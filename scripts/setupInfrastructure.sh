@@ -63,7 +63,7 @@ rm ../manifests/dynatrace/oneagent_tmp.yml
 sleep 150
 
 # Export Jenkins route in a variable
-export JENKINS_URL=$(kubectl describe svc jenkins -n cicd | grep "LoadBalancer Ingress:" | sed 's/LoadBalancer Ingress:[ \t]*//')
+export JENKINS_URL=$(kubectl describe svc jenkins -n cicd | grep "LoadBalancer Ingress:" | sed 's~LoadBalancer Ingress:[ \t]*~~')
 
 curl -X POST http://$JENKINS_URL:24711/credentials/store/system/domain/_/createCredentials --user $JENKINS_USER:$JENKINS_PASSWORD \
 --data-urlencode 'json={
