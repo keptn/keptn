@@ -32,11 +32,11 @@ sleep 100
 export REGISTRY_URL=$(kubectl describe svc docker-registry -n cicd | grep IP: | sed 's/IP:[ \t]*//')
 
 # Create Jenkins
-cat ../manifests/jenkins/k8s-jenkins-deployment.yml | sed 's/GITHUB_USER_EMAIL_PLACEHOLDER/'"$GITHUB_USER_EMAIL"'/' | \
-  sed 's/GITHUB_ORGANIZATION_PLACEHOLDER/'"$GITHUB_ORGANIZATION"'/' | \
-  sed 's/DOCKER_REGISTRY_IP_PLACEHOLDER/'"$REGISTRY_URL"'/' | \
-  sed 's/DT_TENANT_URL_PLACEHOLDER/'"$DT_TENANT_URL"'/' | \
-  sed 's/DT_API_TOKEN_PLACEHOLDER/'"$DT_API_TOKEN"'/' >> ../manifests/jenkins/k8s-jenkins-deployment_tmp.yml
+cat ../manifests/jenkins/k8s-jenkins-deployment.yml | sed 's~GITHUB_USER_EMAIL_PLACEHOLDER~'"$GITHUB_USER_EMAIL"'~' | \
+  sed 's~GITHUB_ORGANIZATION_PLACEHOLDER~'"$GITHUB_ORGANIZATION"'~' | \
+  sed 's~DOCKER_REGISTRY_IP_PLACEHOLDER~'"$REGISTRY_URL"'~' | \
+  sed 's~DT_TENANT_URL_PLACEHOLDER~'"$DT_TENANT_URL"'~' | \
+  sed 's~DT_API_TOKEN_PLACEHOLDER~'"$DT_API_TOKEN"'~' >> ../manifests/jenkins/k8s-jenkins-deployment_tmp.yml
 
 kubectl create -f ../manifests/jenkins/k8s-jenkins-pvcs.yml 
 kubectl create -f ../manifests/jenkins/k8s-jenkins-deployment_tmp.yml
@@ -51,7 +51,7 @@ kubectl create -f https://raw.githubusercontent.com/Dynatrace/dynatrace-oneagent
 sleep 60
 
 kubectl -n dynatrace create secret generic oneagent --from-literal="apiToken=$DT_API_TOKEN" --from-literal="paasToken=$DT_PAAS_TOKEN"
-cat ../manifests/dynatrace/oneagent.yml | sed 's/ENVIRONMENTID/'"$DT_TENANT_ID"'/' >> ../manifests/dynatrace/oneagent_tmp.yml
+cat ../manifests/dynatrace/oneagent.yml | sed 's~ENVIRONMENTID~'"$DT_TENANT_ID"'~' >> ../manifests/dynatrace/oneagent_tmp.yml
 
 kubectl create -f ../manifests/dynatrace/oneagent_tmp.yml
 rm ../manifests/dynatrace/oneagent_tmp.yml
