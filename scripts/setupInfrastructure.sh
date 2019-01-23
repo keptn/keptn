@@ -29,7 +29,7 @@ sleep 100
 
 # Create a route for the docker registry service
 # Store the docker registry route in a variable
-export REGISTRY_URL=$(kubectl describe svc docker-registry -n cicd | grep IP: | sed 's/IP:[ \t]*//')
+export REGISTRY_URL=$(kubectl describe svc docker-registry -n cicd | grep IP: | sed 's~IP:[ \t]*~~')
 
 # Create Jenkins
 cat ../manifests/jenkins/k8s-jenkins-deployment.yml | sed 's~GITHUB_USER_EMAIL_PLACEHOLDER~'"$GITHUB_USER_EMAIL"'~' | \
