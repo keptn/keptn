@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd ../repositories/sockshop-infrastructure
+cd ../repositories/sockshop-infrastructure/manifests
 kubectl apply -f carts-db.yml
 kubectl apply -f catalogue-db.yml
 kubectl apply -f orders-db.yml
