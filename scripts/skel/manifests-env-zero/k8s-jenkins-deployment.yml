@@ -1,0 +1,68 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: jenkins
+  namespace: cicd
+spec:
+  type: LoadBalancer
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+    protocol: TCP
+  - name: jnlp
+    port: 50000
+    targetPort: 50000
+    protocol: TCP
+  selector:
+    app: jenkins
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: jenkins-deployment
+  namespace: cicd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jenkins
+  template:
+    metadata:
+      labels:
+        app: jenkins
+    spec:
+      containers:
+      - name: jenkins
+        image: dynatraceacm/jenkins
+        imagePullPolicy: Always
+        env:
+          - name: GITHUB_USER_EMAIL
+            value: GITHUB_USER_EMAIL_PLACEHOLDER
+          - name: GITHUB_ORGANIZATION
+            value: GITHUB_ORGANIZATION_PLACEHOLDER
+          - name: DOCKER_REGISTRY_IP
+            value: DOCKER_REGISTRY_IP_PLACEHOLDER
+        ports:
+        - containerPort: 8080
+        - containerPort: 50000
+        volumeMounts:
+              - name: jenkins-persistent-storage-workspaces
+                mountPath: /var/jenkins_home/workspaces
+              - name: jenkins-persistent-storage-jobs
+                mountPath: /var/jenkins_home/jobs
+        lifecycle:
+          postStart:
+            exec:
+              command:
+                - "/bin/sh"
+                - "-c"
+                - "cp -R /tmp/jobs/* /var/jenkins_home/jobs/"
+      volumes:
+      - name: jenkins-persistent-storage-workspaces
+        persistentVolumeClaim:
+           claimName: jenkins-workspaces
+      - name: jenkins-persistent-storage-jobs
+        persistentVolumeClaim:
+           claimName: jenkins-jobs

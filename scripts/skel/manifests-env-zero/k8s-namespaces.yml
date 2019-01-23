@@ -1,0 +1,24 @@
+# namespace for all ci/cd resources (jenkins, build slaves, docker registry, ...)
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cicd
+---
+# namespace for development stage - all successful builds will be pushed to dev
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dev
+---
+# name for staging stage - all performance tested builds will be pushed to staging
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: staging
+---
+# name for production stage - at a specific point in time, the artefacts in staging will be
+# marked for production and the deployed to the production namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: production

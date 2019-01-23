@@ -1,0 +1,18 @@
+apiVersion: dynatrace.com/v1alpha1
+kind: OneAgent
+metadata:
+  name: oneagent
+  namespace: dynatrace
+spec:
+  apiUrl: CHANGE_TO_API_URL
+  skipCertCheck: false
+  tokens: ""
+  nodeSelector: {}
+  tolerations: []
+  image: ""
+  args:
+  - APP_LOG_CONTENT_ACCESS=1
+  - HOST_GROUP=k8s_cluster_sockshop
+  env:
+  - name: ONEAGENT_ENABLE_VOLUME_STORAGE
+    value: "true"
