@@ -22,7 +22,7 @@ This use case gives an overview of how to leverage the power of runbook automati
 This step integrates the defined _remediation runbook_ in Dynatrace in a way, that it will be called each time Dynatrace detects a problem. Please note that in a more enterprise scenario, you might want to define _Alerting profiles_ to be able to control in a more fine-grained way when to call a remediation runbook.
 
 1. Setup a **Problem Notification** in Dynatrace
-    - Navigate to **Settings**, **Problem notification**, **Ansible Tower** 
+    - Navigate to **Settings**, **Integration**, **Problem notification**, **Ansible Tower** 
 
     ![integration](./assets/ansible-integration.png)
 
@@ -90,4 +90,4 @@ Therefore, the endpoint `carts/1/items/promotional/` can take as an input a numb
 
 :arrow_forward: [Use Case: Unbreakable delivery pipeline](../unbreakable-delivery-pipeline)
 
-:arrow_up_small: [Back to keptn](../../)
+:arrow_up_small: [Back to keptn](../)

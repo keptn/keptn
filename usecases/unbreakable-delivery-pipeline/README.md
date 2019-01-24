@@ -149,4 +149,4 @@ In this step you will create a deployment of the front-end service that passes t
 
 ---
 
-:arrow_up_small: [Back to keptn](../../)
+:arrow_up_small: [Back to keptn](../)
