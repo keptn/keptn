@@ -9,7 +9,7 @@ Performance as a self-service aims on moving from manual sporadic execution and 
 
 ## Step 1: Define request attributes in Dynatrace
 
-In this lab you will learn how to capture request attributes in Dynatrace based on web request data. In more detail, the data stored in the request header `x-dynatrace-test` will be extracted to create request attributes that tag and distinguish service traffic. 
+In this step you will set up a rule to capture request attributes in Dynatrace based on web request data. In more detail, the data stored in the request header `x-dynatrace-test` will be extracted to create request attributes that tag and distinguish service traffic. 
 
 For further information on how to capture request attributes, [please see this page in the Dynatrace documentation.](https://www.dynatrace.com/support/help/monitor/transactions-and-services/request-attributes/how-do-i-capture-request-attributes-based-on-web-request-data/)
 
@@ -27,7 +27,7 @@ For further information on how to capture request attributes, [please see this p
 Screenshot shows this rule definition.
 ![request-attribute](../assets/request_attribute.png)
 
-1. Create Request Attribute for Load Script Name (LSN)
+2. Create Request Attribute for Load Script Name (LSN)
     1. Go to **Settings**, **Server-side monitoring**, and click on **Request attributes**.
     1. Click the **Create new request attribute** button.
     1. Provide a unique *Request attribute name*: `LSN`.
@@ -38,7 +38,7 @@ Screenshot shows this rule definition.
     1. At *Preprocess by extracting substring* set: `between` > `LSN=` > `;`
     1. Finally, click **Save**, click **Save**.
 
-1.  Create Request Attribute for Test Script Name (TSN)
+3.  Create Request Attribute for Test Script Name (TSN)
     1. Go to **Settings**, **Server-side monitoring**, and click on **Request attributes**.
     1. Click the **Create new request attribute** button.
     1. Provide a unique *Request attribute name*: `TSN`.
@@ -51,7 +51,7 @@ Screenshot shows this rule definition.
 
 ## Step 2: Run performance test on carts service
 
-In this lab you'll trigger a performance test for (1) the current implementation of carts and (2) a new version of the carts service. The new version of the carts intentionally contains a slow down of the service, which should be detected by the performance validation.
+In this step you trigger a performance test for (1) the current implementation of carts and (2) a new version of the carts service. The new version of the carts intentionally contains a slow down of the service, which should be detected by the performance validation.
 
 1. Run performance test on current implementation
     1. Go to  **Jenkins** and click on **sockshop** folder.
@@ -79,36 +79,34 @@ In this lab you'll trigger a performance test for (1) the current implementation
     This opens a trend analysis of the jMeter test results. In more details, it shows a chart for the throughput, response time, and percentage of errors as shown below.
     ![performance_trend](../assets/performance_trend.png)
 
-    1. Click on **Performance Signature**.
+    2. Click on **Performance Signature**.
     There you get an overview of the last builds similar to the screenshot below. 
     ![jenkins_result](../assets/jenkins_result.png)
 
-    1. Click on the **Build No** of one particular build and click on **Performance Signature**.
+    3. Click on the **Build No** of one particular build and click on **Performance Signature**.
     This opens a detailed view about the performance validation of the selected build. 
     ![build_result](../assets/build_result.png)
 
-
-
 ## Step 3: Compare builds in Dynatrace
 
-In this lab you'll learn how to leverage Dynatrace to identify the difference between two performance tests. Literally, a couple of clicks can tell you the reason why one build was slower compared to another one. 
+In this step you will leverage Dynatrace to identify the difference between two performance tests. Literally, a couple of clicks can tell you the reason why one build was slower compared to another one. 
 
 1. Open Dynatrace from Jenkins Pipeline
     1. In the Performance Signature for a selected build, click on **open in Dynatrace**. (This opens the correct timeframe.)
     1. Go to **Diagnostic tools** and click on **Top web requests**.
     1. (optional) Filter on a Management Zone. 
 
-1. Narrow down the Requests based on Request Attributes
+1. Narrow down the requests based on request attributes
     1. Click on **Add filter**.
     1. Create filter for: `Request attribute` > `LTN`.
     1. Click on **Apply**.
 
-1. Open Comparison View
+1. Open comparison view
     1. Select the timeframe of a *good build*.
     1. Click on **...** and select **Comparison** as shown below:
     ![compare_builds](../assets/compare_builds.png)
 
-1. Compare Response Time Hotspots
+1. Compare response time hotspots
     1. Select the timeframe of the *bad build* by selecting *compare with*: `custom time frame`
     1. Click on **Compare response time hotspots**.
     ![compare_hotspots](../assets/compare_hotspots.png)
