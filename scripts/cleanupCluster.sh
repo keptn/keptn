@@ -22,6 +22,10 @@ kubectl delete namespace dynatrace
 kubectl delete services,deployments,pods --all -n tower
 kubectl delete namespace tower
 
+# Clean up istio namespace
+kubectl delete services,deployments,pods --all -n istio-system
+kubectl delete namespace istio-system
+
 # Verification
 kubectl delete clusterrolebindings.rbac.authorization.k8s.io dynatrace-cluster-admin-binding
 kubectl delete clusterrolebindings.rbac.authorization.k8s.io jenkins-rbac

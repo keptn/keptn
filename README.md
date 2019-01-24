@@ -48,14 +48,20 @@ This directory contains all scripts and instructions needed to deploy the socksh
 
     ```console
     $ kubectl get svc front-end -n dev
+    NAME        TYPE           CLUSTER-IP     EXTERNAL-IP      PORT(S)          AGE
+    front-end   LoadBalancer   10.23.252.**   **.225.203.***   8080:30438/TCP   6m
     ```
 
     ```console
     $ kubectl get svc front-end -n staging
+    NAME        TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)          AGE
+    front-end   LoadBalancer   10.23.246.***   **.184.97.***   8080:32501/TCP   9m
     ```
 
     ```console
     $ kubectl get svc front-end -n production
+    NAME        TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)          AGE
+    front-end   LoadBalancer   10.23.248.***   **.226.62.***   8080:32232/TCP   9m
     ```
 
 1. Run the `kubectl get svc` command to get the external IP of Jenkins. Then user a browser to open Jenkins and login using the default Jenkins credentials: `admin` / `AiTx4u8VyUV8tCKk`. **Note:** it is recommended to change these credentials right after the first login.
@@ -78,7 +84,7 @@ This directory contains all scripts and instructions needed to deploy the socksh
 
 ## Step Two: Setup process group naming rule in Dynatrace <a id="step-two"></a>
 
-1. Create a Naming Rule for Process Groups
+1. Create a naming rule for process groups
     1. Go to **Settings**, **Process groups**, and click on **Process group naming**.
     1. Create a new process group naming rule with **Add new rule**. 
     1. Edit that rule:
