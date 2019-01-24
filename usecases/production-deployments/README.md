@@ -1,6 +1,6 @@
 # Production Deployments
 
-This session gives an overview of production deployments, deployment strategies, and showcases those using Istio on Kubernetes to canary-deploy a new front-end version.
+This use case gives an overview of production deployments, deployment strategies, and showcases those using Istio on Kubernetes to canary-deploy a new front-end version.
 
 ##### Table of Contents
  * [Step 0: Verify Istio installation and deploy to production](#step-zero)
@@ -114,7 +114,7 @@ In this step, you create an improved version of the front-end service. You will 
 
 1. Save the changes to that file.
 
-1. Now it's time to commit your changes. First locally, and thne pushing it to the remote repository.
+1. Now it's time to commit your changes. First locally, and then push it to the remote repository.
 
     ```console
     $ git add .
@@ -164,13 +164,13 @@ In this step, you create an improved version of the front-end service. You will 
 
 In this step, you will promote the new version of the `front-end` service to production.
 
-1. In your Jenkins instance, trigger the parameterized pipeline `k8s-deploy-production.update` :one:.
+1. In your Jenkins instance, trigger the parameterized pipeline `k8s-deploy-production.update` (see :one:).
 
-    ![trigger-production-update](../assets/trigger-production-update.png)
+    ![trigger-production-update](./assets/trigger-production-update.png)
 
 2. Enter `front-end` as service name and `v2` as new version when asked for parameters to that pipeline.
 
-    ![enter-parameters](../assets/enter-parameters.png)
+    ![enter-parameters](./assets/enter-parameters.png)
 
     This pipeline reads the version of the passed service in the `staging` namespace and deploys the artefact in that version to the `production` namespace in a deployment with the passed version number. After running that pipeline, there should be two deployments of `front-end`, one with v1 and one with v2.
 
@@ -184,7 +184,7 @@ In this step, you will promote the new version of the `front-end` service to pro
     ...
     ```
 
-    We've configured the `VirtualService` sockshop to only use v1 initially, so the application is not affected at all by the deployment of a new version in the `production` namespace. You can check the details of the deployments to see that each deployment uses a different artefact version, e.g. `0.5.0` and `0.6.0` in the example below.
+    We've configured the `VirtualService` sockshop to only use v1 initially. So, the application is not affected at all by the deployment of a new version in the `production` namespace. You can check the details of the deployments to see that each deployment uses a different artefact version, e.g. `0.5.0` and `0.6.0` in the example below.
 
     ```console
     $ kubectl -n production describe deployment front-end-v1
@@ -216,9 +216,9 @@ In this step, you will promote the new version of the `front-end` service to pro
 
 ## Step 4. Istio traffic routing <a id="step-four"></a>
 
-In this lab, we'll configure traffic routing in Istio to redirect traffic based on different criteria to the version 2 of the `front-end`. We'll cover how to redirect traffic using weight rules, redirecting only logged in users to the version 2, and redirecting only Chrome users to version 2.
+In this step, you will configure traffic routing in Istio to redirect traffic based on different criteria to the version 2 of the `front-end`. This addresses the tasks to redirect traffic using weight rules, redirect only logged in users to the version 2, and redirect only Chrome users to version 2.
 
-1. Right now, traffic to `front-end` is only routed to the version 1, because we've configured the `VirtualService` to do exactly that. The `subset: v1` entry in the configuration takes care of that.
+1. Right now, traffic to `front-end` is only routed to the version 1 due to the configuration of the `VirtualService`. The `subset: v1` entry in the configuration takes care of that.
 
     ```
     apiVersion: networking.istio.io/v1alpha3
@@ -248,33 +248,33 @@ In this lab, we'll configure traffic routing in Istio to redirect traffic based 
 
     Edit the file like this:
 
-    **!!! YOU MUST NOT DELETE THE COMMENTS #v1 AND #v2 - WE NEED THOSE LATER ON !!!**
+    **!Note! YOU MUST NOT DELETE THE COMMENTS #v1 AND #v2 - WE NEED THOSE LATER ON**
 
-    ![modify-canary-yml](../assets/modify-canary-yml.png)
+    ![modify-canary-yml](./assets/modify-canary-yml.png)
 
     This configuration redirects 10% of all traffic hitting the sockshop `VirtualService` to version 2. Let's take a look how that looks in Dynatrace.
 
 1. Open Dynatrace and navigate to Transactions&Services and open the `front-end` service screen.
 
-    ![open-frontend-service](../assets/dynatrace-service-2-pgis.png)
+    ![open-frontend-service](./assets/dynatrace-service-2-pgis.png)
 
     You see, that there are two service instances to the `front-end` service, i.e. the two different deployments we've done earlier, as you can see in the brackets of the processes (front-end-v1-... and front-end-v2-...). Dynatrace is aware of the two versions.
 
 1. Let's create a chart in Dynatrace that shows the traffic distribution between two service versions. To that end, click on the "Create" button in the "Multidimensional analysis views" section on the service screen. In the next screen select the metric `Total requests - Server` and click "Build chart"
 
-    ![chart-select-metric](../assets/chart-select-metric.png)
+    ![chart-select-metric](./assets/chart-select-metric.png)
 
 1. Rename the chart and configure the filter so only requests that contain the string `index` are taken into account for that chart. By doing that, we filter out the readiness and liveness probe requests.
 
-    ![chart-rename-filter](../assets/chart-rename-filter.png)
+    ![chart-rename-filter](./assets/chart-rename-filter.png)
 
 1. Click on the metric :one: under the chart, select either "Stacked Area" or "Stacked Bar" chart :two:, and select "Service instance" as dimension :three:.
 
-    ![chart-select-dimension](../assets/chart-select-dimension.png)
+    ![chart-select-dimension](./assets/chart-select-dimension.png)
 
 1. Your chart should now look something like this, already showing the traffic distribution between the two service instances. Finally, click the "Save to Service" button :one: in the upper right corner, so you can easily access this chart form the service overview from now on.
 
-    ![chart-done](../assets/chart-done.png)
+    ![chart-done](./assets/chart-done.png)
 
 1. You can now change the weight distribution of verison 1 and 2 to arbitrary values and see it reflect in the chart you've just created.
 
