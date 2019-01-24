@@ -48,13 +48,13 @@ In this step you will create an Ansible Tower job that releases a deployment in 
     After this step, your job template for *canary reset userX* should look as shown below: 
     ![](./assets/ansible-template2.png)
 
-## Step 3: Introduce a failure into front-end and deploy to production<a id="step-three"></a>
+## Step 3: Introduce a failure into front-end and deploy to production <a id="step-three"></a>
 
 In this step you will introduce a Java Script error into the front-end. This version will be deployed as version `v2`.
 
 1. Make sure you are in the master branch of your front-end.
-    ```
-    (local)$ git checkout master
+    ```console
+    $ git checkout master
     ```
 
 1. Open file `front-end\public\topbar.html` and add the following scripts to the `div class=container` element. 
@@ -149,4 +149,4 @@ In this step you will create a deployment of the front-end service that passes t
 
 ---
 
-:arrow_up_small: [Back to keptn](../)
+:arrow_up_small: [Back to keptn](../../)

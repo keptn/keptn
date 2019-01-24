@@ -293,4 +293,4 @@ In this step, you will configure traffic routing in Istio to redirect traffic ba
 
 :arrow_forward: [Use Case: Runbook automation and self-healing](../runbook-automation-and-self-healing)
 
-:arrow_up_small: [Back to keptn](../)
+:arrow_up_small: [Back to keptn](../../)

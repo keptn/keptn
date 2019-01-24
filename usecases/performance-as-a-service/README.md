@@ -119,4 +119,4 @@ In this step you will leverage Dynatrace to identify the difference between two 
 
 :arrow_forward: [Use Case: Production Deployments](../production-deployments)
 
-:arrow_up_small: [Back to keptn](../)
+:arrow_up_small: [Back to keptn](../../)
