@@ -1,0 +1,8 @@
+language: go
+os: linux
+sudo: required
+services:
+  - docker
+
+go:
+  - 1.9.x
