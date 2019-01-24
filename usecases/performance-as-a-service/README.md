@@ -25,7 +25,7 @@ For further information on how to capture request attributes, [please see this p
     1. Finally, click **Save**, click **Save**.
 
 Screenshot shows this rule definition.
-![request-attribute](../assets/request_attribute.png)
+![request-attribute](./assets/request_attribute.png)
 
 2. Create Request Attribute for Load Script Name (LSN)
     1. Go to **Settings**, **Server-side monitoring**, and click on **Request attributes**.
@@ -77,15 +77,15 @@ In this step you trigger a performance test for (1) the current implementation o
 1. Explore Results in Jenkins
     1. After a successful pipeline execution, click on **Performance Trend**. 
     This opens a trend analysis of the jMeter test results. In more details, it shows a chart for the throughput, response time, and percentage of errors as shown below.
-    ![performance_trend](../assets/performance_trend.png)
+    ![performance_trend](./assets/performance_trend.png)
 
     2. Click on **Performance Signature**.
     There you get an overview of the last builds similar to the screenshot below. 
-    ![jenkins_result](../assets/jenkins_result.png)
+    ![jenkins_result](./assets/jenkins_result.png)
 
     3. Click on the **Build No** of one particular build and click on **Performance Signature**.
     This opens a detailed view about the performance validation of the selected build. 
-    ![build_result](../assets/build_result.png)
+    ![build_result](./assets/build_result.png)
 
 ## Step 3: Compare builds in Dynatrace
 
@@ -104,13 +104,13 @@ In this step you will leverage Dynatrace to identify the difference between two 
 1. Open comparison view
     1. Select the timeframe of a *good build*.
     1. Click on **...** and select **Comparison** as shown below:
-    ![compare_builds](../assets/compare_builds.png)
+    ![compare_builds](./assets/compare_builds.png)
 
 1. Compare response time hotspots
     1. Select the timeframe of the *bad build* by selecting *compare with*: `custom time frame`
     1. Click on **Compare response time hotspots**.
-    ![compare_hotspots](../assets/compare_hotspots.png)
+    ![compare_hotspots](./assets/compare_hotspots.png)
     1. There you can see that the *Active wait time* increased.
-    ![compare_overview](../assets/compare_overview.png)
+    ![compare_overview](./assets/compare_overview.png)
     1. Click on **View method hotspots** to identify the root cause.
-    ![method_hotspot](../assets/method_hotspot.png)
+    ![method_hotspot](./assets/method_hotspot.png)
