@@ -7,7 +7,7 @@ This use case aims on moving from manual sporadic execution and analysis of perf
  * [Step 2: Run performance test on carts service](#step-two)
  * [Step 3: Compare builds in Dynatrace](#step-three)
 
-## Step 1: Define request attributes in Dynatrace
+## Step 1: Define request attributes in Dynatrace <a id="step-one"></a>
 
 In this step you will set up a rule to capture request attributes in Dynatrace based on web request data. In more detail, the data stored in the request header `x-dynatrace-test` will be extracted to create request attributes that tag and distinguish service traffic. 
 
@@ -49,7 +49,7 @@ Screenshot shows this rule definition.
     1. At *Preprocess by extracting substring* set: `between` > `TSN=` > `;`
     1. Finally, click **Save**, click **Save**.
 
-## Step 2: Run performance test on carts service
+## Step 2: Run performance test on carts service <a id="step-two"></a>
 
 In this step you trigger a performance test for (1) the current implementation of carts and (2) a new version of the carts service. The new version of the carts intentionally contains a slow down of the service, which should be detected by the performance validation.
 
@@ -87,7 +87,7 @@ In this step you trigger a performance test for (1) the current implementation o
     This opens a detailed view about the performance validation of the selected build. 
     ![build_result](./assets/build_result.png)
 
-## Step 3: Compare builds in Dynatrace
+## Step 3: Compare builds in Dynatrace <a id="step-three"></a>
 
 In this step you will leverage Dynatrace to identify the difference between two performance tests. Literally, a couple of clicks can tell you the reason why one build was slower compared to another one. 
 
