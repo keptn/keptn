@@ -1,0 +1,6 @@
+language: generic
+os: linux
+sudo: required
+services:
+  - docker
+
