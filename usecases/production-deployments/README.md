@@ -4,7 +4,7 @@ This use case gives an overview of production deployments, deployment strategies
 
 ##### Table of Contents
  * [Step 0: Verify Istio installation and deploy to production](#step-zero)
- * [Step 1: Configure Istio components](#step-one)
+ * [Step 1: Access ingress gateway](#step-one)
  * [Step 2: Create front-end v2](#step-two)
  * [Step 3: Deploy front-end v2 to production](#step-three)
  * [Step 4: Istio traffic routing](#step-four)
@@ -51,9 +51,7 @@ This use case gives an overview of production deployments, deployment strategies
 
     <!-- Naturally, we dispatch a deployment event to all affected services. This might not work for the first deployment, because the service might not exist as a Dynatrace entity when dispatching the event, but it will work for all consecutive calls. -->
 
-## Step 1: Configure Istio components * In progress * <a id="step-one"></a>
-
-In this step, you enable Istio's automatic sidecar injection for production namespace, create and configure mandatory Istio components, and allow mesh external traffic to leave the service mesh.
+## Step 1: Access ingress gateway <a id="step-one"></a>
 
 1. Run the `kubectl get svc` command to get the **EXTERNAL-IP** and **PORT** of your `Gateway`.
 
@@ -61,47 +59,6 @@ In this step, you enable Istio's automatic sidecar injection for production name
     $ kubectl get svc istio-ingressgateway -n istio-system
     NAME                   TYPE           CLUSTER-IP       EXTERNAL-IP     PORT(S)                                      AGE
     istio-ingressgateway   LoadBalancer   172.21.109.129   1xx.2xx.10.12x  80:31380/TCP,443:31390/TCP,31400:31400/TCP   17h
-    ```
-
-1. We'll define `ServiceEntry`s that add entries to Istio's internal service registry and allow for connection to services that are external to the service mesh, e.g. mesh-external hosted databases for the `carts` and `orders` service.
-
-    ```console
-    $ kubectl apply -f repositories/k8s-deploy-production/istio/service_entries_sockshop.yml
-    ```
-
-1. Last but not least, we need to configure `ServiceEntry`s for the Dynatrace OneAgent, so the language specific components that run inside the pods can communicate with the Dynatrace servers. To do that, at first make a GET call to the REST endpoint of your Dynatrace environment. Replace the _environmentId_ with your environment ID and the _paas-token_ with the PaaS token you've created earlier during the Monitoring-as-a-Service session.
-
-    ```console
-    $ curl https://{environmentID}.live.dynatrace.com/api/v1/deployment/installer/agent/connectioninfo?Api-Token={paas-token}
-    ```
-
-    The output you get will loke something like this. The list of `communcationEndpoints` is what we need in the next step.
-
-    ```
-    {
-        "tenantUUID": "abc12345", (your environment ID)
-        "tenantToken": "ABCDEF1234567890",
-        "communicationEndpoints": [
-            "https://sg-us-west-2-rrr-sss-ttt-uuu-prod-us-west-2-oregon.live.ruxit.com/communication",
-            "https://sg-us-west-2-www-xxx-yyy-zzz-prod-us-west-2-oregon.live.ruxit.com/communication",
-            ...
-        ]
-    }
-    ```
-
-    In the `k8s-deploy-production` repository, open the file `istio/service_entry_oneagent.yml` and edit the contents so that all `communicationEndpoints` from the previous are listed in that file. Make sure that you 
-    * enter all `communicationEndpoints` in the `ServiceEntry` :one:, 
-    * enter all `communicationEndpoints` in the `VirtualService` :two:,
-    * make sure that a `tls-match` entry exists for each `communicationEndpoint` :three:
-
-    ![service-entry-oneagent.yml](./assets/service-entry-oneagent.png)
-
-    After editing the file, apply the configuration.
-
-    ```console
-    $ pwd
-    ~/repositories/k8s-deploy-production
-    $ kubectl apply -f istio/service_entry_oneagent.yml
     ```
 
 ## Step 2. Create front-end v2 <a id="step-two"></a>
@@ -252,29 +209,13 @@ In this step, you will configure traffic routing in Istio to redirect traffic ba
 
     ![modify-canary-yml](./assets/modify-canary-yml.png)
 
-    This configuration redirects 10% of all traffic hitting the sockshop `VirtualService` to version 2. Let's take a look how that looks in Dynatrace.
+    This configuration redirects 10% of all traffic hitting the sockshop `VirtualService` to version 2. 
 
-1. Open Dynatrace and navigate to Transactions&Services and open the `front-end` service screen.
+1. Apply the changes: 
 
-    ![open-frontend-service](./assets/dynatrace-service-2-pgis.png)
-
-    You see, that there are two service instances to the `front-end` service, i.e. the two different deployments we've done earlier, as you can see in the brackets of the processes (front-end-v1-... and front-end-v2-...). Dynatrace is aware of the two versions.
-
-1. Let's create a chart in Dynatrace that shows the traffic distribution between two service versions. To that end, click on the "Create" button in the "Multidimensional analysis views" section on the service screen. In the next screen select the metric `Total requests - Server` and click "Build chart"
-
-    ![chart-select-metric](./assets/chart-select-metric.png)
-
-1. Rename the chart and configure the filter so only requests that contain the string `index` are taken into account for that chart. By doing that, we filter out the readiness and liveness probe requests.
-
-    ![chart-rename-filter](./assets/chart-rename-filter.png)
-
-1. Click on the metric :one: under the chart, select either "Stacked Area" or "Stacked Bar" chart :two:, and select "Service instance" as dimension :three:.
-
-    ![chart-select-dimension](./assets/chart-select-dimension.png)
-
-1. Your chart should now look something like this, already showing the traffic distribution between the two service instances. Finally, click the "Save to Service" button :one: in the upper right corner, so you can easily access this chart form the service overview from now on.
-
-    ![chart-done](./assets/chart-done.png)
+    ```console
+    $ kubectl apply -f virtual-service-canary.yml
+    ```
 
 1. You can now change the weight distribution of verison 1 and 2 to arbitrary values and see it reflect in the chart you've just created.
 
