@@ -9,7 +9,7 @@ This use case gives an overview of production deployments, deployment strategies
  * [Step 3: Deploy front-end v2 to production](#step-three)
  * [Step 4: Istio traffic routing](#step-four)
 
-## Step 0: Verify Istio installation <a id="step-zero"></a>
+## Step 0: Verify Istio installation and deploy to production <a id="step-zero"></a>
 
 1. To verify the installation of Istio, execute the `kubectl get services -n istio-system` command:
 
