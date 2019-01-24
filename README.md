@@ -4,8 +4,8 @@ Keptn shows how to ...
 ##### Table of Contents
  * [Step Zero: Prerequisites](#step-zero)
  * [Step One: Provision cluster on Kubernetes](#step-one)
- * [Step Two: Setup process group naming rule in Dynatrace](#step-two)
- * [Step Three: Setup service tagging rules in Dynatrace](#step-three)
+ * [Step Two: Setup service tagging rules in Dynatrace](#step-two)
+ * [Step Three: Setup process group naming rule in Dynatrace](#step-three)
  * [Step Four: Use case walk through](#step-four)
  * [Step Five: Cleanup](#step-five)
 
@@ -48,24 +48,31 @@ This directory contains all scripts and instructions needed to deploy the socksh
 
     ```console
     $ kubectl get svc front-end -n dev
+    NAME         TYPE            CLUSTER-IP      EXTERNAL-IP       PORT(S)           AGE
+    front-end    LoadBalancer    10.23.252.***   **.225.203.***    8080:30438/TCP    5m
     ```
 
     ```console
     $ kubectl get svc front-end -n staging
+    NAME         TYPE            CLUSTER-IP       EXTERNAL-IP      PORT(S)           AGE
+    front-end    LoadBalancer    10.23.246.***    **.184.97.***    8080:32501/TCP    6m
     ```
 
     ```console
     $ kubectl get svc front-end -n production
+    NAME         TYPE            CLUSTER-IP       EXTERNAL-IP      PORT(S)           AGE
+    front-end    LoadBalancer    10.23.248.***    **.226.62.***    8080:32232/TCP    7m
     ```
 
-1. Run the `kubectl get svc` command to get the external IP of Jenkins. Then user a browser to open Jenkins and login using the default Jenkins credentials: `admin` / `AiTx4u8VyUV8tCKk`. **Note:** it is recommended to change these credentials right after the first login.
+1. Run the `kubectl get svc` command to get the **EXTERNAL-IP** and **PORT** of Jenkins. Then user a browser to open Jenkins and login using the default Jenkins credentials: `admin` / `AiTx4u8VyUV8tCKk`. **Note:** it is recommended to change these credentials right after the first login.
 
     ```console
     $ kubectl get svc jenkins -n cicd
+    NAME       TYPE            CLUSTER-IP      EXTERNAL-IP       PORT(S)                            AGE
+    jenkins    LoadBalancer    10.23.245.***   ***.198.26.***    24***:32478/TCP,50***:31867/TCP    10m
     ``` 
 
 1. To verify the correct installation of Jenkins, go to the Jenkins dashboard where you see the following pipelines:
-
     * k8s-deploy-production
     * k8s-deploy-production-canary
     * k8s-deploy-production-update
@@ -76,24 +83,12 @@ This directory contains all scripts and instructions needed to deploy the socksh
 
 ![](./assets/jenkins-env-vars.png)
 
-## Step Two: Setup process group naming rule in Dynatrace <a id="step-two"></a>
-
-1. Create a Naming Rule for Process Groups
-    1. Go to **Settings**, **Process groups**, and click on **Process group naming**.
-    1. Create a new process group naming rule with **Add new rule**. 
-    1. Edit that rule:
-        * Rule name: `Container.Namespace`
-        * Process group name format: `{ProcessGroup:KubernetesContainerName}.{ProcessGroup:KubernetesNamespace}`
-        * Condition: `Kubernetes namespace`> `exits`
-    1. Click on **Preview** and **Save**.
-
-Screenshot shows this rule definition.
-![tagging-rule](./assets/pg_naming.png)
-
-## Step Three: Setup service tagging rules in Dynatrace <a id="step-three"></a>
+## Step Two: Setup service tagging rules in Dynatrace <a id="step-two"></a>
 
 This step creates tagging rules based on Kubernetes pod name and namespaces.
 These rules allow you to query service-level metrics such as response time, failure rate, or throughput automatically based on meta-data that you have passed during a deployment, e.g.: *Deployment Stage* (dev, staging, or production). 
+
+1. Login in to you Dynatrace tenant.
 
 1. Create service tag for app name based on K8S container name
     1. Go to **Settings**, **Tags**, and click on **Automatically applied tags**.
@@ -115,11 +110,34 @@ These rules allow you to query service-level metrics such as response time, fail
     1. Click on **Preview** to validate rule works.
     1. Click on **Save** for the rule and then **Done**.
 
+## Step Three: Setup process group naming rule in Dynatrace <a id="step-three"></a>
+
+1. Create a naming rule for process groups
+    1. Go to **Settings**, **Process groups**, and click on **Process group naming**.
+    1. Create a new process group naming rule with **Add new rule**. 
+    1. Edit that rule:
+        * Rule name: `Container.Namespace`
+        * Process group name format: `{ProcessGroup:KubernetesContainerName}.{ProcessGroup:KubernetesNamespace}`
+        * Condition: `Kubernetes namespace`> `exits`
+    1. Click on **Preview** and **Save**.
+
+Screenshot shows this rule definition.
+![tagging-rule](./assets/pg_naming.png)
+
 ## Step Three: Use case walk through <a id="step-four"></a>
 
-* [Performance as a Service](./usecases/performance-as-a-service) 
-* [Production Deployments](./usecases/production-deployments) 
-* [Runbook Automation and Self-Healing](./usecases/runbook-automation-and-self-healing)
-* [Unbreakable Delivery Pipeline](./usecases/unbreakable-delivery-pipeline)
+* [Performance as a Service](./usecases/performance-as-a-service): This use case aims on moving from manual sporadic execution and analysis of performance tests to a fully automated on-demand self-service testing model for developers.
+
+* [Production Deployments](./usecases/production-deployments): This use case gives an overview of production deployments, deployment strategies, and showcases those using Istio on Kubernetes to canary-deploy a new front-end version.
+
+* [Runbook Automation and Self-Healing](./usecases/runbook-automation-and-self-healing): This use case gives an overview of how to leverage the power of runbook automation to build self-healing applications. 
+
+* [Unbreakable Delivery Pipeline](./usecases/unbreakable-delivery-pipeline): The overall goal of the *Unbreakable Delivery Pipeline* is to implement a pipeline that prevents bad code changes from impacting real end users.
 
 ## Step Four: Cleanup <a id="step-five"></a>
+
+1. To clean up your Kubernetes cluster, execute the `cleanupCluster.sh` script in the `scripts` directory.
+
+    ```console
+    $ ./scripts/cleanupCluster.sh
+    ```

@@ -8,7 +8,11 @@ kubectl apply -f ../manifests/istio/istio-demo.yml
 sleep 500
 
 kubectl label namespace production istio-injection=enabled
-kubectl create -f ../manifests/istio/istio-gateway.yml
+
+# Istio configuration for production namespace
+kubectl create -f ../repositories/k8s-deploy-production/istio/gateway.yml
+kubectl create -f ../repositories/k8s-deploy-production/istio/destination_rule.yml
+kubectl create -f ../repositories/k8s-deploy-production/istio/virtual_service.yml
 
 ./createServiceEntry.sh $DT_TENANT_ID $DT_PAAS_TOKEN
 
