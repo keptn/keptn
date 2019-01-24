@@ -1,0 +1,14 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: sockshop
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - sockshop-gateway
+  http:
+  - route:
+    - destination:
+        host: front-end.production.svc.cluster.local
+        subset: v1

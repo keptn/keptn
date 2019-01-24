@@ -1,6 +1,6 @@
 # Performance as a Service
 
-Performance as a self-service aims on moving from manual sporadic execution and analysis of performance tests to a fully automated on-demand self-service model for developers. This provides early performance feedback and results in better performing software that gets deployed into production.
+This use case aims on moving from manual sporadic execution and analysis of performance tests to a fully automated on-demand self-service model for developers. This provides early performance feedback and results in better performing software that gets deployed into production.
 
 ##### Table of Contents
  * [Step 1: Define request attributes in Dynatrace](#step-one)
@@ -114,3 +114,9 @@ In this step you will leverage Dynatrace to identify the difference between two 
     ![compare_overview](./assets/compare_overview.png)
     1. Click on **View method hotspots** to identify the root cause.
     ![method_hotspot](./assets/method_hotspot.png)
+
+---
+
+:arrow_forward: [Use Case: Production Deployments](../production-deployments)
+
+:arrow_up_small: [Back to keptn](../)

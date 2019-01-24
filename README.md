@@ -126,9 +126,12 @@ Screenshot shows this rule definition.
 
 ## Step Three: Use case walk through <a id="step-four"></a>
 
-* [Performance as a Service](./usecases/performance-as-a-service):  
-* [Production Deployments](./usecases/production-deployments):  
+* [Performance as a Service](./usecases/performance-as-a-service): This use case aims on moving from manual sporadic execution and analysis of performance tests to a fully automated on-demand self-service testing model for developers.
+
+* [Production Deployments](./usecases/production-deployments): This section  gives an overview of production deployments, deployment strategies, and showcases those using Istio on Kubernetes to canary-deploy a new front-end version.
+
 * [Runbook Automation and Self-Healing](./usecases/runbook-automation-and-self-healing): 
+
 * [Unbreakable Delivery Pipeline](./usecases/unbreakable-delivery-pipeline): 
 
 ## Step Four: Cleanup <a id="step-five"></a>
