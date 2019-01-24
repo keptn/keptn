@@ -129,7 +129,7 @@ In this step, you will promote the new version of the `front-end` service to pro
 
     ![enter-parameters](./assets/enter-parameters.png)
 
-    This pipeline reads the version of the passed service in the `staging` namespace and deploys the artefact in that version to the `production` namespace in a deployment with the passed version number. After running that pipeline, two deployments of `front-end` - one with v1 and one with v2 - are available.
+    This pipeline reads the version of the passed service in the `staging` namespace and deploys the artefact in that version to the `production` namespace in a deployment with the passed version number. After running that pipeline, two deployments of `front-end` (one with v1 and one with v2) are available.
 
     ```console
     $ kubectl -n production get deployment
@@ -140,7 +140,7 @@ In this step, you will promote the new version of the `front-end` service to pro
     ...
     ```
 
-    We've configured the `VirtualService` sockshop to only use v1 initially. So, the application is not affected at all by the deployment of a new version in the `production` namespace. You can check the details of the deployments to see that each deployment uses a different artefact version, e.g. `0.5.0` and `0.6.0` in the example below.
+    At this stage, the `VirtualService` for sockshop is configured to use v1 initially. So, the application is not affected at all by the deployment of a new version in the `production` namespace. You can check the details of the deployments to see that each deployment uses a different artefact version, e.g. `0.5.0` and `0.6.0`, in the example below:
 
     ```console
     $ kubectl -n production describe deployment front-end-v1
@@ -172,9 +172,9 @@ In this step, you will promote the new version of the `front-end` service to pro
 
 ## Step 4. Istio traffic routing <a id="step-four"></a>
 
-In this step, you will configure traffic routing in Istio to redirect traffic based on different criteria to the version 2 of the `front-end`. This addresses the tasks to redirect traffic using weight rules, redirect only logged in users to the version 2, and redirect only Chrome users to version 2.
+In this step, you will configure traffic routing in Istio to redirect traffic based on different criteria to the version 2 of the `front-end` service. It addresses the tasks to redirect traffic using weight rules, redirect only logged in users, and redirect only Chrome users to version 2.
 
-1. Right now, traffic to `front-end` is only routed to the version 1 due to the configuration of the `VirtualService`. The `subset: v1` entry in the configuration takes care of that.
+1. Right now, traffic to `front-end` is routed to the version 1 due to the configuration of the `VirtualService`. The `subset: v1` entry in the configuration takes care of that.
 
     ```
     apiVersion: networking.istio.io/v1alpha3
@@ -193,7 +193,7 @@ In this step, you will configure traffic routing in Istio to redirect traffic ba
             subset: v1
     ```
 
-1. To see if the new version works properly we only want 10% of the traffic to be redirected to that version initially. To that end, we modify the `virtual-service-canary.yml` in the `k8s-deploy-production` repository and apply it.
+1. To see if the new version works properly, 10% of the traffic can be redirected to that version. Therefore, it is necessary to modify the `virtual-service-canary.yml` in the `keptn/repositories/k8s-deploy-production/istio` repository and to apply it.
 
     ```console
     $ pwd
@@ -210,13 +210,13 @@ In this step, you will configure traffic routing in Istio to redirect traffic ba
 
     This configuration redirects 10% of all traffic hitting the sockshop `VirtualService` to version 2. 
 
-1. Apply the changes: 
+1. Apply the changes by executing the command `kubectl apply -f virtual-service-canary.yml`
 
     ```console
     $ kubectl apply -f virtual-service-canary.yml
     ```
 
-1. You can now change the weight distribution of verison 1 and 2 to arbitrary values and see it reflect in the chart you've just created.
+1. You can now change the weight distribution of verison 1 and 2 to arbitrary values.
 
 1. (Optional) You can decide traffic routing also based on information that is included in the HTTP header. For example, you can present version 2 only to users that are logged in. See the following configuration that enables that.
 
@@ -286,10 +286,10 @@ In this step, you will configure traffic routing in Istio to redirect traffic ba
     $ kubectl apply -f virtual_service_v2_for_chrome.yml
     ```
 
-    If you open sockshop using Chrome you should see version 2, with any other version 1 should be displayed.
+    If you open sockshop using Chrome you see version 2, with any other browser version 1 is be displayed.
 
 ---
 
-:arrow_forward: [Use Case: Runbook automation and self-healing](../runbook-automation-and-self-healing)
+[Use Case: Performance as a Service](../performance-as-a-service) :arrow_backward: :arrow_forward: [Use Case: Runbook automation and self-healing](../runbook-automation-and-self-healing)
 
 :arrow_up_small: [Back to keptn](../)

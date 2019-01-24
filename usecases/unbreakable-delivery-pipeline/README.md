@@ -149,4 +149,6 @@ In this step you will create a deployment of the front-end service that passes t
 
 ---
 
+[Use Case: Runbook automation and self-healing](../runbook-automation-and-self-healing) :arrow_backward: 
+
 :arrow_up_small: [Back to keptn](../)

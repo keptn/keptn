@@ -88,6 +88,6 @@ Therefore, the endpoint `carts/1/items/promotional/` can take as an input a numb
 
 ---
 
-:arrow_forward: [Use Case: Unbreakable delivery pipeline](../unbreakable-delivery-pipeline)
+[Use Case: Production deployments](../production-deployments) :arrow_backward: :arrow_forward: [Use Case: Unbreakable delivery pipeline](../unbreakable-delivery-pipeline)
 
 :arrow_up_small: [Back to keptn](../)

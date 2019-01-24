@@ -15,7 +15,7 @@ Keptn assumes that you have a working Kubernetes cluster in Google Container Eng
 
 The scripts provided in this directory run in a BASH and require following tools locally installed: 
 * [`jq`](https://stedolan.github.io/jq/) which is a lightweight and flexible command-line JSON processor
-* [`git`](https://git-scm.com/) and [`hub`](https://hub.github.com/)
+* [`git`](https://git-scm.com/) and [`hub`](https://hub.github.com/) that helps you do everyday GitHub tasks without ever leaving the terminal
 * [`kubectl`](https://kubernetes.io/docs/tasks/tools/install-kubectl/) that is logged in to your cluster. 
     **Tip:** View all the kubectl commands, including their options and descriptions in the [kubectl CLI reference](https://kubernetes.io/docs/user-guide/kubectl-overview/).
 
