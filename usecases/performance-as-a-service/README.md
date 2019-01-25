@@ -58,7 +58,7 @@ In this step you trigger a performance test for (1) the current implementation o
     1. Then select the **master** branch and click on **Build Now** to trigger the performance pipeline.
 
 1. Introduce a slowdown in the carts service
-    1. In the directory of `keptn/repositories/carts/`, open the file: `./src/main/resources/application.properties`
+    1. In the directory of `~/keptn/repositories/carts/`, open the file: `./src/main/resources/application.properties`
     1. Change the value of `delayInMillis` from `0` to `1000`
     1. Commit/Push the changes to your GitHub Repository *carts*
 
@@ -126,7 +126,7 @@ In this step you will leverage Dynatrace to identify the difference between two 
 In this step you will clean up the applications.properties file and rebuild the artifact.
 
 1. Remove the slowdown in the carts service
-    1. In the directory of `keptn/repositories/carts/`, open the file: `./src/main/resources/application.properties`
+    1. In the directory of `~/keptn/repositories/carts/`, open the file: `./src/main/resources/application.properties`
     1. Change the value of `delayInMillis` from `1000` to `0`
     1. Commit/Push the changes to your GitHub Repository *carts*
 

@@ -66,7 +66,7 @@ This use case gives an overview of production deployments, deployment strategies
 
 In this step, you create an *improved* version of the front-end service. You will change the color of the header of the application to be able to see the effect of traffic routing between two different artefact versions.
 
-1. Edit the file `public/topbar.html` in the master branch of the `keptn/repositories/front-end` repository and change the following lines as depicted in the screenshot:
+1. Edit the file `public/topbar.html` in the master branch of the `~/keptn/repositories/front-end` repository and change the following lines as depicted in the screenshot:
 
     ![change-topbar-html](./assets/change-topbar-html.png)
 
@@ -194,7 +194,7 @@ In this step, you will configure traffic routing in Istio to redirect traffic ba
             subset: v1
     ```
 
-1. To see if the new version works properly, 10% of the traffic can be redirected to that version. Therefore, it is necessary to modify the `virtual-service-canary.yml` in the `keptn/repositories/k8s-deploy-production/istio` repository and to apply it.
+1. To see if the new version works properly, 10% of the traffic can be redirected to that version. Therefore, it is necessary to modify the `virtual-service-canary.yml` in the `~/keptn/repositories/k8s-deploy-production/istio` repository and to apply it.
 
     ```console
     $ pwd
@@ -294,9 +294,7 @@ In this step, you will configure traffic routing in Istio to redirect traffic ba
 1. Apply the configuration of the `VirtualService` to use v1 only.
 
     ```console
-    $ pwd
-    ~/repositories/k8s-deploy-production/istio
-    
+    $ cd ~/keptn/repositories/k8s-deploy-production/istio
     $ kubectl apply -f virtual_service.yml
     virtualservice.networking.istio.io/sockshop configured
     ```
