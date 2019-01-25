@@ -47,4 +47,4 @@ script:
       sed 's~GITHUB_USER_EMAIL_PLACEHOLDER~'"$GITHUB_EMAIL"'~' | \
       sed 's~GITHUB_ORG_PLACEHOLDER~'"$GITHUB_ORG"'~' >> creds.json
   - ./setupInfrastructure.sh
-  - gcloud container clusters delete $CLUSTER_NAME --zone $CLOUDSDK_COMPUTE_ZONE --project $PROJECT_NAME
+  - gcloud container clusters delete $CLUSTER_NAME --zone $CLOUDSDK_COMPUTE_ZONE --project $PROJECT_NAME --quiet
