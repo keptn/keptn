@@ -119,7 +119,7 @@ These rules allow you to query service-level metrics such as response time, fail
 ## Step Three: Setup process group naming rule in Dynatrace <a id="step-three"></a>
 
 1. Create a naming rule for process groups
-    1. Go to **Settings**, **Process groups**, and click on **Process group naming**.
+    1. Go to **Settings**, **Process and containers**, and click on **Process group naming**.
     1. Create a new process group naming rule with **Add new rule**. 
     1. Edit that rule:
         * Rule name: `Container.Namespace`
