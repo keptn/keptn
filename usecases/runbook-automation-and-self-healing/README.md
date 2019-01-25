@@ -48,7 +48,7 @@ This step runs a promotional campaign in our production environment by applying 
 
 Therefore, the endpoint `carts/1/items/promotional/` can take a number between 0 and 100 as an input, which corresponds to the percentages of user interactions that will receive the promotional gift; i.e., `carts/1/items/promotional/5` will enable it for 5 %, while `carts/1/items/promotional/100` will enable it for 100 % of user interactions. 
 
-1. Generate load for the `carts` service
+1. Generate load for the carts service
     - Receive the IP of the carts service by executing the `kubectl get svc -n production` command: 
 
       ```console
@@ -71,10 +71,10 @@ Therefore, the endpoint `carts/1/items/promotional/` can take a number between 0
       - Do not change the `remediation_action` 
     - Click **Next**, then **Launch**
 
-1. To verify the update in the `carts` service in Dynatrace, navigate to the `carts` service in your Dynatrace tenant and verify the configuration change that has been applied and sent to Dynatrace.
+1. To verify the update in the `carts` service in Dynatrace, navigate to the `carts` service in your Dynatrace tenant and see the configuration change that has been applied and sent to Dynatrace.
     ![custom configuration event](./assets/service-custom-configuration-event.png)
 
-1. After a while you will experience an increase of the failure rate at the `carts-ItemController` in Dynatrace once you enable the promotional campaign. 
+1. After a while you will experience an increase of the failure rate at the `carts-ItemController` in Dynatrace once you activated the promotional campaign. 
     ![failure rate increase](./assets/failure-rate-increase.png)
 
 1. Dynatrace will open a problem ticket for the increase of the failure rate. Since we have setup the problem notification with Ansible Tower, the according `remediation` playbook will be executed once Dynatrace sends out the notification.

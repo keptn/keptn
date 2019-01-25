@@ -1,5 +1,5 @@
 # Keptn
-Keptn shows how to ...
+Keptn is a ...
 
 ##### Table of Contents
  * [Step Zero: Prerequisites](#step-zero)
@@ -31,19 +31,20 @@ This directory contains all scripts and instructions needed to deploy the demo a
 1. Execute the `forkGitHubRepositories.sh` script in the `scripts` directory. This script takes the name of the GitHub organization you have created earlier. This script clones all needed repositories and uses `hub` to fork those repositories to the passed GitHub organization. Aftewards, the script deletes all repositories and clones them again from the GitHub organization.
 
     ```console
-    $ ./scripts/forkGitHubRepositories.sh <GitHubOrg>
+    $ cd ~/keptn/scripts/
+    $ ./forkGitHubRepositories.sh <GitHubOrg>
     ```
     
 1. Insert information in *./scripts/creds.json* by executing `defineCredentials.sh` in the `scripts` directory. This script will prompt you for all information needed to complete the setup and populate the file *scripts/creds.json* with them.
 
     ```console
-    $ ./scripts/defineCredentials.sh
+    $ ./defineCredentials.sh
     ```
     
 1. Execute `setupInfrastructure.sh` in the `scripts` directory. This script deploys a container registry and Jenkins service within your cluster, as well as an initial deployment of the sockshop application in the *dev*, *staging*, and *production* namespaces. **Note:** the script will run for some time (~5 min), since it will wait for Jenkins to boot before setting credentials via the Jenkins REST API.
 
     ```console
-    $ ./scripts/setupInfrastructure.sh
+    $ ./setupInfrastructure.sh
     ```
 
 1. To verify the deployment of the sockshop service, retrieve the URLs of your front-end in the dev, staging, and production environments with the `kubectl get svc` *`service`* `-n` *`namespace`* command:
