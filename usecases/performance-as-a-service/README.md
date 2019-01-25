@@ -9,11 +9,9 @@ This use case aims on moving from manual sporadic execution and analysis of perf
 
 ## Step 1: Define request attributes in Dynatrace <a id="step-one"></a>
 
-In this step you will set up a rule to capture request attributes in Dynatrace based on web request data. In more detail, the data stored in the request header `x-dynatrace-test` will be extracted to create request attributes that tag and distinguish service traffic. 
+In this step you will set up a rule to capture request attributes in Dynatrace based on web request data. In more detail, the data stored in the request header `x-dynatrace-test` will be extracted to create request attributes that tag and distinguish service traffic. For further information on how to capture request attributes, [please see this page in the Dynatrace documentation.](https://www.dynatrace.com/support/help/monitor/transactions-and-services/request-attributes/how-do-i-capture-request-attributes-based-on-web-request-data/)
 
-For further information on how to capture request attributes, [please see this page in the Dynatrace documentation.](https://www.dynatrace.com/support/help/monitor/transactions-and-services/request-attributes/how-do-i-capture-request-attributes-based-on-web-request-data/)
-
-1. Request Attribute for Load Test Name (LTN)
+1. Create request attribute for Load Test Name (LTN)
     1. Go to **Settings**, **Server-side monitoring**, and click on **Request attributes**.
     1. Click the **Create new request attribute** button.
     1. Provide a unique *Request attribute name*: `LTN`.
@@ -24,10 +22,10 @@ For further information on how to capture request attributes, [please see this p
     1. At *Preprocess by extracting substring* set: `between` > `LTN=` > `;`
     1. Finally, click **Save**, click **Save**.
 
-Screenshot shows this rule definition.
-![request-attribute](./assets/request_attribute.png)
+    Screenshot shows this rule definition.
+    ![request-attribute](./assets/request_attribute.png)
 
-2. Create Request Attribute for Load Script Name (LSN)
+2. Create request attribute for Load Script Name (LSN)
     1. Go to **Settings**, **Server-side monitoring**, and click on **Request attributes**.
     1. Click the **Create new request attribute** button.
     1. Provide a unique *Request attribute name*: `LSN`.
@@ -38,7 +36,7 @@ Screenshot shows this rule definition.
     1. At *Preprocess by extracting substring* set: `between` > `LSN=` > `;`
     1. Finally, click **Save**, click **Save**.
 
-3.  Create Request Attribute for Test Script Name (TSN)
+3.  Create request attribute for Test Script Name (TSN)
     1. Go to **Settings**, **Server-side monitoring**, and click on **Request attributes**.
     1. Click the **Create new request attribute** button.
     1. Provide a unique *Request attribute name*: `TSN`.
@@ -51,7 +49,7 @@ Screenshot shows this rule definition.
 
 ## Step 2: Run performance test on carts service <a id="step-two"></a>
 
-In this step you trigger a performance test for (1) the current implementation of carts and (2) a new version of the carts service. The new version of the carts intentionally contains a slow down of the service, which should be detected by the performance validation.
+In this step you trigger a performance test for (1) the current implementation of carts and (2) a new version of the carts service. The new version of carts intentionally contains a slow down of the service, which will be detected by the performance validation.
 
 1. Run performance test on current implementation
     1. Go to  **Jenkins** and click on **sockshop** folder.
@@ -59,24 +57,30 @@ In this step you trigger a performance test for (1) the current implementation o
     1. Click on **Build Now** to trigger the performance pipeline.
 
 1. Introduce a slowdown in the carts service
-    1. In the directory of `carts\`, open the file: `carts\src\main\resources\application.properties`.
+    1. In the directory of `keptn\repositories\carts\`, open the file: `carts\src\main\resources\application.properties`.
     1. Change the value of `delayInMillis` from `0` to `1000`.
     1. Commit/Push the changes to your GitHub Repository *carts*.
 
-1. Build this new Version
+    ```console
+    $ git add .
+    $ git commit -m "Property changed"
+    $ git push
+    ```
+
+1. Build this new version
     1. Go to your **Jenkins** and click on **sockshop** folder.
     1. Click on **carts** and select the **master** branch.
     1. Click on **Build Now** to trigger the performance pipeline.
     1. Wait until the pipeline shows: *Success*.
 
-1. Run Performance Test on new Version
+1. Run performance test on new version
     1. Go to **Jenkins** and click on **sockshop** folder.
     1. Click on **carts.performance** and select the **master** branch.  
     1. Click on **Build Now** to trigger the performance pipeline.
 
-1. Explore Results in Jenkins
+1. Explore results in Jenkins
     1. After a successful pipeline execution, click on **Performance Trend**. 
-    This opens a trend analysis of the jMeter test results. In more details, it shows a chart for the throughput, response time, and percentage of errors as shown below.
+    This opens a trend analysis of the JMeter test results. In more details, it shows a chart for the throughput, response time, and percentage of errors as shown below.
     ![performance_trend](./assets/performance_trend.png)
 
     2. Click on **Performance Signature**.
@@ -119,4 +123,4 @@ In this step you will leverage Dynatrace to identify the difference between two 
 
 :arrow_forward: [Use Case: Production Deployments](../production-deployments)
 
-:arrow_up_small: [Back to keptn](../../)
+:arrow_up_small: [Back to keptn](../)
