@@ -6,6 +6,7 @@ This use case aims on moving from manual sporadic execution and analysis of perf
  * [Step 1: Define request attributes in Dynatrace](#step-one)
  * [Step 2: Run performance test on carts service](#step-two)
  * [Step 3: Compare builds in Dynatrace](#step-three)
+ * [Step 4: Cleanup use case](#step-four)
 
 ## Step 1: Define request attributes in Dynatrace <a id="step-one"></a>
 
@@ -14,10 +15,10 @@ In this step you will set up a rule to capture request attributes in Dynatrace b
 1. Create request attribute for Load Test Name (LTN)
     1. Go to **Settings**, **Server-side monitoring**, and click on **Request attributes**.
     1. Click the **Create new request attribute** button.
-    1. Provide a unique *Request attribute name*: `LTN`.
+    1. Provide a unique *Request attribute name*: `LTN`
     1. Click on **Add new data source**.
-    1. Select the *Request attribute source*: `HTTP request header`.
-    1. Specify the *Parameter name*: `x-dynatrace-test`.
+    1. Select the *Request attribute source*: `HTTP request header`
+    1. Specify the *Parameter name*: `x-dynatrace-test`
     1. Open *Optionally restrict or process the captured parameter(s) further*
     1. At *Preprocess by extracting substring* set: `between` > `LTN=` > `;`
     1. Finally, click **Save**, click **Save**.
@@ -28,10 +29,10 @@ In this step you will set up a rule to capture request attributes in Dynatrace b
 2. Create request attribute for Load Script Name (LSN)
     1. Go to **Settings**, **Server-side monitoring**, and click on **Request attributes**.
     1. Click the **Create new request attribute** button.
-    1. Provide a unique *Request attribute name*: `LSN`.
+    1. Provide a unique *Request attribute name*: `LSN`
     1. Click on **Add new data source**.
-    1. Select the *Request attribute source*: `HTTP request header`.
-    1. Specify the *Parameter name*: `x-dynatrace-test`.
+    1. Select the *Request attribute source*: `HTTP request header`
+    1. Specify the *Parameter name*: `x-dynatrace-test`
     1. Open *Optionally restrict or process the captured parameter(s) further*
     1. At *Preprocess by extracting substring* set: `between` > `LSN=` > `;`
     1. Finally, click **Save**, click **Save**.
@@ -39,10 +40,10 @@ In this step you will set up a rule to capture request attributes in Dynatrace b
 3.  Create request attribute for Test Script Name (TSN)
     1. Go to **Settings**, **Server-side monitoring**, and click on **Request attributes**.
     1. Click the **Create new request attribute** button.
-    1. Provide a unique *Request attribute name*: `TSN`.
+    1. Provide a unique *Request attribute name*: `TSN`
     1. Click on **Add new data source**.
-    1. Select the *Request attribute source*: `HTTP request header`.
-    1. Specify the *Parameter name*: `x-dynatrace-test`.
+    1. Select the *Request attribute source*: `HTTP request header`
+    1. Specify the *Parameter name*: `x-dynatrace-test`
     1. Open *Optionally restrict or process the captured parameter(s) further*
     1. At *Preprocess by extracting substring* set: `between` > `TSN=` > `;`
     1. Finally, click **Save**, click **Save**.
@@ -53,13 +54,13 @@ In this step you trigger a performance test for (1) the current implementation o
 
 1. Run performance test on current implementation
     1. Go to  **Jenkins** and click on **sockshop** folder.
-    1. Click on **carts.performance** and select the **master** branch.  
-    1. Click on **Build Now** to trigger the performance pipeline.
+    1. Click on **carts.performance** and click on **Scan Multibranch Pipeline Now**.
+    1. Then select the **master** branch and click on **Build Now** to trigger the performance pipeline.
 
 1. Introduce a slowdown in the carts service
-    1. In the directory of `keptn\repositories\carts\`, open the file: `carts\src\main\resources\application.properties`.
-    1. Change the value of `delayInMillis` from `0` to `1000`.
-    1. Commit/Push the changes to your GitHub Repository *carts*.
+    1. In the directory of `keptn/repositories/carts/`, open the file: `./src/main/resources/application.properties`
+    1. Change the value of `delayInMillis` from `0` to `1000`
+    1. Commit/Push the changes to your GitHub Repository *carts*
 
     ```console
     $ git add .
@@ -69,7 +70,7 @@ In this step you trigger a performance test for (1) the current implementation o
 
 1. Build this new version
     1. Go to your **Jenkins** and click on **sockshop** folder.
-    1. Click on **carts** and select the **master** branch.
+    1. Click on **carts** and select the **master** branch (or click on **Scan Multibranch Pipeline Now**).
     1. Click on **Build Now** to trigger the performance pipeline.
     1. Wait until the pipeline shows: *Success*.
 
@@ -118,6 +119,28 @@ In this step you will leverage Dynatrace to identify the difference between two 
     ![compare_overview](./assets/compare_overview.png)
     1. Click on **View method hotspots** to identify the root cause.
     ![method_hotspot](./assets/method_hotspot.png)
+
+
+## Step 4. Cleanup use case<a id="step-four"></a>
+
+In this step you will clean up the applications.properties file and rebuild the artifact.
+
+1. Remove the slowdown in the carts service
+    1. In the directory of `keptn/repositories/carts/`, open the file: `./src/main/resources/application.properties`
+    1. Change the value of `delayInMillis` from `1000` to `0`
+    1. Commit/Push the changes to your GitHub Repository *carts*
+
+    ```console
+    $ git add .
+    $ git commit -m "Set delay to 0"
+    $ git push
+    ```
+
+1. Build this new version
+    1. Go to your **Jenkins** and click on **sockshop** folder.
+    1. Click on **carts** and select the **master** branch (or click on **Scan Multibranch Pipeline Now**).
+    1. Click on **Build Now** to trigger the performance pipeline.
+    1. Wait until the pipeline shows: *Success*.
 
 ---
 

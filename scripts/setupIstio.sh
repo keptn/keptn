@@ -19,5 +19,7 @@ kubectl create -f ../repositories/k8s-deploy-production/istio/virtual_service.ym
 sleep 10
 
 kubectl delete pods --all -n production
+kubectl delete pods --all -n staging
+kubectl delete pods --all -n dev
 
 kubectl delete meshpolicies.authentication.istio.io default # fix for the MySQL connection error caused by Istio
