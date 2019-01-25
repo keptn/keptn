@@ -8,6 +8,7 @@ This use case gives an overview of production deployments, deployment strategies
  * [Step 2: Create front-end v2](#step-two)
  * [Step 3: Deploy front-end v2 to production](#step-three)
  * [Step 4: Istio traffic routing](#step-four)
+ * [Step 5: Cleanup use case](#step-five)
 
 ## Step 0: Verify Istio installation and deploy sockshop to production <a id="step-zero"></a>
 
@@ -288,6 +289,17 @@ In this step, you will configure traffic routing in Istio to redirect traffic ba
 
     If you open sockshop using Chrome you see version 2, with any other browser version 1 is be displayed.
 
+## Step 5. Cleanup use case<a id="step-five"></a>
+
+1. Apply the configuration of the `VirtualService` to use v1 only.
+
+    ```console
+    $ pwd
+    ~/repositories/k8s-deploy-production/istio
+    
+    $ kubectl apply -f virtual_service.yml
+    virtualservice.networking.istio.io/sockshop configured
+    ```
 ---
 
 [Use Case: Performance as a Service](../performance-as-a-service) :arrow_backward: :arrow_forward: [Use Case: Runbook automation and self-healing](../runbook-automation-and-self-healing)
