@@ -1,5 +1,5 @@
 # Keptn
-Keptn is a ...
+Keptn is a fabric for cloud-native lifecycle automation at enterprise scale.
 
 ##### Table of Contents
  * [Step Zero: Prerequisites](#step-zero)
@@ -97,8 +97,8 @@ These rules allow you to query service-level metrics such as response time, fail
     1. Go to **Settings**, **Tags**, and click on **Automatically applied tags**.
     1. Create a new custom tag with the name `app`.
     1. Edit that tag and **Add new rule**.
-        * Rule applies to: `Services` 
         * Optional tag value: `{ProcessGroup:KubernetesContainerName}`
+        * Rule applies to: `Services` 
         * Condition on `Kubernetes container name` if `exists`
     1. Click on **Preview** to validate that the rule works.
     1. Click on **Save** for the rule and then **Done**.
@@ -107,11 +107,14 @@ These rules allow you to query service-level metrics such as response time, fail
     1. Go to **Settings**, **Tags**, and click on **Automatically applied tags**.
     1. Create a new custom tag with the name `environment`.
     1. Edit that tag and **Add new rule**.
-        * Rule applies to: `Services` 
         * Optional tag value: `{ProcessGroup:KubernetesNamespace}`
+        * Rule applies to: `Services` 
         * Condition on `Kubernetes namespace` if `exists`
     1. Click on **Preview** to validate that the rule works.
     1. Click on **Save** for the rule and then **Done**.
+
+    Screenshot shows rule for app tag.
+    ![tagging-rule](./assets/tagging_rule.png)
 
 ## Step Three: Setup process group naming rule in Dynatrace <a id="step-three"></a>
 
@@ -125,7 +128,7 @@ These rules allow you to query service-level metrics such as response time, fail
     1. Click on **Preview** and **Save**.
 
     Screenshot shows this rule definition.
-    ![tagging-rule](./assets/pg_naming.png)
+    ![naming-rule](./assets/pg_naming.png)
 
 ## Step Three: Use case walk through <a id="step-four"></a>
 
