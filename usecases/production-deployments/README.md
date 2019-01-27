@@ -54,7 +54,7 @@ This use case gives an overview of production deployments, deployment strategies
 
 ## Step 1: Access ingress gateway <a id="step-one"></a>
 
-1. Run the `kubectl get svc istio-ingressgateway -n istio-system` command to get the **EXTERNAL-IP** and **PORT** of your *Gateway*.
+1. Run the `kubectl get svc istio-ingressgateway -n istio-system` command to get the *EXTERNAL-IP* of your *Gateway*.
 
     ```console
     $ kubectl get svc istio-ingressgateway -n istio-system
@@ -64,7 +64,7 @@ This use case gives an overview of production deployments, deployment strategies
 
 ## Step 2. Create front-end v2 <a id="step-two"></a>
 
-In this step, you create an *improved* version of the front-end service. You will change the color of the header of the application to be able to see the effect of traffic routing between two different artefact versions.
+In this step, you create an *improved* version of the front-end service. You will change the color of the application header to see the effect of traffic routing between two different artefact versions.
 
 1. Edit the file `public/topbar.html` in the master branch of the `~/keptn/repositories/front-end` repository and change the following lines as depicted in the screenshot:
 
@@ -92,10 +92,11 @@ In this step, you create an *improved* version of the front-end service. You wil
         1. Increments the current version by 1. 
         1. Commits/Pushes the new version to the Git repository.
 
-        ![pipeline_release_branch_1](./assets/pipeline_release_branch_1.png)
+        <!-- ![pipeline_release_branch_1](./assets/pipeline_release_branch_1.png) -->
         ![pipeline_release_branch_2](./assets/pipeline_release_branch_2.png)
 
 1. After the **create-release-branch** pipeline has finished, trigger the build pipeline for the `front-end` service and wait until the new artefacts is deployed to the `staging` namespace.
+    - Wait until the release/**version** build has finished.
 
 1. To see your changes in the `front-end` service that is deployed in `staging`, get the public IP of the `front-end` load balancer in `staging` by listing all services in that namespace.
 
