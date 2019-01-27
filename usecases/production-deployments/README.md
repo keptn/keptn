@@ -28,7 +28,7 @@ This use case gives an overview of production deployments, deployment strategies
     istio-telemetry          ClusterIP      10.23.244.185   <none>          9091/TCP,15004/TCP,9093/TCP,42422/TCP            10h
     ```
 
-1. Ensure that the label `istio-injection` has only been applied to the production namespace by executing the `kubectl get namespace -L istio-injection` command:.
+1. Ensure that the label `istio-injection` has only been applied to the production namespace by executing the `kubectl get namespace -L istio-injection` command:
 
     ```console
     $ kubectl get namespace -L istio-injection
@@ -48,7 +48,7 @@ This use case gives an overview of production deployments, deployment strategies
 
     ![trigger k8s-deploy-production](./assets/trigger-k8s-deploy-production.png)
 
-    This pipeline reads the current versions of all artefacts in the `staging` namespace and deploys those artefacts in the exact same version to the `production` namespace. Instead of pushing individual microservices to production, we chose the approach of defining a release bracket, that holds versions of microservices that work together well.
+    This pipeline reads the current versions of all artefacts in the `staging` namespace and deploys those artefacts in the exact same version to the `production` namespace. Instead of pushing individual microservices to production, we chose the approach of defining a release bracket, which holds versions of microservices that work together well.
 
     <!-- Naturally, we dispatch a deployment event to all affected services. This might not work for the first deployment, because the service might not exist as a Dynatrace entity when dispatching the event, but it will work for all consecutive calls. -->
 
