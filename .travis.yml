@@ -39,12 +39,6 @@ script:
   - sudo apt install --reinstall sed
   - cd scripts
   - ./forkGitHubRepositories.sh $GITHUB_ORG
-  - cat ./creds.sav | sed 's~DYNATRACE_TENANT_PLACEHOLDER~'"$DT_TENANT"'~' | \
-      sed 's~DYNATRACE_API_TOKEN~'"$DT_API_TOKEN"'~' | \
-      sed 's~DYNATRACE_PAAS_TOKEN~'"$DT_PAAS_TOKEN"'~' | \
-      sed 's~GITHUB_USER_NAME_PLACEHOLDER~'"$GITHUB_USER_NAME"'~' | \
-      sed 's~PERSONAL_ACCESS_TOKEN_PLACEHOLDER~'"$GITHUB_TOKEN"'~' | \
-      sed 's~GITHUB_USER_EMAIL_PLACEHOLDER~'"$GITHUB_EMAIL"'~' | \
-      sed 's~GITHUB_ORG_PLACEHOLDER~'"$GITHUB_ORG"'~' >> creds.json
+  - cat ./creds.sav |sed 's~DYNATRACE_TENANT_PLACEHOLDER~'"$DT_TENANT"'~' |sed 's~DYNATRACE_API_TOKEN~'"$DT_API_TOKEN"'~' |sed 's~DYNATRACE_PAAS_TOKEN~'"$DT_PAAS_TOKEN"'~' |sed 's~GITHUB_USER_NAME_PLACEHOLDER~'"$GITHUB_USER_NAME"'~' |sed 's~PERSONAL_ACCESS_TOKEN_PLACEHOLDER~'"$GITHUB_TOKEN"'~' |sed 's~GITHUB_USER_EMAIL_PLACEHOLDER~'"$GITHUB_EMAIL"'~' |sed 's~GITHUB_ORG_PLACEHOLDER~'"$GITHUB_ORG"'~' >> creds.json
   - ./setupInfrastructure.sh
   - gcloud container clusters delete $CLUSTER_NAME --zone $CLOUDSDK_COMPUTE_ZONE --project $PROJECT_NAME --quiet
