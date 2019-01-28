@@ -36,6 +36,7 @@ script:
   - gcloud container clusters get-credentials $CLUSTER_NAME --zone $CLOUDSDK_COMPUTE_ZONE --project $PROJECT_NAME
   - kubectl config view
   - set +e
+  - sudo apt install --reinstall sed
   - cd scripts
   - ./forkGitHubRepositories.sh $GITHUB_ORG
   - cat ./creds.sav | sed 's~DYNATRACE_TENANT_PLACEHOLDER~'"$DT_TENANT"'~' | \
