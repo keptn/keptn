@@ -8,6 +8,7 @@ This use case gives an overview of production deployments, deployment strategies
  * [Step 2: Create front-end v2](#step-two)
  * [Step 3: Deploy front-end v2 to production](#step-three)
  * [Step 4: Istio traffic routing](#step-four)
+ * [Step 5: Cleanup use case](#step-five)
 
 ## Step 0: Verify Istio installation and deploy sockshop to production <a id="step-zero"></a>
 
@@ -27,7 +28,7 @@ This use case gives an overview of production deployments, deployment strategies
     istio-telemetry          ClusterIP      10.23.244.185   <none>          9091/TCP,15004/TCP,9093/TCP,42422/TCP            10h
     ```
 
-1. Ensure that the label `istio-injection` has only been applied to the production namespace by executing the `kubectl get namespace -L istio-injection` command:.
+1. Ensure that the label `istio-injection` has only been applied to the production namespace by executing the `kubectl get namespace -L istio-injection` command:
 
     ```console
     $ kubectl get namespace -L istio-injection
@@ -47,13 +48,13 @@ This use case gives an overview of production deployments, deployment strategies
 
     ![trigger k8s-deploy-production](./assets/trigger-k8s-deploy-production.png)
 
-    This pipeline reads the current versions of all artefacts in the `staging` namespace and deploys those artefacts in the exact same version to the `production` namespace. Instead of pushing individual microservices to production, we chose the approach of defining a release bracket, that holds versions of microservices that work together well.
+    This pipeline reads the current versions of all artefacts in the `staging` namespace and deploys those artefacts in the exact same version to the `production` namespace. Instead of pushing individual microservices to production, we chose the approach of defining a release bracket, which holds versions of microservices that work together well.
 
     <!-- Naturally, we dispatch a deployment event to all affected services. This might not work for the first deployment, because the service might not exist as a Dynatrace entity when dispatching the event, but it will work for all consecutive calls. -->
 
 ## Step 1: Access ingress gateway <a id="step-one"></a>
 
-1. Run the `kubectl get svc istio-ingressgateway -n istio-system` command to get the **EXTERNAL-IP** and **PORT** of your *Gateway*.
+1. Run the `kubectl get svc istio-ingressgateway -n istio-system` command to get the *EXTERNAL-IP* of your *Gateway*.
 
     ```console
     $ kubectl get svc istio-ingressgateway -n istio-system
@@ -63,9 +64,9 @@ This use case gives an overview of production deployments, deployment strategies
 
 ## Step 2. Create front-end v2 <a id="step-two"></a>
 
-In this step, you create an *improved* version of the front-end service. You will change the color of the header of the application to be able to see the effect of traffic routing between two different artefact versions.
+In this step, you create an *improved* version of the front-end service. You will change the color of the application header to see the effect of traffic routing between two different artefact versions.
 
-1. Edit the file `public/topbar.html` in the master branch of the `keptn/repositories/front-end` repository and change the following lines as depicted in the screenshot:
+1. Edit the file `public/topbar.html` in the master branch of the `~/keptn/repositories/front-end` repository and change the following lines as depicted in the screenshot:
 
     ![change-topbar-html](./assets/change-topbar-html.png)
 
@@ -91,10 +92,11 @@ In this step, you create an *improved* version of the front-end service. You wil
         1. Increments the current version by 1. 
         1. Commits/Pushes the new version to the Git repository.
 
-        ![pipeline_release_branch_1](./assets/pipeline_release_branch_1.png)
+        <!-- ![pipeline_release_branch_1](./assets/pipeline_release_branch_1.png) -->
         ![pipeline_release_branch_2](./assets/pipeline_release_branch_2.png)
 
 1. After the **create-release-branch** pipeline has finished, trigger the build pipeline for the `front-end` service and wait until the new artefacts is deployed to the `staging` namespace.
+    - Wait until the release/**version** build has finished.
 
 1. To see your changes in the `front-end` service that is deployed in `staging`, get the public IP of the `front-end` load balancer in `staging` by listing all services in that namespace.
 
@@ -193,7 +195,7 @@ In this step, you will configure traffic routing in Istio to redirect traffic ba
             subset: v1
     ```
 
-1. To see if the new version works properly, 10% of the traffic can be redirected to that version. Therefore, it is necessary to modify the `virtual-service-canary.yml` in the `keptn/repositories/k8s-deploy-production/istio` repository and to apply it.
+1. To see if the new version works properly, 10% of the traffic can be redirected to that version. Therefore, it is necessary to modify the `virtual-service-canary.yml` in the `~/keptn/repositories/k8s-deploy-production/istio` repository and to apply it.
 
     ```console
     $ pwd
@@ -288,6 +290,15 @@ In this step, you will configure traffic routing in Istio to redirect traffic ba
 
     If you open sockshop using Chrome you see version 2, with any other browser version 1 is be displayed.
 
+## Step 5. Cleanup use case<a id="step-five"></a>
+
+1. Apply the configuration of the `VirtualService` to use v1 only.
+
+    ```console
+    $ cd ~/keptn/repositories/k8s-deploy-production/istio
+    $ kubectl apply -f virtual_service.yml
+    virtualservice.networking.istio.io/sockshop configured
+    ```
 ---
 
 [Use Case: Performance as a Service](../performance-as-a-service) :arrow_backward: :arrow_forward: [Use Case: Runbook automation and self-healing](../runbook-automation-and-self-healing)
