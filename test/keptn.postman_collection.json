@@ -1,0 +1,156 @@
+{
+	"info": {
+		"_postman_id": "9f95a1a3-4f0f-42eb-9941-8066a6b22f38",
+		"name": "keptn",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Sockshop Frontend Istio",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "bfadd2e5-8dbe-4ae5-ac9e-322df19fd50f",
+						"exec": [
+							"tests[\"Status code is 200\"] = responseCode.code === 200;",
+							"",
+							"tests[\"Body contains 'socks'\"] = responseBody.has('socks');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://{{istioIngress}}/index.html",
+					"protocol": "http",
+					"host": [
+						"{{istioIngress}}"
+					],
+					"path": [
+						"index.html"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Sockshop Frontend Production",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "8bcbfdae-44e3-4a10-8c78-b2b0c1bd5e2c",
+						"exec": [
+							"tests[\"Status code is 200\"] = responseCode.code === 200;",
+							"",
+							"tests[\"Body contains 'socks'\"] = responseBody.has('socks');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://{{frontEndProduction}}:8080/index.html",
+					"protocol": "http",
+					"host": [
+						"{{frontEndProduction}}"
+					],
+					"port": "8080",
+					"path": [
+						"index.html"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Sockshop Frontend Staging",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "c833346f-1475-497e-96b0-a11d642f01ce",
+						"exec": [
+							"tests[\"Status code is 200\"] = responseCode.code === 200;",
+							"",
+							"tests[\"Body contains 'socks'\"] = responseBody.has('socks');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://{{frontEndStaging}}:8080/index.html",
+					"protocol": "http",
+					"host": [
+						"{{frontEndStaging}}"
+					],
+					"port": "8080",
+					"path": [
+						"index.html"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Sockshop Frontend Dev",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "3fbde516-cadd-43c0-ab42-d2c6e5a46955",
+						"exec": [
+							"tests[\"Status code is 200\"] = responseCode.code === 200;",
+							"",
+							"tests[\"Body contains 'socks'\"] = responseBody.has('socks');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://{{frontEndDev}}:8080/index.html",
+					"protocol": "http",
+					"host": [
+						"{{frontEndDev}}"
+					],
+					"port": "8080",
+					"path": [
+						"index.html"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
