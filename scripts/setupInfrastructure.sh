@@ -46,7 +46,6 @@ kubectl create -f ../manifests/jenkins/k8s-jenkins-rbac.yml
 rm ../manifests/jenkins/k8s-jenkins-deployment_tmp.yml
 
 # Deploy Dynatrace operator
-kubectl create namespace dynatrace
 LATEST_RELEASE=$(curl -s https://api.github.com/repos/dynatrace/dynatrace-oneagent-operator/releases/latest | grep tag_name | cut -d '"' -f 4)
 kubectl create -f https://raw.githubusercontent.com/Dynatrace/dynatrace-oneagent-operator/$LATEST_RELEASE/deploy/kubernetes.yaml
 sleep 60
