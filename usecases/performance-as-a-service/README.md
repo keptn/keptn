@@ -120,7 +120,6 @@ In this step you will leverage Dynatrace to identify the difference between two 
     1. Click on **View method hotspots** to identify the root cause.
     ![method_hotspot](./assets/method_hotspot.png)
 
-
 ## Step 4. Cleanup use case<a id="step-four"></a>
 
 In this step you will clean up the applications.properties file and rebuild the artifact.
