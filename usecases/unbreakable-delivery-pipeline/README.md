@@ -1,17 +1,69 @@
 # Unbreakable Delivery Pipeline
 
-The overall goal of the *Unbreakable Delivery Pipeline* is to implement a pipeline that prevents bad code changes from impacting your real end users. Therefore, it relies on three concepts known as Shift-Left, Shift-Right, and Self-Healing:
+The overall goal of the *Unbreakable Delivery Pipeline* is to implement a pipeline that prevents bad code changes from impacting your end users. Therefore, it relies on three concepts known as Shift-Left, Shift-Right, and Self-Healing:
 
-* **Shift-Left**: Ability to pull data for specific entities (processes, services, applications) through an Automation API and feed it into the tools that are used to decide on whether to stop the pipeline or keep it running.
+* **Shift-Left**: Ability to pull data for specific entities (processes, services, or applications) through an automation API and feed it into the tools that are used to decide on whether to stop the pipeline or keep it running.
 
-* **Shift-Right**: Ability to push deployment information and meta data to your monitoring environment, e.g: differentiate BLUE vs GREEN deployments, push build or revision number of deployment, notify about configuration changes.
+* **Shift-Right**: Ability to push deployment information and meta data to your monitoring environment, e.g., differentiate BLUE vs GREEN deployments, push build or revision number of deployment, or notify about configuration changes.
 
 * **Self-Healing**: Ability for smart auto-remediation that addresses the root cause of a problem and not the symptom.
 
 ##### Table of Contents
+ * [Step 1: Simulate a early pipeline break](#step-one)
  * [Step 2: Setup self-healing action for production deployment](#step-two)
  * [Step 3: Introduce a failure into front-end and deploy to production](#step-three)
  * [Step 4: Simulate a bad production deployment](#step-four)
+
+## Step 1: Simulate a early pipeline break <a id="step-one"></a>
+
+In this step you'll release a service to staging that is not tested based on performance tests. Intentionally, the service is slowed down to fail at the end-to-end check in the staging pipeline.
+
+1. Introduce a slowdown in the carts service
+    1. In the directory of `~/keptn/repositories/carts/`, open the file: `./src/main/resources/application.properties`
+    1. Change the value of `delayInMillis` from `0` to `1000`
+    1. Commit/Push the changes to your GitHub Repository *carts*
+
+    ```console
+    $ git add .
+    $ git commit -m "Property changed"
+    $ git push
+    ```
+
+1. You need the new version of the carts service in the staging namespace. Therefore, create a new release branch in the carts repository using our Jenkins pipeline:
+    1. Go to **Jenkins** and **sockshop**.
+    1. Click on **create-release-branch** pipeline and **Schedule a build with parameters**.
+    1. For the parameter **SERVICE**, enter the name of the service you want to create a release for. In this case: **carts**
+
+        The pipeline does the following:
+        1. Reads the current version of the microservice.
+        1. Creates a release branch with the name release/**version**.
+        1. Increments the current version by 1. 
+        1. Commits/Pushes the new version to the Git repository.
+
+1. After the create-release-branch pipeline has finished, trigger the build pipeline for the carts service and follow the build pipeline:
+    1. Open the current build by clicking on the **#no**.
+    1. In the **Console Output** wait for *Starting building: k8s-deploy-staging* and click on that link.
+    1. The pipeline should fail due to a too high response time. 
+    1. Click on **Performance Report** to see the average response time of the URI: *_cart - add to cart*
+
+![break_early](../assets/break_early.png)
+
+1. Remove the slowdown in the carts service
+    1. In the directory of `~/keptn/repositories/carts/`, open the file: `./src/main/resources/application.properties`
+    1. Change the value of `delayInMillis` from `1000` to `0`
+    1. Commit/Push the changes to your GitHub Repository *carts*
+
+    ```console
+    $ git add .
+    $ git commit -m "Set delay to 0"
+    $ git push
+    ```
+
+1. Build this new version
+    1. Go to **Jenkins** and **sockshop**.
+    1. Click on **create-release-branch** pipeline and **Schedule a build with parameters**.
+    1. For the parameter **SERVICE**, enter the name of the service you want to create a release for. In this case: **carts**
+    1. After the create-release-branch pipeline has finished, trigger the build pipeline for the carts service.
 
 ## Step 2: Setup self-healing action for production deployment <a id="step-two"></a>
 
@@ -29,16 +81,16 @@ In this step you will create an Ansible Tower job that releases a deployment in 
       ---
       jenkins_user: "admin"
       jenkins_password: "admin"
-      jenkins_url: "http://X.X.X.X/job/k8s-deploy-production.canary/build?delay=0sec"
-      remediation_url: "https://X.X.X.X/api/v2/job_templates/XX/launch/"
+      jenkins_url: "http://1**.2**.3**.4**/job/k8s-deploy-production.canary/build?delay=0sec"
+      remediation_url: "https://5**.6**.7**.8**/api/v2/job_templates/xx/launch/"
       ``` 
     - Remarks:
-        - The **X.X.X.X** in jenkins_url need to be replaced by the IP of your Jenkins.
-        - The **X.X.X.X** in remediation_url need to be replaced by the IP of Ansible Tower.
-        - The **XX** before /launch need to be replaced by the ID of the job created in the next step.
+        - The `1**.2**.3**.4**` in jenkins_url need to be replaced by the IP of your Jenkins.
+        - The `5**.6**.7**.8**` in remediation_url need to be replaced by the IP of Ansible Tower.
+        - The `xx` before /launch need to be replaced by the ID of the job created in the next step.
 
     After this step, your job template for *canary userX*  should look as shown below: 
-    ![](./assets/ansible-template.png)
+    ![ansible_template_1](./assets/ansible_template_1.png)
 
 1. Duplicate the existing job template and change the following values
     - Name: `canary reset userX`
@@ -46,7 +98,7 @@ In this step you will create an Ansible Tower job that releases a deployment in 
     - Skip Tags: *remove the value* 
 
     After this step, your job template for *canary reset userX* should look as shown below: 
-    ![](./assets/ansible-template2.png)
+    ![ansible_template_2](./assets/ansible_template_2.png)
 
 ## Step 3: Introduce a failure into front-end and deploy to production <a id="step-three"></a>
 
