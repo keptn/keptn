@@ -1,0 +1,27 @@
+---
+- hosts: localhost
+
+  tasks:
+  - name: trigger jenkins pipeline
+    vars:
+      payload:  {"parameter": [{"name":"VERSION1", "value":"{{item.version1}}"}, {"name":"VERSION2", "value":"{{item.version2}}"}, {"name":"REMEDIATIONURL", "value":"{{remediation_url}}"}]}
+    command:  curl -X POST {{jenkins_url}} --user {{jenkins_user}}:{{jenkins_password}} --data-urlencode json='{{payload | to_json}}'   
+    loop:
+      - version1: 90
+        version2: 10
+      - version1: 50
+        version2: 50
+      - version1: 30
+        version2: 70
+      - version1: 0
+        version2: 100
+    loop_control:
+      pause: 120
+
+  - name: reset load balancing to 100/0
+    vars:
+      payload:  {"parameter": [{"name":"VERSION1", "value":"100"}, {"name":"VERSION2", "value":"0"}, {"name":"REMEDIATIONURL", "value":"{{remediation_url}}"}]}
+    command:  curl -X POST {{jenkins_url}} --user {{jenkins_user}}:{{jenkins_password}} --data-urlencode json='{{payload | to_json}}'   
+    tags:
+      - canary_reset
+

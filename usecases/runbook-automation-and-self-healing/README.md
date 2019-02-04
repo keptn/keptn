@@ -4,7 +4,7 @@ This use case gives an overview of how to leverage the power of runbook automati
 
 ##### Table of Contents
  * [Step 0: Check prerequisites](#step-zero)
- * [Step 1: TBD](#step-one)
+ * [Step 1: Verify installation of Ansible Tower](#step-one)
  * [Step 2: Integration Ansible Tower runbook in Dynatrace](#step-two)
  * [Step 3: Run a promotional campaign](#step-three)
 
@@ -12,10 +12,37 @@ This use case gives an overview of how to leverage the power of runbook automati
 
 1. A personal license for Ansible Tower is needed. In case you don't have a license yet, you can get a free license here: https://www.ansible.com/license
 
+
+## Step 1: Verify installation of Ansible Tower <a id="step-one"></a>
+
+During the setup of the cluster, Ansible Tower has already been installed and preconfigured for you. 
+
+1. Login to your Ansible Tower instance.
+
+    Receive the public IP from your Ansible Tower:
+    ```console
+    $ kubectl get services -n tower
+    NAME            TYPE           CLUSTER-IP     EXTERNAL-IP     PORT(S)         AGE
+    ansible-tower   LoadBalancer   xx.xx.xxx.xx   xx.xxx.xxx.xx   443:30528/TCP   1d
+    ```
+    
+    Copy the `EXTERNAL-IP` into your browser and navigate to https://external-ip 
+
 1. Submit the Ansible Tower license when prompted.
     ![ansible license prompt](./assets/ansible-license.png)
 
-## Step 1: TBD <a id="step-one"></a>
+1. Your login is:
+
+    - Username: `admin` 
+    - Password: `dynatrace` 
+
+    You should see your initial dashbaord after your first login.
+    ![Ansible Tower dashboard](./assets/tower-initial-dashboard.png)
+
+
+### Verify predefined Templates, Projects and Inventories
+
+
 
 ## Step 2: Integration Ansible Tower runbook in Dynatrace <a id="step-two"></a>
 
