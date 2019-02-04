@@ -92,8 +92,7 @@ In this step, you create an *improved* version of the front-end service. You wil
         1. Increments the current version by 1. 
         1. Commits/Pushes the new version to the Git repository.
 
-        <!-- ![pipeline_release_branch_1](./assets/pipeline_release_branch_1.png) -->
-        ![pipeline_release_branch_2](./assets/pipeline_release_branch_2.png)
+        ![pipeline_release_branch](./assets/pipeline_release_branch.png)
 
 1. After the **create-release-branch** pipeline has finished, trigger the build pipeline for the `front-end` service and wait until the new artefacts is deployed to the *staging* namespace.
     - Wait until the release/**version** build has finished.
