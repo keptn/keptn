@@ -83,7 +83,7 @@ In this step you will use an Ansible Tower job to release a deployment in a cana
     
     Copy the `EXTERNAL-IP` into your browser and navigate to https://xxx.143.98.xxx 
 
-1. (See [submit the Ansible Tower license](../runbook-automation-and-self-healing) if you haven't entered the license yet.) 
+1. (See [submit the Ansible Tower license](../runbook-automation-and-self-healing#step-1-verify-installation-of-ansible-tower-) if you haven't entered the license yet.) 
    
 1. Your login is:
     - Username: `admin` 
@@ -113,7 +113,7 @@ In this step you will use an Ansible Tower job to release a deployment in a cana
     ![ansible_template_1](./assets/ansible_template_1.png)
 
 1. Verify the existing job template for canary-reset in Ansible Tower by navigating to **Templates** and **canary-reset**.
-    - Name: `canary`
+    - Name: `canary-reset`
     - Job Type: `Run`
     - Inventory: `inventory`
     - Project: `self-healing`
@@ -127,16 +127,12 @@ In this step you will use an Ansible Tower job to release a deployment in a cana
 
 ## Step 3: Introduce a failure into front-end and deploy to production <a id="step-three"></a>
 
-In this step you will introduce a Java Script error into the front-end. This version will be deployed as version `v2`.
+In this step you will introduce a Java Script error into the front-end service. This version will be deployed as version `v2`.
 
-1. Make sure you are in the master branch of your front-end.
-    ```console
-    $ git checkout master
-    ```
 
-1. Open file `front-end\public\topbar.html` and add the following scripts to the `div class=container` element. 
+1. Edit the file `public/topbar.html` in the master branch of the `~/keptn/repositories/front-end` repository and add the following scripts to the `div class=container` element. 
 
-    ```
+    ```html
     <div class="container">
         <!-- add dummy errors -->
         <script>
@@ -154,13 +150,13 @@ In this step you will introduce a Java Script error into the front-end. This ver
     ```
 
 1. Change version number from v1 to v2 in the link text in the top bar.
-    ```
+    ```html
     </a> <a href="#">Buy 1000 socks, get a shoe for free - v1</a>
     ```
 
 1. Change the color of the top bar. 
-    ```
-    <div class="container" style="background-color: purple">
+    ```html
+    <div class="container" style="background-color:royalblue">
     ```
 
 1. Save the changes to that file.
@@ -169,15 +165,15 @@ In this step you will introduce a Java Script error into the front-end. This ver
 
     ```console
     $ git add .
-    $ git commit -m "New more colorful version of front-end service"
+    $ git commit -m "New messaging feature and more colorful version of front-end service"
     $ git push
     ```
 
-1. You need the new version of the `front-end` service in the `staging` namespace, before you can start with a blue-green or canary deployment. Therefore, create a new release branch in the `front-end` repository using the Jenkins pipeline `create-release-branch`:
+1. You need the new version of the `front-end` service in the *staging* namespace, before you can start with a blue-green or canary deployment. Therefore, create a new release branch in the `front-end` repository using our Jenkins pipeline:
 
     1. Go to **Jenkins** and **sockshop**.
     1. Click on **create-release-branch** pipeline and **Schedule a build with parameters**.
-    1. For the parameter **SERVICE**, enter the name of the service you want to create a release for **front-end**
+    1. For the parameter **SERVICE**, enter the name of the service you want to create a release for. In this case: **front-end**
 
         The pipeline does the following:
         1. Reads the current version of the microservice.
@@ -185,16 +181,16 @@ In this step you will introduce a Java Script error into the front-end. This ver
         1. Increments the current version by 1. 
         1. Commits/Pushes the new version to the Git repository.
 
-        ![pipeline_release_branch_1](./assets/pipeline_release_branch_1.png)
-        ![pipeline_release_branch_2](./assets/pipeline_release_branch_2.png)
+        ![pipeline_release_branch](./assets/pipeline_release_branch.png)
 
-1. After the **create-release-branch** pipeline has finished, trigger the build pipeline for the `front-end` service and and wait until the new artefacts is deployed to the `staging` namespace.
+1. After the **create-release-branch** pipeline has finished, trigger the build pipeline for the `front-end` service and wait until the new artefacts is deployed to the *staging* namespace.
+    - Wait until the release/**version** build has finished.
 
 1. Deploy the new front-end to production
     1. Go to your **Jenkins** and click on **k8s-deploy-production.update**.
     1. Click on **master** and **Build with Parameters**:
-        * SERVICE: *front-end*
-        * VERSION: *v2*
+        * SERVICE: `front-end`
+        * VERSION: `v2`
     1. Hit **Build** and wait until the pipeline shows: *Success*.
 
 ## Step 4. Simulate a bad production deployment <a id="step-four"></a>
