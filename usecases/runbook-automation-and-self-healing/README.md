@@ -42,84 +42,148 @@ During the setup of the cluster, Ansible Tower has already been installed and pr
 
 ### Verify predefined Templates, Projects and Inventories
 
+When running the install scripts from [this readme](../README.md) Ansible Tower is already preconfigured for this use case. The needed templates, inventories, and projects are already created and set up. We are going to verify this.
 
+1. Credentials
+
+    Click on **Credentials** and verify that the `git-token` passed via the `creds.json` file has been added to your Ansible Tower instance.
+
+1. Inventories
+
+    Click on **Inventories** and verify that an inventory with some variables has already been added for you.
+
+1. Projects
+
+    Click on **Projects** and verify that a project with name **self-healing** has been added.
+
+1. Templates
+
+    Click on **Templates** and verify that several job templates have been added.
+    - canary
+    - canary-reset
+    - remediation
+    - start-campaign
+    - stop-campaign
+
+    <a id="copy-to-clipboard"></a>
+    Please go ahead an open the *remediation* playbook. Copy the URL from your browser to your clipboard, we will need it in a second. 
+    ![remediation-template](./assets/ansible-remediation-template.png)
 
 ## Step 2: Integration Ansible Tower runbook in Dynatrace <a id="step-two"></a>
 
 This step integrates the defined *remediation runbook* in Dynatrace in a way that it will be called each time Dynatrace detects a problem. Please note that in an enterprise scenario, you might want to define *Alerting profiles* to be able to control problem notifications in a more fine-grained way when to call a remediation runbook.
 
 1. Setup a problem notification in Dynatrace
-    - Navigate to **Settings**, **Integration**, **Problem notification**, and **Ansible Tower** 
+    - Navigate to **Settings**, **Integration**, **Problem notification**, **Set up notifications**, and **Ansible Tower** 
 
     ![integration](./assets/ansible-integration.png)
 
 1. Enter your Ansible Tower job template URL and Ansible Tower credentials.
-    - Name: e.g., "remediation playbook"
-    - Ansible Tower job template URL: copy & paste the Ansible Tower job URL from your Ansible Tower remediation job template, e.g., `https://XX.XXX.XX.XXX/#/templates/job_template/18`
+    - Name: e.g., "remediation"
+    - Ansible Tower job template URL: copy & paste the Ansible Tower job URL from your Ansible Tower remediation job template, e.g., `https://XX.XXX.XX.XXX/#/templates/job_template/18` (you should have this copied to your clipboard already in the [previous step](#copy-to-clipboard) )
     - Username: your Ansible Tower username `admin`
     - Password: your Ansible Tower password `dynatrace`
-    - Click **Send test notification** > a green banner should appear
+    - Click **Send test notification** > a green banner should appear.
     - **Save** the integration
 
     ![integration successful](./assets/ansible-integration-successful.png)
 
-1. Login (or navigate back) to your Ansible Tower instance and check what happenend when setting up the integration.
-    - Navigate to **Jobs** and click on your *remediation-user0* job
+1. *Optional:* Navigate back to your Ansible Tower instance and check what happenend when setting up the integration.
+    - Navigate to **Jobs** and click on your *X - remediation* job
     - You can see all tasks from the playbook that have been triggered by the integration.
 
-    ![integration run](./assets/ansible-integration-run.png)
+## Step 3: Apply anomaly detection rules ##
 
-## Step 3: Run a promotional campaign <a id="step-three"></a>
+Problem and anomaly detection in Dynatrace leverages AI technology. This means that the AI learns how each and every microservice behaves and baselines them. Therefore, in a demo scenario like we have right now, we have to override the AI engine with user-defined values to allow the creation of problems due to an increase of a failure rate. (Please note if we would have the application running and simulate end-user traffic for a couple of days there would be no need for this step.)
+
+In your Dynatrace tenant, navigate to "Transaction & services" and filter by: *app:carts* and *environment:production* (This assumes that you have done the previous use-cases of keptn)
+
+![services](./assets/dynatrace-services.png)
+
+Click on the **ItemsController** and then on the three dots (<kbd>...</kbd> ) next to the service name. Click on *Edit*. 
+On the next screen, edit the anomaly detection settings as seen in the following screenshot.
+- **Globaly anomaly detection** has to be **turned off**
+- Detect increases in **failure rate** using **fixed thresholds**
+- Alert if **10 %** custom failure rate threshold is exceed during any 5-minute period.
+- Sensitivity: **High**
+
+![service-edit](./assets/dynatrace-service-edit.png)
+
+
+![anomaly detection](./assets/anomaly-detection.png)
+
+
+## Step 4: Run a promotional campaign <a id="step-three"></a>
 
 This step runs a promotional campaign in our production environment by applying a change to our configuration of the `carts` service. This service is prepared to allow to add a promotional gift (e.g., Halloween Socks, Christmas Socks, Easter Socks, ...) to a given percentage of user interactions in the `carts` service. 
 
-Therefore, the endpoint `carts/1/items/promotional/` can take a number between 0 and 100 as an input, which corresponds to the percentages of user interactions that will receive the promotional gift; i.e., `carts/1/items/promotional/5` will enable it for 5 %, while `carts/1/items/promotional/100` will enable it for 100 % of user interactions. 
+Therefore, the endpoint `carts/1/items/promotional/` can take a number between 0 and 100 as an input, which corresponds to the percentages of user interactions that will receive the promotional gift, i.e., `carts/1/items/promotional/5` will enable it for 5 %, while `carts/1/items/promotional/100` will enable it for 100 % of user interactions. 
 
 1. Generate load for the carts service
     - Receive the IP of the carts service by executing the `kubectl get svc -n production` command: 
 
       ```console
-      $ kubectl get svc -n production
+      $ kubectl get svc carts -n production
+      NAME    TYPE           CLUSTER-IP      EXTERNAL-IP       PORT(S)        AGE
+      carts   LoadBalancer   xx.xx.xxx.xxx   xxx.xxx.xxx.xxx   80:31399/TCP   1d
       ```
 
-    - Navigate to the `keptn/usecases/runbook-automation-and-self-healing/scripts` directory and start the [add-to-cart](../scripts/) script using the IP of your carts service.
+    - From inside your `keptn` directory, navigate to the `usecases/runbook-automation-and-self-healing/scripts` directory and start the [add-to-cart](../scripts/) script using the IP of your carts service.
 
       ```console
-      $ cd \keptn\usecases\runbook-automation-and-self-healing\scripts
-      $ ./add-to-cart.sh http://XX.XXX.XXX.XX/carts/1/items
+      $ cd usecases/runbook-automation-and-self-healing/scripts
+      $ ./add-to-cart.sh http://XXX.XXX.XXX.XXX/carts/1/items
+
+      Press [CTRL+C] to stop..
+
+      adding item to cart...
+      {"id":"3395a43e-2d88-40de-b95f-e00e1502085b","itemId":"03fef6ac-1896-4ce8-bd69-b798f85c6e0b","quantity":2187,"unitPrice":0.0}
+      adding item to cart...
+      {"id":"3395a43e-2d88-40de-b95f-e00e1502085b","itemId":"03fef6ac-1896-4ce8-bd69-b798f85c6e0b","quantity":2188,"unitPrice":0.0}
+      adding item to cart...
+      {"id":"3395a43e-2d88-40de-b95f-e00e1502085b","itemId":"03fef6ac-1896-4ce8-bd69-b798f85c6e0b","quantity":2189,"unitPrice":0.0}
+      ...
       ```
 
 1. Run the promotional campain
     - Navigate to **Templates** in your Ansible Tower
-    - Click on the "rocket" icon (🚀) next to your *start campaign userX* job template
+    - Click on the "rocket" icon (🚀) next to your *start-campaign* job template
     ![run template](./assets/ansible-template-run.png)
     - Adjust the values accordingly for you promotional campaign:
-      - Set the value for `promotion_rate: '20'` to allow for 20 % of the user interactions to receive the promotional gift
-      - Do not change the `remediation_action` 
+      - Set the value for `promotion_rate: '30'` to allow for 30 % of the user interactions to receive the promotional gift
+      - Do not change the `remediation_action`, this is already configured for you and it is set to the `stop-campaign` job template URL.
     - Click **Next**, then **Launch**
 
-1. To verify the update in the `carts` service in Dynatrace, navigate to the `carts` service in your Dynatrace tenant and see the configuration change that has been applied and sent to Dynatrace.
+1. To verify the update in the `carts` service in Dynatrace, navigate to the `carts` service in your Dynatrace tenant and see the configuration change that has been applied and attached to the `carts` service in the production environment.
     ![custom configuration event](./assets/service-custom-configuration-event.png)
 
-1. After a while you will experience an increase of the failure rate at the `carts-ItemController` in Dynatrace once you activated the promotional campaign. 
-    ![failure rate increase](./assets/failure-rate-increase.png)
+    Please also note that a remediation action has been attached to this configuration change. This means, if Dynatrace detects a problem with this service that is related to this configuratio change, this remediation action could be called to remediate the problem. 
 
-1. Dynatrace will open a problem ticket for the increase of the failure rate. Since we have setup the problem notification with Ansible Tower, the according `remediation` playbook will be executed once Dynatrace sends out the notification.
+1. Looking at the loadgeneration output in your console, you will notice that about 1/3 of the requests will produce an error.
+
+    ```console
+    {"id":"3395a43e-2d88-40de-b95f-e00e1502085b","itemId":"03fef6ac-1896-4ce8-bd69-b798f85c6e0b","quantity":13916,"unitPrice":0.0}
+    adding item to cart...
+    {"id":"3395a43e-2d88-40de-b95f-e00e1502085b","itemId":"03fef6ac-1896-4ce8-bd69-b798f85c6e0b","quantity":13917,"unitPrice":0.0}
+    adding item to cart...
+    {"timestamp":1549290255564,"status":500,"error":"Internal Server Error","exception":"java.lang.Exception","message":"promotion campaign not yet implemented","path":"/carts/1/items"}
+    ```
+
+1. After a couple of minutes, Dynatrace will open a problem ticket for the increase of the failure rate. Since we have setup the problem notification with Ansible Tower, the according `remediation` playbook will be executed once Dynatrace sends out the notification.
 
 1. To verify executed playbooks in Ansible Tower, navigate to **Jobs** and verify that Ansible Tower has executed two jobs.        
-    - The first job - `remediation-userX` was called since Dynatrace sent out the problem notification to Ansible Tower. 
-    - This job was then executing the remediation tasks which include the execution of the remediation action that is defined in the custom configuration event of the impacted entities (the `carts` service). Therefore, you will also see the `stop-campaign-userX` that was executed.
+    - The first job `X - remediation` was called since Dynatrace sent out the problem notification to Ansible Tower. 
+    - This job was then executing the remediation tasks which include the execution of the remediation action that is defined in the custom configuration event of the impacted entities (the `carts` service). Therefore, you will also see a job called `X - stop-campaign` that was executed.
 
     ![remediation job execution](./assets/ansible-remediation-execution.png)
 
-1. To fully verify that the remedation was executed, you will find evidence in Dynatrace.
+1. To fully verify that the remedation was executed, you will also find evidence in Dynatrace.
     - New configuration event that set the promotion rate back to 0 %:
     ![custom configuration event](./assets/service-custom-configuration-event-remediation.png)
 
     - Comment on the Dynatrace problem ticket that the playbook has been executed:
-    ![comments on problem](./assets/problem-comments.png)
-    
-1. (optional) Use Dynatrace to find the corresponding Java class as well as the exact line number that was responsible for the increase of the failure rate to be able to fix the issue and prevent it to happen again for future campaigns.
+    ![problem details](./assets/dynatrace-problem.png)
+
 
 ---
 
