@@ -100,7 +100,7 @@ In your Dynatrace tenant, navigate to "Transaction & services" and filter by: *a
 
 ![services](./assets/dynatrace-services.png)
 
-Click on the **ItemsController** and then on the three dots (<kbd>...</kbd> ) next to the service name. Click on *Edit*. 
+Click on the **ItemsController** and then on the three dots ( <kbd>...</kbd> ) next to the service name. Click on *Edit*. 
 On the next screen, edit the anomaly detection settings as seen in the following screenshot.
 - **Globaly anomaly detection** has to be **turned off**
 - Detect increases in **failure rate** using **fixed thresholds**
