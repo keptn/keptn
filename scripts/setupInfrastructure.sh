@@ -46,16 +46,16 @@ kubectl create -f ../manifests/jenkins/k8s-jenkins-rbac.yml
 rm ../manifests/jenkins/k8s-jenkins-deployment_tmp.yml
 
 # Deploy Dynatrace operator
-kubectl create namespace dynatrace
-kubectl create -f https://raw.githubusercontent.com/Dynatrace/dynatrace-oneagent-operator/master/deploy/kubernetes.yaml
-
+export LATEST_RELEASE=$(curl -s https://api.github.com/repos/dynatrace/dynatrace-oneagent-operator/releases/latest | grep tag_name | cut -d '"' -f 4)
+echo "Installing Dynatrace Operator $LATEST_RELEASE"
+kubectl create -f https://raw.githubusercontent.com/Dynatrace/dynatrace-oneagent-operator/$LATEST_RELEASE/deploy/kubernetes.yaml
 sleep 60
-
 kubectl -n dynatrace create secret generic oneagent --from-literal="apiToken=$DT_API_TOKEN" --from-literal="paasToken=$DT_PAAS_TOKEN"
+curl -o ../manifests/dynatrace/cr.yml https://raw.githubusercontent.com/Dynatrace/dynatrace-oneagent-operator/$LATEST_RELEASE/deploy/cr.yaml
+cat ../manifests/dynatrace/cr.yml | sed 's/ENVIRONMENTID/'"$DT_TENANT_ID"'/' >> ../manifests/dynatrace/cr_tmp.yml
+kubectl create -f ../manifests/dynatrace/cr_tmp.yml
+rm ../manifests/dynatrace/cr_tmp.yml
 
-cat ../manifests/dynatrace/oneagent.yml | sed 's~ENVIRONMENTID~'"$DT_TENANT_ID"'~' >> ../manifests/dynatrace/oneagent_tmp.yml
-kubectl create -f ../manifests/dynatrace/oneagent_tmp.yml
-rm ../manifests/dynatrace/oneagent_tmp.yml
 
 # Deploy sockshop application
 ./deploySockshop.sh
