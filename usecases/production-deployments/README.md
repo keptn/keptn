@@ -33,15 +33,15 @@ This use case gives an overview of production deployments, deployment strategies
     ```console
     $ kubectl get namespace -L istio-injection
     NAME           STATUS    AGE       ISTIO-INJECTION
-    cicd           Active    10d
-    default        Active    16d
-    dev            Active    10d
-    dynatrace      Active    3d
-    istio-system   Active    9d        disabled
-    kube-public    Active    16d
-    kube-system    Active    16d
-    production     Active    9d        enabled
-    staging        Active    10d
+    cicd           Active    10h
+    default        Active    10h
+    dev            Active    10h
+    dynatrace      Active    10h
+    istio-system   Active    10h        disabled
+    kube-public    Active    10h
+    kube-system    Active    10h
+    production     Active    10h        enabled
+    staging        Active    10h
     ```
 
 1. Trigger the `k8s-deploy-production` pipeline in your Jenkins instance (see :one:). This promotes all components that are currently in the `staging` namespace to the `production` namespace.
@@ -59,7 +59,7 @@ This use case gives an overview of production deployments, deployment strategies
     ```console
     $ kubectl get svc istio-ingressgateway -n istio-system
     NAME                   TYPE           CLUSTER-IP       EXTERNAL-IP     PORT(S)                                      AGE
-    istio-ingressgateway   LoadBalancer   172.21.109.129   1xx.2xx.10.12x  80:31380/TCP,443:31390/TCP,31400:31400/TCP   17h
+    istio-ingressgateway   LoadBalancer   172.21.109.129   1**.2**.1**.1**  80:31380/TCP,443:31390/TCP,31400:31400/TCP   17h
     ```
 
 ## Step 2. Create front-end v2 <a id="step-two"></a>
@@ -98,24 +98,24 @@ In this step, you create an *improved* version of the front-end service. You wil
 1. After the **create-release-branch** pipeline has finished, trigger the build pipeline for the `front-end` service and wait until the new artefacts is deployed to the `staging` namespace.
     - Wait until the release/**version** build has finished.
 
-1. To see your changes in the `front-end` service that is deployed in `staging`, get the public IP of the `front-end` load balancer in `staging` by listing all services in that namespace.
+1. To see your changes in the `front-end` service that is deployed in `staging`, get the *EXTERNAL-IP* of the `front-end` load balancer in `staging` by listing all services in that namespace.
 
     ```console
     $ kubectl -n staging get services
-    NAME           TYPE            CLUSTER-IP       EXTERNAL-IP     PORT(S)
-    carts          ClusterIP       10.11.250.175    <none>          80/TCP
-    catalogue      ClusterIP       10.11.254.135    <none>          80/TCP
-    front-end      LoadBalancer    10.11.249.245    1*.2*.3*.4*     8080:31481/TCP
-    orders         ClusterIP       10.11.251.11     <none>          80/TCP
-    payment        ClusterIP       10.11.248.211    <none>          80/TCP
-    queue-master   ClusterIP       10.11.242.139    <none>          80/TCP
-    rabbitmq       ClusterIP       10.11.255.201    <none>          5672/TCP,9090/TCP
-    shipping       ClusterIP       10.11.244.162    <none>          80/TCP
-    user           ClusterIP       10.11.245.147    <none>          80/TCP
-    user-db-svc    ClusterIP       10.11.243.25     <none>          27017/TCP
+    NAME           TYPE            CLUSTER-IP       EXTERNAL-IP         PORT(S)
+    carts          ClusterIP       10.11.250.175    <none>              80/TCP
+    catalogue      ClusterIP       10.11.254.135    <none>              80/TCP
+    front-end      LoadBalancer    10.11.249.245    1**.2**.3**.4**     8080:31481/TCP
+    orders         ClusterIP       10.11.251.11     <none>              80/TCP
+    payment        ClusterIP       10.11.248.211    <none>              80/TCP
+    queue-master   ClusterIP       10.11.242.139    <none>              80/TCP
+    rabbitmq       ClusterIP       10.11.255.201    <none>              5672/TCP,9090/TCP
+    shipping       ClusterIP       10.11.244.162    <none>              80/TCP
+    user           ClusterIP       10.11.245.147    <none>              80/TCP
+    user-db-svc    ClusterIP       10.11.243.25     <none>              27017/TCP
     ```
 
-    Enter the public IP (e.g., 1*.2*.3*.4*) in your browser and you see the visual improvements you did.
+    Enter the public IP (e.g., 1**.2**.3**.4**:8080) in your browser and you see the visual improvements you did.
 
     ![frontend-v2](./assets/frontend-v2.png)
 
@@ -131,25 +131,25 @@ In this step, you will promote the new version of the `front-end` service to pro
 
     ![enter-parameters](./assets/enter-parameters.png)
 
-    This pipeline reads the version of the passed service in the `staging` namespace and deploys the artefact in that version to the `production` namespace in a deployment with the passed version number. After running that pipeline, two deployments of `front-end` (one with v1 and one with v2) are available.
+    This pipeline reads the version of the passed service in the `staging` namespace and deploys the artefact in that version to the `production` namespace in a deployment with the passed version number. After running that pipeline, two deployments of `front-end` (one with *v1* and one with *v2*) are available.
 
     ```console
     $ kubectl -n production get deployment
     NAME           DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
     ...
-    front-end-v1   1         1         1            1           4d
-    front-end-v2   1         1         1            1           6d
+    front-end-v1   1         1         1            1           10h
+    front-end-v2   1         1         1            1           32s
     ...
     ```
 
-    At this stage, the `VirtualService` for sockshop is configured to use v1 initially. So, the application is not affected at all by the deployment of a new version in the `production` namespace. You can check the details of the deployments to see that each deployment uses a different artefact version, e.g. `0.5.0` and `0.6.0`, in the example below:
+    At this stage, the `VirtualService` for sockshop is configured to use *v1* initially. So, the application is not affected at all by the deployment of a new version in the `production` namespace. You can check the details of the deployments to see that each deployment uses a different artefact version, e.g. `0.5.0` and `0.6.0`, in the example below:
 
     ```console
     $ kubectl -n production describe deployment front-end-v1
     ...
     Pod Template:
     Labels:  app=front-end
-            version=v1
+             version=v1
     Containers:
     front-end:
         Image:      10.11.249.13:5000/library/sockshop/front-end-0.5.0
@@ -163,7 +163,7 @@ In this step, you will promote the new version of the `front-end` service to pro
     ...
     Pod Template:
     Labels:  app=front-end
-            version=v2
+             version=v2
     Containers:
     front-end:
         Image:      10.11.249.13:5000/library/sockshop/front-end-0.6.0
@@ -174,11 +174,11 @@ In this step, you will promote the new version of the `front-end` service to pro
 
 ## Step 4. Istio traffic routing <a id="step-four"></a>
 
-In this step, you will configure traffic routing in Istio to redirect traffic based on different criteria to the version 2 of the `front-end` service. It addresses the tasks to redirect traffic using weight rules, redirect only logged in users, and redirect only Chrome users to version 2.
+In this step, you will configure traffic routing in Istio to redirect traffic based on different criteria to *v2* of the `front-end` service. It addresses the tasks to redirect traffic using weight rules, redirect only logged in users, and to redirect only Chrome users to v2.
 
-1. Right now, traffic to `front-end` is routed to the version 1 due to the configuration of the `VirtualService`. The `subset: v1` entry in the configuration takes care of that.
+1. Right now, traffic to `front-end` is routed to *v1* due to the configuration of the `VirtualService`. The `subset: v1` entry in the configuration takes care of that.
 
-    ```
+    ```yaml
     apiVersion: networking.istio.io/v1alpha3
     kind: VirtualService
     metadata:
@@ -212,17 +212,19 @@ In this step, you will configure traffic routing in Istio to redirect traffic ba
 
     This configuration redirects 10% of all traffic hitting the sockshop `VirtualService` to version 2. 
 
-1. Apply the changes by executing the command `kubectl apply -f virtual-service-canary.yml`
+1. Apply the changes by executing the command `kubectl apply -f virtual_service_canary.yml`
 
     ```console
-    $ kubectl apply -f virtual-service-canary.yml
+    $ kubectl apply -f virtual_service_canary.yml
     ```
 
-1. You can now change the weight distribution of verison 1 and 2 to arbitrary values.
+1. To verify the configuration change, open the ingress gateway and refresh the page a couple of times. You should notice that about every tenth hit redirects you to the new version (*v2*) showing a blue header.
 
-1. (Optional) You can decide traffic routing also based on information that is included in the HTTP header. For example, you can present version 2 only to users that are logged in. See the following configuration that enables that.
+#### Redirect only logged in users
 
-    ```
+1. You can decide traffic routing also based on information that is included in the HTTP header. For example, you can present *v2* only to users that are logged in. See the following configuration that enables that:
+
+    ```yaml
     apiVersion: networking.istio.io/v1alpha3
     kind: VirtualService
     metadata:
@@ -255,9 +257,11 @@ In this step, you will configure traffic routing in Istio to redirect traffic ba
 
     If you login using either a new registrated user, or a user that you've created before, you should see version 2. After logging out, you should see verison 1 again.
 
-1. (Optional) Another option is to redirect traffic based on the user browser. See the following configuration that enables that.
+#### Redirect only Chrome users
 
-    ```
+1. Another option is to redirect traffic based on the used browser. See the following configuration that enables that:
+
+    ```yaml
     apiVersion: networking.istio.io/v1alpha3
     kind: VirtualService
     metadata:
@@ -288,7 +292,7 @@ In this step, you will configure traffic routing in Istio to redirect traffic ba
     $ kubectl apply -f virtual_service_v2_for_chrome.yml
     ```
 
-    If you open sockshop using Chrome you see version 2, with any other browser version 1 is be displayed.
+    If you open sockshop using Chrome you see version 2, with any other browser version 1 is displayed.
 
 ## Step 5. Cleanup use case<a id="step-five"></a>
 
