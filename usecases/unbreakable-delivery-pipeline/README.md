@@ -18,7 +18,7 @@ The overall goal of the *Unbreakable Delivery Pipeline* is to implement a pipeli
 
 In this step you'll release a service to staging that is not tested based on performance tests. Intentionally, the service is slowed down to fail at the end-to-end check in the staging pipeline.
 
-1. Introduce a slowdown in the carts service
+1. Introduce a slowdown in the carts service.
     1. In the directory of `~/keptn/repositories/carts/`, open the file: `./src/main/resources/application.properties`
     1. Change the value of `delayInMillis` from `0` to `1000`
     1. Commit/Push the changes to your GitHub Repository *carts*
@@ -29,7 +29,7 @@ In this step you'll release a service to staging that is not tested based on per
     $ git push
     ```
 
-1. You need the new version of the carts service in the staging namespace. Therefore, create a new release branch in the carts repository using our Jenkins pipeline:
+1. You need the new version of the carts service in the staging namespace. Therefore, create a new release branch in the carts repository using the Jenkins pipeline `create-release-branch`:
     1. Go to **Jenkins** and **sockshop**.
     1. Click on **create-release-branch** pipeline and **Schedule a build with parameters**.
     1. For the parameter **SERVICE**, enter the name of the service you want to create a release for. In this case: **carts**
@@ -40,8 +40,11 @@ In this step you'll release a service to staging that is not tested based on per
         1. Increments the current version by 1. 
         1. Commits/Pushes the new version to the Git repository.
 
-1. After the create-release-branch pipeline has finished, trigger the build pipeline for the carts service and follow the build pipeline:
-    1. Open the current build by clicking on the **#no**.
+        ![pipeline_release_branch](./assets/pipeline_release_branch.png)
+
+1. After the `create-release-branch` pipeline has finished, trigger the build pipeline for the carts release and follow the pipeline:
+    1. Go to **sockshop**, **carts**, and click on **Scan Multibranch Pipeline Now**.
+    1. Open the release build by clicking on the **#no**.
     1. In the **Console Output** wait for *Starting building: k8s-deploy-staging* and click on that link.
     1. The pipeline should fail due to a too high response time. 
     1. Click on **Performance Report** to see the average response time of the URI: *_cart - add to cart*
@@ -59,11 +62,11 @@ In this step you'll release a service to staging that is not tested based on per
     $ git push
     ```
 
-1. Build this new version
+1. Build this new release
     1. Go to **Jenkins** and **sockshop**.
     1. Click on **create-release-branch** pipeline and **Schedule a build with parameters**.
     1. For the parameter **SERVICE**, enter the name of the service you want to create a release for. In this case: **carts**
-    1. After the create-release-branch pipeline has finished, trigger the build pipeline for the carts service.
+    1. After the create-release-branch pipeline has finished, trigger the build pipeline for the carts release.
 
 ## Step 2: Setup self-healing action for production deployment <a id="step-two"></a>
 
@@ -148,7 +151,7 @@ In this step you will introduce a Java Script error into the front-end. This ver
     $ git push
     ```
 
-1. You need the new version of the `front-end` service in the `staging` namespace, before you can start with a blue-green or canary deployment. Therefore, create a new release branch in the `front-end` repository using our Jenkins pipeline:
+1. You need the new version of the `front-end` service in the `staging` namespace, before you can start with a blue-green or canary deployment. Therefore, create a new release branch in the `front-end` repository using the Jenkins pipeline `create-release-branch`:
 
     1. Go to **Jenkins** and **sockshop**.
     1. Click on **create-release-branch** pipeline and **Schedule a build with parameters**.
