@@ -36,7 +36,7 @@ During the setup of the cluster, Ansible Tower has already been installed and pr
     - Username: `admin` 
     - Password: `dynatrace` 
 
-    You should see your initial dashbaord after your first login.
+    You should see your initial dashboard after your first login.
     ![Ansible Tower dashboard](./assets/tower-initial-dashboard.png)
 
 
