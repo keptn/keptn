@@ -129,7 +129,6 @@ In this step you will use an Ansible Tower job to release a deployment in a cana
 
 In this step you will introduce a Java Script error into the front-end service. This version will be deployed as version `v2`.
 
-
 1. Edit the file `public/topbar.html` in the master branch of the `~/keptn/repositories/front-end` repository and add the following scripts to the `div class=container` element. 
 
     ```html
@@ -151,7 +150,7 @@ In this step you will introduce a Java Script error into the front-end service. 
 
 1. Change version number from v1 to v2 in the link text in the top bar.
     ```html
-    </a> <a href="#">Buy 1000 socks, get a shoe for free - v1</a>
+    </a> <a href="#">Buy 1000 socks, get a shoe for free - v2</a>
     ```
 
 1. Change the color of the top bar. 
@@ -186,7 +185,7 @@ In this step you will introduce a Java Script error into the front-end service. 
 1. After the **create-release-branch** pipeline has finished, trigger the build pipeline for the `front-end` service and wait until the new artefacts is deployed to the *staging* namespace.
     - Wait until the release/**version** build has finished.
 
-1. Deploy the new front-end to production
+1. Deploy the new `front-end` to production
     1. Go to your **Jenkins** and click on **k8s-deploy-production.update**.
     1. Click on **master** and **Build with Parameters**:
         * SERVICE: `front-end`
@@ -195,22 +194,30 @@ In this step you will introduce a Java Script error into the front-end service. 
 
 ## Step 4. Simulate a bad production deployment <a id="step-four"></a>
 
-In this step you will create a deployment of the front-end service that passes the quality gate in the staging pipeline and will get deployed to production. Besides, the entire traffic will be be routed to this new version using a prepared deployment pipeline. 
+In this step, you wil launch the above Ansible job that redirects the entire traffic to the new version of front-end in a canary release manner. Since the new front-end contains a failure, Dynatrace will open a problem and automatically invokes an auto-remediation action.
+
+1. Run the `kubectl get svc istio-ingressgateway -n istio-system` command to get the *EXTERNAL-IP* of your *Gateway*.
+    ```console
+    $ kubectl get svc istio-ingressgateway -n istio-system
+    NAME                   TYPE           CLUSTER-IP       EXTERNAL-IP     PORT(S)                                      AGE
+    istio-ingressgateway   LoadBalancer   172.21.109.129   1**.2**.1**.1**  80:31380/TCP,443:31390/TCP,31400:31400/TCP   17h
+    ```
 
 1. Simulation of real-user traffic
     1. In your Dynatrace tenant, go to **Synthetic** and click on **Create a synthetic monitor**
-    1. Click on **Create a browser monitor**.
-    1. Type in the public IP of your front-end and give your monitor a name (e.g. Sockshop Monitor).
+    1. Click on **Create a browser monitor**
+    1. Type in the *EXTERNAL-IP* of your ingress gateway and give your monitor a name (e.g., Sockshop Monitor).
     1. At *Frequency and locations* set Monitor my website every **5** minutes.
-    1. Select all Locations and finally click on **Monitor single URL** and **Create browser monitor**.
-    1. Now, please wait a couple of minutes.
+    1. Select all locations and finally click on **Monitor single URL** and **Create browser monitor**.
+    1. Now, wait a couple of minutes for the synthetic traffic.
 
 1. Run job template in the Ansible Tower
     1. Go to Ansible Tower.
-    1. Start the job template **canary userX** to trigger a canary release of version 2 of the front-end service.
+    1. Start the job template **canary** to trigger a canary release of front-end *v2*.
+    ![canary_release_job](./assets/canary_release_job.png)
 
-1. Adjust sensitivity of anomaly detection
-    1. Go to **Transaction & service** and click on **front-end- [production]**.
+1. (Optional) Adjust sensitivity of anomaly detection
+    1. Go to **Transaction & service** and click on **front-end.production**.
     1. Click on the **...** button in the top right corner and select **Edit**.
     1. Go to **Anomaly Detection** and enable the switch for *Detect increases in failure rate*.
         * Select `using fixed thresholds`
@@ -219,6 +226,37 @@ In this step you will create a deployment of the front-end service that passes t
     1. Go back to **My web application**.
 
 1. Now, you need to wait until a problem appears in Dynatrace.
+
+1. **EXPLAIN WHAT HAPPENS.**
+
+## Step 5. Cleanup use case<a id="step-five"></a>
+
+1. Apply the configuration of the **VirtualService** to use v1 only.
+
+    ```console
+    $ cd ~/keptn/repositories/k8s-deploy-production/istio
+    $ kubectl apply -f virtual_service.yml
+    virtualservice.networking.istio.io/sockshop configured
+    ```
+1. Remove the failure from the front-end service
+    1. Edit the file `public/topbar.html` in the master branch of the `~/keptn/repositories/front-end` repository and remove the scripts from the `div class=container` element. 
+
+    ```html
+    <div class="container">
+        <!-- add dummy errors -->
+        <!-- end dummy errors -->
+    ...
+    ```
+
+    1. Save the changes to that file.
+
+    1. Now it's time to commit your changes. First locally, and then push it to the remote repository.
+
+        ```console
+        $ git add .
+        $ git commit -m "Fixed issues with messaging feature"
+        $ git push
+        ```
 
 ---
 

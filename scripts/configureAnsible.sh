@@ -85,7 +85,7 @@ export CANARY_RESET_ID=$(curl -k -X POST https://$TOWER_URL/api/v1/job_templates
   "inventory": '$INVENTORY_ID',
   "project": '$PROJECT_ID',
   "playbook": "scripts/playbooks/canary.yaml",
-  "extra_vars": "---\ndt_app: \"front-end\"\ndt_env: \"production\"\ndteventapiurl: \"https://{{tenantid}}.live.dynatrace.com/api/v1/events/?Api-Token={{apitoken}}\"\njenkins_user: \"'$JENKINS_USER'\"\njenkins_password: \"'$JENKINS_PASSWORD'\"\njenkins_url: \"http://'$JENKINS_URL':24711/job/k8s-deploy-production.canary.multi/job/master/build?delay=0sec\"\nremediation_url: \"\"",
+  "extra_vars": "---\ndt_app: \"front-end\"\ndt_env: \"production\"\ndteventapiurl: \"https://{{tenantid}}.live.dynatrace.com/api/v1/events/?Api-Token={{apitoken}}\"\njenkins_user: \"'$JENKINS_USER'\"\njenkins_password: \"'$JENKINS_PASSWORD'\"\njenkins_url: \"http://'$JENKINS_URL':24711/job/k8s-deploy-production-canary/build?delay=0sec\"\nremediation_url: \"\"",
   "ask_variables_on_launch": false,
   "job_tags": "canary_reset"
 }' | jq -r '.id')
@@ -97,7 +97,7 @@ export CANARY_ID=$(curl -k -X POST https://$TOWER_URL/api/v1/job_templates/ --us
   "inventory": '$INVENTORY_ID',
   "project": '$PROJECT_ID',
   "playbook": "scripts/playbooks/canary.yaml",
-  "extra_vars": "---\ndt_app: \"front-end\"\ndt_env: \"production\"\ndteventapiurl: \"https://{{tenantid}}.live.dynatrace.com/api/v1/events/?Api-Token={{apitoken}}\"\njenkins_user: \"'$JENKINS_USER'\"\njenkins_password: \"'$JENKINS_PASSWORD'\"\njenkins_url: \"http://'$JENKINS_URL':24711/job/k8s-deploy-production.canary.multi/job/master/build?delay=0sec\"\nremediation_url: \"https://'$TOWER_URL'/api/v2/job_templates/'$CANARY_RESET_ID'/launch/\"",
+  "extra_vars": "---\ndt_app: \"front-end\"\ndt_env: \"production\"\ndteventapiurl: \"https://{{tenantid}}.live.dynatrace.com/api/v1/events/?Api-Token={{apitoken}}\"\njenkins_user: \"'$JENKINS_USER'\"\njenkins_password: \"'$JENKINS_PASSWORD'\"\njenkins_url: \"http://'$JENKINS_URL':24711/job/k8s-deploy-production-canary/build?delay=0sec\"\nremediation_url: \"https://'$TOWER_URL'/api/v2/job_templates/'$CANARY_RESET_ID'/launch/\"",
   "ask_variables_on_launch": true,
   "skip_tags": "canary_reset"
 }' | jq -r '.id')
