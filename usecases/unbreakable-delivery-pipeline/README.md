@@ -49,7 +49,7 @@ In this step you'll release a service to staging that is not tested based on per
     1. The pipeline should fail due to a too high response time. 
     1. Click on **Performance Report** to see the average response time of the URI: *_cart - add to cart*
 
-![break_early](../assets/break_early.png)
+    ![break_early](./assets/break_early.png)
 
 1. Remove the slowdown in the carts service
     1. In the directory of `~/keptn/repositories/carts/`, open the file: `./src/main/resources/application.properties`
@@ -70,37 +70,59 @@ In this step you'll release a service to staging that is not tested based on per
 
 ## Step 2: Setup self-healing action for production deployment <a id="step-two"></a>
 
-In this step you will create an Ansible Tower job that releases a deployment in a canary release manner. Additionally, you will create a second job that switches back to the old version in case the *canary* (i.e., the new version of front-end) behaves wrong. 
+In this step you will use an Ansible Tower job to release a deployment in a canary release manner. Additionally, you will create a second job that switches back to the old version in case the *canary* (i.e., the new version of front-end) behaves wrong. 
 
-1. To create job template for canary release in Ansible Tower, navigate to **Templates** and create a new Job Template for the canary release mechanism.
-    - Name: `canary userX`
+1. Login to your Ansible Tower instance.
+
+    Receive the public IP from your Ansible Tower:
+    ```console
+    $ kubectl get services -n tower
+    NAME            TYPE           CLUSTER-IP       EXTERNAL-IP     PORT(S)         AGE
+    ansible-tower   LoadBalancer   ***.***.***.**   xxx.143.98.xxx   443:30528/TCP   1d
+    ```
+    
+    Copy the `EXTERNAL-IP` into your browser and navigate to https://xxx.143.98.xxx 
+
+1. (See [submit the Ansible Tower license](../runbook-automation-and-self-healing) if you haven't entered the license yet.) 
+   
+1. Your login is:
+    - Username: `admin` 
+    - Password: `dynatrace`
+
+1. Verify the existing job template for canary release in Ansible Tower by navigating to **Templates** and **canary**.
+    - Name: `canary`
     - Job Type: `Run`
     - Inventory: `inventory`
     - Project: `self-healing`
-    - Playbook: `workshop/10_.../canary.yml`
+    - Playbook: `scripts/playbooks/canary.yaml`
     - Skip Tags: `canary_reset`
     - Extra Variables:
       ```
       ---
       jenkins_user: "admin"
-      jenkins_password: "admin"
+      jenkins_password: "AiTx4u8VyUV8tCKk"
       jenkins_url: "http://1**.2**.3**.4**/job/k8s-deploy-production.canary/build?delay=0sec"
       remediation_url: "https://5**.6**.7**.8**/api/v2/job_templates/xx/launch/"
       ``` 
     - Remarks:
-        - The `1**.2**.3**.4**` in jenkins_url need to be replaced by the IP of your Jenkins.
-        - The `5**.6**.7**.8**` in remediation_url need to be replaced by the IP of Ansible Tower.
-        - The `xx` before /launch need to be replaced by the ID of the job created in the next step.
+        - The IP `1**.2**.3**.4**` in jenkins_url is the IP of your Jenkins.
+        - The IP `5**.6**.7**.8**` in remediation_url is the IP of your Ansible Tower.
+        - The `xx` before `/launch` is the ID of the job shown in the next step.
 
-    After this step, your job template for *canary userX*  should look as shown below: 
+    After this step, your job template for *canary*  should look as shown below: 
     ![ansible_template_1](./assets/ansible_template_1.png)
 
-1. Duplicate the existing job template and change the following values
-    - Name: `canary reset userX`
+1. Verify the existing job template for canary-reset in Ansible Tower by navigating to **Templates** and **canary-reset**.
+    - Name: `canary`
+    - Job Type: `Run`
+    - Inventory: `inventory`
+    - Project: `self-healing`
+    - Playbook: `scripts/playbooks/canary.yaml`
     - Job Tags: `canary_reset`
-    - Skip Tags: *remove the value* 
+    - Remarks:
+        - The IP `1**.2**.3**.4**` in jenkins_url is the IP of your Jenkins.
 
-    After this step, your job template for *canary reset userX* should look as shown below: 
+    After this step, your job template for *canary reset* should look as shown below: 
     ![ansible_template_2](./assets/ansible_template_2.png)
 
 ## Step 3: Introduce a failure into front-end and deploy to production <a id="step-three"></a>
