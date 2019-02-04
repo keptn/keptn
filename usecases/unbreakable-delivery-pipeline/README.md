@@ -101,7 +101,7 @@ In this step you will use an Ansible Tower job to release a deployment in a cana
       ---
       jenkins_user: "admin"
       jenkins_password: "AiTx4u8VyUV8tCKk"
-      jenkins_url: "http://1**.2**.3**.4**/job/k8s-deploy-production.canary/build?delay=0sec"
+      jenkins_url: "http://1**.2**.3**.4**/job/k8s-deploy-production-canary/build?delay=0sec"
       remediation_url: "https://5**.6**.7**.8**/api/v2/job_templates/xx/launch/"
       ``` 
     - Remarks:
@@ -217,7 +217,7 @@ In this step, you wil launch the above Ansible job that redirects the entire tra
     ![canary_release_job](./assets/canary_release_job.png)
 
 1. (Optional) Adjust sensitivity of anomaly detection
-    1. Go to **Transaction & service** and click on **front-end.production**.
+    1. In your Dynatrace tenant, go to **Transaction & service** and click on **front-end.production**.
     1. Click on the **...** button in the top right corner and select **Edit**.
     1. Go to **Anomaly Detection** and enable the switch for *Detect increases in failure rate*.
         * Select `using fixed thresholds`
@@ -250,7 +250,7 @@ In this step, you wil launch the above Ansible job that redirects the entire tra
 
     1. Save the changes to that file.
 
-    1. Now it's time to commit your changes. First locally, and then push it to the remote repository.
+    1. Commit your changes and push it to the remote repository.
 
         ```console
         $ git add .
