@@ -177,6 +177,8 @@ Therefore, the endpoint `carts/1/items/promotional/` can take a number between 0
 
     ![remediation job execution](./assets/ansible-remediation-execution.png)
 
+TODO MOVE THIS SECTION
+
 1. To fully verify that the remedation was executed, you will also find evidence in Dynatrace.
     - New configuration event that set the promotion rate back to 0 %:
     ![custom configuration event](./assets/service-custom-configuration-event-remediation.png)
