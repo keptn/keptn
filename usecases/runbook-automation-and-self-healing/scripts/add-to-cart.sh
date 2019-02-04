@@ -1,6 +1,6 @@
 #!/bin/bash
 echo "Usage: ./add-to-cart.sh http://XX.XX.XX.XX/carts/1/items"
-echo "Press [CTRL+C] to stop.."
+echo "Press [CTRL+C] to stop."
 
 if [ -z $1 ]
 then
