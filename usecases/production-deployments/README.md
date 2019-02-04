@@ -216,6 +216,7 @@ In this step, you will configure traffic routing in Istio to redirect traffic ba
 
     ```console
     $ kubectl apply -f virtual_service_canary.yml
+    virtualservice.networking.istio.io/sockshop configured
     ```
 
 1. To verify the configuration change, open the ingress gateway and refresh the page a couple of times. You should notice that about every tenth hit redirects you to the new version (*v2*) showing a blue header.
@@ -249,13 +250,16 @@ In this step, you will configure traffic routing in Istio to redirect traffic ba
             subset: v1
     ```
 
-    Istio checks if the cookie field of the HTTP header contains the string `logged_in` using regular expressions. This, of course, depends on the implementation of your web application and is not univesally appllicable. To set this in action apply the configuration.
+    Istio checks if the cookie field of the HTTP header contains the string `logged_in` using regular expressions. This, of course, depends on the implementation of your web application and is not univesally appllicable. 
+
+1. Apply the changes by executing the command `kubectl apply -f virtual_service_v2_for_users.yml`
 
     ```console
     $ kubectl apply -f virtual_service_v2_for_users.yml
+    virtualservice.networking.istio.io/sockshop configured
     ```
 
-    If you login using either a new registrated user, or a user that you've created before, you should see version 2. After logging out, you should see verison 1 again.
+1. If you login using either a new registrated user, or a user that you've created before, you should see version 2. After logging out, you should see verison 1 again.
 
 #### Redirect only Chrome users
 
@@ -286,13 +290,14 @@ In this step, you will configure traffic routing in Istio to redirect traffic ba
             subset: v1
     ```
 
-    You can apply the configuration to see its effect.
+1. Apply the changes by executing the command `kubectl apply -f virtual_service_v2_for_chrome.yml`
 
     ```console
     $ kubectl apply -f virtual_service_v2_for_chrome.yml
+    virtualservice.networking.istio.io/sockshop configured
     ```
 
-    If you open sockshop using Chrome you see version 2, with any other browser version 1 is displayed.
+1. If you open sockshop using Chrome you see version 2, with any other browser version 1 is displayed.
 
 ## Step 5. Cleanup use case<a id="step-five"></a>
 
