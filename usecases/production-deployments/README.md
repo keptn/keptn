@@ -44,11 +44,11 @@ This use case gives an overview of production deployments, deployment strategies
     staging        Active    10h
     ```
 
-1. Trigger the `k8s-deploy-production` pipeline in your Jenkins instance (see :one:). This promotes all components that are currently in the `staging` namespace to the `production` namespace.
+1. Trigger the `k8s-deploy-production` pipeline in your Jenkins instance (see :one:). This promotes all components that are currently in the *staging* namespace to the *production* namespace.
 
     ![trigger k8s-deploy-production](./assets/trigger-k8s-deploy-production.png)
 
-    This pipeline reads the current versions of all artefacts in the `staging` namespace and deploys those artefacts in the exact same version to the `production` namespace. Instead of pushing individual microservices to production, we chose the approach of defining a release bracket, which holds versions of microservices that work together well.
+    This pipeline reads the current versions of all artefacts in the *staging* namespace and deploys those artefacts in the exact same version to the *production* namespace. Instead of pushing individual microservices to production, we chose the approach of defining a release bracket, which holds versions of microservices that work together well.
 
     <!-- Naturally, we dispatch a deployment event to all affected services. This might not work for the first deployment, because the service might not exist as a Dynatrace entity when dispatching the event, but it will work for all consecutive calls. -->
 
@@ -80,7 +80,7 @@ In this step, you create an *improved* version of the front-end service. You wil
     $ git push
     ```
 
-1. You need the new version of the `front-end` service in the `staging` namespace, before you can start with a blue-green or canary deployment. Therefore, create a new release branch in the `front-end` repository using our Jenkins pipeline:
+1. You need the new version of the `front-end` service in the *staging* namespace, before you can start with a blue-green or canary deployment. Therefore, create a new release branch in the `front-end` repository using our Jenkins pipeline:
 
     1. Go to **Jenkins** and **sockshop**.
     1. Click on **create-release-branch** pipeline and **Schedule a build with parameters**.
@@ -95,10 +95,10 @@ In this step, you create an *improved* version of the front-end service. You wil
         <!-- ![pipeline_release_branch_1](./assets/pipeline_release_branch_1.png) -->
         ![pipeline_release_branch_2](./assets/pipeline_release_branch_2.png)
 
-1. After the **create-release-branch** pipeline has finished, trigger the build pipeline for the `front-end` service and wait until the new artefacts is deployed to the `staging` namespace.
+1. After the **create-release-branch** pipeline has finished, trigger the build pipeline for the `front-end` service and wait until the new artefacts is deployed to the *staging* namespace.
     - Wait until the release/**version** build has finished.
 
-1. To see your changes in the `front-end` service that is deployed in `staging`, get the *EXTERNAL-IP* of the `front-end` load balancer in `staging` by listing all services in that namespace.
+1. To see your changes in the `front-end` service that is deployed in *staging*, get the *EXTERNAL-IP* of the `front-end` load balancer in *staging* by listing all services in that namespace.
 
     ```console
     $ kubectl -n staging get services
@@ -131,7 +131,7 @@ In this step, you will promote the new version of the `front-end` service to pro
 
     ![enter-parameters](./assets/enter-parameters.png)
 
-    This pipeline reads the version of the passed service in the `staging` namespace and deploys the artefact in that version to the `production` namespace in a deployment with the passed version number. After running that pipeline, two deployments of `front-end` (one with *v1* and one with *v2*) are available.
+    This pipeline reads the version of the passed service in the *staging* namespace and deploys the artefact in that version to the *production* namespace in a deployment with the passed version number. After running that pipeline, two deployments of `front-end` (one with *v1* and one with *v2*) are available.
 
     ```console
     $ kubectl -n production get deployment
@@ -142,7 +142,7 @@ In this step, you will promote the new version of the `front-end` service to pro
     ...
     ```
 
-    At this stage, the `VirtualService` for sockshop is configured to use *v1* initially. So, the application is not affected at all by the deployment of a new version in the `production` namespace. You can check the details of the deployments to see that each deployment uses a different artefact version, e.g. `0.5.0` and `0.6.0`, in the example below:
+    At this stage, the **VirtualService** for sockshop is configured to use *v1* initially. So, the application is not affected at all by the deployment of a new version in the *production* namespace. You can check the details of the deployments to see that each deployment uses a different artefact version, e.g. `0.5.0` and `0.6.0`, in the example below:
 
     ```console
     $ kubectl -n production describe deployment front-end-v1
@@ -176,7 +176,7 @@ In this step, you will promote the new version of the `front-end` service to pro
 
 In this step, you will configure traffic routing in Istio to redirect traffic based on different criteria to *v2* of the `front-end` service. It addresses the tasks to redirect traffic using weight rules, redirect only logged in users, and to redirect only Chrome users to v2.
 
-1. Right now, traffic to `front-end` is routed to *v1* due to the configuration of the `VirtualService`. The `subset: v1` entry in the configuration takes care of that.
+1. Right now, traffic to `front-end` is routed to *v1* due to the configuration of the **VirtualService**. The `subset: v1` entry in the configuration takes care of that.
 
     ```yaml
     apiVersion: networking.istio.io/v1alpha3
@@ -210,7 +210,7 @@ In this step, you will configure traffic routing in Istio to redirect traffic ba
 
     ![modify-canary-yml](./assets/modify-canary-yml.png)
 
-    This configuration redirects 10% of all traffic hitting the sockshop `VirtualService` to version 2. 
+    This configuration redirects 10% of all traffic hitting the sockshop **VirtualService** to version 2. 
 
 1. Apply the changes by executing the command `kubectl apply -f virtual_service_canary.yml`
 
@@ -259,7 +259,7 @@ In this step, you will configure traffic routing in Istio to redirect traffic ba
     virtualservice.networking.istio.io/sockshop configured
     ```
 
-1. If you login using either a new registrated user, or a user that you've created before, you should see version 2. After logging out, you should see verison 1 again.
+1. If you login using either a new registrated user, or a user that you've created before, you see version 2. After logging out, you see verison 1 again.
 
 #### Redirect only Chrome users
 
@@ -301,7 +301,7 @@ In this step, you will configure traffic routing in Istio to redirect traffic ba
 
 ## Step 5. Cleanup use case<a id="step-five"></a>
 
-1. Apply the configuration of the `VirtualService` to use v1 only.
+1. Apply the configuration of the **VirtualService** to use v1 only.
 
     ```console
     $ cd ~/keptn/repositories/k8s-deploy-production/istio
