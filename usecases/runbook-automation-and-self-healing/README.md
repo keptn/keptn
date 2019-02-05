@@ -5,13 +5,17 @@ This use case gives an overview of how to leverage the power of runbook automati
 #### Table of Contents
  * [Step 0: Check prerequisites](#step-zero)
  * [Step 1: Verify installation of Ansible Tower](#step-one)
- * [Step 2: Integration Ansible Tower runbook in Dynatrace](#step-two)
+ * [Step 2: Integration of Ansible Tower runbook in Dynatrace](#step-two)
  * [Step 3: Apply anomaly detection rules](#step-three)
  * [Step 4: Run a promotional campaign](#step-four)
 
 ## Step 0: Check prerequisites <a id="step-zero"></a>
 
 1. A personal license for Ansible Tower is needed. In case you don't have a license yet, you can get a free license here: https://www.ansible.com/license
+
+    The personal edition with limited features is sufficient for this use case.
+
+    ![free license](./assets/ansible-license-free.png)
 
 
 ## Step 1: Verify installation of Ansible Tower <a id="step-one"></a>
@@ -43,7 +47,7 @@ During the setup of the cluster, Ansible Tower has already been installed and pr
 
 ### Verify predefined Templates, Projects and Inventories
 
-When running the install scripts from [this readme](../README.md) Ansible Tower is already preconfigured for this use case. The needed templates, inventories, and projects are already created and set up. We are going to verify this.
+When running the install scripts from [this readme](../../README.md) Ansible Tower is already preconfigured for this use case. The needed templates, inventories, and projects are already created and set up. We are going to verify this.
 
 1. Credentials
 
@@ -70,7 +74,7 @@ When running the install scripts from [this readme](../README.md) Ansible Tower 
     Please go ahead an open the *remediation* playbook. Copy the URL from your browser to your clipboard, we will need it in a second. 
     ![remediation-template](./assets/ansible-remediation-template.png)
 
-## Step 2: Integration Ansible Tower runbook in Dynatrace <a id="step-two"></a>
+## Step 2: Integration of Ansible Tower runbook in Dynatrace <a id="step-two"></a>
 
 This step integrates the defined *remediation runbook* in Dynatrace in a way that it will be called each time Dynatrace detects a problem. Please note that in an enterprise scenario, you might want to define *Alerting profiles* to be able to control problem notifications in a more fine-grained way when to call a remediation runbook.
 
