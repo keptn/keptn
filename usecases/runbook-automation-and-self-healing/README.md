@@ -123,7 +123,9 @@ This step runs a promotional campaign in our production environment by applying 
 
 Therefore, the endpoint `carts/1/items/promotional/` can take a number between 0 and 100 as an input, which corresponds to the percentages of user interactions that will receive the promotional gift, i.e., `carts/1/items/promotional/5` will enable it for 5 %, while `carts/1/items/promotional/100` will enable it for 100 % of user interactions. 
 
-1. Generate load for the carts service
+The promotional itself is controlled via Ansible Tower. That means that starting, and eventually stopping the campaign is done by triggering Ansible Tower job templates that in turn start Ansible playbooks.
+
+1. First we want to generate load for the carts service
     - Receive the IP of the carts service by executing the `kubectl get svc -n production` command: 
 
       ```console
@@ -166,16 +168,18 @@ Therefore, the endpoint `carts/1/items/promotional/` can take a number between 0
 1. Looking at the loadgeneration output in your console, you will notice that about 1/3 of the requests will produce an error.
 
     ```console
+    ...
     {"id":"3395a43e-2d88-40de-b95f-e00e1502085b","itemId":"03fef6ac-1896-4ce8-bd69-b798f85c6e0b","quantity":13916,"unitPrice":0.0}
     adding item to cart...
     {"id":"3395a43e-2d88-40de-b95f-e00e1502085b","itemId":"03fef6ac-1896-4ce8-bd69-b798f85c6e0b","quantity":13917,"unitPrice":0.0}
     adding item to cart...
     {"timestamp":1549290255564,"status":500,"error":"Internal Server Error","exception":"java.lang.Exception","message":"promotion campaign not yet implemented","path":"/carts/1/items"}
+    ...
     ```
 
-1. After a couple of minutes, Dynatrace will open a problem ticket for the increase of the failure rate. Since we have setup the problem notification with Ansible Tower, the according `remediation` playbook will be executed once Dynatrace sends out the notification.
+1. After a couple of minutes, Dynatrace will open a problem ticket for the increase of the failure rate. Since we have setup the problem notification with Ansible Tower, the according *remediation* playbook will be executed once Dynatrace sends out the notification.
 
-    The open problem ticket in Dynatrace gives us detailed information on the problem:
+    The **open problem ticket** in Dynatrace gives us detailed information on the problem:
     - we see how many users, service calls, and services are impacted (1 service, ItemsController)
     - we see why the problem was created (increase of the failure rate)
     - Dynatrace detected the root cause of the problem
