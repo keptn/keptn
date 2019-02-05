@@ -47,7 +47,7 @@ During the setup of the cluster, Ansible Tower has already been installed and pr
 
 ### Verify predefined Templates, Projects and Inventories
 
-When running the install scripts from [this readme](../README.md) Ansible Tower is already preconfigured for this use case. The needed templates, inventories, and projects are already created and set up. We are going to verify this.
+When running the install scripts from [this readme](../../README.md) Ansible Tower is already preconfigured for this use case. The needed templates, inventories, and projects are already created and set up. We are going to verify this.
 
 1. Credentials
 
