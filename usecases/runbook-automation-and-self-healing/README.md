@@ -13,6 +13,10 @@ This use case gives an overview of how to leverage the power of runbook automati
 
 1. A personal license for Ansible Tower is needed. In case you don't have a license yet, you can get a free license here: https://www.ansible.com/license
 
+    The personal edition with limited features is sufficient for this use case.
+
+    ![free license](./assets/ansible-license-free.png)
+
 
 ## Step 1: Verify installation of Ansible Tower <a id="step-one"></a>
 
