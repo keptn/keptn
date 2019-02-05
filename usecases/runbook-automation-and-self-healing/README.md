@@ -194,7 +194,7 @@ Therefore, the endpoint `carts/1/items/promotional/` can take a number between 0
     - New configuration event that set the promotion rate back to 0 %:
     ![custom configuration event](./assets/service-custom-configuration-event-remediation.png)
 
-
+1. Problem is remediated thanks to automating runbook execution by Dynatrace!
 
 
 ---
