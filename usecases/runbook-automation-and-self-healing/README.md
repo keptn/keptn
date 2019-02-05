@@ -2,11 +2,12 @@
 
 This use case gives an overview of how to leverage the power of runbook automation to build self-healing applications. Therefore, you will use Ansible Tower as the tool for executing and managing the runbooks.
 
-##### Table of Contents
+#### Table of Contents
  * [Step 0: Check prerequisites](#step-zero)
  * [Step 1: Verify installation of Ansible Tower](#step-one)
  * [Step 2: Integration Ansible Tower runbook in Dynatrace](#step-two)
- * [Step 3: Run a promotional campaign](#step-three)
+ * [Step 3: Apply anomaly detection rules](#step-three)
+ * [Step 4: Run a promotional campaign](#step-four)
 
 ## Step 0: Check prerequisites <a id="step-zero"></a>
 
@@ -92,7 +93,7 @@ This step integrates the defined *remediation runbook* in Dynatrace in a way tha
     - Navigate to **Jobs** and click on your *X - remediation* job
     - You can see all tasks from the playbook that have been triggered by the integration.
 
-## Step 3: Apply anomaly detection rules ##
+## Step 3: Apply anomaly detection rules <a id="step-three"></a>
 
 Problem and anomaly detection in Dynatrace leverages AI technology. This means that the AI learns how each and every microservice behaves and baselines them. Therefore, in a demo scenario like we have right now, we have to override the AI engine with user-defined values to allow the creation of problems due to an increase of a failure rate. (Please note if we would have the application running and simulate end-user traffic for a couple of days there would be no need for this step.)
 
@@ -113,7 +114,7 @@ On the next screen, edit the anomaly detection settings as seen in the following
 ![anomaly detection](./assets/anomaly-detection.png)
 
 
-## Step 4: Run a promotional campaign <a id="step-three"></a>
+## Step 4: Run a promotional campaign <a id="step-four"></a>
 
 This step runs a promotional campaign in our production environment by applying a change to our configuration of the `carts` service. This service is prepared to allow to add a promotional gift (e.g., Halloween Socks, Christmas Socks, Easter Socks, ...) to a given percentage of user interactions in the `carts` service. 
 
@@ -171,18 +172,30 @@ Therefore, the endpoint `carts/1/items/promotional/` can take a number between 0
 
 1. After a couple of minutes, Dynatrace will open a problem ticket for the increase of the failure rate. Since we have setup the problem notification with Ansible Tower, the according `remediation` playbook will be executed once Dynatrace sends out the notification.
 
+    The open problem ticket in Dynatrace gives us detailed information on the problem:
+    - we see how many users, service calls, and services are impacted (1 service, ItemsController)
+    - we see why the problem was created (increase of the failure rate)
+    - Dynatrace detected the root cause of the problem
+        - failure rate increase due to
+        - configuration change
+    - we already see two comments on the problem
+        - one comment that the remediation playbook has started
+        - one comment that the remediation playbook has already finished executing
+
+    ![problem details](./assets/dynatrace-problem.png)
+
 1. To verify executed playbooks in Ansible Tower, navigate to **Jobs** and verify that Ansible Tower has executed two jobs.        
     - The first job `X - remediation` was called since Dynatrace sent out the problem notification to Ansible Tower. 
     - This job was then executing the remediation tasks which include the execution of the remediation action that is defined in the custom configuration event of the impacted entities (the `carts` service). Therefore, you will also see a job called `X - stop-campaign` that was executed.
 
     ![remediation job execution](./assets/ansible-remediation-execution.png)
 
-1. To fully verify that the remedation was executed, you will also find evidence in Dynatrace.
+
+1. The remediation playbook set back the promotion rate to 0 %, which is also send back to Dynatrace.
     - New configuration event that set the promotion rate back to 0 %:
     ![custom configuration event](./assets/service-custom-configuration-event-remediation.png)
 
-    - Comment on the Dynatrace problem ticket that the playbook has been executed:
-    ![problem details](./assets/dynatrace-problem.png)
+1. Problem is remediated thanks to automating runbook execution by Dynatrace!
 
 
 ---
