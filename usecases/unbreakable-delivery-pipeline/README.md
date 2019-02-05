@@ -83,8 +83,10 @@ In this step you will use an Ansible Tower job to release a deployment in a cana
     
     Copy the `EXTERNAL-IP` into your browser and navigate to https://xxx.143.98.xxx 
 
-1. (See [submit the Ansible Tower license](../runbook-automation-and-self-healing#step-1-verify-installation-of-ansible-tower-) if you haven't entered the license yet.) 
+1. (If you haven't entered the license yet, see [submit the Ansible Tower license](../runbook-automation-and-self-healing#step-1-verify-installation-of-ansible-tower-).) 
    
+1. (If you haven't integrated Ansible Tower into Dynatrace, see [Integration Ansible Tower runbook in Dynatrace](../runbook-automation-and-self-healing#step-2-integration-ansible-tower-runbook-in-dynatrace-).) 
+
 1. Your login is:
     - Username: `admin` 
     - Password: `dynatrace`
@@ -227,7 +229,8 @@ In this step, you wil launch the above Ansible job that redirects the entire tra
 
 1. Now, you need to wait until a problem appears in Dynatrace.
 
-1. **EXPLAIN WHAT HAPPENS.**
+1. When Dynatrace opens a problem notification, it automatically invokes the remediation action as defined in the canary playbook. In fact, the remediation action refers to the **canary-reset** playbook in Ansible Tower. Consequently, you see the executed playbook when navigating to Ansible Tower and Jobs. Moreover, the failure rate of the front-end service must decline since new traffic is routed to the previous version.
+    ![canary_reset](./assets/canary_reset.png)
 
 ## Step 5. Cleanup use case<a id="step-five"></a>
 
