@@ -229,7 +229,7 @@ In this step, you wil launch the above Ansible job that redirects the entire tra
 
 1. Now, you need to wait until a problem appears in Dynatrace.
 
-1. When Dynatrace opens a problem notification, it automatically invokes the remediation action as defined in the canary playbook. In fact, the remediation action refers to the **canary-reset** playbook in Ansible Tower. Consequently, you see the executed playbook when navigating to Ansible Tower and Jobs. Moreover, the failure rate of the front-end service must decline since new traffic is routed to the previous version.
+1. When Dynatrace opens a problem notification, it automatically invokes the remediation action as defined in the canary playbook. In fact, the remediation action refers to the **remediation** playbook, which then triggers the **canary-reset** playbook. Consequently, you see the executed playbooks when navigating to *Ansible Tower* and *Jobs*. Moreover, the failure rate of the front-end service must decrease since new traffic is routed to the previous version of front-end.
     ![canary_reset](./assets/canary_reset.png)
 
 ## Step 5. Cleanup use case<a id="step-five"></a>
