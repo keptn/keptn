@@ -171,20 +171,30 @@ Therefore, the endpoint `carts/1/items/promotional/` can take a number between 0
 
 1. After a couple of minutes, Dynatrace will open a problem ticket for the increase of the failure rate. Since we have setup the problem notification with Ansible Tower, the according `remediation` playbook will be executed once Dynatrace sends out the notification.
 
+    The open problem ticket in Dynatrace gives us detailed information on the problem:
+    - we see how many users, service calls, and services are impacted (1 service, ItemsController)
+    - we see why the problem was created (increase of the failure rate)
+    - Dynatrace detected the root cause of the problem
+        - failure rate increase due to
+        - configuration change
+    - we already see two comments on the problem
+        - one comment that the remediation playbook has started
+        - one comment that the remediation playbook has already finished executing
+
+    ![problem details](./assets/dynatrace-problem.png)
+
 1. To verify executed playbooks in Ansible Tower, navigate to **Jobs** and verify that Ansible Tower has executed two jobs.        
     - The first job `X - remediation` was called since Dynatrace sent out the problem notification to Ansible Tower. 
     - This job was then executing the remediation tasks which include the execution of the remediation action that is defined in the custom configuration event of the impacted entities (the `carts` service). Therefore, you will also see a job called `X - stop-campaign` that was executed.
 
     ![remediation job execution](./assets/ansible-remediation-execution.png)
 
-TODO MOVE THIS SECTION
 
-1. To fully verify that the remedation was executed, you will also find evidence in Dynatrace.
+1. The remediation playbook set back the promotion rate to 0 %, which is also send back to Dynatrace.
     - New configuration event that set the promotion rate back to 0 %:
     ![custom configuration event](./assets/service-custom-configuration-event-remediation.png)
 
-    - Comment on the Dynatrace problem ticket that the playbook has been executed:
-    ![problem details](./assets/dynatrace-problem.png)
+
 
 
 ---
