@@ -25,6 +25,8 @@ do
 
     # Deploy service to production
     cat $repo.yml | sed 's#namespace: .*#namespace: production#' >> production_tmp.yml
+    # edit the deployment name in line 5 from $repo to $repo-v1 to avoid duplicate deployments in production namespace
+    sed -i "5 s#$repo#$repo-v1#" production_tmp.yml
     kubectl apply -f ./production_tmp.yml
     rm production_tmp.yml
 
