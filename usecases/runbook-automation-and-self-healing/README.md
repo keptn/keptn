@@ -2,7 +2,7 @@
 
 This use case gives an overview of how to leverage the power of runbook automation to build self-healing applications. Therefore, you will use Ansible Tower as the tool for executing and managing the runbooks.
 
-##### Table of Contents
+#### Table of Contents
  * [Step 0: Check prerequisites](#step-zero)
  * [Step 1: Verify installation of Ansible Tower](#step-one)
  * [Step 2: Integration Ansible Tower runbook in Dynatrace](#step-two)
