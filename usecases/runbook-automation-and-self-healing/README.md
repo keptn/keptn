@@ -6,7 +6,8 @@ This use case gives an overview of how to leverage the power of runbook automati
  * [Step 0: Check prerequisites](#step-zero)
  * [Step 1: Verify installation of Ansible Tower](#step-one)
  * [Step 2: Integration Ansible Tower runbook in Dynatrace](#step-two)
- * [Step 3: Run a promotional campaign](#step-three)
+ * [Step 3: Apply anomaly detection rules](#step-three)
+ * [Step 4: Run a promotional campaign](#step-four)
 
 ## Step 0: Check prerequisites <a id="step-zero"></a>
 
@@ -92,7 +93,7 @@ This step integrates the defined *remediation runbook* in Dynatrace in a way tha
     - Navigate to **Jobs** and click on your *X - remediation* job
     - You can see all tasks from the playbook that have been triggered by the integration.
 
-## Step 3: Apply anomaly detection rules ##
+## Step 3: Apply anomaly detection rules <a id="step-three"></a>
 
 Problem and anomaly detection in Dynatrace leverages AI technology. This means that the AI learns how each and every microservice behaves and baselines them. Therefore, in a demo scenario like we have right now, we have to override the AI engine with user-defined values to allow the creation of problems due to an increase of a failure rate. (Please note if we would have the application running and simulate end-user traffic for a couple of days there would be no need for this step.)
 
@@ -113,7 +114,7 @@ On the next screen, edit the anomaly detection settings as seen in the following
 ![anomaly detection](./assets/anomaly-detection.png)
 
 
-## Step 4: Run a promotional campaign <a id="step-three"></a>
+## Step 4: Run a promotional campaign <a id="step-four"></a>
 
 This step runs a promotional campaign in our production environment by applying a change to our configuration of the `carts` service. This service is prepared to allow to add a promotional gift (e.g., Halloween Socks, Christmas Socks, Easter Socks, ...) to a given percentage of user interactions in the `carts` service. 
 
