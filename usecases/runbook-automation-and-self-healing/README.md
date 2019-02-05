@@ -5,7 +5,7 @@ This use case gives an overview of how to leverage the power of runbook automati
 #### Table of Contents
  * [Step 0: Check prerequisites](#step-zero)
  * [Step 1: Verify installation of Ansible Tower](#step-one)
- * [Step 2: Integration Ansible Tower runbook in Dynatrace](#step-two)
+ * [Step 2: Integration of Ansible Tower runbook in Dynatrace](#step-two)
  * [Step 3: Apply anomaly detection rules](#step-three)
  * [Step 4: Run a promotional campaign](#step-four)
 
@@ -70,7 +70,7 @@ When running the install scripts from [this readme](../README.md) Ansible Tower 
     Please go ahead an open the *remediation* playbook. Copy the URL from your browser to your clipboard, we will need it in a second. 
     ![remediation-template](./assets/ansible-remediation-template.png)
 
-## Step 2: Integration Ansible Tower runbook in Dynatrace <a id="step-two"></a>
+## Step 2: Integration of Ansible Tower runbook in Dynatrace <a id="step-two"></a>
 
 This step integrates the defined *remediation runbook* in Dynatrace in a way that it will be called each time Dynatrace detects a problem. Please note that in an enterprise scenario, you might want to define *Alerting profiles* to be able to control problem notifications in a more fine-grained way when to call a remediation runbook.
 
