@@ -9,12 +9,12 @@ The overall goal of the *Unbreakable Delivery Pipeline* is to implement a pipeli
 * **Self-Healing**: Ability for smart auto-remediation that addresses the root cause of a problem and not the symptom.
 
 ##### Table of Contents
- * [Step 1: Simulate a early pipeline break](#step-one)
+ * [Step 1: Simulate an early pipeline break](#step-one)
  * [Step 2: Setup self-healing action for production deployment](#step-two)
  * [Step 3: Introduce a failure into front-end and deploy to production](#step-three)
  * [Step 4: Simulate a bad production deployment](#step-four)
 
-## Step 1: Simulate a early pipeline break <a id="step-one"></a>
+## Step 1: Simulate an early pipeline break <a id="step-one"></a>
 
 In this step you'll release a service to staging that is not tested based on performance tests. Intentionally, the service is slowed down to fail at the end-to-end check in the staging pipeline.
 
@@ -196,7 +196,7 @@ In this step you will introduce a Java Script error into the front-end service. 
 
 ## Step 4. Simulate a bad production deployment <a id="step-four"></a>
 
-In this step, you wil launch the above Ansible job that redirects the entire traffic to the new version of front-end in a canary release manner. Since the new front-end contains a failure, Dynatrace will open a problem and automatically invokes an auto-remediation action.
+In this step, you will launch the above Ansible job that redirects the entire traffic to the new version of front-end in a canary release manner. Since the new front-end contains a failure, Dynatrace will open a problem and automatically invokes an auto-remediation action.
 
 1. Run the `kubectl get svc istio-ingressgateway -n istio-system` command to get the *EXTERNAL-IP* of your *Gateway*.
     ```console

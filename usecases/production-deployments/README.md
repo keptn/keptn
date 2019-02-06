@@ -249,7 +249,7 @@ In this step, you will configure traffic routing in Istio to redirect traffic ba
             subset: v1
     ```
 
-    Istio checks if the cookie field of the HTTP header contains the string `logged_in` using regular expressions. This, of course, depends on the implementation of your web application and is not univesally appllicable. 
+    Istio checks if the cookie field of the HTTP header contains the string `logged_in` using regular expressions. This, of course, depends on the implementation of your web application and is not universally applicable.
 
 1. Apply the changes by executing the command `kubectl apply -f virtual_service_v2_for_users.yml`
 
@@ -258,7 +258,7 @@ In this step, you will configure traffic routing in Istio to redirect traffic ba
     virtualservice.networking.istio.io/sockshop configured
     ```
 
-1. If you login using either a new registrated user, or a user that you've created before, you see version 2. After logging out, you see verison 1 again.
+1. If you login using either a new registered user, or a user that you've created before, you see version 2. After logging out, you see verison 1 again.
 
 #### Redirect only Chrome users
 
