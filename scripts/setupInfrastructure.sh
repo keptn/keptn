@@ -64,10 +64,23 @@ kubectl create -f ../manifests/dynatrace/cr.yml
 
 
 # Deploy sockshop application
+echo "--------------------------"
+echo "Deploy SockShop "
+echo "--------------------------"
+
 ./deploySockshop.sh
 
-# Set up credentials in Jenkins
+echo "--------------------------"
+echo "End Deploy Sockshop "
+echo "--------------------------"
+
+echo "wait for changes to apply..."
 sleep 150
+
+# Set up credentials in Jenkins
+echo "--------------------------"
+echo "Setup Credentials in Jenkins "
+echo "--------------------------"
 
 # Export Jenkins route in a variable
 export JENKINS_URL=$(kubectl describe svc jenkins -n cicd | grep "LoadBalancer Ingress:" | sed 's~LoadBalancer Ingress:[ \t]*~~')
@@ -110,18 +123,43 @@ curl -X POST http://$JENKINS_URL:24711/credentials/store/system/domain/_/createC
   }
 }'
 
+echo "--------------------------"
+echo "End setup credentials in Jenkins "
+echo "--------------------------"
+
+
+
 # Install Istio service mesh
+echo "--------------------------"
+echo "Set up Istio "
+echo "--------------------------"
+
 ./setupIstio.sh $DT_TENANT_ID $DT_PAAS_TOKEN
 
+echo "--------------------------"
+echo "End set up Istio "
+echo "--------------------------"
+
+
 # Create Ansible Tower
+
+echo "--------------------------"
+echo "Setup Ansible Tower "
+echo "--------------------------"
+
 kubectl create -f ../manifests/ansible-tower/namespace.yml
 kubectl create -f ../manifests/ansible-tower/deployment.yml
 kubectl create -f ../manifests/ansible-tower/service.yml
 
+echo "wait for changes to apply..."
 sleep 120
 
 ./configureAnsible.sh
 
 echo "--------------------------"
-echo "Finished setting up infrastructure "
+echo "End set up Ansible Tower "
 echo "--------------------------"
+
+echo "----------------------------------------------------"
+echo "Finished setting up infrastructure "
+echo "----------------------------------------------------"

@@ -1,10 +1,5 @@
 #!/bin/bash
 
-echo "--------------------------"
-echo "Deploy SockShop "
-echo "--------------------------"
-
-
 cd ../repositories/sockshop-infrastructure
 kubectl apply -f manifests/carts-db.yaml
 kubectl apply -f manifests/catalogue-db.yaml
@@ -39,7 +34,3 @@ do
     cd ../..
 done
 cd ../scripts
-
-echo "--------------------------"
-echo "End Deploy Sockshop "
-echo "--------------------------"

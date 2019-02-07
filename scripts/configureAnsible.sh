@@ -1,9 +1,5 @@
 #!/bin/bash
 
-echo "--------------------------"
-echo "Configuring Ansible Tower "
-echo "--------------------------"
-
 export JENKINS_USER=$(cat creds.json | jq -r '.jenkinsUser')
 export JENKINS_PASSWORD=$(cat creds.json | jq -r '.jenkinsPassword')
 export GITHUB_PERSONAL_ACCESS_TOKEN=$(cat creds.json | jq -r '.githubPersonalAccessToken')
@@ -106,7 +102,6 @@ export CANARY_ID=$(curl -k -X POST https://$TOWER_URL/api/v1/job_templates/ --us
   "skip_tags": "canary_reset"
 }' | jq -r '.id')
 
-echo "--------------------------"
+
 echo "Ansible has been configured successfully! Copy the following URL to set it as an Ansible Job URL in the Dynatrace notification settings:"
 echo "https://$TOWER_URL/#templates/job_template/$REMEDIATION_TEMPLATE_ID"
-echo "--------------------------"
