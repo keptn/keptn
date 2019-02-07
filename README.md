@@ -36,13 +36,23 @@ This directory contains all scripts and instructions needed to deploy the demo a
     $ ./forkGitHubRepositories.sh <GitHubOrg>
     ```
     
-1. Insert information in *./scripts/creds.json* by executing `defineCredentials.sh` in the `scripts` directory. This script will prompt you for all information needed to complete the setup and populate the file *scripts/creds.json* with them.
+1. Insert information in *./scripts/creds.json* by executing `defineCredentials.sh` in the `scripts` directory. This script will prompt you for all information needed to complete the setup and populate the file *scripts/creds.json* with them. 
+
+    **Attention:** This file will hold your personal access-token and credentials needed for the automatic setup of keptn. Take care of not leaking this file! (As a first precaution we have added this file to the `.gitignore` file to prevent committing it to GitHub.)
 
     ```console
     $ ./defineCredentials.sh
     ```
     
-1. Execute `setupInfrastructure.sh` in the `scripts` directory. This script deploys a container registry and Jenkins service within your cluster, as well as an initial deployment of the sockshop application in the *dev*, *staging*, and *production* namespaces. **Note:** the script will run for some time (~5 min), since it will wait for Jenkins to boot before setting credentials via the Jenkins REST API.
+1. Execute `setupInfrastructure.sh` in the `scripts` directory. This script deploys a container registry and Jenkins service within your cluster, as well as an initial deployment of the sockshop application in the *dev*, *staging*, and *production* namespaces. Please note that this is an initial step to provide you with running services in all three environments. In the course of the different use cases provided by keptn (see section [use cases](#step-four)), the microservices will be built and deployed by the Jenkins pipelines set up by keptn. 
+
+    **Attention:** The script will create several new resources for you and will also update the files shipped with keptn. Take care of not leaking any files that will hold personal information. Including:
+        
+    - `manifests/dynatrace/cr.yml`
+    - `manifests/istio/service_entries.yml`
+    - `manifests/jenkins/k8s-jenkins-deployment.yml`
+
+    **Note:** The script will run for some time (~10-15 min), since it will wait for Jenkins to boot before setting credentials via the Jenkins REST API.
 
     ```console
     $ ./setupInfrastructure.sh
