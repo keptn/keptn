@@ -14,19 +14,21 @@ Keptn is a fabric for cloud-native lifecycle automation at enterprise scale.
 
 Keptn assumes that you have a working Kubernetes cluster in Google Container Engine (GKE). See the [Getting Started Guides](https://kubernetes.io/docs/setup/) for details about creating a cluster.
 
-The following configuration is recommended for the cluster:
+The following configuration is recommended for the k8s cluster:
     
 - Master version 1.11.6 (Minimum tested master version 1.10.11)
 - Node pool with 2 nodes
 
   - each 8vCPUs and 30 GB memory (`n1-standard-8` in GKE)
-  - image type: Ubuntu *or* Container-Optimized OS (cos)
+  - image type: Ubuntu (preferred) (or Container-Optimized OS (cos))
+    
+    - in case *Container-Optimized OS (cos)* is selected, make sure to [follow the instructions](https://www.dynatrace.com/support/help/cloud-platforms/google-cloud-platform/google-kubernetes-engine/deploy-oneagent-on-google-kubernetes-engine-clusters/#expand-134parameter-for-container-optimized-os-early-access) for setting up the Dynatrace OneAgent Operator. This means that after the initial setup with `setupInfrastructure.sh` (you'll find this later in this readme) the `cr.yml` has to be edited and applied again. In addition, all pods have to be restarted.
   
 
 The scripts provided in this directory run in a BASH and require following tools locally installed: 
-* [`jq`](https://stedolan.github.io/jq/) which is a lightweight and flexible command-line JSON processor
-* [`git`](https://git-scm.com/) and [`hub`](https://hub.github.com/) that helps you do everyday GitHub tasks without ever leaving the terminal
-* [`kubectl`](https://kubernetes.io/docs/tasks/tools/install-kubectl/) that is logged in to your cluster. 
+* `jq` [(download)](https://stedolan.github.io/jq/) which is a lightweight and flexible command-line JSON processor.
+* `git` [(download)](https://git-scm.com/) and `hub` [(download)](https://hub.github.com/) that helps you do everyday GitHub tasks without ever leaving the terminal
+* `kubectl` [(download)](https://kubernetes.io/docs/tasks/tools/install-kubectl/) that is logged in to your cluster. 
     **Tip:** View all the kubectl commands, including their options and descriptions in the [kubectl CLI reference](https://kubernetes.io/docs/user-guide/kubectl-overview/).
 
 Additionally, the scripts need:
