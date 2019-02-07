@@ -1,4 +1,10 @@
 #!/bin/bash
+
+echo "--------------------------"
+echo "Set up Istio "
+echo "--------------------------"
+
+
 DT_TENANT_ID=$1
 DT_PAAS_TOKEN=$2
 
@@ -23,3 +29,7 @@ kubectl delete pods --all -n staging
 kubectl delete pods --all -n dev
 
 kubectl delete meshpolicies.authentication.istio.io default # fix for the MySQL connection error caused by Istio
+
+echo "--------------------------"
+echo "End set up Istio "
+echo "--------------------------"

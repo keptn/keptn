@@ -27,6 +27,8 @@ cat ../manifests/istio/service_entries_tpl/part3 >> serviceEntry_tmp/service_ent
 
 cat serviceEntry_tmp/service_entries >> serviceEntry_tmp/service_entries_oneagent.yml
 
+cp serviceEntry_tmp/service_entries_oneagent.yml ../manifests/istio/service_entries_oneagent.yml
+
 kubectl apply -f serviceEntry_tmp/service_entries_oneagent.yml
 
 rm -rf serviceEntry_tmp

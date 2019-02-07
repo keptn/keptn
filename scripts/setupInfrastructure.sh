@@ -1,5 +1,10 @@
 #!/bin/bash
 
+echo "--------------------------"
+echo "Setup Infrastructure "
+echo "--------------------------"
+
+
 # Script if you don't want to apply all yaml files manually
 
 export JENKINS_USER=$(cat creds.json | jq -r '.jenkinsUser')
@@ -39,11 +44,12 @@ cat ../manifests/jenkins/k8s-jenkins-deployment.yml | \
   sed 's~DT_TENANT_URL_PLACEHOLDER~'"$DT_TENANT_URL"'~' | \
   sed 's~DT_API_TOKEN_PLACEHOLDER~'"$DT_API_TOKEN"'~' >> ../manifests/jenkins/k8s-jenkins-deployment_tmp.yml
 
+mv ../manifests/jenkins/k8s-jenkins-deployment_tmp.yml ../manifests/jenkins/k8s-jenkins-deployment.yml
+
 kubectl create -f ../manifests/jenkins/k8s-jenkins-pvcs.yml 
-kubectl create -f ../manifests/jenkins/k8s-jenkins-deployment_tmp.yml
+kubectl create -f ../manifests/jenkins/k8s-jenkins-deployment.yml
 kubectl create -f ../manifests/jenkins/k8s-jenkins-rbac.yml
 
-rm ../manifests/jenkins/k8s-jenkins-deployment_tmp.yml
 
 # Deploy Dynatrace operator
 export LATEST_RELEASE=$(curl -s https://api.github.com/repos/dynatrace/dynatrace-oneagent-operator/releases/latest | grep tag_name | cut -d '"' -f 4)
@@ -53,8 +59,8 @@ sleep 60
 kubectl -n dynatrace create secret generic oneagent --from-literal="apiToken=$DT_API_TOKEN" --from-literal="paasToken=$DT_PAAS_TOKEN"
 curl -o ../manifests/dynatrace/cr.yml https://raw.githubusercontent.com/Dynatrace/dynatrace-oneagent-operator/$LATEST_RELEASE/deploy/cr.yaml
 cat ../manifests/dynatrace/cr.yml | sed 's/ENVIRONMENTID/'"$DT_TENANT_ID"'/' >> ../manifests/dynatrace/cr_tmp.yml
-kubectl create -f ../manifests/dynatrace/cr_tmp.yml
-rm ../manifests/dynatrace/cr_tmp.yml
+mv ../manifests/dynatrace/cr_tmp.yml ../manifests/dynatrace/cr.yml
+kubectl create -f ../manifests/dynatrace/cr.yml
 
 
 # Deploy sockshop application
@@ -115,3 +121,7 @@ kubectl create -f ../manifests/ansible-tower/service.yml
 sleep 120
 
 ./configureAnsible.sh
+
+echo "--------------------------"
+echo "Finished setting up infrastructure "
+echo "--------------------------"
