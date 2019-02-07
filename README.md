@@ -14,6 +14,15 @@ Keptn is a fabric for cloud-native lifecycle automation at enterprise scale.
 
 Keptn assumes that you have a working Kubernetes cluster in Google Container Engine (GKE). See the [Getting Started Guides](https://kubernetes.io/docs/setup/) for details about creating a cluster.
 
+The following configuration is recommended for the cluster:
+    
+- Master version 1.11.6 (Minimum tested master version 1.10.11)
+- Node pool with 2 nodes
+
+  - each 8vCPUs and 30 GB memory (`n1-standard-8` in GKE)
+  - image type: Ubuntu *or* Container-Optimized OS (cos)
+  
+
 The scripts provided in this directory run in a BASH and require following tools locally installed: 
 * [`jq`](https://stedolan.github.io/jq/) which is a lightweight and flexible command-line JSON processor
 * [`git`](https://git-scm.com/) and [`hub`](https://hub.github.com/) that helps you do everyday GitHub tasks without ever leaving the terminal
