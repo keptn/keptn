@@ -31,7 +31,7 @@ The scripts provided in this directory run in a BASH and require following tools
 Additionally, the scripts need:
 * `GitHub organization` to store the repositories of the sockshop application
 * `GitHub personal access token` to push changes to the sockshop repositories
-* Dynatrace Tenant including the Dynatrace `Tenant ID`, a Dynatrace `API Token`, and Dynatrace `PaaS Token`
+* Dynatrace Tenant including the Dynatrace `Tenant ID`, a Dynatrace `API Token`, and Dynatrace `PaaS Token`. If you don't have a Dynatrace tenant yet, sign up for a [free trial](https://www.dynatrace.com/trial/) or a [developer account](https://www.dynatrace.com/developer/).
 
 ## Step One: Provision cluster on Kubernetes <a id="step-one"></a>
 
