@@ -69,7 +69,7 @@ echo "--------------------------"
 echo "Apply auto tagging rules in Dynatrace "
 echo "--------------------------"
 
-./applyAutoTaggingRules.sh
+./applyAutoTaggingRules.sh $DT_TENANT_ID $DT_API_TOKEN
 
 echo "--------------------------"
 echo "End applying auto tagging rules in Dynatrace "
