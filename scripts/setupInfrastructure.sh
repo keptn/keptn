@@ -62,6 +62,17 @@ cat ../manifests/dynatrace/cr.yml | sed 's/ENVIRONMENTID/'"$DT_TENANT_ID"'/' >> 
 mv ../manifests/dynatrace/cr_tmp.yml ../manifests/dynatrace/cr.yml
 kubectl create -f ../manifests/dynatrace/cr.yml
 
+# Apply auto tagging rules in Dynatrace
+echo "--------------------------"
+echo "Apply auto tagging rules in Dynatrace "
+echo "--------------------------"
+
+./applyAutoTaggingRules.sh
+
+echo "--------------------------"
+echo "End applying auto tagging rules in Dynatrace "
+echo "--------------------------"
+
 
 # Deploy sockshop application
 echo "--------------------------"
