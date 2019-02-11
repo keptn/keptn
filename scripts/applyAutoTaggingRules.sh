@@ -10,7 +10,7 @@ curl -X POST \
   -H 'Content-Type: application/json' \
   -H 'cache-control: no-cache' \
   -d '{
-    "name": "service1",
+    "name": "service",
     "rules": [
         {
             "type": "SERVICE",
@@ -42,7 +42,7 @@ curl -X POST \
   -H 'Content-Type: application/json' \
   -H 'cache-control: no-cache' \
   -d '{
-	"name": "environment1",
+	"name": "environment",
   "rules": [
     {
       "type": "SERVICE",
