@@ -13,7 +13,7 @@ fi
 
 if [ -z $1 ]
 then
-    echo "Please provide the target GitHub orgainzation as parameter:"
+    echo "Please provide the target GitHub organization as parameter:"
     echo ""
     echo "  e.g.: ./forkGitHubRepositories.sh myorganization"
     echo ""
