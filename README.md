@@ -5,10 +5,9 @@ Keptn is a fabric for cloud-native lifecycle automation at enterprise scale.
 ##### Table of Contents
  * [Step Zero: Prerequisites](#step-zero)
  * [Step One: Provision cluster on Kubernetes](#step-one)
- * [Step Two: Setup service tagging rules in Dynatrace](#step-two)
- * [Step Three: Setup process group naming rule in Dynatrace](#step-three)
- * [Step Four: Use case walk through](#step-four)
- * [Step Five: Cleanup](#step-five)
+ * [Step Two: (Optional) Setup process group naming rule in Dynatrace](#step-two)
+ * [Step Three: Use case walk through](#step-three)
+ * [Step Four: Cleanup](#step-four)
 
 ## Step Zero: Prerequisites <a id="step-zero"></a>
 
@@ -105,37 +104,7 @@ This directory contains all scripts and instructions needed to deploy the demo a
 
 ![](./assets/jenkins-env-vars.png)
 
-## Step Two: Setup service tagging rules in Dynatrace <a id="step-two"></a>
-
-This step creates tagging rules based on Kubernetes pod name and namespaces.
-These rules allow you to query service-level metrics such as response time, failure rate, or throughput automatically based on meta-data that you have passed during a deployment, e.g.: *Deployment Stage* (dev, staging, or production). 
-
-1. Login in to your Dynatrace tenant.
-
-1. Create service tag for app name based on Kubernetes container name
-    1. Go to **Settings**, **Tags**, and click on **Automatically applied tags**.
-    1. Create a new custom tag with the name `app`.
-    1. Edit that tag and **Add new rule**.
-        * Optional tag value: `{ProcessGroup:KubernetesContainerName}`
-        * Rule applies to: `Services` 
-        * Condition on `Kubernetes container name` if `exists`
-    1. Click on **Preview** to validate that the rule works.
-    1. Click on **Save** for the rule and then **Done**.
-
-1. Create service tag for environment based on Kubernetes namespace
-    1. Go to **Settings**, **Tags**, and click on **Automatically applied tags**.
-    1. Create a new custom tag with the name `environment`.
-    1. Edit that tag and **Add new rule**.
-        * Optional tag value: `{ProcessGroup:KubernetesNamespace}`
-        * Rule applies to: `Services` 
-        * Condition on `Kubernetes namespace` if `exists`
-    1. Click on **Preview** to validate that the rule works.
-    1. Click on **Save** for the rule and then **Done**.
-
-    Screenshot shows rule for app tag.
-    ![tagging-rule](./assets/tagging_rule.png)
-
-## Step Three: Setup process group naming rule in Dynatrace <a id="step-three"></a>
+## Step Two: (Optional) Setup process group naming rule in Dynatrace <a id="step-three"></a>
 
 1. Create a naming rule for process groups
     1. Go to **Settings**, **Process and containers**, and click on **Process group naming**.
