@@ -104,7 +104,7 @@ This directory contains all scripts and instructions needed to deploy the demo a
 
 ![](./assets/jenkins-env-vars.png)
 
-## Step Two: (Optional) Setup process group naming rule in Dynatrace <a id="step-three"></a>
+## Step Two: (Optional) Setup process group naming rule in Dynatrace <a id="step-two"></a>
 
 1. Create a naming rule for process groups
     1. Go to **Settings**, **Process and containers**, and click on **Process group naming**.
@@ -118,7 +118,7 @@ This directory contains all scripts and instructions needed to deploy the demo a
     Screenshot shows this rule definition.
     ![naming-rule](./assets/pg_naming.png)
 
-## Step Three: Use case walk through <a id="step-four"></a>
+## Step Three: Use case walk through <a id="step-three"></a>
 
 To explore the capabilities of keptn, follow the provided use cases that are dedicated to a special topic.
 
@@ -130,7 +130,7 @@ To explore the capabilities of keptn, follow the provided use cases that are ded
 
 * [Unbreakable Delivery Pipeline](./usecases/unbreakable-delivery-pipeline): The overall goal of the *Unbreakable Delivery Pipeline* is to implement a pipeline that prevents bad code changes from impacting real end users.
 
-## Step Four: Cleanup <a id="step-five"></a>
+## Step Four: Cleanup <a id="step-four"></a>
 
 1. To clean up your Kubernetes cluster, execute the `cleanupCluster.sh` script in the `scripts` directory.
 
