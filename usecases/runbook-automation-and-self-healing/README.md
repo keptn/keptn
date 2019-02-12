@@ -210,8 +210,3 @@ The promotional itself is controlled via Ansible Tower. That means that starting
 
 In this use case, you 
 
----
-
-[Use Case: Production deployments](../production-deployments) :arrow_backward: :arrow_forward: [Use Case: Unbreakable delivery pipeline](../unbreakable-delivery-pipeline)
-
-:arrow_up_small: [Back to keptn](../)

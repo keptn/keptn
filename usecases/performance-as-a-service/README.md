@@ -1,10 +1,12 @@
 # Performance as a Service
 
-This use case aims on moving from manual sporadic execution and analysis of performance tests to a fully automated on-demand self-service model for developers. This provides early performance feedback and results in better performing software that gets deployed into production.
+This use case shows you how to setup a fully automated on-demand self-service model for performance testing.
 
 ## About this use case
 
+The keptn Sockshop sample consists of eight microservices that are under development. The initial goal of this use case is to provide an automated performance testing model for developers to run a performance test on demand. This supports the implementation of advanced DevOps approaches due to early performance feedback regarding a service in a dev environment and before it gets deployed into a production environment. All in all, this helps to move from manual sporadic execution and analysis of performance tests to a fully automated on-demand self-service model for developers.
 
+To illustrate the scenario this use case addresses, you will change one service of Sockshop that gets deployed to the dev environment. Eager to understand the performance characteristics of this new deployment, you trigger a performance test. However, this performance test fails due to a quality gate in place. To investigate the issues resulting in this failed performance test, you will use a monitoring solution that allows a comparison of test load.
 
 ##### Table of Contents
  * [Step 1: Define request attributes in Dynatrace](#step-one)
@@ -147,10 +149,4 @@ In this step you will clean up the applications.properties file and rebuild the 
 
 ## Understanding what happened
 
-In this use case, you 
-
----
-
-:arrow_forward: [Use Case: Production Deployments](../production-deployments)
-
-:arrow_up_small: [Back to keptn](../)
+In this use case, you triggered a performance test of the `carts` service first. Then you changed its configuration to introduce a slowdown. This change caused a second performance test execution to fail and this failed test where then further investigated to derive the deviation to the prior service version.  

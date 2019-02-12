@@ -309,13 +309,7 @@ In this step, you will configure traffic routing in Istio to redirect traffic ba
     $ kubectl apply -f virtual_service.yml
     virtualservice.networking.istio.io/sockshop configured
     ```
-    
+
 ## Understanding what happened
 
 In this use case, you 
-
----
-
-[Use Case: Performance as a Service](../performance-as-a-service) :arrow_backward: :arrow_forward: [Use Case: Runbook automation and self-healing](../runbook-automation-and-self-healing)
-
-:arrow_up_small: [Back to keptn](../)
