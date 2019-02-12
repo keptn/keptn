@@ -7,13 +7,13 @@ major use cases based on a demo application.
 
 ## Automated Setup
 
-This release of keptn provides an automated setup for the keptn core components as well  as a demo applications. The setup only requires a Kubernetes cluster *TODO* add version and specs. 
+This release of keptn provides an automated setup for the keptn core components as well as a demo applications. The setup only requires a Kubernetes cluster *TODO* add version and specs. 
 
-If you want to onboard your own application you will have to modify the keptn setup files. Future versions will provide a smoother onboarding experience. 
+If you want to onboard your own application, you will have to modify the keptn setup files. Future versions will provide a smoother onboarding experience. 
 
 ## Automated Multistage Pipeline
 
-Keptn supports a three stage continuous delivery pipeline with the following stages:
+Keptn supports a three-stage continuous delivery pipeline with the following stages:
 
 * Development - for integration testing
 * Staging/Continuous Performance - for production-like performance testing
@@ -26,8 +26,8 @@ Keptn provides a quality gate from the development to the staging and from the s
 The use case provided in this release is as follows:
 
 1. The source code of a service is changed, and the service gets deployed to the development environment. 
-1. The service passes the quality gates in development.
-1. However, the service does not pass the quality gate in production due to an increase of the response time detected by a performance test.
+1. The service passes the quality gates in the development environment.
+1. However, the service does not pass the quality gate in staging due to an increase of the response time detected by a performance test.
 
 ## Automated Runbook Automation with Ansible
 
