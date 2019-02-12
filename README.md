@@ -3,13 +3,13 @@
 Keptn is a fabric for cloud-native lifecycle automation at enterprise scale.
 
 ##### Table of Contents
- * [Step Zero: Prerequisites](#step-zero)
- * [Step One: Provision cluster on Kubernetes](#step-one)
- * [Step Two: (Optional) Setup process group naming rule in Dynatrace](#step-two)
- * [Step Three: Use case walk through](#step-three)
- * [Step Four: Cleanup](#step-four)
+ * [Step 0: Prerequisites](#step-zero)
+ * [Step 1: Provision cluster on Kubernetes](#step-one)
+ * [Step 2: (optional) Create process group naming rule in Dynatrace](#step-two)
+ * [Step 3: Use case walk through](#step-three)
+ * [Step 4: Cleanup](#step-four)
 
-## Step Zero: Prerequisites <a id="step-zero"></a>
+## Step 0: Prerequisites <a id="step-zero"></a>
 
 Keptn assumes that you have a working Kubernetes cluster in Google Container Engine (GKE). See the [Getting Started Guides](https://kubernetes.io/docs/setup/) for details about creating a cluster.
 
@@ -32,7 +32,7 @@ Additionally, the scripts need:
 * `GitHub personal access token` to push changes to the sockshop repositories
 * Dynatrace Tenant including the Dynatrace `Tenant ID`, a Dynatrace `API Token`, and Dynatrace `PaaS Token`. If you don't have a Dynatrace tenant yet, sign up for a [free trial](https://www.dynatrace.com/trial/) or a [developer account](https://www.dynatrace.com/developer/).
 
-## Step One: Provision cluster on Kubernetes <a id="step-one"></a>
+## Step 1: Provision cluster on Kubernetes <a id="step-one"></a>
 
 This directory contains all scripts and instructions needed to deploy the demo application *sockshop* on a Kubernetes cluster.
 
@@ -104,7 +104,7 @@ This directory contains all scripts and instructions needed to deploy the demo a
 
 ![](./assets/jenkins-env-vars.png)
 
-## Step Two: (Optional) Setup process group naming rule in Dynatrace <a id="step-two"></a>
+## Step 2: (Optional) Create process group naming rule in Dynatrace <a id="step-two"></a>
 
 1. Create a naming rule for process groups
     1. Go to **Settings**, **Process and containers**, and click on **Process group naming**.
@@ -118,7 +118,7 @@ This directory contains all scripts and instructions needed to deploy the demo a
     Screenshot shows this rule definition.
     ![naming-rule](./assets/pg_naming.png)
 
-## Step Three: Use case walk through <a id="step-three"></a>
+## Step 3: Use case walk through <a id="step-three"></a>
 
 To explore the capabilities of keptn, follow the provided use cases that are dedicated to a special topic.
 
@@ -130,7 +130,7 @@ To explore the capabilities of keptn, follow the provided use cases that are ded
 
 * [Unbreakable Delivery Pipeline](./usecases/unbreakable-delivery-pipeline): The overall goal of the *Unbreakable Delivery Pipeline* is to implement a pipeline that prevents bad code changes from impacting real end users.
 
-## Step Four: Cleanup <a id="step-four"></a>
+## Step 4: Cleanup <a id="step-four"></a>
 
 1. To clean up your Kubernetes cluster, execute the `cleanupCluster.sh` script in the `scripts` directory.
 
