@@ -2,6 +2,8 @@
 
 This use case gives an overview of production deployments, deployment strategies, and showcases those using Istio on Kubernetes to canary-deploy a new front-end version.
 
+## About this use case
+
 ##### Table of Contents
  * [Step 0: Verify Istio installation and deploy sockshop to production](#step-zero)
  * [Step 1: Access ingress gateway](#step-one)
@@ -307,6 +309,11 @@ In this step, you will configure traffic routing in Istio to redirect traffic ba
     $ kubectl apply -f virtual_service.yml
     virtualservice.networking.istio.io/sockshop configured
     ```
+    
+## Understanding what happened
+
+In this use case, you 
+
 ---
 
 [Use Case: Performance as a Service](../performance-as-a-service) :arrow_backward: :arrow_forward: [Use Case: Runbook automation and self-healing](../runbook-automation-and-self-healing)

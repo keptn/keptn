@@ -2,6 +2,8 @@
 
 This use case gives an overview of how to leverage the power of runbook automation to build self-healing applications. Therefore, you will use Ansible Tower as the tool for executing and managing the runbooks.
 
+## About this use case
+
 #### Table of Contents
  * [Step 0: Check prerequisites](#step-zero)
  * [Step 1: Verify installation of Ansible Tower](#step-one)
@@ -204,6 +206,9 @@ The promotional itself is controlled via Ansible Tower. That means that starting
 
 1. Problem is remediated thanks to automating runbook execution by Dynatrace!
 
+## Understanding what happened
+
+In this use case, you 
 
 ---
 

@@ -8,6 +8,8 @@ The overall goal of the *Unbreakable Delivery Pipeline* is to implement a pipeli
 
 * **Self-Healing**: Ability for smart auto-remediation that addresses the root cause of a problem and not the symptom.
 
+## About this use case
+
 ##### Table of Contents
  * [Step 1: Simulate an early pipeline break](#step-one)
  * [Step 2: Setup self-healing action for production deployment](#step-two)
@@ -260,6 +262,10 @@ In this step, you will launch the above Ansible job that redirects the entire tr
         $ git commit -m "Fixed issues with messaging feature"
         $ git push
         ```
+
+## Understanding what happened
+
+In this use case, you 
 
 ---
 

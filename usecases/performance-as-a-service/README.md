@@ -2,6 +2,10 @@
 
 This use case aims on moving from manual sporadic execution and analysis of performance tests to a fully automated on-demand self-service model for developers. This provides early performance feedback and results in better performing software that gets deployed into production.
 
+## About this use case
+
+
+
 ##### Table of Contents
  * [Step 1: Define request attributes in Dynatrace](#step-one)
  * [Step 2: Run performance test on carts service](#step-two)
@@ -140,6 +144,10 @@ In this step you will clean up the applications.properties file and rebuild the 
     1. Click on **carts** and select the **master** branch (or click on **Scan Multibranch Pipeline Now**).
     1. Click on **Build Now** to trigger the performance pipeline.
     1. Wait until the pipeline shows: *Success*.
+
+## Understanding what happened
+
+In this use case, you 
 
 ---
 
