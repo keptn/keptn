@@ -149,4 +149,6 @@ In this step you will clean up the applications.properties file and rebuild the 
 
 ## Understanding what happened
 
-In this use case, you triggered a performance test of the `carts` service first. Then you changed its configuration to introduce a slowdown. This change caused a second performance test execution to fail and this failed test where then further investigated to derive the deviation to the prior service version.  
+In this use case, you triggered a performance test for the current version of the `carts` service. Then you changed its configuration to introduce a slowdown into the service. This change caused a second performance test execution to fail and this failed test where then further investigated to derive the deviation to the prior service version.
+
+By providing such a self-service model for performance testing, developers can trigger a performance validation on demand and get immediate feedback regarding their changes.
