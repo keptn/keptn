@@ -267,8 +267,3 @@ In this step, you will launch the above Ansible job that redirects the entire tr
 
 In this use case, you 
 
----
-
-[Use Case: Runbook automation and self-healing](../runbook-automation-and-self-healing) :arrow_backward: 
-
-:arrow_up_small: [Back to keptn](../)

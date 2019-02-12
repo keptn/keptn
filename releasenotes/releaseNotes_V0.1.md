@@ -21,14 +21,31 @@ Keptn supports a three stage continuous delivery pipeline with the following sta
 
 ## Automated Quality Gates
 
-## Automatic Rollback of Faulty Blue/Green Deployments
+Keptn provides a quality gate from the development to the staging and from the staging to the production environment. While the gate in development is a basic check regarding the availability of the service, the quality gate in staging assumes an execution of a performance test that gets validated against a performance signature. This signature defines the thresholds to mark a deployment as unstable and to stop the delivery pipeline.
+
+The use case provided in this release is as follows:
+
+1. The source code of a service is changed, and the service gets deployed to the development environment. 
+1. The service passes the quality gates in development.
+1. However, the service does not pass the quality gate in production due to an increase of the response time detected by a performance test.
 
 ## Automated Runbook Automation with Ansible
 
-Keptn provides runbook automation as an auto-remediation approach in response to detected issues in a production environment. Therefore, Keptn automatically sets up and configures an Ansible Tower instance during setup. The example ships with predefined playbooks that are capable of updating the configuration of a service in production, defining configuration change events, and react on them in case of issues are detected. 
+Keptn provides runbook automation as an auto-remediation approach in response to detected issues in a production environment. Therefore, keptn automatically sets up and configures an Ansible Tower instance during setup. The example ships with predefined playbooks that are capable of updating the configuration of a service in production, defining configuration change events, and reacting on them in case of detected issues. 
 
-The use case provided in this release is as follows.
+The use case provided in this release is as follows:
 
-1. A faulty configuration change is applied to a service in the production environment
-1. An issue is detected in production and a problem ticket is opened
+1. A faulty configuration change is applied to a service in the production environment.
+1. An issue is detected in production and a problem ticket is opened.
 1. The faulty configuration change is automatically reverted.
+
+## Automatic Rollback of Faulty Blue/Green Deployments
+
+Keptn provides the runbooks to deploy a new service and to automatically switches back to the previous version if an issue is detected. As described above, keptn relies on Ansible Tower for auto-remediation capabilities. Thus, keptn is shipped with pre-defined playbooks that can deploy a new service version and take care of re-routing traffic in case of detected problems.
+
+The use case provided in this release is as follows:
+
+1. A faulty service version is deployed to the production environment and traffic is routed to this new version. 
+1. An issue is detected in production and a problem ticket is opened.
+1. The traffic routing is changed to redirect traffic to the previous (non-faulty) version.
+
