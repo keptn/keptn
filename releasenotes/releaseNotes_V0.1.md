@@ -21,7 +21,14 @@ Keptn supports a three stage continuous delivery pipeline with the following sta
 
 ## Automated Quality Gates
 
-## Automatic rollback of faulty blue/green deployments. 
+## Automatic Rollback of Faulty Blue/Green Deployments
 
-## Automated runbook automation with Ansible
+## Automated Runbook Automation with Ansible
 
+Keptn provides runbook automation as an auto-remediation approach in response to detected issues in a production environment. Therefore, Keptn automatically sets up and configures an Ansible Tower instance during setup. The example ships with predefined playbooks that are capable of updating the configuration of a service in production, defining configuration change events, and react on them in case of issues are detected. 
+
+The use case provided in this release is as follows.
+
+1. A faulty configuration change is applied to a service in the production environment
+1. An issue is detected in production and a problem ticket is opened
+1. The faulty configuration change is automatically reverted.
