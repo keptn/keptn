@@ -2,10 +2,6 @@
 
 This use case gives an overview of how to leverage the power of runbook automation to build self-healing applications. Therefore, you will use Ansible Tower as the tool for executing and managing the runbooks.
 
-## Before you begin
-
-optional section
-
 ## About this use case
 
 In this use case, 

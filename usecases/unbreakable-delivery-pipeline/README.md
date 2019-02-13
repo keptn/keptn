@@ -149,9 +149,9 @@ In this step you will introduce a Java Script error into the front-end service. 
     ...
     ```
 
-1. Save the changes to that file.
+1. Save changes to that file.
 
-1. Now it's time to commit your changes. First locally, and then push it to the remote repository.
+1. Commit your changes and push it to the remote repository.
 
     ```console
     $ git add .
@@ -248,7 +248,7 @@ In this step, you will launch the above Ansible job that redirects the entire tr
         ```console
         $ git add .
         $ git commit -m "Fixed issue in server component"
-        $ git push
+        $ git push origin master
         ```
 
 ## Understanding what happened
