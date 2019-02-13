@@ -4,7 +4,7 @@ This use case shows you how to implement a delivery pipeline that prevents bad c
 
 ## About this use case
 
-The inital goal of the *Unbreakable Delivery Pipeline* is to implement a pipeline that prevents bad code changes from impacting your end users. Therefore, it relies on three concepts known as Shift-Left, Shift-Right, and Self-Healing.
+The initial goal of the *Unbreakable Delivery Pipeline* is to implement a pipeline that prevents bad code changes from impacting your end users. Therefore, it relies on three concepts known as Shift-Left, Shift-Right, and Self-Healing.
 
 * **Shift-Left**: Ability to pull data for specific entities (processes, services, or applications) through an automation API and feed it into the tools that are used to decide on whether to stop the pipeline or keep it running.
 
@@ -31,11 +31,11 @@ In this step you'll release a service to staging that is not tested based on per
     1. Change the value of `delayInMillis` from `0` to `1000`
     1. Commit/Push the changes to your GitHub Repository *carts*
 
-    ```console
-    $ git add .
-    $ git commit -m "Property changed"
-    $ git push
-    ```
+        ```console
+        $ git add .
+        $ git commit -m "Property changed"
+        $ git push
+        ```
 
 1. You need the new version of the carts service in the staging namespace. Therefore, create a new release branch in the carts repository using the Jenkins pipeline `create-release-branch`:
     1. Go to **Jenkins** and **sockshop**.
@@ -57,18 +57,18 @@ In this step you'll release a service to staging that is not tested based on per
     1. The pipeline should fail due to a too high response time. 
     1. Click on **Performance Report** to see the average response time of the URI: *_cart - add to cart*
 
-    ![break_early](./assets/break_early.png)
+        ![break_early](./assets/break_early.png)
 
 1. Remove the slowdown in the carts service
     1. In the directory of `~/keptn/repositories/carts/`, open the file: `./src/main/resources/application.properties`
     1. Change the value of `delayInMillis` from `1000` to `0`
     1. Commit/Push the changes to your GitHub Repository *carts*
 
-    ```console
-    $ git add .
-    $ git commit -m "Set delay to 0"
-    $ git push
-    ```
+        ```console
+        $ git add .
+        $ git commit -m "Set delay to 0"
+        $ git push
+        ```
 
 1. Build this new release
     1. Go to **Jenkins** and **sockshop**.
@@ -139,33 +139,14 @@ In this step you will use an Ansible Tower job to release a deployment in a cana
 
 In this step you will introduce a Java Script error into the front-end service. This version will be deployed as version `v2`.
 
-1. Edit the file `public/topbar.html` in the master branch of the `~/keptn/repositories/front-end` repository and add the following scripts to the `div class=container` element. 
+1. Open the file `server.js` in the master branch of the `~/keptn/repositories/front-end` and set the property `response-error-probability` to 20: 
 
-    ```html
-    <div class="container">
-        <!-- add dummy errors -->
-        <script>
-            var waitUntil = Date.now() + 3 * 1000;
-            (function lazyWait (){
-                while (Date.now () < waitUntil){
-                }        
-            })();
-        </script>
-        <script>
-            messageBox.getCoolNewMessage ();
-        </script>
-        <!-- end dummy errors -->
+    ```js
     ...
-    ```
-
-1. Change version number from v1 to v2 in the link text in the top bar.
-    ```html
-    </a> <a href="#">Buy 1000 socks, get a shoe for free - v2</a>
-    ```
-
-1. Change the color of the top bar. 
-    ```html
-    <div class="container" style="background-color:royalblue">
+    global.acmws['request-latency'] = 0;
+    global.acmws['request-latency-catalogue'] = 500; 
+    global.acmws['response-error-probability'] = 20;
+    ...
     ```
 
 1. Save the changes to that file.
@@ -174,7 +155,7 @@ In this step you will introduce a Java Script error into the front-end service. 
 
     ```console
     $ git add .
-    $ git commit -m "New messaging feature and more colorful version of front-end service"
+    $ git commit -m "Changes in the server component"
     $ git push
     ```
 
@@ -233,7 +214,7 @@ In this step, you will launch the above Ansible job that redirects the entire tr
         * Select `using fixed thresholds`
         * Alert if `2`% custom error rate threshold is exceeded during any 5-minute period.
         * Sensitivity: `High`
-    1. Go back to **My web application**.
+    1. Go back to your service.
 
 1. Now, you need to wait until a problem appears in Dynatrace.
 
@@ -249,15 +230,16 @@ In this step, you will launch the above Ansible job that redirects the entire tr
     $ kubectl apply -f virtual_service.yml
     virtualservice.networking.istio.io/sockshop configured
     ```
-1. Remove the failure from the front-end service
-    1. Edit the file `public/topbar.html` in the master branch of the `~/keptn/repositories/front-end` repository and remove the scripts from the `div class=container` element. 
+1. Remove the failure from the front-end service.
+    1. Open the file `server.js` in the master branch of the `~/keptn/repositories/front-end` and set the property `response-error-probability` to 0: 
 
-    ```html
-    <div class="container">
-        <!-- add dummy errors -->
-        <!-- end dummy errors -->
-    ...
-    ```
+        ```js
+        ...
+        global.acmws['request-latency'] = 0;
+        global.acmws['request-latency-catalogue'] = 500; 
+        global.acmws['response-error-probability'] = 0;
+        ...
+        ```
 
     1. Save the changes to that file.
 
@@ -265,11 +247,12 @@ In this step, you will launch the above Ansible job that redirects the entire tr
 
         ```console
         $ git add .
-        $ git commit -m "Fixed issues with messaging feature"
+        $ git commit -m "Fixed issue in server component"
         $ git push
         ```
 
 ## Understanding what happened
 
-In this use case, you 
+In this use case, you intentionally introduced a failure into a service to demonstrate an early pipeline stop. Early enough to not deploy a faulty service version into production.
 
+Assuming a bad deployment gets deployed to a production environment, then there must be a mechanism that triggers an auto-remediation action due to a problem notification. This action takes care of achieving a desired state. To experience this scenario, you created a failure in the front-end service, which were deployed to a production environment. As Dynatrace detected an increase of the failure rate, a problem notification automatically triggered a runbook in Ansible Tower that took care of rerouting traffic to the previous version.
