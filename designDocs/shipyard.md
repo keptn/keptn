@@ -1,10 +1,10 @@
 # Shipyard
 Shipyard evolved out of the **Monitoring as Code** and **Performance Signature** work done by Dynatrace, Dynatrace customers & partners. Discussions and observations of what others have been doing in the market we came up with several use cases that Shipyard should support in the future. 
 
-**Minimum Viable Featureset: Automate Quality Gates**
+#### Minimum Viable Featureset: Automate Quality Gates
 The most basic goal and *minimum viable feature* is defining the criteria for an automated quality gate as services get pushed through different deployment stages.
 
-**Additional Use Cases: For future considerations**
+#### Additional Use Cases: For future considerations
 All use cases were presented first at Neotys PAC 2019. See slides and video recording once published here: https://www.neotys.com/performance-advisory-council/andreas-grabner. To list a few:
 * Automated Test Generation
 * Automated Baseline Definition for Alerting
@@ -78,7 +78,7 @@ For this we define a gate that includes a definition of a test to be executed an
     }
 },
 ```
-The example above defines a gate that will first trigger the neotys.executor which will run the defined test case. Upon successful completion the Shipyard Evaluator will calculate the overall acceptanceScore and matches it with any of the defined score labels. For example - if the overall score is >= 65 the deployment is considered **pass**. If between 45 and 65 it is considered **warning**. If it is below 45 it is considered **failed**!
+The example above defines a gate that will first trigger the neotys.executor which will run the defined test case. Upon successful completion the Shipyard Evaluator will calculate the overall acceptanceScore and matches it with any of the defined score labels. For example, if the overall score is >= 65 the deployment is considered **pass**. If it is between 45 and 65, it is considered **warning**. If it is below 45, it is considered **failed**.
 
 ## Implemention in keptn: Workflow
 Evaluating Shipyard is a core capability of keptn. The following illustrates the general workflow from:
@@ -91,7 +91,7 @@ Evaluating Shipyard is a core capability of keptn. The following illustrates the
 ![keptn Workflow](./shipyard/workflow.png)
 
 ## Usage through the keptn CLI
-In order to provide Shipyard capabilities to other tools and users we provide a CLI that can kickoff the execution and is able to provide feedback on the result. Here is a proposal for these calls
+In order to provide Shipyard capabilities to other tools and users we provide a CLI that can kickoff the execution and is able to provide feedback on the result. Here is a proposal for these calls:
 
 ```console
 $ keptn shipyard execute myshipyard.json
