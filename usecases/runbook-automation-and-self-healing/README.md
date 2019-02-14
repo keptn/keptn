@@ -218,5 +218,6 @@ The promotional itself is controlled via Ansible Tower. That means that starting
 
 ## Understanding what happened
 
-In this use case, you 
+In this use case, we have seen how we can leverage runbook automation in response to issues that are detected in our environment. In the use case we have seen here, the developer has prepared a runbook for starting the campaign and one for stopping the campaign. In addition, a remediation runbook was provided which was able to receive problem notifications from Dynatrace, parse the problem, and execute the remediation action (i.e., stopping the campaign) that was attached to the root cause of the problem. 
+
 
