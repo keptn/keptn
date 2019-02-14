@@ -167,13 +167,13 @@
             },
             {
                 "endpointid": "getitems",
-                "output": "{totalItems: $TOTALITEMS}",
+                "output": "{totalItems: $$TOTALITEMS}",
                 "validate": "$TOTALITEMS==$COUNT"
             },
             {
                 "endpointid": "postitems",
                 "input": "body={productId=$PRODUCTID$count=0}",
-                "output": "{totalItems: $TOTALITEMS}",
+                "output": "{totalItems: $$TOTALITEMS}",
                 "validate": "$TOTALITEMS==0"
             }
         ],
