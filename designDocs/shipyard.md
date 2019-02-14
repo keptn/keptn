@@ -78,6 +78,6 @@ Evaluating Shipyard is a core capability of keptn. The following illustrates the
 3. triggering the actual evaluation when tests are done -> this pulls data from metric source providers
 4. sending final gateresult 
 
-![keptn Workflow](./workflow.png)
+![keptn Workflow](./shipyard/workflow.png)
 
 ## Usage through the keptn CLI
