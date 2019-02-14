@@ -13,8 +13,10 @@ The initial goal of the *Unbreakable Delivery Pipeline* is to implement a pipeli
 * **Self-Healing**: Ability for smart auto-remediation that addresses the root cause of a problem and not the symptom.
 
 To illustrate the scenario this use case addresses, two steps are required: 
-* (1) The source code of a service will be changed, and the service gets deployed to the development environment. Although the service passes the quality gates in the development environment, the service does not pass the quality gate in staging due to an increase of the response time detected by a performance test. This demonstrates an early break of the delivery pipeline based on automated quality gates. 
-* (2) For showcasing the self-healing capabilities a faulty service version is deployed to the production environment and traffic is routed to this new version. Consequently, an issue is detected in production and a problem ticket is opened. To auto-remediate the bad deployment, the traffic routing is changed to redirect traffic to the previous (non-faulty) version.
+
+1. The source code of a service will be changed, and the service gets deployed to the development environment. Although the service passes the quality gates in the development environment, the service does not pass the quality gate in staging due to an increase of the response time detected by a performance test. This demonstrates an early break of the delivery pipeline based on automated quality gates. 
+
+1. For showing the self-healing capabilities, a faulty service version is deployed to the production environment and traffic is routed to this new version. Consequently, an issue is detected in production and a problem ticket is opened. To auto-remediate the bad deployment, the traffic routing is changed to redirect traffic to the previous (non-faulty) version.
 
 ##### Table of Contents
  * [Step 1: Simulate an early pipeline break](#step-one)
