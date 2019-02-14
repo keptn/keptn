@@ -2,7 +2,7 @@
 Shipyard evolved out of the "Monitoring as Code" and "Performance Signature" work done by Dynatrace, Dynatrace customers & partners.
 Discussions and observations of what others have been doing in the market we came up with several use cases that Shipyard should support in the future. 
 
-**Minimum Viable Featureset: Automate Quality Gates**
+**Minimum Viable Product/Featureset: Automate Quality Gates**
 The most basic goal and *minimum viable feature* is defining the criteria for an automated quality gate as services get pushed through different deployment stages.
 
 **Additional Use Cases: For future considerations**
@@ -17,7 +17,7 @@ In the shipyard subdirectory you find 2 sample shipyard files that define two di
 * [shipyard_sockshop_carts_dev_func.json](./shipyard/shipyard_sockshop_carts_dev_func.json)
 * [shipyard_sockshop_carts_dev_perf.json](./shipyard/shipyard_sockshop_carts_dev_perf.json)
 
-## Automated Quality Gates
+## MVP Use Case: Automated Quality Gates
 Shipyard allows developers to define which tests to execute in a deployment stage and which metrics to evaluate to automatically quality rate the current build artifact/deployment. Shipyard therefore introduces the following concepts
 1. A definition of metrics to evaluate
 2. Thresholds and rating criteria for each metric
@@ -113,3 +113,71 @@ We are proposing a couple of parameters for the CLI to enable additonal use case
 #2: Getting the raw metric values, e.g: allows a CI Plugin to not only show final result but all evaluated data points
 --output raw
 ```
+
+## Additional Use Cases
+
+In the shipyard folder you find additonal sample files for additional use cases that go beyond Quality Gates:
+* [Automatic Endpoint Test Generation: shipyard_sockshop_carts_dev_perf.json](./shipyard/shipyard_sockshop_carts_dev_perf.json)
+
+### Use Case: Automatic API Endpoint Test Generation
+This use cases enables automatic generation of endpoint test cases that can either be used for functional health checks as well as for SLA validation in production!
+```
+    "endpoints": [ {
+        "id": "postitems",
+        "url": "/items",
+        "method": "POST",
+        "params": [{
+            "itemid": "1"
+        }, {
+            "count": "2"
+        }],
+        "headers": [{
+            "Content-Type": "application/json",
+            "Cache-Control": "no-cache"
+        }]
+    }]
+```
+The example abovev allows e.g: a test executor to generate an API Endpoint test script on-the-fly and execute them as part of the quality gate test execution.
+The same example can be used when deploying into production by setting up Synthetic Tests for these endpoints.
+
+### Use Case: Automatic Test Scenario Generation
+Building on top of Automatic API Endpoint definition, this use cases goes a step further and defines a testing scenarios. A Test Scenario is a sequence of endpoint API calls. This can be used for both function scenario testing as well as for load testing. 
+```
+    "scenarios": [{
+        "id": "addremovecart",
+        "steps": [{
+                "endpointid": "postitems",
+                "input": "body={productId=$PRODUCTID&count=$COUNT}",
+                "output": "{totalItems: $$TOTALITEMS}",
+                "validate": "$TOTALITEMS==$COUNT"
+            },
+            {
+                "endpointid": "getitems",
+                "output": "{totalItems: $TOTALITEMS}",
+                "validate": "$TOTALITEMS==$COUNT"
+            },
+            {
+                "endpointid": "postitems",
+                "input": "body={productId=$PRODUCTID$count=0}",
+                "output": "{totalItems: $$TOTALITEMS}",
+                "validate": "$TOTALITEMS==0"
+            }
+        ],
+        "behavior" : [
+            {
+                "id" : "10vu_5min_5min",
+                "workload" : {
+                    "initialvu" : 1,
+                    "rampuptovu" : 10,
+                    "rampuptime" : 5,
+                    "steadystate" : 5
+                },
+                "expected" : {
+                    "throughput" : 400
+                }
+            }
+        ]
+    }]
+```
+The example above defines a scenario that adds and removes an item from the shopping cart by calling the correct sequence of API Endpoints. Input parameters can be used as shown for our quality gates. We extend it with also output parameters which can then be used again as input parameters in subsequent calls int he scenarios.
+The example above also shows that we can define different workload behaviors. This allows us to define different workloads, e.g: Single User Functional Check or 10 Virtual Users for 5 minutes.
