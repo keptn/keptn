@@ -1,13 +1,14 @@
 # Runbook Automation and Self-healing
 
-This use case gives an overview of how to leverage the power of runbook automation in response to issues in your environment to build self-healing applications. Therefore, you will use Dynatrace as the platform to identify issues in your environment and Ansible Tower as the tool for managing and executing the runbooks.
+This use case gives an overview of how to leverage the power of runbook automation in response to issues in your environment to eventually build self-healing applications. Therefore, we will use Dynatrace as the platform to identify issues in your environment, and Ansible Tower as the tool for managing and executing the runbooks.
 
 
 ## About this use case
 
-In this use case we are going to use the [Dynatrace Sockshop](https://github.com/dynatrace-sockshop) as our demo application. Assume that we want to start a marketing campaign for our SockShop, which will add promotional gifts (e.g., Halloween socks, Christmas socks, ...) to interactions with the shopping cart. However, if something goes wrong with the campaign, we will be able to stop the campaign automatically.
+In this use case we are going to use the [Dynatrace SockShop](https://github.com/dynatrace-sockshop) as our demo application. Assume that we want to start a marketing campaign for our SockShop, which will add promotional gifts (e.g., Halloween socks, Christmas socks, ...) to a given percentage of interactions with the shopping cart. However, if something goes wrong with the campaign, we want to have mechanisms in place, to be able to stop the campaign automatically.
 
-In our scenario, we will use Ansible Tower as the tool that is managing the promotional campaigns. There a playbooks that allow to configure and start a campaign, e.g., adding gifts to 30 % of the interactions with the shopping cart, i.e., about 1/3 of the items placed in the shopping card will be awarded an additional gift. However, in this use case we will experience troubles with the promotional campaign. Therefore, we will setup means that automatically execute a playbook that stop the campaign in case of any troubles.
+In our scenario, we will use Ansible Tower as the tool that is managing the promotional campaigns. We will have a playbook that allows us to configure and start a campaign, e.g., adding gifts to 30 % of the interactions with the shopping cart, i.e., about 1/3 of the items placed in the shopping card will be awarded an additional gift. In addition, we will have a playbook that stops the campaign if something goes wrong. 
+Therefore, in this use case we will experience troubles with the promotional campaign. We will setup means that automatically execute the playbook that can stop the campaign based on the information we get from our monitoring tool Dynatrace.
 
 
 #### Table of Contents
@@ -219,5 +220,3 @@ The promotional itself is controlled via Ansible Tower. That means that starting
 ## Understanding what happened
 
 In this use case, we have seen how we can leverage runbook automation in response to issues that are detected in our environment. In the use case we have seen here, the developer has prepared a runbook for starting the campaign and one for stopping the campaign. In addition, a remediation runbook was provided which was able to receive problem notifications from Dynatrace, parse the problem, and execute the remediation action (i.e., stopping the campaign) that was attached to the root cause of the problem. 
-
-
