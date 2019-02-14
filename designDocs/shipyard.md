@@ -6,14 +6,16 @@ Discussions and observations of what others have been doing in the market we cam
 The most basic goal and *minimum viable feature* is defining the criteria for an automated quality gate as services get pushed through different deployment stages.
 
 **Additional Use Cases: For future considerations**
-All use cases were presented first at Neotys PAC 2019. See slides and video recording once published here: [https://www.neotys.com/performance-advisory-council/andreas-grabner]. To list a few
+All use cases were presented first at Neotys PAC 2019. See slides and video recording once published here: https://www.neotys.com/performance-advisory-council/andreas-grabner. To list a few
 * Automated Test Generation
 * Automated Baseline Definition for Alerting
 * Automated Environment Health Checks
 * Automated Synthetic Production SLA Monitoring
 
 ## Example Files
-In the shipyard subdirectory you find 2 sample shipyard files that define two different types of quality gates: a pure functional quality gate and one focused on performance.
+In the shipyard subdirectory you find 2 sample shipyard files that define two different types of quality gates: a pure functional quality gate and one focused on performance:
+* [shipyard_sockshop_carts_dev_func.json](./shipyard/shipyard_sockshop_carts_dev_func.json)
+* [shipyard_sockshop_carts_dev_perf.json](./shipyard/shipyard_sockshop_carts_dev_perf.json)
 
 ## Automated Quality Gates
 Shipyard allows developers to define which tests to execute in a deployment stage and which metrics to evaluate to automatically quality rate the current build artifact/deployment. Shipyard therefore introduces the following concepts
