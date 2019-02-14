@@ -2,14 +2,12 @@
 
 This use case gives an overview of how to leverage the power of runbook automation in response to issues in your environment to eventually build self-healing applications. Therefore, we will use Dynatrace as the platform to identify issues in your environment, and Ansible Tower as the tool for managing and executing the runbooks.
 
-
 ## About this use case
 
-In this use case we are going to use the [Dynatrace SockShop](https://github.com/dynatrace-sockshop) as our demo application. Assume that we want to start a marketing campaign for our SockShop, which will add promotional gifts (e.g., Halloween socks, Christmas socks, ...) to a given percentage of interactions with the shopping cart. However, if something goes wrong with the campaign, we want to have mechanisms in place, to be able to stop the campaign automatically.
+In this use case we are going to use the [Dynatrace Sockshop](https://github.com/dynatrace-sockshop) as our demo application. Assume that we want to start a marketing campaign for our SockShop, which will add promotional gifts (e.g., Halloween socks, Christmas socks, ...) to a given percentage of interactions with the shopping cart. However, if something goes wrong with the campaign, we want to have mechanisms in place, to be able to stop the campaign automatically.
 
 In our scenario, we will use Ansible Tower as the tool that is managing the promotional campaigns. We will have a playbook that allows us to configure and start a campaign, e.g., adding gifts to 30 % of the interactions with the shopping cart, i.e., about 1/3 of the items placed in the shopping card will be awarded an additional gift. In addition, we will have a playbook that stops the campaign if something goes wrong. 
 Therefore, in this use case we will experience troubles with the promotional campaign. We will setup means that automatically execute the playbook that can stop the campaign based on the information we get from our monitoring tool Dynatrace.
-
 
 #### Table of Contents
  * [Step 1: Check prerequisites](#step-one)
@@ -126,7 +124,6 @@ On the next screen, edit the anomaly detection settings as seen in the following
 
 ![anomaly detection](./assets/anomaly-detection.png)
 
-
 ## Step 5: Run a promotional campaign <a id="step-five"></a>
 
 This step runs a promotional campaign in our production environment by applying a change to our configuration of the `carts` service. This service is prepared to allow to add a promotional gift (e.g., Halloween Socks, Christmas Socks, Easter Socks, ...) to a given percentage of user interactions in the `carts` service. 
@@ -135,7 +132,7 @@ Therefore, the endpoint `carts/1/items/promotional/` can take a number between 0
 
 The promotional itself is controlled via Ansible Tower. That means that starting, and eventually stopping the campaign is done by triggering Ansible Tower job templates that in turn start Ansible playbooks.
 
-1. First we want to generate load for the carts service
+1. First, we want to generate load for the carts service
     - Receive the IP of the carts service by executing the `kubectl get svc -n production` command: 
 
       ```console
@@ -175,7 +172,6 @@ The promotional itself is controlled via Ansible Tower. That means that starting
 
     Please also note that a remediation action has been attached to this configuration change. This means, if Dynatrace detects a problem with this service that is related to this configuratio change, this remediation action could be called to remediate the problem. 
 
-
 ## Step 6: See how runbook automation kicks in <a id="step-six"></a>
 
 1. Looking at the loadgeneration output in your console, you will notice that about 1/3 of the requests will produce an error.
@@ -209,7 +205,6 @@ The promotional itself is controlled via Ansible Tower. That means that starting
     - This job was then executing the remediation tasks which include the execution of the remediation action that is defined in the custom configuration event of the impacted entities (the `carts` service). Therefore, you will also see a job called `X - stop-campaign` that was executed.
 
     ![remediation job execution](./assets/ansible-remediation-execution.png)
-
 
 1. The remediation playbook set back the promotion rate to 0 %, which is also send back to Dynatrace.
     - New configuration event that set the promotion rate back to 0 %:
