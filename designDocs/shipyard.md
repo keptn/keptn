@@ -81,3 +81,33 @@ Evaluating Shipyard is a core capability of keptn. The following illustrates the
 ![keptn Workflow](./shipyard/workflow.png)
 
 ## Usage through the keptn CLI
+In order to provide Shipyard capabilities to other tools and users we provide a CLI that can kickoff the execution and is able to provide feedback on the result. Here is a proposal for these calls
+
+```
+$ keptn shipyard execute myshipyard.json
+Started gate validation for myshipyard.json ...
+Token: SHIPYARD-12345-123-ABCDE
+
+$ keptn shipyard status SHIPYARD-12345-123-ABCDE
+The crew has not yet been able to validate shipyard. Check back later!
+
+$ keptn shipyard status SHIPYARD-12345-123-ABCDE
+Gate Status: pass
+Total Score: 70
+```
+
+Here is another option to specify the a custom callback 
+```
+$ keptn shipyard execute myshipyard.json --r https://myshipyardcallback:8080/shipyardresult
+Started gate validation for myshipyard.json ... registered result webhook https://myshipyardcallback:8080/shipyardresult
+Token: SHIPYARD-12345-123-ABCDE
+```
+
+We are proposing a couple of parameters for the CLI to enable additonal use cases
+```
+#1: Overwriting parameter values, e.g: pass in a different test or environment name 
+--p parameter1=value1
+
+#2: Getting the raw metric values, e.g: allows a CI Plugin to not only show final result but all evaluated data points
+--output raw
+```
