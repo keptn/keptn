@@ -1,23 +1,24 @@
 # Runbook Automation and Self-healing
 
-This use case gives an overview of how to leverage the power of runbook automation to build self-healing applications. Therefore, you will use Ansible Tower as the tool for executing and managing the runbooks.
+This use case gives an overview of how to leverage the power of runbook automation in response to issues in your environment to build self-healing applications. Therefore, you will use Dynatrace as the platform to identify issues in your environment and Ansible Tower as the tool for managing and executing the runbooks.
 
-## Before you begin
-
-optional section
 
 ## About this use case
 
-In this use case, 
+In this use case we are going to use the [Dynatrace Sockshop](https://github.com/dynatrace-sockshop) as our demo application. Assume that we want to start a marketing campaign for our SockShop, which will add promotional gifts (e.g., Halloween socks, Christmas socks, ...) to interactions with the shopping cart. However, if something goes wrong with the campaign, we will be able to stop the campaign automatically.
+
+In our scenario, we will use Ansible Tower as the tool that is managing the promotional campaigns. There a playbooks that allow to configure and start a campaign, e.g., adding gifts to 30 % of the interactions with the shopping cart, i.e., about 1/3 of the items placed in the shopping card will be awarded an additional gift. However, in this use case we will experience troubles with the promotional campaign. Therefore, we will setup means that automatically execute a playbook that stop the campaign in case of any troubles.
+
 
 #### Table of Contents
- * [Step 0: Check prerequisites](#step-zero)
- * [Step 1: Verify installation of Ansible Tower](#step-one)
- * [Step 2: Integration of Ansible Tower runbook in Dynatrace](#step-two)
- * [Step 3: Apply anomaly detection rules](#step-three)
- * [Step 4: Run a promotional campaign](#step-four)
+ * [Step 1: Check prerequisites](#step-one)
+ * [Step 2: Verify installation of Ansible Tower](#step-two)
+ * [Step 3: Integration of Ansible Tower runbook in Dynatrace](#step-three)
+ * [Step 4: Apply anomaly detection rules](#step-four)
+ * [Step 5: Run a promotional campaign](#step-five)
+ * [Step 6: See how runbook automation kicks in](#step-six)
 
-## Step 0: Check prerequisites <a id="step-zero"></a>
+## Step 1: Check prerequisites <a id="step-one"></a>
 
 1. A personal license for Ansible Tower is needed. In case you don't have a license yet, you can get a free license here: https://www.ansible.com/license
 
@@ -26,7 +27,7 @@ In this use case,
     ![free license](./assets/ansible-license-free.png)
 
 
-## Step 1: Verify installation of Ansible Tower <a id="step-one"></a>
+## Step 2: Verify installation of Ansible Tower <a id="step-two"></a>
 
 During the setup of the cluster, Ansible Tower has already been installed and preconfigured for you. 
 
@@ -82,7 +83,7 @@ When running the install scripts from [this readme](../../README.md) Ansible Tow
     Please go ahead an open the *remediation* playbook. Copy the URL from your browser to your clipboard, we will need it in a second. 
     ![remediation-template](./assets/ansible-remediation-template.png)
 
-## Step 2: Integration of Ansible Tower runbook in Dynatrace <a id="step-two"></a>
+## Step 3: Integration of Ansible Tower runbook in Dynatrace <a id="step-three"></a>
 
 This step integrates the defined *remediation runbook* in Dynatrace in a way that it will be called each time Dynatrace detects a problem. Please note that in an enterprise scenario, you might want to define *Alerting profiles* to be able to control problem notifications in a more fine-grained way when to call a remediation runbook.
 
@@ -105,7 +106,7 @@ This step integrates the defined *remediation runbook* in Dynatrace in a way tha
     - Navigate to **Jobs** and click on your *X - remediation* job
     - You can see all tasks from the playbook that have been triggered by the integration.
 
-## Step 3: Apply anomaly detection rules <a id="step-three"></a>
+## Step 4: Apply anomaly detection rules <a id="step-four"></a>
 
 Both problem and anomaly detection in Dynatrace leverage AI technology. This means that the AI learns how each and every microservice behaves and baselines them. Therefore, in a demo scenario like we have right now, we have to override the AI engine with user-defined values to allow the creation of problems due to an artificial increase of a failure rate. (Please note if we would have the application running and simulate end-user traffic for a couple of days there would be no need for this step.)
 
@@ -125,7 +126,7 @@ On the next screen, edit the anomaly detection settings as seen in the following
 ![anomaly detection](./assets/anomaly-detection.png)
 
 
-## Step 4: Run a promotional campaign <a id="step-four"></a>
+## Step 5: Run a promotional campaign <a id="step-five"></a>
 
 This step runs a promotional campaign in our production environment by applying a change to our configuration of the `carts` service. This service is prepared to allow to add a promotional gift (e.g., Halloween Socks, Christmas Socks, Easter Socks, ...) to a given percentage of user interactions in the `carts` service. 
 
@@ -172,6 +173,9 @@ The promotional itself is controlled via Ansible Tower. That means that starting
     ![custom configuration event](./assets/service-custom-configuration-event.png)
 
     Please also note that a remediation action has been attached to this configuration change. This means, if Dynatrace detects a problem with this service that is related to this configuratio change, this remediation action could be called to remediate the problem. 
+
+
+## Step 6: See how runbook automation kicks in <a id="step-six"></a>
 
 1. Looking at the loadgeneration output in your console, you will notice that about 1/3 of the requests will produce an error.
 
