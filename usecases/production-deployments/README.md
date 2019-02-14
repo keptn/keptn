@@ -1,8 +1,14 @@
 # Production Deployments
 
-This use case gives an overview of production deployments, deployment strategies, and showcases those using Istio on Kubernetes to canary-deploy a new front-end version.
+This use case gives an overview of production deployments, deployment strategies, and depicts those using Istio on Kubernetes to canary-deploy a new front-end version.
 
 ## About this use case
+
+When developing an application, sooner or later you need to update a service in a production environment. To conduct this in a controlled manner and without impacting end-user experience,  deployment strategies must be in place. For example, blue-green or canary deployment are well known strategies to rollout a new service version. Additionally, these strategies keep the previous service available if something goes wrong.
+
+To illustrate the benefit this use case addresses, you will create a second version of the front-end service, which has another background color in the header component. Then, this version will be deployed to the production environment in a dark-launch manner. To route traffic to this new service version, the configuration of a virtual service will be changed by setting weights for the routes. In other words, this configuration change defines how much traffic is routed to the old and to the new version of the front-end service.
+
+Optionally, you can try the additional virtual service configurations that redirect signed-in users or users with a Chrome browser to the new front-end version.
 
 ##### Table of Contents
  * [Step 0: Verify Istio installation and deploy sockshop to production](#step-zero)
@@ -222,7 +228,7 @@ In this step, you will configure traffic routing in Istio to redirect traffic ba
 
 1. To verify the configuration change, open the ingress gateway and refresh the page a couple of times. You should notice that about every tenth hit redirects you to the new version (*v2*) showing a blue header.
 
-#### Redirect only logged in users
+#### (optional) Redirect only logged in users
 
 1. You can decide traffic routing also based on information that is included in the HTTP header. For example, you can present *v2* only to users that are logged in. See the following configuration that enables that:
 
@@ -262,7 +268,7 @@ In this step, you will configure traffic routing in Istio to redirect traffic ba
 
 1. If you login using either a new registered user, or a user that you've created before, you see version 2. After logging out, you see verison 1 again.
 
-#### Redirect only Chrome users
+#### (optional) Redirect only Chrome users
 
 1. Another option is to redirect traffic based on the used browser. See the following configuration that enables that:
 
@@ -312,4 +318,4 @@ In this step, you will configure traffic routing in Istio to redirect traffic ba
 
 ## Understanding what happened
 
-In this use case, you 
+In this use case, you deployed a new service version into production and used Istio to redirect traffic towards the new and old version. 
