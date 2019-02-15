@@ -7,7 +7,7 @@ CREDS=./creds.json
 rm $CREDS 2> /dev/null
 
 echo -e "${YLW}Please enter the credentials as requested below: ${NC}"
-read -p "Dynatrace Tenant ID (8-digit) (default=$DTENV): " DTENVC
+read -p "Dynatrace Tenant ID (8-digits) (default=$DTENV): " DTENVC
 read -p "Dynatrace API Token (default=$DTAPI): " DTAPIC
 read -p "Dynatrace PaaS Token (default=$DTAPI): " DTPAAST
 read -p "GitHub User Name: " GITU 
