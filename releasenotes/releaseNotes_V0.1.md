@@ -35,9 +35,9 @@ Keptn provides runbook automation as an auto-remediation approach in response to
 
 The use case provided in this release is as follows:
 
-1. A faulty configuration change is applied to a service in the production environment.
+1. A configuration change is applied to a service in the production environment, leading to an increase of the failure rate.
 1. An issue is detected in production and a problem ticket is opened.
-1. The faulty configuration change is automatically reverted.
+1. The configuration change is automatically reverted.
 
 ## Production Deployments with Canaray Releases
 
