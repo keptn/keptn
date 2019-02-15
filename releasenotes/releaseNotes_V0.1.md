@@ -7,7 +7,7 @@ major use cases based on a demo application.
 
 ## Automated Setup
 
-This release of keptn provides an automated setup for the keptn core components as well as a demo application. The setup only requires a Kubernetes cluster **TODO: add version and specs**. 
+This release of keptn provides an automated setup for the keptn core components as well as a demo application. The setup only requires a Kubernetes cluster with minimum master version 1.10.11. Detail specs can be found in the [getting started section](../GettingStarted.md).
 
 If you want to use keptn with your own application, you will have to modify the keptn setup files. Future versions will provide a smoother onboarding experience. 
 
@@ -39,7 +39,7 @@ The use case provided in this release is as follows:
 1. An issue is detected in production and a problem ticket is opened.
 1. The configuration change is automatically reverted.
 
-## Production Deployments with Canaray Releases
+## Production Deployments with Canary Releases
 
 Keptn provides the runbooks to release a new version and to automatically switch back to the previous version if an issue is detected. As described above, keptn relies on Ansible Tower for auto-remediation capabilities. Thus, keptn is shipped with pre-defined playbooks that can deploy a new version and take care of re-routing traffic in case of detected problems.
 
