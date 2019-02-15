@@ -35,17 +35,17 @@ Keptn provides runbook automation as an auto-remediation approach in response to
 
 The use case provided in this release is as follows:
 
-1. A faulty configuration change is applied to a service in the production environment.
+1. A configuration change is applied to a service in the production environment, leading to an increase of the failure rate.
 1. An issue is detected in production and a problem ticket is opened.
-1. The faulty configuration change is automatically reverted.
+1. The configuration change is automatically reverted.
 
-## Automatic Rollback of Faulty Blue/Green Deployments
+## Production Deployments with Canaray Releases
 
-Keptn provides the runbooks to deploy a new service and to automatically switches back to the previous version if an issue is detected. As described above, keptn relies on Ansible Tower for auto-remediation capabilities. Thus, keptn is shipped with pre-defined playbooks that can deploy a new service version and take care of re-routing traffic in case of detected problems.
+Keptn provides the runbooks to release a new version and to automatically switch back to the previous version if an issue is detected. As described above, keptn relies on Ansible Tower for auto-remediation capabilities. Thus, keptn is shipped with pre-defined playbooks that can deploy a new version and take care of re-routing traffic in case of detected problems.
 
 The use case provided in this release is as follows:
 
-1. A faulty service version is deployed to the production environment and traffic is routed to this new version. 
+1. A faulty service version is deployed to the production environment and traffic is routed to this new version in a canary release manner, starting with only 10 % of the traffic and increasing this percentage over time.
 1. An issue is detected in production and a problem ticket is opened.
 1. The traffic routing is changed to redirect traffic to the previous (non-faulty) version.
 
