@@ -121,13 +121,13 @@ This directory contains all scripts and instructions needed to deploy the demo a
 
 To explore the capabilities of keptn, follow the provided use cases that are dedicated to a special topic.
 
-* [Performance as a Service](./usecases/performance-as-a-service): This use case aims on moving from manual sporadic execution and analysis of performance tests to a fully automated on-demand self-service testing model for developers.
+* [Performance as a Service](https://keptn.sh/docs/usecases/performance-as-a-service/): This use case aims on moving from manual sporadic execution and analysis of performance tests to a fully automated on-demand self-service testing model for developers.
 
-* [Production Deployments](./usecases/production-deployments): This use case gives an overview of production deployments, deployment strategies, and showcases those using Istio on Kubernetes to canary-deploy a new front-end version.
+* [Production Deployments](https://keptn.sh/docs/usecases/performance-as-a-service/): This use case gives an overview of production deployments, deployment strategies, and showcases those using Istio on Kubernetes to canary-deploy a new front-end version.
 
-* [Runbook Automation and Self-Healing](./usecases/runbook-automation-and-self-healing): This use case gives an overview of how to leverage the power of runbook automation to build self-healing applications. 
+* [Runbook Automation and Self-Healing](https://keptn.sh/docs/usecases/runbook-automation-and-self-healing/): This use case gives an overview of how to leverage the power of runbook automation to build self-healing applications. 
 
-* [Unbreakable Delivery Pipeline](./usecases/unbreakable-delivery-pipeline): The overall goal of the *Unbreakable Delivery Pipeline* is to implement a pipeline that prevents bad code changes from impacting real end users.
+* [Unbreakable Delivery Pipeline](https://keptn.sh/docs/usecases/unbreakable-delivery-pipeline/): The overall goal of the *Unbreakable Delivery Pipeline* is to implement a pipeline that prevents bad code changes from impacting real end users.
 
 ## Step 4: Cleanup <a id="step-four"></a>
 
