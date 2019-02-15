@@ -13,7 +13,7 @@ All use cases were presented first at Neotys PAC 2019. See slides and video reco
 * Automated Synthetic Production SLA Monitoring
 
 ## Example Files
-In the shipyard subdirectory, you find two sample shipyard files that define two different types of quality gates: (1) a pure functional quality gate and (2) a qualty gate focused on performance:
+In the shipyard subdirectory, you find two sample shipyard files that define two different types of quality gates: (1) a pure functional quality gate and (2) a quality gate focused on performance:
 
 1. [shipyard_sockshop_carts_dev_func.json](./shipyard/shipyard_sockshop_carts_dev_func.json)
 2. [shipyard_sockshop_carts_dev_perf.json](./shipyard/shipyard_sockshop_carts_dev_perf.json)
@@ -27,7 +27,7 @@ Shipyard allows developers to define which tests to execute in a deployment stag
 
 #### Metric Sources
 
-As metrics can come from all sorts of tools, e.g., APM, Infrasturcture Monitoring, Testing Tools, Cloud or PaaS Platforms, etc., we allow metrics to be provided by different metric providers, e.g., Dynatrace, Neoload, Prometheus, and so on. Here is an example section for metric sources:
+As metrics can come from all sorts of tools, e.g., APM, Infrastructure Monitoring, Testing Tools, Cloud or PaaS Platforms, etc., we allow metrics to be provided by different metric providers, e.g., Dynatrace, Neoload, Prometheus, and so on. Here is an example section for metric sources:
 
 ```json
 "sources": [
@@ -46,11 +46,11 @@ As metrics can come from all sorts of tools, e.g., APM, Infrasturcture Monitorin
     },
 ```
 
-The above example defines a secion for metric provider *dynatrace*. It contains a metric with the id *Avg_FailureRate_Carts* and query details that are specific to Dynatrace. Every metric provider can have their own set of query parameters. You also see that we can work with parameters which can be defined globally in the Shipyard file.
+The above example defines a section for metric provider *dynatrace*. It contains a metric with the id *Avg_FailureRate_Carts* and query details that are specific to Dynatrace. Every metric provider can have their own set of query parameters. You also see that we can work with parameters which can be defined globally in the Shipyard file.
 
 #### Performance Signature (=Threshold & Score)
 
-While there are many approaches to evaluate metric values and whether they behave as expected or not (static thresholds, behavior, ...) we decided to start with static thresholds for the first iteration of Shipyard, allowing users to define upper and lower boundaries for warning and severe. If a metric doesn't exceed any boundary, it gets the full metric score. If it exceeds warning, it only gets half the score and if it exceeds severe it gets a score of 0. The maximum score for a metric has to be defined in Shipyard. Here is an example
+While there are many approaches to evaluate metric values and whether they behave as expected or not (static thresholds, behavior, ...) we decided to start with static thresholds for the first iteration of Shipyard, allowing users to define upper and lower boundaries for warning and severe. If a metric doesn't exceed any boundary, it gets the full metric score. If it exceeds warning, it only gets half the score and if it exceeds severe it gets a score of 0. The maximum score for a metric must be defined in Shipyard. Here is an example
 
 ```json
 "signature": [
@@ -114,12 +114,12 @@ Started gate validation for myshipyard.json ... registered result webhook https:
 Token: SHIPYARD-12345-123-ABCDE
 ```
 
-We are proposing a couple of parameters for the CLI to enable additonal use cases:
+We are proposing a couple of parameters for the CLI to enable additional use cases:
 ```
-#1: Overwriting parameter values, e.g: pass in a different test or environment name 
+#1: Overwriting parameter values, e.g., pass in a different test or environment name 
 --p parameter1=value1
 
-#2: Getting the raw metric values, e.g: allows a CI Plugin to not only show final result but all evaluated data points
+#2: Getting the raw metric values, e.g., allows a CI Plugin to not only show the final result but all evaluated data points
 --output raw
 ```
 

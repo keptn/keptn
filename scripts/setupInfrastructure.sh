@@ -4,7 +4,6 @@ echo "--------------------------"
 echo "Setup Infrastructure "
 echo "--------------------------"
 
-
 # Script if you don't want to apply all yaml files manually
 
 export JENKINS_USER=$(cat creds.json | jq -r '.jenkinsUser')
@@ -30,7 +29,6 @@ kubectl create -f ../manifests/container-registry/k8s-docker-registry-pvc.yml
 kubectl create -f ../manifests/container-registry/k8s-docker-registry-deployment.yml
 kubectl create -f ../manifests/container-registry/k8s-docker-registry-service.yml
 
-
 echo "waiting for docker service to get public ip..."
 sleep 100
 
@@ -51,7 +49,6 @@ mv ../manifests/jenkins/k8s-jenkins-deployment_tmp.yml ../manifests/jenkins/k8s-
 kubectl create -f ../manifests/jenkins/k8s-jenkins-pvcs.yml 
 kubectl create -f ../manifests/jenkins/k8s-jenkins-deployment.yml
 kubectl create -f ../manifests/jenkins/k8s-jenkins-rbac.yml
-
 
 # Deploy Dynatrace operator
 export LATEST_RELEASE=$(curl -s https://api.github.com/repos/dynatrace/dynatrace-oneagent-operator/releases/latest | grep tag_name | cut -d '"' -f 4)
@@ -74,7 +71,6 @@ echo "--------------------------"
 echo "--------------------------"
 echo "End applying auto tagging rules in Dynatrace "
 echo "--------------------------"
-
 
 # Deploy sockshop application
 echo "--------------------------"
@@ -140,8 +136,6 @@ echo "--------------------------"
 echo "End setup credentials in Jenkins "
 echo "--------------------------"
 
-
-
 # Install Istio service mesh
 echo "--------------------------"
 echo "Set up Istio "
@@ -152,7 +146,6 @@ echo "--------------------------"
 echo "--------------------------"
 echo "End set up Istio "
 echo "--------------------------"
-
 
 # Create Ansible Tower
 
