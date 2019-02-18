@@ -1,1 +1,0 @@
-# keptn Event Broker
