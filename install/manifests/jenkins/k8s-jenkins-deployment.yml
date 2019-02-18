@@ -57,12 +57,6 @@ spec:
               - name: jenkins-persistent-storage-jobs
                 mountPath: /var/jenkins_home/jobs
         lifecycle:
-          postStart:
-            exec:
-              command:
-                - "/bin/sh"
-                - "-c"
-                - "cp -R /tmp/jobs/* /var/jenkins_home/jobs/"
       volumes:
       - name: jenkins-persistent-storage-workspaces
         persistentVolumeClaim:
