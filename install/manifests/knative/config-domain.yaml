@@ -6,10 +6,10 @@ metadata:
 data:
   # These are example settings of domain.
   # example.org will be used for routes having app=prod.
-  35.222.34.43.xip.io: |
+  ISTIO_INGRESS_IP_PLACEHOLDER.xip.io: |
     selector:
       app: prod
   # Default value for domain, for routes that does not have app=prod labels.
   # Although it will match all routes, it is the least-specific rule so it
   # will only be used if no other domain matches.
-  35.222.34.43.xip.io: ""
+  ISTIO_INGRESS_IP_PLACEHOLDER.xip.io: ""
