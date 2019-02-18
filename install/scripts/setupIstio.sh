@@ -14,11 +14,6 @@ echo "continue..."
 
 kubectl label namespace production istio-injection=enabled
 
-# Istio configuration for production namespace
-kubectl create -f ../repositories/k8s-deploy-production/istio/gateway.yml
-kubectl create -f ../repositories/k8s-deploy-production/istio/destination_rule.yml
-kubectl create -f ../repositories/k8s-deploy-production/istio/virtual_service.yml
-
 ./createServiceEntry.sh $DT_TENANT_ID $DT_PAAS_TOKEN
 
 sleep 10
