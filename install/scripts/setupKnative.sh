@@ -59,18 +59,21 @@ kubectl apply -f ../../core/eventbroker/config/tests-finished-channel.yaml
 export TESTS_FINISHED_CHANNEL=$(kubectl describe channel tests-finished -n keptn | grep "Hostname:" | sed 's~[ \t]*Hostname:[ \t]*~~')
 
 kubectl apply -f ../../core/eventbroker/config/start-evaluation-channel.yaml
-export START_EVALUATION_CHANNEL=$(kubectl describe channel start-evaluation-n keptn | grep "Hostname:" | sed 's~[ \t]*Hostname:[ \t]*~~')
+export START_EVALUATION_CHANNEL=$(kubectl describe channel start-evaluation -n keptn | grep "Hostname:" | sed 's~[ \t]*Hostname:[ \t]*~~')
 
 kubectl apply -f ../../core/eventbroker/config/evaluation-done-channel.yaml
 export EVALUATION_DONE_CHANNEL=$(kubectl describe channel evaluation-done -n keptn | grep "Hostname:" | sed 's~[ \t]*Hostname:[ \t]*~~')
 
 
 # Deploy event broker
-sh ../../core/eventbroker/deploy.sh $REGISTRY_URL $KEPTN_CHANNEL_URI $NEW_ARTEFACT_CHANNEL $START_DEPLOYMENT_CHANNEL $DEPLOYMENT_FINISHED_CHANNEL $START_TESTS_CHANNEL $TESTS_FINISHED_CHANNEL $START_EVALUATION_CHANNEL $EVALUATION_DONE_CHANNEL
+cd ../../core/eventbroker
+./deploy.sh $REGISTRY_URL $KEPTN_CHANNEL_URI $NEW_ARTEFACT_CHANNEL $START_DEPLOYMENT_CHANNEL $DEPLOYMENT_FINISHED_CHANNEL $START_TESTS_CHANNEL $TESTS_FINISHED_CHANNEL $START_EVALUATION_CHANNEL $EVALUATION_DONE_CHANNEL
 
-mv ../../core/eventbroker/config/event-broker_tmp.yaml ../../core/eventbroker/config/event-broker.yaml
+mv config/event-broker_tmp.yaml config/event-broker.yaml
 
-kubectl apply -f ../../core/eventbroker/config/event-broker.yaml
+kubectl apply -f config/event-broker.yaml
+
+cd ../../install/scripts
 
 # Deploy Operator
 # kubectl apply -f ../../keptn.jenkins-operator/config/operator.yaml
