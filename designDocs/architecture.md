@@ -1,4 +1,4 @@
-# keptn Architecture v0.2
+# keptn Architecture v0.3
 
 ![Architecture](./res/architecturev0.2.jpg)
 
