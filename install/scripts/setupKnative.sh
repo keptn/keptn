@@ -2,7 +2,6 @@
 JENKINS_URL=$1
 JENKINS_USER=$2
 JENKINS_PASSWORD=$3
-
 REGISTRY_URL=$4
 
 kubectl create namespace keptn
@@ -68,11 +67,6 @@ export EVALUATION_DONE_CHANNEL=$(kubectl describe channel evaluation-done -n kep
 # Deploy event broker
 cd ../../core/eventbroker
 ./deploy.sh $REGISTRY_URL $KEPTN_CHANNEL_URI $NEW_ARTEFACT_CHANNEL $START_DEPLOYMENT_CHANNEL $DEPLOYMENT_FINISHED_CHANNEL $START_TESTS_CHANNEL $TESTS_FINISHED_CHANNEL $START_EVALUATION_CHANNEL $EVALUATION_DONE_CHANNEL
-
-mv config/event-broker_tmp.yaml config/event-broker.yaml
-
-kubectl apply -f config/event-broker.yaml
-
 cd ../../install/scripts
 
 # Deploy Operator
