@@ -72,17 +72,6 @@ echo "--------------------------"
 echo "End applying auto tagging rules in Dynatrace "
 echo "--------------------------"
 
-# Deploy sockshop application
-echo "--------------------------"
-echo "Deploy SockShop "
-echo "--------------------------"
-
-./deploySockshop.sh
-
-echo "--------------------------"
-echo "End Deploy Sockshop "
-echo "--------------------------"
-
 echo "wait for changes to apply..."
 sleep 150
 
@@ -147,6 +136,18 @@ echo "--------------------------"
 echo "End set up Istio "
 echo "--------------------------"
 
+# Install knative based core components
+echo "--------------------------"
+echo "Set up Knative components "
+echo "--------------------------"
+
+./setupKnative.sh $JENKINS_URL $JENKINS_USER $JENKINS_PASSWORD $REGISTRY_URL
+
+echo "--------------------------"
+echo "End set up Knative components "
+echo "--------------------------"
+
+
 # Create Ansible Tower
 
 echo "--------------------------"
@@ -156,11 +157,6 @@ echo "--------------------------"
 kubectl create -f ../manifests/ansible-tower/namespace.yml
 kubectl create -f ../manifests/ansible-tower/deployment.yml
 kubectl create -f ../manifests/ansible-tower/service.yml
-
-echo "wait for changes to apply..."
-sleep 120
-
-./configureAnsible.sh
 
 echo "--------------------------"
 echo "End set up Ansible Tower "
