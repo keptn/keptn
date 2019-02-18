@@ -6,13 +6,13 @@ RUN addgroup mygroup && adduser -D -G mygroup myuser && mkdir -p /usr/src/app &&
 
 # Prepare app directory
 WORKDIR /usr/src/app
-COPY package.json /usr/src/app/
+COPY /core/eventbroker/package.json /usr/src/app/
 
 
 USER myuser
 RUN npm install
 
-COPY . /usr/src/app
+COPY /core/eventbroker /usr/src/app
 
 # Start the app
 #CMD ["/usr/local/bin/npm", "start", "--domain=.jx-staging.35.241.184.104.nip.io"] 
