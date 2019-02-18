@@ -5,6 +5,7 @@
 # keptn
 keptn is a fabric for cloud-native lifecycle automation at enterprise scale. In its first version it provides an automated setup of the keptn core components as well as a demo application. Also included are three preconfigured use cases for the demo application: automated quality gates, runbook automation, and automated evaluation of blue/green deployments.
 
+
 ##### Table of Contents
  * [Introduction](#intro)
  * [Repositories](#repos)
@@ -32,3 +33,4 @@ In a nutshell, keptn provides following advantages:
 ## To start using keptn <a id="using-keptn"></a>
 
 ## To start developing keptn <a id="developing-keptn"></a>
+
