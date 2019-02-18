@@ -54,11 +54,12 @@ These introductions explain how to install keptn.
     docker-deployment-5594b8c597-lgr4d   1/1       Running   0          10m
     ```
 
+<!-- 
 ## Future work: Install keptn like istio <a id="step-install"></a>
 
     ```console
     $ kubectl apply keptn.yml
     ```
-
+-->
 
 
