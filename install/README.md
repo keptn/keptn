@@ -4,7 +4,9 @@ These introductions explain how to install keptn.
 ##### Table of Contents
  * [Prerequisites](#step-zero)
  * [Install](#step-install)
+ <!--
  * [Future work: Install](#step-install)
+ -->
 
 ## Install keptn core components <a id="step-install"></a>
 
@@ -46,6 +48,12 @@ These introductions explain how to install keptn.
 
     ```console
     $ kubectl get pods -n istio-system
+
+    ```
+
+    ```console
+    $ kubectl get svc -n keptn
+    
     ```
 
     ```console

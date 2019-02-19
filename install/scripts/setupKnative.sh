@@ -63,7 +63,6 @@ export START_EVALUATION_CHANNEL=$(kubectl describe channel start-evaluation -n k
 kubectl apply -f ../../core/eventbroker/config/evaluation-done-channel.yaml
 export EVALUATION_DONE_CHANNEL=$(kubectl describe channel evaluation-done -n keptn | grep "Hostname:" | sed 's~[ \t]*Hostname:[ \t]*~~')
 
-
 # Deploy event broker
 cd ../../core/eventbroker
 ./deploy.sh $REGISTRY_URL $KEPTN_CHANNEL_URI $NEW_ARTEFACT_CHANNEL $START_DEPLOYMENT_CHANNEL $DEPLOYMENT_FINISHED_CHANNEL $START_TESTS_CHANNEL $TESTS_FINISHED_CHANNEL $START_EVALUATION_CHANNEL $EVALUATION_DONE_CHANNEL

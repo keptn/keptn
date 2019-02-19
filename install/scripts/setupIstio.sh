@@ -6,11 +6,10 @@ DT_PAAS_TOKEN=$2
 kubectl apply -f ../manifests/istio/istio-crds.yml
 kubectl apply -f ../manifests/istio/istio-demo.yml
 
-echo "wait a couple of minutes for changes to apply... "
-sleep 250
-echo "wait even longer..."
-sleep 250
-echo "continue..."
+echo "Wait 4 minutes for changes to apply... "
+sleep 240
+echo "Wait additional 4 minutes for changes to apply... "
+sleep 240
 
 kubectl label namespace production istio-injection=enabled
 
