@@ -147,8 +147,8 @@ echo "--------------------------"
 echo "End setup Knative components "
 echo "--------------------------"
 
-echo "Wait 60s for changes to apply..."
-sleep 60
+echo "Wait 120s for changes to apply..."
+sleep 120
 
 # Create Ansible Tower
 
