@@ -65,5 +65,5 @@ script:
   #- npm install newman
   #- node_modules/.bin/newman run ../test/keptn.postman_collection.json -e ../test/env.json
   
-  # Delete cluster
+  # Delete K8s cluster
   - gcloud container clusters delete $CLUSTER_NAME --zone $CLOUDSDK_COMPUTE_ZONE --project $PROJECT_NAME --quiet
