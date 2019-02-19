@@ -8,7 +8,7 @@ kubectl apply -f ../manifests/istio/istio-demo.yml
 
 echo "Wait 4 minutes for changes to apply... "
 sleep 240
-echo "Wait additional 4 minutes for changes to apply... "
+echo "Wait 4 additional minutes for changes to apply... "
 sleep 240
 
 kubectl label namespace production istio-injection=enabled
