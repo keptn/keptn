@@ -15,10 +15,11 @@ RUN npm install -g concurrently
 RUN npm install -g typescript
 
 USER myuser
+
+COPY /core/auth/* /usr/src/app
+
 RUN npm install
 RUN npm run build-ts
-
-COPY /core/auth /usr/src/app
 
 # Start the app
 CMD ["/usr/local/bin/npm", "start"]
