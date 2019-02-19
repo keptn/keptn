@@ -37,11 +37,6 @@ kubectl delete --filename https://github.com/knative/serving/releases/download/v
 kubectl delete services,deployments,pods --all -n istio-system
 kubectl delete namespace istio-system
 
-# Clean up istio components
-kubectl delete -f ../repositories/k8s-deploy-production/istio/gateway.yml
-kubectl delete -f ../repositories/k8s-deploy-production/istio/destination_rule.yml
-kubectl delete -f ../repositories/k8s-deploy-production/istio/virtual_service.yml
-
 # Verification
 kubectl delete clusterrolebindings.rbac.authorization.k8s.io dynatrace-cluster-admin-binding
 kubectl delete clusterrolebindings.rbac.authorization.k8s.io jenkins-rbac
