@@ -1,6 +1,6 @@
 import express = require("express");
 import bodyParser = require("body-parser");
-import customerRouter = require("./routes/authRouter");
+import authRouter = require("./routes/authRouter");
 import requestLogger = require("./middleware/requestLogger");
 
 export class WebApi {
@@ -22,7 +22,7 @@ export class WebApi {
     }
 
     private configureRoutes(app: express.Express) {
-        app.use("/auth", customerRouter );
+        app.use("/auth", authRouter );
         // mount more routers here
         // e.g. app.use("/organisation", organisationRouter);
     }
