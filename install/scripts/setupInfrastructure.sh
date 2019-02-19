@@ -29,7 +29,7 @@ kubectl create -f ../manifests/container-registry/k8s-docker-registry-pvc.yml
 kubectl create -f ../manifests/container-registry/k8s-docker-registry-deployment.yml
 kubectl create -f ../manifests/container-registry/k8s-docker-registry-service.yml
 
-echo "Wait for docker service to get public ip..."
+echo "Wait 100s for docker service to get public ip..."
 sleep 100
 
 # Create a route for the docker registry service
@@ -72,7 +72,7 @@ echo "--------------------------"
 echo "End applying auto tagging rules in Dynatrace "
 echo "--------------------------"
 
-echo "Wait for changes to apply..."
+echo "Wait 150s for changes to apply..."
 sleep 150
 
 # Setup credentials in Jenkins
@@ -147,8 +147,8 @@ echo "--------------------------"
 echo "End setup Knative components "
 echo "--------------------------"
 
-echo "Wait for changes to apply..."
-sleep 30
+echo "Wait 60s for changes to apply..."
+sleep 60
 
 # Create Ansible Tower
 

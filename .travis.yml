@@ -60,7 +60,7 @@ script:
   - kubectl get svc -n keptn
   - export EVENT_BROKER_NAME=$(kubectl describe svc event-broker -n keptn | grep "Name:" | sed 's~Name:[ \t]*~~')
   - echo $EVENT_BROKER_NAME
-  - ./../../test/assertEquals $EVENT_BROKER_NAME event-broker
+  - ./../../test/assertEquals.sh $EVENT_BROKER_NAME event-broker
   
   #- cat ../test/keptn.postman_environment.json |sed 's~FRONT_END_DEV_PLACEHOLDER~'"$FRONT_END_DEV"'~' |sed 's~FRONT_END_STAGING_PLACEHOLDER~'"$FRONT_END_STAGING"'~' |sed 's~FRONT_END_PRODUCTION_PLACEHOLDER~'"$FRONT_END_PRODUCTION"'~' |sed 's~ISTIO_INGRESS_PLACEHOLDER~'"$ISTIO_INGRESS"'~' >> ../test/env.json
   #- npm install newman
