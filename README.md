@@ -5,6 +5,7 @@
 # keptn
 keptn is a fabric for cloud-native lifecycle automation at enterprise scale. In its first version it provides an automated setup of the keptn core components as well as a demo application. Also included are three preconfigured use cases for the demo application: automated quality gates, runbook automation, and automated evaluation of blue/green deployments.
 
+<!-- 
 ##### Table of Contents
  * [Introduction](#intro)
  * [Repositories](#repos)
@@ -17,6 +18,7 @@ In a nutshell, keptn provides following advantages:
 * **Best practices out-of-the box:** Keptn supports best practices and the latest delivery platforms utilized by modern applications while ensuring that you can easily get started in minutes.
 * **Future-proof and pluggable:** One-off implementations often lead to eventual maintenance problems. Keptn provides a core framework that you can use to build cohesive, standardized cloud native-fabric for your organization. Keptn also enables you to replace tools as you wish and avoid vendor lock-in.
 * **Smart and flexible:** Concepts like GitOps, self-healing, and unbreakable deployments can be implemented in different ways, varying from one organization to the next. While keptn has built-in intelligence that assists you in taking advantage of these industry best practices, it’s flexible enough to address your specific needs.
+-->
 
 ## Repositories <a id="repos"></a>
 * [keptn/keptn](README.md). This is the main repository that you are currently looking at. It hosts keptn's core components and documents that govern the keptn open source project. It includes:
@@ -29,6 +31,8 @@ In a nutshell, keptn provides following advantages:
 
 * [keptn/examples](https://github.com/keptn/examples). This repository contains examples to explore keptn and to learn more about the cloud-native lifecycle automation based on different use cases.
 
+<!-- 
 ## To start using keptn <a id="using-keptn"></a>
 
 ## To start developing keptn <a id="developing-keptn"></a>
+-->
