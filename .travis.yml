@@ -57,9 +57,8 @@ script:
   #- export FRONT_END_PRODUCTION=$(kubectl describe svc front-end -n production | grep "LoadBalancer Ingress:" | sed 's~LoadBalancer Ingress:[ \t]*~~')
   
   - export ISTIO_INGRESS=$(kubectl describe svc istio-ingressgateway -n istio-system | grep "LoadBalancer Ingress:" | sed 's~LoadBalancer Ingress:[ \t]*~~')
-  - kubectl get svc -n keptn
-  - kubectl get ksvc event-broker -n keptn
-  - export EVENT_BROKER_NAME=$(kubectl describe svc event-broker -n keptn | grep "Name:" | sed 's~Name:[ \t]*~~')
+  - kubectl describe ksvc event-broker -n kept
+  - export EVENT_BROKER_NAME=$(kubectl describe ksvc event-broker -n keptn | grep -m 1 "Name:" | sed 's~Name:[ \t]*~~')
   - echo $EVENT_BROKER_NAME
   - ./../../test/assertEquals.sh $EVENT_BROKER_NAME event-broker
   
