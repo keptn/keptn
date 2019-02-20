@@ -41,6 +41,3 @@ kubectl delete namespace istio-system
 kubectl delete clusterrolebindings.rbac.authorization.k8s.io dynatrace-cluster-admin-binding
 kubectl delete clusterrolebindings.rbac.authorization.k8s.io jenkins-rbac
 kubectl delete -f https://raw.githubusercontent.com/Dynatrace/dynatrace-oneagent-operator/master/deploy/kubernetes.yaml
-
-
-
