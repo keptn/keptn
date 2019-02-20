@@ -20,12 +20,8 @@ env:
 
 jobs:
   include:
-    - stage: prepare
-      script:
-        - export GITHUB_TOKEN=$GITHUB_TOKEN
-        
-    - stage: build
-      if: branch = master
+    - stage: master
+      if: branch = master 
       script:
         # Install hub
         - sudo wget https://github.com/github/hub/releases/download/v2.6.0/hub-linux-amd64-2.6.0.tgz
@@ -57,31 +53,40 @@ jobs:
 
         - cat ./creds.sav |sed 's~DYNATRACE_TENANT_PLACEHOLDER~'"$DT_TENANT"'~' |sed 's~DYNATRACE_API_TOKEN~'"$DT_API_TOKEN"'~' |sed 's~DYNATRACE_PAAS_TOKEN~'"$DT_PAAS_TOKEN"'~' |sed 's~GITHUB_USER_NAME_PLACEHOLDER~'"$GITHUB_USER_NAME"'~' |sed 's~PERSONAL_ACCESS_TOKEN_PLACEHOLDER~'"$GITHUB_TOKEN"'~' |sed 's~GITHUB_USER_EMAIL_PLACEHOLDER~'"$GITHUB_EMAIL"'~' |sed 's~GITHUB_ORG_PLACEHOLDER~'"$GITHUB_ORG"'~' >> creds.json
         - ./setupInfrastructure.sh
-      
-  
+        
         # Test front-end keptn v.0.1
         #- export FRONT_END_DEV=$(kubectl describe svc front-end -n dev | grep "LoadBalancer Ingress:" | sed 's~LoadBalancer Ingress:[ \t]*~~')
         #- export FRONT_END_STAGING=$(kubectl describe svc front-end -n staging | grep "LoadBalancer Ingress:" | sed 's~LoadBalancer Ingress:[ \t]*~~')
         #- export FRONT_END_PRODUCTION=$(kubectl describe svc front-end -n production | grep "LoadBalancer Ingress:" | sed 's~LoadBalancer Ingress:[ \t]*~~')
         
         - export ISTIO_INGRESS=$(kubectl describe svc istio-ingressgateway -n istio-system | grep "LoadBalancer Ingress:" | sed 's~LoadBalancer Ingress:[ \t]*~~')
-
+        
+        - export EVENT_BROKER_NAME=$(kubectl describe ksvc event-broker -n keptn | grep -m 1 "Name:" | sed 's~Name:[ \t]*~~')
+        - ./../../test/assertEquals.sh $EVENT_BROKER_NAME event-broker
+        
         #- cat ../test/keptn.postman_environment.json |sed 's~FRONT_END_DEV_PLACEHOLDER~'"$FRONT_END_DEV"'~' |sed 's~FRONT_END_STAGING_PLACEHOLDER~'"$FRONT_END_STAGING"'~' |sed 's~FRONT_END_PRODUCTION_PLACEHOLDER~'"$FRONT_END_PRODUCTION"'~' |sed 's~ISTIO_INGRESS_PLACEHOLDER~'"$ISTIO_INGRESS"'~' >> ../test/env.json
         #- npm install newman
         #- node_modules/.bin/newman run ../test/keptn.postman_collection.json -e ../test/env.json
-  
-    - stage: shutdown
-      if: branch = master
-      script:
+        
+        # Clean up cluster
+        #- ./cleanupCluster.sh
+
         # Delete K8s cluster
         - gcloud container clusters delete $CLUSTER_NAME --zone $CLOUDSDK_COMPUTE_ZONE --project $PROJECT_NAME --quiet
 
-
-    - stage: test-eventbroker
+    - stage: pr
       if: type = pull_request
       script:
-        - echo "correct conditional check!"
-        - echo "GITHUB token:" $GITHUB_TOKEN
-        #- export EVENT_BROKER_NAME=$(kubectl describe ksvc event-broker -n keptn | grep -m 1 "Name:" | sed 's~Name:[ \t]*~~')
-        #- ./../../test/assertEquals.sh $EVENT_BROKER_NAME event-broker
+        - if [ ! -d "$HOME/google-cloud-sdk/bin" ]; then rm -rf $HOME/google-cloud-sdk; export CLOUDSDK_CORE_DISABLE_PROMPTS=1; curl https://sdk.cloud.google.com | bash; fi
+        - source /home/travis/google-cloud-sdk/path.bash.inc
+        - gcloud version
+        - gcloud --quiet components update
+        - gcloud --quiet components update kubectl
+        - echo $GCLOUD_SERVICE_KEY | base64 --decode -i > ${HOME}/gcloud-service-key.json
+        - gcloud auth activate-service-account --key-file ${HOME}/gcloud-service-key.json
+        - gcloud container clusters get-credentials keptn-pr-check --zone us-central1-a --project sai-research
+        - export REGISTRY_URL=$(kubectl describe svc docker-registry -n cicd | grep IP: | sed 's~IP:[ \t]*~~')
+        - ./install/scripts/setupKnative.sh $JENKINS_USER $JENKINS_PASSWORD $REGISTRY_URL
+        - export EVENT_BROKER_NAME=$(kubectl describe ksvc event-broker -n keptn | grep -m 1 "Name:" | sed 's~Name:[ \t]*~~')
+        - ./../../test/assertEquals.sh $EVENT_BROKER_NAME event-broker
 
