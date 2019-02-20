@@ -29,7 +29,7 @@ kubectl create -f ../manifests/container-registry/k8s-docker-registry-pvc.yml
 kubectl create -f ../manifests/container-registry/k8s-docker-registry-deployment.yml
 kubectl create -f ../manifests/container-registry/k8s-docker-registry-service.yml
 
-echo "waiting for docker service to get public ip..."
+echo "Wait 100s for docker service to get public ip..."
 sleep 100
 
 # Create a route for the docker registry service
@@ -72,21 +72,10 @@ echo "--------------------------"
 echo "End applying auto tagging rules in Dynatrace "
 echo "--------------------------"
 
-# Deploy sockshop application
-echo "--------------------------"
-echo "Deploy SockShop "
-echo "--------------------------"
-
-./deploySockshop.sh
-
-echo "--------------------------"
-echo "End Deploy Sockshop "
-echo "--------------------------"
-
-echo "wait for changes to apply..."
+echo "Wait 150s for changes to apply..."
 sleep 150
 
-# Set up credentials in Jenkins
+# Setup credentials in Jenkins
 echo "--------------------------"
 echo "Setup Credentials in Jenkins "
 echo "--------------------------"
@@ -138,14 +127,28 @@ echo "--------------------------"
 
 # Install Istio service mesh
 echo "--------------------------"
-echo "Set up Istio "
+echo "Setup Istio "
 echo "--------------------------"
 
 ./setupIstio.sh $DT_TENANT_ID $DT_PAAS_TOKEN
 
 echo "--------------------------"
-echo "End set up Istio "
+echo "End setup Istio "
 echo "--------------------------"
+
+# Install knative based core components
+echo "--------------------------"
+echo "Setup Knative components "
+echo "--------------------------"
+
+./setupKnative.sh $JENKINS_URL $JENKINS_USER $JENKINS_PASSWORD $REGISTRY_URL
+
+echo "--------------------------"
+echo "End setup Knative components "
+echo "--------------------------"
+
+echo "Wait 10s for changes to apply..."
+sleep 10
 
 # Create Ansible Tower
 
@@ -157,13 +160,8 @@ kubectl create -f ../manifests/ansible-tower/namespace.yml
 kubectl create -f ../manifests/ansible-tower/deployment.yml
 kubectl create -f ../manifests/ansible-tower/service.yml
 
-echo "wait for changes to apply..."
-sleep 120
-
-./configureAnsible.sh
-
 echo "--------------------------"
-echo "End set up Ansible Tower "
+echo "End setup Ansible Tower "
 echo "--------------------------"
 
 echo "----------------------------------------------------"
