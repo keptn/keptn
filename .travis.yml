@@ -88,4 +88,6 @@ jobs:
         - ./install/scripts/setupKnative.sh $JENKINS_USER $JENKINS_PASSWORD $REGISTRY_URL
         - export EVENT_BROKER_NAME=$(kubectl describe ksvc event-broker -n keptn | grep -m 1 "Name:" | sed 's~Name:[ \t]*~~')
         - ./../../test/assertEquals.sh $EVENT_BROKER_NAME event-broker
+        # delete namespaces
+        - kubectl delete ns keptn knative-build knative-eventing knative-monitoring knative-serving knative-sources
 
