@@ -8,6 +8,12 @@ cache:
   directories:
     - "$HOME/google-cloud-sdk/"
 
+# safelist
+branches:
+  only:
+  - master
+  - cli
+
 # Install services
 services:
   - docker
@@ -18,6 +24,11 @@ env:
     - GOOGLE_APPLICATION_CREDENTIALS=~/gcloud-service-key.json
 
 script:
+  # Execute Go tests
+  - cd cli
+  - go test ${gobuild_args} ./...
+  - cd ..
+  
   - export GITHUB_TOKEN=$GITHUB_TOKEN
 
   # Install hub
