@@ -35,6 +35,7 @@ let authenticator: express.RequestHandler = (
                 next();
             } else {
                 response.status(401);
+                response.end();
             }
         })
         .catch(e => {
