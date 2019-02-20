@@ -30,6 +30,7 @@ let authenticator: express.RequestHandler = (
 
     axios.post(AUTH_URL, authRequest)
         .then(authResult => {
+            console.log(authResult);
             if (authResult.data.authenticated) {
                 next();
             } else {
