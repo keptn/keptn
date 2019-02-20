@@ -82,7 +82,6 @@ jobs:
       script:
         - echo "correct conditional check!"
         - echo "GITHUB token: " $GITHUB_TOKEN
-        - echo "ok"
         - echo "GOOGLE_APPLICATION_CREDENTIALS: " $GOOGLE_APPLICATION_CREDENTIALS
         #- export EVENT_BROKER_NAME=$(kubectl describe ksvc event-broker -n keptn | grep -m 1 "Name:" | sed 's~Name:[ \t]*~~')
         #- ./../../test/assertEquals.sh $EVENT_BROKER_NAME event-broker
