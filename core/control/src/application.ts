@@ -2,6 +2,7 @@ import express = require("express");
 import bodyParser = require("body-parser");
 import onboardRouter = require("./routes/onboardRouter");
 import requestLogger = require("./middleware/requestLogger");
+import authenticator = require('./middleware/authenticator');
 
 export class WebApi {
     /**
@@ -19,6 +20,7 @@ export class WebApi {
     private configureMiddleware(app: express.Express) {
         app.use(bodyParser.json());
         app.use(requestLogger);
+        app.use(authenticator);
     }
 
     private configureRoutes(app: express.Express) {
