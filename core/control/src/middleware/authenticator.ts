@@ -21,8 +21,12 @@ let authenticator: express.RequestHandler = async (
     let authResult = await axios.post('http://authenticator/auth', authRequest);
 
     console.log(authResult);
-
-    next();
+    
+    if (authResult.data.authenticated) {
+        next();
+    } else {
+        response.status(401);
+    }
 }
 
 export = authenticator;
