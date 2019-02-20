@@ -2,15 +2,23 @@ import express = require("express");
 import { AuthRequest } from '../types/authRequest';
 import axios from 'axios';
 
-let authenticator: express.RequestHandler = async (
+const AUTH_URL = process.env.NODE_ENV === 'production' ? 'http://authenticator.keptn.svc.cluster.local/auth' : 'http://localhost:3000/auth';
+
+let authenticator: express.RequestHandler = (
     request: express.Request,
     response: express.Response,
     next: express.NextFunction
 ) => {
-    console.log(JSON.stringify(request));
+    console.log('Starting authentication');
+    console.log(JSON.stringify(request.body));
     // TODO: insert call to authenticator.keptn.svc.cluster.local here
     // get signature from header
-    let signature: string = request.headers['X-Keptn-Signature'] as string;
+    let signature: string = request.headers['x-keptn-signature'] as string;
+    console.log(signature);
+    if (signature === undefined) {
+        response.status(401);
+        return;
+    }
     let payload = JSON.stringify(request.body);
 
     let authRequest: AuthRequest = {
@@ -20,20 +28,18 @@ let authenticator: express.RequestHandler = async (
 
     console.log(`Sending auth request: ${JSON.stringify(authRequest)}`);
 
-    let authResult;
-    try {
-        authResult = await axios.post('http://authenticator.keptn.svc.cluster.local/auth', authRequest);
-    } catch (e) {
-        console.log(e);
-    }
-
-    console.log(authResult);
-    
-    if (authResult.data.authenticated) {
-        next();
-    } else {
-        response.status(401);
-    }
+    axios.post(AUTH_URL, authRequest)
+        .then(authResult => {
+            if (authResult.data.authenticated) {
+                next();
+            } else {
+                response.status(401);
+            }
+        })
+        .catch(e => {
+            console.log('Authentication request failed');
+            response.status(401);
+        });
 }
 
 export = authenticator;
