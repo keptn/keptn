@@ -7,7 +7,7 @@ let authenticator: express.RequestHandler = async (
     response: express.Response,
     next: express.NextFunction
 ) => {
-    
+    console.log(JSON.stringify(request));
     // TODO: insert call to authenticator.keptn.svc.cluster.local here
     // get signature from header
     let signature: string = request.headers['X-Keptn-Signature'] as string;
