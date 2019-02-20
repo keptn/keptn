@@ -10,8 +10,6 @@ let authenticator: express.RequestHandler = (
     next: express.NextFunction
 ) => {
     console.log('Starting authentication');
-    next()
-    /*
     console.log(JSON.stringify(request.body));
     // TODO: insert call to authenticator.keptn.svc.cluster.local here
     // get signature from header
@@ -42,7 +40,6 @@ let authenticator: express.RequestHandler = (
             console.log('Authentication request failed');
             response.status(401);
         });
-        */
 }
 
 export = authenticator;
