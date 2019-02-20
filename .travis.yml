@@ -75,6 +75,7 @@ jobs:
         # Delete K8s cluster
         - gcloud container clusters delete $CLUSTER_NAME --zone $CLOUDSDK_COMPUTE_ZONE --project $PROJECT_NAME --quiet
 
+
     - stage: test-eventbroker
       if: type = pull_request
       script:
