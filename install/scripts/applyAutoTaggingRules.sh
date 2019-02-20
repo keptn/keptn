@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "setting up auto tagging rules in your Dynatrace tenant..."
+echo "Setting up auto tagging rules in your Dynatrace tenant."
 
 DT_TENANT_ID=$1
 DT_API_TOKEN=$2

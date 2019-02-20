@@ -1,3 +1,14 @@
+# Creds files
 scripts/creds.json
 install/scripts/creds.json
+
+# Auto-generated files
+manifests/gen/service_entries_oneagent.yml
+manifests/gen/hosts
+manifests/gen/service_entries
+manifests/gen/k8s-jenkins-deployment.yml
+manifests/gen/cr.yml
+manifests/gen/config-domain.yaml
+
+# Repositories forked by forkGitHubRepositories.sh
 repositories
