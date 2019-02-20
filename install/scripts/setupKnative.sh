@@ -9,7 +9,6 @@ kubectl create namespace keptn
 kubectl label namespace keptn istio-injection=enabled
 
 # Install knative serving, eventing, build
-
 kubectl apply --filename https://github.com/knative/serving/releases/download/v0.3.0/serving.yaml
 kubectl apply --filename https://github.com/knative/build/releases/download/v0.3.0/release.yaml
 kubectl apply --filename https://github.com/knative/eventing/releases/download/v0.3.0/release.yaml
@@ -17,14 +16,13 @@ kubectl apply --filename https://github.com/knative/eventing-sources/releases/do
 kubectl apply --filename https://github.com/knative/serving/releases/download/v0.3.0/monitoring.yaml
 
 # Configure knative serving default domain
+rm -f ../manifests/gen/config-domain.yaml
+
 export ISTIO_INGRESS_IP=$(kubectl describe svc istio-ingressgateway -n istio-system | grep "LoadBalancer Ingress:" | sed 's~LoadBalancer Ingress:[ \t]*~~')
-
 cat ../manifests/knative/config-domain.yaml | \
-  sed 's~ISTIO_INGRESS_IP_PLACEHOLDER~'"$ISTIO_INGRESS_IP"'~' >> ../manifests/knative/config-domain_tmp.yaml
+  sed 's~ISTIO_INGRESS_IP_PLACEHOLDER~'"$ISTIO_INGRESS_IP"'~' >> ../manifests/gen/config-domain.yaml
 
-mv ../manifests/knative/config-domain_tmp.yaml ../manifests/knative/config-domain.yaml
-
-kubectl apply -f ../manifests/knative/config-domain.yaml
+kubectl apply -f ../manifests/gen/config-domain.yaml
 
 # Install kaniko build template
 kubectl apply -f https://raw.githubusercontent.com/knative/build-templates/master/kaniko/kaniko.yaml -n keptn

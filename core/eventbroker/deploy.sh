@@ -9,7 +9,7 @@ TESTS_FINISHED_CHANNEL=$7
 START_EVALUATION_CHANNEL=$8
 EVALUATION_DONE_CHANNEL=$9
 
-rm config/gen/event-broker.yaml
+rm -f config/gen/event-broker.yaml
 
 cat config/event-broker.yaml | \
   sed 's~CHANNEL_URI_PLACEHOLDER~'"$CHANNEL_URI"'~' | \
