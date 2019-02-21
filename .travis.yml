@@ -97,6 +97,8 @@ jobs:
         - ./../../test/assertEquals.sh $EVENT_BROKER_NAME event-broker
         # execute GO tests
         - sudo apt-get install -y libsecret-1-0
+        - export PKG_CONFIG_PATH=$LD_LIBRARY_PATH:/usr/lib/pkgconfig:/usr/local/lib/pkgconfig
+        - echo PKG CONFIG PATH
         - echo $PKG_CONFIG_PATH
         - cd ../../cli/ 
         - go test ${gobuild_args} ./...
