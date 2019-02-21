@@ -17,8 +17,6 @@ kubectl apply --filename https://github.com/knative/serving/releases/download/v0
 # Configure knative serving default domain
 rm -f ../manifests/gen/config-domain.yaml
 
-ls ../manifests/gen
-
 export ISTIO_INGRESS_IP=$(kubectl describe svc istio-ingressgateway -n istio-system | grep "LoadBalancer Ingress:" | sed 's~LoadBalancer Ingress:[ \t]*~~')
 cat ../manifests/knative/config-domain.yaml | \
   sed 's~ISTIO_INGRESS_IP_PLACEHOLDER~'"$ISTIO_INGRESS_IP"'~' >> ../manifests/gen/config-domain.yaml
