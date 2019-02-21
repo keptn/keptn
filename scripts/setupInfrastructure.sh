@@ -22,7 +22,7 @@ export GCLOUD_USER=$(gcloud config get-value account)
 kubectl create clusterrolebinding dynatrace-cluster-admin-binding --clusterrole=cluster-admin --user=$GCLOUD_USER
 
 # Create K8s namespaces
-kubectl create -f ../manifests/k8s-namespaces.yml 
+kubectl create -f ../manifests/k8s-namespaces.yml
 
 # Create container registry
 kubectl create -f ../manifests/container-registry/k8s-docker-registry-pvc.yml
@@ -46,7 +46,7 @@ cat ../manifests/jenkins/k8s-jenkins-deployment.yml | \
 
 mv ../manifests/jenkins/k8s-jenkins-deployment_tmp.yml ../manifests/jenkins/k8s-jenkins-deployment.yml
 
-kubectl create -f ../manifests/jenkins/k8s-jenkins-pvcs.yml 
+kubectl create -f ../manifests/jenkins/k8s-jenkins-pvcs.yml
 kubectl create -f ../manifests/jenkins/k8s-jenkins-deployment.yml
 kubectl create -f ../manifests/jenkins/k8s-jenkins-rbac.yml
 
@@ -57,7 +57,7 @@ kubectl create -f https://raw.githubusercontent.com/Dynatrace/dynatrace-oneagent
 sleep 60
 kubectl -n dynatrace create secret generic oneagent --from-literal="apiToken=$DT_API_TOKEN" --from-literal="paasToken=$DT_PAAS_TOKEN"
 curl -o ../manifests/dynatrace/cr.yml https://raw.githubusercontent.com/Dynatrace/dynatrace-oneagent-operator/$LATEST_RELEASE/deploy/cr.yaml
-cat ../manifests/dynatrace/cr.yml | sed 's/ENVIRONMENTID.live.dynatrace.com/'"$DT_TENANT_ID"'/' >> ../manifests/dynatrace/cr_tmp.yml
+cat ../manifests/dynatrace/cr.yml | sed 's,ENVIRONMENTID.live.dynatrace.com,'"$DT_TENANT_ID"',' >> ../manifests/dynatrace/cr_tmp.yml
 mv ../manifests/dynatrace/cr_tmp.yml ../manifests/dynatrace/cr.yml
 kubectl create -f ../manifests/dynatrace/cr.yml
 
