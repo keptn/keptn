@@ -31,4 +31,4 @@ cp serviceEntry_tmp/service_entries_oneagent.yml ../manifests/istio/service_entr
 
 kubectl apply -f serviceEntry_tmp/service_entries_oneagent.yml
 
-rm -rf serviceEntry_tmp
+#rm -rf serviceEntry_tmp
