@@ -9,10 +9,10 @@ touch serviceEntry_tmp/service_entries
 
 cat ../manifests/istio/service_entries_tpl/part1 >> serviceEntry_tmp/service_entries_oneagent.yml
 
-echo -e "  - $1" >> serviceEntry_tmp/hosts
+dthost=$(echo $1 | sed 's,/.*,,')
+echo -e "  - $dthost" >> serviceEntry_tmp/hosts
 cat ../manifests/istio/service_entries_tpl/service_entry_tmpl | sed 's~ENDPOINT_PLACEHOLDER~'"$1"'~' >> serviceEntry_tmp/service_entries
 
-1=$(echo $1 | sed 's~/e~~')
 for row in $entries; do
     row=$(echo $row | sed 's~https://~~')
     row=$(echo $row | sed 's~/communication~~')
