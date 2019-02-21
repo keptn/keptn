@@ -32,6 +32,7 @@
     "axios": "^0.18.0",
     "express": "^4.16.4",
     "github-api": "^3.0.0",
+    "mustache": "^3.0.1",
     "yamljs": "^0.3.0",
     "kubernetes-client": "^6.8.3"
   }

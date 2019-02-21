@@ -1,12 +1,14 @@
 import express = require('express');
+import Mustache = require('mustache');
+import GitHub = require('github-api');
+import YAML = require('yamljs');
 
 import { CreateRequest } from '../types/createRequest';
 import { Utils } from '../lib/utils';
 
-const GitHub = require('github-api');
-const YAML = require('yamljs');
-
 const router = express.Router();
+
+// Util class
 const utils = new Utils();
 
 // Basic authentication
@@ -20,7 +22,7 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 
   const payload : CreateRequest = {
     data : {
-      application: 'sockshop8',
+      application: 'sockshop12',
       stages: [
         {
           name: 'dev',
@@ -148,15 +150,21 @@ async function createBranchesForEachStages(gitHubOrgName : string, payload : Cre
                            { encode: true });
 
       await repo.writeFile(stage.name,
-                           `helm-chart/values.yml`,
+                           'helm-chart/values.yml',
                            '',
                            '[keptn]: Added helm-chart values.yml file.',
                            { encode: true });
 
       if(stage.deployment_strategy === 'blue_green_service' ) {
+        // Add istio gateway to stage
         let gatewaySpec = await utils.readFileContent('keptn/keptn/core/control/src/routes/istio-manifests/gateway.tpl');
-        //gatewaySpec = mustache.render(gatewaySpec, { gitHubOrg: gitHubOrgName });
-        await repo.writeFile(stage.name, 'helm-chart/templates/istio-gateway.yaml', gatewaySpec, `[keptn]: Added istio gateway`, {encode: true});
+        gatewaySpec = Mustache.render(gatewaySpec, { application: payload.data.application, stage: stage.name});
+        
+        await repo.writeFile(stage.name,
+                             'helm-chart/templates/istio-gateway.yaml',
+                             gatewaySpec, 
+                             '[keptn]: Added istio gateway.',
+                             {encode: true});
       }
 
     });

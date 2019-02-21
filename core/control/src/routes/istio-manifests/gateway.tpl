@@ -1,7 +1,7 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
-  name: {{ gitHubOrg }}-gateway
+  name: {{ application }}-{{ stage }}-gateway
 spec:
   selector:
     istio: ingressgateway
