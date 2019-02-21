@@ -94,7 +94,7 @@ jobs:
         - ./../../test/assertEquals.sh $EVENT_BROKER_NAME event-broker
         # execute GO tests
         - cd ../../cli/ 
-        - go test -v ./...
+        - go test ${gobuild_args} ./...
 
       after_script:
         - sleep 30
