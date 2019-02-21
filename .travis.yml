@@ -95,7 +95,7 @@ jobs:
         - export EVENT_BROKER_NAME=$(kubectl describe ksvc event-broker -n keptn | grep -m 1 "Name:" | sed 's~Name:[ \t]*~~')
         - ./../../test/assertEquals.sh $EVENT_BROKER_NAME event-broker
         # cleanup starts here
-        - "echo wait before cleanup..."
+        - echo "wait before cleanup..."
         - sleep 30
         # delete namespaces
         - kubectl delete pods,svc,deployments --all -n keptn
@@ -109,5 +109,5 @@ jobs:
         - sleep 30
         - kubectl delete clusterrolebinding travis-cluster-admin-binding
         # finished
-        
+
         
