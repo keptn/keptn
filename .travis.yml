@@ -1,7 +1,7 @@
 sudo: true
 
 # Use node_js environnement
-language: generic
+language: go
 
 go:
   - 1.11.x
