@@ -2,7 +2,7 @@ import express = require("express");
 
 let router = express.Router();
 
-router.post('/', (request: express.Request, response: express.Response) => {
+router.post('/create', (request: express.Request, response: express.Response) => {
 
     let result = {
         "foo": "bar"

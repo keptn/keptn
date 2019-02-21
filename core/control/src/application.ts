@@ -1,9 +1,11 @@
 import express = require("express");
 import bodyParser = require("body-parser");
 import onboardRouter = require("./routes/onboardRouter");
+import appRouter = require("./routes/appRouter");
 import requestLogger = require("./middleware/requestLogger");
 
 export class WebApi {
+    
     /**
      * @param app - express application
      * @param port - port to listen on
@@ -21,8 +23,13 @@ export class WebApi {
         app.use(requestLogger);
     }
 
+    /**
+     * @param app - express application
+     */
     private configureRoutes(app: express.Express) {
         app.use("/onboard", onboardRouter );
+        app.use("/app", appRouter );
+
         // mount more routers here
         // e.g. app.use("/organisation", organisationRouter);
     }
