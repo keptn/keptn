@@ -1,12 +1,15 @@
-import express = require("express");
+import express = require('express');
 
-let requestLogger: express.RequestHandler = (
-    request: express.Request,
-    response: express.Response,
-    next: express.NextFunction
+const requestLogger: express.RequestHandler = (
+  request: express.Request,
+  response: express.Response,
+  next: express.NextFunction,
 ) => {
-    console.info(`${(new Date()).toUTCString()}|${request.method}|${request.url}|${request.ip}|${JSON.stringify(request.body)}`);
-    next();
-}
+  console.info(
+    `${(new Date()).toUTCString()}
+    |${request.method}|${request.url}|${request.ip}|${JSON.stringify(request.body)}`,
+  );
+  next();
+};
 
 export = requestLogger;

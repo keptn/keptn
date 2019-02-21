@@ -1,4 +1,4 @@
 export interface AuthRequest {
-    payload: string;
-    signature: string;
+  payload: string;
+  signature: string;
 }
