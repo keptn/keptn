@@ -23,8 +23,10 @@ cat ../manifests/knative/config-domain.yaml | \
 
 kubectl apply -f ../manifests/gen/config-domain.yaml
 
+sleep 30
+
 # Install kaniko build template
-kubectl apply -f https://raw.githubusercontent.com/knative/build-templates/master/kaniko/kaniko.yaml -n keptn
+kubectl apply -f ../manifests/knative/build/kaniko.yaml -n keptn
 
 # Create build-bot service account
 kubectl apply -f ../manifests/knative/build/service-account.yaml
