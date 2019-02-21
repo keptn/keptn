@@ -23,7 +23,7 @@ export class WebApi {
   private configureMiddleware(app: express.Express) {
     app.use(bodyParser.json());
     app.use(requestLogger);
-    app.use(authenticator);
+    //app.use(authenticator);
   }
 
   /**

@@ -8,7 +8,7 @@ const YAML = require('yamljs');
 // Basic authentication
 const gh = new GitHub({
   username: 'johannes-b',
-  password: 'd74b5346409bdebe31ac4e9011602c17da62d7e5',
+  password: '**',
   auth: 'basic',
 });
 
@@ -16,7 +16,7 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 
   const payload = {
     data : {
-      application: 'sockshop',
+      application: 'sockshop1',
       stages: [
         {
           name: 'dev',
@@ -33,63 +33,15 @@ router.post('/', async (request: express.Request, response: express.Response) =>
     },
   };
 
-  const repository = {
-    name : payload.data.application,
-  };
-
   const gitHubOrgName = 'keptn-test';
 
-  // Create repository
-  try {
-    const organization = await gh.getOrganization(gitHubOrgName);
-    //await organization.createRepo(repository);
-  } catch (e) {
-    console.log('Creating repository failed.');
-    console.log(e.message);
-  }
+  await createRepository(gitHubOrgName, payload); 
 
-  // Initial commit
-  try {
-    const codeRepo = await gh.getRepo(gitHubOrgName, 'sockshop');
-    /*
-    await codeRepo.writeFile('master',
-                             'README.md',
-                             `# keptn takes care of your ${payload.data.application}`,
-                             'Initial commit', { encode: true });
-    */
-  } catch (e) {
-    console.log('Initial commit failed.');
-    console.log(e.message);
-  }
+  await initialCommit(gitHubOrgName, payload);
 
-  // Create branches
-  try {
-    const codeRepo = await gh.getRepo(gitHubOrgName, 'sockshop');
+  await createEmptyBranches(gitHubOrgName, payload);
 
-    /*
-    payload.data.stages.forEach(async stage =>
-      await codeRepo.createBranch('master', stage.name),
-    );
-    */
-  } catch (e) {
-    console.log('Creating branches failed.');
-    console.log(e.message);
-  }
-
-  // Add shipyard to master
-  try {
-    const codeRepo = await gh.getRepo(gitHubOrgName, 'sockshop');
-    /*
-    await codeRepo.writeFile('master',
-                             'shipyard.yml',
-                             YAML.stringify(payload.data),
-                             'Added shipyard containing the definition of each stage',
-                             { encode: true });
-    */
-  } catch (e) {
-    console.log('Initial commit failed.');
-    console.log(e.message);
-  }
+  await addShipyardToMaster(gitHubOrgName, payload);
 
   const result = {
     result: 'success',
@@ -115,5 +67,60 @@ router.delete('/', async (request: express.Request, response: express.Response) 
 
   response.send(result);
 });
+
+async function createRepository(gitHubOrgName, payload) {
+  const repository = {
+    name : payload.data.application,
+  };
+
+  try {
+    const organization = await gh.getOrganization(gitHubOrgName);
+    await organization.createRepo(repository);
+  } catch (e) {
+    console.log('Creating repository failed.');
+    console.log(e.message);
+  }
+}
+
+async function initialCommit(gitHubOrgName, payload) {
+  try {
+    const codeRepo = await gh.getRepo(gitHubOrgName, payload.data.application);
+    
+    await codeRepo.writeFile('master',
+                            'README.md',
+                            `# keptn takes care of your ${payload.data.application}`,
+                            'Initial commit', { encode: true });
+  } catch (e) {
+    console.log('Initial commit failed.');
+    console.log(e.message);
+  }
+}
+
+async function createEmptyBranches(gitHubOrgName, payload) {
+  try {
+    const codeRepo = await gh.getRepo(gitHubOrgName, payload.data.application);
+
+    payload.data.stages.forEach(async stage =>
+      await codeRepo.createBranch('master', stage.name),
+    );
+  } catch (e) {
+    console.log('Creating branches failed.');
+    console.log(e.message);
+  }
+}
+
+async function addShipyardToMaster(gitHubOrgName, payload) {
+  try {
+    const codeRepo = await gh.getRepo(gitHubOrgName, payload.data.application);
+    await codeRepo.writeFile('master',
+                              'shipyard.yml',
+                              YAML.stringify(payload.data),
+                              'Added shipyard containing the definition of each stage',
+                              { encode: true });
+  } catch (e) {
+    console.log('Adding shipyard to master failed.');
+    console.log(e.message);
+  }
+}
 
 export = router;
