@@ -57,7 +57,7 @@ kubectl create -f https://raw.githubusercontent.com/Dynatrace/dynatrace-oneagent
 sleep 60
 kubectl -n dynatrace create secret generic oneagent --from-literal="apiToken=$DT_API_TOKEN" --from-literal="paasToken=$DT_PAAS_TOKEN"
 curl -o ../manifests/dynatrace/cr.yml https://raw.githubusercontent.com/Dynatrace/dynatrace-oneagent-operator/$LATEST_RELEASE/deploy/cr.yaml
-cat ../manifests/dynatrace/cr.yml | sed 's/ENVIRONMENTID/'"$DT_TENANT_ID"'/' >> ../manifests/dynatrace/cr_tmp.yml
+cat ../manifests/dynatrace/cr.yml | sed 's/ENVIRONMENTID.live.dynatrace.com/'"$DT_TENANT_ID"'/' >> ../manifests/dynatrace/cr_tmp.yml
 mv ../manifests/dynatrace/cr_tmp.yml ../manifests/dynatrace/cr.yml
 kubectl create -f ../manifests/dynatrace/cr.yml
 
