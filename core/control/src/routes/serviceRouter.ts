@@ -2,13 +2,13 @@ import express = require("express");
 
 let router = express.Router();
 
-router.post('/', (request: express.Request, response: express.Response) => {
+router.post('/onboard', (request: express.Request, response: express.Response) => {
 
-    let result = {
-        "foo": "bar"
-    };
+  const result = {
+    foo: 'bar',
+  };
 
-    response.send(result);
+  response.send(result);
 });
 
 // add more route handlers here
