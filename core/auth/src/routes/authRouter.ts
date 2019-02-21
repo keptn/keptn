@@ -1,33 +1,35 @@
-import express = require("express");
-import "../types/authRequest";
-import { AuthRequest } from "../types/authRequest";
-const crypto = require("crypto");
-const bufferEq = require("buffer-equal-constant-time");
+import express = require('express');
+import { AuthRequest } from '../types/authRequest';
+const crypto = require('crypto');
+const bufferEq = require('buffer-equal-constant-time');
 
-let authRouter = express.Router();
+const authRouter = express.Router();
 
-function sign (data: string) {
-    let signature = 'sha1=' + crypto.createHmac('sha1', process.env.SECRET_TOKEN || "").update(data).digest('hex');
-    console.log(`Calculated signature: ${signature}`);
-    return signature;
-  }
+function sign(data: string) {
+  const signature =
+    `sha1=${crypto.createHmac('sha1', process.env.SECRET_TOKEN || '')
+    .update(data).digest('hex')}`;
 
-  function verify (authRequest: AuthRequest) {
-    return bufferEq(Buffer.from(authRequest.signature), Buffer.from(sign(authRequest.payload)));
-  }
+  console.log(`Calculated signature: ${signature}`);
+  return signature;
+}
+
+function verify(authRequest: AuthRequest) {
+  return bufferEq(Buffer.from(authRequest.signature), Buffer.from(sign(authRequest.payload)));
+}
 
 authRouter.post('/', (request: express.Request, response: express.Response) => {
-    console.log('Starting authentication');
-    var authRequest: AuthRequest = request.body;
-    console.log(`Received auth request: ${JSON.stringify(authRequest)}`);
+  console.log('Starting authentication');
+  const authRequest: AuthRequest = request.body;
+  console.log(`Received auth request: ${JSON.stringify(authRequest)}`);
 
-    let authResult = {
-        authenticated: verify(authRequest)
-    }
+  const authResult = {
+    authenticated: verify(authRequest),
+  };
 
-    console.log(`Response: ${JSON.stringify(authResult)}`);
+  console.log(`Response: ${JSON.stringify(authResult)}`);
 
-    response.send(authResult);
+  response.send(authResult);
 });
 // add more route handlers here
 // e.g. authRouter.post('/', (req,res,next)=> {/*...*/})
