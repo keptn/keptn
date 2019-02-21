@@ -22,7 +22,7 @@ env:
 jobs:
   include:
     - stage: master
-      if: branch = master 
+      if: branch = master AND NOT type = pull_request
       script:
         # Install hub
         - sudo wget https://github.com/github/hub/releases/download/v2.6.0/hub-linux-amd64-2.6.0.tgz
@@ -88,6 +88,7 @@ jobs:
         - export GCLOUD_USER=$(gcloud config get-value account)
         - kubectl create clusterrolebinding travis-cluster-admin-binding --clusterrole=cluster-admin --user=$GCLOUD_USER
         - export REGISTRY_URL=$(kubectl describe svc docker-registry -n cicd | grep "IP:" | sed 's~IP:[ \t]*~~')
+
         - cd ./install/scripts/
         - ./setupKnative.sh $JENKINS_USER $JENKINS_PASSWORD $REGISTRY_URL
         - export EVENT_BROKER_NAME=$(kubectl describe ksvc event-broker -n keptn | grep -m 1 "Name:" | sed 's~Name:[ \t]*~~')
@@ -97,7 +98,6 @@ jobs:
         - go test -v ./...
 
       after_script:
-        - sleep 30
         - kubectl delete pods,svc,deployments --all -n keptn
         - kubectl delete channel --all -n keptn
         - kubectl delete clusterchannelprovisioner --all -n keptn
