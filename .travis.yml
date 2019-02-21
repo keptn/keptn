@@ -87,7 +87,7 @@ jobs:
         - export GCLOUD_USER=$(gcloud config get-value account)
         - kubectl create clusterrolebinding travis-cluster-admin-binding --clusterrole=cluster-admin --user=$GCLOUD_USER
         # cleanup before installing keptn
-        - kubectl delete ns keptn knative-build knative-eventing knative-monitoring knative-serving knative-sources --ignore-not-found=true
+        #- kubectl delete ns keptn knative-build knative-eventing knative-monitoring knative-serving knative-sources --ignore-not-found=true
         - export REGISTRY_URL=$(kubectl describe svc docker-registry -n cicd | grep "IP:" | sed 's~IP:[ \t]*~~')
         # install yq!? - not needed according to Johannes
         - cd ./install/scripts/
@@ -103,11 +103,10 @@ jobs:
         - kubectl delete clusterchannelprovisioner --all -n keptn
         - sleep 10
         - kubectl delete ns knative-build knative-eventing knative-monitoring knative-serving knative-sources
-        - sleep 10
+        - sleep 30
         #- kubectl delete ns keptn
         # to prevent other jobs from being executed right afterwards and cleanup is not finished yet
         - sleep 30
         - kubectl delete clusterrolebinding travis-cluster-admin-binding
         # finished
 
-        
