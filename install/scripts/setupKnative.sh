@@ -1,8 +1,7 @@
 #!/bin/bash
-JENKINS_URL=$1
-JENKINS_USER=$2
-JENKINS_PASSWORD=$3
-REGISTRY_URL=$4
+JENKINS_USER=$1
+JENKINS_PASSWORD=$2
+REGISTRY_URL=$3
 
 kubectl create namespace keptn
 
@@ -17,6 +16,8 @@ kubectl apply --filename https://github.com/knative/serving/releases/download/v0
 
 # Configure knative serving default domain
 rm -f ../manifests/gen/config-domain.yaml
+
+ls ../manifests/gen
 
 export ISTIO_INGRESS_IP=$(kubectl describe svc istio-ingressgateway -n istio-system | grep "LoadBalancer Ingress:" | sed 's~LoadBalancer Ingress:[ \t]*~~')
 cat ../manifests/knative/config-domain.yaml | \
