@@ -15,6 +15,7 @@ kubectl label namespace production istio-injection=enabled
 
 ./createServiceEntry.sh $DT_TENANT_ID $DT_PAAS_TOKEN
 
+echo "Wait 10s for changes to apply... "
 sleep 10
 
 kubectl delete pods --all -n production
