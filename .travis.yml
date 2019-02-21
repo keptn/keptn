@@ -86,7 +86,7 @@ jobs:
         - gcloud container clusters get-credentials keptn-pr-check --zone us-central1-a --project sai-research
         - export GCLOUD_USER=$(gcloud config get-value account)
         - echo "GCLOUD_USER:" $GCLOUD_USER
-        - kubectl create clusterrolebinding dynatrace-cluster-admin-binding --clusterrole=cluster-admin --user=$GCLOUD_USER
+        - kubectl create clusterrolebinding $GLOUD_USER-cluster-admin-binding --clusterrole=cluster-admin --user=$GCLOUD_USER
         - export REGISTRY_URL=$(kubectl describe svc docker-registry -n cicd | grep "IP:" | sed 's~IP:[ \t]*~~')
         # install jq and yq!?
         - cd ./install/scripts/
@@ -94,5 +94,6 @@ jobs:
         - export EVENT_BROKER_NAME=$(kubectl describe ksvc event-broker -n keptn | grep -m 1 "Name:" | sed 's~Name:[ \t]*~~')
         - ./../../test/assertEquals.sh $EVENT_BROKER_NAME event-broker
         # delete namespaces
+        - kubectl delete clusterrolebinding $GLOUD_USER-cluster-admin-binding
         - kubectl delete ns keptn knative-build knative-eventing knative-monitoring knative-serving knative-sources
 
