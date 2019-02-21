@@ -21,7 +21,11 @@ env:
   global:
     - GOOGLE_APPLICATION_CREDENTIALS=~/gcloud-service-key.json
 
-
+before_install:
+  - sudo apt-get install -y libsecret-1-0
+  - export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/lib/pkgconfig:/usr/local/lib/pkgconfig
+  - echo $PKG_CONFIG_PATH
+  
 jobs:
   include:
     - stage: master
@@ -79,10 +83,6 @@ jobs:
 
     - stage: pr
       if: type = pull_request
-      before_install:
-        - sudo apt-get install -y libsecret-1-0
-        - export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/lib/pkgconfig:/usr/local/lib/pkgconfig
-        - echo $PKG_CONFIG_PATH
       script:
         - if [ ! -d "$HOME/google-cloud-sdk/bin" ]; then rm -rf $HOME/google-cloud-sdk; export CLOUDSDK_CORE_DISABLE_PROMPTS=1; curl https://sdk.cloud.google.com | bash; fi
         - source /home/travis/google-cloud-sdk/path.bash.inc
