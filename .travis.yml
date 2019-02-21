@@ -83,7 +83,7 @@ jobs:
         - gcloud --quiet components update kubectl
         - echo $GCLOUD_SERVICE_KEY | base64 --decode -i > ${HOME}/gcloud-service-key.json
         - gcloud auth activate-service-account --key-file ${HOME}/gcloud-service-key.json
-        - gcloud container clusters get-credentials keptn-pr-statuscheck --zone us-central1-a --project sai-research
+        - gcloud container clusters get-credentials keptn-pr-statuscheck1 --zone us-central1-a --project sai-research
         - export GCLOUD_USER=$(gcloud config get-value account)
         - kubectl create clusterrolebinding travis-cluster-admin-binding --clusterrole=cluster-admin --user=$GCLOUD_USER
         # cleanup before installing keptn
