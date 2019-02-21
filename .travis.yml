@@ -96,6 +96,7 @@ jobs:
         - export EVENT_BROKER_NAME=$(kubectl describe ksvc event-broker -n keptn | grep -m 1 "Name:" | sed 's~Name:[ \t]*~~')
         - ./../../test/assertEquals.sh $EVENT_BROKER_NAME event-broker
         # execute GO tests
+        - sudo apt-get install -y libsecret-1-dev
         - cd ../../cli/ 
         - go test ${gobuild_args} ./...
 
