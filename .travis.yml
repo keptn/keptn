@@ -3,6 +3,9 @@ sudo: true
 # Use node_js environnement
 language: generic
 
+go:
+  - 1.11.x
+
 # Cache Gcloud SDK between commands
 cache:
   directories:
@@ -94,7 +97,7 @@ jobs:
         - ./../../test/assertEquals.sh $EVENT_BROKER_NAME event-broker
         # execute GO tests
         - cd ../../cli/ 
-        - go test -v ./...
+        - go test ${gobuild_args} ./...
 
       after_script:
         - sleep 30
