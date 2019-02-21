@@ -85,6 +85,7 @@ jobs:
         - gcloud auth activate-service-account --key-file ${HOME}/gcloud-service-key.json
         - gcloud container clusters get-credentials keptn-pr-check --zone us-central1-a --project sai-research
         - export GCLOUD_USER=$(gcloud config get-value account)
+        - echo "GCLOUD_USER:" $GCLOUD_USER
         - kubectl create clusterrolebinding dynatrace-cluster-admin-binding --clusterrole=cluster-admin --user=$GCLOUD_USER
         - export REGISTRY_URL=$(kubectl describe svc docker-registry -n cicd | grep "IP:" | sed 's~IP:[ \t]*~~')
         # install jq and yq!?
