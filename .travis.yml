@@ -78,7 +78,7 @@ jobs:
       script:
         - if [ ! -d "$HOME/google-cloud-sdk/bin" ]; then rm -rf $HOME/google-cloud-sdk; export CLOUDSDK_CORE_DISABLE_PROMPTS=1; curl https://sdk.cloud.google.com | bash; fi
         - source /home/travis/google-cloud-sdk/path.bash.inc
-        - gcloud version
+        - gcloud --quiet version
         - gcloud --quiet components update
         - gcloud --quiet components update kubectl
         - echo $GCLOUD_SERVICE_KEY | base64 --decode -i > ${HOME}/gcloud-service-key.json
@@ -98,8 +98,9 @@ jobs:
         - sleep 30
         # delete namespaces
         - kubectl delete pods,svc,deployments --all -n keptn
+        - sleep 30
         - kubectl delete ns keptn knative-build knative-eventing knative-monitoring knative-serving knative-sources
-        - kubectl delete clusterrolebinding travis-cluster-admin-binding
         # to prevent other jobs from being executed right afterwards and cleanup is not finished yet
         - sleep 30
-
+        - kubectl delete clusterrolebinding travis-cluster-admin-binding
+        
