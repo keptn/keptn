@@ -95,5 +95,5 @@ spec:
 
 The following diagram illustrates the setup steps executed during the onboarding process:
 
-![keptn-infra](./docs/assets/keptn-onboard-infra.png)
+![keptn-infra](./docs/res/keptn-onboard-infra.png)
 
