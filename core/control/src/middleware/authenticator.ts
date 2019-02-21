@@ -1,5 +1,5 @@
 import express = require('express');
-import { AuthRequest } from '../types/authRequest';
+import { AuthRequest } from '../lib/types/AuthRequest';
 import axios from 'axios';
 
 const AUTH_URL = process.env.NODE_ENV === 'production' ?

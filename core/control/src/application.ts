@@ -23,7 +23,9 @@ export class WebApi {
   private configureMiddleware(app: express.Express) {
     app.use(bodyParser.json());
     app.use(requestLogger);
-    app.use(authenticator);
+    if (process.env.NODE_ENV === 'production') {
+      app.use(authenticator);
+    }
   }
 
   /**
