@@ -18,6 +18,7 @@ env:
   global:
     - GOOGLE_APPLICATION_CREDENTIALS=~/gcloud-service-key.json
 
+
 jobs:
   include:
     - stage: master
@@ -27,7 +28,6 @@ jobs:
         - sudo wget https://github.com/github/hub/releases/download/v2.6.0/hub-linux-amd64-2.6.0.tgz
         - tar -xzf hub-linux-amd64-2.6.0.tgz
         - sudo cp hub-linux-amd64-2.6.0/bin/hub /bin/
-
         # Create K8s cluster
         - if [ ! -d "$HOME/google-cloud-sdk/bin" ]; then rm -rf $HOME/google-cloud-sdk; export CLOUDSDK_CORE_DISABLE_PROMPTS=1; curl https://sdk.cloud.google.com | bash; fi
         - source /home/travis/google-cloud-sdk/path.bash.inc
