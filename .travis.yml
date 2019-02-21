@@ -106,7 +106,7 @@ jobs:
         - sleep 30
         #- kubectl delete ns keptn
         # to prevent other jobs from being executed right afterwards and cleanup is not finished yet
-        - sleep 30
+        #- sleep 30
         - kubectl delete clusterrolebinding travis-cluster-admin-binding
         # finished
 
