@@ -91,7 +91,12 @@ jobs:
         - ./setupKnative.sh $JENKINS_USER $JENKINS_PASSWORD $REGISTRY_URL
         - export EVENT_BROKER_NAME=$(kubectl describe ksvc event-broker -n keptn | grep -m 1 "Name:" | sed 's~Name:[ \t]*~~')
         - ./../../test/assertEquals.sh $EVENT_BROKER_NAME event-broker
+        # execute GO tests
+        #- cd ../../cli/ 
+        #- go test -v ./...
+
       after_script:
+        - sleep 30
         - kubectl delete pods,svc,deployments --all -n keptn
         - kubectl delete channel --all -n keptn
         - kubectl delete clusterchannelprovisioner --all -n keptn
