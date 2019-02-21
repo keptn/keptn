@@ -1,33 +1,38 @@
 import express = require('express');
 
-const router = express.Router();
+import { CreateRequest } from '../types/createRequest';
+import { Utils } from '../lib/utils';
 
 const GitHub = require('github-api');
 const YAML = require('yamljs');
 
+const router = express.Router();
+const utils = new Utils();
+
 // Basic authentication
 const gh = new GitHub({
-  username: 'johannes-b',
+  username: '**',
   password: '**',
   auth: 'basic',
 });
 
 router.post('/', async (request: express.Request, response: express.Response) => {
 
-  const payload = {
+  const payload : CreateRequest = {
     data : {
-      application: 'sockshop1',
+      application: 'sockshop8',
       stages: [
         {
           name: 'dev',
-          next: 'staging',
+          deployment_strategy: 'direct',
         },
         {
           name: 'staging',
-          next: 'production',
+          deployment_strategy: 'blue_green_service',
         },
         {
           name: 'production',
+          deployment_strategy: 'blue_green_service',
         },
       ],
     },
@@ -39,9 +44,11 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 
   await initialCommit(gitHubOrgName, payload);
 
-  await createEmptyBranches(gitHubOrgName, payload);
+  await createBranchesForEachStages(gitHubOrgName, payload);
 
   await addShipyardToMaster(gitHubOrgName, payload);
+
+  await setHook(gitHubOrgName, payload);
 
   const result = {
     result: 'success',
@@ -68,7 +75,30 @@ router.delete('/', async (request: express.Request, response: express.Response) 
   response.send(result);
 });
 
-async function createRepository(gitHubOrgName, payload) {
+async function setHook(gitHubOrgName : string, payload : CreateRequest) {
+  try {
+    const repo = await gh.getRepo(gitHubOrgName, payload.data.application);
+
+    //const istioIngressGatewayService = await utils.getK8sServiceUrl('istio-ingressgateway', 'istio-system');
+    //const eventBrokerUri = `event-broker.keptn.${istioIngressGatewayService.ip}.xip.io`;
+    const eventBrokerUri = 'need-to-be-set';
+
+    await repo.createHook({
+        name: 'web',
+        events: ['push'],
+        config: {
+            url: `http://${eventBrokerUri}/github`,
+            content_type: 'json'   
+        }
+    });
+    console.log(`Webhook created: http://${eventBrokerUri}/github`);
+  } catch (e) {
+    console.log('Setting hook failed.');
+    console.log(e.message);
+  }
+}
+
+async function createRepository(gitHubOrgName : string, payload : CreateRequest) {
   const repository = {
     name : payload.data.application,
   };
@@ -79,44 +109,75 @@ async function createRepository(gitHubOrgName, payload) {
   } catch (e) {
     console.log('Creating repository failed.');
     console.log(e.message);
-  }
+  }  
 }
 
-async function initialCommit(gitHubOrgName, payload) {
+async function initialCommit(gitHubOrgName : string, payload : CreateRequest) {
   try {
-    const codeRepo = await gh.getRepo(gitHubOrgName, payload.data.application);
+    const repo = await gh.getRepo(gitHubOrgName, payload.data.application);
     
-    await codeRepo.writeFile('master',
-                            'README.md',
-                            `# keptn takes care of your ${payload.data.application}`,
-                            'Initial commit', { encode: true });
+    await repo.writeFile('master',
+                         'README.md',
+                         `# keptn takes care of your ${payload.data.application}`,
+                         '[keptn]: Initial commit', { encode: true });
   } catch (e) {
     console.log('Initial commit failed.');
     console.log(e.message);
   }
 }
 
-async function createEmptyBranches(gitHubOrgName, payload) {
-  try {
-    const codeRepo = await gh.getRepo(gitHubOrgName, payload.data.application);
+async function createBranchesForEachStages(gitHubOrgName : string, payload : CreateRequest) {
 
-    payload.data.stages.forEach(async stage =>
-      await codeRepo.createBranch('master', stage.name),
-    );
+  const chart = {
+    apiVersion: 'v1',
+    description: 'A Helm chart for Kubernetes',
+    name: 'mean-k8s',
+    version: '0.1.0'
+  };
+  
+  try {
+    const repo = await gh.getRepo(gitHubOrgName, payload.data.application);
+
+    payload.data.stages.forEach(async stage => {
+      await repo.createBranch('master', stage.name);
+
+      await repo.writeFile(stage.name,
+                           'helm-chart/Chart.yml',
+                           YAML.stringify(chart),
+                           '[keptn]: Added helm-chart Chart.yml file.',
+                           { encode: true });
+
+      await repo.writeFile(stage.name,
+                           `helm-chart/values.yml`,
+                           '',
+                           '[keptn]: Added helm-chart values.yml file.',
+                           { encode: true });
+
+      if(stage.deployment_strategy === 'blue_green_service' ) {
+        let gatewaySpec = await utils.readFileContent('keptn/keptn/core/control/src/routes/istio-manifests/gateway.tpl');
+        //gatewaySpec = mustache.render(gatewaySpec, { gitHubOrg: gitHubOrgName });
+        await repo.writeFile(stage.name, 'helm-chart/templates/istio-gateway.yaml', gatewaySpec, `[keptn]: Added istio gateway`, {encode: true});
+      }
+
+    });
   } catch (e) {
     console.log('Creating branches failed.');
     console.log(e.message);
   }
 }
 
-async function addShipyardToMaster(gitHubOrgName, payload) {
+async function createHelmChart() {
+  console.log("create Helm charts");
+}
+
+async function addShipyardToMaster(gitHubOrgName : string, payload : CreateRequest) {
   try {
-    const codeRepo = await gh.getRepo(gitHubOrgName, payload.data.application);
-    await codeRepo.writeFile('master',
-                              'shipyard.yml',
-                              YAML.stringify(payload.data),
-                              'Added shipyard containing the definition of each stage',
-                              { encode: true });
+    const repo = await gh.getRepo(gitHubOrgName, payload.data.application);
+    await repo.writeFile('master',
+                         'shipyard.yml',
+                         YAML.stringify(payload.data),
+                         '[keptn]: Added shipyard containing the definition of each stage',
+                         { encode: true });
   } catch (e) {
     console.log('Adding shipyard to master failed.');
     console.log(e.message);

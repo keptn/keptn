@@ -1,7 +1,6 @@
 import express = require('express');
 import bodyParser = require('body-parser');
 import configRouter = require('./routes/configRouter');
-import onboardRouter = require('./routes/onboardRouter');
 import appRouter = require('./routes/appRouter');
 import requestLogger = require('./middleware/requestLogger');
 import authenticator = require('./middleware/authenticator');
@@ -31,7 +30,6 @@ export class WebApi {
    */
   private configureRoutes(app: express.Express) {
     app.use('/config', configRouter);
-    app.use('/onboard', onboardRouter);
     app.use('/app', appRouter);
 
     // mount more routers here
