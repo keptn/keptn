@@ -83,7 +83,7 @@ jobs:
         - gcloud --quiet components update kubectl
         - echo $GCLOUD_SERVICE_KEY | base64 --decode -i > ${HOME}/gcloud-service-key.json
         - gcloud auth activate-service-account --key-file ${HOME}/gcloud-service-key.json
-        - gcloud container clusters get-credentials keptn-pr-statuscheck1 --zone us-central1-a --project sai-research
+        - gcloud container clusters get-credentials keptn-pr-statuscheck --zone us-central1-a --project sai-research
         - export GCLOUD_USER=$(gcloud config get-value account)
         - kubectl create clusterrolebinding travis-cluster-admin-binding --clusterrole=cluster-admin --user=$GCLOUD_USER
         # cleanup before installing keptn
@@ -104,7 +104,7 @@ jobs:
         - sleep 10
         - kubectl delete ns knative-build knative-eventing knative-monitoring knative-serving knative-sources
         - sleep 10
-        - kubectl delete ns keptn
+        #- kubectl delete ns keptn
         # to prevent other jobs from being executed right afterwards and cleanup is not finished yet
         - sleep 30
         - kubectl delete clusterrolebinding travis-cluster-admin-binding
