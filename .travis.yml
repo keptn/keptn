@@ -8,12 +8,6 @@ cache:
   directories:
     - "$HOME/google-cloud-sdk/"
 
-# safelist
-branches:
-  only:
-  - master
-  - cli
-
 # Install services
 services:
   - docker
