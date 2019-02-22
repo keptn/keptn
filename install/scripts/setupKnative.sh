@@ -2,6 +2,7 @@
 JENKINS_USER=$1
 JENKINS_PASSWORD=$2
 REGISTRY_URL=$3
+SHOW_API_TOKEN=$4
 
 kubectl create namespace keptn
 
@@ -75,7 +76,11 @@ cd ../../core/control
 ./deploy.sh $REGISTRY_URL
 cd ../../install/scripts
 
-echo "API token: $KEPTN_API_TOKEN"
+if [[ $SHOW_API_TOKEN = 'y' ]]
+then
+    echo "API token: $KEPTN_API_TOKEN"
+fi
+
 
 # Deploy Operator
 # kubectl apply -f ../../keptn.jenkins-operator/config/operator.yaml
