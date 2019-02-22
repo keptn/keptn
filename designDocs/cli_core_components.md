@@ -43,7 +43,7 @@ In the following, planned commands for the CLI are listed and explained:
 
     *Example:* 
     ```console
-    $ keptn configure --endpoint= --api-token=
+    $ keptn auth --endpoint= --api-token=
     ```
 
 * **keptn configure --org --user --token**: Configures the keptn CLI by storing the the **GitHub organization** and **GitHub user** locally, and this command triggers the *keptn.control* component to create a secret for the **GitHub token**.
@@ -53,11 +53,18 @@ In the following, planned commands for the CLI are listed and explained:
     $ keptn configure --org= --user= --token=
     ```
 
-* **keptn create app**: Creates a new repository in the GitHub organization and initializes the repository with helm charts. For this now, the shipyard.yml file (see below) contains the number of stages and name of each stage. Based on that information, this command creates a branch for each stage.
+* **keptn create project**: Creates a new repository in the GitHub organization and initializes the repository with helm charts. For this now, the shipyard.yml file (see below) contains the number of stages and name of each stage. Based on that information, this command creates a branch for each stage.
 
     *Example:*
     ```console
-    $ keptn create app sockshop shipyard.yml
+    $ keptn create project sockshop shipyard.yml
+    ```
+
+* **keptn onboard service**: Takes an service.yaml and sends a CloudEvent (containing the yaml) to the control component.
+   
+     *Example: Takes file*
+    ```console
+    $ keptn onboard service --project=sockshop --file=carts.yaml
     ```
 
 # Structure GitHub Organization
@@ -81,7 +88,7 @@ stages:
 - name: 
     development_strategy: [direct, service_blue/green, application_blue/green]
     deployment_operator:
-    test_strategy: [load_testing_tool, continous_performance, production]
+    test_strategy: [functional, health, continous_performance, production]
     test_operator: 
     validation_operator: 
     remediation_handler: [rollback]
@@ -95,7 +102,7 @@ stages:
 - name: dev
     deployment_strategy: direct
     deployment_operator: jenkins-operator, slack
-    test_strategy: load_testing_tool
+    test_strategy: functional
     test_operator: neotys_operator
     validation_operator: keptn.monspec-evaluator
     remediation_handler: // TBD    
@@ -111,6 +118,8 @@ stages:
 - name: production
     deployment_strategy: application blue/green
     deployment_operator: jenkins-operator, slack
+    test_strategy: production
+    test_operator: neotys_operator
     validation_strategy: production
     remediation_handler: rollback
 ```
