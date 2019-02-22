@@ -28,14 +28,14 @@
     "typescript": "^3.3.3"
   },
   "dependencies": {
-    "@kubernetes/client-node": "^0.8.1",
     "@types/express": "^4.16.1",
     "axios": "^0.18.0",
     "cloudevents-sdk": "^0.2.0",
     "express": "^4.16.4",
     "github-api": "^3.0.0",
+    "kubernetes-client": "^6.8.3",
     "mustache": "^3.0.1",
-    "yamljs": "^0.3.0",
-    "kubernetes-client": "^6.8.3"
+    "nodejs-base64": "^1.0.3",
+    "yamljs": "^0.3.0"
   }
 }

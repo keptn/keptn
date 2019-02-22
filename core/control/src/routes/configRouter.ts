@@ -1,18 +1,16 @@
 import express = require('express');
-import { ConfigHandler } from '../handler/config/configHandler';
+import { CredentialsService } from '../service/CredentialsService';
 
 const router = express.Router();
 
 router.post('/', async (request: express.Request, response: express.Response) => {
-  const configHandler = new ConfigHandler();
-  await configHandler.init();
-
+  const credentialsService = CredentialsService.getInstance();
   try {
-    await configHandler.updateKeptnConfig(request.body.data);
+    await credentialsService.updateGithubConfig(request.body.data);
+    const secret = await credentialsService.getGithubCredentials();
   } catch (e) {
     console.log(e);
   }
-
 
   response.send({ status: 'OK' });
 });
