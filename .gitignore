@@ -1,3 +1,4 @@
 scripts/creds.json
 repositories
 scripts/logs/*.log
+manifests/gen
