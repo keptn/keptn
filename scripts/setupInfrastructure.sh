@@ -1,5 +1,9 @@
 #!/bin/bash
 
+LOG_LOCATION=./logs
+exec > >(tee -i $LOG_LOCATION/setupInfrastructure.log)
+exec 2>&1
+
 echo "--------------------------"
 echo "Setup Infrastructure "
 echo "--------------------------"
@@ -29,8 +33,8 @@ kubectl create -f ../manifests/container-registry/k8s-docker-registry-pvc.yml
 kubectl create -f ../manifests/container-registry/k8s-docker-registry-deployment.yml
 kubectl create -f ../manifests/container-registry/k8s-docker-registry-service.yml
 
-echo "waiting for docker service to get public ip..."
-sleep 100
+echo "waiting for docker service to get ip..."
+sleep 30
 
 # Create a route for the docker registry service
 # Store the docker registry route in a variable
