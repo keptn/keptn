@@ -1,5 +1,5 @@
-import {FactoryBuilder} from './factoryBuilder';
-import { CreateRequest } from '../types/createRequest';
+import {FactoryBuilder} from './FactoryBuilder';
+import { CreateRequest } from '../types/CreateRequest';
 import { Utils } from '../lib/utils';
 
 const GitHub = require('github-api');

@@ -9,7 +9,7 @@ router.post('/', async (request: express.Request, response: express.Response) =>
 
   const payload : CreateRequest = {
     data : {
-      application: 'sockshop15',
+      application: 'sockshop16',
       stages: [
         {
           name: 'dev',
