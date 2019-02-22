@@ -1,13 +1,13 @@
 package credentialmanager
 
 import (
-	"github.com/docker/docker-credential-helpers/secretservice"
+	"github.com/docker/docker-credential-helpers/pass"
 )
 
 func SetCreds(secret string) error {
-	return setCreds(secretservice.Secretservice{}, secret)
+	return setCreds(pass.Pass{}, secret)
 }
 
 func GetCreds() (string, error) {
-	return getCreds(secretservice.Secretservice{})
+	return getCreds(pass.Pass{})
 }
