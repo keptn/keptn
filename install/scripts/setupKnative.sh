@@ -1,8 +1,7 @@
 #!/bin/bash
-JENKINS_URL=$1
-JENKINS_USER=$2
-JENKINS_PASSWORD=$3
-REGISTRY_URL=$4
+JENKINS_USER=$1
+JENKINS_PASSWORD=$2
+REGISTRY_URL=$3
 
 kubectl create namespace keptn
 
@@ -24,8 +23,10 @@ cat ../manifests/knative/config-domain.yaml | \
 
 kubectl apply -f ../manifests/gen/config-domain.yaml
 
+sleep 30
+
 # Install kaniko build template
-kubectl apply -f https://raw.githubusercontent.com/knative/build-templates/master/kaniko/kaniko.yaml -n keptn
+kubectl apply -f ../manifests/knative/build/kaniko.yaml -n keptn
 
 # Create build-bot service account
 kubectl apply -f ../manifests/knative/build/service-account.yaml
