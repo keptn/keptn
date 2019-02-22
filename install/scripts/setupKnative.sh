@@ -26,6 +26,8 @@ mv ../manifests/knative/config-domain_tmp.yaml ../manifests/knative/config-domai
 
 kubectl apply -f ../manifests/knative/config-domain.yaml
 
+kubectl apply -f ../manifests/keptn/keptn-rbac.yaml
+
 # Install kaniko build template
 kubectl apply -f https://raw.githubusercontent.com/knative/build-templates/master/kaniko/kaniko.yaml -n keptn
 

@@ -1,14 +1,17 @@
 import express = require('express');
+import { CredentialsService } from '../service/CredentialsService';
 
 const router = express.Router();
 
-router.post('/', (request: express.Request, response: express.Response) => {
+router.post('/', async (request: express.Request, response: express.Response) => {
+  const credentialsService = CredentialsService.getInstance();
+  try {
+    await credentialsService.updateGithubConfig(request.body.data);
+  } catch (e) {
+    console.log(e);
+  }
 
-  const result = {
-    foo: 'bar',
-  };
-
-  response.send(result);
+  response.send({ status: 'OK' });
 });
 
 // add more route handlers here

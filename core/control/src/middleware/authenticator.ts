@@ -1,9 +1,8 @@
 import express = require('express');
-import { AuthRequest } from '../types/authRequest';
+import { AuthRequest } from '../lib/types/AuthRequest';
 import axios from 'axios';
 
-const AUTH_URL = process.env.NODE_ENV === 'production' ?
-  'http://authenticator.keptn.svc.cluster.local/auth' : 'http://localhost:3000/auth';
+const AUTH_URL = 'http://authenticator.keptn.svc.cluster.local/auth';
 
 const authenticator: express.RequestHandler = (
   request: express.Request,

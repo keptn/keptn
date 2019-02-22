@@ -22,7 +22,12 @@
   },
   "homepage": "https://github.com/keptn/keptn#readme",
   "devDependencies": {
+    "@types/chai": "^4.1.7",
+    "@types/mocha": "^5.2.6",
+    "chai": "^4.2.0",
+    "mocha": "^6.0.1",
     "nodemon": "^1.18.10",
+    "ts-node": "^8.0.2",
     "tslint": "^5.12.1",
     "tslint-config-airbnb": "^5.11.1",
     "typescript": "^3.3.3"
@@ -30,10 +35,12 @@
   "dependencies": {
     "@types/express": "^4.16.1",
     "axios": "^0.18.0",
+    "cloudevents-sdk": "^0.2.0",
     "express": "^4.16.4",
     "github-api": "^3.0.0",
+    "kubernetes-client": "^6.8.3",
     "mustache": "^3.0.1",
-    "yamljs": "^0.3.0",
-    "kubernetes-client": "^6.8.3"
+    "nodejs-base64": "^1.0.3",
+    "yamljs": "^0.3.0"
   }
 }

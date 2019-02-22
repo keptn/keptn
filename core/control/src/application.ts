@@ -2,8 +2,8 @@ import express = require('express');
 import bodyParser = require('body-parser');
 import configRouter = require('./routes/configRouter');
 import appRouter = require('./routes/appRouter');
-import requestLogger = require('./middleware/requestLogger');
-import authenticator = require('./middleware/authenticator');
+import RequestLogger = require('./middleware/RequestLogger');
+import Authenticator = require('./middleware/Authenticator');
 
 export class WebApi {
 
@@ -21,8 +21,10 @@ export class WebApi {
    */
   private configureMiddleware(app: express.Express) {
     app.use(bodyParser.json());
-    app.use(requestLogger);
-    //app.use(authenticator);
+    app.use(RequestLogger);
+    if (process.env.NODE_ENV === 'production') {
+      app.use(Authenticator);
+    }
   }
 
   /**
