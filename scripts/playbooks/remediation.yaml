@@ -1,5 +1,5 @@
 ---
-- name: autoremediaton playbook
+- name: autoremediation playbook
   hosts: localhost
   vars:
     relative_time: "hour"
