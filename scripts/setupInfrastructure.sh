@@ -33,12 +33,14 @@ kubectl create -f ../manifests/container-registry/k8s-docker-registry-pvc.yml
 kubectl create -f ../manifests/container-registry/k8s-docker-registry-deployment.yml
 kubectl create -f ../manifests/container-registry/k8s-docker-registry-service.yml
 
-echo "waiting for docker service to get ip..."
+echo "wait 30s for docker service to get ip..."
 sleep 30
 
 # Create a route for the docker registry service
 # Store the docker registry route in a variable
 export REGISTRY_URL=$(kubectl describe svc docker-registry -n cicd | grep IP: | sed 's~IP:[ \t]*~~')
+
+echo "REGISTRY_URL: " $REGISTRY_URL
 
 # Create Jenkins
 rm -f ../manifests/gen/k8s-jenkins-deployment.yml
@@ -51,7 +53,7 @@ cat ../manifests/jenkins/k8s-jenkins-deployment.yml | \
   sed 's~DT_API_TOKEN_PLACEHOLDER~'"$DT_API_TOKEN"'~' >> ../manifests/gen/k8s-jenkins-deployment.yml
 
 kubectl create -f ../manifests/jenkins/k8s-jenkins-pvcs.yml 
-kubectl create -f ../manifests/jenkins/k8s-jenkins-deployment.yml
+kubectl create -f ../manifests/gens/k8s-jenkins-deployment.yml
 kubectl create -f ../manifests/jenkins/k8s-jenkins-rbac.yml
 
 # Deploy Dynatrace operator
@@ -162,7 +164,7 @@ kubectl create -f ../manifests/ansible-tower/namespace.yml
 kubectl create -f ../manifests/ansible-tower/deployment.yml
 kubectl create -f ../manifests/ansible-tower/service.yml
 
-echo "wait for changes to apply..."
+echo "wait 2 minutes for changes to apply..."
 sleep 120
 
 ./configureAnsible.sh
