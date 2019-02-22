@@ -2,6 +2,7 @@
 JENKINS_USER=$1
 JENKINS_PASSWORD=$2
 REGISTRY_URL=$3
+SHOW_API_TOKEN=$4
 
 kubectl create namespace keptn
 
@@ -25,6 +26,8 @@ kubectl apply -f ../manifests/gen/config-domain.yaml
 
 sleep 30
 
+kubectl apply -f ../manifests/keptn/keptn-rbac.yaml
+
 # Install kaniko build template
 kubectl apply -f ../manifests/knative/build/kaniko.yaml -n keptn
 
@@ -39,33 +42,45 @@ kubectl -n knative-serving get cm config-controller -o=yaml | yq w - data.regist
 
 # Deploy knative eventing channel (keptn-channel)
 kubectl apply -f ../../core/eventbroker/config/channel.yaml
-export KEPTN_CHANNEL_URI=$(kubectl describe channel keptn-channel -n keptn | grep "Hostname:" | sed 's~[ \t]*Hostname:[ \t]*~~')
-
 kubectl apply -f ../../core/eventbroker/config/new-artefact-channel.yaml
-export NEW_ARTEFACT_CHANNEL=$(kubectl describe channel new-artefact -n keptn | grep "Hostname:" | sed 's~[ \t]*Hostname:[ \t]*~~')
-
 kubectl apply -f ../../core/eventbroker/config/start-deployment-channel.yaml
-export START_DEPLOYMENT_CHANNEL=$(kubectl describe channel start-deployment -n keptn | grep "Hostname:" | sed 's~[ \t]*Hostname:[ \t]*~~')
-
 kubectl apply -f ../../core/eventbroker/config/deployment-finished-channel.yaml
-export DEPLOYMENT_FINISHED_CHANNEL=$(kubectl describe channel deployment-finished -n keptn | grep "Hostname:" | sed 's~[ \t]*Hostname:[ \t]*~~')
-
 kubectl apply -f ../../core/eventbroker/config/start-tests-channel.yaml
-export START_TESTS_CHANNEL=$(kubectl describe channel start-tests -n keptn | grep "Hostname:" | sed 's~[ \t]*Hostname:[ \t]*~~')
-
 kubectl apply -f ../../core/eventbroker/config/tests-finished-channel.yaml
-export TESTS_FINISHED_CHANNEL=$(kubectl describe channel tests-finished -n keptn | grep "Hostname:" | sed 's~[ \t]*Hostname:[ \t]*~~')
-
 kubectl apply -f ../../core/eventbroker/config/start-evaluation-channel.yaml
-export START_EVALUATION_CHANNEL=$(kubectl describe channel start-evaluation -n keptn | grep "Hostname:" | sed 's~[ \t]*Hostname:[ \t]*~~')
-
 kubectl apply -f ../../core/eventbroker/config/evaluation-done-channel.yaml
+
+export KEPTN_CHANNEL_URI=$(kubectl describe channel keptn-channel -n keptn | grep "Hostname:" | sed 's~[ \t]*Hostname:[ \t]*~~')
+export NEW_ARTEFACT_CHANNEL=$(kubectl describe channel new-artefact -n keptn | grep "Hostname:" | sed 's~[ \t]*Hostname:[ \t]*~~')
+export START_DEPLOYMENT_CHANNEL=$(kubectl describe channel start-deployment -n keptn | grep "Hostname:" | sed 's~[ \t]*Hostname:[ \t]*~~')
+export DEPLOYMENT_FINISHED_CHANNEL=$(kubectl describe channel deployment-finished -n keptn | grep "Hostname:" | sed 's~[ \t]*Hostname:[ \t]*~~')
+export START_TESTS_CHANNEL=$(kubectl describe channel start-tests -n keptn | grep "Hostname:" | sed 's~[ \t]*Hostname:[ \t]*~~')
+export TESTS_FINISHED_CHANNEL=$(kubectl describe channel tests-finished -n keptn | grep "Hostname:" | sed 's~[ \t]*Hostname:[ \t]*~~')
+export START_EVALUATION_CHANNEL=$(kubectl describe channel start-evaluation -n keptn | grep "Hostname:" | sed 's~[ \t]*Hostname:[ \t]*~~')
 export EVALUATION_DONE_CHANNEL=$(kubectl describe channel evaluation-done -n keptn | grep "Hostname:" | sed 's~[ \t]*Hostname:[ \t]*~~')
+
+
+export KEPTN_API_TOKEN=$(head -c 16 /dev/urandom | base64)
+kubectl create secret generic -n keptn keptn-api-token --from-literal=keptn-api-token="$KEPTN_API_TOKEN"
 
 # Deploy event broker
 cd ../../core/eventbroker
 ./deploy.sh $REGISTRY_URL $KEPTN_CHANNEL_URI $NEW_ARTEFACT_CHANNEL $START_DEPLOYMENT_CHANNEL $DEPLOYMENT_FINISHED_CHANNEL $START_TESTS_CHANNEL $TESTS_FINISHED_CHANNEL $START_EVALUATION_CHANNEL $EVALUATION_DONE_CHANNEL
 cd ../../install/scripts
+
+cd ../../core/auth
+./deploy.sh $REGISTRY_URL
+cd ../../install/scripts
+
+cd ../../core/control
+./deploy.sh $REGISTRY_URL
+cd ../../install/scripts
+
+if [[ $SHOW_API_TOKEN = 'y' ]]
+then
+    echo "API token: $KEPTN_API_TOKEN"
+fi
+
 
 # Deploy Operator
 # kubectl apply -f ../../keptn.jenkins-operator/config/operator.yaml
