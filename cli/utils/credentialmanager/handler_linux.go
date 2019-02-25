@@ -3,9 +3,10 @@ package credentialmanager
 import (
 	"os"
 
+	"io/ioutil"
+
 	"github.com/docker/docker-credential-helpers/pass"
 	"github.com/keptn/keptn/cli/utils"
-	"io/ioutil"
 )
 
 // TODO: Write documentation
@@ -21,7 +22,7 @@ func SetCreds(secret string) error {
 	if _, err := os.Stat(passwordStoreDirectory); os.IsNotExist(err) {
 		utils.Warning.Println("Use a file-based storage for the key because the password-store seems to be not set up.")
 
-		return ioutil.WriteFile(apiTokenFileName,, []byte(secret), 0644)
+		return ioutil.WriteFile(apiTokenFileName, []byte(secret), 0644)
 	}
 	return setCreds(pass.Pass{}, secret)
 }
