@@ -1,14 +1,15 @@
 import express = require('express');
 import bodyParser = require('body-parser');
-import ConfigRouter from './routes/ConfigRouter';
+// tslint:disable-next-line: import-name
+import ConfigRouter from './routes/configRouter';
 import ProjectRouter = require('./routes/ProjectRouter');
-import RequestLogger = require('./middleware/RequestLogger');
-import Authenticator = require('./middleware/Authenticator');
+// tslint:disable-next-line: import-name
+import RequestLogger = require('./middleware/requestLogger');
+// tslint:disable-next-line: import-name
+import Authenticator = require('./middleware/authenticator');
 import * as path from 'path';
 
 import * as swagger from 'swagger-express-ts';
-import { SwaggerDefinitionConstant } from 'swagger-express-ts';
-import { SwaggerUIBundle, SwaggerUIStandalonePreset } from 'swagger-ui-dist';
 const swaggerUiAssetPath = require('swagger-ui-dist').getAbsoluteFSPath();
 
 export class WebApi {

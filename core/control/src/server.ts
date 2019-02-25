@@ -11,11 +11,14 @@ import * as swagger from 'swagger-express-ts';
 
 // import controllers
 import './config/ConfigController';
+import './auth/AuthController';
 
 // import models
 import './config/ConfigRequestModel';
+import './auth/AuthRequestModel';
 
-import RequestLogger = require('./middleware/RequestLogger');
+// tslint:disable-next-line: import-name
+import RequestLogger = require('./middleware/requestLogger');
 import authenticator = require('./middleware/authenticator');
 import * as path from 'path';
 import ProjectRouter = require('./routes/ProjectRouter');

@@ -1,7 +1,6 @@
 import express = require('express');
 import { CreateRequest } from '../types/createRequest';
-import { FactoryBuilder } from '../factoryBuilders/factoryBuilder';
-import { GitHubFactoryBuilder } from '../factoryBuilders/gitHubFactoryBuilder';
+import { GitHubFactoryBuilder } from '../factoryBuilders/GitHubFactoryBuilder';
 
 const router = express.Router();
 
