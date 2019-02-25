@@ -12,7 +12,7 @@ export GITHUB_ORGANIZATION=$(cat creds.json | jq -r '.githubOrg')
 export DT_TENANT_URL="$DT_TENANT_ID.live.dynatrace.com"
 
 export JENKINS_URL=$(kubectl describe svc jenkins -n cicd | grep IP: | sed 's/IP:[ \t]*//')
-export CART_URL=$(kubectl describe svc carts -n production | grep IP: | sed 's/IP:[ \t]*//')
+export CART_URL=$(kubectl describe svc carts -n production | grep "LoadBalancer Ingress:" | sed 's/LoadBalancer Ingress:[ \t]*//')
 export TOWER_URL=$(kubectl describe svc ansible-tower -n tower | grep "LoadBalancer Ingress:" | sed 's/LoadBalancer Ingress:[ \t]*//')
 
 #curl -k -X GET https://$TOWER_URL/api/v1/credentials/ --user admin:dynatrace 
