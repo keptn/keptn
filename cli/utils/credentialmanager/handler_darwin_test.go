@@ -1,10 +1,17 @@
 package credentialmanager
 
 import (
+	"os"
 	"testing"
+
+	"github.com/keptn/keptn/cli/utils"
 )
 
 const testCred = "super-secret"
+
+func init() {
+	utils.Init(os.Stdout, os.Stdout, os.Stderr)
+}
 
 func TestSetAndGetCreds(t *testing.T) {
 

@@ -7,7 +7,10 @@ import (
 	"github.com/keptn/keptn/cli/utils"
 )
 
-func main() {
+func init() {
 	utils.Init(os.Stdout, os.Stdout, os.Stderr)
+}
+
+func main() {
 	cmd.Execute()
 }
