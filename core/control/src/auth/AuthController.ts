@@ -28,7 +28,7 @@ export class AuthController implements interfaces.Controller {
     parameters: {
       body: {
         description: 'Signed payload',
-        model: 'ConfigRequestModel',
+        model: 'AuthRequestModel',
         required: true,
       },
     },

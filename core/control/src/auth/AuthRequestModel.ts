@@ -4,7 +4,7 @@ import { ApiModel, ApiModelProperty, SwaggerDefinitionConstant } from 'swagger-e
   description: '',
   name: 'AuthRequestModel',
 })
-export class ConfigRequestModel {
+export class AuthRequestModel {
   @ApiModelProperty({
     description: 'Arbitrary JSON payload',
     example: [{
