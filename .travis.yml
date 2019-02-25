@@ -20,12 +20,7 @@ services:
 env:
   global:
     - GOOGLE_APPLICATION_CREDENTIALS=~/gcloud-service-key.json
-
-before_install:
-  - sudo apt-get install -y libsecret-1-0
-  - export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/lib/pkgconfig:/usr/local/lib/pkgconfig
-  - echo $PKG_CONFIG_PATH
-  
+ 
 jobs:
   include:
     - stage: master
