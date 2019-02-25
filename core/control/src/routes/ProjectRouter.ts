@@ -1,15 +1,14 @@
 import express = require('express');
-import { CreateRequest } from '../types/createRequest';
-import { FactoryBuilder } from '../factoryBuilders/factoryBuilder';
-import { GitHubFactoryBuilder } from '../factoryBuilders/gitHubFactoryBuilder';
 
 const router = express.Router();
 
 router.post('/', async (request: express.Request, response: express.Response) => {
 
-  const payload : CreateRequest = {
+  // TODO: convert payload into a CloudEvent containing the following data block:
+
+  /*
     data : {
-      application: 'sockshop16',
+      project: 'sockshop',
       stages: [
         {
           name: 'dev',
@@ -24,22 +23,10 @@ router.post('/', async (request: express.Request, response: express.Response) =>
           deployment_strategy: 'blue_green_service',
         },
       ],
-    },
-  };
+    }
+  */
 
-  const gitHubOrgName = 'keptn-test';
-
-  let factoryBuilder = GitHubFactoryBuilder.getInstance();
-
-  await factoryBuilder.createRepository(gitHubOrgName, payload); 
-
-  await factoryBuilder.initialCommit(gitHubOrgName, payload);
-
-  await factoryBuilder.createBranchesForEachStages(gitHubOrgName, payload);
-
-  await factoryBuilder.addShipyardToMaster(gitHubOrgName, payload);
-
-  await factoryBuilder.setHook(gitHubOrgName, payload);
+  // Post this CloudEvent into the Channel.
 
   const result = {
     result: 'success',

@@ -5,6 +5,7 @@ const router = express.Router();
 
 router.post('/', async (request: express.Request, response: express.Response) => {
   const credentialsService = CredentialsService.getInstance();
+  
   try {
     await credentialsService.updateGithubConfig(request.body.data);
   } catch (e) {

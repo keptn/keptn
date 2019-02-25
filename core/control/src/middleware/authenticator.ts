@@ -13,6 +13,7 @@ const authenticator: express.RequestHandler = (
   console.log(JSON.stringify(request.body));
   // TODO: insert call to authenticator.keptn.svc.cluster.local here
   // get signature from header
+  
   const signature: string = request.headers['x-keptn-signature'] as string;
   console.log(signature);
   if (signature === undefined) {

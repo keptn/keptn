@@ -1,3 +1,6 @@
+# Auto-generated files
+config/gen/control.yaml
+
 # Logs
 *.log
 
@@ -27,6 +30,5 @@ node_modules
 .DS_Store
 .tmp
 
-config/gen/control.yaml
-
+# Dist directory
 dist/

@@ -1,4 +1,5 @@
 import { KeptnGithubCredentials } from './KeptnGithubCredentials';
+
 export interface KeptnGithubCredentialsSecret {
   apiVersion: string;
   kind: string;
@@ -6,6 +7,7 @@ export interface KeptnGithubCredentialsSecret {
   type: string;
   data: KeptnGithubCredentials;
 }
+
 interface Metadata {
   name: string;
   namespace: string;
