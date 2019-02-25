@@ -1,16 +1,10 @@
 import express = require('express');
 import bodyParser = require('body-parser');
-// tslint:disable-next-line: import-name
-import ConfigRouter from './routes/configRouter';
-import ProjectRouter = require('./routes/ProjectRouter');
-// tslint:disable-next-line: import-name
-import RequestLogger = require('./middleware/requestLogger');
-// tslint:disable-next-line: import-name
-import Authenticator = require('./middleware/authenticator');
-import * as path from 'path';
-
-import * as swagger from 'swagger-express-ts';
-const swaggerUiAssetPath = require('swagger-ui-dist').getAbsoluteFSPath();
+import configRouter = require('./routes/ConfigRouter');
+import projectRouter = require('./routes/ProjectRouter');
+import serviceRouter = require('./routes/ServiceRouter');
+import RequestLogger = require('./middleware/RequestLogger');
+import Authenticator = require('./middleware/Authenticator');
 
 export class WebApi {
 
@@ -29,12 +23,6 @@ export class WebApi {
    * @param app - express application
    */
   private configureMiddleware(app: express.Express) {
-    app.use('/api-docs/swagger', express.static(path.join(__dirname, '/src/swagger')));
-    app.use('/api-docs/swagger/assets',
-            express.static(
-              swaggerUiAssetPath,
-            ),
-      );
     app.use(bodyParser.json());
     app.use(RequestLogger);
     if (process.env.NODE_ENV === 'production') {
@@ -46,22 +34,9 @@ export class WebApi {
    * @param app - express application
    */
   private configureRoutes(app: express.Express) {
-    app.use(swagger.express(
-      {
-        definition: {
-          info: {
-            title: 'Keptn Control API',
-            version: '0.2',
-          },
-          externalDocs: {
-            url: '',
-          },
-          // Models can be defined here
-        },
-      },
-    ));
-    app.use('/config', ConfigRouter);
-    app.use('/project', ProjectRouter);
+    app.use('/config', configRouter);
+    app.use('/project', projectRouter);
+    app.use('/service', serviceRouter);
 
     // mount more routers here
     // e.g. app.use("/organisation", organisationRouter);

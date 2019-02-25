@@ -1,3 +1,6 @@
+# Auto-generated files
+config/gen/authenticator.yaml
+
 # Logs
 *.log
 
@@ -27,6 +30,5 @@ node_modules
 .DS_Store
 .tmp
 
-config/gen/authenticator.yaml
-
+# Dist directory
 dist/
