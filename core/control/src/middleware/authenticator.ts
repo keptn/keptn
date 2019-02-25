@@ -9,7 +9,7 @@ const authenticator: express.RequestHandler = (
   response: express.Response,
   next: express.NextFunction,
 ) => {
-  if (request.path.indexOf('swagger')) {
+  if (request.url.indexOf('swagger') > 0) {
     next();
     return;
   }
