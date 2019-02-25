@@ -53,7 +53,7 @@ cat ../manifests/jenkins/k8s-jenkins-deployment.yml | \
   sed 's~DT_API_TOKEN_PLACEHOLDER~'"$DT_API_TOKEN"'~' >> ../manifests/gen/k8s-jenkins-deployment.yml
 
 kubectl create -f ../manifests/jenkins/k8s-jenkins-pvcs.yml 
-kubectl create -f ../manifests/gens/k8s-jenkins-deployment.yml
+kubectl create -f ../manifests/gen/k8s-jenkins-deployment.yml
 kubectl create -f ../manifests/jenkins/k8s-jenkins-rbac.yml
 
 # Deploy Dynatrace operator
@@ -73,10 +73,20 @@ echo "--------------------------"
 echo "Apply auto tagging rules in Dynatrace "
 echo "--------------------------"
 
-./applyAutoTaggingRules.sh $DT_TENANT_ID $DT_API_TOKEN
+./applyAutoTaggingRules.sh 
 
 echo "--------------------------"
 echo "End applying auto tagging rules in Dynatrace "
+echo "--------------------------"
+
+echo "--------------------------"
+echo "Apply Dynatrace Request Attributes"
+echo "--------------------------"
+
+./applyRequestAttributeRules.sh
+
+echo "--------------------------"
+echo "End applying Dynatrace Request Attributes"
 echo "--------------------------"
 
 # Deploy sockshop application
