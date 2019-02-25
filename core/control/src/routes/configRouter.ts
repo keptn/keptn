@@ -1,5 +1,11 @@
 import express = require('express');
 import { CredentialsService } from '../service/CredentialsService';
+import {
+  ApiOperationGet,
+  ApiOperationPost,
+  ApiPath,
+  SwaggerDefinitionConstant,
+} from 'swagger-express-ts';
 
 const router = express.Router();
 

@@ -8,6 +8,16 @@
         "sourceMap": true,
         "outDir": "dist",
         "baseUrl": ".",
+        "types": [
+          "express",
+          "inversify",
+          "inversify-express-utils",
+          "reflect-metadata",
+        ],
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "preserveConstEnums": true,
+        "suppressImplicitAnyIndexErrors": true,
         "paths": {
             "*": [
                 "node_modules/*",
@@ -15,7 +25,7 @@
             ]
         },
         "lib": [
-            "es2015"
+            "es6", "dom"
         ]
     },
     "include": [
