@@ -4,11 +4,11 @@ const router = express.Router();
 
 router.post('/', async (request: express.Request, response: express.Response) => {
 
-  // TODO: converrt payload into a CloudEvent containing the following data block:
+  // TODO: convert payload into a CloudEvent containing the following data block:
 
   /*
     data : {
-      application: 'sockshop',
+      project: 'sockshop',
       stages: [
         {
           name: 'dev',
