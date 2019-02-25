@@ -10,6 +10,7 @@ const authenticator: express.RequestHandler = (
   next: express.NextFunction,
 ) => {
   if (request.url.indexOf('swagger') > 0) {
+    console.log('Skipping auth for swagger doc');
     next();
     return;
   }
