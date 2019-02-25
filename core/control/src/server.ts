@@ -44,10 +44,6 @@ server.setConfig((app: any) => {
     );
   app.use(bodyParser.json());
   app.use(RequestLogger);
-  if (process.env.NODE_ENV === 'production') {
-    app.use(authenticator);
-  }
-  app.use('/project', ProjectRouter);
   app.use(
     swagger.express({
       definition: {
@@ -62,6 +58,10 @@ server.setConfig((app: any) => {
       },
     }),
   );
+  if (process.env.NODE_ENV === 'production') {
+    app.use(authenticator);
+  }
+  app.use('/project', ProjectRouter);
 });
 
 server.setErrorConfig((app: any) => {
