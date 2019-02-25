@@ -13,8 +13,6 @@
           "inversify",
           "inversify-express-utils",
           "reflect-metadata",
-          "mocha",
-          "chai"
         ],
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
