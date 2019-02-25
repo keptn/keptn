@@ -9,6 +9,10 @@ const authenticator: express.RequestHandler = (
   response: express.Response,
   next: express.NextFunction,
 ) => {
+  if (request.path.indexOf('swagger')) {
+    next();
+    return;
+  }
   console.log('Starting authentication');
   console.log(JSON.stringify(request.body));
   // TODO: insert call to authenticator.keptn.svc.cluster.local here
