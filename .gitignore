@@ -2,3 +2,4 @@ scripts/creds.json
 repositories
 scripts/logs/*.log
 manifests/gen
+manifests/dynatrace/oneagent-cr.yml
