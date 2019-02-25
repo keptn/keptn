@@ -1,10 +1,10 @@
 import express = require('express');
 import bodyParser = require('body-parser');
-import configRouter = require('./routes/ConfigRouter');
+import configRouter = require('./routes/configRouter');
 import projectRouter = require('./routes/ProjectRouter');
-import serviceRouter = require('./routes/ServiceRouter');
-import RequestLogger = require('./middleware/RequestLogger');
-import Authenticator = require('./middleware/Authenticator');
+import serviceRouter = require('./routes/serviceRouter');
+import RequestLogger = require('./middleware/requestLogger');
+import Authenticator = require('./middleware/authenticator');
 
 export class WebApi {
 
