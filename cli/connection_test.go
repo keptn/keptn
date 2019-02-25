@@ -28,7 +28,7 @@ func TestKnativeCloudEvents(t *testing.T) {
 
 	data := Empty{}
 
-	err := utils.Send("http://control-andreas.keptn.35.239.5.164.xip.io/onboard", "h5MUZM9xEP5RIba77clHgQ==", builder, data)
+	err := utils.Send("http://control-andreas.keptn.35.239.5.164.xip.io/onboard", "tok", builder, data)
 	if err != nil {
 		t.Errorf("An error occured %v", err)
 	}
