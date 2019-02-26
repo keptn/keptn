@@ -8,7 +8,7 @@ import (
 )
 
 const testEndPoint = "my-endpoint"
-const testCred = "super-secret"
+const testAPIToken = "super-secret"
 
 func init() {
 	utils.Init(os.Stdout, os.Stdout, os.Stderr)
@@ -16,15 +16,15 @@ func init() {
 
 func TestSetAndGetCreds(t *testing.T) {
 
-	if err := SetCreds(testEndPoint, testCred); err != nil {
+	if err := SetCreds(testEndPoint, testAPIToken); err != nil {
 		t.Fatal(err)
 	}
 
-	endPoint, secret, err := GetCreds()s
+	endPoint, apiToken, err := GetCreds()s
 	if err != nil {
 		t.Fatal(err)
 	}
-	if testEndPoint != endPoint || testCred != secret {
+	if testEndPoint != endPoint || testAPIToken != apiToken {
 		t.Fatal("Readed creds do not match")
 	}
 }

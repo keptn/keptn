@@ -25,26 +25,29 @@ func init() {
 	apiTokenURI = os.Getenv("HOME") + "/.keptn"
 }
 
-func SetCreds(endPoint string, secret string) error {
+// SetCreds stores the credentials consisting of an endpoint and an api token using pass or into a file in case
+// pass is unavailable.
+func SetCreds(endPoint string, apiToken string) error {
 	if _, err := os.Stat(passwordStoreDirectory); os.IsNotExist(err) {
 		utils.Warning.Println("Use a file-based storage for the key because the password-store seems to be not set up.")
 
-		return ioutil.WriteFile(apiTokenURI, []byte(endPoint+"\n"+secret), 0644)
+		return ioutil.WriteFile(apiTokenURI, []byte(endPoint+"\n"+apiToken), 0644)
 	}
-	return setCreds(pass.Pass{}, endPoint, secret)
+	return setCreds(pass.Pass{}, endPoint, apiToken)
 }
 
+// GetCreds reads the credentials and returns an endpoint, the api token, or potentially an error.
 func GetCreds() (string, string, error) {
 	if _, err := os.Stat(passwordStoreDirectory); os.IsNotExist(err) {
 		utils.Warning.Println("Use a file-based storage for the key because the password-store seems to be not set up.")
 
 		data, err := ioutil.ReadFile(apiTokenURI)
 		if err != nil {
-			return nil, nil, err
+			return "", "", err
 		}
 		creds := strings.Split(string(data), "\n")
 		if len(creds) != 2 {
-			return nil, nil, errors.New("Format of file-based key storage is invalid!")
+			return "", "", errors.New("Format of file-based key storage is invalid!")
 		}
 		return creds[0], creds[1], err
 	}
