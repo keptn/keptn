@@ -33,4 +33,4 @@ spec:
             imagePullPolicy: Always
             env:
             - name: CHANNEL_URI
-            value: CHANNEL_URI_PLACEHOLDER
+              value: CHANNEL_URI_PLACEHOLDER
