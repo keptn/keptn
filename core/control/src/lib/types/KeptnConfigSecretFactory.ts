@@ -1,7 +1,7 @@
 import { KeptnGithubCredentials } from './KeptnGithubCredentials';
 import { KeptnGithubCredentialsSecret } from './KeptnGithubCredentialsSecret';
 
-import { base64encode, base64decode } from 'nodejs-base64';
+import { base64encode } from 'nodejs-base64';
 
 export class KeptnConfigSecretFactory {
 

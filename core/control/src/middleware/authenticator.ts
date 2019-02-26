@@ -9,10 +9,16 @@ const authenticator: express.RequestHandler = (
   response: express.Response,
   next: express.NextFunction,
 ) => {
+  if (request.url.indexOf('swagger') > 0) {
+    console.log('Skipping auth for swagger doc');
+    next();
+    return;
+  }
   console.log('Starting authentication');
   console.log(JSON.stringify(request.body));
   // TODO: insert call to authenticator.keptn.svc.cluster.local here
   // get signature from header
+  
   const signature: string = request.headers['x-keptn-signature'] as string;
   console.log(signature);
   if (signature === undefined) {

@@ -1,11 +1,14 @@
 import express = require('express');
 import bodyParser = require('body-parser');
-import configRouter = require('./routes/ConfigRouter');
+import configRouter = require('./routes/configRouter');
 import projectRouter = require('./routes/ProjectRouter');
-import RequestLogger = require('./middleware/RequestLogger');
-import Authenticator = require('./middleware/Authenticator');
+import serviceRouter = require('./routes/serviceRouter');
+import RequestLogger = require('./middleware/requestLogger');
+import Authenticator = require('./middleware/authenticator');
 
 export class WebApi {
+
+  private swaggerSpec: any;
 
   /**
    * @param app - express application
@@ -33,6 +36,7 @@ export class WebApi {
   private configureRoutes(app: express.Express) {
     app.use('/config', configRouter);
     app.use('/project', projectRouter);
+    app.use('/service', serviceRouter);
 
     // mount more routers here
     // e.g. app.use("/organisation", organisationRouter);
