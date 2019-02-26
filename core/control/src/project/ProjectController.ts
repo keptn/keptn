@@ -50,7 +50,7 @@ export class ProjectController implements interfaces.Controller {
     const result = {
       result: 'success',
     };
-  
+
     response.send(result);
   }
 
@@ -61,7 +61,7 @@ export class ProjectController implements interfaces.Controller {
       },
       400: { description: 'Parameters fail' },
     },
-    summary: 'Get keptn projects', 
+    summary: 'Get keptn projects',
   })
   @httpGet('/')
   public getProjects(
@@ -72,7 +72,7 @@ export class ProjectController implements interfaces.Controller {
     const result = {
       result: 'success',
     };
-  
+
     response.send(result);
   }
 
@@ -97,7 +97,7 @@ export class ProjectController implements interfaces.Controller {
     const result = {
       result: 'success',
     };
-  
+
     response.send(result);
   }
 }
