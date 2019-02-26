@@ -12,16 +12,19 @@ import * as swagger from 'swagger-express-ts';
 // import controllers
 import './config/ConfigController';
 import './auth/AuthController';
+import './project/ProjectController';
+import './service/ServiceController';
 
 // import models
 import './config/ConfigRequestModel';
 import './auth/AuthRequestModel';
+import './project/ProjectRequestModel';
+import './service/ServiceRequestModel';
 
 // tslint:disable-next-line: import-name
 import RequestLogger = require('./middleware/requestLogger');
 import authenticator = require('./middleware/authenticator');
 import * as path from 'path';
-import ProjectRouter = require('./routes/ProjectRouter');
 
 const port: number = Number(process.env.PORT) || 5001; // or from a configuration file
 const swaggerUiAssetPath = require('swagger-ui-dist').getAbsoluteFSPath();
@@ -61,7 +64,6 @@ server.setConfig((app: any) => {
   if (process.env.NODE_ENV === 'production') {
     app.use(authenticator);
   }
-  app.use('/project', ProjectRouter);
 });
 
 server.setErrorConfig((app: any) => {

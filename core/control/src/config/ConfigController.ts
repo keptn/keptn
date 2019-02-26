@@ -14,7 +14,7 @@ import {
   SwaggerDefinitionConstant,
 } from 'swagger-express-ts';
 import { ConfigRequestModel } from './ConfigRequestModel';
-import { CredentialsService } from '../service/CredentialsService';
+import { CredentialsService } from '../svc/CredentialsService';
 
 @ApiPath({
   name: 'Config',

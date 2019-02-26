@@ -2,7 +2,7 @@ import * as Api from 'kubernetes-client';
 
 export class K8sClientFactory {
 
-  constructor() {}
+  constructor() { }
 
   createK8sClient(): Api.ApiRoot {
     // tslint:disable-next-line: variable-name
@@ -15,7 +15,7 @@ export class K8sClientFactory {
     } else {
       k8sClient = new Client({ config: config.fromKubeconfig() });
     }
-    
+
     return k8sClient;
   }
 }
