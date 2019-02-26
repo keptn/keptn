@@ -4,10 +4,10 @@ import (
 	"github.com/docker/docker-credential-helpers/wincred"
 )
 
-func SetCreds(secret string) error {
-	return setCreds(wincred.Wincred{}, secret)
+func SetCreds(endPoint string, secret string) error {
+	return setCreds(wincred.Wincred{}, endPoint, secret)
 }
 
-func GetCreds() (string, error) {
+func GetCreds() (string, string, error) {
 	return getCreds(wincred.Wincred{})
 }

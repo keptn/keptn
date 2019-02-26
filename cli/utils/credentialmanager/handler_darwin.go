@@ -1,13 +1,11 @@
 package credentialmanager
 
-import (
-	"github.com/docker/docker-credential-helpers/osxkeychain"
-)
+import "github.com/docker/docker-credential-helpers/osxkeychain"
 
-func SetCreds(secret string) error {
-	return setCreds(osxkeychain.Osxkeychain{}, secret)
+func SetCreds(endPoint string, secret string) error {
+	return setCreds(osxkeychain.Osxkeychain{}, endPoint, secret)
 }
 
-func GetCreds() (string, error) {
+func GetCreds() (string, string, error) {
 	return getCreds(osxkeychain.Osxkeychain{})
 }

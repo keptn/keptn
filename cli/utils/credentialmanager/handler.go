@@ -1,9 +1,11 @@
 package credentialmanager
 
-import "github.com/docker/docker-credential-helpers/credentials"
+import (
+	"github.com/docker/docker-credential-helpers/credentials"
+)
 
 const credsLab = "keptn"
-const serverURL = "https://test.keptn.sh"
+const serverURL = "https://keptn.sh"
 const username = "token"
 
 type bot interface {
@@ -11,17 +13,16 @@ type bot interface {
 	GetCreds() (string, error)
 }
 
-func setCreds(h credentials.Helper, secret string) error {
+func setCreds(h credentials.Helper, endPoint string, secret string) error {
 	credentials.SetCredsLabel(credsLab)
 	c := &credentials.Credentials{
 		ServerURL: serverURL,
-		Username:  username,
+		Username:  endPoint,
 		Secret:    secret,
 	}
 	return h.Add(c)
 }
 
-func getCreds(h credentials.Helper) (string, error) {
-	_, secret, err := h.Get(serverURL)
-	return secret, err
+func getCreds(h credentials.Helper) (string, string, error) {
+	return h.Get(serverURL)
 }
