@@ -25,6 +25,7 @@ import './service/ServiceRequestModel';
 import RequestLogger = require('./middleware/requestLogger');
 import authenticator = require('./middleware/authenticator');
 import * as path from 'path';
+import { MessageService } from './svc/MessageService';
 
 const port: number = Number(process.env.PORT) || 5001; // or from a configuration file
 const swaggerUiAssetPath = require('swagger-ui-dist').getAbsoluteFSPath();
@@ -33,7 +34,8 @@ const swaggerUiAssetPath = require('swagger-ui-dist').getAbsoluteFSPath();
 // set up container
 const container = new Container();
 
-// note that you *must* bind your controllers to Controller
+// set up bindings
+container.bind<MessageService>('MessageService').to(MessageService);
 
 // create server
 const server = new InversifyExpressServer(container);

@@ -15,6 +15,7 @@ import {
   SwaggerDefinitionConstant,
   ApiOperationDelete,
 } from 'swagger-express-ts';
+import { MessageService } from '../svc/MessageService';
 
 @ApiPath({
   name: 'Service',
@@ -23,6 +24,8 @@ import {
 })
 @controller('service')
 export class ServiceController implements interfaces.Controller {
+
+  @inject('MessageService') private readonly messageService: MessageService;
 
   @ApiOperationPost({
     description: 'Onboards a new service to a keptn project',
@@ -41,14 +44,16 @@ export class ServiceController implements interfaces.Controller {
     summary: 'Onboard a new service to a keptn project',
   })
   @httpPost('/')
-  public onboardService(
+  public async onboardService(
     request: express.Request,
     response: express.Response,
     next: express.NextFunction,
-  ): void {
+  ): Promise<void> {
     const result = {
       result: 'success',
     };
+
+    await this.messageService.sendMessage(request.body);
 
     response.send(result);
   }

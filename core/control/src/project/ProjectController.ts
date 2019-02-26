@@ -16,6 +16,8 @@ import {
   ApiOperationDelete,
 } from 'swagger-express-ts';
 
+import { MessageService } from '../svc/MessageService';
+
 @ApiPath({
   name: 'Project',
   path: '/project',
@@ -23,6 +25,9 @@ import {
 })
 @controller('/project')
 export class ProjectController implements interfaces.Controller {
+
+  @inject('MessageService') private readonly messageService: MessageService;
+
   constructor() { }
 
   @ApiOperationPost({
@@ -42,14 +47,16 @@ export class ProjectController implements interfaces.Controller {
     summary: 'Create a new keptn project',
   })
   @httpPost('/')
-  public setGithubConfig(
+  public async setGithubConfig(
     request: express.Request,
     response: express.Response,
     next: express.NextFunction,
-  ): void {
+  ): Promise<void> {
     const result = {
       result: 'success',
     };
+
+    await this.messageService.sendMessage(request.body);
 
     response.send(result);
   }
