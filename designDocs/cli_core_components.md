@@ -46,11 +46,11 @@ In the following, planned commands for the CLI are listed and explained:
     $ keptn auth --endpoint= --api-token=
     ```
 
-* **keptn configure --org --user --token**: Configures the keptn CLI by storing the the **GitHub organization** and **GitHub user** locally, and this command triggers the *keptn.control* component to create a secret for the **GitHub token**.
+* **keptn configure --org **: Configures the **GitHub organization** in the keptn installation.
 
     *Example:*
     ```console
-    $ keptn configure --org= --user= --token=
+    $ keptn configure --org= 
     ```
 
 * **keptn create project**: Creates a new repository in the GitHub organization and initializes the repository with helm charts. For this now, the shipyard.yml file (see below) contains the number of stages and name of each stage. Based on that information, this command creates a branch for each stage.
