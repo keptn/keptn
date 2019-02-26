@@ -1,5 +1,9 @@
 #!/bin/bash
 
+LOG_LOCATION=./logs
+exec > >(tee -i $LOG_LOCATION/setupInfrastructure.log)
+exec 2>&1
+
 echo "--------------------------"
 echo "Setup Infrastructure "
 echo "--------------------------"
