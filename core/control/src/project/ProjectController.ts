@@ -7,7 +7,6 @@ import {
   interfaces,
   httpDelete,
 } from 'inversify-express-utils';
-import 'reflect-metadata';
 import {
   ApiOperationGet,
   ApiOperationPost,

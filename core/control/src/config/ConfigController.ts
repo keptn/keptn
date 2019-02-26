@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import * as express from 'express';
 import { inject, injectable } from 'inversify';
 import {
@@ -6,7 +7,6 @@ import {
   httpPost,
   interfaces,
 } from 'inversify-express-utils';
-import 'reflect-metadata';
 import {
   ApiOperationGet,
   ApiOperationPost,
@@ -25,7 +25,7 @@ import { MessageService } from '../svc/MessageService';
 @controller('/config')
 export class ConfigController implements interfaces.Controller {
 
-  @inject('MessageService') private readonly messageService: MessageService;
+  constructor(@inject('MessageService') private readonly messageService: MessageService) {}
 
   @ApiOperationPost({
     description: 'Set Github credentials for keptn',
