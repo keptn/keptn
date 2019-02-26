@@ -6,19 +6,18 @@ import (
 
 const credsLab = "keptn"
 const serverURL = "https://keptn.sh"
-const username = "token"
 
 type bot interface {
-	SetCreds(secret string) error
-	GetCreds() (string, error)
+	SetCreds(endPoint string, apiToken string) error
+	GetCreds() (string, string, error)
 }
 
-func setCreds(h credentials.Helper, endPoint string, secret string) error {
+func setCreds(h credentials.Helper, endPoint string, apiToken string) error {
 	credentials.SetCredsLabel(credsLab)
 	c := &credentials.Credentials{
 		ServerURL: serverURL,
 		Username:  endPoint,
-		Secret:    secret,
+		Secret:    apiToken,
 	}
 	return h.Add(c)
 }
