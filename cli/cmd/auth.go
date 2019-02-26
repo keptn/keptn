@@ -15,7 +15,6 @@
 package cmd
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/keptn/keptn/cli/utils"
@@ -35,10 +34,11 @@ var authCmd = &cobra.Command{
 	Use:   "auth",
 	Short: "Authenticates the keptn CLI against a keptn installation.",
 	Long: `Authenticates the keptn CLI against a keptn installation using an endpoint
-	and an api-token. For example:
+	and an api-token. This can be accomplished by 
 
-keptn auth --endpoint=myendpoint.com --api-token`,
-	Run: func(cmd *cobra.Command, args []string) {
+	keptn auth --endpoint=myendpoint.com --api-token`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		utils.Info.Println("auth called")
 		builder := cloudevents.Builder{
 			Source:    "https://github.com/keptn/keptn/cli#auth",
 			EventType: "auth",
@@ -49,18 +49,17 @@ keptn auth --endpoint=myendpoint.com --api-token`,
 			*endPoint += "/"
 		}
 		authRestEndPoint := *endPoint + "auth"
-		fmt.Println(authRestEndPoint)
 
 		err := utils.Send(authRestEndPoint, *apiToken, builder, data)
 		if err != nil {
-			fmt.Println(fmt.Errorf("Endpoint invalid or keptn unreachable. Details: %v", err))
-			utils.Error.Fatalf("Endpoint invalid or keptn unreachable. Details: %v", err)
-		} else {
-			// Store endpoint and api token as credentials
-			utils.Info.Println("Authentication was successful.")
-
-			credentialmanager.SetCreds(*endPoint, *apiToken)
+			utils.Error.Printf("Endpoint invalid or keptn unreachable. Details: %v", err)
+			return err
 		}
+
+		// Store endpoint and api token as credentials
+		utils.Info.Println("Authentication was successful.")
+		credentialmanager.SetCreds(*endPoint, *apiToken)
+		return nil
 	},
 }
 
