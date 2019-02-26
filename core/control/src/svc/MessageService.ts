@@ -9,11 +9,11 @@ export class MessageService {
   }
 
   public async sendMessage(message: any): Promise<boolean> {
+    console.log(`Forwarding message to channel ${this.channelUri}`);
     if (this.channelUri === '') {
       return false;
     }
-    console.log(`Forwarding message to channel ${this.channelUri}`);
-    const result = await axios.post(this.channelUri, message);
+    const result = await axios.post(`http://${this.channelUri}`, message);
     console.log(result);
     return true;
   }

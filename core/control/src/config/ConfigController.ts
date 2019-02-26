@@ -49,6 +49,7 @@ export class ConfigController implements interfaces.Controller {
     response: express.Response,
     next: express.NextFunction,
   ): Promise<void> {
+    console.log(`received config command...`);
     await this.messageService.sendMessage(request.body);
     /*
     const credentialsService = CredentialsService.getInstance();
