@@ -4,6 +4,12 @@ This component accepts incoming events from sources such as GitHub webhooks, and
 
 ## Installation
 
+1. Create the `keptn` namespace, if it doesn't already exist:
+
+    ```console
+    $ kubectl create namespace keptn
+    ```
+
 1. Create the channel by using the following kubernetes command:
     ```console
     $ kubectl apply -f config/channel.yaml
