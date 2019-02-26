@@ -2,8 +2,9 @@
 
 echo "setting up auto tagging rules in your Dynatrace tenant..."
 
-DT_TENANT_ID=$1
-DT_API_TOKEN=$2
+export DT_TENANT_ID=$(cat creds.json | jq -r '.dynatraceTenant')
+export DT_API_TOKEN=$(cat creds.json | jq -r '.dynatraceApiToken')
+
 
 curl -X POST \
   "https://$DT_TENANT_ID.live.dynatrace.com/api/config/v1/autoTags?Api-Token=$DT_API_TOKEN" \

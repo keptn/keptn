@@ -1,5 +1,9 @@
 #!/bin/bash
 
+LOG_LOCATION=./logs
+exec > >(tee -i $LOG_LOCATION/setupInfrastructure.log)
+exec 2>&1
+
 echo "--------------------------"
 echo "Setup Infrastructure "
 echo "--------------------------"
@@ -29,25 +33,27 @@ kubectl create -f ../manifests/container-registry/k8s-docker-registry-pvc.yml
 kubectl create -f ../manifests/container-registry/k8s-docker-registry-deployment.yml
 kubectl create -f ../manifests/container-registry/k8s-docker-registry-service.yml
 
-echo "waiting for docker service to get public ip..."
-sleep 100
+echo "wait 30s for docker service to get ip..."
+sleep 30
 
 # Create a route for the docker registry service
 # Store the docker registry route in a variable
 export REGISTRY_URL=$(kubectl describe svc docker-registry -n cicd | grep IP: | sed 's~IP:[ \t]*~~')
 
+echo "REGISTRY_URL: " $REGISTRY_URL
+
 # Create Jenkins
+rm -f ../manifests/gen/k8s-jenkins-deployment.yml
+
 cat ../manifests/jenkins/k8s-jenkins-deployment.yml | \
   sed 's~GITHUB_USER_EMAIL_PLACEHOLDER~'"$GITHUB_USER_EMAIL"'~' | \
   sed 's~GITHUB_ORGANIZATION_PLACEHOLDER~'"$GITHUB_ORGANIZATION"'~' | \
   sed 's~DOCKER_REGISTRY_IP_PLACEHOLDER~'"$REGISTRY_URL"'~' | \
   sed 's~DT_TENANT_URL_PLACEHOLDER~'"$DT_TENANT_URL"'~' | \
-  sed 's~DT_API_TOKEN_PLACEHOLDER~'"$DT_API_TOKEN"'~' >> ../manifests/jenkins/k8s-jenkins-deployment_tmp.yml
-
-mv ../manifests/jenkins/k8s-jenkins-deployment_tmp.yml ../manifests/jenkins/k8s-jenkins-deployment.yml
+  sed 's~DT_API_TOKEN_PLACEHOLDER~'"$DT_API_TOKEN"'~' >> ../manifests/gen/k8s-jenkins-deployment.yml
 
 kubectl create -f ../manifests/jenkins/k8s-jenkins-pvcs.yml 
-kubectl create -f ../manifests/jenkins/k8s-jenkins-deployment.yml
+kubectl create -f ../manifests/gen/k8s-jenkins-deployment.yml
 kubectl create -f ../manifests/jenkins/k8s-jenkins-rbac.yml
 
 # Deploy Dynatrace operator
@@ -56,20 +62,31 @@ echo "Installing Dynatrace Operator $LATEST_RELEASE"
 kubectl create -f https://raw.githubusercontent.com/Dynatrace/dynatrace-oneagent-operator/$LATEST_RELEASE/deploy/kubernetes.yaml
 sleep 60
 kubectl -n dynatrace create secret generic oneagent --from-literal="apiToken=$DT_API_TOKEN" --from-literal="paasToken=$DT_PAAS_TOKEN"
-curl -o ../manifests/dynatrace/cr.yml https://raw.githubusercontent.com/Dynatrace/dynatrace-oneagent-operator/$LATEST_RELEASE/deploy/cr.yaml
-cat ../manifests/dynatrace/cr.yml | sed 's/ENVIRONMENTID/'"$DT_TENANT_ID"'/' >> ../manifests/dynatrace/cr_tmp.yml
-mv ../manifests/dynatrace/cr_tmp.yml ../manifests/dynatrace/cr.yml
-kubectl create -f ../manifests/dynatrace/cr.yml
+rm -f ../manifests/gen/oneagent-cr.yml
+curl -o ../manifests/dynatrace/oneagent-cr.yml https://raw.githubusercontent.com/Dynatrace/dynatrace-oneagent-operator/$LATEST_RELEASE/deploy/cr.yaml
+cat ../manifests/dynatrace/oneagent-cr.yml | sed 's/ENVIRONMENTID/'"$DT_TENANT_ID"'/' >> ../manifests/dynatrace/cr_tmp.yml
+mv ../manifests/dynatrace/cr_tmp.yml ../manifests/gen/oneagent-cr.yml
+kubectl create -f ../manifests/gen/oneagent-cr.yml
 
 # Apply auto tagging rules in Dynatrace
 echo "--------------------------"
 echo "Apply auto tagging rules in Dynatrace "
 echo "--------------------------"
 
-./applyAutoTaggingRules.sh $DT_TENANT_ID $DT_API_TOKEN
+./applyAutoTaggingRules.sh 
 
 echo "--------------------------"
 echo "End applying auto tagging rules in Dynatrace "
+echo "--------------------------"
+
+echo "--------------------------"
+echo "Apply Dynatrace Request Attributes"
+echo "--------------------------"
+
+./applyRequestAttributeRules.sh
+
+echo "--------------------------"
+echo "End applying Dynatrace Request Attributes"
 echo "--------------------------"
 
 # Deploy sockshop application
@@ -157,7 +174,7 @@ kubectl create -f ../manifests/ansible-tower/namespace.yml
 kubectl create -f ../manifests/ansible-tower/deployment.yml
 kubectl create -f ../manifests/ansible-tower/service.yml
 
-echo "wait for changes to apply..."
+echo "wait 2 minutes for changes to apply..."
 sleep 120
 
 ./configureAnsible.sh
