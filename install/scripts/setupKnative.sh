@@ -73,7 +73,7 @@ cd ../../core/auth
 cd ../../install/scripts
 
 cd ../../core/control
-./deploy.sh $REGISTRY_URL
+./deploy.sh $REGISTRY_URL $KEPTN_CHANNEL_URI
 cd ../../install/scripts
 
 if [[ $SHOW_API_TOKEN = 'y' ]]

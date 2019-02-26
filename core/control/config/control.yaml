@@ -31,3 +31,6 @@ spec:
           container:
             image: REGISTRY_URI_PLACEHOLDER:5000/keptn/keptn-control:latest
             imagePullPolicy: Always
+            env:
+            - name: CHANNEL_URI
+            value: CHANNEL_URI_PLACEHOLDER
