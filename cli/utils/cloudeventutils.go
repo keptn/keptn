@@ -43,8 +43,7 @@ func Send(target string, apiToken string, builder cloudevents.Builder, data inte
 		return err
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-		fmt.Println(resp.StatusCode)
+	if resp.StatusCode == 200 {
 		return nil
 	}
 	return fmt.Errorf("error sending cloudevent: %s", status(resp))
