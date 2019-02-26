@@ -12,7 +12,9 @@ export class MessageService {
     if (this.channelUri === '') {
       return false;
     }
+    console.log(`Forwarding message to channel ${this.channelUri}`);
     const result = await axios.post(this.channelUri, message);
+    console.log(result);
     return true;
   }
 }
