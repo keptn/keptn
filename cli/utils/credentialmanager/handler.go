@@ -21,6 +21,12 @@ type bot interface {
 // named "endPoint.txt"
 var MockCreds bool
 
+var apiTokenFileURI string
+
+func init() {
+	apiTokenFileURI = os.Getenv("HOME") + "/.keptn"
+}
+
 func setCreds(h credentials.Helper, endPoint string, apiToken string) error {
 	if MockCreds {
 		// Do nothing
@@ -39,29 +45,24 @@ func setCreds(h credentials.Helper, endPoint string, apiToken string) error {
 func getCreds(h credentials.Helper) (string, string, error) {
 
 	if MockCreds {
-		return ReadCredsFromFile()
+		return readCredsFromFile()
 	}
 	return h.Get(serverURL)
 }
 
-// ReadCredsFromFile reads the credentials from a file named "endPoint.txt".
+// readCredsFromFile reads the credentials from a file named "endPoint.txt".
 // This function is used for testing
-func ReadCredsFromFile() (string, string, error) {
-	const endPointFile = "endPoint.txt"
-	if _, err := os.Stat(endPointFile); os.IsNotExist(err) {
-		return "", "", err
-	}
-
-	data, err := ioutil.ReadFile(endPointFile)
+func readCredsFromFile() (string, string, error) {
+	data, err := ioutil.ReadFile(apiTokenFileURI)
 	if err != nil {
 		return "", "", err
 	}
 	creds := strings.Split(string(data), "\n")
 	if len(creds) != 2 {
-		return "", "", errors.New("Format of endPoint.txt file is invalid")
+		return "", "", errors.New("Format of file-based key storage is invalid")
 	}
 	if !strings.HasSuffix(creds[0], "/") {
 		creds[0] += "/"
 	}
-	return creds[0], creds[1], nil
+	return creds[0], creds[1], err
 }
