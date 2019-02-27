@@ -18,7 +18,9 @@ const authenticator: express.RequestHandler = async (
   console.log(JSON.stringify(request.body));
   // TODO: insert call to authenticator.keptn.svc.cluster.local here
   // get signature from header
-  const signature: string = request.headers !== undefined ? request.headers['x-keptn-signature'] as string : undefined;
+  const signature: string =
+    request.headers !== undefined ?
+      request.headers['x-keptn-signature'] as string : undefined;
   console.log(signature);
   if (signature === undefined) {
     response.status(401);

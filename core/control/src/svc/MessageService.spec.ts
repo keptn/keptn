@@ -7,7 +7,6 @@ import { cleanUpMetadata } from 'inversify-express-utils';
 import { MessageService } from './MessageService';
 const nock = require('nock');
 
-
 describe('MessageService', () => {
   let messageService: MessageService;
   beforeEach(() => {
