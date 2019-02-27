@@ -17,6 +17,7 @@ export class MessageService {
     try {
       result = await axios.post(`http://${this.channelUri}`, message);
     } catch (e) {
+      console.log(e);
       return false;
     }
     return true;
