@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/hmac"
 	"crypto/sha1"
+	"crypto/tls"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -37,7 +38,10 @@ func Send(target string, apiToken string, builder cloudevents.Builder, data inte
 	if err != nil {
 		return err
 	}
-	client := &http.Client{Timeout: 60 * time.Second}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+	client := &http.Client{Timeout: 60 * time.Second, Transport: tr}
 	resp, err := client.Do(req)
 	if err != nil {
 		return err

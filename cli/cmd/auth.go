@@ -34,9 +34,9 @@ var authCmd = &cobra.Command{
 	Use:   "auth",
 	Short: "Authenticates the keptn CLI against a keptn installation.",
 	Long: `Authenticates the keptn CLI against a keptn installation using an endpoint
-	and an api-token. This can be accomplished by 
+	and an api-token. Usage of \"auth\":
 
-	keptn auth --endpoint=myendpoint.com --api-token`,
+keptn auth --endpoint=myendpoint.com --api-token`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		utils.Info.Println("auth called")
 		builder := cloudevents.Builder{

@@ -24,9 +24,9 @@ import (
 )
 
 type configData struct {
-	org   *string
-	user  *string
-	token *string
+	Org   *string `json:"org"`
+	User  *string `json:"user"`
+	Token *string `json:"token"`
 }
 
 var config configData
@@ -36,9 +36,9 @@ var configureCmd = &cobra.Command{
 	Use:   "configure",
 	Short: "Configures the GitHub org, user and token in the keptn installation.",
 	Long: `Configures the GitHub Organization, the GitHub user, and the GitHub
-	token in the keptn installation. This can be accomplished by
+	token in the keptn installation. Usage of \"configure\":
 
-	keptn configure --org=MyOrg --user=keptnUser --token=XYZ`,
+keptn configure --org=MyOrg --user=keptnUser --token=XYZ`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		utils.Info.Println("configure called")
 
@@ -64,10 +64,10 @@ var configureCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(configureCmd)
 
-	config.org = configureCmd.Flags().StringP("org", "o", "", "The GitHub organization")
+	config.Org = configureCmd.Flags().StringP("org", "o", "", "The GitHub organization")
 	configureCmd.MarkFlagRequired("org")
-	config.user = configureCmd.Flags().StringP("user", "u", "", "The GitHub user")
+	config.User = configureCmd.Flags().StringP("user", "u", "", "The GitHub user")
 	configureCmd.MarkFlagRequired("user")
-	config.token = configureCmd.Flags().StringP("token", "t", "", "The GitHub token")
+	config.Token = configureCmd.Flags().StringP("token", "t", "", "The GitHub token")
 	configureCmd.MarkFlagRequired("token")
 }
