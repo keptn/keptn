@@ -19,9 +19,6 @@ export class MessageService {
     } catch (e) {
       return false;
     }
-    if (result.status === 200) {
-      return true;
-    }
-    return false;
+    return true;
   }
 }
