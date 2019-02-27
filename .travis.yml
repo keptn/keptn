@@ -30,7 +30,7 @@ jobs:
         - tar -xzf hub-linux-amd64-2.6.0.tgz
         - sudo cp hub-linux-amd64-2.6.0/bin/hub /bin/
         # Install yq
-        - sudo add-apt-repository ppa:rmescandon/yq
+        - sudo add-apt-repository ppa:rmescandon/yq -y
         - sudo apt update
         - sudo apt install yq -y
         # Create K8s cluster
@@ -101,7 +101,7 @@ jobs:
         - export REGISTRY_URL=$(kubectl describe svc docker-registry -n cicd | grep "IP:" | sed 's~IP:[ \t]*~~')
         
         # Install yq
-        - sudo add-apt-repository ppa:rmescandon/yq
+        - sudo add-apt-repository ppa:rmescandon/yq -y
         - sudo apt update
         - sudo apt install yq -y
 
