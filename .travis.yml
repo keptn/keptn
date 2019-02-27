@@ -28,7 +28,9 @@ jobs:
         - tar -xzf hub-linux-amd64-2.6.0.tgz
         - sudo cp hub-linux-amd64-2.6.0/bin/hub /bin/
         # Install yq
-        - sudo apt install yq -y
+        - sudo add-apt-repository ppa:rmescandon/yq
+        - sudo apt update
+        - sudo apt install yq
         # Create K8s cluster
         - if [ ! -d "$HOME/google-cloud-sdk/bin" ]; then rm -rf $HOME/google-cloud-sdk; export CLOUDSDK_CORE_DISABLE_PROMPTS=1; curl https://sdk.cloud.google.com | bash; fi
         - source /home/travis/google-cloud-sdk/path.bash.inc
@@ -97,7 +99,9 @@ jobs:
         - export REGISTRY_URL=$(kubectl describe svc docker-registry -n cicd | grep "IP:" | sed 's~IP:[ \t]*~~')
         
         # Install yq
-        - sudo apt install yq -y
+        - sudo add-apt-repository ppa:rmescandon/yq
+        - sudo apt update
+        - sudo apt install yq
 
         - cd ./install/scripts/
         - ./setupKnative.sh $JENKINS_USER $JENKINS_PASSWORD $REGISTRY_URL
