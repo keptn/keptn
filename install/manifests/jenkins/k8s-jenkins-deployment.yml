@@ -35,7 +35,7 @@ spec:
     spec:
       containers:
       - name: jenkins
-        image: dynatraceacm/keptn-jenkins:0.2
+        image: keptn/jenkins:0.2
         imagePullPolicy: Always
         env:
           - name: GITHUB_USER_EMAIL

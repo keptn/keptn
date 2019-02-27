@@ -46,7 +46,7 @@ In the following, planned commands for the CLI are listed and explained:
     $ keptn auth --endpoint= --api-token=
     ```
 
-* **keptn configure --org --user --token**: Configures the keptn CLI by storing the the **GitHub organization** and **GitHub user** locally, and this command triggers the *keptn.control* component to create a secret for the **GitHub token**.
+* **keptn configure --org --user --token**: Sends the **GitHub organization**, **GitHub user**, and **Github token** to the *keptn.control* component.
 
     *Example:*
     ```console
