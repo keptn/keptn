@@ -1,0 +1,57 @@
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: dynatrace-oneagent-hostnames
+spec:
+  hosts:
+  - mvv888.dynatrace-managed.com
+  - 34.240.91.120:8443
+  - 34.241.14.6:8443
+  location: MESH_EXTERNAL
+  ports:
+  - number: 443
+    name: HTTPS
+    protocol: HTTPS
+  resolution: DNS
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: dynatrace-oneagent-hostnames
+spec:
+  hosts:
+  - mvv888.dynatrace-managed.com
+  - 34.240.91.120:8443
+  - 34.241.14.6:8443
+  tls:
+  - match:
+    - port: 443
+      sni_hosts:
+      - mvv888.dynatrace-managed.com/e/dt-acm-keptn
+    route:
+    - destination:
+        host: mvv888.dynatrace-managed.com/e/dt-acm-keptn
+        port:
+          number: 443
+          name: HTTPS
+  - match:
+    - port: 443
+      sni_hosts:
+      - 34.240.91.120:8443
+    route:
+    - destination:
+        host: 34.240.91.120:8443
+        port:
+          number: 443
+          name: HTTPS
+  - match:
+    - port: 443
+      sni_hosts:
+      - 34.241.14.6:8443
+    route:
+    - destination:
+        host: 34.241.14.6:8443
+        port:
+          number: 443
+          name: HTTPS

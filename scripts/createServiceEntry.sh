@@ -11,11 +11,12 @@ cat ../manifests/istio/service_entries_tpl/part1 >> serviceEntry_tmp/service_ent
 
 dthost=$(echo $1 | sed 's,/.*,,')
 echo -e "  - $dthost" >> serviceEntry_tmp/hosts
-cat ../manifests/istio/service_entries_tpl/service_entry_tmpl | sed 's~ENDPOINT_PLACEHOLDER~'"$1"'~' >> serviceEntry_tmp/service_entries
+cat ../manifests/istio/service_entries_tpl/service_entry_tmpl | sed 's~ENDPOINT_PLACEHOLDER~'"$dthost"'~' >> serviceEntry_tmp/service_entries
 
 for row in $entries; do
     row=$(echo $row | sed 's~https://~~')
     row=$(echo $row | sed 's~/communication~~')
+    row=$(echo $row | sed 's/:.*//')
     echo -e "  - $row" >> serviceEntry_tmp/hosts
     cat ../manifests/istio/service_entries_tpl/service_entry_tmpl | sed 's~ENDPOINT_PLACEHOLDER~'"$row"'~' >> serviceEntry_tmp/service_entries
 done
@@ -32,4 +33,4 @@ cp serviceEntry_tmp/service_entries_oneagent.yml ../manifests/istio/service_entr
 
 kubectl apply -f serviceEntry_tmp/service_entries_oneagent.yml
 
-#rm -rf serviceEntry_tmp
+rm -rf serviceEntry_tmp
