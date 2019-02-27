@@ -32,3 +32,5 @@ node_modules
 
 # Dist directory
 dist/
+
+.nyc_output
