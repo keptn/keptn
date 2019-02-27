@@ -1,9 +1,7 @@
 package credentialmanager
 
 import (
-	"errors"
 	"os"
-	"strings"
 
 	"io/ioutil"
 
@@ -18,11 +16,9 @@ import (
 // 3. pass init [generated pub key]
 
 var passwordStoreDirectory string
-var apiTokenURI string
 
 func init() {
 	passwordStoreDirectory = os.Getenv("HOME") + "/.password-store"
-	apiTokenURI = os.Getenv("HOME") + "/.keptn"
 }
 
 // SetCreds stores the credentials consisting of an endpoint and an api token using pass or into a file in case
@@ -41,15 +37,7 @@ func GetCreds() (string, string, error) {
 	if _, err := os.Stat(passwordStoreDirectory); os.IsNotExist(err) {
 		utils.Warning.Println("Use a file-based storage for the key because the password-store seems to be not set up.")
 
-		data, err := ioutil.ReadFile(apiTokenURI)
-		if err != nil {
-			return "", "", err
-		}
-		creds := strings.Split(string(data), "\n")
-		if len(creds) != 2 {
-			return "", "", errors.New("Format of file-based key storage is invalid!")
-		}
-		return creds[0], creds[1], err
+		return readCredsFromFile()
 	}
 	return getCreds(pass.Pass{})
 }

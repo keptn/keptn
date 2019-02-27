@@ -19,7 +19,8 @@ func init() {
 func TestAuthCmd(t *testing.T) {
 
 	credentialmanager.MockCreds = true
-	endPoint, apiToken, err := credentialmanager.ReadCredsFromFile()
+
+	endPoint, apiToken, err := credentialmanager.GetCreds()
 	if err != nil {
 		t.Error(err)
 		return
