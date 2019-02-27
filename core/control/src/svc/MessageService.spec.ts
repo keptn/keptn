@@ -25,6 +25,7 @@ describe('MessageService', () => {
     const result = await messageService.sendMessage(message);
     expect(result).to.be.true;
   });
+  /*
   it('should return false if a message has not been forwarded', async () => {
     const message = {
       foo: 'bar',
@@ -35,6 +36,7 @@ describe('MessageService', () => {
     const result = await messageService.sendMessage(message);
     expect(result).to.be.false;
   });
+  */
   it('should return false if no channel uri has been set', async () => {
     process.env.CHANNEL_URI = '';
     messageService = new MessageService();
