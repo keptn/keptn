@@ -50,7 +50,7 @@ export class ConfigController implements interfaces.Controller {
     next: express.NextFunction,
   ): Promise<void> {
     console.log(`received config command...`);
-    await this.messageService.sendMessage(request.body);
+    const result = await this.messageService.sendMessage(request.body);
     /*
     const credentialsService = CredentialsService.getInstance();
     try {
@@ -59,6 +59,6 @@ export class ConfigController implements interfaces.Controller {
       console.log(e);
     }
     */
-    response.send({ status: 'OK' });
+    response.send({ success: result });
   }
 }

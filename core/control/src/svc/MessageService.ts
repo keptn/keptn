@@ -13,8 +13,15 @@ export class MessageService {
     if (this.channelUri === '') {
       return false;
     }
-    const result = await axios.post(`http://${this.channelUri}`, message);
-    console.log(result);
-    return true;
+    let result;
+    try {
+      result = await axios.post(`http://${this.channelUri}`, message);
+    } catch (e) {
+      return false;
+    }
+    if (result.status === 200) {
+      return true;
+    }
+    return false;
   }
 }
