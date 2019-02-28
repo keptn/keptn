@@ -15,7 +15,7 @@ export DT_TENANT_ID=$(cat creds.json | jq -r '.dynatraceTenant')
 export DT_API_TOKEN=$(cat creds.json | jq -r '.dynatraceApiToken')
 export DT_PAAS_TOKEN=$(cat creds.json | jq -r '.dynatracePaaSToken')
 export GITHUB_ORGANIZATION=$(cat creds.json | jq -r '.githubOrg')
-export DT_TENANT_URL=$(echo $DT_TENANT_ID | sed 's,/,///,g')
+export DT_TENANT_URL=$(echo $DT_TENANT_ID | sed 's,/,\\\\\\\\/,g')
 
 # Grant cluster admin rights to gcloud user
 export GCLOUD_USER=$(gcloud config get-value account)
@@ -42,7 +42,7 @@ cat ../manifests/jenkins/k8s-jenkins-deployment.yml | \
   sed 's~GITHUB_ORGANIZATION_PLACEHOLDER~'"$GITHUB_ORGANIZATION"'~' | \
   sed 's~DOCKER_REGISTRY_IP_PLACEHOLDER~'"$REGISTRY_URL"'~' | \
   sed 's~DT_TENANT_URL_PLACEHOLDER~'"$DT_TENANT_URL"'~' | \
-  sed 's~DT_API_TOKEN_PLACEHOLDER~'"$DT_API_TOKEN"'~' >> ../manifests/jenkins/k8s-jenkins-deployment_tmp.yml
+  sed 's~DT_API_TOKEN_PLACEHOLDER~'""$DT_API_TOKEN""'~' >> ../manifests/jenkins/k8s-jenkins-deployment_tmp.yml
 
 mv ../manifests/jenkins/k8s-jenkins-deployment_tmp.yml ../manifests/jenkins/k8s-jenkins-deployment.yml
 
