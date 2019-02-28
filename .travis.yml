@@ -135,8 +135,12 @@ jobs:
         - go test ${gobuild_args} ./...
 
       after_script:
-        #- kubectl delete pods,svc,deployments --all -n keptn
-        #- kubectl delete channel --all -n keptn
-        #- kubectl delete clusterchannelprovisioner --all -n keptn
-        #- kubectl delete ns knative-build knative-eventing knative-monitoring knative-serving knative-sources
-        #- kubectl delete clusterrolebinding travis-cluster-admin-binding
+        - cd ../core/
+        - kubectl delete -f auth/config/gen
+        - kubectl delete -f control/config/gen
+        - kubectl delete -f eventbroker/config/gen
+        - kubectl delete pods,svc,deployments --all -n keptn
+        - kubectl delete channel --all -n keptn
+        - kubectl delete clusterchannelprovisioner --all -n keptn
+        - kubectl delete ns knative-build knative-eventing knative-monitoring knative-serving knative-sources
+        - kubectl delete clusterrolebinding travis-cluster-admin-binding
