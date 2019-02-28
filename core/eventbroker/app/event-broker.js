@@ -46,7 +46,7 @@ async function sendMessage(msg, eventType) {
   } else {
     channelUri = process.env.CHANNEL_URI;
   }
-  console.log(`Sending message to ${process.env.CHANNEL_URI}`);
+  console.log(`Sending message to ${channelUri}`);
   var config = {
     method: 'POST',
     url: `http://${channelUri}`,
