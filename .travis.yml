@@ -1,5 +1,7 @@
 sudo: true
 
+dist: xenial
+
 # Use node_js environnement
 language: go
 
@@ -14,7 +16,6 @@ cache:
 # Install services
 services:
   - docker
-  - go
 
 # Set env vars
 env:
@@ -24,12 +25,16 @@ env:
 jobs:
   include:
     - stage: master
-      if: branch = master 
+      if: branch = master AND NOT type = pull_request
       script:
         # Install hub
         - sudo wget https://github.com/github/hub/releases/download/v2.6.0/hub-linux-amd64-2.6.0.tgz
         - tar -xzf hub-linux-amd64-2.6.0.tgz
         - sudo cp hub-linux-amd64-2.6.0/bin/hub /bin/
+        # Install yq
+        - sudo add-apt-repository ppa:rmescandon/yq -y
+        - sudo apt update
+        - sudo apt install yq -y
         # Create K8s cluster
         - if [ ! -d "$HOME/google-cloud-sdk/bin" ]; then rm -rf $HOME/google-cloud-sdk; export CLOUDSDK_CORE_DISABLE_PROMPTS=1; curl https://sdk.cloud.google.com | bash; fi
         - source /home/travis/google-cloud-sdk/path.bash.inc
@@ -65,6 +70,12 @@ jobs:
         
         - export EVENT_BROKER_NAME=$(kubectl describe ksvc event-broker -n keptn | grep -m 1 "Name:" | sed 's~Name:[ \t]*~~')
         - ./../../test/assertEquals.sh $EVENT_BROKER_NAME event-broker
+
+        - export AUTHENTICATOR_NAME=$(kubectl describe ksvc authenticator -n keptn | grep -m 1 "Name:" | sed 's~Name:[ \t]*~~')
+        - ./../../test/assertEquals.sh $AUTHENTICATOR_NAME authenticator
+
+        - export CONTROL_NAME=$(kubectl describe ksvc control -n keptn | grep -m 1 "Name:" | sed 's~Name:[ \t]*~~')
+        - ./../../test/assertEquals.sh $CONTROL_NAME control
         
         #- cat ../test/keptn.postman_environment.json |sed 's~FRONT_END_DEV_PLACEHOLDER~'"$FRONT_END_DEV"'~' |sed 's~FRONT_END_STAGING_PLACEHOLDER~'"$FRONT_END_STAGING"'~' |sed 's~FRONT_END_PRODUCTION_PLACEHOLDER~'"$FRONT_END_PRODUCTION"'~' |sed 's~ISTIO_INGRESS_PLACEHOLDER~'"$ISTIO_INGRESS"'~' >> ../test/env.json
         #- npm install newman
@@ -86,14 +97,32 @@ jobs:
         - gcloud --quiet components update kubectl
         - echo $GCLOUD_SERVICE_KEY | base64 --decode -i > ${HOME}/gcloud-service-key.json
         - gcloud auth activate-service-account --key-file ${HOME}/gcloud-service-key.json
-        - gcloud container clusters get-credentials keptn-pr-statuscheck --zone us-central1-a --project sai-research
+        - gcloud container clusters get-credentials $CLUSTER_PR_STATUSCHECK_NAME --zone $CLUSTER_PR_STATUSCHECK_ZONE --project $PROJECT_NAME
         - export GCLOUD_USER=$(gcloud config get-value account)
         - kubectl create clusterrolebinding travis-cluster-admin-binding --clusterrole=cluster-admin --user=$GCLOUD_USER
         - export REGISTRY_URL=$(kubectl describe svc docker-registry -n cicd | grep "IP:" | sed 's~IP:[ \t]*~~')
+        
+        # Install yq
+        - sudo add-apt-repository ppa:rmescandon/yq -y
+        - sudo apt update
+        - sudo apt install yq -y
+
         - cd ./install/scripts/
         - ./setupKnative.sh $JENKINS_USER $JENKINS_PASSWORD $REGISTRY_URL
         - export EVENT_BROKER_NAME=$(kubectl describe ksvc event-broker -n keptn | grep -m 1 "Name:" | sed 's~Name:[ \t]*~~')
         - ./../../test/assertEquals.sh $EVENT_BROKER_NAME event-broker
+    
+        - export AUTHENTICATOR_NAME=$(kubectl describe ksvc authenticator -n keptn | grep -m 1 "Name:" | sed 's~Name:[ \t]*~~')
+        - ./../../test/assertEquals.sh $AUTHENTICATOR_NAME authenticator
+
+        - export CONTROL_NAME=$(kubectl describe ksvc control -n keptn | grep -m 1 "Name:" | sed 's~Name:[ \t]*~~')
+        - ./../../test/assertEquals.sh $CONTROL_NAME control
+
+        # execute unit tests for core components
+        - cd ../../core/control
+        - npm install
+        - npm run test
+      
         # write credentials in local file for testing the CLI
         - kubectl describe ksvc control -n keptn | yq r - Status.Domain > ~/.keptn
         - kubectl get secret keptn-api-token  -n keptn -o=yaml | yq r - data.keptn-api-token | base64 --de >> ~/.keptn
@@ -102,7 +131,6 @@ jobs:
         - go test ${gobuild_args} ./...
 
       after_script:
-        - sleep 30
         - kubectl delete pods,svc,deployments --all -n keptn
         - kubectl delete channel --all -n keptn
         - kubectl delete clusterchannelprovisioner --all -n keptn

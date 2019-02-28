@@ -9,6 +9,7 @@ manifests/gen/service_entries
 manifests/gen/k8s-jenkins-deployment.yml
 manifests/gen/cr.yml
 manifests/gen/config-domain.yaml
+install/scripts/logs/*.log
 
 # Repositories forked by forkGitHubRepositories.sh
 repositories
