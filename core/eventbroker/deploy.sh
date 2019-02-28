@@ -21,6 +21,6 @@ cat config/event-broker.yaml | \
   sed 's~TESTS_FINISHED_CHANNEL_PLACEHOLDER~'"$TESTS_FINISHED_CHANNEL"'~' | \
   sed 's~START_EVALUATION_CHANNEL_PLACEHOLDER~'"$START_EVALUATION_CHANNEL"'~' | \
   sed 's~EVALUATION_DONE_CHANNEL_PLACEHOLDER~'"$EVALUATION_DONE_CHANNEL"'~' | \
-  sed 's~REGISTRY_URI_PLACEHOLDER~'"$REGISTRY_URI"'~' >> config/gen/event-broker.yaml 
+  sed 's~REGISTRY_URI_PLACEHOLDER~'"$REGISTRY_URL"'~' >> config/gen/event-broker.yaml 
   
 kubectl apply -f config/gen/event-broker.yaml
