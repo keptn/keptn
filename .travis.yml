@@ -127,6 +127,7 @@ jobs:
         - printf "https://" > ~/.keptn
         - kubectl describe ksvc control -n keptn | yq r - Status.Domain >> ~/.keptn
         - kubectl get secret keptn-api-token  -n keptn -o=yaml | yq r - data.keptn-api-token | base64 --de >> ~/.keptn
+        - cat ~/.keptn
         # execute GO tests
         - cd ../../cli/ 
         - go test ${gobuild_args} ./...
