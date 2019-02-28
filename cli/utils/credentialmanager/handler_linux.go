@@ -27,7 +27,7 @@ func SetCreds(endPoint string, apiToken string) error {
 	if _, err := os.Stat(passwordStoreDirectory); os.IsNotExist(err) {
 		utils.Warning.Println("Use a file-based storage for the key because the password-store seems to be not set up.")
 
-		return ioutil.WriteFile(apiTokenURI, []byte(endPoint+"\n"+apiToken), 0644)
+		return ioutil.WriteFile(apiTokenFileURI, []byte(endPoint+"\n"+apiToken), 0644)
 	}
 	return setCreds(pass.Pass{}, endPoint, apiToken)
 }
