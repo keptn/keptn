@@ -94,6 +94,9 @@ jobs:
         - ./setupKnative.sh $JENKINS_USER $JENKINS_PASSWORD $REGISTRY_URL
         - export EVENT_BROKER_NAME=$(kubectl describe ksvc event-broker -n keptn | grep -m 1 "Name:" | sed 's~Name:[ \t]*~~')
         - ./../../test/assertEquals.sh $EVENT_BROKER_NAME event-broker
+        # write credentials in local file for testing the CLI
+        - kubectl describe ksvc control -n keptn | yq r - Status.Domain > ~/.keptn
+        - kubectl get secret keptn-api-token  -n keptn -o=yaml | yq r - data.keptn-api-token | base64 --de >> ~/.keptn
         # execute GO tests
         - cd ../../cli/ 
         - go test ${gobuild_args} ./...
