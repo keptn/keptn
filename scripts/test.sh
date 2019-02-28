@@ -1,5 +1,5 @@
 export DT_TENANT_ID=$(cat creds.json | jq -r '.dynatraceTenant')
-export DT_TENANT_URL=$(echo $DT_TENANT_ID | sed 's,/,\\\\\\\\/,g')
+export DT_TENANT_URL=$(echo $DT_TENANT_ID | sed 's,/,\\/,g')
 echo $DT_TENANT_URL
 cat ../manifests/jenkins/k8s-jenkins-deployment-defaults.yml | \
   sed 's~GITHUB_USER_EMAIL_PLACEHOLDER~'"$GITHUB_USER_EMAIL"'~' | \
