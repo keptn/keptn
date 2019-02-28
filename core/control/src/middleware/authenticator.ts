@@ -4,12 +4,12 @@ import axios from 'axios';
 
 const AUTH_URL = 'http://authenticator.keptn.svc.cluster.local/auth';
 
-const authenticator: express.RequestHandler = (
+const authenticator: express.RequestHandler = async (
   request: express.Request,
   response: express.Response,
   next: express.NextFunction,
 ) => {
-  if (request.url.indexOf('swagger') > 0) {
+  if (request.url !== undefined && request.url.indexOf('swagger') > 0) {
     console.log('Skipping auth for swagger doc');
     next();
     return;
@@ -18,8 +18,9 @@ const authenticator: express.RequestHandler = (
   console.log(JSON.stringify(request.body));
   // TODO: insert call to authenticator.keptn.svc.cluster.local here
   // get signature from header
-  
-  const signature: string = request.headers['x-keptn-signature'] as string;
+  const signature: string =
+    request.headers !== undefined ?
+      request.headers['x-keptn-signature'] as string : undefined;
   console.log(signature);
   if (signature === undefined) {
     response.status(401);
@@ -33,21 +34,19 @@ const authenticator: express.RequestHandler = (
   };
 
   console.log(`Sending auth request: ${JSON.stringify(authRequest)}`);
-
-  axios.post(AUTH_URL, authRequest)
-    .then((authResult) => {
-      console.log(authResult);
-      if (authResult.data.authenticated) {
-        next();
-      } else {
-        response.status(401);
-        response.end();
-      }
-    })
-    .catch(() => {
-      console.log('Authentication request failed');
+  let authResult;
+  try {
+    authResult = await axios.post(AUTH_URL, authRequest);
+    if (authResult.data.authenticated) {
+      next();
+    } else {
       response.status(401);
-    });
+      response.end();
+    }
+  } catch (e) {
+    console.log('Authentication request failed');
+    response.status(401);
+  }
 };
 
 export = authenticator;

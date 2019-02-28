@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import * as express from 'express';
 import { inject, injectable } from 'inversify';
 import {
@@ -6,7 +7,6 @@ import {
   httpPost,
   interfaces,
 } from 'inversify-express-utils';
-import 'reflect-metadata';
 import {
   ApiOperationGet,
   ApiOperationPost,
@@ -14,7 +14,8 @@ import {
   SwaggerDefinitionConstant,
 } from 'swagger-express-ts';
 import { ConfigRequestModel } from './ConfigRequestModel';
-import { CredentialsService } from '../service/CredentialsService';
+import { CredentialsService } from '../svc/CredentialsService';
+import { MessageService } from '../svc/MessageService';
 
 @ApiPath({
   name: 'Config',
@@ -23,7 +24,8 @@ import { CredentialsService } from '../service/CredentialsService';
 })
 @controller('/config')
 export class ConfigController implements interfaces.Controller {
-  constructor() { }
+
+  constructor(@inject('MessageService') private readonly messageService: MessageService) {}
 
   @ApiOperationPost({
     description: 'Set Github credentials for keptn',
@@ -47,12 +49,19 @@ export class ConfigController implements interfaces.Controller {
     response: express.Response,
     next: express.NextFunction,
   ): Promise<void> {
+    console.log(`received config command...`);
+    if (request.body !== undefined) {
+      request.body.eventType = 'config';
+    }
+    const result = await this.messageService.sendMessage(request.body);
+    /*
     const credentialsService = CredentialsService.getInstance();
     try {
       await credentialsService.updateGithubConfig(request.body.data);
     } catch (e) {
       console.log(e);
     }
-    response.send({ status: 'OK' });
+    */
+    response.send({ success: result });
   }
 }
