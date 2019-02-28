@@ -22,9 +22,11 @@ type bot interface {
 var MockCreds bool
 
 var apiTokenFileURI string
+var mockAPItokenFileURI string
 
 func init() {
 	apiTokenFileURI = os.Getenv("HOME") + "/.keptn"
+	mockAPItokenFileURI = os.Getenv("HOME") + "/.keptnmock"
 }
 
 func setCreds(h credentials.Helper, endPoint string, apiToken string) error {
@@ -53,7 +55,13 @@ func getCreds(h credentials.Helper) (string, string, error) {
 // readCredsFromFile reads the credentials from a file named "endPoint.txt".
 // This function is used for testing
 func readCredsFromFile() (string, string, error) {
-	data, err := ioutil.ReadFile(apiTokenFileURI)
+	var data []byte
+	var err error
+	if MockCreds {
+		data, err = ioutil.ReadFile(mockAPItokenFileURI)
+	} else {
+		data, err = ioutil.ReadFile(apiTokenFileURI)
+	}
 	if err != nil {
 		return "", "", err
 	}
