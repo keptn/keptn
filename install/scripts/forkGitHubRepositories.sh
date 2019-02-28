@@ -1,5 +1,10 @@
 #!/bin/bash
 
+
+LOG_LOCATION=./logs
+exec > >(tee -i $LOG_LOCATION/forkGitHubRepositories.log)
+exec 2>&1
+
 YLW='\033[1;33m'
 NC='\033[0m'
 

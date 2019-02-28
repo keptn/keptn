@@ -22,7 +22,7 @@
                   "meTypes" : ["SERVICE"],
                   "tags" : [ {
                     "context" : "CONTEXTLESS",
-                    "key" : "app",
+                    "key" : "service",
                     "value" : "{{dt_app}}"            
                   }, {
                     "context" : "CONTEXTLESS",
