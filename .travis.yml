@@ -120,7 +120,13 @@ jobs:
         #- go test -v ./...
 
         # execute unit tests for core components
+        # Control
         - cd ../../core/control
+        - npm install
+        - npm run test
+
+        # Auth
+        - cd ../auth
         - npm install
         - npm run test
 
