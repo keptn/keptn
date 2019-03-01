@@ -124,6 +124,9 @@ jobs:
         - npm run test
       
         # write credentials in local file for testing the CLI
+        - sleep 60
+        - kubectl describe ksvc control -n keptn 
+        
         - ENDPOINT="$(kubectl describe ksvc control -n keptn | yq r - Status.Domain)"
         - echo "${ENDPOINT}"
         - while [ "$ENDPOINT" = "null" ]; do sleep 5; ENDPOINT="$(kubectl describe ksvc control -n keptn | yq r - Status.Domain)"; echo "${ENDPOINT}"; done
