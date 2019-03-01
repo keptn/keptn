@@ -15,7 +15,7 @@ RUN npm install -g concurrently
 RUN npm install -g typescript
 RUN npm install -g copyfiles
 
-COPY /core/control/ /usr/src/app
+COPY /core/eventbroker/ /usr/src/app
 
 RUN ls -la /usr/src/app/*
 
