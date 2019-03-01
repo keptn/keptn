@@ -47,12 +47,13 @@ export class MessageService {
         channelUri = eventSpec.channelUri;
       } else {
         console.log(`No event found for eventType ${eventType}`);
+        channelUri = 'new-artefact.keptn.channels.cluster.local';
         return;
       }
     }
-    console.log(`Sending message to ${process.env.CHANNEL_URI}`);
+    console.log(`Sending message to ${channelUri}`);
 
-    axios.post(`http://${channelUri}`, message).then().catch(() => {});
+    axios.post(`http://${channelUri}`, message).then().catch((e) => { console.log(e); });
 
     return true;
   }
