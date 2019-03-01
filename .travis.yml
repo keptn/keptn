@@ -133,7 +133,7 @@ jobs:
 
         - SEC="$(kubectl get secret keptn-api-token  -n keptn -o=yaml | yq r - data.keptn-api-token | base64 --decode)"
         - echo "${SEC}"
-        - echo "${SEC}" >> ~./keptnmock
+        - echo "${SEC}" >> ~/.keptnmock
         - cat ~/.keptnmock
         # execute GO tests
         - cd ../../cli/ 
