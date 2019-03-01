@@ -131,7 +131,7 @@ jobs:
         - printf "https://" > ~/.keptnmock
         - kubectl get ksvc control -n keptn -o=yaml  | yq r - status.domain >> ~/.keptnmock
 
-        - SEC="$(kubectl get secret keptn-api-token  -n keptn -o=yaml | yq r - data.keptn-api-token | base64 --de)"
+        - SEC="$(kubectl get secret keptn-api-token  -n keptn -o=yaml | yq r - data.keptn-api-token | base64 --decode)"
         - echo "${SEC}"
         - echo "${SEC}" >> ~./keptnmock
         - cat ~/.keptnmock
