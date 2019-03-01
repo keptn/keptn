@@ -125,13 +125,14 @@ jobs:
       
         # write credentials in local file for testing the CLI
        
-        - ENDPOINT="$(kubectl get ksvc control -n keptn -o=yaml | yq r - Status.Domain)"
+        - ENDPOINT="$(kubectl get ksvc control -n keptn -o=yaml | yq r - status.domain)"
         - echo "${ENDPOINT}"
-        - while [ "$ENDPOINT" = "null" ]; do sleep 5; ENDPOINT="$(kubectl get ksvc control -n keptn -o=yaml | yq r - Status.Domain)"; echo "${ENDPOINT}"; done
+        - while [ "$ENDPOINT" = "null" ]; do sleep 5; ENDPOINT="$(kubectl get ksvc control -n keptn -o=yaml | yq r - status.domain)"; echo "${ENDPOINT}"; done
         - printf "https://" > ~/.keptnmock
-        - SEC="$(kubectl describe ksvc control -n keptn | yq r - Status.Domain)"
+        - kubectl get ksvc control -n keptn -o=yaml  | yq r - status.domain >> ~/.keptnmock
+
+        - SEC="$(kubectl get secret keptn-api-token  -n keptn -o=yaml | yq r - data.keptn-api-token)"
         - echo "${SEC}"
-        - kubectl describe ksvc control -n keptn | yq r - Status.Domain >> ~/.keptnmock
         - kubectl get secret keptn-api-token  -n keptn -o=yaml | yq r - data.keptn-api-token | base64 --de >> ~/.keptnmock
         - cat ~/.keptnmock
         # execute GO tests
