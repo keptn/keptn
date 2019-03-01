@@ -13,6 +13,7 @@ COPY /core/auth/package.json /usr/src/app/
 RUN npm install -g tsc 
 RUN npm install -g concurrently 
 RUN npm install -g typescript
+RUN npm install -g copyfiles
 
 COPY /core/auth/ /usr/src/app
 
