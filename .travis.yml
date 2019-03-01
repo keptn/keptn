@@ -124,10 +124,10 @@ jobs:
         - npm run test
       
         # write credentials in local file for testing the CLI
-        - ENDPOINT="$(kubectl describe ksvc control -n keptn | yq r - Status.Domain)"  || "null"
-        - while [ "$ENDPOINT" = "null" ]; do sleep 5; ENDPOINT="$(kubectl describe ksvc control -n keptn | yq r - Status.Domain)"  || "null"; done
+        - ENDPOINT="$(kubectl describe ksvc control -n keptn -o=yaml | yq r - Status.Domain)"  || "null"
+        - while [ "$ENDPOINT" = "null" ]; do sleep 5; ENDPOINT="$(kubectl describe ksvc control -n keptn -o=yaml | yq r - Status.Domain)"  || "null"; done
         - printf "https://" > ~/.keptnmock
-        - kubectl describe ksvc control -n keptn | yq r - Status.Domain >> ~/.keptnmock
+        - kubectl describe ksvc control -n keptn -o=yaml | yq r - Status.Domain >> ~/.keptnmock
         - kubectl get secret keptn-api-token  -n keptn -o=yaml | yq r - data.keptn-api-token | base64 --de >> ~/.keptnmock
         - cat ~/.keptnmock
         # execute GO tests

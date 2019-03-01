@@ -74,13 +74,13 @@ keptn create project sockshop shipyard.yml`,
 		}
 		endPoint, apiToken, err := credentialmanager.GetCreds()
 		if err != nil || endPoint == "" {
-			utils.Info.Printf("Create project called without beeing authenticated.")
+			utils.Info.Printf("create project called without beeing authenticated.")
 			return errors.New("This command requires to be authenticated. See \"keptn auth\" for details")
 		}
 		projectEndPoint := endPoint + "project"
 		err = utils.Send(projectEndPoint, apiToken, builder, prjData)
 		if err != nil {
-			utils.Error.Printf("Create project command was unsuccessful. Details: %v", err)
+			utils.Error.Printf("create project command was unsuccessful. Details: %v", err)
 			return err
 		}
 		return nil
