@@ -107,6 +107,8 @@ jobs:
         - sudo apt update
         - sudo apt install yq -y
 
+        # Delete potential knative remainings
+        - kubectl delete ns knative-build knative-eventing knative-monitoring knative-serving knative-sources
         - cd ./install/scripts/
         - ./setupKnative.sh $JENKINS_USER $JENKINS_PASSWORD $REGISTRY_URL
         - export EVENT_BROKER_NAME=$(kubectl describe ksvc event-broker -n keptn | grep -m 1 "Name:" | sed 's~Name:[ \t]*~~')
@@ -127,13 +129,11 @@ jobs:
        
         - ENDPOINT="$(kubectl get ksvc control -n keptn -o=yaml | yq r - status.domain)"
         - echo "${ENDPOINT}"
-        - while [ "$ENDPOINT" = "null" ]; do sleep 5; ENDPOINT="$(kubectl get ksvc control -n keptn -o=yaml | yq r - status.domain)"; echo "${ENDPOINT}"; done
+        - while [ "$ENDPOINT" = "null" ]; do sleep 5; ENDPOINT="$(kubectl get ksvc control -n keptn -o=yaml | yq r - status.domain)"; done
         - printf "https://" > ~/.keptnmock
         - kubectl get ksvc control -n keptn -o=yaml  | yq r - status.domain >> ~/.keptnmock
 
-        - SEC="$(kubectl get secret keptn-api-token  -n keptn -o=yaml | yq r - data.keptn-api-token | base64 --decode)"
-        - echo "${SEC}"
-        - echo "${SEC}" >> ~/.keptnmock
+        - kubectl get secret keptn-api-token  -n keptn -o=yaml | yq r - data.keptn-api-token | base64 --decode >> ~/.keptnmock
         - cat ~/.keptnmock
         # execute GO tests
         - cd ../../cli/ 
