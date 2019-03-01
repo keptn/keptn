@@ -37,6 +37,7 @@ const authenticator: express.RequestHandler = async (
   let authResult;
   try {
     authResult = await axios.post(AUTH_URL, authRequest);
+    console.log(`auth result: ${JSON.stringify(authResult)}`);
     if (authResult.data.authenticated) {
       next();
     } else {
