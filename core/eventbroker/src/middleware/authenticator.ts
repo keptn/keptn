@@ -33,7 +33,7 @@ const authenticator: express.RequestHandler = async (
     payload,
   };
 
-  console.log(`Sending auth request: ${JSON.stringify(authRequest)}`);
+  console.log(`Sending Auth request: ${JSON.stringify(authRequest)}`);
   let authResult;
   try {
     authResult = await axios.post(AUTH_URL, authRequest);
