@@ -125,7 +125,8 @@ jobs:
       
         # write credentials in local file for testing the CLI
         - ENDPOINT="$(kubectl describe ksvc control -n keptn | yq r - Status.Domain)"
-        - while [ "$ENDPOINT" = "null" ]; do sleep 5; ENDPOINT="$(kubectl describe ksvc control -n keptn | yq r - Status.Domain)"; done
+        - echo "${ENDPOINT}"
+        - while [ "$ENDPOINT" = "null" ]; do sleep 5; ENDPOINT="$(kubectl describe ksvc control -n keptn | yq r - Status.Domain)"; echo "${ENDPOINT}"; done
         - printf "https://" > ~/.keptnmock
         - kubectl describe ksvc control -n keptn | yq r - Status.Domain >> ~/.keptnmock
         - kubectl get secret keptn-api-token  -n keptn -o=yaml | yq r - data.keptn-api-token | base64 --de >> ~/.keptnmock
