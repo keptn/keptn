@@ -44,6 +44,7 @@
     "crypto": "^1.0.1",
     "copyfiles": "^2.1.0",
     "express": "^4.16.4",
+    "reflect-metadata": "^0.1.13",
     "inversify": "^5.0.1",
     "inversify-express-utils": "^6.3.2",
     "mocha": "^6.0.2",
