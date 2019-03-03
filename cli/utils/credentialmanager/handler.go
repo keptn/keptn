@@ -66,7 +66,7 @@ func readCredsFromFile() (string, string, error) {
 		return "", "", err
 	}
 	creds := strings.Split(strings.TrimSuffix(string(data), "\n"), "\n")
-	if len(creds) <= 2 {
+	if len(creds) != 2 {
 		return "", "", errors.New("Format of file-based key storage is invalid")
 	}
 	if !strings.HasSuffix(creds[0], "/") {
