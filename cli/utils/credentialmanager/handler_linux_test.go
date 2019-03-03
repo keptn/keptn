@@ -16,7 +16,7 @@ func init() {
 
 func TestSetAndGetCreds(t *testing.T) {
 
-	utils.Info("Creds manager is mocked=%v", MockCreds)
+	utils.Info.Printf("Creds manager is mocked=%v", MockCreds)
 	if err := SetCreds(testEndPoint, testAPIToken); err != nil {
 		t.Fatal(err)
 	}
@@ -26,7 +26,7 @@ func TestSetAndGetCreds(t *testing.T) {
 		t.Fatal(err)
 	}
 	if testEndPoint != endPoint || testAPIToken != apiToken {
-		t.Info("Expected secret is %v but was %v", testAPIToken, apiToken)
+		utils.Info.Printf("Expected secret is %v but was %v", testAPIToken, apiToken)
 		t.Fatal("Readed creds do not match")
 	}
 }
