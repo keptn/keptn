@@ -2,6 +2,7 @@ package credentialmanager
 
 import (
 	"os"
+	"strings"
 
 	"io/ioutil"
 
@@ -27,6 +28,9 @@ func SetCreds(endPoint string, apiToken string) error {
 	if _, err := os.Stat(passwordStoreDirectory); os.IsNotExist(err) {
 		utils.Warning.Println("Use a file-based storage for the key because the password-store seems to be not set up.")
 
+		if !strings.HasSuffix(endPoint, "/") {
+			endPoint += "/"
+		}
 		return ioutil.WriteFile(apiTokenFileURI, []byte(endPoint+"\n"+apiToken), 0644)
 	}
 	return setCreds(pass.Pass{}, endPoint, apiToken)
