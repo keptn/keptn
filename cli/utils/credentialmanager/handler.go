@@ -35,6 +35,10 @@ func setCreds(h credentials.Helper, endPoint string, apiToken string) error {
 		return nil
 	}
 
+	if !strings.HasSuffix(endPoint, "/") {
+		endPoint += "/"
+	}
+
 	credentials.SetCredsLabel(credsLab)
 	c := &credentials.Credentials{
 		ServerURL: serverURL,
