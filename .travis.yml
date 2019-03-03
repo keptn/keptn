@@ -138,7 +138,7 @@ jobs:
         - cat ~/.keptnmock
         # execute GO tests
         - cd ../../cli/ 
-        - go test ${gobuild_args} -timeout 90s ./...
+        - go test ${gobuild_args} -timeout 240s ./...
 
       after_script:
         - cd ../core/
