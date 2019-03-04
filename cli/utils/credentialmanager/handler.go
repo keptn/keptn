@@ -3,7 +3,9 @@ package credentialmanager
 import (
 	"errors"
 	"io/ioutil"
+	"log"
 	"os"
+	"os/user"
 	"strings"
 
 	"github.com/docker/docker-credential-helpers/credentials"
@@ -25,8 +27,13 @@ var apiTokenFileURI string
 var mockAPItokenFileURI string
 
 func init() {
-	apiTokenFileURI = os.Getenv("HOME") + "/.keptn"
-	mockAPItokenFileURI = os.Getenv("HOME") + "/.keptnmock"
+	usr, err := user.Current()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	apiTokenFileURI = usr.HomeDir + string(os.PathSeparator) + ".keptn"
+	mockAPItokenFileURI = usr.HomeDir + string(os.PathSeparator) + ".keptnmock"
 }
 
 func setCreds(h credentials.Helper, endPoint string, apiToken string) error {
