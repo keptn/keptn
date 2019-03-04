@@ -11,6 +11,7 @@ import * as swagger from 'swagger-express-ts';
 
 // import controllers
 import './github/GitHubController';
+import './docker/DockerController';
 
 // import models
 
@@ -19,6 +20,7 @@ import RequestLogger = require('./middleware/requestLogger');
 import authenticator = require('./middleware/authenticator');
 import * as path from 'path';
 import { GitHubService } from './github/GitHubService';
+import { DockerService } from './docker/DockerService';
 
 const port: number = Number(process.env.PORT) || 5001; // or from a configuration file
 const swaggerUiAssetPath = require('swagger-ui-dist').getAbsoluteFSPath();
@@ -29,6 +31,7 @@ const container = new Container();
 
 // set up bindings
 container.bind<GitHubService>('GitHubService').to(GitHubService);
+container.bind<DockerService>('DockerService').to(DockerService);
 
 // create server
 const server = new InversifyExpressServer(container);
