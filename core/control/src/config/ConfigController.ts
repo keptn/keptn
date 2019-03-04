@@ -50,9 +50,6 @@ export class ConfigController implements interfaces.Controller {
     next: express.NextFunction,
   ): Promise<void> {
     console.log(`received config command...`);
-    if (request.body !== undefined) {
-      request.body.eventType = 'config';
-    }
     const result = await this.messageService.sendMessage(request.body);
     /*
     const credentialsService = CredentialsService.getInstance();
