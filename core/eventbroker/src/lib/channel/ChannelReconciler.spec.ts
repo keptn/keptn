@@ -1,0 +1,23 @@
+import { expect } from 'chai';
+import 'mocha';
+import { ChannelReconciler } from './ChannelReconciler';
+
+describe('ChannelReconciler', () => {
+  let channelReconciler: ChannelReconciler;
+  beforeEach(() => {
+    channelReconciler = new ChannelReconciler();
+  });
+
+  it('Should return a channel URI', async () => {
+    const channelName: string = 'new-artefact';
+    const channelUri = await channelReconciler.resolveChannel(channelName);
+
+    expect(channelUri.indexOf(channelName) > -1).is.true;
+  });
+  it('Should return an empty string if no channel can be found', async () => {
+    const channelName: string = 'idontexist';
+    const channelUri = await channelReconciler.resolveChannel(channelName);
+
+    expect(channelUri === '').is.true;
+  });
+});
