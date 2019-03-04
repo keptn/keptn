@@ -121,6 +121,7 @@ jobs:
         - ./../../test/assertEquals.sh $CONTROL_NAME control
 
         # execute unit tests for core components
+        # Control
         - cd ../../core/control
         - npm install
         - npm run test
@@ -138,6 +139,11 @@ jobs:
         # execute GO tests
         - cd ../../cli/ 
         - go test ${gobuild_args} -timeout 240s ./...
+
+        # Auth
+        - cd ../auth
+        - npm install
+        - npm run test
 
       after_script:
         - cd ../core/
