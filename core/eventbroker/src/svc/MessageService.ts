@@ -46,9 +46,8 @@ export class MessageService {
       if (eventSpec !== undefined) {
         channelUri = eventSpec.channelUri;
       } else {
-        console.log(`No event found for eventType ${eventType}`);
-        channelUri = 'new-artefact.keptn.channels.cluster.local';
-        // return;
+        console.log(`No channel found for eventType ${eventType}`);
+        return false;
       }
     }
     console.log(`Sending message to ${channelUri}`);
