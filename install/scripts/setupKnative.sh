@@ -51,14 +51,6 @@ kubectl apply -f ../../core/eventbroker/config/start-evaluation-channel.yaml
 kubectl apply -f ../../core/eventbroker/config/evaluation-done-channel.yaml
 
 export KEPTN_CHANNEL_URI=$(kubectl describe channel keptn-channel -n keptn | grep "Hostname:" | sed 's~[ \t]*Hostname:[ \t]*~~')
-export NEW_ARTEFACT_CHANNEL=$(kubectl describe channel new-artefact -n keptn | grep "Hostname:" | sed 's~[ \t]*Hostname:[ \t]*~~')
-export START_DEPLOYMENT_CHANNEL=$(kubectl describe channel start-deployment -n keptn | grep "Hostname:" | sed 's~[ \t]*Hostname:[ \t]*~~')
-export DEPLOYMENT_FINISHED_CHANNEL=$(kubectl describe channel deployment-finished -n keptn | grep "Hostname:" | sed 's~[ \t]*Hostname:[ \t]*~~')
-export START_TESTS_CHANNEL=$(kubectl describe channel start-tests -n keptn | grep "Hostname:" | sed 's~[ \t]*Hostname:[ \t]*~~')
-export TESTS_FINISHED_CHANNEL=$(kubectl describe channel tests-finished -n keptn | grep "Hostname:" | sed 's~[ \t]*Hostname:[ \t]*~~')
-export START_EVALUATION_CHANNEL=$(kubectl describe channel start-evaluation -n keptn | grep "Hostname:" | sed 's~[ \t]*Hostname:[ \t]*~~')
-export EVALUATION_DONE_CHANNEL=$(kubectl describe channel evaluation-done -n keptn | grep "Hostname:" | sed 's~[ \t]*Hostname:[ \t]*~~')
-
 
 export KEPTN_API_TOKEN=$(head -c 16 /dev/urandom | base64)
 kubectl create secret generic -n keptn keptn-api-token --from-literal=keptn-api-token="$KEPTN_API_TOKEN"
