@@ -1,4 +1,4 @@
-import { injectable } from 'inversify';
+import { inject, injectable } from 'inversify';
 import axios from 'axios';
 import { KeptnRequestModel } from '../keptn/KeptnRequestModel';
 import { ChannelReconciler } from '../lib/channel/ChannelReconciler';
@@ -6,11 +6,7 @@ import { ChannelReconciler } from '../lib/channel/ChannelReconciler';
 @injectable()
 export class MessageService {
 
-  private channelReconciler: ChannelReconciler;
-
-  constructor() {
-    this.channelReconciler = new ChannelReconciler();
-  }
+  constructor(@inject('ChannelReconciler') private readonly channelReconciler: ChannelReconciler) {}
 
   public async sendMessage(message: KeptnRequestModel): Promise<boolean> {
     let channelUri;

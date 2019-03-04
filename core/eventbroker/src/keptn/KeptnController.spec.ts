@@ -6,6 +6,7 @@ import 'mocha';
 import * as sinon from 'sinon';
 import { MessageService } from '../svc/MessageService';
 import { cleanUpMetadata } from 'inversify-express-utils';
+import { ChannelReconciler } from '../lib/channel/ChannelReconciler';
 
 describe('KeptnController', () => {
   let keptnController: KeptnController;
@@ -16,7 +17,7 @@ describe('KeptnController', () => {
 
   beforeEach(() => {
     cleanUpMetadata();
-    messageService = new MessageService();
+    messageService = new MessageService(new ChannelReconciler);
     keptnController = new KeptnController(messageService);
     request = {} as express.Request;
     response = {} as express.Response;

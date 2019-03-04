@@ -1,5 +1,7 @@
+import { injectable } from 'inversify';
 import { K8sClientFactory } from '../k8s/K8sClientFactory';
 
+@injectable()
 export class ChannelReconciler {
 
   private k8sClient: KubernetesClient.ApiRoot;
