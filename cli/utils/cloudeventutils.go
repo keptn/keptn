@@ -18,6 +18,7 @@ import (
 // issue sending the event, otherwise nil means the event was accepted.
 func Send(target string, apiToken string, builder cloudevents.Builder, data interface{}, overrides ...cloudevents.SendContext) error {
 
+	builder.Encoding = cloudevents.StructuredV01
 	req, err := builder.Build(target, data, overrides...)
 
 	bodyBytes, err := ioutil.ReadAll(req.Body)
@@ -34,6 +35,7 @@ func Send(target string, apiToken string, builder cloudevents.Builder, data inte
 
 	// Add signature header
 	req.Header.Set("X-Keptn-Signature", sha1Hash)
+	req.Header.Set("Content-Type", "application/json")
 
 	if err != nil {
 		return err
