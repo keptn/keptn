@@ -155,3 +155,5 @@ jobs:
         - kubectl delete clusterchannelprovisioner --all -n keptn
         - kubectl delete ns knative-build knative-eventing knative-monitoring knative-serving knative-sources
         - kubectl delete clusterrolebinding travis-cluster-admin-binding
+        - kubectl delete svc knative-ingressgateway -n istio-system
+        - kubectl delete deploy knative-ingressgateway -n istio-system

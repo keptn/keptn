@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
@@ -40,7 +41,7 @@ var configureCmd = &cobra.Command{
 
 keptn configure --org=MyOrg --user=keptnUser --token=XYZ`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		utils.Info.Println("configure called")
+		utils.Info.Println("Configure called")
 
 		builder := cloudevents.Builder{
 			Source:    "https://github.com/keptn/keptn/cli#configure",
@@ -57,6 +58,7 @@ keptn configure --org=MyOrg --user=keptnUser --token=XYZ`,
 			utils.Error.Printf("Configure command was unsuccessful. Details: %v", err)
 			return err
 		}
+		fmt.Println("Successfully configured Github org, user and token in the keptn installation.")
 		return nil
 	},
 }

@@ -58,7 +58,7 @@ keptn create project sockshop shipyard.yml`,
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		utils.Info.Println("project called")
+		utils.Info.Println("Create project called")
 
 		prjData := projectData{}
 		prjData.Project = args[0]
@@ -70,7 +70,7 @@ keptn create project sockshop shipyard.yml`,
 
 		builder := cloudevents.Builder{
 			Source:    "https://github.com/keptn/keptn/cli#createproject",
-			EventType: "createproject",
+			EventType: "create.project",
 		}
 		endPoint, apiToken, err := credentialmanager.GetCreds()
 		if err != nil || endPoint == "" {
@@ -83,6 +83,7 @@ keptn create project sockshop shipyard.yml`,
 			utils.Error.Printf("create project command was unsuccessful. Details: %v", err)
 			return err
 		}
+		fmt.Printf("Successfully created project %v on Github\n", prjData.Project)
 		return nil
 	},
 }
