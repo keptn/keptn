@@ -125,6 +125,11 @@ jobs:
         - cd ../../core/control
         - npm install
         - npm run test
+
+                # Auth
+        - cd ../auth
+        - npm install
+        - npm run test
       
         # write credentials in local file for testing the CLI
        
@@ -139,11 +144,6 @@ jobs:
         # execute GO tests
         - cd ../../cli/ 
         - go test ${gobuild_args} -timeout 240s ./...
-
-        # Auth
-        - cd ../auth
-        - npm install
-        - npm run test
 
       after_script:
         - cd ../core/
