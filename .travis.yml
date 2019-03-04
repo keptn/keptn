@@ -108,7 +108,7 @@ jobs:
         - sudo apt install yq -y
 
         # Delete potential knative remainings
-        - kubectl delete ns knative-build knative-eventing knative-monitoring knative-serving knative-sources
+        - kubectl delete ns knative-build knative-eventing knative-monitoring knative-serving knative-sources || true
         - cd ./install/scripts/
         - ./setupKnative.sh $JENKINS_USER $JENKINS_PASSWORD $REGISTRY_URL
         - export EVENT_BROKER_NAME=$(kubectl describe ksvc event-broker -n keptn | grep -m 1 "Name:" | sed 's~Name:[ \t]*~~')
@@ -135,9 +135,7 @@ jobs:
         - SEC="$(kubectl get secret keptn-api-token  -n keptn -o=yaml | yq r - data.keptn-api-token | base64 --decode)"
         - echo "${SEC}" >> ~/.keptnmock
         
-        - cat ~/.keptnmock
         # execute GO tests
-        - sleep 120
         - cd ../../cli/ 
         - go test ${gobuild_args} -timeout 240s ./...
 
