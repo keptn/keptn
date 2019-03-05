@@ -44,7 +44,7 @@ keptn create project sockshop shipyard.yml`,
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		utils.Info.Println("Create project called")
+		fmt.Println("Starting to create a project")
 
 		prjData := projectData{}
 		prjData.Project = args[0]

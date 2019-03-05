@@ -7,7 +7,7 @@ import (
 	"github.com/keptn/keptn/cli/utils"
 )
 
-const testEndPoint = "my-endpoint"
+const testEndPoint = "my-endpoint/"
 const testAPIToken = "super-secret"
 
 func init() {
@@ -20,7 +20,7 @@ func TestSetAndGetCreds(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	endPoint, apiToken, err := GetCreds()s
+	endPoint, apiToken, err := GetCreds()
 	if err != nil {
 		t.Fatal(err)
 	}
