@@ -21,7 +21,7 @@ import { MessageService } from '../svc/MessageService';
   path: '/service',
   security: { apiKeyHeader: ['x-keptn-signature'] },
 })
-@controller('service')
+@controller('/service')
 export class ServiceController implements interfaces.Controller {
 
   @inject('MessageService') private readonly messageService: MessageService;
