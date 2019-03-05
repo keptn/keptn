@@ -31,9 +31,10 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	apiTokenFileURI = usr.HomeDir + string(os.PathSeparator) + ".keptn"
 	mockAPItokenFileURI = usr.HomeDir + string(os.PathSeparator) + ".keptnmock"
+
+	credentials.SetCredsLabel(credsLab)
 }
 
 func setCreds(h credentials.Helper, endPoint string, apiToken string) error {
@@ -46,7 +47,6 @@ func setCreds(h credentials.Helper, endPoint string, apiToken string) error {
 		endPoint += "/"
 	}
 
-	credentials.SetCredsLabel(credsLab)
 	c := &credentials.Credentials{
 		ServerURL: serverURL,
 		Username:  endPoint,
@@ -76,7 +76,8 @@ func readCredsFromFile() (string, string, error) {
 	if err != nil {
 		return "", "", err
 	}
-	creds := strings.Split(strings.TrimSpace(string(data)), "\n")
+	dataStr := strings.TrimSpace(strings.Replace(string(data), "\r\n", "\n", -1))
+	creds := strings.Split(dataStr, "\n")
 	if len(creds) != 2 {
 		return "", "", errors.New("Format of file-based key storage is invalid")
 	}

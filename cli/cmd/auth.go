@@ -39,7 +39,7 @@ var authCmd = &cobra.Command{
 
 keptn auth --endpoint=myendpoint.com --api-token`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		utils.Info.Println("Authentication called")
+		fmt.Println("Starting to authenticate")
 		builder := cloudevents.Builder{
 			Source:    "https://github.com/keptn/keptn/cli#auth",
 			EventType: "auth",
@@ -59,8 +59,7 @@ keptn auth --endpoint=myendpoint.com --api-token`,
 
 		// Store endpoint and api token as credentials
 		fmt.Println("Successfully authenticated")
-		credentialmanager.SetCreds(*endPoint, *apiToken)
-		return nil
+		return credentialmanager.SetCreds(*endPoint, *apiToken)
 	},
 }
 
