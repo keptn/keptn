@@ -2,7 +2,8 @@ import { expect } from 'chai';
 import 'mocha';
 import { ChannelReconciler } from './ChannelReconciler';
 
-describe('ChannelReconciler', () => {
+describe('ChannelReconciler', function() {
+  this.timeout(0);
   let channelReconciler: ChannelReconciler;
   beforeEach(() => {
     channelReconciler = new ChannelReconciler();
