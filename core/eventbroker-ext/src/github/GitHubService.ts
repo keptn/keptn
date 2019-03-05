@@ -39,6 +39,8 @@ export class GitHubService {
     configChangeEvent.project = project;
     configChangeEvent.stage = stage;
 
+    console.log(`Sending ConfigChange event ${JSON.stringify(configChangeEvent)}`);
+
     const keptnEvent: KeptnRequestModel = new KeptnRequestModel();
     keptnEvent.data = configChangeEvent;
     keptnEvent.type = KeptnRequestModel.EVENT_TYPES.CONFIGURATION_CHANGED;
