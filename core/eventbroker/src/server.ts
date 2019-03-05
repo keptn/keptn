@@ -60,7 +60,7 @@ server.setConfig((app: any) => {
     }),
   );
   if (process.env.NODE_ENV === 'production') {
-    app.use(authenticator);
+    // app.use(authenticator);
   }
 });
 

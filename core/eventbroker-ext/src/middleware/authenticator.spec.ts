@@ -33,7 +33,7 @@ describe('authenticator', () => {
     response.end = responseEndSpy;
 
     request.headers = {};
-    request.headers['x-keptn-signature'] = 'sha1=123';
+    request.headers['x-hub-signature'] = 'sha1=123';
 
     request.body = {};
 
@@ -41,7 +41,7 @@ describe('authenticator', () => {
     next = nextSpy;
 
     const authRequest: AuthRequest = {} as AuthRequest;
-    authRequest.signature = request.headers['x-keptn-signature'] as string;
+    authRequest.signature = request.headers['x-hub-signature'] as string;
     authRequest.payload = JSON.stringify(request.body);
 
     nock(AUTH_URL)

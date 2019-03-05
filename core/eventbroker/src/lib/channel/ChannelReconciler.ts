@@ -12,6 +12,7 @@ export class ChannelReconciler {
   }
 
   public async resolveChannel(channelName: string): Promise<string> {
+    console.log(`Trying to find URI for channel ${channelName}`);
     const services = await this.k8sClient.api.v1.namespace('keptn').services.get();
     if (services.body === undefined) {
       return '';
@@ -35,8 +36,10 @@ export class ChannelReconciler {
       return false;
     });
     if (channelData === undefined) {
+      console.log(`No URI found for channel ${channelName}`);
       return '';
     }
+    console.log(`Channel found at: ${channelData.metadata.name}.keptn.svc.cluster.local`);
     return `${channelData.metadata.name}.keptn.svc.cluster.local`;
   }
 }
