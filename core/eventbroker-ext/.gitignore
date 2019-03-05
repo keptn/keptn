@@ -1,5 +1,5 @@
 # Auto-generated files
-config/gen/event-broker.yaml
+config/gen/event-broker-ext.yaml
 
 # Logs
 *.log
