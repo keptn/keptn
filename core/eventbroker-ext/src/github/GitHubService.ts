@@ -21,6 +21,14 @@ export class GitHubService {
 
     const keptnEvent: KeptnRequestModel = new KeptnRequestModel();
     keptnEvent.type = KeptnRequestModel.EVENT_TYPES.CONFIGURATION_CHANGED;
-    axios.post('http://event-broker.keptn.svc.cluster.local/keptn', keptnEvent);
+    axios.post(
+      'http://cluster-local-gateway.istio-system.svc.cluster.local', 
+      keptnEvent,
+      {
+        headers: {
+          Host: 'event-broker.keptn.svc.cluster.local'
+        },
+      },
+    );
   }
 }
