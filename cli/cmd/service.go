@@ -32,18 +32,7 @@ var deploymentFilePath *string
 var valuesFilePath *string
 var serviceFilePath *string
 
-type serviceData struct {
-	Project      string      `json:"project"`
-	Values       interface{} `json:"values"`
-	TemplateData templates
-}
-
-type templates struct {
-	Deployment string `json:"deployment"`
-	Service    string `json:"service"`
-}
-
-type serviceData2 map[string]interface{}
+type serviceData map[string]interface{}
 
 // serviceCmd represents the service command
 var serviceCmd = &cobra.Command{
@@ -83,8 +72,8 @@ keptn onboard service --project=carts --values=values.yaml --deployment=deployme
 	RunE: func(cmd *cobra.Command, args []string) error {
 		fmt.Println("Starting to onboard service")
 
-		svcData := serviceData2{}
-		svcData["Project"] = *project
+		svcData := serviceData{}
+		svcData["project"] = *project
 
 		valuesData, err := readFile(*valuesFilePath)
 		if err != nil {
@@ -94,14 +83,16 @@ keptn onboard service --project=carts --values=values.yaml --deployment=deployme
 		if err != nil {
 			return err
 		}
-		svcData["Values"] = data
+		svcData["values"] = data
+
+		deployment := make(map[string]string)
 
 		if *deploymentFilePath != "" {
 			content, err := readFile(*deploymentFilePath)
 			if err != nil {
 				return err
 			}
-			svcData["Deployment"] = content
+			deployment["deployment"] = content
 		}
 
 		if *serviceFilePath != "" {
@@ -109,7 +100,11 @@ keptn onboard service --project=carts --values=values.yaml --deployment=deployme
 			if err != nil {
 				return err
 			}
-			svcData["Service"] = content
+			deployment["service"] = content
+		}
+
+		if len(deployment) > 0 {
+			svcData["templates"] = deployment
 		}
 
 		builder := cloudevents.Builder{

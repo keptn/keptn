@@ -94,8 +94,8 @@ spec:
 		"onboard",
 		"service",
 		"--project=carts",
-		fmt.Sprintf("--deployment=%s", tmpDeployment),
 		fmt.Sprintf("--values=%s", tmpValues),
+		// fmt.Sprintf("--deployment=%s", tmpDeployment),
 		// fmt.Sprintf("--service=%s", tmpService),
 	}
 	rootCmd.SetArgs(args)
