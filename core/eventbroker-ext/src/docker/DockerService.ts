@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { injectable } from 'inversify';
-import { axios } from 'axios';
+import axios  from 'axios';
 
 
 @injectable()
