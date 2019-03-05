@@ -11,6 +11,7 @@ import * as swagger from 'swagger-express-ts';
 
 // import controllers
 import './keptn/KeptnController';
+import './docker/DockerController';
 
 // import models
 import './keptn/KeptnRequestModel';
@@ -20,6 +21,7 @@ import RequestLogger = require('./middleware/requestLogger');
 import authenticator = require('./middleware/authenticator');
 import * as path from 'path';
 import { MessageService } from './svc/MessageService';
+import { DockerService } from './docker/DockerService';
 import { ChannelReconciler } from './lib/channel/ChannelReconciler';
 
 const port: number = Number(process.env.PORT) || 5001; // or from a configuration file
@@ -32,6 +34,7 @@ const container = new Container();
 // set up bindings
 container.bind<MessageService>('MessageService').to(MessageService);
 container.bind<ChannelReconciler>('ChannelReconciler').to(ChannelReconciler);
+container.bind<DockerService>('DockerService').to(DockerService);
 
 // create server
 const server = new InversifyExpressServer(container);

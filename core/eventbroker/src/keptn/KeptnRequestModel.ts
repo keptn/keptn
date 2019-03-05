@@ -1,4 +1,5 @@
 import { ApiModel, ApiModelProperty, SwaggerDefinitionConstant } from 'swagger-express-ts';
+import moment from 'moment';
 
 @ApiModel({
   description: '',
@@ -65,4 +66,10 @@ export class KeptnRequestModel {
     required: true,
   })
   public data: any;
+
+  constructor() {
+    this.specversion = '0.2';
+    this.time = moment().format();
+    this.datacontenttype = 'application/json';
+  }
 }
