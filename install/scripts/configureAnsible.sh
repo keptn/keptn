@@ -12,12 +12,30 @@ export GITHUB_ORGANIZATION=$(cat creds.json | jq -r '.githubOrg')
 export DT_TENANT_URL="$DT_TENANT_ID.live.dynatrace.com"
 
 export JENKINS_URL=$(kubectl describe svc jenkins -n cicd | grep IP: | sed 's/IP:[ \t]*//')
-export CART_URL=$(kubectl describe svc carts -n production | grep IP: | sed 's/IP:[ \t]*//')
+export CART_URL=$(kubectl describe svc carts -n production | grep "LoadBalancer Ingress:" | sed 's/LoadBalancer Ingress:[ \t]*//')
 export TOWER_URL=$(kubectl describe svc ansible-tower -n tower | grep "LoadBalancer Ingress:" | sed 's/LoadBalancer Ingress:[ \t]*//')
 
 #curl -k -X GET https://$TOWER_URL/api/v1/credentials/ --user admin:dynatrace 
 
-export CRED_ID=$(curl -k -X POST https://$TOWER_URL/api/v1/credentials/ --user admin:dynatrace -H "Content-Type: application/json" \
+export DTAPICREDTYPE=$(curl -k -X POST https://$TOWER_URL/api/v2/credential_types/ --user admin:dynatrace -H "Content-Type: application/json" \
+--data '{
+  "name": "dt-api",
+  "kind": "cloud",
+  "description" :"Dynatrace API Authentication Token",
+  "inputs": { "fields": [ { "secret": true, "type": "string", "id": "dt_api_token", "label": "Dynatrace API Token" } ], "required": ["dt_api_token"]}, "injectors": { "extra_vars": { "DYNATRACE_API_TOKEN": "{{dt_api_token}}" } }
+}' | jq -r '.id')
+echo "DTAPICREDTYPE: " $DTAPICREDTYPE
+
+export DTCRED=$(curl -k -X POST https://$TOWER_URL/api/v2/credentials/ --user admin:dynatrace -H "Content-Type: application/json" \
+--data '{
+  "name": "'$DT_TENANT_ID' API token",
+  "credential_type": '$DTAPICREDTYPE',
+  "organization": 1,
+  "inputs": { "dt_api_token": "'$DT_API_TOKEN'" }
+}' | jq -r '.id')
+echo "DTCRED: " $DTCRED
+
+export GITCRED=$(curl -k -X POST https://$TOWER_URL/api/v1/credentials/ --user admin:dynatrace -H "Content-Type: application/json" \
 --data '{
   "name": "git-token",
   "kind": "scm",
@@ -25,16 +43,20 @@ export CRED_ID=$(curl -k -X POST https://$TOWER_URL/api/v1/credentials/ --user a
   "username": "'$GITHUB_USER_NAME'",
   "password": "'$GITHUB_PERSONAL_ACCESS_TOKEN'"
 }' | jq -r '.id')
+echo "GITCRED: " $GITCRED
 
 export PROJECT_ID=$(curl -k -X POST https://$TOWER_URL/api/v1/projects/ --user admin:dynatrace -H "Content-Type: application/json" \
 --data '{
   "name": "self-healing",
   "scm_type": "git",
   "scm_url": "https://github.com/keptn/keptn",
-  "credential": '$CRED_ID',
+  "scm_branch": "release-0.1.x",
+  "credential": '$GITCRED',
   "scm_clean": "true"
 }' | jq -r '.id')
+echo "PROJECT_ID: " $PROJECT_ID
 
+echo "wait for project to initialize..."
 sleep 60
 
 export INVENTORY_ID=$(curl -k -X POST https://$TOWER_URL/api/v1/inventories/ --user admin:dynatrace -H "Content-Type: application/json" \
@@ -42,8 +64,9 @@ export INVENTORY_ID=$(curl -k -X POST https://$TOWER_URL/api/v1/inventories/ --u
   "name": "inventory",
   "type": "inventory",
   "organization": 1,
-  "variables": "---\ntenantid: \"'$DT_TENANT_ID'\"\napitoken: \"'$DT_API_TOKEN'\"\ncarts_promotion_url: \"http://'$CART_URL'/carts/1/items/promotion\"\ncommentuser: \"Ansible Playbook\"\ntower_user: \"admin\"\ntower_password: \"dynatrace\"\ndtcommentapiurl: \"https://{{tenantid}}.live.dynatrace.com/api/v1/problem/details/{{pid}}/comments?Api-Token={{apitoken}}\"\ndteventapiurl: \"https://{{tenantid}}.live.dynatrace.com/api/v1/events/?Api-Token={{apitoken}}\""
+  "variables": "---\ntenantid: \"'$DT_TENANT_ID'\"\ncarts_promotion_url: \"http://'$CART_URL'/carts/1/items/promotion\"\ncommentuser: \"Ansible Playbook\"\ntower_user: \"admin\"\ntower_password: \"dynatrace\"\ndtcommentapiurl: \"https://{{tenantid}}.live.dynatrace.com/api/v1/problem/details/{{pid}}/comments?Api-Token={{DYNATRACE_API_TOKEN}}\"\ndteventapiurl: \"https://{{tenantid}}.live.dynatrace.com/api/v1/events/?Api-Token={{DYNATRACE_API_TOKEN}}\""
 }' | jq -r '.id')
+echo "INVENTORY_ID: " $INVENTORY_ID
 
 export REMEDIATION_TEMPLATE_ID=$(curl -k -X POST https://$TOWER_URL/api/v1/job_templates/ --user admin:dynatrace -H "Content-Type: application/json" \
 --data '{
@@ -54,6 +77,7 @@ export REMEDIATION_TEMPLATE_ID=$(curl -k -X POST https://$TOWER_URL/api/v1/job_t
   "playbook": "scripts/playbooks/remediation.yaml",
   "ask_variables_on_launch": true
 }' | jq -r '.id')
+echo "REMEDIATION_TEMPLATE_ID: " $REMEDIATION_TEMPLATE_ID
 
 export STOP_CAMPAIGN_ID=$(($REMEDIATION_TEMPLATE_ID + 1))
 
@@ -66,8 +90,9 @@ export STOP_CAMPAIGN_ID=$(curl -k -X POST https://$TOWER_URL/api/v1/job_template
   "playbook": "scripts/playbooks/campaign.yaml",
   "extra_vars": "---\npromotion_rate: \"0\"\nremediation_action: \"https://'$TOWER_URL'/api/v2/job_templates/'$STOP_CAMPAIGN_ID'/launch/\"\ndt_application: \"carts\"\ndt_environment: \"production\""
 }' | jq -r '.id')
+echo "STOP_CAMPAIGN_ID: " $STOP_CAMPAIGN_ID
 
-export STOP_CAMPAIGN_ID=$(curl -k -X POST https://$TOWER_URL/api/v1/job_templates/ --user admin:dynatrace -H "Content-Type: application/json" \
+export START_CAMPAIGN_ID=$(curl -k -X POST https://$TOWER_URL/api/v1/job_templates/ --user admin:dynatrace -H "Content-Type: application/json" \
 --data '{
   "name": "start-campaign",
   "job_type": "run",
@@ -77,6 +102,7 @@ export STOP_CAMPAIGN_ID=$(curl -k -X POST https://$TOWER_URL/api/v1/job_template
   "extra_vars": "---\npromotion_rate: \"0\"\nremediation_action: \"https://'$TOWER_URL'/api/v2/job_templates/'$STOP_CAMPAIGN_ID'/launch/\"\ndt_application: \"carts\"\ndt_environment: \"production\"",
   "ask_variables_on_launch": true
 }' | jq -r '.id')
+echo "START_CAMPAIGN_ID: " $START_CAMPAIGN_ID
 
 export CANARY_RESET_ID=$(curl -k -X POST https://$TOWER_URL/api/v1/job_templates/ --user admin:dynatrace -H "Content-Type: application/json" \
 --data '{
@@ -89,6 +115,7 @@ export CANARY_RESET_ID=$(curl -k -X POST https://$TOWER_URL/api/v1/job_templates
   "ask_variables_on_launch": false,
   "job_tags": "canary_reset"
 }' | jq -r '.id')
+echo "CANARY_RESET_ID: " $CANARY_RESET_ID
 
 export CANARY_ID=$(curl -k -X POST https://$TOWER_URL/api/v1/job_templates/ --user admin:dynatrace -H "Content-Type: application/json" \
 --data '{
@@ -101,6 +128,18 @@ export CANARY_ID=$(curl -k -X POST https://$TOWER_URL/api/v1/job_templates/ --us
   "ask_variables_on_launch": true,
   "skip_tags": "canary_reset"
 }' | jq -r '.id')
+echo "CANARY_ID: " $CANARY_ID
+
+#Assign DT API credential to all jobs
+declare -a job_templates=($REMEDIATION_TEMPLATE_ID $STOP_CAMPAIGN_ID $START_CAMPAIGN_ID $CANARY_RESET_ID $CANARY_ID)
+
+for template in "${job_templates[@]}"
+do
+  curl -k -X POST https://$TOWER_URL/api/v2/job_templates/$template/credentials/ --user admin:dynatrace -H "Content-Type: application/json" \
+  --data '{
+    "id": '$DTCRED'
+  }'
+done
 
 
 echo "Ansible has been configured successfully! Copy the following URL to set it as an Ansible Job URL in the Dynatrace notification settings:"
