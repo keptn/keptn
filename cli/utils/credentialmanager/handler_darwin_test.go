@@ -11,7 +11,7 @@ const testEndPoint = "my-endpoint/"
 const testAPIToken = "super-secret"
 
 func init() {
-	utils.Init(os.Stdout, os.Stdout, os.Stderr)
+	utils.InitLoggers(os.Stdout, os.Stdout, os.Stderr)
 }
 
 func TestSetAndGetCreds(t *testing.T) {
