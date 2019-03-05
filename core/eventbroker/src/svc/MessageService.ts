@@ -19,7 +19,7 @@ export class MessageService {
       const channelName = split[3];
       channelUri = await this.channelReconciler.resolveChannel(channelName);
     }
-    if (channelUri === '') {
+    if (channelUri === '' || channelUri === undefined) {
       console.log(`Could not find channel URI for event of type ${message.type}`);
       return false;
     }
