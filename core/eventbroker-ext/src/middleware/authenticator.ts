@@ -20,7 +20,7 @@ const authenticator: express.RequestHandler = async (
   // get signature from header
   const signature: string =
     request.headers !== undefined ?
-      request.headers['x-keptn-signature'] as string : undefined;
+      request.headers['x-hub-signature'] as string : undefined;
   console.log(signature);
   if (signature === undefined) {
     response.status(401);
