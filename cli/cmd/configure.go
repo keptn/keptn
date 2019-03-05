@@ -41,7 +41,7 @@ var configureCmd = &cobra.Command{
 
 keptn configure --org=MyOrg --user=keptnUser --token=XYZ`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		utils.Info.Println("Configure called")
+		fmt.Println("Starting to configure Github org, user and token")
 
 		builder := cloudevents.Builder{
 			Source:    "https://github.com/keptn/keptn/cli#configure",
