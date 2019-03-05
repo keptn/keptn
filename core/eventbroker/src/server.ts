@@ -43,7 +43,7 @@ server.setConfig((app: any) => {
             swaggerUiAssetPath,
           ),
     );
-  app.use(bodyParser.json());
+  app.use(bodyParser.json({ type: 'application/*+json' }));
   app.use(RequestLogger);
   app.use(
     swagger.express({
