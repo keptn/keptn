@@ -44,7 +44,11 @@ describe('authenticator', () => {
     authRequest.signature = request.headers['x-hub-signature'] as string;
     authRequest.payload = JSON.stringify(request.body);
 
-    nock(AUTH_URL)
+    nock(AUTH_URL, {
+      filteringScope: () => {
+        return true;
+      },
+    })
       .post('/auth')
       .reply(200, { authenticated: true });
 
@@ -92,7 +96,7 @@ describe('authenticator', () => {
     next = nextSpy;
 
     const authRequest: AuthRequest = {} as AuthRequest;
-    authRequest.signature = request.headers['x-keptn-signature'] as string;
+    authRequest.signature = request.headers['x-hub-signature'] as string;
     authRequest.payload = JSON.stringify(request.body);
 
     nock(AUTH_URL)
@@ -138,7 +142,7 @@ describe('authenticator', () => {
     response.end = responseEndSpy;
 
     request.headers = {};
-    request.headers['x-keptn-signature'] = 'sha1=123';
+    request.headers['x-hub-signature'] = 'sha1=123';
 
     request.body = {};
 
