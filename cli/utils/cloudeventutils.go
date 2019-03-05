@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/hmac"
 	"crypto/sha1"
+	"crypto/tls"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -17,6 +18,7 @@ import (
 // issue sending the event, otherwise nil means the event was accepted.
 func Send(target string, apiToken string, builder cloudevents.Builder, data interface{}, overrides ...cloudevents.SendContext) error {
 
+	builder.Encoding = cloudevents.StructuredV01
 	req, err := builder.Build(target, data, overrides...)
 
 	bodyBytes, err := ioutil.ReadAll(req.Body)
@@ -33,18 +35,21 @@ func Send(target string, apiToken string, builder cloudevents.Builder, data inte
 
 	// Add signature header
 	req.Header.Set("X-Keptn-Signature", sha1Hash)
+	req.Header.Set("Content-Type", "application/json")
 
 	if err != nil {
 		return err
 	}
-	client := &http.Client{Timeout: 30 * time.Second}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+	client := &http.Client{Timeout: 60 * time.Second, Transport: tr}
 	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-		fmt.Println(resp.StatusCode)
+	if resp.StatusCode == 200 {
 		return nil
 	}
 	return fmt.Errorf("error sending cloudevent: %s", status(resp))
