@@ -14,6 +14,7 @@ export class GitHubService {
     githubEventPayload: any): Promise<boolean> {
     // for now, only handle events of type 'push'
     if (gitHubEventType !== 'push') {
+      console.log('Not a push event. retruning.');
       return false;
     }
 
@@ -25,6 +26,7 @@ export class GitHubService {
     // a keptn-config-change message follows the following format:
     // [keptn-config-change]:<service>:<image-tag>
     if (commitMessage.indexOf('[keptn-config-change]') !== 0) {
+      console.log('Not a keptn config change.');
       return false;
     }
     const commitMsgSplit = commitMessage.split(':');
