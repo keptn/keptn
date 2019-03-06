@@ -14,6 +14,12 @@ const authenticator: express.RequestHandler = async (
     next();
     return;
   }
+  // TODO: also add authentication for Dynatrace endpoint!
+  if (request.url !== undefined && request.url.indexOf('dynatrace') > 0) {
+    console.log('Skipping auth for swagger doc');
+    next();
+    return;
+  }
   console.log('Starting authentication');
   console.log(JSON.stringify(request.body));
   // TODO: insert call to authenticator.keptn.svc.cluster.local here
