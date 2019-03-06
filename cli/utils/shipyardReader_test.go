@@ -6,7 +6,7 @@ import (
 )
 
 func init() {
-	Init(os.Stdout, os.Stdout, os.Stderr)
+	InitLoggers(os.Stdout, os.Stdout, os.Stderr)
 }
 
 func TestShipyardReader(t *testing.T) {

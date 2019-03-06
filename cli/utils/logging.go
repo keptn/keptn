@@ -11,7 +11,7 @@ var (
 	Error   *log.Logger
 )
 
-func Init(
+func InitLoggers(
 	infoHandle io.Writer,
 	warningHandle io.Writer,
 	errorHandle io.Writer) {
