@@ -19,7 +19,6 @@ func Send(req *http.Request, apiToken string) error {
 	bodyBytes, err := ioutil.ReadAll(req.Body)
 	// Restore the io.ReadCloser to its original state
 	req.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
-	fmt.Println(string(bodyBytes))
 	if err != nil {
 		fmt.Println("Unable to read body", err)
 	}

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -11,113 +12,7 @@ import (
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
 )
 
-func init() {
-	utils.InitLoggers(os.Stdout, os.Stdout, os.Stderr)
-}
-
-func TestOnboardServiceUsingHelmCmd(t *testing.T) {
-
-	credentialmanager.MockCreds = true
-
-	// Write temporary files
-	const tmpValues = "valuesTest.tpl"
-	valuesContent := `replicaCount: 1
-image:
-  repository: null
-  tag: null
-  pullPolicy: IfNotPresent
-service:
-  name: carts
-  type: LoadBalancer
-  externalPort: 8080
-  internalPort: 8080
-resources:
-  limits:
-    cpu: 100m
-    memory: 128Mi
-  requests:
-    cpu: 100m
-    memory: 128Mi`
-
-	const tmpDeployment = "deploymentTest.tpl"
-	deploymentContent := `apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  name: {{ .Chart.Name }}-SERVICE_PLACEHOLDER_DEC
-  labels:
-    app: {{ .Chart.Name }}-selector-SERVICE_PLACEHOLDER_DEC
-    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
-    release: "{{ .Release.Name }}"
-    heritage: "{{ .Release.Service }}"
-spec:
-  replicas: {{ .Values.SERVICE_PLACEHOLDER_C.replicaCount }}
-  template:
-    metadata:
-      labels:
-        app: {{ .Chart.Name }}-selector-SERVICE_PLACEHOLDER_DEC
-        deployment: SERVICE_PLACEHOLDER_DEC
-    spec:
-      containers:
-      - name: {{ .Chart.Name }}
-        image: "{{ .Values.SERVICE_PLACEHOLDER_C.image.repository }}:{{ .Values.SERVICE_PLACEHOLDER_C.image.tag }}"
-        imagePullPolicy: {{ .Values.SERVICE_PLACEHOLDER_C.image.pullPolicy }}
-        ports:
-        - name: internalport
-          containerPort: {{ .Values.SERVICE_PLACEHOLDER_C.service.internalPort }}
-        resources: {{ toYaml .Values.resources | indent 12 }}`
-
-	const tmpService = "serviceTest.tpl"
-	serviceContent := `apiVersion: v1
-kind: Service
-metadata:
-  name: {{ .Chart.Name }}-SERVICE_PLACEHOLDER_DEC
-  labels:
-    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
-spec:
-  type: {{ .Values.SERVICE_PLACEHOLDER_C.service.type }}
-  ports:
-  - port: {{ .Values.SERVICE_PLACEHOLDER_C.service.externalPort }}
-    targetPort: {{ .Values.SERVICE_PLACEHOLDER_C.service.internalPort }}
-    protocol: TCP
-    name: {{ .Values.SERVICE_PLACEHOLDER_C.service.name }}
-  selector:
-    app: {{ .Chart.Name }}-selector-SERVICE_PLACEHOLDER_DEC`
-
-	ioutil.WriteFile(tmpValues, []byte(valuesContent), 0644)
-	ioutil.WriteFile(tmpDeployment, []byte(deploymentContent), 0644)
-	ioutil.WriteFile(tmpService, []byte(serviceContent), 0644)
-
-	buf := new(bytes.Buffer)
-	rootCmd.SetOutput(buf)
-
-	args := []string{
-		"onboard",
-		"service",
-		"--project=carts",
-		fmt.Sprintf("--values=%s", tmpValues),
-		fmt.Sprintf("--deployment=%s", tmpDeployment),
-		fmt.Sprintf("--service=%s", tmpService),
-	}
-	rootCmd.SetArgs(args)
-	err := rootCmd.Execute()
-
-	// Delete temporary shipyard.yml file
-	os.Remove(tmpValues)
-	os.Remove(tmpDeployment)
-	os.Remove(tmpService)
-
-	if err != nil {
-		t.Errorf("An error occured %v", err)
-	}
-}
-
-func TestOnboardServiceUsingManifestCmd(t *testing.T) {
-
-	credentialmanager.MockCreds = true
-
-	// Write temporary files
-	const tmpManifest = "manifestTest.yml"
-	manifestContent := `---
+const manifestContent = `---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -190,6 +85,118 @@ spec:
     app: carts
   type: LoadBalancer`
 
+const valuesContent = `replicaCount: 1
+image:
+  repository: null
+  tag: null
+  pullPolicy: IfNotPresent
+service:
+  name: carts
+  type: LoadBalancer
+  externalPort: 8080
+  internalPort: 8080
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi`
+
+const deploymentContent = `apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ .Chart.Name }}-SERVICE_PLACEHOLDER_DEC
+  labels:
+    app: {{ .Chart.Name }}-selector-SERVICE_PLACEHOLDER_DEC
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+spec:
+  replicas: {{ .Values.SERVICE_PLACEHOLDER_C.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Chart.Name }}-selector-SERVICE_PLACEHOLDER_DEC
+        deployment: SERVICE_PLACEHOLDER_DEC
+    spec:
+      containers:
+      - name: {{ .Chart.Name }}
+        image: "{{ .Values.SERVICE_PLACEHOLDER_C.image.repository }}:{{ .Values.SERVICE_PLACEHOLDER_C.image.tag }}"
+        imagePullPolicy: {{ .Values.SERVICE_PLACEHOLDER_C.image.pullPolicy }}
+        ports:
+        - name: internalport
+          containerPort: {{ .Values.SERVICE_PLACEHOLDER_C.service.internalPort }}
+        resources: {{ toYaml .Values.resources | indent 12 }}`
+
+const serviceContent = `apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Chart.Name }}-SERVICE_PLACEHOLDER_DEC
+  labels:
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+spec:
+  type: {{ .Values.SERVICE_PLACEHOLDER_C.service.type }}
+  ports:
+  - port: {{ .Values.SERVICE_PLACEHOLDER_C.service.externalPort }}
+    targetPort: {{ .Values.SERVICE_PLACEHOLDER_C.service.internalPort }}
+    protocol: TCP
+    name: {{ .Values.SERVICE_PLACEHOLDER_C.service.name }}
+  selector:
+    app: {{ .Chart.Name }}-selector-SERVICE_PLACEHOLDER_DEC`
+
+func init() {
+	utils.InitLoggers(os.Stdout, os.Stdout, os.Stderr)
+}
+
+func TestOnboardServiceCmdUsingHelm(t *testing.T) {
+
+	credentialmanager.MockCreds = true
+
+	// Write temporary files
+	const tmpValues = "valuesTest.tpl"
+	const tmpDeployment = "deploymentTest.tpl"
+	const tmpService = "serviceTest.tpl"
+
+	ioutil.WriteFile(tmpValues, []byte(valuesContent), 0644)
+	ioutil.WriteFile(tmpDeployment, []byte(deploymentContent), 0644)
+	ioutil.WriteFile(tmpService, []byte(serviceContent), 0644)
+
+	buf := new(bytes.Buffer)
+	rootCmd.SetOutput(buf)
+
+	args := []string{
+		"onboard",
+		"service",
+		"--project=carts",
+		fmt.Sprintf("--values=%s", tmpValues),
+		fmt.Sprintf("--deployment=%s", tmpDeployment),
+		fmt.Sprintf("--service=%s", tmpService),
+	}
+	rootCmd.SetArgs(args)
+	err := rootCmd.Execute()
+
+	*valuesFilePath = ""
+	*serviceFilePath = ""
+	*deploymentFilePath = ""
+
+	// Delete temporary files
+	os.Remove(tmpValues)
+	os.Remove(tmpDeployment)
+	os.Remove(tmpService)
+
+	if err != nil {
+		t.Errorf("An error occured %v", err)
+	}
+}
+
+func TestOnboardServiceCmdUsingManifest(t *testing.T) {
+
+	credentialmanager.MockCreds = true
+
+	// Write temporary files
+	const tmpManifest = "manifestTest.yml"
+
 	ioutil.WriteFile(tmpManifest, []byte(manifestContent), 0644)
 
 	buf := new(bytes.Buffer)
@@ -204,10 +211,50 @@ spec:
 	rootCmd.SetArgs(args)
 	err := rootCmd.Execute()
 
-	// Delete temporary shipyard.yml file
+	*manifestFilePath = ""
+
+	// Delete temporary files
 	os.Remove(tmpManifest)
 
 	if err != nil {
 		t.Errorf("An error occured %v", err)
+	}
+}
+
+func TestOnboardServiceCmdUsingInvalidArguments(t *testing.T) {
+
+	credentialmanager.MockCreds = true
+
+	// Write temporary files
+	const tmpManifest = "manifestTest.yml"
+	const tmpValues = "valuesTest.tpl"
+
+	ioutil.WriteFile(tmpManifest, []byte(manifestContent), 0644)
+	ioutil.WriteFile(tmpValues, []byte(valuesContent), 0644)
+
+	buf := new(bytes.Buffer)
+	rootCmd.SetOutput(buf)
+
+	args := []string{
+		"onboard",
+		"service",
+		"--project=carts",
+		fmt.Sprintf("--manifest=%s", tmpManifest),
+		fmt.Sprintf("--values=%s", tmpValues),
+	}
+	rootCmd.SetArgs(args)
+	err := rootCmd.Execute()
+
+	*manifestFilePath = ""
+	*valuesFilePath = ""
+
+	// Delete temporary files
+	os.Remove(tmpManifest)
+	os.Remove(tmpManifest)
+
+	expectedError := errors.New("Error specifying a Helm description as well as a k8s manifest. Only use one option")
+
+	if err.Error() != expectedError.Error() {
+		t.Error("Actual error does not match expected error")
 	}
 }
