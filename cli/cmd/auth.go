@@ -10,9 +10,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type authData struct {
-}
-
 var endPoint *string
 var apiToken *string
 
@@ -29,15 +26,20 @@ keptn auth --endpoint=myendpoint.com --api-token`,
 		builder := cloudevents.Builder{
 			Source:    "https://github.com/keptn/keptn/cli#auth",
 			EventType: "auth",
+			Encoding:  cloudevents.StructuredV01,
 		}
 
-		data := authData{}
 		if !strings.HasSuffix(*endPoint, "/") {
 			*endPoint += "/"
 		}
-		authRestEndPoint := *endPoint + "auth"
 
-		err := utils.Send(authRestEndPoint, *apiToken, builder, data)
+		var data interface{}
+		req, err := builder.Build(*endPoint+"auth", data)
+		if err != nil {
+			return err
+		}
+
+		err = utils.Send(req, *apiToken)
 		if err != nil {
 			utils.Error.Printf("Endpoint invalid or keptn unreachable. Details: %v", err)
 			return err
