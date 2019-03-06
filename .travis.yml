@@ -99,8 +99,10 @@ jobs:
         - gcloud auth activate-service-account --key-file ${HOME}/gcloud-service-key.json
         - gcloud container clusters get-credentials $CLUSTER_PR_STATUSCHECK_NAME --zone $CLUSTER_PR_STATUSCHECK_ZONE --project $PROJECT_NAME
         - export GCLOUD_USER=$(gcloud config get-value account)
-        - kubectl create clusterrolebinding travis-cluster-admin-binding --clusterrole=cluster-admin --user=$GCLOUD_USER
+
+        - kubectl create clusterrolebinding travis-cluster-admin-binding --clusterrole=cluster-admin --user=$GCLOUD_USER || true
         - export REGISTRY_URL=$(kubectl describe svc docker-registry -n keptn | grep "IP:" | sed 's~IP:[ \t]*~~')
+
         
         # Install yq
         - sudo add-apt-repository ppa:rmescandon/yq -y
