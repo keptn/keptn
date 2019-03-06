@@ -6,6 +6,11 @@ SHOW_API_TOKEN=$4
 
 kubectl create namespace keptn
 
+# Create container registry
+kubectl create -f ../manifests/container-registry/k8s-docker-registry-pvc.yml
+kubectl create -f ../manifests/container-registry/k8s-docker-registry-deployment.yml
+kubectl create -f ../manifests/container-registry/k8s-docker-registry-service.yml
+
 kubectl label namespace keptn istio-injection=enabled
 
 # Install knative serving, eventing, build
