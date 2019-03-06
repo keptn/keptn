@@ -47,7 +47,7 @@ export class DockerController implements interfaces.Controller {
     next: express.NextFunction,
   ): Promise<void> {
     console.log(`received event: ${JSON.stringify(request.body)}`);
-    await this.dockerService.handleDockerRequest(event);
+    await this.dockerService.handleDockerRequest(request.body);
     response.status(200).send();
   }
 }

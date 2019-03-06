@@ -6,6 +6,15 @@ import moment from 'moment';
   name: 'KeptnRequestModel',
 })
 export class KeptnRequestModel {
+
+  static EVENT_TYPES = {
+    NEW_ARTEFACT: 'sh.keptn.events.new-artefact',
+    CONFIGURATION_CHANGED: 'sh.keptn.events.configuration-changed',
+    DEPLOYMENT_FINISHED: 'sh.keptn.events.deployment-finished',
+    TESTS_FINISHED: 'sh.keptn.events.tests-finished',
+    EVALUATION_DONE: 'sh.keptn.events.evaluation-done',
+  };
+
   @ApiModelProperty({
     description: 'CE SpecVersion',
     example: ['0.2'],

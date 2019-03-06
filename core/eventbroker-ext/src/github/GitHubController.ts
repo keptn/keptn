@@ -47,7 +47,7 @@ export class GitHubController implements interfaces.Controller {
     next: express.NextFunction,
   ): Promise<void> {
     const gitHubEventType = request.headers['x-github-event'] as string;
-    this.gitHubService.handleGitHubEvent(gitHubEventType, request.body);
-
+    await this.gitHubService.handleGitHubEvent(gitHubEventType, request.body);
+    response.status(200).send();
   }
 }

@@ -36,6 +36,7 @@ export class DockerService {
 
     const msg: KeptnRequestModel = new KeptnRequestModel();
     msg.data = msgPayload;
+    msg.type = KeptnRequestModel.EVENT_TYPES.NEW_ARTEFACT;
     await this.messageService.sendMessage(msg);
   }
 }
