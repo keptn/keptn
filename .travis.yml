@@ -98,7 +98,7 @@ jobs:
         - gcloud container clusters get-credentials $CLUSTER_PR_STATUSCHECK_NAME --zone $CLUSTER_PR_STATUSCHECK_ZONE --project $PROJECT_NAME
         - export GCLOUD_USER=$(gcloud config get-value account)
         - kubectl create clusterrolebinding travis-cluster-admin-binding --clusterrole=cluster-admin --user=$GCLOUD_USER
-        - export REGISTRY_URL=$(kubectl describe svc docker-registry -n cicd | grep "IP:" | sed 's~IP:[ \t]*~~')
+        - export REGISTRY_URL=$(kubectl describe svc docker-registry -n keptn | grep "IP:" | sed 's~IP:[ \t]*~~')
         
         # Install yq
         - sudo add-apt-repository ppa:rmescandon/yq -y
@@ -132,6 +132,11 @@ jobs:
 
         # Event Broker
         - cd ../eventbroker
+        - npm install
+        - npm run test
+
+        # Event Broker (ext)
+        - cd ../eventbroker-ext
         - npm install
         - npm run test
 

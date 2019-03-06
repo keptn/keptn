@@ -1,6 +1,6 @@
 #!/bin/sh
 
-REGISTRY_URI=$(kubectl describe svc docker-registry -n cicd | grep IP: | sed 's~IP:[ \t]*~~')
+REGISTRY_URI=$(kubectl describe svc docker-registry -n keptn | grep IP: | sed 's~IP:[ \t]*~~')
 
 rm -f config/gen/event-broker.yaml
 
