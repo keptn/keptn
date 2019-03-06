@@ -126,8 +126,18 @@ jobs:
         - npm install
         - npm run test
 
-                # Auth
+        # Auth
         - cd ../auth
+        - npm install
+        - npm run test
+
+        # Event Broker
+        - cd ../eventbroker
+        - npm install
+        - npm run test
+
+        # Event Broker (ext)
+        - cd ../eventbroker-ext
         - npm install
         - npm run test
       
@@ -144,16 +154,6 @@ jobs:
         # execute GO tests
         - cd ../../cli/ 
         - go test ${gobuild_args} -timeout 240s ./...
-
-        # Event Broker
-        - cd ../eventbroker
-        - npm install
-        - npm run test
-
-        # Event Broker (ext)
-        - cd ../eventbroker-ext
-        - npm install
-        - npm run test
 
       after_script:
         - cd ../core/
