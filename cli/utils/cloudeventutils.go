@@ -9,21 +9,17 @@ import (
 	"io/ioutil"
 	"net/http"
 	"time"
-
-	"github.com/knative/pkg/cloudevents"
 )
 
 // Send creates a request including the X-Keptn-Signature and sends the data
 // struct to the provided target. It returns error if there was an
 // issue sending the event, otherwise nil means the event was accepted.
-func Send(target string, apiToken string, builder cloudevents.Builder, data interface{}, overrides ...cloudevents.SendContext) error {
-
-	builder.Encoding = cloudevents.StructuredV01
-	req, err := builder.Build(target, data, overrides...)
+func Send(req *http.Request, apiToken string) error {
 
 	bodyBytes, err := ioutil.ReadAll(req.Body)
 	// Restore the io.ReadCloser to its original state
 	req.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
+	fmt.Println(string(bodyBytes))
 	if err != nil {
 		fmt.Println("Unable to read body", err)
 	}

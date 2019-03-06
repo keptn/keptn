@@ -15,7 +15,7 @@ func init() {
 	utils.InitLoggers(os.Stdout, os.Stdout, os.Stderr)
 }
 
-func TestOnboardServiceCmd(t *testing.T) {
+func TestOnboardServiceUsingHelmCmd(t *testing.T) {
 
 	credentialmanager.MockCreds = true
 
@@ -95,8 +95,8 @@ spec:
 		"service",
 		"--project=carts",
 		fmt.Sprintf("--values=%s", tmpValues),
-		// fmt.Sprintf("--deployment=%s", tmpDeployment),
-		// fmt.Sprintf("--service=%s", tmpService),
+		fmt.Sprintf("--deployment=%s", tmpDeployment),
+		fmt.Sprintf("--service=%s", tmpService),
 	}
 	rootCmd.SetArgs(args)
 	err := rootCmd.Execute()
@@ -105,6 +105,107 @@ spec:
 	os.Remove(tmpValues)
 	os.Remove(tmpDeployment)
 	os.Remove(tmpService)
+
+	if err != nil {
+		t.Errorf("An error occured %v", err)
+	}
+}
+
+func TestOnboardServiceUsingManifestCmd(t *testing.T) {
+
+	credentialmanager.MockCreds = true
+
+	// Write temporary files
+	const tmpManifest = "manifestTest.yml"
+	manifestContent := `---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: carts
+  namespace: dev
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: carts
+        version: v1
+    spec:
+      containers:
+      - name: carts
+        image: dynatracesockshop/carts:0.6.0
+        env:
+        - name: JAVA_OPTS
+          value: -Xms128m -Xmx512m -XX:PermSize=128m -XX:MaxPermSize=128m -XX:+UseG1GC -Djava.security.egd=file:/dev/urandom
+        - name: DT_TAGS
+          value: "application=sockshop"
+        - name: DT_CUSTOM_PROP
+          value: "SERVICE_TYPE=BACKEND"
+        resources:
+          limits:
+            cpu: 500m
+            memory: 1024Mi
+          requests:
+            cpu: 400m
+            memory: 768Mi
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - mountPath: /tmp
+          name: tmp-volume
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 15
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 15
+      volumes:
+        - name: tmp-volume
+          emptyDir:
+            medium: Memory
+      nodeSelector:
+        beta.kubernetes.io/os: linux
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: carts
+  labels:
+    app: carts
+  namespace: dev
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+  selector:
+    app: carts
+  type: LoadBalancer`
+
+	ioutil.WriteFile(tmpManifest, []byte(manifestContent), 0644)
+
+	buf := new(bytes.Buffer)
+	rootCmd.SetOutput(buf)
+
+	args := []string{
+		"onboard",
+		"service",
+		"--project=carts",
+		fmt.Sprintf("--manifest=%s", tmpManifest),
+	}
+	rootCmd.SetArgs(args)
+	err := rootCmd.Execute()
+
+	// Delete temporary shipyard.yml file
+	os.Remove(tmpManifest)
 
 	if err != nil {
 		t.Errorf("An error occured %v", err)

@@ -31,6 +31,7 @@ var project *string
 var deploymentFilePath *string
 var valuesFilePath *string
 var serviceFilePath *string
+var manifestFilePath *string
 
 type serviceData map[string]interface{}
 
@@ -47,23 +48,44 @@ var serviceCmd = &cobra.Command{
 keptn onboard service --project=carts --values=values.yaml --deployment=deployment.yaml --service=service.yaml`,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 
-		valuesData, err := readFile(*valuesFilePath)
-		if err != nil {
-			return err
+		if (*valuesFilePath != "" || *manifestFilePath != "") && (*valuesFilePath != "" && *manifestFilePath != "") {
+			return errors.New("Error specifying a Helm description as well as a k8s manifest. Only use one option")
 		}
 
-		if _, err := unmarshalValues(valuesData); err != nil {
-			return err
-		}
-
-		if *deploymentFilePath != "" {
-			if _, err := readFile(*deploymentFilePath); err != nil {
+		if *valuesFilePath != "" {
+			valuesData, err := readFile(*valuesFilePath)
+			if err != nil {
 				return err
 			}
-		}
 
-		if *serviceFilePath != "" {
-			if _, err := readFile(*serviceFilePath); err != nil {
+			if _, err := unmarshalValues(valuesData); err != nil {
+				return err
+			}
+
+			if *deploymentFilePath != "" {
+				if _, err := readFile(*deploymentFilePath); err != nil {
+					return err
+				}
+			}
+
+			if *serviceFilePath != "" {
+				if _, err := readFile(*serviceFilePath); err != nil {
+					return err
+				}
+			}
+		} else {
+			if *deploymentFilePath != "" {
+				fmt.Printf("The specified deployment file is ignored")
+			}
+			if *serviceFilePath != "" {
+				fmt.Println("The specified service file is ignored")
+			}
+			manifestData, err := readFile(*manifestFilePath)
+			if err != nil {
+				return err
+			}
+
+			if _, err := unmarshalValues(manifestData); err != nil {
 				return err
 			}
 		}
@@ -75,54 +97,72 @@ keptn onboard service --project=carts --values=values.yaml --deployment=deployme
 		svcData := serviceData{}
 		svcData["project"] = *project
 
-		valuesData, err := readFile(*valuesFilePath)
-		if err != nil {
-			return err
-		}
-		data, err := unmarshalValues(valuesData)
-		if err != nil {
-			return err
-		}
-		svcData["values"] = data
-
-		deployment := make(map[string]string)
-
-		if *deploymentFilePath != "" {
-			content, err := readFile(*deploymentFilePath)
+		if *valuesFilePath != "" {
+			valuesData, err := readFile(*valuesFilePath)
 			if err != nil {
 				return err
 			}
-			deployment["deployment"] = content
-		}
-
-		if *serviceFilePath != "" {
-			content, err := readFile(*serviceFilePath)
+			data, err := unmarshalValues(valuesData)
 			if err != nil {
 				return err
 			}
-			deployment["service"] = content
-		}
+			svcData["values"] = data
 
-		if len(deployment) > 0 {
-			svcData["templates"] = deployment
+			deployment := make(map[string]string)
+
+			if *deploymentFilePath != "" {
+				content, err := readFile(*deploymentFilePath)
+				if err != nil {
+					return err
+				}
+				deployment["deployment"] = content
+			}
+
+			if *serviceFilePath != "" {
+				content, err := readFile(*serviceFilePath)
+				if err != nil {
+					return err
+				}
+				deployment["service"] = content
+			}
+
+			if len(deployment) > 0 {
+				svcData["templates"] = deployment
+			}
+		} else {
+			manifestData, err := readFile(*manifestFilePath)
+			if err != nil {
+				return err
+			}
+			data, err := unmarshalValues(manifestData)
+			if err != nil {
+				return err
+			}
+			svcData["manifest"] = data
 		}
 
 		builder := cloudevents.Builder{
 			Source:    "https://github.com/keptn/keptn/cli#onboardservice",
 			EventType: "onboard.service",
+			Encoding:  cloudevents.StructuredV01,
 		}
 		endPoint, apiToken, err := credentialmanager.GetCreds()
 		if err != nil || endPoint == "" {
 			fmt.Printf("onboard service called without beeing authenticated.")
 			return errors.New("This command requires to be authenticated. See \"keptn auth\" for details")
 		}
-		projectEndPoint := endPoint + "service"
-		err = utils.Send(projectEndPoint, apiToken, builder, svcData)
+
+		req, err := builder.Build(endPoint+"service", svcData)
+		if err != nil {
+			return err
+		}
+
+		err = utils.Send(req, apiToken)
 		if err != nil {
 			fmt.Printf("onboard service command was unsuccessful. Details: %v", err)
 			return err
 		}
-		fmt.Printf("Successfully onboarded service in project %v\n", svcData["Project"])
+		fmt.Printf("Successfully onboarded service in project %v\n", svcData["project"])
 		return nil
 	},
 }
@@ -169,10 +209,11 @@ func init() {
 	project = serviceCmd.Flags().StringP("project", "p", "", "The name of the project")
 	serviceCmd.MarkFlagRequired("project")
 
+	// Flags for onboarding a service using Helm
 	valuesFilePath = serviceCmd.Flags().StringP("values", "v", "", "The values file")
-	serviceCmd.MarkFlagRequired("values")
-
 	deploymentFilePath = serviceCmd.Flags().StringP("deployment", "d", "", "The deployment file")
-
 	serviceFilePath = serviceCmd.Flags().StringP("service", "s", "", "The service file")
+
+	// Flags for onboarding using "pure" k8s manifests
+	manifestFilePath = serviceCmd.Flags().StringP("manifest", "m", "", "The manifest file")
 }
