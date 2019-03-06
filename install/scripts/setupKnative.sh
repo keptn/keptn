@@ -41,6 +41,8 @@ kubectl apply -f ../manifests/knative/build/service-account.yaml
 
 kubectl create secret generic -n keptn jenkinsurl --from-literal=jenkinsurl="http://$JENKINS_USER:$JENKINS_PASSWORD@jenkins.cicd.svc.cluster.local:24711"
 
+REGISTRY_URL=$(kubectl describe svc docker-registry -n keptn | grep "IP:" | sed 's~IP:[ \t]*~~')
+
 # Mark internal docker registry as insecure registry for knative controller
 val=$(kubectl -n knative-serving get cm config-controller -o=json | jq -r .data.registriesSkippingTagResolving | awk '{print $1",'$REGISTRY_URL':5000"}')
 kubectl -n knative-serving get cm config-controller -o=yaml | yq w - data.registriesSkippingTagResolving $val | kubectl apply -f -
