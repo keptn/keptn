@@ -1,16 +1,16 @@
 {
-specversion: "0.2",
-type: "sh.keptn.events.problem",
-source: "https://tenantId.live.dynatrace.com/#problems/problemdetails",
-id: "ADi3-DFDF-6784",
-time: "2018-04-05T17:31:00Z",
-contenttype: "application/json",
-data: {
-  project: "carts",
-  environment: "production",
-  problemTitle: "error rate increase",
-  problemId: "123456789",
-  impactedEntities: [],
-  remediationAction: "https://action"
-}
+  "specversion":"0.2",
+  "type":"sh.keptn.events.problem",
+  "source":"",
+  "id":"",
+  "time":"",
+  "contenttype":"application/json",
+  "data": {
+    "project": "carts",
+    "environment": "production",
+    "problemTitle": "error rate increase",
+    "problemId": "123456789",
+    "impactedEntities": [],
+    "remediationAction": "https://action"
+  }
 }
