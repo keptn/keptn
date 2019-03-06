@@ -66,6 +66,10 @@ cd ../../core/eventbroker
 ./deploy.sh $REGISTRY_URL $KEPTN_CHANNEL_URI $NEW_ARTEFACT_CHANNEL $START_DEPLOYMENT_CHANNEL $DEPLOYMENT_FINISHED_CHANNEL $START_TESTS_CHANNEL $TESTS_FINISHED_CHANNEL $START_EVALUATION_CHANNEL $EVALUATION_DONE_CHANNEL
 cd ../../install/scripts
 
+cd ../../core/eventbroker-ext
+./deploy.sh
+cd ../../install/scripts
+
 cd ../../core/auth
 ./deploy.sh $REGISTRY_URL
 cd ../../install/scripts
