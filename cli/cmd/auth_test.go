@@ -11,7 +11,7 @@ import (
 )
 
 func init() {
-	utils.Init(os.Stdout, os.Stdout, os.Stderr)
+	utils.InitLoggers(os.Stdout, os.Stdout, os.Stderr)
 }
 
 // TestAuthCmd tests the auth command. Therefore, this test assumes a file named "endPoint.txt" containing

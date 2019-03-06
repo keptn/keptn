@@ -11,7 +11,7 @@ import (
 )
 
 func init() {
-	utils.Init(os.Stdout, os.Stdout, os.Stderr)
+	utils.InitLoggers(os.Stdout, os.Stdout, os.Stderr)
 }
 
 func TestCreateProjectCmd(t *testing.T) {
