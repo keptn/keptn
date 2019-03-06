@@ -74,7 +74,7 @@ describe('DockerController', () => {
     await dockerController.handleDockerEvent(request, response, next);
 
     expect(dockerServiceStub.calledWith(request.body)).is.true;
-    expect(responseSendSpy.calledWith({messageSent: true })).is.true;
+    expect(responseSendSpy.calledWith({ messageSent: true })).is.true;
     expect(responseStatusSpy.calledWith(200)).is.true;
   });
 
@@ -100,7 +100,7 @@ describe('DockerController', () => {
     await dockerController.handleDockerEvent(request, response, next);
 
     expect(dockerServiceStub.calledWith(request.body)).is.true;
-    expect(responseSendSpy.calledWith({messageSent: false })).is.true;
+    expect(responseSendSpy.calledWith({ messageSent: false })).is.true;
     expect(responseStatusSpy.calledWith(200)).is.true;
   });
 });
