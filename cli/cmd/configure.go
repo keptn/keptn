@@ -23,7 +23,7 @@ var configureCmd = &cobra.Command{
 	Use:   "configure",
 	Short: "Configures the GitHub org, user and token in the keptn installation.",
 	Long: `Configures the GitHub Organization, the GitHub user, and the GitHub
-	token in the keptn installation. Usage of \"configure\":
+token in the keptn installation. Usage of "configure":
 
 keptn configure --org=MyOrg --user=keptnUser --token=XYZ`,
 	RunE: func(cmd *cobra.Command, args []string) error {
