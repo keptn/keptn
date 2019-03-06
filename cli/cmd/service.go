@@ -25,16 +25,19 @@ type serviceData map[string]interface{}
 var serviceCmd = &cobra.Command{
 	Use:   "service",
 	Short: "Onboards a new service.",
-	Long: `Onboards a new service. Therefore, this command takes a 
-	service description given as yaml and onboards 
-	this service in the provided project. 
-	Optionally, this command takes a Helm deployment and service description.
-	Usage of \"onboard service\":
+	Long: `Onboards a new service in the provided project. Therefore, this command 
+either takes a service description given as yaml or takes a Helm values, deployment and service description.
+Usage of "onboard service":
 
+keptn onboard service --project=carts --manifest=serviceDesc.yaml 
+or
 keptn onboard service --project=carts --values=values.yaml --deployment=deployment.yaml --service=service.yaml`,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 
-		if (*valuesFilePath != "" || *manifestFilePath != "") && (*valuesFilePath != "" && *manifestFilePath != "") {
+		if *valuesFilePath == "" && *manifestFilePath == "" {
+			return errors.New("Specify either a Helm description using the flags values, deployment, and service or a k8s manifest using the flag manifest")
+		}
+		if *valuesFilePath != "" && *manifestFilePath != "" {
 			return errors.New("Error specifying a Helm description as well as a k8s manifest. Only use one option")
 		}
 

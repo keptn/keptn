@@ -28,21 +28,21 @@ const logo = `
  ####(   .###    (###    ####    #########               .&&&& &&&&&&         &&&&&        *&&&&     &&&&&        &&&&&     &&&&&             &&&&&       &&&&&
   ##    ####    ####    ####    ########                 .&&&&&&&&&           &&&&&&&&&&&&&&&&&&     &&&&&         &&&&&    &&&&&             &&&&&       &&&&&
       ####    ####    ####    #########                  .&&&&&&&&&&          &&&&&&&&&&&&&&&&&&     &&&&&         &&&&&    &&&&&             &&&&&       &&&&&
-     ####    ###/   (###,   (########                    .&&&&  &&&&         &&&&&                  &&&&&         &&&&&    &&&&&             &&&&&       &&&&&
+     ####    ###/   (###,   (########                    .&&&&  &&&&         &&&&&                   &&&&&         &&&&&    &&&&&             &&&&&       &&&&&
            ####    ####    ########*                     .&&&&   .&&&&&       #&&&&&                 &&&&&        &&&&&     /&&&&             &&&&&       &&&&&
          ####    ####    #########                       .&&&&     &&&&&&      &&&&&&&%    ,&&&      &&&&&&&( .&&&&&&&       &&&&&&/  %&&     &&&&&       &&&&&
-          ##    ####    ########                         .&&&&       &&&&      &&&&&&&&&&&&&&      &&&&&&&&&&&&&&&&         &&&&&&&&&&&     &&&&&       &&&&&
+          ##    ####    ########                         .&&&&       &&&&      &&&&&&&&&&&&&&        &&&&&&&&&&&&&&&&         &&&&&&&&&&&     &&&&&       &&&&&
                                                                                     .&&&&&&&*        &&&&&  *&&&&                 (&&%                         
                                                                                                      &&&&&                                                     
                                                                                                      &&&&&                                                     
-																									 &&&&&`
+                                                                                                     &&&&&`
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "keptn",
 	Short: "This is a CLI for using keptn",
 	Long: `This is a CLI for using keptn. The CLI allows to authenticate against keptn, to configure your Github organization,
-	to create projects, and to onboard services.
+to create projects, and to onboard services.
 	
 	` + logo,
 	// Uncomment the following line if your bare application
