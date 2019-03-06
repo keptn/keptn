@@ -99,8 +99,10 @@ jobs:
         - gcloud auth activate-service-account --key-file ${HOME}/gcloud-service-key.json
         - gcloud container clusters get-credentials $CLUSTER_PR_STATUSCHECK_NAME --zone $CLUSTER_PR_STATUSCHECK_ZONE --project $PROJECT_NAME
         - export GCLOUD_USER=$(gcloud config get-value account)
+
         - kubectl create clusterrolebinding travis-cluster-admin-binding --clusterrole=cluster-admin --user=$GCLOUD_USER || true
-        - export REGISTRY_URL=$(kubectl describe svc docker-registry -n cicd | grep "IP:" | sed 's~IP:[ \t]*~~')
+        - export REGISTRY_URL=$(kubectl describe svc docker-registry -n keptn | grep "IP:" | sed 's~IP:[ \t]*~~')
+
         
         # Install yq
         - sudo add-apt-repository ppa:rmescandon/yq -y
@@ -128,8 +130,18 @@ jobs:
         - npm install
         - npm run test
 
-                # Auth
+        # Auth
         - cd ../auth
+        - npm install
+        - npm run test
+
+        # Event Broker
+        - cd ../eventbroker
+        - npm install
+        - npm run test
+
+        # Event Broker (ext)
+        - cd ../eventbroker-ext
         - npm install
         - npm run test
       
@@ -152,6 +164,7 @@ jobs:
         - kubectl delete -f auth/config/gen
         - kubectl delete -f control/config/gen
         - kubectl delete -f eventbroker/config/gen
+        - kubectl delete -f eventbroker-ext/config/gen
         - kubectl delete pods,svc,deployments --all -n keptn
         - kubectl delete channel --all -n keptn
         - kubectl delete clusterchannelprovisioner --all -n keptn

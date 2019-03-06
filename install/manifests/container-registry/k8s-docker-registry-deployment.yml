@@ -2,7 +2,7 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: docker-registry
-  namespace: cicd
+  namespace: keptn
 spec:
   replicas: 1
   selector:
@@ -22,7 +22,16 @@ spec:
         volumeMounts:
               - name: docker-registry-persistent-storage
                 mountPath: /var/lib/registry
+              - name: config
+                mountPath: /etc/docker/registry
+                readOnly: true
       volumes:
       - name: docker-registry-persistent-storage
         persistentVolumeClaim:
            claimName: docker-registry
+      - name: config
+        configMap:
+          name: docker-registry
+          items:
+            - key: registry-config.yml
+              path: config.yml

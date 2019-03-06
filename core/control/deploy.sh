@@ -1,5 +1,5 @@
 #!/bin/sh
-REGISTRY_URI=$1
+REGISTRY_URI=$(kubectl describe svc docker-registry -n keptn | grep IP: | sed 's~IP:[ \t]*~~')
 CHANNEL_URI=$2
 
 rm -f config/gen/control.yaml

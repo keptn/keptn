@@ -3,6 +3,8 @@ kind: Service
 metadata:
   name: event-broker
   namespace: keptn
+  labels:
+    serving.knative.dev/visibility: cluster-local
 spec:
   runLatest:
     configuration:
@@ -17,12 +19,12 @@ spec:
           source:
             git:
               url: https://github.com/keptn/keptn.git
-              revision: master
+              revision: event-broker
           template:
             name: kaniko
             arguments:
               - name: IMAGE
-                value: docker-registry.cicd.svc.cluster.local:5000/keptn/keptn-event-broker:latest
+                value: docker-registry.keptn.svc.cluster.local:5000/keptn/keptn-event-broker:latest
               - name: DOCKERFILE
                 value: /core/eventbroker/Dockerfile
       revisionTemplate:
@@ -34,20 +36,3 @@ spec:
           container:
             image: REGISTRY_URI_PLACEHOLDER:5000/keptn/keptn-event-broker:latest
             imagePullPolicy: Always
-            env:
-            - name: CHANNEL_URI
-              value: CHANNEL_URI_PLACEHOLDER
-            - name: NEW_ARTEFACT_CHANNEL
-              value: NEW_ARTEFACT_CHANNEL_PLACEHOLDER
-            - name: START_DEPLOYMENT_CHANNEL
-              value: START_DEPLOYMENT_CHANNEL_PLACEHOLDER
-            - name: DEPLOYMENT_FINISHED_CHANNEL
-              value: DEPLOYMENT_FINISHED_CHANNEL_PLACEHOLDER
-            - name: START_TESTS_CHANNEL
-              value: START_TESTS_CHANNEL_PLACEHOLDER
-            - name: TESTS_FINISHED_CHANNEL
-              value: TESTS_FINISHED_CHANNEL_PLACEHOLDER
-            - name: START_EVALUATION_CHANNEL
-              value: START_EVALUATION_CHANNEL_PLACEHOLDER
-            - name: EVALUATION_DONE_CHANNEL
-              value: EVALUATION_DONE_CHANNEL_PLACEHOLDER
