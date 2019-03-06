@@ -44,7 +44,7 @@
     "express": "^4.16.4",
     "inversify": "^5.0.1",
     "inversify-express-utils": "^6.3.2",
-    "kubernetes-client": "^6.9.0",
+    "kubernetes-client": "^6.10.0",
     "mocha": "^6.0.2",
     "moment": "^2.24.0",
     "reflect-metadata": "^0.1.13",
