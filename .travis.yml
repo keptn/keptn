@@ -130,6 +130,11 @@ jobs:
         - npm install
         - npm run test
 
+        # Event Broker
+        - cd ../eventbroker
+        - npm install
+        - npm run test
+
       after_script:
         - kubectl delete pods,svc,deployments --all -n keptn
         - kubectl delete channel --all -n keptn
