@@ -49,6 +49,7 @@ kubectl apply -f ../../core/eventbroker/config/start-tests-channel.yaml
 kubectl apply -f ../../core/eventbroker/config/tests-finished-channel.yaml
 kubectl apply -f ../../core/eventbroker/config/start-evaluation-channel.yaml
 kubectl apply -f ../../core/eventbroker/config/evaluation-done-channel.yaml
+kubectl apply -f ../../core/eventbroker/config/problem-channel.yaml
 
 export KEPTN_CHANNEL_URI=$(kubectl describe channel keptn-channel -n keptn | grep "Hostname:" | sed 's~[ \t]*Hostname:[ \t]*~~')
 
