@@ -1,5 +1,5 @@
 #!/bin/sh
-REGISTRY_URI=$1
+REGISTRY_URI=$(kubectl describe svc docker-registry -n keptn | grep IP: | sed 's~IP:[ \t]*~~')
 
 rm -f config/gen/authenticator.yaml
 
