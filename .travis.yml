@@ -3,7 +3,10 @@ sudo: true
 dist: xenial
 
 # Use node_js environnement
-language: generic
+language: go
+
+go:
+  - 1.11.x
 
 # Cache Gcloud SDK between commands
 cache:
@@ -18,8 +21,7 @@ services:
 env:
   global:
     - GOOGLE_APPLICATION_CREDENTIALS=~/gcloud-service-key.json
-
-
+ 
 jobs:
   include:
     - stage: master
@@ -105,6 +107,8 @@ jobs:
         - sudo apt update
         - sudo apt install yq -y
 
+        # Delete potential knative remainings
+        - kubectl delete ns knative-build knative-eventing knative-monitoring knative-serving knative-sources || true
         - cd ./install/scripts/
         - ./setupKnative.sh $JENKINS_USER $JENKINS_PASSWORD $REGISTRY_URL
         - export EVENT_BROKER_NAME=$(kubectl describe ksvc event-broker -n keptn | grep -m 1 "Name:" | sed 's~Name:[ \t]*~~')
@@ -115,9 +119,6 @@ jobs:
 
         - export CONTROL_NAME=$(kubectl describe ksvc control -n keptn | grep -m 1 "Name:" | sed 's~Name:[ \t]*~~')
         - ./../../test/assertEquals.sh $CONTROL_NAME control
-        # execute GO tests
-        #- cd ../../cli/ 
-        #- go test -v ./...
 
         # execute unit tests for core components
         # Control
@@ -125,10 +126,24 @@ jobs:
         - npm install
         - npm run test
 
-        # Auth
+                # Auth
         - cd ../auth
         - npm install
         - npm run test
+      
+        # write credentials in local file for testing the CLI
+       
+        - ENDPOINT="$(kubectl get ksvc control -n keptn -o=yaml | yq r - status.domain)"
+        - while [ "$ENDPOINT" = "null" ]; do sleep 30; ENDPOINT="$(kubectl get ksvc control -n keptn -o=yaml | yq r - status.domain)"; echo "waiting for control service"; done
+        - printf "https://" > ~/.keptnmock
+        - kubectl get ksvc control -n keptn -o=yaml  | yq r - status.domain >> ~/.keptnmock
+
+        - SEC="$(kubectl get secret keptn-api-token  -n keptn -o=yaml | yq r - data.keptn-api-token | base64 --decode)"
+        - echo "${SEC}" >> ~/.keptnmock
+        
+        # execute GO tests
+        - cd ../../cli/ 
+        - go test ${gobuild_args} -timeout 240s ./...
 
         # Event Broker
         - cd ../eventbroker
@@ -141,8 +156,14 @@ jobs:
         - npm run test
 
       after_script:
+        - cd ../core/
+        - kubectl delete -f auth/config/gen
+        - kubectl delete -f control/config/gen
+        - kubectl delete -f eventbroker/config/gen
         - kubectl delete pods,svc,deployments --all -n keptn
         - kubectl delete channel --all -n keptn
         - kubectl delete clusterchannelprovisioner --all -n keptn
         - kubectl delete ns knative-build knative-eventing knative-monitoring knative-serving knative-sources
         - kubectl delete clusterrolebinding travis-cluster-admin-binding
+        - kubectl delete svc knative-ingressgateway -n istio-system
+        - kubectl delete deploy knative-ingressgateway -n istio-system
