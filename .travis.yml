@@ -109,6 +109,8 @@ jobs:
 
         # Delete potential knative remainings
         - kubectl delete ns knative-build knative-eventing knative-monitoring knative-serving knative-sources || true
+        - kubectl delete svc knative-ingressgateway -n istio-system || true
+        - kubectl delete deploy knative-ingressgateway -n istio-system || true
         - cd ./install/scripts/
         - ./setupKnative.sh $JENKINS_USER $JENKINS_PASSWORD $REGISTRY_URL
         - export EVENT_BROKER_NAME=$(kubectl describe ksvc event-broker -n keptn | grep -m 1 "Name:" | sed 's~Name:[ \t]*~~')

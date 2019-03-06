@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -11,17 +12,80 @@ import (
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
 )
 
-func init() {
-	utils.InitLoggers(os.Stdout, os.Stdout, os.Stderr)
-}
+const manifestContent = `---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: carts
+  namespace: dev
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: carts
+        version: v1
+    spec:
+      containers:
+      - name: carts
+        image: dynatracesockshop/carts:0.6.0
+        env:
+        - name: JAVA_OPTS
+          value: -Xms128m -Xmx512m -XX:PermSize=128m -XX:MaxPermSize=128m -XX:+UseG1GC -Djava.security.egd=file:/dev/urandom
+        - name: DT_TAGS
+          value: "application=sockshop"
+        - name: DT_CUSTOM_PROP
+          value: "SERVICE_TYPE=BACKEND"
+        resources:
+          limits:
+            cpu: 500m
+            memory: 1024Mi
+          requests:
+            cpu: 400m
+            memory: 768Mi
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - mountPath: /tmp
+          name: tmp-volume
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 15
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 15
+      volumes:
+        - name: tmp-volume
+          emptyDir:
+            medium: Memory
+      nodeSelector:
+        beta.kubernetes.io/os: linux
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: carts
+  labels:
+    app: carts
+  namespace: dev
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+  selector:
+    app: carts
+  type: LoadBalancer`
 
-func TestOnboardServiceCmd(t *testing.T) {
-
-	credentialmanager.MockCreds = true
-
-	// Write temporary files
-	const tmpValues = "valuesTest.tpl"
-	valuesContent := `replicaCount: 1
+const valuesContent = `replicaCount: 1
 image:
   repository: null
   tag: null
@@ -39,8 +103,7 @@ resources:
     cpu: 100m
     memory: 128Mi`
 
-	const tmpDeployment = "deploymentTest.tpl"
-	deploymentContent := `apiVersion: extensions/v1beta1
+const deploymentContent = `apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: {{ .Chart.Name }}-SERVICE_PLACEHOLDER_DEC
@@ -66,8 +129,7 @@ spec:
           containerPort: {{ .Values.SERVICE_PLACEHOLDER_C.service.internalPort }}
         resources: {{ toYaml .Values.resources | indent 12 }}`
 
-	const tmpService = "serviceTest.tpl"
-	serviceContent := `apiVersion: v1
+const serviceContent = `apiVersion: v1
 kind: Service
 metadata:
   name: {{ .Chart.Name }}-SERVICE_PLACEHOLDER_DEC
@@ -83,6 +145,19 @@ spec:
   selector:
     app: {{ .Chart.Name }}-selector-SERVICE_PLACEHOLDER_DEC`
 
+func init() {
+	utils.InitLoggers(os.Stdout, os.Stdout, os.Stderr)
+}
+
+func TestOnboardServiceCmdUsingHelm(t *testing.T) {
+
+	credentialmanager.MockCreds = true
+
+	// Write temporary files
+	const tmpValues = "valuesTest.tpl"
+	const tmpDeployment = "deploymentTest.tpl"
+	const tmpService = "serviceTest.tpl"
+
 	ioutil.WriteFile(tmpValues, []byte(valuesContent), 0644)
 	ioutil.WriteFile(tmpDeployment, []byte(deploymentContent), 0644)
 	ioutil.WriteFile(tmpService, []byte(serviceContent), 0644)
@@ -95,18 +170,91 @@ spec:
 		"service",
 		"--project=carts",
 		fmt.Sprintf("--values=%s", tmpValues),
-		// fmt.Sprintf("--deployment=%s", tmpDeployment),
-		// fmt.Sprintf("--service=%s", tmpService),
+		fmt.Sprintf("--deployment=%s", tmpDeployment),
+		fmt.Sprintf("--service=%s", tmpService),
 	}
 	rootCmd.SetArgs(args)
 	err := rootCmd.Execute()
 
-	// Delete temporary shipyard.yml file
+	*valuesFilePath = ""
+	*serviceFilePath = ""
+	*deploymentFilePath = ""
+
+	// Delete temporary files
 	os.Remove(tmpValues)
 	os.Remove(tmpDeployment)
 	os.Remove(tmpService)
 
 	if err != nil {
 		t.Errorf("An error occured %v", err)
+	}
+}
+
+func TestOnboardServiceCmdUsingManifest(t *testing.T) {
+
+	credentialmanager.MockCreds = true
+
+	// Write temporary files
+	const tmpManifest = "manifestTest.yml"
+
+	ioutil.WriteFile(tmpManifest, []byte(manifestContent), 0644)
+
+	buf := new(bytes.Buffer)
+	rootCmd.SetOutput(buf)
+
+	args := []string{
+		"onboard",
+		"service",
+		"--project=carts",
+		fmt.Sprintf("--manifest=%s", tmpManifest),
+	}
+	rootCmd.SetArgs(args)
+	err := rootCmd.Execute()
+
+	*manifestFilePath = ""
+
+	// Delete temporary files
+	os.Remove(tmpManifest)
+
+	if err != nil {
+		t.Errorf("An error occured %v", err)
+	}
+}
+
+func TestOnboardServiceCmdUsingInvalidArguments(t *testing.T) {
+
+	credentialmanager.MockCreds = true
+
+	// Write temporary files
+	const tmpManifest = "manifestTest.yml"
+	const tmpValues = "valuesTest.tpl"
+
+	ioutil.WriteFile(tmpManifest, []byte(manifestContent), 0644)
+	ioutil.WriteFile(tmpValues, []byte(valuesContent), 0644)
+
+	buf := new(bytes.Buffer)
+	rootCmd.SetOutput(buf)
+
+	args := []string{
+		"onboard",
+		"service",
+		"--project=carts",
+		fmt.Sprintf("--manifest=%s", tmpManifest),
+		fmt.Sprintf("--values=%s", tmpValues),
+	}
+	rootCmd.SetArgs(args)
+	err := rootCmd.Execute()
+
+	*manifestFilePath = ""
+	*valuesFilePath = ""
+
+	// Delete temporary files
+	os.Remove(tmpManifest)
+	os.Remove(tmpManifest)
+
+	expectedError := errors.New("Error specifying a Helm description as well as a k8s manifest. Only use one option")
+
+	if err.Error() != expectedError.Error() {
+		t.Error("Actual error does not match expected error")
 	}
 }
