@@ -26,7 +26,7 @@ data:
     notifications:
       endpoints:
         - name: listener
-          url: http://event-broker.keptn.svc.cluster.local/keptn
+          url: http://event-broker.keptn.svc.cluster.local/docker
           Headers:
             Content-Type: application/json
           timeout: 5000ms

@@ -14,6 +14,7 @@ import {
   SwaggerDefinitionConstant,
 } from 'swagger-express-ts';
 import { DockerService } from './DockerService';
+import { DockerRequestModel } from './DockerRequestModel';
 
 @ApiPath({
   name: 'Docker',
@@ -23,13 +24,14 @@ import { DockerService } from './DockerService';
 @controller('/docker')
 export class DockerController implements interfaces.Controller {
 
-  constructor(@inject('DockerService') private readonly dockerService: DockerService) {}
+  constructor(@inject('DockerService') private readonly dockerService: DockerService) { }
 
   @ApiOperationPost({
     description: 'Handle an incoming docker event',
     parameters: {
       body: {
         description: 'Docker Webhook payload',
+        model: 'DockerRequestModel',
         required: true,
       },
     },
@@ -47,7 +49,11 @@ export class DockerController implements interfaces.Controller {
     next: express.NextFunction,
   ): Promise<void> {
     console.log(`received event: ${JSON.stringify(request.body)}`);
-    await this.dockerService.handleDockerRequest(request.body);
-    response.status(200).send();
+    const messageSent =
+      await this.dockerService.handleDockerRequest(request.body as DockerRequestModel);
+    response.status(200);
+    response.send({
+      messageSent,
+    });
   }
 }

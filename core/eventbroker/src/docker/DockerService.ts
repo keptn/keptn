@@ -3,13 +3,14 @@ import { injectable, inject } from 'inversify';
 import axios  from 'axios';
 import { MessageService } from '../svc/MessageService';
 import { KeptnRequestModel } from '../keptn/KeptnRequestModel';
+import { DockerRequestModel } from './DockerRequestModel';
 
 @injectable()
 export class DockerService {
 
   constructor(@inject('MessageService') private readonly messageService: MessageService) {}
 
-  public async handleDockerRequest(event: any): Promise<boolean> {
+  public async handleDockerRequest(event: DockerRequestModel): Promise<boolean> {
     if (event.events === undefined || event.events.length === 0) {
       return false;
     }
@@ -37,6 +38,6 @@ export class DockerService {
     const msg: KeptnRequestModel = new KeptnRequestModel();
     msg.data = msgPayload;
     msg.type = KeptnRequestModel.EVENT_TYPES.NEW_ARTEFACT;
-    await this.messageService.sendMessage(msg);
+    return await this.messageService.sendMessage(msg);
   }
 }

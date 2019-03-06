@@ -36,8 +36,7 @@ describe('MessageService', () => {
     const result = await messageService.sendMessage(message);
     expect(result).to.be.true;
   });
-  /*
-  it('should return false if a message has not been forwarded', async () => {
+  it('should gracefully handle 503 responses', async () => {
     const message: KeptnRequestModel = {} as KeptnRequestModel;
     nock(`http://any-url`, {
       filteringScope: () => {
@@ -47,9 +46,8 @@ describe('MessageService', () => {
       .post('/', message)
       .reply(503, {});
     const result = await messageService.sendMessage(message);
-    expect(result).to.be.true;
+    expect(result).to.be.false;
   });
-  */
   it('should return false if no channel uri can be found ', async () => {
     const message: KeptnRequestModel = {} as KeptnRequestModel;
     message.type = 'unknown';

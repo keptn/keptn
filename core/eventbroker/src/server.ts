@@ -15,6 +15,7 @@ import './docker/DockerController';
 
 // import models
 import './keptn/KeptnRequestModel';
+import './docker/DockerRequestModel';
 
 // tslint:disable-next-line: import-name
 import RequestLogger = require('./middleware/requestLogger');
