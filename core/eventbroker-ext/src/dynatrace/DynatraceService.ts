@@ -14,6 +14,7 @@ export class DynatraceService {
     const keptnEvent: KeptnRequestModel = new KeptnRequestModel();
     keptnEvent.data = dtEventPayload;
     keptnEvent.type = KeptnRequestModel.EVENT_TYPES.PROBLEM;
+    console.log(`Sending keptn event ${JSON.stringify(keptnEvent)}`);
     await axios.post('http://event-broker.keptn.svc.cluster.local/keptn', keptnEvent);
     return true;
   }
