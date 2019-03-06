@@ -250,7 +250,7 @@ func TestOnboardServiceCmdUsingInvalidArguments(t *testing.T) {
 
 	// Delete temporary files
 	os.Remove(tmpManifest)
-	os.Remove(tmpManifest)
+	os.Remove(tmpValues)
 
 	expectedError := errors.New("Error specifying a Helm description as well as a k8s manifest. Only use one option")
 

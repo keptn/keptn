@@ -19,16 +19,15 @@ type projectData struct {
 
 // projectCmd represents the project command
 var projectCmd = &cobra.Command{
-	Use:   "project",
-	Short: "Creates a new repository in the GitHub organization and initializes the repository with helm charts.",
-	Long: `Creates a new repository in the GitHub organization and initializes the repository with helm charts. 
-	Therfore, the provided name and the description for the stages (specified in the provided yml file)
-	is used. Usage of \"create project\":
+	Use:   "project [project_name] [shipyard_file]",
+	Short: "Creates a new project.",
+	Long: `Creates a new project with the provided name and shipyard file. 
+The shipyard file describes the used stages. Usage of "create project":
 
 keptn create project sockshop shipyard.yml`,
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 2 {
-			return errors.New("Requires exact two args specifying the project name and the description for the stages")
+			return errors.New("Requires exact two args: [project_name] [shipyard_file]")
 		}
 		if _, err := os.Stat(args[1]); os.IsNotExist(err) {
 			return fmt.Errorf("Cannot find file %s", args[1])
