@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { injectable } from 'inversify';
 import axios  from 'axios';
-import { DynatraceRequestModel } from './DynatraceRequestModel'
+import { DynatraceRequestModel } from './DynatraceRequestModel';
 import { KeptnRequestModel } from '../lib/types/KeptnRequestModel';
 
 @injectable()
