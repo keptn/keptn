@@ -37,11 +37,11 @@ async function handleDynatraceRequest(
   }
   const split = authHeaderValue.split(' ');
   if (split.length < 2) {
-    token = split[1];
     response.status(401);
     response.end();
+    return;
   }
-  console.log(`auth header: ${authHeaderValue}`);
+  token = split[1];
   const authRequest: BearerAuthRequest = {
     token,
   };
