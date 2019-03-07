@@ -3,4 +3,5 @@
   image: string;
   project: string;
   stage: string;
+  gitHubOrg: string;
 }
