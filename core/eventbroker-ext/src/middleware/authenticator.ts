@@ -41,6 +41,7 @@ async function handleDynatraceRequest(
     response.status(401);
     response.end();
   }
+  console.log(`auth header: ${authHeaderValue}`);
   const authRequest: BearerAuthRequest = {
     token,
   };
