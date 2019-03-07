@@ -1,5 +1,5 @@
 
-function setup_gcloud() {
+function setup_gcloud {
     if [ ! -d "$HOME/google-cloud-sdk/bin" ]; then rm -rf $HOME/google-cloud-sdk; export CLOUDSDK_CORE_DISABLE_PROMPTS=1; curl https://sdk.cloud.google.com | bash; fi
     source /home/travis/google-cloud-sdk/path.bash.inc
     gcloud --quiet version
@@ -15,17 +15,18 @@ function setup_gcloud() {
 }
 
 # Install yq
-function install_yq() {
+function install_yq {
     sudo add-apt-repository ppa:rmescandon/yq -y
     sudo apt update
     sudo apt install yq -y
 }
 
-function setup_knative() {
+function setup_knative {
     # First delete potential knative remainings
     kubectl delete ns knative-build knative-eventing knative-monitoring knative-serving knative-sources || true
     kubectl delete svc knative-ingressgateway -n istio-system || true
     kubectl delete deploy knative-ingressgateway -n istio-system || true
+    pwd
     cd ./install/scripts/
     ./setupKnative.sh $JENKINS_USER $JENKINS_PASSWORD $REGISTRY_URL
     export EVENT_BROKER_NAME=$(kubectl describe ksvc event-broker -n keptn | grep -m 1 "Name:" | sed 's~Name:[ \t]*~~')
@@ -39,7 +40,7 @@ function setup_knative() {
     cd ../..
 }
 
-function execute_core_component_tests() {
+function execute_core_component_tests {
     # execute unit tests for core components
     
     # Control
@@ -65,7 +66,7 @@ function execute_core_component_tests() {
     cd ../..
 }
 
-function execute_cli_tests() {
+function execute_cli_tests {
 
     cd cli
     ENDPOINT="$(kubectl get ksvc control -n keptn -o=yaml | yq r - status.domain)"
