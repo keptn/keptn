@@ -48,7 +48,7 @@ function setup_knative {
 
 function export_names {
     export EVENT_BROKER_NAME=$(kubectl describe ksvc event-broker -n keptn | grep -m 1 "Name:" | sed 's~Name:[ \t]*~~')
-    .//test/assertEquals.sh $EVENT_BROKER_NAME event-broker
+    ./test/assertEquals.sh $EVENT_BROKER_NAME event-broker
     
     export AUTHENTICATOR_NAME=$(kubectl describe ksvc authenticator -n keptn | grep -m 1 "Name:" | sed 's~Name:[ \t]*~~')
     ./test/assertEquals.sh $AUTHENTICATOR_NAME authenticator
@@ -95,7 +95,7 @@ function execute_cli_tests {
     SEC="$(kubectl get secret keptn-api-token  -n keptn -o=yaml | yq r - data.keptn-api-token | base64 --decode)"
     echo "${SEC}" >> ~/.keptnmock
     set -x
-    
+
     # execute GO tests
     go test ${gobuild_args} -timeout 240s ./...
     cd ..
