@@ -7,7 +7,9 @@ source ./travis-scripts/setup_functions.sh
 set -e -x
 
 setup_gcloud
+setup_glcoud_pr
 install_yq
 setup_knative
+export_names
 execute_core_component_tests
 execute_cli_tests
