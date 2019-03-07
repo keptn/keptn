@@ -14,6 +14,7 @@ import './auth/AuthController';
 
 // import models
 import './auth/AuthRequestModel';
+import './auth/BearerAuthRequestModel';
 
 // tslint:disable-next-line: import-name
 import RequestLogger = require('./middleware/requestLogger');
