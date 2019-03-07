@@ -1,14 +1,14 @@
 import { expect } from 'chai';
 import 'mocha';
-import { GitHubService } from './GitHubService';
+import { DynatraceService } from './DynatraceService';
 import nock from 'nock';
 
-describe('GitHubService', function () {
+describe('DynatraceService', function () {
   this.timeout(0);
-  let gitHubService: GitHubService;
+  let dynatraceService: DynatraceService;
 
   beforeEach(() => {
-    gitHubService = new GitHubService();
+    dynatraceService = new DynatraceService();
   });
 
   it('Should send a new ConfigChangeEvent when a valid commit is detected', async () => {
@@ -29,7 +29,7 @@ describe('GitHubService', function () {
       .post('/keptn')
       .reply(200, {});
 
-    const result = await gitHubService.handleGitHubEvent('push', message);
+    const result = await dynatraceService.handleDynatraceEvent('push', message);
     expect(result).is.true;
   });
   it('Should not send a ConfigChangeEvent if no valid commit message is detected', async () => {
@@ -43,7 +43,7 @@ describe('GitHubService', function () {
       },
     };
 
-    const result = await gitHubService.handleGitHubEvent('push', message);
+    const result = await dynatraceService.handleDynatraceEvent('push', message);
     expect(result).is.false;
   });
   it('Should not send a ConfigChangeEvent if no valid commit message is detected (2)', async () => {
@@ -57,7 +57,7 @@ describe('GitHubService', function () {
       },
     };
 
-    const result = await gitHubService.handleGitHubEvent('push', message);
+    const result = await dynatraceService.handleDynatraceEvent('push', message);
     expect(result).is.false;
   });
   it('Should not send a ConfigChangeEvent if the eventType is not set to push', async () => {
@@ -71,7 +71,7 @@ describe('GitHubService', function () {
       },
     };
 
-    const result = await gitHubService.handleGitHubEvent('pull', message);
+    const result = await dynatraceService.handleDynatraceEvent('pull', message);
     expect(result).is.false;
   });
   it('Should return false if an invalid event structure is received', async () => {
@@ -79,7 +79,7 @@ describe('GitHubService', function () {
       foo: 'bar',
     };
 
-    const result = await gitHubService.handleGitHubEvent('pull', message);
+    const result = await dynatraceService.handleDynatraceEvent('pull', message);
     expect(result).is.false;
   });
 });
