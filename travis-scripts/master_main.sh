@@ -18,12 +18,13 @@ cd install/scripts
 
 cat ./creds.sav |sed 's~DYNATRACE_TENANT_PLACEHOLDER~'"$DT_TENANT"'~' |sed 's~DYNATRACE_API_TOKEN~'"$DT_API_TOKEN"'~' |sed 's~DYNATRACE_PAAS_TOKEN~'"$DT_PAAS_TOKEN"'~' |sed 's~GITHUB_USER_NAME_PLACEHOLDER~'"$GITHUB_USER_NAME"'~' |sed 's~PERSONAL_ACCESS_TOKEN_PLACEHOLDER~'"$GITHUB_TOKEN"'~' |sed 's~GITHUB_USER_EMAIL_PLACEHOLDER~'"$GITHUB_EMAIL"'~' |sed 's~GITHUB_ORG_PLACEHOLDER~'"$GITHUB_ORG"'~' >> creds.json
 ./setupInfrastructure.sh
+cd ../..
 
 # Test front-end keptn v.0.1
 # export FRONT_END_DEV=$(kubectl describe svc front-end -n dev | grep "LoadBalancer Ingress:" | sed 's~LoadBalancer Ingress:[ \t]*~~')
 # export FRONT_END_STAGING=$(kubectl describe svc front-end -n staging | grep "LoadBalancer Ingress:" | sed 's~LoadBalancer Ingress:[ \t]*~~')
 # export FRONT_END_PRODUCTION=$(kubectl describe svc front-end -n production | grep "LoadBalancer Ingress:" | sed 's~LoadBalancer Ingress:[ \t]*~~')
-        
+
 export ISTIO_INGRESS=$(kubectl describe svc istio-ingressgateway -n istio-system | grep "LoadBalancer Ingress:" | sed 's~LoadBalancer Ingress:[ \t]*~~')
 export_names
 
