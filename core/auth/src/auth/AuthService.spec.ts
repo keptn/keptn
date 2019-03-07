@@ -3,6 +3,7 @@ import { expect } from 'chai';
 import 'mocha';
 import { AuthService } from './AuthService';
 import { AuthRequestModel } from './AuthRequestModel';
+import { BearerAuthRequestModel } from './BearerAuthRequestModel';
 
 describe('AuthService', () => {
   let authService: AuthService;
@@ -29,6 +30,26 @@ describe('AuthService', () => {
     };
 
     const result = authService.verify(authRequest);
+
+    expect(result).is.false;
+  });
+
+  it('Should return true for valid bearer tokens', async () => {
+    const authRequest: BearerAuthRequestModel = {
+      token: '',
+    };
+
+    const result = authService.verifyBearerToken(authRequest);
+
+    expect(result).is.true;
+  });
+
+  it('Should return false for invalid bearer tokens', async () => {
+    const authRequest: BearerAuthRequestModel = {
+      token: 'invalid',
+    };
+
+    const result = authService.verifyBearerToken(authRequest);
 
     expect(result).is.false;
   });
