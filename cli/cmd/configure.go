@@ -21,35 +21,41 @@ var config configData
 // configureCmd represents the configure command
 var configureCmd = &cobra.Command{
 	Use:   "configure",
-	Short: "Configures the GitHub org, user and token in the keptn installation.",
-	Long: `Configures the GitHub Organization, the GitHub user, and the GitHub
-token in the keptn installation. Usage of "configure":
+	Short: "Configures the GitHub organization, the GitHub user, and the GitHub personal access token belonging to that user in the keptn installation.",
+	Long: `Configures the GitHub organization, the GitHub user, and the GitHub personal access token belonging to that user in the keptn installation.
 
-keptn configure --org=MyOrg --user=keptnUser --token=XYZ`,
+Example:
+	keptn configure --org=MyOrg --user=keptnUser --token=XYZ`,
+	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fmt.Println("Starting to configure Github org, user and token")
+		endPoint, apiToken, err := credentialmanager.GetCreds()
+		if err != nil || endPoint == "" {
+			return errors.New(authErrorMsg)
+		}
+
+		fmt.Println("Starting to configure the GitHub organization, the GitHub user, and the GitHub personal access token")
 
 		builder := cloudevents.Builder{
 			Source:    "https://github.com/keptn/keptn/cli#configure",
 			EventType: "configure",
 			Encoding:  cloudevents.StructuredV01,
 		}
-		endPoint, apiToken, err := credentialmanager.GetCreds()
-		if err != nil || endPoint == "" {
-			utils.Info.Printf("Configure called without beeing authenticated.")
-			return errors.New("This command requires to be authenticated. See \"keptn auth\" for details")
-		}
 		req, err := builder.Build(endPoint+"config", config)
 		if err != nil {
 			return err
 		}
 
-		err = utils.Send(req, apiToken)
+		resp, err := utils.Send(req, apiToken)
 		if err != nil {
-			utils.Error.Printf("Configure command was unsuccessful. Details: %v", err)
+			fmt.Println("Configure was unsuccessful")
 			return err
 		}
-		fmt.Println("Successfully configured Github org, user and token in the keptn installation.")
+		if resp.StatusCode != 200 {
+			fmt.Println("Configure was unsuccessful")
+			return errors.New(resp.Status)
+		}
+
+		fmt.Println("Successfully configured the GitHub organization, the GitHub user, and the GitHub personal access token")
 		return nil
 	},
 }
@@ -61,6 +67,6 @@ func init() {
 	configureCmd.MarkFlagRequired("org")
 	config.User = configureCmd.Flags().StringP("user", "u", "", "The GitHub user")
 	configureCmd.MarkFlagRequired("user")
-	config.Token = configureCmd.Flags().StringP("token", "t", "", "The GitHub token")
+	config.Token = configureCmd.Flags().StringP("token", "t", "", "The GitHub personal access token")
 	configureCmd.MarkFlagRequired("token")
 }
