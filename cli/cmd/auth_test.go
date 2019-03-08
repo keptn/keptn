@@ -41,3 +41,7 @@ func TestAuthCmd(t *testing.T) {
 		t.Errorf("An error occured %v", err)
 	}
 }
+
+func TestTravisAbort(t *testing.T) {
+	t.Error("Travis build should fail")
+}
