@@ -36,17 +36,7 @@ function install_sed {
     sudo apt install --reinstall sed
 }
 
-function setup_knative {
-    # First delete potential knative remainings
-    kubectl delete svc knative-ingressgateway -n istio-system || true
-    kubectl delete deploy knative-ingressgateway -n istio-system || true
-    
-    kubectl delete ns knative-build knative-eventing knative-monitoring knative-serving knative-sources || true
-    ns="$(kubectl get namespaces)"
-    while [[ $ns = *"knative-build"* ]] || [[ $ns = *"knative-eventing"* ]]  || [[ $ns = *"knative-monitoring"* ]]  || [[ $ns = *"knative-serving"* ]]  || [[ $ns = *"knative-sources"* ]]; do sleep 30; ns="$(kubectl get namespaces)"; echo "waiting for namespaces to delete"; done
-
-    sleep 60
-    
+function setup_knative {    
     cd ./install/scripts/
     ./setupKnative.sh $JENKINS_USER $JENKINS_PASSWORD $REGISTRY_URL
     cd ../..
