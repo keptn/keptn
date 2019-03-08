@@ -7,6 +7,7 @@ SHOW_API_TOKEN=$4
 kubectl create namespace keptn
 
 # Create container registry
+kubectl create -f ../manifests/container-registry/k8s-docker-registry-configmap.yml
 kubectl create -f ../manifests/container-registry/k8s-docker-registry-pvc.yml
 kubectl create -f ../manifests/container-registry/k8s-docker-registry-deployment.yml
 kubectl create -f ../manifests/container-registry/k8s-docker-registry-service.yml
@@ -14,12 +15,13 @@ kubectl create -f ../manifests/container-registry/k8s-docker-registry-service.ym
 kubectl label namespace keptn istio-injection=enabled
 
 # Install knative serving, eventing, build
-kubectl apply --filename https://github.com/knative/serving/releases/download/v0.3.0/serving.yaml
-kubectl apply --filename https://github.com/knative/build/releases/download/v0.3.0/release.yaml
-kubectl apply --filename https://github.com/knative/eventing/releases/download/v0.3.0/release.yaml
-kubectl apply --filename https://github.com/knative/eventing-sources/releases/download/v0.3.0/release.yaml
-kubectl apply --filename https://github.com/knative/serving/releases/download/v0.3.0/monitoring.yaml
-
+kubectl apply --filename https://github.com/knative/serving/releases/download/v0.4.0/serving.yaml
+kubectl apply --filename https://github.com/knative/build/releases/download/v0.4.0/build.yaml
+kubectl apply --filename https://github.com/knative/eventing/releases/download/v0.4.0/in-memory-channel.yaml
+kubectl apply --filename https://github.com/knative/eventing/releases/download/v0.4.0/release.yaml
+kubectl apply --filename https://github.com/knative/eventing-sources/releases/download/v0.4.0/release.yaml
+kubectl apply --filename https://github.com/knative/serving/releases/download/v0.4.0/monitoring.yaml
+kubectl apply --filename https://raw.githubusercontent.com/knative/serving/v0.4.0/third_party/config/build/clusterrole.yaml
 # Configure knative serving default domain
 rm -f ../manifests/gen/config-domain.yaml
 
