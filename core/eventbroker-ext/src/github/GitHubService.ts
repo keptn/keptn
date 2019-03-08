@@ -22,6 +22,10 @@ export class GitHubService {
     const stage = refSplit[refSplit.length - 1];
     const commitMessage = githubEventPayload.head_commit.message;
     const project = githubEventPayload.repository.name;
+    let gitHubOrg = '';
+    if (githubEventPayload.repository.owner !== undefined) {
+      gitHubOrg = githubEventPayload.repository.owner.name;
+    }
 
     // a keptn-config-change message follows the following format:
     // [keptn-config-change]:<service>:<image-tag>
@@ -40,6 +44,7 @@ export class GitHubService {
     configChangeEvent.image = commitMsgSplit[2];
     configChangeEvent.project = project;
     configChangeEvent.stage = stage;
+    configChangeEvent.gitHubOrg = gitHubOrg;
 
     console.log(`Sending ConfigChange event ${JSON.stringify(configChangeEvent)}`);
 

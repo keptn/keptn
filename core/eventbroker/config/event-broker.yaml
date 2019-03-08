@@ -19,7 +19,7 @@ spec:
           source:
             git:
               url: https://github.com/keptn/keptn.git
-              revision: event-broker
+              revision: master
           template:
             name: kaniko
             arguments:
