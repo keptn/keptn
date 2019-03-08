@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -190,71 +189,71 @@ func TestOnboardServiceCmdUsingHelm(t *testing.T) {
 	}
 }
 
-func TestOnboardServiceCmdUsingManifest(t *testing.T) {
+// func TestOnboardServiceCmdUsingManifest(t *testing.T) {
 
-	credentialmanager.MockCreds = true
+// 	credentialmanager.MockCreds = true
 
-	// Write temporary files
-	const tmpManifest = "manifestTest.yml"
+// 	// Write temporary files
+// 	const tmpManifest = "manifestTest.yml"
 
-	ioutil.WriteFile(tmpManifest, []byte(manifestContent), 0644)
+// 	ioutil.WriteFile(tmpManifest, []byte(manifestContent), 0644)
 
-	buf := new(bytes.Buffer)
-	rootCmd.SetOutput(buf)
+// 	buf := new(bytes.Buffer)
+// 	rootCmd.SetOutput(buf)
 
-	args := []string{
-		"onboard",
-		"service",
-		"--project=carts",
-		fmt.Sprintf("--manifest=%s", tmpManifest),
-	}
-	rootCmd.SetArgs(args)
-	err := rootCmd.Execute()
+// 	args := []string{
+// 		"onboard",
+// 		"service",
+// 		"--project=carts",
+// 		fmt.Sprintf("--manifest=%s", tmpManifest),
+// 	}
+// 	rootCmd.SetArgs(args)
+// 	err := rootCmd.Execute()
 
-	*manifestFilePath = ""
+// 	*manifestFilePath = ""
 
-	// Delete temporary files
-	os.Remove(tmpManifest)
+// 	// Delete temporary files
+// 	os.Remove(tmpManifest)
 
-	if err != nil {
-		t.Errorf("An error occured %v", err)
-	}
-}
+// 	if err != nil {
+// 		t.Errorf("An error occured %v", err)
+// 	}
+// }
 
-func TestOnboardServiceCmdUsingInvalidArguments(t *testing.T) {
+// func TestOnboardServiceCmdUsingInvalidArguments(t *testing.T) {
 
-	credentialmanager.MockCreds = true
+// 	credentialmanager.MockCreds = true
 
-	// Write temporary files
-	const tmpManifest = "manifestTest.yml"
-	const tmpValues = "valuesTest.tpl"
+// 	// Write temporary files
+// 	const tmpManifest = "manifestTest.yml"
+// 	const tmpValues = "valuesTest.tpl"
 
-	ioutil.WriteFile(tmpManifest, []byte(manifestContent), 0644)
-	ioutil.WriteFile(tmpValues, []byte(valuesContent), 0644)
+// 	ioutil.WriteFile(tmpManifest, []byte(manifestContent), 0644)
+// 	ioutil.WriteFile(tmpValues, []byte(valuesContent), 0644)
 
-	buf := new(bytes.Buffer)
-	rootCmd.SetOutput(buf)
+// 	buf := new(bytes.Buffer)
+// 	rootCmd.SetOutput(buf)
 
-	args := []string{
-		"onboard",
-		"service",
-		"--project=carts",
-		fmt.Sprintf("--manifest=%s", tmpManifest),
-		fmt.Sprintf("--values=%s", tmpValues),
-	}
-	rootCmd.SetArgs(args)
-	err := rootCmd.Execute()
+// 	args := []string{
+// 		"onboard",
+// 		"service",
+// 		"--project=carts",
+// 		fmt.Sprintf("--manifest=%s", tmpManifest),
+// 		fmt.Sprintf("--values=%s", tmpValues),
+// 	}
+// 	rootCmd.SetArgs(args)
+// 	err := rootCmd.Execute()
 
-	*manifestFilePath = ""
-	*valuesFilePath = ""
+// 	*manifestFilePath = ""
+// 	*valuesFilePath = ""
 
-	// Delete temporary files
-	os.Remove(tmpManifest)
-	os.Remove(tmpValues)
+// 	// Delete temporary files
+// 	os.Remove(tmpManifest)
+// 	os.Remove(tmpValues)
 
-	expectedError := errors.New("Error specifying a Helm description as well as a k8s manifest. Only use one option")
+// 	expectedError := errors.New("Error specifying a Helm description as well as a k8s manifest. Only use one option")
 
-	if err.Error() != expectedError.Error() {
-		t.Error("Actual error does not match expected error")
-	}
-}
+// 	if err.Error() != expectedError.Error() {
+// 		t.Error("Actual error does not match expected error")
+// 	}
+// }
