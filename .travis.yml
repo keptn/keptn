@@ -27,6 +27,13 @@ jobs:
     - stage: master
       if: branch = master AND NOT type = pull_request
       script: bash travis-scripts/master_main.sh
+      notifications:
+        webhooks:
+          urls:
+            - https://us-central1-sai-research.cloudfunctions.net/travisWebhookListener
+          on_failure: always
+          on_cancel: always
+          on_error: always
 
     - stage: pr
       if: type = pull_request
