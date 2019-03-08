@@ -22,7 +22,7 @@ spec:
             name: kaniko
             arguments:
               - name: IMAGE
-                value: docker-registry.cicd.svc.cluster.local:5000/keptn/keptn-control:latest
+                value: docker-registry.keptn.svc.cluster.local:5000/keptn/keptn-control:latest
               - name: DOCKERFILE
                 value: /core/control/Dockerfile
       revisionTemplate:
