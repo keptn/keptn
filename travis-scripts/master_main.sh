@@ -2,9 +2,8 @@
 
 source ./travis-scripts/setup_functions.sh
 
-# Causes the shell to exit immediately if a simple command exits with a nonzero exit value as well as
 # prints the full command before output of the command.
-set -e -x
+set -x
 
 install_hub
 install_yq
