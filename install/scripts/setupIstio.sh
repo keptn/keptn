@@ -3,8 +3,8 @@
 DT_TENANT_ID=$1
 DT_PAAS_TOKEN=$2
 
-kubectl apply -f ../manifests/istio/istio-crds.yml
-kubectl apply -f ../manifests/istio/istio-demo.yml
+kubectl apply --filename https://github.com/knative/serving/releases/download/v0.4.0/istio-crds.yaml && \
+kubectl apply --filename https://github.com/knative/serving/releases/download/v0.4.0/istio.yaml
 
 echo "Wait 4 minutes for changes to apply... "
 sleep 240
