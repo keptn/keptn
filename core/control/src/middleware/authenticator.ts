@@ -14,6 +14,11 @@ const authenticator: express.RequestHandler = async (
     next();
     return;
   }
+  if (request.url !== undefined && request.url.indexOf('comm') > 0) {
+    console.log('Skipping auth for websocket endpoint');
+    next();
+    return;
+  }
   console.log('Starting authentication');
   console.log(JSON.stringify(request.body));
   // TODO: insert call to authenticator.keptn.svc.cluster.local here
