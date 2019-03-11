@@ -55,6 +55,9 @@ export class ConfigController implements interfaces.Controller {
       request.body.data.channelInfo = channelInfo;
     }
     const result = await this.messageService.sendMessage(request.body);
-    response.send({ success: result });
+    response.send({
+      success: result,
+      websocketChannel: channelInfo,
+    });
   }
 }

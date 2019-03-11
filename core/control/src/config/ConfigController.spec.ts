@@ -41,7 +41,7 @@ describe('ConfigController', () => {
     await configController.setGithubConfig(request, response, next);
 
     expect(messageServiceStub.calledWith(request.body)).is.true;
-    expect(responseSendSpy.calledWith({
+    expect(responseSendSpy.calledWithMatch({
       success: true,
     })).is.true;
   });
@@ -64,7 +64,7 @@ describe('ConfigController', () => {
     await configController.setGithubConfig(request, response, next);
 
     expect(messageServiceStub.calledWith(request.body)).is.true;
-    expect(responseSendSpy.calledWith({
+    expect(responseSendSpy.calledWithMatch({
       success: false,
     })).is.true;
   });
