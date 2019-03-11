@@ -15,6 +15,7 @@ import {
   ApiOperationDelete,
 } from 'swagger-express-ts';
 import { MessageService } from '../svc/MessageService';
+import { WebSocketService } from '../svc/WebSocketService';
 
 @ApiPath({
   name: 'Service',
@@ -48,12 +49,15 @@ export class ServiceController implements interfaces.Controller {
     response: express.Response,
     next: express.NextFunction,
   ): Promise<void> {
-    const result = {
-      result: 'success',
-    };
-
-    await this.messageService.sendMessage(request.body);
-
+    const channelInfo = await WebSocketService.getInstance().createChannel();
+    if (request.body && request.body.data !== undefined) {
+      request.body.data.channelInfo = channelInfo;
+    }
+    const result = await this.messageService.sendMessage(request.body);
+    response.send({
+      success: result,
+      websocketChannel: channelInfo,
+    });
     response.send(result);
   }
 

@@ -16,6 +16,7 @@ import {
 } from 'swagger-express-ts';
 
 import { MessageService } from '../svc/MessageService';
+import { WebSocketService } from '../svc/WebSocketService';
 
 @ApiPath({
   name: 'Project',
@@ -46,18 +47,20 @@ export class ProjectController implements interfaces.Controller {
     summary: 'Create a new keptn project',
   })
   @httpPost('/')
-  public async setGithubConfig(
+  public async createProject(
     request: express.Request,
     response: express.Response,
     next: express.NextFunction,
   ): Promise<void> {
-    const result = {
-      result: 'success',
-    };
-
-    await this.messageService.sendMessage(request.body);
-
-    response.send(result);
+    const channelInfo = await WebSocketService.getInstance().createChannel();
+    if (request.body && request.body.data !== undefined) {
+      request.body.data.channelInfo = channelInfo;
+    }
+    const result = await this.messageService.sendMessage(request.body);
+    response.send({
+      success: result,
+      websocketChannel: channelInfo,
+    });
   }
 
   @ApiOperationGet({
