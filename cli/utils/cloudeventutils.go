@@ -12,9 +12,8 @@ import (
 )
 
 // Send creates a request including the X-Keptn-Signature and sends the data
-// struct to the provided target. It returns error if there was an
-// issue sending the event, otherwise nil means the event was accepted.
-func Send(req *http.Request, apiToken string) error {
+// struct to the provided target. It returns the obtained http.Response.
+func Send(req *http.Request, apiToken string) (*http.Response, error) {
 
 	bodyBytes, err := ioutil.ReadAll(req.Body)
 	// Restore the io.ReadCloser to its original state
@@ -33,7 +32,7 @@ func Send(req *http.Request, apiToken string) error {
 	req.Header.Set("Content-Type", "application/json")
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
@@ -41,13 +40,10 @@ func Send(req *http.Request, apiToken string) error {
 	client := &http.Client{Timeout: 60 * time.Second, Transport: tr}
 	resp, err := client.Do(req)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode == 200 {
-		return nil
-	}
-	return fmt.Errorf("error sending cloudevent: %s", status(resp))
+	return resp, nil
 }
 
 // status is a helper method to read the response of the target.
