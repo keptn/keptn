@@ -14,7 +14,7 @@ const authenticator: express.RequestHandler = async (
     next();
     return;
   }
-  if (request.url !== undefined && request.url.indexOf('comm') > 0) {
+  if (request.url !== undefined && request.url.indexOf('comm') > 0 || request.url !== undefined && request.url.indexOf('echo') > 0) {
     console.log('Skipping auth for websocket endpoint');
     next();
     return;
