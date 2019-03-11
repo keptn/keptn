@@ -44,8 +44,14 @@ container.bind<MessageService>('MessageService').to(MessageService);
 const server = new InversifyExpressServer(container);
 
 server.setConfig((app: any) => {
-  const websocketConfigurator = WebSocketConfigurator.getInstance(app);
-  websocketConfigurator.configure();
+  require('express-ws')(app);
+  app.ws('/echo', function(ws, req) {
+    ws.on('message', function(msg) {
+      ws.send(msg);
+    });
+  });
+  // const websocketConfigurator = WebSocketConfigurator.getInstance(app);
+  // websocketConfigurator.configure();
   app.use('/api-docs/swagger', express.static(path.join(__dirname, '/src/swagger')));
   app.use('/api-docs/swagger/assets',
           express.static(
