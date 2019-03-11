@@ -50,6 +50,7 @@
     "cloudevents-sdk": "^0.2.0",
     "express": "^4.16.4",
     "express-ws": "^4.0.0",
+    "express-ws-routes": "^1.1.0",
     "github-api": "^3.0.0",
     "inversify": "^5.0.1",
     "inversify-express-utils": "^6.3.2",
@@ -63,6 +64,7 @@
     "swagger-express-ts": "^1.0.1",
     "swagger-ui-dist": "^3.20.9",
     "uuid": "^3.3.2",
+    "ws": "^6.2.0",
     "yamljs": "^0.3.0"
   },
   "nyc": {
