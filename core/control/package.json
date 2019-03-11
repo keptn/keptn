@@ -45,6 +45,7 @@
     "axios": "^0.18.0",
     "cloudevents-sdk": "^0.2.0",
     "express": "^4.16.4",
+    "express-ws": "^4.0.0",
     "github-api": "^3.0.0",
     "inversify": "^5.0.1",
     "inversify-express-utils": "^6.3.2",
