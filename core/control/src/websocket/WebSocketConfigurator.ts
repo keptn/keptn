@@ -21,7 +21,7 @@ export class WebSocketConfigurator {
   configure() {
     require('express-ws')(this.app, undefined, {
       wsOptions: {
-        verifyClient: WebSocketService.getInstance().verifyToken,
+        verifyClient: (info) => { return true; }, //WebSocketService.getInstance().verifyToken,
       },
     });
     this.app.ws('/comm', websocketHandler);
