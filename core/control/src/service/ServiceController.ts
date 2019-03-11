@@ -58,7 +58,6 @@ export class ServiceController implements interfaces.Controller {
       success: result,
       websocketChannel: channelInfo,
     });
-    response.send(result);
   }
 
   @ApiOperationDelete({
