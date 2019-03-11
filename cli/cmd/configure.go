@@ -29,7 +29,7 @@ Example:
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		endPoint, apiToken, err := credentialmanager.GetCreds()
-		if err != nil || endPoint == "" {
+		if err != nil {
 			return errors.New(authErrorMsg)
 		}
 
@@ -40,7 +40,10 @@ Example:
 			EventType: "configure",
 			Encoding:  cloudevents.StructuredV01,
 		}
-		req, err := builder.Build(endPoint+"config", config)
+		configURL := endPoint
+		configURL.Path = "config"
+
+		req, err := builder.Build(configURL.String(), config)
 		if err != nil {
 			return err
 		}

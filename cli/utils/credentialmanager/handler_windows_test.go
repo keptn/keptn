@@ -7,9 +7,6 @@ import (
 	"github.com/keptn/keptn/cli/utils"
 )
 
-const testEndPoint = "my-endpoint/"
-const testAPIToken = "super-secret"
-
 func init() {
 	utils.InitLoggers(os.Stdout, os.Stdout, os.Stderr)
 }

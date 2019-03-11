@@ -28,8 +28,8 @@ Example:
 	keptn create project sockshop shipyard.yml`,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
-		endPoint, _, err := credentialmanager.GetCreds()
-		if err != nil || endPoint == "" {
+		_, _, err := credentialmanager.GetCreds()
+		if err != nil {
 			return errors.New(authErrorMsg)
 		}
 
@@ -52,7 +52,7 @@ Example:
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		endPoint, apiToken, err := credentialmanager.GetCreds()
-		if err != nil || endPoint == "" {
+		if err != nil {
 			return errors.New(authErrorMsg)
 		}
 
@@ -71,7 +71,11 @@ Example:
 			EventType: "create.project",
 			Encoding:  cloudevents.StructuredV01,
 		}
-		req, err := builder.Build(endPoint+"project", prjData)
+
+		projectURL := endPoint
+		projectURL.Path = "project"
+
+		req, err := builder.Build(projectURL.String(), prjData)
 		if err != nil {
 			return err
 		}
