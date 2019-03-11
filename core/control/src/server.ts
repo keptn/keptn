@@ -7,6 +7,7 @@ import {
   InversifyExpressServer,
   TYPE,
 } from 'inversify-express-utils';
+import * as SocketIO from 'socket.io';
 import * as swagger from 'swagger-express-ts';
 import * as expressWs from 'express-ws';
 
@@ -44,20 +45,12 @@ container.bind<MessageService>('MessageService').to(MessageService);
 const server = new InversifyExpressServer(container);
 
 server.setConfig((app: any) => {
-  require('express-ws')(app);
-  app.ws('/echo', function(ws, req) {
-    ws.on('message', function(msg) {
-      ws.send(msg);
-    });
-  });
-  // const websocketConfigurator = WebSocketConfigurator.getInstance(app);
-  // websocketConfigurator.configure();
   app.use('/api-docs/swagger', express.static(path.join(__dirname, '/src/swagger')));
   app.use('/api-docs/swagger/assets',
           express.static(
-            swaggerUiAssetPath,
-          ),
-    );
+      swaggerUiAssetPath,
+    ),
+  );
   app.use(bodyParser.json());
   app.use(RequestLogger);
   app.use(
@@ -94,5 +87,9 @@ server.setErrorConfig((app: any) => {
 });
 
 const app = server.build();
-app.listen(port);
+const serverInstance = app.listen(port);
+
+const websocketConfigurator = WebSocketConfigurator.getInstance(app, serverInstance);
+websocketConfigurator.configure();
+
 console.info(`Server is listening on port : ${port}`);

@@ -5,21 +5,23 @@ import { WebSocketService } from '../svc/WebSocketService';
 
 export class WebSocketConfigurator {
   private app: any;
+  private server: any;
   static instance: WebSocketConfigurator;
 
-  private constructor(app: any) {
+  private constructor(app: any, server: any) {
     this.app = app;
+    this.server = server;
   }
 
-  static getInstance(app) {
+  static getInstance(app, server) {
     if (WebSocketConfigurator.instance === undefined) {
-      WebSocketConfigurator.instance = new WebSocketConfigurator(app);
+      WebSocketConfigurator.instance = new WebSocketConfigurator(app, server);
     }
     return WebSocketConfigurator.instance;
   }
 
   configure() {
-    require('express-ws')(this.app, undefined, {
+    require('express-ws')(this.app, this.server, {
       wsOptions: {
         verifyClient: WebSocketService.getInstance().verifyToken,
       },
