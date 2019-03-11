@@ -30,8 +30,8 @@ var serviceCmd = &cobra.Command{
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 
-		endPoint, _, err := credentialmanager.GetCreds()
-		if err != nil || endPoint == "" {
+		_, _, err := credentialmanager.GetCreds()
+		if err != nil {
 			return errors.New(authErrorMsg)
 		}
 
@@ -90,7 +90,7 @@ var serviceCmd = &cobra.Command{
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		endPoint, apiToken, err := credentialmanager.GetCreds()
-		if err != nil || endPoint == "" {
+		if err != nil {
 			return errors.New(authErrorMsg)
 		}
 
@@ -149,7 +149,10 @@ var serviceCmd = &cobra.Command{
 			Encoding:  cloudevents.StructuredV01,
 		}
 
-		req, err := builder.Build(endPoint+"service", svcData)
+		serviceURL := endPoint
+		serviceURL.Path = "service"
+
+		req, err := builder.Build(serviceURL.String(), svcData)
 		if err != nil {
 			return err
 		}
