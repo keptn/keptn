@@ -21,146 +21,27 @@ services:
 env:
   global:
     - GOOGLE_APPLICATION_CREDENTIALS=~/gcloud-service-key.json
- 
+
+notifications:
+  webhooks:
+    urls:
+      - https://us-central1-sai-research.cloudfunctions.net/travisWebhookListener
+    on_failure: always
+    on_cancel: always
+    on_error: always 
+    
 jobs:
   include:
     - stage: master
       if: branch = master AND NOT type = pull_request
-      script:
-        # Install hub
-        - sudo wget https://github.com/github/hub/releases/download/v2.6.0/hub-linux-amd64-2.6.0.tgz
-        - tar -xzf hub-linux-amd64-2.6.0.tgz
-        - sudo cp hub-linux-amd64-2.6.0/bin/hub /bin/
-        # Install yq
-        - sudo add-apt-repository ppa:rmescandon/yq -y
-        - sudo apt update
-        - sudo apt install yq -y
-        # Create K8s cluster
-        - if [ ! -d "$HOME/google-cloud-sdk/bin" ]; then rm -rf $HOME/google-cloud-sdk; export CLOUDSDK_CORE_DISABLE_PROMPTS=1; curl https://sdk.cloud.google.com | bash; fi
-        - source /home/travis/google-cloud-sdk/path.bash.inc
-        - gcloud --quiet version
-        - gcloud --quiet components update
-        - gcloud --quiet components update kubectl
-        - echo $GCLOUD_SERVICE_KEY | base64 --decode -i > ${HOME}/gcloud-service-key.json
-        - gcloud auth activate-service-account --key-file ${HOME}/gcloud-service-key.json
-        - gcloud --quiet config set project $PROJECT_NAME
-        - gcloud --quiet config set container/cluster $CLUSTER_NAME
-        - gcloud --quiet config set compute/zone ${CLOUDSDK_COMPUTE_ZONE}
-        - gcloud container --project $PROJECT_NAME clusters create $CLUSTER_NAME --zone $CLOUDSDK_COMPUTE_ZONE --username "admin" --cluster-version "1.11.6-gke.2" --machine-type "n1-standard-8" --image-type "UBUNTU" --disk-type "pd-standard" --disk-size "100" --scopes "https://www.googleapis.com/auth/devstorage.read_only","https://www.googleapis.com/auth/logging.write","https://www.googleapis.com/auth/monitoring","https://www.googleapis.com/auth/servicecontrol","https://www.googleapis.com/auth/service.management.readonly","https://www.googleapis.com/auth/trace.append" --num-nodes "2" --enable-cloud-logging --enable-cloud-monitoring --no-enable-ip-alias --network "projects/sai-research/global/networks/default" --subnetwork "projects/sai-research/regions/$CLOUDSDK_REGION/subnetworks/default" --addons HorizontalPodAutoscaling,HttpLoadBalancing --no-enable-autoupgrade --no-enable-autorepair
-        - gcloud container clusters get-credentials $CLUSTER_NAME --zone $CLOUDSDK_COMPUTE_ZONE --project $PROJECT_NAME
-        - kubectl config view
-        - set +e
-
-        # Install sed
-        - sudo apt install --reinstall sed
-        
-        # Run scripts in ~/keptn/install/scripts
-        - cd install/scripts
-        - ./forkGitHubRepositories.sh $GITHUB_ORG
-
-        - cat ./creds.sav |sed 's~DYNATRACE_TENANT_PLACEHOLDER~'"$DT_TENANT"'~' |sed 's~DYNATRACE_API_TOKEN~'"$DT_API_TOKEN"'~' |sed 's~DYNATRACE_PAAS_TOKEN~'"$DT_PAAS_TOKEN"'~' |sed 's~GITHUB_USER_NAME_PLACEHOLDER~'"$GITHUB_USER_NAME"'~' |sed 's~PERSONAL_ACCESS_TOKEN_PLACEHOLDER~'"$GITHUB_TOKEN"'~' |sed 's~GITHUB_USER_EMAIL_PLACEHOLDER~'"$GITHUB_EMAIL"'~' |sed 's~GITHUB_ORG_PLACEHOLDER~'"$GITHUB_ORG"'~' >> creds.json
-        - ./setupInfrastructure.sh
-        
-        # Test front-end keptn v.0.1
-        #- export FRONT_END_DEV=$(kubectl describe svc front-end -n dev | grep "LoadBalancer Ingress:" | sed 's~LoadBalancer Ingress:[ \t]*~~')
-        #- export FRONT_END_STAGING=$(kubectl describe svc front-end -n staging | grep "LoadBalancer Ingress:" | sed 's~LoadBalancer Ingress:[ \t]*~~')
-        #- export FRONT_END_PRODUCTION=$(kubectl describe svc front-end -n production | grep "LoadBalancer Ingress:" | sed 's~LoadBalancer Ingress:[ \t]*~~')
-        
-        - export ISTIO_INGRESS=$(kubectl describe svc istio-ingressgateway -n istio-system | grep "LoadBalancer Ingress:" | sed 's~LoadBalancer Ingress:[ \t]*~~')
-        
-        - export EVENT_BROKER_NAME=$(kubectl describe ksvc event-broker -n keptn | grep -m 1 "Name:" | sed 's~Name:[ \t]*~~')
-        - ./../../test/assertEquals.sh $EVENT_BROKER_NAME event-broker
-
-        - export AUTHENTICATOR_NAME=$(kubectl describe ksvc authenticator -n keptn | grep -m 1 "Name:" | sed 's~Name:[ \t]*~~')
-        - ./../../test/assertEquals.sh $AUTHENTICATOR_NAME authenticator
-
-        - export CONTROL_NAME=$(kubectl describe ksvc control -n keptn | grep -m 1 "Name:" | sed 's~Name:[ \t]*~~')
-        - ./../../test/assertEquals.sh $CONTROL_NAME control
-        
-        #- cat ../test/keptn.postman_environment.json |sed 's~FRONT_END_DEV_PLACEHOLDER~'"$FRONT_END_DEV"'~' |sed 's~FRONT_END_STAGING_PLACEHOLDER~'"$FRONT_END_STAGING"'~' |sed 's~FRONT_END_PRODUCTION_PLACEHOLDER~'"$FRONT_END_PRODUCTION"'~' |sed 's~ISTIO_INGRESS_PLACEHOLDER~'"$ISTIO_INGRESS"'~' >> ../test/env.json
-        #- npm install newman
-        #- node_modules/.bin/newman run ../test/keptn.postman_collection.json -e ../test/env.json
-        
-        # Clean up cluster
-        #- ./cleanupCluster.sh
-
-        # Delete K8s cluster
-        - gcloud container clusters delete $CLUSTER_NAME --zone $CLOUDSDK_COMPUTE_ZONE --project $PROJECT_NAME --quiet
+      script: bash travis-scripts/master_main.sh
 
     - stage: pr
       if: type = pull_request
-      script:
-        - if [ ! -d "$HOME/google-cloud-sdk/bin" ]; then rm -rf $HOME/google-cloud-sdk; export CLOUDSDK_CORE_DISABLE_PROMPTS=1; curl https://sdk.cloud.google.com | bash; fi
-        - source /home/travis/google-cloud-sdk/path.bash.inc
-        - gcloud --quiet version
-        - gcloud --quiet components update
-        - gcloud --quiet components update kubectl
-        - echo $GCLOUD_SERVICE_KEY | base64 --decode -i > ${HOME}/gcloud-service-key.json
-        - gcloud auth activate-service-account --key-file ${HOME}/gcloud-service-key.json
-        - gcloud container clusters get-credentials $CLUSTER_PR_STATUSCHECK_NAME --zone $CLUSTER_PR_STATUSCHECK_ZONE --project $PROJECT_NAME
-        - export GCLOUD_USER=$(gcloud config get-value account)
-
-        - kubectl create clusterrolebinding travis-cluster-admin-binding --clusterrole=cluster-admin --user=$GCLOUD_USER || true
-        - export REGISTRY_URL=$(kubectl describe svc docker-registry -n keptn | grep "IP:" | sed 's~IP:[ \t]*~~')
-
-        
-        # Install yq
-        - sudo add-apt-repository ppa:rmescandon/yq -y
-        - sudo apt update
-        - sudo apt install yq -y
-
-        # Delete potential knative remainings
-        - kubectl delete ns knative-build knative-eventing knative-monitoring knative-serving knative-sources || true
-        - kubectl delete svc knative-ingressgateway -n istio-system || true
-        - kubectl delete deploy knative-ingressgateway -n istio-system || true
-        - cd ./install/scripts/
-        - ./setupKnative.sh $JENKINS_USER $JENKINS_PASSWORD $REGISTRY_URL
-        - export EVENT_BROKER_NAME=$(kubectl describe ksvc event-broker -n keptn | grep -m 1 "Name:" | sed 's~Name:[ \t]*~~')
-        - ./../../test/assertEquals.sh $EVENT_BROKER_NAME event-broker
-    
-        - export AUTHENTICATOR_NAME=$(kubectl describe ksvc authenticator -n keptn | grep -m 1 "Name:" | sed 's~Name:[ \t]*~~')
-        - ./../../test/assertEquals.sh $AUTHENTICATOR_NAME authenticator
-
-        - export CONTROL_NAME=$(kubectl describe ksvc control -n keptn | grep -m 1 "Name:" | sed 's~Name:[ \t]*~~')
-        - ./../../test/assertEquals.sh $CONTROL_NAME control
-
-        # execute unit tests for core components
-        # Control
-        - cd ../../core/control
-        - npm install
-        - npm run test
-
-        # Auth
-        - cd ../auth
-        - npm install
-        - npm run test
-
-        # Event Broker
-        - cd ../eventbroker
-        - npm install
-        - npm run test
-
-        # Event Broker (ext)
-        - cd ../eventbroker-ext
-        - npm install
-        - npm run test
-      
-        # write credentials in local file for testing the CLI
-       
-        - ENDPOINT="$(kubectl get ksvc control -n keptn -o=yaml | yq r - status.domain)"
-        - while [ "$ENDPOINT" = "null" ]; do sleep 30; ENDPOINT="$(kubectl get ksvc control -n keptn -o=yaml | yq r - status.domain)"; echo "waiting for control service"; done
-        - printf "https://" > ~/.keptnmock
-        - kubectl get ksvc control -n keptn -o=yaml  | yq r - status.domain >> ~/.keptnmock
-
-        - SEC="$(kubectl get secret keptn-api-token  -n keptn -o=yaml | yq r - data.keptn-api-token | base64 --decode)"
-        - echo "${SEC}" >> ~/.keptnmock
-        
-        # execute GO tests
-        - cd ../../cli/ 
-        - go test ${gobuild_args} -timeout 240s ./...
+      script: bash travis-scripts/pr_main.sh        
 
       after_script:
-        - cd ../core/
+        - cd ./core/
         - kubectl delete -f auth/config/gen
         - kubectl delete -f control/config/gen
         - kubectl delete -f eventbroker/config/gen
@@ -168,7 +49,6 @@ jobs:
         - kubectl delete pods,svc,deployments --all -n keptn
         - kubectl delete channel --all -n keptn
         - kubectl delete clusterchannelprovisioner --all -n keptn
-        - kubectl delete ns knative-build knative-eventing knative-monitoring knative-serving knative-sources
         - kubectl delete clusterrolebinding travis-cluster-admin-binding
         - kubectl delete svc knative-ingressgateway -n istio-system
         - kubectl delete deploy knative-ingressgateway -n istio-system
