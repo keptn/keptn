@@ -59,17 +59,17 @@ function execute_core_component_tests {
     # Control
     cd ./core/control
     npm install
-    npm run test
+    npm run test || exit 1
     
     # Auth
     cd ../auth
     npm install
-    npm run test
+    npm run test || exit 1
     
     # Event Broker
     cd ../eventbroker
     npm install
-    npm run test
+    npm run test || exit 1
 
     # Event Broker (ext)
     cd ../eventbroker-ext
@@ -93,7 +93,7 @@ function execute_cli_tests {
     set -x
 
     # execute GO tests
-    go test ${gobuild_args} -timeout 240s ./...
+    go test ${gobuild_args} -timeout 240s ./... || exit 1
     cd ..
 }
 
