@@ -14,8 +14,8 @@ import {
   SwaggerDefinitionConstant,
 } from 'swagger-express-ts';
 import { ConfigRequestModel } from './ConfigRequestModel';
-import { CredentialsService } from '../svc/CredentialsService';
 import { MessageService } from '../svc/MessageService';
+import { WebSocketService } from '../svc/WebSocketService';
 
 @ApiPath({
   name: 'Config',
@@ -50,15 +50,11 @@ export class ConfigController implements interfaces.Controller {
     next: express.NextFunction,
   ): Promise<void> {
     console.log(`received config command...`);
-    const result = await this.messageService.sendMessage(request.body);
-    /*
-    const credentialsService = CredentialsService.getInstance();
-    try {
-      await credentialsService.updateGithubConfig(request.body.data);
-    } catch (e) {
-      console.log(e);
+    const channelInfo = await WebSocketService.getInstance().createChannel();
+    if (request.body && request.body.data !== undefined) {
+      request.body.data.channelInfo = channelInfo;
     }
-    */
+    const result = await this.messageService.sendMessage(request.body);
     response.send({ success: result });
   }
 }
