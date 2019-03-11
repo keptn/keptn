@@ -3,10 +3,9 @@ import 'mocha';
 import { GitHubService } from './GitHubService';
 import nock from 'nock';
 
-describe('GitHubService', function() {
+describe('GitHubService', function () {
   this.timeout(0);
   let gitHubService: GitHubService;
-  let mockServer: any;
 
   beforeEach(() => {
     gitHubService = new GitHubService();

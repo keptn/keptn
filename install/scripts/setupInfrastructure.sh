@@ -30,6 +30,7 @@ kubectl create -f ../manifests/k8s-namespaces.yml
 
 # Create container registry
 kubectl create -f ../manifests/container-registry/k8s-docker-registry-pvc.yml
+kubectl create -f ../manifests/container-registry/k8s-docker-registry-configmap.yml
 kubectl create -f ../manifests/container-registry/k8s-docker-registry-deployment.yml
 kubectl create -f ../manifests/container-registry/k8s-docker-registry-service.yml
 
