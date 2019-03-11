@@ -8,6 +8,7 @@ import {
   TYPE,
 } from 'inversify-express-utils';
 import * as swagger from 'swagger-express-ts';
+import * as expressWs from 'express-ws';
 
 // import controllers
 import './config/ConfigController';
@@ -24,8 +25,10 @@ import './service/ServiceRequestModel';
 // tslint:disable-next-line: import-name
 import RequestLogger = require('./middleware/requestLogger');
 import authenticator = require('./middleware/authenticator');
+
 import * as path from 'path';
 import { MessageService } from './svc/MessageService';
+import { WebSocketConfigurator } from './websocket/WebSocketConfigurator';
 
 const port: number = Number(process.env.PORT) || 5001; // or from a configuration file
 const swaggerUiAssetPath = require('swagger-ui-dist').getAbsoluteFSPath();
@@ -41,6 +44,8 @@ container.bind<MessageService>('MessageService').to(MessageService);
 const server = new InversifyExpressServer(container);
 
 server.setConfig((app: any) => {
+  const websocketConfigurator = WebSocketConfigurator.getInstance(app);
+  websocketConfigurator.configure();
   app.use('/api-docs/swagger', express.static(path.join(__dirname, '/src/swagger')));
   app.use('/api-docs/swagger/assets',
           express.static(

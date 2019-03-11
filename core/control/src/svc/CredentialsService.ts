@@ -30,6 +30,24 @@ export class CredentialsService {
     console.log(created);
   }
 
+  async getKeptnApiToken(): Promise<string> {
+    let token;
+    const secret = await this.k8sClient.api.v1
+      .namespaces('keptn').secrets
+      .get({ name: 'keptn-api-token', pretty: true, exact: true, export: true });
+
+    if (secret.body.items && secret.body.items.length > 0) {
+      const apiToken = secret.body.items.find(item => item.metadata.name === 'keptn-api-token');
+      if (apiToken && apiToken.data !== undefined) {
+        token = base64decode(apiToken.data['keptn-api-token']);
+      } else {
+        console.log('[keptn] The secret does not contain the proper information.');
+      }
+    }
+
+    return token;
+  }
+
   async getGithubCredentials(): Promise<KeptnGithubCredentials> {
     const gitHubCredentials: KeptnGithubCredentials = {
       user: '',
