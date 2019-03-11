@@ -8,6 +8,7 @@ kubectl create namespace keptn
 
 # Create container registry
 kubectl create -f ../manifests/container-registry/k8s-docker-registry-pvc.yml
+kubectl create -f ../manifests/container-registry/k8s-docker-registry-configmap.yml
 kubectl create -f ../manifests/container-registry/k8s-docker-registry-deployment.yml
 kubectl create -f ../manifests/container-registry/k8s-docker-registry-service.yml
 
@@ -91,3 +92,6 @@ openssl req -nodes -newkey rsa:2048 -keyout key.pem -out certificate.pem  -x509 
 kubectl create --namespace istio-system secret tls istio-ingressgateway-certs --key key.pem --cert certificate.pem
 
 kubectl get gateway knative-ingress-gateway --namespace knative-serving -o=yaml | yq w - spec.servers[1].tls.mode SIMPLE | yq w - spec.servers[1].tls.privateKey /etc/istio/ingressgateway-certs/tls.key | yq w - spec.servers[1].tls.serverCertificate /etc/istio/ingressgateway-certs/tls.crt | kubectl apply -f -
+
+rm key.pem
+rm certificate.pem
