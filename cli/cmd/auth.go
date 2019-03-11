@@ -3,7 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"strings"
+	"net/url"
 
 	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
@@ -33,12 +33,16 @@ Example:
 			Encoding:  cloudevents.StructuredV01,
 		}
 
-		if !strings.HasSuffix(*endPoint, "/") {
-			*endPoint += "/"
+		u, err := url.Parse(*endPoint)
+		if err != nil {
+			return err
 		}
 
+		authURL := u
+		authURL.Path = "auth"
+
 		var data interface{}
-		req, err := builder.Build(*endPoint+"auth", data)
+		req, err := builder.Build(authURL.String(), data)
 		if err != nil {
 			return err
 		}
@@ -61,7 +65,7 @@ Example:
 
 		// Store endpoint and api token as credentials
 		fmt.Println("Successfully authenticated")
-		return credentialmanager.SetCreds(*endPoint, *apiToken)
+		return credentialmanager.SetCreds(*u, *apiToken)
 	},
 }
 
