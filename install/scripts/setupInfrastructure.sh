@@ -47,18 +47,15 @@ sleep 100
 export REGISTRY_URL=$(kubectl describe svc docker-registry -n keptn | grep IP: | sed 's~IP:[ \t]*~~')
 
 # Create Jenkins
-rm -f ../manifests/gen/k8s-jenkins-deployment.yml
+echo "--------------------------"
+echo "Setup Jenkins "
+echo "--------------------------"
 
-cat ../manifests/jenkins/k8s-jenkins-deployment.yml | \
-  sed 's~GITHUB_USER_EMAIL_PLACEHOLDER~'"$GITHUB_USER_EMAIL"'~' | \
-  sed 's~GITHUB_ORGANIZATION_PLACEHOLDER~'"$GITHUB_ORGANIZATION"'~' | \
-  sed 's~DOCKER_REGISTRY_IP_PLACEHOLDER~'"$REGISTRY_URL"'~' | \
-  sed 's~DT_TENANT_URL_PLACEHOLDER~'"$DT_TENANT_URL"'~' | \
-  sed 's~DT_API_TOKEN_PLACEHOLDER~'"$DT_API_TOKEN"'~' >> ../manifests/gen/k8s-jenkins-deployment.yml
+./setupJenkins.sh $REGISTRY_URL
 
-kubectl create -f ../manifests/jenkins/k8s-jenkins-pvcs.yml 
-kubectl create -f ../manifests/gen/k8s-jenkins-deployment.yml
-kubectl create -f ../manifests/jenkins/k8s-jenkins-rbac.yml
+echo "--------------------------"
+echo "End Setup Jenkins"
+echo "--------------------------"
 
 # Deploy Dynatrace operator
 export LATEST_RELEASE=$(curl -s https://api.github.com/repos/dynatrace/dynatrace-oneagent-operator/releases/latest | grep tag_name | cut -d '"' -f 4)
@@ -87,56 +84,6 @@ echo "--------------------------"
 
 echo "Wait 150s for changes to apply..."
 sleep 150
-
-# Setup credentials in Jenkins
-echo "--------------------------"
-echo "Setup Credentials in Jenkins "
-echo "--------------------------"
-
-# Export Jenkins route in a variable
-export JENKINS_URL=$(kubectl describe svc jenkins -n cicd | grep "LoadBalancer Ingress:" | sed 's~LoadBalancer Ingress:[ \t]*~~')
-
-curl -X POST http://$JENKINS_URL:24711/credentials/store/system/domain/_/createCredentials --user $JENKINS_USER:$JENKINS_PASSWORD \
---data-urlencode 'json={
-  "": "0",
-  "credentials": {
-    "scope": "GLOBAL",
-    "id": "registry-creds",
-    "username": "user",
-    "password": "'$TOKEN_VALUE'",
-    "description": "Token used by Jenkins to push to the OpenShift container registry",
-    "$class": "com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl"
-  }
-}'
-
-curl -X POST http://$JENKINS_URL:24711/credentials/store/system/domain/_/createCredentials --user $JENKINS_USER:$JENKINS_PASSWORD \
---data-urlencode 'json={
-  "": "0",
-  "credentials": {
-    "scope": "GLOBAL",
-    "id": "git-credentials-acm",
-    "username": "'$GITHUB_USER_NAME'",
-    "password": "'$GITHUB_PERSONAL_ACCESS_TOKEN'",
-    "description": "Token used by Jenkins to access the GitHub repositories",
-    "$class": "com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl"
-  }
-}'
-
-curl -X POST http://$JENKINS_URL:24711/credentials/store/system/domain/_/createCredentials --user $JENKINS_USER:$JENKINS_PASSWORD \
---data-urlencode 'json={
-  "": "0",
-  "credentials": {
-    "scope": "GLOBAL",
-    "id": "perfsig-api-token",
-    "apiToken": "'$DT_API_TOKEN'",
-    "description": "Dynatrace API Token used by the Performance Signature plugin",
-    "$class": "de.tsystems.mms.apm.performancesignature.dynatracesaas.model.DynatraceApiTokenImpl"
-  }
-}'
-
-echo "--------------------------"
-echo "End setup credentials in Jenkins "
-echo "--------------------------"
 
 # Install Istio service mesh
 echo "--------------------------"
