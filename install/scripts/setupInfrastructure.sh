@@ -154,7 +154,7 @@ echo "--------------------------"
 echo "Setup Knative components "
 echo "--------------------------"
 
-./setupKnative.sh $JENKINS_USER $JENKINS_PASSWORD $REGISTRY_URL
+./setupKnative.sh $JENKINS_USER $JENKINS_PASSWORD $REGISTRY_URL $CLUSTER_NAME $CLUSTER_ZONE
 
 echo "--------------------------"
 echo "End setup Knative components "
