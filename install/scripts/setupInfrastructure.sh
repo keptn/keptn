@@ -20,6 +20,11 @@ export DT_API_TOKEN=$(cat creds.json | jq -r '.dynatraceApiToken')
 export DT_PAAS_TOKEN=$(cat creds.json | jq -r '.dynatracePaaSToken')
 export GITHUB_ORGANIZATION=$(cat creds.json | jq -r '.githubOrg')
 export DT_TENANT_URL="$DT_TENANT_ID.live.dynatrace.com"
+export CLUSTER_NAME=$(cat creds.json | jq -r '.clusterName')
+export CLUSTER_ZONE=$(cat creds.json | jq -r '.clusterZone')
+export GKE_PROJECT=$(cat creds.json | jq -r '.gkeProject')
+
+gcloud container clusters get-credentials $CLUSTER_NAME --zone $CLUSTER_ZONE --project $GKE_PROJECT
 
 # Grant cluster admin rights to gcloud user
 export GCLOUD_USER=$(gcloud config get-value account)
@@ -138,7 +143,7 @@ echo "--------------------------"
 echo "Setup Istio "
 echo "--------------------------"
 
-./setupIstio.sh $DT_TENANT_ID $DT_PAAS_TOKEN
+./setupIstio.sh $DT_TENANT_ID $DT_PAAS_TOKEN $CLUSTER_NAME $CLUSTER_ZONE
 
 echo "--------------------------"
 echo "End setup Istio "
