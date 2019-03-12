@@ -6,7 +6,7 @@ metadata:
 subjects:
   - kind: ServiceAccount
     name: default
-    namespace: cicd
+    namespace: keptn
 roleRef:
   kind: ClusterRole
   name: cluster-admin

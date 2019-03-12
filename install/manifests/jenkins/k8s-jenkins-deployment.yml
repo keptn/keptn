@@ -1,16 +1,50 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: jenkins-gateway
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*"
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: jenkins-destination
+spec:
+  host: jenkins.keptn.svc.cluster.local
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: jenkins
+spec:
+  hosts:
+  - "jenkins.keptn.GATEWAY_PLACEHOLDER.xip.io"
+  - "jenkins.keptn.svc.cluster.local"
+  gateways:
+  - jenkins-gateway
+  http:
+  - route:
+    - destination:
+        host: jenkins.keptn.svc.cluster.local
 ---
 kind: Service
 apiVersion: v1
 metadata:
   name: jenkins
-  namespace: cicd
+  namespace: keptn
 spec:
-  type: LoadBalancer
   ports:
   - name: http
-    port: 24711
+    port: 80
     targetPort: 8080
-    protocol: TCP
   - name: jnlp
     port: 50000
     targetPort: 50000
@@ -22,7 +56,7 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: jenkins-deployment
-  namespace: cicd
+  namespace: keptn
 spec:
   replicas: 1
   selector:
@@ -35,7 +69,7 @@ spec:
     spec:
       containers:
       - name: jenkins
-        image: keptn/jenkins:0.2
+        image: keptn/jenkins:0.3-rc
         imagePullPolicy: Always
         env:
           - name: GITHUB_USER_EMAIL
