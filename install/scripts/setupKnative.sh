@@ -3,6 +3,8 @@ JENKINS_USER=$1
 JENKINS_PASSWORD=$2
 REGISTRY_URL=$3
 SHOW_API_TOKEN=$4
+CLUSTER_NAME=$5
+CLUSTER_ZONE=$6
 
 kubectl create namespace keptn
 
@@ -30,6 +32,13 @@ cat ../manifests/knative/config-domain.yaml | \
   sed 's~ISTIO_INGRESS_IP_PLACEHOLDER~'"$ISTIO_INGRESS_IP"'~' >> ../manifests/gen/config-domain.yaml
 
 kubectl apply -f ../manifests/gen/config-domain.yaml
+
+# Determine the IP scope of the cluster (https://github.com/knative/docs/blob/master/serving/outbound-network-access.md)
+# Gcloud:
+CLUSTER_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_NAME} --zone=${CLUSTER_ZONE} | yq r - clusterIpv4Cidr)
+SERVICES_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_NAME} --zone=${CLUSTER_ZONE} | yq r - servicesIpv4Cidr)
+
+kubectl get configmap config-network -n knative-serving -o=yaml | yq w - data['istio.sidecar.includeOutboundIPRanges'] "$CLUSTER_IPV4_CIDR,$SERVICES_IPV4_CIDR" | kubectl apply -f - 
 
 sleep 30
 
