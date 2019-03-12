@@ -3,6 +3,8 @@ kind: Deployment
 metadata:
   name: docker-registry
   namespace: keptn
+  annotations:
+    istio.sidecar.inject: "true"
 spec:
   replicas: 1
   selector:
