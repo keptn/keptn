@@ -1,9 +1,9 @@
-# Namespace 
 apiVersion: v1
 kind: Namespace
 metadata:
   name: istio-system
-
+  labels:
+    istio-injection: disabled
 ---
 # Source: istio/charts/galley/templates/configmap.yaml
 apiVersion: v1
