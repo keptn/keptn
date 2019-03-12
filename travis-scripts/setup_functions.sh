@@ -74,7 +74,7 @@ function execute_core_component_tests {
     # Event Broker (ext)
     cd ../eventbroker-ext
     npm install
-    npm run test
+    npm run test || exit 1
     
     cd ../..
 }
