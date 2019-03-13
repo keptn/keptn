@@ -1,8 +1,8 @@
 package credentialmanager
 
 import (
+	"net/url"
 	"os"
-	"strings"
 
 	"io/ioutil"
 
@@ -24,20 +24,17 @@ func init() {
 
 // SetCreds stores the credentials consisting of an endpoint and an api token using pass or into a file in case
 // pass is unavailable.
-func SetCreds(endPoint string, apiToken string) error {
+func SetCreds(endPoint url.URL, apiToken string) error {
 	if _, err := os.Stat(passwordStoreDirectory); os.IsNotExist(err) {
 		utils.Warning.Println("Use a file-based storage for the key because the password-store seems to be not set up.")
 
-		if !strings.HasSuffix(endPoint, "/") {
-			endPoint += "/"
-		}
-		return ioutil.WriteFile(apiTokenFileURI, []byte(endPoint+"\n"+apiToken), 0644)
+		return ioutil.WriteFile(apiTokenFileURI, []byte(endPoint.String()+"\n"+apiToken), 0644)
 	}
 	return setCreds(pass.Pass{}, endPoint, apiToken)
 }
 
 // GetCreds reads the credentials and returns an endpoint, the api token, or potentially an error.
-func GetCreds() (string, string, error) {
+func GetCreds() (url.URL, string, error) {
 	if _, err := os.Stat(passwordStoreDirectory); os.IsNotExist(err) {
 		utils.Warning.Println("Use a file-based storage for the key because the password-store seems to be not set up.")
 

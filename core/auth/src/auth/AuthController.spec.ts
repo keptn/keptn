@@ -109,4 +109,65 @@ describe('AuthController', () => {
     expect(responseStatusSpy.calledWith(422)).is.true;
     expect(verifyStub.called).is.false;
   });
+  // BEARER TOKEN TESTS
+  it('Should return a auth-true response for valid bearer token requests', async () => {
+    const verifyStub = sinon.stub().returns(true);
+
+    authService.verifyBearerToken = verifyStub;
+
+    const responseSendSpy = sinon.spy();
+    response.send = responseSendSpy;
+
+    request.body = {
+      token: 'avalidtoken',
+    };
+
+    await authController.authenticateToken(request, response, next);
+
+    expect(verifyStub.calledWith(request.body)).is.true;
+    expect(responseSendSpy.calledWith({
+      authenticated: true,
+    })).is.true;
+  });
+
+  it('Should return a auth-false response for invalid bearer token requests', async () => {
+    const verifyStub = sinon.stub().returns(false);
+
+    authService.verifyBearerToken = verifyStub;
+
+    const responseSendSpy = sinon.spy();
+    response.send = responseSendSpy;
+
+    request.body = {
+      token: 'invalidtoken',
+    };
+
+    await authController.authenticateToken(request, response, next);
+
+    expect(verifyStub.calledWith(request.body)).is.true;
+    expect(responseSendSpy.calledWith({
+      authenticated: false,
+    })).is.true;
+  });
+
+  it('Should return 422 response for invalid bearer token payload', async () => {
+    const verifyStub = sinon.fake();
+    verifyStub.returnValues = [false];
+    authService.verifyBearerToken = verifyStub;
+
+    const responseSendSpy = sinon.spy();
+    response.send = responseSendSpy;
+
+    const responseStatusSpy = sinon.spy();
+    response.status = responseStatusSpy;
+
+    request.body = {
+      foo: 'bar',
+    };
+
+    await authController.authenticateToken(request, response, next);
+
+    expect(responseStatusSpy.calledWith(422)).is.true;
+    expect(verifyStub.called).is.false;
+  });
 });

@@ -1,16 +1,15 @@
 #!/bin/bash
-JENKINS_USER=$1
-JENKINS_PASSWORD=$2
-REGISTRY_URL=$3
+REGISTRY_URL=$1
+CLUSTER_NAME=$2
+CLUSTER_ZONE=$3
 SHOW_API_TOKEN=$4
-CLUSTER_NAME=$5
-CLUSTER_ZONE=$6
 
 kubectl create namespace keptn
 
 # Create container registry
 kubectl create -f ../manifests/container-registry/k8s-docker-registry-configmap.yml
 kubectl create -f ../manifests/container-registry/k8s-docker-registry-pvc.yml
+kubectl create -f ../manifests/container-registry/k8s-docker-registry-configmap.yml
 kubectl create -f ../manifests/container-registry/k8s-docker-registry-deployment.yml
 kubectl create -f ../manifests/container-registry/k8s-docker-registry-service.yml
 
@@ -49,9 +48,6 @@ kubectl apply -f ../manifests/knative/build/kaniko.yaml -n keptn
 
 # Create build-bot service account
 kubectl apply -f ../manifests/knative/build/service-account.yaml
-
-# SECRET must contain the values separately. See deployJenkins.sh
-#kubectl create secret generic -n keptn jenkinsurl --from-literal=jenkinsurl="http://$JENKINS_USER:$JENKINS_PASSWORD@jenkins.cicd.svc.cluster.local:24711"
 
 REGISTRY_URL=$(kubectl describe svc docker-registry -n keptn | grep "IP:" | sed 's~IP:[ \t]*~~')
 
