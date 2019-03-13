@@ -1,12 +1,13 @@
 #!/bin/bash
-JENKINS_USER=$1
-JENKINS_PASSWORD=$2
-REGISTRY_URL=$3
+REGISTRY_URL=$1
+CLUSTER_NAME=$2
+CLUSTER_ZONE=$3
 SHOW_API_TOKEN=$4
 
 kubectl create namespace keptn
 
 # Create container registry
+kubectl create -f ../manifests/container-registry/k8s-docker-registry-configmap.yml
 kubectl create -f ../manifests/container-registry/k8s-docker-registry-pvc.yml
 kubectl create -f ../manifests/container-registry/k8s-docker-registry-configmap.yml
 kubectl create -f ../manifests/container-registry/k8s-docker-registry-deployment.yml
@@ -15,12 +16,13 @@ kubectl create -f ../manifests/container-registry/k8s-docker-registry-service.ym
 kubectl label namespace keptn istio-injection=enabled
 
 # Install knative serving, eventing, build
-kubectl apply --filename https://github.com/knative/serving/releases/download/v0.3.0/serving.yaml
-kubectl apply --filename https://github.com/knative/build/releases/download/v0.3.0/release.yaml
-kubectl apply --filename https://github.com/knative/eventing/releases/download/v0.3.0/release.yaml
-kubectl apply --filename https://github.com/knative/eventing-sources/releases/download/v0.3.0/release.yaml
-kubectl apply --filename https://github.com/knative/serving/releases/download/v0.3.0/monitoring.yaml
-
+kubectl apply --filename https://github.com/knative/serving/releases/download/v0.4.0/serving.yaml
+kubectl apply --filename https://github.com/knative/build/releases/download/v0.4.0/build.yaml
+kubectl apply --filename https://github.com/knative/eventing/releases/download/v0.4.0/in-memory-channel.yaml
+kubectl apply --filename https://github.com/knative/eventing/releases/download/v0.4.0/release.yaml
+kubectl apply --filename https://github.com/knative/eventing-sources/releases/download/v0.4.0/release.yaml
+kubectl apply --filename https://github.com/knative/serving/releases/download/v0.4.0/monitoring.yaml
+kubectl apply --filename https://raw.githubusercontent.com/knative/serving/v0.4.0/third_party/config/build/clusterrole.yaml
 # Configure knative serving default domain
 rm -f ../manifests/gen/config-domain.yaml
 
@@ -29,6 +31,13 @@ cat ../manifests/knative/config-domain.yaml | \
   sed 's~ISTIO_INGRESS_IP_PLACEHOLDER~'"$ISTIO_INGRESS_IP"'~' >> ../manifests/gen/config-domain.yaml
 
 kubectl apply -f ../manifests/gen/config-domain.yaml
+
+# Determine the IP scope of the cluster (https://github.com/knative/docs/blob/master/serving/outbound-network-access.md)
+# Gcloud:
+CLUSTER_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_NAME} --zone=${CLUSTER_ZONE} | yq r - clusterIpv4Cidr)
+SERVICES_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_NAME} --zone=${CLUSTER_ZONE} | yq r - servicesIpv4Cidr)
+
+kubectl get configmap config-network -n knative-serving -o=yaml | yq w - data['istio.sidecar.includeOutboundIPRanges'] "$CLUSTER_IPV4_CIDR,$SERVICES_IPV4_CIDR" | kubectl apply -f - 
 
 sleep 30
 
@@ -39,8 +48,6 @@ kubectl apply -f ../manifests/knative/build/kaniko.yaml -n keptn
 
 # Create build-bot service account
 kubectl apply -f ../manifests/knative/build/service-account.yaml
-
-kubectl create secret generic -n keptn jenkinsurl --from-literal=jenkinsurl="http://$JENKINS_USER:$JENKINS_PASSWORD@jenkins.cicd.svc.cluster.local:24711"
 
 REGISTRY_URL=$(kubectl describe svc docker-registry -n keptn | grep "IP:" | sed 's~IP:[ \t]*~~')
 

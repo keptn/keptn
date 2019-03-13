@@ -38,7 +38,7 @@ function install_sed {
 
 function setup_knative {    
     cd ./install/scripts/
-    ./setupKnative.sh $JENKINS_USER $JENKINS_PASSWORD $REGISTRY_URL
+    ./setupKnative.sh $REGISTRY_URL $CLUSTER_NAME $CLOUDSDK_COMPUTE_ZONE
     cd ../..
 }
 
