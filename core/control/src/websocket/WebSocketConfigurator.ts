@@ -36,7 +36,6 @@ export class WebSocketConfigurator {
           client.send(`${message}`);
         });
       });
-      ws.send('something');
     });
 
     /*
