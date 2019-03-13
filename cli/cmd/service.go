@@ -21,24 +21,32 @@ var manifestFilePath *string
 
 type serviceData map[string]interface{}
 
+const manifestEnabled = false
+
 // serviceCmd represents the service command
 var serviceCmd = &cobra.Command{
-	Use:   "service",
-	Short: "Onboards a new service.",
-	Long: `Onboards a new service in the provided project. Therefore, this command 
-either takes a service description given as yaml or takes a Helm values, deployment and service description.
-Usage of "onboard service":
-
-keptn onboard service --project=carts --manifest=serviceDesc.yaml 
-or
-keptn onboard service --project=carts --values=values.yaml --deployment=deployment.yaml --service=service.yaml`,
+	Use:          "service",
+	Short:        "Onboards a new service.",
+	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 
-		if *valuesFilePath == "" && *manifestFilePath == "" {
-			return errors.New("Specify either a Helm description using the flags values, deployment, and service or a k8s manifest using the flag manifest")
+		_, _, err := credentialmanager.GetCreds()
+		if err != nil {
+			return errors.New(authErrorMsg)
 		}
-		if *valuesFilePath != "" && *manifestFilePath != "" {
-			return errors.New("Error specifying a Helm description as well as a k8s manifest. Only use one option")
+
+		if manifestEnabled {
+			if *valuesFilePath == "" && *manifestFilePath == "" {
+				return errors.New("Specify either a Helm description using the flags values, deployment, and service or a k8s manifest using the flag manifest")
+			}
+			if *valuesFilePath != "" && *manifestFilePath != "" {
+				return errors.New("Error specifying a Helm description as well as a k8s manifest. Only use one option")
+			}
+		} else {
+			if *valuesFilePath == "" {
+				cmd.SilenceUsage = false
+				return errors.New("Provide a Helm values file\n")
+			}
 		}
 
 		if *valuesFilePath != "" {
@@ -81,6 +89,11 @@ keptn onboard service --project=carts --values=values.yaml --deployment=deployme
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
+		endPoint, apiToken, err := credentialmanager.GetCreds()
+		if err != nil {
+			return errors.New(authErrorMsg)
+		}
+
 		fmt.Println("Starting to onboard service")
 
 		svcData := serviceData{}
@@ -135,22 +148,26 @@ keptn onboard service --project=carts --values=values.yaml --deployment=deployme
 			EventType: "onboard.service",
 			Encoding:  cloudevents.StructuredV01,
 		}
-		endPoint, apiToken, err := credentialmanager.GetCreds()
-		if err != nil || endPoint == "" {
-			fmt.Printf("onboard service called without beeing authenticated.")
-			return errors.New("This command requires to be authenticated. See \"keptn auth\" for details")
-		}
 
-		req, err := builder.Build(endPoint+"service", svcData)
+		serviceURL := endPoint
+		serviceURL.Path = "service"
+
+		req, err := builder.Build(serviceURL.String(), svcData)
 		if err != nil {
 			return err
 		}
 
-		err = utils.Send(req, apiToken)
+		resp, err := utils.Send(req, apiToken)
+
 		if err != nil {
-			fmt.Printf("onboard service command was unsuccessful. Details: %v", err)
+			fmt.Println("Onboard service was unsuccessful")
 			return err
 		}
+		if resp.StatusCode != 200 {
+			fmt.Println("Onboard service was unsuccessful")
+			return errors.New(resp.Status)
+		}
+
 		fmt.Printf("Successfully onboarded service in project %v\n", svcData["project"])
 		return nil
 	},
@@ -203,6 +220,22 @@ func init() {
 	deploymentFilePath = serviceCmd.Flags().StringP("deployment", "d", "", "The deployment file")
 	serviceFilePath = serviceCmd.Flags().StringP("service", "s", "", "The service file")
 
-	// Flags for onboarding using "pure" k8s manifests
-	manifestFilePath = serviceCmd.Flags().StringP("manifest", "m", "", "The manifest file")
+	if manifestEnabled {
+		// Flags for onboarding using "pure" k8s manifests
+		manifestFilePath = serviceCmd.Flags().StringP("manifest", "m", "", "The manifest file")
+		serviceCmd.Long = `Onboards a new service in the provided project. Therefore, this command 
+either takes a service description given as yaml or takes a Helm values, deployment and service description.
+
+Examples:
+	# Using a k8s service description
+	keptn onboard service --project=carts --manifest=serviceDesc.yaml 
+	# Using a Helm chart
+	keptn onboard service --project=carts --values=values.yaml --deployment=deployment.yaml --service=service.yaml`
+	} else {
+		serviceCmd.Long = `Onboards a new service in the provided project. Therefore, this command 
+takes a Helm values, deployment and service description.
+
+Examples:
+	keptn onboard service --project=carts --values=values.yaml --deployment=deployment.yaml --service=service.yaml`
+	}
 }
