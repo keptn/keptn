@@ -54,6 +54,6 @@ export class WebSocketConfigurator {
     });
     const webSocketHandler: WebSocketHandler = new WebSocketHandler(wssInstance);
     this.app.ws('/comm', webSocketHandler.handleMessage);
+    */
   }
-  */
 }
