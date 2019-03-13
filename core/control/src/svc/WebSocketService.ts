@@ -10,6 +10,7 @@ export class WebSocketService {
   private credentialsService: CredentialsService;
   private constructor() {
     this.credentialsService = CredentialsService.getInstance();
+    this.verifyToken = this.verifyToken.bind(this);
   }
 
   static getInstance(): WebSocketService {
@@ -34,7 +35,7 @@ export class WebSocketService {
     return channelInfo;
   }
 
-  public async verifyToken(info, cb) {
+  public async verifyToken(info, cb): Promise<void> {
     if (process.env.NODE_ENV !== 'production') {
       console.log('Skipping verification in dev mode');
       cb(true);
