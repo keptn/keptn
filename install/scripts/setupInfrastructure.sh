@@ -47,16 +47,6 @@ sleep 100
 # Store the docker registry route in a variable
 export REGISTRY_URL=$(kubectl describe svc docker-registry -n keptn | grep IP: | sed 's~IP:[ \t]*~~')
 
-# Create Jenkins
-echo "--------------------------"
-echo "Setup Jenkins "
-echo "--------------------------"
-
-./setupJenkins.sh $REGISTRY_URL
-
-echo "--------------------------"
-echo "End Setup Jenkins"
-echo "--------------------------"
 
 # Deploy Dynatrace operator
 export LATEST_RELEASE=$(curl -s https://api.github.com/repos/dynatrace/dynatrace-oneagent-operator/releases/latest | grep tag_name | cut -d '"' -f 4)
@@ -102,10 +92,21 @@ echo "--------------------------"
 echo "Setup Knative components "
 echo "--------------------------"
 
-./setupKnative.sh $JENKINS_USER $JENKINS_PASSWORD $REGISTRY_URL $CLUSTER_NAME $CLUSTER_ZONE
+./setupKnative.sh $REGISTRY_URL $CLUSTER_NAME $CLUSTER_ZONE
 
 echo "--------------------------"
 echo "End setup Knative components "
+echo "--------------------------"
+
+# Create Jenkins
+echo "--------------------------"
+echo "Setup CD Services "
+echo "--------------------------"
+
+./deployServices.sh $REGISTRY_URL
+
+echo "--------------------------"
+echo "End Setup CD Services"
 echo "--------------------------"
 
 echo "Wait 10s for changes to apply..."
@@ -128,3 +129,6 @@ echo "--------------------------"
 echo "----------------------------------------------------"
 echo "Finished setting up infrastructure "
 echo "----------------------------------------------------"
+
+echo "To retrieve the Keptn API Token, please execute the following command"
+echo "kubectl get secret keptn-api-token -n keptn -o=yaml | yq - r data.keptn-api-token | base64 --decode"
