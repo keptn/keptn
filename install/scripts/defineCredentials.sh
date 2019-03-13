@@ -14,6 +14,9 @@ read -p "GitHub User Name: " GITU
 read -p "GitHub Personal Access Token: " GITAT
 read -p "GitHub User Email: " GITE
 read -p "GitHub Organization: " GITO
+read -p "GKE Cluster Name: " CLN
+read -p "GKE Cluster Zone: " CLZ
+read -p "GKE Project: " PROJ
 echo ""
 
 if [[ $DTENV = '' ]]
@@ -34,7 +37,10 @@ echo "Dynatrace PaaS Token: $DTPAAST"
 echo "GitHub User Name: $GITU"
 echo "GitHub Personal Access Token: $GITAT"
 echo "GitHub User Email: $GITE"
-echo "GitHub Organization: $GITO" 
+echo "GitHub Organization: $GITO"
+echo "GKE Cluster Name: $CLN"
+echo "GKE Cluster Zone: $CLZ"
+echo "GKE Project: $PROJ"
 read -p "Is this all correct? (y/n) : " -n 1 -r
 echo ""
 
@@ -47,6 +53,9 @@ then
       sed 's~GITHUB_USER_NAME_PLACEHOLDER~'"$GITU"'~' | \
       sed 's~PERSONAL_ACCESS_TOKEN_PLACEHOLDER~'"$GITAT"'~' | \
       sed 's~GITHUB_USER_EMAIL_PLACEHOLDER~'"$GITE"'~' | \
+      sed 's~CLUSTER_NAME_PLACEHOLDER~'"$CLN"'~' | \
+      sed 's~CLUSTER_ZONE_PLACEHOLDER~'"$CLZ"'~' | \
+      sed 's~GKE_PROJECT_PLACEHOLDER~'"$PROJ"'~' | \
       sed 's~GITHUB_ORG_PLACEHOLDER~'"$GITO"'~' >> $CREDS
 fi
 
