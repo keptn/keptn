@@ -35,8 +35,11 @@ export class WebSocketService {
   }
 
   public async verifyToken(info, cb) {
-    cb(true);
-    /*
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('Skipping verification in dev mode');
+      cb(true);
+      return;
+    }
     const token = info.req.headers.token;
     const secretKey = await this.credentialsService.getKeptnApiToken();
     if (!token) {
@@ -51,6 +54,5 @@ export class WebSocketService {
         }
       });
     }
-    */
   }
 }
