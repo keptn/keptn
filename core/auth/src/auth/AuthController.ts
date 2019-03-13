@@ -14,6 +14,7 @@ import {
   SwaggerDefinitionConstant,
 } from 'swagger-express-ts';
 import { AuthRequestModel } from './AuthRequestModel';
+import { BearerAuthRequestModel } from './BearerAuthRequestModel';
 import { AuthService } from './AuthService';
 
 @ApiPath({
@@ -27,7 +28,7 @@ export class AuthController implements interfaces.Controller {
   constructor(@inject('AuthService') private readonly authService: AuthService) {}
 
   @ApiOperationPost({
-    description: 'Verifiy authentication request',
+    description: 'Verifiy authentication request (Sha1 signature)',
     parameters: {
       body: {
         description: 'AuthRequest',
@@ -40,7 +41,7 @@ export class AuthController implements interfaces.Controller {
       },
       400: { description: 'Parameters fail' },
     },
-    summary: 'Set Github credentials for keptn',
+    summary: 'Validate auth request',
   })
   @httpPost('/')
   public async authenticate(
@@ -61,6 +62,48 @@ export class AuthController implements interfaces.Controller {
 
     const authResult = {
       authenticated: this.authService.verify(authRequest),
+    };
+
+    console.log(`Response: ${JSON.stringify(authResult)}`);
+
+    response.send(authResult);
+  }
+
+  @ApiOperationPost({
+    description: 'Verifiy authentication request (Bearer token)',
+    parameters: {
+      body: {
+        description: 'BearerAuthRequest',
+        model: 'BearerAuthRequestModel',
+        required: true,
+      },
+    },
+    responses: {
+      200: {
+      },
+      400: { description: 'Parameters fail' },
+    },
+    summary: 'Validate auth request',
+  })
+  @httpPost('/token')
+  public async authenticateToken(
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction,
+  ): Promise<void> {
+    console.log('Starting authentication');
+    const authRequest: BearerAuthRequestModel = request.body;
+
+    if (!BearerAuthRequestModel.isBearerAuthRequestModel(authRequest)) {
+      console.log('Not a valid request');
+      response.status(422);
+      response.send();
+      return;
+    }
+    console.log(`Received auth request: ${JSON.stringify(authRequest)}`);
+
+    const authResult = {
+      authenticated: this.authService.verifyBearerToken(authRequest),
     };
 
     console.log(`Response: ${JSON.stringify(authResult)}`);

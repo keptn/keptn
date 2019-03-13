@@ -26,12 +26,14 @@ export class DockerService {
     if (repositorySplit.length < 2) {
       return false;
     }
-    const project = repositorySplit[0];
-    const service = repositorySplit[1];
+    const project = repositorySplit[repositorySplit.length - 2];
+    const service = repositorySplit[repositorySplit.length - 1];
     const tag = eventPayload.target.tag;
+    const image = `${eventPayload.request.host}/${eventPayload.target.repository}`;
     const msgPayload = {
       project,
       service,
+      image,
       tag,
     };
 
