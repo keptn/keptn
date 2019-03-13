@@ -19,15 +19,23 @@ type projectData struct {
 
 // projectCmd represents the project command
 var projectCmd = &cobra.Command{
-	Use:   "project [project_name] [shipyard_file]",
+	Use:   "project project_name shipyard_file",
 	Short: "Creates a new project.",
 	Long: `Creates a new project with the provided name and shipyard file. 
-The shipyard file describes the used stages. Usage of "create project":
+The shipyard file describes the used stages.
 
-keptn create project sockshop shipyard.yml`,
+Example:
+	keptn create project sockshop shipyard.yml`,
+	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
+		_, _, err := credentialmanager.GetCreds()
+		if err != nil {
+			return errors.New(authErrorMsg)
+		}
+
 		if len(args) != 2 {
-			return errors.New("Requires exact two args: [project_name] [shipyard_file]")
+			cmd.SilenceUsage = false
+			return errors.New("Requires project_name and shipyard_file\n")
 		}
 		if _, err := os.Stat(args[1]); os.IsNotExist(err) {
 			return fmt.Errorf("Cannot find file %s", args[1])
@@ -38,11 +46,16 @@ keptn create project sockshop shipyard.yml`,
 		}
 		stages := utils.UnmarshalStages(data)
 		if len(stages) == 0 {
-			return fmt.Errorf("No stages defined")
+			return fmt.Errorf("No stages defined in provided shipyard file")
 		}
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
+		endPoint, apiToken, err := credentialmanager.GetCreds()
+		if err != nil {
+			return errors.New(authErrorMsg)
+		}
+
 		fmt.Println("Starting to create a project")
 
 		prjData := projectData{}
@@ -58,21 +71,25 @@ keptn create project sockshop shipyard.yml`,
 			EventType: "create.project",
 			Encoding:  cloudevents.StructuredV01,
 		}
-		endPoint, apiToken, err := credentialmanager.GetCreds()
-		if err != nil || endPoint == "" {
-			utils.Info.Printf("create project called without beeing authenticated.")
-			return errors.New("This command requires to be authenticated. See \"keptn auth\" for details")
-		}
-		req, err := builder.Build(endPoint+"project", prjData)
+
+		projectURL := endPoint
+		projectURL.Path = "project"
+
+		req, err := builder.Build(projectURL.String(), prjData)
 		if err != nil {
 			return err
 		}
 
-		err = utils.Send(req, apiToken)
+		resp, err := utils.Send(req, apiToken)
 		if err != nil {
-			utils.Error.Printf("create project command was unsuccessful. Details: %v", err)
+			fmt.Println("Create project was unsuccessful")
 			return err
 		}
+		if resp.StatusCode != 200 {
+			fmt.Println("Create project was unsuccessful")
+			return errors.New(resp.Status)
+		}
+
 		fmt.Printf("Successfully created project %v on Github\n", prjData.Project)
 		return nil
 	},

@@ -5,6 +5,7 @@ import 'mocha';
 import * as sinon from 'sinon';
 import { cleanUpMetadata } from 'inversify-express-utils';
 import { AuthRequest } from '../lib/types/AuthRequest';
+import { BearerAuthRequest } from '../lib/types/BearerAuthRequest';
 const nock = require('nock');
 
 const authenticator = require('./authenticator');
@@ -57,6 +58,41 @@ describe('authenticator', () => {
     expect(nextSpy.called).is.true;
   });
 
+  it('should call next() if Dynatrace token authentication was successful', async () => {
+    const responseSendSpy = sinon.spy();
+    response.send = responseSendSpy;
+
+    const responseStatusSpy = sinon.spy();
+    response.status = responseStatusSpy;
+
+    const responseEndSpy = sinon.spy();
+    response.end = responseEndSpy;
+
+    request.url = '/dynatrace';
+    request.headers = {};
+    request.headers['authorization'] = 'Bearer mytokenvalue';
+
+    request.body = {};
+
+    const nextSpy = sinon.spy();
+    next = nextSpy;
+
+    const authRequest: BearerAuthRequest = {} as BearerAuthRequest;
+    authRequest.token = 'mytokenvalue';
+
+    nock(AUTH_URL, {
+      filteringScope: () => {
+        return true;
+      },
+    })
+      .post('/auth/token')
+      .reply(200, { authenticated: true });
+
+    await authenticator(request, response, next);
+
+    expect(nextSpy.called).is.true;
+  });
+
   it('should return a 401 if no signature header was provided', async () => {
     const responseSendSpy = sinon.spy();
     response.send = responseSendSpy;
@@ -68,6 +104,51 @@ describe('authenticator', () => {
     response.end = responseEndSpy;
 
     request.body = {};
+
+    const nextSpy = sinon.spy();
+    next = nextSpy;
+
+    await authenticator(request, response, next);
+
+    expect(responseStatusSpy.calledWith(401)).is.true;
+  });
+
+  it('should return a 401 if no auth token for /dynatrace was provided', async () => {
+    const responseSendSpy = sinon.spy();
+    response.send = responseSendSpy;
+
+    const responseStatusSpy = sinon.spy();
+    response.status = responseStatusSpy;
+
+    const responseEndSpy = sinon.spy();
+    response.end = responseEndSpy;
+
+    request.body = {};
+    request.url = '/dynatrace';
+    request.headers = {};
+
+    const nextSpy = sinon.spy();
+    next = nextSpy;
+
+    await authenticator(request, response, next);
+
+    expect(responseStatusSpy.calledWith(401)).is.true;
+  });
+
+  it('should return a 401 if no valid auth token for /dynatrace was provided', async () => {
+    const responseSendSpy = sinon.spy();
+    response.send = responseSendSpy;
+
+    const responseStatusSpy = sinon.spy();
+    response.status = responseStatusSpy;
+
+    const responseEndSpy = sinon.spy();
+    response.end = responseEndSpy;
+
+    request.body = {};
+    request.url = '/dynatrace';
+    request.headers = {};
+    request.headers['authorization'] = 'Bearer';
 
     const nextSpy = sinon.spy();
     next = nextSpy;
@@ -101,6 +182,38 @@ describe('authenticator', () => {
 
     nock(AUTH_URL)
       .post('/auth')
+      .reply(200, { authenticated: false });
+
+    await authenticator(request, response, next);
+
+    expect(responseStatusSpy.calledWith(401)).is.true;
+    expect(nextSpy.called).is.false;
+  });
+
+  it('should return a 401 if the auth service could not verify the token', async () => {
+    const responseSendSpy = sinon.spy();
+    response.send = responseSendSpy;
+
+    const responseStatusSpy = sinon.spy();
+    response.status = responseStatusSpy;
+
+    const responseEndSpy = sinon.spy();
+    response.end = responseEndSpy;
+
+    request.url = '/dynatrace';
+    request.headers = {};
+    request.headers['authorization'] = 'Bearer invalidtoken';
+
+    request.body = {};
+
+    const nextSpy = sinon.spy();
+    next = nextSpy;
+
+    const authRequest: BearerAuthRequest = {} as BearerAuthRequest;
+    authRequest.token = 'mytokenvalue';
+
+    nock(AUTH_URL)
+      .post('/auth/token')
       .reply(200, { authenticated: false });
 
     await authenticator(request, response, next);
