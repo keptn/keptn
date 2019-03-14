@@ -1,19 +1,3 @@
-# Clean up cicd namespace
-kubectl delete services,deployments,pods --all -n cicd
-kubectl delete namespace cicd
-
-# Clean up dev namespace
-kubectl delete services,deployments,pods --all -n dev
-kubectl delete namespace dev
-
-# Clean up staging namespace
-kubectl delete services,deployments,pods --all -n staging
-kubectl delete namespace staging
-
-# Clean up production namespace
-kubectl delete services,deployments,pods --all -n production
-kubectl delete namespace production
-
 # Clean up dynatrace namespace
 kubectl delete services,deployments,pods --all -n dynatrace
 kubectl delete namespace dynatrace
@@ -36,6 +20,8 @@ kubectl delete --filename https://github.com/knative/serving/releases/download/v
 kubectl delete --filename https://raw.githubusercontent.com/knative/serving/v0.4.0/third_party/config/build/clusterrole.yaml
 
 # Clean up istio namespace
+kubectl delete -f ../manifests/istio/istio-knative.yaml
+kubectl delete -f ../manifests/istio/istio-crds-knative.yaml
 kubectl delete services,deployments,pods --all -n istio-system
 kubectl delete namespace istio-system
 
