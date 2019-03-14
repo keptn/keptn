@@ -23,7 +23,6 @@ export class WebSocketConfigurator {
   }
 
   configure() {
-
     const server = this.server;
     const wss = new WebSocket.Server({
       server,
@@ -32,8 +31,10 @@ export class WebSocketConfigurator {
     wss.on('connection', (ws) => {
       ws.on('message', (message) => {
         console.log('received: %s', message);
-        wss.clients.forEach((client) => {
-          client.send(`${message}`);
+        wss.clients.forEach((client: WebSocket) => {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(`${message}`);
+          }
         });
       });
     });
