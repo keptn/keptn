@@ -25,7 +25,9 @@ export CLUSTER_ZONE=$(cat creds.json | jq -r '.clusterZone')
 export CLUSTER_REGION=$(cat creds.json | jq -r '.clusterRegion')
 export GKE_PROJECT=$(cat creds.json | jq -r '.gkeProject')
 
+set -e
 gcloud container clusters get-credentials $CLUSTER_NAME --zone $CLUSTER_ZONE --project $GKE_PROJECT
+set +e
 
 # Grant cluster admin rights to gcloud user
 export GCLOUD_USER=$(gcloud config get-value account)
