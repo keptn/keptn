@@ -1,17 +1,5 @@
-# Namespace for all ci/cd resources (jenkins, build slaves, ...)
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: cicd
----
 # Namespace for all core components, as well as the internal docker registry
 apiVersion: v1
 kind: Namespace
 metadata:
   name: keptn
----
-# Namespace for all core components, as well as the internal docker registry
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: dynatrace

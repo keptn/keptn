@@ -24,6 +24,8 @@ kubectl delete --filename https://github.com/knative/serving/releases/download/v
 kubectl delete --filename https://raw.githubusercontent.com/knative/serving/v0.4.0/third_party/config/build/clusterrole.yaml
 
 # Clean up istio namespace
+kubectl delete -f ../manifests/istio/istio-knative.yaml
+kubectl delete -f ../manifests/istio/istio-crds-knative.yaml
 kubectl delete services,deployments,pods --all -n istio-system
 kubectl delete namespace istio-system
 
