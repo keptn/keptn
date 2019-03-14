@@ -5,15 +5,26 @@ import (
 	"crypto/hmac"
 	"crypto/sha1"
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 	"time"
 )
 
+type WebsocketDescription struct {
+	ChannelID string `json:"channelId"`
+	Token     string `json:"token"`
+}
+
+type RespData struct {
+	Desc WebsocketDescription `json:"websocketChannel"`
+}
+
 // Send creates a request including the X-Keptn-Signature and sends the data
 // struct to the provided target. It returns the obtained http.Response.
-func Send(req *http.Request, apiToken string) (*http.Response, error) {
+func Send(req *http.Request, apiToken string, desc *WebsocketDescription) (*http.Response, error) {
 
 	bodyBytes, err := ioutil.ReadAll(req.Body)
 	// Restore the io.ReadCloser to its original state
@@ -43,7 +54,18 @@ func Send(req *http.Request, apiToken string) (*http.Response, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	return resp, nil
+
+	if desc != nil {
+		// TODO: Check if there is a more elegant way to get the content-type
+		if strings.HasPrefix(resp.Header.Get("Content-Type"), "application/json") {
+
+			gResp := RespData{}
+			err = json.NewDecoder(resp.Body).Decode(&gResp)
+			*desc = gResp.Desc
+		}
+	}
+
+	return resp, err
 }
 
 // status is a helper method to read the response of the target.

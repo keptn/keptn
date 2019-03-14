@@ -8,6 +8,7 @@ import (
 
 	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
+	"github.com/keptn/keptn/cli/utils/websockethelper"
 	"github.com/knative/pkg/cloudevents"
 	"github.com/spf13/cobra"
 )
@@ -80,7 +81,9 @@ Example:
 			return err
 		}
 
-		resp, err := utils.Send(req, apiToken)
+		var desc = new(utils.WebsocketDescription)
+		resp, err := utils.Send(req, apiToken, desc)
+
 		if err != nil {
 			fmt.Println("Create project was unsuccessful")
 			return err
@@ -88,6 +91,14 @@ Example:
 		if resp.StatusCode != 200 {
 			fmt.Println("Create project was unsuccessful")
 			return errors.New(resp.Status)
+		}
+
+		if desc.Token != "" {
+			ws, err := websockethelper.OpenWS(desc.Token)
+			if err != nil {
+				return err
+			}
+			return websockethelper.PrintWSContent(ws)
 		}
 
 		fmt.Printf("Successfully created project %v on Github\n", prjData.Project)

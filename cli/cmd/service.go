@@ -157,7 +157,7 @@ var serviceCmd = &cobra.Command{
 			return err
 		}
 
-		resp, err := utils.Send(req, apiToken)
+		resp, err := utils.Send(req, apiToken, nil)
 
 		if err != nil {
 			fmt.Println("Onboard service was unsuccessful")
