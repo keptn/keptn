@@ -52,6 +52,7 @@ export REGISTRY_URL=$(kubectl describe svc docker-registry -n keptn | grep IP: |
 
 
 # Deploy Dynatrace operator
+kubectl create namespace dynatrace
 export LATEST_RELEASE=$(curl -s https://api.github.com/repos/dynatrace/dynatrace-oneagent-operator/releases/latest | grep tag_name | cut -d '"' -f 4)
 echo "Installing Dynatrace Operator $LATEST_RELEASE"
 kubectl create -f https://raw.githubusercontent.com/Dynatrace/dynatrace-oneagent-operator/$LATEST_RELEASE/deploy/kubernetes.yaml
