@@ -25,7 +25,7 @@ export class WebSocketConfigurator {
   configure() {
 
     const server = this.server;
-    const wss = new WebSocket.Server({ 
+    const wss = new WebSocket.Server({
       server,
       verifyClient: WebSocketService.getInstance().verifyToken,
     });
@@ -37,22 +37,5 @@ export class WebSocketConfigurator {
         });
       });
     });
-
-    /*
-    this.server.on('upgrade', (request, socket, head) => {
-      wss.handleUpgrade(request, socket, head, function done(ws) {
-        wss.emit('connection', ws, request);
-      });
-    });
-    */
-   /*
-    const wssInstance = require('express-ws')(this.app, this.server, {
-      wsOptions: {
-        verifyClient: WebSocketService.getInstance().verifyToken,
-      },
-    });
-    const webSocketHandler: WebSocketHandler = new WebSocketHandler(wssInstance);
-    this.app.ws('/comm', webSocketHandler.handleMessage);
-    */
   }
 }
