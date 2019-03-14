@@ -39,15 +39,15 @@ spec:
         imagePullPolicy: Always
         env:
           - name: GITHUB_USER_EMAIL
-            value: alasdair.patton@dynatrace.com
+            value: GITHUB_USER_EMAIL_PLACEHOLDER
           - name: GITHUB_ORGANIZATION
-            value: dt-acm
+            value: GITHUB_ORGANIZATION_PLACEHOLDER
           - name: DOCKER_REGISTRY_IP
-            value: 10.63.245.222
+            value: DOCKER_REGISTRY_IP_PLACEHOLDER
           - name: DT_TENANT_URL
-            value: mvv888.dynatrace-managed.com\e\dt-acm-keptn
+            value: DT_TENANT_URL_PLACEHOLDER
           - name: DT_API_TOKEN
-            value: X4xiDQKeSrKJzp6aHa7JL
+            value: DT_API_TOKEN_PLACEHOLDER
         ports:
         - containerPort: 8080
         - containerPort: 50000
