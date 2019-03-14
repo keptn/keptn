@@ -25,7 +25,9 @@ export CLUSTER_ZONE=$(cat creds.json | jq -r '.clusterZone')
 export CLUSTER_REGION=$(cat creds.json | jq -r '.clusterRegion')
 export GKE_PROJECT=$(cat creds.json | jq -r '.gkeProject')
 
+set -e
 gcloud container clusters get-credentials $CLUSTER_NAME --zone $CLUSTER_ZONE --project $GKE_PROJECT
+set +e
 
 # Grant cluster admin rights to gcloud user
 export GCLOUD_USER=$(gcloud config get-value account)
@@ -50,6 +52,7 @@ export REGISTRY_URL=$(kubectl describe svc docker-registry -n keptn | grep IP: |
 
 
 # Deploy Dynatrace operator
+kubectl create namespace dynatrace
 export LATEST_RELEASE=$(curl -s https://api.github.com/repos/dynatrace/dynatrace-oneagent-operator/releases/latest | grep tag_name | cut -d '"' -f 4)
 echo "Installing Dynatrace Operator $LATEST_RELEASE"
 kubectl create -f https://raw.githubusercontent.com/Dynatrace/dynatrace-oneagent-operator/$LATEST_RELEASE/deploy/kubernetes.yaml
@@ -108,23 +111,6 @@ echo "--------------------------"
 
 echo "--------------------------"
 echo "End Setup CD Services"
-echo "--------------------------"
-
-echo "Wait 10s for changes to apply..."
-sleep 10
-
-# Create Ansible Tower
-
-echo "--------------------------"
-echo "Setup Ansible Tower "
-echo "--------------------------"
-
-kubectl create -f ../manifests/ansible-tower/namespace.yml
-kubectl create -f ../manifests/ansible-tower/deployment.yml
-kubectl create -f ../manifests/ansible-tower/service.yml
-
-echo "--------------------------"
-echo "End setup Ansible Tower "
 echo "--------------------------"
 
 echo "----------------------------------------------------"
