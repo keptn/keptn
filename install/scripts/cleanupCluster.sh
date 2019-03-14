@@ -1,7 +1,3 @@
-# Clean up cicd namespace
-kubectl delete services,deployments,pods --all -n cicd
-kubectl delete namespace cicd
-
 # Clean up dynatrace namespace
 kubectl delete services,deployments,pods --all -n dynatrace
 kubectl delete namespace dynatrace
