@@ -3,6 +3,7 @@ package credentialmanager
 import (
 	"net/url"
 	"os"
+	"fmt"
 
 	"io/ioutil"
 
@@ -26,7 +27,7 @@ func init() {
 // pass is unavailable.
 func SetCreds(endPoint url.URL, apiToken string) error {
 	if _, err := os.Stat(passwordStoreDirectory); os.IsNotExist(err) {
-		utils.Warning.Println("Use a file-based storage for the key because the password-store seems to be not set up.")
+		fmt.Println("Using a file-based storage for the key because the password-store seems to be not set up.")
 
 		return ioutil.WriteFile(apiTokenFileURI, []byte(endPoint.String()+"\n"+apiToken), 0644)
 	}
