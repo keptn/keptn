@@ -115,23 +115,6 @@ echo "--------------------------"
 echo "End Setup CD Services"
 echo "--------------------------"
 
-echo "Wait 10s for changes to apply..."
-sleep 10
-
-# Create Ansible Tower
-
-echo "--------------------------"
-echo "Setup Ansible Tower "
-echo "--------------------------"
-
-kubectl create -f ../manifests/ansible-tower/namespace.yml
-kubectl create -f ../manifests/ansible-tower/deployment.yml
-kubectl create -f ../manifests/ansible-tower/service.yml
-
-echo "--------------------------"
-echo "End setup Ansible Tower "
-echo "--------------------------"
-
 echo "----------------------------------------------------"
 echo "Finished setting up infrastructure "
 echo "----------------------------------------------------"
