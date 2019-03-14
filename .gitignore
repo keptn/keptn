@@ -11,6 +11,7 @@ install/manifests/gen/cr.yml
 install/manifests/gen/config-domain.yaml
 install/manifests/gen/istio-knative.yaml
 install/scripts/logs/*.log
+install/scripts/keptn-services/*
 
 # Repositories forked by forkGitHubRepositories.sh
 repositories
