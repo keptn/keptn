@@ -60,7 +60,7 @@ kubectl create -f ../manifests/jenkins/k8s-jenkins-rbac.yml
 export LATEST_RELEASE=$(curl -s https://api.github.com/repos/dynatrace/dynatrace-oneagent-operator/releases/latest | grep tag_name | cut -d '"' -f 4)
 echo "Installing Dynatrace Operator $LATEST_RELEASE"
 kubectl create namespace dynatrace
-kubectl create -f https://raw.githubusercontent.com/Dynatrace/dynatrace-oneagent-operator/$LATEST_RELEASE/deploy/kubernetes.yaml
+kubectl create -f https://raw.githubusercontent.com/Dynatrace/dynatrace-oneagent-operator/$LATEST_RELEASE/deploy/kubernetes.yaml --validate=false
 sleep 60
 kubectl -n dynatrace create secret generic oneagent --from-literal="apiToken=$DT_API_TOKEN" --from-literal="paasToken=$DT_PAAS_TOKEN"
 rm -f ../manifests/gen/oneagent-cr.yml
