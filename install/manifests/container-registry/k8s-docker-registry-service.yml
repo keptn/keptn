@@ -2,7 +2,7 @@ kind: Service
 apiVersion: v1
 metadata:
   name: docker-registry
-  namespace: cicd
+  namespace: keptn
 spec:
   ports:
     - port: 5000

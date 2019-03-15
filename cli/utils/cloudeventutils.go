@@ -4,20 +4,16 @@ import (
 	"bytes"
 	"crypto/hmac"
 	"crypto/sha1"
+	"crypto/tls"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"time"
-
-	"github.com/knative/pkg/cloudevents"
 )
 
 // Send creates a request including the X-Keptn-Signature and sends the data
-// struct to the provided target. It returns error if there was an
-// issue sending the event, otherwise nil means the event was accepted.
-func Send(target string, apiToken string, builder cloudevents.Builder, data interface{}, overrides ...cloudevents.SendContext) error {
-
-	req, err := builder.Build(target, data, overrides...)
+// struct to the provided target. It returns the obtained http.Response.
+func Send(req *http.Request, apiToken string) (*http.Response, error) {
 
 	bodyBytes, err := ioutil.ReadAll(req.Body)
 	// Restore the io.ReadCloser to its original state
@@ -33,21 +29,21 @@ func Send(target string, apiToken string, builder cloudevents.Builder, data inte
 
 	// Add signature header
 	req.Header.Set("X-Keptn-Signature", sha1Hash)
+	req.Header.Set("Content-Type", "application/json")
 
 	if err != nil {
-		return err
+		return nil, err
 	}
-	client := &http.Client{Timeout: 30 * time.Second}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+	client := &http.Client{Timeout: 60 * time.Second, Transport: tr}
 	resp, err := client.Do(req)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-		fmt.Println(resp.StatusCode)
-		return nil
-	}
-	return fmt.Errorf("error sending cloudevent: %s", status(resp))
+	return resp, nil
 }
 
 // status is a helper method to read the response of the target.

@@ -55,9 +55,6 @@ export class ProjectController implements interfaces.Controller {
       result: 'success',
     };
 
-    if (request.body !== undefined) {
-      request.body.eventType = 'project';
-    }
     await this.messageService.sendMessage(request.body);
 
     response.send(result);
