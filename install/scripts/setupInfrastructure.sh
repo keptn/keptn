@@ -27,17 +27,17 @@ set +e
 
 # Grant cluster admin rights to gcloud user
 export GCLOUD_USER=$(gcloud config get-value account)
-kubectl create clusterrolebinding dynatrace-cluster-admin-binding --clusterrole=cluster-admin --user=$GCLOUD_USER
+kubectl apply clusterrolebinding dynatrace-cluster-admin-binding --clusterrole=cluster-admin --user=$GCLOUD_USER
 
 # Create K8s namespaces
-kubectl create -f ../manifests/k8s-namespaces.yml 
+kubectl apply -f ../manifests/k8s-namespaces.yml 
 
 # Create container registry
-kubectl create -f ../manifests/container-registry/k8s-docker-registry-configmap.yml
-kubectl create -f ../manifests/container-registry/k8s-docker-registry-pvc.yml
-kubectl create -f ../manifests/container-registry/k8s-docker-registry-configmap.yml
-kubectl create -f ../manifests/container-registry/k8s-docker-registry-deployment.yml
-kubectl create -f ../manifests/container-registry/k8s-docker-registry-service.yml
+kubectl apply -f ../manifests/container-registry/k8s-docker-registry-configmap.yml
+kubectl apply -f ../manifests/container-registry/k8s-docker-registry-pvc.yml
+kubectl apply -f ../manifests/container-registry/k8s-docker-registry-configmap.yml
+kubectl apply -f ../manifests/container-registry/k8s-docker-registry-deployment.yml
+kubectl apply -f ../manifests/container-registry/k8s-docker-registry-service.yml
 
 echo "Wait 100s for docker service to get public ip..."
 sleep 100
