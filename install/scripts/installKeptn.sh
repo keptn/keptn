@@ -39,9 +39,6 @@ kubectl apply -f ../manifests/container-registry/k8s-docker-registry-configmap.y
 kubectl apply -f ../manifests/container-registry/k8s-docker-registry-deployment.yml
 kubectl apply -f ../manifests/container-registry/k8s-docker-registry-service.yml
 
-echo "Wait 100s for docker service to get public ip..."
-sleep 100
-
 # Create a route for the docker registry service
 # Store the docker registry route in a variable
 export REGISTRY_URL=$(kubectl describe svc docker-registry -n keptn | grep IP: | sed 's~IP:[ \t]*~~')
