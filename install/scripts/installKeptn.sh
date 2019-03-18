@@ -21,10 +21,10 @@ export CLUSTER_ZONE=$(cat creds.json | jq -r '.clusterZone')
 export CLUSTER_REGION=$(cat creds.json | jq -r '.clusterRegion')
 export GKE_PROJECT=$(cat creds.json | jq -r '.gkeProject')
 
+set -e
 gcloud --quiet config set project $GKE_PROJECT
 gcloud --quiet config set container/cluster $CLUSTER_NAME
 gcloud --quiet config set compute/zone $CLUSTER_ZONE
-set -e
 gcloud container clusters get-credentials $CLUSTER_NAME --zone $CLUSTER_ZONE --project $GKE_PROJECT
 set +e
 
@@ -41,9 +41,6 @@ kubectl apply -f ../manifests/container-registry/k8s-docker-registry-pvc.yml
 kubectl apply -f ../manifests/container-registry/k8s-docker-registry-configmap.yml
 kubectl apply -f ../manifests/container-registry/k8s-docker-registry-deployment.yml
 kubectl apply -f ../manifests/container-registry/k8s-docker-registry-service.yml
-
-echo "Wait 100s for docker service to get public ip..."
-sleep 100
 
 # Create a route for the docker registry service
 # Store the docker registry route in a variable
