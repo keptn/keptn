@@ -1,3 +1,4 @@
+.DS_Store
 # Creds files
 scripts/creds.json
 install/scripts/creds.json
