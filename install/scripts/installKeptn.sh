@@ -21,6 +21,9 @@ export CLUSTER_ZONE=$(cat creds.json | jq -r '.clusterZone')
 export CLUSTER_REGION=$(cat creds.json | jq -r '.clusterRegion')
 export GKE_PROJECT=$(cat creds.json | jq -r '.gkeProject')
 
+gcloud --quiet config set project $GKE_PROJECT
+gcloud --quiet config set container/cluster $CLUSTER_NAME
+gcloud --quiet config set compute/zone $CLUSTER_ZONE
 set -e
 gcloud --quiet config set project $GKE_PROJECT
 gcloud --quiet config set container/cluster $CLUSTER_NAME
