@@ -4,14 +4,14 @@ CLUSTER_NAME=$2
 CLUSTER_ZONE=$3
 SHOW_API_TOKEN=$4
 
-kubectl create namespace keptn
+kubectl create namespace keptn 2> /dev/null
 
 # Create container registry
-kubectl create -f ../manifests/container-registry/k8s-docker-registry-configmap.yml
-kubectl create -f ../manifests/container-registry/k8s-docker-registry-pvc.yml
-kubectl create -f ../manifests/container-registry/k8s-docker-registry-configmap.yml
-kubectl create -f ../manifests/container-registry/k8s-docker-registry-deployment.yml
-kubectl create -f ../manifests/container-registry/k8s-docker-registry-service.yml
+kubectl apply -f ../manifests/container-registry/k8s-docker-registry-configmap.yml
+kubectl apply -f ../manifests/container-registry/k8s-docker-registry-pvc.yml
+kubectl apply -f ../manifests/container-registry/k8s-docker-registry-configmap.yml
+kubectl apply -f ../manifests/container-registry/k8s-docker-registry-deployment.yml
+kubectl apply -f ../manifests/container-registry/k8s-docker-registry-service.yml
 
 kubectl label namespace keptn istio-injection=enabled
 
@@ -70,7 +70,7 @@ kubectl apply -f ../../core/eventbroker/config/problem-channel.yaml
 export KEPTN_CHANNEL_URI=$(kubectl describe channel keptn-channel -n keptn | grep "Hostname:" | sed 's~[ \t]*Hostname:[ \t]*~~')
 
 export KEPTN_API_TOKEN=$(head -c 16 /dev/urandom | base64)
-kubectl create secret generic -n keptn keptn-api-token --from-literal=keptn-api-token="$KEPTN_API_TOKEN"
+kubectl apply secret generic -n keptn keptn-api-token --from-literal=keptn-api-token="$KEPTN_API_TOKEN"
 
 # Deploy event broker
 cd ../../core/eventbroker
@@ -97,7 +97,7 @@ fi
 # Set up SSL
 openssl req -nodes -newkey rsa:2048 -keyout key.pem -out certificate.pem  -x509 -days 365 -subj "/CN=$ISTIO_INGRESS_IP.xip.io"
 
-kubectl create --namespace istio-system secret tls istio-ingressgateway-certs --key key.pem --cert certificate.pem
+kubectl apply --namespace istio-system secret tls istio-ingressgateway-certs --key key.pem --cert certificate.pem
 
 kubectl get gateway knative-ingress-gateway --namespace knative-serving -o=yaml | yq w - spec.servers[1].tls.mode SIMPLE | yq w - spec.servers[1].tls.privateKey /etc/istio/ingressgateway-certs/tls.key | yq w - spec.servers[1].tls.serverCertificate /etc/istio/ingressgateway-certs/tls.crt | kubectl apply -f -
 
