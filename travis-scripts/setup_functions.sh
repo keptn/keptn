@@ -44,7 +44,7 @@ function setup_knative {
 
 function setup_knative_pr {    
     cd ./install/scripts/
-    ./setupKnative.sh $REGISTRY_URL $CLUSTER_PR_STATUSCHECK_NAME $CLUSTER_PR_STATUSCHECK_ZONE
+    ./setupKnative.sh '' $CLUSTER_PR_STATUSCHECK_NAME $CLUSTER_PR_STATUSCHECK_ZONE
     cd ../..
 }
 
