@@ -14,10 +14,10 @@ function setup_glcoud_pr {
     export GCLOUD_USER=$(gcloud config get-value account)
 
     kubectl create clusterrolebinding travis-cluster-admin-binding --clusterrole=cluster-admin --user=$GCLOUD_USER || true
-    export REGISTRY_URL=$(kubectl describe svc docker-registry -n keptn | grep "IP:" | sed 's~IP:[ \t]*~~')
+    # export REGISTRY_URL=$(kubectl describe svc docker-registry -n keptn | grep "IP:" | sed 's~IP:[ \t]*~~')
 }
 
-function setup_glcoud_master {
+function setup_gcloud_master {
     gcloud --quiet config set project $PROJECT_NAME
     gcloud --quiet config set container/cluster $CLUSTER_NAME
     gcloud --quiet config set compute/zone ${CLOUDSDK_COMPUTE_ZONE}
@@ -38,7 +38,13 @@ function install_sed {
 
 function setup_knative {    
     cd ./install/scripts/
-    ./setupKnative.sh $REGISTRY_URL $CLUSTER_NAME $CLOUDSDK_COMPUTE_ZONE
+    ./setupKnative.sh ' ' $CLUSTER_NAME ${CLOUDSDK_COMPUTE_ZONE}
+    cd ../..
+}
+
+function setup_knative_pr {    
+    cd ./install/scripts/
+    ./setupKnative.sh '' $CLUSTER_PR_STATUSCHECK_NAME $CLUSTER_PR_STATUSCHECK_ZONE
     cd ../..
 }
 

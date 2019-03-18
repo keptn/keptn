@@ -10,7 +10,7 @@ This document describes design decision regarding the keptn CLI.
     * (?) GITHUB_TOKEN
     * (?) GITHUB_ORG
 
-1. Execute `setupInfrastructure.sh` that returns:
+1. Execute `installKeptn.sh` that returns:
     * Endpoint
     * KEPTN-API-TOKEN
 
