@@ -8,7 +8,7 @@ set -x
 install_hub
 install_yq
 setup_gcloud
-setup_glcoud_master
+setup_gcloud_master
 install_sed
 
 # Run scripts in ~/keptn/install/scripts
