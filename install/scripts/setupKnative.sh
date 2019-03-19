@@ -13,8 +13,6 @@ kubectl apply -f ../manifests/container-registry/k8s-docker-registry-configmap.y
 kubectl apply -f ../manifests/container-registry/k8s-docker-registry-deployment.yml
 kubectl apply -f ../manifests/container-registry/k8s-docker-registry-service.yml
 
-kubectl label namespace keptn istio-injection=enabled
-
 # Install knative serving, eventing, build
 kubectl apply --filename https://github.com/knative/serving/releases/download/v0.4.0/serving.yaml
 kubectl apply --filename https://github.com/knative/build/releases/download/v0.4.0/build.yaml
