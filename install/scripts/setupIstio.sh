@@ -23,8 +23,6 @@ kubectl apply -f ../manifests/gen/istio-knative.yaml
 echo "Wait 4 minutes for changes to apply... "
 sleep 240
 
-kubectl label namespace keptn istio-injection=enabled
-
 echo "Wait 10s for changes to apply... "
 sleep 10
 
