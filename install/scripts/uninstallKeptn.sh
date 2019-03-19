@@ -30,10 +30,3 @@ kubectl delete namespace istio-system --ignore-not-found
 kubectl delete clusterrolebinding dynatrace-cluster-admin-binding --ignore-not-found
 kubectl delete clusterrolebindings.rbac.authorization.k8s.io jenkins-rbac --ignore-not-found
 kubectl delete -f https://raw.githubusercontent.com/Dynatrace/dynatrace-oneagent-operator/master/deploy/kubernetes.yaml --ignore-not-found
-
-# Force deletion of keptn namespace
-NAMESPACE=keptn
-kubectl proxy &
-kubectl get namespace $NAMESPACE -o json |jq '.spec = {"finalizers":[]}' >temp.json
-curl -k -H "Content-Type: application/json" -X PUT --data-binary @temp.json 127.0.0.1:8001/api/v1/namespaces/$NAMESPACE/finalize
-rm temp.json

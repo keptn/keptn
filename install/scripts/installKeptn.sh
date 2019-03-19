@@ -4,9 +4,14 @@ LOG_LOCATION=./logs
 exec > >(tee -i $LOG_LOCATION/setupInfrastructure.log)
 exec 2>&1
 
-echo "--------------------------"
-echo "Setup Infrastructure "
-echo "--------------------------"
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+echo -e "${BLUE}--------------------------"
+echo "Starting keptn installation"
+echo -e "--------------------------${NC}"
 
 # Script if you don't want to apply all yaml files manually
 
@@ -21,12 +26,21 @@ export CLUSTER_ZONE=$(cat creds.json | jq -r '.clusterZone')
 export CLUSTER_REGION=$(cat creds.json | jq -r '.clusterRegion')
 export GKE_PROJECT=$(cat creds.json | jq -r '.gkeProject')
 
-set -e
 gcloud --quiet config set project $GKE_PROJECT
 gcloud --quiet config set container/cluster $CLUSTER_NAME
 gcloud --quiet config set compute/zone $CLUSTER_ZONE
 gcloud container clusters get-credentials $CLUSTER_NAME --zone $CLUSTER_ZONE --project $GKE_PROJECT
-set +e
+
+if [[ $? != '0' ]]
+then
+  echo -e "${RED}Could not connect to cluster. Please ensure you have set the correct values for your Cluster Name, GKE Project, Cluster Zone and Cluster Region during the credentials setup.${NC}"
+  exit 1
+fi
+
+if [[ $? = '0' ]]
+then
+  echo -e "${GREEN}Connection to cluster successful.${NC}"
+fi
 
 # Grant cluster admin rights to gcloud user
 export GCLOUD_USER=$(gcloud config get-value account)
@@ -47,41 +61,41 @@ kubectl apply -f ../manifests/container-registry/k8s-docker-registry-service.yml
 export REGISTRY_URL=$(kubectl describe svc docker-registry -n keptn | grep IP: | sed 's~IP:[ \t]*~~')
 
 # Install Istio service mesh
-echo "--------------------------"
+echo -e "${BLUE}--------------------------"
 echo "Setup Istio "
-echo "--------------------------"
+echo -e "--------------------------${NC}"
 
 ./setupIstio.sh $CLUSTER_NAME $CLUSTER_ZONE
 
-echo "--------------------------"
+echo -e "${BLUE}--------------------------"
 echo "End setup Istio "
-echo "--------------------------"
+echo -e "--------------------------${NC}"
 
 # Install knative based core components
-echo "--------------------------"
+echo -e "${BLUE}--------------------------"
 echo "Setup Knative components "
-echo "--------------------------"
+echo -e "--------------------------${NC}"
 
 ./setupKnative.sh $REGISTRY_URL $CLUSTER_NAME $CLUSTER_ZONE
 
-echo "--------------------------"
+echo -e "${BLUE}--------------------------"
 echo "End setup Knative components "
-echo "--------------------------"
+echo -e "--------------------------${NC}"
 
 # Create Jenkins
-echo "--------------------------"
+echo -e "${BLUE}--------------------------"
 echo "Setup CD Services "
-echo "--------------------------"
+echo -e "--------------------------${NC}"
 
 ./deployServices.sh $REGISTRY_URL
 
-echo "--------------------------"
+echo -e "${BLUE}--------------------------"
 echo "End Setup CD Services"
-echo "--------------------------"
+echo -e "--------------------------${NC}"
 
-echo "----------------------------------------------------"
+echo -e "${GREEN}----------------------------------------------------"
 echo "Finished setting up infrastructure "
 echo "----------------------------------------------------"
 
 echo "To retrieve the Keptn API Token, please execute the following command"
-echo "kubectl get secret keptn-api-token -n keptn -o=yaml | yq - r data.keptn-api-token | base64 --decode"
+echo -e "kubectl get secret keptn-api-token -n keptn -o=yaml | yq - r data.keptn-api-token | base64 --decode${NC}"
