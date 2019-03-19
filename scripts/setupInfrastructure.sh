@@ -26,7 +26,7 @@ export GCLOUD_USER=$(gcloud config get-value account)
 kubectl create clusterrolebinding dynatrace-cluster-admin-binding --clusterrole=cluster-admin --user=$GCLOUD_USER
 
 # Create K8s namespaces
-kubectl create -f ../manifests/k8s-namespaces.yml 
+kubectl create -f ../manifests/k8s-namespaces.yml
 
 # Create container registry
 kubectl create -f ../manifests/container-registry/k8s-docker-registry-pvc.yml
@@ -52,14 +52,15 @@ cat ../manifests/jenkins/k8s-jenkins-deployment.yml | \
   sed 's~DT_TENANT_URL_PLACEHOLDER~'"$DT_TENANT_URL"'~' | \
   sed 's~DT_API_TOKEN_PLACEHOLDER~'"$DT_API_TOKEN"'~' >> ../manifests/gen/k8s-jenkins-deployment.yml
 
-kubectl create -f ../manifests/jenkins/k8s-jenkins-pvcs.yml 
+kubectl create -f ../manifests/jenkins/k8s-jenkins-pvcs.yml
 kubectl create -f ../manifests/gen/k8s-jenkins-deployment.yml
 kubectl create -f ../manifests/jenkins/k8s-jenkins-rbac.yml
 
 # Deploy Dynatrace operator
 export LATEST_RELEASE=$(curl -s https://api.github.com/repos/dynatrace/dynatrace-oneagent-operator/releases/latest | grep tag_name | cut -d '"' -f 4)
 echo "Installing Dynatrace Operator $LATEST_RELEASE"
-kubectl create -f https://raw.githubusercontent.com/Dynatrace/dynatrace-oneagent-operator/$LATEST_RELEASE/deploy/kubernetes.yaml
+kubectl create namespace dynatrace
+kubectl create -f https://raw.githubusercontent.com/Dynatrace/dynatrace-oneagent-operator/$LATEST_RELEASE/deploy/kubernetes.yaml --validate=false
 sleep 60
 kubectl -n dynatrace create secret generic oneagent --from-literal="apiToken=$DT_API_TOKEN" --from-literal="paasToken=$DT_PAAS_TOKEN"
 rm -f ../manifests/gen/oneagent-cr.yml
@@ -73,7 +74,7 @@ echo "--------------------------"
 echo "Apply auto tagging rules in Dynatrace "
 echo "--------------------------"
 
-./applyAutoTaggingRules.sh 
+./applyAutoTaggingRules.sh
 
 echo "--------------------------"
 echo "End applying auto tagging rules in Dynatrace "
