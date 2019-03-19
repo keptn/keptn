@@ -27,6 +27,6 @@ kubectl delete services,deployments,pods --all -n istio-system --ignore-not-foun
 kubectl delete namespace istio-system --ignore-not-found
 
 # Verification
-kubectl delete clusterrolebindings.rbac.authorization.k8s.io dynatrace-cluster-admin-binding --ignore-not-found
+kubectl delete clusterrolebinding dynatrace-cluster-admin-binding --ignore-not-found
 kubectl delete clusterrolebindings.rbac.authorization.k8s.io jenkins-rbac --ignore-not-found
 kubectl delete -f https://raw.githubusercontent.com/Dynatrace/dynatrace-oneagent-operator/master/deploy/kubernetes.yaml --ignore-not-found
