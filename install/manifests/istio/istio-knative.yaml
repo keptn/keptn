@@ -3488,11 +3488,8 @@ webhooks:
         resources: ["pods"]
     failurePolicy: Fail
     namespaceSelector:
-      matchExpressions:
-      - key: istio-injection
-        operator: NotIn
-        values:
-        - disabled
+      matchLabels:
+        istio-injection: enabled
 
 
 ---
