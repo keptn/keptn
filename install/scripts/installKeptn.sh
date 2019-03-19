@@ -1,7 +1,7 @@
 #!/bin/bash
 
 LOG_LOCATION=./logs
-exec > >(tee -i $LOG_LOCATION/setupInfrastructure.log)
+exec > >(tee -i $LOG_LOCATION/installKeptn.log)
 exec 2>&1
 
 RED='\033[0;31m'
