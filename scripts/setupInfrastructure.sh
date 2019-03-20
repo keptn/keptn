@@ -67,6 +67,7 @@ rm -f ../manifests/gen/oneagent-cr.yml
 curl -o ../manifests/dynatrace/oneagent-cr.yml https://raw.githubusercontent.com/Dynatrace/dynatrace-oneagent-operator/$LATEST_RELEASE/deploy/cr.yaml
 cat ../manifests/dynatrace/oneagent-cr.yml | sed 's/ENVIRONMENTID/'"$DT_TENANT_ID"'/' >> ../manifests/dynatrace/cr_tmp.yml
 mv ../manifests/dynatrace/cr_tmp.yml ../manifests/gen/oneagent-cr.yml
+mv ../manifests/dynatrace/kubernetes-monitoring-service-account.yaml ../manifests/gen/kubernetes-monitoring-service-account.yaml
 kubectl create -f ../manifests/gen/oneagent-cr.yml
 
 # Create a Bearer token for authenticating against the Kubernetes API
@@ -187,7 +188,7 @@ echo "--------------------------"
 echo "End set up Ansible Tower "
 echo "--------------------------"
 
-# Connect Kubernetes cluster to Dynatrace
+  # Connect Kubernetes cluster to Dynatrace
 echo "--------------------------"
 echo "Connect Kubernetes cluster to Dynatrace "
 echo "--------------------------"
