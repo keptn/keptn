@@ -8,7 +8,9 @@ export class MessageService {
 
   constructor(@inject('ChannelReconciler') private readonly channelReconciler: ChannelReconciler) {}
 
-  public async sendMessage(message: KeptnRequestModel): Promise<boolean> {
+  public async sendMessage(
+    message: KeptnRequestModel,
+    keptnContext: string = ''): Promise<boolean> {
     let channelUri;
     const eventType = message.type;
     if (eventType !== undefined) {
@@ -20,10 +22,20 @@ export class MessageService {
       channelUri = await this.channelReconciler.resolveChannel(channelName);
     }
     if (channelUri === '' || channelUri === undefined) {
-      console.log(`Could not find channel URI for event of type ${message.type}`);
+      console.log(JSON.stringify({
+        keptnContext,
+        keptnService: 'eventbroker',
+        logLevel: 'ERROR',
+        message: `Could not find channel URI for event of type ${message.type}`,
+      }));
       return false;
     }
-    console.log(`Sending message to ${channelUri}`);
+    console.log(JSON.stringify({
+      keptnContext,
+      keptnService: 'eventbroker',
+      logLevel: 'INFO',
+      message: `Sending message to ${channelUri}`,
+    }));
 
     axios.post(`http://${channelUri}`, message).then().catch((e) => { console.log(e); });
 
