@@ -31,13 +31,13 @@ export class DockerService {
     const service = repositorySplit[repositorySplit.length - 1];
     const tag = eventPayload.target.tag;
     const image = `${eventPayload.request.host}/${eventPayload.target.repository}`;
-    const pipelineId = uuidv4();
+    const keptnContext = uuidv4();
     const msgPayload = {
       project,
       service,
       image,
       tag,
-      pipelineId,
+      keptnContext,
     };
 
     const msg: KeptnRequestModel = new KeptnRequestModel();
@@ -45,7 +45,7 @@ export class DockerService {
     msg.type = KeptnRequestModel.EVENT_TYPES.NEW_ARTEFACT;
 
     console.log(JSON.stringify({
-      pipelineId,
+      keptnContext,
       keptnService: 'eventbroker',
       logLevel: 'INFO',
       message: msg,
