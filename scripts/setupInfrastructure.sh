@@ -69,6 +69,9 @@ cat ../manifests/dynatrace/oneagent-cr.yml | sed 's/ENVIRONMENTID/'"$DT_TENANT_I
 mv ../manifests/dynatrace/cr_tmp.yml ../manifests/gen/oneagent-cr.yml
 kubectl create -f ../manifests/gen/oneagent-cr.yml
 
+# Create a Bearer token for authenticating against the Kubernetes API
+kubectl apply -f ../manifests/gen/kubernetes-monitoring-service-account.yaml
+
 # Apply auto tagging rules in Dynatrace
 echo "--------------------------"
 echo "Apply auto tagging rules in Dynatrace "
@@ -182,6 +185,17 @@ sleep 120
 
 echo "--------------------------"
 echo "End set up Ansible Tower "
+echo "--------------------------"
+
+# Connect Kubernetes cluster to Dynatrace
+echo "--------------------------"
+echo "Connect Kubernetes cluster to Dynatrace "
+echo "--------------------------"
+
+./setupKubernetesEndpoint.sh
+
+echo "--------------------------"
+echo "End Connect Kubernetes cluster to Dynatrace "
 echo "--------------------------"
 
 echo "----------------------------------------------------"

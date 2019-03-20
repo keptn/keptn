@@ -31,8 +31,10 @@ kubectl delete -f ../repositories/k8s-deploy-production/istio/gateway.yml
 kubectl delete -f ../repositories/k8s-deploy-production/istio/destination_rule.yml
 kubectl delete -f ../repositories/k8s-deploy-production/istio/virtual_service.yml
 
+# Remove Kubernetes cluster to Dynatrace connection
+./deleteKubernetesEndpoint.sh
+
 # Verification
 kubectl delete clusterrolebindings.rbac.authorization.k8s.io dynatrace-cluster-admin-binding
 kubectl delete clusterrolebindings.rbac.authorization.k8s.io jenkins-rbac
 kubectl delete -f https://raw.githubusercontent.com/Dynatrace/dynatrace-oneagent-operator/master/deploy/kubernetes.yaml
-
