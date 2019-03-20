@@ -47,6 +47,7 @@ export class DockerService {
     console.log(JSON.stringify({
       pipelineId,
       keptnService: 'eventbroker',
+      logLevel: 'INFO',
       message: msg,
     }));
 
