@@ -51,6 +51,6 @@ export class DockerService {
       message: msg,
     }));
 
-    return await this.messageService.sendMessage(msg);
+    return await this.messageService.sendMessage(msg, keptnContext);
   }
 }
