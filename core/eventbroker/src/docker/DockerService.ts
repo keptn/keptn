@@ -4,6 +4,7 @@ import axios  from 'axios';
 import { MessageService } from '../svc/MessageService';
 import { KeptnRequestModel } from '../keptn/KeptnRequestModel';
 import { DockerRequestModel } from './DockerRequestModel';
+const uuidv4 = require('uuid/v4');
 
 @injectable()
 export class DockerService {
@@ -30,16 +31,25 @@ export class DockerService {
     const service = repositorySplit[repositorySplit.length - 1];
     const tag = eventPayload.target.tag;
     const image = `${eventPayload.request.host}/${eventPayload.target.repository}`;
+    const pipelineId = uuidv4();
     const msgPayload = {
       project,
       service,
       image,
       tag,
+      pipelineId,
     };
 
     const msg: KeptnRequestModel = new KeptnRequestModel();
     msg.data = msgPayload;
     msg.type = KeptnRequestModel.EVENT_TYPES.NEW_ARTEFACT;
+
+    console.log(JSON.stringify({
+      pipelineId,
+      keptnService: 'eventbroker',
+      message: msg,
+    }));
+
     return await this.messageService.sendMessage(msg);
   }
 }
