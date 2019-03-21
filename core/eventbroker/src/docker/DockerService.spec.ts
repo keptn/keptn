@@ -72,8 +72,11 @@ describe('DockerService', () => {
       image: 'docker-registry.keptn.svc.cluster.local:5000/library/keptn/keptn-event-broker-ext',
       tag: 'latest',
     };
+    expectedMessage.shkeptncontext = sinon.match.string;
+    expectedMessage.id = sinon.match.string;
     expectedMessage.type = KeptnRequestModel.EVENT_TYPES.NEW_ARTEFACT;
-    expect(messageServiceSendMessageStub.calledWithMatch(expectedMessage)).is.true;
+    expect(messageServiceSendMessageStub.calledWithMatch(
+      expectedMessage, sinon.match.string)).is.true;
     expect(result).to.be.true;
   });
 
@@ -129,7 +132,10 @@ describe('DockerService', () => {
         tag: 'latest',
       };
       expectedMessage.type = KeptnRequestModel.EVENT_TYPES.NEW_ARTEFACT;
-      expect(messageServiceSendMessageStub.calledWithMatch(expectedMessage)).is.true;
+      expectedMessage.shkeptncontext = sinon.match.string;
+      expectedMessage.id = sinon.match.string;
+      expect(messageServiceSendMessageStub.calledWithMatch(
+        expectedMessage, sinon.match.string)).is.true;
       expect(result).to.be.true;
     });
 
