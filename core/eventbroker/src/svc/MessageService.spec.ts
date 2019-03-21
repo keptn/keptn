@@ -12,7 +12,7 @@ const nock = require('nock');
 describe('MessageService', () => {
   let messageService: MessageService;
   let channelReconciler: ChannelReconciler;
-  let keptnContext = 'my-keptn-context';
+  const keptnContext = 'my-keptn-context';
   beforeEach(() => {
     cleanUpMetadata();
     process.env.CHANNEL_URI = 'channel';
