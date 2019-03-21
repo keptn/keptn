@@ -50,9 +50,8 @@ export class KeptnController implements interfaces.Controller {
   ): Promise<void> {
     let keptnContext = '';
     if (request.body !== undefined &&
-      request.body.data !== undefined &&
-      request.body.data.keptnContext !== undefined) {
-      keptnContext = request.body.keptnContext;
+      request.body.shkeptncontext !== undefined) {
+      keptnContext = request.body.shkeptncontext;
     }
     console.log(JSON.stringify({
       keptnContext,
