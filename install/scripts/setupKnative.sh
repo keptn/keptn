@@ -40,6 +40,7 @@ kubectl get configmap config-network -n knative-serving -o=yaml | yq w - data['i
 sleep 30
 
 kubectl apply -f ../manifests/keptn/keptn-rbac.yaml
+kubectl apply -f ../manifests/keptn/keptn-org-configmap.yaml
 
 # Install kaniko build template
 kubectl apply -f ../manifests/knative/build/kaniko.yaml -n keptn
