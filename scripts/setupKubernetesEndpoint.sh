@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Create a Bearer token for authenticating against the Kubernetes API
+kubectl apply -f kubernetes-monitoring-service-account.yaml
+sleep 60
+
+# env variables
 export DT_TENANT_ID=$(cat creds.json | jq -r '.dynatraceTenant')
 export DT_API_TOKEN=$(cat creds.json | jq -r '.dynatraceApiToken')
 export kubeURL=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}')
