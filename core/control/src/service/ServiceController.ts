@@ -55,8 +55,8 @@ export class ServiceController implements interfaces.Controller {
       keptnContext,
       result: 'success',
     };
-    if (request.body !== undefined && request.body.data !== undefined) {
-      request.body.data.keptnContext = keptnContext;
+    if (request.body !== undefined) {
+      request.body.shkeptncontext = keptnContext;
     }
     await this.messageService.sendMessage(request.body);
 

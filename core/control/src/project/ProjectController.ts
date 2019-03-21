@@ -59,7 +59,7 @@ export class ProjectController implements interfaces.Controller {
       result: 'success',
     };
     if (request.body !== undefined && request.body.data !== undefined) {
-      request.body.data.keptnContext = keptnContext;
+      request.body.shkeptncontext = keptnContext;
     }
 
     await this.messageService.sendMessage(request.body);

@@ -57,8 +57,8 @@ export class ConfigController implements interfaces.Controller {
       keptnContext,
       success: true,
     };
-    if (request.body !== undefined && request.body.data !== undefined) {
-      request.body.data.keptnContext = keptnContext;
+    if (request.body !== undefined) {
+      request.body.shkeptncontext = keptnContext;
     }
     result.success = await this.messageService.sendMessage(request.body);
     response.send(result);
