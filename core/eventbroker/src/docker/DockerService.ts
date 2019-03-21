@@ -1,6 +1,5 @@
 import 'reflect-metadata';
 import { injectable, inject } from 'inversify';
-import axios  from 'axios';
 import { MessageService } from '../svc/MessageService';
 import { KeptnRequestModel } from '../keptn/KeptnRequestModel';
 import { DockerRequestModel } from './DockerRequestModel';
@@ -49,6 +48,14 @@ export class DockerService {
     const msg: KeptnRequestModel = new KeptnRequestModel();
     msg.data = msgPayload;
     msg.type = KeptnRequestModel.EVENT_TYPES.NEW_ARTEFACT;
-    return await this.messageService.sendMessage(msg);
+
+    console.log(JSON.stringify({
+      keptnContext: msg.shkeptncontext,
+      keptnService: 'eventbroker',
+      logLevel: 'INFO',
+      message: msg,
+    }));
+
+    return await this.messageService.sendMessage(msg, msg.shkeptncontext);
   }
 }

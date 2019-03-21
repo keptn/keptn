@@ -17,6 +17,8 @@ import { ConfigRequestModel } from './ConfigRequestModel';
 import { CredentialsService } from '../svc/CredentialsService';
 import { MessageService } from '../svc/MessageService';
 
+const uuidv4 = require('uuid/v4');
+
 @ApiPath({
   name: 'Config',
   path: '/config',
@@ -50,15 +52,15 @@ export class ConfigController implements interfaces.Controller {
     next: express.NextFunction,
   ): Promise<void> {
     console.log(`received config command...`);
-    const result = await this.messageService.sendMessage(request.body);
-    /*
-    const credentialsService = CredentialsService.getInstance();
-    try {
-      await credentialsService.updateGithubConfig(request.body.data);
-    } catch (e) {
-      console.log(e);
+    const keptnContext = uuidv4();
+    const result = {
+      keptnContext,
+      success: true,
+    };
+    if (request.body !== undefined) {
+      request.body.shkeptncontext = keptnContext;
     }
-    */
-    response.send({ success: result });
+    result.success = await this.messageService.sendMessage(request.body);
+    response.send(result);
   }
 }
