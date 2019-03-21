@@ -57,7 +57,9 @@ kubectl create -f ../manifests/gen/k8s-jenkins-deployment.yml
 kubectl create -f ../manifests/jenkins/k8s-jenkins-rbac.yml
 
 # Deploy Dynatrace operator
-export LATEST_RELEASE=$(curl -s https://api.github.com/repos/dynatrace/dynatrace-oneagent-operator/releases/latest | grep tag_name | cut -d '"' -f 4)
+# instead of taking the latest release we go with the version v0.3.0
+# export LATEST_RELEASE=$(curl -s https://api.github.com/repos/dynatrace/dynatrace-oneagent-operator/releases/latest | grep tag_name | cut -d '"' -f 4)
+export LATEST_RELEASE=v0.3.0
 echo "Installing Dynatrace Operator $LATEST_RELEASE"
 kubectl create namespace dynatrace
 kubectl create -f https://raw.githubusercontent.com/Dynatrace/dynatrace-oneagent-operator/$LATEST_RELEASE/deploy/kubernetes.yaml --validate=false
