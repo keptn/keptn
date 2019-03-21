@@ -3,7 +3,7 @@
 export DT_TENANT_ID=$(cat creds.json | jq -r '.dynatraceTenant')
 export DT_API_TOKEN=$(cat creds.json | jq -r '.dynatraceApiToken')
 export kubeURL=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}')
-export kube_API_TOKEN=$(kubectl get secret $(kubectl get sa dynatrace-monitoring -o jsonpath='{.secrets[0].name}' -n dynatrace) -o jsonpath='{.data.token}' -n dynatrace | base64 -D)
+export kube_API_TOKEN=$(kubectl get secret $(kubectl get sa dynatrace-monitoring -o jsonpath='{.secrets[0].name}' -n dynatrace) -o jsonpath='{.data.token}' -n dynatrace | base64 -d)
 export CLUSTERVERSION=$(curl -s https://$DT_TENANT_ID.live.dynatrace.com/api/v1/config/clusterversion?api-token=$DT_API_TOKEN | jq -r .version[2:5])
 
 # check tenant is at least 1.164
