@@ -187,17 +187,6 @@ echo "--------------------------"
 echo "End set up Ansible Tower "
 echo "--------------------------"
 
-  # Connect Kubernetes cluster to Dynatrace
-echo "--------------------------"
-echo "Connect Kubernetes cluster to Dynatrace "
-echo "--------------------------"
-
-./setupKubernetesEndpoint.sh
-
-echo "--------------------------"
-echo "End Connect Kubernetes cluster to Dynatrace "
-echo "--------------------------"
-
 echo "----------------------------------------------------"
 echo "Finished setting up infrastructure "
 echo "----------------------------------------------------"
