@@ -33,11 +33,25 @@ export class DockerService {
     const service = repositorySplit[repositorySplit.length - 1];
     const tag = eventPayload.target.tag;
     const image = `${eventPayload.request.host}/${eventPayload.target.repository}`;
+
+    const msg: KeptnRequestModel = new KeptnRequestModel();
+
     const repo = await this.orgToRepoMapper.getRepoForOrg(project);
     if (repo === '') {
-      console.log(`No repo found for organization ${project}`);
+      console.log(JSON.stringify({
+        keptnContext: msg.shkeptncontext,
+        keptnService: 'eventbroker',
+        logLevel: 'INFO',
+        message: `No repo found for organization ${project}`,
+      }));
       return false;
     }
+    console.log(JSON.stringify({
+      keptnContext: msg.shkeptncontext,
+      keptnService: 'eventbroker',
+      logLevel: 'INFO',
+      message: `Found mapping org ${project} to ${repo}`,
+    }));
     const msgPayload = {
       service,
       image,
@@ -45,7 +59,6 @@ export class DockerService {
       project: repo,
     };
 
-    const msg: KeptnRequestModel = new KeptnRequestModel();
     msg.data = msgPayload;
     msg.type = KeptnRequestModel.EVENT_TYPES.NEW_ARTEFACT;
 
