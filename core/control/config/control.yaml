@@ -17,7 +17,7 @@ spec:
           source:
             git:
               url: https://github.com/keptn/keptn.git
-              revision: cloudevents-sdk
+              revision: master
           template:
             name: kaniko
             arguments:
