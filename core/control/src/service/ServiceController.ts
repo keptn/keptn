@@ -16,6 +16,8 @@ import {
 } from 'swagger-express-ts';
 import { MessageService } from '../svc/MessageService';
 
+const uuidv4 = require('uuid/v4');
+
 @ApiPath({
   name: 'Service',
   path: '/service',
@@ -48,10 +50,14 @@ export class ServiceController implements interfaces.Controller {
     response: express.Response,
     next: express.NextFunction,
   ): Promise<void> {
+    const keptnContext = uuidv4();
     const result = {
+      keptnContext,
       result: 'success',
     };
-
+    if (request.body !== undefined) {
+      request.body.shkeptncontext = keptnContext;
+    }
     await this.messageService.sendMessage(request.body);
 
     response.send(result);

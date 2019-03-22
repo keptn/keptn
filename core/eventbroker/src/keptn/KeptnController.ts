@@ -48,9 +48,19 @@ export class KeptnController implements interfaces.Controller {
     response: express.Response,
     next: express.NextFunction,
   ): Promise<void> {
-    console.log(`received event: ${JSON.stringify(request.body)}`);
+    let keptnContext = '';
+    if (request.body !== undefined &&
+      request.body.shkeptncontext !== undefined) {
+      keptnContext = request.body.shkeptncontext;
+    }
+    console.log(JSON.stringify({
+      keptnContext,
+      keptnService: 'eventbroker',
+      logLevel: 'INFO',
+      message: `received event: ${JSON.stringify(request.body)}`,
+    }));
 
-    const result = await this.messageService.sendMessage(request.body);
+    const result = await this.messageService.sendMessage(request.body, keptnContext);
     response.send({ success: result });
   }
 }
