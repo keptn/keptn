@@ -36,6 +36,14 @@ export class DockerService {
 
     const msg: KeptnRequestModel = new KeptnRequestModel();
 
+    console.log(JSON.stringify({
+      keptnContext: msg.shkeptncontext,
+      keptnService: 'eventbroker',
+      logLevel: 'INFO',
+      keptnEntry: true,
+      message: `Starting new pipeline run for ${project}/${service}:${tag}`,
+    }));
+
     const repo = await this.orgToRepoMapper.getRepoForOrg(project);
     if (repo === '') {
       console.log(JSON.stringify({
