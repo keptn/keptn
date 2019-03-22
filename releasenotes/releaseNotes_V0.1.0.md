@@ -1,4 +1,4 @@
-# keptn Release Notes V 0.1
+# keptn Release Notes V 0.1.0
 
 ## Release Goal
 
