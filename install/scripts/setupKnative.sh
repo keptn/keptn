@@ -21,6 +21,7 @@ kubectl apply --filename https://github.com/knative/eventing-sources/releases/do
 kubectl apply --filename https://github.com/knative/eventing/releases/download/v0.4.0/in-memory-channel.yaml
 kubectl apply --filename https://github.com/knative/serving/releases/download/v0.4.0/monitoring.yaml
 kubectl apply --filename https://raw.githubusercontent.com/knative/serving/v0.4.0/third_party/config/build/clusterrole.yaml
+kubectl apply --filename https://github.com/knative/serving/releases/download/v0.4.0/monitoring-logs-elasticsearch.yaml
 # Configure knative serving default domain
 rm -f ../manifests/gen/config-domain.yaml
 
