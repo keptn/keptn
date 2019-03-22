@@ -17,3 +17,4 @@ install/scripts/keptn-services/*
 
 # Repositories forked by forkGitHubRepositories.sh
 repositories
+cli/vendor/*
