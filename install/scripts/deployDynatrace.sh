@@ -33,5 +33,3 @@ echo "End applying auto tagging rules in Dynatrace "
 echo "--------------------------"
 
 ./createServiceEntry.sh $DT_TENANT_ID $DT_PAAS_TOKEN
-
-./redeployJenkins.sh
