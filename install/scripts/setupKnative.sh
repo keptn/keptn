@@ -55,15 +55,12 @@ REGISTRY_URL=$(kubectl describe svc docker-registry -n keptn | grep "IP:" | sed 
 val=$(kubectl -n knative-serving get cm config-controller -o=json | jq -r .data.registriesSkippingTagResolving | awk '{print $1",'$REGISTRY_URL':5000"}')
 kubectl -n knative-serving get cm config-controller -o=yaml | yq w - data.registriesSkippingTagResolving $val | kubectl apply -f -
 
-# Deploy knative eventing channel (keptn-channel)
+# Deploy knative eventing channels (keptn-channel)
 kubectl apply -f ../../core/eventbroker/config/channel.yaml
 kubectl apply -f ../../core/eventbroker/config/new-artefact-channel.yaml
 kubectl apply -f ../../core/eventbroker/config/configuration-changed-channel.yaml
-kubectl apply -f ../../core/eventbroker/config/start-deployment-channel.yaml
 kubectl apply -f ../../core/eventbroker/config/deployment-finished-channel.yaml
-kubectl apply -f ../../core/eventbroker/config/start-tests-channel.yaml
 kubectl apply -f ../../core/eventbroker/config/tests-finished-channel.yaml
-kubectl apply -f ../../core/eventbroker/config/start-evaluation-channel.yaml
 kubectl apply -f ../../core/eventbroker/config/evaluation-done-channel.yaml
 kubectl apply -f ../../core/eventbroker/config/problem-channel.yaml
 
