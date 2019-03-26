@@ -319,6 +319,52 @@ describe('DockerService', () => {
       expect(result).to.be.false;
     });
 
+    it(
+      'should return false if a message with an invalid format is received (no tag)',
+      async () => {
+        const message: any = {
+          events: [
+            {
+              id: 'a24e1fe3-efc9-42e3-b274-3c736f015552',
+              timestamp: '2019-03-05T14:52:38.292839945Z',
+              action: 'push',
+              target: {
+                mediaType: 'application/vnd.docker.distribution.manifest.v2+json',
+                size: 2223,
+                digest: 'sha256:d1b654481b04da5f1f69dc4e3bd72f4b592a60c6fb5618a9096eeac870cd3fe6',
+                length: 2223,
+                repository: 'library/keptn/keptn-event-broker-ext',
+                url: 'http://docker-registry.keptn.svc.cluster.local:5000/',
+              },
+              request: {
+                id: '164cafa5-ec03-4445-83b3-3ba6f7f28772',
+                addr: '127.0.0.1:37402',
+                host: 'docker-registry.keptn.svc.cluster.local:5000',
+                method: 'PUT',
+                useragent: 'kaniko/unset',
+              },
+              actor: {
+
+              },
+              source: {
+                addr: 'docker-registry-55bd8d967c-hztw9:5000',
+                instanceID: '2871c1e7-78b9-4fa5-b749-dc5e5fff8f9c',
+              },
+            },
+          ],
+        };
+
+        const messageServiceSendMessageStub = sinon.stub().resolves(false);
+        messageService.sendMessage = messageServiceSendMessageStub;
+
+        const orgToRepoStub = sinon.stub().resolves('keptn');
+        orgToRepoMapper.getRepoForOrg = orgToRepoStub;
+
+        const result = await dockerService.handleDockerRequest(message);
+        expect(result).to.be.false;
+        expect(messageServiceSendMessageStub.called).is.false;
+      });
+
   it(
     'should return false if a message with an invalid format is \
       received (invalid repository string)',
