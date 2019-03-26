@@ -32,17 +32,13 @@ export class DockerService {
     const project = repositorySplit[repositorySplit.length - 2];
     const service = repositorySplit[repositorySplit.length - 1];
     const tag = eventPayload.target.tag;
+
+    if (tag === undefined) {
+      return false;
+    }
     const image = `${eventPayload.request.host}/${eventPayload.target.repository}`;
 
     const msg: KeptnRequestModel = new KeptnRequestModel();
-
-    console.log(JSON.stringify({
-      keptnContext: msg.shkeptncontext,
-      keptnService: 'eventbroker',
-      logLevel: 'INFO',
-      keptnEntry: true,
-      message: `Starting new pipeline run for ${project}/${service}:${tag}`,
-    }));
 
     const repo = await this.orgToRepoMapper.getRepoForOrg(project);
     if (repo === '') {
@@ -54,6 +50,13 @@ export class DockerService {
       }));
       return false;
     }
+    console.log(JSON.stringify({
+      keptnContext: msg.shkeptncontext,
+      keptnService: 'eventbroker',
+      logLevel: 'INFO',
+      keptnEntry: true,
+      message: `Starting new pipeline run for ${project}/${service}:${tag}`,
+    }));
     console.log(JSON.stringify({
       keptnContext: msg.shkeptncontext,
       keptnService: 'eventbroker',
