@@ -3,8 +3,3 @@
 
 # These owners will be the default owners for everything in the repo.
 * @dirkwall @jetzlstorfer @AloisReitbauer @danielkhan @bacherfl @johannes-b @agrimmer
-/cli @agrimmer @dirkwall @AloisReitbauer
-/core @bacherfl @dirkwall @AloisReitbauer
-/install @bacherfl @dirkwall @AloisReitbauer
-/travis-scripts @agrimmer @dirkwall @AloisReitbauer
-
