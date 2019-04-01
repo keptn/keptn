@@ -19,6 +19,7 @@ kubectl delete --filename https://github.com/knative/eventing/releases/download/
 kubectl delete --filename https://github.com/knative/eventing-sources/releases/download/v0.4.0/release.yaml --ignore-not-found
 kubectl delete --filename https://github.com/knative/serving/releases/download/v0.4.0/monitoring.yaml --ignore-not-found
 kubectl delete --filename https://raw.githubusercontent.com/knative/serving/v0.4.0/third_party/config/build/clusterrole.yaml --ignore-not-found
+kubectl delete --filename https://github.com/knative/serving/releases/download/v0.4.0/monitoring-logs-elasticsearch.yaml --ignore-not-found
 
 # Clean up istio namespace
 kubectl delete -f ../manifests/istio/istio-knative.yaml --ignore-not-found
