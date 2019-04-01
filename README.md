@@ -7,13 +7,14 @@ keptn is a fabric for cloud-native lifecycle automation at enterprise scale. In 
 
 ## Usage
 
-**:warning: keptn is actively developed on the master branch, therefore, the `master` might not be stable. :warning:** 
+**We recommend working with the [V 0.2 release branch](https://github.com/keptn/keptn/releases/tag/v0.2.x-prerelease)**
 
 Here is the best way to getting started with keptn:
 
 - Please use the [docs on the keptn website](https://keptn.sh/docs) to get resources on how to use keptn.
 - Please use the [release section](https://github.com/keptn/keptn/releases) to learn about our current releases, release candidates and pre-releases to get the latest version of keptn.
 
+**:warning: keptn is actively developed on the master branch, therefore, the `master` might not be stable. :warning:** 
 
 ## Repositories <a id="repos"></a>
 * [keptn/keptn](README.md). This is the main repository that you are currently looking at. It hosts keptn's core components and documents that govern the keptn open source project. It includes:
