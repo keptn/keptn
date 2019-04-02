@@ -1,9 +1,7 @@
 #!/bin/bash
 
-DT_TENANT_ID=$1
-DT_PAAS_TOKEN=$2
-CLUSTER_NAME=$3
-CLUSTER_ZONE=$4
+CLUSTER_NAME=$1
+CLUSTER_ZONE=$2
 
 #kubectl apply --filename https://github.com/knative/serving/releases/download/v0.4.0/istio-crds.yaml && \
 #kubectl apply --filename https://github.com/knative/serving/releases/download/v0.4.0/istio.yaml
@@ -24,12 +22,6 @@ kubectl apply -f ../manifests/gen/istio-knative.yaml
 
 echo "Wait 4 minutes for changes to apply... "
 sleep 240
-echo "Wait 4 additional minutes for changes to apply... "
-sleep 240
-
-kubectl label namespace keptn istio-injection=enabled
-
-./createServiceEntry.sh $DT_TENANT_ID $DT_PAAS_TOKEN
 
 echo "Wait 10s for changes to apply... "
 sleep 10

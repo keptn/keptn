@@ -26,4 +26,10 @@ git clone https://github.com/keptn/github-service.git
 cd github-service
 chmod +x deploy.sh
 ./deploy.sh $REGISTRY_URI
+cd ..
 
+git clone https://github.com/keptn/servicenow-service.git
+cd servicenow-service
+chmod +x deploy.sh
+./deploy.sh
+cd ..
