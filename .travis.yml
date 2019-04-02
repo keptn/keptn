@@ -29,7 +29,13 @@ notifications:
     on_failure: always
     on_cancel: always
     on_error: always 
-    
+
+before_install:                                                                 
+  - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh 
+  - cd cli/
+  - dep ensure
+  - cd ..
+
 jobs:
   include:
     - stage: master

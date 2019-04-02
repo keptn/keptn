@@ -7,9 +7,6 @@ CREDS=./creds.json
 rm $CREDS 2> /dev/null
 
 echo -e "${YLW}Please enter the credentials as requested below: ${NC}"
-read -p "Dynatrace Tenant ID (8-digits) (default=$DTENV): " DTENVC
-read -p "Dynatrace API Token (default=$DTAPI): " DTAPIC
-read -p "Dynatrace PaaS Token (default=$DTAPI): " DTPAAST
 read -p "GitHub User Name: " GITU 
 read -p "GitHub Personal Access Token: " GITAT
 read -p "GitHub User Email: " GITE
@@ -32,9 +29,6 @@ fi
 
 echo ""
 echo -e "${YLW}Please confirm all are correct: ${NC}"
-echo "Dynatrace Tenant: $DTENV"
-echo "Dynatrace API Token: $DTAPI"
-echo "Dynatrace PaaS Token: $DTPAAST"
 echo "GitHub User Name: $GITU"
 echo "GitHub Personal Access Token: $GITAT"
 echo "GitHub User Email: $GITE"
@@ -49,10 +43,7 @@ echo ""
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
     rm $CREDS 2> /dev/null
-    cat ./creds.sav | sed 's~DYNATRACE_TENANT_PLACEHOLDER~'"$DTENV"'~' | \
-      sed 's~DYNATRACE_API_TOKEN~'"$DTAPI"'~' | \
-      sed 's~DYNATRACE_PAAS_TOKEN~'"$DTPAAST"'~' | \
-      sed 's~GITHUB_USER_NAME_PLACEHOLDER~'"$GITU"'~' | \
+    cat ./creds.sav | sed 's~GITHUB_USER_NAME_PLACEHOLDER~'"$GITU"'~' | \
       sed 's~PERSONAL_ACCESS_TOKEN_PLACEHOLDER~'"$GITAT"'~' | \
       sed 's~GITHUB_USER_EMAIL_PLACEHOLDER~'"$GITE"'~' | \
       sed 's~CLUSTER_NAME_PLACEHOLDER~'"$CLN"'~' | \

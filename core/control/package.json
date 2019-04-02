@@ -48,13 +48,14 @@
     "github-api": "^3.0.0",
     "inversify": "^5.0.1",
     "inversify-express-utils": "^6.3.2",
-    "kubernetes-client": "^6.8.3",
+    "kubernetes-client": "^6.11.0",
     "mocha": "^6.0.2",
     "mustache": "^3.0.1",
     "nodejs-base64": "^1.0.3",
     "reflect-metadata": "^0.1.13",
     "swagger-express-ts": "^1.0.1",
     "swagger-ui-dist": "^3.20.9",
+    "uuid": "^3.3.2",
     "yamljs": "^0.3.0"
   },
   "nyc": {

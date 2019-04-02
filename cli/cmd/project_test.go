@@ -20,7 +20,8 @@ func TestCreateProjectCmd(t *testing.T) {
 
 	// Write temporary shipyardTest.yml file
 	const tmpShipyardFileName = "shipyardTest.yml"
-	shipYardContent := `stages: 
+	shipYardContent := `registry: sockshopcr
+stages: 
 - name: dev
   deployment_strategy: direct
 - name: staging
@@ -36,7 +37,7 @@ func TestCreateProjectCmd(t *testing.T) {
 	args := []string{
 		"create",
 		"project",
-		"sockshop20",
+		"sockshop",
 		tmpShipyardFileName,
 	}
 	rootCmd.SetArgs(args)
