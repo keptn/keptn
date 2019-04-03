@@ -33,3 +33,6 @@ echo "End applying auto tagging rules in Dynatrace "
 echo "--------------------------"
 
 ./createServiceEntry.sh $DT_TENANT_ID $DT_PAAS_TOKEN
+
+# Create Secrets to be used by keptn services
+kubectl -n keptn create secret generic dynatrace --from-literal="DT_API_TOKEN=$DT_API_TOKEN" --from-literal="DT_TENANT_ID=$DT_TENANT_ID"
