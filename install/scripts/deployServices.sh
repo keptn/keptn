@@ -33,3 +33,10 @@ cd servicenow-service
 chmod +x deploy.sh
 ./deploy.sh
 cd ..
+
+git clone https://github.com/keptn/pitometer-service.git
+cd pitometer-service
+chmod +x deploy.sh
+./deploy.sh
+cd ..
+
