@@ -3,7 +3,10 @@
 DT_TENANT_ID=$1
 DT_PAAS_TOKEN=$2
 
-for i in ../manifests/istio/crd*yaml; do kubectl apply -f $i; done
+kubectl apply -f ../manifests/istio/crd-10.yaml
+kubectl apply -f ../manifests/istio/crd-11.yaml
+kubectl apply -f ../manifests/istio/crd-certmanager-10.yaml
+kubectl apply -f ../manifests/istio/crd-certmanager-11.yaml
 
 sleep 30
 
