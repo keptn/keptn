@@ -16,25 +16,25 @@ rm -rf keptn-services
 mkdir keptn-services
 cd keptn-services
 
-git clone https://github.com/keptn/jenkins-service.git
+git clone --branch release-0.2.x https://github.com/keptn/jenkins-service.git
 cd jenkins-service
 chmod +x deploy.sh
 ./deploy.sh $REGISTRY_URI $JENKINS_USER $JENKINS_PASSWORD $GITHUB_USER_EMAIL $GITHUB_ORGANIZATION $DT_TENANT_ID $DT_API_TOKEN $DT_TENANT_URL
 cd ..
 
-git clone https://github.com/keptn/github-service.git
+git clone --branch release-0.2.x https://github.com/keptn/github-service.git
 cd github-service
 chmod +x deploy.sh
 ./deploy.sh $REGISTRY_URI
 cd ..
 
-git clone https://github.com/keptn/servicenow-service.git
+git clone --branch release-0.2.x https://github.com/keptn/servicenow-service.git
 cd servicenow-service
 chmod +x deploy.sh
 ./deploy.sh
 cd ..
 
-git clone https://github.com/keptn/pitometer-service.git
+git clone --branch release-0.2.x https://github.com/keptn/pitometer-service.git
 cd pitometer-service
 chmod +x deploy.sh
 ./deploy.sh
