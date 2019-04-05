@@ -8,25 +8,6 @@ metadata:
 spec:
   runLatest:
     configuration:
-      build:
-        apiVersion: build.knative.dev/v1alpha1
-        kind: Build
-        metadata:
-          name: event-broker-ext-builder
-          namespace: keptn
-        spec:
-          serviceAccountName: build-bot
-          source:
-            git:
-              url: https://github.com/keptn/keptn.git
-              revision: master
-          template:
-            name: kaniko
-            arguments:
-              - name: IMAGE
-                value: docker-registry.keptn.svc.cluster.local:5000/keptn/keptn-event-broker-ext:latest
-              - name: DOCKERFILE
-                value: /core/eventbroker-ext/Dockerfile
       revisionTemplate:
         metadata:
           annotations:
@@ -34,5 +15,5 @@ spec:
             autoscaling.knative.dev/minScale: "1"
         spec:
           container:
-            image: REGISTRY_URI_PLACEHOLDER:5000/keptn/keptn-event-broker-ext:latest
+            image: keptn/keptn-event-broker-ext:0.2-rc
             imagePullPolicy: Always

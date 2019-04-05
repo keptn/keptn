@@ -1,7 +1,7 @@
 .DS_Store
 # Creds files
 scripts/creds.json
-install/scripts/creds.json
+install/scripts/*creds*.json
 install/scripts/creds_dt.json
 
 # Auto-generated files
