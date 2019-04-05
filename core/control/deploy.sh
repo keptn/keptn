@@ -1,6 +1,6 @@
 #!/bin/sh
-REGISTRY_URI=$1
-CHANNEL_URI=$2
+REGISTRY_URI=$(kubectl describe svc docker-registry -n keptn | grep IP: | sed 's~IP:[ \t]*~~')
+CHANNEL_URI=$(kubectl describe channel keptn-channel -n keptn | grep "Hostname:" | sed 's~[ \t]*Hostname:[ \t]*~~')
 
 rm -f config/gen/control.yaml
 
