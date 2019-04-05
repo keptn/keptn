@@ -2,6 +2,7 @@ import { inject, injectable } from 'inversify';
 import axios from 'axios';
 import { KeptnRequestModel } from '../keptn/KeptnRequestModel';
 import { ChannelReconciler } from '../lib/channel/ChannelReconciler';
+import moment from 'moment';
 
 @injectable()
 export class MessageService {
@@ -21,6 +22,7 @@ export class MessageService {
       const channelName = split[3];
       channelUri = await this.channelReconciler.resolveChannel(channelName);
     }
+    message.time = moment().format();
     if (channelUri === '' || channelUri === undefined) {
       console.log(JSON.stringify({
         keptnContext,

@@ -71,18 +71,22 @@ kubectl create secret generic -n keptn keptn-api-token --from-literal=keptn-api-
 
 # Deploy event broker
 cd ../../core/eventbroker
+chmod +x deploy.sh
 ./deploy.sh $REGISTRY_URL $KEPTN_CHANNEL_URI $NEW_ARTEFACT_CHANNEL $START_DEPLOYMENT_CHANNEL $DEPLOYMENT_FINISHED_CHANNEL $START_TESTS_CHANNEL $TESTS_FINISHED_CHANNEL $START_EVALUATION_CHANNEL $EVALUATION_DONE_CHANNEL
 cd ../../install/scripts
 
 cd ../../core/eventbroker-ext
+chmod +x deploy.sh
 ./deploy.sh
 cd ../../install/scripts
 
 cd ../../core/auth
+chmod +x deploy.sh
 ./deploy.sh $REGISTRY_URL
 cd ../../install/scripts
 
 cd ../../core/control
+chmod +x deploy.sh
 ./deploy.sh $REGISTRY_URL $KEPTN_CHANNEL_URI
 cd ../../install/scripts
 
