@@ -159,7 +159,7 @@ var serviceCmd = &cobra.Command{
 		serviceURL := endPoint
 		serviceURL.Path = "service"
 
-		_, err = utils.Send(serviceURL, event, apiToken)
+		_, err = utils.Send(serviceURL, event, apiToken, utils.AddXKeptnSignatureHeader)
 
 		if err != nil {
 			fmt.Println("Onboard service was unsuccessful")

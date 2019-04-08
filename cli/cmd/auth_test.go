@@ -14,8 +14,8 @@ func init() {
 	utils.InitLoggers(os.Stdout, os.Stdout, os.Stderr)
 }
 
-// TestAuthCmd tests the auth command. Therefore, this test assumes a file named "endPoint.txt" containing
-// the endpoint and api-token in the executing directory.
+// TestAuthCmd tests the auth command. Therefore, this test assumes a file named ".keptnmock" containing
+// the endpoint and api-token in the HOME directory.
 func TestAuthCmd(t *testing.T) {
 
 	credentialmanager.MockCreds = true

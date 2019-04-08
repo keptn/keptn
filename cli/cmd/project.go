@@ -27,7 +27,8 @@ var projectCmd = &cobra.Command{
 	Use:   "project project_name shipyard_file",
 	Short: "Creates a new project.",
 	Long: `Creates a new project with the provided name and shipyard file. 
-The shipyard file describes the used stages.
+The shipyard file describes the used stages. Furthermore, for these stages the shipyard file 
+describes the used deployment and test strategies.
 
 Example:
 	keptn create project sockshop shipyard.yml`,
@@ -85,7 +86,7 @@ Example:
 		projectURL := endPoint
 		projectURL.Path = "project"
 
-		_, err = utils.Send(projectURL, event, apiToken)
+		_, err = utils.Send(projectURL, event, apiToken, utils.AddXKeptnSignatureHeader)
 		if err != nil {
 			fmt.Println("Create project was unsuccessful")
 			return err
