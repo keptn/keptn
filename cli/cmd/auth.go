@@ -50,7 +50,7 @@ Example:
 		authURL := *u
 		authURL.Path = "auth"
 
-		_, err = utils.Send(authURL, event, *apiToken)
+		_, err = utils.Send(authURL, event, *apiToken, utils.AddXKeptnSignatureHeader)
 		if err != nil {
 			fmt.Println("Authentication was unsuccessful")
 			return err
