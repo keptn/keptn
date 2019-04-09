@@ -21,7 +21,7 @@ var manifestFilePath *string
 
 type serviceData map[string]interface{}
 
-const manifestEnabled = true
+const manifestEnabled = false
 
 // serviceCmd represents the service command
 var serviceCmd = &cobra.Command{
