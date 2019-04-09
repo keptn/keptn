@@ -15,5 +15,5 @@ spec:
             autoscaling.knative.dev/minScale: "1"
         spec:
           container:
-            image: keptn/keptn-event-broker:0.2-rc
+            image: keptn/keptn-event-broker:0.2.0
             imagePullPolicy: Always
