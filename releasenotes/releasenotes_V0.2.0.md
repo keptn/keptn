@@ -2,7 +2,7 @@
 
 ## Release Goal
 
-The goal of this release is to provide a keptn installation that comes with integrated quality gates, different deployment strategies, a dedicated keptn CLI and integration with 3rd party vendors to allow you to build your cloud-native delivery.
+The goal of this release is to provide a keptn installation that comes with automated quality gates evaluation, different deployment strategies, a dedicated keptn CLI and integration with 3rd party vendors to allow you to build your cloud-native delivery.
 
 ### Automated setup
 This release comes with scripts that automatically install keptn on your GKE cluster and set up all needed components including Istio, Knative, Kibana and all keptn services. Additionally, keptn creates namespaces for the different stages your service will go through (e.g., dev, staging, production) to ensure resource isolation.
