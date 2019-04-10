@@ -34,10 +34,10 @@ keptn in [version 0.2](https://github.com/keptn/keptn/tree/prerelease-0.2.x) req
 - keptn/servicenow-service:0.1.0
 - keptn/github-service:0.1.0
 - keptn/jenkins-service:0.1.0
-    - keptn/jenkins-0.4-rc
+    - keptn/jenkins:0.4.0
 
 keptn in [version 0.1.3](https://github.com/keptn/keptn/tree/0.1.3) requires:
-- keptn/jenkins-0.2
+- keptn/jenkins:0.2
 - dynatraceacm/ansibletower:3.3.1-1-2
 
 ## Further information
