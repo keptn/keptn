@@ -25,7 +25,7 @@ We mangage the keptn core components as well as all services (e.g. Jenkins-servi
 The versions of the keptn core components and the services have to be compatible to each other.
 Therefore, this section shows the compatibility between these versions.
 
-keptn in [version 0.2](https://github.com/keptn/keptn/tree/prerelease-0.2.x) requires:
+keptn in [version 0.2.0](https://github.com/keptn/keptn/tree/release-0.2.x) requires:
 - keptn/keptn-authenticator:0.2.0
 - keptn/keptn-control:0.2.0
 - keptn/keptn-event-broker:0.2.0
