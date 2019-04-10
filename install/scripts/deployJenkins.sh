@@ -5,8 +5,8 @@ export JENKINS_USER=$(cat creds.json | jq -r '.jenkinsUser')
 export JENKINS_PASSWORD=$(cat creds.json | jq -r '.jenkinsPassword')
 export GITHUB_USER_EMAIL=$(cat creds.json | jq -r '.githubUserEmail')
 export GITHUB_ORGANIZATION=$(cat creds.json | jq -r '.githubOrg')
-export DT_TENANT_ID=$(cat creds.json | jq -r '.dynatraceTenant')
-export DT_API_TOKEN=$(cat creds.json | jq -r '.dynatraceApiToken')
+export DT_TENANT_ID=$(cat creds_dt.json | jq -r '.dynatraceTenant')
+export DT_API_TOKEN=$(cat creds_dt.json | jq -r '.dynatraceApiToken')
 export DT_TENANT_URL="$DT_TENANT_ID.live.dynatrace.com"
 
 # Deploy Jenkins - see keptn/install/setupInfrastructure.sh:
