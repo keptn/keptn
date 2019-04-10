@@ -159,6 +159,7 @@ var serviceCmd = &cobra.Command{
 		serviceURL := endPoint
 		serviceURL.Path = "service"
 
+		fmt.Println("Connecting to server ", endPoint.String())
 		_, err = utils.Send(serviceURL, event, apiToken)
 
 		if err != nil {
