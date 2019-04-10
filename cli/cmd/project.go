@@ -85,6 +85,7 @@ Example:
 		projectURL := endPoint
 		projectURL.Path = "project"
 
+		fmt.Println("Connecting to server ", endPoint.String())
 		_, err = utils.Send(projectURL, event, apiToken)
 		if err != nil {
 			fmt.Println("Create project was unsuccessful")
