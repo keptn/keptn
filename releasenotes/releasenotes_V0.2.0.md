@@ -1,4 +1,4 @@
-# Release Notes v0.2.0
+# Release Notes 0.2.0
 
 ## Release Goal
 
@@ -36,7 +36,7 @@ Thereby it relies on three concepts:
 
 ## Version capabilities:
 
-keptn is installed by using these images from the keptn Dockerhub registry:
+keptn is installed by using these images from the [keptn Dockerhub registry](https://hub.docker.com/u/keptn):
 
 - keptn/keptn-authenticator:0.2.0
 - keptn/keptn-control:0.2.0
@@ -50,7 +50,7 @@ keptn is installed by using these images from the keptn Dockerhub registry:
 
 ## Known limitations:
 
-- installation currently only on GKE 
+- installation currently only on GKE (more platforms to come)
 - no multi-tenant functionality yet (only one GitHub organization can be configured with the keptn server)
 - for use cases that require Dynatrace: support for Dynatrace SaaS tenants only (managed support to come)
 - keptn CLI output not reliably reflecting success/error of keptn services: the CLI only reflects the successful acknowledgment of the CLI command but not its successful execution
