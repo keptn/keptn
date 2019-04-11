@@ -222,28 +222,6 @@ describe('authenticator', () => {
     expect(nextSpy.called).is.false;
   });
 
-  it('should not try to verify requests for getting the swagger doc', async () => {
-    const responseSendSpy = sinon.spy();
-    response.send = responseSendSpy;
-
-    const responseStatusSpy = sinon.spy();
-    response.status = responseStatusSpy;
-
-    const responseEndSpy = sinon.spy();
-    response.end = responseEndSpy;
-
-    request.body = {};
-
-    request.url = '/swagger.json';
-
-    const nextSpy = sinon.spy();
-    next = nextSpy;
-
-    await authenticator(request, response, next);
-
-    expect(nextSpy.called).is.true;
-  });
-
   it('should return a 401 if the auth service call fails', async () => {
     const responseSendSpy = sinon.spy();
     response.send = responseSendSpy;
