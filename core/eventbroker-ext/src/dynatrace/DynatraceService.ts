@@ -4,6 +4,8 @@ import axios  from 'axios';
 import { DynatraceRequestModel } from './DynatraceRequestModel';
 import { KeptnRequestModel } from '../lib/types/KeptnRequestModel';
 
+const uuidv4 = require('uuid/v4');
+
 @injectable()
 export class DynatraceService {
 
@@ -11,11 +13,16 @@ export class DynatraceService {
 
   public async handleDynatraceEvent(dtEventPayload: DynatraceRequestModel): Promise<boolean> {
 
-    const keptnEvent: KeptnRequestModel = new KeptnRequestModel();
-    keptnEvent.data = dtEventPayload;
-    keptnEvent.type = KeptnRequestModel.EVENT_TYPES.PROBLEM;
-    console.log(`Sending keptn event ${JSON.stringify(keptnEvent)}`);
-    await axios.post('http://event-broker.keptn.svc.cluster.local/keptn', keptnEvent);
+    if (dtEventPayload.shkeptncontext === undefined) {
+      dtEventPayload.shkeptncontext = uuidv4();
+    }
+    console.log(JSON.stringify({
+      keptnContext: dtEventPayload.shkeptncontext,
+      keptnService: 'eventbroker-ext',
+      logLevel: 'INFO',
+      message: `Sending keptn event ${JSON.stringify(dtEventPayload)}`,
+    }));
+    await axios.post('http://event-broker.keptn.svc.cluster.local/keptn', dtEventPayload);
     return true;
   }
 }

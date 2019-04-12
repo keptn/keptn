@@ -1,26 +1,27 @@
 #!/bin/bash
-JENKINS_USER=$1
-JENKINS_PASSWORD=$2
-REGISTRY_URL=$3
+REGISTRY_URL=$1
+CLUSTER_NAME=$2
+CLUSTER_ZONE=$3
 SHOW_API_TOKEN=$4
 
-kubectl create namespace keptn
+kubectl create namespace keptn 2> /dev/null
 
 # Create container registry
-kubectl create -f ../manifests/container-registry/k8s-docker-registry-pvc.yml
-kubectl create -f ../manifests/container-registry/k8s-docker-registry-configmap.yml
-kubectl create -f ../manifests/container-registry/k8s-docker-registry-deployment.yml
-kubectl create -f ../manifests/container-registry/k8s-docker-registry-service.yml
-
-kubectl label namespace keptn istio-injection=enabled
+kubectl apply -f ../manifests/container-registry/k8s-docker-registry-configmap.yml
+kubectl apply -f ../manifests/container-registry/k8s-docker-registry-pvc.yml
+kubectl apply -f ../manifests/container-registry/k8s-docker-registry-configmap.yml
+kubectl apply -f ../manifests/container-registry/k8s-docker-registry-deployment.yml
+kubectl apply -f ../manifests/container-registry/k8s-docker-registry-service.yml
 
 # Install knative serving, eventing, build
-kubectl apply --filename https://github.com/knative/serving/releases/download/v0.3.0/serving.yaml
-kubectl apply --filename https://github.com/knative/build/releases/download/v0.3.0/release.yaml
-kubectl apply --filename https://github.com/knative/eventing/releases/download/v0.3.0/release.yaml
-kubectl apply --filename https://github.com/knative/eventing-sources/releases/download/v0.3.0/release.yaml
-kubectl apply --filename https://github.com/knative/serving/releases/download/v0.3.0/monitoring.yaml
-
+kubectl apply --filename https://github.com/knative/serving/releases/download/v0.4.0/serving.yaml
+kubectl apply --filename https://github.com/knative/build/releases/download/v0.4.0/build.yaml
+kubectl apply --filename https://github.com/knative/eventing/releases/download/v0.4.0/release.yaml
+kubectl apply --filename https://github.com/knative/eventing-sources/releases/download/v0.4.0/release.yaml
+kubectl apply --filename https://github.com/knative/eventing/releases/download/v0.4.0/in-memory-channel.yaml
+kubectl apply --filename https://github.com/knative/serving/releases/download/v0.4.0/monitoring.yaml
+kubectl apply --filename https://raw.githubusercontent.com/knative/serving/v0.4.0/third_party/config/build/clusterrole.yaml
+kubectl apply --filename https://github.com/knative/serving/releases/download/v0.4.0/monitoring-logs-elasticsearch.yaml
 # Configure knative serving default domain
 rm -f ../manifests/gen/config-domain.yaml
 
@@ -30,9 +31,17 @@ cat ../manifests/knative/config-domain.yaml | \
 
 kubectl apply -f ../manifests/gen/config-domain.yaml
 
+# Determine the IP scope of the cluster (https://github.com/knative/docs/blob/master/serving/outbound-network-access.md)
+# Gcloud:
+CLUSTER_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_NAME} --zone=${CLUSTER_ZONE} | yq r - clusterIpv4Cidr)
+SERVICES_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_NAME} --zone=${CLUSTER_ZONE} | yq r - servicesIpv4Cidr)
+
+kubectl get configmap config-network -n knative-serving -o=yaml | yq w - data['istio.sidecar.includeOutboundIPRanges'] "$CLUSTER_IPV4_CIDR,$SERVICES_IPV4_CIDR" | kubectl apply -f - 
+
 sleep 30
 
 kubectl apply -f ../manifests/keptn/keptn-rbac.yaml
+kubectl apply -f ../manifests/keptn/keptn-org-configmap.yaml
 
 # Install kaniko build template
 kubectl apply -f ../manifests/knative/build/kaniko.yaml -n keptn
@@ -40,22 +49,18 @@ kubectl apply -f ../manifests/knative/build/kaniko.yaml -n keptn
 # Create build-bot service account
 kubectl apply -f ../manifests/knative/build/service-account.yaml
 
-kubectl create secret generic -n keptn jenkinsurl --from-literal=jenkinsurl="http://$JENKINS_USER:$JENKINS_PASSWORD@jenkins.cicd.svc.cluster.local:24711"
-
 REGISTRY_URL=$(kubectl describe svc docker-registry -n keptn | grep "IP:" | sed 's~IP:[ \t]*~~')
 
 # Mark internal docker registry as insecure registry for knative controller
 val=$(kubectl -n knative-serving get cm config-controller -o=json | jq -r .data.registriesSkippingTagResolving | awk '{print $1",'$REGISTRY_URL':5000"}')
 kubectl -n knative-serving get cm config-controller -o=yaml | yq w - data.registriesSkippingTagResolving $val | kubectl apply -f -
 
-# Deploy knative eventing channel (keptn-channel)
+# Deploy knative eventing channels (keptn-channel)
 kubectl apply -f ../../core/eventbroker/config/channel.yaml
 kubectl apply -f ../../core/eventbroker/config/new-artefact-channel.yaml
-kubectl apply -f ../../core/eventbroker/config/start-deployment-channel.yaml
+kubectl apply -f ../../core/eventbroker/config/configuration-changed-channel.yaml
 kubectl apply -f ../../core/eventbroker/config/deployment-finished-channel.yaml
-kubectl apply -f ../../core/eventbroker/config/start-tests-channel.yaml
 kubectl apply -f ../../core/eventbroker/config/tests-finished-channel.yaml
-kubectl apply -f ../../core/eventbroker/config/start-evaluation-channel.yaml
 kubectl apply -f ../../core/eventbroker/config/evaluation-done-channel.yaml
 kubectl apply -f ../../core/eventbroker/config/problem-channel.yaml
 
@@ -66,18 +71,22 @@ kubectl create secret generic -n keptn keptn-api-token --from-literal=keptn-api-
 
 # Deploy event broker
 cd ../../core/eventbroker
+chmod +x deploy.sh
 ./deploy.sh $REGISTRY_URL $KEPTN_CHANNEL_URI $NEW_ARTEFACT_CHANNEL $START_DEPLOYMENT_CHANNEL $DEPLOYMENT_FINISHED_CHANNEL $START_TESTS_CHANNEL $TESTS_FINISHED_CHANNEL $START_EVALUATION_CHANNEL $EVALUATION_DONE_CHANNEL
 cd ../../install/scripts
 
 cd ../../core/eventbroker-ext
+chmod +x deploy.sh
 ./deploy.sh
 cd ../../install/scripts
 
 cd ../../core/auth
+chmod +x deploy.sh
 ./deploy.sh $REGISTRY_URL
 cd ../../install/scripts
 
 cd ../../core/control
+chmod +x deploy.sh
 ./deploy.sh $REGISTRY_URL $KEPTN_CHANNEL_URI
 cd ../../install/scripts
 

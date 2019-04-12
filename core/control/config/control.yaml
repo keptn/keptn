@@ -6,25 +6,6 @@ metadata:
 spec:
   runLatest:
     configuration:
-      build:
-        apiVersion: build.knative.dev/v1alpha1
-        kind: Build
-        metadata:
-          name: control-builder
-          namespace: keptn
-        spec:
-          serviceAccountName: build-bot
-          source:
-            git:
-              url: https://github.com/keptn/keptn.git
-              revision: master
-          template:
-            name: kaniko
-            arguments:
-              - name: IMAGE
-                value: docker-registry.keptn.svc.cluster.local:5000/keptn/keptn-control:latest
-              - name: DOCKERFILE
-                value: /core/control/Dockerfile
       revisionTemplate:
         metadata:
           annotations:
@@ -32,7 +13,7 @@ spec:
             autoscaling.knative.dev/minScale: "1"
         spec:
           container:
-            image: REGISTRY_URI_PLACEHOLDER:5000/keptn/keptn-control:latest
+            image: keptn/keptn-control:0.2.0
             imagePullPolicy: Always
             env:
             - name: CHANNEL_URI

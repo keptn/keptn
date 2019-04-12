@@ -1,6 +1,8 @@
 import { ApiModel, ApiModelProperty, SwaggerDefinitionConstant } from 'swagger-express-ts';
 import moment from 'moment';
 
+const uuidv4 = require('uuid/v4');
+
 @ApiModel({
   description: '',
   name: 'KeptnRequestModel',
@@ -50,7 +52,7 @@ export class KeptnRequestModel {
     type: 'string',
     required: true,
   })
-  public id: string;
+  public id: any;
 
   @ApiModelProperty({
     description: 'CE Time',
@@ -76,9 +78,13 @@ export class KeptnRequestModel {
   })
   public data: any;
 
+  public shkeptncontext: any;
+
   constructor() {
+    this.id = uuidv4();
     this.specversion = '0.2';
     this.time = moment().format();
     this.datacontenttype = 'application/json';
+    this.shkeptncontext = uuidv4();
   }
 }

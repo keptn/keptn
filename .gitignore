@@ -1,6 +1,8 @@
+.DS_Store
 # Creds files
 scripts/creds.json
-install/scripts/creds.json
+install/scripts/*creds*.json
+install/scripts/creds_dt.json
 
 # Auto-generated files
 install/manifests/gen/service_entries_oneagent.yml
@@ -9,7 +11,10 @@ install/manifests/gen/service_entries
 install/manifests/gen/k8s-jenkins-deployment.yml
 install/manifests/gen/cr.yml
 install/manifests/gen/config-domain.yaml
+install/manifests/gen/istio-knative.yaml
 install/scripts/logs/*.log
+install/scripts/keptn-services/*
 
 # Repositories forked by forkGitHubRepositories.sh
 repositories
+cli/vendor/*

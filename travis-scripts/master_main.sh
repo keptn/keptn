@@ -8,7 +8,7 @@ set -x
 install_hub
 install_yq
 setup_gcloud
-setup_glcoud_master
+setup_gcloud_master
 install_sed
 
 # Run scripts in ~/keptn/install/scripts
@@ -16,7 +16,7 @@ cd install/scripts
 ./forkGitHubRepositories.sh $GITHUB_ORG
 
 cat ./creds.sav |sed 's~DYNATRACE_TENANT_PLACEHOLDER~'"$DT_TENANT"'~' |sed 's~DYNATRACE_API_TOKEN~'"$DT_API_TOKEN"'~' |sed 's~DYNATRACE_PAAS_TOKEN~'"$DT_PAAS_TOKEN"'~' |sed 's~GITHUB_USER_NAME_PLACEHOLDER~'"$GITHUB_USER_NAME"'~' |sed 's~PERSONAL_ACCESS_TOKEN_PLACEHOLDER~'"$GITHUB_TOKEN"'~' |sed 's~GITHUB_USER_EMAIL_PLACEHOLDER~'"$GITHUB_EMAIL"'~' |sed 's~GITHUB_ORG_PLACEHOLDER~'"$GITHUB_ORG"'~' >> creds.json
-./setupInfrastructure.sh
+./installKeptn.sh
 cd ../..
 
 # Test front-end keptn v.0.1
