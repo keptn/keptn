@@ -29,7 +29,7 @@ import (
 )
 
 type newArtifactStruct struct {
-	Service     *string `json:service`
+	Service     *string `json:"service"`
 	Stage       *string `json:"stage"`
 	DockerImage *string `json:"dockerimage"`
 }
@@ -54,7 +54,7 @@ Example:
 			return errors.New(authErrorMsg)
 		}
 
-		fmt.Println("Starting to send a new articat event to deploy the new artifact into ", newArtifact.Stage)
+		fmt.Println("Starting to send a new articat event to deploy the new artifact ", newArtifact.Service, " into ", newArtifact.Stage)
 
 		source, _ := url.Parse("https://github.com/keptn/keptn/cli#new-artifact")
 		contentType := "application/json"
@@ -84,7 +84,7 @@ Example:
 }
 
 func init() {
-	rootCmd.AddCommand(newArtifactCmd)
+	eventCmd.AddCommand(newArtifactCmd)
 
 	newArtifact.Service = newArtifactCmd.Flags().StringP("service", "", "", "The service which should be new deployed")
 	newArtifactCmd.MarkFlagRequired("service")
