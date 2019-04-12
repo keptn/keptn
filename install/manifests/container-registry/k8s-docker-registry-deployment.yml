@@ -12,6 +12,8 @@ spec:
     metadata:
       labels:
         service: dockerregistry
+      annotations:
+        istio.sidecar.inject: "true"
     spec:
       containers:
       - name: registry

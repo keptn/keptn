@@ -3,19 +3,24 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"net/url"
 	"os"
+	"strings"
 
+	"github.com/cloudevents/sdk-go/pkg/cloudevents"
+	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
+	"github.com/google/uuid"
 	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
 	"github.com/keptn/keptn/cli/utils/websockethelper"
-	"github.com/knative/pkg/cloudevents"
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v2"
 )
 
 type projectData struct {
-	Project string        `json:"project"`
-	Stages  []utils.Stage `json:"stages"`
+	Project  string      `json:"project"`
+	Registry interface{} `json:"registry"`
+	Stages   interface{} `json:"stages"`
 }
 
 // projectCmd represents the project command
@@ -36,18 +41,19 @@ Example:
 
 		if len(args) != 2 {
 			cmd.SilenceUsage = false
-			return errors.New("Requires project_name and shipyard_file\n")
+			return errors.New("Requires project_name and shipyard_file")
 		}
 		if _, err := os.Stat(args[1]); os.IsNotExist(err) {
 			return fmt.Errorf("Cannot find file %s", args[1])
 		}
-		data, err := ioutil.ReadFile(args[1])
+		_, err = utils.ReadFile(args[1])
 		if err != nil {
 			return err
 		}
-		stages := utils.UnmarshalStages(data)
-		if len(stages) == 0 {
-			return fmt.Errorf("No stages defined in provided shipyard file")
+		testPrjData := projectData{}
+		err = parseShipYard(&testPrjData, args[1])
+		if err != nil {
+			return fmt.Errorf("Invalid shipyard file")
 		}
 		return nil
 	},
@@ -61,36 +67,30 @@ Example:
 
 		prjData := projectData{}
 		prjData.Project = args[0]
-		data, err := ioutil.ReadFile(args[1])
-		if err != nil {
-			return err
-		}
-		prjData.Stages = utils.UnmarshalStages(data)
 
-		builder := cloudevents.Builder{
-			Source:    "https://github.com/keptn/keptn/cli#createproject",
-			EventType: "create.project",
-			Encoding:  cloudevents.StructuredV01,
+		parseShipYard(&prjData, args[1])
+
+		source, _ := url.Parse("https://github.com/keptn/keptn/cli#createproject")
+
+		contentType := "application/json"
+		event := cloudevents.Event{
+			Context: cloudevents.EventContextV02{
+				ID:          uuid.New().String(),
+				Type:        "create.project",
+				Source:      types.URLRef{URL: *source},
+				ContentType: &contentType,
+			}.AsV02(),
+			Data: prjData,
 		}
 
 		projectURL := endPoint
 		projectURL.Path = "project"
 
-		req, err := builder.Build(projectURL.String(), prjData)
-		if err != nil {
-			return err
-		}
-
-		var desc = new(utils.WebsocketDescription)
-		resp, err := utils.Send(req, apiToken, desc)
-
+		fmt.Println("Connecting to server ", endPoint.String())
+		_, err = utils.Send(projectURL, event, apiToken)
 		if err != nil {
 			fmt.Println("Create project was unsuccessful")
 			return err
-		}
-		if resp.StatusCode != 200 {
-			fmt.Println("Create project was unsuccessful")
-			return errors.New(resp.Status)
 		}
 
 		if desc.Token != "" {
@@ -104,6 +104,24 @@ Example:
 		fmt.Printf("Successfully created project %v on Github\n", prjData.Project)
 		return nil
 	},
+}
+
+func parseShipYard(prjData *projectData, yamlFile string) error {
+	data, err := utils.ReadFile(yamlFile)
+	if err != nil {
+		return err
+	}
+
+	var shipyardContent map[string]interface{}
+	dec := yaml.NewDecoder(strings.NewReader(data))
+	dec.Decode(&shipyardContent)
+
+	if err != nil {
+		return errors.New("Invalid shipyard file")
+	}
+	prjData.Registry = utils.Convert(shipyardContent["registry"])
+	prjData.Stages = utils.Convert(shipyardContent["stages"])
+	return nil
 }
 
 func init() {

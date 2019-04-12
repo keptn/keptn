@@ -24,6 +24,7 @@ import * as path from 'path';
 import { MessageService } from './svc/MessageService';
 import { DockerService } from './docker/DockerService';
 import { ChannelReconciler } from './lib/channel/ChannelReconciler';
+import { OrgToRepoMapper } from './lib/org-to-repo-mapper/OrgToRepoMapper';
 
 const port: number = Number(process.env.PORT) || 5001; // or from a configuration file
 const swaggerUiAssetPath = require('swagger-ui-dist').getAbsoluteFSPath();
@@ -35,6 +36,7 @@ const container = new Container();
 // set up bindings
 container.bind<MessageService>('MessageService').to(MessageService);
 container.bind<ChannelReconciler>('ChannelReconciler').to(ChannelReconciler);
+container.bind<OrgToRepoMapper>('OrgToRepoMapper').to(OrgToRepoMapper);
 container.bind<DockerService>('DockerService').to(DockerService);
 
 // create server

@@ -3,14 +3,14 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
-	"os"
+	"net/url"
 
+	"github.com/cloudevents/sdk-go/pkg/cloudevents"
+	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
+	"github.com/google/uuid"
 	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
-	"github.com/knative/pkg/cloudevents"
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v2"
 )
 
 var project *string
@@ -50,23 +50,23 @@ var serviceCmd = &cobra.Command{
 		}
 
 		if *valuesFilePath != "" {
-			valuesData, err := readFile(*valuesFilePath)
+			valuesData, err := utils.ReadFile(*valuesFilePath)
 			if err != nil {
 				return err
 			}
 
-			if _, err := unmarshalValues(valuesData); err != nil {
+			if _, err := utils.UnmarshalString(valuesData); err != nil {
 				return err
 			}
 
 			if *deploymentFilePath != "" {
-				if _, err := readFile(*deploymentFilePath); err != nil {
+				if _, err := utils.ReadFile(*deploymentFilePath); err != nil {
 					return err
 				}
 			}
 
 			if *serviceFilePath != "" {
-				if _, err := readFile(*serviceFilePath); err != nil {
+				if _, err := utils.ReadFile(*serviceFilePath); err != nil {
 					return err
 				}
 			}
@@ -77,12 +77,12 @@ var serviceCmd = &cobra.Command{
 			if *serviceFilePath != "" {
 				fmt.Println("The specified service file is ignored")
 			}
-			manifestData, err := readFile(*manifestFilePath)
+			manifestData, err := utils.ReadFile(*manifestFilePath)
 			if err != nil {
 				return err
 			}
 
-			if _, err := unmarshalValues(manifestData); err != nil {
+			if _, err := utils.UnmarshalString(manifestData); err != nil {
 				return err
 			}
 		}
@@ -100,11 +100,11 @@ var serviceCmd = &cobra.Command{
 		svcData["project"] = *project
 
 		if *valuesFilePath != "" {
-			valuesData, err := readFile(*valuesFilePath)
+			valuesData, err := utils.ReadFile(*valuesFilePath)
 			if err != nil {
 				return err
 			}
-			data, err := unmarshalValues(valuesData)
+			data, err := utils.UnmarshalString(valuesData)
 			if err != nil {
 				return err
 			}
@@ -113,7 +113,7 @@ var serviceCmd = &cobra.Command{
 			deployment := make(map[string]string)
 
 			if *deploymentFilePath != "" {
-				content, err := readFile(*deploymentFilePath)
+				content, err := utils.ReadFile(*deploymentFilePath)
 				if err != nil {
 					return err
 				}
@@ -121,7 +121,7 @@ var serviceCmd = &cobra.Command{
 			}
 
 			if *serviceFilePath != "" {
-				content, err := readFile(*serviceFilePath)
+				content, err := utils.ReadFile(*serviceFilePath)
 				if err != nil {
 					return err
 				}
@@ -132,81 +132,44 @@ var serviceCmd = &cobra.Command{
 				svcData["templates"] = deployment
 			}
 		} else {
-			manifestData, err := readFile(*manifestFilePath)
+			manifestData, err := utils.ReadFile(*manifestFilePath)
 			if err != nil {
 				return err
 			}
-			data, err := unmarshalValues(manifestData)
+			data, err := utils.UnmarshalString(manifestData)
 			if err != nil {
 				return err
 			}
 			svcData["manifest"] = data
 		}
 
-		builder := cloudevents.Builder{
-			Source:    "https://github.com/keptn/keptn/cli#onboardservice",
-			EventType: "onboard.service",
-			Encoding:  cloudevents.StructuredV01,
+		source, _ := url.Parse("https://github.com/keptn/keptn/cli#onboardservice")
+
+		contentType := "application/json"
+		event := cloudevents.Event{
+			Context: cloudevents.EventContextV02{
+				ID:          uuid.New().String(),
+				Type:        "onboard.service",
+				Source:      types.URLRef{URL: *source},
+				ContentType: &contentType,
+			}.AsV02(),
+			Data: svcData,
 		}
 
 		serviceURL := endPoint
 		serviceURL.Path = "service"
 
-		req, err := builder.Build(serviceURL.String(), svcData)
-		if err != nil {
-			return err
-		}
-
-		resp, err := utils.Send(req, apiToken, nil)
+		fmt.Println("Connecting to server ", endPoint.String())
+		_, err = utils.Send(serviceURL, event, apiToken)
 
 		if err != nil {
 			fmt.Println("Onboard service was unsuccessful")
 			return err
-		}
-		if resp.StatusCode != 200 {
-			fmt.Println("Onboard service was unsuccessful")
-			return errors.New(resp.Status)
 		}
 
 		fmt.Printf("Successfully onboarded service in project %v\n", svcData["project"])
 		return nil
 	},
-}
-
-func readFile(fileName string) (string, error) {
-	if _, err := os.Stat(fileName); os.IsNotExist(err) {
-		return "", fmt.Errorf("Cannot find file %s", fileName)
-	}
-	data, err := ioutil.ReadFile(fileName)
-	if err != nil {
-		return "", err
-	}
-	return string(data), nil
-}
-
-func unmarshalValues(data string) (interface{}, error) {
-	var body interface{}
-	err := yaml.Unmarshal([]byte(data), &body)
-	if err != nil {
-		return nil, err
-	}
-	return convert(body), nil
-}
-
-func convert(i interface{}) interface{} {
-	switch x := i.(type) {
-	case map[interface{}]interface{}:
-		m2 := map[string]interface{}{}
-		for k, v := range x {
-			m2[k.(string)] = convert(v)
-		}
-		return m2
-	case []interface{}:
-		for i, v := range x {
-			x[i] = convert(v)
-		}
-	}
-	return i
 }
 
 func init() {
