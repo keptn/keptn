@@ -54,7 +54,9 @@ Example:
 		configURL := endPoint
 		configURL.Path = "config"
 
+		fmt.Println("Connecting to server ", endPoint.String())
 		_, err = utils.Send(configURL, event, apiToken, utils.AddXKeptnSignatureHeader)
+
 		if err != nil {
 			fmt.Println("Configure was unsuccessful")
 			return err
