@@ -21,7 +21,7 @@ var manifestFilePath *string
 
 type serviceData map[string]interface{}
 
-const manifestEnabled = true
+const manifestEnabled = false
 
 // serviceCmd represents the service command
 var serviceCmd = &cobra.Command{
@@ -159,6 +159,7 @@ var serviceCmd = &cobra.Command{
 		serviceURL := endPoint
 		serviceURL.Path = "service"
 
+		fmt.Println("Connecting to server ", endPoint.String())
 		_, err = utils.Send(serviceURL, event, apiToken, utils.AddXKeptnSignatureHeader)
 
 		if err != nil {
