@@ -87,26 +87,26 @@ func getCloudEventData(data []byte) (interface{}, error) {
 
 // PrintWSContent prints received cloud events
 func PrintWSContent(ws *websocket.Conn) error {
+
 	for {
 		ceData, err := readCE(ws)
 		if err != nil || ceData == nil {
 			return err
 		}
-		if handleCE(ceData) {
+		switch ceData.(type) {
+		case *LogData:
+			logData := ceData.(*LogData)
+			handleLogCE(*logData)
+			if logData.Terminate {
+				return nil
+			}
+		default:
+			fmt.Printf("Cloud event type unknown")
 			return nil
 		}
 	}
 }
 
-func handleCE(i interface{}) bool {
-
-	switch i.(type) {
-	case *LogData:
-		logData := i.(*LogData)
-		fmt.Println(logData.Message)
-		return logData.Terminate
-	default:
-		fmt.Printf("Cloud event type unknown")
-		return true
-	}
+func handleLogCE(log LogData) {
+	fmt.Println(log.Message)
 }
