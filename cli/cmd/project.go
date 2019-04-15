@@ -94,7 +94,7 @@ Example:
 		}
 
 		if desc.Token != "" {
-			ws, err := websockethelper.OpenWS(desc.Token)
+			ws, _, err := websockethelper.OpenWS(desc.Token)
 			if err != nil {
 				return err
 			}
