@@ -25,7 +25,7 @@ gcloud container clusters get-credentials $CLUSTER_NAME --zone $CLUSTER_ZONE --p
 
 if [[ $? != '0' ]]
 then
-  echo -e "${RED}Could not connect to cluster. Please ensure you have set the correct values for your Cluster Name, GKE Project, Cluster Zone and Cluster Region during the credentials setup.${NC}"
+  echo -e "${RED}Could not connect to cluster. Please ensure you have set the correct values for your Cluster Name, GKE Project, and Cluster Zone during the credentials setup.${NC}"
   exit 1
 fi
 
