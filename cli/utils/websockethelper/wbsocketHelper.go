@@ -3,11 +3,12 @@ package websockethelper
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
+	"github.com/gorilla/websocket"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
-	"golang.org/x/net/websocket"
 )
 
 type myCloudEvent struct {
@@ -28,22 +29,29 @@ type LogData struct {
 }
 
 // OpenWS opens a websocket
-func OpenWS(token string) (*websocket.Conn, error) {
+func OpenWS(token string) (*websocket.Conn, *http.Response, error) {
 
 	endPoint, _, err := credentialmanager.GetCreds()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	wsEndPoint := endPoint
 	wsEndPoint.Scheme = "ws"
 
-	origin := "http://localhost/"
+	// origin := "http://localhost/"
+	// u := url.URL{Scheme: wsEndPoint.Scheme, Host: *wsEndPoint, Path: "/"}
+	header := http.Header{}
+	header.Add("Token", token)
+	return websocket.DefaultDialer.Dial(wsEndPoint.String(), header)
+	// if err != nil {
+	// 	log.Fatal("dial: ", err)
+	// }
 
-	config, err := websocket.NewConfig(wsEndPoint.String(), origin)
-	config.Header = http.Header{}
-	config.Header.Add("Token", token)
-	return websocket.DialConfig(config)
+	// config, err := websocket. .NewConfig(wsEndPoint.String(), origin)
+	// config.Header = http.Header{}
+	// config.Header.Add("Token", token)
+	// return websocket.DialConfig(config)
 }
 
 // readCE reads a cloud event
@@ -51,11 +59,13 @@ func readCE(ws *websocket.Conn) (interface{}, error) {
 
 	ws.SetReadDeadline(time.Now().Add(time.Minute))
 	var msg = make([]byte, 512)
-	n, err := ws.Read(msg)
+	_, message, err := ws.ReadMessage() // .Read(msg)
 	if err != nil {
+		log.Println("read: ", err)
 		return nil, err
 	}
-	return getCloudEventData(msg[:n])
+	log.Println("received: ", message)
+	return getCloudEventData(msg)
 }
 
 func getCloudEventData(data []byte) (interface{}, error) {

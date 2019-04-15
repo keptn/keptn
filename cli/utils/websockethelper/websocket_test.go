@@ -4,6 +4,7 @@ import (
 	"log"
 	"testing"
 
+	"github.com/gorilla/websocket"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
 )
 
@@ -22,13 +23,14 @@ func TestClient(t *testing.T) {
 
 	credentialmanager.MockCreds = true
 
-	ws, err := OpenWS("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjaGFubmVsSWQiOiI2MDY0Njc5Zi0wNmJiLTRmMDEtOWIyNS1lMjM5Yjc4YmMzYTMiLCJpYXQiOjE1NTI0Nzk3NzgsImV4cCI6MTYzODg3OTc3OH0.ZDphJPxXrJtk4Qyk77t1nafNSzxBXBZmvcGTR7Vz064")
+	ws, _, err := OpenWS("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjaGFubmVsSWQiOiI2MDY0Njc5Zi0wNmJiLTRmMDEtOWIyNS1lMjM5Yjc4YmMzYTMiLCJpYXQiOjE1NTI0Nzk3NzgsImV4cCI6MTYzODg3OTc3OH0.ZDphJPxXrJtk4Qyk77t1nafNSzxBXBZmvcGTR7Vz064")
 
 	if err != nil {
 		t.Errorf("An error occured %v", err)
 	}
 
-	if _, err := ws.Write([]byte(logCEString)); err != nil {
+	err = ws.WriteMessage(websocket.TextMessage, ([]byte(logCEString)))
+	if err != nil {
 		log.Fatal(err)
 	}
 
