@@ -29,4 +29,3 @@ export REGISTRY_URL=$(kubectl describe svc docker-registry -n keptn | grep "IP:"
 
 kubectl apply -f ../manifests/istio/istio-crds.yml
 kubectl apply -f ../manifests/istio/istio-demo.yml
-

@@ -37,4 +37,3 @@ cd pitometer-service
 chmod +x deploy.sh
 ./deploy.sh
 cd ..
-

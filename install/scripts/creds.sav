@@ -7,6 +7,5 @@
     "githubOrg": "GITHUB_ORG_PLACEHOLDER",
     "clusterName": "CLUSTER_NAME_PLACEHOLDER",
     "clusterZone": "CLUSTER_ZONE_PLACEHOLDER",
-    "clusterRegion": "CLUSTER_REGION_PLACEHOLDER",
     "gkeProject": "GKE_PROJECT_PLACEHOLDER"
 }
