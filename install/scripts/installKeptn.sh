@@ -13,18 +13,10 @@ echo -e "${BLUE}--------------------------"
 echo "Starting keptn installation"
 echo -e "--------------------------${NC}"
 
-# Script if you don't want to apply all yaml files manually
-
-export JENKINS_USER=$(cat creds.json | jq -r '.jenkinsUser')
-export JENKINS_PASSWORD=$(cat creds.json | jq -r '.jenkinsPassword')
-export GITHUB_PERSONAL_ACCESS_TOKEN=$(cat creds.json | jq -r '.githubPersonalAccessToken')
-export GITHUB_USER_NAME=$(cat creds.json | jq -r '.githubUserName')
-export GITHUB_USER_EMAIL=$(cat creds.json | jq -r '.githubUserEmail')
-export GITHUB_ORGANIZATION=$(cat creds.json | jq -r '.githubOrg')
+# Environment variables for connecting to cluster
+export GKE_PROJECT=$(cat creds.json | jq -r '.gkeProject')
 export CLUSTER_NAME=$(cat creds.json | jq -r '.clusterName')
 export CLUSTER_ZONE=$(cat creds.json | jq -r '.clusterZone')
-export CLUSTER_REGION=$(cat creds.json | jq -r '.clusterRegion')
-export GKE_PROJECT=$(cat creds.json | jq -r '.gkeProject')
 
 gcloud --quiet config set project $GKE_PROJECT
 gcloud --quiet config set container/cluster $CLUSTER_NAME

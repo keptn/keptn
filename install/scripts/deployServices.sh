@@ -6,11 +6,11 @@ export JENKINS_PASSWORD=$(cat creds.json | jq -r '.jenkinsPassword')
 export GITHUB_PERSONAL_ACCESS_TOKEN=$(cat creds.json | jq -r '.githubPersonalAccessToken')
 export GITHUB_USER_NAME=$(cat creds.json | jq -r '.githubUserName')
 export GITHUB_USER_EMAIL=$(cat creds.json | jq -r '.githubUserEmail')
+export GITHUB_ORGANIZATION=$(cat creds.json | jq -r '.githubOrg')
 export DT_TENANT_ID=$(cat creds_dt.json | jq -r '.dynatraceTenant')
+export DT_TENANT_URL="$DT_TENANT_ID.live.dynatrace.com"
 export DT_API_TOKEN=$(cat creds_dt.json | jq -r '.dynatraceApiToken')
 export DT_PAAS_TOKEN=$(cat creds_dt.json | jq -r '.dynatracePaaSToken')
-export GITHUB_ORGANIZATION=$(cat creds.json | jq -r '.githubOrg')
-export DT_TENANT_URL="$DT_TENANT_ID.live.dynatrace.com"
 
 rm -rf keptn-services
 mkdir keptn-services
