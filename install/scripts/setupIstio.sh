@@ -18,6 +18,7 @@ cat ../manifests/istio/istio-knative.yaml | \
   sed 's~INCLUDE_OUTBOUND_IP_RANGES_PLACEHOLDER~'"$CLUSTER_IPV4_CIDR,$SERVICES_IPV4_CIDR"'~' >> ../manifests/gen/istio-knative.yaml
 
 kubectl apply -f ../manifests/istio/istio-crds-knative.yaml
+sleep 60
 kubectl apply -f ../manifests/gen/istio-knative.yaml
 
 echo "Wait 4 minutes for changes to apply... "
