@@ -1,8 +1,5 @@
 #!/bin/bash
 REGISTRY_URL=$1
-CLUSTER_NAME=$2
-CLUSTER_ZONE=$3
-SHOW_API_TOKEN=$4
 
 kubectl create namespace keptn 2> /dev/null
 
@@ -31,12 +28,7 @@ cat ../manifests/knative/config-domain.yaml | \
 
 kubectl apply -f ../manifests/gen/config-domain.yaml
 
-# Determine the IP scope of the cluster (https://github.com/knative/docs/blob/master/serving/outbound-network-access.md)
-# Gcloud:
-CLUSTER_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_NAME} --zone=${CLUSTER_ZONE} | yq r - clusterIpv4Cidr)
-SERVICES_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_NAME} --zone=${CLUSTER_ZONE} | yq r - servicesIpv4Cidr)
-
-kubectl get configmap config-network -n knative-serving -o=yaml | yq w - data['istio.sidecar.includeOutboundIPRanges'] "$CLUSTER_IPV4_CIDR,$SERVICES_IPV4_CIDR" | kubectl apply -f - 
+kubectl get configmap config-network -n knative-serving -o=yaml | yq w - data['istio.sidecar.includeOutboundIPRanges'] "" | kubectl apply -f - 
 
 sleep 30
 
@@ -89,11 +81,6 @@ cd ../../core/control
 chmod +x deploy.sh
 ./deploy.sh $REGISTRY_URL $KEPTN_CHANNEL_URI
 cd ../../install/scripts
-
-if [[ $SHOW_API_TOKEN = 'y' ]]
-then
-    echo "API token: $KEPTN_API_TOKEN"
-fi
 
 # Set up SSL
 openssl req -nodes -newkey rsa:2048 -keyout key.pem -out certificate.pem  -x509 -days 365 -subj "/CN=$ISTIO_INGRESS_IP.xip.io"
