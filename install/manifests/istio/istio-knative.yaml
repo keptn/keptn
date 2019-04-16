@@ -634,7 +634,7 @@ data:
             [[ end ]]
         [[ else -]]
           limits:
-            cpu: 2000m
+            cpu: 200m
             memory: 128Mi
           requests:
             cpu: 100m
@@ -2056,7 +2056,7 @@ spec:
               fieldPath: status.podIP
         resources:
           limits:
-            cpu: 2000m
+            cpu: 200m
             memory: 128Mi
           requests:
             cpu: 100m
@@ -2177,10 +2177,10 @@ spec:
           value: "6"
         resources:
           limits:
-            cpu: 4800m
+            cpu: 480m
             memory: 4G
           requests:
-            cpu: 1000m
+            cpu: 100m
             memory: 1G
 
         volumeMounts:
@@ -2235,7 +2235,7 @@ spec:
               fieldPath: status.podIP
         resources:
           limits:
-            cpu: 2000m
+            cpu: 200m
             memory: 128Mi
           requests:
             cpu: 100m
@@ -2376,7 +2376,7 @@ spec:
                 fieldPath: status.podIP
           resources:
             limits:
-              cpu: 2000m
+              cpu: 200m
               memory: 128Mi
             requests:
               cpu: 100m
