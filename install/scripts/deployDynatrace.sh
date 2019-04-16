@@ -12,7 +12,26 @@ export LATEST_RELEASE=$(curl -s https://api.github.com/repos/dynatrace/dynatrace
 echo "Installing Dynatrace Operator $LATEST_RELEASE"
 
 kubectl apply -f https://raw.githubusercontent.com/Dynatrace/dynatrace-oneagent-operator/$LATEST_RELEASE/deploy/kubernetes.yaml
-sleep 60
+
+# Wait for custom resource OneAgent to be available
+SLEEP_TIME=1
+SLEEP_ROUND=1
+
+while [ $SLEEP_TIME -lt 100 ]
+do
+  kubectl get oneagent
+  if [[ $? != '0' ]]
+  then
+    echo "CRD OneAgent now available, can continue... "
+    break
+  fi
+  SLEEP_TIME=$[$SLEEP_ROUND*$SLEEP_ROUND]
+  SLEEP_ROUND=$[$SLEEP_ROUND+1]
+  echo "Wait ${SLEEP_TIME}s for changes to apply... "
+  sleep ${SLEEP_TIME}
+done
+
+# Create Dynatrace OneAgent
 kubectl -n dynatrace create secret generic oneagent --from-literal="apiToken=$DT_API_TOKEN" --from-literal="paasToken=$DT_PAAS_TOKEN"
 
 rm -f ../manifests/gen/cr.yml
