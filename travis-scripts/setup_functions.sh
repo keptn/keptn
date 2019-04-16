@@ -93,6 +93,11 @@ function execute_cli_tests {
     printf "https://" > ~/.keptnmock
     kubectl get ksvc control -n keptn -o=yaml  | yq r - status.domain >> ~/.keptnmock
 
+    AUTH_ENDPOINT="$(kubectl get ksvc authenticator -n keptn -o=yaml | yq r - status.domain)"
+    while [ "$AUTH_ENDPOINT" = "null" ]; do sleep 30; AUTH_ENDPOINT="$(kubectl get ksvc authenticator -n keptn -o=yaml | yq r - status.domain)"; echo "waiting for authenticator service"; done
+    printf "https://" > ~/.keptnmock
+    kubectl get ksvc authenticator -n keptn -o=yaml  | yq r - status.domain >> ~/.keptnmock
+
     set +x
     SEC="$(kubectl get secret keptn-api-token  -n keptn -o=yaml | yq r - data.keptn-api-token | base64 --decode)"
     echo "${SEC}" >> ~/.keptnmock
