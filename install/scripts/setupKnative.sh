@@ -1,5 +1,7 @@
 #!/bin/bash
 REGISTRY_URL=$1
+CLUSTER_NAME=$2
+CLUSTER_ZONE=$3
 
 kubectl create namespace keptn 2> /dev/null
 
@@ -11,14 +13,12 @@ kubectl apply -f ../manifests/container-registry/k8s-docker-registry-deployment.
 kubectl apply -f ../manifests/container-registry/k8s-docker-registry-service.yml
 
 # Install knative serving, eventing, build
-kubectl apply --filename https://github.com/knative/serving/releases/download/v0.4.0/serving.yaml
-kubectl apply --filename https://github.com/knative/build/releases/download/v0.4.0/build.yaml
-kubectl apply --filename https://github.com/knative/eventing/releases/download/v0.4.0/release.yaml
-kubectl apply --filename https://github.com/knative/eventing-sources/releases/download/v0.4.0/release.yaml
-kubectl apply --filename https://github.com/knative/eventing/releases/download/v0.4.0/in-memory-channel.yaml
-kubectl apply --filename https://github.com/knative/serving/releases/download/v0.4.0/monitoring.yaml
-kubectl apply --filename https://raw.githubusercontent.com/knative/serving/v0.4.0/third_party/config/build/clusterrole.yaml
-kubectl apply --filename https://github.com/knative/serving/releases/download/v0.4.0/monitoring-logs-elasticsearch.yaml
+kubectl apply --filename https://github.com/knative/serving/releases/download/v0.5.0/serving.yaml
+kubectl apply --filename https://github.com/knative/build/releases/download/v0.5.0/build.yaml
+kubectl apply --filename https://github.com/knative/eventing/releases/download/v0.5.0/release.yaml
+kubectl apply --filename https://github.com/knative/eventing-sources/releases/download/v0.5.0/eventing-sources.yaml
+kubectl apply --filename https://github.com/knative/serving/releases/download/v0.5.0/monitoring.yaml
+kubectl apply --filename https://raw.githubusercontent.com/knative/serving/v0.5.0/third_party/config/build/clusterrole.yaml
 # Configure knative serving default domain
 rm -f ../manifests/gen/config-domain.yaml
 
@@ -28,7 +28,12 @@ cat ../manifests/knative/config-domain.yaml | \
 
 kubectl apply -f ../manifests/gen/config-domain.yaml
 
-kubectl get configmap config-network -n knative-serving -o=yaml | yq w - data['istio.sidecar.includeOutboundIPRanges'] "" | kubectl apply -f - 
+# Determine the IP scope of the cluster (https://github.com/knative/docs/blob/master/serving/outbound-network-access.md)
+# Gcloud:
+CLUSTER_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_NAME} --zone=${CLUSTER_ZONE} | yq r - clusterIpv4Cidr)
+SERVICES_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_NAME} --zone=${CLUSTER_ZONE} | yq r - servicesIpv4Cidr)
+
+kubectl get configmap config-network -n knative-serving -o=yaml | yq w - data['istio.sidecar.includeOutboundIPRanges'] "$CLUSTER_IPV4_CIDR,$SERVICES_IPV4_CIDR" | kubectl apply -f - 
 
 sleep 30
 
