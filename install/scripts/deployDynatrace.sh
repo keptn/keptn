@@ -19,7 +19,7 @@ SLEEP_ROUND=1
 
 while [ $SLEEP_TIME -lt 100 ]
 do
-  kubectl get oneagent
+  kubectl get OneAgent
   if [[ $? != '0' ]]
   then
     echo "CRD OneAgent now available, can continue... "

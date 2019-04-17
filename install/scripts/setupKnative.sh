@@ -36,6 +36,7 @@ SERVICES_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_NAME} --zone=$
 
 kubectl get configmap config-network -n knative-serving -o=yaml | yq w - data['istio.sidecar.includeOutboundIPRanges'] "$CLUSTER_IPV4_CIDR,$SERVICES_IPV4_CIDR" | kubectl apply -f - 
 
+echo "Wait 30s for changes to apply... "
 sleep 30
 
 kubectl apply -f ../manifests/keptn/keptn-rbac.yaml
