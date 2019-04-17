@@ -25,6 +25,7 @@ export class WebSocketService {
 
   public handleConnection(wss, ws, req): void {
     const channelId = req.headers['x-keptn-ws-channel-id'];
+    console.log(`New connection with channelId ${channelId}`);
     WebSocketService.connections.push({
       channelId,
       client: ws,
@@ -60,14 +61,7 @@ export class WebSocketService {
         console.log('found client and sending message');
         connection.client.send(`${message}`);
       }
-      /*
-      wss.clients.forEach((client: WebSocket) => {
-        if (client.readyState === WebSocket.OPEN && ws !== client) {
-          clientFound = true;
-          client.send(`${message}`);
-        }
-      });
-      */
+
       if (!clientFound && msgPayload) {
         const index =
           WebSocketService.messageQueues.findIndex(queue => queue.channelId === keptnContext);
