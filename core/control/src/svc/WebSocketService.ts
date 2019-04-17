@@ -10,7 +10,7 @@ export class WebSocketService {
   private static instance: WebSocketService;
   private credentialsService: CredentialsService;
   private static messageQueues: MessageQueue[] = [];
-  private static connections: any[];
+  private static connections: any[] = [];
   private constructor() {
     this.credentialsService = CredentialsService.getInstance();
     this.verifyToken = this.verifyToken.bind(this);
@@ -74,6 +74,8 @@ export class WebSocketService {
         }
       }
     });
+
+    // TODO: handle 'close' event and remove element in connection array
   }
 
   public async createChannel(keptnContext: string): Promise<WebSocketChannelInfo> {
