@@ -29,7 +29,7 @@ type LogData struct {
 }
 
 // OpenWS opens a websocket
-func OpenWS(token string) (*websocket.Conn, *http.Response, error) {
+func OpenWS(token string, channelID string) (*websocket.Conn, *http.Response, error) {
 
 	endPoint, _, err := credentialmanager.GetCreds()
 	if err != nil {
@@ -43,6 +43,7 @@ func OpenWS(token string) (*websocket.Conn, *http.Response, error) {
 	// u := url.URL{Scheme: wsEndPoint.Scheme, Host: *wsEndPoint, Path: "/"}
 	header := http.Header{}
 	header.Add("Token", token)
+	header.Add("x-keptn-ws-channel-id", channelID)
 	return websocket.DefaultDialer.Dial(wsEndPoint.String(), header)
 	// if err != nil {
 	// 	log.Fatal("dial: ", err)
@@ -56,20 +57,26 @@ func OpenWS(token string) (*websocket.Conn, *http.Response, error) {
 
 // readCE reads a cloud event
 func readCE(ws *websocket.Conn) (interface{}, error) {
-
+	// fmt.Println("readCE")
 	ws.SetReadDeadline(time.Now().Add(time.Minute))
-	var msg = make([]byte, 512)
-	_, message, err := ws.ReadMessage() // .Read(msg)
-	if err != nil {
-		log.Println("read: ", err)
-		return nil, err
+	// fmt.Println("read deadline set")
+	// var msg = make([]byte, 512)
+	for {
+		fmt.Println("enter loop")
+		messageType, message, err := ws.ReadMessage()
+		fmt.Println("messageType, ", messageType)
+		fmt.Println("message: ", message)
+		if err != nil {
+			log.Println("read: ", err)
+			return nil, err
+		}
+		log.Println("received: ", message)
 	}
-	log.Println("received: ", message)
-	return getCloudEventData(msg)
+	//return getCloudEventData(message)
 }
 
 func getCloudEventData(data []byte) (interface{}, error) {
-
+	fmt.Println("getCloudEventData: ", data)
 	ce := myCloudEvent{}
 	if err := json.Unmarshal(data, &ce); err != nil {
 		fmt.Println("JSON unmarshalling error. Cloud events are expected")
@@ -84,8 +91,10 @@ func getCloudEventData(data []byte) (interface{}, error) {
 
 	switch eventType {
 	case "sh.keptn.events.log":
+		fmt.Println("type: sh.keptn.events.log")
 		dst = new(LogData)
 	default:
+		fmt.Println("type: not defined")
 		dst = new(interface{})
 	}
 
@@ -97,12 +106,12 @@ func getCloudEventData(data []byte) (interface{}, error) {
 
 // PrintWSContent prints received cloud events
 func PrintWSContent(ws *websocket.Conn) error {
-
 	for {
 		ceData, err := readCE(ws)
 		if err != nil || ceData == nil {
 			return err
 		}
+		// TODO add close connection handling here
 		switch ceData.(type) {
 		case *LogData:
 			logData := ceData.(*LogData)
