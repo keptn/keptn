@@ -28,15 +28,8 @@ export class WebSocketConfigurator {
       server,
       verifyClient: WebSocketService.getInstance().verifyToken,
     });
-    wss.on('connection', (ws) => {
-      ws.on('message', (message) => {
-        console.log('received: %s', message);
-        wss.clients.forEach((client: WebSocket) => {
-          if (client.readyState === WebSocket.OPEN) {
-            client.send(`${message}`);
-          }
-        });
-      });
+    wss.on('connection', (ws, req) => {
+      WebSocketService.getInstance().handleConnection(wss, ws, req);
     });
   }
 }

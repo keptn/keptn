@@ -4,10 +4,12 @@ import * as UUID from 'uuid';
 import { CredentialsService } from './CredentialsService';
 import { WebSocketChannelInfo } from '../lib/types/WebSocketChannelInfo';
 import * as WebSocket from 'ws';
+import { MessageQueue } from '../lib/types/MessageQueue';
 
 export class WebSocketService {
   private static instance: WebSocketService;
   private credentialsService: CredentialsService;
+  private static messageQueues: MessageQueue[] = [];
   private constructor() {
     this.credentialsService = CredentialsService.getInstance();
     this.verifyToken = this.verifyToken.bind(this);
@@ -18,6 +20,27 @@ export class WebSocketService {
       WebSocketService.instance = new WebSocketService();
     }
     return WebSocketService.instance;
+  }
+
+  public handleConnection(wss, ws, req): void {
+    const channelId = req.headers['x-keptn-ws-channel-id'];
+    const index = WebSocketService.messageQueues
+      .findIndex(queue => queue.channelId === channelId);
+
+    if (index > -1) {
+      WebSocketService.messageQueues[index].messages.forEach((msg) => {
+        ws.send(`${msg}`);
+      });
+      WebSocketService.messageQueues.splice(index, 1);
+    }
+    ws.on('message', (message) => {
+      console.log('received: %s', message);
+      wss.clients.forEach((client: WebSocket) => {
+        if (client.readyState === WebSocket.OPEN && ws !== client) {
+          client.send(`${message}`);
+        }
+      });
+    });
   }
 
   public async createChannel(): Promise<WebSocketChannelInfo> {
@@ -32,6 +55,9 @@ export class WebSocketService {
     );
     channelInfo.channelId = channelId;
     channelInfo.token = token;
+    const messageQueue = {} as MessageQueue;
+    messageQueue.channelId = channelId;
+    WebSocketService.messageQueues.push(messageQueue);
     return channelInfo;
   }
 
