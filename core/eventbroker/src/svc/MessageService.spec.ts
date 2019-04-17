@@ -12,6 +12,7 @@ const nock = require('nock');
 describe('MessageService', () => {
   let messageService: MessageService;
   let channelReconciler: ChannelReconciler;
+  const keptnContext = 'my-keptn-context';
   beforeEach(() => {
     cleanUpMetadata();
     process.env.CHANNEL_URI = 'channel';
@@ -33,7 +34,7 @@ describe('MessageService', () => {
     })
       .post('/', message)
       .reply(200, {});
-    const result = await messageService.sendMessage(message);
+    const result = await messageService.sendMessage(message, keptnContext);
     expect(result).to.be.true;
   });
   it('should gracefully handle 503 responses', async () => {
@@ -45,7 +46,7 @@ describe('MessageService', () => {
     })
       .post('/', message)
       .reply(503, {});
-    const result = await messageService.sendMessage(message);
+    const result = await messageService.sendMessage(message, keptnContext);
     expect(result).to.be.false;
   });
   it('should return false if no channel uri can be found ', async () => {
@@ -56,7 +57,7 @@ describe('MessageService', () => {
 
     channelReconciler.resolveChannel = channelReconcilerResolveStub;
 
-    const result = await messageService.sendMessage(message);
+    const result = await messageService.sendMessage(message, keptnContext);
     expect(result).to.be.false;
   });
   it('should return false if no channel uri can be found 2', async () => {
@@ -67,7 +68,7 @@ describe('MessageService', () => {
 
     channelReconciler.resolveChannel = channelReconcilerResolveStub;
 
-    const result = await messageService.sendMessage(message);
+    const result = await messageService.sendMessage(message, keptnContext);
     expect(result).to.be.false;
   });
 });

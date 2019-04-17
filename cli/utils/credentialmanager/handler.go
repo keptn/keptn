@@ -4,12 +4,17 @@ import (
 	"errors"
 	"io/ioutil"
 	"log"
+	"net/url"
 	"os"
 	"os/user"
 	"strings"
 
 	"github.com/docker/docker-credential-helpers/credentials"
 )
+
+var testEndPoint = url.URL{Scheme: "https", Host: "my-endpoint"}
+
+const testAPIToken = "super-secret"
 
 const credsLab = "keptn"
 const serverURL = "https://keptn.sh"
@@ -37,35 +42,36 @@ func init() {
 	credentials.SetCredsLabel(credsLab)
 }
 
-func setCreds(h credentials.Helper, endPoint string, apiToken string) error {
+func setCreds(h credentials.Helper, endPoint url.URL, apiToken string) error {
 	if MockCreds {
 		// Do nothing
 		return nil
 	}
 
-	if !strings.HasSuffix(endPoint, "/") {
-		endPoint += "/"
-	}
-
 	c := &credentials.Credentials{
 		ServerURL: serverURL,
-		Username:  endPoint,
+		Username:  endPoint.String(),
 		Secret:    apiToken,
 	}
 	return h.Add(c)
 }
 
-func getCreds(h credentials.Helper) (string, string, error) {
+func getCreds(h credentials.Helper) (url.URL, string, error) {
 
 	if MockCreds {
 		return readCredsFromFile()
 	}
-	return h.Get(serverURL)
+	endPointStr, apiToken, err := h.Get(serverURL)
+	if err != nil {
+		return url.URL{}, "", err
+	}
+	url, err := url.Parse(endPointStr)
+	return *url, apiToken, err
 }
 
 // readCredsFromFile reads the credentials from a file named "endPoint.txt".
 // This function is used for testing
-func readCredsFromFile() (string, string, error) {
+func readCredsFromFile() (url.URL, string, error) {
 	var data []byte
 	var err error
 	if MockCreds {
@@ -74,15 +80,13 @@ func readCredsFromFile() (string, string, error) {
 		data, err = ioutil.ReadFile(apiTokenFileURI)
 	}
 	if err != nil {
-		return "", "", err
+		return url.URL{}, "", err
 	}
 	dataStr := strings.TrimSpace(strings.Replace(string(data), "\r\n", "\n", -1))
 	creds := strings.Split(dataStr, "\n")
 	if len(creds) != 2 {
-		return "", "", errors.New("Format of file-based key storage is invalid")
+		return url.URL{}, "", errors.New("Format of file-based key storage is invalid")
 	}
-	if !strings.HasSuffix(creds[0], "/") {
-		creds[0] += "/"
-	}
-	return creds[0], creds[1], err
+	url, err := url.Parse(creds[0])
+	return *url, creds[1], err
 }

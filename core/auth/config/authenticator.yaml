@@ -6,25 +6,6 @@ metadata:
 spec:
   runLatest:
     configuration:
-      build:
-        apiVersion: build.knative.dev/v1alpha1
-        kind: Build
-        metadata:
-          name: authenticator-builder
-          namespace: keptn
-        spec:
-          serviceAccountName: build-bot
-          source:
-            git:
-              url: https://github.com/keptn/keptn.git
-              revision: master
-          template:
-            name: kaniko
-            arguments:
-              - name: IMAGE
-                value: docker-registry.keptn.svc.cluster.local:5000/keptn/keptn-authenticator:latest
-              - name: DOCKERFILE
-                value: /core/auth/Dockerfile
       revisionTemplate:
         metadata:
           annotations:
@@ -32,7 +13,7 @@ spec:
             autoscaling.knative.dev/minScale: "1"
         spec:
           container:
-            image: REGISTRY_URI_PLACEHOLDER:5000/keptn/keptn-authenticator:latest
+            image: keptn/keptn-authenticator:0.2.0
             imagePullPolicy: Always
             env:
             - name: SECRET_TOKEN

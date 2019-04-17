@@ -1,13 +1,14 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
-	"strings"
+	"net/url"
 
+	"github.com/cloudevents/sdk-go/pkg/cloudevents"
+	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
+	"github.com/google/uuid"
 	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
-	"github.com/knative/pkg/cloudevents"
 	"github.com/spf13/cobra"
 )
 
@@ -27,41 +28,36 @@ Example:
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		fmt.Println("Starting to authenticate")
-		builder := cloudevents.Builder{
-			Source:    "https://github.com/keptn/keptn/cli#auth",
-			EventType: "auth",
-			Encoding:  cloudevents.StructuredV01,
-		}
 
-		if !strings.HasSuffix(*endPoint, "/") {
-			*endPoint += "/"
-		}
-
+		source, _ := url.Parse("https://github.com/keptn/keptn/cli#auth")
+		contentType := "application/json"
 		var data interface{}
-		req, err := builder.Build(*endPoint+"auth", data)
+		event := cloudevents.Event{
+			Context: cloudevents.EventContextV02{
+				ID:          uuid.New().String(),
+				Type:        "auth",
+				Source:      types.URLRef{URL: *source},
+				ContentType: &contentType,
+			}.AsV02(),
+			Data: data,
+		}
+
+		u, err := url.Parse(*endPoint)
 		if err != nil {
 			return err
 		}
 
-		resp, err := utils.Send(req, *apiToken)
+		authURL := *u
+		authURL.Path = "auth"
+
+		_, err = utils.Send(authURL, event, *apiToken)
 		if err != nil {
 			fmt.Println("Authentication was unsuccessful")
 			return err
 		}
-		if resp.StatusCode == 404 {
-			return errors.New("Endpoint not found")
-		}
-		if resp.StatusCode == 401 {
-			return errors.New("Unauthorized request")
-		}
-		if resp.StatusCode != 200 {
-			fmt.Println("Authentication was unsuccessful")
-			return errors.New(resp.Status)
-		}
 
-		// Store endpoint and api token as credentials
 		fmt.Println("Successfully authenticated")
-		return credentialmanager.SetCreds(*endPoint, *apiToken)
+		return credentialmanager.SetCreds(*u, *apiToken)
 	},
 }
 

@@ -55,7 +55,7 @@
     "inversify": "^5.0.1",
     "inversify-express-utils": "^6.3.2",
     "jsonwebtoken": "^8.5.0",
-    "kubernetes-client": "^6.8.3",
+    "kubernetes-client": "^6.11.0",
     "mocha": "^6.0.2",
     "mustache": "^3.0.1",
     "nodejs-base64": "^1.0.3",
