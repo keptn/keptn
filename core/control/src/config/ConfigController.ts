@@ -57,7 +57,7 @@ export class ConfigController implements interfaces.Controller {
       keptnContext,
       success: true,
     };
-    const channelInfo = await WebSocketService.getInstance().createChannel();
+    const channelInfo = await WebSocketService.getInstance().createChannel(keptnContext);
     if (request.body && request.body.data !== undefined) {
       request.body.data.channelInfo = channelInfo;
       request.body.shkeptncontext = keptnContext;
