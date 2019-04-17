@@ -330,7 +330,7 @@ data:
         - "-m"
         - [[ annotation .ObjectMeta `sidecar.istio.io/interceptionMode` .ProxyConfig.InterceptionMode ]]
         - "-i"
-        - "[[ annotation .ObjectMeta `traffic.sidecar.istio.io/includeOutboundIPRanges`  "*"  ]]"
+        - "[[ annotation .ObjectMeta `traffic.sidecar.istio.io/includeOutboundIPRanges`  "INCLUDE_OUTBOUND_IP_RANGES_PLACEHOLDER"  ]]"
         - "-x"
         - "[[ annotation .ObjectMeta `traffic.sidecar.istio.io/excludeOutboundIPRanges`  ""  ]]"
         - "-b"
