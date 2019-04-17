@@ -63,9 +63,6 @@ export class ConfigController implements interfaces.Controller {
       request.body.shkeptncontext = keptnContext;
     }
     result.success = await this.messageService.sendMessage(request.body);
-    response.send({
-      result,
-      websocketChannel: channelInfo,
-    });
+    response.send(request.body);
   }
 }
