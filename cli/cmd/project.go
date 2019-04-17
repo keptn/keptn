@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/url"
@@ -21,6 +22,16 @@ type projectData struct {
 	Project  string      `json:"project"`
 	Registry interface{} `json:"registry"`
 	Stages   interface{} `json:"stages"`
+}
+
+type tokenData struct {
+	Token     string `json:"token"`
+	ChannelID string `json:"channelID"`
+}
+
+type myCloudEvent struct {
+	contenttype string
+	data        string
 }
 
 // projectCmd represents the project command
@@ -87,18 +98,31 @@ Example:
 		projectURL.Path = "project"
 
 		fmt.Println("Connecting to server ", endPoint.String())
-		_, err = utils.Send(projectURL, event, apiToken)
+		responseCE, err := utils.Send(projectURL, event, apiToken)
 		if err != nil {
 			fmt.Println("Create project was unsuccessful")
 			return err
 		}
 
-		if desc.Token != "" {
-			ws, _, err := websockethelper.OpenWS(desc.Token)
-			if err != nil {
-				return err
+		// check for responseCE to include token
+		if responseCE == nil {
+			fmt.Println("response CE is nil")
+			return nil
+		}
+		if responseCE.Data != nil {
+			var myData map[string]interface{}
+			json.Unmarshal(responseCE.Data.([]byte), &myData)
+			fmt.Println(myData)
+			token := myData["data"].(map[string]interface{})["channelInfo"].(map[string]interface{})["token"].(string)
+			channelID := myData["data"].(map[string]interface{})["channelInfo"].(map[string]interface{})["channelId"].(string)
+			if token != "" {
+				ws, _, err := websockethelper.OpenWS(token, channelID)
+				if err != nil {
+					fmt.Println("could not open websocket")
+					return err
+				}
+				return websockethelper.PrintWSContent(ws)
 			}
-			return websockethelper.PrintWSContent(ws)
 		}
 
 		fmt.Printf("Successfully created project %v on Github\n", prjData.Project)

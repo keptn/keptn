@@ -23,7 +23,7 @@ func TestClient(t *testing.T) {
 
 	credentialmanager.MockCreds = true
 
-	ws, _, err := OpenWS("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjaGFubmVsSWQiOiI2MDY0Njc5Zi0wNmJiLTRmMDEtOWIyNS1lMjM5Yjc4YmMzYTMiLCJpYXQiOjE1NTI0Nzk3NzgsImV4cCI6MTYzODg3OTc3OH0.ZDphJPxXrJtk4Qyk77t1nafNSzxBXBZmvcGTR7Vz064")
+	ws, _, err := OpenWS("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjaGFubmVsSWQiOiI2MDY0Njc5Zi0wNmJiLTRmMDEtOWIyNS1lMjM5Yjc4YmMzYTMiLCJpYXQiOjE1NTI0Nzk3NzgsImV4cCI6MTYzODg3OTc3OH0.ZDphJPxXrJtk4Qyk77t1nafNSzxBXBZmvcGTR7Vz064", "channelId")
 
 	if err != nil {
 		t.Errorf("An error occured %v", err)
