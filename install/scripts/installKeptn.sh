@@ -36,7 +36,7 @@ fi
 
 # Grant cluster admin rights to gcloud user
 export GCLOUD_USER=$(gcloud config get-value account)
-kubectl create clusterrolebinding dynatrace-cluster-admin-binding --clusterrole=cluster-admin --user=$GCLOUD_USER
+kubectl create clusterrolebinding cluster-admin-binding --clusterrole=cluster-admin --user=$GCLOUD_USER
 
 # Create K8s namespaces
 kubectl apply -f ../manifests/k8s-namespaces.yml 

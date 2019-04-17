@@ -11,7 +11,7 @@ gcloud beta container --project "sai-research" clusters create "$CLUSTER_NAME" -
 gcloud container clusters get-credentials $CLUSTER_NAME --zone us-central1-a --project sai-research
 
 export GCLOUD_USER=$(gcloud config get-value account)
-kubectl create clusterrolebinding dynatrace-cluster-admin-binding --clusterrole=cluster-admin --user=$GCLOUD_USER
+kubectl create clusterrolebinding cluster-admin-binding --clusterrole=cluster-admin --user=$GCLOUD_USER
 
 kubectl create -f ../manifests/k8s-namespaces.yml 
 
