@@ -92,6 +92,7 @@ export class WebSocketService {
     channelInfo.token = token;
     const messageQueue = {} as MessageQueue;
     messageQueue.channelId = channelId;
+    messageQueue.messages = [];
     WebSocketService.messageQueues.push(messageQueue);
     return channelInfo;
   }
