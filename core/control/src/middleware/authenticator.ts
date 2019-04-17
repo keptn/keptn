@@ -9,12 +9,9 @@ const authenticator: express.RequestHandler = async (
   response: express.Response,
   next: express.NextFunction,
 ) => {
-  if (request.url !== undefined && request.url.indexOf('swagger') > 0) {
-    console.log('Skipping auth for swagger doc');
-    next();
-    return;
-  }
-  if (request.url !== undefined && request.url.indexOf('comm') > 0 || request.url !== undefined && request.url.indexOf('echo') > 0) {
+  if (
+    request.url !== undefined && request.url.indexOf('comm') > 0 ||
+    request.url !== undefined && request.url.indexOf('echo') > 0) {
     console.log('Skipping auth for websocket endpoint');
     next();
     return;

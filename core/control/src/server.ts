@@ -48,10 +48,12 @@ server.setConfig((app: any) => {
   app.use('/api-docs/swagger', express.static(path.join(__dirname, '/src/swagger')));
   app.use('/api-docs/swagger/assets',
           express.static(
-      swaggerUiAssetPath,
-    ),
-  );
-  app.use(bodyParser.json());
+            swaggerUiAssetPath,
+          ),
+    );
+  app.use(bodyParser.json({
+    type: ['*/json', '*/cloudevents+json'],
+  }));
   app.use(RequestLogger);
   app.use(
     swagger.express({

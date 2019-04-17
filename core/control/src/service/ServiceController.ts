@@ -17,6 +17,8 @@ import {
 import { MessageService } from '../svc/MessageService';
 import { WebSocketService } from '../svc/WebSocketService';
 
+const uuidv4 = require('uuid/v4');
+
 @ApiPath({
   name: 'Service',
   path: '/service',
@@ -49,11 +51,17 @@ export class ServiceController implements interfaces.Controller {
     response: express.Response,
     next: express.NextFunction,
   ): Promise<void> {
+    const keptnContext = uuidv4();
+    const result = {
+      keptnContext,
+      success: true,
+    };
     const channelInfo = await WebSocketService.getInstance().createChannel();
     if (request.body && request.body.data !== undefined) {
       request.body.data.channelInfo = channelInfo;
+      request.body.shkeptncontext = keptnContext;
     }
-    const result = await this.messageService.sendMessage(request.body);
+    result.success = await this.messageService.sendMessage(request.body);
     response.send({
       success: result,
       websocketChannel: channelInfo,

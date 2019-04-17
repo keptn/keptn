@@ -8,6 +8,7 @@ import { DockerService } from './DockerService';
 import { cleanUpMetadata } from 'inversify-express-utils';
 import { ChannelReconciler } from '../lib/channel/ChannelReconciler';
 import { MessageService } from '../svc/MessageService';
+import { OrgToRepoMapper } from '../lib/org-to-repo-mapper/OrgToRepoMapper';
 
 describe('DockerController', () => {
   let dockerController: DockerController;
@@ -20,7 +21,9 @@ describe('DockerController', () => {
     cleanUpMetadata();
     dockerService = new DockerService(
         new MessageService(
-          new ChannelReconciler()));
+          new ChannelReconciler()),
+        new OrgToRepoMapper(),
+      );
     dockerController = new DockerController(dockerService);
     request = {} as express.Request;
     response = {} as express.Response;
