@@ -26,10 +26,12 @@ export class WebSocketService {
   public handleConnection(wss, ws, req): void {
     const channelId = req.headers['x-keptn-ws-channel-id'];
     console.log(`New connection with channelId ${channelId}`);
-    WebSocketService.connections.push({
-      channelId,
-      client: ws,
-    });
+    if (channelId !== undefined) {
+      WebSocketService.connections.push({
+        channelId,
+        client: ws,
+      });
+    }
     const index = WebSocketService.messageQueues
       .findIndex(queue => queue.channelId === channelId);
 
@@ -53,6 +55,7 @@ export class WebSocketService {
       if (msgPayload !== undefined) {
         keptnContext = msgPayload.shkeptncontext;
       }
+      console.log(`Trying to find client for channel ${keptnContext}.`);
       let clientFound = false;
       const connection =
         WebSocketService.connections.find(connection => connection.channelId === keptnContext);
