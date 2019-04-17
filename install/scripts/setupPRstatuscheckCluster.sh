@@ -20,7 +20,7 @@ kubectl create -f ../manifests/container-registry/k8s-docker-registry-pvc.yml
 kubectl create -f ../manifests/container-registry/k8s-docker-registry-deployment.yml
 kubectl create -f ../manifests/container-registry/k8s-docker-registry-service.yml
 
-echo "Wait for docker service to get ip..."
+echo "Wait 10s for docker service to get ip..."
 sleep 10
 
 # Create a route for the docker registry service

@@ -3,10 +3,6 @@ echo "Deleting Dynatrace OneAgent"
 kubectl delete services,deployments,pods --all -n dynatrace --ignore-not-found
 kubectl delete namespace dynatrace --ignore-not-found
 
-# Clean up tower namespace
-kubectl delete services,deployments,pods --all -n tower --ignore-not-found
-kubectl delete namespace tower --ignore-not-found
-
 # Clean up keptn namespace
 kubectl delete services,deployments,pods,secrets --all -n keptn --ignore-not-found
 kubectl delete namespace keptn --ignore-not-found
