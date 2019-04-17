@@ -62,12 +62,15 @@ export class WebSocketService {
         connection.client.send(`${message}`);
       }
 
-      if (!clientFound && msgPayload) {
+      if (!clientFound && msgPayload !== undefined) {
+        console.log(`No client for channel ${keptnContext} found. Putting msg into queue`);
         const index =
           WebSocketService.messageQueues.findIndex(queue => queue.channelId === keptnContext);
         if (index > -1) {
+          console.log(`Queue found for ${keptnContext}.`);
           WebSocketService.messageQueues[index].messages.push(message);
         }
+        console.log(`No queue found for ${keptnContext}.`);
       }
     });
 
