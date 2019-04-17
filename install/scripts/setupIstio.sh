@@ -3,10 +3,6 @@
 CLUSTER_NAME=$1
 CLUSTER_ZONE=$2
 
-#kubectl apply --filename https://github.com/knative/serving/releases/download/v0.4.0/istio-crds.yaml && \
-#kubectl apply --filename https://github.com/knative/serving/releases/download/v0.4.0/istio.yaml
-
-
 # Determine the IP scope of the cluster (https://github.com/knative/docs/blob/master/serving/outbound-network-access.md)
 # Gcloud:
 CLUSTER_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_NAME} --zone=${CLUSTER_ZONE} | yq r - clusterIpv4Cidr)
@@ -28,5 +24,3 @@ echo "Wait 10s for changes to apply... "
 sleep 10
 
 kubectl delete pods --all -n keptn
-
-# kubectl delete meshpolicies.authentication.istio.io default # fix for the MySQL connection error caused by Istio
