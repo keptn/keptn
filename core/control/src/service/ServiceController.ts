@@ -62,10 +62,7 @@ export class ServiceController implements interfaces.Controller {
       request.body.shkeptncontext = keptnContext;
     }
     result.success = await this.messageService.sendMessage(request.body);
-    response.send({
-      success: result,
-      websocketChannel: channelInfo,
-    });
+    response.send(request.body);
   }
 
   @ApiOperationDelete({
