@@ -34,6 +34,7 @@ export class WebSocketService {
 
     if (index > -1) {
       WebSocketService.messageQueues[index].messages.forEach((msg) => {
+        console.log(`sending message from queue: ${msg}`);
         ws.send(`${msg}`);
       });
       WebSocketService.messageQueues.splice(index, 1);
@@ -56,6 +57,7 @@ export class WebSocketService {
         WebSocketService.connections.find(connection => connection.channelId === keptnContext);
       if (connection !== undefined && connection.client !== undefined) {
         clientFound = true;
+        console.log('found client and sending message');
         connection.client.send(`${message}`);
       }
       /*
