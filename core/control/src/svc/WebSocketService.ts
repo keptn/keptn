@@ -10,6 +10,7 @@ export class WebSocketService {
   private static instance: WebSocketService;
   private credentialsService: CredentialsService;
   private static messageQueues: MessageQueue[] = [];
+  private static connections: any[];
   private constructor() {
     this.credentialsService = CredentialsService.getInstance();
     this.verifyToken = this.verifyToken.bind(this);
@@ -24,6 +25,10 @@ export class WebSocketService {
 
   public handleConnection(wss, ws, req): void {
     const channelId = req.headers['x-keptn-ws-channel-id'];
+    WebSocketService.connections.push({
+      channelId,
+      client: ws,
+    });
     const index = WebSocketService.messageQueues
       .findIndex(queue => queue.channelId === channelId);
 
@@ -35,17 +40,45 @@ export class WebSocketService {
     }
     ws.on('message', (message) => {
       console.log('received: %s', message);
+      let msgPayload = undefined;
+      try {
+        msgPayload = JSON.parse(message);
+      } catch (e) {
+        msgPayload = undefined;
+      }
+
+      let keptnContext = '';
+      if (msgPayload !== undefined) {
+        keptnContext = msgPayload.shkeptncontext;
+      }
+      let clientFound = false;
+      const connection =
+        WebSocketService.connections.find(connection => connection.channelId === keptnContext);
+      if (connection !== undefined && connection.client !== undefined) {
+        clientFound = true;
+        connection.client.send(`${message}`);
+      }
+      /*
       wss.clients.forEach((client: WebSocket) => {
         if (client.readyState === WebSocket.OPEN && ws !== client) {
+          clientFound = true;
           client.send(`${message}`);
         }
       });
+      */
+      if (!clientFound && msgPayload) {
+        const index =
+          WebSocketService.messageQueues.findIndex(queue => queue.channelId === keptnContext);
+        if (index > -1) {
+          WebSocketService.messageQueues[index].messages.push(message);
+        }
+      }
     });
   }
 
-  public async createChannel(): Promise<WebSocketChannelInfo> {
+  public async createChannel(keptnContext: string): Promise<WebSocketChannelInfo> {
     const channelInfo: WebSocketChannelInfo = {} as WebSocketChannelInfo;
-    const channelId = UUID.v4();
+    const channelId = keptnContext;
     const token = Jwt.sign(
       { channelId },
       await this.credentialsService.getKeptnApiToken(),
