@@ -15,6 +15,7 @@ import {
   ApiOperationDelete,
 } from 'swagger-express-ts';
 import { MessageService } from '../svc/MessageService';
+import { WebSocketService } from '../svc/WebSocketService';
 
 const uuidv4 = require('uuid/v4');
 
@@ -51,16 +52,15 @@ export class ServiceController implements interfaces.Controller {
     next: express.NextFunction,
   ): Promise<void> {
     const keptnContext = uuidv4();
-    const result = {
-      keptnContext,
-      result: 'success',
-    };
-    if (request.body !== undefined) {
-      request.body.shkeptncontext = keptnContext;
-    }
-    await this.messageService.sendMessage(request.body);
+    const result = request.body;
 
-    response.send(result);
+    const channelInfo = await WebSocketService.getInstance().createChannel(keptnContext);
+    if (result && result.data !== undefined) {
+      result.data.channelInfo = channelInfo;
+      result.shkeptncontext = keptnContext;
+    }
+    result.data.success = await this.messageService.sendMessage(result);
+    response.send(request.body);
   }
 
   @ApiOperationDelete({
