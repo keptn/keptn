@@ -19,6 +19,7 @@ kubectl apply --filename https://github.com/knative/eventing/releases/download/v
 kubectl apply --filename https://github.com/knative/eventing-sources/releases/download/v0.5.0/eventing-sources.yaml
 kubectl apply --filename https://github.com/knative/serving/releases/download/v0.5.0/monitoring.yaml
 kubectl apply --filename https://raw.githubusercontent.com/knative/serving/v0.5.0/third_party/config/build/clusterrole.yaml
+
 # Configure knative serving default domain
 rm -f ../manifests/gen/config-domain.yaml
 
@@ -35,6 +36,7 @@ SERVICES_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_NAME} --zone=$
 
 kubectl get configmap config-network -n knative-serving -o=yaml | yq w - data['istio.sidecar.includeOutboundIPRanges'] "$CLUSTER_IPV4_CIDR,$SERVICES_IPV4_CIDR" | kubectl apply -f - 
 
+echo "Wait 30s for changes to apply... "
 sleep 30
 
 kubectl apply -f ../manifests/keptn/keptn-rbac.yaml
