@@ -42,7 +42,9 @@ describe('ConfigController', () => {
 
     expect(messageServiceStub.calledWith(request.body)).is.true;
     expect(responseSendSpy.calledWithMatch({
-      success: true,
+      data: {
+        success: true,
+      },
     })).is.true;
   });
   it('should return false if a message has not been forwarded', async () => {
@@ -65,7 +67,9 @@ describe('ConfigController', () => {
 
     expect(messageServiceStub.calledWith(request.body)).is.true;
     expect(responseSendSpy.calledWithMatch({
-      success: false,
+      data: {
+        success: false,
+      },
     })).is.true;
   });
 });
