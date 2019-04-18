@@ -14,8 +14,8 @@ import {
   SwaggerDefinitionConstant,
 } from 'swagger-express-ts';
 import { ConfigRequestModel } from './ConfigRequestModel';
-import { CredentialsService } from '../svc/CredentialsService';
 import { MessageService } from '../svc/MessageService';
+import { WebSocketService } from '../svc/WebSocketService';
 
 const uuidv4 = require('uuid/v4');
 
@@ -53,14 +53,14 @@ export class ConfigController implements interfaces.Controller {
   ): Promise<void> {
     console.log(`received config command...`);
     const keptnContext = uuidv4();
-    const result = {
-      keptnContext,
-      success: true,
-    };
-    if (request.body !== undefined) {
-      request.body.shkeptncontext = keptnContext;
+    const result = request.body;
+
+    const channelInfo = await WebSocketService.getInstance().createChannel(keptnContext);
+    if (result && result.data !== undefined) {
+      result.data.channelInfo = channelInfo;
+      result.shkeptncontext = keptnContext;
     }
-    result.success = await this.messageService.sendMessage(request.body);
+    result.data.success = await this.messageService.sendMessage(result);
     response.send(result);
   }
 }
