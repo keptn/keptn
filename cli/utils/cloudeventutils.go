@@ -77,7 +77,6 @@ func Send(url url.URL, event cloudevents.Event, apiToken string) (*cloudevents.E
 		// Add signature header
 		usedContext = cloudeventshttp.ContextWithHeader(usedContext, "X-Keptn-Signature", sha1Hash)
 	}
-	fmt.Println("right before c.Send")
 	return c.Send(usedContext, event)
 }
 
