@@ -4,10 +4,10 @@ LOG_LOCATION=./logs
 exec > >(tee -i $LOG_LOCATION/installKeptn.log)
 exec 2>&1
 
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+RED='' #'\033[0;31m'
+GREEN='' #'\033[0;32m'
+BLUE='' #'\033[0;34m'
+NC='' #'\033[0m' # No Color
 
 echo -e "${BLUE}--------------------------"
 echo "Starting keptn installation"
@@ -18,28 +18,16 @@ export GKE_PROJECT=$(cat creds.json | jq -r '.gkeProject')
 export CLUSTER_NAME=$(cat creds.json | jq -r '.clusterName')
 export CLUSTER_ZONE=$(cat creds.json | jq -r '.clusterZone')
 
-gcloud --quiet config set project $GKE_PROJECT
-gcloud --quiet config set container/cluster $CLUSTER_NAME
-gcloud --quiet config set compute/zone $CLUSTER_ZONE
-gcloud container clusters get-credentials $CLUSTER_NAME --zone $CLUSTER_ZONE --project $GKE_PROJECT
-
-if [[ $? != '0' ]]
-then
-  echo -e "${RED}Could not connect to cluster. Please ensure you have set the correct values for your Cluster Name, GKE Project, and Cluster Zone during the credentials setup.${NC}"
-  exit 1
-fi
-
-if [[ $? = '0' ]]
-then
-  echo -e "${GREEN}Connection to cluster successful.${NC}"
-fi
+./testConnection.sh $GKE_PROJECT $CLUSTER_NAME $CLUSTER_ZONE
 
 # Grant cluster admin rights to gcloud user
-export GCLOUD_USER=$(gcloud config get-value account)
+if [[ -z "${GCLOUD_USER}" ]]; then
+  GCLOUD_USER=$(gcloud config get-value account)
+fi
 kubectl create clusterrolebinding cluster-admin-binding --clusterrole=cluster-admin --user=$GCLOUD_USER
 
 # Create K8s namespaces
-kubectl apply -f ../manifests/k8s-namespaces.yml 
+kubectl apply -f ../manifests/k8s-namespaces.yml
 
 # Create container registry
 kubectl apply -f ../manifests/container-registry/k8s-docker-registry-configmap.yml
