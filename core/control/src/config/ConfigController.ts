@@ -53,16 +53,14 @@ export class ConfigController implements interfaces.Controller {
   ): Promise<void> {
     console.log(`received config command...`);
     const keptnContext = uuidv4();
-    const result = {
-      keptnContext,
-      success: true,
-    };
+    const result = request.body;
+
     const channelInfo = await WebSocketService.getInstance().createChannel(keptnContext);
-    if (request.body && request.body.data !== undefined) {
-      request.body.data.channelInfo = channelInfo;
-      request.body.shkeptncontext = keptnContext;
+    if (result && result.data !== undefined) {
+      result.data.channelInfo = channelInfo;
+      result.shkeptncontext = keptnContext;
     }
-    result.success = await this.messageService.sendMessage(request.body);
-    response.send(request.body);
+    result.data.success = await this.messageService.sendMessage(result);
+    response.send(result);
   }
 }

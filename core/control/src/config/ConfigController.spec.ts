@@ -42,7 +42,7 @@ describe('ConfigController', () => {
 
     expect(messageServiceStub.calledWith(request.body)).is.true;
     expect(responseSendSpy.calledWithMatch({
-      result: {
+      data: {
         success: true,
       },
     })).is.true;
@@ -67,7 +67,7 @@ describe('ConfigController', () => {
 
     expect(messageServiceStub.calledWith(request.body)).is.true;
     expect(responseSendSpy.calledWithMatch({
-      result: {
+      data: {
         success: false,
       },
     })).is.true;
