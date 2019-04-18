@@ -34,6 +34,8 @@ type myCloudEvent struct {
 	data        string
 }
 
+var Verbose bool
+
 // projectCmd represents the project command
 var projectCmd = &cobra.Command{
 	Use:   "project project_name shipyard_file",
@@ -69,6 +71,9 @@ Example:
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if Verbose {
+			fmt.Println("Verbose Loggin enabled")
+		}
 		endPoint, apiToken, err := credentialmanager.GetCreds()
 		if err != nil {
 			return errors.New(authErrorMsg)
@@ -112,7 +117,7 @@ Example:
 		if responseCE.Data != nil {
 			var myData map[string]interface{}
 			json.Unmarshal(responseCE.Data.([]byte), &myData)
-			fmt.Println(myData)
+			// fmt.Println(myData)
 			token := myData["data"].(map[string]interface{})["channelInfo"].(map[string]interface{})["token"].(string)
 			channelID := myData["data"].(map[string]interface{})["channelInfo"].(map[string]interface{})["channelId"].(string)
 			if token != "" {
@@ -121,7 +126,7 @@ Example:
 					fmt.Println("could not open websocket")
 					return err
 				}
-				return websockethelper.PrintWSContent(ws)
+				return websockethelper.PrintWSContent(ws, Verbose)
 			}
 		}
 
@@ -150,4 +155,6 @@ func parseShipYard(prjData *projectData, yamlFile string) error {
 
 func init() {
 	createCmd.AddCommand(projectCmd)
+
+	projectCmd.Flags().BoolVarP(&Verbose, "verbose", "v", false, "verbose logging")
 }

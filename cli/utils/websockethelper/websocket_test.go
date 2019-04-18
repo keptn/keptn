@@ -34,7 +34,7 @@ func TestClient(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	err = PrintWSContent(ws)
+	err = PrintWSContent(ws, true)
 	if err != nil {
 		t.Errorf("An error occured %v", err)
 	}
