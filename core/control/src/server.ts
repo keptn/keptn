@@ -7,7 +7,9 @@ import {
   InversifyExpressServer,
   TYPE,
 } from 'inversify-express-utils';
+import * as SocketIO from 'socket.io';
 import * as swagger from 'swagger-express-ts';
+import * as expressWs from 'express-ws';
 
 // import controllers
 import './config/ConfigController';
@@ -24,8 +26,10 @@ import './service/ServiceRequestModel';
 // tslint:disable-next-line: import-name
 import RequestLogger = require('./middleware/requestLogger');
 import authenticator = require('./middleware/authenticator');
+
 import * as path from 'path';
 import { MessageService } from './svc/MessageService';
+import { WebSocketConfigurator } from './websocket/WebSocketConfigurator';
 
 const port: number = Number(process.env.PORT) || 5001; // or from a configuration file
 const swaggerUiAssetPath = require('swagger-ui-dist').getAbsoluteFSPath();
@@ -49,7 +53,7 @@ server.setConfig((app: any) => {
     );
   app.use(bodyParser.json({
     type: ['*/json', '*/cloudevents+json'],
-    }));
+  }));
   app.use(RequestLogger);
   app.use(
     swagger.express({
@@ -85,5 +89,9 @@ server.setErrorConfig((app: any) => {
 });
 
 const app = server.build();
-app.listen(port);
+const serverInstance = app.listen(port);
+
+const websocketConfigurator = WebSocketConfigurator.getInstance(app, serverInstance);
+websocketConfigurator.configure();
+
 console.info(`Server is listening on port : ${port}`);

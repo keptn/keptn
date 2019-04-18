@@ -16,6 +16,7 @@ import {
 } from 'swagger-express-ts';
 
 import { MessageService } from '../svc/MessageService';
+import { WebSocketService } from '../svc/WebSocketService';
 
 const uuidv4 = require('uuid/v4');
 
@@ -48,22 +49,20 @@ export class ProjectController implements interfaces.Controller {
     summary: 'Create a new keptn project',
   })
   @httpPost('/')
-  public async setGithubConfig(
+  public async createProject(
     request: express.Request,
     response: express.Response,
     next: express.NextFunction,
   ): Promise<void> {
     const keptnContext = uuidv4();
-    const result = {
-      keptnContext,
-      result: 'success',
-    };
-    if (request.body !== undefined && request.body.data !== undefined) {
-      request.body.shkeptncontext = keptnContext;
+    const result = request.body;
+
+    const channelInfo = await WebSocketService.getInstance().createChannel(keptnContext);
+    if (result && result.data !== undefined) {
+      result.data.channelInfo = channelInfo;
+      result.shkeptncontext = keptnContext;
     }
-
-    await this.messageService.sendMessage(request.body);
-
+    result.data.success = await this.messageService.sendMessage(request.body);
     response.send(result);
   }
 
