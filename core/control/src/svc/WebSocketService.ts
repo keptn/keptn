@@ -24,24 +24,7 @@ export class WebSocketService {
   }
 
   public handleConnection(wss, ws, req): void {
-    const channelId = req.headers['x-keptn-ws-channel-id'];
-    console.log(`New connection with channelId ${channelId}`);
-    if (channelId !== undefined) {
-      WebSocketService.connections.push({
-        channelId,
-        client: ws,
-      });
-    }
-    const index = WebSocketService.messageQueues
-      .findIndex(queue => queue.channelId === channelId);
-
-    if (index > -1) {
-      WebSocketService.messageQueues[index].messages.forEach((msg) => {
-        console.log(`sending message from queue: ${msg}`);
-        ws.send(`${msg}`);
-      });
-      WebSocketService.messageQueues.splice(index, 1);
-    }
+    this.handleCLIClientConnection(req, ws);
     ws.on('message', (message) => {
       console.log('received: %s', message);
       let msgPayload = undefined;
@@ -72,17 +55,52 @@ export class WebSocketService {
         if (index > -1) {
           console.log(`Queue found for ${keptnContext}.`);
           WebSocketService.messageQueues[index].messages.push(message);
+        } else {
+          console.log(`No queue found for ${keptnContext}.`);
         }
-        console.log(`No queue found for ${keptnContext}.`);
       }
     });
 
-    // TODO: handle 'close' event and remove element in connection array
+    ws.on('close', () => {
+      const conIdx = WebSocketService.connections.findIndex(connection => connection.client === ws);
+      WebSocketService.connections.splice(conIdx, 1);
+    });
   }
 
+  private handleCLIClientConnection(req: any, ws: any) {
+    const channelId = req.headers['x-keptn-ws-channel-id'];
+    console.log(`New connection with channelId ${channelId}`);
+    if (channelId !== undefined) {
+      WebSocketService.connections.push({
+        channelId,
+        client: ws,
+      });
+    }
+
+    // check if there are already some messages in the buffer for this channel 
+    // (channel == CLI command execution)
+    const index = WebSocketService.messageQueues
+      .findIndex(queue => queue.channelId === channelId);
+    if (index > -1) {
+      WebSocketService.messageQueues[index].messages.forEach((msg) => {
+        console.log(`sending message from queue: ${msg}`);
+        ws.send(`${msg}`);
+      });
+      WebSocketService.messageQueues.splice(index, 1);
+    }
+  }
+
+  /**
+   * Creates a new WebSocket Channel for logging a CLI command execution via WebSocket connection
+   * Incoming connections for this channel will be validated using JWT
+   *
+   * @param keptnContext the ID used to identify the channel
+   */
   public async createChannel(keptnContext: string): Promise<WebSocketChannelInfo> {
     const channelInfo: WebSocketChannelInfo = {} as WebSocketChannelInfo;
     const channelId = keptnContext;
+
+    // create the JWT
     const token = Jwt.sign(
       { channelId },
       await this.credentialsService.getKeptnApiToken(),
@@ -92,6 +110,11 @@ export class WebSocketService {
     );
     channelInfo.channelId = channelId;
     channelInfo.token = token;
+
+    // create a new message queue
+    // usually, the service executing the command will be connected and send logs before
+    // the CLI client is connected. Until the CLI has established a connection, we need to buffer
+    // the log messages sent by the service
     const messageQueue = {} as MessageQueue;
     messageQueue.channelId = channelId;
     messageQueue.messages = [];
