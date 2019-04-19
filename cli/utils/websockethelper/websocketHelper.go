@@ -13,7 +13,8 @@ import (
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
 )
 
-type myCloudEvent struct {
+// MyCloudEvent represents a keptn cloud event
+type MyCloudEvent struct {
 	CloudEventsVersion string          `json:"cloudEventsVersion"`
 	ContentType        string          `json:"contentType"`
 	Data               json.RawMessage `json:"data"`
@@ -54,7 +55,7 @@ func readAndPrintCE(ws *websocket.Conn, verboseLogging bool) (interface{}, error
 	for {
 		messageType, message, err := ws.ReadMessage()
 		if messageType == 1 { // 1.. textmessage
-			var messageCE myCloudEvent
+			var messageCE MyCloudEvent
 			dec := json.NewDecoder(strings.NewReader(string(message)))
 			if err := dec.Decode(&messageCE); err == io.EOF {
 				break
@@ -75,7 +76,7 @@ func readAndPrintCE(ws *websocket.Conn, verboseLogging bool) (interface{}, error
 	return nil, nil
 }
 
-func printCE(ce myCloudEvent, verboseLogging bool) bool {
+func printCE(ce MyCloudEvent, verboseLogging bool) bool {
 	var log LogData
 	if err := json.Unmarshal(ce.Data, &log); err != nil {
 		fmt.Println("JSON unmarshalling error. LogData format expected.")
