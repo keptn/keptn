@@ -1,7 +1,7 @@
 #!/bin/bash
 REGISTRY_URL=$(kubectl describe svc docker-registry -n keptn | grep IP: | sed 's~IP:[ \t]*~~')
 
-# Environment variables for installing keptn services
+# Environment variables jenkins-service
 if [[ -z "${JENKINS_USER}" ]]; then
   echo "[keptn|1]JENKINS_USER not set, take it from creds.json"
   JENKINS_USER=$(cat creds.json | jq -r '.jenkinsUser')
@@ -57,7 +57,7 @@ cd ..
 git clone --branch 0.1.0 https://github.com/keptn/github-service.git --single-branch
 cd github-service
 chmod +x deploy.sh
-./deploy.sh $REGISTRY_URL
+./deploy.sh
 cd ..
 
 git clone --branch 0.1.0 https://github.com/keptn/servicenow-service.git --single-branch

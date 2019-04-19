@@ -29,7 +29,6 @@ cat ../manifests/knative/config-domain.yaml | \
 kubectl apply -f ../manifests/gen/config-domain.yaml
 
 # Determine the IP scope of the cluster (https://github.com/knative/docs/blob/master/serving/outbound-network-access.md)
-# Gcloud:
 if [[ -z "${CLUSTER_IPV4_CIDR}" ]]; then
   echo "[keptn|1]CLUSTER_IPV4_CIDR not set, retrieve it using gcloud"
   CLUSTER_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_NAME} --zone=${CLUSTER_ZONE} | yq r - clusterIpv4Cidr)
