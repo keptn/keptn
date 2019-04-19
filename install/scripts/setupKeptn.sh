@@ -1,5 +1,5 @@
 #!/bin/bash
-REGISTRY_URL=$1
+REGISTRY_URL=$(kubectl describe svc docker-registry -n keptn | grep IP: | sed 's~IP:[ \t]*~~')
 
 # Mark internal docker registry as insecure registry for knative controller
 val=$(kubectl -n knative-serving get cm config-controller -o=json | jq -r .data.registriesSkippingTagResolving | awk '{print $1",'$REGISTRY_URL':5000"}')
@@ -14,9 +14,9 @@ kubectl apply -f ../../core/eventbroker/config/tests-finished-channel.yaml
 kubectl apply -f ../../core/eventbroker/config/evaluation-done-channel.yaml
 kubectl apply -f ../../core/eventbroker/config/problem-channel.yaml
 
-export KEPTN_CHANNEL_URI=$(kubectl describe channel keptn-channel -n keptn | grep "Hostname:" | sed 's~[ \t]*Hostname:[ \t]*~~')
+KEPTN_CHANNEL_URI=$(kubectl describe channel keptn-channel -n keptn | grep "Hostname:" | sed 's~[ \t]*Hostname:[ \t]*~~')
+KEPTN_API_TOKEN=$(head -c 16 /dev/urandom | base64)
 
-export KEPTN_API_TOKEN=$(head -c 16 /dev/urandom | base64)
 kubectl create secret generic -n keptn keptn-api-token --from-literal=keptn-api-token="$KEPTN_API_TOKEN"
 
 # Deploy event broker

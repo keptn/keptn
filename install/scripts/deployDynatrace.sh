@@ -42,15 +42,9 @@ cat ../manifests/dynatrace/cr.yml | sed 's/ENVIRONMENTID/'"$DT_TENANT_ID"'/' >> 
 kubectl apply -f ../manifests/gen/cr.yml
 
 # Apply auto tagging rules in Dynatrace
-echo "--------------------------"
 echo "Apply auto tagging rules in Dynatrace "
-echo "--------------------------"
-
 ./applyAutoTaggingRules.sh $DT_TENANT_ID $DT_API_TOKEN
-
-echo "--------------------------"
 echo "End applying auto tagging rules in Dynatrace "
-echo "--------------------------"
 
 ./createServiceEntry.sh $DT_TENANT_ID $DT_PAAS_TOKEN
 
