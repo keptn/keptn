@@ -36,8 +36,8 @@ type myCloudEvent struct {
 
 var Verbose bool
 
-// projectCmd represents the project command
-var projectCmd = &cobra.Command{
+// crprojectCmd represents the project command
+var crprojectCmd = &cobra.Command{
 	Use:   "project project_name shipyard_file",
 	Short: "Creates a new project.",
 	Long: `Creates a new project with the provided name and shipyard file. 
@@ -154,7 +154,7 @@ func parseShipYard(prjData *projectData, yamlFile string) error {
 }
 
 func init() {
-	createCmd.AddCommand(projectCmd)
+	createCmd.AddCommand(crprojectCmd)
 
-	projectCmd.Flags().BoolVarP(&Verbose, "verbose", "v", false, "verbose logging")
+	crprojectCmd.Flags().BoolVarP(&Verbose, "verbose", "v", false, "verbose logging")
 }
