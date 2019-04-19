@@ -24,17 +24,12 @@ type projectData struct {
 	Stages   interface{} `json:"stages"`
 }
 
-type tokenData struct {
-	Token     string `json:"token"`
-	ChannelID string `json:"channelID"`
-}
-
 type myCloudEvent struct {
 	contenttype string
 	data        string
 }
 
-var Verbose bool
+var verbose bool
 
 // crprojectCmd represents the project command
 var crprojectCmd = &cobra.Command{
@@ -71,7 +66,7 @@ Example:
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if Verbose {
+		if verbose {
 			fmt.Println("Verbose Loggin enabled")
 		}
 		endPoint, apiToken, err := credentialmanager.GetCreds()
@@ -117,20 +112,19 @@ Example:
 		if responseCE.Data != nil {
 			var myData map[string]interface{}
 			json.Unmarshal(responseCE.Data.([]byte), &myData)
-			// fmt.Println(myData)
 			token := myData["data"].(map[string]interface{})["channelInfo"].(map[string]interface{})["token"].(string)
 			channelID := myData["data"].(map[string]interface{})["channelInfo"].(map[string]interface{})["channelId"].(string)
-			if token != "" {
+			success := myData["data"].(map[string]interface{})["success"].(bool)
+			if success && token != "" && channelID != "" {
 				ws, _, err := websockethelper.OpenWS(token, channelID)
 				if err != nil {
 					fmt.Println("could not open websocket")
 					return err
 				}
-				return websockethelper.PrintWSContent(ws, Verbose)
+				return websockethelper.PrintWSContent(ws, verbose)
 			}
+			fmt.Printf("Unsuccessful. Token or Channel ID might be missing or request received unsuccessful status")
 		}
-
-		fmt.Printf("Successfully created project %v on Github\n", prjData.Project)
 		return nil
 	},
 }
@@ -156,5 +150,5 @@ func parseShipYard(prjData *projectData, yamlFile string) error {
 func init() {
 	createCmd.AddCommand(crprojectCmd)
 
-	crprojectCmd.Flags().BoolVarP(&Verbose, "verbose", "v", false, "verbose logging")
+	crprojectCmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "verbose logging")
 }
