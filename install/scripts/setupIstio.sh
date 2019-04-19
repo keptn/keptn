@@ -1,15 +1,16 @@
 #!/bin/bash
-
 CLUSTER_NAME=$1
 CLUSTER_ZONE=$2
 
 # Determine the IP scope of the cluster (https://github.com/knative/docs/blob/master/serving/outbound-network-access.md)
 # Gcloud:
 if [[ -z "${CLUSTER_IPV4_CIDR}" ]]; then
+  echo "CLUSTER_IPV4_CIDR not set, retrieve it using gcloud"
   CLUSTER_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_NAME} --zone=${CLUSTER_ZONE} | yq r - clusterIpv4Cidr)
 fi
 
 if [[ -z "${SERVICES_IPV4_CIDR}" ]]; then
+  echo "SERVICES_IPV4_CIDR not set, retrieve it using gcloud"
   SERVICES_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_NAME} --zone=${CLUSTER_ZONE} | yq r - servicesIpv4Cidr)
 fi 
 

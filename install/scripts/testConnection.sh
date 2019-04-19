@@ -1,5 +1,4 @@
 #!/bin/bash
-
 GKE_PROJECT=$1
 CLUSTER_NAME=$2
 CLUSTER_ZONE=$3

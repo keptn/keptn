@@ -1,5 +1,4 @@
 # Clean up dynatrace namespace
-echo "Deleting Dynatrace OneAgent"
 kubectl delete services,deployments,pods --all -n dynatrace --ignore-not-found
 kubectl delete namespace dynatrace --ignore-not-found
 
