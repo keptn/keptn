@@ -48,7 +48,7 @@ rm -rf keptn-services
 mkdir keptn-services
 cd keptn-services
 
-git clone https://github.com/keptn/jenkins-service.git
+git clone --branch 0.1.0 https://github.com/keptn/jenkins-service.git --single-branch
 cd jenkins-service
 chmod +x deploy.sh
 ./deploy.sh $REGISTRY_URL $JENKINS_USER $JENKINS_PASSWORD $GITHUB_USER_EMAIL $GITHUB_ORGANIZATION $GITHUB_PERSONAL_ACCESS_TOKEN $DT_API_TOKEN $DT_TENANT_URL
