@@ -14,10 +14,8 @@ echo "Installing Dynatrace Operator $LATEST_RELEASE"
 kubectl apply -f https://raw.githubusercontent.com/Dynatrace/dynatrace-oneagent-operator/$LATEST_RELEASE/deploy/kubernetes.yaml
 
 # Wait for custom resource OneAgent to be available
-SLEEP_TIME=1
-SLEEP_ROUND=1
-
-while [ $SLEEP_TIME -lt 100 ]
+RETRY=1
+while [ $RETRY -lt 5 ]
 do
   kubectl get OneAgent
   if [[ $? == '0' ]]
@@ -25,10 +23,9 @@ do
     echo "CRD OneAgent now available, can continue... "
     break
   fi
-  SLEEP_TIME=$[$SLEEP_ROUND*$SLEEP_ROUND]
-  SLEEP_ROUND=$[$SLEEP_ROUND+1]
-  echo "Wait ${SLEEP_TIME}s for changes to apply... "
-  sleep ${SLEEP_TIME}
+  RETRY=$[$RETRY+1]
+  echo "Wait 10s for changes to apply... "
+  sleep 10
 done
 
 # Create Dynatrace OneAgent
