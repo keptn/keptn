@@ -1,6 +1,6 @@
 #!/bin/bash
 
-kubectl apply -f ./rbac.yaml
+kubectl apply -f ../manifests/installer/rbac.yaml
 
 # Update installer.yaml
 CLUSTER_NAME=$(cat creds.json | jq -r '.clusterName')
@@ -19,7 +19,7 @@ GITHUB_ORGANIZATION=$(cat creds.json | jq -r '.githubOrg')
 DT_TENANT_ID=$(cat creds_dt.json | jq -r '.dynatraceTenant')
 DT_API_TOKEN=$(cat creds_dt.json | jq -r '.dynatraceApiToken')
 
-cat ./installer.yaml | \
+cat ../manifests/installer/installer.yaml | \
   sed 's~value: CLUSTER_IPV4_CIDR~'"value: $CLUSTER_IPV4_CIDR"'~' | \
   sed 's~value: SERVICES_IPV4_CIDR~'"value: $SERVICES_IPV4_CIDR"'~' | \
   sed 's~value: GCLOUD_USER~'"value: $GCLOUD_USER"'~' | \
@@ -27,7 +27,7 @@ cat ./installer.yaml | \
   sed 's~value: JENKINS_PASSWORD~'"value: $JENKINS_PASSWORD"'~' | \
   sed 's~value: GITHUB_PERSONAL_ACCESS_TOKEN~'"value: $GITHUB_PERSONAL_ACCESS_TOKEN"'~' | \
   sed 's~value: GITHUB_USER_EMAIL~'"value: $GITHUB_USER_EMAIL"'~' | \
-  sed 's~value: GITHUB_ORGANIZATION~'"value: $GITHUB_ORGANIZATION"'~' >> ./installer-gen.yaml
+  sed 's~value: GITHUB_ORGANIZATION~'"value: $GITHUB_ORGANIZATION"'~' >> ../manifests/gen/installer.yaml
 
 # Roll-out installer on cluster
-kubectl apply -f ./installer-gen.yaml
+kubectl apply -f ../manifests/gen/installer.yaml
