@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/url"
@@ -10,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
+	"github.com/keptn/keptn/cli/utils/websockethelper"
 	"github.com/spf13/cobra"
 )
 
@@ -55,13 +57,35 @@ Example:
 		configURL.Path = "config"
 
 		fmt.Println("Connecting to server ", endPoint.String())
-		_, err = utils.Send(configURL, event, apiToken)
+		responseCE, err := utils.Send(configURL, event, apiToken)
 		if err != nil {
 			fmt.Println("Configure was unsuccessful")
 			return err
 		}
 
-		fmt.Println("Successfully configured the GitHub organization, the GitHub user, and the GitHub personal access token")
+		// check for responseCE to include token
+		if responseCE == nil {
+			fmt.Println("response CE is nil")
+			return nil
+		}
+		if responseCE.Data != nil {
+			var myData map[string]interface{}
+			json.Unmarshal(responseCE.Data.([]byte), &myData)
+			token := myData["data"].(map[string]interface{})["channelInfo"].(map[string]interface{})["token"].(string)
+			channelID := myData["data"].(map[string]interface{})["channelInfo"].(map[string]interface{})["channelId"].(string)
+			success := myData["data"].(map[string]interface{})["success"].(bool)
+			if success && token != "" && channelID != "" {
+				ws, _, err := websockethelper.OpenWS(token, channelID)
+				if err != nil {
+					fmt.Println("could not open websocket")
+					return err
+				}
+				return websockethelper.PrintWSContent(ws, verbose)
+			}
+			fmt.Printf("Unsuccessful. Token or Channel ID might be missing or request received unsuccessful status")
+		}
+
+		// fmt.Println("Successfully configured the GitHub organization, the GitHub user, and the GitHub personal access token")
 		return nil
 	},
 }
