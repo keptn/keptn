@@ -3,42 +3,42 @@ REGISTRY_URL=$(kubectl describe svc docker-registry -n keptn | grep IP: | sed 's
 
 # Environment variables for installing keptn services
 if [[ -z "${JENKINS_USER}" ]]; then
-  echo "JENKINS_USER not set, take it from creds.json"
+  echo "[keptn|1]JENKINS_USER not set, take it from creds.json"
   JENKINS_USER=$(cat creds.json | jq -r '.jenkinsUser')
 fi
 
 if [[ -z "${JENKINS_PASSWORD}" ]]; then
-  echo "JENKINS_PASSWORD not set, take it from creds.json"
+  echo "[keptn|1]JENKINS_PASSWORD not set, take it from creds.json"
   JENKINS_PASSWORD=$(cat creds.json | jq -r '.jenkinsPassword')
 fi
 
 if [[ -z "${GITHUB_PERSONAL_ACCESS_TOKEN}" ]]; then
-  echo "GITHUB_PERSONAL_ACCESS_TOKEN not set, take it from creds.json"
+  echo "[keptn|1]GITHUB_PERSONAL_ACCESS_TOKEN not set, take it from creds.json"
   GITHUB_PERSONAL_ACCESS_TOKEN=$(cat creds.json | jq -r '.githubPersonalAccessToken')
 fi
 
 if [[ -z "${GITHUB_USER_EMAIL}" ]]; then
-  echo "GITHUB_USER_EMAIL not set, take it from creds.json"
+  echo "[keptn|1]GITHUB_USER_EMAIL not set, take it from creds.json"
   GITHUB_USER_EMAIL=$(cat creds.json | jq -r '.githubUserEmail')
 fi
 
 if [[ -z "${GITHUB_ORGANIZATION}" ]]; then
-  echo "GITHUB_ORGANIZATION not set, take it from creds.json"
+  echo "[keptn|1]GITHUB_ORGANIZATION not set, take it from creds.json"
   GITHUB_ORGANIZATION=$(cat creds.json | jq -r '.githubOrg')
 fi
 
 if [[ -z "${DT_TENANT_ID}" ]]; then
-  echo "DT_TENANT_ID not set, take it from creds_dt.json"
+  echo "[keptn|1]DT_TENANT_ID not set, take it from creds_dt.json"
   DT_TENANT_ID=$(cat creds_dt.json | jq -r '.dynatraceTenant')
 fi
 
 if [[ -z "${DT_API_TOKEN}" ]]; then
-  echo "DT_API_TOKEN not set, take it from creds_dt.json"
+  echo "[keptn|1]DT_API_TOKEN not set, take it from creds_dt.json"
   DT_API_TOKEN=$(cat creds_dt.json | jq -r '.dynatraceApiToken')
 fi
 
 if [[ -z "${DT_TENANT_URL}" ]]; then
-  echo "DT_TENANT_URL not set, define it based on DT_TENANT_ID"
+  echo "[keptn|1]DT_TENANT_URL not set, define it based on DT_TENANT_ID"
   DT_TENANT_URL="$DT_TENANT_ID.live.dynatrace.com"
 fi
 

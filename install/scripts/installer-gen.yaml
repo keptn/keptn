@@ -20,18 +20,18 @@ spec:
         image: jbraeuer/installer:0.2.3
         env: 
         - name: CLUSTER_IPV4_CIDR
-          value: CLUSTER_IPV4_CIDR
+          value: 10.8.0.0/14
         - name: SERVICES_IPV4_CIDR
-          value: SERVICES_IPV4_CIDR
+          value: 10.11.240.0/20
         - name: GCLOUD_USER
-          value: GCLOUD_USER
+          value: johannes.braeuer@dynatrace.com
         - name: JENKINS_USER
-          value: JENKINS_USER
+          value: admin
         - name: JENKINS_PASSWORD
-          value: JENKINS_PASSWORD
+          value: AiTx4u8VyUV8tCKk
         - name: GITHUB_PERSONAL_ACCESS_TOKEN
-          value: GITHUB_PERSONAL_ACCESS_TOKEN
+          value: 8bafc6135dc7e8403972f85ab471fa2e0328c1f1
         - name: GITHUB_USER_EMAIL
-          value: GITHUB_USER_EMAIL
+          value: johannes.braeuer@dynatrace.com
         - name: GITHUB_ORGANIZATION
-          value: GITHUB_ORGANIZATION
+          value: keptn-tiger

@@ -31,18 +31,18 @@ kubectl apply -f ../manifests/gen/config-domain.yaml
 # Determine the IP scope of the cluster (https://github.com/knative/docs/blob/master/serving/outbound-network-access.md)
 # Gcloud:
 if [[ -z "${CLUSTER_IPV4_CIDR}" ]]; then
-  echo "CLUSTER_IPV4_CIDR not set, retrieve it using gcloud"
+  echo "[keptn|1]CLUSTER_IPV4_CIDR not set, retrieve it using gcloud"
   CLUSTER_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_NAME} --zone=${CLUSTER_ZONE} | yq r - clusterIpv4Cidr)
 fi
 
 if [[ -z "${SERVICES_IPV4_CIDR}" ]]; then
-  echo "SERVICES_IPV4_CIDR not set, retrieve it using gcloud"
+  echo "[keptn|1]SERVICES_IPV4_CIDR not set, retrieve it using gcloud"
   SERVICES_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_NAME} --zone=${CLUSTER_ZONE} | yq r - servicesIpv4Cidr)
 fi
 
 kubectl get configmap config-network -n knative-serving -o=yaml | yq w - data['istio.sidecar.includeOutboundIPRanges'] "$CLUSTER_IPV4_CIDR,$SERVICES_IPV4_CIDR" | kubectl apply -f - 
 
-echo "Wait 30s for changes to apply... "
+echo "[keptn|0]Wait 30s for changes to apply... "
 sleep 30
 
 kubectl apply -f ../manifests/keptn/keptn-rbac.yaml
