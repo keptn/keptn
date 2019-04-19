@@ -42,10 +42,14 @@ export class WebSocketService {
       let clientFound = false;
       const connection =
         WebSocketService.connections.find(connection => connection.channelId === keptnContext);
-      if (connection !== undefined && connection.client !== undefined) {
-        clientFound = true;
-        console.log('found client and sending message');
-        connection.client.send(`${message}`);
+      if (connection !== undefined &&
+        connection.client !== undefined &&
+        connection.client.readyState === WebSocket.OPEN) {
+        try {
+          clientFound = true;
+          console.log('found client and sending message');
+          connection.client.send(`${message}`);
+        } catch (e) {}
       }
 
       if (!clientFound && msgPayload !== undefined) {
