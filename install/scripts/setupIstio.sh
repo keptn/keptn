@@ -5,12 +5,12 @@ CLUSTER_ZONE=$2
 # Determine the IP scope of the cluster (https://github.com/knative/docs/blob/master/serving/outbound-network-access.md)
 # Gcloud:
 if [[ -z "${CLUSTER_IPV4_CIDR}" ]]; then
-  echo "CLUSTER_IPV4_CIDR not set, retrieve it using gcloud"
+  echo "[keptn|1]CLUSTER_IPV4_CIDR not set, retrieve it using gcloud"
   CLUSTER_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_NAME} --zone=${CLUSTER_ZONE} | yq r - clusterIpv4Cidr)
 fi
 
 if [[ -z "${SERVICES_IPV4_CIDR}" ]]; then
-  echo "SERVICES_IPV4_CIDR not set, retrieve it using gcloud"
+  echo "[keptn|1]SERVICES_IPV4_CIDR not set, retrieve it using gcloud"
   SERVICES_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_NAME} --zone=${CLUSTER_ZONE} | yq r - servicesIpv4Cidr)
 fi 
 
@@ -21,12 +21,12 @@ cat ../manifests/istio/istio-knative.yaml | \
 
 kubectl apply -f ../manifests/istio/istio-crds-knative.yaml
 
-echo "Wait 4 minutes for changes to apply... "
+echo "[keptn|0]Wait 4 minutes for changes to apply... "
 sleep 240
 
 kubectl apply -f ../manifests/gen/istio-knative.yaml
 
-echo "Wait 10s for changes to apply... "
+echo "[keptn|0]Wait 10s for changes to apply... "
 sleep 10
 
 kubectl delete pods --all -n keptn

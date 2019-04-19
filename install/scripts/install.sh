@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#kubectl apply -f ./rbac.yaml
+kubectl apply -f ./rbac.yaml
 
 # Update installer.yaml
 CLUSTER_NAME=$(cat creds.json | jq -r '.clusterName')
@@ -30,4 +30,4 @@ cat ./installer.yaml | \
   sed 's~value: GITHUB_ORGANIZATION~'"value: $GITHUB_ORGANIZATION"'~' >> ./installer-gen.yaml
 
 # Roll-out installer on cluster
-#kubectl apply -f ./installer-gen.yaml
+kubectl apply -f ./installer-gen.yaml
