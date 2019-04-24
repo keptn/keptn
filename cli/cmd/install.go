@@ -25,13 +25,21 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"regexp"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 )
+
+type installConfig struct {
+	LogLevel *string `json:"logLevel"`
+}
+
+var installCfg installConfig
 
 type installCredentials struct {
 	ClusterName               string `json:"clusterName"`
@@ -144,7 +152,6 @@ Example:
 		// var creds *installCredentials
 
 		clusterName, clusterZone, _ := connectToCluster()
-		fmt.Printf("Cluster: %s", clusterName)
 
 		var err error
 		var creds *installCredentials
@@ -170,45 +177,40 @@ Example:
 		setDeploymentFileKey("CLUSTER_IPV4_CIDR", clusterIPCIDR)
 		setDeploymentFileKey("SERVICES_IPV4_CIDR", servicesIPCIDR)
 
-		execCmd := exec.Command("kubectl", "apply", "-f", "https://raw.githubusercontent.com/keptn/keptn/install-keptn/install/manifests/installer/rbac.yaml")
+		execCmd := exec.Command(
+			"kubectl",
+			"apply",
+			"-f",
+			"https://raw.githubusercontent.com/keptn/keptn/install-keptn/install/manifests/installer/rbac.yaml",
+		)
 
-		var stdout, stderr []byte
-		var errStdout, errStderr error
-		stdoutIn, _ := execCmd.StdoutPipe()
-		stderrIn, _ := execCmd.StderrPipe()
-		err = execCmd.Start()
+		_, err = execCmd.Output()
+
 		if err != nil {
-			log.Fatalf("cmd.Start() failed with '%s'\n", err)
+			log.Fatalf("Error while applying RBAC: %s \n", err)
 		}
 
-		// cmd.Wait() should be called only after we finish reading
-		// from stdoutIn and stderrIn.
-		// wg ensures that we finish
-		var wg sync.WaitGroup
-		wg.Add(1)
-		go func() {
-			copyAndCapture(os.Stdout, stdoutIn)
-			wg.Done()
-		}()
-
-		copyAndCapture(os.Stderr, stderrIn)
-
-		wg.Wait()
-
-		err = execCmd.Wait()
+		execCmd = exec.Command(
+			"kubectl",
+			"apply",
+			"-f",
+			"installer.yaml",
+		)
+		_, err = execCmd.Output()
 		if err != nil {
-			log.Fatalf("cmd.Run() failed with %s\n", err)
+			log.Fatalf("Error while deploying keptn installer pod: %s \n", err)
 		}
-		if errStdout != nil || errStderr != nil {
-			log.Fatal("failed to capture stdout or stderr\n")
-		}
-		outStr, errStr := string(stdout), string(stderr)
-		fmt.Printf("\nout:\n%s\nerr:\n%s\n", outStr, errStr)
+		fmt.Println("Installer pod deployed successfully.")
+
+		installerPodName := waitForInstallerPod()
+
+		getInstallerLogs(installerPodName)
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(installCmd)
+	installCfg.LogLevel = installCmd.Flags().StringP("log-level", "l", "INFO", "Log level")
 }
 
 func getInstallCredentials() (*installCredentials, error) {
@@ -252,20 +254,34 @@ func getInstallCredentials() (*installCredentials, error) {
 
 	newCreds, _ := json.Marshal(creds)
 	newCredsStr := strings.Replace(string(newCreds), "\n", "", -1)
-	fmt.Printf("new creds file content: %s\n", newCredsStr)
 	credentialmanager.SetInstallCreds(newCredsStr)
 	return creds, err
 }
 
-func copyAndCapture(w io.Writer, r io.Reader) {
+func copyAndCapture(w io.Writer, r io.Reader, in io.WriteCloser) []byte {
+	var log string
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
-		// text := strings.Replace(scanner.Text(), "found", "", -1)
-		fmt.Println(scanner.Text())
+		log += scanner.Text() + "\n"
+		if strings.HasPrefix(scanner.Text(), "[keptn|") {
+			var reg = regexp.MustCompile(`\[keptn\|[0-9]+\]`)
+			outputStr := reg.ReplaceAllString(scanner.Text(), "")
+			fmt.Println(outputStr)
+			if outputStr == "Installation of keptn complete." {
+				cmd := exec.Command(
+					"kubectl",
+					"delete",
+					"deployment",
+					"installer",
+				)
+				cmd.Run()
+			}
+		}
 	}
 	if err := scanner.Err(); err != nil {
 		fmt.Fprintln(os.Stderr, "reading standard input:", err)
 	}
+	return []byte(log)
 }
 
 // DownloadFile will download a url to a local file. It's efficient because it will
@@ -432,4 +448,91 @@ func getGcloudClusterIPCIDR(clusterName string, clusterZone string) (string, str
 	servicesIPCIDR := clusterDescription["servicesIpv4Cidr"].(string)
 
 	return clusterIPCIDR, servicesIPCIDR
+}
+
+func waitForInstallerPod() string {
+	podName := ""
+	podRunning := false
+	for ok := true; ok; ok = !podRunning {
+		time.Sleep(5 * time.Second)
+		cmd := exec.Command(
+			"kubectl",
+			"get",
+			"pods",
+			"-l",
+			"app=installer",
+			"-ojson",
+		)
+		out, err := cmd.Output()
+		if err != nil {
+			log.Fatalf("Error while retrieving installer pod: %s\n", err)
+		} else {
+			var podInfo map[string]interface{}
+			err = json.Unmarshal(out, &podInfo)
+			if err == nil && podInfo != nil {
+				podStatusArray := podInfo["items"].([]interface{})
+
+				if len(podStatusArray) > 0 {
+					podStatus := podStatusArray[0].(map[string]interface{})["status"].(map[string]interface{})["phase"].(string)
+					if podStatus == "Running" {
+						podName = podStatusArray[0].(map[string]interface{})["metadata"].(map[string]interface{})["name"].(string)
+						podRunning = true
+					}
+				}
+
+			}
+		}
+	}
+	return podName
+}
+
+func getInstallerLogs(podName string) {
+	var stdout []byte
+	var errStdout, errStderr error
+
+	fmt.Printf("Getting logs of pod %s\n", podName)
+
+	execCmd := exec.Command(
+		"kubectl",
+		"logs",
+		podName,
+		"-c",
+		"keptn-installer",
+		"-f",
+	)
+
+	stdoutIn, _ := execCmd.StdoutPipe()
+	stderrIn, _ := execCmd.StderrPipe()
+	stdIn, _ := execCmd.StdinPipe()
+	err := execCmd.Start()
+	if err != nil {
+		log.Fatalf("Could not get installer pod logs: '%s'\n", err)
+	}
+
+	// cmd.Wait() should be called only after we finish reading
+	// from stdoutIn and stderrIn.
+	// wg ensures that we finish
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		stdout = copyAndCapture(os.Stdout, stdoutIn, stdIn)
+		wg.Done()
+	}()
+
+	stdout = copyAndCapture(os.Stderr, stderrIn, stdIn)
+
+	wg.Wait()
+
+	err = execCmd.Wait()
+	if err != nil {
+		log.Fatalf("cmd.Run() failed with %s\n", err)
+	}
+	if errStdout != nil || errStderr != nil {
+		log.Fatal("failed to capture stdout or stderr\n")
+	}
+
+	if err = ioutil.WriteFile("keptn-installer.log", stdout, 0666); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }
