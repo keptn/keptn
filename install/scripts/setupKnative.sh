@@ -52,3 +52,20 @@ kubectl apply -f ../manifests/knative/build/kaniko.yaml -n keptn
 
 # Create build-bot service account
 kubectl apply -f ../manifests/knative/build/service-account.yaml
+
+##############################################
+## Start validation of Knative installation ##
+##############################################
+
+# Wait max 1min for webhook deployment
+RETRY=0
+while [ $RETRY -lt 6 ]
+do
+  kubectl rollout status deployment webhook -n knative-eventing --timeout=10s
+  if [[ $? == '0' ]]
+  then
+    echo "[keptn|0]Deployment webhook in knative-eventing namespace available, can continue... "
+    break
+  fi
+  RETRY=$[$RETRY+1]
+done

@@ -17,7 +17,7 @@ spec:
         emptyDir: {}
       containers:
       - name: keptn-installer
-        image: jbraeuer/installer:0.2.8
+        image: jbraeuer/installer:0.2.9
         env: 
         - name: CLUSTER_IPV4_CIDR
           value: CLUSTER_IPV4_CIDR
