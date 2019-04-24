@@ -13,9 +13,9 @@ echo "Installing Dynatrace Operator $LATEST_RELEASE"
 
 kubectl apply -f https://raw.githubusercontent.com/Dynatrace/dynatrace-oneagent-operator/$LATEST_RELEASE/deploy/kubernetes.yaml
 
-# Wait for custom resource OneAgent to be available
-RETRY=1
-while [ $RETRY -lt 5 ]
+# Wait 1m for custom resource OneAgent to be available
+RETRY=0
+while [ $RETRY -lt 6 ]
 do
   kubectl get OneAgent
   if [[ $? == '0' ]]
@@ -28,9 +28,10 @@ do
   sleep 10
 done
 
-# Create Dynatrace OneAgent
+# Create Dynatrace secret
 kubectl -n dynatrace create secret generic oneagent --from-literal="apiToken=$DT_API_TOKEN" --from-literal="paasToken=$DT_PAAS_TOKEN"
 
+# Create Dynatrace OneAgent
 rm -f ../manifests/gen/cr.yml
 
 curl -o ../manifests/dynatrace/cr.yml https://raw.githubusercontent.com/Dynatrace/dynatrace-oneagent-operator/$LATEST_RELEASE/deploy/cr.yaml
@@ -39,9 +40,9 @@ cat ../manifests/dynatrace/cr.yml | sed 's/ENVIRONMENTID/'"$DT_TENANT_ID"'/' >> 
 kubectl apply -f ../manifests/gen/cr.yml
 
 # Apply auto tagging rules in Dynatrace
-echo "Apply auto tagging rules in Dynatrace "
+echo "Apply auto tagging rules in Dynatrace."
 ./applyAutoTaggingRules.sh $DT_TENANT_ID $DT_API_TOKEN
-echo "End applying auto tagging rules in Dynatrace "
+echo "End applying auto tagging rules in Dynatrace."
 
 ./createServiceEntry.sh $DT_TENANT_ID $DT_PAAS_TOKEN
 

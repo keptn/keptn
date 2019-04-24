@@ -28,12 +28,12 @@ if [[ -z "${GITHUB_ORGANIZATION}" ]]; then
 fi
 
 if [[ -z "${DT_TENANT_ID}" ]]; then
-  echo "[keptn|1]DT_TENANT_ID not set, take it from creds_dt.json"
+  echo "[keptn|1]DT_TENANT_ID not set, use value from creds_dt.json"
   DT_TENANT_ID=$(cat creds_dt.json | jq -r '.dynatraceTenant')
 fi
 
 if [[ -z "${DT_API_TOKEN}" ]]; then
-  echo "[keptn|1]DT_API_TOKEN not set, take it from creds_dt.json"
+  echo "[keptn|1]DT_API_TOKEN not set, use value from creds_dt.json"
   DT_API_TOKEN=$(cat creds_dt.json | jq -r '.dynatraceApiToken')
 fi
 

@@ -28,7 +28,7 @@ do
     break
   fi
   RETRY=$[$RETRY+1]
-  echo "[keptn|0]Wait 10s for changes to apply... "
+  echo "[keptn|0]Retry: ${$RETRY} - Wait 10s for changes to apply... "
   sleep 10
 done
 
@@ -44,7 +44,7 @@ do
     break
   fi
   RETRY=$[$RETRY+1]
-  echo "[keptn|0]Wait 10s for changes to apply... "
+  echo "[keptn|0]Retry: ${$RETRY} - Wait 10s for changes to apply... "
   sleep 10
 done
 
@@ -58,24 +58,26 @@ kubectl apply -f ../manifests/gen/istio-knative.yaml
 echo "Wait 4 minutes for changes to apply... "
 sleep 240
 
-# Wait max 4min for IP of Istio ingressgateway
-sleep 2
-RETRY=0
-while [ $RETRY -lt 24 ]
-do
-  ISTIO_INGRESS_IP=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-  if [[ -z "${ISTIO_INGRESS_IP}" ]]
-  then
-    echo "[keptn|1]IP of Istio ingressgateway: ${ISTIO_INGRESS_IP}"
-    echo "[keptn|0]IP of Istio ingressgateway available, can continue... "
-    break
-  fi
-  RETRY=$[$RETRY+1]
-  echo "[keptn|0]Wait 10s for changes to apply... "
-  sleep 10
-done
-
 # Delete all pods in keptn to apply Istio changes
 kubectl delete pods --all -n keptn
 
-## Start validation of Istio installation
+##############################################
+## Start validation of Istio installation   ##
+##############################################
+
+# Wait max 4min for IP of Istio ingressgateway
+# sleep 2
+# RETRY=0
+# while [ $RETRY -lt 24 ]
+# do
+#   ISTIO_INGRESS_IP=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+#   if [[ -z "${ISTIO_INGRESS_IP}" ]]
+#   then
+#     echo "[keptn|1]IP of Istio ingressgateway: ${ISTIO_INGRESS_IP}"
+#     echo "[keptn|0]IP of Istio ingressgateway available, can continue... "
+#     break
+#   fi
+#   RETRY=$[$RETRY+1]
+#   echo "[keptn|0]Retry: ${$RETRY} - Wait 10s for changes to apply... "
+#   sleep 10
+# done
