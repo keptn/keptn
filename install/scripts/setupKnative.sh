@@ -47,9 +47,6 @@ sleep 30
 kubectl apply -f ../manifests/keptn/keptn-rbac.yaml
 kubectl apply -f ../manifests/keptn/keptn-org-configmap.yaml
 
-# Install kaniko build template
-kubectl apply -f ../manifests/knative/build/kaniko.yaml -n keptn
-
 # Create build-bot service account
 kubectl apply -f ../manifests/knative/build/service-account.yaml
 
@@ -57,9 +54,9 @@ kubectl apply -f ../manifests/knative/build/service-account.yaml
 ## Start validation of Knative installation ##
 ##############################################
 
-# Wait max 1min for webhook deployment
+# Wait max 2min for webhook deployment
 RETRY=0
-while [ $RETRY -lt 6 ]
+while [ $RETRY -lt 12 ]
 do
   kubectl rollout status deployment webhook -n knative-eventing --timeout=10s
   if [[ $? == '0' ]]
@@ -69,3 +66,6 @@ do
   fi
   RETRY=$[$RETRY+1]
 done
+
+# Install kaniko build template
+kubectl apply -f ../manifests/knative/build/kaniko.yaml -n keptn

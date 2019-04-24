@@ -28,7 +28,7 @@ do
     break
   fi
   RETRY=$[$RETRY+1]
-  echo "[keptn|0]Retry: ${$RETRY} - Wait 10s for changes to apply... "
+  echo "[keptn|0]Retry: ${RETRY}/6 - Wait 10s for changes to apply... "
   sleep 10
 done
 
@@ -44,7 +44,7 @@ do
     break
   fi
   RETRY=$[$RETRY+1]
-  echo "[keptn|0]Retry: ${$RETRY} - Wait 10s for changes to apply... "
+  echo "[keptn|0]Retry: ${RETRY}/6 - Wait 10s for changes to apply... "
   sleep 10
 done
 
@@ -78,6 +78,6 @@ kubectl delete pods --all -n keptn
 #     break
 #   fi
 #   RETRY=$[$RETRY+1]
-#   echo "[keptn|0]Retry: ${$RETRY} - Wait 10s for changes to apply... "
+#   echo "[keptn|0]Retry: ${RETRY}/24 - Wait 10s for changes to apply... "
 #   sleep 10
 # done
