@@ -19,7 +19,7 @@ KEPTN_API_TOKEN=$(head -c 16 /dev/urandom | base64)
 
 kubectl create secret generic -n keptn keptn-api-token --from-literal=keptn-api-token="$KEPTN_API_TOKEN"
 
-# Deploy event broker
+# Deploy keptn core components: eventbroker, eventbroker-ext, auth, control
 cd ../../core/eventbroker
 chmod +x deploy.sh
 ./deploy.sh $REGISTRY_URL $KEPTN_CHANNEL_URI

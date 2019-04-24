@@ -12,6 +12,11 @@ if [[ -z "${JENKINS_PASSWORD}" ]]; then
   JENKINS_PASSWORD=$(cat creds.json | jq -r '.jenkinsPassword')
 fi
 
+if [[ -z "${GITHUB_USER_NAME}" ]]; then
+  echo "[keptn|1]GITHUB_USER_NAME not set, take it from creds.json"
+  GITHUB_USER_NAME=$(cat creds.json | jq -r '.githubUserName')
+fi
+
 if [[ -z "${GITHUB_PERSONAL_ACCESS_TOKEN}" ]]; then
   echo "[keptn|1]GITHUB_PERSONAL_ACCESS_TOKEN not set, take it from creds.json"
   GITHUB_PERSONAL_ACCESS_TOKEN=$(cat creds.json | jq -r '.githubPersonalAccessToken')
@@ -51,7 +56,7 @@ cd keptn-services
 git clone --branch 0.1.0 https://github.com/keptn/jenkins-service.git --single-branch
 cd jenkins-service
 chmod +x deploy.sh
-./deploy.sh $REGISTRY_URL $JENKINS_USER $JENKINS_PASSWORD $GITHUB_USER_EMAIL $GITHUB_ORGANIZATION $GITHUB_PERSONAL_ACCESS_TOKEN $DT_API_TOKEN $DT_TENANT_URL
+./deploy.sh $REGISTRY_URL $JENKINS_USER $JENKINS_PASSWORD $GITHUB_USER_NAME $GITHUB_USER_EMAIL $GITHUB_ORGANIZATION $GITHUB_PERSONAL_ACCESS_TOKEN $DT_API_TOKEN $DT_TENANT_URL
 cd ..
 
 git clone --branch 0.1.0 https://github.com/keptn/github-service.git --single-branch
