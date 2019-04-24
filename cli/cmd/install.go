@@ -142,6 +142,10 @@ Example:
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Installing keptn...")
 		// var creds *installCredentials
+
+		clusterName, clusterZone, _ := connectToCluster()
+		fmt.Printf("Cluster: %s", clusterName)
+
 		var err error
 		var creds *installCredentials
 		creds, err = getInstallCredentials()
@@ -156,7 +160,7 @@ Example:
 		}
 
 		gcloudUser := getGcloudUser()
-		clusterIPCIDR, servicesIPCIDR := getGcloudClusterIPCIDR(creds.ClusterName, creds.ClusterZone)
+		clusterIPCIDR, servicesIPCIDR := getGcloudClusterIPCIDR(clusterName, clusterZone)
 		setDeploymentFileKey("JENKINS_USER", "admin")
 		setDeploymentFileKey("JENKINS_PASSWORD", "AiTx4u8VyUV8tCKk")
 		setDeploymentFileKey("GITHUB_PERSONAL_ACCESS_TOKEN", creds.GithubPersonalAccessToken)
@@ -223,18 +227,6 @@ func getInstallCredentials() (*installCredentials, error) {
 	fmt.Print("Please enter the following information (press enter to keep the old value):\n")
 
 	reader := bufio.NewReader(os.Stdin)
-
-	fmt.Printf("GKE cluster name [%s]: ", creds.ClusterName)
-	clusterName, _ := reader.ReadString('\n')
-	if clusterName != "\n" {
-		creds.ClusterName = strings.TrimSuffix(clusterName, "\n")
-	}
-
-	fmt.Printf("GKE cluster zone [%s]: ", creds.ClusterZone)
-	clusterZone, _ := reader.ReadString('\n')
-	if clusterZone != "\n" {
-		creds.ClusterZone = strings.TrimSuffix(clusterZone, "\n")
-	}
 
 	// default creds for jenkins
 	creds.JenkinsUser = "admin"
@@ -314,11 +306,112 @@ func setDeploymentFileKey(key string, value string) {
 	}
 }
 
+func connectToCluster() (string, string, string) {
+	reader := bufio.NewReader(os.Stdin)
+	setupNewCluster := false
+	clusterName, clusterZone, gkeProject := getClusterInfo()
+	if clusterName != "" && clusterZone != "" && gkeProject != "" {
+		fmt.Printf("You are currently connected to the following cluster:\n")
+		fmt.Printf("Project: %s\n", gkeProject)
+		fmt.Printf("Compute Zone: %s\n", clusterZone)
+		fmt.Printf("Cluster Name: %s\n", clusterName)
+		fmt.Printf("Would you like to use this cluster to set up keptn? [Y/n]\n")
+		setupNewClusterPrompt, _ := reader.ReadString('\n')
+
+		if setupNewClusterPrompt != "\n" {
+			setupNewCluster = true
+		}
+	} else {
+		setupNewCluster = true
+	}
+
+	if setupNewCluster {
+		connectionSuccessful := false
+		for tryConnection := true; tryConnection; tryConnection = !connectionSuccessful {
+			for ok := true; ok; ok = (gkeProject == "") {
+				fmt.Printf("Please enter the GKE project [%s]:", gkeProject)
+				newGkeProject, _ := reader.ReadString('\n')
+				if newGkeProject != "\n" {
+					gkeProject = strings.TrimSuffix(newGkeProject, "\n")
+				}
+			}
+
+			for ok := true; ok; ok = (clusterName == "") {
+				fmt.Printf("Please enter the GKE cluster name [%s]:", clusterName)
+				newClusterName, _ := reader.ReadString('\n')
+				if newClusterName != "\n" {
+					clusterName = strings.TrimSuffix(newClusterName, "\n")
+				}
+			}
+
+			for ok := true; ok; ok = (clusterZone == "") {
+				fmt.Printf("Please enter the GKE cluster zone [%s]:", clusterZone)
+				newClusterZone, _ := reader.ReadString('\n')
+				if newClusterZone != "\n" {
+					clusterZone = strings.TrimSuffix(newClusterZone, "\n")
+				}
+			}
+
+			cmd := exec.Command(
+				"gcloud",
+				"container",
+				"clusters",
+				"get-credentials",
+				clusterName,
+				"--zone",
+				clusterZone,
+				"--project",
+				gkeProject,
+			)
+
+			_, err := cmd.Output()
+			if err != nil {
+				fmt.Println("Could not connect to cluster. Please verify that you have entered the correct information:")
+			} else {
+				connectionSuccessful = true
+				fmt.Println("Connection to cluster successful:")
+			}
+		}
+	}
+
+	return clusterName, clusterZone, gkeProject
+}
+
+func getClusterInfo() (string, string, string) {
+	var clusterName string
+	var clusterZone string
+	var project string
+	fmt.Println("Trying to get GKE cluster info...")
+	// try to get current cluster from gcloud config
+	cmd := exec.Command("gcloud", "config", "get-value", "container/cluster")
+	out, err := cmd.Output()
+	if err != nil {
+		clusterName = ""
+	}
+	clusterName = strings.Replace(string(out), "\n", "", -1)
+
+	cmd = exec.Command("gcloud", "config", "get-value", "compute/zone")
+	out, err = cmd.Output()
+	if err != nil {
+		clusterZone = ""
+	}
+	clusterZone = strings.Replace(string(out), "\n", "", -1)
+
+	cmd = exec.Command("gcloud", "config", "get-value", "core/project")
+	out, err = cmd.Output()
+	if err != nil {
+		project = ""
+	}
+	project = strings.Replace(string(out), "\n", "", -1)
+
+	return clusterName, clusterZone, project
+}
+
 func getGcloudUser() string {
 	var err error
 
-	exec := exec.Command("gcloud", "config", "get-value", "account")
-	out, err := exec.Output()
+	cmd := exec.Command("gcloud", "config", "get-value", "account")
+	out, err := cmd.Output()
 	if err != nil {
 		log.Fatalf("cmd.Run() failed with %s\n", err)
 	}
@@ -328,8 +421,8 @@ func getGcloudUser() string {
 func getGcloudClusterIPCIDR(clusterName string, clusterZone string) (string, string) {
 	var err error
 	var clusterDescription map[string]interface{}
-	exec := exec.Command("gcloud", "container", "clusters", "describe", clusterName, "--zone="+clusterZone)
-	out, err := exec.Output()
+	cmd := exec.Command("gcloud", "container", "clusters", "describe", clusterName, "--zone="+clusterZone)
+	out, err := cmd.Output()
 	if err != nil {
 		log.Fatalf("Could not get cluster Info\n")
 	}
