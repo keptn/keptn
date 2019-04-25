@@ -17,6 +17,7 @@ package cmd
 import (
 	"bufio"
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -51,94 +52,23 @@ type installCredentials struct {
 	GithubOrg                 string `json:"githubOrg"`
 }
 
-/*
-type gCloudClusterDescription struct {
-	AddonsConfig struct {
-		HTTPLoadBalancing struct {
-		} `yaml:"httpLoadBalancing,omitempty"`
-		KubernetesDashboard struct {
-			Disabled bool `yaml:"disabled"`
-		} `yaml:"kubernetesDashboard,omitempty"`
-		NetworkPolicyConfig struct {
-			Disabled bool `yaml:"disabled,omitempty"`
-		} `yaml:"networkPolicyConfig,omitempty"`
-	} `yaml:"addonsConfig,omitempty"`
-	ClusterIpv4Cidr          string    `yaml:"clusterIpv4Cidr"`
-	CreateTime               time.Time `yaml:"createTime,omitempty"`
-	CurrentMasterVersion     string    `yaml:"currentMasterVersion"`
-	CurrentNodeCount         int       `yaml:"currentNodeCount"`
-	CurrentNodeVersion       string    `yaml:"currentNodeVersion"`
-	DefaultMaxPodsConstraint struct {
-		MaxPodsPerNode string `yaml:"maxPodsPerNode"`
-	} `yaml:"defaultMaxPodsConstraint,omitempty"`
-	Endpoint              string   `yaml:"endpoint,omitempty"`
-	InitialClusterVersion string   `yaml:"initialClusterVersion,omitempty"`
-	InstanceGroupUrls     []string `yaml:"instanceGroupUrls,omitempty"`
-	IPAllocationPolicy    struct {
-	} `yaml:"ipAllocationPolicy,omitempty"`
-	LabelFingerprint string `yaml:"labelFingerprint,omitempty"`
-	LegacyAbac       struct {
-	} `yaml:"legacyAbac,omitempty"`
-	Location       string   `yaml:"location,omitempty"`
-	Locations      []string `yaml:"locations,omitempty"`
-	LoggingService string   `yaml:"loggingService,omitempty"`
-	MasterAuth     struct {
-		ClientCertificate    string `yaml:"clientCertificate,omitempty"`
-		ClientKey            string `yaml:"clientKey,omitempty"`
-		ClusterCaCertificate string `yaml:"clusterCaCertificate,omitempty"`
-		Password             string `yaml:"password,omitempty"`
-		Username             string `yaml:"username,omitempty"`
-	} `yaml:"masterAuth,omitempty"`
-	MasterAuthorizedNetworksConfig struct {
-	} `yaml:"masterAuthorizedNetworksConfig,omitempty"`
-	MonitoringService string `yaml:"monitoringService,omitempty"`
-	Name              string `yaml:"name,omitempty"`
-	Network           string `yaml:"network,omitempty"`
-	NetworkConfig     struct {
-		Network    string `yaml:"network,omitempty"`
-		Subnetwork string `yaml:"subnetwork,omitempty"`
-	} `yaml:"networkConfig,omitempty"`
-	NetworkPolicy struct {
-	} `yaml:"networkPolicy,omitempty"`
-	NodeConfig struct {
-		DiskSizeGb     int      `yaml:"diskSizeGb,omitempty"`
-		DiskType       string   `yaml:"diskType,omitempty"`
-		ImageType      string   `yaml:"imageType,omitempty"`
-		MachineType    string   `yaml:"machineType,omitempty"`
-		OauthScopes    []string `yaml:"oauthScopes,omitempty"`
-		ServiceAccount string   `yaml:"serviceAccount,omitempty"`
-	} `yaml:"nodeConfig,omitempty"`
-	NodeIpv4CidrSize int `yaml:"nodeIpv4CidrSize,omitempty"`
-	NodePools        []struct {
-		Autoscaling struct {
-		} `yaml:"autoscaling,omitempty"`
-		Config struct {
-			DiskSizeGb     int      `yaml:"diskSizeGb,omitempty"`
-			DiskType       string   `yaml:"diskType,omitempty"`
-			ImageType      string   `yaml:"imageType,omitempty"`
-			MachineType    string   `yaml:"machineType,omitempty"`
-			OauthScopes    []string `yaml:"oauthScopes,omitempty"`
-			ServiceAccount string   `yaml:"serviceAccount,omitempty"`
-		} `yaml:"config,omitempty"`
-		InitialNodeCount  int      `yaml:"initialNodeCount,omitempty"`
-		InstanceGroupUrls []string `yaml:"instanceGroupUrls,omitempty"`
-		Management        struct {
-		} `yaml:"management,omitempty"`
-		Name     string `yaml:"name,omitempty"`
-		SelfLink string `yaml:"selfLink,omitempty"`
-		Status   string `yaml:"status,omitempty"`
-		Version  string `yaml:"version,omitempty"`
-	} `yaml:"nodePools,omitempty"`
-	ResourceLabels struct {
-		Owner string `yaml:"owner,omitempty"`
-	} `yaml:"resourceLabels,omitempty"`
-	SelfLink         string `yaml:"selfLink,omitempty"`
-	ServicesIpv4Cidr string `yaml:"servicesIpv4Cidr,omitempty"`
-	Status           string `yaml:"status,omitempty"`
-	Subnetwork       string `yaml:"subnetwork,omitempty"`
-	Zone             string `yaml:"zone,omitempty"`
+type keptnAPITokenSecret struct {
+	APIVersion string `json:"apiVersion"`
+	Data       struct {
+		KeptnAPIToken string `json:"keptn-api-token"`
+	} `json:"data"`
+	Kind     string `json:"kind"`
+	Metadata struct {
+		CreationTimestamp time.Time `json:"creationTimestamp"`
+		Name              string    `json:"name"`
+		Namespace         string    `json:"namespace"`
+		ResourceVersion   string    `json:"resourceVersion"`
+		SelfLink          string    `json:"selfLink"`
+		UID               string    `json:"uid"`
+	} `json:"metadata"`
+	Type string `json:"type"`
 }
-*/
+
 // installCmd represents the version command
 var installCmd = &cobra.Command{
 	Use:   "install",
@@ -146,9 +76,10 @@ var installCmd = &cobra.Command{
 	Long: `Installs keptn on your Kubernetes cluster
 
 Example:
-	keptn install`,
+	keptn install --log-level=INFO`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Installing keptn...")
+		fmt.Printf("LogLevel=%s\n", *installCfg.LogLevel)
 		// var creds *installCredentials
 
 		clusterName, clusterZone, _ := connectToCluster()
@@ -205,6 +136,9 @@ Example:
 		installerPodName := waitForInstallerPod()
 
 		getInstallerLogs(installerPodName)
+
+		// installation finished, get auth token and endpoint
+		setupKeptnAuth()
 	},
 }
 
@@ -327,7 +261,7 @@ func connectToCluster() (string, string, string) {
 	setupNewCluster := false
 	clusterName, clusterZone, gkeProject := getClusterInfo()
 	if clusterName != "" && clusterZone != "" && gkeProject != "" {
-		fmt.Printf("You are currently connected to the following cluster:\n")
+		fmt.Printf("Detected the following cluster:\n")
 		fmt.Printf("Project: %s\n", gkeProject)
 		fmt.Printf("Compute Zone: %s\n", clusterZone)
 		fmt.Printf("Cluster Name: %s\n", clusterName)
@@ -367,30 +301,46 @@ func connectToCluster() (string, string, string) {
 					clusterZone = strings.TrimSuffix(newClusterZone, "\n")
 				}
 			}
+		}
 
-			cmd := exec.Command(
-				"gcloud",
-				"container",
-				"clusters",
-				"get-credentials",
-				clusterName,
-				"--zone",
-				clusterZone,
-				"--project",
-				gkeProject,
-			)
+		setGcloudConfig("core/project", gkeProject)
+		setGcloudConfig("container/cluster", clusterName)
+		setGcloudConfig("compute/zone", clusterZone)
 
-			_, err := cmd.Output()
-			if err != nil {
-				fmt.Println("Could not connect to cluster. Please verify that you have entered the correct information:")
-			} else {
-				connectionSuccessful = true
-				fmt.Println("Connection to cluster successful:")
-			}
+		cmd := exec.Command(
+			"gcloud",
+			"container",
+			"clusters",
+			"get-credentials",
+			clusterName,
+			"--zone",
+			clusterZone,
+			"--project",
+			gkeProject,
+		)
+
+		_, err := cmd.Output()
+		if err != nil {
+			fmt.Println("Could not connect to cluster. Please verify that you have entered the correct information:")
+		} else {
+			connectionSuccessful = true
+			fmt.Println("Connection to cluster successful:")
 		}
 	}
 
 	return clusterName, clusterZone, gkeProject
+}
+
+func setGcloudConfig(key string, value string) {
+	cmd := exec.Command(
+		"gcloud",
+		"config",
+		"clusters",
+		"set",
+		key,
+		value,
+	)
+	cmd.Run()
 }
 
 func getClusterInfo() (string, string, string) {
@@ -535,4 +485,61 @@ func getInstallerLogs(podName string) {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+}
+
+func setupKeptnAuth() {
+	cmd := exec.Command(
+		"kubectl",
+		"get",
+		"secret",
+		"keptn-api-token",
+		"-n",
+		"keptn",
+		"-ojson",
+	)
+
+	out, err := cmd.Output()
+	if err != nil {
+		log.Fatal("Could not retrieve keptn API token")
+	}
+	var secret keptnAPITokenSecret
+	err = json.Unmarshal(out, &secret)
+	if err != nil {
+		log.Fatal("Could not retrieve keptn API token")
+	}
+	apiToken, err := base64.StdEncoding.DecodeString(secret.Data.KeptnAPIToken)
+	if err != nil {
+		log.Fatal("Could not retrieve keptn API token")
+	}
+	// $(kubectl get ksvc -n keptn control -o=yaml | yq r - status.domain)
+	cmd = exec.Command(
+		"kubectl",
+		"get",
+		"ksvc",
+		"-n",
+		"keptn",
+		"control",
+		"-ojsonpath'{.status.domain}'",
+	)
+
+	out, err = cmd.Output()
+	if err != nil {
+		log.Fatal("Could not retrieve keptn API endpoint")
+	}
+	keptnEndpoint := string(out)
+	if keptnEndpoint == "" || !strings.Contains(keptnEndpoint, "xip.io") {
+		log.Fatal("Could not retrieve keptn API endpoint")
+	}
+	cmd = exec.Command(
+		"keptn",
+		"auth",
+		"--endpoint="+keptnEndpoint,
+		"--api-token="+string(apiToken),
+	)
+
+	_, err = cmd.Output()
+	if err != nil {
+		log.Fatal("Authentication at keptn API endpoint failed.")
+	}
+	fmt.Println("You are now ready to use keptn.")
 }
