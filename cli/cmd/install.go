@@ -24,6 +24,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"regexp"
@@ -31,6 +32,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/cloudevents/sdk-go/pkg/cloudevents"
+	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
+	"github.com/google/uuid"
+	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
@@ -78,6 +83,7 @@ var installCmd = &cobra.Command{
 Example:
 	keptn install --log-level=INFO`,
 	Run: func(cmd *cobra.Command, args []string) {
+
 		fmt.Println("Installing keptn...")
 		fmt.Printf("LogLevel=%s\n", *installCfg.LogLevel)
 		// var creds *installCredentials
@@ -120,7 +126,7 @@ Example:
 		if err != nil {
 			log.Fatalf("Error while applying RBAC: %s \n", err)
 		}
-
+		fmt.Println("Deploying keptn installer pod....")
 		execCmd = exec.Command(
 			"kubectl",
 			"apply",
@@ -268,17 +274,16 @@ func connectToCluster() (string, string, string) {
 		fmt.Printf("Would you like to use this cluster to set up keptn? [Y/n]\n")
 		setupNewClusterPrompt, _ := reader.ReadString('\n')
 
-		if setupNewClusterPrompt != "\n" {
+		if setupNewClusterPrompt != "\n" && setupNewClusterPrompt != "y\n" && setupNewClusterPrompt != "Y\n" {
 			setupNewCluster = true
 		}
 	} else {
 		setupNewCluster = true
 	}
 
-	connectionSuccessful := false
-	for tryConnection := true; tryConnection; tryConnection = !connectionSuccessful {
-		if setupNewCluster {
-
+	if setupNewCluster {
+		connectionSuccessful := false
+		for tryConnection := true; tryConnection; tryConnection = !connectionSuccessful {
 			for ok := true; ok; ok = (gkeProject == "") {
 				fmt.Printf("Please enter the GKE project [%s]:", gkeProject)
 				newGkeProject, _ := reader.ReadString('\n')
@@ -302,32 +307,27 @@ func connectToCluster() (string, string, string) {
 					clusterZone = strings.TrimSuffix(newClusterZone, "\n")
 				}
 			}
+			cmd := exec.Command(
+				"gcloud",
+				"container",
+				"clusters",
+				"get-credentials",
+				clusterName,
+				"--zone",
+				clusterZone,
+				"--project",
+				gkeProject,
+			)
+
+			_, err := cmd.Output()
+			if err != nil {
+				fmt.Println("Could not connect to cluster. Please verify that you have entered the correct information.")
+			} else {
+				connectionSuccessful = true
+				fmt.Println("Connection to cluster successful:")
+			}
+
 		}
-
-		setGcloudConfig("core/project", gkeProject)
-		setGcloudConfig("container/cluster", clusterName)
-		setGcloudConfig("compute/zone", clusterZone)
-
-		cmd := exec.Command(
-			"gcloud",
-			"container",
-			"clusters",
-			"get-credentials",
-			clusterName,
-			"--zone",
-			clusterZone,
-			"--project",
-			gkeProject,
-		)
-
-		_, err := cmd.Output()
-		if err != nil {
-			fmt.Println("Could not connect to cluster. Please verify that you have entered the correct information:")
-		} else {
-			connectionSuccessful = true
-			fmt.Println("Connection to cluster successful:")
-		}
-
 	}
 
 	return clusterName, clusterZone, gkeProject
@@ -346,33 +346,45 @@ func setGcloudConfig(key string, value string) {
 }
 
 func getClusterInfo() (string, string, string) {
-	var clusterName string
-	var clusterZone string
-	var project string
 	fmt.Println("Trying to get GKE cluster info...")
 	// try to get current cluster from gcloud config
-	cmd := exec.Command("gcloud", "config", "get-value", "container/cluster")
+	cmd := exec.Command("kubectl", "config", "current-context")
 	out, err := cmd.Output()
 	if err != nil {
-		clusterName = ""
+		return "", "", ""
 	}
-	clusterName = strings.Replace(string(out), "\n", "", -1)
-
-	cmd = exec.Command("gcloud", "config", "get-value", "compute/zone")
-	out, err = cmd.Output()
-	if err != nil {
-		clusterZone = ""
+	clusterInfo := strings.TrimSuffix(string(out), "\n")
+	if !strings.HasPrefix(clusterInfo, "gke") {
+		return "", "", ""
 	}
-	clusterZone = strings.Replace(string(out), "\n", "", -1)
 
-	cmd = exec.Command("gcloud", "config", "get-value", "core/project")
-	out, err = cmd.Output()
-	if err != nil {
-		project = ""
+	clusterInfoArray := strings.Split(clusterInfo, "_")
+	if len(clusterInfoArray) < 4 {
+		return "", "", ""
 	}
-	project = strings.Replace(string(out), "\n", "", -1)
 
-	return clusterName, clusterZone, project
+	return clusterInfoArray[3], clusterInfoArray[2], clusterInfoArray[1]
+
+	// ===========
+	/*
+		clusterName = strings.Replace(string(out), "\n", "", -1)
+
+		cmd = exec.Command("gcloud", "config", "get-value", "compute/zone")
+		out, err = cmd.Output()
+		if err != nil {
+			clusterZone = ""
+		}
+		clusterZone = strings.Replace(string(out), "\n", "", -1)
+
+		cmd = exec.Command("gcloud", "config", "get-value", "core/project")
+		out, err = cmd.Output()
+		if err != nil {
+			project = ""
+		}
+		project = strings.Replace(string(out), "\n", "", -1)
+
+		return clusterName, clusterZone, project
+	*/
 }
 
 func getGcloudUser() string {
@@ -533,7 +545,7 @@ func setupKeptnAuth() {
 		if err != nil {
 			retries++
 			if retries >= 15 {
-				log.Fatal("Could not retrieve keptn API endpoint")
+				fmt.Println("API endpoint not yet available... trying again in 5s")
 			}
 		} else {
 			retries = 0
@@ -542,26 +554,61 @@ func setupKeptnAuth() {
 		if keptnEndpoint == "" || !strings.Contains(keptnEndpoint, "xip.io") {
 			retries++
 			if retries >= 15 {
-				log.Fatal("Could not retrieve keptn API endpoint")
+				fmt.Println("API endpoint not yet available... trying again in 5s")
 			}
 		} else {
+			keptnEndpoint = "https://" + keptnEndpoint
 			apiEndpointRetrieved = true
 		}
 		if !apiEndpointRetrieved {
 			time.Sleep(5 * time.Second)
 		}
 	}
+	fmt.Printf("Connecting to %s with API token %s", keptnEndpoint, apiToken)
 
-	cmd = exec.Command(
-		"keptn",
-		"auth",
-		"--endpoint="+keptnEndpoint,
-		"--api-token="+string(apiToken),
-	)
+	source, _ := url.Parse("https://github.com/keptn/keptn/cli#auth")
+	contentType := "application/json"
+	var data interface{}
+	event := cloudevents.Event{
+		Context: cloudevents.EventContextV02{
+			ID:          uuid.New().String(),
+			Type:        "auth",
+			Source:      types.URLRef{URL: *source},
+			ContentType: &contentType,
+		}.AsV02(),
+		Data: data,
+	}
 
-	_, err = cmd.Output()
-	if err != nil {
+	u, err2 := url.Parse(keptnEndpoint)
+	if err2 != nil {
 		log.Fatal("Authentication at keptn API endpoint failed.")
 	}
+
+	authURL := *u
+	authURL.Path = "auth"
+
+	_, err = utils.Send(authURL, event, string(apiToken))
+	if err != nil {
+		fmt.Println("Authentication was unsuccessful")
+		log.Fatal("Authentication at keptn API endpoint failed.")
+	}
+
+	fmt.Println("Successfully authenticated")
+	credentialmanager.SetCreds(*u, string(apiToken))
+	/*
+		cmd = exec.Command(
+			"keptn",
+			"auth",
+			"--endpoint="+keptnEndpoint,
+			"--api-token="+string(apiToken),
+		)
+
+		_, err = cmd.Output()
+		if err != nil {
+			fmt.Printf("Error: %s", err)
+			log.Fatal("Authentication at keptn API endpoint failed.")
+		}
+	*/
 	fmt.Println("You are now ready to use keptn.")
+
 }
