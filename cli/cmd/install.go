@@ -275,9 +275,10 @@ func connectToCluster() (string, string, string) {
 		setupNewCluster = true
 	}
 
-	if setupNewCluster {
-		connectionSuccessful := false
-		for tryConnection := true; tryConnection; tryConnection = !connectionSuccessful {
+	connectionSuccessful := false
+	for tryConnection := true; tryConnection; tryConnection = !connectionSuccessful {
+		if setupNewCluster {
+
 			for ok := true; ok; ok = (gkeProject == "") {
 				fmt.Printf("Please enter the GKE project [%s]:", gkeProject)
 				newGkeProject, _ := reader.ReadString('\n')
@@ -326,6 +327,7 @@ func connectToCluster() (string, string, string) {
 			connectionSuccessful = true
 			fmt.Println("Connection to cluster successful:")
 		}
+
 	}
 
 	return clusterName, clusterZone, gkeProject
@@ -512,24 +514,44 @@ func setupKeptnAuth() {
 		log.Fatal("Could not retrieve keptn API token")
 	}
 	// $(kubectl get ksvc -n keptn control -o=yaml | yq r - status.domain)
-	cmd = exec.Command(
-		"kubectl",
-		"get",
-		"ksvc",
-		"-n",
-		"keptn",
-		"control",
-		"-ojsonpath'{.status.domain}'",
-	)
 
-	out, err = cmd.Output()
-	if err != nil {
-		log.Fatal("Could not retrieve keptn API endpoint")
+	var keptnEndpoint string
+	apiEndpointRetrieved := false
+	retries := 0
+	for tryGetAPIEndpoint := true; tryGetAPIEndpoint; tryGetAPIEndpoint = !apiEndpointRetrieved {
+		cmd = exec.Command(
+			"kubectl",
+			"get",
+			"ksvc",
+			"-n",
+			"keptn",
+			"control",
+			"-ojsonpath='{.status.domain}'",
+		)
+
+		out, err = cmd.Output()
+		if err != nil {
+			retries++
+			if retries >= 15 {
+				log.Fatal("Could not retrieve keptn API endpoint")
+			}
+		} else {
+			retries = 0
+		}
+		keptnEndpoint = string(out)
+		if keptnEndpoint == "" || !strings.Contains(keptnEndpoint, "xip.io") {
+			retries++
+			if retries >= 15 {
+				log.Fatal("Could not retrieve keptn API endpoint")
+			}
+		} else {
+			apiEndpointRetrieved = true
+		}
+		if !apiEndpointRetrieved {
+			time.Sleep(5 * time.Second)
+		}
 	}
-	keptnEndpoint := string(out)
-	if keptnEndpoint == "" || !strings.Contains(keptnEndpoint, "xip.io") {
-		log.Fatal("Could not retrieve keptn API endpoint")
-	}
+
 	cmd = exec.Command(
 		"keptn",
 		"auth",
