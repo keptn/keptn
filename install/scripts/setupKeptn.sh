@@ -1,9 +1,19 @@
 #!/bin/bash
 REGISTRY_URL=$(kubectl describe svc docker-registry -n keptn | grep IP: | sed 's~IP:[ \t]*~~')
 
+source ./utils.sh
+
+# Creating cluster role binding
+kubectl apply -f ../manifests/keptn/keptn-rbac.yaml
+verify_kubectl $? "Creating cluster role for keptn failed, stop installation."
+
+# Creating config map to store mapping
+kubectl apply -f ../manifests/keptn/keptn-org-configmap.yaml
+verify_kubectl $? "Creating config map for keptn failed, stop installation."
+
 # Mark internal docker registry as insecure registry for knative controller
-val=$(kubectl -n knative-serving get cm config-controller -o=json | jq -r .data.registriesSkippingTagResolving | awk '{print $1",'$REGISTRY_URL':5000"}')
-kubectl -n knative-serving get cm config-controller -o=yaml | yq w - data.registriesSkippingTagResolving $val | kubectl apply -f -
+VAL=$(kubectl -n knative-serving get cm config-controller -o=json | jq -r .data.registriesSkippingTagResolving | awk '{print $1",'$REGISTRY_URL':5000"}')
+kubectl -n knative-serving get cm config-controller -o=yaml | yq w - data.registriesSkippingTagResolving $VAL | kubectl apply -f -
 
 # Deploy knative eventing channels (keptn-channel)
 kubectl apply -f ../../core/eventbroker/config/channel.yaml
