@@ -639,20 +639,6 @@ func setupKeptnAuth() {
 
 	fmt.Println("Successfully authenticated")
 	credentialmanager.SetCreds(*u, string(apiToken))
-	/*
-		cmd = exec.Command(
-			"keptn",
-			"auth",
-			"--endpoint="+keptnEndpoint,
-			"--api-token="+string(apiToken),
-		)
-
-		_, err = cmd.Output()
-		if err != nil {
-			fmt.Printf("Error: %s", err)
-			log.Fatal("Authentication at keptn API endpoint failed.")
-		}
-	*/
 	fmt.Println("You are now ready to use keptn.")
 
 }
