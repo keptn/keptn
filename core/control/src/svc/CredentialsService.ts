@@ -2,8 +2,7 @@ import { KeptnGithubCredentials } from '../lib/types/KeptnGithubCredentials';
 import { K8sClientFactory } from '../lib/k8s/K8sClientFactory';
 import * as K8sApi from 'kubernetes-client';
 
-import { KeptnConfigSecretFactory } from '../lib/types/KeptnConfigSecretFactory';
-import { KeptnGithubCredentialsSecret } from '../lib/types/KeptnGithubCredentialsSecret';
+import { Logger } from '../lib/log/Logger';
 
 import { base64encode, base64decode } from 'nodejs-base64';
 
@@ -23,26 +22,23 @@ export class CredentialsService {
     return CredentialsService.instance;
   }
 
-  async updateGithubConfig(keptnConfig: KeptnGithubCredentials) {
-    const secret = new KeptnConfigSecretFactory().createKeptnConfigSecret(keptnConfig);
-
-    const created = await this.updateGithubCredentials(secret);
-    console.log(created);
-  }
-
   async getKeptnApiToken(): Promise<string> {
     let token;
-    const secret = await this.k8sClient.api.v1
-      .namespaces('keptn').secrets
-      .get({ name: 'keptn-api-token', pretty: true, exact: true, export: true });
+    try {
+      const secret = await this.k8sClient.api.v1
+        .namespaces('keptn').secrets
+        .get({ name: 'keptn-api-token', pretty: true, exact: true, export: true });
 
-    if (secret.body.items && secret.body.items.length > 0) {
-      const apiToken = secret.body.items.find(item => item.metadata.name === 'keptn-api-token');
-      if (apiToken && apiToken.data !== undefined) {
-        token = base64decode(apiToken.data['keptn-api-token']);
-      } else {
-        console.log('[keptn] The secret does not contain the proper information.');
+      if (secret.body.items && secret.body.items.length > 0) {
+        const apiToken = secret.body.items.find(item => item.metadata.name === 'keptn-api-token');
+        if (apiToken && apiToken.data !== undefined) {
+          token = base64decode(apiToken.data['keptn-api-token']);
+        } else {
+          console.log('[keptn] The secret does not contain the proper information.');
+        }
       }
+    } catch (e) {
+      token = '';
     }
 
     return token;
@@ -71,17 +67,4 @@ export class CredentialsService {
     return gitHubCredentials;
   }
 
-  private async updateGithubCredentials(secret: KeptnGithubCredentialsSecret) {
-    try {
-      const deleteResult = await this.k8sClient.api.v1
-        .namespaces('keptn').secrets('github-credentials').delete();
-      console.log(deleteResult);
-    }
-    catch (e) { }
-    const created = await this.k8sClient.api.v1.namespaces('keptn').secrets.post({
-      body: secret,
-    });
-
-    return created;
-  }
 }
