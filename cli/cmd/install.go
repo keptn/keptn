@@ -94,8 +94,6 @@ Example:
 		var creds *installCredentials
 		creds, err = getInstallCredentials()
 
-		// execCmd = exec.Command("kubectl", "logs", "control-lxxt6-deployment-569499f6cb-gbzgp", "-n", "keptn", "-c", "user-container", "-f")
-
 		// get the YAML for the installer pod
 		fileURL := "https://raw.githubusercontent.com/keptn/keptn/install-keptn/install/manifests/installer/installer.yaml"
 
@@ -168,34 +166,75 @@ func getInstallCredentials() (*installCredentials, error) {
 
 	fmt.Print("Please enter the following information (press enter to keep the old value):\n")
 
-	reader := bufio.NewReader(os.Stdin)
-
 	// default creds for jenkins
 	creds.JenkinsUser = "admin"
 	creds.JenkinsPassword = "AiTx4u8VyUV8tCKk"
 
-	fmt.Printf("GitHub User Email [%s]: ", creds.GithubUserEmail)
-	githubUserEmail, _ := reader.ReadString('\n')
-	if githubUserEmail != "\n" {
-		creds.GithubUserEmail = strings.TrimSuffix(githubUserEmail, "\n")
-	}
+	readGithubUserEmail(creds)
+	readGithubPersonalAccessToken(creds)
+	readGithubOrg(creds)
 
-	fmt.Printf("GitHub Organization [%s]: ", creds.GithubOrg)
-	githubOrg, _ := reader.ReadString('\n')
-	if githubOrg != "\n" {
-		creds.GithubOrg = strings.TrimSuffix(githubOrg, "\n")
-	}
-
-	fmt.Printf("GitHub Personal Access Token [%s]: ", creds.GithubPersonalAccessToken)
-	githubPersonalAccessToken, _ := reader.ReadString('\n')
-	if githubPersonalAccessToken != "\n" {
-		creds.GithubPersonalAccessToken = strings.TrimSuffix(githubPersonalAccessToken, "\n")
-	}
+	// TODO: check if the github org exists and the access token has the necessary permissions
 
 	newCreds, _ := json.Marshal(creds)
 	newCredsStr := strings.Replace(string(newCreds), "\n", "", -1)
 	credentialmanager.SetInstallCreds(newCredsStr)
 	return creds, err
+}
+
+func readGithubUserEmail(creds *installCredentials) {
+	readUserInput(
+		&creds.GithubUserEmail,
+		"^[a-z0-9._%+\\-]+@[a-z0-9.\\-]+\\.[a-z]{2,4}$",
+		"GitHub User Email",
+		"Please enter a valid email address.",
+	)
+}
+
+func readGithubPersonalAccessToken(creds *installCredentials) {
+	readUserInput(
+		&creds.GithubPersonalAccessToken,
+		"^[a-z0-9]{40}$",
+		"GitHub Personal Access Token",
+		"Please enter a valid GitHub Personal Access Token.",
+	)
+}
+
+func readGithubOrg(creds *installCredentials) {
+	readUserInput(
+		&creds.GithubOrg,
+		"^(([a-z0-9]+-)*[a-z0-9]+)$",
+		"GitHub Organization",
+		"Please enter a valid GitHub Organization.",
+	)
+}
+
+func readUserInput(value *string, regex string, promptMessage string, regexViolationMessage string) {
+	reader := bufio.NewReader(os.Stdin)
+	var re *regexp.Regexp
+	validateRegex := false
+	if regex != "" {
+		re = regexp.MustCompile(regex)
+		validateRegex = true
+	}
+	keepAsking := true
+	for ok := true; ok; ok = keepAsking {
+		fmt.Printf("%s [%s]: ", promptMessage, *value)
+		userInput, _ := reader.ReadString('\n')
+		userInput = strings.TrimSuffix(userInput, "\n")
+		if userInput != "" {
+			if *value == "" && userInput == "" {
+				fmt.Println("Please enter a value.")
+			} else if validateRegex && !re.MatchString(userInput) {
+				fmt.Println(regexViolationMessage)
+			} else {
+				*value = userInput
+				keepAsking = false
+			}
+		} else {
+			keepAsking = false
+		}
+	}
 }
 
 func copyAndCapture(w io.Writer, r io.Reader, in io.WriteCloser) []byte {
@@ -271,7 +310,7 @@ func connectToCluster() (string, string, string) {
 		fmt.Printf("Project: %s\n", gkeProject)
 		fmt.Printf("Compute Zone: %s\n", clusterZone)
 		fmt.Printf("Cluster Name: %s\n", clusterName)
-		fmt.Printf("Would you like to use this cluster to set up keptn? [Y/n]\n")
+		fmt.Printf("Would you like to use this cluster to set up keptn? [Y/n]")
 		setupNewClusterPrompt, _ := reader.ReadString('\n')
 
 		if setupNewClusterPrompt != "\n" && setupNewClusterPrompt != "y\n" && setupNewClusterPrompt != "Y\n" {
@@ -280,6 +319,8 @@ func connectToCluster() (string, string, string) {
 	} else {
 		setupNewCluster = true
 	}
+
+	setupNewCluster = !authenticateAtCluster(clusterName, clusterZone, gkeProject)
 
 	if setupNewCluster {
 		connectionSuccessful := false
@@ -307,30 +348,33 @@ func connectToCluster() (string, string, string) {
 					clusterZone = strings.TrimSuffix(newClusterZone, "\n")
 				}
 			}
-			cmd := exec.Command(
-				"gcloud",
-				"container",
-				"clusters",
-				"get-credentials",
-				clusterName,
-				"--zone",
-				clusterZone,
-				"--project",
-				gkeProject,
-			)
-
-			_, err := cmd.Output()
-			if err != nil {
-				fmt.Println("Could not connect to cluster. Please verify that you have entered the correct information.")
-			} else {
-				connectionSuccessful = true
-				fmt.Println("Connection to cluster successful:")
-			}
-
+			connectionSuccessful = authenticateAtCluster(clusterName, clusterZone, gkeProject)
 		}
 	}
 
 	return clusterName, clusterZone, gkeProject
+}
+
+func authenticateAtCluster(clusterName string, clusterZone string, gkeProject string) bool {
+	cmd := exec.Command(
+		"gcloud",
+		"container",
+		"clusters",
+		"get-credentials",
+		clusterName,
+		"--zone",
+		clusterZone,
+		"--project",
+		gkeProject,
+	)
+
+	_, err := cmd.Output()
+	if err != nil {
+		fmt.Println("Could not connect to cluster. Please verify that you have entered the correct information.")
+		return false
+	}
+	fmt.Println("Connection to cluster successful:")
+	return true
 }
 
 func setGcloudConfig(key string, value string) {
