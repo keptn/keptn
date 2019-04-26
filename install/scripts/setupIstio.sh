@@ -1,50 +1,24 @@
 #!/bin/bash
-CLUSTER_NAME=$1
-CLUSTER_ZONE=$2
-
-# Determine the IP scope of the cluster (https://github.com/knative/docs/blob/master/serving/outbound-network-access.md)
-if [[ -z "${CLUSTER_IPV4_CIDR}" ]]; then
-  echo "[keptn|1]CLUSTER_IPV4_CIDR not set, retrieve it using gcloud"
-  CLUSTER_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_NAME} --zone=${CLUSTER_ZONE} | yq r - clusterIpv4Cidr)
-fi
-
-if [[ -z "${SERVICES_IPV4_CIDR}" ]]; then
-  echo "[keptn|1]SERVICES_IPV4_CIDR not set, retrieve it using gcloud"
-  SERVICES_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_NAME} --zone=${CLUSTER_ZONE} | yq r - servicesIpv4Cidr)
-fi 
+CLUSTER_IPV4_CIDR=$1
+SERVICES_IPV4_CIDR=$2
 
 # Apply custom resource definitions for Istio
 kubectl apply -f ../manifests/istio/istio-crds-knative.yaml
+# TODO: check return value
 
 # Wait max 1min for custom resource virtualservice to be available
-sleep 2
 RETRY=0
 while [ $RETRY -lt 6 ]
 do
-  kubectl get virtualservice
+  # TODO check all crds
+  kubectl get virtualservice,handler,...
   if [[ $? == '0' ]]
   then
-    echo "[keptn|0]CRD virtualservice now available, can continue... "
+    echo "[keptn|INFO] All custom resource definitions now available, continue installation. "
     break
   fi
   RETRY=$[$RETRY+1]
-  echo "[keptn|0]Retry: ${RETRY}/6 - Wait 10s for changes to apply... "
-  sleep 10
-done
-
-# Wait max 1min for custom resource handler to be available
-sleep 2
-RETRY=0
-while [ $RETRY -lt 6 ]
-do
-  kubectl get handler
-  if [[ $? == '0' ]]
-  then
-    echo "[keptn|0]CRD handler now available, can continue... "
-    break
-  fi
-  RETRY=$[$RETRY+1]
-  echo "[keptn|0]Retry: ${RETRY}/6 - Wait 10s for changes to apply... "
+  echo "[keptn|INFO] Retry: ${RETRY}/6 - Wait 10s for changes to apply... "
   sleep 10
 done
 
@@ -54,12 +28,15 @@ cat ../manifests/istio/istio-knative.yaml | \
   sed 's~INCLUDE_OUTBOUND_IP_RANGES_PLACEHOLDER~'"$CLUSTER_IPV4_CIDR,$SERVICES_IPV4_CIDR"'~' >> ../manifests/gen/istio-knative.yaml
 
 kubectl apply -f ../manifests/gen/istio-knative.yaml
+# TODO: check return value
 
+# TODO: script from Florian
 echo "Wait 4 minutes for changes to apply... "
 sleep 240
 
 # Delete all pods in keptn to apply Istio changes
 kubectl delete pods --all -n keptn
+# TODO: validate result
 
 ##############################################
 ## Start validation of Istio installation   ##
@@ -73,11 +50,11 @@ kubectl delete pods --all -n keptn
 #   ISTIO_INGRESS_IP=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 #   if [[ -z "${ISTIO_INGRESS_IP}" ]]
 #   then
-#     echo "[keptn|1]IP of Istio ingressgateway: ${ISTIO_INGRESS_IP}"
-#     echo "[keptn|0]IP of Istio ingressgateway available, can continue... "
+#     echo "[keptn|DEBUG] IP of Istio ingressgateway: ${ISTIO_INGRESS_IP}"
+#     echo "[keptn|INFO] IP of Istio ingressgateway available, can continue... "
 #     break
 #   fi
 #   RETRY=$[$RETRY+1]
-#   echo "[keptn|0]Retry: ${RETRY}/24 - Wait 10s for changes to apply... "
+#   echo "[keptn|INFO] Retry: ${RETRY}/24 - Wait 10s for changes to apply... "
 #   sleep 10
 # done

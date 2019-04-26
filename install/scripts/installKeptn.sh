@@ -4,68 +4,108 @@ LOG_LOCATION=./logs
 exec > >(tee -i $LOG_LOCATION/installKeptn.log)
 exec 2>&1
 
-echo "[keptn|0]Starting installation of keptn"
+echo "[keptn|INFO] [Fri Sep 09 10:42:29.902022 2011] Starting installation of keptn"
 
-# Environment variables for test connection to cluster
-if [[ -z "${GKE_PROJECT}" ]]; then
-  echo "[keptn|1]GKE_PROJECT not set, take it from creds.json"
-  GKE_PROJECT=$(cat creds.json | jq -r '.gkeProject')
+# Environment variables for install Istio and Knative
+if [[ -z "${CLUSTER_IPV4_CIDR}" ]]; then
+  echo "[keptn|DEBUG] CLUSTER_IPV4_CIDR not set, retrieve it using gcloud."
+  CLUSTER_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_NAME} --zone=${CLUSTER_ZONE} | yq r - clusterIpv4Cidr)
+
+  if [[ -z "${CLUSTER_IPV4_CIDR}" ]]; then
+    echo "[keptn|ERROR] CLUSTER_IPV4_CIDR is undefined, stop installation." && exit 1
+  fi
 fi
 
-if [[ -z "${CLUSTER_NAME}" ]]; then
-  echo "[keptn|1]CLUSTER_NAME not set, take it from creds.json"
-  CLUSTER_NAME=$(cat creds.json | jq -r '.clusterName')
+if [[ -z "${SERVICES_IPV4_CIDR}" ]]; then
+  echo "[keptn|DEBUG] SERVICES_IPV4_CIDR not set, retrieve it using gcloud"
+  SERVICES_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_NAME} --zone=${CLUSTER_ZONE} | yq r - servicesIpv4Cidr)
+  
+  if [[ -z "${SERVICES_IPV4_CIDR}" ]]; then
+    echo "[keptn|ERROR] SERVICES_IPV4_CIDR is undefined, stop installation." && exit 1
+  fi
 fi
 
-if [[ -z "${CLUSTER_ZONE}" ]]; then
-  echo "[keptn|1]CLUSTER_ZONE not set, take it from creds.json"
-  CLUSTER_ZONE=$(cat creds.json | jq -r '.clusterZone')
+if [[ -z "${GCLOUD_USER}" ]]; then
+  echo "[keptn|DEBUG] GCLOUD_USER not set, retrieve it using gcloud"
+  GCLOUD_USER=$(gcloud config get-value account)
+
+  if [[ -z "${GCLOUD_USER}" ]]; then
+    echo "[keptn|ERROR] GCLOUD_USER is undefined, stop installation." && exit 1
+  fi
 fi
 
-./testConnection.sh $GKE_PROJECT $CLUSTER_NAME $CLUSTER_ZONE
+# Test connection to cluster
+echo "[keptn|INFO] Test connection to cluster"
+./testConnection.sh
+
+if [[ $? != '0' ]]; then
+  echo "[keptn|ERROR] Connection failed." && exit 1
+fi
 
 # Grant cluster admin rights to gcloud user
-if [[ -z "${GCLOUD_USER}" ]]; then
-  echo "[keptn|1]GCLOUD_USER not set, retrieve it using gcloud"
-  GCLOUD_USER=$(gcloud config get-value account)
+kubectl create clusterrolebinding keptn-cluster-admin-binding --clusterrole=cluster-admin --user=$GCLOUD_USER
+if [[ $? != '0' ]]; then
+  echo "[keptn|ERROR] Cluster role binding could not be created." && exit 1
 fi
-
-kubectl create clusterrolebinding cluster-admin-binding --clusterrole=cluster-admin --user=$GCLOUD_USER
 
 # Create K8s namespaces
 kubectl apply -f ../manifests/k8s-namespaces.yml
+if [[ $? != '0' ]]; then
+  echo "[keptn|ERROR] Namespace could not be created." && exit 1
+fi
 
 # Create container registry
-echo "[keptn|0]Creating container registry"
-kubectl apply -f ../manifests/container-registry/k8s-docker-registry-configmap.yml
-kubectl apply -f ../manifests/container-registry/k8s-docker-registry-pvc.yml
-kubectl apply -f ../manifests/container-registry/k8s-docker-registry-configmap.yml
-kubectl apply -f ../manifests/container-registry/k8s-docker-registry-deployment.yml
-kubectl apply -f ../manifests/container-registry/k8s-docker-registry-service.yml
-echo "[keptn|0]Creating container registry done"
+echo "[keptn|INFO] Creating container registry"
+./setupContainerRegistry.sh
+
+if [[ $? != '0' ]]; then
+  echo "[keptn|ERROR] Creating container registry failed." && exit 1
+fi
+
+echo "[keptn|INFO] Creating container registry done"
 
 # Install Istio service mesh
-echo "[keptn|0]Installing Istio"
-./setupIstio.sh $CLUSTER_NAME $CLUSTER_ZONE
-echo "[keptn|0]Installing Istio done"
+echo "[keptn|INFO] Installing Istio"
+./setupIstio.sh $CLUSTER_IPV4_CIDR $SERVICES_IPV4_CIDR
+
+if [[ $? != '0' ]]; then
+  echo "[keptn|ERROR] Installing Istio failed." && exit 1
+fi
+
+echo "[keptn|INFO] Installing Istio done"
 
 # Install knative core components
-echo "[keptn|0]Installing Knative"
-./setupKnative.sh $CLUSTER_NAME $CLUSTER_ZONE
-echo "[keptn|0]Installing Knative done"
+echo "[keptn|INFO] Installing Knative"
+./setupKnative.sh $CLUSTER_IPV4_CIDR $SERVICES_IPV4_CIDR
+
+if [[ $? != '0' ]]; then
+  echo "[keptn|ERROR] Installing Knative failed." && exit 1
+fi
+
+echo "[keptn|INFO] Installing Knative done"
 
 # Install keptn core services - Install keptn channels
-echo "[keptn|0]Install keptn"
+echo "[keptn|INFO] Install keptn"
 ./setupKeptn.sh
-echo "[keptn|0]Install keptn done"
 
-# Install services
-echo "[keptn|0]Wear uniform"
+if [[ $? != '0' ]]; then
+  echo "[keptn|ERROR] Installing keptn failed." && exit 1
+fi
+
+echo "[keptn|INFO] Install keptn done"
+
+# Install keptn services
+echo "[keptn|INFO] Wear uniform"
 ./wearUniform.sh
-echo "[keptn|0]Keptn wears uniform"
+
+if [[ $? != '0' ]]; then
+  echo "[keptn|ERROR] Installing keptn's uniform failed." && exit 1
+fi
+
+echo "[keptn|INFO] Keptn wears uniform"
 
 # Install done
-echo "[keptn|0]Installation of keptn complete."
+echo "[keptn|INFO] Installation of keptn complete."
 
-echo "[keptn|0]To retrieve the Keptn API Token, please execute the following command:"
-echo "[keptn|0]kubectl get secret keptn-api-token -n keptn -o=yaml | yq - r data.keptn-api-token | base64 --decode"
+echo "[keptn|INFO] To retrieve the Keptn API Token, please execute the following command:"
+echo "[keptn|INFO] kubectl get secret keptn-api-token -n keptn -o=yaml | yq - r data.keptn-api-token | base64 --decode"
