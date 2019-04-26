@@ -7,12 +7,12 @@ kubectl delete services,deployments,pods,secrets --all -n keptn --ignore-not-fou
 kubectl delete namespace keptn --ignore-not-found
 
 # Clean up knative components
-kubectl delete -f https://github.com/knative/serving/releases/download/v0.5.0/serving.yaml
-kubectl delete -f https://github.com/knative/build/releases/download/v0.5.0/build.yaml
-kubectl delete -f https://github.com/knative/eventing/releases/download/v0.5.0/release.yaml
-kubectl delete -f https://github.com/knative/eventing-sources/releases/download/v0.5.0/eventing-sources.yaml
-kubectl delete -f https://github.com/knative/serving/releases/download/v0.5.0/monitoring.yaml
-kubectl delete -f https://raw.githubusercontent.com/knative/serving/v0.5.0/third_party/config/build/clusterrole.yaml
+kubectl delete -f https://github.com/knative/serving/releases/download/v0.5.0/serving.yaml --ignore-not-found
+kubectl delete -f https://github.com/knative/build/releases/download/v0.5.0/build.yaml --ignore-not-found
+kubectl delete -f https://github.com/knative/eventing/releases/download/v0.5.0/release.yaml --ignore-not-found
+kubectl delete -f https://github.com/knative/eventing-sources/releases/download/v0.5.0/eventing-sources.yaml --ignore-not-found
+kubectl delete -f https://github.com/knative/serving/releases/download/v0.5.0/monitoring.yaml --ignore-not-found
+kubectl delete -f https://raw.githubusercontent.com/knative/serving/v0.5.0/third_party/config/build/clusterrole.yaml --ignore-not-found
 
 # Clean up istio namespace
 kubectl delete -f ../manifests/istio/istio-knative.yaml --ignore-not-found
