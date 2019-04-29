@@ -87,7 +87,6 @@ Example:
 		fmt.Println("Installing keptn...")
 		fmt.Printf("LogLevel=%s\n", *installCfg.LogLevel)
 		// var creds *installCredentials
-
 		clusterName, clusterZone, _ := connectToCluster()
 
 		var err error
@@ -140,7 +139,6 @@ Example:
 		installerPodName := waitForInstallerPod()
 
 		getInstallerLogs(installerPodName)
-
 		// installation finished, get auth token and endpoint
 		setupKeptnAuth()
 	},
@@ -243,7 +241,7 @@ func copyAndCapture(w io.Writer, r io.Reader, in io.WriteCloser) []byte {
 	for scanner.Scan() {
 		log += scanner.Text() + "\n"
 		if strings.HasPrefix(scanner.Text(), "[keptn|") {
-			var reg = regexp.MustCompile(`\[keptn\|[0-9]+\]`)
+			var reg = regexp.MustCompile(`\[keptn\|[a-zA-Z]+\]`)
 			outputStr := reg.ReplaceAllString(scanner.Text(), "")
 			fmt.Println(outputStr)
 			if outputStr == "Installation of keptn complete." {
@@ -408,27 +406,6 @@ func getClusterInfo() (string, string, string) {
 	}
 
 	return clusterInfoArray[3], clusterInfoArray[2], clusterInfoArray[1]
-
-	// ===========
-	/*
-		clusterName = strings.Replace(string(out), "\n", "", -1)
-
-		cmd = exec.Command("gcloud", "config", "get-value", "compute/zone")
-		out, err = cmd.Output()
-		if err != nil {
-			clusterZone = ""
-		}
-		clusterZone = strings.Replace(string(out), "\n", "", -1)
-
-		cmd = exec.Command("gcloud", "config", "get-value", "core/project")
-		out, err = cmd.Output()
-		if err != nil {
-			project = ""
-		}
-		project = strings.Replace(string(out), "\n", "", -1)
-
-		return clusterName, clusterZone, project
-	*/
 }
 
 func getGcloudUser() string {
@@ -582,7 +559,7 @@ func setupKeptnAuth() {
 			"-n",
 			"keptn",
 			"control",
-			"-ojsonpath='{.status.domain}'",
+			"-ojsonpath={.status.domain}",
 		)
 
 		out, err = cmd.Output()
@@ -608,7 +585,7 @@ func setupKeptnAuth() {
 			time.Sleep(5 * time.Second)
 		}
 	}
-	fmt.Printf("Connecting to %s with API token %s", keptnEndpoint, apiToken)
+	fmt.Printf("Connecting to %s with API token %s\n", keptnEndpoint, apiToken)
 
 	source, _ := url.Parse("https://github.com/keptn/keptn/cli#auth")
 	contentType := "application/json"
