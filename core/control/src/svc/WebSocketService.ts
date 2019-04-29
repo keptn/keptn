@@ -5,6 +5,7 @@ import { CredentialsService } from './CredentialsService';
 import { WebSocketChannelInfo } from '../lib/types/WebSocketChannelInfo';
 import * as WebSocket from 'ws';
 import { MessageQueue } from '../lib/types/MessageQueue';
+import { Logger } from '../lib/log/Logger';
 
 export class WebSocketService {
   private static instance: WebSocketService;
@@ -26,7 +27,6 @@ export class WebSocketService {
   public handleConnection(wss, ws, req): void {
     this.handleCLIClientConnection(req, ws);
     ws.on('message', (message) => {
-      console.log('received: %s', message);
       let msgPayload = undefined;
       try {
         msgPayload = JSON.parse(message);
@@ -38,25 +38,29 @@ export class WebSocketService {
       if (msgPayload !== undefined) {
         keptnContext = msgPayload.shkeptncontext;
       }
-      console.log(`Trying to find client for channel ${keptnContext}.`);
+      Logger.debug(keptnContext, `received: ${message}`);
+      Logger.debug(keptnContext, `Trying to find client for channel ${keptnContext}.`);
       let clientFound = false;
       const connection =
         WebSocketService.connections.find(connection => connection.channelId === keptnContext);
       if (connection !== undefined && connection.client !== undefined) {
         clientFound = true;
-        console.log('found client and sending message');
+        Logger.debug(keptnContext, 'found client and sending message');
         connection.client.send(`${message}`);
       }
 
       if (!clientFound && msgPayload !== undefined) {
-        console.log(`No client for channel ${keptnContext} found. Putting msg into queue`);
+        Logger.debug(
+          keptnContext,
+          `No client for channel ${keptnContext} found. Putting msg into queue`,
+        );
         const index =
           WebSocketService.messageQueues.findIndex(queue => queue.channelId === keptnContext);
         if (index > -1) {
-          console.log(`Queue found for ${keptnContext}.`);
+          Logger.debug(keptnContext, `Queue found for ${keptnContext}.`);
           WebSocketService.messageQueues[index].messages.push(message);
         } else {
-          console.log(`No queue found for ${keptnContext}.`);
+          Logger.debug(keptnContext, `No queue found for ${keptnContext}.`);
         }
       }
     });
@@ -69,7 +73,7 @@ export class WebSocketService {
 
   private handleCLIClientConnection(req: any, ws: any) {
     const channelId = req.headers['x-keptn-ws-channel-id'];
-    console.log(`New connection with channelId ${channelId}`);
+    Logger.debug(channelId, `New connection with channelId ${channelId}`);
     if (channelId !== undefined) {
       WebSocketService.connections.push({
         channelId,
@@ -77,13 +81,13 @@ export class WebSocketService {
       });
     }
 
-    // check if there are already some messages in the buffer for this channel 
+    // check if there are already some messages in the buffer for this channel
     // (channel == CLI command execution)
     const index = WebSocketService.messageQueues
       .findIndex(queue => queue.channelId === channelId);
     if (index > -1) {
       WebSocketService.messageQueues[index].messages.forEach((msg) => {
-        console.log(`sending message from queue: ${msg}`);
+        Logger.debug(channelId, `sending message from queue: ${msg}`);
         ws.send(`${msg}`);
       });
       WebSocketService.messageQueues.splice(index, 1);
@@ -100,10 +104,15 @@ export class WebSocketService {
     const channelInfo: WebSocketChannelInfo = {} as WebSocketChannelInfo;
     const channelId = keptnContext;
 
+    const apiToken = await this.credentialsService.getKeptnApiToken();
+    if (apiToken === undefined || apiToken === '') {
+      Logger.error(keptnContext, 'Could not establish WebSocket connection.');
+      return channelInfo;
+    }
     // create the JWT
     const token = Jwt.sign(
       { channelId },
-      await this.credentialsService.getKeptnApiToken(),
+      apiToken,
       {
         expiresIn: 1 * 24 * 60 * 60 * 1000,
       },
