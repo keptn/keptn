@@ -38,33 +38,11 @@ export class CredentialsService {
         }
       }
     } catch (e) {
+      Logger.error('', `Error retrieving API Token: ${e}`);
       token = '';
     }
 
     return token;
-  }
-
-  async getGithubCredentials(): Promise<KeptnGithubCredentials> {
-    const gitHubCredentials: KeptnGithubCredentials = {
-      user: '',
-      org: '',
-      token: '',
-    };
-
-    const s = await this.k8sClient.api.v1
-      .namespaces('keptn').secrets
-      .get({ name: 'github-credentials', pretty: true, exact: true, export: true });
-
-    if (s.body.items && s.body.items.length > 0) {
-      const ghItem = s.body.items.find(item => item.metadata.name === 'github-credentials');
-      if (ghItem && ghItem.data !== undefined) {
-        gitHubCredentials.org = base64decode(ghItem.data.org);
-        gitHubCredentials.user = base64decode(ghItem.data.user);
-        gitHubCredentials.token = base64decode(ghItem.data.token);
-      }
-    }
-
-    return gitHubCredentials;
   }
 
 }
