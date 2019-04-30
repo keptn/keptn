@@ -72,6 +72,7 @@ func PrintWSContent(responseCE *cloudevents.Event, verbose bool) error {
 		fmt.Println("Opening websocket failed")
 		return err
 	}
+	defer ws.Close()
 
 	return readAndPrintCE(ws, verbose)
 }
@@ -114,7 +115,7 @@ func readAndPrintCE(ws *websocket.Conn, verboseLogging bool) error {
 				log.Fatal(err)
 			}
 			if printCE(messageCE, verboseLogging) {
-				return ws.Close()
+				return nil
 			}
 		}
 		if err != nil {
