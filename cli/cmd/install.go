@@ -121,9 +121,9 @@ Example:
 		_, err = execCmd.Output()
 
 		if err != nil {
-			log.Fatalf("Error while applying RBAC: %s \n", err)
+			log.Fatalf("Error while applying RBAC for installer pod: %s \n Aborting installation. \n", err)
 		}
-		fmt.Println("Deploying keptn installer pod....")
+		fmt.Println("Deploying keptn installer pod...")
 		execCmd = exec.Command(
 			"kubectl",
 			"apply",
@@ -318,7 +318,9 @@ func connectToCluster() (string, string, string) {
 		setupNewCluster = true
 	}
 
-	setupNewCluster = !authenticateAtCluster(clusterName, clusterZone, gkeProject)
+	if !setupNewCluster {
+		setupNewCluster = !authenticateAtCluster(clusterName, clusterZone, gkeProject)
+	}
 
 	if setupNewCluster {
 		connectionSuccessful := false
@@ -585,7 +587,14 @@ func setupKeptnAuth() {
 			time.Sleep(5 * time.Second)
 		}
 	}
-	fmt.Printf("Connecting to %s with API token %s\n", keptnEndpoint, apiToken)
+	authenticateKeptn(keptnEndpoint, apiToken)
+	configureKeptn()
+	fmt.Println("You are now ready to use keptn.")
+
+}
+
+func authenticateKeptn(keptnEndpoint string, apiToken []byte) {
+	fmt.Printf("Connecting to %s\n", keptnEndpoint)
 
 	source, _ := url.Parse("https://github.com/keptn/keptn/cli#auth")
 	contentType := "application/json"
@@ -608,7 +617,7 @@ func setupKeptnAuth() {
 	authURL := *u
 	authURL.Path = "auth"
 
-	_, err = utils.Send(authURL, event, string(apiToken))
+	_, err := utils.Send(authURL, event, string(apiToken))
 	if err != nil {
 		fmt.Println("Authentication was unsuccessful")
 		log.Fatal("Authentication at keptn API endpoint failed.\n To manually set up your keptn CLI, please follow the instructions at https://keptn.sh/docs/0.2.0/reference/cli/.")
@@ -616,6 +625,37 @@ func setupKeptnAuth() {
 
 	fmt.Println("Successfully authenticated")
 	credentialmanager.SetCreds(*u, string(apiToken))
-	fmt.Println("You are now ready to use keptn.")
+}
 
+func configureKeptn() {
+	endPoint, apiToken, err := credentialmanager.GetCreds()
+	if err != nil {
+		log.Fatal("Automatic configuration failed.\n To manually set up your keptn CLI, please follow the instructions at https://keptn.sh/docs/0.2.0/reference/cli/.")
+	}
+
+	fmt.Println("Starting to configure the GitHub organization, the GitHub user, and the GitHub personal access token")
+
+	source, _ := url.Parse("https://github.com/keptn/keptn/cli#configure")
+
+	contentType := "application/json"
+	event := cloudevents.Event{
+		Context: cloudevents.EventContextV02{
+			ID:          uuid.New().String(),
+			Type:        "configure",
+			Source:      types.URLRef{URL: *source},
+			ContentType: &contentType,
+		}.AsV02(),
+		Data: config,
+	}
+
+	configURL := endPoint
+	configURL.Path = "config"
+
+	fmt.Println("Connecting to server ", endPoint.String())
+	_, err = utils.Send(configURL, event, apiToken)
+	if err != nil {
+		log.Fatal("Automatic configuration failed.\n To manually set up your keptn CLI, please follow the instructions at https://keptn.sh/docs/0.2.0/reference/cli/.")
+	}
+
+	fmt.Println("Successfully configured the GitHub organization, the GitHub user, and the GitHub personal access token")
 }
