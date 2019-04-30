@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Delete K8s cluster
+gcloud container clusters delete $CLUSTER_NAME_NIGHTLY --zone $CLOUDSDK_COMPUTE_ZONE --project $PROJECT_NAME --quiet
+
 source ./travis-scripts/setup_functions.sh
 
 # prints the full command before output of the command.
@@ -11,11 +14,26 @@ setup_gcloud
 setup_gcloud_master
 install_sed
 
-# Run scripts in ~/keptn/install/scripts
-cd install/scripts
-./forkGitHubRepositories.sh $GITHUB_ORG
+# TODO: update project name(s)
+hub delete -y $GITHUB_ORG_NIGHTLY/carts || true
 
-cat ./creds.sav |sed 's~DYNATRACE_TENANT_PLACEHOLDER~'"$DT_TENANT"'~' |sed 's~DYNATRACE_API_TOKEN~'"$DT_API_TOKEN"'~' |sed 's~DYNATRACE_PAAS_TOKEN~'"$DT_PAAS_TOKEN"'~' |sed 's~GITHUB_USER_NAME_PLACEHOLDER~'"$GITHUB_USER_NAME"'~' |sed 's~PERSONAL_ACCESS_TOKEN_PLACEHOLDER~'"$GITHUB_TOKEN"'~' |sed 's~GITHUB_USER_EMAIL_PLACEHOLDER~'"$GITHUB_EMAIL"'~' |sed 's~GITHUB_ORG_PLACEHOLDER~'"$GITHUB_ORG"'~' >> creds.json
+# TODO: For developing purposes the branch 'travis-nightly-build' is selected. Afterwards, change it back to master.
+git clone --branch travis-nightly-build https://github.com/keptn/keptn
+cd keptn/install/scripts
+
+source ./defineCredentials.sh
+
+# Set enviornment variables used in replaceCreds function
+GITU = $GITHUB_USER_NAME_NIGHTLY
+GITAT = $GITHUB_TOKEN_NIGHTLY
+GITE = $GITHUB_EMAIL_NIGHTLY
+CLN = $CLUSTER_NAME_NIGHTLY
+CLZ = $CLOUDSDK_COMPUTE_ZONE
+PROJ = $PROJECT_NAME
+GITO = $GITHUB_ORG_NIGHTLY
+
+replaceCreds
+
 ./installKeptn.sh
 cd ../..
 
@@ -34,5 +52,3 @@ export_names
 # Clean up cluster
 #- ./cleanupCluster.sh
 
-# Delete K8s cluster
-gcloud container clusters delete $CLUSTER_NAME --zone $CLOUDSDK_COMPUTE_ZONE --project $PROJECT_NAME --quiet
