@@ -63,8 +63,8 @@ function wait_for_deployment_in_namespace() {
         break
       fi
       RETRY=$[$RETRY+1]
-      print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 10s for deployment ${DEPLOYMENT} in namespace ${NAMESPACE} ..."
-      sleep 10
+      print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 20s for deployment ${DEPLOYMENT} in namespace ${NAMESPACE} ..."
+      sleep 20
     done
 
     if [[ $RETRY == $RETRY_MAX ]]; then
@@ -87,8 +87,8 @@ function wait_for_channel_in_namespace() {
       break
     fi
     RETRY=$[$RETRY+1]
-    print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 10s for channel ${CHANNEL} in namespace ${NAMESPACE} to be available ..."
-    sleep 10
+    print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 20s for channel ${CHANNEL} in namespace ${NAMESPACE} to be available ..."
+    sleep 20
   done
 
   if [[ $RETRY == $RETRY_MAX ]]; then
@@ -113,8 +113,8 @@ function wait_for_all_pods_in_namespace() {
       break
     fi
     RETRY=$[$RETRY+1]
-    print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 10s for pods to start in namespace ${NAMESPACE} ..."
-    sleep 10
+    print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 20s for pods to start in namespace ${NAMESPACE} ..."
+    sleep 20
   done
 
   if [[ $RETRY == $RETRY_MAX ]]; then
@@ -136,8 +136,8 @@ function wait_for_crds() {
       break
     fi
     RETRY=$[$RETRY+1]
-    print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 10s for custom resource definitions ..."
-    sleep 10
+    print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 20s for custom resource definitions ..."
+    sleep 20
   done
 
   if [[ $RETRY == $RETRY_MAX ]]; then
