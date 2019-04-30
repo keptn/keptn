@@ -45,7 +45,7 @@ var serviceCmd = &cobra.Command{
 		} else {
 			if *valuesFilePath == "" {
 				cmd.SilenceUsage = false
-				return errors.New("Provide a Helm values file\n")
+				return errors.New("Provide a Helm values file.\n")
 			}
 		}
 
@@ -109,6 +109,17 @@ var serviceCmd = &cobra.Command{
 				return err
 			}
 			svcData["values"] = data
+
+			// check if service name is valid
+			svcName := svcData["values"].(map[string]interface{})["service"].(map[string]interface{})["name"].(string)
+			if !utils.ValidateK8sName(svcName) {
+				errorMsg := "Service name as defined in the .yaml file includes invalid characters or is not well-formed.\n"
+				errorMsg += "keptn relies on Helm charts and thus these conventions have to be followed: "
+				errorMsg += "start with a lower case letter, then lower case letters, dash and numbers are allowed.\n"
+				errorMsg += "You can find the guidelines here: https://github.com/helm/helm/blob/master/docs/chart_best_practices/conventions.md#chart-names\n"
+				errorMsg += "Please update service name and try again."
+				return errors.New(errorMsg)
+			}
 
 			deployment := make(map[string]string)
 
