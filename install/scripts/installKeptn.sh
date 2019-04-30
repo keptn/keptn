@@ -13,18 +13,10 @@ echo -e "${BLUE}--------------------------"
 echo "Starting keptn installation"
 echo -e "--------------------------${NC}"
 
-# Script if you don't want to apply all yaml files manually
-
-export JENKINS_USER=$(cat creds.json | jq -r '.jenkinsUser')
-export JENKINS_PASSWORD=$(cat creds.json | jq -r '.jenkinsPassword')
-export GITHUB_PERSONAL_ACCESS_TOKEN=$(cat creds.json | jq -r '.githubPersonalAccessToken')
-export GITHUB_USER_NAME=$(cat creds.json | jq -r '.githubUserName')
-export GITHUB_USER_EMAIL=$(cat creds.json | jq -r '.githubUserEmail')
-export GITHUB_ORGANIZATION=$(cat creds.json | jq -r '.githubOrg')
+# Environment variables for connecting to cluster
+export GKE_PROJECT=$(cat creds.json | jq -r '.gkeProject')
 export CLUSTER_NAME=$(cat creds.json | jq -r '.clusterName')
 export CLUSTER_ZONE=$(cat creds.json | jq -r '.clusterZone')
-export CLUSTER_REGION=$(cat creds.json | jq -r '.clusterRegion')
-export GKE_PROJECT=$(cat creds.json | jq -r '.gkeProject')
 
 gcloud --quiet config set project $GKE_PROJECT
 gcloud --quiet config set container/cluster $CLUSTER_NAME
@@ -33,7 +25,7 @@ gcloud container clusters get-credentials $CLUSTER_NAME --zone $CLUSTER_ZONE --p
 
 if [[ $? != '0' ]]
 then
-  echo -e "${RED}Could not connect to cluster. Please ensure you have set the correct values for your Cluster Name, GKE Project, Cluster Zone and Cluster Region during the credentials setup.${NC}"
+  echo -e "${RED}Could not connect to cluster. Please ensure you have set the correct values for your Cluster Name, GKE Project, and Cluster Zone during the credentials setup.${NC}"
   exit 1
 fi
 
@@ -44,7 +36,7 @@ fi
 
 # Grant cluster admin rights to gcloud user
 export GCLOUD_USER=$(gcloud config get-value account)
-kubectl create clusterrolebinding dynatrace-cluster-admin-binding --clusterrole=cluster-admin --user=$GCLOUD_USER
+kubectl create clusterrolebinding cluster-admin-binding --clusterrole=cluster-admin --user=$GCLOUD_USER
 
 # Create K8s namespaces
 kubectl apply -f ../manifests/k8s-namespaces.yml 
