@@ -50,7 +50,7 @@ func TestSingleCERead(t *testing.T) {
 
 	msg := "Test"
 
-	sendCE(t, ws, msg, true, "DEBGUG")
+	sendCE(t, ws, msg, true, "DEBUG")
 
 	r, w, old := beginRedirectStdOut()
 	readAndPrintCE(ws, true)
@@ -77,8 +77,8 @@ func TestDoubleCERead(t *testing.T) {
 	defer ws.Close()
 
 	msg := "Test"
-	sendCE(t, ws, msg, false, "DEBGUG")
-	sendCE(t, ws, msg, true, "DEBGUG")
+	sendCE(t, ws, msg, false, "DEBUG")
+	sendCE(t, ws, msg, true, "DEBUG")
 
 	r, w, old := beginRedirectStdOut()
 	readAndPrintCE(ws, true)
