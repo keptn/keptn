@@ -55,7 +55,7 @@ function wait_for_deployment_in_namespace() {
   for DEPLOYMENT in "${array[@]}" 
   do
     while [[ $RETRY -lt $RETRY_MAX ]]; do
-      kubectl rollout status deployment $DEPLOYMENT -n $NAMESPACE --timeout=10s
+      kubectl rollout status deployment $DEPLOYMENT -n $NAMESPACE
 
       if [[ $? == '0' ]]
       then
@@ -64,6 +64,7 @@ function wait_for_deployment_in_namespace() {
       fi
       RETRY=$[$RETRY+1]
       print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 10s for deployment ${DEPLOYMENT} in namespace ${NAMESPACE} ..."
+      sleep 10
     done
 
     if [[ $RETRY == $RETRY_MAX ]]; then
