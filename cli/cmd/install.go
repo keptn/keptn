@@ -132,7 +132,7 @@ Example:
 		)
 		_, err = execCmd.Output()
 		if err != nil {
-			log.Fatalf("Error while deploying keptn installer pod: %s \n", err)
+			log.Fatalf("Error while deploying keptn installer pod: %s \nAborting installation. \n", err)
 		}
 		fmt.Println("Installer pod deployed successfully.")
 
@@ -425,7 +425,7 @@ func getGcloudClusterIPCIDR(clusterName string, clusterZone string) (string, str
 	cmd := exec.Command("gcloud", "container", "clusters", "describe", clusterName, "--zone="+clusterZone)
 	out, err := cmd.Output()
 	if err != nil {
-		log.Fatalf("Could not get cluster Info\n")
+		log.Fatalf("Could not get cluster Info. Aborting installation. \n")
 	}
 
 	err = yaml.Unmarshal([]byte(out), &clusterDescription)
@@ -450,7 +450,7 @@ func waitForInstallerPod() string {
 		)
 		out, err := cmd.Output()
 		if err != nil {
-			log.Fatalf("Error while retrieving installer pod: %s\n", err)
+			log.Fatalf("Error while retrieving installer pod: %s\n. Aborting installation. \n", err)
 		} else {
 			var podInfo map[string]interface{}
 			err = json.Unmarshal(out, &podInfo)
@@ -510,10 +510,10 @@ func getInstallerLogs(podName string) {
 
 	err = execCmd.Wait()
 	if err != nil {
-		log.Fatalf("cmd.Run() failed with %s\n", err)
+		log.Fatalf("Could not get installer pod logs: '%s'\n", err)
 	}
 	if errStdout != nil || errStderr != nil {
-		log.Fatal("failed to capture stdout or stderr\n")
+		log.Fatal("Could not get installer pod logs.\n")
 	}
 
 	if err = ioutil.WriteFile("keptn-installer.log", stdout, 0666); err != nil {
@@ -535,16 +535,16 @@ func setupKeptnAuth() {
 
 	out, err := cmd.Output()
 	if err != nil {
-		log.Fatal("Could not retrieve keptn API token")
+		log.Fatal("Could not retrieve keptn API token.\n To manually set up your keptn CLI, please follow the instructions at https://keptn.sh/docs/0.2.0/reference/cli/.")
 	}
 	var secret keptnAPITokenSecret
 	err = json.Unmarshal(out, &secret)
 	if err != nil {
-		log.Fatal("Could not retrieve keptn API token")
+		log.Fatal("Could not retrieve keptn API token\n To manually set up your keptn CLI, please follow the instructions at https://keptn.sh/docs/0.2.0/reference/cli/.")
 	}
 	apiToken, err := base64.StdEncoding.DecodeString(secret.Data.KeptnAPIToken)
 	if err != nil {
-		log.Fatal("Could not retrieve keptn API token")
+		log.Fatal("Could not retrieve keptn API token\n To manually set up your keptn CLI, please follow the instructions at https://keptn.sh/docs/0.2.0/reference/cli/.")
 	}
 	// $(kubectl get ksvc -n keptn control -o=yaml | yq r - status.domain)
 
@@ -602,7 +602,7 @@ func setupKeptnAuth() {
 
 	u, err2 := url.Parse(keptnEndpoint)
 	if err2 != nil {
-		log.Fatal("Authentication at keptn API endpoint failed.")
+		log.Fatal("Authentication at keptn API endpoint failed.\n To manually set up your keptn CLI, please follow the instructions at https://keptn.sh/docs/0.2.0/reference/cli/.")
 	}
 
 	authURL := *u
@@ -611,7 +611,7 @@ func setupKeptnAuth() {
 	_, err = utils.Send(authURL, event, string(apiToken))
 	if err != nil {
 		fmt.Println("Authentication was unsuccessful")
-		log.Fatal("Authentication at keptn API endpoint failed.")
+		log.Fatal("Authentication at keptn API endpoint failed.\n To manually set up your keptn CLI, please follow the instructions at https://keptn.sh/docs/0.2.0/reference/cli/.")
 	}
 
 	fmt.Println("Successfully authenticated")
