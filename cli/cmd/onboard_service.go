@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/url"
@@ -174,21 +173,7 @@ var serviceCmd = &cobra.Command{
 			return nil
 		}
 		if responseCE.Data != nil {
-			var myData map[string]interface{}
-			json.Unmarshal(responseCE.Data.([]byte), &myData)
-			// TODO improve parsing of values
-			token := myData["data"].(map[string]interface{})["channelInfo"].(map[string]interface{})["token"].(string)
-			channelID := myData["data"].(map[string]interface{})["channelInfo"].(map[string]interface{})["channelId"].(string)
-			success := myData["data"].(map[string]interface{})["success"].(bool)
-			if success && token != "" && channelID != "" {
-				ws, _, err := websockethelper.OpenWS(token, channelID)
-				if err != nil {
-					fmt.Println("could not open websocket")
-					return err
-				}
-				return websockethelper.PrintWSContent(ws, verbose)
-			}
-			fmt.Printf("Unsuccessful. Token or Channel ID might be missing or request received unsuccessful status")
+			return websockethelper.PrintWSContent(responseCE, verbose)
 		}
 		return nil
 	},
