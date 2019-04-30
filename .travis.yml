@@ -38,7 +38,7 @@ before_install:
 
 jobs:
   include:
-    - stage: travis-nightly-build      
+    - stage: master
       # TODO: For developing purposes the branch 'travis-nightly-build' is selected. Afterwards, change it back to master.
       if: branch = travis-nightly-build AND NOT type = pull_request 
       script: source travis-scripts/master_main.sh
