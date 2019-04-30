@@ -8,7 +8,7 @@ source ./utils.sh
 if [[ -z "${GKE_PROJECT}" ]]; then
   print_debug "GKE_PROJECT not set, take it from creds.json"
   GKE_PROJECT=$(cat creds.json | jq -r '.gkeProject')
-  verify_variable $GKE_PROJECT "GKE_PROJECT is empty, stop installation." 
+  verify_variable "$GKE_PROJECT" "GKE_PROJECT is not defined in environment variable nor in creds.json file." 
 fi
 
 gcloud --quiet config set project $GKE_PROJECT

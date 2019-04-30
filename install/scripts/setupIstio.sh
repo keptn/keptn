@@ -6,7 +6,7 @@ source ./utils.sh
 
 # Apply custom resource definitions for Istio
 kubectl apply -f ../manifests/istio/istio-crds-knative.yaml
-verify_kubectl $? "Istio custom resource definitions could not be created, stop installation."
+verify_kubectl $? "Creating istio custom resource definitions failed."
 wait_for_crds "virtualservices,destinationrules,serviceentries,gateways,envoyfilters,policies,meshpolicies,httpapispecbindings,httpapispecs,quotaspecbindings,quotaspecs,rules,attributemanifests,bypasses,circonuses,deniers,fluentds,kubernetesenvs,listcheckers,memquotas,noops,opas,prometheuses,rbacs,redisquotas,servicecontrols,signalfxs,solarwindses,stackdrivers,statsds,stdios,apikeys,authorizations,checknothings,kuberneteses,listentries,logentries,edges,metrics,quotas,reportnothings,servicecontrolreports,tracespans,adapters,instances,templates,handlers,rbacconfigs,serviceroles,servicerolebindings"
 
 # Apply Istio configuration
@@ -15,17 +15,17 @@ cat ../manifests/istio/istio-knative.yaml | \
   sed 's~INCLUDE_OUTBOUND_IP_RANGES_PLACEHOLDER~'"$CLUSTER_IPV4_CIDR,$SERVICES_IPV4_CIDR"'~' >> ../manifests/gen/istio-knative.yaml
 
 kubectl apply -f ../manifests/gen/istio-knative.yaml
-verify_kubectl $? "Istio components could not be created, stop installation."
+verify_kubectl $? "Creating all istio components failed."
 wait_for_all_pods_in_namespace "istio-system"
 
 # Delete all pods in keptn to apply Istio changes
 kubectl delete pods --all -n keptn
-verify_kubectl $? "Deleting pods in keptn namespace failed, stop installation."
+verify_kubectl $? "Deleting pods in keptn namespace failed."
 wait_for_all_pods_in_namespace "keptn"
 
-# ##############################################
-# ## Start validation of Istio installation   ##
-# ##############################################
+# # ##############################################
+# # ## Start validation of Istio installation   ##
+# # ##############################################
 
 # # Wait max 4min for IP of Istio ingressgateway
 # # sleep 2
