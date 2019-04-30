@@ -10,31 +10,31 @@ curl -X POST \
   -H 'Content-Type: application/json' \
   -H 'cache-control: no-cache' \
   -d '{
-    "name": "service",
-    "rules": [
+  "name": "service",
+  "rules": [
+    {
+      "type": "SERVICE",
+      "enabled": true,
+      "valueFormat": "{ProcessGroup:KubernetesContainerName}",
+      "propagationTypes": [],
+      "conditions": [
         {
-            "type": "SERVICE",
-            "enabled": true,
-            "valueFormat": "{ProcessGroup:KubernetesContainerName}",
-            "propagationTypes": [],
-            "conditions": [
-                {
-                    "key": {
-                        "attribute": "PROCESS_GROUP_PREDEFINED_METADATA",
-                        "dynamicKey": "KUBERNETES_CONTAINER_NAME",
-                        "type": "PROCESS_PREDEFINED_METADATA_KEY"
-                    },
-                    "comparisonInfo": {
-                        "type": "STRING",
-                        "operator": "EXISTS",
-                        "value": null,
-                        "negate": false,
-                        "caseSensitive": null
-                    }
-                }
-            ]
+          "key": {
+            "attribute": "PROCESS_GROUP_PREDEFINED_METADATA",
+            "dynamicKey": "KUBERNETES_CONTAINER_NAME",
+            "type": "PROCESS_PREDEFINED_METADATA_KEY"
+          },
+          "comparisonInfo": {
+            "type": "STRING",
+            "operator": "EXISTS",
+            "value": null,
+            "negate": false,
+            "caseSensitive": null
+          }
         }
-    ]
+      ]
+    }
+  ]
 }'
 
 curl -X POST \
@@ -67,4 +67,5 @@ curl -X POST \
       ]
     }
   ]
-  }'
+}'
+  
