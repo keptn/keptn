@@ -24,7 +24,7 @@ wait_for_all_pods_in_namespace "knative-build"
 
 kubectl apply -f https://github.com/knative/eventing/releases/download/v0.4.0/release.yaml
 ## KNOWN ISSUE: Race condition regarding custom resource defintion ClusterChannelProvisioner when applying release.yaml - https://github.com/knative/eventing/issues/680
-print_info "KNOWN ISSUE: Applying the knative v.0.4.0 release.yaml runs into a race condition for the custom resource definition ClusterChannelProvisioner. This does not have an impact on keptn." 
+print_info "KNOWN ISSUE: Applying the knative v.0.4.0 release.yaml runs into a race condition for the custom resource definition ClusterChannelProvisioner." 
 #verify_kubectl $? "Applying knative eventing components failed."
 wait_for_crds "channels,clusterchannelprovisioners,subscriptions"
 wait_for_all_pods_in_namespace "knative-eventing"
