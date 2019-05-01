@@ -42,22 +42,22 @@ if [[ -z "${GITHUB_ORGANIZATION}" ]]; then
   verify_variable "$GITHUB_ORGANIZATION" "GITHUB_USER_EMAIL is not defined in environment variable nor in creds.json file." 
 fi
 
-if [[ -z "${DT_TENANT_ID}" ]]; then
-  echo "[keptn|DEBUG] DT_TENANT_ID not set, use value from creds_dt.json"
-  DT_TENANT_ID=$(cat creds_dt.json | jq -r '.dynatraceTenant')
-  verify_variable "$DT_TENANT_ID" "DT_TENANT_ID is not defined in environment variable nor in creds_dt.json file." 
-fi
+# if [[ -z "${DT_TENANT_ID}" ]]; then
+#   echo "[keptn|DEBUG] DT_TENANT_ID not set, use value from creds_dt.json"
+#   DT_TENANT_ID=$(cat creds_dt.json | jq -r '.dynatraceTenant')
+#   verify_variable "$DT_TENANT_ID" "DT_TENANT_ID is not defined in environment variable nor in creds_dt.json file." 
+# fi
 
-if [[ -z "${DT_API_TOKEN}" ]]; then
-  echo "[keptn|DEBUG] DT_API_TOKEN not set, use value from creds_dt.json"
-  DT_API_TOKEN=$(cat creds_dt.json | jq -r '.dynatraceApiToken')
-  verify_variable "$DT_API_TOKEN" "DT_API_TOKEN is not defined in environment variable nor in creds_dt.json file." 
-fi
+# if [[ -z "${DT_API_TOKEN}" ]]; then
+#   echo "[keptn|DEBUG] DT_API_TOKEN not set, use value from creds_dt.json"
+#   DT_API_TOKEN=$(cat creds_dt.json | jq -r '.dynatraceApiToken')
+#   verify_variable "$DT_API_TOKEN" "DT_API_TOKEN is not defined in environment variable nor in creds_dt.json file." 
+# fi
 
-if [[ -z "${DT_TENANT_URL}" ]]; then
-  echo "[keptn|DEBUG] DT_TENANT_URL not set, define it based on DT_TENANT_ID"
-  DT_TENANT_URL="$DT_TENANT_ID.live.dynatrace.com"
-fi
+# if [[ -z "${DT_TENANT_URL}" ]]; then
+#   echo "[keptn|DEBUG] DT_TENANT_URL not set, define it based on DT_TENANT_ID"
+#   DT_TENANT_URL="$DT_TENANT_ID.live.dynatrace.com"
+# fi
 
 # Clean-up working directory
 rm -rf keptn-services
@@ -68,7 +68,7 @@ cd keptn-services
 git clone --branch deploy-script https://github.com/keptn/jenkins-service.git --single-branch
 cd jenkins-service
 chmod +x deploy.sh
-./deploy.sh $REGISTRY_URL $JENKINS_USER $JENKINS_PASSWORD $GITHUB_USER_NAME $GITHUB_USER_EMAIL $GITHUB_ORGANIZATION $GITHUB_PERSONAL_ACCESS_TOKEN $DT_API_TOKEN $DT_TENANT_URL
+./deploy.sh $REGISTRY_URL $JENKINS_USER $JENKINS_PASSWORD $GITHUB_USER_NAME $GITHUB_USER_EMAIL $GITHUB_ORGANIZATION $GITHUB_PERSONAL_ACCESS_TOKEN #$DT_API_TOKEN $DT_TENANT_URL
 verify_install_step $? "Deploying jenkins-service failed."
 cd ..
 
