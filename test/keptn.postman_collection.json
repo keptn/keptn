@@ -17,7 +17,7 @@
 							"    var jsonData = pm.response.json();",
 							"    var sockshopRepo = ",
 							"        jsonData.find((item) => item.name === pm.environment.get(\"project\"));",
-							"    pm.expect(sockshopRepo.name).to.eql(\"sockshop\");",
+							"    pm.expect(sockshopRepo.name).to.eql(pm.environment.get(\"project\"));",
 							"});"
 						],
 						"type": "text/javascript"
