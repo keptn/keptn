@@ -128,8 +128,7 @@ function build_and_install_cli {
     cd cli/
     dep ensure
     go build -o keptn
-    mv keptn /opt/bin/keptn
-    PATH=$PATH:~/opt/bin
+    mv keptn /usr/local/bin/keptn
     cd ..
 }
 
