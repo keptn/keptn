@@ -16,9 +16,6 @@ create_nightly_cluster
 
 install_sed
 
-# TODO: update project name(s)
-hub delete -y $GITHUB_ORG_NIGHTLY/carts || true
-
 # TODO: For developing purposes the branch 'travis-nightly-build' is selected. Afterwards, change it back to master.
 git clone --branch travis-nightly-build https://github.com/keptn/keptn
 cd keptn/install/scripts
@@ -37,6 +34,9 @@ export GITO=$GITHUB_ORG_NIGHTLY
 
 replaceCreds
 
+# Add execution right because there 
+# is a rights problem with e.g. testConnection
+find . -type f -exec chmod +x {} \;
 ./installKeptn.sh
 cd ../..
 
@@ -48,10 +48,18 @@ cd ../..
 export ISTIO_INGRESS=$(kubectl describe svc istio-ingressgateway -n istio-system | grep "LoadBalancer Ingress:" | sed 's~LoadBalancer Ingress:[ \t]*~~')
 export_names
 
+# Execute unit tests
+execute_core_component_tests
+execute_cli_tests
+
+build_and_install_cli
+
+# Execute end-to-end test
+cd test
+source ./testOnboarding
+
 #- cat ../test/keptn.postman_environment.json |sed 's~FRONT_END_DEV_PLACEHOLDER~'"$FRONT_END_DEV"'~' |sed 's~FRONT_END_STAGING_PLACEHOLDER~'"$FRONT_END_STAGING"'~' |sed 's~FRONT_END_PRODUCTION_PLACEHOLDER~'"$FRONT_END_PRODUCTION"'~' |sed 's~ISTIO_INGRESS_PLACEHOLDER~'"$ISTIO_INGRESS"'~' >> ../test/env.json
 #- npm install newman
 #- node_modules/.bin/newman run ../test/keptn.postman_collection.json -e ../test/env.json
-        
-# Clean up cluster
-#- ./cleanupCluster.sh
+
 

@@ -16,16 +16,6 @@ read -p "GKE Cluster Zone: " CLZ
 read -p "GKE Project: " PROJ
 echo ""
 
-if [[ $DTENV = '' ]]
-then 
-    DTENV=$DTENVC
-fi
-
-if [[ $DTAPI = '' ]]
-then 
-    DTAPI=$DTAPIC
-fi
-
 echo ""
 echo -e "${YLW}Please confirm all are correct: ${NC}"
 echo "GitHub User Name: $GITU"
