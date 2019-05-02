@@ -47,7 +47,7 @@ jobs:
       script: source travis-scripts/master_main.sh
 
     - stage: pr
-      if: type = pull_request
+      if: type = pull_request AND NOT branch = travis-nightly-build
       script: source travis-scripts/pr_main.sh
       after_script: source travis-scripts/pr_cleanup.sh
 
