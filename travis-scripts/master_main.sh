@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-# Delete K8s cluster
-gcloud container clusters delete $CLUSTER_NAME_NIGHTLY --zone $CLOUDSDK_COMPUTE_ZONE --project $PROJECT_NAME --quiet
 
 source ./travis-scripts/setup_functions.sh
 
@@ -10,8 +8,12 @@ set -x
 
 install_hub
 install_yq
+
 setup_gcloud
-setup_gcloud_master
+setup_gcloud_nightly
+delete_nightly_cluster
+create_nightly_cluster
+
 install_sed
 
 # TODO: update project name(s)
@@ -21,7 +23,8 @@ hub delete -y $GITHUB_ORG_NIGHTLY/carts || true
 git clone --branch travis-nightly-build https://github.com/keptn/keptn
 cd keptn/install/scripts
 
-source ./defineCredentials.sh
+
+source ./defineCredentialsUtils.sh
 
 # Set enviornment variables used in replaceCreds function
 GITU = $GITHUB_USER_NAME_NIGHTLY
