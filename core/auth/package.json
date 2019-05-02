@@ -43,10 +43,10 @@
     "buffer-equal-constant-time": "^1.0.1",
     "crypto": "^1.0.1",
     "express": "^4.16.4",
-    "reflect-metadata": "^0.1.13",
     "inversify": "^5.0.1",
     "inversify-express-utils": "^6.3.2",
-    "mocha": "^6.0.2",
+    "mocha": "^6.1.4",
+    "reflect-metadata": "^0.1.13",
     "sinon": "^7.2.5",
     "swagger-express-ts": "^1.0.1",
     "swagger-ui-dist": "^3.20.9"
