@@ -9,6 +9,18 @@ KEPTN_ENDPOINT=https://$(kubectl get ksvc -n keptn control -o=yaml | yq r - stat
 KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -o=yaml | yq - r data.keptn-api-token | base64 --decode)
 
 PROJECT=sockshop4
+
+# Delete old project
+git ls-remote https://github.com/$GITHUB_ORG_NIGHTLY/$PROJECT > /dev/null 2>&1
+if [ $? = 0 ]; then 
+    echo "Delete project $PROJECT" 
+    hub delete -y $GITHUB_ORG_NIGHTLY/$PROJECT
+    echo "Finished deleting project $PROJECT"
+else 
+    echo "No project to delete"
+fi
+
+# Authenticate keptn CLI
 keptn auth --endpoint=$KEPTN_ENDPOINT --api-token=$KEPTN_API_TOKEN
 verify_test_step $? "Could not authenticate at keptn API."
 
