@@ -102,6 +102,9 @@ function execute_core_component_tests {
 function execute_cli_tests {
 
     cd cli
+
+    dep ensure
+
     ENDPOINT="$(kubectl get ksvc control -n keptn -o=yaml | yq r - status.domain)"
     while [ "$ENDPOINT" = "null" ]; do sleep 30; ENDPOINT="$(kubectl get ksvc control -n keptn -o=yaml | yq r - status.domain)"; echo "waiting for control service"; done
     printf "https://" > ~/.keptnmock
@@ -117,6 +120,16 @@ function execute_cli_tests {
 
     # execute GO tests
     go test ${gobuild_args} -timeout 240s ./... || exit 1
+    cd ..
+}
+
+function build_and_install_cli {
+    # Build CLI for end-to-end test
+    cd cli/
+    dep ensure
+    go build -o keptn
+    mv keptn /opt/bin/keptn
+    PATH=$PATH:~/opt/bin
     cd ..
 }
 
