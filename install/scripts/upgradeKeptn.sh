@@ -6,7 +6,7 @@ exec 2>&1
 
 source ./utils.sh
 
-echo "Starting update to keptn 0.2.1"
+echo "Starting upgrade to keptn 0.2.1"
 
 GITHUB_USER_NAME=$1
 GITHUB_PERSONAL_ACCESS_TOKEN=$2
@@ -49,6 +49,7 @@ kubectl apply -f $SERVICENAME-deployment.yaml
 verify_kubectl $? "Updating of $SERVICENAME failed."
 print_debug "Removing old revision of $SERVICENAME service"
 kubectl delete revision $SERVICE_REVISION -n keptn
+rm $SERVICENAME-deployment.yaml
 
 
 SERVICENAME=authenticator
@@ -61,7 +62,7 @@ kubectl apply -f $SERVICENAME-deployment.yaml
 verify_kubectl $? "Updating of $SERVICENAME failed."
 print_debug "Removing old revision of $SERVICENAME service"
 kubectl delete revision $SERVICE_REVISION -n keptn
-
+rm $SERVICENAME-deployment.yaml
 
 
 SERVICENAME=event-broker
@@ -74,7 +75,7 @@ kubectl apply -f $SERVICENAME-deployment.yaml
 verify_kubectl $? "Updating of $SERVICENAME failed."
 print_debug "Removing old revision of $SERVICENAME service"
 kubectl delete revision $SERVICE_REVISION -n keptn
-
+rm $SERVICENAME-deployment.yaml
 
 
 SERVICENAME=event-broker-ext
@@ -87,6 +88,7 @@ kubectl apply -f $SERVICENAME-deployment.yaml
 verify_kubectl $? "Updating of $SERVICENAME failed."
 print_debug "Removing old revision of $SERVICENAME service"
 kubectl delete revision $SERVICE_REVISION -n keptn
+rm $SERVICENAME-deployment.yaml
 
 
 SERVICENAME=github-service
@@ -99,6 +101,7 @@ kubectl apply -f $SERVICENAME-deployment.yaml
 verify_kubectl $? "Updating of $SERVICENAME failed."
 print_debug "Removing old revision of $SERVICENAME service"
 kubectl delete revision $SERVICE_REVISION -n keptn
+rm $SERVICENAME-deployment.yaml
 
 
 SERVICENAME=pitometer-service
@@ -110,25 +113,28 @@ yq w -i $SERVICENAME-deployment.yaml spec.runLatest.configuration.revisionTempla
 kubectl apply -f $SERVICENAME-deployment.yaml
 print_debug "Removing old revision of $SERVICENAME service"
 kubectl delete revision $SERVICE_REVISION -n keptn
+rm $SERVICENAME-deployment.yaml
 
 SERVICENAME=jenkins-service
 print_debug "Update $SERVICENAME service"
 SERVICE_REVISION=$(kubectl get revisions --namespace=keptn | grep $SERVICENAME | cut -d' ' -f1)
 kubectl get ksvc $SERVICENAME -n keptn -o=yaml > $SERVICENAME-deployment.yaml
 verify_kubectl $? "$SERVICENAME could not be retrieved."
-yq w -i $SERVICENAME-deployment.yaml spec.runLatest.configuration.revisionTemplate.spec.container.image keptn/$SERVICENAME:0.1.1
+yq w -i $SERVICENAME-deployment.yaml spec.runLatest.configuration.revisionTemplate.spec.container.image keptn/$SERVICENAME:0.2.0
 kubectl apply -f $SERVICENAME-deployment.yaml
 verify_kubectl $? "Updating of $SERVICENAME failed."
 print_debug "Removing old revision of $SERVICENAME service"
 kubectl delete revision $SERVICE_REVISION -n keptn
+rm $SERVICENAME-deployment.yaml
 
 SERVICENAME=jenkins-deployment
 print_debug "Update $SERVICENAME"
 kubectl get deployment $SERVICENAME -n keptn -o=yaml > $SERVICENAME-deployment.yaml
 verify_kubectl $? "$SERVICENAME could not be retrieved."
-yq w -i $SERVICENAME-deployment.yaml spec.template.spec.containers[0].image keptn/jenkins:0.4.1
+yq w -i $SERVICENAME-deployment.yaml spec.template.spec.containers[0].image keptn/jenkins:0.5.0
 kubectl apply -f $SERVICENAME-deployment.yaml
 verify_kubectl $? "Updating of $SERVICENAME failed."
+rm $SERVICENAME-deployment.yaml
 
 
 GATEWAY=$(kubectl describe svc istio-ingressgateway -n istio-system | grep "LoadBalancer Ingress:" | sed 's~LoadBalancer Ingress:[ \t]*~~')
@@ -148,10 +154,15 @@ while [[ $RETRY -lt $RETRY_MAX ]]; do
   then
     break
   fi 
-  echo "Jenkins not yet available."
-  sleep 10
+  echo "Jenkins not yet available. Retrying..."
+  sleep 15
   RETRY=$[$RETRY+1]
 done
+
+if [[ $RETRY == $RETRY_MAX ]]; then
+  print_error "Jenkins not available, thus Git credentials could not be created in Jenkins."
+  exit 1
+fi
 
 RETRY=0
 
@@ -186,5 +197,5 @@ if [[ $RETRY == $RETRY_MAX ]]; then
 fi
 
 echo "Upgrade to keptn 0.2.1 done."
-echo "Please save the configuration of your Jenkins."
 echo "You can find your Jenkins here: http://jenkins.keptn.$GATEWAY.xip.io/configure"
+echo "Please verify and save your Jenkins configuration."
