@@ -42,7 +42,7 @@ jobs:
       if: branch = master AND NOT type = pull_request 
       script: source travis-scripts/master_main.sh
 
-    - stage: pr_dev
+    - stage: travisdev
       if: branch = travis-nightly-build AND type = pull_request
       script: source travis-scripts/master_main.sh
 
