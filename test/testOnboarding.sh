@@ -8,7 +8,7 @@ GITHUB_TOKEN=$(cat ../install/scripts/creds.json | jq -r '.githubPersonalAccessT
 KEPTN_ENDPOINT=https://$(kubectl get ksvc -n keptn control -o=yaml | yq r - status.domain)
 KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -o=yaml | yq - r data.keptn-api-token | base64 --decode)
 
-PROJECT=sockshop4
+PROJECT=sockshop6
 keptn auth --endpoint=$KEPTN_ENDPOINT --api-token=$KEPTN_API_TOKEN
 verify_test_step $? "Could not authenticate at keptn API."
 
@@ -40,7 +40,7 @@ cd examples
 cd onboarding-carts
 
 keptn create project $PROJECT shipyard.yaml
-verify_test_step $? "keptn create-project command failed."
+verify_test_step $? "keptn create project command failed."
 
 sleep 30
 keptn onboard service --project=$PROJECT --values=values_carts.yaml
