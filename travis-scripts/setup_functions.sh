@@ -10,6 +10,7 @@ function setup_gcloud {
 }
 
 function setup_glcoud_pr {
+    gcloud --quiet config set project $PROJECT_NAME
     gcloud container clusters get-credentials $CLUSTER_PR_STATUSCHECK_NAME --zone $CLUSTER_PR_STATUSCHECK_ZONE --project $PROJECT_NAME
     export GCLOUD_USER=$(gcloud config get-value account)
 

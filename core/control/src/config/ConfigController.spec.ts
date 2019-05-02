@@ -6,6 +6,7 @@ import 'mocha';
 import * as sinon from 'sinon';
 import { MessageService } from '../svc/MessageService';
 import { cleanUpMetadata } from 'inversify-express-utils';
+import { doesNotReject } from 'assert';
 
 describe('ConfigController', () => {
   let configController: ConfigController;
@@ -46,7 +47,7 @@ describe('ConfigController', () => {
         success: true,
       },
     })).is.true;
-  });
+  }).timeout(5000);
   it('should return false if a message has not been forwarded', async () => {
     const messageServiceStub = sinon
       .stub()
