@@ -8,7 +8,7 @@ import (
 
 // ValidateK8sName valides if a given name starts with lowercase letter and only contains lowercase letters and -
 func ValidateK8sName(svcName string) bool {
-	reg, err := regexp.Compile("[a-z][a-zA-Z0-9/-]+")
+	reg, err := regexp.Compile("[a-z][a-z0-9/-]+")
 	if err != nil {
 		log.Fatal(err)
 	}
