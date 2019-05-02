@@ -119,8 +119,6 @@ var serviceCmd = &cobra.Command{
 				return errors.New("Service name could not be retrieved. Please verify that a service name is defined in your .yaml file")
 			}
 
-			// TODO check for error
-
 			if !utils.ValidateK8sName(svcName) {
 				errorMsg := "Service name as defined in the .yaml file includes invalid characters or is not well-formed.\n"
 				errorMsg += "keptn relies on Helm charts and thus these conventions have to be followed: "
