@@ -1,5 +1,6 @@
 import { injectable } from 'inversify';
 import axios from 'axios';
+import { Logger } from '../lib/log/Logger';
 
 @injectable()
 export class MessageService {
@@ -14,8 +15,16 @@ export class MessageService {
       return false;
     }
 
-    axios.post(`http://${this.channelUri}`, message).then().catch(() => {});
-
+    try {
+      const result = await axios.post(`http://${this.channelUri}`, message);
+      Logger.debug(
+        message.shkeptncontext,
+        `Sent request to channel. Reponse: ${JSON.stringify(result.data)}`,
+      );
+    } catch (e) {
+      Logger.error(message.shkeptncontext, `Error while sending request: ${e}`);
+      return false;
+    }
     return true;
   }
 }

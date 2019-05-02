@@ -2,6 +2,7 @@ import { inject, injectable } from 'inversify';
 import axios from 'axios';
 import { KeptnRequestModel } from '../keptn/KeptnRequestModel';
 import { ChannelReconciler } from '../lib/channel/ChannelReconciler';
+import { Logger } from '../lib/log/Logger';
 import moment from 'moment';
 
 @injectable()
@@ -24,22 +25,21 @@ export class MessageService {
     }
     message.time = moment().format();
     if (channelUri === '' || channelUri === undefined) {
-      console.log(JSON.stringify({
-        keptnContext,
-        keptnService: 'eventbroker',
-        logLevel: 'ERROR',
-        message: `Could not find channel URI for event of type ${message.type}`,
-      }));
+      Logger.error(keptnContext, `Could not find channel URI for event of type ${message.type}`);
       return false;
     }
-    console.log(JSON.stringify({
-      keptnContext,
-      keptnService: 'eventbroker',
-      logLevel: 'INFO',
-      message: `Sending message to ${channelUri}`,
-    }));
+    Logger.info(keptnContext, `Sending message to ${channelUri}`);
 
-    axios.post(`http://${channelUri}`, message).then().catch((e) => { console.log(e); });
+    try {
+      const result = await axios.post(`http://${channelUri}`, message);
+      Logger.debug(
+        message.shkeptncontext,
+        `Sent request to channel. Reponse: ${JSON.stringify(result.data)}`,
+      );
+    } catch (e) {
+      Logger.error(message.shkeptncontext, `Error while sending request: ${e}`);
+      return false;
+    }
 
     return true;
   }
