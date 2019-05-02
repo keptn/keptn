@@ -8,7 +8,6 @@ set -x
 setup_gcloud
 setup_glcoud_pr
 install_yq
-setup_knative_pr
 setup_keptn_pr
 export_names
 execute_core_component_tests
