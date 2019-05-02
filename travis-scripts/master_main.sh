@@ -55,6 +55,8 @@ export_names
 execute_core_component_tests
 execute_cli_tests
 
+build_and_install_cli
+
 # Execute end-to-end test
 
 
