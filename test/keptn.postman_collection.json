@@ -1,21 +1,24 @@
 {
 	"info": {
-		"_postman_id": "9f95a1a3-4f0f-42eb-9941-8066a6b22f38",
-		"name": "keptn",
+		"_postman_id": "517043e2-5469-402c-84ca-fa6b627d3347",
+		"name": "Keptn Integration Tests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
-			"name": "Sockshop Frontend Istio",
+			"name": "Get Github Repos",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
-						"id": "bfadd2e5-8dbe-4ae5-ac9e-322df19fd50f",
+						"id": "a167a937-b342-466e-a424-5ec2ee05a520",
 						"exec": [
-							"tests[\"Status code is 200\"] = responseCode.code === 200;",
-							"",
-							"tests[\"Body contains 'socks'\"] = responseBody.has('socks');"
+							"pm.test(\"Repository exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var sockshopRepo = ",
+							"        jsonData.find((item) => item.name === pm.environment.get(\"project\"));",
+							"    pm.expect(sockshopRepo.name).to.eql(\"sockshop\");",
+							"});"
 						],
 						"type": "text/javascript"
 					}
@@ -29,29 +32,43 @@
 					"raw": ""
 				},
 				"url": {
-					"raw": "http://{{istioIngress}}/index.html",
-					"protocol": "http",
+					"raw": "https://api.github.com/orgs/{{githubOrg}}/repos",
+					"protocol": "https",
 					"host": [
-						"{{istioIngress}}"
+						"api",
+						"github",
+						"com"
 					],
 					"path": [
-						"index.html"
+						"orgs",
+						"{{githubOrg}}",
+						"repos"
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "Sockshop Frontend Production",
+			"name": "Get Github Project Branches",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
-						"id": "8bcbfdae-44e3-4a10-8c78-b2b0c1bd5e2c",
+						"id": "a167a937-b342-466e-a424-5ec2ee05a520",
 						"exec": [
-							"tests[\"Status code is 200\"] = responseCode.code === 200;",
+							"pm.test(\"Dev branch exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var devBranch = ",
+							"        jsonData.find((item) => item.name === \"dev\");",
+							"    pm.expect(devBranch === undefined).to.be.false",
+							"});",
 							"",
-							"tests[\"Body contains 'socks'\"] = responseBody.has('socks');"
+							"pm.test(\"Staging branch exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var branch = ",
+							"        jsonData.find((item) => item.name === \"staging\");",
+							"    pm.expect(branch === undefined).to.be.false",
+							"});"
 						],
 						"type": "text/javascript"
 					}
@@ -65,88 +82,18 @@
 					"raw": ""
 				},
 				"url": {
-					"raw": "http://{{frontEndProduction}}:8080/index.html",
+					"raw": "http://api.github.com/repos/{{githubOrg}}/{{project}}/branches",
 					"protocol": "http",
 					"host": [
-						"{{frontEndProduction}}"
+						"api",
+						"github",
+						"com"
 					],
-					"port": "8080",
 					"path": [
-						"index.html"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Sockshop Frontend Staging",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"id": "c833346f-1475-497e-96b0-a11d642f01ce",
-						"exec": [
-							"tests[\"Status code is 200\"] = responseCode.code === 200;",
-							"",
-							"tests[\"Body contains 'socks'\"] = responseBody.has('socks');"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
-				"url": {
-					"raw": "http://{{frontEndStaging}}:8080/index.html",
-					"protocol": "http",
-					"host": [
-						"{{frontEndStaging}}"
-					],
-					"port": "8080",
-					"path": [
-						"index.html"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Sockshop Frontend Dev",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"id": "3fbde516-cadd-43c0-ab42-d2c6e5a46955",
-						"exec": [
-							"tests[\"Status code is 200\"] = responseCode.code === 200;",
-							"",
-							"tests[\"Body contains 'socks'\"] = responseBody.has('socks');"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
-				"url": {
-					"raw": "http://{{frontEndDev}}:8080/index.html",
-					"protocol": "http",
-					"host": [
-						"{{frontEndDev}}"
-					],
-					"port": "8080",
-					"path": [
-						"index.html"
+						"repos",
+						"{{githubOrg}}",
+						"{{project}}",
+						"branches"
 					]
 				}
 			},
