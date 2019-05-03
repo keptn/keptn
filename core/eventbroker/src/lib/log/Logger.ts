@@ -1,8 +1,9 @@
 export class Logger {
-  static info(keptnContext: string, message: string) {
+  static info(keptnContext: string, message: string, keptnEntry: boolean = false) {
     try {
       const msg = JSON.stringify({
         keptnContext,
+        keptnEntry,
         message,
         keptnService: 'eventbroker',
         logLevel: 'INFO',
