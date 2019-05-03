@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Setting up auto tagging rules in your Dynatrace tenant."
+source ./utils.sh
 
 DT_TENANT_ID=$1
 DT_API_TOKEN=$2
@@ -37,6 +37,12 @@ curl -X POST \
   ]
 }'
 
+if [[ $1 != '0' ]]; then
+  echo ""
+  print_error "Tagging rule for service could not be created in tenant $DT_TENANT_ID."
+  exit 1
+fi
+
 curl -X POST \
   "https://$DT_TENANT_ID.live.dynatrace.com/api/config/v1/autoTags?Api-Token=$DT_API_TOKEN" \
   -H 'Content-Type: application/json' \
@@ -68,4 +74,9 @@ curl -X POST \
     }
   ]
 }'
-  
+
+if [[ $1 != '0' ]]; then
+  echo ""
+  print_error "Tagging rule for environment could not be created in tenant $DT_TENANT_ID."
+  exit 1
+fi
