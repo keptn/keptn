@@ -10,7 +10,7 @@ keptn is a fabric for cloud-native lifecycle automation at enterprise scale. In 
 Here is the best way to getting started with keptn:
 - If you want to try out the latest stable release with your own services and application, please head over to the [release section](https://github.com/keptn/keptn/releases) of keptn and follow the official [documentation of keptn](https://keptn.sh/docs). We recommend to work with this version.
 - If you want to try out the latest version of keptn with your own services and application, please use the [0.2.x release branch](https://github.com/keptn/keptn/tree/release-0.2.x) and follow the [documentation](https://keptn.sh/docs/) on the https://keptn.sh website. 
-- If you want to work with the latest version of keptn that is currently under development, please use the master branch. (:warning: this is the development branch, so it might not be stable all the time)
+- If you want to work with the latest version of keptn that is currently under development, please use the development branch. (:warning: this is the development branch, so it might not be stable all the time)
 - Please use the [docs on the keptn website](https://keptn.sh/docs) to get resources on how to use keptn.
 - Please use the [release section](https://github.com/keptn/keptn/releases) to learn about our current releases, release candidates and pre-releases to get the latest version of keptn.
 
