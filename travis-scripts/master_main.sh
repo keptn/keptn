@@ -11,6 +11,9 @@ install_yq
 
 setup_gcloud
 setup_gcloud_nightly
+
+uninstall_keptn
+
 delete_nightly_cluster
 create_nightly_cluster
 

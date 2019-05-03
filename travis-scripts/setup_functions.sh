@@ -55,6 +55,11 @@ function setup_knative {
     ./setupKnative.sh ' ' $CLUSTER_NAME_NIGHTLY ${CLOUDSDK_COMPUTE_ZONE}
     cd ../..
 }
+function uninstall_keptn {
+    cd ./install/scripts
+    ./uninstallKeptn.sh
+    cd ../..
+}
 
 function setup_knative_pr {    
     cd ./install/scripts/
