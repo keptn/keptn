@@ -13,19 +13,8 @@ read -p "GitHub User Email: " GITE
 read -p "GitHub Organization: " GITO
 read -p "GKE Cluster Name: " CLN
 read -p "GKE Cluster Zone: " CLZ
-read -p "GKE Cluster Region: " CLR
 read -p "GKE Project: " PROJ
 echo ""
-
-if [[ $DTENV = '' ]]
-then 
-    DTENV=$DTENVC
-fi
-
-if [[ $DTAPI = '' ]]
-then 
-    DTAPI=$DTAPIC
-fi
 
 echo ""
 echo -e "${YLW}Please confirm all are correct: ${NC}"
@@ -35,7 +24,6 @@ echo "GitHub User Email: $GITE"
 echo "GitHub Organization: $GITO"
 echo "GKE Cluster Name: $CLN"
 echo "GKE Cluster Zone: $CLZ"
-echo "GKE Cluster Region: $CLR"
 echo "GKE Project: $PROJ"
 read -p "Is this all correct? (y/n) : " -n 1 -r
 echo ""
@@ -48,7 +36,6 @@ then
       sed 's~GITHUB_USER_EMAIL_PLACEHOLDER~'"$GITE"'~' | \
       sed 's~CLUSTER_NAME_PLACEHOLDER~'"$CLN"'~' | \
       sed 's~CLUSTER_ZONE_PLACEHOLDER~'"$CLZ"'~' | \
-      sed 's~CLUSTER_REGION_PLACEHOLDER~'"$CLR"'~' | \
       sed 's~GKE_PROJECT_PLACEHOLDER~'"$PROJ"'~' | \
       sed 's~GITHUB_ORG_PLACEHOLDER~'"$GITO"'~' >> $CREDS
 fi
