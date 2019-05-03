@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/keptn/keptn.svg?branch=master)](https://travis-ci.org/keptn/keptn)
+<!--[![Build Status](https://travis-ci.org/keptn/keptn.svg?branch=master)](https://travis-ci.org/keptn/keptn)-->
 
 ![keptn](./assets/keptn.png)
 
