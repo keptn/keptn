@@ -4,6 +4,7 @@ import { MessageService } from '../svc/MessageService';
 import { KeptnRequestModel } from '../keptn/KeptnRequestModel';
 import { DockerRequestModel } from './DockerRequestModel';
 import { OrgToRepoMapper } from '../lib/org-to-repo-mapper/OrgToRepoMapper';
+import { Logger } from '../lib/log/Logger';
 
 @injectable()
 export class DockerService {
@@ -42,27 +43,12 @@ export class DockerService {
 
     const repo = await this.orgToRepoMapper.getRepoForOrg(project);
     if (repo === '') {
-      console.log(JSON.stringify({
-        keptnContext: msg.shkeptncontext,
-        keptnService: 'eventbroker',
-        logLevel: 'INFO',
-        message: `No repo found for organization ${project}`,
-      }));
+      Logger.info(msg.shkeptncontext, `No repo found for organization ${project}`);
       return false;
     }
-    console.log(JSON.stringify({
-      keptnContext: msg.shkeptncontext,
-      keptnService: 'eventbroker',
-      logLevel: 'INFO',
-      keptnEntry: true,
-      message: `Starting new pipeline run for ${project}/${service}:${tag}`,
-    }));
-    console.log(JSON.stringify({
-      keptnContext: msg.shkeptncontext,
-      keptnService: 'eventbroker',
-      logLevel: 'INFO',
-      message: `Found mapping org ${project} to ${repo}`,
-    }));
+    Logger.info(msg.shkeptncontext, `Found mapping org ${project} to ${repo}`);
+    Logger.info(msg.shkeptncontext, `Starting new pipeline run for ${project}/${service}:${tag}`);
+
     const msgPayload = {
       service,
       image,
@@ -73,12 +59,7 @@ export class DockerService {
     msg.data = msgPayload;
     msg.type = KeptnRequestModel.EVENT_TYPES.NEW_ARTEFACT;
 
-    console.log(JSON.stringify({
-      keptnContext: msg.shkeptncontext,
-      keptnService: 'eventbroker',
-      logLevel: 'INFO',
-      message: msg,
-    }));
+    Logger.info(msg.shkeptncontext, JSON.stringify(msg));
 
     return await this.messageService.sendMessage(msg, msg.shkeptncontext);
   }

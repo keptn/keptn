@@ -9,11 +9,6 @@ const authenticator: express.RequestHandler = async (
   response: express.Response,
   next: express.NextFunction,
 ) => {
-  if (request.url !== undefined && request.url.indexOf('swagger') > 0) {
-    console.log('Skipping auth for swagger doc');
-    next();
-    return;
-  }
   console.log('Starting authentication');
   console.log(JSON.stringify(request.body));
   // TODO: insert call to authenticator.keptn.svc.cluster.local here
