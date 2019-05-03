@@ -18,6 +18,12 @@ function setup_glcoud_pr {
     # export REGISTRY_URL=$(kubectl describe svc docker-registry -n keptn | grep "IP:" | sed 's~IP:[ \t]*~~')
 }
 
+function install_helm {
+    curl https://storage.googleapis.com/kubernetes-helm/helm-v2.12.3-linux-amd64.tar.gz --output helm-v2.12.3-linux-amd64.tar.gz
+    tar -zxvf helm-v2.12.3-linux-amd64.tar.gz
+    sudo mv linux-amd64/helm /usr/local/bin/helm
+}
+
 function setup_gcloud_nightly {
     gcloud --quiet config set project $PROJECT_NAME
     gcloud --quiet config set container/cluster $CLUSTER_NAME_NIGHTLY
@@ -142,7 +148,7 @@ function build_and_install_cli {
     cd cli/
     dep ensure
     go build -o keptn
-    mv keptn /usr/local/bin/keptn
+    sudo mv keptn /usr/local/bin/keptn
     cd ..
 }
 
