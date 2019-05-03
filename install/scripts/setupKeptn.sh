@@ -49,7 +49,7 @@ KEPTN_API_TOKEN=$(head -c 16 /dev/urandom | base64)
 verify_variable "$KEPTN_API_TOKEN" "KEPTN_API_TOKEN could not be derived." 
 
 kubectl create secret generic -n keptn keptn-api-token --from-literal=keptn-api-token="$KEPTN_API_TOKEN"
-verify_kubectl $? "Creating secret for keptn api token failed."
+#verify_kubectl $? "Creating secret for keptn api token failed."
 
 KEPTN_CHANNEL_URI=$(kubectl describe channel keptn-channel -n keptn | grep "Hostname:" | sed 's~[ \t]*Hostname:[ \t]*~~')
 verify_variable "$KEPTN_CHANNEL_URI" "KEPTN_CHANNEL_URI could not be derived from keptn-channel description." 
@@ -86,7 +86,7 @@ verify_variable "$ISTIO_INGRESS_IP" "ISTIO_INGRESS_IP is empty and could not be 
 openssl req -nodes -newkey rsa:2048 -keyout key.pem -out certificate.pem  -x509 -days 365 -subj "/CN=$ISTIO_INGRESS_IP.xip.io"
 
 kubectl create --namespace istio-system secret tls istio-ingressgateway-certs --key key.pem --cert certificate.pem
-verify_kubectl $? "Creating secret for istio-ingressgateway-certs failed."
+#verify_kubectl $? "Creating secret for istio-ingressgateway-certs failed."
 
 kubectl get gateway knative-ingress-gateway --namespace knative-serving -o=yaml | yq w - spec.servers[1].tls.mode SIMPLE | yq w - spec.servers[1].tls.privateKey /etc/istio/ingressgateway-certs/tls.key | yq w - spec.servers[1].tls.serverCertificate /etc/istio/ingressgateway-certs/tls.crt | kubectl apply -f -
 verify_kubectl $? "Updating knative ingress gateway with private key failed."
