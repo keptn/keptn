@@ -39,13 +39,21 @@ function install_sed {
 
 function setup_knative {    
     cd ./install/scripts/
-    ./setupKnative.sh ' ' $CLUSTER_NAME ${CLOUDSDK_COMPUTE_ZONE}
+    ./setupKnative.sh $CLUSTER_NAME ${CLOUDSDK_COMPUTE_ZONE}
     cd ../..
 }
 
 function setup_knative_pr {    
     cd ./install/scripts/
-    ./setupKnative.sh '' $CLUSTER_PR_STATUSCHECK_NAME $CLUSTER_PR_STATUSCHECK_ZONE
+    CLUSTER_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_PR_STATUSCHECK_NAME} --zone=${CLUSTER_PR_STATUSCHECK_ZONE} | yq r - clusterIpv4Cidr)
+    SERVICES_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_PR_STATUSCHECK_NAME} --zone=${CLUSTER_PR_STATUSCHECK_ZONE} | yq r - servicesIpv4Cidr)
+    ./setupKnative.sh $CLUSTER_IPV4_CIDR $SERVICES_IPV4_CIDR
+    cd ../..
+}
+
+function setup_keptn_pr {    
+    cd ./install/scripts/
+    ./setupKeptn.sh
     cd ../..
 }
 
