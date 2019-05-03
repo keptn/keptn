@@ -47,7 +47,11 @@ export class DockerService {
       return false;
     }
     Logger.info(msg.shkeptncontext, `Found mapping org ${project} to ${repo}`);
-    Logger.info(msg.shkeptncontext, `Starting new pipeline run for ${project}/${service}:${tag}`);
+    Logger.info(
+      msg.shkeptncontext,
+      `Starting new pipeline run for ${project}/${service}:${tag}`,
+      true,
+    );
 
     const msgPayload = {
       service,
