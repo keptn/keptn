@@ -21,7 +21,7 @@ function setup_glcoud_pr {
 function install_helm {
     curl https://storage.googleapis.com/kubernetes-helm/helm-v2.12.3-linux-amd64.tar.gz --output helm-v2.12.3-linux-amd64.tar.gz
     tar -zxvf helm-v2.12.3-linux-amd64.tar.gz
-    mv linux-amd64/helm /usr/local/bin/helm
+    sudo mv linux-amd64/helm /usr/local/bin/helm
 }
 
 function setup_gcloud_nightly {
@@ -148,7 +148,7 @@ function build_and_install_cli {
     cd cli/
     dep ensure
     go build -o keptn
-    mv keptn /usr/local/bin/keptn
+    sudo mv keptn /usr/local/bin/keptn
     cd ..
 }
 
