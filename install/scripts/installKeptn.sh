@@ -104,5 +104,12 @@ print_info "Keptn wears uniform"
 # Install done
 print_info "Installation of keptn complete."
 
-print_info "To retrieve the keptn API token, please execute the following command:"
-print_info "kubectl get secret keptn-api-token -n keptn -o=yaml | yq - r data.keptn-api-token | base64 --decode"
+# Retrieve keptn endpoint and api-token
+KEPTN_ENDPOINT=https://$(kubectl get ksvc -n keptn control -o=yaml | yq r - status.domain)
+KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -o=yaml | yq - r data.keptn-api-token | base64 --decode)
+
+print_info "keptn endpoint: $KEPTN_ENDPOINT"
+print_info "keptn api-token: $KEPTN_API_TOKEN"
+
+#print_info "To retrieve the keptn API token, please execute the following command:"
+#print_info "kubectl get secret keptn-api-token -n keptn -o=yaml | yq - r data.keptn-api-token | base64 --decode"
