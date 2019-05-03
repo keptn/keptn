@@ -10,11 +10,6 @@ const authenticator: express.RequestHandler = async (
   response: express.Response,
   next: express.NextFunction,
 ) => {
-  if (request.url !== undefined && request.url.indexOf('swagger') > 0) {
-    console.log('Skipping auth for swagger doc');
-    next();
-    return;
-  }
   // TODO: also add authentication for Dynatrace endpoint!
   if (request.url !== undefined && request.url.indexOf('dynatrace') > 0) {
     await handleDynatraceRequest(request, response, next);

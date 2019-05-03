@@ -44,4 +44,4 @@ spec:
   # https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/
   #priorityClassName: PRIORITYCLASS
   # disables automatic restarts of oneagent pods in case a new version is available
-  #disableAgentUpdate: true
+  #disableAgentUpdate: false

@@ -1,5 +1,4 @@
 #!/bin/bash
-
 CLUSTER_NAME=$1
 
 LOG_LOCATION=.
@@ -11,7 +10,7 @@ gcloud beta container --project "sai-research" clusters create "$CLUSTER_NAME" -
 gcloud container clusters get-credentials $CLUSTER_NAME --zone us-central1-a --project sai-research
 
 export GCLOUD_USER=$(gcloud config get-value account)
-kubectl create clusterrolebinding dynatrace-cluster-admin-binding --clusterrole=cluster-admin --user=$GCLOUD_USER
+kubectl create clusterrolebinding cluster-admin-binding --clusterrole=cluster-admin --user=$GCLOUD_USER
 
 kubectl create -f ../manifests/k8s-namespaces.yml 
 
@@ -20,7 +19,7 @@ kubectl create -f ../manifests/container-registry/k8s-docker-registry-pvc.yml
 kubectl create -f ../manifests/container-registry/k8s-docker-registry-deployment.yml
 kubectl create -f ../manifests/container-registry/k8s-docker-registry-service.yml
 
-echo "Wait for docker service to get ip..."
+echo "Wait 10s for docker service to get ip..."
 sleep 10
 
 # Create a route for the docker registry service
@@ -29,4 +28,3 @@ export REGISTRY_URL=$(kubectl describe svc docker-registry -n keptn | grep "IP:"
 
 kubectl apply -f ../manifests/istio/istio-crds.yml
 kubectl apply -f ../manifests/istio/istio-demo.yml
-
