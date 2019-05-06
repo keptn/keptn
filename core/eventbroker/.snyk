@@ -5,6 +5,4 @@ ignore: {}
 patch:
   SNYK-JS-AXIOS-174505:
     - axios:
-        patched: '2019-05-06T04:32:29.981Z'
-    - cloudevents-sdk > axios:
-        patched: '2019-05-06T04:32:29.981Z'
+        patched: '2019-05-06T07:56:50.138Z'
