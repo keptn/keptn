@@ -60,7 +60,7 @@ keptn onboard service --project=$PROJECT --values=values_carts.yaml
 sleep 30
 keptn onboard service --project=$PROJECT --values=values_carts_db.yaml --deployment=deployment_carts_db.yaml --service=service_carts_db.yaml
 
-sleep 30
+sleep 60
 cd ../..
 npm install newman
 yq w keptn.postman_environment.json values[0].value $GITHUB_ORG | yq  - w values[1].value $PROJECT | yq - r -j > keptn.postman_environment_tmp.json
