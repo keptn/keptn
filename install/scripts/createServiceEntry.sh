@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source ./utils.sh
+
 entries=$(curl https://$1.live.dynatrace.com/api/v1/deployment/installer/agent/connectioninfo?Api-Token=$2 | jq -r '.communicationEndpoints[]')
 
 rm -f ../manifests/gen/service_entries_oneagent.yml
@@ -31,3 +33,4 @@ cat ../manifests/gen/service_entries >> ../manifests/gen/service_entries_oneagen
 
 # Apply service entries
 kubectl apply -f ../manifests/gen/service_entries_oneagent.yml
+verify_kubectl $? "Applying service entries for Dynatrace OneAgent failed."
