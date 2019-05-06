@@ -10,6 +10,7 @@ function setup_gcloud {
 }
 
 function setup_glcoud_pr {
+    gcloud --quiet config set project $PROJECT_NAME
     gcloud container clusters get-credentials $CLUSTER_PR_STATUSCHECK_NAME --zone $CLUSTER_PR_STATUSCHECK_ZONE --project $PROJECT_NAME
     export GCLOUD_USER=$(gcloud config get-value account)
 
@@ -38,13 +39,21 @@ function install_sed {
 
 function setup_knative {    
     cd ./install/scripts/
-    ./setupKnative.sh ' ' $CLUSTER_NAME ${CLOUDSDK_COMPUTE_ZONE}
+    ./setupKnative.sh $CLUSTER_NAME ${CLOUDSDK_COMPUTE_ZONE}
     cd ../..
 }
 
 function setup_knative_pr {    
     cd ./install/scripts/
-    ./setupKnative.sh '' $CLUSTER_PR_STATUSCHECK_NAME $CLUSTER_PR_STATUSCHECK_ZONE
+    CLUSTER_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_PR_STATUSCHECK_NAME} --zone=${CLUSTER_PR_STATUSCHECK_ZONE} | yq r - clusterIpv4Cidr)
+    SERVICES_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_PR_STATUSCHECK_NAME} --zone=${CLUSTER_PR_STATUSCHECK_ZONE} | yq r - servicesIpv4Cidr)
+    ./setupKnative.sh $CLUSTER_IPV4_CIDR $SERVICES_IPV4_CIDR
+    cd ../..
+}
+
+function setup_keptn_pr {    
+    cd ./install/scripts/
+    ./setupKeptn.sh
     cd ../..
 }
 
@@ -92,6 +101,9 @@ function execute_cli_tests {
     while [ "$ENDPOINT" = "null" ]; do sleep 30; ENDPOINT="$(kubectl get ksvc control -n keptn -o=yaml | yq r - status.domain)"; echo "waiting for control service"; done
     printf "https://" > ~/.keptnmock
     kubectl get ksvc control -n keptn -o=yaml  | yq r - status.domain >> ~/.keptnmock
+
+    AUTH_ENDPOINT="$(kubectl get ksvc authenticator -n keptn -o=yaml | yq r - status.domain)"
+    while [ "$AUTH_ENDPOINT" = "null" ]; do sleep 30; AUTH_ENDPOINT="$(kubectl get ksvc authenticator -n keptn -o=yaml | yq r - status.domain)"; echo "waiting for authenticator service"; done
 
     set +x
     SEC="$(kubectl get secret keptn-api-token  -n keptn -o=yaml | yq r - data.keptn-api-token | base64 --decode)"

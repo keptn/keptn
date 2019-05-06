@@ -43,6 +43,14 @@ Example:
 			cmd.SilenceUsage = false
 			return errors.New("Requires project_name and shipyard_file")
 		}
+		if !utils.ValidateK8sName(args[0]) {
+			errorMsg := "Project name includes invalid characters or is not well-formed.\n"
+			errorMsg += "keptn relies on Helm charts and thus these conventions have to be followed: "
+			errorMsg += "start with a lower case letter, then lower case letters, dash and numbers are allowed.\n"
+			errorMsg += "You can find the guidelines here: https://github.com/helm/helm/blob/master/docs/chart_best_practices/conventions.md#chart-names\n"
+			errorMsg += "Please update project name and try again."
+			return errors.New(errorMsg)
+		}
 		if _, err := os.Stat(args[1]); os.IsNotExist(err) {
 			return fmt.Errorf("Cannot find file %s", args[1])
 		}
