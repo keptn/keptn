@@ -29,7 +29,7 @@ var versionCmd = &cobra.Command{
 Example:
 	keptn version`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("CLI version: 0.2.0")
+		fmt.Println("CLI version: 0.2.1")
 	},
 }
 
