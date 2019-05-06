@@ -28,8 +28,8 @@
 				"method": "GET",
 				"header": [
 					{
-						"key": "Authorization",
-						"value": "{{OAUTH}} OAUTH-TOKEN",
+						"key": "User-Agent",
+						"value": "keptn-nightly-user",
 						"type": "text"
 					}
 				],
@@ -38,7 +38,7 @@
 					"raw": ""
 				},
 				"url": {
-					"raw": "https://api.github.com/orgs/{{githubOrg}}/repos",
+					"raw": "https://api.github.com/orgs/{{githubOrg}}/repos?client_id={{Client-Id}}&client_secret={{Client-Secret}}",
 					"protocol": "https",
 					"host": [
 						"api",
@@ -49,6 +49,16 @@
 						"orgs",
 						"{{githubOrg}}",
 						"repos"
+					],
+					"query": [
+						{
+							"key": "client_id",
+							"value": "{{Client-Id}}"
+						}, 
+						{
+							"key": "client_secret",
+							"value": "{{Client-Secret}}"
+						}
 					]
 				}
 			},
@@ -91,8 +101,8 @@
 				"method": "GET",
 				"header": [
 					{
-						"key": "Authorization",
-						"value": "{{OAUTH}} OAUTH-TOKEN",
+						"key": "User-Agent",
+						"value": "keptn-nightly-user",
 						"type": "text"
 					}
 				],
@@ -101,7 +111,7 @@
 					"raw": ""
 				},
 				"url": {
-					"raw": "http://api.github.com/repos/{{githubOrg}}/{{project}}/branches",
+					"raw": "http://api.github.com/repos/{{githubOrg}}/{{project}}/branches?client_id={{Client-Id}}&client_secret={{Client-Secret}}",
 					"protocol": "http",
 					"host": [
 						"api",
@@ -113,6 +123,16 @@
 						"{{githubOrg}}",
 						"{{project}}",
 						"branches"
+					],
+					"query": [
+						{
+							"key": "client_id",
+							"value": "{{Client-Id}}"
+						}, 
+						{
+							"key": "client_secret",
+							"value": "{{Client-Secret}}"
+						}
 					]
 				}
 			},
@@ -143,7 +163,7 @@
 					"raw": ""
 				},
 				"url": {
-					"raw": "https://raw.githubusercontent.com/{{githubOrg}}/{{project}}/master/shipyard.yaml",
+					"raw": "https://raw.githubusercontent.com/{{githubOrg}}/{{project}}/master/shipyard.yaml?client_id={{Client-Id}}&client_secret={{Client-Secret}}",
 					"protocol": "https",
 					"host": [
 						"raw",
@@ -155,6 +175,16 @@
 						"{{project}}",
 						"master",
 						"shipyard.yaml"
+					],
+					"query": [
+						{
+							"key": "client_id",
+							"value": "{{Client-Id}}"
+						}, 
+						{
+							"key": "client_secret",
+							"value": "{{Client-Secret}}"
+						}
 					]
 				}
 			},
@@ -192,7 +222,7 @@
 					"raw": ""
 				},
 				"url": {
-					"raw": "https://raw.githubusercontent.com/{{githubOrg}}/{{project}}/dev/helm-chart/values.yaml",
+					"raw": "https://raw.githubusercontent.com/{{githubOrg}}/{{project}}/dev/helm-chart/values.yaml?client_id={{Client-Id}}&client_secret={{Client-Secret}}",
 					"protocol": "https",
 					"host": [
 						"raw",
@@ -205,8 +235,18 @@
 						"dev",
 						"helm-chart",
 						"values.yaml"
+					],
+					"query": [
+						{
+							"key": "client_id",
+							"value": "{{Client-Id}}"
+						}, 
+						{
+							"key": "client_secret",
+							"value": "{{Client-Secret}}"
+						}
 					]
-				}
+				}				
 			},
 			"response": []
 		},
@@ -280,8 +320,8 @@
 				"method": "GET",
 				"header": [
 					{
-						"key": "Authorization",
-						"value": "{{OAUTH}} OAUTH-TOKEN",
+						"key": "User-Agent",
+						"value": "keptn-nightly-user",
 						"type": "text"
 					}
 				],
@@ -290,7 +330,7 @@
 					"raw": ""
 				},
 				"url": {
-					"raw": "https://api.github.com/repos/{{githubOrg}}/{{project}}/contents/helm-chart/templates?ref=dev",
+					"raw": "https://api.github.com/repos/{{githubOrg}}/{{project}}/contents/helm-chart/templates?ref=dev&client_id={{Client-Id}}&client_secret={{Client-Secret}}",
 					"protocol": "https",
 					"host": [
 						"api",
@@ -309,6 +349,14 @@
 						{
 							"key": "ref",
 							"value": "dev"
+						},
+						{
+							"key": "client_id",
+							"value": "{{Client-Id}}"
+						}, 
+						{
+							"key": "client_secret",
+							"value": "{{Client-Secret}}"
 						}
 					]
 				}
@@ -413,8 +461,8 @@
 				"method": "GET",
 				"header": [
 					{
-						"key": "Authorization",
-						"value": "{{OAUTH}} OAUTH-TOKEN",
+						"key": "User-Agent",
+						"value": "keptn-nightly-user",
 						"type": "text"
 					}
 				],
@@ -423,7 +471,7 @@
 					"raw": ""
 				},
 				"url": {
-					"raw": "https://api.github.com/repos/{{githubOrg}}/{{project}}/contents/helm-chart/templates?ref=staging",
+					"raw": "https://api.github.com/repos/{{githubOrg}}/{{project}}/contents/helm-chart/templates?ref=staging&client_id={{Client-Id}}&client_secret={{Client-Secret}}",
 					"protocol": "https",
 					"host": [
 						"api",
@@ -442,6 +490,14 @@
 						{
 							"key": "ref",
 							"value": "staging"
+						},
+						{
+							"key": "client_id",
+							"value": "{{Client-Id}}"
+						}, 
+						{
+							"key": "client_secret",
+							"value": "{{Client-Secret}}"
 						}
 					]
 				}
@@ -546,8 +602,8 @@
 				"method": "GET",
 				"header": [
 					{
-						"key": "Authorization",
-						"value": "{{OAUTH}} OAUTH-TOKEN",
+						"key": "User-Agent",
+						"value": "keptn-nightly-user",
 						"type": "text"
 					}
 				],
@@ -556,7 +612,7 @@
 					"raw": ""
 				},
 				"url": {
-					"raw": "https://api.github.com/repos/{{githubOrg}}/{{project}}/contents/helm-chart/templates?ref=production",
+					"raw": "https://api.github.com/repos/{{githubOrg}}/{{project}}/contents/helm-chart/templates?ref=production&client_id={{Client-Id}}&&client_secret={{Client-Secret}}",
 					"protocol": "https",
 					"host": [
 						"api",
@@ -575,6 +631,14 @@
 						{
 							"key": "ref",
 							"value": "production"
+						},
+						{
+							"key": "client_id",
+							"value": "{{Client-Id}}"
+						}, 
+						{
+							"key": "client_secret",
+							"value": "{{Client-Secret}}"
 						}
 					]
 				}
