@@ -12,7 +12,9 @@
     "watch-ts": "tsc -w",
     "dev": "nodemon",
     "test": "echo \"Testing...\" && nyc --reporter=text nyc mocha && nyc report",
-    "lint": "tslint --project tslint.json"
+    "lint": "tslint --project tslint.json",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
   },
   "repository": {
     "type": "git",
@@ -65,7 +67,8 @@
     "swagger-ui-dist": "^3.20.9",
     "uuid": "^3.3.2",
     "ws": "^6.2.0",
-    "yamljs": "^0.3.0"
+    "yamljs": "^0.3.0",
+    "snyk": "^1.161.1"
   },
   "nyc": {
     "include": [
@@ -87,5 +90,6 @@
     ],
     "sourceMap": true,
     "instrument": true
-  }
+  },
+  "snyk": true
 }
