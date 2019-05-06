@@ -4,11 +4,11 @@
 set -x
 
 cd ./core/
-kubectl delete -f auth/config/gen
+kubectl delete -f auth/config/authenticator.yaml
 kubectl delete -f control/config/gen
-kubectl delete -f eventbroker/config/gen
-kubectl delete -f eventbroker-ext/config/gen
-kubectl delete pods,svc,deployments --all -n keptn
+kubectl delete -f eventbroker/config/event-broker.yaml
+kubectl delete -f eventbroker-ext/config/event-broker-ext.yaml
+kubectl delete svc,deployments --all -n keptn
 kubectl delete channel --all -n keptn
 kubectl delete clusterchannelprovisioner --all -n keptn
 kubectl delete clusterrolebinding travis-cluster-admin-binding

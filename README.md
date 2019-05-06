@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/keptn/keptn.svg?branch=master)](https://travis-ci.org/keptn/keptn)
+<!--[![Build Status](https://travis-ci.org/keptn/keptn.svg?branch=master)](https://travis-ci.org/keptn/keptn)-->
 
 ![keptn](./assets/keptn.png)
 
@@ -8,9 +8,9 @@ keptn is a fabric for cloud-native lifecycle automation at enterprise scale. In 
 ## Usage
 
 Here is the best way to getting started with keptn:
-- If you want to try out the latest stable release with your own services and application, please head over to the [release section](https://github.com/keptn/keptn/releases) of keptn and follow the official [documentation of keptn](https://keptn.sh/docs).
-- If you want to try out the latest version of keptn with your own services and application, please use the [0.2.x release branch](https://github.com/keptn/keptn/tree/release-0.2.x) and follow the [documentation](https://keptn.sh/docs/0.2.0/) on the https://keptn.sh website. We recommend to work with this version.
-- If you want to work with the latest version of keptn that is currently under development, please use the master branch. (:warning: this is the development branch, so it might not be stable all the time)
+- If you want to try out the latest stable release with your own services and application, please head over to the [release section](https://github.com/keptn/keptn/releases) of keptn and follow the official [documentation of keptn](https://keptn.sh/docs). We recommend to work with this version.
+- If you want to try out the latest version of keptn with your own services and application, please use the [0.2.x release branch](https://github.com/keptn/keptn/tree/release-0.2.x) and follow the [documentation](https://keptn.sh/docs/) on the https://keptn.sh website. 
+- If you want to work with the latest version of keptn that is currently under development, please use the development branch. (:warning: this is the development branch, so it might not be stable all the time)
 - Please use the [docs on the keptn website](https://keptn.sh/docs) to get resources on how to use keptn.
 - Please use the [release section](https://github.com/keptn/keptn/releases) to learn about our current releases, release candidates and pre-releases to get the latest version of keptn.
 
@@ -25,7 +25,18 @@ We mangage the keptn core components as well as all services (e.g. Jenkins-servi
 The versions of the keptn core components and the services have to be compatible to each other.
 Therefore, this section shows the compatibility between these versions.
 
-keptn in [version 0.2.0](https://github.com/keptn/keptn/tree/release-0.2.x) requires:
+keptn in [version 0.2.1](https://github.com/keptn/keptn/releases/tag/0.2.1) requires:
+- keptn/keptn-authenticator:0.2.1
+- keptn/keptn-control:0.2.1
+- keptn/keptn-event-broker:0.2.1
+- keptn/keptn-event-broker-ext:0.2.1
+- keptn/pitometer-service:0.1.1 
+- keptn/servicenow-service:0.1.0
+- keptn/github-service:0.1.1 
+- keptn/jenkins-service:0.2.0
+  - keptn/jenkins-0.5.0
+
+keptn in [version 0.2.0](https://github.com/keptn/keptn/releases/tag/0.2.0) requires:
 - keptn/keptn-authenticator:0.2.0
 - keptn/keptn-control:0.2.0
 - keptn/keptn-event-broker:0.2.0
