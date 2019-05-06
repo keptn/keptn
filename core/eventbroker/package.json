@@ -12,7 +12,9 @@
     "watch-ts": "tsc -w",
     "dev": "nodemon",
     "test": "echo \"Testing...\" && nyc --reporter=text nyc mocha && nyc report",
-    "lint": "tslint --project tslint.json"
+    "lint": "tslint --project tslint.json",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
   },
   "author": "keptn.sh",
   "license": "Apache-2.0",
@@ -51,7 +53,8 @@
     "swagger-express-ts": "^1.0.1",
     "swagger-ui-dist": "^3.20.9",
     "uuid": "^3.3.2",
-    "verify-github-webhook": "^1.0.1"
+    "verify-github-webhook": "^1.0.1",
+    "snyk": "^1.161.1"
   },
   "nyc": {
     "include": [
@@ -73,5 +76,6 @@
     ],
     "sourceMap": true,
     "instrument": true
-  }
+  },
+  "snyk": true
 }
