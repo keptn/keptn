@@ -40,7 +40,7 @@
     "@types/mocha": "^5.2.6",
     "@types/node": "^11.9.6",
     "@types/sinon": "^7.0.6",
-    "axios": "^0.18.0",
+    "axios": "^0.19.0-beta.1",
     "body-parser": "^1.18.3",
     "chai": "^4.2.0",
     "express": "^4.16.4",
@@ -50,11 +50,11 @@
     "mocha": "^6.1.4",
     "moment": "^2.24.0",
     "reflect-metadata": "^0.1.13",
+    "snyk": "^1.161.1",
     "swagger-express-ts": "^1.0.1",
     "swagger-ui-dist": "^3.20.9",
     "uuid": "^3.3.2",
-    "verify-github-webhook": "^1.0.1",
-    "snyk": "^1.161.1"
+    "verify-github-webhook": "^1.0.1"
   },
   "nyc": {
     "include": [
