@@ -48,7 +48,7 @@
     "@types/socket.io": "^2.1.2",
     "@types/uuid": "^3.4.4",
     "@types/ws": "^6.0.1",
-    "axios": "^0.18.0",
+    "axios": "^0.19.0-beta.1",
     "cloudevents-sdk": "^0.2.0",
     "express": "^4.16.4",
     "express-ws": "^4.0.0",
@@ -62,13 +62,13 @@
     "mustache": "^3.0.1",
     "nodejs-base64": "^1.0.3",
     "reflect-metadata": "^0.1.13",
+    "snyk": "^1.161.1",
     "socket.io": "^2.2.0",
     "swagger-express-ts": "^1.0.1",
     "swagger-ui-dist": "^3.20.9",
     "uuid": "^3.3.2",
     "ws": "^6.2.0",
-    "yamljs": "^0.3.0",
-    "snyk": "^1.161.1"
+    "yamljs": "^0.3.0"
   },
   "nyc": {
     "include": [
