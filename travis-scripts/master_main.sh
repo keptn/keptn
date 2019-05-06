@@ -41,7 +41,7 @@ replaceCreds
 # Add execution right because there 
 # is a rights problem with e.g. testConnection
 find . -type f -exec chmod +x {} \;
-./installKeptn.sh
+source ./installKeptn.sh
 cd ../..
 
 # Test front-end keptn v.0.1

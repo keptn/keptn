@@ -7,6 +7,7 @@ function setup_gcloud {
     gcloud --quiet components update kubectl
     echo $GCLOUD_SERVICE_KEY | base64 --decode -i > ${HOME}/gcloud-service-key.json
     gcloud auth activate-service-account --key-file ${HOME}/gcloud-service-key.json
+    verify_step $? "gcloud authentication failed."
 }
 
 function setup_glcoud_pr {
@@ -32,7 +33,9 @@ function setup_gcloud_nightly {
 
 function create_nightly_cluster {
     gcloud container --project $PROJECT_NAME clusters create $CLUSTER_NAME_NIGHTLY --zone $CLOUDSDK_COMPUTE_ZONE --username "admin" --cluster-version "1.11.8-gke.6" --machine-type "n1-standard-16" --image-type "UBUNTU" --disk-type "pd-standard" --disk-size "100" --scopes "https://www.googleapis.com/auth/devstorage.read_only","https://www.googleapis.com/auth/logging.write","https://www.googleapis.com/auth/monitoring","https://www.googleapis.com/auth/servicecontrol","https://www.googleapis.com/auth/service.management.readonly","https://www.googleapis.com/auth/trace.append" --num-nodes "1" --enable-cloud-logging --enable-cloud-monitoring --no-enable-ip-alias --network "projects/sai-research/global/networks/default" --subnetwork "projects/sai-research/regions/$CLOUDSDK_REGION/subnetworks/default" --addons HorizontalPodAutoscaling,HttpLoadBalancing --no-enable-autoupgrade --no-enable-autorepair
+    verify_step $? "gcloud cluster create failed."
     gcloud container clusters get-credentials $CLUSTER_NAME_NIGHTLY --zone $CLOUDSDK_COMPUTE_ZONE --project $PROJECT_NAME
+    verify_step $? "gcloud get credentials failed."
     kubectl config view
 }
 
@@ -85,6 +88,9 @@ function setup_keptn_pr {
 function export_names {
     export EVENT_BROKER_NAME=$(kubectl describe ksvc event-broker -n keptn | grep -m 1 "Name:" | sed 's~Name:[ \t]*~~')
     ./test/assertEquals.sh $EVENT_BROKER_NAME event-broker
+
+    export EVENT_BROKER_EXT_NAME=$(kubectl describe ksvc event-broker-ext -n keptn | grep -m 1 "Name:" | sed 's~Name:[ \t]*~~')
+    ./test/assertEquals.sh $EVENT_BROKER_EXT_NAME event-broker-ext
     
     export AUTHENTICATOR_NAME=$(kubectl describe ksvc authenticator -n keptn | grep -m 1 "Name:" | sed 's~Name:[ \t]*~~')
     ./test/assertEquals.sh $AUTHENTICATOR_NAME authenticator
@@ -99,22 +105,26 @@ function execute_core_component_tests {
     # Control
     cd ./core/control
     npm install
-    npm run test || exit 1
+    npm run test
+    verify_step $? "Tests for component 'control' failed."
     
     # Auth
     cd ../auth
     npm install
-    npm run test || exit 1
+    npm run test
+    verify_step $? "Tests for component 'auth' failed."
     
     # Event Broker
     cd ../eventbroker
     npm install
-    npm run test || exit 1
+    npm run test
+    verify_step $? "Tests for component 'eventbroker' failed."
 
     # Event Broker (ext)
     cd ../eventbroker-ext
     npm install
-    npm run test || exit 1
+    npm run test
+    verify_step $? "Tests for component 'eventbroker-ext' failed."
     
     cd ../..
 }
@@ -139,7 +149,8 @@ function execute_cli_tests {
     set -x
 
     # execute GO tests
-    go test ${gobuild_args} -timeout 240s ./... || exit 1
+    go test ${gobuild_args} -timeout 240s ./...
+    verify_step $? "CLI tests failed."
     cd ..
 }
 
@@ -157,4 +168,11 @@ function install_hub {
     sudo wget https://github.com/github/hub/releases/download/v2.6.0/hub-linux-amd64-2.6.0.tgz
     tar -xzf hub-linux-amd64-2.6.0.tgz
     sudo cp hub-linux-amd64-2.6.0/bin/hub /bin/
+}
+
+function verify_step() {
+  if [[ $1 != '0' ]]; then
+    print_error "$2"
+    exit 1
+  fi
 }
