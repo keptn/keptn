@@ -1,5 +1,4 @@
 #!/bin/bash
-
 CLUSTER_NAME=$1
 
 LOG_LOCATION=.

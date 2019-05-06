@@ -102,6 +102,24 @@ resources:
     cpu: 100m
     memory: 128Mi`
 
+const valuesIncorrectContent = `replicaCount: 1
+image:
+  repository: null
+  tag: null
+  pullPolicy: IfNotPresent
+service:
+  name: carts.service
+  type: LoadBalancer
+  externalPort: 8080
+  internalPort: 8080
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi`
+
 const deploymentContent = `apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -186,6 +204,51 @@ func TestOnboardServiceCmdUsingHelm(t *testing.T) {
 
 	if err != nil {
 		t.Errorf("An error occured %v", err)
+	}
+}
+
+func TestOnboardServiceCmdUsingHelmIncorrectName(t *testing.T) {
+
+	credentialmanager.MockCreds = true
+
+	// Write temporary files
+	const tmpValues = "valuesTest.tpl"
+	const tmpDeployment = "deploymentTest.tpl"
+	const tmpService = "serviceTest.tpl"
+
+	ioutil.WriteFile(tmpValues, []byte(valuesIncorrectContent), 0644)
+	ioutil.WriteFile(tmpDeployment, []byte(deploymentContent), 0644)
+	ioutil.WriteFile(tmpService, []byte(serviceContent), 0644)
+
+	buf := new(bytes.Buffer)
+	rootCmd.SetOutput(buf)
+
+	args := []string{
+		"onboard",
+		"service",
+		"--project=carts",
+		fmt.Sprintf("--values=%s", tmpValues),
+		fmt.Sprintf("--deployment=%s", tmpDeployment),
+		fmt.Sprintf("--service=%s", tmpService),
+	}
+	rootCmd.SetArgs(args)
+	err := rootCmd.Execute()
+
+	*valuesFilePath = ""
+	*serviceFilePath = ""
+	*deploymentFilePath = ""
+
+	// Delete temporary files
+	os.Remove(tmpValues)
+	os.Remove(tmpDeployment)
+	os.Remove(tmpService)
+
+	if err != nil {
+		if !utils.ErrorContains(err, "Service name as defined in the .yaml file includes invalid characters or is not well-formed.") {
+			t.Errorf("An error occured: %v", err)
+		}
+	} else {
+		t.Fail()
 	}
 }
 
