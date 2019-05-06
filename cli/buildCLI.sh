@@ -1,7 +1,9 @@
 #!/bin/bash
 
+## should be started from a Mac OS X 
+
 # MAC
-env GOOS=darwin GOARCH=amd64 go build -o keptn
+go build -o keptn
 zip keptn-macOS.zip keptn
 tar -zcvf keptn-macOS.tar.gz keptn
 rm keptn

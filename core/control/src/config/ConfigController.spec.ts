@@ -6,6 +6,7 @@ import 'mocha';
 import * as sinon from 'sinon';
 import { MessageService } from '../svc/MessageService';
 import { cleanUpMetadata } from 'inversify-express-utils';
+import { doesNotReject } from 'assert';
 
 describe('ConfigController', () => {
   let configController: ConfigController;
@@ -42,9 +43,11 @@ describe('ConfigController', () => {
 
     expect(messageServiceStub.calledWith(request.body)).is.true;
     expect(responseSendSpy.calledWithMatch({
-      success: true,
+      data: {
+        success: true,
+      },
     })).is.true;
-  });
+  }).timeout(5000);
   it('should return false if a message has not been forwarded', async () => {
     const messageServiceStub = sinon
       .stub()
@@ -65,7 +68,9 @@ describe('ConfigController', () => {
 
     expect(messageServiceStub.calledWith(request.body)).is.true;
     expect(responseSendSpy.calledWithMatch({
-      success: false,
+      data: {
+        success: false,
+      },
     })).is.true;
   });
 });
