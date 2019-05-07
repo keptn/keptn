@@ -20,10 +20,7 @@ create_nightly_cluster
 
 install_sed
 
-# TODO: For developing purposes the branch 'travis-nightly-build' is selected. Afterwards, change it back to master.
-git clone --branch travis-nightly-build https://github.com/keptn/keptn
 cd keptn/install/scripts
-
 
 source ./defineCredentialsUtils.sh
 
