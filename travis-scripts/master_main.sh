@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+
 source ./travis-scripts/setup_functions.sh
 
 # prints the full command before output of the command.
@@ -7,16 +8,37 @@ set -x
 
 install_hub
 install_yq
+install_helm
+
 setup_gcloud
-setup_gcloud_master
+setup_gcloud_nightly
+
+uninstall_keptn
+
+delete_nightly_cluster
+create_nightly_cluster
+
 install_sed
 
-# Run scripts in ~/keptn/install/scripts
-cd install/scripts
-./forkGitHubRepositories.sh $GITHUB_ORG
+cd keptn/install/scripts
 
-cat ./creds.sav |sed 's~DYNATRACE_TENANT_PLACEHOLDER~'"$DT_TENANT"'~' |sed 's~DYNATRACE_API_TOKEN~'"$DT_API_TOKEN"'~' |sed 's~DYNATRACE_PAAS_TOKEN~'"$DT_PAAS_TOKEN"'~' |sed 's~GITHUB_USER_NAME_PLACEHOLDER~'"$GITHUB_USER_NAME"'~' |sed 's~PERSONAL_ACCESS_TOKEN_PLACEHOLDER~'"$GITHUB_TOKEN"'~' |sed 's~GITHUB_USER_EMAIL_PLACEHOLDER~'"$GITHUB_EMAIL"'~' |sed 's~GITHUB_ORG_PLACEHOLDER~'"$GITHUB_ORG"'~' >> creds.json
-./installKeptn.sh
+source ./defineCredentialsUtils.sh
+
+# Set enviornment variables used in replaceCreds function
+export GITU=$GITHUB_USER_NAME_NIGHTLY
+export GITAT=$GITHUB_TOKEN_NIGHTLY
+export GITE=$GITHUB_EMAIL_NIGHTLY
+export CLN=$CLUSTER_NAME_NIGHTLY
+export CLZ=$CLOUDSDK_COMPUTE_ZONE
+export PROJ=$PROJECT_NAME
+export GITO=$GITHUB_ORG_NIGHTLY
+
+replaceCreds
+
+# Add execution right because there 
+# is a rights problem with e.g. testConnection
+find . -type f -exec chmod +x {} \;
+source ./installKeptn.sh
 cd ../..
 
 # Test front-end keptn v.0.1
@@ -27,12 +49,18 @@ cd ../..
 export ISTIO_INGRESS=$(kubectl describe svc istio-ingressgateway -n istio-system | grep "LoadBalancer Ingress:" | sed 's~LoadBalancer Ingress:[ \t]*~~')
 export_names
 
+# Execute unit tests
+execute_core_component_tests
+execute_cli_tests
+
+build_and_install_cli
+
+# Execute end-to-end test
+cd test
+source ./testOnboarding.sh
+
 #- cat ../test/keptn.postman_environment.json |sed 's~FRONT_END_DEV_PLACEHOLDER~'"$FRONT_END_DEV"'~' |sed 's~FRONT_END_STAGING_PLACEHOLDER~'"$FRONT_END_STAGING"'~' |sed 's~FRONT_END_PRODUCTION_PLACEHOLDER~'"$FRONT_END_PRODUCTION"'~' |sed 's~ISTIO_INGRESS_PLACEHOLDER~'"$ISTIO_INGRESS"'~' >> ../test/env.json
 #- npm install newman
 #- node_modules/.bin/newman run ../test/keptn.postman_collection.json -e ../test/env.json
-        
-# Clean up cluster
-#- ./cleanupCluster.sh
 
-# Delete K8s cluster
-gcloud container clusters delete $CLUSTER_NAME --zone $CLOUDSDK_COMPUTE_ZONE --project $PROJECT_NAME --quiet
+
