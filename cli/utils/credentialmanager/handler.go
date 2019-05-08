@@ -67,8 +67,7 @@ func setInstallCreds(h credentials.Helper, creds string) error {
 
 func getInstallCreds(h credentials.Helper) (string, error) {
 	if MockCreds {
-		// Do nothing
-		return "", nil
+		return readInstallCredsFromFile()
 	}
 	_, creds, err := h.Get(installCredsKey)
 	if err != nil {
