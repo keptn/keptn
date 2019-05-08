@@ -2,14 +2,16 @@ package utils
 
 import (
 	"context"
+	"fmt"
+	"net/http"
 	"strings"
 
 	"github.com/google/go-github/github"
 	"golang.org/x/oauth2"
 )
 
-// OrgExists checks whether the specified org exists
-func OrgExists(accessToken string, orgName string) (bool, error) {
+// IsOrgExisting checks whether the specified org exists
+func IsOrgExisting(accessToken string, orgName string) (bool, error) {
 
 	ctx := context.Background()
 	ts := oauth2.StaticTokenSource(
@@ -19,7 +21,12 @@ func OrgExists(accessToken string, orgName string) (bool, error) {
 
 	client := github.NewClient(tc)
 
-	orgs, _, err := client.Organizations.List(ctx, "", nil)
+	orgs, resp, err := client.Organizations.List(ctx, "", nil)
+
+	if resp.StatusCode == http.StatusUnauthorized {
+		fmt.Println("Token unauthorized")
+		return false, nil
+	}
 	if err != nil {
 		return false, err
 	}
@@ -33,8 +40,8 @@ func OrgExists(accessToken string, orgName string) (bool, error) {
 	return false, nil
 }
 
-// CheckRepoScopeOfToken checks whether the provided access token has repo rights
-func CheckRepoScopeOfToken(accessToken string) (bool, error) {
+// HasTokenRepoScope checks whether the provided access token has repo rights
+func HasTokenRepoScope(accessToken string) (bool, error) {
 
 	ctx := context.Background()
 	ts := oauth2.StaticTokenSource(
@@ -45,7 +52,14 @@ func CheckRepoScopeOfToken(accessToken string) (bool, error) {
 	client := github.NewClient(tc)
 
 	_, resp, err := client.Organizations.List(ctx, "", nil)
+
+	if resp.StatusCode == http.StatusUnauthorized {
+		fmt.Println("Token unauthorized")
+		return false, nil
+	}
+
 	if err != nil {
+		fmt.Println(err)
 		return false, err
 	}
 
