@@ -29,7 +29,6 @@ import (
 	"os/exec"
 	"regexp"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
@@ -41,11 +40,6 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type installConfig struct {
-	LogLevel *string `json:"logLevel"`
-}
-
-var installCfg installConfig
 var configFilePath *string
 var installerVersion *string
 
@@ -55,6 +49,16 @@ const jenkinsPassword = "AiTx4u8VyUV8tCKk"
 const installerPrefixURL = "https://raw.githubusercontent.com/keptn/keptn/"
 const installerSuffixPath = "/install/manifests/installer/installer.yaml"
 const rbacSuffixPath = "/install/manifests/installer/rbac.yaml"
+
+var logLevel *string
+
+type logLevelType int
+
+const (
+	infoLevel logLevelType = iota
+	debugLevel
+	errorLevel
+)
 
 type installCredentials struct {
 	JenkinsUser               string `json:"jenkinsUser"`
@@ -100,6 +104,10 @@ Example:
 	keptn install --log-level=INFO`,
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
+
+		if getLogLevel(*logLevel) < 0 {
+			return errors.New("Provided log-level not supported. Supperted are INFO, DEBUG, and ERROR")
+		}
 
 		isInstallerAvailable, err := checkInstallerAvailablity()
 		if err != nil || !isInstallerAvailable {
@@ -164,7 +172,7 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 	RunE: func(cmd *cobra.Command, args []string) error {
 
 		fmt.Println("Installing keptn...")
-		fmt.Printf("LogLevel=%s\n", *installCfg.LogLevel)
+		fmt.Printf("LogLevel=%s\n", *logLevel)
 
 		var creds installCredentials
 		var err error
@@ -186,10 +194,23 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 
 func init() {
 	rootCmd.AddCommand(installCmd)
-	installCfg.LogLevel = installCmd.Flags().StringP("log-level", "l", "INFO", "Log level")
+
+	logLevel = installCmd.Flags().StringP("log-level", "l", "INFO", "The log-level specifies the kind of log messages which are provided during the keptn installation. Available log levles in ascending order: INFO, DEBUG, ERROR")
 
 	configFilePath = installCmd.Flags().StringP("creds", "c", "", "The name of the creds file")
 	installerVersion = installCmd.Flags().StringP("keptnVersion", "v", "master", "The branch or tag of the version which is installed")
+}
+
+func getLogLevel(logLevel string) logLevelType {
+
+	if strings.ToLower(logLevel) == "info" {
+		return infoLevel
+	} else if strings.ToLower(logLevel) == "debug" {
+		return debugLevel
+	} else if strings.ToLower(logLevel) == "error" {
+		return errorLevel
+	}
+	return -1
 }
 
 func checkInstallerAvailablity() (bool, error) {
@@ -440,32 +461,6 @@ func readUserInput(reader *bufio.Reader, value *string, regex string, promptMess
 	}
 }
 
-func copyAndCapture(w io.Writer, r io.Reader, in io.WriteCloser) []byte {
-	var log string
-	scanner := bufio.NewScanner(r)
-	for scanner.Scan() {
-		log += scanner.Text() + "\n"
-		if strings.HasPrefix(scanner.Text(), "[keptn|") {
-			var reg = regexp.MustCompile(`\[keptn\|[a-zA-Z]+\]`)
-			outputStr := reg.ReplaceAllString(scanner.Text(), "")
-			fmt.Println(outputStr)
-			if outputStr == "Installation of keptn complete." {
-				cmd := exec.Command(
-					"kubectl",
-					"delete",
-					"deployment",
-					"installer",
-				)
-				cmd.Run()
-			}
-		}
-	}
-	if err := scanner.Err(); err != nil {
-		fmt.Fprintln(os.Stderr, "reading standard input:", err)
-	}
-	return []byte(log)
-}
-
 // downloadFile will download a url to a local file. It's efficient because it will
 // write as it downloads and not load the whole file into memory.
 func downloadFile(filepath string, url string) error {
@@ -629,8 +624,6 @@ func waitForInstallerPod() string {
 }
 
 func getInstallerLogs(podName string) {
-	var stdout []byte
-	var errStdout, errStderr error
 
 	fmt.Printf("Getting logs of pod %s\n", podName)
 
@@ -645,7 +638,6 @@ func getInstallerLogs(podName string) {
 
 	stdoutIn, _ := execCmd.StdoutPipe()
 	stderrIn, _ := execCmd.StderrPipe()
-	stdIn, _ := execCmd.StdinPipe()
 	err := execCmd.Start()
 	if err != nil {
 		log.Fatalf("Could not get installer pod logs: '%s'\n", err)
@@ -653,30 +645,65 @@ func getInstallerLogs(podName string) {
 
 	// cmd.Wait() should be called only after we finish reading
 	// from stdoutIn and stderrIn.
-	// wg ensures that we finish
-	var wg sync.WaitGroup
-	wg.Add(1)
+
+	channel := make(chan []byte)
+
 	go func() {
-		stdout = copyAndCapture(os.Stdout, stdoutIn, stdIn)
-		wg.Done()
+		channel <- copyAndCapture(stdoutIn)
 	}()
 
-	stdout = copyAndCapture(os.Stderr, stderrIn, stdIn)
-
-	wg.Wait()
+	stdErrRead := copyAndCapture(stderrIn)
+	stdOutRead := <-channel
 
 	err = execCmd.Wait()
 	if err != nil {
 		log.Fatalf("Could not get installer pod logs: '%s'\n", err)
 	}
-	if errStdout != nil || errStderr != nil {
-		log.Fatal("Could not get installer pod logs.\n")
+
+	logs := stdOutRead
+	if len(stdErrRead) > 0 {
+		logs = append(logs, []byte("\n\nStandard error output:\n")...)
+		logs = append(logs, stdErrRead...)
 	}
 
-	if err = ioutil.WriteFile("keptn-installer.log", stdout, 0666); err != nil {
+	if err = ioutil.WriteFile("keptn-installer.log", logs, 0666); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+}
+
+func copyAndCapture(r io.Reader) []byte {
+	var log string
+	scanner := bufio.NewScanner(r)
+	for scanner.Scan() {
+		log += scanner.Text() + "\n"
+		if strings.HasPrefix(scanner.Text(), "[keptn|") {
+			var reg = regexp.MustCompile(`\[keptn\|[a-zA-Z]+\]`)
+			txt := scanner.Text()
+			msgLogLevel := reg.FindStringSubmatch(txt)[0]
+			msgLogLevel = strings.TrimPrefix(msgLogLevel, "[keptn|")
+			msgLogLevel = strings.TrimSuffix(msgLogLevel, "]")
+			msgLogLevel = strings.TrimSpace(msgLogLevel)
+
+			outputStr := reg.ReplaceAllString(txt, "")
+			if getLogLevel(msgLogLevel) >= getLogLevel(*logLevel) {
+				fmt.Println(strings.TrimSpace(outputStr))
+			}
+			if outputStr == "Installation of keptn complete." {
+				cmd := exec.Command(
+					"kubectl",
+					"delete",
+					"deployment",
+					"installer",
+				)
+				cmd.Run()
+			}
+		}
+	}
+	if err := scanner.Err(); err != nil {
+		fmt.Fprintln(os.Stderr, "reading standard input:", err)
+	}
+	return []byte(log)
 }
 
 func setupKeptnAuth() {
