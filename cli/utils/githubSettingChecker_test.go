@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestOrgExists(t *testing.T) {
+func TestIsOrgExisting(t *testing.T) {
 
 	token := os.Getenv("GITHUB_TOKEN_NIGHTLY")
 	if token == "" {
@@ -15,7 +15,7 @@ func TestOrgExists(t *testing.T) {
 
 	const existingOrg = "keptn-nightly"
 
-	res, err := OrgExists(token, existingOrg)
+	res, err := IsOrgExisting(token, existingOrg)
 	if err != nil {
 		t.Error(err)
 		t.Fail()
@@ -25,7 +25,7 @@ func TestOrgExists(t *testing.T) {
 	}
 
 	const nonExistingOrg = "kpn-nightly"
-	res, err = OrgExists(token, nonExistingOrg)
+	res, err = IsOrgExisting(token, nonExistingOrg)
 	if err != nil {
 		t.Error(err)
 		t.Fail()
@@ -35,7 +35,7 @@ func TestOrgExists(t *testing.T) {
 	}
 
 	const existingOrgWithoutRights = "keptn-tiger"
-	res, err = OrgExists(token, existingOrgWithoutRights)
+	res, err = IsOrgExisting(token, existingOrgWithoutRights)
 	if err != nil {
 		t.Error(err)
 		t.Fail()
@@ -45,7 +45,7 @@ func TestOrgExists(t *testing.T) {
 	}
 }
 
-func TestCheckRepoScopeOfToken(t *testing.T) {
+func TestHasTokenRepoScope(t *testing.T) {
 
 	token := os.Getenv("GITHUB_TOKEN_NIGHTLY")
 	if token == "" {
@@ -53,7 +53,7 @@ func TestCheckRepoScopeOfToken(t *testing.T) {
 		t.FailNow()
 	}
 
-	res, err := CheckRepoScopeOfToken(token)
+	res, err := HasTokenRepoScope(token)
 	if err != nil {
 		t.Error(err)
 		t.Fail()
