@@ -637,38 +637,42 @@ func getInstallerLogs(podName string) {
 
 	// cmd.Wait() should be called only after we finish reading
 	// from stdoutIn and stderrIn.
-
-	channel := make(chan []byte)
+	errChannel := make(chan error)
 
 	go func() {
-		channel <- copyAndCapture(stdoutIn)
+		errChannel <- copyAndCapture(stdoutIn, "keptn-installer.log")
 	}()
 
-	stdErrRead := copyAndCapture(stderrIn)
-	stdOutRead := <-channel
+	errStdErrIn := copyAndCapture(stderrIn, "keptn-installer-err.log")
+	errStdOutIn := <-errChannel
+
+	if errStdErrIn != nil || errStdOutIn != nil {
+		log.Fatal()
+	}
 
 	err = execCmd.Wait()
 	if err != nil {
 		log.Fatalf("Could not get installer pod logs: '%s'\n", err)
 	}
-
-	logs := stdOutRead
-	if len(stdErrRead) > 0 {
-		logs = append(logs, []byte("\n\nStandard error output:\n")...)
-		logs = append(logs, stdErrRead...)
-	}
-
-	if err = ioutil.WriteFile("keptn-installer.log", logs, 0666); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
 }
 
-func copyAndCapture(r io.Reader) []byte {
-	var log string
+func copyAndCapture(r io.Reader, fileName string) error {
+
+	var file *os.File
+
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
-		log += scanner.Text() + "\n"
+		if file == nil {
+			// Only create file on-demand
+			var err error
+			file, err = createFile(fileName)
+			if err != nil {
+				return err
+			}
+			defer file.Close()
+		}
+		file.WriteString(scanner.Text() + "\n")
+		file.Sync()
 		if strings.HasPrefix(scanner.Text(), "[keptn|") {
 			var reg = regexp.MustCompile(`\[keptn\|[a-zA-Z]+\]`)
 			txt := scanner.Text()
@@ -695,7 +699,16 @@ func copyAndCapture(r io.Reader) []byte {
 	if err := scanner.Err(); err != nil {
 		fmt.Fprintln(os.Stderr, "reading standard input:", err)
 	}
-	return []byte(log)
+	return nil
+}
+
+func createFile(fileName string) (*os.File, error) {
+	path, err := utils.GetKeptnDirectory()
+	if err != nil {
+		return nil, err
+	}
+
+	return os.Create(path + fileName)
 }
 
 func setupKeptnAuth(creds installCredentials) {
