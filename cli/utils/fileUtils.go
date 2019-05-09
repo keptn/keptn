@@ -17,7 +17,7 @@ func GetKeptnDirectory() (string, error) {
 	keptnDir := usr.HomeDir + string(os.PathSeparator) + keptnFolderName + string(os.PathSeparator)
 
 	if _, err := os.Stat(keptnDir); os.IsNotExist(err) {
-		_, err := os.Create(keptnDir)
+		err := os.MkdirAll(keptnDir, os.ModePerm)
 		if err != nil {
 			return "", err
 		}
