@@ -188,6 +188,7 @@ func init() {
 
 	configFilePath = installCmd.Flags().StringP("creds", "c", "", "The name of the creds file")
 	installerVersion = installCmd.Flags().StringP("keptn-version", "k", "master", "The branch or tag of the version which is installed")
+	installCmd.Flags().MarkHidden("keptn-version")
 }
 
 func getLogLevel(logLevel string) logLevelType {
