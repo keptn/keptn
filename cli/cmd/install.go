@@ -187,6 +187,7 @@ func init() {
 		"By default log level INFO is used")
 
 	configFilePath = installCmd.Flags().StringP("creds", "c", "", "The name of the creds file")
+	installCmd.Flags().MarkHidden("creds")
 	installerVersion = installCmd.Flags().StringP("keptn-version", "k", "master", "The branch or tag of the version which is installed")
 	installCmd.Flags().MarkHidden("keptn-version")
 }
