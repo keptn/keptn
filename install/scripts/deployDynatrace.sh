@@ -27,7 +27,7 @@ verify_kubectl $? "Creating secret for Dynatrace OneAgent failed."
 rm -f ../manifests/gen/cr.yml
 
 curl -o ../manifests/dynatrace/cr.yml https://raw.githubusercontent.com/Dynatrace/dynatrace-oneagent-operator/$LATEST_RELEASE/deploy/cr.yaml
-cat ../manifests/dynatrace/cr.yml | sed 's/ENVIRONMENTID/'"$DT_TENANT"'/' >> ../manifests/gen/cr.yml
+cat ../manifests/dynatrace/cr.yml | sed 's/DT_TENANT/'"$DT_TENANT"'/' >> ../manifests/gen/cr.yml
 
 kubectl apply -f ../manifests/gen/cr.yml
 verify_kubectl $? "Creating Dynatrace OneAgent failed."
