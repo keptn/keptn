@@ -289,7 +289,7 @@ func doInstallation(creds installCredentials) error {
 
 	getInstallerLogs(installerPodName)
 	// installation finished, get auth token and endpoint
-	setupKeptnAuth(creds)
+	setupKeptnAuthAndConfigure(creds)
 
 	return os.Remove(installerPath)
 }
@@ -645,37 +645,56 @@ func getInstallerLogs(podName string) {
 
 	// cmd.Wait() should be called only after we finish reading
 	// from stdoutIn and stderrIn.
-	errChannel := make(chan error)
+	c := make(chan bool)
 
 	go func() {
-		errChannel <- copyAndCapture(stdoutIn, "keptn-installer.log")
+		c <- copyAndCapture(stdoutIn, "keptn-installer.log")
 	}()
 
-	errStdErrIn := copyAndCapture(stderrIn, "keptn-installer-err.log")
-	errStdOutIn := <-errChannel
-
-	if errStdErrIn != nil || errStdOutIn != nil {
-		log.Fatal()
-	}
+	installSuccessfulStdErr := copyAndCapture(stderrIn, "keptn-installer-err.log")
+	installSuccessfulStdOut := <-c
 
 	err = execCmd.Wait()
 	if err != nil {
 		log.Fatalf("Could not get installer pod logs: '%s'\n", err)
 	}
+
+	if installSuccessfulStdErr || installSuccessfulStdOut {
+		log.Fatalf("keptn installation was unsuccessful.")
+	}
+
+	cmd := exec.Command(
+		"kubectl",
+		"delete",
+		"deployment",
+		"installer",
+	)
+	cmd.Run()
 }
 
-func copyAndCapture(r io.Reader, fileName string) error {
+func copyAndCapture(r io.Reader, fileName string) bool {
 
 	var file *os.File
 
+	errorOccured := false
+	installSuccessful := true
+
+	const successMsg = "Installation of keptn complete."
+
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
+
+		// If something is read from the provided stream (stdin or stderr),
+		// the data of the stream has to contain the 'successMsg'
+		// for considering the keptn installation successful.
+		installSuccessful = false
+
 		if file == nil {
 			// Only create file on-demand
 			var err error
 			file, err = createFileInKeptnDirectory(fileName)
 			if err != nil {
-				return err
+				log.Fatalf("Could not write logs into file: '%s\n", err)
 			}
 			defer file.Close()
 		}
@@ -688,27 +707,20 @@ func copyAndCapture(r io.Reader, fileName string) error {
 			msgLogLevel = strings.TrimPrefix(msgLogLevel, "[keptn|")
 			msgLogLevel = strings.TrimSuffix(msgLogLevel, "]")
 			msgLogLevel = strings.TrimSpace(msgLogLevel)
-
 			var fullSufixReg = regexp.MustCompile(`\[keptn\|[a-zA-Z]+\]\s+\[.*\]`)
-			outputStr := fullSufixReg.ReplaceAllString(txt, "")
+			outputStr := strings.TrimSpace(fullSufixReg.ReplaceAllString(txt, ""))
 			if getLogLevel(msgLogLevel) >= getLogLevel(*logLevel) {
-				fmt.Println(strings.TrimSpace(outputStr))
+				fmt.Println(outputStr)
 			}
-			if outputStr == "Installation of keptn complete." {
-				cmd := exec.Command(
-					"kubectl",
-					"delete",
-					"deployment",
-					"installer",
-				)
-				cmd.Run()
+			if getLogLevel(msgLogLevel) == errorLevel {
+				errorOccured = true
+			}
+			if outputStr == successMsg {
+				installSuccessful = true
 			}
 		}
 	}
-	if err := scanner.Err(); err != nil {
-		fmt.Fprintln(os.Stderr, "reading standard input:", err)
-	}
-	return nil
+	return !errorOccured && installSuccessful
 }
 
 func createFileInKeptnDirectory(fileName string) (*os.File, error) {
@@ -720,7 +732,7 @@ func createFileInKeptnDirectory(fileName string) (*os.File, error) {
 	return os.Create(path + fileName)
 }
 
-func setupKeptnAuth(creds installCredentials) {
+func setupKeptnAuthAndConfigure(creds installCredentials) {
 	cmd := exec.Command(
 		"kubectl",
 		"get",
@@ -787,7 +799,6 @@ func setupKeptnAuth(creds installCredentials) {
 	authenticate(keptnEndpoint, string(apiToken))
 	configure(creds)
 	fmt.Println("You are now ready to use keptn.")
-
 }
 
 func authenticate(endPoint string, apiToken string) {
