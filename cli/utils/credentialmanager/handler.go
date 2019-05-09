@@ -5,9 +5,9 @@ import (
 	"io/ioutil"
 	"log"
 	"net/url"
-	"os"
-	"os/user"
 	"strings"
+
+	"github.com/keptn/keptn/cli/utils"
 
 	"github.com/docker/docker-credential-helpers/credentials"
 )
@@ -38,15 +38,16 @@ var credsFileURI string
 var mockCredsFileURI string
 
 func init() {
-	usr, err := user.Current()
+	dir, err := utils.GetKeptnDirectory()
 	if err != nil {
 		log.Fatal(err)
 	}
-	apiTokenFileURI = usr.HomeDir + string(os.PathSeparator) + ".keptn"
-	mockAPItokenFileURI = usr.HomeDir + string(os.PathSeparator) + ".keptnmock"
 
-	credsFileURI = usr.HomeDir + string(os.PathSeparator) + ".keptn-creds"
-	mockCredsFileURI = usr.HomeDir + string(os.PathSeparator) + ".keptn-credsmock"
+	apiTokenFileURI = dir + ".keptn"
+	mockAPItokenFileURI = dir + ".keptnmock"
+
+	credsFileURI = dir + ".keptn-creds"
+	mockCredsFileURI = dir + ".keptn-credsmock"
 
 	credentials.SetCredsLabel(credsLab)
 }
