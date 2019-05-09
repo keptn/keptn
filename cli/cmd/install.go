@@ -70,20 +70,9 @@ type installCredentials struct {
 }
 
 type keptnAPITokenSecret struct {
-	APIVersion string `json:"apiVersion"`
-	Data       struct {
+	Data struct {
 		KeptnAPIToken string `json:"keptn-api-token"`
 	} `json:"data"`
-	Kind     string `json:"kind"`
-	Metadata struct {
-		CreationTimestamp time.Time `json:"creationTimestamp"`
-		Name              string    `json:"name"`
-		Namespace         string    `json:"namespace"`
-		ResourceVersion   string    `json:"resourceVersion"`
-		SelfLink          string    `json:"selfLink"`
-		UID               string    `json:"uid"`
-	} `json:"metadata"`
-	Type string `json:"type"`
 }
 
 type placeholderReplacement struct {
@@ -351,7 +340,8 @@ func getInstallCredentials(creds *installCredentials) error {
 	}
 
 	newCreds, _ := json.Marshal(creds)
-	newCredsStr := strings.Replace(string(newCreds), "\n", "", -1)
+	newCredsStr := strings.Replace(string(newCreds), "\r\n", "\n", -1)
+	newCredsStr = strings.Replace(newCredsStr, "\n", "", -1)
 	return credentialmanager.SetInstallCreds(newCredsStr)
 }
 
@@ -444,7 +434,7 @@ func readUserInput(reader *bufio.Reader, value *string, regex string, promptMess
 	for keepAsking {
 		fmt.Printf("%s [%s]: ", promptMessage, *value)
 		userInput, _ := reader.ReadString('\n')
-		userInput = strings.TrimSuffix(userInput, "\n")
+		userInput = strings.TrimSpace(strings.Replace(userInput, "\r\n", "\n", -1))
 		if userInput != "" || *value == "" {
 			if validateRegex && !re.MatchString(userInput) {
 				fmt.Println(regexViolationMessage)
@@ -535,7 +525,7 @@ func getClusterInfo() (string, string, string) {
 	if err != nil {
 		return "", "", ""
 	}
-	clusterInfo := strings.TrimSuffix(string(out), "\n")
+	clusterInfo := strings.TrimSpace(strings.Replace(string(out), "\r\n", "\n", -1))
 	if !strings.HasPrefix(clusterInfo, "gke") {
 		return "", "", ""
 	}
@@ -555,7 +545,8 @@ func getGcloudUser() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return strings.Replace(string(out), "\n", "", -1), nil
+	// This command returns the account in the first line
+	return strings.Split(strings.Replace(string(out), "\r\n", "\n", -1), "\n")[0], nil
 }
 
 func isKubectlAvailable() (bool, error) {
@@ -753,7 +744,7 @@ func setupKeptnAuth(creds installCredentials) {
 		} else {
 			retries = 0
 		}
-		keptnEndpoint = string(out)
+		keptnEndpoint = strings.TrimSpace(string(out))
 		if keptnEndpoint == "" || !strings.Contains(keptnEndpoint, "xip.io") {
 			retries++
 			if retries >= 15 {
