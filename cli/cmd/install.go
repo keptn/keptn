@@ -248,7 +248,7 @@ func doInstallation(creds installCredentials) error {
 
 	gcloudUser, err := getGcloudUser()
 	clusterIPCIDR, servicesIPCIDR := getGcloudClusterIPCIDR(creds.ClusterName, creds.ClusterZone)
-	if err := setDeploymentFileKey(placeholderReplacement{"JENKINS_USER", creds.JenkinsUser},
+	if err := setDeploymentFileKey(installerPath, placeholderReplacement{"JENKINS_USER", creds.JenkinsUser},
 		placeholderReplacement{"JENKINS_PASSWORD", creds.JenkinsPassword},
 		placeholderReplacement{"GITHUB_PERSONAL_ACCESS_TOKEN", creds.GithubPersonalAccessToken},
 		placeholderReplacement{"GITHUB_USER_EMAIL", creds.GithubUserEmail},
@@ -484,8 +484,8 @@ func downloadFile(filepath string, url string) error {
 	return err
 }
 
-func setDeploymentFileKey(replacements ...placeholderReplacement) error {
-	content, err := utils.ReadFile("installer.yaml")
+func setDeploymentFileKey(installerPath string, replacements ...placeholderReplacement) error {
+	content, err := utils.ReadFile(installerPath)
 	if err != nil {
 		return err
 	}
@@ -493,7 +493,7 @@ func setDeploymentFileKey(replacements ...placeholderReplacement) error {
 		content = strings.ReplaceAll(content, "value: "+replacement.placeholderValue, "value: "+replacement.desiredValue)
 	}
 
-	return ioutil.WriteFile("installer.yaml", []byte(content), 0666)
+	return ioutil.WriteFile(installerPath, []byte(content), 0666)
 }
 
 func authenticateAtCluster(creds installCredentials) (bool, error) {
