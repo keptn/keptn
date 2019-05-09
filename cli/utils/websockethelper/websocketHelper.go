@@ -34,8 +34,8 @@ type LogData struct {
 	LogLevel  string `json:"loglevel"`
 }
 
-// IncompleteCE is used for unmarshalling the CE data
-type IncompleteCE struct {
+// incompleteCE is a helper type for unmarshalling the CE data
+type incompleteCE struct {
 	ConnData ConnectionData `json:"data"`
 }
 
@@ -55,7 +55,7 @@ type ChannelInfo struct {
 // prints status data
 func PrintWSContent(responseCE *cloudevents.Event, verbose bool) error {
 
-	ceData := &IncompleteCE{}
+	ceData := &incompleteCE{}
 	err := responseCE.DataAs(ceData)
 	if err != nil {
 		return err
