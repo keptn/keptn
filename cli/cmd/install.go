@@ -659,7 +659,7 @@ func getInstallerLogs(podName string) {
 		log.Fatalf("Could not get installer pod logs: '%s'\n", err)
 	}
 
-	if installSuccessfulStdErr || installSuccessfulStdOut {
+	if !installSuccessfulStdErr || !installSuccessfulStdOut {
 		log.Fatalf("keptn installation was unsuccessful.")
 	}
 
