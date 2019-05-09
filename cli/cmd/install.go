@@ -681,7 +681,8 @@ func copyAndCapture(r io.Reader, fileName string) error {
 			msgLogLevel = strings.TrimSuffix(msgLogLevel, "]")
 			msgLogLevel = strings.TrimSpace(msgLogLevel)
 
-			outputStr := reg.ReplaceAllString(txt, "")
+			var fullSufixReg = regexp.MustCompile(`\[keptn\|[a-zA-Z]+\]\s+\[.*\]`)
+			outputStr := fullSufixReg.ReplaceAllString(txt, "")
 			if getLogLevel(msgLogLevel) >= getLogLevel(*logLevel) {
 				fmt.Println(strings.TrimSpace(outputStr))
 			}
