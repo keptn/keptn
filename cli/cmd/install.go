@@ -52,8 +52,8 @@ var logLevel *string
 type logLevelType int
 
 const (
-	infoLevel logLevelType = iota
-	debugLevel
+	debugLevel logLevelType = iota
+	infoLevel
 	errorLevel
 )
 
@@ -181,7 +181,10 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 func init() {
 	rootCmd.AddCommand(installCmd)
 
-	logLevel = installCmd.Flags().StringP("log-level", "l", "INFO", "The log-level specifies the kind of log messages which are provided during the keptn installation. Available log levles in ascending order: INFO, DEBUG, ERROR")
+	logLevel = installCmd.Flags().StringP("log-level", "l", "INFO", "The log-level specifies the kind of log messages "+
+		"which are provided during the keptn installation. "+
+		"Available log levles in ascending order are DEBUG, INFO, ERROR; "+
+		"By default log level INFO is used")
 
 	configFilePath = installCmd.Flags().StringP("creds", "c", "", "The name of the creds file")
 	installerVersion = installCmd.Flags().StringP("keptn-version", "k", "master", "The branch or tag of the version which is installed")
