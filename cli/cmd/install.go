@@ -235,8 +235,14 @@ func getRbacURL() string {
 // Preconditions: 1. Already authenticated against the cluster; 2. Github credentials are checked
 func doInstallation(creds installCredentials) error {
 
+	path, err := utils.GetKeptnDirectory()
+	if err != nil {
+		return err
+	}
+	installerPath := path + "installer.yaml"
+
 	// get the YAML for the installer pod
-	if err := downloadFile("installer.yaml", getInstallerURL()); err != nil {
+	if err := downloadFile(installerPath, getInstallerURL()); err != nil {
 		return err
 	}
 
@@ -271,7 +277,7 @@ func doInstallation(creds installCredentials) error {
 		"kubectl",
 		"apply",
 		"-f",
-		"installer.yaml",
+		installerPath,
 	)
 	_, err = execCmd.Output()
 	if err != nil {
@@ -284,7 +290,8 @@ func doInstallation(creds installCredentials) error {
 	getInstallerLogs(installerPodName)
 	// installation finished, get auth token and endpoint
 	setupKeptnAuth(creds)
-	return nil
+
+	return os.Remove(installerPath)
 }
 
 func parseConfig(configFile string) (installCredentials, error) {
@@ -666,7 +673,7 @@ func copyAndCapture(r io.Reader, fileName string) error {
 		if file == nil {
 			// Only create file on-demand
 			var err error
-			file, err = createFile(fileName)
+			file, err = createFileInKeptnDirectory(fileName)
 			if err != nil {
 				return err
 			}
@@ -704,7 +711,7 @@ func copyAndCapture(r io.Reader, fileName string) error {
 	return nil
 }
 
-func createFile(fileName string) (*os.File, error) {
+func createFileInKeptnDirectory(fileName string) (*os.File, error) {
 	path, err := utils.GetKeptnDirectory()
 	if err != nil {
 		return nil, err
