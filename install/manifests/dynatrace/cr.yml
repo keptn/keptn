@@ -7,7 +7,7 @@ metadata:
   namespace: dynatrace
 spec:
   # dynatrace api url including `/api` path at the end
-  apiUrl: https://ENVIRONMENTID.live.dynatrace.com/api
+  apiUrl: https://DT_TENANT/api
   # disable certificate validation checks for installer download and API communication
   skipCertCheck: false
   # name of secret holding `apiToken` and `paasToken`
