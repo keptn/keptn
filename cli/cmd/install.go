@@ -195,7 +195,7 @@ func init() {
 	logLevel = installCmd.Flags().StringP("log-level", "l", "INFO", "The log-level specifies the kind of log messages which are provided during the keptn installation. Available log levles in ascending order: INFO, DEBUG, ERROR")
 
 	configFilePath = installCmd.Flags().StringP("creds", "c", "", "The name of the creds file")
-	installerVersion = installCmd.Flags().StringP("keptnVersion", "k", "master", "The branch or tag of the version which is installed")
+	installerVersion = installCmd.Flags().StringP("keptn-version", "k", "master", "The branch or tag of the version which is installed")
 }
 
 func getLogLevel(logLevel string) logLevelType {
