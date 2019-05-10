@@ -6,7 +6,7 @@ DT_TENANT=$(cat creds_dt.json | jq -r '.dynatraceTenant')
 DT_API_TOKEN=$(cat creds_dt.json | jq -r '.dynatraceApiToken')
 DT_PAAS_TOKEN=$(cat creds_dt.json | jq -r '.dynatracePaaSToken')
 
-# Deploy Dynatrace operator
+# # Deploy Dynatrace operator
 LATEST_RELEASE=$(curl -s https://api.github.com/repos/dynatrace/dynatrace-oneagent-operator/releases/latest | grep tag_name | cut -d '"' -f 4)
 print_info "Installing Dynatrace Operator $LATEST_RELEASE"
 
@@ -27,7 +27,7 @@ verify_kubectl $? "Creating secret for Dynatrace OneAgent failed."
 rm -f ../manifests/gen/cr.yml
 
 curl -o ../manifests/dynatrace/cr.yml https://raw.githubusercontent.com/Dynatrace/dynatrace-oneagent-operator/$LATEST_RELEASE/deploy/cr.yaml
-cat ../manifests/dynatrace/cr.yml | sed 's/DT_TENANT/'"$DT_TENANT"'/' >> ../manifests/gen/cr.yml
+cat ../manifests/dynatrace/cr.yml | sed 's~ENVIRONMENTID.live.dynatrace.com~'"$DT_TENANT"'~' >> ../manifests/gen/cr.yml
 
 kubectl apply -f ../manifests/gen/cr.yml
 verify_kubectl $? "Creating Dynatrace OneAgent failed."
