@@ -137,15 +137,15 @@ function execute_cli_tests {
 
     ENDPOINT="$(kubectl get ksvc control -n keptn -o=yaml | yq r - status.domain)"
     while [ "$ENDPOINT" = "null" ]; do sleep 30; ENDPOINT="$(kubectl get ksvc control -n keptn -o=yaml | yq r - status.domain)"; echo "waiting for control service"; done
-    printf "https://" > ~/.keptnmock
-    kubectl get ksvc control -n keptn -o=yaml  | yq r - status.domain >> ~/.keptnmock
+    printf "https://" > ~/.keptn/.keptnmock
+    kubectl get ksvc control -n keptn -o=yaml  | yq r - status.domain >> ~/.keptn/.keptnmock
 
     AUTH_ENDPOINT="$(kubectl get ksvc authenticator -n keptn -o=yaml | yq r - status.domain)"
     while [ "$AUTH_ENDPOINT" = "null" ]; do sleep 30; AUTH_ENDPOINT="$(kubectl get ksvc authenticator -n keptn -o=yaml | yq r - status.domain)"; echo "waiting for authenticator service"; done
 
     set +x
     SEC="$(kubectl get secret keptn-api-token  -n keptn -o=yaml | yq r - data.keptn-api-token | base64 --decode)"
-    echo "${SEC}" >> ~/.keptnmock
+    echo "${SEC}" >> ~/.keptn/.keptnmock
     set -x
 
     # execute GO tests
