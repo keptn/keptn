@@ -678,16 +678,20 @@ func copyAndCapture(r io.Reader, fileName string) bool {
 
 	errorOccured := false
 	installSuccessful := true
+	firstRead := true
 
 	const successMsg = "Installation of keptn complete."
 
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
 
-		// If something is read from the provided stream (stdin or stderr),
-		// the data of the stream has to contain the 'successMsg'
-		// for considering the keptn installation successful.
-		installSuccessful = false
+		if firstRead {
+			// If something is read from the provided stream (stdin or stderr),
+			// the data of the stream has to contain the 'successMsg'
+			// for considering the keptn installation successful.
+			installSuccessful = false
+			firstRead = false
+		}
 
 		if file == nil {
 			// Only create file on-demand
