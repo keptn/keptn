@@ -3,9 +3,9 @@
 source ./utils.sh
 
 DT_TENANT=$1
-DT_API_TOKEN=$2
+DT_TOKEN=$2
 
-entries=$(curl https://$DT_TENANT/api/v1/deployment/installer/agent/connectioninfo?Api-Token=$DT_API_TOKEN | jq -r '.communicationEndpoints[]')
+entries=$(curl https://$DT_TENANT/api/v1/deployment/installer/agent/connectioninfo?api-token=$DT_TOKEN | jq -r '.communicationEndpoints[]')
 
 rm -f ../manifests/gen/service_entries_oneagent.yml
 rm -f ../manifests/gen/hosts

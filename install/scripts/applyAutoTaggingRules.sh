@@ -6,7 +6,7 @@ DT_TENANT=$1
 DT_API_TOKEN=$2
 
 curl -X POST \
-  "https://$DT_TENANT/api/config/v1/autoTags?Api-Token=$DT_API_TOKEN" \
+  "https://$DT_TENANT/api/config/v1/autoTags?api-token=$DT_API_TOKEN" \
   -H 'Content-Type: application/json' \
   -H 'cache-control: no-cache' \
   -d '{
@@ -37,14 +37,14 @@ curl -X POST \
   ]
 }'
 
-if [[ $1 != '0' ]]; then
+if [[ $? != '0' ]]; then
   echo ""
   print_error "Tagging rule for service could not be created in tenant $DT_TENANT."
   exit 1
 fi
 
 curl -X POST \
-  "https://$DT_TENANT/api/config/v1/autoTags?Api-Token=$DT_API_TOKEN" \
+  "https://$DT_TENANT/api/config/v1/autoTags?api-token=$DT_API_TOKEN" \
   -H 'Content-Type: application/json' \
   -H 'cache-control: no-cache' \
   -d '{
@@ -75,7 +75,7 @@ curl -X POST \
   ]
 }'
 
-if [[ $1 != '0' ]]; then
+if [[ $? != '0' ]]; then
   echo ""
   print_error "Tagging rule for environment could not be created in tenant $DT_TENANT."
   exit 1

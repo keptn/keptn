@@ -6,7 +6,7 @@ DT_TENANT=$(cat creds_dt.json | jq -r '.dynatraceTenant')
 DT_API_TOKEN=$(cat creds_dt.json | jq -r '.dynatraceApiToken')
 DT_PAAS_TOKEN=$(cat creds_dt.json | jq -r '.dynatracePaaSToken')
 
-# # Deploy Dynatrace operator
+# Deploy Dynatrace operator
 LATEST_RELEASE=$(curl -s https://api.github.com/repos/dynatrace/dynatrace-oneagent-operator/releases/latest | grep tag_name | cut -d '"' -f 4)
 print_info "Installing Dynatrace Operator $LATEST_RELEASE"
 
