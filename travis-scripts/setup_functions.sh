@@ -135,6 +135,7 @@ function execute_cli_tests {
 
     dep ensure
 
+    mkdir ~/.keptn
     ENDPOINT="$(kubectl get ksvc control -n keptn -o=yaml | yq r - status.domain)"
     while [ "$ENDPOINT" = "null" ]; do sleep 30; ENDPOINT="$(kubectl get ksvc control -n keptn -o=yaml | yq r - status.domain)"; echo "waiting for control service"; done
     printf "https://" > ~/.keptn/.keptnmock
