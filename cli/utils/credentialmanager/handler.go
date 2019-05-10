@@ -5,9 +5,9 @@ import (
 	"io/ioutil"
 	"log"
 	"net/url"
-	"os"
-	"os/user"
 	"strings"
+
+	"github.com/keptn/keptn/cli/utils"
 
 	"github.com/docker/docker-credential-helpers/credentials"
 )
@@ -18,8 +18,11 @@ const testAPIToken = "super-secret"
 
 const credsLab = "keptn"
 const serverURL = "https://keptn.sh"
+const installCredsKey = "https://keptn-install.sh"
 
 type bot interface {
+	SetInstallCreds(creds string) error
+	GetInstallCreds() (string, error)
 	SetCreds(endPoint string, apiToken string) error
 	GetCreds() (string, string, error)
 }
@@ -31,15 +34,47 @@ var MockCreds bool
 var apiTokenFileURI string
 var mockAPItokenFileURI string
 
+var credsFileURI string
+var mockCredsFileURI string
+
 func init() {
-	usr, err := user.Current()
+	dir, err := utils.GetKeptnDirectory()
 	if err != nil {
 		log.Fatal(err)
 	}
-	apiTokenFileURI = usr.HomeDir + string(os.PathSeparator) + ".keptn"
-	mockAPItokenFileURI = usr.HomeDir + string(os.PathSeparator) + ".keptnmock"
+
+	apiTokenFileURI = dir + ".keptn"
+	mockAPItokenFileURI = dir + ".keptnmock"
+
+	credsFileURI = dir + ".keptn-creds"
+	mockCredsFileURI = dir + ".keptn-credsmock"
 
 	credentials.SetCredsLabel(credsLab)
+}
+
+func setInstallCreds(h credentials.Helper, creds string) error {
+	if MockCreds {
+		// Do nothing
+		return nil
+	}
+
+	c := &credentials.Credentials{
+		ServerURL: installCredsKey,
+		Username:  "creds",
+		Secret:    creds,
+	}
+	return h.Add(c)
+}
+
+func getInstallCreds(h credentials.Helper) (string, error) {
+	if MockCreds {
+		return readInstallCredsFromFile()
+	}
+	_, creds, err := h.Get(installCredsKey)
+	if err != nil {
+		return "", err
+	}
+	return creds, err
 }
 
 func setCreds(h credentials.Helper, endPoint url.URL, apiToken string) error {
@@ -89,4 +124,21 @@ func readCredsFromFile() (url.URL, string, error) {
 	}
 	url, err := url.Parse(creds[0])
 	return *url, creds[1], err
+}
+
+// readInstallCredsFromFile reads the credentials from a file named "creds.json".
+// This function is used for testing
+func readInstallCredsFromFile() (string, error) {
+	var data []byte
+	var err error
+	if MockCreds {
+		data, err = ioutil.ReadFile(mockCredsFileURI)
+	} else {
+		data, err = ioutil.ReadFile(credsFileURI)
+	}
+	if err != nil {
+		return "", err
+	}
+	dataStr := strings.TrimSpace(strings.Replace(string(data), "\r\n", "\n", -1))
+	return dataStr, err
 }
