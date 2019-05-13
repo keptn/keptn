@@ -37,7 +37,7 @@ curl -X POST \
   ]
 }'
 
-if [[ $1 != '0' ]]; then
+if [[ $? != '0' ]]; then
   echo ""
   print_error "Tagging rule for service could not be created in tenant $DT_TENANT_ID."
   exit 1
@@ -75,7 +75,7 @@ curl -X POST \
   ]
 }'
 
-if [[ $1 != '0' ]]; then
+if [[ $? != '0' ]]; then
   echo ""
   print_error "Tagging rule for environment could not be created in tenant $DT_TENANT_ID."
   exit 1
