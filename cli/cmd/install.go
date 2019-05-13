@@ -183,7 +183,8 @@ func init() {
 
 	logLevel = installCmd.Flags().StringP("log-level", "l", "INFO", "The log-level specifies the level of log messages "+
 		"which are provided during the keptn installation. "+
-		"Available log leveles in ascending order are DEBUG, INFO, ERROR")
+		"Available log leveles in ascending order are DEBUG (prints all messages), INFO (prints only status messages), and "+
+		"ERROR (prints only errors).")
 
 	configFilePath = installCmd.Flags().StringP("creds", "c", "", "The name of the creds file")
 	installCmd.Flags().MarkHidden("creds")
