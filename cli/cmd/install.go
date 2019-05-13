@@ -181,10 +181,10 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 func init() {
 	rootCmd.AddCommand(installCmd)
 
-	logLevel = installCmd.Flags().StringP("log-level", "l", "INFO", "The log-level specifies the kind of log messages "+
+	logLevel = installCmd.Flags().StringP("log-level", "l", "INFO", "The log-level specifies the level of log messages "+
 		"which are provided during the keptn installation. "+
-		"Available log levles in ascending order are DEBUG, INFO, ERROR; "+
-		"By default log level INFO is used")
+		"Available log leveles in ascending order are DEBUG (prints all messages), INFO (prints only status messages), and "+
+		"ERROR (prints only errors).")
 
 	configFilePath = installCmd.Flags().StringP("creds", "c", "", "The name of the creds file")
 	installCmd.Flags().MarkHidden("creds")
@@ -704,10 +704,12 @@ func copyAndCapture(r io.Reader, fileName string) bool {
 		}
 		file.WriteString(scanner.Text() + "\n")
 		file.Sync()
-		if strings.HasPrefix(scanner.Text(), "[keptn|") {
-			var reg = regexp.MustCompile(`\[keptn\|[a-zA-Z]+\]`)
-			txt := scanner.Text()
-			msgLogLevel := reg.FindStringSubmatch(txt)[0]
+
+		var reg = regexp.MustCompile(`\[keptn\|[a-zA-Z]+\]`)
+		txt := scanner.Text()
+		matches := reg.FindStringSubmatch(txt)
+		if len(matches) == 1 {
+			msgLogLevel := matches[0]
 			msgLogLevel = strings.TrimPrefix(msgLogLevel, "[keptn|")
 			msgLogLevel = strings.TrimSuffix(msgLogLevel, "]")
 			msgLogLevel = strings.TrimSpace(msgLogLevel)
