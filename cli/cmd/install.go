@@ -704,10 +704,12 @@ func copyAndCapture(r io.Reader, fileName string) bool {
 		}
 		file.WriteString(scanner.Text() + "\n")
 		file.Sync()
-		if strings.HasPrefix(scanner.Text(), "[keptn|") {
-			var reg = regexp.MustCompile(`\[keptn\|[a-zA-Z]+\]`)
-			txt := scanner.Text()
-			msgLogLevel := reg.FindStringSubmatch(txt)[0]
+
+		var reg = regexp.MustCompile(`\[keptn\|[a-zA-Z]+\]`)
+		txt := scanner.Text()
+		matches := reg.FindStringSubmatch(txt)
+		if len(matches) == 1 {
+			msgLogLevel := matches[0]
 			msgLogLevel = strings.TrimPrefix(msgLogLevel, "[keptn|")
 			msgLogLevel = strings.TrimSuffix(msgLogLevel, "]")
 			msgLogLevel = strings.TrimSpace(msgLogLevel)
