@@ -68,7 +68,7 @@ Example:
 			return nil
 		}
 		if responseCE.Data != nil {
-			return websockethelper.PrintWSContent(responseCE, verbose)
+			return websockethelper.PrintWSContent(responseCE, verboseLogging)
 		}
 
 		// fmt.Println("Successfully configured the GitHub organization, the GitHub user, and the GitHub personal access token")

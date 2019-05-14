@@ -10,6 +10,7 @@ import (
 )
 
 var cfgFile string
+var verboseLogging bool
 
 const authErrorMsg = "This command requires to be authenticated. See \"keptn auth\" for details"
 
@@ -62,6 +63,7 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(initConfig)
+	rootCmd.PersistentFlags().BoolVarP(&verboseLogging, "verbose", "v", false, "verbose logging")
 }
 
 // initConfig reads in config file and ENV variables if set.
