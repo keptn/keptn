@@ -2,7 +2,7 @@
 
 source ./utils.sh
 
-DT_TENANT_ID=$(cat creds_dt.json | jq -r '.dynatraceTenant')
+DT_TENANT=$(cat creds_dt.json | jq -r '.dynatraceTenant')
 DT_API_TOKEN=$(cat creds_dt.json | jq -r '.dynatraceApiToken')
 DT_PAAS_TOKEN=$(cat creds_dt.json | jq -r '.dynatracePaaSToken')
 
@@ -27,22 +27,25 @@ verify_kubectl $? "Creating secret for Dynatrace OneAgent failed."
 rm -f ../manifests/gen/cr.yml
 
 curl -o ../manifests/dynatrace/cr.yml https://raw.githubusercontent.com/Dynatrace/dynatrace-oneagent-operator/$LATEST_RELEASE/deploy/cr.yaml
-cat ../manifests/dynatrace/cr.yml | sed 's/ENVIRONMENTID/'"$DT_TENANT_ID"'/' >> ../manifests/gen/cr.yml
+cat ../manifests/dynatrace/cr.yml | sed 's~ENVIRONMENTID.live.dynatrace.com~'"$DT_TENANT"'~' >> ../manifests/gen/cr.yml
 
 kubectl apply -f ../manifests/gen/cr.yml
 verify_kubectl $? "Creating Dynatrace OneAgent failed."
 
 # Apply auto tagging rules in Dynatrace
 print_info "Applying auto tagging rules in Dynatrace."
-./applyAutoTaggingRules.sh $DT_TENANT_ID $DT_API_TOKEN
+./applyAutoTaggingRules.sh $DT_TENANT $DT_API_TOKEN
 verify_install_step $? "Applying auto tagging rules in Dynatrace failed."
 print_info "Applying auto tagging rules in Dynatrace done."
 
-print_info "Creating service entries for Dynatrace OneAgent."
-./createServiceEntry.sh $DT_TENANT_ID $DT_PAAS_TOKEN
-verify_install_step $? "Creating service entries for Dynatrace OneAgent failed."
-print_info "Creating service entries for Dynatrace OneAgent done."
+# Create service entries for Dynatrace
+if [[ $DT_TENANT == *"live.dynatrace"*  ]]; then
+  print_info "Creating service entries for Dynatrace OneAgent."
+  ./createServiceEntry.sh $DT_TENANT $DT_PAAS_TOKEN
+  verify_install_step $? "Creating service entries for Dynatrace OneAgent failed."
+  print_info "Creating service entries for Dynatrace OneAgent done."
+fi
 
 # Create secrets to be used by keptn services
-kubectl -n keptn create secret generic dynatrace --from-literal="DT_API_TOKEN=$DT_API_TOKEN" --from-literal="DT_TENANT_ID=$DT_TENANT_ID"
+kubectl -n keptn create secret generic dynatrace --from-literal="DT_API_TOKEN=$DT_API_TOKEN" --from-literal="DT_TENANT=$DT_TENANT"
 verify_kubectl $? "Creating dynatrace secret for keptn services failed."

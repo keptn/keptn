@@ -7,7 +7,7 @@ CREDS=./creds_dt.json
 rm $CREDS 2> /dev/null
 
 echo -e "${YLW}Please enter the credentials as requested below: ${NC}"
-read -p "Dynatrace Tenant ID (8-digits) (default=$DTENV): " DTENVC
+read -p "Dynatrace Tenant {your-domain}/e/{your-environment-id} for managed or {your-environment-id}.live.dynatrace.com for SaaS (default=$DTENV): " DTENVC
 read -p "Dynatrace API Token (default=$DTAPI): " DTAPIC
 read -p "Dynatrace PaaS Token (default=$DTAPI): " DTPAAST
 echo ""
