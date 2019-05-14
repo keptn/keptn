@@ -71,9 +71,6 @@ Example:
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if verboseLogging {
-			fmt.Println("Verbose Logging enabled")
-		}
 		endPoint, apiToken, err := credentialmanager.GetCreds()
 		if err != nil {
 			return errors.New(authErrorMsg)
