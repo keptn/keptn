@@ -191,7 +191,7 @@ var serviceCmd = &cobra.Command{
 			return nil
 		}
 		if responseCE.Data != nil {
-			return websockethelper.PrintWSContent(responseCE, verbose)
+			return websockethelper.PrintWSContent(responseCE, verboseLogging)
 		}
 		return nil
 	},

@@ -28,8 +28,6 @@ type myCloudEvent struct {
 	data        string
 }
 
-var verbose bool
-
 // crprojectCmd represents the project command
 var crprojectCmd = &cobra.Command{
 	Use:   "project project_name shipyard_file",
@@ -73,8 +71,8 @@ Example:
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if verbose {
-			fmt.Println("Verbose Loggin enabled")
+		if verboseLogging {
+			fmt.Println("Verbose Logging enabled")
 		}
 		endPoint, apiToken, err := credentialmanager.GetCreds()
 		if err != nil {
@@ -117,7 +115,7 @@ Example:
 			return nil
 		}
 		if responseCE.Data != nil {
-			return websockethelper.PrintWSContent(responseCE, verbose)
+			return websockethelper.PrintWSContent(responseCE, verboseLogging)
 		}
 		return nil
 	},
@@ -143,6 +141,4 @@ func parseShipYard(prjData *projectData, yamlFile string) error {
 
 func init() {
 	createCmd.AddCommand(crprojectCmd)
-
-	crprojectCmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "verbose logging")
 }
