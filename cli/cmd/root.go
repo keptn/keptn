@@ -4,12 +4,19 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/keptn/keptn/cli/utils/websockethelper"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
 var cfgFile string
+var verboseLogging bool
+var quietLogging bool
+var mocking bool
+
+// LogLevel used for verbose/quiet output
+var LogLevel string
 
 const authErrorMsg = "This command requires to be authenticated. See \"keptn auth\" for details"
 
@@ -61,11 +68,29 @@ func Execute() {
 }
 
 func init() {
+	rootCmd.PersistentFlags().BoolVarP(&verboseLogging, "verbose", "v", false, "verbose logging")
+	rootCmd.PersistentFlags().BoolVarP(&quietLogging, "quiet", "q", false, "suppress debug and info output")
+	rootCmd.PersistentFlags().BoolVarP(&mocking, "mock", "", false, "mocking of server communication - ATTENTION: your commands won't be sent to the keptn server")
+
 	cobra.OnInitialize(initConfig)
+
 }
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
+	LogLevel = "INFO"
+	if verboseLogging && quietLogging {
+		fmt.Println("Verbose logging and quiet output are mutually exclusive flags. Please use only one.")
+		os.Exit(1)
+	}
+	if verboseLogging {
+		LogLevel = "DEBUG"
+		fmt.Println("Verbose logging enabled.")
+	}
+	if quietLogging {
+		LogLevel = "ERROR"
+	}
+
 	if cfgFile != "" {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
@@ -86,6 +111,6 @@ func initConfig() {
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
+		websockethelper.PrintLogLevel(websockethelper.LogData{Message: fmt.Sprintf("Using config file: %s", viper.ConfigFileUsed()), LogLevel: "INFO"}, LogLevel)
 	}
 }
