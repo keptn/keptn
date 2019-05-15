@@ -162,19 +162,24 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 
 		var creds installCredentials
 		var err error
-		if configFilePath != nil && *configFilePath != "" {
-			creds, err = parseConfig(*configFilePath)
-			if err != nil {
-				return err
-			}
+		if !mocking {
+			if configFilePath != nil && *configFilePath != "" {
+				creds, err = parseConfig(*configFilePath)
+				if err != nil {
+					return err
+				}
 
-		} else {
-			err = getInstallCredentials(&creds)
-			if err != nil {
-				return err
+			} else {
+				err = getInstallCredentials(&creds)
+				if err != nil {
+					return err
+				}
 			}
+			return doInstallation(creds)
+		} else {
+			fmt.Println("skipping intallation due to mocking flag set to true")
 		}
-		return doInstallation(creds)
+		return nil
 	},
 }
 

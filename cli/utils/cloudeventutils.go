@@ -17,10 +17,20 @@ import (
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 )
 
+type WebsocketDescription struct {
+	ChannelID string `json:"channelId"`
+	Token     string `json:"token"`
+}
+
+type RespData struct {
+	Desc WebsocketDescription `json:"websocketChannel"`
+}
+
+const timeout = 60
+
 // Send creates a request including the X-Keptn-Signature and sends the data
 // struct to the provided target. It returns the obtained http.Response.
 func Send(url url.URL, event cloudevents.Event, apiToken string) (*cloudevents.Event, error) {
-
 	ec := event.Context.AsV02()
 	if ec.Time == nil || ec.Time.IsZero() {
 		ec.Time = &types.Timestamp{Time: time.Now()}
@@ -35,7 +45,7 @@ func Send(url url.URL, event cloudevents.Event, apiToken string) (*cloudevents.E
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
-	t.Client = &http.Client{Timeout: 60 * time.Second, Transport: tr}
+	t.Client = &http.Client{Timeout: timeout * time.Second, Transport: tr}
 
 	if err != nil {
 		return nil, err
