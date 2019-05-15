@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"net/url"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
@@ -61,6 +62,8 @@ Example:
 			websockethelper.PrintLogLevel(websockethelper.LogData{Message: "Successfully authenticated", LogLevel: "INFO"}, LogLevel)
 
 			return credentialmanager.SetCreds(*u, *apiToken)
+		} else {
+			fmt.Println("skipping auth due to mocking flag set to true")
 		}
 		return nil
 	},
