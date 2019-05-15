@@ -49,8 +49,11 @@ RUN wget -q https://storage.googleapis.com/kubernetes-release/release/v$KUBE_VER
 WORKDIR /usr/keptn
 COPY ./core core
 COPY ./install install
+COPY MANIFEST install/scripts
+
 RUN cd ./install/scripts && ls -lsa
 
 WORKDIR /usr/keptn/install/scripts
 
-ENTRYPOINT ["/bin/bash", "--", "installKeptn.sh"]
+# Start the app
+CMD ["sh", "-c", "cat MANIFEST && installKeptn.sh"]
