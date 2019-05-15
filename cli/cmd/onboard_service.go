@@ -46,7 +46,7 @@ var serviceCmd = &cobra.Command{
 		} else {
 			if *valuesFilePath == "" {
 				cmd.SilenceUsage = false
-				return errors.New("Provide a Helm values file.\n")
+				return errors.New("Provide a Helm values file")
 			}
 		}
 
@@ -73,10 +73,12 @@ var serviceCmd = &cobra.Command{
 			}
 		} else {
 			if *deploymentFilePath != "" {
-				fmt.Printf("The specified deployment file is ignored")
+				websockethelper.PrintLogLevel(websockethelper.LogData{Message: "The specified deployment file is ignored", LogLevel: "INFO"}, LogLevel)
+
 			}
 			if *serviceFilePath != "" {
-				fmt.Println("The specified service file is ignored")
+				websockethelper.PrintLogLevel(websockethelper.LogData{Message: "The specified service file is ignored", LogLevel: "INFO"}, LogLevel)
+
 			}
 			manifestData, err := utils.ReadFile(*manifestFilePath)
 			if err != nil {
@@ -95,7 +97,7 @@ var serviceCmd = &cobra.Command{
 			return errors.New(authErrorMsg)
 		}
 
-		fmt.Println("Starting to onboard service")
+		websockethelper.PrintLogLevel(websockethelper.LogData{Message: "Starting to onboard service", LogLevel: "INFO"}, LogLevel)
 
 		svcData := serviceData{}
 		svcData["project"] = *project
@@ -178,20 +180,21 @@ var serviceCmd = &cobra.Command{
 		serviceURL := endPoint
 		serviceURL.Path = "service"
 
-		fmt.Println("Connecting to server ", endPoint.String())
+		websockethelper.PrintLogLevel(websockethelper.LogData{Message: fmt.Sprintf("Connecting to server %s", endPoint.String()), LogLevel: "DEBUG"}, LogLevel)
 		responseCE, err := utils.Send(serviceURL, event, apiToken)
 		if err != nil {
-			fmt.Println("Onboard service was unsuccessful")
+			websockethelper.PrintLogLevel(websockethelper.LogData{Message: "Onboard service was unsuccessful", LogLevel: "ERROR"}, LogLevel)
 			return err
 		}
 
 		// check for responseCE to include token
 		if responseCE == nil {
-			fmt.Println("response CE is nil")
+			websockethelper.PrintLogLevel(websockethelper.LogData{Message: "response CE is nil", LogLevel: "ERROR"}, LogLevel)
+
 			return nil
 		}
 		if responseCE.Data != nil {
-			return websockethelper.PrintWSContent(responseCE, verboseLogging)
+			return websockethelper.PrintWSContent(responseCE, LogLevel)
 		}
 		return nil
 	},
@@ -204,7 +207,7 @@ func init() {
 	serviceCmd.MarkFlagRequired("project")
 
 	// Flags for onboarding a service using Helm
-	valuesFilePath = serviceCmd.Flags().StringP("values", "v", "", "The values file")
+	valuesFilePath = serviceCmd.Flags().StringP("values", "", "", "The values file")
 	deploymentFilePath = serviceCmd.Flags().StringP("deployment", "d", "", "The deployment file")
 	serviceFilePath = serviceCmd.Flags().StringP("service", "s", "", "The service file")
 

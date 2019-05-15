@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"net/url"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
@@ -9,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
+	"github.com/keptn/keptn/cli/utils/websockethelper"
 	"github.com/spf13/cobra"
 )
 
@@ -27,7 +27,7 @@ Example:
 	keptn auth --endpoint=myendpoint.com --api-token=xyz`,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fmt.Println("Starting to authenticate")
+		websockethelper.PrintLogLevel(websockethelper.LogData{Message: "Starting to authenticate", LogLevel: "INFO"}, LogLevel)
 
 		source, _ := url.Parse("https://github.com/keptn/keptn/cli#auth")
 		contentType := "application/json"
@@ -52,11 +52,13 @@ Example:
 
 		_, err = utils.Send(authURL, event, *apiToken)
 		if err != nil {
-			fmt.Println("Authentication was unsuccessful")
+			websockethelper.PrintLogLevel(websockethelper.LogData{Message: "Authentication was unsuccessful", LogLevel: "ERROR"}, LogLevel)
+
 			return err
 		}
 
-		fmt.Println("Successfully authenticated")
+		websockethelper.PrintLogLevel(websockethelper.LogData{Message: "Successfully authenticated", LogLevel: "INFO"}, LogLevel)
+
 		return credentialmanager.SetCreds(*u, *apiToken)
 	},
 }
