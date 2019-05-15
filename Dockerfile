@@ -1,5 +1,7 @@
 FROM ubuntu:18.04
 
+ENV KEPTN_INSTALL_ENV "cluster"
+
 RUN apt-get update \
   && apt-get install -y curl \
   && apt-get install -y wget

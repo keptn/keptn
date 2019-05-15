@@ -15,3 +15,13 @@ func SetCreds(endPoint url.URL, apiToken string) error {
 func GetCreds() (url.URL, string, error) {
 	return getCreds(wincred.Wincred{})
 }
+
+// SetInstallCreds sets the install credentials
+func SetInstallCreds(creds string) error {
+	return setInstallCreds(wincred.Wincred{}, creds)
+}
+
+// GetInstallCreds gets the install credentials
+func GetInstallCreds() (string, error) {
+	return getInstallCreds(wincred.Wincred{})
+}

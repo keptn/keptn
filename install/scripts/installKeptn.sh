@@ -8,17 +8,25 @@ source ./utils.sh
 
 print_info "Starting installation of keptn"
 
-# Variables for gcloud
-if [[ -z "${CLUSTER_NAME}" ]]; then
-  print_debug "CLUSTER_NAME is not set, take it from creds.json"
-  CLUSTER_NAME=$(cat creds.json | jq -r '.clusterName')
-  verify_variable "$CLUSTER_NAME" "CLUSTER_NAME is not defined in environment variable nor in creds.json file." 
-fi
+if [[ -z "${KEPTN_INSTALL_ENV}" ]]; then
+  # Variables for gcloud
+  if [[ -z "${CLUSTER_NAME}" ]]; then
+    print_debug "CLUSTER_NAME is not set, take it from creds.json"
+    CLUSTER_NAME=$(cat creds.json | jq -r '.clusterName')
+    verify_variable "$CLUSTER_NAME" "CLUSTER_NAME is not defined in environment variable nor in creds.json file." 
+  fi
 
-if [[ -z "${CLUSTER_ZONE}" ]]; then
-  print_debug "CLUSTER_ZONE is not set, take it from creds.json"
-  CLUSTER_ZONE=$(cat creds.json | jq -r '.clusterZone')
-  verify_variable "$CLUSTER_ZONE" "CLUSTER_NAME is not defined in environment variable nor in creds.json file." 
+  if [[ -z "${CLUSTER_ZONE}" ]]; then
+    print_debug "CLUSTER_ZONE is not set, take it from creds.json"
+    CLUSTER_ZONE=$(cat creds.json | jq -r '.clusterZone')
+    verify_variable "$CLUSTER_ZONE" "CLUSTER_NAME is not defined in environment variable nor in creds.json file." 
+  fi
+
+  # Test connection to cluster
+  print_info "Test connection to cluster"
+  ./testConnection.sh $CLUSTER_NAME $CLUSTER_ZONE
+  # verify_install_step $? "Could not connect to cluster. Please check the values for your Cluster Name, GKE Project, and Cluster Zone during the credentials setup."
+  print_info "Connection to cluster successful"
 fi
 
 # Variables for installing Istio and Knative
@@ -49,12 +57,6 @@ if [[ -z "${GCLOUD_USER}" ]]; then
   fi
   verify_variable "$GCLOUD_USER" "GCLOUD_USER is not defined in environment variable nor could it be retrieved using gcloud." 
 fi
-
-# Test connection to cluster
-print_info "Test connection to cluster"
-./testConnection.sh $CLUSTER_NAME $CLUSTER_ZONE
-verify_install_step $? "Could not connect to cluster. Please check the values for your Cluster Name, GKE Project, and Cluster Zone during the credentials setup."
-print_info "Connection to cluster successful"
 
 # Test kubectl get namespaces
 print_info "Testing connection to Kubernetes API"
