@@ -37,7 +37,7 @@ Example:
 			return errors.New(authErrorMsg)
 		}
 
-		fmt.Println("Starting to configure the GitHub organization, the GitHub user, and the GitHub personal access token")
+		websockethelper.PrintLogLevel(websockethelper.LogData{Message: "Starting to configure the GitHub organization, the GitHub user, and the GitHub personal access token", LogLevel: "INFO"}, LogLevel)
 
 		source, _ := url.Parse("https://github.com/keptn/keptn/cli#configure")
 
@@ -55,20 +55,22 @@ Example:
 		configURL := endPoint
 		configURL.Path = "config"
 
-		fmt.Println("Connecting to server ", endPoint.String())
+		websockethelper.PrintLogLevel(websockethelper.LogData{Message: fmt.Sprintf("Connecting to server %s", endPoint.String()), LogLevel: "DEBUG"}, LogLevel)
 		responseCE, err := utils.Send(configURL, event, apiToken)
 		if err != nil {
-			fmt.Println("Configure was unsuccessful")
+			websockethelper.PrintLogLevel(websockethelper.LogData{Message: "Configure was unsuccessful", LogLevel: "ERROR"}, LogLevel)
+
 			return err
 		}
 
 		// check for responseCE to include token
 		if responseCE == nil {
-			fmt.Println("response CE is nil")
+			websockethelper.PrintLogLevel(websockethelper.LogData{Message: "response CE is nil", LogLevel: "ERROR"}, LogLevel)
+
 			return nil
 		}
 		if responseCE.Data != nil {
-			return websockethelper.PrintWSContent(responseCE, verboseLogging)
+			return websockethelper.PrintWSContent(responseCE, LogLevel)
 		}
 
 		// fmt.Println("Successfully configured the GitHub organization, the GitHub user, and the GitHub personal access token")

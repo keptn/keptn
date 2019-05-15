@@ -42,7 +42,6 @@ type incompleteCE struct {
 // ConnectionData stores ChannelInfo and Success data
 type ConnectionData struct {
 	ChannelInfo ChannelInfo `json:"channelInfo"`
-	Success     bool        `json:"success"`
 }
 
 // ChannelInfo stores a token and a channelID used for opening the websocket
@@ -53,7 +52,7 @@ type ChannelInfo struct {
 
 // PrintWSContent opens a websocket using the passed connection data and
 // prints status data
-func PrintWSContent(responseCE *cloudevents.Event, verbose bool) error {
+func PrintWSContent(responseCE *cloudevents.Event, loglevel string) error {
 
 	ceData := &incompleteCE{}
 	err := responseCE.DataAs(ceData)
@@ -72,14 +71,15 @@ func PrintWSContent(responseCE *cloudevents.Event, verbose bool) error {
 		fmt.Println("Opening websocket failed")
 		return err
 	}
+	// PrintLogLevel(LogData{Message: "Websocket successfully opened", LogLevel: "DEBUG"}, loglevel)
 	defer ws.Close()
 
-	return readAndPrintCE(ws, verbose)
+	return readAndPrintCE(ws, loglevel)
 }
 
 func validateConnectionData(connData ConnectionData) error {
-	if !connData.Success || connData.ChannelInfo.Token == "" && connData.ChannelInfo.ChannelID == "" {
-		return errors.New("Could not open websocket because Token or Channel ID might be missing or request received unsuccessful status")
+	if connData.ChannelInfo.Token == "" && connData.ChannelInfo.ChannelID == "" {
+		return errors.New("Could not open websocket because Token or Channel ID are missing")
 	}
 	return nil
 }
@@ -102,7 +102,7 @@ func openWS(connData ConnectionData) (*websocket.Conn, *http.Response, error) {
 }
 
 // readAndPrintCE reads a cloud event from the websocket
-func readAndPrintCE(ws *websocket.Conn, verboseLogging bool) error {
+func readAndPrintCE(ws *websocket.Conn, loglevel string) error {
 	ws.SetReadDeadline(time.Now().Add(time.Minute))
 	for {
 		messageType, message, err := ws.ReadMessage()
@@ -114,7 +114,7 @@ func readAndPrintCE(ws *websocket.Conn, verboseLogging bool) error {
 			} else if err != nil {
 				log.Fatal(err)
 			}
-			if printCE(messageCE, verboseLogging) {
+			if printCE(messageCE, loglevel) {
 				return nil
 			}
 		}
@@ -127,7 +127,7 @@ func readAndPrintCE(ws *websocket.Conn, verboseLogging bool) error {
 	return nil
 }
 
-func printCE(ce MyCloudEvent, verboseLogging bool) bool {
+func printCE(ce MyCloudEvent, loglevel string) bool {
 	var log LogData
 	if err := json.Unmarshal(ce.Data, &log); err != nil {
 		fmt.Println("JSON unmarshalling error. LogData format expected.")
@@ -135,7 +135,7 @@ func printCE(ce MyCloudEvent, verboseLogging bool) bool {
 	}
 	switch ce.Type {
 	case "sh.keptn.events.log":
-		printLogLevel(log, verboseLogging)
+		PrintLogLevel(log, loglevel)
 		return log.Terminate
 	default:
 		fmt.Println("type of event could not be processed")
@@ -143,10 +143,14 @@ func printCE(ce MyCloudEvent, verboseLogging bool) bool {
 	return true
 }
 
-func printLogLevel(log LogData, verboseLogging bool) {
-	if log.LogLevel == "DEBUG" && verboseLogging {
+// PrintLogLevel prints the log according to the log level that is set via the CLI
+func PrintLogLevel(log LogData, loglevel string) {
+	// fmt.Println("log.LogLevel=", log.LogLevel)
+	if log.LogLevel == "DEBUG" && loglevel == "DEBUG" {
 		fmt.Println(log.Message)
-	} else if log.LogLevel != "DEBUG" {
+	} else if log.LogLevel == "INFO" && (loglevel == "INFO" || loglevel == "DEBUG") {
+		fmt.Println(log.Message)
+	} else if log.LogLevel == "ERROR" {
 		fmt.Println(log.Message)
 	}
 }

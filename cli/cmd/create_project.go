@@ -75,8 +75,7 @@ Example:
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
-
-		fmt.Println("Starting to create a project")
+		websockethelper.PrintLogLevel(websockethelper.LogData{Message: "Starting to create a project", LogLevel: "INFO"}, LogLevel)
 
 		prjData := projectData{}
 		prjData.Project = args[0]
@@ -99,7 +98,7 @@ Example:
 		projectURL := endPoint
 		projectURL.Path = "project"
 
-		fmt.Println("Connecting to server ", endPoint.String())
+		websockethelper.PrintLogLevel(websockethelper.LogData{Message: fmt.Sprintf("Connecting to server %s", endPoint.String()), LogLevel: "DEBUG"}, LogLevel)
 		responseCE, err := utils.Send(projectURL, event, apiToken)
 		if err != nil {
 			fmt.Println("Create project was unsuccessful")
@@ -109,10 +108,11 @@ Example:
 		// check for responseCE to include token
 		if responseCE == nil {
 			fmt.Println("response CE is nil")
+			websockethelper.PrintLogLevel(websockethelper.LogData{Message: "response CE is nil", LogLevel: "ERROR"}, LogLevel)
 			return nil
 		}
 		if responseCE.Data != nil {
-			return websockethelper.PrintWSContent(responseCE, verboseLogging)
+			return websockethelper.PrintWSContent(responseCE, LogLevel)
 		}
 		return nil
 	},
