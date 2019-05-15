@@ -13,6 +13,7 @@ import (
 var cfgFile string
 var verboseLogging bool
 var quietLogging bool
+var mocking bool
 
 // LogLevel used for verbose/quiet output
 var LogLevel string
@@ -69,6 +70,7 @@ func Execute() {
 func init() {
 	rootCmd.PersistentFlags().BoolVarP(&verboseLogging, "verbose", "v", false, "verbose logging")
 	rootCmd.PersistentFlags().BoolVarP(&quietLogging, "quiet", "q", false, "suppress debug and info output")
+	rootCmd.PersistentFlags().BoolVarP(&mocking, "mock", "", false, "mocking of server communication - ATTENTION: your commands won't be sent to the keptn server")
 
 	cobra.OnInitialize(initConfig)
 

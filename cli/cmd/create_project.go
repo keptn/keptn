@@ -99,20 +99,23 @@ Example:
 		projectURL.Path = "project"
 
 		websockethelper.PrintLogLevel(websockethelper.LogData{Message: fmt.Sprintf("Connecting to server %s", endPoint.String()), LogLevel: "DEBUG"}, LogLevel)
-		responseCE, err := utils.Send(projectURL, event, apiToken)
-		if err != nil {
-			fmt.Println("Create project was unsuccessful")
-			return err
-		}
 
-		// check for responseCE to include token
-		if responseCE == nil {
-			fmt.Println("response CE is nil")
-			websockethelper.PrintLogLevel(websockethelper.LogData{Message: "response CE is nil", LogLevel: "ERROR"}, LogLevel)
-			return nil
-		}
-		if responseCE.Data != nil {
-			return websockethelper.PrintWSContent(responseCE, LogLevel)
+		if !mocking {
+			responseCE, err := utils.Send(projectURL, event, apiToken)
+			if err != nil {
+				fmt.Println("Create project was unsuccessful")
+				return err
+			}
+
+			// check for responseCE to include token
+			if responseCE == nil {
+				fmt.Println("response CE is nil")
+				websockethelper.PrintLogLevel(websockethelper.LogData{Message: "response CE is nil", LogLevel: "ERROR"}, LogLevel)
+				return nil
+			}
+			if responseCE.Data != nil {
+				return websockethelper.PrintWSContent(responseCE, LogLevel)
+			}
 		}
 		return nil
 	},

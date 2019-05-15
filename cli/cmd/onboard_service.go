@@ -181,20 +181,22 @@ var serviceCmd = &cobra.Command{
 		serviceURL.Path = "service"
 
 		websockethelper.PrintLogLevel(websockethelper.LogData{Message: fmt.Sprintf("Connecting to server %s", endPoint.String()), LogLevel: "DEBUG"}, LogLevel)
-		responseCE, err := utils.Send(serviceURL, event, apiToken)
-		if err != nil {
-			websockethelper.PrintLogLevel(websockethelper.LogData{Message: "Onboard service was unsuccessful", LogLevel: "ERROR"}, LogLevel)
-			return err
-		}
+		if !mocking {
+			responseCE, err := utils.Send(serviceURL, event, apiToken)
+			if err != nil {
+				websockethelper.PrintLogLevel(websockethelper.LogData{Message: "Onboard service was unsuccessful", LogLevel: "ERROR"}, LogLevel)
+				return err
+			}
 
-		// check for responseCE to include token
-		if responseCE == nil {
-			websockethelper.PrintLogLevel(websockethelper.LogData{Message: "response CE is nil", LogLevel: "ERROR"}, LogLevel)
+			// check for responseCE to include token
+			if responseCE == nil {
+				websockethelper.PrintLogLevel(websockethelper.LogData{Message: "response CE is nil", LogLevel: "ERROR"}, LogLevel)
 
-			return nil
-		}
-		if responseCE.Data != nil {
-			return websockethelper.PrintWSContent(responseCE, LogLevel)
+				return nil
+			}
+			if responseCE.Data != nil {
+				return websockethelper.PrintWSContent(responseCE, LogLevel)
+			}
 		}
 		return nil
 	},
