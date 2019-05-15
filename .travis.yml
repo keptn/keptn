@@ -31,14 +31,24 @@ notifications:
     on_error: always 
 
 before_install:                                                                 
-  - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh 
-  - cd cli/
-  - dep ensure
-  - cd ..
+- curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh 
+- cd cli/
+- dep ensure
+- cd ..
+- export TZ=Europe/Vienna
+- IMAGE=keptn/installer
+- REGISTRY_USER=jbraeuer
+- VERSION="$(cat version | tr -d '[:space:]')"
+- DATE="$(date +'%Y%m%d.%H%M')"
+- GIT_SHA="$(git rev-parse --short HEAD)"
+- echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
+- REPO_URL="$(git remote get-url --all origin)"
+- LAST_COMMIT="$(git log -1 --oneline)"
+- ./writeManifest.sh
+- cat MANIFEST
   
 jobs:
   include:
-
     - stage: develop
       if: branch = develop AND NOT type = pull_request 
       script: source travis-scripts/master_main.sh
@@ -48,3 +58,9 @@ jobs:
       script: source travis-scripts/pr_main.sh
       after_script: source travis-scripts/pr_cleanup.sh
 
+    - stage: master
+      if: branch = master AND NOT type = pull_request
+      script:
+      - echo $TRAVIS_BUILD_STAGE_NAME
+      - docker build . -t "${IMAGE}:${VERSION}"
+      - docker push "${IMAGE}:${VERSION}"
