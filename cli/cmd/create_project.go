@@ -116,6 +116,8 @@ Example:
 			if responseCE.Data != nil {
 				return websockethelper.PrintWSContent(responseCE, LogLevel)
 			}
+		} else {
+			fmt.Println("skipping create project due to mocking flag set to true")
 		}
 		return nil
 	},
