@@ -50,16 +50,19 @@ Example:
 		authURL := *u
 		authURL.Path = "auth"
 
-		_, err = utils.Send(authURL, event, *apiToken)
-		if err != nil {
-			websockethelper.PrintLogLevel(websockethelper.LogData{Message: "Authentication was unsuccessful", LogLevel: "ERROR"}, LogLevel)
+		if !mocking {
+			_, err = utils.Send(authURL, event, *apiToken)
+			if err != nil {
+				websockethelper.PrintLogLevel(websockethelper.LogData{Message: "Authentication was unsuccessful", LogLevel: "ERROR"}, LogLevel)
 
-			return err
+				return err
+			}
+
+			websockethelper.PrintLogLevel(websockethelper.LogData{Message: "Successfully authenticated", LogLevel: "INFO"}, LogLevel)
+
+			return credentialmanager.SetCreds(*u, *apiToken)
 		}
-
-		websockethelper.PrintLogLevel(websockethelper.LogData{Message: "Successfully authenticated", LogLevel: "INFO"}, LogLevel)
-
-		return credentialmanager.SetCreds(*u, *apiToken)
+		return nil
 	},
 }
 

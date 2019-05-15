@@ -55,24 +55,25 @@ Example:
 		configURL := endPoint
 		configURL.Path = "config"
 
-		websockethelper.PrintLogLevel(websockethelper.LogData{Message: fmt.Sprintf("Connecting to server %s", endPoint.String()), LogLevel: "DEBUG"}, LogLevel)
-		responseCE, err := utils.Send(configURL, event, apiToken)
-		if err != nil {
-			websockethelper.PrintLogLevel(websockethelper.LogData{Message: "Configure was unsuccessful", LogLevel: "ERROR"}, LogLevel)
+		if !mocking {
+			websockethelper.PrintLogLevel(websockethelper.LogData{Message: fmt.Sprintf("Connecting to server %s", endPoint.String()), LogLevel: "DEBUG"}, LogLevel)
+			responseCE, err := utils.Send(configURL, event, apiToken)
+			if err != nil {
+				websockethelper.PrintLogLevel(websockethelper.LogData{Message: "Configure was unsuccessful", LogLevel: "ERROR"}, LogLevel)
 
-			return err
+				return err
+			}
+
+			// check for responseCE to include token
+			if responseCE == nil {
+				websockethelper.PrintLogLevel(websockethelper.LogData{Message: "response CE is nil", LogLevel: "ERROR"}, LogLevel)
+
+				return nil
+			}
+			if responseCE.Data != nil {
+				return websockethelper.PrintWSContent(responseCE, LogLevel)
+			}
 		}
-
-		// check for responseCE to include token
-		if responseCE == nil {
-			websockethelper.PrintLogLevel(websockethelper.LogData{Message: "response CE is nil", LogLevel: "ERROR"}, LogLevel)
-
-			return nil
-		}
-		if responseCE.Data != nil {
-			return websockethelper.PrintWSContent(responseCE, LogLevel)
-		}
-
 		// fmt.Println("Successfully configured the GitHub organization, the GitHub user, and the GitHub personal access token")
 		return nil
 	},
