@@ -53,7 +53,7 @@ func TestSingleCERead(t *testing.T) {
 	sendCE(t, ws, msg, true, "DEBUG")
 
 	r, w, old := beginRedirectStdOut()
-	readAndPrintCE(ws, true)
+	readAndPrintCE(ws, "DEBUG")
 	out := endRedirectStdOut(r, w, old)
 
 	if strings.TrimSpace(out) != msg {
@@ -81,7 +81,7 @@ func TestDoubleCERead(t *testing.T) {
 	sendCE(t, ws, msg, true, "DEBUG")
 
 	r, w, old := beginRedirectStdOut()
-	readAndPrintCE(ws, true)
+	readAndPrintCE(ws, "DEBUG")
 	out := endRedirectStdOut(r, w, old)
 
 	if strings.TrimSpace(out) != msg+"\n"+msg {
