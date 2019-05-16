@@ -116,7 +116,7 @@ Example:
 				return websockethelper.PrintWSContent(responseCE)
 			}
 		} else {
-			fmt.Println("skipping create project due to mocking flag set to true")
+			fmt.Println("Skipping create project due to mocking flag set to true")
 		}
 		return nil
 	},
