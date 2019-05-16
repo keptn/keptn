@@ -72,7 +72,7 @@ Example:
 				return websockethelper.PrintWSContent(responseCE)
 			}
 		} else {
-			fmt.Println("skipping configure due to mocking flag set to true")
+			fmt.Println("Skipping configure due to mocking flag set to true")
 		}
 		// fmt.Println("Successfully configured the GitHub organization, the GitHub user, and the GitHub personal access token")
 		return nil

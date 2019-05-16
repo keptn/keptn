@@ -143,7 +143,7 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 
-		fmt.Println("Installing keptn...")
+		utils.PrintLog("Installing keptn...", utils.InfoLevel)
 
 		var creds installCredentials
 		var err error
@@ -161,9 +161,8 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 				}
 			}
 			return doInstallation(creds)
-		} else {
-			fmt.Println("skipping intallation due to mocking flag set to true")
 		}
+		fmt.Println("Skipping intallation due to mocking flag set to true")
 		return nil
 	},
 }
@@ -286,41 +285,68 @@ func getInstallCredentials(creds *installCredentials) error {
 	json.Unmarshal([]byte(credsStr), &creds)
 
 	fmt.Print("Please enter the following information or press enter to keep the old value:\n")
-	reader := bufio.NewReader(os.Stdin)
 
-	connectToCluster(reader, creds)
+	for {
+		connectToCluster(creds)
 
-	// At present, we use default creds for jenkins
-	creds.JenkinsUser = jenkinsUser
-	creds.JenkinsPassword = jenkinsPassword
+		// At present, we use default creds for jenkins
+		creds.JenkinsUser = jenkinsUser
+		creds.JenkinsPassword = jenkinsPassword
 
-	readGithubUserName(reader, creds)
-	readGithubUserEmail(reader, creds)
+		readGithubUserName(creds)
+		readGithubUserEmail(creds)
 
-	// Check if the access token has the necessary permissions and the github org exists
-	validScopeRes := false
-	for !validScopeRes {
-		readGithubPersonalAccessToken(reader, creds)
-		validScopeRes, err = utils.HasTokenRepoScope(creds.GithubPersonalAccessToken)
+		// Check if the access token has the necessary permissions and the github org exists
+		validScopeRes := false
+		for !validScopeRes {
+			readGithubPersonalAccessToken(creds)
+			validScopeRes, err = utils.HasTokenRepoScope(creds.GithubPersonalAccessToken)
+			if err != nil {
+				return err
+			}
+			if !validScopeRes {
+				fmt.Println("GitHub Personal Access Token requies at least a 'repo'-scope")
+				creds.GithubPersonalAccessToken = ""
+			}
+		}
+		validOrg := false
+		for !validOrg {
+			readGithubOrg(creds)
+			validOrg, err = utils.IsOrgExisting(creds.GithubPersonalAccessToken, creds.GithubOrg)
+			if err != nil {
+				return err
+			}
+			if !validOrg {
+				fmt.Println("Provided GitHub Organization " + creds.GithubOrg + " does not exist.")
+				creds.GithubOrg = ""
+			}
+		}
+
+		fmt.Println()
+		fmt.Println("Please confirm that the provided information is correct: ")
+
+		fmt.Println("Cluster Name: " + creds.ClusterName)
+		fmt.Println("Cluster Zone: " + creds.ClusterZone)
+		fmt.Println("GKE Project: " + creds.GkeProject)
+
+		fmt.Println("GitHub User Name: " + creds.GithubUserName)
+		fmt.Println("GitHub User Email: " + creds.GithubUserEmail)
+		fmt.Println("GitHub Personal Access Token: " + creds.GithubPersonalAccessToken)
+		fmt.Println("GitHub Organization: " + creds.GithubOrg)
+
+		fmt.Println()
+		fmt.Println("Is this all correct? (y/n)")
+
+		reader := bufio.NewReader(os.Stdin)
+		in, err := reader.ReadString('\n')
 		if err != nil {
 			return err
 		}
-		if !validScopeRes {
-			fmt.Println("Personal access token requies at least a 'repo'-scope")
-			creds.GithubPersonalAccessToken = ""
+		in = strings.TrimSpace(in)
+		if in == "y" || in == "yes" {
+			break
 		}
-	}
-	validOrg := false
-	for !validOrg {
-		readGithubOrg(reader, creds)
-		validOrg, err = utils.IsOrgExisting(creds.GithubPersonalAccessToken, creds.GithubOrg)
-		if err != nil {
-			return err
-		}
-		if !validOrg {
-			fmt.Println("Provided organization " + creds.GithubOrg + " does not exist.")
-			creds.GithubOrg = ""
-		}
+
 	}
 
 	newCreds, _ := json.Marshal(creds)
@@ -329,7 +355,7 @@ func getInstallCredentials(creds *installCredentials) error {
 	return credentialmanager.SetInstallCreds(newCredsStr)
 }
 
-func connectToCluster(reader *bufio.Reader, creds *installCredentials) {
+func connectToCluster(creds *installCredentials) {
 
 	if creds.ClusterName == "" || creds.ClusterZone == "" || creds.GkeProject == "" {
 		creds.ClusterName, creds.ClusterZone, creds.GkeProject = getClusterInfo()
@@ -337,77 +363,70 @@ func connectToCluster(reader *bufio.Reader, creds *installCredentials) {
 
 	connectionSuccessful := false
 	for !connectionSuccessful {
-		readClusterName(reader, creds)
-		readClusterZone(reader, creds)
-		readGkeProject(reader, creds)
+		readClusterName(creds)
+		readClusterZone(creds)
+		readGkeProject(creds)
 		connectionSuccessful, _ = authenticateAtCluster(*creds)
 	}
 }
 
-func readClusterName(reader *bufio.Reader, creds *installCredentials) {
-	readUserInput(reader,
-		&creds.ClusterName,
+func readClusterName(creds *installCredentials) {
+	readUserInput(&creds.ClusterName,
 		"^(([a-z0-9]+-)*[a-z0-9]+)$",
-		"Cluster name",
-		"Please enter a valid cluster name.",
+		"Cluster Name",
+		"Please enter a valid Cluster Name.",
 	)
 }
 
-func readClusterZone(reader *bufio.Reader, creds *installCredentials) {
-	readUserInput(reader,
-		&creds.ClusterZone,
+func readClusterZone(creds *installCredentials) {
+	readUserInput(&creds.ClusterZone,
 		"^(([a-z0-9]+-)*[a-z0-9]+)$",
-		"Cluster zone",
-		"Please enter a valid cluster zone.",
+		"Cluster Zone",
+		"Please enter a valid Cluster Zone.",
 	)
 }
 
-func readGkeProject(reader *bufio.Reader, creds *installCredentials) {
-	readUserInput(reader,
-		&creds.GkeProject,
+func readGkeProject(creds *installCredentials) {
+	readUserInput(&creds.GkeProject,
 		"^(([a-z0-9]+-)*[a-z0-9]+)$",
-		"GKE project",
-		"Please enter a valid GKE project.",
+		"GKE Project",
+		"Please enter a valid GKE Project.",
 	)
 }
 
-func readGithubUserName(reader *bufio.Reader, creds *installCredentials) {
-	readUserInput(reader,
-		&creds.GithubUserName,
+func readGithubUserName(creds *installCredentials) {
+	readUserInput(&creds.GithubUserName,
 		"^(([a-z0-9]+-)*[a-z0-9]+)$",
 		"GitHub User Name",
 		"Please enter a valid GitHub User Name.",
 	)
 }
 
-func readGithubUserEmail(reader *bufio.Reader, creds *installCredentials) {
-	readUserInput(reader,
-		&creds.GithubUserEmail,
+func readGithubUserEmail(creds *installCredentials) {
+	readUserInput(&creds.GithubUserEmail,
 		"^[a-z0-9._%+\\-]+@[a-z0-9.\\-]+\\.[a-z]{2,4}$",
 		"GitHub User Email",
-		"Please enter a valid email address.",
+		"Please enter a valid GitHub User Email.",
 	)
 }
 
-func readGithubPersonalAccessToken(reader *bufio.Reader, creds *installCredentials) {
-	readUserInput(reader,
-		&creds.GithubPersonalAccessToken,
+func readGithubPersonalAccessToken(creds *installCredentials) {
+	readUserInput(&creds.GithubPersonalAccessToken,
 		"^[a-z0-9]{40}$",
 		"GitHub Personal Access Token",
 		"Please enter a valid GitHub Personal Access Token.",
 	)
 }
 
-func readGithubOrg(reader *bufio.Reader, creds *installCredentials) {
-	readUserInput(reader,
-		&creds.GithubOrg,
+func readGithubOrg(creds *installCredentials) {
+	readUserInput(&creds.GithubOrg,
 		"^(([a-z0-9]+-)*[a-z0-9]+)$",
 		"GitHub Organization",
 		"Please enter a valid GitHub Organization.",
 	)
 }
 
-func readUserInput(reader *bufio.Reader, value *string, regex string, promptMessage string, regexViolationMessage string) {
+func readUserInput(value *string, regex string, promptMessage string, regexViolationMessage string) {
 	var re *regexp.Regexp
 	validateRegex := false
 	if regex != "" {
@@ -415,6 +434,7 @@ func readUserInput(reader *bufio.Reader, value *string, regex string, promptMess
 		validateRegex = true
 	}
 	keepAsking := true
+	reader := bufio.NewReader(os.Stdin)
 	for keepAsking {
 		fmt.Printf("%s [%s]: ", promptMessage, *value)
 		userInput, _ := reader.ReadString('\n')
