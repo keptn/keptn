@@ -744,6 +744,9 @@ func createFileInKeptnDirectory(fileName string) (*os.File, error) {
 }
 
 func setupKeptnAuthAndConfigure(creds installCredentials) {
+
+	fmt.Println("Starting to configure your keptn CLI...")
+
 	cmd := exec.Command(
 		"kubectl",
 		"get",
@@ -754,7 +757,8 @@ func setupKeptnAuthAndConfigure(creds installCredentials) {
 		"-ojson",
 	)
 
-	const errorMsg = "Could not retrieve keptn API token.\n To manually set up your keptn CLI, please follow the instructions at https://keptn.sh/docs/0.2.0/reference/cli/."
+	const errorMsg = "Could not retrieve keptn API token.\n" +
+		"To manually set up your keptn CLI, please follow the instructions at https://keptn.sh/docs/0.2.0/reference/cli/."
 	out, err := cmd.Output()
 	if err != nil {
 		log.Fatal(errorMsg)
@@ -809,7 +813,7 @@ func setupKeptnAuthAndConfigure(creds installCredentials) {
 	}
 	authenticate(keptnEndpoint, string(apiToken))
 	configure(creds)
-	fmt.Println("You are now ready to use keptn.")
+	fmt.Println("Your CLI is now sucessfully configured. You are now ready to use keptn.")
 }
 
 func authenticate(endPoint string, apiToken string) {
@@ -845,6 +849,7 @@ func configure(creds installCredentials) {
 	err := rootCmd.Execute()
 
 	if err != nil {
-		log.Fatal("Automatic configuration failed.\n To manually set up your keptn CLI, please follow the instructions at https://keptn.sh/docs/0.2.0/reference/cli/.")
+		log.Fatal("Automatic configuration failed.\n To manually set up your keptn CLI, " +
+			"please follow the instructions at https://keptn.sh/docs/0.2.0/reference/cli/.")
 	}
 }
