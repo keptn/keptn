@@ -76,7 +76,7 @@ jobs:
     script:
     - echo $TRAVIS_BUILD_STAGE_NAME
     - | 
-      if [[ $CHANGED_FILES == *"${AUTH_FOLDER}"*  ]]; then
+      if [[ $CHANGED_FILES == *"${AUTH_FOLDER}"* ]]; then
         echo "Build keptn auth component"
         cd ./core/auth
         docker build . -t "${AUTH_IMAGE}:${GIT_SHA}"
@@ -85,7 +85,7 @@ jobs:
         docker push "${AUTH_IMAGE}:${TYPE}.${NUMBER}.${DATE}"
       fi
     - | 
-      if [[ $CHANGED_FILES == *"${CONTROL_FOLDER}"*  ]]; then
+      if [[ $CHANGED_FILES == *"${CONTROL_FOLDER}"* ]]; then
         echo "Build keptn control component"
         cd ./core/control
         docker build . -t "${CONTROL_IMAGE}:${GIT_SHA}"
@@ -106,5 +106,6 @@ jobs:
     if: branch = master AND NOT type = pull_request
     script:
     - echo $TRAVIS_BUILD_STAGE_NAME
-    - docker build . -t "${IMAGE}:${VERSION}"
-    - docker push "${IMAGE}:${VERSION}"
+    - echo "Build keptn installer"
+    - docker build . -t "${INSTALLER_IMAGE}:${VERSION}"
+    - docker push "${INSTALLER_IMAGE}:${VERSION}"
