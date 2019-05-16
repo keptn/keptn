@@ -76,6 +76,8 @@ jobs:
     if: branch =~ ^feature.*$ OR branch =~ ^bug.*$ OR branch =~ ^hotfix.*$
     script:
     - echo $TRAVIS_BUILD_STAGE_NAME
+    - TYPE="$(echo $TRAVIS_BRANCH | cut -d'/' -f1)"
+    - NUMBER="$(echo $TRAVIS_BRANCH | cut -d'/' -f2)"
     - | 
       if [[ $CHANGED_FILES == *"${AUTH_FOLDER}"* ]]; then
         echo "Build keptn auth component"
@@ -102,6 +104,8 @@ jobs:
     if: type = pull_request
     script: 
     #- source travis-scripts/pr_main.sh
+    - TYPE="$(echo $TRAVIS_BRANCH | cut -d'/' -f1)"
+    - NUMBER="$(echo $TRAVIS_BRANCH | cut -d'/' -f2)"
     - | 
       if [[ $CHANGED_FILES == *"${AUTH_FOLDER}"* ]]; then
         echo "Build keptn auth component"
