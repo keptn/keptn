@@ -84,6 +84,15 @@ jobs:
         docker push "${AUTH_IMAGE}:${GIT_SHA}"
         docker push "${AUTH_IMAGE}:${TYPE}.${NUMBER}.${DATE}"
       fi
+    - | 
+      if [[ $CHANGED_FILES == *"${CONTROL_FOLDER}"*  ]]; then
+        echo "Build keptn control component"
+        cd ./core/control
+        docker build . -t "${CONTROL_IMAGE}:${GIT_SHA}"
+        docker tag "${CONTROL_IMAGE}:${GIT_SHA}" "${CONTROL_IMAGE}:${TYPE}.${NUMBER}.${DATE}"
+        docker push "${CONTROL_IMAGE}:${GIT_SHA}"
+        docker push "${CONTROL_IMAGE}:${TYPE}.${NUMBER}.${DATE}"
+      fi
   - stage: develop
     if: branch = develop AND NOT type = pull_request 
     script: source travis-scripts/master_main.sh
