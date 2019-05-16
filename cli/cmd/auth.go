@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
+	"github.com/keptn/keptn/cli/utils/websockethelper"
 	"github.com/spf13/cobra"
 )
 
@@ -27,7 +28,7 @@ Example:
 	keptn auth --endpoint=myendpoint.com --api-token=xyz`,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fmt.Println("Starting to authenticate")
+		websockethelper.PrintLogLevel(websockethelper.LogData{Message: "Starting to authenticate", LogLevel: "INFO"}, LogLevel)
 
 		source, _ := url.Parse("https://github.com/keptn/keptn/cli#auth")
 		contentType := "application/json"
@@ -50,14 +51,21 @@ Example:
 		authURL := *u
 		authURL.Path = "auth"
 
-		_, err = utils.Send(authURL, event, *apiToken)
-		if err != nil {
-			fmt.Println("Authentication was unsuccessful")
-			return err
-		}
+		if !mocking {
+			_, err = utils.Send(authURL, event, *apiToken)
+			if err != nil {
+				websockethelper.PrintLogLevel(websockethelper.LogData{Message: "Authentication was unsuccessful", LogLevel: "ERROR"}, LogLevel)
 
-		fmt.Println("Successfully authenticated")
-		return credentialmanager.SetCreds(*u, *apiToken)
+				return err
+			}
+
+			websockethelper.PrintLogLevel(websockethelper.LogData{Message: "Successfully authenticated", LogLevel: "INFO"}, LogLevel)
+
+			return credentialmanager.SetCreds(*u, *apiToken)
+		} else {
+			fmt.Println("skipping auth due to mocking flag set to true")
+		}
+		return nil
 	},
 }
 

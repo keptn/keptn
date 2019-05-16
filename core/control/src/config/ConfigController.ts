@@ -60,7 +60,7 @@ export class ConfigController implements interfaces.Controller {
       result.data.channelInfo = channelInfo;
       result.shkeptncontext = keptnContext;
     }
-    result.data.success = await this.messageService.sendMessage(result);
+    this.messageService.sendMessage(result);
     response.send(result);
   }
 }

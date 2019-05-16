@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
+	"github.com/keptn/keptn/cli/utils/websockethelper"
 	"github.com/spf13/cobra"
 )
 
@@ -36,7 +37,7 @@ Example:
 			return errors.New(authErrorMsg)
 		}
 
-		fmt.Println("Starting to configure the GitHub organization, the GitHub user, and the GitHub personal access token")
+		websockethelper.PrintLogLevel(websockethelper.LogData{Message: "Starting to configure the GitHub organization, the GitHub user, and the GitHub personal access token", LogLevel: "INFO"}, LogLevel)
 
 		source, _ := url.Parse("https://github.com/keptn/keptn/cli#configure")
 
@@ -54,14 +55,28 @@ Example:
 		configURL := endPoint
 		configURL.Path = "config"
 
-		fmt.Println("Connecting to server ", endPoint.String())
-		_, err = utils.Send(configURL, event, apiToken)
-		if err != nil {
-			fmt.Println("Configure was unsuccessful")
-			return err
-		}
+		if !mocking {
+			websockethelper.PrintLogLevel(websockethelper.LogData{Message: fmt.Sprintf("Connecting to server %s", endPoint.String()), LogLevel: "DEBUG"}, LogLevel)
+			responseCE, err := utils.Send(configURL, event, apiToken)
+			if err != nil {
+				websockethelper.PrintLogLevel(websockethelper.LogData{Message: "Configure was unsuccessful", LogLevel: "ERROR"}, LogLevel)
 
-		fmt.Println("Successfully configured the GitHub organization, the GitHub user, and the GitHub personal access token")
+				return err
+			}
+
+			// check for responseCE to include token
+			if responseCE == nil {
+				websockethelper.PrintLogLevel(websockethelper.LogData{Message: "response CE is nil", LogLevel: "ERROR"}, LogLevel)
+
+				return nil
+			}
+			if responseCE.Data != nil {
+				return websockethelper.PrintWSContent(responseCE, LogLevel)
+			}
+		} else {
+			fmt.Println("skipping configure due to mocking flag set to true")
+		}
+		// fmt.Println("Successfully configured the GitHub organization, the GitHub user, and the GitHub personal access token")
 		return nil
 	},
 }
