@@ -4,7 +4,7 @@ This release is a stability improvement release. It does not add any new use cas
 
 ## New Features
 
-- 
+- The deployDynatrace.sh script installs the dynatrace-service #268 
 
 ## Fixed Issues
 
