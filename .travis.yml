@@ -99,7 +99,17 @@ jobs:
 
   - stage: pr
     if: type = pull_request
-    script: source travis-scripts/pr_main.sh
+    script: 
+    - source travis-scripts/pr_main.sh
+    - | 
+      if [[ $CHANGED_FILES == *"${AUTH_FOLDER}"* ]]; then
+        echo "Build keptn auth component"
+        cd ./core/auth
+        docker build . -t "${AUTH_IMAGE}:${GIT_SHA}"
+        docker tag "${AUTH_IMAGE}:${GIT_SHA}" "${AUTH_IMAGE}:${TYPE}.${NUMBER}.${DATE}"
+        docker push "${AUTH_IMAGE}:${GIT_SHA}"
+        docker push "${AUTH_IMAGE}:${TYPE}.${NUMBER}.${DATE}"
+      fi
     after_script: source travis-scripts/pr_cleanup.sh
 
   - stage: master
