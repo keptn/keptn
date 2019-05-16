@@ -75,7 +75,7 @@ Example:
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
-		websockethelper.PrintLogLevel(websockethelper.LogData{Message: "Starting to create a project", LogLevel: "INFO"}, LogLevel)
+		utils.PrintLog("Starting to create a project", utils.InfoLevel)
 
 		prjData := projectData{}
 		prjData.Project = args[0]
@@ -98,7 +98,7 @@ Example:
 		projectURL := endPoint
 		projectURL.Path = "project"
 
-		websockethelper.PrintLogLevel(websockethelper.LogData{Message: fmt.Sprintf("Connecting to server %s", endPoint.String()), LogLevel: "DEBUG"}, LogLevel)
+		utils.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), utils.DebugLevel)
 
 		if !mocking {
 			responseCE, err := utils.Send(projectURL, event, apiToken)
@@ -109,12 +109,11 @@ Example:
 
 			// check for responseCE to include token
 			if responseCE == nil {
-				fmt.Println("response CE is nil")
-				websockethelper.PrintLogLevel(websockethelper.LogData{Message: "response CE is nil", LogLevel: "ERROR"}, LogLevel)
+				utils.PrintLog("Response CE is nil", utils.ErrorLevel)
 				return nil
 			}
 			if responseCE.Data != nil {
-				return websockethelper.PrintWSContent(responseCE, LogLevel)
+				return websockethelper.PrintWSContent(responseCE)
 			}
 		} else {
 			fmt.Println("skipping create project due to mocking flag set to true")

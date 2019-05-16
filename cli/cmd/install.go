@@ -47,16 +47,6 @@ const installerPrefixURL = "https://raw.githubusercontent.com/keptn/keptn/"
 const installerSuffixPath = "/install/manifests/installer/installer.yaml"
 const rbacSuffixPath = "/install/manifests/installer/rbac.yaml"
 
-var logLevel *string
-
-type logLevelType int
-
-const (
-	debugLevel logLevelType = iota
-	infoLevel
-	errorLevel
-)
-
 type installCredentials struct {
 	JenkinsUser               string `json:"jenkinsUser"`
 	JenkinsPassword           string `json:"jenkinsPassword"`
@@ -87,13 +77,9 @@ var installCmd = &cobra.Command{
 	Long: `Installs keptn on your Kubernetes cluster
 
 Example:
-	keptn install --log-level=INFO`,
+	keptn install`,
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-
-		if getLogLevel(*logLevel) < 0 {
-			return errors.New("Provided log-level not supported. Supperted are INFO, DEBUG, and ERROR")
-		}
 
 		isInstallerAvailable, err := checkInstallerAvailablity()
 		if err != nil || !isInstallerAvailable {
@@ -158,7 +144,6 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 	RunE: func(cmd *cobra.Command, args []string) error {
 
 		fmt.Println("Installing keptn...")
-		fmt.Printf("LogLevel=%s\n", *logLevel)
 
 		var creds installCredentials
 		var err error
@@ -185,28 +170,10 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 
 func init() {
 	rootCmd.AddCommand(installCmd)
-
-	logLevel = installCmd.Flags().StringP("log-level", "l", "INFO", "The log-level specifies the level of log messages "+
-		"which are provided during the keptn installation. "+
-		"Available log leveles in ascending order are DEBUG (prints all messages), INFO (prints only status messages), and "+
-		"ERROR (prints only errors).")
-
 	configFilePath = installCmd.Flags().StringP("creds", "c", "", "The name of the creds file")
 	installCmd.Flags().MarkHidden("creds")
 	installerVersion = installCmd.Flags().StringP("keptn-version", "k", "master", "The branch or tag of the version which is installed")
 	installCmd.Flags().MarkHidden("keptn-version")
-}
-
-func getLogLevel(logLevel string) logLevelType {
-
-	if strings.ToLower(logLevel) == "info" {
-		return infoLevel
-	} else if strings.ToLower(logLevel) == "debug" {
-		return debugLevel
-	} else if strings.ToLower(logLevel) == "error" {
-		return errorLevel
-	}
-	return -1
 }
 
 func checkInstallerAvailablity() (bool, error) {
@@ -720,10 +687,9 @@ func copyAndCapture(r io.Reader, fileName string) bool {
 			msgLogLevel = strings.TrimSpace(msgLogLevel)
 			var fullSufixReg = regexp.MustCompile(`\[keptn\|[a-zA-Z]+\]\s+\[.*\]`)
 			outputStr := strings.TrimSpace(fullSufixReg.ReplaceAllString(txt, ""))
-			if getLogLevel(msgLogLevel) >= getLogLevel(*logLevel) {
-				fmt.Println(outputStr)
-			}
-			if getLogLevel(msgLogLevel) == errorLevel {
+
+			utils.PrintLogStringLevel(outputStr, msgLogLevel)
+			if utils.GetLogLevel(msgLogLevel) == utils.ErrorLevel {
 				errorOccured = true
 			}
 			if outputStr == successMsg {
