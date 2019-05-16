@@ -7,15 +7,14 @@ RUN addgroup mygroup && adduser -D -G mygroup myuser && mkdir -p /usr/src/app &&
 # Prepare app directory
 WORKDIR /usr/src/app
 
-# IMPORTANT: the root of the working directory is the root of the GitHub repo, NOT the location of the Dockerfile
-COPY /core/eventbroker/package.json /usr/src/app/
+COPY package.json /usr/src/app/
 
 RUN npm install -g tsc 
 RUN npm install -g concurrently 
 RUN npm install -g typescript
 RUN npm install -g copyfiles
 
-COPY /core/eventbroker/ /usr/src/app
+COPY . /usr/src/app
 
 RUN ls -la /usr/src/app/*
 
