@@ -53,7 +53,7 @@ Example:
 		if !mocking {
 			_, err = utils.Send(authURL, event, *apiToken)
 			if err != nil {
-				utils.PrintLog("Authentication was unsuccessful", utils.ErrorLevel)
+				utils.PrintLog("Authentication was unsuccessful", utils.QuietLevel)
 				return err
 			}
 			utils.PrintLog("Successfully authenticated", utils.InfoLevel)

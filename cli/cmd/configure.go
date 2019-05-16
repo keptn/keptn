@@ -56,16 +56,16 @@ Example:
 		configURL.Path = "config"
 
 		if !mocking {
-			utils.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), utils.DebugLevel)
+			utils.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), utils.VerboseLevel)
 			responseCE, err := utils.Send(configURL, event, apiToken)
 			if err != nil {
-				utils.PrintLog("Configure was unsuccessful", utils.ErrorLevel)
+				utils.PrintLog("Configure was unsuccessful", utils.QuietLevel)
 				return err
 			}
 
 			// check for responseCE to include token
 			if responseCE == nil {
-				utils.PrintLog("Response CE is nil", utils.ErrorLevel)
+				utils.PrintLog("Response CE is nil", utils.QuietLevel)
 				return nil
 			}
 			if responseCE.Data != nil {

@@ -81,11 +81,10 @@ func initConfig() {
 		os.Exit(1)
 	}
 	if verboseLogging {
-		utils.LogLevel = utils.DebugLevel
-		fmt.Println("Verbose logging enabled.")
+		utils.LogLevel = utils.VerboseLevel
 	}
 	if quietLogging {
-		utils.LogLevel = utils.ErrorLevel
+		utils.LogLevel = utils.QuietLevel
 	}
 
 	if cfgFile != "" {
