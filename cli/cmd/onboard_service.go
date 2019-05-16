@@ -180,17 +180,17 @@ var serviceCmd = &cobra.Command{
 		serviceURL := endPoint
 		serviceURL.Path = "service"
 
-		utils.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), utils.DebugLevel)
+		utils.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), utils.VerboseLevel)
 		if !mocking {
 			responseCE, err := utils.Send(serviceURL, event, apiToken)
 			if err != nil {
-				utils.PrintLog("Onboard service was unsuccessful", utils.ErrorLevel)
+				utils.PrintLog("Onboard service was unsuccessful", utils.QuietLevel)
 				return err
 			}
 
 			// check for responseCE to include token
 			if responseCE == nil {
-				utils.PrintLog("Response CE is nil", utils.ErrorLevel)
+				utils.PrintLog("Response CE is nil", utils.QuietLevel)
 
 				return nil
 			}

@@ -709,7 +709,7 @@ func copyAndCapture(r io.Reader, fileName string) bool {
 			outputStr := strings.TrimSpace(fullSufixReg.ReplaceAllString(txt, ""))
 
 			utils.PrintLogStringLevel(outputStr, msgLogLevel)
-			if utils.GetLogLevel(msgLogLevel) == utils.ErrorLevel {
+			if utils.GetLogLevel(msgLogLevel) == utils.QuietLevel {
 				errorOccured = true
 			}
 			if outputStr == successMsg {

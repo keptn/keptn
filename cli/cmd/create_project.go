@@ -98,7 +98,7 @@ Example:
 		projectURL := endPoint
 		projectURL.Path = "project"
 
-		utils.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), utils.DebugLevel)
+		utils.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), utils.VerboseLevel)
 
 		if !mocking {
 			responseCE, err := utils.Send(projectURL, event, apiToken)
@@ -109,7 +109,7 @@ Example:
 
 			// check for responseCE to include token
 			if responseCE == nil {
-				utils.PrintLog("Response CE is nil", utils.ErrorLevel)
+				utils.PrintLog("Response CE is nil", utils.QuietLevel)
 				return nil
 			}
 			if responseCE.Data != nil {

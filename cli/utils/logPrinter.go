@@ -12,12 +12,12 @@ var LogLevel LogLevelType
 type LogLevelType int
 
 const (
-	// DebugLevel logs debug, info, and error log messages
-	DebugLevel LogLevelType = iota
+	// VerboseLevel logs debug, info, and error log messages
+	VerboseLevel LogLevelType = iota
 	// InfoLevel logs info and error log messages
 	InfoLevel
-	// ErrorLevel logs error log messages
-	ErrorLevel
+	// QuietLevel logs error log messages
+	QuietLevel
 )
 
 // PrintLog prints the log according to the log level that is set in the flags
@@ -44,10 +44,11 @@ func GetLogLevel(logLevel string) LogLevelType {
 
 	if strings.ToLower(logLevel) == "info" {
 		return InfoLevel
-	} else if strings.ToLower(logLevel) == "debug" {
-		return DebugLevel
-	} else if strings.ToLower(logLevel) == "error" {
-		return ErrorLevel
+	} else if strings.ToLower(logLevel) == "debug" || strings.ToLower(logLevel) == "verbose" {
+		fmt.Println("Verbose logging enabled.")
+		return VerboseLevel
+	} else if strings.ToLower(logLevel) == "error" || strings.ToLower(logLevel) == "quiet" {
+		return QuietLevel
 	}
 	return -1
 }
