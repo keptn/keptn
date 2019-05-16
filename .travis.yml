@@ -50,10 +50,10 @@ before_install:
 - EVENTBROKER_VERSION="$(cat ./core/eventbroker/version | tr -d '[:space:]')"
 - EVENTBROKER_EXT_VERSION="$(cat ./core/eventbroker-ext/version | tr -d '[:space:]')"
 
-- AUTH_FOLDER="/core/auth/"
-- CONTROL_FOLDER="/core/control/"
-- EVENTBROKER_FOLDER="/core/eventbroker/"
-- EVENTBROKER_EXT_FOLDER="/core/eventbroker-ext/"
+- AUTH_FOLDER="core/auth/"
+- CONTROL_FOLDER="core/control/"
+- EVENTBROKER_FOLDER="core/eventbroker/"
+- EVENTBROKER_EXT_FOLDER="core/eventbroker-ext/"
 
 - DATE="$(date +'%Y%m%d.%H%M')"
 - GIT_SHA="$(git rev-parse --short HEAD)"
@@ -61,6 +61,7 @@ before_install:
 - REPO_URL="$(git remote get-url --all origin)"
 - LAST_COMMIT="$(git log -1 --oneline)"
 - CHANGED_FILES=($(git diff --name-only $TRAVIS_COMMIT_RANGE | paste -sd "," ) )
+- echo "$CHANGED_FILES"
 - ./writeManifest.sh
 - cat MANIFEST
 
@@ -100,7 +101,7 @@ jobs:
   - stage: pr
     if: type = pull_request
     script: 
-    - source travis-scripts/pr_main.sh
+    #- source travis-scripts/pr_main.sh
     - | 
       if [[ $CHANGED_FILES == *"${AUTH_FOLDER}"* ]]; then
         echo "Build keptn auth component"
@@ -110,7 +111,7 @@ jobs:
         docker push "${AUTH_IMAGE}:${GIT_SHA}"
         docker push "${AUTH_IMAGE}:${TYPE}.${NUMBER}.${DATE}"
       fi
-    after_script: source travis-scripts/pr_cleanup.sh
+    #after_script: source travis-scripts/pr_cleanup.sh
 
   - stage: master
     if: branch = master AND NOT type = pull_request
