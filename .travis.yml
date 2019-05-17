@@ -114,7 +114,7 @@ jobs:
     #after_script: source travis-scripts/pr_cleanup.sh
 
   - stage: develop/nightly
-    if: branch = develop AND NOT type = pull_request 
+    if: branch = develop NOT type = cron
     script: 
     - source travis-scripts/master_main.sh
 
@@ -165,7 +165,7 @@ jobs:
     - |
       if [[ $CHANGED_FILES == *"${INSTALL_FOLDER}"* ]]; then
         echo "Build keptn installer"
-        source travis-scripts/uild_develop.sh "${INSTALLER_IMAGE}" "${GIT_SHA}" "${DATE}"
+        source travis-scripts/build_develop.sh "${INSTALLER_IMAGE}" "${GIT_SHA}" "${DATE}"
       fi
     - | 
       if [[ $CHANGED_FILES == *"${AUTH_FOLDER}"* ]]; then
