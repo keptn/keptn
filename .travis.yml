@@ -114,7 +114,7 @@ jobs:
     #after_script: source travis-scripts/pr_cleanup.sh
 
   - stage: develop/nightly
-    if: branch = develop AND NOT type = cron
+    if: branch = develop AND type = cron
     script: 
     - source travis-scripts/master_main.sh
 
