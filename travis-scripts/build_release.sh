@@ -14,5 +14,3 @@ docker tag "${IMAGE}:${GIT_SHA}" "${IMAGE}:${VERSION}.latest"
 docker push "${IMAGE}:${GIT_SHA}"
 docker push "${IMAGE}:${VERSION}.${DATE}"
 docker push "${IMAGE}:${VERSION}.latest"
-
-cd ../..
