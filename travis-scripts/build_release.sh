@@ -1,12 +1,9 @@
 #!/usr/bin/env bash
 
-FOLDER=$1
-IMAGE=$2
-GIT_SHA=$3
-DATE=$4
-VERSION=$5
-
-cd "${FOLDER}"
+IMAGE=$1
+GIT_SHA=$2
+DATE=$3
+VERSION=$4
 
 docker build . -t "${IMAGE}:${GIT_SHA}"
 docker tag "${IMAGE}:${GIT_SHA}" "${IMAGE}:${VERSION}.${DATE}"

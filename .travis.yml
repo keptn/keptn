@@ -162,33 +162,41 @@ jobs:
       fi
 
   - stage: develop
-    if: branch = develop AND type = pull_request 
+    if: branch = develop AND NOT type = pull_request
     script: 
     - source travis-scripts/master_main.sh
     - echo $TRAVIS_BUILD_STAGE_NAME
     - | 
       if [[ $CHANGED_FILES == *"${AUTH_FOLDER}"* ]]; then
         echo "Build keptn auth component"
-        source travis-scripts/build_develop.sh "./${AUTH_FOLDER}" "${AUTH_IMAGE}" "${GIT_SHA}" "${DATE}"
+        cd "./${AUTH_FOLDER}"
+        source travis-scripts/build_develop.sh "${AUTH_IMAGE}" "${GIT_SHA}" "${DATE}"
+        cd ../..
       fi
     - | 
       if [[ $CHANGED_FILES == *"${CONTROL_FOLDER}"* ]]; then
         echo "Build keptn control component"
-        source travis-scripts/build_develop.sh "./${CONTROL_FOLDER}" "${CONTROL_IMAGE}" "${GIT_SHA}" "${DATE}"
+        cd "./${CONTROL_FOLDER}"
+        source travis-scripts/build_develop.sh "${CONTROL_IMAGE}" "${GIT_SHA}" "${DATE}"
+        cd ../..
       fi
     - | 
       if [[ $CHANGED_FILES == *"${EVENTBROKER_FOLDER}"* ]]; then
         echo "Build keptn eventbroker component"
-        source travis-scripts/build_develop.sh "./${EVENTBROKER_FOLDER}" "${EVENTBROKER_IMAGE}" "${GIT_SHA}" "${DATE}"
+        cd "./${EVENTBROKER_FOLDER}"
+        source travis-scripts/build_develop.sh "${EVENTBROKER_IMAGE}" "${GIT_SHA}" "${DATE}"
+        cd ../..
       fi
     - | 
       if [[ $CHANGED_FILES == *"${EVENTBROKER_EXT_FOLDER}"* ]]; then
         echo "Build keptn eventbroker-ext component"
-        source travis-scripts/build_develop.sh "./${EVENTBROKER_EXT_FOLDER}" "${EVENTBROKER_EXT_IMAGE}" "${GIT_SHA}" "${DATE}"
+        cd "./${EVENTBROKER_EXT_FOLDER}"
+        source travis-scripts/build_develop.sh "${EVENTBROKER_EXT_IMAGE}" "${GIT_SHA}" "${DATE}"
+        cd ../..
       fi
     
   - stage: release
-    if: branch =~ ^release.*$ AND type = pull_request
+    if: branch =~ ^release.*$ AND NOT type = pull_request
     script:
     - echo $TRAVIS_BUILD_STAGE_NAME
     - echo "Build keptn installer"
@@ -196,30 +204,34 @@ jobs:
     - | 
       if [[ $CHANGED_FILES == *"${AUTH_FOLDER}"* ]]; then
         echo "Build keptn auth component"
-        source travis-scripts/build_release.sh "./${AUTH_FOLDER}" "${AUTH_IMAGE}" "${GIT_SHA}" "${DATE}" "${AUTH_VERSION}"
+        cd "./${AUTH_FOLDER}"
+        source travis-scripts/build_release.sh "${AUTH_IMAGE}" "${GIT_SHA}" "${DATE}" "${AUTH_VERSION}"
         cd ../..
       fi
     - | 
       if [[ $CHANGED_FILES == *"${CONTROL_FOLDER}"* ]]; then
         echo "Build keptn control component"
-        source travis-scripts/build_release.sh "./${CONTROL_FOLDER}" "${CONTROL_IMAGE}" "${GIT_SHA}" "${DATE}" "${CONTROL_VERSION}"
+        cd "./${CONTROL_FOLDER}"
+        source travis-scripts/build_release.sh "${CONTROL_IMAGE}" "${GIT_SHA}" "${DATE}" "${CONTROL_VERSION}"
         cd ../..
       fi
     - | 
       if [[ $CHANGED_FILES == *"${EVENTBROKER_FOLDER}"* ]]; then
         echo "Build keptn eventbroker component"
-        source travis-scripts/build_release.sh "./${EVENTBROKER_FOLDER}" "${EVENTBROKER_IMAGE}" "${GIT_SHA}" "${DATE}" "${EVENTBROKER_VERSION}"
+        cd "./${EVENTBROKER_FOLDER}"
+        source travis-scripts/build_release.sh "${EVENTBROKER_IMAGE}" "${GIT_SHA}" "${DATE}" "${EVENTBROKER_VERSION}"
         cd ../..
       fi
     - | 
       if [[ $CHANGED_FILES == *"${EVENTBROKER_EXT_FOLDER}"* ]]; then
         echo "Build keptn eventbroker-ext component"
-        source travis-scripts/build_release.sh "./${EVENTBROKER_EXT_FOLDER}" "${EVENTBROKER_EXT_IMAGE}" "${GIT_SHA}" "${DATE}" "${EVENTBROKER_EXT_VERSION}"
+        cd "./${EVENTBROKER_EXT_FOLDER}"
+        source travis-scripts/build_release.sh "${EVENTBROKER_EXT_IMAGE}" "${GIT_SHA}" "${DATE}" "${EVENTBROKER_EXT_VERSION}"
         cd ../..
       fi
 
   - stage: master
-    if: branch = master AND type = pull_request
+    if: branch = master AND NOT type = pull_request
     script:
     - echo $TRAVIS_BUILD_STAGE_NAME
     - echo "Build keptn installer"
@@ -227,24 +239,28 @@ jobs:
     - | 
       if [[ $CHANGED_FILES == *"${AUTH_FOLDER}"* ]]; then
         echo "Build keptn auth component"
-        source travis-scripts/build_master.sh "./${AUTH_FOLDER}" "${AUTH_IMAGE}" "${AUTH_VERSION}"
+        cd "./${AUTH_FOLDER}"
+        source travis-scripts/build_master.sh "${AUTH_IMAGE}" "${AUTH_VERSION}"
         cd ../..
       fi
     - | 
       if [[ $CHANGED_FILES == *"${CONTROL_FOLDER}"* ]]; then
         echo "Build keptn control component"
-        source travis-scripts/build_master.sh "./${CONTROL_FOLDER}" "${CONTROL_IMAGE}" "${CONTROL_VERSION}"
+        cd "./${CONTROL_FOLDER}"
+        source travis-scripts/build_master.sh "${CONTROL_IMAGE}" "${CONTROL_VERSION}"
         cd ../..
       fi
     - | 
       if [[ $CHANGED_FILES == *"${EVENTBROKER_FOLDER}"* ]]; then
         echo "Build keptn eventbroker component"
-        source travis-scripts/build_master.sh "./${EVENTBROKER_FOLDER}" "${EVENTBROKER_IMAGE}" "${EVENTBROKER_VERSION}"
+        cd "./${EVENTBROKER_FOLDER}"
+        source travis-scripts/build_master.sh "${EVENTBROKER_IMAGE}" "${EVENTBROKER_VERSION}"
         cd ../..
       fi
     - | 
       if [[ $CHANGED_FILES == *"${EVENTBROKER_EXT_FOLDER}"* ]]; then
         echo "Build keptn eventbroker-ext component"
-        source travis-scripts/build_master.sh "./${EVENTBROKER_EXT_FOLDER}" "${EVENTBROKER_EXT_IMAGE}" "${EVENTBROKER_EXT_VERSION}"
+        cd "./${EVENTBROKER_EXT_FOLDER}"
+        source travis-scripts/build_master.sh "${EVENTBROKER_EXT_IMAGE}" "${EVENTBROKER_EXT_VERSION}"
         cd ../..
       fi

@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-IMAGE=$2
-GIT_SHA=$3
-TYPE=$4
-NUMBER=$5
-DATE=$6
+IMAGE=$1
+GIT_SHA=$2
+TYPE=$3
+NUMBER=$4
+DATE=$5
 
 docker build . -t "${IMAGE}:${GIT_SHA}"
 docker tag "${IMAGE}:${GIT_SHA}" "${IMAGE}:${TYPE}.${NUMBER}.${DATE}"
