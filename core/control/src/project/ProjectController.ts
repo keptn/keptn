@@ -62,7 +62,7 @@ export class ProjectController implements interfaces.Controller {
       result.data.channelInfo = channelInfo;
       result.shkeptncontext = keptnContext;
     }
-    result.data.success = await this.messageService.sendMessage(request.body);
+    this.messageService.sendMessage(request.body);
     response.send(result);
   }
 

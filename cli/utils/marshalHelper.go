@@ -30,7 +30,7 @@ func UnmarshalString(data string) (interface{}, error) {
 	return Convert(body), nil
 }
 
-// Convert makes a type confersion of a yaml object
+// Convert makes a type conversion of a yaml object
 func Convert(i interface{}) interface{} {
 	switch x := i.(type) {
 	case map[interface{}]interface{}:

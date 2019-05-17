@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
+	"github.com/keptn/keptn/cli/utils/websockethelper"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 )
@@ -22,8 +23,13 @@ type projectData struct {
 	Stages   interface{} `json:"stages"`
 }
 
-// projectCmd represents the project command
-var projectCmd = &cobra.Command{
+type myCloudEvent struct {
+	contenttype string
+	data        string
+}
+
+// crprojectCmd represents the project command
+var crprojectCmd = &cobra.Command{
 	Use:   "project project_name shipyard_file",
 	Short: "Creates a new project.",
 	Long: `Creates a new project with the provided name and shipyard file. 
@@ -69,8 +75,7 @@ Example:
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
-
-		fmt.Println("Starting to create a project")
+		websockethelper.PrintLogLevel(websockethelper.LogData{Message: "Starting to create a project", LogLevel: "INFO"}, LogLevel)
 
 		prjData := projectData{}
 		prjData.Project = args[0]
@@ -93,14 +98,27 @@ Example:
 		projectURL := endPoint
 		projectURL.Path = "project"
 
-		fmt.Println("Connecting to server ", endPoint.String())
-		_, err = utils.Send(projectURL, event, apiToken)
-		if err != nil {
-			fmt.Println("Create project was unsuccessful")
-			return err
-		}
+		websockethelper.PrintLogLevel(websockethelper.LogData{Message: fmt.Sprintf("Connecting to server %s", endPoint.String()), LogLevel: "DEBUG"}, LogLevel)
 
-		fmt.Printf("Successfully created project %v on Github\n", prjData.Project)
+		if !mocking {
+			responseCE, err := utils.Send(projectURL, event, apiToken)
+			if err != nil {
+				fmt.Println("Create project was unsuccessful")
+				return err
+			}
+
+			// check for responseCE to include token
+			if responseCE == nil {
+				fmt.Println("response CE is nil")
+				websockethelper.PrintLogLevel(websockethelper.LogData{Message: "response CE is nil", LogLevel: "ERROR"}, LogLevel)
+				return nil
+			}
+			if responseCE.Data != nil {
+				return websockethelper.PrintWSContent(responseCE, LogLevel)
+			}
+		} else {
+			fmt.Println("skipping create project due to mocking flag set to true")
+		}
 		return nil
 	},
 }
@@ -124,5 +142,5 @@ func parseShipYard(prjData *projectData, yamlFile string) error {
 }
 
 func init() {
-	createCmd.AddCommand(projectCmd)
+	createCmd.AddCommand(crprojectCmd)
 }
