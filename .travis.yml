@@ -38,11 +38,11 @@ before_install:
 - export TZ=Europe/Vienna
 - REGISTRY_USER=jbraeuer
 
-- INSTALLER_IMAGE=jbraeuer/installer
-- AUTH_IMAGE=jbraeuer/keptn-authenticator
-- CONTROL_IMAGE=jbraeuer/keptn-control
-- EVENTBROKER_IMAGE=jbraeuer/keptn-event-broker
-- EVENTBROKER_EXT_IMAGE=jbraeuer/keptn-event-broker-ext
+- INSTALLER_IMAGE=keptn/installer
+- AUTH_IMAGE=keptn/keptn-authenticator
+- CONTROL_IMAGE=keptn/keptn-control
+- EVENTBROKER_IMAGE=keptn/keptn-event-broker
+- EVENTBROKER_EXT_IMAGE=keptn/keptn-event-broker-ext
 
 - INSTALLER_VERSION="$(cat version | tr -d '[:space:]')"
 - AUTH_VERSION="$(cat ./core/auth/version | tr -d '[:space:]')"
@@ -77,39 +77,10 @@ jobs:
     if: type = pull_request
     script: 
     #- source travis-scripts/pr_main.sh
-    - echo $TRAVIS_BUILD_STAGE_NAME
     - |
-      if [[ $CHANGED_FILES == *"${INSTALL_FOLDER}"* ]]; then
-        echo "Build keptn installer"
-        source travis-scripts/build_master.sh "${INSTALLER_IMAGE}" "${INSTALLER_VERSION}"
-      fi
-    - | 
-      if [[ $CHANGED_FILES == *"${AUTH_FOLDER}"* ]]; then
-        echo "Build keptn auth component"
-        cd "./${AUTH_FOLDER}"
-        source ../../travis-scripts/build_master.sh "${AUTH_IMAGE}" "${AUTH_VERSION}"
-        cd ../..
-      fi
-    - | 
-      if [[ $CHANGED_FILES == *"${CONTROL_FOLDER}"* ]]; then
-        echo "Build keptn control component"
-        cd "./${CONTROL_FOLDER}"
-        source ../../travis-scripts/build_master.sh "${CONTROL_IMAGE}" "${CONTROL_VERSION}"
-        cd ../..
-      fi
-    - | 
-      if [[ $CHANGED_FILES == *"${EVENTBROKER_FOLDER}"* ]]; then
-        echo "Build keptn eventbroker component"
-        cd "./${EVENTBROKER_FOLDER}"
-        source ../../travis-scripts/build_master.sh "${EVENTBROKER_IMAGE}" "${EVENTBROKER_VERSION}"
-        cd ../..
-      fi
-    - | 
-      if [[ $CHANGED_FILES == *"${EVENTBROKER_EXT_FOLDER}"* ]]; then
-        echo "Build keptn eventbroker-ext component"
-        cd "./${EVENTBROKER_EXT_FOLDER}"
-        source ../../travis-scripts/build_master.sh "${EVENTBROKER_EXT_IMAGE}" "${EVENTBROKER_EXT_VERSION}"
-        cd ../..
+      if [[ $CHANGED_FILES == *"${CLI_FOLDER}"* ]]; then
+        echo "Build keptn cli"
+        source cli/build_cli_feature.sh "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
       fi
     #after_script: source travis-scripts/pr_cleanup.sh
 
