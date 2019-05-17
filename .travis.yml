@@ -38,11 +38,11 @@ before_install:
 - export TZ=Europe/Vienna
 - REGISTRY_USER=jbraeuer
 
-- INSTALLER_IMAGE=keptn/installer
-- AUTH_IMAGE=keptn/keptn-authenticator
-- CONTROL_IMAGE=keptn/keptn-control
-- EVENTBROKER_IMAGE=keptn/keptn-event-broker
-- EVENTBROKER_EXT_IMAGE=keptn/keptn-event-broker-ext
+- INSTALLER_IMAGE=jbraeuer/installer
+- AUTH_IMAGE=jbraeuer/keptn-authenticator
+- CONTROL_IMAGE=jbraeuer/keptn-control
+- EVENTBROKER_IMAGE=jbraeuer/keptn-event-broker
+- EVENTBROKER_EXT_IMAGE=jbraeuer/keptn-event-broker-ext
 
 - INSTALLER_VERSION="$(cat version | tr -d '[:space:]')"
 - AUTH_VERSION="$(cat ./core/auth/version | tr -d '[:space:]')"
@@ -81,37 +81,6 @@ jobs:
     - | 
       if [[ $CHANGED_FILES == *"${AUTH_FOLDER}"* ]]; then
         echo "Build keptn auth component"
-        source ./travis-scripts/build_feature.sh "./${AUTH_FOLDER}" "${AUTH_IMAGE}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
-      fi
-    - | 
-      if [[ $CHANGED_FILES == *"${CONTROL_FOLDER}"* ]]; then
-        echo "Build keptn control component"
-        source ./travis-scripts/build_feature.sh "./${CONTROL_FOLDER}" "${CONTROL_IMAGE}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
-      fi
-    - | 
-      if [[ $CHANGED_FILES == *"${EVENTBROKER_FOLDER}"* ]]; then
-        echo "Build keptn eventbroker component"
-        source ./travis-scripts/build_feature.sh "./${EVENTBROKER_FOLDER}" "${EVENTBROKER_IMAGE}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
-      fi
-    - | 
-      if [[ $CHANGED_FILES == *"${EVENTBROKER_EXT_FOLDER}"* ]]; then
-        echo "Build keptn eventbroker-ext component"
-        source ./travis-scripts/build_feature.sh "./${EVENTBROKER_EXT_FOLDER}" "${EVENTBROKER_EXT_IMAGE}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
-      fi
-
-  - stage: develop
-    if: branch = develop AND NOT type = pull_request 
-    script: source travis-scripts/master_main.sh
-
-  - stage: pr
-    if: type = pull_request
-    script: 
-    #- source travis-scripts/pr_main.sh
-    - TYPE="$(echo $TRAVIS_BRANCH | cut -d'/' -f1)"
-    - NUMBER="$(echo $TRAVIS_BRANCH | cut -d'/' -f2)"
-    - | 
-      if [[ $CHANGED_FILES == *"${AUTH_FOLDER}"* ]]; then
-        echo "Build keptn auth component"
         source travis-scripts/build_feature.sh "./${AUTH_FOLDER}" "${AUTH_IMAGE}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
       fi
     - | 
@@ -128,7 +97,39 @@ jobs:
       if [[ $CHANGED_FILES == *"${EVENTBROKER_EXT_FOLDER}"* ]]; then
         echo "Build keptn eventbroker-ext component"
         source travis-scripts/build_feature.sh "./${EVENTBROKER_EXT_FOLDER}" "${EVENTBROKER_EXT_IMAGE}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
-      fi    
+      fi
+
+  - stage: develop
+    if: branch = develop AND NOT type = pull_request 
+    script: 
+    - source travis-scripts/master_main.sh
+    
+  - stage: pr
+    if: type = pull_request
+    script: 
+    #- source travis-scripts/pr_main.sh
+    - echo $TRAVIS_BUILD_STAGE_NAME
+    - | 
+      if [[ $CHANGED_FILES == *"${AUTH_FOLDER}"* ]]; then
+        echo "Build keptn auth component"
+        source travis-scripts/build_develop.sh "./${AUTH_FOLDER}" "${AUTH_IMAGE}" "${GIT_SHA}" "${DATE}"
+      fi
+    - | 
+      if [[ $CHANGED_FILES == *"${CONTROL_FOLDER}"* ]]; then
+        echo "Build keptn control component"
+        source travis-scripts/build_develop.sh "./${CONTROL_FOLDER}" "${CONTROL_IMAGE}" "${GIT_SHA}" "${DATE}"
+      fi
+    - | 
+      if [[ $CHANGED_FILES == *"${EVENTBROKER_FOLDER}"* ]]; then
+        echo "Build keptn eventbroker component"
+        source travis-scripts/build_develop.sh "./${EVENTBROKER_FOLDER}" "${EVENTBROKER_IMAGE}" "${GIT_SHA}" "${DATE}"
+      fi
+    - | 
+      if [[ $CHANGED_FILES == *"${EVENTBROKER_EXT_FOLDER}"* ]]; then
+        echo "Build keptn eventbroker-ext component"
+        source travis-scripts/build_develop.sh "./${EVENTBROKER_EXT_FOLDER}" "${EVENTBROKER_EXT_IMAGE}" "${GIT_SHA}" "${DATE}"
+      fi
+
     #after_script: source travis-scripts/pr_cleanup.sh
 
   - stage: release
@@ -143,4 +144,9 @@ jobs:
     - source ./travis-scripts/build_master.sh "./" "${INSTALLER_IMAGE}" "${INSTALLER_VERSION}"
     - echo "Build keptn auth component"
     - source ./travis-scripts/build_master.sh "./${AUTH_FOLDER}" "${AUTH_IMAGE}" "${AUTH_VERSION}"
-
+    - echo "Build keptn control component"
+    - source ./travis-scripts/build_master.sh "./${CONTROL_FOLDER}" "${CONTROL_IMAGE}" "${CONTROL_VERSION}"
+    - echo "Build keptn eventbroker component"
+    - source ./travis-scripts/build_master.sh "./${EVENTBROKER_FOLDER}" "${EVENTBROKER_IMAGE}" "${EVENTBROKER_VERSION}"
+    - echo "Build keptn eventbroker-ext component"
+    - source ./travis-scripts/build_master.sh "./${EVENTBROKER_EXT_FOLDER}" "${EVENTBROKER_EXT_IMAGE}" "${EVENTBROKER_EXT_VERSION}"
