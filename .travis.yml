@@ -82,11 +82,27 @@ jobs:
       if [[ $CHANGED_FILES == *"${AUTH_FOLDER}"* ]]; then
         echo "Build keptn auth component"
         cd ./core/auth
-        docker build . -t "${AUTH_IMAGE}:${GIT_SHA}"
-        docker tag "${AUTH_IMAGE}:${GIT_SHA}" "${AUTH_IMAGE}:${TYPE}.${NUMBER}.${DATE}"
-        docker push "${AUTH_IMAGE}:${GIT_SHA}"
-        docker push "${AUTH_IMAGE}:${TYPE}.${NUMBER}.${DATE}"
+        source travis-scripts/build_feature.sh "${AUTH_IMAGE}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
       fi
+    - | 
+      if [[ $CHANGED_FILES == *"${CONTROL_FOLDER}"* ]]; then
+        echo "Build keptn control component"
+        cd ./core/control
+        source travis-scripts/build_feature.sh "${CONTROL_IMAGE}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
+      fi
+    - | 
+      if [[ $CHANGED_FILES == *"${EVENTBROKER_FOLDER}"* ]]; then
+        echo "Build keptn eventbroker component"
+        cd ./core/eventbroker
+        source travis-scripts/build_feature.sh "${EVENTBROKER_IMAGE}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
+      fi
+    - | 
+      if [[ $CHANGED_FILES == *"${EVENTBROKER_EXT_FOLDER}"* ]]; then
+        echo "Build keptn eventbroker-ext component"
+        cd ./core/eventbroker-ext
+        source travis-scripts/build_feature.sh "${EVENTBROKER_EXT_IMAGE}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
+      fi
+
   - stage: develop
     if: branch = develop AND NOT type = pull_request 
     script: source travis-scripts/master_main.sh
@@ -101,44 +117,36 @@ jobs:
       if [[ $CHANGED_FILES == *"${AUTH_FOLDER}"* ]]; then
         echo "Build keptn auth component"
         cd ./core/auth
-        docker build . -t "${AUTH_IMAGE}:${GIT_SHA}"
-        docker tag "${AUTH_IMAGE}:${GIT_SHA}" "${AUTH_IMAGE}:${TYPE}.${NUMBER}.${DATE}"
-        docker push "${AUTH_IMAGE}:${GIT_SHA}"
-        docker push "${AUTH_IMAGE}:${TYPE}.${NUMBER}.${DATE}"
+        source travis-scripts/build_feature.sh "${AUTH_IMAGE}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
       fi
     - | 
       if [[ $CHANGED_FILES == *"${CONTROL_FOLDER}"* ]]; then
         echo "Build keptn control component"
         cd ./core/control
-        docker build . -t "${CONTROL_IMAGE}:${GIT_SHA}"
-        docker tag "${CONTROL_IMAGE}:${GIT_SHA}" "${CONTROL_IMAGE}:${TYPE}.${NUMBER}.${DATE}"
-        docker push "${CONTROL_IMAGE}:${GIT_SHA}"
-        docker push "${CONTROL_IMAGE}:${TYPE}.${NUMBER}.${DATE}"
+        source travis-scripts/build_feature.sh "${CONTROL_IMAGE}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
       fi
     - | 
       if [[ $CHANGED_FILES == *"${EVENTBROKER_FOLDER}"* ]]; then
         echo "Build keptn eventbroker component"
         cd ./core/eventbroker
-        docker build . -t "${EVENTBROKER_IMAGE}:${GIT_SHA}"
-        docker tag "${EVENTBROKER_IMAGE}:${GIT_SHA}" "${EVENTBROKER_IMAGE}:${TYPE}.${NUMBER}.${DATE}"
-        docker push "${EVENTBROKER_IMAGE}:${GIT_SHA}"
-        docker push "${EVENTBROKER_IMAGE}:${TYPE}.${NUMBER}.${DATE}"
+        source travis-scripts/build_feature.sh "${EVENTBROKER_IMAGE}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
       fi
     - | 
       if [[ $CHANGED_FILES == *"${EVENTBROKER_EXT_FOLDER}"* ]]; then
         echo "Build keptn eventbroker-ext component"
         cd ./core/eventbroker-ext
-        docker build . -t "${EVENTBROKER_EXT_IMAGE}:${GIT_SHA}"
-        docker tag "${EVENTBROKER_EXT_IMAGE}:${GIT_SHA}" "${EVENTBROKER_EXT_IMAGE}:${TYPE}.${NUMBER}.${DATE}"
-        docker push "${EVENTBROKER_EXT_IMAGE}:${GIT_SHA}"
-        docker push "${EVENTBROKER_EXT_IMAGE}:${TYPE}.${NUMBER}.${DATE}"
-      fi
+        source travis-scripts/build_feature.sh "${EVENTBROKER_EXT_IMAGE}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
+      fi    
     #after_script: source travis-scripts/pr_cleanup.sh
+
+  - stage: release
+    if: branch =~ ^release.*$ AND NOT type = pull_request
+    script:
 
   - stage: master
     if: branch = master AND NOT type = pull_request
     script:
     - echo $TRAVIS_BUILD_STAGE_NAME
     - echo "Build keptn installer"
-    - docker build . -t "${INSTALLER_IMAGE}:${VERSION}"
-    - docker push "${INSTALLER_IMAGE}:${VERSION}"
+    - docker build . -t "${INSTALLER_IMAGE}:${INSTALLER_VERSION}"
+    - docker push "${INSTALLER_IMAGE}:${INSTALLER_VERSION}"
