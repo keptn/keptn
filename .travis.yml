@@ -83,6 +83,7 @@ jobs:
     - |
       if [[ $CHANGED_FILES == *"${CLI_FOLDER}"* ]]; then
         echo "Build keptn cli"
+        cd "./${CLI_FOLDER}"
         source cli/build_cli_feature.sh "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
       fi
     #after_script: source travis-scripts/pr_cleanup.sh
