@@ -13,7 +13,7 @@ spec:
             autoscaling.knative.dev/minScale: "1"
         spec:
           container:
-            image: keptn/keptn-authenticator:0.2.1
+            image: jbraeuer/keptn-authenticator:0.2.2.latest
             imagePullPolicy: Always
             env:
             - name: SECRET_TOKEN
