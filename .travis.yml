@@ -117,25 +117,25 @@ jobs:
       if [[ $CHANGED_FILES == *"${AUTH_FOLDER}"* ]]; then
         echo "Build keptn auth component"
         cd ./core/auth
-        source travis-scripts/build_feature.sh "${AUTH_IMAGE}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
+        source ./travis-scripts/build_feature.sh "${AUTH_IMAGE}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
       fi
     - | 
       if [[ $CHANGED_FILES == *"${CONTROL_FOLDER}"* ]]; then
         echo "Build keptn control component"
         cd ./core/control
-        source travis-scripts/build_feature.sh "${CONTROL_IMAGE}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
+        source ./travis-scripts/build_feature.sh "${CONTROL_IMAGE}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
       fi
     - | 
       if [[ $CHANGED_FILES == *"${EVENTBROKER_FOLDER}"* ]]; then
         echo "Build keptn eventbroker component"
         cd ./core/eventbroker
-        source travis-scripts/build_feature.sh "${EVENTBROKER_IMAGE}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
+        source ./travis-scripts/build_feature.sh "${EVENTBROKER_IMAGE}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
       fi
     - | 
       if [[ $CHANGED_FILES == *"${EVENTBROKER_EXT_FOLDER}"* ]]; then
         echo "Build keptn eventbroker-ext component"
         cd ./core/eventbroker-ext
-        source travis-scripts/build_feature.sh "${EVENTBROKER_EXT_IMAGE}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
+        source ./travis-scripts/build_feature.sh "${EVENTBROKER_EXT_IMAGE}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
       fi    
     #after_script: source travis-scripts/pr_cleanup.sh
 
@@ -148,5 +148,8 @@ jobs:
     script:
     - echo $TRAVIS_BUILD_STAGE_NAME
     - echo "Build keptn installer"
-    - docker build . -t "${INSTALLER_IMAGE}:${INSTALLER_VERSION}"
-    - docker push "${INSTALLER_IMAGE}:${INSTALLER_VERSION}"
+    - source ./travis-scripts/build_master.sh "${INSTALLER_IMAGE}" "${INSTALLER_VERSION}"
+    - echo "Build keptn auth component"
+    - cd ./core/auth
+    - source ./travis-scripts/build_master.sh "${AUTH_IMAGE}" "${AUTH_VERSION}"
+
