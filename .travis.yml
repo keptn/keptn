@@ -38,11 +38,11 @@ before_install:
 - export TZ=Europe/Vienna
 - REGISTRY_USER=jbraeuer
 
-- INSTALLER_IMAGE=keptn/installer
-- AUTH_IMAGE=keptn/keptn-authenticator
-- CONTROL_IMAGE=keptn/keptn-control
-- EVENTBROKER_IMAGE=keptn/keptn-event-broker
-- EVENTBROKER_EXT_IMAGE=keptn/keptn-event-broker-ext
+- INSTALLER_IMAGE=jbraeuer/installer
+- AUTH_IMAGE=jbraeuer/keptn-authenticator
+- CONTROL_IMAGE=jbraeuer/keptn-control
+- EVENTBROKER_IMAGE=jbraeuer/keptn-event-broker
+- EVENTBROKER_EXT_IMAGE=jbraeuer/keptn-event-broker-ext
 
 - INSTALLER_VERSION="$(cat version | tr -d '[:space:]')"
 - AUTH_VERSION="$(cat ./core/auth/version | tr -d '[:space:]')"
