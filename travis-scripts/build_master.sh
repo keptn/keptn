@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 
-IMAGE=$1
-VERSION=$2
+FOLDER=$1
+IMAGE=$2
+VERSION=$3
+
+cd "${FOLDER}"
 
 docker build . -t "${IMAGE}:${VERSION}"
 docker push "${IMAGE}:${VERSION}"
+
+cd ../..
