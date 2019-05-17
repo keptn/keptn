@@ -101,7 +101,7 @@ jobs:
     - | 
       if [[ $CHANGED_FILES == *"${EVENTBROKER_EXT_FOLDER}"* ]]; then
         echo "Build keptn eventbroker-ext component"
-        source travis-scripts/build_master.sh "./${EVENTBROKER_EXT_FOLDER}" "${EVENTBROKER_EXT_IMAGE}" ${EVENTBROKER_EXT_VERSION}"
+        source travis-scripts/build_master.sh "./${EVENTBROKER_EXT_FOLDER}" "${EVENTBROKER_EXT_IMAGE}" "${EVENTBROKER_EXT_VERSION}"
         cd ../..
       fi
     #after_script: source travis-scripts/pr_cleanup.sh
@@ -211,6 +211,6 @@ jobs:
     - | 
       if [[ $CHANGED_FILES == *"${EVENTBROKER_EXT_FOLDER}"* ]]; then
         echo "Build keptn eventbroker-ext component"
-        source travis-scripts/build_master.sh "./${EVENTBROKER_EXT_FOLDER}" "${EVENTBROKER_EXT_IMAGE}" ${EVENTBROKER_EXT_VERSION}"
+        source travis-scripts/build_master.sh "./${EVENTBROKER_EXT_FOLDER}" "${EVENTBROKER_EXT_IMAGE}" "${EVENTBROKER_EXT_VERSION}"
         cd ../..
       fi
