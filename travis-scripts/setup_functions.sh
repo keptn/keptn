@@ -75,13 +75,13 @@ function setup_knative_pr {
     cd ./install/scripts/
     CLUSTER_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_PR_STATUSCHECK_NAME} --zone=${CLUSTER_PR_STATUSCHECK_ZONE} | yq r - clusterIpv4Cidr)
     SERVICES_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_PR_STATUSCHECK_NAME} --zone=${CLUSTER_PR_STATUSCHECK_ZONE} | yq r - servicesIpv4Cidr)
-    ./setupKnative.sh $CLUSTER_IPV4_CIDR $SERVICES_IPV4_CIDR
+    source ./setupKnative.sh $CLUSTER_IPV4_CIDR $SERVICES_IPV4_CIDR
     cd ../..
 }
 
 function setup_keptn_pr {    
     cd ./install/scripts/
-    ./setupKeptn.sh
+    source ./setupKeptn.sh
     cd ../..
 }
 
