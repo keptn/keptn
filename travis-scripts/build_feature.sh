@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
-FOLDER=$1;
-IMAGE=$2;
-GIT_SHA=$3;
-TYPE=$4;
-NUMBER=$5;
-DATE=$6;
+FOLDER=$1
+IMAGE=$2
+GIT_SHA=$3
+TYPE=$4
+NUMBER=$5
+DATE=$6
 
 cd "${FOLDER}"
 
