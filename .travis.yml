@@ -50,6 +50,7 @@ before_install:
 - EVENTBROKER_VERSION="$(cat ./core/eventbroker/version | tr -d '[:space:]')"
 - EVENTBROKER_EXT_VERSION="$(cat ./core/eventbroker-ext/version | tr -d '[:space:]')"
 
+- CLI_FOLDER="cli/"
 - INSTALL_FOLDER="install/"
 - AUTH_FOLDER="core/auth/"
 - CONTROL_FOLDER="core/control/"
@@ -77,6 +78,8 @@ jobs:
     if: type = pull_request
     script: 
     #- source travis-scripts/pr_main.sh
+    - TYPE="$(echo $TRAVIS_BRANCH | cut -d'/' -f1)"
+    - NUMBER="$(echo $TRAVIS_BRANCH | cut -d'/' -f2)"
     - |
       if [[ $CHANGED_FILES == *"${CLI_FOLDER}"* ]]; then
         echo "Build keptn cli"
