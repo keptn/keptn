@@ -81,34 +81,34 @@ jobs:
     - |
       if [[ $CHANGED_FILES == *"${INSTALL_FOLDER}"* ]]; then
         echo "Build keptn installer"
-        source travis-scripts/build_release.sh "${INSTALLER_IMAGE}" "${GIT_SHA}" "${DATE}" "${INSTALLER_VERSION}"
+        source travis-scripts/build_master.sh "${INSTALLER_IMAGE}" "${INSTALLER_VERSION}"
       fi
     - | 
       if [[ $CHANGED_FILES == *"${AUTH_FOLDER}"* ]]; then
         echo "Build keptn auth component"
         cd "./${AUTH_FOLDER}"
-        source ../../travis-scripts/build_release.sh "${AUTH_IMAGE}" "${GIT_SHA}" "${DATE}" "${AUTH_VERSION}"
+        source ../../travis-scripts/build_master.sh "${AUTH_IMAGE}" "${AUTH_VERSION}"
         cd ../..
       fi
     - | 
       if [[ $CHANGED_FILES == *"${CONTROL_FOLDER}"* ]]; then
         echo "Build keptn control component"
         cd "./${CONTROL_FOLDER}"
-        source ../../travis-scripts/build_release.sh "${CONTROL_IMAGE}" "${GIT_SHA}" "${DATE}" "${CONTROL_VERSION}"
+        source ../../travis-scripts/build_master.sh "${CONTROL_IMAGE}" "${CONTROL_VERSION}"
         cd ../..
       fi
     - | 
       if [[ $CHANGED_FILES == *"${EVENTBROKER_FOLDER}"* ]]; then
         echo "Build keptn eventbroker component"
         cd "./${EVENTBROKER_FOLDER}"
-        source ../../travis-scripts/build_release.sh "${EVENTBROKER_IMAGE}" "${GIT_SHA}" "${DATE}" "${EVENTBROKER_VERSION}"
+        source ../../travis-scripts/build_master.sh "${EVENTBROKER_IMAGE}" "${EVENTBROKER_VERSION}"
         cd ../..
       fi
     - | 
       if [[ $CHANGED_FILES == *"${EVENTBROKER_EXT_FOLDER}"* ]]; then
         echo "Build keptn eventbroker-ext component"
         cd "./${EVENTBROKER_EXT_FOLDER}"
-        source ../../travis-scripts/build_release.sh "${EVENTBROKER_EXT_IMAGE}" "${GIT_SHA}" "${DATE}" "${EVENTBROKER_EXT_VERSION}"
+        source ../../travis-scripts/build_master.sh "${EVENTBROKER_EXT_IMAGE}" "${EVENTBROKER_EXT_VERSION}"
         cd ../..
       fi
     #after_script: source travis-scripts/pr_cleanup.sh
