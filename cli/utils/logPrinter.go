@@ -44,10 +44,13 @@ func GetLogLevel(logLevel string) LogLevelType {
 
 	if strings.ToLower(logLevel) == "info" {
 		return InfoLevel
-	} else if strings.ToLower(logLevel) == "debug" || strings.ToLower(logLevel) == "verbose" {
-		fmt.Println("Verbose logging enabled.")
+	} else if strings.ToLower(logLevel) == "debug" ||
+		strings.ToLower(logLevel) == "verbose" ||
+		strings.ToLower(logLevel) == "v" {
 		return VerboseLevel
-	} else if strings.ToLower(logLevel) == "error" || strings.ToLower(logLevel) == "quiet" {
+	} else if strings.ToLower(logLevel) == "error" ||
+		strings.ToLower(logLevel) == "quiet" ||
+		strings.ToLower(logLevel) == "q" {
 		return QuietLevel
 	}
 	return -1
