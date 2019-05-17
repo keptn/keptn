@@ -34,7 +34,7 @@ export class MessageService {
       const result = await axios.post(`http://${channelUri}`, message);
       Logger.debug(
         message.shkeptncontext,
-        `Sent request to channel. Reponse: ${JSON.stringify(result.data)}`,
+        `Sent request to channel. Response: ${JSON.stringify(result.data)}`,
       );
     } catch (e) {
       Logger.error(message.shkeptncontext, `Error while sending request: ${e}`);
