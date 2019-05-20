@@ -13,39 +13,15 @@ import (
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
-	"github.com/cloudevents/sdk-go/pkg/cloudevents/transport"
 	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 )
 
-type addHeader func(context.Context, transport.Message, string) context.Context
-
-// AddXKeptnSignatureHeader adds the X-Keptn-Signature header in the provided context
-func AddXKeptnSignatureHeader(c context.Context, msg transport.Message, apiToken string) context.Context {
-	if m, ok := msg.(*cloudeventshttp.Message); ok {
-		mac := hmac.New(sha1.New, []byte(apiToken))
-		mac.Write(m.Body)
-		signatureVal := mac.Sum(nil)
-		sha1Hash := "sha1=" + fmt.Sprintf("%x", signatureVal)
-
-		// Add signature header
-		return cloudeventshttp.ContextWithHeader(c, "X-Keptn-Signature", sha1Hash)
-	}
-
-	Warning.Printf("Cannto add header")
-	return c
-}
-
-// AddAuthorizationHeader adds the Autorization header in the provided context
-func AddAuthorizationHeader(c context.Context, msg transport.Message, apiToken string) context.Context {
-
-	return cloudeventshttp.ContextWithHeader(c, "Authorization", "Bearer "+apiToken)
-}
+const timeout = 60
 
 // Send creates a request including the X-Keptn-Signature and sends the data
 // struct to the provided target. It returns the obtained http.Response.
-func Send(url url.URL, event cloudevents.Event, apiToken string, fn addHeader) (*cloudevents.Event, error) {
-
+func Send(url url.URL, event cloudevents.Event, apiToken string) (*cloudevents.Event, error) {
 	ec := event.Context.AsV02()
 	if ec.Time == nil || ec.Time.IsZero() {
 		ec.Time = &types.Timestamp{Time: time.Now()}
@@ -60,7 +36,7 @@ func Send(url url.URL, event cloudevents.Event, apiToken string, fn addHeader) (
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
-	t.Client = &http.Client{Timeout: 60 * time.Second, Transport: tr}
+	t.Client = &http.Client{Timeout: timeout * time.Second, Transport: tr}
 
 	if err != nil {
 		return nil, err
@@ -83,10 +59,15 @@ func Send(url url.URL, event cloudevents.Event, apiToken string, fn addHeader) (
 	}
 
 	usedContext := context.Background()
-	if fn != nil {
-		usedContext = fn(usedContext, msg, apiToken)
-	}
+	if m, ok := msg.(*cloudeventshttp.Message); ok {
+		mac := hmac.New(sha1.New, []byte(apiToken))
+		mac.Write(m.Body)
+		signatureVal := mac.Sum(nil)
+		sha1Hash := "sha1=" + fmt.Sprintf("%x", signatureVal)
 
+		// Add signature header
+		usedContext = cloudeventshttp.ContextWithHeader(usedContext, "X-Keptn-Signature", sha1Hash)
+	}
 	return c.Send(usedContext, event)
 }
 
