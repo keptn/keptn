@@ -89,6 +89,30 @@ jobs:
         source ../travis-scripts/build_cli_feature.sh "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
         cd ..
       fi
+    - |
+      if [[ $CHANGED_FILES == *"${CLI_FOLDER}"* ]]; then
+        echo "Build keptn cli"
+        travis-scripts/setup_gcloud.sh
+        cd "./${CLI_FOLDER}"
+        source ../travis-scripts/build_cli_develop.sh "${GIT_SHA}" "${DATE}"
+        cd ..
+      fi
+    - |
+      if [[ $CHANGED_FILES == *"${CLI_FOLDER}"* ]]; then
+        echo "Build keptn cli"
+        travis-scripts/setup_gcloud.sh
+        cd "./${CLI_FOLDER}"
+        source ../travis-scripts/build_cli_release.sh "${GIT_SHA}" "${DATE}" "${CLI_VERSION}"
+        cd ..
+      fi
+    - |
+      if [[ $CHANGED_FILES == *"${CLI_FOLDER}"* ]]; then
+        echo "Build keptn cli"
+        travis-scripts/setup_gcloud.sh
+        cd "./${CLI_FOLDER}"
+        source ../travis-scripts/build_cli_master.sh "${CLI_VERSION}"
+        cd ..
+      fi
     #after_script: source travis-scripts/pr_cleanup.sh
 
   - stage: develop/nightly
