@@ -32,7 +32,7 @@ export class ExtEventRequestModel {
 
   @ApiModelProperty({
     description: 'CE Source',
-    example: ['https://github-operator.svc.cluster.local'],
+    example: ['Keptn CLI'],
     type: 'string',
     required: true,
   })
