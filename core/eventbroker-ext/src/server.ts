@@ -15,6 +15,7 @@ import './ext-event/ExtEventController';
 import './dynatrace/DynatraceController';
 
 // import models
+import './ext-event/ExtEventRequestModel';
 
 // tslint:disable-next-line: import-name
 import RequestLogger = require('./middleware/requestLogger');
