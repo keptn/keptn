@@ -27,6 +27,7 @@ async function handleExtEventRequest(
   next: express.NextFunction,
 ) {
   console.log('Starting authentication');
+  console.log(request)
   console.log(JSON.stringify(request.body));
   const signature: string =
     request.headers !== undefined ?
