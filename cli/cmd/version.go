@@ -20,6 +20,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	// Version information which is passed by ldflags
+	Version string
+)
+
 // versionCmd represents the version command
 var versionCmd = &cobra.Command{
 	Use:   "version",
@@ -29,7 +34,7 @@ var versionCmd = &cobra.Command{
 Example:
 	keptn version`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("CLI version: 0.2.1")
+		fmt.Println("CLI version: " + Version)
 	},
 }
 
