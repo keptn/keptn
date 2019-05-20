@@ -27,7 +27,7 @@ Example:
 	keptn auth --endpoint=myendpoint.com --api-token=xyz`,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fmt.Println("Starting to authenticate")
+		utils.PrintLog("Starting to authenticate", utils.InfoLevel)
 
 		source, _ := url.Parse("https://github.com/keptn/keptn/cli#auth")
 		contentType := "application/json"
@@ -50,14 +50,18 @@ Example:
 		authURL := *u
 		authURL.Path = "auth"
 
-		_, err = utils.Send(authURL, event, *apiToken, utils.AddXKeptnSignatureHeader)
-		if err != nil {
-			fmt.Println("Authentication was unsuccessful")
-			return err
+		if !mocking {
+			_, err = utils.Send(authURL, event, *apiToken)
+			if err != nil {
+				utils.PrintLog("Authentication was unsuccessful", utils.QuietLevel)
+				return err
+			}
+			utils.PrintLog("Successfully authenticated", utils.InfoLevel)
+			return credentialmanager.SetCreds(*u, *apiToken)
 		}
 
-		fmt.Println("Successfully authenticated")
-		return credentialmanager.SetCreds(*u, *apiToken)
+		fmt.Println("skipping auth due to mocking flag set to true")
+		return nil
 	},
 }
 

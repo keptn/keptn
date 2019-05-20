@@ -189,6 +189,7 @@ func TestOnboardServiceCmdUsingHelm(t *testing.T) {
 		fmt.Sprintf("--values=%s", tmpValues),
 		fmt.Sprintf("--deployment=%s", tmpDeployment),
 		fmt.Sprintf("--service=%s", tmpService),
+		"--mock",
 	}
 	rootCmd.SetArgs(args)
 	err := rootCmd.Execute()
@@ -230,6 +231,7 @@ func TestOnboardServiceCmdUsingHelmIncorrectName(t *testing.T) {
 		fmt.Sprintf("--values=%s", tmpValues),
 		fmt.Sprintf("--deployment=%s", tmpDeployment),
 		fmt.Sprintf("--service=%s", tmpService),
+		"--mock",
 	}
 	rootCmd.SetArgs(args)
 	err := rootCmd.Execute()

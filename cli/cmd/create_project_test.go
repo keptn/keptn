@@ -39,6 +39,7 @@ stages:
 		"project",
 		"sockshop",
 		tmpShipyardFileName,
+		"--mock",
 	}
 	rootCmd.SetArgs(args)
 	err := rootCmd.Execute()

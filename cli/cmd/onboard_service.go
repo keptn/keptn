@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
+	"github.com/keptn/keptn/cli/utils/websockethelper"
 	"github.com/spf13/cobra"
 )
 
@@ -45,7 +46,7 @@ var serviceCmd = &cobra.Command{
 		} else {
 			if *valuesFilePath == "" {
 				cmd.SilenceUsage = false
-				return errors.New("Provide a Helm values file.\n")
+				return errors.New("Provide a Helm values file")
 			}
 		}
 
@@ -72,10 +73,12 @@ var serviceCmd = &cobra.Command{
 			}
 		} else {
 			if *deploymentFilePath != "" {
-				fmt.Printf("The specified deployment file is ignored")
+				utils.PrintLog("The specified deployment file is ignored", utils.InfoLevel)
+
 			}
 			if *serviceFilePath != "" {
-				fmt.Println("The specified service file is ignored")
+				utils.PrintLog("The specified service file is ignored", utils.InfoLevel)
+
 			}
 			manifestData, err := utils.ReadFile(*manifestFilePath)
 			if err != nil {
@@ -94,7 +97,7 @@ var serviceCmd = &cobra.Command{
 			return errors.New(authErrorMsg)
 		}
 
-		fmt.Println("Starting to onboard service")
+		utils.PrintLog("Starting to onboard service", utils.InfoLevel)
 
 		svcData := serviceData{}
 		svcData["project"] = *project
@@ -177,15 +180,26 @@ var serviceCmd = &cobra.Command{
 		serviceURL := endPoint
 		serviceURL.Path = "service"
 
-		fmt.Println("Connecting to server ", endPoint.String())
-		_, err = utils.Send(serviceURL, event, apiToken, utils.AddXKeptnSignatureHeader)
+		utils.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), utils.VerboseLevel)
+		if !mocking {
+			responseCE, err := utils.Send(serviceURL, event, apiToken)
+			if err != nil {
+				utils.PrintLog("Onboard service was unsuccessful", utils.QuietLevel)
+				return err
+			}
 
-		if err != nil {
-			fmt.Println("Onboard service was unsuccessful")
-			return err
+			// check for responseCE to include token
+			if responseCE == nil {
+				utils.PrintLog("Response CE is nil", utils.QuietLevel)
+
+				return nil
+			}
+			if responseCE.Data != nil {
+				return websockethelper.PrintWSContent(responseCE)
+			}
+		} else {
+			fmt.Println("Skipping onboard service due to mocking flag set to true")
 		}
-
-		fmt.Printf("Successfully onboarded service in project %v\n", svcData["project"])
 		return nil
 	},
 }
@@ -197,7 +211,7 @@ func init() {
 	serviceCmd.MarkFlagRequired("project")
 
 	// Flags for onboarding a service using Helm
-	valuesFilePath = serviceCmd.Flags().StringP("values", "v", "", "The values file")
+	valuesFilePath = serviceCmd.Flags().StringP("values", "", "", "The values file")
 	deploymentFilePath = serviceCmd.Flags().StringP("deployment", "d", "", "The deployment file")
 	serviceFilePath = serviceCmd.Flags().StringP("service", "s", "", "The service file")
 

@@ -59,7 +59,7 @@ function wait_for_deployment_in_namespace() {
 
       if [[ $? == '0' ]]
       then
-        print_debug "Deployment ${DEPLOYMENT} in ${NAMESPACE} namespace available, continue installation."
+        print_debug "Deployment ${DEPLOYMENT} in ${NAMESPACE} namespace available."
         break
       fi
       RETRY=$[$RETRY+1]
@@ -83,7 +83,7 @@ function wait_for_channel_in_namespace() {
     kubectl get channel $CHANNEL -n $NAMESPACE
 
     if [[ $? == '0' ]]; then
-      print_debug "Channel ${CHANNEL} in namespace ${NAMESPACE} available, continue installation."
+      print_debug "Channel ${CHANNEL} in namespace ${NAMESPACE} available."
       break
     fi
     RETRY=$[$RETRY+1]
@@ -109,7 +109,7 @@ function wait_for_all_pods_in_namespace() {
     eval $CMD
 
     if [[ $? == '0' ]]; then
-      print_debug "All pods are running in namespace ${NAMESPACE}, continue installation."
+      print_debug "All pods are running in namespace ${NAMESPACE}."
       break
     fi
     RETRY=$[$RETRY+1]
@@ -132,7 +132,7 @@ function wait_for_crds() {
     kubectl get $CRDS
 
     if [[ $? == '0' ]]; then
-      print_debug "All custom resource definitions are available, continue installation."
+      print_debug "All custom resource definitions are available."
       break
     fi
     RETRY=$[$RETRY+1]

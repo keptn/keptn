@@ -25,6 +25,7 @@ func TestConfigureCmd(t *testing.T) {
 		"--org=TestORG",
 		"--user=User",
 		"--token=super-secret",
+		"--mock",
 	}
 	rootCmd.SetArgs(args)
 	err := rootCmd.Execute()

@@ -23,7 +23,7 @@ describe('ConfigController', () => {
     response = {} as express.Response;
     next = {} as express.NextFunction;
   });
-  it('should return true if a message has been forwarded', async () => {
+  it('should invoke the message service', async () => {
     const messageServiceStub = sinon
       .stub()
       .returns(true);
@@ -42,35 +42,5 @@ describe('ConfigController', () => {
     await configController.setGithubConfig(request, response, next);
 
     expect(messageServiceStub.calledWith(request.body)).is.true;
-    expect(responseSendSpy.calledWithMatch({
-      data: {
-        success: true,
-      },
-    })).is.true;
   }).timeout(5000);
-  it('should return false if a message has not been forwarded', async () => {
-    const messageServiceStub = sinon
-      .stub()
-      .returns(false);
-
-    messageService.sendMessage = messageServiceStub;
-    const responseSendSpy = sinon.spy();
-    response.send = responseSendSpy;
-
-    request.body = {
-      data: {
-        org: 'my_org',
-        user: 'my_user',
-        token: 'my_token',
-      },
-    };
-    await configController.setGithubConfig(request, response, next);
-
-    expect(messageServiceStub.calledWith(request.body)).is.true;
-    expect(responseSendSpy.calledWithMatch({
-      data: {
-        success: false,
-      },
-    })).is.true;
-  });
 });

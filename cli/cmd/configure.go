@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
+	"github.com/keptn/keptn/cli/utils/websockethelper"
 	"github.com/spf13/cobra"
 )
 
@@ -36,7 +37,7 @@ Example:
 			return errors.New(authErrorMsg)
 		}
 
-		fmt.Println("Starting to configure the GitHub organization, the GitHub user, and the GitHub personal access token")
+		utils.PrintLog("Starting to configure the GitHub organization, the GitHub user, and the GitHub personal access token", utils.InfoLevel)
 
 		source, _ := url.Parse("https://github.com/keptn/keptn/cli#configure")
 
@@ -54,15 +55,26 @@ Example:
 		configURL := endPoint
 		configURL.Path = "config"
 
-		fmt.Println("Connecting to server ", endPoint.String())
-		_, err = utils.Send(configURL, event, apiToken, utils.AddXKeptnSignatureHeader)
+		if !mocking {
+			utils.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), utils.VerboseLevel)
+			responseCE, err := utils.Send(configURL, event, apiToken)
+			if err != nil {
+				utils.PrintLog("Configure was unsuccessful", utils.QuietLevel)
+				return err
+			}
 
-		if err != nil {
-			fmt.Println("Configure was unsuccessful")
-			return err
+			// check for responseCE to include token
+			if responseCE == nil {
+				utils.PrintLog("Response CE is nil", utils.QuietLevel)
+				return nil
+			}
+			if responseCE.Data != nil {
+				return websockethelper.PrintWSContent(responseCE)
+			}
+		} else {
+			fmt.Println("Skipping configure due to mocking flag set to true")
 		}
-
-		fmt.Println("Successfully configured the GitHub organization, the GitHub user, and the GitHub personal access token")
+		// fmt.Println("Successfully configured the GitHub organization, the GitHub user, and the GitHub personal access token")
 		return nil
 	},
 }
