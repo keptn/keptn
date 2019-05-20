@@ -34,6 +34,7 @@ async function handleExtEventRequest(
   console.log(signature);
   if (signature === undefined) {
     response.status(401);
+    response.end();
     return;
   }
   const payload = JSON.stringify(request.body);
@@ -56,6 +57,7 @@ async function handleExtEventRequest(
   } catch (e) {
     console.log('Authentication request failed');
     response.status(401);
+    response.end();
   }
 }
 
