@@ -14,9 +14,52 @@ const authenticator: express.RequestHandler = async (
   if (request.url !== undefined && request.url.indexOf('dynatrace') > 0) {
     await handleDynatraceRequest(request, response, next);
     return;
+  } else if (request.url !== undefined && request.url.indexOf('event') > 0) {
+    await handleExtEventRequest(request, response, next);
+    return;
   }
   await handleGitHubRequest(request, response, next);
 };
+
+async function handleExtEventRequest(
+  request: express.Request,
+  response: express.Response,
+  next: express.NextFunction,
+) {
+  console.log('Starting authentication');
+  console.log(JSON.stringify(request.body));
+  const signature: string =
+    request.headers !== undefined ?
+      request.headers['x-keptn-signature'] as string : undefined;
+  console.log(signature);
+  if (signature === undefined) {
+    response.status(401);
+    response.end();
+    return;
+  }
+  const payload = JSON.stringify(request.body);
+
+  const authRequest: AuthRequest = {
+    signature,
+    payload,
+  };
+
+  console.log(`Sending auth request: ${JSON.stringify(authRequest)}`);
+  let authResult;
+  try {
+    authResult = await axios.post(AUTH_URL, authRequest);
+    if (authResult.data.authenticated) {
+      next();
+    } else {
+      response.status(401);
+      response.end();
+    }
+  } catch (e) {
+    console.log('Authentication request failed');
+    response.status(401);
+    response.end();
+  }
+}
 
 async function handleDynatraceRequest(
   request: express.Request,
