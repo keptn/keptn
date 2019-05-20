@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/keptn/keptn/cli/utils"
-	"github.com/keptn/keptn/cli/utils/credentialmanager"
 )
 
 func init() {
@@ -17,16 +16,20 @@ func init() {
 // TestNewArtifact tests the new-artifact command.
 func TestNewArtifact(t *testing.T) {
 
-	credentialmanager.MockCreds = true
+	// credentialmanager.MockCreds = true
 
 	buf := new(bytes.Buffer)
 	rootCmd.SetOutput(buf)
 
 	args := []string{
+		"send",
 		"new-artifact",
+		fmt.Sprintf("--project=%s", "sockshop"),
 		fmt.Sprintf("--service=%s", "carts"),
 		fmt.Sprintf("--stage=%s", "dev"),
-		fmt.Sprintf("--docker-image=%s", "keptn/carts:latest"),
+		fmt.Sprintf("--image=%s", "keptnexamples/carts"),
+		fmt.Sprintf("--tag=%s", "0.7.0"),
+		// "--mock",
 	}
 	rootCmd.SetArgs(args)
 	err := rootCmd.Execute()
