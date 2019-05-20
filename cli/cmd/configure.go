@@ -37,7 +37,7 @@ Example:
 			return errors.New(authErrorMsg)
 		}
 
-		websockethelper.PrintLogLevel(websockethelper.LogData{Message: "Starting to configure the GitHub organization, the GitHub user, and the GitHub personal access token", LogLevel: "INFO"}, LogLevel)
+		utils.PrintLog("Starting to configure the GitHub organization, the GitHub user, and the GitHub personal access token", utils.InfoLevel)
 
 		source, _ := url.Parse("https://github.com/keptn/keptn/cli#configure")
 
@@ -56,25 +56,23 @@ Example:
 		configURL.Path = "config"
 
 		if !mocking {
-			websockethelper.PrintLogLevel(websockethelper.LogData{Message: fmt.Sprintf("Connecting to server %s", endPoint.String()), LogLevel: "DEBUG"}, LogLevel)
+			utils.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), utils.VerboseLevel)
 			responseCE, err := utils.Send(configURL, event, apiToken)
 			if err != nil {
-				websockethelper.PrintLogLevel(websockethelper.LogData{Message: "Configure was unsuccessful", LogLevel: "ERROR"}, LogLevel)
-
+				utils.PrintLog("Configure was unsuccessful", utils.QuietLevel)
 				return err
 			}
 
 			// check for responseCE to include token
 			if responseCE == nil {
-				websockethelper.PrintLogLevel(websockethelper.LogData{Message: "response CE is nil", LogLevel: "ERROR"}, LogLevel)
-
+				utils.PrintLog("Response CE is nil", utils.QuietLevel)
 				return nil
 			}
 			if responseCE.Data != nil {
-				return websockethelper.PrintWSContent(responseCE, LogLevel)
+				return websockethelper.PrintWSContent(responseCE)
 			}
 		} else {
-			fmt.Println("skipping configure due to mocking flag set to true")
+			fmt.Println("Skipping configure due to mocking flag set to true")
 		}
 		// fmt.Println("Successfully configured the GitHub organization, the GitHub user, and the GitHub personal access token")
 		return nil
