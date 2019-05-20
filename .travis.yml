@@ -1,23 +1,17 @@
 sudo: true
-
 dist: xenial
-
-# Use node_js environnement
 language: go
-
 go:
   - 1.12.x
 
-# Cache GCloud SDK between commands
+# Cache google cloud SDK between commands
 cache:
   directories:
     - "$HOME/google-cloud-sdk/"
 
-# Install services
 services:
   - docker
 
-# Set env vars
 env:
   global:
     - GOOGLE_APPLICATION_CREDENTIALS=~/gcloud-service-key.json
