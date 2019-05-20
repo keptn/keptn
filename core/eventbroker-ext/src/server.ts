@@ -21,7 +21,7 @@ import RequestLogger = require('./middleware/requestLogger');
 import authenticator = require('./middleware/authenticator');
 import * as path from 'path';
 import { GitHubService } from './github/GitHubService';
-import { DockerService } from './docker/DockerService';
+import { ExtEventService } from './ext-event/ExtEventService';
 import { DynatraceService } from './dynatrace/DynatraceService';
 
 const port: number = Number(process.env.PORT) || 5001; // or from a configuration file
@@ -33,7 +33,7 @@ const container = new Container();
 
 // set up bindings
 container.bind<GitHubService>('GitHubService').to(GitHubService);
-container.bind<DockerService>('DockerService').to(DockerService);
+container.bind<ExtEventService>('ExtEventService').to(ExtEventService);
 container.bind<DynatraceService>('DynatraceService').to(DynatraceService);
 
 // create server
