@@ -11,7 +11,7 @@ import * as swagger from 'swagger-express-ts';
 
 // import controllers
 import './github/GitHubController';
-import './docker/DockerController';
+import './ext-event/ExtEventController';
 import './dynatrace/DynatraceController';
 
 // import models
