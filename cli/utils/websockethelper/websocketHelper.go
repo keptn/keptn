@@ -12,6 +12,7 @@ import (
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/gorilla/websocket"
+	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
 )
 
@@ -52,7 +53,7 @@ type ChannelInfo struct {
 
 // PrintWSContent opens a websocket using the passed connection data and
 // prints status data
-func PrintWSContent(responseCE *cloudevents.Event, loglevel string) error {
+func PrintWSContent(responseCE *cloudevents.Event) error {
 
 	ceData := &incompleteCE{}
 	err := responseCE.DataAs(ceData)
@@ -74,7 +75,7 @@ func PrintWSContent(responseCE *cloudevents.Event, loglevel string) error {
 	// PrintLogLevel(LogData{Message: "Websocket successfully opened", LogLevel: "DEBUG"}, loglevel)
 	defer ws.Close()
 
-	return readAndPrintCE(ws, loglevel)
+	return readAndPrintCE(ws)
 }
 
 func validateConnectionData(connData ConnectionData) error {
@@ -102,7 +103,7 @@ func openWS(connData ConnectionData) (*websocket.Conn, *http.Response, error) {
 }
 
 // readAndPrintCE reads a cloud event from the websocket
-func readAndPrintCE(ws *websocket.Conn, loglevel string) error {
+func readAndPrintCE(ws *websocket.Conn) error {
 	ws.SetReadDeadline(time.Now().Add(time.Minute))
 	for {
 		messageType, message, err := ws.ReadMessage()
@@ -114,7 +115,7 @@ func readAndPrintCE(ws *websocket.Conn, loglevel string) error {
 			} else if err != nil {
 				log.Fatal(err)
 			}
-			if printCE(messageCE, loglevel) {
+			if printCE(messageCE) {
 				return nil
 			}
 		}
@@ -127,7 +128,7 @@ func readAndPrintCE(ws *websocket.Conn, loglevel string) error {
 	return nil
 }
 
-func printCE(ce MyCloudEvent, loglevel string) bool {
+func printCE(ce MyCloudEvent) bool {
 	var log LogData
 	if err := json.Unmarshal(ce.Data, &log); err != nil {
 		fmt.Println("JSON unmarshalling error. LogData format expected.")
@@ -135,22 +136,10 @@ func printCE(ce MyCloudEvent, loglevel string) bool {
 	}
 	switch ce.Type {
 	case "sh.keptn.events.log":
-		PrintLogLevel(log, loglevel)
+		utils.PrintLogStringLevel(log.Message, log.LogLevel)
 		return log.Terminate
 	default:
 		fmt.Println("type of event could not be processed")
 	}
 	return true
-}
-
-// PrintLogLevel prints the log according to the log level that is set via the CLI
-func PrintLogLevel(log LogData, loglevel string) {
-	// fmt.Println("log.LogLevel=", log.LogLevel)
-	if log.LogLevel == "DEBUG" && loglevel == "DEBUG" {
-		fmt.Println(log.Message)
-	} else if log.LogLevel == "INFO" && (loglevel == "INFO" || loglevel == "DEBUG") {
-		fmt.Println(log.Message)
-	} else if log.LogLevel == "ERROR" {
-		fmt.Println(log.Message)
-	}
 }

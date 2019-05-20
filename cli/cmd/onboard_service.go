@@ -73,11 +73,11 @@ var serviceCmd = &cobra.Command{
 			}
 		} else {
 			if *deploymentFilePath != "" {
-				websockethelper.PrintLogLevel(websockethelper.LogData{Message: "The specified deployment file is ignored", LogLevel: "INFO"}, LogLevel)
+				utils.PrintLog("The specified deployment file is ignored", utils.InfoLevel)
 
 			}
 			if *serviceFilePath != "" {
-				websockethelper.PrintLogLevel(websockethelper.LogData{Message: "The specified service file is ignored", LogLevel: "INFO"}, LogLevel)
+				utils.PrintLog("The specified service file is ignored", utils.InfoLevel)
 
 			}
 			manifestData, err := utils.ReadFile(*manifestFilePath)
@@ -97,7 +97,7 @@ var serviceCmd = &cobra.Command{
 			return errors.New(authErrorMsg)
 		}
 
-		websockethelper.PrintLogLevel(websockethelper.LogData{Message: "Starting to onboard service", LogLevel: "INFO"}, LogLevel)
+		utils.PrintLog("Starting to onboard service", utils.InfoLevel)
 
 		svcData := serviceData{}
 		svcData["project"] = *project
@@ -180,25 +180,25 @@ var serviceCmd = &cobra.Command{
 		serviceURL := endPoint
 		serviceURL.Path = "service"
 
-		websockethelper.PrintLogLevel(websockethelper.LogData{Message: fmt.Sprintf("Connecting to server %s", endPoint.String()), LogLevel: "DEBUG"}, LogLevel)
+		utils.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), utils.VerboseLevel)
 		if !mocking {
 			responseCE, err := utils.Send(serviceURL, event, apiToken)
 			if err != nil {
-				websockethelper.PrintLogLevel(websockethelper.LogData{Message: "Onboard service was unsuccessful", LogLevel: "ERROR"}, LogLevel)
+				utils.PrintLog("Onboard service was unsuccessful", utils.QuietLevel)
 				return err
 			}
 
 			// check for responseCE to include token
 			if responseCE == nil {
-				websockethelper.PrintLogLevel(websockethelper.LogData{Message: "response CE is nil", LogLevel: "ERROR"}, LogLevel)
+				utils.PrintLog("Response CE is nil", utils.QuietLevel)
 
 				return nil
 			}
 			if responseCE.Data != nil {
-				return websockethelper.PrintWSContent(responseCE, LogLevel)
+				return websockethelper.PrintWSContent(responseCE)
 			}
 		} else {
-			fmt.Println("skipping onboard service due to mocking flag set to true")
+			fmt.Println("Skipping onboard service due to mocking flag set to true")
 		}
 		return nil
 	},

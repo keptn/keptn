@@ -9,7 +9,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
-	"github.com/keptn/keptn/cli/utils/websockethelper"
 	"github.com/spf13/cobra"
 )
 
@@ -28,7 +27,7 @@ Example:
 	keptn auth --endpoint=myendpoint.com --api-token=xyz`,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		websockethelper.PrintLogLevel(websockethelper.LogData{Message: "Starting to authenticate", LogLevel: "INFO"}, LogLevel)
+		utils.PrintLog("Starting to authenticate", utils.InfoLevel)
 
 		source, _ := url.Parse("https://github.com/keptn/keptn/cli#auth")
 		contentType := "application/json"
@@ -54,17 +53,14 @@ Example:
 		if !mocking {
 			_, err = utils.Send(authURL, event, *apiToken)
 			if err != nil {
-				websockethelper.PrintLogLevel(websockethelper.LogData{Message: "Authentication was unsuccessful", LogLevel: "ERROR"}, LogLevel)
-
+				utils.PrintLog("Authentication was unsuccessful", utils.QuietLevel)
 				return err
 			}
-
-			websockethelper.PrintLogLevel(websockethelper.LogData{Message: "Successfully authenticated", LogLevel: "INFO"}, LogLevel)
-
+			utils.PrintLog("Successfully authenticated", utils.InfoLevel)
 			return credentialmanager.SetCreds(*u, *apiToken)
-		} else {
-			fmt.Println("skipping auth due to mocking flag set to true")
 		}
+
+		fmt.Println("skipping auth due to mocking flag set to true")
 		return nil
 	},
 }
