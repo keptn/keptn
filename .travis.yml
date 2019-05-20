@@ -38,7 +38,7 @@ before_install:
 - export TZ=Europe/Vienna
 - REGISTRY_USER=jbraeuer
 
-- source travis-scripts/setup_functions.sh | setup_gcloud
+- source travis-scripts/setup_gcloud.sh
 
 - INSTALLER_IMAGE=keptn/installer
 - AUTH_IMAGE=keptn/keptn-authenticator
