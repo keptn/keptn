@@ -72,46 +72,8 @@ jobs:
   - stage: pr
     if: type = pull_request
     script: 
-    #- source travis-scripts/pr_main.sh
-    - TYPE="$(echo $TRAVIS_BRANCH | cut -d'/' -f1)"
-    - NUMBER="$(echo $TRAVIS_BRANCH | cut -d'/' -f2)"
-    - |
-      if [[ $CHANGED_FILES == *"${CLI_FOLDER}"* ]]; then
-        echo "Build keptn cli"
-        travis-scripts/setup_gcloud.sh
-        cd "./${CLI_FOLDER}"
-        TAG="${TYPE}-${NUMBER}-${DATE}"
-        source ../travis-scripts/build_cli.sh "${TAG}"
-        cd ..
-      fi
-    - |
-      if [[ $CHANGED_FILES == *"${CLI_FOLDER}"* ]]; then
-        echo "Build keptn cli"
-        travis-scripts/setup_gcloud.sh
-        cd "./${CLI_FOLDER}"
-        TAG="${DATE}-latest"
-        source ../travis-scripts/build_cli.sh "${TAG}"
-        cd ..
-      fi
-    - |
-      if [[ $CHANGED_FILES == *"${CLI_FOLDER}"* ]]; then
-        echo "Build keptn cli"
-        travis-scripts/setup_gcloud.sh
-        cd "./${CLI_FOLDER}"
-        TAG="${CLI_VERSION}-${DATE}"
-        source ../travis-scripts/build_cli.sh "${TAG}"
-        cd ..
-      fi
-    - |
-      if [[ $CHANGED_FILES == *"${CLI_FOLDER}"* ]]; then
-        echo "Build keptn cli"
-        travis-scripts/setup_gcloud.sh
-        cd "./${CLI_FOLDER}"
-        TAG="${CLI_VERSION}"
-        source ../travis-scripts/build_cli.sh "${TAG}"
-        cd ..
-      fi
-    #after_script: source travis-scripts/pr_cleanup.sh
+    - source travis-scripts/pr_main.sh
+    after_script: source travis-scripts/pr_cleanup.sh
 
   - stage: develop/nightly
     if: branch = develop AND type = cron
@@ -128,6 +90,15 @@ jobs:
       if [[ $CHANGED_FILES == *"${INSTALL_FOLDER}"* ]]; then
         echo "Build keptn installer"
         source travis-scripts/build_feature.sh "${INSTALLER_IMAGE}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
+      fi
+    - |
+      if [[ $CHANGED_FILES == *"${CLI_FOLDER}"* ]]; then
+        echo "Build keptn cli"
+        travis-scripts/setup_gcloud.sh
+        cd "./${CLI_FOLDER}"
+        TAG="${TYPE}-${NUMBER}-${DATE}"
+        source ../travis-scripts/build_cli.sh "${TAG}"
+        cd ..
       fi
     - |
       if [[ $CHANGED_FILES == *"${AUTH_FOLDER}"* ]]; then
@@ -167,6 +138,15 @@ jobs:
         echo "Build keptn installer"
         source travis-scripts/build_develop.sh "${INSTALLER_IMAGE}" "${GIT_SHA}" "${DATE}"
       fi
+    - |
+      if [[ $CHANGED_FILES == *"${CLI_FOLDER}"* ]]; then
+        echo "Build keptn cli"
+        travis-scripts/setup_gcloud.sh
+        cd "./${CLI_FOLDER}"
+        TAG="${DATE}-latest"
+        source ../travis-scripts/build_cli.sh "${TAG}"
+        cd ..
+      fi
     - | 
       if [[ $CHANGED_FILES == *"${AUTH_FOLDER}"* ]]; then
         echo "Build keptn auth component"
@@ -205,6 +185,15 @@ jobs:
         echo "Build keptn installer"
         source travis-scripts/build_release.sh "${INSTALLER_IMAGE}" "${GIT_SHA}" "${DATE}" "${INSTALLER_VERSION}"
       fi
+    - |
+      if [[ $CHANGED_FILES == *"${CLI_FOLDER}"* ]]; then
+        echo "Build keptn cli"
+        travis-scripts/setup_gcloud.sh
+        cd "./${CLI_FOLDER}"
+        TAG="${CLI_VERSION}-${DATE}"
+        source ../travis-scripts/build_cli.sh "${TAG}"
+        cd ..
+      fi
     - | 
       if [[ $CHANGED_FILES == *"${AUTH_FOLDER}"* ]]; then
         echo "Build keptn auth component"
@@ -242,6 +231,15 @@ jobs:
       if [[ $CHANGED_FILES == *"${INSTALL_FOLDER}"* ]]; then
         echo "Build keptn installer"
         source travis-scripts/build_master.sh "${INSTALLER_IMAGE}" "${INSTALLER_VERSION}"
+      fi
+    - |
+      if [[ $CHANGED_FILES == *"${CLI_FOLDER}"* ]]; then
+        echo "Build keptn cli"
+        travis-scripts/setup_gcloud.sh
+        cd "./${CLI_FOLDER}"
+        TAG="${CLI_VERSION}"
+        source ../travis-scripts/build_cli.sh "${TAG}"
+        cd ..
       fi
     - | 
       if [[ $CHANGED_FILES == *"${AUTH_FOLDER}"* ]]; then
