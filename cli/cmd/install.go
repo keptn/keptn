@@ -23,7 +23,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -46,16 +45,6 @@ const jenkinsPassword = "AiTx4u8VyUV8tCKk"
 const installerPrefixURL = "https://raw.githubusercontent.com/keptn/keptn/"
 const installerSuffixPath = "/install/manifests/installer/installer.yaml"
 const rbacSuffixPath = "/install/manifests/installer/rbac.yaml"
-
-var logLevel *string
-
-type logLevelType int
-
-const (
-	debugLevel logLevelType = iota
-	infoLevel
-	errorLevel
-)
 
 type installCredentials struct {
 	JenkinsUser               string `json:"jenkinsUser"`
@@ -87,13 +76,9 @@ var installCmd = &cobra.Command{
 	Long: `Installs keptn on your Kubernetes cluster
 
 Example:
-	keptn install --log-level=INFO`,
+	keptn install`,
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-
-		if getLogLevel(*logLevel) < 0 {
-			return errors.New("Provided log-level not supported. Supperted are INFO, DEBUG, and ERROR")
-		}
 
 		isInstallerAvailable, err := checkInstallerAvailablity()
 		if err != nil || !isInstallerAvailable {
@@ -157,8 +142,7 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 
-		fmt.Println("Installing keptn...")
-		fmt.Printf("LogLevel=%s\n", *logLevel)
+		utils.PrintLog("Installing keptn...", utils.InfoLevel)
 
 		var creds installCredentials
 		var err error
@@ -176,37 +160,18 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 				}
 			}
 			return doInstallation(creds)
-		} else {
-			fmt.Println("skipping intallation due to mocking flag set to true")
 		}
+		fmt.Println("Skipping intallation due to mocking flag set to true")
 		return nil
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(installCmd)
-
-	logLevel = installCmd.Flags().StringP("log-level", "l", "INFO", "The log-level specifies the level of log messages "+
-		"which are provided during the keptn installation. "+
-		"Available log leveles in ascending order are DEBUG (prints all messages), INFO (prints only status messages), and "+
-		"ERROR (prints only errors).")
-
 	configFilePath = installCmd.Flags().StringP("creds", "c", "", "The name of the creds file")
 	installCmd.Flags().MarkHidden("creds")
 	installerVersion = installCmd.Flags().StringP("keptn-version", "k", "master", "The branch or tag of the version which is installed")
 	installCmd.Flags().MarkHidden("keptn-version")
-}
-
-func getLogLevel(logLevel string) logLevelType {
-
-	if strings.ToLower(logLevel) == "info" {
-		return infoLevel
-	} else if strings.ToLower(logLevel) == "debug" {
-		return debugLevel
-	} else if strings.ToLower(logLevel) == "error" {
-		return errorLevel
-	}
-	return -1
 }
 
 func checkInstallerAvailablity() (bool, error) {
@@ -252,7 +217,14 @@ func doInstallation(creds installCredentials) error {
 	}
 
 	gcloudUser, err := getGcloudUser()
-	clusterIPCIDR, servicesIPCIDR := getGcloudClusterIPCIDR(creds.ClusterName, creds.ClusterZone)
+	if err != nil {
+		return err
+	}
+	clusterIPCIDR, servicesIPCIDR, err := getGcloudClusterIPCIDR(creds.ClusterName, creds.ClusterZone)
+	if err != nil {
+		return err
+	}
+
 	if err := setDeploymentFileKey(installerPath, placeholderReplacement{"JENKINS_USER", creds.JenkinsUser},
 		placeholderReplacement{"JENKINS_PASSWORD", creds.JenkinsPassword},
 		placeholderReplacement{"GITHUB_PERSONAL_ACCESS_TOKEN", creds.GithubPersonalAccessToken},
@@ -277,7 +249,7 @@ func doInstallation(creds installCredentials) error {
 		return errors.New("Error while applying RBAC for installer pod: %s \n Aborting installation. \n" + err.Error())
 	}
 
-	fmt.Println("Deploying keptn installer pod...")
+	utils.PrintLog("Deploying keptn installer pod...", utils.InfoLevel)
 	execCmd = exec.Command(
 		"kubectl",
 		"apply",
@@ -288,13 +260,22 @@ func doInstallation(creds installCredentials) error {
 	if err != nil {
 		return errors.New("Error while deploying keptn installer pod: %s \nAborting installation. \n" + err.Error())
 	}
-	fmt.Println("Installer pod deployed successfully.")
+	utils.PrintLog("Installer pod deployed successfully.", utils.InfoLevel)
 
-	installerPodName := waitForInstallerPod()
+	installerPodName, err := waitForInstallerPod()
+	if err != nil {
+		return err
+	}
 
-	getInstallerLogs(installerPodName)
+	err = getInstallerLogs(installerPodName)
+	if err != nil {
+		return err
+	}
 	// installation finished, get auth token and endpoint
-	setupKeptnAuthAndConfigure(creds)
+	err = setupKeptnAuthAndConfigure(creds)
+	if err != nil {
+		return err
+	}
 
 	return os.Remove(installerPath)
 }
@@ -319,41 +300,68 @@ func getInstallCredentials(creds *installCredentials) error {
 	json.Unmarshal([]byte(credsStr), &creds)
 
 	fmt.Print("Please enter the following information or press enter to keep the old value:\n")
-	reader := bufio.NewReader(os.Stdin)
 
-	connectToCluster(reader, creds)
+	for {
+		connectToCluster(creds)
 
-	// At present, we use default creds for jenkins
-	creds.JenkinsUser = jenkinsUser
-	creds.JenkinsPassword = jenkinsPassword
+		// At present, we use default creds for jenkins
+		creds.JenkinsUser = jenkinsUser
+		creds.JenkinsPassword = jenkinsPassword
 
-	readGithubUserName(reader, creds)
-	readGithubUserEmail(reader, creds)
+		readGithubUserName(creds)
+		readGithubUserEmail(creds)
 
-	// Check if the access token has the necessary permissions and the github org exists
-	validScopeRes := false
-	for !validScopeRes {
-		readGithubPersonalAccessToken(reader, creds)
-		validScopeRes, err = utils.HasTokenRepoScope(creds.GithubPersonalAccessToken)
+		// Check if the access token has the necessary permissions and the github org exists
+		validScopeRes := false
+		for !validScopeRes {
+			readGithubPersonalAccessToken(creds)
+			validScopeRes, err = utils.HasTokenRepoScope(creds.GithubPersonalAccessToken)
+			if err != nil {
+				return err
+			}
+			if !validScopeRes {
+				fmt.Println("GitHub Personal Access Token requies at least a 'repo'-scope")
+				creds.GithubPersonalAccessToken = ""
+			}
+		}
+		validOrg := false
+		for !validOrg {
+			readGithubOrg(creds)
+			validOrg, err = utils.IsOrgExisting(creds.GithubPersonalAccessToken, creds.GithubOrg)
+			if err != nil {
+				return err
+			}
+			if !validOrg {
+				fmt.Println("Provided GitHub Organization " + creds.GithubOrg + " does not exist.")
+				creds.GithubOrg = ""
+			}
+		}
+
+		fmt.Println()
+		fmt.Println("Please confirm that the provided information is correct: ")
+
+		fmt.Println("Cluster Name: " + creds.ClusterName)
+		fmt.Println("Cluster Zone: " + creds.ClusterZone)
+		fmt.Println("GKE Project: " + creds.GkeProject)
+
+		fmt.Println("GitHub User Name: " + creds.GithubUserName)
+		fmt.Println("GitHub User Email: " + creds.GithubUserEmail)
+		fmt.Println("GitHub Personal Access Token: " + creds.GithubPersonalAccessToken)
+		fmt.Println("GitHub Organization: " + creds.GithubOrg)
+
+		fmt.Println()
+		fmt.Println("Is this all correct? (y/n)")
+
+		reader := bufio.NewReader(os.Stdin)
+		in, err := reader.ReadString('\n')
 		if err != nil {
 			return err
 		}
-		if !validScopeRes {
-			fmt.Println("Personal access token requies at least a 'repo'-scope")
-			creds.GithubPersonalAccessToken = ""
+		in = strings.TrimSpace(in)
+		if in == "y" || in == "yes" {
+			break
 		}
-	}
-	validOrg := false
-	for !validOrg {
-		readGithubOrg(reader, creds)
-		validOrg, err = utils.IsOrgExisting(creds.GithubPersonalAccessToken, creds.GithubOrg)
-		if err != nil {
-			return err
-		}
-		if !validOrg {
-			fmt.Println("Provided organization " + creds.GithubOrg + " does not exist.")
-			creds.GithubOrg = ""
-		}
+
 	}
 
 	newCreds, _ := json.Marshal(creds)
@@ -362,7 +370,7 @@ func getInstallCredentials(creds *installCredentials) error {
 	return credentialmanager.SetInstallCreds(newCredsStr)
 }
 
-func connectToCluster(reader *bufio.Reader, creds *installCredentials) {
+func connectToCluster(creds *installCredentials) {
 
 	if creds.ClusterName == "" || creds.ClusterZone == "" || creds.GkeProject == "" {
 		creds.ClusterName, creds.ClusterZone, creds.GkeProject = getClusterInfo()
@@ -370,77 +378,70 @@ func connectToCluster(reader *bufio.Reader, creds *installCredentials) {
 
 	connectionSuccessful := false
 	for !connectionSuccessful {
-		readClusterName(reader, creds)
-		readClusterZone(reader, creds)
-		readGkeProject(reader, creds)
+		readClusterName(creds)
+		readClusterZone(creds)
+		readGkeProject(creds)
 		connectionSuccessful, _ = authenticateAtCluster(*creds)
 	}
 }
 
-func readClusterName(reader *bufio.Reader, creds *installCredentials) {
-	readUserInput(reader,
-		&creds.ClusterName,
+func readClusterName(creds *installCredentials) {
+	readUserInput(&creds.ClusterName,
 		"^(([a-z0-9]+-)*[a-z0-9]+)$",
-		"Cluster name",
-		"Please enter a valid cluster name.",
+		"Cluster Name",
+		"Please enter a valid Cluster Name.",
 	)
 }
 
-func readClusterZone(reader *bufio.Reader, creds *installCredentials) {
-	readUserInput(reader,
-		&creds.ClusterZone,
+func readClusterZone(creds *installCredentials) {
+	readUserInput(&creds.ClusterZone,
 		"^(([a-z0-9]+-)*[a-z0-9]+)$",
-		"Cluster zone",
-		"Please enter a valid cluster zone.",
+		"Cluster Zone",
+		"Please enter a valid Cluster Zone.",
 	)
 }
 
-func readGkeProject(reader *bufio.Reader, creds *installCredentials) {
-	readUserInput(reader,
-		&creds.GkeProject,
+func readGkeProject(creds *installCredentials) {
+	readUserInput(&creds.GkeProject,
 		"^(([a-z0-9]+-)*[a-z0-9]+)$",
-		"GKE project",
-		"Please enter a valid GKE project.",
+		"GKE Project",
+		"Please enter a valid GKE Project.",
 	)
 }
 
-func readGithubUserName(reader *bufio.Reader, creds *installCredentials) {
-	readUserInput(reader,
-		&creds.GithubUserName,
+func readGithubUserName(creds *installCredentials) {
+	readUserInput(&creds.GithubUserName,
 		"^(([a-z0-9]+-)*[a-z0-9]+)$",
 		"GitHub User Name",
 		"Please enter a valid GitHub User Name.",
 	)
 }
 
-func readGithubUserEmail(reader *bufio.Reader, creds *installCredentials) {
-	readUserInput(reader,
-		&creds.GithubUserEmail,
+func readGithubUserEmail(creds *installCredentials) {
+	readUserInput(&creds.GithubUserEmail,
 		"^[a-z0-9._%+\\-]+@[a-z0-9.\\-]+\\.[a-z]{2,4}$",
 		"GitHub User Email",
-		"Please enter a valid email address.",
+		"Please enter a valid GitHub User Email.",
 	)
 }
 
-func readGithubPersonalAccessToken(reader *bufio.Reader, creds *installCredentials) {
-	readUserInput(reader,
-		&creds.GithubPersonalAccessToken,
+func readGithubPersonalAccessToken(creds *installCredentials) {
+	readUserInput(&creds.GithubPersonalAccessToken,
 		"^[a-z0-9]{40}$",
 		"GitHub Personal Access Token",
 		"Please enter a valid GitHub Personal Access Token.",
 	)
 }
 
-func readGithubOrg(reader *bufio.Reader, creds *installCredentials) {
-	readUserInput(reader,
-		&creds.GithubOrg,
+func readGithubOrg(creds *installCredentials) {
+	readUserInput(&creds.GithubOrg,
 		"^(([a-z0-9]+-)*[a-z0-9]+)$",
 		"GitHub Organization",
 		"Please enter a valid GitHub Organization.",
 	)
 }
 
-func readUserInput(reader *bufio.Reader, value *string, regex string, promptMessage string, regexViolationMessage string) {
+func readUserInput(value *string, regex string, promptMessage string, regexViolationMessage string) {
 	var re *regexp.Regexp
 	validateRegex := false
 	if regex != "" {
@@ -448,6 +449,7 @@ func readUserInput(reader *bufio.Reader, value *string, regex string, promptMess
 		validateRegex = true
 	}
 	keepAsking := true
+	reader := bufio.NewReader(os.Stdin)
 	for keepAsking {
 		fmt.Printf("%s [%s]: ", promptMessage, *value)
 		userInput, _ := reader.ReadString('\n')
@@ -560,7 +562,7 @@ func getGcloudUser() (string, error) {
 	cmd := exec.Command("gcloud", "config", "get-value", "account")
 	out, err := cmd.Output()
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("Please configure your gcloud: %s", err)
 	}
 	// This command returns the account in the first line
 	return strings.Split(strings.Replace(string(out), "\r\n", "\n", -1), "\n")[0], nil
@@ -576,23 +578,26 @@ func isKubectlAvailable() (bool, error) {
 	return true, nil
 }
 
-func getGcloudClusterIPCIDR(clusterName string, clusterZone string) (string, string) {
+func getGcloudClusterIPCIDR(clusterName string, clusterZone string) (string, string, error) {
 
 	var clusterDescription map[string]interface{}
 	cmd := exec.Command("gcloud", "container", "clusters", "describe", clusterName, "--zone="+clusterZone)
 	out, err := cmd.Output()
 	if err != nil {
-		log.Fatalf("Could not get cluster info. Aborting installation. \n")
+		return "", "", fmt.Errorf("Could not get cluster info: %s\nAborting installation", err)
 	}
 
 	err = yaml.Unmarshal([]byte(out), &clusterDescription)
+	if err != nil {
+		return "", "", err
+	}
 	clusterIPCIDR := clusterDescription["clusterIpv4Cidr"].(string)
 	servicesIPCIDR := clusterDescription["servicesIpv4Cidr"].(string)
 
-	return clusterIPCIDR, servicesIPCIDR
+	return clusterIPCIDR, servicesIPCIDR, nil
 }
 
-func waitForInstallerPod() string {
+func waitForInstallerPod() (string, error) {
 	podName := ""
 	podRunning := false
 	for ok := true; ok; ok = !podRunning {
@@ -607,28 +612,28 @@ func waitForInstallerPod() string {
 		)
 		out, err := cmd.Output()
 		if err != nil {
-			log.Fatalf("Error while retrieving installer pod: %s\n. Aborting installation. \n", err)
-		} else {
-			var podInfo map[string]interface{}
-			err = json.Unmarshal(out, &podInfo)
-			if err == nil && podInfo != nil {
-				podStatusArray := podInfo["items"].([]interface{})
+			return "", fmt.Errorf("Error while retrieving installer pod: %s\n. Aborting installation", err)
+		}
 
-				if len(podStatusArray) > 0 {
-					podStatus := podStatusArray[0].(map[string]interface{})["status"].(map[string]interface{})["phase"].(string)
-					if podStatus == "Running" {
-						podName = podStatusArray[0].(map[string]interface{})["metadata"].(map[string]interface{})["name"].(string)
-						podRunning = true
-					}
+		var podInfo map[string]interface{}
+		err = json.Unmarshal(out, &podInfo)
+		if err == nil && podInfo != nil {
+			podStatusArray := podInfo["items"].([]interface{})
+
+			if len(podStatusArray) > 0 {
+				podStatus := podStatusArray[0].(map[string]interface{})["status"].(map[string]interface{})["phase"].(string)
+				if podStatus == "Running" {
+					podName = podStatusArray[0].(map[string]interface{})["metadata"].(map[string]interface{})["name"].(string)
+					podRunning = true
 				}
-
 			}
+
 		}
 	}
-	return podName
+	return podName, nil
 }
 
-func getInstallerLogs(podName string) {
+func getInstallerLogs(podName string) error {
 
 	fmt.Printf("Getting logs of pod %s\n", podName)
 
@@ -645,27 +650,38 @@ func getInstallerLogs(podName string) {
 	stderrIn, _ := execCmd.StderrPipe()
 	err := execCmd.Start()
 	if err != nil {
-		log.Fatalf("Could not get installer pod logs: '%s'\n", err)
+		return fmt.Errorf("Could not get installer pod logs: '%s'", err)
 	}
 
 	// cmd.Wait() should be called only after we finish reading
 	// from stdoutIn and stderrIn.
-	c := make(chan bool)
+	cRes := make(chan bool)
+	cErr := make(chan error)
 
 	go func() {
-		c <- copyAndCapture(stdoutIn, "keptn-installer.log")
+		res, err := copyAndCapture(stdoutIn, "keptn-installer.log")
+		cRes <- res
+		cErr <- err
 	}()
 
-	installSuccessfulStdErr := copyAndCapture(stderrIn, "keptn-installer-err.log")
-	installSuccessfulStdOut := <-c
+	installSuccessfulStdErr, errStdErr := copyAndCapture(stderrIn, "keptn-installer-err.log")
+	installSuccessfulStdOut := <-cRes
+	errStdOut := <-cErr
+
+	if errStdErr != nil {
+		return errStdErr
+	}
+	if errStdOut != nil {
+		return errStdOut
+	}
 
 	err = execCmd.Wait()
 	if err != nil {
-		log.Fatalf("Could not get installer pod logs: '%s'\n", err)
+		return fmt.Errorf("Could not get installer pod logs: '%s'", err)
 	}
 
 	if !installSuccessfulStdErr || !installSuccessfulStdOut {
-		log.Fatalf("keptn installation was unsuccessful.")
+		return errors.New("keptn installation was unsuccessful")
 	}
 
 	cmd := exec.Command(
@@ -674,10 +690,10 @@ func getInstallerLogs(podName string) {
 		"deployment",
 		"installer",
 	)
-	cmd.Run()
+	return cmd.Run()
 }
 
-func copyAndCapture(r io.Reader, fileName string) bool {
+func copyAndCapture(r io.Reader, fileName string) (bool, error) {
 
 	var file *os.File
 
@@ -703,7 +719,7 @@ func copyAndCapture(r io.Reader, fileName string) bool {
 			var err error
 			file, err = createFileInKeptnDirectory(fileName)
 			if err != nil {
-				log.Fatalf("Could not write logs into file: '%s\n", err)
+				return false, fmt.Errorf("Could not write logs into file: '%s", err)
 			}
 			defer file.Close()
 		}
@@ -720,10 +736,9 @@ func copyAndCapture(r io.Reader, fileName string) bool {
 			msgLogLevel = strings.TrimSpace(msgLogLevel)
 			var fullSufixReg = regexp.MustCompile(`\[keptn\|[a-zA-Z]+\]\s+\[.*\]`)
 			outputStr := strings.TrimSpace(fullSufixReg.ReplaceAllString(txt, ""))
-			if getLogLevel(msgLogLevel) >= getLogLevel(*logLevel) {
-				fmt.Println(outputStr)
-			}
-			if getLogLevel(msgLogLevel) == errorLevel {
+
+			utils.PrintLogStringLevel(outputStr, msgLogLevel)
+			if utils.GetLogLevel(msgLogLevel) == utils.QuietLevel {
 				errorOccured = true
 			}
 			if outputStr == successMsg {
@@ -731,7 +746,7 @@ func copyAndCapture(r io.Reader, fileName string) bool {
 			}
 		}
 	}
-	return !errorOccured && installSuccessful
+	return !errorOccured && installSuccessful, nil
 }
 
 func createFileInKeptnDirectory(fileName string) (*os.File, error) {
@@ -743,7 +758,10 @@ func createFileInKeptnDirectory(fileName string) (*os.File, error) {
 	return os.Create(path + fileName)
 }
 
-func setupKeptnAuthAndConfigure(creds installCredentials) {
+func setupKeptnAuthAndConfigure(creds installCredentials) error {
+
+	utils.PrintLog("Starting to configure your keptn CLI...", utils.InfoLevel)
+
 	cmd := exec.Command(
 		"kubectl",
 		"get",
@@ -754,19 +772,20 @@ func setupKeptnAuthAndConfigure(creds installCredentials) {
 		"-ojson",
 	)
 
-	const errorMsg = "Could not retrieve keptn API token.\n To manually set up your keptn CLI, please follow the instructions at https://keptn.sh/docs/0.2.0/reference/cli/."
+	const errorMsg = `Could not retrieve keptn API token: %s
+To manually set up your keptn CLI, please follow the instructions at https://keptn.sh/docs/0.2.0/reference/cli/.`
 	out, err := cmd.Output()
 	if err != nil {
-		log.Fatal(errorMsg)
+		return fmt.Errorf(errorMsg, err)
 	}
 	var secret keptnAPITokenSecret
 	err = json.Unmarshal(out, &secret)
 	if err != nil {
-		log.Fatal(errorMsg)
+		return fmt.Errorf(errorMsg, err)
 	}
 	apiToken, err := base64.StdEncoding.DecodeString(secret.Data.KeptnAPIToken)
 	if err != nil {
-		log.Fatal(errorMsg)
+		return fmt.Errorf(errorMsg, err)
 	}
 	// $(kubectl get ksvc -n keptn control -o=yaml | yq r - status.domain)
 
@@ -788,7 +807,7 @@ func setupKeptnAuthAndConfigure(creds installCredentials) {
 		if err != nil {
 			retries++
 			if retries >= 15 {
-				fmt.Println("API endpoint not yet available... trying again in 5s")
+				utils.PrintLog("API endpoint not yet available... trying again in 5s", utils.InfoLevel)
 			}
 		} else {
 			retries = 0
@@ -797,7 +816,7 @@ func setupKeptnAuthAndConfigure(creds installCredentials) {
 		if keptnEndpoint == "" || !strings.Contains(keptnEndpoint, "xip.io") {
 			retries++
 			if retries >= 15 {
-				fmt.Println("API endpoint not yet available... trying again in 5s")
+				utils.PrintLog("API endpoint not yet available... trying again in 5s", utils.InfoLevel)
 			}
 		} else {
 			keptnEndpoint = "https://" + keptnEndpoint
@@ -807,12 +826,19 @@ func setupKeptnAuthAndConfigure(creds installCredentials) {
 			time.Sleep(5 * time.Second)
 		}
 	}
-	authenticate(keptnEndpoint, string(apiToken))
-	configure(creds)
-	fmt.Println("You are now ready to use keptn.")
+	err = authenticate(keptnEndpoint, string(apiToken))
+	if err != nil {
+		return err
+	}
+	err = configure(creds)
+	if err != nil {
+		return err
+	}
+	utils.PrintLog("Your CLI is now sucessfully configured. You are now ready to use keptn.", utils.InfoLevel)
+	return nil
 }
 
-func authenticate(endPoint string, apiToken string) {
+func authenticate(endPoint string, apiToken string) error {
 	buf := new(bytes.Buffer)
 	rootCmd.SetOutput(buf)
 
@@ -825,12 +851,13 @@ func authenticate(endPoint string, apiToken string) {
 	err := rootCmd.Execute()
 
 	if err != nil {
-		log.Fatal(`Authentication at keptn API endpoint failed.
-To manually set up your keptn CLI, please follow the instructions at https://keptn.sh/docs/0.2.0/reference/cli/.`)
+		return fmt.Errorf("Authentication at keptn failed: %s\n"+
+			"To manually set up your keptn CLI, please follow the instructions at https://keptn.sh/docs/0.2.0/reference/cli/.", err)
 	}
+	return nil
 }
 
-func configure(creds installCredentials) {
+func configure(creds installCredentials) error {
 
 	buf := new(bytes.Buffer)
 	rootCmd.SetOutput(buf)
@@ -845,6 +872,8 @@ func configure(creds installCredentials) {
 	err := rootCmd.Execute()
 
 	if err != nil {
-		log.Fatal("Automatic configuration failed.\n To manually set up your keptn CLI, please follow the instructions at https://keptn.sh/docs/0.2.0/reference/cli/.")
+		return fmt.Errorf("Configuration failed: %s\n"+
+			"To manually set up your keptn CLI, please follow the instructions at https://keptn.sh/docs/0.2.0/reference/cli/.", err)
 	}
+	return nil
 }
