@@ -11,17 +11,18 @@ import * as swagger from 'swagger-express-ts';
 
 // import controllers
 import './github/GitHubController';
-import './docker/DockerController';
+import './ext-event/ExtEventController';
 import './dynatrace/DynatraceController';
 
 // import models
+import './ext-event/ExtEventRequestModel';
 
 // tslint:disable-next-line: import-name
 import RequestLogger = require('./middleware/requestLogger');
 import authenticator = require('./middleware/authenticator');
 import * as path from 'path';
 import { GitHubService } from './github/GitHubService';
-import { DockerService } from './docker/DockerService';
+import { ExtEventService } from './ext-event/ExtEventService';
 import { DynatraceService } from './dynatrace/DynatraceService';
 
 const port: number = Number(process.env.PORT) || 5001; // or from a configuration file
@@ -33,7 +34,7 @@ const container = new Container();
 
 // set up bindings
 container.bind<GitHubService>('GitHubService').to(GitHubService);
-container.bind<DockerService>('DockerService').to(DockerService);
+container.bind<ExtEventService>('ExtEventService').to(ExtEventService);
 container.bind<DynatraceService>('DynatraceService').to(DynatraceService);
 
 // create server
@@ -46,7 +47,9 @@ server.setConfig((app: any) => {
             swaggerUiAssetPath,
           ),
     );
-  app.use(bodyParser.json());
+  app.use(bodyParser.json({
+      type: ['*/json', '*/cloudevents+json'],
+    }));
   app.use(RequestLogger);
   app.use(
     swagger.express({
