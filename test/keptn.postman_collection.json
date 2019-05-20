@@ -1,21 +1,24 @@
 {
 	"info": {
-		"_postman_id": "9f95a1a3-4f0f-42eb-9941-8066a6b22f38",
-		"name": "keptn",
+		"_postman_id": "517043e2-5469-402c-84ca-fa6b627d3347",
+		"name": "Keptn Onboarding Integration Tests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
-			"name": "Sockshop Frontend Istio",
+			"name": "Get Github Repos",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
-						"id": "bfadd2e5-8dbe-4ae5-ac9e-322df19fd50f",
+						"id": "a167a937-b342-466e-a424-5ec2ee05a520",
 						"exec": [
-							"tests[\"Status code is 200\"] = responseCode.code === 200;",
-							"",
-							"tests[\"Body contains 'socks'\"] = responseBody.has('socks');"
+							"pm.test(\"Repository exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var sockshopRepo = ",
+							"        jsonData.find((item) => item.name === pm.environment.get(\"project\"));",
+							"    pm.expect(sockshopRepo.name).to.eql(pm.environment.get(\"project\"));",
+							"});"
 						],
 						"type": "text/javascript"
 					}
@@ -23,35 +26,72 @@
 			],
 			"request": {
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "User-Agent",
+						"value": "keptn-nightly-user",
+						"type": "text"
+					}
+				],
 				"body": {
 					"mode": "raw",
 					"raw": ""
 				},
 				"url": {
-					"raw": "http://{{istioIngress}}/index.html",
-					"protocol": "http",
+					"raw": "https://api.github.com/orgs/{{githubOrg}}/repos?client_id={{Client-Id}}&client_secret={{Client-Secret}}",
+					"protocol": "https",
 					"host": [
-						"{{istioIngress}}"
+						"api",
+						"github",
+						"com"
 					],
 					"path": [
-						"index.html"
+						"orgs",
+						"{{githubOrg}}",
+						"repos"
+					],
+					"query": [
+						{
+							"key": "client_id",
+							"value": "{{Client-Id}}"
+						}, 
+						{
+							"key": "client_secret",
+							"value": "{{Client-Secret}}"
+						}
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "Sockshop Frontend Production",
+			"name": "Get Github Project Branches",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
-						"id": "8bcbfdae-44e3-4a10-8c78-b2b0c1bd5e2c",
+						"id": "a167a937-b342-466e-a424-5ec2ee05a520",
 						"exec": [
-							"tests[\"Status code is 200\"] = responseCode.code === 200;",
+							"pm.test(\"Dev branch exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var devBranch = ",
+							"        jsonData.find((item) => item.name === \"dev\");",
+							"    pm.expect(devBranch === undefined).to.be.false",
+							"});",
 							"",
-							"tests[\"Body contains 'socks'\"] = responseBody.has('socks');"
+							"pm.test(\"Staging branch exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var branch = ",
+							"        jsonData.find((item) => item.name === \"staging\");",
+							"    pm.expect(branch === undefined).to.be.false",
+							"});",
+							"",
+							"pm.test(\"Production branch exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var branch = ",
+							"        jsonData.find((item) => item.name === \"production\");",
+							"    pm.expect(branch === undefined).to.be.false",
+							"});"
 						],
 						"type": "text/javascript"
 					}
@@ -59,36 +99,57 @@
 			],
 			"request": {
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "User-Agent",
+						"value": "keptn-nightly-user",
+						"type": "text"
+					}
+				],
 				"body": {
 					"mode": "raw",
 					"raw": ""
 				},
 				"url": {
-					"raw": "http://{{frontEndProduction}}:8080/index.html",
+					"raw": "http://api.github.com/repos/{{githubOrg}}/{{project}}/branches?client_id={{Client-Id}}&client_secret={{Client-Secret}}",
 					"protocol": "http",
 					"host": [
-						"{{frontEndProduction}}"
+						"api",
+						"github",
+						"com"
 					],
-					"port": "8080",
 					"path": [
-						"index.html"
+						"repos",
+						"{{githubOrg}}",
+						"{{project}}",
+						"branches"
+					],
+					"query": [
+						{
+							"key": "client_id",
+							"value": "{{Client-Id}}"
+						}, 
+						{
+							"key": "client_secret",
+							"value": "{{Client-Secret}}"
+						}
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "Sockshop Frontend Staging",
+			"name": "Check configuration of onboarded service",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
-						"id": "c833346f-1475-497e-96b0-a11d642f01ce",
+						"id": "bba33aac-8b26-4e74-bfd9-e17d608ef85b",
 						"exec": [
-							"tests[\"Status code is 200\"] = responseCode.code === 200;",
-							"",
-							"tests[\"Body contains 'socks'\"] = responseBody.has('socks');"
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							""
 						],
 						"type": "text/javascript"
 					}
@@ -102,30 +163,52 @@
 					"raw": ""
 				},
 				"url": {
-					"raw": "http://{{frontEndStaging}}:8080/index.html",
-					"protocol": "http",
+					"raw": "https://raw.githubusercontent.com/{{githubOrg}}/{{project}}/master/shipyard.yaml?client_id={{Client-Id}}&client_secret={{Client-Secret}}",
+					"protocol": "https",
 					"host": [
-						"{{frontEndStaging}}"
+						"raw",
+						"githubusercontent",
+						"com"
 					],
-					"port": "8080",
 					"path": [
-						"index.html"
+						"{{githubOrg}}",
+						"{{project}}",
+						"master",
+						"shipyard.yaml"
+					],
+					"query": [
+						{
+							"key": "client_id",
+							"value": "{{Client-Id}}"
+						}, 
+						{
+							"key": "client_secret",
+							"value": "{{Client-Secret}}"
+						}
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "Sockshop Frontend Dev",
+			"name": "Check values.yaml in dev",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
-						"id": "3fbde516-cadd-43c0-ab42-d2c6e5a46955",
+						"id": "a3c82b2b-a49b-49ef-823c-f20fd602f218",
 						"exec": [
-							"tests[\"Status code is 200\"] = responseCode.code === 200;",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
 							"",
-							"tests[\"Body contains 'socks'\"] = responseBody.has('socks');"
+							"pm.test(\"Contains entry for carts service\", function () {",
+							"    pm.expect(pm.response.text()).to.contain(\"carts:\");",
+							"});",
+							"",
+							"pm.test(\"Contains entry for carts-db service\", function () {",
+							"    pm.expect(pm.response.text()).to.contain(\"cartsDb:\");",
+							"});"
 						],
 						"type": "text/javascript"
 					}
@@ -139,14 +222,424 @@
 					"raw": ""
 				},
 				"url": {
-					"raw": "http://{{frontEndDev}}:8080/index.html",
-					"protocol": "http",
+					"raw": "https://raw.githubusercontent.com/{{githubOrg}}/{{project}}/dev/helm-chart/values.yaml?client_id={{Client-Id}}&client_secret={{Client-Secret}}",
+					"protocol": "https",
 					"host": [
-						"{{frontEndDev}}"
+						"raw",
+						"githubusercontent",
+						"com"
 					],
-					"port": "8080",
 					"path": [
-						"index.html"
+						"{{githubOrg}}",
+						"{{project}}",
+						"dev",
+						"helm-chart",
+						"values.yaml"
+					],
+					"query": [
+						{
+							"key": "client_id",
+							"value": "{{Client-Id}}"
+						}, 
+						{
+							"key": "client_secret",
+							"value": "{{Client-Secret}}"
+						}
+					]
+				}				
+			},
+			"response": []
+		},
+		{
+			"name": "Check carts configuration in dev",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "a3c82b2b-a49b-49ef-823c-f20fd602f218",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"carts-deployment.yaml exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var item = ",
+							"        jsonData.find((item) => item.name === \"carts-deployment.yaml\");",
+							"    pm.expect(item === undefined).to.be.false",
+							"});",
+							"",
+							"",
+							"pm.test(\"carts-service.yaml exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var item = ",
+							"        jsonData.find((item) => item.name === \"carts-service.yaml\");",
+							"    pm.expect(item === undefined).to.be.false",
+							"});",
+							"",
+							"pm.test(\"cartsDb-deployment.yaml exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var item = ",
+							"        jsonData.find((item) => item.name === \"carts-db-deployment.yaml\");",
+							"    pm.expect(item === undefined).to.be.false",
+							"});",
+							"",
+							"pm.test(\"cartsDb-service.yaml exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var item = ",
+							"        jsonData.find((item) => item.name === \"carts-db-service.yaml\");",
+							"    pm.expect(item === undefined).to.be.false",
+							"});",
+							"",
+							"pm.test(\"istio-gateway.yaml exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var item = ",
+							"        jsonData.find((item) => item.name === \"istio-gateway.yaml\");",
+							"    pm.expect(item === undefined).to.be.false",
+							"});",
+							"",
+							"pm.test(\"carts-istio-virtual-service.yaml exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var item = ",
+							"        jsonData.find((item) => item.name === \"carts-istio-virtual-service.yaml\");",
+							"    pm.expect(item === undefined).to.be.false",
+							"});",
+							"",
+							"pm.test(\"carts-db-istio-virtual-service.yaml exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var item = ",
+							"        jsonData.find((item) => item.name === \"carts-db-istio-virtual-service.yaml\");",
+							"    pm.expect(item === undefined).to.be.false",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "User-Agent",
+						"value": "keptn-nightly-user",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://api.github.com/repos/{{githubOrg}}/{{project}}/contents/helm-chart/templates?ref=dev&client_id={{Client-Id}}&client_secret={{Client-Secret}}",
+					"protocol": "https",
+					"host": [
+						"api",
+						"github",
+						"com"
+					],
+					"path": [
+						"repos",
+						"{{githubOrg}}",
+						"{{project}}",
+						"contents",
+						"helm-chart",
+						"templates"
+					],
+					"query": [
+						{
+							"key": "ref",
+							"value": "dev"
+						},
+						{
+							"key": "client_id",
+							"value": "{{Client-Id}}"
+						}, 
+						{
+							"key": "client_secret",
+							"value": "{{Client-Secret}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Check carts configuration in staging",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "a3c82b2b-a49b-49ef-823c-f20fd602f218",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"carts-blue-deployment.yaml exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var item = ",
+							"        jsonData.find((item) => item.name === \"carts-blue-deployment.yaml\");",
+							"    pm.expect(item === undefined).to.be.false",
+							"});",
+							"",
+							"pm.test(\"carts-green-deployment.yaml exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var item = ",
+							"        jsonData.find((item) => item.name === \"carts-green-deployment.yaml\");",
+							"    pm.expect(item === undefined).to.be.false",
+							"});",
+							"",
+							"",
+							"pm.test(\"carts-service.yaml exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var item = ",
+							"        jsonData.find((item) => item.name === \"carts-service.yaml\");",
+							"    pm.expect(item === undefined).to.be.false",
+							"});",
+							"",
+							"pm.test(\"carts-db-blue-deployment.yaml exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var item = ",
+							"        jsonData.find((item) => item.name === \"carts-db-blue-deployment.yaml\");",
+							"    pm.expect(item === undefined).to.be.false",
+							"});",
+							"",
+							"pm.test(\"carts-db-green-deployment.yaml exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var item = ",
+							"        jsonData.find((item) => item.name === \"carts-db-green-deployment.yaml\");",
+							"    pm.expect(item === undefined).to.be.false",
+							"});",
+							"",
+							"pm.test(\"carts-db-service.yaml exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var item = ",
+							"        jsonData.find((item) => item.name === \"carts-db-service.yaml\");",
+							"    pm.expect(item === undefined).to.be.false",
+							"});",
+							"",
+							"pm.test(\"istio-gateway.yaml exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var item = ",
+							"        jsonData.find((item) => item.name === \"istio-gateway.yaml\");",
+							"    pm.expect(item === undefined).to.be.false",
+							"});",
+							"",
+							"pm.test(\"carts-istio-virtual-service.yaml exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var item = ",
+							"        jsonData.find((item) => item.name === \"carts-istio-virtual-service.yaml\");",
+							"    pm.expect(item === undefined).to.be.false",
+							"});",
+							"",
+							"pm.test(\"carts-db-istio-virtual-service.yaml exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var item = ",
+							"        jsonData.find((item) => item.name === \"carts-db-istio-virtual-service.yaml\");",
+							"    pm.expect(item === undefined).to.be.false",
+							"});",
+							"",
+							"pm.test(\"carts-istio-destination-rule.yaml exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var item = ",
+							"        jsonData.find((item) => item.name === \"carts-istio-destination-rule.yaml\");",
+							"    pm.expect(item === undefined).to.be.false",
+							"});",
+							"",
+							"pm.test(\"carts-db-istio-destination-rule.yaml exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var item = ",
+							"        jsonData.find((item) => item.name === \"carts-db-istio-destination-rule.yaml\");",
+							"    pm.expect(item === undefined).to.be.false",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "User-Agent",
+						"value": "keptn-nightly-user",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://api.github.com/repos/{{githubOrg}}/{{project}}/contents/helm-chart/templates?ref=staging&client_id={{Client-Id}}&client_secret={{Client-Secret}}",
+					"protocol": "https",
+					"host": [
+						"api",
+						"github",
+						"com"
+					],
+					"path": [
+						"repos",
+						"{{githubOrg}}",
+						"{{project}}",
+						"contents",
+						"helm-chart",
+						"templates"
+					],
+					"query": [
+						{
+							"key": "ref",
+							"value": "staging"
+						},
+						{
+							"key": "client_id",
+							"value": "{{Client-Id}}"
+						}, 
+						{
+							"key": "client_secret",
+							"value": "{{Client-Secret}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Check carts configuration in production",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "a3c82b2b-a49b-49ef-823c-f20fd602f218",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"carts-blue-deployment.yaml exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var item = ",
+							"        jsonData.find((item) => item.name === \"carts-blue-deployment.yaml\");",
+							"    pm.expect(item === undefined).to.be.false",
+							"});",
+							"",
+							"pm.test(\"carts-green-deployment.yaml exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var item = ",
+							"        jsonData.find((item) => item.name === \"carts-green-deployment.yaml\");",
+							"    pm.expect(item === undefined).to.be.false",
+							"});",
+							"",
+							"",
+							"pm.test(\"carts-service.yaml exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var item = ",
+							"        jsonData.find((item) => item.name === \"carts-service.yaml\");",
+							"    pm.expect(item === undefined).to.be.false",
+							"});",
+							"",
+							"pm.test(\"carts-db-blue-deployment.yaml exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var item = ",
+							"        jsonData.find((item) => item.name === \"carts-db-blue-deployment.yaml\");",
+							"    pm.expect(item === undefined).to.be.false",
+							"});",
+							"",
+							"pm.test(\"carts-db-green-deployment.yaml exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var item = ",
+							"        jsonData.find((item) => item.name === \"carts-db-green-deployment.yaml\");",
+							"    pm.expect(item === undefined).to.be.false",
+							"});",
+							"",
+							"pm.test(\"carts-db-service.yaml exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var item = ",
+							"        jsonData.find((item) => item.name === \"carts-db-service.yaml\");",
+							"    pm.expect(item === undefined).to.be.false",
+							"});",
+							"",
+							"pm.test(\"istio-gateway.yaml exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var item = ",
+							"        jsonData.find((item) => item.name === \"istio-gateway.yaml\");",
+							"    pm.expect(item === undefined).to.be.false",
+							"});",
+							"",
+							"pm.test(\"carts-istio-virtual-service.yaml exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var item = ",
+							"        jsonData.find((item) => item.name === \"carts-istio-virtual-service.yaml\");",
+							"    pm.expect(item === undefined).to.be.false",
+							"});",
+							"",
+							"pm.test(\"carts-db-istio-virtual-service.yaml exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var item = ",
+							"        jsonData.find((item) => item.name === \"carts-db-istio-virtual-service.yaml\");",
+							"    pm.expect(item === undefined).to.be.false",
+							"});",
+							"",
+							"pm.test(\"carts-istio-destination-rule.yaml exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var item = ",
+							"        jsonData.find((item) => item.name === \"carts-istio-destination-rule.yaml\");",
+							"    pm.expect(item === undefined).to.be.false",
+							"});",
+							"",
+							"pm.test(\"carts-db-istio-destination-rule.yaml exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var item = ",
+							"        jsonData.find((item) => item.name === \"carts-db-istio-destination-rule.yaml\");",
+							"    pm.expect(item === undefined).to.be.false",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "User-Agent",
+						"value": "keptn-nightly-user",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://api.github.com/repos/{{githubOrg}}/{{project}}/contents/helm-chart/templates?ref=production&client_id={{Client-Id}}&&client_secret={{Client-Secret}}",
+					"protocol": "https",
+					"host": [
+						"api",
+						"github",
+						"com"
+					],
+					"path": [
+						"repos",
+						"{{githubOrg}}",
+						"{{project}}",
+						"contents",
+						"helm-chart",
+						"templates"
+					],
+					"query": [
+						{
+							"key": "ref",
+							"value": "production"
+						},
+						{
+							"key": "client_id",
+							"value": "{{Client-Id}}"
+						}, 
+						{
+							"key": "client_secret",
+							"value": "{{Client-Secret}}"
+						}
 					]
 				}
 			},
