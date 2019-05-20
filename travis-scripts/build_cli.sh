@@ -1,16 +1,15 @@
 #!/bin/bash
 
-VERSION=$1
+TAG=$1
 
-TAG="${VERSION}"
 echo "$TAG" > version
 
-# MAC
-env GOOS=darwin GOARCH=amd64 go get ./...
-env GOOS=darwin GOARCH=amd64 go build -o keptn
-zip keptn-macOS.zip keptn
-tar -zcvf keptn-macOS.tar.gz keptn
-rm keptn
+# MAC is not supported yet
+#env GOOS=darwin GOARCH=amd64 go get ./...
+#env GOOS=darwin GOARCH=amd64 go build -o keptn
+#zip keptn-macOS.zip keptn
+#tar -zcvf keptn-macOS.tar.gz keptn
+#rm keptn
 
 #gsutil cp keptn-macOS.zip gs://keptn-cli/${TAG}/keptn-macOS.zip
 #gsutil cp keptn-macOS.tar.gz gs://keptn-cli/${TAG}/keptn-macOS.tar.gz
