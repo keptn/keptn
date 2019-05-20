@@ -99,14 +99,6 @@ Example:
 		projectURL := endPoint
 		projectURL.Path = "project"
 
-<<<<<<< HEAD:cli/cmd/project.go
-		fmt.Println("Connecting to server ", endPoint.String())
-		_, err = utils.Send(projectURL, event, apiToken, utils.AddXKeptnSignatureHeader)
-
-		if err != nil {
-			fmt.Println("Create project was unsuccessful")
-			return err
-=======
 		utils.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), utils.VerboseLevel)
 
 		if !mocking {
@@ -126,7 +118,6 @@ Example:
 			}
 		} else {
 			fmt.Println("Skipping create project due to mocking flag set to true")
->>>>>>> develop:cli/cmd/create_project.go
 		}
 		return nil
 	},
