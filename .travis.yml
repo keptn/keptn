@@ -98,7 +98,7 @@ jobs:
         echo "Build keptn cli"
         travis-scripts/setup_gcloud.sh
         cd "./${CLI_FOLDER}"
-        TAG="${VERSION}-${DATE}"
+        TAG="${CLI_VERSION}-${DATE}"
         source ../travis-scripts/build_cli.sh "${TAG}"
         cd ..
       fi
@@ -107,7 +107,7 @@ jobs:
         echo "Build keptn cli"
         travis-scripts/setup_gcloud.sh
         cd "./${CLI_FOLDER}"
-        TAG="${VERSION}"
+        TAG="${CLI_VERSION}"
         source ../travis-scripts/build_cli.sh "${TAG}"
         cd ..
       fi
