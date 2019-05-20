@@ -47,7 +47,7 @@ async function handleExtEventRequest(
   console.log(`Sending auth request: ${JSON.stringify(authRequest)}`);
   let authResult;
   try {
-    authResult = await axios.post(AUTH_URL, authRequest);
+    authResult = await axios.post(`${AUTH_URL}/auth`, authRequest);
     if (authResult.data.authenticated) {
       next();
     } else {
