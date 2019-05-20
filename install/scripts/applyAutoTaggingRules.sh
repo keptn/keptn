@@ -22,13 +22,21 @@ export DT_ID=$(curl -X GET \
 if [ "$DT_ID" != "" ]
 then
   echo "Removing $DT_RULE_NAME since exists. Replacing with new definition."
-  curl -X DELETE \
+  curl -f -X DELETE \
   "https://$DT_TENANT/api/config/v1/autoTags/$DT_ID?Api-Token=$DT_API_TOKEN" \
   -H 'Content-Type: application/json' \
   -H 'cache-control: no-cache'
+
+  if [[ $? -ne 0 ]]; then
+    print_error "Tagging rule: $DT_RULE_NAME could not be deleted in tenant $DT_TENANT_ID."
+    exit 1
+  fi
 fi
 
-curl -X POST \
+
+
+
+curl -f -X POST \
   "https://$DT_TENANT/api/config/v1/autoTags?api-token=$DT_API_TOKEN" \
   -H 'Content-Type: application/json' \
   -H 'cache-control: no-cache' \
@@ -80,13 +88,18 @@ export DT_ID=$(curl -X GET \
 if [ "$DT_ID" != "" ]
 then
   echo "Removing $DT_RULE_NAME since exists. Replacing with new definition."
-  curl -X DELETE \
+  curl -f -X DELETE \
   "https://$DT_TENANT/api/config/v1/autoTags/$DT_ID?Api-Token=$DT_API_TOKEN" \
   -H 'Content-Type: application/json' \
   -H 'cache-control: no-cache'
+
+  if [[ $? -ne 0 ]]; then
+    print_error "Tagging rule: $DT_RULE_NAME could not be deleted in tenant $DT_TENANT_ID."
+    exit 1
+  fi
 fi
 
-curl -X POST \
+curl -f -X POST \
   "https://$DT_TENANT/api/config/v1/autoTags?api-token=$DT_API_TOKEN" \
   -H 'Content-Type: application/json' \
   -H 'cache-control: no-cache' \
