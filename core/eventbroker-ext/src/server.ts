@@ -47,7 +47,9 @@ server.setConfig((app: any) => {
             swaggerUiAssetPath,
           ),
     );
-  app.use(bodyParser.json());
+  app.use(bodyParser.json({
+      type: ['*/json', '*/cloudevents+json'],
+    }));
   app.use(RequestLogger);
   app.use(
     swagger.express({
