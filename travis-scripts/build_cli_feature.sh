@@ -21,7 +21,7 @@ zip keptn-linux.zip keptn
 tar -zcvf keptn-linux.tar.gz keptn
 rm keptn
 
-gsutil cp keptn-linux.zip gs://keptn-cli/${FOLDER}/
+gsutil cp keptn-linux.zip gs://keptn-cli/${FOLDER}/keptn-linux.zip
 
 # Windows
 env GOOS=windows GOARCH=amd64 go get ./...
@@ -30,6 +30,6 @@ zip keptn-windows.zip keptn.exe
 tar -zcvf keptn-windows.tar.gz keptn.exe
 rm keptn.exe
 
-gsutil cp keptn-windows.zip gs://keptn-cli/${FOLDER}/
+gsutil cp keptn-windows.zip gs://keptn-cli/${FOLDER}/keptn-windows.zip
 
 ls -lsa

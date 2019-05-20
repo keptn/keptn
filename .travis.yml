@@ -8,7 +8,7 @@ language: go
 go:
   - 1.12.x
 
-# Cache Gcloud SDK between commands
+# Cache GCloud SDK between commands
 cache:
   directories:
     - "$HOME/google-cloud-sdk/"
@@ -45,6 +45,7 @@ before_install:
 - EVENTBROKER_EXT_IMAGE=keptn/keptn-event-broker-ext
 
 - INSTALLER_VERSION="$(cat version | tr -d '[:space:]')"
+- CLI_VERSION="$(cat ./cli/version | tr -d '[:space:]')"
 - AUTH_VERSION="$(cat ./core/auth/version | tr -d '[:space:]')"
 - CONTROL_VERSION="$(cat ./core/control/version | tr -d '[:space:]')"
 - EVENTBROKER_VERSION="$(cat ./core/eventbroker/version | tr -d '[:space:]')"
