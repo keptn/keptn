@@ -19,12 +19,6 @@ function setup_glcoud_pr {
     # export REGISTRY_URL=$(kubectl describe svc docker-registry -n keptn | grep "IP:" | sed 's~IP:[ \t]*~~')
 }
 
-function install_helm {
-    curl https://storage.googleapis.com/kubernetes-helm/helm-v2.12.3-linux-amd64.tar.gz --output helm-v2.12.3-linux-amd64.tar.gz
-    tar -zxvf helm-v2.12.3-linux-amd64.tar.gz
-    sudo mv linux-amd64/helm /usr/local/bin/helm
-}
-
 function setup_gcloud_nightly {
     gcloud --quiet config set project $PROJECT_NAME
     gcloud --quiet config set container/cluster $CLUSTER_NAME_NIGHTLY
@@ -50,10 +44,22 @@ function delete_nightly_cluster {
     fi
 }
 
+function install_helm {
+    curl https://storage.googleapis.com/kubernetes-helm/helm-v2.12.3-linux-amd64.tar.gz --output helm-v2.12.3-linux-amd64.tar.gz
+    tar -zxvf helm-v2.12.3-linux-amd64.tar.gz
+    sudo mv linux-amd64/helm /usr/local/bin/helm
+}
+
 function install_yq {
     sudo add-apt-repository ppa:rmescandon/yq -y
     sudo apt update
     sudo apt install yq -y
+}
+
+function install_hub {
+    sudo wget https://github.com/github/hub/releases/download/v2.6.0/hub-linux-amd64-2.6.0.tgz
+    tar -xzf hub-linux-amd64-2.6.0.tgz
+    sudo cp hub-linux-amd64-2.6.0/bin/hub /bin/
 }
 
 function install_sed {
@@ -100,8 +106,6 @@ function export_names {
 }
 
 function execute_core_component_tests {
-    # execute unit tests for core components
-    
     # Control
     cd ./core/control
     npm install
@@ -162,13 +166,6 @@ function build_and_install_cli {
     go build -o keptn
     sudo mv keptn /usr/local/bin/keptn
     cd ..
-}
-
-function install_hub {
-    # Install hub
-    sudo wget https://github.com/github/hub/releases/download/v2.6.0/hub-linux-amd64-2.6.0.tgz
-    tar -xzf hub-linux-amd64-2.6.0.tgz
-    sudo cp hub-linux-amd64-2.6.0/bin/hub /bin/
 }
 
 function verify_step() {

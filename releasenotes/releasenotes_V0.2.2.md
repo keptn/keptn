@@ -1,4 +1,4 @@
-# Release Notes 0.2.1
+# Release Notes 0.2.2
 
 This release is a stability improvement release. It does not add any new use cases, but significantly improves the installation experience of keptn.
 
@@ -28,5 +28,3 @@ keptn is installed by using these images from the [keptn Dockerhub registry](htt
 
 - Installation currently only on GKE (more platforms to come)
 - Only one GitHub organization can be configured with the keptn server (will be adressed in #210)
-- For use cases that require Dynatrace: support for Dynatrace SaaS tenants only (will be adressed in #255)
-- keptn CLI output not reliably reflecting success/error of keptn services: the CLI only reflects the successful acknowledgment of the CLI command but not its successful execution (will be adressed in #203 #143)
