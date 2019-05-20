@@ -4,11 +4,11 @@ This release is a stability improvement release. It does not add any new use cas
 
 ## New Features
 
-- The deployDynatrace.sh script installs the dynatrace-service #268 
+- The deployDynatrace.sh script installs the dynatrace-service [#268](https://github.com/keptn/keptn/issues/268)
+- CLI: Introduce new command for installing keptn [#272](https://github.com/keptn/keptn/issues/272)
 
 ## Fixed Issues
-
-- 
+- Correct typo in eventbroker and control service [#268](https://github.com/keptn/keptn/issues/324) 
 
 ## Version dependencies:
 

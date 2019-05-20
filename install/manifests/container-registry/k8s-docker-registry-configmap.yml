@@ -29,6 +29,6 @@ data:
           url: http://event-broker.keptn.svc.cluster.local/docker
           Headers:
             Content-Type: application/json
-          timeout: 5000ms
+          timeout: 30000ms
           threshold: 5
           backoff: 1s
