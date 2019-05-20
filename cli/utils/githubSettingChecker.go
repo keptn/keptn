@@ -24,7 +24,7 @@ func IsOrgExisting(accessToken string, orgName string) (bool, error) {
 	orgs, resp, err := client.Organizations.List(ctx, "", nil)
 
 	if resp.StatusCode == http.StatusUnauthorized {
-		fmt.Println("Token unauthorized")
+		fmt.Println("GitHub Personal Access Token is unauthorized")
 		return false, nil
 	}
 	if err != nil {
@@ -54,7 +54,7 @@ func HasTokenRepoScope(accessToken string) (bool, error) {
 	_, resp, err := client.Organizations.List(ctx, "", nil)
 
 	if resp.StatusCode == http.StatusUnauthorized {
-		fmt.Println("Token unauthorized")
+		fmt.Println("GitHub Personal Access Token is unauthorized")
 		return false, nil
 	}
 
