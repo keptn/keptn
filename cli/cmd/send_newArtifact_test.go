@@ -26,7 +26,6 @@ func TestNewArtifact(t *testing.T) {
 		"new-artifact",
 		fmt.Sprintf("--project=%s", "sockshop"),
 		fmt.Sprintf("--service=%s", "carts"),
-		fmt.Sprintf("--stage=%s", "dev"),
 		fmt.Sprintf("--image=%s", "keptnexamples/carts"),
 		fmt.Sprintf("--tag=%s", "0.7.0"),
 		// "--mock",

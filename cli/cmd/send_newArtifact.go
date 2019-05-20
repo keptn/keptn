@@ -32,7 +32,6 @@ import (
 type newArtifactStruct struct {
 	Project *string `json:"project"`
 	Service *string `json:"service"`
-	Stage   *string `json:"stage"`
 	Image   *string `json:"image"`
 	Tag     *string `json:"tag"`
 }
@@ -43,14 +42,13 @@ var newArtifact newArtifactStruct
 var newArtifactCmd = &cobra.Command{
 	Use: "new-artifact",
 	Short: "Sends a new-artifact-event to the keptn installation in order to deploy a new artifact" +
-		"for the specified service in the provided project and stage.",
+		"for the specified service in the provided project.",
 	Long: `Sends a new-artifact-event to the keptn installation in order to deploy a new artifact
-for the specified service in the provided project and stage.
-Therefore, this command takes the project containing the service, the name of the service, the stage into which the new artifact is deployed
-as well as the image and tag of the new artifact.
+for the specified service in the provided project.
+Therefore, this command takes the project, the name of the service as well as the image and tag of the new artifact.
 	
 Example:
-	keptn new-artifact --project=sockshop --service=carts --stage=dev --image=docker.io/keptnexamples/carts --tag=0.7.0`,
+	keptn new-artifact --project=sockshop --service=carts --image=docker.io/keptnexamples/carts --tag=0.7.0`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		controlEndPoint, apiToken, err := credentialmanager.GetCreds()
 		if err != nil {
@@ -58,8 +56,7 @@ Example:
 		}
 
 		utils.PrintLog("Starting to send a new-artifact-event to deploy the service "+
-			*newArtifact.Service+" in project "+*newArtifact.Project+" and stage "+
-			*newArtifact.Stage+" in version "+*newArtifact.Image+":"+*newArtifact.Tag, utils.InfoLevel)
+			*newArtifact.Service+" in project "+*newArtifact.Project+" in version "+*newArtifact.Image+":"+*newArtifact.Tag, utils.InfoLevel)
 
 		source, _ := url.Parse("https://github.com/keptn/keptn/cli#new-artifact")
 		contentType := "application/json"
@@ -109,9 +106,6 @@ func init() {
 
 	newArtifact.Service = newArtifactCmd.Flags().StringP("service", "", "", "The service which will be new deployed")
 	newArtifactCmd.MarkFlagRequired("service")
-
-	newArtifact.Stage = newArtifactCmd.Flags().StringP("stage", "", "", "The stage into which the new artifact will be deployed")
-	newArtifactCmd.MarkFlagRequired("stage")
 
 	newArtifact.Image = newArtifactCmd.Flags().StringP("image", "", "", "The image name, e.g."+
 		"docker.io/YOUR_ORG/YOUR_IMAGE or quay.io/YOUR_ORG/YOUR_IMAGE")
