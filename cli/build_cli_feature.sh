@@ -19,11 +19,15 @@ zip keptn-linux-${GIT_SHA}-${TYPE}-${NUMBER}-${DATE}.zip keptn
 tar -zcvf keptn-linux-${GIT_SHA}-${TYPE}-${NUMBER}-${DATE}.tar.gz keptn
 rm keptn
 
+gsutil cp keptn-linux-${GIT_SHA}-${TYPE}-${NUMBER}-${DATE}.zip gs://keptn-cli
+
 # Windows
 env GOOS=windows GOARCH=amd64 go get ./...
 env GOOS=windows GOARCH=amd64 go build -o keptn.exe
 zip keptn-windows-${GIT_SHA}-${TYPE}-${NUMBER}-${DATE}.zip keptn.exe
 tar -zcvf keptn-windows-${GIT_SHA}-${TYPE}-${NUMBER}-${DATE}.tar.gz keptn.exe
 rm keptn.exe
+
+gsutil cp keptn-windows-${GIT_SHA}-${TYPE}-${NUMBER}-${DATE}.zip gs://keptn-cli
 
 ls -lsa
