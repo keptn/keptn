@@ -23,11 +23,6 @@ type projectData struct {
 	Stages   interface{} `json:"stages"`
 }
 
-type myCloudEvent struct {
-	contenttype string
-	data        string
-}
-
 // crprojectCmd represents the project command
 var crprojectCmd = &cobra.Command{
 	Use:   "project project_name shipyard_file",
