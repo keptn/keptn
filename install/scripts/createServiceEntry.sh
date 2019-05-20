@@ -1,5 +1,7 @@
 #!/bin/bash
 
+## This script is not used anymore
+
 source ./utils.sh
 
 DT_TENANT=$1
