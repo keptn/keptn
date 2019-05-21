@@ -15,6 +15,10 @@ import {
 } from 'swagger-express-ts';
 import { ExtEventService } from './ExtEventService';
 import { ExtEventRequestModel } from './ExtEventRequestModel'
+import { MessageService } from '../svc/MessageService';
+import { WebSocketService } from '../svc/WebSocketService';
+
+const uuidv4 = require('uuid/v4');
 
 @ApiPath({
   name: 'Event',
@@ -24,7 +28,7 @@ import { ExtEventRequestModel } from './ExtEventRequestModel'
 @controller('/event')
 export class ExtEventController implements interfaces.Controller {
 
-  constructor(@inject('ExtEventService') private readonly extEventService: ExtEventService) {}
+  constructor(@inject('MessageService') private readonly messageService: MessageService) {}
 
   @ApiOperationPost({
     description: 'Handle incoming external event',
@@ -48,18 +52,22 @@ export class ExtEventController implements interfaces.Controller {
     response: express.Response,
     next: express.NextFunction,
   ): Promise<void> {
-    let keptnContext = '';
-    if (request.body !== undefined &&
-      request.body.shkeptncontext !== undefined) {
-      keptnContext = request.body.shkeptncontext;
-    }
+    const keptnContext = uuidv4();
+    
     console.log(JSON.stringify({
       keptnContext,
-      keptnService: 'eventbroker-ext',
+      keptnService: 'control',
       logLevel: 'INFO',
-      message: `received event: ${JSON.stringify(request.body)}`,
+      message: `received external event: ${JSON.stringify(request.body)}`,
     }));
+    const result = request.body;
 
-    this.extEventService.handleExtEvent(request.body);
+    const channelInfo = await WebSocketService.getInstance().createChannel(keptnContext);
+    if (result && result.data !== undefined) {
+      result.data.channelInfo = channelInfo;
+      result.shkeptncontext = keptnContext;
+    }
+    this.messageService.sendMessage(result);
+    response.send(result);
   }
 }

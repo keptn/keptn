@@ -17,7 +17,7 @@ export class ExtEventService {
     }
     console.log(JSON.stringify({
       keptnContext: extEventPayload.shkeptncontext,
-      keptnService: 'eventbroker-ext',
+      keptnService: 'control',
       logLevel: 'INFO',
       message: `Sending keptn event ${JSON.stringify(extEventPayload)}`,
     }));
