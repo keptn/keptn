@@ -13,7 +13,6 @@ import {
   ApiPath,
   SwaggerDefinitionConstant,
 } from 'swagger-express-ts';
-import { ExtEventService } from './ExtEventService';
 import { ExtEventRequestModel } from './ExtEventRequestModel'
 import { MessageService } from '../svc/MessageService';
 import { WebSocketService } from '../svc/WebSocketService';
