@@ -130,7 +130,7 @@ jobs:
       fi
 
   - stage: develop
-    if: branch = develop AND NOT type = pull_request
+    if: branch = develop AND NOT type = cron
     script: 
     - echo $TRAVIS_BUILD_STAGE_NAME
     - |
