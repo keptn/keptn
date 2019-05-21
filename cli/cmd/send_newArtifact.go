@@ -17,7 +17,10 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
@@ -48,6 +51,10 @@ Therefore, this command takes the project, the name of the service as well as th
 	
 Example:
 	keptn new-artifact --project=sockshop --service=carts --image=docker.io/keptnexamples/carts --tag=0.7.0`,
+	SilenceUsage: true,
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		return checkImageAvailability()
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		endPoint, apiToken, err := credentialmanager.GetCreds()
 		if err != nil {
@@ -94,6 +101,38 @@ Example:
 		}
 		return nil
 	},
+}
+
+func checkImageAvailability() error {
+
+	if strings.HasPrefix(*newArtifact.Image, "docker.io/") {
+		resp, err := http.Get("https://index.docker.io/v1/repositories/" +
+			strings.TrimPrefix(*newArtifact.Image, "docker.io/") + "/tags/" + *newArtifact.Tag)
+		if err != nil {
+			return err
+		}
+		if resp.StatusCode == http.StatusOK {
+			return nil
+		}
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return err
+		}
+		return errors.New("Provided image not found: " + string(body))
+	} else if strings.HasPrefix(*newArtifact.Image, "quay.io/") {
+
+		resp, err := http.Get("https://quay.io/api/v1/repository/" +
+			strings.TrimPrefix(*newArtifact.Image, "quay.io/") + "/tag/" + *newArtifact.Tag + "/images")
+		if err != nil {
+			return err
+		}
+		if resp.StatusCode == http.StatusOK {
+			return nil
+		}
+		return errors.New("Provided image not found: " + resp.Status)
+	}
+	utils.PrintLog("Availability of provided image cannot be checked.", utils.InfoLevel)
+	return nil
 }
 
 func init() {

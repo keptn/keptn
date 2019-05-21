@@ -18,7 +18,6 @@ func init() {
 func TestNewArtifact(t *testing.T) {
 
 	credentialmanager.MockCreds = true
-
 	buf := new(bytes.Buffer)
 	rootCmd.SetOutput(buf)
 
@@ -27,7 +26,7 @@ func TestNewArtifact(t *testing.T) {
 		"new-artifact",
 		fmt.Sprintf("--project=%s", "sockshop"),
 		fmt.Sprintf("--service=%s", "carts"),
-		fmt.Sprintf("--image=%s", "keptnexamples/carts"),
+		fmt.Sprintf("--image=%s", "docker.io/keptnexamples/carts"),
 		fmt.Sprintf("--tag=%s", "0.7.0"),
 		"--mock",
 	}
