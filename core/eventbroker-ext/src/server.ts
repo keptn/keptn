@@ -11,7 +11,6 @@ import * as swagger from 'swagger-express-ts';
 
 // import controllers
 import './github/GitHubController';
-import './ext-event/ExtEventController';
 import './dynatrace/DynatraceController';
 
 // import models
@@ -22,7 +21,6 @@ import RequestLogger = require('./middleware/requestLogger');
 import authenticator = require('./middleware/authenticator');
 import * as path from 'path';
 import { GitHubService } from './github/GitHubService';
-import { ExtEventService } from './ext-event/ExtEventService';
 import { DynatraceService } from './dynatrace/DynatraceService';
 
 const port: number = Number(process.env.PORT) || 5001; // or from a configuration file
@@ -34,7 +32,6 @@ const container = new Container();
 
 // set up bindings
 container.bind<GitHubService>('GitHubService').to(GitHubService);
-container.bind<ExtEventService>('ExtEventService').to(ExtEventService);
 container.bind<DynatraceService>('DynatraceService').to(DynatraceService);
 
 // create server

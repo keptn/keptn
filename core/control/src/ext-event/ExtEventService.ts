@@ -2,7 +2,6 @@ import 'reflect-metadata';
 import { injectable } from 'inversify';
 import axios  from 'axios';
 import { ExtEventRequestModel } from './ExtEventRequestModel';
-import { KeptnRequestModel } from '../lib/types/KeptnRequestModel';
 
 const uuidv4 = require('uuid/v4');
 

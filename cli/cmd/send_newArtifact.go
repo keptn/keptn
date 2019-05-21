@@ -18,7 +18,6 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
-	"strings"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
@@ -50,7 +49,7 @@ Therefore, this command takes the project, the name of the service as well as th
 Example:
 	keptn new-artifact --project=sockshop --service=carts --image=docker.io/keptnexamples/carts --tag=0.7.0`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		controlEndPoint, apiToken, err := credentialmanager.GetCreds()
+		endPoint, apiToken, err := credentialmanager.GetCreds()
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
@@ -70,13 +69,12 @@ Example:
 			Data: newArtifact,
 		}
 
-		eventBrokerHostName := controlEndPoint
-		eventBrokerHostName.Host = strings.Replace(eventBrokerHostName.Host, "control", "event-broker-ext", -1)
-		eventBrokerHostName.Path = "event"
+		eventURL := endPoint
+		eventURL.Path = "event"
 
-		utils.PrintLog(fmt.Sprintf("Connecting to server %s", eventBrokerHostName.String()), utils.VerboseLevel)
+		utils.PrintLog(fmt.Sprintf("Connecting to server %s", eventURL.String()), utils.VerboseLevel)
 		if !mocking {
-			responseCE, err := utils.Send(eventBrokerHostName, event, apiToken)
+			responseCE, err := utils.Send(eventURL, event, apiToken)
 			if err != nil {
 				utils.PrintLog("Send new-artifact was unsuccessful", utils.QuietLevel)
 				return err
