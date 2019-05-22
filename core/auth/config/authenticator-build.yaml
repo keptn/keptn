@@ -24,7 +24,7 @@ spec:
               - name: IMAGE
                 value: docker-registry.keptn.svc.cluster.local:5000/keptn/keptn-authenticator:latest
               - name: DOCKERFILE
-                value: /core/auth/Dockerfile
+                value: /core/auth/Dockerfile_kaniko
       revisionTemplate:
         metadata:
           annotations:
