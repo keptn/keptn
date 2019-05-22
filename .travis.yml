@@ -1,23 +1,17 @@
 sudo: true
-
 dist: xenial
-
-# Use node_js environnement
 language: go
-
 go:
   - 1.12.x
 
-# Cache Gcloud SDK between commands
+# Cache google cloud SDK between commands
 cache:
   directories:
     - "$HOME/google-cloud-sdk/"
 
-# Install services
 services:
   - docker
 
-# Set env vars
 env:
   global:
     - GOOGLE_APPLICATION_CREDENTIALS=~/gcloud-service-key.json
@@ -31,20 +25,247 @@ notifications:
     on_error: always 
 
 before_install:                                                                 
-  - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh 
-  - cd cli/
-  - dep ensure
-  - cd ..
+- curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh 
+- cd cli/
+- dep ensure
+- cd ..
+- export TZ=Europe/Vienna
+- REGISTRY_USER=jbraeuer
+
+- INSTALLER_IMAGE=keptn/installer
+- AUTH_IMAGE=keptn/keptn-authenticator
+- CONTROL_IMAGE=keptn/keptn-control
+- EVENTBROKER_IMAGE=keptn/keptn-event-broker
+- EVENTBROKER_EXT_IMAGE=keptn/keptn-event-broker-ext
+
+- INSTALLER_VERSION="$(cat version | tr -d '[:space:]')"
+- CLI_VERSION="$(cat ./cli/version | tr -d '[:space:]')"
+- AUTH_VERSION="$(cat ./core/auth/version | tr -d '[:space:]')"
+- CONTROL_VERSION="$(cat ./core/control/version | tr -d '[:space:]')"
+- EVENTBROKER_VERSION="$(cat ./core/eventbroker/version | tr -d '[:space:]')"
+- EVENTBROKER_EXT_VERSION="$(cat ./core/eventbroker-ext/version | tr -d '[:space:]')"
+
+- CLI_FOLDER="cli/"
+- INSTALL_FOLDER="install/"
+- AUTH_FOLDER="core/auth/"
+- CONTROL_FOLDER="core/control/"
+- EVENTBROKER_FOLDER="core/eventbroker/"
+- EVENTBROKER_EXT_FOLDER="core/eventbroker-ext/"
+
+- DATE="$(date +'%Y%m%d.%H%M')"
+- GIT_SHA="$(git rev-parse --short HEAD)"
+- echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
+- REPO_URL="$(git remote get-url --all origin)"
+- CHANGED_FILES=($(git diff --name-only $TRAVIS_COMMIT_RANGE | paste -sd "," ) )
+- echo "$CHANGED_FILES"
+- ./writeManifest.sh
+- cat MANIFEST
+
+- cp MANIFEST ./core/auth/MANIFEST
+- cp MANIFEST ./core/control/MANIFEST
+- cp MANIFEST ./core/eventbroker/MANIFEST
+- cp MANIFEST ./core/eventbroker-ext/MANIFEST
   
 jobs:
   include:
 
-    - stage: develop
-      if: branch = develop AND NOT type = pull_request 
-      script: source travis-scripts/master_main.sh
+  - stage: pr
+    if: type = pull_request
+    script: 
+    - source travis-scripts/pr_main.sh
+    after_script: source travis-scripts/pr_cleanup.sh
 
-    - stage: pr
-      if: type = pull_request
-      script: source travis-scripts/pr_main.sh
-      after_script: source travis-scripts/pr_cleanup.sh
+  - stage: develop/nightly
+    if: branch = develop AND type = cron
+    script: 
+    - source travis-scripts/master_main.sh
 
+  - stage: feature/bug/hotfix
+    if: branch =~ ^feature.*$ OR branch =~ ^bug.*$ OR branch =~ ^hotfix.*$
+    script:
+    - echo $TRAVIS_BUILD_STAGE_NAME
+    - TYPE="$(echo $TRAVIS_BRANCH | cut -d'/' -f1)"
+    - NUMBER="$(echo $TRAVIS_BRANCH | cut -d'/' -f2)"
+    - |
+      if [[ $CHANGED_FILES == *"${INSTALL_FOLDER}"* ]]; then
+        echo "Build keptn installer"
+        source travis-scripts/build_feature.sh "${INSTALLER_IMAGE}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
+      fi
+    - |
+      if [[ $CHANGED_FILES == *"${CLI_FOLDER}"* ]]; then
+        echo "Build keptn cli"
+        travis-scripts/setup_gcloud.sh
+        cd "./${CLI_FOLDER}"
+        TAG="${TYPE}-${NUMBER}-${DATE}"
+        source ../travis-scripts/build_cli.sh "${TAG}"
+        cd ..
+      fi
+    - |
+      if [[ $CHANGED_FILES == *"${AUTH_FOLDER}"* ]]; then
+        echo "Build keptn auth component"
+        cd "./${AUTH_FOLDER}"
+        source ../../travis-scripts/build_feature.sh "${AUTH_IMAGE}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
+        cd ../..
+      fi
+    - |
+      if [[ $CHANGED_FILES == *"${CONTROL_FOLDER}"* ]]; then
+        echo "Build keptn control component"
+        cd "./${CONTROL_FOLDER}"
+        source ../../travis-scripts/build_feature.sh "${CONTROL_IMAGE}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
+        cd ../..
+      fi
+    - |
+      if [[ $CHANGED_FILES == *"${EVENTBROKER_FOLDER}"* ]]; then
+        echo "Build keptn eventbroker component"
+        cd "./${EVENTBROKER_FOLDER}"
+        source ../../travis-scripts/build_feature.sh "${EVENTBROKER_IMAGE}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
+        cd ../..
+      fi
+    - |
+      if [[ $CHANGED_FILES == *"${EVENTBROKER_EXT_FOLDER}"* ]]; then
+        echo "Build keptn eventbroker-ext component"
+        cd "./${EVENTBROKER_EXT_FOLDER}"
+        source ../../travis-scripts/build_feature.sh "${EVENTBROKER_EXT_IMAGE}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
+        cd ../..
+      fi
+
+  - stage: develop
+    if: branch = develop AND NOT type = cron
+    script: 
+    - echo $TRAVIS_BUILD_STAGE_NAME
+    - |
+      if [[ $CHANGED_FILES == *"${INSTALL_FOLDER}"* ]]; then
+        echo "Build keptn installer"
+        source travis-scripts/build_develop.sh "${INSTALLER_IMAGE}" "${GIT_SHA}" "${DATE}"
+      fi
+    - |
+      if [[ $CHANGED_FILES == *"${CLI_FOLDER}"* ]]; then
+        echo "Build keptn cli"
+        travis-scripts/setup_gcloud.sh
+        cd "./${CLI_FOLDER}"
+        TAG="${DATE}-latest"
+        source ../travis-scripts/build_cli.sh "${TAG}"
+        cd ..
+      fi
+    - | 
+      if [[ $CHANGED_FILES == *"${AUTH_FOLDER}"* ]]; then
+        echo "Build keptn auth component"
+        cd "./${AUTH_FOLDER}"
+        source ../../travis-scripts/build_develop.sh "${AUTH_IMAGE}" "${GIT_SHA}" "${DATE}"
+        cd ../..
+      fi
+    - | 
+      if [[ $CHANGED_FILES == *"${CONTROL_FOLDER}"* ]]; then
+        echo "Build keptn control component"
+        cd "./${CONTROL_FOLDER}"
+        source ../../travis-scripts/build_develop.sh "${CONTROL_IMAGE}" "${GIT_SHA}" "${DATE}"
+        cd ../..
+      fi
+    - | 
+      if [[ $CHANGED_FILES == *"${EVENTBROKER_FOLDER}"* ]]; then
+        echo "Build keptn eventbroker component"
+        cd "./${EVENTBROKER_FOLDER}"
+        source ../../travis-scripts/build_develop.sh "${EVENTBROKER_IMAGE}" "${GIT_SHA}" "${DATE}"
+        cd ../..
+      fi
+    - | 
+      if [[ $CHANGED_FILES == *"${EVENTBROKER_EXT_FOLDER}"* ]]; then
+        echo "Build keptn eventbroker-ext component"
+        cd "./${EVENTBROKER_EXT_FOLDER}"
+        source ../../travis-scripts/build_develop.sh "${EVENTBROKER_EXT_IMAGE}" "${GIT_SHA}" "${DATE}"
+        cd ../..
+      fi
+    
+  - stage: release
+    if: branch =~ ^release.*$ AND NOT type = pull_request
+    script:
+    - echo $TRAVIS_BUILD_STAGE_NAME
+    - |
+      if [[ $CHANGED_FILES == *"${INSTALL_FOLDER}"* ]]; then
+        echo "Build keptn installer"
+        source travis-scripts/build_release.sh "${INSTALLER_IMAGE}" "${GIT_SHA}" "${DATE}" "${INSTALLER_VERSION}"
+      fi
+    - |
+      if [[ $CHANGED_FILES == *"${CLI_FOLDER}"* ]]; then
+        echo "Build keptn cli"
+        travis-scripts/setup_gcloud.sh
+        cd "./${CLI_FOLDER}"
+        TAG="${CLI_VERSION}-${DATE}"
+        source ../travis-scripts/build_cli.sh "${TAG}"
+        cd ..
+      fi
+    - | 
+      if [[ $CHANGED_FILES == *"${AUTH_FOLDER}"* ]]; then
+        echo "Build keptn auth component"
+        cd "./${AUTH_FOLDER}"
+        source ../../travis-scripts/build_release.sh "${AUTH_IMAGE}" "${GIT_SHA}" "${DATE}" "${AUTH_VERSION}"
+        cd ../..
+      fi
+    - | 
+      if [[ $CHANGED_FILES == *"${CONTROL_FOLDER}"* ]]; then
+        echo "Build keptn control component"
+        cd "./${CONTROL_FOLDER}"
+        source ../../travis-scripts/build_release.sh "${CONTROL_IMAGE}" "${GIT_SHA}" "${DATE}" "${CONTROL_VERSION}"
+        cd ../..
+      fi
+    - | 
+      if [[ $CHANGED_FILES == *"${EVENTBROKER_FOLDER}"* ]]; then
+        echo "Build keptn eventbroker component"
+        cd "./${EVENTBROKER_FOLDER}"
+        source ../../travis-scripts/build_release.sh "${EVENTBROKER_IMAGE}" "${GIT_SHA}" "${DATE}" "${EVENTBROKER_VERSION}"
+        cd ../..
+      fi
+    - | 
+      if [[ $CHANGED_FILES == *"${EVENTBROKER_EXT_FOLDER}"* ]]; then
+        echo "Build keptn eventbroker-ext component"
+        cd "./${EVENTBROKER_EXT_FOLDER}"
+        source ../../travis-scripts/build_release.sh "${EVENTBROKER_EXT_IMAGE}" "${GIT_SHA}" "${DATE}" "${EVENTBROKER_EXT_VERSION}"
+        cd ../..
+      fi
+
+  - stage: master
+    if: branch = master AND NOT type = pull_request
+    script:
+    - echo $TRAVIS_BUILD_STAGE_NAME
+    - |
+      if [[ $CHANGED_FILES == *"${INSTALL_FOLDER}"* ]]; then
+        echo "Build keptn installer"
+        source travis-scripts/build_master.sh "${INSTALLER_IMAGE}" "${INSTALLER_VERSION}"
+      fi
+    - |
+      if [[ $CHANGED_FILES == *"${CLI_FOLDER}"* ]]; then
+        echo "Build keptn cli"
+        travis-scripts/setup_gcloud.sh
+        cd "./${CLI_FOLDER}"
+        TAG="${CLI_VERSION}"
+        source ../travis-scripts/build_cli.sh "${TAG}"
+        cd ..
+      fi
+    - | 
+      if [[ $CHANGED_FILES == *"${AUTH_FOLDER}"* ]]; then
+        echo "Build keptn auth component"
+        cd "./${AUTH_FOLDER}"
+        source ../../travis-scripts/build_master.sh "${AUTH_IMAGE}" "${AUTH_VERSION}"
+        cd ../..
+      fi
+    - | 
+      if [[ $CHANGED_FILES == *"${CONTROL_FOLDER}"* ]]; then
+        echo "Build keptn control component"
+        cd "./${CONTROL_FOLDER}"
+        source ../../travis-scripts/build_master.sh "${CONTROL_IMAGE}" "${CONTROL_VERSION}"
+        cd ../..
+      fi
+    - | 
+      if [[ $CHANGED_FILES == *"${EVENTBROKER_FOLDER}"* ]]; then
+        echo "Build keptn eventbroker component"
+        cd "./${EVENTBROKER_FOLDER}"
+        source ../../travis-scripts/build_master.sh "${EVENTBROKER_IMAGE}" "${EVENTBROKER_VERSION}"
+        cd ../..
+      fi
+    - | 
+      if [[ $CHANGED_FILES == *"${EVENTBROKER_EXT_FOLDER}"* ]]; then
+        echo "Build keptn eventbroker-ext component"
+        cd "./${EVENTBROKER_EXT_FOLDER}"
+        source ../../travis-scripts/build_master.sh "${EVENTBROKER_EXT_IMAGE}" "${EVENTBROKER_EXT_VERSION}"
+        cd ../..
+      fi
