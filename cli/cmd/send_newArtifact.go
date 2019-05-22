@@ -47,7 +47,7 @@ var newArtifactCmd = &cobra.Command{
 		"for the specified service in the provided project.",
 	Long: `Sends a new-artifact-event to the keptn installation in order to deploy a new artifact
 for the specified service in the provided project.
-Therefore, this command takes the project, the name of the service as well as the image and tag of the new artifact.
+Therefore, this command takes the project, the service as well as the image and tag of the new artifact.
 	
 Example:
 	keptn new-artifact --project=sockshop --service=carts --image=docker.io/keptnexamples/carts --tag=0.7.0`,
@@ -94,7 +94,7 @@ Example:
 				return nil
 			}
 			if responseCE.Data != nil {
-				return websockethelper.PrintWSContent(responseCE)
+				return websockethelper.PrintWSContentCEResponse(responseCE)
 			}
 		} else {
 			fmt.Println("Skipping send-new artifact due to mocking flag set to true")

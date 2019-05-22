@@ -195,7 +195,7 @@ var serviceCmd = &cobra.Command{
 				return nil
 			}
 			if responseCE.Data != nil {
-				return websockethelper.PrintWSContent(responseCE)
+				return websockethelper.PrintWSContentCEResponse(responseCE)
 			}
 		} else {
 			fmt.Println("Skipping onboard service due to mocking flag set to true")

@@ -51,18 +51,34 @@ type ChannelInfo struct {
 	ChannelID string `json:"channelId"`
 }
 
-// PrintWSContent opens a websocket using the passed connection data and
-// prints status data
-func PrintWSContent(responseCE *cloudevents.Event) error {
+// PrintWSContentCEResponse opens a websocket using the passed
+// connection data (in form of a cloud event) and prints status data
+func PrintWSContentCEResponse(responseCE *cloudevents.Event) error {
 
 	ceData := &incompleteCE{}
 	err := responseCE.DataAs(ceData)
 	if err != nil {
 		return err
 	}
-	connData := ceData.ConnData
+	return printWSContent(ceData.ConnData)
+}
 
-	err = validateConnectionData(connData)
+// PrintWSContentByteResponse opens a websocket using the passed
+// connection data (in form of a byte slice) and prints status data
+func PrintWSContentByteResponse(response []byte) error {
+
+	ceData := &incompleteCE{}
+	err := json.Unmarshal(response, ceData)
+	if err != nil {
+		return err
+	}
+
+	return printWSContent(ceData.ConnData)
+}
+
+func printWSContent(connData ConnectionData) error {
+
+	err := validateConnectionData(connData)
 	if err != nil {
 		return err
 	}
