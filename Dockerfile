@@ -56,4 +56,4 @@ RUN cd ./install/scripts && ls -lsa
 WORKDIR /usr/keptn/install/scripts
 
 # Start the app
-CMD ["sh", "-c", "cat MANIFEST && installKeptn.sh"]
+CMD ["sh", "-c", "cat MANIFEST && ./installKeptn.sh"]
