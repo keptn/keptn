@@ -82,7 +82,6 @@ Example:
 
 			// Add signature header
 			req.Header.Set("X-Keptn-Signature", sha1Hash)
-			fmt.Println(sha1Hash)
 			req.Header.Set("Content-Type", "application/json")
 
 			tr := &http.Transport{
