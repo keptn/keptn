@@ -4,31 +4,31 @@ import * as express from 'express';
 import { expect } from 'chai';
 import 'mocha';
 import * as sinon from 'sinon';
-import { MessageService } from '../svc/MessageService';
+import { ExtEventService } from './ExtEventService';
 import { cleanUpMetadata } from 'inversify-express-utils';
 import { doesNotReject } from 'assert';
 
 describe('ExtEventController', () => {
   let extEventController: ExtEventController;
-  let messageService: MessageService;
+  let extEventService: ExtEventService;
   let request: express.Request;
   let response: express.Response;
   let next: express.NextFunction;
 
   beforeEach(() => {
     cleanUpMetadata();
-    messageService = new MessageService();
-    extEventController = new ExtEventController(messageService);
+    extEventService = new ExtEventService();
+    extEventController = new ExtEventController(extEventService);
     request = {} as express.Request;
     response = {} as express.Response;
     next = {} as express.NextFunction;
   });
   it('should invoke the message service', async () => {
-    const messageServiceStub = sinon
+    const extEventServiceStub = sinon
       .stub()
       .returns(true);
 
-    messageService.sendMessage = messageServiceStub;
+    extEventService.handleExtEvent = extEventServiceStub;
     const responseSendSpy = sinon.spy();
     response.send = responseSendSpy;
 
@@ -42,6 +42,6 @@ describe('ExtEventController', () => {
     };
     await extEventController.handleExtEvent(request, response, next);
 
-    expect(messageServiceStub.calledWith(request.body)).is.true;
+    expect(extEventServiceStub.calledWith(request.body)).is.true;
   }).timeout(5000);
 });
