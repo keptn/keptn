@@ -23,6 +23,7 @@ import './config/ConfigRequestModel';
 import './auth/AuthRequestModel';
 import './project/ProjectRequestModel';
 import './service/ServiceRequestModel';
+import './ext-event/ExtEventRequestModel';
 
 // tslint:disable-next-line: import-name
 import RequestLogger = require('./middleware/requestLogger');
