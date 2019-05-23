@@ -26,7 +26,7 @@ spec:
               - name: IMAGE
                 value: docker-registry.keptn.svc.cluster.local:5000/keptn/keptn-event-broker-ext:latest
               - name: DOCKERFILE
-                value: /core/eventbroker-ext/Dockerfile
+                value: /core/eventbroker-ext/Dockerfile_kaniko
       revisionTemplate:
         metadata:
           annotations:

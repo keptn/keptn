@@ -14,28 +14,24 @@ func init() {
 	utils.InitLoggers(os.Stdout, os.Stdout, os.Stderr)
 }
 
-// TestAuthCmd tests the auth command. Therefore, this test assumes a file "~/keptn/.keptnmock" containing
-// the endpoint and api-token.
-func TestAuthCmd(t *testing.T) {
+// TestNewArtifact tests the new-artifact command.
+func TestNewArtifact(t *testing.T) {
 
 	credentialmanager.MockCreds = true
-
-	endPoint, apiToken, err := credentialmanager.GetCreds()
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
 	buf := new(bytes.Buffer)
 	rootCmd.SetOutput(buf)
 
 	args := []string{
-		"auth",
-		fmt.Sprintf("--endpoint=%s", endPoint.String()),
-		fmt.Sprintf("--api-token=%s", apiToken),
+		"send",
+		"new-artifact",
+		fmt.Sprintf("--project=%s", "sockshop"),
+		fmt.Sprintf("--service=%s", "carts"),
+		fmt.Sprintf("--image=%s", "docker.io/keptnexamples/carts"),
+		fmt.Sprintf("--tag=%s", "0.7.0"),
+		"--mock",
 	}
 	rootCmd.SetArgs(args)
-	err = rootCmd.Execute()
+	err := rootCmd.Execute()
 
 	if err != nil {
 		t.Errorf("An error occured %v", err)

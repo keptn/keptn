@@ -17,15 +17,6 @@ import (
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 )
 
-type WebsocketDescription struct {
-	ChannelID string `json:"channelId"`
-	Token     string `json:"token"`
-}
-
-type RespData struct {
-	Desc WebsocketDescription `json:"websocketChannel"`
-}
-
 const timeout = 60
 
 // Send creates a request including the X-Keptn-Signature and sends the data
