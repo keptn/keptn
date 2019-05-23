@@ -16,7 +16,7 @@ import './config/ConfigController';
 import './auth/AuthController';
 import './project/ProjectController';
 import './service/ServiceController';
-import './ext-event/ExtEventController';
+// import './ext-event/ExtEventController';
 
 // import models
 import './config/ConfigRequestModel';
