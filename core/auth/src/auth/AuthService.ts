@@ -11,6 +11,7 @@ export class AuthService {
     return authRequest.token === secret;
   }
   private sign(data: string): string {
+    console.log(data)
     const signature =
       `sha1=${crypto.createHmac('sha1', process.env.SECRET_TOKEN || '')
         .update(data).digest('hex')}`;
