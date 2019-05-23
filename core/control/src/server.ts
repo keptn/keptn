@@ -33,6 +33,7 @@ import * as path from 'path';
 import { MessageService } from './svc/MessageService';
 import { WebSocketConfigurator } from './websocket/WebSocketConfigurator';
 import { ExtEventService } from './ext-event/ExtEventService';
+import { ExtEventController } from './ext-event/ExtEventController';
 
 const port: number = Number(process.env.PORT) || 5001; // or from a configuration file
 const swaggerUiAssetPath = require('swagger-ui-dist').getAbsoluteFSPath();
@@ -43,7 +44,8 @@ const container = new Container();
 
 // set up bindings
 container.bind<MessageService>('MessageService').to(MessageService);
-container.bind<ExtEventService>('ExtEventService').to(ExtEventService);
+// container.bind<ExtEventService>('ExtEventService').to(ExtEventService);
+container.bind<interfaces.Controller> (TYPE.Controller).to(ExtEventController).inSingletonScope().whenTargetNamed("ExtEventController")
 
 // create server
 const server = new InversifyExpressServer(container);
