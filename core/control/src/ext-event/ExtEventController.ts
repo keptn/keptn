@@ -52,6 +52,10 @@ export class ExtEventController implements interfaces.Controller {
     response: express.Response,
     next: express.NextFunction,
   ): Promise<void> {
+
+    if (!request.body ) {
+        return response.status(400).end();
+    }
     
     if (request.body.shkeptncontext === undefined) {
       request.body.shkeptncontext = uuidv4();
