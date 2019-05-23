@@ -18,17 +18,21 @@ import (
 	"bytes"
 	"crypto/hmac"
 	"crypto/sha1"
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"time"
 
 	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
 	"github.com/keptn/keptn/cli/utils/websockethelper"
 	"github.com/spf13/cobra"
 )
+
+const timeout = 60
 
 var eventFilePath *string
 
@@ -59,25 +63,33 @@ Example:
 			return err
 		}
 
+		var body interface{}
+		json.Unmarshal([]byte(eventString), &body)
+
 		utils.PrintLog("Starting to send an event", utils.InfoLevel)
 
 		eventURL := endPoint
 		eventURL.Path = "event"
 		utils.PrintLog(fmt.Sprintf("Connecting to server %s", eventURL.String()), utils.VerboseLevel)
 		if !mocking {
-			bodyBytes := []byte(eventString)
-			req, err := http.NewRequest("POST", eventURL.String(), bytes.NewBuffer(bodyBytes))
+			data, err := json.Marshal(body)
+			req, err := http.NewRequest("POST", eventURL.String(), bytes.NewReader(data))
 
 			mac := hmac.New(sha1.New, []byte(apiToken))
-			mac.Write(bodyBytes)
+			mac.Write(data)
 			signatureVal := mac.Sum(nil)
 			sha1Hash := "sha1=" + fmt.Sprintf("%x", signatureVal)
 
 			// Add signature header
 			req.Header.Set("X-Keptn-Signature", sha1Hash)
+			fmt.Println(sha1Hash)
 			req.Header.Set("Content-Type", "application/json")
 
-			client := &http.Client{}
+			tr := &http.Transport{
+				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			}
+
+			client := &http.Client{Timeout: timeout * time.Second, Transport: tr}
 			resp, err := client.Do(req)
 			if err != nil {
 				utils.PrintLog("Send event was unsuccessful", utils.QuietLevel)
@@ -99,14 +111,13 @@ Example:
 				return nil
 			}
 			return websockethelper.PrintWSContentByteResponse(body)
-		} else {
-			fmt.Println("Skipping send-new artifact due to mocking flag set to true")
 		}
+		fmt.Println("Skipping send-new artifact due to mocking flag set to true")
 		return nil
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(sendCmd)
-	eventFilePath = serviceCmd.Flags().StringP("event", "e", "", "The file containing the event as Cloud Event in JSON.")
+	eventFilePath = sendCmd.Flags().StringP("event", "e", "", "The file containing the event as Cloud Event in JSON.")
 }
