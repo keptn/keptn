@@ -44,7 +44,7 @@ export class ExtEventController implements interfaces.Controller {
       },
       400: { description: 'Parameters fail' },
     },
-    summary: 'Sends the passed keptn event to the eventbroker',
+    summary: 'Accepts a keptn event and sends it to the eventbroker',
   })
   @httpPost('/')
   public async handleExtEvent(
