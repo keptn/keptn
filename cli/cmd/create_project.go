@@ -23,17 +23,13 @@ type projectData struct {
 	Stages   interface{} `json:"stages"`
 }
 
-type myCloudEvent struct {
-	contenttype string
-	data        string
-}
-
 // crprojectCmd represents the project command
 var crprojectCmd = &cobra.Command{
 	Use:   "project project_name shipyard_file",
 	Short: "Creates a new project.",
 	Long: `Creates a new project with the provided name and shipyard file. 
-The shipyard file describes the used stages.
+The shipyard file describes the used stages. Furthermore, for these stages the shipyard file 
+describes the used deployment and test strategies.
 
 Example:
 	keptn create project sockshop shipyard.yml`,
@@ -113,7 +109,7 @@ Example:
 				return nil
 			}
 			if responseCE.Data != nil {
-				return websockethelper.PrintWSContent(responseCE)
+				return websockethelper.PrintWSContentCEResponse(responseCE)
 			}
 		} else {
 			fmt.Println("Skipping create project due to mocking flag set to true")

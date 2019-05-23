@@ -41,6 +41,7 @@ const authenticator: express.RequestHandler = async (
   } catch (e) {
     console.log('Authentication request failed');
     response.status(401);
+    response.end();
   }
 };
 

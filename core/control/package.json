@@ -59,6 +59,7 @@
     "jsonwebtoken": "^8.5.0",
     "kubernetes-client": "^7.0.0",
     "mocha": "^6.1.4",
+    "moment": "^2.24.0",
     "mustache": "^3.0.1",
     "nodejs-base64": "^1.0.3",
     "reflect-metadata": "^0.1.13",

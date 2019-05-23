@@ -69,7 +69,7 @@ Example:
 				return nil
 			}
 			if responseCE.Data != nil {
-				return websockethelper.PrintWSContent(responseCE)
+				return websockethelper.PrintWSContentCEResponse(responseCE)
 			}
 		} else {
 			fmt.Println("Skipping configure due to mocking flag set to true")

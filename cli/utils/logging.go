@@ -6,11 +6,15 @@ import (
 )
 
 var (
-	Info    *log.Logger
+	// Info provides a logger for info messages
+	Info *log.Logger
+	// Warning provides a logger for warnings
 	Warning *log.Logger
-	Error   *log.Logger
+	// Error provides a logger for error
+	Error *log.Logger
 )
 
+// InitLoggers initalizes the loggers
 func InitLoggers(
 	infoHandle io.Writer,
 	warningHandle io.Writer,
