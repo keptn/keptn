@@ -43,14 +43,14 @@ var newArtifact newArtifactStruct
 // newArtifactCmd represents the newArtifact command
 var newArtifactCmd = &cobra.Command{
 	Use: "new-artifact",
-	Short: "Sends a new-artifact-event to the keptn installation in order to deploy a new artifact" +
+	Short: "Sends a new-artifact event to keptn in order to deploy a new artifact" +
 		"for the specified service in the provided project.",
-	Long: `Sends a new-artifact-event to the keptn installation in order to deploy a new artifact
+	Long: `Sends a new-artifact event to keptn in order to deploy a new artifact
 for the specified service in the provided project.
 Therefore, this command takes the project, the service as well as the image and tag of the new artifact.
 	
 Example:
-	keptn new-artifact --project=sockshop --service=carts --image=docker.io/keptnexamples/carts --tag=0.7.0`,
+	keptn send event new-artifact --project=sockshop --service=carts --image=docker.io/keptnexamples/carts --tag=0.7.0`,
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		return checkImageAvailability()
@@ -136,7 +136,7 @@ func checkImageAvailability() error {
 }
 
 func init() {
-	sendCmd.AddCommand(newArtifactCmd)
+	sendEventCmd.AddCommand(newArtifactCmd)
 
 	newArtifact.Project = newArtifactCmd.Flags().StringP("project", "", "", "The project containing the service which will be new deployed")
 	newArtifactCmd.MarkFlagRequired("project")
