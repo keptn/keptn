@@ -53,6 +53,7 @@ Example:
 	keptn send event new-artifact --project=sockshop --service=carts --image=docker.io/keptnexamples/carts --tag=0.7.0`,
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
+		setTag()
 		return checkImageAvailability()
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -103,6 +104,25 @@ Example:
 	},
 }
 
+func setTag() {
+
+	if newArtifact.Tag != nil && *newArtifact.Tag != "" {
+		// The tag is already set
+		return
+	}
+	parts := strings.Split(*newArtifact.Image, ":")
+	if len(parts) == 2 {
+		// Tag is provided in the image name
+		newArtifact.Image = &parts[0]
+		newArtifact.Tag = &parts[1]
+		return
+	}
+	// Otherwise use latest tag
+	latest := "latest"
+	newArtifact.Tag = &latest
+
+}
+
 func checkImageAvailability() error {
 
 	if strings.HasPrefix(*newArtifact.Image, "docker.io/") {
@@ -138,16 +158,19 @@ func checkImageAvailability() error {
 func init() {
 	sendEventCmd.AddCommand(newArtifactCmd)
 
-	newArtifact.Project = newArtifactCmd.Flags().StringP("project", "", "", "The project containing the service which will be new deployed")
+	newArtifact.Project = newArtifactCmd.Flags().StringP("project", "", "",
+		"The project containing the service which will be new deployed")
 	newArtifactCmd.MarkFlagRequired("project")
 
-	newArtifact.Service = newArtifactCmd.Flags().StringP("service", "", "", "The service which will be new deployed")
+	newArtifact.Service = newArtifactCmd.Flags().StringP("service", "", "",
+		"The service which will be new deployed")
 	newArtifactCmd.MarkFlagRequired("service")
 
 	newArtifact.Image = newArtifactCmd.Flags().StringP("image", "", "", "The image name, e.g."+
-		"docker.io/YOUR_ORG/YOUR_IMAGE or quay.io/YOUR_ORG/YOUR_IMAGE")
+		"docker.io/YOUR_ORG/YOUR_IMAGE or quay.io/YOUR_ORG/YOUR_IMAGE. "+
+		"Optionally, you can directly append the tag using \":YOUR_TAG\"")
 	newArtifactCmd.MarkFlagRequired("image")
 
-	newArtifact.Tag = newArtifactCmd.Flags().StringP("tag", "", "", "The tag of the image name")
-	newArtifactCmd.MarkFlagRequired("tag")
+	newArtifact.Tag = newArtifactCmd.Flags().StringP("tag", "", "", "The tag of the image. "+
+		"If no tag is specified, the \"latest\" tag is used.")
 }
