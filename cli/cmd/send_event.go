@@ -109,7 +109,7 @@ Example:
 				utils.PrintLog("Response is empty", utils.InfoLevel)
 				return nil
 			}
-			return websockethelper.PrintWSContentByteResponse(body)
+			return websockethelper.PrintWSContentByteResponse(body, endPoint)
 		}
 		fmt.Println("Skipping send-new artifact due to mocking flag set to true")
 		return nil
