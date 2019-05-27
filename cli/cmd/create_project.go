@@ -109,7 +109,7 @@ Example:
 				return nil
 			}
 			if responseCE.Data != nil {
-				return websockethelper.PrintWSContentCEResponse(responseCE)
+				return websockethelper.PrintWSContentCEResponse(responseCE, endPoint)
 			}
 		} else {
 			fmt.Println("Skipping create project due to mocking flag set to true")

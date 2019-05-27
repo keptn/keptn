@@ -23,6 +23,7 @@ func TestNewArtifact(t *testing.T) {
 
 	args := []string{
 		"send",
+		"event",
 		"new-artifact",
 		fmt.Sprintf("--project=%s", "sockshop"),
 		fmt.Sprintf("--service=%s", "carts"),
