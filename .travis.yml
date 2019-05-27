@@ -1,5 +1,5 @@
 sudo: true
-os: osx
+dist: xenial
 language: go
 go:
   - 1.12.x
@@ -18,8 +18,7 @@ notifications:
     on_failure: always
     on_cancel: always
     on_error: always 
-before_install:
-- GOBIN=$GOPATH/bin                                                            
+before_install:                                                        
 - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh 
 - cd cli/
 - dep ensure
