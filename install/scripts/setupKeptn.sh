@@ -4,6 +4,7 @@ REGISTRY_URL=$(kubectl describe svc docker-registry -n keptn | grep IP: | sed 's
 CONTROL_RELEASE="develop"
 AUTHENTICATOR_RELEASE="develop"
 EVENTBROKER_RELEASE="develop"
+EVENTBROKER_EXT_RELEASE="develop"
 
 source ./utils.sh
 
@@ -64,11 +65,9 @@ kubectl apply -f https://raw.githubusercontent.com/keptn/eventbroker/$EVENTBROKE
 verify_kubectl $? "Deploying keptn eventbroker component failed."
 
 # Deploy eventbroker-ext component
-cd ../../core/eventbroker-ext
-chmod +x deploy.sh
-./deploy.sh
-verify_install_step $? "Deploying keptn event-broker-ext failed."
-cd ../../install/scripts
+kubectl delete -f https://raw.githubusercontent.com/keptn/eventbroker-ext/$EVENTBROKER_EXT_RELEASE/config/eventbroker-ext.yaml --ignore-not-found
+kubectl apply -f https://raw.githubusercontent.com/keptn/eventbroker-ext/$EVENTBROKER_EXT_RELEASE/config/eventbroker-ext.yaml
+verify_kubectl $? "Deploying keptn eventbroker-ext component failed."
 
 # Deploy authenticator component
 kubectl delete -f https://raw.githubusercontent.com/keptn/authenticator/$AUTHENTICATOR_RELEASE/config/authenticator.yaml --ignore-not-found
@@ -106,6 +105,6 @@ rm certificate.pem
 ##############################################
 wait_for_all_pods_in_namespace "keptn"
 
-wait_for_deployment_in_namespace "event-broker" "keptn" # Wait function also waits for event-broker-ext
+wait_for_deployment_in_namespace "event-broker" "keptn" # Wait function also waits for eventbroker-ext
 wait_for_deployment_in_namespace "auth" "keptn"
 wait_for_deployment_in_namespace "control" "keptn"
