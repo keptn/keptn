@@ -31,15 +31,8 @@ before_install:
 - cd ..
 - export TZ=Europe/Vienna
 - REGISTRY_USER=jbraeuer
-
-- INSTALLER_IMAGE=keptn/installer
-
-- INSTALLER_VERSION="$(cat version | tr -d '[:space:]')"
 - CLI_VERSION="$(cat ./cli/version | tr -d '[:space:]')"
-
 - CLI_FOLDER="cli/"
-- INSTALL_FOLDER="install/"
-
 - DATE="$(date +'%Y%m%d.%H%M')"
 - GIT_SHA="$(git rev-parse --short HEAD)"
 - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
@@ -70,11 +63,6 @@ jobs:
     - TYPE="$(echo $TRAVIS_BRANCH | cut -d'/' -f1)"
     - NUMBER="$(echo $TRAVIS_BRANCH | cut -d'/' -f2)"
     - |
-      if [[ $CHANGED_FILES == *"${INSTALL_FOLDER}"* ]]; then
-        echo "Build keptn installer"
-        source travis-scripts/build_feature.sh "${INSTALLER_IMAGE}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
-      fi
-    - |
       if [[ $CHANGED_FILES == *"${CLI_FOLDER}"* ]]; then
         echo "Build keptn cli"
         travis-scripts/setup_gcloud.sh
@@ -88,11 +76,6 @@ jobs:
     if: branch = develop AND type = push
     script: 
     - echo $TRAVIS_BUILD_STAGE_NAME
-    - |
-      if [[ $CHANGED_FILES == *"${INSTALL_FOLDER}"* ]]; then
-        echo "Build keptn installer"
-        source travis-scripts/build_develop.sh "${INSTALLER_IMAGE}" "${GIT_SHA}" "${DATE}"
-      fi
     - |
       if [[ $CHANGED_FILES == *"${CLI_FOLDER}"* ]]; then
         echo "Build keptn cli"
@@ -108,11 +91,6 @@ jobs:
     script:
     - echo $TRAVIS_BUILD_STAGE_NAME
     - |
-      if [[ $CHANGED_FILES == *"${INSTALL_FOLDER}"* ]]; then
-        echo "Build keptn installer"
-        source travis-scripts/build_release.sh "${INSTALLER_IMAGE}" "${GIT_SHA}" "${DATE}" "${INSTALLER_VERSION}"
-      fi
-    - |
       if [[ $CHANGED_FILES == *"${CLI_FOLDER}"* ]]; then
         echo "Build keptn cli"
         travis-scripts/setup_gcloud.sh
@@ -126,11 +104,6 @@ jobs:
     if: branch = master AND NOT type = pull_request
     script:
     - echo $TRAVIS_BUILD_STAGE_NAME
-    - |
-      if [[ $CHANGED_FILES == *"${INSTALL_FOLDER}"* ]]; then
-        echo "Build keptn installer"
-        source travis-scripts/build_master.sh "${INSTALLER_IMAGE}" "${INSTALLER_VERSION}"
-      fi
     - |
       if [[ $CHANGED_FILES == *"${CLI_FOLDER}"* ]]; then
         echo "Build keptn cli"
