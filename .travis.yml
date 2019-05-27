@@ -33,19 +33,16 @@ before_install:
 - REGISTRY_USER=jbraeuer
 
 - INSTALLER_IMAGE=keptn/installer
-- AUTH_IMAGE=keptn/keptn-authenticator
 - EVENTBROKER_IMAGE=keptn/keptn-event-broker
 - EVENTBROKER_EXT_IMAGE=keptn/keptn-event-broker-ext
 
 - INSTALLER_VERSION="$(cat version | tr -d '[:space:]')"
 - CLI_VERSION="$(cat ./cli/version | tr -d '[:space:]')"
-- AUTH_VERSION="$(cat ./core/auth/version | tr -d '[:space:]')"
 - EVENTBROKER_VERSION="$(cat ./core/eventbroker/version | tr -d '[:space:]')"
 - EVENTBROKER_EXT_VERSION="$(cat ./core/eventbroker-ext/version | tr -d '[:space:]')"
 
 - CLI_FOLDER="cli/"
 - INSTALL_FOLDER="install/"
-- AUTH_FOLDER="core/auth/"
 - EVENTBROKER_FOLDER="core/eventbroker/"
 - EVENTBROKER_EXT_FOLDER="core/eventbroker-ext/"
 
@@ -58,7 +55,6 @@ before_install:
 - ./writeManifest.sh
 - cat MANIFEST
 
-- cp MANIFEST ./core/auth/MANIFEST
 - cp MANIFEST ./core/eventbroker/MANIFEST
 - cp MANIFEST ./core/eventbroker-ext/MANIFEST
   
@@ -97,13 +93,6 @@ jobs:
         cd ..
       fi
     - |
-      if [[ $CHANGED_FILES == *"${AUTH_FOLDER}"* ]]; then
-        echo "Build keptn auth component"
-        cd "./${AUTH_FOLDER}"
-        source ../../travis-scripts/build_feature.sh "${AUTH_IMAGE}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
-        cd ../..
-      fi
-    - |
       if [[ $CHANGED_FILES == *"${EVENTBROKER_FOLDER}"* ]]; then
         echo "Build keptn eventbroker component"
         cd "./${EVENTBROKER_FOLDER}"
@@ -135,13 +124,6 @@ jobs:
         TAG="${DATE}-latest"
         source ../travis-scripts/build_cli.sh "${TAG}"
         cd ..
-      fi
-    - | 
-      if [[ $CHANGED_FILES == *"${AUTH_FOLDER}"* ]]; then
-        echo "Build keptn auth component"
-        cd "./${AUTH_FOLDER}"
-        source ../../travis-scripts/build_develop.sh "${AUTH_IMAGE}" "${GIT_SHA}" "${DATE}"
-        cd ../..
       fi
     - | 
       if [[ $CHANGED_FILES == *"${EVENTBROKER_FOLDER}"* ]]; then
@@ -177,13 +159,6 @@ jobs:
         cd ..
       fi
     - | 
-      if [[ $CHANGED_FILES == *"${AUTH_FOLDER}"* ]]; then
-        echo "Build keptn auth component"
-        cd "./${AUTH_FOLDER}"
-        source ../../travis-scripts/build_release.sh "${AUTH_IMAGE}" "${GIT_SHA}" "${DATE}" "${AUTH_VERSION}"
-        cd ../..
-      fi
-    - | 
       if [[ $CHANGED_FILES == *"${EVENTBROKER_FOLDER}"* ]]; then
         echo "Build keptn eventbroker component"
         cd "./${EVENTBROKER_FOLDER}"
@@ -215,13 +190,6 @@ jobs:
         TAG="${CLI_VERSION}"
         source ../travis-scripts/build_cli.sh "${TAG}"
         cd ..
-      fi
-    - | 
-      if [[ $CHANGED_FILES == *"${AUTH_FOLDER}"* ]]; then
-        echo "Build keptn auth component"
-        cd "./${AUTH_FOLDER}"
-        source ../../travis-scripts/build_master.sh "${AUTH_IMAGE}" "${AUTH_VERSION}"
-        cd ../..
       fi
     - | 
       if [[ $CHANGED_FILES == *"${EVENTBROKER_FOLDER}"* ]]; then

@@ -105,28 +105,6 @@ function export_names {
     ./test/assertEquals.sh $CONTROL_NAME control
 }
 
-function execute_core_component_tests { 
-    # Auth
-    cd ../auth
-    npm install
-    npm run test
-    verify_step $? "Tests for component 'auth' failed."
-    
-    # Event Broker
-    cd ../eventbroker
-    npm install
-    npm run test
-    verify_step $? "Tests for component 'eventbroker' failed."
-
-    # Event Broker (ext)
-    cd ../eventbroker-ext
-    npm install
-    npm run test
-    verify_step $? "Tests for component 'eventbroker-ext' failed."
-    
-    cd ../..
-}
-
 function execute_cli_tests {
 
     cd cli
