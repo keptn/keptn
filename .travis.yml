@@ -33,17 +33,14 @@ before_install:
 - REGISTRY_USER=jbraeuer
 
 - INSTALLER_IMAGE=keptn/installer
-- EVENTBROKER_IMAGE=keptn/keptn-event-broker
 - EVENTBROKER_EXT_IMAGE=keptn/keptn-event-broker-ext
 
 - INSTALLER_VERSION="$(cat version | tr -d '[:space:]')"
 - CLI_VERSION="$(cat ./cli/version | tr -d '[:space:]')"
-- EVENTBROKER_VERSION="$(cat ./core/eventbroker/version | tr -d '[:space:]')"
 - EVENTBROKER_EXT_VERSION="$(cat ./core/eventbroker-ext/version | tr -d '[:space:]')"
 
 - CLI_FOLDER="cli/"
 - INSTALL_FOLDER="install/"
-- EVENTBROKER_FOLDER="core/eventbroker/"
 - EVENTBROKER_EXT_FOLDER="core/eventbroker-ext/"
 
 - DATE="$(date +'%Y%m%d.%H%M')"
@@ -55,7 +52,6 @@ before_install:
 - ./writeManifest.sh
 - cat MANIFEST
 
-- cp MANIFEST ./core/eventbroker/MANIFEST
 - cp MANIFEST ./core/eventbroker-ext/MANIFEST
   
 jobs:
@@ -93,13 +89,6 @@ jobs:
         cd ..
       fi
     - |
-      if [[ $CHANGED_FILES == *"${EVENTBROKER_FOLDER}"* ]]; then
-        echo "Build keptn eventbroker component"
-        cd "./${EVENTBROKER_FOLDER}"
-        source ../../travis-scripts/build_feature.sh "${EVENTBROKER_IMAGE}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
-        cd ../..
-      fi
-    - |
       if [[ $CHANGED_FILES == *"${EVENTBROKER_EXT_FOLDER}"* ]]; then
         echo "Build keptn eventbroker-ext component"
         cd "./${EVENTBROKER_EXT_FOLDER}"
@@ -124,13 +113,6 @@ jobs:
         TAG="${DATE}-latest"
         source ../travis-scripts/build_cli.sh "${TAG}"
         cd ..
-      fi
-    - | 
-      if [[ $CHANGED_FILES == *"${EVENTBROKER_FOLDER}"* ]]; then
-        echo "Build keptn eventbroker component"
-        cd "./${EVENTBROKER_FOLDER}"
-        source ../../travis-scripts/build_develop.sh "${EVENTBROKER_IMAGE}" "${GIT_SHA}" "${DATE}"
-        cd ../..
       fi
     - | 
       if [[ $CHANGED_FILES == *"${EVENTBROKER_EXT_FOLDER}"* ]]; then
@@ -159,13 +141,6 @@ jobs:
         cd ..
       fi
     - | 
-      if [[ $CHANGED_FILES == *"${EVENTBROKER_FOLDER}"* ]]; then
-        echo "Build keptn eventbroker component"
-        cd "./${EVENTBROKER_FOLDER}"
-        source ../../travis-scripts/build_release.sh "${EVENTBROKER_IMAGE}" "${GIT_SHA}" "${DATE}" "${EVENTBROKER_VERSION}"
-        cd ../..
-      fi
-    - | 
       if [[ $CHANGED_FILES == *"${EVENTBROKER_EXT_FOLDER}"* ]]; then
         echo "Build keptn eventbroker-ext component"
         cd "./${EVENTBROKER_EXT_FOLDER}"
@@ -190,13 +165,6 @@ jobs:
         TAG="${CLI_VERSION}"
         source ../travis-scripts/build_cli.sh "${TAG}"
         cd ..
-      fi
-    - | 
-      if [[ $CHANGED_FILES == *"${EVENTBROKER_FOLDER}"* ]]; then
-        echo "Build keptn eventbroker component"
-        cd "./${EVENTBROKER_FOLDER}"
-        source ../../travis-scripts/build_master.sh "${EVENTBROKER_IMAGE}" "${EVENTBROKER_VERSION}"
-        cd ../..
       fi
     - | 
       if [[ $CHANGED_FILES == *"${EVENTBROKER_EXT_FOLDER}"* ]]; then
