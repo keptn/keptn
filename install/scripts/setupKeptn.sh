@@ -2,6 +2,7 @@
 REGISTRY_URL=$(kubectl describe svc docker-registry -n keptn | grep IP: | sed 's~IP:[ \t]*~~')
 
 CONTROL_RELEASE="develop"
+AUTHENTICATOR_RELEASE="develop"
 
 source ./utils.sh
 
@@ -69,18 +70,17 @@ chmod +x deploy.sh
 verify_install_step $? "Deploying keptn event-broker-ext failed."
 cd ../../install/scripts
 
-cd ../../core/auth
-chmod +x deploy.sh
-./deploy.sh
-verify_install_step $? "Deploying keptn auth component failed."
-cd ../../install/scripts
+# authenticator component
+curl -o ../manifests/keptn/authenticator.yaml https://raw.githubusercontent.com/keptn/authenticator/$AUTHENTICATOR_RELEASE/config/authenticator.yaml
+kubectl delete -f ../manifests/keptn/authenticator.yaml --ignore-not-found
+kubectl apply -f ../manifests/keptn/authenticator.yaml
+verify_kubectl $? "Deploying keptn authenticator component failed."
 
 # control component
-curl -o ../manifests/keptn/control.yml https://raw.githubusercontent.com/keptn/control/$CONTROL_RELEASE/config/control.yaml
+curl -o ../manifests/keptn/control.yaml https://raw.githubusercontent.com/keptn/control/$CONTROL_RELEASE/config/control.yaml
 
 rm -f ../manifests/keptn/gen/control.yaml
-
-cat ../manifests/keptn/control.yml | \
+cat ../manifests/keptn/control.yaml | \
   sed 's~CHANNEL_URI_PLACEHOLDER~'"$KEPTN_CHANNEL_URI"'~' >> ../manifests/keptn/gen/control.yaml
   
 kubectl delete -f ../manifests/keptn/gen/control.yaml --ignore-not-found

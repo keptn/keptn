@@ -49,7 +49,6 @@ export ISTIO_INGRESS=$(kubectl describe svc istio-ingressgateway -n istio-system
 export_names
 
 # Execute unit tests
-execute_core_component_tests
 execute_cli_tests
 
 build_and_install_cli

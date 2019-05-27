@@ -10,5 +10,4 @@ setup_glcoud_pr
 install_yq
 setup_keptn_pr
 export_names
-execute_core_component_tests
 execute_cli_tests
