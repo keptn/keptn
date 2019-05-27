@@ -19,7 +19,7 @@ create_nightly_cluster
 
 install_sed
 
-cd ./install/scripts
+cd ./installer/scripts
 
 source ./defineCredentialsUtils.sh
 

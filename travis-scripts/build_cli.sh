@@ -32,5 +32,3 @@ rm keptn.exe
 
 gsutil cp keptn-windows.zip gs://keptn-cli/${TAG}/keptn-windows.zip
 gsutil cp keptn-windows.tar.gz gs://keptn-cli/${TAG}/keptn-windows.tar.gz
-
-ls -lsa
