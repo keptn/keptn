@@ -3,6 +3,7 @@ REGISTRY_URL=$(kubectl describe svc docker-registry -n keptn | grep IP: | sed 's
 
 CONTROL_RELEASE="develop"
 AUTHENTICATOR_RELEASE="develop"
+EVENTBROKER_RELEASE="develop"
 
 source ./utils.sh
 
@@ -20,31 +21,31 @@ kubectl -n knative-serving get cm config-controller -o=yaml | yq w - data.regist
 verify_kubectl $? "Marking internal docker registry as insecure failed."
 
 # Deploy knative eventing channels
-kubectl apply -f ../../core/eventbroker/config/channel.yaml
+kubectl apply -f https://raw.githubusercontent.com/keptn/eventbroker/$EVENTBROKER_RELEASE/config/keptn-channel.yaml
 verify_kubectl $? "Creating keptn-channel channel failed."
 wait_for_channel_in_namespace "keptn-channel" "keptn"
 
-kubectl apply -f ../../core/eventbroker/config/new-artefact-channel.yaml
+kubectl apply -f https://raw.githubusercontent.com/keptn/eventbroker/$EVENTBROKER_RELEASE/config/new-artefact-channel.yaml
 verify_kubectl $? "Creating new-artefact channel failed."
 wait_for_channel_in_namespace "new-artefact" "keptn"
 
-kubectl apply -f ../../core/eventbroker/config/configuration-changed-channel.yaml
+kubectl apply -f https://raw.githubusercontent.com/keptn/eventbroker/$EVENTBROKER_RELEASE/config/configuration-changed-channel.yaml
 verify_kubectl $? "Creating configuration-changed channel failed."
 wait_for_channel_in_namespace "configuration-changed" "keptn"
 
-kubectl apply -f ../../core/eventbroker/config/deployment-finished-channel.yaml
+kubectl apply -f https://raw.githubusercontent.com/keptn/eventbroker/$EVENTBROKER_RELEASE/config/deployment-finished-channel.yaml
 verify_kubectl $? "Creating deployment-finished channel failed."
 wait_for_channel_in_namespace "deployment-finished" "keptn"
 
-kubectl apply -f ../../core/eventbroker/config/tests-finished-channel.yaml
+kubectl apply -f https://raw.githubusercontent.com/keptn/eventbroker/$EVENTBROKER_RELEASE/config/tests-finished-channel.yaml
 verify_kubectl $? "Creating tests-finished channel failed."
 wait_for_channel_in_namespace "tests-finished" "keptn"
 
-kubectl apply -f ../../core/eventbroker/config/evaluation-done-channel.yaml
+kubectl apply -f https://raw.githubusercontent.com/keptn/eventbroker/$EVENTBROKER_RELEASE/config/evaluation-done-channel.yaml
 verify_kubectl $? "Creating evaluation-done channel failed."
 wait_for_channel_in_namespace "evaluation-done" "keptn"
 
-kubectl apply -f ../../core/eventbroker/config/problem-channel.yaml
+kubectl apply -f https://raw.githubusercontent.com/keptn/eventbroker/$EVENTBROKER_RELEASE/config/problem-channel.yaml
 verify_kubectl $? "Creating problem channel failed."
 wait_for_channel_in_namespace "problem" "keptn"
 
@@ -57,26 +58,24 @@ kubectl create secret generic -n keptn keptn-api-token --from-literal=keptn-api-
 KEPTN_CHANNEL_URI=$(kubectl describe channel keptn-channel -n keptn | grep "Hostname:" | sed 's~[ \t]*Hostname:[ \t]*~~')
 verify_variable "$KEPTN_CHANNEL_URI" "KEPTN_CHANNEL_URI could not be derived from keptn-channel description." 
 
-# Deploy keptn core components: eventbroker, eventbroker-ext, auth, control
-cd ../../core/eventbroker
-chmod +x deploy.sh
-./deploy.sh
-verify_install_step $? "Deploying keptn event-broker failed."
-cd ../../install/scripts
+# Deploy eventbroker component
+kubectl delete -f https://raw.githubusercontent.com/keptn/eventbroker/$EVENTBROKER_RELEASE/config/eventbroker.yaml --ignore-not-found
+kubectl apply -f https://raw.githubusercontent.com/keptn/eventbroker/$EVENTBROKER_RELEASE/config/eventbroker.yaml
+verify_kubectl $? "Deploying keptn eventbroker component failed."
 
+# Deploy eventbroker-ext component
 cd ../../core/eventbroker-ext
 chmod +x deploy.sh
 ./deploy.sh
 verify_install_step $? "Deploying keptn event-broker-ext failed."
 cd ../../install/scripts
 
-# authenticator component
-curl -o ../manifests/keptn/authenticator.yaml https://raw.githubusercontent.com/keptn/authenticator/$AUTHENTICATOR_RELEASE/config/authenticator.yaml
-kubectl delete -f ../manifests/keptn/authenticator.yaml --ignore-not-found
-kubectl apply -f ../manifests/keptn/authenticator.yaml
+# Deploy authenticator component
+kubectl delete -f https://raw.githubusercontent.com/keptn/authenticator/$AUTHENTICATOR_RELEASE/config/authenticator.yaml --ignore-not-found
+kubectl apply -f https://raw.githubusercontent.com/keptn/authenticator/$AUTHENTICATOR_RELEASE/config/authenticator.yaml
 verify_kubectl $? "Deploying keptn authenticator component failed."
 
-# control component
+# Deploy control component
 curl -o ../manifests/keptn/control.yaml https://raw.githubusercontent.com/keptn/control/$CONTROL_RELEASE/config/control.yaml
 
 rm -f ../manifests/keptn/gen/control.yaml
