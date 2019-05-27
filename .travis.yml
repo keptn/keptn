@@ -18,7 +18,8 @@ notifications:
     on_failure: always
     on_cancel: always
     on_error: always 
-before_install:                                                                 
+before_install:
+- GOBIN=$GOPATH/bin                                                            
 - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh 
 - cd cli/
 - dep ensure
@@ -33,18 +34,11 @@ before_install:
 
 jobs:
   include:
-
-  - stage: pr
-    if: type = pull_request
-    script: 
-    - source travis-scripts/pr_main.sh
-    after_script: source travis-scripts/pr_cleanup.sh
-
   - stage: cron
     if: branch = develop AND type = cron
-    script: 
+    script:
+    - git clone --branch develop https://github.com/keptn/installer.git --single-branch
     - source travis-scripts/cronjob_main.sh
-
   - stage: feature/bug/hotfix
     if: branch =~ ^feature.*$ OR branch =~ ^bug.*$ OR branch =~ ^hotfix.*$
     script:

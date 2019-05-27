@@ -67,18 +67,18 @@ function install_sed {
 }
 
 function setup_knative {    
-    cd ./install/scripts/
+    cd ./installer/scripts/
     ./setupKnative.sh $CLUSTER_NAME_NIGHTLY ${CLOUDSDK_COMPUTE_ZONE}
     cd ../..
 }
 function uninstall_keptn {
-    cd ./install/scripts
+    cd ./installer/scripts
     ./uninstallKeptn.sh
     cd ../..
 }
 
 function setup_knative_pr {    
-    cd ./install/scripts/
+    cd ./installer/scripts/
     CLUSTER_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_PR_STATUSCHECK_NAME} --zone=${CLUSTER_PR_STATUSCHECK_ZONE} | yq r - clusterIpv4Cidr)
     SERVICES_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_PR_STATUSCHECK_NAME} --zone=${CLUSTER_PR_STATUSCHECK_ZONE} | yq r - servicesIpv4Cidr)
     source ./setupKnative.sh $CLUSTER_IPV4_CIDR $SERVICES_IPV4_CIDR
@@ -86,7 +86,7 @@ function setup_knative_pr {
 }
 
 function setup_keptn_pr {    
-    cd ./install/scripts/
+    cd ./installer/scripts/
     source ./setupKeptn.sh
     cd ../..
 }
