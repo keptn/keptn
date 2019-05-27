@@ -3,19 +3,14 @@ dist: xenial
 language: go
 go:
   - 1.12.x
-
-# Cache google cloud SDK between commands
 cache:
   directories:
     - "$HOME/google-cloud-sdk/"
-
 services:
   - docker
-
 env:
   global:
     - GOOGLE_APPLICATION_CREDENTIALS=~/gcloud-service-key.json
-
 notifications:
   webhooks:
     urls:
@@ -23,7 +18,6 @@ notifications:
     on_failure: always
     on_cancel: always
     on_error: always 
-
 before_install:                                                                 
 - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh 
 - cd cli/
@@ -32,16 +26,10 @@ before_install:
 - export TZ=Europe/Vienna
 - REGISTRY_USER=jbraeuer
 - CLI_VERSION="$(cat ./cli/version | tr -d '[:space:]')"
-- CLI_FOLDER="cli/"
 - DATE="$(date +'%Y%m%d.%H%M')"
 - GIT_SHA="$(git rev-parse --short HEAD)"
 - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
 - REPO_URL="$(git remote get-url --all origin)"
-- CHANGED_FILES=($(git diff --name-only $TRAVIS_COMMIT_RANGE | paste -sd "," ) )
-- echo "$CHANGED_FILES"
-- ./writeManifest.sh
-- cat MANIFEST
-  
 jobs:
   include:
 
@@ -51,10 +39,10 @@ jobs:
     - source travis-scripts/pr_main.sh
     after_script: source travis-scripts/pr_cleanup.sh
 
-  - stage: develop/nightly
+  - stage: cron
     if: branch = develop AND type = cron
     script: 
-    - source travis-scripts/master_main.sh
+    - source travis-scripts/cronjob_main.sh
 
   - stage: feature/bug/hotfix
     if: branch =~ ^feature.*$ OR branch =~ ^bug.*$ OR branch =~ ^hotfix.*$
@@ -62,54 +50,31 @@ jobs:
     - echo $TRAVIS_BUILD_STAGE_NAME
     - TYPE="$(echo $TRAVIS_BRANCH | cut -d'/' -f1)"
     - NUMBER="$(echo $TRAVIS_BRANCH | cut -d'/' -f2)"
-    - |
-      if [[ $CHANGED_FILES == *"${CLI_FOLDER}"* ]]; then
-        echo "Build keptn cli"
-        travis-scripts/setup_gcloud.sh
-        cd "./${CLI_FOLDER}"
-        TAG="${TYPE}-${NUMBER}-${DATE}"
-        source ../travis-scripts/build_cli.sh "${TAG}"
-        cd ..
-      fi
-
+    - travis-scripts/setup_gcloud.sh
+    - cd ./cli
+    - TAG="${TYPE}-${NUMBER}-${DATE}"
+    - source ../travis-scripts/build_cli.sh "${TAG}"
   - stage: develop
     if: branch = develop AND type = push
     script: 
     - echo $TRAVIS_BUILD_STAGE_NAME
-    - |
-      if [[ $CHANGED_FILES == *"${CLI_FOLDER}"* ]]; then
-        echo "Build keptn cli"
-        travis-scripts/setup_gcloud.sh
-        cd "./${CLI_FOLDER}"
-        TAG="${DATE}-latest"
-        source ../travis-scripts/build_cli.sh "${TAG}"
-        cd ..
-      fi
-    
+    - travis-scripts/setup_gcloud.sh
+    - cd ./cli
+    - TAG="${DATE}-latest"
+    - source ../travis-scripts/build_cli.sh "${TAG}"  
   - stage: release
     if: branch =~ ^release.*$ AND NOT type = pull_request
     script:
     - echo $TRAVIS_BUILD_STAGE_NAME
-    - |
-      if [[ $CHANGED_FILES == *"${CLI_FOLDER}"* ]]; then
-        echo "Build keptn cli"
-        travis-scripts/setup_gcloud.sh
-        cd "./${CLI_FOLDER}"
-        TAG="${CLI_VERSION}-${DATE}"
-        source ../travis-scripts/build_cli.sh "${TAG}"
-        cd ..
-      fi
-
+    - travis-scripts/setup_gcloud.sh
+    - cd ./cli
+    - TAG="${CLI_VERSION}-${DATE}"
+    - source ../travis-scripts/build_cli.sh "${TAG}"  
   - stage: master
     if: branch = master AND NOT type = pull_request
     script:
     - echo $TRAVIS_BUILD_STAGE_NAME
-    - |
-      if [[ $CHANGED_FILES == *"${CLI_FOLDER}"* ]]; then
-        echo "Build keptn cli"
-        travis-scripts/setup_gcloud.sh
-        cd "./${CLI_FOLDER}"
-        TAG="${CLI_VERSION}"
-        source ../travis-scripts/build_cli.sh "${TAG}"
-        cd ..
-      fi
+    - travis-scripts/setup_gcloud.sh
+    - cd ./cli
+    - TAG="${CLI_VERSION}"
+    - source ../travis-scripts/build_cli.sh "${TAG}"  
