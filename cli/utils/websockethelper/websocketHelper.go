@@ -7,13 +7,13 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/gorilla/websocket"
 	"github.com/keptn/keptn/cli/utils"
-	"github.com/keptn/keptn/cli/utils/credentialmanager"
 )
 
 // MyCloudEvent represents a keptn cloud event
@@ -53,19 +53,19 @@ type ChannelInfo struct {
 
 // PrintWSContentCEResponse opens a websocket using the passed
 // connection data (in form of a cloud event) and prints status data
-func PrintWSContentCEResponse(responseCE *cloudevents.Event) error {
+func PrintWSContentCEResponse(responseCE *cloudevents.Event, controlEndPoint url.URL) error {
 
 	ceData := &incompleteCE{}
 	err := responseCE.DataAs(ceData)
 	if err != nil {
 		return err
 	}
-	return printWSContent(ceData.ConnData)
+	return printWSContent(ceData.ConnData, controlEndPoint)
 }
 
 // PrintWSContentByteResponse opens a websocket using the passed
 // connection data (in form of a byte slice) and prints status data
-func PrintWSContentByteResponse(response []byte) error {
+func PrintWSContentByteResponse(response []byte, controlEndPoint url.URL) error {
 
 	ceData := &incompleteCE{}
 	err := json.Unmarshal(response, ceData)
@@ -73,17 +73,17 @@ func PrintWSContentByteResponse(response []byte) error {
 		return err
 	}
 
-	return printWSContent(ceData.ConnData)
+	return printWSContent(ceData.ConnData, controlEndPoint)
 }
 
-func printWSContent(connData ConnectionData) error {
+func printWSContent(connData ConnectionData, controlEndPoint url.URL) error {
 
 	err := validateConnectionData(connData)
 	if err != nil {
 		return err
 	}
 
-	ws, _, err := openWS(connData)
+	ws, _, err := openWS(connData, controlEndPoint)
 	if err != nil {
 		fmt.Println("Opening websocket failed")
 		return err
@@ -102,14 +102,9 @@ func validateConnectionData(connData ConnectionData) error {
 }
 
 // openWS opens a websocket
-func openWS(connData ConnectionData) (*websocket.Conn, *http.Response, error) {
+func openWS(connData ConnectionData, controlEndPoint url.URL) (*websocket.Conn, *http.Response, error) {
 
-	endPoint, _, err := credentialmanager.GetCreds()
-	if err != nil {
-		return nil, nil, err
-	}
-
-	wsEndPoint := endPoint
+	wsEndPoint := controlEndPoint
 	wsEndPoint.Scheme = "ws"
 
 	header := http.Header{}
