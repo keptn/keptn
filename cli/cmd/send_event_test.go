@@ -44,7 +44,8 @@ func TestSend(t *testing.T) {
 
 	args := []string{
 		"send",
-		fmt.Sprintf("--event=%s", tmpCE),
+		"event",
+		fmt.Sprintf("--file=%s", tmpCE),
 		"--mock",
 	}
 	rootCmd.SetArgs(args)
