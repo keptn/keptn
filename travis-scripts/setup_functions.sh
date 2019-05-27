@@ -105,13 +105,7 @@ function export_names {
     ./test/assertEquals.sh $CONTROL_NAME control
 }
 
-function execute_core_component_tests {
-    # Control
-    cd ./core/control
-    npm install
-    npm run test
-    verify_step $? "Tests for component 'control' failed."
-    
+function execute_core_component_tests { 
     # Auth
     cd ../auth
     npm install

@@ -1,6 +1,8 @@
 #!/bin/bash
 REGISTRY_URL=$(kubectl describe svc docker-registry -n keptn | grep IP: | sed 's~IP:[ \t]*~~')
 
+CONTROL_RELEASE="develop"
+
 source ./utils.sh
 
 # Creating cluster role binding
@@ -57,7 +59,7 @@ verify_variable "$KEPTN_CHANNEL_URI" "KEPTN_CHANNEL_URI could not be derived fro
 # Deploy keptn core components: eventbroker, eventbroker-ext, auth, control
 cd ../../core/eventbroker
 chmod +x deploy.sh
-./deploy.sh $REGISTRY_URL $KEPTN_CHANNEL_URI
+./deploy.sh
 verify_install_step $? "Deploying keptn event-broker failed."
 cd ../../install/scripts
 
@@ -69,15 +71,21 @@ cd ../../install/scripts
 
 cd ../../core/auth
 chmod +x deploy.sh
-./deploy.sh $REGISTRY_URL
+./deploy.sh
 verify_install_step $? "Deploying keptn auth component failed."
 cd ../../install/scripts
 
-cd ../../core/control
-chmod +x deploy.sh
-./deploy.sh $REGISTRY_URL $KEPTN_CHANNEL_URI
-verify_install_step $? "Deploying keptn control component failed."
-cd ../../install/scripts
+# control component
+curl -o ../manifests/keptn/control.yml https://raw.githubusercontent.com/keptn/control/$CONTROL_RELEASE/config/control.yaml
+
+rm -f ../manifests/keptn/gen/control.yaml
+
+cat ../manifests/keptn/control.yml | \
+  sed 's~CHANNEL_URI_PLACEHOLDER~'"$KEPTN_CHANNEL_URI"'~' >> ../manifests/keptn/gen/control.yaml
+  
+kubectl delete -f ../manifests/keptn/gen/control.yaml --ignore-not-found
+kubectl apply -f ../manifests/keptn/gen/control.yaml
+verify_kubectl $? "Deploying keptn control component failed."
 
 # Set up SSL
 ISTIO_INGRESS_IP=$(kubectl describe svc istio-ingressgateway -n istio-system | grep "LoadBalancer Ingress:" | sed 's~LoadBalancer Ingress:[ \t]*~~')
