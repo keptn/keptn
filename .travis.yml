@@ -19,7 +19,7 @@ notifications:
     on_error: always 
 before_install:   
 - |
-  !if [ ! -d "$HOME/google-cloud-sdk/bin" ]; then 
+  if [ ! -d "$HOME/google-cloud-sdk/bin" ]; then 
     rm -rf $HOME/google-cloud-sdk;
     export CLOUDSDK_CORE_DISABLE_PROMPTS=1;
     curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-247.0.0-darwin-x86_64.tar.gz > gcloud.tar.gz 
