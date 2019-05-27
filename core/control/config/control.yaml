@@ -13,7 +13,7 @@ spec:
             autoscaling.knative.dev/minScale: "1"
         spec:
           container:
-            image: keptn/keptn-control:0.2.1
+            image: keptn/keptn-control:latest
             imagePullPolicy: Always
             env:
             - name: CHANNEL_URI
