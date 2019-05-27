@@ -6,8 +6,6 @@ go:
 cache:
   directories:
     - "$HOME/google-cloud-sdk/"
-services:
-  - docker
 env:
   global:
     - GOOGLE_APPLICATION_CREDENTIALS=~/gcloud-service-key.json
@@ -29,12 +27,8 @@ before_install:
 - dep ensure
 - cd ..
 - export TZ=Europe/Vienna
-- REGISTRY_USER=jbraeuer
 - CLI_VERSION="$(cat ./cli/version | tr -d '[:space:]')"
 - DATE="$(date +'%Y%m%d.%H%M')"
-- GIT_SHA="$(git rev-parse --short HEAD)"
-- echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
-- REPO_URL="$(git remote get-url --all origin)"
 
 jobs:
   include:
