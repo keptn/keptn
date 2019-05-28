@@ -15,7 +15,7 @@ func init() {
 
 func TestConfigureCmd(t *testing.T) {
 
-	credentialmanager.MockCreds = true
+	credentialmanager.MockAuthCreds = true
 
 	buf := new(bytes.Buffer)
 	rootCmd.SetOutput(buf)

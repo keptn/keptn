@@ -16,7 +16,7 @@ func init() {
 
 func TestCreateProjectCmd(t *testing.T) {
 
-	credentialmanager.MockCreds = true
+	credentialmanager.MockAuthCreds = true
 
 	// Write temporary shipyardTest.yml file
 	const tmpShipyardFileName = "shipyardTest.yml"
@@ -54,7 +54,7 @@ stages:
 
 func TestCreateProjectIncorrectProjectNameCmd(t *testing.T) {
 
-	credentialmanager.MockCreds = true
+	credentialmanager.MockAuthCreds = true
 
 	// Write temporary shipyardTest.yml file
 	const tmpShipyardFileName = "shipyardTest.yml"

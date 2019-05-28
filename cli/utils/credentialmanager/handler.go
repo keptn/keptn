@@ -27,15 +27,12 @@ type bot interface {
 	GetCreds() (string, string, error)
 }
 
-// MockCreds shows whether the get and set should be mocked by a file
-// named "endPoint.txt"
-var MockCreds bool
+// MockAuthCreds shows whether the get and set for the auth-creds should be mocked
+var MockAuthCreds bool
 
 var apiTokenFileURI string
-var mockAPItokenFileURI string
 
 var credsFileURI string
-var mockCredsFileURI string
 
 func init() {
 	dir, err := utils.GetKeptnDirectory()
@@ -44,20 +41,13 @@ func init() {
 	}
 
 	apiTokenFileURI = dir + ".keptn"
-	mockAPItokenFileURI = dir + ".keptnmock"
 
 	credsFileURI = dir + ".keptn-creds"
-	mockCredsFileURI = dir + ".keptn-credsmock"
 
 	credentials.SetCredsLabel(credsLab)
 }
 
 func setInstallCreds(h credentials.Helper, creds string) error {
-	if MockCreds {
-		// Do nothing
-		return nil
-	}
-
 	c := &credentials.Credentials{
 		ServerURL: installCredsKey,
 		Username:  "creds",
@@ -67,9 +57,6 @@ func setInstallCreds(h credentials.Helper, creds string) error {
 }
 
 func getInstallCreds(h credentials.Helper) (string, error) {
-	if MockCreds {
-		return readInstallCredsFromFile()
-	}
 	_, creds, err := h.Get(installCredsKey)
 	if err != nil {
 		return "", err
@@ -78,7 +65,7 @@ func getInstallCreds(h credentials.Helper) (string, error) {
 }
 
 func setCreds(h credentials.Helper, endPoint url.URL, apiToken string) error {
-	if MockCreds {
+	if MockAuthCreds {
 		// Do nothing
 		return nil
 	}
@@ -93,8 +80,8 @@ func setCreds(h credentials.Helper, endPoint url.URL, apiToken string) error {
 
 func getCreds(h credentials.Helper) (url.URL, string, error) {
 
-	if MockCreds {
-		return readCredsFromFile()
+	if MockAuthCreds {
+		return url.URL{}, "", nil
 	}
 	endPointStr, apiToken, err := h.Get(serverURL)
 	if err != nil {
@@ -109,11 +96,7 @@ func getCreds(h credentials.Helper) (url.URL, string, error) {
 func readCredsFromFile() (url.URL, string, error) {
 	var data []byte
 	var err error
-	if MockCreds {
-		data, err = ioutil.ReadFile(mockAPItokenFileURI)
-	} else {
-		data, err = ioutil.ReadFile(apiTokenFileURI)
-	}
+	data, err = ioutil.ReadFile(apiTokenFileURI)
 	if err != nil {
 		return url.URL{}, "", err
 	}
@@ -131,11 +114,7 @@ func readCredsFromFile() (url.URL, string, error) {
 func readInstallCredsFromFile() (string, error) {
 	var data []byte
 	var err error
-	if MockCreds {
-		data, err = ioutil.ReadFile(mockCredsFileURI)
-	} else {
-		data, err = ioutil.ReadFile(credsFileURI)
-	}
+	data, err = ioutil.ReadFile(credsFileURI)
 	if err != nil {
 		return "", err
 	}
