@@ -38,7 +38,7 @@ func TestSend(t *testing.T) {
 	const tmpCE = "ce.json"
 	ioutil.WriteFile(tmpCE, []byte(newArtifactEvent), 0644)
 
-	credentialmanager.MockCreds = true
+	credentialmanager.MockAuthCreds = true
 	buf := new(bytes.Buffer)
 	rootCmd.SetOutput(buf)
 
