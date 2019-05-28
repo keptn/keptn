@@ -17,7 +17,7 @@ func init() {
 // TestNewArtifact tests the new-artifact command.
 func TestNewArtifact(t *testing.T) {
 
-	credentialmanager.MockCreds = true
+	credentialmanager.MockAuthCreds = true
 	buf := new(bytes.Buffer)
 	rootCmd.SetOutput(buf)
 
@@ -53,7 +53,7 @@ func TestCheckImageAvailability(t *testing.T) {
 		DockerImg{"10.10.10.10:10/keptnexamples/carts", "0.7.5"},
 		DockerImg{"10.10.10.10:10/keptnexamples/carts:0.7.5", ""}}
 
-	credentialmanager.MockCreds = true
+	credentialmanager.MockAuthCreds = true
 	buf := new(bytes.Buffer)
 	rootCmd.SetOutput(buf)
 
@@ -75,7 +75,7 @@ func TestCheckImageNonAvailability(t *testing.T) {
 
 	invalidImgs := []DockerImg{DockerImg{"keptnexamples/carts", "0.7.5"}, DockerImg{"docker.io/keptnexamples/carts:0.7.5", ""}}
 
-	credentialmanager.MockCreds = true
+	credentialmanager.MockAuthCreds = true
 	buf := new(bytes.Buffer)
 	rootCmd.SetOutput(buf)
 
