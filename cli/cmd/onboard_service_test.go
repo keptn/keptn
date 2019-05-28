@@ -168,7 +168,7 @@ func init() {
 
 func TestOnboardServiceCmdUsingHelm(t *testing.T) {
 
-	credentialmanager.MockCreds = true
+	credentialmanager.MockAuthCreds = true
 
 	// Write temporary files
 	const tmpValues = "valuesTest.tpl"
@@ -210,7 +210,7 @@ func TestOnboardServiceCmdUsingHelm(t *testing.T) {
 
 func TestOnboardServiceCmdUsingHelmIncorrectName(t *testing.T) {
 
-	credentialmanager.MockCreds = true
+	credentialmanager.MockAuthCreds = true
 
 	// Write temporary files
 	const tmpValues = "valuesTest.tpl"
