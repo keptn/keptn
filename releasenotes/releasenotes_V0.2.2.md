@@ -15,8 +15,8 @@ This release improves the usability and stability of keptn. More precisely, it s
 - Deploys dynatrace-service when Dynatrace monitoring is activated #268 #354
 - The *deploy* pipeline does not send the Dynatrace deployment event since this is handled by the dynatrace-service #268
 
-
 ## Fixed Issues
+
 - Fix no healthy upstream-problem during blue green deployment #332
 - Bugfix in roll-back step of *evalution_done* and *run_tests* pipelines #292
 - Set visibility of service to cluster-local #396
