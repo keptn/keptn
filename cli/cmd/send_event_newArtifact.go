@@ -53,6 +53,8 @@ Example:
 	keptn send event new-artifact --project=sockshop --service=carts --image=docker.io/keptnexamples/carts --tag=0.7.0`,
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
+		trimmedImage := strings.TrimSuffix(*newArtifact.Image, "/")
+		newArtifact.Image = &trimmedImage
 		setTag()
 		return checkImageAvailability()
 	},
@@ -110,22 +112,28 @@ func setTag() {
 		// The tag is already set
 		return
 	}
-	parts := strings.Split(*newArtifact.Image, ":")
-	if len(parts) == 2 {
+
+	// Get image name without Docker-organization
+	splitsIntoImage := strings.Split(*newArtifact.Image, "/")
+	imageName := splitsIntoImage[len(splitsIntoImage)-1]
+
+	splitsIntoTag := strings.Split(imageName, ":")
+	if len(splitsIntoTag) == 2 {
 		// Tag is provided in the image name
-		newArtifact.Image = &parts[0]
-		newArtifact.Tag = &parts[1]
+		tag := splitsIntoTag[len(splitsIntoTag)-1]
+		newArtifact.Tag = &tag
+		imageWithoutTag := strings.TrimSuffix(*newArtifact.Image, ":"+*newArtifact.Tag)
+		newArtifact.Image = &imageWithoutTag
 		return
 	}
 	// Otherwise use latest tag
 	latest := "latest"
 	newArtifact.Tag = &latest
-
 }
 
 func checkImageAvailability() error {
 
-	if strings.HasPrefix(*newArtifact.Image, "docker.io/") {
+	if strings.HasPrefix(*newArtifact.Image, "docker.io/") || strings.Count(*newArtifact.Image, "/") == 1 {
 		resp, err := http.Get("https://index.docker.io/v1/repositories/" +
 			strings.TrimPrefix(*newArtifact.Image, "docker.io/") + "/tags/" + *newArtifact.Tag)
 		if err != nil {
@@ -140,7 +148,6 @@ func checkImageAvailability() error {
 		}
 		return errors.New("Provided image not found: " + string(body))
 	} else if strings.HasPrefix(*newArtifact.Image, "quay.io/") {
-
 		resp, err := http.Get("https://quay.io/api/v1/repository/" +
 			strings.TrimPrefix(*newArtifact.Image, "quay.io/") + "/tag/" + *newArtifact.Tag + "/images")
 		if err != nil {
