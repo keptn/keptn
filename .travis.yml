@@ -31,8 +31,8 @@ before_install:
 # - export PATH="$PATH:$HOME/google-cloud-sdk/bin" 
 - gcloud --quiet version
 - gcloud --quiet components update
-- echo $GCLOUD_SERVICE_KEY | base64 --decode -i > ${HOME}/gcloud-service-key.json
-- gcloud auth activate-service-account --key-file ${HOME}/gcloud-service-key.json
+- echo ${GCLOUD_SERVICE_KEY} | base64 --decode -i > ~/gcloud-service-key.json
+- gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
 
 # Download the binary to bin folder in $GOPATH
 - mkdir $GOPATH/bin/
