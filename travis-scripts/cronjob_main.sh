@@ -9,7 +9,6 @@ install_hub
 install_yq
 install_helm
 
-setup_gcloud
 setup_gcloud_nightly
 
 uninstall_keptn
