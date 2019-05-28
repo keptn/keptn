@@ -42,9 +42,9 @@ var installerVersion *string
 const jenkinsUser = "admin"
 const jenkinsPassword = "AiTx4u8VyUV8tCKk"
 
-const installerPrefixURL = "https://raw.githubusercontent.com/keptn/keptn/"
-const installerSuffixPath = "/install/manifests/installer/installer.yaml"
-const rbacSuffixPath = "/install/manifests/installer/rbac.yaml"
+const installerPrefixURL = "https://raw.githubusercontent.com/keptn/installer/"
+const installerSuffixPath = "/manifests/installer/installer.yaml"
+const rbacSuffixPath = "/manifests/installer/rbac.yaml"
 
 type installCredentials struct {
 	JenkinsUser               string `json:"jenkinsUser"`
