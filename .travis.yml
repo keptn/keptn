@@ -30,6 +30,7 @@ before_install:
   fi
 - gcloud --quiet version
 - gcloud --quiet components update
+- gcloud --quiet components update kubectl
 - echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
 - gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
 
