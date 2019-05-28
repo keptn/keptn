@@ -25,7 +25,8 @@ before_install:
 - curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-247.0.0-darwin-x86_64.tar.gz > gcloud.tar.gz 
 - gunzip -c gcloud.tar.gz | tar xopf - 
 - ./google-cloud-sdk/install.sh
-- source ~/.bashrc
+- source ./google-cloud-sdk/completion.bash.inc
+- source ./google-cloud-sdk/path.bash.inc
   # fi
 # - export PATH="$PATH:$HOME/google-cloud-sdk/bin" 
 - travis-scripts/setup_gcloud.sh
