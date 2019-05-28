@@ -48,6 +48,7 @@ before_install:
 install:
 - cd cli/
 - go test ./...
+- cd ..
 
 jobs:
   include:
