@@ -18,17 +18,16 @@ notifications:
     on_cancel: always
     on_error: always 
 before_install:   
-# - |
-  # if [ ! -d "$HOME/google-cloud-sdk/bin" ]; then 
-- rm -rf $HOME/google-cloud-sdk;
-- export CLOUDSDK_CORE_DISABLE_PROMPTS=1;
-- curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-247.0.0-darwin-x86_64.tar.gz > gcloud.tar.gz 
-- gunzip -c gcloud.tar.gz | tar xopf - 
-- ./google-cloud-sdk/install.sh
-- source ./google-cloud-sdk/completion.bash.inc
-- source ./google-cloud-sdk/path.bash.inc
-# fi
-# - export PATH="$PATH:$HOME/google-cloud-sdk/bin" 
+- |
+  if [ ! -d "$HOME/google-cloud-sdk/bin" ]; then 
+    rm -rf $HOME/google-cloud-sdk;
+    export CLOUDSDK_CORE_DISABLE_PROMPTS=1;
+    curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-247.0.0-darwin-x86_64.tar.gz > gcloud.tar.gz 
+    gunzip -c gcloud.tar.gz | tar xopf - 
+    ./google-cloud-sdk/install.sh
+    source ./google-cloud-sdk/completion.bash.inc
+    source ./google-cloud-sdk/path.bash.inc
+  fi
 - gcloud --quiet version
 - gcloud --quiet components update
 - echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
@@ -45,6 +44,10 @@ before_install:
 - export TZ=Europe/Vienna
 - CLI_VERSION="$(cat ./cli/version | tr -d '[:space:]')"
 - DATE="$(date +'%Y%m%d.%H%M')"
+
+install:
+- cd cli/
+- go test ./...
 
 jobs:
   include:
