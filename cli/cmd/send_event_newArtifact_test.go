@@ -48,10 +48,12 @@ func TestCheckImageAvailability(t *testing.T) {
 
 	validImgs := []DockerImg{DockerImg{"docker.io/keptnexamples/carts", "0.7.0"},
 		DockerImg{"docker.io/keptnexamples/carts:0.7.0", ""},
+		DockerImg{"keptnexamples/carts", ""},
 		DockerImg{"keptnexamples/carts", "0.7.0"},
 		DockerImg{"keptnexamples/carts:0.7.0", ""},
 		DockerImg{"10.10.10.10:10/keptnexamples/carts", "0.7.5"},
-		DockerImg{"10.10.10.10:10/keptnexamples/carts:0.7.5", ""}}
+		DockerImg{"10.10.10.10:10/keptnexamples/carts:0.7.5", ""},
+		DockerImg{"httpd", ""}}
 
 	credentialmanager.MockCreds = true
 	buf := new(bytes.Buffer)
