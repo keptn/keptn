@@ -19,7 +19,7 @@ create_nightly_cluster
 
 install_sed
 
-cd ./install/scripts
+cd ./installer/scripts
 
 source ./defineCredentialsUtils.sh
 
@@ -49,7 +49,6 @@ export ISTIO_INGRESS=$(kubectl describe svc istio-ingressgateway -n istio-system
 export_names
 
 # Execute unit tests
-execute_core_component_tests
 execute_cli_tests
 
 build_and_install_cli
