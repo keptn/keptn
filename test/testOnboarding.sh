@@ -1,9 +1,9 @@
 #!/bin/bash
 source ./utils.sh
 
-GITHUB_USER=$(cat ../install/scripts/creds.json | jq -r '.githubUserName')
-GITHUB_ORG=$(cat ../install/scripts/creds.json | jq -r '.githubOrg')
-GITHUB_TOKEN=$(cat ../install/scripts/creds.json | jq -r '.githubPersonalAccessToken')
+GITHUB_USER=$(cat ./installer/scripts/creds.json | jq -r '.githubUserName')
+GITHUB_ORG=$(cat ./installer/scripts/creds.json | jq -r '.githubOrg')
+GITHUB_TOKEN=$(cat ./installer/scripts/creds.json | jq -r '.githubPersonalAccessToken')
 
 KEPTN_ENDPOINT=https://$(kubectl get ksvc -n keptn control -o=yaml | yq r - status.domain)
 KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -o=yaml | yq - r data.keptn-api-token | base64 --decode)
