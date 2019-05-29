@@ -31,9 +31,7 @@ before_install:
 - gcloud --quiet version
 - gcloud --quiet components update
 - gcloud --quiet components update kubectl
-- mkdir -p $HOME/.kube
-- sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-- sudo chown $(id -u):$(id -g) $HOME/.kube/config
+- cat $HOME/.kube/config
 - echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
 - gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
 
