@@ -31,6 +31,7 @@ function create_nightly_cluster {
     gcloud container clusters get-credentials $CLUSTER_NAME_NIGHTLY --zone $CLOUDSDK_COMPUTE_ZONE --project $PROJECT_NAME
     verify_step $? "gcloud get credentials failed."
     kubectl config view
+    cat ~/.kube/config
 }
 
 function delete_nightly_cluster {
