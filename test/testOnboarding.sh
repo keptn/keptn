@@ -29,7 +29,7 @@ while [[ $RETRY -lt $RETRY_MAX ]]; do
   sleep 10
   STORED_GITHUB_USER=$(kubectl get secret github-credentials -n keptn -ojsonpath={.data.user} | base64 --decode)
 
-  if [ "$STORED_GITHUB_USER" == "$GITHUB_USER" ]; then
+  if [ "$STORED_GITHUB_USER" == "$GITHUB_USER_NAME_NIGHTLY" ]; then
       echo "Keptn config succeeded."
       break
   fi
@@ -50,13 +50,10 @@ cd onboarding-carts
 keptn create project $PROJECT shipyard.yaml
 verify_test_step $? "keptn create project command failed."
 
-sleep 30
 keptn onboard service --project=$PROJECT --values=values_carts.yaml
 
-sleep 30
 keptn onboard service --project=$PROJECT --values=values_carts_db.yaml --deployment=deployment_carts_db.yaml --service=service_carts_db.yaml
 
-sleep 60
 cd ../..
 npm install newman
 go get gopkg.in/mikefarah/yq.v2
