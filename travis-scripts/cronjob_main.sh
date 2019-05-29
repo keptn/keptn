@@ -49,7 +49,7 @@ export PROJ=$PROJECT_NAME
 export GITO=$GITHUB_ORG_NIGHTLY	
 
 replaceCreds
-keptn install --keptn-version=develop --creds= --verbose
+keptn install --keptn-version=develop --creds=creds.json --verbose
 cd ../..
 
 # Execute end-to-end test
