@@ -1,27 +1,15 @@
 sudo: true
-
-dist: xenial
-
-# Use node_js environnement
+os: osx
 language: go
-
 go:
-  - 1.11.x
-
-# Cache Gcloud SDK between commands
+  - 1.12.x
 cache:
   directories:
     - "$HOME/google-cloud-sdk/"
-
-# Install services
-services:
-  - docker
-
-# Set env vars
 env:
   global:
     - GOOGLE_APPLICATION_CREDENTIALS=~/gcloud-service-key.json
-
+    - DEP_VERSION="0.5.3"
 notifications:
   webhooks:
     urls:
@@ -29,22 +17,73 @@ notifications:
     on_failure: always
     on_cancel: always
     on_error: always 
+before_install:   
+- |
+  if [ ! -d "$HOME/google-cloud-sdk/bin" ]; then 
+    rm -rf $HOME/google-cloud-sdk;
+    export CLOUDSDK_CORE_DISABLE_PROMPTS=1;
+    curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-247.0.0-darwin-x86_64.tar.gz > gcloud.tar.gz 
+    gunzip -c gcloud.tar.gz | tar xopf - 
+    ./google-cloud-sdk/install.sh
+    source ./google-cloud-sdk/completion.bash.inc
+    source ./google-cloud-sdk/path.bash.inc
+  fi
+- gcloud --quiet version
+- gcloud --quiet components update
+- echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
+- gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
 
-before_install:                                                                 
-  - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh 
-  - cd cli/
-  - dep ensure
-  - cd ..
+# Download the binary to bin folder in $GOPATH
+- mkdir $GOPATH/bin/
+- curl -L -s https://github.com/golang/dep/releases/download/v${DEP_VERSION}/dep-darwin-amd64 -o $GOPATH/bin/dep
+# Make the binary executable
+- chmod +x $GOPATH/bin/dep
+- cd cli/
+- dep ensure
+- cd ..
+- export TZ=Europe/Vienna
+- CLI_VERSION="$(cat ./cli/version | tr -d '[:space:]')"
+- DATE="$(date +'%Y%m%d.%H%M')"
+
+install:
+- cd cli/
+- go test ./...
+- cd ..
 
 jobs:
   include:
-    - stage: master
-      if: branch = master AND NOT type = pull_request
-      script: source travis-scripts/master_main.sh
-
-    - stage: pr
-      if: type = pull_request
-      script: source travis-scripts/pr_main.sh
-
-      after_script: source travis-scripts/pr_cleanup.sh
-
+  - stage: cron
+    if: branch = develop AND type = cron
+    script:
+    - git clone --branch develop https://github.com/keptn/installer.git --single-branch
+    - source travis-scripts/cronjob_main.sh
+  - stage: feature/bug/hotfix
+    if: branch =~ ^feature.*$ OR branch =~ ^bug.*$ OR branch =~ ^hotfix.*$
+    script:
+    - echo $TRAVIS_BUILD_STAGE_NAME
+    - TYPE="$(echo $TRAVIS_BRANCH | cut -d'/' -f1)"
+    - NUMBER="$(echo $TRAVIS_BRANCH | cut -d'/' -f2)"
+    - cd ./cli
+    - TAG="${TYPE}-${NUMBER}-${DATE}"
+    - source ../travis-scripts/build_cli.sh "${TAG}"
+  - stage: develop
+    if: branch = develop AND type = push
+    script: 
+    - echo $TRAVIS_BUILD_STAGE_NAME
+    - cd ./cli
+    - TAG="${DATE}-latest"
+    - source ../travis-scripts/build_cli.sh "${TAG}"  
+  - stage: release
+    if: branch =~ ^release.*$ AND NOT type = pull_request
+    script:
+    - echo $TRAVIS_BUILD_STAGE_NAME
+    - cd ./cli
+    - TAG="${CLI_VERSION}-${DATE}"
+    - source ../travis-scripts/build_cli.sh "${TAG}"  
+  - stage: master
+    if: branch = master AND NOT type = pull_request
+    script:
+    - echo $TRAVIS_BUILD_STAGE_NAME
+    - cd ./cli
+    - TAG="${CLI_VERSION}"
+    - source ../travis-scripts/build_cli.sh "${TAG}"  

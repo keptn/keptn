@@ -14,11 +14,11 @@ func init() {
 	utils.InitLoggers(os.Stdout, os.Stdout, os.Stderr)
 }
 
-// TestAuthCmd tests the auth command. Therefore, this test assumes a file named "endPoint.txt" containing
-// the endpoint and api-token in the executing directory.
+// TestAuthCmd tests the auth command. Therefore, this test assumes a file "~/keptn/.keptnmock" containing
+// the endpoint and api-token.
 func TestAuthCmd(t *testing.T) {
 
-	credentialmanager.MockCreds = true
+	credentialmanager.MockAuthCreds = true
 
 	endPoint, apiToken, err := credentialmanager.GetCreds()
 	if err != nil {
@@ -33,6 +33,7 @@ func TestAuthCmd(t *testing.T) {
 		"auth",
 		fmt.Sprintf("--endpoint=%s", endPoint.String()),
 		fmt.Sprintf("--api-token=%s", apiToken),
+		"--mock",
 	}
 	rootCmd.SetArgs(args)
 	err = rootCmd.Execute()
