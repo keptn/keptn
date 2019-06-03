@@ -27,7 +27,7 @@ func TestSend(t *testing.T) {
 "specversion":"0.2",
 "time":"` + time.String() + `",
 "datacontenttype":"application/json",
-"type":"sh.keptn.events.new-artefact",
+"type":"sh.keptn.events.new-artifact",
 "data":{
 	"project":"sockshop",
 	"service":"carts",
