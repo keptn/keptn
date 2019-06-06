@@ -10,6 +10,8 @@ env:
   global:
     - GOOGLE_APPLICATION_CREDENTIALS=~/gcloud-service-key.json
     - DEP_VERSION="0.5.3"
+    - HUB_VERSION="v2.11.2"
+    - HUB_INSTALLER="hub-darwin-amd64-2.11.2"
 notifications:
   webhooks:
     urls:
@@ -33,6 +35,10 @@ before_install:
 - gcloud --quiet components update kubectl
 - echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
 - gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
+
+- curl -L -s https://github.com/github/hub/releases/download/${HUB_VERSION}/${HUB_INSTALLER}.tgz  -o ${HUB_INSTALLER}.tgz
+- tar xopf ${HUB_INSTALLER}.tgz
+- sudo mv ${HUB_INSTALLER}/bin/hub /usr/local/bin/hub
 
 # Download the binary to bin folder in $GOPATH
 - mkdir $GOPATH/bin/
