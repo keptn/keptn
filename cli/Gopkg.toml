@@ -61,17 +61,18 @@
   name = "github.com/google/go-github"
   version = "25.0.2"
 
-[[constraint]]
+[[override]]
+  name = "k8s.io/client-go"
+  version = "kubernetes-11.0.0"
+
+[[override]]
   name = "k8s.io/api"
   version = "kubernetes-1.14.3"
 
-[[constraint]]
+[[override]]
   name = "k8s.io/apimachinery"
   version = "kubernetes-1.14.3"
 
-[[constraint]]
-  name = "k8s.io/client-go"
-  version = "11.0.0"
   
 #[prune]
 #  go-tests = true
