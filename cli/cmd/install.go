@@ -30,6 +30,7 @@ import (
 	"strings"
 	"time"
 
+	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
 	"github.com/spf13/cobra"
@@ -39,16 +40,11 @@ import (
 var configFilePath *string
 var installerVersion *string
 
-const jenkinsUser = "admin"
-const jenkinsPassword = "AiTx4u8VyUV8tCKk"
-
 const installerPrefixURL = "https://raw.githubusercontent.com/keptn/installer/"
 const installerSuffixPath = "/manifests/installer/installer.yaml"
 const rbacSuffixPath = "/manifests/installer/rbac.yaml"
 
 type installCredentials struct {
-	JenkinsUser               string `json:"jenkinsUser"`
-	JenkinsPassword           string `json:"jenkinsPassword"`
 	GithubPersonalAccessToken string `json:"githubPersonalAccessToken"`
 	GithubUserEmail           string `json:"githubUserEmail"`
 	GithubOrg                 string `json:"githubOrg"`
@@ -107,8 +103,7 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 			}
 			// Verify the provided config
 			// Check whether all data is provided
-			if creds.ClusterName == "" || creds.ClusterZone == "" || creds.JenkinsUser == "" ||
-				creds.JenkinsPassword == "" || creds.GithubPersonalAccessToken == "" ||
+			if creds.ClusterName == "" || creds.ClusterZone == "" || creds.GithubPersonalAccessToken == "" ||
 				creds.GithubUserEmail == "" || creds.GithubOrg == "" || creds.GithubUserName == "" {
 				return errors.New("Incomplete credential file " + *configFilePath)
 			}
@@ -205,7 +200,7 @@ func getRbacURL() string {
 // Preconditions: 1. Already authenticated against the cluster; 2. Github credentials are checked
 func doInstallation(creds installCredentials) error {
 
-	path, err := utils.GetKeptnDirectory()
+	path, err := keptnutils.GetKeptnDirectory()
 	if err != nil {
 		return err
 	}
@@ -225,8 +220,7 @@ func doInstallation(creds installCredentials) error {
 		return err
 	}
 
-	if err := setDeploymentFileKey(installerPath, placeholderReplacement{"JENKINS_USER", creds.JenkinsUser},
-		placeholderReplacement{"JENKINS_PASSWORD", creds.JenkinsPassword},
+	if err := setDeploymentFileKey(installerPath,
 		placeholderReplacement{"GITHUB_PERSONAL_ACCESS_TOKEN", creds.GithubPersonalAccessToken},
 		placeholderReplacement{"GITHUB_USER_EMAIL", creds.GithubUserEmail},
 		placeholderReplacement{"GITHUB_USER_NAME", creds.GithubUserName},
@@ -303,10 +297,6 @@ func getInstallCredentials(creds *installCredentials) error {
 
 	for {
 		connectToCluster(creds)
-
-		// At present, we use default creds for jenkins
-		creds.JenkinsUser = jenkinsUser
-		creds.JenkinsPassword = jenkinsPassword
 
 		readGithubUserName(creds)
 		readGithubUserEmail(creds)
@@ -750,7 +740,7 @@ func copyAndCapture(r io.Reader, fileName string) (bool, error) {
 }
 
 func createFileInKeptnDirectory(fileName string) (*os.File, error) {
-	path, err := utils.GetKeptnDirectory()
+	path, err := keptnutils.GetKeptnDirectory()
 	if err != nil {
 		return nil, err
 	}
