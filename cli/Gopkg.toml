@@ -63,7 +63,7 @@
 
 [[override]]
   name = "k8s.io/client-go"
-  version = "kubernetes-11.0.0"
+  version = "11.0.0"
 
 [[override]]
   name = "k8s.io/api"
