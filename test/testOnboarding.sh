@@ -10,6 +10,8 @@ PROJECT=sockshop
 git ls-remote https://github.com/$GITHUB_ORG_NIGHTLY/$PROJECT > /dev/null 2>&1
 if [ $? = 0 ]; then 
     echo "Delete project $PROJECT" 
+    GITHUB_USER=GITHUB_USER_NAME_NIGHTLY
+    GITHUB_PASSWORD=GITHUB_TOKEN_NIGHTLY
     hub delete -y $GITHUB_ORG_NIGHTLY/$PROJECT
     echo "Finished deleting project $PROJECT"
 else 
