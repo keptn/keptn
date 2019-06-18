@@ -49,10 +49,13 @@ cd onboarding-carts
 
 keptn create project $PROJECT shipyard.yaml
 verify_test_step $? "keptn create project command failed."
+sleep 10
 
 keptn onboard service --project=$PROJECT --values=values_carts.yaml
+sleep 10
 
 keptn onboard service --project=$PROJECT --values=values_carts_db.yaml --deployment=deployment_carts_db.yaml --service=service_carts_db.yaml
+sleep 10
 
 cd ../..
 npm install newman
