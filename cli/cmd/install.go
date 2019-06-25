@@ -39,6 +39,7 @@ import (
 
 var configFilePath *string
 var installerVersion *string
+var platform *string
 
 const installerPrefixURL = "https://raw.githubusercontent.com/keptn/installer/"
 const installerSuffixPath = "/manifests/installer/installer.yaml"
@@ -52,6 +53,11 @@ type installCredentials struct {
 	ClusterName               string `json:"clusterName"`
 	ClusterZone               string `json:"clusterZone"`
 	GkeProject                string `json:"gkeProject"`
+	OpenshiftURL              string `json:"openshiftUrl"`
+	OpenshiftUser             string `json:"openshiftUser"`
+	OpenshiftPassword         string `json:"openshiftPassword"`
+	ClusterIPCIDR             string `json:"clusterIPCIDR"`
+	ServicesIPCIDR            string `json:"servicesIPCIDR"`
 }
 
 type keptnAPITokenSecret struct {
@@ -82,10 +88,12 @@ Example:
 				getInstallerURL() + "\n" + getRbacURL())
 		}
 
-		// Check whether Gcloud user is configured
-		_, err = getGcloudUser()
-		if err != nil {
-			return err
+		if platform == nil || *platform == "gke" {
+			// Check whether Gcloud user is configured
+			_, err = getGcloudUser()
+			if err != nil {
+				return err
+			}
 		}
 
 		// Check whether kubectl is installed
@@ -103,13 +111,25 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 			}
 			// Verify the provided config
 			// Check whether all data is provided
-			if creds.ClusterName == "" || creds.ClusterZone == "" || creds.GithubPersonalAccessToken == "" ||
+			if creds.GithubPersonalAccessToken == "" ||
 				creds.GithubUserEmail == "" || creds.GithubOrg == "" || creds.GithubUserName == "" {
 				return errors.New("Incomplete credential file " + *configFilePath)
 			}
 
 			// Check whether the authentication at the cluster is valid
-			authenticated, err := authenticateAtCluster(creds)
+			var authenticated = false
+			if platform == nil || *platform == "gke" {
+				if creds.ClusterName == "" || creds.ClusterZone == "" {
+					return errors.New("Incomplete credential file " + *configFilePath)
+				}
+				authenticated, err = authenticateAtGkeCluster(creds)
+			} else if *platform == "openshift" {
+				if creds.OpenshiftURL == "" || creds.OpenshiftUser == "" || creds.OpenshiftPassword == "" ||
+					creds.ClusterIPCIDR == "" || creds.ServicesIPCIDR == "" {
+					return errors.New("Incomplete credential file " + *configFilePath)
+				}
+				authenticated, err = authenticateAtOpenshiftCluster(creds)
+			}
 			if err != nil {
 				return err
 			}
@@ -167,6 +187,7 @@ func init() {
 	installCmd.Flags().MarkHidden("creds")
 	installerVersion = installCmd.Flags().StringP("keptn-version", "k", "master", "The branch or tag of the version which is installed")
 	installCmd.Flags().MarkHidden("keptn-version")
+	platform = installCmd.Flags().StringP("platform", "p", "gke", "The platform to run keptn on [gke,openshift]")
 }
 
 func checkInstallerAvailablity() (bool, error) {
@@ -211,13 +232,19 @@ func doInstallation(creds installCredentials) error {
 		return err
 	}
 
-	gcloudUser, err := getGcloudUser()
-	if err != nil {
-		return err
-	}
-	clusterIPCIDR, servicesIPCIDR, err := getGcloudClusterIPCIDR(creds.ClusterName, creds.ClusterZone)
-	if err != nil {
-		return err
+	var gcloudUser, clusterIPCIDR, servicesIPCIDR string
+	if platform == nil || *platform == "gke" {
+		gcloudUser, err = getGcloudUser()
+		if err != nil {
+			return err
+		}
+		clusterIPCIDR, servicesIPCIDR, err = getGcloudClusterIPCIDR(creds.ClusterName, creds.ClusterZone)
+		if err != nil {
+			return err
+		}
+	} else if *platform == "openshift" {
+		clusterIPCIDR = creds.ClusterIPCIDR
+		servicesIPCIDR = creds.ServicesIPCIDR
 	}
 
 	if err := setDeploymentFileKey(installerPath,
@@ -226,29 +253,33 @@ func doInstallation(creds installCredentials) error {
 		placeholderReplacement{"GITHUB_USER_NAME", creds.GithubUserName},
 		placeholderReplacement{"GITHUB_ORGANIZATION", creds.GithubOrg},
 		placeholderReplacement{"GCLOUD_USER", gcloudUser},
+		placeholderReplacement{"PLATFORM", *platform},
 		placeholderReplacement{"CLUSTER_IPV4_CIDR", clusterIPCIDR},
 		placeholderReplacement{"SERVICES_IPV4_CIDR", servicesIPCIDR}); err != nil {
 		return err
 	}
+	var execCmd *exec.Cmd
+	if platform == nil || *platform == "gke" {
+		execCmd = exec.Command(
+			"kubectl",
+			"apply",
+			"-f",
+			getRbacURL(),
+		)
 
-	execCmd := exec.Command(
-		"kubectl",
-		"apply",
-		"-f",
-		getRbacURL(),
-	)
-
-	_, err = execCmd.Output()
-	if err != nil {
-		return errors.New("Error while applying RBAC for installer pod: %s \n Aborting installation. \n" + err.Error())
+		_, err = execCmd.Output()
+		if err != nil {
+			return errors.New("Error while applying RBAC for installer pod: %s \n Aborting installation. \n" + err.Error())
+		}
 	}
 
 	utils.PrintLog("Deploying keptn installer pod...", utils.InfoLevel)
+
 	execCmd = exec.Command(
 		"kubectl",
 		"apply",
 		"-f",
-		installerPath,
+		path,
 	)
 	_, err = execCmd.Output()
 	if err != nil {
@@ -327,12 +358,24 @@ func getInstallCredentials(creds *installCredentials) error {
 			}
 		}
 
+		if platform != nil && *platform == "openshift" {
+			readClusterIPCIDR(creds)
+			readServiceIPCIDR(creds)
+		}
+
 		fmt.Println()
 		fmt.Println("Please confirm that the provided information is correct: ")
 
-		fmt.Println("Cluster Name: " + creds.ClusterName)
-		fmt.Println("Cluster Zone: " + creds.ClusterZone)
-		fmt.Println("GKE Project: " + creds.GkeProject)
+		if platform == nil || *platform == "gke" {
+			fmt.Println("Cluster Name: " + creds.ClusterName)
+			fmt.Println("Cluster Zone: " + creds.ClusterZone)
+			fmt.Println("GKE Project: " + creds.GkeProject)
+		} else if *platform == "openshift" {
+			fmt.Println("Openshift Server URL: " + creds.OpenshiftURL)
+			fmt.Println("Openshift User: " + creds.OpenshiftUser)
+			fmt.Println("Cluster IP CIDR: " + creds.ClusterIPCIDR)
+			fmt.Println("Services IP CIDR: " + creds.ServicesIPCIDR)
+		}
 
 		fmt.Println("GitHub User Name: " + creds.GithubUserName)
 		fmt.Println("GitHub User Email: " + creds.GithubUserEmail)
@@ -361,18 +404,52 @@ func getInstallCredentials(creds *installCredentials) error {
 }
 
 func connectToCluster(creds *installCredentials) {
+	if platform == nil || *platform == "gke" {
+		if creds.ClusterName == "" || creds.ClusterZone == "" || creds.GkeProject == "" {
+			creds.ClusterName, creds.ClusterZone, creds.GkeProject = getGkeClusterInfo()
+		}
 
-	if creds.ClusterName == "" || creds.ClusterZone == "" || creds.GkeProject == "" {
-		creds.ClusterName, creds.ClusterZone, creds.GkeProject = getClusterInfo()
+		connectionSuccessful := false
+		for !connectionSuccessful {
+			readClusterName(creds)
+			readClusterZone(creds)
+			readGkeProject(creds)
+			connectionSuccessful, _ = authenticateAtGkeCluster(*creds)
+		}
+	} else if *platform == "openshift" {
+		connectionSuccessful := false
+		for !connectionSuccessful {
+			readOpenshiftClusterURL(creds)
+			readOpenshiftUser(creds)
+			readOpenshiftPassword(creds)
+			connectionSuccessful, _ = authenticateAtOpenshiftCluster(*creds)
+		}
 	}
 
-	connectionSuccessful := false
-	for !connectionSuccessful {
-		readClusterName(creds)
-		readClusterZone(creds)
-		readGkeProject(creds)
-		connectionSuccessful, _ = authenticateAtCluster(*creds)
-	}
+}
+
+func readOpenshiftClusterURL(creds *installCredentials) {
+	readUserInput(&creds.OpenshiftURL,
+		"",
+		"Openshift Server URL",
+		"Please enter a valid Server URL.",
+	)
+}
+
+func readOpenshiftUser(creds *installCredentials) {
+	readUserInput(&creds.OpenshiftUser,
+		"",
+		"Openshift User",
+		"Please enter a valid user name.",
+	)
+}
+
+func readOpenshiftPassword(creds *installCredentials) {
+	readUserInput(&creds.OpenshiftPassword,
+		"",
+		"Openshift Password",
+		"Please enter a valid password.",
+	)
 }
 
 func readClusterName(creds *installCredentials) {
@@ -428,6 +505,22 @@ func readGithubOrg(creds *installCredentials) {
 		"^(([a-z0-9]+-)*[a-z0-9]+)$",
 		"GitHub Organization",
 		"Please enter a valid GitHub Organization.",
+	)
+}
+
+func readClusterIPCIDR(creds *installCredentials) {
+	readUserInput(&creds.ClusterIPCIDR,
+		`^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(3[0-2]|[1-2][0-9]|[0-9]))$`,
+		"Cluster IP CIDR",
+		"Please enter a valid CIDR.",
+	)
+}
+
+func readServiceIPCIDR(creds *installCredentials) {
+	readUserInput(&creds.ServicesIPCIDR,
+		`^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(3[0-2]|[1-2][0-9]|[0-9]))$`,
+		"Services IP CIDR",
+		"Please enter a valid CIDR.",
 	)
 }
 
@@ -493,7 +586,26 @@ func setDeploymentFileKey(installerPath string, replacements ...placeholderRepla
 	return ioutil.WriteFile(installerPath, []byte(content), 0666)
 }
 
-func authenticateAtCluster(creds installCredentials) (bool, error) {
+func authenticateAtOpenshiftCluster(creds installCredentials) (bool, error) {
+	cmd := exec.Command(
+		"oc",
+		"login",
+		creds.OpenshiftURL,
+		"-u="+creds.OpenshiftUser,
+		"-p="+creds.OpenshiftPassword,
+		"--insecure-skip-tls-verify=true",
+	)
+
+	_, err := cmd.Output()
+	if err != nil {
+		fmt.Println("Could not connect to cluster. Please verify that you have entered the correct information.")
+		return false, err
+	}
+
+	return true, nil
+}
+
+func authenticateAtGkeCluster(creds installCredentials) (bool, error) {
 	cmd := exec.Command(
 		"gcloud",
 		"container",
@@ -511,6 +623,7 @@ func authenticateAtCluster(creds installCredentials) (bool, error) {
 		fmt.Println("Could not connect to cluster. Please verify that you have entered the correct information.")
 		return false, err
 	}
+
 	return true, nil
 }
 
@@ -526,7 +639,7 @@ func setGcloudConfig(key string, value string) {
 	cmd.Run()
 }
 
-func getClusterInfo() (string, string, string) {
+func getGkeClusterInfo() (string, string, string) {
 
 	// try to get current cluster from gcloud config
 	cmd := exec.Command("kubectl", "config", "current-context")
