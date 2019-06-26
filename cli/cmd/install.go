@@ -58,6 +58,7 @@ type installCredentials struct {
 	OpenshiftPassword         string `json:"openshiftPassword"`
 	ClusterIPCIDR             string `json:"clusterIPCIDR"`
 	ServicesIPCIDR            string `json:"servicesIPCIDR"`
+	AzureResourceGroup        string `json:"azureResourceGroup"`
 }
 
 type keptnAPITokenSecret struct {
@@ -91,6 +92,12 @@ Example:
 		if platform == nil || *platform == "gke" {
 			// Check whether Gcloud user is configured
 			_, err = getGcloudUser()
+			if err != nil {
+				return err
+			}
+		}
+		if *platform == "aks" {
+			_, err = getAzUser()
 			if err != nil {
 				return err
 			}
@@ -129,6 +136,11 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 					return errors.New("Incomplete credential file " + *configFilePath)
 				}
 				authenticated, err = authenticateAtOpenshiftCluster(creds)
+			} else if *platform == "aks" {
+				if creds.ClusterName == "" || creds.AzureResourceGroup == "" {
+					return errors.New("Incomplete credential file " + *configFilePath)
+				}
+				authenticated, err = authenticateAtAksCluster(creds)
 			}
 			if err != nil {
 				return err
@@ -232,9 +244,9 @@ func doInstallation(creds installCredentials) error {
 		return err
 	}
 
-	var gcloudUser, clusterIPCIDR, servicesIPCIDR string
+	var user, clusterIPCIDR, servicesIPCIDR string
 	if platform == nil || *platform == "gke" {
-		gcloudUser, err = getGcloudUser()
+		user, err = getGcloudUser()
 		if err != nil {
 			return err
 		}
@@ -245,6 +257,15 @@ func doInstallation(creds installCredentials) error {
 	} else if *platform == "openshift" {
 		clusterIPCIDR = creds.ClusterIPCIDR
 		servicesIPCIDR = creds.ServicesIPCIDR
+	} else if *platform == "aks" {
+		user, err = getAzUser()
+		if err != nil {
+			return err
+		}
+		clusterIPCIDR, servicesIPCIDR, err = getAksClusterIPCIDR(creds.ClusterName, creds.AzureResourceGroup)
+		if err != nil {
+			return err
+		}
 	}
 
 	if err := setDeploymentFileKey(installerPath,
@@ -252,19 +273,20 @@ func doInstallation(creds installCredentials) error {
 		placeholderReplacement{"GITHUB_USER_EMAIL", creds.GithubUserEmail},
 		placeholderReplacement{"GITHUB_USER_NAME", creds.GithubUserName},
 		placeholderReplacement{"GITHUB_ORGANIZATION", creds.GithubOrg},
-		placeholderReplacement{"GCLOUD_USER", gcloudUser},
+		placeholderReplacement{"USER", user},
 		placeholderReplacement{"PLATFORM", *platform},
 		placeholderReplacement{"CLUSTER_IPV4_CIDR", clusterIPCIDR},
 		placeholderReplacement{"SERVICES_IPV4_CIDR", servicesIPCIDR}); err != nil {
 		return err
 	}
 	var execCmd *exec.Cmd
-	if platform == nil || *platform == "gke" {
+	if platform == nil || *platform == "gke" || *platform == "aks" {
 		execCmd = exec.Command(
 			"kubectl",
 			"apply",
 			"-f",
 			getRbacURL(),
+			"--wait",
 		)
 
 		_, err = execCmd.Output()
@@ -285,6 +307,7 @@ func doInstallation(creds installCredentials) error {
 	if err != nil {
 		return errors.New("Error while deploying keptn installer pod: %s \nAborting installation. \n" + err.Error())
 	}
+
 	utils.PrintLog("Installer pod deployed successfully.", utils.InfoLevel)
 
 	installerPodName, err := waitForInstallerPod()
@@ -375,6 +398,9 @@ func getInstallCredentials(creds *installCredentials) error {
 			fmt.Println("Openshift User: " + creds.OpenshiftUser)
 			fmt.Println("Cluster IP CIDR: " + creds.ClusterIPCIDR)
 			fmt.Println("Services IP CIDR: " + creds.ServicesIPCIDR)
+		} else if *platform == "aks" {
+			fmt.Println("Cluster Name: " + creds.ClusterName)
+			fmt.Println("Azure Resource Group: " + creds.AzureResourceGroup)
 		}
 
 		fmt.Println("GitHub User Name: " + creds.GithubUserName)
@@ -424,6 +450,17 @@ func connectToCluster(creds *installCredentials) {
 			readOpenshiftPassword(creds)
 			connectionSuccessful, _ = authenticateAtOpenshiftCluster(*creds)
 		}
+	} else if *platform == "aks" {
+		if creds.ClusterName == "" {
+			creds.ClusterName = getAksClusterInfo()
+		}
+
+		connectionSuccessful := false
+		for !connectionSuccessful {
+			readClusterName(creds)
+			readAzureResourceGroup(creds)
+			connectionSuccessful, _ = authenticateAtAksCluster(*creds)
+		}
 	}
 
 }
@@ -457,6 +494,14 @@ func readClusterName(creds *installCredentials) {
 		"^(([a-z0-9]+-)*[a-z0-9]+)$",
 		"Cluster Name",
 		"Please enter a valid Cluster Name.",
+	)
+}
+
+func readAzureResourceGroup(creds *installCredentials) {
+	readUserInput(&creds.AzureResourceGroup,
+		"^(([a-z0-9]+-)*[a-z0-9]+)$",
+		"Azure Resource Group",
+		"Please enter a valid Azure Resource Group.",
 	)
 }
 
@@ -627,6 +672,27 @@ func authenticateAtGkeCluster(creds installCredentials) (bool, error) {
 	return true, nil
 }
 
+func authenticateAtAksCluster(creds installCredentials) (bool, error) {
+	cmd := exec.Command(
+		"az",
+		"aks",
+		"get-credentials",
+		"--resource-group",
+		creds.AzureResourceGroup,
+		"--name",
+		creds.ClusterName,
+		"--overwrite-existing",
+	)
+
+	_, err := cmd.Output()
+	if err != nil {
+		fmt.Println("Could not connect to cluster. Please verify that you have entered the correct information.")
+		return false, err
+	}
+
+	return true, nil
+}
+
 func setGcloudConfig(key string, value string) {
 	cmd := exec.Command(
 		"gcloud",
@@ -660,9 +726,31 @@ func getGkeClusterInfo() (string, string, string) {
 	return clusterInfoArray[3], clusterInfoArray[2], clusterInfoArray[1]
 }
 
+func getAksClusterInfo() string {
+
+	// try to get current cluster from gcloud config
+	cmd := exec.Command("kubectl", "config", "current-context")
+	out, err := cmd.Output()
+	if err != nil {
+		return ""
+	}
+	return strings.TrimSpace(strings.Replace(string(out), "\r\n", "\n", -1))
+}
+
 func getGcloudUser() (string, error) {
 
 	cmd := exec.Command("gcloud", "config", "get-value", "account")
+	out, err := cmd.Output()
+	if err != nil {
+		return "", fmt.Errorf("Please configure your gcloud: %s", err)
+	}
+	// This command returns the account in the first line
+	return strings.Split(strings.Replace(string(out), "\r\n", "\n", -1), "\n")[0], nil
+}
+
+func getAzUser() (string, error) {
+
+	cmd := exec.Command("az", "account", "show", "--query=user.name", "--output=tsv")
 	out, err := cmd.Output()
 	if err != nil {
 		return "", fmt.Errorf("Please configure your gcloud: %s", err)
@@ -696,6 +784,27 @@ func getGcloudClusterIPCIDR(clusterName string, clusterZone string) (string, str
 	}
 	clusterIPCIDR := clusterDescription["clusterIpv4Cidr"].(string)
 	servicesIPCIDR := clusterDescription["servicesIpv4Cidr"].(string)
+
+	return clusterIPCIDR, servicesIPCIDR, nil
+}
+
+func getAksClusterIPCIDR(clusterName string, azureResourceGroup string) (string, string, error) {
+
+	cmd := exec.Command("az", "aks", "show", "--name", clusterName, "--resource-group", azureResourceGroup,
+		"--query=networkProfile.podCidr", "--output=tsv")
+	out, err := cmd.Output()
+	if err != nil {
+		return "", "", fmt.Errorf("Could not get cluster info: %s\nAborting installation", err)
+	}
+	clusterIPCIDR := string(out)
+
+	cmd = exec.Command("az", "aks", "show", "--name", clusterName, "--resource-group", azureResourceGroup,
+		"--query=networkProfile.serviceCidr", "--output=tsv")
+	out, err = cmd.Output()
+	if err != nil {
+		return "", "", fmt.Errorf("Could not get cluster info: %s\nAborting installation", err)
+	}
+	servicesIPCIDR := string(out)
 
 	return clusterIPCIDR, servicesIPCIDR, nil
 }
