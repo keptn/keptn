@@ -280,12 +280,14 @@ func doInstallation(creds installCredentials) error {
 		return err
 	}
 	var execCmd *exec.Cmd
-	if platform == nil || *platform == "gke" || *platform == "eks" {
+	if platform == nil || *platform == "gke" || *platform == "aks" {
+		fmt.Println(getRbacURL())
 		execCmd = exec.Command(
 			"kubectl",
 			"apply",
 			"-f",
 			getRbacURL(),
+			"--wait",
 		)
 
 		_, err = execCmd.Output()
@@ -306,6 +308,7 @@ func doInstallation(creds installCredentials) error {
 	if err != nil {
 		return errors.New("Error while deploying keptn installer pod: %s \nAborting installation. \n" + err.Error())
 	}
+
 	utils.PrintLog("Installer pod deployed successfully.", utils.InfoLevel)
 
 	installerPodName, err := waitForInstallerPod()
