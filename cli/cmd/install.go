@@ -244,9 +244,9 @@ func doInstallation(creds installCredentials) error {
 		return err
 	}
 
-	var gcloudUser, clusterIPCIDR, servicesIPCIDR string
+	var user, clusterIPCIDR, servicesIPCIDR string
 	if platform == nil || *platform == "gke" {
-		gcloudUser, err = getGcloudUser()
+		user, err = getGcloudUser()
 		if err != nil {
 			return err
 		}
@@ -258,6 +258,10 @@ func doInstallation(creds installCredentials) error {
 		clusterIPCIDR = creds.ClusterIPCIDR
 		servicesIPCIDR = creds.ServicesIPCIDR
 	} else if *platform == "aks" {
+		user, err = getAzUser()
+		if err != nil {
+			return err
+		}
 		clusterIPCIDR, servicesIPCIDR, err = getAksClusterIPCIDR(creds.ClusterName, creds.AzureResourceGroup)
 		if err != nil {
 			return err
@@ -269,7 +273,7 @@ func doInstallation(creds installCredentials) error {
 		placeholderReplacement{"GITHUB_USER_EMAIL", creds.GithubUserEmail},
 		placeholderReplacement{"GITHUB_USER_NAME", creds.GithubUserName},
 		placeholderReplacement{"GITHUB_ORGANIZATION", creds.GithubOrg},
-		placeholderReplacement{"GCLOUD_USER", gcloudUser},
+		placeholderReplacement{"USER", user},
 		placeholderReplacement{"PLATFORM", *platform},
 		placeholderReplacement{"CLUSTER_IPV4_CIDR", clusterIPCIDR},
 		placeholderReplacement{"SERVICES_IPV4_CIDR", servicesIPCIDR}); err != nil {
