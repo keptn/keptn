@@ -279,7 +279,7 @@ func doInstallation(creds installCredentials) error {
 		"kubectl",
 		"apply",
 		"-f",
-		path,
+		installerPath,
 	)
 	_, err = execCmd.Output()
 	if err != nil {
