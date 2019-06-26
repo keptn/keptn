@@ -281,7 +281,6 @@ func doInstallation(creds installCredentials) error {
 	}
 	var execCmd *exec.Cmd
 	if platform == nil || *platform == "gke" || *platform == "aks" {
-		fmt.Println(getRbacURL())
 		execCmd = exec.Command(
 			"kubectl",
 			"apply",
