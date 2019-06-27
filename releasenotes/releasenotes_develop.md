@@ -1,6 +1,8 @@
 # Release Notes x.x.x
 
 ## New Features
+- Support installation on an AKS cluster [#3](https://github.com/keptn/keptn/issues/3)
+- Support installation on Openshift cluster [#4](https://github.com/keptn/keptn/issues/4)
 
 ## Fixed Issues
 
