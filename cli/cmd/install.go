@@ -59,6 +59,7 @@ type installCredentials struct {
 	ClusterIPCIDR             string `json:"clusterIPCIDR"`
 	ServicesIPCIDR            string `json:"servicesIPCIDR"`
 	AzureResourceGroup        string `json:"azureResourceGroup"`
+	AzureSubscription         string `json:"azureSubscription"`
 }
 
 type keptnAPITokenSecret struct {
@@ -137,7 +138,7 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 				}
 				authenticated, err = authenticateAtOpenshiftCluster(creds)
 			} else if *platform == "aks" {
-				if creds.ClusterName == "" || creds.AzureResourceGroup == "" {
+				if creds.ClusterName == "" || creds.AzureResourceGroup == "" || creds.AzureSubscription == "" {
 					return errors.New("Incomplete credential file " + *configFilePath)
 				}
 				authenticated, err = authenticateAtAksCluster(creds)
@@ -459,6 +460,7 @@ func connectToCluster(creds *installCredentials) {
 		for !connectionSuccessful {
 			readClusterName(creds)
 			readAzureResourceGroup(creds)
+			readAzureSubscription(creds)
 			connectionSuccessful, _ = authenticateAtAksCluster(*creds)
 		}
 	}
@@ -502,6 +504,14 @@ func readAzureResourceGroup(creds *installCredentials) {
 		"^(([a-z0-9]+-)*[a-z0-9]+)$",
 		"Azure Resource Group",
 		"Please enter a valid Azure Resource Group.",
+	)
+}
+
+func readAzureSubscription(creds *installCredentials) {
+	readUserInput(&creds.AzureSubscription,
+		"^(([a-z0-9]+-)*[a-z0-9]+)$",
+		"Azure Subscription",
+		"Please enter a valid Azure Subscription.",
 	)
 }
 
@@ -681,6 +691,8 @@ func authenticateAtAksCluster(creds installCredentials) (bool, error) {
 		creds.AzureResourceGroup,
 		"--name",
 		creds.ClusterName,
+		"--subscription",
+		creds.AzureSubscription,
 		"--overwrite-existing",
 	)
 
