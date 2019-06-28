@@ -493,7 +493,7 @@ func readOpenshiftPassword(creds *installCredentials) {
 
 func readClusterName(creds *installCredentials) {
 	readUserInput(&creds.ClusterName,
-		"^(([a-z0-9]+-)*[a-z0-9]+)$",
+		"^(([a-zA-Z0-9]+-)*[a-zA-Z0-9]+)$",
 		"Cluster Name",
 		"Please enter a valid Cluster Name.",
 	)
@@ -501,7 +501,7 @@ func readClusterName(creds *installCredentials) {
 
 func readAzureResourceGroup(creds *installCredentials) {
 	readUserInput(&creds.AzureResourceGroup,
-		"^(([a-z0-9]+-)*[a-z0-9]+)$",
+		"^(([a-zA-Z0-9]+-)*[a-zA-Z0-9]+)$",
 		"Azure Resource Group",
 		"Please enter a valid Azure Resource Group.",
 	)
@@ -509,7 +509,7 @@ func readAzureResourceGroup(creds *installCredentials) {
 
 func readAzureSubscription(creds *installCredentials) {
 	readUserInput(&creds.AzureSubscription,
-		"^(([a-z0-9]+-)*[a-z0-9]+)$",
+		"^(([a-zA-Z0-9]+-)*[a-zA-Z0-9]+)$",
 		"Azure Subscription",
 		"Please enter a valid Azure Subscription.",
 	)
@@ -517,7 +517,7 @@ func readAzureSubscription(creds *installCredentials) {
 
 func readClusterZone(creds *installCredentials) {
 	readUserInput(&creds.ClusterZone,
-		"^(([a-z0-9]+-)*[a-z0-9]+)$",
+		"^(([a-zA-Z0-9]+-)*[a-zA-Z0-9]+)$",
 		"Cluster Zone",
 		"Please enter a valid Cluster Zone.",
 	)
@@ -525,7 +525,7 @@ func readClusterZone(creds *installCredentials) {
 
 func readGkeProject(creds *installCredentials) {
 	readUserInput(&creds.GkeProject,
-		"^(([a-z0-9]+-)*[a-z0-9]+)$",
+		"^(([a-zA-Z0-9]+-)*[a-zA-Z0-9]+)$",
 		"GKE Project",
 		"Please enter a valid GKE Project.",
 	)
@@ -533,7 +533,7 @@ func readGkeProject(creds *installCredentials) {
 
 func readGithubUserName(creds *installCredentials) {
 	readUserInput(&creds.GithubUserName,
-		"^(([a-z0-9]+-)*[a-z0-9]+)$",
+		"^(([a-zA-Z0-9]+-)*[a-zA-Z0-9]+)$",
 		"GitHub User Name",
 		"Please enter a valid GitHub User Name.",
 	)
@@ -557,7 +557,7 @@ func readGithubPersonalAccessToken(creds *installCredentials) {
 
 func readGithubOrg(creds *installCredentials) {
 	readUserInput(&creds.GithubOrg,
-		"^(([a-z0-9]+-)*[a-z0-9]+)$",
+		"^(([a-zA-Z0-9]+-)*[a-zA-Z0-9]+)$",
 		"GitHub Organization",
 		"Please enter a valid GitHub Organization.",
 	)
