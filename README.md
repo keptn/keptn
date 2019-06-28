@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/keptn/keptn.svg?branch=develop)](https://travis-ci.org/keptn/keptn)
-
 ![keptn](./assets/keptn.png)
 
 # keptn
