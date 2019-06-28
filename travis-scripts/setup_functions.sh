@@ -19,31 +19,6 @@ function setup_glcoud_pr {
     # export REGISTRY_URL=$(kubectl describe svc docker-registry -n keptn | grep "IP:" | sed 's~IP:[ \t]*~~')
 }
 
-function setup_gcloud_nightly {
-    gcloud --quiet config set project $PROJECT_NAME
-    gcloud --quiet config set container/cluster $CLUSTER_NAME_NIGHTLY
-    gcloud --quiet config set compute/zone ${CLOUDSDK_COMPUTE_ZONE}
-}
-
-function create_nightly_cluster {
-    gcloud container --project $PROJECT_NAME clusters create $CLUSTER_NAME_NIGHTLY --zone $CLOUDSDK_COMPUTE_ZONE --username "admin" --cluster-version "1.11.8-gke.6" --machine-type "n1-standard-16" --image-type "UBUNTU" --disk-type "pd-standard" --disk-size "100" --scopes "https://www.googleapis.com/auth/devstorage.read_only","https://www.googleapis.com/auth/logging.write","https://www.googleapis.com/auth/monitoring","https://www.googleapis.com/auth/servicecontrol","https://www.googleapis.com/auth/service.management.readonly","https://www.googleapis.com/auth/trace.append" --num-nodes "1" --enable-cloud-logging --enable-cloud-monitoring --no-enable-ip-alias --network "projects/sai-research/global/networks/default" --subnetwork "projects/sai-research/regions/$CLOUDSDK_REGION/subnetworks/default" --addons HorizontalPodAutoscaling,HttpLoadBalancing --no-enable-autoupgrade --no-enable-autorepair
-    verify_step $? "gcloud cluster create failed."
-    gcloud container clusters get-credentials $CLUSTER_NAME_NIGHTLY --zone $CLOUDSDK_COMPUTE_ZONE --project $PROJECT_NAME
-    verify_step $? "gcloud get credentials failed."
-    kubectl config view
-}
-
-function delete_nightly_cluster {
-    clusters=$(gcloud container clusters list --zone $CLOUDSDK_COMPUTE_ZONE --project $PROJECT_NAME)
-    if echo "$clusters" | grep $CLUSTER_NAME_NIGHTLY; then 
-        echo "Start deleting nightly cluster"
-        gcloud container clusters delete $CLUSTER_NAME_NIGHTLY --zone $CLOUDSDK_COMPUTE_ZONE --project $PROJECT_NAME --quiet
-        echo "Finished deleting nigtly cluster"
-    else 
-        echo "No nightly cluster available"
-    fi
-}
-
 function install_helm {
     curl https://storage.googleapis.com/kubernetes-helm/helm-v2.12.3-linux-amd64.tar.gz --output helm-v2.12.3-linux-amd64.tar.gz
     tar -zxvf helm-v2.12.3-linux-amd64.tar.gz
@@ -103,41 +78,6 @@ function export_names {
 
     export CONTROL_NAME=$(kubectl describe ksvc control -n keptn | grep -m 1 "Name:" | sed 's~Name:[ \t]*~~')
     ./test/assertEquals.sh $CONTROL_NAME control
-}
-
-function execute_cli_tests {
-
-    cd cli
-
-    dep ensure
-
-    mkdir ~/.keptn
-    ENDPOINT="$(kubectl get ksvc control -n keptn -o=yaml | yq r - status.domain)"
-    while [ "$ENDPOINT" = "null" ]; do sleep 30; ENDPOINT="$(kubectl get ksvc control -n keptn -o=yaml | yq r - status.domain)"; echo "waiting for control service"; done
-    printf "https://" > ~/.keptn/.keptnmock
-    kubectl get ksvc control -n keptn -o=yaml  | yq r - status.domain >> ~/.keptn/.keptnmock
-
-    AUTH_ENDPOINT="$(kubectl get ksvc authenticator -n keptn -o=yaml | yq r - status.domain)"
-    while [ "$AUTH_ENDPOINT" = "null" ]; do sleep 30; AUTH_ENDPOINT="$(kubectl get ksvc authenticator -n keptn -o=yaml | yq r - status.domain)"; echo "waiting for authenticator service"; done
-
-    set +x
-    SEC="$(kubectl get secret keptn-api-token  -n keptn -o=yaml | yq r - data.keptn-api-token | base64 --decode)"
-    echo "${SEC}" >> ~/.keptn/.keptnmock
-    set -x
-
-    # execute GO tests
-    go test ${gobuild_args} -timeout 240s ./...
-    verify_step $? "CLI tests failed."
-    cd ..
-}
-
-function build_and_install_cli {
-    # Build CLI for end-to-end test
-    cd cli/
-    dep ensure
-    go build -o keptn
-    sudo mv keptn /usr/local/bin/keptn
-    cd ..
 }
 
 function verify_step() {

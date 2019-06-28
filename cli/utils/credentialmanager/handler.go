@@ -7,9 +7,8 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/keptn/keptn/cli/utils"
-
 	"github.com/docker/docker-credential-helpers/credentials"
+	keptnutils "github.com/keptn/go-utils/pkg/utils"
 )
 
 var testEndPoint = url.URL{Scheme: "https", Host: "my-endpoint"}
@@ -35,7 +34,7 @@ var apiTokenFileURI string
 var credsFileURI string
 
 func init() {
-	dir, err := utils.GetKeptnDirectory()
+	dir, err := keptnutils.GetKeptnDirectory()
 	if err != nil {
 		log.Fatal(err)
 	}
