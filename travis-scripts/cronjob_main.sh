@@ -1,63 +1,57 @@
 #!/usr/bin/env bash
 
-source ./travis-scripts/setup_functions.sh
-
 # prints the full command before output of the command.
 set -x
 
-install_hub
-install_yq
-install_helm
+gcloud --quiet config set project $PROJECT_NAME
+gcloud --quiet config set container/cluster $CLUSTER_NAME_NIGHTLY
+gcloud --quiet config set compute/zone ${CLOUDSDK_COMPUTE_ZONE}
 
-setup_gcloud_nightly
+clusters=$(gcloud container clusters list --zone $CLOUDSDK_COMPUTE_ZONE --project $PROJECT_NAME)
+if echo "$clusters" | grep $CLUSTER_NAME_NIGHTLY; then 
+    echo "First delete old keptn installation"
+    cd ./installer/scripts
+    ./uninstallKeptn.sh
+    cd ../..
 
-uninstall_keptn
+    echo "Start deleting nightly cluster"
+    gcloud container clusters delete $CLUSTER_NAME_NIGHTLY --zone $CLOUDSDK_COMPUTE_ZONE --project $PROJECT_NAME --quiet
+    echo "Finished deleting nigtly cluster"
+else 
+    echo "No nightly cluster available"
+fi
 
-delete_nightly_cluster
-create_nightly_cluster
+gcloud container --project $PROJECT_NAME clusters create $CLUSTER_NAME_NIGHTLY --zone $CLOUDSDK_COMPUTE_ZONE --username "admin" --cluster-version "1.12.8-gke.6" --machine-type "n1-standard-16" --image-type "UBUNTU" --disk-type "pd-standard" --disk-size "100" --scopes "https://www.googleapis.com/auth/devstorage.read_only","https://www.googleapis.com/auth/logging.write","https://www.googleapis.com/auth/monitoring","https://www.googleapis.com/auth/servicecontrol","https://www.googleapis.com/auth/service.management.readonly","https://www.googleapis.com/auth/trace.append" --num-nodes "1" --enable-cloud-logging --enable-cloud-monitoring --no-enable-ip-alias --network "projects/sai-research/global/networks/default" --subnetwork "projects/sai-research/regions/$CLOUDSDK_REGION/subnetworks/default" --addons HorizontalPodAutoscaling,HttpLoadBalancing --no-enable-autoupgrade --no-enable-autorepair
+verify_step $? "gcloud cluster create failed."
+gcloud container clusters get-credentials $CLUSTER_NAME_NIGHTLY --zone $CLOUDSDK_COMPUTE_ZONE --project $PROJECT_NAME
+verify_step $? "gcloud get credentials failed."
+kubectl config view
+cat ~/.kube/config
 
-install_sed
+# Build and install CLI
+cd cli/
+dep ensure
+go build -o keptn
+sudo mv keptn /usr/local/bin/keptn
+cd ..
 
+# Prepare creds.json file
 cd ./installer/scripts
+source ./utils.sh
 
-source ./defineCredentialsUtils.sh
-
-# Set enviornment variables used in replaceCreds function
-export GITU=$GITHUB_USER_NAME_NIGHTLY
-export GITAT=$GITHUB_TOKEN_NIGHTLY
-export GITE=$GITHUB_EMAIL_NIGHTLY
-export CLN=$CLUSTER_NAME_NIGHTLY
-export CLZ=$CLOUDSDK_COMPUTE_ZONE
-export PROJ=$PROJECT_NAME
-export GITO=$GITHUB_ORG_NIGHTLY
+export GITU=$GITHUB_USER_NAME_NIGHTLY	
+export GITAT=$GITHUB_TOKEN_NIGHTLY	
+export GITE=$GITHUB_EMAIL_NIGHTLY	
+export CLN=$CLUSTER_NAME_NIGHTLY	
+export CLZ=$CLOUDSDK_COMPUTE_ZONE	
+export PROJ=$PROJECT_NAME	
+export GITO=$GITHUB_ORG_NIGHTLY	
 
 replaceCreds
-
-# Add execution right because there 
-# is a rights problem with e.g. testConnection
-find . -type f -exec chmod +x {} \;
-source ./installKeptn.sh
+keptn install --keptn-version=develop --creds=creds.json --verbose
 cd ../..
-
-# Test front-end keptn v.0.1
-# export FRONT_END_DEV=$(kubectl describe svc front-end -n dev | grep "LoadBalancer Ingress:" | sed 's~LoadBalancer Ingress:[ \t]*~~')
-# export FRONT_END_STAGING=$(kubectl describe svc front-end -n staging | grep "LoadBalancer Ingress:" | sed 's~LoadBalancer Ingress:[ \t]*~~')
-# export FRONT_END_PRODUCTION=$(kubectl describe svc front-end -n production | grep "LoadBalancer Ingress:" | sed 's~LoadBalancer Ingress:[ \t]*~~')
-
-export ISTIO_INGRESS=$(kubectl describe svc istio-ingressgateway -n istio-system | grep "LoadBalancer Ingress:" | sed 's~LoadBalancer Ingress:[ \t]*~~')
-export_names
-
-# Execute unit tests
-execute_cli_tests
-
-build_and_install_cli
 
 # Execute end-to-end test
 cd test
 source ./testOnboarding.sh
-
-#- cat ../test/keptn.postman_environment.json |sed 's~FRONT_END_DEV_PLACEHOLDER~'"$FRONT_END_DEV"'~' |sed 's~FRONT_END_STAGING_PLACEHOLDER~'"$FRONT_END_STAGING"'~' |sed 's~FRONT_END_PRODUCTION_PLACEHOLDER~'"$FRONT_END_PRODUCTION"'~' |sed 's~ISTIO_INGRESS_PLACEHOLDER~'"$ISTIO_INGRESS"'~' >> ../test/env.json
-#- npm install newman
-#- node_modules/.bin/newman run ../test/keptn.postman_collection.json -e ../test/env.json
-
 

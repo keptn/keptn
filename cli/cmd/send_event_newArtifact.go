@@ -72,7 +72,7 @@ Example:
 		event := cloudevents.Event{
 			Context: cloudevents.EventContextV02{
 				ID:          uuid.New().String(),
-				Type:        "sh.keptn.events.new-artefact",
+				Type:        "sh.keptn.events.new-artifact",
 				Source:      types.URLRef{URL: *source},
 				ContentType: &contentType,
 			}.AsV02(),
