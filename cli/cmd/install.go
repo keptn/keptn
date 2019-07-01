@@ -911,7 +911,7 @@ func getInstallerLogs(podName string) error {
 	cmd := exec.Command(
 		"kubectl",
 		"delete",
-		"deployment",
+		"job",
 		"installer",
 	)
 	return cmd.Run()
