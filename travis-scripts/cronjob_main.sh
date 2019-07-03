@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 
-# prints the full command before output of the command.
-set -x
-
 gcloud --quiet config set project $PROJECT_NAME
 gcloud --quiet config set container/cluster $CLUSTER_NAME_NIGHTLY
 gcloud --quiet config set compute/zone ${CLOUDSDK_COMPUTE_ZONE}
@@ -22,9 +19,15 @@ else
 fi
 
 gcloud container --project $PROJECT_NAME clusters create $CLUSTER_NAME_NIGHTLY --zone $CLOUDSDK_COMPUTE_ZONE --username "admin" --cluster-version "1.12.8-gke.6" --machine-type "n1-standard-16" --image-type "UBUNTU" --disk-type "pd-standard" --disk-size "100" --scopes "https://www.googleapis.com/auth/devstorage.read_only","https://www.googleapis.com/auth/logging.write","https://www.googleapis.com/auth/monitoring","https://www.googleapis.com/auth/servicecontrol","https://www.googleapis.com/auth/service.management.readonly","https://www.googleapis.com/auth/trace.append" --num-nodes "1" --enable-cloud-logging --enable-cloud-monitoring --no-enable-ip-alias --network "projects/sai-research/global/networks/default" --subnetwork "projects/sai-research/regions/$CLOUDSDK_REGION/subnetworks/default" --addons HorizontalPodAutoscaling,HttpLoadBalancing --no-enable-autoupgrade --no-enable-autorepair
-verify_step $? "gcloud cluster create failed."
+if [[ $? != '0' ]]; then
+    print_error "gcloud cluster create failed."
+    exit 1
+fi
 gcloud container clusters get-credentials $CLUSTER_NAME_NIGHTLY --zone $CLOUDSDK_COMPUTE_ZONE --project $PROJECT_NAME
-verify_step $? "gcloud get credentials failed."
+if [[ $? != '0' ]]; then
+    print_error "gcloud get credentials failed."
+    exit 1
+fi
 kubectl config view
 cat ~/.kube/config
 
@@ -37,7 +40,6 @@ cd ..
 
 # Prepare creds.json file
 cd ./installer/scripts
-source ./utils.sh
 
 export GITU=$GITHUB_USER_NAME_NIGHTLY	
 export GITAT=$GITHUB_TOKEN_NIGHTLY	
@@ -47,7 +49,9 @@ export CLZ=$CLOUDSDK_COMPUTE_ZONE
 export PROJ=$PROJECT_NAME	
 export GITO=$GITHUB_ORG_NIGHTLY	
 
+source ./gke/defineCredentialsHelper.sh
 replaceCreds
+
 keptn install --keptn-version=develop --creds=creds.json --verbose
 cd ../..
 
