@@ -26,7 +26,7 @@ func TestSend(t *testing.T) {
 	newArtifactEvent := `{"id":"` + uuid.New().String() + `",
 "specversion":"0.2",
 "time":"` + time.String() + `",
-"datacontenttype":"application/json",
+"contenttype":"application/json",
 "type":"sh.keptn.events.new-artifact",
 "data":{
 	"project":"sockshop",
