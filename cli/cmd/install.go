@@ -269,6 +269,16 @@ func doInstallation(creds installCredentials) error {
 		}
 	}
 
+	if user == "" {
+		return errors.New("Cannot obtain the user of the platform")
+	}
+	if clusterIPCIDR == "" {
+		return errors.New("Cannot obtain the cluster/pod IP CIDR")
+	}
+	if servicesIPCIDR == "" {
+		return errors.New("Cannot obtain the service IP CIDR")
+	}
+
 	if err := setDeploymentFileKey(installerPath,
 		placeholderReplacement{"GITHUB_PERSONAL_ACCESS_TOKEN", creds.GithubPersonalAccessToken},
 		placeholderReplacement{"GITHUB_USER_EMAIL", creds.GithubUserEmail},
