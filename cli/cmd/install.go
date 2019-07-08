@@ -295,8 +295,8 @@ func doInstallation(creds installCredentials) error {
 		_, err := keptnutils.ExecuteCommand("kubectl", []string{
 			"apply",
 			"-f",
-			getRbacURL()}
-		)
+			getRbacURL(),
+		})
 
 		if err != nil {
 			return fmt.Errorf("Error while applying RBAC for installer pod: %s \nAborting installation", err.Error())
@@ -308,8 +308,9 @@ func doInstallation(creds installCredentials) error {
 	_, err = keptnutils.ExecuteCommand("kubectl", []string{
 		"apply",
 		"-f",
-		installerPath}
-	)
+		installerPath,
+	})
+
 	if err != nil {
 		return fmt.Errorf("Error while deploying keptn installer pod: %s \nAborting installation", err.Error())
 	}
@@ -426,7 +427,6 @@ func getInstallCredentials(creds *installCredentials) error {
 		if in == "y" || in == "yes" {
 			break
 		}
-
 	}
 
 	newCreds, _ := json.Marshal(creds)
@@ -650,10 +650,10 @@ func authenticateAtOpenshiftCluster(creds installCredentials) (bool, error) {
 	_, err := keptnutils.ExecuteCommand("oc", []string{
 		"login",
 		creds.OpenshiftURL,
-		"-u="+creds.OpenshiftUser, 
-		"-p="+creds.OpenshiftPassword,
-		"--insecure-skip-tls-verify=true"}
-	)
+		"-u=" + creds.OpenshiftUser,
+		"-p=" + creds.OpenshiftPassword,
+		"--insecure-skip-tls-verify=true",
+	})
 
 	if err != nil {
 		fmt.Println("Could not connect to cluster. Please verify that you have entered the correct information.")
@@ -672,8 +672,8 @@ func authenticateAtGkeCluster(creds installCredentials) (bool, error) {
 		"--zone",
 		creds.ClusterZone,
 		"--project",
-		creds.GkeProject}
-	)
+		creds.GkeProject,
+	})
 
 	if err != nil {
 		fmt.Println("Could not connect to cluster. Please verify that you have entered the correct information.")
@@ -693,8 +693,8 @@ func authenticateAtAksCluster(creds installCredentials) (bool, error) {
 		creds.ClusterName,
 		"--subscription",
 		creds.AzureSubscription,
-		"--overwrite-existing"}
-	)
+		"--overwrite-existing",
+	})
 
 	if err != nil {
 		fmt.Println("Could not connect to cluster. Please verify that you have entered the correct information.")
@@ -704,23 +704,13 @@ func authenticateAtAksCluster(creds installCredentials) (bool, error) {
 	return true, nil
 }
 
-func setGcloudConfig(key string, value string) {
-	_, err := keptnutils.ExecuteCommand("gcloud", []string{
-		"config",
-		"clusters",
-		"set",
-		key,
-		value}
-	)
-}
-
 func getGkeClusterInfo() (string, string, string) {
-
 	// try to get current cluster from gcloud config
 	out, err := keptnutils.ExecuteCommand("kubectl", []string{
 		"config",
-		"current-context"}
-	)
+		"current-context",
+	})
+
 	if err != nil {
 		return "", "", ""
 	}
@@ -738,12 +728,12 @@ func getGkeClusterInfo() (string, string, string) {
 }
 
 func getAksClusterInfo() string {
-
 	// try to get current cluster from gcloud config
 	out, err := keptnutils.ExecuteCommand("kubectl", []string{
 		"config",
-		"current-context"}
-	)
+		"current-context",
+	})
+
 	if err != nil {
 		return ""
 	}
@@ -751,12 +741,12 @@ func getAksClusterInfo() string {
 }
 
 func getGcloudUser() (string, error) {
-
 	out, err := keptnutils.ExecuteCommand("gcloud", []string{
 		"config",
 		"get-value",
-	  "account"}
-	)
+		"account",
+	})
+
 	if err != nil {
 		return "", fmt.Errorf("Please configure your gcloud: %s", err)
 	}
@@ -765,13 +755,13 @@ func getGcloudUser() (string, error) {
 }
 
 func getAzUser() (string, error) {
-
 	out, err := keptnutils.ExecuteCommand("az", []string{
 		"account",
 		"show",
 		"--query=user.name",
-		"--output=tsv"}
-	)
+		"--output=tsv",
+	})
+
 	if err != nil {
 		return "", fmt.Errorf("Please configure your gcloud: %s", err)
 	}
@@ -781,7 +771,7 @@ func getAzUser() (string, error) {
 
 func isKubectlAvailable() (bool, error) {
 
-	_, err := keptnutils.ExecuteCommand("kubectl", []string{}	)
+	_, err := keptnutils.ExecuteCommand("kubectl", []string{})
 	if err != nil {
 		return false, err
 	}
@@ -789,15 +779,15 @@ func isKubectlAvailable() (bool, error) {
 }
 
 func getGcloudClusterIPCIDR(clusterName string, clusterZone string) (string, string, error) {
-
 	var clusterDescription map[string]interface{}
 	out, err := keptnutils.ExecuteCommand("gcloud", []string{
 		"container",
 		"clusters",
 		"describe",
 		clusterName,
-		"--zone="+clusterZone}
-	)
+		"--zone=" + clusterZone,
+	})
+
 	if err != nil {
 		return "", "", fmt.Errorf("Could not get cluster info: %s\nAborting installation", err)
 	}
@@ -822,15 +812,15 @@ func getAksClusterIPCIDR(clusterName string, azureResourceGroup string) (string,
 		"--resource-group",
 		azureResourceGroup,
 		"--query=networkProfile.podCidr",
-		"--output=tsv"}
-	)
+		"--output=tsv",
+	})
 
 	if err != nil {
 		return "", "", fmt.Errorf("Could not get cluster info: %s\nAborting installation", err)
 	}
 	clusterIPCIDR := string(out)
 
-	out, err := keptnutils.ExecuteCommand("az", []string{
+	out, err = keptnutils.ExecuteCommand("az", []string{
 		"aks",
 		"show",
 		"--name",
@@ -838,8 +828,8 @@ func getAksClusterIPCIDR(clusterName string, azureResourceGroup string) (string,
 		"--resource-group",
 		azureResourceGroup,
 		"--query=networkProfile.serviceCidr",
-		"--output=tsv"}
-	)
+		"--output=tsv",
+	})
 
 	if err != nil {
 		return "", "", fmt.Errorf("Could not get cluster info: %s\nAborting installation", err)
@@ -859,14 +849,15 @@ func waitForInstallerPod() (string, error) {
 			"pods",
 			"-l",
 			"app=installer",
-			"-ojson"}
-		)
+			"-ojson",
+		})
+
 		if err != nil {
 			return "", fmt.Errorf("Error while retrieving installer pod: %s\n. Aborting installation", err)
 		}
 
 		var podInfo map[string]interface{}
-		err = json.Unmarshal(out, &podInfo)
+		err = json.Unmarshal([]byte(out), &podInfo)
 		if err == nil && podInfo != nil {
 			podStatusArray := podInfo["items"].([]interface{})
 
@@ -1011,8 +1002,8 @@ func setupKeptnAuthAndConfigure(creds installCredentials) error {
 		"keptn-api-token",
 		"-n",
 		"keptn",
-		"-ojson"}
-	)
+		"-ojson",
+	})
 
 	const errorMsg = `Could not retrieve keptn API token: %s
 To manually set up your keptn CLI, please follow the instructions at https://keptn.sh/docs/0.2.0/reference/cli/.`
@@ -1021,7 +1012,7 @@ To manually set up your keptn CLI, please follow the instructions at https://kep
 		return fmt.Errorf(errorMsg, err)
 	}
 	var secret keptnAPITokenSecret
-	err = json.Unmarshal(out, &secret)
+	err = json.Unmarshal([]byte(out), &secret)
 	if err != nil {
 		return fmt.Errorf(errorMsg, err)
 	}
@@ -1042,8 +1033,8 @@ To manually set up your keptn CLI, please follow the instructions at https://kep
 			"-n",
 			"keptn",
 			"control",
-			"-ojsonpath={.status.domain}"}
-		)
+			"-ojsonpath={.status.domain}",
+		})
 
 		if err != nil {
 			retries++
