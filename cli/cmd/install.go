@@ -933,14 +933,7 @@ func getInstallerLogs(podName string) error {
 	if !installSuccessfulStdErr || !installSuccessfulStdOut {
 		return errors.New("keptn installation was unsuccessful")
 	}
-
-	cmd := exec.Command(
-		"kubectl",
-		"delete",
-		"job",
-		"installer",
-	)
-	return cmd.Run()
+	return nil
 }
 
 func copyAndCapture(r io.Reader, fileName string) (bool, error) {
