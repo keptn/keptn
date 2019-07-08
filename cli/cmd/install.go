@@ -302,7 +302,7 @@ func doInstallation(creds installCredentials) error {
 
 		_, err = execCmd.Output()
 		if err != nil {
-			return errors.New("Error while applying RBAC for installer pod: %s \n Aborting installation. \n" + err.Error())
+			return fmt.Errorf("Error while applying RBAC for installer pod: %s \nAborting installation", err.Error())
 		}
 	}
 
@@ -316,7 +316,7 @@ func doInstallation(creds installCredentials) error {
 	)
 	_, err = execCmd.Output()
 	if err != nil {
-		return errors.New("Error while deploying keptn installer pod: %s \nAborting installation. \n" + err.Error())
+		return fmt.Errorf("Error while deploying keptn installer pod: %s \nAborting installation", err.Error())
 	}
 
 	utils.PrintLog("Installer pod deployed successfully.", utils.InfoLevel)
