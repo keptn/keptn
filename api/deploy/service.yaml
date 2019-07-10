@@ -1,0 +1,22 @@
+apiVersion: serving.knative.dev/v1alpha1
+kind: Service
+metadata:
+  name: api
+  namespace: keptn
+spec:
+  runLatest:
+    configuration:
+      revisionTemplate:
+        metadata:
+          annotations:
+            autoscaling.knative.dev/minScale: "1"
+        spec:
+          container:
+            image: keptn/api:latest
+            imagePullPolicy: Always
+            env:
+            - name: SECRET_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: keptn-api-token
+                  key: keptn-api-token
