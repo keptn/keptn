@@ -19,9 +19,9 @@ import (
 	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
-	"github.com/keptn/api/restapi/operations/event"
+	"github.com/keptn/keptn/api/restapi/operations/event"
 
-	models "github.com/keptn/api/models"
+	models "github.com/keptn/keptn/api/models"
 )
 
 // NewAPI creates a new  instance

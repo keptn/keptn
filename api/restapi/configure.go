@@ -12,12 +12,12 @@ import (
 	middleware "github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
 
-	"github.com/keptn/api/auth"
-	"github.com/keptn/api/handlers"
-	"github.com/keptn/api/restapi/operations"
-	"github.com/keptn/api/restapi/operations/event"
+	"github.com/keptn/keptn/api/auth"
+	"github.com/keptn/keptn/api/handlers"
+	"github.com/keptn/keptn/api/restapi/operations"
+	"github.com/keptn/keptn/api/restapi/operations/event"
 
-	models "github.com/keptn/api/models"
+	models "github.com/keptn/keptn/api/models"
 )
 
 //go:generate swagger generate server --target ../../api --name  --spec ../swagger.json --principal models.Principal

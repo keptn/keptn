@@ -14,7 +14,7 @@ import (
 	swag "github.com/go-openapi/swag"
 	validate "github.com/go-openapi/validate"
 
-	models "github.com/keptn/api/models"
+	models "github.com/keptn/keptn/api/models"
 )
 
 // SendEventHandlerFunc turns a function with the right signature into a send event handler
