@@ -6,9 +6,9 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	"github.com/keptn/api/restapi/operations/event"
-	"github.com/keptn/api/utils"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	"github.com/keptn/keptn/api/restapi/operations/event"
+	"github.com/keptn/keptn/api/utils"
 )
 
 const eventbrokerURL = "http://event-broker.keptn.svc.cluster.local/keptn"

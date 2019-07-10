@@ -6,8 +6,8 @@ import (
 	"os"
 
 	errors "github.com/go-openapi/errors"
-	"github.com/keptn/api/models"
-	"github.com/keptn/api/restapi/operations"
+	"github.com/keptn/keptn/api/models"
+	"github.com/keptn/keptn/api/restapi/operations"
 )
 
 // CheckToken checkes whether the token is correct
