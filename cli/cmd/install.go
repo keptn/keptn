@@ -34,7 +34,6 @@ import (
 	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v2"
 )
 
 var configFilePath *string
@@ -132,8 +131,7 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 				}
 				authenticated, err = authenticateAtGkeCluster(creds)
 			} else if *platform == "openshift" {
-				if creds.OpenshiftURL == "" || creds.OpenshiftUser == "" || creds.OpenshiftPassword == "" ||
-					creds.ClusterIPCIDR == "" || creds.ServicesIPCIDR == "" {
+				if creds.OpenshiftURL == "" || creds.OpenshiftUser == "" || creds.OpenshiftPassword == "" {
 					return errors.New("Incomplete credential file " + *configFilePath)
 				}
 				authenticated, err = authenticateAtOpenshiftCluster(creds)
@@ -245,49 +243,8 @@ func doInstallation(creds installCredentials) error {
 		return err
 	}
 
-	var user, clusterIPCIDR, servicesIPCIDR string
-	if platform == nil || *platform == "gke" {
-		user, err = getGcloudUser()
-		if err != nil {
-			return err
-		}
-		clusterIPCIDR, servicesIPCIDR, err = getGcloudClusterIPCIDR(creds.ClusterName, creds.ClusterZone)
-		if err != nil {
-			return err
-		}
-	} else if *platform == "openshift" {
-		clusterIPCIDR = creds.ClusterIPCIDR
-		servicesIPCIDR = creds.ServicesIPCIDR
-	} else if *platform == "aks" {
-		user, err = getAzUser()
-		if err != nil {
-			return err
-		}
-		clusterIPCIDR, servicesIPCIDR, err = getAksClusterIPCIDR(creds.ClusterName, creds.AzureResourceGroup)
-		if err != nil {
-			return err
-		}
-	}
-
-	if user == "" {
-		return errors.New("Cannot obtain the user of the platform")
-	}
-	if clusterIPCIDR == "" {
-		return errors.New("Cannot obtain the cluster/pod IP CIDR")
-	}
-	if servicesIPCIDR == "" {
-		return errors.New("Cannot obtain the service IP CIDR")
-	}
-
 	if err := setDeploymentFileKey(installerPath,
-		placeholderReplacement{"GITHUB_PERSONAL_ACCESS_TOKEN", creds.GithubPersonalAccessToken},
-		placeholderReplacement{"GITHUB_USER_EMAIL", creds.GithubUserEmail},
-		placeholderReplacement{"GITHUB_USER_NAME", creds.GithubUserName},
-		placeholderReplacement{"GITHUB_ORGANIZATION", creds.GithubOrg},
-		placeholderReplacement{"USER", user},
-		placeholderReplacement{"PLATFORM", *platform},
-		placeholderReplacement{"CLUSTER_IPV4_CIDR", clusterIPCIDR},
-		placeholderReplacement{"SERVICES_IPV4_CIDR", servicesIPCIDR}); err != nil {
+		placeholderReplacement{"PLATFORM", *platform}); err != nil {
 		return err
 	}
 
@@ -388,11 +345,6 @@ func getInstallCredentials(creds *installCredentials) error {
 			}
 		}
 
-		if platform != nil && *platform == "openshift" {
-			readClusterIPCIDR(creds)
-			readServiceIPCIDR(creds)
-		}
-
 		fmt.Println()
 		fmt.Println("Please confirm that the provided information is correct: ")
 
@@ -403,8 +355,6 @@ func getInstallCredentials(creds *installCredentials) error {
 		} else if *platform == "openshift" {
 			fmt.Println("Openshift Server URL: " + creds.OpenshiftURL)
 			fmt.Println("Openshift User: " + creds.OpenshiftUser)
-			fmt.Println("Cluster IP CIDR: " + creds.ClusterIPCIDR)
-			fmt.Println("Services IP CIDR: " + creds.ServicesIPCIDR)
 		} else if *platform == "aks" {
 			fmt.Println("Cluster Name: " + creds.ClusterName)
 			fmt.Println("Azure Resource Group: " + creds.AzureResourceGroup)
@@ -565,22 +515,6 @@ func readGithubOrg(creds *installCredentials) {
 		"^(([a-zA-Z0-9]+-)*[a-zA-Z0-9]+)$",
 		"GitHub Organization",
 		"Please enter a valid GitHub Organization.",
-	)
-}
-
-func readClusterIPCIDR(creds *installCredentials) {
-	readUserInput(&creds.ClusterIPCIDR,
-		`^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(3[0-2]|[1-2][0-9]|[0-9]))$`,
-		"Cluster IP CIDR",
-		"Please enter a valid CIDR.",
-	)
-}
-
-func readServiceIPCIDR(creds *installCredentials) {
-	readUserInput(&creds.ServicesIPCIDR,
-		`^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(3[0-2]|[1-2][0-9]|[0-9]))$`,
-		"Services IP CIDR",
-		"Please enter a valid CIDR.",
 	)
 }
 
@@ -778,67 +712,6 @@ func isKubectlAvailable() (bool, error) {
 	return true, nil
 }
 
-func getGcloudClusterIPCIDR(clusterName string, clusterZone string) (string, string, error) {
-	var clusterDescription map[string]interface{}
-	out, err := keptnutils.ExecuteCommand("gcloud", []string{
-		"container",
-		"clusters",
-		"describe",
-		clusterName,
-		"--zone=" + clusterZone,
-	})
-
-	if err != nil {
-		return "", "", fmt.Errorf("Could not get cluster info: %s\nAborting installation", err)
-	}
-
-	err = yaml.Unmarshal([]byte(out), &clusterDescription)
-	if err != nil {
-		return "", "", err
-	}
-	clusterIPCIDR := clusterDescription["clusterIpv4Cidr"].(string)
-	servicesIPCIDR := clusterDescription["servicesIpv4Cidr"].(string)
-
-	return clusterIPCIDR, servicesIPCIDR, nil
-}
-
-func getAksClusterIPCIDR(clusterName string, azureResourceGroup string) (string, string, error) {
-
-	out, err := keptnutils.ExecuteCommand("az", []string{
-		"aks",
-		"show",
-		"--name",
-		clusterName,
-		"--resource-group",
-		azureResourceGroup,
-		"--query=networkProfile.podCidr",
-		"--output=tsv",
-	})
-
-	if err != nil {
-		return "", "", fmt.Errorf("Could not get cluster info: %s\nAborting installation", err)
-	}
-	clusterIPCIDR := string(out)
-
-	out, err = keptnutils.ExecuteCommand("az", []string{
-		"aks",
-		"show",
-		"--name",
-		clusterName,
-		"--resource-group",
-		azureResourceGroup,
-		"--query=networkProfile.serviceCidr",
-		"--output=tsv",
-	})
-
-	if err != nil {
-		return "", "", fmt.Errorf("Could not get cluster info: %s\nAborting installation", err)
-	}
-	servicesIPCIDR := string(out)
-
-	return clusterIPCIDR, servicesIPCIDR, nil
-}
-
 func waitForInstallerPod() (string, error) {
 	podName := ""
 	podRunning := false
@@ -1020,8 +893,6 @@ To manually set up your keptn CLI, please follow the instructions at https://kep
 	if err != nil {
 		return fmt.Errorf(errorMsg, err)
 	}
-	// $(kubectl get ksvc -n keptn control -o=yaml | yq r - status.domain)
-
 	var keptnEndpoint string
 	apiEndpointRetrieved := false
 	retries := 0
@@ -1029,11 +900,9 @@ To manually set up your keptn CLI, please follow the instructions at https://kep
 
 		out, err := keptnutils.ExecuteCommand("kubectl", []string{
 			"get",
-			"ksvc",
-			"-n",
-			"keptn",
+			"virtualservice",
 			"control",
-			"-ojsonpath={.status.domain}",
+			"-ojsonpath={.spec.hosts[0]}",
 		})
 
 		if err != nil {
