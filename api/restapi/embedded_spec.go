@@ -169,7 +169,7 @@ func init() {
     "ConfigureCE": {
       "allOf": [
         {
-          "$ref": "ce_v0_2_without_data.json#/definitions/event"
+          "$ref": "https://raw.githubusercontent.com/keptn/keptn/feature/506/api-service/api/ce_v0_2_without_data.json#/definitions/event"
         },
         {
           "type": "object",
@@ -199,7 +199,7 @@ func init() {
     "CreateProjectCE": {
       "allOf": [
         {
-          "$ref": "ce_v0_2_without_data.json#/definitions/event"
+          "$ref": "https://raw.githubusercontent.com/keptn/keptn/feature/506/api-service/api/ce_v0_2_without_data.json#/definitions/event"
         },
         {
           "type": "object",
