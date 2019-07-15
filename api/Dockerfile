@@ -24,6 +24,8 @@ RUN apk add --no-cache ca-certificates
 
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /go/src/github.com/keptn/keptn/api/api-service /api-service
+COPY --from=builder /go/src/github.com/keptn/keptn/api/swagger-ui /swagger-ui
+COPY --from=builder /go/src/github.com/keptn/keptn/api/swagger.json /swagger-ui/swagger.json
 ADD MANIFEST /
 # Run the web service on container startup.
 CMD ["sh", "-c", "cat MANIFEST && /api-service"]
