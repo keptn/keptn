@@ -207,13 +207,13 @@ func TestPositiveVerification(t *testing.T) {
 	os.Setenv("keptn-api-token", "test-token")
 
 	keptnContext := uuid.New().String()
-	c, err := CreateChannelInfo(keptnContext)
+	token, err := CreateChannelInfo(keptnContext)
 
 	assert.Equal(t, err, nil)
 
 	var header http.Header
 	header = make(http.Header)
-	header.Add("Token", *c.Token)
+	header.Add("Token", token)
 	err = VerifyToken(header)
 	assert.Equal(t, err, nil)
 }
