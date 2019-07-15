@@ -43,6 +43,12 @@ func init() {
         "responses": {
           "200": {
             "description": "Upgrading to WS"
+          },
+          "default": {
+            "description": "error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
           }
         }
       }
@@ -175,6 +181,27 @@ func init() {
         "responses": {
           "200": {
             "description": "Upgrading to WS"
+          },
+          "default": {
+            "description": "error",
+            "schema": {
+              "type": "object",
+              "required": [
+                "message"
+              ],
+              "properties": {
+                "code": {
+                  "type": "integer",
+                  "format": "int64"
+                },
+                "fields": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                }
+              }
+            }
           }
         }
       }

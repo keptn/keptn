@@ -36,6 +36,12 @@
         "responses": {
           "200": {
             "description": "Upgrading to WS"
+          },
+          "default": {
+            "description": "error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
           }
         }
       }
@@ -62,7 +68,6 @@
             "schema" : {
               "$ref" : "#/definitions/ChannelInfo"
             }
-
           },
           "default": {
             "description": "error",

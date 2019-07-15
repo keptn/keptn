@@ -2,11 +2,15 @@ package ws
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
+	"github.com/gbrlsnchs/jwt"
 	"github.com/gorilla/websocket"
+	"github.com/keptn/keptn/api/restapi/operations/event"
 )
 
 const (
@@ -135,30 +139,74 @@ func (c *cliClientType) writePump() {
 }
 
 // ServeWs handles websocket requests from the services.
-func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
+func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request) error {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
-		return
+		return err
 	}
 	client := &clientType{hub: hub, conn: conn}
 	client.hub.register <- client
 
 	go client.readPump()
+	return nil
 }
 
 // ServeWsCLI handles websocket requests from the CLI.
-func ServeWsCLI(hub *Hub, w http.ResponseWriter, r *http.Request, channelID string) {
-
-	// TODO: Verify token
+func ServeWsCLI(hub *Hub, w http.ResponseWriter, r *http.Request, channelID string) error {
 
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
-		return
+		return err
 	}
 	client := &cliClientType{hub: hub, conn: conn, send: make(chan []byte, 256), channelID: channelIDType(channelID)}
 	client.hub.registerCLI <- client
 
 	go client.writePump()
+	return nil
+}
+
+// VerifyToken verifies the Token containted in the HTTP Header
+func VerifyToken(header http.Header) error {
+
+	if val, ok := header["Token"]; ok && len(val) == 1 {
+		token := val[0]
+
+		// Define a signer.
+		hs256 := jwt.NewHS256(os.Getenv("keptn-api-token"))
+
+		payload, sig, err := jwt.Parse(token)
+		if err != nil {
+			return err
+		}
+		if err = hs256.Verify(payload, sig); err != nil {
+			return err
+		}
+		return nil
+	}
+
+	return errors.New("No Token in Header")
+}
+
+// CreateChannelInfo creates a new channel info for websockets
+func CreateChannelInfo(keptnContext string) (*event.SendEventCreatedBody, error) {
+
+	hs256 := jwt.NewHS256(os.Getenv("keptn-api-token"))
+	jot := &jwt.JWT{
+		ExpirationTime: time.Now().Add(24 * 30 * 12 * time.Hour).Unix(),
+	}
+	jot.SetAlgorithm(hs256)
+	payload, err := jwt.Marshal(jot)
+	if err != nil {
+		return nil, err
+	}
+	token, err := hs256.Sign(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	tokenString := string(token)
+	channelInfo := event.SendEventCreatedBody{ChannelID: &keptnContext, Token: &tokenString}
+	return &channelInfo, nil
 }
