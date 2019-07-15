@@ -336,6 +336,73 @@ func (o *SendEventBody) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// SendEventCreatedBody send event created body
+// swagger:model SendEventCreatedBody
+type SendEventCreatedBody struct {
+
+	// channel ID
+	// Required: true
+	ChannelID *string `json:"channelID"`
+
+	// token
+	// Required: true
+	Token *string `json:"token"`
+}
+
+// Validate validates this send event created body
+func (o *SendEventCreatedBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateChannelID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateToken(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *SendEventCreatedBody) validateChannelID(formats strfmt.Registry) error {
+
+	if err := validate.Required("sendEventCreated"+"."+"channelID", "body", o.ChannelID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *SendEventCreatedBody) validateToken(formats strfmt.Registry) error {
+
+	if err := validate.Required("sendEventCreated"+"."+"token", "body", o.Token); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *SendEventCreatedBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *SendEventCreatedBody) UnmarshalBinary(b []byte) error {
+	var res SendEventCreatedBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
 // SendEventDefaultBody send event default body
 // swagger:model SendEventDefaultBody
 type SendEventDefaultBody struct {

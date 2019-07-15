@@ -14,13 +14,18 @@ import (
 
 	"github.com/keptn/keptn/api/auth"
 	"github.com/keptn/keptn/api/handlers"
+	models "github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations"
 	"github.com/keptn/keptn/api/restapi/operations/event"
-
-	models "github.com/keptn/keptn/api/models"
+	"github.com/keptn/keptn/api/restapi/operations/openws"
+	"github.com/keptn/keptn/api/ws"
 )
 
 //go:generate swagger generate server --target ../../api --name  --spec ../swagger.json --principal models.Principal
+
+const skipAuth = true
+
+var hub *ws.Hub
 
 func configureFlags(api *operations.API) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
@@ -42,6 +47,10 @@ func configureAPI(api *operations.API) http.Handler {
 
 	// Applies when the "x-token" header is set
 	api.KeyAuth = func(token string) (*models.Principal, error) {
+		if skipAuth {
+			prin := models.Principal(token)
+			return &prin, nil
+		}
 		return auth.CheckToken(api, token)
 	}
 
@@ -54,7 +63,22 @@ func configureAPI(api *operations.API) http.Handler {
 		if err := handlers.ForwardEvent(params.Body); err != nil {
 			return event.NewSendEventDefault(500).WithPayload(&event.SendEventDefaultBody{Code: 500, Message: swag.String(err.Error())})
 		}
-		return event.NewSendEventCreated()
+		payload, err := ws.CreateChannelInfo(*params.Body.Shkeptncontext)
+		if err != nil {
+			return event.NewSendEventDefault(500).WithPayload(&event.SendEventDefaultBody{Code: 500, Message: swag.String(err.Error())})
+		}
+
+		return event.NewSendEventCreated().WithPayload(payload)
+	})
+
+	api.OpenwsOpenWSHandler = openws.OpenWSHandlerFunc(func(params openws.OpenWSParams, pincipal *models.Principal) middleware.Responder {
+		return middleware.ResponderFunc(func(rw http.ResponseWriter, _ runtime.Producer) {
+			if val, ok := params.HTTPRequest.Header["Keptn-Ws-Channel-Id"]; ok {
+				ws.ServeWsCLI(hub, rw, params.HTTPRequest, val[0])
+			} else {
+				ws.ServeWs(hub, rw, params.HTTPRequest)
+			}
+		})
 	})
 
 	api.ServerShutdown = func() {}
@@ -72,6 +96,8 @@ func configureTLS(tlsConfig *tls.Config) {
 // This function can be called multiple times, depending on the number of serving schemes.
 // scheme value will be set accordingly: "http", "https" or "unix"
 func configureServer(s *http.Server, scheme, addr string) {
+	hub := ws.NewHub()
+	go hub.Run()
 }
 
 // The middleware configuration is for the handler executors. These do not apply to the swagger.json document.

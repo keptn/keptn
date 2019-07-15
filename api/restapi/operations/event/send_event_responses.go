@@ -19,6 +19,11 @@ const SendEventCreatedCode int = 201
 swagger:response sendEventCreated
 */
 type SendEventCreated struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *SendEventCreatedBody `json:"body,omitempty"`
 }
 
 // NewSendEventCreated creates SendEventCreated with default headers values
@@ -27,12 +32,27 @@ func NewSendEventCreated() *SendEventCreated {
 	return &SendEventCreated{}
 }
 
+// WithPayload adds the payload to the send event created response
+func (o *SendEventCreated) WithPayload(payload *SendEventCreatedBody) *SendEventCreated {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the send event created response
+func (o *SendEventCreated) SetPayload(payload *SendEventCreatedBody) {
+	o.Payload = payload
+}
+
 // WriteResponse to the client
 func (o *SendEventCreated) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
-	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
-
 	rw.WriteHeader(201)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
 }
 
 /*SendEventDefault error

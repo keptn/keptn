@@ -27,6 +27,19 @@
     }
   ],
   "paths": {
+    "/": {
+      "get": {
+        "tags": [
+          "openws"
+        ],
+        "operationId": "openWS",      
+        "responses": {
+          "200": {
+            "description": "Upgrading to WS"
+          }
+        }
+      }
+    },
     "/event": {
       "post": {
         "tags": [
@@ -45,7 +58,11 @@
         ],
         "responses": {
           "201": {
-            "description": "forwarded"
+            "description": "forwarded",
+            "schema" : {
+              "$ref" : "#/definitions/ChannelInfo"
+            }
+
           },
           "default": {
             "description": "error",
@@ -90,6 +107,21 @@
           "type": "string"
         },
         "fields": {
+          "type": "string"
+        }
+      }
+    },
+    "ChannelInfo" : {
+      "type": "object",
+      "required": [
+        "token",
+        "channelID"
+      ],
+      "properties": {
+        "token": {
+          "type": "string"
+        },
+        "channelID": {
           "type": "string"
         }
       }

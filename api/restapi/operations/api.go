@@ -20,6 +20,7 @@ import (
 	"github.com/go-openapi/swag"
 
 	"github.com/keptn/keptn/api/restapi/operations/event"
+	"github.com/keptn/keptn/api/restapi/operations/openws"
 
 	models "github.com/keptn/keptn/api/models"
 )
@@ -41,6 +42,9 @@ func NewAPI(spec *loads.Document) *API {
 		BearerAuthenticator: security.BearerAuth,
 		JSONConsumer:        runtime.JSONConsumer(),
 		JSONProducer:        runtime.JSONProducer(),
+		OpenwsOpenWSHandler: openws.OpenWSHandlerFunc(func(params openws.OpenWSParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation OpenwsOpenWS has not yet been implemented")
+		}),
 		EventSendEventHandler: event.SendEventHandlerFunc(func(params event.SendEventParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation EventSendEvent has not yet been implemented")
 		}),
@@ -90,6 +94,8 @@ type API struct {
 	// APIAuthorizer provides access control (ACL/RBAC/ABAC) by providing access to the request and authenticated principal
 	APIAuthorizer runtime.Authorizer
 
+	// OpenwsOpenWSHandler sets the operation handler for the open w s operation
+	OpenwsOpenWSHandler openws.OpenWSHandler
 	// EventSendEventHandler sets the operation handler for the send event operation
 	EventSendEventHandler event.SendEventHandler
 
@@ -157,6 +163,10 @@ func (o *API) Validate() error {
 
 	if o.KeyAuth == nil {
 		unregistered = append(unregistered, "XTokenAuth")
+	}
+
+	if o.OpenwsOpenWSHandler == nil {
+		unregistered = append(unregistered, "openws.OpenWSHandler")
 	}
 
 	if o.EventSendEventHandler == nil {
@@ -272,6 +282,11 @@ func (o *API) initHandlerCache() {
 	if o.handlers == nil {
 		o.handlers = make(map[string]map[string]http.Handler)
 	}
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"][""] = openws.NewOpenWS(o.context, o.OpenwsOpenWSHandler)
 
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
