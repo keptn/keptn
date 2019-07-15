@@ -10,7 +10,6 @@ import (
 
 	"github.com/gbrlsnchs/jwt"
 	"github.com/gorilla/websocket"
-	"github.com/keptn/keptn/api/restapi/operations/event"
 )
 
 const (
@@ -190,7 +189,7 @@ func VerifyToken(header http.Header) error {
 }
 
 // CreateChannelInfo creates a new channel info for websockets
-func CreateChannelInfo(keptnContext string) (*event.SendEventCreatedBody, error) {
+func CreateChannelInfo(keptnContext string) (string, error) {
 
 	hs256 := jwt.NewHS256(os.Getenv("keptn-api-token"))
 	jot := &jwt.JWT{
@@ -199,14 +198,12 @@ func CreateChannelInfo(keptnContext string) (*event.SendEventCreatedBody, error)
 	jot.SetAlgorithm(hs256)
 	payload, err := jwt.Marshal(jot)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	token, err := hs256.Sign(payload)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	tokenString := string(token)
-	channelInfo := event.SendEventCreatedBody{ChannelID: &keptnContext, Token: &tokenString}
-	return &channelInfo, nil
+	return string(token), nil
 }

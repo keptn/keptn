@@ -7,13 +7,18 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/keptn/keptn/api/restapi/operations/project"
+
+	"github.com/keptn/keptn/api/restapi/operations/configure"
+	"github.com/keptn/keptn/api/utils"
+
 	errors "github.com/go-openapi/errors"
 	runtime "github.com/go-openapi/runtime"
 	middleware "github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
 
+	"github.com/google/uuid"
 	"github.com/keptn/keptn/api/auth"
-	"github.com/keptn/keptn/api/handlers"
 	models "github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations"
 	"github.com/keptn/keptn/api/restapi/operations/event"
@@ -60,15 +65,51 @@ func configureAPI(api *operations.API) http.Handler {
 	// Example:
 	// api.APIAuthorizer = security.Authorized()
 	api.EventSendEventHandler = event.SendEventHandlerFunc(func(params event.SendEventParams, principal *models.Principal) middleware.Responder {
-		if err := handlers.ForwardEvent(params.Body); err != nil {
+		if params.Body.Shkeptncontext == nil || *params.Body.Shkeptncontext == "" {
+			uuidStr := uuid.New().String()
+			params.Body.Shkeptncontext = &uuidStr
+		}
+
+		if err := utils.PostToEventBroker(params.Body, *params.Body.Shkeptncontext); err != nil {
 			return event.NewSendEventDefault(500).WithPayload(&event.SendEventDefaultBody{Code: 500, Message: swag.String(err.Error())})
 		}
-		payload, err := ws.CreateChannelInfo(*params.Body.Shkeptncontext)
+		token, err := ws.CreateChannelInfo(*params.Body.Shkeptncontext)
 		if err != nil {
 			return event.NewSendEventDefault(500).WithPayload(&event.SendEventDefaultBody{Code: 500, Message: swag.String(err.Error())})
 		}
+		return event.NewSendEventCreated().WithPayload(&event.SendEventCreatedBody{ChannelID: params.Body.Shkeptncontext, Token: &token})
+	})
 
-		return event.NewSendEventCreated().WithPayload(payload)
+	api.ConfigureConfigureHandler = configure.ConfigureHandlerFunc(func(params configure.ConfigureParams, principal *models.Principal) middleware.Responder {
+		if params.Body.Shkeptncontext == nil || *params.Body.Shkeptncontext == "" {
+			uuidStr := uuid.New().String()
+			params.Body.Shkeptncontext = &uuidStr
+		}
+
+		if err := utils.PostToEventBroker(params.Body, *params.Body.Shkeptncontext); err != nil {
+			return configure.NewConfigureDefault(500).WithPayload(&configure.ConfigureDefaultBody{Code: 500, Message: swag.String(err.Error())})
+		}
+		token, err := ws.CreateChannelInfo(*params.Body.Shkeptncontext)
+		if err != nil {
+			return configure.NewConfigureDefault(500).WithPayload(&configure.ConfigureDefaultBody{Code: 500, Message: swag.String(err.Error())})
+		}
+		return configure.NewConfigureCreated().WithPayload(&configure.ConfigureCreatedBody{ChannelID: params.Body.Shkeptncontext, Token: &token})
+	})
+
+	api.ProjectProjectHandler = project.ProjectHandlerFunc(func(params project.ProjectParams, principal *models.Principal) middleware.Responder {
+		if params.Body.Shkeptncontext == nil || *params.Body.Shkeptncontext == "" {
+			uuidStr := uuid.New().String()
+			params.Body.Shkeptncontext = &uuidStr
+		}
+
+		if err := utils.PostToEventBroker(params.Body, *params.Body.Shkeptncontext); err != nil {
+			return project.NewProjectDefault(500).WithPayload(&project.ProjectDefaultBody{Code: 500, Message: swag.String(err.Error())})
+		}
+		token, err := ws.CreateChannelInfo(*params.Body.Shkeptncontext)
+		if err != nil {
+			return project.NewProjectDefault(500).WithPayload(&project.ProjectDefaultBody{Code: 500, Message: swag.String(err.Error())})
+		}
+		return project.NewProjectCreated().WithPayload(&project.ProjectCreatedBody{ChannelID: params.Body.Shkeptncontext, Token: &token})
 	})
 
 	api.OpenwsOpenWSHandler = openws.OpenWSHandlerFunc(func(params openws.OpenWSParams, pincipal *models.Principal) middleware.Responder {

@@ -53,12 +53,44 @@ func init() {
         }
       }
     },
+    "/configure": {
+      "post": {
+        "tags": [
+          "configure"
+        ],
+        "summary": "Forwards the received configure event to the eventbroker",
+        "operationId": "configure",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/ConfigureCE"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "configured",
+            "schema": {
+              "$ref": "#/definitions/ChannelInfo"
+            }
+          },
+          "default": {
+            "description": "error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
     "/event": {
       "post": {
         "tags": [
           "event"
         ],
-        "summary": "Forwards a new event to the eventbroker",
+        "summary": "Forwards the received event to the eventbroker",
         "operationId": "sendEvent",
         "parameters": [
           {
@@ -72,6 +104,38 @@ func init() {
         "responses": {
           "201": {
             "description": "forwarded",
+            "schema": {
+              "$ref": "#/definitions/ChannelInfo"
+            }
+          },
+          "default": {
+            "description": "error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/project": {
+      "post": {
+        "tags": [
+          "project"
+        ],
+        "summary": "Forwards the received project event to the eventbroker",
+        "operationId": "project",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/CreateProjectCE"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "project created",
             "schema": {
               "$ref": "#/definitions/ChannelInfo"
             }
@@ -101,6 +165,79 @@ func init() {
           "type": "string"
         }
       }
+    },
+    "ConfigureCE": {
+      "allOf": [
+        {
+          "$ref": "ce_v0_2_without_data.json#/definitions/event"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "data": {
+              "required": [
+                "org",
+                "user",
+                "token"
+              ],
+              "properties": {
+                "org": {
+                  "type": "string"
+                },
+                "token": {
+                  "type": "string"
+                },
+                "user": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "CreateProjectCE": {
+      "allOf": [
+        {
+          "$ref": "ce_v0_2_without_data.json#/definitions/event"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "data": {
+              "required": [
+                "project",
+                "stages"
+              ],
+              "properties": {
+                "project": {
+                  "type": "string"
+                },
+                "stages": {
+                  "type": "array",
+                  "items": {
+                    "required": [
+                      "name",
+                      "deployment_strategy"
+                    ],
+                    "properties": {
+                      "deployment_strategy": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "test_strategy": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
     },
     "KeptnContextExtendedCE": {
       "allOf": [
@@ -206,12 +343,133 @@ func init() {
         }
       }
     },
+    "/configure": {
+      "post": {
+        "tags": [
+          "configure"
+        ],
+        "summary": "Forwards the received configure event to the eventbroker",
+        "operationId": "configure",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "allOf": [
+                {
+                  "type": "object",
+                  "required": [
+                    "specversion",
+                    "id",
+                    "type",
+                    "source",
+                    "shkeptncontext"
+                  ],
+                  "properties": {
+                    "contenttype": {
+                      "type": "string"
+                    },
+                    "extensions": {
+                      "type": "object"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "shkeptncontext": {
+                      "type": "string"
+                    },
+                    "source": {
+                      "type": "string",
+                      "format": "uri-reference"
+                    },
+                    "specversion": {
+                      "type": "string"
+                    },
+                    "time": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "type": {
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "required": [
+                        "org",
+                        "user",
+                        "token"
+                      ],
+                      "properties": {
+                        "org": {
+                          "type": "string"
+                        },
+                        "token": {
+                          "type": "string"
+                        },
+                        "user": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "configured",
+            "schema": {
+              "type": "object",
+              "required": [
+                "token",
+                "channelID"
+              ],
+              "properties": {
+                "channelID": {
+                  "type": "string"
+                },
+                "token": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "error",
+            "schema": {
+              "type": "object",
+              "required": [
+                "message"
+              ],
+              "properties": {
+                "code": {
+                  "type": "integer",
+                  "format": "int64"
+                },
+                "fields": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/event": {
       "post": {
         "tags": [
           "event"
         ],
-        "summary": "Forwards a new event to the eventbroker",
+        "summary": "Forwards the received event to the eventbroker",
         "operationId": "sendEvent",
         "parameters": [
           {
@@ -316,6 +574,140 @@ func init() {
           }
         }
       }
+    },
+    "/project": {
+      "post": {
+        "tags": [
+          "project"
+        ],
+        "summary": "Forwards the received project event to the eventbroker",
+        "operationId": "project",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "allOf": [
+                {
+                  "type": "object",
+                  "required": [
+                    "specversion",
+                    "id",
+                    "type",
+                    "source",
+                    "shkeptncontext"
+                  ],
+                  "properties": {
+                    "contenttype": {
+                      "type": "string"
+                    },
+                    "extensions": {
+                      "type": "object"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "shkeptncontext": {
+                      "type": "string"
+                    },
+                    "source": {
+                      "type": "string",
+                      "format": "uri-reference"
+                    },
+                    "specversion": {
+                      "type": "string"
+                    },
+                    "time": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "type": {
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "required": [
+                        "project",
+                        "stages"
+                      ],
+                      "properties": {
+                        "project": {
+                          "type": "string"
+                        },
+                        "stages": {
+                          "type": "array",
+                          "items": {
+                            "required": [
+                              "name",
+                              "deployment_strategy"
+                            ],
+                            "properties": {
+                              "deployment_strategy": {
+                                "type": "string"
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "test_strategy": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "project created",
+            "schema": {
+              "type": "object",
+              "required": [
+                "token",
+                "channelID"
+              ],
+              "properties": {
+                "channelID": {
+                  "type": "string"
+                },
+                "token": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "error",
+            "schema": {
+              "type": "object",
+              "required": [
+                "message"
+              ],
+              "properties": {
+                "code": {
+                  "type": "integer",
+                  "format": "int64"
+                },
+                "fields": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -333,6 +725,149 @@ func init() {
           "type": "string"
         }
       }
+    },
+    "ConfigureCE": {
+      "allOf": [
+        {
+          "type": "object",
+          "required": [
+            "specversion",
+            "id",
+            "type",
+            "source",
+            "shkeptncontext"
+          ],
+          "properties": {
+            "contenttype": {
+              "type": "string"
+            },
+            "extensions": {
+              "type": "object"
+            },
+            "id": {
+              "type": "string"
+            },
+            "shkeptncontext": {
+              "type": "string"
+            },
+            "source": {
+              "type": "string",
+              "format": "uri-reference"
+            },
+            "specversion": {
+              "type": "string"
+            },
+            "time": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "type": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "data": {
+              "required": [
+                "org",
+                "user",
+                "token"
+              ],
+              "properties": {
+                "org": {
+                  "type": "string"
+                },
+                "token": {
+                  "type": "string"
+                },
+                "user": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "CreateProjectCE": {
+      "allOf": [
+        {
+          "type": "object",
+          "required": [
+            "specversion",
+            "id",
+            "type",
+            "source",
+            "shkeptncontext"
+          ],
+          "properties": {
+            "contenttype": {
+              "type": "string"
+            },
+            "extensions": {
+              "type": "object"
+            },
+            "id": {
+              "type": "string"
+            },
+            "shkeptncontext": {
+              "type": "string"
+            },
+            "source": {
+              "type": "string",
+              "format": "uri-reference"
+            },
+            "specversion": {
+              "type": "string"
+            },
+            "time": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "type": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "data": {
+              "required": [
+                "project",
+                "stages"
+              ],
+              "properties": {
+                "project": {
+                  "type": "string"
+                },
+                "stages": {
+                  "type": "array",
+                  "items": {
+                    "required": [
+                      "name",
+                      "deployment_strategy"
+                    ],
+                    "properties": {
+                      "deployment_strategy": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "test_strategy": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
     },
     "KeptnContextExtendedCE": {
       "allOf": [
