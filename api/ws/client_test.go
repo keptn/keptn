@@ -214,7 +214,7 @@ func TestPositiveVerification(t *testing.T) {
 	var header http.Header
 	header = make(http.Header)
 	header.Add("Token", *c.Token)
-	err = verifyToken(header)
+	err = VerifyToken(header)
 	assert.Equal(t, err, nil)
 }
 
@@ -225,7 +225,7 @@ func TestNegativeVerification(t *testing.T) {
 	var header http.Header
 	header = make(http.Header)
 	header.Add("Token", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1OTQyODAxOTh9.1yZsr6r9F4Ftpj9AsN3AeE6N_Tjr2oGDjHMkdO1Z0P3")
-	err := verifyToken(header)
+	err := VerifyToken(header)
 	assert.Equal(t, err, errors.New("jwt: HMAC verification failed"))
 }
 
