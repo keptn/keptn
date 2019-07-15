@@ -20,6 +20,7 @@ import (
 	"github.com/go-openapi/swag"
 
 	"github.com/keptn/keptn/api/restapi/operations/configure"
+	"github.com/keptn/keptn/api/restapi/operations/dynatrace"
 	"github.com/keptn/keptn/api/restapi/operations/event"
 	"github.com/keptn/keptn/api/restapi/operations/openws"
 	"github.com/keptn/keptn/api/restapi/operations/project"
@@ -46,6 +47,9 @@ func NewAPI(spec *loads.Document) *API {
 		JSONProducer:        runtime.JSONProducer(),
 		ConfigureConfigureHandler: configure.ConfigureHandlerFunc(func(params configure.ConfigureParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation ConfigureConfigure has not yet been implemented")
+		}),
+		DynatraceDynatraceHandler: dynatrace.DynatraceHandlerFunc(func(params dynatrace.DynatraceParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation DynatraceDynatrace has not yet been implemented")
 		}),
 		OpenwsOpenWSHandler: openws.OpenWSHandlerFunc(func(params openws.OpenWSParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation OpenwsOpenWS has not yet been implemented")
@@ -104,6 +108,8 @@ type API struct {
 
 	// ConfigureConfigureHandler sets the operation handler for the configure operation
 	ConfigureConfigureHandler configure.ConfigureHandler
+	// DynatraceDynatraceHandler sets the operation handler for the dynatrace operation
+	DynatraceDynatraceHandler dynatrace.DynatraceHandler
 	// OpenwsOpenWSHandler sets the operation handler for the open w s operation
 	OpenwsOpenWSHandler openws.OpenWSHandler
 	// ProjectProjectHandler sets the operation handler for the project operation
@@ -179,6 +185,10 @@ func (o *API) Validate() error {
 
 	if o.ConfigureConfigureHandler == nil {
 		unregistered = append(unregistered, "configure.ConfigureHandler")
+	}
+
+	if o.DynatraceDynatraceHandler == nil {
+		unregistered = append(unregistered, "dynatrace.DynatraceHandler")
 	}
 
 	if o.OpenwsOpenWSHandler == nil {
@@ -307,6 +317,11 @@ func (o *API) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/configure"] = configure.NewConfigure(o.context, o.ConfigureConfigureHandler)
+
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/dynatrace"] = dynatrace.NewDynatrace(o.context, o.DynatraceDynatraceHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)

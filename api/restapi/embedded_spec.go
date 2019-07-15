@@ -85,6 +85,35 @@ func init() {
         }
       }
     },
+    "/dynatrace": {
+      "post": {
+        "tags": [
+          "dynatrace"
+        ],
+        "summary": "Forwards the received event from Dynatrace to the eventbroker",
+        "operationId": "dynatrace",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/DynatraceProblemCE"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "event forwarded"
+          },
+          "default": {
+            "description": "error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
     "/event": {
       "post": {
         "tags": [
@@ -169,7 +198,7 @@ func init() {
     "ConfigureCE": {
       "allOf": [
         {
-          "$ref": "https://raw.githubusercontent.com/keptn/keptn/feature/506/api-service/api/ce_v0_2_without_data.json#/definitions/event"
+          "$ref": "ce_v0_2_without_data.json#/definitions/event"
         },
         {
           "type": "object",
@@ -199,7 +228,7 @@ func init() {
     "CreateProjectCE": {
       "allOf": [
         {
-          "$ref": "https://raw.githubusercontent.com/keptn/keptn/feature/506/api-service/api/ce_v0_2_without_data.json#/definitions/event"
+          "$ref": "ce_v0_2_without_data.json#/definitions/event"
         },
         {
           "type": "object",
@@ -232,6 +261,77 @@ func init() {
                       }
                     }
                   }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "DynatraceProblemCE": {
+      "allOf": [
+        {
+          "$ref": "ce_v0_2_without_data.json#/definitions/event"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "data": {
+              "required": [
+                "state",
+                "problemid",
+                "pid",
+                "problemtitle",
+                "problemdetails",
+                "impactedentities",
+                "impactedentity"
+              ],
+              "properties": {
+                "impactedentities": {
+                  "type": "array",
+                  "items": {
+                    "required": [
+                      "type",
+                      "name",
+                      "entity"
+                    ],
+                    "properties": {
+                      "entity": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "impactedentity": {
+                  "type": "string"
+                },
+                "pid": {
+                  "type": "string"
+                },
+                "problemdetails": {
+                  "required": [
+                    "id"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "problemid": {
+                  "type": "string"
+                },
+                "problemtitle": {
+                  "type": "string"
+                },
+                "state": {
+                  "type": "string"
                 }
               }
             }
@@ -439,6 +539,153 @@ func init() {
                 }
               }
             }
+          },
+          "default": {
+            "description": "error",
+            "schema": {
+              "type": "object",
+              "required": [
+                "message"
+              ],
+              "properties": {
+                "code": {
+                  "type": "integer",
+                  "format": "int64"
+                },
+                "fields": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dynatrace": {
+      "post": {
+        "tags": [
+          "dynatrace"
+        ],
+        "summary": "Forwards the received event from Dynatrace to the eventbroker",
+        "operationId": "dynatrace",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "allOf": [
+                {
+                  "type": "object",
+                  "required": [
+                    "specversion",
+                    "id",
+                    "type",
+                    "source",
+                    "shkeptncontext"
+                  ],
+                  "properties": {
+                    "contenttype": {
+                      "type": "string"
+                    },
+                    "extensions": {
+                      "type": "object"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "shkeptncontext": {
+                      "type": "string"
+                    },
+                    "source": {
+                      "type": "string",
+                      "format": "uri-reference"
+                    },
+                    "specversion": {
+                      "type": "string"
+                    },
+                    "time": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "type": {
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "required": [
+                        "state",
+                        "problemid",
+                        "pid",
+                        "problemtitle",
+                        "problemdetails",
+                        "impactedentities",
+                        "impactedentity"
+                      ],
+                      "properties": {
+                        "impactedentities": {
+                          "type": "array",
+                          "items": {
+                            "required": [
+                              "type",
+                              "name",
+                              "entity"
+                            ],
+                            "properties": {
+                              "entity": {
+                                "type": "string"
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "type": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        },
+                        "impactedentity": {
+                          "type": "string"
+                        },
+                        "pid": {
+                          "type": "string"
+                        },
+                        "problemdetails": {
+                          "required": [
+                            "id"
+                          ],
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "problemid": {
+                          "type": "string"
+                        },
+                        "problemtitle": {
+                          "type": "string"
+                        },
+                        "state": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "event forwarded"
           },
           "default": {
             "description": "error",
@@ -862,6 +1109,112 @@ func init() {
                       }
                     }
                   }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "DynatraceProblemCE": {
+      "allOf": [
+        {
+          "type": "object",
+          "required": [
+            "specversion",
+            "id",
+            "type",
+            "source",
+            "shkeptncontext"
+          ],
+          "properties": {
+            "contenttype": {
+              "type": "string"
+            },
+            "extensions": {
+              "type": "object"
+            },
+            "id": {
+              "type": "string"
+            },
+            "shkeptncontext": {
+              "type": "string"
+            },
+            "source": {
+              "type": "string",
+              "format": "uri-reference"
+            },
+            "specversion": {
+              "type": "string"
+            },
+            "time": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "type": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "data": {
+              "required": [
+                "state",
+                "problemid",
+                "pid",
+                "problemtitle",
+                "problemdetails",
+                "impactedentities",
+                "impactedentity"
+              ],
+              "properties": {
+                "impactedentities": {
+                  "type": "array",
+                  "items": {
+                    "required": [
+                      "type",
+                      "name",
+                      "entity"
+                    ],
+                    "properties": {
+                      "entity": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "impactedentity": {
+                  "type": "string"
+                },
+                "pid": {
+                  "type": "string"
+                },
+                "problemdetails": {
+                  "required": [
+                    "id"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "problemid": {
+                  "type": "string"
+                },
+                "problemtitle": {
+                  "type": "string"
+                },
+                "state": {
+                  "type": "string"
                 }
               }
             }
