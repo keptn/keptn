@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/keptn/keptn/api/restapi/operations/dynatrace"
+
 	"github.com/keptn/keptn/api/restapi/operations/project"
 
 	"github.com/keptn/keptn/api/restapi/operations/configure"
@@ -111,6 +113,33 @@ func configureAPI(api *operations.API) http.Handler {
 			return project.NewProjectDefault(500).WithPayload(&project.ProjectDefaultBody{Code: 500, Message: swag.String(err.Error())})
 		}
 		return project.NewProjectCreated().WithPayload(&project.ProjectCreatedBody{ChannelID: params.Body.Shkeptncontext, Token: &token})
+	})
+
+	api.ProjectProjectHandler = project.ProjectHandlerFunc(func(params project.ProjectParams, principal *models.Principal) middleware.Responder {
+		if params.Body.Shkeptncontext == nil || *params.Body.Shkeptncontext == "" {
+			uuidStr := uuid.New().String()
+			params.Body.Shkeptncontext = &uuidStr
+		}
+
+		if err := utils.PostToEventBroker(params.Body, *params.Body.Shkeptncontext); err != nil {
+			return project.NewProjectDefault(500).WithPayload(&project.ProjectDefaultBody{Code: 500, Message: swag.String(err.Error())})
+		}
+		token, err := ws.CreateChannelInfo(*params.Body.Shkeptncontext)
+		if err != nil {
+			return project.NewProjectDefault(500).WithPayload(&project.ProjectDefaultBody{Code: 500, Message: swag.String(err.Error())})
+		}
+		return project.NewProjectCreated().WithPayload(&project.ProjectCreatedBody{ChannelID: params.Body.Shkeptncontext, Token: &token})
+	})
+
+	api.DynatraceDynatraceHandler = dynatrace.DynatraceHandlerFunc(func(params dynatrace.DynatraceParams, principal *models.Principal) middleware.Responder {
+		if params.Body.Shkeptncontext == nil || *params.Body.Shkeptncontext == "" {
+			uuidStr := uuid.New().String()
+			params.Body.Shkeptncontext = &uuidStr
+		}
+		if err := utils.PostToEventBroker(params.Body, *params.Body.Shkeptncontext); err != nil {
+			return dynatrace.NewDynatraceDefault(500).WithPayload(&dynatrace.DynatraceDefaultBody{Code: 500, Message: swag.String(err.Error())})
+		}
+		return dynatrace.NewDynatraceCreated()
 	})
 
 	api.OpenwsOpenWSHandler = openws.OpenWSHandlerFunc(func(params openws.OpenWSParams, pincipal *models.Principal) middleware.Responder {
