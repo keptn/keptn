@@ -166,7 +166,7 @@ func setupGlobalMiddleware(handler http.Handler) http.Handler {
 		}
 		// Serving ./swagger-ui/
 		if strings.Index(r.URL.Path, "/swagger-ui/") == 0 {
-			http.StripPrefix("/swagger-ui/", http.FileServer(http.Dir("ui"))).ServeHTTP(w, r)
+			http.StripPrefix("/swagger-ui/", http.FileServer(http.Dir("swagger-ui"))).ServeHTTP(w, r)
 			return
 		}
 		handler.ServeHTTP(w, r)
