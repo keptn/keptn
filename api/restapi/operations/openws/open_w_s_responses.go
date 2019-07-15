@@ -34,3 +34,61 @@ func (o *OpenWSOK) WriteResponse(rw http.ResponseWriter, producer runtime.Produc
 
 	rw.WriteHeader(200)
 }
+
+/*OpenWSDefault error
+
+swagger:response openWSDefault
+*/
+type OpenWSDefault struct {
+	_statusCode int
+
+	/*
+	  In: Body
+	*/
+	Payload *OpenWSDefaultBody `json:"body,omitempty"`
+}
+
+// NewOpenWSDefault creates OpenWSDefault with default headers values
+func NewOpenWSDefault(code int) *OpenWSDefault {
+	if code <= 0 {
+		code = 500
+	}
+
+	return &OpenWSDefault{
+		_statusCode: code,
+	}
+}
+
+// WithStatusCode adds the status to the open w s default response
+func (o *OpenWSDefault) WithStatusCode(code int) *OpenWSDefault {
+	o._statusCode = code
+	return o
+}
+
+// SetStatusCode sets the status to the open w s default response
+func (o *OpenWSDefault) SetStatusCode(code int) {
+	o._statusCode = code
+}
+
+// WithPayload adds the payload to the open w s default response
+func (o *OpenWSDefault) WithPayload(payload *OpenWSDefaultBody) *OpenWSDefault {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the open w s default response
+func (o *OpenWSDefault) SetPayload(payload *OpenWSDefaultBody) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *OpenWSDefault) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(o._statusCode)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}

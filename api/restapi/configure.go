@@ -72,6 +72,13 @@ func configureAPI(api *operations.API) http.Handler {
 	})
 
 	api.OpenwsOpenWSHandler = openws.OpenWSHandlerFunc(func(params openws.OpenWSParams, pincipal *models.Principal) middleware.Responder {
+
+		// Verify token
+		err := ws.VerifyToken(params.HTTPRequest.Header)
+		if err != nil {
+			return openws.NewOpenWSDefault(401).WithPayload(&openws.OpenWSDefaultBody{Code: 401, Message: swag.String(err.Error())})
+		}
+
 		return middleware.ResponderFunc(func(rw http.ResponseWriter, _ runtime.Producer) {
 			if val, ok := params.HTTPRequest.Header["Keptn-Ws-Channel-Id"]; ok {
 				ws.ServeWsCLI(hub, rw, params.HTTPRequest, val[0])

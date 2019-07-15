@@ -4,14 +4,6 @@
 
 package ws
 
-import (
-	"os"
-	"time"
-
-	"github.com/gbrlsnchs/jwt"
-	"github.com/keptn/keptn/api/restapi/operations/event"
-)
-
 // Hub maintains the set of active clients and broadcasts messages to the
 // clients.
 type Hub struct {
@@ -89,7 +81,7 @@ func (h *Hub) Run() {
 				}
 			}
 		case message := <-h.broadcast:
-			
+
 			if _, available := h.cliClients[message.channelID]; !available {
 				// Buffer message
 				if _, available := h.buffers[message.channelID]; !available {
@@ -109,22 +101,4 @@ func (h *Hub) Run() {
 			}
 		}
 	}
-}
-
-// CreateChannelInfo creates a new channel info for websockets
-func CreateChannelInfo(keptnContext string) (*event.SendEventCreatedBody, error) {
-
-	now := time.Now()
-	hs256 := jwt.NewHMAC(jwt.SHA256, []byte(os.Getenv("keptn-api-token")))
-	h := jwt.Header{KeyID: keptnContext}
-	p := jwt.Payload{
-		ExpirationTime: now.Add(24 * 30 * 12 * time.Hour).Unix(),
-	}
-	jwtToken, err := jwt.Sign(h, p, hs256)
-	if err != nil {
-		return nil, err
-	}
-	token := string(jwtToken)
-	channelInfo := event.SendEventCreatedBody{ChannelID: &keptnContext, Token: &token}
-	return &channelInfo, nil
 }

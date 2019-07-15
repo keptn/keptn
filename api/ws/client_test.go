@@ -2,13 +2,16 @@ package ws
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/magiconair/properties/assert"
 )
@@ -197,6 +200,33 @@ func TestBuffering(t *testing.T) {
 	}()
 
 	<-done
+}
+
+func TestPositiveVerification(t *testing.T) {
+
+	os.Setenv("keptn-api-token", "test-token")
+
+	keptnContext := uuid.New().String()
+	c, err := CreateChannelInfo(keptnContext)
+
+	assert.Equal(t, err, nil)
+
+	var header http.Header
+	header = make(http.Header)
+	header.Add("Token", *c.Token)
+	err = verifyToken(header)
+	assert.Equal(t, err, nil)
+}
+
+func TestNegativeVerification(t *testing.T) {
+
+	os.Setenv("keptn-api-token", "test-token")
+
+	var header http.Header
+	header = make(http.Header)
+	header.Add("Token", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1OTQyODAxOTh9.1yZsr6r9F4Ftpj9AsN3AeE6N_Tjr2oGDjHMkdO1Z0P3")
+	err := verifyToken(header)
+	assert.Equal(t, err, errors.New("jwt: HMAC verification failed"))
 }
 
 func writeMessage(client *websocket.Conn, message []byte) {
