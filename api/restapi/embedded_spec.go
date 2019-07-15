@@ -34,6 +34,19 @@ func init() {
   },
   "basePath": "/",
   "paths": {
+    "/": {
+      "get": {
+        "tags": [
+          "openws"
+        ],
+        "operationId": "openWS",
+        "responses": {
+          "200": {
+            "description": "Upgrading to WS"
+          }
+        }
+      }
+    },
     "/event": {
       "post": {
         "tags": [
@@ -52,7 +65,10 @@ func init() {
         ],
         "responses": {
           "201": {
-            "description": "forwarded"
+            "description": "forwarded",
+            "schema": {
+              "$ref": "#/definitions/ChannelInfo"
+            }
           },
           "default": {
             "description": "error",
@@ -65,6 +81,21 @@ func init() {
     }
   },
   "definitions": {
+    "ChannelInfo": {
+      "type": "object",
+      "required": [
+        "token",
+        "channelID"
+      ],
+      "properties": {
+        "channelID": {
+          "type": "string"
+        },
+        "token": {
+          "type": "string"
+        }
+      }
+    },
     "KeptnContextExtendedCE": {
       "allOf": [
         {
@@ -135,6 +166,19 @@ func init() {
   },
   "basePath": "/",
   "paths": {
+    "/": {
+      "get": {
+        "tags": [
+          "openws"
+        ],
+        "operationId": "openWS",
+        "responses": {
+          "200": {
+            "description": "Upgrading to WS"
+          }
+        }
+      }
+    },
     "/event": {
       "post": {
         "tags": [
@@ -205,7 +249,22 @@ func init() {
         ],
         "responses": {
           "201": {
-            "description": "forwarded"
+            "description": "forwarded",
+            "schema": {
+              "type": "object",
+              "required": [
+                "token",
+                "channelID"
+              ],
+              "properties": {
+                "channelID": {
+                  "type": "string"
+                },
+                "token": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "default": {
             "description": "error",
@@ -233,6 +292,21 @@ func init() {
     }
   },
   "definitions": {
+    "ChannelInfo": {
+      "type": "object",
+      "required": [
+        "token",
+        "channelID"
+      ],
+      "properties": {
+        "channelID": {
+          "type": "string"
+        },
+        "token": {
+          "type": "string"
+        }
+      }
+    },
     "KeptnContextExtendedCE": {
       "allOf": [
         {
