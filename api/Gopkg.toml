@@ -33,6 +33,10 @@
   name = "github.com/keptn/go-utils"
   version = "0.1.0"
 
+[[constraint]]
+  name = "github.com/gbrlsnchs/jwt"
+  version = "v2.0.0"
+
 [prune]
   go-tests = true
   unused-packages = true
