@@ -37,7 +37,7 @@ func NewSendEvent(ctx *middleware.Context, handler SendEventHandler) *SendEvent 
 
 /*SendEvent swagger:route POST /event event sendEvent
 
-Forwards a new event to the eventbroker
+Forwards the received event to the eventbroker
 
 */
 type SendEvent struct {

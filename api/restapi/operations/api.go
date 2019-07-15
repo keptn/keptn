@@ -19,8 +19,10 @@ import (
 	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
+	"github.com/keptn/keptn/api/restapi/operations/configure"
 	"github.com/keptn/keptn/api/restapi/operations/event"
 	"github.com/keptn/keptn/api/restapi/operations/openws"
+	"github.com/keptn/keptn/api/restapi/operations/project"
 
 	models "github.com/keptn/keptn/api/models"
 )
@@ -42,8 +44,14 @@ func NewAPI(spec *loads.Document) *API {
 		BearerAuthenticator: security.BearerAuth,
 		JSONConsumer:        runtime.JSONConsumer(),
 		JSONProducer:        runtime.JSONProducer(),
+		ConfigureConfigureHandler: configure.ConfigureHandlerFunc(func(params configure.ConfigureParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation ConfigureConfigure has not yet been implemented")
+		}),
 		OpenwsOpenWSHandler: openws.OpenWSHandlerFunc(func(params openws.OpenWSParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation OpenwsOpenWS has not yet been implemented")
+		}),
+		ProjectProjectHandler: project.ProjectHandlerFunc(func(params project.ProjectParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation ProjectProject has not yet been implemented")
 		}),
 		EventSendEventHandler: event.SendEventHandlerFunc(func(params event.SendEventParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation EventSendEvent has not yet been implemented")
@@ -94,8 +102,12 @@ type API struct {
 	// APIAuthorizer provides access control (ACL/RBAC/ABAC) by providing access to the request and authenticated principal
 	APIAuthorizer runtime.Authorizer
 
+	// ConfigureConfigureHandler sets the operation handler for the configure operation
+	ConfigureConfigureHandler configure.ConfigureHandler
 	// OpenwsOpenWSHandler sets the operation handler for the open w s operation
 	OpenwsOpenWSHandler openws.OpenWSHandler
+	// ProjectProjectHandler sets the operation handler for the project operation
+	ProjectProjectHandler project.ProjectHandler
 	// EventSendEventHandler sets the operation handler for the send event operation
 	EventSendEventHandler event.SendEventHandler
 
@@ -165,8 +177,16 @@ func (o *API) Validate() error {
 		unregistered = append(unregistered, "XTokenAuth")
 	}
 
+	if o.ConfigureConfigureHandler == nil {
+		unregistered = append(unregistered, "configure.ConfigureHandler")
+	}
+
 	if o.OpenwsOpenWSHandler == nil {
 		unregistered = append(unregistered, "openws.OpenWSHandler")
+	}
+
+	if o.ProjectProjectHandler == nil {
+		unregistered = append(unregistered, "project.ProjectHandler")
 	}
 
 	if o.EventSendEventHandler == nil {
@@ -283,10 +303,20 @@ func (o *API) initHandlerCache() {
 		o.handlers = make(map[string]map[string]http.Handler)
 	}
 
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/configure"] = configure.NewConfigure(o.context, o.ConfigureConfigureHandler)
+
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"][""] = openws.NewOpenWS(o.context, o.OpenwsOpenWSHandler)
+
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/project"] = project.NewProject(o.context, o.ProjectProjectHandler)
 
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
