@@ -1,7 +1,7 @@
 #!/bin/bash
 source ./utils.sh
 
-KEPTN_ENDPOINT=https://$(kubectl get ksvc -n keptn control -ojsonpath={.status.domain})
+KEPTN_ENDPOINT=https://control.keptn.$(kubectl get cm -n keptn keptn-domain -oyaml | yq - r data.app_domain)
 KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)
 
 PROJECT=sockshop
