@@ -12,7 +12,7 @@ spec:
             autoscaling.knative.dev/minScale: "1"
         spec:
           container:
-            image: keptn/api:latest
+            image: agrimmer/api:latest
             imagePullPolicy: Always
             env:
             - name: SECRET_TOKEN
