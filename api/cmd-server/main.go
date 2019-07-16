@@ -17,6 +17,8 @@ import (
 
 func main() {
 
+	os.Setenv("keptn-api-token", "BLC5kHCuC0TrR+bfPzA3ig==")
+
 	swaggerSpec, err := loads.Embedded(restapi.SwaggerJSON, restapi.FlatSwaggerJSON)
 	if err != nil {
 		log.Fatalln(err)
