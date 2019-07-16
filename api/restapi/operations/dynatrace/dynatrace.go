@@ -92,8 +92,7 @@ type DynatraceBody struct {
 	ID *string `json:"id"`
 
 	// shkeptncontext
-	// Required: true
-	Shkeptncontext *string `json:"shkeptncontext"`
+	Shkeptncontext string `json:"shkeptncontext,omitempty"`
 
 	// source
 	// Required: true
@@ -125,7 +124,7 @@ func (o *DynatraceBody) UnmarshalJSON(raw []byte) error {
 
 		ID *string `json:"id"`
 
-		Shkeptncontext *string `json:"shkeptncontext"`
+		Shkeptncontext string `json:"shkeptncontext,omitempty"`
 
 		Source *string `json:"source"`
 
@@ -179,7 +178,7 @@ func (o DynatraceBody) MarshalJSON() ([]byte, error) {
 
 		ID *string `json:"id"`
 
-		Shkeptncontext *string `json:"shkeptncontext"`
+		Shkeptncontext string `json:"shkeptncontext,omitempty"`
 
 		Source *string `json:"source"`
 
@@ -235,10 +234,6 @@ func (o *DynatraceBody) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := o.validateShkeptncontext(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := o.validateSource(formats); err != nil {
 		res = append(res, err)
 	}
@@ -268,15 +263,6 @@ func (o *DynatraceBody) Validate(formats strfmt.Registry) error {
 func (o *DynatraceBody) validateID(formats strfmt.Registry) error {
 
 	if err := validate.Required("body"+"."+"id", "body", o.ID); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (o *DynatraceBody) validateShkeptncontext(formats strfmt.Registry) error {
-
-	if err := validate.Required("body"+"."+"shkeptncontext", "body", o.Shkeptncontext); err != nil {
 		return err
 	}
 

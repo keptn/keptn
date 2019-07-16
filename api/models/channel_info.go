@@ -17,24 +17,176 @@ import (
 // swagger:model ChannelInfo
 type ChannelInfo struct {
 
-	// channel ID
-	// Required: true
-	ChannelID *string `json:"channelID"`
+	// contenttype
+	Contenttype string `json:"contenttype,omitempty"`
 
-	// token
+	// extensions
+	Extensions interface{} `json:"extensions,omitempty"`
+
+	// id
 	// Required: true
-	Token *string `json:"token"`
+	ID *string `json:"id"`
+
+	// shkeptncontext
+	Shkeptncontext string `json:"shkeptncontext,omitempty"`
+
+	// source
+	// Required: true
+	Source *string `json:"source"`
+
+	// specversion
+	// Required: true
+	Specversion *string `json:"specversion"`
+
+	// time
+	// Format: date-time
+	Time strfmt.DateTime `json:"time,omitempty"`
+
+	// type
+	// Required: true
+	Type *string `json:"type"`
+
+	// data
+	Data *ChannelInfoAO1Data `json:"data,omitempty"`
+}
+
+// UnmarshalJSON unmarshals this object from a JSON structure
+func (m *ChannelInfo) UnmarshalJSON(raw []byte) error {
+	// AO0
+	var dataAO0 struct {
+		Contenttype string `json:"contenttype,omitempty"`
+
+		Extensions interface{} `json:"extensions,omitempty"`
+
+		ID *string `json:"id"`
+
+		Shkeptncontext string `json:"shkeptncontext,omitempty"`
+
+		Source *string `json:"source"`
+
+		Specversion *string `json:"specversion"`
+
+		Time strfmt.DateTime `json:"time,omitempty"`
+
+		Type *string `json:"type"`
+	}
+	if err := swag.ReadJSON(raw, &dataAO0); err != nil {
+		return err
+	}
+
+	m.Contenttype = dataAO0.Contenttype
+
+	m.Extensions = dataAO0.Extensions
+
+	m.ID = dataAO0.ID
+
+	m.Shkeptncontext = dataAO0.Shkeptncontext
+
+	m.Source = dataAO0.Source
+
+	m.Specversion = dataAO0.Specversion
+
+	m.Time = dataAO0.Time
+
+	m.Type = dataAO0.Type
+
+	// AO1
+	var dataAO1 struct {
+		Data *ChannelInfoAO1Data `json:"data,omitempty"`
+	}
+	if err := swag.ReadJSON(raw, &dataAO1); err != nil {
+		return err
+	}
+
+	m.Data = dataAO1.Data
+
+	return nil
+}
+
+// MarshalJSON marshals this object to a JSON structure
+func (m ChannelInfo) MarshalJSON() ([]byte, error) {
+	_parts := make([][]byte, 0, 2)
+
+	var dataAO0 struct {
+		Contenttype string `json:"contenttype,omitempty"`
+
+		Extensions interface{} `json:"extensions,omitempty"`
+
+		ID *string `json:"id"`
+
+		Shkeptncontext string `json:"shkeptncontext,omitempty"`
+
+		Source *string `json:"source"`
+
+		Specversion *string `json:"specversion"`
+
+		Time strfmt.DateTime `json:"time,omitempty"`
+
+		Type *string `json:"type"`
+	}
+
+	dataAO0.Contenttype = m.Contenttype
+
+	dataAO0.Extensions = m.Extensions
+
+	dataAO0.ID = m.ID
+
+	dataAO0.Shkeptncontext = m.Shkeptncontext
+
+	dataAO0.Source = m.Source
+
+	dataAO0.Specversion = m.Specversion
+
+	dataAO0.Time = m.Time
+
+	dataAO0.Type = m.Type
+
+	jsonDataAO0, errAO0 := swag.WriteJSON(dataAO0)
+	if errAO0 != nil {
+		return nil, errAO0
+	}
+	_parts = append(_parts, jsonDataAO0)
+
+	var dataAO1 struct {
+		Data *ChannelInfoAO1Data `json:"data,omitempty"`
+	}
+
+	dataAO1.Data = m.Data
+
+	jsonDataAO1, errAO1 := swag.WriteJSON(dataAO1)
+	if errAO1 != nil {
+		return nil, errAO1
+	}
+	_parts = append(_parts, jsonDataAO1)
+
+	return swag.ConcatJSON(_parts...), nil
 }
 
 // Validate validates this channel info
 func (m *ChannelInfo) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateChannelID(formats); err != nil {
+	if err := m.validateID(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateToken(formats); err != nil {
+	if err := m.validateSource(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSpecversion(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTime(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateData(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -44,19 +196,68 @@ func (m *ChannelInfo) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ChannelInfo) validateChannelID(formats strfmt.Registry) error {
+func (m *ChannelInfo) validateID(formats strfmt.Registry) error {
 
-	if err := validate.Required("channelID", "body", m.ChannelID); err != nil {
+	if err := validate.Required("id", "body", m.ID); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ChannelInfo) validateToken(formats strfmt.Registry) error {
+func (m *ChannelInfo) validateSource(formats strfmt.Registry) error {
 
-	if err := validate.Required("token", "body", m.Token); err != nil {
+	if err := validate.Required("source", "body", m.Source); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *ChannelInfo) validateSpecversion(formats strfmt.Registry) error {
+
+	if err := validate.Required("specversion", "body", m.Specversion); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ChannelInfo) validateTime(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Time) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("time", "body", "date-time", m.Time.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ChannelInfo) validateType(formats strfmt.Registry) error {
+
+	if err := validate.Required("type", "body", m.Type); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ChannelInfo) validateData(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Data) { // not required
+		return nil
+	}
+
+	if m.Data != nil {
+		if err := m.Data.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("data")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -73,6 +274,131 @@ func (m *ChannelInfo) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *ChannelInfo) UnmarshalBinary(b []byte) error {
 	var res ChannelInfo
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ChannelInfoAO1Data channel info a o1 data
+// swagger:model ChannelInfoAO1Data
+type ChannelInfoAO1Data struct {
+
+	// channel info
+	ChannelInfo *ChannelInfoAO1DataChannelInfo `json:"channelInfo,omitempty"`
+}
+
+// Validate validates this channel info a o1 data
+func (m *ChannelInfoAO1Data) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateChannelInfo(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ChannelInfoAO1Data) validateChannelInfo(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.ChannelInfo) { // not required
+		return nil
+	}
+
+	if m.ChannelInfo != nil {
+		if err := m.ChannelInfo.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("data" + "." + "channelInfo")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ChannelInfoAO1Data) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ChannelInfoAO1Data) UnmarshalBinary(b []byte) error {
+	var res ChannelInfoAO1Data
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ChannelInfoAO1DataChannelInfo channel info a o1 data channel info
+// swagger:model ChannelInfoAO1DataChannelInfo
+type ChannelInfoAO1DataChannelInfo struct {
+
+	// channel ID
+	// Required: true
+	ChannelID *string `json:"channelID"`
+
+	// token
+	// Required: true
+	Token *string `json:"token"`
+}
+
+// Validate validates this channel info a o1 data channel info
+func (m *ChannelInfoAO1DataChannelInfo) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateChannelID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateToken(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ChannelInfoAO1DataChannelInfo) validateChannelID(formats strfmt.Registry) error {
+
+	if err := validate.Required("data"+"."+"channelInfo"+"."+"channelID", "body", m.ChannelID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ChannelInfoAO1DataChannelInfo) validateToken(formats strfmt.Registry) error {
+
+	if err := validate.Required("data"+"."+"channelInfo"+"."+"token", "body", m.Token); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ChannelInfoAO1DataChannelInfo) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ChannelInfoAO1DataChannelInfo) UnmarshalBinary(b []byte) error {
+	var res ChannelInfoAO1DataChannelInfo
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

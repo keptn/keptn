@@ -91,8 +91,7 @@ type ConfigureBody struct {
 	ID *string `json:"id"`
 
 	// shkeptncontext
-	// Required: true
-	Shkeptncontext *string `json:"shkeptncontext"`
+	Shkeptncontext string `json:"shkeptncontext,omitempty"`
 
 	// source
 	// Required: true
@@ -124,7 +123,7 @@ func (o *ConfigureBody) UnmarshalJSON(raw []byte) error {
 
 		ID *string `json:"id"`
 
-		Shkeptncontext *string `json:"shkeptncontext"`
+		Shkeptncontext string `json:"shkeptncontext,omitempty"`
 
 		Source *string `json:"source"`
 
@@ -178,7 +177,7 @@ func (o ConfigureBody) MarshalJSON() ([]byte, error) {
 
 		ID *string `json:"id"`
 
-		Shkeptncontext *string `json:"shkeptncontext"`
+		Shkeptncontext string `json:"shkeptncontext,omitempty"`
 
 		Source *string `json:"source"`
 
@@ -234,10 +233,6 @@ func (o *ConfigureBody) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := o.validateShkeptncontext(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := o.validateSource(formats); err != nil {
 		res = append(res, err)
 	}
@@ -267,15 +262,6 @@ func (o *ConfigureBody) Validate(formats strfmt.Registry) error {
 func (o *ConfigureBody) validateID(formats strfmt.Registry) error {
 
 	if err := validate.Required("body"+"."+"id", "body", o.ID); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (o *ConfigureBody) validateShkeptncontext(formats strfmt.Registry) error {
-
-	if err := validate.Required("body"+"."+"shkeptncontext", "body", o.Shkeptncontext); err != nil {
 		return err
 	}
 
@@ -362,24 +348,176 @@ func (o *ConfigureBody) UnmarshalBinary(b []byte) error {
 // swagger:model ConfigureCreatedBody
 type ConfigureCreatedBody struct {
 
-	// channel ID
-	// Required: true
-	ChannelID *string `json:"channelID"`
+	// contenttype
+	Contenttype string `json:"contenttype,omitempty"`
 
-	// token
+	// extensions
+	Extensions interface{} `json:"extensions,omitempty"`
+
+	// id
 	// Required: true
-	Token *string `json:"token"`
+	ID *string `json:"id"`
+
+	// shkeptncontext
+	Shkeptncontext string `json:"shkeptncontext,omitempty"`
+
+	// source
+	// Required: true
+	Source *string `json:"source"`
+
+	// specversion
+	// Required: true
+	Specversion *string `json:"specversion"`
+
+	// time
+	// Format: date-time
+	Time strfmt.DateTime `json:"time,omitempty"`
+
+	// type
+	// Required: true
+	Type *string `json:"type"`
+
+	// data
+	Data *ConfigureCreatedBodyAO1Data `json:"data,omitempty"`
+}
+
+// UnmarshalJSON unmarshals this object from a JSON structure
+func (o *ConfigureCreatedBody) UnmarshalJSON(raw []byte) error {
+	// ConfigureCreatedBodyAO0
+	var dataConfigureCreatedBodyAO0 struct {
+		Contenttype string `json:"contenttype,omitempty"`
+
+		Extensions interface{} `json:"extensions,omitempty"`
+
+		ID *string `json:"id"`
+
+		Shkeptncontext string `json:"shkeptncontext,omitempty"`
+
+		Source *string `json:"source"`
+
+		Specversion *string `json:"specversion"`
+
+		Time strfmt.DateTime `json:"time,omitempty"`
+
+		Type *string `json:"type"`
+	}
+	if err := swag.ReadJSON(raw, &dataConfigureCreatedBodyAO0); err != nil {
+		return err
+	}
+
+	o.Contenttype = dataConfigureCreatedBodyAO0.Contenttype
+
+	o.Extensions = dataConfigureCreatedBodyAO0.Extensions
+
+	o.ID = dataConfigureCreatedBodyAO0.ID
+
+	o.Shkeptncontext = dataConfigureCreatedBodyAO0.Shkeptncontext
+
+	o.Source = dataConfigureCreatedBodyAO0.Source
+
+	o.Specversion = dataConfigureCreatedBodyAO0.Specversion
+
+	o.Time = dataConfigureCreatedBodyAO0.Time
+
+	o.Type = dataConfigureCreatedBodyAO0.Type
+
+	// ConfigureCreatedBodyAO1
+	var dataConfigureCreatedBodyAO1 struct {
+		Data *ConfigureCreatedBodyAO1Data `json:"data,omitempty"`
+	}
+	if err := swag.ReadJSON(raw, &dataConfigureCreatedBodyAO1); err != nil {
+		return err
+	}
+
+	o.Data = dataConfigureCreatedBodyAO1.Data
+
+	return nil
+}
+
+// MarshalJSON marshals this object to a JSON structure
+func (o ConfigureCreatedBody) MarshalJSON() ([]byte, error) {
+	_parts := make([][]byte, 0, 2)
+
+	var dataConfigureCreatedBodyAO0 struct {
+		Contenttype string `json:"contenttype,omitempty"`
+
+		Extensions interface{} `json:"extensions,omitempty"`
+
+		ID *string `json:"id"`
+
+		Shkeptncontext string `json:"shkeptncontext,omitempty"`
+
+		Source *string `json:"source"`
+
+		Specversion *string `json:"specversion"`
+
+		Time strfmt.DateTime `json:"time,omitempty"`
+
+		Type *string `json:"type"`
+	}
+
+	dataConfigureCreatedBodyAO0.Contenttype = o.Contenttype
+
+	dataConfigureCreatedBodyAO0.Extensions = o.Extensions
+
+	dataConfigureCreatedBodyAO0.ID = o.ID
+
+	dataConfigureCreatedBodyAO0.Shkeptncontext = o.Shkeptncontext
+
+	dataConfigureCreatedBodyAO0.Source = o.Source
+
+	dataConfigureCreatedBodyAO0.Specversion = o.Specversion
+
+	dataConfigureCreatedBodyAO0.Time = o.Time
+
+	dataConfigureCreatedBodyAO0.Type = o.Type
+
+	jsonDataConfigureCreatedBodyAO0, errConfigureCreatedBodyAO0 := swag.WriteJSON(dataConfigureCreatedBodyAO0)
+	if errConfigureCreatedBodyAO0 != nil {
+		return nil, errConfigureCreatedBodyAO0
+	}
+	_parts = append(_parts, jsonDataConfigureCreatedBodyAO0)
+
+	var dataConfigureCreatedBodyAO1 struct {
+		Data *ConfigureCreatedBodyAO1Data `json:"data,omitempty"`
+	}
+
+	dataConfigureCreatedBodyAO1.Data = o.Data
+
+	jsonDataConfigureCreatedBodyAO1, errConfigureCreatedBodyAO1 := swag.WriteJSON(dataConfigureCreatedBodyAO1)
+	if errConfigureCreatedBodyAO1 != nil {
+		return nil, errConfigureCreatedBodyAO1
+	}
+	_parts = append(_parts, jsonDataConfigureCreatedBodyAO1)
+
+	return swag.ConcatJSON(_parts...), nil
 }
 
 // Validate validates this configure created body
 func (o *ConfigureCreatedBody) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := o.validateChannelID(formats); err != nil {
+	if err := o.validateID(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := o.validateToken(formats); err != nil {
+	if err := o.validateSource(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateSpecversion(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateTime(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateData(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -389,19 +527,68 @@ func (o *ConfigureCreatedBody) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (o *ConfigureCreatedBody) validateChannelID(formats strfmt.Registry) error {
+func (o *ConfigureCreatedBody) validateID(formats strfmt.Registry) error {
 
-	if err := validate.Required("configureCreated"+"."+"channelID", "body", o.ChannelID); err != nil {
+	if err := validate.Required("configureCreated"+"."+"id", "body", o.ID); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (o *ConfigureCreatedBody) validateToken(formats strfmt.Registry) error {
+func (o *ConfigureCreatedBody) validateSource(formats strfmt.Registry) error {
 
-	if err := validate.Required("configureCreated"+"."+"token", "body", o.Token); err != nil {
+	if err := validate.Required("configureCreated"+"."+"source", "body", o.Source); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (o *ConfigureCreatedBody) validateSpecversion(formats strfmt.Registry) error {
+
+	if err := validate.Required("configureCreated"+"."+"specversion", "body", o.Specversion); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *ConfigureCreatedBody) validateTime(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Time) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("configureCreated"+"."+"time", "body", "date-time", o.Time.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *ConfigureCreatedBody) validateType(formats strfmt.Registry) error {
+
+	if err := validate.Required("configureCreated"+"."+"type", "body", o.Type); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *ConfigureCreatedBody) validateData(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Data) { // not required
+		return nil
+	}
+
+	if o.Data != nil {
+		if err := o.Data.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("configureCreated" + "." + "data")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -418,6 +605,131 @@ func (o *ConfigureCreatedBody) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (o *ConfigureCreatedBody) UnmarshalBinary(b []byte) error {
 	var res ConfigureCreatedBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+// ConfigureCreatedBodyAO1Data configure created body a o1 data
+// swagger:model ConfigureCreatedBodyAO1Data
+type ConfigureCreatedBodyAO1Data struct {
+
+	// channel info
+	ChannelInfo *ConfigureCreatedBodyAO1DataChannelInfo `json:"channelInfo,omitempty"`
+}
+
+// Validate validates this configure created body a o1 data
+func (o *ConfigureCreatedBodyAO1Data) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateChannelInfo(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *ConfigureCreatedBodyAO1Data) validateChannelInfo(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.ChannelInfo) { // not required
+		return nil
+	}
+
+	if o.ChannelInfo != nil {
+		if err := o.ChannelInfo.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("configureCreated" + "." + "data" + "." + "channelInfo")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *ConfigureCreatedBodyAO1Data) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *ConfigureCreatedBodyAO1Data) UnmarshalBinary(b []byte) error {
+	var res ConfigureCreatedBodyAO1Data
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+// ConfigureCreatedBodyAO1DataChannelInfo configure created body a o1 data channel info
+// swagger:model ConfigureCreatedBodyAO1DataChannelInfo
+type ConfigureCreatedBodyAO1DataChannelInfo struct {
+
+	// channel ID
+	// Required: true
+	ChannelID *string `json:"channelID"`
+
+	// token
+	// Required: true
+	Token *string `json:"token"`
+}
+
+// Validate validates this configure created body a o1 data channel info
+func (o *ConfigureCreatedBodyAO1DataChannelInfo) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateChannelID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateToken(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *ConfigureCreatedBodyAO1DataChannelInfo) validateChannelID(formats strfmt.Registry) error {
+
+	if err := validate.Required("configureCreated"+"."+"data"+"."+"channelInfo"+"."+"channelID", "body", o.ChannelID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *ConfigureCreatedBodyAO1DataChannelInfo) validateToken(formats strfmt.Registry) error {
+
+	if err := validate.Required("configureCreated"+"."+"data"+"."+"channelInfo"+"."+"token", "body", o.Token); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *ConfigureCreatedBodyAO1DataChannelInfo) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *ConfigureCreatedBodyAO1DataChannelInfo) UnmarshalBinary(b []byte) error {
+	var res ConfigureCreatedBodyAO1DataChannelInfo
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
