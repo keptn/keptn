@@ -14,8 +14,6 @@ import (
 
 const eventbrokerURL = "http://event-broker.keptn.svc.cluster.local/keptn"
 
-const mockOutgoingTraffic = true
-
 // PostToEventBroker makes a post request to the eventbroker
 func PostToEventBroker(e interface{}, shkeptncontext string) error {
 
@@ -30,9 +28,6 @@ func PostToEventBroker(e interface{}, shkeptncontext string) error {
 
 	client := &http.Client{}
 
-	if mockOutgoingTraffic {
-		return nil
-	}
 	resp, err := client.Do(req)
 	if err != nil {
 		utils.Error(shkeptncontext, fmt.Sprintf("Error making POST %s", err.Error()))
