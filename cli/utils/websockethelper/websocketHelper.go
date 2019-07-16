@@ -48,19 +48,20 @@ type ConnectionData struct {
 // ChannelInfo stores a token and a channelID used for opening the websocket
 type ChannelInfo struct {
 	Token     string `json:"token"`
-	ChannelID string `json:"channelId"`
+	ChannelID string `json:"channelID"`
 }
 
 // PrintWSContentCEResponse opens a websocket using the passed
 // connection data (in form of a cloud event) and prints status data
 func PrintWSContentCEResponse(responseCE *cloudevents.Event, controlEndPoint url.URL) error {
 
-	ceData := &incompleteCE{}
-	err := responseCE.DataAs(ceData)
+	connectionData := &ConnectionData{}
+	err := responseCE.DataAs(connectionData)
+
 	if err != nil {
 		return err
 	}
-	return printWSContent(ceData.ConnData, controlEndPoint)
+	return printWSContent(*connectionData, controlEndPoint)
 }
 
 // PrintWSContentByteResponse opens a websocket using the passed
@@ -109,7 +110,7 @@ func openWS(connData ConnectionData, controlEndPoint url.URL) (*websocket.Conn, 
 
 	header := http.Header{}
 	header.Add("Token", connData.ChannelInfo.Token)
-	header.Add("x-keptn-ws-channel-id", connData.ChannelInfo.ChannelID)
+	header.Add("Keptn-Ws-Channel-Id", connData.ChannelInfo.ChannelID)
 	return websocket.DefaultDialer.Dial(wsEndPoint.String(), header)
 }
 
