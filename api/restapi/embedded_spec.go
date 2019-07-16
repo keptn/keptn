@@ -53,6 +53,29 @@ func init() {
         }
       }
     },
+    "/auth": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Checks the provided token",
+        "operationId": "auth",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "https://raw.githubusercontent.com/cloudevents/spec/v0.2/spec.json#/definitions/event"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "authenticated"
+          }
+        }
+      }
+    },
     "/configure": {
       "post": {
         "tags": [
@@ -439,6 +462,66 @@ func init() {
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/auth": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Checks the provided token",
+        "operationId": "auth",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "required": [
+                "specversion",
+                "id",
+                "type",
+                "source"
+              ],
+              "properties": {
+                "contenttype": {
+                  "type": "string"
+                },
+                "data": {
+                  "type": [
+                    "object",
+                    "string"
+                  ]
+                },
+                "extensions": {
+                  "type": "object"
+                },
+                "id": {
+                  "type": "string"
+                },
+                "source": {
+                  "type": "string",
+                  "format": "uri-reference"
+                },
+                "specversion": {
+                  "type": "string"
+                },
+                "time": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "type": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "authenticated"
           }
         }
       }

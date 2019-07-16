@@ -19,6 +19,7 @@ import (
 	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
+	"github.com/keptn/keptn/api/restapi/operations/auth"
 	"github.com/keptn/keptn/api/restapi/operations/configure"
 	"github.com/keptn/keptn/api/restapi/operations/dynatrace"
 	"github.com/keptn/keptn/api/restapi/operations/event"
@@ -45,6 +46,9 @@ func NewAPI(spec *loads.Document) *API {
 		BearerAuthenticator: security.BearerAuth,
 		JSONConsumer:        runtime.JSONConsumer(),
 		JSONProducer:        runtime.JSONProducer(),
+		AuthAuthHandler: auth.AuthHandlerFunc(func(params auth.AuthParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation AuthAuth has not yet been implemented")
+		}),
 		ConfigureConfigureHandler: configure.ConfigureHandlerFunc(func(params configure.ConfigureParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation ConfigureConfigure has not yet been implemented")
 		}),
@@ -106,6 +110,8 @@ type API struct {
 	// APIAuthorizer provides access control (ACL/RBAC/ABAC) by providing access to the request and authenticated principal
 	APIAuthorizer runtime.Authorizer
 
+	// AuthAuthHandler sets the operation handler for the auth operation
+	AuthAuthHandler auth.AuthHandler
 	// ConfigureConfigureHandler sets the operation handler for the configure operation
 	ConfigureConfigureHandler configure.ConfigureHandler
 	// DynatraceDynatraceHandler sets the operation handler for the dynatrace operation
@@ -181,6 +187,10 @@ func (o *API) Validate() error {
 
 	if o.KeyAuth == nil {
 		unregistered = append(unregistered, "XTokenAuth")
+	}
+
+	if o.AuthAuthHandler == nil {
+		unregistered = append(unregistered, "auth.AuthHandler")
 	}
 
 	if o.ConfigureConfigureHandler == nil {
@@ -312,6 +322,11 @@ func (o *API) initHandlerCache() {
 	if o.handlers == nil {
 		o.handlers = make(map[string]map[string]http.Handler)
 	}
+
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/auth"] = auth.NewAuth(o.context, o.AuthAuthHandler)
 
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
