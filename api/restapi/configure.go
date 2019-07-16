@@ -4,7 +4,6 @@ package restapi
 
 import (
 	"crypto/tls"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -30,7 +29,6 @@ import (
 	models "github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations"
 	"github.com/keptn/keptn/api/restapi/operations/event"
-	"github.com/keptn/keptn/api/restapi/operations/openws"
 	"github.com/keptn/keptn/api/ws"
 )
 
@@ -169,26 +167,6 @@ func configureAPI(api *operations.API) http.Handler {
 			return dynatrace.NewDynatraceDefault(500).WithPayload(&dynatrace.DynatraceDefaultBody{Code: 500, Message: swag.String(err.Error())})
 		}
 		return dynatrace.NewDynatraceCreated()
-	})
-
-	api.OpenwsOpenWSHandler = openws.OpenWSHandlerFunc(func(params openws.OpenWSParams, pincipal *models.Principal) middleware.Responder {
-
-		// Verify token
-		fmt.Println("Open WS")
-		err := ws.VerifyToken(params.HTTPRequest.Header)
-		if err != nil {
-			return openws.NewOpenWSDefault(401).WithPayload(&openws.OpenWSDefaultBody{Code: 401, Message: swag.String(err.Error())})
-		}
-
-		return middleware.ResponderFunc(func(rw http.ResponseWriter, _ runtime.Producer) {
-			if val, ok := params.HTTPRequest.Header["Keptn-Ws-Channel-Id"]; ok {
-				fmt.Println("Serve CLI")
-				ws.ServeWsCLI(hub, rw, params.HTTPRequest, val[0])
-			} else {
-				fmt.Println("Serve service")
-				ws.ServeWs(hub, rw, params.HTTPRequest)
-			}
-		})
 	})
 
 	api.ServerShutdown = func() {}
