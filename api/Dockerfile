@@ -15,7 +15,7 @@ RUN curl -L -s https://github.com/golang/dep/releases/download/v$DEP_VERSION/dep
 # Build the command inside the container.
 # (You may fetch or manage dependencies here,
 # either manually or with a tool like "godep".)
-RUN CGO_ENABLED=0 GOOS=linux go build -v -o api-service
+RUN CGO_ENABLED=0 GOOS=linux go build -v cmd-server/main.go
 
 # Use a Docker multi-stage build to create a lean production image.
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
@@ -23,7 +23,7 @@ FROM alpine
 RUN apk add --no-cache ca-certificates
 
 # Copy the binary to the production image from the builder stage.
-COPY --from=builder /go/src/github.com/keptn/keptn/api/api-service /api-service
+COPY --from=builder /go/src/github.com/keptn/keptn/api/main /api
 COPY --from=builder /go/src/github.com/keptn/keptn/api/swagger-ui /swagger-ui
 COPY --from=builder /go/src/github.com/keptn/keptn/api/swagger.json /swagger-ui/swagger.json
 ADD MANIFEST /
