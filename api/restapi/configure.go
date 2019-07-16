@@ -4,10 +4,12 @@ package restapi
 
 import (
 	"crypto/tls"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/keptn/keptn/api/restapi/operations/auth"
 	"github.com/keptn/keptn/api/restapi/operations/dynatrace"
@@ -20,6 +22,7 @@ import (
 	errors "github.com/go-openapi/errors"
 	runtime "github.com/go-openapi/runtime"
 	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
 	"github.com/google/uuid"
@@ -86,51 +89,83 @@ func configureAPI(api *operations.API) http.Handler {
 		if err != nil {
 			return event.NewSendEventDefault(500).WithPayload(&event.SendEventDefaultBody{Code: 500, Message: swag.String(err.Error())})
 		}
-		return event.NewSendEventCreated().WithPayload(&event.SendEventCreatedBody{ChannelID: params.Body.Shkeptncontext, Token: &token})
+
+		channelInfo := getChannelInfo(params.Body.Shkeptncontext, &token)
+		data, err := channelInfo.MarshalJSON()
+		if err != nil {
+			return event.NewSendEventDefault(500).WithPayload(&event.SendEventDefaultBody{Code: 500, Message: swag.String("Marshalling error")})
+		}
+		resp := event.SendEventCreatedBody{}
+		err = resp.UnmarshalJSON(data)
+		if err != nil {
+			return event.NewSendEventDefault(500).WithPayload(&event.SendEventDefaultBody{Code: 500, Message: swag.String("Marshalling error")})
+		}
+		return event.NewSendEventCreated().WithPayload(&resp)
 	})
 
 	api.ConfigureConfigureHandler = configure.ConfigureHandlerFunc(func(params configure.ConfigureParams, principal *models.Principal) middleware.Responder {
-		if params.Body.Shkeptncontext == nil || *params.Body.Shkeptncontext == "" {
-			uuidStr := uuid.New().String()
-			params.Body.Shkeptncontext = &uuidStr
+		if params.Body.Shkeptncontext == "" {
+			params.Body.Shkeptncontext = uuid.New().String()
 		}
-		keptnutils.Info(*params.Body.Shkeptncontext, "API received configure event")
+		keptnutils.Info(params.Body.Shkeptncontext, "API received configure event")
 
-		if err := utils.PostToEventBroker(params.Body, *params.Body.Shkeptncontext); err != nil {
+		if err := utils.PostToEventBroker(params.Body, params.Body.Shkeptncontext); err != nil {
 			return configure.NewConfigureDefault(500).WithPayload(&configure.ConfigureDefaultBody{Code: 500, Message: swag.String(err.Error())})
 		}
-		token, err := ws.CreateChannelInfo(*params.Body.Shkeptncontext)
+		token, err := ws.CreateChannelInfo(params.Body.Shkeptncontext)
 		if err != nil {
 			return configure.NewConfigureDefault(500).WithPayload(&configure.ConfigureDefaultBody{Code: 500, Message: swag.String(err.Error())})
 		}
-		return configure.NewConfigureCreated().WithPayload(&configure.ConfigureCreatedBody{ChannelID: params.Body.Shkeptncontext, Token: &token})
+
+		channelInfo := getChannelInfo(&params.Body.Shkeptncontext, &token)
+		data, err := channelInfo.MarshalJSON()
+		if err != nil {
+			return event.NewSendEventDefault(500).WithPayload(&event.SendEventDefaultBody{Code: 500, Message: swag.String("Marshalling error")})
+		}
+		resp := configure.ConfigureCreatedBody{}
+		err = resp.UnmarshalJSON(data)
+		if err != nil {
+			return event.NewSendEventDefault(500).WithPayload(&event.SendEventDefaultBody{Code: 500, Message: swag.String("Marshalling error")})
+		}
+
+		return configure.NewConfigureCreated().WithPayload(&resp)
 	})
 
 	api.ProjectProjectHandler = project.ProjectHandlerFunc(func(params project.ProjectParams, principal *models.Principal) middleware.Responder {
-		if params.Body.Shkeptncontext == nil || *params.Body.Shkeptncontext == "" {
-			uuidStr := uuid.New().String()
-			params.Body.Shkeptncontext = &uuidStr
+		if params.Body.Shkeptncontext == "" {
+			params.Body.Shkeptncontext = uuid.New().String()
 		}
-		keptnutils.Info(*params.Body.Shkeptncontext, "API received project event")
+		keptnutils.Info(params.Body.Shkeptncontext, "API received project event")
 
-		if err := utils.PostToEventBroker(params.Body, *params.Body.Shkeptncontext); err != nil {
+		if err := utils.PostToEventBroker(params.Body, params.Body.Shkeptncontext); err != nil {
 			return project.NewProjectDefault(500).WithPayload(&project.ProjectDefaultBody{Code: 500, Message: swag.String(err.Error())})
 		}
-		token, err := ws.CreateChannelInfo(*params.Body.Shkeptncontext)
+		token, err := ws.CreateChannelInfo(params.Body.Shkeptncontext)
 		if err != nil {
 			return project.NewProjectDefault(500).WithPayload(&project.ProjectDefaultBody{Code: 500, Message: swag.String(err.Error())})
 		}
-		return project.NewProjectCreated().WithPayload(&project.ProjectCreatedBody{ChannelID: params.Body.Shkeptncontext, Token: &token})
+
+		channelInfo := getChannelInfo(&params.Body.Shkeptncontext, &token)
+		data, err := channelInfo.MarshalJSON()
+		if err != nil {
+			return event.NewSendEventDefault(500).WithPayload(&event.SendEventDefaultBody{Code: 500, Message: swag.String("Marshalling error")})
+		}
+		resp := project.ProjectCreatedBody{}
+		err = resp.UnmarshalJSON(data)
+		if err != nil {
+			return event.NewSendEventDefault(500).WithPayload(&event.SendEventDefaultBody{Code: 500, Message: swag.String("Marshalling error")})
+		}
+
+		return project.NewProjectCreated().WithPayload(&resp)
 	})
 
 	api.DynatraceDynatraceHandler = dynatrace.DynatraceHandlerFunc(func(params dynatrace.DynatraceParams, principal *models.Principal) middleware.Responder {
-		if params.Body.Shkeptncontext == nil || *params.Body.Shkeptncontext == "" {
-			uuidStr := uuid.New().String()
-			params.Body.Shkeptncontext = &uuidStr
+		if params.Body.Shkeptncontext == "" {
+			params.Body.Shkeptncontext = uuid.New().String()
 		}
-		keptnutils.Info(*params.Body.Shkeptncontext, "API received Dynatrace event")
+		keptnutils.Info(params.Body.Shkeptncontext, "API received Dynatrace event")
 
-		if err := utils.PostToEventBroker(params.Body, *params.Body.Shkeptncontext); err != nil {
+		if err := utils.PostToEventBroker(params.Body, params.Body.Shkeptncontext); err != nil {
 			return dynatrace.NewDynatraceDefault(500).WithPayload(&dynatrace.DynatraceDefaultBody{Code: 500, Message: swag.String(err.Error())})
 		}
 		return dynatrace.NewDynatraceCreated()
@@ -139,6 +174,7 @@ func configureAPI(api *operations.API) http.Handler {
 	api.OpenwsOpenWSHandler = openws.OpenWSHandlerFunc(func(params openws.OpenWSParams, pincipal *models.Principal) middleware.Responder {
 
 		// Verify token
+		fmt.Println("Open WS")
 		err := ws.VerifyToken(params.HTTPRequest.Header)
 		if err != nil {
 			return openws.NewOpenWSDefault(401).WithPayload(&openws.OpenWSDefaultBody{Code: 401, Message: swag.String(err.Error())})
@@ -146,8 +182,10 @@ func configureAPI(api *operations.API) http.Handler {
 
 		return middleware.ResponderFunc(func(rw http.ResponseWriter, _ runtime.Producer) {
 			if val, ok := params.HTTPRequest.Header["Keptn-Ws-Channel-Id"]; ok {
+				fmt.Println("Serve CLI")
 				ws.ServeWsCLI(hub, rw, params.HTTPRequest, val[0])
 			} else {
+				fmt.Println("Serve service")
 				ws.ServeWs(hub, rw, params.HTTPRequest)
 			}
 		})
@@ -156,6 +194,19 @@ func configureAPI(api *operations.API) http.Handler {
 	api.ServerShutdown = func() {}
 
 	return setupGlobalMiddleware(api.Serve(setupMiddlewares))
+}
+
+func getChannelInfo(channelID *string, token *string) models.ChannelInfo {
+
+	id := uuid.New().String()
+	source := "api"
+	specversion := "0.2"
+	time := strfmt.DateTime(time.Now())
+	typeInfo := "ChannelInfo"
+	channelInfo := models.ChannelInfoAO1DataChannelInfo{ChannelID: channelID, Token: token}
+	data := models.ChannelInfoAO1Data{ChannelInfo: &channelInfo}
+
+	return models.ChannelInfo{Contenttype: "application/json", ID: &id, Source: &source, Specversion: &specversion, Time: time, Type: &typeInfo, Data: &data}
 }
 
 // The TLS configuration before HTTPS server starts.
@@ -192,6 +243,25 @@ func setupGlobalMiddleware(handler http.Handler) http.Handler {
 			http.StripPrefix("/swagger-ui/", http.FileServer(http.Dir("swagger-ui"))).ServeHTTP(w, r)
 			return
 		}
+		if r.URL.Path == "/" {
+			// Verify token
+			err := ws.VerifyToken(r.Header)
+			if err != nil {
+				w.WriteHeader(401)
+				return
+			}
+
+			if val, ok := r.Header["Keptn-Ws-Channel-Id"]; ok {
+				err = ws.ServeWsCLI(hub, w, r, val[0])
+			} else {
+				err = ws.ServeWs(hub, w, r)
+			}
+			if err != nil {
+				w.WriteHeader(500)
+			}
+			return
+		}
+
 		handler.ServeHTTP(w, r)
 	})
 }

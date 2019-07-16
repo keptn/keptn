@@ -92,8 +92,7 @@ type ProjectBody struct {
 	ID *string `json:"id"`
 
 	// shkeptncontext
-	// Required: true
-	Shkeptncontext *string `json:"shkeptncontext"`
+	Shkeptncontext string `json:"shkeptncontext,omitempty"`
 
 	// source
 	// Required: true
@@ -125,7 +124,7 @@ func (o *ProjectBody) UnmarshalJSON(raw []byte) error {
 
 		ID *string `json:"id"`
 
-		Shkeptncontext *string `json:"shkeptncontext"`
+		Shkeptncontext string `json:"shkeptncontext,omitempty"`
 
 		Source *string `json:"source"`
 
@@ -179,7 +178,7 @@ func (o ProjectBody) MarshalJSON() ([]byte, error) {
 
 		ID *string `json:"id"`
 
-		Shkeptncontext *string `json:"shkeptncontext"`
+		Shkeptncontext string `json:"shkeptncontext,omitempty"`
 
 		Source *string `json:"source"`
 
@@ -235,10 +234,6 @@ func (o *ProjectBody) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := o.validateShkeptncontext(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := o.validateSource(formats); err != nil {
 		res = append(res, err)
 	}
@@ -268,15 +263,6 @@ func (o *ProjectBody) Validate(formats strfmt.Registry) error {
 func (o *ProjectBody) validateID(formats strfmt.Registry) error {
 
 	if err := validate.Required("body"+"."+"id", "body", o.ID); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (o *ProjectBody) validateShkeptncontext(formats strfmt.Registry) error {
-
-	if err := validate.Required("body"+"."+"shkeptncontext", "body", o.Shkeptncontext); err != nil {
 		return err
 	}
 
@@ -363,24 +349,176 @@ func (o *ProjectBody) UnmarshalBinary(b []byte) error {
 // swagger:model ProjectCreatedBody
 type ProjectCreatedBody struct {
 
-	// channel ID
-	// Required: true
-	ChannelID *string `json:"channelID"`
+	// contenttype
+	Contenttype string `json:"contenttype,omitempty"`
 
-	// token
+	// extensions
+	Extensions interface{} `json:"extensions,omitempty"`
+
+	// id
 	// Required: true
-	Token *string `json:"token"`
+	ID *string `json:"id"`
+
+	// shkeptncontext
+	Shkeptncontext string `json:"shkeptncontext,omitempty"`
+
+	// source
+	// Required: true
+	Source *string `json:"source"`
+
+	// specversion
+	// Required: true
+	Specversion *string `json:"specversion"`
+
+	// time
+	// Format: date-time
+	Time strfmt.DateTime `json:"time,omitempty"`
+
+	// type
+	// Required: true
+	Type *string `json:"type"`
+
+	// data
+	Data *ProjectCreatedBodyAO1Data `json:"data,omitempty"`
+}
+
+// UnmarshalJSON unmarshals this object from a JSON structure
+func (o *ProjectCreatedBody) UnmarshalJSON(raw []byte) error {
+	// ProjectCreatedBodyAO0
+	var dataProjectCreatedBodyAO0 struct {
+		Contenttype string `json:"contenttype,omitempty"`
+
+		Extensions interface{} `json:"extensions,omitempty"`
+
+		ID *string `json:"id"`
+
+		Shkeptncontext string `json:"shkeptncontext,omitempty"`
+
+		Source *string `json:"source"`
+
+		Specversion *string `json:"specversion"`
+
+		Time strfmt.DateTime `json:"time,omitempty"`
+
+		Type *string `json:"type"`
+	}
+	if err := swag.ReadJSON(raw, &dataProjectCreatedBodyAO0); err != nil {
+		return err
+	}
+
+	o.Contenttype = dataProjectCreatedBodyAO0.Contenttype
+
+	o.Extensions = dataProjectCreatedBodyAO0.Extensions
+
+	o.ID = dataProjectCreatedBodyAO0.ID
+
+	o.Shkeptncontext = dataProjectCreatedBodyAO0.Shkeptncontext
+
+	o.Source = dataProjectCreatedBodyAO0.Source
+
+	o.Specversion = dataProjectCreatedBodyAO0.Specversion
+
+	o.Time = dataProjectCreatedBodyAO0.Time
+
+	o.Type = dataProjectCreatedBodyAO0.Type
+
+	// ProjectCreatedBodyAO1
+	var dataProjectCreatedBodyAO1 struct {
+		Data *ProjectCreatedBodyAO1Data `json:"data,omitempty"`
+	}
+	if err := swag.ReadJSON(raw, &dataProjectCreatedBodyAO1); err != nil {
+		return err
+	}
+
+	o.Data = dataProjectCreatedBodyAO1.Data
+
+	return nil
+}
+
+// MarshalJSON marshals this object to a JSON structure
+func (o ProjectCreatedBody) MarshalJSON() ([]byte, error) {
+	_parts := make([][]byte, 0, 2)
+
+	var dataProjectCreatedBodyAO0 struct {
+		Contenttype string `json:"contenttype,omitempty"`
+
+		Extensions interface{} `json:"extensions,omitempty"`
+
+		ID *string `json:"id"`
+
+		Shkeptncontext string `json:"shkeptncontext,omitempty"`
+
+		Source *string `json:"source"`
+
+		Specversion *string `json:"specversion"`
+
+		Time strfmt.DateTime `json:"time,omitempty"`
+
+		Type *string `json:"type"`
+	}
+
+	dataProjectCreatedBodyAO0.Contenttype = o.Contenttype
+
+	dataProjectCreatedBodyAO0.Extensions = o.Extensions
+
+	dataProjectCreatedBodyAO0.ID = o.ID
+
+	dataProjectCreatedBodyAO0.Shkeptncontext = o.Shkeptncontext
+
+	dataProjectCreatedBodyAO0.Source = o.Source
+
+	dataProjectCreatedBodyAO0.Specversion = o.Specversion
+
+	dataProjectCreatedBodyAO0.Time = o.Time
+
+	dataProjectCreatedBodyAO0.Type = o.Type
+
+	jsonDataProjectCreatedBodyAO0, errProjectCreatedBodyAO0 := swag.WriteJSON(dataProjectCreatedBodyAO0)
+	if errProjectCreatedBodyAO0 != nil {
+		return nil, errProjectCreatedBodyAO0
+	}
+	_parts = append(_parts, jsonDataProjectCreatedBodyAO0)
+
+	var dataProjectCreatedBodyAO1 struct {
+		Data *ProjectCreatedBodyAO1Data `json:"data,omitempty"`
+	}
+
+	dataProjectCreatedBodyAO1.Data = o.Data
+
+	jsonDataProjectCreatedBodyAO1, errProjectCreatedBodyAO1 := swag.WriteJSON(dataProjectCreatedBodyAO1)
+	if errProjectCreatedBodyAO1 != nil {
+		return nil, errProjectCreatedBodyAO1
+	}
+	_parts = append(_parts, jsonDataProjectCreatedBodyAO1)
+
+	return swag.ConcatJSON(_parts...), nil
 }
 
 // Validate validates this project created body
 func (o *ProjectCreatedBody) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := o.validateChannelID(formats); err != nil {
+	if err := o.validateID(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := o.validateToken(formats); err != nil {
+	if err := o.validateSource(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateSpecversion(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateTime(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateData(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -390,19 +528,68 @@ func (o *ProjectCreatedBody) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (o *ProjectCreatedBody) validateChannelID(formats strfmt.Registry) error {
+func (o *ProjectCreatedBody) validateID(formats strfmt.Registry) error {
 
-	if err := validate.Required("projectCreated"+"."+"channelID", "body", o.ChannelID); err != nil {
+	if err := validate.Required("projectCreated"+"."+"id", "body", o.ID); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (o *ProjectCreatedBody) validateToken(formats strfmt.Registry) error {
+func (o *ProjectCreatedBody) validateSource(formats strfmt.Registry) error {
 
-	if err := validate.Required("projectCreated"+"."+"token", "body", o.Token); err != nil {
+	if err := validate.Required("projectCreated"+"."+"source", "body", o.Source); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (o *ProjectCreatedBody) validateSpecversion(formats strfmt.Registry) error {
+
+	if err := validate.Required("projectCreated"+"."+"specversion", "body", o.Specversion); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *ProjectCreatedBody) validateTime(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Time) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("projectCreated"+"."+"time", "body", "date-time", o.Time.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *ProjectCreatedBody) validateType(formats strfmt.Registry) error {
+
+	if err := validate.Required("projectCreated"+"."+"type", "body", o.Type); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *ProjectCreatedBody) validateData(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Data) { // not required
+		return nil
+	}
+
+	if o.Data != nil {
+		if err := o.Data.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("projectCreated" + "." + "data")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -419,6 +606,131 @@ func (o *ProjectCreatedBody) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (o *ProjectCreatedBody) UnmarshalBinary(b []byte) error {
 	var res ProjectCreatedBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+// ProjectCreatedBodyAO1Data project created body a o1 data
+// swagger:model ProjectCreatedBodyAO1Data
+type ProjectCreatedBodyAO1Data struct {
+
+	// channel info
+	ChannelInfo *ProjectCreatedBodyAO1DataChannelInfo `json:"channelInfo,omitempty"`
+}
+
+// Validate validates this project created body a o1 data
+func (o *ProjectCreatedBodyAO1Data) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateChannelInfo(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *ProjectCreatedBodyAO1Data) validateChannelInfo(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.ChannelInfo) { // not required
+		return nil
+	}
+
+	if o.ChannelInfo != nil {
+		if err := o.ChannelInfo.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("projectCreated" + "." + "data" + "." + "channelInfo")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *ProjectCreatedBodyAO1Data) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *ProjectCreatedBodyAO1Data) UnmarshalBinary(b []byte) error {
+	var res ProjectCreatedBodyAO1Data
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+// ProjectCreatedBodyAO1DataChannelInfo project created body a o1 data channel info
+// swagger:model ProjectCreatedBodyAO1DataChannelInfo
+type ProjectCreatedBodyAO1DataChannelInfo struct {
+
+	// channel ID
+	// Required: true
+	ChannelID *string `json:"channelID"`
+
+	// token
+	// Required: true
+	Token *string `json:"token"`
+}
+
+// Validate validates this project created body a o1 data channel info
+func (o *ProjectCreatedBodyAO1DataChannelInfo) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateChannelID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateToken(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *ProjectCreatedBodyAO1DataChannelInfo) validateChannelID(formats strfmt.Registry) error {
+
+	if err := validate.Required("projectCreated"+"."+"data"+"."+"channelInfo"+"."+"channelID", "body", o.ChannelID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *ProjectCreatedBodyAO1DataChannelInfo) validateToken(formats strfmt.Registry) error {
+
+	if err := validate.Required("projectCreated"+"."+"data"+"."+"channelInfo"+"."+"token", "body", o.Token); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *ProjectCreatedBodyAO1DataChannelInfo) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *ProjectCreatedBodyAO1DataChannelInfo) UnmarshalBinary(b []byte) error {
+	var res ProjectCreatedBodyAO1DataChannelInfo
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

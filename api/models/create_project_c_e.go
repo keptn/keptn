@@ -30,8 +30,7 @@ type CreateProjectCE struct {
 	ID *string `json:"id"`
 
 	// shkeptncontext
-	// Required: true
-	Shkeptncontext *string `json:"shkeptncontext"`
+	Shkeptncontext string `json:"shkeptncontext,omitempty"`
 
 	// source
 	// Required: true
@@ -63,7 +62,7 @@ func (m *CreateProjectCE) UnmarshalJSON(raw []byte) error {
 
 		ID *string `json:"id"`
 
-		Shkeptncontext *string `json:"shkeptncontext"`
+		Shkeptncontext string `json:"shkeptncontext,omitempty"`
 
 		Source *string `json:"source"`
 
@@ -117,7 +116,7 @@ func (m CreateProjectCE) MarshalJSON() ([]byte, error) {
 
 		ID *string `json:"id"`
 
-		Shkeptncontext *string `json:"shkeptncontext"`
+		Shkeptncontext string `json:"shkeptncontext,omitempty"`
 
 		Source *string `json:"source"`
 
@@ -173,10 +172,6 @@ func (m *CreateProjectCE) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateShkeptncontext(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.validateSource(formats); err != nil {
 		res = append(res, err)
 	}
@@ -206,15 +201,6 @@ func (m *CreateProjectCE) Validate(formats strfmt.Registry) error {
 func (m *CreateProjectCE) validateID(formats strfmt.Registry) error {
 
 	if err := validate.Required("id", "body", m.ID); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *CreateProjectCE) validateShkeptncontext(formats strfmt.Registry) error {
-
-	if err := validate.Required("shkeptncontext", "body", m.Shkeptncontext); err != nil {
 		return err
 	}
 

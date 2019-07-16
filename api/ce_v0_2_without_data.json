@@ -38,8 +38,7 @@
           "specversion",
           "id",
           "type",
-          "source",
-          "shkeptncontext"
+          "source"
         ],
         "type": "object"
       },

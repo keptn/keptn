@@ -26,26 +26,7 @@
       "key": []
     }
   ],
-  "paths": {
-    "/": {
-      "get": {
-        "tags": [
-          "openws"
-        ],
-        "operationId": "openWS",      
-        "responses": {
-          "200": {
-            "description": "Upgrading to WS"
-          },
-          "default": {
-            "description": "error",
-            "schema": {
-              "$ref": "#/definitions/error"
-            }
-          }
-        }
-      }
-    },
+  "paths": {    
     "/auth": {
       "post": {
         "tags": [
@@ -377,22 +358,34 @@
       }
     },
     "ChannelInfo" : {
-      "type": "object",
-      "required": [
-        "token",
-        "channelID"
-      ],
-      "properties": {
-        "token": {
-          "type": "string"
+      "allOf": [
+        {
+          "$ref": "ce_v0_2_without_data.json#/definitions/event"
         },
-        "channelID": {
-          "type": "string"
+        {
+          "type": "object",          
+          "properties": {
+            "data": {
+              "properties": {
+                "channelInfo": {
+                  "required": [
+                    "token",
+                    "channelID"
+                  ],
+                  "properties": {
+                    "token": {
+                      "type": "string"
+                    },
+                    "channelID": {
+                      "type": "string"
+                    }
+                  }
+                }  
+              }           
+            }
+          }
         }
-      }
-    },
-    "principal": {
-      "type": "string"
+      ]
     }
   }
 }

@@ -34,25 +34,6 @@ func init() {
   },
   "basePath": "/",
   "paths": {
-    "/": {
-      "get": {
-        "tags": [
-          "openws"
-        ],
-        "operationId": "openWS",
-        "responses": {
-          "200": {
-            "description": "Upgrading to WS"
-          },
-          "default": {
-            "description": "error",
-            "schema": {
-              "$ref": "#/definitions/error"
-            }
-          }
-        }
-      }
-    },
     "/auth": {
       "post": {
         "tags": [
@@ -204,19 +185,34 @@ func init() {
   },
   "definitions": {
     "ChannelInfo": {
-      "type": "object",
-      "required": [
-        "token",
-        "channelID"
-      ],
-      "properties": {
-        "channelID": {
-          "type": "string"
+      "allOf": [
+        {
+          "$ref": "ce_v0_2_without_data.json#/definitions/event"
         },
-        "token": {
-          "type": "string"
+        {
+          "type": "object",
+          "properties": {
+            "data": {
+              "properties": {
+                "channelInfo": {
+                  "required": [
+                    "token",
+                    "channelID"
+                  ],
+                  "properties": {
+                    "channelID": {
+                      "type": "string"
+                    },
+                    "token": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
-      }
+      ]
     },
     "ConfigureCE": {
       "allOf": [
@@ -397,9 +393,6 @@ func init() {
           "type": "string"
         }
       }
-    },
-    "principal": {
-      "type": "string"
     }
   },
   "securityDefinitions": {
@@ -432,40 +425,6 @@ func init() {
   },
   "basePath": "/",
   "paths": {
-    "/": {
-      "get": {
-        "tags": [
-          "openws"
-        ],
-        "operationId": "openWS",
-        "responses": {
-          "200": {
-            "description": "Upgrading to WS"
-          },
-          "default": {
-            "description": "error",
-            "schema": {
-              "type": "object",
-              "required": [
-                "message"
-              ],
-              "properties": {
-                "code": {
-                  "type": "integer",
-                  "format": "int64"
-                },
-                "fields": {
-                  "type": "string"
-                },
-                "message": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/auth": {
       "post": {
         "tags": [
@@ -545,8 +504,7 @@ func init() {
                     "specversion",
                     "id",
                     "type",
-                    "source",
-                    "shkeptncontext"
+                    "source"
                   ],
                   "properties": {
                     "contenttype": {
@@ -608,19 +566,68 @@ func init() {
           "201": {
             "description": "configured",
             "schema": {
-              "type": "object",
-              "required": [
-                "token",
-                "channelID"
-              ],
-              "properties": {
-                "channelID": {
-                  "type": "string"
+              "allOf": [
+                {
+                  "type": "object",
+                  "required": [
+                    "specversion",
+                    "id",
+                    "type",
+                    "source"
+                  ],
+                  "properties": {
+                    "contenttype": {
+                      "type": "string"
+                    },
+                    "extensions": {
+                      "type": "object"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "shkeptncontext": {
+                      "type": "string"
+                    },
+                    "source": {
+                      "type": "string",
+                      "format": "uri-reference"
+                    },
+                    "specversion": {
+                      "type": "string"
+                    },
+                    "time": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "type": {
+                      "type": "string"
+                    }
+                  }
                 },
-                "token": {
-                  "type": "string"
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "channelInfo": {
+                          "required": [
+                            "token",
+                            "channelID"
+                          ],
+                          "properties": {
+                            "channelID": {
+                              "type": "string"
+                            },
+                            "token": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
                 }
-              }
+              ]
             }
           },
           "default": {
@@ -666,8 +673,7 @@ func init() {
                     "specversion",
                     "id",
                     "type",
-                    "source",
-                    "shkeptncontext"
+                    "source"
                   ],
                   "properties": {
                     "contenttype": {
@@ -866,19 +872,68 @@ func init() {
           "201": {
             "description": "forwarded",
             "schema": {
-              "type": "object",
-              "required": [
-                "token",
-                "channelID"
-              ],
-              "properties": {
-                "channelID": {
-                  "type": "string"
+              "allOf": [
+                {
+                  "type": "object",
+                  "required": [
+                    "specversion",
+                    "id",
+                    "type",
+                    "source"
+                  ],
+                  "properties": {
+                    "contenttype": {
+                      "type": "string"
+                    },
+                    "extensions": {
+                      "type": "object"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "shkeptncontext": {
+                      "type": "string"
+                    },
+                    "source": {
+                      "type": "string",
+                      "format": "uri-reference"
+                    },
+                    "specversion": {
+                      "type": "string"
+                    },
+                    "time": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "type": {
+                      "type": "string"
+                    }
+                  }
                 },
-                "token": {
-                  "type": "string"
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "channelInfo": {
+                          "required": [
+                            "token",
+                            "channelID"
+                          ],
+                          "properties": {
+                            "channelID": {
+                              "type": "string"
+                            },
+                            "token": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
                 }
-              }
+              ]
             }
           },
           "default": {
@@ -924,8 +979,7 @@ func init() {
                     "specversion",
                     "id",
                     "type",
-                    "source",
-                    "shkeptncontext"
+                    "source"
                   ],
                   "properties": {
                     "contenttype": {
@@ -1000,19 +1054,68 @@ func init() {
           "201": {
             "description": "project created",
             "schema": {
-              "type": "object",
-              "required": [
-                "token",
-                "channelID"
-              ],
-              "properties": {
-                "channelID": {
-                  "type": "string"
+              "allOf": [
+                {
+                  "type": "object",
+                  "required": [
+                    "specversion",
+                    "id",
+                    "type",
+                    "source"
+                  ],
+                  "properties": {
+                    "contenttype": {
+                      "type": "string"
+                    },
+                    "extensions": {
+                      "type": "object"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "shkeptncontext": {
+                      "type": "string"
+                    },
+                    "source": {
+                      "type": "string",
+                      "format": "uri-reference"
+                    },
+                    "specversion": {
+                      "type": "string"
+                    },
+                    "time": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "type": {
+                      "type": "string"
+                    }
+                  }
                 },
-                "token": {
-                  "type": "string"
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "channelInfo": {
+                          "required": [
+                            "token",
+                            "channelID"
+                          ],
+                          "properties": {
+                            "channelID": {
+                              "type": "string"
+                            },
+                            "token": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
                 }
-              }
+              ]
             }
           },
           "default": {
@@ -1042,19 +1145,68 @@ func init() {
   },
   "definitions": {
     "ChannelInfo": {
-      "type": "object",
-      "required": [
-        "token",
-        "channelID"
-      ],
-      "properties": {
-        "channelID": {
-          "type": "string"
+      "allOf": [
+        {
+          "type": "object",
+          "required": [
+            "specversion",
+            "id",
+            "type",
+            "source"
+          ],
+          "properties": {
+            "contenttype": {
+              "type": "string"
+            },
+            "extensions": {
+              "type": "object"
+            },
+            "id": {
+              "type": "string"
+            },
+            "shkeptncontext": {
+              "type": "string"
+            },
+            "source": {
+              "type": "string",
+              "format": "uri-reference"
+            },
+            "specversion": {
+              "type": "string"
+            },
+            "time": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "type": {
+              "type": "string"
+            }
+          }
         },
-        "token": {
-          "type": "string"
+        {
+          "type": "object",
+          "properties": {
+            "data": {
+              "properties": {
+                "channelInfo": {
+                  "required": [
+                    "token",
+                    "channelID"
+                  ],
+                  "properties": {
+                    "channelID": {
+                      "type": "string"
+                    },
+                    "token": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
-      }
+      ]
     },
     "ConfigureCE": {
       "allOf": [
@@ -1064,8 +1216,7 @@ func init() {
             "specversion",
             "id",
             "type",
-            "source",
-            "shkeptncontext"
+            "source"
           ],
           "properties": {
             "contenttype": {
@@ -1129,8 +1280,7 @@ func init() {
             "specversion",
             "id",
             "type",
-            "source",
-            "shkeptncontext"
+            "source"
           ],
           "properties": {
             "contenttype": {
@@ -1207,8 +1357,7 @@ func init() {
             "specversion",
             "id",
             "type",
-            "source",
-            "shkeptncontext"
+            "source"
           ],
           "properties": {
             "contenttype": {
@@ -1377,9 +1526,6 @@ func init() {
           "type": "string"
         }
       }
-    },
-    "principal": {
-      "type": "string"
     }
   },
   "securityDefinitions": {
