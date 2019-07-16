@@ -46,6 +46,29 @@
         }
       }
     },
+    "/auth": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "operationId": "auth",
+        "summary": "Checks the provided token",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "https://raw.githubusercontent.com/cloudevents/spec/v0.2/spec.json#/definitions/event"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "authenticated"
+          }
+        }
+      }
+    },
     "/event": {
       "post": {
         "tags": [

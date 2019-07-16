@@ -6,8 +6,10 @@ import (
 	"crypto/tls"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 
+	"github.com/keptn/keptn/api/restapi/operations/auth"
 	"github.com/keptn/keptn/api/restapi/operations/dynatrace"
 
 	"github.com/keptn/keptn/api/restapi/operations/project"
@@ -22,7 +24,6 @@ import (
 
 	"github.com/google/uuid"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
-	"github.com/keptn/keptn/api/auth"
 	models "github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations"
 	"github.com/keptn/keptn/api/restapi/operations/event"
@@ -54,7 +55,12 @@ func configureAPI(api *operations.API) http.Handler {
 
 	// Applies when the "x-token" header is set
 	api.KeyAuth = func(token string) (*models.Principal, error) {
-		return auth.CheckToken(api, token)
+		if token == os.Getenv("keptn-api-token") {
+			prin := models.Principal(token)
+			return &prin, nil
+		}
+		api.Logger("Access attempt with incorrect api key auth: %s", token)
+		return nil, errors.New(401, "incorrect api key auth")
 	}
 
 	// Set your custom authorizer if needed. Default one is security.Authorized()
@@ -62,6 +68,10 @@ func configureAPI(api *operations.API) http.Handler {
 	//
 	// Example:
 	// api.APIAuthorizer = security.Authorized()
+	api.AuthAuthHandler = auth.AuthHandlerFunc(func(params auth.AuthParams, principal *models.Principal) middleware.Responder {
+		return auth.NewAuthOK()
+	})
+
 	api.EventSendEventHandler = event.SendEventHandlerFunc(func(params event.SendEventParams, principal *models.Principal) middleware.Responder {
 		if params.Body.Shkeptncontext == nil || *params.Body.Shkeptncontext == "" {
 			uuidStr := uuid.New().String()
