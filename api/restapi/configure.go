@@ -21,6 +21,7 @@ import (
 	"github.com/go-openapi/swag"
 
 	"github.com/google/uuid"
+	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/api/auth"
 	models "github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations"
@@ -30,8 +31,6 @@ import (
 )
 
 //go:generate swagger generate server --target ../../api --name  --spec ../swagger.json --principal models.Principal
-
-const skipAuth = true
 
 var hub *ws.Hub
 
@@ -55,10 +54,6 @@ func configureAPI(api *operations.API) http.Handler {
 
 	// Applies when the "x-token" header is set
 	api.KeyAuth = func(token string) (*models.Principal, error) {
-		if skipAuth {
-			prin := models.Principal(token)
-			return &prin, nil
-		}
 		return auth.CheckToken(api, token)
 	}
 
@@ -72,6 +67,7 @@ func configureAPI(api *operations.API) http.Handler {
 			uuidStr := uuid.New().String()
 			params.Body.Shkeptncontext = &uuidStr
 		}
+		keptnutils.Info(*params.Body.Shkeptncontext, "API received keptn event")
 
 		if err := utils.PostToEventBroker(params.Body, *params.Body.Shkeptncontext); err != nil {
 			return event.NewSendEventDefault(500).WithPayload(&event.SendEventDefaultBody{Code: 500, Message: swag.String(err.Error())})
@@ -88,6 +84,7 @@ func configureAPI(api *operations.API) http.Handler {
 			uuidStr := uuid.New().String()
 			params.Body.Shkeptncontext = &uuidStr
 		}
+		keptnutils.Info(*params.Body.Shkeptncontext, "API received configure event")
 
 		if err := utils.PostToEventBroker(params.Body, *params.Body.Shkeptncontext); err != nil {
 			return configure.NewConfigureDefault(500).WithPayload(&configure.ConfigureDefaultBody{Code: 500, Message: swag.String(err.Error())})
@@ -104,22 +101,7 @@ func configureAPI(api *operations.API) http.Handler {
 			uuidStr := uuid.New().String()
 			params.Body.Shkeptncontext = &uuidStr
 		}
-
-		if err := utils.PostToEventBroker(params.Body, *params.Body.Shkeptncontext); err != nil {
-			return project.NewProjectDefault(500).WithPayload(&project.ProjectDefaultBody{Code: 500, Message: swag.String(err.Error())})
-		}
-		token, err := ws.CreateChannelInfo(*params.Body.Shkeptncontext)
-		if err != nil {
-			return project.NewProjectDefault(500).WithPayload(&project.ProjectDefaultBody{Code: 500, Message: swag.String(err.Error())})
-		}
-		return project.NewProjectCreated().WithPayload(&project.ProjectCreatedBody{ChannelID: params.Body.Shkeptncontext, Token: &token})
-	})
-
-	api.ProjectProjectHandler = project.ProjectHandlerFunc(func(params project.ProjectParams, principal *models.Principal) middleware.Responder {
-		if params.Body.Shkeptncontext == nil || *params.Body.Shkeptncontext == "" {
-			uuidStr := uuid.New().String()
-			params.Body.Shkeptncontext = &uuidStr
-		}
+		keptnutils.Info(*params.Body.Shkeptncontext, "API received project event")
 
 		if err := utils.PostToEventBroker(params.Body, *params.Body.Shkeptncontext); err != nil {
 			return project.NewProjectDefault(500).WithPayload(&project.ProjectDefaultBody{Code: 500, Message: swag.String(err.Error())})
@@ -136,6 +118,8 @@ func configureAPI(api *operations.API) http.Handler {
 			uuidStr := uuid.New().String()
 			params.Body.Shkeptncontext = &uuidStr
 		}
+		keptnutils.Info(*params.Body.Shkeptncontext, "API received Dynatrace event")
+
 		if err := utils.PostToEventBroker(params.Body, *params.Body.Shkeptncontext); err != nil {
 			return dynatrace.NewDynatraceDefault(500).WithPayload(&dynatrace.DynatraceDefaultBody{Code: 500, Message: swag.String(err.Error())})
 		}
