@@ -8,11 +8,10 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/keptn/go-utils/pkg/utils"
 )
-
-const eventbrokerURL = "http://event-broker.keptn.svc.cluster.local/keptn"
 
 // PostToEventBroker makes a post request to the eventbroker
 func PostToEventBroker(e interface{}, shkeptncontext string) error {
@@ -23,7 +22,8 @@ func PostToEventBroker(e interface{}, shkeptncontext string) error {
 		return err
 	}
 
-	req, err := http.NewRequest("POST", eventbrokerURL, bytes.NewBuffer(data))
+	url := "http://" + os.Getenv("CHANNEL_URI")
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(data))
 	req.Header.Set("Content-Type", "application/cloudevents+json")
 
 	client := &http.Client{}
