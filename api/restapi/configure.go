@@ -197,7 +197,7 @@ func configureTLS(tlsConfig *tls.Config) {
 // This function can be called multiple times, depending on the number of serving schemes.
 // scheme value will be set accordingly: "http", "https" or "unix"
 func configureServer(s *http.Server, scheme, addr string) {
-	hub := ws.NewHub()
+	hub = ws.NewHub()
 	go hub.Run()
 	keptnutils.ServiceName = "api"
 }
