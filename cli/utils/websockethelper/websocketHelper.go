@@ -53,7 +53,7 @@ type ChannelInfo struct {
 
 // PrintWSContentCEResponse opens a websocket using the passed
 // connection data (in form of a cloud event) and prints status data
-func PrintWSContentCEResponse(responseCE *cloudevents.Event, controlEndPoint url.URL) error {
+func PrintWSContentCEResponse(responseCE *cloudevents.Event, apiEndPoint url.URL) error {
 
 	connectionData := &ConnectionData{}
 	err := responseCE.DataAs(connectionData)
@@ -61,12 +61,12 @@ func PrintWSContentCEResponse(responseCE *cloudevents.Event, controlEndPoint url
 	if err != nil {
 		return err
 	}
-	return printWSContent(*connectionData, controlEndPoint)
+	return printWSContent(*connectionData, apiEndPoint)
 }
 
 // PrintWSContentByteResponse opens a websocket using the passed
 // connection data (in form of a byte slice) and prints status data
-func PrintWSContentByteResponse(response []byte, controlEndPoint url.URL) error {
+func PrintWSContentByteResponse(response []byte, apiEndPoint url.URL) error {
 
 	ceData := &incompleteCE{}
 	err := json.Unmarshal(response, ceData)
@@ -74,17 +74,17 @@ func PrintWSContentByteResponse(response []byte, controlEndPoint url.URL) error 
 		return err
 	}
 
-	return printWSContent(ceData.ConnData, controlEndPoint)
+	return printWSContent(ceData.ConnData, apiEndPoint)
 }
 
-func printWSContent(connData ConnectionData, controlEndPoint url.URL) error {
+func printWSContent(connData ConnectionData, apiEndPoint url.URL) error {
 
 	err := validateConnectionData(connData)
 	if err != nil {
 		return err
 	}
 
-	ws, _, err := openWS(connData, controlEndPoint)
+	ws, _, err := openWS(connData, apiEndPoint)
 	if err != nil {
 		fmt.Println("Opening websocket failed")
 		return err
@@ -103,9 +103,9 @@ func validateConnectionData(connData ConnectionData) error {
 }
 
 // openWS opens a websocket
-func openWS(connData ConnectionData, controlEndPoint url.URL) (*websocket.Conn, *http.Response, error) {
+func openWS(connData ConnectionData, apiEndPoint url.URL) (*websocket.Conn, *http.Response, error) {
 
-	wsEndPoint := controlEndPoint
+	wsEndPoint := apiEndPoint
 	wsEndPoint.Scheme = "ws"
 
 	header := http.Header{}
