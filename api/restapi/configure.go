@@ -56,7 +56,7 @@ func configureAPI(api *operations.API) http.Handler {
 
 	// Applies when the "x-token" header is set
 	api.KeyAuth = func(token string) (*models.Principal, error) {
-		if token == os.Getenv("keptn-api-token") {
+		if token == os.Getenv("SECRET_TOKEN") {
 			prin := models.Principal(token)
 			return &prin, nil
 		}
@@ -199,6 +199,7 @@ func configureTLS(tlsConfig *tls.Config) {
 func configureServer(s *http.Server, scheme, addr string) {
 	hub := ws.NewHub()
 	go hub.Run()
+	keptnutils.ServiceName = "api"
 }
 
 // The middleware configuration is for the handler executors. These do not apply to the swagger.json document.
