@@ -902,6 +902,8 @@ To manually set up your keptn CLI, please follow the instructions at https://kep
 			"get",
 			"virtualservice",
 			"control",
+			"-n",
+			"keptn",
 			"-ojsonpath={.spec.hosts[0]}",
 		})
 
@@ -914,7 +916,7 @@ To manually set up your keptn CLI, please follow the instructions at https://kep
 			retries = 0
 		}
 		keptnEndpoint = strings.TrimSpace(string(out))
-		if keptnEndpoint == "" || !strings.Contains(keptnEndpoint, "xip.io") {
+		if keptnEndpoint == "" {
 			retries++
 			if retries >= 15 {
 				utils.PrintLog("API endpoint not yet available... trying again in 5s", utils.InfoLevel)
