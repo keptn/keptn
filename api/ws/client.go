@@ -173,7 +173,7 @@ func VerifyToken(header http.Header) error {
 		token := val[0]
 
 		// Define a signer.
-		hs256 := jwt.NewHS256(os.Getenv("keptn-api-token"))
+		hs256 := jwt.NewHS256(os.Getenv("SECRET_TOKEN"))
 
 		payload, sig, err := jwt.Parse(token)
 		if err != nil {
@@ -191,7 +191,7 @@ func VerifyToken(header http.Header) error {
 // CreateChannelInfo creates a new channel info for websockets
 func CreateChannelInfo(keptnContext string) (string, error) {
 
-	hs256 := jwt.NewHS256(os.Getenv("keptn-api-token"))
+	hs256 := jwt.NewHS256(os.Getenv("SECRET_TOKEN"))
 	jot := &jwt.JWT{
 		ExpirationTime: time.Now().Add(24 * 30 * 12 * time.Hour).Unix(),
 	}
