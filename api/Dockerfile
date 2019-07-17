@@ -28,4 +28,4 @@ COPY --from=builder /go/src/github.com/keptn/keptn/api/swagger-ui /swagger-ui
 COPY --from=builder /go/src/github.com/keptn/keptn/api/swagger.json /swagger-ui/swagger.json
 ADD MANIFEST /
 # Run the web service on container startup.
-CMD ["sh", "-c", "cat MANIFEST && /api --port=8080"]
+CMD ["sh", "-c", "cat MANIFEST && ./api --host=0.0.0.0 --port=8080"]
