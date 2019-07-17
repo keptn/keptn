@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"testing"
 	"time"
@@ -36,7 +37,10 @@ func TestSend(t *testing.T) {
 }}`
 
 	const tmpCE = "ce.json"
-	ioutil.WriteFile(tmpCE, []byte(newArtifactEvent), 0644)
+	err := ioutil.WriteFile(tmpCE, []byte(newArtifactEvent), 0644)
+	if err != nil {
+		log.Fatalf("An error occured %v", err)
+	}
 
 	credentialmanager.MockAuthCreds = true
 	buf := new(bytes.Buffer)
@@ -49,11 +53,11 @@ func TestSend(t *testing.T) {
 		"--mock",
 	}
 	rootCmd.SetArgs(args)
-	err := rootCmd.Execute()
+	err = rootCmd.Execute()
 
 	os.Remove(tmpCE)
 
 	if err != nil {
-		t.Errorf("An error occured %v", err)
+		log.Fatalf("An error occured %v", err)
 	}
 }
