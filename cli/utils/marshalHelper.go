@@ -5,11 +5,14 @@ import (
 	"io/ioutil"
 	"os"
 
+	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"gopkg.in/yaml.v2"
 )
 
 // ReadFile reads a file and returns the content as string
 func ReadFile(fileName string) (string, error) {
+
+	fileName = keptnutils.ExpandTilde(fileName)
 	if _, err := os.Stat(fileName); os.IsNotExist(err) {
 		return "", fmt.Errorf("Cannot find file %s", fileName)
 	}
