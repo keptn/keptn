@@ -39,7 +39,7 @@
             "name": "body",
             "in": "body",
             "schema": {
-              "$ref": "https://raw.githubusercontent.com/cloudevents/spec/v0.2/spec.json#/definitions/event"
+              "$ref": "#/definitions/CE"
             }
           }
         ],
@@ -62,7 +62,7 @@
             "name": "body",
             "in": "body",
             "schema": {
-              "$ref": "#/definitions/KeptnContextExtendedCE"
+              "$ref": "#/definitions/CE_with_keptncontext"
             }
           }
         ],
@@ -81,7 +81,7 @@
           }
         }
       }
-    },
+    },    
     "/configure": {
       "post": {
         "tags": [
@@ -158,7 +158,7 @@
             "name": "body",
             "in": "body",
             "schema": {
-              "$ref": "#/definitions/KeptnContextExtendedCE"
+              "$ref": "#/definitions/CE_with_keptncontext"
             }
           }
         ],
@@ -209,28 +209,10 @@
     }
   },  
   "definitions": {
-    "KeptnContextExtendedCE": {
-      "allOf": [
-        {
-          "$ref": "https://raw.githubusercontent.com/cloudevents/spec/v0.2/spec.json#/definitions/event"
-        },
-        {
-          "type": "object",
-          "required": [
-            "shkeptncontext"
-          ],
-          "properties": {
-            "shkeptncontext": {
-              "type": "string"
-            }
-          }
-        }
-      ]
-    },
     "ConfigureCE": {
       "allOf": [
         {
-          "$ref": "ce_v0_2_without_data.json#/definitions/event"
+          "$ref": "#/definitions/CE_without_data_with_keptncontext"
         },
         {
           "type": "object",          
@@ -260,7 +242,7 @@
     "DynatraceProblemCE": {
       "allOf": [
         {
-          "$ref": "ce_v0_2_without_data.json#/definitions/event"
+          "$ref": "#/definitions/CE_without_data_with_keptncontext"
         },
         {
           "type": "object",          
@@ -331,7 +313,7 @@
     "CreateProjectCE": {
       "allOf": [
         {
-          "$ref": "ce_v0_2_without_data.json#/definitions/event"
+          "$ref": "#/definitions/CE_without_data_with_keptncontext"
         },
         {
           "type": "object",          
@@ -392,7 +374,7 @@
     "ChannelInfo" : {
       "allOf": [
         {
-          "$ref": "ce_v0_2_without_data.json#/definitions/event"
+          "$ref": "#/definitions/CE_without_data_with_keptncontext"
         },
         {
           "type": "object",          
@@ -418,6 +400,88 @@
           }
         }
       ]
+    },
+    "CE_with_keptncontext": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/CE"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "shkeptncontext": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "CE_without_data_with_keptncontext": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/CE_without_data"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "shkeptncontext": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "CE" : {
+      "allOf": [
+        {
+          "$ref": "#/definitions/CE_without_data"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "data": {
+              "type": [
+                "object",
+                "string"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "CE_without_data" : {
+      "type": "object",
+      "required": [
+        "specversion",
+        "id",
+        "type",
+        "source"
+      ],
+      "properties": {
+        "specversion": {
+          "type": "string"
+        },
+        "contenttype": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "time": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "extensions": {
+          "type": "object"
+        },
+        "source": {
+          "format": "uri-reference",
+          "type": "string"
+        }
+      }
     }
   }
 }

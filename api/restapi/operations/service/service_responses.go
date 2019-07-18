@@ -9,6 +9,8 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/runtime"
+
+	models "github.com/keptn/keptn/api/models"
 )
 
 // ServiceCreatedCode is the HTTP code returned for type ServiceCreated
@@ -23,7 +25,7 @@ type ServiceCreated struct {
 	/*
 	  In: Body
 	*/
-	Payload *ServiceCreatedBody `json:"body,omitempty"`
+	Payload *models.ChannelInfo `json:"body,omitempty"`
 }
 
 // NewServiceCreated creates ServiceCreated with default headers values
@@ -33,13 +35,13 @@ func NewServiceCreated() *ServiceCreated {
 }
 
 // WithPayload adds the payload to the service created response
-func (o *ServiceCreated) WithPayload(payload *ServiceCreatedBody) *ServiceCreated {
+func (o *ServiceCreated) WithPayload(payload *models.ChannelInfo) *ServiceCreated {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the service created response
-func (o *ServiceCreated) SetPayload(payload *ServiceCreatedBody) {
+func (o *ServiceCreated) SetPayload(payload *models.ChannelInfo) {
 	o.Payload = payload
 }
 
@@ -65,7 +67,7 @@ type ServiceDefault struct {
 	/*
 	  In: Body
 	*/
-	Payload *ServiceDefaultBody `json:"body,omitempty"`
+	Payload *models.Error `json:"body,omitempty"`
 }
 
 // NewServiceDefault creates ServiceDefault with default headers values
@@ -91,13 +93,13 @@ func (o *ServiceDefault) SetStatusCode(code int) {
 }
 
 // WithPayload adds the payload to the service default response
-func (o *ServiceDefault) WithPayload(payload *ServiceDefaultBody) *ServiceDefault {
+func (o *ServiceDefault) WithPayload(payload *models.Error) *ServiceDefault {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the service default response
-func (o *ServiceDefault) SetPayload(payload *ServiceDefaultBody) {
+func (o *ServiceDefault) SetPayload(payload *models.Error) {
 	o.Payload = payload
 }
 

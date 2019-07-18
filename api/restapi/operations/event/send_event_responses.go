@@ -9,6 +9,8 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/runtime"
+
+	models "github.com/keptn/keptn/api/models"
 )
 
 // SendEventCreatedCode is the HTTP code returned for type SendEventCreated
@@ -23,7 +25,7 @@ type SendEventCreated struct {
 	/*
 	  In: Body
 	*/
-	Payload *SendEventCreatedBody `json:"body,omitempty"`
+	Payload *models.ChannelInfo `json:"body,omitempty"`
 }
 
 // NewSendEventCreated creates SendEventCreated with default headers values
@@ -33,13 +35,13 @@ func NewSendEventCreated() *SendEventCreated {
 }
 
 // WithPayload adds the payload to the send event created response
-func (o *SendEventCreated) WithPayload(payload *SendEventCreatedBody) *SendEventCreated {
+func (o *SendEventCreated) WithPayload(payload *models.ChannelInfo) *SendEventCreated {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the send event created response
-func (o *SendEventCreated) SetPayload(payload *SendEventCreatedBody) {
+func (o *SendEventCreated) SetPayload(payload *models.ChannelInfo) {
 	o.Payload = payload
 }
 
@@ -65,7 +67,7 @@ type SendEventDefault struct {
 	/*
 	  In: Body
 	*/
-	Payload *SendEventDefaultBody `json:"body,omitempty"`
+	Payload *models.Error `json:"body,omitempty"`
 }
 
 // NewSendEventDefault creates SendEventDefault with default headers values
@@ -91,13 +93,13 @@ func (o *SendEventDefault) SetStatusCode(code int) {
 }
 
 // WithPayload adds the payload to the send event default response
-func (o *SendEventDefault) WithPayload(payload *SendEventDefaultBody) *SendEventDefault {
+func (o *SendEventDefault) WithPayload(payload *models.Error) *SendEventDefault {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the send event default response
-func (o *SendEventDefault) SetPayload(payload *SendEventDefaultBody) {
+func (o *SendEventDefault) SetPayload(payload *models.Error) {
 	o.Payload = payload
 }
 
