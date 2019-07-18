@@ -1,6 +1,7 @@
 package ws
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -31,8 +32,13 @@ func TestServiceRegistering(t *testing.T) {
 	hub = NewHub()
 	go hub.Run()
 
+	http.DefaultServeMux = http.NewServeMux()
+	srv := &http.Server{Addr: ":80"}
 	http.HandleFunc("/", handler)
-	go http.ListenAndServe(":80", nil)
+
+	go func() {
+		srv.ListenAndServe()
+	}()
 
 	u := url.URL{Scheme: "ws", Host: "localhost", Path: "/"}
 	log.Printf("connecting to %s", u.String())
@@ -57,6 +63,9 @@ func TestServiceRegistering(t *testing.T) {
 		waitCount++
 	}
 	assert.Equal(t, len(hub.clients), 0, "Client not unregistered")
+
+	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+	srv.Shutdown(ctx)
 }
 
 func TestCLIRegistering(t *testing.T) {
@@ -64,9 +73,13 @@ func TestCLIRegistering(t *testing.T) {
 	hub = NewHub()
 	go hub.Run()
 
+	http.DefaultServeMux = http.NewServeMux()
+	srv := &http.Server{Addr: ":80"}
 	http.HandleFunc("/", handler)
 
-	go http.ListenAndServe(":80", nil)
+	go func() {
+		srv.ListenAndServe()
+	}()
 
 	u := url.URL{Scheme: "ws", Host: "localhost", Path: "/"}
 	log.Printf("connecting to %s", u.String())
@@ -95,6 +108,9 @@ func TestCLIRegistering(t *testing.T) {
 		waitCount++
 	}
 	assert.Equal(t, len(hub.cliClients), 0, "CLI Client not unregistered")
+
+	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+	srv.Shutdown(ctx)
 }
 
 func TestSendMessage(t *testing.T) {
@@ -102,9 +118,13 @@ func TestSendMessage(t *testing.T) {
 	hub = NewHub()
 	go hub.Run()
 
+	http.DefaultServeMux = http.NewServeMux()
+	srv := &http.Server{Addr: ":80"}
 	http.HandleFunc("/", handler)
 
-	go http.ListenAndServe(":80", nil)
+	go func() {
+		srv.ListenAndServe()
+	}()
 
 	u := url.URL{Scheme: "ws", Host: "localhost", Path: "/"}
 	log.Printf("connecting to %s", u.String())
@@ -148,6 +168,9 @@ func TestSendMessage(t *testing.T) {
 	// Close clients
 	serviceClient.Close()
 	<-done
+
+	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+	srv.Shutdown(ctx)
 }
 
 func TestBuffering(t *testing.T) {
@@ -155,9 +178,13 @@ func TestBuffering(t *testing.T) {
 	hub = NewHub()
 	go hub.Run()
 
+	http.DefaultServeMux = http.NewServeMux()
+	srv := &http.Server{Addr: ":80"}
 	http.HandleFunc("/", handler)
 
-	go http.ListenAndServe(":80", nil)
+	go func() {
+		srv.ListenAndServe()
+	}()
 
 	u := url.URL{Scheme: "ws", Host: "localhost", Path: "/"}
 	log.Printf("connecting to %s", u.String())
@@ -200,11 +227,14 @@ func TestBuffering(t *testing.T) {
 	}()
 
 	<-done
+
+	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+	srv.Shutdown(ctx)
 }
 
 func TestPositiveVerification(t *testing.T) {
 
-	os.Setenv("keptn-api-token", "test-token")
+	os.Setenv("SECRET_TOKEN", "test-token")
 
 	keptnContext := uuid.New().String()
 	token, err := CreateChannelInfo(keptnContext)
@@ -220,7 +250,7 @@ func TestPositiveVerification(t *testing.T) {
 
 func TestNegativeVerification(t *testing.T) {
 
-	os.Setenv("keptn-api-token", "test-token")
+	os.Setenv("SECRET_TOKEN", "test-token")
 
 	var header http.Header
 	header = make(http.Header)
