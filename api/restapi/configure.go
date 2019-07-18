@@ -4,6 +4,8 @@ package restapi
 
 import (
 	"crypto/tls"
+	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -18,7 +20,7 @@ import (
 	"github.com/keptn/keptn/api/restapi/operations/configure"
 	"github.com/keptn/keptn/api/utils"
 
-	errors "github.com/go-openapi/errors"
+	openapierrors "github.com/go-openapi/errors"
 	runtime "github.com/go-openapi/runtime"
 	middleware "github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
@@ -40,9 +42,25 @@ func configureFlags(api *operations.API) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
 }
 
+func getSendEventInternalError(err error) *event.SendEventDefault {
+	return event.NewSendEventDefault(500).WithPayload(&event.SendEventDefaultBody{Code: 500, Message: swag.String(err.Error())})
+}
+
+func getConfigureInternalError(err error) *configure.ConfigureDefault {
+	return configure.NewConfigureDefault(500).WithPayload(&configure.ConfigureDefaultBody{Code: 500, Message: swag.String(err.Error())})
+}
+
+func getProjectInternalError(err error) *project.ProjectDefault {
+	return project.NewProjectDefault(500).WithPayload(&project.ProjectDefaultBody{Code: 500, Message: swag.String(err.Error())})
+}
+
+func getDynatraceInternalError(err error) *dynatrace.DynatraceDefault {
+	return dynatrace.NewDynatraceDefault(500).WithPayload(&dynatrace.DynatraceDefaultBody{Code: 500, Message: swag.String(err.Error())})
+}
+
 func configureAPI(api *operations.API) http.Handler {
 	// configure the api here
-	api.ServeError = errors.ServeError
+	api.ServeError = openapierrors.ServeError
 
 	// Set your custom logger if needed. Default one is log.Printf
 	// Expected interface func(string, ...interface{})
@@ -61,7 +79,7 @@ func configureAPI(api *operations.API) http.Handler {
 			return &prin, nil
 		}
 		api.Logger("Access attempt with incorrect api key auth: %s", token)
-		return nil, errors.New(401, "incorrect api key auth")
+		return nil, openapierrors.New(401, "incorrect api key auth")
 	}
 
 	// Set your custom authorizer if needed. Default one is security.Authorized()
@@ -80,23 +98,32 @@ func configureAPI(api *operations.API) http.Handler {
 		}
 		keptnutils.Info(*params.Body.Shkeptncontext, "API received keptn event")
 
-		if err := utils.PostToEventBroker(params.Body, *params.Body.Shkeptncontext); err != nil {
-			return event.NewSendEventDefault(500).WithPayload(&event.SendEventDefaultBody{Code: 500, Message: swag.String(err.Error())})
-		}
 		token, err := ws.CreateChannelInfo(*params.Body.Shkeptncontext)
 		if err != nil {
-			return event.NewSendEventDefault(500).WithPayload(&event.SendEventDefaultBody{Code: 500, Message: swag.String(err.Error())})
+			return getSendEventInternalError(err)
+		}
+		channelInfo := getChannelInfo(params.Body.Shkeptncontext, &token)
+		bodyData, err := params.Body.MarshalJSON()
+		if err != nil {
+			return getSendEventInternalError(err)
+		}
+		forwardEvent, err := addChannelInfoInCE(bodyData, channelInfo)
+		if err != nil {
+			return getSendEventInternalError(err)
 		}
 
-		channelInfo := getChannelInfo(params.Body.Shkeptncontext, &token)
+		if err := utils.PostToEventBroker(forwardEvent, *params.Body.Shkeptncontext); err != nil {
+			return getSendEventInternalError(err)
+		}
+
 		data, err := channelInfo.MarshalJSON()
 		if err != nil {
-			return event.NewSendEventDefault(500).WithPayload(&event.SendEventDefaultBody{Code: 500, Message: swag.String("Marshalling error")})
+			return getSendEventInternalError(err)
 		}
 		resp := event.SendEventCreatedBody{}
 		err = resp.UnmarshalJSON(data)
 		if err != nil {
-			return event.NewSendEventDefault(500).WithPayload(&event.SendEventDefaultBody{Code: 500, Message: swag.String("Marshalling error")})
+			return getSendEventInternalError(err)
 		}
 		return event.NewSendEventCreated().WithPayload(&resp)
 	})
@@ -107,23 +134,31 @@ func configureAPI(api *operations.API) http.Handler {
 		}
 		keptnutils.Info(params.Body.Shkeptncontext, "API received configure event")
 
-		if err := utils.PostToEventBroker(params.Body, params.Body.Shkeptncontext); err != nil {
-			return configure.NewConfigureDefault(500).WithPayload(&configure.ConfigureDefaultBody{Code: 500, Message: swag.String(err.Error())})
-		}
 		token, err := ws.CreateChannelInfo(params.Body.Shkeptncontext)
 		if err != nil {
-			return configure.NewConfigureDefault(500).WithPayload(&configure.ConfigureDefaultBody{Code: 500, Message: swag.String(err.Error())})
+			return getConfigureInternalError(err)
+		}
+		channelInfo := getChannelInfo(&params.Body.Shkeptncontext, &token)
+		bodyData, err := params.Body.MarshalJSON()
+		if err != nil {
+			return getConfigureInternalError(err)
+		}
+		forwardEvent, err := addChannelInfoInCE(bodyData, channelInfo)
+		if err != nil {
+			return getConfigureInternalError(err)
 		}
 
-		channelInfo := getChannelInfo(&params.Body.Shkeptncontext, &token)
+		if err := utils.PostToEventBroker(forwardEvent, params.Body.Shkeptncontext); err != nil {
+			return getConfigureInternalError(err)
+		}
 		data, err := channelInfo.MarshalJSON()
 		if err != nil {
-			return event.NewSendEventDefault(500).WithPayload(&event.SendEventDefaultBody{Code: 500, Message: swag.String("Marshalling error")})
+			return getConfigureInternalError(err)
 		}
 		resp := configure.ConfigureCreatedBody{}
 		err = resp.UnmarshalJSON(data)
 		if err != nil {
-			return event.NewSendEventDefault(500).WithPayload(&event.SendEventDefaultBody{Code: 500, Message: swag.String("Marshalling error")})
+			return getConfigureInternalError(err)
 		}
 
 		return configure.NewConfigureCreated().WithPayload(&resp)
@@ -135,23 +170,31 @@ func configureAPI(api *operations.API) http.Handler {
 		}
 		keptnutils.Info(params.Body.Shkeptncontext, "API received project event")
 
-		if err := utils.PostToEventBroker(params.Body, params.Body.Shkeptncontext); err != nil {
-			return project.NewProjectDefault(500).WithPayload(&project.ProjectDefaultBody{Code: 500, Message: swag.String(err.Error())})
-		}
 		token, err := ws.CreateChannelInfo(params.Body.Shkeptncontext)
 		if err != nil {
-			return project.NewProjectDefault(500).WithPayload(&project.ProjectDefaultBody{Code: 500, Message: swag.String(err.Error())})
+			return getProjectInternalError(err)
+		}
+		channelInfo := getChannelInfo(&params.Body.Shkeptncontext, &token)
+		bodyData, err := params.Body.MarshalJSON()
+		if err != nil {
+			return getProjectInternalError(err)
+		}
+		forwardEvent, err := addChannelInfoInCE(bodyData, channelInfo)
+		if err != nil {
+			return getProjectInternalError(err)
 		}
 
-		channelInfo := getChannelInfo(&params.Body.Shkeptncontext, &token)
+		if err := utils.PostToEventBroker(forwardEvent, params.Body.Shkeptncontext); err != nil {
+			return getProjectInternalError(err)
+		}
 		data, err := channelInfo.MarshalJSON()
 		if err != nil {
-			return event.NewSendEventDefault(500).WithPayload(&event.SendEventDefaultBody{Code: 500, Message: swag.String("Marshalling error")})
+			return getProjectInternalError(err)
 		}
 		resp := project.ProjectCreatedBody{}
 		err = resp.UnmarshalJSON(data)
 		if err != nil {
-			return event.NewSendEventDefault(500).WithPayload(&event.SendEventDefaultBody{Code: 500, Message: swag.String("Marshalling error")})
+			return getProjectInternalError(err)
 		}
 
 		return project.NewProjectCreated().WithPayload(&resp)
@@ -164,7 +207,7 @@ func configureAPI(api *operations.API) http.Handler {
 		keptnutils.Info(params.Body.Shkeptncontext, "API received Dynatrace event")
 
 		if err := utils.PostToEventBroker(params.Body, params.Body.Shkeptncontext); err != nil {
-			return dynatrace.NewDynatraceDefault(500).WithPayload(&dynatrace.DynatraceDefaultBody{Code: 500, Message: swag.String(err.Error())})
+			return getDynatraceInternalError(err)
 		}
 		return dynatrace.NewDynatraceCreated()
 	})
@@ -172,6 +215,18 @@ func configureAPI(api *operations.API) http.Handler {
 	api.ServerShutdown = func() {}
 
 	return setupGlobalMiddleware(api.Serve(setupMiddlewares))
+}
+
+func addChannelInfoInCE(ceData []byte, channelInfo models.ChannelInfo) (interface{}, error) {
+
+	var ce interface{}
+	fmt.Println(string(ceData))
+	err := json.Unmarshal(ceData, &ce)
+	if err != nil {
+		return nil, err
+	}
+	ce.(map[string]interface{})["data"].(map[string]interface{})["channelInfo"] = channelInfo.Data.ChannelInfo
+	return ce, nil
 }
 
 func getChannelInfo(channelID *string, token *string) models.ChannelInfo {
