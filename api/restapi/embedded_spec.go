@@ -46,7 +46,7 @@ func init() {
             "name": "body",
             "in": "body",
             "schema": {
-              "$ref": "https://raw.githubusercontent.com/cloudevents/spec/v0.2/spec.json#/definitions/event"
+              "$ref": "#/definitions/CE"
             }
           }
         ],
@@ -130,7 +130,7 @@ func init() {
             "name": "body",
             "in": "body",
             "schema": {
-              "$ref": "#/definitions/KeptnContextExtendedCE"
+              "$ref": "#/definitions/CE_with_keptncontext"
             }
           }
         ],
@@ -194,7 +194,7 @@ func init() {
             "name": "body",
             "in": "body",
             "schema": {
-              "$ref": "#/definitions/KeptnContextExtendedCE"
+              "$ref": "#/definitions/CE_with_keptncontext"
             }
           }
         ],
@@ -216,10 +216,92 @@ func init() {
     }
   },
   "definitions": {
+    "CE": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/CE_without_data"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "data": {
+              "type": [
+                "object",
+                "string"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "CE_with_keptncontext": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/CE"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "shkeptncontext": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "CE_without_data": {
+      "type": "object",
+      "required": [
+        "specversion",
+        "id",
+        "type",
+        "source"
+      ],
+      "properties": {
+        "contenttype": {
+          "type": "string"
+        },
+        "extensions": {
+          "type": "object"
+        },
+        "id": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string",
+          "format": "uri-reference"
+        },
+        "specversion": {
+          "type": "string"
+        },
+        "time": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "type": {
+          "type": "string"
+        }
+      }
+    },
+    "CE_without_data_with_keptncontext": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/CE_without_data"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "shkeptncontext": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
     "ChannelInfo": {
       "allOf": [
         {
-          "$ref": "ce_v0_2_without_data.json#/definitions/event"
+          "$ref": "#/definitions/CE_without_data_with_keptncontext"
         },
         {
           "type": "object",
@@ -249,7 +331,7 @@ func init() {
     "ConfigureCE": {
       "allOf": [
         {
-          "$ref": "ce_v0_2_without_data.json#/definitions/event"
+          "$ref": "#/definitions/CE_without_data_with_keptncontext"
         },
         {
           "type": "object",
@@ -279,7 +361,7 @@ func init() {
     "CreateProjectCE": {
       "allOf": [
         {
-          "$ref": "ce_v0_2_without_data.json#/definitions/event"
+          "$ref": "#/definitions/CE_without_data_with_keptncontext"
         },
         {
           "type": "object",
@@ -322,7 +404,7 @@ func init() {
     "DynatraceProblemCE": {
       "allOf": [
         {
-          "$ref": "ce_v0_2_without_data.json#/definitions/event"
+          "$ref": "#/definitions/CE_without_data_with_keptncontext"
         },
         {
           "type": "object",
@@ -385,24 +467,6 @@ func init() {
                   "type": "string"
                 }
               }
-            }
-          }
-        }
-      ]
-    },
-    "KeptnContextExtendedCE": {
-      "allOf": [
-        {
-          "$ref": "https://raw.githubusercontent.com/cloudevents/spec/v0.2/spec.json#/definitions/event"
-        },
-        {
-          "type": "object",
-          "required": [
-            "shkeptncontext"
-          ],
-          "properties": {
-            "shkeptncontext": {
-              "type": "string"
             }
           }
         }
@@ -469,44 +533,7 @@ func init() {
             "name": "body",
             "in": "body",
             "schema": {
-              "type": "object",
-              "required": [
-                "specversion",
-                "id",
-                "type",
-                "source"
-              ],
-              "properties": {
-                "contenttype": {
-                  "type": "string"
-                },
-                "data": {
-                  "type": [
-                    "object",
-                    "string"
-                  ]
-                },
-                "extensions": {
-                  "type": "object"
-                },
-                "id": {
-                  "type": "string"
-                },
-                "source": {
-                  "type": "string",
-                  "format": "uri-reference"
-                },
-                "specversion": {
-                  "type": "string"
-                },
-                "time": {
-                  "type": "string",
-                  "format": "date-time"
-                },
-                "type": {
-                  "type": "string"
-                }
-              }
+              "$ref": "#/definitions/CE"
             }
           }
         ],
@@ -529,68 +556,7 @@ func init() {
             "name": "body",
             "in": "body",
             "schema": {
-              "allOf": [
-                {
-                  "type": "object",
-                  "required": [
-                    "specversion",
-                    "id",
-                    "type",
-                    "source"
-                  ],
-                  "properties": {
-                    "contenttype": {
-                      "type": "string"
-                    },
-                    "extensions": {
-                      "type": "object"
-                    },
-                    "id": {
-                      "type": "string"
-                    },
-                    "shkeptncontext": {
-                      "type": "string"
-                    },
-                    "source": {
-                      "type": "string",
-                      "format": "uri-reference"
-                    },
-                    "specversion": {
-                      "type": "string"
-                    },
-                    "time": {
-                      "type": "string",
-                      "format": "date-time"
-                    },
-                    "type": {
-                      "type": "string"
-                    }
-                  }
-                },
-                {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "required": [
-                        "org",
-                        "user",
-                        "token"
-                      ],
-                      "properties": {
-                        "org": {
-                          "type": "string"
-                        },
-                        "token": {
-                          "type": "string"
-                        },
-                        "user": {
-                          "type": "string"
-                        }
-                      }
-                    }
-                  }
-                }
-              ]
+              "$ref": "#/definitions/ConfigureCE"
             }
           }
         ],
@@ -598,89 +564,13 @@ func init() {
           "201": {
             "description": "configured",
             "schema": {
-              "allOf": [
-                {
-                  "type": "object",
-                  "required": [
-                    "specversion",
-                    "id",
-                    "type",
-                    "source"
-                  ],
-                  "properties": {
-                    "contenttype": {
-                      "type": "string"
-                    },
-                    "extensions": {
-                      "type": "object"
-                    },
-                    "id": {
-                      "type": "string"
-                    },
-                    "shkeptncontext": {
-                      "type": "string"
-                    },
-                    "source": {
-                      "type": "string",
-                      "format": "uri-reference"
-                    },
-                    "specversion": {
-                      "type": "string"
-                    },
-                    "time": {
-                      "type": "string",
-                      "format": "date-time"
-                    },
-                    "type": {
-                      "type": "string"
-                    }
-                  }
-                },
-                {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "properties": {
-                        "channelInfo": {
-                          "required": [
-                            "token",
-                            "channelID"
-                          ],
-                          "properties": {
-                            "channelID": {
-                              "type": "string"
-                            },
-                            "token": {
-                              "type": "string"
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              ]
+              "$ref": "#/definitions/ChannelInfo"
             }
           },
           "default": {
             "description": "error",
             "schema": {
-              "type": "object",
-              "required": [
-                "message"
-              ],
-              "properties": {
-                "code": {
-                  "type": "integer",
-                  "format": "int64"
-                },
-                "fields": {
-                  "type": "string"
-                },
-                "message": {
-                  "type": "string"
-                }
-              }
+              "$ref": "#/definitions/error"
             }
           }
         }
@@ -698,109 +588,7 @@ func init() {
             "name": "body",
             "in": "body",
             "schema": {
-              "allOf": [
-                {
-                  "type": "object",
-                  "required": [
-                    "specversion",
-                    "id",
-                    "type",
-                    "source"
-                  ],
-                  "properties": {
-                    "contenttype": {
-                      "type": "string"
-                    },
-                    "extensions": {
-                      "type": "object"
-                    },
-                    "id": {
-                      "type": "string"
-                    },
-                    "shkeptncontext": {
-                      "type": "string"
-                    },
-                    "source": {
-                      "type": "string",
-                      "format": "uri-reference"
-                    },
-                    "specversion": {
-                      "type": "string"
-                    },
-                    "time": {
-                      "type": "string",
-                      "format": "date-time"
-                    },
-                    "type": {
-                      "type": "string"
-                    }
-                  }
-                },
-                {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "required": [
-                        "state",
-                        "problemid",
-                        "pid",
-                        "problemtitle",
-                        "problemdetails",
-                        "impactedentities",
-                        "impactedentity"
-                      ],
-                      "properties": {
-                        "impactedentities": {
-                          "type": "array",
-                          "items": {
-                            "required": [
-                              "type",
-                              "name",
-                              "entity"
-                            ],
-                            "properties": {
-                              "entity": {
-                                "type": "string"
-                              },
-                              "name": {
-                                "type": "string"
-                              },
-                              "type": {
-                                "type": "string"
-                              }
-                            }
-                          }
-                        },
-                        "impactedentity": {
-                          "type": "string"
-                        },
-                        "pid": {
-                          "type": "string"
-                        },
-                        "problemdetails": {
-                          "required": [
-                            "id"
-                          ],
-                          "properties": {
-                            "id": {
-                              "type": "string"
-                            }
-                          }
-                        },
-                        "problemid": {
-                          "type": "string"
-                        },
-                        "problemtitle": {
-                          "type": "string"
-                        },
-                        "state": {
-                          "type": "string"
-                        }
-                      }
-                    }
-                  }
-                }
-              ]
+              "$ref": "#/definitions/DynatraceProblemCE"
             }
           }
         ],
@@ -811,22 +599,7 @@ func init() {
           "default": {
             "description": "error",
             "schema": {
-              "type": "object",
-              "required": [
-                "message"
-              ],
-              "properties": {
-                "code": {
-                  "type": "integer",
-                  "format": "int64"
-                },
-                "fields": {
-                  "type": "string"
-                },
-                "message": {
-                  "type": "string"
-                }
-              }
+              "$ref": "#/definitions/error"
             }
           }
         }
@@ -844,59 +617,7 @@ func init() {
             "name": "body",
             "in": "body",
             "schema": {
-              "allOf": [
-                {
-                  "type": "object",
-                  "required": [
-                    "specversion",
-                    "id",
-                    "type",
-                    "source"
-                  ],
-                  "properties": {
-                    "contenttype": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "type": [
-                        "object",
-                        "string"
-                      ]
-                    },
-                    "extensions": {
-                      "type": "object"
-                    },
-                    "id": {
-                      "type": "string"
-                    },
-                    "source": {
-                      "type": "string",
-                      "format": "uri-reference"
-                    },
-                    "specversion": {
-                      "type": "string"
-                    },
-                    "time": {
-                      "type": "string",
-                      "format": "date-time"
-                    },
-                    "type": {
-                      "type": "string"
-                    }
-                  }
-                },
-                {
-                  "type": "object",
-                  "required": [
-                    "shkeptncontext"
-                  ],
-                  "properties": {
-                    "shkeptncontext": {
-                      "type": "string"
-                    }
-                  }
-                }
-              ]
+              "$ref": "#/definitions/CE_with_keptncontext"
             }
           }
         ],
@@ -904,89 +625,13 @@ func init() {
           "201": {
             "description": "forwarded",
             "schema": {
-              "allOf": [
-                {
-                  "type": "object",
-                  "required": [
-                    "specversion",
-                    "id",
-                    "type",
-                    "source"
-                  ],
-                  "properties": {
-                    "contenttype": {
-                      "type": "string"
-                    },
-                    "extensions": {
-                      "type": "object"
-                    },
-                    "id": {
-                      "type": "string"
-                    },
-                    "shkeptncontext": {
-                      "type": "string"
-                    },
-                    "source": {
-                      "type": "string",
-                      "format": "uri-reference"
-                    },
-                    "specversion": {
-                      "type": "string"
-                    },
-                    "time": {
-                      "type": "string",
-                      "format": "date-time"
-                    },
-                    "type": {
-                      "type": "string"
-                    }
-                  }
-                },
-                {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "properties": {
-                        "channelInfo": {
-                          "required": [
-                            "token",
-                            "channelID"
-                          ],
-                          "properties": {
-                            "channelID": {
-                              "type": "string"
-                            },
-                            "token": {
-                              "type": "string"
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              ]
+              "$ref": "#/definitions/ChannelInfo"
             }
           },
           "default": {
             "description": "error",
             "schema": {
-              "type": "object",
-              "required": [
-                "message"
-              ],
-              "properties": {
-                "code": {
-                  "type": "integer",
-                  "format": "int64"
-                },
-                "fields": {
-                  "type": "string"
-                },
-                "message": {
-                  "type": "string"
-                }
-              }
+              "$ref": "#/definitions/error"
             }
           }
         }
@@ -1004,81 +649,7 @@ func init() {
             "name": "body",
             "in": "body",
             "schema": {
-              "allOf": [
-                {
-                  "type": "object",
-                  "required": [
-                    "specversion",
-                    "id",
-                    "type",
-                    "source"
-                  ],
-                  "properties": {
-                    "contenttype": {
-                      "type": "string"
-                    },
-                    "extensions": {
-                      "type": "object"
-                    },
-                    "id": {
-                      "type": "string"
-                    },
-                    "shkeptncontext": {
-                      "type": "string"
-                    },
-                    "source": {
-                      "type": "string",
-                      "format": "uri-reference"
-                    },
-                    "specversion": {
-                      "type": "string"
-                    },
-                    "time": {
-                      "type": "string",
-                      "format": "date-time"
-                    },
-                    "type": {
-                      "type": "string"
-                    }
-                  }
-                },
-                {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "required": [
-                        "project",
-                        "stages"
-                      ],
-                      "properties": {
-                        "project": {
-                          "type": "string"
-                        },
-                        "stages": {
-                          "type": "array",
-                          "items": {
-                            "required": [
-                              "name",
-                              "deployment_strategy"
-                            ],
-                            "properties": {
-                              "deployment_strategy": {
-                                "type": "string"
-                              },
-                              "name": {
-                                "type": "string"
-                              },
-                              "test_strategy": {
-                                "type": "string"
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              ]
+              "$ref": "#/definitions/CreateProjectCE"
             }
           }
         ],
@@ -1086,89 +657,13 @@ func init() {
           "201": {
             "description": "project created",
             "schema": {
-              "allOf": [
-                {
-                  "type": "object",
-                  "required": [
-                    "specversion",
-                    "id",
-                    "type",
-                    "source"
-                  ],
-                  "properties": {
-                    "contenttype": {
-                      "type": "string"
-                    },
-                    "extensions": {
-                      "type": "object"
-                    },
-                    "id": {
-                      "type": "string"
-                    },
-                    "shkeptncontext": {
-                      "type": "string"
-                    },
-                    "source": {
-                      "type": "string",
-                      "format": "uri-reference"
-                    },
-                    "specversion": {
-                      "type": "string"
-                    },
-                    "time": {
-                      "type": "string",
-                      "format": "date-time"
-                    },
-                    "type": {
-                      "type": "string"
-                    }
-                  }
-                },
-                {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "properties": {
-                        "channelInfo": {
-                          "required": [
-                            "token",
-                            "channelID"
-                          ],
-                          "properties": {
-                            "channelID": {
-                              "type": "string"
-                            },
-                            "token": {
-                              "type": "string"
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              ]
+              "$ref": "#/definitions/ChannelInfo"
             }
           },
           "default": {
             "description": "error",
             "schema": {
-              "type": "object",
-              "required": [
-                "message"
-              ],
-              "properties": {
-                "code": {
-                  "type": "integer",
-                  "format": "int64"
-                },
-                "fields": {
-                  "type": "string"
-                },
-                "message": {
-                  "type": "string"
-                }
-              }
+              "$ref": "#/definitions/error"
             }
           }
         }
@@ -1186,59 +681,7 @@ func init() {
             "name": "body",
             "in": "body",
             "schema": {
-              "allOf": [
-                {
-                  "type": "object",
-                  "required": [
-                    "specversion",
-                    "id",
-                    "type",
-                    "source"
-                  ],
-                  "properties": {
-                    "contenttype": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "type": [
-                        "object",
-                        "string"
-                      ]
-                    },
-                    "extensions": {
-                      "type": "object"
-                    },
-                    "id": {
-                      "type": "string"
-                    },
-                    "source": {
-                      "type": "string",
-                      "format": "uri-reference"
-                    },
-                    "specversion": {
-                      "type": "string"
-                    },
-                    "time": {
-                      "type": "string",
-                      "format": "date-time"
-                    },
-                    "type": {
-                      "type": "string"
-                    }
-                  }
-                },
-                {
-                  "type": "object",
-                  "required": [
-                    "shkeptncontext"
-                  ],
-                  "properties": {
-                    "shkeptncontext": {
-                      "type": "string"
-                    }
-                  }
-                }
-              ]
+              "$ref": "#/definitions/CE_with_keptncontext"
             }
           }
         ],
@@ -1246,89 +689,13 @@ func init() {
           "201": {
             "description": "service onboarded",
             "schema": {
-              "allOf": [
-                {
-                  "type": "object",
-                  "required": [
-                    "specversion",
-                    "id",
-                    "type",
-                    "source"
-                  ],
-                  "properties": {
-                    "contenttype": {
-                      "type": "string"
-                    },
-                    "extensions": {
-                      "type": "object"
-                    },
-                    "id": {
-                      "type": "string"
-                    },
-                    "shkeptncontext": {
-                      "type": "string"
-                    },
-                    "source": {
-                      "type": "string",
-                      "format": "uri-reference"
-                    },
-                    "specversion": {
-                      "type": "string"
-                    },
-                    "time": {
-                      "type": "string",
-                      "format": "date-time"
-                    },
-                    "type": {
-                      "type": "string"
-                    }
-                  }
-                },
-                {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "properties": {
-                        "channelInfo": {
-                          "required": [
-                            "token",
-                            "channelID"
-                          ],
-                          "properties": {
-                            "channelID": {
-                              "type": "string"
-                            },
-                            "token": {
-                              "type": "string"
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              ]
+              "$ref": "#/definitions/ChannelInfo"
             }
           },
           "default": {
             "description": "error",
             "schema": {
-              "type": "object",
-              "required": [
-                "message"
-              ],
-              "properties": {
-                "code": {
-                  "type": "integer",
-                  "format": "int64"
-                },
-                "fields": {
-                  "type": "string"
-                },
-                "message": {
-                  "type": "string"
-                }
-              }
+              "$ref": "#/definitions/error"
             }
           }
         }
@@ -1336,44 +703,92 @@ func init() {
     }
   },
   "definitions": {
-    "ChannelInfo": {
+    "CE": {
       "allOf": [
         {
+          "$ref": "#/definitions/CE_without_data"
+        },
+        {
           "type": "object",
-          "required": [
-            "specversion",
-            "id",
-            "type",
-            "source"
-          ],
           "properties": {
-            "contenttype": {
-              "type": "string"
-            },
-            "extensions": {
-              "type": "object"
-            },
-            "id": {
-              "type": "string"
-            },
+            "data": {
+              "type": [
+                "object",
+                "string"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "CE_with_keptncontext": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/CE"
+        },
+        {
+          "type": "object",
+          "properties": {
             "shkeptncontext": {
-              "type": "string"
-            },
-            "source": {
-              "type": "string",
-              "format": "uri-reference"
-            },
-            "specversion": {
-              "type": "string"
-            },
-            "time": {
-              "type": "string",
-              "format": "date-time"
-            },
-            "type": {
               "type": "string"
             }
           }
+        }
+      ]
+    },
+    "CE_without_data": {
+      "type": "object",
+      "required": [
+        "specversion",
+        "id",
+        "type",
+        "source"
+      ],
+      "properties": {
+        "contenttype": {
+          "type": "string"
+        },
+        "extensions": {
+          "type": "object"
+        },
+        "id": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string",
+          "format": "uri-reference"
+        },
+        "specversion": {
+          "type": "string"
+        },
+        "time": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "type": {
+          "type": "string"
+        }
+      }
+    },
+    "CE_without_data_with_keptncontext": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/CE_without_data"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "shkeptncontext": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "ChannelInfo": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/CE_without_data_with_keptncontext"
         },
         {
           "type": "object",
@@ -1403,41 +818,7 @@ func init() {
     "ConfigureCE": {
       "allOf": [
         {
-          "type": "object",
-          "required": [
-            "specversion",
-            "id",
-            "type",
-            "source"
-          ],
-          "properties": {
-            "contenttype": {
-              "type": "string"
-            },
-            "extensions": {
-              "type": "object"
-            },
-            "id": {
-              "type": "string"
-            },
-            "shkeptncontext": {
-              "type": "string"
-            },
-            "source": {
-              "type": "string",
-              "format": "uri-reference"
-            },
-            "specversion": {
-              "type": "string"
-            },
-            "time": {
-              "type": "string",
-              "format": "date-time"
-            },
-            "type": {
-              "type": "string"
-            }
-          }
+          "$ref": "#/definitions/CE_without_data_with_keptncontext"
         },
         {
           "type": "object",
@@ -1467,41 +848,7 @@ func init() {
     "CreateProjectCE": {
       "allOf": [
         {
-          "type": "object",
-          "required": [
-            "specversion",
-            "id",
-            "type",
-            "source"
-          ],
-          "properties": {
-            "contenttype": {
-              "type": "string"
-            },
-            "extensions": {
-              "type": "object"
-            },
-            "id": {
-              "type": "string"
-            },
-            "shkeptncontext": {
-              "type": "string"
-            },
-            "source": {
-              "type": "string",
-              "format": "uri-reference"
-            },
-            "specversion": {
-              "type": "string"
-            },
-            "time": {
-              "type": "string",
-              "format": "date-time"
-            },
-            "type": {
-              "type": "string"
-            }
-          }
+          "$ref": "#/definitions/CE_without_data_with_keptncontext"
         },
         {
           "type": "object",
@@ -1544,41 +891,7 @@ func init() {
     "DynatraceProblemCE": {
       "allOf": [
         {
-          "type": "object",
-          "required": [
-            "specversion",
-            "id",
-            "type",
-            "source"
-          ],
-          "properties": {
-            "contenttype": {
-              "type": "string"
-            },
-            "extensions": {
-              "type": "object"
-            },
-            "id": {
-              "type": "string"
-            },
-            "shkeptncontext": {
-              "type": "string"
-            },
-            "source": {
-              "type": "string",
-              "format": "uri-reference"
-            },
-            "specversion": {
-              "type": "string"
-            },
-            "time": {
-              "type": "string",
-              "format": "date-time"
-            },
-            "type": {
-              "type": "string"
-            }
-          }
+          "$ref": "#/definitions/CE_without_data_with_keptncontext"
         },
         {
           "type": "object",
@@ -1641,61 +954,6 @@ func init() {
                   "type": "string"
                 }
               }
-            }
-          }
-        }
-      ]
-    },
-    "KeptnContextExtendedCE": {
-      "allOf": [
-        {
-          "type": "object",
-          "required": [
-            "specversion",
-            "id",
-            "type",
-            "source"
-          ],
-          "properties": {
-            "contenttype": {
-              "type": "string"
-            },
-            "data": {
-              "type": [
-                "object",
-                "string"
-              ]
-            },
-            "extensions": {
-              "type": "object"
-            },
-            "id": {
-              "type": "string"
-            },
-            "source": {
-              "type": "string",
-              "format": "uri-reference"
-            },
-            "specversion": {
-              "type": "string"
-            },
-            "time": {
-              "type": "string",
-              "format": "date-time"
-            },
-            "type": {
-              "type": "string"
-            }
-          }
-        },
-        {
-          "type": "object",
-          "required": [
-            "shkeptncontext"
-          ],
-          "properties": {
-            "shkeptncontext": {
-              "type": "string"
             }
           }
         }

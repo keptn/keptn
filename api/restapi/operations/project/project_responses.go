@@ -9,6 +9,8 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/runtime"
+
+	models "github.com/keptn/keptn/api/models"
 )
 
 // ProjectCreatedCode is the HTTP code returned for type ProjectCreated
@@ -23,7 +25,7 @@ type ProjectCreated struct {
 	/*
 	  In: Body
 	*/
-	Payload *ProjectCreatedBody `json:"body,omitempty"`
+	Payload *models.ChannelInfo `json:"body,omitempty"`
 }
 
 // NewProjectCreated creates ProjectCreated with default headers values
@@ -33,13 +35,13 @@ func NewProjectCreated() *ProjectCreated {
 }
 
 // WithPayload adds the payload to the project created response
-func (o *ProjectCreated) WithPayload(payload *ProjectCreatedBody) *ProjectCreated {
+func (o *ProjectCreated) WithPayload(payload *models.ChannelInfo) *ProjectCreated {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the project created response
-func (o *ProjectCreated) SetPayload(payload *ProjectCreatedBody) {
+func (o *ProjectCreated) SetPayload(payload *models.ChannelInfo) {
 	o.Payload = payload
 }
 
@@ -65,7 +67,7 @@ type ProjectDefault struct {
 	/*
 	  In: Body
 	*/
-	Payload *ProjectDefaultBody `json:"body,omitempty"`
+	Payload *models.Error `json:"body,omitempty"`
 }
 
 // NewProjectDefault creates ProjectDefault with default headers values
@@ -91,13 +93,13 @@ func (o *ProjectDefault) SetStatusCode(code int) {
 }
 
 // WithPayload adds the payload to the project default response
-func (o *ProjectDefault) WithPayload(payload *ProjectDefaultBody) *ProjectDefault {
+func (o *ProjectDefault) WithPayload(payload *models.Error) *ProjectDefault {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the project default response
-func (o *ProjectDefault) SetPayload(payload *ProjectDefaultBody) {
+func (o *ProjectDefault) SetPayload(payload *models.Error) {
 	o.Payload = payload
 }
 

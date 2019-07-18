@@ -9,6 +9,8 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/runtime"
+
+	models "github.com/keptn/keptn/api/models"
 )
 
 // DynatraceCreatedCode is the HTTP code returned for type DynatraceCreated
@@ -45,7 +47,7 @@ type DynatraceDefault struct {
 	/*
 	  In: Body
 	*/
-	Payload *DynatraceDefaultBody `json:"body,omitempty"`
+	Payload *models.Error `json:"body,omitempty"`
 }
 
 // NewDynatraceDefault creates DynatraceDefault with default headers values
@@ -71,13 +73,13 @@ func (o *DynatraceDefault) SetStatusCode(code int) {
 }
 
 // WithPayload adds the payload to the dynatrace default response
-func (o *DynatraceDefault) WithPayload(payload *DynatraceDefaultBody) *DynatraceDefault {
+func (o *DynatraceDefault) WithPayload(payload *models.Error) *DynatraceDefault {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the dynatrace default response
-func (o *DynatraceDefault) SetPayload(payload *DynatraceDefaultBody) {
+func (o *DynatraceDefault) SetPayload(payload *models.Error) {
 	o.Payload = payload
 }
 

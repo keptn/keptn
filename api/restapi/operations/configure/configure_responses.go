@@ -9,6 +9,8 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/runtime"
+
+	models "github.com/keptn/keptn/api/models"
 )
 
 // ConfigureCreatedCode is the HTTP code returned for type ConfigureCreated
@@ -23,7 +25,7 @@ type ConfigureCreated struct {
 	/*
 	  In: Body
 	*/
-	Payload *ConfigureCreatedBody `json:"body,omitempty"`
+	Payload *models.ChannelInfo `json:"body,omitempty"`
 }
 
 // NewConfigureCreated creates ConfigureCreated with default headers values
@@ -33,13 +35,13 @@ func NewConfigureCreated() *ConfigureCreated {
 }
 
 // WithPayload adds the payload to the configure created response
-func (o *ConfigureCreated) WithPayload(payload *ConfigureCreatedBody) *ConfigureCreated {
+func (o *ConfigureCreated) WithPayload(payload *models.ChannelInfo) *ConfigureCreated {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the configure created response
-func (o *ConfigureCreated) SetPayload(payload *ConfigureCreatedBody) {
+func (o *ConfigureCreated) SetPayload(payload *models.ChannelInfo) {
 	o.Payload = payload
 }
 
@@ -65,7 +67,7 @@ type ConfigureDefault struct {
 	/*
 	  In: Body
 	*/
-	Payload *ConfigureDefaultBody `json:"body,omitempty"`
+	Payload *models.Error `json:"body,omitempty"`
 }
 
 // NewConfigureDefault creates ConfigureDefault with default headers values
@@ -91,13 +93,13 @@ func (o *ConfigureDefault) SetStatusCode(code int) {
 }
 
 // WithPayload adds the payload to the configure default response
-func (o *ConfigureDefault) WithPayload(payload *ConfigureDefaultBody) *ConfigureDefault {
+func (o *ConfigureDefault) WithPayload(payload *models.Error) *ConfigureDefault {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the configure default response
-func (o *ConfigureDefault) SetPayload(payload *ConfigureDefaultBody) {
+func (o *ConfigureDefault) SetPayload(payload *models.Error) {
 	o.Payload = payload
 }
 

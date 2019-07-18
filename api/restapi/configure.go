@@ -43,23 +43,23 @@ func configureFlags(api *operations.API) {
 }
 
 func getSendEventInternalError(err error) *event.SendEventDefault {
-	return event.NewSendEventDefault(500).WithPayload(&event.SendEventDefaultBody{Code: 500, Message: swag.String(err.Error())})
+	return event.NewSendEventDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 }
 
 func getConfigureInternalError(err error) *configure.ConfigureDefault {
-	return configure.NewConfigureDefault(500).WithPayload(&configure.ConfigureDefaultBody{Code: 500, Message: swag.String(err.Error())})
+	return configure.NewConfigureDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 }
 
 func getProjectInternalError(err error) *project.ProjectDefault {
-	return project.NewProjectDefault(500).WithPayload(&project.ProjectDefaultBody{Code: 500, Message: swag.String(err.Error())})
+	return project.NewProjectDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 }
 
 func getServiceInternalError(err error) *service.ServiceDefault {
-	return service.NewServiceDefault(500).WithPayload(&service.ServiceDefaultBody{Code: 500, Message: swag.String(err.Error())})
+	return service.NewServiceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 }
 
 func getDynatraceInternalError(err error) *dynatrace.DynatraceDefault {
-	return dynatrace.NewDynatraceDefault(500).WithPayload(&dynatrace.DynatraceDefaultBody{Code: 500, Message: swag.String(err.Error())})
+	return dynatrace.NewDynatraceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 }
 
 func configureAPI(api *operations.API) http.Handler {
@@ -96,17 +96,17 @@ func configureAPI(api *operations.API) http.Handler {
 	})
 
 	api.EventSendEventHandler = event.SendEventHandlerFunc(func(params event.SendEventParams, principal *models.Principal) middleware.Responder {
-		if params.Body.Shkeptncontext == nil || *params.Body.Shkeptncontext == "" {
+		if params.Body.Shkeptncontext == "" {
 			uuidStr := uuid.New().String()
-			params.Body.Shkeptncontext = &uuidStr
+			params.Body.Shkeptncontext = uuidStr
 		}
-		keptnutils.Info(*params.Body.Shkeptncontext, "API received keptn event")
+		keptnutils.Info(params.Body.Shkeptncontext, "API received keptn event")
 
-		token, err := ws.CreateChannelInfo(*params.Body.Shkeptncontext)
+		token, err := ws.CreateChannelInfo(params.Body.Shkeptncontext)
 		if err != nil {
 			return getSendEventInternalError(err)
 		}
-		channelInfo := getChannelInfo(params.Body.Shkeptncontext, &token)
+		channelInfo := getChannelInfo(&params.Body.Shkeptncontext, &token)
 		bodyData, err := params.Body.MarshalJSON()
 		if err != nil {
 			return getSendEventInternalError(err)
@@ -116,20 +116,10 @@ func configureAPI(api *operations.API) http.Handler {
 			return getSendEventInternalError(err)
 		}
 
-		if err := utils.PostToEventBroker(forwardEvent, *params.Body.Shkeptncontext); err != nil {
+		if err := utils.PostToEventBroker(forwardEvent, params.Body.Shkeptncontext); err != nil {
 			return getSendEventInternalError(err)
 		}
-
-		data, err := channelInfo.MarshalJSON()
-		if err != nil {
-			return getSendEventInternalError(err)
-		}
-		resp := event.SendEventCreatedBody{}
-		err = resp.UnmarshalJSON(data)
-		if err != nil {
-			return getSendEventInternalError(err)
-		}
-		return event.NewSendEventCreated().WithPayload(&resp)
+		return event.NewSendEventCreated().WithPayload(&channelInfo)
 	})
 
 	api.ConfigureConfigureHandler = configure.ConfigureHandlerFunc(func(params configure.ConfigureParams, principal *models.Principal) middleware.Responder {
@@ -155,17 +145,7 @@ func configureAPI(api *operations.API) http.Handler {
 		if err := utils.PostToEventBroker(forwardEvent, params.Body.Shkeptncontext); err != nil {
 			return getConfigureInternalError(err)
 		}
-		data, err := channelInfo.MarshalJSON()
-		if err != nil {
-			return getConfigureInternalError(err)
-		}
-		resp := configure.ConfigureCreatedBody{}
-		err = resp.UnmarshalJSON(data)
-		if err != nil {
-			return getConfigureInternalError(err)
-		}
-
-		return configure.NewConfigureCreated().WithPayload(&resp)
+		return configure.NewConfigureCreated().WithPayload(&channelInfo)
 	})
 
 	api.ProjectProjectHandler = project.ProjectHandlerFunc(func(params project.ProjectParams, principal *models.Principal) middleware.Responder {
@@ -191,31 +171,21 @@ func configureAPI(api *operations.API) http.Handler {
 		if err := utils.PostToEventBroker(forwardEvent, params.Body.Shkeptncontext); err != nil {
 			return getProjectInternalError(err)
 		}
-		data, err := channelInfo.MarshalJSON()
-		if err != nil {
-			return getProjectInternalError(err)
-		}
-		resp := project.ProjectCreatedBody{}
-		err = resp.UnmarshalJSON(data)
-		if err != nil {
-			return getProjectInternalError(err)
-		}
-
-		return project.NewProjectCreated().WithPayload(&resp)
+		return project.NewProjectCreated().WithPayload(&channelInfo)
 	})
 
 	api.ServiceServiceHandler = service.ServiceHandlerFunc(func(params service.ServiceParams, principal *models.Principal) middleware.Responder {
-		if params.Body.Shkeptncontext == nil || *params.Body.Shkeptncontext == "" {
+		if params.Body.Shkeptncontext == "" {
 			uuidStr := uuid.New().String()
-			params.Body.Shkeptncontext = &uuidStr
+			params.Body.Shkeptncontext = uuidStr
 		}
-		keptnutils.Info(*params.Body.Shkeptncontext, "API received service event")
+		keptnutils.Info(params.Body.Shkeptncontext, "API received service event")
 
-		token, err := ws.CreateChannelInfo(*params.Body.Shkeptncontext)
+		token, err := ws.CreateChannelInfo(params.Body.Shkeptncontext)
 		if err != nil {
 			return getServiceInternalError(err)
 		}
-		channelInfo := getChannelInfo(params.Body.Shkeptncontext, &token)
+		channelInfo := getChannelInfo(&params.Body.Shkeptncontext, &token)
 		bodyData, err := params.Body.MarshalJSON()
 		if err != nil {
 			return getServiceInternalError(err)
@@ -225,20 +195,10 @@ func configureAPI(api *operations.API) http.Handler {
 			return getServiceInternalError(err)
 		}
 
-		if err := utils.PostToEventBroker(forwardEvent, *params.Body.Shkeptncontext); err != nil {
+		if err := utils.PostToEventBroker(forwardEvent, params.Body.Shkeptncontext); err != nil {
 			return getServiceInternalError(err)
 		}
-		data, err := channelInfo.MarshalJSON()
-		if err != nil {
-			return getServiceInternalError(err)
-		}
-		resp := service.ServiceCreatedBody{}
-		err = resp.UnmarshalJSON(data)
-		if err != nil {
-			return getServiceInternalError(err)
-		}
-
-		return service.NewServiceCreated().WithPayload(&resp)
+		return service.NewServiceCreated().WithPayload(&channelInfo)
 	})
 
 	api.DynatraceDynatraceHandler = dynatrace.DynatraceHandlerFunc(func(params dynatrace.DynatraceParams, principal *models.Principal) middleware.Responder {
@@ -279,7 +239,9 @@ func getChannelInfo(channelID *string, token *string) models.ChannelInfo {
 	channelInfo := models.ChannelInfoAO1DataChannelInfo{ChannelID: channelID, Token: token}
 	data := models.ChannelInfoAO1Data{ChannelInfo: &channelInfo}
 
-	return models.ChannelInfo{Contenttype: "application/json", ID: &id, Source: &source, Specversion: &specversion, Time: time, Type: &typeInfo, Data: &data}
+	ceContext := models.CEWithoutDataWithKeptncontext{CEWithoutData: models.CEWithoutData{Contenttype: "application/json",
+		ID: &id, Source: &source, Specversion: &specversion, Time: time, Type: &typeInfo}}
+	return models.ChannelInfo{CEWithoutDataWithKeptncontext: ceContext, Data: &data}
 }
 
 // The TLS configuration before HTTPS server starts.
