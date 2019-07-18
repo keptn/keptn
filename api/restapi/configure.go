@@ -5,7 +5,6 @@ package restapi
 import (
 	"crypto/tls"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -14,6 +13,7 @@ import (
 
 	"github.com/keptn/keptn/api/restapi/operations/auth"
 	"github.com/keptn/keptn/api/restapi/operations/dynatrace"
+	"github.com/keptn/keptn/api/restapi/operations/service"
 
 	"github.com/keptn/keptn/api/restapi/operations/project"
 
@@ -52,6 +52,10 @@ func getConfigureInternalError(err error) *configure.ConfigureDefault {
 
 func getProjectInternalError(err error) *project.ProjectDefault {
 	return project.NewProjectDefault(500).WithPayload(&project.ProjectDefaultBody{Code: 500, Message: swag.String(err.Error())})
+}
+
+func getServiceInternalError(err error) *service.ServiceDefault {
+	return service.NewServiceDefault(500).WithPayload(&service.ServiceDefaultBody{Code: 500, Message: swag.String(err.Error())})
 }
 
 func getDynatraceInternalError(err error) *dynatrace.DynatraceDefault {
@@ -200,6 +204,43 @@ func configureAPI(api *operations.API) http.Handler {
 		return project.NewProjectCreated().WithPayload(&resp)
 	})
 
+	api.ServiceServiceHandler = service.ServiceHandlerFunc(func(params service.ServiceParams, principal *models.Principal) middleware.Responder {
+		if params.Body.Shkeptncontext == nil || *params.Body.Shkeptncontext == "" {
+			uuidStr := uuid.New().String()
+			params.Body.Shkeptncontext = &uuidStr
+		}
+		keptnutils.Info(*params.Body.Shkeptncontext, "API received service event")
+
+		token, err := ws.CreateChannelInfo(*params.Body.Shkeptncontext)
+		if err != nil {
+			return getServiceInternalError(err)
+		}
+		channelInfo := getChannelInfo(params.Body.Shkeptncontext, &token)
+		bodyData, err := params.Body.MarshalJSON()
+		if err != nil {
+			return getServiceInternalError(err)
+		}
+		forwardEvent, err := addChannelInfoInCE(bodyData, channelInfo)
+		if err != nil {
+			return getServiceInternalError(err)
+		}
+
+		if err := utils.PostToEventBroker(forwardEvent, *params.Body.Shkeptncontext); err != nil {
+			return getServiceInternalError(err)
+		}
+		data, err := channelInfo.MarshalJSON()
+		if err != nil {
+			return getServiceInternalError(err)
+		}
+		resp := service.ServiceCreatedBody{}
+		err = resp.UnmarshalJSON(data)
+		if err != nil {
+			return getServiceInternalError(err)
+		}
+
+		return service.NewServiceCreated().WithPayload(&resp)
+	})
+
 	api.DynatraceDynatraceHandler = dynatrace.DynatraceHandlerFunc(func(params dynatrace.DynatraceParams, principal *models.Principal) middleware.Responder {
 		if params.Body.Shkeptncontext == "" {
 			params.Body.Shkeptncontext = uuid.New().String()
@@ -220,7 +261,6 @@ func configureAPI(api *operations.API) http.Handler {
 func addChannelInfoInCE(ceData []byte, channelInfo models.ChannelInfo) (interface{}, error) {
 
 	var ce interface{}
-	fmt.Println(string(ceData))
 	err := json.Unmarshal(ceData, &ce)
 	if err != nil {
 		return nil, err

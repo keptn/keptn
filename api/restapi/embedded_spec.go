@@ -181,6 +181,38 @@ func init() {
           }
         }
       }
+    },
+    "/service": {
+      "post": {
+        "tags": [
+          "service"
+        ],
+        "summary": "Forwards the received service event to the eventbroker",
+        "operationId": "service",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/KeptnContextExtendedCE"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "service onboarded",
+            "schema": {
+              "$ref": "#/definitions/ChannelInfo"
+            }
+          },
+          "default": {
+            "description": "error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -1053,6 +1085,166 @@ func init() {
         "responses": {
           "201": {
             "description": "project created",
+            "schema": {
+              "allOf": [
+                {
+                  "type": "object",
+                  "required": [
+                    "specversion",
+                    "id",
+                    "type",
+                    "source"
+                  ],
+                  "properties": {
+                    "contenttype": {
+                      "type": "string"
+                    },
+                    "extensions": {
+                      "type": "object"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "shkeptncontext": {
+                      "type": "string"
+                    },
+                    "source": {
+                      "type": "string",
+                      "format": "uri-reference"
+                    },
+                    "specversion": {
+                      "type": "string"
+                    },
+                    "time": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "type": {
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "channelInfo": {
+                          "required": [
+                            "token",
+                            "channelID"
+                          ],
+                          "properties": {
+                            "channelID": {
+                              "type": "string"
+                            },
+                            "token": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "default": {
+            "description": "error",
+            "schema": {
+              "type": "object",
+              "required": [
+                "message"
+              ],
+              "properties": {
+                "code": {
+                  "type": "integer",
+                  "format": "int64"
+                },
+                "fields": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/service": {
+      "post": {
+        "tags": [
+          "service"
+        ],
+        "summary": "Forwards the received service event to the eventbroker",
+        "operationId": "service",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "allOf": [
+                {
+                  "type": "object",
+                  "required": [
+                    "specversion",
+                    "id",
+                    "type",
+                    "source"
+                  ],
+                  "properties": {
+                    "contenttype": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": [
+                        "object",
+                        "string"
+                      ]
+                    },
+                    "extensions": {
+                      "type": "object"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "source": {
+                      "type": "string",
+                      "format": "uri-reference"
+                    },
+                    "specversion": {
+                      "type": "string"
+                    },
+                    "time": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "type": {
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "shkeptncontext"
+                  ],
+                  "properties": {
+                    "shkeptncontext": {
+                      "type": "string"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "service onboarded",
             "schema": {
               "allOf": [
                 {

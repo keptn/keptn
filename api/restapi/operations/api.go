@@ -24,6 +24,7 @@ import (
 	"github.com/keptn/keptn/api/restapi/operations/dynatrace"
 	"github.com/keptn/keptn/api/restapi/operations/event"
 	"github.com/keptn/keptn/api/restapi/operations/project"
+	"github.com/keptn/keptn/api/restapi/operations/service"
 
 	models "github.com/keptn/keptn/api/models"
 )
@@ -59,6 +60,9 @@ func NewAPI(spec *loads.Document) *API {
 		}),
 		EventSendEventHandler: event.SendEventHandlerFunc(func(params event.SendEventParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation EventSendEvent has not yet been implemented")
+		}),
+		ServiceServiceHandler: service.ServiceHandlerFunc(func(params service.ServiceParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation ServiceService has not yet been implemented")
 		}),
 
 		// Applies when the "x-token" header is set
@@ -116,6 +120,8 @@ type API struct {
 	ProjectProjectHandler project.ProjectHandler
 	// EventSendEventHandler sets the operation handler for the send event operation
 	EventSendEventHandler event.SendEventHandler
+	// ServiceServiceHandler sets the operation handler for the service operation
+	ServiceServiceHandler service.ServiceHandler
 
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
@@ -201,6 +207,10 @@ func (o *API) Validate() error {
 
 	if o.EventSendEventHandler == nil {
 		unregistered = append(unregistered, "event.SendEventHandler")
+	}
+
+	if o.ServiceServiceHandler == nil {
+		unregistered = append(unregistered, "service.ServiceHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -337,6 +347,11 @@ func (o *API) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/event"] = event.NewSendEvent(o.context, o.EventSendEventHandler)
+
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/service"] = service.NewService(o.context, o.ServiceServiceHandler)
 
 }
 

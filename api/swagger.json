@@ -146,6 +146,38 @@
         }
       }
     },
+    "/service": {
+      "post": {
+        "tags": [
+          "service"
+        ],
+        "operationId": "service",
+        "summary": "Forwards the received service event to the eventbroker",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/KeptnContextExtendedCE"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "service onboarded",
+            "schema" : {
+              "$ref" : "#/definitions/ChannelInfo"
+            }
+          },
+          "default": {
+            "description": "error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
     "/dynatrace": {
       "post": {
         "tags": [
