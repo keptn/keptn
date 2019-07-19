@@ -22,7 +22,7 @@ func PostToEventBroker(e interface{}, shkeptncontext string) error {
 		return err
 	}
 
-	url := "http://" + os.Getenv("CHANNEL_URI")
+	url := "http://" + os.Getenv("EVENTBROKER_URI")
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(data))
 	req.Header.Set("Content-Type", "application/cloudevents+json")
 
