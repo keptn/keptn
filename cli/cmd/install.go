@@ -869,7 +869,7 @@ func setupKeptnAuthAndConfigure(creds installCredentials) error {
 		"keptn-api-token",
 		"-n",
 		"keptn",
-		"--ojsonpath={.data.keptn-api-token}",
+		"-ojsonpath={.data.keptn-api-token}",
 	})
 
 	const errorMsg = `Could not retrieve keptn API token: %s
