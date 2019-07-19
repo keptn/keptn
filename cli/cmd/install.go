@@ -40,6 +40,11 @@ var configFilePath *string
 var installerVersion *string
 var platform *string
 
+const gke = "gke"
+const aks = "aks"
+const openshift = "openshift"
+const kubernetes = "kubernetes"
+
 const installerPrefixURL = "https://raw.githubusercontent.com/keptn/installer/"
 const installerSuffixPath = "/manifests/installer/installer.yaml"
 const rbacSuffixPath = "/manifests/installer/rbac.yaml"
@@ -83,20 +88,25 @@ Example:
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 
+		err := checkIfPlatformIsSupported()
+		if err != nil {
+			return err
+		}
+
 		isInstallerAvailable, err := checkInstallerAvailablity()
 		if err != nil || !isInstallerAvailable {
 			return errors.New("Installers not found under:\n" +
 				getInstallerURL() + "\n" + getRbacURL())
 		}
 
-		if platform == nil || *platform == "gke" {
+		if *platform == gke {
 			// Check whether Gcloud user is configured
 			_, err = getGcloudUser()
 			if err != nil {
 				return err
 			}
 		}
-		if *platform == "aks" {
+		if *platform == aks {
 			_, err = getAzUser()
 			if err != nil {
 				return err
@@ -125,21 +135,25 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 
 			// Check whether the authentication at the cluster is valid
 			var authenticated = false
-			if platform == nil || *platform == "gke" {
+			if *platform == gke {
 				if creds.ClusterName == "" || creds.ClusterZone == "" {
 					return errors.New("Incomplete credential file " + *configFilePath)
 				}
 				authenticated, err = authenticateAtGkeCluster(creds)
-			} else if *platform == "openshift" {
+			} else if *platform == openshift {
 				if creds.OpenshiftURL == "" || creds.OpenshiftUser == "" || creds.OpenshiftPassword == "" {
 					return errors.New("Incomplete credential file " + *configFilePath)
 				}
 				authenticated, err = authenticateAtOpenshiftCluster(creds)
-			} else if *platform == "aks" {
+			} else if *platform == aks {
 				if creds.ClusterName == "" || creds.AzureResourceGroup == "" || creds.AzureSubscription == "" {
 					return errors.New("Incomplete credential file " + *configFilePath)
 				}
 				authenticated, err = authenticateAtAksCluster(creds)
+			} else if *platform == kubernetes {
+				if ctx, err := getKubeContext(); err == nil && ctx != "" {
+					authenticated = true
+				}
 			}
 			if err != nil {
 				return err
@@ -161,6 +175,11 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 			}
 			if !validOrg {
 				return errors.New("Provided organization " + creds.GithubOrg + " does not exist.")
+			}
+		} else if platform != nil && *platform == kubernetes {
+			if ctx, err := getKubeContext(); err != nil || ctx == "" {
+				return errors.New("kubectl is not properly configured. " +
+					"Check your current context with 'kubectl config current-context'")
 			}
 		}
 
@@ -192,13 +211,25 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 	},
 }
 
+func checkIfPlatformIsSupported() error {
+	if platform == nil {
+		*platform = gke
+		return nil
+	}
+	*platform = strings.ToLower(*platform)
+	if *platform != gke && *platform != aks && *platform != openshift && *platform != kubernetes {
+		return errors.New("Unsupported platform '" + *platform + "'. The following platforms are supported: gke, aks, openshift, kubernetes")
+	}
+	return nil
+}
+
 func init() {
 	rootCmd.AddCommand(installCmd)
 	configFilePath = installCmd.Flags().StringP("creds", "c", "", "The name of the creds file")
 	installCmd.Flags().MarkHidden("creds")
 	installerVersion = installCmd.Flags().StringP("keptn-version", "k", "master", "The branch or tag of the version which is installed")
 	installCmd.Flags().MarkHidden("keptn-version")
-	platform = installCmd.Flags().StringP("platform", "p", "gke", "The platform to run keptn on [gke,openshift]")
+	platform = installCmd.Flags().StringP("platform", "p", "gke", "The platform to run keptn on [gke,openshift,aks,kubernetes]")
 }
 
 func checkInstallerAvailablity() (bool, error) {
@@ -248,7 +279,7 @@ func doInstallation(creds installCredentials) error {
 		return err
 	}
 
-	if platform == nil || *platform == "gke" || *platform == "aks" {
+	if *platform == gke || *platform == aks || *platform == kubernetes {
 		_, err := keptnutils.ExecuteCommand("kubectl", []string{
 			"apply",
 			"-f",
@@ -348,16 +379,19 @@ func getInstallCredentials(creds *installCredentials) error {
 		fmt.Println()
 		fmt.Println("Please confirm that the provided information is correct: ")
 
-		if platform == nil || *platform == "gke" {
+		if *platform == gke {
 			fmt.Println("Cluster Name: " + creds.ClusterName)
 			fmt.Println("Cluster Zone: " + creds.ClusterZone)
 			fmt.Println("GKE Project: " + creds.GkeProject)
-		} else if *platform == "openshift" {
+		} else if *platform == openshift {
 			fmt.Println("Openshift Server URL: " + creds.OpenshiftURL)
 			fmt.Println("Openshift User: " + creds.OpenshiftUser)
-		} else if *platform == "aks" {
+		} else if *platform == aks {
 			fmt.Println("Cluster Name: " + creds.ClusterName)
 			fmt.Println("Azure Resource Group: " + creds.AzureResourceGroup)
+		} else if *platform == kubernetes {
+			ctx, _ := getKubeContext()
+			fmt.Println("Cluster: " + strings.TrimSpace(ctx))
 		}
 
 		fmt.Println("GitHub User Name: " + creds.GithubUserName)
@@ -386,7 +420,7 @@ func getInstallCredentials(creds *installCredentials) error {
 }
 
 func connectToCluster(creds *installCredentials) {
-	if platform == nil || *platform == "gke" {
+	if *platform == gke {
 		if creds.ClusterName == "" || creds.ClusterZone == "" || creds.GkeProject == "" {
 			creds.ClusterName, creds.ClusterZone, creds.GkeProject = getGkeClusterInfo()
 		}
@@ -398,7 +432,7 @@ func connectToCluster(creds *installCredentials) {
 			readGkeProject(creds)
 			connectionSuccessful, _ = authenticateAtGkeCluster(*creds)
 		}
-	} else if *platform == "openshift" {
+	} else if *platform == openshift {
 		connectionSuccessful := false
 		for !connectionSuccessful {
 			readOpenshiftClusterURL(creds)
@@ -406,7 +440,7 @@ func connectToCluster(creds *installCredentials) {
 			readOpenshiftPassword(creds)
 			connectionSuccessful, _ = authenticateAtOpenshiftCluster(*creds)
 		}
-	} else if *platform == "aks" {
+	} else if *platform == aks {
 		if creds.ClusterName == "" {
 			creds.ClusterName = getAksClusterInfo()
 		}
@@ -419,7 +453,6 @@ func connectToCluster(creds *installCredentials) {
 			connectionSuccessful, _ = authenticateAtAksCluster(*creds)
 		}
 	}
-
 }
 
 func readOpenshiftClusterURL(creds *installCredentials) {
@@ -640,16 +673,13 @@ func authenticateAtAksCluster(creds installCredentials) (bool, error) {
 
 func getGkeClusterInfo() (string, string, string) {
 	// try to get current cluster from gcloud config
-	out, err := keptnutils.ExecuteCommand("kubectl", []string{
-		"config",
-		"current-context",
-	})
+	out, err := getKubeContext()
 
 	if err != nil {
 		return "", "", ""
 	}
 	clusterInfo := strings.TrimSpace(strings.Replace(string(out), "\r\n", "\n", -1))
-	if !strings.HasPrefix(clusterInfo, "gke") {
+	if !strings.HasPrefix(clusterInfo, gke) {
 		return "", "", ""
 	}
 
@@ -659,6 +689,13 @@ func getGkeClusterInfo() (string, string, string) {
 	}
 
 	return clusterInfoArray[3], clusterInfoArray[2], clusterInfoArray[1]
+}
+
+func getKubeContext() (string, error) {
+	return keptnutils.ExecuteCommand("kubectl", []string{
+		"config",
+		"current-context",
+	})
 }
 
 func getAksClusterInfo() string {
