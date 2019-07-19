@@ -26,7 +26,7 @@ spec:
             memory: "128Mi"
             cpu: "500m"
         env:
-        - name: CHANNEL_URI
+        - name: EVENTBROKER_URI
           value: event-broker.keptn.svc.cluster.local
         - name: SECRET_TOKEN
           valueFrom:
