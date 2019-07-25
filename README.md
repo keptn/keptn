@@ -1,7 +1,7 @@
 ![keptn](./assets/keptn.png)
 
 # keptn
-keptn is a fabric for cloud-native lifecycle automation at enterprise scale. In its first version it provides an automated setup of the keptn core components as well as a demo application. Also included are three preconfigured use cases for the demo application: automated quality gates, runbook automation, and automated evaluation of blue/green deployments.
+keptn is a fabric for cloud-native lifecycle automation at enterprise scale. In its first version it provides an automated setup of the keptn core components as well as a demo application. Also included are three pre-configured use cases for the demo application: automated quality gates, runbook automation, and automated evaluation of blue/green deployments.
 
 ## Usage
 Please find the documentation of how to get started with keptn in [our official documentation](https://keptn.sh/docs) to get resources on how to use keptn. We recommend to use the [latest stable release](https://github.com/keptn/keptn/releases).
@@ -14,16 +14,36 @@ We mangage the keptn core components as well as all services (e.g. gitHub-servic
 The versions of the keptn core components and the services have to be compatible to each other.
 Therefore, this section shows the compatibility between these versions.
 
-keptn in [version 0.3.0](https://github.com/keptn/keptn/releases/tag/0.2.1) requires:
+**keptn in [version 0.4.0](https://github.com/keptn/keptn/releases/tag/0.4.0) requires:**
 
-Keptn core
+*keptn core:*
+- keptn/authenticator:0.2.3
+- keptn/bridge:0.1.3
+- keptn/control:0.3.0
+- keptn/eventbroker-go:0.1.0
+- keptn/eventbroker-ext:0.3.0
+
+*keptn uniform:*
+- keptn/gatekeeper-service:0.1.1
+- keptn/github-service:0.3.0
+- keptn/helm-service:0.1.1
+- keptn/jmeter-service:0.1.1
+- keptn/pitometer-service:0.2.0
+- keptn/servicenow-service:0.1.3
+
+*for Openshift:*
+- keptn/openshift-route-service:0.1.1
+
+**keptn in [version 0.3.0](https://github.com/keptn/keptn/releases/tag/0.3.0) requires:**
+
+*keptn core:*
 - keptn/authenticator:0.2.2
 - keptn/bridge:0.1.2
 - keptn/control:0.2.4
 - keptn/eventbroker:0.2.3
 - keptn/eventbroker-ext:0.2.3
 
-Uniform
+*keptn uniform:*
 - keptn/gatekeeper-service:0.1.0
 - keptn/github-service:0.2.2
 - keptn/helm-service:0.1.0
@@ -31,10 +51,10 @@ Uniform
 - keptn/pitometer-service:0.1.3
 - keptn/servicenow-service:0.1.2
 
-For Openshift
+*for Openshift:*
 - keptn/openshift-route-service:0.1.0
 
-keptn in [version 0.2.2](https://github.com/keptn/keptn/releases/tag/0.2.2) requires:
+**keptn in [version 0.2.2](https://github.com/keptn/keptn/releases/tag/0.2.2) requires:**
 - keptn/authenticator:0.2.2
 - keptn/bridge:0.1.2
 - keptn/control:0.2.3
@@ -46,7 +66,7 @@ keptn in [version 0.2.2](https://github.com/keptn/keptn/releases/tag/0.2.2) requ
 - keptn/jenkins-service:0.3.0
   - keptn/jenkins-0.6.0
   
-keptn in [version 0.2.1](https://github.com/keptn/keptn/releases/tag/0.2.1) requires:
+**keptn in [version 0.2.1](https://github.com/keptn/keptn/releases/tag/0.2.1) requires:**
 - keptn/keptn-authenticator:0.2.1
 - keptn/keptn-control:0.2.1
 - keptn/keptn-event-broker:0.2.1
@@ -57,7 +77,7 @@ keptn in [version 0.2.1](https://github.com/keptn/keptn/releases/tag/0.2.1) requ
 - keptn/jenkins-service:0.2.0
   - keptn/jenkins-0.5.0
 
-keptn in [version 0.2.0](https://github.com/keptn/keptn/releases/tag/0.2.0) requires:
+**keptn in [version 0.2.0](https://github.com/keptn/keptn/releases/tag/0.2.0) requires:**
 - keptn/keptn-authenticator:0.2.0
 - keptn/keptn-control:0.2.0
 - keptn/keptn-event-broker:0.2.0
@@ -68,10 +88,10 @@ keptn in [version 0.2.0](https://github.com/keptn/keptn/releases/tag/0.2.0) requ
 - keptn/jenkins-service:0.1.0
     - keptn/jenkins:0.4.0
 
-keptn in [version 0.1.3](https://github.com/keptn/keptn/tree/0.1.3) requires:
+**keptn in [version 0.1.3](https://github.com/keptn/keptn/tree/0.1.3) requires:**
 - keptn/jenkins:0.2
 - dynatraceacm/ansibletower:3.3.1-1-2
 
 ## Further information
-* The [keptn website](https://keptn.sh) has the documentation of keptn and its usecases.
+* The [keptn website](https://keptn.sh) has the documentation of keptn and its use cases.
 
