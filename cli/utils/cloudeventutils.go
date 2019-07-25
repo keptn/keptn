@@ -7,8 +7,11 @@ import (
 	"crypto/tls"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"net/url"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
@@ -18,6 +21,33 @@ import (
 )
 
 const timeout = 60
+
+func resolveXipIo(ctx context.Context, network, addr string) (net.Conn, error) {
+	dialer := &net.Dialer{
+		Timeout:   30 * time.Second,
+		KeepAlive: 30 * time.Second,
+		DualStack: true,
+	}
+
+	if strings.Contains(addr, "xip.io") {
+
+		regex := `\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b`
+		re := regexp.MustCompile(regex)
+		ip := re.FindString(addr)
+
+		regex = `:\d+$`
+		re = regexp.MustCompile(regex)
+		port := re.FindString(addr)
+
+		var newAddr string
+		if port != "" {
+			newAddr = ip + port
+		}
+		PrintLog("Directly resolve "+addr+" to "+newAddr, VerboseLevel)
+		addr = newAddr
+	}
+	return dialer.DialContext(ctx, network, addr)
+}
 
 // Send creates a request including the X-Keptn-Signature and sends the data
 // struct to the provided target. It returns the obtained http.Response.
@@ -35,6 +65,7 @@ func Send(url url.URL, event cloudevents.Event, apiToken string) (*cloudevents.E
 	// Reset Client because we need TLS
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		DialContext:     resolveXipIo,
 	}
 	t.Client = &http.Client{Timeout: timeout * time.Second, Transport: tr}
 
