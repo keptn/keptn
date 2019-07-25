@@ -974,7 +974,7 @@ To manually set up your keptn CLI, please follow the instructions at https://kep
 	if err != nil {
 		return err
 	}
-	utils.PrintLog("Your CLI is now sucessfully configured. You are now ready to use keptn.", utils.InfoLevel)
+	utils.PrintLog("Your CLI is now successfully configured. You are now ready to use keptn.", utils.InfoLevel)
 	return nil
 }
 
