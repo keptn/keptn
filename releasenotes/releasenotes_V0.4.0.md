@@ -1,4 +1,4 @@
-# Release Notes x.x.x
+# Release Notes 0.4.04
 
 ## New Features
 - Deploy the installer as a Job instead of Deployment [#456](https://github.com/keptn/keptn/issues/456)

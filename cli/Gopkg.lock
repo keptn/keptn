@@ -300,12 +300,12 @@
   version = "v1.1.6"
 
 [[projects]]
-  branch = "develop"
-  digest = "1:d2d23bc7410222318336cdef3931e2eda82b8a63223aff904c840c008184ffe3"
+  digest = "1:0166342d340586a12c44d16c769ea895dd31f8c6e5ee04f6b14fc9d2faf4d2f7"
   name = "github.com/keptn/go-utils"
   packages = ["pkg/utils"]
   pruneopts = ""
-  revision = "d8a9e7e51ac619df7d4fe87ba642f42027aa9347"
+  revision = "9f13e220173a73b4bc0e04dc56e8edc2c7cbe126"
+  version = "0.1.1"
 
 [[projects]]
   digest = "1:41e0bed5df4f9fd04c418bf9b6b7179b3671e416ad6175332601ca1c8dc74606"
