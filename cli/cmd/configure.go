@@ -53,7 +53,7 @@ Example:
 		}
 
 		configURL := endPoint
-		configURL.Path = "config"
+		configURL.Path = "configure"
 
 		if !mocking {
 			utils.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), utils.VerboseLevel)
