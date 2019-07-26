@@ -66,12 +66,6 @@ type installCredentials struct {
 	AzureSubscription         string `json:"azureSubscription"`
 }
 
-type keptnAPITokenSecret struct {
-	Data struct {
-		KeptnAPIToken string `json:"keptn-api-token"`
-	} `json:"data"`
-}
-
 type placeholderReplacement struct {
 	placeholderValue string
 	desiredValue     string
@@ -912,7 +906,7 @@ func setupKeptnAuthAndConfigure(creds installCredentials) error {
 		"keptn-api-token",
 		"-n",
 		"keptn",
-		"-ojson",
+		"-ojsonpath={.data.keptn-api-token}",
 	})
 
 	const errorMsg = `Could not retrieve keptn API token: %s
@@ -921,12 +915,8 @@ To manually set up your keptn CLI, please follow the instructions at https://kep
 	if err != nil {
 		return fmt.Errorf(errorMsg, err)
 	}
-	var secret keptnAPITokenSecret
-	err = json.Unmarshal([]byte(out), &secret)
-	if err != nil {
-		return fmt.Errorf(errorMsg, err)
-	}
-	apiToken, err := base64.StdEncoding.DecodeString(secret.Data.KeptnAPIToken)
+
+	apiToken, err := base64.StdEncoding.DecodeString(out)
 	if err != nil {
 		return fmt.Errorf(errorMsg, err)
 	}
@@ -938,7 +928,7 @@ To manually set up your keptn CLI, please follow the instructions at https://kep
 		out, err := keptnutils.ExecuteCommand("kubectl", []string{
 			"get",
 			"virtualservice",
-			"control",
+			"api",
 			"-n",
 			"keptn",
 			"-ojsonpath={.spec.hosts[0]}",
