@@ -1,5 +1,4 @@
 sudo: true
-os: osx
 language: go
 go:
   - 1.12.x
@@ -12,13 +11,15 @@ env:
     - DEP_VERSION="0.5.3"
     - HUB_VERSION="v2.11.2"
     - HUB_INSTALLER="hub-darwin-amd64-2.11.2"
+
 notifications:
   webhooks:
     urls:
       - https://us-central1-sai-research.cloudfunctions.net/travisWebhookListener
     on_failure: always
     on_cancel: always
-    on_error: always 
+    on_error: always
+ 
 before_install:   
 - |
   if [ ! -d "$HOME/google-cloud-sdk/bin" ]; then 
@@ -40,17 +41,30 @@ before_install:
 - tar xopf ${HUB_INSTALLER}.tgz
 - sudo mv ${HUB_INSTALLER}/bin/hub /usr/local/bin/hub
 
-# Download the binary to bin folder in $GOPATH
+# Download dep binary to bin folder in $GOPATH and change mode
 - mkdir $GOPATH/bin/
 - curl -L -s https://github.com/golang/dep/releases/download/v${DEP_VERSION}/dep-darwin-amd64 -o $GOPATH/bin/dep
-# Make the binary executable
 - chmod +x $GOPATH/bin/dep
+
 - cd cli/
 - dep ensure
 - cd ..
+
+# Build variables
 - export TZ=Europe/Vienna
-- CLI_VERSION="$(cat ./cli/version | tr -d '[:space:]')"
+
+- VERSION="$(cat ./version | tr -d '[:space:]')"
 - DATE="$(date +'%Y%m%d.%H%M')"
+- GIT_SHA="$(git rev-parse --short HEAD)"
+- REGISTRY_USER=jbraeuer
+- echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
+
+- CHANGED_FILES=($(git diff --name-only $TRAVIS_COMMIT_RANGE | paste -sd "," ) )
+- ./writeManifest.sh
+
+- CLI_FOLDER="cli/"
+- API_IMAGE=keptn/api
+- API_FOLDER="api/"
 
 install:
 - cd cli/
@@ -59,38 +73,63 @@ install:
 
 jobs:
   include:
+
   - stage: cron
     if: branch = develop AND type = cron
+    os: osx
     script:
     - git clone --branch develop https://github.com/keptn/installer.git --single-branch
     - source travis-scripts/cronjob_main.sh
-  - stage: feature/bug/hotfix
-    if: branch =~ ^feature.*$ OR branch =~ ^bug.*$ OR branch =~ ^hotfix.*$
+
+  - stage: feature/bug/hotfix/patch
+    if: branch =~ ^feature.*$ OR branch =~ ^bug.*$ OR branch =~ ^hotfix.*$ OR branch =~ ^patch.*$
+    os: osx
     script:
-    - echo $TRAVIS_BUILD_STAGE_NAME
     - TYPE="$(echo $TRAVIS_BRANCH | cut -d'/' -f1)"
     - NUMBER="$(echo $TRAVIS_BRANCH | cut -d'/' -f2)"
-    - cd ./cli
-    - TAG="${TYPE}-${NUMBER}-${DATE}"
-    - source ../travis-scripts/build_cli.sh "${TAG}"
+    - | 
+      if [[ $CHANGED_FILES == *"${CLI_FOLDER}"*  ]]; then
+        echo "Build keptn cli"
+        cd ./cli
+        source ../travis-scripts/build_cli.sh "${TYPE}-${NUMBER}-${DATE}"
+      fi
+  - if: branch =~ ^feature.*$ OR branch =~ ^bug.*$ OR branch =~ ^hotfix.*$ OR branch =~ ^patch.*$
+    os: linux
+    script:
+    - | 
+      if [[ $CHANGED_FILES == *"${API_FOLDER}"*  ]]; then
+        echo "Build api component"
+        cp MANIFEST ./api/MANIFEST
+        cd ./api
+        docker build . -t "${API_IMAGE}:${GIT_SHA}"
+        docker tag "${API_IMAGE}:${GIT_SHA}" "${API_IMAGE}:${TYPE}.${NUMBER}.${DATE}"
+        docker push "${API_IMAGE}:${GIT_SHA}"
+        docker push "${API_IMAGE}:${TYPE}.${NUMBER}.${DATE}"
+      fi
+
   - stage: develop
     if: branch = develop AND type = push
+    os: osx
     script: 
     - echo $TRAVIS_BUILD_STAGE_NAME
     - cd ./cli
     - TAG="${DATE}-latest"
-    - source ../travis-scripts/build_cli.sh "${TAG}"  
+    - source ../travis-scripts/build_cli.sh "${TAG}"
+
   - stage: release
     if: branch =~ ^release.*$ AND NOT type = pull_request
+    os: osx
     script:
     - echo $TRAVIS_BUILD_STAGE_NAME
     - cd ./cli
-    - TAG="${CLI_VERSION}-${DATE}"
+    - TAG="${VERSION}-${DATE}"
     - source ../travis-scripts/build_cli.sh "${TAG}"  
+  
   - stage: master
     if: branch = master AND NOT type = pull_request
+    os: osx
     script:
     - echo $TRAVIS_BUILD_STAGE_NAME
     - cd ./cli
-    - TAG="${CLI_VERSION}"
+    - TAG="${VERSION}"
     - source ../travis-scripts/build_cli.sh "${TAG}"  
