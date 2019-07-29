@@ -90,7 +90,7 @@ jobs:
     - NUMBER="$(echo $TRAVIS_BRANCH | cut -d'/' -f2)"
     - | 
       if [[ $CHANGED_FILES == *"${API_FOLDER}"*  ]]; then
-        echo "Build api component"
+        echo "Build keptn api"
         cp MANIFEST ./api/MANIFEST
         cd ./api
         docker build . -t "${API_IMAGE}:${GIT_SHA}"
@@ -123,7 +123,7 @@ jobs:
     - ./writeManifest.sh
     - | 
       if [[ $CHANGED_FILES == *"${API_FOLDER}"*  ]]; then
-        echo "Build api component"
+        echo "Build keptn api"
         cp MANIFEST ./api/MANIFEST
         cd ./api
         docker build . -t "${API_IMAGE}:${GIT_SHA}"
@@ -153,7 +153,7 @@ jobs:
     script:
     - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
     - ./writeManifest.sh
-    - echo "Build api component"
+    - echo "Build keptn api"
     - cp MANIFEST ./api/MANIFEST
     - cd ./api
     - docker build . -t "${API_IMAGE}:${GIT_SHA}"
@@ -180,7 +180,7 @@ jobs:
     services:
       - docker
     script:
-    - echo "Build api component"
+    - echo "Build keptn api"
     - cd ./api
     - docker build . -t "${API_IMAGE}:${VERSION}"
     - docker push "${API_IMAGE}:${VERSION}"
