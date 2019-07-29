@@ -90,6 +90,8 @@ jobs:
       - docker
     script:
     - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
+    - TYPE="$(echo $TRAVIS_BRANCH | cut -d'/' -f1)"
+    - NUMBER="$(echo $TRAVIS_BRANCH | cut -d'/' -f2)"
     - | 
       if [[ $CHANGED_FILES == *"${API_FOLDER}"*  ]]; then
         echo "Build api component"
