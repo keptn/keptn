@@ -76,7 +76,6 @@ jobs:
         dep ensure
         go test ./...
         TAG="${TYPE}-${NUMBER}-${DATE}"
-        echo $TAG
         source ../travis-scripts/build_cli.sh "${TAG}"
         cd ..
       fi
@@ -104,26 +103,85 @@ jobs:
   - stage: develop
     if: branch = develop AND type = push
     os: osx
-    script: 
-    - echo $TRAVIS_BUILD_STAGE_NAME
-    - cd ./cli
-    - TAG="${DATE}-latest"
-    - source ../travis-scripts/build_cli.sh "${TAG}"
+    script:
+    - | 
+      if [[ $CHANGED_FILES == *"${CLI_FOLDER}"*  ]]; then
+        echo "Build keptn cli"
+        cd ./cli
+        dep ensure
+        go test ./...
+        TAG="${DATE}-latest"
+        source ../travis-scripts/build_cli.sh "${TAG}"
+        cd ..
+      fi
+  - if: branch = develop AND type = push
+    os: linux
+    services:
+      - docker
+    script:
+    - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
+    - ./writeManifest.sh
+    - | 
+      if [[ $CHANGED_FILES == *"${API_FOLDER}"*  ]]; then
+        echo "Build api component"
+        cp MANIFEST ./api/MANIFEST
+        cd ./api
+        docker build . -t "${API_IMAGE}:${GIT_SHA}"
+        docker tag "${API_IMAGE}:${GIT_SHA}" "${API_IMAGE}:${DATE}"
+        docker tag "${API_IMAGE}:${GIT_SHA}" "${API_IMAGE}:latest"
+        docker push "${API_IMAGE}:${GIT_SHA}"
+        docker push "${API_IMAGE}:${DATE}"
+        docker push "${API_IMAGE}:latest"
+        cd ..
+      fi
 
   - stage: release
     if: branch =~ ^release.*$ AND NOT type = pull_request
     os: osx
     script:
-    - echo $TRAVIS_BUILD_STAGE_NAME
+    - echo "Build keptn cli"
     - cd ./cli
+    - dep ensure
+    - go test ./...
     - TAG="${VERSION}-${DATE}"
-    - source ../travis-scripts/build_cli.sh "${TAG}"  
-  
+    - source ../travis-scripts/build_cli.sh "${TAG}"
+    - cd ..
+  - if: branch =~ ^release.*$ AND NOT type = pull_request
+    os: linux
+    services:
+      - docker
+    script:
+    - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
+    - ./writeManifest.sh
+    - echo "Build api component"
+    - cp MANIFEST ./api/MANIFEST
+    - cd ./api
+    - docker build . -t "${API_IMAGE}:${GIT_SHA}"
+    - docker tag "${API_IMAGE}:${GIT_SHA}" "${API_IMAGE}:${VERSION}.${DATE}"
+    - docker tag "${API_IMAGE}:${GIT_SHA}" "${API_IMAGE}:${VERSION}.latest"
+    - docker push "${API_IMAGE}:${GIT_SHA}"
+    - docker push "${API_IMAGE}:${VERSION}.${DATE}"
+    - docker push "${API_IMAGE}:${VERSION}.latest"
+    - cd ..
+
   - stage: master
     if: branch = master AND NOT type = pull_request
     os: osx
     script:
-    - echo $TRAVIS_BUILD_STAGE_NAME
+    - echo "Build keptn cli"
     - cd ./cli
+    - dep ensure
+    - go test ./...
     - TAG="${VERSION}"
-    - source ../travis-scripts/build_cli.sh "${TAG}"  
+    - source ../travis-scripts/build_cli.sh "${TAG}"
+    - cd ..
+  - if: branch = master AND NOT type = pull_request
+    os: linux
+    services:
+      - docker
+    script:
+    - echo "Build api component"
+    - cd ./api
+    - docker build . -t "${API_IMAGE}:${VERSION}"
+    - docker push "${API_IMAGE}:${VERSION}"
+    - cd ..
