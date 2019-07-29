@@ -72,7 +72,6 @@
   name = "k8s.io/apimachinery"
   version = "kubernetes-1.14.3"
 
-  
 #[prune]
 #  go-tests = true
 #  unused-packages = true
