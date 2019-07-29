@@ -31,7 +31,6 @@ before_install:
     source ./google-cloud-sdk/completion.bash.inc
     source ./google-cloud-sdk/path.bash.inc
   fi
-- gcloud --quiet version
 - gcloud --quiet components update
 - gcloud --quiet components update kubectl
 - echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
@@ -54,7 +53,6 @@ before_install:
 - REGISTRY_USER=jbraeuer
 
 - CHANGED_FILES=($(git diff --name-only $TRAVIS_COMMIT_RANGE | sed ':a;N;$!ba;s/\n/.\//g' ) )
-- ./writeManifest.sh
 
 - CLI_FOLDER="./cli/"
 - API_IMAGE=keptn/api
@@ -90,6 +88,7 @@ jobs:
       - docker
     script:
     - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
+    - ./writeManifest.sh
     - TYPE="$(echo $TRAVIS_BRANCH | cut -d'/' -f1)"
     - NUMBER="$(echo $TRAVIS_BRANCH | cut -d'/' -f2)"
     - | 
