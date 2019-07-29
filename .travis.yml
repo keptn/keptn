@@ -48,7 +48,6 @@ before_install:
 
 - git diff --name-only $TRAVIS_COMMIT_RANGE > files.txt
 - CHANGED_FILES=$(tr '\n' , < files.txt)
-- echo $CHANGED_FILES
 
 - CLI_FOLDER="cli/"
 - API_IMAGE=keptn/api
@@ -76,7 +75,9 @@ jobs:
         cd ./cli
         dep ensure
         go test ./...
-        source ../travis-scripts/build_cli.sh "${TYPE}-${NUMBER}-${DATE}"
+        TAG="${TYPE}-${NUMBER}-${DATE}"
+        echo $TAG
+        source ../travis-scripts/build_cli.sh "${TAG}"
         cd ..
       fi
   - if: branch =~ ^feature.*$ OR branch =~ ^bug.*$ OR branch =~ ^hotfix.*$ OR branch =~ ^patch.*$
