@@ -49,9 +49,9 @@ before_install:
 - CHANGED_FILES=($(git diff --name-only $TRAVIS_COMMIT_RANGE | sed ':a;N;$!ba;s/\n/.\//g' ) )
 - echo $CHANGED_FILES
 
-- CLI_FOLDER="./cli/"
+- CLI_FOLDER="cli/"
 - API_IMAGE=keptn/api
-- API_FOLDER="./api/"
+- API_FOLDER="api/"
 
 jobs:
   include:
