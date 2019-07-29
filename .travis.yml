@@ -46,7 +46,8 @@ before_install:
 - GIT_SHA="$(git rev-parse --short HEAD)"
 - REGISTRY_USER=jbraeuer
 
-- CHANGED_FILES=($(git diff --name-only $TRAVIS_COMMIT_RANGE | sed ':a;N;$!ba;s/\n/.\//g' ) )
+- git diff --name-only $TRAVIS_COMMIT_RANGE > files.txt
+- CHANGED_FILES=$(tr '\n' , < files.txt)
 - echo $CHANGED_FILES
 
 - CLI_FOLDER="cli/"
