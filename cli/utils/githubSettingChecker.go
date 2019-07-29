@@ -52,15 +52,14 @@ func HasTokenRepoScope(accessToken string) (bool, error) {
 	client := github.NewClient(tc)
 
 	_, resp, err := client.Organizations.List(ctx, "", nil)
+	if err != nil {
+		fmt.Println(err)
+		return false, err
+	}
 
 	if resp.StatusCode == http.StatusUnauthorized {
 		fmt.Println("GitHub Personal Access Token is unauthorized")
 		return false, nil
-	}
-
-	if err != nil {
-		fmt.Println(err)
-		return false, err
 	}
 
 	return strings.Contains(resp.Header.Get("X-OAuth-Scopes"), "repo"), nil
