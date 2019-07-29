@@ -18,7 +18,6 @@ RUN curl -L -s https://github.com/golang/dep/releases/download/v$DEP_VERSION/dep
 RUN CGO_ENABLED=0 GOOS=linux go build -v cmd-server/main.go
 
 # Use a Docker multi-stage build to create a lean production image.
-# https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
 FROM alpine
 RUN apk add --no-cache ca-certificates
 
@@ -27,5 +26,6 @@ COPY --from=builder /go/src/github.com/keptn/keptn/api/main /api
 COPY --from=builder /go/src/github.com/keptn/keptn/api/swagger-ui /swagger-ui
 COPY --from=builder /go/src/github.com/keptn/keptn/api/swagger.json /swagger-ui/swagger.json
 ADD MANIFEST /
+
 # Run the web service on container startup.
 CMD ["sh", "-c", "cat MANIFEST && ./api --host=0.0.0.0 --port=8080"]
