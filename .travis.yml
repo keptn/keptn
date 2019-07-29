@@ -2,6 +2,8 @@ sudo: true
 language: go
 go:
   - 1.12.x
+services:
+- docker
 cache:
   directories:
     - "$HOME/google-cloud-sdk/"
@@ -59,7 +61,7 @@ before_install:
 - REGISTRY_USER=jbraeuer
 - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
 
-- CHANGED_FILES=($(git diff --name-only $TRAVIS_COMMIT_RANGE | paste -sd "," ) )
+- CHANGED_FILES=($(git diff --name-only $TRAVIS_COMMIT_RANGE | sed ':a;N;$!ba;s/\n/ /g' ) )
 - ./writeManifest.sh
 
 - CLI_FOLDER="cli/"
