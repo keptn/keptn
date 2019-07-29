@@ -72,11 +72,11 @@ jobs:
     - | 
       if [[ $CHANGED_FILES == *"${CLI_FOLDER}"*  ]]; then
         echo "Build keptn cli"
-        #cd ./cli
-        #dep ensure
-        #go test ./...
-        #source ../travis-scripts/build_cli.sh "${TYPE}-${NUMBER}-${DATE}"
-        #cd ..
+        cd ./cli
+        dep ensure
+        go test ./...
+        source ../travis-scripts/build_cli.sh "${TYPE}-${NUMBER}-${DATE}"
+        cd ..
       fi
   - if: branch =~ ^feature.*$ OR branch =~ ^bug.*$ OR branch =~ ^hotfix.*$ OR branch =~ ^patch.*$
     os: linux
@@ -92,11 +92,11 @@ jobs:
         echo "Build api component"
         cp MANIFEST ./api/MANIFEST
         cd ./api
-        #docker build . -t "${API_IMAGE}:${GIT_SHA}"
-        #docker tag "${API_IMAGE}:${GIT_SHA}" "${API_IMAGE}:${TYPE}.${NUMBER}.${DATE}"
-        #docker push "${API_IMAGE}:${GIT_SHA}"
-        #docker push "${API_IMAGE}:${TYPE}.${NUMBER}.${DATE}"
-        #cd ..
+        docker build . -t "${API_IMAGE}:${GIT_SHA}"
+        docker tag "${API_IMAGE}:${GIT_SHA}" "${API_IMAGE}:${TYPE}.${NUMBER}.${DATE}"
+        docker push "${API_IMAGE}:${GIT_SHA}"
+        docker push "${API_IMAGE}:${TYPE}.${NUMBER}.${DATE}"
+        cd ..
       fi
 
   - stage: develop
