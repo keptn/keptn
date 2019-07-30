@@ -44,6 +44,8 @@ before_install:
 - CLI_FOLDER="cli/"
 - API_IMAGE=keptn/api
 - API_FOLDER="api/"
+- OS_ROUTE_SVC_IMAGE=keptn/openshift-route-service
+- OS_ROUTE_SVC_FOLDER="openshift-route-service/"
 
 jobs:
   include:
@@ -91,6 +93,17 @@ jobs:
         docker push "${API_IMAGE}:${TYPE}.${NUMBER}.${DATE}"
         cd ..
       fi
+    - | 
+      if [[ $CHANGED_FILES == *"${OS_ROUTE_SVC_FOLDER}"*  ]]; then
+        echo "Build keptn openshift-route-service"
+        cp MANIFEST ./platform-support/openshift-route-service/MANIFEST
+        cd ./platform-support/openshift-route-service
+        docker build . -t "${OS_ROUTE_SVC_IMAGE}:${GIT_SHA}"
+        docker tag "${OS_ROUTE_SVC_IMAGE}:${GIT_SHA}" "${OS_ROUTE_SVC_IMAGE}:${TYPE}.${NUMBER}.${DATE}"
+        docker push "${OS_ROUTE_SVC_IMAGE}:${GIT_SHA}"
+        docker push "${OS_ROUTE_SVC_IMAGE}:${TYPE}.${NUMBER}.${DATE}"
+        cd ../..
+      fi
 
   - stage: develop
     if: branch = develop AND type = push
@@ -126,6 +139,19 @@ jobs:
         docker push "${API_IMAGE}:latest"
         cd ..
       fi
+    - | 
+      if [[ $CHANGED_FILES == *"${OS_ROUTE_SVC_FOLDER}"*  ]]; then
+        echo "Build keptn openshift-route-service"
+        cp MANIFEST ./platform-support/openshift-route-service/MANIFEST
+        cd ./platform-support/openshift-route-service/
+        docker build . -t "${OS_ROUTE_SVC_IMAGE}:${GIT_SHA}"
+        docker tag "${OS_ROUTE_SVC_IMAGE}:${GIT_SHA}" "${OS_ROUTE_SVC_IMAGE}:${DATE}"
+        docker tag "${OS_ROUTE_SVC_IMAGE}:${GIT_SHA}" "${OS_ROUTE_SVC_IMAGE}:latest"
+        docker push "${OS_ROUTE_SVC_IMAGE}:${GIT_SHA}"
+        docker push "${OS_ROUTE_SVC_IMAGE}:${DATE}"
+        docker push "${OS_ROUTE_SVC_IMAGE}:latest"
+        cd ../..
+      fi
 
   - stage: release
     if: branch =~ ^release.*$ AND NOT type = pull_request
@@ -155,6 +181,16 @@ jobs:
     - docker push "${API_IMAGE}:${VERSION}.${DATE}"
     - docker push "${API_IMAGE}:${VERSION}.latest"
     - cd ..
+    - echo "Build keptn openshift-route-service"
+    - cp MANIFEST ./platform-support/openshift-route-service/MANIFEST
+    - cd ./platform-support/openshift-route-service/
+    - docker build . -t "${OS_ROUTE_SVC_IMAGE}:${GIT_SHA}"
+    - docker tag "${OS_ROUTE_SVC_IMAGE}:${GIT_SHA}" "${OS_ROUTE_SVC_IMAGE}:${VERSION}.${DATE}"
+    - docker tag "${OS_ROUTE_SVC_IMAGE}:${GIT_SHA}" "${OS_ROUTE_SVC_IMAGE}:${VERSION}.latest"
+    - docker push "${OS_ROUTE_SVC_IMAGE}:${GIT_SHA}"
+    - docker push "${OS_ROUTE_SVC_IMAGE}:${VERSION}.${DATE}"
+    - docker push "${OS_ROUTE_SVC_IMAGE}:${VERSION}.latest"
+    - cd ../..
 
   - stage: master
     if: branch = master AND NOT type = pull_request
@@ -177,3 +213,8 @@ jobs:
     - docker build . -t "${API_IMAGE}:${VERSION}"
     - docker push "${API_IMAGE}:${VERSION}"
     - cd ..
+    - echo "Build keptn openshift-route-service"
+    - cd ./platform-support/openshift-route-service/
+    - docker build . -t "${OS_ROUTE_SVC_IMAGE}:${VERSION}"
+    - docker push "${OS_ROUTE_SVC_IMAGE}:${VERSION}"
+    - cd ../..
