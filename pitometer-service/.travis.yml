@@ -1,0 +1,57 @@
+sudo: true
+dist: xenial
+language: node_js
+node_js:
+- '10'
+services:
+- docker
+before_install:
+- export TZ=Europe/Vienna
+- IMAGE=keptn/pitometer-service
+- REGISTRY_USER=jbraeuer
+- VERSION="$(cat version | tr -d '[:space:]')"
+- DATE="$(date +'%Y%m%d.%H%M')"
+- GIT_SHA="$(git rev-parse --short HEAD)"
+- echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
+- REPO_URL="$(git remote get-url --all origin)"
+- LAST_COMMIT="$(git log -1 --oneline)"
+- ./writeManifest.sh
+- cat MANIFEST
+jobs:
+  include:
+  - stage: feature/bug
+    if: branch =~ ^feature.*$ OR branch =~ ^bug.*$ OR branch =~ ^hotfix.*$
+    script:
+    - echo $TRAVIS_BUILD_STAGE_NAME
+    - TYPE="$(echo $TRAVIS_BRANCH | cut -d'/' -f1)"
+    - NUMBER="$(echo $TRAVIS_BRANCH | cut -d'/' -f2)"
+    - docker build . -t "${IMAGE}:${GIT_SHA}"
+    - docker tag "${IMAGE}:${GIT_SHA}" "${IMAGE}:${TYPE}.${NUMBER}.${DATE}"
+    - docker push "${IMAGE}:${GIT_SHA}"
+    - docker push "${IMAGE}:${TYPE}.${NUMBER}.${DATE}"
+  - stage: develop
+    if: branch = develop AND NOT type = pull_request
+    script:
+    - echo $TRAVIS_BUILD_STAGE_NAME
+    - docker build . -t "${IMAGE}:${GIT_SHA}"
+    - docker tag "${IMAGE}:${GIT_SHA}" "${IMAGE}:${DATE}"
+    - docker tag "${IMAGE}:${GIT_SHA}" "${IMAGE}:latest"
+    - docker push "${IMAGE}:${GIT_SHA}"
+    - docker push "${IMAGE}:${DATE}"
+    - docker push "${IMAGE}:latest"
+  - stage: release-branch
+    if: branch =~ ^release.*$ AND NOT type = pull_request
+    script:
+    - echo $TRAVIS_BUILD_STAGE_NAME
+    - docker build . -t "${IMAGE}:${GIT_SHA}"
+    - docker tag "${IMAGE}:${GIT_SHA}" "${IMAGE}:${VERSION}.${DATE}"
+    - docker tag "${IMAGE}:${GIT_SHA}" "${IMAGE}:${VERSION}.latest"
+    - docker push "${IMAGE}:${GIT_SHA}"
+    - docker push "${IMAGE}:${VERSION}.${DATE}"
+    - docker push "${IMAGE}:${VERSION}.latest"
+  - stage: master
+    if: branch = master AND NOT type = pull_request
+    script:
+    - echo $TRAVIS_BUILD_STAGE_NAME
+    - docker build . -t "${IMAGE}:${VERSION}"
+    - docker push "${IMAGE}:${VERSION}"
