@@ -8,11 +8,12 @@ TYPE=$4
 NUMBER=$5
 DATE=$6
 
-echo "Build keptn ${IMAGE}"
-cp MANIFEST ./${FOLDER}
-cd ./${FOLDER}
-cat MANIFEST
-docker build . -t "${IMAGE}:${GIT_SHA}"
-docker tag "${IMAGE}:${GIT_SHA}" "${API_IMAGE}:${TYPE}.${NUMBER}.${DATE}"
-docker push "${API_IMAGE}:${GIT_SHA}"
-docker push "${API_IMAGE}:${TYPE}.${NUMBER}.${DATE}"
+echo "hallo"
+#echo "Build keptn ${IMAGE}"
+#cp MANIFEST ./${FOLDER}MANIFEST #$FOLDER contains / at the end
+#cd ./${FOLDER}
+#cat MANIFEST
+#docker build . -t "${IMAGE}:${GIT_SHA}"
+#docker tag "${IMAGE}:${GIT_SHA}" "${API_IMAGE}:${TYPE}.${NUMBER}.${DATE}"
+#docker push "${API_IMAGE}:${GIT_SHA}"
+#docker push "${API_IMAGE}:${TYPE}.${NUMBER}.${DATE}"
