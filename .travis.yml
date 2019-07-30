@@ -51,6 +51,8 @@ before_install:
 - PITOMETER_SVC_FOLDER="pitometer-service/"
 - BRIDGE_IMAGE="keptn/bridge"
 - BRIDGE_FOLDER="bridge/"
+- JMETER_SVC_IMAGE="keptn/jmeter-service"
+- JMETER_SVC_FOLDER="jmeter-service/"
 
 jobs:
   include:
@@ -107,6 +109,11 @@ jobs:
         source ./travis-scripts/build_feature.sh "${BRIDGE_IMAGE}" "${BRIDGE_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
         cd ..
       fi
+    - | 
+      if [[ $CHANGED_FILES == *"${JMETER_SVC_FOLDER}"*  ]]; then
+        source ./travis-scripts/build_feature.sh "${JMETER_SVC_IMAGE}" "${JMETER_SVC_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
+        cd ..
+      fi
 
   - stage: develop
     if: branch = develop AND type = push
@@ -149,6 +156,11 @@ jobs:
         source ./travis-scripts/build_develop.sh "${BRIDGE_IMAGE}" "${BRIDGE_FOLDER}" "${GIT_SHA}" "${DATE}"
         cd ..
       fi
+    - | 
+      if [[ $CHANGED_FILES == *"${JMETER_SVC_FOLDER}"*  ]]; then
+        source ./travis-scripts/build_develop.sh "${JMETER_SVC_IMAGE}" "${JMETER_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
+        cd ..
+      fi
 
   - stage: release
     if: branch =~ ^release.*$ AND NOT type = pull_request
@@ -176,6 +188,8 @@ jobs:
     - cd ..
     - source ./travis-scripts/build_release.sh "${BRIDGE_IMAGE}" "${BRIDGE_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
     - cd ..
+    - source ./travis-scripts/build_release.sh "${JMETER_SVC_IMAGE}" "${JMETER_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+    - cd ..
 
   - stage: master
     if: branch = master AND NOT type = pull_request
@@ -202,4 +216,6 @@ jobs:
     - source ./travis-scripts/build_master.sh "${PITOMETER_SVC_IMAGE}" "${PITOMETER_SVC_FOLDER}" "${VERSION}"
     - cd ..
     - source ./travis-scripts/build_master.sh "${BRIDGE_IMAGE}" "${BRIDGE_FOLDER}" "${VERSION}"
+    - cd ..
+    - source ./travis-scripts/build_master.sh "${JMETER_SVC_IMAGE}" "${JMETER_SVC_FOLDER}" "${VERSION}"
     - cd ..
