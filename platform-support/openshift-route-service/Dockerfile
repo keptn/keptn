@@ -30,9 +30,9 @@ RUN wget https://github.com/openshift/origin/releases/download/v3.11.0/openshift
   rm -rf openshift-origin-client-tools-* && \
   rm -rf openshift*tar.gz
 
-
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /go/src/github.com/keptn/openshift-route-service/openshift-route-service /openshift-route-service
 ADD MANIFEST /
+
 # Run the web service on container startup.
 CMD ["sh", "-c", "cat MANIFEST && /openshift-route-service"]
