@@ -9,8 +9,8 @@ NUMBER=$5
 DATE=$6
 
 echo "Build keptn ${IMAGE}"
-cp MANIFEST ./${IMAGE}
-cd ./${IMAGE}
+cp MANIFEST ./${FOLDER}
+cd ./${FOLDER}
 cat MANIFEST
 docker build . -t "${IMAGE}:${GIT_SHA}"
 docker tag "${IMAGE}:${GIT_SHA}" "${API_IMAGE}:${TYPE}.${NUMBER}.${DATE}"

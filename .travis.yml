@@ -89,7 +89,7 @@ jobs:
     - NUMBER="$(echo $TRAVIS_BRANCH | cut -d'/' -f2)"
     - | 
       if [[ $CHANGED_FILES == *"${API_FOLDER}"*  ]]; then
-        source ../travis-scripts/build_feature.sh "${API_IMAGE}" "${API_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
+        source ./travis-scripts/build_feature.sh "${API_IMAGE}" "${API_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
         cd ..
       fi
     - | 
