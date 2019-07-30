@@ -100,7 +100,8 @@ func configureAPI(api *operations.API) http.Handler {
 			uuidStr := uuid.New().String()
 			params.Body.Shkeptncontext = uuidStr
 		}
-		keptnutils.Info(params.Body.Shkeptncontext, "API received keptn event")
+		l := keptnutils.NewLogger(params.Body.Shkeptncontext, *params.Body.ID, "api")
+		l.Info("API received keptn-event")
 
 		token, err := ws.CreateChannelInfo(params.Body.Shkeptncontext)
 		if err != nil {
@@ -116,7 +117,7 @@ func configureAPI(api *operations.API) http.Handler {
 			return getSendEventInternalError(err)
 		}
 
-		if err := utils.PostToEventBroker(forwardEvent, params.Body.Shkeptncontext); err != nil {
+		if err := utils.PostToEventBroker(forwardEvent, l); err != nil {
 			return getSendEventInternalError(err)
 		}
 		return event.NewSendEventCreated().WithPayload(&channelInfo)
@@ -126,7 +127,8 @@ func configureAPI(api *operations.API) http.Handler {
 		if params.Body.Shkeptncontext == "" {
 			params.Body.Shkeptncontext = uuid.New().String()
 		}
-		keptnutils.Info(params.Body.Shkeptncontext, "API received configure event")
+		l := keptnutils.NewLogger(params.Body.Shkeptncontext, *params.Body.ID, "api")
+		l.Info("API received configure-event")
 
 		token, err := ws.CreateChannelInfo(params.Body.Shkeptncontext)
 		if err != nil {
@@ -142,7 +144,7 @@ func configureAPI(api *operations.API) http.Handler {
 			return getConfigureInternalError(err)
 		}
 
-		if err := utils.PostToEventBroker(forwardEvent, params.Body.Shkeptncontext); err != nil {
+		if err := utils.PostToEventBroker(forwardEvent, l); err != nil {
 			return getConfigureInternalError(err)
 		}
 		return configure.NewConfigureCreated().WithPayload(&channelInfo)
@@ -152,7 +154,8 @@ func configureAPI(api *operations.API) http.Handler {
 		if params.Body.Shkeptncontext == "" {
 			params.Body.Shkeptncontext = uuid.New().String()
 		}
-		keptnutils.Info(params.Body.Shkeptncontext, "API received project event")
+		l := keptnutils.NewLogger(params.Body.Shkeptncontext, *params.Body.ID, "api")
+		l.Info("API received project-event")
 
 		token, err := ws.CreateChannelInfo(params.Body.Shkeptncontext)
 		if err != nil {
@@ -168,7 +171,7 @@ func configureAPI(api *operations.API) http.Handler {
 			return getProjectInternalError(err)
 		}
 
-		if err := utils.PostToEventBroker(forwardEvent, params.Body.Shkeptncontext); err != nil {
+		if err := utils.PostToEventBroker(forwardEvent, l); err != nil {
 			return getProjectInternalError(err)
 		}
 		return project.NewProjectCreated().WithPayload(&channelInfo)
@@ -179,7 +182,8 @@ func configureAPI(api *operations.API) http.Handler {
 			uuidStr := uuid.New().String()
 			params.Body.Shkeptncontext = uuidStr
 		}
-		keptnutils.Info(params.Body.Shkeptncontext, "API received service event")
+		l := keptnutils.NewLogger(params.Body.Shkeptncontext, *params.Body.ID, "api")
+		l.Info("API received service-event")
 
 		token, err := ws.CreateChannelInfo(params.Body.Shkeptncontext)
 		if err != nil {
@@ -195,7 +199,7 @@ func configureAPI(api *operations.API) http.Handler {
 			return getServiceInternalError(err)
 		}
 
-		if err := utils.PostToEventBroker(forwardEvent, params.Body.Shkeptncontext); err != nil {
+		if err := utils.PostToEventBroker(forwardEvent, l); err != nil {
 			return getServiceInternalError(err)
 		}
 		return service.NewServiceCreated().WithPayload(&channelInfo)
@@ -205,9 +209,10 @@ func configureAPI(api *operations.API) http.Handler {
 		if params.Body.Shkeptncontext == "" {
 			params.Body.Shkeptncontext = uuid.New().String()
 		}
-		keptnutils.Info(params.Body.Shkeptncontext, "API received Dynatrace event")
+		l := keptnutils.NewLogger(params.Body.Shkeptncontext, *params.Body.ID, "api")
+		l.Info("API received Dynatrace-event")
 
-		if err := utils.PostToEventBroker(params.Body, params.Body.Shkeptncontext); err != nil {
+		if err := utils.PostToEventBroker(params.Body, l); err != nil {
 			return getDynatraceInternalError(err)
 		}
 		return dynatrace.NewDynatraceCreated()
@@ -256,7 +261,6 @@ func configureTLS(tlsConfig *tls.Config) {
 func configureServer(s *http.Server, scheme, addr string) {
 	hub = ws.NewHub()
 	go hub.Run()
-	keptnutils.ServiceName = "api"
 }
 
 // The middleware configuration is for the handler executors. These do not apply to the swagger.json document.
