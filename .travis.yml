@@ -170,7 +170,7 @@ jobs:
     - ./writeManifest.sh
     - source ./travis-scripts/build_release.sh "${API_IMAGE}" "${API_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
     - cd ..
-    - source ./travis-scripts/build_release.sh "${OS_ROUTE_SVC_IMAGE}" "${OS_ROUTE_SVC_IMAGE}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+    - source ./travis-scripts/build_release.sh "${OS_ROUTE_SVC_IMAGE}" "${OS_ROUTE_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
     - cd ../..
     - source ./travis-scripts/build_release.sh "${PITOMETER_SVC_IMAGE}" "${PITOMETER_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
     - cd ..
@@ -193,23 +193,13 @@ jobs:
     services:
       - docker
     script:
-    - echo "Build keptn api"
-    - cd ./api
-    - docker build . -t "${API_IMAGE}:${VERSION}"
-    - docker push "${API_IMAGE}:${VERSION}"
+    - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
+    - ./writeManifest.sh
+    - source ./travis-scripts/build_master.sh "${API_IMAGE}" "${API_FOLDER}" "${VERSION}"
     - cd ..
-    - echo "Build openshift-route-service"
-    - cd ./platform-support/openshift-route-service/
-    - docker build . -t "${OS_ROUTE_SVC_IMAGE}:${VERSION}"
-    - docker push "${OS_ROUTE_SVC_IMAGE}:${VERSION}"
+    - source ./travis-scripts/build_master.sh "${OS_ROUTE_SVC_IMAGE}" "${OS_ROUTE_SVC_FOLDER}" "${VERSION}"
     - cd ../..
-    - echo "Build pitometer-service"
-    - cd ./pitometer-service/
-    - docker build . -t "${PITOMETER_SVC_IMAGE}:${VERSION}"
-    - docker push "${PITOMETER_SVC_IMAGE}:${VERSION}"
-    - cd ../..
-    - echo "Build bridge"
-    - cd ./bridge/
-    - docker build . -t "${BRIDGE_IMAGE}:${VERSION}"
-    - docker push "${BRIDGE_IMAGE}:${VERSION}"
-    - cd ../..
+    - source ./travis-scripts/build_master.sh "${PITOMETER_SVC_IMAGE}" "${PITOMETER_SVC_FOLDER}" "${VERSION}"
+    - cd ..
+    - source ./travis-scripts/build_master.sh "${BRIDGE_IMAGE}" "${BRIDGE_FOLDER}" "${VERSION}"
+    - cd ..
