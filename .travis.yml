@@ -55,6 +55,10 @@ before_install:
 - JMETER_SVC_FOLDER="jmeter-service/"
 - HELM_SVC_IMAGE="keptn/helm-service"
 - HELM_SVC_FOLDER="helm-service/"
+- GATEKEEPER_SVC_IMAGE="keptn/gatekeeper-service"
+- GATEKEEPER_SVC_FOLDER="gatekeeper-service/"
+- DISTRIBUTOR_IMAGE="keptn/distributor"
+- DISTRIBUTOR_FOLDER="distributor/"
 
 jobs:
   include:
@@ -121,6 +125,16 @@ jobs:
         source ./travis-scripts/build_feature.sh "${HELM_SVC_IMAGE}" "${HELM_SVC_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
         cd ..
       fi
+    - | 
+      if [[ $CHANGED_FILES == *"${GATEKEEPER_SVC_FOLDER}"*  ]]; then
+        source ./travis-scripts/build_feature.sh "${GATEKEEPER_SVC_IMAGE}" "${GATEKEEPER_SVC_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
+        cd ..
+      fi
+    - | 
+      if [[ $CHANGED_FILES == *"${DISTRIBUTOR_FOLDER}"*  ]]; then
+        source ./travis-scripts/build_feature.sh "${DISTRIBUTOR_IMAGE}" "${DISTRIBUTOR_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
+        cd ..
+      fi
 
   - stage: develop
     if: branch = develop AND type = push
@@ -173,6 +187,16 @@ jobs:
         source ./travis-scripts/build_develop.sh "${HELM_SVC_IMAGE}" "${HELM_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
         cd ..
       fi
+    - | 
+      if [[ $CHANGED_FILES == *"${GATEKEEPER_SVC_FOLDER}"*  ]]; then
+        source ./travis-scripts/build_develop.sh "${GATEKEEPER_SVC_IMAGE}" "${GATEKEEPER_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
+        cd ..
+      fi
+    - | 
+      if [[ $CHANGED_FILES == *"${DISTRIBUTOR_FOLDER}"*  ]]; then
+        source ./travis-scripts/build_develop.sh "${DISTRIBUTOR_IMAGE}" "${DISTRIBUTOR_FOLDER}" "${GIT_SHA}" "${DATE}"
+        cd ..
+      fi
 
   - stage: release
     if: branch =~ ^release.*$ AND NOT type = pull_request
@@ -204,6 +228,10 @@ jobs:
     - cd ..
     - source ./travis-scripts/build_release.sh "${HELM_SVC_IMAGE}" "${HELM_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
     - cd ..
+    - source ./travis-scripts/build_release.sh "${GATEKEEPER_SVC_IMAGE}" "${GATEKEEPER_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+    - cd ..
+    - source ./travis-scripts/build_release.sh "${DISTRIBUTOR_IMAGE}" "${DISTRIBUTOR_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+    - cd ..
 
   - stage: master
     if: branch = master AND NOT type = pull_request
@@ -234,4 +262,8 @@ jobs:
     - source ./travis-scripts/build_master.sh "${JMETER_SVC_IMAGE}" "${JMETER_SVC_FOLDER}" "${VERSION}"
     - cd ..
     - source ./travis-scripts/build_master.sh "${HELM_SVC_IMAGE}" "${HELM_SVC_FOLDER}" "${VERSION}"
+    - cd ..
+    - source ./travis-scripts/build_master.sh "${GATEKEEPER_SVC_IMAGE}" "${GATEKEEPER_SVC_FOLDER}" "${VERSION}"
+    - cd ..
+    - source ./travis-scripts/build_master.sh "${DISTRIBUTOR_IMAGE}" "${DISTRIBUTOR_FOLDER}" "${VERSION}"
     - cd ..
