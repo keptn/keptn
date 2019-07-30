@@ -88,13 +88,7 @@ jobs:
     - NUMBER="$(echo $TRAVIS_BRANCH | cut -d'/' -f2)"
     - | 
       if [[ $CHANGED_FILES == *"${API_FOLDER}"*  ]]; then
-        echo "Build keptn api"
-        cp MANIFEST ./api/MANIFEST
-        cd ./api
-        docker build . -t "${API_IMAGE}:${GIT_SHA}"
-        docker tag "${API_IMAGE}:${GIT_SHA}" "${API_IMAGE}:${TYPE}.${NUMBER}.${DATE}"
-        docker push "${API_IMAGE}:${GIT_SHA}"
-        docker push "${API_IMAGE}:${TYPE}.${NUMBER}.${DATE}"
+        source ../travis-scripts/build_feature.sh "${API_IMAGE}" "${API_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
         cd ..
       fi
     - | 
