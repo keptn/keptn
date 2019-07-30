@@ -19,6 +19,7 @@ RUN apk add --no-cache ca-certificates
 
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /go/src/github.com/keptn/navigator/navigator /navigator
+
 ADD MANIFEST /
 
 RUN ls -R /navigator

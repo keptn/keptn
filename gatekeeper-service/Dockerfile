@@ -24,6 +24,7 @@ RUN apk add --no-cache ca-certificates
 
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /go/src/github.com/keptn/gatekeeper-service/gatekeeper-service /gatekeeper-service
+
 ADD MANIFEST /
 
 # Run the web service on container startup.

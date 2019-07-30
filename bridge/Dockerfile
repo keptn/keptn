@@ -7,7 +7,6 @@ RUN npm install -g http-server
 RUN addgroup mygroup && adduser -D -G mygroup myuser && mkdir -p /usr/src/app && chown -R myuser /usr/src/app
 
 # Prepare app directory
-
 WORKDIR /usr/src/app
 
 COPY . /usr/src/app
