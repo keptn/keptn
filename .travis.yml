@@ -40,14 +40,17 @@ before_install:
 
 - git diff --name-only $TRAVIS_COMMIT_RANGE > files.txt
 - CHANGED_FILES=$(tr '\n' , < files.txt)
+- echo $CHANGED_FILES
 
 - CLI_FOLDER="cli/"
-- API_IMAGE=keptn/api
+- API_IMAGE="keptn/api"
 - API_FOLDER="api/"
-- OS_ROUTE_SVC_IMAGE=keptn/openshift-route-service
-- OS_ROUTE_SVC_FOLDER="openshift-route-service/"
-- PITOMETER_SVC_IMAGE=keptn/pitometer-service
+- OS_ROUTE_SVC_IMAGE="keptn/openshift-route-service"
+- OS_ROUTE_SVC_FOLDER="platform-support/openshift-route-service/"
+- PITOMETER_SVC_IMAGE="keptn/pitometer-service"
 - PITOMETER_SVC_FOLDER="pitometer-service/"
+- BRIDGE_IMAGE="keptn/bridge"
+- BRIDGE_FOLDER="bridge/"
 
 jobs:
   include:
@@ -86,35 +89,22 @@ jobs:
     - NUMBER="$(echo $TRAVIS_BRANCH | cut -d'/' -f2)"
     - | 
       if [[ $CHANGED_FILES == *"${API_FOLDER}"*  ]]; then
-        echo "Build keptn api"
-        cp MANIFEST ./api/MANIFEST
-        cd ./api
-        docker build . -t "${API_IMAGE}:${GIT_SHA}"
-        docker tag "${API_IMAGE}:${GIT_SHA}" "${API_IMAGE}:${TYPE}.${NUMBER}.${DATE}"
-        docker push "${API_IMAGE}:${GIT_SHA}"
-        docker push "${API_IMAGE}:${TYPE}.${NUMBER}.${DATE}"
+        source ./travis-scripts/build_feature.sh "${API_IMAGE}" "${API_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
         cd ..
       fi
     - | 
       if [[ $CHANGED_FILES == *"${OS_ROUTE_SVC_FOLDER}"*  ]]; then
-        echo "Build openshift-route-service"
-        cp MANIFEST ./platform-support/openshift-route-service/MANIFEST
-        cd ./platform-support/openshift-route-service
-        docker build . -t "${OS_ROUTE_SVC_IMAGE}:${GIT_SHA}"
-        docker tag "${OS_ROUTE_SVC_IMAGE}:${GIT_SHA}" "${OS_ROUTE_SVC_IMAGE}:${TYPE}.${NUMBER}.${DATE}"
-        docker push "${OS_ROUTE_SVC_IMAGE}:${GIT_SHA}"
-        docker push "${OS_ROUTE_SVC_IMAGE}:${TYPE}.${NUMBER}.${DATE}"
+        source ./travis-scripts/build_feature.sh "${OS_ROUTE_SVC_IMAGE}" "${OS_ROUTE_SVC_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
         cd ../..
       fi
     - | 
       if [[ $CHANGED_FILES == *"${PITOMETER_SVC_FOLDER}"*  ]]; then
-        echo "Build pitometer-service"
-        cp MANIFEST ./pitometer-service/MANIFEST
-        cd ./pitometer-service
-        docker build . -t "${PITOMETER_SVC_IMAGE}:${GIT_SHA}"
-        docker tag "${PITOMETER_SVC_IMAGE}:${GIT_SHA}" "${PITOMETER_SVC_IMAGE}:${TYPE}.${NUMBER}.${DATE}"
-        docker push "${PITOMETER_SVC_IMAGE}:${GIT_SHA}"
-        docker push "${PITOMETER_SVC_IMAGE}:${TYPE}.${NUMBER}.${DATE}"
+        source ./travis-scripts/build_feature.sh "${PITOMETER_SVC_IMAGE}" "${PITOMETER_SVC_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
+        cd ..
+      fi
+    - | 
+      if [[ $CHANGED_FILES == *"${BRIDGE_FOLDER}"*  ]]; then
+        source ./travis-scripts/build_feature.sh "${BRIDGE_IMAGE}" "${BRIDGE_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
         cd ..
       fi
 
@@ -141,41 +131,22 @@ jobs:
     - ./writeManifest.sh
     - | 
       if [[ $CHANGED_FILES == *"${API_FOLDER}"*  ]]; then
-        echo "Build keptn api"
-        cp MANIFEST ./api/MANIFEST
-        cd ./api
-        docker build . -t "${API_IMAGE}:${GIT_SHA}"
-        docker tag "${API_IMAGE}:${GIT_SHA}" "${API_IMAGE}:${DATE}"
-        docker tag "${API_IMAGE}:${GIT_SHA}" "${API_IMAGE}:latest"
-        docker push "${API_IMAGE}:${GIT_SHA}"
-        docker push "${API_IMAGE}:${DATE}"
-        docker push "${API_IMAGE}:latest"
+        source ./travis-scripts/build_develop.sh "${API_IMAGE}" "${API_FOLDER}" "${GIT_SHA}" "${DATE}"
         cd ..
       fi
     - | 
       if [[ $CHANGED_FILES == *"${OS_ROUTE_SVC_FOLDER}"*  ]]; then
-        echo "Build keptn openshift-route-service"
-        cp MANIFEST ./platform-support/openshift-route-service/MANIFEST
-        cd ./platform-support/openshift-route-service/
-        docker build . -t "${OS_ROUTE_SVC_IMAGE}:${GIT_SHA}"
-        docker tag "${OS_ROUTE_SVC_IMAGE}:${GIT_SHA}" "${OS_ROUTE_SVC_IMAGE}:${DATE}"
-        docker tag "${OS_ROUTE_SVC_IMAGE}:${GIT_SHA}" "${OS_ROUTE_SVC_IMAGE}:latest"
-        docker push "${OS_ROUTE_SVC_IMAGE}:${GIT_SHA}"
-        docker push "${OS_ROUTE_SVC_IMAGE}:${DATE}"
-        docker push "${OS_ROUTE_SVC_IMAGE}:latest"
+        source ./travis-scripts/build_develop.sh "${OS_ROUTE_SVC_IMAGE}" "${OS_ROUTE_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
         cd ../..
       fi
     - | 
       if [[ $CHANGED_FILES == *"${PITOMETER_SVC_FOLDER}"*  ]]; then
-        echo "Build keptn pitometer-service"
-        cp MANIFEST ./platform-support/openshift-route-service/MANIFEST
-        cd ./platform-support/openshift-route-service/
-        docker build . -t "${PITOMETER_SVC_IMAGE}:${GIT_SHA}"
-        docker tag "${PITOMETER_SVC_IMAGE}:${GIT_SHA}" "${PITOMETER_SVC_IMAGE}:${DATE}"
-        docker tag "${PITOMETER_SVC_IMAGE}:${GIT_SHA}" "${PITOMETER_SVC_IMAGE}:latest"
-        docker push "${PITOMETER_SVC_IMAGE}:${GIT_SHA}"
-        docker push "${PITOMETER_SVC_IMAGE}:${DATE}"
-        docker push "${PITOMETER_SVC_IMAGE}:latest"
+        source ./travis-scripts/build_develop.sh "${PITOMETER_SVC_IMAGE}" "${PITOMETER_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
+        cd ..
+      fi
+    - | 
+      if [[ $CHANGED_FILES == *"${BRIDGE_FOLDER}"*  ]]; then
+        source ./travis-scripts/build_develop.sh "${BRIDGE_IMAGE}" "${BRIDGE_FOLDER}" "${GIT_SHA}" "${DATE}"
         cd ..
       fi
 
@@ -197,35 +168,13 @@ jobs:
     script:
     - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
     - ./writeManifest.sh
-    - echo "Build keptn api"
-    - cp MANIFEST ./api/MANIFEST
-    - cd ./api
-    - docker build . -t "${API_IMAGE}:${GIT_SHA}"
-    - docker tag "${API_IMAGE}:${GIT_SHA}" "${API_IMAGE}:${VERSION}.${DATE}"
-    - docker tag "${API_IMAGE}:${GIT_SHA}" "${API_IMAGE}:${VERSION}.latest"
-    - docker push "${API_IMAGE}:${GIT_SHA}"
-    - docker push "${API_IMAGE}:${VERSION}.${DATE}"
-    - docker push "${API_IMAGE}:${VERSION}.latest"
+    - source ./travis-scripts/build_release.sh "${API_IMAGE}" "${API_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
     - cd ..
-    - echo "Build openshift-route-service"
-    - cp MANIFEST ./platform-support/openshift-route-service/MANIFEST
-    - cd ./platform-support/openshift-route-service/
-    - docker build . -t "${OS_ROUTE_SVC_IMAGE}:${GIT_SHA}"
-    - docker tag "${OS_ROUTE_SVC_IMAGE}:${GIT_SHA}" "${OS_ROUTE_SVC_IMAGE}:${VERSION}.${DATE}"
-    - docker tag "${OS_ROUTE_SVC_IMAGE}:${GIT_SHA}" "${OS_ROUTE_SVC_IMAGE}:${VERSION}.latest"
-    - docker push "${OS_ROUTE_SVC_IMAGE}:${GIT_SHA}"
-    - docker push "${OS_ROUTE_SVC_IMAGE}:${VERSION}.${DATE}"
-    - docker push "${OS_ROUTE_SVC_IMAGE}:${VERSION}.latest"
+    - source ./travis-scripts/build_release.sh "${OS_ROUTE_SVC_IMAGE}" "${OS_ROUTE_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
     - cd ../..
-    - echo "Build pitometer-service"
-    - cp MANIFEST ./pitometer-service/MANIFEST
-    - cd ./pitometer-service
-    - docker build . -t "${PITOMETER_SVC_IMAGE}:${GIT_SHA}"
-    - docker tag "${PITOMETER_SVC_IMAGE}:${GIT_SHA}" "${PITOMETER_SVC_IMAGE}:${VERSION}.${DATE}"
-    - docker tag "${PITOMETER_SVC_IMAGE}:${GIT_SHA}" "${PITOMETER_SVC_IMAGE}:${VERSION}.latest"
-    - docker push "${PITOMETER_SVC_IMAGE}:${GIT_SHA}"
-    - docker push "${PITOMETER_SVC_IMAGE}:${VERSION}.${DATE}"
-    - docker push "${PITOMETER_SVC_IMAGE}:${VERSION}.latest"
+    - source ./travis-scripts/build_release.sh "${PITOMETER_SVC_IMAGE}" "${PITOMETER_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+    - cd ..
+    - source ./travis-scripts/build_release.sh "${BRIDGE_IMAGE}" "${BRIDGE_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
     - cd ..
 
   - stage: master
@@ -244,18 +193,13 @@ jobs:
     services:
       - docker
     script:
-    - echo "Build keptn api"
-    - cd ./api
-    - docker build . -t "${API_IMAGE}:${VERSION}"
-    - docker push "${API_IMAGE}:${VERSION}"
+    - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
+    - ./writeManifest.sh
+    - source ./travis-scripts/build_master.sh "${API_IMAGE}" "${API_FOLDER}" "${VERSION}"
     - cd ..
-    - echo "Build openshift-route-service"
-    - cd ./platform-support/openshift-route-service/
-    - docker build . -t "${OS_ROUTE_SVC_IMAGE}:${VERSION}"
-    - docker push "${OS_ROUTE_SVC_IMAGE}:${VERSION}"
+    - source ./travis-scripts/build_master.sh "${OS_ROUTE_SVC_IMAGE}" "${OS_ROUTE_SVC_FOLDER}" "${VERSION}"
     - cd ../..
-    - echo "Build pitometer-service"
-    - cd ./pitometer-service/
-    - docker build . -t "${PITOMETER_SVC_IMAGE}:${VERSION}"
-    - docker push "${PITOMETER_SVC_IMAGE}:${VERSION}"
-    - cd ../..
+    - source ./travis-scripts/build_master.sh "${PITOMETER_SVC_IMAGE}" "${PITOMETER_SVC_FOLDER}" "${VERSION}"
+    - cd ..
+    - source ./travis-scripts/build_master.sh "${BRIDGE_IMAGE}" "${BRIDGE_FOLDER}" "${VERSION}"
+    - cd ..
