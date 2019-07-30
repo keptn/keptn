@@ -48,7 +48,6 @@ ENV PATH $PATH:$JMETER_BIN
 
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /go/src/github.com/keptn/jmeter-service/jmeter-service /jmeter-service
-
 ADD MANIFEST /
 
 # Run the web service on container startup.

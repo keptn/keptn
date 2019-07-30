@@ -23,7 +23,6 @@ RUN apk add --no-cache ca-certificates
 COPY --from=builder /go/src/github.com/keptn/keptn/api/main /api
 COPY --from=builder /go/src/github.com/keptn/keptn/api/swagger-ui /swagger-ui
 COPY --from=builder /go/src/github.com/keptn/keptn/api/swagger.json /swagger-ui/swagger.json
-
 ADD MANIFEST /
 
 # Run the web service on container startup.
