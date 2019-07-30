@@ -10,14 +10,6 @@ env:
     - GOOGLE_APPLICATION_CREDENTIALS=~/gcloud-service-key.json
     - DEP_VERSION="0.5.3"
 
-notifications:
-  webhooks:
-    urls:
-      - https://us-central1-sai-research.cloudfunctions.net/travisWebhookListener
-    on_failure: always
-    on_cancel: always
-    on_error: always
- 
 before_install:   
 - |
   if [ ! -d "$HOME/google-cloud-sdk/bin" ]; then 
