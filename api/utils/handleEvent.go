@@ -10,15 +10,15 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/keptn/go-utils/pkg/utils"
+	keptnutils "github.com/keptn/go-utils/pkg/utils"
 )
 
 // PostToEventBroker makes a post request to the eventbroker
-func PostToEventBroker(e interface{}, shkeptncontext string) error {
+func PostToEventBroker(e interface{}, logger *keptnutils.Logger) error {
 
 	data, err := json.Marshal(e)
 	if err != nil {
-		utils.Error(shkeptncontext, fmt.Sprintf("Error marshaling data %s", err.Error()))
+		logger.Error(fmt.Sprintf("Error marshaling data %s", err.Error()))
 		return err
 	}
 
@@ -30,7 +30,7 @@ func PostToEventBroker(e interface{}, shkeptncontext string) error {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		utils.Error(shkeptncontext, fmt.Sprintf("Error making POST %s", err.Error()))
+		logger.Error(fmt.Sprintf("Error making POST %s", err.Error()))
 		return err
 	}
 	defer resp.Body.Close()
