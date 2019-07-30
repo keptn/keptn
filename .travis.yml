@@ -48,6 +48,8 @@ before_install:
 - OS_ROUTE_SVC_FOLDER="openshift-route-service/"
 - PITOMETER_SVC_IMAGE=keptn/pitometer-service
 - PITOMETER_SVC_FOLDER="pitometer-service/"
+- BRIDGE_IMAGE=keptn/bridge
+- BRIDGE_FOLDER="bridge/"
 
 jobs:
   include:
@@ -117,6 +119,17 @@ jobs:
         docker push "${PITOMETER_SVC_IMAGE}:${TYPE}.${NUMBER}.${DATE}"
         cd ..
       fi
+    - | 
+      if [[ $CHANGED_FILES == *"${BRIDGE_FOLDER}"*  ]]; then
+        echo "Build bridge"
+        cp MANIFEST ./bridge/MANIFEST
+        cd ./bridge
+        docker build . -t "${BRIDGE_IMAGE}:${GIT_SHA}"
+        docker tag "${BRIDGE_IMAGE}:${GIT_SHA}" "${BRIDGE_IMAGE}:${TYPE}.${NUMBER}.${DATE}"
+        docker push "${BRIDGE_IMAGE}:${GIT_SHA}"
+        docker push "${BRIDGE_IMAGE}:${TYPE}.${NUMBER}.${DATE}"
+        cd ..
+      fi
 
   - stage: develop
     if: branch = develop AND type = push
@@ -141,7 +154,7 @@ jobs:
     - ./writeManifest.sh
     - | 
       if [[ $CHANGED_FILES == *"${API_FOLDER}"*  ]]; then
-        echo "Build keptn api"
+        echo "Build api"
         cp MANIFEST ./api/MANIFEST
         cd ./api
         docker build . -t "${API_IMAGE}:${GIT_SHA}"
@@ -154,7 +167,7 @@ jobs:
       fi
     - | 
       if [[ $CHANGED_FILES == *"${OS_ROUTE_SVC_FOLDER}"*  ]]; then
-        echo "Build keptn openshift-route-service"
+        echo "Build openshift-route-service"
         cp MANIFEST ./platform-support/openshift-route-service/MANIFEST
         cd ./platform-support/openshift-route-service/
         docker build . -t "${OS_ROUTE_SVC_IMAGE}:${GIT_SHA}"
@@ -167,15 +180,28 @@ jobs:
       fi
     - | 
       if [[ $CHANGED_FILES == *"${PITOMETER_SVC_FOLDER}"*  ]]; then
-        echo "Build keptn pitometer-service"
-        cp MANIFEST ./platform-support/openshift-route-service/MANIFEST
-        cd ./platform-support/openshift-route-service/
+        echo "Build pitometer-service"
+        cp MANIFEST ./pitometer-service/MANIFEST
+        cd ./pitometer-service/
         docker build . -t "${PITOMETER_SVC_IMAGE}:${GIT_SHA}"
         docker tag "${PITOMETER_SVC_IMAGE}:${GIT_SHA}" "${PITOMETER_SVC_IMAGE}:${DATE}"
         docker tag "${PITOMETER_SVC_IMAGE}:${GIT_SHA}" "${PITOMETER_SVC_IMAGE}:latest"
         docker push "${PITOMETER_SVC_IMAGE}:${GIT_SHA}"
         docker push "${PITOMETER_SVC_IMAGE}:${DATE}"
         docker push "${PITOMETER_SVC_IMAGE}:latest"
+        cd ..
+      fi
+    - | 
+      if [[ $CHANGED_FILES == *"${BRIDGE_FOLDER}"*  ]]; then
+        echo "Build bridge"
+        cp MANIFEST ./bridge/MANIFEST
+        cd ./bridge/
+        docker build . -t "${BRIDGE_IMAGE}:${GIT_SHA}"
+        docker tag "${BRIDGE_IMAGE}:${GIT_SHA}" "${BRIDGE_IMAGE}:${DATE}"
+        docker tag "${BRIDGE_IMAGE}:${GIT_SHA}" "${BRIDGE_IMAGE}:latest"
+        docker push "${BRIDGE_IMAGE}:${GIT_SHA}"
+        docker push "${BRIDGE_IMAGE}:${DATE}"
+        docker push "${BRIDGE_IMAGE}:latest"
         cd ..
       fi
 
@@ -227,6 +253,16 @@ jobs:
     - docker push "${PITOMETER_SVC_IMAGE}:${VERSION}.${DATE}"
     - docker push "${PITOMETER_SVC_IMAGE}:${VERSION}.latest"
     - cd ..
+    - echo "Build bridge"
+    - cp MANIFEST ./bridge/MANIFEST
+    - cd ./bridge
+    - docker build . -t "${BRIDGE_IMAGE}:${GIT_SHA}"
+    - docker tag "${BRIDGE_IMAGE}:${GIT_SHA}" "${BRIDGE_IMAGE}:${VERSION}.${DATE}"
+    - docker tag "${BRIDGE_IMAGE}:${GIT_SHA}" "${BRIDGE_IMAGE}:${VERSION}.latest"
+    - docker push "${BRIDGE_IMAGE}:${GIT_SHA}"
+    - docker push "${BRIDGE_IMAGE}:${VERSION}.${DATE}"
+    - docker push "${BRIDGE_IMAGE}:${VERSION}.latest"
+    - cd ..
 
   - stage: master
     if: branch = master AND NOT type = pull_request
@@ -258,4 +294,9 @@ jobs:
     - cd ./pitometer-service/
     - docker build . -t "${PITOMETER_SVC_IMAGE}:${VERSION}"
     - docker push "${PITOMETER_SVC_IMAGE}:${VERSION}"
+    - cd ../..
+    - echo "Build bridge"
+    - cd ./bridge/
+    - docker build . -t "${BRIDGE_IMAGE}:${VERSION}"
+    - docker push "${BRIDGE_IMAGE}:${VERSION}"
     - cd ../..
