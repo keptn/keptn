@@ -24,7 +24,6 @@ RUN apk add --no-cache ca-certificates
 
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /go/src/github.com/keptn/eventbroker-go/eventbroker-go /eventbroker-go
-
 ADD MANIFEST /
 
 RUN ls -R /eventbroker-go
