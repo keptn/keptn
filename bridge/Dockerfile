@@ -16,6 +16,4 @@ RUN npm run build
 ENV NODE_ENV "production"
 USER myuser
 
-ADD MANIFEST /
-
 CMD ["sh", "-c", "cat MANIFEST && /usr/local/bin/npm start"]
