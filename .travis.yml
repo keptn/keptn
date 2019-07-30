@@ -40,15 +40,16 @@ before_install:
 
 - git diff --name-only $TRAVIS_COMMIT_RANGE > files.txt
 - CHANGED_FILES=$(tr '\n' , < files.txt)
+- echo $CHANGED_FILES
 
 - CLI_FOLDER="cli/"
-- API_IMAGE=keptn/api
+- API_IMAGE="keptn/api"
 - API_FOLDER="api/"
-- OS_ROUTE_SVC_IMAGE=keptn/openshift-route-service
-- OS_ROUTE_SVC_FOLDER="openshift-route-service/"
-- PITOMETER_SVC_IMAGE=keptn/pitometer-service
+- OS_ROUTE_SVC_IMAGE="keptn/openshift-route-service"
+- OS_ROUTE_SVC_FOLDER="platform-support/openshift-route-service/"
+- PITOMETER_SVC_IMAGE="keptn/pitometer-service"
 - PITOMETER_SVC_FOLDER="pitometer-service/"
-- BRIDGE_IMAGE=keptn/bridge
+- BRIDGE_IMAGE="keptn/bridge"
 - BRIDGE_FOLDER="bridge/"
 
 jobs:
