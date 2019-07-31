@@ -33,7 +33,15 @@ fi
 kubectl config view
 cat ~/.kube/config
 
-# Build and install CLI
+# Install hub
+HUB_VERSION="v2.11.2"
+HUB_INSTALLER="hub-darwin-amd64-2.11.2"
+
+curl -L -s https://github.com/github/hub/releases/download/${HUB_VERSION}/${HUB_INSTALLER}.tgz  -o ${HUB_INSTALLER}.tgz
+tar xopf ${HUB_INSTALLER}.tgz
+sudo mv ${HUB_INSTALLER}/bin/hub /usr/local/bin/hub
+
+# Build and install keptn CLI
 cd cli/
 dep ensure
 go build -o keptn
@@ -54,6 +62,7 @@ export GITO=$GITHUB_ORG_NIGHTLY
 source ./gke/defineCredentialsHelper.sh
 replaceCreds
 
+# Install keptn
 keptn install --keptn-version=develop --creds=creds.json --verbose
 cd ../..
 
