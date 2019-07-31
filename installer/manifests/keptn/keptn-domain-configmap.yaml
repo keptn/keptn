@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: keptn-domain
+  namespace: keptn
+data:
+  app_domain: DOMAIN_PLACEHOLDER
