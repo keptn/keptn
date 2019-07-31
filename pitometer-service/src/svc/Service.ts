@@ -27,7 +27,7 @@ export class Service {
     try {
       if (event.data.teststrategy === 'functional') {
         Logger.log(
-          event.shkeptncontext,
+          event.shkeptncontext, event.id,
           `No performance gate specified for stage ${event.data.stage}`,
         );
         this.handleEvaluationResult({ result: 'pass' }, event);
@@ -64,7 +64,7 @@ export class Service {
         });
       } catch (e) {
         Logger.log(
-          event.shkeptncontext,
+          event.shkeptncontext, event.id,
           `No perfspec file defined for `
           + `${event.data.project}:${event.data.service}:${event.data.stage}`);
         this.handleEvaluationResult({ result: 'pass' }, event);
@@ -72,7 +72,7 @@ export class Service {
       }
 
       Logger.log(
-        event.shkeptncontext,
+        event.shkeptncontext, event.id,
         perfspecResponse.data,
       );
 
@@ -109,7 +109,7 @@ export class Service {
 
         perfspecResponse.data = JSON.parse(perfspecString);
         Logger.log(
-          event.shkeptncontext,
+          event.shkeptncontext, event.id,
           `Perfspec file content: ${JSON.stringify(perfspecResponse.data)}`,
         );
 
@@ -178,7 +178,7 @@ export class Service {
             },
           );
           Logger.log(
-            event.shkeptncontext,
+            event.shkeptncontext, event.id,
             evaluationResult,
           );
 
@@ -224,7 +224,7 @@ export class Service {
       dynatraceCredentials.tenant !== undefined &&
       dynatraceCredentials.apiToken !== undefined) {
       Logger.log(
-        event.shkeptncontext,
+        event.shkeptncontext, event.id,
         `Adding Dynatrace Source for tenant ${dynatraceCredentials.tenant}`,
         'DEBUG',
       );
@@ -266,7 +266,7 @@ export class Service {
     event: RequestModel, dynatraceCredentials: DynatraceCredentialsModel): Promise<string> {
     let entityId = '';
     Logger.log(
-      event.shkeptncontext,
+      event.shkeptncontext, event.id,
       `Trying to get serviceEntityId with most requests ` +
       `during test run execution for ${event.data.service} ` +
       `in namespace ${event.data.project}-${event.data.stage}`,
@@ -322,12 +322,12 @@ export class Service {
     }
     if (entityId !== undefined && entityId !== '') {
       Logger.log(
-        event.shkeptncontext,
+        event.shkeptncontext, event.id,
         `Found serviceEntityId: ${entityId}`,
       );
     } else {
       Logger.log(
-        event.shkeptncontext,
+        event.shkeptncontext, event.id,
         'No Dynatrace serviceEntityId found.',
       );
     }
@@ -339,10 +339,10 @@ export class Service {
       evaluationResult.result !== undefined &&
       (evaluationResult.result === 'pass' || evaluationResult.result === 'warning');
 
-    Logger.log(sourceEvent.shkeptncontext, `Evaluation passed: ${evaluationPassed}`);
+    Logger.log(sourceEvent.shkeptncontext, sourceEvent.id, `Evaluation passed: ${evaluationPassed}`);
     try {
       Logger.log(
-        sourceEvent.shkeptncontext,
+        sourceEvent.shkeptncontext, sourceEvent.id,
         `Pitometer Result: ${JSON.stringify(evaluationResult)}`,
       );
     } catch (e) {
