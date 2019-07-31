@@ -18,6 +18,7 @@ DOMAIN=$(kubectl get svc istio-ingressgateway -o json -n istio-system | jq -r .s
 if [[ $? != 0 ]]; then
   print_error "Failed to get ingress gateway information." && exit 1
 fi
+
 if [[ $DOMAIN = "null" ]]; then
   print_info "Could not get ingress gateway domain name. Trying to retrieve IP address instead."
   DOMAIN=$(kubectl get svc istio-ingressgateway -o json -n istio-system | jq -r .status.loadBalancer.ingress[0].ip)
@@ -55,8 +56,6 @@ KEPTN_API_TOKEN=$(head -c 16 /dev/urandom | base64)
 verify_variable "$KEPTN_API_TOKEN" "KEPTN_API_TOKEN could not be derived." 
 kubectl create secret generic -n keptn keptn-api-token --from-literal=keptn-api-token="$KEPTN_API_TOKEN"
 
-# Deploy keptn core components
-
 # Install logging
 print_info "Installing Logging"
 kubectl apply -f ../manifests/logging/namespace.yaml
@@ -84,13 +83,7 @@ wait_for_deployment_in_namespace "mongodb-datastore" "keptn-datastore"
 kubectl apply -f ../manifests/logging/mongodb-datastore/mongodb-datastore-distributor.yaml
 verify_kubectl $? "Creating mongodb-datastore service failed."
 
-KEPTN_CHANNEL_URI="event-broker.keptn.svc.cluster.local/keptn"
-
-rm -f ../manifests/keptn/gen/core.yaml
-cat ../manifests/keptn/core.yaml | \
-  sed 's~CHANNEL_URI_PLACEHOLDER~'"$KEPTN_CHANNEL_URI"'~' >> ../manifests/keptn/gen/core.yaml
-  
-kubectl apply -f ../manifests/keptn/gen/core.yaml 
+kubectl apply -f ../manifests/keptn/core.yaml 
 verify_kubectl $? "Deploying keptn core components failed."
 
 ##############################################
