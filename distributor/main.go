@@ -60,7 +60,7 @@ func main() {
 func _main(args []string, env envConfig) int {
 	ctx := context.Background()
 	logger := keptnutils.NewLogger("", "", "distributor")
-	// initialize http client
+	// initialize the http client
 	createRecipientConnection(logger)
 
 	subscribeToTopics(ctx, logger)
