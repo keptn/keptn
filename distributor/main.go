@@ -26,7 +26,7 @@ import (
 	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
 	cloudeventsnats "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/nats"
 	"github.com/kelseyhightower/envconfig"
-	"github.com/keptn/go-utils/pkg/utils"
+	keptnutils "github.com/keptn/go-utils/pkg/utils"
 )
 
 // Subscriber establishes a connection to a PubSub server
@@ -49,8 +49,9 @@ var httpClient client.Client
 
 func main() {
 	var env envConfig
+	logger := keptnutils.NewLogger("", "", "distributor")
 	if err := envconfig.Process("", &env); err != nil {
-		utils.Error("", "Failed to process env var: "+err.Error())
+		logger.Error("Failed to process env var: " + err.Error())
 		os.Exit(1)
 	}
 	os.Exit(_main(os.Args[1:], env))
@@ -58,20 +59,18 @@ func main() {
 
 func _main(args []string, env envConfig) int {
 	ctx := context.Background()
+	logger := keptnutils.NewLogger("", "", "distributor")
+	// initialize the http client
+	createRecipientConnection(logger)
 
-	utils.ServiceName = "distributor"
-
-	// initialize http client
-	createRecipientConnection()
-
-	subscribeToTopics(ctx)
+	subscribeToTopics(ctx, logger)
 	return 0
 }
 
-func createRecipientConnection() {
+func createRecipientConnection(logger *keptnutils.Logger) {
 	recipientURL, err := getPubSubRecipientURL()
 	if err != nil {
-		utils.Error("", err.Error())
+		logger.Error(err.Error())
 		os.Exit(1)
 	}
 	httpTransport, err := cloudeventshttp.New(
@@ -79,51 +78,51 @@ func createRecipientConnection() {
 		cloudeventshttp.WithStructuredEncoding(),
 	)
 	if err != nil {
-		utils.Error("", "failed to create Http connection: "+err.Error())
+		logger.Error("failed to create Http connection: " + err.Error())
 		os.Exit(1)
 	}
 	httpClient, err = client.New(httpTransport)
 	if err != nil {
-		utils.Error("", "failed to create client: "+err.Error())
+		logger.Error("failed to create client: " + err.Error())
 		os.Exit(1)
 	}
 }
 
-func subscribeToTopics(ctx context.Context) {
+func subscribeToTopics(ctx context.Context, logger *keptnutils.Logger) {
 	pubSubURL := os.Getenv("PUBSUB_URL")
 	pubSubTopic := os.Getenv("PUBSUB_TOPIC")
 
 	if pubSubURL == "" {
-		utils.Error("", "no PubSub URL defined")
+		logger.Error("no PubSub URL defined")
 		os.Exit(1)
 	}
 
 	if pubSubTopic == "" {
-		utils.Error("", "no PubSub Topic defined")
+		logger.Error("no PubSub Topic defined")
 		os.Exit(1)
 	}
 
-	createPubSubConnection(ctx, pubSubURL, pubSubTopic)
+	createPubSubConnection(ctx, pubSubURL, pubSubTopic, logger)
 }
 
-func createPubSubConnection(ctx context.Context, pubSubURL string, pubSubTopic string) {
-	utils.Debug("", "Subscribing to topic "+pubSubTopic)
+func createPubSubConnection(ctx context.Context, pubSubURL string, pubSubTopic string, logger *keptnutils.Logger) {
+	logger.Debug("Subscribing to topic " + pubSubTopic)
 	natsConnection, err := cloudeventsnats.New(
 		pubSubURL,
 		pubSubTopic,
 	)
 
 	if err != nil {
-		utils.Error("", "failed to create transport: "+err.Error())
+		logger.Error("failed to create transport: " + err.Error())
 		os.Exit(1)
 	}
 	eventClient, err := client.New(natsConnection)
 	if err != nil {
-		utils.Error("", "failed to create client: "+err.Error())
+		logger.Error("failed to create client: " + err.Error())
 		os.Exit(1)
 	}
 
-	utils.Info("", "Subscribed to topic: "+pubSubTopic+"; NATS-URL="+pubSubURL)
+	logger.Info("Subscribed to topic: " + pubSubTopic + "; NATS-URL=" + pubSubURL)
 	log.Fatalf("failed to start receiver: %s", eventClient.StartReceiver(ctx, gotEvent))
 }
 
@@ -131,17 +130,19 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	var shkeptncontext string
 	event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
 
-	utils.Debug(shkeptncontext, fmt.Sprintf("Got Event: %+v", event.String()))
+	logger := keptnutils.NewLogger(shkeptncontext, event.Context.GetID(), "distributor")
 
-	sendEvent(ctx, event, shkeptncontext)
+	logger.Debug(fmt.Sprintf("Got Event: %+v", event.String()))
+
+	sendEvent(ctx, event, shkeptncontext, logger)
 
 	return nil
 }
 
-func sendEvent(ctx context.Context, event cloudevents.Event, keptnContext string) error {
+func sendEvent(ctx context.Context, event cloudevents.Event, keptnContext string, logger *keptnutils.Logger) error {
 	_, err := httpClient.Send(ctx, event)
 	if err != nil {
-		utils.Error(keptnContext, "failed to send event: "+err.Error())
+		logger.Error("failed to send event: " + err.Error())
 	}
 	return nil
 }
