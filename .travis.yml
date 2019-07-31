@@ -38,7 +38,8 @@ before_install:
 - GIT_SHA="$(git rev-parse --short HEAD)"
 - REGISTRY_USER=jbraeuer
 
-- git diff --name-only $TRAVIS_COMMIT_RANGE > files.txt
+- git diff --staged --name-only $TRAVIS_COMMIT_RANGE > files.txt
+- cat files.txt
 - CHANGED_FILES=$(tr '\n' , < files.txt)
 - echo $CHANGED_FILES
 
