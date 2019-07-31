@@ -16,7 +16,6 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
 	"os"
 
@@ -95,8 +94,6 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
 
 	logger := keptnutils.NewLogger(shkeptncontext, event.Context.GetID(), "eventbroker")
-
-	logger.Debug(fmt.Sprintf("Got Event: %+v", event.String()))
 
 	pubSubConnection, err := createPubSubConnection(event.Context.GetType(), logger)
 
