@@ -51,7 +51,7 @@ function wait_for_deployment_in_namespace() {
     DEPLOYMENT_LIST=$(eval "kubectl get deployments -n $NAMESPACE | awk '/$DEPL/'" | awk '{print $1}') # list of multiple deployments when starting with the same name
     if [[ -z "$DEPLOYMENT_LIST" ]]; then
       RETRY=$[$RETRY+1]
-      print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 20s for deployment ${DEPL} in namespace ${NAMESPACE} ..."
+      print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 10s for deployment ${DEPL} in namespace ${NAMESPACE} ..."
       sleep 10
     else
       break
@@ -80,7 +80,7 @@ function wait_for_deployment_in_namespace() {
         break
       fi
       RETRY=$[$RETRY+1]
-      print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 20s for deployment ${DEPL} in namespace ${NAMESPACE} ..."
+      print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 10s for deployment ${DEPL} in namespace ${NAMESPACE} ..."
       sleep 10
     done
 
@@ -107,7 +107,7 @@ function wait_for_all_pods_in_namespace() {
       break
     fi
     RETRY=$[$RETRY+1]
-    print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 20s for pods to start in namespace ${NAMESPACE} ..."
+    print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 10s for pods to start in namespace ${NAMESPACE} ..."
     sleep 10
   done
 
@@ -130,7 +130,7 @@ function wait_for_crds() {
       break
     fi
     RETRY=$[$RETRY+1]
-    print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 20s for custom resource definitions ..."
+    print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 10s for custom resource definitions ..."
     sleep 10
   done
 
@@ -157,7 +157,7 @@ function wait_for_istio_ingressgateway() {
       break
     fi
     RETRY=$[$RETRY+1]
-    print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 20s for ${PROPERTY} of Istio Ingressgateway to be available ..."
+    print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 5s for ${PROPERTY} of Istio Ingressgateway to be available ..."
     sleep 5
   done
 }
