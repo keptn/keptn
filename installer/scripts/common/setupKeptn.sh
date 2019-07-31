@@ -80,6 +80,7 @@ verify_kubectl $? "Creating fluent-bit daemonset failed."
 kubectl apply -f ../manifests/logging/mongodb-datastore/k8s/mongodb-datastore.yaml
 verify_kubectl $? "Creating mongodb-datastore service failed."
 wait_for_deployment_in_namespace "mongodb-datastore" "keptn-datastore"
+
 kubectl apply -f ../manifests/logging/mongodb-datastore/mongodb-datastore-distributor.yaml
 verify_kubectl $? "Creating mongodb-datastore service failed."
 
