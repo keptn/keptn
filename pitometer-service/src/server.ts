@@ -16,7 +16,6 @@ import './svc/Controller';
 import './svc/RequestModel';
 
 // tslint:disable-next-line: import-name
-import RequestLogger = require('./middleware/requestLogger');
 import * as path from 'path';
 import { Service } from './svc/Service';
 
@@ -41,7 +40,6 @@ server.setConfig((app: any) => {
           ),
     );
   app.use(bodyParser.json({ type: 'application/*' }));
-  app.use(RequestLogger);
   app.use(
     swagger.express({
       definition: {
@@ -74,4 +72,3 @@ server.setErrorConfig((app: any) => {
 
 const app = server.build();
 app.listen(port);
-console.info(`Server is listening on port : ${port}`);
