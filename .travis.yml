@@ -74,7 +74,6 @@ jobs:
     if: branch = develop AND type = cron
     os: osx
     script:
-    - git clone --branch develop https://github.com/keptn/installer.git --single-branch
     - source travis-scripts/cronjob_main.sh
 
   - stage: feature/bug/hotfix/patch

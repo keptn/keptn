@@ -45,9 +45,9 @@ const aks = "aks"
 const openshift = "openshift"
 const kubernetes = "kubernetes"
 
-const installerPrefixURL = "https://raw.githubusercontent.com/keptn/installer/"
-const installerSuffixPath = "/manifests/installer/installer.yaml"
-const rbacSuffixPath = "/manifests/installer/rbac.yaml"
+const installerPrefixURL = "https://raw.githubusercontent.com/keptn/keptn/"
+const installerSuffixPath = "/installer/manifests/installer/installer.yaml"
+const rbacSuffixPath = "/installer/manifests/installer/rbac.yaml"
 
 type installCredentials struct {
 	GithubPersonalAccessToken string `json:"githubPersonalAccessToken"`
