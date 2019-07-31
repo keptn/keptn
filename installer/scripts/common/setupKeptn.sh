@@ -14,18 +14,22 @@ kubectl apply -f ../manifests/nats/nats-cluster.yaml
 verify_kubectl $? "Creating NATS Cluster failed."
 
 # Domain used for routing to keptn services
+wait_for_istio_ingressgateway "hostname"
 DOMAIN=$(kubectl get svc istio-ingressgateway -o json -n istio-system | jq -r .status.loadBalancer.ingress[0].hostname)
 if [[ $? != 0 ]]; then
   print_error "Failed to get ingress gateway information." && exit 1
 fi
 
-if [[ $DOMAIN = "null" ]]; then
+if [[ "$DOMAIN" == "null" ]]; then
   print_info "Could not get ingress gateway domain name. Trying to retrieve IP address instead."
+  
+  wait_for_istio_ingressgateway "ip"
+
   DOMAIN=$(kubectl get svc istio-ingressgateway -o json -n istio-system | jq -r .status.loadBalancer.ingress[0].ip)
-  if [[ $DOMAIN = "null" ]]; then
-    DOMAIN=""
+  if [[ "$DOMAIN" == "null" ]]; then
+    print_error "IP of Istio Ingressgateway could not be derived."
+    exit 1
   fi
-  verify_variable "$DOMAIN" "DOMAIN is empty and could not be derived from the Istio ingress gateway."
   DOMAIN="$DOMAIN.xip.io"
 fi
 
