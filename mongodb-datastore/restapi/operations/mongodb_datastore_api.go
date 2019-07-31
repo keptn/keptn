@@ -19,8 +19,8 @@ import (
 	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
-	"github.com/keptn/mongodb-datastore/restapi/operations/event"
-	"github.com/keptn/mongodb-datastore/restapi/operations/logs"
+	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/event"
+	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/logs"
 )
 
 // NewMongodbDatastoreAPI creates a new MongodbDatastore instance

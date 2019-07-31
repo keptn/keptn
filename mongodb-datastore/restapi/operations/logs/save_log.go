@@ -121,8 +121,8 @@ func (o *SaveLogDefaultBody) UnmarshalBinary(b []byte) error {
 // swagger:model SaveLogParamsBodyItems0
 type SaveLogParamsBodyItems0 struct {
 
-	// id
-	ID string `json:"id,omitempty"`
+	// event Id
+	EventID string `json:"eventId,omitempty"`
 
 	// keptn context
 	KeptnContext string `json:"keptnContext,omitempty"`

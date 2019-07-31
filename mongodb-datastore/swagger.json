@@ -209,7 +209,7 @@
           "keptnContext":{
             "type":"string"
           },
-          "id":{
+          "eventId":{
             "type":"string"
           },
           "keptnService":{

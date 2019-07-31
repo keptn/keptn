@@ -25,7 +25,7 @@ import (
 	flags "github.com/jessevdk/go-flags"
 	"golang.org/x/net/netutil"
 
-	"github.com/keptn/mongodb-datastore/restapi/operations"
+	"github.com/keptn/keptn/mongodb-datastore/restapi/operations"
 )
 
 const (
