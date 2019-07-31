@@ -58,4 +58,3 @@ cd ../..
 # Execute end-to-end test
 cd test
 source ./testOnboarding.sh
-
