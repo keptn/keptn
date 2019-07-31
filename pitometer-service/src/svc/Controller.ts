@@ -48,7 +48,6 @@ export class Controller implements interfaces.Controller {
     response: express.Response,
     next: express.NextFunction,
   ): Promise<void> {
-    console.log(`received event: ${JSON.stringify(request.body)}`);
     await this.service.handleRequest(request.body as RequestModel);
     response.status(200);
     response.send({});
