@@ -62,6 +62,8 @@ before_install:
 - DISTRIBUTOR_FOLDER="distributor/"
 - EVENTBROKER_IMAGE="keptn/eventbroker-go"
 - EVENTBROKER_FOLDER="eventbroker/"
+- MONGODB_DS_IMAGE="keptn/mongodb-datastore"
+- MONGODB_DS_FOLDER="mongodb-datastore/"
 - INSTALLER_IMAGE="keptn/installer"
 - INSTALLER_FOLDER="installer/"
 
@@ -146,6 +148,11 @@ jobs:
         cd ..
       fi
     - | 
+      if [[ $CHANGED_FILES == *"${MONGODB_DS_FOLDER}"*  ]]; then
+        source ./travis-scripts/build_feature.sh "${MONGODB_DS_IMAGE}" "${MONGODB_DS_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
+        cd ..
+      fi
+    - | 
       if [[ $CHANGED_FILES == *"${INSTALLER_FOLDER}"*  ]]; then
         source ./travis-scripts/build_feature.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
         cd ..
@@ -218,6 +225,11 @@ jobs:
         cd ..
       fi
     - | 
+      if [[ $CHANGED_FILES == *"${MONGODB_DS_FOLDER}"*  ]]; then
+        source ./travis-scripts/build_develop.sh "${MONGODB_DS_IMAGE}" "${MONGODB_DS_FOLDER}" "${GIT_SHA}" "${DATE}"
+        cd ..
+      fi
+    - | 
       if [[ $CHANGED_FILES == *"${INSTALLER_FOLDER}"*  ]]; then
         source ./travis-scripts/build_develop.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${GIT_SHA}" "${DATE}"
         cd ..
@@ -259,6 +271,8 @@ jobs:
     - cd ..
     - source ./travis-scripts/build_release.sh "${EVENTBROKER_IMAGE}" "${EVENTBROKER_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
     - cd ..
+    - source ./travis-scripts/build_release.sh "${MONGODB_DS_IMAGE}" "${MONGODB_DS_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+    - cd ..
     - source ./travis-scripts/build_release.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
     - cd ..
 
@@ -297,6 +311,8 @@ jobs:
     - source ./travis-scripts/build_master.sh "${DISTRIBUTOR_IMAGE}" "${DISTRIBUTOR_FOLDER}" "${VERSION}"
     - cd ..
     - source ./travis-scripts/build_master.sh "${EVENTBROKER_IMAGE}" "${EVENTBROKER_FOLDER}" "${VERSION}"
+    - cd ..
+    - source ./travis-scripts/build_master.sh "${MONGODB_DS_IMAGE}" "${MONGODB_DS_FOLDER}" "${VERSION}"
     - cd ..
     - source ./travis-scripts/build_master.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${VERSION}"
     - cd ..
