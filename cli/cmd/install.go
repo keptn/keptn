@@ -798,8 +798,7 @@ func getInstallerLogs(podName string) error {
 		return fmt.Errorf("Could not get installer pod logs: '%s'", err)
 	}
 
-	// cmd.Wait() should be called only after we finish reading
-	// from stdoutIn and stderrIn.
+	// cmd.Wait() should be called only after we finish reading from stdoutIn and stderrIn.
 	cRes := make(chan bool)
 	cErr := make(chan error)
 
