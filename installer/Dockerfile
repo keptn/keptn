@@ -49,7 +49,6 @@ COPY ./scripts scripts
 COPY MANIFEST scripts
 
 RUN cd ./scripts && ls -lsa
-
 WORKDIR /usr/keptn/scripts
 
 # Start the app
