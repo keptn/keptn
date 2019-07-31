@@ -12,5 +12,6 @@ kubectl delete -f ../../manifests/istio/crd-11.yaml --ignore-not-found
 kubectl delete -f ../../manifests/istio/crd-12.yaml --ignore-not-found
 kubectl delete -f ../../manifests/istio/crd-certmanager-10.yaml --ignore-not-found
 kubectl delete -f ../../manifests/istio/crd-certmanager-11.yaml --ignore-not-found
+
 # Delete tiller
 kubectl delete -f ../../manifests/tiller/tiller.yaml --ignore-not-found
