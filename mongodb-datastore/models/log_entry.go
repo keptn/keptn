@@ -15,8 +15,8 @@ import (
 // swagger:model LogEntry
 type LogEntry struct {
 
-	// id
-	ID string `json:"id,omitempty"`
+	// event Id
+	EventID string `json:"eventId,omitempty"`
 
 	// keptn context
 	KeptnContext string `json:"keptnContext,omitempty"`

@@ -226,7 +226,7 @@ func init() {
     "LogEntry": {
       "type": "object",
       "properties": {
-        "id": {
+        "eventId": {
           "type": "string"
         },
         "keptnContext": {
@@ -670,7 +670,7 @@ func init() {
               "items": {
                 "type": "object",
                 "properties": {
-                  "id": {
+                  "eventId": {
                     "type": "string"
                   },
                   "keptnContext": {
@@ -727,7 +727,7 @@ func init() {
               "items": {
                 "type": "object",
                 "properties": {
-                  "id": {
+                  "eventId": {
                     "type": "string"
                   },
                   "keptnContext": {
@@ -832,7 +832,7 @@ func init() {
     "LogEntry": {
       "type": "object",
       "properties": {
-        "id": {
+        "eventId": {
           "type": "string"
         },
         "keptnContext": {
