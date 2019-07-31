@@ -313,7 +313,6 @@ func _main(args []string, env envConfig) int {
 		log.Fatalf("failed to create client, %v", err)
 	}
 
-	log.Printf("will listen on :%d%s\n", env.Port, env.Path)
 	log.Fatalf("failed to start receiver: %s", c.StartReceiver(ctx, gotEvent))
 
 	return 0

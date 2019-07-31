@@ -32,9 +32,9 @@ func executeJMeter(testInfo string, scriptName string, resultsDir string, server
 		"-JSERVER_PORT=" + strconv.Itoa(serverPort),
 		"-JThinkTime=" + strconv.Itoa(thinkTime)})
 
-	fmt.Println(res)
+	logger.Info(res)
 	if err != nil {
-		fmt.Println(err)
+		logger.Error(err.Error())
 		return false, err
 	}
 
