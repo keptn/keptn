@@ -8,7 +8,7 @@ TYPE=$4
 NUMBER=$5
 DATE=$6
 
-echo "Build keptn ${IMAGE}"
+echo "Build ${IMAGE}"
 cp MANIFEST ./${FOLDER}MANIFEST #$FOLDER contains / at the end
 cd ./${FOLDER}
 cat MANIFEST
