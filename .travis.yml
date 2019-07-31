@@ -62,6 +62,8 @@ before_install:
 - DISTRIBUTOR_FOLDER="distributor/"
 - EVENTBROKER_IMAGE="keptn/eventbroker-go"
 - EVENTBROKER_FOLDER="eventbroker/"
+- INSTALLER_IMAGE="keptn/installer"
+- INSTALLER_FOLDER="installer/"
 
 jobs:
   include:
@@ -143,6 +145,11 @@ jobs:
         source ./travis-scripts/build_feature.sh "${EVENTBROKER_IMAGE}" "${EVENTBROKER_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
         cd ..
       fi
+    - | 
+      if [[ $CHANGED_FILES == *"${INSTALLER_FOLDER}"*  ]]; then
+        source ./travis-scripts/build_feature.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
+        cd ..
+      fi
 
   - stage: develop
     if: branch = develop AND type = push
@@ -210,6 +217,11 @@ jobs:
         source ./travis-scripts/build_develop.sh "${EVENTBROKER_IMAGE}" "${EVENTBROKER_FOLDER}" "${GIT_SHA}" "${DATE}"
         cd ..
       fi
+    - | 
+      if [[ $CHANGED_FILES == *"${INSTALLER_FOLDER}"*  ]]; then
+        source ./travis-scripts/build_develop.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${GIT_SHA}" "${DATE}"
+        cd ..
+      fi
 
   - stage: release
     if: branch =~ ^release.*$ AND NOT type = pull_request
@@ -247,6 +259,8 @@ jobs:
     - cd ..
     - source ./travis-scripts/build_release.sh "${EVENTBROKER_IMAGE}" "${EVENTBROKER_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
     - cd ..
+    - source ./travis-scripts/build_release.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+    - cd ..
 
   - stage: master
     if: branch = master AND NOT type = pull_request
@@ -283,4 +297,6 @@ jobs:
     - source ./travis-scripts/build_master.sh "${DISTRIBUTOR_IMAGE}" "${DISTRIBUTOR_FOLDER}" "${VERSION}"
     - cd ..
     - source ./travis-scripts/build_master.sh "${EVENTBROKER_IMAGE}" "${EVENTBROKER_FOLDER}" "${VERSION}"
+    - cd ..
+    - source ./travis-scripts/build_master.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${VERSION}"
     - cd ..

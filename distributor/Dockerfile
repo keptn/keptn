@@ -7,6 +7,11 @@ FROM golang:1.12 as builder
 WORKDIR /go/src/github.com/keptn/navigator
 COPY . .
 
+ARG DEP_VERSION=0.5.3
+RUN curl -L -s https://github.com/golang/dep/releases/download/v$DEP_VERSION/dep-linux-amd64 -o ./dep && \
+  chmod +x ./dep && \
+  ./dep ensure
+
 # Build the command inside the container.
 # (You may fetch or manage dependencies here,
 # either manually or with a tool like "godep".)
