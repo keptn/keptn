@@ -1,10 +1,18 @@
 #!/bin/bash
 source ./utils.sh
 
-KEPTN_ENDPOINT=https://$(kubectl get virtualservice -n keptn control -ojsonpath={.spec.hosts[0]})
+KEPTN_ENDPOINT=https://$(kubectl get virtualservice -n keptn api -ojsonpath={.spec.hosts[0]})
 KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)
 
 PROJECT=sockshop
+
+# Install hub
+HUB_VERSION="v2.11.2"
+HUB_INSTALLER="hub-darwin-amd64-2.11.2"
+
+curl -L -s https://github.com/github/hub/releases/download/${HUB_VERSION}/${HUB_INSTALLER}.tgz  -o ${HUB_INSTALLER}.tgz
+tar xopf ${HUB_INSTALLER}.tgz
+sudo mv ${HUB_INSTALLER}/bin/hub /usr/local/bin/hub
 
 # Delete old project
 git ls-remote https://github.com/$GITHUB_ORG_NIGHTLY/$PROJECT > /dev/null 2>&1

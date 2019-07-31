@@ -8,7 +8,7 @@ clusters=$(gcloud container clusters list --zone $CLOUDSDK_COMPUTE_ZONE --projec
 if echo "$clusters" | grep $CLUSTER_NAME_NIGHTLY; then 
     echo "First delete old keptn installation"
     cd ./installer/scripts
-    ./uninstallKeptn.sh
+    ./common/uninstallKeptn.sh
     cd ../..
 
     echo "Start deleting nightly cluster"
@@ -23,11 +23,13 @@ if [[ $? != '0' ]]; then
     print_error "gcloud cluster create failed."
     exit 1
 fi
+
 gcloud container clusters get-credentials $CLUSTER_NAME_NIGHTLY --zone $CLOUDSDK_COMPUTE_ZONE --project $PROJECT_NAME
 if [[ $? != '0' ]]; then
     print_error "gcloud get credentials failed."
     exit 1
 fi
+
 kubectl config view
 cat ~/.kube/config
 
