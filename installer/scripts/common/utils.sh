@@ -140,26 +140,24 @@ function wait_for_crds() {
   fi
 }
 
-# Waits for hostname of channel
-function wait_for_hostname() {
-  CHANNEL=$1; NAMESPACE=$2;
+# Waits for ip of gateway
+function wait_for_istio_ingressgateway() {
+  PROPERTY=$1;
   RETRY=0; RETRY_MAX=12;
-  HOSTNAME="";
+  DOMAIN="";
 
   while [[ $RETRY -lt $RETRY_MAX ]]; do
-    HOSTNAME=$(kubectl describe channel keptn-channel -n keptn | grep "Hostname:" | sed 's~[ \t]*Hostname:[ \t]*~~')
+    DOMAIN=$(kubectl get svc istio-ingressgateway -o json -n istio-system | jq -r .status.loadBalancer.ingress[0].${PROPERTY})
+    if [[ $DOMAIN = "null" ]]; then
+      DOMAIN=""
+    fi
 
-    if [[ ! -z "$HOSTNAME" ]]; then
-      print_debug "Host name of channel $CHANNEL in namespace $NAMESPACE available."
+    if [[ "$DOMAIN" != "" ]]; then
+      print_debug "${PROPERTY} of Istio Ingressgateway is available."
       break
     fi
     RETRY=$[$RETRY+1]
-    print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 20s for hostname to be available ..."
+    print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 20s for ${PROPERTY} of Istio Ingressgateway to be available ..."
     sleep 20
   done
-
-  if [[ -z "$HOSTNAME" ]]; then
-    print_error "Host name could not be derived from $CHANNEL in namespace $NAMESPACE."
-    exit 1
-  fi
 }
