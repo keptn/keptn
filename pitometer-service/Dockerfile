@@ -10,7 +10,8 @@ RUN apk update && apk upgrade && \
 # Prepare app directory
 WORKDIR /usr/src/app
 
-# IMPORTANT: the root of the working directory is the root of the GitHub repo, NOT the location of the Dockerfile
+# IMPORTANT: the root of the working directory is the root of the GitHub repo, 
+#            NOT the location of the Dockerfile
 COPY package.json /usr/src/app/
 
 RUN npm install -g typescript 
