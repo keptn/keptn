@@ -4,7 +4,7 @@
 FROM golang:1.12 as builder
 
 # Copy local code to the container image.
-WORKDIR /go/src/github.com/keptn/openshift-route-service
+WORKDIR /go/src/github.com/keptn/keptn/platform-support/openshift-route-service
 COPY . .
 
 ARG DEP_VERSION=0.5.3
@@ -13,7 +13,8 @@ RUN curl -L -s https://github.com/golang/dep/releases/download/v$DEP_VERSION/dep
   ./dep ensure
 
 # Build the command inside the container.
-# (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
+# (You may fetch or manage dependencies here, 
+# either manually or with a tool like "godep".)
 RUN CGO_ENABLED=0 GOOS=linux go build -v -o openshift-route-service
 
 # Use a Docker multi-stage build to create a lean production image.
@@ -30,7 +31,7 @@ RUN wget https://github.com/openshift/origin/releases/download/v3.11.0/openshift
   rm -rf openshift*tar.gz
 
 # Copy the binary to the production image from the builder stage.
-COPY --from=builder /go/src/github.com/keptn/openshift-route-service/openshift-route-service /openshift-route-service
+COPY --from=builder /go/src/github.com/keptn/keptn/platform-support/openshift-route-service/openshift-route-service /openshift-route-service
 ADD MANIFEST /
 
 # Run the web service on container startup.
