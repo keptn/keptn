@@ -4,7 +4,7 @@
 FROM golang:1.12 as builder
 
 # Copy local code to the container image.
-WORKDIR /go/src/github.com/keptn/gatekeeper-service
+WORKDIR /go/src/github.com/keptn/keptn/gatekeeper-service
 COPY . .
 
 ARG DEP_VERSION=0.5.3
@@ -23,7 +23,7 @@ FROM alpine
 RUN apk add --no-cache ca-certificates
 
 # Copy the binary to the production image from the builder stage.
-COPY --from=builder /go/src/github.com/keptn/gatekeeper-service/gatekeeper-service /gatekeeper-service
+COPY --from=builder /go/src/github.com/keptn/keptn/gatekeeper-service/gatekeeper-service /gatekeeper-service
 ADD MANIFEST /
 
 # Run the web service on container startup.

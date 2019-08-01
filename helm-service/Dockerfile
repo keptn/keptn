@@ -4,7 +4,7 @@
 FROM golang:1.12 as builder
 
 # Copy local code to the container image.
-WORKDIR /go/src/github.com/keptn/helm-service
+WORKDIR /go/src/github.com/keptn/keptn/helm-service
 COPY . .
 
 ARG DEP_VERSION=0.5.3
@@ -28,7 +28,7 @@ RUN wget https://storage.googleapis.com/kubernetes-helm/helm-v$HELM_VERSION-linu
   cp linux-amd64/helm /bin/helm
 
 # Copy the binary to the production image from the builder stage.
-COPY --from=builder /go/src/github.com/keptn/helm-service/helm-service /helm-service
+COPY --from=builder /go/src/github.com/keptn/keptn/helm-service/helm-service /helm-service
 ADD MANIFEST /
 
 # Run the web service on container startup.

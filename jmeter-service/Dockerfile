@@ -4,7 +4,7 @@
 FROM golang:1.12 as builder
 
 # Copy local code to the container image.
-WORKDIR /go/src/github.com/keptn/jmeter-service
+WORKDIR /go/src/github.com/keptn/keptn/jmeter-service
 COPY . .
 
 ARG DEP_VERSION=0.5.3
@@ -47,7 +47,7 @@ RUN    apk update \
 ENV PATH $PATH:$JMETER_BIN
 
 # Copy the binary to the production image from the builder stage.
-COPY --from=builder /go/src/github.com/keptn/jmeter-service/jmeter-service /jmeter-service
+COPY --from=builder /go/src/github.com/keptn/keptn/jmeter-service/jmeter-service /jmeter-service
 ADD MANIFEST /
 
 # Run the web service on container startup.
