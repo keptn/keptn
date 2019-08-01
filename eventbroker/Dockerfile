@@ -4,7 +4,7 @@
 FROM golang:1.12 as builder
 
 # Copy local code to the container image.
-WORKDIR /go/src/github.com/keptn/eventbroker-go
+WORKDIR /go/src/github.com/keptn/keptn/eventbroker
 COPY . .
 
 ARG DEP_VERSION=0.5.3
@@ -14,7 +14,7 @@ RUN curl -L -s https://github.com/golang/dep/releases/download/v$DEP_VERSION/dep
 
 # Build the command inside the container.
 # (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
-RUN CGO_ENABLED=0 GOOS=linux go build -v -o eventbroker-go
+RUN CGO_ENABLED=0 GOOS=linux go build -v -o eventbroker
 
 # Use a Docker multi-stage build to create a lean production image.
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
@@ -22,9 +22,9 @@ FROM alpine
 RUN apk add --no-cache ca-certificates
 
 # Copy the binary to the production image from the builder stage.
-COPY --from=builder /go/src/github.com/keptn/eventbroker-go/eventbroker-go /eventbroker-go
+COPY --from=builder /go/src/github.com/keptn/keptn/eventbroker/eventbroker /eventbroker
 ADD MANIFEST /
 
-RUN ls -R /eventbroker-go
+RUN ls -R /eventbroker
 # Run the web service on container startup.
-CMD ["sh", "-c", "cat MANIFEST && /eventbroker-go"]
+CMD ["sh", "-c", "cat MANIFEST && /eventbroker"]
