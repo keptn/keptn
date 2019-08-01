@@ -11,7 +11,7 @@ import (
 	"github.com/jeremywohl/flatten"
 	"go.mongodb.org/mongo-driver/bson"
 
-	"github.com/keptn/mongodb-datastore/restapi/operations/event"
+	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/event"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )

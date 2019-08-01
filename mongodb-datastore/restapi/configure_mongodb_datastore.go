@@ -13,10 +13,10 @@ import (
 	middleware "github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
 
-	"github.com/keptn/mongodb-datastore/handlers"
-	"github.com/keptn/mongodb-datastore/restapi/operations"
-	"github.com/keptn/mongodb-datastore/restapi/operations/event"
-	"github.com/keptn/mongodb-datastore/restapi/operations/logs"
+	"github.com/keptn/keptn/mongodb-datastore/handlers"
+	"github.com/keptn/keptn/mongodb-datastore/restapi/operations"
+	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/event"
+	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/logs"
 )
 
 //go:generate swagger generate server --target ../../mongodb-datastore --name mongodb-datastore --spec ../swagger.json
