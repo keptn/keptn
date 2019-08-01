@@ -13,8 +13,7 @@ RUN curl -L -s https://github.com/golang/dep/releases/download/v$DEP_VERSION/dep
   ./dep ensure
 
 # Build the command inside the container.
-# (You may fetch or manage dependencies here,
-# either manually or with a tool like "godep".)
+# (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
 RUN CGO_ENABLED=0 GOOS=linux go build -v -o jmeter-service
 
 # Use a Docker multi-stage build to create a lean production image.
