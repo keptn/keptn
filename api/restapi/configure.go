@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/keptn/keptn/api/restapi/operations/auth"
-	"github.com/keptn/keptn/api/restapi/operations/dynatrace"
 	"github.com/keptn/keptn/api/restapi/operations/service"
 
 	"github.com/keptn/keptn/api/restapi/operations/project"
@@ -56,10 +55,6 @@ func getProjectInternalError(err error) *project.ProjectDefault {
 
 func getServiceInternalError(err error) *service.ServiceDefault {
 	return service.NewServiceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
-}
-
-func getDynatraceInternalError(err error) *dynatrace.DynatraceDefault {
-	return dynatrace.NewDynatraceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 }
 
 func configureAPI(api *operations.API) http.Handler {
@@ -203,19 +198,6 @@ func configureAPI(api *operations.API) http.Handler {
 			return getServiceInternalError(err)
 		}
 		return service.NewServiceCreated().WithPayload(&channelInfo)
-	})
-
-	api.DynatraceDynatraceHandler = dynatrace.DynatraceHandlerFunc(func(params dynatrace.DynatraceParams, principal *models.Principal) middleware.Responder {
-		if params.Body.Shkeptncontext == "" {
-			params.Body.Shkeptncontext = uuid.New().String()
-		}
-		l := keptnutils.NewLogger(params.Body.Shkeptncontext, *params.Body.ID, "api")
-		l.Info("API received Dynatrace-event")
-
-		if err := utils.PostToEventBroker(params.Body, l); err != nil {
-			return getDynatraceInternalError(err)
-		}
-		return dynatrace.NewDynatraceCreated()
 	})
 
 	api.ServerShutdown = func() {}
