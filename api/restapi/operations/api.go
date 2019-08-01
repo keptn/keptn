@@ -21,7 +21,6 @@ import (
 
 	"github.com/keptn/keptn/api/restapi/operations/auth"
 	"github.com/keptn/keptn/api/restapi/operations/configure"
-	"github.com/keptn/keptn/api/restapi/operations/dynatrace"
 	"github.com/keptn/keptn/api/restapi/operations/event"
 	"github.com/keptn/keptn/api/restapi/operations/project"
 	"github.com/keptn/keptn/api/restapi/operations/service"
@@ -51,9 +50,6 @@ func NewAPI(spec *loads.Document) *API {
 		}),
 		ConfigureConfigureHandler: configure.ConfigureHandlerFunc(func(params configure.ConfigureParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation ConfigureConfigure has not yet been implemented")
-		}),
-		DynatraceDynatraceHandler: dynatrace.DynatraceHandlerFunc(func(params dynatrace.DynatraceParams, principal *models.Principal) middleware.Responder {
-			return middleware.NotImplemented("operation DynatraceDynatrace has not yet been implemented")
 		}),
 		ProjectProjectHandler: project.ProjectHandlerFunc(func(params project.ProjectParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation ProjectProject has not yet been implemented")
@@ -114,8 +110,6 @@ type API struct {
 	AuthAuthHandler auth.AuthHandler
 	// ConfigureConfigureHandler sets the operation handler for the configure operation
 	ConfigureConfigureHandler configure.ConfigureHandler
-	// DynatraceDynatraceHandler sets the operation handler for the dynatrace operation
-	DynatraceDynatraceHandler dynatrace.DynatraceHandler
 	// ProjectProjectHandler sets the operation handler for the project operation
 	ProjectProjectHandler project.ProjectHandler
 	// EventSendEventHandler sets the operation handler for the send event operation
@@ -195,10 +189,6 @@ func (o *API) Validate() error {
 
 	if o.ConfigureConfigureHandler == nil {
 		unregistered = append(unregistered, "configure.ConfigureHandler")
-	}
-
-	if o.DynatraceDynatraceHandler == nil {
-		unregistered = append(unregistered, "dynatrace.DynatraceHandler")
 	}
 
 	if o.ProjectProjectHandler == nil {
@@ -332,11 +322,6 @@ func (o *API) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/configure"] = configure.NewConfigure(o.context, o.ConfigureConfigureHandler)
-
-	if o.handlers["POST"] == nil {
-		o.handlers["POST"] = make(map[string]http.Handler)
-	}
-	o.handlers["POST"]["/dynatrace"] = dynatrace.NewDynatrace(o.context, o.DynatraceDynatraceHandler)
 
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
