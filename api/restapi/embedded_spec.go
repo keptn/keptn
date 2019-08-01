@@ -89,35 +89,6 @@ func init() {
         }
       }
     },
-    "/dynatrace": {
-      "post": {
-        "tags": [
-          "dynatrace"
-        ],
-        "summary": "Forwards the received event from Dynatrace to the eventbroker",
-        "operationId": "dynatrace",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/DynatraceProblemCE"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "event forwarded"
-          },
-          "default": {
-            "description": "error",
-            "schema": {
-              "$ref": "#/definitions/error"
-            }
-          }
-        }
-      }
-    },
     "/event": {
       "post": {
         "tags": [
@@ -394,77 +365,6 @@ func init() {
                       }
                     }
                   }
-                }
-              }
-            }
-          }
-        }
-      ]
-    },
-    "DynatraceProblemCE": {
-      "allOf": [
-        {
-          "$ref": "#/definitions/CE_without_data_with_keptncontext"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "data": {
-              "required": [
-                "state",
-                "problemid",
-                "pid",
-                "problemtitle",
-                "problemdetails",
-                "impactedentities",
-                "impactedentity"
-              ],
-              "properties": {
-                "impactedentities": {
-                  "type": "array",
-                  "items": {
-                    "required": [
-                      "type",
-                      "name",
-                      "entity"
-                    ],
-                    "properties": {
-                      "entity": {
-                        "type": "string"
-                      },
-                      "name": {
-                        "type": "string"
-                      },
-                      "type": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                },
-                "impactedentity": {
-                  "type": "string"
-                },
-                "pid": {
-                  "type": "string"
-                },
-                "problemdetails": {
-                  "required": [
-                    "id"
-                  ],
-                  "properties": {
-                    "id": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "problemid": {
-                  "type": "string"
-                },
-                "problemtitle": {
-                  "type": "string"
-                },
-                "state": {
-                  "type": "string"
                 }
               }
             }
@@ -576,35 +476,6 @@ func init() {
         }
       }
     },
-    "/dynatrace": {
-      "post": {
-        "tags": [
-          "dynatrace"
-        ],
-        "summary": "Forwards the received event from Dynatrace to the eventbroker",
-        "operationId": "dynatrace",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/DynatraceProblemCE"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "event forwarded"
-          },
-          "default": {
-            "description": "error",
-            "schema": {
-              "$ref": "#/definitions/error"
-            }
-          }
-        }
-      }
-    },
     "/event": {
       "post": {
         "tags": [
@@ -881,77 +752,6 @@ func init() {
                       }
                     }
                   }
-                }
-              }
-            }
-          }
-        }
-      ]
-    },
-    "DynatraceProblemCE": {
-      "allOf": [
-        {
-          "$ref": "#/definitions/CE_without_data_with_keptncontext"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "data": {
-              "required": [
-                "state",
-                "problemid",
-                "pid",
-                "problemtitle",
-                "problemdetails",
-                "impactedentities",
-                "impactedentity"
-              ],
-              "properties": {
-                "impactedentities": {
-                  "type": "array",
-                  "items": {
-                    "required": [
-                      "type",
-                      "name",
-                      "entity"
-                    ],
-                    "properties": {
-                      "entity": {
-                        "type": "string"
-                      },
-                      "name": {
-                        "type": "string"
-                      },
-                      "type": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                },
-                "impactedentity": {
-                  "type": "string"
-                },
-                "pid": {
-                  "type": "string"
-                },
-                "problemdetails": {
-                  "required": [
-                    "id"
-                  ],
-                  "properties": {
-                    "id": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "problemid": {
-                  "type": "string"
-                },
-                "problemtitle": {
-                  "type": "string"
-                },
-                "state": {
-                  "type": "string"
                 }
               }
             }
