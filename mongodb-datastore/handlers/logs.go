@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/keptn/mongodb-datastore/restapi/operations/logs"
+	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/logs"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
