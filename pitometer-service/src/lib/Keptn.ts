@@ -4,7 +4,6 @@ import { Logger } from './Logger';
 
 export class Keptn {
   static async sendEvent(event: RequestModel): Promise<void> {
-    Logger.log(event.shkeptncontext, event.id, `Sending event: ${JSON.stringify(event)}`);
     if (!(process.env.NODE_ENV === 'production')) {
       return;
     }
