@@ -44,14 +44,14 @@ function verify_variable() {
 
 # Waits for a deployment in a given namespace to be available.
 function wait_for_deployment_in_namespace() {
-  DEPL=$1; NAMESPACE=$2;
+  NEW_DEPLOYMENT=$1; NAMESPACE=$2;
   RETRY=0; RETRY_MAX=24; 
 
   while [[ $RETRY -lt $RETRY_MAX ]]; do
-    DEPLOYMENT_LIST=$(eval "kubectl get deployments -n $NAMESPACE | awk '/$DEPL/'" | awk '{print $1}') # list of multiple deployments when starting with the same name
+    DEPLOYMENT_LIST=$(eval "kubectl get deployments -n $NAMESPACE | awk '/$NEW_DEPLOYMENT/'" | awk '{print $1}') # list of multiple deployments when starting with the same name
     if [[ -z "$DEPLOYMENT_LIST" ]]; then
       RETRY=$[$RETRY+1]
-      print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 10s for deployment ${DEPL} in namespace ${NAMESPACE} ..."
+      print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 10s for deployment ${NEW_DEPLOYMENT} in namespace ${NAMESPACE} ..."
       sleep 10
     else
       break
@@ -59,33 +59,33 @@ function wait_for_deployment_in_namespace() {
   done
 
   if [[ $RETRY == $RETRY_MAX ]]; then
-    print_error "Deployment ${DEPL} in namespace ${NAMESPACE} is not available"
+    print_error "Deployment ${NEW_DEPLOYMENT} in namespace ${NAMESPACE} is not available"
     exit 1
   fi
 
   RETRY=0
 
-  verify_variable "$DEPLOYMENT_LIST" "DEPLOYMENT_LIST could not be derived from deployments list of namespace $NAMESPACE."
+  verify_variable "$DEPLOYMENT_LIST" "List of deployments in namespace $NAMESPACE could not be derived."
 
   array=(${DEPLOYMENT_LIST// / })
 
-  for DEPLOYMENT in "${array[@]}" 
+  for DEPLOYED_DEPLOYMENT in "${array[@]}" 
   do
     while [[ $RETRY -lt $RETRY_MAX ]]; do
       kubectl rollout status deployment $DEPLOYMENT -n $NAMESPACE
 
       if [[ $? == '0' ]]
       then
-        print_debug "Deployment ${DEPL} in ${NAMESPACE} namespace available."
+        print_debug "Deployment ${DEPLOYED_DEPLOYMENT} in ${NAMESPACE} namespace available."
         break
       fi
       RETRY=$[$RETRY+1]
-      print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 10s for deployment ${DEPL} in namespace ${NAMESPACE} ..."
+      print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 10s for deployment ${DEPLOYED_DEPLOYMENT} in namespace ${NAMESPACE} ..."
       sleep 10
     done
 
     if [[ $RETRY == $RETRY_MAX ]]; then
-      print_error "Deployment ${DEPL} in namespace ${NAMESPACE} is not available"
+      print_error "Deployment ${DEPLOYED_DEPLOYMENT} in namespace ${NAMESPACE} is not available"
       exit 1
     fi
   done
