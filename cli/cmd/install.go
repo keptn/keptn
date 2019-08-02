@@ -39,6 +39,7 @@ import (
 var configFilePath *string
 var installerVersion *string
 var platform *string
+var insecureskiptlsverify *string
 
 const gke = "gke"
 const aks = "aks"
@@ -230,6 +231,7 @@ func init() {
 	installerVersion = installCmd.Flags().StringP("keptn-version", "k", "master", "The branch or tag of the version which is installed")
 	installCmd.Flags().MarkHidden("keptn-version")
 	platform = installCmd.Flags().StringP("platform", "p", "gke", "The platform to run keptn on [gke,openshift,aks,kubernetes]")
+	insecureskiptlsverify = installCmd.Flags().StringP("insecure-skip-tls-verify", "s", "no", "skip tls verification")
 }
 
 func checkInstallerAvailablity() (bool, error) {
@@ -280,12 +282,20 @@ func doInstallation(creds installCredentials) error {
 	}
 
 	if *platform == gke || *platform == aks || *platform == kubernetes {
-		_, err := keptnutils.ExecuteCommand("kubectl", []string{
-			"apply",
-			"-f",
-			getRbacURL(),
-		})
-
+		if (*insecureskiptlsverify == yes) {
+			_, err := keptnutils.ExecuteCommand("kubectl --insecure-skip-tls-verify", []string{
+				"apply",
+				"-f",
+				getRbacURL(),
+			})
+		} else {
+			_, err := keptnutils.ExecuteCommand("kubectl", []string{
+				"apply",
+				"-f",
+				getRbacURL(),
+			})
+		}
+		
 		if err != nil {
 			return fmt.Errorf("Error while applying RBAC for installer pod: %s \nAborting installation", err.Error())
 		}
@@ -293,12 +303,20 @@ func doInstallation(creds installCredentials) error {
 
 	utils.PrintLog("Deploying keptn installer pod...", utils.InfoLevel)
 
-	_, err = keptnutils.ExecuteCommand("kubectl", []string{
-		"apply",
-		"-f",
-		installerPath,
-	})
-
+	if (*insecureskiptlsverify == yes) {
+		_, err = keptnutils.ExecuteCommand("kubectl --insecure-skip-tls-verify", []string{
+			"apply",
+			"-f",
+			installerPath,
+		})
+	} else {
+		_, err = keptnutils.ExecuteCommand("kubectl", []string{
+			"apply",
+			"-f",
+			installerPath,
+		})
+	}
+	
 	if err != nil {
 		return fmt.Errorf("Error while deploying keptn installer pod: %s \nAborting installation", err.Error())
 	}
