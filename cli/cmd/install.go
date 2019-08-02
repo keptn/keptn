@@ -51,7 +51,6 @@ const rbacSuffixPath = "/installer/manifests/installer/rbac.yaml"
 
 type installCredentials struct {
 	GithubPersonalAccessToken string `json:"githubPersonalAccessToken"`
-	GithubUserEmail           string `json:"githubUserEmail"`
 	GithubOrg                 string `json:"githubOrg"`
 	GithubUserName            string `json:"githubUserName"`
 	ClusterName               string `json:"clusterName"`
@@ -123,7 +122,7 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 			// Verify the provided config
 			// Check whether all data is provided
 			if creds.GithubPersonalAccessToken == "" ||
-				creds.GithubUserEmail == "" || creds.GithubOrg == "" || creds.GithubUserName == "" {
+				creds.GithubOrg == "" || creds.GithubUserName == "" {
 				return errors.New("Incomplete credential file " + *configFilePath)
 			}
 
@@ -342,7 +341,6 @@ func getInstallCredentials(creds *installCredentials) error {
 		connectToCluster(creds)
 
 		readGithubUserName(creds)
-		readGithubUserEmail(creds)
 
 		// Check if the access token has the necessary permissions and the github org exists
 		validScopeRes := false
@@ -389,7 +387,6 @@ func getInstallCredentials(creds *installCredentials) error {
 		}
 
 		fmt.Println("GitHub User Name: " + creds.GithubUserName)
-		fmt.Println("GitHub User Email: " + creds.GithubUserEmail)
 		fmt.Println("GitHub Personal Access Token: " + creds.GithubPersonalAccessToken)
 		fmt.Println("GitHub Organization: " + creds.GithubOrg)
 
@@ -518,14 +515,6 @@ func readGithubUserName(creds *installCredentials) {
 		"^(([a-zA-Z0-9]+-)*[a-zA-Z0-9]+)$",
 		"GitHub User Name",
 		"Please enter a valid GitHub User Name.",
-	)
-}
-
-func readGithubUserEmail(creds *installCredentials) {
-	readUserInput(&creds.GithubUserEmail,
-		"^[a-z0-9._%+\\-]+@[a-z0-9.\\-]+\\.[a-z]{2,4}$",
-		"GitHub User Email",
-		"Please enter a valid GitHub User Email.",
 	)
 }
 
