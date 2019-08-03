@@ -39,7 +39,9 @@ import (
 var configFilePath *string
 var installerVersion *string
 var platform *string
-var insecureskiptlsverify *bool
+var insecureSkipTLSVerify bool
+
+var kubectlOptions string
 
 const gke = "gke"
 const aks = "aks"
@@ -88,6 +90,10 @@ Example:
 	keptn install`,
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
+
+		if insecureSkipTLSVerify {
+			kubectlOptions = "--insecure-skip-tls-verify=true"
+		}
 
 		err := checkIfPlatformIsSupported()
 		if err != nil {
@@ -231,7 +237,7 @@ func init() {
 	installerVersion = installCmd.Flags().StringP("keptn-version", "k", "master", "The branch or tag of the version which is installed")
 	installCmd.Flags().MarkHidden("keptn-version")
 	platform = installCmd.Flags().StringP("platform", "p", "gke", "The platform to run keptn on [gke,openshift,aks,kubernetes]")
-	insecureskiptlsverify = installCmd.Flags().BoolP("insecure-skip-tls-verify", "s", false, "skip tls verification")
+	installCmd.PersistentFlags().BoolVarP(&insecureSkipTLSVerify, "insecure-skip-tls-verify", "s", false, "Skip tls verification for kubectl commands")
 }
 
 func checkInstallerAvailablity() (bool, error) {
@@ -282,20 +288,10 @@ func doInstallation(creds installCredentials) error {
 	}
 
 	if *platform == gke || *platform == aks || *platform == kubernetes {
-		if (*insecureskiptlsverify == true) {
-			_, err := keptnutils.ExecuteCommand("kubectl --insecure-skip-tls-verify", []string{
-				"apply",
-				"-f",
-				getRbacURL(),
-			})
-		} else {
-			_, err := keptnutils.ExecuteCommand("kubectl", []string{
-				"apply",
-				"-f",
-				getRbacURL(),
-			})
-		}
-		
+		options := options{"apply", "-f", getRbacURL()}
+		options.appendIfNotEmpty(kubectlOptions)
+		_, err = keptnutils.ExecuteCommand("kubectl", options)
+
 		if err != nil {
 			return fmt.Errorf("Error while applying RBAC for installer pod: %s \nAborting installation", err.Error())
 		}
@@ -303,20 +299,10 @@ func doInstallation(creds installCredentials) error {
 
 	utils.PrintLog("Deploying keptn installer pod...", utils.InfoLevel)
 
-	if (*insecureskiptlsverify == true) {
-		_, err = keptnutils.ExecuteCommand("kubectl --insecure-skip-tls-verify", []string{
-			"apply",
-			"-f",
-			installerPath,
-		})
-	} else {
-		_, err = keptnutils.ExecuteCommand("kubectl", []string{
-			"apply",
-			"-f",
-			installerPath,
-		})
-	}
-	
+	options := options{"apply", "-f", installerPath}
+	options.appendIfNotEmpty(kubectlOptions)
+	_, err = keptnutils.ExecuteCommand("kubectl", options)
+
 	if err != nil {
 		return fmt.Errorf("Error while deploying keptn installer pod: %s \nAborting installation", err.Error())
 	}
@@ -710,34 +696,18 @@ func getGkeClusterInfo() (string, string, string) {
 }
 
 func getKubeContext() (string, error) {
-	if (*insecureskiptlsverify == true) {
-		return keptnutils.ExecuteCommand("kubectl --insecure-skip-tls-verify", []string{
-			"config",
-			"current-context",
-		})
-	} else {
-		return keptnutils.ExecuteCommand("kubectl", []string{
-			"config",
-			"current-context",
-		})
-	}
-
+	return keptnutils.ExecuteCommand("kubectl", []string{
+		"config",
+		"current-context",
+	})
 }
 
 func getAksClusterInfo() string {
-	if (*insecureskiptlsverify == true) {
-		// try to get current cluster from gcloud config
-		out, err := keptnutils.ExecuteCommand("kubectl --insecure-skip-tls-verify", []string{
-			"config",
-			"current-context",
-		})
-	} else {
-		// try to get current cluster from gcloud config
-		out, err := keptnutils.ExecuteCommand("kubectl", []string{
-			"config",
-			"current-context",
-		})
-	}
+	// try to get current cluster from gcloud config
+	out, err := keptnutils.ExecuteCommand("kubectl", []string{
+		"config",
+		"current-context",
+	})
 
 	if err != nil {
 		return ""
@@ -776,13 +746,7 @@ func getAzUser() (string, error) {
 
 func isKubectlAvailable() (bool, error) {
 
-	if (*insecureskiptlsverify == true) {
-		_, err := keptnutils.ExecuteCommand("kubectl --insecure-skip-tls-verify", []string{})
-	} else {
-		_, err := keptnutils.ExecuteCommand("kubectl", []string{})
-	}
-
-	
+	_, err := keptnutils.ExecuteCommand("kubectl", []string{})
 	if err != nil {
 		return false, err
 	}
@@ -795,24 +759,14 @@ func waitForInstallerPod() (string, error) {
 	for ok := true; ok; ok = !podRunning {
 		time.Sleep(5 * time.Second)
 
-		if (*insecureskiptlsverify == true) {
-			out, err := keptnutils.ExecuteCommand("kubectl --insecure-skip-tls-verify", []string{
-				"get",
-				"pods",
-				"-l",
-				"app=installer",
-				"-ojson",
-			})
-		} else {
-			out, err := keptnutils.ExecuteCommand("kubectl", []string{
-				"get",
-				"pods",
-				"-l",
-				"app=installer",
-				"-ojson",
-			})
-		}
-		
+		options := options{"get",
+			"pods",
+			"-l",
+			"app=installer",
+			"-ojson"}
+		options.appendIfNotEmpty(kubectlOptions)
+		out, err := keptnutils.ExecuteCommand("kubectl", options)
+
 		if err != nil {
 			return "", fmt.Errorf("Error while retrieving installer pod: %s\n. Aborting installation", err)
 		}
@@ -839,26 +793,16 @@ func getInstallerLogs(podName string) error {
 
 	fmt.Printf("Getting logs of pod %s\n", podName)
 
-	if (*insecureskiptlsverify == true) {
-		execCmd := exec.Command(
-			"kubectl --insecure-skip-tls-verify",
-			"logs",
-			podName,
-			"-c",
-			"keptn-installer",
-			"-f",
-		)
-	} else {
-		execCmd := exec.Command(
-			"kubectl",
-			"logs",
-			podName,
-			"-c",
-			"keptn-installer",
-			"-f",
-		)
-	}
-	
+	options := options{"logs",
+		podName,
+		"-c",
+		"keptn-installer",
+		"-f"}
+	options.appendIfNotEmpty(kubectlOptions)
+
+	execCmd := exec.Command(
+		"kubectl", options...,
+	)
 
 	stdoutIn, _ := execCmd.StdoutPipe()
 	stderrIn, _ := execCmd.StderrPipe()
@@ -969,26 +913,14 @@ func setupKeptnAuthAndConfigure(creds installCredentials) error {
 
 	utils.PrintLog("Starting to configure your keptn CLI...", utils.InfoLevel)
 
-	if (*insecureskiptlsverify == true) {
-		out, err := keptnutils.ExecuteCommand("kubectl --insecure-skip-tls-verify", []string{
-			"get",
-			"secret",
-			"keptn-api-token",
-			"-n",
-			"keptn",
-			"-ojson",
-		})
-	} else {
-		out, err := keptnutils.ExecuteCommand("kubectl", []string{
-			"get",
-			"secret",
-			"keptn-api-token",
-			"-n",
-			"keptn",
-			"-ojson",
-		})
-	}
-	
+	ops := options{"get",
+		"secret",
+		"keptn-api-token",
+		"-n",
+		"keptn",
+		"-ojson"}
+	ops.appendIfNotEmpty(kubectlOptions)
+	out, err := keptnutils.ExecuteCommand("kubectl", ops)
 
 	const errorMsg = `Could not retrieve keptn API token: %s
 To manually set up your keptn CLI, please follow the instructions at https://keptn.sh/docs/0.2.0/reference/cli/.`
@@ -1010,26 +942,16 @@ To manually set up your keptn CLI, please follow the instructions at https://kep
 	retries := 0
 	for tryGetAPIEndpoint := true; tryGetAPIEndpoint; tryGetAPIEndpoint = !apiEndpointRetrieved {
 
-		if (*insecureskiptlsverify == true) {
-			out, err := keptnutils.ExecuteCommand("kubectl --insecure-skip-tls-verify", []string{
-				"get",
-				"virtualservice",
-				"control",
-				"-n",
-				"keptn",
-				"-ojsonpath={.spec.hosts[0]}",
-			})
-		} else {
-			out, err := keptnutils.ExecuteCommand("kubectl", []string{
-				"get",
-				"virtualservice",
-				"control",
-				"-n",
-				"keptn",
-				"-ojsonpath={.spec.hosts[0]}",
-			})
-		}
-		
+		ops := options{"get",
+			"virtualservice",
+			"control",
+			"-n",
+			"keptn",
+			"-ojsonpath={.spec.hosts[0]}"}
+		ops.appendIfNotEmpty(kubectlOptions)
+
+		out, err := keptnutils.ExecuteCommand("kubectl", ops)
+
 		if err != nil {
 			retries++
 			if retries >= 15 {
@@ -1102,4 +1024,12 @@ func configure(creds installCredentials) error {
 			"To manually set up your keptn CLI, please follow the instructions at https://keptn.sh/docs/0.2.0/reference/cli/.", err)
 	}
 	return nil
+}
+
+type options []string
+
+func (s *options) appendIfNotEmpty(newOption string) {
+	if newOption != "" {
+		*s = append(*s, newOption)
+	}
 }
