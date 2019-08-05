@@ -295,7 +295,7 @@ func (o *MongodbDatastoreAPI) initHandlerCache() {
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/events/{id}"] = event.NewGetEvent(o.context, o.EventGetEventHandler)
+	o.handlers["GET"]["/events/id/{id}"] = event.NewGetEvent(o.context, o.EventGetEventHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
@@ -310,7 +310,7 @@ func (o *MongodbDatastoreAPI) initHandlerCache() {
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/events/newartifact"] = event.NewGetNewArtifactEvents(o.context, o.EventGetNewArtifactEventsHandler)
+	o.handlers["GET"]["/events/type/newartifact"] = event.NewGetNewArtifactEvents(o.context, o.EventGetNewArtifactEventsHandler)
 
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
