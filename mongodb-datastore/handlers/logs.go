@@ -32,12 +32,15 @@ func SaveLog(body []*logs.SaveLogParamsBodyItems0) (err error) {
 	collection := client.Database(mongoDBName).Collection(logsCollectionName)
 
 	for _, l := range body {
-
-		res, err := collection.InsertOne(ctx, l)
-		if err != nil {
-			log.Fatalln("error inserting: ", err.Error())
+		if l.KeptnService != "" {
+			res, err := collection.InsertOne(ctx, l)
+			if err != nil {
+				log.Fatalln("error inserting: ", err.Error())
+			}
+			fmt.Println("insertedID: ", res.InsertedID)
+		} else {
+			fmt.Println("no KeptnService set, log not stored in datastore")
 		}
-		fmt.Println("insertedID: ", res.InsertedID)
 	}
 
 	return err
