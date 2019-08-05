@@ -35,7 +35,7 @@ func (o *GetNewArtifactEventsURL) SetBasePath(bp string) {
 func (o *GetNewArtifactEventsURL) Build() (*url.URL, error) {
 	var _result url.URL
 
-	var _path = "/events/newartifact"
+	var _path = "/events/type/newartifact"
 
 	_basePath := o._basePath
 	if _basePath == "" {
