@@ -40,7 +40,7 @@ func (o *GetEventURL) SetBasePath(bp string) {
 func (o *GetEventURL) Build() (*url.URL, error) {
 	var _result url.URL
 
-	var _path = "/events/{id}"
+	var _path = "/events/id/{id}"
 
 	id := o.ID
 	if id != "" {

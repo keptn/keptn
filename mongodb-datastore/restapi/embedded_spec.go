@@ -89,13 +89,22 @@ func init() {
         }
       }
     },
-    "/events/newartifact": {
+    "/events/id/{id}": {
       "get": {
         "tags": [
           "event"
         ],
-        "summary": "Gets new artifact events from the data store",
-        "operationId": "getNewArtifactEvents",
+        "summary": "Gets events from the data store",
+        "operationId": "getEvent",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "ID of the event to get",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
         "responses": {
           "200": {
             "description": "ok",
@@ -115,22 +124,13 @@ func init() {
         }
       }
     },
-    "/events/{id}": {
+    "/events/type/newartifact": {
       "get": {
         "tags": [
           "event"
         ],
-        "summary": "Gets events from the data store",
-        "operationId": "getEvent",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "ID of the event to get",
-            "name": "id",
-            "in": "path",
-            "required": true
-          }
-        ],
+        "summary": "Gets new artifact events from the data store",
+        "operationId": "getNewArtifactEvents",
         "responses": {
           "200": {
             "description": "ok",
@@ -466,13 +466,22 @@ func init() {
         }
       }
     },
-    "/events/newartifact": {
+    "/events/id/{id}": {
       "get": {
         "tags": [
           "event"
         ],
-        "summary": "Gets new artifact events from the data store",
-        "operationId": "getNewArtifactEvents",
+        "summary": "Gets events from the data store",
+        "operationId": "getEvent",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "ID of the event to get",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
         "responses": {
           "200": {
             "description": "ok",
@@ -556,22 +565,13 @@ func init() {
         }
       }
     },
-    "/events/{id}": {
+    "/events/type/newartifact": {
       "get": {
         "tags": [
           "event"
         ],
-        "summary": "Gets events from the data store",
-        "operationId": "getEvent",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "ID of the event to get",
-            "name": "id",
-            "in": "path",
-            "required": true
-          }
-        ],
+        "summary": "Gets new artifact events from the data store",
+        "operationId": "getNewArtifactEvents",
         "responses": {
           "200": {
             "description": "ok",

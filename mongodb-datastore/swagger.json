@@ -70,7 +70,7 @@
             }
           }
       },
-      "/events/newartifact": {
+      "/events/type/newartifact": {
         "get": {
           "tags": [
             "event"
@@ -96,7 +96,7 @@
           }
         }
       },
-      "/events/{id}": {
+      "/events/id/{id}": {
         "get": {
             "tags": [
               "event"

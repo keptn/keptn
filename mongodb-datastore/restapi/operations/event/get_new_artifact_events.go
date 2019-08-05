@@ -33,7 +33,7 @@ func NewGetNewArtifactEvents(ctx *middleware.Context, handler GetNewArtifactEven
 	return &GetNewArtifactEvents{Context: ctx, Handler: handler}
 }
 
-/*GetNewArtifactEvents swagger:route GET /events/newartifact event getNewArtifactEvents
+/*GetNewArtifactEvents swagger:route GET /events/type/newartifact event getNewArtifactEvents
 
 Gets new artifact events from the data store
 
