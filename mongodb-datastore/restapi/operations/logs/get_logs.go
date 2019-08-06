@@ -135,10 +135,36 @@ type GetLogsOKBodyItems0 struct {
 
 	// message
 	Message string `json:"message,omitempty"`
+
+	// timestamp
+	// Format: date-time
+	Timestamp strfmt.DateTime `json:"timestamp,omitempty"`
 }
 
 // Validate validates this get logs o k body items0
 func (o *GetLogsOKBodyItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateTimestamp(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *GetLogsOKBodyItems0) validateTimestamp(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Timestamp) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("timestamp", "body", "date-time", o.Timestamp.String(), formats); err != nil {
+		return err
+	}
+
 	return nil
 }
 

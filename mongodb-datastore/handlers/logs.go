@@ -64,8 +64,8 @@ func GetLogs() (res []*logs.GetLogsOKBodyItems0, err error) {
 	}
 
 	collection := client.Database(mongoDBName).Collection(logsCollectionName)
-
-	cur, err := collection.Find(ctx, bson.D{{}})
+	options := options.Find().SetSort(bson.D{{"timestamp", -1}})
+	cur, err := collection.Find(ctx, bson.D{{}}, options)
 	if err != nil {
 		log.Fatalln("error finding elements in collections: ", err.Error())
 	}
