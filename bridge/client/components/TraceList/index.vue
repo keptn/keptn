@@ -5,17 +5,14 @@
         class="mt-2"
         striped
         hover
+        dark
         :fields="fields"
         :items="traces"
         bordered
         v-if="traces && traces.length"
-      >
-        <template slot="row-details" slot-scope="row">
-          <small>{{row.item.message}}</small>
-        </template>
-      </b-table>
+      ></b-table>
       <div class="placeholder" v-else>
-        <font-awesome-icon class="icon" icon="arrow-left"/>
+        <font-awesome-icon class="icon" icon="arrow-left" />
         <div class="placeholder-text">Please select an entry point!</div>
       </div>
     </div>
@@ -26,26 +23,36 @@
 import { mapState } from 'vuex';
 import moment from 'moment';
 
+function formatDate(date) {
+  return moment(date).format('YYYY-MM-DD, hh:mm:ss');
+}
+
 export default {
   name: 'TraceList',
   props: {},
   data() {
-    return { fields: ['timestamp', 'service'] };
-  },
-  filters: {
-    moment: function formatDate(date) {
-      return moment(date).format('YYYY-MM-DD, hh:mm:ss');
-    },
+    return {
+      fields: [
+        { key: 'type', sortable: true },
+        {
+          key: 'timestamp',
+          sortable: true,
+          formatter: value => {
+            return moment(value).format('YYYY-MM-DD, hh:mm:ss');
+          },
+        },
+        { key: 'project', sortable: true },
+        { key: 'service', sortable: true },
+        { key: 'stage', sortable: true },
+        { key: 'tag', sortable: true },
+      ],
+    };
   },
   computed: mapState({
     traces: state =>
       state.traces.map(trace => {
         return {
-          timestamp: moment(trace._source['@timestamp']).format(
-            'YYYY-MM-DD, hh:mm:ss',
-          ),
-          service: trace._source.keptnService,
-          message: trace._source.message,
+          ...trace,
           _showDetails: true,
         };
       }),
