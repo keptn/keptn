@@ -44,7 +44,7 @@ func SaveEvent(body event.SaveEventBody) error {
 	return err
 }
 
-// GetEvents gets the latest 100 events from the data store
+// GetEvents gets all events from the data store sorted by time
 func GetEvents() (events []*event.GetEventsOKBodyItems0, err error) {
 	fmt.Println("get events from datastore")
 	client, err := mongo.NewClient(options.Client().ApplyURI(mongoDBConnection))
@@ -62,7 +62,8 @@ func GetEvents() (events []*event.GetEventsOKBodyItems0, err error) {
 
 	collection := client.Database(mongoDBName).Collection(eventsCollectionName)
 
-	cur, err := collection.Find(ctx, bson.D{{}})
+	options := options.Find().SetSort(bson.D{{"time", -1}})
+	cur, err := collection.Find(ctx, bson.D{{}}, options)
 	if err != nil {
 		log.Fatalln("error finding elements in collections: ", err.Error())
 	}
@@ -89,7 +90,7 @@ func GetEvents() (events []*event.GetEventsOKBodyItems0, err error) {
 
 }
 
-// GetEventsByKeptncontext gets all events with a specific keptn context
+// GetEventsByKeptncontext gets all events with a specific keptn context sorted by time
 func GetEventsByKeptncontext(keptncontext string) (events []*event.GetEventOKBodyItems0, err error) {
 	fmt.Println("get event from datastore with shkeptncontext: ", keptncontext)
 	client, err := mongo.NewClient(options.Client().ApplyURI(mongoDBConnection))
@@ -106,8 +107,8 @@ func GetEventsByKeptncontext(keptncontext string) (events []*event.GetEventOKBod
 	}
 
 	collection := client.Database(mongoDBName).Collection(eventsCollectionName)
-
-	cur, err := collection.Find(ctx, bson.M{"shkeptncontext": primitive.Regex{Pattern: keptncontext, Options: ""}})
+	options := options.Find().SetSort(bson.D{{"time", -1}})
+	cur, err := collection.Find(ctx, bson.M{"shkeptncontext": primitive.Regex{Pattern: keptncontext, Options: ""}}, options)
 	if err != nil {
 		log.Fatalln("error finding elements in collections: ", err.Error())
 	}
@@ -134,7 +135,7 @@ func GetEventsByKeptncontext(keptncontext string) (events []*event.GetEventOKBod
 
 }
 
-// GetNewArtifactEvents returns all new artifact events
+// GetNewArtifactEvents returns all new artifact events sorted by time
 func GetNewArtifactEvents() (events []*event.GetNewArtifactEventsOKBodyItems0, err error) {
 	fmt.Println("get new artifact events from datastore")
 	client, err := mongo.NewClient(options.Client().ApplyURI(mongoDBConnection))
@@ -152,7 +153,8 @@ func GetNewArtifactEvents() (events []*event.GetNewArtifactEventsOKBodyItems0, e
 
 	collection := client.Database(mongoDBName).Collection(eventsCollectionName)
 
-	cur, err := collection.Find(ctx, bson.M{"type": "sh.keptn.events.new-artifact"})
+	options := options.Find().SetSort(bson.D{{"time", -1}})
+	cur, err := collection.Find(ctx, bson.M{"type": "sh.keptn.events.new-artifact"}, options)
 	if err != nil {
 		log.Fatalln("error finding elements in collections: ", err.Error())
 	}
