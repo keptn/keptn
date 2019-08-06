@@ -15,40 +15,40 @@ import (
 	validate "github.com/go-openapi/validate"
 )
 
-// SaveLogHandlerFunc turns a function with the right signature into a save log handler
-type SaveLogHandlerFunc func(SaveLogParams) middleware.Responder
+// GetLogsByEventIDHandlerFunc turns a function with the right signature into a get logs by event Id handler
+type GetLogsByEventIDHandlerFunc func(GetLogsByEventIDParams) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn SaveLogHandlerFunc) Handle(params SaveLogParams) middleware.Responder {
+func (fn GetLogsByEventIDHandlerFunc) Handle(params GetLogsByEventIDParams) middleware.Responder {
 	return fn(params)
 }
 
-// SaveLogHandler interface for that can handle valid save log params
-type SaveLogHandler interface {
-	Handle(SaveLogParams) middleware.Responder
+// GetLogsByEventIDHandler interface for that can handle valid get logs by event Id params
+type GetLogsByEventIDHandler interface {
+	Handle(GetLogsByEventIDParams) middleware.Responder
 }
 
-// NewSaveLog creates a new http.Handler for the save log operation
-func NewSaveLog(ctx *middleware.Context, handler SaveLogHandler) *SaveLog {
-	return &SaveLog{Context: ctx, Handler: handler}
+// NewGetLogsByEventID creates a new http.Handler for the get logs by event Id operation
+func NewGetLogsByEventID(ctx *middleware.Context, handler GetLogsByEventIDHandler) *GetLogsByEventID {
+	return &GetLogsByEventID{Context: ctx, Handler: handler}
 }
 
-/*SaveLog swagger:route POST /log logs saveLog
+/*GetLogsByEventID swagger:route GET /logs/eventId/{eventId} logs getLogsByEventId
 
-Saves a log to the datastore
+Get logs by eventId
 
 */
-type SaveLog struct {
+type GetLogsByEventID struct {
 	Context *middleware.Context
-	Handler SaveLogHandler
+	Handler GetLogsByEventIDHandler
 }
 
-func (o *SaveLog) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
+func (o *GetLogsByEventID) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, rCtx, _ := o.Context.RouteInfo(r)
 	if rCtx != nil {
 		r = rCtx
 	}
-	var Params = NewSaveLogParams()
+	var Params = NewGetLogsByEventIDParams()
 
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -61,9 +61,9 @@ func (o *SaveLog) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 }
 
-// SaveLogDefaultBody save log default body
-// swagger:model SaveLogDefaultBody
-type SaveLogDefaultBody struct {
+// GetLogsByEventIDDefaultBody get logs by event ID default body
+// swagger:model GetLogsByEventIDDefaultBody
+type GetLogsByEventIDDefaultBody struct {
 
 	// code
 	Code int64 `json:"code,omitempty"`
@@ -76,8 +76,8 @@ type SaveLogDefaultBody struct {
 	Message *string `json:"message"`
 }
 
-// Validate validates this save log default body
-func (o *SaveLogDefaultBody) Validate(formats strfmt.Registry) error {
+// Validate validates this get logs by event ID default body
+func (o *GetLogsByEventIDDefaultBody) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := o.validateMessage(formats); err != nil {
@@ -90,9 +90,9 @@ func (o *SaveLogDefaultBody) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (o *SaveLogDefaultBody) validateMessage(formats strfmt.Registry) error {
+func (o *GetLogsByEventIDDefaultBody) validateMessage(formats strfmt.Registry) error {
 
-	if err := validate.Required("saveLog default"+"."+"message", "body", o.Message); err != nil {
+	if err := validate.Required("getLogsByEventId default"+"."+"message", "body", o.Message); err != nil {
 		return err
 	}
 
@@ -100,7 +100,7 @@ func (o *SaveLogDefaultBody) validateMessage(formats strfmt.Registry) error {
 }
 
 // MarshalBinary interface implementation
-func (o *SaveLogDefaultBody) MarshalBinary() ([]byte, error) {
+func (o *GetLogsByEventIDDefaultBody) MarshalBinary() ([]byte, error) {
 	if o == nil {
 		return nil, nil
 	}
@@ -108,8 +108,8 @@ func (o *SaveLogDefaultBody) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (o *SaveLogDefaultBody) UnmarshalBinary(b []byte) error {
-	var res SaveLogDefaultBody
+func (o *GetLogsByEventIDDefaultBody) UnmarshalBinary(b []byte) error {
+	var res GetLogsByEventIDDefaultBody
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -117,9 +117,9 @@ func (o *SaveLogDefaultBody) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SaveLogParamsBodyItems0 save log params body items0
-// swagger:model SaveLogParamsBodyItems0
-type SaveLogParamsBodyItems0 struct {
+// GetLogsByEventIDOKBodyItems0 get logs by event ID o k body items0
+// swagger:model GetLogsByEventIDOKBodyItems0
+type GetLogsByEventIDOKBodyItems0 struct {
 
 	// event Id
 	EventID string `json:"eventId,omitempty"`
@@ -141,8 +141,8 @@ type SaveLogParamsBodyItems0 struct {
 	Timestamp strfmt.DateTime `json:"timestamp,omitempty"`
 }
 
-// Validate validates this save log params body items0
-func (o *SaveLogParamsBodyItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this get logs by event ID o k body items0
+func (o *GetLogsByEventIDOKBodyItems0) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := o.validateTimestamp(formats); err != nil {
@@ -155,7 +155,7 @@ func (o *SaveLogParamsBodyItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (o *SaveLogParamsBodyItems0) validateTimestamp(formats strfmt.Registry) error {
+func (o *GetLogsByEventIDOKBodyItems0) validateTimestamp(formats strfmt.Registry) error {
 
 	if swag.IsZero(o.Timestamp) { // not required
 		return nil
@@ -169,7 +169,7 @@ func (o *SaveLogParamsBodyItems0) validateTimestamp(formats strfmt.Registry) err
 }
 
 // MarshalBinary interface implementation
-func (o *SaveLogParamsBodyItems0) MarshalBinary() ([]byte, error) {
+func (o *GetLogsByEventIDOKBodyItems0) MarshalBinary() ([]byte, error) {
 	if o == nil {
 		return nil, nil
 	}
@@ -177,8 +177,8 @@ func (o *SaveLogParamsBodyItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (o *SaveLogParamsBodyItems0) UnmarshalBinary(b []byte) error {
-	var res SaveLogParamsBodyItems0
+func (o *GetLogsByEventIDOKBodyItems0) UnmarshalBinary(b []byte) error {
+	var res GetLogsByEventIDOKBodyItems0
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

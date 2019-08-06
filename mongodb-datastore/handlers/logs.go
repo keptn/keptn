@@ -8,6 +8,7 @@ import (
 
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/logs"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -48,7 +49,7 @@ func SaveLog(body []*logs.SaveLogParamsBodyItems0) (err error) {
 }
 
 // GetLogs returns logs
-func GetLogs() (res []*logs.GetLogsOKBodyItems0, err error) {
+func GetLogs(params logs.GetLogsParams) (res []*logs.GetLogsOKBodyItems0, err error) {
 	fmt.Println("get logs from datastore")
 	client, err := mongo.NewClient(options.Client().ApplyURI(mongoDBConnection))
 	if err != nil {
@@ -64,8 +65,14 @@ func GetLogs() (res []*logs.GetLogsOKBodyItems0, err error) {
 	}
 
 	collection := client.Database(mongoDBName).Collection(logsCollectionName)
-	options := options.Find().SetSort(bson.D{{"timestamp", -1}})
-	cur, err := collection.Find(ctx, bson.D{{}}, options)
+
+	searchOptions := bson.M{}
+	if params.EventID != nil {
+		searchOptions["evenId"] = primitive.Regex{Pattern: *params.EventID, Options: ""}
+	}
+
+	sortOptions := options.Find().SetSort(bson.D{{"timestamp", -1}})
+	cur, err := collection.Find(ctx, searchOptions, sortOptions)
 	if err != nil {
 		log.Fatalln("error finding elements in collections: ", err.Error())
 	}
