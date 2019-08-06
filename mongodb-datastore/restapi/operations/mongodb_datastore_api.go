@@ -49,6 +49,9 @@ func NewMongodbDatastoreAPI(spec *loads.Document) *MongodbDatastoreAPI {
 		LogsGetLogsHandler: logs.GetLogsHandlerFunc(func(params logs.GetLogsParams) middleware.Responder {
 			return middleware.NotImplemented("operation LogsGetLogs has not yet been implemented")
 		}),
+		LogsGetLogsByEventIDHandler: logs.GetLogsByEventIDHandlerFunc(func(params logs.GetLogsByEventIDParams) middleware.Responder {
+			return middleware.NotImplemented("operation LogsGetLogsByEventID has not yet been implemented")
+		}),
 		EventGetNewArtifactEventsHandler: event.GetNewArtifactEventsHandlerFunc(func(params event.GetNewArtifactEventsParams) middleware.Responder {
 			return middleware.NotImplemented("operation EventGetNewArtifactEvents has not yet been implemented")
 		}),
@@ -95,6 +98,8 @@ type MongodbDatastoreAPI struct {
 	EventGetEventsHandler event.GetEventsHandler
 	// LogsGetLogsHandler sets the operation handler for the get logs operation
 	LogsGetLogsHandler logs.GetLogsHandler
+	// LogsGetLogsByEventIDHandler sets the operation handler for the get logs by event Id operation
+	LogsGetLogsByEventIDHandler logs.GetLogsByEventIDHandler
 	// EventGetNewArtifactEventsHandler sets the operation handler for the get new artifact events operation
 	EventGetNewArtifactEventsHandler event.GetNewArtifactEventsHandler
 	// EventSaveEventHandler sets the operation handler for the save event operation
@@ -174,6 +179,10 @@ func (o *MongodbDatastoreAPI) Validate() error {
 
 	if o.LogsGetLogsHandler == nil {
 		unregistered = append(unregistered, "logs.GetLogsHandler")
+	}
+
+	if o.LogsGetLogsByEventIDHandler == nil {
+		unregistered = append(unregistered, "logs.GetLogsByEventIDHandler")
 	}
 
 	if o.EventGetNewArtifactEventsHandler == nil {
@@ -306,6 +315,11 @@ func (o *MongodbDatastoreAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/logs"] = logs.NewGetLogs(o.context, o.LogsGetLogsHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/logs/eventId/{eventId}"] = logs.NewGetLogsByEventID(o.context, o.LogsGetLogsByEventIDHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)

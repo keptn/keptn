@@ -8,6 +8,7 @@ import (
 
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/logs"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -66,6 +67,42 @@ func GetLogs() (res []*logs.GetLogsOKBodyItems0, err error) {
 	collection := client.Database(mongoDBName).Collection(logsCollectionName)
 	options := options.Find().SetSort(bson.D{{"timestamp", -1}})
 	cur, err := collection.Find(ctx, bson.D{{}}, options)
+	if err != nil {
+		log.Fatalln("error finding elements in collections: ", err.Error())
+	}
+
+	var resultLogs []*logs.GetLogsOKBodyItems0
+	for cur.Next(ctx) {
+		var result logs.GetLogsOKBodyItems0
+		err := cur.Decode(&result)
+		if err != nil {
+			return nil, err
+		}
+		resultLogs = append(resultLogs, &result)
+		//fmt.Println(result)
+	}
+	return resultLogs, nil
+}
+
+// GetLogsByEventID returns logs by event ID
+func GetLogsByEventID(eventId string) (res []*logs.GetLogsOKBodyItems0, err error) {
+	fmt.Println("get logs from datastore with eventId: ", eventId)
+	client, err := mongo.NewClient(options.Client().ApplyURI(mongoDBConnection))
+	if err != nil {
+		log.Fatalln("error creating client: ", err.Error())
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err = client.Connect(ctx)
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+
+	collection := client.Database(mongoDBName).Collection(logsCollectionName)
+	options := options.Find().SetSort(bson.D{{"timestamp", -1}})
+	cur, err := collection.Find(ctx, bson.M{"eventId": primitive.Regex{Pattern: eventId, Options: ""}}, options)
 	if err != nil {
 		log.Fatalln("error finding elements in collections: ", err.Error())
 	}

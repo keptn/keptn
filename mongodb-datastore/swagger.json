@@ -185,6 +185,39 @@
             }
           }
         }
+      },
+      "/logs/eventId/{eventId}":{
+        "get":{
+          "tags":[
+            "logs"
+          ],
+          "operationId": "getLogsByEventId",
+          "summary":"Get logs by eventId",
+          "parameters":[{
+            "name":"eventId",
+            "in":"path",
+            "type":"string",
+            "required":true,
+            "description":"EventId of the event the logs belog to"
+          }],
+          "responses":{
+            "200":{
+              "description":"ok",
+              "schema":{
+                "type":"array",
+                "items":{
+                  "$ref":"#/definitions/LogEntry"
+                }
+              }
+            },
+            "default":{
+              "description":"error",
+              "schema":{
+                "$ref":"#/definitions/error"
+              }
+            }
+          }
+        }
       }
     },
     "definitions": {

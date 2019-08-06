@@ -85,6 +85,14 @@ func configureAPI(api *operations.MongodbDatastoreAPI) http.Handler {
 		return logs.NewGetLogsOK().WithPayload(mylogs)
 	})
 
+	api.LogsGetLogsByEventIDHandler = logs.GetLogsByEventIDHandlerFunc(func(params logs.GetLogsByEventIDParams) middleware.Responder {
+		mylogs, err := handlers.GetLogsByEventID(params.ID)
+		if err != nil {
+			return logs.GetLogsByEventIDDefault(500).WithPayload(&logs.GetLogsByEventIDDefaultBody{Code: 500, Message: swag.String(err.Error())})
+		}
+		return logs.GetLogsByEventIDOK().WithPayload(mylogs)
+	})
+
 	api.ServerShutdown = func() {}
 
 	return setupGlobalMiddleware(api.Serve(setupMiddlewares))
