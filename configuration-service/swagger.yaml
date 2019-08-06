@@ -1,0 +1,388 @@
+swagger: '2.0'
+info:
+  title: Configuration Service API
+  version: 0.1.0
+schemes:
+  - http
+securityDefinitions:
+  key:
+    type: apiKey
+    in: header
+    name: x-token
+security:
+  - key: []
+  
+parameters:
+  projectName:
+    in: path
+    name: projectName
+    required: true
+    type: string
+    description: Name of the project.
+  stageName:
+    in: path
+    name: stageName
+    required: true
+    type: string
+    description: Name of the stage.
+  serviceName:
+    in: path
+    name: serviceName
+    required: true
+    type: string
+    description: Name of the service
+  resource:
+    in: path
+    name: resource
+    required: true
+    type: string
+    description: Indentifier of a resource
+  pageSize:
+    in: query
+    name: pageSize
+    type: number
+    description: Size for paging
+  nextPageKey:
+    in: query
+    name: nextPageKey
+    type: string
+    description: Pointer to the next page
+
+paths:
+
+  '/v1/project':
+    post:
+      tags:
+        - Project
+      summary: Create a new project by project name
+      responses:
+        '204':
+          description: Success. Request attribute has been created. Response does not have a body.
+    get:
+      tags:
+        - Project
+      parameters:
+        - $ref: '#/parameters/pageSize'
+        - $ref: '#/parameters/nextPageKey'
+      summary: Get list of projects
+      responses:
+        '200':
+          description: OK
+
+  '/v1/project/{projectName}':
+    parameters:
+      - $ref: '#/parameters/projectName'
+    get:
+      tags:
+        - Project
+      summary: Get the specified project
+      responses:
+        '200':
+          description: OK
+    put:
+      tags:
+        - Project
+      summary: Update the specified project
+      responses:
+        '204':
+          description: Success. Request attribute has been updated. Response does not have a body.
+    delete:
+      tags:
+        - Project
+      summary: Delete the specified project
+      responses:
+        '204':
+          description: Deleted. Response does not have a body.
+
+  '/v1/project/{projectName}/resource':
+    parameters:
+      - $ref: '#/parameters/projectName'
+    post:
+      tags:
+        - Project Resource
+      summary: Create a new resource for the project
+      responses:
+        '204':
+          description: Success. Request attribute has been created. Response does not have a body.
+    get:
+      tags:
+        - Project Resource
+      parameters:
+        - $ref: '#/parameters/pageSize'
+        - $ref: '#/parameters/nextPageKey'
+      summary: Get list of resources of the project
+      responses:
+        '204':
+          description: Success. Request attribute has been created. Response does not have a body.
+
+  '/v1/project/{projectName}/resource/{resource}':
+    parameters:
+      - $ref: '#/parameters/projectName'
+      - $ref: '#/parameters/resource'
+    get:
+      tags:
+        - Project Resource
+      summary: Get the specified resource
+      responses:
+        '200':
+          description: OK
+    put:
+      tags:
+        - Project Resource
+      summary: Update the specified resource
+      responses:
+        '204':
+          description: Success. Request attribute has been updated. Response does not have a body.
+    delete:
+      tags:
+        - Project Resource
+      summary: Delete the specified resource
+      responses:
+        '204':
+          description: Deleted. Response does not have a body.
+          
+  '/v1/project/{projectName}/stage':
+    parameters:
+      - $ref: '#/parameters/projectName'
+    post:
+      tags:
+        - Stage
+      summary: Create a new stage by stage name
+      responses:
+        '204':
+          description: Success. Request attribute has been created. Response does not have a body.
+    get:
+      tags:
+        - Stage
+      parameters:
+        - $ref: '#/parameters/pageSize'
+        - $ref: '#/parameters/nextPageKey'
+      summary: Get list of stages
+      responses:
+        '200':
+          description: OK
+
+  '/v1/project/{projectName}/stage/{stageName}':
+    parameters:
+      - $ref: '#/parameters/projectName'
+      - $ref: '#/parameters/stageName'
+    get:
+      tags:
+        - Stage
+      summary: Get the specified stage
+      responses:
+        '200':
+          description: OK
+    put:
+      tags:
+        - Stage
+      summary: Update the specified stage
+      responses:
+        '204':
+          description: Success. Request attribute has been updated. Response does not have a body.
+    delete:
+      tags:
+        - Stage
+      summary: Delete the specified stage
+      responses:
+        '204':
+          description: Deleted. Response does not have a body.
+
+  '/v1/project/{projectName}/stage/{stageName}/resource':
+    parameters:
+      - $ref: '#/parameters/projectName'
+      - $ref: '#/parameters/stageName'
+    post:
+      tags:
+        - Stage Resource
+      summary: Create a new resource for the stage
+      responses:
+        '204':
+          description: Success. Request attribute has been created. Response does not have a body.
+    get:
+      tags:
+        - Stage Resource
+      parameters:
+        - $ref: '#/parameters/pageSize'
+        - $ref: '#/parameters/nextPageKey'
+      summary: Get list of resources of the stage
+      responses:
+        '200':
+          description: OK
+
+  '/v1/project/{projectName}/stage/{stageName}/resource/{resource}':
+    parameters:
+      - $ref: '#/parameters/projectName'
+      - $ref: '#/parameters/stageName'
+      - $ref: '#/parameters/resource'
+    get:
+      tags:
+        - Stage Resource
+      summary: Get the specified resource
+      responses:
+        '200':
+          description: OK
+    put:
+      tags:
+        - Stage Resource
+      summary: Update the specified resource
+      responses:
+        '204':
+          description: Success. Request attribute has been updated. Response does not have a body.
+    delete:
+      tags:
+        - Stage Resource
+      summary: Delete the specified resource
+      responses:
+        '204':
+          description: Deleted. Response does not have a body.
+
+  '/v1/project/{projectName}/stage/{stageName}/service':
+    parameters:
+      - $ref: '#/parameters/projectName'
+      - $ref: '#/parameters/stageName'
+    post:
+      tags:
+        - Service
+      summary: Create a new service by service name
+      responses:
+        '204':
+          description: Success. Request attribute has been created. Response does not have a body.
+    get:
+      tags:
+        - Service
+      parameters:
+        - $ref: '#/parameters/pageSize'
+        - $ref: '#/parameters/nextPageKey'
+      summary: Get list of services
+      responses:
+        '200':
+          description: OK
+
+  '/v1/project/{projectName}/stage/{stageName}/service/{serviceName}':
+    parameters:
+      - $ref: '#/parameters/projectName'
+      - $ref: '#/parameters/stageName'
+      - $ref: '#/parameters/serviceName'      
+    get:
+      tags:
+        - Service
+      summary: Get the specified service
+      responses:
+        '200':
+          description: OK
+    put:
+      tags:
+        - Service
+      summary: Update the specified service
+      responses:
+        '204':
+          description: Success. Request attribute has been updated. Response does not have a body.
+    delete:
+      tags:
+        - Service
+      summary: Delete the specified service
+      responses:
+        '204':
+          description: Deleted. Response does not have a body.
+
+  '/v1/project/{projectName}/stage/{stageName}/service/{serviceName}/resource':
+    parameters:
+      - $ref: '#/parameters/projectName'
+      - $ref: '#/parameters/stageName'
+      - $ref: '#/parameters/serviceName'
+    post:
+      tags:
+        - Service Resource
+      summary: Create a new resource for the stage
+      responses:
+        '204':
+          description: Success. Request attribute has been created. Response does not have a body.
+    get:
+      tags:
+        - Service Resource
+      parameters:
+        - $ref: '#/parameters/pageSize'
+        - $ref: '#/parameters/nextPageKey'
+      summary: Get list of resources of the stage
+      responses:
+        '200':
+          description: OK
+
+  '/v1/project/{projectName}/stage/{stageName}/service/{serviceName}/resource/{resource}':
+    parameters:
+      - $ref: '#/parameters/projectName'
+      - $ref: '#/parameters/stageName'
+      - $ref: '#/parameters/serviceName'
+      - $ref: '#/parameters/resource'
+    get:
+      tags:
+        - Service Resource
+      summary: Get the specified resource
+      responses:
+        '200':
+          description: OK
+    put:
+      tags:
+        - Service Resource
+      summary: Update the specified resource
+      responses:
+        '204':
+          description: Success. Request attribute has been updated. Response does not have a body.
+    delete:
+      tags:
+        - Service Resource
+      summary: Delete the specified resource
+      responses:
+        '204':
+          description: Deleted. Response does not have a body.
+
+  '/v1/project/{projectName}/service/{serviceName}/resource':
+    parameters:
+      - $ref: '#/parameters/projectName'
+      - $ref: '#/parameters/serviceName'
+    post:
+      tags:
+        - Service Default Resource 
+      summary: Create a default resource for the service used in all stages
+      responses:
+        '204':
+          description: Success. Request attribute has been created. Response does not have a body.
+    get:
+      tags:
+        - Service Default Resource 
+      parameters:
+        - $ref: '#/parameters/pageSize'
+        - $ref: '#/parameters/nextPageKey'
+      summary: Get list of default resources for the service used in all stages
+      responses:
+        '200':
+          description: OK
+
+  '/v1/project/{projectName}/service/{serviceName}/resource/{resource}':
+    parameters:
+      - $ref: '#/parameters/projectName'
+      - $ref: '#/parameters/stageName'
+      - $ref: '#/parameters/serviceName'
+      - $ref: '#/parameters/resource'
+    get:
+      tags:
+        - Service Default Resource
+      summary: Get the specified default resource for the service
+      responses:
+        '200':
+          description: OK
+    put:
+      tags:
+        - Service Default Resource
+      summary: Update the specified default resource for the service
+      responses:
+        '204':
+          description: Success. Request attribute has been updated. Response does not have a body.
+    delete:
+      tags:
+        - Service Default Resource
+      summary: Delete the specified default resource for the service
+      responses:
+        '204':
+          description: Deleted. Response does not have a body.
