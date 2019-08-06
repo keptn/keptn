@@ -33,7 +33,7 @@ func NewGetLogs(ctx *middleware.Context, handler GetLogsHandler) *GetLogs {
 	return &GetLogs{Context: ctx, Handler: handler}
 }
 
-/*GetLogs swagger:route GET /logs logs getLogs
+/*GetLogs swagger:route GET /log logs getLogs
 
 gets the logs from the datastore
 

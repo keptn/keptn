@@ -17,7 +17,7 @@
       "application/json"
     ],
     "paths": {
-      "/events": {
+      "/event": {
         "post": {
           "tags": [
             "event"
@@ -51,6 +51,21 @@
             ],
             "operationId": "getEvents",
             "summary": "Gets events from the data store",
+            "parameters": [ {
+              "name": "keptnContext",
+              "in": "query",
+              "type":"string",
+              "required": false,
+              "description": "keptnContext of the events to get"
+              },
+              {
+                "name": "type",
+                "in": "query",
+                "type": "string",
+                "required": false,
+                "description": "Type of the keptn cloud event"
+              }
+            ],
             "responses": {
               "200": {
                 "description": "ok",
@@ -70,67 +85,7 @@
             }
           }
       },
-      "/events/type/newartifact": {
-        "get": {
-          "tags": [
-            "event"
-          ],
-          "operationId": "getNewArtifactEvents",
-          "summary": "Gets new artifact events from the data store",
-          "responses": {
-            "200": {
-              "description": "ok",
-              "schema":{
-                  "type":"array",
-                  "items": {
-                      "$ref":"#/definitions/KeptnContextExtendedCE"
-                  }
-              }
-            },
-            "default": {
-              "description": "error",
-              "schema": {
-                "$ref": "#/definitions/error"
-              }
-            }
-          }
-        }
-      },
-      "/events/id/{id}": {
-        "get": {
-            "tags": [
-              "event"
-            ],
-            "operationId": "getEvent",
-            "summary": "Gets events from the data store",
-            "parameters": [ {
-                "name": "id",
-                "in": "path",
-                "type":"string",
-                "required": true,
-                "description": "ID of the event to get"
-                }
-            ],
-            "responses": {
-              "200": {
-                "description": "ok",
-                "schema":{
-                  "type":"array",
-                  "items": {
-                      "$ref":"#/definitions/KeptnContextExtendedCE"
-                  }
-                }
-              },
-              "default": {
-                "description": "error",
-                "schema": {
-                  "$ref": "#/definitions/error"
-                }
-              }
-            }
-          }
-      },
-      "/logs": {
+      "/log": {
         "post": {
           "tags": [
             "logs"
@@ -167,45 +122,19 @@
           ],
           "operationId": "getLogs",
           "summary": "gets the logs from the datastore",
+          "parameters":[{
+            "name":"eventId",
+            "in":"query",
+            "type":"string",
+            "required":false,
+            "description":"EventId of the event the logs belog to"
+          }],
           "responses": {
             "200": {
               "description":"ok",
               "schema":{
                 "type":"array",
                 "items": {
-                  "$ref":"#/definitions/LogEntry"
-                }
-              }
-            },
-            "default":{
-              "description":"error",
-              "schema":{
-                "$ref":"#/definitions/error"
-              }
-            }
-          }
-        }
-      },
-      "/logs/eventId/{eventId}":{
-        "get":{
-          "tags":[
-            "logs"
-          ],
-          "operationId": "getLogsByEventId",
-          "summary":"Get logs by eventId",
-          "parameters":[{
-            "name":"eventId",
-            "in":"path",
-            "type":"string",
-            "required":true,
-            "description":"EventId of the event the logs belog to"
-          }],
-          "responses":{
-            "200":{
-              "description":"ok",
-              "schema":{
-                "type":"array",
-                "items":{
                   "$ref":"#/definitions/LogEntry"
                 }
               }

@@ -33,7 +33,7 @@ func NewSaveLog(ctx *middleware.Context, handler SaveLogHandler) *SaveLog {
 	return &SaveLog{Context: ctx, Handler: handler}
 }
 
-/*SaveLog swagger:route POST /logs logs saveLog
+/*SaveLog swagger:route POST /log logs saveLog
 
 Saves a log to the datastore
 

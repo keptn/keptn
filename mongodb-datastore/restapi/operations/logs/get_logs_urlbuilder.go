@@ -13,7 +13,11 @@ import (
 
 // GetLogsURL generates an URL for the get logs operation
 type GetLogsURL struct {
+	EventID *string
+
 	_basePath string
+	// avoid unkeyed usage
+	_ struct{}
 }
 
 // WithBasePath sets the base path for this url builder, only required when it's different from the
@@ -35,13 +39,25 @@ func (o *GetLogsURL) SetBasePath(bp string) {
 func (o *GetLogsURL) Build() (*url.URL, error) {
 	var _result url.URL
 
-	var _path = "/logs"
+	var _path = "/log"
 
 	_basePath := o._basePath
 	if _basePath == "" {
 		_basePath = "/"
 	}
 	_result.Path = golangswaggerpaths.Join(_basePath, _path)
+
+	qs := make(url.Values)
+
+	var eventID string
+	if o.EventID != nil {
+		eventID = *o.EventID
+	}
+	if eventID != "" {
+		qs.Set("eventId", eventID)
+	}
+
+	_result.RawQuery = qs.Encode()
 
 	return &_result, nil
 }
