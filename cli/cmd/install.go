@@ -48,13 +48,12 @@ const aks = "aks"
 const openshift = "openshift"
 const kubernetes = "kubernetes"
 
-const installerPrefixURL = "https://raw.githubusercontent.com/keptn/installer/"
-const installerSuffixPath = "/manifests/installer/installer.yaml"
-const rbacSuffixPath = "/manifests/installer/rbac.yaml"
+const installerPrefixURL = "https://raw.githubusercontent.com/keptn/keptn/"
+const installerSuffixPath = "/installer/manifests/installer/installer.yaml"
+const rbacSuffixPath = "/installer/manifests/installer/rbac.yaml"
 
 type installCredentials struct {
 	GithubPersonalAccessToken string `json:"githubPersonalAccessToken"`
-	GithubUserEmail           string `json:"githubUserEmail"`
 	GithubOrg                 string `json:"githubOrg"`
 	GithubUserName            string `json:"githubUserName"`
 	ClusterName               string `json:"clusterName"`
@@ -67,12 +66,6 @@ type installCredentials struct {
 	ServicesIPCIDR            string `json:"servicesIPCIDR"`
 	AzureResourceGroup        string `json:"azureResourceGroup"`
 	AzureSubscription         string `json:"azureSubscription"`
-}
-
-type keptnAPITokenSecret struct {
-	Data struct {
-		KeptnAPIToken string `json:"keptn-api-token"`
-	} `json:"data"`
 }
 
 type placeholderReplacement struct {
@@ -136,7 +129,7 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 			// Verify the provided config
 			// Check whether all data is provided
 			if creds.GithubPersonalAccessToken == "" ||
-				creds.GithubUserEmail == "" || creds.GithubOrg == "" || creds.GithubUserName == "" {
+				creds.GithubOrg == "" || creds.GithubUserName == "" {
 				return errors.New("Incomplete credential file " + *configFilePath)
 			}
 
@@ -352,7 +345,6 @@ func getInstallCredentials(creds *installCredentials) error {
 		connectToCluster(creds)
 
 		readGithubUserName(creds)
-		readGithubUserEmail(creds)
 
 		// Check if the access token has the necessary permissions and the github org exists
 		validScopeRes := false
@@ -399,7 +391,6 @@ func getInstallCredentials(creds *installCredentials) error {
 		}
 
 		fmt.Println("GitHub User Name: " + creds.GithubUserName)
-		fmt.Println("GitHub User Email: " + creds.GithubUserEmail)
 		fmt.Println("GitHub Personal Access Token: " + creds.GithubPersonalAccessToken)
 		fmt.Println("GitHub Organization: " + creds.GithubOrg)
 
@@ -528,14 +519,6 @@ func readGithubUserName(creds *installCredentials) {
 		"^(([a-zA-Z0-9]+-)*[a-zA-Z0-9]+)$",
 		"GitHub User Name",
 		"Please enter a valid GitHub User Name.",
-	)
-}
-
-func readGithubUserEmail(creds *installCredentials) {
-	readUserInput(&creds.GithubUserEmail,
-		"^[a-z0-9._%+\\-]+@[a-z0-9.\\-]+\\.[a-z]{2,4}$",
-		"GitHub User Email",
-		"Please enter a valid GitHub User Email.",
 	)
 }
 
@@ -811,8 +794,7 @@ func getInstallerLogs(podName string) error {
 		return fmt.Errorf("Could not get installer pod logs: '%s'", err)
 	}
 
-	// cmd.Wait() should be called only after we finish reading
-	// from stdoutIn and stderrIn.
+	// cmd.Wait() should be called only after we finish reading from stdoutIn and stderrIn.
 	cRes := make(chan bool)
 	cErr := make(chan error)
 
@@ -918,7 +900,7 @@ func setupKeptnAuthAndConfigure(creds installCredentials) error {
 		"keptn-api-token",
 		"-n",
 		"keptn",
-		"-ojson"}
+		"-ojsonpath={.data.keptn-api-token}"}
 	ops.appendIfNotEmpty(kubectlOptions)
 	out, err := keptnutils.ExecuteCommand("kubectl", ops)
 
@@ -928,12 +910,8 @@ To manually set up your keptn CLI, please follow the instructions at https://kep
 	if err != nil {
 		return fmt.Errorf(errorMsg, err)
 	}
-	var secret keptnAPITokenSecret
-	err = json.Unmarshal([]byte(out), &secret)
-	if err != nil {
-		return fmt.Errorf(errorMsg, err)
-	}
-	apiToken, err := base64.StdEncoding.DecodeString(secret.Data.KeptnAPIToken)
+
+	apiToken, err := base64.StdEncoding.DecodeString(out)
 	if err != nil {
 		return fmt.Errorf(errorMsg, err)
 	}
@@ -944,7 +922,7 @@ To manually set up your keptn CLI, please follow the instructions at https://kep
 
 		ops := options{"get",
 			"virtualservice",
-			"control",
+			"api",
 			"-n",
 			"keptn",
 			"-ojsonpath={.spec.hosts[0]}"}
@@ -982,7 +960,7 @@ To manually set up your keptn CLI, please follow the instructions at https://kep
 	if err != nil {
 		return err
 	}
-	utils.PrintLog("Your CLI is now sucessfully configured. You are now ready to use keptn.", utils.InfoLevel)
+	utils.PrintLog("Your CLI is now successfully configured. You are now ready to use keptn.", utils.InfoLevel)
 	return nil
 }
 

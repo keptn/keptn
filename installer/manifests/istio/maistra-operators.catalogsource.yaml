@@ -1,0 +1,261 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: maistra-operators
+
+data:
+  customResourceDefinitions: |-
+    - apiVersion: apiextensions.k8s.io/v1beta1
+      kind: CustomResourceDefinition
+      metadata:
+        name: installations.istio.openshift.com
+      spec:
+        group: istio.openshift.com
+        names:
+          kind: Installation
+          plural: installations
+          singular: installation
+        scope: Namespaced
+        version: v1alpha1
+  clusterServiceVersions: |-
+    - apiVersion: operators.coreos.com/v1alpha1
+      kind: ClusterServiceVersion
+      metadata:
+        name: maistra.v0.5.0
+      spec:
+        displayName: Maistra
+        description: "Maistra, otherwise known as OpenShift Service Mesh, is Red Hat's version of Istio."
+        keywords: ['service mesh', 'istio']
+        maintainers:
+        - name: Red Hat
+          email: istio-feedback@redhat.com
+        provider:
+          name: Red Hat
+        links:
+        - name: Documentation
+          url: https://maistra.io
+        installModes:
+        - supported: true
+          type: OwnNamespace
+        - supported: true
+          type: SingleNamespace
+        - supported: false
+          type: MultiNamespace
+        - supported: true
+          type: AllNamespaces
+        install:
+          strategy: deployment
+          spec:
+            permissions:
+            - serviceAccountName: istio-operator
+              rules:
+              - apiGroups:
+                - istio.openshift.com
+                resources:
+                - "*"
+                verbs:
+                - "*"
+              - apiGroups:
+                - ""
+                resources:
+                - pods
+                - services
+                - endpoints
+                - persistentvolumeclaims
+                - events
+                - configmaps
+                - secrets
+                - securitycontextconstraints
+                verbs:
+                - "*"
+              - apiGroups:
+                - apps
+                resources:
+                - deployments
+                - daemonsets
+                - replicasets
+                - statefulsets
+                verbs:
+                - "*"
+            clusterPermissions:
+            - serviceAccountName: istio-operator
+              rules:
+              - apiGroups:
+                - '*'
+                resources:
+                - '*'
+                verbs:
+                - '*'
+              - nonResourceURLs:
+                - '*'
+                verbs:
+                - '*'
+            deployments:
+            - name: istio-operator
+              spec:
+                replicas: 1
+                strategy:
+                  type: RollingUpdate
+                selector:
+                  matchLabels:
+                    app: istio-operator
+                template:
+                  metadata:
+                    labels:
+                      app: istio-operator
+                  spec:
+                    containers:
+                    - name: istio-operator
+                      image: maistra/istio-operator-centos7:0.5.0
+                      ports:
+                      - containerPort: 60000
+                        name: metrics
+                      command:
+                      - istio-operator
+                      imagePullPolicy: Always
+                      env:
+                      - name: WATCH_NAMESPACE
+                        valueFrom:
+                          fieldRef:
+                            fieldPath: metadata.namespace
+                      - name: OPERATOR_NAME
+                        value: "istio-operator"
+                    serviceAccountName: istio-operator
+        maturity: alpha
+        version: 0.5.0
+        apiservicedefinitions:
+        customresourcedefinitions:
+          owned:
+          - name: installations.istio.openshift.com
+            version: v1alpha1
+            kind: Installation
+            displayName: Maistra Installation
+            description: CRD representing Maistra installation options
+    - apiVersion: operators.coreos.com/v1alpha1
+      kind: ClusterServiceVersion
+      metadata:
+        name: maistra.v0.6.0
+      spec:
+        displayName: Maistra
+        description: "Maistra, otherwise known as OpenShift Service Mesh, is Red Hat's version of Istio."
+        keywords: ['service mesh', 'istio']
+        maintainers:
+        - name: Red Hat
+          email: istio-feedback@redhat.com
+        provider:
+          name: Red Hat
+        links:
+        - name: Documentation
+          url: https://maistra.io
+        installModes:
+        - supported: true
+          type: OwnNamespace
+        - supported: true
+          type: SingleNamespace
+        - supported: false
+          type: MultiNamespace
+        - supported: true
+          type: AllNamespaces
+        install:
+          strategy: deployment
+          spec:
+            permissions:
+            - serviceAccountName: istio-operator
+              rules:
+              - apiGroups:
+                - istio.openshift.com
+                resources:
+                - "*"
+                verbs:
+                - "*"
+              - apiGroups:
+                - ""
+                resources:
+                - pods
+                - services
+                - endpoints
+                - persistentvolumeclaims
+                - events
+                - configmaps
+                - secrets
+                - securitycontextconstraints
+                verbs:
+                - "*"
+              - apiGroups:
+                - apps
+                resources:
+                - deployments
+                - daemonsets
+                - replicasets
+                - statefulsets
+                verbs:
+                - "*"
+            clusterPermissions:
+            - serviceAccountName: istio-operator
+              rules:
+              - apiGroups:
+                - '*'
+                resources:
+                - '*'
+                verbs:
+                - '*'
+              - nonResourceURLs:
+                - '*'
+                verbs:
+                - '*'
+            deployments:
+            - name: istio-operator
+              spec:
+                replicas: 1
+                strategy:
+                  type: RollingUpdate
+                selector:
+                  matchLabels:
+                    app: istio-operator
+                template:
+                  metadata:
+                    labels:
+                      app: istio-operator
+                  spec:
+                    containers:
+                    - name: istio-operator
+                      image: maistra/istio-operator-centos7:0.6.0
+                      ports:
+                      - containerPort: 60000
+                        name: metrics
+                      command:
+                      - istio-operator
+                      imagePullPolicy: Always
+                      env:
+                      - name: WATCH_NAMESPACE
+                        valueFrom:
+                          fieldRef:
+                            fieldPath: metadata.namespace
+                      - name: OPERATOR_NAME
+                        value: "istio-operator"
+                    serviceAccountName: istio-operator
+        maturity: alpha
+        version: 0.6.0
+        apiservicedefinitions:
+        customresourcedefinitions:
+          owned:
+          - name: installations.istio.openshift.com
+            version: v1alpha1
+            kind: Installation
+            displayName: Maistra Installation
+            description: CRD representing Maistra installation options
+  packages: |-
+    - packageName: maistra
+      channels:
+      - name: alpha
+        currentCSV: maistra.v0.6.0
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: maistra-operators
+spec:
+  sourceType: internal
+  configMap: maistra-operators
+  displayName: Maistra Operators
+  publisher: Red Hat
