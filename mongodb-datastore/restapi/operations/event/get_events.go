@@ -33,7 +33,7 @@ func NewGetEvents(ctx *middleware.Context, handler GetEventsHandler) *GetEvents 
 	return &GetEvents{Context: ctx, Handler: handler}
 }
 
-/*GetEvents swagger:route GET /events event getEvents
+/*GetEvents swagger:route GET /event event getEvents
 
 Gets events from the data store
 

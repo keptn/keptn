@@ -9,17 +9,22 @@ import (
 	"errors"
 	"net/url"
 	golangswaggerpaths "path"
+	"strings"
 )
 
-// SaveLogURL generates an URL for the save log operation
-type SaveLogURL struct {
+// GetLogsByEventIDURL generates an URL for the get logs by event Id operation
+type GetLogsByEventIDURL struct {
+	EventID string
+
 	_basePath string
+	// avoid unkeyed usage
+	_ struct{}
 }
 
 // WithBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *SaveLogURL) WithBasePath(bp string) *SaveLogURL {
+func (o *GetLogsByEventIDURL) WithBasePath(bp string) *GetLogsByEventIDURL {
 	o.SetBasePath(bp)
 	return o
 }
@@ -27,15 +32,22 @@ func (o *SaveLogURL) WithBasePath(bp string) *SaveLogURL {
 // SetBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *SaveLogURL) SetBasePath(bp string) {
+func (o *GetLogsByEventIDURL) SetBasePath(bp string) {
 	o._basePath = bp
 }
 
 // Build a url path and query string
-func (o *SaveLogURL) Build() (*url.URL, error) {
+func (o *GetLogsByEventIDURL) Build() (*url.URL, error) {
 	var _result url.URL
 
-	var _path = "/log"
+	var _path = "/logs/eventId/{eventId}"
+
+	eventID := o.EventID
+	if eventID != "" {
+		_path = strings.Replace(_path, "{eventId}", eventID, -1)
+	} else {
+		return nil, errors.New("eventId is required on GetLogsByEventIDURL")
+	}
 
 	_basePath := o._basePath
 	if _basePath == "" {
@@ -47,7 +59,7 @@ func (o *SaveLogURL) Build() (*url.URL, error) {
 }
 
 // Must is a helper function to panic when the url builder returns an error
-func (o *SaveLogURL) Must(u *url.URL, err error) *url.URL {
+func (o *GetLogsByEventIDURL) Must(u *url.URL, err error) *url.URL {
 	if err != nil {
 		panic(err)
 	}
@@ -58,17 +70,17 @@ func (o *SaveLogURL) Must(u *url.URL, err error) *url.URL {
 }
 
 // String returns the string representation of the path with query string
-func (o *SaveLogURL) String() string {
+func (o *GetLogsByEventIDURL) String() string {
 	return o.Must(o.Build()).String()
 }
 
 // BuildFull builds a full url with scheme, host, path and query string
-func (o *SaveLogURL) BuildFull(scheme, host string) (*url.URL, error) {
+func (o *GetLogsByEventIDURL) BuildFull(scheme, host string) (*url.URL, error) {
 	if scheme == "" {
-		return nil, errors.New("scheme is required for a full url on SaveLogURL")
+		return nil, errors.New("scheme is required for a full url on GetLogsByEventIDURL")
 	}
 	if host == "" {
-		return nil, errors.New("host is required for a full url on SaveLogURL")
+		return nil, errors.New("host is required for a full url on GetLogsByEventIDURL")
 	}
 
 	base, err := o.Build()
@@ -82,6 +94,6 @@ func (o *SaveLogURL) BuildFull(scheme, host string) (*url.URL, error) {
 }
 
 // StringFull returns the string representation of a complete url
-func (o *SaveLogURL) StringFull(scheme, host string) string {
+func (o *GetLogsByEventIDURL) StringFull(scheme, host string) string {
 	return o.Must(o.BuildFull(scheme, host)).String()
 }

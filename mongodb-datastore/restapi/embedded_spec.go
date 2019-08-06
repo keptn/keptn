@@ -36,13 +36,27 @@ func init() {
   },
   "basePath": "/",
   "paths": {
-    "/events": {
+    "/event": {
       "get": {
         "tags": [
           "event"
         ],
         "summary": "Gets events from the data store",
         "operationId": "getEvents",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "keptnContext of the events to get",
+            "name": "keptnContext",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Type of the keptn cloud event",
+            "name": "type",
+            "in": "query"
+          }
+        ],
         "responses": {
           "200": {
             "description": "ok",
@@ -89,74 +103,21 @@ func init() {
         }
       }
     },
-    "/events/id/{id}": {
-      "get": {
-        "tags": [
-          "event"
-        ],
-        "summary": "Gets events from the data store",
-        "operationId": "getEvent",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "ID of the event to get",
-            "name": "id",
-            "in": "path",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "ok",
-            "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/KeptnContextExtendedCE"
-              }
-            }
-          },
-          "default": {
-            "description": "error",
-            "schema": {
-              "$ref": "#/definitions/error"
-            }
-          }
-        }
-      }
-    },
-    "/events/type/newartifact": {
-      "get": {
-        "tags": [
-          "event"
-        ],
-        "summary": "Gets new artifact events from the data store",
-        "operationId": "getNewArtifactEvents",
-        "responses": {
-          "200": {
-            "description": "ok",
-            "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/KeptnContextExtendedCE"
-              }
-            }
-          },
-          "default": {
-            "description": "error",
-            "schema": {
-              "$ref": "#/definitions/error"
-            }
-          }
-        }
-      }
-    },
-    "/logs": {
+    "/log": {
       "get": {
         "tags": [
           "logs"
         ],
         "summary": "gets the logs from the datastore",
         "operationId": "getLogs",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "EventId of the event the logs belog to",
+            "name": "eventId",
+            "in": "query"
+          }
+        ],
         "responses": {
           "200": {
             "description": "ok",
@@ -289,13 +250,27 @@ func init() {
   },
   "basePath": "/",
   "paths": {
-    "/events": {
+    "/event": {
       "get": {
         "tags": [
           "event"
         ],
         "summary": "Gets events from the data store",
         "operationId": "getEvents",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "keptnContext of the events to get",
+            "name": "keptnContext",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Type of the keptn cloud event",
+            "name": "type",
+            "in": "query"
+          }
+        ],
         "responses": {
           "200": {
             "description": "ok",
@@ -470,202 +445,21 @@ func init() {
         }
       }
     },
-    "/events/id/{id}": {
-      "get": {
-        "tags": [
-          "event"
-        ],
-        "summary": "Gets events from the data store",
-        "operationId": "getEvent",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "ID of the event to get",
-            "name": "id",
-            "in": "path",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "ok",
-            "schema": {
-              "type": "array",
-              "items": {
-                "allOf": [
-                  {
-                    "type": "object",
-                    "required": [
-                      "specversion",
-                      "id",
-                      "type",
-                      "source"
-                    ],
-                    "properties": {
-                      "contenttype": {
-                        "type": "string"
-                      },
-                      "data": {
-                        "type": [
-                          "object",
-                          "string"
-                        ]
-                      },
-                      "extensions": {
-                        "type": "object"
-                      },
-                      "id": {
-                        "type": "string"
-                      },
-                      "source": {
-                        "type": "string",
-                        "format": "uri-reference"
-                      },
-                      "specversion": {
-                        "type": "string"
-                      },
-                      "time": {
-                        "type": "string",
-                        "format": "date-time"
-                      },
-                      "type": {
-                        "type": "string"
-                      }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "shkeptncontext": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                ]
-              }
-            }
-          },
-          "default": {
-            "description": "error",
-            "schema": {
-              "type": "object",
-              "required": [
-                "message"
-              ],
-              "properties": {
-                "code": {
-                  "type": "integer",
-                  "format": "int64"
-                },
-                "fields": {
-                  "type": "string"
-                },
-                "message": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/events/type/newartifact": {
-      "get": {
-        "tags": [
-          "event"
-        ],
-        "summary": "Gets new artifact events from the data store",
-        "operationId": "getNewArtifactEvents",
-        "responses": {
-          "200": {
-            "description": "ok",
-            "schema": {
-              "type": "array",
-              "items": {
-                "allOf": [
-                  {
-                    "type": "object",
-                    "required": [
-                      "specversion",
-                      "id",
-                      "type",
-                      "source"
-                    ],
-                    "properties": {
-                      "contenttype": {
-                        "type": "string"
-                      },
-                      "data": {
-                        "type": [
-                          "object",
-                          "string"
-                        ]
-                      },
-                      "extensions": {
-                        "type": "object"
-                      },
-                      "id": {
-                        "type": "string"
-                      },
-                      "source": {
-                        "type": "string",
-                        "format": "uri-reference"
-                      },
-                      "specversion": {
-                        "type": "string"
-                      },
-                      "time": {
-                        "type": "string",
-                        "format": "date-time"
-                      },
-                      "type": {
-                        "type": "string"
-                      }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "shkeptncontext": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                ]
-              }
-            }
-          },
-          "default": {
-            "description": "error",
-            "schema": {
-              "type": "object",
-              "required": [
-                "message"
-              ],
-              "properties": {
-                "code": {
-                  "type": "integer",
-                  "format": "int64"
-                },
-                "fields": {
-                  "type": "string"
-                },
-                "message": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/logs": {
+    "/log": {
       "get": {
         "tags": [
           "logs"
         ],
         "summary": "gets the logs from the datastore",
         "operationId": "getLogs",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "EventId of the event the logs belog to",
+            "name": "eventId",
+            "in": "query"
+          }
+        ],
         "responses": {
           "200": {
             "description": "ok",

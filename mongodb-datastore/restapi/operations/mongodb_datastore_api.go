@@ -40,17 +40,11 @@ func NewMongodbDatastoreAPI(spec *loads.Document) *MongodbDatastoreAPI {
 		BearerAuthenticator: security.BearerAuth,
 		JSONConsumer:        runtime.JSONConsumer(),
 		JSONProducer:        runtime.JSONProducer(),
-		EventGetEventHandler: event.GetEventHandlerFunc(func(params event.GetEventParams) middleware.Responder {
-			return middleware.NotImplemented("operation EventGetEvent has not yet been implemented")
-		}),
 		EventGetEventsHandler: event.GetEventsHandlerFunc(func(params event.GetEventsParams) middleware.Responder {
 			return middleware.NotImplemented("operation EventGetEvents has not yet been implemented")
 		}),
 		LogsGetLogsHandler: logs.GetLogsHandlerFunc(func(params logs.GetLogsParams) middleware.Responder {
 			return middleware.NotImplemented("operation LogsGetLogs has not yet been implemented")
-		}),
-		EventGetNewArtifactEventsHandler: event.GetNewArtifactEventsHandlerFunc(func(params event.GetNewArtifactEventsParams) middleware.Responder {
-			return middleware.NotImplemented("operation EventGetNewArtifactEvents has not yet been implemented")
 		}),
 		EventSaveEventHandler: event.SaveEventHandlerFunc(func(params event.SaveEventParams) middleware.Responder {
 			return middleware.NotImplemented("operation EventSaveEvent has not yet been implemented")
@@ -89,14 +83,10 @@ type MongodbDatastoreAPI struct {
 	// JSONProducer registers a producer for a "application/cloudevents+json" mime type
 	JSONProducer runtime.Producer
 
-	// EventGetEventHandler sets the operation handler for the get event operation
-	EventGetEventHandler event.GetEventHandler
 	// EventGetEventsHandler sets the operation handler for the get events operation
 	EventGetEventsHandler event.GetEventsHandler
 	// LogsGetLogsHandler sets the operation handler for the get logs operation
 	LogsGetLogsHandler logs.GetLogsHandler
-	// EventGetNewArtifactEventsHandler sets the operation handler for the get new artifact events operation
-	EventGetNewArtifactEventsHandler event.GetNewArtifactEventsHandler
 	// EventSaveEventHandler sets the operation handler for the save event operation
 	EventSaveEventHandler event.SaveEventHandler
 	// LogsSaveLogHandler sets the operation handler for the save log operation
@@ -164,20 +154,12 @@ func (o *MongodbDatastoreAPI) Validate() error {
 		unregistered = append(unregistered, "JSONProducer")
 	}
 
-	if o.EventGetEventHandler == nil {
-		unregistered = append(unregistered, "event.GetEventHandler")
-	}
-
 	if o.EventGetEventsHandler == nil {
 		unregistered = append(unregistered, "event.GetEventsHandler")
 	}
 
 	if o.LogsGetLogsHandler == nil {
 		unregistered = append(unregistered, "logs.GetLogsHandler")
-	}
-
-	if o.EventGetNewArtifactEventsHandler == nil {
-		unregistered = append(unregistered, "event.GetNewArtifactEventsHandler")
 	}
 
 	if o.EventSaveEventHandler == nil {
@@ -295,32 +277,22 @@ func (o *MongodbDatastoreAPI) initHandlerCache() {
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/events/id/{id}"] = event.NewGetEvent(o.context, o.EventGetEventHandler)
+	o.handlers["GET"]["/event"] = event.NewGetEvents(o.context, o.EventGetEventsHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/events"] = event.NewGetEvents(o.context, o.EventGetEventsHandler)
-
-	if o.handlers["GET"] == nil {
-		o.handlers["GET"] = make(map[string]http.Handler)
-	}
-	o.handlers["GET"]["/logs"] = logs.NewGetLogs(o.context, o.LogsGetLogsHandler)
-
-	if o.handlers["GET"] == nil {
-		o.handlers["GET"] = make(map[string]http.Handler)
-	}
-	o.handlers["GET"]["/events/type/newartifact"] = event.NewGetNewArtifactEvents(o.context, o.EventGetNewArtifactEventsHandler)
+	o.handlers["GET"]["/log"] = logs.NewGetLogs(o.context, o.LogsGetLogsHandler)
 
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
-	o.handlers["POST"]["/events"] = event.NewSaveEvent(o.context, o.EventSaveEventHandler)
+	o.handlers["POST"]["/event"] = event.NewSaveEvent(o.context, o.EventSaveEventHandler)
 
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
-	o.handlers["POST"]["/logs"] = logs.NewSaveLog(o.context, o.LogsSaveLogHandler)
+	o.handlers["POST"]["/log"] = logs.NewSaveLog(o.context, o.LogsSaveLogHandler)
 
 }
 

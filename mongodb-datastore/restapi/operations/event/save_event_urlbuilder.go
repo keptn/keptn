@@ -35,7 +35,7 @@ func (o *SaveEventURL) SetBasePath(bp string) {
 func (o *SaveEventURL) Build() (*url.URL, error) {
 	var _result url.URL
 
-	var _path = "/events"
+	var _path = "/event"
 
 	_basePath := o._basePath
 	if _basePath == "" {

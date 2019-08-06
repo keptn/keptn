@@ -13,7 +13,12 @@ import (
 
 // GetEventsURL generates an URL for the get events operation
 type GetEventsURL struct {
+	KeptnContext *string
+	Type         *string
+
 	_basePath string
+	// avoid unkeyed usage
+	_ struct{}
 }
 
 // WithBasePath sets the base path for this url builder, only required when it's different from the
@@ -35,13 +40,33 @@ func (o *GetEventsURL) SetBasePath(bp string) {
 func (o *GetEventsURL) Build() (*url.URL, error) {
 	var _result url.URL
 
-	var _path = "/events"
+	var _path = "/event"
 
 	_basePath := o._basePath
 	if _basePath == "" {
 		_basePath = "/"
 	}
 	_result.Path = golangswaggerpaths.Join(_basePath, _path)
+
+	qs := make(url.Values)
+
+	var keptnContext string
+	if o.KeptnContext != nil {
+		keptnContext = *o.KeptnContext
+	}
+	if keptnContext != "" {
+		qs.Set("keptnContext", keptnContext)
+	}
+
+	var typeVar string
+	if o.Type != nil {
+		typeVar = *o.Type
+	}
+	if typeVar != "" {
+		qs.Set("type", typeVar)
+	}
+
+	_result.RawQuery = qs.Encode()
 
 	return &_result, nil
 }
