@@ -85,7 +85,7 @@ func GetLogs() (res []*logs.GetLogsOKBodyItems0, err error) {
 }
 
 // GetLogsByEventID returns logs by event ID
-func GetLogsByEventID(eventId string) (res []*logs.GetLogsOKBodyItems0, err error) {
+func GetLogsByEventID(eventId string) (res []*logs.GetLogsByEventIDOKBodyItems0, err error) {
 	fmt.Println("get logs from datastore with eventId: ", eventId)
 	client, err := mongo.NewClient(options.Client().ApplyURI(mongoDBConnection))
 	if err != nil {
@@ -107,9 +107,9 @@ func GetLogsByEventID(eventId string) (res []*logs.GetLogsOKBodyItems0, err erro
 		log.Fatalln("error finding elements in collections: ", err.Error())
 	}
 
-	var resultLogs []*logs.GetLogsOKBodyItems0
+	var resultLogs []*logs.GetLogsByEventIDOKBodyItems0
 	for cur.Next(ctx) {
-		var result logs.GetLogsOKBodyItems0
+		var result logs.GetLogsByEventIDOKBodyItems0
 		err := cur.Decode(&result)
 		if err != nil {
 			return nil, err
