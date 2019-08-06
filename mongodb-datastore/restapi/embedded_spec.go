@@ -205,6 +205,41 @@ func init() {
           }
         }
       }
+    },
+    "/logs/eventId/{eventId}": {
+      "get": {
+        "tags": [
+          "logs"
+        ],
+        "summary": "Get logs by eventId",
+        "operationId": "getLogsByEventId",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "EventId of the event the logs belog to",
+            "name": "eventId",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ok",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/LogEntry"
+              }
+            }
+          },
+          "default": {
+            "description": "error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -762,6 +797,77 @@ func init() {
         "responses": {
           "201": {
             "description": "created"
+          },
+          "default": {
+            "description": "error",
+            "schema": {
+              "type": "object",
+              "required": [
+                "message"
+              ],
+              "properties": {
+                "code": {
+                  "type": "integer",
+                  "format": "int64"
+                },
+                "fields": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/logs/eventId/{eventId}": {
+      "get": {
+        "tags": [
+          "logs"
+        ],
+        "summary": "Get logs by eventId",
+        "operationId": "getLogsByEventId",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "EventId of the event the logs belog to",
+            "name": "eventId",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ok",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "eventId": {
+                    "type": "string"
+                  },
+                  "keptnContext": {
+                    "type": "string"
+                  },
+                  "keptnService": {
+                    "type": "string"
+                  },
+                  "logLevel": {
+                    "type": "string"
+                  },
+                  "message": {
+                    "type": "string"
+                  },
+                  "timestamp": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                }
+              }
+            }
           },
           "default": {
             "description": "error",
