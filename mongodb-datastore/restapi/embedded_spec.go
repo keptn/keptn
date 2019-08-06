@@ -240,6 +240,10 @@ func init() {
         },
         "message": {
           "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
         }
       }
     },
@@ -684,6 +688,10 @@ func init() {
                   },
                   "message": {
                     "type": "string"
+                  },
+                  "timestamp": {
+                    "type": "string",
+                    "format": "date-time"
                   }
                 }
               }
@@ -741,6 +749,10 @@ func init() {
                   },
                   "message": {
                     "type": "string"
+                  },
+                  "timestamp": {
+                    "type": "string",
+                    "format": "date-time"
                   }
                 }
               }
@@ -846,6 +858,10 @@ func init() {
         },
         "message": {
           "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
         }
       }
     },
