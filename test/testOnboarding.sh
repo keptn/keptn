@@ -1,7 +1,7 @@
 #!/bin/bash
 source ./utils.sh
 
-KEPTN_ENDPOINT=https://$(kubectl get virtualservice -n keptn control -ojsonpath={.spec.hosts[0]})
+KEPTN_ENDPOINT=https://$(kubectl get virtualservice -n keptn api -ojsonpath={.spec.hosts[0]})
 KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)
 
 PROJECT=sockshop

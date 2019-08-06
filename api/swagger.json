@@ -1,0 +1,387 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "keptn api",
+    "version": "0.1.0"
+  },
+  "schemes": [
+    "http"
+  ],
+  "basePath": "/",
+  "consumes": [
+    "application/cloudevents+json"
+  ],
+  "produces": [
+    "application/cloudevents+json"
+  ],
+  "securityDefinitions": {
+    "key": {
+      "type": "apiKey",
+      "in": "header",
+      "name": "x-token"
+    }
+  },
+  "security": [
+    { 
+      "key": []
+    }
+  ],
+  "paths": {    
+    "/auth": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "operationId": "auth",
+        "summary": "Checks the provided token",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/CE"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "authenticated"
+          }
+        }
+      }
+    },
+    "/event": {
+      "post": {
+        "tags": [
+          "event"
+        ],
+        "operationId": "sendEvent",
+        "summary": "Forwards the received event to the eventbroker",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/CE_with_keptncontext"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "forwarded",
+            "schema" : {
+              "$ref" : "#/definitions/ChannelInfo"
+            }
+          },
+          "default": {
+            "description": "error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },    
+    "/configure": {
+      "post": {
+        "tags": [
+          "configure"
+        ],
+        "operationId": "configure",
+        "summary": "Forwards the received configure event to the eventbroker",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/ConfigureCE"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "configured",
+            "schema" : {
+              "$ref" : "#/definitions/ChannelInfo"
+            }
+          },
+          "default": {
+            "description": "error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/project": {
+      "post": {
+        "tags": [
+          "project"
+        ],
+        "operationId": "project",
+        "summary": "Forwards the received project event to the eventbroker",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/CreateProjectCE"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "project created",
+            "schema" : {
+              "$ref" : "#/definitions/ChannelInfo"
+            }
+          },
+          "default": {
+            "description": "error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/service": {
+      "post": {
+        "tags": [
+          "service"
+        ],
+        "operationId": "service",
+        "summary": "Forwards the received service event to the eventbroker",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/CE_with_keptncontext"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "service onboarded",
+            "schema" : {
+              "$ref" : "#/definitions/ChannelInfo"
+            }
+          },
+          "default": {
+            "description": "error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    }
+  },  
+  "definitions": {
+    "ConfigureCE": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/CE_without_data_with_keptncontext"
+        },
+        {
+          "type": "object",          
+          "properties": {
+            "data": {
+              "required": [
+                "org",
+                "user",
+                "token"
+              ],
+              "properties": {
+                "org": {
+                  "type": "string"
+                },
+                "user": {
+                  "type": "string"
+                },
+                "token": {
+                  "type": "string"
+                }
+              }              
+            }
+          }
+        }
+      ]
+    },
+    "CreateProjectCE": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/CE_without_data_with_keptncontext"
+        },
+        {
+          "type": "object",          
+          "properties": {
+            "data": {
+              "required": [
+                "project",
+                "stages"
+              ],
+              "properties": {
+                "project": {
+                  "type": "string"
+                },
+                "stages": {
+                  "type": "array",
+                  "items": {
+                    "required": [
+                      "name",
+                      "deployment_strategy"
+                    ],
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "deployment_strategy": {
+                        "type": "string"
+                      },
+                      "test_strategy": {
+                        "type": "string"
+                      }
+                    }
+                  }                  
+                }
+              }              
+            }
+          }
+        }
+      ]
+    },
+    "error": {
+      "type": "object",
+      "required": [
+        "message"
+      ],
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "message": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "string"
+        }
+      }
+    },
+    "ChannelInfo" : {
+      "allOf": [
+        {
+          "$ref": "#/definitions/CE_without_data_with_keptncontext"
+        },
+        {
+          "type": "object",          
+          "properties": {
+            "data": {
+              "properties": {
+                "channelInfo": {
+                  "required": [
+                    "token",
+                    "channelID"
+                  ],
+                  "properties": {
+                    "token": {
+                      "type": "string"
+                    },
+                    "channelID": {
+                      "type": "string"
+                    }
+                  }
+                }  
+              }           
+            }
+          }
+        }
+      ]
+    },
+    "CE_with_keptncontext": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/CE"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "shkeptncontext": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "CE_without_data_with_keptncontext": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/CE_without_data"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "shkeptncontext": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "CE" : {
+      "allOf": [
+        {
+          "$ref": "#/definitions/CE_without_data"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "data": {
+              "type": [
+                "object",
+                "string"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "CE_without_data" : {
+      "type": "object",
+      "required": [
+        "specversion",
+        "id",
+        "type",
+        "source"
+      ],
+      "properties": {
+        "specversion": {
+          "type": "string"
+        },
+        "contenttype": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "time": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "extensions": {
+          "type": "object"
+        },
+        "source": {
+          "format": "uri-reference",
+          "type": "string"
+        }
+      }
+    }
+  }
+}
