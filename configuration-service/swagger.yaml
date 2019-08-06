@@ -2,6 +2,7 @@ swagger: '2.0'
 info:
   title: Configuration Service API
   version: 0.1.0
+basePath: /v1
 schemes:
   - http
 securityDefinitions:
@@ -11,7 +12,129 @@ securityDefinitions:
     name: x-token
 security:
   - key: []
-  
+
+definitions:
+
+  error:
+    type: object
+    properties:
+      error:
+        type: object
+        properties: 
+          code:
+            type: integer
+            description: Error code
+          message:
+            type: string
+            description: Error message
+
+  version:
+    type: object
+    properties:
+      version:
+        type: string
+        description: Version identifier
+
+  project:
+    type: object
+    properties:
+      projectName:
+        type: string
+        description: Project name
+
+  stage:
+    type: object
+    properties:
+      stageName:
+        type: string
+        description: Stage name
+
+  service:
+    type: object
+    properties:
+      serviceName:
+        type: string
+        description: Service name
+
+  resource:
+    type: object
+    properties:
+      resourceIdentifier:
+        type: string
+        description: Resource identifier
+      content:
+        type: string
+        format: byte
+        description: Resource content
+
+  projects:
+    type: object
+    properties:
+      nextPageKey: 
+        type: string
+        description: Pointer to next page, base64 encoded
+      totalCount: 
+        type: number
+        description: Total number of projects
+      pageSize: 
+        type: number
+        description: Size of returned page
+      result:
+        type: array
+        items:
+          $ref: '#/definitions/project'
+
+  stages:
+    type: object
+    properties:
+      nextPageKey: 
+        type: string
+        description: Pointer to next page, base64 encoded
+      totalCount: 
+        type: number
+        description: Total number of stages
+      pageSize: 
+        type: number
+        description: Size of returned page
+      result:
+        type: array
+        items:
+          $ref: '#/definitions/stage'
+
+  services:
+    type: object
+    properties:
+      nextPageKey: 
+        type: string
+        description: Pointer to next page, base64 encoded
+      totalCount: 
+        type: number
+        description: Total number of services
+      pageSize: 
+        type: number
+        description: Size of returned page
+      result:
+        type: array
+        items:
+          $ref: '#/definitions/service'
+
+  resources:
+    type: object
+    properties:
+      nextPageKey: 
+        type: string
+        description: Pointer to next page, base64 encoded
+      totalCount: 
+        type: number
+        description: Total number of resources
+      pageSize: 
+        type: number
+        description: Size of returned page
+      result:
+        type: array
+        items:
+          $ref: '#/definitions/resource'
+
 parameters:
   projectName:
     in: path
@@ -50,14 +173,18 @@ parameters:
 
 paths:
 
-  '/v1/project':
+  '/project':
     post:
       tags:
         - Project
       summary: Create a new project by project name
       responses:
         '204':
-          description: Success. Request attribute has been created. Response does not have a body.
+          description: Success. Project has been created. Response does not have a body.
+        '400':
+          description: Failed. Project could not be created.
+          schema:
+            $ref: '#/definitions/error'
     get:
       tags:
         - Project
@@ -67,9 +194,11 @@ paths:
       summary: Get list of projects
       responses:
         '200':
-          description: OK
+          description: Success
+          schema:
+            $ref: '#/definitions/projects'
 
-  '/v1/project/{projectName}':
+  '/project/{projectName}':
     parameters:
       - $ref: '#/parameters/projectName'
     get:
@@ -78,23 +207,33 @@ paths:
       summary: Get the specified project
       responses:
         '200':
-          description: OK
+          description: Success
+          schema:
+            $ref: '#/definitions/project'
     put:
       tags:
         - Project
       summary: Update the specified project
       responses:
         '204':
-          description: Success. Request attribute has been updated. Response does not have a body.
+          description: Success. Project has been updated. Response does not have a body.
+        '400':
+          description: Failed. Project could not be updated.
+          schema:
+            $ref: '#/definitions/error'
     delete:
       tags:
         - Project
       summary: Delete the specified project
       responses:
         '204':
-          description: Deleted. Response does not have a body.
+          description: Success. Project has been deleted. Response does not have a body.
+        '400':
+          description: Failed. Project could not be deleted.
+          schema:
+            $ref: '#/definitions/error'
 
-  '/v1/project/{projectName}/resource':
+  '/project/{projectName}/resource':
     parameters:
       - $ref: '#/parameters/projectName'
     post:
@@ -103,19 +242,25 @@ paths:
       summary: Create a new resource for the project
       responses:
         '204':
-          description: Success. Request attribute has been created. Response does not have a body.
+          description: Success. Project resource has been created. Response does not have a body.
+        '400':
+          description: Failed. Project resource could not be created.
+          schema:
+            $ref: '#/definitions/error'
     get:
       tags:
         - Project Resource
       parameters:
         - $ref: '#/parameters/pageSize'
         - $ref: '#/parameters/nextPageKey'
-      summary: Get list of resources of the project
+      summary: Get list of project resources
       responses:
-        '204':
-          description: Success. Request attribute has been created. Response does not have a body.
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/resources'
 
-  '/v1/project/{projectName}/resource/{resource}':
+  '/project/{projectName}/resource/{resource}':
     parameters:
       - $ref: '#/parameters/projectName'
       - $ref: '#/parameters/resource'
@@ -125,23 +270,33 @@ paths:
       summary: Get the specified resource
       responses:
         '200':
-          description: OK
+          description: Success
+          schema:
+            $ref: '#/definitions/resource'
     put:
       tags:
         - Project Resource
       summary: Update the specified resource
       responses:
         '204':
-          description: Success. Request attribute has been updated. Response does not have a body.
+          description: Success. Project resource has been updated. Response does not have a body.
+        '400':
+          description: Failed. Project resource could not be updated.
+          schema:
+            $ref: '#/definitions/error'
     delete:
       tags:
         - Project Resource
       summary: Delete the specified resource
       responses:
         '204':
-          description: Deleted. Response does not have a body.
+          description: Success. Project resource has been deleted. Response does not have a body.
+        '400':
+          description: Failed. Project resource could not be deleted.
+          schema:
+            $ref: '#/definitions/error'
           
-  '/v1/project/{projectName}/stage':
+  '/project/{projectName}/stage':
     parameters:
       - $ref: '#/parameters/projectName'
     post:
@@ -150,7 +305,11 @@ paths:
       summary: Create a new stage by stage name
       responses:
         '204':
-          description: Success. Request attribute has been created. Response does not have a body.
+          description: Success. Stage has been created. Response does not have a body.
+        '400':
+          description: Failed. Stage could not be created.
+          schema:
+            $ref: '#/definitions/error'
     get:
       tags:
         - Stage
@@ -160,9 +319,11 @@ paths:
       summary: Get list of stages
       responses:
         '200':
-          description: OK
+          description: Success
+          schema:
+            $ref: '#/definitions/stages'
 
-  '/v1/project/{projectName}/stage/{stageName}':
+  '/project/{projectName}/stage/{stageName}':
     parameters:
       - $ref: '#/parameters/projectName'
       - $ref: '#/parameters/stageName'
@@ -172,23 +333,33 @@ paths:
       summary: Get the specified stage
       responses:
         '200':
-          description: OK
+          description: Success
+          schema:
+            $ref: '#/definitions/stage'
     put:
       tags:
         - Stage
       summary: Update the specified stage
       responses:
         '204':
-          description: Success. Request attribute has been updated. Response does not have a body.
+          description: Success. Stage has been updated. Response does not have a body.
+        '400':
+          description: Failed. Stage could not be updated.
+          schema:
+            $ref: '#/definitions/error'
     delete:
       tags:
         - Stage
       summary: Delete the specified stage
       responses:
         '204':
-          description: Deleted. Response does not have a body.
+          description: Success. Stage has been deleted. Response does not have a body.
+        '400':
+          description: Failed. Stage could not be deleted.
+          schema:
+            $ref: '#/definitions/error'
 
-  '/v1/project/{projectName}/stage/{stageName}/resource':
+  '/project/{projectName}/stage/{stageName}/resource':
     parameters:
       - $ref: '#/parameters/projectName'
       - $ref: '#/parameters/stageName'
@@ -198,19 +369,25 @@ paths:
       summary: Create a new resource for the stage
       responses:
         '204':
-          description: Success. Request attribute has been created. Response does not have a body.
+          description: Success. Stage resource has been created. Response does not have a body.
+        '400':
+          description: Failed. Stage resource could not be created.
+          schema:
+            $ref: '#/definitions/error'
     get:
       tags:
         - Stage Resource
       parameters:
         - $ref: '#/parameters/pageSize'
         - $ref: '#/parameters/nextPageKey'
-      summary: Get list of resources of the stage
+      summary: Get list of stage resources
       responses:
         '200':
-          description: OK
+          description: Success
+          schema:
+            $ref: '#/definitions/resources'
 
-  '/v1/project/{projectName}/stage/{stageName}/resource/{resource}':
+  '/project/{projectName}/stage/{stageName}/resource/{resource}':
     parameters:
       - $ref: '#/parameters/projectName'
       - $ref: '#/parameters/stageName'
@@ -221,23 +398,33 @@ paths:
       summary: Get the specified resource
       responses:
         '200':
-          description: OK
+          description: Success
+          schema:
+            $ref: '#/definitions/resource'
     put:
       tags:
         - Stage Resource
       summary: Update the specified resource
       responses:
         '204':
-          description: Success. Request attribute has been updated. Response does not have a body.
+          description: Success. Stage resource has been updated. Response does not have a body.
+        '400':
+          description: Failed. Stage resource could not be updated.
+          schema:
+            $ref: '#/definitions/error'
     delete:
       tags:
         - Stage Resource
       summary: Delete the specified resource
       responses:
         '204':
-          description: Deleted. Response does not have a body.
+          description: Success. Stage resource has been deleted. Response does not have a body.
+        '400':
+          description: Failed. Stage resource could not be deleted.
+          schema:
+            $ref: '#/definitions/error'
 
-  '/v1/project/{projectName}/stage/{stageName}/service':
+  '/project/{projectName}/stage/{stageName}/service':
     parameters:
       - $ref: '#/parameters/projectName'
       - $ref: '#/parameters/stageName'
@@ -247,7 +434,11 @@ paths:
       summary: Create a new service by service name
       responses:
         '204':
-          description: Success. Request attribute has been created. Response does not have a body.
+          description: Success. Service has been created. Response does not have a body.
+        '400':
+          description: Failed. Service could not be created.
+          schema:
+            $ref: '#/definitions/error'
     get:
       tags:
         - Service
@@ -257,9 +448,11 @@ paths:
       summary: Get list of services
       responses:
         '200':
-          description: OK
+          description: Success
+          schema:
+            $ref: '#/definitions/services'
 
-  '/v1/project/{projectName}/stage/{stageName}/service/{serviceName}':
+  '/project/{projectName}/stage/{stageName}/service/{serviceName}':
     parameters:
       - $ref: '#/parameters/projectName'
       - $ref: '#/parameters/stageName'
@@ -270,23 +463,33 @@ paths:
       summary: Get the specified service
       responses:
         '200':
-          description: OK
+          description: Success
+          schema:
+            $ref: '#/definitions/service'
     put:
       tags:
         - Service
       summary: Update the specified service
       responses:
         '204':
-          description: Success. Request attribute has been updated. Response does not have a body.
+          description: Success. Service has been updated. Response does not have a body.
+        '400':
+          description: Failed. Service could not be updated.
+          schema:
+            $ref: '#/definitions/error'
     delete:
       tags:
         - Service
       summary: Delete the specified service
       responses:
         '204':
-          description: Deleted. Response does not have a body.
+          description: Success. Service has been deleted. Response does not have a body.
+        '400':
+          description: Failed. Service could not be deleted.
+          schema:
+            $ref: '#/definitions/error'
 
-  '/v1/project/{projectName}/stage/{stageName}/service/{serviceName}/resource':
+  '/project/{projectName}/stage/{stageName}/service/{serviceName}/resource':
     parameters:
       - $ref: '#/parameters/projectName'
       - $ref: '#/parameters/stageName'
@@ -297,19 +500,25 @@ paths:
       summary: Create a new resource for the stage
       responses:
         '204':
-          description: Success. Request attribute has been created. Response does not have a body.
+          description: Success. Service resource has been created. Response does not have a body.
+        '400':
+          description: Failed. Service resource could not be created.
+          schema:
+            $ref: '#/definitions/error'
     get:
       tags:
         - Service Resource
       parameters:
         - $ref: '#/parameters/pageSize'
         - $ref: '#/parameters/nextPageKey'
-      summary: Get list of resources of the stage
+      summary: Get list of service resources
       responses:
         '200':
-          description: OK
+          description: Success
+          schema:
+            $ref: '#/definitions/resources'
 
-  '/v1/project/{projectName}/stage/{stageName}/service/{serviceName}/resource/{resource}':
+  '/project/{projectName}/stage/{stageName}/service/{serviceName}/resource/{resource}':
     parameters:
       - $ref: '#/parameters/projectName'
       - $ref: '#/parameters/stageName'
@@ -321,23 +530,35 @@ paths:
       summary: Get the specified resource
       responses:
         '200':
-          description: OK
+          description: Success
+          schema:
+            $ref: '#/definitions/resource'
     put:
       tags:
         - Service Resource
       summary: Update the specified resource
       responses:
-        '204':
-          description: Success. Request attribute has been updated. Response does not have a body.
+        '201':
+          description: Success. Service resource has been updated. The version of the new configuration is returned.
+          schema:
+            $ref: '#/definitions/version'
+        '400':
+          description: Failed. Service resource could not be updated.
+          schema:
+            $ref: '#/definitions/error'
     delete:
       tags:
         - Service Resource
       summary: Delete the specified resource
       responses:
         '204':
-          description: Deleted. Response does not have a body.
+          description: Success. Service resource has been deleted. Response does not have a body.
+        '400':
+          description: Failed. Service resource could not be deleted.
+          schema:
+            $ref: '#/definitions/error'
 
-  '/v1/project/{projectName}/service/{serviceName}/resource':
+  '/project/{projectName}/service/{serviceName}/resource':
     parameters:
       - $ref: '#/parameters/projectName'
       - $ref: '#/parameters/serviceName'
@@ -347,7 +568,11 @@ paths:
       summary: Create a default resource for the service used in all stages
       responses:
         '204':
-          description: Success. Request attribute has been created. Response does not have a body.
+          description: Success. Service default resource has been created. Response does not have a body.
+        '400':
+          description: Failed. Service default resource could not be created.
+          schema:
+            $ref: '#/definitions/error'
     get:
       tags:
         - Service Default Resource 
@@ -357,9 +582,11 @@ paths:
       summary: Get list of default resources for the service used in all stages
       responses:
         '200':
-          description: OK
+          description: Success
+          schema:
+            $ref: '#/definitions/resources'
 
-  '/v1/project/{projectName}/service/{serviceName}/resource/{resource}':
+  '/project/{projectName}/service/{serviceName}/resource/{resource}':
     parameters:
       - $ref: '#/parameters/projectName'
       - $ref: '#/parameters/stageName'
@@ -371,18 +598,30 @@ paths:
       summary: Get the specified default resource for the service
       responses:
         '200':
-          description: OK
+          description: Success
+          schema:
+            $ref: '#/definitions/resource'
     put:
       tags:
         - Service Default Resource
       summary: Update the specified default resource for the service
       responses:
-        '204':
-          description: Success. Request attribute has been updated. Response does not have a body.
+        '201':
+          description: Success. Service default resource has been updated. The version of the new configuration is returned.
+          schema:
+            $ref: '#/definitions/version'
+        '400':
+          description: Failed. Service default resource could not be updated.
+          schema:
+            $ref: '#/definitions/error'
     delete:
       tags:
         - Service Default Resource
       summary: Delete the specified default resource for the service
       responses:
         '204':
-          description: Deleted. Response does not have a body.
+          description: Success. Service default resource has been deleted. Response does not have a body.
+        '400':
+          description: Failed. Service default resource could not be deleted.
+          schema:
+            $ref: '#/definitions/error'
