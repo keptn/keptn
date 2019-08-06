@@ -33,7 +33,7 @@ func NewSaveEvent(ctx *middleware.Context, handler SaveEventHandler) *SaveEvent 
 	return &SaveEvent{Context: ctx, Handler: handler}
 }
 
-/*SaveEvent swagger:route POST /events event saveEvent
+/*SaveEvent swagger:route POST /event event saveEvent
 
 Saves an event to the datastore
 

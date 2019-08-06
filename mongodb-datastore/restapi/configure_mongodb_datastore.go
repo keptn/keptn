@@ -47,27 +47,11 @@ func configureAPI(api *operations.MongodbDatastoreAPI) http.Handler {
 	})
 
 	api.EventGetEventsHandler = event.GetEventsHandlerFunc(func(params event.GetEventsParams) middleware.Responder {
-		events, err := handlers.GetEvents()
+		events, err := handlers.GetEvents(params)
 		if err != nil {
 			return event.NewGetEventsDefault(500).WithPayload(&event.GetEventsDefaultBody{Code: 500, Message: swag.String(err.Error())})
 		}
 		return event.NewGetEventsOK().WithPayload(events)
-	})
-
-	api.EventGetNewArtifactEventsHandler = event.GetNewArtifactEventsHandlerFunc(func(params event.GetNewArtifactEventsParams) middleware.Responder {
-		events, err := handlers.GetNewArtifactEvents()
-		if err != nil {
-			return event.NewGetNewArtifactEventsDefault(500).WithPayload(&event.GetNewArtifactEventsDefaultBody{Code: 500, Message: swag.String(err.Error())})
-		}
-		return event.NewGetNewArtifactEventsOK().WithPayload(events)
-	})
-
-	api.EventGetEventHandler = event.GetEventHandlerFunc(func(params event.GetEventParams) middleware.Responder {
-		events, err := handlers.GetEventsByKeptncontext(params.ID)
-		if err != nil {
-			return event.NewGetEventDefault(500).WithPayload(&event.GetEventDefaultBody{Code: 500, Message: swag.String(err.Error())})
-		}
-		return event.NewGetEventOK().WithPayload(events)
 	})
 
 	api.LogsSaveLogHandler = logs.SaveLogHandlerFunc(func(params logs.SaveLogParams) middleware.Responder {
@@ -78,19 +62,11 @@ func configureAPI(api *operations.MongodbDatastoreAPI) http.Handler {
 	})
 
 	api.LogsGetLogsHandler = logs.GetLogsHandlerFunc(func(params logs.GetLogsParams) middleware.Responder {
-		mylogs, err := handlers.GetLogs()
+		mylogs, err := handlers.GetLogs(params)
 		if err != nil {
 			return logs.NewGetLogsDefault(500).WithPayload(&logs.GetLogsDefaultBody{Code: 500, Message: swag.String(err.Error())})
 		}
 		return logs.NewGetLogsOK().WithPayload(mylogs)
-	})
-
-	api.LogsGetLogsByEventIDHandler = logs.GetLogsByEventIDHandlerFunc(func(params logs.GetLogsByEventIDParams) middleware.Responder {
-		mylogs, err := handlers.GetLogsByEventID(params.EventID)
-		if err != nil {
-			return logs.NewGetLogsByEventIDDefault(500).WithPayload(&logs.GetLogsByEventIDDefaultBody{Code: 500, Message: swag.String(err.Error())})
-		}
-		return logs.NewGetLogsByEventIDOK().WithPayload(mylogs)
 	})
 
 	api.ServerShutdown = func() {}

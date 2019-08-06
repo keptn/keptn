@@ -9,7 +9,10 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+
+	strfmt "github.com/go-openapi/strfmt"
 )
 
 // NewGetLogsParams creates a new GetLogsParams object
@@ -27,6 +30,11 @@ type GetLogsParams struct {
 
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
+
+	/*EventId of the event the logs belog to
+	  In: query
+	*/
+	EventID *string
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -38,8 +46,33 @@ func (o *GetLogsParams) BindRequest(r *http.Request, route *middleware.MatchedRo
 
 	o.HTTPRequest = r
 
+	qs := runtime.Values(r.URL.Query())
+
+	qEventID, qhkEventID, _ := qs.GetOK("eventId")
+	if err := o.bindEventID(qEventID, qhkEventID, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+// bindEventID binds and validates parameter EventID from query.
+func (o *GetLogsParams) bindEventID(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+
+	// Required: false
+	// AllowEmptyValue: false
+	if raw == "" { // empty values pass all other validations
+		return nil
+	}
+
+	o.EventID = &raw
+
 	return nil
 }

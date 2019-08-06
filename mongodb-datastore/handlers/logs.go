@@ -49,7 +49,7 @@ func SaveLog(body []*logs.SaveLogParamsBodyItems0) (err error) {
 }
 
 // GetLogs returns logs
-func GetLogs() (res []*logs.GetLogsOKBodyItems0, err error) {
+func GetLogs(params logs.GetLogsParams) (res []*logs.GetLogsOKBodyItems0, err error) {
 	fmt.Println("get logs from datastore")
 	client, err := mongo.NewClient(options.Client().ApplyURI(mongoDBConnection))
 	if err != nil {
@@ -65,8 +65,14 @@ func GetLogs() (res []*logs.GetLogsOKBodyItems0, err error) {
 	}
 
 	collection := client.Database(mongoDBName).Collection(logsCollectionName)
-	options := options.Find().SetSort(bson.D{{"timestamp", -1}})
-	cur, err := collection.Find(ctx, bson.D{{}}, options)
+
+	searchOptions := bson.M{}
+	if params.EventID != nil {
+		searchOptions["evenId"] = primitive.Regex{Pattern: *params.EventID, Options: ""}
+	}
+
+	sortOptions := options.Find().SetSort(bson.D{{"timestamp", -1}})
+	cur, err := collection.Find(ctx, searchOptions, sortOptions)
 	if err != nil {
 		log.Fatalln("error finding elements in collections: ", err.Error())
 	}
@@ -74,42 +80,6 @@ func GetLogs() (res []*logs.GetLogsOKBodyItems0, err error) {
 	var resultLogs []*logs.GetLogsOKBodyItems0
 	for cur.Next(ctx) {
 		var result logs.GetLogsOKBodyItems0
-		err := cur.Decode(&result)
-		if err != nil {
-			return nil, err
-		}
-		resultLogs = append(resultLogs, &result)
-		//fmt.Println(result)
-	}
-	return resultLogs, nil
-}
-
-// GetLogsByEventID returns logs by event ID
-func GetLogsByEventID(eventId string) (res []*logs.GetLogsByEventIDOKBodyItems0, err error) {
-	fmt.Println("get logs from datastore with eventId: ", eventId)
-	client, err := mongo.NewClient(options.Client().ApplyURI(mongoDBConnection))
-	if err != nil {
-		log.Fatalln("error creating client: ", err.Error())
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	err = client.Connect(ctx)
-	if err != nil {
-		log.Fatalln(err.Error())
-	}
-
-	collection := client.Database(mongoDBName).Collection(logsCollectionName)
-	options := options.Find().SetSort(bson.D{{"timestamp", -1}})
-	cur, err := collection.Find(ctx, bson.M{"eventId": primitive.Regex{Pattern: eventId, Options: ""}}, options)
-	if err != nil {
-		log.Fatalln("error finding elements in collections: ", err.Error())
-	}
-
-	var resultLogs []*logs.GetLogsByEventIDOKBodyItems0
-	for cur.Next(ctx) {
-		var result logs.GetLogsByEventIDOKBodyItems0
 		err := cur.Decode(&result)
 		if err != nil {
 			return nil, err

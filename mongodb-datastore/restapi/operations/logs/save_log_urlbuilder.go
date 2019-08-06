@@ -35,7 +35,7 @@ func (o *SaveLogURL) SetBasePath(bp string) {
 func (o *SaveLogURL) Build() (*url.URL, error) {
 	var _result url.URL
 
-	var _path = "/logs"
+	var _path = "/log"
 
 	_basePath := o._basePath
 	if _basePath == "" {
