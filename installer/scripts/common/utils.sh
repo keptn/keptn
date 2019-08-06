@@ -44,14 +44,14 @@ function verify_variable() {
 
 # Waits for a deployment in a given namespace to be available.
 function wait_for_deployment_in_namespace() {
-  NEW_DEPLOYMENT=$1; NAMESPACE=$2;
+  DEPLOYMENT=$1; NAMESPACE=$2;
   RETRY=0; RETRY_MAX=24; 
 
   while [[ $RETRY -lt $RETRY_MAX ]]; do
-    DEPLOYMENT_LIST=$(eval "kubectl get deployments -n $NAMESPACE | awk '/$NEW_DEPLOYMENT/'" | awk '{print $1}') # list of multiple deployments when starting with the same name
+    DEPLOYMENT_LIST=$(eval "kubectl get deployments -n ${NAMESPACE} | awk '/$DEPLOYMENT/'" | awk '{print $1}') # list of multiple deployments when starting with the same name
     if [[ -z "$DEPLOYMENT_LIST" ]]; then
       RETRY=$[$RETRY+1]
-      print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 10s for deployment ${NEW_DEPLOYMENT} in namespace ${NAMESPACE} ..."
+      print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 10s for deployment ${DEPLOYMENT} in namespace ${NAMESPACE} ..."
       sleep 10
     else
       break
@@ -59,7 +59,7 @@ function wait_for_deployment_in_namespace() {
   done
 
   if [[ $RETRY == $RETRY_MAX ]]; then
-    print_error "Deployment ${NEW_DEPLOYMENT} in namespace ${NAMESPACE} is not available"
+    print_error "Deployment ${DEPLOYMENT} in namespace ${NAMESPACE} is not available"
     exit 1
   fi
 
