@@ -206,6 +206,10 @@
       "LogEntry": {
         "type": "object",
         "properties":{
+          "timestamp":{
+            "type":"string",
+            "format":"date-time"
+          },
           "keptnContext":{
             "type":"string"
           },
