@@ -23,7 +23,7 @@ type GetEventsOK struct {
 	/*
 	  In: Body
 	*/
-	Payload []*GetEventsOKBodyItems0 `json:"body,omitempty"`
+	Payload *GetEventsOKBody `json:"body,omitempty"`
 }
 
 // NewGetEventsOK creates GetEventsOK with default headers values
@@ -33,13 +33,13 @@ func NewGetEventsOK() *GetEventsOK {
 }
 
 // WithPayload adds the payload to the get events o k response
-func (o *GetEventsOK) WithPayload(payload []*GetEventsOKBodyItems0) *GetEventsOK {
+func (o *GetEventsOK) WithPayload(payload *GetEventsOKBody) *GetEventsOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the get events o k response
-func (o *GetEventsOK) SetPayload(payload []*GetEventsOKBodyItems0) {
+func (o *GetEventsOK) SetPayload(payload *GetEventsOKBody) {
 	o.Payload = payload
 }
 
@@ -47,14 +47,11 @@ func (o *GetEventsOK) SetPayload(payload []*GetEventsOKBodyItems0) {
 func (o *GetEventsOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(200)
-	payload := o.Payload
-	if payload == nil {
-		// return empty array
-		payload = make([]*GetEventsOKBodyItems0, 0, 50)
-	}
-
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
 }
 
