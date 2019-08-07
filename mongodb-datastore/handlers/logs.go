@@ -71,7 +71,10 @@ func GetLogs(params logs.GetLogsParams) (res []*logs.GetLogsOKBodyItems0, err er
 		searchOptions["evenId"] = primitive.Regex{Pattern: *params.EventID, Options: ""}
 	}
 
-	sortOptions := options.Find().SetSort(bson.D{{"timestamp", -1}})
+	pagesize := *params.Pagesize
+	offset := (*params.Page - 1) * pagesize
+
+	sortOptions := options.Find().SetSort(bson.D{{"timestamp", -1}}).SetSkip(offset).SetLimit(pagesize)
 	cur, err := collection.Find(ctx, searchOptions, sortOptions)
 	if err != nil {
 		log.Fatalln("error finding elements in collections: ", err.Error())

@@ -64,6 +64,12 @@
                 "type": "string",
                 "required": false,
                 "description": "Type of the keptn cloud event"
+              },
+              {
+                "$ref":"#/parameters/pagesizeParam"
+              },
+              {
+                "$ref":"#/parameters/pageParam"
               }
             ],
             "responses": {
@@ -122,13 +128,21 @@
           ],
           "operationId": "getLogs",
           "summary": "gets the logs from the datastore",
-          "parameters":[{
-            "name":"eventId",
-            "in":"query",
-            "type":"string",
-            "required":false,
-            "description":"EventId of the event the logs belog to"
-          }],
+          "parameters":[
+            {
+              "name":"eventId",
+              "in":"query",
+              "type":"string",
+              "required":false,
+              "description":"EventId of the event the logs belog to"
+            },
+            {
+              "$ref":"#/parameters/pagesizeParam"
+            },
+            {
+              "$ref":"#/parameters/pageParam"
+            }
+          ],
           "responses": {
             "200": {
               "description":"ok",
@@ -147,6 +161,27 @@
             }
           }
         }
+      }
+    },
+    "parameters": {
+      "pagesizeParam": {
+        "name":"pagesize",
+        "in":"query",
+        "type":"integer",
+        "required":false,
+        "default": 20,
+        "minimum": 1,
+        "maximum": 100,
+        "description":"Page size to be returned"
+      },
+      "pageParam": {
+        "name":"page",
+        "in":"query",
+        "type":"integer",
+        "required":false,
+        "default":1,
+        "minimum":1,
+        "description":"Number of page to be returned"
       }
     },
     "definitions": {

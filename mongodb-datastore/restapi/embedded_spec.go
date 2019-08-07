@@ -55,6 +55,12 @@ func init() {
             "description": "Type of the keptn cloud event",
             "name": "type",
             "in": "query"
+          },
+          {
+            "$ref": "#/parameters/pagesizeParam"
+          },
+          {
+            "$ref": "#/parameters/pageParam"
           }
         ],
         "responses": {
@@ -116,6 +122,12 @@ func init() {
             "description": "EventId of the event the logs belog to",
             "name": "eventId",
             "in": "query"
+          },
+          {
+            "$ref": "#/parameters/pagesizeParam"
+          },
+          {
+            "$ref": "#/parameters/pageParam"
           }
         ],
         "responses": {
@@ -229,6 +241,25 @@ func init() {
     "principal": {
       "type": "string"
     }
+  },
+  "parameters": {
+    "pageParam": {
+      "minimum": 1,
+      "type": "integer",
+      "default": 1,
+      "description": "Number of page to be returned",
+      "name": "page",
+      "in": "query"
+    },
+    "pagesizeParam": {
+      "maximum": 100,
+      "minimum": 1,
+      "type": "integer",
+      "default": 20,
+      "description": "Page size to be returned",
+      "name": "pagesize",
+      "in": "query"
+    }
   }
 }`))
 	FlatSwaggerJSON = json.RawMessage([]byte(`{
@@ -268,6 +299,23 @@ func init() {
             "type": "string",
             "description": "Type of the keptn cloud event",
             "name": "type",
+            "in": "query"
+          },
+          {
+            "maximum": 100,
+            "minimum": 1,
+            "type": "integer",
+            "default": 20,
+            "description": "Page size to be returned",
+            "name": "pagesize",
+            "in": "query"
+          },
+          {
+            "minimum": 1,
+            "type": "integer",
+            "default": 1,
+            "description": "Number of page to be returned",
+            "name": "page",
             "in": "query"
           }
         ],
@@ -457,6 +505,23 @@ func init() {
             "type": "string",
             "description": "EventId of the event the logs belog to",
             "name": "eventId",
+            "in": "query"
+          },
+          {
+            "maximum": 100,
+            "minimum": 1,
+            "type": "integer",
+            "default": 20,
+            "description": "Page size to be returned",
+            "name": "pagesize",
+            "in": "query"
+          },
+          {
+            "minimum": 1,
+            "type": "integer",
+            "default": 1,
+            "description": "Number of page to be returned",
+            "name": "page",
             "in": "query"
           }
         ],
@@ -679,6 +744,25 @@ func init() {
     },
     "principal": {
       "type": "string"
+    }
+  },
+  "parameters": {
+    "pageParam": {
+      "minimum": 1,
+      "type": "integer",
+      "default": 1,
+      "description": "Number of page to be returned",
+      "name": "page",
+      "in": "query"
+    },
+    "pagesizeParam": {
+      "maximum": 100,
+      "minimum": 1,
+      "type": "integer",
+      "default": 20,
+      "description": "Page size to be returned",
+      "name": "pagesize",
+      "in": "query"
     }
   }
 }`))
