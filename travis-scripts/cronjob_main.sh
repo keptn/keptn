@@ -8,7 +8,7 @@ clusters=$(gcloud container clusters list --zone $CLOUDSDK_COMPUTE_ZONE --projec
 if echo "$clusters" | grep $CLUSTER_NAME_NIGHTLY; then 
     echo "First delete old keptn installation"
     cd ./installer/scripts
-    ./uninstallKeptn.sh
+    ./common/uninstallKeptn.sh
     cd ../..
 
     echo "Start deleting nightly cluster"
@@ -23,15 +23,25 @@ if [[ $? != '0' ]]; then
     print_error "gcloud cluster create failed."
     exit 1
 fi
+
 gcloud container clusters get-credentials $CLUSTER_NAME_NIGHTLY --zone $CLOUDSDK_COMPUTE_ZONE --project $PROJECT_NAME
 if [[ $? != '0' ]]; then
     print_error "gcloud get credentials failed."
     exit 1
 fi
+
 kubectl config view
 cat ~/.kube/config
 
-# Build and install CLI
+# Install hub
+HUB_VERSION="v2.11.2"
+HUB_INSTALLER="hub-darwin-amd64-2.11.2"
+
+curl -L -s https://github.com/github/hub/releases/download/${HUB_VERSION}/${HUB_INSTALLER}.tgz  -o ${HUB_INSTALLER}.tgz
+tar xopf ${HUB_INSTALLER}.tgz
+sudo mv ${HUB_INSTALLER}/bin/hub /usr/local/bin/hub
+
+# Build and install keptn CLI
 cd cli/
 dep ensure
 go build -o keptn
@@ -43,7 +53,6 @@ cd ./installer/scripts
 
 export GITU=$GITHUB_USER_NAME_NIGHTLY	
 export GITAT=$GITHUB_TOKEN_NIGHTLY	
-export GITE=$GITHUB_EMAIL_NIGHTLY	
 export CLN=$CLUSTER_NAME_NIGHTLY	
 export CLZ=$CLOUDSDK_COMPUTE_ZONE	
 export PROJ=$PROJECT_NAME	
@@ -52,10 +61,10 @@ export GITO=$GITHUB_ORG_NIGHTLY
 source ./gke/defineCredentialsHelper.sh
 replaceCreds
 
+# Install keptn
 keptn install --keptn-version=develop --creds=creds.json --verbose
 cd ../..
 
 # Execute end-to-end test
 cd test
 source ./testOnboarding.sh
-

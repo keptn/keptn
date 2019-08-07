@@ -2,8 +2,6 @@ package utils
 
 import (
 	"context"
-	"crypto/hmac"
-	"crypto/sha1"
 	"crypto/tls"
 	"fmt"
 	"io/ioutil"
@@ -49,26 +47,8 @@ func Send(url url.URL, event cloudevents.Event, apiToken string) (*cloudevents.E
 		return nil, err
 	}
 
-	myCodec := &cloudeventshttp.Codec{
-		Encoding:                   t.Encoding,
-		DefaultEncodingSelectionFn: t.DefaultEncodingSelectionFn,
-	}
-
-	msg, err := myCodec.Encode(event)
-	if err != nil {
-		return nil, err
-	}
-
-	usedContext := context.Background()
-	if m, ok := msg.(*cloudeventshttp.Message); ok {
-		mac := hmac.New(sha1.New, []byte(apiToken))
-		mac.Write(m.Body)
-		signatureVal := mac.Sum(nil)
-		sha1Hash := "sha1=" + fmt.Sprintf("%x", signatureVal)
-
-		// Add signature header
-		usedContext = cloudeventshttp.ContextWithHeader(usedContext, "X-Keptn-Signature", sha1Hash)
-	}
+	// Add signature header
+	usedContext := cloudeventshttp.ContextWithHeader(context.Background(), "x-token", apiToken)
 	return c.Send(usedContext, event)
 }
 

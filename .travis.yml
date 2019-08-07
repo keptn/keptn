@@ -1,5 +1,4 @@
 sudo: true
-os: osx
 language: go
 go:
   - 1.12.x
@@ -10,15 +9,7 @@ env:
   global:
     - GOOGLE_APPLICATION_CREDENTIALS=~/gcloud-service-key.json
     - DEP_VERSION="0.5.3"
-    - HUB_VERSION="v2.11.2"
-    - HUB_INSTALLER="hub-darwin-amd64-2.11.2"
-notifications:
-  webhooks:
-    urls:
-      - https://us-central1-sai-research.cloudfunctions.net/travisWebhookListener
-    on_failure: always
-    on_cancel: always
-    on_error: always 
+
 before_install:   
 - |
   if [ ! -d "$HOME/google-cloud-sdk/bin" ]; then 
@@ -30,67 +21,297 @@ before_install:
     source ./google-cloud-sdk/completion.bash.inc
     source ./google-cloud-sdk/path.bash.inc
   fi
-- gcloud --quiet version
 - gcloud --quiet components update
 - gcloud --quiet components update kubectl
 - echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
 - gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
 
-- curl -L -s https://github.com/github/hub/releases/download/${HUB_VERSION}/${HUB_INSTALLER}.tgz  -o ${HUB_INSTALLER}.tgz
-- tar xopf ${HUB_INSTALLER}.tgz
-- sudo mv ${HUB_INSTALLER}/bin/hub /usr/local/bin/hub
-
-# Download the binary to bin folder in $GOPATH
-- mkdir $GOPATH/bin/
+# Download dep binary to bin folder in $GOPATH and change mode
+- mkdir -p $GOPATH/bin/
 - curl -L -s https://github.com/golang/dep/releases/download/v${DEP_VERSION}/dep-darwin-amd64 -o $GOPATH/bin/dep
-# Make the binary executable
 - chmod +x $GOPATH/bin/dep
-- cd cli/
-- dep ensure
-- cd ..
-- export TZ=Europe/Vienna
-- CLI_VERSION="$(cat ./cli/version | tr -d '[:space:]')"
-- DATE="$(date +'%Y%m%d.%H%M')"
 
-install:
-- cd cli/
-- go test ./...
-- cd ..
+# Build variables
+- export TZ=Europe/Vienna
+- VERSION="$(cat ./version | tr -d '[:space:]')"
+- DATE="$(date +'%Y%m%d.%H%M')"
+- GIT_SHA="$(git rev-parse --short HEAD)"
+- REGISTRY_USER=jbraeuer
+
+- git diff --name-only $TRAVIS_COMMIT_RANGE > files.txt
+- cat files.txt
+- CHANGED_FILES=$(tr '\n' , < files.txt)
+- echo $CHANGED_FILES
+
+- CLI_FOLDER="cli/"
+- API_IMAGE="keptn/api"
+- API_FOLDER="api/"
+- OS_ROUTE_SVC_IMAGE="keptn/openshift-route-service"
+- OS_ROUTE_SVC_FOLDER="platform-support/openshift-route-service/"
+- PITOMETER_SVC_IMAGE="keptn/pitometer-service"
+- PITOMETER_SVC_FOLDER="pitometer-service/"
+- BRIDGE_IMAGE="keptn/bridge"
+- BRIDGE_FOLDER="bridge/"
+- JMETER_SVC_IMAGE="keptn/jmeter-service"
+- JMETER_SVC_FOLDER="jmeter-service/"
+- HELM_SVC_IMAGE="keptn/helm-service"
+- HELM_SVC_FOLDER="helm-service/"
+- GATEKEEPER_SVC_IMAGE="keptn/gatekeeper-service"
+- GATEKEEPER_SVC_FOLDER="gatekeeper-service/"
+- DISTRIBUTOR_IMAGE="keptn/distributor"
+- DISTRIBUTOR_FOLDER="distributor/"
+- EVENTBROKER_IMAGE="keptn/eventbroker-go"
+- EVENTBROKER_FOLDER="eventbroker/"
+- MONGODB_DS_IMAGE="keptn/mongodb-datastore"
+- MONGODB_DS_FOLDER="mongodb-datastore/"
+- INSTALLER_IMAGE="keptn/installer"
+- INSTALLER_FOLDER="installer/"
 
 jobs:
   include:
+
   - stage: cron
     if: branch = develop AND type = cron
+    os: osx
     script:
-    - git clone --branch develop https://github.com/keptn/installer.git --single-branch
     - source travis-scripts/cronjob_main.sh
-  - stage: feature/bug/hotfix
-    if: branch =~ ^feature.*$ OR branch =~ ^bug.*$ OR branch =~ ^hotfix.*$
+
+  - stage: feature/bug/hotfix/patch
+    if: branch =~ ^feature.*$ OR branch =~ ^bug.*$ OR branch =~ ^hotfix.*$ OR branch =~ ^patch.*$
+    os: osx
     script:
-    - echo $TRAVIS_BUILD_STAGE_NAME
     - TYPE="$(echo $TRAVIS_BRANCH | cut -d'/' -f1)"
     - NUMBER="$(echo $TRAVIS_BRANCH | cut -d'/' -f2)"
-    - cd ./cli
-    - TAG="${TYPE}-${NUMBER}-${DATE}"
-    - source ../travis-scripts/build_cli.sh "${TAG}"
+    - | 
+      if [[ $CHANGED_FILES == *"${CLI_FOLDER}"*  ]]; then
+        echo "Build keptn cli"
+        cd ./cli
+        dep ensure
+        go test ./...
+        TAG="${TYPE}-${NUMBER}-${DATE}"
+        source ../travis-scripts/build_cli.sh "${TAG}"
+        cd ..
+      fi
+  - if: branch =~ ^feature.*$ OR branch =~ ^bug.*$ OR branch =~ ^hotfix.*$ OR branch =~ ^patch.*$
+    os: linux
+    services:
+      - docker
+    script:
+    - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
+    - ./writeManifest.sh
+    - TYPE="$(echo $TRAVIS_BRANCH | cut -d'/' -f1)"
+    - NUMBER="$(echo $TRAVIS_BRANCH | cut -d'/' -f2)"
+    - | 
+      if [[ $CHANGED_FILES == *"${API_FOLDER}"*  ]]; then
+        source ./travis-scripts/build_feature.sh "${API_IMAGE}" "${API_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
+        cd ..
+      fi
+    - | 
+      if [[ $CHANGED_FILES == *"${OS_ROUTE_SVC_FOLDER}"*  ]]; then
+        source ./travis-scripts/build_feature.sh "${OS_ROUTE_SVC_IMAGE}" "${OS_ROUTE_SVC_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
+        cd ../..
+      fi
+    - | 
+      if [[ $CHANGED_FILES == *"${PITOMETER_SVC_FOLDER}"*  ]]; then
+        source ./travis-scripts/build_feature.sh "${PITOMETER_SVC_IMAGE}" "${PITOMETER_SVC_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
+        cd ..
+      fi
+    - | 
+      if [[ $CHANGED_FILES == *"${BRIDGE_FOLDER}"*  ]]; then
+        source ./travis-scripts/build_feature.sh "${BRIDGE_IMAGE}" "${BRIDGE_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
+        cd ..
+      fi
+    - | 
+      if [[ $CHANGED_FILES == *"${JMETER_SVC_FOLDER}"*  ]]; then
+        source ./travis-scripts/build_feature.sh "${JMETER_SVC_IMAGE}" "${JMETER_SVC_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
+        cd ..
+      fi
+    - | 
+      if [[ $CHANGED_FILES == *"${HELM_SVC_FOLDER}"*  ]]; then
+        source ./travis-scripts/build_feature.sh "${HELM_SVC_IMAGE}" "${HELM_SVC_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
+        cd ..
+      fi
+    - | 
+      if [[ $CHANGED_FILES == *"${GATEKEEPER_SVC_FOLDER}"*  ]]; then
+        source ./travis-scripts/build_feature.sh "${GATEKEEPER_SVC_IMAGE}" "${GATEKEEPER_SVC_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
+        cd ..
+      fi
+    - | 
+      if [[ $CHANGED_FILES == *"${DISTRIBUTOR_FOLDER}"*  ]]; then
+        source ./travis-scripts/build_feature.sh "${DISTRIBUTOR_IMAGE}" "${DISTRIBUTOR_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
+        cd ..
+      fi
+    - | 
+      if [[ $CHANGED_FILES == *"${EVENTBROKER_FOLDER}"*  ]]; then
+        source ./travis-scripts/build_feature.sh "${EVENTBROKER_IMAGE}" "${EVENTBROKER_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
+        cd ..
+      fi
+    - | 
+      if [[ $CHANGED_FILES == *"${MONGODB_DS_FOLDER}"*  ]]; then
+        source ./travis-scripts/build_feature.sh "${MONGODB_DS_IMAGE}" "${MONGODB_DS_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
+        cd ..
+      fi
+    - | 
+      if [[ $CHANGED_FILES == *"${INSTALLER_FOLDER}"*  ]]; then
+        source ./travis-scripts/build_feature.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
+        cd ..
+      fi
+
   - stage: develop
     if: branch = develop AND type = push
-    script: 
-    - echo $TRAVIS_BUILD_STAGE_NAME
-    - cd ./cli
-    - TAG="${DATE}-latest"
-    - source ../travis-scripts/build_cli.sh "${TAG}"  
+    os: osx
+    script:
+    - | 
+      if [[ $CHANGED_FILES == *"${CLI_FOLDER}"*  ]]; then
+        echo "Build keptn cli"
+        cd ./cli
+        dep ensure
+        go test ./...
+        TAG="${DATE}-latest"
+        source ../travis-scripts/build_cli.sh "${TAG}"
+        cd ..
+      fi
+  - if: branch = develop AND type = push
+    os: linux
+    services:
+      - docker
+    script:
+    - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
+    - ./writeManifest.sh
+    - | 
+      if [[ $CHANGED_FILES == *"${API_FOLDER}"*  ]]; then
+        source ./travis-scripts/build_develop.sh "${API_IMAGE}" "${API_FOLDER}" "${GIT_SHA}" "${DATE}"
+        cd ..
+      fi
+    - | 
+      if [[ $CHANGED_FILES == *"${OS_ROUTE_SVC_FOLDER}"*  ]]; then
+        source ./travis-scripts/build_develop.sh "${OS_ROUTE_SVC_IMAGE}" "${OS_ROUTE_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
+        cd ../..
+      fi
+    - | 
+      if [[ $CHANGED_FILES == *"${PITOMETER_SVC_FOLDER}"*  ]]; then
+        source ./travis-scripts/build_develop.sh "${PITOMETER_SVC_IMAGE}" "${PITOMETER_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
+        cd ..
+      fi
+    - | 
+      if [[ $CHANGED_FILES == *"${BRIDGE_FOLDER}"*  ]]; then
+        source ./travis-scripts/build_develop.sh "${BRIDGE_IMAGE}" "${BRIDGE_FOLDER}" "${GIT_SHA}" "${DATE}"
+        cd ..
+      fi
+    - | 
+      if [[ $CHANGED_FILES == *"${JMETER_SVC_FOLDER}"*  ]]; then
+        source ./travis-scripts/build_develop.sh "${JMETER_SVC_IMAGE}" "${JMETER_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
+        cd ..
+      fi
+    - | 
+      if [[ $CHANGED_FILES == *"${HELM_SVC_FOLDER}"*  ]]; then
+        source ./travis-scripts/build_develop.sh "${HELM_SVC_IMAGE}" "${HELM_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
+        cd ..
+      fi
+    - | 
+      if [[ $CHANGED_FILES == *"${GATEKEEPER_SVC_FOLDER}"*  ]]; then
+        source ./travis-scripts/build_develop.sh "${GATEKEEPER_SVC_IMAGE}" "${GATEKEEPER_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
+        cd ..
+      fi
+    - | 
+      if [[ $CHANGED_FILES == *"${DISTRIBUTOR_FOLDER}"*  ]]; then
+        source ./travis-scripts/build_develop.sh "${DISTRIBUTOR_IMAGE}" "${DISTRIBUTOR_FOLDER}" "${GIT_SHA}" "${DATE}"
+        cd ..
+      fi
+    - | 
+      if [[ $CHANGED_FILES == *"${EVENTBROKER_FOLDER}"*  ]]; then
+        source ./travis-scripts/build_develop.sh "${EVENTBROKER_IMAGE}" "${EVENTBROKER_FOLDER}" "${GIT_SHA}" "${DATE}"
+        cd ..
+      fi
+    - | 
+      if [[ $CHANGED_FILES == *"${MONGODB_DS_FOLDER}"*  ]]; then
+        source ./travis-scripts/build_develop.sh "${MONGODB_DS_IMAGE}" "${MONGODB_DS_FOLDER}" "${GIT_SHA}" "${DATE}"
+        cd ..
+      fi
+    - | 
+      if [[ $CHANGED_FILES == *"${INSTALLER_FOLDER}"*  ]]; then
+        source ./travis-scripts/build_develop.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${GIT_SHA}" "${DATE}"
+        cd ..
+      fi
+
   - stage: release
     if: branch =~ ^release.*$ AND NOT type = pull_request
+    os: osx
     script:
-    - echo $TRAVIS_BUILD_STAGE_NAME
+    - echo "Build keptn cli"
     - cd ./cli
-    - TAG="${CLI_VERSION}-${DATE}"
-    - source ../travis-scripts/build_cli.sh "${TAG}"  
+    - dep ensure
+    - go test ./...
+    - TAG="${VERSION}-${DATE}"
+    - source ../travis-scripts/build_cli.sh "${TAG}"
+    - cd ..
+  - if: branch =~ ^release.*$ AND NOT type = pull_request
+    os: linux
+    services:
+      - docker
+    script:
+    - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
+    - ./writeManifest.sh
+    - source ./travis-scripts/build_release.sh "${API_IMAGE}" "${API_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+    - cd ..
+    - source ./travis-scripts/build_release.sh "${OS_ROUTE_SVC_IMAGE}" "${OS_ROUTE_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+    - cd ../..
+    - source ./travis-scripts/build_release.sh "${PITOMETER_SVC_IMAGE}" "${PITOMETER_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+    - cd ..
+    - source ./travis-scripts/build_release.sh "${BRIDGE_IMAGE}" "${BRIDGE_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+    - cd ..
+    - source ./travis-scripts/build_release.sh "${JMETER_SVC_IMAGE}" "${JMETER_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+    - cd ..
+    - source ./travis-scripts/build_release.sh "${HELM_SVC_IMAGE}" "${HELM_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+    - cd ..
+    - source ./travis-scripts/build_release.sh "${GATEKEEPER_SVC_IMAGE}" "${GATEKEEPER_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+    - cd ..
+    - source ./travis-scripts/build_release.sh "${DISTRIBUTOR_IMAGE}" "${DISTRIBUTOR_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+    - cd ..
+    - source ./travis-scripts/build_release.sh "${EVENTBROKER_IMAGE}" "${EVENTBROKER_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+    - cd ..
+    - source ./travis-scripts/build_release.sh "${MONGODB_DS_IMAGE}" "${MONGODB_DS_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+    - cd ..
+    - source ./travis-scripts/build_release.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+    - cd ..
+
   - stage: master
     if: branch = master AND NOT type = pull_request
+    os: osx
     script:
-    - echo $TRAVIS_BUILD_STAGE_NAME
+    - echo "Build keptn cli"
     - cd ./cli
-    - TAG="${CLI_VERSION}"
-    - source ../travis-scripts/build_cli.sh "${TAG}"  
+    - dep ensure
+    - go test ./...
+    - TAG="${VERSION}"
+    - source ../travis-scripts/build_cli.sh "${TAG}"
+    - cd ..
+  - if: branch = master AND NOT type = pull_request
+    os: linux
+    services:
+      - docker
+    script:
+    - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
+    - ./writeManifest.sh
+    - source ./travis-scripts/build_master.sh "${API_IMAGE}" "${API_FOLDER}" "${VERSION}"
+    - cd ..
+    - source ./travis-scripts/build_master.sh "${OS_ROUTE_SVC_IMAGE}" "${OS_ROUTE_SVC_FOLDER}" "${VERSION}"
+    - cd ../..
+    - source ./travis-scripts/build_master.sh "${PITOMETER_SVC_IMAGE}" "${PITOMETER_SVC_FOLDER}" "${VERSION}"
+    - cd ..
+    - source ./travis-scripts/build_master.sh "${BRIDGE_IMAGE}" "${BRIDGE_FOLDER}" "${VERSION}"
+    - cd ..
+    - source ./travis-scripts/build_master.sh "${JMETER_SVC_IMAGE}" "${JMETER_SVC_FOLDER}" "${VERSION}"
+    - cd ..
+    - source ./travis-scripts/build_master.sh "${HELM_SVC_IMAGE}" "${HELM_SVC_FOLDER}" "${VERSION}"
+    - cd ..
+    - source ./travis-scripts/build_master.sh "${GATEKEEPER_SVC_IMAGE}" "${GATEKEEPER_SVC_FOLDER}" "${VERSION}"
+    - cd ..
+    - source ./travis-scripts/build_master.sh "${DISTRIBUTOR_IMAGE}" "${DISTRIBUTOR_FOLDER}" "${VERSION}"
+    - cd ..
+    - source ./travis-scripts/build_master.sh "${EVENTBROKER_IMAGE}" "${EVENTBROKER_FOLDER}" "${VERSION}"
+    - cd ..
+    - source ./travis-scripts/build_master.sh "${MONGODB_DS_IMAGE}" "${MONGODB_DS_FOLDER}" "${VERSION}"
+    - cd ..
+    - source ./travis-scripts/build_master.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${VERSION}"
+    - cd ..
