@@ -5,28 +5,21 @@ info:
 basePath: /v1
 schemes:
   - http
-securityDefinitions:
-  key:
-    type: apiKey
-    in: header
-    name: x-token
-security:
-  - key: []
 
 definitions:
 
   error:
     type: object
-    properties:
-      error:
-        type: object
-        properties: 
-          code:
-            type: integer
-            description: Error code
-          message:
-            type: string
-            description: Error message
+    required:
+      - message
+    properties: 
+      code:
+        type: integer
+        format: int64
+        description: Error code
+      message:
+        type: string
+        description: Error message
 
   version:
     type: object
@@ -59,10 +52,10 @@ definitions:
   resource:
     type: object
     properties:
-      resourceIdentifier:
+      resourceURI:
         type: string
-        description: Resource identifier
-      content:
+        description: Resource URI
+      resourceContent:
         type: string
         format: byte
         description: Resource content
@@ -79,7 +72,7 @@ definitions:
       pageSize: 
         type: number
         description: Size of returned page
-      result:
+      projects:
         type: array
         items:
           $ref: '#/definitions/project'
@@ -96,7 +89,7 @@ definitions:
       pageSize: 
         type: number
         description: Size of returned page
-      result:
+      stages:
         type: array
         items:
           $ref: '#/definitions/stage'
@@ -113,7 +106,7 @@ definitions:
       pageSize: 
         type: number
         description: Size of returned page
-      result:
+      services:
         type: array
         items:
           $ref: '#/definitions/service'
@@ -130,7 +123,7 @@ definitions:
       pageSize: 
         type: number
         description: Size of returned page
-      result:
+      resources:
         type: array
         items:
           $ref: '#/definitions/resource'
@@ -141,13 +134,13 @@ parameters:
     name: projectName
     required: true
     type: string
-    description: Name of the project.
+    description: Name of the project
   stageName:
     in: path
     name: stageName
     required: true
     type: string
-    description: Name of the stage.
+    description: Name of the stage
   serviceName:
     in: path
     name: serviceName
@@ -159,18 +152,34 @@ parameters:
     name: resource
     required: true
     type: string
-    description: Indentifier of a resource
+    description: Resource URI
   pageSize:
     in: query
     name: pageSize
-    type: number
-    description: Size for paging
+    type: integer
+    minimum: 1
+    maximum: 100
+    default: 20
+    description: The numbers of items to return
   nextPageKey:
     in: query
     name: nextPageKey
     type: string
     description: Pointer to the next page
-
+  resourceContents:
+    in: formData
+    name: resourceContents
+    type: array
+    items: 
+      type: string
+    description: Array of resource contents
+  resourceURIs:
+    in: formData
+    name: resourceURIs
+    type: array
+    items:
+      type: string
+    description: Array of resource URIs
 paths:
 
   '/project':
@@ -178,6 +187,11 @@ paths:
       tags:
         - Project
       summary: Create a new project by project name
+      parameters:
+        - name: body
+          in: body
+          schema: 
+            $ref: '#/definitions/project'
       responses:
         '204':
           description: Success. Project has been created. Response does not have a body.
@@ -214,6 +228,11 @@ paths:
       tags:
         - Project
       summary: Update the specified project
+      parameters:
+        - name: body
+          in: body
+          schema: 
+            $ref: '#/definitions/project'      
       responses:
         '204':
           description: Success. Project has been updated. Response does not have a body.
@@ -239,10 +258,17 @@ paths:
     post:
       tags:
         - Project Resource
-      summary: Create a new resource for the project
+      summary: Create a list of resources for the project
+      consumes:
+        - multipart/form-data
+      parameters:
+         - $ref: '#/parameters/resourceContents'
+         - $ref: '#/parameters/resourceURIs'         
       responses:
-        '204':
-          description: Success. Project resource has been created. Response does not have a body.
+        '201':
+          description: Success. Project resource has been created. The version of the new configuration is returned.
+          schema:
+            $ref: '#/definitions/version'
         '400':
           description: Failed. Project resource could not be created.
           schema:
@@ -278,8 +304,10 @@ paths:
         - Project Resource
       summary: Update the specified resource
       responses:
-        '204':
-          description: Success. Project resource has been updated. Response does not have a body.
+        '201':
+          description: Success. Project resource has been updated. The version of the new configuration is returned.
+          schema:
+            $ref: '#/definitions/version'
         '400':
           description: Failed. Project resource could not be updated.
           schema:
@@ -303,6 +331,11 @@ paths:
       tags:
         - Stage
       summary: Create a new stage by stage name
+      parameters:
+        - name: body
+          in: body
+          schema: 
+            $ref: '#/definitions/stage'
       responses:
         '204':
           description: Success. Stage has been created. Response does not have a body.
@@ -340,6 +373,11 @@ paths:
       tags:
         - Stage
       summary: Update the specified stage
+      parameters:
+        - name: body
+          in: body
+          schema: 
+            $ref: '#/definitions/stage'
       responses:
         '204':
           description: Success. Stage has been updated. Response does not have a body.
@@ -366,10 +404,17 @@ paths:
     post:
       tags:
         - Stage Resource
-      summary: Create a new resource for the stage
+      summary: Create a list of new resources for the stage
+      consumes:
+        - multipart/form-data
+      parameters:
+         - $ref: '#/parameters/resourceContents'
+         - $ref: '#/parameters/resourceURIs'  
       responses:
-        '204':
-          description: Success. Stage resource has been created. Response does not have a body.
+        '201':
+          description: Success. Stage resource has been created. The version of the new configuration is returned.
+          schema:
+            $ref: '#/definitions/version'
         '400':
           description: Failed. Stage resource could not be created.
           schema:
@@ -406,8 +451,10 @@ paths:
         - Stage Resource
       summary: Update the specified resource
       responses:
-        '204':
-          description: Success. Stage resource has been updated. Response does not have a body.
+        '201':
+          description: Success. Stage resource has been updated. The version of the new configuration is returned.
+          schema:
+            $ref: '#/definitions/version'
         '400':
           description: Failed. Stage resource could not be updated.
           schema:
@@ -432,9 +479,16 @@ paths:
       tags:
         - Service
       summary: Create a new service by service name
+      parameters:
+        - name: body
+          in: body
+          schema: 
+            $ref: '#/definitions/service'
       responses:
-        '204':
-          description: Success. Service has been created. Response does not have a body.
+        '201':
+          description: Success. Service has been created. The version of the new configuration is returned.
+          schema:
+            $ref: '#/definitions/version'
         '400':
           description: Failed. Service could not be created.
           schema:
@@ -470,6 +524,11 @@ paths:
       tags:
         - Service
       summary: Update the specified service
+      parameters:
+        - name: body
+          in: body
+          schema: 
+            $ref: '#/definitions/service'
       responses:
         '204':
           description: Success. Service has been updated. Response does not have a body.
@@ -497,10 +556,17 @@ paths:
     post:
       tags:
         - Service Resource
-      summary: Create a new resource for the stage
+      summary: Create a list of resources for the service
+      consumes:
+        - multipart/form-data
+      parameters:
+         - $ref: '#/parameters/resourceContents'
+         - $ref: '#/parameters/resourceURIs'  
       responses:
-        '204':
-          description: Success. Service resource has been created. Response does not have a body.
+        '201':
+          description: Success. Service resource has been created. The version of the new configuration is returned.
+          schema:
+            $ref: '#/definitions/version'
         '400':
           description: Failed. Service resource could not be created.
           schema:
@@ -565,10 +631,17 @@ paths:
     post:
       tags:
         - Service Default Resource 
-      summary: Create a default resource for the service used in all stages
+      summary: Create a list of default resources for the service used in all stages
+      consumes:
+        - multipart/form-data
+      parameters:
+         - $ref: '#/parameters/resourceContents'
+         - $ref: '#/parameters/resourceURIs' 
       responses:
-        '204':
-          description: Success. Service default resource has been created. Response does not have a body.
+        '201':
+          description: Success. Service default resource has been created. The version of the new configuration is returned.
+          schema:
+            $ref: '#/definitions/version'
         '400':
           description: Failed. Service default resource could not be created.
           schema:
