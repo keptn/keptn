@@ -36,4 +36,4 @@ spec:
         - name: PUBSUB_RECIPIENT
           value: 'mongodb-datastore'
         - name: PUBSUB_RECIPIENT_PATH
-          value: '/events'
+          value: '/event'

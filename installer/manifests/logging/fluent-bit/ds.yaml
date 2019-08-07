@@ -29,11 +29,6 @@ spec:
         imagePullPolicy: Always
         ports:
           - containerPort: 2020
-        env:
-        - name: FLUENT_ELASTICSEARCH_HOST
-          value: "elasticsearch-logging"
-        - name: FLUENT_ELASTICSEARCH_PORT
-          value: "9200"
         volumeMounts:
         - name: varlog
           mountPath: /var/log
