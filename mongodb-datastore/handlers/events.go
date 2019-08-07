@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strconv"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -45,7 +46,7 @@ func SaveEvent(body event.SaveEventBody) error {
 }
 
 // GetEvents gets all events from the data store sorted by time
-func GetEvents(params event.GetEventsParams) (events []*event.GetEventsOKBodyItems0, err error) {
+func GetEvents(params event.GetEventsParams) (result *event.GetEventsOKBody, err error) {
 	fmt.Println("get events from datastore")
 	client, err := mongo.NewClient(options.Client().ApplyURI(mongoDBConnection))
 	if err != nil {
@@ -62,6 +63,11 @@ func GetEvents(params event.GetEventsParams) (events []*event.GetEventsOKBodyIte
 
 	collection := client.Database(mongoDBName).Collection(eventsCollectionName)
 
+	totalCount, err := collection.CountDocuments(ctx, bson.D{})
+	if err != nil {
+		log.Fatalln("could not retrieve size of event collection: ", err.Error())
+	}
+
 	searchOptions := bson.M{}
 	if params.KeptnContext != nil {
 		searchOptions["shkeptncontext"] = primitive.Regex{Pattern: *params.KeptnContext, Options: ""}
@@ -69,16 +75,27 @@ func GetEvents(params event.GetEventsParams) (events []*event.GetEventsOKBodyIte
 	if params.Type != nil {
 		searchOptions["type"] = params.Type
 	}
+	var newNextPageKey int64
+	var nextPageKey int64 = 0
+	if params.NextPageKey != nil {
+		tmpNextPageKey, _ := strconv.Atoi(*params.NextPageKey)
+		nextPageKey = int64(tmpNextPageKey)
+		newNextPageKey = nextPageKey + *params.PageSize
+	} else {
+		newNextPageKey = *params.PageSize
+	}
 
-	sortOptions := options.Find().SetSort(bson.D{{"time", -1}})
+	pagesize := *params.PageSize
+
+	sortOptions := options.Find().SetSort(bson.D{{"time", -1}}).SetSkip(nextPageKey).SetLimit(pagesize)
 	cur, err := collection.Find(ctx, searchOptions, sortOptions)
 	if err != nil {
 		log.Fatalln("error finding elements in collections: ", err.Error())
 	}
 
-	var resultEvents []*event.GetEventsOKBodyItems0
+	var resultEvents []*event.EventsItems0
 	for cur.Next(ctx) {
-		var result event.GetEventsOKBodyItems0
+		var result event.EventsItems0
 		err := cur.Decode(&result)
 		if err != nil {
 			return nil, err
@@ -94,6 +111,15 @@ func GetEvents(params event.GetEventsParams) (events []*event.GetEventsOKBodyIte
 		resultEvents = append(resultEvents, &result)
 		//fmt.Println(result)
 	}
-	return resultEvents, nil
+
+	var myresult event.GetEventsOKBody
+	myresult.Events = resultEvents
+	myresult.PageSize = pagesize
+	myresult.TotalCount = totalCount
+	if newNextPageKey < totalCount {
+		myresult.NextPageKey = strconv.FormatInt(newNextPageKey, 10)
+	}
+
+	return &myresult, nil
 
 }

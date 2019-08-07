@@ -11,15 +11,25 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 )
 
 // NewGetLogsParams creates a new GetLogsParams object
-// no default values defined in spec.
+// with the default values initialized.
 func NewGetLogsParams() GetLogsParams {
 
-	return GetLogsParams{}
+	var (
+		// initialize parameters with default values
+
+		pageSizeDefault = int64(20)
+	)
+
+	return GetLogsParams{
+		PageSize: &pageSizeDefault,
+	}
 }
 
 // GetLogsParams contains all the bound params for the get logs operation
@@ -35,6 +45,17 @@ type GetLogsParams struct {
 	  In: query
 	*/
 	EventID *string
+	/*Key of the page to be returned
+	  In: query
+	*/
+	NextPageKey *string
+	/*Page size to be returned
+	  Maximum: 100
+	  Minimum: 1
+	  In: query
+	  Default: 20
+	*/
+	PageSize *int64
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -50,6 +71,16 @@ func (o *GetLogsParams) BindRequest(r *http.Request, route *middleware.MatchedRo
 
 	qEventID, qhkEventID, _ := qs.GetOK("eventId")
 	if err := o.bindEventID(qEventID, qhkEventID, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
+	qNextPageKey, qhkNextPageKey, _ := qs.GetOK("nextPageKey")
+	if err := o.bindNextPageKey(qNextPageKey, qhkNextPageKey, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
+	qPageSize, qhkPageSize, _ := qs.GetOK("pageSize")
+	if err := o.bindPageSize(qPageSize, qhkPageSize, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -73,6 +104,65 @@ func (o *GetLogsParams) bindEventID(rawData []string, hasKey bool, formats strfm
 	}
 
 	o.EventID = &raw
+
+	return nil
+}
+
+// bindNextPageKey binds and validates parameter NextPageKey from query.
+func (o *GetLogsParams) bindNextPageKey(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+
+	// Required: false
+	// AllowEmptyValue: false
+	if raw == "" { // empty values pass all other validations
+		return nil
+	}
+
+	o.NextPageKey = &raw
+
+	return nil
+}
+
+// bindPageSize binds and validates parameter PageSize from query.
+func (o *GetLogsParams) bindPageSize(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+
+	// Required: false
+	// AllowEmptyValue: false
+	if raw == "" { // empty values pass all other validations
+		// Default values have been previously initialized by NewGetLogsParams()
+		return nil
+	}
+
+	value, err := swag.ConvertInt64(raw)
+	if err != nil {
+		return errors.InvalidType("pageSize", "query", "int64", raw)
+	}
+	o.PageSize = &value
+
+	if err := o.validatePageSize(formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validatePageSize carries on validations for parameter PageSize
+func (o *GetLogsParams) validatePageSize(formats strfmt.Registry) error {
+
+	if err := validate.MinimumInt("pageSize", "query", int64(*o.PageSize), 1, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("pageSize", "query", int64(*o.PageSize), 100, false); err != nil {
+		return err
+	}
 
 	return nil
 }

@@ -9,11 +9,15 @@ import (
 	"errors"
 	"net/url"
 	golangswaggerpaths "path"
+
+	"github.com/go-openapi/swag"
 )
 
 // GetLogsURL generates an URL for the get logs operation
 type GetLogsURL struct {
-	EventID *string
+	EventID     *string
+	NextPageKey *string
+	PageSize    *int64
 
 	_basePath string
 	// avoid unkeyed usage
@@ -55,6 +59,22 @@ func (o *GetLogsURL) Build() (*url.URL, error) {
 	}
 	if eventID != "" {
 		qs.Set("eventId", eventID)
+	}
+
+	var nextPageKey string
+	if o.NextPageKey != nil {
+		nextPageKey = *o.NextPageKey
+	}
+	if nextPageKey != "" {
+		qs.Set("nextPageKey", nextPageKey)
+	}
+
+	var pageSize string
+	if o.PageSize != nil {
+		pageSize = swag.FormatInt64(*o.PageSize)
+	}
+	if pageSize != "" {
+		qs.Set("pageSize", pageSize)
 	}
 
 	_result.RawQuery = qs.Encode()

@@ -7,6 +7,7 @@ package event
 
 import (
 	"net/http"
+	"strconv"
 
 	errors "github.com/go-openapi/errors"
 	middleware "github.com/go-openapi/runtime/middleware"
@@ -59,6 +60,252 @@ func (o *GetEvents) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
+}
+
+// EventsItems0 events items0
+// swagger:model EventsItems0
+type EventsItems0 struct {
+
+	// contenttype
+	Contenttype string `json:"contenttype,omitempty"`
+
+	// data
+	Data interface{} `json:"data,omitempty"`
+
+	// extensions
+	Extensions interface{} `json:"extensions,omitempty"`
+
+	// id
+	// Required: true
+	ID *string `json:"id"`
+
+	// source
+	// Required: true
+	Source *string `json:"source"`
+
+	// specversion
+	// Required: true
+	Specversion *string `json:"specversion"`
+
+	// time
+	// Format: date-time
+	Time strfmt.DateTime `json:"time,omitempty"`
+
+	// type
+	// Required: true
+	Type *string `json:"type"`
+
+	// shkeptncontext
+	Shkeptncontext string `json:"shkeptncontext,omitempty"`
+}
+
+// UnmarshalJSON unmarshals this object from a JSON structure
+func (o *EventsItems0) UnmarshalJSON(raw []byte) error {
+	// AO0
+	var dataAO0 struct {
+		Contenttype string `json:"contenttype,omitempty"`
+
+		Data interface{} `json:"data,omitempty"`
+
+		Extensions interface{} `json:"extensions,omitempty"`
+
+		ID *string `json:"id"`
+
+		Source *string `json:"source"`
+
+		Specversion *string `json:"specversion"`
+
+		Time strfmt.DateTime `json:"time,omitempty"`
+
+		Type *string `json:"type"`
+	}
+	if err := swag.ReadJSON(raw, &dataAO0); err != nil {
+		return err
+	}
+
+	o.Contenttype = dataAO0.Contenttype
+
+	o.Data = dataAO0.Data
+
+	o.Extensions = dataAO0.Extensions
+
+	o.ID = dataAO0.ID
+
+	o.Source = dataAO0.Source
+
+	o.Specversion = dataAO0.Specversion
+
+	o.Time = dataAO0.Time
+
+	o.Type = dataAO0.Type
+
+	// AO1
+	var dataAO1 struct {
+		Shkeptncontext string `json:"shkeptncontext,omitempty"`
+	}
+	if err := swag.ReadJSON(raw, &dataAO1); err != nil {
+		return err
+	}
+
+	o.Shkeptncontext = dataAO1.Shkeptncontext
+
+	return nil
+}
+
+// MarshalJSON marshals this object to a JSON structure
+func (o EventsItems0) MarshalJSON() ([]byte, error) {
+	_parts := make([][]byte, 0, 2)
+
+	var dataAO0 struct {
+		Contenttype string `json:"contenttype,omitempty"`
+
+		Data interface{} `json:"data,omitempty"`
+
+		Extensions interface{} `json:"extensions,omitempty"`
+
+		ID *string `json:"id"`
+
+		Source *string `json:"source"`
+
+		Specversion *string `json:"specversion"`
+
+		Time strfmt.DateTime `json:"time,omitempty"`
+
+		Type *string `json:"type"`
+	}
+
+	dataAO0.Contenttype = o.Contenttype
+
+	dataAO0.Data = o.Data
+
+	dataAO0.Extensions = o.Extensions
+
+	dataAO0.ID = o.ID
+
+	dataAO0.Source = o.Source
+
+	dataAO0.Specversion = o.Specversion
+
+	dataAO0.Time = o.Time
+
+	dataAO0.Type = o.Type
+
+	jsonDataAO0, errAO0 := swag.WriteJSON(dataAO0)
+	if errAO0 != nil {
+		return nil, errAO0
+	}
+	_parts = append(_parts, jsonDataAO0)
+
+	var dataAO1 struct {
+		Shkeptncontext string `json:"shkeptncontext,omitempty"`
+	}
+
+	dataAO1.Shkeptncontext = o.Shkeptncontext
+
+	jsonDataAO1, errAO1 := swag.WriteJSON(dataAO1)
+	if errAO1 != nil {
+		return nil, errAO1
+	}
+	_parts = append(_parts, jsonDataAO1)
+
+	return swag.ConcatJSON(_parts...), nil
+}
+
+// Validate validates this events items0
+func (o *EventsItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateSource(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateSpecversion(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateTime(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *EventsItems0) validateID(formats strfmt.Registry) error {
+
+	if err := validate.Required("id", "body", o.ID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *EventsItems0) validateSource(formats strfmt.Registry) error {
+
+	if err := validate.Required("source", "body", o.Source); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *EventsItems0) validateSpecversion(formats strfmt.Registry) error {
+
+	if err := validate.Required("specversion", "body", o.Specversion); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *EventsItems0) validateTime(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Time) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("time", "body", "date-time", o.Time.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *EventsItems0) validateType(formats strfmt.Registry) error {
+
+	if err := validate.Required("type", "body", o.Type); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *EventsItems0) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *EventsItems0) UnmarshalBinary(b []byte) error {
+	var res EventsItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
 }
 
 // GetEventsDefaultBody get events default body
@@ -117,176 +364,28 @@ func (o *GetEventsDefaultBody) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// GetEventsOKBodyItems0 get events o k body items0
-// swagger:model GetEventsOKBodyItems0
-type GetEventsOKBodyItems0 struct {
+// GetEventsOKBody get events o k body
+// swagger:model GetEventsOKBody
+type GetEventsOKBody struct {
 
-	// contenttype
-	Contenttype string `json:"contenttype,omitempty"`
+	// events
+	Events []*EventsItems0 `json:"events"`
 
-	// data
-	Data interface{} `json:"data,omitempty"`
+	// Pointer to the next page
+	NextPageKey string `json:"nextPageKey,omitempty"`
 
-	// extensions
-	Extensions interface{} `json:"extensions,omitempty"`
+	// Size of the returned page
+	PageSize int64 `json:"pageSize,omitempty"`
 
-	// id
-	// Required: true
-	ID *string `json:"id"`
-
-	// source
-	// Required: true
-	Source *string `json:"source"`
-
-	// specversion
-	// Required: true
-	Specversion *string `json:"specversion"`
-
-	// time
-	// Format: date-time
-	Time strfmt.DateTime `json:"time,omitempty"`
-
-	// type
-	// Required: true
-	Type *string `json:"type"`
-
-	// shkeptncontext
-	Shkeptncontext string `json:"shkeptncontext,omitempty"`
+	// Total number of events
+	TotalCount int64 `json:"totalCount,omitempty"`
 }
 
-// UnmarshalJSON unmarshals this object from a JSON structure
-func (o *GetEventsOKBodyItems0) UnmarshalJSON(raw []byte) error {
-	// AO0
-	var dataAO0 struct {
-		Contenttype string `json:"contenttype,omitempty"`
-
-		Data interface{} `json:"data,omitempty"`
-
-		Extensions interface{} `json:"extensions,omitempty"`
-
-		ID *string `json:"id"`
-
-		Source *string `json:"source"`
-
-		Specversion *string `json:"specversion"`
-
-		Time strfmt.DateTime `json:"time,omitempty"`
-
-		Type *string `json:"type"`
-	}
-	if err := swag.ReadJSON(raw, &dataAO0); err != nil {
-		return err
-	}
-
-	o.Contenttype = dataAO0.Contenttype
-
-	o.Data = dataAO0.Data
-
-	o.Extensions = dataAO0.Extensions
-
-	o.ID = dataAO0.ID
-
-	o.Source = dataAO0.Source
-
-	o.Specversion = dataAO0.Specversion
-
-	o.Time = dataAO0.Time
-
-	o.Type = dataAO0.Type
-
-	// AO1
-	var dataAO1 struct {
-		Shkeptncontext string `json:"shkeptncontext,omitempty"`
-	}
-	if err := swag.ReadJSON(raw, &dataAO1); err != nil {
-		return err
-	}
-
-	o.Shkeptncontext = dataAO1.Shkeptncontext
-
-	return nil
-}
-
-// MarshalJSON marshals this object to a JSON structure
-func (o GetEventsOKBodyItems0) MarshalJSON() ([]byte, error) {
-	_parts := make([][]byte, 0, 2)
-
-	var dataAO0 struct {
-		Contenttype string `json:"contenttype,omitempty"`
-
-		Data interface{} `json:"data,omitempty"`
-
-		Extensions interface{} `json:"extensions,omitempty"`
-
-		ID *string `json:"id"`
-
-		Source *string `json:"source"`
-
-		Specversion *string `json:"specversion"`
-
-		Time strfmt.DateTime `json:"time,omitempty"`
-
-		Type *string `json:"type"`
-	}
-
-	dataAO0.Contenttype = o.Contenttype
-
-	dataAO0.Data = o.Data
-
-	dataAO0.Extensions = o.Extensions
-
-	dataAO0.ID = o.ID
-
-	dataAO0.Source = o.Source
-
-	dataAO0.Specversion = o.Specversion
-
-	dataAO0.Time = o.Time
-
-	dataAO0.Type = o.Type
-
-	jsonDataAO0, errAO0 := swag.WriteJSON(dataAO0)
-	if errAO0 != nil {
-		return nil, errAO0
-	}
-	_parts = append(_parts, jsonDataAO0)
-
-	var dataAO1 struct {
-		Shkeptncontext string `json:"shkeptncontext,omitempty"`
-	}
-
-	dataAO1.Shkeptncontext = o.Shkeptncontext
-
-	jsonDataAO1, errAO1 := swag.WriteJSON(dataAO1)
-	if errAO1 != nil {
-		return nil, errAO1
-	}
-	_parts = append(_parts, jsonDataAO1)
-
-	return swag.ConcatJSON(_parts...), nil
-}
-
-// Validate validates this get events o k body items0
-func (o *GetEventsOKBodyItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this get events o k body
+func (o *GetEventsOKBody) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := o.validateID(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := o.validateSource(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := o.validateSpecversion(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := o.validateTime(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := o.validateType(formats); err != nil {
+	if err := o.validateEvents(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -296,57 +395,33 @@ func (o *GetEventsOKBodyItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (o *GetEventsOKBodyItems0) validateID(formats strfmt.Registry) error {
+func (o *GetEventsOKBody) validateEvents(formats strfmt.Registry) error {
 
-	if err := validate.Required("id", "body", o.ID); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (o *GetEventsOKBodyItems0) validateSource(formats strfmt.Registry) error {
-
-	if err := validate.Required("source", "body", o.Source); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (o *GetEventsOKBodyItems0) validateSpecversion(formats strfmt.Registry) error {
-
-	if err := validate.Required("specversion", "body", o.Specversion); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (o *GetEventsOKBodyItems0) validateTime(formats strfmt.Registry) error {
-
-	if swag.IsZero(o.Time) { // not required
+	if swag.IsZero(o.Events) { // not required
 		return nil
 	}
 
-	if err := validate.FormatOf("time", "body", "date-time", o.Time.String(), formats); err != nil {
-		return err
-	}
+	for i := 0; i < len(o.Events); i++ {
+		if swag.IsZero(o.Events[i]) { // not required
+			continue
+		}
 
-	return nil
-}
+		if o.Events[i] != nil {
+			if err := o.Events[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("getEventsOK" + "." + "events" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
 
-func (o *GetEventsOKBodyItems0) validateType(formats strfmt.Registry) error {
-
-	if err := validate.Required("type", "body", o.Type); err != nil {
-		return err
 	}
 
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (o *GetEventsOKBodyItems0) MarshalBinary() ([]byte, error) {
+func (o *GetEventsOKBody) MarshalBinary() ([]byte, error) {
 	if o == nil {
 		return nil, nil
 	}
@@ -354,8 +429,8 @@ func (o *GetEventsOKBodyItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (o *GetEventsOKBodyItems0) UnmarshalBinary(b []byte) error {
-	var res GetEventsOKBodyItems0
+func (o *GetEventsOKBody) UnmarshalBinary(b []byte) error {
+	var res GetEventsOKBody
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
