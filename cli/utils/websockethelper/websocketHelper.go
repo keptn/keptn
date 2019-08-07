@@ -9,7 +9,6 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"regexp"
 	"strings"
 	"time"
 
@@ -112,16 +111,9 @@ func openWS(connData ConnectionData, controlEndPoint url.URL) (*websocket.Conn, 
 	header := http.Header{}
 	header.Add("Token", connData.ChannelInfo.Token)
 	header.Add("x-keptn-ws-channel-id", connData.ChannelInfo.ChannelID)
-	if strings.Contains(controlEndPoint.String(), "xip.io") {
 
-		regex := `\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b`
-		re := regexp.MustCompile(regex)
-		ip := re.FindString(controlEndPoint.String())
-
-		header.Add("Host", controlEndPoint.Host)
-		wsEndPoint.Host = ip
-	}
 	dialer := websocket.DefaultDialer
+	dialer.NetDial = utils.ResolveXipIo
 	dialer.TLSClientConfig = &tls.Config{
 		InsecureSkipVerify: true,
 	}
