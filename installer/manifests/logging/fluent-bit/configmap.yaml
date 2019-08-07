@@ -52,7 +52,7 @@ data:
         Match           *
         Host            mongodb-datastore
         Port            8080
-        URI             /logs
+        URI             /log
         Format          json
 
   output-stdout.conf: |
