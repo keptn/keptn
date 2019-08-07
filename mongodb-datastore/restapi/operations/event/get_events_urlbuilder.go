@@ -9,11 +9,15 @@ import (
 	"errors"
 	"net/url"
 	golangswaggerpaths "path"
+
+	"github.com/go-openapi/swag"
 )
 
 // GetEventsURL generates an URL for the get events operation
 type GetEventsURL struct {
 	KeptnContext *string
+	Page         *int64
+	Pagesize     *int64
 	Type         *string
 
 	_basePath string
@@ -56,6 +60,22 @@ func (o *GetEventsURL) Build() (*url.URL, error) {
 	}
 	if keptnContext != "" {
 		qs.Set("keptnContext", keptnContext)
+	}
+
+	var page string
+	if o.Page != nil {
+		page = swag.FormatInt64(*o.Page)
+	}
+	if page != "" {
+		qs.Set("page", page)
+	}
+
+	var pagesize string
+	if o.Pagesize != nil {
+		pagesize = swag.FormatInt64(*o.Pagesize)
+	}
+	if pagesize != "" {
+		qs.Set("pagesize", pagesize)
 	}
 
 	var typeVar string

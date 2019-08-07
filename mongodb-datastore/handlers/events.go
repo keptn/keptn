@@ -70,7 +70,10 @@ func GetEvents(params event.GetEventsParams) (events []*event.GetEventsOKBodyIte
 		searchOptions["type"] = params.Type
 	}
 
-	sortOptions := options.Find().SetSort(bson.D{{"time", -1}})
+	pagesize := *params.Pagesize
+	offset := (*params.Page - 1) * pagesize
+
+	sortOptions := options.Find().SetSort(bson.D{{"time", -1}}).SetSkip(offset).SetLimit(pagesize)
 	cur, err := collection.Find(ctx, searchOptions, sortOptions)
 	if err != nil {
 		log.Fatalln("error finding elements in collections: ", err.Error())
