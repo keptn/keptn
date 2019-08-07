@@ -65,6 +65,10 @@
   name = "go.mongodb.org/mongo-driver"
   version = "~1.0.4"
 
+[[constraint]]
+  name = "github.com/keptn/go-utils"
+  branch = "develop"
+
 [prune]
   go-tests = true
   unused-packages = true
