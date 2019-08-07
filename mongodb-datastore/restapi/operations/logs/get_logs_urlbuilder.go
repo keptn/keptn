@@ -15,9 +15,9 @@ import (
 
 // GetLogsURL generates an URL for the get logs operation
 type GetLogsURL struct {
-	EventID  *string
-	Page     *int64
-	Pagesize *int64
+	EventID     *string
+	NextPageKey *string
+	PageSize    *int64
 
 	_basePath string
 	// avoid unkeyed usage
@@ -61,20 +61,20 @@ func (o *GetLogsURL) Build() (*url.URL, error) {
 		qs.Set("eventId", eventID)
 	}
 
-	var page string
-	if o.Page != nil {
-		page = swag.FormatInt64(*o.Page)
+	var nextPageKey string
+	if o.NextPageKey != nil {
+		nextPageKey = *o.NextPageKey
 	}
-	if page != "" {
-		qs.Set("page", page)
+	if nextPageKey != "" {
+		qs.Set("nextPageKey", nextPageKey)
 	}
 
-	var pagesize string
-	if o.Pagesize != nil {
-		pagesize = swag.FormatInt64(*o.Pagesize)
+	var pageSize string
+	if o.PageSize != nil {
+		pageSize = swag.FormatInt64(*o.PageSize)
 	}
-	if pagesize != "" {
-		qs.Set("pagesize", pagesize)
+	if pageSize != "" {
+		qs.Set("pageSize", pageSize)
 	}
 
 	_result.RawQuery = qs.Encode()

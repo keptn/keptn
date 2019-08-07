@@ -67,9 +67,26 @@ func init() {
           "200": {
             "description": "ok",
             "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/KeptnContextExtendedCE"
+              "type": "object",
+              "properties": {
+                "events": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/KeptnContextExtendedCE"
+                  }
+                },
+                "nextPageKey": {
+                  "description": "Pointer to the next page",
+                  "type": "string"
+                },
+                "pageSize": {
+                  "description": "Size of the returned page",
+                  "type": "integer"
+                },
+                "totalCount": {
+                  "description": "Total number of events",
+                  "type": "integer"
+                }
               }
             }
           },
@@ -134,9 +151,26 @@ func init() {
           "200": {
             "description": "ok",
             "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/LogEntry"
+              "type": "object",
+              "properties": {
+                "logs": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/LogEntry"
+                  }
+                },
+                "nextPageKey": {
+                  "description": "Pointer to the next page",
+                  "type": "string"
+                },
+                "pageSize": {
+                  "description": "Size of the returned page",
+                  "type": "integer"
+                },
+                "totalCount": {
+                  "description": "Total number of logs",
+                  "type": "integer"
+                }
               }
             }
           },
@@ -244,11 +278,9 @@ func init() {
   },
   "parameters": {
     "pageParam": {
-      "minimum": 1,
-      "type": "integer",
-      "default": 1,
-      "description": "Number of page to be returned",
-      "name": "page",
+      "type": "string",
+      "description": "Key of the page to be returned",
+      "name": "nextPageKey",
       "in": "query"
     },
     "pagesizeParam": {
@@ -257,7 +289,7 @@ func init() {
       "type": "integer",
       "default": 20,
       "description": "Page size to be returned",
-      "name": "pagesize",
+      "name": "pageSize",
       "in": "query"
     }
   }
@@ -307,15 +339,13 @@ func init() {
             "type": "integer",
             "default": 20,
             "description": "Page size to be returned",
-            "name": "pagesize",
+            "name": "pageSize",
             "in": "query"
           },
           {
-            "minimum": 1,
-            "type": "integer",
-            "default": 1,
-            "description": "Number of page to be returned",
-            "name": "page",
+            "type": "string",
+            "description": "Key of the page to be returned",
+            "name": "nextPageKey",
             "in": "query"
           }
         ],
@@ -323,58 +353,75 @@ func init() {
           "200": {
             "description": "ok",
             "schema": {
-              "type": "array",
-              "items": {
-                "allOf": [
-                  {
-                    "type": "object",
-                    "required": [
-                      "specversion",
-                      "id",
-                      "type",
-                      "source"
-                    ],
-                    "properties": {
-                      "contenttype": {
-                        "type": "string"
+              "type": "object",
+              "properties": {
+                "events": {
+                  "type": "array",
+                  "items": {
+                    "allOf": [
+                      {
+                        "type": "object",
+                        "required": [
+                          "specversion",
+                          "id",
+                          "type",
+                          "source"
+                        ],
+                        "properties": {
+                          "contenttype": {
+                            "type": "string"
+                          },
+                          "data": {
+                            "type": [
+                              "object",
+                              "string"
+                            ]
+                          },
+                          "extensions": {
+                            "type": "object"
+                          },
+                          "id": {
+                            "type": "string"
+                          },
+                          "source": {
+                            "type": "string",
+                            "format": "uri-reference"
+                          },
+                          "specversion": {
+                            "type": "string"
+                          },
+                          "time": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "type": {
+                            "type": "string"
+                          }
+                        }
                       },
-                      "data": {
-                        "type": [
-                          "object",
-                          "string"
-                        ]
-                      },
-                      "extensions": {
-                        "type": "object"
-                      },
-                      "id": {
-                        "type": "string"
-                      },
-                      "source": {
-                        "type": "string",
-                        "format": "uri-reference"
-                      },
-                      "specversion": {
-                        "type": "string"
-                      },
-                      "time": {
-                        "type": "string",
-                        "format": "date-time"
-                      },
-                      "type": {
-                        "type": "string"
+                      {
+                        "type": "object",
+                        "properties": {
+                          "shkeptncontext": {
+                            "type": "string"
+                          }
+                        }
                       }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "shkeptncontext": {
-                        "type": "string"
-                      }
-                    }
+                    ]
                   }
-                ]
+                },
+                "nextPageKey": {
+                  "description": "Pointer to the next page",
+                  "type": "string"
+                },
+                "pageSize": {
+                  "description": "Size of the returned page",
+                  "type": "integer"
+                },
+                "totalCount": {
+                  "description": "Total number of events",
+                  "type": "integer"
+                }
               }
             }
           },
@@ -513,15 +560,13 @@ func init() {
             "type": "integer",
             "default": 20,
             "description": "Page size to be returned",
-            "name": "pagesize",
+            "name": "pageSize",
             "in": "query"
           },
           {
-            "minimum": 1,
-            "type": "integer",
-            "default": 1,
-            "description": "Number of page to be returned",
-            "name": "page",
+            "type": "string",
+            "description": "Key of the page to be returned",
+            "name": "nextPageKey",
             "in": "query"
           }
         ],
@@ -529,29 +574,46 @@ func init() {
           "200": {
             "description": "ok",
             "schema": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "eventId": {
-                    "type": "string"
-                  },
-                  "keptnContext": {
-                    "type": "string"
-                  },
-                  "keptnService": {
-                    "type": "string"
-                  },
-                  "logLevel": {
-                    "type": "string"
-                  },
-                  "message": {
-                    "type": "string"
-                  },
-                  "timestamp": {
-                    "type": "string",
-                    "format": "date-time"
+              "type": "object",
+              "properties": {
+                "logs": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "eventId": {
+                        "type": "string"
+                      },
+                      "keptnContext": {
+                        "type": "string"
+                      },
+                      "keptnService": {
+                        "type": "string"
+                      },
+                      "logLevel": {
+                        "type": "string"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "timestamp": {
+                        "type": "string",
+                        "format": "date-time"
+                      }
+                    }
                   }
+                },
+                "nextPageKey": {
+                  "description": "Pointer to the next page",
+                  "type": "string"
+                },
+                "pageSize": {
+                  "description": "Size of the returned page",
+                  "type": "integer"
+                },
+                "totalCount": {
+                  "description": "Total number of logs",
+                  "type": "integer"
                 }
               }
             }
@@ -748,11 +810,9 @@ func init() {
   },
   "parameters": {
     "pageParam": {
-      "minimum": 1,
-      "type": "integer",
-      "default": 1,
-      "description": "Number of page to be returned",
-      "name": "page",
+      "type": "string",
+      "description": "Key of the page to be returned",
+      "name": "nextPageKey",
       "in": "query"
     },
     "pagesizeParam": {
@@ -761,7 +821,7 @@ func init() {
       "type": "integer",
       "default": 20,
       "description": "Page size to be returned",
-      "name": "pagesize",
+      "name": "pageSize",
       "in": "query"
     }
   }

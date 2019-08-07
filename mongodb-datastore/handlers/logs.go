@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strconv"
 	"time"
 
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/logs"
@@ -49,7 +50,7 @@ func SaveLog(body []*logs.SaveLogParamsBodyItems0) (err error) {
 }
 
 // GetLogs returns logs
-func GetLogs(params logs.GetLogsParams) (res []*logs.GetLogsOKBodyItems0, err error) {
+func GetLogs(params logs.GetLogsParams) (result *logs.GetLogsOKBody, err error) {
 	fmt.Println("get logs from datastore")
 	client, err := mongo.NewClient(options.Client().ApplyURI(mongoDBConnection))
 	if err != nil {
@@ -66,23 +67,37 @@ func GetLogs(params logs.GetLogsParams) (res []*logs.GetLogsOKBodyItems0, err er
 
 	collection := client.Database(mongoDBName).Collection(logsCollectionName)
 
+	totalCount, err := collection.CountDocuments(ctx, bson.D{})
+	if err != nil {
+		log.Fatalln("could not retrieve size of logs collection: ", err.Error())
+	}
+
 	searchOptions := bson.M{}
 	if params.EventID != nil {
 		searchOptions["evenId"] = primitive.Regex{Pattern: *params.EventID, Options: ""}
 	}
 
-	pagesize := *params.Pagesize
-	offset := (*params.Page - 1) * pagesize
+	var newNextPageKey int64
+	var nextPageKey int64 = 0
+	if params.NextPageKey != nil {
+		tmpNextPageKey, _ := strconv.Atoi(*params.NextPageKey)
+		nextPageKey = int64(tmpNextPageKey)
+		newNextPageKey = nextPageKey + *params.PageSize
+	} else {
+		newNextPageKey = *params.PageSize
+	}
 
-	sortOptions := options.Find().SetSort(bson.D{{"timestamp", -1}}).SetSkip(offset).SetLimit(pagesize)
+	pagesize := *params.PageSize
+
+	sortOptions := options.Find().SetSort(bson.D{{"timestamp", -1}}).SetSkip(nextPageKey).SetLimit(pagesize)
 	cur, err := collection.Find(ctx, searchOptions, sortOptions)
 	if err != nil {
 		log.Fatalln("error finding elements in collections: ", err.Error())
 	}
 
-	var resultLogs []*logs.GetLogsOKBodyItems0
+	var resultLogs []*logs.LogsItems0
 	for cur.Next(ctx) {
-		var result logs.GetLogsOKBodyItems0
+		var result logs.LogsItems0
 		err := cur.Decode(&result)
 		if err != nil {
 			return nil, err
@@ -90,5 +105,13 @@ func GetLogs(params logs.GetLogsParams) (res []*logs.GetLogsOKBodyItems0, err er
 		resultLogs = append(resultLogs, &result)
 		//fmt.Println(result)
 	}
-	return resultLogs, nil
+
+	var myresult logs.GetLogsOKBody
+	myresult.Logs = resultLogs
+	myresult.PageSize = pagesize
+	myresult.TotalCount = totalCount
+	if newNextPageKey < totalCount {
+		myresult.NextPageKey = strconv.FormatInt(newNextPageKey, 10)
+	}
+	return &myresult, nil
 }
