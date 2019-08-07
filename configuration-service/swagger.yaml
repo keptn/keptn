@@ -727,7 +727,6 @@ paths:
   '/project/{projectName}/service/{serviceName}/resource/{resourceURI}':
     parameters:
       - $ref: '#/parameters/projectName'
-      - $ref: '#/parameters/stageName'
       - $ref: '#/parameters/serviceName'
       - $ref: '#/parameters/resourceURI'
     get:
