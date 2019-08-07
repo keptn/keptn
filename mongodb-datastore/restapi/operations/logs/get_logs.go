@@ -7,6 +7,7 @@ package logs
 
 import (
 	"net/http"
+	"strconv"
 
 	errors "github.com/go-openapi/errors"
 	middleware "github.com/go-openapi/runtime/middleware"
@@ -117,9 +118,83 @@ func (o *GetLogsDefaultBody) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// GetLogsOKBodyItems0 get logs o k body items0
-// swagger:model GetLogsOKBodyItems0
-type GetLogsOKBodyItems0 struct {
+// GetLogsOKBody get logs o k body
+// swagger:model GetLogsOKBody
+type GetLogsOKBody struct {
+
+	// logs
+	Logs []*LogsItems0 `json:"logs"`
+
+	// Pointer to the next page
+	NextPageKey string `json:"nextPageKey,omitempty"`
+
+	// Size of the returned page
+	PageSize int64 `json:"pageSize,omitempty"`
+
+	// Total number of logs
+	TotalCount int64 `json:"totalCount,omitempty"`
+}
+
+// Validate validates this get logs o k body
+func (o *GetLogsOKBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateLogs(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *GetLogsOKBody) validateLogs(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Logs) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(o.Logs); i++ {
+		if swag.IsZero(o.Logs[i]) { // not required
+			continue
+		}
+
+		if o.Logs[i] != nil {
+			if err := o.Logs[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("getLogsOK" + "." + "logs" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *GetLogsOKBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *GetLogsOKBody) UnmarshalBinary(b []byte) error {
+	var res GetLogsOKBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+// LogsItems0 logs items0
+// swagger:model LogsItems0
+type LogsItems0 struct {
 
 	// event Id
 	EventID string `json:"eventId,omitempty"`
@@ -141,8 +216,8 @@ type GetLogsOKBodyItems0 struct {
 	Timestamp strfmt.DateTime `json:"timestamp,omitempty"`
 }
 
-// Validate validates this get logs o k body items0
-func (o *GetLogsOKBodyItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this logs items0
+func (o *LogsItems0) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := o.validateTimestamp(formats); err != nil {
@@ -155,7 +230,7 @@ func (o *GetLogsOKBodyItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (o *GetLogsOKBodyItems0) validateTimestamp(formats strfmt.Registry) error {
+func (o *LogsItems0) validateTimestamp(formats strfmt.Registry) error {
 
 	if swag.IsZero(o.Timestamp) { // not required
 		return nil
@@ -169,7 +244,7 @@ func (o *GetLogsOKBodyItems0) validateTimestamp(formats strfmt.Registry) error {
 }
 
 // MarshalBinary interface implementation
-func (o *GetLogsOKBodyItems0) MarshalBinary() ([]byte, error) {
+func (o *LogsItems0) MarshalBinary() ([]byte, error) {
 	if o == nil {
 		return nil, nil
 	}
@@ -177,8 +252,8 @@ func (o *GetLogsOKBodyItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (o *GetLogsOKBodyItems0) UnmarshalBinary(b []byte) error {
-	var res GetLogsOKBodyItems0
+func (o *LogsItems0) UnmarshalBinary(b []byte) error {
+	var res LogsItems0
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

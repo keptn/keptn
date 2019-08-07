@@ -76,9 +76,26 @@
               "200": {
                 "description": "ok",
                 "schema":{
-                    "type":"array",
-                    "items": {
-                        "$ref":"#/definitions/KeptnContextExtendedCE"
+                    "type":"object",
+                    "properties": {
+                      "nextPageKey": {
+                        "type": "string",
+                        "description": "Pointer to the next page"
+                      },
+                      "totalCount": {
+                        "type": "integer",
+                        "description": "Total number of events"
+                      },
+                      "pageSize": {
+                        "type": "integer",
+                        "description": "Size of the returned page"
+                      },
+                      "events": {
+                        "type":"array",
+                        "items":{
+                          "$ref": "#/definitions/KeptnContextExtendedCE"
+                        }
+                      }
                     }
                 }
               },
@@ -147,9 +164,26 @@
             "200": {
               "description":"ok",
               "schema":{
-                "type":"array",
-                "items": {
-                  "$ref":"#/definitions/LogEntry"
+                "type":"object",
+                "properties": {
+                  "nextPageKey": {
+                    "type": "string",
+                    "description": "Pointer to the next page"
+                  },
+                  "totalCount": {
+                    "type": "integer",
+                    "description": "Total number of logs"
+                  },
+                  "pageSize": {
+                    "type": "integer",
+                    "description": "Size of the returned page"
+                  },
+                  "logs": {
+                    "type":"array",
+                    "items":{
+                      "$ref": "#/definitions/LogEntry"
+                    }
+                  }
                 }
               }
             },
@@ -165,7 +199,7 @@
     },
     "parameters": {
       "pagesizeParam": {
-        "name":"pagesize",
+        "name":"pageSize",
         "in":"query",
         "type":"integer",
         "required":false,
@@ -175,13 +209,11 @@
         "description":"Page size to be returned"
       },
       "pageParam": {
-        "name":"page",
+        "name":"nextPageKey",
         "in":"query",
-        "type":"integer",
+        "type":"string",
         "required":false,
-        "default":1,
-        "minimum":1,
-        "description":"Number of page to be returned"
+        "description":"Key of the page to be returned"
       }
     },
     "definitions": {
