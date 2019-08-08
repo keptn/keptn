@@ -20,8 +20,7 @@ func TestCreateProjectCmd(t *testing.T) {
 
 	// Write temporary shipyardTest.yml file
 	const tmpShipyardFileName = "shipyardTest.yml"
-	shipYardContent := `registry: sockshop
-stages: 
+	shipYardContent := `stages: 
 - name: dev
   deployment_strategy: direct
 - name: staging
@@ -58,8 +57,7 @@ func TestCreateProjectIncorrectProjectNameCmd(t *testing.T) {
 
 	// Write temporary shipyardTest.yml file
 	const tmpShipyardFileName = "shipyardTest.yml"
-	shipYardContent := `registry: sockshop
-stages:
+	shipYardContent := `stages:
 - name: dev
   deployment_strategy: direct
 - name: staging
