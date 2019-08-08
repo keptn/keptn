@@ -55,15 +55,38 @@ func init() {
             "description": "Type of the keptn cloud event",
             "name": "type",
             "in": "query"
+          },
+          {
+            "$ref": "#/parameters/pagesizeParam"
+          },
+          {
+            "$ref": "#/parameters/pageParam"
           }
         ],
         "responses": {
           "200": {
             "description": "ok",
             "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/KeptnContextExtendedCE"
+              "type": "object",
+              "properties": {
+                "events": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/KeptnContextExtendedCE"
+                  }
+                },
+                "nextPageKey": {
+                  "description": "Pointer to the next page",
+                  "type": "string"
+                },
+                "pageSize": {
+                  "description": "Size of the returned page",
+                  "type": "integer"
+                },
+                "totalCount": {
+                  "description": "Total number of events",
+                  "type": "integer"
+                }
               }
             }
           },
@@ -116,15 +139,38 @@ func init() {
             "description": "EventId of the event the logs belog to",
             "name": "eventId",
             "in": "query"
+          },
+          {
+            "$ref": "#/parameters/pagesizeParam"
+          },
+          {
+            "$ref": "#/parameters/pageParam"
           }
         ],
         "responses": {
           "200": {
             "description": "ok",
             "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/LogEntry"
+              "type": "object",
+              "properties": {
+                "logs": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/LogEntry"
+                  }
+                },
+                "nextPageKey": {
+                  "description": "Pointer to the next page",
+                  "type": "string"
+                },
+                "pageSize": {
+                  "description": "Size of the returned page",
+                  "type": "integer"
+                },
+                "totalCount": {
+                  "description": "Total number of logs",
+                  "type": "integer"
+                }
               }
             }
           },
@@ -229,6 +275,23 @@ func init() {
     "principal": {
       "type": "string"
     }
+  },
+  "parameters": {
+    "pageParam": {
+      "type": "string",
+      "description": "Key of the page to be returned",
+      "name": "nextPageKey",
+      "in": "query"
+    },
+    "pagesizeParam": {
+      "maximum": 100,
+      "minimum": 1,
+      "type": "integer",
+      "default": 20,
+      "description": "Page size to be returned",
+      "name": "pageSize",
+      "in": "query"
+    }
   }
 }`))
 	FlatSwaggerJSON = json.RawMessage([]byte(`{
@@ -269,64 +332,96 @@ func init() {
             "description": "Type of the keptn cloud event",
             "name": "type",
             "in": "query"
+          },
+          {
+            "maximum": 100,
+            "minimum": 1,
+            "type": "integer",
+            "default": 20,
+            "description": "Page size to be returned",
+            "name": "pageSize",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Key of the page to be returned",
+            "name": "nextPageKey",
+            "in": "query"
           }
         ],
         "responses": {
           "200": {
             "description": "ok",
             "schema": {
-              "type": "array",
-              "items": {
-                "allOf": [
-                  {
-                    "type": "object",
-                    "required": [
-                      "specversion",
-                      "id",
-                      "type",
-                      "source"
-                    ],
-                    "properties": {
-                      "contenttype": {
-                        "type": "string"
+              "type": "object",
+              "properties": {
+                "events": {
+                  "type": "array",
+                  "items": {
+                    "allOf": [
+                      {
+                        "type": "object",
+                        "required": [
+                          "specversion",
+                          "id",
+                          "type",
+                          "source"
+                        ],
+                        "properties": {
+                          "contenttype": {
+                            "type": "string"
+                          },
+                          "data": {
+                            "type": [
+                              "object",
+                              "string"
+                            ]
+                          },
+                          "extensions": {
+                            "type": "object"
+                          },
+                          "id": {
+                            "type": "string"
+                          },
+                          "source": {
+                            "type": "string",
+                            "format": "uri-reference"
+                          },
+                          "specversion": {
+                            "type": "string"
+                          },
+                          "time": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "type": {
+                            "type": "string"
+                          }
+                        }
                       },
-                      "data": {
-                        "type": [
-                          "object",
-                          "string"
-                        ]
-                      },
-                      "extensions": {
-                        "type": "object"
-                      },
-                      "id": {
-                        "type": "string"
-                      },
-                      "source": {
-                        "type": "string",
-                        "format": "uri-reference"
-                      },
-                      "specversion": {
-                        "type": "string"
-                      },
-                      "time": {
-                        "type": "string",
-                        "format": "date-time"
-                      },
-                      "type": {
-                        "type": "string"
+                      {
+                        "type": "object",
+                        "properties": {
+                          "shkeptncontext": {
+                            "type": "string"
+                          }
+                        }
                       }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "shkeptncontext": {
-                        "type": "string"
-                      }
-                    }
+                    ]
                   }
-                ]
+                },
+                "nextPageKey": {
+                  "description": "Pointer to the next page",
+                  "type": "string"
+                },
+                "pageSize": {
+                  "description": "Size of the returned page",
+                  "type": "integer"
+                },
+                "totalCount": {
+                  "description": "Total number of events",
+                  "type": "integer"
+                }
               }
             }
           },
@@ -458,35 +553,67 @@ func init() {
             "description": "EventId of the event the logs belog to",
             "name": "eventId",
             "in": "query"
+          },
+          {
+            "maximum": 100,
+            "minimum": 1,
+            "type": "integer",
+            "default": 20,
+            "description": "Page size to be returned",
+            "name": "pageSize",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Key of the page to be returned",
+            "name": "nextPageKey",
+            "in": "query"
           }
         ],
         "responses": {
           "200": {
             "description": "ok",
             "schema": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "eventId": {
-                    "type": "string"
-                  },
-                  "keptnContext": {
-                    "type": "string"
-                  },
-                  "keptnService": {
-                    "type": "string"
-                  },
-                  "logLevel": {
-                    "type": "string"
-                  },
-                  "message": {
-                    "type": "string"
-                  },
-                  "timestamp": {
-                    "type": "string",
-                    "format": "date-time"
+              "type": "object",
+              "properties": {
+                "logs": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "eventId": {
+                        "type": "string"
+                      },
+                      "keptnContext": {
+                        "type": "string"
+                      },
+                      "keptnService": {
+                        "type": "string"
+                      },
+                      "logLevel": {
+                        "type": "string"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "timestamp": {
+                        "type": "string",
+                        "format": "date-time"
+                      }
+                    }
                   }
+                },
+                "nextPageKey": {
+                  "description": "Pointer to the next page",
+                  "type": "string"
+                },
+                "pageSize": {
+                  "description": "Size of the returned page",
+                  "type": "integer"
+                },
+                "totalCount": {
+                  "description": "Total number of logs",
+                  "type": "integer"
                 }
               }
             }
@@ -679,6 +806,23 @@ func init() {
     },
     "principal": {
       "type": "string"
+    }
+  },
+  "parameters": {
+    "pageParam": {
+      "type": "string",
+      "description": "Key of the page to be returned",
+      "name": "nextPageKey",
+      "in": "query"
+    },
+    "pagesizeParam": {
+      "maximum": 100,
+      "minimum": 1,
+      "type": "integer",
+      "default": 20,
+      "description": "Page size to be returned",
+      "name": "pageSize",
+      "in": "query"
     }
   }
 }`))

@@ -3,7 +3,7 @@ package handlers
 import (
 	"context"
 	"fmt"
-	"log"
+	"strconv"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -11,6 +11,7 @@ import (
 	"github.com/jeremywohl/flatten"
 	"go.mongodb.org/mongo-driver/bson"
 
+	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/event"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -18,11 +19,11 @@ import (
 
 // SaveEvent to data store
 func SaveEvent(body event.SaveEventBody) error {
-	fmt.Println("save event to datastore")
+	keptnutils.Debug("", "save event to datastore")
 
 	client, err := mongo.NewClient(options.Client().ApplyURI(mongoDBConnection))
 	if err != nil {
-		log.Fatalln("error creating client: ", err.Error())
+		keptnutils.Error("", fmt.Sprintf("error creating client: %s", err.Error()))
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -30,26 +31,26 @@ func SaveEvent(body event.SaveEventBody) error {
 
 	err = client.Connect(ctx)
 	if err != nil {
-		log.Fatalln(err.Error())
+		keptnutils.Error("", fmt.Sprintf("could not connect: %s", err.Error()))
 	}
 
 	collection := client.Database(mongoDBName).Collection(eventsCollectionName)
 
 	res, err := collection.InsertOne(ctx, body)
 	if err != nil {
-		log.Fatalln("error inserting: ", err.Error())
+		keptnutils.Error("", fmt.Sprintf("error inserting into collection: %s", err.Error()))
 	}
-	fmt.Println("insertedID: ", res.InsertedID)
+	keptnutils.Debug("", fmt.Sprintf("insertedID: %s", res.InsertedID))
 
 	return err
 }
 
 // GetEvents gets all events from the data store sorted by time
-func GetEvents(params event.GetEventsParams) (events []*event.GetEventsOKBodyItems0, err error) {
-	fmt.Println("get events from datastore")
+func GetEvents(params event.GetEventsParams) (result *event.GetEventsOKBody, err error) {
+	keptnutils.Debug("", "getting events from the datastore")
 	client, err := mongo.NewClient(options.Client().ApplyURI(mongoDBConnection))
 	if err != nil {
-		log.Fatalln("error creating client: ", err.Error())
+		keptnutils.Error("", fmt.Sprintf("error creating client: %s", err.Error()))
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -57,7 +58,7 @@ func GetEvents(params event.GetEventsParams) (events []*event.GetEventsOKBodyIte
 
 	err = client.Connect(ctx)
 	if err != nil {
-		log.Fatalln(err.Error())
+		keptnutils.Error("", fmt.Sprintf("could not connect: %s", err.Error()))
 	}
 
 	collection := client.Database(mongoDBName).Collection(eventsCollectionName)
@@ -69,16 +70,33 @@ func GetEvents(params event.GetEventsParams) (events []*event.GetEventsOKBodyIte
 	if params.Type != nil {
 		searchOptions["type"] = params.Type
 	}
-
-	sortOptions := options.Find().SetSort(bson.D{{"time", -1}})
-	cur, err := collection.Find(ctx, searchOptions, sortOptions)
-	if err != nil {
-		log.Fatalln("error finding elements in collections: ", err.Error())
+	var newNextPageKey int64
+	var nextPageKey int64 = 0
+	if params.NextPageKey != nil {
+		tmpNextPageKey, _ := strconv.Atoi(*params.NextPageKey)
+		nextPageKey = int64(tmpNextPageKey)
+		newNextPageKey = nextPageKey + *params.PageSize
+	} else {
+		newNextPageKey = *params.PageSize
 	}
 
-	var resultEvents []*event.GetEventsOKBodyItems0
+	pagesize := *params.PageSize
+
+	sortOptions := options.Find().SetSort(bson.D{{"time", -1}}).SetSkip(nextPageKey).SetLimit(pagesize)
+
+	totalCount, err := collection.CountDocuments(ctx, searchOptions)
+	if err != nil {
+		keptnutils.Error("", fmt.Sprintf("error counting elements in events collection: %s", err.Error()))
+	}
+
+	cur, err := collection.Find(ctx, searchOptions, sortOptions)
+	if err != nil {
+		keptnutils.Error("", fmt.Sprintf("error finding elements in events collection: %s", err.Error()))
+	}
+
+	var resultEvents []*event.EventsItems0
 	for cur.Next(ctx) {
-		var result event.GetEventsOKBodyItems0
+		var result event.EventsItems0
 		err := cur.Decode(&result)
 		if err != nil {
 			return nil, err
@@ -88,12 +106,20 @@ func GetEvents(params event.GetEventsParams) (events []*event.GetEventsOKBodyIte
 		myMap := data.Map()
 		flat, err := flatten.Flatten(myMap, "", flatten.RailsStyle)
 		if err != nil {
-			log.Fatalln(err.Error())
+			keptnutils.Error("", fmt.Sprintf("could not flatten element: %s", err.Error()))
 		}
 		result.Data = flat
 		resultEvents = append(resultEvents, &result)
-		//fmt.Println(result)
 	}
-	return resultEvents, nil
+
+	var myresult event.GetEventsOKBody
+	myresult.Events = resultEvents
+	myresult.PageSize = pagesize
+	myresult.TotalCount = totalCount
+	if newNextPageKey < totalCount {
+		myresult.NextPageKey = strconv.FormatInt(newNextPageKey, 10)
+	}
+
+	return &myresult, nil
 
 }
