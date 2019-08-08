@@ -6,6 +6,7 @@
 - Remove Git email from install process [#555](https://github.com/keptn/keptn/issues/555)
 - Delete unused scripts in installer [#614](https://github.com/keptn/keptn/issues/614)
 - Add option --insecure-skip-tls-verify in installer [#567](https://github.com/keptn/keptn/issues/567)
+- Refactor installer in keptn CLI [#638](https://github.com/keptn/keptn/issues/638)
 
 ## Fixed Issues
 
