@@ -34,3 +34,13 @@ func StageAndCommitAll(project string, message string) error {
 	}
 	return nil
 }
+
+// GetCurrentVersion gets the latest version (i.e. commit hash) of the currently checked out branch
+func GetCurrentVersion(project string) (string, error) {
+	projectConfigPath := config.ConfigDir + "/" + project
+	out, err := utils.ExecuteCommandInDirectory("git", []string{"rev-parse", "HEAD"}, projectConfigPath)
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSuffix(out, "\n"), nil
+}
