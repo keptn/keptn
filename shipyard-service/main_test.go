@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"encoding/json"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -27,7 +27,8 @@ func TestGetEndpoint(t *testing.T) {
 	endPoint, err = getEndpoint(*logger)
 
 	assert.Equal(t, err, nil, "Received unexpected error")
-	assert.Equal(t, endPoint.Path, "http://configuration-service.keptn.svc.cluster.local", "Endpoint not set in environment variable")
+	assert.Equal(t, endPoint.Scheme, "http", "Schema of configuration-service endpoint incorrect")
+	assert.Equal(t, endPoint.Host, "configuration-service.keptn.svc.cluster.local", "Host of configuration-service endpoint incorrect")
 }
 
 func testingHTTPClient(handler http.Handler) (*http.Client, func()) {
@@ -46,9 +47,8 @@ func testingHTTPClient(handler http.Handler) (*http.Client, func()) {
 
 func TestCreateProject(t *testing.T) {
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, r.Method, "POST", "Expecte POST request")
-		fmt.Println(r.URL.EscapedPath())
-		assert.Equal(t, r.URL.EscapedPath(), "/project", "Expecte POST request")
+		assert.Equal(t, r.Method, "POST", "Expect POST request")
+		assert.Equal(t, r.URL.EscapedPath(), "/project", "Expect /project endpoint")
 	})
 
 	httpClient, teardown := testingHTTPClient(handler)
@@ -69,9 +69,8 @@ func TestCreateProject(t *testing.T) {
 
 func TestCreateStage(t *testing.T) {
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, r.Method, "POST", "Expecte POST request")
-		fmt.Println(r.URL.EscapedPath())
-		assert.Equal(t, r.URL.EscapedPath(), "/project/sockshop/stage", "Expecte POST request")
+		assert.Equal(t, r.Method, "POST", "Expect POST request")
+		assert.Equal(t, r.URL.EscapedPath(), "/project/sockshop/stage", "Expect /project/sockshop/stage endpoint")
 	})
 
 	httpClient, teardown := testingHTTPClient(handler)
@@ -93,5 +92,31 @@ func TestCreateStage(t *testing.T) {
 }
 
 func TestStoreResource(t *testing.T) {
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, r.Method, "POST", "Expect POST request")
+		assert.Equal(t, r.URL.EscapedPath(), "/project/sockshop/resource", "Expect /project/sockshop/resource endpoint")
+	})
 
+	httpClient, teardown := testingHTTPClient(handler)
+	defer teardown()
+
+	client := NewClient()
+	client.httpClient = httpClient
+
+	logger := keptnutils.NewLogger("4711-a83b-4bc1-9dc0-1f050c7e789b", "4711-a83b-4bc1-9dc0-1f050c7e781b", "shipyard-service")
+	os.Setenv("CONFIGURATION_SERVICE", "http://configuration-service.keptn.svc.cluster.local")
+
+	project := models.Project{}
+	project.ProjectName = "sockshop"
+
+	shipyard := models.Resource{}
+	var resourceURI = "shipyard.yaml"
+	shipyard.ResourceURI = &resourceURI
+	shipyard.ResourceContent, _ = json.Marshal([]string{"apple", "peach", "pear"})
+
+	resources := []*models.Resource{&shipyard}
+
+	err := client.storeResource(project, resources, *logger)
+
+	assert.Equal(t, err, nil, "Received unexpected error")
 }

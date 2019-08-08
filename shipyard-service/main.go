@@ -95,7 +95,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	if event.Type() == "sh.keptn.events.project.create" {
 		eventData := &createProjectEvent{}
 		if err := event.DataAs(eventData); err != nil {
-			logger.Error(fmt.Sprintf("data of the event are incompatibl: %s", err.Error()))
+			logger.Error(fmt.Sprintf("data of the event is incompatible: %s", err.Error()))
 			return err
 		}
 		return createProjectAndProcessShipyard(*eventData, *logger)
@@ -112,16 +112,33 @@ func createProjectAndProcessShipyard(eventData createProjectEvent, logger keptnu
 
 	project := models.Project{}
 	project.ProjectName = eventData.Project
-	client.createProject(project, logger)
+	if err := client.createProject(project, logger); err != nil {
+		logger.Error(fmt.Sprintf("project not created"))
+		return err
+	}
 
 	for _, shipyardStage := range eventData.Shipyard {
 		stage := models.Stage{}
 		stage.StageName = shipyardStage.Name
-		client.createStage(project, stage, logger)
+
+		if err := client.createStage(project, stage, logger); err != nil {
+			logger.Error(fmt.Sprintf("stage not created"))
+			return err
+		}
 	}
 
-	resource := models.Resource{}
-	client.storeResource(project, resource, logger)
+	shipyard := models.Resource{}
+
+	var resourceURI = "shipyard.yaml"
+	shipyard.ResourceURI = &resourceURI
+	shipyard.ResourceContent, _ = json.Marshal(eventData.Shipyard)
+
+	resources := []*models.Resource{&shipyard}
+
+	if err := client.storeResource(project, resources, logger); err != nil {
+		logger.Error(fmt.Sprintf("resource not stored"))
+		return err
+	}
 
 	return nil
 }
@@ -134,7 +151,7 @@ func getEndpoint(logger keptnutils.Logger) (url.URL, error) {
 	return *url, err
 }
 
-func postRequest(client *Client, path string, body string, logger keptnutils.Logger) (*http.Response, error) {
+func postRequest(client *Client, path string, body []byte, logger keptnutils.Logger) (*http.Response, error) {
 	endPoint, err := getEndpoint(logger)
 	if err != nil {
 		const errorMsg = "post request execution aborted"
@@ -151,9 +168,7 @@ func postRequest(client *Client, path string, body string, logger keptnutils.Log
 	eventURL := endPoint
 	eventURL.Path = path
 
-	data, err := json.Marshal(body)
-	fmt.Println(eventURL.String())
-	req, err := http.NewRequest("POST", eventURL.String(), bytes.NewReader(data))
+	req, err := http.NewRequest("POST", eventURL.String(), bytes.NewReader(body))
 	if err != nil {
 		const errorMsg = "building new request failed"
 		logger.Error(errorMsg)
@@ -164,7 +179,13 @@ func postRequest(client *Client, path string, body string, logger keptnutils.Log
 }
 
 func (client *Client) createProject(project models.Project, logger keptnutils.Logger) error {
-	resp, err := postRequest(client, "/project", "project-payload", logger)
+	data, err := project.MarshalBinary()
+	if err != nil {
+		logger.Error("project can not be encoded")
+		return err
+	}
+
+	resp, err := postRequest(client, "/project", data, logger)
 	if err != nil {
 		logger.Error("request failed - creating project was unsuccessful")
 		return err
@@ -172,14 +193,20 @@ func (client *Client) createProject(project models.Project, logger keptnutils.Lo
 
 	defer resp.Body.Close()
 	if resp.StatusCode == http.StatusOK {
-		logger.Info("Successfully created project")
+		logger.Info("project created successfully")
 	}
 
 	return nil
 }
 
 func (client *Client) createStage(project models.Project, stage models.Stage, logger keptnutils.Logger) error {
-	resp, err := postRequest(client, fmt.Sprintf("project/%s/stage", project.ProjectName), "stage-payload", logger)
+	data, err := project.MarshalBinary()
+	if err != nil {
+		logger.Error("stage can not be encoded")
+		return err
+	}
+
+	resp, err := postRequest(client, fmt.Sprintf("project/%s/stage", project.ProjectName), data, logger)
 	if err != nil {
 		logger.Error("request failed - creating stage was unsuccessful")
 		return err
@@ -187,14 +214,20 @@ func (client *Client) createStage(project models.Project, stage models.Stage, lo
 
 	defer resp.Body.Close()
 	if resp.StatusCode == http.StatusOK {
-		logger.Info("Successfully created stage")
+		logger.Info("stage created successfully")
 	}
 
 	return nil
 }
 
-func (client *Client) storeResource(project models.Project, resource models.Resource, logger keptnutils.Logger) error {
-	resp, err := postRequest(client, fmt.Sprintf("project/%s/resource", project.ProjectName), "resource-payload", logger)
+func (client *Client) storeResource(project models.Project, resources []*models.Resource, logger keptnutils.Logger) error {
+	data, err := project.MarshalBinary()
+	if err != nil {
+		logger.Error("resources can not be encoded")
+		return err
+	}
+
+	resp, err := postRequest(client, fmt.Sprintf("project/%s/resource", project.ProjectName), data, logger)
 	if err != nil {
 		logger.Error("request failed - storing resource was unsuccessful")
 		return err
@@ -202,7 +235,7 @@ func (client *Client) storeResource(project models.Project, resource models.Reso
 
 	defer resp.Body.Close()
 	if resp.StatusCode == http.StatusOK {
-		logger.Info("Successfully stored resource")
+		logger.Info("resource stored successfully")
 	}
 
 	return nil
