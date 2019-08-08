@@ -44,7 +44,14 @@ func PostProjectProjectNameResourceHandlerFunc(params project_resource.PostProje
 		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
 	}
 	utils.Debug("", "Successfully added resources")
-	return project_resource.NewPostProjectProjectNameResourceCreated()
+
+	newVersion, err := common.GetCurrentVersion(params.ProjectName)
+	if err != nil {
+		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
+	}
+	return project_resource.NewPostProjectProjectNameResourceCreated().WithPayload(&models.Version{
+		Version: newVersion,
+	})
 }
 
 // GetProjectProjectNameResourceResourceURIHandlerFunc gets the specified resource
