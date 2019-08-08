@@ -54,16 +54,16 @@
   version = "0.19.2"
 
 [[constraint]]
-  name = "github.com/jessevdk/go-flags"
-  version = "1.4.0"
-
-[[constraint]]
-  branch = "master"
-  name = "golang.org/x/net"
-
-[[constraint]]
   name = "go.mongodb.org/mongo-driver"
   version = "~1.0.4"
+
+[[constraint]]
+  name = "github.com/keptn/go-utils"
+  version = "0.1.1"
+
+[[override]]
+  name = "contrib.go.opencensus.io/exporter/ocagent"
+  version = "v0.4.12"
 
 [prune]
   go-tests = true

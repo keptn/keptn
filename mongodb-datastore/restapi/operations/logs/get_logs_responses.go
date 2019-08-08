@@ -23,7 +23,7 @@ type GetLogsOK struct {
 	/*
 	  In: Body
 	*/
-	Payload []*GetLogsOKBodyItems0 `json:"body,omitempty"`
+	Payload *GetLogsOKBody `json:"body,omitempty"`
 }
 
 // NewGetLogsOK creates GetLogsOK with default headers values
@@ -33,13 +33,13 @@ func NewGetLogsOK() *GetLogsOK {
 }
 
 // WithPayload adds the payload to the get logs o k response
-func (o *GetLogsOK) WithPayload(payload []*GetLogsOKBodyItems0) *GetLogsOK {
+func (o *GetLogsOK) WithPayload(payload *GetLogsOKBody) *GetLogsOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the get logs o k response
-func (o *GetLogsOK) SetPayload(payload []*GetLogsOKBodyItems0) {
+func (o *GetLogsOK) SetPayload(payload *GetLogsOKBody) {
 	o.Payload = payload
 }
 
@@ -47,14 +47,11 @@ func (o *GetLogsOK) SetPayload(payload []*GetLogsOKBodyItems0) {
 func (o *GetLogsOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(200)
-	payload := o.Payload
-	if payload == nil {
-		// return empty array
-		payload = make([]*GetLogsOKBodyItems0, 0, 50)
-	}
-
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
 }
 

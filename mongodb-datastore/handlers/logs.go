@@ -3,7 +3,7 @@ package handlers
 import (
 	"context"
 	"fmt"
-	"log"
+	"strconv"
 	"time"
 
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/logs"
@@ -11,15 +11,17 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+
+	keptnutils "github.com/keptn/go-utils/pkg/utils"
 )
 
 // SaveLog to datastore
 func SaveLog(body []*logs.SaveLogParamsBodyItems0) (err error) {
-	fmt.Println("save log to datastore")
+	keptnutils.Debug("", "save log to datastore")
 
 	client, err := mongo.NewClient(options.Client().ApplyURI(mongoDBConnection))
 	if err != nil {
-		log.Fatalln("error creating client: ", err.Error())
+		keptnutils.Error("", fmt.Sprintf("error creating client: %s", err.Error()))
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -27,7 +29,7 @@ func SaveLog(body []*logs.SaveLogParamsBodyItems0) (err error) {
 
 	err = client.Connect(ctx)
 	if err != nil {
-		log.Fatalln(err.Error())
+		keptnutils.Error("", fmt.Sprintf("could not connect: %s", err.Error()))
 	}
 
 	collection := client.Database(mongoDBName).Collection(logsCollectionName)
@@ -36,11 +38,11 @@ func SaveLog(body []*logs.SaveLogParamsBodyItems0) (err error) {
 		if l.KeptnService != "" {
 			res, err := collection.InsertOne(ctx, l)
 			if err != nil {
-				log.Fatalln("error inserting: ", err.Error())
+				keptnutils.Error("", fmt.Sprintf("could not insert: %s", err.Error()))
 			}
-			fmt.Println("insertedID: ", res.InsertedID)
+			keptnutils.Debug("", fmt.Sprintf("insertedID: %s", res.InsertedID))
 		} else {
-			fmt.Println("no KeptnService set, log not stored in datastore")
+			keptnutils.Info("", "no KepntService set, log not stored in datastore")
 		}
 	}
 
@@ -49,11 +51,12 @@ func SaveLog(body []*logs.SaveLogParamsBodyItems0) (err error) {
 }
 
 // GetLogs returns logs
-func GetLogs(params logs.GetLogsParams) (res []*logs.GetLogsOKBodyItems0, err error) {
-	fmt.Println("get logs from datastore")
+func GetLogs(params logs.GetLogsParams) (result *logs.GetLogsOKBody, err error) {
+	keptnutils.Debug("", "getting logs from datastore")
+
 	client, err := mongo.NewClient(options.Client().ApplyURI(mongoDBConnection))
 	if err != nil {
-		log.Fatalln("error creating client: ", err.Error())
+		keptnutils.Error("", fmt.Sprintf("error creating client: %s", err.Error()))
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -61,31 +64,56 @@ func GetLogs(params logs.GetLogsParams) (res []*logs.GetLogsOKBodyItems0, err er
 
 	err = client.Connect(ctx)
 	if err != nil {
-		log.Fatalln(err.Error())
+		keptnutils.Error("", fmt.Sprintf("could not connect: %s", err.Error()))
 	}
 
 	collection := client.Database(mongoDBName).Collection(logsCollectionName)
 
 	searchOptions := bson.M{}
 	if params.EventID != nil {
-		searchOptions["evenId"] = primitive.Regex{Pattern: *params.EventID, Options: ""}
+		searchOptions["eventid"] = primitive.Regex{Pattern: *params.EventID, Options: ""}
 	}
 
-	sortOptions := options.Find().SetSort(bson.D{{"timestamp", -1}})
+	var newNextPageKey int64
+	var nextPageKey int64 = 0
+	if params.NextPageKey != nil {
+		tmpNextPageKey, _ := strconv.Atoi(*params.NextPageKey)
+		nextPageKey = int64(tmpNextPageKey)
+		newNextPageKey = nextPageKey + *params.PageSize
+	} else {
+		newNextPageKey = *params.PageSize
+	}
+
+	pagesize := *params.PageSize
+
+	sortOptions := options.Find().SetSort(bson.D{{"timestamp", -1}}).SetSkip(nextPageKey).SetLimit(pagesize)
+
+	totalCount, err := collection.CountDocuments(ctx, searchOptions)
+	if err != nil {
+		keptnutils.Error("", fmt.Sprintf("error counting elements in logs collection: %s", err.Error()))
+	}
+
 	cur, err := collection.Find(ctx, searchOptions, sortOptions)
 	if err != nil {
-		log.Fatalln("error finding elements in collections: ", err.Error())
+		keptnutils.Error("", fmt.Sprintf("error finding elements in logs collection: %s", err.Error()))
 	}
 
-	var resultLogs []*logs.GetLogsOKBodyItems0
+	var resultLogs []*logs.LogsItems0
 	for cur.Next(ctx) {
-		var result logs.GetLogsOKBodyItems0
+		var result logs.LogsItems0
 		err := cur.Decode(&result)
 		if err != nil {
 			return nil, err
 		}
 		resultLogs = append(resultLogs, &result)
-		//fmt.Println(result)
 	}
-	return resultLogs, nil
+
+	var myresult logs.GetLogsOKBody
+	myresult.Logs = resultLogs
+	myresult.PageSize = pagesize
+	myresult.TotalCount = totalCount
+	if newNextPageKey < totalCount {
+		myresult.NextPageKey = strconv.FormatInt(newNextPageKey, 10)
+	}
+	return &myresult, nil
 }
