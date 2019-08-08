@@ -37,6 +37,14 @@
 #  name = "gopkg.in/src-d/go-git.v4"
 #  version = "4.13.1"
 
+[[constraint]]
+  name = "github.com/keptn/go-utils"
+  version = "0.1.1"
+
+[[override]]
+ name = "contrib.go.opencensus.io/exporter/ocagent"
+ version = "v0.4.12"
+
 [prune]
   go-tests = true
   unused-packages = true
