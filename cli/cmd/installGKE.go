@@ -118,7 +118,8 @@ func (p gkePlatform) authenticateAtCluster() (bool, error) {
 	})
 
 	if err != nil {
-		fmt.Println("Could not connect to cluster. Please verify that you have entered the correct information.")
+		fmt.Println("Could not connect to cluster. " +
+			"Please verify that you have entered the correct information. Error: " + err.Error())
 		return false, err
 	}
 
