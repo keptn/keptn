@@ -39,6 +39,9 @@ import (
 var configFilePath *string
 var installerVersion *string
 var platform *string
+var insecureSkipTLSVerify bool
+
+var kubectlOptions string
 
 const gke = "gke"
 const aks = "aks"
@@ -80,6 +83,10 @@ Example:
 	keptn install`,
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
+
+		if insecureSkipTLSVerify {
+			kubectlOptions = "--insecure-skip-tls-verify=true"
+		}
 
 		err := checkIfPlatformIsSupported()
 		if err != nil {
@@ -223,6 +230,7 @@ func init() {
 	installerVersion = installCmd.Flags().StringP("keptn-version", "k", "master", "The branch or tag of the version which is installed")
 	installCmd.Flags().MarkHidden("keptn-version")
 	platform = installCmd.Flags().StringP("platform", "p", "gke", "The platform to run keptn on [gke,openshift,aks,kubernetes]")
+	installCmd.PersistentFlags().BoolVarP(&insecureSkipTLSVerify, "insecure-skip-tls-verify", "s", false, "Skip tls verification for kubectl commands")
 }
 
 func checkInstallerAvailablity() (bool, error) {
@@ -273,11 +281,9 @@ func doInstallation(creds installCredentials) error {
 	}
 
 	if *platform == gke || *platform == aks || *platform == kubernetes {
-		_, err := keptnutils.ExecuteCommand("kubectl", []string{
-			"apply",
-			"-f",
-			getRbacURL(),
-		})
+		options := options{"apply", "-f", getRbacURL()}
+		options.appendIfNotEmpty(kubectlOptions)
+		_, err = keptnutils.ExecuteCommand("kubectl", options)
 
 		if err != nil {
 			return fmt.Errorf("Error while applying RBAC for installer pod: %s \nAborting installation", err.Error())
@@ -286,11 +292,9 @@ func doInstallation(creds installCredentials) error {
 
 	utils.PrintLog("Deploying keptn installer pod...", utils.InfoLevel)
 
-	_, err = keptnutils.ExecuteCommand("kubectl", []string{
-		"apply",
-		"-f",
-		installerPath,
-	})
+	options := options{"apply", "-f", installerPath}
+	options.appendIfNotEmpty(kubectlOptions)
+	_, err = keptnutils.ExecuteCommand("kubectl", options)
 
 	if err != nil {
 		return fmt.Errorf("Error while deploying keptn installer pod: %s \nAborting installation", err.Error())
@@ -737,13 +741,14 @@ func waitForInstallerPod() (string, error) {
 	podRunning := false
 	for ok := true; ok; ok = !podRunning {
 		time.Sleep(5 * time.Second)
-		out, err := keptnutils.ExecuteCommand("kubectl", []string{
-			"get",
+
+		options := options{"get",
 			"pods",
 			"-l",
 			"app=installer",
-			"-ojson",
-		})
+			"-ojson"}
+		options.appendIfNotEmpty(kubectlOptions)
+		out, err := keptnutils.ExecuteCommand("kubectl", options)
 
 		if err != nil {
 			return "", fmt.Errorf("Error while retrieving installer pod: %s\n. Aborting installation", err)
@@ -771,13 +776,15 @@ func getInstallerLogs(podName string) error {
 
 	fmt.Printf("Getting logs of pod %s\n", podName)
 
-	execCmd := exec.Command(
-		"kubectl",
-		"logs",
+	options := options{"logs",
 		podName,
 		"-c",
 		"keptn-installer",
-		"-f",
+		"-f"}
+	options.appendIfNotEmpty(kubectlOptions)
+
+	execCmd := exec.Command(
+		"kubectl", options...,
 	)
 
 	stdoutIn, _ := execCmd.StdoutPipe()
@@ -888,14 +895,14 @@ func setupKeptnAuthAndConfigure(creds installCredentials) error {
 
 	utils.PrintLog("Starting to configure your keptn CLI...", utils.InfoLevel)
 
-	out, err := keptnutils.ExecuteCommand("kubectl", []string{
-		"get",
+	ops := options{"get",
 		"secret",
 		"keptn-api-token",
 		"-n",
 		"keptn",
-		"-ojsonpath={.data.keptn-api-token}",
-	})
+		"-ojsonpath={.data.keptn-api-token}"}
+	ops.appendIfNotEmpty(kubectlOptions)
+	out, err := keptnutils.ExecuteCommand("kubectl", ops)
 
 	const errorMsg = `Could not retrieve keptn API token: %s
 To manually set up your keptn CLI, please follow the instructions at https://keptn.sh/docs/0.2.0/reference/cli/.`
@@ -913,14 +920,15 @@ To manually set up your keptn CLI, please follow the instructions at https://kep
 	retries := 0
 	for tryGetAPIEndpoint := true; tryGetAPIEndpoint; tryGetAPIEndpoint = !apiEndpointRetrieved {
 
-		out, err := keptnutils.ExecuteCommand("kubectl", []string{
-			"get",
+		ops := options{"get",
 			"virtualservice",
 			"api",
 			"-n",
 			"keptn",
-			"-ojsonpath={.spec.hosts[0]}",
-		})
+			"-ojsonpath={.spec.hosts[0]}"}
+		ops.appendIfNotEmpty(kubectlOptions)
+
+		out, err := keptnutils.ExecuteCommand("kubectl", ops)
 
 		if err != nil {
 			retries++
@@ -994,4 +1002,12 @@ func configure(creds installCredentials) error {
 			"To manually set up your keptn CLI, please follow the instructions at https://keptn.sh/docs/0.2.0/reference/cli/.", err)
 	}
 	return nil
+}
+
+type options []string
+
+func (s *options) appendIfNotEmpty(newOption string) {
+	if newOption != "" {
+		*s = append(*s, newOption)
+	}
 }
