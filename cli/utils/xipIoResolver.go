@@ -1,0 +1,42 @@
+package utils
+
+import (
+	"context"
+	"net"
+	"regexp"
+	"strings"
+	"time"
+)
+
+// ResolveXipIo resolves a xip io address
+func ResolveXipIo(network, addr string) (net.Conn, error) {
+	return ResolveXipIoWithContext(context.Background(), network, addr)
+}
+
+// ResolveXipIo resolves a xip io address
+func ResolveXipIoWithContext(ctx context.Context, network, addr string) (net.Conn, error) {
+	dialer := &net.Dialer{
+		Timeout:   30 * time.Second,
+		KeepAlive: 30 * time.Second,
+		DualStack: true,
+	}
+
+	if strings.Contains(addr, "xip.io") {
+
+		regex := `\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b`
+		re := regexp.MustCompile(regex)
+		ip := re.FindString(addr)
+
+		regex = `:\d+$`
+		re = regexp.MustCompile(regex)
+		port := re.FindString(addr)
+
+		var newAddr string
+		if port != "" {
+			newAddr = ip + port
+		}
+		PrintLog("Directly resolve "+addr+" to "+newAddr, VerboseLevel)
+		addr = newAddr
+	}
+	return dialer.DialContext(ctx, network, addr)
+}
