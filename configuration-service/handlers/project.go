@@ -1,8 +1,10 @@
 package handlers
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
+	"time"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
@@ -11,7 +13,13 @@ import (
 	"github.com/keptn/keptn/configuration-service/config"
 	"github.com/keptn/keptn/configuration-service/models"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/project"
+	"gopkg.in/yaml.v2"
 )
+
+type projectMetadata struct {
+	ProjectName       string
+	CreationTimestamp string
+}
 
 // GetProjectHandlerFunc gets a list of projects
 func GetProjectHandlerFunc(params project.GetProjectParams) middleware.Responder {
@@ -56,6 +64,29 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 	out, err := utils.ExecuteCommandInDirectory("git", []string{"init"}, projectConfigPath)
 	utils.Debug("", "Init git result: "+out)
 	if err != nil {
+		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
+	}
+
+	newProjectMetadata := &projectMetadata{
+		ProjectName:       params.Project.ProjectName,
+		CreationTimestamp: time.Now().String(),
+	}
+
+	metadataString, err := yaml.Marshal(newProjectMetadata)
+	err = common.WriteFile(projectConfigPath+"/metadata.yaml", metadataString)
+
+	if err != nil {
+		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
+	}
+
+	out, err = utils.ExecuteCommandInDirectory("git", []string{"add", "."}, projectConfigPath)
+	if err != nil {
+		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
+	}
+
+	out, err = utils.ExecuteCommandInDirectory("git", []string{"commit", "-m", `"added metadata.yaml"`}, projectConfigPath)
+	if err != nil {
+		fmt.Print(err.Error())
 		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
 	}
 
