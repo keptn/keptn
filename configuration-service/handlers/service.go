@@ -1,0 +1,31 @@
+package handlers
+
+import (
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/keptn/keptn/configuration-service/restapi/operations/service"
+)
+
+// GetProjectProjectNameStageStageNameServiceHandlerFunc get list of services
+func GetProjectProjectNameStageStageNameServiceHandlerFunc(params service.GetProjectProjectNameStageStageNameServiceParams) middleware.Responder {
+	return middleware.NotImplemented("operation service.GetProjectProjectNameStageStageNameService has not yet been implemented")
+}
+
+// GetProjectProjectNameStageStageNameServiceServiceNameHandlerFunc get the specified service
+func GetProjectProjectNameStageStageNameServiceServiceNameHandlerFunc(params service.GetProjectProjectNameStageStageNameServiceServiceNameParams) middleware.Responder {
+	return middleware.NotImplemented("operation service.GetProjectProjectNameStageStageNameServiceServiceName has not yet been implemented")
+}
+
+// PostProjectProjectNameStageStageNameServiceHandlerFunc creates a new service
+func PostProjectProjectNameStageStageNameServiceHandlerFunc(params service.PostProjectProjectNameStageStageNameServiceParams) middleware.Responder {
+	return middleware.NotImplemented("operation service.PostProjectProjectNameStageStageNameService has not yet been implemented")
+}
+
+// PutProjectProjectNameStageStageNameServiceServiceNameHandlerFunc updates a service
+func PutProjectProjectNameStageStageNameServiceServiceNameHandlerFunc(params service.PutProjectProjectNameStageStageNameServiceServiceNameParams) middleware.Responder {
+	return middleware.NotImplemented("operation service.PutProjectProjectNameStageStageNameServiceServiceName has not yet been implemented")
+}
+
+// DeleteProjectProjectNameStageStageNameServiceServiceNameHandlerFunc deletes a service
+func DeleteProjectProjectNameStageStageNameServiceServiceNameHandlerFunc(params service.DeleteProjectProjectNameStageStageNameServiceServiceNameParams) middleware.Responder {
+	return middleware.NotImplemented("operation service.DeleteProjectProjectNameStageStageNameServiceServiceName has not yet been implemented")
+}

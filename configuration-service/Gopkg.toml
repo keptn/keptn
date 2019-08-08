@@ -24,9 +24,6 @@
 #   go-tests = true
 #   unused-packages = true
 
-[[constraint]]
-  name = "github.com/cloudevents/sdk-go"
-  version = "0.7.0"
 
 [[constraint]]
   name = "github.com/kelseyhightower/envconfig"

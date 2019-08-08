@@ -1,0 +1,36 @@
+package handlers
+
+import (
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/keptn/keptn/configuration-service/restapi/operations/stage_resource"
+)
+
+// GetProjectProjectNameStageStageNameResourceHandlerFunc get list of stage resources
+func GetProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resource.GetProjectProjectNameStageStageNameResourceParams) middleware.Responder {
+	return middleware.NotImplemented("operation stage_resource.GetProjectProjectNameStageStageNameResource has not yet been implemented")
+}
+
+// GetProjectProjectNameStageStageNameResourceResourceURIHandlerFunc get the specified resource
+func GetProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(params stage_resource.GetProjectProjectNameStageStageNameResourceResourceURIParams) middleware.Responder {
+	return middleware.NotImplemented("operation stage_resource.GetProjectProjectNameStageStageNameResourceResourceURI has not yet been implemented")
+}
+
+// PostProjectProjectNameStageStageNameResourceHandlerFunc creates list of new resources in a stage
+func PostProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resource.PostProjectProjectNameStageStageNameResourceParams) middleware.Responder {
+	return middleware.NotImplemented("operation stage_resource.PostProjectProjectNameStageStageNameResource has not yet been implemented")
+}
+
+// PutProjectProjectNameStageStageNameResourceHandlerFunc updates list of stage resources
+func PutProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resource.PutProjectProjectNameStageStageNameResourceParams) middleware.Responder {
+	return middleware.NotImplemented("operation stage_resource.PutProjectProjectNameStageStageNameResource has not yet been implemented")
+}
+
+// PutProjectProjectNameStageStageNameResourceResourceURIHandlerFunc updates the specified stage resource
+func PutProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(params stage_resource.PutProjectProjectNameStageStageNameResourceResourceURIParams) middleware.Responder {
+	return middleware.NotImplemented("operation stage_resource.PutProjectProjectNameStageStageNameResourceResourceURI has not yet been implemented")
+}
+
+// DeleteProjectProjectNameStageStageNameResourceResourceURIHandlerFunc deletes the specified stage resource
+func DeleteProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(params stage_resource.DeleteProjectProjectNameStageStageNameResourceResourceURIParams) middleware.Responder {
+	return middleware.NotImplemented("operation stage_resource.DeleteProjectProjectNameStageStageNameResourceResourceURI has not yet been implemented")
+}
