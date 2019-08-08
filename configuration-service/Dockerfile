@@ -18,6 +18,8 @@ RUN CGO_ENABLED=0 GOOS=linux go build -v cmd-server/main.go
 
 # Use a Docker multi-stage build to create a lean production image.
 FROM alpine
+
+ENV env=production
 RUN apk add --no-cache ca-certificates
 
 # Install git
