@@ -2,6 +2,7 @@ package common
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/configuration-service/config"
@@ -25,8 +26,9 @@ func StageAndCommitAll(project string, message string) error {
 		return err
 	}
 
-	_, err = utils.ExecuteCommandInDirectory("git", []string{"commit", "-m", `"` + message + `"`}, projectConfigPath)
-	if err != nil {
+	out, err := utils.ExecuteCommandInDirectory("git", []string{"commit", "-m", `"` + message + `"`}, projectConfigPath)
+	utils.Debug("", out)
+	if err != nil && !(strings.Contains(out, "nothing to commit")) {
 		fmt.Print(err.Error())
 		return err
 	}

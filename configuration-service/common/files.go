@@ -2,12 +2,23 @@ package common
 
 import (
 	"os"
+	"strings"
 )
 
 // WriteFile writes to a file in the filesystem
 func WriteFile(path string, content []byte) error {
+	pathArr := strings.Split(path, "/")
+	directory := ""
+	for _, pathItem := range pathArr[0 : len(pathArr)-1] {
+		directory += pathItem + "/"
+	}
+
+	err := os.MkdirAll(directory, os.ModePerm)
+	if err != nil {
+		return err
+	}
 	// detect if file exists
-	var _, err = os.Stat(path)
+	_, err = os.Stat(path)
 
 	// create file if not exists
 	if os.IsNotExist(err) {

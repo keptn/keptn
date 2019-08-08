@@ -1,8 +1,6 @@
 package handlers
 
 import (
-	"fmt"
-
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
 	"github.com/keptn/go-utils/pkg/utils"
@@ -28,21 +26,24 @@ func PostProjectProjectNameResourceHandlerFunc(params project_resource.PostProje
 	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
 
 	utils.Debug("", "Creating new resource(s) in: "+projectConfigPath)
-	utils.Debug("", "Checking out master branch: ")
+	utils.Debug("", "Checking out master branch")
 	err := common.CheckoutBranch(params.ProjectName, "master")
 	if err != nil {
 		return project_resource.NewPostProjectProjectNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
 	}
 
 	for _, res := range params.Resources.Resources {
+		utils.Debug("", "Adding resource: "+projectConfigPath+"/"+*res.ResourceURI)
+
 		common.WriteFile(projectConfigPath+"/"+*res.ResourceURI, res.ResourceContent)
 	}
 
+	utils.Debug("", "Staging Changes")
 	err = common.StageAndCommitAll(params.ProjectName, "Added resources")
 	if err != nil {
-		fmt.Print(err.Error())
 		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
 	}
+	utils.Debug("", "Successfully added resources")
 	return project_resource.NewPostProjectProjectNameResourceCreated()
 }
 
