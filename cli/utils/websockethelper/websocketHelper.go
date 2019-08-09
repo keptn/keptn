@@ -9,7 +9,6 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"regexp"
 	"strings"
 	"time"
 
@@ -113,15 +112,17 @@ func openWS(connData ConnectionData, apiEndPoint url.URL) (*websocket.Conn, *htt
 	header := http.Header{}
 	header.Add("Token", connData.ChannelInfo.Token)
 	header.Add("Keptn-Ws-Channel-Id", connData.ChannelInfo.ChannelID)
-	if strings.Contains(apiEndPoint.String(), "xip.io") {
+	/*
+		if strings.Contains(apiEndPoint.String(), "xip.io") {
 
-		regex := `\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b`
-		re := regexp.MustCompile(regex)
-		ip := re.FindString(apiEndPoint.String())
+			regex := `\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b`
+			re := regexp.MustCompile(regex)
+			ip := re.FindString(apiEndPoint.String())
 
-		header.Add("Host", apiEndPoint.Host)
-		wsEndPoint.Host = ip
-	}
+			header.Add("Host", apiEndPoint.Host)
+			wsEndPoint.Host = ip
+		}
+	*/
 	dialer := websocket.DefaultDialer
 	dialer.TLSClientConfig = &tls.Config{
 		InsecureSkipVerify: true,
