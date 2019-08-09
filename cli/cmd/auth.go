@@ -81,8 +81,6 @@ func init() {
 
 func authUsingKube() error {
 
-	utils.PrintLog("Starting to authenticate your keptn CLI...", utils.InfoLevel)
-
 	ops := options{"get",
 		"secret",
 		"keptn-api-token",
