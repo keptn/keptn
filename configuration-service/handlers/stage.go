@@ -2,12 +2,22 @@ package handlers
 
 import (
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/swag"
+	"github.com/keptn/keptn/configuration-service/common"
+	"github.com/keptn/keptn/configuration-service/models"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/stage"
 )
 
 // PostProjectProjectNameStageHandlerFunc creates a new stage
 func PostProjectProjectNameStageHandlerFunc(params stage.PostProjectProjectNameStageParams) middleware.Responder {
-	return middleware.NotImplemented("operation stage.PostProjectProjectNameStage has not yet been implemented")
+	if !common.ProjectExists(params.ProjectName) {
+		return stage.NewPostProjectProjectNameStageBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Project does not exist.")})
+	}
+	err := common.CreateBranch(params.ProjectName, params.Stage.StageName, "master")
+	if err != nil {
+		return stage.NewPostProjectProjectNameStageBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
+	}
+	return stage.NewPostProjectProjectNameStageNoContent()
 }
 
 // PutProjectProjectNameStageStageNameHandlerFunc updates a stage
