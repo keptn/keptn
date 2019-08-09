@@ -240,7 +240,7 @@ func doInstallation() error {
 	}
 
 	if err := utils.Replace(installerPath,
-		utils.PlaceholderReplacement{PlaceholderValue: "PLATFORM", DesiredValue: *platformIdentifier}); err != nil {
+		utils.PlaceholderReplacement{PlaceholderValue: "PLATFORM_PLACEHOLDER", DesiredValue: *platformIdentifier}); err != nil {
 		return err
 	}
 

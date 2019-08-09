@@ -59,7 +59,7 @@ func Replace(filePath string, replacements ...PlaceholderReplacement) error {
 		return err
 	}
 	for _, replacement := range replacements {
-		content = strings.ReplaceAll(content, "value: "+replacement.PlaceholderValue, "value: "+replacement.DesiredValue)
+		content = strings.ReplaceAll(content, replacement.PlaceholderValue, replacement.DesiredValue)
 	}
 
 	return ioutil.WriteFile(filePath, []byte(content), 0666)
