@@ -56,3 +56,105 @@ func (o *GetProjectProjectNameServiceServiceNameResourceResourceURIOK) WriteResp
 		}
 	}
 }
+
+// GetProjectProjectNameServiceServiceNameResourceResourceURINotFoundCode is the HTTP code returned for type GetProjectProjectNameServiceServiceNameResourceResourceURINotFound
+const GetProjectProjectNameServiceServiceNameResourceResourceURINotFoundCode int = 404
+
+/*GetProjectProjectNameServiceServiceNameResourceResourceURINotFound Failed. Default resource could not be found.
+
+swagger:response getProjectProjectNameServiceServiceNameResourceResourceUriNotFound
+*/
+type GetProjectProjectNameServiceServiceNameResourceResourceURINotFound struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewGetProjectProjectNameServiceServiceNameResourceResourceURINotFound creates GetProjectProjectNameServiceServiceNameResourceResourceURINotFound with default headers values
+func NewGetProjectProjectNameServiceServiceNameResourceResourceURINotFound() *GetProjectProjectNameServiceServiceNameResourceResourceURINotFound {
+
+	return &GetProjectProjectNameServiceServiceNameResourceResourceURINotFound{}
+}
+
+// WithPayload adds the payload to the get project project name service service name resource resource Uri not found response
+func (o *GetProjectProjectNameServiceServiceNameResourceResourceURINotFound) WithPayload(payload *models.Error) *GetProjectProjectNameServiceServiceNameResourceResourceURINotFound {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the get project project name service service name resource resource Uri not found response
+func (o *GetProjectProjectNameServiceServiceNameResourceResourceURINotFound) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *GetProjectProjectNameServiceServiceNameResourceResourceURINotFound) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(404)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
+/*GetProjectProjectNameServiceServiceNameResourceResourceURIDefault Error
+
+swagger:response getProjectProjectNameServiceServiceNameResourceResourceUriDefault
+*/
+type GetProjectProjectNameServiceServiceNameResourceResourceURIDefault struct {
+	_statusCode int
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewGetProjectProjectNameServiceServiceNameResourceResourceURIDefault creates GetProjectProjectNameServiceServiceNameResourceResourceURIDefault with default headers values
+func NewGetProjectProjectNameServiceServiceNameResourceResourceURIDefault(code int) *GetProjectProjectNameServiceServiceNameResourceResourceURIDefault {
+	if code <= 0 {
+		code = 500
+	}
+
+	return &GetProjectProjectNameServiceServiceNameResourceResourceURIDefault{
+		_statusCode: code,
+	}
+}
+
+// WithStatusCode adds the status to the get project project name service service name resource resource URI default response
+func (o *GetProjectProjectNameServiceServiceNameResourceResourceURIDefault) WithStatusCode(code int) *GetProjectProjectNameServiceServiceNameResourceResourceURIDefault {
+	o._statusCode = code
+	return o
+}
+
+// SetStatusCode sets the status to the get project project name service service name resource resource URI default response
+func (o *GetProjectProjectNameServiceServiceNameResourceResourceURIDefault) SetStatusCode(code int) {
+	o._statusCode = code
+}
+
+// WithPayload adds the payload to the get project project name service service name resource resource URI default response
+func (o *GetProjectProjectNameServiceServiceNameResourceResourceURIDefault) WithPayload(payload *models.Error) *GetProjectProjectNameServiceServiceNameResourceResourceURIDefault {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the get project project name service service name resource resource URI default response
+func (o *GetProjectProjectNameServiceServiceNameResourceResourceURIDefault) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *GetProjectProjectNameServiceServiceNameResourceResourceURIDefault) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(o._statusCode)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}

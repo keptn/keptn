@@ -80,3 +80,61 @@ func (o *DeleteProjectProjectNameStageStageNameServiceServiceNameBadRequest) Wri
 		}
 	}
 }
+
+/*DeleteProjectProjectNameStageStageNameServiceServiceNameDefault Error
+
+swagger:response deleteProjectProjectNameStageStageNameServiceServiceNameDefault
+*/
+type DeleteProjectProjectNameStageStageNameServiceServiceNameDefault struct {
+	_statusCode int
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewDeleteProjectProjectNameStageStageNameServiceServiceNameDefault creates DeleteProjectProjectNameStageStageNameServiceServiceNameDefault with default headers values
+func NewDeleteProjectProjectNameStageStageNameServiceServiceNameDefault(code int) *DeleteProjectProjectNameStageStageNameServiceServiceNameDefault {
+	if code <= 0 {
+		code = 500
+	}
+
+	return &DeleteProjectProjectNameStageStageNameServiceServiceNameDefault{
+		_statusCode: code,
+	}
+}
+
+// WithStatusCode adds the status to the delete project project name stage stage name service service name default response
+func (o *DeleteProjectProjectNameStageStageNameServiceServiceNameDefault) WithStatusCode(code int) *DeleteProjectProjectNameStageStageNameServiceServiceNameDefault {
+	o._statusCode = code
+	return o
+}
+
+// SetStatusCode sets the status to the delete project project name stage stage name service service name default response
+func (o *DeleteProjectProjectNameStageStageNameServiceServiceNameDefault) SetStatusCode(code int) {
+	o._statusCode = code
+}
+
+// WithPayload adds the payload to the delete project project name stage stage name service service name default response
+func (o *DeleteProjectProjectNameStageStageNameServiceServiceNameDefault) WithPayload(payload *models.Error) *DeleteProjectProjectNameStageStageNameServiceServiceNameDefault {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the delete project project name stage stage name service service name default response
+func (o *DeleteProjectProjectNameStageStageNameServiceServiceNameDefault) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *DeleteProjectProjectNameStageStageNameServiceServiceNameDefault) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(o._statusCode)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}

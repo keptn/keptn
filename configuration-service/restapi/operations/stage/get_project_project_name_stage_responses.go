@@ -56,3 +56,105 @@ func (o *GetProjectProjectNameStageOK) WriteResponse(rw http.ResponseWriter, pro
 		}
 	}
 }
+
+// GetProjectProjectNameStageNotFoundCode is the HTTP code returned for type GetProjectProjectNameStageNotFound
+const GetProjectProjectNameStageNotFoundCode int = 404
+
+/*GetProjectProjectNameStageNotFound Failed. Containing project could not be found.
+
+swagger:response getProjectProjectNameStageNotFound
+*/
+type GetProjectProjectNameStageNotFound struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewGetProjectProjectNameStageNotFound creates GetProjectProjectNameStageNotFound with default headers values
+func NewGetProjectProjectNameStageNotFound() *GetProjectProjectNameStageNotFound {
+
+	return &GetProjectProjectNameStageNotFound{}
+}
+
+// WithPayload adds the payload to the get project project name stage not found response
+func (o *GetProjectProjectNameStageNotFound) WithPayload(payload *models.Error) *GetProjectProjectNameStageNotFound {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the get project project name stage not found response
+func (o *GetProjectProjectNameStageNotFound) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *GetProjectProjectNameStageNotFound) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(404)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
+/*GetProjectProjectNameStageDefault Error
+
+swagger:response getProjectProjectNameStageDefault
+*/
+type GetProjectProjectNameStageDefault struct {
+	_statusCode int
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewGetProjectProjectNameStageDefault creates GetProjectProjectNameStageDefault with default headers values
+func NewGetProjectProjectNameStageDefault(code int) *GetProjectProjectNameStageDefault {
+	if code <= 0 {
+		code = 500
+	}
+
+	return &GetProjectProjectNameStageDefault{
+		_statusCode: code,
+	}
+}
+
+// WithStatusCode adds the status to the get project project name stage default response
+func (o *GetProjectProjectNameStageDefault) WithStatusCode(code int) *GetProjectProjectNameStageDefault {
+	o._statusCode = code
+	return o
+}
+
+// SetStatusCode sets the status to the get project project name stage default response
+func (o *GetProjectProjectNameStageDefault) SetStatusCode(code int) {
+	o._statusCode = code
+}
+
+// WithPayload adds the payload to the get project project name stage default response
+func (o *GetProjectProjectNameStageDefault) WithPayload(payload *models.Error) *GetProjectProjectNameStageDefault {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the get project project name stage default response
+func (o *GetProjectProjectNameStageDefault) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *GetProjectProjectNameStageDefault) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(o._statusCode)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}

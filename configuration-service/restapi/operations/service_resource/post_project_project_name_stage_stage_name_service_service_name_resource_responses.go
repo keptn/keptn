@@ -100,3 +100,61 @@ func (o *PostProjectProjectNameStageStageNameServiceServiceNameResourceBadReques
 		}
 	}
 }
+
+/*PostProjectProjectNameStageStageNameServiceServiceNameResourceDefault Error
+
+swagger:response postProjectProjectNameStageStageNameServiceServiceNameResourceDefault
+*/
+type PostProjectProjectNameStageStageNameServiceServiceNameResourceDefault struct {
+	_statusCode int
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewPostProjectProjectNameStageStageNameServiceServiceNameResourceDefault creates PostProjectProjectNameStageStageNameServiceServiceNameResourceDefault with default headers values
+func NewPostProjectProjectNameStageStageNameServiceServiceNameResourceDefault(code int) *PostProjectProjectNameStageStageNameServiceServiceNameResourceDefault {
+	if code <= 0 {
+		code = 500
+	}
+
+	return &PostProjectProjectNameStageStageNameServiceServiceNameResourceDefault{
+		_statusCode: code,
+	}
+}
+
+// WithStatusCode adds the status to the post project project name stage stage name service service name resource default response
+func (o *PostProjectProjectNameStageStageNameServiceServiceNameResourceDefault) WithStatusCode(code int) *PostProjectProjectNameStageStageNameServiceServiceNameResourceDefault {
+	o._statusCode = code
+	return o
+}
+
+// SetStatusCode sets the status to the post project project name stage stage name service service name resource default response
+func (o *PostProjectProjectNameStageStageNameServiceServiceNameResourceDefault) SetStatusCode(code int) {
+	o._statusCode = code
+}
+
+// WithPayload adds the payload to the post project project name stage stage name service service name resource default response
+func (o *PostProjectProjectNameStageStageNameServiceServiceNameResourceDefault) WithPayload(payload *models.Error) *PostProjectProjectNameStageStageNameServiceServiceNameResourceDefault {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the post project project name stage stage name service service name resource default response
+func (o *PostProjectProjectNameStageStageNameServiceServiceNameResourceDefault) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *PostProjectProjectNameStageStageNameServiceServiceNameResourceDefault) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(o._statusCode)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}

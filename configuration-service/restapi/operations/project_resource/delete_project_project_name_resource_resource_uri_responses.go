@@ -80,3 +80,61 @@ func (o *DeleteProjectProjectNameResourceResourceURIBadRequest) WriteResponse(rw
 		}
 	}
 }
+
+/*DeleteProjectProjectNameResourceResourceURIDefault Error
+
+swagger:response deleteProjectProjectNameResourceResourceUriDefault
+*/
+type DeleteProjectProjectNameResourceResourceURIDefault struct {
+	_statusCode int
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewDeleteProjectProjectNameResourceResourceURIDefault creates DeleteProjectProjectNameResourceResourceURIDefault with default headers values
+func NewDeleteProjectProjectNameResourceResourceURIDefault(code int) *DeleteProjectProjectNameResourceResourceURIDefault {
+	if code <= 0 {
+		code = 500
+	}
+
+	return &DeleteProjectProjectNameResourceResourceURIDefault{
+		_statusCode: code,
+	}
+}
+
+// WithStatusCode adds the status to the delete project project name resource resource URI default response
+func (o *DeleteProjectProjectNameResourceResourceURIDefault) WithStatusCode(code int) *DeleteProjectProjectNameResourceResourceURIDefault {
+	o._statusCode = code
+	return o
+}
+
+// SetStatusCode sets the status to the delete project project name resource resource URI default response
+func (o *DeleteProjectProjectNameResourceResourceURIDefault) SetStatusCode(code int) {
+	o._statusCode = code
+}
+
+// WithPayload adds the payload to the delete project project name resource resource URI default response
+func (o *DeleteProjectProjectNameResourceResourceURIDefault) WithPayload(payload *models.Error) *DeleteProjectProjectNameResourceResourceURIDefault {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the delete project project name resource resource URI default response
+func (o *DeleteProjectProjectNameResourceResourceURIDefault) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *DeleteProjectProjectNameResourceResourceURIDefault) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(o._statusCode)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}

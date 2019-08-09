@@ -80,3 +80,61 @@ func (o *DeleteProjectProjectNameBadRequest) WriteResponse(rw http.ResponseWrite
 		}
 	}
 }
+
+/*DeleteProjectProjectNameDefault Error
+
+swagger:response deleteProjectProjectNameDefault
+*/
+type DeleteProjectProjectNameDefault struct {
+	_statusCode int
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewDeleteProjectProjectNameDefault creates DeleteProjectProjectNameDefault with default headers values
+func NewDeleteProjectProjectNameDefault(code int) *DeleteProjectProjectNameDefault {
+	if code <= 0 {
+		code = 500
+	}
+
+	return &DeleteProjectProjectNameDefault{
+		_statusCode: code,
+	}
+}
+
+// WithStatusCode adds the status to the delete project project name default response
+func (o *DeleteProjectProjectNameDefault) WithStatusCode(code int) *DeleteProjectProjectNameDefault {
+	o._statusCode = code
+	return o
+}
+
+// SetStatusCode sets the status to the delete project project name default response
+func (o *DeleteProjectProjectNameDefault) SetStatusCode(code int) {
+	o._statusCode = code
+}
+
+// WithPayload adds the payload to the delete project project name default response
+func (o *DeleteProjectProjectNameDefault) WithPayload(payload *models.Error) *DeleteProjectProjectNameDefault {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the delete project project name default response
+func (o *DeleteProjectProjectNameDefault) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *DeleteProjectProjectNameDefault) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(o._statusCode)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}

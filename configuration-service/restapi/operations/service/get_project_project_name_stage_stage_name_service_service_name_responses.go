@@ -56,3 +56,105 @@ func (o *GetProjectProjectNameStageStageNameServiceServiceNameOK) WriteResponse(
 		}
 	}
 }
+
+// GetProjectProjectNameStageStageNameServiceServiceNameNotFoundCode is the HTTP code returned for type GetProjectProjectNameStageStageNameServiceServiceNameNotFound
+const GetProjectProjectNameStageStageNameServiceServiceNameNotFoundCode int = 404
+
+/*GetProjectProjectNameStageStageNameServiceServiceNameNotFound Failed. Service could not be found.
+
+swagger:response getProjectProjectNameStageStageNameServiceServiceNameNotFound
+*/
+type GetProjectProjectNameStageStageNameServiceServiceNameNotFound struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewGetProjectProjectNameStageStageNameServiceServiceNameNotFound creates GetProjectProjectNameStageStageNameServiceServiceNameNotFound with default headers values
+func NewGetProjectProjectNameStageStageNameServiceServiceNameNotFound() *GetProjectProjectNameStageStageNameServiceServiceNameNotFound {
+
+	return &GetProjectProjectNameStageStageNameServiceServiceNameNotFound{}
+}
+
+// WithPayload adds the payload to the get project project name stage stage name service service name not found response
+func (o *GetProjectProjectNameStageStageNameServiceServiceNameNotFound) WithPayload(payload *models.Error) *GetProjectProjectNameStageStageNameServiceServiceNameNotFound {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the get project project name stage stage name service service name not found response
+func (o *GetProjectProjectNameStageStageNameServiceServiceNameNotFound) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *GetProjectProjectNameStageStageNameServiceServiceNameNotFound) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(404)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
+/*GetProjectProjectNameStageStageNameServiceServiceNameDefault Error
+
+swagger:response getProjectProjectNameStageStageNameServiceServiceNameDefault
+*/
+type GetProjectProjectNameStageStageNameServiceServiceNameDefault struct {
+	_statusCode int
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewGetProjectProjectNameStageStageNameServiceServiceNameDefault creates GetProjectProjectNameStageStageNameServiceServiceNameDefault with default headers values
+func NewGetProjectProjectNameStageStageNameServiceServiceNameDefault(code int) *GetProjectProjectNameStageStageNameServiceServiceNameDefault {
+	if code <= 0 {
+		code = 500
+	}
+
+	return &GetProjectProjectNameStageStageNameServiceServiceNameDefault{
+		_statusCode: code,
+	}
+}
+
+// WithStatusCode adds the status to the get project project name stage stage name service service name default response
+func (o *GetProjectProjectNameStageStageNameServiceServiceNameDefault) WithStatusCode(code int) *GetProjectProjectNameStageStageNameServiceServiceNameDefault {
+	o._statusCode = code
+	return o
+}
+
+// SetStatusCode sets the status to the get project project name stage stage name service service name default response
+func (o *GetProjectProjectNameStageStageNameServiceServiceNameDefault) SetStatusCode(code int) {
+	o._statusCode = code
+}
+
+// WithPayload adds the payload to the get project project name stage stage name service service name default response
+func (o *GetProjectProjectNameStageStageNameServiceServiceNameDefault) WithPayload(payload *models.Error) *GetProjectProjectNameStageStageNameServiceServiceNameDefault {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the get project project name stage stage name service service name default response
+func (o *GetProjectProjectNameStageStageNameServiceServiceNameDefault) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *GetProjectProjectNameStageStageNameServiceServiceNameDefault) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(o._statusCode)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}

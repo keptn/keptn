@@ -235,6 +235,10 @@ paths:
           description: Failed. Project could not be created.
           schema:
             $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
     get:
       tags:
         - Project
@@ -247,6 +251,10 @@ paths:
           description: Success
           schema:
             $ref: '#/definitions/Projects'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error' 
 
   '/project/{projectName}':
     parameters:
@@ -260,6 +268,14 @@ paths:
           description: Success
           schema:
             $ref: '#/definitions/Project'
+        '404':
+          description: Failed. Project could not be found.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'  
     put:
       tags:
         - Project
@@ -273,6 +289,10 @@ paths:
           description: Failed. Project could not be updated.
           schema:
             $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error' 
     delete:
       tags:
         - Project
@@ -284,6 +304,10 @@ paths:
           description: Failed. Project could not be deleted.
           schema:
             $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error' 
 
   '/project/{projectName}/resource':
     parameters:
@@ -303,6 +327,10 @@ paths:
           description: Failed. Project resource could not be created.
           schema:
             $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error' 
     get:
       tags:
         - Project Resource
@@ -315,6 +343,14 @@ paths:
           description: Success
           schema:
             $ref: '#/definitions/Resources'
+        '404':
+          description: Failed. Containing project could not be found.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'  
     put:
       tags:
         - Project Resource
@@ -328,6 +364,10 @@ paths:
             $ref: '#/definitions/Version'
         '400':
           description: Failed. Project resources could not be updated.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
           schema:
             $ref: '#/definitions/Error'
 
@@ -344,6 +384,14 @@ paths:
           description: Success
           schema:
             $ref: '#/definitions/Resource'
+        '404':
+          description: Failed. Project resource could not be found.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'            
     put:
       tags:
         - Project Resource
@@ -359,6 +407,10 @@ paths:
           description: Failed. Project resource could not be updated.
           schema:
             $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
     delete:
       tags:
         - Project Resource
@@ -368,6 +420,10 @@ paths:
           description: Success. Project resource has been deleted. Response does not have a body.
         '400':
           description: Failed. Project resource could not be deleted.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
           schema:
             $ref: '#/definitions/Error'
           
@@ -387,6 +443,10 @@ paths:
           description: Failed. Stage could not be created.
           schema:
             $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
     get:
       tags:
         - Stage
@@ -399,6 +459,14 @@ paths:
           description: Success
           schema:
             $ref: '#/definitions/Stages'
+        '404':
+          description: Failed. Containing project could not be found.
+          schema:
+            $ref: '#/definitions/Error' 
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
 
   '/project/{projectName}/stage/{stageName}':
     parameters:
@@ -413,6 +481,14 @@ paths:
           description: Success
           schema:
             $ref: '#/definitions/Stage'
+        '404':
+          description: Failed. Project resource could not be found.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error' 
     put:
       tags:
         - Stage
@@ -426,6 +502,10 @@ paths:
           description: Failed. Stage could not be updated.
           schema:
             $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
     delete:
       tags:
         - Stage
@@ -435,6 +515,10 @@ paths:
           description: Success. Stage has been deleted. Response does not have a body.
         '400':
           description: Failed. Stage could not be deleted.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
           schema:
             $ref: '#/definitions/Error'
 
@@ -457,6 +541,10 @@ paths:
           description: Failed. Stage resource could not be created.
           schema:
             $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
     get:
       tags:
         - Stage Resource
@@ -469,6 +557,14 @@ paths:
           description: Success
           schema:
             $ref: '#/definitions/Resources'
+        '404':
+          description: Failed. Stage could not be found.
+          schema:
+            $ref: '#/definitions/Error' 
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
     put:
       tags:
         - Stage Resource
@@ -482,6 +578,10 @@ paths:
             $ref: '#/definitions/Version'
         '400':
           description: Failed. Stage resources could not be updated.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
           schema:
             $ref: '#/definitions/Error'
 
@@ -499,6 +599,14 @@ paths:
           description: Success
           schema:
             $ref: '#/definitions/Resource'
+        '404':
+          description: Failed. Stage resource could not be found.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error' 
     put:
       tags:
         - Stage Resource
@@ -512,6 +620,10 @@ paths:
           description: Failed. Stage resource could not be updated.
           schema:
             $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
     delete:
       tags:
         - Stage Resource
@@ -521,6 +633,10 @@ paths:
           description: Success. Stage resource has been deleted. Response does not have a body.
         '400':
           description: Failed. Stage resource could not be deleted.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
           schema:
             $ref: '#/definitions/Error'
 
@@ -541,6 +657,10 @@ paths:
           description: Failed. Service could not be created.
           schema:
             $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
     get:
       tags:
         - Service
@@ -553,6 +673,14 @@ paths:
           description: Success
           schema:
             $ref: '#/definitions/Services'
+        '404':
+          description: Failed. Containing project could not be found.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error' 
 
   '/project/{projectName}/stage/{stageName}/service/{serviceName}':
     parameters:
@@ -568,6 +696,14 @@ paths:
           description: Success
           schema:
             $ref: '#/definitions/Service'
+        '404':
+          description: Failed. Service could not be found.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error' 
     put:
       tags:
         - Service
@@ -581,6 +717,10 @@ paths:
           description: Failed. Service could not be updated.
           schema:
             $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
     delete:
       tags:
         - Service
@@ -590,6 +730,10 @@ paths:
           description: Success. Service has been deleted. Response does not have a body.
         '400':
           description: Failed. Service could not be deleted.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
           schema:
             $ref: '#/definitions/Error'
 
@@ -613,6 +757,10 @@ paths:
           description: Failed. Service resource could not be created.
           schema:
             $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
     get:
       tags:
         - Service Resource
@@ -625,6 +773,14 @@ paths:
           description: Success
           schema:
             $ref: '#/definitions/Resources'
+        '404':
+          description: Failed. Containing Service could not be found.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error' 
     put:
       tags:
         - Service Resource
@@ -638,6 +794,10 @@ paths:
             $ref: '#/definitions/Version'
         '400':
           description: Failed. Service resources could not be updated.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
           schema:
             $ref: '#/definitions/Error'
 
@@ -656,6 +816,14 @@ paths:
           description: Success
           schema:
             $ref: '#/definitions/Resource'
+        '404':
+          description: Failed. Service resource could not be found.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error' 
     put:
       tags:
         - Service Resource
@@ -669,6 +837,10 @@ paths:
           description: Failed. Service resource could not be updated.
           schema:
             $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
     delete:
       tags:
         - Service Resource
@@ -678,6 +850,10 @@ paths:
           description: Success. Service resource has been deleted. Response does not have a body.
         '400':
           description: Failed. Service resource could not be deleted.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
           schema:
             $ref: '#/definitions/Error'
 
@@ -700,6 +876,10 @@ paths:
           description: Failed. Service default resource could not be created.
           schema:
             $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
     get:
       tags:
         - Service Default Resource 
@@ -712,6 +892,14 @@ paths:
           description: Success
           schema:
             $ref: '#/definitions/Resources'
+        '404':
+          description: Failed. Containing service could not be found.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error' 
     put:
       tags:
         - Service Default Resource
@@ -725,6 +913,10 @@ paths:
             $ref: '#/definitions/Version'
         '400':
           description: Failed. Service default resources could not be updated.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
           schema:
             $ref: '#/definitions/Error'
 
@@ -742,6 +934,14 @@ paths:
           description: Success
           schema:
             $ref: '#/definitions/Resource'
+        '404':
+          description: Failed. Default resource could not be found.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error' 
     put:
       tags:
         - Service Default Resource
@@ -755,6 +955,10 @@ paths:
           description: Failed. Service default resource could not be updated.
           schema:
             $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
     delete:
       tags:
         - Service Default Resource
@@ -764,5 +968,9 @@ paths:
           description: Success. Service default resource has been deleted. Response does not have a body.
         '400':
           description: Failed. Service default resource could not be deleted.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
           schema:
             $ref: '#/definitions/Error'

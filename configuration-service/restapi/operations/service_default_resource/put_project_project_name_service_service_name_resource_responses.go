@@ -100,3 +100,61 @@ func (o *PutProjectProjectNameServiceServiceNameResourceBadRequest) WriteRespons
 		}
 	}
 }
+
+/*PutProjectProjectNameServiceServiceNameResourceDefault Error
+
+swagger:response putProjectProjectNameServiceServiceNameResourceDefault
+*/
+type PutProjectProjectNameServiceServiceNameResourceDefault struct {
+	_statusCode int
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewPutProjectProjectNameServiceServiceNameResourceDefault creates PutProjectProjectNameServiceServiceNameResourceDefault with default headers values
+func NewPutProjectProjectNameServiceServiceNameResourceDefault(code int) *PutProjectProjectNameServiceServiceNameResourceDefault {
+	if code <= 0 {
+		code = 500
+	}
+
+	return &PutProjectProjectNameServiceServiceNameResourceDefault{
+		_statusCode: code,
+	}
+}
+
+// WithStatusCode adds the status to the put project project name service service name resource default response
+func (o *PutProjectProjectNameServiceServiceNameResourceDefault) WithStatusCode(code int) *PutProjectProjectNameServiceServiceNameResourceDefault {
+	o._statusCode = code
+	return o
+}
+
+// SetStatusCode sets the status to the put project project name service service name resource default response
+func (o *PutProjectProjectNameServiceServiceNameResourceDefault) SetStatusCode(code int) {
+	o._statusCode = code
+}
+
+// WithPayload adds the payload to the put project project name service service name resource default response
+func (o *PutProjectProjectNameServiceServiceNameResourceDefault) WithPayload(payload *models.Error) *PutProjectProjectNameServiceServiceNameResourceDefault {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the put project project name service service name resource default response
+func (o *PutProjectProjectNameServiceServiceNameResourceDefault) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *PutProjectProjectNameServiceServiceNameResourceDefault) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(o._statusCode)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}

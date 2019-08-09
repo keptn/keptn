@@ -56,6 +56,12 @@ func PostProjectProjectNameResourceHandlerFunc(params project_resource.PostProje
 
 // GetProjectProjectNameResourceResourceURIHandlerFunc gets the specified resource
 func GetProjectProjectNameResourceResourceURIHandlerFunc(params project_resource.GetProjectProjectNameResourceResourceURIParams) middleware.Responder {
+	utils.Debug("", "Checking out master branch")
+	err := common.CheckoutBranch(params.ProjectName, "master")
+	if err != nil {
+		//return new project_resource.NewDef
+		// return project_resource.().WithPayload(&models.Error{Code: 404, Message: swag.String(err.Error())})
+	}
 	return middleware.NotImplemented("operation project_resource.GetProjectProjectNameResourceResourceURI has not yet been implemented")
 }
 

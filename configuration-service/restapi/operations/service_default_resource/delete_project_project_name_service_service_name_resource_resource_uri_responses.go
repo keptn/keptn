@@ -80,3 +80,61 @@ func (o *DeleteProjectProjectNameServiceServiceNameResourceResourceURIBadRequest
 		}
 	}
 }
+
+/*DeleteProjectProjectNameServiceServiceNameResourceResourceURIDefault Error
+
+swagger:response deleteProjectProjectNameServiceServiceNameResourceResourceUriDefault
+*/
+type DeleteProjectProjectNameServiceServiceNameResourceResourceURIDefault struct {
+	_statusCode int
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewDeleteProjectProjectNameServiceServiceNameResourceResourceURIDefault creates DeleteProjectProjectNameServiceServiceNameResourceResourceURIDefault with default headers values
+func NewDeleteProjectProjectNameServiceServiceNameResourceResourceURIDefault(code int) *DeleteProjectProjectNameServiceServiceNameResourceResourceURIDefault {
+	if code <= 0 {
+		code = 500
+	}
+
+	return &DeleteProjectProjectNameServiceServiceNameResourceResourceURIDefault{
+		_statusCode: code,
+	}
+}
+
+// WithStatusCode adds the status to the delete project project name service service name resource resource URI default response
+func (o *DeleteProjectProjectNameServiceServiceNameResourceResourceURIDefault) WithStatusCode(code int) *DeleteProjectProjectNameServiceServiceNameResourceResourceURIDefault {
+	o._statusCode = code
+	return o
+}
+
+// SetStatusCode sets the status to the delete project project name service service name resource resource URI default response
+func (o *DeleteProjectProjectNameServiceServiceNameResourceResourceURIDefault) SetStatusCode(code int) {
+	o._statusCode = code
+}
+
+// WithPayload adds the payload to the delete project project name service service name resource resource URI default response
+func (o *DeleteProjectProjectNameServiceServiceNameResourceResourceURIDefault) WithPayload(payload *models.Error) *DeleteProjectProjectNameServiceServiceNameResourceResourceURIDefault {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the delete project project name service service name resource resource URI default response
+func (o *DeleteProjectProjectNameServiceServiceNameResourceResourceURIDefault) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *DeleteProjectProjectNameServiceServiceNameResourceResourceURIDefault) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(o._statusCode)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}

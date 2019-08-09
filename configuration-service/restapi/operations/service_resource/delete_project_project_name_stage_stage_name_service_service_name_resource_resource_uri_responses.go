@@ -80,3 +80,61 @@ func (o *DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourc
 		}
 	}
 }
+
+/*DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault Error
+
+swagger:response deleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceUriDefault
+*/
+type DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault struct {
+	_statusCode int
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewDeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault creates DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault with default headers values
+func NewDeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault(code int) *DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault {
+	if code <= 0 {
+		code = 500
+	}
+
+	return &DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault{
+		_statusCode: code,
+	}
+}
+
+// WithStatusCode adds the status to the delete project project name stage stage name service service name resource resource URI default response
+func (o *DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault) WithStatusCode(code int) *DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault {
+	o._statusCode = code
+	return o
+}
+
+// SetStatusCode sets the status to the delete project project name stage stage name service service name resource resource URI default response
+func (o *DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault) SetStatusCode(code int) {
+	o._statusCode = code
+}
+
+// WithPayload adds the payload to the delete project project name stage stage name service service name resource resource URI default response
+func (o *DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault) WithPayload(payload *models.Error) *DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the delete project project name stage stage name service service name resource resource URI default response
+func (o *DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(o._statusCode)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
