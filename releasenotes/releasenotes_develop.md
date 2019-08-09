@@ -9,6 +9,7 @@
 - Refactor installer in keptn CLI [#638](https://github.com/keptn/keptn/issues/638)
 - Use custom dialer for xip io resolving in the websocket communication [#634](https://github.com/keptn/keptn/issues/634)
 - Use internal datastore for logging events and service logs [#536](https://github.com/keptn/keptn/issues/536)
+- Allow update domain from CLI [#553](https://github.com/keptn/keptn/issues/553)
 
 ## Fixed Issues
 
