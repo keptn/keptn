@@ -18,6 +18,20 @@ func CheckoutBranch(project string, branch string) error {
 	return nil
 }
 
+// CreateBranch creates a new branch
+func CreateBranch(project string, branch string, sourceBranch string) error {
+	projectConfigPath := config.ConfigDir + "/" + project
+	err := CheckoutBranch(project, sourceBranch)
+	if err != nil {
+		return err
+	}
+	_, err = utils.ExecuteCommandInDirectory("git", []string{"checkout", "-b", branch}, projectConfigPath)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // StageAndCommitAll stages all current changes and commits them to the current branch
 func StageAndCommitAll(project string, message string) error {
 	projectConfigPath := config.ConfigDir + "/" + project

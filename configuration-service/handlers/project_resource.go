@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"io/ioutil"
-	"os"
 
 	"github.com/go-openapi/strfmt"
 
@@ -63,7 +62,7 @@ func PostProjectProjectNameResourceHandlerFunc(params project_resource.PostProje
 func GetProjectProjectNameResourceResourceURIHandlerFunc(params project_resource.GetProjectProjectNameResourceResourceURIParams) middleware.Responder {
 	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
 	resourcePath := projectConfigPath + "/" + params.ResourceURI
-	if !projectExists(params.ProjectName) {
+	if !common.ProjectExists(params.ProjectName) {
 		return project_resource.NewGetProjectProjectNameResourceResourceURINotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project not found")})
 	}
 	utils.Debug("", "Checking out master branch")
@@ -115,15 +114,4 @@ func DeleteProjectProjectNameResourceResourceURIHandlerFunc(params project_resou
 	utils.Debug("", "Successfully deleted resources")
 
 	return project_resource.NewDeleteProjectProjectNameResourceResourceURINoContent()
-}
-
-func projectExists(project string) bool {
-	projectConfigPath := config.ConfigDir + "/" + project
-	// check if the project exists
-	_, err := os.Stat(projectConfigPath)
-	// create file if not exists
-	if os.IsNotExist(err) {
-		return false
-	}
-	return true
 }
