@@ -1,6 +1,11 @@
 package handlers
 
 import (
+	"io/ioutil"
+	"os"
+
+	"github.com/go-openapi/strfmt"
+
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
 	"github.com/keptn/go-utils/pkg/utils"
@@ -56,13 +61,32 @@ func PostProjectProjectNameResourceHandlerFunc(params project_resource.PostProje
 
 // GetProjectProjectNameResourceResourceURIHandlerFunc gets the specified resource
 func GetProjectProjectNameResourceResourceURIHandlerFunc(params project_resource.GetProjectProjectNameResourceResourceURIParams) middleware.Responder {
+	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
+	resourcePath := projectConfigPath + "/" + params.ResourceURI
+	if !projectExists(params.ProjectName) {
+		return project_resource.NewGetProjectProjectNameResourceResourceURINotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project not found")})
+	}
 	utils.Debug("", "Checking out master branch")
 	err := common.CheckoutBranch(params.ProjectName, "master")
 	if err != nil {
-		//return new project_resource.NewDef
-		// return project_resource.().WithPayload(&models.Error{Code: 404, Message: swag.String(err.Error())})
+		return project_resource.NewGetProjectProjectNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 	}
-	return middleware.NotImplemented("operation project_resource.GetProjectProjectNameResourceResourceURI has not yet been implemented")
+
+	if !common.FileExists(resourcePath) {
+		return project_resource.NewGetProjectProjectNameResourceResourceURINotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project resource not found")})
+	}
+
+	dat, err := ioutil.ReadFile(resourcePath)
+	if err != nil {
+		return project_resource.NewGetProjectProjectNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+	}
+
+	resourceContent := strfmt.Base64(dat)
+	return project_resource.NewGetProjectProjectNameResourceResourceURIOK().WithPayload(
+		&models.Resource{
+			ResourceURI:     &params.ResourceURI,
+			ResourceContent: resourceContent,
+		})
 }
 
 // PutProjectProjectNameResourceResourceURIHandlerFunc updates a resource
@@ -72,5 +96,34 @@ func PutProjectProjectNameResourceResourceURIHandlerFunc(params project_resource
 
 // DeleteProjectProjectNameResourceResourceURIHandlerFunc deletes a project resource
 func DeleteProjectProjectNameResourceResourceURIHandlerFunc(params project_resource.DeleteProjectProjectNameResourceResourceURIParams) middleware.Responder {
-	return middleware.NotImplemented("operation project_resource.DeleteProjectProjectNameResourceResourceURI has not yet been implemented")
+	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
+	resourcePath := projectConfigPath + "/" + params.ResourceURI
+	err := common.CheckoutBranch(params.ProjectName, "master")
+	if err != nil {
+		return project_resource.NewDeleteProjectProjectNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+	}
+	err = common.DeleteFile(resourcePath)
+	if err != nil {
+		return project_resource.NewDeleteProjectProjectNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+	}
+
+	utils.Debug("", "Staging Changes")
+	err = common.StageAndCommitAll(params.ProjectName, "Deleted resources")
+	if err != nil {
+		return project_resource.NewDeleteProjectProjectNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+	}
+	utils.Debug("", "Successfully deleted resources")
+
+	return project_resource.NewDeleteProjectProjectNameResourceResourceURINoContent()
+}
+
+func projectExists(project string) bool {
+	projectConfigPath := config.ConfigDir + "/" + project
+	// check if the project exists
+	_, err := os.Stat(projectConfigPath)
+	// create file if not exists
+	if os.IsNotExist(err) {
+		return false
+	}
+	return true
 }
