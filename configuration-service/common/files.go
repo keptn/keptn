@@ -45,3 +45,22 @@ func WriteFile(path string, content []byte) error {
 	err = file.Sync()
 	return nil
 }
+
+// DeleteFile deletes a file
+func DeleteFile(path string) error {
+	var err = os.Remove(path)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// FileExists checks wether a file is available or not
+func FileExists(path string) bool {
+	_, err := os.Stat(path)
+	// create file if not exists
+	if os.IsNotExist(err) {
+		return false
+	}
+	return true
+}
