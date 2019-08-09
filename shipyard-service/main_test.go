@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
-	"github.com/keptn/keptn/shipyard-service/models"
+	"github.com/keptn/keptn/configuration-service/models"
 	"github.com/magiconair/properties/assert"
 )
 

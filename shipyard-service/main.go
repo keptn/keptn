@@ -12,7 +12,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/keptn/keptn/shipyard-service/models"
+	"github.com/keptn/keptn/configuration-service/models"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
@@ -32,18 +32,24 @@ type envConfig struct {
 	Path string `envconfig:"RCV_PATH" default:"/"`
 }
 
-type createProjectEvent struct {
-	Project  string          `json:"project"`
-	Upstream string          `json:"upstream"`
-	User     string          `json:"user"`
-	Token    string          `json:"token"`
-	Shipyard []shipyardStage `json:"stages"`
+type createProjectEventData struct {
+	Project      string          `json:"project"`
+	GitRemoteURL string          `json:"gitremoteurl"`
+	GitUser      string          `json:"gituser"`
+	GitToken     string          `json:"gittoken"`
+	Shipyard     []shipyardStage `json:"stages"`
 }
 
 type shipyardStage struct {
 	Name               string `json:"name"`
 	DeplyomentStrategy string `json:"deployment_strategy"`
 	TestStrategy       string `json:"test_strategy"`
+}
+
+type doneEventData struct {
+	Result  string `json:"result"`
+	Message string `json:"message"`
+	Version string `json:"version"`
 }
 
 type Client struct {
@@ -85,7 +91,6 @@ func newClient() *Client {
 			Timeout: 5 * time.Second,
 		},
 	}
-
 	return &client
 }
 
@@ -93,24 +98,21 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	var shkeptncontext string
 	event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
 
-	logger := keptnutils.NewLogger(shkeptncontext, event.Context.GetID(), "project-mgt-service")
+	logger := keptnutils.NewLogger(shkeptncontext, event.Context.GetID(), "shipyard-service")
 
-	if event.Type() == "sh.keptn.events.project.create" {
-		eventData := &createProjectEvent{}
+	if event.Type() == "sh.keptn.internal.events.project.create" {
+		eventData := &createProjectEventData{}
 		if err := event.DataAs(eventData); err != nil {
 			logger.Error(fmt.Sprintf("data of the event is incompatible: %s", err.Error()))
 			return err
 		}
 
-		if err := createProjectAndProcessShipyard(*eventData, *logger); err != nil {
-			logger.Error(err.Error())
-			sendDoneEvent(event)
+		err := createProjectAndProcessShipyard(*eventData, *logger)
+		if err := respondWithDoneEvent(event, err, *logger); err != nil {
+			logger.Error(fmt.Sprintf("no sh.keptn.event.done sent: %s", err.Error()))
 			return err
-		} else {
-			logger.Info("project.create event processed successfully")
-			sendDoneEvent(event)
-			return nil
 		}
+		return nil
 	}
 
 	const errorMsg = "received unexpected keptn event that cannot be processed"
@@ -118,7 +120,24 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	return errors.New(errorMsg)
 }
 
-func createProjectAndProcessShipyard(eventData createProjectEvent, logger keptnutils.Logger) error {
+func respondWithDoneEvent(event cloudevents.Event, err error, logger keptnutils.Logger) error {
+	if err != nil {
+		logger.Error(err.Error())
+		if err := sendDoneEvent(event, "error", err.Error()); err != nil {
+			logger.Error(err.Error())
+		}
+		return err
+	}
+
+	logger.Info("Create project event processed successfully")
+	if err := sendDoneEvent(event, "success", "Create project event processed successfully"); err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+	return nil
+}
+
+func createProjectAndProcessShipyard(eventData createProjectEventData, logger keptnutils.Logger) error {
 
 	client := newClient()
 
@@ -247,10 +266,28 @@ func (client *Client) storeResource(project models.Project, resources []*models.
 	return nil
 }
 
-func sendDoneEvent(incomingEvent cloudevents.Event) error {
+func sendDoneEvent(receivedEvent cloudevents.Event, result string, message string) error {
+
+	fmt.Println(result)
+
+	var shkeptncontext string
+	receivedEvent.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
+	var shkeptnphaseid string
+	receivedEvent.Context.ExtensionAs("shkeptnphaseid", &shkeptnphaseid)
+	var shkeptnphase string
+	receivedEvent.Context.ExtensionAs("shkeptnphase", &shkeptnphase)
+	var shkeptnstepid string
+	receivedEvent.Context.ExtensionAs("shkeptnstepid", &shkeptnstepid)
+	var shkeptnstep string
+	receivedEvent.Context.ExtensionAs("shkeptnstep", &shkeptnstep)
 
 	source, _ := url.Parse("shipyard-service")
 	contentType := "application/json"
+
+	eventData := doneEventData{
+		Result:  result,
+		Message: message,
+	}
 
 	event := cloudevents.Event{
 		Context: cloudevents.EventContextV02{
@@ -258,8 +295,15 @@ func sendDoneEvent(incomingEvent cloudevents.Event) error {
 			Type:        "sh.keptn.events.done",
 			Source:      types.URLRef{URL: *source},
 			ContentType: &contentType,
+			Extensions: map[string]interface{}{
+				"shkeptncontext": shkeptncontext,
+				"shkeptnphaseid": shkeptnphaseid,
+				"shkeptnphase":   shkeptnphase,
+				"shkeptnstepid":  shkeptnstepid,
+				"shkeptnstep":    shkeptnstep,
+			},
 		}.AsV02(),
-		Data: "",
+		Data: eventData,
 	}
 
 	endPoint, err := getServiceEndpoint(eventbroker)
@@ -267,21 +311,25 @@ func sendDoneEvent(incomingEvent cloudevents.Event) error {
 		return errors.New("failed to retrieve endpoint of eventbroker: %s" + err.Error())
 	}
 
+	if endPoint.Host == "" {
+		return errors.New("host of eventbroker not set")
+	}
+
 	transport, err := cloudeventshttp.New(
 		cloudeventshttp.WithTarget(endPoint.String()),
 		cloudeventshttp.WithEncoding(cloudeventshttp.StructuredV02),
 	)
 	if err != nil {
-		return errors.New("failed to create transport:" + err.Error())
+		return errors.New("failed to create transport: " + err.Error())
 	}
 
 	client, err := client.New(transport)
 	if err != nil {
-		return errors.New("failed to create HTTP client:" + err.Error())
+		return errors.New("failed to create HTTP client: " + err.Error())
 	}
 
 	if _, err := client.Send(context.Background(), event); err != nil {
-		return errors.New("failed to send cloudevent: " + err.Error())
+		return errors.New("failed to send cloudevent sh.keptn.events.done: " + err.Error())
 	}
 
 	return nil
