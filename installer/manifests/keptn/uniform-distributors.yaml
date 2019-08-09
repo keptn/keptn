@@ -1,8 +1,9 @@
-## github-service: create.project
+---
+## shipyard-service: create.project
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: github-service-create-project-distributor
+  name: shipyard-service-create-project-distributor
   namespace: keptn
 spec:
   selector:
@@ -32,7 +33,7 @@ spec:
         - name: PUBSUB_TOPIC
           value: 'create.project'
         - name: PUBSUB_RECIPIENT
-          value: 'github-service'
+          value: 'shipyard-service'
 ---
 ## github-service: onboard.service
 apiVersion: apps/v1

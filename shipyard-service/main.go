@@ -100,8 +100,9 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 	logger := keptnutils.NewLogger(shkeptncontext, event.Context.GetID(), "shipyard-service")
 
-	if event.Type() == "sh.keptn.internal.events.project.create" {
-		eventData := &createProjectEventData{}
+	//if event.Type() == "sh.keptn.internal.events.project.create" {
+	if event.Type() == "create.project" {
+			eventData := &createProjectEventData{}
 		if err := event.DataAs(eventData); err != nil {
 			logger.Error(fmt.Sprintf("data of the event is incompatible: %s", err.Error()))
 			return err
