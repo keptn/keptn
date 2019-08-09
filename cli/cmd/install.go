@@ -16,13 +16,10 @@ package cmd
 
 import (
 	"bufio"
-	"bytes"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
@@ -39,9 +36,6 @@ import (
 var configFilePath *string
 var installerVersion *string
 var platformIdentifier *string
-var insecureSkipTLSVerify bool
-
-var kubectlOptions string
 
 const gke = "gke"
 const aks = "aks"
@@ -65,11 +59,6 @@ type githubCredentials struct {
 	GithubPersonalAccessToken string `json:"githubPersonalAccessToken"`
 	GithubOrg                 string `json:"githubOrg"`
 	GithubUserName            string `json:"githubUserName"`
-}
-
-type placeholderReplacement struct {
-	placeholderValue string
-	desiredValue     string
 }
 
 var p platform
@@ -105,7 +94,7 @@ Example:
 		}
 
 		// Check whether kubectl is installed
-		isKubAvailable, err := isKubectlAvailable()
+		isKubAvailable, err := utils.IsKubectlAvailable()
 		if err != nil || !isKubAvailable {
 			return errors.New(`keptn requires 'kubectl' but it is not available.
 Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
@@ -246,12 +235,12 @@ func doInstallation() error {
 	installerPath := path + "installer.yaml"
 
 	// get the YAML for the installer pod
-	if err := downloadFile(installerPath, getInstallerURL()); err != nil {
+	if err := utils.DownloadFile(installerPath, getInstallerURL()); err != nil {
 		return err
 	}
 
-	if err := setDeploymentFileKey(installerPath,
-		placeholderReplacement{"PLATFORM", *platformIdentifier}); err != nil {
+	if err := utils.Replace(installerPath,
+		utils.PlaceholderReplacement{PlaceholderValue: "PLATFORM", DesiredValue: *platformIdentifier}); err != nil {
 		return err
 	}
 
@@ -289,8 +278,14 @@ func doInstallation() error {
 	if err != nil {
 		return err
 	}
+
 	// installation finished, get auth token and endpoint
-	err = setupKeptnAuthAndConfigure(p.getGithubCreds())
+	err = authUsingKube()
+	if err != nil {
+		return err
+	}
+	err = configure(p.getGithubCreds().GithubOrg,
+		p.getGithubCreds().GithubUserName, p.getGithubCreds().GithubPersonalAccessToken)
 	if err != nil {
 		return err
 	}
@@ -425,51 +420,6 @@ func readUserInput(value *string, regex string, promptMessage string, regexViola
 			keepAsking = false
 		}
 	}
-}
-
-// downloadFile will download a url to a local file. It's efficient because it will
-// write as it downloads and not load the whole file into memory.
-func downloadFile(filepath string, url string) error {
-
-	// Get the data
-
-	resp, err := http.Get(url)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	// Create the file
-	out, err := os.Create(filepath)
-	if err != nil {
-		return err
-	}
-	defer out.Close()
-
-	// Write the body to file
-	_, err = io.Copy(out, resp.Body)
-	return err
-}
-
-func setDeploymentFileKey(installerPath string, replacements ...placeholderReplacement) error {
-	content, err := utils.ReadFile(installerPath)
-	if err != nil {
-		return err
-	}
-	for _, replacement := range replacements {
-		content = strings.ReplaceAll(content, "value: "+replacement.placeholderValue, "value: "+replacement.desiredValue)
-	}
-
-	return ioutil.WriteFile(installerPath, []byte(content), 0666)
-}
-
-func isKubectlAvailable() (bool, error) {
-
-	_, err := keptnutils.ExecuteCommand("kubectl", []string{})
-	if err != nil {
-		return false, err
-	}
-	return true, nil
 }
 
 func waitForInstallerPod() (string, error) {
@@ -625,125 +575,4 @@ func createFileInKeptnDirectory(fileName string) (*os.File, error) {
 	}
 
 	return os.Create(path + fileName)
-}
-
-func setupKeptnAuthAndConfigure(creds *githubCredentials) error {
-
-	utils.PrintLog("Starting to configure your keptn CLI...", utils.InfoLevel)
-
-	ops := options{"get",
-		"secret",
-		"keptn-api-token",
-		"-n",
-		"keptn",
-		"-ojsonpath={.data.keptn-api-token}"}
-	ops.appendIfNotEmpty(kubectlOptions)
-	out, err := keptnutils.ExecuteCommand("kubectl", ops)
-
-	const errorMsg = `Could not retrieve keptn API token: %s
-To manually set up your keptn CLI, please follow the instructions at https://keptn.sh/docs/0.2.0/reference/cli/.`
-
-	if err != nil {
-		return fmt.Errorf(errorMsg, err)
-	}
-
-	apiToken, err := base64.StdEncoding.DecodeString(out)
-	if err != nil {
-		return fmt.Errorf(errorMsg, err)
-	}
-	var keptnEndpoint string
-	apiEndpointRetrieved := false
-	retries := 0
-	for tryGetAPIEndpoint := true; tryGetAPIEndpoint; tryGetAPIEndpoint = !apiEndpointRetrieved {
-
-		ops := options{"get",
-			"virtualservice",
-			"api",
-			"-n",
-			"keptn",
-			"-ojsonpath={.spec.hosts[0]}"}
-		ops.appendIfNotEmpty(kubectlOptions)
-
-		out, err := keptnutils.ExecuteCommand("kubectl", ops)
-
-		if err != nil {
-			retries++
-			if retries >= 15 {
-				utils.PrintLog("API endpoint not yet available... trying again in 5s", utils.InfoLevel)
-			}
-		} else {
-			retries = 0
-		}
-		keptnEndpoint = strings.TrimSpace(string(out))
-		if keptnEndpoint == "" {
-			retries++
-			if retries >= 15 {
-				utils.PrintLog("API endpoint not yet available... trying again in 5s", utils.InfoLevel)
-			}
-		} else {
-			keptnEndpoint = "https://" + keptnEndpoint
-			apiEndpointRetrieved = true
-		}
-		if !apiEndpointRetrieved {
-			time.Sleep(5 * time.Second)
-		}
-	}
-	err = authenticate(keptnEndpoint, string(apiToken))
-	if err != nil {
-		return err
-	}
-	err = configure(creds)
-	if err != nil {
-		return err
-	}
-	utils.PrintLog("Your CLI is now successfully configured. You are now ready to use keptn.", utils.InfoLevel)
-	return nil
-}
-
-func authenticate(endPoint string, apiToken string) error {
-	buf := new(bytes.Buffer)
-	rootCmd.SetOutput(buf)
-
-	args := []string{
-		"auth",
-		fmt.Sprintf("--endpoint=%s", endPoint),
-		fmt.Sprintf("--api-token=%s", apiToken),
-	}
-	rootCmd.SetArgs(args)
-	err := rootCmd.Execute()
-
-	if err != nil {
-		return fmt.Errorf("Authentication at keptn failed: %s\n"+
-			"To manually set up your keptn CLI, please follow the instructions at https://keptn.sh/docs/0.2.0/reference/cli/.", err)
-	}
-	return nil
-}
-
-func configure(creds *githubCredentials) error {
-
-	buf := new(bytes.Buffer)
-	rootCmd.SetOutput(buf)
-
-	args := []string{
-		"configure",
-		fmt.Sprintf("--org=%s", creds.GithubOrg),
-		fmt.Sprintf("--user=%s", creds.GithubUserName),
-		fmt.Sprintf("--token=%s", creds.GithubPersonalAccessToken),
-	}
-	rootCmd.SetArgs(args)
-	err := rootCmd.Execute()
-
-	if err != nil {
-		return fmt.Errorf("Configuration failed: %s\n"+
-			"To manually set up your keptn CLI, please follow the instructions at https://keptn.sh/docs/0.2.0/reference/cli/.", err)
-	}
-	return nil
-}
-
-type options []string
-
-func (s *options) appendIfNotEmpty(newOption string) {
-	if newOption != "" {
-		*s = append(*s, newOption)
-	}
 }
