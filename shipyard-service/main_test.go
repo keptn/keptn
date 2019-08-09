@@ -15,16 +15,14 @@ import (
 )
 
 func TestGetEndpoint(t *testing.T) {
-	logger := keptnutils.NewLogger("4711-a83b-4bc1-9dc0-1f050c7e789b", "4711-a83b-4bc1-9dc0-1f050c7e781b", "shipyard-service")
-
-	endPoint, err := getEndpoint(*logger)
+	endPoint, err := getServiceEndpoint("CONFIGURATION_SERVICE")
 
 	assert.Equal(t, err, nil, "Received unexpected error")
 	assert.Equal(t, endPoint.Path, "", "Endpoint has to be empty")
 
 	os.Setenv("CONFIGURATION_SERVICE", "http://configuration-service.keptn.svc.cluster.local")
 
-	endPoint, err = getEndpoint(*logger)
+	endPoint, err = getServiceEndpoint("CONFIGURATION_SERVICE")
 
 	assert.Equal(t, err, nil, "Received unexpected error")
 	assert.Equal(t, endPoint.Scheme, "http", "Schema of configuration-service endpoint incorrect")
@@ -54,7 +52,7 @@ func TestCreateProject(t *testing.T) {
 	httpClient, teardown := testingHTTPClient(handler)
 	defer teardown()
 
-	client := NewClient()
+	client := newClient()
 	client.httpClient = httpClient
 
 	logger := keptnutils.NewLogger("4711-a83b-4bc1-9dc0-1f050c7e789b", "4711-a83b-4bc1-9dc0-1f050c7e781b", "shipyard-service")
@@ -76,7 +74,7 @@ func TestCreateStage(t *testing.T) {
 	httpClient, teardown := testingHTTPClient(handler)
 	defer teardown()
 
-	client := NewClient()
+	client := newClient()
 	client.httpClient = httpClient
 
 	logger := keptnutils.NewLogger("4711-a83b-4bc1-9dc0-1f050c7e789b", "4711-a83b-4bc1-9dc0-1f050c7e781b", "shipyard-service")
@@ -100,7 +98,7 @@ func TestStoreResource(t *testing.T) {
 	httpClient, teardown := testingHTTPClient(handler)
 	defer teardown()
 
-	client := NewClient()
+	client := newClient()
 	client.httpClient = httpClient
 
 	logger := keptnutils.NewLogger("4711-a83b-4bc1-9dc0-1f050c7e789b", "4711-a83b-4bc1-9dc0-1f050c7e781b", "shipyard-service")
