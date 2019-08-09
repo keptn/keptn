@@ -100,3 +100,61 @@ func (o *PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceUR
 		}
 	}
 }
+
+/*PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault Error
+
+swagger:response putProjectProjectNameStageStageNameServiceServiceNameResourceResourceUriDefault
+*/
+type PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault struct {
+	_statusCode int
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewPutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault creates PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault with default headers values
+func NewPutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault(code int) *PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault {
+	if code <= 0 {
+		code = 500
+	}
+
+	return &PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault{
+		_statusCode: code,
+	}
+}
+
+// WithStatusCode adds the status to the put project project name stage stage name service service name resource resource URI default response
+func (o *PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault) WithStatusCode(code int) *PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault {
+	o._statusCode = code
+	return o
+}
+
+// SetStatusCode sets the status to the put project project name stage stage name service service name resource resource URI default response
+func (o *PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault) SetStatusCode(code int) {
+	o._statusCode = code
+}
+
+// WithPayload adds the payload to the put project project name stage stage name service service name resource resource URI default response
+func (o *PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault) WithPayload(payload *models.Error) *PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the put project project name stage stage name service service name resource resource URI default response
+func (o *PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(o._statusCode)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}

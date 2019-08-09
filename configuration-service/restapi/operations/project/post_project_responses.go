@@ -80,3 +80,61 @@ func (o *PostProjectBadRequest) WriteResponse(rw http.ResponseWriter, producer r
 		}
 	}
 }
+
+/*PostProjectDefault Error
+
+swagger:response postProjectDefault
+*/
+type PostProjectDefault struct {
+	_statusCode int
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewPostProjectDefault creates PostProjectDefault with default headers values
+func NewPostProjectDefault(code int) *PostProjectDefault {
+	if code <= 0 {
+		code = 500
+	}
+
+	return &PostProjectDefault{
+		_statusCode: code,
+	}
+}
+
+// WithStatusCode adds the status to the post project default response
+func (o *PostProjectDefault) WithStatusCode(code int) *PostProjectDefault {
+	o._statusCode = code
+	return o
+}
+
+// SetStatusCode sets the status to the post project default response
+func (o *PostProjectDefault) SetStatusCode(code int) {
+	o._statusCode = code
+}
+
+// WithPayload adds the payload to the post project default response
+func (o *PostProjectDefault) WithPayload(payload *models.Error) *PostProjectDefault {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the post project default response
+func (o *PostProjectDefault) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *PostProjectDefault) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(o._statusCode)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}

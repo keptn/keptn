@@ -80,3 +80,61 @@ func (o *PutProjectProjectNameStageStageNameBadRequest) WriteResponse(rw http.Re
 		}
 	}
 }
+
+/*PutProjectProjectNameStageStageNameDefault Error
+
+swagger:response putProjectProjectNameStageStageNameDefault
+*/
+type PutProjectProjectNameStageStageNameDefault struct {
+	_statusCode int
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewPutProjectProjectNameStageStageNameDefault creates PutProjectProjectNameStageStageNameDefault with default headers values
+func NewPutProjectProjectNameStageStageNameDefault(code int) *PutProjectProjectNameStageStageNameDefault {
+	if code <= 0 {
+		code = 500
+	}
+
+	return &PutProjectProjectNameStageStageNameDefault{
+		_statusCode: code,
+	}
+}
+
+// WithStatusCode adds the status to the put project project name stage stage name default response
+func (o *PutProjectProjectNameStageStageNameDefault) WithStatusCode(code int) *PutProjectProjectNameStageStageNameDefault {
+	o._statusCode = code
+	return o
+}
+
+// SetStatusCode sets the status to the put project project name stage stage name default response
+func (o *PutProjectProjectNameStageStageNameDefault) SetStatusCode(code int) {
+	o._statusCode = code
+}
+
+// WithPayload adds the payload to the put project project name stage stage name default response
+func (o *PutProjectProjectNameStageStageNameDefault) WithPayload(payload *models.Error) *PutProjectProjectNameStageStageNameDefault {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the put project project name stage stage name default response
+func (o *PutProjectProjectNameStageStageNameDefault) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *PutProjectProjectNameStageStageNameDefault) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(o._statusCode)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}

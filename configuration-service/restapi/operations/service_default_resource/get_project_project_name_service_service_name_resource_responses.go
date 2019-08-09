@@ -56,3 +56,105 @@ func (o *GetProjectProjectNameServiceServiceNameResourceOK) WriteResponse(rw htt
 		}
 	}
 }
+
+// GetProjectProjectNameServiceServiceNameResourceNotFoundCode is the HTTP code returned for type GetProjectProjectNameServiceServiceNameResourceNotFound
+const GetProjectProjectNameServiceServiceNameResourceNotFoundCode int = 404
+
+/*GetProjectProjectNameServiceServiceNameResourceNotFound Failed. Containing service could not be found.
+
+swagger:response getProjectProjectNameServiceServiceNameResourceNotFound
+*/
+type GetProjectProjectNameServiceServiceNameResourceNotFound struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewGetProjectProjectNameServiceServiceNameResourceNotFound creates GetProjectProjectNameServiceServiceNameResourceNotFound with default headers values
+func NewGetProjectProjectNameServiceServiceNameResourceNotFound() *GetProjectProjectNameServiceServiceNameResourceNotFound {
+
+	return &GetProjectProjectNameServiceServiceNameResourceNotFound{}
+}
+
+// WithPayload adds the payload to the get project project name service service name resource not found response
+func (o *GetProjectProjectNameServiceServiceNameResourceNotFound) WithPayload(payload *models.Error) *GetProjectProjectNameServiceServiceNameResourceNotFound {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the get project project name service service name resource not found response
+func (o *GetProjectProjectNameServiceServiceNameResourceNotFound) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *GetProjectProjectNameServiceServiceNameResourceNotFound) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(404)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
+/*GetProjectProjectNameServiceServiceNameResourceDefault Error
+
+swagger:response getProjectProjectNameServiceServiceNameResourceDefault
+*/
+type GetProjectProjectNameServiceServiceNameResourceDefault struct {
+	_statusCode int
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewGetProjectProjectNameServiceServiceNameResourceDefault creates GetProjectProjectNameServiceServiceNameResourceDefault with default headers values
+func NewGetProjectProjectNameServiceServiceNameResourceDefault(code int) *GetProjectProjectNameServiceServiceNameResourceDefault {
+	if code <= 0 {
+		code = 500
+	}
+
+	return &GetProjectProjectNameServiceServiceNameResourceDefault{
+		_statusCode: code,
+	}
+}
+
+// WithStatusCode adds the status to the get project project name service service name resource default response
+func (o *GetProjectProjectNameServiceServiceNameResourceDefault) WithStatusCode(code int) *GetProjectProjectNameServiceServiceNameResourceDefault {
+	o._statusCode = code
+	return o
+}
+
+// SetStatusCode sets the status to the get project project name service service name resource default response
+func (o *GetProjectProjectNameServiceServiceNameResourceDefault) SetStatusCode(code int) {
+	o._statusCode = code
+}
+
+// WithPayload adds the payload to the get project project name service service name resource default response
+func (o *GetProjectProjectNameServiceServiceNameResourceDefault) WithPayload(payload *models.Error) *GetProjectProjectNameServiceServiceNameResourceDefault {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the get project project name service service name resource default response
+func (o *GetProjectProjectNameServiceServiceNameResourceDefault) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *GetProjectProjectNameServiceServiceNameResourceDefault) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(o._statusCode)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}

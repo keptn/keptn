@@ -100,3 +100,61 @@ func (o *PutProjectProjectNameResourceBadRequest) WriteResponse(rw http.Response
 		}
 	}
 }
+
+/*PutProjectProjectNameResourceDefault Error
+
+swagger:response putProjectProjectNameResourceDefault
+*/
+type PutProjectProjectNameResourceDefault struct {
+	_statusCode int
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewPutProjectProjectNameResourceDefault creates PutProjectProjectNameResourceDefault with default headers values
+func NewPutProjectProjectNameResourceDefault(code int) *PutProjectProjectNameResourceDefault {
+	if code <= 0 {
+		code = 500
+	}
+
+	return &PutProjectProjectNameResourceDefault{
+		_statusCode: code,
+	}
+}
+
+// WithStatusCode adds the status to the put project project name resource default response
+func (o *PutProjectProjectNameResourceDefault) WithStatusCode(code int) *PutProjectProjectNameResourceDefault {
+	o._statusCode = code
+	return o
+}
+
+// SetStatusCode sets the status to the put project project name resource default response
+func (o *PutProjectProjectNameResourceDefault) SetStatusCode(code int) {
+	o._statusCode = code
+}
+
+// WithPayload adds the payload to the put project project name resource default response
+func (o *PutProjectProjectNameResourceDefault) WithPayload(payload *models.Error) *PutProjectProjectNameResourceDefault {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the put project project name resource default response
+func (o *PutProjectProjectNameResourceDefault) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *PutProjectProjectNameResourceDefault) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(o._statusCode)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}

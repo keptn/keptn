@@ -54,6 +54,12 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Projects"
             }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -76,6 +82,12 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Error"
             }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       }
@@ -91,6 +103,18 @@ func init() {
             "description": "Success",
             "schema": {
               "$ref": "#/definitions/Project"
+            }
+          },
+          "404": {
+            "description": "Failed. Project could not be found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
             }
           }
         }
@@ -114,6 +138,12 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Error"
             }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -128,6 +158,12 @@ func init() {
           },
           "400": {
             "description": "Failed. Project could not be deleted.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
             "schema": {
               "$ref": "#/definitions/Error"
             }
@@ -160,6 +196,18 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Resources"
             }
+          },
+          "404": {
+            "description": "Failed. Containing project could not be found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -182,6 +230,12 @@ func init() {
           },
           "400": {
             "description": "Failed. Project resources could not be updated.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
             "schema": {
               "$ref": "#/definitions/Error"
             }
@@ -210,6 +264,12 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Error"
             }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -230,6 +290,18 @@ func init() {
             "description": "Success",
             "schema": {
               "$ref": "#/definitions/Resource"
+            }
+          },
+          "404": {
+            "description": "Failed. Project resource could not be found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
             }
           }
         }
@@ -256,6 +328,12 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Error"
             }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -270,6 +348,12 @@ func init() {
           },
           "400": {
             "description": "Failed. Project resource could not be deleted.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
             "schema": {
               "$ref": "#/definitions/Error"
             }
@@ -305,6 +389,18 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Resources"
             }
+          },
+          "404": {
+            "description": "Failed. Containing service could not be found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -327,6 +423,12 @@ func init() {
           },
           "400": {
             "description": "Failed. Service default resources could not be updated.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
             "schema": {
               "$ref": "#/definitions/Error"
             }
@@ -355,6 +457,12 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Error"
             }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -379,6 +487,18 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Resource"
             }
+          },
+          "404": {
+            "description": "Failed. Default resource could not be found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -399,6 +519,12 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Error"
             }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -413,6 +539,12 @@ func init() {
           },
           "400": {
             "description": "Failed. Service default resource could not be deleted.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
             "schema": {
               "$ref": "#/definitions/Error"
             }
@@ -451,6 +583,18 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Stages"
             }
+          },
+          "404": {
+            "description": "Failed. Containing project could not be found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -470,6 +614,12 @@ func init() {
           },
           "400": {
             "description": "Failed. Stage could not be created.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
             "schema": {
               "$ref": "#/definitions/Error"
             }
@@ -494,6 +644,18 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Stage"
             }
+          },
+          "404": {
+            "description": "Failed. Project resource could not be found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -516,6 +678,12 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Error"
             }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -530,6 +698,12 @@ func init() {
           },
           "400": {
             "description": "Failed. Stage could not be deleted.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
             "schema": {
               "$ref": "#/definitions/Error"
             }
@@ -565,6 +739,18 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Resources"
             }
+          },
+          "404": {
+            "description": "Failed. Stage could not be found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -587,6 +773,12 @@ func init() {
           },
           "400": {
             "description": "Failed. Stage resources could not be updated.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
             "schema": {
               "$ref": "#/definitions/Error"
             }
@@ -615,6 +807,12 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Error"
             }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -639,6 +837,18 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Resource"
             }
+          },
+          "404": {
+            "description": "Failed. Stage resource could not be found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -659,6 +869,12 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Error"
             }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -673,6 +889,12 @@ func init() {
           },
           "400": {
             "description": "Failed. Stage resource could not be deleted.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
             "schema": {
               "$ref": "#/definitions/Error"
             }
@@ -711,6 +933,18 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Services"
             }
+          },
+          "404": {
+            "description": "Failed. Containing project could not be found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -730,6 +964,12 @@ func init() {
           },
           "400": {
             "description": "Failed. Service could not be created.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
             "schema": {
               "$ref": "#/definitions/Error"
             }
@@ -757,6 +997,18 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Service"
             }
+          },
+          "404": {
+            "description": "Failed. Service could not be found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -779,6 +1031,12 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Error"
             }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -793,6 +1051,12 @@ func init() {
           },
           "400": {
             "description": "Failed. Service could not be deleted.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
             "schema": {
               "$ref": "#/definitions/Error"
             }
@@ -831,6 +1095,18 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Resources"
             }
+          },
+          "404": {
+            "description": "Failed. Containing Service could not be found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -856,6 +1132,12 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Error"
             }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -878,6 +1160,12 @@ func init() {
           },
           "400": {
             "description": "Failed. Service resource could not be created.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
             "schema": {
               "$ref": "#/definitions/Error"
             }
@@ -908,6 +1196,18 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Resource"
             }
+          },
+          "404": {
+            "description": "Failed. Service resource could not be found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -928,6 +1228,12 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Error"
             }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -942,6 +1248,12 @@ func init() {
           },
           "400": {
             "description": "Failed. Service resource could not be deleted.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
             "schema": {
               "$ref": "#/definitions/Error"
             }
@@ -1267,6 +1579,12 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Projects"
             }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -1294,6 +1612,12 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Error"
             }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       }
@@ -1309,6 +1633,18 @@ func init() {
             "description": "Success",
             "schema": {
               "$ref": "#/definitions/Project"
+            }
+          },
+          "404": {
+            "description": "Failed. Project could not be found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
             }
           }
         }
@@ -1337,6 +1673,12 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Error"
             }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -1351,6 +1693,12 @@ func init() {
           },
           "400": {
             "description": "Failed. Project could not be deleted.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
             "schema": {
               "$ref": "#/definitions/Error"
             }
@@ -1396,6 +1744,18 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Resources"
             }
+          },
+          "404": {
+            "description": "Failed. Containing project could not be found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -1430,6 +1790,12 @@ func init() {
           },
           "400": {
             "description": "Failed. Project resources could not be updated.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
             "schema": {
               "$ref": "#/definitions/Error"
             }
@@ -1470,6 +1836,12 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Error"
             }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -1494,6 +1866,18 @@ func init() {
             "description": "Success",
             "schema": {
               "$ref": "#/definitions/Resource"
+            }
+          },
+          "404": {
+            "description": "Failed. Project resource could not be found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
             }
           }
         }
@@ -1525,6 +1909,12 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Error"
             }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -1539,6 +1929,12 @@ func init() {
           },
           "400": {
             "description": "Failed. Project resource could not be deleted.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
             "schema": {
               "$ref": "#/definitions/Error"
             }
@@ -1591,6 +1987,18 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Resources"
             }
+          },
+          "404": {
+            "description": "Failed. Containing service could not be found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -1625,6 +2033,12 @@ func init() {
           },
           "400": {
             "description": "Failed. Service default resources could not be updated.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
             "schema": {
               "$ref": "#/definitions/Error"
             }
@@ -1665,6 +2079,12 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Error"
             }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -1697,6 +2117,18 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Resource"
             }
+          },
+          "404": {
+            "description": "Failed. Default resource could not be found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -1717,6 +2149,12 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Error"
             }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -1731,6 +2169,12 @@ func init() {
           },
           "400": {
             "description": "Failed. Service default resource could not be deleted.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
             "schema": {
               "$ref": "#/definitions/Error"
             }
@@ -1790,6 +2234,18 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Stages"
             }
+          },
+          "404": {
+            "description": "Failed. Containing project could not be found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -1814,6 +2270,12 @@ func init() {
           },
           "400": {
             "description": "Failed. Stage could not be created.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
             "schema": {
               "$ref": "#/definitions/Error"
             }
@@ -1842,6 +2304,18 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Stage"
             }
+          },
+          "404": {
+            "description": "Failed. Project resource could not be found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -1869,6 +2343,12 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Error"
             }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -1883,6 +2363,12 @@ func init() {
           },
           "400": {
             "description": "Failed. Stage could not be deleted.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
             "schema": {
               "$ref": "#/definitions/Error"
             }
@@ -1935,6 +2421,18 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Resources"
             }
+          },
+          "404": {
+            "description": "Failed. Stage could not be found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -1969,6 +2467,12 @@ func init() {
           },
           "400": {
             "description": "Failed. Stage resources could not be updated.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
             "schema": {
               "$ref": "#/definitions/Error"
             }
@@ -2009,6 +2513,12 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Error"
             }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -2041,6 +2551,18 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Resource"
             }
+          },
+          "404": {
+            "description": "Failed. Stage resource could not be found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -2061,6 +2583,12 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Error"
             }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -2075,6 +2603,12 @@ func init() {
           },
           "400": {
             "description": "Failed. Stage resource could not be deleted.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
             "schema": {
               "$ref": "#/definitions/Error"
             }
@@ -2134,6 +2668,18 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Services"
             }
+          },
+          "404": {
+            "description": "Failed. Containing project could not be found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -2158,6 +2704,12 @@ func init() {
           },
           "400": {
             "description": "Failed. Service could not be created.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
             "schema": {
               "$ref": "#/definitions/Error"
             }
@@ -2193,6 +2745,18 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Service"
             }
+          },
+          "404": {
+            "description": "Failed. Service could not be found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -2220,6 +2784,12 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Error"
             }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -2234,6 +2804,12 @@ func init() {
           },
           "400": {
             "description": "Failed. Service could not be deleted.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
             "schema": {
               "$ref": "#/definitions/Error"
             }
@@ -2293,6 +2869,18 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Resources"
             }
+          },
+          "404": {
+            "description": "Failed. Containing Service could not be found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -2330,6 +2918,12 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Error"
             }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -2364,6 +2958,12 @@ func init() {
           },
           "400": {
             "description": "Failed. Service resource could not be created.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
             "schema": {
               "$ref": "#/definitions/Error"
             }
@@ -2406,6 +3006,18 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Resource"
             }
+          },
+          "404": {
+            "description": "Failed. Service resource could not be found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -2426,6 +3038,12 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Error"
             }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -2440,6 +3058,12 @@ func init() {
           },
           "400": {
             "description": "Failed. Service resource could not be deleted.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
             "schema": {
               "$ref": "#/definitions/Error"
             }

@@ -80,3 +80,61 @@ func (o *DeleteProjectProjectNameStageStageNameBadRequest) WriteResponse(rw http
 		}
 	}
 }
+
+/*DeleteProjectProjectNameStageStageNameDefault Error
+
+swagger:response deleteProjectProjectNameStageStageNameDefault
+*/
+type DeleteProjectProjectNameStageStageNameDefault struct {
+	_statusCode int
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewDeleteProjectProjectNameStageStageNameDefault creates DeleteProjectProjectNameStageStageNameDefault with default headers values
+func NewDeleteProjectProjectNameStageStageNameDefault(code int) *DeleteProjectProjectNameStageStageNameDefault {
+	if code <= 0 {
+		code = 500
+	}
+
+	return &DeleteProjectProjectNameStageStageNameDefault{
+		_statusCode: code,
+	}
+}
+
+// WithStatusCode adds the status to the delete project project name stage stage name default response
+func (o *DeleteProjectProjectNameStageStageNameDefault) WithStatusCode(code int) *DeleteProjectProjectNameStageStageNameDefault {
+	o._statusCode = code
+	return o
+}
+
+// SetStatusCode sets the status to the delete project project name stage stage name default response
+func (o *DeleteProjectProjectNameStageStageNameDefault) SetStatusCode(code int) {
+	o._statusCode = code
+}
+
+// WithPayload adds the payload to the delete project project name stage stage name default response
+func (o *DeleteProjectProjectNameStageStageNameDefault) WithPayload(payload *models.Error) *DeleteProjectProjectNameStageStageNameDefault {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the delete project project name stage stage name default response
+func (o *DeleteProjectProjectNameStageStageNameDefault) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *DeleteProjectProjectNameStageStageNameDefault) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(o._statusCode)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
