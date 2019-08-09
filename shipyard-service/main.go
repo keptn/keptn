@@ -17,12 +17,15 @@ import (
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
 	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
+	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
+	"github.com/google/uuid"
 	"github.com/kelseyhightower/envconfig"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 )
 
 const timeout = 60
 const configservice = "CONFIGURATION_SERVICE"
+const eventbroker = "EVENTBROKER"
 
 type envConfig struct {
 	Port int    `envconfig:"RCV_PORT" default:"8080"`
@@ -76,7 +79,7 @@ func _main(args []string, env envConfig) int {
 	return 0
 }
 
-func NewClient() *Client {
+func newClient() *Client {
 	client := Client{
 		httpClient: &http.Client{
 			Timeout: 5 * time.Second,
@@ -98,7 +101,16 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 			logger.Error(fmt.Sprintf("data of the event is incompatible: %s", err.Error()))
 			return err
 		}
-		return createProjectAndProcessShipyard(*eventData, *logger)
+
+		if err := createProjectAndProcessShipyard(*eventData, *logger); err != nil {
+			logger.Error(err.Error())
+			sendDoneEvent(event)
+			return err
+		} else {
+			logger.Info("project.create event processed successfully")
+			sendDoneEvent(event)
+			return nil
+		}
 	}
 
 	const errorMsg = "received unexpected keptn event that cannot be processed"
@@ -108,13 +120,13 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 func createProjectAndProcessShipyard(eventData createProjectEvent, logger keptnutils.Logger) error {
 
-	client := NewClient()
+	client := newClient()
 
 	project := models.Project{}
 	project.ProjectName = eventData.Project
 	if err := client.createProject(project, logger); err != nil {
-		logger.Error(fmt.Sprintf("project not created"))
-		return err
+		logger.Error(err.Error())
+		return errors.New("processing shipyard failed at creating project")
 	}
 
 	for _, shipyardStage := range eventData.Shipyard {
@@ -122,8 +134,8 @@ func createProjectAndProcessShipyard(eventData createProjectEvent, logger keptnu
 		stage.StageName = shipyardStage.Name
 
 		if err := client.createStage(project, stage, logger); err != nil {
-			logger.Error(fmt.Sprintf("stage not created"))
-			return err
+			logger.Error(err.Error())
+			return errors.New("processing shipyard failed at creating stage: " + stage.StageName)
 		}
 	}
 
@@ -136,33 +148,29 @@ func createProjectAndProcessShipyard(eventData createProjectEvent, logger keptnu
 	resources := []*models.Resource{&shipyard}
 
 	if err := client.storeResource(project, resources, logger); err != nil {
-		logger.Error(fmt.Sprintf("resource not stored"))
-		return err
+		logger.Error(err.Error())
+		return errors.New("processing shipyard failed at storing shipyard.yaml")
 	}
 
 	return nil
 }
 
-func getEndpoint(logger keptnutils.Logger) (url.URL, error) {
-	url, err := url.Parse(os.Getenv(configservice))
+func getServiceEndpoint(service string) (url.URL, error) {
+	url, err := url.Parse(os.Getenv(service))
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed to retrieve value from ENVIRONMENT_VARIBLE: %s", configservice))
+		return *url, fmt.Errorf("failed to retrieve value from ENVIRONMENT_VARIBLE: %s", service)
 	}
-	return *url, err
+	return *url, nil
 }
 
-func postRequest(client *Client, path string, body []byte, logger keptnutils.Logger) (*http.Response, error) {
-	endPoint, err := getEndpoint(logger)
+func postRequest(client *Client, path string, body []byte) (*http.Response, error) {
+	endPoint, err := getServiceEndpoint(configservice)
 	if err != nil {
-		const errorMsg = "post request execution aborted"
-		logger.Error(errorMsg)
-		return nil, errors.New(errorMsg)
+		return nil, err
 	}
 
 	if endPoint.Host == "" {
-		const errorMsg = "host of configuration-service not set"
-		logger.Error(errorMsg)
-		return nil, errors.New(errorMsg)
+		return nil, errors.New("host of configuration-service not set")
 	}
 
 	eventURL := endPoint
@@ -170,9 +178,7 @@ func postRequest(client *Client, path string, body []byte, logger keptnutils.Log
 
 	req, err := http.NewRequest("POST", eventURL.String(), bytes.NewReader(body))
 	if err != nil {
-		const errorMsg = "building new request failed"
-		logger.Error(errorMsg)
-		return nil, errors.New(errorMsg)
+		return nil, errors.New("failed to build new request")
 	}
 
 	return client.httpClient.Do(req)
@@ -181,14 +187,14 @@ func postRequest(client *Client, path string, body []byte, logger keptnutils.Log
 func (client *Client) createProject(project models.Project, logger keptnutils.Logger) error {
 	data, err := project.MarshalBinary()
 	if err != nil {
-		logger.Error("project can not be encoded")
-		return err
+		logger.Error(err.Error())
+		return errors.New("failed to create project")
 	}
 
-	resp, err := postRequest(client, "/project", data, logger)
+	resp, err := postRequest(client, "/project", data)
 	if err != nil {
-		logger.Error("request failed - creating project was unsuccessful")
-		return err
+		logger.Error(err.Error())
+		return errors.New("failed to create project")
 	}
 
 	defer resp.Body.Close()
@@ -202,14 +208,14 @@ func (client *Client) createProject(project models.Project, logger keptnutils.Lo
 func (client *Client) createStage(project models.Project, stage models.Stage, logger keptnutils.Logger) error {
 	data, err := project.MarshalBinary()
 	if err != nil {
-		logger.Error("stage can not be encoded")
-		return err
+		logger.Error(err.Error())
+		return errors.New("failed to create stage")
 	}
 
-	resp, err := postRequest(client, fmt.Sprintf("project/%s/stage", project.ProjectName), data, logger)
+	resp, err := postRequest(client, fmt.Sprintf("project/%s/stage", project.ProjectName), data)
 	if err != nil {
-		logger.Error("request failed - creating stage was unsuccessful")
-		return err
+		logger.Error(err.Error())
+		return errors.New("failed to create stage")
 	}
 
 	defer resp.Body.Close()
@@ -223,19 +229,59 @@ func (client *Client) createStage(project models.Project, stage models.Stage, lo
 func (client *Client) storeResource(project models.Project, resources []*models.Resource, logger keptnutils.Logger) error {
 	data, err := project.MarshalBinary()
 	if err != nil {
-		logger.Error("resources can not be encoded")
-		return err
+		logger.Error(err.Error())
+		return errors.New("failed to store resource")
 	}
 
-	resp, err := postRequest(client, fmt.Sprintf("project/%s/resource", project.ProjectName), data, logger)
+	resp, err := postRequest(client, fmt.Sprintf("project/%s/resource", project.ProjectName), data)
 	if err != nil {
-		logger.Error("request failed - storing resource was unsuccessful")
-		return err
+		logger.Error(err.Error())
+		return errors.New("failed to store resource")
 	}
 
 	defer resp.Body.Close()
 	if resp.StatusCode == http.StatusOK {
 		logger.Info("resource stored successfully")
+	}
+
+	return nil
+}
+
+func sendDoneEvent(incomingEvent cloudevents.Event) error {
+
+	source, _ := url.Parse("shipyard-service")
+	contentType := "application/json"
+
+	event := cloudevents.Event{
+		Context: cloudevents.EventContextV02{
+			ID:          uuid.New().String(),
+			Type:        "sh.keptn.events.done",
+			Source:      types.URLRef{URL: *source},
+			ContentType: &contentType,
+		}.AsV02(),
+		Data: "",
+	}
+
+	endPoint, err := getServiceEndpoint(eventbroker)
+	if err != nil {
+		return errors.New("failed to retrieve endpoint of eventbroker: %s" + err.Error())
+	}
+
+	transport, err := cloudeventshttp.New(
+		cloudeventshttp.WithTarget(endPoint.String()),
+		cloudeventshttp.WithEncoding(cloudeventshttp.StructuredV02),
+	)
+	if err != nil {
+		return errors.New("failed to create transport:" + err.Error())
+	}
+
+	client, err := client.New(transport)
+	if err != nil {
+		return errors.New("failed to create HTTP client:" + err.Error())
+	}
+
+	if _, err := client.Send(context.Background(), event); err != nil {
+		return errors.New("failed to send cloudevent: " + err.Error())
 	}
 
 	return nil
