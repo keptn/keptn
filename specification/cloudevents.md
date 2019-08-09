@@ -12,13 +12,10 @@ Keptn Events
 * [Start Apply Configuration](#start-apply-configuration)
 * [Start Tests](#start-tests)
 * [Start Evaluation](#start-evaluation)
-* [Done](#done)
 * [Start Deployment](#start-deployment)
-* [Deployment Done](#deployment-done)
 * [Start Release](#start-release)
-* [Release Done](#release-done)
 * [Start Operations](#start-operations)
-* [Operations Done](#operations-done)
+* [Done](#done)
 
 ---
 
@@ -293,35 +290,6 @@ The *start evaluation* event is sent when a test for a service is completed and 
 ```
 ([&uarr; up to index](#cloudevents-used-by-keptn))
 
-## Done
-
-The *done* event is sent by each keptn service as response to the execution of a start-* event. 
-
-```json
-{
-  "type": "sh.keptn.events.done",
-  "specversion": "0.2",
-  "source": "https://github.com/keptn/workflow-engine",
-  "id": "49ac0dec-a83b-4bc1-9dc0-1f050c7e781b",
-  "time": "2019-06-07T07:02:15.64489Z",
-  "contenttype": "application/json",
-  "shkeptncontext":"49ac0dec-a83b-4bc1-9dc0-1f050c7e789b",
-  "shkeptnphaseid":"k5dg-565h-9o87",
-  "shkeptnphase":"DEPLOYMENT",
-  "shkeptnstepid":"a3ce-grdv-qwed",
-  "shkeptnstep":"TESTS",
-  "data": {
-    "project": "sockshop",
-    "service": "carts",
-    "image": "keptnexamples/carts",
-    "tag": "0.7.1",
-    "stage":"dev",
-    "teststrategy":"functional"
-  }
-}
-```
-([&uarr; up to index](#cloudevents-used-by-keptn))
-
 ## Start Deployment
 
 The *start deployment* event is sent when a new version of an artifact, i.e., a new version of a container image, is available and should be deployed. 
@@ -402,6 +370,34 @@ The *start operations* event is sent when a problem related to a keptn-managed s
 ([&uarr; up to index](#cloudevents-used-by-keptn))
 
 
+## Done
+
+The *done* event is sent by each keptn service as response to the execution of a *.start or *.create event. 
+
+```json
+{
+  "type": "sh.keptn.events.done",
+  "specversion": "0.2",
+  "source": "https://github.com/keptn/workflow-engine",
+  "id": "49ac0dec-a83b-4bc1-9dc0-1f050c7e781b",
+  "time": "2019-06-07T07:02:15.64489Z",
+  "contenttype": "application/json",
+  "shkeptncontext":"49ac0dec-a83b-4bc1-9dc0-1f050c7e789b",
+  "shkeptnphaseid":"k5dg-565h-9o87",
+  "shkeptnphase":"DEPLOYMENT",
+  "shkeptnstepid":"a3ce-grdv-qwed",
+  "shkeptnstep":"TESTS",
+  "data": {
+    "project": "sockshop",
+    "service": "carts",
+    "image": "keptnexamples/carts",
+    "tag": "0.7.1",
+    "stage":"dev",
+    "teststrategy":"functional"
+  }
+}
+```
+([&uarr; up to index](#cloudevents-used-by-keptn))
 
 
 # Postman collection of keptn CloudEvents
