@@ -1,0 +1,36 @@
+package handlers
+
+import (
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/keptn/keptn/configuration-service/restapi/operations/service_default_resource"
+)
+
+// GetProjectProjectNameServiceServiceNameResourceHandlerFunc get list of default resources for the service
+func GetProjectProjectNameServiceServiceNameResourceHandlerFunc(params service_default_resource.GetProjectProjectNameServiceServiceNameResourceParams) middleware.Responder {
+	return middleware.NotImplemented("operation service_default_resource.GetProjectProjectNameServiceServiceNameResource has not yet been implemented")
+}
+
+// GetProjectProjectNameServiceServiceNameResourceResourceURIHandlerFunc gets a specified default resource
+func GetProjectProjectNameServiceServiceNameResourceResourceURIHandlerFunc(params service_default_resource.GetProjectProjectNameServiceServiceNameResourceResourceURIParams) middleware.Responder {
+	return middleware.NotImplemented("operation service_default_resource.GetProjectProjectNameServiceServiceNameResourceResourceURI has not yet been implemented")
+}
+
+// PostProjectProjectNameServiceServiceNameResourceHandlerFunc creates a list of new default resources
+func PostProjectProjectNameServiceServiceNameResourceHandlerFunc(params service_default_resource.PostProjectProjectNameServiceServiceNameResourceParams) middleware.Responder {
+	return middleware.NotImplemented("operation service_default_resource.PostProjectProjectNameServiceServiceNameResource has not yet been implemented")
+}
+
+// PutProjectProjectNameServiceServiceNameResourceHandlerFunc updates a list of default resources
+func PutProjectProjectNameServiceServiceNameResourceHandlerFunc(params service_default_resource.PutProjectProjectNameServiceServiceNameResourceParams) middleware.Responder {
+	return middleware.NotImplemented("operation service_default_resource.PutProjectProjectNameServiceServiceNameResource has not yet been implemented")
+}
+
+// PutProjectProjectNameServiceServiceNameResourceResourceURIHandlerFunc updates the specified resource for the service
+func PutProjectProjectNameServiceServiceNameResourceResourceURIHandlerFunc(params service_default_resource.PutProjectProjectNameServiceServiceNameResourceResourceURIParams) middleware.Responder {
+	return middleware.NotImplemented("operation service_default_resource.PutProjectProjectNameServiceServiceNameResourceResourceURI has not yet been implemented")
+}
+
+// DeleteProjectProjectNameServiceServiceNameResourceResourceURIHandlerFunc deletes the specified resource from the service
+func DeleteProjectProjectNameServiceServiceNameResourceResourceURIHandlerFunc(params service_default_resource.DeleteProjectProjectNameServiceServiceNameResourceResourceURIParams) middleware.Responder {
+	return middleware.NotImplemented("operation service_default_resource.DeleteProjectProjectNameServiceServiceNameResourceResourceURI has not yet been implemented")
+}
