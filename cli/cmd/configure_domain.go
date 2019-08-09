@@ -62,13 +62,13 @@ var domainCmd = &cobra.Command{
 		}
 
 		kubernetesPlatform := newKubernetesPlatform()
-		err = kubernetesPlatform.checkRequirements()
-		if err != nil {
-			return err
-		}
+		return kubernetesPlatform.checkRequirements()
+
+	},
+	RunE: func(cmd *cobra.Command, args []string) error {
 
 		ctx, _ := getKubeContext()
-		fmt.Println("Your .kube-config is configured to: " + strings.TrimSpace(ctx))
+		fmt.Println("Your kubernetes current context is configured to cluster: " + strings.TrimSpace(ctx))
 		fmt.Println("Would you like to update the keptn domain for this cluster? (y/n)")
 
 		reader := bufio.NewReader(os.Stdin)
@@ -78,14 +78,12 @@ var domainCmd = &cobra.Command{
 		}
 		in = strings.TrimSpace(in)
 		if in != "y" && in != "yes" {
-			return errors.New(`Please first configure your .kube-config so that it
-points to the cluster where you would like to update the keptn domain`)
+			fmt.Println("Please first configure your kubernetes current context so that it" +
+				"points to the cluster where you would like to update the keptn domain.")
+			return nil
 		}
 
 		fmt.Println("Please note that the domain of already onboarded services is not updated!")
-		return nil
-	},
-	RunE: func(cmd *cobra.Command, args []string) error {
 
 		utils.PrintLog("Starting to configure domain", utils.InfoLevel)
 
@@ -111,6 +109,8 @@ points to the cluster where you would like to update the keptn domain`)
 			if err != nil {
 				return err
 			}
+
+			fmt.Println("Successfully configured domain")
 
 			err = authUsingKube()
 			if err != nil {
