@@ -2,6 +2,7 @@ package common
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/keptn/go-utils/pkg/utils"
@@ -57,4 +58,48 @@ func GetCurrentVersion(project string) (string, error) {
 		return "", err
 	}
 	return strings.TrimSuffix(out, "\n"), nil
+}
+
+// ProjectExists checks if a project exists
+func ProjectExists(project string) bool {
+	projectConfigPath := config.ConfigDir + "/" + project
+	// check if the project exists
+	_, err := os.Stat(projectConfigPath)
+	// create file if not exists
+	if os.IsNotExist(err) {
+		return false
+	}
+	return true
+}
+
+// StageExists checks if a stage in a given project exists
+func StageExists(project string, stage string) bool {
+	if !ProjectExists(project) {
+		return false
+	}
+	// try to checkout the branch containing the stage config
+	err := CheckoutBranch(project, stage)
+	if err != nil {
+		return false
+	}
+	return true
+}
+
+// ServiceExists checks if a service exists in a given stage of a project
+func ServiceExists(project string, stage string, service string) bool {
+	if !ProjectExists(project) {
+		return false
+	}
+	// try to checkout the branch containing the stage config
+	err := CheckoutBranch(project, stage)
+	if err != nil {
+		return false
+	}
+	serviceConfigPath := config.ConfigDir + "/" + project + "/" + service
+	_, err = os.Stat(serviceConfigPath)
+	// create file if not exists
+	if os.IsNotExist(err) {
+		return false
+	}
+	return true
 }
