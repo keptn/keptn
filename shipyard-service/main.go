@@ -268,8 +268,6 @@ func (client *Client) storeResource(project models.Project, resources []*models.
 
 func sendDoneEvent(receivedEvent cloudevents.Event, result string, message string) error {
 
-	fmt.Println(result)
-
 	var shkeptncontext string
 	receivedEvent.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
 	var shkeptnphaseid string
