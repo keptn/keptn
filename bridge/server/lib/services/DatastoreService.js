@@ -12,57 +12,40 @@ class DatastoreService {
       timestamp: event.time,
       type: event.type,
       keptnContext: event.shkeptncontext,
-      project: event.data.project,
-      service: event.data.service,
-      stage: event.data.stage,
-      tag: event.data.tag,
+      data: event.data,
+      id: event.id,
     };
   }
 
   async getRoots() {
-    const url = `${this.api}/events/type/newartifact`;
+    const url = `${this.api}/event?type=sh.keptn.events.new-artifact&pageSize=100`;
     const result = await axios.get(url);
     const { data } = result;
-    return data.map(event => DatastoreService.mapEvent(event));
+    if (data.events) {
+      return data.events.map(event => DatastoreService.mapEvent(event));
+    }
+    return [];
   }
 
   async getTraces(contextId) {
-    const url = `${this.api}/events/id/${contextId}`;
+    const url = `${this.api}/event?keptnContext=${contextId}&pageSize=100`;
     const result = await axios.get(url);
     const { data } = result;
-    return data.map(event => DatastoreService.mapEvent(event));
+    if (data.events) {
+      return data.events.map(event => DatastoreService.mapEvent(event));
+    }
+    return [];
   }
 
-  async findRoots(keptnContext) {
-    const result = await this.elastic.search({
-      index: 'logstash-*',
-      body: {
-        from: 0,
-        size: 20,
-        query: {
-          bool: {
-            must: [
-              { match_all: {} },
-              { match_phrase: { keptnEntry: { query: true } } },
-              {
-                match_phrase: {
-                  keptnContext: { query: keptnContext },
-                },
-              },
-            ],
-            must_not: [],
-          },
-        },
-        sort: { '@timestamp': 'desc' },
-        _source: ['message', 'keptnContext', '@timestamp'],
-      },
-    });
-
-    return result.body.hits.hits.map(hit => ({
-      timestamp: hit._source['@timestamp'],
-      keptnContext: hit._source.keptnContext,
-      message: hit._source.message,
-    }));
+  async findRoots(contextId) {
+    const url = `${this.api}/event?keptnContext=${contextId}&type=sh.keptn.events.new-artifact&pageSize=10`;
+    console.log(url);
+    const result = await axios.get(url);
+    const { data } = result;
+    if (data.events) {
+      return data.events.map(event => DatastoreService.mapEvent(event));
+    }
+    return [];
   }
 }
 

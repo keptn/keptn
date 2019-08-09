@@ -34,6 +34,10 @@ export default {
     return {
       fields: [
         { key: 'type', sortable: true },
+        { key: 'data.project', label: 'Project', sortable: true },
+        { key: 'data.service', label: 'Service', sortable: true },
+        { key: 'data.stage', label: 'Stage', sortable: true },
+        { key: 'data.tag', label: 'tag', sortable: true },
         {
           key: 'timestamp',
           sortable: true,
@@ -41,10 +45,6 @@ export default {
             return moment(value).format('YYYY-MM-DD, hh:mm:ss');
           },
         },
-        { key: 'project', sortable: true },
-        { key: 'service', sortable: true },
-        { key: 'stage', sortable: true },
-        { key: 'tag', sortable: true },
       ],
     };
   },
