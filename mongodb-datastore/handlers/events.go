@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"fmt"
-	"log"
 	"strconv"
 	"time"
 
@@ -12,6 +11,7 @@ import (
 	"github.com/jeremywohl/flatten"
 	"go.mongodb.org/mongo-driver/bson"
 
+	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/event"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -19,11 +19,11 @@ import (
 
 // SaveEvent to data store
 func SaveEvent(body event.SaveEventBody) error {
-	fmt.Println("save event to datastore")
+	keptnutils.Debug("", "save event to datastore")
 
 	client, err := mongo.NewClient(options.Client().ApplyURI(mongoDBConnection))
 	if err != nil {
-		log.Fatalln("error creating client: ", err.Error())
+		keptnutils.Error("", fmt.Sprintf("error creating client: %s", err.Error()))
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -31,26 +31,26 @@ func SaveEvent(body event.SaveEventBody) error {
 
 	err = client.Connect(ctx)
 	if err != nil {
-		log.Fatalln(err.Error())
+		keptnutils.Error("", fmt.Sprintf("could not connect: %s", err.Error()))
 	}
 
 	collection := client.Database(mongoDBName).Collection(eventsCollectionName)
 
 	res, err := collection.InsertOne(ctx, body)
 	if err != nil {
-		log.Fatalln("error inserting: ", err.Error())
+		keptnutils.Error("", fmt.Sprintf("error inserting into collection: %s", err.Error()))
 	}
-	fmt.Println("insertedID: ", res.InsertedID)
+	keptnutils.Debug("", fmt.Sprintf("insertedID: %s", res.InsertedID))
 
 	return err
 }
 
 // GetEvents gets all events from the data store sorted by time
 func GetEvents(params event.GetEventsParams) (result *event.GetEventsOKBody, err error) {
-	fmt.Println("get events from datastore")
+	keptnutils.Debug("", "getting events from the datastore")
 	client, err := mongo.NewClient(options.Client().ApplyURI(mongoDBConnection))
 	if err != nil {
-		log.Fatalln("error creating client: ", err.Error())
+		keptnutils.Error("", fmt.Sprintf("error creating client: %s", err.Error()))
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -58,14 +58,14 @@ func GetEvents(params event.GetEventsParams) (result *event.GetEventsOKBody, err
 
 	err = client.Connect(ctx)
 	if err != nil {
-		log.Fatalln(err.Error())
+		keptnutils.Error("", fmt.Sprintf("could not connect: %s", err.Error()))
 	}
 
 	collection := client.Database(mongoDBName).Collection(eventsCollectionName)
 
 	totalCount, err := collection.CountDocuments(ctx, bson.D{})
 	if err != nil {
-		log.Fatalln("could not retrieve size of event collection: ", err.Error())
+		keptnutils.Error("", fmt.Sprintf("could not retrieve size of event collection: %s", err.Error()))
 	}
 
 	searchOptions := bson.M{}
@@ -90,7 +90,7 @@ func GetEvents(params event.GetEventsParams) (result *event.GetEventsOKBody, err
 	sortOptions := options.Find().SetSort(bson.D{{"time", -1}}).SetSkip(nextPageKey).SetLimit(pagesize)
 	cur, err := collection.Find(ctx, searchOptions, sortOptions)
 	if err != nil {
-		log.Fatalln("error finding elements in collections: ", err.Error())
+		keptnutils.Error("", fmt.Sprintf("error fiding elements in events collection: %s", err.Error()))
 	}
 
 	var resultEvents []*event.EventsItems0
@@ -105,11 +105,10 @@ func GetEvents(params event.GetEventsParams) (result *event.GetEventsOKBody, err
 		myMap := data.Map()
 		flat, err := flatten.Flatten(myMap, "", flatten.RailsStyle)
 		if err != nil {
-			log.Fatalln(err.Error())
+			keptnutils.Error("", fmt.Sprintf("could not flatten element: %s", err.Error()))
 		}
 		result.Data = flat
 		resultEvents = append(resultEvents, &result)
-		//fmt.Println(result)
 	}
 
 	var myresult event.GetEventsOKBody
