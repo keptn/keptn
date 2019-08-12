@@ -42,7 +42,8 @@ func GetProjectHandlerFunc(params project.GetProjectParams) middleware.Responder
 	if paginationInfo.NextPageKey < int64(totalCount) {
 		for _, f := range files[paginationInfo.NextPageKey:paginationInfo.EndIndex] {
 			if f.IsDir() {
-				payload.Projects = append(payload.Projects, &models.Project{ProjectName: f.Name()})
+				var project = &models.Project{ProjectName: f.Name()}
+				payload.Projects = append(payload.Projects, project)
 			}
 		}
 	}
@@ -107,7 +108,12 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 
 // GetProjectProjectNameHandlerFunc gets a project by its name
 func GetProjectProjectNameHandlerFunc(params project.GetProjectProjectNameParams) middleware.Responder {
-	return middleware.NotImplemented("operation project.GetProjectProjectName has not yet been implemented")
+	var projectResponse = &models.Project{ProjectName: params.ProjectName}
+	projectCreds, _ := common.GetCredentials(params.ProjectName)
+	if projectCreds != nil {
+		projectResponse.GitRemoteURI = projectCreds.RemoteURI
+	}
+	return project.NewGetProjectProjectNameOK().WithPayload(projectResponse)
 }
 
 // PutProjectProjectNameHandlerFunc updates a project
