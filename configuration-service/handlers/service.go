@@ -33,8 +33,8 @@ func PostProjectProjectNameStageStageNameServiceHandlerFunc(params service.PostP
 	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
 	servicePath := projectConfigPath + "/" + params.Service.ServiceName
 
-	if !common.ProjectExists(params.ProjectName) {
-		return service.NewPostProjectProjectNameStageStageNameServiceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Project  " + params.ProjectName + " does not exist.")})
+	if !common.StageExists(params.ProjectName, params.StageName) {
+		return service.NewPostProjectProjectNameStageStageNameServiceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Stage  " + params.StageName + " does not exist.")})
 	}
 	// utils.Debug("", "Creating new resource(s) in: "+projectConfigPath+" in stage "+params.StageName)
 	// utils.Debug("", "Checking out branch: "+params.StageName)
