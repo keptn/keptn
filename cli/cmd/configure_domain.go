@@ -118,7 +118,8 @@ var domainCmd = &cobra.Command{
 			}
 
 			if strings.ToLower(*platformID) == openshift {
-				fmt.Println("Please manually create the following route:")
+				fmt.Println("Please manually execute the following commands for deleting an old route and creating a new route:")
+				fmt.Println("oc delete route istio-wildcard-ingress-secure-keptn -n istio-system")
 				fmt.Println("oc create route passthrough istio-wildcard-ingress-secure-keptn --service=istio-ingressgateway --hostname=\"www.keptn.ingress-gateway. " +
 					args[0] + "\" --port=https --wildcard-policy=Subdomain --insecure-policy='None' -n istio-system")
 				fmt.Println()
