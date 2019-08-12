@@ -147,37 +147,6 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	return errors.New(errorMsg)
 }
 
-// respondWithDoneEvent sends a keptn done event to the keptn eventbroker
-func respondWithDoneEvent(event cloudevents.Event, version *models.Version, err error, logger keptnutils.Logger, ws *websocket.Conn) error {
-	if err != nil {
-		// error
-		logger.Error(err.Error())
-
-		if err := websocketutil.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), fmt.Sprintf("%s", err.Error()), true, "INFO"); err != nil {
-			logger.Error(fmt.Sprintf("could not write log to websocket: %s", err.Error()))
-		}
-		if err := sendDoneEvent(event, "error", err.Error(), version); err != nil {
-			logger.Error(err.Error())
-		}
-
-		return err
-
-	}
-	// success
-	const successMsg = "Project created and shipyard successfully processed"
-	logger.Info(successMsg)
-
-	if err := websocketutil.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), successMsg, true, "INFO"); err != nil {
-		logger.Error(fmt.Sprintf("could not write log to websocket: %s", err.Error()))
-	}
-	if err := sendDoneEvent(event, "success", successMsg, version); err != nil {
-		logger.Error(err.Error())
-		return err
-	}
-
-	return nil
-}
-
 // createProjectAndProcessShipyard creates a project and stages defined in the shipyard
 func createProjectAndProcessShipyard(event cloudevents.Event, logger keptnutils.Logger, ws *websocket.Conn) (*models.Version, error) {
 	eventData := &createProjectEventData{}
@@ -229,35 +198,35 @@ func createProjectAndProcessShipyard(event cloudevents.Event, logger keptnutils.
 	return version, nil
 }
 
-// getServiceEndpoint returns the endpoint of a service stored in an environment variable
-func getServiceEndpoint(service string) (url.URL, error) {
-	url, err := url.Parse(os.Getenv(service))
+// respondWithDoneEvent sends a keptn done event to the keptn eventbroker
+func respondWithDoneEvent(event cloudevents.Event, version *models.Version, err error, logger keptnutils.Logger, ws *websocket.Conn) error {
 	if err != nil {
-		return *url, fmt.Errorf("Failed to retrieve value from ENVIRONMENT_VARIABLE: %s", service)
+		// error
+		logger.Error(err.Error())
+
+		if err := websocketutil.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), fmt.Sprintf("%s", err.Error()), true, "INFO"); err != nil {
+			logger.Error(fmt.Sprintf("could not write log to websocket: %s", err.Error()))
+		}
+		if err := sendDoneEvent(event, "error", err.Error(), version); err != nil {
+			logger.Error(err.Error())
+		}
+
+		return err
+
 	}
-	return *url, nil
-}
+	// success
+	const successMsg = "Project created and shipyard successfully processed"
+	logger.Info(successMsg)
 
-// postRequest sends a post request
-func postRequest(client *Client, path string, body []byte) (*http.Response, error) {
-	endPoint, err := getServiceEndpoint(configservice)
-	if err != nil {
-		return nil, err
+	if err := websocketutil.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), successMsg, true, "INFO"); err != nil {
+		logger.Error(fmt.Sprintf("could not write log to websocket: %s", err.Error()))
+	}
+	if err := sendDoneEvent(event, "success", successMsg, version); err != nil {
+		logger.Error(err.Error())
+		return err
 	}
 
-	if endPoint.Host == "" {
-		return nil, errors.New("Host of configuration-service not set")
-	}
-
-	eventURL := endPoint
-	eventURL.Path = path
-
-	req, err := http.NewRequest("POST", eventURL.String(), bytes.NewReader(body))
-	if err != nil {
-		return nil, errors.New("Failed to build new request")
-	}
-
-	return client.httpClient.Do(req)
+	return nil
 }
 
 func (client *Client) createProject(project models.Project, logger keptnutils.Logger) error {
@@ -344,6 +313,38 @@ func (client *Client) storeResource(project models.Project, resources []*models.
 	}
 }
 
+// postRequest sends a post request
+func postRequest(client *Client, path string, body []byte) (*http.Response, error) {
+	endPoint, err := getServiceEndpoint(configservice)
+	if err != nil {
+		return nil, err
+	}
+
+	if endPoint.Host == "" {
+		return nil, errors.New("Host of configuration-service not set")
+	}
+
+	eventURL := endPoint
+	eventURL.Path = path
+
+	req, err := http.NewRequest("POST", eventURL.String(), bytes.NewReader(body))
+	if err != nil {
+		return nil, errors.New("Failed to build new request")
+	}
+
+	return client.httpClient.Do(req)
+}
+
+// getServiceEndpoint returns the endpoint of a service stored in an environment variable
+func getServiceEndpoint(service string) (url.URL, error) {
+	url, err := url.Parse(os.Getenv(service))
+	if err != nil {
+		return *url, fmt.Errorf("Failed to retrieve value from ENVIRONMENT_VARIABLE: %s", service)
+	}
+	return *url, nil
+}
+
+// createEventCopy creates a deep copy of a CloudEvent
 func createEventCopy(eventSource cloudevents.Event, eventType string) cloudevents.Event {
 	var shkeptncontext string
 	eventSource.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
