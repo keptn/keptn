@@ -89,8 +89,7 @@ func StageAndCommitAll(project string, message string) error {
 		return err
 	}
 
-	out, err := utils.ExecuteCommandInDirectory("git", []string{"commit", "-m", `"` + message + `"`}, projectConfigPath)
-	utils.Debug("", out)
+	_, err = utils.ExecuteCommandInDirectory("git", []string{"commit", "-m", `"` + message + `"`}, projectConfigPath)
 	if err != nil && !(strings.Contains(err.Error(), "nothing to commit")) {
 		fmt.Print(err.Error())
 		return err

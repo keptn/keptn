@@ -7,7 +7,6 @@ import (
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
-	"github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/configuration-service/common"
 	"github.com/keptn/keptn/configuration-service/config"
 	"github.com/keptn/keptn/configuration-service/models"
@@ -37,25 +36,25 @@ func PutProjectProjectNameResourceHandlerFunc(params project_resource.PutProject
 	}
 	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
 
-	utils.Debug("", "Updatingresource(s) in: "+projectConfigPath)
-	utils.Debug("", "Checking out master branch")
+	// utils.Debug("", "Updatingresource(s) in: "+projectConfigPath)
+	// utils.Debug("", "Checking out master branch")
 	err := common.CheckoutBranch(params.ProjectName, "master")
 	if err != nil {
 		return project_resource.NewPutProjectProjectNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
 	}
 
 	for _, res := range params.Resources.Resources {
-		filePath := projectConfigPath + "/" + *res.ResourceURI
-		utils.Debug("", "Updating resource: "+filePath)
+		// filePath := projectConfigPath + "/" + *res.ResourceURI
+		// utils.Debug("", "Updating resource: "+filePath)
 		common.WriteFile(projectConfigPath+"/"+*res.ResourceURI, res.ResourceContent)
 	}
 
-	utils.Debug("", "Staging Changes")
+	// utils.Debug("", "Staging Changes")
 	err = common.StageAndCommitAll(params.ProjectName, "Updated resources")
 	if err != nil {
 		return project_resource.NewPutProjectProjectNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
 	}
-	utils.Debug("", "Successfully updated resources")
+	// utils.Debug("", "Successfully updated resources")
 
 	newVersion, err := common.GetCurrentVersion(params.ProjectName)
 	if err != nil {
@@ -73,8 +72,8 @@ func PostProjectProjectNameResourceHandlerFunc(params project_resource.PostProje
 	}
 	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
 
-	utils.Debug("", "Creating new resource(s) in: "+projectConfigPath)
-	utils.Debug("", "Checking out master branch")
+	// utils.Debug("", "Creating new resource(s) in: "+projectConfigPath)
+	// utils.Debug("", "Checking out master branch")
 	err := common.CheckoutBranch(params.ProjectName, "master")
 	if err != nil {
 		return project_resource.NewPostProjectProjectNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
@@ -83,17 +82,17 @@ func PostProjectProjectNameResourceHandlerFunc(params project_resource.PostProje
 	for _, res := range params.Resources.Resources {
 		filePath := projectConfigPath + "/" + *res.ResourceURI
 		if !common.FileExists(filePath) {
-			utils.Debug("", "Adding resource: "+filePath)
+			// utils.Debug("", "Adding resource: "+filePath)
 			common.WriteFile(projectConfigPath+"/"+*res.ResourceURI, res.ResourceContent)
 		}
 	}
 
-	utils.Debug("", "Staging Changes")
+	// utils.Debug("", "Staging Changes")
 	err = common.StageAndCommitAll(params.ProjectName, "Added resources")
 	if err != nil {
 		return project_resource.NewPostProjectProjectNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
 	}
-	utils.Debug("", "Successfully added resources")
+	// utils.Debug("", "Successfully added resources")
 
 	newVersion, err := common.GetCurrentVersion(params.ProjectName)
 	if err != nil {
@@ -111,7 +110,7 @@ func GetProjectProjectNameResourceResourceURIHandlerFunc(params project_resource
 	if !common.ProjectExists(params.ProjectName) {
 		return project_resource.NewGetProjectProjectNameResourceResourceURINotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project not found")})
 	}
-	utils.Debug("", "Checking out master branch")
+	// utils.Debug("", "Checking out master branch")
 	err := common.CheckoutBranch(params.ProjectName, "master")
 	if err != nil {
 		return project_resource.NewGetProjectProjectNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
@@ -141,8 +140,8 @@ func PutProjectProjectNameResourceResourceURIHandlerFunc(params project_resource
 	}
 	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
 
-	utils.Debug("", "Creating new resource(s) in: "+projectConfigPath)
-	utils.Debug("", "Checking out branch: master")
+	// utils.Debug("", "Creating new resource(s) in: "+projectConfigPath)
+	// utils.Debug("", "Checking out branch: master")
 	err := common.CheckoutBranch(params.ProjectName, "master")
 	if err != nil {
 		return project_resource.NewPutProjectProjectNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
@@ -151,12 +150,12 @@ func PutProjectProjectNameResourceResourceURIHandlerFunc(params project_resource
 	filePath := projectConfigPath + "/" + params.ResourceURI
 	common.WriteFile(filePath, params.Resource.ResourceContent)
 
-	utils.Debug("", "Staging Changes")
+	// utils.Debug("", "Staging Changes")
 	err = common.StageAndCommitAll(params.ProjectName, "Updated resource: "+params.ResourceURI)
 	if err != nil {
 		return project_resource.NewPutProjectProjectNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
 	}
-	utils.Debug("", "Successfully updated resource: "+params.ResourceURI)
+	// utils.Debug("", "Successfully updated resource: "+params.ResourceURI)
 
 	newVersion, err := common.GetCurrentVersion(params.ProjectName)
 	if err != nil {
@@ -184,12 +183,12 @@ func DeleteProjectProjectNameResourceResourceURIHandlerFunc(params project_resou
 		return project_resource.NewDeleteProjectProjectNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 	}
 
-	utils.Debug("", "Staging Changes")
+	// utils.Debug("", "Staging Changes")
 	err = common.StageAndCommitAll(params.ProjectName, "Deleted resources")
 	if err != nil {
 		return project_resource.NewDeleteProjectProjectNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 	}
-	utils.Debug("", "Successfully deleted resources")
+	// utils.Debug("", "Successfully deleted resources")
 
 	return project_resource.NewDeleteProjectProjectNameResourceResourceURINoContent()
 }

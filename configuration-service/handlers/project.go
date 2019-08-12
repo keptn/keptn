@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"time"
@@ -72,8 +71,8 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
 		}
 
-		out, err := utils.ExecuteCommandInDirectory("git", []string{"init"}, projectConfigPath)
-		utils.Debug("", "Init git result: "+out)
+		_, err = utils.ExecuteCommandInDirectory("git", []string{"init"}, projectConfigPath)
+		// // utils.Debug("", "Init git result: "+out)
 		if err != nil {
 			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
 		}
@@ -92,14 +91,8 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
 	}
 
-	_, err = utils.ExecuteCommandInDirectory("git", []string{"add", "."}, projectConfigPath)
+	err = common.StageAndCommitAll(params.Project.ProjectName, "added metadata.yaml")
 	if err != nil {
-		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
-	}
-
-	_, err = utils.ExecuteCommandInDirectory("git", []string{"commit", "-m", `"added metadata.yaml"`}, projectConfigPath)
-	if err != nil {
-		fmt.Print(err.Error())
 		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
 	}
 
@@ -123,7 +116,7 @@ func PutProjectProjectNameHandlerFunc(params project.PutProjectProjectNameParams
 
 // DeleteProjectProjectNameHandlerFunc deletes a project
 func DeleteProjectProjectNameHandlerFunc(params project.DeleteProjectProjectNameParams) middleware.Responder {
-	utils.Debug("", "Deleting project "+params.ProjectName)
+	// utils.Debug("", "Deleting project "+params.ProjectName)
 	err := os.RemoveAll(config.ConfigDir + "/" + params.ProjectName)
 	if err != nil {
 		return project.NewDeleteProjectProjectNameBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
@@ -136,6 +129,6 @@ func DeleteProjectProjectNameHandlerFunc(params project.DeleteProjectProjectName
 		}
 	}
 
-	utils.Debug("", "Project "+params.ProjectName+" has been deleted")
+	// utils.Debug("", "Project "+params.ProjectName+" has been deleted")
 	return project.NewDeleteProjectProjectNameNoContent()
 }
