@@ -12,6 +12,19 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+// MyCloudEvent represents a keptn cloud event
+type MyCloudEvent struct {
+	CloudEventsVersion string          `json:"cloudEventsVersion"`
+	ContentType        string          `json:"contentType"`
+	Data               json.RawMessage `json:"data"`
+	EventID            string          `json:"eventID"`
+	EventTime          string          `json:"eventTime"`
+	EventType          string          `json:"eventType"`
+	Type               string          `json:"type"`
+	Source             string          `json:"source"`
+	ShKeptnContext     string          `json:"shkeptncontext"`
+}
+
 // OpenWS opens a websocket
 func OpenWS(connData websockethelper.ConnectionData, apiEndPoint url.URL) (*websocket.Conn, *http.Response, error) {
 
@@ -40,7 +53,10 @@ func WriteWSLog(ws *websocket.Conn, logEvent cloudevents.Event, message string, 
 
 	logDataRaw, _ := json.Marshal(logData)
 
-	messageCE := websockethelper.MyCloudEvent{
+	var shkeptncontext string
+	logEvent.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
+
+	messageCE := MyCloudEvent{
 		CloudEventsVersion: logEvent.SpecVersion(),
 		ContentType:        logEvent.DataContentType(),
 		Data:               logDataRaw,
@@ -49,6 +65,7 @@ func WriteWSLog(ws *websocket.Conn, logEvent cloudevents.Event, message string, 
 		EventType:          logEvent.Type(),
 		Type:               "sh.keptn.events.log",
 		Source:             logEvent.Source(),
+		ShKeptnContext:     shkeptncontext,
 	}
 
 	//logEvent.Data = logData
