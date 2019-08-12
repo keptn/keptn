@@ -67,5 +67,6 @@ func WriteWSLog(ws *websocket.Conn, logEvent cloudevents.Event, message string, 
 	fmt.Println(message)
 
 	logEvent.Data = logData
-	return ws.WriteJSON(logEvent)
+	data, _ := json.Marshal(logEvent)
+	return ws.WriteMessage(websocket.TextMessage, data)
 }
