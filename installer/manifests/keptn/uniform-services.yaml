@@ -260,7 +260,7 @@ spec:
     spec:
       containers:
       - name: shipyard-service
-        image: keptn/shipyard-service:e43b7b6
+        image: keptn/shipyard-service:5f13e23
         ports:
         - containerPort: 8080
         resources:
