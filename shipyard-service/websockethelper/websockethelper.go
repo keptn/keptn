@@ -1,7 +1,6 @@
 package websockethelper
 
 import (
-	"crypto/tls"
 	"encoding/json"
 	"net/http"
 	"net/url"
@@ -44,16 +43,13 @@ type ChannelInfo struct {
 func OpenWS(connData ConnectionData, apiEndPoint url.URL) (*websocket.Conn, *http.Response, error) {
 
 	wsEndPoint := apiEndPoint
-	wsEndPoint.Scheme = "wss"
+	wsEndPoint.Scheme = "ws"
 
 	header := http.Header{}
 	header.Add("Token", connData.ChannelInfo.Token)
 	header.Add("Keptn-Ws-Channel-Id", connData.ChannelInfo.ChannelID)
 
 	dialer := websocket.DefaultDialer
-	dialer.TLSClientConfig = &tls.Config{
-		InsecureSkipVerify: true,
-	}
 
 	return dialer.Dial(wsEndPoint.String(), header)
 }
