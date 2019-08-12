@@ -121,7 +121,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	}
 	ws, _, err := websockethelper.OpenWS(*connData, endPoint)
 	if err != nil {
-		fmt.Println("opening websocket failed")
+		logger.Error(fmt.Sprintf("opening websocket failed: %s", err.Error()))
 		return err
 	}
 	defer ws.Close()
