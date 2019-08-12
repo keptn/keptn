@@ -126,11 +126,11 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	}
 	defer ws.Close()
 
-	if err := websockethelper.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), "First log", false, "INFO"); err != nil {
+	if err := websockethelper.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), "First log line", false, "INFO"); err != nil {
 		logger.Error(fmt.Sprintf("could not write log to websocket: %s", err.Error()))
 	}
 
-	if err := websockethelper.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), "Second log", true, "INFO"); err != nil {
+	if err := websockethelper.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), "Second log line", true, "INFO"); err != nil {
 		logger.Error(fmt.Sprintf("could not write log to websocket: %s", err.Error()))
 	}
 
