@@ -3,7 +3,6 @@ package ws
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -73,20 +72,17 @@ func (c *clientType) readPump() {
 		c.conn.Close()
 	}()
 	c.conn.SetReadLimit(maxMessageSize)
-	fmt.Println("in read")
 	for {
 		_, message, err := c.conn.ReadMessage()
-		fmt.Println("print message: ")
-		fmt.Println(message)
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				log.Printf("error: %v", err)
 			}
 			break
 		}
+
 		var data receivedData
 		err = json.Unmarshal(message, &data)
-		fmt.Println(data)
 		if err != nil {
 			log.Fatal(err.Error())
 		}
