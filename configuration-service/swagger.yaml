@@ -40,6 +40,15 @@ definitions:
       projectName:
         type: string
         description: Project name
+      gitUser:
+        type: string
+        description: Git User
+      gitRemoteURI:
+        type: string
+        description: Git remote URI
+      gitToken:
+        type: string
+        description: Git token
 
   Projects:
     type: object
