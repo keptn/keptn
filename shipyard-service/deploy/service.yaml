@@ -31,6 +31,8 @@ spec:
           value: 'http://configuration-service.keptn.svc.cluster.local/'
         - name: EVENTBROKER
           value: 'http://event-broker.keptn.svc.cluster.local/keptn'
+        - name: API
+          value: 'ws://api.keptn.svc.cluster.local'
 ---
 apiVersion: v1
 kind: Service

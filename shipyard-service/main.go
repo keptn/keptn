@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/keptn/keptn/configuration-service/models"
+	"github.com/keptn/keptn/shipyard-service/websockethelper"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
@@ -26,6 +27,7 @@ import (
 const timeout = 60
 const configservice = "CONFIGURATION_SERVICE"
 const eventbroker = "EVENTBROKER"
+const api = "API"
 
 type envConfig struct {
 	Port int    `envconfig:"RCV_PORT" default:"8080"`
@@ -100,6 +102,28 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 	logger := keptnutils.NewLogger(shkeptncontext, event.Context.GetID(), "shipyard-service")
 
+	// open websocket connection to api component
+	endPoint, err := getServiceEndpoint(api)
+	if err != nil {
+		return err
+	}
+
+	if endPoint.Host == "" {
+		return errors.New("host of api not set")
+	}
+
+	connData := &websockethelper.ConnectionData{}
+	if err := event.DataAs(connData); err != nil {
+		logger.Error(fmt.Sprintf("data of the event is incompatible: %s", err.Error()))
+		return err
+	}
+	ws, _, err := websockethelper.OpenWS(*connData, endPoint)
+	if err != nil {
+		fmt.Println("opening websocket failed")
+		return err
+	}
+	defer ws.Close()
+
 	//if event.Type() == "sh.keptn.internal.events.project.create" { // for keptn internal topics
 	if event.Type() == "create.project" {
 		eventData := &createProjectEventData{}
@@ -121,6 +145,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	return errors.New(errorMsg)
 }
 
+// Sends a keptn done event to the keptn eventbroker
 func respondWithDoneEvent(event cloudevents.Event, version *models.Version, err error, logger keptnutils.Logger) error {
 	if err != nil {
 		logger.Error(err.Error())
@@ -138,8 +163,8 @@ func respondWithDoneEvent(event cloudevents.Event, version *models.Version, err 
 	return nil
 }
 
+// Creates a project and stages depending on the shipyard
 func createProjectAndProcessShipyard(eventData createProjectEventData, logger keptnutils.Logger) (*models.Version, error) {
-
 	client := newClient()
 
 	project := models.Project{}
@@ -175,6 +200,7 @@ func createProjectAndProcessShipyard(eventData createProjectEventData, logger ke
 	return version, nil
 }
 
+// Returns the endpoint of a service stored in an environment variable
 func getServiceEndpoint(service string) (url.URL, error) {
 	url, err := url.Parse(os.Getenv(service))
 	if err != nil {
@@ -183,6 +209,7 @@ func getServiceEndpoint(service string) (url.URL, error) {
 	return *url, nil
 }
 
+// Sends a post request
 func postRequest(client *Client, path string, body []byte) (*http.Response, error) {
 	endPoint, err := getServiceEndpoint(configservice)
 	if err != nil {
@@ -288,6 +315,7 @@ func (client *Client) storeResource(project models.Project, resources []*models.
 	}
 }
 
+// Prepares a keptn done event and sends it to the eventbroker
 func sendDoneEvent(receivedEvent cloudevents.Event, result string, message string, version *models.Version) error {
 
 	var shkeptncontext string
