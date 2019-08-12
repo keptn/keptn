@@ -9,9 +9,12 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 
 	strfmt "github.com/go-openapi/strfmt"
+
+	models "github.com/keptn/keptn/configuration-service/models"
 )
 
 // NewPutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIParams creates a new PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIParams object
@@ -35,6 +38,10 @@ type PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIPar
 	  In: path
 	*/
 	ProjectName string
+	/*Resource
+	  In: body
+	*/
+	Resource *models.Resource
 	/*Resource URI
 	  Required: true
 	  In: path
@@ -66,6 +73,22 @@ func (o *PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceUR
 		res = append(res, err)
 	}
 
+	if runtime.HasBody(r) {
+		defer r.Body.Close()
+		var body models.Resource
+		if err := route.Consumer.Consume(r.Body, &body); err != nil {
+			res = append(res, errors.NewParseError("resource", "body", "", err))
+		} else {
+			// validate body object
+			if err := body.Validate(route.Formats); err != nil {
+				res = append(res, err)
+			}
+
+			if len(res) == 0 {
+				o.Resource = &body
+			}
+		}
+	}
 	rResourceURI, rhkResourceURI, _ := route.Params.GetOK("resourceURI")
 	if err := o.bindResourceURI(rResourceURI, rhkResourceURI, route.Formats); err != nil {
 		res = append(res, err)
