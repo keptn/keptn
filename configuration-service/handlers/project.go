@@ -122,6 +122,14 @@ func DeleteProjectProjectNameHandlerFunc(params project.DeleteProjectProjectName
 	if err != nil {
 		return project.NewDeleteProjectProjectNameBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
 	}
+	creds, _ := common.GetCredentials(params.ProjectName)
+	if creds != nil {
+		err = common.DeleteCredentials(params.ProjectName)
+		if err != nil {
+			return project.NewDeleteProjectProjectNameBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
+		}
+	}
+
 	utils.Debug("", "Project "+params.ProjectName+" has been deleted")
 	return project.NewDeleteProjectProjectNameNoContent()
 }
