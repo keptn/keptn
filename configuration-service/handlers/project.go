@@ -42,7 +42,8 @@ func GetProjectHandlerFunc(params project.GetProjectParams) middleware.Responder
 	if paginationInfo.NextPageKey < int64(totalCount) {
 		for _, f := range files[paginationInfo.NextPageKey:paginationInfo.EndIndex] {
 			if f.IsDir() {
-				payload.Projects = append(payload.Projects, &models.Project{ProjectName: f.Name()})
+				var project = &models.Project{ProjectName: f.Name()}
+				payload.Projects = append(payload.Projects, project)
 			}
 		}
 	}
@@ -56,16 +57,28 @@ func GetProjectHandlerFunc(params project.GetProjectParams) middleware.Responder
 func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Responder {
 
 	projectConfigPath := config.ConfigDir + "/" + params.Project.ProjectName
-	err := os.MkdirAll(projectConfigPath, os.ModePerm)
-	if err != nil {
-		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
-	}
 
-	out, err := utils.ExecuteCommandInDirectory("git", []string{"init"}, projectConfigPath)
-	utils.Debug("", "Init git result: "+out)
-	if err != nil {
-		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
+	////////////////////////////////////////////////////
+	// clone existing repo
+	////////////////////////////////////////////////////
+	if params.Project.GitUser != "" && params.Project.GitToken != "" && params.Project.GitRemoteURI != "" {
+		common.StoreGitCredentials(params.Project.ProjectName, params.Project.GitUser, params.Project.GitToken, params.Project.GitRemoteURI)
+		common.CloneRepo(params.Project.ProjectName, params.Project.GitUser, params.Project.GitToken, params.Project.GitRemoteURI)
+	} else {
+		// if no remote URI has been specified, create a new repo
+		////////////////////////////////////////////////////
+		err := os.MkdirAll(projectConfigPath, os.ModePerm)
+		if err != nil {
+			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
+		}
+
+		out, err := utils.ExecuteCommandInDirectory("git", []string{"init"}, projectConfigPath)
+		utils.Debug("", "Init git result: "+out)
+		if err != nil {
+			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
+		}
 	}
+	////////////////////////////////////////////////////
 
 	newProjectMetadata := &projectMetadata{
 		ProjectName:       params.Project.ProjectName,
@@ -79,12 +92,12 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
 	}
 
-	out, err = utils.ExecuteCommandInDirectory("git", []string{"add", "."}, projectConfigPath)
+	_, err = utils.ExecuteCommandInDirectory("git", []string{"add", "."}, projectConfigPath)
 	if err != nil {
 		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
 	}
 
-	out, err = utils.ExecuteCommandInDirectory("git", []string{"commit", "-m", `"added metadata.yaml"`}, projectConfigPath)
+	_, err = utils.ExecuteCommandInDirectory("git", []string{"commit", "-m", `"added metadata.yaml"`}, projectConfigPath)
 	if err != nil {
 		fmt.Print(err.Error())
 		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
@@ -95,7 +108,12 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 
 // GetProjectProjectNameHandlerFunc gets a project by its name
 func GetProjectProjectNameHandlerFunc(params project.GetProjectProjectNameParams) middleware.Responder {
-	return middleware.NotImplemented("operation project.GetProjectProjectName has not yet been implemented")
+	var projectResponse = &models.Project{ProjectName: params.ProjectName}
+	projectCreds, _ := common.GetCredentials(params.ProjectName)
+	if projectCreds != nil {
+		projectResponse.GitRemoteURI = projectCreds.RemoteURI
+	}
+	return project.NewGetProjectProjectNameOK().WithPayload(projectResponse)
 }
 
 // PutProjectProjectNameHandlerFunc updates a project
@@ -110,6 +128,14 @@ func DeleteProjectProjectNameHandlerFunc(params project.DeleteProjectProjectName
 	if err != nil {
 		return project.NewDeleteProjectProjectNameBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
 	}
+	creds, _ := common.GetCredentials(params.ProjectName)
+	if creds != nil {
+		err = common.DeleteCredentials(params.ProjectName)
+		if err != nil {
+			return project.NewDeleteProjectProjectNameBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
+		}
+	}
+
 	utils.Debug("", "Project "+params.ProjectName+" has been deleted")
 	return project.NewDeleteProjectProjectNameNoContent()
 }

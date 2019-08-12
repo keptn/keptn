@@ -1307,6 +1307,18 @@ func init() {
     "Project": {
       "type": "object",
       "properties": {
+        "gitRemoteURI": {
+          "description": "Git remote URI",
+          "type": "string"
+        },
+        "gitToken": {
+          "description": "Git token",
+          "type": "string"
+        },
+        "gitUser": {
+          "description": "Git User",
+          "type": "string"
+        },
         "projectName": {
           "description": "Project name",
           "type": "string"
@@ -3153,6 +3165,18 @@ func init() {
     "Project": {
       "type": "object",
       "properties": {
+        "gitRemoteURI": {
+          "description": "Git remote URI",
+          "type": "string"
+        },
+        "gitToken": {
+          "description": "Git token",
+          "type": "string"
+        },
+        "gitUser": {
+          "description": "Git User",
+          "type": "string"
+        },
         "projectName": {
           "description": "Project name",
           "type": "string"

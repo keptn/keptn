@@ -25,8 +25,8 @@ func GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHan
 	if !common.ServiceExists(params.ProjectName, params.StageName, params.ServiceName) {
 		return service_resource.NewGetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURINotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Service not found")})
 	}
-	utils.Debug("", "Checking out master branch")
-	err := common.CheckoutBranch(params.ProjectName, "master")
+	utils.Debug("", "Checking out "+params.StageName+" branch")
+	err := common.CheckoutBranch(params.ProjectName, params.StageName)
 	if err != nil {
 		return service_resource.NewGetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 	}
@@ -133,16 +133,16 @@ func PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHan
 	if !common.ServiceExists(params.ProjectName, params.StageName, params.ServiceName) {
 		return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Service does not exist")})
 	}
-	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
+	serviceConfigPath := config.ConfigDir + "/" + params.ProjectName + "/" + params.ServiceName
 
-	utils.Debug("", "Creating new resource(s) in: "+projectConfigPath+" in stage "+params.StageName)
+	utils.Debug("", "updating resource(s) in: "+serviceConfigPath+" in stage "+params.StageName)
 	utils.Debug("", "Checking out branch: "+params.StageName)
 	err := common.CheckoutBranch(params.ProjectName, params.StageName)
 	if err != nil {
 		return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
 	}
 
-	filePath := projectConfigPath + "/" + params.ResourceURI
+	filePath := serviceConfigPath + "/" + params.ResourceURI
 	common.WriteFile(filePath, params.Resource.ResourceContent)
 
 	utils.Debug("", "Staging Changes")

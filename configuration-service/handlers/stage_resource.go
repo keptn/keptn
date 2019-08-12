@@ -1,7 +1,10 @@
 package handlers
 
 import (
+	"io/ioutil"
+
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/configuration-service/common"
@@ -12,12 +15,48 @@ import (
 
 // GetProjectProjectNameStageStageNameResourceHandlerFunc get list of stage resources
 func GetProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resource.GetProjectProjectNameStageStageNameResourceParams) middleware.Responder {
-	return middleware.NotImplemented("operation stage_resource.GetProjectProjectNameStageStageNameResource has not yet been implemented")
+	if !common.StageExists(params.ProjectName, params.StageName) {
+		return stage_resource.NewGetProjectProjectNameStageStageNameResourceNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Stage does not exist")})
+	}
+
+	err := common.CheckoutBranch(params.ProjectName, params.StageName)
+	if err != nil {
+		return stage_resource.NewGetProjectProjectNameStageStageNameResourceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+	}
+
+	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
+	result := common.GetPaginatedResources(projectConfigPath, params.PageSize, params.NextPageKey)
+	return stage_resource.NewGetProjectProjectNameStageStageNameResourceOK().WithPayload(result)
 }
 
 // GetProjectProjectNameStageStageNameResourceResourceURIHandlerFunc get the specified resource
 func GetProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(params stage_resource.GetProjectProjectNameStageStageNameResourceResourceURIParams) middleware.Responder {
-	return middleware.NotImplemented("operation stage_resource.GetProjectProjectNameStageStageNameResourceResourceURI has not yet been implemented")
+	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
+	resourcePath := projectConfigPath + "/" + params.ResourceURI
+	if !common.StageExists(params.ProjectName, params.StageName) {
+		return stage_resource.NewGetProjectProjectNameStageStageNameResourceResourceURINotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project not found")})
+	}
+	utils.Debug("", "Checking out "+params.StageName+" branch")
+	err := common.CheckoutBranch(params.ProjectName, params.StageName)
+	if err != nil {
+		return stage_resource.NewGetProjectProjectNameStageStageNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+	}
+
+	if !common.FileExists(resourcePath) {
+		return stage_resource.NewGetProjectProjectNameStageStageNameResourceResourceURINotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Stage resource not found")})
+	}
+
+	dat, err := ioutil.ReadFile(resourcePath)
+	if err != nil {
+		return stage_resource.NewGetProjectProjectNameStageStageNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+	}
+
+	resourceContent := strfmt.Base64(dat)
+	return stage_resource.NewGetProjectProjectNameStageStageNameResourceResourceURIOK().WithPayload(
+		&models.Resource{
+			ResourceURI:     &params.ResourceURI,
+			ResourceContent: resourceContent,
+		})
 }
 
 // PostProjectProjectNameStageStageNameResourceHandlerFunc creates list of new resources in a stage

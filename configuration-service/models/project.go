@@ -15,6 +15,15 @@ import (
 // swagger:model Project
 type Project struct {
 
+	// Git remote URI
+	GitRemoteURI string `json:"gitRemoteURI,omitempty"`
+
+	// Git token
+	GitToken string `json:"gitToken,omitempty"`
+
+	// Git User
+	GitUser string `json:"gitUser,omitempty"`
+
 	// Project name
 	ProjectName string `json:"projectName,omitempty"`
 }
