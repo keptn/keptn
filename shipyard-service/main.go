@@ -130,6 +130,10 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		logger.Error(fmt.Sprintf("could not write log to websocket: %s", err.Error()))
 	}
 
+	if err := websockethelper.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), "Second log", true, "INFO"); err != nil {
+		logger.Error(fmt.Sprintf("could not write log to websocket: %s", err.Error()))
+	}
+
 	//if event.Type() == "sh.keptn.internal.events.project.create" { // for keptn internal topics
 	if event.Type() == "create.project" {
 		eventData := &createProjectEventData{}
