@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"io"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -29,6 +30,7 @@ func TestGetEndpoint(t *testing.T) {
 	assert.Equal(t, endPoint.Host, "configuration-service.keptn.svc.cluster.local", "Host of configuration-service endpoint incorrect")
 }
 
+// Helper function to build a test client with a httptest server
 func testingHTTPClient(handler http.Handler) (*http.Client, func()) {
 	server := httptest.NewServer(handler)
 
@@ -43,10 +45,11 @@ func testingHTTPClient(handler http.Handler) (*http.Client, func()) {
 	return client, server.Close
 }
 
-func TestCreateProject(t *testing.T) {
+func TestCreateProjectStatusNoContent(t *testing.T) {
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, r.Method, "POST", "Expect POST request")
 		assert.Equal(t, r.URL.EscapedPath(), "/project", "Expect /project endpoint")
+		w.WriteHeader(http.StatusNoContent) // 204 - StatusNoContent
 	})
 
 	httpClient, teardown := testingHTTPClient(handler)
@@ -65,10 +68,35 @@ func TestCreateProject(t *testing.T) {
 	assert.Equal(t, err, nil, "Received unexpected error")
 }
 
-func TestCreateStage(t *testing.T) {
+func TestCreateProjectBadRequest(t *testing.T) {
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, r.Method, "POST", "Expect POST request")
+		assert.Equal(t, r.URL.EscapedPath(), "/project", "Expect /project endpoint")
+		w.WriteHeader(http.StatusBadRequest) // 400 - BadRequest
+		io.WriteString(w, `{"code": 400, "message": "creating project failed due to error in configuration-service"}`)
+	})
+
+	httpClient, teardown := testingHTTPClient(handler)
+	defer teardown()
+
+	client := newClient()
+	client.httpClient = httpClient
+
+	logger := keptnutils.NewLogger("4711-a83b-4bc1-9dc0-1f050c7e789b", "4711-a83b-4bc1-9dc0-1f050c7e781b", "shipyard-service")
+	os.Setenv("CONFIGURATION_SERVICE", "http://configuration-service.keptn.svc.cluster.local")
+
+	project := models.Project{}
+	project.ProjectName = "sockshop"
+	err := client.createProject(project, *logger)
+
+	assert.Equal(t, err.Error(), "creating project failed due to error in configuration-service", "Expect an error")
+}
+
+func TestCreateStageStatusNoContent(t *testing.T) {
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, r.Method, "POST", "Expect POST request")
 		assert.Equal(t, r.URL.EscapedPath(), "/project/sockshop/stage", "Expect /project/sockshop/stage endpoint")
+		w.WriteHeader(http.StatusNoContent) // 204 - StatusNoContent
 	})
 
 	httpClient, teardown := testingHTTPClient(handler)
@@ -93,6 +121,8 @@ func TestStoreResource(t *testing.T) {
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, r.Method, "POST", "Expect POST request")
 		assert.Equal(t, r.URL.EscapedPath(), "/project/sockshop/resource", "Expect /project/sockshop/resource endpoint")
+		w.WriteHeader(http.StatusCreated) // 201 - StatusCreated
+		io.WriteString(w, `{"version": "as923nad"}`)
 	})
 
 	httpClient, teardown := testingHTTPClient(handler)
@@ -114,7 +144,8 @@ func TestStoreResource(t *testing.T) {
 
 	resources := []*models.Resource{&shipyard}
 
-	err := client.storeResource(project, resources, *logger)
+	version, err := client.storeResource(project, resources, *logger)
 
 	assert.Equal(t, err, nil, "Received unexpected error")
+	assert.Equal(t, version.Version, "as923nad", "Version not returned")
 }
