@@ -6,7 +6,6 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
-	"github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/configuration-service/common"
 	"github.com/keptn/keptn/configuration-service/config"
 	"github.com/keptn/keptn/configuration-service/models"
@@ -25,7 +24,7 @@ func GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHan
 	if !common.ServiceExists(params.ProjectName, params.StageName, params.ServiceName) {
 		return service_resource.NewGetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURINotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Service not found")})
 	}
-	utils.Debug("", "Checking out "+params.StageName+" branch")
+	// utils.Debug("", "Checking out "+params.StageName+" branch")
 	err := common.CheckoutBranch(params.ProjectName, params.StageName)
 	if err != nil {
 		return service_resource.NewGetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
@@ -60,8 +59,8 @@ func PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(p
 	}
 	serviceConfigPath := config.ConfigDir + "/" + params.ProjectName + "/" + params.ServiceName
 
-	utils.Debug("", "Creating new resource(s) in: "+serviceConfigPath+" in stage "+params.StageName)
-	utils.Debug("", "Checking out branch: "+params.StageName)
+	// utils.Debug("", "Creating new resource(s) in: "+serviceConfigPath+" in stage "+params.StageName)
+	// utils.Debug("", "Checking out branch: "+params.StageName)
 	err := common.CheckoutBranch(params.ProjectName, params.StageName)
 	if err != nil {
 		return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
@@ -71,17 +70,17 @@ func PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(p
 		filePath := serviceConfigPath + "/" + *res.ResourceURI
 		// don't overwrite existing files
 		if !common.FileExists(filePath) {
-			utils.Debug("", "Adding resource: "+filePath)
+			// utils.Debug("", "Adding resource: "+filePath)
 			common.WriteFile(filePath, res.ResourceContent)
 		}
 	}
 
-	utils.Debug("", "Staging Changes")
+	// utils.Debug("", "Staging Changes")
 	err = common.StageAndCommitAll(params.ProjectName, "Added resources")
 	if err != nil {
 		return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
 	}
-	utils.Debug("", "Successfully added resources")
+	// utils.Debug("", "Successfully added resources")
 
 	newVersion, err := common.GetCurrentVersion(params.ProjectName)
 	if err != nil {
@@ -99,8 +98,8 @@ func PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(pa
 	}
 	serviceConfigPath := config.ConfigDir + "/" + params.ProjectName + "/" + params.ServiceName
 
-	utils.Debug("", "Updating resource(s) in: "+serviceConfigPath+" in stage "+params.StageName)
-	utils.Debug("", "Checking out branch: "+params.StageName)
+	// utils.Debug("", "Updating resource(s) in: "+serviceConfigPath+" in stage "+params.StageName)
+	// utils.Debug("", "Checking out branch: "+params.StageName)
 	err := common.CheckoutBranch(params.ProjectName, params.StageName)
 	if err != nil {
 		return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
@@ -108,16 +107,16 @@ func PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(pa
 
 	for _, res := range params.Resources.Resources {
 		filePath := serviceConfigPath + "/" + *res.ResourceURI
-		utils.Debug("", "Updating resource: "+filePath)
+		// utils.Debug("", "Updating resource: "+filePath)
 		common.WriteFile(filePath, res.ResourceContent)
 	}
 
-	utils.Debug("", "Staging Changes")
+	// utils.Debug("", "Staging Changes")
 	err = common.StageAndCommitAll(params.ProjectName, "Updated resources")
 	if err != nil {
 		return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
 	}
-	utils.Debug("", "Successfully updated resources")
+	// utils.Debug("", "Successfully updated resources")
 
 	newVersion, err := common.GetCurrentVersion(params.ProjectName)
 	if err != nil {
@@ -135,8 +134,8 @@ func PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHan
 	}
 	serviceConfigPath := config.ConfigDir + "/" + params.ProjectName + "/" + params.ServiceName
 
-	utils.Debug("", "updating resource(s) in: "+serviceConfigPath+" in stage "+params.StageName)
-	utils.Debug("", "Checking out branch: "+params.StageName)
+	// utils.Debug("", "updating resource(s) in: "+serviceConfigPath+" in stage "+params.StageName)
+	// utils.Debug("", "Checking out branch: "+params.StageName)
 	err := common.CheckoutBranch(params.ProjectName, params.StageName)
 	if err != nil {
 		return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
@@ -145,12 +144,12 @@ func PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHan
 	filePath := serviceConfigPath + "/" + params.ResourceURI
 	common.WriteFile(filePath, params.Resource.ResourceContent)
 
-	utils.Debug("", "Staging Changes")
+	// utils.Debug("", "Staging Changes")
 	err = common.StageAndCommitAll(params.ProjectName, "Updated resource: "+params.ResourceURI)
 	if err != nil {
 		return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
 	}
-	utils.Debug("", "Successfully updated resource: "+params.ResourceURI)
+	// utils.Debug("", "Successfully updated resource: "+params.ResourceURI)
 
 	newVersion, err := common.GetCurrentVersion(params.ProjectName)
 	if err != nil {

@@ -6,7 +6,6 @@ import (
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
-	"github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/configuration-service/common"
 	"github.com/keptn/keptn/configuration-service/config"
 	"github.com/keptn/keptn/configuration-service/models"
@@ -37,8 +36,8 @@ func PostProjectProjectNameStageStageNameServiceHandlerFunc(params service.PostP
 	if !common.ProjectExists(params.ProjectName) {
 		return service.NewPostProjectProjectNameStageStageNameServiceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Project  " + params.ProjectName + " does not exist.")})
 	}
-	utils.Debug("", "Creating new resource(s) in: "+projectConfigPath+" in stage "+params.StageName)
-	utils.Debug("", "Checking out branch: "+params.StageName)
+	// utils.Debug("", "Creating new resource(s) in: "+projectConfigPath+" in stage "+params.StageName)
+	// utils.Debug("", "Checking out branch: "+params.StageName)
 	err := common.CheckoutBranch(params.ProjectName, params.StageName)
 	if err != nil {
 		return service.NewPostProjectProjectNameStageStageNameServiceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})

@@ -11,7 +11,6 @@ import (
 	errors "github.com/go-openapi/errors"
 	runtime "github.com/go-openapi/runtime"
 
-	"github.com/keptn/go-utils/pkg/utils"
 	handlers "github.com/keptn/keptn/configuration-service/handlers"
 	"github.com/keptn/keptn/configuration-service/restapi/operations"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/project"
@@ -138,17 +137,17 @@ func configureTLS(tlsConfig *tls.Config) {
 func configureServer(s *http.Server, scheme, addr string) {
 	if os.Getenv("env") == "production" {
 		///////// initialize git ////////////
-		utils.Debug("", "Configuring git user.email")
+		// utils.Debug("", "Configuring git user.email")
 		cmd := exec.Command("git", "config", "--global", "user.email", "keptn@keptn.com")
 		_, err := cmd.Output()
 		if err != nil {
-			utils.Error("", "Could not configure git user.email: "+err.Error())
+			// utils.Error("", "Could not configure git user.email: "+err.Error())
 		}
-		utils.Debug("", "Configuring git user.name")
+		// utils.Debug("", "Configuring git user.name")
 		cmd = exec.Command("git", "config", "--global", "user.name", "keptn")
 		_, err = cmd.Output()
 		if err != nil {
-			utils.Error("", "Could not configure git user.name: "+err.Error())
+			// utils.Error("", "Could not configure git user.name: "+err.Error())
 		}
 		////////////////////////////////////
 	}
