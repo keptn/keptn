@@ -16,7 +16,18 @@ import (
 
 // GetProjectProjectNameResourceHandlerFunc get list of project resources
 func GetProjectProjectNameResourceHandlerFunc(params project_resource.GetProjectProjectNameResourceParams) middleware.Responder {
-	return middleware.NotImplemented("operation project_resource.GetProjectProjectNameResource has not yet been implemented")
+	if !common.ProjectExists(params.ProjectName) {
+		return project_resource.NewGetProjectProjectNameResourceNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project does not exist")})
+	}
+
+	err := common.CheckoutBranch(params.ProjectName, "master")
+	if err != nil {
+		return project_resource.NewGetProjectProjectNameResourceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+	}
+
+	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
+	result := common.GetPaginatedResources(projectConfigPath, params.PageSize, params.NextPageKey)
+	return project_resource.NewGetProjectProjectNameResourceOK().WithPayload(result)
 }
 
 // PutProjectProjectNameResourceHandlerFunc update list of project resources
