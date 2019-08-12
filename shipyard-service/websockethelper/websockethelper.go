@@ -58,15 +58,28 @@ func OpenWS(connData ConnectionData, apiEndPoint url.URL) (*websocket.Conn, *htt
 // WriteWSLog writes the log event to the websocket
 func WriteWSLog(ws *websocket.Conn, logEvent cloudevents.Event, message string, terminate bool, logLevel string) error {
 
+	fmt.Println(message)
+
 	logData := LogData{
 		Message:   message,
 		Terminate: terminate,
 		LogLevel:  logLevel,
 	}
 
-	fmt.Println(message)
+	logDataRaw, _ := json.Marshal(logData)
 
-	logEvent.Data = logData
-	data, _ := json.Marshal(logEvent)
+	messageCE := MyCloudEvent{
+		CloudEventsVersion: logEvent.SpecVersion(),
+		ContentType:        logEvent.DataContentType(),
+		Data:               logDataRaw,
+		EventID:            logEvent.ID(),
+		EventTime:          logEvent.Time().String(),
+		EventType:          logEvent.Type(),
+		Type:               "sh.keptn.events.log",
+		Source:             logEvent.Source(),
+	}
+
+	//logEvent.Data = logData
+	data, _ := json.Marshal(messageCE)
 	return ws.WriteMessage(websocket.TextMessage, data) // ws.WriteJSON not supported because keptn CLI does a ReadMessage
 }
