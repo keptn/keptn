@@ -331,5 +331,5 @@ func init() {
 	domainCmd.Flags().MarkHidden("keptn-version")
 	domainCmd.PersistentFlags().BoolVarP(&insecureSkipTLSVerify, "insecure-skip-tls-verify", "s", false, "Skip tls verification for kubectl commands")
 
-	platformID = installCmd.Flags().StringP("platform", "p", "gke", "The platform on which keptn is running [gke,openshift,aks,kubernetes]")
+	platformID = domainCmd.Flags().StringP("platform", "p", "gke", "The platform on which keptn is running [gke,openshift,aks,kubernetes]")
 }
