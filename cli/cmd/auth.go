@@ -81,14 +81,7 @@ func init() {
 
 func authUsingKube() error {
 
-	ops := options{"get",
-		"secret",
-		"keptn-api-token",
-		"-n",
-		"keptn",
-		"-ojsonpath={.data.keptn-api-token}"}
-	ops.appendIfNotEmpty(kubectlOptions)
-	out, err := keptnutils.ExecuteCommand("kubectl", ops)
+	apiToken, err := getAPITokenUsingKube()
 
 	const errorMsg = `Could not retrieve keptn API token: %s
 To manually set up your keptn CLI, please follow the instructions at https://keptn.sh/.`
@@ -97,24 +90,12 @@ To manually set up your keptn CLI, please follow the instructions at https://kep
 		return fmt.Errorf(errorMsg, err)
 	}
 
-	apiToken, err := base64.StdEncoding.DecodeString(out)
-	if err != nil {
-		return fmt.Errorf(errorMsg, err)
-	}
 	var keptnEndpoint string
 	apiEndpointRetrieved := false
 	retries := 0
 	for tryGetAPIEndpoint := true; tryGetAPIEndpoint; tryGetAPIEndpoint = !apiEndpointRetrieved {
 
-		ops := options{"get",
-			"virtualservice",
-			"api",
-			"-n",
-			"keptn",
-			"-ojsonpath={.spec.hosts[0]}"}
-		ops.appendIfNotEmpty(kubectlOptions)
-
-		out, err := keptnutils.ExecuteCommand("kubectl", ops)
+		out, err := getEndpointUsingKube()
 
 		if err != nil {
 			retries++
@@ -138,7 +119,37 @@ To manually set up your keptn CLI, please follow the instructions at https://kep
 			time.Sleep(5 * time.Second)
 		}
 	}
-	return authenticate(keptnEndpoint, string(apiToken))
+	return authenticate(keptnEndpoint, apiToken)
+}
+
+func getEndpointUsingKube() (string, error) {
+	ops := options{"get",
+		"virtualservice",
+		"api",
+		"-n",
+		"keptn",
+		"-ojsonpath={.spec.hosts[0]}"}
+	ops.appendIfNotEmpty(kubectlOptions)
+	return keptnutils.ExecuteCommand("kubectl", ops)
+}
+
+func getAPITokenUsingKube() (string, error) {
+	ops := options{"get",
+		"secret",
+		"keptn-api-token",
+		"-n",
+		"keptn",
+		"-ojsonpath={.data.keptn-api-token}"}
+	ops.appendIfNotEmpty(kubectlOptions)
+	out, err := keptnutils.ExecuteCommand("kubectl", ops)
+	if err != nil {
+		return out, err
+	}
+	apiToken, err := base64.StdEncoding.DecodeString(out)
+	if err != nil {
+		return "", err
+	}
+	return string(apiToken), nil
 }
 
 func authenticate(endPoint string, apiToken string) error {
