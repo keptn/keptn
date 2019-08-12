@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/gorilla/websocket"
 )
 
@@ -51,4 +52,17 @@ func OpenWS(connData ConnectionData, apiEndPoint url.URL) (*websocket.Conn, *htt
 	dialer := websocket.DefaultDialer
 
 	return dialer.Dial(wsEndPoint.String(), header)
+}
+
+// WriteWSLog writes the log event to the websocket
+func WriteWSLog(ws *websocket.Conn, logEvent cloudevents.Event, message string, terminate bool, logLevel string) error {
+
+	logData := LogData{
+		Message:   message,
+		Terminate: terminate,
+		LogLevel:  logLevel,
+	}
+
+	logEvent.Data = logData
+	return ws.WriteJSON(logEvent)
 }
