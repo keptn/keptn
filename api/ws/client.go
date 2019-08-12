@@ -73,8 +73,11 @@ func (c *clientType) readPump() {
 		c.conn.Close()
 	}()
 	c.conn.SetReadLimit(maxMessageSize)
+	fmt.Println("in read")
 	for {
 		_, message, err := c.conn.ReadMessage()
+		fmt.Println("print message: ")
+		fmt.Println(message)
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				log.Printf("error: %v", err)
