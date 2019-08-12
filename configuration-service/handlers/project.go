@@ -56,16 +56,28 @@ func GetProjectHandlerFunc(params project.GetProjectParams) middleware.Responder
 func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Responder {
 
 	projectConfigPath := config.ConfigDir + "/" + params.Project.ProjectName
-	err := os.MkdirAll(projectConfigPath, os.ModePerm)
-	if err != nil {
-		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
-	}
 
-	out, err := utils.ExecuteCommandInDirectory("git", []string{"init"}, projectConfigPath)
-	utils.Debug("", "Init git result: "+out)
-	if err != nil {
-		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
+	////////////////////////////////////////////////////
+	// clone existing repo
+	////////////////////////////////////////////////////
+	if params.Project.GitUser != "" && params.Project.GitToken != "" && params.Project.GitRemoteURI != "" {
+		common.StoreGitCredentials(params.Project.ProjectName, params.Project.GitUser, params.Project.GitToken, params.Project.GitRemoteURI)
+		common.CloneRepo(params.Project.ProjectName, params.Project.GitUser, params.Project.GitToken, params.Project.GitRemoteURI)
+	} else {
+		// if no remote URI has been specified, create a new repo
+		////////////////////////////////////////////////////
+		err := os.MkdirAll(projectConfigPath, os.ModePerm)
+		if err != nil {
+			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
+		}
+
+		out, err := utils.ExecuteCommandInDirectory("git", []string{"init"}, projectConfigPath)
+		utils.Debug("", "Init git result: "+out)
+		if err != nil {
+			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
+		}
 	}
+	////////////////////////////////////////////////////
 
 	newProjectMetadata := &projectMetadata{
 		ProjectName:       params.Project.ProjectName,
@@ -79,12 +91,12 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
 	}
 
-	out, err = utils.ExecuteCommandInDirectory("git", []string{"add", "."}, projectConfigPath)
+	_, err = utils.ExecuteCommandInDirectory("git", []string{"add", "."}, projectConfigPath)
 	if err != nil {
 		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
 	}
 
-	out, err = utils.ExecuteCommandInDirectory("git", []string{"commit", "-m", `"added metadata.yaml"`}, projectConfigPath)
+	_, err = utils.ExecuteCommandInDirectory("git", []string{"commit", "-m", `"added metadata.yaml"`}, projectConfigPath)
 	if err != nil {
 		fmt.Print(err.Error())
 		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
