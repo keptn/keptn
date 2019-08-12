@@ -68,5 +68,5 @@ func WriteWSLog(ws *websocket.Conn, logEvent cloudevents.Event, message string, 
 
 	logEvent.Data = logData
 	data, _ := json.Marshal(logEvent)
-	return ws.WriteMessage(websocket.TextMessage, data)
+	return ws.WriteMessage(websocket.TextMessage, data) // ws.WriteJSON not supported because keptn CLI does a ReadMessage
 }
