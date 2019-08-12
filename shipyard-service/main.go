@@ -109,7 +109,9 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	}
 
 	if endPoint.Host == "" {
-		return errors.New("host of api not set")
+		const errorMsg = "host of api not set"
+		logger.Error(errorMsg)
+		return errors.New(errorMsg)
 	}
 
 	connData := &websockethelper.ConnectionData{}
