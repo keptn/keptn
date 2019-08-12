@@ -2,6 +2,7 @@ package websockethelper
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/url"
 
@@ -62,6 +63,8 @@ func WriteWSLog(ws *websocket.Conn, logEvent cloudevents.Event, message string, 
 		Terminate: terminate,
 		LogLevel:  logLevel,
 	}
+
+	fmt.Println(message)
 
 	logEvent.Data = logData
 	return ws.WriteJSON(logEvent)
