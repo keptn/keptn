@@ -12,8 +12,9 @@ import (
 	"os"
 	"time"
 
+	"github.com/keptn/keptn/cli/utils/websockethelper"
 	"github.com/keptn/keptn/configuration-service/models"
-	"github.com/keptn/keptn/shipyard-service/websockethelper"
+	websocket "github.com/keptn/keptn/shipyard-service/websocket"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
@@ -119,18 +120,18 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		logger.Error(fmt.Sprintf("data of the event is incompatible: %s", err.Error()))
 		return err
 	}
-	ws, _, err := websockethelper.OpenWS(*connData, endPoint)
+	ws, _, err := websocket.OpenWS(*connData, endPoint)
 	if err != nil {
 		logger.Error(fmt.Sprintf("opening websocket failed: %s", err.Error()))
 		return err
 	}
 	defer ws.Close()
 
-	if err := websockethelper.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), "First log line", false, "INFO"); err != nil {
+	if err := websocket.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), "First log line", false, "INFO"); err != nil {
 		logger.Error(fmt.Sprintf("could not write log to websocket: %s", err.Error()))
 	}
 
-	if err := websockethelper.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), "Second log line", true, "INFO"); err != nil {
+	if err := websocket.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), "Second log line", true, "INFO"); err != nil {
 		logger.Error(fmt.Sprintf("could not write log to websocket: %s", err.Error()))
 	}
 
