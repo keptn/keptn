@@ -33,7 +33,6 @@ func OpenWS(connData websockethelper.ConnectionData, apiEndPoint url.URL) (*webs
 
 	header := http.Header{}
 	header.Add("Token", connData.ChannelInfo.Token)
-	header.Add("Keptn-Ws-Channel-Id", connData.ChannelInfo.ChannelID)
 
 	dialer := websocket.DefaultDialer
 
