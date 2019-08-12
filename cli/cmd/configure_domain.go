@@ -27,6 +27,8 @@ const apiVirtualServiceURL = "/installer/manifests/keptn/keptn-api-virtualservic
 const domainConfigMapURL = "/installer/manifests/keptn/keptn-domain-configmap.yaml"
 const uniformServicesURL = "/installer/manifests/keptn/uniform-services.yaml"
 
+var platformID *string
+
 // domainCmd represents the domain command
 var domainCmd = &cobra.Command{
 	Use:          "domain domain_url",
@@ -115,11 +117,24 @@ var domainCmd = &cobra.Command{
 				return err
 			}
 
-			fmt.Println("Successfully configured domain")
+			if strings.ToLower(*platformID) == openshift {
+				fmt.Println("Please manually create the following route:")
+				fmt.Println("oc create route passthrough istio-wildcard-ingress-secure-keptn --service=istio-ingressgateway --hostname=\"www.keptn.ingress-gateway. " +
+					args[0] + "\" --port=https --wildcard-policy=Subdomain --insecure-policy='None' -n istio-system")
+				fmt.Println()
+				token, err := getAPITokenUsingKube()
+				if err != nil {
+					return err
+				}
+				fmt.Println("Afterwards, you can login with 'keptn auth --endpoint=https://api.keptn." + args[0] + " --token=" + token + "'")
 
-			err = authUsingKube()
-			if err != nil {
-				return err
+			} else {
+				fmt.Println("Successfully configured domain")
+
+				err = authUsingKube()
+				if err != nil {
+					return err
+				}
 			}
 
 			configured, err := checkIfConfiguredUsingKube()
@@ -314,4 +329,6 @@ func init() {
 		"The branch or tag of the version which is used for updating the domain")
 	domainCmd.Flags().MarkHidden("keptn-version")
 	domainCmd.PersistentFlags().BoolVarP(&insecureSkipTLSVerify, "insecure-skip-tls-verify", "s", false, "Skip tls verification for kubectl commands")
+
+	platformID = installCmd.Flags().StringP("platform", "p", "gke", "The platform on which keptn is running [gke,openshift,aks,kubernetes]")
 }
