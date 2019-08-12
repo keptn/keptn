@@ -111,20 +111,20 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	}
 
 	if endPoint.Host == "" {
-		const errorMsg = "host of api not set"
+		const errorMsg = "Host of api not set"
 		logger.Error(errorMsg)
 		return errors.New(errorMsg)
 	}
 
 	connData := &websockethelper.ConnectionData{}
 	if err := event.DataAs(connData); err != nil {
-		logger.Error(fmt.Sprintf("data of the event is incompatible: %s", err.Error()))
+		logger.Error(fmt.Sprintf("Data of the event is incompatible: %s", err.Error()))
 		return err
 	}
 
 	ws, _, err := websocketutil.OpenWS(*connData, endPoint)
 	if err != nil {
-		logger.Error(fmt.Sprintf("opening websocket failed: %s", err.Error()))
+		logger.Error(fmt.Sprintf("Opening websocket connection failed: %s", err.Error()))
 		return err
 	}
 	defer ws.Close()
@@ -133,13 +133,16 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	if event.Type() == "create.project" {
 		version, err := createProjectAndProcessShipyard(event, *logger, ws)
 		if err := respondWithDoneEvent(event, version, err, *logger, ws); err != nil {
-			logger.Error(fmt.Sprintf("no sh.keptn.event.done sent: %s", err.Error()))
+			logger.Error(fmt.Sprintf("No sh.keptn.event.done sent: %s", err.Error()))
 			return err
 		}
 		return nil
 	}
 
-	const errorMsg = "received unexpected keptn event that cannot be processed"
+	const errorMsg = "Received unexpected keptn event that cannot be processed"
+	if err := websocketutil.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), errorMsg, true, "INFO"); err != nil {
+		logger.Error(fmt.Sprintf("Could not write log to websocket: %s", err.Error()))
+	}
 	logger.Error(errorMsg)
 	return errors.New(errorMsg)
 }
@@ -147,62 +150,69 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 // respondWithDoneEvent sends a keptn done event to the keptn eventbroker
 func respondWithDoneEvent(event cloudevents.Event, version *models.Version, err error, logger keptnutils.Logger, ws *websocket.Conn) error {
 	if err != nil {
+		// error
 		logger.Error(err.Error())
+
 		if err := websocketutil.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), fmt.Sprintf("%s", err.Error()), true, "INFO"); err != nil {
 			logger.Error(fmt.Sprintf("could not write log to websocket: %s", err.Error()))
 		}
-
 		if err := sendDoneEvent(event, "error", err.Error(), version); err != nil {
 			logger.Error(err.Error())
 		}
-		return err
-	}
 
-	logger.Info("Create project event processed successfully")
-	if err := sendDoneEvent(event, "success", "Create project event processed successfully", version); err != nil {
+		return err
+
+	}
+	// success
+	const successMsg = "Project created and shipyard successfully processed"
+	logger.Info(successMsg)
+
+	if err := websocketutil.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), successMsg, true, "INFO"); err != nil {
+		logger.Error(fmt.Sprintf("could not write log to websocket: %s", err.Error()))
+	}
+	if err := sendDoneEvent(event, "success", successMsg, version); err != nil {
 		logger.Error(err.Error())
 		return err
-	}
-	if err := websocketutil.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), "Project created and shipyard processed successfully", true, "INFO"); err != nil {
-		logger.Error(fmt.Sprintf("could not write log to websocket: %s", err.Error()))
 	}
 
 	return nil
 }
 
-// createProjectAndProcessShipyard creates a project and stages depending on the shipyard
+// createProjectAndProcessShipyard creates a project and stages defined in the shipyard
 func createProjectAndProcessShipyard(event cloudevents.Event, logger keptnutils.Logger, ws *websocket.Conn) (*models.Version, error) {
-	client := newClient()
-
 	eventData := &createProjectEventData{}
 	if err := event.DataAs(eventData); err != nil {
-		logger.Error(fmt.Sprintf("data of the event is incompatible: %s", err.Error()))
+		logger.Error(fmt.Sprintf("Data of the event is incompatible: %s", err.Error()))
 		return nil, err
 	}
 
+	client := newClient()
+	// create project
 	project := models.Project{}
 	project.ProjectName = eventData.Project
 	if err := client.createProject(project, logger); err != nil {
 		logger.Error(err.Error())
-		return nil, errors.New("processing shipyard failed at creating project")
+		return nil, fmt.Errorf("Creating project %s failed: %s", project, err.Error())
 	}
 	if err := websocketutil.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), fmt.Sprintf("%s created", project), false, "INFO"); err != nil {
-		logger.Error(fmt.Sprintf("could not write log to websocket: %s", err.Error()))
+		logger.Error(fmt.Sprintf("Could not write log to websocket: %s", err.Error()))
 	}
 
+	// process shipyard file and create stages
 	for _, shipyardStage := range eventData.Shipyard {
 		stage := models.Stage{}
 		stage.StageName = shipyardStage.Name
 
 		if err := client.createStage(project, stage, logger); err != nil {
 			logger.Error(err.Error())
-			return nil, errors.New("processing shipyard failed at creating stage: " + stage.StageName)
+			return nil, fmt.Errorf("Creating stage %s failed: %s", stage.StageName, err.Error())
 		}
 		if err := websocketutil.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), fmt.Sprintf("%s created", stage), false, "INFO"); err != nil {
-			logger.Error(fmt.Sprintf("could not write log to websocket: %s", err.Error()))
+			logger.Error(fmt.Sprintf("Could not write log to websocket: %s", err.Error()))
 		}
 	}
 
+	// store shipyard.yaml
 	shipyard := models.Resource{}
 
 	var resourceURI = "shipyard.yaml"
@@ -213,7 +223,7 @@ func createProjectAndProcessShipyard(event cloudevents.Event, logger keptnutils.
 	version, err := client.storeResource(project, resources, logger)
 	if err != nil {
 		logger.Error(err.Error())
-		return nil, errors.New("processing shipyard failed at storing shipyard.yaml")
+		return nil, errors.New("Storing shipyard.yaml file failed")
 	}
 
 	return version, nil
@@ -223,7 +233,7 @@ func createProjectAndProcessShipyard(event cloudevents.Event, logger keptnutils.
 func getServiceEndpoint(service string) (url.URL, error) {
 	url, err := url.Parse(os.Getenv(service))
 	if err != nil {
-		return *url, fmt.Errorf("failed to retrieve value from ENVIRONMENT_VARIBLE: %s", service)
+		return *url, fmt.Errorf("Failed to retrieve value from ENVIRONMENT_VARIABLE: %s", service)
 	}
 	return *url, nil
 }
@@ -236,7 +246,7 @@ func postRequest(client *Client, path string, body []byte) (*http.Response, erro
 	}
 
 	if endPoint.Host == "" {
-		return nil, errors.New("host of configuration-service not set")
+		return nil, errors.New("Host of configuration-service not set")
 	}
 
 	eventURL := endPoint
@@ -244,7 +254,7 @@ func postRequest(client *Client, path string, body []byte) (*http.Response, erro
 
 	req, err := http.NewRequest("POST", eventURL.String(), bytes.NewReader(body))
 	if err != nil {
-		return nil, errors.New("failed to build new request")
+		return nil, errors.New("Failed to build new request")
 	}
 
 	return client.httpClient.Do(req)
@@ -254,24 +264,24 @@ func (client *Client) createProject(project models.Project, logger keptnutils.Lo
 	data, err := project.MarshalBinary()
 	if err != nil {
 		logger.Error(err.Error())
-		return errors.New("failed to create project")
+		return errors.New("Failed to create project")
 	}
 
 	resp, err := postRequest(client, "/project", data)
 	if err != nil {
 		logger.Error(err.Error())
-		return errors.New("failed to create project")
+		return errors.New("Failed to create project")
 	}
 
 	defer resp.Body.Close()
 	if resp.StatusCode == http.StatusNoContent || resp.StatusCode == http.StatusOK { // 204 - Success. Project has been created. Response does not have a body.
-		logger.Info("project created successfully")
+		logger.Info("Project successfully created")
 	} else if resp.StatusCode == http.StatusBadRequest { //	400 - Failed. Project could not be created.
 		errorObj := models.Error{}
 		json.NewDecoder(resp.Body).Decode(&errorObj)
 		return errors.New(*errorObj.Message)
 	} else { // catch undefined errors
-		return errors.New("undefined error in response of creating project")
+		return errors.New("Undefined error in response of creating project")
 	}
 
 	return nil
@@ -281,24 +291,24 @@ func (client *Client) createStage(project models.Project, stage models.Stage, lo
 	data, err := project.MarshalBinary()
 	if err != nil {
 		logger.Error(err.Error())
-		return errors.New("failed to create stage")
+		return errors.New("Failed to create stage")
 	}
 
 	resp, err := postRequest(client, fmt.Sprintf("project/%s/stage", project.ProjectName), data)
 	if err != nil {
 		logger.Error(err.Error())
-		return errors.New("failed to create stage")
+		return errors.New("Failed to create stage")
 	}
 
 	defer resp.Body.Close()
 	if resp.StatusCode == http.StatusNoContent { // 204 - Success. Stage has been created. Response does not have a body.
-		logger.Info("stage created successfully")
+		logger.Info("Stage successfully created")
 	} else if resp.StatusCode == http.StatusBadRequest { //	400 - Failed. Stage could not be created.
 		errorObj := models.Error{}
 		json.NewDecoder(resp.Body).Decode(&errorObj)
 		return errors.New(*errorObj.Message)
 	} else { // catch undefined errors
-		return errors.New("undefined error in response of creating stage")
+		return errors.New("Undefined error in response of creating stage")
 	}
 
 	return nil
@@ -308,20 +318,20 @@ func (client *Client) storeResource(project models.Project, resources []*models.
 	data, err := project.MarshalBinary()
 	if err != nil {
 		logger.Error(err.Error())
-		return nil, errors.New("failed to store resource")
+		return nil, errors.New("Failed to store resource")
 	}
 
 	resp, err := postRequest(client, fmt.Sprintf("project/%s/resource", project.ProjectName), data)
 	if err != nil {
 		logger.Error(err.Error())
-		return nil, errors.New("failed to store resource")
+		return nil, errors.New("Failed to store resource")
 	}
 
 	defer resp.Body.Close()
 	if resp.StatusCode == http.StatusCreated { // 201 - Success. Stage has been created. Response does not have a body.
 		versionObj := models.Version{}
 		json.NewDecoder(resp.Body).Decode(&versionObj)
-		logger.Info("resource stored successfully")
+		logger.Info("Resource successfully stored")
 
 		return &versionObj, nil
 	} else if resp.StatusCode == http.StatusBadRequest { //	400 - Failed. Stage could not be created.
@@ -330,7 +340,7 @@ func (client *Client) storeResource(project models.Project, resources []*models.
 
 		return nil, errors.New(*errorObj.Message)
 	} else { // catch undefined errors
-		return nil, errors.New("undefined error in response of storing resource")
+		return nil, errors.New("Undefined error in response of storing resource")
 	}
 }
 
@@ -386,11 +396,11 @@ func sendDoneEvent(receivedEvent cloudevents.Event, result string, message strin
 
 	endPoint, err := getServiceEndpoint(eventbroker)
 	if err != nil {
-		return errors.New("failed to retrieve endpoint of eventbroker: %s" + err.Error())
+		return errors.New("Failed to retrieve endpoint of eventbroker: %s" + err.Error())
 	}
 
 	if endPoint.Host == "" {
-		return errors.New("host of eventbroker not set")
+		return errors.New("Host of eventbroker not set")
 	}
 
 	transport, err := cloudeventshttp.New(
@@ -398,16 +408,16 @@ func sendDoneEvent(receivedEvent cloudevents.Event, result string, message strin
 		cloudeventshttp.WithEncoding(cloudeventshttp.StructuredV02),
 	)
 	if err != nil {
-		return errors.New("failed to create transport: " + err.Error())
+		return errors.New("Failed to create transport: " + err.Error())
 	}
 
 	client, err := client.New(transport)
 	if err != nil {
-		return errors.New("failed to create HTTP client: " + err.Error())
+		return errors.New("Failed to create HTTP client: " + err.Error())
 	}
 
 	if _, err := client.Send(context.Background(), doneEvent); err != nil {
-		return errors.New("failed to send cloudevent sh.keptn.events.done: " + err.Error())
+		return errors.New("Failed to send cloudevent sh.keptn.events.done: " + err.Error())
 	}
 
 	return nil
