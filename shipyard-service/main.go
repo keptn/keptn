@@ -100,16 +100,16 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 	logger := keptnutils.NewLogger(shkeptncontext, event.Context.GetID(), "shipyard-service")
 
-	//if event.Type() == "sh.keptn.internal.events.project.create" {
+	//if event.Type() == "sh.keptn.internal.events.project.create" { // for keptn internal topics
 	if event.Type() == "create.project" {
-			eventData := &createProjectEventData{}
+		eventData := &createProjectEventData{}
 		if err := event.DataAs(eventData); err != nil {
 			logger.Error(fmt.Sprintf("data of the event is incompatible: %s", err.Error()))
 			return err
 		}
 
-		err := createProjectAndProcessShipyard(*eventData, *logger)
-		if err := respondWithDoneEvent(event, err, *logger); err != nil {
+		version, err := createProjectAndProcessShipyard(*eventData, *logger)
+		if err := respondWithDoneEvent(event, version, err, *logger); err != nil {
 			logger.Error(fmt.Sprintf("no sh.keptn.event.done sent: %s", err.Error()))
 			return err
 		}
@@ -121,24 +121,24 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	return errors.New(errorMsg)
 }
 
-func respondWithDoneEvent(event cloudevents.Event, err error, logger keptnutils.Logger) error {
+func respondWithDoneEvent(event cloudevents.Event, version *models.Version, err error, logger keptnutils.Logger) error {
 	if err != nil {
 		logger.Error(err.Error())
-		if err := sendDoneEvent(event, "error", err.Error()); err != nil {
+		if err := sendDoneEvent(event, "error", err.Error(), version); err != nil {
 			logger.Error(err.Error())
 		}
 		return err
 	}
 
 	logger.Info("Create project event processed successfully")
-	if err := sendDoneEvent(event, "success", "Create project event processed successfully"); err != nil {
+	if err := sendDoneEvent(event, "success", "Create project event processed successfully", version); err != nil {
 		logger.Error(err.Error())
 		return err
 	}
 	return nil
 }
 
-func createProjectAndProcessShipyard(eventData createProjectEventData, logger keptnutils.Logger) error {
+func createProjectAndProcessShipyard(eventData createProjectEventData, logger keptnutils.Logger) (*models.Version, error) {
 
 	client := newClient()
 
@@ -146,7 +146,7 @@ func createProjectAndProcessShipyard(eventData createProjectEventData, logger ke
 	project.ProjectName = eventData.Project
 	if err := client.createProject(project, logger); err != nil {
 		logger.Error(err.Error())
-		return errors.New("processing shipyard failed at creating project")
+		return nil, errors.New("processing shipyard failed at creating project")
 	}
 
 	for _, shipyardStage := range eventData.Shipyard {
@@ -155,7 +155,7 @@ func createProjectAndProcessShipyard(eventData createProjectEventData, logger ke
 
 		if err := client.createStage(project, stage, logger); err != nil {
 			logger.Error(err.Error())
-			return errors.New("processing shipyard failed at creating stage: " + stage.StageName)
+			return nil, errors.New("processing shipyard failed at creating stage: " + stage.StageName)
 		}
 	}
 
@@ -166,13 +166,13 @@ func createProjectAndProcessShipyard(eventData createProjectEventData, logger ke
 	shipyard.ResourceContent, _ = json.Marshal(eventData.Shipyard)
 
 	resources := []*models.Resource{&shipyard}
-
-	if err := client.storeResource(project, resources, logger); err != nil {
+	version, err := client.storeResource(project, resources, logger)
+	if err != nil {
 		logger.Error(err.Error())
-		return errors.New("processing shipyard failed at storing shipyard.yaml")
+		return nil, errors.New("processing shipyard failed at storing shipyard.yaml")
 	}
 
-	return nil
+	return version, nil
 }
 
 func getServiceEndpoint(service string) (url.URL, error) {
@@ -218,8 +218,14 @@ func (client *Client) createProject(project models.Project, logger keptnutils.Lo
 	}
 
 	defer resp.Body.Close()
-	if resp.StatusCode == http.StatusOK {
+	if resp.StatusCode == http.StatusNoContent || resp.StatusCode == http.StatusOK { // 204 - Success. Project has been created. Response does not have a body.
 		logger.Info("project created successfully")
+	} else if resp.StatusCode == http.StatusBadRequest { //	400 - Failed. Project could not be created.
+		errorObj := models.Error{}
+		json.NewDecoder(resp.Body).Decode(&errorObj)
+		return errors.New(*errorObj.Message)
+	} else { // catch undefined errors
+		return errors.New("undefined error in response of creating project")
 	}
 
 	return nil
@@ -239,35 +245,50 @@ func (client *Client) createStage(project models.Project, stage models.Stage, lo
 	}
 
 	defer resp.Body.Close()
-	if resp.StatusCode == http.StatusOK {
+	if resp.StatusCode == http.StatusNoContent { // 204 - Success. Stage has been created. Response does not have a body.
 		logger.Info("stage created successfully")
+	} else if resp.StatusCode == http.StatusBadRequest { //	400 - Failed. Stage could not be created.
+		errorObj := models.Error{}
+		json.NewDecoder(resp.Body).Decode(&errorObj)
+		return errors.New(*errorObj.Message)
+	} else { // catch undefined errors
+		return errors.New("undefined error in response of creating stage")
 	}
 
 	return nil
 }
 
-func (client *Client) storeResource(project models.Project, resources []*models.Resource, logger keptnutils.Logger) error {
+func (client *Client) storeResource(project models.Project, resources []*models.Resource, logger keptnutils.Logger) (*models.Version, error) {
 	data, err := project.MarshalBinary()
 	if err != nil {
 		logger.Error(err.Error())
-		return errors.New("failed to store resource")
+		return nil, errors.New("failed to store resource")
 	}
 
 	resp, err := postRequest(client, fmt.Sprintf("project/%s/resource", project.ProjectName), data)
 	if err != nil {
 		logger.Error(err.Error())
-		return errors.New("failed to store resource")
+		return nil, errors.New("failed to store resource")
 	}
 
 	defer resp.Body.Close()
-	if resp.StatusCode == http.StatusOK {
+	if resp.StatusCode == http.StatusCreated { // 201 - Success. Stage has been created. Response does not have a body.
+		versionObj := models.Version{}
+		json.NewDecoder(resp.Body).Decode(&versionObj)
 		logger.Info("resource stored successfully")
-	}
 
-	return nil
+		return &versionObj, nil
+	} else if resp.StatusCode == http.StatusBadRequest { //	400 - Failed. Stage could not be created.
+		errorObj := models.Error{}
+		json.NewDecoder(resp.Body).Decode(&errorObj)
+
+		return nil, errors.New(*errorObj.Message)
+	} else { // catch undefined errors
+		return nil, errors.New("undefined error in response of storing resource")
+	}
 }
 
-func sendDoneEvent(receivedEvent cloudevents.Event, result string, message string) error {
+func sendDoneEvent(receivedEvent cloudevents.Event, result string, message string, version *models.Version) error {
 
 	var shkeptncontext string
 	receivedEvent.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
@@ -286,6 +307,10 @@ func sendDoneEvent(receivedEvent cloudevents.Event, result string, message strin
 	eventData := doneEventData{
 		Result:  result,
 		Message: message,
+	}
+
+	if version != nil {
+		eventData.Version = version.Version
 	}
 
 	event := cloudevents.Event{
