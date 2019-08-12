@@ -120,6 +120,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		logger.Error(fmt.Sprintf("data of the event is incompatible: %s", err.Error()))
 		return err
 	}
+
 	ws, _, err := websocket.OpenWS(*connData, endPoint)
 	if err != nil {
 		logger.Error(fmt.Sprintf("opening websocket failed: %s", err.Error()))
