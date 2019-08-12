@@ -857,6 +857,11 @@ func init() {
           "Stage Resource"
         ],
         "summary": "Update the specified resource",
+        "parameters": [
+          {
+            "$ref": "#/parameters/resource"
+          }
+        ],
         "responses": {
           "201": {
             "description": "Success. Stage resource has been updated. The version of the new configuration is returned.",
@@ -1216,6 +1221,11 @@ func init() {
           "Service Resource"
         ],
         "summary": "Update the specified resource",
+        "parameters": [
+          {
+            "$ref": "#/parameters/resource"
+          }
+        ],
         "responses": {
           "201": {
             "description": "Success. Service resource has been updated. The version of the new configuration is returned.",
@@ -2571,6 +2581,16 @@ func init() {
           "Stage Resource"
         ],
         "summary": "Update the specified resource",
+        "parameters": [
+          {
+            "description": "Resource",
+            "name": "resource",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/Resource"
+            }
+          }
+        ],
         "responses": {
           "201": {
             "description": "Success. Stage resource has been updated. The version of the new configuration is returned.",
@@ -3026,6 +3046,16 @@ func init() {
           "Service Resource"
         ],
         "summary": "Update the specified resource",
+        "parameters": [
+          {
+            "description": "Resource",
+            "name": "resource",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/Resource"
+            }
+          }
+        ],
         "responses": {
           "201": {
             "description": "Success. Service resource has been updated. The version of the new configuration is returned.",
