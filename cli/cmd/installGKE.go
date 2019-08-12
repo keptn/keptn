@@ -54,7 +54,7 @@ func (p gkePlatform) checkRequirements() error {
 
 func (p gkePlatform) checkCreds() error {
 	if p.creds.ClusterName == "" || p.creds.ClusterZone == "" {
-		return errors.New("Incomplete credential file " + *configFilePath)
+		return errors.New("Incomplete credentials")
 	}
 
 	authenticated, err := p.authenticateAtCluster()
