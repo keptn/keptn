@@ -3,6 +3,7 @@ package ws
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -82,6 +83,7 @@ func (c *clientType) readPump() {
 		}
 		var data receivedData
 		err = json.Unmarshal(message, &data)
+		fmt.Println(data)
 		if err != nil {
 			log.Fatal(err.Error())
 		}
