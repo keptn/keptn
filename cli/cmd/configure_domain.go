@@ -105,6 +105,11 @@ var domainCmd = &cobra.Command{
 				return err
 			}
 
+			err = updateKeptnDomainConfigMap(path, args[0])
+			if err != nil {
+				return err
+			}
+
 			err = reDeployGithubService()
 			if err != nil {
 				return err
@@ -158,10 +163,17 @@ func updateKeptnDomainConfigMap(path, domain string) error {
 		return err
 	}
 
+	o := options{"delete", "-f", keptnDomainConfigMap}
+	o.appendIfNotEmpty(kubectlOptions)
+	_, err := keptnutils.ExecuteCommand("kubectl", o)
+	if err != nil {
+		return err
+	}
+
 	// Add config map in keptn namespace that contains the domain - this will be used by other services as well
-	options := options{"apply", "-f", keptnDomainConfigMap}
-	options.appendIfNotEmpty(kubectlOptions)
-	_, err := keptnutils.ExecuteCommand("kubectl", options)
+	o = options{"apply", "-f", keptnDomainConfigMap}
+	o.appendIfNotEmpty(kubectlOptions)
+	_, err = keptnutils.ExecuteCommand("kubectl", o)
 	return err
 }
 
