@@ -69,7 +69,7 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 		common.CloneRepo(params.Project.ProjectName, params.Project.GitUser, params.Project.GitToken, params.Project.GitRemoteURI)
 	} else {
 		// if no remote URI has been specified, create a new repo
-		////////////////////////////////////////////////////
+		///////////////////////////////////////////////////
 		err := os.MkdirAll(projectConfigPath, os.ModePerm)
 		if err != nil {
 			logger.Error(err.Error())
