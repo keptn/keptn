@@ -24,6 +24,10 @@ func GetProjectProjectNameServiceServiceNameResourceResourceURIHandlerFunc(param
 func PostProjectProjectNameServiceServiceNameResourceHandlerFunc(params service_default_resource.PostProjectProjectNameServiceServiceNameResourceParams) middleware.Responder {
 	logger := utils.NewLogger("", "", "configuration-service")
 
+	if !common.ProjectExists(params.ProjectName) {
+		return service_default_resource.NewPostProjectProjectNameServiceServiceNameResourceDefault(404).WithPayload(&models.Error{Code: 400, Message: swag.String("Project does not exist")})
+	}
+
 	branches, err := common.GetBranches(params.ProjectName)
 	if err != nil {
 		logger.Error(err.Error())
