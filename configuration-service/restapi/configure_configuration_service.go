@@ -11,7 +11,7 @@ import (
 
 	errors "github.com/go-openapi/errors"
 	runtime "github.com/go-openapi/runtime"
-
+	"github.com/keptn/go-utils/pkg/utils"
 	handlers "github.com/keptn/keptn/configuration-service/handlers"
 	"github.com/keptn/keptn/configuration-service/restapi/operations"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/project"
@@ -136,19 +136,20 @@ func configureTLS(tlsConfig *tls.Config) {
 // This function can be called multiple times, depending on the number of serving schemes.
 // scheme value will be set accordingly: "http", "https" or "unix"
 func configureServer(s *http.Server, scheme, addr string) {
+	logger := utils.NewLogger("", "", "configuration-service")
 	if os.Getenv("env") == "production" {
 		///////// initialize git ////////////
-		// utils.Debug("", "Configuring git user.email")
+		logger.Debug("Configuring git user.email")
 		cmd := exec.Command("git", "config", "--global", "user.email", "keptn@keptn.com")
 		_, err := cmd.Output()
 		if err != nil {
-			// utils.Error("", "Could not configure git user.email: "+err.Error())
+			logger.Error("Could not configure git user.email: " + err.Error())
 		}
-		// utils.Debug("", "Configuring git user.name")
+		logger.Debug("Configuring git user.name")
 		cmd = exec.Command("git", "config", "--global", "user.name", "keptn")
 		_, err = cmd.Output()
 		if err != nil {
-			// utils.Error("", "Could not configure git user.name: "+err.Error())
+			logger.Error("Could not configure git user.name: " + err.Error())
 		}
 		////////////////////////////////////
 	}
