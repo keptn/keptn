@@ -41,8 +41,7 @@ var domainCmd = &cobra.Command{
 			return errors.New("Requires a domain as argument")
 		}
 
-		_, err := url.Parse(args[0])
-		if err != nil {
+		if _, err := url.Parse(args[0]); err != nil {
 			cmd.SilenceUsage = false
 			return errors.New("Cannot parse provided domain")
 		}
@@ -96,24 +95,20 @@ var domainCmd = &cobra.Command{
 
 		if !mocking {
 
-			err = updateKeptnAPIVirtualService(path, args[0])
-			if err != nil {
+			if err := updateKeptnAPIVirtualService(path, args[0]); err != nil {
 				return err
 			}
 
 			// Generate new certificate
-			err = updateCertificate(path, args[0])
-			if err != nil {
+			if err := updateCertificate(path, args[0]); err != nil {
 				return err
 			}
 
-			err = updateKeptnDomainConfigMap(path, args[0])
-			if err != nil {
+			if err := updateKeptnDomainConfigMap(path, args[0]); err != nil {
 				return err
 			}
 
-			err = reDeployGithubService()
-			if err != nil {
+			if err := reDeployGithubService(); err != nil {
 				return err
 			}
 
@@ -132,8 +127,7 @@ var domainCmd = &cobra.Command{
 			} else {
 				fmt.Println("Successfully configured domain")
 
-				err = authUsingKube()
-				if err != nil {
+				if err := authUsingKube(); err != nil {
 					return err
 				}
 			}
