@@ -80,6 +80,7 @@ func (c *clientType) readPump() {
 			}
 			break
 		}
+
 		var data receivedData
 		err = json.Unmarshal(message, &data)
 		if err != nil {

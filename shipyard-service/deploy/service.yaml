@@ -2,21 +2,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: openshift-route-service
+  name: shipyard-service
   namespace: keptn
 spec:
   selector:
     matchLabels:
-      run: openshift-route-service
+      run: shipyard-service
   replicas: 1
   template:
     metadata:
       labels:
-        run: openshift-route-service
+        run: shipyard-service
     spec:
       containers:
-      - name: openshift-route-service
-        image: keptn/openshift-route-service:latest
+      - name: shipyard-service
+        image: keptn/shipyard-service:latest
         ports:
         - containerPort: 8080
         resources:
@@ -27,22 +27,23 @@ spec:
             memory: "128Mi"
             cpu: "500m"
         env:
-        - name: APP_DOMAIN
-          valueFrom:
-            configMapKeyRef:
-              name: keptn-domain
-              key: app_domain
+        - name: CONFIGURATION_SERVICE
+          value: 'http://configuration-service.keptn.svc.cluster.local:8080'
+        - name: EVENTBROKER
+          value: 'http://event-broker.keptn.svc.cluster.local/keptn'
+        - name: API
+          value: 'ws://api.keptn.svc.cluster.local'
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: openshift-route-service
+  name: shipyard-service
   namespace: keptn
   labels:
-    run: openshift-route-service
+    run: shipyard-service
 spec:
   ports:
   - port: 8080
     protocol: TCP
   selector:
-    run: openshift-route-service
+    run: shipyard-service
