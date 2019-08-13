@@ -23,9 +23,10 @@ import (
 
 var configVersion *string
 
-const apiVirtualServiceURL = "/installer/manifests/keptn/keptn-api-virtualservice.yaml"
-const domainConfigMapURL = "/installer/manifests/keptn/keptn-domain-configmap.yaml"
-const uniformServicesURL = "/installer/manifests/keptn/uniform-services.yaml"
+const apiVirtualServiceSuffix = "/installer/manifests/keptn/keptn-api-virtualservice.yaml"
+const domainConfigMapSuffix = "/installer/manifests/keptn/keptn-domain-configmap.yaml"
+const uniformServicesSuffix = "/installer/manifests/keptn/uniform-services.yaml"
+const gatewaySuffix = "/installer/manifests/keptn/keptn-gateway.yaml"
 
 var platformID *string
 
@@ -112,6 +113,10 @@ var domainCmd = &cobra.Command{
 				return err
 			}
 
+			if err := reDeployGateway(); err != nil {
+				return err
+			}
+
 			if strings.ToLower(*platformID) == openshift {
 				fmt.Println("Please manually execute the following commands for deleting an old route and creating a new route:")
 				fmt.Println("oc delete route istio-wildcard-ingress-secure-keptn -n istio-system")
@@ -125,7 +130,7 @@ var domainCmd = &cobra.Command{
 				fmt.Println("Afterwards, you can login with 'keptn auth --endpoint=https://api.keptn." + args[0] + " --token=" + token + "'")
 
 			} else {
-				fmt.Println("Successfully configured domain")
+				utils.PrintLog("Successfully configured domain", utils.InfoLevel)
 
 				if err := authUsingKube(); err != nil {
 					return err
@@ -143,6 +148,20 @@ var domainCmd = &cobra.Command{
 
 		return nil
 	},
+}
+
+func reDeployGateway() error {
+	o := options{"delete", "-f", getGatewayURL()}
+	o.appendIfNotEmpty(kubectlOptions)
+	_, err := keptnutils.ExecuteCommand("kubectl", o)
+	if err != nil {
+		return err
+	}
+
+	o = options{"apply", "-f", getGatewayURL()}
+	o.appendIfNotEmpty(kubectlOptions)
+	_, err = keptnutils.ExecuteCommand("kubectl", o)
+	return err
 }
 
 func reDeployGithubService() error {
@@ -292,15 +311,19 @@ func updateCertificate(path, domain string) error {
 }
 
 func getAPIVirtualServiceURL() string {
-	return installerPrefixURL + *configVersion + apiVirtualServiceURL
+	return installerPrefixURL + *configVersion + apiVirtualServiceSuffix
 }
 
 func getDomainConfigMapURL() string {
-	return installerPrefixURL + *configVersion + domainConfigMapURL
+	return installerPrefixURL + *configVersion + domainConfigMapSuffix
 }
 
 func getUniformServicesURL() string {
-	return installerPrefixURL + *configVersion + uniformServicesURL
+	return installerPrefixURL + *configVersion + uniformServicesSuffix
+}
+
+func getGatewayURL() string {
+	return installerPrefixURL + *configVersion + gatewaySuffix
 }
 
 func checkConfigureDomainResourceAvailability() (bool, error) {
@@ -322,6 +345,14 @@ func checkConfigureDomainResourceAvailability() (bool, error) {
 	}
 
 	resp, err = http.Get(getUniformServicesURL())
+	if err != nil {
+		return false, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return false, nil
+	}
+
+	resp, err = http.Get(getGatewayURL())
 	if err != nil {
 		return false, err
 	}
