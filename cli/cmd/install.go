@@ -39,6 +39,7 @@ var platformIdentifier *string
 
 const gke = "gke"
 const aks = "aks"
+const eks = "eks"
 const openshift = "openshift"
 const kubernetes = "kubernetes"
 
@@ -106,11 +107,20 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 			if err != nil {
 				return err
 			}
-			// Verify the provided config
-			// Check whether all data is provided
-			if p.getGithubCreds().GithubPersonalAccessToken == "" ||
-				p.getGithubCreds().GithubOrg == "" || p.getGithubCreds().GithubUserName == "" {
-				return errors.New("Incomplete credential file " + *configFilePath)
+
+			_, eks := p.(*eksPlatform)
+			if !eks {
+				// Verify the provided config
+				// Check whether all data is provided
+				if p.getGithubCreds().GithubPersonalAccessToken == "" ||
+					p.getGithubCreds().GithubOrg == "" || p.getGithubCreds().GithubUserName == "" {
+					return errors.New("Incomplete credential file " + *configFilePath)
+				}
+
+				err = checkGithubCreds()
+				if err != nil {
+					return err
+				}
 			}
 
 			// Check whether the authentication at the cluster is valid
@@ -119,10 +129,6 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 				return err
 			}
 
-			err = checkGithubCreds()
-			if err != nil {
-				return err
-			}
 		}
 
 		return nil
@@ -176,6 +182,9 @@ func setPlatform() error {
 	case aks:
 		p = newAKSPlatform()
 		return nil
+	case eks:
+		p = newEKSPlatform()
+		return nil
 	case openshift:
 		p = newOpenShiftPlatform()
 		return nil
@@ -183,7 +192,7 @@ func setPlatform() error {
 		p = newKubernetesPlatform()
 		return nil
 	default:
-		return errors.New("Unsupported platform '" + *platformIdentifier + "'. The following platforms are supported: gke, aks, openshift, and kubernetes")
+		return errors.New("Unsupported platform '" + *platformIdentifier + "'. The following platforms are supported: aks, eks, gke, openshift, and kubernetes")
 	}
 }
 
@@ -193,7 +202,7 @@ func init() {
 	installCmd.Flags().MarkHidden("creds")
 	installerVersion = installCmd.Flags().StringP("keptn-version", "k", "master", "The branch or tag of the version which is installed")
 	installCmd.Flags().MarkHidden("keptn-version")
-	platformIdentifier = installCmd.Flags().StringP("platform", "p", "gke", "The platform to run keptn on [gke,openshift,aks,kubernetes]")
+	platformIdentifier = installCmd.Flags().StringP("platform", "p", "gke", "The platform to run keptn on [aks,eks,gke,openshift,kubernetes]")
 	installCmd.PersistentFlags().BoolVarP(&insecureSkipTLSVerify, "insecure-skip-tls-verify", "s", false, "Skip tls verification for kubectl commands")
 }
 
@@ -244,10 +253,11 @@ func doInstallation() error {
 		return err
 	}
 
-	_, gke := p.(*gkePlatform)
 	_, aks := p.(*aksPlatform)
+	_, eks := p.(*eksPlatform)
+	_, gke := p.(*gkePlatform)
 	_, k8s := p.(*kubernetesPlatform)
-	if gke || aks || k8s {
+	if gke || aks || k8s || eks {
 		options := options{"apply", "-f", getRbacURL()}
 		options.appendIfNotEmpty(kubectlOptions)
 		_, err = keptnutils.ExecuteCommand("kubectl", options)
@@ -259,9 +269,9 @@ func doInstallation() error {
 
 	utils.PrintLog("Deploying keptn installer pod...", utils.InfoLevel)
 
-	options := options{"apply", "-f", installerPath}
-	options.appendIfNotEmpty(kubectlOptions)
-	_, err = keptnutils.ExecuteCommand("kubectl", options)
+	o := options{"apply", "-f", installerPath}
+	o.appendIfNotEmpty(kubectlOptions)
+	_, err = keptnutils.ExecuteCommand("kubectl", o)
 
 	if err != nil {
 		return fmt.Errorf("Error while deploying keptn installer pod: %s \nAborting installation", err.Error())
@@ -279,17 +289,29 @@ func doInstallation() error {
 		return err
 	}
 
-	// installation finished, get auth token and endpoint
-	err = authUsingKube()
-	if err != nil {
-		return err
-	}
-	err = configure(p.getGithubCreds().GithubOrg,
-		p.getGithubCreds().GithubUserName, p.getGithubCreds().GithubPersonalAccessToken)
-	if err != nil {
-		return err
-	}
+	if eks {
+		o = options{"get", "svc", "istio-ingressgateway", "-n", "istio-system",
+			"-ojsonpath={.status.loadBalancer.ingress[0].hostname}"}
+		o.appendIfNotEmpty(kubectlOptions)
+		hostname, err := keptnutils.ExecuteCommand("kubectl", o)
+		if err != nil {
+			return err
+		}
 
+		fmt.Println("Please create a Route53 Hosted Zone with a wildcard record set for " + hostname)
+		fmt.Println("Afterwards, call 'keptn configure domain YOUR_ROUTE53_DOMAIN'")
+	} else {
+		// installation finished, get auth token and endpoint
+		err = authUsingKube()
+		if err != nil {
+			return err
+		}
+		err = configure(p.getGithubCreds().GithubOrg,
+			p.getGithubCreds().GithubUserName, p.getGithubCreds().GithubPersonalAccessToken)
+		if err != nil {
+			return err
+		}
+	}
 	return os.Remove(installerPath)
 }
 
@@ -312,34 +334,38 @@ func readCreds() error {
 
 	fmt.Print("Please enter the following information or press enter to keep the old value:\n")
 
+	_, eks := p.(*eksPlatform)
+
 	for {
 		p.readCreds()
 
-		readGithubUserName(p.getGithubCreds())
+		if !eks {
+			readGithubUserName(p.getGithubCreds())
 
-		// Check if the access token has the necessary permissions and the github org exists
-		validScopeRes := false
-		for !validScopeRes {
-			readGithubPersonalAccessToken(p.getGithubCreds())
-			validScopeRes, err = utils.HasTokenRepoScope(p.getGithubCreds().GithubPersonalAccessToken)
-			if err != nil {
-				return err
+			// Check if the access token has the necessary permissions and the github org exists
+			validScopeRes := false
+			for !validScopeRes {
+				readGithubPersonalAccessToken(p.getGithubCreds())
+				validScopeRes, err = utils.HasTokenRepoScope(p.getGithubCreds().GithubPersonalAccessToken)
+				if err != nil {
+					return err
+				}
+				if !validScopeRes {
+					fmt.Println("GitHub Personal Access Token requies at least a 'repo'-scope")
+					p.getGithubCreds().GithubPersonalAccessToken = ""
+				}
 			}
-			if !validScopeRes {
-				fmt.Println("GitHub Personal Access Token requies at least a 'repo'-scope")
-				p.getGithubCreds().GithubPersonalAccessToken = ""
-			}
-		}
-		validOrg := false
-		for !validOrg {
-			readGithubOrg(p.getGithubCreds())
-			validOrg, err = utils.IsOrgExisting(p.getGithubCreds().GithubPersonalAccessToken, p.getGithubCreds().GithubOrg)
-			if err != nil {
-				return err
-			}
-			if !validOrg {
-				fmt.Println("Provided GitHub Organization " + p.getGithubCreds().GithubOrg + " does not exist.")
-				p.getGithubCreds().GithubOrg = ""
+			validOrg := false
+			for !validOrg {
+				readGithubOrg(p.getGithubCreds())
+				validOrg, err = utils.IsOrgExisting(p.getGithubCreds().GithubPersonalAccessToken, p.getGithubCreds().GithubOrg)
+				if err != nil {
+					return err
+				}
+				if !validOrg {
+					fmt.Println("Provided GitHub Organization " + p.getGithubCreds().GithubOrg + " does not exist.")
+					p.getGithubCreds().GithubOrg = ""
+				}
 			}
 		}
 
@@ -348,9 +374,11 @@ func readCreds() error {
 
 		p.printCreds()
 
-		fmt.Println("GitHub User Name: " + p.getGithubCreds().GithubUserName)
-		fmt.Println("GitHub Personal Access Token: " + p.getGithubCreds().GithubPersonalAccessToken)
-		fmt.Println("GitHub Organization: " + p.getGithubCreds().GithubOrg)
+		if !eks {
+			fmt.Println("GitHub User Name: " + p.getGithubCreds().GithubUserName)
+			fmt.Println("GitHub Personal Access Token: " + p.getGithubCreds().GithubPersonalAccessToken)
+			fmt.Println("GitHub Organization: " + p.getGithubCreds().GithubOrg)
+		}
 
 		fmt.Println()
 		fmt.Println("Is this all correct? (y/n)")

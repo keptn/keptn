@@ -54,7 +54,7 @@ func (p aksPlatform) checkRequirements() error {
 
 func (p aksPlatform) checkCreds() error {
 	if p.creds.ClusterName == "" || p.creds.AzureResourceGroup == "" || p.creds.AzureSubscription == "" {
-		return errors.New("Incomplete credential file " + *configFilePath)
+		return errors.New("Incomplete credentials")
 	}
 
 	authenticated, err := p.authenticateAtCluster()
