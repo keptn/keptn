@@ -133,7 +133,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	if event.Type() == "create.project" {
 		version, err := createProjectAndProcessShipyard(event, *logger, ws)
 		if err := logErrAndRespondWithDoneEvent(event, version, err, *logger, ws); err != nil {
-			logger.Error(fmt.Sprintf("No sh.keptn.event.done event sent: %s", err.Error()))
+			logger.Error(fmt.Sprintf("No sh.keptn.event.done event sent."))
 			return err
 		}
 		return nil
