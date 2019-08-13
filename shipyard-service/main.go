@@ -133,7 +133,6 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	if event.Type() == "create.project" {
 		version, err := createProjectAndProcessShipyard(event, *logger, ws)
 		if err := logErrAndRespondWithDoneEvent(event, version, err, *logger, ws); err != nil {
-			logger.Error(fmt.Sprintf("No sh.keptn.event.done event sent."))
 			return err
 		}
 		return nil
@@ -159,7 +158,7 @@ func createProjectAndProcessShipyard(event cloudevents.Event, logger keptnutils.
 	project := models.Project{}
 	project.ProjectName = eventData.Project
 	if err := client.createProject(project, logger); err != nil {
-		return nil, fmt.Errorf("Creating project %s failed.\n%s", project.ProjectName, err.Error())
+		return nil, fmt.Errorf("Creating project %s failed. %s", project.ProjectName, err.Error())
 	}
 	if err := websocketutil.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), fmt.Sprintf("%s created", project), false, "INFO"); err != nil {
 		logger.Error(fmt.Sprintf("Could not write log to websocket: %s", err.Error()))
@@ -171,7 +170,7 @@ func createProjectAndProcessShipyard(event cloudevents.Event, logger keptnutils.
 		stage.StageName = shipyardStage.Name
 
 		if err := client.createStage(project, stage, logger); err != nil {
-			return nil, fmt.Errorf("Creating stage %s failed: \n%s", stage.StageName, err.Error())
+			return nil, fmt.Errorf("Creating stage %s failed: %s", stage.StageName, err.Error())
 		}
 		if err := websocketutil.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), fmt.Sprintf("%s created", stage), false, "INFO"); err != nil {
 			logger.Error(fmt.Sprintf("Could not write log to websocket: %s", err.Error()))
@@ -188,7 +187,7 @@ func createProjectAndProcessShipyard(event cloudevents.Event, logger keptnutils.
 	resources := []*models.Resource{&shipyard}
 	version, err := client.storeResource(project, resources, logger)
 	if err != nil {
-		return nil, fmt.Errorf("Storing %s file failed.\n%s", resourceURI, err.Error())
+		return nil, fmt.Errorf("Storing %s file failed. %s", resourceURI, err.Error())
 	}
 
 	return version, nil
@@ -201,10 +200,10 @@ func logErrAndRespondWithDoneEvent(event cloudevents.Event, version *models.Vers
 		logger.Error(err.Error())
 
 		if err := websocketutil.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), fmt.Sprintf("%s", err.Error()), true, "INFO"); err != nil {
-			logger.Error(fmt.Sprintf("could not write log to websocket: %s", err.Error()))
+			logger.Error(fmt.Sprintf("Could not write log to websocket: %s", err.Error()))
 		}
 		if err := sendDoneEvent(event, "error", err.Error(), version); err != nil {
-			logger.Error(err.Error())
+			logger.Error(fmt.Sprintf("No sh.keptn.event.done event sent. %s", err.Error()))
 		}
 
 		return err
@@ -215,11 +214,10 @@ func logErrAndRespondWithDoneEvent(event cloudevents.Event, version *models.Vers
 	logger.Info(successMsg)
 
 	if err := websocketutil.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), successMsg, true, "INFO"); err != nil {
-		logger.Error(fmt.Sprintf("could not write log to websocket: %s", err.Error()))
+		logger.Error(fmt.Sprintf("Could not write log to websocket: %s", err.Error()))
 	}
 	if err := sendDoneEvent(event, "success", successMsg, version); err != nil {
-		logger.Error(err.Error())
-		return err
+		logger.Error(fmt.Sprintf("No sh.keptn.event.done event sent. %s", err.Error()))
 	}
 
 	return nil
@@ -228,12 +226,12 @@ func logErrAndRespondWithDoneEvent(event cloudevents.Event, version *models.Vers
 func (client *Client) createProject(project models.Project, logger keptnutils.Logger) error {
 	data, err := project.MarshalBinary()
 	if err != nil {
-		return fmt.Errorf("Failed to marshal project.\n%s", err.Error())
+		return fmt.Errorf("Failed to marshal project. %s", err.Error())
 	}
 
 	resp, err := postRequest(client, "/project", data)
 	if err != nil {
-		return fmt.Errorf("Failed to post request.\n%s", err.Error())
+		return fmt.Errorf("Failed to post request. %s", err.Error())
 	}
 
 	defer resp.Body.Close()
@@ -253,12 +251,12 @@ func (client *Client) createProject(project models.Project, logger keptnutils.Lo
 func (client *Client) createStage(project models.Project, stage models.Stage, logger keptnutils.Logger) error {
 	data, err := project.MarshalBinary()
 	if err != nil {
-		return fmt.Errorf("Failed to marshal stage.\n%s", err.Error())
+		return fmt.Errorf("Failed to marshal stage. %s", err.Error())
 	}
 
 	resp, err := postRequest(client, fmt.Sprintf("project/%s/stage", project.ProjectName), data)
 	if err != nil {
-		return fmt.Errorf("Failed to post request.\n%s", err.Error())
+		return fmt.Errorf("Failed to post request. %s", err.Error())
 	}
 
 	defer resp.Body.Close()
@@ -278,12 +276,12 @@ func (client *Client) createStage(project models.Project, stage models.Stage, lo
 func (client *Client) storeResource(project models.Project, resources []*models.Resource, logger keptnutils.Logger) (*models.Version, error) {
 	data, err := project.MarshalBinary()
 	if err != nil {
-		return nil, fmt.Errorf("Failed to marshal stage.\n%s", err.Error())
+		return nil, fmt.Errorf("Failed to marshal stage. %s", err.Error())
 	}
 
 	resp, err := postRequest(client, fmt.Sprintf("project/%s/resource", project.ProjectName), data)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to post request.\n%s", err.Error())
+		return nil, fmt.Errorf("Failed to post request. %s", err.Error())
 	}
 
 	defer resp.Body.Close()
