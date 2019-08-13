@@ -127,16 +127,19 @@ func readAndPrintCE(ws *websocket.Conn) error {
 		messageType, message, err := ws.ReadMessage()
 		if messageType == 1 { // 1.. textmessage
 			var messageCE MyCloudEvent
+
 			dec := json.NewDecoder(strings.NewReader(string(message)))
 			if err := dec.Decode(&messageCE); err == io.EOF {
 				break
 			} else if err != nil {
 				log.Fatal(err)
 			}
+
 			if printCE(messageCE) {
 				return nil
 			}
 		}
+
 		if err != nil {
 			log.Println("read: ", err)
 			return err
