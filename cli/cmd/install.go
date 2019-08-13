@@ -291,14 +291,14 @@ func doInstallation() error {
 
 	if eks {
 		o = options{"get", "svc", "istio-ingressgateway", "-n", "istio-system",
-			"-ojsonpath={.status.loadBalancer.ingress[0].ip}"}
+			"-ojsonpath={.status.loadBalancer.ingress[0].hostname}"}
 		o.appendIfNotEmpty(kubectlOptions)
-		extIP, err := keptnutils.ExecuteCommand("kubectl", o)
+		hostname, err := keptnutils.ExecuteCommand("kubectl", o)
 		if err != nil {
 			return err
 		}
 
-		fmt.Println("Please create a Route53 Hosted Zone with a wildcard record set for " + extIP)
+		fmt.Println("Please create a Route53 Hosted Zone with a wildcard record set for " + hostname)
 		fmt.Println("Afterwards, call 'keptn configure domain YOUR_ROUTE53_DOMAIN'")
 	} else {
 		// installation finished, get auth token and endpoint
