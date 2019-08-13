@@ -99,7 +99,7 @@ func StageAndCommitAll(project string, message string) error {
 		repoURI := getRepoURI(credentials.RemoteURI, credentials.User, credentials.Token)
 		_, err = utils.ExecuteCommandInDirectory("git", []string{"push", repoURI}, projectConfigPath)
 		if err != nil {
-			return errors.New("Could not push to upstream")
+			return err
 		}
 	}
 	return nil

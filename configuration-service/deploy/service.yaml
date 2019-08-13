@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: config-service
+  name: configuration-service
   namespace: keptn
 spec:
   selector:
     matchLabels:
-      run: config-service
+      run: configuration-service
   replicas: 1
   template:
     metadata:
       labels:
-        run: config-service
+        run: configuration-service
     spec:
       containers:
-      - name: config-service
+      - name: configuration-service
         image: keptn/configuration-service:latest
         ports:
         - containerPort: 8080
@@ -27,23 +27,23 @@ spec:
             cpu: "500m"
         volumeMounts:
         - mountPath: /data/config
-          name: config-volume
+          name: configuration-volume
       volumes:
-      - name: config-volume
+      - name: configuration-volume
         persistentVolumeClaim:
-          claimName: config-volume
+          claimName: configuration-volume
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: config-service
+  name: configuration-service
   namespace: keptn
   labels:
-    run: config-service
+    run: configuration-service
 spec:
   ports:
   - port: 8080
     targetPort: 8080
     protocol: TCP
   selector:
-    run: config-service
+    run: configuration-service
