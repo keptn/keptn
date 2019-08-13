@@ -1,12 +1,17 @@
 package cmd
 
 import (
+	"bytes"
+	"encoding/base64"
 	"fmt"
 	"net/url"
+	"strings"
+	"time"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 	"github.com/google/uuid"
+	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
 	"github.com/spf13/cobra"
@@ -72,4 +77,90 @@ func init() {
 	authCmd.MarkFlagRequired("endpoint")
 	apiToken = authCmd.Flags().StringP("api-token", "a", "", "The API token provided by keptn")
 	authCmd.MarkFlagRequired("api-token")
+}
+
+func authUsingKube() error {
+
+	apiToken, err := getAPITokenUsingKube()
+
+	const errorMsg = `Could not retrieve keptn API token: %s
+To manually set up your keptn CLI, please follow the instructions at https://keptn.sh/.`
+
+	if err != nil {
+		return fmt.Errorf(errorMsg, err)
+	}
+
+	var keptnEndpoint string
+	apiEndpointRetrieved := false
+	retries := 0
+	for tryGetAPIEndpoint := true; tryGetAPIEndpoint; tryGetAPIEndpoint = !apiEndpointRetrieved {
+
+		out, err := getEndpointUsingKube()
+
+		if err != nil {
+			retries++
+			if retries >= 15 {
+				utils.PrintLog("API endpoint not yet available... trying again in 5s", utils.InfoLevel)
+			}
+		} else {
+			retries = 0
+		}
+		keptnEndpoint = strings.TrimSpace(string(out))
+		if keptnEndpoint == "" {
+			retries++
+			if retries >= 15 {
+				utils.PrintLog("API endpoint not yet available... trying again in 5s", utils.InfoLevel)
+			}
+		} else {
+			keptnEndpoint = "https://" + keptnEndpoint
+			apiEndpointRetrieved = true
+		}
+		if !apiEndpointRetrieved {
+			time.Sleep(5 * time.Second)
+		}
+	}
+	return authenticate(keptnEndpoint, apiToken)
+}
+
+func getEndpointUsingKube() (string, error) {
+	ops := options{"get",
+		"virtualservice",
+		"api",
+		"-n",
+		"keptn",
+		"-ojsonpath={.spec.hosts[0]}"}
+	ops.appendIfNotEmpty(kubectlOptions)
+	return keptnutils.ExecuteCommand("kubectl", ops)
+}
+
+func getAPITokenUsingKube() (string, error) {
+	ops := options{"get",
+		"secret",
+		"keptn-api-token",
+		"-n",
+		"keptn",
+		"-ojsonpath={.data.keptn-api-token}"}
+	ops.appendIfNotEmpty(kubectlOptions)
+	out, err := keptnutils.ExecuteCommand("kubectl", ops)
+	if err != nil {
+		return out, err
+	}
+	apiToken, err := base64.StdEncoding.DecodeString(out)
+	if err != nil {
+		return "", err
+	}
+	return string(apiToken), nil
+}
+
+func authenticate(endPoint string, apiToken string) error {
+	buf := new(bytes.Buffer)
+	rootCmd.SetOutput(buf)
+
+	args := []string{
+		"auth",
+		fmt.Sprintf("--endpoint=%s", endPoint),
+		fmt.Sprintf("--api-token=%s", apiToken),
+	}
+	rootCmd.SetArgs(args)
+	return rootCmd.Execute()
 }
