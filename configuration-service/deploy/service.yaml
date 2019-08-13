@@ -1,20 +1,21 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: config-service
+  name: configuration-service
   namespace: keptn
 spec:
   selector:
     matchLabels:
-      run: config-service
+      run: configuration-service
   replicas: 1
   template:
     metadata:
       labels:
-        run: config-service
+        run: configuration-service
     spec:
       containers:
-      - name: config-service
+      - name: configuration-service
         image: bacherfl/config-service:latest
         ports:
         - containerPort: 8080
@@ -36,14 +37,14 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: config-service
+  name: configuration-service
   namespace: keptn
   labels:
-    run: config-service
+    run: configuration-service
 spec:
   ports:
   - port: 8080
     targetPort: 8080
     protocol: TCP
   selector:
-    run: config-service
+    run: configuration-service
