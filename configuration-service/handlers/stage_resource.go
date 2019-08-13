@@ -6,6 +6,7 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/configuration-service/common"
 	"github.com/keptn/keptn/configuration-service/config"
 	"github.com/keptn/keptn/configuration-service/models"
@@ -30,12 +31,13 @@ func GetProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resourc
 
 // GetProjectProjectNameStageStageNameResourceResourceURIHandlerFunc get the specified resource
 func GetProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(params stage_resource.GetProjectProjectNameStageStageNameResourceResourceURIParams) middleware.Responder {
+	logger := utils.NewLogger("", "", "configuration-service")
 	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
 	resourcePath := projectConfigPath + "/" + params.ResourceURI
 	if !common.StageExists(params.ProjectName, params.StageName) {
 		return stage_resource.NewGetProjectProjectNameStageStageNameResourceResourceURINotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project not found")})
 	}
-	// utils.Debug("", "Checking out "+params.StageName+" branch")
+	logger.Debug("Checking out " + params.StageName + " branch")
 	err := common.CheckoutBranch(params.ProjectName, params.StageName)
 	if err != nil {
 		return stage_resource.NewGetProjectProjectNameStageStageNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
@@ -60,14 +62,15 @@ func GetProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(params st
 
 // PostProjectProjectNameStageStageNameResourceHandlerFunc creates list of new resources in a stage
 func PostProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resource.PostProjectProjectNameStageStageNameResourceParams) middleware.Responder {
+	logger := utils.NewLogger("", "", "configuration-service")
 	if !common.StageExists(params.ProjectName, params.StageName) {
 		return stage_resource.NewPostProjectProjectNameStageStageNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Stage does not exist")})
 	}
 
 	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
 
-	// utils.Debug("", "Creating new resource(s) in: "+projectConfigPath+" in stage "+params.StageName)
-	// utils.Debug("", "Checking out branch: "+params.StageName)
+	logger.Debug("Creating new resource(s) in: " + projectConfigPath + " in stage " + params.StageName)
+	logger.Debug("Checking out branch: " + params.StageName)
 	err := common.CheckoutBranch(params.ProjectName, params.StageName)
 	if err != nil {
 		return stage_resource.NewPostProjectProjectNameStageStageNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
@@ -77,17 +80,17 @@ func PostProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resour
 		filePath := projectConfigPath + "/" + *res.ResourceURI
 		// don't overwrite existing files
 		if !common.FileExists(filePath) {
-			// utils.Debug("", "Adding resource: "+filePath)
+			logger.Debug("Adding resource: " + filePath)
 			common.WriteFile(filePath, res.ResourceContent)
 		}
 	}
 
-	// utils.Debug("", "Staging Changes")
+	logger.Debug("Staging Changes")
 	err = common.StageAndCommitAll(params.ProjectName, "Added resources")
 	if err != nil {
 		return stage_resource.NewPostProjectProjectNameStageStageNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
 	}
-	// utils.Debug("", "Successfully added resources")
+	logger.Debug("Successfully added resources")
 
 	newVersion, err := common.GetCurrentVersion(params.ProjectName)
 	if err != nil {
@@ -100,13 +103,14 @@ func PostProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resour
 
 // PutProjectProjectNameStageStageNameResourceHandlerFunc updates list of stage resources
 func PutProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resource.PutProjectProjectNameStageStageNameResourceParams) middleware.Responder {
+	logger := utils.NewLogger("", "", "configuration-service")
 	if !common.StageExists(params.ProjectName, params.StageName) {
 		return stage_resource.NewPutProjectProjectNameStageStageNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Stage does not exist")})
 	}
 	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
 
-	// utils.Debug("", "Creating new resource(s) in: "+projectConfigPath+" in stage "+params.StageName)
-	// utils.Debug("", "Checking out branch: "+params.StageName)
+	logger.Debug("Creating new resource(s) in: " + projectConfigPath + " in stage " + params.StageName)
+	logger.Debug("Checking out branch: " + params.StageName)
 	err := common.CheckoutBranch(params.ProjectName, params.StageName)
 	if err != nil {
 		return stage_resource.NewPutProjectProjectNameStageStageNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
@@ -117,12 +121,12 @@ func PutProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resourc
 		common.WriteFile(filePath, res.ResourceContent)
 	}
 
-	// utils.Debug("", "Staging Changes")
+	logger.Debug("Staging Changes")
 	err = common.StageAndCommitAll(params.ProjectName, "Updated resources")
 	if err != nil {
 		return stage_resource.NewPutProjectProjectNameStageStageNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
 	}
-	// utils.Debug("", "Successfully updated resources")
+	logger.Debug("Successfully updated resources")
 
 	newVersion, err := common.GetCurrentVersion(params.ProjectName)
 	if err != nil {
@@ -135,13 +139,14 @@ func PutProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resourc
 
 // PutProjectProjectNameStageStageNameResourceResourceURIHandlerFunc updates the specified stage resource
 func PutProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(params stage_resource.PutProjectProjectNameStageStageNameResourceResourceURIParams) middleware.Responder {
+	logger := utils.NewLogger("", "", "configuration-service")
 	if !common.StageExists(params.ProjectName, params.StageName) {
 		return stage_resource.NewPutProjectProjectNameStageStageNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Stage does not exist")})
 	}
 	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
 
-	// utils.Debug("", "Creating new resource(s) in: "+projectConfigPath+" in stage "+params.StageName)
-	// utils.Debug("", "Checking out branch: "+params.StageName)
+	logger.Debug("Creating new resource(s) in: " + projectConfigPath + " in stage " + params.StageName)
+	logger.Debug("Checking out branch: " + params.StageName)
 	err := common.CheckoutBranch(params.ProjectName, params.StageName)
 	if err != nil {
 		return stage_resource.NewPutProjectProjectNameStageStageNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
@@ -150,12 +155,12 @@ func PutProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(params st
 	filePath := projectConfigPath + "/" + params.ResourceURI
 	common.WriteFile(filePath, params.Resource.ResourceContent)
 
-	// utils.Debug("", "Staging Changes")
+	logger.Debug("Staging Changes")
 	err = common.StageAndCommitAll(params.ProjectName, "Updated resource: "+params.ResourceURI)
 	if err != nil {
 		return stage_resource.NewPutProjectProjectNameStageStageNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
 	}
-	// utils.Debug("", "Successfully updated resource: "+params.ResourceURI)
+	logger.Debug("Successfully updated resource: " + params.ResourceURI)
 
 	newVersion, err := common.GetCurrentVersion(params.ProjectName)
 	if err != nil {
