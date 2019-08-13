@@ -4,7 +4,7 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 
-const ElasticService = require('./lib/services/ElasticService');
+const DatastoreService = require('./lib/services/DatastoreService');
 const configs = require('./config');
 
 const apiRouter = require('./api');
@@ -12,7 +12,7 @@ const apiRouter = require('./api');
 const app = express();
 const config = configs[app.get('env') || 'development'];
 
-const elasticService = new ElasticService(config.elasticEndpoint);
+const datastoreService = new DatastoreService(config.datastore);
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -24,7 +24,7 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(`${__dirname}/../dist/index.html`));
 });
 
-app.use('/api', apiRouter({ elasticService }));
+app.use('/api', apiRouter({ datastoreService }));
 
 
 // catch 404 and forward to error handler

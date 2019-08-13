@@ -18,9 +18,8 @@ import (
 )
 
 type projectData struct {
-	Project  string      `json:"project"`
-	Registry interface{} `json:"registry"`
-	Stages   interface{} `json:"stages"`
+	Project string      `json:"project"`
+	Stages  interface{} `json:"stages"`
 }
 
 // crprojectCmd represents the project command
@@ -131,7 +130,6 @@ func parseShipYard(prjData *projectData, yamlFile string) error {
 	if err != nil {
 		return errors.New("Invalid shipyard file")
 	}
-	prjData.Registry = utils.Convert(shipyardContent["registry"])
 	prjData.Stages = utils.Convert(shipyardContent["stages"])
 	return nil
 }

@@ -16,5 +16,5 @@ spec:
         image: keptn/installer:latest
         env:       
         - name: PLATFORM
-          value: PLATFORM
+          value: PLATFORM_PLACEHOLDER
       restartPolicy: OnFailure

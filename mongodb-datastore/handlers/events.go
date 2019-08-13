@@ -63,11 +63,6 @@ func GetEvents(params event.GetEventsParams) (result *event.GetEventsOKBody, err
 
 	collection := client.Database(mongoDBName).Collection(eventsCollectionName)
 
-	totalCount, err := collection.CountDocuments(ctx, bson.D{})
-	if err != nil {
-		keptnutils.Error("", fmt.Sprintf("could not retrieve size of event collection: %s", err.Error()))
-	}
-
 	searchOptions := bson.M{}
 	if params.KeptnContext != nil {
 		searchOptions["shkeptncontext"] = primitive.Regex{Pattern: *params.KeptnContext, Options: ""}
@@ -88,9 +83,15 @@ func GetEvents(params event.GetEventsParams) (result *event.GetEventsOKBody, err
 	pagesize := *params.PageSize
 
 	sortOptions := options.Find().SetSort(bson.D{{"time", -1}}).SetSkip(nextPageKey).SetLimit(pagesize)
+
+	totalCount, err := collection.CountDocuments(ctx, searchOptions)
+	if err != nil {
+		keptnutils.Error("", fmt.Sprintf("error counting elements in events collection: %s", err.Error()))
+	}
+
 	cur, err := collection.Find(ctx, searchOptions, sortOptions)
 	if err != nil {
-		keptnutils.Error("", fmt.Sprintf("error fiding elements in events collection: %s", err.Error()))
+		keptnutils.Error("", fmt.Sprintf("error finding elements in events collection: %s", err.Error()))
 	}
 
 	var resultEvents []*event.EventsItems0

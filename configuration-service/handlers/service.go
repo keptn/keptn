@@ -31,21 +31,28 @@ func GetProjectProjectNameStageStageNameServiceServiceNameHandlerFunc(params ser
 
 // PostProjectProjectNameStageStageNameServiceHandlerFunc creates a new service
 func PostProjectProjectNameStageStageNameServiceHandlerFunc(params service.PostProjectProjectNameStageStageNameServiceParams) middleware.Responder {
+	logger := utils.NewLogger("", "", "configuration-service")
 	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
 	servicePath := projectConfigPath + "/" + params.Service.ServiceName
 
-	if !common.ProjectExists(params.ProjectName) {
-		return service.NewPostProjectProjectNameStageStageNameServiceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Project  " + params.ProjectName + " does not exist.")})
+	if !common.StageExists(params.ProjectName, params.StageName) {
+		return service.NewPostProjectProjectNameStageStageNameServiceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Stage  " + params.StageName + " does not exist.")})
 	}
-	utils.Debug("", "Creating new resource(s) in: "+projectConfigPath+" in stage "+params.StageName)
-	utils.Debug("", "Checking out branch: "+params.StageName)
+
+	if common.ServiceExists(params.ProjectName, params.StageName, params.Service.ServiceName) {
+		return service.NewPostProjectProjectNameStageStageNameServiceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Service already exists")})
+	}
+	logger.Debug("Creating new resource(s) in: " + projectConfigPath + " in stage " + params.StageName)
+	logger.Debug("Checking out branch: " + params.StageName)
 	err := common.CheckoutBranch(params.ProjectName, params.StageName)
 	if err != nil {
-		return service.NewPostProjectProjectNameStageStageNameServiceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+		logger.Error(err.Error())
+		return service.NewPostProjectProjectNameStageStageNameServiceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not check out branch")})
 	}
 	err = os.MkdirAll(servicePath, os.ModePerm)
 	if err != nil {
-		return service.NewPostProjectProjectNameStageStageNameServiceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+		logger.Error(err.Error())
+		return service.NewPostProjectProjectNameStageStageNameServiceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not create service directory")})
 	}
 
 	newServiceMetadata := &serviceMetadata{
