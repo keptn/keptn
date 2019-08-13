@@ -2,7 +2,6 @@ package websocketutil
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/url"
 
@@ -41,15 +40,11 @@ func OpenWS(connData websockethelper.ConnectionData, apiEndPoint url.URL) (*webs
 
 // WriteWSLog writes the log event to the websocket
 func WriteWSLog(ws *websocket.Conn, logEvent cloudevents.Event, message string, terminate bool, logLevel string) error {
-
-	fmt.Println(message)
-
 	logData := websockethelper.LogData{
 		Message:   message,
 		Terminate: terminate,
 		LogLevel:  logLevel,
 	}
-
 	logDataRaw, _ := json.Marshal(logData)
 
 	var shkeptncontext string
@@ -67,7 +62,6 @@ func WriteWSLog(ws *websocket.Conn, logEvent cloudevents.Event, message string, 
 		ShKeptnContext:     shkeptncontext,
 	}
 
-	//logEvent.Data = logData
 	data, _ := json.Marshal(messageCE)
 	return ws.WriteMessage(1, data) // websocket.TextMessage = 1; ws.WriteJSON not supported because keptn CLI does a ReadMessage
 }
