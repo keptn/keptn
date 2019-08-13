@@ -224,6 +224,7 @@ func updateKeptnAPIVirtualService(path, domain string) error {
 func updateCertificate(path, domain string) error {
 
 	// Source: https://golang.org/src/crypto/tls/generate_cert.go
+	// We can verify the generated key with 'openssl rsa -in key.pem -check'
 	serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128)
 	serialNumber, err := rand.Int(rand.Reader, serialNumberLimit)
 	if err != nil {
