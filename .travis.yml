@@ -67,7 +67,7 @@ before_install:
 - INSTALLER_IMAGE="keptn/installer"
 - INSTALLER_FOLDER="installer/"
 - CONFIGURATION_SVC_IMAGE="keptn/configuration-service"
-- CONFIGURATION_SVC_PATH="configuration-service"
+- CONFIGURATION_SVC_FOLDER="configuration-service"
 
 jobs:
   include:
