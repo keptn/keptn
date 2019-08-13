@@ -80,7 +80,12 @@ var uninstallCmd = &cobra.Command{
 			for _, val := range istioFiles {
 				o := options{"delete", "-f", getIstioCRD(val), "--ignore-not-found"}
 				o.appendIfNotEmpty(kubectlOptions)
-				if _, err := keptnutils.ExecuteCommand("kubectl", o); err != nil {
+				out, err := keptnutils.ExecuteCommand("kubectl", o)
+				out = strings.TrimSpace(out)
+				if out != "" {
+					utils.PrintLog(out, utils.VerboseLevel)
+				}
+				if err != nil {
 					return err
 				}
 			}
@@ -88,7 +93,12 @@ var uninstallCmd = &cobra.Command{
 			// Clean up tiller
 			o := options{"delete", "-f", getTillerResource(), "--ignore-not-found"}
 			o.appendIfNotEmpty(kubectlOptions)
-			if _, err := keptnutils.ExecuteCommand("kubectl", o); err != nil {
+			out, err := keptnutils.ExecuteCommand("kubectl", o)
+			out = strings.TrimSpace(out)
+			if out != "" {
+				utils.PrintLog(out, utils.VerboseLevel)
+			}
+			if err != nil {
 				return err
 			}
 		}
@@ -101,14 +111,22 @@ var uninstallCmd = &cobra.Command{
 func deleteResources(namespace string) error {
 	o := options{"delete", "services,deployments,pods,secrets", "--all", "-n", namespace, "--ignore-not-found"}
 	o.appendIfNotEmpty(kubectlOptions)
-	_, err := keptnutils.ExecuteCommand("kubectl", o)
+	out, err := keptnutils.ExecuteCommand("kubectl", o)
+	out = strings.TrimSpace(out)
+	if out != "" {
+		utils.PrintLog(out, utils.VerboseLevel)
+	}
 	return err
 }
 
 func deleteNamespace(namespace string) error {
 	o := options{"delete", "namespace", namespace, "--ignore-not-found"}
 	o.appendIfNotEmpty(kubectlOptions)
-	_, err := keptnutils.ExecuteCommand("kubectl", o)
+	out, err := keptnutils.ExecuteCommand("kubectl", o)
+	out = strings.TrimSpace(out)
+	if out != "" {
+		utils.PrintLog(out, utils.VerboseLevel)
+	}
 	return err
 }
 
