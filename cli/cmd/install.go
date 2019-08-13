@@ -298,6 +298,7 @@ func doInstallation() error {
 			return err
 		}
 
+		fmt.Println()
 		fmt.Println("Please create a Route53 Hosted Zone with a wildcard record set for " + hostname)
 		fmt.Println("Afterwards, call 'keptn configure domain YOUR_ROUTE53_DOMAIN'")
 	} else {
