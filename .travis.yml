@@ -66,6 +66,8 @@ before_install:
 - MONGODB_DS_FOLDER="mongodb-datastore/"
 - INSTALLER_IMAGE="keptn/installer"
 - INSTALLER_FOLDER="installer/"
+- CONFIGURATION_SVC_IMAGE="keptn/configuration-service"
+- CONFIGURATION_SVC_FOLDER="configuration-service/"
 
 jobs:
   include:
@@ -156,6 +158,11 @@ jobs:
         source ./travis-scripts/build_feature.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
         cd ..
       fi
+    - | 
+      if [[ $CHANGED_FILES == *"${CONFIGURATION_SVC_FOLDER}"*  ]]; then
+        source ./travis-scripts/build_feature.sh "${CONFIGURATION_SVC_IMAGE}" "${CONFIGURATION_SVC_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
+        cd ..
+      fi
 
   - stage: develop
     if: branch = develop AND type = push
@@ -233,6 +240,11 @@ jobs:
         source ./travis-scripts/build_develop.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${GIT_SHA}" "${DATE}"
         cd ..
       fi
+    - | 
+      if [[ $CHANGED_FILES == *"${CONFIGURATION_SVC_FOLDER}"*  ]]; then
+        source ./travis-scripts/build_develop.sh "${CONFIGURATION_SVC_IMAGE}" "${CONFIGURATION_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
+        cd ..
+      fi
 
   - stage: release
     if: branch =~ ^release.*$ AND NOT type = pull_request
@@ -274,6 +286,8 @@ jobs:
     - cd ..
     - source ./travis-scripts/build_release.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
     - cd ..
+    - source ./travis-scripts/build_release.sh "${CONFIGURATION_SVC_IMAGE}" "${CONFIGURATION_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+    - cd ..
 
   - stage: master
     if: branch = master AND NOT type = pull_request
@@ -314,4 +328,6 @@ jobs:
     - source ./travis-scripts/build_master.sh "${MONGODB_DS_IMAGE}" "${MONGODB_DS_FOLDER}" "${VERSION}"
     - cd ..
     - source ./travis-scripts/build_master.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${VERSION}"
+    - cd ..
+    - source ./travis-scripts/build_master.sh "${CONFIGURATION_SVC_IMAGE}" "${CONFIGURATION_SVC_FOLDER}" "${VERSION}"
     - cd ..

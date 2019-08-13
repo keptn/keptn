@@ -112,7 +112,6 @@ func openWS(connData ConnectionData, apiEndPoint url.URL) (*websocket.Conn, *htt
 	header := http.Header{}
 	header.Add("Token", connData.ChannelInfo.Token)
 	header.Add("Keptn-Ws-Channel-Id", connData.ChannelInfo.ChannelID)
-
 	dialer := websocket.DefaultDialer
 	dialer.NetDial = utils.ResolveXipIo
 	dialer.TLSClientConfig = &tls.Config{
