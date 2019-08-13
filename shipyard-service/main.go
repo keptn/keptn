@@ -60,6 +60,14 @@ type Client struct {
 	httpClient *http.Client
 }
 
+// ResourceListBody parameter
+// swagger:model ResourceListBody
+type ResourceListBody struct {
+
+	// resources
+	Resources []*models.Resource `json:"resources"`
+}
+
 func main() {
 	var env envConfig
 	if err := envconfig.Process("", &env); err != nil {
@@ -135,6 +143,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		if err := logErrAndRespondWithDoneEvent(event, version, err, *logger, ws); err != nil {
 			return err
 		}
+
 		return nil
 	}
 
@@ -145,6 +154,40 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	logger.Error(errorMsg)
 	return errors.New(errorMsg)
 }
+
+//
+// Helper function to retrieve a resource from a project
+///////////////////////////////////////////////////////
+// func retrieveShipyard(event cloudevents.Event, logger keptnutils.Logger, ws *websocket.Conn) error {
+// 	eventData := &createProjectEventData{}
+// 	if err := event.DataAs(eventData); err != nil {
+// 		return err
+// 	}
+
+// 	client := newClient()
+
+// 	resp, err := getRequest(client, fmt.Sprintf("v1/project/%s/resource/%s", eventData.Project, "shipyard.yaml"))
+// 	if err != nil {
+// 		return fmt.Errorf("Failed to post request. %s", err.Error())
+// 	}
+
+// 	defer resp.Body.Close()
+// 	if resp.StatusCode == http.StatusNoContent || resp.StatusCode == http.StatusOK { // 204 - Success. Project has been created. Response does not have a body.
+// 		resource := models.Resource{}
+// 		json.NewDecoder(resp.Body).Decode(&resource)
+// 		logger.Info(*resource.ResourceURI)
+// 		content, _ := base64.StdEncoding.DecodeString(resource.ResourceContent.String())
+// 		logger.Info(string(content))
+// 	} else if resp.StatusCode == http.StatusBadRequest { //	400 - Failed. Project could not be created.
+// 		errorObj := models.Error{}
+// 		json.NewDecoder(resp.Body).Decode(&errorObj)
+// 		return errors.New(*errorObj.Message)
+// 	} else { // catch undefined errors
+// 		return fmt.Errorf("Undefined error in response of creating project. Status: %s", resp.Status)
+// 	}
+
+// 	return nil
+// }
 
 // createProjectAndProcessShipyard creates a project and stages defined in the shipyard
 func createProjectAndProcessShipyard(event cloudevents.Event, logger keptnutils.Logger, ws *websocket.Conn) (*models.Version, error) {
@@ -158,9 +201,9 @@ func createProjectAndProcessShipyard(event cloudevents.Event, logger keptnutils.
 	project := models.Project{}
 	project.ProjectName = eventData.Project
 	if err := client.createProject(project, logger); err != nil {
-		return nil, fmt.Errorf("Creating project %s failed: %s", project.ProjectName, err.Error())
+		return nil, fmt.Errorf("Creating project %s failed. %s", project.ProjectName, err.Error())
 	}
-	if err := websocketutil.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), fmt.Sprintf("%s created", project.ProjectName), false, "INFO"); err != nil {
+	if err := websocketutil.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), fmt.Sprintf("Project %s created", project.ProjectName), false, "INFO"); err != nil {
 		logger.Error(fmt.Sprintf("Could not write log to websocket: %s", err.Error()))
 	}
 
@@ -170,9 +213,9 @@ func createProjectAndProcessShipyard(event cloudevents.Event, logger keptnutils.
 		stage.StageName = shipyardStage.Name
 
 		if err := client.createStage(project, stage, logger); err != nil {
-			return nil, fmt.Errorf("Creating stage %s failed: %s", stage.StageName, err.Error())
+			return nil, fmt.Errorf("Creating stage %s failed. %s", stage.StageName, err.Error())
 		}
-		if err := websocketutil.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), fmt.Sprintf("%s created", stage.StageName), false, "INFO"); err != nil {
+		if err := websocketutil.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), fmt.Sprintf("Stage %s created", stage.StageName), false, "INFO"); err != nil {
 			logger.Error(fmt.Sprintf("Could not write log to websocket: %s", err.Error()))
 		}
 	}
@@ -184,7 +227,10 @@ func createProjectAndProcessShipyard(event cloudevents.Event, logger keptnutils.
 	shipyard.ResourceURI = &resourceURI
 	shipyard.ResourceContent, _ = json.Marshal(eventData.Shipyard)
 
-	resources := []*models.Resource{&shipyard}
+	resourcesArray := []*models.Resource{&shipyard}
+	resources := ResourceListBody{
+		Resources: resourcesArray,
+	}
 	version, err := client.storeResource(project, resources, logger)
 	if err != nil {
 		return nil, fmt.Errorf("Storing shipyard.yaml file failed. %s", err.Error())
@@ -224,7 +270,7 @@ func (client *Client) createProject(project models.Project, logger keptnutils.Lo
 		return fmt.Errorf("Failed to marshal project. %s", err.Error())
 	}
 
-	resp, err := postRequest(client, "/project", data)
+	resp, err := postRequest(client, "v1/project", data)
 	if err != nil {
 		return fmt.Errorf("Failed to post request. %s", err.Error())
 	}
@@ -237,19 +283,19 @@ func (client *Client) createProject(project models.Project, logger keptnutils.Lo
 		json.NewDecoder(resp.Body).Decode(&errorObj)
 		return errors.New(*errorObj.Message)
 	} else { // catch undefined errors
-		return errors.New("Undefined error in response of creating project")
+		return fmt.Errorf("Undefined error in response of creating project. Status: %s", resp.Status)
 	}
 
 	return nil
 }
 
 func (client *Client) createStage(project models.Project, stage models.Stage, logger keptnutils.Logger) error {
-	data, err := project.MarshalBinary()
+	data, err := stage.MarshalBinary()
 	if err != nil {
 		return fmt.Errorf("Failed to marshal stage. %s", err.Error())
 	}
 
-	resp, err := postRequest(client, fmt.Sprintf("project/%s/stage", project.ProjectName), data)
+	resp, err := postRequest(client, fmt.Sprintf("v1/project/%s/stage", project.ProjectName), data)
 	if err != nil {
 		return fmt.Errorf("Failed to post request. %s", err.Error())
 	}
@@ -262,19 +308,19 @@ func (client *Client) createStage(project models.Project, stage models.Stage, lo
 		json.NewDecoder(resp.Body).Decode(&errorObj)
 		return errors.New(*errorObj.Message)
 	} else { // catch undefined errors
-		return errors.New("Undefined error in response of creating stage")
+		return fmt.Errorf("Undefined error in response of creating project. Status: %s", resp.Status)
 	}
 
 	return nil
 }
 
-func (client *Client) storeResource(project models.Project, resources []*models.Resource, logger keptnutils.Logger) (*models.Version, error) {
-	data, err := project.MarshalBinary() // marshal resource
+func (client *Client) storeResource(project models.Project, resources ResourceListBody, logger keptnutils.Logger) (*models.Version, error) {
+	data, err := json.Marshal(resources)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to marshal resources. %s", err.Error())
 	}
 
-	resp, err := postRequest(client, fmt.Sprintf("project/%s/resource", project.ProjectName), data)
+	resp, err := postRequest(client, fmt.Sprintf("v1/project/%s/resource", project.ProjectName), data)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to post request. %s", err.Error())
 	}
@@ -292,38 +338,59 @@ func (client *Client) storeResource(project models.Project, resources []*models.
 
 		return nil, errors.New(*errorObj.Message)
 	} else { // catch undefined errors
-		return nil, errors.New("Undefined error in response of storing resource")
+		return nil, fmt.Errorf("Undefined error in response of creating project. Status: %s", resp.Status)
 	}
 }
 
 // postRequest sends a post request
 func postRequest(client *Client, path string, body []byte) (*http.Response, error) {
-	endPoint, err := getServiceEndpoint(configservice)
+	eventURL, err := getServiceEndpoint(configservice)
 	if err != nil {
 		return nil, err
 	}
 
-	if endPoint.Host == "" {
+	if eventURL.Host == "" {
 		return nil, errors.New("Host of configuration-service not set")
 	}
 
-	eventURL := endPoint
 	eventURL.Path = path
 
-	req, err := http.NewRequest("POST", eventURL.String(), bytes.NewReader(body))
-	if err != nil {
-		return nil, errors.New("Failed to build new request")
-	}
+	req, _ := http.NewRequest("POST", eventURL.String(), bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
 
 	return client.httpClient.Do(req)
 }
 
-// getServiceEndpoint returns the endpoint of a service stored in an environment variable
+// postRequest sends a post request
+func getRequest(client *Client, path string) (*http.Response, error) {
+	eventURL, err := getServiceEndpoint(configservice)
+	if err != nil {
+		return nil, err
+	}
+
+	if eventURL.Host == "" {
+		return nil, errors.New("Host of configuration-service not set")
+	}
+
+	eventURL.Path = path
+
+	req, _ := http.NewRequest("GET", eventURL.String(), nil)
+	req.Header.Set("Content-Type", "application/json")
+
+	return client.httpClient.Do(req)
+}
+
+// getServiceEndpoint retrieves an endpoint stored in an environment variable and sets http as default scheme
 func getServiceEndpoint(service string) (url.URL, error) {
 	url, err := url.Parse(os.Getenv(service))
 	if err != nil {
 		return *url, fmt.Errorf("Failed to retrieve value from ENVIRONMENT_VARIABLE: %s", service)
 	}
+
+	if url.Scheme == "" {
+		url.Scheme = "http"
+	}
+
 	return *url, nil
 }
 
