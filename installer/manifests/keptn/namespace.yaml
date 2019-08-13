@@ -1,4 +1,5 @@
-# Namespace for all core components, as well as the internal docker registry
+---
+# Namespace for all keptn core components
 apiVersion: v1
 kind: Namespace
 metadata:
