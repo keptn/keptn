@@ -3,11 +3,11 @@ const express = require('express');
 const router = express.Router();
 
 module.exports = (params) => {
-  const { elasticService } = params;
+  const { datastoreService } = params;
 
   router.get('/roots', async (req, res, next) => {
     try {
-      const roots = await elasticService.getRoots();
+      const roots = await datastoreService.getRoots();
       return res.json(roots);
     } catch (err) {
       return next(err);
@@ -16,7 +16,7 @@ module.exports = (params) => {
 
   router.get('/roots/:contextId', async (req, res, next) => {
     try {
-      const roots = await elasticService.findRoots(req.params.contextId);
+      const roots = await datastoreService.findRoots(req.params.contextId);
       return res.json(roots);
     } catch (err) {
       return next(err);
@@ -25,7 +25,7 @@ module.exports = (params) => {
 
   router.get('/traces/:contextId', async (req, res, next) => {
     try {
-      const traces = await elasticService.getTraces(req.params.contextId);
+      const traces = await datastoreService.getTraces(req.params.contextId);
       return res.json(traces);
     } catch (err) {
       return next(err);

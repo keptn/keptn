@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// WriteFile writes to a file in the filesystem
+// WriteFile writes to a file in the filesystem if it exists, it is overwritten
 func WriteFile(path string, content []byte) error {
 	pathArr := strings.Split(path, "/")
 	directory := ""
@@ -20,16 +20,17 @@ func WriteFile(path string, content []byte) error {
 	// detect if file exists
 	_, err = os.Stat(path)
 
-	// create file if not exists
-	if os.IsNotExist(err) {
-		var file, err = os.Create(path)
-		if err != nil {
-			return err
-		}
-		defer file.Close()
+	// delete the file and re-create it, if it existed previously
+	if !os.IsNotExist(err) {
+		DeleteFile(path)
 	}
+	file, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
 
-	file, err := os.OpenFile(path, os.O_RDWR, 0644)
+	file, err = os.OpenFile(path, os.O_RDWR, 0644)
 	if err != nil {
 		return err
 	}
