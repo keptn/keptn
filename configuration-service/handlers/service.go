@@ -42,11 +42,13 @@ func PostProjectProjectNameStageStageNameServiceHandlerFunc(params service.PostP
 	logger.Debug("Checking out branch: " + params.StageName)
 	err := common.CheckoutBranch(params.ProjectName, params.StageName)
 	if err != nil {
-		return service.NewPostProjectProjectNameStageStageNameServiceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+		logger.Error(err.Error())
+		return service.NewPostProjectProjectNameStageStageNameServiceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not check out branch")})
 	}
 	err = os.MkdirAll(servicePath, os.ModePerm)
 	if err != nil {
-		return service.NewPostProjectProjectNameStageStageNameServiceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+		logger.Error(err.Error())
+		return service.NewPostProjectProjectNameStageStageNameServiceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not create service directory")})
 	}
 
 	newServiceMetadata := &serviceMetadata{
