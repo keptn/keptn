@@ -113,6 +113,10 @@ var domainCmd = &cobra.Command{
 				return err
 			}
 
+			if err := reDeployGateway(); err != nil {
+				return err
+			}
+
 			if strings.ToLower(*platformID) == openshift {
 				fmt.Println("Please manually execute the following commands for deleting an old route and creating a new route:")
 				fmt.Println("oc delete route istio-wildcard-ingress-secure-keptn -n istio-system")
