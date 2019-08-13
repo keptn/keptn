@@ -161,9 +161,9 @@ func createProjectAndProcessShipyard(event cloudevents.Event, logger keptnutils.
 	project.ProjectName = eventData.Project
 	if err := client.createProject(project, logger); err != nil {
 		logger.Error(err.Error())
-		return nil, fmt.Errorf("Creating project %s failed: %s", project, err.Error())
+		return nil, fmt.Errorf("Creating project %s failed: %s", project.ProjectName, err.Error())
 	}
-	if err := websocketutil.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), fmt.Sprintf("%s created", project), false, "INFO"); err != nil {
+	if err := websocketutil.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), fmt.Sprintf("%s created", project.ProjectName), false, "INFO"); err != nil {
 		logger.Error(fmt.Sprintf("Could not write log to websocket: %s", err.Error()))
 	}
 
@@ -176,7 +176,7 @@ func createProjectAndProcessShipyard(event cloudevents.Event, logger keptnutils.
 			logger.Error(err.Error())
 			return nil, fmt.Errorf("Creating stage %s failed: %s", stage.StageName, err.Error())
 		}
-		if err := websocketutil.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), fmt.Sprintf("%s created", stage), false, "INFO"); err != nil {
+		if err := websocketutil.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), fmt.Sprintf("%s created", stage.StageName), false, "INFO"); err != nil {
 			logger.Error(fmt.Sprintf("Could not write log to websocket: %s", err.Error()))
 		}
 	}
