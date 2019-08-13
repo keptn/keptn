@@ -1,5 +1,5 @@
 FROM node:10-alpine
-ENV ELASTIC_ENDPOINT "http://elasticsearch-logging.knative-monitoring.svc.cluster.local:9200/"
+ENV DATASTORE "http://mongodb-datastore.keptn-datastore.svc.cluster.local:8080/"
 EXPOSE 8080
 
 RUN npm install -g http-server

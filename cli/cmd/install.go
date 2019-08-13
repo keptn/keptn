@@ -16,13 +16,10 @@ package cmd
 
 import (
 	"bufio"
-	"bytes"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
@@ -38,13 +35,11 @@ import (
 
 var configFilePath *string
 var installerVersion *string
-var platform *string
-var insecureSkipTLSVerify bool
-
-var kubectlOptions string
+var platformIdentifier *string
 
 const gke = "gke"
 const aks = "aks"
+const eks = "eks"
 const openshift = "openshift"
 const kubernetes = "kubernetes"
 
@@ -52,26 +47,22 @@ const installerPrefixURL = "https://raw.githubusercontent.com/keptn/keptn/"
 const installerSuffixPath = "/installer/manifests/installer/installer.yaml"
 const rbacSuffixPath = "/installer/manifests/installer/rbac.yaml"
 
-type installCredentials struct {
+type platform interface {
+	checkRequirements() error
+	getCreds() interface{}
+	getGithubCreds() *githubCredentials
+	checkCreds() error
+	readCreds()
+	printCreds()
+}
+
+type githubCredentials struct {
 	GithubPersonalAccessToken string `json:"githubPersonalAccessToken"`
 	GithubOrg                 string `json:"githubOrg"`
 	GithubUserName            string `json:"githubUserName"`
-	ClusterName               string `json:"clusterName"`
-	ClusterZone               string `json:"clusterZone"`
-	GkeProject                string `json:"gkeProject"`
-	OpenshiftURL              string `json:"openshiftUrl"`
-	OpenshiftUser             string `json:"openshiftUser"`
-	OpenshiftPassword         string `json:"openshiftPassword"`
-	ClusterIPCIDR             string `json:"clusterIPCIDR"`
-	ServicesIPCIDR            string `json:"servicesIPCIDR"`
-	AzureResourceGroup        string `json:"azureResourceGroup"`
-	AzureSubscription         string `json:"azureSubscription"`
 }
 
-type placeholderReplacement struct {
-	placeholderValue string
-	desiredValue     string
-}
+var p platform
 
 // installCmd represents the version command
 var installCmd = &cobra.Command{
@@ -88,33 +79,23 @@ Example:
 			kubectlOptions = "--insecure-skip-tls-verify=true"
 		}
 
-		err := checkIfPlatformIsSupported()
+		err := setPlatform()
 		if err != nil {
 			return err
 		}
 
-		isInstallerAvailable, err := checkInstallerAvailablity()
+		isInstallerAvailable, err := checkInstallerAvailability()
 		if err != nil || !isInstallerAvailable {
 			return errors.New("Installers not found under:\n" +
 				getInstallerURL() + "\n" + getRbacURL())
 		}
 
-		if *platform == gke {
-			// Check whether Gcloud user is configured
-			_, err = getGcloudUser()
-			if err != nil {
-				return err
-			}
-		}
-		if *platform == aks {
-			_, err = getAzUser()
-			if err != nil {
-				return err
-			}
+		if p.checkRequirements() != nil {
+			return err
 		}
 
 		// Check whether kubectl is installed
-		isKubAvailable, err := isKubectlAvailable()
+		isKubAvailable, err := utils.IsKubectlAvailable()
 		if err != nil || !isKubAvailable {
 			return errors.New(`keptn requires 'kubectl' but it is not available.
 Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
@@ -122,65 +103,32 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 
 		if configFilePath != nil && *configFilePath != "" {
 			// Config was provided in form of a file
-			creds, err := parseConfig(*configFilePath)
+			err = parseConfig(*configFilePath)
 			if err != nil {
 				return err
 			}
-			// Verify the provided config
-			// Check whether all data is provided
-			if creds.GithubPersonalAccessToken == "" ||
-				creds.GithubOrg == "" || creds.GithubUserName == "" {
-				return errors.New("Incomplete credential file " + *configFilePath)
+
+			_, eks := p.(*eksPlatform)
+			if !eks {
+				// Verify the provided config
+				// Check whether all data is provided
+				if p.getGithubCreds().GithubPersonalAccessToken == "" ||
+					p.getGithubCreds().GithubOrg == "" || p.getGithubCreds().GithubUserName == "" {
+					return errors.New("Incomplete credential file " + *configFilePath)
+				}
+
+				err = checkGithubCreds()
+				if err != nil {
+					return err
+				}
 			}
 
 			// Check whether the authentication at the cluster is valid
-			var authenticated = false
-			if *platform == gke {
-				if creds.ClusterName == "" || creds.ClusterZone == "" {
-					return errors.New("Incomplete credential file " + *configFilePath)
-				}
-				authenticated, err = authenticateAtGkeCluster(creds)
-			} else if *platform == openshift {
-				if creds.OpenshiftURL == "" || creds.OpenshiftUser == "" || creds.OpenshiftPassword == "" {
-					return errors.New("Incomplete credential file " + *configFilePath)
-				}
-				authenticated, err = authenticateAtOpenshiftCluster(creds)
-			} else if *platform == aks {
-				if creds.ClusterName == "" || creds.AzureResourceGroup == "" || creds.AzureSubscription == "" {
-					return errors.New("Incomplete credential file " + *configFilePath)
-				}
-				authenticated, err = authenticateAtAksCluster(creds)
-			} else if *platform == kubernetes {
-				if ctx, err := getKubeContext(); err == nil && ctx != "" {
-					authenticated = true
-				}
-			}
+			err = p.checkCreds()
 			if err != nil {
 				return err
 			}
-			if !authenticated {
-				return errors.New("Cannot authenticate at cluster " + creds.ClusterName)
-			}
-			// Check GitHub token and org
-			validScopeRes, err := utils.HasTokenRepoScope(creds.GithubPersonalAccessToken)
-			if err != nil {
-				return err
-			}
-			if !validScopeRes {
-				return errors.New("Personal access token requies at least a 'repo'-scope")
-			}
-			validOrg, err := utils.IsOrgExisting(creds.GithubPersonalAccessToken, creds.GithubOrg)
-			if err != nil {
-				return err
-			}
-			if !validOrg {
-				return errors.New("Provided organization " + creds.GithubOrg + " does not exist.")
-			}
-		} else if platform != nil && *platform == kubernetes {
-			if ctx, err := getKubeContext(); err != nil || ctx == "" {
-				return errors.New("kubectl is not properly configured. " +
-					"Check your current context with 'kubectl config current-context'")
-			}
+
 		}
 
 		return nil
@@ -189,38 +137,63 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 
 		utils.PrintLog("Installing keptn...", utils.InfoLevel)
 
-		var creds installCredentials
 		var err error
 		if !mocking {
-			if configFilePath != nil && *configFilePath != "" {
-				creds, err = parseConfig(*configFilePath)
-				if err != nil {
-					return err
-				}
-
-			} else {
-				err = getInstallCredentials(&creds)
+			if configFilePath == nil || *configFilePath == "" {
+				err = readCreds()
 				if err != nil {
 					return err
 				}
 			}
-			return doInstallation(creds)
+			return doInstallation()
 		}
-		fmt.Println("Skipping intallation due to mocking flag set to true")
+		fmt.Println("Skipping intallation due to mocking flag")
 		return nil
 	},
 }
 
-func checkIfPlatformIsSupported() error {
-	if platform == nil {
-		*platform = gke
-		return nil
+func checkGithubCreds() error {
+	// Check GitHub token and org
+	validScopeRes, err := utils.HasTokenRepoScope(p.getGithubCreds().GithubPersonalAccessToken)
+	if err != nil {
+		return err
 	}
-	*platform = strings.ToLower(*platform)
-	if *platform != gke && *platform != aks && *platform != openshift && *platform != kubernetes {
-		return errors.New("Unsupported platform '" + *platform + "'. The following platforms are supported: gke, aks, openshift, kubernetes")
+	if !validScopeRes {
+		return errors.New("Personal access token requies at least a 'repo'-scope")
+	}
+	validOrg, err := utils.IsOrgExisting(p.getGithubCreds().GithubPersonalAccessToken, p.getGithubCreds().GithubOrg)
+	if err != nil {
+		return err
+	}
+	if !validOrg {
+		return errors.New("Provided organization " + p.getGithubCreds().GithubOrg + " does not exist.")
 	}
 	return nil
+}
+
+func setPlatform() error {
+
+	*platformIdentifier = strings.ToLower(*platformIdentifier)
+
+	switch *platformIdentifier {
+	case gke:
+		p = newGKEPlatform()
+		return nil
+	case aks:
+		p = newAKSPlatform()
+		return nil
+	case eks:
+		p = newEKSPlatform()
+		return nil
+	case openshift:
+		p = newOpenShiftPlatform()
+		return nil
+	case kubernetes:
+		p = newKubernetesPlatform()
+		return nil
+	default:
+		return errors.New("Unsupported platform '" + *platformIdentifier + "'. The following platforms are supported: aks, eks, gke, openshift, and kubernetes")
+	}
 }
 
 func init() {
@@ -229,11 +202,11 @@ func init() {
 	installCmd.Flags().MarkHidden("creds")
 	installerVersion = installCmd.Flags().StringP("keptn-version", "k", "master", "The branch or tag of the version which is installed")
 	installCmd.Flags().MarkHidden("keptn-version")
-	platform = installCmd.Flags().StringP("platform", "p", "gke", "The platform to run keptn on [gke,openshift,aks,kubernetes]")
+	platformIdentifier = installCmd.Flags().StringP("platform", "p", "gke", "The platform to run keptn on [aks,eks,gke,openshift,kubernetes]")
 	installCmd.PersistentFlags().BoolVarP(&insecureSkipTLSVerify, "insecure-skip-tls-verify", "s", false, "Skip tls verification for kubectl commands")
 }
 
-func checkInstallerAvailablity() (bool, error) {
+func checkInstallerAvailability() (bool, error) {
 
 	resp, err := http.Get(getInstallerURL())
 	if err != nil {
@@ -262,7 +235,7 @@ func getRbacURL() string {
 }
 
 // Preconditions: 1. Already authenticated against the cluster; 2. Github credentials are checked
-func doInstallation(creds installCredentials) error {
+func doInstallation() error {
 
 	path, err := keptnutils.GetKeptnDirectory()
 	if err != nil {
@@ -271,16 +244,20 @@ func doInstallation(creds installCredentials) error {
 	installerPath := path + "installer.yaml"
 
 	// get the YAML for the installer pod
-	if err := downloadFile(installerPath, getInstallerURL()); err != nil {
+	if err := utils.DownloadFile(installerPath, getInstallerURL()); err != nil {
 		return err
 	}
 
-	if err := setDeploymentFileKey(installerPath,
-		placeholderReplacement{"PLATFORM", *platform}); err != nil {
+	if err := utils.Replace(installerPath,
+		utils.PlaceholderReplacement{PlaceholderValue: "PLATFORM_PLACEHOLDER", DesiredValue: *platformIdentifier}); err != nil {
 		return err
 	}
 
-	if *platform == gke || *platform == aks || *platform == kubernetes {
+	_, aks := p.(*aksPlatform)
+	_, eks := p.(*eksPlatform)
+	_, gke := p.(*gkePlatform)
+	_, k8s := p.(*kubernetesPlatform)
+	if gke || aks || k8s || eks {
 		options := options{"apply", "-f", getRbacURL()}
 		options.appendIfNotEmpty(kubectlOptions)
 		_, err = keptnutils.ExecuteCommand("kubectl", options)
@@ -292,9 +269,9 @@ func doInstallation(creds installCredentials) error {
 
 	utils.PrintLog("Deploying keptn installer pod...", utils.InfoLevel)
 
-	options := options{"apply", "-f", installerPath}
-	options.appendIfNotEmpty(kubectlOptions)
-	_, err = keptnutils.ExecuteCommand("kubectl", options)
+	o := options{"apply", "-f", installerPath}
+	o.appendIfNotEmpty(kubectlOptions)
+	_, err = keptnutils.ExecuteCommand("kubectl", o)
 
 	if err != nil {
 		return fmt.Errorf("Error while deploying keptn installer pod: %s \nAborting installation", err.Error())
@@ -311,88 +288,98 @@ func doInstallation(creds installCredentials) error {
 	if err != nil {
 		return err
 	}
-	// installation finished, get auth token and endpoint
-	err = setupKeptnAuthAndConfigure(creds)
-	if err != nil {
-		return err
-	}
 
+	if eks {
+		o = options{"get", "svc", "istio-ingressgateway", "-n", "istio-system",
+			"-ojsonpath={.status.loadBalancer.ingress[0].hostname}"}
+		o.appendIfNotEmpty(kubectlOptions)
+		hostname, err := keptnutils.ExecuteCommand("kubectl", o)
+		if err != nil {
+			return err
+		}
+
+		fmt.Println()
+		fmt.Println("Please create a Route53 Hosted Zone with a wildcard record set for " + hostname)
+		fmt.Println("Afterwards, call 'keptn configure domain YOUR_ROUTE53_DOMAIN'")
+	} else {
+		// installation finished, get auth token and endpoint
+		err = authUsingKube()
+		if err != nil {
+			return err
+		}
+		err = configure(p.getGithubCreds().GithubOrg,
+			p.getGithubCreds().GithubUserName, p.getGithubCreds().GithubPersonalAccessToken)
+		if err != nil {
+			return err
+		}
+	}
 	return os.Remove(installerPath)
 }
 
-func parseConfig(configFile string) (installCredentials, error) {
+func parseConfig(configFile string) error {
 	data, err := utils.ReadFile(configFile)
 	if err != nil {
-		return installCredentials{}, err
+		return err
 	}
-	var installCreds installCredentials
-	json.Unmarshal([]byte(data), &installCreds)
-	return installCreds, nil
+	return json.Unmarshal([]byte(data), p.getCreds())
 }
 
-func getInstallCredentials(creds *installCredentials) error {
+func readCreds() error {
 
 	credsStr, err := credentialmanager.GetInstallCreds()
 	if err != nil {
 		credsStr = ""
 	}
 	// Ignore unmarshaling error
-	json.Unmarshal([]byte(credsStr), &creds)
+	json.Unmarshal([]byte(credsStr), p.getCreds())
 
 	fmt.Print("Please enter the following information or press enter to keep the old value:\n")
 
+	_, eks := p.(*eksPlatform)
+
 	for {
-		connectToCluster(creds)
+		p.readCreds()
 
-		readGithubUserName(creds)
+		if !eks {
+			readGithubUserName(p.getGithubCreds())
 
-		// Check if the access token has the necessary permissions and the github org exists
-		validScopeRes := false
-		for !validScopeRes {
-			readGithubPersonalAccessToken(creds)
-			validScopeRes, err = utils.HasTokenRepoScope(creds.GithubPersonalAccessToken)
-			if err != nil {
-				return err
+			// Check if the access token has the necessary permissions and the github org exists
+			validScopeRes := false
+			for !validScopeRes {
+				readGithubPersonalAccessToken(p.getGithubCreds())
+				validScopeRes, err = utils.HasTokenRepoScope(p.getGithubCreds().GithubPersonalAccessToken)
+				if err != nil {
+					return err
+				}
+				if !validScopeRes {
+					fmt.Println("GitHub Personal Access Token requies at least a 'repo'-scope")
+					p.getGithubCreds().GithubPersonalAccessToken = ""
+				}
 			}
-			if !validScopeRes {
-				fmt.Println("GitHub Personal Access Token requies at least a 'repo'-scope")
-				creds.GithubPersonalAccessToken = ""
-			}
-		}
-		validOrg := false
-		for !validOrg {
-			readGithubOrg(creds)
-			validOrg, err = utils.IsOrgExisting(creds.GithubPersonalAccessToken, creds.GithubOrg)
-			if err != nil {
-				return err
-			}
-			if !validOrg {
-				fmt.Println("Provided GitHub Organization " + creds.GithubOrg + " does not exist.")
-				creds.GithubOrg = ""
+			validOrg := false
+			for !validOrg {
+				readGithubOrg(p.getGithubCreds())
+				validOrg, err = utils.IsOrgExisting(p.getGithubCreds().GithubPersonalAccessToken, p.getGithubCreds().GithubOrg)
+				if err != nil {
+					return err
+				}
+				if !validOrg {
+					fmt.Println("Provided GitHub Organization " + p.getGithubCreds().GithubOrg + " does not exist.")
+					p.getGithubCreds().GithubOrg = ""
+				}
 			}
 		}
 
 		fmt.Println()
 		fmt.Println("Please confirm that the provided information is correct: ")
 
-		if *platform == gke {
-			fmt.Println("Cluster Name: " + creds.ClusterName)
-			fmt.Println("Cluster Zone: " + creds.ClusterZone)
-			fmt.Println("GKE Project: " + creds.GkeProject)
-		} else if *platform == openshift {
-			fmt.Println("Openshift Server URL: " + creds.OpenshiftURL)
-			fmt.Println("Openshift User: " + creds.OpenshiftUser)
-		} else if *platform == aks {
-			fmt.Println("Cluster Name: " + creds.ClusterName)
-			fmt.Println("Azure Resource Group: " + creds.AzureResourceGroup)
-		} else if *platform == kubernetes {
-			ctx, _ := getKubeContext()
-			fmt.Println("Cluster: " + strings.TrimSpace(ctx))
-		}
+		p.printCreds()
 
-		fmt.Println("GitHub User Name: " + creds.GithubUserName)
-		fmt.Println("GitHub Personal Access Token: " + creds.GithubPersonalAccessToken)
-		fmt.Println("GitHub Organization: " + creds.GithubOrg)
+		if !eks {
+			fmt.Println("GitHub User Name: " + p.getGithubCreds().GithubUserName)
+			fmt.Println("GitHub Personal Access Token: " + p.getGithubCreds().GithubPersonalAccessToken)
+			fmt.Println("GitHub Organization: " + p.getGithubCreds().GithubOrg)
+		}
 
 		fmt.Println()
 		fmt.Println("Is this all correct? (y/n)")
@@ -408,113 +395,13 @@ func getInstallCredentials(creds *installCredentials) error {
 		}
 	}
 
-	newCreds, _ := json.Marshal(creds)
+	newCreds, _ := json.Marshal(p.getCreds())
 	newCredsStr := strings.Replace(string(newCreds), "\r\n", "\n", -1)
 	newCredsStr = strings.Replace(newCredsStr, "\n", "", -1)
 	return credentialmanager.SetInstallCreds(newCredsStr)
 }
 
-func connectToCluster(creds *installCredentials) {
-	if *platform == gke {
-		if creds.ClusterName == "" || creds.ClusterZone == "" || creds.GkeProject == "" {
-			creds.ClusterName, creds.ClusterZone, creds.GkeProject = getGkeClusterInfo()
-		}
-
-		connectionSuccessful := false
-		for !connectionSuccessful {
-			readClusterName(creds)
-			readClusterZone(creds)
-			readGkeProject(creds)
-			connectionSuccessful, _ = authenticateAtGkeCluster(*creds)
-		}
-	} else if *platform == openshift {
-		connectionSuccessful := false
-		for !connectionSuccessful {
-			readOpenshiftClusterURL(creds)
-			readOpenshiftUser(creds)
-			readOpenshiftPassword(creds)
-			connectionSuccessful, _ = authenticateAtOpenshiftCluster(*creds)
-		}
-	} else if *platform == aks {
-		if creds.ClusterName == "" {
-			creds.ClusterName = getAksClusterInfo()
-		}
-
-		connectionSuccessful := false
-		for !connectionSuccessful {
-			readClusterName(creds)
-			readAzureResourceGroup(creds)
-			readAzureSubscription(creds)
-			connectionSuccessful, _ = authenticateAtAksCluster(*creds)
-		}
-	}
-}
-
-func readOpenshiftClusterURL(creds *installCredentials) {
-	readUserInput(&creds.OpenshiftURL,
-		"",
-		"Openshift Server URL",
-		"Please enter a valid Server URL.",
-	)
-}
-
-func readOpenshiftUser(creds *installCredentials) {
-	readUserInput(&creds.OpenshiftUser,
-		"",
-		"Openshift User",
-		"Please enter a valid user name.",
-	)
-}
-
-func readOpenshiftPassword(creds *installCredentials) {
-	readUserInput(&creds.OpenshiftPassword,
-		"",
-		"Openshift Password",
-		"Please enter a valid password.",
-	)
-}
-
-func readClusterName(creds *installCredentials) {
-	readUserInput(&creds.ClusterName,
-		"^(([a-zA-Z0-9]+-)*[a-zA-Z0-9]+)$",
-		"Cluster Name",
-		"Please enter a valid Cluster Name.",
-	)
-}
-
-func readAzureResourceGroup(creds *installCredentials) {
-	readUserInput(&creds.AzureResourceGroup,
-		"^(([a-zA-Z0-9]+-)*[a-zA-Z0-9]+)$",
-		"Azure Resource Group",
-		"Please enter a valid Azure Resource Group.",
-	)
-}
-
-func readAzureSubscription(creds *installCredentials) {
-	readUserInput(&creds.AzureSubscription,
-		"^(([a-zA-Z0-9]+-)*[a-zA-Z0-9]+)$",
-		"Azure Subscription",
-		"Please enter a valid Azure Subscription.",
-	)
-}
-
-func readClusterZone(creds *installCredentials) {
-	readUserInput(&creds.ClusterZone,
-		"^(([a-zA-Z0-9]+-)*[a-zA-Z0-9]+)$",
-		"Cluster Zone",
-		"Please enter a valid Cluster Zone.",
-	)
-}
-
-func readGkeProject(creds *installCredentials) {
-	readUserInput(&creds.GkeProject,
-		"^(([a-zA-Z0-9]+-)*[a-zA-Z0-9]+)$",
-		"GKE Project",
-		"Please enter a valid GKE Project.",
-	)
-}
-
-func readGithubUserName(creds *installCredentials) {
+func readGithubUserName(creds *githubCredentials) {
 	readUserInput(&creds.GithubUserName,
 		"^(([a-zA-Z0-9]+-)*[a-zA-Z0-9]+)$",
 		"GitHub User Name",
@@ -522,7 +409,7 @@ func readGithubUserName(creds *installCredentials) {
 	)
 }
 
-func readGithubPersonalAccessToken(creds *installCredentials) {
+func readGithubPersonalAccessToken(creds *githubCredentials) {
 	readUserInput(&creds.GithubPersonalAccessToken,
 		"^[a-z0-9]{40}$",
 		"GitHub Personal Access Token",
@@ -530,7 +417,7 @@ func readGithubPersonalAccessToken(creds *installCredentials) {
 	)
 }
 
-func readGithubOrg(creds *installCredentials) {
+func readGithubOrg(creds *githubCredentials) {
 	readUserInput(&creds.GithubOrg,
 		"^(([a-zA-Z0-9]+-)*[a-zA-Z0-9]+)$",
 		"GitHub Organization",
@@ -562,178 +449,6 @@ func readUserInput(value *string, regex string, promptMessage string, regexViola
 			keepAsking = false
 		}
 	}
-}
-
-// downloadFile will download a url to a local file. It's efficient because it will
-// write as it downloads and not load the whole file into memory.
-func downloadFile(filepath string, url string) error {
-
-	// Get the data
-
-	resp, err := http.Get(url)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	// Create the file
-	out, err := os.Create(filepath)
-	if err != nil {
-		return err
-	}
-	defer out.Close()
-
-	// Write the body to file
-	_, err = io.Copy(out, resp.Body)
-	return err
-}
-
-func setDeploymentFileKey(installerPath string, replacements ...placeholderReplacement) error {
-	content, err := utils.ReadFile(installerPath)
-	if err != nil {
-		return err
-	}
-	for _, replacement := range replacements {
-		content = strings.ReplaceAll(content, "value: "+replacement.placeholderValue, "value: "+replacement.desiredValue)
-	}
-
-	return ioutil.WriteFile(installerPath, []byte(content), 0666)
-}
-
-func authenticateAtOpenshiftCluster(creds installCredentials) (bool, error) {
-	_, err := keptnutils.ExecuteCommand("oc", []string{
-		"login",
-		creds.OpenshiftURL,
-		"-u=" + creds.OpenshiftUser,
-		"-p=" + creds.OpenshiftPassword,
-		"--insecure-skip-tls-verify=true",
-	})
-
-	if err != nil {
-		fmt.Println("Could not connect to cluster. Please verify that you have entered the correct information.")
-		return false, err
-	}
-
-	return true, nil
-}
-
-func authenticateAtGkeCluster(creds installCredentials) (bool, error) {
-	_, err := keptnutils.ExecuteCommand("gcloud", []string{
-		"container",
-		"clusters",
-		"get-credentials",
-		creds.ClusterName,
-		"--zone",
-		creds.ClusterZone,
-		"--project",
-		creds.GkeProject,
-	})
-
-	if err != nil {
-		fmt.Println("Could not connect to cluster. Please verify that you have entered the correct information.")
-		return false, err
-	}
-
-	return true, nil
-}
-
-func authenticateAtAksCluster(creds installCredentials) (bool, error) {
-	_, err := keptnutils.ExecuteCommand("az", []string{
-		"aks",
-		"get-credentials",
-		"--resource-group",
-		creds.AzureResourceGroup,
-		"--name",
-		creds.ClusterName,
-		"--subscription",
-		creds.AzureSubscription,
-		"--overwrite-existing",
-	})
-
-	if err != nil {
-		fmt.Println("Could not connect to cluster. Please verify that you have entered the correct information.")
-		return false, err
-	}
-
-	return true, nil
-}
-
-func getGkeClusterInfo() (string, string, string) {
-	// try to get current cluster from gcloud config
-	out, err := getKubeContext()
-
-	if err != nil {
-		return "", "", ""
-	}
-	clusterInfo := strings.TrimSpace(strings.Replace(string(out), "\r\n", "\n", -1))
-	if !strings.HasPrefix(clusterInfo, gke) {
-		return "", "", ""
-	}
-
-	clusterInfoArray := strings.Split(clusterInfo, "_")
-	if len(clusterInfoArray) < 4 {
-		return "", "", ""
-	}
-
-	return clusterInfoArray[3], clusterInfoArray[2], clusterInfoArray[1]
-}
-
-func getKubeContext() (string, error) {
-	return keptnutils.ExecuteCommand("kubectl", []string{
-		"config",
-		"current-context",
-	})
-}
-
-func getAksClusterInfo() string {
-	// try to get current cluster from gcloud config
-	out, err := keptnutils.ExecuteCommand("kubectl", []string{
-		"config",
-		"current-context",
-	})
-
-	if err != nil {
-		return ""
-	}
-	return strings.TrimSpace(strings.Replace(string(out), "\r\n", "\n", -1))
-}
-
-func getGcloudUser() (string, error) {
-	out, err := keptnutils.ExecuteCommand("gcloud", []string{
-		"config",
-		"get-value",
-		"account",
-	})
-
-	if err != nil {
-		return "", fmt.Errorf("Please configure your gcloud: %s", err)
-	}
-	// This command returns the account in the first line
-	return strings.Split(strings.Replace(string(out), "\r\n", "\n", -1), "\n")[0], nil
-}
-
-func getAzUser() (string, error) {
-	out, err := keptnutils.ExecuteCommand("az", []string{
-		"account",
-		"show",
-		"--query=user.name",
-		"--output=tsv",
-	})
-
-	if err != nil {
-		return "", fmt.Errorf("Please configure your gcloud: %s", err)
-	}
-	// This command returns the account in the first line
-	return strings.Split(strings.Replace(string(out), "\r\n", "\n", -1), "\n")[0], nil
-}
-
-func isKubectlAvailable() (bool, error) {
-
-	_, err := keptnutils.ExecuteCommand("kubectl", []string{})
-	if err != nil {
-		return false, err
-	}
-	return true, nil
 }
 
 func waitForInstallerPod() (string, error) {
@@ -889,125 +604,4 @@ func createFileInKeptnDirectory(fileName string) (*os.File, error) {
 	}
 
 	return os.Create(path + fileName)
-}
-
-func setupKeptnAuthAndConfigure(creds installCredentials) error {
-
-	utils.PrintLog("Starting to configure your keptn CLI...", utils.InfoLevel)
-
-	ops := options{"get",
-		"secret",
-		"keptn-api-token",
-		"-n",
-		"keptn",
-		"-ojsonpath={.data.keptn-api-token}"}
-	ops.appendIfNotEmpty(kubectlOptions)
-	out, err := keptnutils.ExecuteCommand("kubectl", ops)
-
-	const errorMsg = `Could not retrieve keptn API token: %s
-To manually set up your keptn CLI, please follow the instructions at https://keptn.sh/docs/0.2.0/reference/cli/.`
-
-	if err != nil {
-		return fmt.Errorf(errorMsg, err)
-	}
-
-	apiToken, err := base64.StdEncoding.DecodeString(out)
-	if err != nil {
-		return fmt.Errorf(errorMsg, err)
-	}
-	var keptnEndpoint string
-	apiEndpointRetrieved := false
-	retries := 0
-	for tryGetAPIEndpoint := true; tryGetAPIEndpoint; tryGetAPIEndpoint = !apiEndpointRetrieved {
-
-		ops := options{"get",
-			"virtualservice",
-			"api",
-			"-n",
-			"keptn",
-			"-ojsonpath={.spec.hosts[0]}"}
-		ops.appendIfNotEmpty(kubectlOptions)
-
-		out, err := keptnutils.ExecuteCommand("kubectl", ops)
-
-		if err != nil {
-			retries++
-			if retries >= 15 {
-				utils.PrintLog("API endpoint not yet available... trying again in 5s", utils.InfoLevel)
-			}
-		} else {
-			retries = 0
-		}
-		keptnEndpoint = strings.TrimSpace(string(out))
-		if keptnEndpoint == "" {
-			retries++
-			if retries >= 15 {
-				utils.PrintLog("API endpoint not yet available... trying again in 5s", utils.InfoLevel)
-			}
-		} else {
-			keptnEndpoint = "https://" + keptnEndpoint
-			apiEndpointRetrieved = true
-		}
-		if !apiEndpointRetrieved {
-			time.Sleep(5 * time.Second)
-		}
-	}
-	err = authenticate(keptnEndpoint, string(apiToken))
-	if err != nil {
-		return err
-	}
-	err = configure(creds)
-	if err != nil {
-		return err
-	}
-	utils.PrintLog("Your CLI is now successfully configured. You are now ready to use keptn.", utils.InfoLevel)
-	return nil
-}
-
-func authenticate(endPoint string, apiToken string) error {
-	buf := new(bytes.Buffer)
-	rootCmd.SetOutput(buf)
-
-	args := []string{
-		"auth",
-		fmt.Sprintf("--endpoint=%s", endPoint),
-		fmt.Sprintf("--api-token=%s", apiToken),
-	}
-	rootCmd.SetArgs(args)
-	err := rootCmd.Execute()
-
-	if err != nil {
-		return fmt.Errorf("Authentication at keptn failed: %s\n"+
-			"To manually set up your keptn CLI, please follow the instructions at https://keptn.sh/docs/0.2.0/reference/cli/.", err)
-	}
-	return nil
-}
-
-func configure(creds installCredentials) error {
-
-	buf := new(bytes.Buffer)
-	rootCmd.SetOutput(buf)
-
-	args := []string{
-		"configure",
-		fmt.Sprintf("--org=%s", creds.GithubOrg),
-		fmt.Sprintf("--user=%s", creds.GithubUserName),
-		fmt.Sprintf("--token=%s", creds.GithubPersonalAccessToken),
-	}
-	rootCmd.SetArgs(args)
-	err := rootCmd.Execute()
-
-	if err != nil {
-		return fmt.Errorf("Configuration failed: %s\n"+
-			"To manually set up your keptn CLI, please follow the instructions at https://keptn.sh/docs/0.2.0/reference/cli/.", err)
-	}
-	return nil
-}
-
-type options []string
-
-func (s *options) appendIfNotEmpty(newOption string) {
-	if newOption != "" {
-		*s = append(*s, newOption)
-	}
 }

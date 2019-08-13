@@ -89,8 +89,7 @@ func StageAndCommitAll(project string, message string) error {
 		return err
 	}
 
-	out, err := utils.ExecuteCommandInDirectory("git", []string{"commit", "-m", `"` + message + `"`}, projectConfigPath)
-	utils.Debug("", out)
+	_, err = utils.ExecuteCommandInDirectory("git", []string{"commit", "-m", `"` + message + `"`}, projectConfigPath)
 	if err != nil && !(strings.Contains(err.Error(), "nothing to commit")) {
 		fmt.Print(err.Error())
 		return err
@@ -100,7 +99,7 @@ func StageAndCommitAll(project string, message string) error {
 		repoURI := getRepoURI(credentials.RemoteURI, credentials.User, credentials.Token)
 		_, err = utils.ExecuteCommandInDirectory("git", []string{"push", repoURI}, projectConfigPath)
 		if err != nil {
-			return errors.New("Could not push to upstream")
+			return err
 		}
 	}
 	return nil
@@ -249,4 +248,16 @@ func DeleteCredentials(project string) error {
 		return err
 	}
 	return nil
+}
+
+// GetBranches returns a list of branches within the project
+func GetBranches(project string) ([]string, error) {
+	projectConfigPath := config.ConfigDir + "/" + project
+	out, err := utils.ExecuteCommandInDirectory("git", []string{"for-each-ref", `--format=%(refname:short)`, "refs/heads/*"}, projectConfigPath)
+	if err != nil {
+		return nil, err
+	}
+	branches := strings.Split(out, "\n")
+
+	return branches, nil
 }

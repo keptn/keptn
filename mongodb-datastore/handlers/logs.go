@@ -17,7 +17,7 @@ import (
 
 // SaveLog to datastore
 func SaveLog(body []*logs.SaveLogParamsBodyItems0) (err error) {
-	fmt.Println("save log to datastore")
+	keptnutils.Debug("", "save log to datastore")
 
 	client, err := mongo.NewClient(options.Client().ApplyURI(mongoDBConnection))
 	if err != nil {
@@ -69,14 +69,9 @@ func GetLogs(params logs.GetLogsParams) (result *logs.GetLogsOKBody, err error) 
 
 	collection := client.Database(mongoDBName).Collection(logsCollectionName)
 
-	totalCount, err := collection.CountDocuments(ctx, bson.D{})
-	if err != nil {
-		keptnutils.Error("", fmt.Sprintf("could ot retrieve size of logs collection: %s", err.Error()))
-	}
-
 	searchOptions := bson.M{}
 	if params.EventID != nil {
-		searchOptions["evenId"] = primitive.Regex{Pattern: *params.EventID, Options: ""}
+		searchOptions["eventid"] = primitive.Regex{Pattern: *params.EventID, Options: ""}
 	}
 
 	var newNextPageKey int64
@@ -92,6 +87,12 @@ func GetLogs(params logs.GetLogsParams) (result *logs.GetLogsOKBody, err error) 
 	pagesize := *params.PageSize
 
 	sortOptions := options.Find().SetSort(bson.D{{"timestamp", -1}}).SetSkip(nextPageKey).SetLimit(pagesize)
+
+	totalCount, err := collection.CountDocuments(ctx, searchOptions)
+	if err != nil {
+		keptnutils.Error("", fmt.Sprintf("error counting elements in logs collection: %s", err.Error()))
+	}
+
 	cur, err := collection.Find(ctx, searchOptions, sortOptions)
 	if err != nil {
 		keptnutils.Error("", fmt.Sprintf("error finding elements in logs collection: %s", err.Error()))
@@ -105,7 +106,6 @@ func GetLogs(params logs.GetLogsParams) (result *logs.GetLogsOKBody, err error) 
 			return nil, err
 		}
 		resultLogs = append(resultLogs, &result)
-		//fmt.Println(result)
 	}
 
 	var myresult logs.GetLogsOKBody

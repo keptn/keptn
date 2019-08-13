@@ -28,11 +28,11 @@ spec:
             cpu: "500m"
         volumeMounts:
         - mountPath: /data/config
-          name: config-volume
+          name: configuration-volume
       volumes:
-      - name: config-volume
+      - name: configuration-volume
         persistentVolumeClaim:
-          claimName: config-volume
+          claimName: configuration-volume
 ---
 apiVersion: v1
 kind: Service

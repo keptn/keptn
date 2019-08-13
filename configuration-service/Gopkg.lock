@@ -6,8 +6,8 @@
   name = "cloud.google.com/go"
   packages = ["compute/metadata"]
   pruneopts = "UT"
-  revision = "cdaaf98f9226c39dc162b8e55083b2fbc67b4674"
-  version = "v0.43.0"
+  revision = "2b2aeece7979f19ee2809459e0411b337d02661a"
+  version = "v0.44.0"
 
 [[projects]]
   digest = "1:6b1426cad7057b717351eacf5b6fe70f053f11aac1ce254bbf2fd72c031719eb"
@@ -18,7 +18,7 @@
   version = "v0.4.12"
 
 [[projects]]
-  digest = "1:6262a6675cf23d3a262041493ca5ed8621322683a10e6f42d55bd86005f1b13c"
+  digest = "1:0959e2a5bb07a9083c00f6c0041a78aa59b3fe43f587cc6e358ebb0fcfb35305"
   name = "github.com/Azure/go-autorest"
   packages = [
     "autorest",
@@ -29,8 +29,8 @@
     "tracing",
   ]
   pruneopts = "UT"
-  revision = "7166fb346dbf8978ad28211a1937b20fdabc08c8"
-  version = "v12.4.2"
+  revision = "880eb0e2aca291c40538ddef66e5914fb1cc1d7f"
+  version = "v12.4.3"
 
 [[projects]]
   digest = "1:a2682518d905d662d984ef9959984ef87cecb777d379bfa9d9fe40e78069b3e4"
@@ -323,12 +323,12 @@
   version = "v1.1.7"
 
 [[projects]]
-  digest = "1:88f017a0f027ac3019f1000c1b62e84750c78a40743e57c49f114f2cb154fa5c"
+  branch = "develop"
+  digest = "1:5c472f90bf8a7d2d15062a6afd28af52751962d895ef5cdb99c6b53dbb173b18"
   name = "github.com/keptn/go-utils"
   packages = ["pkg/utils"]
   pruneopts = "UT"
-  revision = "9f13e220173a73b4bc0e04dc56e8edc2c7cbe126"
-  version = "0.1.1"
+  revision = "4a55d6940657bb1e929491239b92c38b8c5d8fb8"
 
 [[projects]]
   digest = "1:fd7f169f32c221b096c74e756bda16fe22d3bb448bbf74042fd0700407a1f92f"
@@ -529,7 +529,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:afce8593ac5918df05a46499b04b8c4e46a91e99566055e4a8ba829a8f389a09"
+  digest = "1:a65b11596dfef5b1fac0574e393384445fe7d0a2c173bf8952faa3d2054b4521"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
@@ -537,7 +537,7 @@
     "windows",
   ]
   pruneopts = "UT"
-  revision = "51ab0e2deafac1f46c46ad59cf0921be2f180c3d"
+  revision = "9eafafc0a87e0fd0aeeba439a4573537970c44c7"
 
 [[projects]]
   digest = "1:66a2f252a58b4fbbad0e4e180e1d85a83c222b6bce09c3dcdef3dc87c72eda7c"
@@ -578,8 +578,8 @@
   name = "google.golang.org/api"
   packages = ["support/bundler"]
   pruneopts = "UT"
-  revision = "02490b97dff7cfde1995bd77de808fd27053bc87"
-  version = "v0.7.0"
+  revision = "dec2ee309f5b09fc59bc40676447c15736284d78"
+  version = "v0.8.0"
 
 [[projects]]
   digest = "1:498b722d33dde4471e7d6e5d88a5e7132d2a8306fea5ff5ee82d1f418b4f41ed"
@@ -785,11 +785,11 @@
     "storage/v1beta1",
   ]
   pruneopts = "UT"
-  revision = "8b51d71136225e816258084dd7b88ebdd39b3c5c"
+  revision = "3ab596449d6fc6d35213dfc7e6254ae5d866e48e"
 
 [[projects]]
   branch = "master"
-  digest = "1:11a8f0c71594443e93335a7e54e241500425be4e60da2ca5cb2b9ce1ae95e6f0"
+  digest = "1:802b7724653105a345979a1e8344e8ef9f556787bd5745bbe00174a362da12bb"
   name = "k8s.io/apimachinery"
   packages = [
     "pkg/api/errors",
@@ -828,7 +828,7 @@
     "third_party/forked/golang/reflect",
   ]
   pruneopts = "UT"
-  revision = "162a2dabc72f2baff556efd80add04b6daa662fa"
+  revision = "423f5d7840102e5ffd2067db94a91de4472f2935"
 
 [[projects]]
   digest = "1:c670c0e30e65c4a1c48960339e23f3f65f32112539e005f8d189d6fa37d3d4f5"
@@ -906,12 +906,12 @@
   version = "v12.0.0"
 
 [[projects]]
-  digest = "1:c283ca5951eb7d723d3300762f96ff94c2ea11eaceb788279e2b7327f92e4f2a"
+  digest = "1:ccb9be4c583b6ec848eb98aa395a4e8c8f8ad9ebb823642c0dd1c1c45939a5bb"
   name = "k8s.io/klog"
   packages = ["."]
   pruneopts = "UT"
-  revision = "d98d8acdac006fb39831f1b25640813fef9c314f"
-  version = "v0.3.3"
+  revision = "3ca30a56d8a775276f9cdae009ba326fdc05af7f"
+  version = "v0.4.0"
 
 [[projects]]
   branch = "master"
@@ -919,7 +919,7 @@
   name = "k8s.io/utils"
   packages = ["integer"]
   pruneopts = "UT"
-  revision = "581e00157fb1a0435d4fac54a52d1ca1e481d60e"
+  revision = "6c36bc71fc4aeb1f49801054e71aebdaef1fbeb4"
 
 [[projects]]
   digest = "1:7719608fe0b52a4ece56c2dde37bedd95b938677d1ab0f84b8a7852e4c59f849"
@@ -946,6 +946,10 @@
     "github.com/jessevdk/go-flags",
     "github.com/keptn/go-utils/pkg/utils",
     "golang.org/x/net/netutil",
+    "gopkg.in/yaml.v2",
+    "k8s.io/api/core/v1",
+    "k8s.io/apimachinery/pkg/apis/meta/v1",
+    "k8s.io/client-go/kubernetes",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
