@@ -11,7 +11,11 @@
 - Use internal datastore for logging events and service logs [#536](https://github.com/keptn/keptn/issues/536)
 - Allow update domain from CLI [#553](https://github.com/keptn/keptn/issues/553)
 - Updated bridge to use internal datastore to show events [#621](https://github.com/keptn/keptn/issues/621)
+- Add EKS support [#608](https://github.com/keptn/keptn/issues/608)
+- Provide uninstall command in CLI [#562](https://github.com/keptn/keptn/issues/562)
 
 ## Fixed Issues
+- Update domain does not create duplicate entries in configmap [#570](https://github.com/keptn/keptn/issues/570)
+- Fix xip.io resolving in websocket communication [#634](https://github.com/keptn/keptn/issues/634)
 
 ## Known Limitations
