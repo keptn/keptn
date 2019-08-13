@@ -16,13 +16,15 @@ import (
 
 // GetProjectProjectNameResourceHandlerFunc get list of project resources
 func GetProjectProjectNameResourceHandlerFunc(params project_resource.GetProjectProjectNameResourceParams) middleware.Responder {
+	logger := utils.NewLogger("", "", "configuration-service")
 	if !common.ProjectExists(params.ProjectName) {
 		return project_resource.NewGetProjectProjectNameResourceNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project does not exist")})
 	}
 
 	err := common.CheckoutBranch(params.ProjectName, "master")
 	if err != nil {
-		return project_resource.NewGetProjectProjectNameResourceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+		logger.Error(err.Error())
+		return project_resource.NewGetProjectProjectNameResourceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not check out branch")})
 	}
 
 	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
@@ -43,7 +45,8 @@ func PutProjectProjectNameResourceHandlerFunc(params project_resource.PutProject
 	logger.Debug("Checking out master branch")
 	err := common.CheckoutBranch(params.ProjectName, "master")
 	if err != nil {
-		return project_resource.NewPutProjectProjectNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
+		logger.Error(err.Error())
+		return project_resource.NewPutProjectProjectNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not check out branch")})
 	}
 
 	for _, res := range params.Resources.Resources {
@@ -55,13 +58,15 @@ func PutProjectProjectNameResourceHandlerFunc(params project_resource.PutProject
 	logger.Debug("Staging Changes")
 	err = common.StageAndCommitAll(params.ProjectName, "Updated resources")
 	if err != nil {
-		return project_resource.NewPutProjectProjectNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
+		logger.Error(err.Error())
+		return project_resource.NewPutProjectProjectNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
 	}
 	logger.Debug("Successfully updated resources")
 
 	newVersion, err := common.GetCurrentVersion(params.ProjectName)
 	if err != nil {
-		return project_resource.NewPutProjectProjectNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
+		logger.Error(err.Error())
+		return project_resource.NewPutProjectProjectNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Coult not retrieve latest version")})
 	}
 	return project_resource.NewPutProjectProjectNameResourceCreated().WithPayload(&models.Version{
 		Version: newVersion,
@@ -80,7 +85,8 @@ func PostProjectProjectNameResourceHandlerFunc(params project_resource.PostProje
 	logger.Debug("Checking out master branch")
 	err := common.CheckoutBranch(params.ProjectName, "master")
 	if err != nil {
-		return project_resource.NewPostProjectProjectNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
+		logger.Error(err.Error())
+		return project_resource.NewPostProjectProjectNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not check out branch")})
 	}
 
 	for _, res := range params.Resources.Resources {
@@ -94,13 +100,15 @@ func PostProjectProjectNameResourceHandlerFunc(params project_resource.PostProje
 	logger.Debug("Staging Changes")
 	err = common.StageAndCommitAll(params.ProjectName, "Added resources")
 	if err != nil {
-		return project_resource.NewPostProjectProjectNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
+		logger.Error(err.Error())
+		return project_resource.NewPostProjectProjectNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
 	}
 	logger.Debug("Successfully added resources")
 
 	newVersion, err := common.GetCurrentVersion(params.ProjectName)
 	if err != nil {
-		return project_resource.NewPostProjectProjectNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
+		logger.Error(err.Error())
+		return project_resource.NewPostProjectProjectNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not retrieve latest version")})
 	}
 	return project_resource.NewPostProjectProjectNameResourceCreated().WithPayload(&models.Version{
 		Version: newVersion,
@@ -118,7 +126,8 @@ func GetProjectProjectNameResourceResourceURIHandlerFunc(params project_resource
 	logger.Debug("Checking out master branch")
 	err := common.CheckoutBranch(params.ProjectName, "master")
 	if err != nil {
-		return project_resource.NewGetProjectProjectNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+		logger.Error(err.Error())
+		return project_resource.NewGetProjectProjectNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not check out branch")})
 	}
 
 	if !common.FileExists(resourcePath) {
@@ -127,7 +136,8 @@ func GetProjectProjectNameResourceResourceURIHandlerFunc(params project_resource
 
 	dat, err := ioutil.ReadFile(resourcePath)
 	if err != nil {
-		return project_resource.NewGetProjectProjectNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+		logger.Error(err.Error())
+		return project_resource.NewGetProjectProjectNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not read file")})
 	}
 
 	resourceContent := strfmt.Base64(dat)
@@ -150,7 +160,8 @@ func PutProjectProjectNameResourceResourceURIHandlerFunc(params project_resource
 	logger.Debug("Checking out branch: master")
 	err := common.CheckoutBranch(params.ProjectName, "master")
 	if err != nil {
-		return project_resource.NewPutProjectProjectNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
+		logger.Error(err.Error())
+		return project_resource.NewPutProjectProjectNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not check out branch")})
 	}
 
 	filePath := projectConfigPath + "/" + params.ResourceURI
@@ -159,13 +170,15 @@ func PutProjectProjectNameResourceResourceURIHandlerFunc(params project_resource
 	logger.Debug("Staging Changes")
 	err = common.StageAndCommitAll(params.ProjectName, "Updated resource: "+params.ResourceURI)
 	if err != nil {
-		return project_resource.NewPutProjectProjectNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
+		logger.Error(err.Error())
+		return project_resource.NewPutProjectProjectNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
 	}
 	logger.Debug("Successfully updated resource: " + params.ResourceURI)
 
 	newVersion, err := common.GetCurrentVersion(params.ProjectName)
 	if err != nil {
-		return project_resource.NewPutProjectProjectNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
+		logger.Error(err.Error())
+		return project_resource.NewPutProjectProjectNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not retrieve latest version")})
 	}
 	return project_resource.NewPutProjectProjectNameResourceResourceURICreated().WithPayload(&models.Version{
 		Version: newVersion,
@@ -183,17 +196,20 @@ func DeleteProjectProjectNameResourceResourceURIHandlerFunc(params project_resou
 	resourcePath := projectConfigPath + "/" + params.ResourceURI
 	err := common.CheckoutBranch(params.ProjectName, "master")
 	if err != nil {
-		return project_resource.NewDeleteProjectProjectNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+		logger.Error(err.Error())
+		return project_resource.NewDeleteProjectProjectNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not check out branch")})
 	}
 	err = common.DeleteFile(resourcePath)
 	if err != nil {
-		return project_resource.NewDeleteProjectProjectNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+		logger.Error(err.Error())
+		return project_resource.NewDeleteProjectProjectNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not delete file")})
 	}
 
 	logger.Debug("Staging Changes")
 	err = common.StageAndCommitAll(params.ProjectName, "Deleted resources")
 	if err != nil {
-		return project_resource.NewDeleteProjectProjectNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+		logger.Error(err.Error())
+		return project_resource.NewDeleteProjectProjectNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not commit changes")})
 	}
 	logger.Debug("Successfully deleted resources")
 

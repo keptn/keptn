@@ -54,8 +54,12 @@ func GetProjectHandlerFunc(params project.GetProjectParams) middleware.Responder
 
 // PostProjectHandlerFunc creates a new project
 func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Responder {
-
+	logger := utils.NewLogger("", "", "configuration-service")
 	projectConfigPath := config.ConfigDir + "/" + params.Project.ProjectName
+
+	if common.ProjectExists(params.Project.ProjectName) {
+		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Project already exists")})
+	}
 
 	////////////////////////////////////////////////////
 	// clone existing repo
@@ -68,13 +72,14 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 		////////////////////////////////////////////////////
 		err := os.MkdirAll(projectConfigPath, os.ModePerm)
 		if err != nil {
-			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
+			logger.Error(err.Error())
+			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not create project")})
 		}
 
 		_, err = utils.ExecuteCommandInDirectory("git", []string{"init"}, projectConfigPath)
-		// // utils.Debug("", "Init git result: "+out)
 		if err != nil {
-			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
+			logger.Error(err.Error())
+			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not initialize git repo")})
 		}
 	}
 	////////////////////////////////////////////////////
@@ -88,12 +93,14 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 	err = common.WriteFile(projectConfigPath+"/metadata.yaml", metadataString)
 
 	if err != nil {
-		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
+		logger.Error(err.Error())
+		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not store project metadata")})
 	}
 
 	err = common.StageAndCommitAll(params.Project.ProjectName, "added metadata.yaml")
 	if err != nil {
-		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
+		logger.Error(err.Error())
+		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
 	}
 
 	return project.NewPostProjectNoContent()
@@ -116,19 +123,22 @@ func PutProjectProjectNameHandlerFunc(params project.PutProjectProjectNameParams
 
 // DeleteProjectProjectNameHandlerFunc deletes a project
 func DeleteProjectProjectNameHandlerFunc(params project.DeleteProjectProjectNameParams) middleware.Responder {
-	// utils.Debug("", "Deleting project "+params.ProjectName)
+	logger := utils.NewLogger("", "", "configuration-service")
+	logger.Debug("Deleting project " + params.ProjectName)
 	err := os.RemoveAll(config.ConfigDir + "/" + params.ProjectName)
 	if err != nil {
-		return project.NewDeleteProjectProjectNameBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
+		logger.Error(err.Error())
+		return project.NewDeleteProjectProjectNameBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not delete project")})
 	}
 	creds, _ := common.GetCredentials(params.ProjectName)
 	if creds != nil {
 		err = common.DeleteCredentials(params.ProjectName)
 		if err != nil {
-			return project.NewDeleteProjectProjectNameBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
+			logger.Error(err.Error())
+			return project.NewDeleteProjectProjectNameBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not delete upstream credentials")})
 		}
 	}
 
-	// utils.Debug("", "Project "+params.ProjectName+" has been deleted")
+	logger.Debug("Project " + params.ProjectName + " has been deleted")
 	return project.NewDeleteProjectProjectNameNoContent()
 }
