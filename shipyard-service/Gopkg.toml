@@ -41,18 +41,6 @@
   name = "github.com/keptn/go-utils"
   branch = "develop"
   
-[[override]]
-  name = "k8s.io/api"
-  version = "kubernetes-1.14.3"
-
-[[override]]
-  name = "k8s.io/apimachinery"
-  version = "kubernetes-1.14.3"
-
-[[override]]
-  name = "k8s.io/client-go"
-  version = "11.0.0"
-
 [prune]
   go-tests = true
   unused-packages = true

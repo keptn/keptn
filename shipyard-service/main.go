@@ -195,33 +195,25 @@ func createProjectAndProcessShipyard(event cloudevents.Event, logger keptnutils.
 
 // logErrAndRespondWithDoneEvent sends a keptn done event to the keptn eventbroker
 func logErrAndRespondWithDoneEvent(event cloudevents.Event, version *models.Version, err error, logger keptnutils.Logger, ws *websocket.Conn) error {
-	if err != nil {
-		// error
-		logger.Error(err.Error())
+	var result = "success"
+	var message = "Project created and shipyard successfully processed"
 
-		if err := websocketutil.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), fmt.Sprintf("%s", err.Error()), true, "INFO"); err != nil {
-			logger.Error(fmt.Sprintf("Could not write log to websocket: %s", err.Error()))
-		}
-		if err := sendDoneEvent(event, "error", err.Error(), version); err != nil {
-			logger.Error(fmt.Sprintf("No sh.keptn.event.done event sent. %s", err.Error()))
-		}
-
-		return err
-
+	if err != nil { // error
+		result = "error"
+		message = err.Error()
+		logger.Error(message)
+	} else { // success
+		logger.Info(message)
 	}
-	// success
-	const successMsg = "Project created and shipyard successfully processed"
-	logger.Info(successMsg)
 
-	if err := websocketutil.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), successMsg, true, "INFO"); err != nil {
+	if err := websocketutil.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), "error message", true, "INFO"); err != nil {
 		logger.Error(fmt.Sprintf("Could not write log to websocket: %s", err.Error()))
 	}
-	if err := sendDoneEvent(event, "success", successMsg, version); err != nil {
-		logger.Error(err.Error())
-		return err
+	if err := sendDoneEvent(event, result, message, version); err != nil {
+		logger.Error(fmt.Sprintf("No sh.keptn.event.done event sent. %s", err.Error()))
 	}
 
-	return nil
+	return err
 }
 
 func (client *Client) createProject(project models.Project, logger keptnutils.Logger) error {
