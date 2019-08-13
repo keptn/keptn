@@ -84,7 +84,7 @@ Example:
 			return err
 		}
 
-		isInstallerAvailable, err := checkInstallerAvailablity()
+		isInstallerAvailable, err := checkInstallerAvailability()
 		if err != nil || !isInstallerAvailable {
 			return errors.New("Installers not found under:\n" +
 				getInstallerURL() + "\n" + getRbacURL())
@@ -206,7 +206,7 @@ func init() {
 	installCmd.PersistentFlags().BoolVarP(&insecureSkipTLSVerify, "insecure-skip-tls-verify", "s", false, "Skip tls verification for kubectl commands")
 }
 
-func checkInstallerAvailablity() (bool, error) {
+func checkInstallerAvailability() (bool, error) {
 
 	resp, err := http.Get(getInstallerURL())
 	if err != nil {
