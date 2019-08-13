@@ -223,20 +223,26 @@ func updateKeptnAPIVirtualService(path, domain string) error {
 
 func updateCertificate(path, domain string) error {
 
-	template := &x509.Certificate{
-		IsCA:                  true,
-		BasicConstraintsValid: true,
-		SubjectKeyId:          []byte(domain),
-		SerialNumber:          big.NewInt(1234),
+	// Source: https://golang.org/src/crypto/tls/generate_cert.go
+	// We can verify the generated key with 'openssl rsa -in key.pem -check'
+	serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128)
+	serialNumber, err := rand.Int(rand.Reader, serialNumberLimit)
+	if err != nil {
+		return err
+	}
+
+	template := x509.Certificate{
+		SerialNumber: serialNumber,
 		Subject: pkix.Name{
-			Country:      []string{"Austria"},
-			Organization: []string{"keptn"},
+			Organization: []string{"Keptn"},
 		},
 		NotBefore: time.Now(),
 		NotAfter:  time.Now().AddDate(1, 0, 0),
-		// see http://golang.org/pkg/crypto/x509/#KeyUsage
-		ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
-		KeyUsage:    x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
+
+		KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
+		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
+		BasicConstraintsValid: true,
+		DNSNames:              []string{domain},
 	}
 
 	// generate private key
@@ -247,30 +253,37 @@ func updateCertificate(path, domain string) error {
 
 	publickey := &privatekey.PublicKey
 
-	// create a self-signed certificate. template = parent
-	var parent = template
-	cert, err := x509.CreateCertificate(rand.Reader, template, parent, publickey, privatekey)
+	derBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, publickey, privatekey)
 	if err != nil {
 		return err
 	}
 
 	privateKeyPath := path + "private.key"
-	keyfile, _ := os.Create(privateKeyPath)
-	var pemkey = &pem.Block{
-		Type:  "PRIVATE KEY",
-		Bytes: x509.MarshalPKCS1PrivateKey(privatekey)}
-	pem.Encode(keyfile, pemkey)
-	keyfile.Close()
-	defer os.Remove(privateKeyPath)
-
 	certPath := path + "cert.pem"
-	pemfile, _ := os.Create(certPath)
-	var pemCert = &pem.Block{
-		Type:  "CERTIFICATE",
-		Bytes: cert}
-	pem.Encode(pemfile, pemCert)
-	pemfile.Close()
+
+	certOut, err := os.Create(certPath)
+	if err != nil {
+		return err
+	}
+	if err := pem.Encode(certOut, &pem.Block{Type: "CERTIFICATE", Bytes: derBytes}); err != nil {
+		return err
+	}
+	if err := certOut.Close(); err != nil {
+		return err
+	}
 	defer os.Remove(certPath)
+
+	keyOut, err := os.OpenFile(privateKeyPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
+	if err != nil {
+		return err
+	}
+	if err := pem.Encode(keyOut, &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(privatekey)}); err != nil {
+		return err
+	}
+	if err := keyOut.Close(); err != nil {
+		return err
+	}
+	defer os.Remove(privateKeyPath)
 
 	// First delete secret
 	o := options{"delete", "--namespace", "istio-system", "secret", "istio-ingressgateway-certs"}

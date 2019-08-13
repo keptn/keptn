@@ -52,7 +52,7 @@ func (p openShiftPlatform) checkRequirements() error {
 
 func (p openShiftPlatform) checkCreds() error {
 	if p.creds.OpenshiftURL == "" || p.creds.OpenshiftUser == "" || p.creds.OpenshiftPassword == "" {
-		return errors.New("Incomplete credential file " + *configFilePath)
+		return errors.New("Incomplete credentials")
 	}
 
 	authenticated, err := p.authenticateAtCluster()
