@@ -67,7 +67,7 @@ before_install:
 - INSTALLER_IMAGE="keptn/installer"
 - INSTALLER_FOLDER="installer/"
 - CONFIGURATION_SVC_IMAGE="keptn/configuration-service"
-- CONFIGURATION_SVC_FOLDER="configuration-service"
+- CONFIGURATION_SVC_FOLDER="configuration-service/"
 
 jobs:
   include:
@@ -238,6 +238,11 @@ jobs:
     - | 
       if [[ $CHANGED_FILES == *"${INSTALLER_FOLDER}"*  ]]; then
         source ./travis-scripts/build_develop.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${GIT_SHA}" "${DATE}"
+        cd ..
+      fi
+    - | 
+      if [[ $CHANGED_FILES == *"${CONFIGURATION_SVC_FOLDER}"*  ]]; then
+        source ./travis-scripts/build_develop.sh "${CONFIGURATION_SVC_IMAGE}" "${CONFIGURATION_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
         cd ..
       fi
 
