@@ -1,9 +1,9 @@
 ---
-## shipyard-service: create.project
+## github-service: create.project
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: shipyard-service-create-project-distributor
+  name: github-service-create-project-distributor
   namespace: keptn
 spec:
   selector:
@@ -33,7 +33,7 @@ spec:
         - name: PUBSUB_TOPIC
           value: 'create.project'
         - name: PUBSUB_RECIPIENT
-          value: 'shipyard-service'
+          value: 'github-service'
 ---
 ## github-service: onboard.service
 apiVersion: apps/v1
@@ -322,3 +322,39 @@ spec:
           value: 'sh.keptn.events.problem'
         - name: PUBSUB_RECIPIENT
           value: 'servicenow-service'
+---
+## shipyard-service: create.project
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shipyard-service-create-project-distributor
+  namespace: keptn
+spec:
+  selector:
+    matchLabels:
+      run: distributor
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: distributor
+    spec:
+      containers:
+      - name: distributor
+        image: keptn/distributor:latest
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        env:
+        - name: PUBSUB_URL
+          value: 'nats://keptn-nats-cluster'
+        - name: PUBSUB_TOPIC
+          value: 'create.project'
+        - name: PUBSUB_RECIPIENT
+          value: 'shipyard-service'
