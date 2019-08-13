@@ -1,3 +1,4 @@
+---
 ## openshift-route-service: create.project
 apiVersion: apps/v1
 kind: Deployment
