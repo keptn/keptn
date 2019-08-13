@@ -32,7 +32,30 @@ func DeleteProjectProjectNameStageStageNameHandlerFunc(params stage.DeleteProjec
 
 // GetProjectProjectNameStageHandlerFunc gets list of stages for a project
 func GetProjectProjectNameStageHandlerFunc(params stage.GetProjectProjectNameStageParams) middleware.Responder {
-	return middleware.NotImplemented("operation stage.GetProjectProjectNameStage has not yet been implemented")
+	if !common.ProjectExists(params.ProjectName) {
+		return stage.NewGetProjectProjectNameStageNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project does not exist.")})
+	}
+	branches, err := common.GetBranches(params.ProjectName)
+	if err != nil {
+		return stage.NewGetProjectProjectNameStageDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not retrieve stages.")})
+	}
+
+	result := []*models.Stage{}
+
+	for _, branch := range branches {
+		if branch != "master" && branch != "" {
+			stage := &models.Stage{
+				StageName: branch,
+			}
+			result = append(result, stage)
+		}
+	}
+	return stage.NewGetProjectProjectNameStageOK().WithPayload(&models.Stages{
+		NextPageKey: "",
+		PageSize:    float64(len(result)),
+		TotalCount:  float64(len(result)),
+		Stages:      result,
+	})
 }
 
 // GetProjectProjectNameStageStageNameHandlerFunc gets the specified stage

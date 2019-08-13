@@ -249,3 +249,15 @@ func DeleteCredentials(project string) error {
 	}
 	return nil
 }
+
+// GetBranches returns a list of branches within the project
+func GetBranches(project string) ([]string, error) {
+	projectConfigPath := config.ConfigDir + "/" + project
+	out, err := utils.ExecuteCommandInDirectory("git", []string{"for-each-ref", `--format=%(refname:short)`, "refs/heads/*"}, projectConfigPath)
+	if err != nil {
+		return nil, err
+	}
+	branches := strings.Split(out, "\n")
+
+	return branches, nil
+}
