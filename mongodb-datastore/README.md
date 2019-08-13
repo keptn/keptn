@@ -1,12 +1,11 @@
 # mongodb Datastore
 
 The mongodb-datastore provides means to store and read data from a mongodb deployed in your keptn cluster.
-In the current implementation the service provides two endpoints
+In the current implementation the service provides two endpoints:
 - /events
 - /logs
 
 The endpoints are implemented in a REST-api manner. More information can be found by generating taking a look at the [generated swagger docs](#view-swagger-docs).
-
 
 ## Local Development
 

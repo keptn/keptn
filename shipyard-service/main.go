@@ -197,19 +197,21 @@ func createProjectAndProcessShipyard(event cloudevents.Event, logger keptnutils.
 func logErrAndRespondWithDoneEvent(event cloudevents.Event, version *models.Version, err error, logger keptnutils.Logger, ws *websocket.Conn) error {
 	var result = "success"
 	var message = "Project created and shipyard successfully processed"
+	var eventMessage = message
 
 	if err != nil { // error
 		result = "error"
-		message = err.Error()
-		logger.Error(message)
+		message = "Failed to create project and to process shipyard"
+		eventMessage = fmt.Sprintf("%s. %s", message, err.Error())
+		logger.Error(eventMessage)
 	} else { // success
 		logger.Info(message)
 	}
 
-	if err := websocketutil.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), "error message", true, "INFO"); err != nil {
+	if err := websocketutil.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), message, true, "INFO"); err != nil {
 		logger.Error(fmt.Sprintf("Could not write log to websocket: %s", err.Error()))
 	}
-	if err := sendDoneEvent(event, result, message, version); err != nil {
+	if err := sendDoneEvent(event, result, eventMessage, version); err != nil {
 		logger.Error(fmt.Sprintf("No sh.keptn.event.done event sent. %s", err.Error()))
 	}
 
