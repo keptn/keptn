@@ -38,6 +38,10 @@ func PostProjectProjectNameStageStageNameServiceHandlerFunc(params service.PostP
 	if !common.StageExists(params.ProjectName, params.StageName) {
 		return service.NewPostProjectProjectNameStageStageNameServiceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Stage  " + params.StageName + " does not exist.")})
 	}
+
+	if common.ServiceExists(params.ProjectName, params.StageName, params.Service.ServiceName) {
+		return service.NewPostProjectProjectNameStageStageNameServiceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Service already exists")})
+	}
 	logger.Debug("Creating new resource(s) in: " + projectConfigPath + " in stage " + params.StageName)
 	logger.Debug("Checking out branch: " + params.StageName)
 	err := common.CheckoutBranch(params.ProjectName, params.StageName)
