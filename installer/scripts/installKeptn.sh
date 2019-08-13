@@ -10,9 +10,8 @@ case $PLATFORM in
     ./common/install.sh
     ;;
   eks)
-    echo "$PLATFORM not supported"
-    echo "Installation aborted"
-    exit 1
+    echo "Install on EKS"
+    ./common/install.sh
     ;;
   openshift)
     echo "Install on OpenShift"

@@ -28,7 +28,7 @@ RUN apk --update add --no-cache git
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /go/src/github.com/keptn/keptn/configuration-service/main /configuration-service
 COPY --from=builder /go/src/github.com/keptn/keptn/configuration-service/swagger-ui /swagger-ui
-COPY --from=builder /go/src/github.com/keptn/keptn/configuration-service/swagger.json /swagger-ui/swagger.json
+COPY --from=builder /go/src/github.com/keptn/keptn/configuration-service/swagger.yaml /swagger-ui/swagger.yaml
 ADD MANIFEST /
 
 # Run the web service on container startup.

@@ -15,6 +15,9 @@ var verboseLogging bool
 var quietLogging bool
 var mocking bool
 
+var insecureSkipTLSVerify bool
+var kubectlOptions string
+
 const authErrorMsg = "This command requires to be authenticated. See \"keptn auth\" for details"
 
 const logo = `                                                                                                                                     
@@ -108,5 +111,13 @@ func initConfig() {
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
 		utils.PrintLog(fmt.Sprintf("Using config file: %s", viper.ConfigFileUsed()), utils.InfoLevel)
+	}
+}
+
+type options []string
+
+func (s *options) appendIfNotEmpty(newOption string) {
+	if newOption != "" {
+		*s = append(*s, newOption)
 	}
 }

@@ -10,12 +10,12 @@
   version = "v0.43.0"
 
 [[projects]]
-  digest = "1:73be43a59b6c938f2f0aa18fe911dc8643164164ab7cd6629306abeb3d002877"
+  digest = "1:6b1426cad7057b717351eacf5b6fe70f053f11aac1ce254bbf2fd72c031719eb"
   name = "contrib.go.opencensus.io/exporter/ocagent"
   packages = ["."]
   pruneopts = "UT"
-  revision = "060e6898ab87d943e2ff1090efb927fbc5181cea"
-  version = "v0.4.6"
+  revision = "dcb33c7f3b7cfe67e8a2cea10207ede1b7c40764"
+  version = "v0.4.12"
 
 [[projects]]
   digest = "1:6262a6675cf23d3a262041493ca5ed8621322683a10e6f42d55bd86005f1b13c"
@@ -339,12 +339,12 @@
   version = "v1.1.7"
 
 [[projects]]
-  branch = "develop"
-  digest = "1:cb0243f980c61778333bfb98ac751f71a8771d3a9af143a9dba7c8f303acae1e"
+  digest = "1:88f017a0f027ac3019f1000c1b62e84750c78a40743e57c49f114f2cb154fa5c"
   name = "github.com/keptn/go-utils"
   packages = ["pkg/utils"]
   pruneopts = "UT"
-  revision = "fe7354585d21303814676710aa7109891dc00a20"
+  revision = "9f13e220173a73b4bc0e04dc56e8edc2c7cbe126"
+  version = "0.1.1"
 
 [[projects]]
   digest = "1:fd7f169f32c221b096c74e756bda16fe22d3bb448bbf74042fd0700407a1f92f"
@@ -491,13 +491,14 @@
   version = "v1.0.4"
 
 [[projects]]
-  digest = "1:032feaff40ceceb08d163a35388c48dc3ab017314e99452567aeda612d7b0bc4"
+  digest = "1:c428408e1ad4170a6b3387a4ef3faf37e4d199d5f1bd030a984a2316b5ed3a24"
   name = "go.opencensus.io"
   packages = [
     ".",
     "exemplar",
     "internal",
     "internal/tagencoding",
+    "plugin/ocgrpc",
     "plugin/ochttp",
     "plugin/ochttp/propagation/b3",
     "plugin/ochttp/propagation/tracecontext",
