@@ -92,6 +92,7 @@ var uninstallCmd = &cobra.Command{
 				return err
 			}
 		}
+		utils.PrintLog("Successfully uninstalled keptn", utils.InfoLevel)
 
 		return nil
 	},
