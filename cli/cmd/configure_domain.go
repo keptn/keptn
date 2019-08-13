@@ -54,7 +54,7 @@ var domainCmd = &cobra.Command{
 			kubectlOptions = "--insecure-skip-tls-verify=true"
 		}
 
-		resourcesAvailable, err := checkResourceAvailablity()
+		resourcesAvailable, err := checkConfigureDomainResourceAvailability()
 		if err != nil || !resourcesAvailable {
 			return errors.New("Resources not found under:\n" +
 				getAPIVirtualServiceURL() + "\n" +
@@ -290,7 +290,7 @@ func getUniformServicesURL() string {
 	return installerPrefixURL + *configVersion + uniformServicesURL
 }
 
-func checkResourceAvailablity() (bool, error) {
+func checkConfigureDomainResourceAvailability() (bool, error) {
 
 	resp, err := http.Get(getAPIVirtualServiceURL())
 	if err != nil {
