@@ -191,7 +191,7 @@ func checkAWSCliVersion() error {
 	if v1 >= 1 && v2 >= 16 && v3 >= 156 {
 		return nil
 	}
-	return errors.New("Please install the aws CLI at least in version 1.16.156")
+	return errors.New("Please install the AWS CLI at least in version 1.16.156")
 }
 
 func (p eksPlatform) printCreds() {
