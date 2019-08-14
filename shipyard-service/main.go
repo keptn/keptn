@@ -247,8 +247,8 @@ func logErrAndRespondWithDoneEvent(event cloudevents.Event, version *models.Vers
 
 	if err != nil { // error
 		result = "error"
-		webSocketMessage = "Failed to create project and to process shipyard"
-		eventMessage = fmt.Sprintf("%s. %s.", webSocketMessage, err.Error())
+		eventMessage = fmt.Sprintf("%s.", err.Error())
+		webSocketMessage = eventMessage
 		logger.Error(eventMessage)
 	} else { // success
 		logger.Info(eventMessage)
