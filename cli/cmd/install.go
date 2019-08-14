@@ -271,9 +271,7 @@ func doInstallation() error {
 
 	o := options{"apply", "-f", installerPath}
 	o.appendIfNotEmpty(kubectlOptions)
-	_, err = keptnutils.ExecuteCommand("kubectl", o)
-
-	if err != nil {
+	if _, err := keptnutils.ExecuteCommand("kubectl", o); err != nil {
 		return fmt.Errorf("Error while deploying keptn installer pod: %s \nAborting installation", err.Error())
 	}
 
@@ -284,8 +282,7 @@ func doInstallation() error {
 		return err
 	}
 
-	err = getInstallerLogs(installerPodName)
-	if err != nil {
+	if err := getInstallerLogs(installerPodName); err != nil {
 		return err
 	}
 
