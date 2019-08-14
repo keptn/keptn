@@ -70,6 +70,8 @@ before_install:
 - MONGODB_DS_FOLDER="mongodb-datastore/"
 - INSTALLER_IMAGE="keptn/installer"
 - INSTALLER_FOLDER="installer/"
+### ATTENTION: please make sure installer is always the last in this list
+
 
 jobs:
   include:
@@ -170,6 +172,7 @@ jobs:
         source ./travis-scripts/build_feature.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
         cd ..
       fi
+      ### ATTENTION: please make sure installer is always the last in this list to be built
 
   - stage: develop
     if: branch = develop AND type = push
@@ -257,6 +260,7 @@ jobs:
         source ./travis-scripts/build_develop.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${GIT_SHA}" "${DATE}"
         cd ..
       fi
+      ### ATTENTION: please make sure installer is always the last in this list to be built
 
   - stage: release
     if: branch =~ ^release.*$ AND NOT type = pull_request
@@ -302,6 +306,7 @@ jobs:
     - cd ..
     - source ./travis-scripts/build_release.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
     - cd ..
+    ### ATTENTION: please make sure installer is always the last in this list to be built
 
   - stage: master
     if: branch = master AND NOT type = pull_request
@@ -347,3 +352,4 @@ jobs:
     - cd ..
     - source ./travis-scripts/build_master.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${VERSION}"
     - cd ..
+    ### ATTENTION: please make sure installer is always the last in this list to be built
