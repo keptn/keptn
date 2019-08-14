@@ -247,14 +247,14 @@ func logErrAndRespondWithDoneEvent(event cloudevents.Event, version *models.Vers
 
 	if err != nil { // error
 		result = "error"
-		webSocketMessage = "Failed to create project and to process shipyard"
-		eventMessage = fmt.Sprintf("%s. %s.", webSocketMessage, err.Error())
+		eventMessage = fmt.Sprintf("%s.", err.Error())
+		webSocketMessage = eventMessage
 		logger.Error(eventMessage)
 	} else { // success
 		logger.Info(eventMessage)
 	}
 
-	if err := websocketutil.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), eventMessage, true, "INFO"); err != nil {
+	if err := websocketutil.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), webSocketMessage, true, "INFO"); err != nil {
 		logger.Error(fmt.Sprintf("Could not write log to websocket. %s", err.Error()))
 	}
 	if err := sendDoneEvent(event, result, eventMessage, version); err != nil {
