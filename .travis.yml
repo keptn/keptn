@@ -152,6 +152,7 @@ jobs:
       fi
     - | 
       if [[ $CHANGED_FILES == *"${SHIPYARD_SVC_FOLDER}"*  ]]; then
+        source ./travis-scripts/run_go_tests.sh "${SHIPYARD_SVC_FOLDER}" && cd ..
         source ./travis-scripts/build_feature.sh "${SHIPYARD_SVC_IMAGE}" "${SHIPYARD_SVC_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
         cd ..
       fi
