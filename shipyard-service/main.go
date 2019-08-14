@@ -254,7 +254,7 @@ func logErrAndRespondWithDoneEvent(event cloudevents.Event, version *models.Vers
 		logger.Info(eventMessage)
 	}
 
-	if err := websocketutil.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), eventMessage, true, "INFO"); err != nil {
+	if err := websocketutil.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), webSocketMessage, true, "INFO"); err != nil {
 		logger.Error(fmt.Sprintf("Could not write log to websocket. %s", err.Error()))
 	}
 	if err := sendDoneEvent(event, result, eventMessage, version); err != nil {
