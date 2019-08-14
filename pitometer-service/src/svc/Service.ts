@@ -53,14 +53,12 @@ export class Service {
       pitometer.addGrader('Threshold', new ThresholdGrader());
 
       // tslint:disable-next-line: max-line-length
-      const perfspecUrl = `https://raw.githubusercontent.com/${event.data.githuborg}/${event.data.service}/master/perfspec/perfspec.json`;
+      // const perfspecUrl = `https://raw.githubusercontent.com/${event.data.githuborg}/${event.data.service}/master/perfspec/perfspec.json`;
+      const perfspecUrl = `http://configuration-service.keptn.svc.cluster.local:8080/v1/project/${event.data.project}/stage/${event.data.stage}/service/${event.data.service}/resource/perfspec.json`
       let perfspecResponse;
 
       try {
         perfspecResponse = await axios.get(perfspecUrl, {
-          headers: {
-            'Cache-Control': 'no-cache',
-          },
         });
       } catch (e) {
         Logger.log(
@@ -76,8 +74,11 @@ export class Service {
         perfspecResponse.data,
       );
 
-      if (perfspecResponse.data !== undefined) {
+      if (perfspecResponse.data !== undefined && perfspecResponse.data.resourceContent !== undefined) {
         let perfspecString;
+        // decode the base64 encoded string
+        let buff = new Buffer(perfspecResponse.data.resourceContent, 'base64');
+        perfspecResponse = buff.toString('ascii')
         try {
           perfspecString = JSON.stringify(perfspecResponse.data);
         } catch (e) {
