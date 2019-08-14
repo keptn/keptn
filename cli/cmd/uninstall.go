@@ -109,7 +109,7 @@ var uninstallCmd = &cobra.Command{
 }
 
 func deleteResources(namespace string) error {
-	o := options{"delete", "services,deployments,pods,secrets", "--all", "-n", namespace, "--ignore-not-found"}
+	o := options{"delete", "services,deployments,pods,secrets,configmaps", "--all", "-n", namespace, "--ignore-not-found"}
 	o.appendIfNotEmpty(kubectlOptions)
 	out, err := keptnutils.ExecuteCommand("kubectl", o)
 	out = strings.TrimSpace(out)
