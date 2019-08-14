@@ -4,7 +4,7 @@ Internal Events
 * [Create Project](#create-project)
 * [Create Project (from CLI)](#create-project-from-cli)
 * [Create Service](#create-service)
-* [Create Project (from CLI)](#create-service-from-cli)
+* [Create Service (from CLI)](#create-service-from-cli)
 * [Generic done event](#generic-done)
 
 Keptn Events
