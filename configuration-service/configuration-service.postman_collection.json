@@ -1,0 +1,647 @@
+{
+	"info": {
+		"_postman_id": "9f95a1a3-4f0f-42eb-9941-8066a6b22f38",
+		"name": "keptn",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Configuration Service",
+			"item": [
+				{
+					"name": "Project",
+					"item": [
+						{
+							"name": "Create Project",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"projectName\": \"rockshop\",\n  \"gitUser\": \"bacherfl\",\n  \"gitToken\": \"\",\n  \"gitRemoteURI\": \"https://github.com/bacherfl/rockshop\"\n}"
+								},
+								"url": {
+									"raw": "localhost:8080/v1/project",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"v1",
+										"project"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Project without upstream",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"projectName\": \"myproject\"\n}"
+								},
+								"url": {
+									"raw": "localhost:8080/v1/project",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"v1",
+										"project"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Project",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "http://localhost:8080/v1/project/myproject",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"v1",
+										"project",
+										"myproject"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Projects",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "http://localhost:8080/v1/project?pageSize=5&nextPageKey=5",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"v1",
+										"project"
+									],
+									"query": [
+										{
+											"key": "pageSize",
+											"value": "5"
+										},
+										{
+											"key": "nextPageKey",
+											"value": "5"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Project Details",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "http://localhost:8080/v1/project/myproject",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"v1",
+										"project",
+										"myproject"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Project Resource",
+					"item": [
+						{
+							"name": "Create Resource",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"resources\": [\n    {\n      \"resourceContent\": \"dGVzdCBmaWxlIGNvbnRlbnQK\",\n      \"resourceURI\": \"shipyard.yaml\"\n    }\n  ]\n}"
+								},
+								"url": {
+									"raw": "localhost:8080/v1/project/rockshop/resource",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"v1",
+										"project",
+										"rockshop",
+										"resource"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Resource",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "localhost:8080/v1/project/myprojec/resource/shipyard.yaml",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"v1",
+										"project",
+										"myprojec",
+										"resource",
+										"shipyard.yaml"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Resource",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "localhost:8080/v1/project/myproject/resource/shipyard.yaml",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"v1",
+										"project",
+										"myproject",
+										"resource",
+										"shipyard.yaml"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Project Resources",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "http://localhost:8080/v1/project/myproject/resource?pageSize=50&nextPageKey=0",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"v1",
+										"project",
+										"myproject",
+										"resource"
+									],
+									"query": [
+										{
+											"key": "pageSize",
+											"value": "50"
+										},
+										{
+											"key": "nextPageKey",
+											"value": "0"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Stage",
+					"item": [
+						{
+							"name": "Create Stage",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\"stageName\": \"production\"\n}"
+								},
+								"url": {
+									"raw": "localhost:8080/v1/project/rockshop/stage",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"v1",
+										"project",
+										"rockshop",
+										"stage"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Stages",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "localhost:8080/v1/project/rockshop/stage",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"v1",
+										"project",
+										"rockshop",
+										"stage"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Stage Resource",
+					"item": [
+						{
+							"name": "Create Stage Resource",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"resources\": [\n    {\n      \"resourceContent\": \"dGVzdCBmaWxlIGNvbnRlbnQK\",\n      \"resourceURI\": \"shipyard-dev.yaml\"\n    },\n        {\n      \"resourceContent\": \"dGVzdCBmaWxlIGNvbnRlbnQK\",\n      \"resourceURI\": \"test/README-dev.md\"\n    }\n  ]\n}"
+								},
+								"url": {
+									"raw": "localhost:8080/v1/project/myproject/stage/dev/resource",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"v1",
+										"project",
+										"myproject",
+										"stage",
+										"dev",
+										"resource"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Stage Resource",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "\n{\n  \"resourceContent\": \"dGVzdCBmaWxlIGNvbnRlbnQK\",\n  \"resourceURI\": \"shipyard-dev.yaml\"\n}\n"
+								},
+								"url": {
+									"raw": "localhost:8080/v1/project/myproject/stage/dev/resource/shipyard.yaml",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"v1",
+										"project",
+										"myproject",
+										"stage",
+										"dev",
+										"resource",
+										"shipyard.yaml"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Stage Resources",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "http://localhost:8080/v1/project/myproject/stage/dev/resource?pageSize=3&nextPageKey=1",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"v1",
+										"project",
+										"myproject",
+										"stage",
+										"dev",
+										"resource"
+									],
+									"query": [
+										{
+											"key": "pageSize",
+											"value": "3"
+										},
+										{
+											"key": "nextPageKey",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Service",
+					"item": [
+						{
+							"name": "Create Service",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\"serviceName\": \"guitars\"\n}"
+								},
+								"url": {
+									"raw": "localhost:8080/v1/project/rockshop/stage/production/service",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"v1",
+										"project",
+										"rockshop",
+										"stage",
+										"production",
+										"service"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Service Resource",
+					"item": [
+						{
+							"name": "Create Service Resource",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"resources\": [\n    {\n      \"resourceContent\": \"cmVwbGljYUNvdW50OiAxCmltYWdlOgogICAgcmVwb3NpdG9yeTogbnVsbAogICAgdGFnOiBudWxsCiAgICBwdWxsUG9saWN5OiBJZk5vdFByZXNlbnQKc2VydmljZToKICAgIG5hbWU6IGNhcnRzCiAgICB0eXBlOiBMb2FkQmFsYW5jZXIKICAgIGV4dGVybmFsUG9ydDogODAKICAgIGludGVybmFsUG9ydDogODA4MApjb250YWluZXI6CiAgICBuYW1lOiBjYXJ0cwpyZXNvdXJjZXM6CiAgICBsaW1pdHM6CiAgICAgICAgY3B1OiAxMDBtCiAgICAgICAgbWVtb3J5OiAxMjhNaQogICAgcmVxdWVzdHM6CiAgICAgICAgY3B1OiAxMDBtCiAgICAgICAgbWVtb3J5OiAxMjhNaQ==\",\n      \"resourceURI\": \"service.yaml\"\n    }\n  ]\n}"
+								},
+								"url": {
+									"raw": "localhost:8080/v1/project/rockshop/stage/dev/service/guitars/resource",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"v1",
+										"project",
+										"rockshop",
+										"stage",
+										"dev",
+										"service",
+										"guitars",
+										"resource"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Service Resource",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n      \"resourceContent\": \"dXBkYXRlZAo=\",\n      \"resourceURI\": \"service.yaml\"\n    }"
+								},
+								"url": {
+									"raw": "localhost:8080/v1/project/myproject/stage/dev/service/my-service/resource/service.yaml",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"v1",
+										"project",
+										"myproject",
+										"stage",
+										"dev",
+										"service",
+										"my-service",
+										"resource",
+										"service.yaml"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Service Resource",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "localhost:8080/v1/project/myproject/stage/dev/service/my-service/resource/my-resource",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"v1",
+										"project",
+										"myproject",
+										"stage",
+										"dev",
+										"service",
+										"my-service",
+										"resource",
+										"my-resource"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Service Default Resource",
+					"item": [
+						{
+							"name": "Create Service Default Resource",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"resources\": [\n    {\n      \"resourceContent\": \"dYBkYXRlZAo=\",\n      \"resourceURI\": \"service3.yaml\"\n    }\n  ]\n}"
+								},
+								"url": {
+									"raw": "localhost:8080/v1/project/rockshop/stage/develop/service/my-new-service/resource",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"v1",
+										"project",
+										"rockshop",
+										"stage",
+										"develop",
+										"service",
+										"my-new-service",
+										"resource"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"_postman_isSubFolder": true
+				}
+			]
+		}
+	]
+}
