@@ -126,13 +126,13 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 	connData := &websockethelper.ConnectionData{}
 	if err := event.DataAs(connData); err != nil {
-		logger.Error(fmt.Sprintf("Data of the event is incompatible: %s", err.Error()))
+		logger.Error(fmt.Sprintf("Data of the event is incompatible. %s", err.Error()))
 		return err
 	}
 
 	ws, _, err := websocketutil.OpenWS(*connData, endPoint)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Opening websocket connection failed: %s", err.Error()))
+		logger.Error(fmt.Sprintf("Opening websocket connection failed. %s", err.Error()))
 		return err
 	}
 	defer ws.Close()
@@ -149,7 +149,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 	const errorMsg = "Received unexpected keptn event that cannot be processed"
 	if err := websocketutil.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), errorMsg, true, "INFO"); err != nil {
-		logger.Error(fmt.Sprintf("Could not write log to websocket: %s", err.Error()))
+		logger.Error(fmt.Sprintf("Could not write log to websocket. %s", err.Error()))
 	}
 	logger.Error(errorMsg)
 	return errors.New(errorMsg)
@@ -204,7 +204,7 @@ func createProjectAndProcessShipyard(event cloudevents.Event, logger keptnutils.
 		return nil, fmt.Errorf("Creating project %s failed. %s", project.ProjectName, err.Error())
 	}
 	if err := websocketutil.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), fmt.Sprintf("Project %s created", project.ProjectName), false, "INFO"); err != nil {
-		logger.Error(fmt.Sprintf("Could not write log to websocket: %s", err.Error()))
+		logger.Error(fmt.Sprintf("Could not write log to websocket. %s", err.Error()))
 	}
 
 	// process shipyard file and create stages
@@ -216,7 +216,7 @@ func createProjectAndProcessShipyard(event cloudevents.Event, logger keptnutils.
 			return nil, fmt.Errorf("Creating stage %s failed. %s", stage.StageName, err.Error())
 		}
 		if err := websocketutil.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), fmt.Sprintf("Stage %s created", stage.StageName), false, "INFO"); err != nil {
-			logger.Error(fmt.Sprintf("Could not write log to websocket: %s", err.Error()))
+			logger.Error(fmt.Sprintf("Could not write log to websocket. %s", err.Error()))
 		}
 	}
 
@@ -248,14 +248,14 @@ func logErrAndRespondWithDoneEvent(event cloudevents.Event, version *models.Vers
 	if err != nil { // error
 		result = "error"
 		webSocketMessage = "Failed to create project and to process shipyard"
-		eventMessage = fmt.Sprintf("%s. %s", webSocketMessage, err.Error())
+		eventMessage = fmt.Sprintf("%s. %s.", webSocketMessage, err.Error())
 		logger.Error(eventMessage)
 	} else { // success
 		logger.Info(eventMessage)
 	}
 
-	if err := websocketutil.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), webSocketMessage, true, "INFO"); err != nil {
-		logger.Error(fmt.Sprintf("Could not write log to websocket: %s", err.Error()))
+	if err := websocketutil.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), eventMessage, true, "INFO"); err != nil {
+		logger.Error(fmt.Sprintf("Could not write log to websocket. %s", err.Error()))
 	}
 	if err := sendDoneEvent(event, result, eventMessage, version); err != nil {
 		logger.Error(fmt.Sprintf("No sh.keptn.event.done event sent. %s", err.Error()))
@@ -450,7 +450,7 @@ func sendDoneEvent(receivedEvent cloudevents.Event, result string, message strin
 
 	endPoint, err := getServiceEndpoint(eventbroker)
 	if err != nil {
-		return errors.New("Failed to retrieve endpoint of eventbroker: %s" + err.Error())
+		return errors.New("Failed to retrieve endpoint of eventbroker. %s" + err.Error())
 	}
 
 	if endPoint.Host == "" {
