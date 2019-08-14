@@ -64,12 +64,12 @@ before_install:
 - EVENTBROKER_FOLDER="eventbroker/"
 - SHIPYARD_SVC_IMAGE="keptn/shipyard-service"
 - SHIPYARD_SVC_FOLDER="shipyard-service/"
+- CONFIGURATION_SVC_IMAGE="keptn/configuration-service"
+- CONFIGURATION_SVC_FOLDER="configuration-service/"
 - MONGODB_DS_IMAGE="keptn/mongodb-datastore"
 - MONGODB_DS_FOLDER="mongodb-datastore/"
 - INSTALLER_IMAGE="keptn/installer"
 - INSTALLER_FOLDER="installer/"
-- CONFIGURATION_SVC_IMAGE="keptn/configuration-service"
-- CONFIGURATION_SVC_FOLDER="configuration-service/"
 
 jobs:
   include:
@@ -156,6 +156,11 @@ jobs:
         cd ..
       fi
     - | 
+      if [[ $CHANGED_FILES == *"${CONFIGURATION_SVC_FOLDER}"*  ]]; then
+        source ./travis-scripts/build_feature.sh "${CONFIGURATION_SVC_IMAGE}" "${CONFIGURATION_SVC_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
+        cd ..
+      fi
+    - | 
       if [[ $CHANGED_FILES == *"${MONGODB_DS_FOLDER}"*  ]]; then
         source ./travis-scripts/build_feature.sh "${MONGODB_DS_IMAGE}" "${MONGODB_DS_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
         cd ..
@@ -163,11 +168,6 @@ jobs:
     - | 
       if [[ $CHANGED_FILES == *"${INSTALLER_FOLDER}"*  ]]; then
         source ./travis-scripts/build_feature.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
-        cd ..
-      fi
-    - | 
-      if [[ $CHANGED_FILES == *"${CONFIGURATION_SVC_FOLDER}"*  ]]; then
-        source ./travis-scripts/build_feature.sh "${CONFIGURATION_SVC_IMAGE}" "${CONFIGURATION_SVC_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
         cd ..
       fi
 
@@ -239,7 +239,13 @@ jobs:
       fi
     - | 
       if [[ $CHANGED_FILES == *"${SHIPYARD_SVC_FOLDER}"*  ]]; then
+        source ./travis-scripts/run_go_tests.sh "${SHIPYARD_SVC_FOLDER}" && cd ..
         source ./travis-scripts/build_develop.sh "${SHIPYARD_SVC_IMAGE}" "${SHIPYARD_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
+        cd ..
+      fi
+    - | 
+      if [[ $CHANGED_FILES == *"${CONFIGURATION_SVC_FOLDER}"*  ]]; then
+        source ./travis-scripts/build_develop.sh "${CONFIGURATION_SVC_IMAGE}" "${CONFIGURATION_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
         cd ..
       fi
     - | 
@@ -250,11 +256,6 @@ jobs:
     - | 
       if [[ $CHANGED_FILES == *"${INSTALLER_FOLDER}"*  ]]; then
         source ./travis-scripts/build_develop.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${GIT_SHA}" "${DATE}"
-        cd ..
-      fi
-    - | 
-      if [[ $CHANGED_FILES == *"${CONFIGURATION_SVC_FOLDER}"*  ]]; then
-        source ./travis-scripts/build_develop.sh "${CONFIGURATION_SVC_IMAGE}" "${CONFIGURATION_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
         cd ..
       fi
 
@@ -296,11 +297,11 @@ jobs:
     - cd ..
     - source ./travis-scripts/build_release.sh "${SHIPYARD_SVC_IMAGE}" "${SHIPYARD_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
     - cd ..
+    - source ./travis-scripts/build_release.sh "${CONFIGURATION_SVC_IMAGE}" "${CONFIGURATION_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+    - cd ..
     - source ./travis-scripts/build_release.sh "${MONGODB_DS_IMAGE}" "${MONGODB_DS_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
     - cd ..
     - source ./travis-scripts/build_release.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
-    - cd ..
-    - source ./travis-scripts/build_release.sh "${CONFIGURATION_SVC_IMAGE}" "${CONFIGURATION_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
     - cd ..
 
   - stage: master
@@ -341,9 +342,9 @@ jobs:
     - cd ..
     - source ./travis-scripts/build_master.sh "${SHIPYARD_SVC_IMAGE}" "${SHIPYARD_SVC_FOLDER}" "${VERSION}"
     - cd ..
+    - source ./travis-scripts/build_master.sh "${CONFIGURATION_SVC_IMAGE}" "${CONFIGURATION_SVC_FOLDER}" "${VERSION}"
+    - cd ..
     - source ./travis-scripts/build_master.sh "${MONGODB_DS_IMAGE}" "${MONGODB_DS_FOLDER}" "${VERSION}"
     - cd ..
     - source ./travis-scripts/build_master.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${VERSION}"
-    - cd ..
-    - source ./travis-scripts/build_master.sh "${CONFIGURATION_SVC_IMAGE}" "${CONFIGURATION_SVC_FOLDER}" "${VERSION}"
     - cd ..
