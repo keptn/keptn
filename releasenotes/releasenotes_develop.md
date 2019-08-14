@@ -13,6 +13,7 @@
 - Updated bridge to use internal datastore to show events [#621](https://github.com/keptn/keptn/issues/621)
 - Add EKS support [#608](https://github.com/keptn/keptn/issues/608)
 - Provide uninstall command in CLI [#562](https://github.com/keptn/keptn/issues/562)
+- After a successful keptn installation, delete installer job [#663](https://github.com/keptn/keptn/issues/663)
 - New **shipyard-service** to process a shipyard file to create a project and stages [#610](https://github.com/keptn/keptn/issues/610)
 
 ## Fixed Issues

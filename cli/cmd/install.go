@@ -271,9 +271,7 @@ func doInstallation() error {
 
 	o := options{"apply", "-f", installerPath}
 	o.appendIfNotEmpty(kubectlOptions)
-	_, err = keptnutils.ExecuteCommand("kubectl", o)
-
-	if err != nil {
+	if _, err := keptnutils.ExecuteCommand("kubectl", o); err != nil {
 		return fmt.Errorf("Error while deploying keptn installer pod: %s \nAborting installation", err.Error())
 	}
 
@@ -284,7 +282,17 @@ func doInstallation() error {
 		return err
 	}
 
-	err = getInstallerLogs(installerPodName)
+	if err := getInstallerLogs(installerPodName); err != nil {
+		return err
+	}
+
+	if err := os.Remove(installerPath); err != nil {
+		return err
+	}
+
+	o = options{"delete", "job", "installer"}
+	o.appendIfNotEmpty(kubectlOptions)
+	_, err = keptnutils.ExecuteCommand("kubectl", o)
 	if err != nil {
 		return err
 	}
@@ -303,17 +311,13 @@ func doInstallation() error {
 		fmt.Println("Afterwards, call 'keptn configure domain YOUR_ROUTE53_DOMAIN'")
 	} else {
 		// installation finished, get auth token and endpoint
-		err = authUsingKube()
-		if err != nil {
+		if err := authUsingKube(); err != nil {
 			return err
 		}
-		err = configure(p.getGithubCreds().GithubOrg,
+		return configure(p.getGithubCreds().GithubOrg,
 			p.getGithubCreds().GithubUserName, p.getGithubCreds().GithubPersonalAccessToken)
-		if err != nil {
-			return err
-		}
 	}
-	return os.Remove(installerPath)
+	return nil
 }
 
 func parseConfig(configFile string) error {
