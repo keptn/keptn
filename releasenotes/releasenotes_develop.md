@@ -13,6 +13,7 @@
 - Updated bridge to use internal datastore to show events [#621](https://github.com/keptn/keptn/issues/621)
 - Add EKS support [#608](https://github.com/keptn/keptn/issues/608)
 - Provide uninstall command in CLI [#562](https://github.com/keptn/keptn/issues/562)
+- After a successful keptn installation, delete installer job [#663](https://github.com/keptn/keptn/issues/663)
 
 ## Fixed Issues
 - Update domain does not create duplicate entries in configmap [#570](https://github.com/keptn/keptn/issues/570)
