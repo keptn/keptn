@@ -289,6 +289,17 @@ func doInstallation() error {
 		return err
 	}
 
+	if err := os.Remove(installerPath); err != nil {
+		return err
+	}
+
+	o = options{"delete", "job", "installer"}
+	o.appendIfNotEmpty(kubectlOptions)
+	_, err = keptnutils.ExecuteCommand("kubectl", o)
+	if err != nil {
+		return err
+	}
+
 	if eks {
 		o = options{"get", "svc", "istio-ingressgateway", "-n", "istio-system",
 			"-ojsonpath={.status.loadBalancer.ingress[0].hostname}"}
@@ -303,17 +314,13 @@ func doInstallation() error {
 		fmt.Println("Afterwards, call 'keptn configure domain YOUR_ROUTE53_DOMAIN'")
 	} else {
 		// installation finished, get auth token and endpoint
-		err = authUsingKube()
-		if err != nil {
+		if err := authUsingKube(); err != nil {
 			return err
 		}
-		err = configure(p.getGithubCreds().GithubOrg,
+		return configure(p.getGithubCreds().GithubOrg,
 			p.getGithubCreds().GithubUserName, p.getGithubCreds().GithubPersonalAccessToken)
-		if err != nil {
-			return err
-		}
 	}
-	return os.Remove(installerPath)
+	return nil
 }
 
 func parseConfig(configFile string) error {
