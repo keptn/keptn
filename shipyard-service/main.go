@@ -242,19 +242,19 @@ func createProjectAndProcessShipyard(event cloudevents.Event, logger keptnutils.
 // logErrAndRespondWithDoneEvent sends a keptn done event to the keptn eventbroker
 func logErrAndRespondWithDoneEvent(event cloudevents.Event, version *models.Version, err error, logger keptnutils.Logger, ws *websocket.Conn) error {
 	var result = "success"
-	var message = "Project created and shipyard successfully processed"
-	var eventMessage = message
+	var webSocketMessage = "Shipyard successfully processed"
+	var eventMessage = "Project created and shipyard successfully processed"
 
 	if err != nil { // error
 		result = "error"
-		message = "Failed to create project and to process shipyard"
-		eventMessage = fmt.Sprintf("%s. %s", message, err.Error())
+		webSocketMessage = "Failed to create project and to process shipyard"
+		eventMessage = fmt.Sprintf("%s. %s", webSocketMessage, err.Error())
 		logger.Error(eventMessage)
 	} else { // success
-		logger.Info(message)
+		logger.Info(eventMessage)
 	}
 
-	if err := websocketutil.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), message, true, "INFO"); err != nil {
+	if err := websocketutil.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), webSocketMessage, true, "INFO"); err != nil {
 		logger.Error(fmt.Sprintf("Could not write log to websocket: %s", err.Error()))
 	}
 	if err := sendDoneEvent(event, result, eventMessage, version); err != nil {
@@ -264,6 +264,7 @@ func logErrAndRespondWithDoneEvent(event cloudevents.Event, version *models.Vers
 	return err
 }
 
+// createProject creates a project by using the configuration-service
 func (client *Client) createProject(project models.Project, logger keptnutils.Logger) error {
 	data, err := project.MarshalBinary()
 	if err != nil {
@@ -289,6 +290,7 @@ func (client *Client) createProject(project models.Project, logger keptnutils.Lo
 	return nil
 }
 
+// createStage creates a stage by using the configuration-service
 func (client *Client) createStage(project models.Project, stage models.Stage, logger keptnutils.Logger) error {
 	data, err := stage.MarshalBinary()
 	if err != nil {
@@ -314,6 +316,7 @@ func (client *Client) createStage(project models.Project, stage models.Stage, lo
 	return nil
 }
 
+// storeResource stores a resource to the specified project entity by using the configuration-service
 func (client *Client) storeResource(project models.Project, resources ResourceListBody, logger keptnutils.Logger) (*models.Version, error) {
 	data, err := json.Marshal(resources)
 	if err != nil {
@@ -342,7 +345,7 @@ func (client *Client) storeResource(project models.Project, resources ResourceLi
 	}
 }
 
-// postRequest sends a post request
+// postRequest sends a post request to the configuration-service
 func postRequest(client *Client, path string, body []byte) (*http.Response, error) {
 	eventURL, err := getServiceEndpoint(configservice)
 	if err != nil {
@@ -361,7 +364,7 @@ func postRequest(client *Client, path string, body []byte) (*http.Response, erro
 	return client.httpClient.Do(req)
 }
 
-// postRequest sends a post request
+// postRequest sends a get request to the configuration-service
 func getRequest(client *Client, path string) (*http.Response, error) {
 	eventURL, err := getServiceEndpoint(configservice)
 	if err != nil {

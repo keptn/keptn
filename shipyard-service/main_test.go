@@ -48,7 +48,7 @@ func testingHTTPClient(handler http.Handler) (*http.Client, func()) {
 func TestCreateProjectStatusNoContent(t *testing.T) {
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, r.Method, "POST", "Expect POST request")
-		assert.Equal(t, r.URL.EscapedPath(), "/project", "Expect /project endpoint")
+		assert.Equal(t, r.URL.EscapedPath(), "/v1/project", "Expect /v1/project endpoint")
 		w.WriteHeader(http.StatusNoContent) // 204 - StatusNoContent
 	})
 
@@ -71,7 +71,7 @@ func TestCreateProjectStatusNoContent(t *testing.T) {
 func TestCreateProjectBadRequest(t *testing.T) {
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, r.Method, "POST", "Expect POST request")
-		assert.Equal(t, r.URL.EscapedPath(), "/project", "Expect /project endpoint")
+		assert.Equal(t, r.URL.EscapedPath(), "/v1/project", "Expect /v1/project endpoint")
 		w.WriteHeader(http.StatusBadRequest) // 400 - BadRequest
 		io.WriteString(w, `{"code": 400, "message": "creating project failed due to error in configuration-service"}`)
 	})
@@ -95,7 +95,7 @@ func TestCreateProjectBadRequest(t *testing.T) {
 func TestCreateStageStatusNoContent(t *testing.T) {
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, r.Method, "POST", "Expect POST request")
-		assert.Equal(t, r.URL.EscapedPath(), "/project/sockshop/stage", "Expect /project/sockshop/stage endpoint")
+		assert.Equal(t, r.URL.EscapedPath(), "/v1/project/sockshop/stage", "Expect /v1/project/sockshop/stage endpoint")
 		w.WriteHeader(http.StatusNoContent) // 204 - StatusNoContent
 	})
 
@@ -120,7 +120,7 @@ func TestCreateStageStatusNoContent(t *testing.T) {
 func TestStoreResource(t *testing.T) {
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, r.Method, "POST", "Expect POST request")
-		assert.Equal(t, r.URL.EscapedPath(), "/project/sockshop/resource", "Expect /project/sockshop/resource endpoint")
+		assert.Equal(t, r.URL.EscapedPath(), "/v1/project/sockshop/resource", "Expect /v1/project/sockshop/resource endpoint")
 		w.WriteHeader(http.StatusCreated) // 201 - StatusCreated
 		io.WriteString(w, `{"version": "as923nad"}`)
 	})
@@ -138,11 +138,15 @@ func TestStoreResource(t *testing.T) {
 	project.ProjectName = "sockshop"
 
 	shipyard := models.Resource{}
+
 	var resourceURI = "shipyard.yaml"
 	shipyard.ResourceURI = &resourceURI
 	shipyard.ResourceContent, _ = json.Marshal([]string{"apple", "peach", "pear"})
 
-	resources := []*models.Resource{&shipyard}
+	resourcesArray := []*models.Resource{&shipyard}
+	resources := ResourceListBody{
+		Resources: resourcesArray,
+	}
 
 	version, err := client.storeResource(project, resources, *logger)
 
