@@ -18,6 +18,10 @@ else
     echo "No project to delete"
 fi
 
+# Retrieve keptn endpoint and api-token
+KEPTN_ENDPOINT=https://api.keptn.$(kubectl get cm -n keptn keptn-domain -oyaml | yq - r data.app_domain)
+KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -o=yaml | yq - r data.keptn-api-token | base64 --decode)
+
 # Authenticate keptn CLI
 keptn auth --endpoint=$KEPTN_ENDPOINT --api-token=$KEPTN_API_TOKEN
 verify_test_step $? "Could not authenticate at keptn API."
