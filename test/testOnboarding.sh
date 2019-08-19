@@ -1,9 +1,6 @@
 #!/bin/bash
 source ./utils.sh
 
-KEPTN_ENDPOINT=https://$(kubectl get virtualservice -n keptn api -ojsonpath={.spec.hosts[0]})
-KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)
-
 PROJECT=sockshop
 
 # Delete old project
@@ -17,31 +14,6 @@ if [ $? = 0 ]; then
 else 
     echo "No project to delete"
 fi
-
-# Authenticate keptn CLI
-keptn auth --endpoint=$KEPTN_ENDPOINT --api-token=$KEPTN_API_TOKEN
-verify_test_step $? "Could not authenticate at keptn API."
-
-keptn configure --org=$GITHUB_ORG_NIGHTLY --user=$GITHUB_USER_NAME_NIGHTLY --token=$GITHUB_TOKEN_NIGHTLY
-verify_test_step $? "keptn config command failed."
-
-# Test keptn config result
-RETRY=0; RETRY_MAX=12;
-while [[ $RETRY -lt $RETRY_MAX ]]; do
-  sleep 10
-  STORED_GITHUB_USER=$(kubectl get secret github-credentials -n keptn -ojsonpath={.data.user} | base64 --decode)
-
-  if [ "$STORED_GITHUB_USER" == "$GITHUB_USER_NAME_NIGHTLY" ]; then
-      echo "Keptn config succeeded."
-      break
-  fi
-  RETRY=$[$RETRY+1]
-  echo "Expected value user=$GITHUB_USER_NAME_NIGHTLY not yet stored in cluster. Actual value is $STORED_GITHUB_USER. Trying again in 10 seconds."
-  sleep 10
-  if [ $RETRY -eq $RETRY_MAX ]; then
-    echo "keptn config failed."
-  fi
-done
 
 # Test keptn create-project and onboard
 rm -rf examples
