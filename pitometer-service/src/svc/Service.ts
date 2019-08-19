@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import { injectable, inject } from 'inversify';
 import { RequestModel } from './RequestModel';
 import axios, { AxiosRequestConfig, AxiosPromise, AxiosError } from 'axios';
+const { base64encode, base64decode } = require('nodejs-base64');
 
 const Pitometer = require('@keptn/pitometer').Pitometer;
 // tslint:disable-next-line: variable-name
@@ -69,18 +70,19 @@ export class Service {
         return true;
       }
 
-      Logger.log(
-        event.shkeptncontext, event.id,
-        perfspecResponse.data,
-      );
-
       if (perfspecResponse.data !== undefined && perfspecResponse.data.resourceContent !== undefined) {
         let perfspecString;
+        let perfspec;
         // decode the base64 encoded string
-        let buff = new Buffer(perfspecResponse.data.resourceContent, 'base64');
-        perfspecResponse = buff.toString('ascii')
+        perfspecString = base64decode(perfspecResponse.data.resourceContent)
+
+        Logger.log(
+          event.shkeptncontext, event.id,
+          perfspecString,
+        );
+
         try {
-          perfspecString = JSON.stringify(perfspecResponse.data);
+          perfspec = JSON.parse(perfspecString);
         } catch (e) {
           this.handleEvaluationResult(
             {
@@ -108,14 +110,14 @@ export class Service {
           perfspecString = perfspecString.replace(durationRegex, `3`);
         }
 
-        perfspecResponse.data = JSON.parse(perfspecString);
+        perfspec = JSON.parse(perfspecString);
         Logger.log(
           event.shkeptncontext, event.id,
-          `Perfspec file content: ${JSON.stringify(perfspecResponse.data)}`,
+          `Perfspec file content: ${JSON.stringify(perfspec)}`,
         );
 
         const indicators = [];
-        if (perfspecResponse.data === undefined || perfspecResponse.data.indicators === undefined) {
+        if (perfspec === undefined || perfspec.indicators === undefined) {
           this.handleEvaluationResult(
             {
               result: 'failed',
@@ -126,13 +128,13 @@ export class Service {
           return false;
         }
 
-        if (perfspecResponse.data.indicators
+        if (perfspec.indicators
           .find(indicator => indicator.source.toLowerCase() === 'prometheus') !== undefined) {
           this.addPrometheusSource(event, pitometer, prometheusUrl);
         }
         // get dynatrace service entity ID if Dynatrace source is defined in perfspec
         let serviceEntityId = '';
-        if (perfspecResponse.data.indicators
+        if (perfspec.indicators
           .find(indicator => indicator.source.toLowerCase() === 'dynatrace') !== undefined) {
           try {
             const dynatraceCredentials = await this.addDynatraceSource(event, pitometer);
@@ -160,8 +162,8 @@ export class Service {
           }
         }
 
-        for (let i = 0; i < perfspecResponse.data.indicators.length; i += 1) {
-          const indicator = perfspecResponse.data.indicators[i];
+        for (let i = 0; i < perfspec.indicators.length; i += 1) {
+          const indicator = perfspec.indicators[i];
           if (indicator.source.toLowerCase() === 'dynatrace' && indicator.query !== undefined) {
             if (serviceEntityId !== undefined && serviceEntityId !== '') {
               indicator.query.entityIds = [serviceEntityId];
@@ -169,10 +171,10 @@ export class Service {
           }
           indicators.push(indicator);
         }
-        perfspecResponse.data.indicators = indicators;
+        perfspec.indicators = indicators;
         try {
           const evaluationResult = await pitometer.run(
-            perfspecResponse.data,
+            perfspec,
             {
               timeStart: moment(event.data.startedat).unix(),
               timeEnd: moment(event.time).unix(),
