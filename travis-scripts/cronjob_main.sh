@@ -30,9 +30,6 @@ if [[ $? != '0' ]]; then
     exit 1
 fi
 
-kubectl config view
-cat ~/.kube/config
-
 # Install hub
 HUB_VERSION="v2.11.2"
 HUB_INSTALLER="hub-darwin-amd64-2.11.2"
