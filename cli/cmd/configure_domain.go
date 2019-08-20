@@ -109,11 +109,19 @@ var domainCmd = &cobra.Command{
 				return err
 			}
 
+			if err := reDeployGateway(); err != nil {
+				return err
+			}
+
 			if err := reDeployGithubService(); err != nil {
 				return err
 			}
 
-			if err := reDeployGateway(); err != nil {
+			if err := keptnutils.RestartPodsWithSelector(false, "keptn", "run=api"); err != nil {
+				return err
+			}
+
+			if err := keptnutils.WaitForDeploymentsInNamespace(false, "keptn"); err != nil {
 				return err
 			}
 
