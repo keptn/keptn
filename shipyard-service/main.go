@@ -190,7 +190,11 @@ func createProjectAndProcessShipyard(event cloudevents.Event, logger keptnutils.
 
 	// store shipyard.yaml
 	shipyard, _ := json.Marshal(eventData.Shipyard)
-	return storeResourceForProject(project.ProjectName, "shipyard.yaml", string(shipyard), logger)
+	version, err := storeResourceForProject(project.ProjectName, "shipyard.yaml", string(shipyard), logger)
+
+	retrieveResourceForProject(project.ProjectName, "shipyard.yaml", logger)
+
+	return version, err
 }
 
 // logErrAndRespondWithDoneEvent sends a keptn done event to the keptn eventbroker
@@ -292,6 +296,20 @@ func storeResourceForProject(projectName string, resourceURI string, resourceCon
 	}
 
 	return &version, nil
+}
+
+func retrieveResourceForProject(projectName string, resourceURI string, logger keptnutils.Logger) (*keptnutils.Resource, error) {
+	eventURL, err := getServiceEndpoint(configservice)
+	resourceHandler := keptnutils.NewResourceHandler(eventURL.Host)
+
+	resource, err := resourceHandler.GetProjectResource(projectName, resourceURI)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to retrieve resource %s", resourceURI, err.Error())
+	}
+
+	logger.Info(resource.ResourceContent)
+
+	return resource, nil
 }
 
 // postRequest sends a post request to the configuration-service
