@@ -155,40 +155,6 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	return errors.New(errorMsg)
 }
 
-//
-// Helper function to retrieve a resource from a project
-///////////////////////////////////////////////////////
-// func retrieveShipyard(event cloudevents.Event, logger keptnutils.Logger, ws *websocket.Conn) error {
-// 	eventData := &createProjectEventData{}
-// 	if err := event.DataAs(eventData); err != nil {
-// 		return err
-// 	}
-
-// 	client := newClient()
-
-// 	resp, err := getRequest(client, fmt.Sprintf("v1/project/%s/resource/%s", eventData.Project, "shipyard.yaml"))
-// 	if err != nil {
-// 		return fmt.Errorf("Failed to post request. %s", err.Error())
-// 	}
-
-// 	defer resp.Body.Close()
-// 	if resp.StatusCode == http.StatusNoContent || resp.StatusCode == http.StatusOK { // 204 - Success. Project has been created. Response does not have a body.
-// 		resource := models.Resource{}
-// 		json.NewDecoder(resp.Body).Decode(&resource)
-// 		logger.Info(*resource.ResourceURI)
-// 		content, _ := base64.StdEncoding.DecodeString(resource.ResourceContent.String())
-// 		logger.Info(string(content))
-// 	} else if resp.StatusCode == http.StatusBadRequest { //	400 - Failed. Project could not be created.
-// 		errorObj := models.Error{}
-// 		json.NewDecoder(resp.Body).Decode(&errorObj)
-// 		return errors.New(*errorObj.Message)
-// 	} else { // catch undefined errors
-// 		return fmt.Errorf("Undefined error in response of creating project. Status: %s", resp.Status)
-// 	}
-
-// 	return nil
-// }
-
 // createProjectAndProcessShipyard creates a project and stages defined in the shipyard
 func createProjectAndProcessShipyard(event cloudevents.Event, logger keptnutils.Logger, ws *websocket.Conn) (*models.Version, error) {
 	eventData := &createProjectEventData{}
@@ -198,8 +164,9 @@ func createProjectAndProcessShipyard(event cloudevents.Event, logger keptnutils.
 
 	client := newClient()
 	// create project
-	project := models.Project{}
-	project.ProjectName = eventData.Project
+	project := models.Project{
+		ProjectName: eventData.Project,
+	}
 	if err := client.createProject(project, logger); err != nil {
 		return nil, fmt.Errorf("Creating project %s failed. %s", project.ProjectName, err.Error())
 	}
@@ -209,8 +176,9 @@ func createProjectAndProcessShipyard(event cloudevents.Event, logger keptnutils.
 
 	// process shipyard file and create stages
 	for _, shipyardStage := range eventData.Shipyard {
-		stage := models.Stage{}
-		stage.StageName = shipyardStage.Name
+		stage := models.Stage{
+			StageName: shipyardStage.Name,
+		}
 
 		if err := client.createStage(project, stage, logger); err != nil {
 			return nil, fmt.Errorf("Creating stage %s failed. %s", stage.StageName, err.Error())
@@ -221,22 +189,8 @@ func createProjectAndProcessShipyard(event cloudevents.Event, logger keptnutils.
 	}
 
 	// store shipyard.yaml
-	shipyard := models.Resource{}
-
-	var resourceURI = "shipyard.yaml"
-	shipyard.ResourceURI = &resourceURI
-	shipyard.ResourceContent, _ = json.Marshal(eventData.Shipyard)
-
-	resourcesArray := []*models.Resource{&shipyard}
-	resources := ResourceListBody{
-		Resources: resourcesArray,
-	}
-	version, err := client.storeResource(project, resources, logger)
-	if err != nil {
-		return nil, fmt.Errorf("Storing shipyard.yaml file failed. %s", err.Error())
-	}
-
-	return version, nil
+	shipyard, _ := json.Marshal(eventData.Shipyard)
+	return storeResourceForProject(project.ProjectName, "shipyard.yaml", string(shipyard), logger)
 }
 
 // logErrAndRespondWithDoneEvent sends a keptn done event to the keptn eventbroker
@@ -316,33 +270,28 @@ func (client *Client) createStage(project models.Project, stage models.Stage, lo
 	return nil
 }
 
-// storeResource stores a resource to the specified project entity by using the configuration-service
-func (client *Client) storeResource(project models.Project, resources ResourceListBody, logger keptnutils.Logger) (*models.Version, error) {
-	data, err := json.Marshal(resources)
+// storeResourceForProject stores the resource for a project using the keptnutils.ResourceHandler
+func storeResourceForProject(projectName string, resourceURI string, resourceContent string, logger keptnutils.Logger) (*models.Version, error) {
+	resource := keptnutils.Resource{
+		ResourceURI:     resourceURI,
+		ResourceContent: resourceContent,
+	}
+	resources := []*keptnutils.Resource{&resource}
+
+	eventURL, err := getServiceEndpoint(configservice)
+	resourceHandler := keptnutils.NewResourceHandler(eventURL.Host)
+
+	versionStr, err := resourceHandler.CreateProjectResources(projectName, resources)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to marshal resources. %s", err.Error())
+		return nil, fmt.Errorf("Storing %s file failed. %s", resourceURI, err.Error())
 	}
 
-	resp, err := postRequest(client, fmt.Sprintf("v1/project/%s/resource", project.ProjectName), data)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to post request. %s", err.Error())
+	logger.Info(fmt.Sprintf("Resource %s successfully stored", resourceURI))
+	version := models.Version{
+		Version: versionStr,
 	}
 
-	defer resp.Body.Close()
-	if resp.StatusCode == http.StatusCreated { // 201 - Success. Stage has been created. Response does not have a body.
-		versionObj := models.Version{}
-		json.NewDecoder(resp.Body).Decode(&versionObj)
-		logger.Info("Resource successfully stored")
-
-		return &versionObj, nil
-	} else if resp.StatusCode == http.StatusBadRequest { //	400 - Failed. Stage could not be created.
-		errorObj := models.Error{}
-		json.NewDecoder(resp.Body).Decode(&errorObj)
-
-		return nil, errors.New(*errorObj.Message)
-	} else { // catch undefined errors
-		return nil, fmt.Errorf("Undefined error in response of creating project. Status: %s", resp.Status)
-	}
+	return &version, nil
 }
 
 // postRequest sends a post request to the configuration-service
