@@ -25,6 +25,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+const configservice = "CONFIGURATION_SERVICE"
+const eventbroker = "EVENTBROKER"
+
 type envConfig struct {
 	// Port on which to listen for cloudevents
 	Port int    `envconfig:"RCV_PORT" default:"8080"`
@@ -88,12 +91,7 @@ func doGateKeeping(event cloudevents.Event, shkeptncontext string, data evaluati
 
 		logger.Info("Evaluation is passed")
 
-		repo, err := keptnutils.Checkout(data.GitHubOrg, data.Project, "master")
-		if err != nil {
-			logger.Error(fmt.Sprintf("Error occured checking out the config repo: %s", err.Error()))
-			return
-		}
-		nextStage, err := getNextStage(repo, data)
+		nextStage, err := getNextStage(data, logger)
 		if err != nil {
 			logger.Error(fmt.Sprintf("Error obtaining the next stage: %s", err.Error()))
 			return
@@ -134,16 +132,15 @@ func doGateKeeping(event cloudevents.Event, shkeptncontext string, data evaluati
 	}
 }
 
-func getNextStage(repo *git.Repository, data evaluationDoneEvent) (string, error) {
+func getNextStage(data evaluationDoneEvent, logger *keptnutils.Logger) (string, error) {
 
-	filePath := data.Project + "/shipyard.yaml"
-	yamlFile, err := ioutil.ReadFile(filePath)
+	resource, err := retrieveResourceForProject(data.Project, "shipyard.yaml", logger)
 	if err != nil {
 		return "", err
 	}
 
 	var shipyard partialShipyard
-	err = yaml.Unmarshal(yamlFile, &shipyard)
+	err = yaml.Unmarshal([]byte(resource.ResourceContent), &shipyard)
 	if err != nil {
 		return "", err
 	}
@@ -333,6 +330,34 @@ func getGithubCredentials() (string, string, error) {
 	}
 
 	return string(secret.Data["user"]), string(secret.Data["token"]), nil
+}
+
+func retrieveResourceForProject(projectName string, resourceURI string, logger *keptnutils.Logger) (*keptnutils.Resource, error) {
+	eventURL, err := getServiceEndpoint(configservice)
+	resourceHandler := keptnutils.NewResourceHandler(eventURL.Host)
+
+	resource, err := resourceHandler.GetProjectResource(projectName, resourceURI)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to retrieve resource %s", resourceURI, err.Error())
+	}
+
+	logger.Info(resource.ResourceContent)
+
+	return resource, nil
+}
+
+// getServiceEndpoint retrieves an endpoint stored in an environment variable and sets http as default scheme
+func getServiceEndpoint(service string) (url.URL, error) {
+	url, err := url.Parse(os.Getenv(service))
+	if err != nil {
+		return *url, fmt.Errorf("Failed to retrieve value from ENVIRONMENT_VARIABLE: %s", service)
+	}
+
+	if url.Scheme == "" {
+		url.Scheme = "http"
+	}
+
+	return *url, nil
 }
 
 func _main(args []string, env envConfig) int {
