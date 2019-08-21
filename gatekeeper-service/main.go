@@ -128,6 +128,7 @@ func doGateKeeping(event cloudevents.Event, shkeptncontext string, data evaluati
 		} else {
 			logger.Info("No further stage available: End of promotion")
 		}
+
 	} else {
 		logger.Info("Evaluation not passed, hence do not promote artifact to next stage")
 
