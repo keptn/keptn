@@ -192,8 +192,6 @@ func createProjectAndProcessShipyard(event cloudevents.Event, logger keptnutils.
 	shipyard, _ := json.Marshal(eventData.Shipyard)
 	version, err := storeResourceForProject(project.ProjectName, "shipyard.yaml", string(shipyard), logger)
 
-	retrieveResourceForProject(project.ProjectName, "shipyard.yaml", logger)
-
 	return version, err
 }
 
