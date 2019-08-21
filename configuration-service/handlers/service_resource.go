@@ -1,10 +1,10 @@
 package handlers
 
 import (
+	"encoding/base64"
 	"io/ioutil"
 
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/configuration-service/common"
@@ -43,7 +43,7 @@ func GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHan
 		return service_resource.NewGetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not read file")})
 	}
 
-	resourceContent := strfmt.Base64(dat)
+	resourceContent := base64.StdEncoding.EncodeToString(dat)
 	return service_resource.NewGetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIOK().WithPayload(
 		&models.Resource{
 			ResourceURI:     &params.ResourceURI,
@@ -77,7 +77,7 @@ func PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(p
 		// don't overwrite existing files
 		if !common.FileExists(filePath) {
 			logger.Debug("Adding resource: " + filePath)
-			common.WriteFile(filePath, res.ResourceContent)
+			common.WriteBase64EncodedFile(filePath, res.ResourceContent)
 		}
 	}
 
@@ -118,7 +118,7 @@ func PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(pa
 	for _, res := range params.Resources.Resources {
 		filePath := serviceConfigPath + "/" + *res.ResourceURI
 		logger.Debug("Updating resource: " + filePath)
-		common.WriteFile(filePath, res.ResourceContent)
+		common.WriteBase64EncodedFile(filePath, res.ResourceContent)
 	}
 
 	logger.Debug("Staging Changes")
@@ -156,7 +156,7 @@ func PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHan
 	}
 
 	filePath := serviceConfigPath + "/" + params.ResourceURI
-	common.WriteFile(filePath, params.Resource.ResourceContent)
+	common.WriteBase64EncodedFile(filePath, params.Resource.ResourceContent)
 
 	logger.Debug("Staging Changes")
 	err = common.StageAndCommitAll(params.ProjectName, "Updated resource: "+params.ResourceURI)

@@ -125,7 +125,7 @@ definitions:
         description: Resource URI
       resourceContent:
         type: string
-        format: byte
+        # format: byte
         description: Resource content
 
   Resources:
