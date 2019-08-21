@@ -42,14 +42,6 @@ type partialStage struct {
 	Name string `json:"name"`
 }
 
-func main() {
-	var env envConfig
-	if err := envconfig.Process("", &env); err != nil {
-		log.Fatalf("Failed to process env var: %s", err)
-	}
-	os.Exit(_main(os.Args[1:], env))
-}
-
 type evaluationDoneEvent struct {
 	GitHubOrg          string `json:"githuborg"`
 	Project            string `json:"project"`
@@ -60,6 +52,36 @@ type evaluationDoneEvent struct {
 	Image              string `json:"image"`
 	Tag                string `json:"tag"`
 	EvaluationPassed   bool   `json:"evaluationpassed"`
+}
+
+func main() {
+	var env envConfig
+	if err := envconfig.Process("", &env); err != nil {
+		log.Fatalf("Failed to process env var: %s", err)
+	}
+	os.Exit(_main(os.Args[1:], env))
+}
+
+func _main(args []string, env envConfig) int {
+
+	ctx := context.Background()
+
+	t, err := cloudeventshttp.New(
+		cloudeventshttp.WithPort(env.Port),
+		cloudeventshttp.WithPath(env.Path),
+	)
+
+	if err != nil {
+		log.Fatalf("failed to create transport, %v", err)
+	}
+	c, err := client.New(t)
+	if err != nil {
+		log.Fatalf("failed to create client, %v", err)
+	}
+
+	log.Fatalf("failed to start receiver: %s", c.StartReceiver(ctx, gotEvent))
+
+	return 0
 }
 
 func gotEvent(ctx context.Context, event cloudevents.Event) error {
@@ -314,8 +336,7 @@ func sendConfigurationChangedEvent(shkeptncontext string, incomingEvent cloudeve
 	return nil
 }
 
-// getGithubCredentials reads the secret 'github-credentials' and returns
-// the user, token, and potentially any occured error
+// getGithubCredentials reads the secret 'github-credentials' and returns the user, token, and potentially any occured error
 func getGithubCredentials() (string, string, error) {
 
 	api, err := keptnutils.GetKubeAPI(true)
@@ -332,6 +353,7 @@ func getGithubCredentials() (string, string, error) {
 	return string(secret.Data["user"]), string(secret.Data["token"]), nil
 }
 
+// retrieveResourceForProject retrieves a resource stored at a project entity
 func retrieveResourceForProject(projectName string, resourceURI string, logger *keptnutils.Logger) (*keptnutils.Resource, error) {
 	eventURL, err := getServiceEndpoint(configservice)
 	resourceHandler := keptnutils.NewResourceHandler(eventURL.Host)
@@ -346,7 +368,7 @@ func retrieveResourceForProject(projectName string, resourceURI string, logger *
 	return resource, nil
 }
 
-// getServiceEndpoint retrieves an endpoint stored in an environment variable and sets http as default scheme
+// getServiceEndpoint gets an endpoint stored in an environment variable and sets http as default scheme
 func getServiceEndpoint(service string) (url.URL, error) {
 	url, err := url.Parse(os.Getenv(service))
 	if err != nil {
@@ -358,26 +380,4 @@ func getServiceEndpoint(service string) (url.URL, error) {
 	}
 
 	return *url, nil
-}
-
-func _main(args []string, env envConfig) int {
-
-	ctx := context.Background()
-
-	t, err := cloudeventshttp.New(
-		cloudeventshttp.WithPort(env.Port),
-		cloudeventshttp.WithPath(env.Path),
-	)
-
-	if err != nil {
-		log.Fatalf("failed to create transport, %v", err)
-	}
-	c, err := client.New(t)
-	if err != nil {
-		log.Fatalf("failed to create client, %v", err)
-	}
-
-	log.Fatalf("failed to start receiver: %s", c.StartReceiver(ctx, gotEvent))
-
-	return 0
 }
