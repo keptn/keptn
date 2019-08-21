@@ -1356,8 +1356,7 @@ func init() {
       "properties": {
         "resourceContent": {
           "description": "Resource content",
-          "type": "string",
-          "format": "byte"
+          "type": "string"
         },
         "resourceURI": {
           "description": "Resource URI",
@@ -3214,8 +3213,7 @@ func init() {
       "properties": {
         "resourceContent": {
           "description": "Resource content",
-          "type": "string",
-          "format": "byte"
+          "type": "string"
         },
         "resourceURI": {
           "description": "Resource URI",

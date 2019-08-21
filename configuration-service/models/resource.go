@@ -18,8 +18,7 @@ import (
 type Resource struct {
 
 	// Resource content
-	// Format: byte
-	ResourceContent strfmt.Base64 `json:"resourceContent,omitempty"`
+	ResourceContent string `json:"resourceContent,omitempty"`
 
 	// Resource URI
 	// Required: true
@@ -30,10 +29,6 @@ type Resource struct {
 func (m *Resource) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateResourceContent(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.validateResourceURI(formats); err != nil {
 		res = append(res, err)
 	}
@@ -41,17 +36,6 @@ func (m *Resource) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *Resource) validateResourceContent(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.ResourceContent) { // not required
-		return nil
-	}
-
-	// Format "byte" (base64 string) is already validated when unmarshalled
-
 	return nil
 }
 
