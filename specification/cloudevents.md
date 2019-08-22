@@ -181,6 +181,7 @@ The *start change configuration* event is sent when a desired state for a servic
 ```
 
 Example for a canary release:
+
 ```json
 {
   "type": "sh.keptn.event.configuration.change",
@@ -198,8 +199,6 @@ Example for a canary release:
     "stage": "production",
     "project": "sockshop",
     "service": "carts",
-    "image": "keptnexamples/carts",
-    "tag": "0.7.1",
     "canary": {
       "value": 10,
       "action": "set"
@@ -227,8 +226,6 @@ Example for promoting/discarding a canary release:
     "stage": "production",
     "project": "sockshop",
     "service": "carts",
-    "image": "keptnexamples/carts",
-    "tag": "0.7.1",
     "canary": {
       "action": "promote|discard"
     }
@@ -283,8 +280,6 @@ Example for a canary release:
     "stage": "production",
     "project": "sockshop",
     "service": "carts",
-    "image": "keptnexamples/carts",
-    "tag": "0.7.1",
     "canary": {
       "value": 10,
       "action": "set"
@@ -324,6 +319,7 @@ The *start test* event is sent when a serivce configuration is applied to a Kube
 ```
 
 Example test event for release phase:
+
 ```json
 {
   "type": "sh.keptn.event.test.start",
@@ -341,8 +337,6 @@ Example test event for release phase:
     "stage": "production",
     "project": "sockshop",
     "service": "carts",
-    "image": "keptnexamples/carts",
-    "tag": "0.7.1",
     "teststrategy":"real-user",
     "duration": "10m"
   }
@@ -398,8 +392,6 @@ Example for evaluation event during canary release:
     "stage": "production",
     "project": "sockshop",
     "service": "carts",
-    "image": "keptnexamples/carts",
-    "tag": "0.7.1",
     "teststrategy":"real-user",
     "startedat": "timestamp",
     "duration": "10m"
