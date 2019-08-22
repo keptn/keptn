@@ -259,11 +259,11 @@
 
 [[projects]]
   branch = "develop"
-  digest = "1:19d9cf9e0e6a5d65549954f392b9a4553a8ab3d1b9d325ca4d73ffebbdc77729"
+  digest = "1:19b6dc818aab1e61b7197019ce0a677c0b8b108634aeb6a2a3bb5f9af65a8d60"
   name = "github.com/keptn/go-utils"
   packages = ["pkg/utils"]
   pruneopts = ""
-  revision = "552888d34b6f0eb55208eab19a790e048e5e46ac"
+  revision = "4d96e8d84e51b3117a052900a50c2d0f1e8cee94"
 
 [[projects]]
   digest = "1:91317956b340c9e61a4287fd94c870bfad3f1922280c3e0a65db91c29017e8de"
@@ -425,7 +425,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:086760278d762dbb0e9a26e09b57f04c89178c86467d8d94fae47d64c222f328"
+  digest = "1:00cb2d43e2f3a7b10653bbe965ca5b6ef074556adaea71a68b014a8f8cf566f7"
   name = "golang.org/x/crypto"
   packages = [
     "cast5",
@@ -447,7 +447,7 @@
     "ssh/terminal",
   ]
   pruneopts = ""
-  revision = "4def268fd1a49955bfb3dda92fe3db4f924f2285"
+  revision = "60c769a6c58655dab1b9adac0d58967dd517cfba"
 
 [[projects]]
   branch = "master"

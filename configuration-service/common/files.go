@@ -1,9 +1,19 @@
 package common
 
 import (
+	"encoding/base64"
 	"os"
 	"strings"
 )
+
+// WriteBase64EncodedFile writes a file using the base64 encoded input
+func WriteBase64EncodedFile(path string, content string) error {
+	data, err := base64.StdEncoding.DecodeString(content)
+	if err != nil {
+		return err
+	}
+	return WriteFile(path, data)
+}
 
 // WriteFile writes to a file in the filesystem if it exists, it is overwritten
 func WriteFile(path string, content []byte) error {
