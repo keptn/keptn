@@ -84,7 +84,7 @@ Examples:
 		event := cloudevents.Event{
 			Context: cloudevents.EventContextV02{
 				ID:          uuid.New().String(),
-				Type:        events.ServiceCreateEvent,
+				Type:        events.ServiceCreateEventType,
 				Source:      types.URLRef{URL: *source},
 				ContentType: &contentType,
 			}.AsV02(),
