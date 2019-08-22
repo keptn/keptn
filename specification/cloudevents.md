@@ -5,17 +5,19 @@ Internal Events
 * [Create Project (from CLI)](#create-project-from-cli)
 * [Create Service](#create-service)
 * [Create Service (from CLI)](#create-service-from-cli)
-* [Generic done event](#generic-done)
 
 Keptn Events
 * [Start Change Configuration](#start-change-configuration)
 * [Start Apply Configuration](#start-apply-configuration)
-* [Start Tests](#start-tests)
+* [Start Test](#start-tests)
 * [Start Evaluation](#start-evaluation)
 * [Start Deployment](#start-deployment)
 * [Start Release](#start-release)
-* [Start Operations](#start-operations)
+* [Start Operations](#start-operations-tbd)
 * [Done](#done)
+
+Postman Collection
+* [deprecated](#Postman-collection-of-keptn-CloudEvents)
 
 ---
 
@@ -26,7 +28,7 @@ Keptn Events
 The *create project* event is sent when a new project should be created.
 ```json
 {
-  "type": "sh.keptn.internal.events.project.create",
+  "type": "sh.keptn.internal.event.project.create",
   "specversion": "0.2",
   "source": "https://github.com/keptn/keptn/cli",
   "id": "49ac0dec-a83b-4bc1-9dc0-1f050c7e781b",
@@ -63,7 +65,7 @@ The *create project* event is sent when a new project should be created.
 The *create project* sent from the CLI when a new project should be created.
 ```json
 {
-  "type": "sh.keptn.events.project.create",
+  "type": "sh.keptn.event.project.create",
   "specversion": "0.2",
   "source": "https://github.com/keptn/keptn/cli",
   "id": "49ac0dec-a83b-4bc1-9dc0-1f050c7e781b",
@@ -89,7 +91,6 @@ The *create project* sent from the CLI when a new project should be created.
 }
 ```
 ([&uarr; up to index](#cloudevents-used-by-keptn))
-
 
 ## Create Service
 
@@ -129,7 +130,7 @@ The *create project* event sent from the CLI when a new service should be create
 
 ```json
 {
-  "type": "sh.keptn.events.service.create",
+  "type": "sh.keptn.event.service.create",
   "specversion": "0.2",
   "source": "https://github.com/keptn/keptn/cli",
   "id": "49ac0dec-a83b-4bc1-9dc0-1f050c7e781b",
@@ -150,31 +151,6 @@ The *create project* event sent from the CLI when a new service should be create
 ([&uarr; up to index](#cloudevents-used-by-keptn))
 
 
-## Generic done
-
-```json
-{
-  "type": "sh.keptn.events.done",
-  "specversion": "0.2",
-  "source": "https://github.com/keptn/keptn/shipyard-service",
-  "id": "49ac0dec-a83b-4bc1-9dc0-1f050c7e781b",
-  "time": "2019-06-07T07:02:15.64489Z",
-  "contenttype": "application/json",
-  "shkeptncontext":"49ac0dec-a83b-4bc1-9dc0-1f050c7e789b",
-  "shkeptnphaseid":"k5dg-565h-9o87",
-  "shkeptnphase":"INIT",
-  "shkeptnstepid":"a3ce-grdv-qwed",
-  "shkeptnstep":"CREATE_PROJECT",
-  "data": {
-    "result": "success|error",
-    "message": "successmessage|errormessage",
-    "version": "git-commit-sha"
-  }
-}
-```
-([&uarr; up to index](#cloudevents-used-by-keptn))
-
-
 # Keptn Events
 
 ## Start Change Configuration 
@@ -183,9 +159,9 @@ The *start change configuration* event is sent when a desired state for a servic
 
 ```json
 {
-  "type": "sh.keptn.events.configuration.change",
+  "type": "sh.keptn.event.configuration.change",
   "specversion": "0.2",
-  "source": "https://github.com/keptn/workflow-engine",
+  "source": "https://github.com/keptn/kernel",
   "id": "49ac0dec-a83b-4bc1-9dc0-1f050c7e781b",
   "time": "2019-06-07T07:02:15.64489Z",
   "contenttype": "application/json",
@@ -195,6 +171,7 @@ The *start change configuration* event is sent when a desired state for a servic
   "shkeptnstepid":"a3ce-f013-4h78",
   "shkeptnstep":"CHANGE_CONFIGURATION",
   "data": {
+    "stage": "staging",
     "project": "sockshop",
     "service": "carts",
     "image": "keptnexamples/carts",
@@ -202,6 +179,60 @@ The *start change configuration* event is sent when a desired state for a servic
   }
 }
 ```
+
+Example for a canary release:
+
+```json
+{
+  "type": "sh.keptn.event.configuration.change",
+  "specversion": "0.2",
+  "source": "https://github.com/keptn/kernel",
+  "id": "49ac0dec-a83b-4bc1-9dc0-1f050c7e781b",
+  "time": "2019-06-07T07:02:15.64489Z",
+  "contenttype": "application/json",
+  "shkeptncontext":"49ac0dec-a83b-4bc1-9dc0-1f050c7e789b",
+  "shkeptnphaseid":"k5dg-565h-9o87",
+  "shkeptnphase":"RELEASE",
+  "shkeptnstepid":"a3ce-f013-4h78",
+  "shkeptnstep":"CHANGE_CONFIGURATION",
+  "data": {
+    "stage": "production",
+    "project": "sockshop",
+    "service": "carts",
+    "canary": {
+      "value": 10,
+      "action": "set"
+    }
+  }
+}
+```
+
+Example for promoting/discarding a canary release:
+
+```json
+{
+  "type": "sh.keptn.event.configuration.change",
+  "specversion": "0.2",
+  "source": "https://github.com/keptn/kernel",
+  "id": "49ac0dec-a83b-4bc1-9dc0-1f050c7e781b",
+  "time": "2019-06-07T07:02:15.64489Z",
+  "contenttype": "application/json",
+  "shkeptncontext":"49ac0dec-a83b-4bc1-9dc0-1f050c7e789b",
+  "shkeptnphaseid":"k5dg-565h-9o87",
+  "shkeptnphase":"RELEASE",
+  "shkeptnstepid":"a3ce-f013-4h78",
+  "shkeptnstep":"CHANGE_CONFIGURATION",
+  "data": {
+    "stage": "production",
+    "project": "sockshop",
+    "service": "carts",
+    "canary": {
+      "action": "promote|discard"
+    }
+  }
+}
+```
+
 ([&uarr; up to index](#cloudevents-used-by-keptn))
 
 ## Start Apply Configuration
@@ -210,7 +241,7 @@ The *start apply configuration* event is sent when the service configuration is 
 
 ```json
 {
-  "type": "sh.keptn.events.configuration.apply",
+  "type": "sh.keptn.event.configuration.apply",
   "specversion": "0.2",
   "source": "https://github.com/keptn/workflow-engine",
   "id": "49ac0dec-a83b-4bc1-9dc0-1f050c7e781b",
@@ -230,6 +261,33 @@ The *start apply configuration* event is sent when the service configuration is 
   }
 }
 ```
+
+Example for a canary release:
+```json
+{
+  "type": "sh.keptn.event.configuration.apply",
+  "specversion": "0.2",
+  "source": "https://github.com/keptn/kernel",
+  "id": "49ac0dec-a83b-4bc1-9dc0-1f050c7e781b",
+  "time": "2019-06-07T07:02:15.64489Z",
+  "contenttype": "application/json",
+  "shkeptncontext":"49ac0dec-a83b-4bc1-9dc0-1f050c7e789b",
+  "shkeptnphaseid":"k5dg-565h-9o87",
+  "shkeptnphase":"RELEASE",
+  "shkeptnstepid":"a3ce-f013-4h78",
+  "shkeptnstep":"APPLY_CONFIGURATION",
+  "data": {
+    "stage": "production",
+    "project": "sockshop",
+    "service": "carts",
+    "canary": {
+      "value": 10,
+      "action": "set"
+    }
+  }
+}
+```
+
 ([&uarr; up to index](#cloudevents-used-by-keptn))
 
 ## Start Tests
@@ -238,9 +296,9 @@ The *start test* event is sent when a serivce configuration is applied to a Kube
 
 ```json
 {
-  "type": "sh.keptn.events.tests.start",
+  "type": "sh.keptn.event.test.start",
   "specversion": "0.2",
-  "source": "https://github.com/keptn/workflow-engine",
+  "source": "https://github.com/keptn/keptn/kernel",
   "id": "49ac0dec-a83b-4bc1-9dc0-1f050c7e781b",
   "time": "2019-06-07T07:02:15.64489Z",
   "contenttype": "application/json",
@@ -259,6 +317,32 @@ The *start test* event is sent when a serivce configuration is applied to a Kube
   }
 }
 ```
+
+Example test event for release phase:
+
+```json
+{
+  "type": "sh.keptn.event.test.start",
+  "specversion": "0.2",
+  "source": "https://github.com/keptn/keptn/kernel",
+  "id": "49ac0dec-a83b-4bc1-9dc0-1f050c7e781b",
+  "time": "2019-06-07T07:02:15.64489Z",
+  "contenttype": "application/json",
+  "shkeptncontext":"49ac0dec-a83b-4bc1-9dc0-1f050c7e789b",
+  "shkeptnphaseid":"k5dg-565h-9o87",
+  "shkeptnphase":"RELEASE",
+  "shkeptnstepid":"a3ce-grdv-3241",
+  "shkeptnstep":"START_TEST",
+  "data": {
+    "stage": "production",
+    "project": "sockshop",
+    "service": "carts",
+    "teststrategy":"real-user",
+    "duration": "10m"
+  }
+}
+```
+
 ([&uarr; up to index](#cloudevents-used-by-keptn))
 
 ## Start Evaluation
@@ -267,9 +351,9 @@ The *start evaluation* event is sent when a test for a service is completed and 
 
 ```json
 {
-  "type": "sh.keptn.events.evaluation.start",
+  "type": "sh.keptn.event.evaluation.start",
   "specversion": "0.2",
-  "source": "https://github.com/keptn/workflow-engine",
+  "source": "https://github.com/keptn/keptn/kernel",
   "id": "49ac0dec-a83b-4bc1-9dc0-1f050c7e781b",
   "time": "2019-06-07T07:02:15.64489Z",
   "contenttype": "application/json",
@@ -277,7 +361,7 @@ The *start evaluation* event is sent when a test for a service is completed and 
   "shkeptnphaseid":"k5dg-565h-9o87",
   "shkeptnphase":"DEPLOYMENT",
   "shkeptnstepid":"a3ce-grdv-qwed",
-  "shkeptnstep":"TESTS",
+  "shkeptnstep":"TEST",
   "data": {
     "project": "sockshop",
     "service": "carts",
@@ -288,6 +372,33 @@ The *start evaluation* event is sent when a test for a service is completed and 
   }
 }
 ```
+
+Example for evaluation event during canary release:
+
+```json
+{
+  "type": "sh.keptn.event.evaluation.start",
+  "specversion": "0.2",
+  "source": "https://github.com/keptn/keptn/kernel",
+  "id": "49ac0dec-a83b-4bc1-9dc0-1f050c7e781b",
+  "time": "2019-06-07T07:02:15.64489Z",
+  "contenttype": "application/json",
+  "shkeptncontext":"49ac0dec-a83b-4bc1-9dc0-1f050c7e789b",
+  "shkeptnphaseid":"k5dg-565h-9o87",
+  "shkeptnphase":"RELEASE",
+  "shkeptnstepid":"a3ce-grdv-qwed",
+  "shkeptnstep":"TEST",
+  "data": {
+    "stage": "production",
+    "project": "sockshop",
+    "service": "carts",
+    "teststrategy":"real-user",
+    "startedat": "2019-06-07T06:00:15.64489Z",
+    "duration": "10m"
+  }
+}
+```
+
 ([&uarr; up to index](#cloudevents-used-by-keptn))
 
 ## Start Deployment
@@ -296,7 +407,7 @@ The *start deployment* event is sent when a new version of an artifact, i.e., a 
 
 ```json
 {
-  "type": "sh.keptn.events.deployment.start",
+  "type": "sh.keptn.event.deployment.start",
   "specversion": "0.2",
   "source": "https://github.com/keptn/workflow-engine",
   "id": "49ac0dec-a83b-4bc1-9dc0-1f050c7e781b",
@@ -324,7 +435,7 @@ The *start release* event is sent when a new deployment of an artifact is availa
 
 ```json
 {
-  "type": "sh.keptn.events.release.start",
+  "type": "sh.keptn.event.release.start",
   "specversion": "0.2",
   "source": "https://github.com/keptn/workflow-engine",
   "id": "49ac0dec-a83b-4bc1-9dc0-1f050c7e781b",
@@ -344,13 +455,13 @@ The *start release* event is sent when a new deployment of an artifact is availa
 ```
 ([&uarr; up to index](#cloudevents-used-by-keptn))
 
-## Start Operations (TBD!)
+## Start Operations (TBD)
 
 The *start operations* event is sent when a problem related to a keptn-managed service appears.
 
 ```json
 {
-  "type": "sh.keptn.events.start-operations",
+  "type": "sh.keptn.event.start-operations",
   "specversion": "0.2",
   "source": "https://github.com/keptn/workflow-engine",
   "id": "49ac0dec-a83b-4bc1-9dc0-1f050c7e781b",
@@ -376,27 +487,25 @@ The *done* event is sent by each keptn service as response to the execution of a
 
 ```json
 {
-  "type": "sh.keptn.events.done",
+  "type": "sh.keptn.event.done",
   "specversion": "0.2",
-  "source": "https://github.com/keptn/workflow-engine",
+  "source": "https://github.com/keptn/keptn/shipyard-service",
   "id": "49ac0dec-a83b-4bc1-9dc0-1f050c7e781b",
   "time": "2019-06-07T07:02:15.64489Z",
   "contenttype": "application/json",
   "shkeptncontext":"49ac0dec-a83b-4bc1-9dc0-1f050c7e789b",
   "shkeptnphaseid":"k5dg-565h-9o87",
-  "shkeptnphase":"DEPLOYMENT",
+  "shkeptnphase":"INIT",
   "shkeptnstepid":"a3ce-grdv-qwed",
-  "shkeptnstep":"TESTS",
+  "shkeptnstep":"CREATE_PROJECT",
   "data": {
-    "project": "sockshop",
-    "service": "carts",
-    "image": "keptnexamples/carts",
-    "tag": "0.7.1",
-    "stage":"dev",
-    "teststrategy":"functional"
+    "result": "success|error",
+    "message": "successmessage|errormessage",
+    "version": "git-commit-sha"
   }
 }
 ```
+
 ([&uarr; up to index](#cloudevents-used-by-keptn))
 
 
@@ -712,3 +821,4 @@ The *problem resolved* is triggered when a monitoring provider detects that a pr
    }
 }
 ```
+
