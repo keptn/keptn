@@ -393,7 +393,7 @@ Example for evaluation event during canary release:
     "project": "sockshop",
     "service": "carts",
     "teststrategy":"real-user",
-    "startedat": "timestamp",
+    "startedat": "2019-06-07T06:00:15.64489Z",
     "duration": "10m"
   }
 }
