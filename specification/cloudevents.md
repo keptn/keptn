@@ -98,7 +98,7 @@ The *create service* event is sent when a new service should be created.
 
 ```json
 {
-  "type": "sh.keptn.internal.events.service.create",
+  "type": "sh.keptn.internal.event.service.create",
   "specversion": "0.2",
   "source": "https://github.com/keptn/keptn/cli",
   "id": "49ac0dec-a83b-4bc1-9dc0-1f050c7e781b",
