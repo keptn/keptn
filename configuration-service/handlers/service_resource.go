@@ -74,11 +74,8 @@ func PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(p
 
 	for _, res := range params.Resources.Resources {
 		filePath := serviceConfigPath + "/" + *res.ResourceURI
-		// don't overwrite existing files
-		if !common.FileExists(filePath) {
-			logger.Debug("Adding resource: " + filePath)
-			common.WriteBase64EncodedFile(filePath, res.ResourceContent)
-		}
+		logger.Debug("Adding resource: " + filePath)
+		common.WriteBase64EncodedFile(filePath, res.ResourceContent)
 	}
 
 	logger.Debug("Staging Changes")
