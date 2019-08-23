@@ -17,7 +17,7 @@ func DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI
 
 // PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc creates a new resource
 func PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(params service_resource.PostProjectProjectNameStageStageNameServiceServiceNameResourceParams, principal *models.Principal) middleware.Responder {
-	resourceHandler := keptnutils.NewResourceHandler("configuration-service.keptn.svc.cluster.local:8080")
+	resourceHandler := keptnutils.NewResourceHandler("configuration-service:8080")
 
 	resourcesToUpload := []*keptnutils.Resource{}
 	for _, resource := range params.Resources.Resources {

@@ -25,6 +25,30 @@
   version = "v13.0.0"
 
 [[projects]]
+  digest = "1:c0952fb3cf9506cff577b4edf4458889570dcbd2902a7b90a1fd96bfbb97ccd8"
+  name = "github.com/PuerkitoBio/purell"
+  packages = ["."]
+  pruneopts = ""
+  revision = "44968752391892e1b0d0b821ee79e9a85fa13049"
+  version = "v1.1.1"
+
+[[projects]]
+  branch = "master"
+  digest = "1:331a419049c2be691e5ba1d24342fc77c7e767a80c666a18fd8a9f7b82419c1c"
+  name = "github.com/PuerkitoBio/urlesc"
+  packages = ["."]
+  pruneopts = ""
+  revision = "de5bf2ad457846296e2031421a34e2568e304e35"
+
+[[projects]]
+  digest = "1:d8a2bb36a048d1571bcc1aee208b61f39dc16c6c53823feffd37449dde162507"
+  name = "github.com/asaskevich/govalidator"
+  packages = ["."]
+  pruneopts = ""
+  revision = "ccb8e960c48f04d6935e72476ae4a51028f9e22f"
+  version = "v9"
+
+[[projects]]
   digest = "1:b2902858a75ce9bc0aa855ce3d46e7efbe272d95171297ca235a600427861974"
   name = "github.com/cloudevents/sdk-go"
   packages = [
@@ -104,6 +128,97 @@
   pruneopts = ""
   revision = "c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9"
   version = "v1.4.7"
+
+[[projects]]
+  digest = "1:66c6d4aeba2a6bdf10842855c95f85d93e4782362ab3113aabd5d1a4360bfc78"
+  name = "github.com/go-openapi/analysis"
+  packages = [
+    ".",
+    "internal",
+  ]
+  pruneopts = ""
+  revision = "48f4521ad6c3df9d6192efb04287c4a411e1f806"
+  version = "v0.19.4"
+
+[[projects]]
+  digest = "1:c9bceb25137de4327cffa341d0eb2eb3e1889b04ec20045f3b8106aad828f6ef"
+  name = "github.com/go-openapi/errors"
+  packages = ["."]
+  pruneopts = ""
+  revision = "0b2a0a1f89aa2eec2d13e03cd80ab0fdaf01f8ce"
+  version = "v0.19.2"
+
+[[projects]]
+  digest = "1:21911d0d3cecc86a42fd1920583c34a33b91035d77d4929772938961d7814ffc"
+  name = "github.com/go-openapi/jsonpointer"
+  packages = ["."]
+  pruneopts = ""
+  revision = "a105a905c5e6ad147f08504784917f3e178e0ba5"
+  version = "v0.19.2"
+
+[[projects]]
+  digest = "1:6ec9ec804d37dfca7ce0e488844fb069cfe4e3eb60793d163279083b8ec61a8d"
+  name = "github.com/go-openapi/jsonreference"
+  packages = ["."]
+  pruneopts = ""
+  revision = "2903bfd4bfbaf188694f1edf731f2725a8fa344f"
+  version = "v0.19.2"
+
+[[projects]]
+  digest = "1:93b42ff64b7bf998c5cfa3130dfa1de6a1ce3902f18c13b356c5d248e3853c85"
+  name = "github.com/go-openapi/loads"
+  packages = ["."]
+  pruneopts = ""
+  revision = "8548893a17237be4a5b2f74773f23002f4179bbe"
+  version = "v0.19.2"
+
+[[projects]]
+  digest = "1:44332885019a8e966932e68e0afe1f689ba504a9f5aa1b53850d49cdbe480463"
+  name = "github.com/go-openapi/runtime"
+  packages = ["."]
+  pruneopts = ""
+  revision = "882fa18ad52bee24eb77d2312d1929580e894013"
+  version = "v0.19.4"
+
+[[projects]]
+  digest = "1:0bf906c8db0e821fa588499950b59d349e4edccad44383c806319035b8bd5f89"
+  name = "github.com/go-openapi/spec"
+  packages = ["."]
+  pruneopts = ""
+  revision = "bdfd7e07daecc404d77868a88b2364d0aed0ee5a"
+  version = "v0.19.2"
+
+[[projects]]
+  digest = "1:737cc5f34f812cc5e4b646b4b0f2ec06ea60ec470e4d969a77cc07f9e12686af"
+  name = "github.com/go-openapi/strfmt"
+  packages = ["."]
+  pruneopts = ""
+  revision = "432db8fbcb18bf11f72ca9538e07943e45be4d9f"
+  version = "v0.19.2"
+
+[[projects]]
+  digest = "1:fb1a3f651afb10230982d116bef8cb05dff148c5d3243c8ed79ef78d51f1ebe7"
+  name = "github.com/go-openapi/swag"
+  packages = ["."]
+  pruneopts = ""
+  revision = "c3d0f7896d589f3babb99eea24bbc7de98108e72"
+  version = "v0.19.5"
+
+[[projects]]
+  digest = "1:2fceb713ba23114e18f28bc88d42a4ef80ee3242d119cbb72a24716b964fe9fc"
+  name = "github.com/go-openapi/validate"
+  packages = ["."]
+  pruneopts = ""
+  revision = "6405b9095e4c96aabb45856da08a9323d50d9336"
+  version = "v0.19.2"
+
+[[projects]]
+  digest = "1:a01080d20c45c031c13f3828c56e58f4f51d926a482ad10cc0316225097eb7ea"
+  name = "github.com/go-stack/stack"
+  packages = ["."]
+  pruneopts = ""
+  revision = "2fee6af1a9795aafbe0253a0cfbdf668e1fb8a9a"
+  version = "v1.8.0"
 
 [[projects]]
   digest = "1:fd53b471edb4c28c7d297f617f4da0d33402755f58d6301e7ca1197ef0a90937"
@@ -259,11 +374,14 @@
 
 [[projects]]
   branch = "develop"
-  digest = "1:19b6dc818aab1e61b7197019ce0a677c0b8b108634aeb6a2a3bb5f9af65a8d60"
+  digest = "1:91f4c5034da5abf8f13d667623c7446cddab115b0df089a3c99560c816e1a9eb"
   name = "github.com/keptn/go-utils"
-  packages = ["pkg/utils"]
+  packages = [
+    "pkg/models",
+    "pkg/utils",
+  ]
   pruneopts = ""
-  revision = "4d96e8d84e51b3117a052900a50c2d0f1e8cee94"
+  revision = "cd71eb813c5ebec8dc1263b10c6085ad51551520"
 
 [[projects]]
   digest = "1:91317956b340c9e61a4287fd94c870bfad3f1922280c3e0a65db91c29017e8de"
@@ -280,6 +398,18 @@
   pruneopts = ""
   revision = "de8848e004dd33dc07a2947b3d76f618a7fc7ef1"
   version = "v1.8.1"
+
+[[projects]]
+  branch = "master"
+  digest = "1:101e8200d89dcff2cec2522e427298045bea6d81ef71f8fe10810faeae741efc"
+  name = "github.com/mailru/easyjson"
+  packages = [
+    "buffer",
+    "jlexer",
+    "jwriter",
+  ]
+  pruneopts = ""
+  revision = "b2ccc519800e761ac8000b95e5d57c80a897ff9e"
 
 [[projects]]
   digest = "1:6dbb0eb72090871f2e58d1e37973fe3cb8c0f45f49459398d3fc740cb30e13bd"
@@ -402,6 +532,21 @@
   version = "v0.2.1"
 
 [[projects]]
+  digest = "1:7ac84b0ea6f71fb1f2f11b05623632529f7e561ca737bf71cf8dd22943be6d3d"
+  name = "go.mongodb.org/mongo-driver"
+  packages = [
+    "bson",
+    "bson/bsoncodec",
+    "bson/bsonrw",
+    "bson/bsontype",
+    "bson/primitive",
+    "x/bsonx/bsoncore",
+  ]
+  pruneopts = ""
+  revision = "d42ea7239f0db8a61e77191b9f2730a922459042"
+  version = "v1.1.0"
+
+[[projects]]
   digest = "1:15322677d41c39ba767c0bcfe258fe2ffeeb1c355069674788418bf9c507e811"
   name = "go.opencensus.io"
   packages = [
@@ -512,6 +657,7 @@
     "unicode/cldr",
     "unicode/norm",
     "unicode/rangetable",
+    "width",
   ]
   pruneopts = ""
   revision = "342b2e1fbaa52c93f31447ad2c6abc048c63e475"
