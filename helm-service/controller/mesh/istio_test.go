@@ -1,10 +1,21 @@
 package mesh
 
 import (
+	"bytes"
+	"encoding/json"
 	"testing"
 
 	"github.com/kinbiko/jsonassert"
+
+	kyaml "k8s.io/apimachinery/pkg/util/yaml"
 )
+
+func toJSON(yaml []byte) ([]byte, error) {
+	var jsonData interface{}
+	dec := kyaml.NewYAMLToJSONDecoder(bytes.NewReader(yaml))
+	dec.Decode(&jsonData)
+	return json.Marshal(jsonData)
+}
 
 func TestGenerateHTTPGateway(t *testing.T) {
 
@@ -12,10 +23,14 @@ func TestGenerateHTTPGateway(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+	jsonData, err := toJSON(data)
+	if err != nil {
+		t.Error(err)
+	}
 
 	ja := jsonassert.New(t)
 	// find some sort of payload
-	ja.Assertf(string(data), `
+	ja.Assertf(string(jsonData), `
     {
 		"apiVersion": "networking.istio.io/v1alpha3",
 		"kind": "Gateway",
@@ -49,10 +64,14 @@ func TestDestinationRule(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+	jsonData, err := toJSON(data)
+	if err != nil {
+		t.Error(err)
+	}
 
 	ja := jsonassert.New(t)
 	// find some sort of payload
-	ja.Assertf(string(data), `
+	ja.Assertf(string(jsonData), `
     {
 		"apiVersion": "networking.istio.io/v1alpha3",
 		"kind": "DestinationRule",
@@ -76,10 +95,14 @@ func TestVirtualService(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+	jsonData, err := toJSON(data)
+	if err != nil {
+		t.Error(err)
+	}
 
 	ja := jsonassert.New(t)
 	// find some sort of payload
-	ja.Assertf(string(data), `
+	ja.Assertf(string(jsonData), `
     {
 		"apiVersion": "networking.istio.io/v1alpha3",
 		"kind": "VirtualService",
