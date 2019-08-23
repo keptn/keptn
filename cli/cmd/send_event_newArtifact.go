@@ -80,7 +80,7 @@ Example:
 		}
 
 		eventURL := endPoint
-		eventURL.Path = "event"
+		eventURL.Path = "v1/event"
 
 		utils.PrintLog(fmt.Sprintf("Connecting to server %s", eventURL.String()), utils.VerboseLevel)
 		if !mocking {
