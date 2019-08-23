@@ -1,8 +1,10 @@
 package cmd
 
 import (
+	"crypto/tls"
 	"errors"
 	"io/ioutil"
+	"net/http"
 	"os"
 
 	"github.com/keptn/go-utils/pkg/models"
@@ -55,10 +57,15 @@ var addResourceCmd = &cobra.Command{
 		resources := []*models.Resource{
 			&models.Resource{
 				ResourceContent: string(resourceContent),
-				ResourceURI:     addResourceCmdParams.ResourceURI,
+				ResourceURI:     addResourceCmdParams.Resource,
 			},
 		}
-		resourceHandler := keptnutils.NewAuthenticatedResourceHandler(endPoint.Host, apiToken, "x-token")
+		tr := &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			DialContext:     utils.ResolveXipIoWithContext,
+		}
+		client := &http.Client{Transport: tr}
+		resourceHandler := keptnutils.NewAuthenticatedResourceHandler(endPoint.Host, apiToken, "x-token", client, "https")
 		_, err = resourceHandler.CreateServiceResources(*addResourceCmdParams.Project, *addResourceCmdParams.Stage, *addResourceCmdParams.Service, resources)
 		if err != nil {
 			utils.PrintLog("Resource "+*addResourceCmdParams.Resource+" could not be uploaded: "+err.Error(), utils.QuietLevel)
@@ -84,10 +91,10 @@ func init() {
 	addResourceCmd.MarkFlagRequired("project")
 	addResourceCmdParams.Stage = addResourceCmd.Flags().StringP("stage", "s", "", "The name of the stage")
 	addResourceCmd.MarkFlagRequired("stage")
-	addResourceCmdParams.Service = addResourceCmd.Flags().StringP("service", "svc", "", "The name of the service within the project")
+	addResourceCmdParams.Service = addResourceCmd.Flags().StringP("service", "", "", "The name of the service within the project")
 	addResourceCmd.MarkFlagRequired("service")
 	addResourceCmdParams.Resource = addResourceCmd.Flags().StringP("resource", "r", "", "Path pointing to the resource on your local file system")
 	addResourceCmd.MarkFlagRequired("resource")
-	addResourceCmdParams.ResourceURI = addResourceCmd.Flags().StringP("resourceUri", "ru", "", "Optional: Location where the resource should be stored within the config repo. If empty, The name of the resource will be the same as on your local file system")
+	addResourceCmdParams.ResourceURI = addResourceCmd.Flags().StringP("resourceUri", "", "", "Optional: Location where the resource should be stored within the config repo. If empty, The name of the resource will be the same as on your local file system")
 
 }

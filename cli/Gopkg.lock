@@ -374,14 +374,14 @@
 
 [[projects]]
   branch = "develop"
-  digest = "1:91f4c5034da5abf8f13d667623c7446cddab115b0df089a3c99560c816e1a9eb"
+  digest = "1:86efbeadd3128bd3da448ce84d1a17287f5d36fee0d7afc67c9db94a07e5bd09"
   name = "github.com/keptn/go-utils"
   packages = [
     "pkg/models",
     "pkg/utils",
   ]
   pruneopts = ""
-  revision = "cd71eb813c5ebec8dc1263b10c6085ad51551520"
+  revision = "8bc311c4ec32c0f330cfa8bf8ef1af87ab91103c"
 
 [[projects]]
   digest = "1:91317956b340c9e61a4287fd94c870bfad3f1922280c3e0a65db91c29017e8de"
@@ -981,6 +981,7 @@
     "github.com/google/go-github/github",
     "github.com/google/uuid",
     "github.com/gorilla/websocket",
+    "github.com/keptn/go-utils/pkg/models",
     "github.com/keptn/go-utils/pkg/utils",
     "github.com/mitchellh/go-homedir",
     "github.com/spf13/cobra",
