@@ -43,23 +43,25 @@ var addResourceCmd = &cobra.Command{
 		}
 
 		if !fileExists(*addResourceCmdParams.Resource) {
-			utils.PrintLog("File "+*addResourceCmdParams.Resource+" not found in local file system", utils.QuietLevel)
 			return errors.New("File " + *addResourceCmdParams.Resource + " not found in local file system")
 		}
 		resourceContent, err := ioutil.ReadFile(*addResourceCmdParams.Resource)
 		if err != nil {
-			utils.PrintLog("File "+*addResourceCmdParams.Resource+" could not be read", utils.QuietLevel)
 			return errors.New("File " + *addResourceCmdParams.Resource + " could not be read")
 		}
 
 		utils.PrintLog("Adding resource "+*addResourceCmdParams.Resource+" to service "+*addResourceCmdParams.Service+" in stage "+*addResourceCmdParams.Stage+" in project "+*addResourceCmdParams.Project, utils.InfoLevel)
 
+		if *addResourceCmdParams.ResourceURI == "" {
+			addResourceCmdParams.ResourceURI = addResourceCmdParams.Resource
+		}
 		resources := []*models.Resource{
 			&models.Resource{
 				ResourceContent: string(resourceContent),
-				ResourceURI:     addResourceCmdParams.Resource,
+				ResourceURI:     addResourceCmdParams.ResourceURI,
 			},
 		}
+
 		tr := &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 			DialContext:     utils.ResolveXipIoWithContext,
@@ -68,7 +70,6 @@ var addResourceCmd = &cobra.Command{
 		resourceHandler := keptnutils.NewAuthenticatedResourceHandler(endPoint.Host, apiToken, "x-token", client, "https")
 		_, err = resourceHandler.CreateServiceResources(*addResourceCmdParams.Project, *addResourceCmdParams.Stage, *addResourceCmdParams.Service, resources)
 		if err != nil {
-			utils.PrintLog("Resource "+*addResourceCmdParams.Resource+" could not be uploaded: "+err.Error(), utils.QuietLevel)
 			return errors.New("Resource " + *addResourceCmdParams.Resource + " could not be uploaded: " + err.Error())
 		}
 		return nil
