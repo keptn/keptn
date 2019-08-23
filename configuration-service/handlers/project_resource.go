@@ -90,10 +90,8 @@ func PostProjectProjectNameResourceHandlerFunc(params project_resource.PostProje
 
 	for _, res := range params.Resources.Resources {
 		filePath := projectConfigPath + "/" + *res.ResourceURI
-		if !common.FileExists(filePath) {
-			logger.Debug("Adding resource: " + filePath)
-			common.WriteBase64EncodedFile(projectConfigPath+"/"+*res.ResourceURI, res.ResourceContent)
-		}
+		logger.Debug("Adding resource: " + filePath)
+		common.WriteBase64EncodedFile(projectConfigPath+"/"+*res.ResourceURI, res.ResourceContent)
 	}
 
 	logger.Debug("Staging Changes")
