@@ -265,12 +265,12 @@
   version = "v0.3.0"
 
 [[projects]]
-  digest = "1:7b5c6e2eeaa9ae5907c391a91c132abfd5c9e8a784a341b5625e750c67e6825d"
+  digest = "1:e62657cca9badaa308d86e7716083e4c5933bb78e30a17743fc67f50be26f6f4"
   name = "github.com/gorilla/websocket"
   packages = ["."]
   pruneopts = "UT"
-  revision = "66b9c49e59c6c48f0ffce28c2d8b8a5678502c6d"
-  version = "v1.4.0"
+  revision = "c3e18be99d19e6b3e8f1559eea2c161a665c4b6b"
+  version = "v1.4.1"
 
 [[projects]]
   digest = "1:a0cefd27d12712af4b5018dc7046f245e1e3b5760e2e848c30b171b570708f9b"
@@ -306,22 +306,14 @@
 
 [[projects]]
   branch = "develop"
-  digest = "1:15e8e30d2b6bfd83de16f726615f15bbb5bbee88c3f13133a4a82e656a0019b4"
+  digest = "1:868c3b979ebdbae3cb816e418345896fd323b2be998b12a3654bbf60c7073304"
   name = "github.com/keptn/go-utils"
-  packages = ["pkg/utils"]
-  pruneopts = "UT"
-  revision = "4d96e8d84e51b3117a052900a50c2d0f1e8cee94"
-
-[[projects]]
-  branch = "develop"
-  digest = "1:26d58669890a0bee57eb9c116547610d187015067c38cf514e2f1ad3b8058198"
-  name = "github.com/keptn/keptn"
   packages = [
-    "configuration-service/models",
-    "configuration-service/restapi/operations/service_resource",
+    "pkg/models",
+    "pkg/utils",
   ]
   pruneopts = "UT"
-  revision = "b5c7fc1bf2b82a3dfeeb0e4b1948c1107d607a42"
+  revision = "6c78af3a9ac46aa5f12649cf701ef187c3a480f6"
 
 [[projects]]
   digest = "1:fd7f169f32c221b096c74e756bda16fe22d3bb448bbf74042fd0700407a1f92f"
@@ -495,7 +487,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:6c97b4baa9cf774b42192e23632afc7dee7b899d4a3dc98057d24708ce1f60ac"
+  digest = "1:a3582bab6e28f2dd0d7cabc98d58b225a643ff99a52026fadd8f182eb213c549"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
@@ -503,7 +495,7 @@
     "windows",
   ]
   pruneopts = "UT"
-  revision = "fde4db37ae7ad8191b03d30d27f258b5291ae4e3"
+  revision = "fb81701db80f1745f51259b1f286de3fe2ec80c8"
 
 [[projects]]
   digest = "1:66a2f252a58b4fbbad0e4e180e1d85a83c222b6bce09c3dcdef3dc87c72eda7c"
@@ -693,7 +685,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:dd88b9fb821a23a38e3cc16850441cfd59ba2e228932c0744cfd041f4dc2ec8a"
+  digest = "1:315605adf3b22c06d558f97b6855ed2d003368f42aed2389250ea05762019acd"
   name = "k8s.io/apimachinery"
   packages = [
     "pkg/api/errors",
@@ -732,7 +724,7 @@
     "third_party/forked/golang/reflect",
   ]
   pruneopts = "UT"
-  revision = "2ef880f74d2a4ddf4822f7df4541418c9abaf328"
+  revision = "8ca64af22337b053ca4477f52d2fb15ebde43eee"
 
 [[projects]]
   digest = "1:c670c0e30e65c4a1c48960339e23f3f65f32112539e005f8d189d6fa37d3d4f5"
@@ -851,9 +843,8 @@
     "github.com/google/uuid",
     "github.com/gorilla/websocket",
     "github.com/jessevdk/go-flags",
+    "github.com/keptn/go-utils/pkg/models",
     "github.com/keptn/go-utils/pkg/utils",
-    "github.com/keptn/keptn/configuration-service/models",
-    "github.com/keptn/keptn/configuration-service/restapi/operations/service_resource",
     "github.com/magiconair/properties/assert",
     "golang.org/x/net/netutil",
   ]
