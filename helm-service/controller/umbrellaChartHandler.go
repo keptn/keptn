@@ -16,9 +16,9 @@ const requirementsURI = "requirements.yaml"
 const valuesURI = "values.yaml"
 const gatewayURI = "templates/istio-gateway.yaml"
 
-// InitUmbrellaCharts creates Umbrella charts for each stage of a project.
+// InitUmbrellaChart creates Umbrella charts for each stage of a project.
 // Therefore, it creats for each stage the required resources
-func InitUmbrellaCharts(event *keptnevents.ServiceCreateEventData, mesh mesh.Mesh, configServiceURL string) error {
+func InitUmbrellaChart(event *keptnevents.ServiceCreateEventData, mesh mesh.Mesh, configServiceURL string) error {
 
 	rootChart, err := createRootChartResource(event)
 	if err != nil {
