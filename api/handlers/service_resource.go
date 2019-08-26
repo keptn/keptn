@@ -97,18 +97,18 @@ func getNotFoundErrorMessage(notFoundErrorcode notFoundError, project string, st
 
 func checkServiceAvailability(project string, stage string, service string) notFoundError {
 	// check if project exists
-	status, err := doGet("http://configuration-service:8080/project/" + project)
+	status, err := doGet("http://configuration-service:8080/v1/project/" + project)
 
 	if err != nil || status == 404 {
 		return projectNotFound
 	}
-	status, err = doGet("http://configuration-service:8080/project/" + project + "/stage/" + stage)
+	status, err = doGet("http://configuration-service:8080/v1/project/" + project + "/stage/" + stage)
 	if err != nil || status == 404 {
 		return stageNotFound
 	}
-	status, err = doGet("http://configuration-service:8080/project/" + project + "/stage/" + stage + "/service/" + service)
+	status, err = doGet("http://configuration-service:8080/v1/project/" + project + "/stage/" + stage + "/service/" + service)
 	if err != nil || status == 404 {
-		return stageNotFound
+		return serviceNotFound
 	}
 	return -1
 }
