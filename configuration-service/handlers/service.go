@@ -26,7 +26,19 @@ func GetProjectProjectNameStageStageNameServiceHandlerFunc(params service.GetPro
 
 // GetProjectProjectNameStageStageNameServiceServiceNameHandlerFunc get the specified service
 func GetProjectProjectNameStageStageNameServiceServiceNameHandlerFunc(params service.GetProjectProjectNameStageStageNameServiceServiceNameParams) middleware.Responder {
-	return middleware.NotImplemented("operation service.GetProjectProjectNameStageStageNameServiceServiceName has not yet been implemented")
+	if !common.ProjectExists(params.ProjectName) {
+		return service.NewGetProjectProjectNameStageStageNameServiceServiceNameNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project not found")})
+	}
+	if !common.StageExists(params.ProjectName, params.StageName) {
+		return service.NewGetProjectProjectNameStageStageNameServiceServiceNameNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Stage not found")})
+	}
+	if !common.ServiceExists(params.ProjectName, params.StageName, params.ServiceName) {
+		return service.NewGetProjectProjectNameStageStageNameServiceServiceNameNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Service not found")})
+	}
+	var serviceResponse = &models.Service{
+		ServiceName: params.ServiceName,
+	}
+	return service.NewGetProjectProjectNameStageStageNameServiceServiceNameOK().WithPayload(serviceResponse)
 }
 
 // PostProjectProjectNameStageStageNameServiceHandlerFunc creates a new service
