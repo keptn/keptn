@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 
@@ -8,7 +9,10 @@ import (
 	keptnevents "github.com/keptn/go-utils/pkg/events"
 	"github.com/keptn/go-utils/pkg/models"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	"github.com/keptn/keptn/helm-service/controller/helm"
+
 	"github.com/keptn/keptn/helm-service/controller/mesh"
+	kyaml "k8s.io/apimachinery/pkg/util/yaml"
 )
 
 const WORKING_DIRECTORY = ""
@@ -44,24 +48,88 @@ func DoOnboard(ce cloudevents.Event, mesh mesh.Mesh, logger *keptnutils.Logger, 
 		}
 	}
 
-	logger.Debug("Storing the Helm chart provided by the user")
-	if err := storeChart(event.Project, event.Service, event.HelmChart, stages, configServiceURL); err != nil {
-		logger.Error("Error when storing the Helm chart provided by the user: " + err.Error())
-		return err
+	userChartName := event.Service
+	genChartName := event.Service + "-generated"
+
+	requiresManagedChart, err := checkIfStageRequiresKeptnManagedChart(event.Project, configServiceURL)
+	if err != nil {
+		logger.Error("Error when checking whether the stages require a keptn managed Helm chart: " + err.Error())
 	}
 
-	logger.Debug("Updating the Umbrealla chart with the new Helm chart")
-	if err := helm.AddChartInUmbrellaRequirements(event.Project, event.Service, stages, configServiceURL); err != nil {
-		logger.Error("Error when adding the chart in the Umbrella requirements file: " + err.Error())
-	}
+	var generatedChartData []byte
 
-	if err := helm.AddChartInUmbrellaValues(event.Project, event.Service, stages, configServiceURL); err != nil {
-		logger.Error("Error when adding the chart in the Umbrella values file: " + err.Error())
-	}
+	for _, stage := range stages {
+		logger.Debug("Storing the Helm chart provided by the user in stage " + stage.StageName)
+		if err := storeChart(event.Project, event.Service, userChartName, event.HelmChart, stage, configServiceURL); err != nil {
+			logger.Error("Error when storing the Helm chart: " + err.Error())
+			return err
+		}
 
-	logger.Debug("Generating the keptn-managed Helm chart")
+		logger.Debug("Updating the Umbrealla chart with the new Helm chart in stage " + stage.StageName)
+		if err := helm.AddChartInUmbrellaRequirements(event.Project, userChartName, stage, configServiceURL); err != nil {
+			logger.Error("Error when adding the chart in the Umbrella requirements file: " + err.Error())
+			return err
+		}
+		if err := helm.AddChartInUmbrellaValues(event.Project, userChartName, stage, configServiceURL); err != nil {
+			logger.Error("Error when adding the chart in the Umbrella values file: " + err.Error())
+			return err
+		}
+
+		if requiresManagedChart[stage.StageName] {
+
+			if generatedChartData == nil {
+				logger.Debug("Generating the keptn-managed Helm chart" + stage.StageName)
+				generatedChartData, err = helm.GenerateManagedChart(event, genChartName)
+				if err != nil {
+					logger.Error("Error when generating the keptn managed chart: " + err.Error())
+					return err
+				}
+			}
+
+			logger.Debug("Storing the keptn generated Helm chart in stage " + stage.StageName)
+			if err := storeChart(event.Project, event.Service, genChartName, generatedChartData, stage, configServiceURL); err != nil {
+				logger.Error("Error when storing the Helm chart: " + err.Error())
+				return err
+			}
+
+			logger.Debug("Updating the Umbrealla chart with the new Helm chart in stage " + stage.StageName)
+			if err := helm.AddChartInUmbrellaRequirements(event.Project, genChartName, stage, configServiceURL); err != nil {
+				logger.Error("Error when adding the chart in the Umbrella requirements file: " + err.Error())
+				return err
+			}
+			if err := helm.AddChartInUmbrellaValues(event.Project, genChartName, stage, configServiceURL); err != nil {
+				logger.Error("Error when adding the chart in the Umbrella values file: " + err.Error())
+				return err
+			}
+		}
+	}
 
 	return nil
+}
+
+func checkIfStageRequiresKeptnManagedChart(project string, configServiceURL string) (map[string]bool, error) {
+
+	resourceHandler := keptnutils.NewResourceHandler(configServiceURL)
+	resource, err := resourceHandler.GetProjectResource(project, "shipyard.yaml")
+	if err != nil {
+		return nil, err
+	}
+
+	dec := kyaml.NewYAMLToJSONDecoder(bytes.NewReader([]byte(resource.ResourceContent)))
+	var shipyard models.Shipyard
+	if err := dec.Decode(&shipyard); err != nil {
+		return nil, err
+	}
+
+	var res map[string]bool
+	res = make(map[string]bool)
+
+	for _, stage := range shipyard.Stages {
+
+		res[stage.Name] = stage.DeploymentStrategy == "blue_green" || stage.DeploymentStrategy == "canary"
+	}
+
+	return res, nil
 }
 
 func isFirstServiceOfProject(event *keptnevents.ServiceCreateEventData, stages []*models.Stage, configServiceURL string) (bool, error) {
@@ -79,20 +147,16 @@ func isFirstServiceOfProject(event *keptnevents.ServiceCreateEventData, stages [
 }
 
 func getHelmChartURI(chartName string) string {
-	return chartName + "/helm/" + chartName + ".tgz"
+	return "helm/" + chartName + ".tgz"
 }
 
-func storeChart(project string, service string, helmChart []byte, stages []*models.Stage, configServiceURL string) error {
+func storeChart(project string, service string, chartName string, helmChart []byte, stage *models.Stage, configServiceURL string) error {
 
 	resourceHandler := keptnutils.NewResourceHandler(configServiceURL)
 
-	uri := getHelmChartURI(service)
+	uri := getHelmChartURI(chartName)
 	resource := models.Resource{ResourceURI: &uri, ResourceContent: string(helmChart)}
 
-	for _, stage := range stages {
-		if _, err := resourceHandler.CreateServiceResources(project, stage.StageName, service, []*models.Resource{&resource}); err != nil {
-			return err
-		}
-	}
-	return nil
+	_, err := resourceHandler.CreateServiceResources(project, stage.StageName, service, []*models.Resource{&resource})
+	return err
 }
