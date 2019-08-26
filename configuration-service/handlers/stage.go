@@ -65,5 +65,15 @@ func GetProjectProjectNameStageHandlerFunc(params stage.GetProjectProjectNameSta
 
 // GetProjectProjectNameStageStageNameHandlerFunc gets the specified stage
 func GetProjectProjectNameStageStageNameHandlerFunc(params stage.GetProjectProjectNameStageStageNameParams) middleware.Responder {
-	return middleware.NotImplemented("operation stage.GetProjectProjectNameStageStageName has not yet been implemented")
+	if !common.ProjectExists(params.ProjectName) {
+		return stage.NewGetProjectProjectNameStageStageNameNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project not found")})
+	}
+	if !common.StageExists(params.ProjectName, params.StageName) {
+		return stage.NewGetProjectProjectNameStageStageNameNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Stage not found")})
+	}
+
+	var stageResponse = &models.Stage{
+		StageName: params.StageName,
+	}
+	return stage.NewGetProjectProjectNameStageStageNameOK().WithPayload(stageResponse)
 }
