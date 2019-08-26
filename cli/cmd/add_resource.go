@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"crypto/tls"
+	"encoding/json"
 	"errors"
 	"io/ioutil"
 	"net/http"
@@ -20,6 +21,11 @@ type addResourceCommandParameters struct {
 	Service     *string
 	Resource    *string
 	ResourceURI *string
+}
+
+type addResourceError struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
 }
 
 var addResourceCmdParams *addResourceCommandParameters
@@ -70,7 +76,12 @@ var addResourceCmd = &cobra.Command{
 		resourceHandler := keptnutils.NewAuthenticatedResourceHandler(endPoint.Host, apiToken, "x-token", client, "https")
 		_, err = resourceHandler.CreateServiceResources(*addResourceCmdParams.Project, *addResourceCmdParams.Stage, *addResourceCmdParams.Service, resources)
 		if err != nil {
-			return errors.New("Resource " + *addResourceCmdParams.Resource + " could not be uploaded: Please check if service " + *addResourceCmdParams.Service + " exists in stage " + *addResourceCmdParams.Stage + " of project " + *addResourceCmdParams.Project)
+			errorObj := &addResourceError{}
+			err2 := json.Unmarshal([]byte(err.Error()), errorObj)
+			if err2 != nil {
+				return errors.New("Resource " + *addResourceCmdParams.Resource + " could not be uploaded: " + err.Error())
+			}
+			return errors.New("Resource " + *addResourceCmdParams.Resource + " could not be uploaded: " + errorObj.Message)
 		}
 		utils.PrintLog("Resource has been uploaded.", utils.InfoLevel)
 		return nil
