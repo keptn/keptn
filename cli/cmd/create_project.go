@@ -91,7 +91,7 @@ Example:
 		}
 
 		projectURL := endPoint
-		projectURL.Path = "project"
+		projectURL.Path = "v1/project"
 
 		utils.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), utils.VerboseLevel)
 

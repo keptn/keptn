@@ -7,11 +7,13 @@
   "schemes": [
     "http"
   ],
-  "basePath": "/",
+  "basePath": "/v1",
   "consumes": [
+    "application/json",
     "application/cloudevents+json"
   ],
   "produces": [
+    "application/json",
     "application/cloudevents+json"
   ],
   "securityDefinitions": {
@@ -22,11 +24,11 @@
     }
   },
   "security": [
-    { 
+    {
       "key": []
     }
   ],
-  "paths": {    
+  "paths": {
     "/auth": {
       "post": {
         "tags": [
@@ -69,8 +71,8 @@
         "responses": {
           "201": {
             "description": "forwarded",
-            "schema" : {
-              "$ref" : "#/definitions/ChannelInfo"
+            "schema": {
+              "$ref": "#/definitions/ChannelInfo"
             }
           },
           "default": {
@@ -81,7 +83,7 @@
           }
         }
       }
-    },    
+    },
     "/configure": {
       "post": {
         "tags": [
@@ -101,8 +103,8 @@
         "responses": {
           "201": {
             "description": "configured",
-            "schema" : {
-              "$ref" : "#/definitions/ChannelInfo"
+            "schema": {
+              "$ref": "#/definitions/ChannelInfo"
             }
           },
           "default": {
@@ -133,8 +135,8 @@
         "responses": {
           "201": {
             "description": "project created",
-            "schema" : {
-              "$ref" : "#/definitions/ChannelInfo"
+            "schema": {
+              "$ref": "#/definitions/ChannelInfo"
             }
           },
           "default": {
@@ -165,8 +167,8 @@
         "responses": {
           "201": {
             "description": "service onboarded",
-            "schema" : {
-              "$ref" : "#/definitions/ChannelInfo"
+            "schema": {
+              "$ref": "#/definitions/ChannelInfo"
             }
           },
           "default": {
@@ -177,8 +179,83 @@
           }
         }
       }
+    },
+    "/project/{projectName}/stage/{stageName}/service/{serviceName}/resource": {
+      "parameters": [
+        {
+          "$ref": "#/parameters/projectName"
+        },
+        {
+          "$ref": "#/parameters/stageName"
+        },
+        {
+          "$ref": "#/parameters/serviceName"
+        }
+      ],
+      "post": {
+        "tags": [
+          "Service Resource"
+        ],
+        "summary": "Create list of new resources for the service",
+        "parameters": [
+          {
+            "$ref": "#/parameters/resources"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success. Service resource has been created. The version of the new configuration is returned.",
+            "schema": {
+              "$ref": "#/definitions/Version"
+            }
+          },
+          "400": {
+            "description": "Failed. Service resource could not be created.",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Service Resource"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/resources"
+          }
+        ],
+        "summary": "Update list of service resources",
+        "responses": {
+          "201": {
+            "description": "Success. Service resources have been updated. The version of the new configuration is returned.",
+            "schema": {
+              "$ref": "#/definitions/Version"
+            }
+          },
+          "400": {
+            "description": "Failed. Service resources could not be updated.",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
     }
-  },  
+  },
   "definitions": {
     "ConfigureCE": {
       "allOf": [
@@ -186,7 +263,7 @@
           "$ref": "#/definitions/CE_without_data_with_keptncontext"
         },
         {
-          "type": "object",          
+          "type": "object",
           "properties": {
             "data": {
               "required": [
@@ -204,7 +281,7 @@
                 "token": {
                   "type": "string"
                 }
-              }              
+              }
             }
           }
         }
@@ -216,7 +293,7 @@
           "$ref": "#/definitions/CE_without_data_with_keptncontext"
         },
         {
-          "type": "object",          
+          "type": "object",
           "properties": {
             "data": {
               "required": [
@@ -245,9 +322,9 @@
                         "type": "string"
                       }
                     }
-                  }                  
+                  }
                 }
-              }              
+              }
             }
           }
         }
@@ -271,13 +348,13 @@
         }
       }
     },
-    "ChannelInfo" : {
+    "ChannelInfo": {
       "allOf": [
         {
           "$ref": "#/definitions/CE_without_data_with_keptncontext"
         },
         {
-          "type": "object",          
+          "type": "object",
           "properties": {
             "data": {
               "properties": {
@@ -294,8 +371,8 @@
                       "type": "string"
                     }
                   }
-                }  
-              }           
+                }
+              }
             }
           }
         }
@@ -331,7 +408,7 @@
         }
       ]
     },
-    "CE" : {
+    "CE": {
       "allOf": [
         {
           "$ref": "#/definitions/CE_without_data"
@@ -349,7 +426,7 @@
         }
       ]
     },
-    "CE_without_data" : {
+    "CE_without_data": {
       "type": "object",
       "required": [
         "specversion",
@@ -380,6 +457,108 @@
         "source": {
           "format": "uri-reference",
           "type": "string"
+        }
+      }
+    },
+    "Resource": {
+      "type": "object",
+      "required": [
+        "resourceURI",
+        "resourceContent"
+      ],
+      "properties": {
+        "resourceURI": {
+          "type": "string",
+          "description": "Resource URI"
+        },
+        "resourceContent": {
+          "type": "string",
+          "description": "Resource content"
+        }
+      }
+    },
+    "Resources": {
+      "type": "object",
+      "properties": {
+        "nextPageKey": {
+          "type": "string",
+          "description": "Pointer to next page, base64 encoded"
+        },
+        "totalCount": {
+          "type": "number",
+          "description": "Total number of resources"
+        },
+        "pageSize": {
+          "type": "number",
+          "description": "Size of returned page"
+        },
+        "resources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Resource"
+          }
+        }
+      }
+    },
+    "Version": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string",
+          "description": "Version identifier"
+        }
+      }
+    }
+  },
+  "parameters": {
+    "projectName": {
+      "in": "path",
+      "name": "projectName",
+      "required": true,
+      "type": "string",
+      "description": "Name of the project"
+    },
+    "stageName": {
+      "in": "path",
+      "name": "stageName",
+      "required": true,
+      "type": "string",
+      "description": "Name of the stage"
+    },
+    "serviceName": {
+      "in": "path",
+      "name": "serviceName",
+      "required": true,
+      "type": "string",
+      "description": "Name of the service"
+    },
+    "resourceURI": {
+      "in": "path",
+      "name": "resourceURI",
+      "required": true,
+      "type": "string",
+      "description": "Resource URI"
+    },
+    "resource": {
+      "in": "body",
+      "name": "resource",
+      "description": "Resource",
+      "schema": {
+        "$ref": "#/definitions/Resource"
+      }
+    },
+    "resources": {
+      "in": "body",
+      "name": "resources",
+      "description": "List of resources",
+      "schema": {
+        "properties": {
+          "resources": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/Resource"
+            }
+          }
         }
       }
     }
