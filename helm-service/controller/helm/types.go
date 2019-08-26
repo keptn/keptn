@@ -23,7 +23,7 @@ type RequirementDependencies struct {
 // Values represents the Helm umbrella values
 type Values map[string]Enabler
 
-// Enabler
+// Enabler in Values file
 type Enabler struct {
 	Enabled bool `json:"enabled"`
 }

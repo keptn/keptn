@@ -1,10 +1,9 @@
-package controller
+package helm
 
 import (
 	keptnevents "github.com/keptn/go-utils/pkg/events"
 	"github.com/keptn/go-utils/pkg/models"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
-	"github.com/keptn/keptn/helm-service/controller/helm"
 	"github.com/keptn/keptn/helm-service/controller/mesh"
 	"sigs.k8s.io/yaml"
 )
@@ -13,7 +12,7 @@ const umbrellaChartURI = "Chart.yaml"
 const requirementsURI = "requirements.yaml"
 const valuesURI = "values.yaml"
 const gatewayURI = "templates/istio-gateway.yaml"
-const Version = "0.1.0"
+const version = "0.1.0"
 
 // InitUmbrellaChart creates Umbrella charts for each stage of a project.
 // Therefore, it creats for each stage the required resources
@@ -50,10 +49,10 @@ func InitUmbrellaChart(event *keptnevents.ServiceCreateEventData, mesh mesh.Mesh
 
 func createRootChartResource(event *keptnevents.ServiceCreateEventData) (*models.Resource, error) {
 
-	chart := helm.Chart{APIVersion: "v1",
+	chart := Chart{APIVersion: "v1",
 		Description: "A Helm chart for project " + event.Project + "-umbrella",
 		Name:        event.Project + "-umbrella",
-		Version:     Version}
+		Version:     version}
 
 	chartData, err := yaml.Marshal(chart)
 	if err != nil {
@@ -67,7 +66,7 @@ func createRootChartResource(event *keptnevents.ServiceCreateEventData) (*models
 
 func createRequirementsResource() (*models.Resource, error) {
 
-	requirements := helm.Requirements{}
+	requirements := Requirements{}
 	requirementsData, err := yaml.Marshal(requirements)
 	if err != nil {
 		return nil, err
@@ -79,7 +78,7 @@ func createRequirementsResource() (*models.Resource, error) {
 
 func createValuesResource() (*models.Resource, error) {
 
-	values := helm.Values{}
+	values := Values{}
 	valuesData, err := yaml.Marshal(values)
 	if err != nil {
 		return nil, err
@@ -112,14 +111,14 @@ func AddChartInUmbrellaRequirements(project string, helmChartName string, stages
 			return err
 		}
 
-		requirements := helm.Requirements{}
+		requirements := Requirements{}
 		err = yaml.Unmarshal([]byte(resource.ResourceContent), &requirements)
 		if err != nil {
 			return err
 		}
 
 		requirements.Dependencies = append(requirements.Dependencies,
-			helm.RequirementDependencies{Name: helmChartName, Condition: helmChartName + ".enabled", Version: Version})
+			RequirementDependencies{Name: helmChartName, Condition: helmChartName + ".enabled", Version: version})
 
 		requirementsData, err := yaml.Marshal(requirements)
 		if err != nil {
@@ -148,13 +147,13 @@ func AddChartInUmbrellaValues(project string, helmChartName string, stages []*mo
 			return err
 		}
 
-		values := helm.Values{}
+		values := Values{}
 		err = yaml.Unmarshal([]byte(resource.ResourceContent), &values)
 		if err != nil {
 			return err
 		}
 
-		values[helmChartName] = helm.Enabler{Enabled: false}
+		values[helmChartName] = Enabler{Enabled: false}
 		valuesData, err := yaml.Marshal(values)
 		if err != nil {
 			return err

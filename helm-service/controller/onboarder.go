@@ -38,7 +38,7 @@ func DoOnboard(ce cloudevents.Event, mesh mesh.Mesh, logger *keptnutils.Logger, 
 		logger.Info("Create Helm Umbrella charts")
 
 		// Initalize the umbrella chart
-		if err := InitUmbrellaChart(event, mesh, stages, configServiceURL); err != nil {
+		if err := helm.InitUmbrellaChart(event, mesh, stages, configServiceURL); err != nil {
 			logger.Error("Error when initializing the umbrella chart: " + err.Error())
 			return err
 		}
@@ -50,13 +50,16 @@ func DoOnboard(ce cloudevents.Event, mesh mesh.Mesh, logger *keptnutils.Logger, 
 		return err
 	}
 
-	if err := AddChartInUmbrellaRequirements(event.Project, event.Service, stages, configServiceURL); err != nil {
+	logger.Debug("Updating the Umbrealla chart with the new Helm chart")
+	if err := helm.AddChartInUmbrellaRequirements(event.Project, event.Service, stages, configServiceURL); err != nil {
 		logger.Error("Error when adding the chart in the Umbrella requirements file: " + err.Error())
 	}
 
-	if err := AddChartInUmbrellaValues(event.Project, event.Service, stages, configServiceURL); err != nil {
+	if err := helm.AddChartInUmbrellaValues(event.Project, event.Service, stages, configServiceURL); err != nil {
 		logger.Error("Error when adding the chart in the Umbrella values file: " + err.Error())
 	}
+
+	logger.Debug("Generating the keptn-managed Helm chart")
 
 	return nil
 }
