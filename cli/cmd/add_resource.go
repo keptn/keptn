@@ -70,8 +70,9 @@ var addResourceCmd = &cobra.Command{
 		resourceHandler := keptnutils.NewAuthenticatedResourceHandler(endPoint.Host, apiToken, "x-token", client, "https")
 		_, err = resourceHandler.CreateServiceResources(*addResourceCmdParams.Project, *addResourceCmdParams.Stage, *addResourceCmdParams.Service, resources)
 		if err != nil {
-			return errors.New("Resource " + *addResourceCmdParams.Resource + " could not be uploaded: " + err.Error())
+			return errors.New("Resource " + *addResourceCmdParams.Resource + " could not be uploaded: Please check if service " + *addResourceCmdParams.Service + " exists in stage " + *addResourceCmdParams.Stage + " of project " + *addResourceCmdParams.Project)
 		}
+		utils.PrintLog("Resource has been uploaded.", utils.InfoLevel)
 		return nil
 	},
 }
