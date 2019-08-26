@@ -100,70 +100,64 @@ func createGatewayResource(event *keptnevents.ServiceCreateEventData, stage stri
 }
 
 // AddChartInUmbrellaRequirements adds the chart in the requirements.yaml of the Umbrella chart
-func AddChartInUmbrellaRequirements(project string, helmChartName string, stages []*models.Stage, configServiceURL string) error {
+func AddChartInUmbrellaRequirements(project string, helmChartName string, stage *models.Stage, configServiceURL string) error {
 
 	rHandler := keptnutils.NewResourceHandler(configServiceURL)
 
-	for _, stage := range stages {
+	resource, err := rHandler.GetStageResource(project, stage.StageName, requirementsURI)
+	if err != nil {
+		return err
+	}
 
-		resource, err := rHandler.GetStageResource(project, stage.StageName, requirementsURI)
-		if err != nil {
-			return err
-		}
+	requirements := Requirements{}
+	err = yaml.Unmarshal([]byte(resource.ResourceContent), &requirements)
+	if err != nil {
+		return err
+	}
 
-		requirements := Requirements{}
-		err = yaml.Unmarshal([]byte(resource.ResourceContent), &requirements)
-		if err != nil {
-			return err
-		}
+	requirements.Dependencies = append(requirements.Dependencies,
+		RequirementDependencies{Name: helmChartName, Condition: helmChartName + ".enabled", Version: version})
 
-		requirements.Dependencies = append(requirements.Dependencies,
-			RequirementDependencies{Name: helmChartName, Condition: helmChartName + ".enabled", Version: version})
+	requirementsData, err := yaml.Marshal(requirements)
+	if err != nil {
+		return err
+	}
+	resource.ResourceContent = string(requirementsData)
 
-		requirementsData, err := yaml.Marshal(requirements)
-		if err != nil {
-			return err
-		}
-		resource.ResourceContent = string(requirementsData)
-
-		_, err = rHandler.CreateStageResources(project, stage.StageName, []*models.Resource{resource})
-		if err != nil {
-			return err
-		}
+	_, err = rHandler.CreateStageResources(project, stage.StageName, []*models.Resource{resource})
+	if err != nil {
+		return err
 	}
 
 	return nil
 }
 
 // AddChartInUmbrellaValues adds the chart in the values.yaml of the Umbrella chart
-func AddChartInUmbrellaValues(project string, helmChartName string, stages []*models.Stage, configServiceURL string) error {
+func AddChartInUmbrellaValues(project string, helmChartName string, stage *models.Stage, configServiceURL string) error {
 
 	rHandler := keptnutils.NewResourceHandler(configServiceURL)
 
-	for _, stage := range stages {
+	resource, err := rHandler.GetStageResource(project, stage.StageName, valuesURI)
+	if err != nil {
+		return err
+	}
 
-		resource, err := rHandler.GetStageResource(project, stage.StageName, valuesURI)
-		if err != nil {
-			return err
-		}
+	values := Values{}
+	err = yaml.Unmarshal([]byte(resource.ResourceContent), &values)
+	if err != nil {
+		return err
+	}
 
-		values := Values{}
-		err = yaml.Unmarshal([]byte(resource.ResourceContent), &values)
-		if err != nil {
-			return err
-		}
+	values[helmChartName] = Enabler{Enabled: false}
+	valuesData, err := yaml.Marshal(values)
+	if err != nil {
+		return err
+	}
+	resource.ResourceContent = string(valuesData)
 
-		values[helmChartName] = Enabler{Enabled: false}
-		valuesData, err := yaml.Marshal(values)
-		if err != nil {
-			return err
-		}
-		resource.ResourceContent = string(valuesData)
-
-		_, err = rHandler.CreateStageResources(project, stage.StageName, []*models.Resource{resource})
-		if err != nil {
-			return err
-		}
+	_, err = rHandler.CreateStageResources(project, stage.StageName, []*models.Resource{resource})
+	if err != nil {
+		return err
 	}
 
 	return nil
