@@ -39,9 +39,6 @@ var addResourceCmd = &cobra.Command{
 	./keptn add-resource --project=sockshop --stage=dev --service=carts --resource=./jmeter.jmx --resourceUri=jmeter/functional.jmx
 	`,
 	SilenceUsage: true,
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		return nil
-	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		endPoint, apiToken, err := credentialmanager.GetCreds()
 		if err != nil {
@@ -51,7 +48,7 @@ var addResourceCmd = &cobra.Command{
 		if !fileExists(*addResourceCmdParams.Resource) {
 			return errors.New("File " + *addResourceCmdParams.Resource + " not found in local file system")
 		}
-		resourceContent, err := ioutil.ReadFile(*addResourceCmdParams.Resource)
+		resourceContent, err := ioutil.ReadFile(keptnutils.ExpandTilde(*addResourceCmdParams.Resource))
 		if err != nil {
 			return errors.New("File " + *addResourceCmdParams.Resource + " could not be read")
 		}
@@ -90,7 +87,6 @@ var addResourceCmd = &cobra.Command{
 
 func fileExists(path string) bool {
 	_, err := os.Stat(path)
-	// create file if not exists
 	if os.IsNotExist(err) {
 		return false
 	}
