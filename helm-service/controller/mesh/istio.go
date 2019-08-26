@@ -6,8 +6,17 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
+// IstioMesh is a Istio implementation of interface Mesh
+type IstioMesh struct {
+}
+
+// NewIstioMesh generates a new istio mesh
+func NewIstioMesh() *IstioMesh {
+	return &IstioMesh{}
+}
+
 // GenerateHTTPGateway generates a new Istio Gateway
-func GenerateHTTPGateway(name string) ([]byte, error) {
+func (*IstioMesh) GenerateHTTPGateway(name string) ([]byte, error) {
 
 	selector := map[string]string{
 		"istio": "ingressgateway",
@@ -25,7 +34,7 @@ func GenerateHTTPGateway(name string) ([]byte, error) {
 }
 
 // GenerateDestinationRule generates a new Istio DestinationRule
-func GenerateDestinationRule(name string, host string) ([]byte, error) {
+func (*IstioMesh) GenerateDestinationRule(name string, host string) ([]byte, error) {
 
 	dr := v1alpha3.DestinationRule{TypeMeta: metav1.TypeMeta{Kind: "DestinationRule", APIVersion: "networking.istio.io/v1alpha3"},
 		ObjectMeta: metav1.ObjectMeta{Name: name}, Spec: v1alpha3.DestinationRuleSpec{Host: host}}
@@ -33,7 +42,7 @@ func GenerateDestinationRule(name string, host string) ([]byte, error) {
 }
 
 // GenerateVirtualService generates a new Istio VirtualService
-func GenerateVirtualService(name string, gateways []string, hosts []string, httpRouteDestinations []HTTPRouteDestination) ([]byte, error) {
+func (*IstioMesh) GenerateVirtualService(name string, gateways []string, hosts []string, httpRouteDestinations []HTTPRouteDestination) ([]byte, error) {
 
 	destinations := []*v1alpha3.HTTPRouteDestination{}
 	for _, httpRouteDst := range httpRouteDestinations {
