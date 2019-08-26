@@ -1,8 +1,6 @@
 package controller
 
 import (
-	b64 "encoding/base64"
-
 	keptnevents "github.com/keptn/go-utils/pkg/events"
 	"github.com/keptn/go-utils/pkg/models"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
@@ -15,10 +13,11 @@ const umbrellaChartURI = "Chart.yaml"
 const requirementsURI = "requirements.yaml"
 const valuesURI = "values.yaml"
 const gatewayURI = "templates/istio-gateway.yaml"
+const Version = "0.1.0"
 
 // InitUmbrellaChart creates Umbrella charts for each stage of a project.
 // Therefore, it creats for each stage the required resources
-func InitUmbrellaChart(event *keptnevents.ServiceCreateEventData, mesh mesh.Mesh, configServiceURL string) error {
+func InitUmbrellaChart(event *keptnevents.ServiceCreateEventData, mesh mesh.Mesh, stages []*models.Stage, configServiceURL string) error {
 
 	rootChart, err := createRootChartResource(event)
 	if err != nil {
@@ -33,11 +32,6 @@ func InitUmbrellaChart(event *keptnevents.ServiceCreateEventData, mesh mesh.Mesh
 		return err
 	}
 
-	stageHandler := keptnutils.NewStageHandler(configServiceURL)
-	stages, err := stageHandler.GetAllStages(event.Project)
-	if err != nil {
-		return err
-	}
 	rHandler := keptnutils.NewResourceHandler(configServiceURL)
 	for _, stage := range stages {
 
@@ -59,7 +53,7 @@ func createRootChartResource(event *keptnevents.ServiceCreateEventData) (*models
 	chart := helm.Chart{APIVersion: "v1",
 		Description: "A Helm chart for project " + event.Project + "-umbrella",
 		Name:        event.Project + "-umbrella",
-		Version:     "0.1.0"}
+		Version:     Version}
 
 	chartData, err := yaml.Marshal(chart)
 	if err != nil {
@@ -67,7 +61,7 @@ func createRootChartResource(event *keptnevents.ServiceCreateEventData) (*models
 	}
 
 	uri := umbrellaChartURI
-	return &models.Resource{ResourceContent: b64.StdEncoding.EncodeToString(chartData),
+	return &models.Resource{ResourceContent: string(chartData),
 		ResourceURI: &uri}, nil
 }
 
@@ -79,7 +73,7 @@ func createRequirementsResource() (*models.Resource, error) {
 		return nil, err
 	}
 	uri := requirementsURI
-	return &models.Resource{ResourceContent: b64.StdEncoding.EncodeToString(requirementsData),
+	return &models.Resource{ResourceContent: string(requirementsData),
 		ResourceURI: &uri}, nil
 }
 
@@ -91,7 +85,7 @@ func createValuesResource() (*models.Resource, error) {
 		return nil, err
 	}
 	uri := valuesURI
-	return &models.Resource{ResourceContent: b64.StdEncoding.EncodeToString(valuesData),
+	return &models.Resource{ResourceContent: string(valuesData),
 		ResourceURI: &uri}, nil
 }
 
@@ -102,6 +96,76 @@ func createGatewayResource(event *keptnevents.ServiceCreateEventData, stage stri
 		return nil, err
 	}
 	uri := gatewayURI
-	return &models.Resource{ResourceContent: b64.StdEncoding.EncodeToString(gwData),
+	return &models.Resource{ResourceContent: string(gwData),
 		ResourceURI: &uri}, nil
+}
+
+// AddChartInUmbrellaRequirements adds the chart in the requirements.yaml of the Umbrella chart
+func AddChartInUmbrellaRequirements(project string, helmChartName string, stages []*models.Stage, configServiceURL string) error {
+
+	rHandler := keptnutils.NewResourceHandler(configServiceURL)
+
+	for _, stage := range stages {
+
+		resource, err := rHandler.GetStageResource(project, stage.StageName, requirementsURI)
+		if err != nil {
+			return err
+		}
+
+		requirements := helm.Requirements{}
+		err = yaml.Unmarshal([]byte(resource.ResourceContent), &requirements)
+		if err != nil {
+			return err
+		}
+
+		requirements.Dependencies = append(requirements.Dependencies,
+			helm.RequirementDependencies{Name: helmChartName, Condition: helmChartName + ".enabled", Version: Version})
+
+		requirementsData, err := yaml.Marshal(requirements)
+		if err != nil {
+			return err
+		}
+		resource.ResourceContent = string(requirementsData)
+
+		_, err = rHandler.CreateStageResources(project, stage.StageName, []*models.Resource{resource})
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// AddChartInUmbrellaValues adds the chart in the values.yaml of the Umbrella chart
+func AddChartInUmbrellaValues(project string, helmChartName string, stages []*models.Stage, configServiceURL string) error {
+
+	rHandler := keptnutils.NewResourceHandler(configServiceURL)
+
+	for _, stage := range stages {
+
+		resource, err := rHandler.GetStageResource(project, stage.StageName, valuesURI)
+		if err != nil {
+			return err
+		}
+
+		values := helm.Values{}
+		err = yaml.Unmarshal([]byte(resource.ResourceContent), &values)
+		if err != nil {
+			return err
+		}
+
+		values[helmChartName] = helm.Enabler{Enabled: false}
+		valuesData, err := yaml.Marshal(values)
+		if err != nil {
+			return err
+		}
+		resource.ResourceContent = string(valuesData)
+
+		_, err = rHandler.CreateStageResources(project, stage.StageName, []*models.Resource{resource})
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

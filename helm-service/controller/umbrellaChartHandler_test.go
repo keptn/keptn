@@ -1,7 +1,6 @@
 package controller
 
 import (
-	b64 "encoding/base64"
 	"testing"
 
 	"github.com/keptn/keptn/helm-service/controller/jsonutils"
@@ -23,12 +22,7 @@ func TestCreateRootChartResource(t *testing.T) {
 
 	assert.Equal(t, *resource.ResourceURI, "Chart.yaml", "URI is wrong")
 
-	data, err := b64.StdEncoding.DecodeString(resource.ResourceContent)
-	if err != nil {
-		t.Error(err)
-	}
-
-	jsonData, err := jsonutils.ToJSON(data)
+	jsonData, err := jsonutils.ToJSON([]byte(resource.ResourceContent))
 	if err != nil {
 		t.Error(err)
 	}
@@ -52,12 +46,7 @@ func TestCreateRequirementsResource(t *testing.T) {
 
 	assert.Equal(t, *resource.ResourceURI, "requirements.yaml", "URI is wrong")
 
-	data, err := b64.StdEncoding.DecodeString(resource.ResourceContent)
-	if err != nil {
-		t.Error(err)
-	}
-
-	jsonData, err := jsonutils.ToJSON(data)
+	jsonData, err := jsonutils.ToJSON([]byte(resource.ResourceContent))
 	if err != nil {
 		t.Error(err)
 	}
@@ -78,12 +67,7 @@ func TestCreateValuesResource(t *testing.T) {
 
 	assert.Equal(t, *resource.ResourceURI, "values.yaml", "URI is wrong")
 
-	data, err := b64.StdEncoding.DecodeString(resource.ResourceContent)
-	if err != nil {
-		t.Error(err)
-	}
-
-	jsonData, err := jsonutils.ToJSON(data)
+	jsonData, err := jsonutils.ToJSON([]byte(resource.ResourceContent))
 	if err != nil {
 		t.Error(err)
 	}
@@ -105,12 +89,7 @@ func TestCreateGatewayResource(t *testing.T) {
 
 	assert.Equal(t, *resource.ResourceURI, "templates/istio-gateway.yaml", "URI is wrong")
 
-	data, err := b64.StdEncoding.DecodeString(resource.ResourceContent)
-	if err != nil {
-		t.Error(err)
-	}
-
-	jsonData, err := jsonutils.ToJSON(data)
+	jsonData, err := jsonutils.ToJSON([]byte(resource.ResourceContent))
 	if err != nil {
 		t.Error(err)
 	}
