@@ -2,6 +2,7 @@ package handlers
 
 import (
 	b64 "encoding/base64"
+	"encoding/json"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
@@ -44,7 +45,9 @@ func PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(p
 	}
 	newVersion, err := resourceHandler.CreateServiceResources(params.ProjectName, params.StageName, params.ServiceName, resourcesToUpload)
 	if err != nil {
-		return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+		errorObj := &models.Error{}
+		json.Unmarshal([]byte(err.Error()), errorObj)
+		return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceDefault(500).WithPayload(errorObj)
 	}
 	return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceCreated().WithPayload(&models.Version{
 		Version: newVersion,
@@ -68,7 +71,9 @@ func PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(pa
 	}
 	newVersion, err := resourceHandler.CreateServiceResources(params.ProjectName, params.StageName, params.ServiceName, resourcesToUpload)
 	if err != nil {
-		return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+		errorObj := &models.Error{}
+		json.Unmarshal([]byte(err.Error()), errorObj)
+		return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceDefault(500).WithPayload(errorObj)
 	}
 	return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceCreated().WithPayload(&models.Version{
 		Version: newVersion,
