@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
+	keptnmodels "github.com/keptn/go-utils/pkg/models"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	models "github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations/service_resource"
@@ -29,15 +30,16 @@ func DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI
 func PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(params service_resource.PostProjectProjectNameStageStageNameServiceServiceNameResourceParams, principal *models.Principal) middleware.Responder {
 	resourceHandler := keptnutils.NewResourceHandler("configuration-service:8080")
 
-	resourcesToUpload := []*keptnutils.Resource{}
+	resourcesToUpload := []*keptnmodels.Resource{}
 	for _, resource := range params.Resources.Resources {
-		decodedStr, err := b64.StdEncoding.DecodeString(*resource.ResourceContent)
+		decodedStrBytes, err := b64.StdEncoding.DecodeString(*resource.ResourceContent)
 		if err != nil {
-			return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not base64-decode content of resource " + resource.ResourceURI)})
+			return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not base64-decode content of resource " + *resource.ResourceURI)})
 		}
-		resourcesToUpload = append(resourcesToUpload, &keptnutils.Resource{
-			ResourceContent: string(decodedStr),
-			ResourceURI:     *resource.ResourceURI,
+		descodedString := string(decodedStrBytes)
+		resourcesToUpload = append(resourcesToUpload, &keptnmodels.Resource{
+			ResourceContent: descodedString,
+			ResourceURI:     resource.ResourceURI,
 		})
 	}
 	newVersion, err := resourceHandler.CreateServiceResources(params.ProjectName, params.StageName, params.ServiceName, resourcesToUpload)
@@ -52,15 +54,16 @@ func PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(p
 // PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc updates a list of resources
 func PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(params service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceParams, principal *models.Principal) middleware.Responder {
 	resourceHandler := keptnutils.NewResourceHandler("configuration-service:8080")
-	resourcesToUpload := []*keptnutils.Resource{}
+	resourcesToUpload := []*keptnmodels.Resource{}
 	for _, resource := range params.Resources.Resources {
-		decodedStr, err := b64.StdEncoding.DecodeString(*resource.ResourceContent)
+		decodedStrBytes, err := b64.StdEncoding.DecodeString(*resource.ResourceContent)
 		if err != nil {
-			return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not base64-decode content of resource " + resource.ResourceURI)})
+			return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not base64-decode content of resource " + *resource.ResourceURI)})
 		}
-		resourcesToUpload = append(resourcesToUpload, &keptnutils.Resource{
-			ResourceContent: string(decodedStr),
-			ResourceURI:     *resource.ResourceURI,
+		descodedString := string(decodedStrBytes)
+		resourcesToUpload = append(resourcesToUpload, &keptnmodels.Resource{
+			ResourceContent: descodedString,
+			ResourceURI:     resource.ResourceURI,
 		})
 	}
 	newVersion, err := resourceHandler.CreateServiceResources(params.ProjectName, params.StageName, params.ServiceName, resourcesToUpload)
