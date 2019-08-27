@@ -308,7 +308,7 @@ func TestGenerateManagedChart(t *testing.T) {
 	assert.Nil(t, err, "Generating the managed Chart should not return any error")
 
 	workingPath, err := ioutil.TempDir("", "helm-test")
-	// defer os.RemoveAll(workingPath)
+	defer os.RemoveAll(workingPath)
 	fmt.Println(workingPath)
 	keptnutils.Untar(workingPath, bytes.NewReader(gen))
 
