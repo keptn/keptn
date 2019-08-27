@@ -88,9 +88,13 @@ func createValuesResource() (*models.Resource, error) {
 		ResourceURI: &uri}, nil
 }
 
+func getGatwayName(project string, stage string) string {
+	return project + "-" + stage + "-gateway"
+}
+
 func createGatewayResource(event *keptnevents.ServiceCreateEventData, stage string, mesh mesh.Mesh) (*models.Resource, error) {
 
-	gwData, err := mesh.GenerateHTTPGateway(event.Project + "-" + stage + "-gateway")
+	gwData, err := mesh.GenerateHTTPGateway(getGatwayName(event.Project, stage))
 	if err != nil {
 		return nil, err
 	}
