@@ -56,7 +56,11 @@ func DoOnboard(ce cloudevents.Event, mesh mesh.Mesh, logger *keptnutils.Logger, 
 		logger.Error("Error when checking whether the stages require a keptn managed Helm chart: " + err.Error())
 	}
 
-	var generatedChartData []byte
+	keptnDomain, err := keptnutils.GetKeptnDomain(false)
+	if err != nil {
+		logger.Error("Error when reading the keptn domain")
+		return err
+	}
 
 	for _, stage := range stages {
 		logger.Debug("Storing the Helm chart provided by the user in stage " + stage.StageName)
@@ -77,13 +81,11 @@ func DoOnboard(ce cloudevents.Event, mesh mesh.Mesh, logger *keptnutils.Logger, 
 
 		if requiresManagedChart[stage.StageName] {
 
-			if generatedChartData == nil {
-				logger.Debug("Generating the keptn-managed Helm chart" + stage.StageName)
-				generatedChartData, err = helm.GenerateManagedChart(event, genChartName)
-				if err != nil {
-					logger.Error("Error when generating the keptn managed chart: " + err.Error())
-					return err
-				}
+			logger.Debug("Generating the keptn-managed Helm chart" + stage.StageName)
+			generatedChartData, err := helm.GenerateManagedChart(event, stage.StageName, mesh, keptnDomain)
+			if err != nil {
+				logger.Error("Error when generating the keptn managed chart: " + err.Error())
+				return err
 			}
 
 			logger.Debug("Storing the keptn generated Helm chart in stage " + stage.StageName)
