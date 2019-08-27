@@ -362,7 +362,7 @@ export class Service {
     event.shkeptncontext = sourceEvent.shkeptncontext;
     event.data.githuborg = sourceEvent.data.githuborg;
     event.data.project = sourceEvent.data.project;
-    event.data.teststategy = sourceEvent.data.teststategy;
+    event.data.teststrategy = sourceEvent.data.teststrategy;
     event.data.deploymentstrategy = sourceEvent.data.deploymentstrategy;
     event.data.stage = sourceEvent.data.stage;
     event.data.service = sourceEvent.data.service;
