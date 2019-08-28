@@ -40,7 +40,7 @@ func GenerateManagedChart(event *keptnevents.ServiceCreateEventData, stageName s
 		return nil, err
 	}
 	if len(helmCharts) != 1 {
-		return nil, errors.New("Multiple helm charts are found wihin tar")
+		return nil, errors.New("Multiple helm charts are found within tar")
 	}
 
 	chartFolder := filepath.Join(workingPath, helmCharts[0].Name())
