@@ -178,7 +178,7 @@ var serviceCmd = &cobra.Command{
 		}
 
 		serviceURL := endPoint
-		serviceURL.Path = "service"
+		serviceURL.Path = "v1/service"
 
 		utils.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), utils.VerboseLevel)
 		if !mocking {

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"io/ioutil"
 	"os"
 	"time"
 
@@ -21,12 +22,68 @@ type serviceMetadata struct {
 
 // GetProjectProjectNameStageStageNameServiceHandlerFunc get list of services
 func GetProjectProjectNameStageStageNameServiceHandlerFunc(params service.GetProjectProjectNameStageStageNameServiceParams) middleware.Responder {
-	return middleware.NotImplemented("operation service.GetProjectProjectNameStageStageNameService has not yet been implemented")
+	logger := utils.NewLogger("", "", "configuration-service")
+	if !common.ProjectExists(params.ProjectName) {
+		return service.NewGetProjectProjectNameStageStageNameServiceNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project not found")})
+	}
+	if !common.StageExists(params.ProjectName, params.StageName) {
+		return service.NewGetProjectProjectNameStageStageNameServiceNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Stage not found")})
+	}
+	var payload = &models.Services{
+		PageSize:    0,
+		NextPageKey: "0",
+		TotalCount:  0,
+		Services:    []*models.Service{},
+	}
+
+	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
+	err := common.CheckoutBranch(params.ProjectName, params.StageName)
+	if err != nil {
+		logger.Error(err.Error())
+		return service.NewGetProjectProjectNameStageStageNameServiceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not check out branch")})
+	}
+	files, err := ioutil.ReadDir(projectConfigPath)
+	if err != nil {
+		return service.NewGetProjectProjectNameStageStageNameServiceOK().WithPayload(payload)
+	}
+
+	filteredFiles := []os.FileInfo{}
+	for _, file := range files {
+		if file.IsDir() && common.FileExists(projectConfigPath+"/"+file.Name()+"/metadata.yaml") {
+			filteredFiles = append(filteredFiles, file)
+		}
+	}
+
+	paginationInfo := common.Paginate(len(filteredFiles), params.PageSize, params.NextPageKey)
+
+	totalCount := len(filteredFiles)
+	if paginationInfo.NextPageKey < int64(totalCount) {
+		for _, f := range filteredFiles[paginationInfo.NextPageKey:paginationInfo.EndIndex] {
+			var service = &models.Service{ServiceName: f.Name()}
+			payload.Services = append(payload.Services, service)
+		}
+	}
+
+	payload.TotalCount = float64(totalCount)
+	payload.NextPageKey = paginationInfo.NewNextPageKey
+	return service.NewGetProjectProjectNameStageStageNameServiceOK().WithPayload(payload)
 }
 
 // GetProjectProjectNameStageStageNameServiceServiceNameHandlerFunc get the specified service
 func GetProjectProjectNameStageStageNameServiceServiceNameHandlerFunc(params service.GetProjectProjectNameStageStageNameServiceServiceNameParams) middleware.Responder {
-	return middleware.NotImplemented("operation service.GetProjectProjectNameStageStageNameServiceServiceName has not yet been implemented")
+	if !common.ProjectExists(params.ProjectName) {
+		return service.NewGetProjectProjectNameStageStageNameServiceServiceNameNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project not found")})
+	}
+	if !common.StageExists(params.ProjectName, params.StageName) {
+		return service.NewGetProjectProjectNameStageStageNameServiceServiceNameNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Stage not found")})
+	}
+	if !common.ServiceExists(params.ProjectName, params.StageName, params.ServiceName) {
+		return service.NewGetProjectProjectNameStageStageNameServiceServiceNameNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Service not found")})
+	}
+	var serviceResponse = &models.Service{
+		ServiceName: params.ServiceName,
+	}
+	return service.NewGetProjectProjectNameStageStageNameServiceServiceNameOK().WithPayload(serviceResponse)
 }
 
 // PostProjectProjectNameStageStageNameServiceHandlerFunc creates a new service

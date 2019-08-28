@@ -11,6 +11,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/keptn/keptn/api/handlers"
+	"github.com/keptn/keptn/api/restapi/operations/service_resource"
+
 	"github.com/keptn/keptn/api/restapi/operations/auth"
 	"github.com/keptn/keptn/api/restapi/operations/service"
 
@@ -199,6 +202,10 @@ func configureAPI(api *operations.API) http.Handler {
 		}
 		return service.NewServiceCreated().WithPayload(&channelInfo)
 	})
+
+	api.ServiceResourcePostProjectProjectNameStageStageNameServiceServiceNameResourceHandler = service_resource.PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(handlers.PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc)
+
+	api.ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceHandler = service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(handlers.PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc)
 
 	api.ServerShutdown = func() {}
 

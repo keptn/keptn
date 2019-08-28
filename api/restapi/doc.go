@@ -6,7 +6,7 @@ Package restapi keptn api
     Schemes:
       http
     Host: localhost
-    BasePath: /
+    BasePath: /v1
     Version: 0.1.0
 
     Consumes:
