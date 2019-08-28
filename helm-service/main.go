@@ -15,7 +15,10 @@ import (
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 	"github.com/google/uuid"
 	"github.com/kelseyhightower/envconfig"
+	keptnevents "github.com/keptn/go-utils/pkg/events"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	"github.com/keptn/keptn/helm-service/controller"
+	"github.com/keptn/keptn/helm-service/controller/mesh"
 )
 
 type envConfig struct {
@@ -44,6 +47,21 @@ type ConfigurationChangedEvent struct {
 	DeploymentStrategy string `json:"deploymentstrategy"`
 }
 
+func getConfigurationServiceURL() string {
+	if os.Getenv("env") == "production" {
+		return "configuration-service.keptn.svc.cluster.local:8080"
+	}
+	return "localhost:8080"
+}
+
+func getKeptnDomain() (string, error) {
+	useInClusterConfig := false
+	if os.Getenv("env") == "production" {
+		useInClusterConfig = true
+	}
+	return keptnutils.GetKeptnDomain(useInClusterConfig)
+}
+
 func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	var shkeptncontext string
 	event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
@@ -55,14 +73,25 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		logger.Error(fmt.Sprintf("Got Data Error: %s", err.Error()))
 		return err
 	}
+	mesh := mesh.NewIstioMesh()
 
-	if event.Type() != "sh.keptn.events.configuration-changed" {
+	if event.Type() == keptnevents.ConfigurationChangeEventType {
+		// TODO: First change configuration. Then apply configuration
+		go doDeployment(event, logger, *data, shkeptncontext)
+	} else if event.Type() == keptnevents.InternalServiceCreateEventType {
+		keptnDomain, err := getKeptnDomain()
+		if err != nil {
+			logger.Error("Error when reading the keptn domain")
+			return err
+		}
+		go controller.DoOnboard(event, mesh, logger, shkeptncontext, getConfigurationServiceURL(), keptnDomain)
+	} else {
 		const errorMsg = "Received unexpected keptn event"
 		logger.Error(errorMsg)
 		return errors.New(errorMsg)
+
 	}
 
-	go doDeployment(event, logger, *data, shkeptncontext)
 	return nil
 }
 
