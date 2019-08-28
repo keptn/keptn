@@ -16,7 +16,7 @@ import (
 )
 
 // DoOnboard onboards a new service
-func DoOnboard(ce cloudevents.Event, mesh mesh.Mesh, logger *keptnutils.Logger, shkeptncontext string, configServiceURL string) error {
+func DoOnboard(ce cloudevents.Event, mesh mesh.Mesh, logger *keptnutils.Logger, shkeptncontext string, configServiceURL string, keptnDomain string) error {
 
 	event := &keptnevents.ServiceCreateEventData{}
 	if err := ce.DataAs(event); err != nil {
@@ -52,12 +52,6 @@ func DoOnboard(ce cloudevents.Event, mesh mesh.Mesh, logger *keptnutils.Logger, 
 	requiresManagedChart, err := checkIfStagesRequireKeptnManagedChart(event.Project, configServiceURL)
 	if err != nil {
 		logger.Error("Error when checking whether the stages require a keptn managed Helm chart: " + err.Error())
-	}
-
-	keptnDomain, err := keptnutils.GetKeptnDomain(false)
-	if err != nil {
-		logger.Error("Error when reading the keptn domain")
-		return err
 	}
 
 	for _, stage := range stages {
@@ -126,7 +120,8 @@ func checkIfStagesRequireKeptnManagedChart(project string, configServiceURL stri
 
 	for _, stage := range shipyard.Stages {
 
-		res[stage.Name] = stage.DeploymentStrategy == "blue_green" || stage.DeploymentStrategy == "canary"
+		res[stage.Name] = stage.DeploymentStrategy == "blue_green_service" ||
+			stage.DeploymentStrategy == "blue_green" || stage.DeploymentStrategy == "canary"
 	}
 
 	return res, nil
