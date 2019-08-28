@@ -5,6 +5,7 @@ import (
 	"github.com/keptn/go-utils/pkg/models"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/helm-service/controller/mesh"
+	hapichart "k8s.io/helm/pkg/proto/hapi/chart"
 	"sigs.k8s.io/yaml"
 )
 
@@ -49,12 +50,12 @@ func InitUmbrellaChart(event *keptnevents.ServiceCreateEventData, mesh mesh.Mesh
 
 func createRootChartResource(event *keptnevents.ServiceCreateEventData) (*models.Resource, error) {
 
-	chart := Chart{APIVersion: "v1",
+	metadata := hapichart.Metadata{ApiVersion: "v1",
 		Description: "A Helm chart for project " + event.Project + "-umbrella",
 		Name:        event.Project + "-umbrella",
 		Version:     version}
 
-	chartData, err := yaml.Marshal(chart)
+	chartData, err := yaml.Marshal(metadata)
 	if err != nil {
 		return nil, err
 	}

@@ -1,10 +1,9 @@
 package helm
 
 import (
-	"bufio"
 	"bytes"
 	"encoding/json"
-	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -12,12 +11,13 @@ import (
 	"strings"
 
 	keptnevents "github.com/keptn/go-utils/pkg/events"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/helm-service/controller/jsonutils"
 	"github.com/keptn/keptn/helm-service/controller/mesh"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	kyaml "k8s.io/apimachinery/pkg/util/yaml"
+	"k8s.io/helm/pkg/chartutil"
+	"k8s.io/helm/pkg/proto/hapi/chart"
 )
 
 // GenerateManagedChart generates a duplicated chart which is managed by keptn and used for
@@ -30,69 +30,38 @@ func GenerateManagedChart(event *keptnevents.ServiceCreateEventData, stageName s
 		return nil, err
 	}
 	defer os.RemoveAll(workingPath)
-
-	if err := keptnutils.Untar(workingPath, bytes.NewReader(event.HelmChart)); err != nil {
-		return nil, err
-	}
-
-	helmCharts, err := ioutil.ReadDir(workingPath)
+	packagedChartFilePath := filepath.Join(workingPath, event.Service)
+	err = ioutil.WriteFile(packagedChartFilePath, event.HelmChart, 0644)
 	if err != nil {
 		return nil, err
 	}
-	if len(helmCharts) != 1 {
-		return nil, errors.New("Multiple helm charts are found within tar")
-	}
 
-	chartFolder := filepath.Join(workingPath, helmCharts[0].Name())
+	ch, err := chartutil.Load(packagedChartFilePath)
 
-	if err := changeChartFile(chartFolder); err != nil {
+	changeChartFile(ch)
+
+	if err := changeTemplateContent(event, ch, mesh, stageName, domain); err != nil {
 		return nil, err
 	}
 
-	if err := changeTemplateContent(event, filepath.Join(chartFolder, "templates"),
-		mesh, stageName, domain); err != nil {
+	helmPackage, err := ioutil.TempDir("", "helm-package")
+	if err != nil {
+		return nil, err
+	}
+	defer os.RemoveAll(helmPackage)
+
+	name, err := chartutil.Save(ch, helmPackage)
+	if err != nil {
 		return nil, err
 	}
 
-	var b bytes.Buffer
-	writer := bufio.NewWriter(&b)
-
-	if err := keptnutils.Tar(chartFolder, writer); err != nil {
-		return nil, err
-	}
-	writer.Flush()
-
-	return b.Bytes(), os.RemoveAll(workingPath)
+	return ioutil.ReadFile(name)
 }
 
-func changeChartFile(chartPath string) error {
+func changeChartFile(ch *chart.Chart) {
 
-	chartFiles, err := keptnutils.GetFiles(chartPath, "Chart.yaml", "Chart.yml")
-	if len(chartFiles) == 0 {
-		return errors.New("No Chart.yaml file can be found for chart " + chartPath)
-	} else if len(chartFiles) > 1 {
-		return errors.New("Multiple Chart.yaml files found for chart " + chartPath)
-	}
-
-	dat, err := ioutil.ReadFile(chartFiles[0])
-	if err != nil {
-		return err
-	}
-
-	dec := kyaml.NewYAMLToJSONDecoder(bytes.NewReader(dat))
-	var chart Chart
-	if err := dec.Decode(&chart); err != nil {
-		return err
-	}
-	chart.Name = chart.Name + "-generated"
-	chart.Description = chart.Description + " (generated)"
-
-	jsonBytes, err := json.Marshal(chart)
-	if err != nil {
-		return err
-	}
-	yamlBytes, err := jsonutils.ToYAML(jsonBytes)
-	return ioutil.WriteFile(chartFiles[0], yamlBytes, 0644)
+	ch.Metadata.Name = ch.Metadata.Name + "-generated"
+	ch.Metadata.Description = ch.Metadata.Description + " (generated)"
 }
 
 func getNamespace(projectName string, stageName string) string {
@@ -100,20 +69,13 @@ func getNamespace(projectName string, stageName string) string {
 }
 
 func changeTemplateContent(event *keptnevents.ServiceCreateEventData,
-	templatesPath string, meshHandler mesh.Mesh, stageName string, domain string) error {
+	ch *chart.Chart, meshHandler mesh.Mesh, stageName string, domain string) error {
 
-	templateFiles, err := keptnutils.GetFiles(templatesPath, ".yml", ".yaml")
-	if err != nil {
-		return err
-	}
+	newTemplates := make([]*chart.Template, 0, 0)
 
-	for _, file := range templateFiles {
-		dat, err := ioutil.ReadFile(file)
-		if err != nil {
-			return err
-		}
-		dec := kyaml.NewYAMLToJSONDecoder(bytes.NewReader(dat))
-		elements := make([]interface{}, 0, 1)
+	for _, templateFile := range ch.Templates {
+		dec := kyaml.NewYAMLToJSONDecoder(bytes.NewReader(templateFile.Data))
+		newContent := make([]byte, 0, 0)
 		for {
 			var document interface{}
 			err := dec.Decode(&document)
@@ -129,89 +91,103 @@ func changeTemplateContent(event *keptnevents.ServiceCreateEventData,
 				return err
 			}
 
-			newServiceElements, err := handleService(doc, event, stageName, meshHandler, templatesPath, domain)
+			newServiceTemplateContent, newServiceTemplates, err := handleService(doc, event, stageName, meshHandler, domain)
 			if err != nil {
 				return err
 			}
-			newDeploymentElement, err := handleDeployment(doc)
+			if len(newServiceTemplateContent) > 0 {
+				fmt.Println(string(newServiceTemplateContent))
+				newContent = append(newContent, newServiceTemplateContent...)
+				newTemplates = append(newTemplates, newServiceTemplates...)
+				continue
+			}
+
+			newDeploymentTemplateContent, err := handleDeployment(doc)
 			if err != nil {
 				return err
 			}
+			if len(newDeploymentTemplateContent) > 0 {
+				fmt.Println(string(newDeploymentTemplateContent))
+				newContent = append(newContent, newDeploymentTemplateContent...)
+				continue
+			}
 
-			if len(newServiceElements) > 0 {
-				elements = append(elements, newServiceElements...)
-			} else if newDeploymentElement != nil {
-				elements = append(elements, newDeploymentElement)
-			} else {
-				elements = append(elements, document)
+			newContent, err = appendAsYaml(newContent, document)
+			if err != nil {
+				return err
 			}
 		}
 
-		// Create new yaml file with changed services and deployments
-		if err := writeNewContent(file, elements); err != nil {
-			return err
-		}
+		templateFile.Data = newContent
 	}
+
+	ch.Templates = append(ch.Templates, newTemplates...)
 	return nil
 }
 
-func writeNewContent(file string, elements []interface{}) error {
-	newFileContent := ""
-	for _, element := range elements {
-		jsonData, err := json.Marshal(element)
-		if err != nil {
-			return err
-		}
-		yamlData, err := jsonutils.ToYAML(jsonData)
-		if err != nil {
-			return err
-		}
-		newFileContent = newFileContent + "---\n" + string(yamlData)
+func appendAsYaml(content []byte, element interface{}) ([]byte, error) {
+
+	jsonData, err := json.Marshal(element)
+	if err != nil {
+		return nil, err
 	}
-	return ioutil.WriteFile(file, []byte(newFileContent), 0644)
+	yamlData, err := jsonutils.ToYAML(jsonData)
+	if err != nil {
+		return nil, err
+	}
+	content = append(content, []byte("---\n")...)
+	return append(content, yamlData...), nil
 }
 
 func handleService(document []byte, event *keptnevents.ServiceCreateEventData, stageName string, meshHandler mesh.Mesh,
-	templatesPath string, domain string) ([]interface{}, error) {
+	domain string) ([]byte, []*chart.Template, error) {
+
 	var svc corev1.Service
 	if err := json.Unmarshal(document, &svc); err != nil {
 		// Ignore unmarshaling error
-		return nil, nil
+		return nil, nil, nil
 	}
 
-	elements := make([]interface{}, 0, 0)
+	newTemplateContent := make([]byte, 0, 0)
+	newTemplates := make([]*chart.Template, 0, 0)
+
 	if isService(svc) {
 
+		var err error
 		serviceCanary := svc.DeepCopy()
 		serviceCanary.Name = serviceCanary.Name + "-canary"
-		elements = append(elements, serviceCanary)
+		newTemplateContent, err = appendAsYaml(newTemplateContent, serviceCanary)
+		if err != nil {
+			return nil, nil, err
+		}
 
 		// Generate destination rule for canary service
 		hostCanary := serviceCanary.Name + "." + getNamespace(event.Project, stageName) + ".svc.cluster.local"
 		destinationRuleCanary, err := meshHandler.GenerateDestinationRule(serviceCanary.Name, hostCanary)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
-		if err := ioutil.WriteFile(filepath.Join(templatesPath, serviceCanary.Name+"-istio-destinationrule.yaml"),
-			destinationRuleCanary, 0644); err != nil {
-			return nil, err
-		}
+
+		d1 := chart.Template{Name: serviceCanary.Name + "-istio-destinationrule.yaml", Data: destinationRuleCanary}
+		newTemplates = append(newTemplates, &d1)
 
 		servicePrimary := svc.DeepCopy()
 		servicePrimary.Name = servicePrimary.Name + "-primary"
 		servicePrimary.Spec.Selector["app"] = servicePrimary.Spec.Selector["app"] + "-primary"
-		elements = append(elements, servicePrimary)
+		newTemplateContent, err = appendAsYaml(newTemplateContent, servicePrimary)
+		if err != nil {
+			return nil, nil, err
+		}
 
 		// Generate destination rule for primary service
 		hostPrimary := servicePrimary.Name + "." + getNamespace(event.Project, stageName) + ".svc.cluster.local"
 		destinationRulePrimary, err := meshHandler.GenerateDestinationRule(servicePrimary.Name, hostPrimary)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
-		if err := ioutil.WriteFile(filepath.Join(templatesPath, servicePrimary.Name+"-istio-destinationrule.yaml"),
-			destinationRulePrimary, 0644); err != nil {
-			return nil, err
-		}
+
+		d2 := chart.Template{Name: servicePrimary.Name + "-istio-destinationrule.yaml", Data: destinationRulePrimary}
+		newTemplates = append(newTemplates, &d2)
 
 		gws := []string{getGatwayName(event.Project, stageName)}
 		hosts := []string{svc.Name + "." + getNamespace(event.Project, stageName) + "." + domain}
@@ -221,16 +197,16 @@ func handleService(document []byte, event *keptnevents.ServiceCreateEventData, s
 
 		vs, err := meshHandler.GenerateVirtualService(svc.Name, gws, hosts, httpRouteDestinations)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
-		if err := ioutil.WriteFile(filepath.Join(templatesPath, svc.Name+"-istio-virtualservice.yaml"), vs, 0644); err != nil {
-			return nil, err
-		}
+
+		gw := chart.Template{Name: svc.Name + "-istio-virtualservice.yaml", Data: vs}
+		newTemplates = append(newTemplates, &gw)
 	}
-	return elements, nil
+	return newTemplateContent, newTemplates, nil
 }
 
-func handleDeployment(document []byte) (interface{}, error) {
+func handleDeployment(document []byte) ([]byte, error) {
 	// Try to unmarshal Deployment
 	var depl appsv1.Deployment
 	if err := json.Unmarshal(document, &depl); err != nil {
@@ -238,13 +214,18 @@ func handleDeployment(document []byte) (interface{}, error) {
 		return nil, nil
 	}
 
+	newTemplateContent := make([]byte, 0, 0)
 	if isDeployment(depl) {
 		depl.Name = depl.Name + "-primary"
 		depl.Spec.Selector.MatchLabels["app"] = depl.Spec.Selector.MatchLabels["app"] + "-primary"
 		depl.Spec.Template.ObjectMeta.Labels["app"] = depl.Spec.Template.ObjectMeta.Labels["app"] + "-primary"
-		return depl, nil
+		var err error
+		newTemplateContent, err = appendAsYaml(newTemplateContent, depl)
+		if err != nil {
+			return nil, err
+		}
 	}
-	return nil, nil
+	return newTemplateContent, nil
 }
 
 func isService(svc corev1.Service) bool {
