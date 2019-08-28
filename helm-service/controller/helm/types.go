@@ -1,13 +1,5 @@
 package helm
 
-// Chart represents a Helm chart
-type Chart struct {
-	APIVersion  string `json:"apiVersion"`
-	Description string `json:"description"`
-	Name        string `json:"name"`
-	Version     string `json:"version"`
-}
-
 // Requirements represents the Helm umbrella requirements
 type Requirements struct {
 	Dependencies []RequirementDependencies `json:"dependencies"`

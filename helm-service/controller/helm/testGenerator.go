@@ -1,16 +1,14 @@
 package helm
 
 import (
-	"bufio"
-	"bytes"
 	"io/ioutil"
 	"os"
 	"testing"
 
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	"k8s.io/helm/pkg/chartutil"
 )
 
-const service = `--- 
+const serviceContent = `--- 
 apiVersion: v1
 kind: Service
 metadata: 
@@ -26,7 +24,7 @@ spec:
     app: carts
 `
 
-const deployment = `--- 
+const deploymentContent = `--- 
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -96,11 +94,11 @@ spec:
               memory: 1024Mi
 `
 
-const values = `
+const valuesContent = `
 image: docker.io/keptnexamples/carts:0.8.1
 `
 
-const chart = `
+const chartContent = `
 apiVersion: v1
 description: A Helm chart for service carts
 name: carts
@@ -115,24 +113,31 @@ func check(e error, t *testing.T) {
 
 // CreateHelmChartData creates a new Helm chart tgz and returns its data
 func CreateHelmChartData(t *testing.T) []byte {
-	err := os.MkdirAll("tar/carts/templates", 0777)
+
+	err := os.MkdirAll("carts/templates", 0777)
 	check(err, t)
-	err = ioutil.WriteFile("tar/carts/Chart.yaml", []byte(chart), 0644)
+	err = ioutil.WriteFile("carts/Chart.yaml", []byte(chartContent), 0644)
 	check(err, t)
-	err = ioutil.WriteFile("tar/carts/values.yaml", []byte(values), 0644)
+	err = ioutil.WriteFile("carts/values.yaml", []byte(valuesContent), 0644)
 	check(err, t)
-	err = ioutil.WriteFile("tar/carts/templates/deployment.yml", []byte(deployment), 0644)
+	err = ioutil.WriteFile("carts/templates/deployment.yml", []byte(deploymentContent), 0644)
 	check(err, t)
-	err = ioutil.WriteFile("tar/carts/templates/service.yaml", []byte(service), 0644)
+	err = ioutil.WriteFile("carts/templates/service.yaml", []byte(serviceContent), 0644)
 	check(err, t)
 
-	var b bytes.Buffer
-	writer := bufio.NewWriter(&b)
-	err = keptnutils.Tar("tar", writer)
-	check(err, t)
+	ch, err := chartutil.LoadDir("carts")
+	if err != nil {
+		check(err, t)
+	}
 
-	err = os.RemoveAll("tar")
+	name, err := chartutil.Save(ch, ".")
+	if err != nil {
+		check(err, t)
+	}
+	defer os.RemoveAll(name)
+	defer os.RemoveAll("carts")
+
+	bytes, err := ioutil.ReadFile(name)
 	check(err, t)
-	writer.Flush()
-	return b.Bytes()
+	return bytes
 }
