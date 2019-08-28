@@ -1,13 +1,15 @@
 package helm
 
 import (
+	"bufio"
 	"bytes"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"k8s.io/helm/pkg/proto/hapi/chart"
 
 	"github.com/keptn/keptn/helm-service/controller/jsonutils"
 	"github.com/keptn/keptn/helm-service/controller/mesh"
@@ -15,8 +17,8 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	keptnevents "github.com/keptn/go-utils/pkg/events"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	kyaml "k8s.io/apimachinery/pkg/util/yaml"
+	"k8s.io/helm/pkg/chartutil"
 )
 
 const projectName = "sockshop"
@@ -279,17 +281,6 @@ var serviceGen = GeneratedResource{
   }
 }`}}
 
-var chartGen = GeneratedResource{
-	URI: "Chart.yaml",
-	FileContent: []string{`
-{
-  "apiVersion": "v1",
-  "description": "A Helm chart for service carts (generated)",
-  "name": "carts-generated",
-  "version": "0.1.0"
-}`},
-}
-
 var valuesGen = GeneratedResource{
 	URI: "values.yaml",
 	FileContent: []string{`
@@ -309,18 +300,36 @@ func TestGenerateManagedChart(t *testing.T) {
 
 	workingPath, err := ioutil.TempDir("", "helm-test")
 	defer os.RemoveAll(workingPath)
-	fmt.Println(workingPath)
-	keptnutils.Untar(workingPath, bytes.NewReader(gen))
+	packagedChartFilePath := filepath.Join(workingPath, event.Service)
+	err = ioutil.WriteFile(packagedChartFilePath, gen, 0644)
+	if err != nil {
+		t.Error(err)
+	}
 
-	generatedResources := []GeneratedResource{cartsCanaryIstioDestinationRuleGen, cartsIstioVirtualserviceGen, cartsPrimaryIstioDestinationRuleGen,
-		deploymentGen, serviceGen, chartGen, valuesGen}
+	ch, err := chartutil.Load(packagedChartFilePath)
 
-	for _, resource := range generatedResources {
+	// Compare values
+	yReader := kyaml.NewYAMLReader(bufio.NewReader(bytes.NewReader([]byte(ch.Values.Raw))))
+	yamlData, err := yReader.Read()
+	if err != nil {
+		t.Error(err)
+	}
+	jsonData, err := jsonutils.ToJSON(yamlData)
+	if err != nil {
+		t.Error(err)
+	}
 
-		f, err := os.Open(filepath.Join(workingPath, resource.URI))
-		assert.Nil(t, err, "Reading generated data should not return any error")
+	ja := jsonassert.New(t)
+	ja.Assertf(string(jsonData), valuesGen.FileContent[0])
 
-		decoder := kyaml.NewDocumentDecoder(f)
+	// Compare templates
+	generatedTemplateResources := []GeneratedResource{cartsCanaryIstioDestinationRuleGen, cartsIstioVirtualserviceGen, cartsPrimaryIstioDestinationRuleGen,
+		deploymentGen, serviceGen}
+
+	for _, resource := range generatedTemplateResources {
+
+		reader := ioutil.NopCloser(bytes.NewReader(getTemplateByName(ch, resource.URI).Data))
+		decoder := kyaml.NewDocumentDecoder(reader)
 
 		for i := 0; ; i++ {
 			b1 := make([]byte, 4096)
@@ -339,4 +348,14 @@ func TestGenerateManagedChart(t *testing.T) {
 			ja.Assertf(string(jsonData), resource.FileContent[i])
 		}
 	}
+}
+
+func getTemplateByName(chart *chart.Chart, templateName string) *chart.Template {
+
+	for _, template := range chart.Templates {
+		if template.Name == templateName {
+			return template
+		}
+	}
+	return nil
 }
