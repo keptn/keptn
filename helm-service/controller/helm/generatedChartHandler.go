@@ -3,7 +3,6 @@ package helm
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -96,7 +95,6 @@ func changeTemplateContent(event *keptnevents.ServiceCreateEventData,
 				return err
 			}
 			if len(newServiceTemplateContent) > 0 {
-				fmt.Println(string(newServiceTemplateContent))
 				newContent = append(newContent, newServiceTemplateContent...)
 				newTemplates = append(newTemplates, newServiceTemplates...)
 				continue
@@ -107,7 +105,6 @@ func changeTemplateContent(event *keptnevents.ServiceCreateEventData,
 				return err
 			}
 			if len(newDeploymentTemplateContent) > 0 {
-				fmt.Println(string(newDeploymentTemplateContent))
 				newContent = append(newContent, newDeploymentTemplateContent...)
 				continue
 			}
@@ -168,7 +165,7 @@ func handleService(document []byte, event *keptnevents.ServiceCreateEventData, s
 			return nil, nil, err
 		}
 
-		d1 := chart.Template{Name: serviceCanary.Name + "-istio-destinationrule.yaml", Data: destinationRuleCanary}
+		d1 := chart.Template{Name: "templates/" + serviceCanary.Name + "-istio-destinationrule.yaml", Data: destinationRuleCanary}
 		newTemplates = append(newTemplates, &d1)
 
 		servicePrimary := svc.DeepCopy()
@@ -186,7 +183,7 @@ func handleService(document []byte, event *keptnevents.ServiceCreateEventData, s
 			return nil, nil, err
 		}
 
-		d2 := chart.Template{Name: servicePrimary.Name + "-istio-destinationrule.yaml", Data: destinationRulePrimary}
+		d2 := chart.Template{Name: "templates/" + servicePrimary.Name + "-istio-destinationrule.yaml", Data: destinationRulePrimary}
 		newTemplates = append(newTemplates, &d2)
 
 		gws := []string{getGatwayName(event.Project, stageName)}
@@ -200,7 +197,7 @@ func handleService(document []byte, event *keptnevents.ServiceCreateEventData, s
 			return nil, nil, err
 		}
 
-		gw := chart.Template{Name: svc.Name + "-istio-virtualservice.yaml", Data: vs}
+		gw := chart.Template{Name: "templates/" + svc.Name + "-istio-virtualservice.yaml", Data: vs}
 		newTemplates = append(newTemplates, &gw)
 	}
 	return newTemplateContent, newTemplates, nil
