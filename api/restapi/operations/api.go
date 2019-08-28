@@ -24,6 +24,7 @@ import (
 	"github.com/keptn/keptn/api/restapi/operations/event"
 	"github.com/keptn/keptn/api/restapi/operations/project"
 	"github.com/keptn/keptn/api/restapi/operations/service"
+	"github.com/keptn/keptn/api/restapi/operations/service_resource"
 
 	models "github.com/keptn/keptn/api/models"
 )
@@ -45,6 +46,12 @@ func NewAPI(spec *loads.Document) *API {
 		BearerAuthenticator: security.BearerAuth,
 		JSONConsumer:        runtime.JSONConsumer(),
 		JSONProducer:        runtime.JSONProducer(),
+		ServiceResourcePostProjectProjectNameStageStageNameServiceServiceNameResourceHandler: service_resource.PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(func(params service_resource.PostProjectProjectNameStageStageNameServiceServiceNameResourceParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation ServiceResourcePostProjectProjectNameStageStageNameServiceServiceNameResource has not yet been implemented")
+		}),
+		ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceHandler: service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(func(params service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResource has not yet been implemented")
+		}),
 		AuthAuthHandler: auth.AuthHandlerFunc(func(params auth.AuthParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation AuthAuth has not yet been implemented")
 		}),
@@ -106,6 +113,10 @@ type API struct {
 	// APIAuthorizer provides access control (ACL/RBAC/ABAC) by providing access to the request and authenticated principal
 	APIAuthorizer runtime.Authorizer
 
+	// ServiceResourcePostProjectProjectNameStageStageNameServiceServiceNameResourceHandler sets the operation handler for the post project project name stage stage name service service name resource operation
+	ServiceResourcePostProjectProjectNameStageStageNameServiceServiceNameResourceHandler service_resource.PostProjectProjectNameStageStageNameServiceServiceNameResourceHandler
+	// ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceHandler sets the operation handler for the put project project name stage stage name service service name resource operation
+	ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceHandler service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceHandler
 	// AuthAuthHandler sets the operation handler for the auth operation
 	AuthAuthHandler auth.AuthHandler
 	// ConfigureConfigureHandler sets the operation handler for the configure operation
@@ -183,6 +194,14 @@ func (o *API) Validate() error {
 		unregistered = append(unregistered, "XTokenAuth")
 	}
 
+	if o.ServiceResourcePostProjectProjectNameStageStageNameServiceServiceNameResourceHandler == nil {
+		unregistered = append(unregistered, "service_resource.PostProjectProjectNameStageStageNameServiceServiceNameResourceHandler")
+	}
+
+	if o.ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceHandler == nil {
+		unregistered = append(unregistered, "service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceHandler")
+	}
+
 	if o.AuthAuthHandler == nil {
 		unregistered = append(unregistered, "auth.AuthHandler")
 	}
@@ -251,6 +270,9 @@ func (o *API) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer {
 		case "application/cloudevents+json":
 			result["application/cloudevents+json"] = o.JSONConsumer
 
+		case "application/json":
+			result["application/json"] = o.JSONConsumer
+
 		}
 
 		if c, ok := o.customConsumers[mt]; ok {
@@ -270,6 +292,9 @@ func (o *API) ProducersFor(mediaTypes []string) map[string]runtime.Producer {
 
 		case "application/cloudevents+json":
 			result["application/cloudevents+json"] = o.JSONProducer
+
+		case "application/json":
+			result["application/json"] = o.JSONProducer
 
 		}
 
@@ -312,6 +337,16 @@ func (o *API) initHandlerCache() {
 	if o.handlers == nil {
 		o.handlers = make(map[string]map[string]http.Handler)
 	}
+
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/project/{projectName}/stage/{stageName}/service/{serviceName}/resource"] = service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResource(o.context, o.ServiceResourcePostProjectProjectNameStageStageNameServiceServiceNameResourceHandler)
+
+	if o.handlers["PUT"] == nil {
+		o.handlers["PUT"] = make(map[string]http.Handler)
+	}
+	o.handlers["PUT"]["/project/{projectName}/stage/{stageName}/service/{serviceName}/resource"] = service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResource(o.context, o.ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceHandler)
 
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)

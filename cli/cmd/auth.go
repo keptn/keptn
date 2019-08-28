@@ -53,7 +53,7 @@ Example:
 		}
 
 		authURL := *u
-		authURL.Path = "auth"
+		authURL.Path = "v1/auth"
 
 		if !mocking {
 			_, err = utils.Send(authURL, event, *apiToken)

@@ -69,7 +69,7 @@ Example:
 		utils.PrintLog("Starting to send an event", utils.InfoLevel)
 
 		eventURL := endPoint
-		eventURL.Path = "event"
+		eventURL.Path = "v1/event"
 		utils.PrintLog(fmt.Sprintf("Connecting to server %s", eventURL.String()), utils.VerboseLevel)
 		if !mocking {
 			data, err := json.Marshal(body)
