@@ -15,8 +15,6 @@ import (
 	kyaml "k8s.io/apimachinery/pkg/util/yaml"
 )
 
-const WORKING_DIRECTORY = ""
-
 // DoOnboard onboards a new service
 func DoOnboard(ce cloudevents.Event, mesh mesh.Mesh, logger *keptnutils.Logger, shkeptncontext string, configServiceURL string) error {
 
@@ -51,7 +49,7 @@ func DoOnboard(ce cloudevents.Event, mesh mesh.Mesh, logger *keptnutils.Logger, 
 	userChartName := event.Service
 	genChartName := event.Service + "-generated"
 
-	requiresManagedChart, err := checkIfStageRequiresKeptnManagedChart(event.Project, configServiceURL)
+	requiresManagedChart, err := checkIfStagesRequireKeptnManagedChart(event.Project, configServiceURL)
 	if err != nil {
 		logger.Error("Error when checking whether the stages require a keptn managed Helm chart: " + err.Error())
 	}
@@ -109,7 +107,7 @@ func DoOnboard(ce cloudevents.Event, mesh mesh.Mesh, logger *keptnutils.Logger, 
 	return nil
 }
 
-func checkIfStageRequiresKeptnManagedChart(project string, configServiceURL string) (map[string]bool, error) {
+func checkIfStagesRequireKeptnManagedChart(project string, configServiceURL string) (map[string]bool, error) {
 
 	resourceHandler := keptnutils.NewResourceHandler(configServiceURL)
 	resource, err := resourceHandler.GetProjectResource(project, "shipyard.yaml")
