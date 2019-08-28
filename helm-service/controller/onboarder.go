@@ -54,7 +54,12 @@ func DoOnboard(ce cloudevents.Event, mesh mesh.Mesh, logger *keptnutils.Logger, 
 		logger.Error("Error when checking whether the stages require a keptn managed Helm chart: " + err.Error())
 	}
 
+	serviceHandler := keptnutils.NewServiceHandler(configServiceURL)
+
 	for _, stage := range stages {
+		logger.Debug("Creating new keptn service " + event.Service + " in stage " + stage.StageName)
+		serviceHandler.CreateService(event.Project, stage.StageName, event.Service)
+
 		logger.Debug("Storing the Helm chart provided by the user in stage " + stage.StageName)
 		if err := storeChart(event.Project, event.Service, userChartName, event.HelmChart, stage, configServiceURL); err != nil {
 			logger.Error("Error when storing the Helm chart: " + err.Error())
