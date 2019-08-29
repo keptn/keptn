@@ -79,8 +79,6 @@ func TestDoOnboard(t *testing.T) {
 	err = DoOnboard(ce, mesh.NewIstioMesh(), keptnutils.NewLogger(id, "service.create", "helm-service"), id, configBaseURL, "test.keptn.sh")
 
 	check(err, t)
-
-	// TODO: Add assertions
 }
 
 func check(e error, t *testing.T) {
