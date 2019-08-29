@@ -186,8 +186,9 @@ func handleService(document []byte, event *keptnevents.ServiceCreateEventData, s
 		d2 := chart.Template{Name: "templates/" + servicePrimary.Name + "-istio-destinationrule.yaml", Data: destinationRulePrimary}
 		newTemplates = append(newTemplates, &d2)
 
-		gws := []string{getGatwayName(event.Project, stageName)}
-		hosts := []string{svc.Name + "." + getNamespace(event.Project, stageName) + "." + domain}
+		gws := []string{getGatwayName(event.Project, stageName), "mesh"}
+		hosts := []string{svc.Name + "." + getNamespace(event.Project, stageName) + "." + domain,
+			svc.Name, svc.Name + "." + getNamespace(event.Project, stageName)}
 		destCanary := mesh.HTTPRouteDestination{Host: hostCanary, Weight: 80}
 		destPrimary := mesh.HTTPRouteDestination{Host: hostPrimary, Weight: 20}
 		httpRouteDestinations := []mesh.HTTPRouteDestination{destCanary, destPrimary}
