@@ -16,7 +16,7 @@ import (
 )
 
 // DoOnboard onboards a new service
-func DoOnboard(ce cloudevents.Event, mesh mesh.Mesh, logger *keptnutils.Logger, shkeptncontext string, configServiceURL string, keptnDomain string) error {
+func DoOnboard(ce cloudevents.Event, mesh mesh.Mesh, logger *keptnutils.Logger, configServiceURL string, keptnDomain string) error {
 
 	event := &keptnevents.ServiceCreateEventData{}
 	if err := ce.DataAs(event); err != nil {
@@ -61,7 +61,7 @@ func DoOnboard(ce cloudevents.Event, mesh mesh.Mesh, logger *keptnutils.Logger, 
 		serviceHandler.CreateService(event.Project, stage.StageName, event.Service)
 
 		logger.Debug("Storing the Helm chart provided by the user in stage " + stage.StageName)
-		if err := storeChart(event.Project, event.Service, userChartName, event.HelmChart, stage, configServiceURL); err != nil {
+		if err := helm.StoreChart(event.Project, event.Service, stage.StageName, userChartName, event.HelmChart, configServiceURL); err != nil {
 			logger.Error("Error when storing the Helm chart: " + err.Error())
 			return err
 		}
@@ -86,7 +86,7 @@ func DoOnboard(ce cloudevents.Event, mesh mesh.Mesh, logger *keptnutils.Logger, 
 			}
 
 			logger.Debug("Storing the keptn generated Helm chart in stage " + stage.StageName)
-			if err := storeChart(event.Project, event.Service, genChartName, generatedChartData, stage, configServiceURL); err != nil {
+			if err := helm.StoreChart(event.Project, event.Service, stage.StageName, genChartName, generatedChartData, configServiceURL); err != nil {
 				logger.Error("Error when storing the Helm chart: " + err.Error())
 				return err
 			}
@@ -144,19 +144,4 @@ func isFirstServiceOfProject(event *keptnevents.ServiceCreateEventData, stages [
 		return false, err
 	}
 	return len(services) == 0, nil
-}
-
-func getHelmChartURI(chartName string) string {
-	return "helm/" + chartName + ".tgz"
-}
-
-func storeChart(project string, service string, chartName string, helmChart []byte, stage *models.Stage, configServiceURL string) error {
-
-	resourceHandler := keptnutils.NewResourceHandler(configServiceURL)
-
-	uri := getHelmChartURI(chartName)
-	resource := models.Resource{ResourceURI: &uri, ResourceContent: string(helmChart)}
-
-	_, err := resourceHandler.CreateServiceResources(project, stage.StageName, service, []*models.Resource{&resource})
-	return err
 }
