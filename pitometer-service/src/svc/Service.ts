@@ -466,11 +466,12 @@ export class Service {
 
   async getServiceResourceContent(event: RequestModel, resourceUri: string): Promise<string> {
     // tslint:disable-next-line: max-line-length
-    const url = `http://configuration-service.keptn.svc.cluster.local:8080/v1/project/${event.data.project}/stage/${event.data.stage}/service/${event.data.service}/${resourceUri}`;
+    const url = `http://configuration-service.keptn.svc.cluster.local:8080/v1/project/${event.data.project}/stage/${event.data.stage}/service/${event.data.service}/resource/${resourceUri}`;
     let response;
 
     try {
       response = await axios.get(url, {});
+      console.log(response);
     } catch (e) {
       Logger.log(
         event.shkeptncontext, event.id,
