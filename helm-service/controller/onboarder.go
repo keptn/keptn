@@ -46,10 +46,7 @@ func DoOnboard(ce cloudevents.Event, mesh mesh.Mesh, logger *keptnutils.Logger, 
 		}
 	}
 
-	userChartName := event.Service
-	genChartName := event.Service + "-generated"
-
-	requiresManagedChart, err := checkIfStagesRequireKeptnManagedChart(event.Project, configServiceURL)
+	requiresGeneratedChart, err := checkIfStagesRequireGeneratedChart(event.Project, configServiceURL)
 	if err != nil {
 		logger.Error("Error when checking whether the stages require a keptn managed Helm chart: " + err.Error())
 	}
@@ -61,22 +58,22 @@ func DoOnboard(ce cloudevents.Event, mesh mesh.Mesh, logger *keptnutils.Logger, 
 		serviceHandler.CreateService(event.Project, stage.StageName, event.Service)
 
 		logger.Debug("Storing the Helm chart provided by the user in stage " + stage.StageName)
-		if err := helm.StoreChart(event.Project, event.Service, stage.StageName, userChartName, event.HelmChart, configServiceURL); err != nil {
+		if err := helm.StoreChart(event.Project, event.Service, stage.StageName, helm.GetChartName(event.Service, false), event.HelmChart, configServiceURL); err != nil {
 			logger.Error("Error when storing the Helm chart: " + err.Error())
 			return err
 		}
 
 		logger.Debug("Updating the Umbrealla chart with the new Helm chart in stage " + stage.StageName)
-		if err := helm.AddChartInUmbrellaRequirements(event.Project, userChartName, stage, configServiceURL); err != nil {
-			logger.Error("Error when adding the chart in the Umbrella requirements file: " + err.Error())
-			return err
-		}
-		if err := helm.AddChartInUmbrellaValues(event.Project, userChartName, stage, configServiceURL); err != nil {
+		// if err := helm.AddChartInUmbrellaRequirements(event.Project, helm.GetChartName(event.Service, false), stage, configServiceURL); err != nil {
+		// 	logger.Error("Error when adding the chart in the Umbrella requirements file: " + err.Error())
+		// 	return err
+		// }
+		if err := helm.AddChartInUmbrellaValues(event.Project, helm.GetChartName(event.Service, false), stage, configServiceURL); err != nil {
 			logger.Error("Error when adding the chart in the Umbrella values file: " + err.Error())
 			return err
 		}
 
-		if requiresManagedChart[stage.StageName] {
+		if requiresGeneratedChart[stage.StageName] {
 
 			logger.Debug("Generating the keptn-managed Helm chart" + stage.StageName)
 			generatedChartData, err := helm.GenerateManagedChart(event, stage.StageName, mesh, keptnDomain)
@@ -86,17 +83,17 @@ func DoOnboard(ce cloudevents.Event, mesh mesh.Mesh, logger *keptnutils.Logger, 
 			}
 
 			logger.Debug("Storing the keptn generated Helm chart in stage " + stage.StageName)
-			if err := helm.StoreChart(event.Project, event.Service, stage.StageName, genChartName, generatedChartData, configServiceURL); err != nil {
+			if err := helm.StoreChart(event.Project, event.Service, stage.StageName, helm.GetChartName(event.Service, true), generatedChartData, configServiceURL); err != nil {
 				logger.Error("Error when storing the Helm chart: " + err.Error())
 				return err
 			}
 
 			logger.Debug("Updating the Umbrealla chart with the new Helm chart in stage " + stage.StageName)
-			if err := helm.AddChartInUmbrellaRequirements(event.Project, genChartName, stage, configServiceURL); err != nil {
-				logger.Error("Error when adding the chart in the Umbrella requirements file: " + err.Error())
-				return err
-			}
-			if err := helm.AddChartInUmbrellaValues(event.Project, genChartName, stage, configServiceURL); err != nil {
+			// if err := helm.AddChartInUmbrellaRequirements(event.Project, helm.GetChartName(event.Service, true), stage, configServiceURL); err != nil {
+			// 	logger.Error("Error when adding the chart in the Umbrella requirements file: " + err.Error())
+			// 	return err
+			// }
+			if err := helm.AddChartInUmbrellaValues(event.Project, helm.GetChartName(event.Service, true), stage, configServiceURL); err != nil {
 				logger.Error("Error when adding the chart in the Umbrella values file: " + err.Error())
 				return err
 			}
@@ -106,7 +103,7 @@ func DoOnboard(ce cloudevents.Event, mesh mesh.Mesh, logger *keptnutils.Logger, 
 	return nil
 }
 
-func checkIfStagesRequireKeptnManagedChart(project string, configServiceURL string) (map[string]bool, error) {
+func checkIfStagesRequireGeneratedChart(project string, configServiceURL string) (map[string]bool, error) {
 
 	resourceHandler := keptnutils.NewResourceHandler(configServiceURL)
 	resource, err := resourceHandler.GetProjectResource(project, "shipyard.yaml")
