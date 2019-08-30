@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/url"
 	"os"
-	"strings"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
@@ -35,18 +34,6 @@ func main() {
 	os.Exit(_main(os.Args[1:], env))
 }
 
-// ConfigurationChangedEvent ...
-type ConfigurationChangedEvent struct {
-	Service            string `json:"service"`
-	Image              string `json:"image"`
-	Tag                string `json:"tag"`
-	Project            string `json:"project"`
-	Stage              string `json:"stage"`
-	GitHubOrg          string `json:"githuborg"`
-	TestStrategy       string `json:"teststrategy"`
-	DeploymentStrategy string `json:"deploymentstrategy"`
-}
-
 func getConfigurationServiceURL() string {
 	if os.Getenv("env") == "production" {
 		return "configuration-service.keptn.svc.cluster.local:8080"
@@ -67,100 +54,35 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
 
 	logger := keptnutils.NewLogger(shkeptncontext, event.Context.GetID(), "helm-service")
-
-	data := &ConfigurationChangedEvent{}
-	if err := event.DataAs(data); err != nil {
-		logger.Error(fmt.Sprintf("Got Data Error: %s", err.Error()))
-		return err
-	}
 	mesh := mesh.NewIstioMesh()
 
 	if event.Type() == keptnevents.ConfigurationChangeEventType {
-		// TODO: First change configuration. Then apply configuration
-		go doDeployment(event, logger, *data, shkeptncontext)
+		go changeAndApply(event, mesh, logger, shkeptncontext)
 	} else if event.Type() == keptnevents.InternalServiceCreateEventType {
 		keptnDomain, err := getKeptnDomain()
-		if err != nil {
+		if err == nil {
+			go controller.DoOnboard(event, mesh, logger, getConfigurationServiceURL(), keptnDomain)
+		} else {
 			logger.Error("Error when reading the keptn domain")
-			return err
 		}
-		go controller.DoOnboard(event, mesh, logger, shkeptncontext, getConfigurationServiceURL(), keptnDomain)
 	} else {
-		const errorMsg = "Received unexpected keptn event"
-		logger.Error(errorMsg)
-		return errors.New(errorMsg)
-
+		logger.Error("Received unexpected keptn event")
 	}
 
 	return nil
 }
 
-func doDeployment(event cloudevents.Event, logger *keptnutils.Logger, data ConfigurationChangedEvent, shkeptncontext string) {
-	repo, err := keptnutils.Checkout(data.GitHubOrg, data.Project, data.Stage)
-	if err != nil {
-		logger.Error(fmt.Sprintf("Error when checking out configuration from GitHub: %s", err.Error()))
-	}
+func changeAndApply(ce cloudevents.Event, mesh mesh.Mesh, logger *keptnutils.Logger, shkeptncontext string) {
 
-	logger.Info("Deploying with helm upgrade")
-
-	switch strings.ToLower(data.DeploymentStrategy) {
-	case "direct":
-		if checkErr(keptnutils.DoHelmUpgrade(data.Project, data.Stage), logger) != nil {
-			return
-		}
-		if checkErr(keptnutils.WaitForDeploymentsInNamespace(true, data.Project+"-"+data.Stage),
-			logger) != nil {
-			return
-		}
-		logger.Info("Finished deploying in stage " + data.Stage)
-
-	case "blue_green_service":
-		// Move repo head one commit back
-		ref, err := keptnutils.CheckoutPrevCommit(repo)
-		if checkErr(err, logger) != nil {
-			return
-		}
-
-		// Do helm upgrade
-		if checkErr(keptnutils.DoHelmUpgrade(data.Project, data.Stage), logger) != nil {
-			return
-		}
-
-		// Wait for rollout to complete
-		if checkErr(keptnutils.WaitForDeploymentToBeAvailable(true, data.Service+"-blue", data.Project+"-"+data.Stage),
-			logger) != nil {
-			return
-		}
-		if checkErr(keptnutils.WaitForDeploymentToBeAvailable(true, data.Service+"-green", data.Project+"-"+data.Stage),
-			logger) != nil {
-			return
-		}
-
-		// Move repo head one commit forward
-		if checkErr(keptnutils.CheckoutReference(repo, ref), logger) != nil {
-			return
-		}
-
-		// Do helm upgrade
-		if checkErr(keptnutils.DoHelmUpgrade(data.Project, data.Stage), logger) != nil {
-			return
-		}
-		logger.Info("Finished deploying in stage " + data.Stage)
-
-	default:
-		logger.Error("Unknown deployment strategy '" + data.DeploymentStrategy + "'")
+	data := &keptnevents.ConfigurationChangeEventData{}
+	if err := ce.DataAs(data); err != nil {
+		logger.Error(fmt.Sprintf("Got Data Error: %s", err.Error()))
 		return
 	}
-
-	checkErr(sendDeploymentFinishedEvent(shkeptncontext, event), logger)
-}
-
-func checkErr(err error, logger *keptnutils.Logger) error {
-	if err != nil {
-		logger.Error(err.Error())
-		return err
+	if err := controller.ChangeConfiguration(data, mesh, logger, getConfigurationServiceURL()); err != nil {
+		return
 	}
-	return nil
+	controller.ApplyConfiguration(data, logger, getConfigurationServiceURL())
 }
 
 func sendDeploymentFinishedEvent(shkeptncontext string, incomingEvent cloudevents.Event) error {
