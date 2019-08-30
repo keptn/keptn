@@ -132,7 +132,7 @@ func handleService(document []byte, event *keptnevents.ServiceCreateEventData, s
 		}
 
 		// Generate destination rule for canary service
-		hostCanary := serviceCanary.Name + "." + GetNamespace(event.Project, stageName) + ".svc.cluster.local"
+		hostCanary := serviceCanary.Name + "." + GetNamespace(event.Project, stageName, true) + ".svc.cluster.local"
 		destinationRuleCanary, err := meshHandler.GenerateDestinationRule(serviceCanary.Name, hostCanary)
 		if err != nil {
 			return nil, nil, err
@@ -150,7 +150,7 @@ func handleService(document []byte, event *keptnevents.ServiceCreateEventData, s
 		}
 
 		// Generate destination rule for primary service
-		hostPrimary := servicePrimary.Name + "." + GetNamespace(event.Project, stageName) + ".svc.cluster.local"
+		hostPrimary := servicePrimary.Name + "." + GetNamespace(event.Project, stageName, true) + ".svc.cluster.local"
 		destinationRulePrimary, err := meshHandler.GenerateDestinationRule(servicePrimary.Name, hostPrimary)
 		if err != nil {
 			return nil, nil, err
@@ -160,8 +160,8 @@ func handleService(document []byte, event *keptnevents.ServiceCreateEventData, s
 		newTemplates = append(newTemplates, &d2)
 
 		gws := []string{GetGatwayName(event.Project, stageName), "mesh"}
-		hosts := []string{svc.Name + "." + GetNamespace(event.Project, stageName) + "." + domain,
-			svc.Name, svc.Name + "." + GetNamespace(event.Project, stageName)}
+		hosts := []string{svc.Name + "." + GetNamespace(event.Project, stageName, false) + "." + domain,
+			svc.Name, svc.Name + "." + GetNamespace(event.Project, stageName, false)}
 		destCanary := mesh.HTTPRouteDestination{Host: hostCanary, Weight: 0}
 		destPrimary := mesh.HTTPRouteDestination{Host: hostPrimary, Weight: 100}
 		httpRouteDestinations := []mesh.HTTPRouteDestination{destCanary, destPrimary}
