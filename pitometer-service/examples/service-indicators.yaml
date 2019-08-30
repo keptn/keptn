@@ -1,0 +1,4 @@
+indicators:
+- metric: cpu_usage_p95_sockshop_carts_production
+  source: Prometheus
+  query: avg(rate(container_cpu_usage_seconds_total{namespace="sockshop-production",pod_name=~"carts-blue-.*|carts-green-.*"}[$DURATION_MINUTES]))
