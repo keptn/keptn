@@ -1,4 +1,7 @@
+pass: 90
+warning: 75
 objectives:
 - metric: cpu_usage_p95_sockshop_carts_production
   threshold: 90
   timeframe: 5m
+  score: 100
