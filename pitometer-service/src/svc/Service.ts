@@ -61,7 +61,7 @@ export class Service {
       let perfspecString;
 
       try {
-        perfspecString = this.getPerfspecString(event);
+        perfspecString = await this.getPerfspecString(event);
       } catch (e) {
         this.handleEvaluationResult(
           {
@@ -406,11 +406,11 @@ export class Service {
     try {
       const indicators = await this.getServiceIndicators(event);
       if (indicators === null) {
-        return this.getServiceResourceContent(event, 'perfspec.json');
+        return await this.getServiceResourceContent(event, 'perfspec.json');
       }
       const objectives = await this.getServiceObjectives(event);
       if (objectives === null) {
-        return this.getServiceResourceContent(event, 'perfspec.json');
+        return await this.getServiceResourceContent(event, 'perfspec.json');
       }
       const perfspecObject = this.createPerfspecObject(indicators, objectives);
       return JSON.stringify(perfspecObject);
@@ -471,7 +471,6 @@ export class Service {
 
     try {
       response = await axios.get(url, {});
-      console.log(response);
     } catch (e) {
       Logger.log(
         event.shkeptncontext, event.id,
