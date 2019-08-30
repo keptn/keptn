@@ -4,9 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
-	"io/ioutil"
-	"os"
-	"path/filepath"
 	"strings"
 
 	keptnevents "github.com/keptn/go-utils/pkg/events"
@@ -15,7 +12,6 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	kyaml "k8s.io/apimachinery/pkg/util/yaml"
-	"k8s.io/helm/pkg/chartutil"
 	"k8s.io/helm/pkg/proto/hapi/chart"
 )
 
@@ -24,18 +20,10 @@ import (
 func GenerateManagedChart(event *keptnevents.ServiceCreateEventData, stageName string,
 	mesh mesh.Mesh, domain string) ([]byte, error) {
 
-	workingPath, err := ioutil.TempDir("", "helm")
+	ch, err := LoadChart(event.HelmChart)
 	if err != nil {
 		return nil, err
 	}
-	defer os.RemoveAll(workingPath)
-	packagedChartFilePath := filepath.Join(workingPath, event.Service)
-	err = ioutil.WriteFile(packagedChartFilePath, event.HelmChart, 0644)
-	if err != nil {
-		return nil, err
-	}
-
-	ch, err := chartutil.Load(packagedChartFilePath)
 
 	changeChartFile(ch)
 
@@ -43,28 +31,13 @@ func GenerateManagedChart(event *keptnevents.ServiceCreateEventData, stageName s
 		return nil, err
 	}
 
-	helmPackage, err := ioutil.TempDir("", "helm-package")
-	if err != nil {
-		return nil, err
-	}
-	defer os.RemoveAll(helmPackage)
-
-	name, err := chartutil.Save(ch, helmPackage)
-	if err != nil {
-		return nil, err
-	}
-
-	return ioutil.ReadFile(name)
+	return PackageChart(ch)
 }
 
 func changeChartFile(ch *chart.Chart) {
 
 	ch.Metadata.Name = ch.Metadata.Name + "-generated"
 	ch.Metadata.Description = ch.Metadata.Description + " (generated)"
-}
-
-func getNamespace(projectName string, stageName string) string {
-	return projectName + "-" + stageName
 }
 
 func changeTemplateContent(event *keptnevents.ServiceCreateEventData,
@@ -159,13 +132,13 @@ func handleService(document []byte, event *keptnevents.ServiceCreateEventData, s
 		}
 
 		// Generate destination rule for canary service
-		hostCanary := serviceCanary.Name + "." + getNamespace(event.Project, stageName) + ".svc.cluster.local"
+		hostCanary := serviceCanary.Name + "." + GetNamespace(event.Project, stageName) + ".svc.cluster.local"
 		destinationRuleCanary, err := meshHandler.GenerateDestinationRule(serviceCanary.Name, hostCanary)
 		if err != nil {
 			return nil, nil, err
 		}
 
-		d1 := chart.Template{Name: "templates/" + serviceCanary.Name + "-istio-destinationrule.yaml", Data: destinationRuleCanary}
+		d1 := chart.Template{Name: "templates/" + serviceCanary.Name + meshHandler.GetDestinationRuleSuffix(), Data: destinationRuleCanary}
 		newTemplates = append(newTemplates, &d1)
 
 		servicePrimary := svc.DeepCopy()
@@ -177,20 +150,20 @@ func handleService(document []byte, event *keptnevents.ServiceCreateEventData, s
 		}
 
 		// Generate destination rule for primary service
-		hostPrimary := servicePrimary.Name + "." + getNamespace(event.Project, stageName) + ".svc.cluster.local"
+		hostPrimary := servicePrimary.Name + "." + GetNamespace(event.Project, stageName) + ".svc.cluster.local"
 		destinationRulePrimary, err := meshHandler.GenerateDestinationRule(servicePrimary.Name, hostPrimary)
 		if err != nil {
 			return nil, nil, err
 		}
 
-		d2 := chart.Template{Name: "templates/" + servicePrimary.Name + "-istio-destinationrule.yaml", Data: destinationRulePrimary}
+		d2 := chart.Template{Name: "templates/" + servicePrimary.Name + meshHandler.GetDestinationRuleSuffix(), Data: destinationRulePrimary}
 		newTemplates = append(newTemplates, &d2)
 
-		gws := []string{getGatwayName(event.Project, stageName), "mesh"}
-		hosts := []string{svc.Name + "." + getNamespace(event.Project, stageName) + "." + domain,
-			svc.Name, svc.Name + "." + getNamespace(event.Project, stageName)}
-		destCanary := mesh.HTTPRouteDestination{Host: hostCanary, Weight: 80}
-		destPrimary := mesh.HTTPRouteDestination{Host: hostPrimary, Weight: 20}
+		gws := []string{GetGatwayName(event.Project, stageName), "mesh"}
+		hosts := []string{svc.Name + "." + GetNamespace(event.Project, stageName) + "." + domain,
+			svc.Name, svc.Name + "." + GetNamespace(event.Project, stageName)}
+		destCanary := mesh.HTTPRouteDestination{Host: hostCanary, Weight: 0}
+		destPrimary := mesh.HTTPRouteDestination{Host: hostPrimary, Weight: 100}
 		httpRouteDestinations := []mesh.HTTPRouteDestination{destCanary, destPrimary}
 
 		vs, err := meshHandler.GenerateVirtualService(svc.Name, gws, hosts, httpRouteDestinations)
@@ -198,7 +171,7 @@ func handleService(document []byte, event *keptnevents.ServiceCreateEventData, s
 			return nil, nil, err
 		}
 
-		gw := chart.Template{Name: "templates/" + svc.Name + "-istio-virtualservice.yaml", Data: vs}
+		gw := chart.Template{Name: "templates/" + svc.Name + meshHandler.GetVirtualServiceSuffix(), Data: vs}
 		newTemplates = append(newTemplates, &gw)
 	}
 	return newTemplateContent, newTemplates, nil
