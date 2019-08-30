@@ -7,9 +7,10 @@ type Requirements struct {
 
 // RequirementDependencies represents the dependencies contained in the Helm umbrella requirements
 type RequirementDependencies struct {
-	Name      string `json:"name"`
-	Version   string `json:"version"`
-	Condition string `json:"condition"`
+	Name       string `json:"name"`
+	Version    string `json:"version"`
+	Condition  string `json:"condition"`
+	Repository string `json:"repository"`
 }
 
 // Values represents the Helm umbrella values
