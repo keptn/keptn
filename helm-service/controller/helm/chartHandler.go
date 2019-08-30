@@ -60,11 +60,33 @@ func PackageChart(ch *chart.Chart) ([]byte, error) {
 }
 
 // GetNamespace returns the namespace for a specific project and stage
-func GetNamespace(projectName string, stage string) string {
-	return projectName + "-" + stage
+func GetNamespace(project string, stage string, generated bool) string {
+	suffix := ""
+	if generated {
+		suffix = "-generated"
+	}
+	return project + "-" + stage + suffix
 }
 
 // GetGatwayName returns the name of the gateway for a specific project and stage
 func GetGatwayName(project string, stage string) string {
 	return project + "-" + stage + "-gateway"
+}
+
+// GetChartName returns the name of the chart
+func GetChartName(service string, generated bool) string {
+	suffix := ""
+	if generated {
+		suffix = "-generated"
+	}
+	return service + suffix
+}
+
+// GetReleaseName returns the name of the Helm release
+func GetReleaseName(project string, service string, stage string, generated bool) string {
+	suffix := ""
+	if generated {
+		suffix = "-generated"
+	}
+	return project + "-" + service + "-" + stage + suffix
 }
