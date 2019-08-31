@@ -59,15 +59,6 @@ func PackageChart(ch *chart.Chart) ([]byte, error) {
 	return ioutil.ReadFile(name)
 }
 
-// GetNamespace returns the namespace for a specific project and stage
-func GetNamespace(project string, stage string, generated bool) string {
-	suffix := ""
-	if generated {
-		suffix = "-generated"
-	}
-	return project + "-" + stage + suffix
-}
-
 // GetGatwayName returns the name of the gateway for a specific project and stage
 func GetGatwayName(project string, stage string) string {
 	return project + "-" + stage + "-gateway"

@@ -58,10 +58,13 @@ var cartsIstioVirtualserviceGen = GeneratedResource{
   },
   "spec": {
     "gateways": [
-      "sockshop-production-gateway"
+      "sockshop-production-gateway",
+      "mesh"
     ],
     "hosts": [
-      "carts.sockshop-production.mydomain.sh"
+      "carts.sockshop-production.mydomain.sh",
+      "carts",
+      "carts.sockshop-production"
     ],
     "http": [
       {
@@ -69,14 +72,13 @@ var cartsIstioVirtualserviceGen = GeneratedResource{
           {
             "destination": {
               "host": "carts-canary.sockshop-production.svc.cluster.local"
-            },
-            "weight": 80
+            }
           },
           {
             "destination": {
               "host": "carts-primary.sockshop-production.svc.cluster.local"
             },
-            "weight": 20
+            "weight": 100
           }
         ]
       }
@@ -294,8 +296,8 @@ func TestGenerateManagedChart(t *testing.T) {
 	data := CreateHelmChartData(t)
 	event := keptnevents.ServiceCreateEventData{Project: projectName, Service: serviceName, HelmChart: data}
 
-	istioMesh := mesh.NewIstioMesh()
-	gen, err := GenerateManagedChart(&event, "production", istioMesh, "mydomain.sh")
+	generator := NewChartGenerator(mesh.NewIstioMesh(), NewCanaryOnDeploymentGenerator(), "mydomain.sh")
+	gen, err := generator.GenerateManagedChart(&event, "production")
 	assert.Nil(t, err, "Generating the managed Chart should not return any error")
 
 	workingPath, err := ioutil.TempDir("", "helm-test")

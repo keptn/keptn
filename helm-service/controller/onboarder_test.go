@@ -76,7 +76,9 @@ func TestDoOnboard(t *testing.T) {
 	ce.Data = dataBytes
 
 	id := uuid.New().String()
-	err = DoOnboard(ce, mesh.NewIstioMesh(), keptnutils.NewLogger(id, "service.create", "helm-service"), id, configBaseURL, "test.keptn.sh")
+	onboarder := NewOnboarder(mesh.NewIstioMesh(), helm.NewCanaryOnNamespaceGenerator(),
+		keptnutils.NewLogger(id, "service.create", "helm-service"), configBaseURL, "test.keptn.sh")
+	err = onboarder.DoOnboard(ce)
 
 	check(err, t)
 }
