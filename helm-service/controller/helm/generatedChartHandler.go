@@ -15,33 +15,43 @@ import (
 	"k8s.io/helm/pkg/proto/hapi/chart"
 )
 
+type ChartGenerator struct {
+	mesh           mesh.Mesh
+	canaryLevelGen CanaryLevelGenerator
+	keptnDomain    string
+}
+
+func NewChartGenerator(mesh mesh.Mesh, canaryLevelGen CanaryLevelGenerator,
+	keptnDomain string) *ChartGenerator {
+	return &ChartGenerator{mesh: mesh, canaryLevelGen: canaryLevelGen, keptnDomain: keptnDomain}
+}
+
 // GenerateManagedChart generates a duplicated chart which is managed by keptn and used for
 // b/g and canary releases
-func GenerateManagedChart(event *keptnevents.ServiceCreateEventData, stageName string,
-	mesh mesh.Mesh, domain string) ([]byte, error) {
+func (c *ChartGenerator) GenerateManagedChart(event *keptnevents.ServiceCreateEventData, stageName string) ([]byte, error) {
 
 	ch, err := LoadChart(event.HelmChart)
 	if err != nil {
 		return nil, err
 	}
 
-	changeChartFile(ch)
+	c.changeChartFile(ch)
 
-	if err := changeTemplateContent(event, ch, mesh, stageName, domain); err != nil {
+	if err := c.changeTemplateContent(event, ch, stageName); err != nil {
 		return nil, err
 	}
 
 	return PackageChart(ch)
 }
 
-func changeChartFile(ch *chart.Chart) {
+func (c *ChartGenerator) changeChartFile(ch *chart.Chart) {
 
 	ch.Metadata.Name = ch.Metadata.Name + "-generated"
 	ch.Metadata.Description = ch.Metadata.Description + " (generated)"
 }
 
-func changeTemplateContent(event *keptnevents.ServiceCreateEventData,
-	ch *chart.Chart, meshHandler mesh.Mesh, stageName string, domain string) error {
+func (c *ChartGenerator) changeTemplateContent(event *keptnevents.ServiceCreateEventData,
+	ch *chart.Chart, stageName string) error {
 
 	newTemplates := make([]*chart.Template, 0, 0)
 
@@ -63,7 +73,7 @@ func changeTemplateContent(event *keptnevents.ServiceCreateEventData,
 				return err
 			}
 
-			newServiceTemplateContent, newServiceTemplates, err := handleService(doc, event, stageName, meshHandler, domain)
+			newServiceTemplateContent, newServiceTemplates, err := c.handleService(doc, event, stageName)
 			if err != nil {
 				return err
 			}
@@ -73,7 +83,7 @@ func changeTemplateContent(event *keptnevents.ServiceCreateEventData,
 				continue
 			}
 
-			newDeploymentTemplateContent, err := handleDeployment(doc)
+			newDeploymentTemplateContent, err := c.handleDeployment(doc)
 			if err != nil {
 				return err
 			}
@@ -82,9 +92,11 @@ func changeTemplateContent(event *keptnevents.ServiceCreateEventData,
 				continue
 			}
 
-			newContent, err = appendAsYaml(newContent, document)
-			if err != nil {
-				return err
+			if c.canaryLevelGen.IsK8sResourceDuplicated() {
+				newContent, err = appendAsYaml(newContent, document)
+				if err != nil {
+					return err
+				}
 			}
 		}
 
@@ -109,8 +121,7 @@ func appendAsYaml(content []byte, element interface{}) ([]byte, error) {
 	return append(content, yamlData...), nil
 }
 
-func handleService(document []byte, event *keptnevents.ServiceCreateEventData, stageName string, meshHandler mesh.Mesh,
-	domain string) ([]byte, []*chart.Template, error) {
+func (c *ChartGenerator) handleService(document []byte, event *keptnevents.ServiceCreateEventData, stageName string) ([]byte, []*chart.Template, error) {
 
 	var svc corev1.Service
 	if err := json.Unmarshal(document, &svc); err != nil {
@@ -121,24 +132,24 @@ func handleService(document []byte, event *keptnevents.ServiceCreateEventData, s
 	newTemplateContent := make([]byte, 0, 0)
 	newTemplates := make([]*chart.Template, 0, 0)
 
-	if isService(svc) {
-
+	if c.isService(svc) {
 		var err error
-		serviceCanary := svc.DeepCopy()
-		serviceCanary.Name = serviceCanary.Name + "-canary"
+
+		serviceCanary := c.canaryLevelGen.GetCanaryService(svc, event, stageName)
+
 		newTemplateContent, err = appendAsYaml(newTemplateContent, serviceCanary)
 		if err != nil {
 			return nil, nil, err
 		}
 
 		// Generate destination rule for canary service
-		hostCanary := serviceCanary.Name + "." + GetNamespace(event.Project, stageName, true) + ".svc.cluster.local"
-		destinationRuleCanary, err := meshHandler.GenerateDestinationRule(serviceCanary.Name, hostCanary)
+		hostCanary := serviceCanary.Name + "." + c.canaryLevelGen.GetNamespace(event.Project, stageName, true) + ".svc.cluster.local"
+		destinationRuleCanary, err := c.mesh.GenerateDestinationRule(serviceCanary.Name, hostCanary)
 		if err != nil {
 			return nil, nil, err
 		}
 
-		d1 := chart.Template{Name: "templates/" + serviceCanary.Name + meshHandler.GetDestinationRuleSuffix(), Data: destinationRuleCanary}
+		d1 := chart.Template{Name: "templates/" + serviceCanary.Name + c.mesh.GetDestinationRuleSuffix(), Data: destinationRuleCanary}
 		newTemplates = append(newTemplates, &d1)
 
 		servicePrimary := svc.DeepCopy()
@@ -150,34 +161,34 @@ func handleService(document []byte, event *keptnevents.ServiceCreateEventData, s
 		}
 
 		// Generate destination rule for primary service
-		hostPrimary := servicePrimary.Name + "." + GetNamespace(event.Project, stageName, true) + ".svc.cluster.local"
-		destinationRulePrimary, err := meshHandler.GenerateDestinationRule(servicePrimary.Name, hostPrimary)
+		hostPrimary := servicePrimary.Name + "." + c.canaryLevelGen.GetNamespace(event.Project, stageName, true) + ".svc.cluster.local"
+		destinationRulePrimary, err := c.mesh.GenerateDestinationRule(servicePrimary.Name, hostPrimary)
 		if err != nil {
 			return nil, nil, err
 		}
 
-		d2 := chart.Template{Name: "templates/" + servicePrimary.Name + meshHandler.GetDestinationRuleSuffix(), Data: destinationRulePrimary}
+		d2 := chart.Template{Name: "templates/" + servicePrimary.Name + c.mesh.GetDestinationRuleSuffix(), Data: destinationRulePrimary}
 		newTemplates = append(newTemplates, &d2)
 
 		gws := []string{GetGatwayName(event.Project, stageName), "mesh"}
-		hosts := []string{svc.Name + "." + GetNamespace(event.Project, stageName, false) + "." + domain,
-			svc.Name, svc.Name + "." + GetNamespace(event.Project, stageName, false)}
+		hosts := []string{svc.Name + "." + c.canaryLevelGen.GetNamespace(event.Project, stageName, false) + "." + c.keptnDomain,
+			svc.Name, svc.Name + "." + c.canaryLevelGen.GetNamespace(event.Project, stageName, false)}
 		destCanary := mesh.HTTPRouteDestination{Host: hostCanary, Weight: 0}
 		destPrimary := mesh.HTTPRouteDestination{Host: hostPrimary, Weight: 100}
 		httpRouteDestinations := []mesh.HTTPRouteDestination{destCanary, destPrimary}
 
-		vs, err := meshHandler.GenerateVirtualService(svc.Name, gws, hosts, httpRouteDestinations)
+		vs, err := c.mesh.GenerateVirtualService(svc.Name, gws, hosts, httpRouteDestinations)
 		if err != nil {
 			return nil, nil, err
 		}
 
-		gw := chart.Template{Name: "templates/" + svc.Name + meshHandler.GetVirtualServiceSuffix(), Data: vs}
+		gw := chart.Template{Name: "templates/" + svc.Name + c.mesh.GetVirtualServiceSuffix(), Data: vs}
 		newTemplates = append(newTemplates, &gw)
 	}
 	return newTemplateContent, newTemplates, nil
 }
 
-func handleDeployment(document []byte) ([]byte, error) {
+func (c *ChartGenerator) handleDeployment(document []byte) ([]byte, error) {
 	// Try to unmarshal Deployment
 	var depl appsv1.Deployment
 	if err := json.Unmarshal(document, &depl); err != nil {
@@ -186,7 +197,7 @@ func handleDeployment(document []byte) ([]byte, error) {
 	}
 
 	newTemplateContent := make([]byte, 0, 0)
-	if isDeployment(depl) {
+	if c.isDeployment(depl) {
 		depl.Name = depl.Name + "-primary"
 		depl.Spec.Selector.MatchLabels["app"] = depl.Spec.Selector.MatchLabels["app"] + "-primary"
 		depl.Spec.Template.ObjectMeta.Labels["app"] = depl.Spec.Template.ObjectMeta.Labels["app"] + "-primary"
@@ -199,10 +210,10 @@ func handleDeployment(document []byte) ([]byte, error) {
 	return newTemplateContent, nil
 }
 
-func isService(svc corev1.Service) bool {
+func (c *ChartGenerator) isService(svc corev1.Service) bool {
 	return strings.ToLower(svc.Kind) == "service"
 }
 
-func isDeployment(dpl appsv1.Deployment) bool {
+func (c *ChartGenerator) isDeployment(dpl appsv1.Deployment) bool {
 	return strings.ToLower(dpl.Kind) == "deployment"
 }

@@ -94,6 +94,17 @@ spec:
               memory: 1024Mi
 `
 
+const secretContent = `
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysecret
+type: Opaque
+data:
+  username: YWRtaW4=
+  password: MWYyZDFlMmU2N2Rm
+`
+
 const valuesContent = `
 image: docker.io/keptnexamples/carts:0.8.1
 `
@@ -123,6 +134,8 @@ func CreateHelmChartData(t *testing.T) []byte {
 	err = ioutil.WriteFile("carts/templates/deployment.yml", []byte(deploymentContent), 0644)
 	check(err, t)
 	err = ioutil.WriteFile("carts/templates/service.yaml", []byte(serviceContent), 0644)
+	check(err, t)
+	err = ioutil.WriteFile("carts/templates/secret.yaml", []byte(secretContent), 0644)
 	check(err, t)
 
 	ch, err := chartutil.LoadDir("carts")
