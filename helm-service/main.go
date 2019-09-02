@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
 	"net/url"
 	"os"
@@ -17,6 +16,7 @@ import (
 	keptnevents "github.com/keptn/go-utils/pkg/events"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/helm-service/controller"
+	"github.com/keptn/keptn/helm-service/controller/helm"
 	"github.com/keptn/keptn/helm-service/controller/mesh"
 )
 
@@ -55,13 +55,16 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 	logger := keptnutils.NewLogger(shkeptncontext, event.Context.GetID(), "helm-service")
 	mesh := mesh.NewIstioMesh()
+	canaryLevelGen := helm.NewCanaryOnNamespaceGenerator()
 
 	if event.Type() == keptnevents.ConfigurationChangeEventType {
-		go changeAndApply(event, mesh, logger, shkeptncontext)
+		configChanger := controller.NewConfigurationChanger(mesh, canaryLevelGen, logger, getConfigurationServiceURL())
+		go configChanger.ChangeAndApplyConfiguration(event)
 	} else if event.Type() == keptnevents.InternalServiceCreateEventType {
 		keptnDomain, err := getKeptnDomain()
 		if err == nil {
-			go controller.DoOnboard(event, mesh, logger, getConfigurationServiceURL(), keptnDomain)
+			onboarder := controller.NewOnboarder(mesh, canaryLevelGen, logger, getConfigurationServiceURL(), keptnDomain)
+			go onboarder.DoOnboard(event)
 		} else {
 			logger.Error("Error when reading the keptn domain")
 		}
@@ -70,19 +73,6 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	}
 
 	return nil
-}
-
-func changeAndApply(ce cloudevents.Event, mesh mesh.Mesh, logger *keptnutils.Logger, shkeptncontext string) {
-
-	data := &keptnevents.ConfigurationChangeEventData{}
-	if err := ce.DataAs(data); err != nil {
-		logger.Error(fmt.Sprintf("Got Data Error: %s", err.Error()))
-		return
-	}
-	if err := controller.ChangeConfiguration(data, mesh, logger, getConfigurationServiceURL()); err != nil {
-		return
-	}
-	controller.ApplyConfiguration(data, logger, getConfigurationServiceURL())
 }
 
 func sendDeploymentFinishedEvent(shkeptncontext string, incomingEvent cloudevents.Event) error {
