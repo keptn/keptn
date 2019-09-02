@@ -2,6 +2,7 @@ package helm
 
 import (
 	keptnevents "github.com/keptn/go-utils/pkg/events"
+	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -37,4 +38,12 @@ func (*CanaryOnNamespaceGenerator) GetNamespace(project string, stage string, ge
 		suffix = "-generated"
 	}
 	return project + "-" + stage + suffix
+}
+
+func (*CanaryOnNamespaceGenerator) DeleteRelease(project string, service string, stage string, generated bool, configServiceURL string) error {
+	releaseName := GetReleaseName(project, service, stage, generated)
+	if _, err := keptnutils.ExecuteCommand("helm", []string{"delete", "--purge", releaseName}); err != nil {
+		return err
+	}
+	return nil
 }

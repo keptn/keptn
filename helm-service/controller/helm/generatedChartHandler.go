@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
-	"strings"
 
 	keptnevents "github.com/keptn/go-utils/pkg/events"
 	"github.com/keptn/keptn/helm-service/controller/jsonutils"
@@ -132,7 +131,7 @@ func (c *ChartGenerator) handleService(document []byte, event *keptnevents.Servi
 	newTemplateContent := make([]byte, 0, 0)
 	newTemplates := make([]*chart.Template, 0, 0)
 
-	if c.isService(svc) {
+	if IsService(&svc) {
 		var err error
 
 		serviceCanary := c.canaryLevelGen.GetCanaryService(svc, event, stageName)
@@ -197,7 +196,7 @@ func (c *ChartGenerator) handleDeployment(document []byte) ([]byte, error) {
 	}
 
 	newTemplateContent := make([]byte, 0, 0)
-	if c.isDeployment(depl) {
+	if IsDeployment(&depl) {
 		depl.Name = depl.Name + "-primary"
 		depl.Spec.Selector.MatchLabels["app"] = depl.Spec.Selector.MatchLabels["app"] + "-primary"
 		depl.Spec.Template.ObjectMeta.Labels["app"] = depl.Spec.Template.ObjectMeta.Labels["app"] + "-primary"
@@ -208,12 +207,4 @@ func (c *ChartGenerator) handleDeployment(document []byte) ([]byte, error) {
 		}
 	}
 	return newTemplateContent, nil
-}
-
-func (c *ChartGenerator) isService(svc corev1.Service) bool {
-	return strings.ToLower(svc.Kind) == "service"
-}
-
-func (c *ChartGenerator) isDeployment(dpl appsv1.Deployment) bool {
-	return strings.ToLower(dpl.Kind) == "deployment"
 }

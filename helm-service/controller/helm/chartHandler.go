@@ -2,11 +2,16 @@ package helm
 
 import (
 	"bytes"
+	"io"
 	"io/ioutil"
 	"os"
+	"strings"
 
 	"github.com/keptn/go-utils/pkg/models"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
+	kyaml "k8s.io/apimachinery/pkg/util/yaml"
 	"k8s.io/helm/pkg/chartutil"
 	"k8s.io/helm/pkg/proto/hapi/chart"
 )
@@ -80,4 +85,40 @@ func GetReleaseName(project string, service string, stage string, generated bool
 		suffix = "-generated"
 	}
 	return project + "-" + service + "-" + stage + suffix
+}
+
+// GetDeployments returns all deployments contained in the provided chart
+func GetDeployments(ch *chart.Chart) []*appsv1.Deployment {
+
+	deployments := make([]*appsv1.Deployment, 0, 0)
+
+	for _, templateFile := range ch.Templates {
+		dec := kyaml.NewYAMLToJSONDecoder(bytes.NewReader(templateFile.Data))
+		for {
+			var dpl appsv1.Deployment
+			err := dec.Decode(&dpl)
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				continue
+			}
+
+			if IsDeployment(&dpl) {
+				deployments = append(deployments, &dpl)
+			}
+		}
+	}
+
+	return deployments
+}
+
+// IsService tests whether the provided struct is a service
+func IsService(svc *corev1.Service) bool {
+	return strings.ToLower(svc.Kind) == "service"
+}
+
+// IsDeployment tests whether the provided struct is a deployment
+func IsDeployment(dpl *appsv1.Deployment) bool {
+	return strings.ToLower(dpl.Kind) == "deployment"
 }
