@@ -1,7 +1,7 @@
 pass: 90
 warning: 75
 objectives:
-- metric: cpu_usage_p95_sockshop_carts_production
-  threshold: 90
+- metric: request_latency_seconds
+  threshold: 0.8
   timeframe: 5m
   score: 100
