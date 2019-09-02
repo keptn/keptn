@@ -30,16 +30,11 @@ func NewGeneratedChartHandler(mesh mesh.Mesh, canaryLevelGen CanaryLevelGenerato
 
 // GenerateManagedChart generates a duplicated chart which is managed by keptn and used for
 // b/g and canary releases
-func (c *GeneratedChartHandler) GenerateManagedChart(event *keptnevents.ServiceCreateEventData, stageName string) ([]byte, error) {
-
-	ch, err := LoadChart(event.HelmChart)
-	if err != nil {
-		return nil, err
-	}
+func (c *GeneratedChartHandler) GenerateManagedChart(ch *chart.Chart, project string, stageName string) ([]byte, error) {
 
 	c.changeChartFile(ch)
 
-	if err := c.changeTemplateContent(event, ch, stageName); err != nil {
+	if err := c.changeTemplateContent(project, ch, stageName); err != nil {
 		return nil, err
 	}
 
@@ -52,7 +47,7 @@ func (c *GeneratedChartHandler) changeChartFile(ch *chart.Chart) {
 	ch.Metadata.Description = ch.Metadata.Description + " (generated)"
 }
 
-func (c *GeneratedChartHandler) changeTemplateContent(event *keptnevents.ServiceCreateEventData,
+func (c *GeneratedChartHandler) changeTemplateContent(project string,
 	ch *chart.Chart, stageName string) error {
 
 	newTemplates := make([]*chart.Template, 0, 0)
@@ -75,7 +70,7 @@ func (c *GeneratedChartHandler) changeTemplateContent(event *keptnevents.Service
 				return err
 			}
 
-			newServiceTemplateContent, newServiceTemplates, err := c.handleService(doc, event, stageName)
+			newServiceTemplateContent, newServiceTemplates, err := c.handleService(doc, project, stageName)
 			if err != nil {
 				return err
 			}
@@ -123,7 +118,7 @@ func appendAsYaml(content []byte, element interface{}) ([]byte, error) {
 	return append(content, yamlData...), nil
 }
 
-func (c *GeneratedChartHandler) handleService(document []byte, event *keptnevents.ServiceCreateEventData, stageName string) ([]byte, []*chart.Template, error) {
+func (c *GeneratedChartHandler) handleService(document []byte, project string, stageName string) ([]byte, []*chart.Template, error) {
 
 	var svc corev1.Service
 	if err := json.Unmarshal(document, &svc); err != nil {
@@ -137,7 +132,7 @@ func (c *GeneratedChartHandler) handleService(document []byte, event *keptnevent
 	if IsService(&svc) {
 		var err error
 
-		serviceCanary := c.canaryLevelGen.GetCanaryService(svc, event, stageName)
+		serviceCanary := c.canaryLevelGen.GetCanaryService(svc, project, stageName)
 
 		newTemplateContent, err = appendAsYaml(newTemplateContent, serviceCanary)
 		if err != nil {
@@ -145,7 +140,7 @@ func (c *GeneratedChartHandler) handleService(document []byte, event *keptnevent
 		}
 
 		// Generate destination rule for canary service
-		hostCanary := serviceCanary.Name + "." + c.canaryLevelGen.GetNamespace(event.Project, stageName, true) + ".svc.cluster.local"
+		hostCanary := serviceCanary.Name + "." + c.canaryLevelGen.GetNamespace(project, stageName, true) + ".svc.cluster.local"
 		destinationRuleCanary, err := c.mesh.GenerateDestinationRule(serviceCanary.Name, hostCanary)
 		if err != nil {
 			return nil, nil, err
@@ -163,7 +158,7 @@ func (c *GeneratedChartHandler) handleService(document []byte, event *keptnevent
 		}
 
 		// Generate destination rule for primary service
-		hostPrimary := servicePrimary.Name + "." + c.canaryLevelGen.GetNamespace(event.Project, stageName, true) + ".svc.cluster.local"
+		hostPrimary := servicePrimary.Name + "." + c.canaryLevelGen.GetNamespace(project, stageName, true) + ".svc.cluster.local"
 		destinationRulePrimary, err := c.mesh.GenerateDestinationRule(servicePrimary.Name, hostPrimary)
 		if err != nil {
 			return nil, nil, err
@@ -172,9 +167,9 @@ func (c *GeneratedChartHandler) handleService(document []byte, event *keptnevent
 		d2 := chart.Template{Name: "templates/" + servicePrimary.Name + c.mesh.GetDestinationRuleSuffix(), Data: destinationRulePrimary}
 		newTemplates = append(newTemplates, &d2)
 
-		gws := []string{GetGatwayName(event.Project, stageName), "mesh"}
-		hosts := []string{svc.Name + "." + c.canaryLevelGen.GetNamespace(event.Project, stageName, false) + "." + c.keptnDomain,
-			svc.Name, svc.Name + "." + c.canaryLevelGen.GetNamespace(event.Project, stageName, false)}
+		gws := []string{GetGatwayName(project, stageName), "mesh"}
+		hosts := []string{svc.Name + "." + c.canaryLevelGen.GetNamespace(project, stageName, false) + "." + c.keptnDomain,
+			svc.Name, svc.Name + "." + c.canaryLevelGen.GetNamespace(project, stageName, false)}
 		destCanary := mesh.HTTPRouteDestination{Host: hostCanary, Weight: 0}
 		destPrimary := mesh.HTTPRouteDestination{Host: hostPrimary, Weight: 100}
 		httpRouteDestinations := []mesh.HTTPRouteDestination{destCanary, destPrimary}
@@ -212,6 +207,7 @@ func (c *GeneratedChartHandler) handleDeployment(document []byte) ([]byte, error
 	return newTemplateContent, nil
 }
 
+// SetCanaryWeight sets the provided traffic weight in the VirtualService
 func (c *GeneratedChartHandler) SetCanaryWeight(e *keptnevents.ConfigurationChangeEventData, canaryWeight int32) error {
 
 	// Read chart
@@ -243,10 +239,5 @@ func (c *GeneratedChartHandler) SetCanaryWeight(e *keptnevents.ConfigurationChan
 	if err != nil {
 		return fmt.Errorf("Error when storing modified chart %s from project %s: %s", GetChartName(e.Service, true), e.Project, err.Error())
 	}
-	return nil
-}
-
-func (c *GeneratedChartHandler) CopyCanaryToPrimary(e *keptnevents.ConfigurationChangeEventData) error {
-
 	return nil
 }

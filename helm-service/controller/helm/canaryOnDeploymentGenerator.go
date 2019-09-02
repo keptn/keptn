@@ -3,7 +3,6 @@ package helm
 import (
 	"os"
 
-	keptnevents "github.com/keptn/go-utils/pkg/events"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	corev1 "k8s.io/api/core/v1"
 )
@@ -15,7 +14,7 @@ func NewCanaryOnDeploymentGenerator() *CanaryOnDeploymentGenerator {
 	return &CanaryOnDeploymentGenerator{}
 }
 
-func (*CanaryOnDeploymentGenerator) GetCanaryService(originalSvc corev1.Service, event *keptnevents.ServiceCreateEventData, stageName string) (canaryService *corev1.Service) {
+func (*CanaryOnDeploymentGenerator) GetCanaryService(originalSvc corev1.Service, project string, stageName string) (canaryService *corev1.Service) {
 
 	canaryService = originalSvc.DeepCopy()
 	canaryService.Name = canaryService.Name + "-canary"
