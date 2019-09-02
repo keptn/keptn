@@ -16,7 +16,6 @@ import (
 	"github.com/kinbiko/jsonassert"
 	"github.com/stretchr/testify/assert"
 
-	keptnevents "github.com/keptn/go-utils/pkg/events"
 	kyaml "k8s.io/apimachinery/pkg/util/yaml"
 	"k8s.io/helm/pkg/chartutil"
 )
@@ -294,15 +293,18 @@ var valuesGen = GeneratedResource{
 func TestGenerateManagedChart(t *testing.T) {
 
 	data := CreateHelmChartData(t)
-	event := keptnevents.ServiceCreateEventData{Project: projectName, Service: serviceName, HelmChart: data}
 
 	h := NewGeneratedChartHandler(mesh.NewIstioMesh(), NewCanaryOnDeploymentGenerator(), "mydomain.sh", "")
-	gen, err := h.GenerateManagedChart(&event, "production")
+	inputChart, err := LoadChart(data)
+	if err != nil {
+		t.Error(err)
+	}
+	gen, err := h.GenerateManagedChart(inputChart, projectName, "production")
 	assert.Nil(t, err, "Generating the managed Chart should not return any error")
 
 	workingPath, err := ioutil.TempDir("", "helm-test")
 	defer os.RemoveAll(workingPath)
-	packagedChartFilePath := filepath.Join(workingPath, event.Service)
+	packagedChartFilePath := filepath.Join(workingPath, serviceName)
 	err = ioutil.WriteFile(packagedChartFilePath, gen, 0644)
 	if err != nil {
 		t.Error(err)
