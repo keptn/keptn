@@ -32,7 +32,7 @@ type ConfigurationChanger struct {
 
 func NewConfigurationChanger(mesh mesh.Mesh, canaryLevelGen helm.CanaryLevelGenerator,
 	logger *keptnutils.Logger, keptnDomain string, configServiceURL string) *ConfigurationChanger {
-	generatedChartHandler := helm.NewGeneratedChartHandler(mesh, canaryLevelGen, keptnDomain, configServiceURL)
+	generatedChartHandler := helm.NewGeneratedChartHandler(mesh, canaryLevelGen, keptnDomain)
 	return &ConfigurationChanger{generatedChartHandler: generatedChartHandler, canaryLevelGen: canaryLevelGen,
 		configServiceURL: configServiceURL, logger: logger, keptnDomain: keptnDomain}
 }
@@ -51,10 +51,16 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event)
 			c.logger.Error(err.Error())
 			return err
 		}
+		if err := c.applyConfiguration(e, true); err != nil {
+			return err
+		}
 	}
 	if len(e.ValuesCanary) > 0 {
 		if err := c.changeValues(e, false, e.ValuesCanary); err != nil {
 			c.logger.Error(err.Error())
+			return err
+		}
+		if err := c.applyConfiguration(e, false); err != nil {
 			return err
 		}
 	}
@@ -75,9 +81,9 @@ func (c *ConfigurationChanger) changeValues(e *keptnevents.ConfigurationChangeEv
 	// Read chart
 	chart, err := helm.GetChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, generated), c.configServiceURL)
 	if err != nil {
-		return fmt.Errorf("Error when reading chart %s from project %s: %s",
-			helm.GetChartName(e.Service, generated), e.Project, err.Error())
+		return err
 	}
+
 	// Change values
 	for k, v := range newValues {
 		chart.Values.Values[k] = v
@@ -86,22 +92,34 @@ func (c *ConfigurationChanger) changeValues(e *keptnevents.ConfigurationChangeEv
 	// Store chart
 	chartData, err := helm.PackageChart(chart)
 	if err != nil {
-		return fmt.Errorf("Error when packaging modified chart %s from project %s: %s",
-			helm.GetChartName(e.Service, generated), e.Project, err.Error())
+		return err
 	}
-	err = helm.StoreChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, generated), chartData, c.configServiceURL)
+	return helm.StoreChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, generated), chartData, c.configServiceURL)
+}
+
+func (c *ConfigurationChanger) setCanaryWeight(e *keptnevents.ConfigurationChangeEventData, canaryWeight int32) error {
+
+	// Read chart
+	chart, err := helm.GetChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, true), c.configServiceURL)
 	if err != nil {
-		return fmt.Errorf("Error when storing modified chart %s from project %s: %s",
-			helm.GetChartName(e.Service, generated), e.Project, err.Error())
+		return err
 	}
-	return c.applyConfiguration(e, generated)
+
+	c.generatedChartHandler.UpdateCanaryWeight(chart, canaryWeight)
+
+	// Store chart
+	chartData, err := helm.PackageChart(chart)
+	if err != nil {
+		return err
+	}
+	return helm.StoreChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, true), chartData, c.configServiceURL)
 }
 
 func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEventData) error {
 
 	switch e.Canary.Action {
 	case keptnevents.Discard:
-		if err := c.generatedChartHandler.SetCanaryWeight(e, 0); err != nil {
+		if err := c.setCanaryWeight(e, 0); err != nil {
 			return err
 		}
 		if err := c.applyConfiguration(e, true); err != nil {
@@ -112,7 +130,7 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 		}
 
 	case keptnevents.Promote:
-		if err := c.generatedChartHandler.SetCanaryWeight(e, 100); err != nil {
+		if err := c.setCanaryWeight(e, 100); err != nil {
 			return err
 		}
 		if err := c.applyConfiguration(e, true); err != nil {
@@ -132,7 +150,7 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 		if err := c.applyConfiguration(e, true); err != nil {
 			return err
 		}
-		if err := c.generatedChartHandler.SetCanaryWeight(e, 0); err != nil {
+		if err := c.setCanaryWeight(e, 0); err != nil {
 			return err
 		}
 		if err := c.applyConfiguration(e, true); err != nil {
@@ -140,7 +158,7 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 		}
 
 	case keptnevents.Set:
-		if err := c.generatedChartHandler.SetCanaryWeight(e, e.Canary.Value); err != nil {
+		if err := c.setCanaryWeight(e, e.Canary.Value); err != nil {
 			return err
 		}
 		if err := c.applyConfiguration(e, true); err != nil {

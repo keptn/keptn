@@ -7,7 +7,6 @@ import (
 	"io"
 	"strings"
 
-	keptnevents "github.com/keptn/go-utils/pkg/events"
 	"github.com/keptn/keptn/helm-service/controller/jsonutils"
 	"github.com/keptn/keptn/helm-service/controller/mesh"
 	appsv1 "k8s.io/api/apps/v1"
@@ -17,15 +16,14 @@ import (
 )
 
 type GeneratedChartHandler struct {
-	mesh             mesh.Mesh
-	canaryLevelGen   CanaryLevelGenerator
-	keptnDomain      string
-	configServiceURL string
+	mesh           mesh.Mesh
+	canaryLevelGen CanaryLevelGenerator
+	keptnDomain    string
 }
 
 func NewGeneratedChartHandler(mesh mesh.Mesh, canaryLevelGen CanaryLevelGenerator,
-	keptnDomain string, configServiceURL string) *GeneratedChartHandler {
-	return &GeneratedChartHandler{mesh: mesh, canaryLevelGen: canaryLevelGen, keptnDomain: keptnDomain, configServiceURL: configServiceURL}
+	keptnDomain string) *GeneratedChartHandler {
+	return &GeneratedChartHandler{mesh: mesh, canaryLevelGen: canaryLevelGen, keptnDomain: keptnDomain}
 }
 
 // GenerateManagedChart generates a duplicated chart which is managed by keptn and used for
@@ -207,37 +205,22 @@ func (c *GeneratedChartHandler) handleDeployment(document []byte) ([]byte, error
 	return newTemplateContent, nil
 }
 
-// SetCanaryWeight sets the provided traffic weight in the VirtualService
-func (c *GeneratedChartHandler) SetCanaryWeight(e *keptnevents.ConfigurationChangeEventData, canaryWeight int32) error {
-
-	// Read chart
-	chart, err := GetChart(e.Project, e.Service, e.Stage, GetChartName(e.Service, true), c.configServiceURL)
-	if err != nil {
-		return fmt.Errorf("Error when reading chart %s from project %s: %s", GetChartName(e.Service, true), e.Project, err.Error())
-	}
+// UpdateCanaryWeight updates the provided traffic weight in the VirtualService contained in the chart
+func (c *GeneratedChartHandler) UpdateCanaryWeight(ch *chart.Chart, canaryWeight int32) error {
 
 	// Set weights in all virtualservices
-	for _, template := range chart.Templates {
+	for _, template := range ch.Templates {
 		if strings.HasPrefix(template.Name, "templates/") &&
 			strings.HasSuffix(template.Name, c.mesh.GetVirtualServiceSuffix()) {
 
 			vs, err := c.mesh.UpdateWeights(template.Data, canaryWeight)
 			if err != nil {
-				return fmt.Errorf("Error when setting new weights in VirtualService %s from chart %s and project %s: %s",
-					template.Name, GetChartName(e.Service, true), e.Project, err.Error())
+				return fmt.Errorf("Error when setting new weights in VirtualService %s: %s",
+					template.Name, err.Error())
 			}
 			template.Data = vs
 		}
 	}
 
-	// Store chart
-	chartData, err := PackageChart(chart)
-	if err != nil {
-		return fmt.Errorf("Error when packaging modified chart %s from project %s: %s", GetChartName(e.Service, true), e.Project, err.Error())
-	}
-	err = StoreChart(e.Project, e.Service, e.Stage, GetChartName(e.Service, true), chartData, c.configServiceURL)
-	if err != nil {
-		return fmt.Errorf("Error when storing modified chart %s from project %s: %s", GetChartName(e.Service, true), e.Project, err.Error())
-	}
 	return nil
 }

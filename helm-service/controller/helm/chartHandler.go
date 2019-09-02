@@ -2,6 +2,7 @@ package helm
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -28,7 +29,11 @@ func StoreChart(project string, service string, stage string, chartName string, 
 	resource := models.Resource{ResourceURI: &uri, ResourceContent: string(helmChart)}
 
 	_, err := resourceHandler.CreateServiceResources(project, stage, service, []*models.Resource{&resource})
-	return err
+	if err != nil {
+		return fmt.Errorf("Error when storing chart %s of service %s in project %s: %s",
+			chartName, service, project, err.Error())
+	}
+	return nil
 }
 
 // GetChart reads the chart from the configuration service
@@ -37,10 +42,16 @@ func GetChart(project string, service string, stage string, chartName string, co
 
 	resource, err := resourceHandler.GetServiceResource(project, stage, service, "helm/"+chartName)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Error when reading chart %s from project %s: %s",
+			chartName, project, err.Error())
 	}
 
-	return LoadChart([]byte(resource.ResourceContent))
+	ch, err := LoadChart([]byte(resource.ResourceContent))
+	if err != nil {
+		return nil, fmt.Errorf("Error when reading chart %s from project %s: %s",
+			chartName, project, err.Error())
+	}
+	return ch, nil
 }
 
 // LoadChart converts a byte array into a Chart
@@ -52,16 +63,20 @@ func LoadChart(data []byte) (*chart.Chart, error) {
 func PackageChart(ch *chart.Chart) ([]byte, error) {
 	helmPackage, err := ioutil.TempDir("", "")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Error when packaging chart: %s", err.Error())
 	}
 	defer os.RemoveAll(helmPackage)
 
 	name, err := chartutil.Save(ch, helmPackage)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Error when packaging chart: %s", err.Error())
 	}
 
-	return ioutil.ReadFile(name)
+	data, err := ioutil.ReadFile(name)
+	if err != nil {
+		return nil, fmt.Errorf("Error when packaging chart: %s", err.Error())
+	}
+	return data, nil
 }
 
 // GetGatwayName returns the name of the gateway for a specific project and stage

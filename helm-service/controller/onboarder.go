@@ -90,7 +90,7 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event) error {
 		}
 
 		if requiresGeneratedChart[stage.StageName] {
-			chartGenerator := helm.NewGeneratedChartHandler(o.mesh, o.canaryLevelGen, o.keptnDomain, o.configServiceURL)
+			chartGenerator := helm.NewGeneratedChartHandler(o.mesh, o.canaryLevelGen, o.keptnDomain)
 
 			o.logger.Debug("Generating the keptn-managed Helm chart" + stage.StageName)
 			ch, err := helm.LoadChart(event.HelmChart)
