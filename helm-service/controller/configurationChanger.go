@@ -180,11 +180,9 @@ func (c *ConfigurationChanger) setCanaryWeight(e *keptnevents.ConfigurationChang
 
 // deleteRelease deletes a helm release
 func (c *ConfigurationChanger) deleteRelease(e *keptnevents.ConfigurationChangeEventData, generated bool) error {
-	releaseName := helm.GetReleaseName(e.Project, e.Service, e.Stage, generated)
-	// TODO: Make differentiation between canary level
-	if _, err := keptnutils.ExecuteCommand("helm", []string{"delete", "--purge", releaseName}); err != nil {
-		c.logger.Error(fmt.Sprintf("Error when deleting release %s: %s", releaseName, err.Error()))
-		return err
+
+	if err := canaryLevelGen.DeleteRelease(e.Project, e.Stage, e.Service, generated); err != nil {
+		logger.Error(fmt.Sprintf("Error when deleting release %s: %s", GetReleaseName(e.Project, e.Service, e.Stage, generated), err.Error()))
 	}
 	return nil
 }
