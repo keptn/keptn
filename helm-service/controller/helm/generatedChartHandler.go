@@ -3,7 +3,9 @@ package helm
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
+	"strings"
 
 	keptnevents "github.com/keptn/go-utils/pkg/events"
 	"github.com/keptn/keptn/helm-service/controller/jsonutils"
@@ -14,20 +16,21 @@ import (
 	"k8s.io/helm/pkg/proto/hapi/chart"
 )
 
-type ChartGenerator struct {
-	mesh           mesh.Mesh
-	canaryLevelGen CanaryLevelGenerator
-	keptnDomain    string
+type GeneratedChartHandler struct {
+	mesh             mesh.Mesh
+	canaryLevelGen   CanaryLevelGenerator
+	keptnDomain      string
+	configServiceURL string
 }
 
-func NewChartGenerator(mesh mesh.Mesh, canaryLevelGen CanaryLevelGenerator,
-	keptnDomain string) *ChartGenerator {
-	return &ChartGenerator{mesh: mesh, canaryLevelGen: canaryLevelGen, keptnDomain: keptnDomain}
+func NewGeneratedChartHandler(mesh mesh.Mesh, canaryLevelGen CanaryLevelGenerator,
+	keptnDomain string, configServiceURL string) *GeneratedChartHandler {
+	return &GeneratedChartHandler{mesh: mesh, canaryLevelGen: canaryLevelGen, keptnDomain: keptnDomain, configServiceURL: configServiceURL}
 }
 
 // GenerateManagedChart generates a duplicated chart which is managed by keptn and used for
 // b/g and canary releases
-func (c *ChartGenerator) GenerateManagedChart(event *keptnevents.ServiceCreateEventData, stageName string) ([]byte, error) {
+func (c *GeneratedChartHandler) GenerateManagedChart(event *keptnevents.ServiceCreateEventData, stageName string) ([]byte, error) {
 
 	ch, err := LoadChart(event.HelmChart)
 	if err != nil {
@@ -43,13 +46,13 @@ func (c *ChartGenerator) GenerateManagedChart(event *keptnevents.ServiceCreateEv
 	return PackageChart(ch)
 }
 
-func (c *ChartGenerator) changeChartFile(ch *chart.Chart) {
+func (c *GeneratedChartHandler) changeChartFile(ch *chart.Chart) {
 
 	ch.Metadata.Name = ch.Metadata.Name + "-generated"
 	ch.Metadata.Description = ch.Metadata.Description + " (generated)"
 }
 
-func (c *ChartGenerator) changeTemplateContent(event *keptnevents.ServiceCreateEventData,
+func (c *GeneratedChartHandler) changeTemplateContent(event *keptnevents.ServiceCreateEventData,
 	ch *chart.Chart, stageName string) error {
 
 	newTemplates := make([]*chart.Template, 0, 0)
@@ -120,7 +123,7 @@ func appendAsYaml(content []byte, element interface{}) ([]byte, error) {
 	return append(content, yamlData...), nil
 }
 
-func (c *ChartGenerator) handleService(document []byte, event *keptnevents.ServiceCreateEventData, stageName string) ([]byte, []*chart.Template, error) {
+func (c *GeneratedChartHandler) handleService(document []byte, event *keptnevents.ServiceCreateEventData, stageName string) ([]byte, []*chart.Template, error) {
 
 	var svc corev1.Service
 	if err := json.Unmarshal(document, &svc); err != nil {
@@ -187,7 +190,7 @@ func (c *ChartGenerator) handleService(document []byte, event *keptnevents.Servi
 	return newTemplateContent, newTemplates, nil
 }
 
-func (c *ChartGenerator) handleDeployment(document []byte) ([]byte, error) {
+func (c *GeneratedChartHandler) handleDeployment(document []byte) ([]byte, error) {
 	// Try to unmarshal Deployment
 	var depl appsv1.Deployment
 	if err := json.Unmarshal(document, &depl); err != nil {
@@ -207,4 +210,43 @@ func (c *ChartGenerator) handleDeployment(document []byte) ([]byte, error) {
 		}
 	}
 	return newTemplateContent, nil
+}
+
+func (c *GeneratedChartHandler) SetCanaryWeight(e *keptnevents.ConfigurationChangeEventData, canaryWeight int32) error {
+
+	// Read chart
+	chart, err := GetChart(e.Project, e.Service, e.Stage, GetChartName(e.Service, true), c.configServiceURL)
+	if err != nil {
+		return fmt.Errorf("Error when reading chart %s from project %s: %s", GetChartName(e.Service, true), e.Project, err.Error())
+	}
+
+	// Set weights in all virtualservices
+	for _, template := range chart.Templates {
+		if strings.HasPrefix(template.Name, "templates/") &&
+			strings.HasSuffix(template.Name, c.mesh.GetVirtualServiceSuffix()) {
+
+			vs, err := c.mesh.UpdateWeights(template.Data, canaryWeight)
+			if err != nil {
+				return fmt.Errorf("Error when setting new weights in VirtualService %s from chart %s and project %s: %s",
+					template.Name, GetChartName(e.Service, true), e.Project, err.Error())
+			}
+			template.Data = vs
+		}
+	}
+
+	// Store chart
+	chartData, err := PackageChart(chart)
+	if err != nil {
+		return fmt.Errorf("Error when packaging modified chart %s from project %s: %s", GetChartName(e.Service, true), e.Project, err.Error())
+	}
+	err = StoreChart(e.Project, e.Service, e.Stage, GetChartName(e.Service, true), chartData, c.configServiceURL)
+	if err != nil {
+		return fmt.Errorf("Error when storing modified chart %s from project %s: %s", GetChartName(e.Service, true), e.Project, err.Error())
+	}
+	return nil
+}
+
+func (c *GeneratedChartHandler) CopyCanaryToPrimary(e *keptnevents.ConfigurationChangeEventData) error {
+
+	return nil
 }
