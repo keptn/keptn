@@ -13,7 +13,6 @@ func NewCanaryOnNamespaceGenerator() *CanaryOnNamespaceGenerator {
 }
 
 func (c *CanaryOnNamespaceGenerator) GetCanaryService(originalSvc corev1.Service, project string, stageName string) (canaryService *corev1.Service) {
-
 	canaryService = &corev1.Service{}
 
 	canaryService.Kind = "Service"
@@ -26,7 +25,6 @@ func (c *CanaryOnNamespaceGenerator) GetCanaryService(originalSvc corev1.Service
 }
 
 func (*CanaryOnNamespaceGenerator) IsK8sResourceDuplicated() bool {
-
 	return true
 }
 
