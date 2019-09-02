@@ -405,11 +405,17 @@ export class Service {
   async getPerfspecString(event: RequestModel): Promise<string> {
     try {
       const indicators = await this.getServiceIndicators(event);
-      if (indicators === null) {
+      if (indicators === null
+        && indicators.indicators !== undefined
+        && indicators.indicators.length > 0
+      ) {
         return await this.getServiceResourceContent(event, 'perfspec.json');
       }
       const objectives = await this.getServiceObjectives(event);
-      if (objectives === null) {
+      if (objectives === null
+        && objectives.objectives !== undefined
+        && objectives.objectives.length > 0
+      ) {
         return await this.getServiceResourceContent(event, 'perfspec.json');
       }
       const perfspecObject = this.createPerfspecObject(indicators, objectives);
@@ -490,7 +496,11 @@ export class Service {
       evaluationResult.result !== undefined &&
       (evaluationResult.result === 'pass' || evaluationResult.result === 'warning');
 
-    Logger.log(sourceEvent.shkeptncontext, sourceEvent.id, `Evaluation passed: ${evaluationPassed}`);
+    Logger.log(
+      sourceEvent.shkeptncontext,
+      sourceEvent.id,
+      `Evaluation passed: ${evaluationPassed}`,
+    );
     try {
       Logger.log(
         sourceEvent.shkeptncontext, sourceEvent.id,
