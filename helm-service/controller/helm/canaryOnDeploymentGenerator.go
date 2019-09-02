@@ -15,14 +15,12 @@ func NewCanaryOnDeploymentGenerator() *CanaryOnDeploymentGenerator {
 }
 
 func (*CanaryOnDeploymentGenerator) GetCanaryService(originalSvc corev1.Service, project string, stageName string) (canaryService *corev1.Service) {
-
 	canaryService = originalSvc.DeepCopy()
 	canaryService.Name = canaryService.Name + "-canary"
 	return
 }
 
 func (*CanaryOnDeploymentGenerator) IsK8sResourceDuplicated() bool {
-
 	return false
 }
 
@@ -32,7 +30,6 @@ func (*CanaryOnDeploymentGenerator) GetNamespace(project string, stage string, g
 }
 
 func (*CanaryOnDeploymentGenerator) DeleteRelease(project string, service string, stage string, generated bool, configServiceURL string) error {
-
 	useInClusterConfig := false
 	if os.Getenv("env") == "production" {
 		useInClusterConfig = true
