@@ -178,7 +178,7 @@ func (c *ConfigurationChanger) setCanaryWeight(e *keptnevents.ConfigurationChang
 	return nil
 }
 
-// deleteRelease deletes a helm reease
+// deleteRelease deletes a helm release
 func (c *ConfigurationChanger) deleteRelease(e *keptnevents.ConfigurationChangeEventData, generated bool) error {
 	releaseName := helm.GetReleaseName(e.Project, e.Service, e.Stage, generated)
 	// TODO: Make differentiation between canary level
