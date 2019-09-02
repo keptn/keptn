@@ -7,12 +7,15 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"k8s.io/helm/pkg/proto/hapi/chart"
+	"sigs.k8s.io/yaml"
 
 	"github.com/keptn/keptn/helm-service/controller/jsonutils"
 	"github.com/keptn/keptn/helm-service/controller/mesh"
+	"github.com/keptn/keptn/helm-service/pkg/apis/networking/istio/v1alpha3"
 	"github.com/kinbiko/jsonassert"
 	"github.com/stretchr/testify/assert"
 
@@ -352,6 +355,41 @@ func TestGenerateManagedChart(t *testing.T) {
 			ja.Assertf(string(jsonData), resource.FileContent[i])
 		}
 	}
+}
+
+func TestUpdateCanaryWeight(t *testing.T) {
+	data := CreateHelmChartData(t)
+
+	h := NewGeneratedChartHandler(mesh.NewIstioMesh(), NewCanaryOnDeploymentGenerator(), "mydomain.sh")
+	chart, err := LoadChart(data)
+	if err != nil {
+		t.Error(err)
+	}
+	genChartData, err := h.GenerateManagedChart(chart, "sockshop", "production")
+	if err != nil {
+		t.Error(err)
+	}
+	genChart, err := LoadChart(genChartData)
+	if err != nil {
+		t.Error(err)
+	}
+
+	h.UpdateCanaryWeight(genChart, 48)
+	assert.Nil(t, err, "Generating the managed Chart should not return any error")
+
+	template := getTemplateByName(genChart, "templates/carts-istio-virtualservice.yaml")
+	assert.NotNil(t, template, "Template must not be null")
+	vs := v1alpha3.VirtualService{}
+	err = yaml.Unmarshal(template.Data, &vs)
+	if err != nil {
+		t.Error(err)
+	}
+	assert.Equal(t, 1, len(vs.Spec.Http))
+	assert.Equal(t, 2, len(vs.Spec.Http[0].Route))
+	assert.Equal(t, int32(48), vs.Spec.Http[0].Route[0].Weight)
+	assert.True(t, strings.Contains(vs.Spec.Http[0].Route[0].Destination.Host, "canary"))
+	assert.Equal(t, int32(52), vs.Spec.Http[0].Route[1].Weight)
+	assert.True(t, strings.Contains(vs.Spec.Http[0].Route[1].Destination.Host, "primary"))
 }
 
 func getTemplateByName(chart *chart.Chart, templateName string) *chart.Template {
