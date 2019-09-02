@@ -38,7 +38,7 @@ func getConfigurationServiceURL() string {
 	if os.Getenv("env") == "production" {
 		return "configuration-service.keptn.svc.cluster.local:8080"
 	}
-	return "localhost:8080"
+	return "localhost:6060"
 }
 
 func getKeptnDomain() (string, error) {
