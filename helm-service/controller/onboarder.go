@@ -18,14 +18,14 @@ import (
 type Onboarder struct {
 	mesh             mesh.Mesh
 	logger           *keptnutils.Logger
-	configServiceURL string
 	canaryLevelGen   helm.CanaryLevelGenerator
 	keptnDomain      string
+	configServiceURL string
 }
 
 func NewOnboarder(mesh mesh.Mesh, canaryLevelGen helm.CanaryLevelGenerator,
-	logger *keptnutils.Logger, configServiceURL string, keptnDomain string) *Onboarder {
-	return &Onboarder{mesh: mesh, canaryLevelGen: canaryLevelGen, logger: logger, configServiceURL: configServiceURL, keptnDomain: keptnDomain}
+	logger *keptnutils.Logger, keptnDomain string, configServiceURL string) *Onboarder {
+	return &Onboarder{mesh: mesh, canaryLevelGen: canaryLevelGen, logger: logger, keptnDomain: keptnDomain, configServiceURL: configServiceURL}
 }
 
 // DoOnboard onboards a new service
@@ -90,7 +90,7 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event) error {
 		}
 
 		if requiresGeneratedChart[stage.StageName] {
-			chartGenerator := helm.NewChartGenerator(o.mesh, o.canaryLevelGen, o.keptnDomain)
+			chartGenerator := helm.NewGeneratedChartHandler(o.mesh, o.canaryLevelGen, o.keptnDomain, o.configServiceURL)
 
 			o.logger.Debug("Generating the keptn-managed Helm chart" + stage.StageName)
 			generatedChartData, err := chartGenerator.GenerateManagedChart(event, stage.StageName)

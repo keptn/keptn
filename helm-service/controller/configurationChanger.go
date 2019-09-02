@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"strings"
 
 	cloudevents "github.com/cloudevents/sdk-go"
 	keptnevents "github.com/keptn/go-utils/pkg/events"
@@ -24,15 +23,18 @@ func init() {
 }
 
 type ConfigurationChanger struct {
-	mesh             mesh.Mesh
-	logger           *keptnutils.Logger
-	configServiceURL string
-	canaryLevelGen   helm.CanaryLevelGenerator
+	generatedChartHandler *helm.GeneratedChartHandler
+	canaryLevelGen        helm.CanaryLevelGenerator
+	configServiceURL      string
+	logger                *keptnutils.Logger
+	keptnDomain           string
 }
 
 func NewConfigurationChanger(mesh mesh.Mesh, canaryLevelGen helm.CanaryLevelGenerator,
-	logger *keptnutils.Logger, configServiceURL string) *ConfigurationChanger {
-	return &ConfigurationChanger{mesh: mesh, canaryLevelGen: canaryLevelGen, logger: logger, configServiceURL: configServiceURL}
+	logger *keptnutils.Logger, keptnDomain string, configServiceURL string) *ConfigurationChanger {
+	generatedChartHandler := helm.NewGeneratedChartHandler(mesh, canaryLevelGen, keptnDomain, configServiceURL)
+	return &ConfigurationChanger{generatedChartHandler: generatedChartHandler, canaryLevelGen: canaryLevelGen,
+		configServiceURL: configServiceURL, logger: logger, keptnDomain: keptnDomain}
 }
 
 // ChangeAndApplyConfiguration changes the configuration and applies it in the cluster
@@ -45,15 +47,24 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event)
 	}
 
 	if len(e.ValuesPrimary) > 0 {
-		c.changeValues(e, true, e.ValuesPrimary)
+		if err := c.changeValues(e, true, e.ValuesPrimary); err != nil {
+			c.logger.Error(err.Error())
+			return err
+		}
 	}
 	if len(e.ValuesCanary) > 0 {
-		c.changeValues(e, false, e.ValuesCanary)
+		if err := c.changeValues(e, false, e.ValuesCanary); err != nil {
+			c.logger.Error(err.Error())
+			return err
+		}
 	}
 
 	// Change canary
 	if e.Canary != nil {
-		c.changeCanary(e)
+		if err := c.changeCanary(e); err != nil {
+			c.logger.Error(err.Error())
+			return err
+		}
 	}
 
 	return nil
@@ -64,8 +75,8 @@ func (c *ConfigurationChanger) changeValues(e *keptnevents.ConfigurationChangeEv
 	// Read chart
 	chart, err := helm.GetChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, generated), c.configServiceURL)
 	if err != nil {
-		c.logger.Error(fmt.Sprintf("Error when reading chart %s from project %s: %s", helm.GetChartName(e.Service, generated), e.Project, err.Error()))
-		return err
+		return fmt.Errorf("Error when reading chart %s from project %s: %s",
+			helm.GetChartName(e.Service, generated), e.Project, err.Error())
 	}
 	// Change values
 	for k, v := range newValues {
@@ -75,13 +86,13 @@ func (c *ConfigurationChanger) changeValues(e *keptnevents.ConfigurationChangeEv
 	// Store chart
 	chartData, err := helm.PackageChart(chart)
 	if err != nil {
-		c.logger.Error(fmt.Sprintf("Error when packaging modified chart %s from project %s: %s", helm.GetChartName(e.Service, generated), e.Project, err.Error()))
-		return err
+		return fmt.Errorf("Error when packaging modified chart %s from project %s: %s",
+			helm.GetChartName(e.Service, generated), e.Project, err.Error())
 	}
 	err = helm.StoreChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, generated), chartData, c.configServiceURL)
 	if err != nil {
-		c.logger.Error(fmt.Sprintf("Error when storing modified chart %s from project %s: %s", helm.GetChartName(e.Service, generated), e.Project, err.Error()))
-		return err
+		return fmt.Errorf("Error when storing modified chart %s from project %s: %s",
+			helm.GetChartName(e.Service, generated), e.Project, err.Error())
 	}
 	return c.applyConfiguration(e, generated)
 }
@@ -90,7 +101,7 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 
 	switch e.Canary.Action {
 	case keptnevents.Discard:
-		if err := c.setCanaryWeight(e, 0); err != nil {
+		if err := c.generatedChartHandler.SetCanaryWeight(e, 0); err != nil {
 			return err
 		}
 		if err := c.applyConfiguration(e, true); err != nil {
@@ -101,19 +112,20 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 		}
 
 	case keptnevents.Promote:
-		if err := c.setCanaryWeight(e, 100); err != nil {
+		if err := c.generatedChartHandler.SetCanaryWeight(e, 100); err != nil {
 			return err
 		}
 		if err := c.applyConfiguration(e, true); err != nil {
 			return err
 		}
-		if err := c.copyCanaryToPrimary(e); err != nil {
+
+		if err := c.generatedChartHandler.CopyCanaryToPrimary(e); err != nil {
 			return err
 		}
 		if err := c.applyConfiguration(e, true); err != nil {
 			return err
 		}
-		if err := c.setCanaryWeight(e, 0); err != nil {
+		if err := c.generatedChartHandler.SetCanaryWeight(e, 0); err != nil {
 			return err
 		}
 		if err := c.applyConfiguration(e, true); err != nil {
@@ -121,68 +133,23 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 		}
 
 	case keptnevents.Set:
-		err := c.setCanaryWeight(e, e.Canary.Value)
-		if err != nil {
+		if err := c.generatedChartHandler.SetCanaryWeight(e, e.Canary.Value); err != nil {
 			return err
 		}
-		err = c.applyConfiguration(e, true)
-		if err != nil {
+		if err := c.applyConfiguration(e, true); err != nil {
 			return err
 		}
 	}
 
-	return nil
-}
-
-func (c *ConfigurationChanger) copyCanaryToPrimary(e *keptnevents.ConfigurationChangeEventData) error {
-
-	// TODO: Implement this function
-	return nil
-}
-
-func (c *ConfigurationChanger) setCanaryWeight(e *keptnevents.ConfigurationChangeEventData, canaryWeight int32) error {
-
-	// Read chart
-	chart, err := helm.GetChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, true), c.configServiceURL)
-	if err != nil {
-		c.logger.Error(fmt.Sprintf("Error when reading chart %s from project %s: %s", helm.GetChartName(e.Service, true), e.Project, err.Error()))
-		return err
-	}
-
-	// Set weights in all virtualservices
-	for _, template := range chart.Templates {
-		if strings.HasPrefix(template.Name, "templates/") &&
-			strings.HasSuffix(template.Name, c.mesh.GetVirtualServiceSuffix()) {
-
-			vs, err := c.mesh.UpdateWeights(template.Data, canaryWeight)
-			if err != nil {
-				c.logger.Error(fmt.Sprintf("Error when setting new weights in VirtualService %s from chart %s and project %s: %s",
-					template.Name, helm.GetChartName(e.Service, true), e.Project, err.Error()))
-				return err
-			}
-			template.Data = vs
-		}
-	}
-
-	// Store chart
-	chartData, err := helm.PackageChart(chart)
-	if err != nil {
-		c.logger.Error(fmt.Sprintf("Error when packaging modified chart %s from project %s: %s", helm.GetChartName(e.Service, true), e.Project, err.Error()))
-		return err
-	}
-	err = helm.StoreChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, true), chartData, c.configServiceURL)
-	if err != nil {
-		c.logger.Error(fmt.Sprintf("Error when storing modified chart %s from project %s: %s", helm.GetChartName(e.Service, true), e.Project, err.Error()))
-		return err
-	}
 	return nil
 }
 
 // deleteRelease deletes a helm release
 func (c *ConfigurationChanger) deleteRelease(e *keptnevents.ConfigurationChangeEventData, generated bool) error {
 
-	if err := canaryLevelGen.DeleteRelease(e.Project, e.Stage, e.Service, generated); err != nil {
-		logger.Error(fmt.Sprintf("Error when deleting release %s: %s", GetReleaseName(e.Project, e.Service, e.Stage, generated), err.Error()))
+	if err := c.canaryLevelGen.DeleteRelease(e.Project, e.Stage, e.Service, generated, c.configServiceURL); err != nil {
+		return fmt.Errorf("Error when deleting release %s: %s",
+			helm.GetReleaseName(e.Project, e.Service, e.Stage, generated), err.Error())
 	}
 	return nil
 }
@@ -193,30 +160,26 @@ func (c *ConfigurationChanger) applyConfiguration(e *keptnevents.ConfigurationCh
 
 	ch, err := helm.GetChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, generated), c.configServiceURL)
 	if err != nil {
-		c.logger.Error(fmt.Sprintf("Error when reading chart %s: %s", helm.GetChartName(e.Service, generated), err.Error()))
-		return err
+		return fmt.Errorf("Error when reading chart %s: %s", helm.GetChartName(e.Service, generated), err.Error())
 	}
 
 	helmChartDir, err := ioutil.TempDir("", "")
 	if err != nil {
-		c.logger.Error(fmt.Sprintf("Error when creating temporary directory: %s", err.Error()))
-		return err
+		return fmt.Errorf("Error when creating temporary directory: %s", err.Error())
 	}
 	defer os.RemoveAll(helmChartDir)
 
 	chartPath, err := chartutil.Save(ch, helmChartDir)
 	if err != nil {
-		c.logger.Error(fmt.Sprintf("Error when saving chart into temporary directory %s: %s", helmChartDir, err.Error()))
-		return err
+		return fmt.Errorf("Error when saving chart into temporary directory %s: %s", helmChartDir, err.Error())
 	}
 
 	releaseName := helm.GetReleaseName(e.Project, e.Service, e.Stage, generated)
 	namespace := c.canaryLevelGen.GetNamespace(e.Project, e.Stage, generated)
 	if _, err := keptnutils.ExecuteCommand("helm", []string{"upgrade", "--install", releaseName,
 		chartPath, "--namespace", namespace, "--wait"}); err != nil {
-		c.logger.Error(fmt.Sprintf("Error when upgrading chart %s in namespace %s: %s",
-			releaseName, namespace, err.Error()))
-		return err
+		return fmt.Errorf("Error when upgrading chart %s in namespace %s: %s",
+			releaseName, namespace, err.Error())
 	}
 
 	useInClusterConfig := false
@@ -225,8 +188,7 @@ func (c *ConfigurationChanger) applyConfiguration(e *keptnevents.ConfigurationCh
 	}
 
 	if err := keptnutils.WaitForDeploymentsInNamespace(useInClusterConfig, namespace); err != nil {
-		c.logger.Error(fmt.Sprintf("Error when waiting for deployments in namespace %s: %s", namespace, err.Error()))
-		return err
+		return fmt.Errorf("Error when waiting for deployments in namespace %s: %s", namespace, err.Error())
 	}
 	c.logger.Info(fmt.Sprintf("Finished upgrading chart %s in namespace %s", releaseName, namespace))
 	return nil

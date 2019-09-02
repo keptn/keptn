@@ -296,8 +296,8 @@ func TestGenerateManagedChart(t *testing.T) {
 	data := CreateHelmChartData(t)
 	event := keptnevents.ServiceCreateEventData{Project: projectName, Service: serviceName, HelmChart: data}
 
-	generator := NewChartGenerator(mesh.NewIstioMesh(), NewCanaryOnDeploymentGenerator(), "mydomain.sh")
-	gen, err := generator.GenerateManagedChart(&event, "production")
+	h := NewGeneratedChartHandler(mesh.NewIstioMesh(), NewCanaryOnDeploymentGenerator(), "mydomain.sh", "")
+	gen, err := h.GenerateManagedChart(&event, "production")
 	assert.Nil(t, err, "Generating the managed Chart should not return any error")
 
 	workingPath, err := ioutil.TempDir("", "helm-test")
