@@ -40,7 +40,7 @@ func StoreChart(project string, service string, stage string, chartName string, 
 func GetChart(project string, service string, stage string, chartName string, configServiceURL string) (*chart.Chart, error) {
 	resourceHandler := keptnutils.NewResourceHandler(configServiceURL)
 
-	resource, err := resourceHandler.GetServiceResource(project, stage, service, "helm/"+chartName)
+	resource, err := resourceHandler.GetServiceResource(project, stage, service, getHelmChartURI(chartName))
 	if err != nil {
 		return nil, fmt.Errorf("Error when reading chart %s from project %s: %s",
 			chartName, project, err.Error())
