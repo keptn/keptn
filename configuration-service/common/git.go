@@ -52,6 +52,14 @@ func CheckoutBranch(project string, branch string) error {
 	if err != nil {
 		return err
 	}
+	credentials, err := GetCredentials(project)
+	if err == nil && credentials != nil {
+		repoURI := getRepoURI(credentials.RemoteURI, credentials.User, credentials.Token)
+		_, err = utils.ExecuteCommandInDirectory("git", []string{"pull", "-s", "recursive", "-X", "theirs", repoURI}, projectConfigPath)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -93,6 +101,10 @@ func StageAndCommitAll(project string, message string) error {
 	credentials, err := GetCredentials(project)
 	if err == nil && credentials != nil {
 		repoURI := getRepoURI(credentials.RemoteURI, credentials.User, credentials.Token)
+		_, err = utils.ExecuteCommandInDirectory("git", []string{"pull", "-s", "recursive", "-X", "theirs", repoURI}, projectConfigPath)
+		if err != nil {
+			return err
+		}
 		_, err = utils.ExecuteCommandInDirectory("git", []string{"push", repoURI}, projectConfigPath)
 		if err != nil {
 			return err
