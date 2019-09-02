@@ -57,17 +57,18 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	mesh := mesh.NewIstioMesh()
 	canaryLevelGen := helm.NewCanaryOnNamespaceGenerator()
 
+	keptnDomain, err := getKeptnDomain()
+	if err != nil {
+		logger.Error("Error when reading the keptn domain")
+		return nil
+	}
+
 	if event.Type() == keptnevents.ConfigurationChangeEventType {
-		configChanger := controller.NewConfigurationChanger(mesh, canaryLevelGen, logger, getConfigurationServiceURL())
+		configChanger := controller.NewConfigurationChanger(mesh, canaryLevelGen, logger, keptnDomain, getConfigurationServiceURL())
 		go configChanger.ChangeAndApplyConfiguration(event)
 	} else if event.Type() == keptnevents.InternalServiceCreateEventType {
-		keptnDomain, err := getKeptnDomain()
-		if err == nil {
-			onboarder := controller.NewOnboarder(mesh, canaryLevelGen, logger, getConfigurationServiceURL(), keptnDomain)
-			go onboarder.DoOnboard(event)
-		} else {
-			logger.Error("Error when reading the keptn domain")
-		}
+		onboarder := controller.NewOnboarder(mesh, canaryLevelGen, logger, keptnDomain, getConfigurationServiceURL())
+		go onboarder.DoOnboard(event)
 	} else {
 		logger.Error("Received unexpected keptn event")
 	}
