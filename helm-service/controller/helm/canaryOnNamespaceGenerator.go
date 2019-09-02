@@ -1,7 +1,6 @@
 package helm
 
 import (
-	keptnevents "github.com/keptn/go-utils/pkg/events"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	corev1 "k8s.io/api/core/v1"
 )
@@ -13,7 +12,7 @@ func NewCanaryOnNamespaceGenerator() *CanaryOnNamespaceGenerator {
 	return &CanaryOnNamespaceGenerator{}
 }
 
-func (c *CanaryOnNamespaceGenerator) GetCanaryService(originalSvc corev1.Service, event *keptnevents.ServiceCreateEventData, stageName string) (canaryService *corev1.Service) {
+func (c *CanaryOnNamespaceGenerator) GetCanaryService(originalSvc corev1.Service, project string, stageName string) (canaryService *corev1.Service) {
 
 	canaryService = &corev1.Service{}
 
@@ -21,7 +20,7 @@ func (c *CanaryOnNamespaceGenerator) GetCanaryService(originalSvc corev1.Service
 	canaryService.APIVersion = "v1"
 	canaryService.Name = originalSvc.Name + "-canary"
 	canaryService.Spec.Type = "ExternalName"
-	canaryService.Spec.ExternalName = originalSvc.Name + "." + c.GetNamespace(event.Project, stageName, false) + ".svc.cluster.local"
+	canaryService.Spec.ExternalName = originalSvc.Name + "." + c.GetNamespace(project, stageName, false) + ".svc.cluster.local"
 	canaryService.Spec.Ports = originalSvc.Spec.Ports
 	return
 }

@@ -93,7 +93,12 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event) error {
 			chartGenerator := helm.NewGeneratedChartHandler(o.mesh, o.canaryLevelGen, o.keptnDomain, o.configServiceURL)
 
 			o.logger.Debug("Generating the keptn-managed Helm chart" + stage.StageName)
-			generatedChartData, err := chartGenerator.GenerateManagedChart(event, stage.StageName)
+			ch, err := helm.LoadChart(event.HelmChart)
+			if err != nil {
+				o.logger.Error("Error when loading chart: " + err.Error())
+				return err
+			}
+			generatedChartData, err := chartGenerator.GenerateManagedChart(ch, event.Project, stage.StageName)
 			if err != nil {
 				o.logger.Error("Error when generating the keptn managed chart: " + err.Error())
 				return err
