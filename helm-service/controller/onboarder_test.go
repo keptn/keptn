@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -18,7 +19,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const configBaseURL = "localhost:8080"
+const configBaseURL = "localhost:6060"
 const projectName = "sockshop"
 const serviceName = "carts"
 const stage1 = "dev"
@@ -70,8 +71,10 @@ func TestDoOnboard(t *testing.T) {
 	createTestProjet(t)
 
 	data := helm.CreateHelmChartData(t)
+	encodedChart := base64.StdEncoding.EncodeToString(data)
+	fmt.Println(encodedChart)
 	ce := cloudevents.New("0.2")
-	dataBytes, err := json.Marshal(keptnevents.ServiceCreateEventData{Project: projectName, Service: serviceName, HelmChart: data})
+	dataBytes, err := json.Marshal(keptnevents.ServiceCreateEventData{Project: projectName, Service: serviceName, HelmChart: encodedChart})
 	check(err, t)
 	ce.Data = dataBytes
 

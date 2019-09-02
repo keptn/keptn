@@ -2,6 +2,7 @@ package controller
 
 import (
 	"bytes"
+	"encoding/base64"
 	"errors"
 	"fmt"
 
@@ -67,6 +68,10 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event) error {
 	}
 
 	serviceHandler := keptnutils.NewServiceHandler(o.configServiceURL)
+	helmChartData, err := base64.StdEncoding.DecodeString(event.HelmChart)
+	if err != nil {
+		o.logger.Error("Error wehn decoding the Helm chart")
+	}
 
 	for _, stage := range stages {
 		o.logger.Debug("Creating new keptn service " + event.Service + " in stage " + stage.StageName)
@@ -74,7 +79,7 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event) error {
 
 		o.logger.Debug("Storing the Helm chart provided by the user in stage " + stage.StageName)
 		if err := helm.StoreChart(event.Project, event.Service, stage.StageName, helm.GetChartName(event.Service, false),
-			event.HelmChart, o.configServiceURL); err != nil {
+			helmChartData, o.configServiceURL); err != nil {
 			o.logger.Error("Error when storing the Helm chart: " + err.Error())
 			return err
 		}
@@ -93,7 +98,7 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event) error {
 			chartGenerator := helm.NewGeneratedChartHandler(o.mesh, o.canaryLevelGen, o.keptnDomain)
 
 			o.logger.Debug("Generating the keptn-managed Helm chart" + stage.StageName)
-			ch, err := helm.LoadChart(event.HelmChart)
+			ch, err := helm.LoadChart(helmChartData)
 			if err != nil {
 				o.logger.Error("Error when loading chart: " + err.Error())
 				return err
