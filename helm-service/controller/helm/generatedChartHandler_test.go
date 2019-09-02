@@ -294,7 +294,7 @@ func TestGenerateManagedChart(t *testing.T) {
 
 	data := CreateHelmChartData(t)
 
-	h := NewGeneratedChartHandler(mesh.NewIstioMesh(), NewCanaryOnDeploymentGenerator(), "mydomain.sh", "")
+	h := NewGeneratedChartHandler(mesh.NewIstioMesh(), NewCanaryOnDeploymentGenerator(), "mydomain.sh")
 	inputChart, err := LoadChart(data)
 	if err != nil {
 		t.Error(err)
