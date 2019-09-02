@@ -406,15 +406,15 @@ export class Service {
     try {
       const indicators = await this.getServiceIndicators(event);
       if (indicators === null
-        && indicators.indicators !== undefined
-        && indicators.indicators.length > 0
+        || indicators.indicators === undefined
+        || indicators.indicators.length === 0
       ) {
         return await this.getServiceResourceContent(event, 'perfspec.json');
       }
       const objectives = await this.getServiceObjectives(event);
       if (objectives === null
-        && objectives.objectives !== undefined
-        && objectives.objectives.length > 0
+        || objectives.objectives === undefined
+        || objectives.objectives.length === 0
       ) {
         return await this.getServiceResourceContent(event, 'perfspec.json');
       }
