@@ -136,20 +136,33 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 		if err := c.applyConfiguration(e, true); err != nil {
 			return err
 		}
+
 		userChart, err := helm.GetChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, false), c.configServiceURL)
 		if err != nil {
 			return err
 		}
-		genChart, err := c.generatedChartHandler.GenerateManagedChart(userChart, e.Project, e.Stage)
+		genChartData, err := c.generatedChartHandler.GenerateManagedChart(userChart, e.Project, e.Stage)
 		if err != nil {
 			return err
 		}
-		if err := helm.StoreChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, true), genChart, c.configServiceURL); err != nil {
+		genChart, err := helm.LoadChart(genChartData)
+		if err != nil {
+			return err
+		}
+		if err := c.generatedChartHandler.UpdateCanaryWeight(genChart, int32(100)); err != nil {
+			return err
+		}
+		genChartData, err = helm.PackageChart(genChart)
+		if err != nil {
+			return err
+		}
+		if err := helm.StoreChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, true), genChartData, c.configServiceURL); err != nil {
 			return err
 		}
 		if err := c.applyConfiguration(e, true); err != nil {
 			return err
 		}
+
 		if err := c.setCanaryWeight(e, 0); err != nil {
 			return err
 		}
