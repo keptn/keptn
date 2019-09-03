@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"bytes"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -13,7 +12,6 @@ import (
 	"github.com/keptn/keptn/helm-service/controller/helm"
 
 	"github.com/keptn/keptn/helm-service/controller/mesh"
-	kyaml "k8s.io/apimachinery/pkg/util/yaml"
 )
 
 type Onboarder struct {
@@ -62,11 +60,6 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event) error {
 		}
 	}
 
-	requiresGeneratedChart, err := o.checkIfStagesRequireGeneratedChart(event.Project)
-	if err != nil {
-		o.logger.Error("Error when checking whether the stages require a keptn managed Helm chart: " + err.Error())
-	}
-
 	serviceHandler := keptnutils.NewServiceHandler(o.configServiceURL)
 	helmChartData, err := base64.StdEncoding.DecodeString(event.HelmChart)
 	if err != nil {
@@ -94,7 +87,12 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event) error {
 			return err
 		}
 
-		if requiresGeneratedChart[stage.StageName] {
+		if _, ok := event.DeploymentStrategies[stage.StageName]; !ok {
+			o.logger.Error("Received event does not define deployment strategy for stage " + stage.StageName +
+				". Hence, a direct strategy is used.")
+		}
+
+		if event.DeploymentStrategies[stage.StageName] == keptnevents.Duplicate {
 			chartGenerator := helm.NewGeneratedChartHandler(o.mesh, o.canaryLevelGen, o.keptnDomain)
 
 			o.logger.Debug("Generating the keptn-managed Helm chart" + stage.StageName)
@@ -128,32 +126,6 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event) error {
 	}
 
 	return nil
-}
-
-func (o *Onboarder) checkIfStagesRequireGeneratedChart(project string) (map[string]bool, error) {
-
-	resourceHandler := keptnutils.NewResourceHandler(o.configServiceURL)
-	resource, err := resourceHandler.GetProjectResource(project, "shipyard.yaml")
-	if err != nil {
-		return nil, err
-	}
-
-	dec := kyaml.NewYAMLToJSONDecoder(bytes.NewReader([]byte(resource.ResourceContent)))
-	var shipyard models.Shipyard
-	if err := dec.Decode(&shipyard); err != nil {
-		return nil, err
-	}
-
-	var res map[string]bool
-	res = make(map[string]bool)
-
-	for _, stage := range shipyard.Stages {
-
-		res[stage.Name] = stage.DeploymentStrategy == "blue_green_service" ||
-			stage.DeploymentStrategy == "blue_green" || stage.DeploymentStrategy == "canary"
-	}
-
-	return res, nil
 }
 
 func (o *Onboarder) isFirstServiceOfProject(event *keptnevents.ServiceCreateEventData, stages []*models.Stage) (bool, error) {
