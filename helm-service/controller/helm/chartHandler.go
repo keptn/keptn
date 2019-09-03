@@ -99,7 +99,7 @@ func GetReleaseName(project string, service string, stage string, generated bool
 	if generated {
 		suffix = "-generated"
 	}
-	return project + "-" + service + "-" + stage + suffix
+	return project + "-" + stage + "-" + service + suffix
 }
 
 // GetDeployments returns all deployments contained in the provided chart
