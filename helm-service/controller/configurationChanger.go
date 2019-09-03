@@ -7,12 +7,12 @@ import (
 	"os"
 
 	cloudevents "github.com/cloudevents/sdk-go"
+	"github.com/ghodss/yaml"
 	keptnevents "github.com/keptn/go-utils/pkg/events"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/helm-service/controller/helm"
 	"github.com/keptn/keptn/helm-service/controller/mesh"
 	"k8s.io/helm/pkg/chartutil"
-	"k8s.io/helm/pkg/proto/hapi/chart"
 )
 
 func init() {
@@ -76,7 +76,7 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event)
 	return nil
 }
 
-func (c *ConfigurationChanger) changeValues(e *keptnevents.ConfigurationChangeEventData, generated bool, newValues map[string]*chart.Value) error {
+func (c *ConfigurationChanger) changeValues(e *keptnevents.ConfigurationChangeEventData, generated bool, newValues map[string]interface{}) error {
 
 	// Read chart
 	chart, err := helm.GetChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, generated), c.configServiceURL)
@@ -84,10 +84,19 @@ func (c *ConfigurationChanger) changeValues(e *keptnevents.ConfigurationChangeEv
 		return err
 	}
 
+	values := make(map[string]interface{})
+	yaml.Unmarshal([]byte(chart.Values.Raw), &values)
+
 	// Change values
 	for k, v := range newValues {
-		chart.Values.Values[k] = v
+		values[k] = v
 	}
+
+	valuesData, err := yaml.Marshal(values)
+	if err != nil {
+		return err
+	}
+	chart.Values.Raw = string(valuesData)
 
 	// Store chart
 	chartData, err := helm.PackageChart(chart)
