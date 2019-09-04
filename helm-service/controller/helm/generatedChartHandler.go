@@ -165,9 +165,9 @@ func (c *GeneratedChartHandler) handleService(document []byte, project string, s
 		d2 := chart.Template{Name: "templates/" + servicePrimary.Name + c.mesh.GetDestinationRuleSuffix(), Data: destinationRulePrimary}
 		newTemplates = append(newTemplates, &d2)
 
-		gws := []string{GetGatewayName(project, stageName) + GetUmbrellaNamespace(project, stageName), "mesh"}
+		gws := []string{GetGatewayName(project, stageName) + "." + GetUmbrellaNamespace(project, stageName), "mesh"}
 		hosts := []string{svc.Name + "." + c.canaryLevelGen.GetNamespace(project, stageName, false) + "." + c.keptnDomain,
-			svc.Name, svc.Name + "." + c.canaryLevelGen.GetNamespace(project, stageName, false)}
+			svc.Name, svc.Name + "." + c.canaryLevelGen.GetNamespace(project, stageName, true)}
 		destCanary := mesh.HTTPRouteDestination{Host: hostCanary, Weight: 0}
 		destPrimary := mesh.HTTPRouteDestination{Host: hostPrimary, Weight: 100}
 		httpRouteDestinations := []mesh.HTTPRouteDestination{destCanary, destPrimary}
@@ -219,6 +219,7 @@ func (c *GeneratedChartHandler) UpdateCanaryWeight(ch *chart.Chart, canaryWeight
 					template.Name, err.Error())
 			}
 			template.Data = vs
+			break
 		}
 	}
 
