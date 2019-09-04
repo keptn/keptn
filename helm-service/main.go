@@ -55,7 +55,12 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 	logger := keptnutils.NewLogger(shkeptncontext, event.Context.GetID(), "helm-service")
 	mesh := mesh.NewIstioMesh()
-	canaryLevelGen := helm.NewCanaryOnNamespaceGenerator()
+	var canaryLevelGen helm.CanaryLevelGenerator
+	if os.Getenv("canary") == "deployment" {
+		canaryLevelGen = helm.NewCanaryOnDeploymentGenerator()
+	} else {
+		canaryLevelGen = helm.NewCanaryOnNamespaceGenerator()
+	}
 
 	keptnDomain, err := getKeptnDomain()
 	if err != nil {
