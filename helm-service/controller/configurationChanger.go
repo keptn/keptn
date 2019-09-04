@@ -78,8 +78,10 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event)
 
 func (c *ConfigurationChanger) changeValues(e *keptnevents.ConfigurationChangeEventData, generated bool, newValues map[string]interface{}) error {
 
+	helmChartName := helm.GetChartName(e.Service, generated)
+	c.logger.Info(fmt.Sprintf("Starting updating values of chart %s", helmChartName))
 	// Read chart
-	chart, err := helm.GetChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, generated), c.configServiceURL)
+	chart, err := helm.GetChart(e.Project, e.Service, e.Stage, helmChartName, c.configServiceURL)
 	if err != nil {
 		return err
 	}
@@ -103,7 +105,11 @@ func (c *ConfigurationChanger) changeValues(e *keptnevents.ConfigurationChangeEv
 	if err != nil {
 		return err
 	}
-	return helm.StoreChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, generated), chartData, c.configServiceURL)
+	if err := helm.StoreChart(e.Project, e.Service, e.Stage, helmChartName, chartData, c.configServiceURL); err != nil {
+		return err
+	}
+	c.logger.Info(fmt.Sprintf("Finished updating values of chart %s", helmChartName))
+	return nil
 }
 
 func (c *ConfigurationChanger) setCanaryWeight(e *keptnevents.ConfigurationChangeEventData, canaryWeight int32) error {
@@ -208,6 +214,10 @@ func (c *ConfigurationChanger) deleteRelease(e *keptnevents.ConfigurationChangeE
 // Furthermore, this function waits until all deployments in the namespace are ready.
 func (c *ConfigurationChanger) applyConfiguration(e *keptnevents.ConfigurationChangeEventData, generated bool) error {
 
+	releaseName := helm.GetReleaseName(e.Project, e.Stage, e.Service, generated)
+	namespace := c.canaryLevelGen.GetNamespace(e.Project, e.Stage, generated)
+	c.logger.Info(fmt.Sprintf("Starting upgrading chart %s in namespace %s", releaseName, namespace))
+
 	ch, err := helm.GetChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, generated), c.configServiceURL)
 	if err != nil {
 		return fmt.Errorf("Error when reading chart %s: %s", helm.GetChartName(e.Service, generated), err.Error())
@@ -224,8 +234,6 @@ func (c *ConfigurationChanger) applyConfiguration(e *keptnevents.ConfigurationCh
 		return fmt.Errorf("Error when saving chart into temporary directory %s: %s", helmChartDir, err.Error())
 	}
 
-	releaseName := helm.GetReleaseName(e.Project, e.Stage, e.Service, generated)
-	namespace := c.canaryLevelGen.GetNamespace(e.Project, e.Stage, generated)
 	if _, err := keptnutils.ExecuteCommand("helm", []string{"upgrade", "--install", releaseName,
 		chartPath, "--namespace", namespace, "--wait"}); err != nil {
 		return fmt.Errorf("Error when upgrading chart %s in namespace %s: %s",
