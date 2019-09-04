@@ -95,10 +95,12 @@ func (c *GeneratedChartHandler) changeTemplateContent(project string,
 			}
 		}
 
-		templateFile.Data = newContent
+		if len(newContent) > 0 {
+			newTemplates = append(newTemplates, &chart.Template{Name: templateFile.Name, Data: newContent})
+		}
 	}
 
-	ch.Templates = append(ch.Templates, newTemplates...)
+	ch.Templates = newTemplates
 	return nil
 }
 
