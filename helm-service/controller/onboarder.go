@@ -40,6 +40,8 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event) error {
 		return err
 	}
 
+	o.logger.Info(fmt.Sprintf("Start creating service %s in project %s", event.Service, event.Project))
+
 	stageHandler := keptnutils.NewStageHandler(o.configServiceURL)
 	stages, err := stageHandler.GetAllStages(event.Project)
 	if err != nil {
@@ -125,6 +127,7 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event) error {
 		}
 	}
 
+	o.logger.Info(fmt.Sprintf("Finished creating service %s in project %s", event.Service, event.Project))
 	return nil
 }
 
