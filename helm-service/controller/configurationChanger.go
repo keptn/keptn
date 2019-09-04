@@ -229,14 +229,31 @@ func (c *ConfigurationChanger) applyConfiguration(e *keptnevents.ConfigurationCh
 			releaseName, namespace, err.Error())
 	}
 
-	useInClusterConfig := false
-	if os.Getenv("env") == "production" {
-		useInClusterConfig = true
-	}
-
-	if err := keptnutils.WaitForDeploymentsInNamespace(useInClusterConfig, namespace); err != nil {
+	if err := keptnutils.WaitForDeploymentsInNamespace(getInClusterConfig(), namespace); err != nil {
 		return fmt.Errorf("Error when waiting for deployments in namespace %s: %s", namespace, err.Error())
 	}
 	c.logger.Info(fmt.Sprintf("Finished upgrading chart %s in namespace %s", releaseName, namespace))
 	return nil
+}
+
+// ApplyDirectory applies the provided directory
+func ApplyDirectory(chartPath, releaseName, namespace string) error {
+
+	if _, err := keptnutils.ExecuteCommand("helm", []string{"upgrade", "--install", releaseName,
+		chartPath, "--namespace", namespace, "--wait"}); err != nil {
+		return fmt.Errorf("Error when upgrading chart %s in namespace %s: %s",
+			releaseName, namespace, err.Error())
+	}
+
+	if err := keptnutils.WaitForDeploymentsInNamespace(getInClusterConfig(), namespace); err != nil {
+		return fmt.Errorf("Error when waiting for deployments in namespace %s: %s", namespace, err.Error())
+	}
+	return nil
+}
+
+func getInClusterConfig() bool {
+	if os.Getenv("env") == "production" {
+		return true
+	}
+	return false
 }
