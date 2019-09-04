@@ -178,6 +178,9 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 		if err := c.applyConfiguration(e, true); err != nil {
 			return err
 		}
+		if err := c.deleteRelease(e, false); err != nil {
+			return err
+		}
 
 	case keptnevents.Set:
 		if err := c.setCanaryWeight(e, e.Canary.Value); err != nil {
