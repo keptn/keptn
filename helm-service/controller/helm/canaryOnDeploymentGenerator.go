@@ -29,7 +29,7 @@ func (*CanaryOnDeploymentGenerator) GetNamespace(project string, stage string, g
 	return project + "-" + stage
 }
 
-func (*CanaryOnDeploymentGenerator) DeleteRelease(project string, stage string, service string, generated bool, configServiceURL string) error {
+func (c *CanaryOnDeploymentGenerator) DeleteRelease(project string, stage string, service string, generated bool, configServiceURL string) error {
 	useInClusterConfig := false
 	if os.Getenv("env") == "production" {
 		useInClusterConfig = true
@@ -40,7 +40,7 @@ func (*CanaryOnDeploymentGenerator) DeleteRelease(project string, stage string, 
 		return err
 	}
 	for _, dpl := range GetDeployments(ch) {
-		if err := keptnutils.ScaleDeployment(useInClusterConfig, dpl.Name, dpl.Namespace, 0); err != nil {
+		if err := keptnutils.ScaleDeployment(useInClusterConfig, dpl.Name, c.GetNamespace(project, stage, generated), 0); err != nil {
 			return err
 		}
 	}
