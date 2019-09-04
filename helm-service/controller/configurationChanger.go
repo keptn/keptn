@@ -79,7 +79,7 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event)
 func (c *ConfigurationChanger) changeValues(e *keptnevents.ConfigurationChangeEventData, generated bool, newValues map[string]interface{}) error {
 
 	helmChartName := helm.GetChartName(e.Service, generated)
-	c.logger.Info(fmt.Sprintf("Starting updating values of chart %s", helmChartName))
+	c.logger.Info(fmt.Sprintf("Start updating values of chart %s", helmChartName))
 	// Read chart
 	chart, err := helm.GetChart(e.Project, e.Service, e.Stage, helmChartName, c.configServiceURL)
 	if err != nil {
@@ -114,6 +114,7 @@ func (c *ConfigurationChanger) changeValues(e *keptnevents.ConfigurationChangeEv
 
 func (c *ConfigurationChanger) setCanaryWeight(e *keptnevents.ConfigurationChangeEventData, canaryWeight int32) error {
 
+	c.logger.Info(fmt.Sprintf("Start updating canary weight to %d for service %s of project %s in stage %s", canaryWeight, e.Service, e.Project, e.Stage))
 	// Read chart
 	chart, err := helm.GetChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, true), c.configServiceURL)
 	if err != nil {
@@ -127,7 +128,11 @@ func (c *ConfigurationChanger) setCanaryWeight(e *keptnevents.ConfigurationChang
 	if err != nil {
 		return err
 	}
-	return helm.StoreChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, true), chartData, c.configServiceURL)
+	if err := helm.StoreChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, true), chartData, c.configServiceURL); err != nil {
+		return err
+	}
+	c.logger.Info(fmt.Sprintf("Finished updating canary weight to %d for service %s of project %s in stage %s", canaryWeight, e.Service, e.Project, e.Stage))
+	return nil
 }
 
 func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEventData) error {
@@ -202,11 +207,12 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 
 // deleteRelease deletes a helm release
 func (c *ConfigurationChanger) deleteRelease(e *keptnevents.ConfigurationChangeEventData, generated bool) error {
-
+	c.logger.Info(fmt.Sprintf("Start deleting deployment/release of service %s of project %s in stage %s", e.Service, e.Project, e.Stage))
 	if err := c.canaryLevelGen.DeleteRelease(e.Project, e.Stage, e.Service, generated, c.configServiceURL); err != nil {
 		return fmt.Errorf("Error when deleting release %s: %s",
 			helm.GetReleaseName(e.Project, e.Stage, e.Service, generated), err.Error())
 	}
+	c.logger.Info(fmt.Sprintf("Finished deleting deployment/release of service %s of project %s in stage %s", e.Service, e.Project, e.Stage))
 	return nil
 }
 
@@ -216,7 +222,7 @@ func (c *ConfigurationChanger) applyConfiguration(e *keptnevents.ConfigurationCh
 
 	releaseName := helm.GetReleaseName(e.Project, e.Stage, e.Service, generated)
 	namespace := c.canaryLevelGen.GetNamespace(e.Project, e.Stage, generated)
-	c.logger.Info(fmt.Sprintf("Starting upgrading chart %s in namespace %s", releaseName, namespace))
+	c.logger.Info(fmt.Sprintf("Start upgrading chart %s in namespace %s", releaseName, namespace))
 
 	ch, err := helm.GetChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, generated), c.configServiceURL)
 	if err != nil {
