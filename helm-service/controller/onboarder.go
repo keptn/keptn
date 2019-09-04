@@ -4,6 +4,8 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"os"
 
 	cloudevents "github.com/cloudevents/sdk-go"
 	keptnevents "github.com/keptn/go-utils/pkg/events"
@@ -30,7 +32,7 @@ func NewOnboarder(mesh mesh.Mesh, canaryLevelGen helm.CanaryLevelGenerator,
 // DoOnboard onboards a new service
 func (o *Onboarder) DoOnboard(ce cloudevents.Event) error {
 
-	umbreallaChartHandler := helm.NewUmbrellaChartHandler(o.mesh, o.configServiceURL)
+	umbrellaChartHandler := helm.NewUmbrellaChartHandler(o.mesh, o.configServiceURL)
 
 	event := &keptnevents.ServiceCreateEventData{}
 	if err := ce.DataAs(event); err != nil {
@@ -52,10 +54,8 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event) error {
 	}
 	if firstService {
 		o.logger.Info("Create Helm Umbrella charts")
-
-		// Initalize the umbrella chart
-		if err := umbreallaChartHandler.InitUmbrellaChart(event, stages); err != nil {
-			o.logger.Error("Error when initializing the umbrella chart: " + err.Error())
+		if err := o.initAndApplyUmbrellaChart(event, umbrellaChartHandler, stages); err != nil {
+			o.logger.Error(fmt.Sprintf("Error when initalizing and applying umbrella charts for project %s: %s", event.Project, err.Error()))
 			return err
 		}
 	}
@@ -82,7 +82,7 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event) error {
 		// 	o.logger.Error("Error when adding the chart in the Umbrella requirements file: " + err.Error())
 		// 	return err
 		// }
-		if err := umbreallaChartHandler.AddChartInUmbrellaValues(event.Project, helm.GetChartName(event.Service, false), stage); err != nil {
+		if err := umbrellaChartHandler.AddChartInUmbrellaValues(event.Project, helm.GetChartName(event.Service, false), stage); err != nil {
 			o.logger.Error("Error when adding the chart in the Umbrella values file: " + err.Error())
 			return err
 		}
@@ -118,13 +118,42 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event) error {
 			// 	o.logger.Error("Error when adding the chart in the Umbrella requirements file: " + err.Error())
 			// 	return err
 			// }
-			if err := umbreallaChartHandler.AddChartInUmbrellaValues(event.Project, helm.GetChartName(event.Service, true), stage); err != nil {
+			if err := umbrellaChartHandler.AddChartInUmbrellaValues(event.Project, helm.GetChartName(event.Service, true), stage); err != nil {
 				o.logger.Error("Error when adding the chart in the Umbrella values file: " + err.Error())
 				return err
 			}
 		}
 	}
 
+	return nil
+}
+
+func (o *Onboarder) initAndApplyUmbrellaChart(event *keptnevents.ServiceCreateEventData,
+	umbrellaChartHandler *helm.UmbrellaChartHandler, stages []*models.Stage) error {
+
+	// Initalize the umbrella chart
+	if err := umbrellaChartHandler.InitUmbrellaChart(event, stages); err != nil {
+		return fmt.Errorf("Error when initializing the umbrella chart: %s", err.Error())
+	}
+
+	for _, stage := range stages {
+		// Apply the umbrella chart
+		umbrellaChart, err := ioutil.TempDir("", "")
+		if err != nil {
+			return fmt.Errorf("Error when creating a temporary directory: %s", err.Error())
+		}
+		if err := umbrellaChartHandler.GetUmbrellaChart(umbrellaChart, event.Project, stage.StageName); err != nil {
+			return fmt.Errorf("Error when getting umbrella chart: %s", err)
+		}
+
+		if err := ApplyDirectory(umbrellaChart, helm.GetUmbrellaReleaseName(event.Project, stage.StageName),
+			helm.GetUmbrellaNamespace(event.Project, stage.StageName)); err != nil {
+			return fmt.Errorf("Error when applying umbrealla chart in stage %s: %s", stage.StageName, err.Error())
+		}
+		if err := os.RemoveAll(umbrellaChart); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 

@@ -79,9 +79,19 @@ func PackageChart(ch *chart.Chart) ([]byte, error) {
 	return data, nil
 }
 
-// GetGatwayName returns the name of the gateway for a specific project and stage
-func GetGatwayName(project string, stage string) string {
+// GetGatewayName returns the name of the gateway for a specific project and stage
+func GetGatewayName(project string, stage string) string {
 	return project + "-" + stage + "-gateway"
+}
+
+// GetUmbrellaReleaseName returns the release name of the umbrella chart
+func GetUmbrellaReleaseName(project string, stage string) string {
+	return project + "-" + stage
+}
+
+// GetUmbrellaNamespace returns the namespace in which the umbrella chart (e.g. containing the gateway) is applied
+func GetUmbrellaNamespace(project string, stage string) string {
+	return project + "-" + stage
 }
 
 // GetChartName returns the name of the chart
