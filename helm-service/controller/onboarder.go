@@ -95,7 +95,7 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event) error {
 		if event.DeploymentStrategies[stage.StageName] == keptnevents.Duplicate {
 			chartGenerator := helm.NewGeneratedChartHandler(o.mesh, o.canaryLevelGen, o.keptnDomain)
 
-			o.logger.Debug("Generating the keptn-managed Helm chart" + stage.StageName)
+			o.logger.Debug("Generating the keptn-managed Helm chart for stage " + stage.StageName)
 			ch, err := helm.LoadChart(helmChartData)
 			if err != nil {
 				o.logger.Error("Error when loading chart: " + err.Error())
