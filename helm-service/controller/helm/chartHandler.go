@@ -104,7 +104,7 @@ func GetChartName(service string, generated bool) string {
 }
 
 // GetReleaseName returns the name of the Helm release
-func GetReleaseName(project string, service string, stage string, generated bool) string {
+func GetReleaseName(project string, stage string, service string, generated bool) string {
 	suffix := ""
 	if generated {
 		suffix = "-generated"

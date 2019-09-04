@@ -37,9 +37,9 @@ func (*CanaryOnNamespaceGenerator) GetNamespace(project string, stage string, ge
 	return project + "-" + stage + suffix
 }
 
-func (*CanaryOnNamespaceGenerator) DeleteRelease(project string, service string, stage string, generated bool, configServiceURL string) error {
-	releaseName := GetReleaseName(project, service, stage, generated)
-	if _, err := keptnutils.ExecuteCommand("helm", []string{"delete", "--purge", releaseName}); err != nil {
+func (*CanaryOnNamespaceGenerator) DeleteRelease(project string, stage string, service string, generated bool, configServiceURL string) error {
+	releaseName := GetReleaseName(project, stage, service, generated)
+	if _, err := keptnutils.ExecuteCommand("helm", []string{"delete", releaseName, "--purge"}); err != nil {
 		return err
 	}
 	return nil
