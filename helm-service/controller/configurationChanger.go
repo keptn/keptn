@@ -196,7 +196,7 @@ func (c *ConfigurationChanger) deleteRelease(e *keptnevents.ConfigurationChangeE
 
 	if err := c.canaryLevelGen.DeleteRelease(e.Project, e.Stage, e.Service, generated, c.configServiceURL); err != nil {
 		return fmt.Errorf("Error when deleting release %s: %s",
-			helm.GetReleaseName(e.Project, e.Service, e.Stage, generated), err.Error())
+			helm.GetReleaseName(e.Project, e.Stage, e.Service, generated), err.Error())
 	}
 	return nil
 }
@@ -221,7 +221,7 @@ func (c *ConfigurationChanger) applyConfiguration(e *keptnevents.ConfigurationCh
 		return fmt.Errorf("Error when saving chart into temporary directory %s: %s", helmChartDir, err.Error())
 	}
 
-	releaseName := helm.GetReleaseName(e.Project, e.Service, e.Stage, generated)
+	releaseName := helm.GetReleaseName(e.Project, e.Stage, e.Service, generated)
 	namespace := c.canaryLevelGen.GetNamespace(e.Project, e.Stage, generated)
 	if _, err := keptnutils.ExecuteCommand("helm", []string{"upgrade", "--install", releaseName,
 		chartPath, "--namespace", namespace, "--wait"}); err != nil {
