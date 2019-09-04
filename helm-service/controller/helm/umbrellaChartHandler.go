@@ -2,6 +2,8 @@ package helm
 
 import (
 	"io/ioutil"
+	"os"
+	"path/filepath"
 	"strings"
 
 	keptnevents "github.com/keptn/go-utils/pkg/events"
@@ -70,15 +72,25 @@ func (u *UmbrellaChartHandler) GetUmbrellaChart(outputDirectory, project, stage 
 	}
 
 	resourcePrefixes := map[string]bool{
-		umbrellaChartURI: true,
-		requirementsURI:  true,
-		valuesURI:        true,
+		"/" + umbrellaChartURI: true,
+		"/" + requirementsURI:  true,
+		"/" + valuesURI:        true,
 	}
 
 	for _, resource := range resources {
 		_, contained := resourcePrefixes[*resource.ResourceURI]
-		if contained || strings.HasPrefix(*resource.ResourceURI, "templates/") {
-			if err := ioutil.WriteFile(*resource.ResourceURI, []byte(resource.ResourceContent), 0644); err != nil {
+		if contained || strings.HasPrefix(*resource.ResourceURI, "/templates/") {
+			rData, err := rHandler.GetStageResource(project, stage, *resource.ResourceURI)
+			if err != nil {
+				return err
+			}
+			if strings.Count(*resource.ResourceURI, "/") > 1 {
+				uri := *resource.ResourceURI
+				dir := uri[:strings.LastIndex(*resource.ResourceURI, "/")]
+				os.MkdirAll(filepath.Join(outputDirectory, dir), 0755)
+			}
+			if err := ioutil.WriteFile(filepath.Join(outputDirectory, *resource.ResourceURI),
+				[]byte(rData.ResourceContent), 0644); err != nil {
 				return err
 			}
 		}
