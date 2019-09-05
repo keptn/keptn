@@ -87,11 +87,11 @@ func sendDeploymentFinishedEvent(shkeptncontext string, project string, stage st
 		return err
 	}
 	deploymentStrategies, err := getDeploymentStrategies(project, configServiceURL)
-	var deploymentStrategyNameOld string
+	var deploymentStrategyOldIdentifier string
 	if deploymentStrategies[stage] == keptnevents.Duplicate {
-		deploymentStrategyNameOld = "blue_green_service"
+		deploymentStrategyOldIdentifier = "blue_green_service"
 	} else {
-		deploymentStrategyNameOld = "direct"
+		deploymentStrategyOldIdentifier = "direct"
 	}
 
 	depFinishedEvent := deploymentFinishedEvent{
@@ -99,7 +99,7 @@ func sendDeploymentFinishedEvent(shkeptncontext string, project string, stage st
 		Stage:              stage,
 		Service:            service,
 		TestStrategy:       testStrategy,
-		DeploymentStrategy: deploymentStrategyNameOld,
+		DeploymentStrategy: deploymentStrategyOldIdentifier,
 	}
 
 	event := cloudevents.Event{
