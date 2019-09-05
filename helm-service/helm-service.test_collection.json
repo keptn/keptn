@@ -1,0 +1,209 @@
+{
+	"info": {
+		"_postman_id": "dae68f27-f7fc-4797-a130-25d53f004a4b",
+		"name": "helm-service",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "createServiceCarts",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/cloudevents+json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"specversion\":\"0.2\",\"time\":\"2019-06-04T06:54:31+00:00\",\"contenttype\":\"application/json\",\"data\":{\"project\":\"sockshop\", \"service\":\"carts\",\"deploymentStrategies\":{\"dev\" :  \"direct\", \"staging\" : \"duplicate\", \"production\" :\"duplicate\"},\"helmChart\":\"H4sIFAAAAAAA/ykAK2FIUjBjSE02THk5NWIzVjBkUzVpWlM5Nk9WVjZNV2xqYW5keVRRbz1IZWxtAOxYX2/jNgzvsz8F0Zd7aiI7cVsYuIcuyXXdmsRI0xbdMBSqzTZCJUsnKdkZh/vug+04dZwUGbD+WQ/+vSQmKYqUSZpURLU17d6MattKqeB7rwBCCDny/fyXEFL/Ja53uOd2/E7Hc0nX9feI63VIdw/IaxhTx9xYqvfIf96r7twHAVXsCrVhMglg4ToxmkgzZfPnE/gVuYAoCw64lxoM6gWLEPKgcRIqMFj+X5Q6SMttEee9vWrwb1Hk/4LyOZrXKgC78p/43Xr++12vyf+3gMMEfcAAYhk9om4x2X5EZRP8RoXiaNp5fASkddxym6z+CVHkv0WhOLVo2jEqLlOBiW2lL1UMduR/x+16tfz3vUO3yf+3wMHBATjVJoAqZdoL13lkSRxAfxUOjkBLY2pp4ABUP/1GYZTRjNXU4kOa/QfQknOWPFyqmFosSACCfrtM6IIyTu84BkByuk0VBjCpLsjUIcfISl2sFdRGs3N6h9yUyqhSpQkAZQAvpSumZuBrC2tLAUoPMkQysZQlqFfiB2veliqWZXP/+3doXRVfz5wEP37srwuFc85DyVmUBnB2P5I21GiyAy2llMxK7Oqx3G9mrVoRAZSWVkaSBzDthRX6yuBQahvAMTkmKy4mi029/ent9OT0oqIi//oHsE+V4iyiWfP3OfOrmApGVKx7VSoKx/3b0clwUNf0RUsRVIgA9wx5PMH7deqSHlI7C2C/fGetTPnmZv1BeD6+GQ5G09fYswiQPz89Vb9Pf23a0BuPpidno8Hk9mx4crphw65oKNX8Pgino9twMv5t0Js+o2TH0RcqLqZbrHiB0zeKRltewXLTweTqrLfN+TxBnpZxtsAEjQm1vMPq3llgn6JdN0fldrRnSLmdrXM24xqAJcwyyvvIaXqBkUxiE8BhVUKhZjJe8dwqzzKBcm6fmP6KqZHG7COabeRcR2iq5nEmmDX11x6peQA+IaJGFyikTgPwSPd4yCpMjV/naJ5R5PnPKnKJ1x2ypmv8X6Pe/xmMNL7wVdDO+58jv9b/df1OM/+9CZzaBVDR9l3kUbCl5RNpESBO0bSNFf06R6eUmRvUhdzN9cTS6+5nJyuRxvwtdRzA8Pom/aP/hQ/FpTfyJqIpDe+PzfzPr/hetADsyv8OIfX8PzzqNPn/FtiY/yo1II+EpyIA2wa/jFjUgnNJ418op0mE2imnmoy9MdCUrVHxsDHXWKof0K6NM6thEHKJyvz23ufXoEGDBh8V/wQAAP//61HxxwAeAAA=\"},\"type\":\"sh.keptn.internal.event.service.create\",\"shkeptncontext\":\"38361aca-1a4c-4fd3-9dc9-a255dd8f1f59\"}"
+				},
+				"url": {
+					"raw": "localhost:8080",
+					"host": [
+						"localhost"
+					],
+					"port": "8080"
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "createServiceCartsDb",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/cloudevents+json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"specversion\":\"0.2\",\"time\":\"2019-06-04T06:54:31+00:00\",\"contenttype\":\"application/json\",\"data\":{\"project\":\"sockshop\", \"service\":\"carts-db\",\"deploymentStrategies\":{\"dev\" :  \"direct\", \"staging\" : \"direct\", \"production\" :\"direct\"},\"helmChart\":\"H4sIFAAAAAAA/ykAK2FIUjBjSE02THk5NWIzVjBkUzVpWlM5Nk9WVjZNV2xqYW5keVRRbz1IZWxtAOxWzW7bMAzOWUDfgS/gRE7qBPCt6A7boV3QAd2ZVdjUmGx5Ep0tKPrug5LIcd38bGjXbIC/SyJSFkmZ32cqtOyi2d3g8gEt95eY695bQ0opJ0my+pVStn9lPDrvxaNkNDofnidy3JPxcDwZ90C+eSY7UDlG25OvjtUu7j8BltktWZeZIoVFLGbklM1KXq0v4CPpHJTvDLg3FhzZRaYIQtOIAnNKt8tFOEn2474Up66tw3HU/F+grsj9FQH4c/6PvKnj/zsgy3FOKeSmmJszsSF4eiYAAOgnky1QT43lFIYTGU/WjqzY43iuB6eurcNx1PxnykuNTG4QTNGMSm2WORWvnAuO8D9ORnGL/5MkHnb8fw9EUSRaM8C3rJilMPUWx1TwrdFVTpcas1zkxDhDxlS0yR6tJMT7hCtJ+Q2oFDl3ZWbk/DKCG8LZV5sxfS4UCQBLzlRWrd1++b0ix5sVgGNjV+oUS3mVCcfIlUvh8Um0s/ZKVfi/brCI74gxVPGhbuEDqQsAjXekN4GxLBu+UIylUmcKXQqx8KlZZJov10/wsqQUbkhZQvaFBTKt3c3IHs1gLwMG65Z9LWfIyEOZgjEryNbHRa3ioD5wI/WPj9C/XX/sVxZ4enq+ZVppPTU6U8sUPt1fG55acv4Gw67SWG6kH22zaHwQavf2Jfs3F6yLVVNdmap4flTuLVPkhxQG/s4GjRs50HJ1KEbLIfkL/QOXTjQD7r2mF2cBlLsYkDayUd5wveeYUxP7N3FI/zfTwKtnwmPz3yhJWvo/nkySTv/fA3v1/8v65R+SzSBEtR4EUjUkJvSQdwSlKVcqsWNTc+AMmxntnHi675HmKLp+xJEmxcbuEPNTX3aHDh06/EP4FQAA//9aWIIMABYAAA==\"},\"type\":\"sh.keptn.internal.event.service.create\",\"shkeptncontext\":\"38361aca-1a4c-4fd3-9dc9-a255dd8f1f59\"}"
+				},
+				"url": {
+					"raw": "localhost:8080",
+					"host": [
+						"localhost"
+					],
+					"port": "8080"
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "valuesPrimary",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/cloudevents+json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"specversion\":\"0.2\",\"time\":\"2019-06-04T06:54:31+00:00\",\"contenttype\":\"application/json\",\"data\":{\"project\":\"sockshop\", \"service\":\"carts\",\"stage\":\"production\", \"valuesCanary\":{\"image\" : { \"value\" : \"docker.io/keptnexamples/carts:0.8.1\"}}},\"type\":\"sh.keptn.event.configuration.change\",\"shkeptncontext\":\"38361aca-1a4c-4fd3-9dc9-a255dd8f1f59\"}"
+				},
+				"url": {
+					"raw": "localhost:8080",
+					"host": [
+						"localhost"
+					],
+					"port": "8080"
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "valuesCanary",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/cloudevents+json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"specversion\":\"0.2\",\"time\":\"2019-06-04T06:54:31+00:00\",\"contenttype\":\"application/json\",\"data\":{\"project\":\"sockshop\", \"service\":\"carts\",\"stage\":\"production\", \"valuesCanary\":{\"image\" : \"docker.io/keptnexamples/carts:0.8.2\"}},\"type\":\"sh.keptn.event.configuration.change\",\"shkeptncontext\":\"38361aca-1a4c-4fd3-9dc9-a255dd8f1f59\"}"
+				},
+				"url": {
+					"raw": "localhost:8080",
+					"host": [
+						"localhost"
+					],
+					"port": "8080"
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "valuesCanaryDb",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/cloudevents+json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"specversion\":\"0.2\",\"time\":\"2019-06-04T06:54:31+00:00\",\"contenttype\":\"application/json\",\"data\":{\"project\":\"sockshop\", \"service\":\"carts-db\",\"stage\":\"production\", \"valuesCanary\":{\"image\" : \"mongo\"}},\"type\":\"sh.keptn.event.configuration.change\",\"shkeptncontext\":\"38361aca-1a4c-4fd3-9dc9-a255dd8f1f59\"}"
+				},
+				"url": {
+					"raw": "localhost:8080",
+					"host": [
+						"localhost"
+					],
+					"port": "8080"
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "canary_set",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/cloudevents+json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"specversion\":\"0.2\",\"time\":\"2019-06-04T06:54:31+00:00\",\"contenttype\":\"application/json\",\"data\":{\"project\":\"sockshop\", \"service\":\"carts\",\"stage\":\"production\", \"canary\":{\"value\" :  \"30\", \"action\" : \"set\"}},\"type\":\"sh.keptn.event.configuration.change\",\"shkeptncontext\":\"38361aca-1a4c-4fd3-9dc9-a255dd8f1f59\"}"
+				},
+				"url": {
+					"raw": "localhost:8080",
+					"host": [
+						"localhost"
+					],
+					"port": "8080"
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "canary_promote",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/cloudevents+json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"specversion\":\"0.2\",\"time\":\"2019-06-04T06:54:31+00:00\",\"contenttype\":\"application/json\",\"data\":{\"project\":\"sockshop\", \"service\":\"carts\",\"stage\":\"production\", \"canary\":{ \"action\" : \"promote\"}},\"type\":\"sh.keptn.event.configuration.change\",\"shkeptncontext\":\"38361aca-1a4c-4fd3-9dc9-a255dd8f1f59\"}"
+				},
+				"url": {
+					"raw": "localhost:8080",
+					"host": [
+						"localhost"
+					],
+					"port": "8080"
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "canary_discard",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/cloudevents+json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"specversion\":\"0.2\",\"time\":\"2019-06-04T06:54:31+00:00\",\"contenttype\":\"application/json\",\"data\":{\"project\":\"sockshop\", \"service\":\"carts\",\"stage\":\"production\", \"canary\":{ \"action\" : \"discard\"}},\"type\":\"sh.keptn.event.configuration.change\",\"shkeptncontext\":\"38361aca-1a4c-4fd3-9dc9-a255dd8f1f59\"}"
+				},
+				"url": {
+					"raw": "localhost:8080",
+					"host": [
+						"localhost"
+					],
+					"port": "8080"
+				}
+			},
+			"response": []
+		}
+	]
+}
