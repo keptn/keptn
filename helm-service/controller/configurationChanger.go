@@ -82,6 +82,15 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event)
 		}
 	}
 
+	if os.Getenv("pre_workflow_engine") == "true" {
+		var shkeptncontext string
+		ce.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
+		if err := sendDeploymentFinishedEvent(shkeptncontext, e.Project, e.Stage, e.Service, c.configServiceURL); err != nil {
+			c.logger.Error(fmt.Sprintf("Cannot send deployment finished event: %s", err.Error()))
+			return err
+		}
+	}
+
 	return nil
 }
 
