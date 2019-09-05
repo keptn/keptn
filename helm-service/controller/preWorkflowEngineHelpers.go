@@ -29,3 +29,16 @@ func getDeploymentStrategies(project string, configServiceURL string) (map[strin
 
 	return res, nil
 }
+
+func getFirstStage(project string, configServiceURL string) (string, error) {
+
+	resourceHandler := keptnutils.NewResourceHandler(configServiceURL)
+	handler := keptnutils.NewKeptnHandler(resourceHandler)
+
+	shipyard, err := handler.GetShipyard(project)
+	if err != nil {
+		return "", err
+	}
+
+	return shipyard.Stages[0].Name, nil
+}
