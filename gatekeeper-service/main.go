@@ -13,10 +13,11 @@ import (
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
 	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
+	"github.com/ghodss/yaml"
 	"github.com/google/uuid"
 	"github.com/kelseyhightower/envconfig"
+	keptnevents "github.com/keptn/go-utils/pkg/events"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
-	"gopkg.in/yaml.v2"
 )
 
 const configservice = "CONFIGURATION_SERVICE"
@@ -28,27 +29,12 @@ type envConfig struct {
 	Path string `envconfig:"RCV_PATH" default:"/"`
 }
 
-type partialShipyard struct {
-	Stages []partialStage `json:"stages"`
-}
-
-type partialStage struct {
-	Name string `json:"name"`
-}
-
 type evaluationDoneEvent struct {
 	Project            string `json:"project"`
-	TestStrategy       string `json:"teststrategy"`
-	DeploymentStrategy string `json:"deploymentstrategy"`
 	Stage              string `json:"stage"`
 	Service            string `json:"service"`
-	Image              string `json:"image"`
-	Tag                string `json:"tag"`
+	DeploymentStrategy string `json:"deploymentstrategy"`
 	EvaluationPassed   bool   `json:"evaluationpassed"`
-}
-
-type canaryData struct {
-	Action string `json:"action"`
 }
 
 func main() {
@@ -87,68 +73,89 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 	logger := keptnutils.NewLogger(shkeptncontext, event.Context.GetID(), "gatekeeper-service")
 
+	if event.Type() == "sh.keptn.events.evaluation-done" {
+		go doGateKeeping(event, shkeptncontext, logger)
+	} else {
+		logger.Error("Received unexpected keptn event")
+	}
+
+	return nil
+}
+
+func doGateKeeping(event cloudevents.Event, shkeptncontext string, logger *keptnutils.Logger) error {
+
 	data := &evaluationDoneEvent{}
 	if err := event.DataAs(data); err != nil {
 		logger.Error(fmt.Sprintf("Got Data Error: %s", err.Error()))
 		return err
 	}
 
-	if event.Type() != "sh.keptn.events.evaluation-done" {
-		const errorMsg = "Received unexpected keptn event"
-		logger.Error(errorMsg)
-		return errors.New(errorMsg)
-	}
-
-	go doGateKeeping(event, shkeptncontext, *data, logger)
-
-	return nil
-}
-
-func doGateKeeping(event cloudevents.Event, shkeptncontext string, data evaluationDoneEvent, logger *keptnutils.Logger) {
-
 	if data.EvaluationPassed {
 
-		logger.Info("Evaluation is passed")
+		logger.Info(fmt.Sprintf("Service %s of project %s in stage %s has passed the evaluation",
+			data.Service, data.Project, data.Stage))
 
-		nextStage, err := getNextStage(data, logger)
+		nextStage, err := getNextStage(data.Project, data.Stage)
 		if err != nil {
 			logger.Error(fmt.Sprintf("Error obtaining the next stage: %s", err.Error()))
-			return
+			return err
 		}
 
 		if nextStage != "" {
-			logger.Info("Promote artifact to stage " + nextStage)
-			if err := sendNewArtifactEvent(shkeptncontext, event, nextStage, logger); err != nil {
-				logger.Error(fmt.Sprintf("Error sending new artifact event: %s", err.Error()))
-				return
+			logger.Info(fmt.Sprintf("Promote service %s of project %s to stage %s",
+				data.Service, data.Project, nextStage))
+
+			// Promote artifact
+			if err := sendCanaryAction(shkeptncontext, data.Project, data.Service,
+				data.Stage, keptnevents.Promote); err != nil {
+				logger.Error(fmt.Sprintf("Error sending promotion event "+
+					"for service %s of project %s and stage %s: %s", data.Service, data.Project,
+					data.Stage, err.Error()))
+				return err
+			}
+
+			// Send configuration changed for next stage
+			image, err := getImage(data.Project, data.Stage, data.Service)
+			if err != nil {
+				logger.Error(err.Error())
+				return err
+			}
+
+			if err := sendNewArtifactEvent(shkeptncontext, data.Project, data.Service,
+				nextStage, image); err != nil {
+				logger.Error(fmt.Sprintf("Error sending new artifact event "+
+					"for service %s of project %s and stage %s: %s", data.Service, data.Project,
+					nextStage, err.Error()))
+				return err
 			}
 		} else {
-			logger.Info("No further stage available: End of promotion")
+			logger.Info(fmt.Sprintf("No further stage available to promote the service %s of project %s",
+				data.Service, data.Project))
 		}
 
 	} else {
-		logger.Info("Evaluation not passed. Hence, do not promote artifact to next stage")
-
-		var action = "discard"
+		logger.Info(fmt.Sprintf("Service %s of project %s in stage %s has NOT passed the evaluation",
+			data.Service, data.Project, data.Stage))
 
 		if strings.ToLower(data.DeploymentStrategy) == "blue_green_service" {
-			if err := sendConfigurationChangedEvent(shkeptncontext, event, action, logger); err != nil {
-				logger.Error(fmt.Sprintf("Error sending configuration changed event: %s", err.Error()))
-				return
+			// Discard artifact
+			if err := sendCanaryAction(shkeptncontext, data.Project, data.Service,
+				data.Stage, keptnevents.Discard); err != nil {
+				logger.Error(fmt.Sprintf("Error sending promotion event "+
+					"for service %s of project %s and stage %s: %s", data.Service, data.Project,
+					data.Stage, err.Error()))
+				return err
 			}
 		}
 	}
+	return nil
 }
 
-func getNextStage(data evaluationDoneEvent, logger *keptnutils.Logger) (string, error) {
+func getNextStage(project string, currentStage string) (string, error) {
+	resourceHandler := keptnutils.NewResourceHandler(configservice)
+	handler := keptnutils.NewKeptnHandler(resourceHandler)
 
-	resource, err := retrieveResourceForProject(data.Project, "shipyard.yaml", logger)
-	if err != nil {
-		return "", err
-	}
-
-	var shipyard partialShipyard
-	err = yaml.Unmarshal([]byte(resource.ResourceContent), &shipyard)
+	shipyard, err := handler.GetShipyard(project)
 	if err != nil {
 		return "", err
 	}
@@ -159,70 +166,91 @@ func getNextStage(data evaluationDoneEvent, logger *keptnutils.Logger) (string, 
 			// Here, we return the next stage
 			return stage.Name, nil
 		}
-		if stage.Name == data.Stage {
+		if stage.Name == currentStage {
 			currentFound = true
 		}
 	}
 	return "", nil
 }
 
-func sendNewArtifactEvent(shkeptncontext string, incomingEvent cloudevents.Event, nextStage string, logger *keptnutils.Logger) error {
+func getImage(project string, currentStage string, service string) (string, error) {
+	helmChartName := service
+	// Read chart
+	chart, err := keptnutils.GetChart(project, service, currentStage, helmChartName, configservice)
+	if err != nil {
+		return "", err
+	}
+
+	values := make(map[string]interface{})
+	if err := yaml.Unmarshal([]byte(chart.Values.Raw), &values); err != nil {
+		return "", err
+	}
+	val, contained := values["image"]
+	if !contained {
+		return "", fmt.Errorf("Cannot find image for service %s in project %s and stage %s",
+			service, project, currentStage)
+	}
+	imageName, validType := val.(string)
+	if !validType {
+		return "", fmt.Errorf("Cannot parse image for service %s in project %s and stage %s",
+			service, project, currentStage)
+	}
+	return imageName, nil
+}
+
+func sendNewArtifactEvent(shkeptncontext string, project string,
+	service string, nextStage string, image string) error {
 
 	source, _ := url.Parse("gatekeeper-service")
 	contentType := "application/json"
 
-	// set next stage
-	var newArtifactEvent interface{}
-	if err := incomingEvent.DataAs(&newArtifactEvent); err != nil {
-		logger.Error(fmt.Sprintf("Got Data Error: %s", err.Error()))
-		return err
+	valuesCanary := make(map[string]interface{})
+	valuesCanary["image"] = image
+	canary := keptnevents.Canary{Action: keptnevents.Set, Value: 100}
+	configChangedEvent := keptnevents.ConfigurationChangeEventData{
+		Project:      project,
+		Service:      service,
+		Stage:        nextStage,
+		ValuesCanary: valuesCanary,
+		Canary:       &canary,
 	}
-	newArtifactEvent.(map[string]interface{})["stage"] = nextStage
 
-	// compose CloudEvent
 	event := cloudevents.Event{
 		Context: cloudevents.EventContextV02{
 			ID:          uuid.New().String(),
-			Type:        "sh.keptn.events.new-artifact",
+			Type:        keptnevents.ConfigurationChangeEventType,
 			Source:      types.URLRef{URL: *source},
 			ContentType: &contentType,
 			Extensions:  map[string]interface{}{"shkeptncontext": shkeptncontext},
 		}.AsV02(),
-		Data: newArtifactEvent,
+		Data: configChangedEvent,
 	}
 
 	return sendEvent(event)
 }
 
-func sendConfigurationChangedEvent(shkeptncontext string, incomingEvent cloudevents.Event, action string, logger *keptnutils.Logger) error {
+func sendCanaryAction(shkeptncontext string, project string,
+	service string, stage string, action keptnevents.CanaryAction) error {
 
 	source, _ := url.Parse("gatekeeper-service")
 	contentType := "application/json"
 
-	// remove test strategy
-	var configurationChangedEventData interface{}
-	if err := incomingEvent.DataAs(&configurationChangedEventData); err != nil {
-		logger.Error(fmt.Sprintf("Got Data Error: %s", err.Error()))
-		return err
+	canary := keptnevents.Canary{Action: action}
+	configChangedEvent := keptnevents.ConfigurationChangeEventData{
+		Project: project,
+		Service: service,
+		Canary:  &canary,
 	}
-	configurationChangedEventData.(map[string]interface{})["teststrategy"] = ""
 
-	// set action for canary
-	var canary = canaryData{
-		Action: action,
-	}
-	configurationChangedEventData.(map[string]interface{})["canary"] = canary
-
-	// compose CloudEvent
 	event := cloudevents.Event{
 		Context: cloudevents.EventContextV02{
 			ID:          uuid.New().String(),
-			Type:        "sh.keptn.events.configuration-changed",
+			Type:        keptnevents.ConfigurationChangeEventType,
 			Source:      types.URLRef{URL: *source},
 			ContentType: &contentType,
 			Extensions:  map[string]interface{}{"shkeptncontext": shkeptncontext},
 		}.AsV02(),
-		Data: configurationChangedEventData,
+		Data: configChangedEvent,
 	}
 
 	return sendEvent(event)
@@ -255,21 +283,6 @@ func sendEvent(event cloudevents.Event) error {
 		return errors.New("Failed to send cloudevent:, " + err.Error())
 	}
 	return nil
-}
-
-// retrieveResourceForProject retrieves a resource stored at a project entity
-func retrieveResourceForProject(projectName string, resourceURI string, logger *keptnutils.Logger) (*keptnutils.Resource, error) {
-	eventURL, err := getServiceEndpoint(configservice)
-	resourceHandler := keptnutils.NewResourceHandler(eventURL.Host)
-
-	resource, err := resourceHandler.GetProjectResource(projectName, resourceURI)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to retrieve resource %s. %s", resourceURI, err.Error())
-	}
-
-	logger.Info(resource.ResourceContent)
-
-	return resource, nil
 }
 
 // getServiceEndpoint gets an endpoint stored in an environment variable and sets http as default scheme
