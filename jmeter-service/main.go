@@ -41,8 +41,6 @@ type deploymentFinishedEvent struct {
 	DeploymentStrategy string `json:"deploymentstrategy"`
 	Stage              string `json:"stage"`
 	Service            string `json:"service"`
-	Image              string `json:"image"`
-	Tag                string `json:"tag"`
 }
 
 func gotEvent(ctx context.Context, event cloudevents.Event) error {
