@@ -84,7 +84,7 @@ Example:
 		event := cloudevents.Event{
 			Context: cloudevents.EventContextV02{
 				ID:          uuid.New().String(),
-				Type:        "sh.keptn.event.configuration.change",
+				Type:        keptnevents.ConfigurationChangeEventType,
 				Source:      types.URLRef{URL: *source},
 				ContentType: &contentType,
 			}.AsV02(),
