@@ -36,7 +36,6 @@ func main() {
 }
 
 type deploymentFinishedEvent struct {
-	GitHubOrg          string `json:"githuborg"`
 	Project            string `json:"project"`
 	TestStrategy       string `json:"teststrategy"`
 	DeploymentStrategy string `json:"deploymentstrategy"`
@@ -70,12 +69,6 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 }
 
 func runTests(event cloudevents.Event, shkeptncontext string, data deploymentFinishedEvent, logger *keptnutils.Logger) {
-
-	_, err := keptnutils.Checkout(data.GitHubOrg, data.Service, "master")
-	if err != nil {
-		logger.Error(fmt.Sprintf("Error when checkingout from GitHub: %s", err.Error()))
-		return
-	}
 
 	testInfo := getTestInfo(data)
 	id := uuid.New().String()
