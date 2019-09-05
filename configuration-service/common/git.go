@@ -3,7 +3,6 @@ package common
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"os"
 	"strings"
 
@@ -53,6 +52,14 @@ func CheckoutBranch(project string, branch string) error {
 	if err != nil {
 		return err
 	}
+	credentials, err := GetCredentials(project)
+	if err == nil && credentials != nil {
+		repoURI := getRepoURI(credentials.RemoteURI, credentials.User, credentials.Token)
+		_, err = utils.ExecuteCommandInDirectory("git", []string{"pull", "-s", "recursive", "-X", "theirs", repoURI}, projectConfigPath)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -90,13 +97,14 @@ func StageAndCommitAll(project string, message string) error {
 	}
 
 	_, err = utils.ExecuteCommandInDirectory("git", []string{"commit", "-m", `"` + message + `"`}, projectConfigPath)
-	if err != nil && !(strings.Contains(err.Error(), "nothing to commit")) {
-		fmt.Print(err.Error())
-		return err
-	}
+	// in this case, ignore errors since the only instance when this can occur at this stage is when there is nothin to commit (no delta)
 	credentials, err := GetCredentials(project)
 	if err == nil && credentials != nil {
 		repoURI := getRepoURI(credentials.RemoteURI, credentials.User, credentials.Token)
+		_, err = utils.ExecuteCommandInDirectory("git", []string{"pull", "-s", "recursive", "-X", "theirs", repoURI}, projectConfigPath)
+		if err != nil {
+			return err
+		}
 		_, err = utils.ExecuteCommandInDirectory("git", []string{"push", repoURI}, projectConfigPath)
 		if err != nil {
 			return err

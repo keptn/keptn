@@ -92,7 +92,7 @@ func runTests(event cloudevents.Event, shkeptncontext string, data deploymentFin
 		}
 		return
 	}
-	logger.Info("Heath Check test passed = " + strconv.FormatBool(res) + ". " + testInfo)
+	logger.Info("Health Check test passed = " + strconv.FormatBool(res) + ". " + testInfo.ToString())
 
 	var sendEvent = false
 	startedAt := time.Now()
@@ -103,7 +103,7 @@ func runTests(event cloudevents.Event, shkeptncontext string, data deploymentFin
 			logger.Error(err.Error())
 			return
 		}
-		logger.Info("Functional test passed = " + strconv.FormatBool(res) + ". " + testInfo)
+		logger.Info("Functional test passed = " + strconv.FormatBool(res) + ". " + testInfo.ToString())
 		sendEvent = true
 
 	case "performance":
@@ -112,31 +112,36 @@ func runTests(event cloudevents.Event, shkeptncontext string, data deploymentFin
 			logger.Error(err.Error())
 			return
 		}
-		logger.Info("Performance test passed = " + strconv.FormatBool(res) + ". " + testInfo)
+		logger.Info("Performance test passed = " + strconv.FormatBool(res) + ". " + testInfo.ToString())
 		sendEvent = true
 
 	case "":
-		logger.Info("No test strategy specified, hence no tests are triggered. " + testInfo)
+		logger.Info("No test strategy specified, hence no tests are triggered. " + testInfo.ToString())
 
 	default:
-		logger.Error("Unknown test strategy '" + data.TestStrategy + "'" + ". " + testInfo)
+		logger.Error("Unknown test strategy '" + data.TestStrategy + "'" + ". " + testInfo.ToString())
 	}
 
 	if sendEvent {
 		if !res {
 			if err := sendEvaluationDoneEvent(shkeptncontext, event, logger); err != nil {
-				logger.Error(fmt.Sprintf("Error sending evaluation done event: %s", err.Error()) + ". " + testInfo)
+				logger.Error(fmt.Sprintf("Error sending evaluation done event: %s", err.Error()) + ". " + testInfo.ToString())
 			}
 			return
 		}
 		if err := sendTestsFinishedEvent(shkeptncontext, event, startedAt, logger); err != nil {
-			logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo)
+			logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.ToString())
 		}
 	}
 }
 
-func getTestInfo(data deploymentFinishedEvent) string {
-	return "Project: " + data.Project + ", Service: " + data.Service + ", Stage: " + data.Stage + ", TestStrategy: " + data.TestStrategy
+func getTestInfo(data deploymentFinishedEvent) *TestInfo {
+	return &TestInfo{
+		Project:      data.Project,
+		Service:      data.Service,
+		Stage:        data.Stage,
+		TestStrategy: data.TestStrategy,
+	}
 }
 
 func runHealthCheck(data deploymentFinishedEvent, id string, logger *keptnutils.Logger) (bool, error) {
@@ -163,7 +168,7 @@ func runHealthCheck(data deploymentFinishedEvent, id string, logger *keptnutils.
 	os.RemoveAll("output.txt")
 
 	testInfo := getTestInfo(data)
-	return executeJMeter(testInfo, data.Service+"/jmeter/basiccheck.jmx", "HealthCheck_"+data.Service,
+	return executeJMeter(testInfo, "jmeter/basiccheck.jmx", "HealthCheck_"+data.Service,
 		data.Service+"."+data.Project+"-"+data.Stage, 80, "/health", 1, 1, 250, "HealthCheck_"+id,
 		true, 0, logger)
 }
@@ -175,7 +180,7 @@ func runFunctionalCheck(data deploymentFinishedEvent, id string, logger *keptnut
 	os.RemoveAll("output.txt")
 
 	testInfo := getTestInfo(data)
-	return executeJMeter(testInfo, data.Service+"/jmeter/"+data.Service+"_load.jmx",
+	return executeJMeter(testInfo, "jmeter/load.jmx",
 		"FuncCheck_"+data.Service, data.Service+"."+data.Project+"-"+data.Stage,
 		80, "/health", 1, 1, 250, "FuncCheck_"+id, true, 0, logger)
 }
@@ -192,7 +197,7 @@ func runPerformanceCheck(data deploymentFinishedEvent, id string, logger *keptnu
 	}
 
 	testInfo := getTestInfo(data)
-	return executeJMeter(testInfo, data.Service+"/jmeter/"+data.Service+"_load.jmx", "PerfCheck_"+data.Service,
+	return executeJMeter(testInfo, "jmeter/load.jmx", "PerfCheck_"+data.Service,
 		data.Service+"."+data.Project+"-"+data.Stage+"."+gateway, 80, "/health", 10, 500, 250, "PerfCheck_"+id,
 		false, 0, logger)
 }

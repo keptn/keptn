@@ -1,9 +1,8 @@
 package handlers
 
 import (
+	"encoding/base64"
 	"io/ioutil"
-
-	"github.com/go-openapi/strfmt"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
@@ -52,7 +51,7 @@ func PutProjectProjectNameResourceHandlerFunc(params project_resource.PutProject
 	for _, res := range params.Resources.Resources {
 		filePath := projectConfigPath + "/" + *res.ResourceURI
 		logger.Debug("Updating resource: " + filePath)
-		common.WriteFile(projectConfigPath+"/"+*res.ResourceURI, res.ResourceContent)
+		common.WriteBase64EncodedFile(projectConfigPath+"/"+*res.ResourceURI, res.ResourceContent)
 	}
 
 	logger.Debug("Staging Changes")
@@ -91,10 +90,8 @@ func PostProjectProjectNameResourceHandlerFunc(params project_resource.PostProje
 
 	for _, res := range params.Resources.Resources {
 		filePath := projectConfigPath + "/" + *res.ResourceURI
-		if !common.FileExists(filePath) {
-			logger.Debug("Adding resource: " + filePath)
-			common.WriteFile(projectConfigPath+"/"+*res.ResourceURI, res.ResourceContent)
-		}
+		logger.Debug("Adding resource: " + filePath)
+		common.WriteBase64EncodedFile(projectConfigPath+"/"+*res.ResourceURI, res.ResourceContent)
 	}
 
 	logger.Debug("Staging Changes")
@@ -140,7 +137,7 @@ func GetProjectProjectNameResourceResourceURIHandlerFunc(params project_resource
 		return project_resource.NewGetProjectProjectNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not read file")})
 	}
 
-	resourceContent := strfmt.Base64(dat)
+	resourceContent := base64.StdEncoding.EncodeToString(dat)
 	return project_resource.NewGetProjectProjectNameResourceResourceURIOK().WithPayload(
 		&models.Resource{
 			ResourceURI:     &params.ResourceURI,
@@ -165,7 +162,7 @@ func PutProjectProjectNameResourceResourceURIHandlerFunc(params project_resource
 	}
 
 	filePath := projectConfigPath + "/" + params.ResourceURI
-	common.WriteFile(filePath, params.Resource.ResourceContent)
+	common.WriteBase64EncodedFile(filePath, params.Resource.ResourceContent)
 
 	logger.Debug("Staging Changes")
 	err = common.StageAndCommitAll(params.ProjectName, "Updated resource: "+params.ResourceURI)

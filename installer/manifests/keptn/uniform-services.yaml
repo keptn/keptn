@@ -106,7 +106,7 @@ spec:
     spec:
       containers:
       - name: pitometer-service
-        image: keptn/pitometer-service:latest
+        image: keptn/pitometer-service:0.2.0
         ports:
         - containerPort: 8080
         resources:
@@ -225,7 +225,7 @@ spec:
     spec:
       containers:
       - name: helm-service
-        image: keptn/jmeter-service:latest
+        image: keptn/jmeter-service:0.1.1
         ports:
         - containerPort: 8080
 ---
