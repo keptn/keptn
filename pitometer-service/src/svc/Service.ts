@@ -2,6 +2,8 @@ import 'reflect-metadata';
 import { injectable, inject } from 'inversify';
 import { RequestModel } from './RequestModel';
 import axios, { AxiosRequestConfig, AxiosPromise, AxiosError } from 'axios';
+import YAML from 'yaml'
+const { base64encode, base64decode } = require('nodejs-base64');
 
 const Pitometer = require('@keptn/pitometer').Pitometer;
 // tslint:disable-next-line: variable-name
@@ -17,6 +19,10 @@ import { Logger } from '../lib/Logger';
 import { Keptn } from '../lib/Keptn';
 import { Credentials } from '../lib/Credentials';
 import { DynatraceCredentialsModel } from '../lib/DynatraceCredentialsModel';
+import { ServiceIndicators, Indicator } from './ServiceIndicators';
+import { ServiceObjectives, Objective } from './ServiceObjectives';
+import { create } from 'domain';
+import { json } from 'body-parser';
 
 @injectable()
 export class Service {
@@ -52,17 +58,21 @@ export class Service {
 
       pitometer.addGrader('Threshold', new ThresholdGrader());
 
-      // tslint:disable-next-line: max-line-length
-      const perfspecUrl = `https://raw.githubusercontent.com/${event.data.githuborg}/${event.data.service}/master/perfspec/perfspec.json`;
-      let perfspecResponse;
+      let perfspecString;
 
       try {
-        perfspecResponse = await axios.get(perfspecUrl, {
-          headers: {
-            'Cache-Control': 'no-cache',
-          },
-        });
+        perfspecString = await this.getPerfspecString(event);
       } catch (e) {
+        this.handleEvaluationResult(
+          {
+            result: 'failed',
+            error: 'Error while retrieving perfspec content.',
+          },
+          event,
+        );
+        return false;
+      }
+      if (perfspecString === '') {
         Logger.log(
           event.shkeptncontext, event.id,
           `No perfspec file defined for `
@@ -71,132 +81,131 @@ export class Service {
         return true;
       }
 
+      let perfspec;
+
       Logger.log(
         event.shkeptncontext, event.id,
-        perfspecResponse.data,
+        perfspecString,
       );
 
-      if (perfspecResponse.data !== undefined) {
-        let perfspecString;
-        try {
-          perfspecString = JSON.stringify(perfspecResponse.data);
-        } catch (e) {
-          this.handleEvaluationResult(
-            {
-              result: 'failed',
-              error: 'Bad perfspec format.',
-            },
-            event,
-          );
-          return false;
-        }
-
-        const envPlaceHolderRegex = new RegExp('\\$ENVIRONMENT', 'g');
-
-        /*
-        /* TODO: going forward, setting the duration via the $DURATION_MINUTES
-        /* placeholder will become obsolete, since this is handled by pitometer now.
-        /* For backwards compatibility reasons we have to keep this for now.
-        */
-        const durationRegex = new RegExp('\\$DURATION_MINUTES', 'g');
-        perfspecString =
-          perfspecString.replace(envPlaceHolderRegex, `${event.data.project}-${event.data.stage}`);
-        if (testRunDurationMinutes > 0) {
-          perfspecString = perfspecString.replace(durationRegex, `${testRunDurationMinutes}`);
-        } else {
-          perfspecString = perfspecString.replace(durationRegex, `3`);
-        }
-
-        perfspecResponse.data = JSON.parse(perfspecString);
-        Logger.log(
-          event.shkeptncontext, event.id,
-          `Perfspec file content: ${JSON.stringify(perfspecResponse.data)}`,
+      try {
+        perfspec = JSON.parse(perfspecString);
+      } catch (e) {
+        this.handleEvaluationResult(
+          {
+            result: 'failed',
+            error: 'Bad perfspec format.',
+          },
+          event,
         );
+        return false;
+      }
 
-        const indicators = [];
-        if (perfspecResponse.data === undefined || perfspecResponse.data.indicators === undefined) {
-          this.handleEvaluationResult(
-            {
-              result: 'failed',
-              error: 'Bad perfspec format.',
-            },
-            event,
-          );
-          return false;
-        }
+      const envPlaceHolderRegex = new RegExp('\\$ENVIRONMENT', 'g');
 
-        if (perfspecResponse.data.indicators
-          .find(indicator => indicator.source.toLowerCase() === 'prometheus') !== undefined) {
-          this.addPrometheusSource(event, pitometer, prometheusUrl);
-        }
-        // get dynatrace service entity ID if Dynatrace source is defined in perfspec
-        let serviceEntityId = '';
-        if (perfspecResponse.data.indicators
-          .find(indicator => indicator.source.toLowerCase() === 'dynatrace') !== undefined) {
-          try {
-            const dynatraceCredentials = await this.addDynatraceSource(event, pitometer);
-            serviceEntityId = await this.getDTServiceEntityId(event, dynatraceCredentials);
+      /*
+      /* TODO: going forward, setting the duration via the $DURATION_MINUTES
+      /* placeholder will become obsolete, since this is handled by pitometer now.
+      /* For backwards compatibility reasons we have to keep this for now.
+      */
+      const durationRegex = new RegExp('\\$DURATION_MINUTES', 'g');
+      perfspecString =
+        perfspecString.replace(envPlaceHolderRegex, `${event.data.project}-${event.data.stage}`);
+      if (testRunDurationMinutes > 0) {
+        perfspecString = perfspecString.replace(durationRegex, `${testRunDurationMinutes}`);
+      } else {
+        perfspecString = perfspecString.replace(durationRegex, `3`);
+      }
 
-            if (serviceEntityId === undefined || serviceEntityId === '') {
-              this.handleEvaluationResult(
-                {
-                  result: 'failed',
-                  error: 'No Dynatrace Service Entity found.',
-                },
-                event,
-              );
-              return false;
-            }
-          } catch (e) {
+      perfspec = JSON.parse(perfspecString);
+      Logger.log(
+        event.shkeptncontext, event.id,
+        `Perfspec file content: ${JSON.stringify(perfspec)}`,
+      );
+
+      const indicators = [];
+      if (perfspec === undefined || perfspec.indicators === undefined) {
+        this.handleEvaluationResult(
+          {
+            result: 'failed',
+            error: 'Bad perfspec format.',
+          },
+          event,
+        );
+        return false;
+      }
+
+      if (perfspec.indicators
+        .find(indicator => indicator.source.toLowerCase() === 'prometheus') !== undefined) {
+        this.addPrometheusSource(event, pitometer, prometheusUrl);
+      }
+      // get dynatrace service entity ID if Dynatrace source is defined in perfspec
+      let serviceEntityId = '';
+      if (perfspec.indicators
+        .find(indicator => indicator.source.toLowerCase() === 'dynatrace') !== undefined) {
+        try {
+          const dynatraceCredentials = await this.addDynatraceSource(event, pitometer);
+          serviceEntityId = await this.getDTServiceEntityId(event, dynatraceCredentials);
+
+          if (serviceEntityId === undefined || serviceEntityId === '') {
             this.handleEvaluationResult(
               {
                 result: 'failed',
-                error: `Error while fetching Dynatrace data: ${e}`,
+                error: 'No Dynatrace Service Entity found.',
               },
               event,
             );
             return false;
           }
-        }
-
-        for (let i = 0; i < perfspecResponse.data.indicators.length; i += 1) {
-          const indicator = perfspecResponse.data.indicators[i];
-          if (indicator.source.toLowerCase() === 'dynatrace' && indicator.query !== undefined) {
-            if (serviceEntityId !== undefined && serviceEntityId !== '') {
-              indicator.query.entityIds = [serviceEntityId];
-            }
-          }
-          indicators.push(indicator);
-        }
-        perfspecResponse.data.indicators = indicators;
-        try {
-          const evaluationResult = await pitometer.run(
-            perfspecResponse.data,
-            {
-              timeStart: moment(event.data.startedat).unix(),
-              timeEnd: moment(event.time).unix(),
-            },
-          );
-          Logger.log(
-            event.shkeptncontext, event.id,
-            evaluationResult,
-          );
-
-          this.handleEvaluationResult(evaluationResult, event);
         } catch (e) {
-          Logger.log(
-            event.shkeptncontext,
-            JSON.stringify(e.config.data),
-            'ERROR',
-          );
           this.handleEvaluationResult(
             {
               result: 'failed',
-              error: `${e}`,
+              error: `Error while fetching Dynatrace data: ${e}`,
             },
             event,
           );
+          return false;
         }
+      }
+
+      for (let i = 0; i < perfspec.indicators.length; i += 1) {
+        const indicator = perfspec.indicators[i];
+        if (indicator.source.toLowerCase() === 'dynatrace' && indicator.query !== undefined) {
+          if (serviceEntityId !== undefined && serviceEntityId !== '') {
+            indicator.query.entityIds = [serviceEntityId];
+          }
+        }
+        indicators.push(indicator);
+      }
+      perfspec.indicators = indicators;
+      try {
+        const evaluationResult = await pitometer.run(
+          perfspec,
+          {
+            timeStart: moment(event.data.startedat).unix(),
+            timeEnd: moment(event.time).unix(),
+          },
+        );
+        Logger.log(
+          event.shkeptncontext, event.id,
+          evaluationResult,
+        );
+
+        this.handleEvaluationResult(evaluationResult, event);
+      } catch (e) {
+        Logger.log(
+          event.shkeptncontext,
+          JSON.stringify(e.config.data),
+          'ERROR',
+        );
+        this.handleEvaluationResult(
+          {
+            result: 'failed',
+            error: `${e}`,
+          },
+          event,
+        );
       }
       return true;
     } catch (e) {
@@ -334,12 +343,164 @@ export class Service {
     return entityId;
   }
 
+  async getServiceIndicators(event: RequestModel): Promise<ServiceIndicators> {
+
+    const indicatorString =
+      await this.getServiceResourceContent(event, 'service-indicators.yaml');
+
+    if (indicatorString === '') {
+      Logger.log(
+        event.shkeptncontext, event.id,
+        `No service-indicators file defined for `
+        + `${event.data.project}:${event.data.service}:${event.data.stage}`);
+      return null;
+    }
+
+    Logger.log(
+      event.shkeptncontext, event.id,
+      `Service Indicator file content: ${indicatorString}`,
+    );
+
+    try {
+      const indicators = <ServiceIndicators>YAML.parse(indicatorString);
+      return indicators;
+    } catch (e) {
+      Logger.log(
+        event.shkeptncontext, event.id,
+        `Invalid Service indicators format: `
+        + `${event.data.project}:${event.data.service}:${event.data.stage}`);
+      throw e;
+    }
+  }
+
+  async getServiceObjectives(event: RequestModel): Promise<ServiceObjectives> {
+    const objectivesString =
+      await this.getServiceResourceContent(event, 'service-objectives.yaml');
+
+    if (objectivesString === '') {
+      Logger.log(
+        event.shkeptncontext, event.id,
+        `No service-objectives file defined for `
+        + `${event.data.project}:${event.data.service}:${event.data.stage}`);
+      return null;
+    }
+
+    Logger.log(
+      event.shkeptncontext, event.id,
+      `Service Objectives file content: ${objectivesString}`,
+    );
+
+    try {
+      const objectives = <ServiceObjectives>YAML.parse(objectivesString);
+      return objectives;
+    } catch (e) {
+      Logger.log(
+        event.shkeptncontext, event.id,
+        `Invalid Service objectives format: `
+        + `${event.data.project}:${event.data.service}:${event.data.stage}`);
+      throw e;
+    }
+  }
+
+  async getPerfspecString(event: RequestModel): Promise<string> {
+    try {
+      const indicators = await this.getServiceIndicators(event);
+      if (indicators === null
+        || indicators.indicators === undefined
+        || indicators.indicators.length === 0
+      ) {
+        return await this.getServiceResourceContent(event, 'perfspec.json');
+      }
+      const objectives = await this.getServiceObjectives(event);
+      if (objectives === null
+        || objectives.objectives === undefined
+        || objectives.objectives.length === 0
+      ) {
+        return await this.getServiceResourceContent(event, 'perfspec.json');
+      }
+      const perfspecObject = this.createPerfspecObject(indicators, objectives);
+      return JSON.stringify(perfspecObject);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  createPerfspecObject(indicators: ServiceIndicators, objectives: ServiceObjectives): any {
+    const perfspecObject = {
+      spec_version: '1.0',
+      indicators: [],
+      objectives: {
+        pass: objectives.pass,
+        warning: objectives.warning,
+      },
+    };
+
+    const getIndicator = (name: string): Indicator => {
+      for (let i = 0; i < indicators.indicators.length; i += 1) {
+        if (indicators.indicators[i].name === name) {
+          return indicators.indicators[i];
+        }
+      }
+      return null;
+    };
+
+    for (let i = 0; i < objectives.objectives.length; i += 1) {
+      const objective = objectives.objectives[i];
+      const indicator = getIndicator(objective.name);
+      if (indicator !== null) {
+        const newPerfspecIndicator = {
+          id: indicator.name,
+          source: indicator.source,
+          query: indicator.query,
+          grading: {
+            type: 'Threshold',
+            thresholds: {
+              upperSevere: objective.threshold,
+            },
+            metricScore: objective.score,
+          },
+        };
+        const durationRegex = new RegExp('\\$DURATION_MINUTES', 'g');
+        newPerfspecIndicator.query =
+          newPerfspecIndicator.query.replace(durationRegex, objective.timeframe);
+        perfspecObject.indicators.push(newPerfspecIndicator);
+      }
+    }
+
+    return perfspecObject;
+  }
+
+  async getServiceResourceContent(event: RequestModel, resourceUri: string): Promise<string> {
+    // tslint:disable-next-line: max-line-length
+    const url = `http://configuration-service.keptn.svc.cluster.local:8080/v1/project/${event.data.project}/stage/${event.data.stage}/service/${event.data.service}/resource/${resourceUri}`;
+    let response;
+
+    try {
+      response = await axios.get(url, {});
+    } catch (e) {
+      Logger.log(
+        event.shkeptncontext, event.id,
+        `Resource ${resourceUri} not found in`
+        + `${event.data.project}:${event.data.service}:${event.data.stage}`);
+      return '';
+    }
+    if (response.data !== undefined && response.data.resourceContent !== undefined) {
+      // decode the base64 encoded string
+      return base64decode(response.data.resourceContent);
+    }
+    return '';
+  }
+
   async handleEvaluationResult(evaluationResult: any, sourceEvent: RequestModel): Promise<void> {
     const evaluationPassed: boolean =
       evaluationResult.result !== undefined &&
       (evaluationResult.result === 'pass' || evaluationResult.result === 'warning');
 
-    Logger.log(sourceEvent.shkeptncontext, sourceEvent.id, `Evaluation passed: ${evaluationPassed}`);
+    Logger.log(
+      sourceEvent.shkeptncontext,
+      sourceEvent.id,
+      `Evaluation passed: ${evaluationPassed}`,
+    );
     try {
       Logger.log(
         sourceEvent.shkeptncontext, sourceEvent.id,
@@ -359,7 +520,7 @@ export class Service {
     event.shkeptncontext = sourceEvent.shkeptncontext;
     event.data.githuborg = sourceEvent.data.githuborg;
     event.data.project = sourceEvent.data.project;
-    event.data.teststategy = sourceEvent.data.teststategy;
+    event.data.teststrategy = sourceEvent.data.teststrategy;
     event.data.deploymentstrategy = sourceEvent.data.deploymentstrategy;
     event.data.stage = sourceEvent.data.stage;
     event.data.service = sourceEvent.data.service;

@@ -1,10 +1,10 @@
 package handlers
 
 import (
+	"encoding/base64"
 	"io/ioutil"
 
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/configuration-service/common"
@@ -43,7 +43,7 @@ func GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHan
 		return service_resource.NewGetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not read file")})
 	}
 
-	resourceContent := strfmt.Base64(dat)
+	resourceContent := base64.StdEncoding.EncodeToString(dat)
 	return service_resource.NewGetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIOK().WithPayload(
 		&models.Resource{
 			ResourceURI:     &params.ResourceURI,
@@ -59,8 +59,14 @@ func DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI
 // PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc creates a new resource
 func PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(params service_resource.PostProjectProjectNameStageStageNameServiceServiceNameResourceParams) middleware.Responder {
 	logger := utils.NewLogger("", "", "configuration-service")
+	if !common.ProjectExists(params.ProjectName) {
+		return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Project " + params.ProjectName + " does not exist")})
+	}
+	if !common.StageExists(params.ProjectName, params.StageName) {
+		return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Stage " + params.StageName + " does not exist within project " + params.ProjectName)})
+	}
 	if !common.ServiceExists(params.ProjectName, params.StageName, params.ServiceName) {
-		return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Service does not exist")})
+		return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Service " + params.ServiceName + " does not exist within stage " + params.StageName + " of project " + params.ProjectName)})
 	}
 	serviceConfigPath := config.ConfigDir + "/" + params.ProjectName + "/" + params.ServiceName
 
@@ -74,11 +80,8 @@ func PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(p
 
 	for _, res := range params.Resources.Resources {
 		filePath := serviceConfigPath + "/" + *res.ResourceURI
-		// don't overwrite existing files
-		if !common.FileExists(filePath) {
-			logger.Debug("Adding resource: " + filePath)
-			common.WriteFile(filePath, res.ResourceContent)
-		}
+		logger.Debug("Adding resource: " + filePath)
+		common.WriteBase64EncodedFile(filePath, res.ResourceContent)
 	}
 
 	logger.Debug("Staging Changes")
@@ -102,8 +105,14 @@ func PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(p
 // PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc updates a list of resources
 func PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(params service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceParams) middleware.Responder {
 	logger := utils.NewLogger("", "", "configuration-service")
+	if !common.ProjectExists(params.ProjectName) {
+		return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Project " + params.ProjectName + " does not exist")})
+	}
+	if !common.StageExists(params.ProjectName, params.StageName) {
+		return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Stage " + params.StageName + " does not exist within project " + params.ProjectName)})
+	}
 	if !common.ServiceExists(params.ProjectName, params.StageName, params.ServiceName) {
-		return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Service does not exist")})
+		return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Service " + params.ServiceName + " does not exist within stage " + params.StageName + " of project " + params.ProjectName)})
 	}
 	serviceConfigPath := config.ConfigDir + "/" + params.ProjectName + "/" + params.ServiceName
 
@@ -118,7 +127,7 @@ func PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(pa
 	for _, res := range params.Resources.Resources {
 		filePath := serviceConfigPath + "/" + *res.ResourceURI
 		logger.Debug("Updating resource: " + filePath)
-		common.WriteFile(filePath, res.ResourceContent)
+		common.WriteBase64EncodedFile(filePath, res.ResourceContent)
 	}
 
 	logger.Debug("Staging Changes")
@@ -156,7 +165,7 @@ func PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHan
 	}
 
 	filePath := serviceConfigPath + "/" + params.ResourceURI
-	common.WriteFile(filePath, params.Resource.ResourceContent)
+	common.WriteBase64EncodedFile(filePath, params.Resource.ResourceContent)
 
 	logger.Debug("Staging Changes")
 	err = common.StageAndCommitAll(params.ProjectName, "Updated resource: "+params.ResourceURI)

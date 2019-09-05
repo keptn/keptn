@@ -108,6 +108,9 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 
 // GetProjectProjectNameHandlerFunc gets a project by its name
 func GetProjectProjectNameHandlerFunc(params project.GetProjectProjectNameParams) middleware.Responder {
+	if !common.ProjectExists(params.ProjectName) {
+		return project.NewGetProjectProjectNameNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project not found")})
+	}
 	var projectResponse = &models.Project{ProjectName: params.ProjectName}
 	projectCreds, _ := common.GetCredentials(params.ProjectName)
 	if projectCreds != nil {

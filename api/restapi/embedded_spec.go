@@ -19,9 +19,11 @@ var (
 func init() {
 	SwaggerJSON = json.RawMessage([]byte(`{
   "consumes": [
+    "application/json",
     "application/cloudevents+json"
   ],
   "produces": [
+    "application/json",
     "application/cloudevents+json"
   ],
   "schemes": [
@@ -32,7 +34,7 @@ func init() {
     "title": "keptn api",
     "version": "0.1.0"
   },
-  "basePath": "/",
+  "basePath": "/v1",
   "paths": {
     "/auth": {
       "post": {
@@ -152,6 +154,81 @@ func init() {
           }
         }
       }
+    },
+    "/project/{projectName}/stage/{stageName}/service/{serviceName}/resource": {
+      "put": {
+        "tags": [
+          "Service Resource"
+        ],
+        "summary": "Update list of service resources",
+        "parameters": [
+          {
+            "$ref": "#/parameters/resources"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success. Service resources have been updated. The version of the new configuration is returned.",
+            "schema": {
+              "$ref": "#/definitions/Version"
+            }
+          },
+          "400": {
+            "description": "Failed. Service resources could not be updated.",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Service Resource"
+        ],
+        "summary": "Create list of new resources for the service",
+        "parameters": [
+          {
+            "$ref": "#/parameters/resources"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success. Service resource has been created. The version of the new configuration is returned.",
+            "schema": {
+              "$ref": "#/definitions/Version"
+            }
+          },
+          "400": {
+            "description": "Failed. Service resource could not be created.",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "$ref": "#/parameters/projectName"
+        },
+        {
+          "$ref": "#/parameters/stageName"
+        },
+        {
+          "$ref": "#/parameters/serviceName"
+        }
+      ]
     },
     "/service": {
       "post": {
@@ -372,6 +449,55 @@ func init() {
         }
       ]
     },
+    "Resource": {
+      "type": "object",
+      "required": [
+        "resourceURI",
+        "resourceContent"
+      ],
+      "properties": {
+        "resourceContent": {
+          "description": "Resource content",
+          "type": "string"
+        },
+        "resourceURI": {
+          "description": "Resource URI",
+          "type": "string"
+        }
+      }
+    },
+    "Resources": {
+      "type": "object",
+      "properties": {
+        "nextPageKey": {
+          "description": "Pointer to next page, base64 encoded",
+          "type": "string"
+        },
+        "pageSize": {
+          "description": "Size of returned page",
+          "type": "number"
+        },
+        "resources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Resource"
+          }
+        },
+        "totalCount": {
+          "description": "Total number of resources",
+          "type": "number"
+        }
+      }
+    },
+    "Version": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "description": "Version identifier",
+          "type": "string"
+        }
+      }
+    },
     "error": {
       "type": "object",
       "required": [
@@ -389,6 +515,59 @@ func init() {
           "type": "string"
         }
       }
+    }
+  },
+  "parameters": {
+    "projectName": {
+      "type": "string",
+      "description": "Name of the project",
+      "name": "projectName",
+      "in": "path",
+      "required": true
+    },
+    "resource": {
+      "description": "Resource",
+      "name": "resource",
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/Resource"
+      }
+    },
+    "resourceURI": {
+      "type": "string",
+      "description": "Resource URI",
+      "name": "resourceURI",
+      "in": "path",
+      "required": true
+    },
+    "resources": {
+      "description": "List of resources",
+      "name": "resources",
+      "in": "body",
+      "schema": {
+        "properties": {
+          "resources": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/Resource"
+            }
+          }
+        }
+      }
+    },
+    "serviceName": {
+      "type": "string",
+      "description": "Name of the service",
+      "name": "serviceName",
+      "in": "path",
+      "required": true
+    },
+    "stageName": {
+      "type": "string",
+      "description": "Name of the stage",
+      "name": "stageName",
+      "in": "path",
+      "required": true
     }
   },
   "securityDefinitions": {
@@ -400,15 +579,17 @@ func init() {
   },
   "security": [
     {
-      "key": []
+      "key": null
     }
   ]
 }`))
 	FlatSwaggerJSON = json.RawMessage([]byte(`{
   "consumes": [
+    "application/json",
     "application/cloudevents+json"
   ],
   "produces": [
+    "application/json",
     "application/cloudevents+json"
   ],
   "schemes": [
@@ -419,7 +600,7 @@ func init() {
     "title": "keptn api",
     "version": "0.1.0"
   },
-  "basePath": "/",
+  "basePath": "/v1",
   "paths": {
     "/auth": {
       "post": {
@@ -539,6 +720,117 @@ func init() {
           }
         }
       }
+    },
+    "/project/{projectName}/stage/{stageName}/service/{serviceName}/resource": {
+      "put": {
+        "tags": [
+          "Service Resource"
+        ],
+        "summary": "Update list of service resources",
+        "parameters": [
+          {
+            "description": "List of resources",
+            "name": "resources",
+            "in": "body",
+            "schema": {
+              "properties": {
+                "resources": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Resource"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success. Service resources have been updated. The version of the new configuration is returned.",
+            "schema": {
+              "$ref": "#/definitions/Version"
+            }
+          },
+          "400": {
+            "description": "Failed. Service resources could not be updated.",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Service Resource"
+        ],
+        "summary": "Create list of new resources for the service",
+        "parameters": [
+          {
+            "description": "List of resources",
+            "name": "resources",
+            "in": "body",
+            "schema": {
+              "properties": {
+                "resources": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Resource"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success. Service resource has been created. The version of the new configuration is returned.",
+            "schema": {
+              "$ref": "#/definitions/Version"
+            }
+          },
+          "400": {
+            "description": "Failed. Service resource could not be created.",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "description": "Name of the project",
+          "name": "projectName",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "description": "Name of the stage",
+          "name": "stageName",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "description": "Name of the service",
+          "name": "serviceName",
+          "in": "path",
+          "required": true
+        }
+      ]
     },
     "/service": {
       "post": {
@@ -759,6 +1051,55 @@ func init() {
         }
       ]
     },
+    "Resource": {
+      "type": "object",
+      "required": [
+        "resourceURI",
+        "resourceContent"
+      ],
+      "properties": {
+        "resourceContent": {
+          "description": "Resource content",
+          "type": "string"
+        },
+        "resourceURI": {
+          "description": "Resource URI",
+          "type": "string"
+        }
+      }
+    },
+    "Resources": {
+      "type": "object",
+      "properties": {
+        "nextPageKey": {
+          "description": "Pointer to next page, base64 encoded",
+          "type": "string"
+        },
+        "pageSize": {
+          "description": "Size of returned page",
+          "type": "number"
+        },
+        "resources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Resource"
+          }
+        },
+        "totalCount": {
+          "description": "Total number of resources",
+          "type": "number"
+        }
+      }
+    },
+    "Version": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "description": "Version identifier",
+          "type": "string"
+        }
+      }
+    },
     "error": {
       "type": "object",
       "required": [
@@ -776,6 +1117,59 @@ func init() {
           "type": "string"
         }
       }
+    }
+  },
+  "parameters": {
+    "projectName": {
+      "type": "string",
+      "description": "Name of the project",
+      "name": "projectName",
+      "in": "path",
+      "required": true
+    },
+    "resource": {
+      "description": "Resource",
+      "name": "resource",
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/Resource"
+      }
+    },
+    "resourceURI": {
+      "type": "string",
+      "description": "Resource URI",
+      "name": "resourceURI",
+      "in": "path",
+      "required": true
+    },
+    "resources": {
+      "description": "List of resources",
+      "name": "resources",
+      "in": "body",
+      "schema": {
+        "properties": {
+          "resources": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/Resource"
+            }
+          }
+        }
+      }
+    },
+    "serviceName": {
+      "type": "string",
+      "description": "Name of the service",
+      "name": "serviceName",
+      "in": "path",
+      "required": true
+    },
+    "stageName": {
+      "type": "string",
+      "description": "Name of the stage",
+      "name": "stageName",
+      "in": "path",
+      "required": true
     }
   },
   "securityDefinitions": {
