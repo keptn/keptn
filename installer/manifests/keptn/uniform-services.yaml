@@ -26,6 +26,11 @@ spec:
           limits:
             memory: "128Mi"
             cpu: "500m"
+        env:
+        - name: CONFIGURATION_SERVICE
+          value: 'http://configuration-service.keptn.svc.cluster.local:8080'
+        - name: EVENTBROKER
+          value: 'http://event-broker.keptn.svc.cluster.local/keptn'
 ---
 apiVersion: v1
 kind: Service
@@ -260,7 +265,7 @@ spec:
     spec:
       containers:
       - name: shipyard-service
-        image: keptn/shipyard-service:latest
+        image: keptn/shipyard-service:228b1e9
         ports:
         - containerPort: 8080
         resources:
