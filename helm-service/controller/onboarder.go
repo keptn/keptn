@@ -40,6 +40,15 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event) error {
 		return err
 	}
 
+	if os.Getenv("pre_workflow_engine") == "true" {
+		deplStrategies, err := getDeploymentStrategies(event.Project, o.configServiceURL)
+		if err != nil {
+			o.logger.Error(fmt.Sprintf("Error when getting deployment strategies: %s" + err.Error()))
+			return err
+		}
+		event.DeploymentStrategies = deplStrategies
+	}
+
 	o.logger.Info(fmt.Sprintf("Start creating service %s in project %s", event.Service, event.Project))
 
 	stageHandler := keptnutils.NewStageHandler(o.configServiceURL)
@@ -73,7 +82,7 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event) error {
 		serviceHandler.CreateService(event.Project, stage.StageName, event.Service)
 
 		o.logger.Debug("Storing the Helm chart provided by the user in stage " + stage.StageName)
-		if err := helm.StoreChart(event.Project, event.Service, stage.StageName, helm.GetChartName(event.Service, false),
+		if err := keptnutils.StoreChart(event.Project, event.Service, stage.StageName, helm.GetChartName(event.Service, false),
 			helmChartData, o.configServiceURL); err != nil {
 			o.logger.Error("Error when storing the Helm chart: " + err.Error())
 			return err
@@ -98,7 +107,7 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event) error {
 			chartGenerator := helm.NewGeneratedChartHandler(o.mesh, o.canaryLevelGen, o.keptnDomain)
 
 			o.logger.Debug("Generating the keptn-managed Helm chart for stage " + stage.StageName)
-			ch, err := helm.LoadChart(helmChartData)
+			ch, err := keptnutils.LoadChart(helmChartData)
 			if err != nil {
 				o.logger.Error("Error when loading chart: " + err.Error())
 				return err
@@ -110,7 +119,7 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event) error {
 			}
 
 			o.logger.Debug("Storing the keptn generated Helm chart in stage " + stage.StageName)
-			if err := helm.StoreChart(event.Project, event.Service, stage.StageName, helm.GetChartName(event.Service, true), generatedChartData, o.configServiceURL); err != nil {
+			if err := keptnutils.StoreChart(event.Project, event.Service, stage.StageName, helm.GetChartName(event.Service, true), generatedChartData, o.configServiceURL); err != nil {
 				o.logger.Error("Error when storing the Helm chart: " + err.Error())
 				return err
 			}

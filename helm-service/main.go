@@ -2,16 +2,12 @@ package main
 
 import (
 	"context"
-	"errors"
 	"log"
-	"net/url"
 	"os"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
 	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
-	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
-	"github.com/google/uuid"
 	"github.com/kelseyhightower/envconfig"
 	keptnevents "github.com/keptn/go-utils/pkg/events"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
@@ -78,41 +74,6 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		logger.Error("Received unexpected keptn event")
 	}
 
-	return nil
-}
-
-func sendDeploymentFinishedEvent(shkeptncontext string, incomingEvent cloudevents.Event) error {
-
-	source, _ := url.Parse("helm-service")
-	contentType := "application/json"
-
-	event := cloudevents.Event{
-		Context: cloudevents.EventContextV02{
-			ID:          uuid.New().String(),
-			Type:        "sh.keptn.events.deployment-finished",
-			Source:      types.URLRef{URL: *source},
-			ContentType: &contentType,
-			Extensions:  map[string]interface{}{"shkeptncontext": shkeptncontext},
-		}.AsV02(),
-		Data: incomingEvent.Data,
-	}
-
-	t, err := cloudeventshttp.New(
-		cloudeventshttp.WithTarget("http://event-broker.keptn.svc.cluster.local/keptn"),
-		cloudeventshttp.WithEncoding(cloudeventshttp.StructuredV02),
-	)
-	if err != nil {
-		return errors.New("Failed to create transport:" + err.Error())
-	}
-
-	c, err := client.New(t)
-	if err != nil {
-		return errors.New("Failed to create HTTP client:" + err.Error())
-	}
-
-	if _, err := c.Send(context.Background(), event); err != nil {
-		return errors.New("Failed to send cloudevent:, " + err.Error())
-	}
 	return nil
 }
 
