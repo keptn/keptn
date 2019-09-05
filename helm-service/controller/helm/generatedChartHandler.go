@@ -7,6 +7,7 @@ import (
 	"io"
 	"strings"
 
+	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/helm-service/controller/jsonutils"
 	"github.com/keptn/keptn/helm-service/controller/mesh"
 	appsv1 "k8s.io/api/apps/v1"
@@ -36,7 +37,7 @@ func (c *GeneratedChartHandler) GenerateManagedChart(ch *chart.Chart, project st
 		return nil, err
 	}
 
-	return PackageChart(ch)
+	return keptnutils.PackageChart(ch)
 }
 
 func (c *GeneratedChartHandler) changeChartFile(ch *chart.Chart) {
@@ -129,7 +130,7 @@ func (c *GeneratedChartHandler) handleService(document []byte, project string, s
 	newTemplateContent := make([]byte, 0, 0)
 	newTemplates := make([]*chart.Template, 0, 0)
 
-	if IsService(&svc) {
+	if keptnutils.IsService(&svc) {
 		var err error
 
 		serviceCanary := c.canaryLevelGen.GetCanaryService(svc, project, stageName)
@@ -194,7 +195,7 @@ func (c *GeneratedChartHandler) handleDeployment(document []byte) ([]byte, error
 	}
 
 	newTemplateContent := make([]byte, 0, 0)
-	if IsDeployment(&depl) {
+	if keptnutils.IsDeployment(&depl) {
 		depl.Name = depl.Name + "-primary"
 		depl.Spec.Selector.MatchLabels["app"] = depl.Spec.Selector.MatchLabels["app"] + "-primary"
 		depl.Spec.Template.ObjectMeta.Labels["app"] = depl.Spec.Template.ObjectMeta.Labels["app"] + "-primary"
