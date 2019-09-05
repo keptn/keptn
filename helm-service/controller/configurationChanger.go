@@ -82,7 +82,10 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event)
 		}
 	}
 
-	if os.Getenv("pre_workflow_engine") == "true" {
+	// Send deployment finished event
+	// Note that this condition also stops the keptn-flow if an artifact is discarded
+	if os.Getenv("pre_workflow_engine") == "true" &&
+		!(e.Canary != nil && e.Canary.Action == keptnevents.Discard) {
 		var shkeptncontext string
 		ce.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
 		if err := sendDeploymentFinishedEvent(shkeptncontext, e.Project, e.Stage, e.Service, c.configServiceURL); err != nil {
