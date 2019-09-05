@@ -1,0 +1,20 @@
+package: github.com/keptn/keptn/remediation-service
+import:
+  - package: k8s.io/helm
+    version: v2.12.0
+  - package: k8s.io/kubernetes
+    version: release-1.12
+  - package: k8s.io/client-go
+    version: kubernetes-1.12.0
+  - package: k8s.io/api
+    version: kubernetes-1.12.0
+  - package: k8s.io/apimachinery
+    version: kubernetes-1.12.0
+  - package: k8s.io/apiserver
+    version: kubernetes-1.12.0
+  - package: k8s.io/cli-runtime
+    version: kubernetes-1.12.0
+  - package: github.com/Azure/go-autorest
+    version: bca49d5b51a50dc5bb17bbf6204c711c6dbded06
+  - package: gopkg.in/src-d/go-git.v4
+    version: 4.11.0
