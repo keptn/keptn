@@ -35,11 +35,11 @@ func (c *CanaryOnDeploymentGenerator) DeleteRelease(project string, stage string
 		useInClusterConfig = true
 	}
 
-	ch, err := GetChart(project, service, stage, GetChartName(service, generated), configServiceURL)
+	ch, err := keptnutils.GetChart(project, service, stage, GetChartName(service, generated), configServiceURL)
 	if err != nil {
 		return err
 	}
-	for _, dpl := range GetDeployments(ch) {
+	for _, dpl := range keptnutils.GetDeployments(ch) {
 		if err := keptnutils.ScaleDeployment(useInClusterConfig, dpl.Name, c.GetNamespace(project, stage, generated), 0); err != nil {
 			return err
 		}
