@@ -25,6 +25,7 @@ import (
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 	"github.com/google/uuid"
+	keptnevents "github.com/keptn/go-utils/pkg/events"
 	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
 	"github.com/keptn/keptn/cli/utils/websockethelper"
@@ -67,16 +68,27 @@ Example:
 		utils.PrintLog("Starting to send a new-artifact-event to deploy the service "+
 			*newArtifact.Service+" in project "+*newArtifact.Project+" in version "+*newArtifact.Image+":"+*newArtifact.Tag, utils.InfoLevel)
 
-		source, _ := url.Parse("https://github.com/keptn/keptn/cli#new-artifact")
+		valuesCanary := make(map[string]interface{})
+		valuesCanary["image"] = *newArtifact.Image + ":" + *newArtifact.Tag
+		canary := keptnevents.Canary{Action: keptnevents.Set, Value: 100}
+		configChangedEvent := keptnevents.ConfigurationChangeEventData{
+			Project:      *newArtifact.Project,
+			Service:      *newArtifact.Service,
+			Stage:        "", // If the stage is empty, the first stage is inserted by the helm-service
+			ValuesCanary: valuesCanary,
+			Canary:       &canary,
+		}
+
+		source, _ := url.Parse("https://github.com/keptn/keptn/cli#configuration-change")
 		contentType := "application/json"
 		event := cloudevents.Event{
 			Context: cloudevents.EventContextV02{
 				ID:          uuid.New().String(),
-				Type:        "sh.keptn.events.new-artifact",
+				Type:        "sh.keptn.event.configuration.change",
 				Source:      types.URLRef{URL: *source},
 				ContentType: &contentType,
 			}.AsV02(),
-			Data: newArtifact,
+			Data: configChangedEvent,
 		}
 
 		eventURL := endPoint
