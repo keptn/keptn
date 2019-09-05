@@ -46,6 +46,15 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event)
 		return err
 	}
 
+	if os.Getenv("pre_workflow_engine") == "true" && e.Stage == "" {
+		stage, err := getFirstStage(e.Project, c.configServiceURL)
+		if err != nil {
+			c.logger.Error(fmt.Sprintf("Error when reading shipyard: %s" + err.Error()))
+			return err
+		}
+		e.Stage = stage
+	}
+
 	if len(e.ValuesPrimary) > 0 {
 		if err := c.changeValues(e, true, e.ValuesPrimary); err != nil {
 			c.logger.Error(err.Error())
