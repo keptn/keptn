@@ -81,7 +81,7 @@ func (c *ConfigurationChanger) changeValues(e *keptnevents.ConfigurationChangeEv
 	helmChartName := helm.GetChartName(e.Service, generated)
 	c.logger.Info(fmt.Sprintf("Start updating values of chart %s", helmChartName))
 	// Read chart
-	chart, err := helm.GetChart(e.Project, e.Service, e.Stage, helmChartName, c.configServiceURL)
+	chart, err := keptnutils.GetChart(e.Project, e.Service, e.Stage, helmChartName, c.configServiceURL)
 	if err != nil {
 		return err
 	}
@@ -101,11 +101,11 @@ func (c *ConfigurationChanger) changeValues(e *keptnevents.ConfigurationChangeEv
 	chart.Values.Raw = string(valuesData)
 
 	// Store chart
-	chartData, err := helm.PackageChart(chart)
+	chartData, err := keptnutils.PackageChart(chart)
 	if err != nil {
 		return err
 	}
-	if err := helm.StoreChart(e.Project, e.Service, e.Stage, helmChartName, chartData, c.configServiceURL); err != nil {
+	if err := keptnutils.StoreChart(e.Project, e.Service, e.Stage, helmChartName, chartData, c.configServiceURL); err != nil {
 		return err
 	}
 	c.logger.Info(fmt.Sprintf("Finished updating values of chart %s", helmChartName))
@@ -116,7 +116,7 @@ func (c *ConfigurationChanger) setCanaryWeight(e *keptnevents.ConfigurationChang
 
 	c.logger.Info(fmt.Sprintf("Start updating canary weight to %d for service %s of project %s in stage %s", canaryWeight, e.Service, e.Project, e.Stage))
 	// Read chart
-	chart, err := helm.GetChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, true), c.configServiceURL)
+	chart, err := keptnutils.GetChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, true), c.configServiceURL)
 	if err != nil {
 		return err
 	}
@@ -124,11 +124,11 @@ func (c *ConfigurationChanger) setCanaryWeight(e *keptnevents.ConfigurationChang
 	c.generatedChartHandler.UpdateCanaryWeight(chart, canaryWeight)
 
 	// Store chart
-	chartData, err := helm.PackageChart(chart)
+	chartData, err := keptnutils.PackageChart(chart)
 	if err != nil {
 		return err
 	}
-	if err := helm.StoreChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, true), chartData, c.configServiceURL); err != nil {
+	if err := keptnutils.StoreChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, true), chartData, c.configServiceURL); err != nil {
 		return err
 	}
 	c.logger.Info(fmt.Sprintf("Finished updating canary weight to %d for service %s of project %s in stage %s", canaryWeight, e.Service, e.Project, e.Stage))
@@ -157,7 +157,7 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 			return err
 		}
 
-		userChart, err := helm.GetChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, false), c.configServiceURL)
+		userChart, err := keptnutils.GetChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, false), c.configServiceURL)
 		if err != nil {
 			return err
 		}
@@ -165,18 +165,18 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 		if err != nil {
 			return err
 		}
-		genChart, err := helm.LoadChart(genChartData)
+		genChart, err := keptnutils.LoadChart(genChartData)
 		if err != nil {
 			return err
 		}
 		if err := c.generatedChartHandler.UpdateCanaryWeight(genChart, int32(100)); err != nil {
 			return err
 		}
-		genChartData, err = helm.PackageChart(genChart)
+		genChartData, err = keptnutils.PackageChart(genChart)
 		if err != nil {
 			return err
 		}
-		if err := helm.StoreChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, true), genChartData, c.configServiceURL); err != nil {
+		if err := keptnutils.StoreChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, true), genChartData, c.configServiceURL); err != nil {
 			return err
 		}
 		if err := c.applyConfiguration(e, true); err != nil {
@@ -224,7 +224,7 @@ func (c *ConfigurationChanger) applyConfiguration(e *keptnevents.ConfigurationCh
 	namespace := c.canaryLevelGen.GetNamespace(e.Project, e.Stage, generated)
 	c.logger.Info(fmt.Sprintf("Start upgrading chart %s in namespace %s", releaseName, namespace))
 
-	ch, err := helm.GetChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, generated), c.configServiceURL)
+	ch, err := keptnutils.GetChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, generated), c.configServiceURL)
 	if err != nil {
 		return fmt.Errorf("Error when reading chart %s: %s", helm.GetChartName(e.Service, generated), err.Error())
 	}
