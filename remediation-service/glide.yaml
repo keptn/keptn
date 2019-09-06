@@ -18,3 +18,9 @@ import:
     version: bca49d5b51a50dc5bb17bbf6204c711c6dbded06
   - package: gopkg.in/src-d/go-git.v4
     version: 4.11.0
+  - package: github.com/cloudevents/sdk-go
+    version: 0.7.0
+  - package: github.com/google/uuid
+    version: 1.1.1
+
+
