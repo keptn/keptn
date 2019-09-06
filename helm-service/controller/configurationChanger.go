@@ -22,16 +22,18 @@ func init() {
 	}
 }
 
+// ConfigurationChanger is a container of variables required for changing the configuration of a service
 type ConfigurationChanger struct {
 	generatedChartHandler *helm.GeneratedChartHandler
 	canaryLevelGen        helm.CanaryLevelGenerator
 	configServiceURL      string
-	logger                *keptnutils.Logger
+	logger                keptnutils.LoggerInterface
 	keptnDomain           string
 }
 
+// NewConfigurationChanger creates a new ConfigurationChanger
 func NewConfigurationChanger(mesh mesh.Mesh, canaryLevelGen helm.CanaryLevelGenerator,
-	logger *keptnutils.Logger, keptnDomain string, configServiceURL string) *ConfigurationChanger {
+	logger keptnutils.LoggerInterface, keptnDomain string, configServiceURL string) *ConfigurationChanger {
 	generatedChartHandler := helm.NewGeneratedChartHandler(mesh, canaryLevelGen, keptnDomain)
 	return &ConfigurationChanger{generatedChartHandler: generatedChartHandler, canaryLevelGen: canaryLevelGen,
 		configServiceURL: configServiceURL, logger: logger, keptnDomain: keptnDomain}
@@ -135,7 +137,8 @@ func (c *ConfigurationChanger) changeValues(e *keptnevents.ConfigurationChangeEv
 
 func (c *ConfigurationChanger) setCanaryWeight(e *keptnevents.ConfigurationChangeEventData, canaryWeight int32) error {
 
-	c.logger.Info(fmt.Sprintf("Start updating canary weight to %d for service %s of project %s in stage %s", canaryWeight, e.Service, e.Project, e.Stage))
+	c.logger.Info(fmt.Sprintf("Start updating canary weight to %d for service %s of project %s in stage %s",
+		canaryWeight, e.Service, e.Project, e.Stage))
 	// Read chart
 	chart, err := keptnutils.GetChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, true), c.configServiceURL)
 	if err != nil {
@@ -152,7 +155,8 @@ func (c *ConfigurationChanger) setCanaryWeight(e *keptnevents.ConfigurationChang
 	if err := keptnutils.StoreChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, true), chartData, c.configServiceURL); err != nil {
 		return err
 	}
-	c.logger.Info(fmt.Sprintf("Finished updating canary weight to %d for service %s of project %s in stage %s", canaryWeight, e.Service, e.Project, e.Stage))
+	c.logger.Info(fmt.Sprintf("Finished updating canary weight to %d for service %s of project %s in stage %s",
+		canaryWeight, e.Service, e.Project, e.Stage))
 	return nil
 }
 

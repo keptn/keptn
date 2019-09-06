@@ -16,16 +16,18 @@ import (
 	"github.com/keptn/keptn/helm-service/controller/mesh"
 )
 
+// Onboarder is a container of variables required for onboarding a new service
 type Onboarder struct {
 	mesh             mesh.Mesh
-	logger           *keptnutils.Logger
+	logger           keptnutils.LoggerInterface
 	canaryLevelGen   helm.CanaryLevelGenerator
 	keptnDomain      string
 	configServiceURL string
 }
 
+// NewOnboarder creates a new Onboarder
 func NewOnboarder(mesh mesh.Mesh, canaryLevelGen helm.CanaryLevelGenerator,
-	logger *keptnutils.Logger, keptnDomain string, configServiceURL string) *Onboarder {
+	logger keptnutils.LoggerInterface, keptnDomain string, configServiceURL string) *Onboarder {
 	return &Onboarder{mesh: mesh, canaryLevelGen: canaryLevelGen, logger: logger, keptnDomain: keptnDomain, configServiceURL: configServiceURL}
 }
 
