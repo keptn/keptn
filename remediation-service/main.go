@@ -5,10 +5,15 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net/url"
 	"os"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
+
+	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
+	"github.com/google/uuid"
 
 	"gopkg.in/yaml.v2"
 
@@ -37,6 +42,7 @@ import (
 const tillernamespace = "kube-system"
 const remediationfilename = "remediation.yaml"
 const configurationserviceconnection = "localhost:6060" // "configuration-service:8080"
+const eventbroker = "EVENTBROKER"
 
 type envConfig struct {
 	Port int    `envconfig:"RCV_PORT" default:"8080"`
@@ -79,8 +85,6 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	logger := keptnutils.NewLogger(shkeptncontext, event.Context.GetID(), "remediation-service")
 	logger.Debug("Received event for shkeptncontext:" + shkeptncontext)
 
-	//fmt.Println(event.Data)
-
 	var eventData *keptnevents.ProblemEventData
 	if event.Type() == keptnevents.ProblemOpenEventType {
 		logger.Debug("Received open problem")
@@ -88,59 +92,73 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		if err := event.DataAs(eventData); err != nil {
 			return err
 		}
-		fmt.Println(eventData)
 	}
 
-	//impactedEntity := eventData.ImpactedEntity //"carts-blue-856559f565-2knz7"
-
-	// assume impactedEntity is pod
 	var releasename *string
 	var err error
+	// get helm release name by impacted entity
 	switch impact := eventData.ProblemDetails; {
 	case strings.HasPrefix(impact, "Pod"):
-		fmt.Println("pod")
-		releasename, err = getReleaseOfPodName(eventData.ImpactedEntity)
+		releasename, err = getReleaseByPodName(eventData.ImpactedEntity)
 		if err != nil {
-			fmt.Println("could not get releaes for pod: ", err)
+			fmt.Println("could not get release for pod: ", err)
 			return err
 		}
 	default:
-		return errors.New("no remediation supported")
+		logger.Error("could not interpret problem details")
+		return errors.New("could not interpret problem details")
 	}
 
-	fmt.Println("release name: ", *releasename)
-
-	// rockshop-production-carts
-	projectname, stagename, servicename := splitReleaseNames("sockshop-production-carts")
+	projectname, stagename, servicename := splitReleaseName(*releasename)
 	resourceURI := remediationfilename
 
 	// get remediation.yaml
 	resourceHandler := keptnutils.NewResourceHandler(configurationserviceconnection)
-
-	fmt.Println(projectname, "/", stagename, "/", servicename, "/", resourceURI)
-
 	resource, err := resourceHandler.GetServiceResource(projectname, stagename, servicename, resourceURI)
 	if err != nil {
-		fmt.Println("could not get resource: ", err)
+		logger.Error("could not get remediation.yaml file")
 		return err
 	}
-	fmt.Println("content\n", resource.ResourceContent)
+	logger.Debug("remediation.yaml for service found")
 
-	// get remediation action
+	// get remediation action from remediation.yaml
 	var remediationData keptnmodels.Remediations
 	yaml.Unmarshal([]byte(resource.ResourceContent), &remediationData)
 
-	fmt.Println(remediationData.Remediations[0].Actions[0].Action)
+	for _, remediation := range remediationData.Remediations {
+		if remediation.Name == eventData.ProblemTitle {
+			logger.Debug("Remediation for problem found in remediation.yaml")
+			// currently only one remediation action is supported
+			if remediation.Actions[0].Action == "scaling" {
+				currentReplicaCount, err := getReplicaCount(projectname, stagename, servicename, configurationserviceconnection)
+				if err != nil {
+					logger.Error("could not get replicaCount")
+					return err
+				}
+				adjustment, err := strconv.Atoi(remediation.Actions[0].Value)
+				if err != nil {
+					logger.Error("could not get value for scaling remediation action")
+				}
+				newReplicacount := currentReplicaCount + adjustment
+				err = createAndSendEvent(shkeptncontext, projectname, servicename, stagename, newReplicacount)
+				if err != nil {
+					logger.Error(err.Error())
+				}
+			}
+
+		}
+	}
 
 	return nil
 }
 
+// initialize helm
 func init() {
-	fmt.Println("init")
 	_, err := keptnutils.ExecuteCommand("helm", []string{"init", "--client-only"})
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Println("initialization of Helm done")
 }
 
 // getKubeClient creates a Kubernetes config and client for a given kubeconfig context.
@@ -229,7 +247,7 @@ func getHelmClient() (*helm.Client, error) {
 
 }
 
-func getReleaseOfPodName(podname string) (*string, error) {
+func getReleaseByPodName(podname string) (*string, error) {
 	client, err := getHelmClient()
 	if err != nil {
 		fmt.Println("could not get Helm client")
@@ -256,13 +274,104 @@ func getReleaseOfPodName(podname string) (*string, error) {
 	return nil, errors.New("could not find release for pod")
 }
 
-func splitReleaseNames(releasename string) (project string, stage string, service string) {
+func splitReleaseName(releasename string) (project string, stage string, service string) {
 	// currently no "-" in project and service name are allowed, thus "-" is used to split
 	s := strings.SplitN(releasename, "-", 3)
 	project = s[0]
 	stage = s[1]
-	service = s[2]
+	// remove the "-generated" suffix
+	service = strings.Replace(s[2], "-generated", "", 1)
 	return project, stage, service
+}
+
+func getReplicaCount(project, stage, service, configServiceURL string) (int, error) {
+	helmChartName := service + "-generated"
+	// Read chart
+	chart, err := keptnutils.GetChart(project, service, stage, helmChartName, configServiceURL)
+	if err != nil {
+		return -1, err
+	}
+
+	values := make(map[string]interface{})
+	yaml.Unmarshal([]byte(chart.Values.Raw), &values)
+
+	val, ok := values["replicas"].(int)
+	if !ok {
+		return -1, errors.New("could not get replicas")
+	}
+	return val, nil
+}
+
+func createAndSendEvent(shkeptncontext string, project string,
+	service string, stage string, replicas int) error {
+
+	source, _ := url.Parse("remediation-service")
+	contentType := "application/json"
+
+	valuesPrimary := make(map[string]interface{})
+	valuesPrimary["replicas"] = replicas
+	configChangedEvent := keptnevents.ConfigurationChangeEventData{
+		Project:       project,
+		Service:       service,
+		Stage:         stage,
+		ValuesPrimary: valuesPrimary,
+	}
+
+	event := cloudevents.Event{
+		Context: cloudevents.EventContextV02{
+			ID:          uuid.New().String(),
+			Type:        keptnevents.ConfigurationChangeEventType,
+			Source:      types.URLRef{URL: *source},
+			ContentType: &contentType,
+			Extensions:  map[string]interface{}{"shkeptncontext": shkeptncontext},
+		}.AsV02(),
+		Data: configChangedEvent,
+	}
+
+	return sendEvent(event)
+}
+
+func sendEvent(event cloudevents.Event) error {
+	endPoint, err := getServiceEndpoint(eventbroker)
+	if err != nil {
+		return errors.New("Failed to retrieve endpoint of eventbroker. %s" + err.Error())
+	}
+
+	if endPoint.Host == "" {
+		return errors.New("Host of eventbroker not set")
+	}
+
+	transport, err := cloudeventshttp.New(
+		cloudeventshttp.WithTarget(endPoint.String()),
+		cloudeventshttp.WithEncoding(cloudeventshttp.StructuredV02),
+	)
+	if err != nil {
+		return errors.New("Failed to create transport:" + err.Error())
+	}
+
+	c, err := client.New(transport)
+	if err != nil {
+		return errors.New("Failed to create HTTP client:" + err.Error())
+	}
+
+	if _, err := c.Send(context.Background(), event); err != nil {
+		return errors.New("Failed to send cloudevent:, " + err.Error())
+	}
+	return nil
+}
+
+// getServiceEndpoint gets an endpoint stored in an environment variable and sets http as default scheme
+func getServiceEndpoint(service string) (url.URL, error) {
+	url, err := url.Parse(os.Getenv(service))
+	if err != nil {
+		return *url, fmt.Errorf("Failed to retrieve value from ENVIRONMENT_VARIABLE: %s", service)
+	}
+
+	if url.Scheme == "" {
+		url.Scheme = "http"
+	}
+
+	return *url, nil
 }
 
 // func retrieveResourceForProject(projectName string, resourceURI string, logger keptnutils.Logger) (*keptnutils.Resource, error) {
