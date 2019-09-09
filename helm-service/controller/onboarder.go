@@ -12,29 +12,29 @@ import (
 	"github.com/keptn/go-utils/pkg/models"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/helm-service/controller/helm"
+	"github.com/keptn/keptn/helm-service/pkg/serviceutils"
 
 	"github.com/keptn/keptn/helm-service/controller/mesh"
 )
 
 // Onboarder is a container of variables required for onboarding a new service
 type Onboarder struct {
-	mesh             mesh.Mesh
-	logger           keptnutils.LoggerInterface
-	canaryLevelGen   helm.CanaryLevelGenerator
-	keptnDomain      string
-	configServiceURL string
+	mesh           mesh.Mesh
+	logger         keptnutils.LoggerInterface
+	canaryLevelGen helm.CanaryLevelGenerator
+	keptnDomain    string
 }
 
 // NewOnboarder creates a new Onboarder
 func NewOnboarder(mesh mesh.Mesh, canaryLevelGen helm.CanaryLevelGenerator,
-	logger keptnutils.LoggerInterface, keptnDomain string, configServiceURL string) *Onboarder {
-	return &Onboarder{mesh: mesh, canaryLevelGen: canaryLevelGen, logger: logger, keptnDomain: keptnDomain, configServiceURL: configServiceURL}
+	logger keptnutils.LoggerInterface, keptnDomain string) *Onboarder {
+	return &Onboarder{mesh: mesh, canaryLevelGen: canaryLevelGen, logger: logger, keptnDomain: keptnDomain}
 }
 
 // DoOnboard onboards a new service
 func (o *Onboarder) DoOnboard(ce cloudevents.Event) error {
 
-	umbrellaChartHandler := helm.NewUmbrellaChartHandler(o.mesh, o.configServiceURL)
+	umbrellaChartHandler := helm.NewUmbrellaChartHandler(o.mesh)
 
 	event := &keptnevents.ServiceCreateEventData{}
 	if err := ce.DataAs(event); err != nil {
@@ -42,8 +42,8 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event) error {
 		return err
 	}
 
-	if os.Getenv("pre_workflow_engine") == "true" {
-		deplStrategies, err := getDeploymentStrategies(event.Project, o.configServiceURL)
+	if os.Getenv("PRE_WORKFLOW_ENGINE") == "true" {
+		deplStrategies, err := getDeploymentStrategies(event.Project)
 		if err != nil {
 			o.logger.Error(fmt.Sprintf("Error when getting deployment strategies: %s" + err.Error()))
 			return err
@@ -53,7 +53,12 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event) error {
 
 	o.logger.Info(fmt.Sprintf("Start creating service %s in project %s", event.Service, event.Project))
 
-	stageHandler := keptnutils.NewStageHandler(o.configServiceURL)
+	url, err := serviceutils.GetConfigServiceURL()
+	if err != nil {
+		return err
+	}
+
+	stageHandler := keptnutils.NewStageHandler(url.String())
 	stages, err := stageHandler.GetAllStages(event.Project)
 	if err != nil {
 		o.logger.Error("Error when getting all stages: " + err.Error())
@@ -73,7 +78,7 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event) error {
 		}
 	}
 
-	serviceHandler := keptnutils.NewServiceHandler(o.configServiceURL)
+	serviceHandler := keptnutils.NewServiceHandler(url.String())
 	helmChartData, err := base64.StdEncoding.DecodeString(event.HelmChart)
 	if err != nil {
 		o.logger.Error("Error wehn decoding the Helm chart")
@@ -85,13 +90,13 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event) error {
 
 		o.logger.Debug("Storing the Helm chart provided by the user in stage " + stage.StageName)
 		if err := keptnutils.StoreChart(event.Project, event.Service, stage.StageName, helm.GetChartName(event.Service, false),
-			helmChartData, o.configServiceURL); err != nil {
+			helmChartData, url.String()); err != nil {
 			o.logger.Error("Error when storing the Helm chart: " + err.Error())
 			return err
 		}
 
 		o.logger.Debug("Updating the Umbrealla chart with the new Helm chart in stage " + stage.StageName)
-		// if err := helm.AddChartInUmbrellaRequirements(event.Project, helm.GetChartName(event.Service, false), stage, configServiceURL); err != nil {
+		// if err := helm.AddChartInUmbrellaRequirements(event.Project, helm.GetChartName(event.Service, false), stage, url.String()); err != nil {
 		// 	o.logger.Error("Error when adding the chart in the Umbrella requirements file: " + err.Error())
 		// 	return err
 		// }
@@ -121,13 +126,14 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event) error {
 			}
 
 			o.logger.Debug("Storing the keptn generated Helm chart in stage " + stage.StageName)
-			if err := keptnutils.StoreChart(event.Project, event.Service, stage.StageName, helm.GetChartName(event.Service, true), generatedChartData, o.configServiceURL); err != nil {
+			if err := keptnutils.StoreChart(event.Project, event.Service, stage.StageName, helm.GetChartName(event.Service, true),
+				generatedChartData, url.String()); err != nil {
 				o.logger.Error("Error when storing the Helm chart: " + err.Error())
 				return err
 			}
 
 			o.logger.Debug("Updating the Umbrealla chart with the new Helm chart in stage " + stage.StageName)
-			// if err := helm.AddChartInUmbrellaRequirements(event.Project, helm.GetChartName(event.Service, true), stage, configServiceURL); err != nil {
+			// if err := helm.AddChartInUmbrellaRequirements(event.Project, helm.GetChartName(event.Service, true), stage, url.String()); err != nil {
 			// 	o.logger.Error("Error when adding the chart in the Umbrella requirements file: " + err.Error())
 			// 	return err
 			// }
@@ -176,7 +182,11 @@ func (o *Onboarder) isFirstServiceOfProject(event *keptnevents.ServiceCreateEven
 	if len(stages) == 0 {
 		return false, errors.New("Cannot onboard service because no stage is available")
 	}
-	svcHandler := keptnutils.NewServiceHandler(o.configServiceURL)
+	url, err := serviceutils.GetConfigServiceURL()
+	if err != nil {
+		return false, err
+	}
+	svcHandler := keptnutils.NewServiceHandler(url.String())
 	// Use any stage for checking whether there is already a service created
 	services, err := svcHandler.GetAllServices(event.Project, stages[0].StageName)
 	if err != nil {

@@ -13,6 +13,7 @@ import (
 	"k8s.io/helm/pkg/proto/hapi/chart"
 	"sigs.k8s.io/yaml"
 
+	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/helm-service/controller/jsonutils"
 	"github.com/keptn/keptn/helm-service/controller/mesh"
 	"github.com/keptn/keptn/helm-service/pkg/apis/networking/istio/v1alpha3"
@@ -60,7 +61,7 @@ var cartsIstioVirtualserviceGen = GeneratedResource{
   },
   "spec": {
     "gateways": [
-      "sockshop-production-gateway",
+      "sockshop-production-gateway.sockshop-production",
       "mesh"
     ],
     "hosts": [
@@ -298,7 +299,7 @@ func TestGenerateManagedChart(t *testing.T) {
 	data := CreateHelmChartData(t)
 
 	h := NewGeneratedChartHandler(mesh.NewIstioMesh(), NewCanaryOnDeploymentGenerator(), "mydomain.sh")
-	inputChart, err := LoadChart(data)
+	inputChart, err := keptnutils.LoadChart(data)
 	if err != nil {
 		t.Error(err)
 	}
@@ -361,7 +362,7 @@ func TestUpdateCanaryWeight(t *testing.T) {
 	data := CreateHelmChartData(t)
 
 	h := NewGeneratedChartHandler(mesh.NewIstioMesh(), NewCanaryOnDeploymentGenerator(), "mydomain.sh")
-	chart, err := LoadChart(data)
+	chart, err := keptnutils.LoadChart(data)
 	if err != nil {
 		t.Error(err)
 	}
@@ -369,7 +370,7 @@ func TestUpdateCanaryWeight(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	genChart, err := LoadChart(genChartData)
+	genChart, err := keptnutils.LoadChart(genChartData)
 	if err != nil {
 		t.Error(err)
 	}

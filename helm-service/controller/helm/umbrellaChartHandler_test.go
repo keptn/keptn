@@ -15,7 +15,7 @@ func TestCreateRootChartResource(t *testing.T) {
 
 	event := keptnevents.ServiceCreateEventData{Project: "sockshop", Service: "carts"}
 
-	c := NewUmbrellaChartHandler(mesh.NewIstioMesh(), "")
+	c := NewUmbrellaChartHandler(mesh.NewIstioMesh())
 	resource, err := c.createRootChartResource(&event)
 	if err != nil {
 		t.Error(err)
@@ -40,7 +40,7 @@ func TestCreateRootChartResource(t *testing.T) {
 
 func TestCreateRequirementsResource(t *testing.T) {
 
-	c := NewUmbrellaChartHandler(mesh.NewIstioMesh(), "")
+	c := NewUmbrellaChartHandler(mesh.NewIstioMesh())
 	resource, err := c.createRequirementsResource()
 	if err != nil {
 		t.Error(err)
@@ -62,7 +62,7 @@ func TestCreateRequirementsResource(t *testing.T) {
 
 func TestCreateValuesResource(t *testing.T) {
 
-	c := NewUmbrellaChartHandler(mesh.NewIstioMesh(), "")
+	c := NewUmbrellaChartHandler(mesh.NewIstioMesh())
 	resource, err := c.createValuesResource()
 	if err != nil {
 		t.Error(err)
@@ -83,7 +83,7 @@ func TestCreateValuesResource(t *testing.T) {
 
 func TestCreateGatewayResource(t *testing.T) {
 
-	c := NewUmbrellaChartHandler(mesh.NewIstioMesh(), "")
+	c := NewUmbrellaChartHandler(mesh.NewIstioMesh())
 	event := keptnevents.ServiceCreateEventData{Project: "sockshop", Service: "carts"}
 	resource, err := c.createGatewayResource(&event, "dev")
 	if err != nil {
