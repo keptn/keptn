@@ -81,7 +81,7 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event) error {
 	serviceHandler := keptnutils.NewServiceHandler(url.String())
 	helmChartData, err := base64.StdEncoding.DecodeString(event.HelmChart)
 	if err != nil {
-		o.logger.Error("Error wehn decoding the Helm chart")
+		o.logger.Error("Error when decoding the Helm chart")
 	}
 
 	for _, stage := range stages {
@@ -95,7 +95,7 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event) error {
 			return err
 		}
 
-		o.logger.Debug("Updating the Umbrealla chart with the new Helm chart in stage " + stage.StageName)
+		o.logger.Debug("Updating the Umbrella chart with the new Helm chart in stage " + stage.StageName)
 		// if err := helm.AddChartInUmbrellaRequirements(event.Project, helm.GetChartName(event.Service, false), stage, url.String()); err != nil {
 		// 	o.logger.Error("Error when adding the chart in the Umbrella requirements file: " + err.Error())
 		// 	return err
@@ -132,7 +132,7 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event) error {
 				return err
 			}
 
-			o.logger.Debug("Updating the Umbrealla chart with the new Helm chart in stage " + stage.StageName)
+			o.logger.Debug("Updating the Umbrella chart with the new Helm chart in stage " + stage.StageName)
 			// if err := helm.AddChartInUmbrellaRequirements(event.Project, helm.GetChartName(event.Service, true), stage, url.String()); err != nil {
 			// 	o.logger.Error("Error when adding the chart in the Umbrella requirements file: " + err.Error())
 			// 	return err
@@ -168,7 +168,7 @@ func (o *Onboarder) initAndApplyUmbrellaChart(event *keptnevents.ServiceCreateEv
 
 		if err := ApplyDirectory(umbrellaChart, helm.GetUmbrellaReleaseName(event.Project, stage.StageName),
 			helm.GetUmbrellaNamespace(event.Project, stage.StageName)); err != nil {
-			return fmt.Errorf("Error when applying umbrealla chart in stage %s: %s", stage.StageName, err.Error())
+			return fmt.Errorf("Error when applying umbrella chart in stage %s: %s", stage.StageName, err.Error())
 		}
 		if err := os.RemoveAll(umbrellaChart); err != nil {
 			return err

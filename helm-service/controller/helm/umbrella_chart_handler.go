@@ -67,7 +67,7 @@ func (u *UmbrellaChartHandler) InitUmbrellaChart(event *keptnevents.ServiceCreat
 	return nil
 }
 
-// GetUmbreallaChart stores the resources of the umbrella chart in the provided directory
+// GetUmbrellaChart stores the resources of the umbrella chart in the provided directory
 func (u *UmbrellaChartHandler) GetUmbrellaChart(outputDirectory, project, stage string) error {
 
 	url, err := serviceutils.GetConfigServiceURL()

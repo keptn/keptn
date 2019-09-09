@@ -49,7 +49,8 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	var logger keptnutils.LoggerInterface
 
 	connData := &keptnutils.ConnectionData{}
-	if err := event.DataAs(connData); err != nil {
+	if err := event.DataAs(connData); err != nil ||
+		connData.ChannelInfo.ChannelID == "" || connData.ChannelInfo.Token == "" {
 		logger = stdLogger
 		logger.Debug("No Websocket connection data available")
 	} else {
@@ -71,7 +72,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 	mesh := mesh.NewIstioMesh()
 	var canaryLevelGen helm.CanaryLevelGenerator
-	if os.Getenv("canary") == "deployment" {
+	if os.Getenv("CANARY") == "deployment" {
 		canaryLevelGen = helm.NewCanaryOnDeploymentGenerator()
 	} else {
 		canaryLevelGen = helm.NewCanaryOnNamespaceGenerator()
