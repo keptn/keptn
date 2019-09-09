@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: wait-service
-        image: keptn/wait-service:f8574de
+        image: keptn/wait-service:462007d
         ports:
         - containerPort: 8080
         resources:
