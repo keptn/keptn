@@ -145,3 +145,295 @@ spec:
     protocol: TCP
   selector:
     run: eventbroker-go
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gatekeeper-service
+  namespace: keptn
+spec:
+  selector:
+    matchLabels:
+      run: gatekeeper-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: gatekeeper-service
+    spec:
+      containers:
+      - name: gatekeeper-service
+        image: keptn/gatekeeper-service:latest
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        env:
+        - name: CONFIGURATION_SERVICE
+          value: 'http://configuration-service.keptn.svc.cluster.local:8080'
+        - name: EVENTBROKER
+          value: 'http://event-broker.keptn.svc.cluster.local/keptn'
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gatekeeper-service
+  namespace: keptn
+  labels:
+    run: gatekeeper-service
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+  selector:
+    run: gatekeeper-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: helm-service
+  namespace: keptn
+spec:
+  selector:
+    matchLabels:
+      run: helm-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: helm-service
+    spec:
+      containers:
+      - name: helm-service
+        image: keptn/helm-service:latest
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        env:
+        - name: CONFIGURATION_SERVICE
+          value: 'http://configuration-service.keptn.svc.cluster.local:8080'
+        - name: EVENTBROKER
+          value: 'http://event-broker.keptn.svc.cluster.local/keptn'
+        - name: API
+          value: 'ws://api.keptn.svc.cluster.local'
+        - name: ENVIRONMENT
+          value: 'production'
+        - name: PRE_WORKFLOW_ENGINE
+          value: 'true'
+        - name: CANARY
+          value: 'deployment'
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: helm-service
+  namespace: keptn
+  labels:
+    run: helm-service
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+  selector:
+    run: helm-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jmeter-service
+  namespace: keptn
+spec:
+  selector:
+    matchLabels:
+      run: jmeter-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: jmeter-service
+    spec:
+      containers:
+      - name: helm-service
+        image: keptn/jmeter-service:0.1.1
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jmeter-service
+  namespace: keptn
+  labels:
+    run: jmeter-service
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+  selector:
+    run: jmeter-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shipyard-service
+  namespace: keptn
+spec:
+  selector:
+    matchLabels:
+      run: shipyard-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: shipyard-service
+    spec:
+      containers:
+      - name: shipyard-service
+        image: keptn/shipyard-service:228b1e9
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        env:
+        - name: CONFIGURATION_SERVICE
+          value: 'http://configuration-service.keptn.svc.cluster.local:8080'
+        - name: EVENTBROKER
+          value: 'http://event-broker.keptn.svc.cluster.local/keptn'
+        - name: API
+          value: 'ws://api.keptn.svc.cluster.local'
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: shipyard-service
+  namespace: keptn
+  labels:
+    run: shipyard-service
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+  selector:
+    run: shipyard-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pitometer-service
+  namespace: keptn
+spec:
+  selector:
+    matchLabels:
+      run: pitometer-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: pitometer-service
+    spec:
+      containers:
+      - name: pitometer-service
+        image: keptn/pitometer-service:0.2.0
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pitometer-service
+  namespace: keptn
+  labels:
+    run: pitometer-service
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+  selector:
+    run: pitometer-service
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  name: configuration-volume
+  namespace: keptn
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+status: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: configuration-service
+  namespace: keptn
+spec:
+  selector:
+    matchLabels:
+      run: configuration-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: configuration-service
+    spec:
+      containers:
+      - name: configuration-service
+        image: keptn/configuration-service:latest
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        volumeMounts:
+        - mountPath: /data/config
+          name: configuration-volume
+      volumes:
+      - name: configuration-volume
+        persistentVolumeClaim:
+          claimName: configuration-volume
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: configuration-service
+  namespace: keptn
+  labels:
+    run: configuration-service
+spec:
+  ports:
+  - port: 8080
+    targetPort: 8080
+    protocol: TCP
+  selector:
+    run: configuration-service
