@@ -100,6 +100,11 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 func _main(args []string, env envConfig) int {
 	ctx := context.Background()
 
+	_, err := keptnutils.ExecuteCommand("helm", []string{"init", "--client-only"})
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	t, err := cloudeventshttp.New(
 		cloudeventshttp.WithPort(env.Port),
 		cloudeventshttp.WithPath(env.Path),
