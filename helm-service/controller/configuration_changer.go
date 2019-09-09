@@ -3,7 +3,6 @@ package controller
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 
 	cloudevents "github.com/cloudevents/sdk-go"
@@ -15,13 +14,6 @@ import (
 	"github.com/keptn/keptn/helm-service/pkg/serviceutils"
 	"k8s.io/helm/pkg/chartutil"
 )
-
-func init() {
-	_, err := keptnutils.ExecuteCommand("helm", []string{"init", "--client-only"})
-	if err != nil {
-		log.Fatal(err)
-	}
-}
 
 // ConfigurationChanger is a container of variables required for changing the configuration of a service
 type ConfigurationChanger struct {
