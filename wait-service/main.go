@@ -25,7 +25,6 @@ import (
 
 const timeout = 60
 const eventbroker = "EVENTBROKER"
-const duration = "WAIT_DURATION"
 
 type envConfig struct {
 	Port int    `envconfig:"RCV_PORT" default:"8080"`
@@ -119,7 +118,7 @@ func waitDuration(event cloudevents.Event, shkeptncontext string, data deploymen
 
 	switch strings.ToLower(data.TestStrategy) {
 	case "real-user":
-		duration, err := retrieveDuration("WAIT_TIME")
+		duration, err := retrieveDuration("WAIT_DURATION")
 		if err != nil {
 			logger.Error(fmt.Sprintf("%s", err.Error()))
 			duration = 0
@@ -143,7 +142,7 @@ func waitDuration(event cloudevents.Event, shkeptncontext string, data deploymen
 func retrieveDuration(environmentVariable string) (int, error) {
 	durationStr := os.Getenv(environmentVariable)
 	if durationStr == "" {
-		return 0, fmt.Errorf("Failed to retrieve value from  environment variable: %s", duration)
+		return 0, fmt.Errorf("Failed to retrieve value from  environment variable: %s", environmentVariable)
 	}
 
 	if strings.Contains(durationStr, "s") {
