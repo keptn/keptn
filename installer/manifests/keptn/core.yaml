@@ -1,4 +1,5 @@
 ---
+# bridge
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -42,6 +43,7 @@ spec:
   selector:
     run: bridge
 ---
+# api
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -98,6 +100,7 @@ spec:
   selector:
     run: api
 ---
+# eventbroker-go
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -179,6 +182,7 @@ spec:
         - name: EVENTBROKER
           value: 'http://event-broker.keptn.svc.cluster.local/keptn'
 ---
+# gatekeeper-service
 apiVersion: v1
 kind: Service
 metadata:
@@ -234,6 +238,7 @@ spec:
         - name: CANARY
           value: 'deployment'
 ---
+# helm-service
 apiVersion: v1
 kind: Service
 metadata:
@@ -269,6 +274,7 @@ spec:
         ports:
         - containerPort: 8080
 ---
+# jmeter-service
 apiVersion: v1
 kind: Service
 metadata:
@@ -282,6 +288,54 @@ spec:
     protocol: TCP
   selector:
     run: jmeter-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wait-service
+  namespace: keptn
+spec:
+  selector:
+    matchLabels:
+      run: wait-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: wait-service
+    spec:
+      containers:
+      - name: wait-service
+        image: keptn/wait-service:462007d
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        env:
+        - name: EVENTBROKER
+          value: 'http://event-broker.keptn.svc.cluster.local/keptn'
+        - name: WAIT_DURATION
+          value: '10s'
+---
+# wait-service
+apiVersion: v1
+kind: Service
+metadata:
+  name: wait-service
+  namespace: keptn
+  labels:
+    run: wait-service
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+  selector:
+    run: wait-service
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -318,6 +372,7 @@ spec:
         - name: API
           value: 'ws://api.keptn.svc.cluster.local'
 ---
+# shipyard-service
 apiVersion: v1
 kind: Service
 metadata:
@@ -360,6 +415,7 @@ spec:
             memory: "128Mi"
             cpu: "500m"
 ---
+# pitometer-service
 apiVersion: v1
 kind: Service
 metadata:
@@ -388,6 +444,7 @@ spec:
       storage: 100Mi
 status: {}
 ---
+# configuration-service
 apiVersion: apps/v1
 kind: Deployment
 metadata:
