@@ -91,6 +91,9 @@ verify_kubectl $? "Creating mongodb-datastore service failed."
 kubectl apply -f ../manifests/keptn/core.yaml 
 verify_kubectl $? "Deploying keptn core components failed."
 
+kubectl apply -f ../manifests/keptn/core-distributors.yaml 
+verify_kubectl $? "Deploying keptn core distributors failed."
+
 ##############################################
 ## Start validation of keptn installation   ##
 ##############################################
@@ -99,6 +102,19 @@ wait_for_all_pods_in_namespace "keptn"
 wait_for_deployment_in_namespace "eventbroker-go" "keptn"
 wait_for_deployment_in_namespace "api" "keptn"
 wait_for_deployment_in_namespace "bridge" "keptn"
+wait_for_deployment_in_namespace "gatekeeper-service" "keptn"
+wait_for_deployment_in_namespace "helm-service" "keptn"
+wait_for_deployment_in_namespace "jmeter-service" "keptn"
+wait_for_deployment_in_namespace "shipyard-service" "keptn"
+wait_for_deployment_in_namespace "pitometer-service" "keptn"
+wait_for_deployment_in_namespace "configuration-service" "keptn"
+
+wait_for_deployment_in_namespace "helm-service-service-create-distributor" "keptn"
+wait_for_deployment_in_namespace "helm-service-configuration-change-distributor" "keptn"
+wait_for_deployment_in_namespace "jmeter-service-deployment-distributor" "keptn"
+wait_for_deployment_in_namespace "pitometer-service-tests-finished-distributor" "keptn"
+wait_for_deployment_in_namespace "gatekeeper-service-evaluation-done-distributor" "keptn"
+wait_for_deployment_in_namespace "shipyard-service-create-project-distributor" "keptn"
 
 kubectl apply -f ../manifests/keptn/keptn-gateway.yaml
 verify_kubectl $? "Deploying keptn gateway failed."
