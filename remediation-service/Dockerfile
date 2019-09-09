@@ -7,10 +7,12 @@ FROM golang:1.12 as builder
 WORKDIR /go/src/github.com/keptn/keptn/remediation-service
 COPY . .
 
-ARG DEP_VERSION=0.5.3
-RUN curl -L -s https://github.com/golang/dep/releases/download/v$DEP_VERSION/dep-linux-amd64 -o ./dep && \
-  chmod +x ./dep && \
-  ./dep ensure
+ARG GLIDE_VERSION=0.13.3
+RUN wget https://github.com/Masterminds/glide/releases/download/v$GLIDE_VERSION/glide-v$GLIDE_VERSION-linux-amd64.tar.gz && \
+  tar -zxvf glide-v$GLIDE_VERSION-linux-amd64.tar.gz && \
+  cp linux-amd64/glide /bin/glide
+
+RUN glide install --strip-vendor
 
 # Build the command inside the container. 
 # (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
@@ -20,6 +22,11 @@ RUN CGO_ENABLED=0 GOOS=linux go build -v -o remediation-service
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
 FROM alpine
 RUN apk add --no-cache ca-certificates
+
+ARG HELM_VERSION=2.12.3
+RUN wget https://storage.googleapis.com/kubernetes-helm/helm-v$HELM_VERSION-linux-amd64.tar.gz && \
+  tar -zxvf helm-v$HELM_VERSION-linux-amd64.tar.gz && \
+  cp linux-amd64/helm /bin/helm
 
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /go/src/github.com/keptn/keptn/remediation-service/remediation-service /remediation-service
