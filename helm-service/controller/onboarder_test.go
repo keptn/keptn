@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"testing"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
@@ -64,9 +65,9 @@ func TestDoOnboard(t *testing.T) {
 
 	_, err := http.Get("http://" + configBaseURL)
 	if err != nil {
-		fmt.Println(err.Error())
 		t.Skip("Skipping test; no local configuration-service available")
 	}
+	os.Setenv("CONFIGURATION_SERVICE", configBaseURL)
 
 	createTestProjet(t)
 
@@ -80,7 +81,7 @@ func TestDoOnboard(t *testing.T) {
 
 	id := uuid.New().String()
 	onboarder := NewOnboarder(mesh.NewIstioMesh(), helm.NewCanaryOnNamespaceGenerator(),
-		keptnutils.NewLogger(id, "service.create", "helm-service"), configBaseURL, "test.keptn.sh")
+		keptnutils.NewLogger(id, "service.create", "helm-service"), "test.keptn.sh")
 	err = onboarder.DoOnboard(ce)
 
 	check(err, t)

@@ -18,6 +18,24 @@ spec:
         image: keptn/helm-service:0.1.1
         ports:
         - containerPort: 8080
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        env:
+        - name: CONFIGURATION_SERVICE
+          value: 'http://configuration-service.keptn.svc.cluster.local:8080'
+        - name: EVENTBROKER
+          value: 'http://event-broker.keptn.svc.cluster.local/keptn'
+        - name: API
+          value: 'ws://api.keptn.svc.cluster.local'
+        - name: ENVIRONMENT
+          value: 'production'
+        - name: PRE_WORKFLOW_ENGINE
+          value: 'true'
 ---
 apiVersion: v1
 kind: Service

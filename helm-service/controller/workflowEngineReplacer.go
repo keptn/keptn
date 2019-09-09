@@ -13,10 +13,17 @@ import (
 	"github.com/google/uuid"
 	keptnevents "github.com/keptn/go-utils/pkg/events"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	"github.com/keptn/keptn/helm-service/pkg/serviceutils"
 )
 
-func getDeploymentStrategies(project string, configServiceURL string) (map[string]keptnevents.DeploymentStrategy, error) {
-	resourceHandler := keptnutils.NewResourceHandler(configServiceURL)
+func getDeploymentStrategies(project string) (map[string]keptnevents.DeploymentStrategy, error) {
+
+	url, err := serviceutils.GetConfigServiceURL()
+	if err != nil {
+		return nil, err
+	}
+
+	resourceHandler := keptnutils.NewResourceHandler(url.String())
 	handler := keptnutils.NewKeptnHandler(resourceHandler)
 
 	shipyard, err := handler.GetShipyard(project)
@@ -39,8 +46,14 @@ func getDeploymentStrategies(project string, configServiceURL string) (map[strin
 	return res, nil
 }
 
-func getFirstStage(project string, configServiceURL string) (string, error) {
-	resourceHandler := keptnutils.NewResourceHandler(configServiceURL)
+func getFirstStage(project string) (string, error) {
+
+	url, err := serviceutils.GetConfigServiceURL()
+	if err != nil {
+		return "", err
+	}
+
+	resourceHandler := keptnutils.NewResourceHandler(url.String())
 	handler := keptnutils.NewKeptnHandler(resourceHandler)
 
 	shipyard, err := handler.GetShipyard(project)
@@ -51,8 +64,14 @@ func getFirstStage(project string, configServiceURL string) (string, error) {
 	return shipyard.Stages[0].Name, nil
 }
 
-func getTestStrategy(project string, stageName string, configServiceURL string) (string, error) {
-	resourceHandler := keptnutils.NewResourceHandler(configServiceURL)
+func getTestStrategy(project string, stageName string) (string, error) {
+
+	url, err := serviceutils.GetConfigServiceURL()
+	if err != nil {
+		return "", err
+	}
+
+	resourceHandler := keptnutils.NewResourceHandler(url.String())
 	handler := keptnutils.NewKeptnHandler(resourceHandler)
 
 	shipyard, err := handler.GetShipyard(project)
@@ -76,17 +95,21 @@ type deploymentFinishedEvent struct {
 	DeploymentStrategy string `json:"deploymentstrategy"`
 }
 
-func sendDeploymentFinishedEvent(shkeptncontext string, project string, stage string, service string,
-	configServiceURL string) error {
+func sendDeploymentFinishedEvent(shkeptncontext string, project string, stage string, service string) error {
 
 	source, _ := url.Parse("helm-service")
 	contentType := "application/json"
 
-	testStrategy, err := getTestStrategy(project, stage, configServiceURL)
+	url, err := serviceutils.GetEventbrokerURL()
 	if err != nil {
 		return err
 	}
-	deploymentStrategies, err := getDeploymentStrategies(project, configServiceURL)
+
+	testStrategy, err := getTestStrategy(project, stage)
+	if err != nil {
+		return err
+	}
+	deploymentStrategies, err := getDeploymentStrategies(project)
 	var deploymentStrategyOldIdentifier string
 	if deploymentStrategies[stage] == keptnevents.Duplicate {
 		deploymentStrategyOldIdentifier = "blue_green_service"
@@ -114,7 +137,7 @@ func sendDeploymentFinishedEvent(shkeptncontext string, project string, stage st
 	}
 
 	t, err := cloudeventshttp.New(
-		cloudeventshttp.WithTarget("http://event-broker.keptn.svc.cluster.local/keptn"),
+		cloudeventshttp.WithTarget(url.String()),
 		cloudeventshttp.WithEncoding(cloudeventshttp.StructuredV02),
 	)
 	if err != nil {

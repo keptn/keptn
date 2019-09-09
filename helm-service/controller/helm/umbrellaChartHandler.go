@@ -10,6 +10,7 @@ import (
 	"github.com/keptn/go-utils/pkg/models"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/helm-service/controller/mesh"
+	"github.com/keptn/keptn/helm-service/pkg/serviceutils"
 	hapichart "k8s.io/helm/pkg/proto/hapi/chart"
 	"sigs.k8s.io/yaml"
 )
@@ -21,12 +22,11 @@ const gatewayURI = "templates/istio-gateway.yaml"
 const version = "0.1.0"
 
 type UmbrellaChartHandler struct {
-	mesh             mesh.Mesh
-	configServiceURL string
+	mesh mesh.Mesh
 }
 
-func NewUmbrellaChartHandler(mesh mesh.Mesh, configServiceURL string) *UmbrellaChartHandler {
-	return &UmbrellaChartHandler{mesh: mesh, configServiceURL: configServiceURL}
+func NewUmbrellaChartHandler(mesh mesh.Mesh) *UmbrellaChartHandler {
+	return &UmbrellaChartHandler{mesh: mesh}
 }
 
 // initUmbrellaChart creates Umbrella charts for each stage of a project.
@@ -46,7 +46,12 @@ func (u *UmbrellaChartHandler) InitUmbrellaChart(event *keptnevents.ServiceCreat
 		return err
 	}
 
-	rHandler := keptnutils.NewResourceHandler(u.configServiceURL)
+	url, err := serviceutils.GetConfigServiceURL()
+	if err != nil {
+		return err
+	}
+
+	rHandler := keptnutils.NewResourceHandler(url.String())
 	for _, stage := range stages {
 
 		gateway, err := u.createGatewayResource(event, stage.StageName)
@@ -65,7 +70,12 @@ func (u *UmbrellaChartHandler) InitUmbrellaChart(event *keptnevents.ServiceCreat
 // GetUmbreallaChart stores the resources of the umbrella chart in the provided directory
 func (u *UmbrellaChartHandler) GetUmbrellaChart(outputDirectory, project, stage string) error {
 
-	rHandler := keptnutils.NewResourceHandler(u.configServiceURL)
+	url, err := serviceutils.GetConfigServiceURL()
+	if err != nil {
+		return err
+	}
+
+	rHandler := keptnutils.NewResourceHandler(url.String())
 	resources, err := rHandler.GetAllStageResources(project, stage)
 	if err != nil {
 		return err
@@ -153,7 +163,12 @@ func (u *UmbrellaChartHandler) createGatewayResource(event *keptnevents.ServiceC
 // AddChartInUmbrellaRequirements adds the chart in the requirements.yaml of the Umbrella chart
 func (u *UmbrellaChartHandler) AddChartInUmbrellaRequirements(project string, helmChartName string, stage *models.Stage) error {
 
-	rHandler := keptnutils.NewResourceHandler(u.configServiceURL)
+	url, err := serviceutils.GetConfigServiceURL()
+	if err != nil {
+		return err
+	}
+
+	rHandler := keptnutils.NewResourceHandler(url.String())
 
 	resource, err := rHandler.GetStageResource(project, stage.StageName, requirementsURI)
 	if err != nil {
@@ -186,7 +201,12 @@ func (u *UmbrellaChartHandler) AddChartInUmbrellaRequirements(project string, he
 // AddChartInUmbrellaValues adds the chart in the values.yaml of the Umbrella chart
 func (u *UmbrellaChartHandler) AddChartInUmbrellaValues(project string, helmChartName string, stage *models.Stage) error {
 
-	rHandler := keptnutils.NewResourceHandler(u.configServiceURL)
+	url, err := serviceutils.GetConfigServiceURL()
+	if err != nil {
+		return err
+	}
+
+	rHandler := keptnutils.NewResourceHandler(url.String())
 
 	resource, err := rHandler.GetStageResource(project, stage.StageName, valuesURI)
 	if err != nil {

@@ -12,6 +12,7 @@ import (
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/helm-service/controller/helm"
 	"github.com/keptn/keptn/helm-service/controller/mesh"
+	"github.com/keptn/keptn/helm-service/pkg/serviceutils"
 	"k8s.io/helm/pkg/chartutil"
 )
 
@@ -26,17 +27,16 @@ func init() {
 type ConfigurationChanger struct {
 	generatedChartHandler *helm.GeneratedChartHandler
 	canaryLevelGen        helm.CanaryLevelGenerator
-	configServiceURL      string
 	logger                keptnutils.LoggerInterface
 	keptnDomain           string
 }
 
 // NewConfigurationChanger creates a new ConfigurationChanger
 func NewConfigurationChanger(mesh mesh.Mesh, canaryLevelGen helm.CanaryLevelGenerator,
-	logger keptnutils.LoggerInterface, keptnDomain string, configServiceURL string) *ConfigurationChanger {
+	logger keptnutils.LoggerInterface, keptnDomain string) *ConfigurationChanger {
 	generatedChartHandler := helm.NewGeneratedChartHandler(mesh, canaryLevelGen, keptnDomain)
 	return &ConfigurationChanger{generatedChartHandler: generatedChartHandler, canaryLevelGen: canaryLevelGen,
-		configServiceURL: configServiceURL, logger: logger, keptnDomain: keptnDomain}
+		logger: logger, keptnDomain: keptnDomain}
 }
 
 // ChangeAndApplyConfiguration changes the configuration and applies it in the cluster
@@ -48,8 +48,8 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event)
 		return err
 	}
 
-	if os.Getenv("pre_workflow_engine") == "true" && e.Stage == "" {
-		stage, err := getFirstStage(e.Project, c.configServiceURL)
+	if os.Getenv("PRE_WORKFLOW_ENGINE") == "true" && e.Stage == "" {
+		stage, err := getFirstStage(e.Project)
 		if err != nil {
 			c.logger.Error(fmt.Sprintf("Error when reading shipyard: %s" + err.Error()))
 			return err
@@ -86,11 +86,11 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event)
 
 	// Send deployment finished event
 	// Note that this condition also stops the keptn-flow if an artifact is discarded
-	if os.Getenv("pre_workflow_engine") == "true" &&
+	if os.Getenv("PRE_WORKFLOW_ENGINE") == "true" &&
 		!(e.Canary != nil && e.Canary.Action == keptnevents.Discard) {
 		var shkeptncontext string
 		ce.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
-		if err := sendDeploymentFinishedEvent(shkeptncontext, e.Project, e.Stage, e.Service, c.configServiceURL); err != nil {
+		if err := sendDeploymentFinishedEvent(shkeptncontext, e.Project, e.Stage, e.Service); err != nil {
 			c.logger.Error(fmt.Sprintf("Cannot send deployment finished event: %s", err.Error()))
 			return err
 		}
@@ -101,10 +101,15 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event)
 
 func (c *ConfigurationChanger) changeValues(e *keptnevents.ConfigurationChangeEventData, generated bool, newValues map[string]interface{}) error {
 
+	url, err := serviceutils.GetConfigServiceURL()
+	if err != nil {
+		return err
+	}
+
 	helmChartName := helm.GetChartName(e.Service, generated)
 	c.logger.Info(fmt.Sprintf("Start updating values of chart %s", helmChartName))
 	// Read chart
-	chart, err := keptnutils.GetChart(e.Project, e.Service, e.Stage, helmChartName, c.configServiceURL)
+	chart, err := keptnutils.GetChart(e.Project, e.Service, e.Stage, helmChartName, url.String())
 	if err != nil {
 		return err
 	}
@@ -128,7 +133,7 @@ func (c *ConfigurationChanger) changeValues(e *keptnevents.ConfigurationChangeEv
 	if err != nil {
 		return err
 	}
-	if err := keptnutils.StoreChart(e.Project, e.Service, e.Stage, helmChartName, chartData, c.configServiceURL); err != nil {
+	if err := keptnutils.StoreChart(e.Project, e.Service, e.Stage, helmChartName, chartData, url.String()); err != nil {
 		return err
 	}
 	c.logger.Info(fmt.Sprintf("Finished updating values of chart %s", helmChartName))
@@ -137,10 +142,15 @@ func (c *ConfigurationChanger) changeValues(e *keptnevents.ConfigurationChangeEv
 
 func (c *ConfigurationChanger) setCanaryWeight(e *keptnevents.ConfigurationChangeEventData, canaryWeight int32) error {
 
+	url, err := serviceutils.GetConfigServiceURL()
+	if err != nil {
+		return err
+	}
+
 	c.logger.Info(fmt.Sprintf("Start updating canary weight to %d for service %s of project %s in stage %s",
 		canaryWeight, e.Service, e.Project, e.Stage))
 	// Read chart
-	chart, err := keptnutils.GetChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, true), c.configServiceURL)
+	chart, err := keptnutils.GetChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, true), url.String())
 	if err != nil {
 		return err
 	}
@@ -152,7 +162,7 @@ func (c *ConfigurationChanger) setCanaryWeight(e *keptnevents.ConfigurationChang
 	if err != nil {
 		return err
 	}
-	if err := keptnutils.StoreChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, true), chartData, c.configServiceURL); err != nil {
+	if err := keptnutils.StoreChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, true), chartData, url.String()); err != nil {
 		return err
 	}
 	c.logger.Info(fmt.Sprintf("Finished updating canary weight to %d for service %s of project %s in stage %s",
@@ -161,6 +171,11 @@ func (c *ConfigurationChanger) setCanaryWeight(e *keptnevents.ConfigurationChang
 }
 
 func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEventData) error {
+
+	url, err := serviceutils.GetConfigServiceURL()
+	if err != nil {
+		return err
+	}
 
 	switch e.Canary.Action {
 	case keptnevents.Discard:
@@ -182,7 +197,7 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 			return err
 		}
 
-		userChart, err := keptnutils.GetChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, false), c.configServiceURL)
+		userChart, err := keptnutils.GetChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, false), url.String())
 		if err != nil {
 			return err
 		}
@@ -201,7 +216,7 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 		if err != nil {
 			return err
 		}
-		if err := keptnutils.StoreChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, true), genChartData, c.configServiceURL); err != nil {
+		if err := keptnutils.StoreChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, true), genChartData, url.String()); err != nil {
 			return err
 		}
 		if err := c.applyConfiguration(e, true); err != nil {
@@ -233,7 +248,7 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 // deleteRelease deletes a helm release
 func (c *ConfigurationChanger) deleteRelease(e *keptnevents.ConfigurationChangeEventData, generated bool) error {
 	c.logger.Info(fmt.Sprintf("Start deleting deployment/release of service %s of project %s in stage %s", e.Service, e.Project, e.Stage))
-	if err := c.canaryLevelGen.DeleteRelease(e.Project, e.Stage, e.Service, generated, c.configServiceURL); err != nil {
+	if err := c.canaryLevelGen.DeleteRelease(e.Project, e.Stage, e.Service, generated); err != nil {
 		return fmt.Errorf("Error when deleting release %s: %s",
 			helm.GetReleaseName(e.Project, e.Stage, e.Service, generated), err.Error())
 	}
@@ -249,7 +264,12 @@ func (c *ConfigurationChanger) applyConfiguration(e *keptnevents.ConfigurationCh
 	namespace := c.canaryLevelGen.GetNamespace(e.Project, e.Stage, generated)
 	c.logger.Info(fmt.Sprintf("Start upgrading chart %s in namespace %s", releaseName, namespace))
 
-	ch, err := keptnutils.GetChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, generated), c.configServiceURL)
+	url, err := serviceutils.GetConfigServiceURL()
+	if err != nil {
+		return err
+	}
+
+	ch, err := keptnutils.GetChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, generated), url.String())
 	if err != nil {
 		return fmt.Errorf("Error when reading chart %s: %s", helm.GetChartName(e.Service, generated), err.Error())
 	}
@@ -294,7 +314,7 @@ func ApplyDirectory(chartPath, releaseName, namespace string) error {
 }
 
 func getInClusterConfig() bool {
-	if os.Getenv("env") == "production" {
+	if os.Getenv("ENVIRONMENT") == "production" {
 		return true
 	}
 	return false

@@ -4,6 +4,7 @@ import (
 	"os"
 
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	"github.com/keptn/keptn/helm-service/pkg/serviceutils"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -29,13 +30,18 @@ func (*CanaryOnDeploymentGenerator) GetNamespace(project string, stage string, g
 	return project + "-" + stage
 }
 
-func (c *CanaryOnDeploymentGenerator) DeleteRelease(project string, stage string, service string, generated bool, configServiceURL string) error {
+func (c *CanaryOnDeploymentGenerator) DeleteRelease(project string, stage string, service string, generated bool) error {
 	useInClusterConfig := false
-	if os.Getenv("env") == "production" {
+	if os.Getenv("ENVIRONMENT") == "production" {
 		useInClusterConfig = true
 	}
 
-	ch, err := keptnutils.GetChart(project, service, stage, GetChartName(service, generated), configServiceURL)
+	url, err := serviceutils.GetConfigServiceURL()
+	if err != nil {
+		return err
+	}
+
+	ch, err := keptnutils.GetChart(project, service, stage, GetChartName(service, generated), url.String())
 	if err != nil {
 		return err
 	}

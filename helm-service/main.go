@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 
@@ -14,6 +15,7 @@ import (
 	"github.com/keptn/keptn/helm-service/controller"
 	"github.com/keptn/keptn/helm-service/controller/helm"
 	"github.com/keptn/keptn/helm-service/controller/mesh"
+	"github.com/keptn/keptn/helm-service/pkg/serviceutils"
 )
 
 type envConfig struct {
@@ -30,16 +32,9 @@ func main() {
 	os.Exit(_main(os.Args[1:], env))
 }
 
-func getConfigurationServiceURL() string {
-	if os.Getenv("env") == "production" {
-		return "configuration-service.keptn.svc.cluster.local:8080"
-	}
-	return "localhost:6060"
-}
-
 func getKeptnDomain() (string, error) {
 	useInClusterConfig := false
-	if os.Getenv("env") == "production" {
+	if os.Getenv("ENVIRONMENT") == "production" {
 		useInClusterConfig = true
 	}
 	return keptnutils.GetKeptnDomain(useInClusterConfig)
@@ -49,7 +44,31 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	var shkeptncontext string
 	event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
 
-	logger := keptnutils.NewLogger(shkeptncontext, event.Context.GetID(), "helm-service")
+	stdLogger := keptnutils.NewLogger(shkeptncontext, event.Context.GetID(), "helm-service")
+
+	var logger keptnutils.LoggerInterface
+
+	connData := &keptnutils.ConnectionData{}
+	if err := event.DataAs(connData); err != nil {
+		logger = stdLogger
+		logger.Debug("No Websocket connection data available")
+	} else {
+		apiServiceURL, err := serviceutils.GetAPIURL()
+		if err != nil {
+			logger.Error(err.Error())
+			return nil
+		}
+		ws, _, err := keptnutils.OpenWS(*connData, *apiServiceURL)
+		defer ws.Close()
+		if err != nil {
+			stdLogger.Error(fmt.Sprintf("Opening websocket connection failed. %s", err.Error()))
+			return nil
+		}
+		combinedLogger := keptnutils.NewCombinedLogger(stdLogger, ws)
+		defer combinedLogger.Terminate()
+		logger = combinedLogger
+	}
+
 	mesh := mesh.NewIstioMesh()
 	var canaryLevelGen helm.CanaryLevelGenerator
 	if os.Getenv("canary") == "deployment" {
@@ -65,10 +84,10 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	}
 
 	if event.Type() == keptnevents.ConfigurationChangeEventType {
-		configChanger := controller.NewConfigurationChanger(mesh, canaryLevelGen, logger, keptnDomain, getConfigurationServiceURL())
+		configChanger := controller.NewConfigurationChanger(mesh, canaryLevelGen, logger, keptnDomain)
 		go configChanger.ChangeAndApplyConfiguration(event)
 	} else if event.Type() == keptnevents.InternalServiceCreateEventType {
-		onboarder := controller.NewOnboarder(mesh, canaryLevelGen, logger, keptnDomain, getConfigurationServiceURL())
+		onboarder := controller.NewOnboarder(mesh, canaryLevelGen, logger, keptnDomain)
 		go onboarder.DoOnboard(event)
 	} else {
 		logger.Error("Received unexpected keptn event")
