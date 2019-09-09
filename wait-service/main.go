@@ -232,6 +232,7 @@ func sendTestsFinishedEvent(shkeptncontext string, incomingEvent cloudevents.Eve
 		return errors.New("Failed to create HTTP client: " + err.Error())
 	}
 
+	logger.Debug("Send sh.keptn.events.tests-finished event to event broker")
 	if _, err := client.Send(context.Background(), event); err != nil {
 		return errors.New("Failed to send cloudevent:, " + err.Error())
 	}
