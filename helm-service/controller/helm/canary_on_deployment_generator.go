@@ -8,19 +8,23 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
+// CanaryOnDeploymentGenerator implements functions for doing a canary on the deployment level
 type CanaryOnDeploymentGenerator struct {
 }
 
+// NewCanaryOnDeploymentGenerator creates a new CanaryOnDeploymentGenerator
 func NewCanaryOnDeploymentGenerator() *CanaryOnDeploymentGenerator {
 	return &CanaryOnDeploymentGenerator{}
 }
 
+// GetCanaryService returns a service which can be used for canary releases
 func (*CanaryOnDeploymentGenerator) GetCanaryService(originalSvc corev1.Service, project string, stageName string) (canaryService *corev1.Service) {
 	canaryService = originalSvc.DeepCopy()
 	canaryService.Name = canaryService.Name + "-canary"
 	return
 }
 
+// IsK8sResourceDuplicated shows whether a resource is duplicated or not
 func (*CanaryOnDeploymentGenerator) IsK8sResourceDuplicated() bool {
 	return false
 }
@@ -30,6 +34,7 @@ func (*CanaryOnDeploymentGenerator) GetNamespace(project string, stage string, g
 	return project + "-" + stage
 }
 
+// DeleteRelease deletes the release by scaling the deployments down to zero
 func (c *CanaryOnDeploymentGenerator) DeleteRelease(project string, stage string, service string, generated bool) error {
 	useInClusterConfig := false
 	if os.Getenv("ENVIRONMENT") == "production" {

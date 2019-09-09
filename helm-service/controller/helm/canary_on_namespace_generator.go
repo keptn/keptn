@@ -5,13 +5,16 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
+// CanaryOnNamespaceGenerator implements functions for doing a canary on the namespace level
 type CanaryOnNamespaceGenerator struct {
 }
 
+// NewCanaryOnNamespaceGenerator creates a new CanaryOnNamespaceGenerator
 func NewCanaryOnNamespaceGenerator() *CanaryOnNamespaceGenerator {
 	return &CanaryOnNamespaceGenerator{}
 }
 
+// GetCanaryService returns a service which can be used for canary releases
 func (c *CanaryOnNamespaceGenerator) GetCanaryService(originalSvc corev1.Service, project string, stageName string) (canaryService *corev1.Service) {
 	canaryService = &corev1.Service{}
 
@@ -24,6 +27,7 @@ func (c *CanaryOnNamespaceGenerator) GetCanaryService(originalSvc corev1.Service
 	return
 }
 
+// IsK8sResourceDuplicated shows whether a resource is duplicated or not
 func (*CanaryOnNamespaceGenerator) IsK8sResourceDuplicated() bool {
 	return true
 }
@@ -37,6 +41,7 @@ func (*CanaryOnNamespaceGenerator) GetNamespace(project string, stage string, ge
 	return project + "-" + stage + suffix
 }
 
+// DeleteRelease deletes the release by deleting the helm chart
 func (*CanaryOnNamespaceGenerator) DeleteRelease(project string, stage string, service string, generated bool) error {
 	releaseName := GetReleaseName(project, stage, service, generated)
 	if _, err := keptnutils.ExecuteCommand("helm", []string{"delete", releaseName, "--purge"}); err != nil {
