@@ -28,7 +28,7 @@ func (ti *TestInfo) ToString() string {
 
 func getConfigurationServiceURL() string {
 	if os.Getenv("env") == "production" {
-		return "configuration-service.keptn.svc.cluster.local:8080"
+		return "configuration-service:8080"
 	}
 	return "localhost:8080"
 }
