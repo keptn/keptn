@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -59,7 +60,7 @@ Examples:
 			return err
 		}
 		if !res {
-			return errors.New("The provided Helm chart is invalid. Please checkout our requirements")
+			return errors.New("The provided Helm chart is invalid. Please checkout the requirements")
 		}
 
 		return nil
@@ -76,7 +77,8 @@ Examples:
 		if err != nil {
 			return err
 		}
-		data := events.ServiceCreateEventData{Project: *project, Service: args[0], HelmChart: chartData}
+		data := events.ServiceCreateEventData{Project: *project, Service: args[0],
+			HelmChart: base64.StdEncoding.EncodeToString(chartData)}
 
 		source, _ := url.Parse("https://github.com/keptn/keptn/cli#onboardservice")
 
@@ -84,7 +86,7 @@ Examples:
 		event := cloudevents.Event{
 			Context: cloudevents.EventContextV02{
 				ID:          uuid.New().String(),
-				Type:        events.ServiceCreateEventType,
+				Type:        events.InternalServiceCreateEventType,
 				Source:      types.URLRef{URL: *source},
 				ContentType: &contentType,
 			}.AsV02(),
