@@ -23,7 +23,6 @@ import (
 )
 
 type gkeCredentials struct {
-	githubCredentials
 	ClusterName string `json:"clusterName"`
 	ClusterZone string `json:"clusterZone"`
 	GkeProject  string `json:"gkeProject"`
@@ -37,10 +36,6 @@ func newGKEPlatform() *gkePlatform {
 	return &gkePlatform{
 		creds: &gkeCredentials{},
 	}
-}
-
-func (p gkePlatform) getGithubCreds() *githubCredentials {
-	return &p.creds.githubCredentials
 }
 
 func (p gkePlatform) getCreds() interface{} {

@@ -40,10 +40,6 @@ func newEKSPlatform() *eksPlatform {
 	}
 }
 
-func (p eksPlatform) getGithubCreds() *githubCredentials {
-	return nil
-}
-
 func (p eksPlatform) getCreds() interface{} {
 	return p.creds
 }

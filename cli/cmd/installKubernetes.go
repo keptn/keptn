@@ -23,21 +23,14 @@ import (
 )
 
 type kubernetesPlatform struct {
-	creds *githubCredentials
 }
 
 func newKubernetesPlatform() *kubernetesPlatform {
-	return &kubernetesPlatform{
-		creds: &githubCredentials{},
-	}
-}
-
-func (p kubernetesPlatform) getGithubCreds() *githubCredentials {
-	return p.creds
+	return &kubernetesPlatform{}
 }
 
 func (p kubernetesPlatform) getCreds() interface{} {
-	return p.creds
+	return nil
 }
 
 func (p kubernetesPlatform) checkRequirements() error {
