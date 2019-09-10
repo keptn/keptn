@@ -27,7 +27,7 @@ export class Controller implements interfaces.Controller {
   constructor(@inject('Service') private readonly service: Service) { }
 
   @ApiOperationPost({
-    description: 'Handle an incoming  event',
+    description: 'Handle an incoming event',
     parameters: {
       body: {
         description: 'payload',

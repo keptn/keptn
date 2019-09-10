@@ -1,18 +1,17 @@
 # mongodb Datastore
 
-The mongodb-datastore provides means to store and read data from a mongodb deployed in your keptn cluster.
-In the current implementation the service provides two endpoints:
+The *mongodb-datastore* provides means to store and read data from a mongodb deployed in your Keptn cluster. In its current implementation, the service provides two endpoints:
 - /events
 - /logs
 
-The endpoints are implemented in a REST-api manner. More information can be found by generating taking a look at the [generated swagger docs](#view-swagger-docs).
+The endpoints are implemented in a REST-api manner. More information can be found by taking a look at the [generated swagger docs](#view-swagger-docs).
 
-## Local Development
+## Local development
 
 ### Generate source from Swagger
 
-If the swagger.json is updated with new endpoints or models, generate the new source by executing:
-```
+If the `swagger.json` is updated with new endpoints or models, generate the new source by executing:
+```console
 swagger generate server -A mongodb-datastore -f ./swagger.json --with-expand
 ```
 
@@ -20,10 +19,9 @@ swagger generate server -A mongodb-datastore -f ./swagger.json --with-expand
 
 The swagger docs are exposed on http://localhost:8080/swagger-ui 
 
-
 ### launch.json for VS Code
 
-If you are using VS Code for your development, you can use the following launch configuration for your local deployment to start the process on your local port 8080.
+If you are using VS Code for your development, you can use the following launch configuration for your local deployment to start the process on the local port 8080.
 ```
 {
     // Use IntelliSense to learn about possible attributes.
