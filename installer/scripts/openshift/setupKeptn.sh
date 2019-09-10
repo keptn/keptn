@@ -94,13 +94,11 @@ verify_kubectl $? "Creating mongodb-datastore service failed."
 KEPTN_CHANNEL_URI="event-broker.keptn.svc.cluster.local/keptn"
 verify_variable "$KEPTN_CHANNEL_URI" "KEPTN_CHANNEL_URI could not be derived from keptn-channel description."
 
-rm -f ../manifests/keptn/gen/core.yaml
-cat ../manifests/keptn/core.yaml | \
-  sed 's~CHANNEL_URI_PLACEHOLDER~'"$KEPTN_CHANNEL_URI"'~' >> ../manifests/keptn/gen/core.yaml
-  
-kubectl apply -f ../manifests/keptn/gen/core.yaml
+kubectl apply -f ../manifests/keptn/core.yaml 
 verify_kubectl $? "Deploying keptn core components failed."
 
+kubectl apply -f ../manifests/keptn/core-distributors.yaml 
+verify_kubectl $? "Deploying keptn core distributors failed."
 
 ##############################################
 ## Start validation of keptn installation   ##
@@ -110,6 +108,12 @@ wait_for_all_pods_in_namespace "keptn"
 wait_for_deployment_in_namespace "eventbroker-go" "keptn"
 wait_for_deployment_in_namespace "api" "keptn"
 wait_for_deployment_in_namespace "bridge" "keptn"
+wait_for_deployment_in_namespace "gatekeeper-service" "keptn"
+wait_for_deployment_in_namespace "helm-service" "keptn"
+wait_for_deployment_in_namespace "jmeter-service" "keptn"
+wait_for_deployment_in_namespace "shipyard-service" "keptn"
+wait_for_deployment_in_namespace "pitometer-service" "keptn"
+wait_for_deployment_in_namespace "configuration-service" "keptn"
 
 kubectl apply -f ../manifests/keptn/keptn-gateway.yaml
 verify_kubectl $? "Deploying keptn gateway failed."

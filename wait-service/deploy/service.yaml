@@ -1,21 +1,22 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: gatekeeper-service
+  name: wait-service
   namespace: keptn
 spec:
   selector:
     matchLabels:
-      run: gatekeeper-service
+      run: wait-service
   replicas: 1
   template:
     metadata:
       labels:
-        run: gatekeeper-service
+        run: wait-service
     spec:
       containers:
-      - name: gatekeeper-service
-        image: keptn/gatekeeper-service:0.1.1
+      - name: wait-service
+        image: keptn/wait-service:462007d
         ports:
         - containerPort: 8080
         resources:
@@ -26,21 +27,21 @@ spec:
             memory: "128Mi"
             cpu: "500m"
         env:
-        - name: CONFIGURATION_SERVICE
-          value: 'http://configuration-service.keptn.svc.cluster.local:8080'
         - name: EVENTBROKER
           value: 'http://event-broker.keptn.svc.cluster.local/keptn'
+        - name: WAIT_DURATION
+          value: '10s'
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: gatekeeper-service
+  name: wait-service
   namespace: keptn
   labels:
-    run: gatekeeper-service
+    run: wait-service
 spec:
   ports:
   - port: 8080
     protocol: TCP
   selector:
-    run: gatekeeper-service
+    run: wait-service

@@ -2,20 +2,20 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
-	"net/url"
 	"os"
-	"strings"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
 	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
-	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
-	"github.com/google/uuid"
 	"github.com/kelseyhightower/envconfig"
+	keptnevents "github.com/keptn/go-utils/pkg/events"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	"github.com/keptn/keptn/helm-service/controller"
+	"github.com/keptn/keptn/helm-service/controller/helm"
+	"github.com/keptn/keptn/helm-service/controller/mesh"
+	"github.com/keptn/keptn/helm-service/pkg/serviceutils"
 )
 
 type envConfig struct {
@@ -32,140 +32,68 @@ func main() {
 	os.Exit(_main(os.Args[1:], env))
 }
 
-// ConfigurationChangedEvent ...
-type ConfigurationChangedEvent struct {
-	Service            string `json:"service"`
-	Image              string `json:"image"`
-	Tag                string `json:"tag"`
-	Project            string `json:"project"`
-	Stage              string `json:"stage"`
-	GitHubOrg          string `json:"githuborg"`
-	TestStrategy       string `json:"teststrategy"`
-	DeploymentStrategy string `json:"deploymentstrategy"`
+func getKeptnDomain() (string, error) {
+	useInClusterConfig := false
+	if os.Getenv("ENVIRONMENT") == "production" {
+		useInClusterConfig = true
+	}
+	return keptnutils.GetKeptnDomain(useInClusterConfig)
 }
 
 func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	var shkeptncontext string
 	event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
 
-	logger := keptnutils.NewLogger(shkeptncontext, event.Context.GetID(), "helm-service")
+	stdLogger := keptnutils.NewLogger(shkeptncontext, event.Context.GetID(), "helm-service")
 
-	data := &ConfigurationChangedEvent{}
-	if err := event.DataAs(data); err != nil {
-		logger.Error(fmt.Sprintf("Got Data Error: %s", err.Error()))
-		return err
+	var logger keptnutils.LoggerInterface
+
+	connData := &keptnutils.ConnectionData{}
+	if err := event.DataAs(connData); err != nil ||
+		connData.ChannelInfo.ChannelID == "" || connData.ChannelInfo.Token == "" {
+		logger = stdLogger
+		logger.Debug("No Websocket connection data available")
+	} else {
+		apiServiceURL, err := serviceutils.GetAPIURL()
+		if err != nil {
+			logger.Error(err.Error())
+			return nil
+		}
+		ws, _, err := keptnutils.OpenWS(*connData, *apiServiceURL)
+		defer ws.Close()
+		if err != nil {
+			stdLogger.Error(fmt.Sprintf("Opening websocket connection failed. %s", err.Error()))
+			return nil
+		}
+		combinedLogger := keptnutils.NewCombinedLogger(stdLogger, ws)
+		defer combinedLogger.Terminate()
+		logger = combinedLogger
 	}
 
-	if event.Type() != "sh.keptn.events.configuration-changed" {
-		const errorMsg = "Received unexpected keptn event"
-		logger.Error(errorMsg)
-		return errors.New(errorMsg)
+	mesh := mesh.NewIstioMesh()
+	var canaryLevelGen helm.CanaryLevelGenerator
+	if os.Getenv("CANARY") == "deployment" {
+		canaryLevelGen = helm.NewCanaryOnDeploymentGenerator()
+	} else {
+		canaryLevelGen = helm.NewCanaryOnNamespaceGenerator()
 	}
 
-	go doDeployment(event, logger, *data, shkeptncontext)
-	return nil
-}
-
-func doDeployment(event cloudevents.Event, logger *keptnutils.Logger, data ConfigurationChangedEvent, shkeptncontext string) {
-	repo, err := keptnutils.Checkout(data.GitHubOrg, data.Project, data.Stage)
+	keptnDomain, err := getKeptnDomain()
 	if err != nil {
-		logger.Error(fmt.Sprintf("Error when checking out configuration from GitHub: %s", err.Error()))
+		logger.Error("Error when reading the keptn domain")
+		return nil
 	}
 
-	logger.Info("Deploying with helm upgrade")
-
-	switch strings.ToLower(data.DeploymentStrategy) {
-	case "direct":
-		if checkErr(keptnutils.DoHelmUpgrade(data.Project, data.Stage), logger) != nil {
-			return
-		}
-		if checkErr(keptnutils.WaitForDeploymentsInNamespace(true, data.Project+"-"+data.Stage),
-			logger) != nil {
-			return
-		}
-		logger.Info("Finished deploying in stage " + data.Stage)
-
-	case "blue_green_service":
-		// Move repo head one commit back
-		ref, err := keptnutils.CheckoutPrevCommit(repo)
-		if checkErr(err, logger) != nil {
-			return
-		}
-
-		// Do helm upgrade
-		if checkErr(keptnutils.DoHelmUpgrade(data.Project, data.Stage), logger) != nil {
-			return
-		}
-
-		// Wait for rollout to complete
-		if checkErr(keptnutils.WaitForDeploymentToBeAvailable(true, data.Service+"-blue", data.Project+"-"+data.Stage),
-			logger) != nil {
-			return
-		}
-		if checkErr(keptnutils.WaitForDeploymentToBeAvailable(true, data.Service+"-green", data.Project+"-"+data.Stage),
-			logger) != nil {
-			return
-		}
-
-		// Move repo head one commit forward
-		if checkErr(keptnutils.CheckoutReference(repo, ref), logger) != nil {
-			return
-		}
-
-		// Do helm upgrade
-		if checkErr(keptnutils.DoHelmUpgrade(data.Project, data.Stage), logger) != nil {
-			return
-		}
-		logger.Info("Finished deploying in stage " + data.Stage)
-
-	default:
-		logger.Error("Unknown deployment strategy '" + data.DeploymentStrategy + "'")
-		return
+	if event.Type() == keptnevents.ConfigurationChangeEventType {
+		configChanger := controller.NewConfigurationChanger(mesh, canaryLevelGen, logger, keptnDomain)
+		go configChanger.ChangeAndApplyConfiguration(event)
+	} else if event.Type() == keptnevents.InternalServiceCreateEventType {
+		onboarder := controller.NewOnboarder(mesh, canaryLevelGen, logger, keptnDomain)
+		go onboarder.DoOnboard(event)
+	} else {
+		logger.Error("Received unexpected keptn event")
 	}
 
-	checkErr(sendDeploymentFinishedEvent(shkeptncontext, event), logger)
-}
-
-func checkErr(err error, logger *keptnutils.Logger) error {
-	if err != nil {
-		logger.Error(err.Error())
-		return err
-	}
-	return nil
-}
-
-func sendDeploymentFinishedEvent(shkeptncontext string, incomingEvent cloudevents.Event) error {
-
-	source, _ := url.Parse("helm-service")
-	contentType := "application/json"
-
-	event := cloudevents.Event{
-		Context: cloudevents.EventContextV02{
-			ID:          uuid.New().String(),
-			Type:        "sh.keptn.events.deployment-finished",
-			Source:      types.URLRef{URL: *source},
-			ContentType: &contentType,
-			Extensions:  map[string]interface{}{"shkeptncontext": shkeptncontext},
-		}.AsV02(),
-		Data: incomingEvent.Data,
-	}
-
-	t, err := cloudeventshttp.New(
-		cloudeventshttp.WithTarget("http://event-broker.keptn.svc.cluster.local/keptn"),
-		cloudeventshttp.WithEncoding(cloudeventshttp.StructuredV02),
-	)
-	if err != nil {
-		return errors.New("Failed to create transport:" + err.Error())
-	}
-
-	c, err := client.New(t)
-	if err != nil {
-		return errors.New("Failed to create HTTP client:" + err.Error())
-	}
-
-	if _, err := c.Send(context.Background(), event); err != nil {
-		return errors.New("Failed to send cloudevent:, " + err.Error())
-	}
 	return nil
 }
 
