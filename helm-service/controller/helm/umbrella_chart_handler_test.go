@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/keptn/keptn/helm-service/controller/mesh"
-	"github.com/keptn/keptn/helm-service/pkg/jsonutils"
+	"github.com/keptn/keptn/helm-service/pkg/objectutils"
 	"github.com/kinbiko/jsonassert"
 
 	keptnevents "github.com/keptn/go-utils/pkg/events"
@@ -23,7 +23,7 @@ func TestCreateRootChartResource(t *testing.T) {
 
 	assert.Equal(t, *resource.ResourceURI, "Chart.yaml", "URI is wrong")
 
-	jsonData, err := jsonutils.ToJSON([]byte(resource.ResourceContent))
+	jsonData, err := objectutils.ToJSON([]byte(resource.ResourceContent))
 	if err != nil {
 		t.Error(err)
 	}
@@ -48,7 +48,7 @@ func TestCreateRequirementsResource(t *testing.T) {
 
 	assert.Equal(t, *resource.ResourceURI, "requirements.yaml", "URI is wrong")
 
-	jsonData, err := jsonutils.ToJSON([]byte(resource.ResourceContent))
+	jsonData, err := objectutils.ToJSON([]byte(resource.ResourceContent))
 	if err != nil {
 		t.Error(err)
 	}
@@ -70,7 +70,7 @@ func TestCreateValuesResource(t *testing.T) {
 
 	assert.Equal(t, *resource.ResourceURI, "values.yaml", "URI is wrong")
 
-	jsonData, err := jsonutils.ToJSON([]byte(resource.ResourceContent))
+	jsonData, err := objectutils.ToJSON([]byte(resource.ResourceContent))
 	if err != nil {
 		t.Error(err)
 	}
@@ -92,7 +92,7 @@ func TestCreateGatewayResource(t *testing.T) {
 
 	assert.Equal(t, *resource.ResourceURI, "templates/istio-gateway.yaml", "URI is wrong")
 
-	jsonData, err := jsonutils.ToJSON([]byte(resource.ResourceContent))
+	jsonData, err := objectutils.ToJSON([]byte(resource.ResourceContent))
 	if err != nil {
 		t.Error(err)
 	}

@@ -8,7 +8,7 @@ import (
 
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/helm-service/controller/mesh"
-	"github.com/keptn/keptn/helm-service/pkg/jsonutils"
+	"github.com/keptn/keptn/helm-service/pkg/objectutils"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	kyaml "k8s.io/apimachinery/pkg/util/yaml"
@@ -105,7 +105,7 @@ func (c *GeneratedChartHandler) changeTemplateContent(project string,
 			}
 
 			if c.canaryLevelGen.IsK8sResourceDuplicated() {
-				newContent, err = appendAsYaml(newContent, document)
+				newContent, err = objectutils.AppendAsYaml(newContent, document)
 				if err != nil {
 					return err
 				}
@@ -119,20 +119,6 @@ func (c *GeneratedChartHandler) changeTemplateContent(project string,
 
 	ch.Templates = newTemplates
 	return nil
-}
-
-func appendAsYaml(content []byte, element interface{}) ([]byte, error) {
-
-	jsonData, err := json.Marshal(element)
-	if err != nil {
-		return nil, err
-	}
-	yamlData, err := jsonutils.ToYAML(jsonData)
-	if err != nil {
-		return nil, err
-	}
-	content = append(content, []byte("---\n")...)
-	return append(content, yamlData...), nil
 }
 
 func (c *GeneratedChartHandler) handleService(document []byte, project string, stageName string) ([]byte, []*chart.Template, error) {
@@ -151,7 +137,7 @@ func (c *GeneratedChartHandler) handleService(document []byte, project string, s
 
 		serviceCanary := c.canaryLevelGen.GetCanaryService(svc, project, stageName)
 
-		newTemplateContent, err = appendAsYaml(newTemplateContent, serviceCanary)
+		newTemplateContent, err = objectutils.AppendAsYaml(newTemplateContent, serviceCanary)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -169,7 +155,7 @@ func (c *GeneratedChartHandler) handleService(document []byte, project string, s
 		servicePrimary := svc.DeepCopy()
 		servicePrimary.Name = servicePrimary.Name + "-primary"
 		servicePrimary.Spec.Selector["app"] = servicePrimary.Spec.Selector["app"] + "-primary"
-		newTemplateContent, err = appendAsYaml(newTemplateContent, servicePrimary)
+		newTemplateContent, err = objectutils.AppendAsYaml(newTemplateContent, servicePrimary)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -216,7 +202,7 @@ func (c *GeneratedChartHandler) handleDeployment(document []byte) ([]byte, error
 		depl.Spec.Selector.MatchLabels["app"] = depl.Spec.Selector.MatchLabels["app"] + "-primary"
 		depl.Spec.Template.ObjectMeta.Labels["app"] = depl.Spec.Template.ObjectMeta.Labels["app"] + "-primary"
 		var err error
-		newTemplateContent, err = appendAsYaml(newTemplateContent, depl)
+		newTemplateContent, err = objectutils.AppendAsYaml(newTemplateContent, depl)
 		if err != nil {
 			return nil, err
 		}

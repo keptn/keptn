@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/keptn/keptn/helm-service/controller/helm"
 	"github.com/keptn/keptn/helm-service/controller/mesh"
+	"github.com/keptn/keptn/helm-service/pkg/helmtest"
 
 	keptnevents "github.com/keptn/go-utils/pkg/events"
 	"github.com/keptn/go-utils/pkg/models"
@@ -71,7 +72,7 @@ func TestDoOnboard(t *testing.T) {
 
 	createTestProjet(t)
 
-	data := helm.CreateHelmChartData(t)
+	data := helmtest.CreateHelmChartData(t)
 	encodedChart := base64.StdEncoding.EncodeToString(data)
 	fmt.Println(encodedChart)
 	ce := cloudevents.New("0.2")
