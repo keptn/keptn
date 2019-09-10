@@ -1,9 +1,8 @@
 package main
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"log"
@@ -13,9 +12,9 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	keptnevents "github.com/keptn/go-utils/pkg/events"
 	keptnmodels "github.com/keptn/go-utils/pkg/models"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
-	"github.com/keptn/keptn/configuration-service/models"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
@@ -23,6 +22,8 @@ import (
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 	"github.com/google/uuid"
 	"github.com/kelseyhightower/envconfig"
+
+	"gopkg.in/yaml.v2"
 )
 
 const timeout = 60
@@ -33,20 +34,6 @@ const api = "API"
 type envConfig struct {
 	Port int    `envconfig:"RCV_PORT" default:"8080"`
 	Path string `envconfig:"RCV_PATH" default:"/"`
-}
-
-type createProjectEventData struct {
-	Project      string          `json:"project"`
-	GitRemoteURL string          `json:"gitremoteurl"`
-	GitUser      string          `json:"gituser"`
-	GitToken     string          `json:"gittoken"`
-	Shipyard     []shipyardStage `json:"stages"`
-}
-
-type shipyardStage struct {
-	Name               string `json:"name"`
-	DeplyomentStrategy string `json:"deployment_strategy"`
-	TestStrategy       string `json:"test_strategy"`
 }
 
 type doneEventData struct {
@@ -64,7 +51,7 @@ type Client struct {
 type ResourceListBody struct {
 
 	// resources
-	Resources []*models.Resource `json:"resources"`
+	Resources []*keptnmodels.Resource `json:"resources"`
 }
 
 func main() {
@@ -137,7 +124,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	defer ws.Close()
 
 	//if event.Type() == "sh.keptn.internal.events.project.create" { // for keptn internal topics
-	if event.Type() == "create.project" {
+	if event.Type() == keptnevents.InternalProjectCreateEventType {
 		version, err := createProjectAndProcessShipyard(event, *logger, ws)
 		if err := logErrAndRespondWithDoneEvent(event, version, err, *logger, ws); err != nil {
 			return err
@@ -155,15 +142,15 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 }
 
 // createProjectAndProcessShipyard creates a project and stages defined in the shipyard
-func createProjectAndProcessShipyard(event cloudevents.Event, logger keptnutils.Logger, ws *websocket.Conn) (*models.Version, error) {
-	eventData := &createProjectEventData{}
-	if err := event.DataAs(eventData); err != nil {
+func createProjectAndProcessShipyard(event cloudevents.Event, logger keptnutils.Logger, ws *websocket.Conn) (*keptnmodels.Version, error) {
+	eventData := keptnevents.ProjectCreateEventData{}
+	if err := event.DataAs(&eventData); err != nil {
 		return nil, err
 	}
 
 	client := newClient()
 	// create project
-	project := models.Project{
+	project := keptnmodels.Project{
 		ProjectName: eventData.Project,
 	}
 	if err := client.createProject(project, logger); err != nil {
@@ -173,29 +160,53 @@ func createProjectAndProcessShipyard(event cloudevents.Event, logger keptnutils.
 		logger.Error(fmt.Sprintf("Could not write log to websocket. %s", err.Error()))
 	}
 
-	// process shipyard file and create stages
-	for _, shipyardStage := range eventData.Shipyard {
-		stage := models.Stage{
-			StageName: shipyardStage.Name,
-		}
+	shipyard := keptnmodels.Shipyard{}
+	data, err := base64.StdEncoding.DecodeString(eventData.Shipyard)
+	if err != nil {
+		logger.Error(fmt.Sprintf("Could not decode shipyard. %s", err.Error()))
+		return nil, err
+	}
+	err = yaml.Unmarshal(data, &shipyard)
+	if err != nil {
+		logger.Error(fmt.Sprintf("Could not unmarshal shipyard. %s", err.Error()))
+		return nil, err
+	}
 
-		if err := client.createStage(project, stage, logger); err != nil {
-			return nil, fmt.Errorf("Creating stage %s failed. %s", stage.StageName, err.Error())
+	// process shipyard file and create stages
+	for _, shipyardStage := range shipyard.Stages {
+		if err := client.createStage(project.ProjectName, shipyardStage.Name, logger); err != nil {
+			return nil, fmt.Errorf("Creating stage %s failed. %s", shipyardStage.Name, err.Error())
 		}
-		if err := keptnutils.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), fmt.Sprintf("Stage %s created", stage.StageName), false, "INFO"); err != nil {
+		if err := keptnutils.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), fmt.Sprintf("Stage %s created", shipyardStage.Name), false, "INFO"); err != nil {
 			logger.Error(fmt.Sprintf("Could not write log to websocket. %s", err.Error()))
 		}
 	}
 
 	// store shipyard.yaml
-	shipyard, _ := json.Marshal(eventData.Shipyard)
-	version, err := storeResourceForProject(project.ProjectName, "shipyard.yaml", string(shipyard), logger)
+	return storeResourceForProject(project.ProjectName, string(data), logger)
+}
 
-	return version, err
+// storeResourceForProject stores the resource for a project using the keptnutils.ResourceHandler
+func storeResourceForProject(projectName, shipyard string, logger keptnutils.Logger) (*keptnmodels.Version, error) {
+	configServiceURL, err := getServiceEndpoint(configservice)
+	if err != nil {
+		logger.Error(fmt.Sprintf("Could not get service endpoint for %s: %s", configservice, err.Error()))
+		return nil, err
+	}
+	handler := keptnutils.NewResourceHandler(configServiceURL.String())
+	uri := "shipyard.yaml"
+	resource := keptnmodels.Resource{ResourceURI: &uri, ResourceContent: shipyard}
+	versionStr, err := handler.CreateProjectResources(projectName, []*keptnmodels.Resource{&resource})
+	if err != nil {
+		return nil, fmt.Errorf("Storing %s file failed. %s", resource.ResourceURI, err.Error())
+	}
+
+	logger.Info(fmt.Sprintf("Resource %s successfully stored", resource.ResourceURI))
+	return &keptnmodels.Version{Version: versionStr}, nil
 }
 
 // logErrAndRespondWithDoneEvent sends a keptn done event to the keptn eventbroker
-func logErrAndRespondWithDoneEvent(event cloudevents.Event, version *models.Version, err error, logger keptnutils.Logger, ws *websocket.Conn) error {
+func logErrAndRespondWithDoneEvent(event cloudevents.Event, version *keptnmodels.Version, err error, logger keptnutils.Logger, ws *websocket.Conn) error {
 	var result = "success"
 	var webSocketMessage = "Shipyard successfully processed"
 	var eventMessage = "Project created and shipyard successfully processed"
@@ -220,131 +231,42 @@ func logErrAndRespondWithDoneEvent(event cloudevents.Event, version *models.Vers
 }
 
 // createProject creates a project by using the configuration-service
-func (client *Client) createProject(project models.Project, logger keptnutils.Logger) error {
-	data, err := project.MarshalBinary()
+func (client *Client) createProject(project keptnmodels.Project, logger keptnutils.Logger) error {
+	configServiceURL, err := getServiceEndpoint(configservice)
 	if err != nil {
-		return fmt.Errorf("Failed to marshal project. %s", err.Error())
+		logger.Error(fmt.Sprintf("Could not get service endpoint for %s: %s", configservice, err.Error()))
+		return err
 	}
+	prjHandler := keptnutils.NewProjectHandler(configServiceURL.String())
+	errorObj, err := prjHandler.CreateProject(project)
 
-	resp, err := postRequest(client, "v1/project", data)
-	if err != nil {
-		return fmt.Errorf("Failed to post request. %s", err.Error())
-	}
-
-	defer resp.Body.Close()
-	if resp.StatusCode == http.StatusNoContent || resp.StatusCode == http.StatusOK { // 204 - Success. Project has been created. Response does not have a body.
+	if errorObj == nil && err == nil {
 		logger.Info("Project successfully created")
-	} else if resp.StatusCode == http.StatusBadRequest { //	400 - Failed. Project could not be created.
-		errorObj := models.Error{}
-		json.NewDecoder(resp.Body).Decode(&errorObj)
+		return nil
+	} else if errorObj != nil {
 		return errors.New(*errorObj.Message)
-	} else { // catch undefined errors
-		return fmt.Errorf("Undefined error in response of creating project. Status: %s", resp.Status)
 	}
-
-	return nil
+	return fmt.Errorf("Error in creating new project: %s", err.Error())
 }
 
 // createStage creates a stage by using the configuration-service
-func (client *Client) createStage(project models.Project, stage models.Stage, logger keptnutils.Logger) error {
-	data, err := stage.MarshalBinary()
-	if err != nil {
-		return fmt.Errorf("Failed to marshal stage. %s", err.Error())
-	}
+func (client *Client) createStage(project string, stage string, logger keptnutils.Logger) error {
 
-	resp, err := postRequest(client, fmt.Sprintf("v1/project/%s/stage", project.ProjectName), data)
+	configServiceURL, err := getServiceEndpoint(configservice)
 	if err != nil {
-		return fmt.Errorf("Failed to post request. %s", err.Error())
+		logger.Error(fmt.Sprintf("Could not get service endpoint for %s: %s", configservice, err.Error()))
+		return err
 	}
+	handler := keptnutils.NewStageHandler(configServiceURL.String())
+	errorObj, err := handler.CreateStage(project, stage)
 
-	defer resp.Body.Close()
-	if resp.StatusCode == http.StatusNoContent { // 204 - Success. Stage has been created. Response does not have a body.
+	if errorObj == nil && err == nil {
 		logger.Info("Stage successfully created")
-	} else if resp.StatusCode == http.StatusBadRequest { //	400 - Failed. Stage could not be created.
-		errorObj := models.Error{}
-		json.NewDecoder(resp.Body).Decode(&errorObj)
+		return nil
+	} else if errorObj != nil {
 		return errors.New(*errorObj.Message)
-	} else { // catch undefined errors
-		return fmt.Errorf("Undefined error in response of creating project. Status: %s", resp.Status)
 	}
-
-	return nil
-}
-
-// storeResourceForProject stores the resource for a project using the keptnutils.ResourceHandler
-func storeResourceForProject(projectName string, resourceURI string, resourceContent string, logger keptnutils.Logger) (*models.Version, error) {
-	resource := keptnmodels.Resource{
-		ResourceURI:     &resourceURI,
-		ResourceContent: resourceContent,
-	}
-	resources := []*keptnmodels.Resource{&resource}
-
-	eventURL, err := getServiceEndpoint(configservice)
-	resourceHandler := keptnutils.NewResourceHandler(eventURL.Host)
-
-	versionStr, err := resourceHandler.CreateProjectResources(projectName, resources)
-	if err != nil {
-		return nil, fmt.Errorf("Storing %s file failed. %s", resourceURI, err.Error())
-	}
-
-	logger.Info(fmt.Sprintf("Resource %s successfully stored", resourceURI))
-	version := models.Version{
-		Version: versionStr,
-	}
-
-	return &version, nil
-}
-
-func retrieveResourceForProject(projectName string, resourceURI string, logger keptnutils.Logger) (*keptnmodels.Resource, error) {
-	eventURL, err := getServiceEndpoint(configservice)
-	resourceHandler := keptnutils.NewResourceHandler(eventURL.Host)
-
-	resource, err := resourceHandler.GetProjectResource(projectName, resourceURI)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to retrieve resource %s", resourceURI, err.Error())
-	}
-
-	logger.Info(resource.ResourceContent)
-
-	return resource, nil
-}
-
-// postRequest sends a post request to the configuration-service
-func postRequest(client *Client, path string, body []byte) (*http.Response, error) {
-	eventURL, err := getServiceEndpoint(configservice)
-	if err != nil {
-		return nil, err
-	}
-
-	if eventURL.Host == "" {
-		return nil, errors.New("Host of configuration-service not set")
-	}
-
-	eventURL.Path = path
-
-	req, _ := http.NewRequest("POST", eventURL.String(), bytes.NewReader(body))
-	req.Header.Set("Content-Type", "application/json")
-
-	return client.httpClient.Do(req)
-}
-
-// postRequest sends a get request to the configuration-service
-func getRequest(client *Client, path string) (*http.Response, error) {
-	eventURL, err := getServiceEndpoint(configservice)
-	if err != nil {
-		return nil, err
-	}
-
-	if eventURL.Host == "" {
-		return nil, errors.New("Host of configuration-service not set")
-	}
-
-	eventURL.Path = path
-
-	req, _ := http.NewRequest("GET", eventURL.String(), nil)
-	req.Header.Set("Content-Type", "application/json")
-
-	return client.httpClient.Do(req)
+	return fmt.Errorf("Error in creating new stage: %s", err.Error())
 }
 
 // getServiceEndpoint retrieves an endpoint stored in an environment variable and sets http as default scheme
@@ -397,7 +319,7 @@ func createEventCopy(eventSource cloudevents.Event, eventType string) cloudevent
 }
 
 // sendDoneEvent prepares a keptn done event and sends it to the eventbroker
-func sendDoneEvent(receivedEvent cloudevents.Event, result string, message string, version *models.Version) error {
+func sendDoneEvent(receivedEvent cloudevents.Event, result string, message string, version *keptnmodels.Version) error {
 
 	doneEvent := createEventCopy(receivedEvent, "sh.keptn.events.done")
 
