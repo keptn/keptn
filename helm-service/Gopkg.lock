@@ -397,7 +397,7 @@
 
 [[projects]]
   branch = "develop"
-  digest = "1:d1460d243ef062274b425c8fd798551fbe13ff3b171c84cd2bf910e1520da4ad"
+  digest = "1:3dc2c9d810a65eb8c516c30b89defd948add26ddca4a2b08fe537321c3554289"
   name = "github.com/keptn/go-utils"
   packages = [
     "pkg/events",
@@ -405,7 +405,7 @@
     "pkg/utils",
   ]
   pruneopts = "UT"
-  revision = "878d3a8099aee829ee80cc9663f20e87e47d5f9a"
+  revision = "97ba1de28936b793ce27d810003b58fcbd7b0445"
 
 [[projects]]
   digest = "1:fd7f169f32c221b096c74e756bda16fe22d3bb448bbf74042fd0700407a1f92f"
@@ -424,7 +424,6 @@
   version = "v1.0.1"
 
 [[projects]]
-  branch = "master"
   digest = "1:927762c6729b4e72957ba3310e485ed09cf8451c5a637a52fd016a9fe09e7936"
   name = "github.com/mailru/easyjson"
   packages = [
@@ -434,6 +433,7 @@
   ]
   pruneopts = "UT"
   revision = "1b2b06f5f209fea48ff5922d8bfb2b9ed5d8f00b"
+  version = "v0.7.0"
 
 [[projects]]
   digest = "1:5d231480e1c64a726869bc4142d270184c419749d34f167646baa21008eb0a79"
