@@ -1,11 +1,20 @@
-package helm
+package helmtest
 
 import (
+	"bufio"
+	"bytes"
+	"io"
 	"io/ioutil"
 	"os"
 	"testing"
 
 	"k8s.io/helm/pkg/chartutil"
+	"k8s.io/helm/pkg/proto/hapi/chart"
+
+	"github.com/keptn/keptn/helm-service/pkg/objectutils"
+	"github.com/kinbiko/jsonassert"
+	"github.com/stretchr/testify/assert"
+	kyaml "k8s.io/apimachinery/pkg/util/yaml"
 )
 
 const serviceContent = `--- 
@@ -30,6 +39,7 @@ kind: Deployment
 metadata:
   name: carts
 spec:
+  replicas: {{ .Values.replicas }}
   strategy:
     rollingUpdate:
       maxUnavailable: 0
@@ -50,27 +60,6 @@ spec:
         - name: http
           protocol: TCP
           containerPort: 8080
-        env:
-        - name: DT_TAGS
-          value: "application={{ .Chart.Name }}"
-        - name: POD_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: "metadata.name"
-        - name: DEPLOYMENT_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: "metadata.labels['deployment']"
-        - name: CONTAINER_IMAGE
-          value: "{{ .Values.image }}"
-        - name: KEPTN_PROJECT
-          value: "{{ .Chart.Name }}"
-        - name: KEPTN_STAGE
-          valueFrom:
-            fieldRef:
-              fieldPath: "metadata.namespace"
-        - name: KEPTN_SERVICE
-          value: "carts"
         livenessProbe:
           httpGet:
             path: /health
@@ -107,6 +96,7 @@ data:
 
 const valuesContent = `
 image: docker.io/keptnexamples/carts:0.8.1
+replicas: 1
 `
 
 const chartContent = `
@@ -153,4 +143,59 @@ func CreateHelmChartData(t *testing.T) []byte {
 	bytes, err := ioutil.ReadFile(name)
 	check(err, t)
 	return bytes
+}
+
+type GeneratedResource struct {
+	URI         string
+	FileContent []string
+}
+
+func Equals(actual *chart.Chart, valuesExpected GeneratedResource, templatesExpected []GeneratedResource, t *testing.T) {
+
+	// Compare values
+	yReader := kyaml.NewYAMLReader(bufio.NewReader(bytes.NewReader([]byte(actual.Values.Raw))))
+	yamlData, err := yReader.Read()
+	if err != nil {
+		t.Error(err)
+	}
+	jsonData, err := objectutils.ToJSON(yamlData)
+	if err != nil {
+		t.Error(err)
+	}
+
+	ja := jsonassert.New(t)
+	ja.Assertf(string(jsonData), valuesExpected.FileContent[0])
+
+	for _, resource := range templatesExpected {
+
+		reader := ioutil.NopCloser(bytes.NewReader(GetTemplateByName(actual, resource.URI).Data))
+		decoder := kyaml.NewDocumentDecoder(reader)
+
+		for i := 0; ; i++ {
+			b1 := make([]byte, 4096)
+			n1, err := decoder.Read(b1)
+			if err == io.EOF {
+				break
+			}
+			assert.Nil(t, err, "")
+
+			jsonData, err := objectutils.ToJSON(b1[:n1])
+			if err != nil {
+				t.Error(err)
+			}
+
+			ja := jsonassert.New(t)
+			ja.Assertf(string(jsonData), resource.FileContent[i])
+		}
+	}
+}
+
+func GetTemplateByName(chart *chart.Chart, templateName string) *chart.Template {
+
+	for _, template := range chart.Templates {
+		if template.Name == templateName {
+			return template
+		}
+	}
+	return nil
 }

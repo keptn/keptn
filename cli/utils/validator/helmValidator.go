@@ -17,7 +17,16 @@ func ValidateHelmChart(helmChart []byte) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return validateValues(ch) && validateServices(ch) && validateDeployments(ch), nil
+	resValues := validateValues(ch)
+	resServiecs, err := validateServices(ch)
+	if err != nil {
+		return false, err
+	}
+	resDeployment, err := validateDeployments(ch)
+	if err != nil {
+		return false, err
+	}
+	return resValues && resServiecs && resDeployment, nil
 }
 
 func validateValues(ch *chart.Chart) bool {
@@ -29,24 +38,30 @@ func validateValues(ch *chart.Chart) bool {
 	return containsImage && containReplicaCount
 }
 
-func validateServices(ch *chart.Chart) bool {
-	services := keptnutils.GetServices(ch)
+func validateServices(ch *chart.Chart) (bool, error) {
+	services, err := keptnutils.GetRenderedServices(ch)
+	if err != nil {
+		return false, err
+	}
 	for _, svc := range services {
 		if !validateService(svc) {
-			return false
+			return false, nil
 		}
 	}
-	return len(services) > 0
+	return len(services) > 0, nil
 }
 
-func validateDeployments(ch *chart.Chart) bool {
-	deployments := keptnutils.GetDeployments(ch)
+func validateDeployments(ch *chart.Chart) (bool, error) {
+	deployments, err := keptnutils.GetRenderedDeployments(ch)
+	if err != nil {
+		return false, err
+	}
 	for _, depl := range deployments {
 		if !validateDeployment(depl) {
-			return false
+			return false, nil
 		}
 	}
-	return len(deployments) > 0
+	return len(deployments) == 1, nil
 }
 
 func validateService(svc *corev1.Service) bool {

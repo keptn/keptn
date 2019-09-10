@@ -1,4 +1,4 @@
-package jsonutils
+package objectutils
 
 import (
 	"bytes"

@@ -1,20 +1,15 @@
-package helm
+package controller
 
 import (
-	"strings"
 	"testing"
 
-	"sigs.k8s.io/yaml"
-
+	keptnevents "github.com/keptn/go-utils/pkg/events"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	"github.com/keptn/keptn/helm-service/controller/helm"
 	"github.com/keptn/keptn/helm-service/controller/mesh"
-	"github.com/keptn/keptn/helm-service/pkg/apis/networking/istio/v1alpha3"
 	"github.com/keptn/keptn/helm-service/pkg/helmtest"
 	"github.com/stretchr/testify/assert"
 )
-
-const projectName = "sockshop"
-const serviceName = "carts"
 
 var cartsCanaryIstioDestinationRuleGen = helmtest.GeneratedResource{
 	URI: "templates/carts-canary-istio-destinationrule.yaml",
@@ -103,7 +98,7 @@ var deploymentGen = helmtest.GeneratedResource{
     "name": "carts-primary"
   },
   "spec": {
-    "replicas" : 1,
+    "replicas" : 2,
     "selector": {
       "matchLabels": {
         "app": "carts-primary"
@@ -238,57 +233,29 @@ var valuesGen = helmtest.GeneratedResource{
 }`},
 }
 
-func TestGenerateManagedChart(t *testing.T) {
+func TestChangePrimaryDeployment(t *testing.T) {
 
 	data := helmtest.CreateHelmChartData(t)
 
-	h := NewGeneratedChartHandler(mesh.NewIstioMesh(), NewCanaryOnDeploymentGenerator(), "mydomain.sh")
+	h := helm.NewGeneratedChartHandler(mesh.NewIstioMesh(), helm.NewCanaryOnDeploymentGenerator(), "mydomain.sh")
 	inputChart, err := keptnutils.LoadChart(data)
 	if err != nil {
 		t.Error(err)
 	}
-	gen, err := h.GenerateManagedChart(inputChart, projectName, "production")
+	gen, err := h.GenerateManagedChart(inputChart, "sockshop", "production")
 	assert.Nil(t, err, "Generating the managed Chart should not return any error")
 
-	ch, err := keptnutils.LoadChart(gen)
+	generatedChart, err := keptnutils.LoadChart(gen)
+	if err != nil {
+		t.Error(err)
+	}
+
+	change := keptnevents.PropertyChange{PropertyPath: "spec.replicas", Value: 2}
+	event := keptnevents.ConfigurationChangeEventData{DeploymentChanges: []keptnevents.PropertyChange{change}}
+	changePrimaryDeployment(&event, generatedChart)
 
 	// Compare templates
 	generatedTemplateResources := []helmtest.GeneratedResource{cartsCanaryIstioDestinationRuleGen, cartsIstioVirtualserviceGen, cartsPrimaryIstioDestinationRuleGen,
 		deploymentGen, serviceGen}
-	helmtest.Equals(ch, valuesGen, generatedTemplateResources, t)
-}
-
-func TestUpdateCanaryWeight(t *testing.T) {
-	data := helmtest.CreateHelmChartData(t)
-
-	h := NewGeneratedChartHandler(mesh.NewIstioMesh(), NewCanaryOnDeploymentGenerator(), "mydomain.sh")
-	chart, err := keptnutils.LoadChart(data)
-	if err != nil {
-		t.Error(err)
-	}
-	genChartData, err := h.GenerateManagedChart(chart, "sockshop", "production")
-	if err != nil {
-		t.Error(err)
-	}
-	genChart, err := keptnutils.LoadChart(genChartData)
-	if err != nil {
-		t.Error(err)
-	}
-
-	h.UpdateCanaryWeight(genChart, 48)
-	assert.Nil(t, err, "Generating the managed Chart should not return any error")
-
-	template := helmtest.GetTemplateByName(genChart, "templates/carts-istio-virtualservice.yaml")
-	assert.NotNil(t, template, "Template must not be null")
-	vs := v1alpha3.VirtualService{}
-	err = yaml.Unmarshal(template.Data, &vs)
-	if err != nil {
-		t.Error(err)
-	}
-	assert.Equal(t, 1, len(vs.Spec.Http))
-	assert.Equal(t, 2, len(vs.Spec.Http[0].Route))
-	assert.Equal(t, int32(48), vs.Spec.Http[0].Route[0].Weight)
-	assert.True(t, strings.Contains(vs.Spec.Http[0].Route[0].Destination.Host, "canary"))
-	assert.Equal(t, int32(52), vs.Spec.Http[0].Route[1].Weight)
-	assert.True(t, strings.Contains(vs.Spec.Http[0].Route[1].Destination.Host, "primary"))
+	helmtest.Equals(generatedChart, valuesGen, generatedTemplateResources, t)
 }
