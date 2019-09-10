@@ -139,8 +139,9 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 				if err != nil {
 					logger.Error("could not get value for scaling remediation action")
 				}
-				newReplicacount := currentReplicaCount + adjustment
-				err = createAndSendEvent(shkeptncontext, projectname, servicename, stagename, newReplicacount)
+				propertyPath := "spec.replicas"
+				propertyValue := currentReplicaCount + adjustment
+				err = createAndSendEvent(shkeptncontext, projectname, servicename, stagename, propertyPath, propertyValue)
 				if err != nil {
 					logger.Error(err.Error())
 				}
@@ -148,6 +149,8 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 		}
 	}
+
+	logger.Debug("remediation service finished")
 
 	return nil
 }
@@ -303,18 +306,23 @@ func getReplicaCount(project, stage, service, configServiceURL string) (int, err
 }
 
 func createAndSendEvent(shkeptncontext string, project string,
-	service string, stage string, replicas int) error {
+	service string, stage string, propertyPath string, propertyValue interface{}) error {
 
-	source, _ := url.Parse("remediation-service")
+	source, _ := url.Parse("https://github.com/keptn/keptn/remediation-service")
 	contentType := "application/json"
 
-	valuesPrimary := make(map[string]interface{})
-	valuesPrimary["replicas"] = replicas
+	pc := keptnevents.PropertyChange{
+		PropertyPath: propertyPath,
+		Value:        propertyValue,
+	}
+
+	// valuesPrimary := make(map[string]interface{})
+	// valuesPrimary["replicas"] = replicas
 	configChangedEvent := keptnevents.ConfigurationChangeEventData{
-		Project:       project,
-		Service:       service,
-		Stage:         stage,
-		ValuesPrimary: valuesPrimary,
+		Project:           project,
+		Service:           service,
+		Stage:             stage,
+		DeploymentChanges: []keptnevents.PropertyChange{pc},
 	}
 
 	event := cloudevents.Event{
@@ -373,17 +381,3 @@ func getServiceEndpoint(service string) (url.URL, error) {
 
 	return *url, nil
 }
-
-// func retrieveResourceForProject(projectName string, resourceURI string, logger keptnutils.Logger) (*keptnutils.Resource, error) {
-// 	eventURL, err := getServiceEndpoint(configservice)
-// 	resourceHandler := keptnutils.NewResourceHandler(eventURL.Host)
-
-// 	resource, err := resourceHandler.GetProjectResource(projectName, resourceURI)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("Failed to retrieve resource %s", resourceURI, err.Error())
-// 	}
-
-// 	logger.Info(resource.ResourceContent)
-
-// 	return resource, nil
-// }
