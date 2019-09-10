@@ -17,25 +17,17 @@ verify_kubectl $? "Creating NATS Cluster failed."
 # allow wildcard domains
 oc project default
 oc adm router --replicas=0
-verify_kubectl $? "Scaling down router failed"
+#verify_kubectl $? "Scaling down router failed"
 oc set env dc/router ROUTER_ALLOW_WILDCARD_ROUTES=true
-verify_kubectl $? "Configuration of openshift router failed"
+#verify_kubectl $? "Configuration of openshift router failed"
 oc scale dc/router --replicas=1
 verify_kubectl $? "Upscaling of router failed"
 
-# create wildcard route for istio ingress gateway
-oc project istio-system
+oc delete pods -n default -l router=router --force --grace-period=0
 
-BASE_URL=$(oc get route -n istio-system istio-ingressgateway -oyaml | yq r - spec.host | sed 's~istio-ingressgateway-istio-system.~~')
-
-oc create route passthrough istio-wildcard-ingress-secure-keptn --service=istio-ingressgateway --hostname="www.keptn.ingress-gateway.$BASE_URL" --port=https --wildcard-policy=Subdomain --insecure-policy='None' -n istio-system
-#verify_kubectl $? "Creation of keptn ingress route failed."
 
 oc adm policy  add-cluster-role-to-user cluster-admin system:serviceaccount:keptn:default
 verify_kubectl $? "Adding cluster-role failed."
-
-# Domain used for routing to keptn services
-DOMAIN="ingress-gateway.$BASE_URL"
 
 # Set up SSL
 openssl req -nodes -newkey rsa:2048 -keyout key.pem -out certificate.pem  -x509 -days 365 -subj "/CN=$DOMAIN"
@@ -45,6 +37,17 @@ kubectl create --namespace istio-system secret tls istio-ingressgateway-certs --
 
 rm key.pem
 rm certificate.pem
+
+# create wildcard route for istio ingress gateway
+
+BASE_URL=$(oc get route -n istio-system istio-ingressgateway -oyaml | yq r - spec.host | sed 's~istio-ingressgateway-istio-system.~~')
+# Domain used for routing to keptn services
+DOMAIN="ingress-gateway.$BASE_URL"
+
+oc create route passthrough istio-wildcard-ingress-secure-keptn --service=istio-ingressgateway --hostname="www.keptn.ingress-gateway.$BASE_URL" --port=https --wildcard-policy=Subdomain --insecure-policy='None' -n istio-system
+
+#verify_kubectl $? "Creation of keptn ingress route failed."
+
 
 # Add config map in keptn namespace that contains the domain - this will be used by other services as well
 cat ../manifests/keptn/keptn-domain-configmap.yaml | \
