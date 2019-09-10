@@ -15,23 +15,6 @@ oc patch scc hostpath -p '{"allowHostDirVolumePlugin": true}'
 oc adm policy add-scc-to-group hostpath system:authenticated
 #verify_install_step "Creating hostpath SCC failed."
 
-# Install logging
-print_info "Installing Logging"
-kubectl apply -f ../manifests/logging/namespace.yaml
-kubectl apply -f ../manifests/logging/monitoring.yaml
-verify_kubectl $? "Creating ElasticSearch deployment failed."
-kubectl apply -f ../manifests/logging/fluent-bit/service-account.yaml
-verify_kubectl $? "Creating fluent-bit service account failed."
-oc adm policy add-scc-to-user privileged -z fluent-bit -n knative-monitoring
-kubectl apply -f ../manifests/logging/fluent-bit/role.yaml
-verify_kubectl $? "Creating fluent-bit role failed."
-kubectl apply -f ../manifests/logging/fluent-bit/role-binding.yaml
-verify_kubectl $? "Creating fluent-bit role binding failed."
-kubectl apply -f ../manifests/logging/fluent-bit/configmap.yaml
-verify_kubectl $? "Creating fluent-bit configmap failed."
-kubectl apply -f ../manifests/logging/fluent-bit/ds.yaml
-verify_kubectl $? "Creating fluent-bit daemonset failed."
-
 oc adm policy add-scc-to-user anyuid -z istio-egressgateway-service-account -n istio-system
 oc adm policy add-scc-to-user anyuid -z istio-citadel-service-account -n istio-system
 oc adm policy add-scc-to-user anyuid -z istio-ingressgateway-service-account -n istio-system
@@ -90,9 +73,3 @@ print_info "Keptn wears Openshift uniform"
 # Install done
 print_info "Installation of keptn complete."
 
-# Retrieve keptn endpoint and api-token
-KEPTN_ENDPOINT=https://api.keptn.$(kubectl get cm -n keptn keptn-domain -oyaml | yq - r data.app_domain)
-KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -o=yaml | yq - r data.keptn-api-token | base64 --decode)
-
-print_info "keptn endpoint: $KEPTN_ENDPOINT"
-print_info "keptn api-token: $KEPTN_API_TOKEN"
