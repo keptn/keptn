@@ -2,6 +2,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: installer
+  namespace: default
 spec:
   template:
     metadata:
