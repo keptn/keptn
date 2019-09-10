@@ -30,6 +30,7 @@ kind: Deployment
 metadata:
   name: carts
 spec:
+  replicas: {{ .Values.replicas }}
   strategy:
     rollingUpdate:
       maxUnavailable: 0
@@ -50,27 +51,6 @@ spec:
         - name: http
           protocol: TCP
           containerPort: 8080
-        env:
-        - name: DT_TAGS
-          value: "application={{ .Chart.Name }}"
-        - name: POD_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: "metadata.name"
-        - name: DEPLOYMENT_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: "metadata.labels['deployment']"
-        - name: CONTAINER_IMAGE
-          value: "{{ .Values.image }}"
-        - name: KEPTN_PROJECT
-          value: "{{ .Chart.Name }}"
-        - name: KEPTN_STAGE
-          valueFrom:
-            fieldRef:
-              fieldPath: "metadata.namespace"
-        - name: KEPTN_SERVICE
-          value: "carts"
         livenessProbe:
           httpGet:
             path: /health
@@ -107,6 +87,7 @@ data:
 
 const valuesContent = `
 image: docker.io/keptnexamples/carts:0.8.1
+replicas: 1
 `
 
 const chartContent = `

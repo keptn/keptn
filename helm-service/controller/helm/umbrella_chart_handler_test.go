@@ -3,8 +3,8 @@ package helm
 import (
 	"testing"
 
-	"github.com/keptn/keptn/helm-service/controller/jsonutils"
 	"github.com/keptn/keptn/helm-service/controller/mesh"
+	"github.com/keptn/keptn/helm-service/pkg/jsonutils"
 	"github.com/kinbiko/jsonassert"
 
 	keptnevents "github.com/keptn/go-utils/pkg/events"

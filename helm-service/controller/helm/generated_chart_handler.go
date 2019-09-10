@@ -1,7 +1,6 @@
 package helm
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -13,7 +12,10 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	kyaml "k8s.io/apimachinery/pkg/util/yaml"
+	"k8s.io/helm/pkg/chartutil"
 	"k8s.io/helm/pkg/proto/hapi/chart"
+	"k8s.io/helm/pkg/renderutil"
+	"k8s.io/helm/pkg/timeconv"
 )
 
 type GeneratedChartHandler struct {
@@ -49,10 +51,24 @@ func (c *GeneratedChartHandler) changeChartFile(ch *chart.Chart) {
 func (c *GeneratedChartHandler) changeTemplateContent(project string,
 	ch *chart.Chart, stageName string) error {
 
+	renderOpts := renderutil.Options{
+		ReleaseOptions: chartutil.ReleaseOptions{
+			Name:      ch.Metadata.Name,
+			IsInstall: false,
+			IsUpgrade: false,
+			Time:      timeconv.Now(),
+		},
+	}
+
+	renderedTemplates, err := renderutil.Render(ch, ch.Values, renderOpts)
+	if err != nil {
+		return err
+	}
+
 	newTemplates := make([]*chart.Template, 0, 0)
 
-	for _, templateFile := range ch.Templates {
-		dec := kyaml.NewYAMLToJSONDecoder(bytes.NewReader(templateFile.Data))
+	for k, v := range renderedTemplates {
+		dec := kyaml.NewYAMLToJSONDecoder(strings.NewReader(v))
 		newContent := make([]byte, 0, 0)
 		for {
 			var document interface{}
@@ -97,7 +113,7 @@ func (c *GeneratedChartHandler) changeTemplateContent(project string,
 		}
 
 		if len(newContent) > 0 {
-			newTemplates = append(newTemplates, &chart.Template{Name: templateFile.Name, Data: newContent})
+			newTemplates = append(newTemplates, &chart.Template{Name: k[len(ch.Metadata.Name)+1:], Data: newContent})
 		}
 	}
 
