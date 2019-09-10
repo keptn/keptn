@@ -95,7 +95,7 @@ type deploymentFinishedEvent struct {
 	DeploymentStrategy string `json:"deploymentstrategy"`
 }
 
-func sendDeploymentFinishedEvent(shkeptncontext string, project string, stage string, service string) error {
+func sendDeploymentFinishedEvent(shkeptncontext string, project string, stage string, service string, testStrategy string) error {
 
 	source, _ := url.Parse("helm-service")
 	contentType := "application/json"
@@ -105,10 +105,6 @@ func sendDeploymentFinishedEvent(shkeptncontext string, project string, stage st
 		return err
 	}
 
-	testStrategy, err := getTestStrategy(project, stage)
-	if err != nil {
-		return err
-	}
 	deploymentStrategies, err := getDeploymentStrategies(project)
 	var deploymentStrategyOldIdentifier string
 	if deploymentStrategies[stage] == keptnevents.Duplicate {
