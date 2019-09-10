@@ -50,7 +50,11 @@ func (c *CanaryOnDeploymentGenerator) DeleteRelease(project string, stage string
 	if err != nil {
 		return err
 	}
-	for _, dpl := range keptnutils.GetDeployments(ch) {
+	depls, err := keptnutils.GetRenderedDeployments(ch)
+	if err != nil {
+		return err
+	}
+	for _, dpl := range depls {
 		if err := keptnutils.ScaleDeployment(useInClusterConfig, dpl.Name, c.GetNamespace(project, stage, generated), 0); err != nil {
 			return err
 		}

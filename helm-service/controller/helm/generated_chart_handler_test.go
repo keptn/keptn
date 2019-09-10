@@ -14,9 +14,9 @@ import (
 	"sigs.k8s.io/yaml"
 
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
-	"github.com/keptn/keptn/helm-service/controller/jsonutils"
 	"github.com/keptn/keptn/helm-service/controller/mesh"
 	"github.com/keptn/keptn/helm-service/pkg/apis/networking/istio/v1alpha3"
+	"github.com/keptn/keptn/helm-service/pkg/jsonutils"
 	"github.com/kinbiko/jsonassert"
 	"github.com/stretchr/testify/assert"
 
@@ -119,6 +119,7 @@ var deploymentGen = GeneratedResource{
     "name": "carts-primary"
   },
   "spec": {
+    "replicas" : 1,
     "selector": {
       "matchLabels": {
         "app": "carts-primary"
@@ -139,50 +140,8 @@ var deploymentGen = GeneratedResource{
       },
       "spec": {
         "containers": [
-          {
-            "env": [
-              {
-                "name": "DT_TAGS",
-                "value": "application={{ .Chart.Name }}"
-              },
-              {
-                "name": "POD_NAME",
-                "valueFrom": {
-                  "fieldRef": {
-                    "fieldPath": "metadata.name"
-                  }
-                }
-              },
-              {
-                "name": "DEPLOYMENT_NAME",
-                "valueFrom": {
-                  "fieldRef": {
-                    "fieldPath": "metadata.labels['deployment']"
-                  }
-                }
-              },
-              {
-                "name": "CONTAINER_IMAGE",
-                "value": "{{ .Values.image }}"
-              },
-              {
-                "name": "KEPTN_PROJECT",
-                "value": "{{ .Chart.Name }}"
-              },
-              {
-                "name": "KEPTN_STAGE",
-                "valueFrom": {
-                  "fieldRef": {
-                    "fieldPath": "metadata.namespace"
-                  }
-                }
-              },
-              {
-                "name": "KEPTN_SERVICE",
-                "value": "carts"
-              }
-            ],
-            "image": "{{ .Values.image }}",
+          {            
+            "image": "docker.io/keptnexamples/carts:0.8.1",
             "imagePullPolicy": "IfNotPresent",
             "livenessProbe": {
               "httpGet": {
@@ -290,7 +249,8 @@ var valuesGen = GeneratedResource{
 	URI: "values.yaml",
 	FileContent: []string{`
 {
-  "image": "docker.io/keptnexamples/carts:0.8.1"
+  "image": "docker.io/keptnexamples/carts:0.8.1",
+  "replicas": 1
 }`},
 }
 
