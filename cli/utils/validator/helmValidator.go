@@ -61,7 +61,7 @@ func validateDeployments(ch *chart.Chart) (bool, error) {
 			return false, nil
 		}
 	}
-	return len(deployments) > 0, nil
+	return len(deployments) == 1, nil
 }
 
 func validateService(svc *corev1.Service) bool {
