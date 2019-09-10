@@ -13,9 +13,9 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/keptn/keptn/cli/utils/websockethelper"
+	keptnmodels "github.com/keptn/go-utils/pkg/models"
+	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/configuration-service/models"
-	websocketutil "github.com/keptn/keptn/shipyard-service/websocketutil"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
@@ -23,7 +23,6 @@ import (
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 	"github.com/google/uuid"
 	"github.com/kelseyhightower/envconfig"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
 )
 
 const timeout = 60
@@ -124,13 +123,13 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		return errors.New(errorMsg)
 	}
 
-	connData := &websockethelper.ConnectionData{}
+	connData := &keptnutils.ConnectionData{}
 	if err := event.DataAs(connData); err != nil {
 		logger.Error(fmt.Sprintf("Data of the event is incompatible. %s", err.Error()))
 		return err
 	}
 
-	ws, _, err := websocketutil.OpenWS(*connData, endPoint)
+	ws, _, err := keptnutils.OpenWS(*connData, endPoint)
 	if err != nil {
 		logger.Error(fmt.Sprintf("Opening websocket connection failed. %s", err.Error()))
 		return err
@@ -148,7 +147,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	}
 
 	const errorMsg = "Received unexpected keptn event that cannot be processed"
-	if err := websocketutil.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), errorMsg, true, "INFO"); err != nil {
+	if err := keptnutils.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), errorMsg, true, "INFO"); err != nil {
 		logger.Error(fmt.Sprintf("Could not write log to websocket. %s", err.Error()))
 	}
 	logger.Error(errorMsg)
@@ -170,7 +169,7 @@ func createProjectAndProcessShipyard(event cloudevents.Event, logger keptnutils.
 	if err := client.createProject(project, logger); err != nil {
 		return nil, fmt.Errorf("Creating project %s failed. %s", project.ProjectName, err.Error())
 	}
-	if err := websocketutil.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), fmt.Sprintf("Project %s created", project.ProjectName), false, "INFO"); err != nil {
+	if err := keptnutils.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), fmt.Sprintf("Project %s created", project.ProjectName), false, "INFO"); err != nil {
 		logger.Error(fmt.Sprintf("Could not write log to websocket. %s", err.Error()))
 	}
 
@@ -183,7 +182,7 @@ func createProjectAndProcessShipyard(event cloudevents.Event, logger keptnutils.
 		if err := client.createStage(project, stage, logger); err != nil {
 			return nil, fmt.Errorf("Creating stage %s failed. %s", stage.StageName, err.Error())
 		}
-		if err := websocketutil.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), fmt.Sprintf("Stage %s created", stage.StageName), false, "INFO"); err != nil {
+		if err := keptnutils.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), fmt.Sprintf("Stage %s created", stage.StageName), false, "INFO"); err != nil {
 			logger.Error(fmt.Sprintf("Could not write log to websocket. %s", err.Error()))
 		}
 	}
@@ -210,7 +209,7 @@ func logErrAndRespondWithDoneEvent(event cloudevents.Event, version *models.Vers
 		logger.Info(eventMessage)
 	}
 
-	if err := websocketutil.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), webSocketMessage, true, "INFO"); err != nil {
+	if err := keptnutils.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), webSocketMessage, true, "INFO"); err != nil {
 		logger.Error(fmt.Sprintf("Could not write log to websocket. %s", err.Error()))
 	}
 	if err := sendDoneEvent(event, result, eventMessage, version); err != nil {
@@ -274,11 +273,11 @@ func (client *Client) createStage(project models.Project, stage models.Stage, lo
 
 // storeResourceForProject stores the resource for a project using the keptnutils.ResourceHandler
 func storeResourceForProject(projectName string, resourceURI string, resourceContent string, logger keptnutils.Logger) (*models.Version, error) {
-	resource := keptnutils.Resource{
-		ResourceURI:     resourceURI,
+	resource := keptnmodels.Resource{
+		ResourceURI:     &resourceURI,
 		ResourceContent: resourceContent,
 	}
-	resources := []*keptnutils.Resource{&resource}
+	resources := []*keptnmodels.Resource{&resource}
 
 	eventURL, err := getServiceEndpoint(configservice)
 	resourceHandler := keptnutils.NewResourceHandler(eventURL.Host)
@@ -296,7 +295,7 @@ func storeResourceForProject(projectName string, resourceURI string, resourceCon
 	return &version, nil
 }
 
-func retrieveResourceForProject(projectName string, resourceURI string, logger keptnutils.Logger) (*keptnutils.Resource, error) {
+func retrieveResourceForProject(projectName string, resourceURI string, logger keptnutils.Logger) (*keptnmodels.Resource, error) {
 	eventURL, err := getServiceEndpoint(configservice)
 	resourceHandler := keptnutils.NewResourceHandler(eventURL.Host)
 
