@@ -1,26 +1,23 @@
 package cmd
 
 import (
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"net/url"
 	"os"
-	"strings"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 	"github.com/google/uuid"
+	keptnevents "github.com/keptn/go-utils/pkg/events"
+	"github.com/keptn/go-utils/pkg/models"
 	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
 	"github.com/keptn/keptn/cli/utils/websockethelper"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 )
-
-type projectData struct {
-	Project string      `json:"project"`
-	Stages  interface{} `json:"stages"`
-}
 
 // crprojectCmd represents the project command
 var crprojectCmd = &cobra.Command{
@@ -54,14 +51,13 @@ Example:
 		if _, err := os.Stat(args[1]); os.IsNotExist(err) {
 			return fmt.Errorf("Cannot find file %s", args[1])
 		}
-		_, err = utils.ReadFile(args[1])
+		content, err := utils.ReadFile(args[1])
 		if err != nil {
 			return err
 		}
-		testPrjData := projectData{}
-		err = parseShipYard(&testPrjData, args[1])
-		if err != nil {
-			return fmt.Errorf("Invalid shipyard file")
+
+		if err := testParseShipYard(content); err != nil {
+			return fmt.Errorf("Invalid shipyard file because parsing failed: %s", err.Error())
 		}
 		return nil
 	},
@@ -72,10 +68,8 @@ Example:
 		}
 		utils.PrintLog("Starting to create a project", utils.InfoLevel)
 
-		prjData := projectData{}
-		prjData.Project = args[0]
-
-		parseShipYard(&prjData, args[1])
+		content, _ := utils.ReadFile(args[1])
+		prjData := keptnevents.ProjectCreateEventData{Project: args[0], Shipyard: base64.StdEncoding.EncodeToString([]byte(content))}
 
 		source, _ := url.Parse("https://github.com/keptn/keptn/cli#createproject")
 
@@ -83,7 +77,7 @@ Example:
 		event := cloudevents.Event{
 			Context: cloudevents.EventContextV02{
 				ID:          uuid.New().String(),
-				Type:        "create.project",
+				Type:        keptnevents.InternalProjectCreateEventType,
 				Source:      types.URLRef{URL: *source},
 				ContentType: &contentType,
 			}.AsV02(),
@@ -117,21 +111,9 @@ Example:
 	},
 }
 
-func parseShipYard(prjData *projectData, yamlFile string) error {
-	data, err := utils.ReadFile(yamlFile)
-	if err != nil {
-		return err
-	}
-
-	var shipyardContent map[string]interface{}
-	dec := yaml.NewDecoder(strings.NewReader(data))
-	dec.Decode(&shipyardContent)
-
-	if err != nil {
-		return errors.New("Invalid shipyard file")
-	}
-	prjData.Stages = utils.Convert(shipyardContent["stages"])
-	return nil
+func testParseShipYard(shipyardContent string) error {
+	shipyard := models.Shipyard{}
+	return yaml.Unmarshal([]byte(shipyardContent), &shipyard)
 }
 
 func init() {
