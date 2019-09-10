@@ -31,7 +31,7 @@ spec:
         - name: PUBSUB_URL
           value: 'nats://keptn-nats-cluster'
         - name: PUBSUB_TOPIC
-          value: 'sh.keptn.event.service.create'
+          value: 'sh.keptn.internal.event.service.create'
         - name: PUBSUB_RECIPIENT
           value: 'helm-service'
 ---
