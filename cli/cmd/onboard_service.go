@@ -12,6 +12,7 @@ import (
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 	"github.com/google/uuid"
 	"github.com/keptn/go-utils/pkg/events"
+	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
 	"github.com/keptn/keptn/cli/utils/validator"
@@ -45,6 +46,8 @@ Examples:
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
+
+		*chartFilePath = keptnutils.ExpandTilde(*chartFilePath)
 
 		if _, err := os.Stat(*chartFilePath); os.IsNotExist(err) {
 			return errors.New("Provided Helm chart does not exist")

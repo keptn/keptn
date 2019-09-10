@@ -1,10 +1,15 @@
 package controller
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
+
+	"k8s.io/helm/pkg/proto/hapi/chart"
 
 	cloudevents "github.com/cloudevents/sdk-go"
 	"github.com/ghodss/yaml"
@@ -12,7 +17,11 @@ import (
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/helm-service/controller/helm"
 	"github.com/keptn/keptn/helm-service/controller/mesh"
+	"github.com/keptn/keptn/helm-service/pkg/objectutils"
 	"github.com/keptn/keptn/helm-service/pkg/serviceutils"
+	"github.com/tidwall/sjson"
+	appsv1 "k8s.io/api/apps/v1"
+	kyaml "k8s.io/apimachinery/pkg/util/yaml"
 	"k8s.io/helm/pkg/chartutil"
 )
 
@@ -57,21 +66,21 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event)
 		e.Stage = stage
 	}
 
-	if len(e.ValuesPrimary) > 0 {
-		if err := c.changeValues(e, true, e.ValuesPrimary); err != nil {
-			c.logger.Error(err.Error())
-			return err
-		}
-		if err := c.applyConfiguration(e, true); err != nil {
-			return err
-		}
-	}
 	if len(e.ValuesCanary) > 0 {
-		if err := c.changeValues(e, false, e.ValuesCanary); err != nil {
+		if err := c.updateChart(e, false, changeValue); err != nil {
 			c.logger.Error(err.Error())
 			return err
 		}
 		if err := c.applyConfiguration(e, false); err != nil {
+			return err
+		}
+	}
+	if len(e.DeploymentChanges) > 0 {
+		if err := c.updateChart(e, true, changePrimaryDeployment); err != nil {
+			c.logger.Error(err.Error())
+			return err
+		}
+		if err := c.applyConfiguration(e, true); err != nil {
 			return err
 		}
 	}
@@ -99,7 +108,57 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event)
 	return nil
 }
 
-func (c *ConfigurationChanger) changeValues(e *keptnevents.ConfigurationChangeEventData, generated bool, newValues map[string]interface{}) error {
+func changePrimaryDeployment(e *keptnevents.ConfigurationChangeEventData, chart *chart.Chart) error {
+
+	for _, template := range chart.Templates {
+		dec := kyaml.NewYAMLToJSONDecoder(bytes.NewReader(template.Data))
+		newContent := make([]byte, 0, 0)
+		for {
+			var document interface{}
+			err := dec.Decode(&document)
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				return err
+			}
+
+			doc, err := json.Marshal(document)
+			if err != nil {
+				return err
+			}
+
+			var depl appsv1.Deployment
+			if err := json.Unmarshal(doc, &depl); err == nil && keptnutils.IsDeployment(&depl) {
+				// It is a deployment
+				newDeployment := string(doc)
+				for _, change := range e.DeploymentChanges {
+					newDeployment, err = sjson.Set(newDeployment, change.PropertyPath, change.Value)
+					fmt.Println(newDeployment)
+					if err != nil {
+						return err
+					}
+				}
+				newContent, err = objectutils.AppendJSONStringAsYaml(newContent, newDeployment)
+				if err != nil {
+					return err
+				}
+
+			} else {
+				newContent, err = objectutils.AppendAsYaml(newContent, document)
+				if err != nil {
+					return err
+				}
+			}
+		}
+		template.Data = newContent
+	}
+
+	return nil
+}
+
+func (c *ConfigurationChanger) updateChart(e *keptnevents.ConfigurationChangeEventData, generated bool,
+	editChart func(*keptnevents.ConfigurationChangeEventData, *chart.Chart) error) error {
 
 	url, err := serviceutils.GetConfigServiceURL()
 	if err != nil {
@@ -107,26 +166,18 @@ func (c *ConfigurationChanger) changeValues(e *keptnevents.ConfigurationChangeEv
 	}
 
 	helmChartName := helm.GetChartName(e.Service, generated)
-	c.logger.Info(fmt.Sprintf("Start updating values of chart %s", helmChartName))
+	c.logger.Info(fmt.Sprintf("Start updating chart %s", helmChartName))
 	// Read chart
 	chart, err := keptnutils.GetChart(e.Project, e.Service, e.Stage, helmChartName, url.String())
 	if err != nil {
 		return err
 	}
 
-	values := make(map[string]interface{})
-	yaml.Unmarshal([]byte(chart.Values.Raw), &values)
-
-	// Change values
-	for k, v := range newValues {
-		values[k] = v
-	}
-
-	valuesData, err := yaml.Marshal(values)
+	// Edit chart
+	err = editChart(e, chart)
 	if err != nil {
 		return err
 	}
-	chart.Values.Raw = string(valuesData)
 
 	// Store chart
 	chartData, err := keptnutils.PackageChart(chart)
@@ -136,7 +187,26 @@ func (c *ConfigurationChanger) changeValues(e *keptnevents.ConfigurationChangeEv
 	if err := keptnutils.StoreChart(e.Project, e.Service, e.Stage, helmChartName, chartData, url.String()); err != nil {
 		return err
 	}
-	c.logger.Info(fmt.Sprintf("Finished updating values of chart %s", helmChartName))
+	c.logger.Info(fmt.Sprintf("Finished updating chart %s", helmChartName))
+	return nil
+}
+
+func changeValue(e *keptnevents.ConfigurationChangeEventData, chart *chart.Chart) error {
+
+	values := make(map[string]interface{})
+	yaml.Unmarshal([]byte(chart.Values.Raw), &values)
+
+	// Change values
+	for k, v := range e.ValuesCanary {
+		values[k] = v
+	}
+
+	valuesData, err := yaml.Marshal(values)
+	if err != nil {
+		return err
+	}
+	chart.Values.Raw = string(valuesData)
+
 	return nil
 }
 
