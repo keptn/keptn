@@ -34,7 +34,7 @@ func validateValues(ch *chart.Chart) bool {
 	values := make(map[string]interface{})
 	yaml.Unmarshal([]byte(ch.Values.Raw), &values)
 	_, containsImage := values["image"]
-	_, containReplicaCount := values["replicaCount"]
+	_, containReplicaCount := values["replicas"]
 	return containsImage && containReplicaCount
 }
 
