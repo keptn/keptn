@@ -84,38 +84,6 @@
         }
       }
     },
-    "/configure": {
-      "post": {
-        "tags": [
-          "configure"
-        ],
-        "operationId": "configure",
-        "summary": "Forwards the received configure event to the eventbroker",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/ConfigureCE"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "configured",
-            "schema": {
-              "$ref": "#/definitions/ChannelInfo"
-            }
-          },
-          "default": {
-            "description": "error",
-            "schema": {
-              "$ref": "#/definitions/error"
-            }
-          }
-        }
-      }
-    },
     "/project": {
       "post": {
         "tags": [
@@ -256,37 +224,7 @@
       }
     }
   },
-  "definitions": {
-    "ConfigureCE": {
-      "allOf": [
-        {
-          "$ref": "#/definitions/CE_without_data_with_keptncontext"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "data": {
-              "required": [
-                "org",
-                "user",
-                "token"
-              ],
-              "properties": {
-                "org": {
-                  "type": "string"
-                },
-                "user": {
-                  "type": "string"
-                },
-                "token": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        }
-      ]
-    },
+  "definitions": {    
     "CreateProjectCE": {
       "allOf": [
         {
@@ -298,31 +236,14 @@
             "data": {
               "required": [
                 "project",
-                "stages"
+                "shipyard"
               ],
               "properties": {
                 "project": {
                   "type": "string"
                 },
-                "stages": {
-                  "type": "array",
-                  "items": {
-                    "required": [
-                      "name",
-                      "deployment_strategy"
-                    ],
-                    "properties": {
-                      "name": {
-                        "type": "string"
-                      },
-                      "deployment_strategy": {
-                        "type": "string"
-                      },
-                      "test_strategy": {
-                        "type": "string"
-                      }
-                    }
-                  }
+                "shipyard": {
+                  "type": "string"
                 }
               }
             }
