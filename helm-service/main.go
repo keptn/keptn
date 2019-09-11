@@ -48,8 +48,8 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 	var logger keptnutils.LoggerInterface
 
-	connData := &keptnutils.ConnectionData{}
-	if err := event.DataAs(connData); err != nil ||
+	connData := keptnutils.ConnectionData{}
+	if err := event.DataAs(&connData); err != nil ||
 		connData.ChannelInfo.ChannelID == "" || connData.ChannelInfo.Token == "" {
 		logger = stdLogger
 		logger.Debug("No Websocket connection data available")
@@ -59,13 +59,13 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 			logger.Error(err.Error())
 			return nil
 		}
-		ws, _, err := keptnutils.OpenWS(*connData, *apiServiceURL)
+		ws, _, err := keptnutils.OpenWS(connData, *apiServiceURL)
 		defer ws.Close()
 		if err != nil {
 			stdLogger.Error(fmt.Sprintf("Opening websocket connection failed. %s", err.Error()))
 			return nil
 		}
-		combinedLogger := keptnutils.NewCombinedLogger(stdLogger, ws)
+		combinedLogger := keptnutils.NewCombinedLogger(stdLogger, ws, shkeptncontext)
 		defer combinedLogger.Terminate()
 		logger = combinedLogger
 	}
