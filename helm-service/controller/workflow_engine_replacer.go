@@ -16,36 +16,6 @@ import (
 	"github.com/keptn/keptn/helm-service/pkg/serviceutils"
 )
 
-func getDeploymentStrategies(project string) (map[string]keptnevents.DeploymentStrategy, error) {
-
-	url, err := serviceutils.GetConfigServiceURL()
-	if err != nil {
-		return nil, err
-	}
-
-	resourceHandler := keptnutils.NewResourceHandler(url.String())
-	handler := keptnutils.NewKeptnHandler(resourceHandler)
-
-	shipyard, err := handler.GetShipyard(project)
-	if err != nil {
-		return nil, err
-	}
-
-	res := make(map[string]keptnevents.DeploymentStrategy)
-
-	for _, stage := range shipyard.Stages {
-
-		if stage.DeploymentStrategy == "blue_green_service" ||
-			stage.DeploymentStrategy == "blue_green" || stage.DeploymentStrategy == "canary" {
-			res[stage.Name] = keptnevents.Duplicate
-		} else {
-			res[stage.Name] = keptnevents.Direct
-		}
-	}
-
-	return res, nil
-}
-
 func getFirstStage(project string) (string, error) {
 
 	url, err := serviceutils.GetConfigServiceURL()
@@ -105,7 +75,7 @@ func sendDeploymentFinishedEvent(shkeptncontext string, project string, stage st
 		return err
 	}
 
-	deploymentStrategies, err := getDeploymentStrategies(project)
+	deploymentStrategies, err := GetDeploymentStrategies(project)
 	var deploymentStrategyOldIdentifier string
 	if deploymentStrategies[stage] == keptnevents.Duplicate {
 		deploymentStrategyOldIdentifier = "blue_green_service"
