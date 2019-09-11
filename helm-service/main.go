@@ -9,6 +9,7 @@ import (
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
 	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
+	"github.com/gorilla/websocket"
 	"github.com/kelseyhightower/envconfig"
 	keptnevents "github.com/keptn/go-utils/pkg/events"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
@@ -48,6 +49,8 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 	var logger keptnutils.LoggerInterface
 
+	loggingDone := make(chan bool)
+
 	connData := keptnutils.ConnectionData{}
 	if err := event.DataAs(&connData); err != nil ||
 		connData.ChannelInfo.ChannelID == "" || connData.ChannelInfo.Token == "" {
@@ -60,14 +63,13 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 			return nil
 		}
 		ws, _, err := keptnutils.OpenWS(connData, *apiServiceURL)
-		defer ws.Close()
 		if err != nil {
 			stdLogger.Error(fmt.Sprintf("Opening websocket connection failed. %s", err.Error()))
 			return nil
 		}
 		combinedLogger := keptnutils.NewCombinedLogger(stdLogger, ws, shkeptncontext)
-		defer combinedLogger.Terminate()
 		logger = combinedLogger
+		go closeLogger(loggingDone, combinedLogger, ws)
 	}
 
 	mesh := mesh.NewIstioMesh()
@@ -86,15 +88,22 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 	if event.Type() == keptnevents.ConfigurationChangeEventType {
 		configChanger := controller.NewConfigurationChanger(mesh, canaryLevelGen, logger, keptnDomain)
-		go configChanger.ChangeAndApplyConfiguration(event)
+		go configChanger.ChangeAndApplyConfiguration(event, loggingDone)
 	} else if event.Type() == keptnevents.InternalServiceCreateEventType {
 		onboarder := controller.NewOnboarder(mesh, canaryLevelGen, logger, keptnDomain)
-		go onboarder.DoOnboard(event)
+		go onboarder.DoOnboard(event, loggingDone)
 	} else {
 		logger.Error("Received unexpected keptn event")
+		loggingDone <- true
 	}
 
 	return nil
+}
+
+func closeLogger(loggingDone chan bool, combinedLogger *keptnutils.CombinedLogger, ws *websocket.Conn) {
+	<-loggingDone
+	combinedLogger.Terminate()
+	ws.Close()
 }
 
 func _main(args []string, env envConfig) int {
