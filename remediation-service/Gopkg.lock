@@ -560,7 +560,7 @@
 
 [[projects]]
   branch = "develop"
-  digest = "1:e4ead7c9edf4f0776abf13a9d751b832dd04ffd00f18d623b2657fbaa9bbecf2"
+  digest = "1:f8faefb398b03fe333eef8d5f2efb18b32ac5e4b4bd7445975bf0c4bd53d2fbd"
   name = "github.com/keptn/go-utils"
   packages = [
     "pkg/events",
@@ -568,7 +568,7 @@
     "pkg/utils",
   ]
   pruneopts = "UT"
-  revision = "6f732312ca551412dbd7e3577660445f9ccfc438"
+  revision = "6bb1ea21967fe4667c0f7afeb20fbfc96b6c8e0a"
 
 [[projects]]
   digest = "1:fd7f169f32c221b096c74e756bda16fe22d3bb448bbf74042fd0700407a1f92f"
@@ -1561,6 +1561,8 @@
     "github.com/keptn/go-utils/pkg/models",
     "github.com/keptn/go-utils/pkg/utils",
     "gopkg.in/yaml.v2",
+    "k8s.io/api/apps/v1",
+    "k8s.io/apimachinery/pkg/util/yaml",
     "k8s.io/client-go/kubernetes",
     "k8s.io/client-go/plugin/pkg/client/auth",
     "k8s.io/client-go/rest",
