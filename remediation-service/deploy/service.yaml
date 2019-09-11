@@ -16,19 +16,23 @@ spec:
     spec:
       containers:
       - name: remediation-service
-        image: jetzlstorfer/remediation-service:latest
+        image: keptn/remediation-service:latest
         ports:
         - containerPort: 8080
         resources:
           requests:
-            memory: "32Mi"
+            memory: "128Mi"
             cpu: "50m"
           limits:
-            memory: "128Mi"
+            memory: "1024Mi"
             cpu: "500m"
         env:
           - name: EVENTBROKER
             value: 'http://event-broker.keptn.svc.cluster.local/keptn'
+          - name: CONFIGURATION_SERVICE
+            value: 'http://configuration-service.keptn.svc.cluster.local:8080'
+          - name: ENVIRONMENT
+            value: 'production'
 ---
 apiVersion: v1
 kind: Service
