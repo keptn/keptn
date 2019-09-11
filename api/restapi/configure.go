@@ -19,7 +19,6 @@ import (
 
 	"github.com/keptn/keptn/api/restapi/operations/project"
 
-	"github.com/keptn/keptn/api/restapi/operations/configure"
 	"github.com/keptn/keptn/api/utils"
 
 	openapierrors "github.com/go-openapi/errors"
@@ -46,10 +45,6 @@ func configureFlags(api *operations.API) {
 
 func getSendEventInternalError(err error) *event.SendEventDefault {
 	return event.NewSendEventDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
-}
-
-func getConfigureInternalError(err error) *configure.ConfigureDefault {
-	return configure.NewConfigureDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 }
 
 func getProjectInternalError(err error) *project.ProjectDefault {
@@ -119,33 +114,6 @@ func configureAPI(api *operations.API) http.Handler {
 			return getSendEventInternalError(err)
 		}
 		return event.NewSendEventCreated().WithPayload(&channelInfo)
-	})
-
-	api.ConfigureConfigureHandler = configure.ConfigureHandlerFunc(func(params configure.ConfigureParams, principal *models.Principal) middleware.Responder {
-		if params.Body.Shkeptncontext == "" {
-			params.Body.Shkeptncontext = uuid.New().String()
-		}
-		l := keptnutils.NewLogger(params.Body.Shkeptncontext, *params.Body.ID, "api")
-		l.Info("API received configure-event")
-
-		token, err := ws.CreateChannelInfo(params.Body.Shkeptncontext)
-		if err != nil {
-			return getConfigureInternalError(err)
-		}
-		channelInfo := getChannelInfo(&params.Body.Shkeptncontext, &token)
-		bodyData, err := params.Body.MarshalJSON()
-		if err != nil {
-			return getConfigureInternalError(err)
-		}
-		forwardEvent, err := addChannelInfoInCE(bodyData, channelInfo)
-		if err != nil {
-			return getConfigureInternalError(err)
-		}
-
-		if err := utils.PostToEventBroker(forwardEvent, l); err != nil {
-			return getConfigureInternalError(err)
-		}
-		return configure.NewConfigureCreated().WithPayload(&channelInfo)
 	})
 
 	api.ProjectProjectHandler = project.ProjectHandlerFunc(func(params project.ProjectParams, principal *models.Principal) middleware.Responder {
