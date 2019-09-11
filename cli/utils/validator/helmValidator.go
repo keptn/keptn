@@ -66,12 +66,19 @@ func validateDeployments(ch *chart.Chart) (bool, error) {
 
 func validateService(svc *corev1.Service) bool {
 
+	if svc.Spec.Selector == nil {
+		return false
+	}
 	val, ok := svc.Spec.Selector["app"]
 	return keptnutils.IsService(svc) && ok && val != ""
 }
 
 func validateDeployment(depl *appsv1.Deployment) bool {
 
+	if depl.Spec.Selector == nil || depl.Spec.Selector.MatchLabels == nil ||
+		depl.Spec.Template.ObjectMeta.Labels == nil {
+		return false
+	}
 	mLabel, ok1 := depl.Spec.Selector.MatchLabels["app"]
 	podLabel, ok2 := depl.Spec.Template.ObjectMeta.Labels["app"]
 	return keptnutils.IsDeployment(depl) && ok1 && ok2 && mLabel != "" && podLabel != ""
