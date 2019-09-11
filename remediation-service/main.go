@@ -35,10 +35,6 @@ import (
 	"k8s.io/helm/pkg/kube"
 )
 
-// const timeout = 60
-// const configservice = "CONFIGURATION_SERVICE"
-// const eventbroker = "EVENTBROKER"
-// const api = "API"
 const tillernamespace = "kube-system"
 const remediationfilename = "remediation.yaml"
 const configurationserviceconnection = "localhost:6060" // "configuration-service:8080"
@@ -94,19 +90,10 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		}
 	}
 
-	var releasename *string
-	var err error
-	// get helm release name by impacted entity
-	switch impact := eventData.ProblemDetails; {
-	case strings.HasPrefix(impact, "Pod"):
-		releasename, err = getReleaseByPodName(eventData.ImpactedEntity)
-		if err != nil {
-			fmt.Println("could not get release for pod: ", err)
-			return err
-		}
-	default:
-		logger.Error("could not interpret problem details")
-		return errors.New("could not interpret problem details")
+	releasename, err := getReleasename(eventData)
+	if err != nil {
+		logger.Error("could not get relase name")
+		return err
 	}
 
 	projectname, stagename, servicename := splitReleaseName(*releasename)
@@ -162,6 +149,20 @@ func init() {
 		log.Fatal(err)
 	}
 	fmt.Println("initialization of Helm done")
+}
+
+// get helm release name by impacted entity
+func getReleasename(eventData *keptnevents.ProblemEventData) (*string, error) {
+	switch impact := eventData.ProblemDetails; {
+	case strings.HasPrefix(impact, "Pod"):
+		return getReleaseByPodName(eventData.ImpactedEntity)
+	case strings.HasPrefix(impact, "Service"):
+		return nil, errors.New("Service remediation not yet supported")
+	case strings.HasPrefix(impact, "Node"):
+		return nil, errors.New("Node remediation not yet supported")
+	default:
+		return nil, errors.New("could not interpret problem details")
+	}
 }
 
 // getKubeClient creates a Kubernetes config and client for a given kubeconfig context.
@@ -242,7 +243,6 @@ func getHelmClient() (*helm.Client, error) {
 		}
 
 		settings.TillerHost = fmt.Sprintf("127.0.0.1:%d", tillerTunnel.Local)
-		//debug("Created tunnel using local port: '%d'\n", tillerTunnel.Local)
 	}
 	options := []helm.Option{helm.Host(settings.TillerHost), helm.ConnectTimeout(5)}
 	client := helm.NewClient(options...)
@@ -250,6 +250,7 @@ func getHelmClient() (*helm.Client, error) {
 
 }
 
+// gets Helm release name by pod name
 func getReleaseByPodName(podname string) (*string, error) {
 	client, err := getHelmClient()
 	if err != nil {
@@ -277,6 +278,7 @@ func getReleaseByPodName(podname string) (*string, error) {
 	return nil, errors.New("could not find release for pod")
 }
 
+// splits helm release name into projec, stage and service
 func splitReleaseName(releasename string) (project string, stage string, service string) {
 	// currently no "-" in project and service name are allowed, thus "-" is used to split
 	s := strings.SplitN(releasename, "-", 3)
@@ -287,6 +289,7 @@ func splitReleaseName(releasename string) (project string, stage string, service
 	return project, stage, service
 }
 
+// gets replica count from helm chart
 func getReplicaCount(project, stage, service, configServiceURL string) (int, error) {
 	helmChartName := service + "-generated"
 	// Read chart
@@ -305,6 +308,7 @@ func getReplicaCount(project, stage, service, configServiceURL string) (int, err
 	return val, nil
 }
 
+// creates and sends cloud event
 func createAndSendEvent(shkeptncontext string, project string,
 	service string, stage string, propertyPath string, propertyValue interface{}) error {
 
@@ -316,8 +320,6 @@ func createAndSendEvent(shkeptncontext string, project string,
 		Value:        propertyValue,
 	}
 
-	// valuesPrimary := make(map[string]interface{})
-	// valuesPrimary["replicas"] = replicas
 	configChangedEvent := keptnevents.ConfigurationChangeEventData{
 		Project:           project,
 		Service:           service,
