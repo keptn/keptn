@@ -45,7 +45,7 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event, loggingDone chan bool) error
 	}
 
 	if os.Getenv("PRE_WORKFLOW_ENGINE") == "true" {
-		deplStrategies, err := getDeploymentStrategies(event.Project)
+		deplStrategies, err := GetDeploymentStrategies(event.Project)
 		if err != nil {
 			o.logger.Error(fmt.Sprintf("Error when getting deployment strategies: %s" + err.Error()))
 			return err
