@@ -13,7 +13,7 @@ wait_for_deployment_in_namespace "nats-operator" "keptn"
 kubectl apply -f ../manifests/nats/nats-cluster.yaml
 verify_kubectl $? "Creating NATS Cluster failed."
 
-
+ROUTER_POD=$(oc get pods -n default -l router=router -ojsonpath={.items[0].metadata.name})
 # allow wildcard domains
 oc project default
 oc adm router --replicas=0
@@ -23,7 +23,7 @@ oc set env dc/router ROUTER_ALLOW_WILDCARD_ROUTES=true
 oc scale dc/router --replicas=1
 verify_kubectl $? "Upscaling of router failed"
 
-oc delete pods -n default -l router=router --force --grace-period=0
+oc delete pod $ROUTER_POD -n default --force --grace-period=0
 
 
 oc adm policy  add-cluster-role-to-user cluster-admin system:serviceaccount:keptn:default
