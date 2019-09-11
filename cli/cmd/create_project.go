@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	keptnevents "github.com/keptn/go-utils/pkg/events"
 	"github.com/keptn/go-utils/pkg/models"
+	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
 	"github.com/keptn/keptn/cli/utils/websockethelper"
@@ -48,10 +49,11 @@ Example:
 			errorMsg += "Please update project name and try again."
 			return errors.New(errorMsg)
 		}
-		if _, err := os.Stat(args[1]); os.IsNotExist(err) {
-			return fmt.Errorf("Cannot find file %s", args[1])
+		if _, err := os.Stat(keptnutils.ExpandTilde(args[1])); os.IsNotExist(err) {
+			return fmt.Errorf("Cannot find file %s", keptnutils.ExpandTilde(args[1]))
 		}
-		content, err := utils.ReadFile(args[1])
+
+		content, err := utils.ReadFile(keptnutils.ExpandTilde(args[1]))
 		if err != nil {
 			return err
 		}
@@ -68,7 +70,7 @@ Example:
 		}
 		utils.PrintLog("Starting to create a project", utils.InfoLevel)
 
-		content, _ := utils.ReadFile(args[1])
+		content, _ := utils.ReadFile(keptnutils.ExpandTilde(args[1]))
 		prjData := keptnevents.ProjectCreateEventData{Project: args[0], Shipyard: base64.StdEncoding.EncodeToString([]byte(content))}
 
 		source, _ := url.Parse("https://github.com/keptn/keptn/cli#createproject")
