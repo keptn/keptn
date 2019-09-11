@@ -6,8 +6,6 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"strconv"
-
 	strfmt "github.com/go-openapi/strfmt"
 
 	"github.com/go-openapi/errors"
@@ -18,7 +16,7 @@ import (
 // CreateProjectCE create project c e
 // swagger:model CreateProjectCE
 type CreateProjectCE struct {
-	CEWithoutDataWithKeptncontext
+	CEWithoutData
 
 	// data
 	Data *CreateProjectCEAO1Data `json:"data,omitempty"`
@@ -27,11 +25,11 @@ type CreateProjectCE struct {
 // UnmarshalJSON unmarshals this object from a JSON structure
 func (m *CreateProjectCE) UnmarshalJSON(raw []byte) error {
 	// AO0
-	var aO0 CEWithoutDataWithKeptncontext
+	var aO0 CEWithoutData
 	if err := swag.ReadJSON(raw, &aO0); err != nil {
 		return err
 	}
-	m.CEWithoutDataWithKeptncontext = aO0
+	m.CEWithoutData = aO0
 
 	// AO1
 	var dataAO1 struct {
@@ -50,7 +48,7 @@ func (m *CreateProjectCE) UnmarshalJSON(raw []byte) error {
 func (m CreateProjectCE) MarshalJSON() ([]byte, error) {
 	_parts := make([][]byte, 0, 2)
 
-	aO0, err := swag.WriteJSON(m.CEWithoutDataWithKeptncontext)
+	aO0, err := swag.WriteJSON(m.CEWithoutData)
 	if err != nil {
 		return nil, err
 	}
@@ -75,8 +73,8 @@ func (m CreateProjectCE) MarshalJSON() ([]byte, error) {
 func (m *CreateProjectCE) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	// validation for a type composition with CEWithoutDataWithKeptncontext
-	if err := m.CEWithoutDataWithKeptncontext.Validate(formats); err != nil {
+	// validation for a type composition with CEWithoutData
+	if err := m.CEWithoutData.Validate(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -134,9 +132,9 @@ type CreateProjectCEAO1Data struct {
 	// Required: true
 	Project *string `json:"project"`
 
-	// stages
+	// shipyard
 	// Required: true
-	Stages []*CreateProjectCEAO1DataStagesItems0 `json:"stages"`
+	Shipyard *string `json:"shipyard"`
 }
 
 // Validate validates this create project c e a o1 data
@@ -147,7 +145,7 @@ func (m *CreateProjectCEAO1Data) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateStages(formats); err != nil {
+	if err := m.validateShipyard(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -166,26 +164,10 @@ func (m *CreateProjectCEAO1Data) validateProject(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *CreateProjectCEAO1Data) validateStages(formats strfmt.Registry) error {
+func (m *CreateProjectCEAO1Data) validateShipyard(formats strfmt.Registry) error {
 
-	if err := validate.Required("data"+"."+"stages", "body", m.Stages); err != nil {
+	if err := validate.Required("data"+"."+"shipyard", "body", m.Shipyard); err != nil {
 		return err
-	}
-
-	for i := 0; i < len(m.Stages); i++ {
-		if swag.IsZero(m.Stages[i]) { // not required
-			continue
-		}
-
-		if m.Stages[i] != nil {
-			if err := m.Stages[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("data" + "." + "stages" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -202,76 +184,6 @@ func (m *CreateProjectCEAO1Data) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *CreateProjectCEAO1Data) UnmarshalBinary(b []byte) error {
 	var res CreateProjectCEAO1Data
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}
-
-// CreateProjectCEAO1DataStagesItems0 create project c e a o1 data stages items0
-// swagger:model CreateProjectCEAO1DataStagesItems0
-type CreateProjectCEAO1DataStagesItems0 struct {
-
-	// deployment strategy
-	// Required: true
-	DeploymentStrategy *string `json:"deployment_strategy"`
-
-	// name
-	// Required: true
-	Name *string `json:"name"`
-
-	// test strategy
-	TestStrategy string `json:"test_strategy,omitempty"`
-}
-
-// Validate validates this create project c e a o1 data stages items0
-func (m *CreateProjectCEAO1DataStagesItems0) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.validateDeploymentStrategy(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateName(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *CreateProjectCEAO1DataStagesItems0) validateDeploymentStrategy(formats strfmt.Registry) error {
-
-	if err := validate.Required("deployment_strategy", "body", m.DeploymentStrategy); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *CreateProjectCEAO1DataStagesItems0) validateName(formats strfmt.Registry) error {
-
-	if err := validate.Required("name", "body", m.Name); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *CreateProjectCEAO1DataStagesItems0) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *CreateProjectCEAO1DataStagesItems0) UnmarshalBinary(b []byte) error {
-	var res CreateProjectCEAO1DataStagesItems0
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
