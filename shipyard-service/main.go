@@ -201,7 +201,7 @@ func storeResourceForProject(projectName, shipyard string, logger keptnutils.Log
 		return nil, fmt.Errorf("Storing %s file failed. %s", resource.ResourceURI, err.Error())
 	}
 
-	logger.Info(fmt.Sprintf("Resource %s successfully stored", resource.ResourceURI))
+	logger.Info(fmt.Sprintf("Resource %s successfully stored", *resource.ResourceURI))
 	return &keptnmodels.Version{Version: versionStr}, nil
 }
 
