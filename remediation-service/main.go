@@ -1,9 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net/url"
 	"os"
@@ -11,6 +14,9 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+
+	appsv1 "k8s.io/api/apps/v1"
+	kyaml "k8s.io/apimachinery/pkg/util/yaml"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 	"github.com/google/uuid"
@@ -37,7 +43,7 @@ import (
 
 const tillernamespace = "kube-system"
 const remediationfilename = "remediation.yaml"
-const configurationserviceconnection = "localhost:6060" // "configuration-service:8080"
+const configurationserviceconnection = "CONFIGURATION_SERVICE" //"localhost:6060" // "configuration-service:8080"
 const eventbroker = "EVENTBROKER"
 
 type envConfig struct {
@@ -92,15 +98,23 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 	releasename, err := getReleasename(eventData)
 	if err != nil {
-		logger.Error("could not get relase name")
+		logger.Error("could not get release name")
 		return err
 	}
 
 	projectname, stagename, servicename := splitReleaseName(*releasename)
 	resourceURI := remediationfilename
 
-	// get remediation.yaml
+	// valide if remediation should be performed
 	resourceHandler := keptnutils.NewResourceHandler(configurationserviceconnection)
+	autoremediate := isRemediationEnabled(resourceHandler, projectname, stagename)
+	logger.Debug(fmt.Sprintf("remedation enabled for project and stage: %t", autoremediate))
+
+	if !autoremediate {
+		return errors.New("remediation not enabled for project and stage")
+	}
+
+	// get remediation.yaml
 	resource, err := resourceHandler.GetServiceResource(projectname, stagename, servicename, resourceURI)
 	if err != nil {
 		logger.Error("could not get remediation.yaml file")
@@ -117,9 +131,9 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 			logger.Debug("Remediation for problem found in remediation.yaml")
 			// currently only one remediation action is supported
 			if remediation.Actions[0].Action == "scaling" {
-				currentReplicaCount, err := getReplicaCount(projectname, stagename, servicename, configurationserviceconnection)
+				currentReplicaCount, err := getReplicaCount(logger, projectname, stagename, servicename, configurationserviceconnection)
 				if err != nil {
-					logger.Error("could not get replicaCount")
+					logger.Error("could not get replica count")
 					return err
 				}
 				adjustment, err := strconv.Atoi(remediation.Actions[0].Value)
@@ -182,15 +196,6 @@ func getKubeClient(context string, kubeconfig string) (*rest.Config, kubernetes.
 	return config, client, nil
 }
 
-// configForContext creates a Kubernetes REST client configuration for a given kubeconfig context.
-func configForContext(context string, kubeconfig string) (*rest.Config, error) {
-	config, err := kube.GetConfig(context, kubeconfig).ClientConfig()
-	if err != nil {
-		return nil, fmt.Errorf("could not get Kubernetes config for context %q: %s", context, err)
-	}
-	return config, nil
-}
-
 // UserHomeDir retries home directory of user
 func UserHomeDir() string {
 	if runtime.GOOS == "windows" {
@@ -205,7 +210,7 @@ func UserHomeDir() string {
 
 func getK8sConfig() (*rest.Config, error) {
 	var useInClusterConfig bool
-	if os.Getenv("env") == "production" {
+	if os.Getenv("ENVIRONMENT") == "production" {
 		useInClusterConfig = true
 	} else {
 		useInClusterConfig = false
@@ -250,6 +255,23 @@ func getHelmClient() (*helm.Client, error) {
 
 }
 
+func isRemediationEnabled(rh *keptnutils.ResourceHandler, project string, stage string) bool {
+	keptnHandler := keptnutils.NewKeptnHandler(rh)
+	fmt.Println("get shipyard for ", project)
+	shipyard, err := keptnHandler.GetShipyard(project)
+	if err != nil {
+		return false
+	}
+	fmt.Println("shipyard: ", shipyard)
+	for _, s := range shipyard.Stages {
+		if s.Name == stage && s.RemediationStrategy == "automated" {
+			return true
+		}
+	}
+
+	return false
+}
+
 // gets Helm release name by pod name
 func getReleaseByPodName(podname string) (*string, error) {
 	client, err := getHelmClient()
@@ -290,22 +312,43 @@ func splitReleaseName(releasename string) (project string, stage string, service
 }
 
 // gets replica count from helm chart
-func getReplicaCount(project, stage, service, configServiceURL string) (int, error) {
+func getReplicaCount(logger *keptnutils.Logger, project, stage, service, configServiceURL string) (int, error) {
 	helmChartName := service + "-generated"
 	// Read chart
 	chart, err := keptnutils.GetChart(project, service, stage, helmChartName, configServiceURL)
 	if err != nil {
 		return -1, err
 	}
+	logger.Debug("chart found for affected service")
 
-	values := make(map[string]interface{})
-	yaml.Unmarshal([]byte(chart.Values.Raw), &values)
+	for _, template := range chart.Templates {
+		dec := kyaml.NewYAMLToJSONDecoder(bytes.NewReader(template.Data))
+		for {
+			var document interface{}
+			err := dec.Decode(&document)
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				return -1, err
+			}
 
-	val, ok := values["replicas"].(int)
-	if !ok {
-		return -1, errors.New("could not get replicas")
+			doc, err := json.Marshal(document)
+			if err != nil {
+				return -1, err
+			}
+
+			var depl appsv1.Deployment
+			if err := json.Unmarshal(doc, &depl); err == nil && keptnutils.IsDeployment(&depl) {
+				// It is a deployment
+				fmt.Println(depl.Spec.Replicas)
+				return 1, nil
+
+			}
+		}
 	}
-	return val, nil
+
+	return -1, errors.New("could not find replica count")
 }
 
 // creates and sends cloud event
