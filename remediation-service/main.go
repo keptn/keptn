@@ -108,7 +108,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	// valide if remediation should be performed
 	resourceHandler := keptnutils.NewResourceHandler(configurationserviceconnection)
 	autoremediate := isRemediationEnabled(resourceHandler, projectname, stagename)
-	logger.Debug(fmt.Sprintf("remedation enabled for project and stage: %t", autoremediate))
+	logger.Debug(fmt.Sprintf("remediation enabled for project and stage: %t", autoremediate))
 
 	if !autoremediate {
 		return errors.New("remediation not enabled for project and stage")
