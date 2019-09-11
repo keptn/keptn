@@ -32,7 +32,9 @@ func NewOnboarder(mesh mesh.Mesh, canaryLevelGen helm.CanaryLevelGenerator,
 }
 
 // DoOnboard onboards a new service
-func (o *Onboarder) DoOnboard(ce cloudevents.Event) error {
+func (o *Onboarder) DoOnboard(ce cloudevents.Event, loggingDone chan bool) error {
+
+	defer func() { loggingDone <- true }()
 
 	umbrellaChartHandler := helm.NewUmbrellaChartHandler(o.mesh)
 

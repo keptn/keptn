@@ -50,7 +50,9 @@ func NewConfigurationChanger(mesh mesh.Mesh, canaryLevelGen helm.CanaryLevelGene
 }
 
 // ChangeAndApplyConfiguration changes the configuration and applies it in the cluster
-func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event) error {
+func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event, loggingDone chan bool) error {
+
+	defer func() { loggingDone <- true }()
 
 	e := &keptnevents.ConfigurationChangeEventData{}
 	if err := ce.DataAs(e); err != nil {
@@ -150,7 +152,6 @@ func changePrimaryDeployment(e *keptnevents.ConfigurationChangeEventData, chart 
 				newDeployment := string(doc)
 				for _, change := range e.DeploymentChanges {
 					newDeployment, err = sjson.Set(newDeployment, change.PropertyPath, change.Value)
-					fmt.Println(newDeployment)
 					if err != nil {
 						return err
 					}
