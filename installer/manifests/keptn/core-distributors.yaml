@@ -179,7 +179,7 @@ spec:
         - name: PUBSUB_RECIPIENT
           value: 'gatekeeper-service'
 ---
-## shipyard-service: create.project
+## shipyard-service: sh.keptn.internal.event.project.create
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -211,7 +211,7 @@ spec:
         - name: PUBSUB_URL
           value: 'nats://keptn-nats-cluster'
         - name: PUBSUB_TOPIC
-          value: 'create.project'
+          value: 'sh.keptn.internal.event.project.create'
         - name: PUBSUB_RECIPIENT
           value: 'shipyard-service'
 ---
