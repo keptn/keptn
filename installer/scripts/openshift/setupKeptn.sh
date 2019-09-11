@@ -23,7 +23,15 @@ verify_kubectl $? "Configuration of openshift router failed"
 oc scale dc/router --replicas=1
 verify_kubectl $? "Upscaling of router failed"
 
-#oc delete pod $ROUTER_POD -n default --force --grace-period=0 --ignore-not-found
+oc delete pod $ROUTER_POD -n default --force --grace-period=0 --ignore-not-found
+
+# create wildcard route for istio ingress gateway
+
+BASE_URL=$(oc get route -n istio-system istio-ingressgateway -oyaml | yq r - spec.host | sed 's~istio-ingressgateway-istio-system.~~')
+# Domain used for routing to keptn services
+DOMAIN="ingress-gateway.$BASE_URL"
+
+oc create route passthrough istio-wildcard-ingress-secure-keptn --service=istio-ingressgateway --hostname="www.keptn.ingress-gateway.$BASE_URL" --port=https --wildcard-policy=Subdomain --insecure-policy='None' -n istio-system
 
 
 oc adm policy  add-cluster-role-to-user cluster-admin system:serviceaccount:keptn:default
@@ -37,14 +45,6 @@ kubectl create --namespace istio-system secret tls istio-ingressgateway-certs --
 
 rm key.pem
 rm certificate.pem
-
-# create wildcard route for istio ingress gateway
-
-BASE_URL=$(oc get route -n istio-system istio-ingressgateway -oyaml | yq r - spec.host | sed 's~istio-ingressgateway-istio-system.~~')
-# Domain used for routing to keptn services
-DOMAIN="ingress-gateway.$BASE_URL"
-
-oc create route passthrough istio-wildcard-ingress-secure-keptn --service=istio-ingressgateway --hostname="www.keptn.ingress-gateway.$BASE_URL" --port=https --wildcard-policy=Subdomain --insecure-policy='None' -n istio-system
 
 #verify_kubectl $? "Creation of keptn ingress route failed."
 
