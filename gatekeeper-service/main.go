@@ -176,7 +176,7 @@ func getNextStage(project string, currentStage string) (string, error) {
 func getImage(project string, currentStage string, service string) (string, error) {
 	helmChartName := service
 	// Read chart
-	chart, err := keptnutils.GetChart(project, service, currentStage, helmChartName, configservice)
+	chart, err := keptnutils.GetChart(project, service, currentStage, helmChartName, os.Getenv(configservice))
 	if err != nil {
 		return "", err
 	}
