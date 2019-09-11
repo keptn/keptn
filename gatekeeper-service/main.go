@@ -152,7 +152,7 @@ func doGateKeeping(event cloudevents.Event, shkeptncontext string, logger *keptn
 }
 
 func getNextStage(project string, currentStage string) (string, error) {
-	resourceHandler := keptnutils.NewResourceHandler(configservice)
+	resourceHandler := keptnutils.NewResourceHandler(os.Getenv(configservice))
 	handler := keptnutils.NewKeptnHandler(resourceHandler)
 
 	shipyard, err := handler.GetShipyard(project)
