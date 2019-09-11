@@ -1090,6 +1090,7 @@
     "github.com/gogo/protobuf/proto",
     "github.com/gogo/protobuf/types",
     "github.com/google/uuid",
+    "github.com/gorilla/websocket",
     "github.com/kelseyhightower/envconfig",
     "github.com/keptn/go-utils/pkg/events",
     "github.com/keptn/go-utils/pkg/models",
