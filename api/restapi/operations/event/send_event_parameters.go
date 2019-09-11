@@ -34,7 +34,7 @@ type SendEventParams struct {
 	/*
 	  In: body
 	*/
-	Body *models.CEWithKeptncontext
+	Body *models.CE
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -48,7 +48,7 @@ func (o *SendEventParams) BindRequest(r *http.Request, route *middleware.Matched
 
 	if runtime.HasBody(r) {
 		defer r.Body.Close()
-		var body models.CEWithKeptncontext
+		var body models.CE
 		if err := route.Consumer.Consume(r.Body, &body); err != nil {
 			res = append(res, errors.NewParseError("body", "body", "", err))
 		} else {

@@ -89,18 +89,15 @@ func configureAPI(api *operations.API) http.Handler {
 	})
 
 	api.EventSendEventHandler = event.SendEventHandlerFunc(func(params event.SendEventParams, principal *models.Principal) middleware.Responder {
-		if params.Body.Shkeptncontext == "" {
-			uuidStr := uuid.New().String()
-			params.Body.Shkeptncontext = uuidStr
-		}
-		l := keptnutils.NewLogger(params.Body.Shkeptncontext, *params.Body.ID, "api")
+		uuidStr := uuid.New().String()
+		l := keptnutils.NewLogger(uuidStr, *params.Body.ID, "api")
 		l.Info("API received keptn-event")
 
-		token, err := ws.CreateChannelInfo(params.Body.Shkeptncontext)
+		token, err := ws.CreateChannelInfo(uuidStr)
 		if err != nil {
 			return getSendEventInternalError(err)
 		}
-		channelInfo := getChannelInfo(&params.Body.Shkeptncontext, &token)
+		channelInfo := getChannelInfo(&uuidStr, &token)
 		bodyData, err := params.Body.MarshalJSON()
 		if err != nil {
 			return getSendEventInternalError(err)
@@ -117,17 +114,15 @@ func configureAPI(api *operations.API) http.Handler {
 	})
 
 	api.ProjectProjectHandler = project.ProjectHandlerFunc(func(params project.ProjectParams, principal *models.Principal) middleware.Responder {
-		if params.Body.Shkeptncontext == "" {
-			params.Body.Shkeptncontext = uuid.New().String()
-		}
-		l := keptnutils.NewLogger(params.Body.Shkeptncontext, *params.Body.ID, "api")
+		uuidStr := uuid.New().String()
+		l := keptnutils.NewLogger(uuidStr, *params.Body.ID, "api")
 		l.Info("API received project-event")
 
-		token, err := ws.CreateChannelInfo(params.Body.Shkeptncontext)
+		token, err := ws.CreateChannelInfo(uuidStr)
 		if err != nil {
 			return getProjectInternalError(err)
 		}
-		channelInfo := getChannelInfo(&params.Body.Shkeptncontext, &token)
+		channelInfo := getChannelInfo(&uuidStr, &token)
 		bodyData, err := params.Body.MarshalJSON()
 		if err != nil {
 			return getProjectInternalError(err)
@@ -144,18 +139,15 @@ func configureAPI(api *operations.API) http.Handler {
 	})
 
 	api.ServiceServiceHandler = service.ServiceHandlerFunc(func(params service.ServiceParams, principal *models.Principal) middleware.Responder {
-		if params.Body.Shkeptncontext == "" {
-			uuidStr := uuid.New().String()
-			params.Body.Shkeptncontext = uuidStr
-		}
-		l := keptnutils.NewLogger(params.Body.Shkeptncontext, *params.Body.ID, "api")
+		uuidStr := uuid.New().String()
+		l := keptnutils.NewLogger(uuidStr, *params.Body.ID, "api")
 		l.Info("API received service-event")
 
-		token, err := ws.CreateChannelInfo(params.Body.Shkeptncontext)
+		token, err := ws.CreateChannelInfo(uuidStr)
 		if err != nil {
 			return getServiceInternalError(err)
 		}
-		channelInfo := getChannelInfo(&params.Body.Shkeptncontext, &token)
+		channelInfo := getChannelInfo(&uuidStr, &token)
 		bodyData, err := params.Body.MarshalJSON()
 		if err != nil {
 			return getServiceInternalError(err)
