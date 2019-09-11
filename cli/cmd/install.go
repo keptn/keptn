@@ -249,7 +249,7 @@ func doInstallation() error {
 		return err
 	}
 
-	o = options{"delete", "job", "installer"}
+	o = options{"delete", "job", "installer", "-n", "default"}
 	o.appendIfNotEmpty(kubectlOptions)
 	_, err = keptnutils.ExecuteCommand("kubectl", o)
 	if err != nil {
