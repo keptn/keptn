@@ -360,6 +360,8 @@ func waitForInstallerPod() (string, error) {
 			"pods",
 			"-l",
 			"app=installer",
+			"-n",
+			"default",
 			"-ojson"}
 		options.appendIfNotEmpty(kubectlOptions)
 		out, err := keptnutils.ExecuteCommand("kubectl", options)
@@ -394,6 +396,8 @@ func getInstallerLogs(podName string) error {
 		podName,
 		"-c",
 		"keptn-installer",
+		"-n",
+		"default",
 		"-f"}
 	options.appendIfNotEmpty(kubectlOptions)
 
