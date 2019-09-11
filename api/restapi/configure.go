@@ -107,6 +107,7 @@ func configureAPI(api *operations.API) http.Handler {
 			return getSendEventInternalError(err)
 		}
 
+		forwardEvent = addShkeptncontext(forwardEvent, uuidStr)
 		if err := utils.PostToEventBroker(forwardEvent, l); err != nil {
 			return getSendEventInternalError(err)
 		}
@@ -132,6 +133,7 @@ func configureAPI(api *operations.API) http.Handler {
 			return getProjectInternalError(err)
 		}
 
+		forwardEvent = addShkeptncontext(forwardEvent, uuidStr)
 		if err := utils.PostToEventBroker(forwardEvent, l); err != nil {
 			return getProjectInternalError(err)
 		}
@@ -157,6 +159,7 @@ func configureAPI(api *operations.API) http.Handler {
 			return getServiceInternalError(err)
 		}
 
+		forwardEvent = addShkeptncontext(forwardEvent, uuidStr)
 		if err := utils.PostToEventBroker(forwardEvent, l); err != nil {
 			return getServiceInternalError(err)
 		}
@@ -183,6 +186,11 @@ func addChannelInfoInCE(ceData []byte, channelInfo models.ChannelInfo) (interfac
 	return ce, nil
 }
 
+func addShkeptncontext(ce interface{}, shkeptncontext string) interface{} {
+
+	ce.(map[string]interface{})["shkeptncontext"] = shkeptncontext
+	return ce
+}
 func getChannelInfo(channelID *string, token *string) models.ChannelInfo {
 
 	id := uuid.New().String()
