@@ -19,7 +19,7 @@ func GetAPIURL() (*url.URL, error) {
 }
 
 func GetEventbrokerURL() (*url.URL, error) {
-	return getServiceEndpoint(api)
+	return getServiceEndpoint(eventbroker)
 }
 
 // getServiceEndpoint retrieves an endpoint stored in an environment variable and sets http as default scheme
