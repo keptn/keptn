@@ -71,7 +71,7 @@ func init() {
             "name": "body",
             "in": "body",
             "schema": {
-              "$ref": "#/definitions/CE_with_keptncontext"
+              "$ref": "#/definitions/CE"
             }
           }
         ],
@@ -210,7 +210,7 @@ func init() {
             "name": "body",
             "in": "body",
             "schema": {
-              "$ref": "#/definitions/CE_with_keptncontext"
+              "$ref": "#/definitions/CE"
             }
           }
         ],
@@ -245,21 +245,6 @@ func init() {
                 "object",
                 "string"
               ]
-            }
-          }
-        }
-      ]
-    },
-    "CE_with_keptncontext": {
-      "allOf": [
-        {
-          "$ref": "#/definitions/CE"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "shkeptncontext": {
-              "type": "string"
             }
           }
         }
@@ -347,7 +332,7 @@ func init() {
     "CreateProjectCE": {
       "allOf": [
         {
-          "$ref": "#/definitions/CE_without_data_with_keptncontext"
+          "$ref": "#/definitions/CE_without_data"
         },
         {
           "type": "object",
@@ -558,7 +543,7 @@ func init() {
             "name": "body",
             "in": "body",
             "schema": {
-              "$ref": "#/definitions/CE_with_keptncontext"
+              "$ref": "#/definitions/CE"
             }
           }
         ],
@@ -733,7 +718,7 @@ func init() {
             "name": "body",
             "in": "body",
             "schema": {
-              "$ref": "#/definitions/CE_with_keptncontext"
+              "$ref": "#/definitions/CE"
             }
           }
         ],
@@ -768,21 +753,6 @@ func init() {
                 "object",
                 "string"
               ]
-            }
-          }
-        }
-      ]
-    },
-    "CE_with_keptncontext": {
-      "allOf": [
-        {
-          "$ref": "#/definitions/CE"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "shkeptncontext": {
-              "type": "string"
             }
           }
         }
@@ -870,7 +840,7 @@ func init() {
     "CreateProjectCE": {
       "allOf": [
         {
-          "$ref": "#/definitions/CE_without_data_with_keptncontext"
+          "$ref": "#/definitions/CE_without_data"
         },
         {
           "type": "object",
