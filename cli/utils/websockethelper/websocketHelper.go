@@ -123,7 +123,9 @@ func printCE(ce keptnutils.MyCloudEvent) bool {
 	}
 	switch ce.Type {
 	case "sh.keptn.events.log":
-		utils.PrintLogStringLevel(log.Message, log.LogLevel)
+		if strings.TrimSpace(log.Message) != "" {
+			utils.PrintLogStringLevel(log.Message, log.LogLevel)
+		}
 		return log.Terminate
 	default:
 		fmt.Println("type of event could not be processed")
