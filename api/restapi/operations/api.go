@@ -20,7 +20,6 @@ import (
 	"github.com/go-openapi/swag"
 
 	"github.com/keptn/keptn/api/restapi/operations/auth"
-	"github.com/keptn/keptn/api/restapi/operations/configure"
 	"github.com/keptn/keptn/api/restapi/operations/event"
 	"github.com/keptn/keptn/api/restapi/operations/project"
 	"github.com/keptn/keptn/api/restapi/operations/service"
@@ -54,9 +53,6 @@ func NewAPI(spec *loads.Document) *API {
 		}),
 		AuthAuthHandler: auth.AuthHandlerFunc(func(params auth.AuthParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation AuthAuth has not yet been implemented")
-		}),
-		ConfigureConfigureHandler: configure.ConfigureHandlerFunc(func(params configure.ConfigureParams, principal *models.Principal) middleware.Responder {
-			return middleware.NotImplemented("operation ConfigureConfigure has not yet been implemented")
 		}),
 		ProjectProjectHandler: project.ProjectHandlerFunc(func(params project.ProjectParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation ProjectProject has not yet been implemented")
@@ -119,8 +115,6 @@ type API struct {
 	ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceHandler service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceHandler
 	// AuthAuthHandler sets the operation handler for the auth operation
 	AuthAuthHandler auth.AuthHandler
-	// ConfigureConfigureHandler sets the operation handler for the configure operation
-	ConfigureConfigureHandler configure.ConfigureHandler
 	// ProjectProjectHandler sets the operation handler for the project operation
 	ProjectProjectHandler project.ProjectHandler
 	// EventSendEventHandler sets the operation handler for the send event operation
@@ -204,10 +198,6 @@ func (o *API) Validate() error {
 
 	if o.AuthAuthHandler == nil {
 		unregistered = append(unregistered, "auth.AuthHandler")
-	}
-
-	if o.ConfigureConfigureHandler == nil {
-		unregistered = append(unregistered, "configure.ConfigureHandler")
 	}
 
 	if o.ProjectProjectHandler == nil {
@@ -352,11 +342,6 @@ func (o *API) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/auth"] = auth.NewAuth(o.context, o.AuthAuthHandler)
-
-	if o.handlers["POST"] == nil {
-		o.handlers["POST"] = make(map[string]http.Handler)
-	}
-	o.handlers["POST"]["/configure"] = configure.NewConfigure(o.context, o.ConfigureConfigureHandler)
 
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
