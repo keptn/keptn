@@ -126,14 +126,14 @@ func waitDuration(event cloudevents.Event, shkeptncontext string, data deploymen
 		logger.Debug(fmt.Sprintf("Start to wait %d seconds.", duration))
 		time.Sleep(time.Duration(duration) * time.Second)
 		logger.Debug(fmt.Sprintf("Waiting %d seconds is over.", duration))
+
+		if err := sendTestsFinishedEvent(shkeptncontext, event, startedAt, logger); err != nil {
+			logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". ")
+		}
 	case "":
 		logger.Info("No test strategy specified, hence no tests are triggered. ")
 	default:
 		logger.Error(fmt.Sprintf("Unknown test strategy '%s'. ", data.TestStrategy))
-	}
-
-	if err := sendTestsFinishedEvent(shkeptncontext, event, startedAt, logger); err != nil {
-		logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". ")
 	}
 }
 
