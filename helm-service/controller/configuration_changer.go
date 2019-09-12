@@ -95,12 +95,16 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event,
 			c.logger.Error(fmt.Sprintf("Error when getting deployment strategies: %s", err.Error()))
 			return err
 		}
+		c.logger.Debug(fmt.Sprintf("Canary action %s for service %s in stage %s of project %s was received", e.Canary.Action, e.Service, e.Stage, e.Project))
 		if deplStrategies[e.Stage] == keptnevents.Duplicate {
+			c.logger.Debug(fmt.Sprintf("Apply canary action %s for service %s in stage %s of project %s", e.Canary.Action, e.Service, e.Stage, e.Project))
 			if err := c.changeCanary(e); err != nil {
 				c.logger.Error(err.Error())
 				return err
 			}
 		} else {
+			c.logger.Debug(fmt.Sprintf("Discard canary action %s for service %s in stage %s of project %s because stage has deployment strategy %s",
+				e.Canary.Action, e.Service, e.Stage, e.Project, deplStrategies[e.Stage].String()))
 			if os.Getenv("PRE_WORKFLOW_ENGINE") != "true" {
 				c.logger.Error(fmt.Sprintf("Cannot process received canary instructions as deployment strategy for stage %s is %s",
 					e.Stage, deplStrategies[e.Stage]))
