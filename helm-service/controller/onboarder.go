@@ -42,7 +42,14 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event, loggingDone chan bool) error
 		return err
 	}
 
-	if os.Getenv("PRE_WORKFLOW_ENGINE") == "true" {
+	if _, ok := event.DeploymentStrategies["*"]; ok {
+		deplStrategies, err := FixDeploymentStrategies(event.Project, event.DeploymentStrategies["*"])
+		if err != nil {
+			o.logger.Error(fmt.Sprintf("Error when getting deployment strategies: %s" + err.Error()))
+			return err
+		}
+		event.DeploymentStrategies = deplStrategies
+	} else if os.Getenv("PRE_WORKFLOW_ENGINE") == "true" && (event.DeploymentStrategies == nil || len(event.DeploymentStrategies) == 0) {
 		deplStrategies, err := GetDeploymentStrategies(event.Project)
 		if err != nil {
 			o.logger.Error(fmt.Sprintf("Error when getting deployment strategies: %s" + err.Error()))
