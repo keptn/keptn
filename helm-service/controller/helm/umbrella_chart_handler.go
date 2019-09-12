@@ -199,7 +199,7 @@ func (u *UmbrellaChartHandler) AddChartInUmbrellaRequirements(project string, he
 }
 
 // AddChartInUmbrellaValues adds the chart in the values.yaml of the Umbrella chart
-func (u *UmbrellaChartHandler) AddChartInUmbrellaValues(project string, helmChartName string, stage *models.Stage) error {
+func (u *UmbrellaChartHandler) AddChartInUmbrellaValues(project string, helmChartName string, stage string) error {
 
 	url, err := serviceutils.GetConfigServiceURL()
 	if err != nil {
@@ -208,7 +208,7 @@ func (u *UmbrellaChartHandler) AddChartInUmbrellaValues(project string, helmChar
 
 	rHandler := keptnutils.NewResourceHandler(url.String())
 
-	resource, err := rHandler.GetStageResource(project, stage.StageName, valuesURI)
+	resource, err := rHandler.GetStageResource(project, stage, valuesURI)
 	if err != nil {
 		return err
 	}
@@ -226,7 +226,7 @@ func (u *UmbrellaChartHandler) AddChartInUmbrellaValues(project string, helmChar
 	}
 	resource.ResourceContent = string(valuesData)
 
-	_, err = rHandler.CreateStageResources(project, stage.StageName, []*models.Resource{resource})
+	_, err = rHandler.CreateStageResources(project, stage, []*models.Resource{resource})
 	if err != nil {
 		return err
 	}
