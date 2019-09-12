@@ -66,6 +66,8 @@ before_install:
 - SHIPYARD_SVC_FOLDER="shipyard-service/"
 - CONFIGURATION_SVC_IMAGE="keptn/configuration-service"
 - CONFIGURATION_SVC_FOLDER="configuration-service/"
+- REMEDIATION_SVC_IMAGE="keptn/remediation-service"
+- REMEDIATION_SVC_FOLDER="remediation-service/"
 - WAIT_SVC_IMAGE="keptn/wait-service"
 - WAIT_SVC_FOLDER="wait-service/"
 - MONGODB_DS_IMAGE="keptn/mongodb-datastore"
@@ -164,6 +166,11 @@ jobs:
         cd ..
       fi
     - | 
+      if [[ $CHANGED_FILES == *"${REMEDIATION_SVC_FOLDER}"*  ]]; then
+        source ./travis-scripts/build_feature.sh "${REMEDIATION_SVC_IMAGE}" "${REMEDIATION_SVC_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
+        cd ..
+      fi
+      - | 
       if [[ $CHANGED_FILES == *"${WAIT_SVC_FOLDER}"*  ]]; then
         source ./travis-scripts/build_feature.sh "${WAIT_SVC_IMAGE}" "${WAIT_SVC_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
         cd ..
@@ -257,6 +264,8 @@ jobs:
         cd ..
       fi
     - | 
+      if [[ $CHANGED_FILES == *"${REMEDIATION_SVC_FOLDER}"*  ]]; then
+        source ./travis-scripts/build_develop.sh "${REMEDIATION_SVC_IMAGE}" "${REMEDIATION_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
       if [[ $CHANGED_FILES == *"${WAIT_SVC_FOLDER}"*  ]]; then
         source ./travis-scripts/build_develop.sh "${WAIT_SVC_IMAGE}" "${WAIT_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
         cd ..
@@ -312,6 +321,8 @@ jobs:
     - source ./travis-scripts/build_release.sh "${SHIPYARD_SVC_IMAGE}" "${SHIPYARD_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
     - cd ..
     - source ./travis-scripts/build_release.sh "${CONFIGURATION_SVC_IMAGE}" "${CONFIGURATION_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+    - cd --
+    - source ./travis-scripts/build_release.sh "${REMEDIATION_SVC_IMAGE}" "${REMEDIATION_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
     - cd ..
     - source ./travis-scripts/build_release.sh "${WAIT_SVC_IMAGE}" "${WAIT_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
     - cd ..
@@ -360,6 +371,8 @@ jobs:
     - source ./travis-scripts/build_master.sh "${SHIPYARD_SVC_IMAGE}" "${SHIPYARD_SVC_FOLDER}" "${VERSION}"
     - cd ..
     - source ./travis-scripts/build_master.sh "${CONFIGURATION_SVC_IMAGE}" "${CONFIGURATION_SVC_FOLDER}" "${VERSION}"
+    - cd ..
+    - source ./travis-scripts/build_master.sh "${REMEDIATION_SVC_IMAGE}" "${REMEDIATION_SVC_FOLDER}" "${VERSION}" 
     - cd ..
     - source ./travis-scripts/build_master.sh "${WAIT_SVC_IMAGE}" "${WAIT_SVC_FOLDER}" "${VERSION}"
     - cd ..
