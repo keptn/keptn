@@ -43,6 +43,7 @@ func executeJMeter(testInfo *TestInfo, scriptName string, resultsDir string, ser
 
 	// if no test file has been found, we assume that no tests should be executed
 	if err != nil || testScriptResource == nil || testScriptResource.ResourceContent == "" {
+		logger.Debug("Skipping test execution because no tests have been defined.")
 		return true, nil
 	}
 
