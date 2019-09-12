@@ -50,6 +50,9 @@ export class Service {
       }
 
       let testRunDurationMinutes = 0;
+      if (event.time === undefined) {
+        event.time = moment().format();
+      }
       if (event.time !== undefined && event.data.startedat !== undefined) {
         testRunDurationMinutes = Math.ceil(
           moment.duration(moment(event.time).diff(moment(event.data.startedat))).asMinutes(),
