@@ -20,8 +20,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var project *string
-var chartFilePath *string
+type onboardServiceCmdParams struct {
+	Project       *string
+	ChartFilePath *string
+	Direct        bool
+}
+
+var onboardServiceParams *onboardServiceCmdParams
 
 // serviceCmd represents the service command
 var serviceCmd = &cobra.Command{
@@ -47,13 +52,13 @@ Examples:
 			return errors.New(authErrorMsg)
 		}
 
-		*chartFilePath = keptnutils.ExpandTilde(*chartFilePath)
+		*onboardServiceParams.ChartFilePath = keptnutils.ExpandTilde(*onboardServiceParams.ChartFilePath)
 
-		if _, err := os.Stat(*chartFilePath); os.IsNotExist(err) {
+		if _, err := os.Stat(*onboardServiceParams.ChartFilePath); os.IsNotExist(err) {
 			return errors.New("Provided Helm chart does not exist")
 		}
 
-		chartData, err := ioutil.ReadFile(*chartFilePath)
+		chartData, err := ioutil.ReadFile(*onboardServiceParams.ChartFilePath)
 		if err != nil {
 			return err
 		}
@@ -76,12 +81,17 @@ Examples:
 
 		utils.PrintLog("Starting to onboard service", utils.InfoLevel)
 
-		chartData, err := ioutil.ReadFile(*chartFilePath)
+		chartData, err := ioutil.ReadFile(*onboardServiceParams.ChartFilePath)
 		if err != nil {
 			return err
 		}
-		data := events.ServiceCreateEventData{Project: *project, Service: args[0],
+		data := events.ServiceCreateEventData{Project: *onboardServiceParams.Project, Service: args[0],
 			HelmChart: base64.StdEncoding.EncodeToString(chartData)}
+		if onboardServiceParams.Direct {
+			deplStrategies := make(map[string]events.DeploymentStrategy)
+			deplStrategies["*"] = events.Direct
+			data.DeploymentStrategies = deplStrategies
+		}
 
 		source, _ := url.Parse("https://github.com/keptn/keptn/cli#onboardservice")
 
@@ -125,11 +135,13 @@ Examples:
 
 func init() {
 	onboardCmd.AddCommand(serviceCmd)
-
-	project = serviceCmd.Flags().StringP("project", "p", "", "The name of the project")
+	onboardServiceParams = &onboardServiceCmdParams{}
+	onboardServiceParams.Project = serviceCmd.Flags().StringP("project", "p", "", "The name of the project")
 	serviceCmd.MarkFlagRequired("project")
 
-	chartFilePath = serviceCmd.Flags().StringP("chart", "", "",
+	onboardServiceParams.ChartFilePath = serviceCmd.Flags().StringP("chart", "", "",
 		"A path to a packed Helm chart. Use `helm package chart_name` to pack your chart")
 	serviceCmd.MarkFlagRequired("chart")
+
+	serviceCmd.PersistentFlags().BoolVarP(&onboardServiceParams.Direct, "direct", "", false, "allows to set the deployment strategy to direct for the onboarded service")
 }
