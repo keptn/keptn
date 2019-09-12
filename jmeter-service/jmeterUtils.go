@@ -41,9 +41,10 @@ func executeJMeter(testInfo *TestInfo, scriptName string, resultsDir string, ser
 	resourceHandler := keptnutils.NewResourceHandler(getConfigurationServiceURL())
 	testScriptResource, err := resourceHandler.GetServiceResource(testInfo.Project, testInfo.Stage, testInfo.Service, scriptName)
 
-	if err != nil {
-		logger.Error(err.Error())
-		return false, err
+	// if no test file has been found, we assume that no tests should be executed
+	if err != nil || testScriptResource == nil || testScriptResource.ResourceContent == "" {
+		logger.Debug("Skipping test execution because no tests have been defined.")
+		return true, nil
 	}
 
 	os.RemoveAll(scriptName)
