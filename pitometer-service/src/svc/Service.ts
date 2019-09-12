@@ -49,13 +49,13 @@ export class Service {
         prometheusUrl = 'http://localhost:8080/api/v1/query';
       }
 
-      let testRunDurationMinutes = 0;
+      let testRunDuration = 0;
       if (event.time === undefined) {
         event.time = moment().format();
       }
       if (event.time !== undefined && event.data.startedat !== undefined) {
-        testRunDurationMinutes = Math.ceil(
-          moment.duration(moment(event.time).diff(moment(event.data.startedat))).asMinutes(),
+        testRunDuration = Math.ceil(
+          moment.duration(moment(event.time).diff(moment(event.data.startedat))).asSeconds(),
         );
       }
 
@@ -112,13 +112,15 @@ export class Service {
       /* placeholder will become obsolete, since this is handled by pitometer now.
       /* For backwards compatibility reasons we have to keep this for now.
       */
-      let durationRegex = new RegExp('\\$DURATION_MINUTESm', 'g');
-      perfspecString = perfspecString.replace(durationRegex, '$DURATION_MINUTES');
-      durationRegex = new RegExp('\\$DURATION_MINUTES', 'g');
-      if (testRunDurationMinutes > 0) {
-        perfspecString = perfspecString.replace(durationRegex, `${testRunDurationMinutes}m`);
+      let durationRegex = new RegExp('\\$DURATIONm', 'g');
+      perfspecString = perfspecString.replace(durationRegex, '$DURATION');
+      durationRegex = new RegExp('\\$DURATIONs', 'g');
+      perfspecString = perfspecString.replace(durationRegex, '$DURATION');
+      durationRegex = new RegExp('\\$DURATION', 'g');
+      if (testRunDuration > 0) {
+        perfspecString = perfspecString.replace(durationRegex, `${testRunDuration}s`);
       } else {
-        perfspecString = perfspecString.replace(durationRegex, `3m`);
+        perfspecString = perfspecString.replace(durationRegex, `10s`);
       }
 
       perfspec = JSON.parse(perfspecString);
