@@ -22,6 +22,8 @@ func GetProjectProjectNameServiceServiceNameResourceResourceURIHandlerFunc(param
 
 // PostProjectProjectNameServiceServiceNameResourceHandlerFunc creates a list of new default resources
 func PostProjectProjectNameServiceServiceNameResourceHandlerFunc(params service_default_resource.PostProjectProjectNameServiceServiceNameResourceParams) middleware.Responder {
+	common.Lock()
+	defer common.UnLock()
 	logger := utils.NewLogger("", "", "configuration-service")
 
 	if !common.ProjectExists(params.ProjectName) {
