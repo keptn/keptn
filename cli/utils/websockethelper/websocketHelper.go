@@ -10,53 +10,18 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"time"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/gorilla/websocket"
+	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/cli/utils"
 )
-
-// MyCloudEvent represents a keptn cloud event
-type MyCloudEvent struct {
-	CloudEventsVersion string          `json:"cloudEventsVersion"`
-	ContentType        string          `json:"contentType"`
-	Data               json.RawMessage `json:"data"`
-	EventID            string          `json:"eventID"`
-	EventTime          string          `json:"eventTime"`
-	EventType          string          `json:"eventType"`
-	Type               string          `json:"type"`
-	Source             string          `json:"source"`
-}
-
-// LogData represents log data
-type LogData struct {
-	Message   string `json:"message"`
-	Terminate bool   `json:"terminate"`
-	LogLevel  string `json:"loglevel"`
-}
-
-// incompleteCE is a helper type for unmarshalling the CE data
-type incompleteCE struct {
-	ConnData ConnectionData `json:"data"`
-}
-
-// ConnectionData stores ChannelInfo and Success data
-type ConnectionData struct {
-	ChannelInfo ChannelInfo `json:"channelInfo"`
-}
-
-// ChannelInfo stores a token and a channelID used for opening the websocket
-type ChannelInfo struct {
-	Token     string `json:"token"`
-	ChannelID string `json:"channelID"`
-}
 
 // PrintWSContentCEResponse opens a websocket using the passed
 // connection data (in form of a cloud event) and prints status data
 func PrintWSContentCEResponse(responseCE *cloudevents.Event, apiEndPoint url.URL) error {
 
-	connectionData := &ConnectionData{}
+	connectionData := &keptnutils.ConnectionData{}
 	err := responseCE.DataAs(connectionData)
 
 	if err != nil {
@@ -69,7 +34,7 @@ func PrintWSContentCEResponse(responseCE *cloudevents.Event, apiEndPoint url.URL
 // connection data (in form of a byte slice) and prints status data
 func PrintWSContentByteResponse(response []byte, apiEndPoint url.URL) error {
 
-	ceData := &incompleteCE{}
+	ceData := &keptnutils.IncompleteCE{}
 	err := json.Unmarshal(response, ceData)
 	if err != nil {
 		return err
@@ -78,7 +43,7 @@ func PrintWSContentByteResponse(response []byte, apiEndPoint url.URL) error {
 	return printWSContent(ceData.ConnData, apiEndPoint)
 }
 
-func printWSContent(connData ConnectionData, apiEndPoint url.URL) error {
+func printWSContent(connData keptnutils.ConnectionData, apiEndPoint url.URL) error {
 
 	err := validateConnectionData(connData)
 	if err != nil {
@@ -96,7 +61,7 @@ func printWSContent(connData ConnectionData, apiEndPoint url.URL) error {
 	return readAndPrintCE(ws)
 }
 
-func validateConnectionData(connData ConnectionData) error {
+func validateConnectionData(connData keptnutils.ConnectionData) error {
 	if connData.ChannelInfo.Token == "" && connData.ChannelInfo.ChannelID == "" {
 		return errors.New("Could not open websocket because Token or Channel ID are missing")
 	}
@@ -104,7 +69,7 @@ func validateConnectionData(connData ConnectionData) error {
 }
 
 // openWS opens a websocket
-func openWS(connData ConnectionData, apiEndPoint url.URL) (*websocket.Conn, *http.Response, error) {
+func openWS(connData keptnutils.ConnectionData, apiEndPoint url.URL) (*websocket.Conn, *http.Response, error) {
 
 	wsEndPoint := apiEndPoint
 	wsEndPoint.Scheme = "wss"
@@ -122,11 +87,10 @@ func openWS(connData ConnectionData, apiEndPoint url.URL) (*websocket.Conn, *htt
 
 // readAndPrintCE reads a cloud event from the websocket
 func readAndPrintCE(ws *websocket.Conn) error {
-	ws.SetReadDeadline(time.Now().Add(time.Minute))
 	for {
 		messageType, message, err := ws.ReadMessage()
 		if messageType == 1 { // 1.. textmessage
-			var messageCE MyCloudEvent
+			var messageCE keptnutils.MyCloudEvent
 
 			dec := json.NewDecoder(strings.NewReader(string(message)))
 			if err := dec.Decode(&messageCE); err == io.EOF {
@@ -149,15 +113,17 @@ func readAndPrintCE(ws *websocket.Conn) error {
 	return nil
 }
 
-func printCE(ce MyCloudEvent) bool {
-	var log LogData
+func printCE(ce keptnutils.MyCloudEvent) bool {
+	var log keptnutils.LogData
 	if err := json.Unmarshal(ce.Data, &log); err != nil {
 		fmt.Println("JSON unmarshalling error. LogData format expected.")
 		//return nil, err
 	}
 	switch ce.Type {
 	case "sh.keptn.events.log":
-		utils.PrintLogStringLevel(log.Message, log.LogLevel)
+		if strings.TrimSpace(log.Message) != "" {
+			utils.PrintLogStringLevel(log.Message, log.LogLevel)
+		}
 		return log.Terminate
 	default:
 		fmt.Println("type of event could not be processed")

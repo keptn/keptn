@@ -23,7 +23,6 @@ import (
 )
 
 type aksCredentials struct {
-	githubCredentials
 	ClusterName        string `json:"clusterName"`
 	AzureResourceGroup string `json:"azureResourceGroup"`
 	AzureSubscription  string `json:"azureSubscription"`
@@ -37,10 +36,6 @@ func newAKSPlatform() *aksPlatform {
 	return &aksPlatform{
 		creds: &aksCredentials{},
 	}
-}
-
-func (p aksPlatform) getGithubCreds() *githubCredentials {
-	return &p.creds.githubCredentials
 }
 
 func (p aksPlatform) getCreds() interface{} {

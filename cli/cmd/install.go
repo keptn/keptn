@@ -50,16 +50,9 @@ const rbacSuffixPath = "/installer/manifests/installer/rbac.yaml"
 type platform interface {
 	checkRequirements() error
 	getCreds() interface{}
-	getGithubCreds() *githubCredentials
 	checkCreds() error
 	readCreds()
 	printCreds()
-}
-
-type githubCredentials struct {
-	GithubPersonalAccessToken string `json:"githubPersonalAccessToken"`
-	GithubOrg                 string `json:"githubOrg"`
-	GithubUserName            string `json:"githubUserName"`
 }
 
 var p platform
@@ -108,21 +101,6 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 				return err
 			}
 
-			_, eks := p.(*eksPlatform)
-			if !eks {
-				// Verify the provided config
-				// Check whether all data is provided
-				if p.getGithubCreds().GithubPersonalAccessToken == "" ||
-					p.getGithubCreds().GithubOrg == "" || p.getGithubCreds().GithubUserName == "" {
-					return errors.New("Incomplete credential file " + *configFilePath)
-				}
-
-				err = checkGithubCreds()
-				if err != nil {
-					return err
-				}
-			}
-
 			// Check whether the authentication at the cluster is valid
 			err = p.checkCreds()
 			if err != nil {
@@ -150,25 +128,6 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 		fmt.Println("Skipping intallation due to mocking flag")
 		return nil
 	},
-}
-
-func checkGithubCreds() error {
-	// Check GitHub token and org
-	validScopeRes, err := utils.HasTokenRepoScope(p.getGithubCreds().GithubPersonalAccessToken)
-	if err != nil {
-		return err
-	}
-	if !validScopeRes {
-		return errors.New("Personal access token requies at least a 'repo'-scope")
-	}
-	validOrg, err := utils.IsOrgExisting(p.getGithubCreds().GithubPersonalAccessToken, p.getGithubCreds().GithubOrg)
-	if err != nil {
-		return err
-	}
-	if !validOrg {
-		return errors.New("Provided organization " + p.getGithubCreds().GithubOrg + " does not exist.")
-	}
-	return nil
 }
 
 func setPlatform() error {
@@ -234,7 +193,7 @@ func getRbacURL() string {
 	return installerPrefixURL + *installerVersion + rbacSuffixPath
 }
 
-// Preconditions: 1. Already authenticated against the cluster; 2. Github credentials are checked
+// Preconditions: 1. Already authenticated against the cluster;
 func doInstallation() error {
 
 	path, err := keptnutils.GetKeptnDirectory()
@@ -290,7 +249,7 @@ func doInstallation() error {
 		return err
 	}
 
-	o = options{"delete", "job", "installer"}
+	o = options{"delete", "job", "installer", "-n", "default"}
 	o.appendIfNotEmpty(kubectlOptions)
 	_, err = keptnutils.ExecuteCommand("kubectl", o)
 	if err != nil {
@@ -314,8 +273,6 @@ func doInstallation() error {
 		if err := authUsingKube(); err != nil {
 			return err
 		}
-		return configure(p.getGithubCreds().GithubOrg,
-			p.getGithubCreds().GithubUserName, p.getGithubCreds().GithubPersonalAccessToken)
 	}
 	return nil
 }
@@ -339,51 +296,13 @@ func readCreds() error {
 
 	fmt.Print("Please enter the following information or press enter to keep the old value:\n")
 
-	_, eks := p.(*eksPlatform)
-
 	for {
 		p.readCreds()
-
-		if !eks {
-			readGithubUserName(p.getGithubCreds())
-
-			// Check if the access token has the necessary permissions and the github org exists
-			validScopeRes := false
-			for !validScopeRes {
-				readGithubPersonalAccessToken(p.getGithubCreds())
-				validScopeRes, err = utils.HasTokenRepoScope(p.getGithubCreds().GithubPersonalAccessToken)
-				if err != nil {
-					return err
-				}
-				if !validScopeRes {
-					fmt.Println("GitHub Personal Access Token requies at least a 'repo'-scope")
-					p.getGithubCreds().GithubPersonalAccessToken = ""
-				}
-			}
-			validOrg := false
-			for !validOrg {
-				readGithubOrg(p.getGithubCreds())
-				validOrg, err = utils.IsOrgExisting(p.getGithubCreds().GithubPersonalAccessToken, p.getGithubCreds().GithubOrg)
-				if err != nil {
-					return err
-				}
-				if !validOrg {
-					fmt.Println("Provided GitHub Organization " + p.getGithubCreds().GithubOrg + " does not exist.")
-					p.getGithubCreds().GithubOrg = ""
-				}
-			}
-		}
 
 		fmt.Println()
 		fmt.Println("Please confirm that the provided information is correct: ")
 
 		p.printCreds()
-
-		if !eks {
-			fmt.Println("GitHub User Name: " + p.getGithubCreds().GithubUserName)
-			fmt.Println("GitHub Personal Access Token: " + p.getGithubCreds().GithubPersonalAccessToken)
-			fmt.Println("GitHub Organization: " + p.getGithubCreds().GithubOrg)
-		}
 
 		fmt.Println()
 		fmt.Println("Is this all correct? (y/n)")
@@ -403,30 +322,6 @@ func readCreds() error {
 	newCredsStr := strings.Replace(string(newCreds), "\r\n", "\n", -1)
 	newCredsStr = strings.Replace(newCredsStr, "\n", "", -1)
 	return credentialmanager.SetInstallCreds(newCredsStr)
-}
-
-func readGithubUserName(creds *githubCredentials) {
-	readUserInput(&creds.GithubUserName,
-		"^(([a-zA-Z0-9]+-)*[a-zA-Z0-9]+)$",
-		"GitHub User Name",
-		"Please enter a valid GitHub User Name.",
-	)
-}
-
-func readGithubPersonalAccessToken(creds *githubCredentials) {
-	readUserInput(&creds.GithubPersonalAccessToken,
-		"^[a-z0-9]{40}$",
-		"GitHub Personal Access Token",
-		"Please enter a valid GitHub Personal Access Token.",
-	)
-}
-
-func readGithubOrg(creds *githubCredentials) {
-	readUserInput(&creds.GithubOrg,
-		"^(([a-zA-Z0-9]+-)*[a-zA-Z0-9]+)$",
-		"GitHub Organization",
-		"Please enter a valid GitHub Organization.",
-	)
 }
 
 func readUserInput(value *string, regex string, promptMessage string, regexViolationMessage string) {
@@ -465,6 +360,8 @@ func waitForInstallerPod() (string, error) {
 			"pods",
 			"-l",
 			"app=installer",
+			"-n",
+			"default",
 			"-ojson"}
 		options.appendIfNotEmpty(kubectlOptions)
 		out, err := keptnutils.ExecuteCommand("kubectl", options)
@@ -499,6 +396,8 @@ func getInstallerLogs(podName string) error {
 		podName,
 		"-c",
 		"keptn-installer",
+		"-n",
+		"default",
 		"-f"}
 	options.appendIfNotEmpty(kubectlOptions)
 

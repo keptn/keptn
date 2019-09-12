@@ -11,6 +11,8 @@ import (
 
 // PostProjectProjectNameStageHandlerFunc creates a new stage
 func PostProjectProjectNameStageHandlerFunc(params stage.PostProjectProjectNameStageParams) middleware.Responder {
+	common.Lock()
+	defer common.UnLock()
 	logger := utils.NewLogger("", "", "configuration-service")
 	if !common.ProjectExists(params.ProjectName) {
 		return stage.NewPostProjectProjectNameStageBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Project does not exist.")})
@@ -35,6 +37,8 @@ func DeleteProjectProjectNameStageStageNameHandlerFunc(params stage.DeleteProjec
 
 // GetProjectProjectNameStageHandlerFunc gets list of stages for a project
 func GetProjectProjectNameStageHandlerFunc(params stage.GetProjectProjectNameStageParams) middleware.Responder {
+	common.Lock()
+	defer common.UnLock()
 	logger := utils.NewLogger("", "", "configuration-service")
 	if !common.ProjectExists(params.ProjectName) {
 		return stage.NewGetProjectProjectNameStageNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project does not exist.")})
@@ -65,6 +69,8 @@ func GetProjectProjectNameStageHandlerFunc(params stage.GetProjectProjectNameSta
 
 // GetProjectProjectNameStageStageNameHandlerFunc gets the specified stage
 func GetProjectProjectNameStageStageNameHandlerFunc(params stage.GetProjectProjectNameStageStageNameParams) middleware.Responder {
+	common.Lock()
+	defer common.UnLock()
 	if !common.ProjectExists(params.ProjectName) {
 		return stage.NewGetProjectProjectNameStageStageNameNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project not found")})
 	}

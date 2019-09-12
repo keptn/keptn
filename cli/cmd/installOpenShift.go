@@ -22,7 +22,6 @@ import (
 )
 
 type openShiftCredentials struct {
-	githubCredentials
 	OpenshiftURL      string `json:"openshiftUrl"`
 	OpenshiftUser     string `json:"openshiftUser"`
 	OpenshiftPassword string `json:"openshiftPassword"`
@@ -36,10 +35,6 @@ func newOpenShiftPlatform() *openShiftPlatform {
 	return &openShiftPlatform{
 		creds: &openShiftCredentials{},
 	}
-}
-
-func (p openShiftPlatform) getGithubCreds() *githubCredentials {
-	return &p.creds.githubCredentials
 }
 
 func (p openShiftPlatform) getCreds() interface{} {

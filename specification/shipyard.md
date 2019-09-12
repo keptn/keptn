@@ -1,4 +1,4 @@
-# Shipyard file
+# Shipyard
 
 The `shipyard.yml` file defines the stages each deployment has to go through until it is released into production. 
 
@@ -14,7 +14,7 @@ A shipyard file can consist of any number of stages. A stage has the following p
   * `direct`
   * `blue_green_service`
 
-   Future versions of keptn will also support canary deployments.
+   Future versions of Keptn will also support canary deployments.
 
 
 * **Test Strategy**. Defines the test strategy used to validate a deployment. Failed tests result in an automatic roll-back of the latest deployment in case of a blue/green deployment strategy. Keptn supports tests of type:
@@ -23,7 +23,7 @@ A shipyard file can consist of any number of stages. A stage has the following p
 
 ## Example of a shipyard.yml file
 
-```
+```yaml
 stages:
   - name: "dev"
     deployment_strategy: "direct"

@@ -1,4 +1,4 @@
-# CloudEvents used by keptn
+# Keptn Cloud Events
 
 Internal Events
 * [Create Project](#create-project)
@@ -457,7 +457,7 @@ The *start release* event is sent when a new deployment of an artifact is availa
 
 ## Start Operations (TBD)
 
-The *start operations* event is sent when a problem related to a keptn-managed service appears.
+The *start operations* event is sent when a problem related to a Keptn-managed service appears.
 
 ```json
 {
@@ -483,7 +483,7 @@ The *start operations* event is sent when a problem related to a keptn-managed s
 
 ## Done
 
-The *done* event is sent by each keptn service as response to the execution of a *.start or *.create event. 
+The *done* event is sent by each Keptn service as response to the execution of a *.start or *.create event. 
 
 ```json
 {
@@ -509,8 +509,8 @@ The *done* event is sent by each keptn service as response to the execution of a
 ([&uarr; up to index](#cloudevents-used-by-keptn))
 
 
-# Postman collection of keptn CloudEvents
-For testing purposes a postman collection is provided that contains all keptn CloudEvents. For now, the postman collection doesn't contain the *start-\** events.
+# Postman collection of Keptn Cloud Events
+For testing purposes, a postman collection is provided that contains all Keptn Cloud Events. For now, the postman collection doesn't contain the *start-\** events.
 
 https://github.com/keptn/keptn-specification/blob/master/keptn-events.postman_collection.json
 

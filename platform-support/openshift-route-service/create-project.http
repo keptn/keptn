@@ -1,0 +1,18 @@
+POST http://localhost:8080/
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+CE-SpecVersion: 0.2
+CE-id: 49ac0dec-a83b-4bc1-9dc0-1f050c7e781b
+CE-type: sh.keptn.internal.event.project.create
+CE-source: https://github.com/keptn/kernel
+
+
+
+{
+    "project": "sockshop",
+    "shipyard": "c3RhZ2VzOg0KICAtIG5hbWU6ICJkZXYiDQogICAgZGVwbG95bWVudF9zdHJhdGVneTogImRpcmVjdCINCiAgICB0ZXN0X3N0cmF0ZWd5OiAiZnVuY3Rpb25hbCINCiAgLSBuYW1lOiAic3RhZ2luZyINCiAgICBkZXBsb3ltZW50X3N0cmF0ZWd5OiAiYmx1ZV9ncmVlbl9zZXJ2aWNlIg0KICAgIHRlc3Rfc3RyYXRlZ3k6ICJwZXJmb3JtYW5jZSINCiAgLSBuYW1lOiAicHJvZHVjdGlvbiINCiAgICBkZXBsb3ltZW50X3N0cmF0ZWd5OiAiYmx1ZV9ncmVlbl9zZXJ2aWNlIg=="
+}
+
+###
+
