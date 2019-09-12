@@ -72,7 +72,8 @@ func runTests(event cloudevents.Event, shkeptncontext string, data deploymentFin
 	id := uuid.New().String()
 
 	var res bool
-	res, err := runHealthCheck(data, id, logger)
+	var err error
+	res, err = runHealthCheck(data, id, logger)
 	if err != nil {
 		logger.Error(err.Error())
 		return
@@ -108,6 +109,7 @@ func runTests(event cloudevents.Event, shkeptncontext string, data deploymentFin
 
 	case "":
 		logger.Info("No test strategy specified, hence no tests are triggered. " + testInfo.ToString())
+		sendEvent = true
 
 	default:
 		logger.Error("Unknown test strategy '" + data.TestStrategy + "'" + ". " + testInfo.ToString())
