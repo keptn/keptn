@@ -95,6 +95,15 @@ func doGateKeeping(event cloudevents.Event, shkeptncontext string, logger *keptn
 		logger.Info(fmt.Sprintf("Service %s of project %s in stage %s has passed the evaluation",
 			data.Service, data.Project, data.Stage))
 
+		// Promote artifact
+		if err := sendCanaryAction(shkeptncontext, data.Project, data.Service,
+			data.Stage, keptnevents.Promote); err != nil {
+			logger.Error(fmt.Sprintf("Error sending promotion event "+
+				"for service %s of project %s and stage %s: %s", data.Service, data.Project,
+				data.Stage, err.Error()))
+			return err
+		}
+
 		nextStage, err := getNextStage(data.Project, data.Stage)
 		if err != nil {
 			logger.Error(fmt.Sprintf("Error obtaining the next stage: %s", err.Error()))
@@ -104,15 +113,6 @@ func doGateKeeping(event cloudevents.Event, shkeptncontext string, logger *keptn
 		if nextStage != "" {
 			logger.Info(fmt.Sprintf("Promote service %s of project %s to stage %s",
 				data.Service, data.Project, nextStage))
-
-			// Promote artifact
-			if err := sendCanaryAction(shkeptncontext, data.Project, data.Service,
-				data.Stage, keptnevents.Promote); err != nil {
-				logger.Error(fmt.Sprintf("Error sending promotion event "+
-					"for service %s of project %s and stage %s: %s", data.Service, data.Project,
-					data.Stage, err.Error()))
-				return err
-			}
 
 			// Send configuration changed for next stage
 			image, err := getImage(data.Project, data.Stage, data.Service)
