@@ -348,7 +348,8 @@ export class Service {
   }
 
   async getServiceIndicators(event: RequestModel): Promise<ServiceIndicators> {
-
+    // TODO: for now we do quality gates with perfspec file since operations SLI/SLO files are not 100% compatible with usage for quality gates
+    return null;
     const indicatorString =
       await this.getServiceResourceContent(event, 'service-indicators.yaml');
 
@@ -378,6 +379,8 @@ export class Service {
   }
 
   async getServiceObjectives(event: RequestModel): Promise<ServiceObjectives> {
+    // TODO: for now we do quality gates with perfspec file since operations SLI/SLO files are not 100% compatible with usage for quality gates
+    return null;
     const objectivesString =
       await this.getServiceResourceContent(event, 'service-objectives.yaml');
 
