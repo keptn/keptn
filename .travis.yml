@@ -268,7 +268,8 @@ jobs:
         source ./travis-scripts/build_develop.sh "${REMEDIATION_SVC_IMAGE}" "${REMEDIATION_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
         cd ..
       fi
-    - if [[ $CHANGED_FILES == *"${WAIT_SVC_FOLDER}"*  ]]; then
+    - |
+      if [[ $CHANGED_FILES == *"${WAIT_SVC_FOLDER}"*  ]]; then
         source ./travis-scripts/build_develop.sh "${WAIT_SVC_IMAGE}" "${WAIT_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
         cd ..
       fi
