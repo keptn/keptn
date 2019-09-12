@@ -404,7 +404,7 @@ spec:
     spec:
       containers:
       - name: pitometer-service
-        image: keptn/pitometer-service:0.2.0
+        image: keptn/pitometer-service:latest
         ports:
         - containerPort: 8080
         resources:
