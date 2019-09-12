@@ -36,8 +36,6 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event, loggingDone chan bool) error
 
 	defer func() { loggingDone <- true }()
 
-	umbrellaChartHandler := helm.NewUmbrellaChartHandler(o.mesh)
-
 	event := &keptnevents.ServiceCreateEventData{}
 	if err := ce.DataAs(event); err != nil {
 		o.logger.Error(fmt.Sprintf("Got Data Error: %s", err.Error()))
@@ -74,79 +72,99 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event, loggingDone chan bool) error
 	}
 	if firstService {
 		o.logger.Info("Create Helm Umbrella charts")
+		umbrellaChartHandler := helm.NewUmbrellaChartHandler(o.mesh)
 		if err := o.initAndApplyUmbrellaChart(event, umbrellaChartHandler, stages); err != nil {
 			o.logger.Error(fmt.Sprintf("Error when initalizing and applying umbrella charts for project %s: %s", event.Project, err.Error()))
 			return err
 		}
 	}
 
-	serviceHandler := keptnutils.NewServiceHandler(url.String())
+	for _, stage := range stages {
+		o.onboardService(stage.StageName, event, url.String())
+	}
+
+	o.logger.Info(fmt.Sprintf("Finished creating service %s in project %s", event.Service, event.Project))
+	return nil
+}
+
+func (o *Onboarder) onboardService(stageName string, event *keptnevents.ServiceCreateEventData,
+	configServiceURL string) error {
+
+	serviceHandler := keptnutils.NewServiceHandler(configServiceURL)
 	helmChartData, err := base64.StdEncoding.DecodeString(event.HelmChart)
 	if err != nil {
 		o.logger.Error("Error when decoding the Helm chart")
 	}
 
-	for _, stage := range stages {
-		o.logger.Debug("Creating new keptn service " + event.Service + " in stage " + stage.StageName)
-		serviceHandler.CreateService(event.Project, stage.StageName, event.Service)
+	o.logger.Debug("Creating new keptn service " + event.Service + " in stage " + stageName)
+	serviceHandler.CreateService(event.Project, stageName, event.Service)
 
-		o.logger.Debug("Storing the Helm chart provided by the user in stage " + stage.StageName)
-		if err := keptnutils.StoreChart(event.Project, event.Service, stage.StageName, helm.GetChartName(event.Service, false),
-			helmChartData, url.String()); err != nil {
-			o.logger.Error("Error when storing the Helm chart: " + err.Error())
+	o.logger.Debug("Storing the Helm chart provided by the user in stage " + stageName)
+	if err := keptnutils.StoreChart(event.Project, event.Service, stageName, helm.GetChartName(event.Service, false),
+		helmChartData, configServiceURL); err != nil {
+		o.logger.Error("Error when storing the Helm chart: " + err.Error())
+		return err
+	}
+
+	if err := o.updateUmbrellaChart(event.Project, stageName, helm.GetChartName(event.Service, false)); err != nil {
+		return err
+	}
+
+	chartGenerator := helm.NewGeneratedChartHandler(o.mesh, o.canaryLevelGen, o.keptnDomain)
+
+	helmChartName := helm.GetChartName(event.Service, true)
+	o.logger.Debug(fmt.Sprintf("Generating the keptn-managed Helm chart %s for stage %s", helmChartName, stageName))
+	ch, err := keptnutils.LoadChart(helmChartData)
+	if err != nil {
+		o.logger.Error("Error when loading chart: " + err.Error())
+		return err
+	}
+
+	var generatedChartData []byte
+	if event.DeploymentStrategies[stageName] == keptnevents.Duplicate {
+		o.logger.Debug(fmt.Sprintf("For stage %s with deployment strategy %s, a duplicate, managed chart is generated", stageName, event.DeploymentStrategies[stageName].String()))
+		generatedChartData, err = chartGenerator.GenerateDuplicateManagedChart(ch, event.Project, stageName)
+		if err != nil {
+			o.logger.Error("Error when generating the keptn managed chart: " + err.Error())
 			return err
 		}
-
-		o.logger.Debug("Updating the Umbrella chart with the new Helm chart in stage " + stage.StageName)
-		// if err := helm.AddChartInUmbrellaRequirements(event.Project, helm.GetChartName(event.Service, false), stage, url.String()); err != nil {
-		// 	o.logger.Error("Error when adding the chart in the Umbrella requirements file: " + err.Error())
-		// 	return err
-		// }
-		if err := umbrellaChartHandler.AddChartInUmbrellaValues(event.Project, helm.GetChartName(event.Service, false), stage); err != nil {
-			o.logger.Error("Error when adding the chart in the Umbrella values file: " + err.Error())
+	} else {
+		o.logger.Debug(fmt.Sprintf("For stage %s with deployment strategy %s, a mesh chart is generated", stageName, event.DeploymentStrategies[stageName].String()))
+		generatedChartData, err = chartGenerator.GenerateMeshChart(ch, event.Project, stageName)
+		if err != nil {
+			o.logger.Error("Error when generating the keptn managed chart: " + err.Error())
 			return err
-		}
-
-		if _, ok := event.DeploymentStrategies[stage.StageName]; !ok {
-			o.logger.Error("Received event does not define deployment strategy for stage " + stage.StageName +
-				". Hence, a direct strategy is used.")
-		}
-
-		if event.DeploymentStrategies[stage.StageName] == keptnevents.Duplicate {
-			chartGenerator := helm.NewGeneratedChartHandler(o.mesh, o.canaryLevelGen, o.keptnDomain)
-
-			o.logger.Debug("Generating the keptn-managed Helm chart for stage " + stage.StageName)
-			ch, err := keptnutils.LoadChart(helmChartData)
-			if err != nil {
-				o.logger.Error("Error when loading chart: " + err.Error())
-				return err
-			}
-			generatedChartData, err := chartGenerator.GenerateManagedChart(ch, event.Project, stage.StageName)
-			if err != nil {
-				o.logger.Error("Error when generating the keptn managed chart: " + err.Error())
-				return err
-			}
-
-			o.logger.Debug("Storing the keptn generated Helm chart in stage " + stage.StageName)
-			if err := keptnutils.StoreChart(event.Project, event.Service, stage.StageName, helm.GetChartName(event.Service, true),
-				generatedChartData, url.String()); err != nil {
-				o.logger.Error("Error when storing the Helm chart: " + err.Error())
-				return err
-			}
-
-			o.logger.Debug("Updating the Umbrella chart with the new Helm chart in stage " + stage.StageName)
-			// if err := helm.AddChartInUmbrellaRequirements(event.Project, helm.GetChartName(event.Service, true), stage, url.String()); err != nil {
-			// 	o.logger.Error("Error when adding the chart in the Umbrella requirements file: " + err.Error())
-			// 	return err
-			// }
-			if err := umbrellaChartHandler.AddChartInUmbrellaValues(event.Project, helm.GetChartName(event.Service, true), stage); err != nil {
-				o.logger.Error("Error when adding the chart in the Umbrella values file: " + err.Error())
-				return err
-			}
 		}
 	}
 
-	o.logger.Info(fmt.Sprintf("Finished creating service %s in project %s", event.Service, event.Project))
+	o.logger.Debug(fmt.Sprintf("Storing the keptn generated Helm chart %s for stage %s", helmChartName, stageName))
+	if err := keptnutils.StoreChart(event.Project, event.Service, stageName, helmChartName,
+		generatedChartData, configServiceURL); err != nil {
+		o.logger.Error("Error when storing the Helm chart: " + err.Error())
+		return err
+	}
+
+	if event.DeploymentStrategies[stageName] == keptnevents.Direct {
+		// Directly apply the chart which only contains mesh resources
+		configChanger := NewConfigurationChanger(o.mesh, o.canaryLevelGen, o.logger, o.keptnDomain)
+		configChanger.ApplyConfiguration(event.Project, stageName, event.Service, true)
+	}
+
+	return o.updateUmbrellaChart(event.Project, stageName, helmChartName)
+}
+
+func (o *Onboarder) updateUmbrellaChart(project, stage, helmChartName string) error {
+
+	umbrellaChartHandler := helm.NewUmbrellaChartHandler(o.mesh)
+	o.logger.Debug(fmt.Sprintf("Updating the Umbrella chart with the new Helm chart %s in stage %s", helmChartName, stage))
+	// if err := helm.AddChartInUmbrellaRequirements(event.Project, helmChartName, stage, url.String()); err != nil {
+	// 	o.logger.Error("Error when adding the chart in the Umbrella requirements file: " + err.Error())
+	// 	return err
+	// }
+	if err := umbrellaChartHandler.AddChartInUmbrellaValues(project, helmChartName, stage); err != nil {
+		o.logger.Error("Error when adding the chart in the Umbrella values file: " + err.Error())
+		return err
+	}
 	return nil
 }
 
