@@ -55,7 +55,8 @@
     "reflect-metadata": "^0.1.13",
     "swagger-express-ts": "^1.0.1",
     "swagger-ui-dist": "^3.22.2",
-    "uuid": "^3.3.2"
+    "uuid": "^3.3.2",
+    "yaml": "^1.6.0"
   },
   "nyc": {
     "include": [

@@ -59,38 +59,6 @@ func init() {
         }
       }
     },
-    "/configure": {
-      "post": {
-        "tags": [
-          "configure"
-        ],
-        "summary": "Forwards the received configure event to the eventbroker",
-        "operationId": "configure",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/ConfigureCE"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "configured",
-            "schema": {
-              "$ref": "#/definitions/ChannelInfo"
-            }
-          },
-          "default": {
-            "description": "error",
-            "schema": {
-              "$ref": "#/definitions/error"
-            }
-          }
-        }
-      }
-    },
     "/event": {
       "post": {
         "tags": [
@@ -103,7 +71,7 @@ func init() {
             "name": "body",
             "in": "body",
             "schema": {
-              "$ref": "#/definitions/CE_with_keptncontext"
+              "$ref": "#/definitions/CE"
             }
           }
         ],
@@ -242,7 +210,7 @@ func init() {
             "name": "body",
             "in": "body",
             "schema": {
-              "$ref": "#/definitions/CE_with_keptncontext"
+              "$ref": "#/definitions/CE"
             }
           }
         ],
@@ -277,21 +245,6 @@ func init() {
                 "object",
                 "string"
               ]
-            }
-          }
-        }
-      ]
-    },
-    "CE_with_keptncontext": {
-      "allOf": [
-        {
-          "$ref": "#/definitions/CE"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "shkeptncontext": {
-              "type": "string"
             }
           }
         }
@@ -376,40 +329,10 @@ func init() {
         }
       ]
     },
-    "ConfigureCE": {
-      "allOf": [
-        {
-          "$ref": "#/definitions/CE_without_data_with_keptncontext"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "data": {
-              "required": [
-                "org",
-                "user",
-                "token"
-              ],
-              "properties": {
-                "org": {
-                  "type": "string"
-                },
-                "token": {
-                  "type": "string"
-                },
-                "user": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        }
-      ]
-    },
     "CreateProjectCE": {
       "allOf": [
         {
-          "$ref": "#/definitions/CE_without_data_with_keptncontext"
+          "$ref": "#/definitions/CE_without_data"
         },
         {
           "type": "object",
@@ -417,31 +340,14 @@ func init() {
             "data": {
               "required": [
                 "project",
-                "stages"
+                "shipyard"
               ],
               "properties": {
                 "project": {
                   "type": "string"
                 },
-                "stages": {
-                  "type": "array",
-                  "items": {
-                    "required": [
-                      "name",
-                      "deployment_strategy"
-                    ],
-                    "properties": {
-                      "deployment_strategy": {
-                        "type": "string"
-                      },
-                      "name": {
-                        "type": "string"
-                      },
-                      "test_strategy": {
-                        "type": "string"
-                      }
-                    }
-                  }
+                "shipyard": {
+                  "type": "string"
                 }
               }
             }
@@ -579,7 +485,7 @@ func init() {
   },
   "security": [
     {
-      "key": null
+      "key": []
     }
   ]
 }`))
@@ -625,38 +531,6 @@ func init() {
         }
       }
     },
-    "/configure": {
-      "post": {
-        "tags": [
-          "configure"
-        ],
-        "summary": "Forwards the received configure event to the eventbroker",
-        "operationId": "configure",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/ConfigureCE"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "configured",
-            "schema": {
-              "$ref": "#/definitions/ChannelInfo"
-            }
-          },
-          "default": {
-            "description": "error",
-            "schema": {
-              "$ref": "#/definitions/error"
-            }
-          }
-        }
-      }
-    },
     "/event": {
       "post": {
         "tags": [
@@ -669,7 +543,7 @@ func init() {
             "name": "body",
             "in": "body",
             "schema": {
-              "$ref": "#/definitions/CE_with_keptncontext"
+              "$ref": "#/definitions/CE"
             }
           }
         ],
@@ -844,7 +718,7 @@ func init() {
             "name": "body",
             "in": "body",
             "schema": {
-              "$ref": "#/definitions/CE_with_keptncontext"
+              "$ref": "#/definitions/CE"
             }
           }
         ],
@@ -879,21 +753,6 @@ func init() {
                 "object",
                 "string"
               ]
-            }
-          }
-        }
-      ]
-    },
-    "CE_with_keptncontext": {
-      "allOf": [
-        {
-          "$ref": "#/definitions/CE"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "shkeptncontext": {
-              "type": "string"
             }
           }
         }
@@ -978,40 +837,10 @@ func init() {
         }
       ]
     },
-    "ConfigureCE": {
-      "allOf": [
-        {
-          "$ref": "#/definitions/CE_without_data_with_keptncontext"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "data": {
-              "required": [
-                "org",
-                "user",
-                "token"
-              ],
-              "properties": {
-                "org": {
-                  "type": "string"
-                },
-                "token": {
-                  "type": "string"
-                },
-                "user": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        }
-      ]
-    },
     "CreateProjectCE": {
       "allOf": [
         {
-          "$ref": "#/definitions/CE_without_data_with_keptncontext"
+          "$ref": "#/definitions/CE_without_data"
         },
         {
           "type": "object",
@@ -1019,31 +848,14 @@ func init() {
             "data": {
               "required": [
                 "project",
-                "stages"
+                "shipyard"
               ],
               "properties": {
                 "project": {
                   "type": "string"
                 },
-                "stages": {
-                  "type": "array",
-                  "items": {
-                    "required": [
-                      "name",
-                      "deployment_strategy"
-                    ],
-                    "properties": {
-                      "deployment_strategy": {
-                        "type": "string"
-                      },
-                      "name": {
-                        "type": "string"
-                      },
-                      "test_strategy": {
-                        "type": "string"
-                      }
-                    }
-                  }
+                "shipyard": {
+                  "type": "string"
                 }
               }
             }

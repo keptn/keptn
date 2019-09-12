@@ -31,6 +31,6 @@ spec:
         - name: PUBSUB_URL
           value: 'nats://keptn-nats-cluster'
         - name: PUBSUB_TOPIC
-          value: 'create.project'
+          value: 'sh.keptn.internal.event.project.create'
         - name: PUBSUB_RECIPIENT
           value: 'openshift-route-service'

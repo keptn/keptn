@@ -20,6 +20,8 @@ func GetProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(pa
 
 // GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc gets the specified resource
 func GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc(params service_resource.GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIParams) middleware.Responder {
+	common.Lock()
+	defer common.UnLock()
 	logger := utils.NewLogger("", "", "configuration-service")
 	serviceConfigPath := config.ConfigDir + "/" + params.ProjectName + "/" + params.ServiceName
 	resourcePath := serviceConfigPath + "/" + params.ResourceURI
@@ -58,6 +60,8 @@ func DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI
 
 // PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc creates a new resource
 func PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(params service_resource.PostProjectProjectNameStageStageNameServiceServiceNameResourceParams) middleware.Responder {
+	common.Lock()
+	defer common.UnLock()
 	logger := utils.NewLogger("", "", "configuration-service")
 	if !common.ProjectExists(params.ProjectName) {
 		return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Project " + params.ProjectName + " does not exist")})
@@ -104,6 +108,8 @@ func PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(p
 
 // PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc updates a list of resources
 func PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(params service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceParams) middleware.Responder {
+	common.Lock()
+	defer common.UnLock()
 	logger := utils.NewLogger("", "", "configuration-service")
 	if !common.ProjectExists(params.ProjectName) {
 		return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Project " + params.ProjectName + " does not exist")})
@@ -150,6 +156,8 @@ func PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(pa
 
 // PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc updates a specified resource
 func PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc(params service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIParams) middleware.Responder {
+	common.Lock()
+	defer common.UnLock()
 	logger := utils.NewLogger("", "", "configuration-service")
 	if !common.ServiceExists(params.ProjectName, params.StageName, params.ServiceName) {
 		return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Service does not exist")})

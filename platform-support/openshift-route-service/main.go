@@ -7,11 +7,16 @@ import (
 	"log"
 	"os"
 
+	b64 "encoding/base64"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
 	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
 	"github.com/kelseyhightower/envconfig"
-	"github.com/keptn/go-utils/pkg/utils"
+	keptnevents "github.com/keptn/go-utils/pkg/events"
+	keptnmodels "github.com/keptn/go-utils/pkg/models"
+	keptnutils "github.com/keptn/go-utils/pkg/utils"
+
+	"gopkg.in/yaml.v2"
 )
 
 type envConfig struct {
@@ -24,9 +29,8 @@ type stage struct {
 	Name string `json:"name"`
 }
 type projectData struct {
-	Project  string      `json:"project"`
-	Registry interface{} `json:"registry"`
-	Stages   []stage     `json:"stages"`
+	Project string  `json:"project"`
+	Stages  []stage `json:"stages"`
 }
 
 func main() {
@@ -39,8 +43,6 @@ func main() {
 
 func _main(args []string, env envConfig) int {
 	ctx := context.Background()
-
-	utils.ServiceName = "helm-service"
 
 	t, err := cloudeventshttp.New(
 		cloudeventshttp.WithPort(env.Port),
@@ -65,39 +67,51 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	var shkeptncontext string
 	event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
 
-	utils.Debug(shkeptncontext, fmt.Sprintf("Got Event Context: %+v", event.Context))
+	logger := keptnutils.NewLogger(shkeptncontext, event.Context.GetID(), "openshift-route-service")
 
-	data := &projectData{}
+	logger.Debug(fmt.Sprintf("Got Event Context: %+v", event.Context))
+
+	data := &keptnevents.ProjectCreateEventData{}
 	if err := event.DataAs(data); err != nil {
-		utils.Error(shkeptncontext, fmt.Sprintf("Got Data Error: %s", err.Error()))
+		logger.Error(fmt.Sprintf("Got Data Error: %s", err.Error()))
 		return err
 	}
-	if event.Type() != "create.project" {
+	if event.Type() != keptnevents.InternalProjectCreateEventType {
 		const errorMsg = "Received unexpected keptn event"
-		utils.Error(shkeptncontext, errorMsg)
+		logger.Error(errorMsg)
 		return errors.New(errorMsg)
 	}
 
-	go createRoutes(shkeptncontext, *data)
+	go createRoutes(data, logger)
 	return nil
 }
 
-func createRoutes(shkeptncontext string, data projectData) {
-
-	for _, stage := range data.Stages {
-		exposeRoute(data.Project, stage.Name, shkeptncontext)
+func createRoutes(data *keptnevents.ProjectCreateEventData, logger *keptnutils.Logger) {
+	shipyard := keptnmodels.Shipyard{}
+	decodedStr, err := b64.StdEncoding.DecodeString(data.Shipyard)
+	if err != nil {
+		logger.Error("Could not parse shipyard content: " + err.Error())
+		return
+	}
+	err = yaml.Unmarshal([]byte(decodedStr), &shipyard)
+	if err != nil {
+		logger.Error("Could not parse shipyard content: " + err.Error())
+		return
+	}
+	for _, stage := range shipyard.Stages {
+		exposeRoute(data.Project, stage.Name, logger)
 	}
 }
 
-func exposeRoute(project string, stage string, shkeptncontext string) {
+func exposeRoute(project string, stage string, logger *keptnutils.Logger) {
 	appDomain := os.Getenv("APP_DOMAIN")
 	if appDomain == "" {
-		utils.Error(shkeptncontext, "No app domain defined. Cannot create route.")
+		logger.Error("No app domain defined. Cannot create route.")
 		return
 	}
 	// oc create route edge istio-wildcard-ingress-secure-keptn --service=istio-ingressgateway --hostname="www.keptn.ingress-gateway.$BASE_URL" --port=http2 --wildcard-policy=Subdomain --insecure-policy='Allow'
-	utils.Info(shkeptncontext, "Trying to create route www."+stage+"."+project+"."+appDomain)
-	out, err := utils.ExecuteCommand("oc",
+	logger.Info("Trying to create route www." + stage + "." + project + "." + appDomain)
+	out, err := keptnutils.ExecuteCommand("oc",
 		[]string{
 			"create",
 			"route",
@@ -112,15 +126,7 @@ func exposeRoute(project string, stage string, shkeptncontext string) {
 			"istio-system",
 		})
 	if err != nil {
-		utils.Error(shkeptncontext, "Could not create route for: "+err.Error())
+		logger.Error("Could not create route for: " + err.Error())
 	}
-	utils.Info(shkeptncontext, "oc create route output: "+out)
-}
-
-func checkErr(err error, shkeptncontext string) error {
-	if err != nil {
-		utils.Error(shkeptncontext, err.Error())
-		return err
-	}
-	return nil
+	logger.Info("oc create route output: " + out)
 }

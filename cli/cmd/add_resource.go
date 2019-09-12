@@ -44,11 +44,12 @@ var addResourceCmd = &cobra.Command{
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
+		*addResourceCmdParams.Resource = keptnutils.ExpandTilde(*addResourceCmdParams.Resource)
 
 		if !fileExists(*addResourceCmdParams.Resource) {
 			return errors.New("File " + *addResourceCmdParams.Resource + " not found in local file system")
 		}
-		resourceContent, err := ioutil.ReadFile(keptnutils.ExpandTilde(*addResourceCmdParams.Resource))
+		resourceContent, err := ioutil.ReadFile(*addResourceCmdParams.Resource)
 		if err != nil {
 			return errors.New("File " + *addResourceCmdParams.Resource + " could not be read")
 		}

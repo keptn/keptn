@@ -64,45 +64,13 @@
             "name": "body",
             "in": "body",
             "schema": {
-              "$ref": "#/definitions/CE_with_keptncontext"
+              "$ref": "#/definitions/CE"
             }
           }
         ],
         "responses": {
           "201": {
             "description": "forwarded",
-            "schema": {
-              "$ref": "#/definitions/ChannelInfo"
-            }
-          },
-          "default": {
-            "description": "error",
-            "schema": {
-              "$ref": "#/definitions/error"
-            }
-          }
-        }
-      }
-    },
-    "/configure": {
-      "post": {
-        "tags": [
-          "configure"
-        ],
-        "operationId": "configure",
-        "summary": "Forwards the received configure event to the eventbroker",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/ConfigureCE"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "configured",
             "schema": {
               "$ref": "#/definitions/ChannelInfo"
             }
@@ -160,7 +128,7 @@
             "name": "body",
             "in": "body",
             "schema": {
-              "$ref": "#/definitions/CE_with_keptncontext"
+              "$ref": "#/definitions/CE"
             }
           }
         ],
@@ -256,41 +224,11 @@
       }
     }
   },
-  "definitions": {
-    "ConfigureCE": {
-      "allOf": [
-        {
-          "$ref": "#/definitions/CE_without_data_with_keptncontext"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "data": {
-              "required": [
-                "org",
-                "user",
-                "token"
-              ],
-              "properties": {
-                "org": {
-                  "type": "string"
-                },
-                "user": {
-                  "type": "string"
-                },
-                "token": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        }
-      ]
-    },
+  "definitions": {    
     "CreateProjectCE": {
       "allOf": [
         {
-          "$ref": "#/definitions/CE_without_data_with_keptncontext"
+          "$ref": "#/definitions/CE_without_data"
         },
         {
           "type": "object",
@@ -298,31 +236,14 @@
             "data": {
               "required": [
                 "project",
-                "stages"
+                "shipyard"
               ],
               "properties": {
                 "project": {
                   "type": "string"
                 },
-                "stages": {
-                  "type": "array",
-                  "items": {
-                    "required": [
-                      "name",
-                      "deployment_strategy"
-                    ],
-                    "properties": {
-                      "name": {
-                        "type": "string"
-                      },
-                      "deployment_strategy": {
-                        "type": "string"
-                      },
-                      "test_strategy": {
-                        "type": "string"
-                      }
-                    }
-                  }
+                "shipyard": {
+                  "type": "string"
                 }
               }
             }
@@ -373,21 +294,6 @@
                   }
                 }
               }
-            }
-          }
-        }
-      ]
-    },
-    "CE_with_keptncontext": {
-      "allOf": [
-        {
-          "$ref": "#/definitions/CE"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "shkeptncontext": {
-              "type": "string"
             }
           }
         }

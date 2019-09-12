@@ -13,7 +13,7 @@ wait_for_deployment_in_namespace "nats-operator" "keptn"
 kubectl apply -f ../manifests/nats/nats-cluster.yaml
 verify_kubectl $? "Creating NATS Cluster failed."
 
-
+ROUTER_POD=$(oc get pods -n default -l router=router -ojsonpath={.items[0].metadata.name})
 # allow wildcard domains
 oc project default
 oc adm router --replicas=0
@@ -23,19 +23,19 @@ verify_kubectl $? "Configuration of openshift router failed"
 oc scale dc/router --replicas=1
 verify_kubectl $? "Upscaling of router failed"
 
+oc delete pod $ROUTER_POD -n default --force --grace-period=0 --ignore-not-found
+
 # create wildcard route for istio ingress gateway
-oc project istio-system
 
 BASE_URL=$(oc get route -n istio-system istio-ingressgateway -oyaml | yq r - spec.host | sed 's~istio-ingressgateway-istio-system.~~')
+# Domain used for routing to keptn services
+DOMAIN="ingress-gateway.$BASE_URL"
 
 oc create route passthrough istio-wildcard-ingress-secure-keptn --service=istio-ingressgateway --hostname="www.keptn.ingress-gateway.$BASE_URL" --port=https --wildcard-policy=Subdomain --insecure-policy='None' -n istio-system
-#verify_kubectl $? "Creation of keptn ingress route failed."
+
 
 oc adm policy  add-cluster-role-to-user cluster-admin system:serviceaccount:keptn:default
 verify_kubectl $? "Adding cluster-role failed."
-
-# Domain used for routing to keptn services
-DOMAIN="ingress-gateway.$BASE_URL"
 
 # Set up SSL
 openssl req -nodes -newkey rsa:2048 -keyout key.pem -out certificate.pem  -x509 -days 365 -subj "/CN=$DOMAIN"
@@ -45,6 +45,9 @@ kubectl create --namespace istio-system secret tls istio-ingressgateway-certs --
 
 rm key.pem
 rm certificate.pem
+
+#verify_kubectl $? "Creation of keptn ingress route failed."
+
 
 # Add config map in keptn namespace that contains the domain - this will be used by other services as well
 cat ../manifests/keptn/keptn-domain-configmap.yaml | \
@@ -94,13 +97,11 @@ verify_kubectl $? "Creating mongodb-datastore service failed."
 KEPTN_CHANNEL_URI="event-broker.keptn.svc.cluster.local/keptn"
 verify_variable "$KEPTN_CHANNEL_URI" "KEPTN_CHANNEL_URI could not be derived from keptn-channel description."
 
-rm -f ../manifests/keptn/gen/core.yaml
-cat ../manifests/keptn/core.yaml | \
-  sed 's~CHANNEL_URI_PLACEHOLDER~'"$KEPTN_CHANNEL_URI"'~' >> ../manifests/keptn/gen/core.yaml
-  
-kubectl apply -f ../manifests/keptn/gen/core.yaml
+kubectl apply -f ../manifests/keptn/core.yaml 
 verify_kubectl $? "Deploying keptn core components failed."
 
+kubectl apply -f ../manifests/keptn/core-distributors.yaml 
+verify_kubectl $? "Deploying keptn core distributors failed."
 
 ##############################################
 ## Start validation of keptn installation   ##
@@ -110,6 +111,12 @@ wait_for_all_pods_in_namespace "keptn"
 wait_for_deployment_in_namespace "eventbroker-go" "keptn"
 wait_for_deployment_in_namespace "api" "keptn"
 wait_for_deployment_in_namespace "bridge" "keptn"
+wait_for_deployment_in_namespace "gatekeeper-service" "keptn"
+wait_for_deployment_in_namespace "helm-service" "keptn"
+wait_for_deployment_in_namespace "jmeter-service" "keptn"
+wait_for_deployment_in_namespace "shipyard-service" "keptn"
+wait_for_deployment_in_namespace "pitometer-service" "keptn"
+wait_for_deployment_in_namespace "configuration-service" "keptn"
 
 kubectl apply -f ../manifests/keptn/keptn-gateway.yaml
 verify_kubectl $? "Deploying keptn gateway failed."
