@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"time"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/gorilla/websocket"
@@ -88,7 +87,6 @@ func openWS(connData keptnutils.ConnectionData, apiEndPoint url.URL) (*websocket
 
 // readAndPrintCE reads a cloud event from the websocket
 func readAndPrintCE(ws *websocket.Conn) error {
-	ws.SetReadDeadline(time.Now().Add(time.Minute))
 	for {
 		messageType, message, err := ws.ReadMessage()
 		if messageType == 1 { // 1.. textmessage
