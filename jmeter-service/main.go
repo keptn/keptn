@@ -108,6 +108,7 @@ func runTests(event cloudevents.Event, shkeptncontext string, data deploymentFin
 
 	case "":
 		logger.Info("No test strategy specified, hence no tests are triggered. " + testInfo.ToString())
+		sendEvent = true
 
 	default:
 		logger.Error("Unknown test strategy '" + data.TestStrategy + "'" + ". " + testInfo.ToString())
