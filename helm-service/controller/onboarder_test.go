@@ -83,7 +83,8 @@ func TestDoOnboard(t *testing.T) {
 	id := uuid.New().String()
 	onboarder := NewOnboarder(mesh.NewIstioMesh(), helm.NewCanaryOnNamespaceGenerator(),
 		keptnutils.NewLogger(id, "service.create", "helm-service"), "test.keptn.sh")
-	err = onboarder.DoOnboard(ce)
+	loggingDone := make(chan bool)
+	err = onboarder.DoOnboard(ce, loggingDone)
 
 	check(err, t)
 }

@@ -29,9 +29,9 @@ func NewGeneratedChartHandler(mesh mesh.Mesh, canaryLevelGen CanaryLevelGenerato
 	return &GeneratedChartHandler{mesh: mesh, canaryLevelGen: canaryLevelGen, keptnDomain: keptnDomain}
 }
 
-// GenerateManagedChart generates a duplicated chart which is managed by keptn and used for
+// GenerateDuplicateManagedChart generates a duplicated chart which is managed by keptn and used for
 // b/g and canary releases
-func (c *GeneratedChartHandler) GenerateManagedChart(ch *chart.Chart, project string, stageName string) ([]byte, error) {
+func (c *GeneratedChartHandler) GenerateDuplicateManagedChart(ch *chart.Chart, project string, stageName string) ([]byte, error) {
 
 	c.changeChartFile(ch)
 
@@ -39,6 +39,42 @@ func (c *GeneratedChartHandler) GenerateManagedChart(ch *chart.Chart, project st
 		return nil, err
 	}
 
+	return keptnutils.PackageChart(ch)
+}
+
+// GenerateMeshChart generates a chart containing the required mesh setup
+func (c *GeneratedChartHandler) GenerateMeshChart(ch *chart.Chart, project string, stageName string) ([]byte, error) {
+
+	c.changeChartFile(ch)
+	newTemplates := make([]*chart.Template, 0, 0)
+
+	services, err := keptnutils.GetRenderedServices(ch)
+	if err != nil {
+		return nil, err
+	}
+	namespace := project + "-" + stageName
+
+	for _, svc := range services {
+		// Generate virtual service
+		gws := []string{GetGatewayName(project, stageName) + "." + GetUmbrellaNamespace(project, stageName), "mesh"}
+		hosts := []string{svc.Name + "." + namespace + "." + c.keptnDomain,
+			svc.Name, svc.Name + "." + namespace}
+		host := svc.Name + "." + namespace + ".svc.cluster.local"
+		dest := mesh.HTTPRouteDestination{Host: host}
+		httpRouteDestinations := []mesh.HTTPRouteDestination{dest}
+
+		vs, err := c.mesh.GenerateVirtualService(svc.Name, gws, hosts, httpRouteDestinations)
+		if err != nil {
+			return nil, err
+		}
+
+		vsTemplate := chart.Template{Name: "templates/" + svc.Name + c.mesh.GetVirtualServiceSuffix(), Data: vs}
+		newTemplates = append(newTemplates, &vsTemplate)
+	}
+
+	ch.Values.Raw = ""
+	ch.Values.Values = make(map[string]*chart.Value)
+	ch.Templates = newTemplates
 	return keptnutils.PackageChart(ch)
 }
 
@@ -170,6 +206,7 @@ func (c *GeneratedChartHandler) handleService(document []byte, project string, s
 		d2 := chart.Template{Name: "templates/" + servicePrimary.Name + c.mesh.GetDestinationRuleSuffix(), Data: destinationRulePrimary}
 		newTemplates = append(newTemplates, &d2)
 
+		// Generate virtual service
 		gws := []string{GetGatewayName(project, stageName) + "." + GetUmbrellaNamespace(project, stageName), "mesh"}
 		hosts := []string{svc.Name + "." + c.canaryLevelGen.GetNamespace(project, stageName, false) + "." + c.keptnDomain,
 			svc.Name, svc.Name + "." + c.canaryLevelGen.GetNamespace(project, stageName, true)}
@@ -182,8 +219,8 @@ func (c *GeneratedChartHandler) handleService(document []byte, project string, s
 			return nil, nil, err
 		}
 
-		gw := chart.Template{Name: "templates/" + svc.Name + c.mesh.GetVirtualServiceSuffix(), Data: vs}
-		newTemplates = append(newTemplates, &gw)
+		vsTemplate := chart.Template{Name: "templates/" + svc.Name + c.mesh.GetVirtualServiceSuffix(), Data: vs}
+		newTemplates = append(newTemplates, &vsTemplate)
 	}
 	return newTemplateContent, newTemplates, nil
 }
