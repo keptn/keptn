@@ -111,7 +111,7 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event,
 	// Send deployment finished event
 	// Note that this condition also stops the keptn-flow if an artifact is discarded
 	if os.Getenv("PRE_WORKFLOW_ENGINE") == "true" &&
-		!(e.Canary != nil && e.Canary.Action == keptnevents.Discard) {
+		!(e.Canary != nil && (e.Canary.Action == keptnevents.Discard || e.Canary.Action == keptnevents.Promote)) {
 
 		testStrategy, err := getTestStrategy(e.Project, e.Stage)
 		if err != nil {
