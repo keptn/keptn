@@ -239,6 +239,7 @@ func sendCanaryAction(shkeptncontext string, project string,
 	configChangedEvent := keptnevents.ConfigurationChangeEventData{
 		Project: project,
 		Service: service,
+		Stage:   stage,
 		Canary:  &canary,
 	}
 
