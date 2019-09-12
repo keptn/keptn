@@ -74,13 +74,13 @@ var monitoringCmd = &cobra.Command{
 		if *params.Remediation == "" {
 			return errors.New("Please specify path to remediation file")
 		}
-		if !fileExists(*params.ServiceIndicators) {
+		if !fileExists(keptnutils.ExpandTilde(*params.ServiceIndicators)) {
 			return errors.New("Service indicators file " + *params.ServiceIndicators + " not found in local file system")
 		}
-		if !fileExists(*params.ServiceObjectives) {
+		if !fileExists(keptnutils.ExpandTilde(*params.ServiceObjectives)) {
 			return errors.New("Service objectives file " + *params.ServiceObjectives + " not found in local file system")
 		}
-		if !fileExists(*params.Remediation) {
+		if !fileExists(keptnutils.ExpandTilde(*params.Remediation)) {
 			return errors.New("Remediation file " + *params.Remediation + " not found in local file system")
 		}
 		return nil
