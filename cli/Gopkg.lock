@@ -33,12 +33,28 @@
   version = "v0.3.1"
 
 [[projects]]
-  digest = "1:b856d8248663c39265a764561c1a1a149783f6cc815feb54a1f3a591b91f6eca"
+  digest = "1:debe400440582cfe5580591afd0f7fdef5b17a25945f06bd3087bc67b4b8fd03"
+  name = "github.com/Masterminds/goutils"
+  packages = ["."]
+  pruneopts = ""
+  revision = "41ac8693c5c10a92ea1ff5ac3a7f95646f6123b0"
+  version = "v1.1.0"
+
+[[projects]]
+  digest = "1:f9d9226ce7676e4c1eb8b0f20571ab55a64b8d6dbdc2e119297093dbb24a4826"
   name = "github.com/Masterminds/semver"
   packages = ["."]
   pruneopts = ""
-  revision = "c7af12943936e8c39859482e61f0574c2fd7fc75"
-  version = "v1.4.2"
+  revision = "805c489aa98f412e79eb308a37996bf9d8b1c91e"
+  version = "v1.5.0"
+
+[[projects]]
+  digest = "1:2635aa12c62c6ed3014ace2bb30887106f9524ce8891d3e3100e41edadf249ce"
+  name = "github.com/Masterminds/sprig"
+  packages = ["."]
+  pruneopts = ""
+  revision = "258b00ffa7318e8b109a141349980ffbd30a35db"
+  version = "v2.20.0"
 
 [[projects]]
   digest = "1:c0952fb3cf9506cff577b4edf4458889570dcbd2902a7b90a1fd96bfbb97ccd8"
@@ -390,6 +406,14 @@
   version = "v1.0.0"
 
 [[projects]]
+  digest = "1:35979179658d20a73693589e67bdc3baf4dc0ef9f524b1dfd3cc55fb5f6ae384"
+  name = "github.com/huandu/xstrings"
+  packages = ["."]
+  pruneopts = ""
+  revision = "f02667b379e2fb5916c3cda2cf31e0eb885d79f8"
+  version = "v1.2.0"
+
+[[projects]]
   digest = "1:31bfd110d31505e9ffbc9478e31773bf05bf02adcaeb9b139af42684f9294c13"
   name = "github.com/imdario/mergo"
   packages = ["."]
@@ -423,7 +447,7 @@
 
 [[projects]]
   branch = "develop"
-  digest = "1:3fc518658500294b3d522c2f778e9e5da26f9fb79ca00ac01fc6f34726edbf3f"
+  digest = "1:215428af29bfb27e8965c5cdd5ce411161ab3147def9dec1b9a70fb89b96152d"
   name = "github.com/keptn/go-utils"
   packages = [
     "pkg/events",
@@ -431,7 +455,7 @@
     "pkg/utils",
   ]
   pruneopts = ""
-  revision = "a26c07c17139068d2f3387b99aab284ab8e60714"
+  revision = "6bb1ea21967fe4667c0f7afeb20fbfc96b6c8e0a"
 
 [[projects]]
   digest = "1:91317956b340c9e61a4287fd94c870bfad3f1922280c3e0a65db91c29017e8de"
@@ -450,8 +474,7 @@
   version = "v1.8.1"
 
 [[projects]]
-  branch = "master"
-  digest = "1:101e8200d89dcff2cec2522e427298045bea6d81ef71f8fe10810faeae741efc"
+  digest = "1:263db331ad7732d9d1e45003031dd3d6295c0c4be232f99596dde34fa51e3df9"
   name = "github.com/mailru/easyjson"
   packages = [
     "buffer",
@@ -459,7 +482,8 @@
     "jwriter",
   ]
   pruneopts = ""
-  revision = "b2ccc519800e761ac8000b95e5d57c80a897ff9e"
+  revision = "1b2b06f5f209fea48ff5922d8bfb2b9ed5d8f00b"
+  version = "v0.7.0"
 
 [[projects]]
   digest = "1:6dbb0eb72090871f2e58d1e37973fe3cb8c0f45f49459398d3fc740cb30e13bd"
@@ -659,7 +683,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:c3b737126c08fa82da30169dff76cee24db554013cd051e9cc888dcc079292e6"
+  digest = "1:4a4c4edf69b61bf98e98d22696aa80c4059384895920de4d5e2fe696068d5f13"
   name = "golang.org/x/crypto"
   packages = [
     "cast5",
@@ -674,14 +698,16 @@
     "openpgp/errors",
     "openpgp/packet",
     "openpgp/s2k",
+    "pbkdf2",
     "poly1305",
+    "scrypt",
     "ssh",
     "ssh/agent",
     "ssh/knownhosts",
     "ssh/terminal",
   ]
   pruneopts = ""
-  revision = "094676da4a83be5288d281081bba63a173ce6772"
+  revision = "227b76d455e791cb042b03e633e2f7fbcfdf74a5"
 
 [[projects]]
   branch = "master"
@@ -716,7 +742,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:7340151bcf028f4deae54d53a3ab97840214b4b5dabaf1be7c9e16fae9c714ff"
+  digest = "1:0c8be8c385496c91dd86d6cc727041eafdc2f42537c9f58ec992e8efad0fa923"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
@@ -724,7 +750,7 @@
     "windows",
   ]
   pruneopts = ""
-  revision = "bbd175535a8b9969bb0b33f1502f681ee0b122bd"
+  revision = "7ad0cfa0b7b5a50bdf0fb49923febdf3742a975c"
 
 [[projects]]
   digest = "1:740b51a55815493a8d0f2b1e0d0ae48fe48953bf7eaf3fcc4198823bf67768c0"
@@ -1038,10 +1064,13 @@
   name = "k8s.io/helm"
   packages = [
     "pkg/chartutil",
+    "pkg/engine",
     "pkg/ignore",
     "pkg/proto/hapi/chart",
     "pkg/proto/hapi/version",
+    "pkg/renderutil",
     "pkg/sympath",
+    "pkg/timeconv",
     "pkg/version",
   ]
   pruneopts = ""

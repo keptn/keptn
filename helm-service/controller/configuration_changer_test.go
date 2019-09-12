@@ -242,7 +242,7 @@ func TestChangePrimaryDeployment(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	gen, err := h.GenerateManagedChart(inputChart, "sockshop", "production")
+	gen, err := h.GenerateDuplicateManagedChart(inputChart, "sockshop", "production")
 	assert.Nil(t, err, "Generating the managed Chart should not return any error")
 
 	generatedChart, err := keptnutils.LoadChart(gen)
