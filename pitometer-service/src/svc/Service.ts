@@ -105,19 +105,20 @@ export class Service {
       }
 
       const envPlaceHolderRegex = new RegExp('\\$ENVIRONMENT', 'g');
-
+      perfspecString =
+          perfspecString.replace(envPlaceHolderRegex, `${event.data.project}-${event.data.stage}`);
       /*
       /* TODO: going forward, setting the duration via the $DURATION_MINUTES
       /* placeholder will become obsolete, since this is handled by pitometer now.
       /* For backwards compatibility reasons we have to keep this for now.
       */
-      const durationRegex = new RegExp('\\$DURATION_MINUTES', 'g');
-      perfspecString =
-        perfspecString.replace(envPlaceHolderRegex, `${event.data.project}-${event.data.stage}`);
+      let durationRegex = new RegExp('\\$DURATION_MINUTESm', 'g');
+      perfspecString = perfspecString.replace(durationRegex, '$DURATION_MINUTES');
+      durationRegex = new RegExp('\\$DURATION_MINUTES', 'g');
       if (testRunDurationMinutes > 0) {
-        perfspecString = perfspecString.replace(durationRegex, `${testRunDurationMinutes}`);
+        perfspecString = perfspecString.replace(durationRegex, `${testRunDurationMinutes}m`);
       } else {
-        perfspecString = perfspecString.replace(durationRegex, `3`);
+        perfspecString = perfspecString.replace(durationRegex, `3m`);
       }
 
       perfspec = JSON.parse(perfspecString);
