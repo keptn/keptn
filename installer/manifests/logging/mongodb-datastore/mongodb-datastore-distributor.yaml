@@ -32,7 +32,7 @@ spec:
         - name: PUBSUB_URL
           value: 'nats://keptn-nats-cluster.keptn.svc.cluster.local'
         - name: PUBSUB_TOPIC
-          value: 'sh.keptn.events.*'
+          value: 'sh.keptn.>'
         - name: PUBSUB_RECIPIENT
           value: 'mongodb-datastore'
         - name: PUBSUB_RECIPIENT_PATH
