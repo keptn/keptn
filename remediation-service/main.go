@@ -300,7 +300,7 @@ func getReleaseByPodName(podname string) (*string, error) {
 	return nil, errors.New("could not find release for pod")
 }
 
-// splits helm release name into projec, stage and service
+// splits helm release name into project, stage and service
 func splitReleaseName(releasename string) (project string, stage string, service string) {
 	// currently no "-" in project and service name are allowed, thus "-" is used to split
 	s := strings.SplitN(releasename, "-", 3)
