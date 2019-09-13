@@ -131,7 +131,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 			logger.Debug("Remediation for problem found in remediation.yaml")
 			// currently only one remediation action is supported
 			if remediation.Actions[0].Action == "scaling" {
-				currentReplicaCount, err := getReplicaCount(logger, projectname, stagename, servicename, configurationserviceconnection)
+				currentReplicaCount, err := getReplicaCount(logger, projectname, stagename, servicename, os.Getenv(configurationserviceconnection))
 				if err != nil {
 					logger.Error("could not get replica count")
 					return err
