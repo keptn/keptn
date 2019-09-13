@@ -242,7 +242,7 @@ func (c *ConfigurationChanger) updateChart(e *keptnevents.ConfigurationChangeEve
 	if err := keptnutils.StoreChart(e.Project, e.Service, e.Stage, helmChartName, chartData, url.String()); err != nil {
 		return err
 	}
-	c.logger.Info(fmt.Sprintf("Finished updating chart %s", helmChartName))
+	c.logger.Info(fmt.Sprintf("Finished updating chart %s of stage %s", helmChartName, e.Stage))
 	return nil
 }
 
@@ -416,6 +416,7 @@ func (c *ConfigurationChanger) ApplyConfiguration(project, stage, service string
 			releaseName, namespace, err.Error())
 	}
 
+	// Undo manual scalings of deployments becaue helm upgrade does not do
 	if err := c.undoScaling(ch, namespace); err != nil {
 		return err
 	}
@@ -428,7 +429,6 @@ func (c *ConfigurationChanger) ApplyConfiguration(project, stage, service string
 }
 
 func (c *ConfigurationChanger) undoScaling(ch *chart.Chart, namespace string) error {
-	// Undo manual scalings of deployments becaue helm upgrade does not do
 	useInClusterConfig := false
 	if os.Getenv("ENVIRONMENT") == "production" {
 		useInClusterConfig = true
@@ -443,12 +443,10 @@ func (c *ConfigurationChanger) undoScaling(ch *chart.Chart, namespace string) er
 	}
 
 	for _, chartDepl := range chartDepls {
-		c.logger.Debug("Get original deployment " + chartDepl.Name)
 		appliedDeployment, err := clientset.AppsV1().Deployments(namespace).Get(chartDepl.Name, metav1.GetOptions{})
 		if err != nil {
 			return err
 		}
-		c.logger.Debug("Received original deployment " + chartDepl.Name)
 
 		if *chartDepl.Spec.Replicas != *appliedDeployment.Spec.Replicas {
 			c.logger.Debug(fmt.Sprintf("Reset scaling of deployment %s in namespace %s to %d", chartDepl.Name, namespace, *chartDepl.Spec.Replicas))
