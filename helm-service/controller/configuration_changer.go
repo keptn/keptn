@@ -115,6 +115,11 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event,
 		}
 	}
 
+	if os.Getenv("PRE_WORKFLOW_ENGINE") == "true" &&
+		strings.HasSuffix(ce.Source(), "remediation-service") {
+		return nil
+	}
+
 	// Send deployment finished event
 	// Note that this condition also stops the keptn-flow if an artifact is discarded
 	if os.Getenv("PRE_WORKFLOW_ENGINE") == "true" &&
@@ -127,16 +132,6 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event,
 		var shkeptncontext string
 		ce.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
 		if err := sendDeploymentFinishedEvent(shkeptncontext, e.Project, e.Stage, e.Service, testStrategy); err != nil {
-			c.logger.Error(fmt.Sprintf("Cannot send deployment finished event: %s", err.Error()))
-			return err
-		}
-	}
-
-	if os.Getenv("PRE_WORKFLOW_ENGINE") == "true" &&
-		strings.HasSuffix(ce.Source(), "remediation-service") {
-		var shkeptncontext string
-		ce.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
-		if err := sendDeploymentFinishedEvent(shkeptncontext, e.Project, e.Stage, e.Service, "real-user"); err != nil {
 			c.logger.Error(fmt.Sprintf("Cannot send deployment finished event: %s", err.Error()))
 			return err
 		}
