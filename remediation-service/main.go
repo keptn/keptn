@@ -106,7 +106,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	resourceURI := remediationfilename
 
 	// valide if remediation should be performed
-	resourceHandler := keptnutils.NewResourceHandler(configurationserviceconnection)
+	resourceHandler := keptnutils.NewResourceHandler(os.Getenv(configurationserviceconnection))
 	autoremediate := isRemediationEnabled(resourceHandler, projectname, stagename)
 	logger.Debug(fmt.Sprintf("remediation enabled for project and stage: %t", autoremediate))
 
@@ -131,7 +131,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 			logger.Debug("Remediation for problem found in remediation.yaml")
 			// currently only one remediation action is supported
 			if remediation.Actions[0].Action == "scaling" {
-				currentReplicaCount, err := getReplicaCount(logger, projectname, stagename, servicename, configurationserviceconnection)
+				currentReplicaCount, err := getReplicaCount(logger, projectname, stagename, servicename, os.Getenv(configurationserviceconnection))
 				if err != nil {
 					logger.Error("could not get replica count")
 					return err
@@ -300,7 +300,7 @@ func getReleaseByPodName(podname string) (*string, error) {
 	return nil, errors.New("could not find release for pod")
 }
 
-// splits helm release name into projec, stage and service
+// splits helm release name into project, stage and service
 func splitReleaseName(releasename string) (project string, stage string, service string) {
 	// currently no "-" in project and service name are allowed, thus "-" is used to split
 	s := strings.SplitN(releasename, "-", 3)
