@@ -90,24 +90,26 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event,
 
 	// Change canary
 	if e.Canary != nil {
-		deplStrategies, err := GetDeploymentStrategies(e.Project)
+		c.logger.Debug(fmt.Sprintf("Canary action %s for service %s in stage %s of project %s was received",
+			e.Canary.Action, e.Service, e.Stage, e.Project))
+		duplicated, err := isServiceDuplicated(e)
 		if err != nil {
-			c.logger.Error(fmt.Sprintf("Error when getting deployment strategies: %s", err.Error()))
-			return err
+			c.logger.Error(fmt.Sprintf("Error when checking whether the service %s in stage %s of project %s is duplicated: %s",
+				e.Service, e.Stage, e.Project, err.Error()))
 		}
-		c.logger.Debug(fmt.Sprintf("Canary action %s for service %s in stage %s of project %s was received", e.Canary.Action, e.Service, e.Stage, e.Project))
-		if deplStrategies[e.Stage] == keptnevents.Duplicate {
+		if duplicated {
 			c.logger.Debug(fmt.Sprintf("Apply canary action %s for service %s in stage %s of project %s", e.Canary.Action, e.Service, e.Stage, e.Project))
 			if err := c.changeCanary(e); err != nil {
 				c.logger.Error(err.Error())
 				return err
 			}
 		} else {
-			c.logger.Debug(fmt.Sprintf("Discard canary action %s for service %s in stage %s of project %s because stage has deployment strategy %s",
-				e.Canary.Action, e.Service, e.Stage, e.Project, deplStrategies[e.Stage].String()))
+			c.logger.Debug(fmt.Sprintf("Discard canary action %s for service %s in stage %s of project %s because service is not duplicated",
+				e.Canary.Action, e.Service, e.Stage, e.Project))
 			if os.Getenv("PRE_WORKFLOW_ENGINE") != "true" {
-				c.logger.Error(fmt.Sprintf("Cannot process received canary instructions as deployment strategy for stage %s is %s",
-					e.Stage, deplStrategies[e.Stage]))
+				c.logger.Error(
+					fmt.Sprintf("Cannot process received canary instructions as no duplicate deployment for service %s in stage %s of project %s is available",
+						e.Service, e.Stage, e.Project))
 			}
 		}
 	}
@@ -140,6 +142,25 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event,
 	}
 
 	return nil
+}
+
+func isServiceDuplicated(e *keptnevents.ConfigurationChangeEventData) (bool, error) {
+	url, err := serviceutils.GetConfigServiceURL()
+	if err != nil {
+		return false, err
+	}
+
+	helmChartName := helm.GetChartName(e.Service, true)
+	// Read chart
+	chart, err := keptnutils.GetChart(e.Project, e.Service, e.Stage, helmChartName, url.String())
+	if err != nil {
+		return false, err
+	}
+	depls, err := keptnutils.GetRenderedDeployments(chart)
+	if err != nil {
+		return false, err
+	}
+	return len(depls) > 0, nil
 }
 
 func changePrimaryDeployment(e *keptnevents.ConfigurationChangeEventData, chart *chart.Chart) error {
