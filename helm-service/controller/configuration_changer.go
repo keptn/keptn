@@ -22,6 +22,7 @@ import (
 	"github.com/keptn/keptn/helm-service/pkg/serviceutils"
 	"github.com/tidwall/sjson"
 	appsv1 "k8s.io/api/apps/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kyaml "k8s.io/apimachinery/pkg/util/yaml"
 	"k8s.io/helm/pkg/chartutil"
 )
@@ -220,7 +221,7 @@ func (c *ConfigurationChanger) updateChart(e *keptnevents.ConfigurationChangeEve
 	}
 
 	helmChartName := helm.GetChartName(e.Service, generated)
-	c.logger.Info(fmt.Sprintf("Start updating chart %s", helmChartName))
+	c.logger.Info(fmt.Sprintf("Start updating chart %s of stage %s", helmChartName, e.Stage))
 	// Read chart
 	chart, err := keptnutils.GetChart(e.Project, e.Service, e.Stage, helmChartName, url.String())
 	if err != nil {
@@ -410,15 +411,54 @@ func (c *ConfigurationChanger) ApplyConfiguration(project, stage, service string
 	}
 
 	if _, err := keptnutils.ExecuteCommand("helm", []string{"upgrade", "--install", releaseName,
-		chartPath, "--namespace", namespace, "--wait"}); err != nil {
+		chartPath, "--namespace", namespace, "--reset-values", "--wait", "--force"}); err != nil {
 		return fmt.Errorf("Error when upgrading chart %s in namespace %s: %s",
 			releaseName, namespace, err.Error())
+	}
+
+	if err := c.undoScaling(ch, namespace); err != nil {
+		return err
 	}
 
 	if err := keptnutils.WaitForDeploymentsInNamespace(getInClusterConfig(), namespace); err != nil {
 		return fmt.Errorf("Error when waiting for deployments in namespace %s: %s", namespace, err.Error())
 	}
 	c.logger.Info(fmt.Sprintf("Finished upgrading chart %s in namespace %s", releaseName, namespace))
+	return nil
+}
+
+func (c *ConfigurationChanger) undoScaling(ch *chart.Chart, namespace string) error {
+	// Undo manual scalings of deployments becaue helm upgrade does not do
+	useInClusterConfig := false
+	if os.Getenv("ENVIRONMENT") == "production" {
+		useInClusterConfig = true
+	}
+	clientset, err := keptnutils.GetClientset(useInClusterConfig)
+	if err != nil {
+		return err
+	}
+	chartDepls, err := keptnutils.GetRenderedDeployments(ch)
+	if err != nil {
+		return err
+	}
+
+	for _, chartDepl := range chartDepls {
+		c.logger.Debug("Get original deployment " + chartDepl.Name)
+		appliedDeployment, err := clientset.AppsV1().Deployments(namespace).Get(chartDepl.Name, metav1.GetOptions{})
+		if err != nil {
+			return err
+		}
+		c.logger.Debug("Received original deployment " + chartDepl.Name)
+
+		if *chartDepl.Spec.Replicas != *appliedDeployment.Spec.Replicas {
+			c.logger.Debug(fmt.Sprintf("Reset scaling of deployment %s in namespace %s to %d", chartDepl.Name, namespace, *chartDepl.Spec.Replicas))
+			if err := keptnutils.ScaleDeployment(useInClusterConfig, appliedDeployment.Name, namespace, *chartDepl.Spec.Replicas); err != nil {
+				return err
+			}
+		} else {
+			c.logger.Debug(fmt.Sprintf("Deployment %s in namespace %s is correctly scaled", chartDepl.Name, namespace))
+		}
+	}
 	return nil
 }
 
