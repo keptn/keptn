@@ -39,12 +39,12 @@
   version = "v1.1.0"
 
 [[projects]]
-  digest = "1:55388fd080150b9a072912f97b1f5891eb0b50df43401f8b75fb4273d3fec9fc"
+  digest = "1:8f73e8efaf5aeee6decc946c0ee8b1169a40f3bc5b70731fea56139ef8cb9345"
   name = "github.com/Masterminds/semver"
   packages = ["."]
   pruneopts = "UT"
-  revision = "c7af12943936e8c39859482e61f0574c2fd7fc75"
-  version = "v1.4.2"
+  revision = "0337c9b20b861d2c2e7b25450779f5d91caca32e"
+  version = "v3.0.0"
 
 [[projects]]
   digest = "1:ab506cfc00b11d6d406789c15abb0b341e8db076640e3f5255615a7e327398c1"
@@ -194,8 +194,8 @@
   name = "github.com/go-openapi/runtime"
   packages = ["."]
   pruneopts = "UT"
-  revision = "9a7d4745a6664423446ba63492cba3e0fdec6623"
-  version = "v0.19.5"
+  revision = "c909caa338861d0afbe126b6706e048e54e40f82"
+  version = "v0.19.6"
 
 [[projects]]
   digest = "1:c150e7fc0e12aec7e8b4161e12a4ce3e875290a2cf13a7ef5eed314653866838"
@@ -422,7 +422,7 @@
 
 [[projects]]
   branch = "develop"
-  digest = "1:e4ead7c9edf4f0776abf13a9d751b832dd04ffd00f18d623b2657fbaa9bbecf2"
+  digest = "1:5cee4bd71598827650b04af246b9b357721449d0d0b858179a576580c9fb3044"
   name = "github.com/keptn/go-utils"
   packages = [
     "pkg/events",
@@ -430,7 +430,7 @@
     "pkg/utils",
   ]
   pruneopts = "UT"
-  revision = "c4b2514a134cb61fc59393333e37b173b0d62970"
+  revision = "1787d0a43436c4590d9907bab384d5e23e7612c2"
 
 [[projects]]
   digest = "1:fd7f169f32c221b096c74e756bda16fe22d3bb448bbf74042fd0700407a1f92f"
@@ -699,7 +699,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:c99fcaf36e21b75c2d61e41e29462a8999dc000e134d6f02592bcc2e4edc8a9a"
+  digest = "1:dca3d6ac35036710d258ac83d4bd392883644c1416675b1b25376234825553c4"
   name = "golang.org/x/net"
   packages = [
     "context",
@@ -712,7 +712,7 @@
     "proxy",
   ]
   pruneopts = "UT"
-  revision = "a7b16738d86b947dd0fadb08ca2c2342b51958b6"
+  revision = "24e19bdeb0f2d062d8e2640d50a7aaf2a7f80e7a"
 
 [[projects]]
   branch = "master"
@@ -730,7 +730,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:66e855c53eea3664a30089d4f6f79edb7772c5ff1a6b8c4aa2c3f79f6dcff649"
+  digest = "1:55aac9cb3f24f72ab39c28a92666273a4c5df9ab6c30db06a8a5507d47cf667e"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
@@ -738,7 +738,7 @@
     "windows",
   ]
   pruneopts = "UT"
-  revision = "bbd175535a8b9969bb0b33f1502f681ee0b122bd"
+  revision = "bc967efca4b87fb45e946a3ea4cb891883404fd0"
 
 [[projects]]
   digest = "1:66a2f252a58b4fbbad0e4e180e1d85a83c222b6bce09c3dcdef3dc87c72eda7c"
