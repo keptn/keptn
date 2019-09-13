@@ -18,7 +18,7 @@ class DatastoreService {
   }
 
   async getRoots() {
-    const url = `${this.api}/event?type=sh.keptn.events.new-artifact&pageSize=100`;
+    const url = `${this.api}/event?type=sh.keptn.event.configuration.change&pageSize=100`;
     const result = await axios.get(url);
     const { data } = result;
     if (data.events) {
