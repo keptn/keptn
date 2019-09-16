@@ -532,17 +532,6 @@
   revision = "d14ea06fba99483203c19d92cfcd13ebe73135f4"
 
 [[projects]]
-  digest = "1:6c41d4f998a03b6604227ccad36edaed6126c397e5d78709ef4814a1145a6757"
-  name = "github.com/jmoiron/sqlx"
-  packages = [
-    ".",
-    "reflectx",
-  ]
-  pruneopts = "UT"
-  revision = "d161d7a76b5661016ad0b085869f77fd410f3e6a"
-  version = "v1.2.0"
-
-[[projects]]
   digest = "1:709cd2a2c29cc9b89732f6c24846bbb9d6270f28ef5ef2128cc73bd0d6d7bff9"
   name = "github.com/json-iterator/go"
   packages = ["."]
@@ -559,8 +548,7 @@
   version = "v1.4.0"
 
 [[projects]]
-  branch = "develop"
-  digest = "1:f8faefb398b03fe333eef8d5f2efb18b32ac5e4b4bd7445975bf0c4bd53d2fbd"
+  digest = "1:7eba0158f93b43d9ac1099c959dec8d7d778b375db7507ac2cbc685263b9c7f5"
   name = "github.com/keptn/go-utils"
   packages = [
     "pkg/events",
@@ -568,7 +556,8 @@
     "pkg/utils",
   ]
   pruneopts = "UT"
-  revision = "6bb1ea21967fe4667c0f7afeb20fbfc96b6c8e0a"
+  revision = "9a7a6235999065b3f1f69159bc669864c03a4333"
+  version = "0.2.0"
 
 [[projects]]
   digest = "1:fd7f169f32c221b096c74e756bda16fe22d3bb448bbf74042fd0700407a1f92f"
@@ -585,18 +574,6 @@
   pruneopts = "UT"
   revision = "f55edac94c9bbba5d6182a4be46d86a2c9b5b50e"
   version = "v1.0.2"
-
-[[projects]]
-  digest = "1:12cb143f2148bf54bcd9fe622abac17325e85eeb1d84b8ec6caf1c80232108fd"
-  name = "github.com/lib/pq"
-  packages = [
-    ".",
-    "oid",
-    "scram",
-  ]
-  pruneopts = "UT"
-  revision = "3427c32cb71afc948325f299f040e53c1dd78979"
-  version = "v1.2.0"
 
 [[projects]]
   digest = "1:927762c6729b4e72957ba3310e485ed09cf8451c5a637a52fd016a9fe09e7936"
@@ -681,17 +658,6 @@
   pruneopts = "UT"
   revision = "ba968bfe8b2f7e042a574c888954fccecfa385b4"
   version = "v0.8.1"
-
-[[projects]]
-  branch = "master"
-  digest = "1:ea0e81b259e0c0563617017b1ba76d4af3ec97817defff75517eb7f34664b917"
-  name = "github.com/rubenv/sql-migrate"
-  packages = [
-    ".",
-    "sqlparse",
-  ]
-  pruneopts = "UT"
-  revision = "8926f37f0bc1a432e673c60cedb705f783306da5"
 
 [[projects]]
   digest = "1:b36a0ede02c4c2aef7df7f91cbbb7bb88a98b5d253509d4f997dda526e50c88c"
@@ -996,14 +962,6 @@
   pruneopts = "UT"
   revision = "6eaf6f47437a6b4e2153a190160ef39a92c7eceb"
   version = "v1.23.0"
-
-[[projects]]
-  digest = "1:1b36b0cb56126316f637ad55cfd5ed84c945fe45bd90e944666b4107a80a1da9"
-  name = "gopkg.in/gorp.v1"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "6a667da9c028871f98598d85413e3fc4c6daa52e"
-  version = "v1.7.2"
 
 [[projects]]
   digest = "1:2d1fbdc6777e5408cabeb02bf336305e724b925ff4546ded0fa8715a7267922a"
@@ -1337,7 +1295,7 @@
   version = "kubernetes-1.12.0"
 
 [[projects]]
-  digest = "1:02875e6e6568773c7e79f05e29269a757ac9820e999ba9c5a12871897b10241e"
+  digest = "1:272795d05596b974f8744f0734355938bd54b26c771ecfed079b6cadf93d216b"
   name = "k8s.io/helm"
   packages = [
     "pkg/chartutil",
@@ -1355,11 +1313,8 @@
     "pkg/proto/hapi/version",
     "pkg/releaseutil",
     "pkg/renderutil",
-    "pkg/storage",
-    "pkg/storage/driver",
     "pkg/storage/errors",
     "pkg/sympath",
-    "pkg/tiller/environment",
     "pkg/timeconv",
     "pkg/version",
   ]

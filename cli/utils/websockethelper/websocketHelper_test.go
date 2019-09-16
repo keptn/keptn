@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/gorilla/websocket"
+	keptnutils "github.com/keptn/go-utils/pkg/utils"
 )
 
 var upgrader = websocket.Upgrader{}
@@ -92,10 +93,10 @@ func TestDoubleCERead(t *testing.T) {
 func sendCE(t *testing.T, ws *websocket.Conn, msg string, terminate bool, logLevel string) {
 	testCloudEvent1 := struct {
 		Type string
-		Data LogData
+		Data keptnutils.LogData
 	}{
 		Type: "sh.keptn.events.log",
-		Data: LogData{
+		Data: keptnutils.LogData{
 			Message:   msg,
 			Terminate: terminate,
 			LogLevel:  logLevel,
