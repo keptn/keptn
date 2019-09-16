@@ -8,6 +8,7 @@
 - Use custom dialer for xip io resolving in the websocket communication [#634](https://github.com/keptn/keptn/issues/634)
 - Use internal datastore for logging events and service logs [#536](https://github.com/keptn/keptn/issues/536)
 - Updated bridge to use internal datastore to show events [#621](https://github.com/keptn/keptn/issues/621)
+- Allow to use complete Helm charts when onboarding a new service [#611](https://github.com/keptn/keptn/issues/611)
 
 ## CLI Enhancements
 - Add EKS support [#608](https://github.com/keptn/keptn/issues/608)
@@ -16,8 +17,11 @@
 - Add option `--insecure-skip-tls-verify` in installer [#567](https://github.com/keptn/keptn/issues/567)
 - Allow update domain from CLI [#553](https://github.com/keptn/keptn/issues/553)
 - Refactor installer in keptn CLI [#638](https://github.com/keptn/keptn/issues/638)
+- Allow to upload resources from the keptn CLI [#673](https://github.com/keptn/keptn/issues/673)
 
 ## New Services
+- New **api** for communicating with keptn [#506](https://github.com/keptn/keptn/issues/506)
+- New **configuration-service** for managing resources for Keptn project-related entities, i.e., project, stage, and service [#451](https://github.com/keptn/keptn/issues/451)
 - New **shipyard-service** to process a shipyard file to create a project and stages [#610](https://github.com/keptn/keptn/issues/610)
 - New **wait-service** to wait a certain time before sending an event [#725](https://github.com/keptn/keptn/issues/725)
 
