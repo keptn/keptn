@@ -1,4 +1,4 @@
-# Release Notes x.x.x
+# Release Notes 0.5.0.beta
 
 ## New Features
 - github.com/keptn is now a mono-repo meaning that it contains all projects relevant for a Keptn deployment [#537](https://github.com/keptn/keptn/issues/537)
