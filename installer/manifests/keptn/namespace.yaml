@@ -1,0 +1,6 @@
+---
+# Namespace for all keptn core components
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: keptn

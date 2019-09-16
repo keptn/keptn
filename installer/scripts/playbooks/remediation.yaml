@@ -1,0 +1,71 @@
+---
+- name: autoremediaton playbook
+  hosts: localhost
+  vars:
+    relative_time: "hour"
+
+  tasks:
+    - name: push comment to dynatrace
+      uri:
+        url: "{{dtcommentapiurl}}"
+        method: POST
+        body_format: json
+        body: "{ \"comment\": \"Remediation playbook started.\", \"user\": \"{{commentuser}}\", \"context\": \"Ansible Tower\" }"
+      when: state == "OPEN"
+
+    - name: get entityId
+      set_fact:
+        myEntity: "{{impactedEntities | first}}"
+      when: state == "OPEN"
+
+    - name: fetch custom configuration events
+      uri:
+        url: "{{dteventapiurl}}&relativeTime={{relative_time}}&entityId={{myEntity.entity}}&eventType=CUSTOM_CONFIGURATION"
+        return_content: yes
+      with_items: "{{ impactedEntities }}"
+      when: state == "OPEN"
+      register: customproperties
+      ignore_errors: no
+
+    - name: parse configuration events
+      when: state == "OPEN"
+      set_fact:
+        configuration_events: "{{item.json.events}}"
+      with_items: "{{ customproperties.results }}"
+      register: app_result
+
+    - name: get most recent configuration event
+      when: state == "OPEN"
+      set_fact:
+        myItem: "{{ configuration_events | first }}"
+
+    - name: call remediation action
+      uri:
+        url: "{{ myItem.customProperties.remediationAction }}"
+        method: POST
+        user: "{{tower_user}}"
+        password: "{{tower_password}}"
+        force_basic_auth: yes
+        status_code: [200,201,202]
+        validate_certs: no
+        return_content: yes
+      when: state == "OPEN" and myItem.customProperties.remediationAction is defined
+      ignore_errors: yes
+      register: result
+
+    - name: push success comment to dynatrace
+      uri:
+        url: "{{dtcommentapiurl}}"
+        method: POST
+        body_format: json
+        body: "{ \"comment\": \"Invoked remediation action successfully executed.\", \"user\": \"{{commentuser}}\", \"context\": \"Ansible Tower\" }"
+      when: state == "OPEN" and (result.status == 200 or result.status == 201 or result.status == 202)
+
+    - name: push error comment to dynatrace
+      uri:
+        url: "{{dtcommentapiurl}}"
+        method: POST
+        body_format: json
+        body: "{ \"comment\": \"Invoked remediation action failed. \", \"user\": \"{{commentuser}}\", \"context\": \"Ansible Tower\" }"
+      when: state == "OPEN" and (result.status != 200 and result.status != 201 and result.status != 202)
+      
