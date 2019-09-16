@@ -138,24 +138,6 @@ func getTestInfo(data deploymentFinishedEvent) *TestInfo {
 }
 
 func runHealthCheck(data deploymentFinishedEvent, id string, logger *keptnutils.Logger) (bool, error) {
-	switch strings.ToLower(data.DeploymentStrategy) {
-	case "direct":
-		if err := keptnutils.WaitForDeploymentToBeAvailable(true, data.Service, data.Project+"-"+data.Stage); err != nil {
-			return false, err
-		}
-
-	case "blue_green_service":
-		if err := keptnutils.WaitForDeploymentToBeAvailable(true, data.Service+"-blue", data.Project+"-"+data.Stage); err != nil {
-			return false, err
-		}
-		if err := keptnutils.WaitForDeploymentToBeAvailable(true, data.Service+"-green", data.Project+"-"+data.Stage); err != nil {
-			return false, err
-		}
-
-	default:
-		return false, errors.New("Unknown deployment strategy '" + data.DeploymentStrategy + "'")
-	}
-
 	os.RemoveAll("HealthCheck_" + data.Service)
 	os.RemoveAll("HealthCheck_" + data.Service + "_result.tlf")
 	os.RemoveAll("output.txt")
