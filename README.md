@@ -16,13 +16,28 @@ Therefore, this section shows the compatibility between these versions.
 **Keptn in [version 0.5.0.beta](https://github.com/keptn/keptn/releases/tag/0.5.0.beta) requires:**
 
 *Keptn core:*
-- TBD
+- keptn/api:0.5.0.beta
+- keptn/bridge:0.5.0.beta
+- keptn/configuration-service:0.5.0.beta
+- keptn/distributor:0.5.0.beta
+- keptn/eventbroker-go:0.5.0.beta
+- keptn/gatekeeper-service:0.5.0.beta
+- keptn/helm-service:0.5.0.beta
+- keptn/jmeter-service:0.5.0.beta
+- keptn/mongodb-datastore:0.5.0.beta
+- keptn/pitometer-service:0.5.0.beta
+- keptn/shipyard-service:0.5.0.beta
+- keptn/wait-service:0.5.0.beta
+- keptn/remediation-service:0.5.0
+
 
 *Keptn uniform:*
-- TBD
+- keptn/dynatrace-service:0.3.0
+- keptn/prometheus-service:0.1.0
+- keptn/servicenow-service:0.1.4
 
 *for Openshift:*
-- TBD
+- keptn/openshift-route-service:0.5.0.beta
 
 <details><summary>Keptn version 0.4.0</summary>
 <p>
