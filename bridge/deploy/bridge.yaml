@@ -1,0 +1,43 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bridge
+  namespace: keptn
+spec:
+  selector:
+    matchLabels:
+      run: bridge
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: bridge
+    spec:
+      containers:
+      - name: bridge
+        image: keptn/bridge:latest
+        ports:
+        - containerPort: 3000
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bridge
+  namespace: keptn
+  labels:
+    run: bridge
+spec:
+  ports:
+  - port: 8080
+    targetPort: 3000
+    protocol: TCP
+  selector:
+    run: bridge

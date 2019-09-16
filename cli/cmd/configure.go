@@ -1,13 +1,16 @@
 package cmd
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"net/url"
+	"strings"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 	"github.com/google/uuid"
+	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
 	"github.com/keptn/keptn/cli/utils/websockethelper"
@@ -53,7 +56,7 @@ Example:
 		}
 
 		configURL := endPoint
-		configURL.Path = "config"
+		configURL.Path = "v1/configure"
 
 		if !mocking {
 			utils.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), utils.VerboseLevel)
@@ -88,4 +91,33 @@ func init() {
 	configureCmd.MarkFlagRequired("user")
 	config.Token = configureCmd.Flags().StringP("token", "t", "", "The GitHub personal access token")
 	configureCmd.MarkFlagRequired("token")
+}
+
+func configure(githubOrg, githubUserName, githubPersonalAccessToken string) error {
+
+	buf := new(bytes.Buffer)
+	rootCmd.SetOutput(buf)
+
+	args := []string{
+		"configure",
+		fmt.Sprintf("--org=%s", githubOrg),
+		fmt.Sprintf("--user=%s", githubUserName),
+		fmt.Sprintf("--token=%s", githubPersonalAccessToken),
+	}
+	rootCmd.SetArgs(args)
+	return rootCmd.Execute()
+}
+
+func checkIfConfiguredUsingKube() (bool, error) {
+
+	ops := options{"get",
+		"secrets",
+		"-n",
+		"keptn"}
+	ops.appendIfNotEmpty(kubectlOptions)
+	out, err := keptnutils.ExecuteCommand("kubectl", ops)
+	if err != nil {
+		return false, err
+	}
+	return strings.Contains(out, "github-credentials"), nil
 }
