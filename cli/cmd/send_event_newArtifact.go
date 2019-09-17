@@ -26,6 +26,7 @@ import (
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 	"github.com/google/uuid"
 	keptnevents "github.com/keptn/go-utils/pkg/events"
+	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
 	"github.com/keptn/keptn/cli/utils/websockethelper"
@@ -65,8 +66,8 @@ Example:
 			return errors.New(authErrorMsg)
 		}
 
-		utils.PrintLog("Starting to send a new-artifact-event to deploy the service "+
-			*newArtifact.Service+" in project "+*newArtifact.Project+" in version "+*newArtifact.Image+":"+*newArtifact.Tag, utils.InfoLevel)
+		logging.PrintLog("Starting to send a new-artifact-event to deploy the service "+
+			*newArtifact.Service+" in project "+*newArtifact.Project+" in version "+*newArtifact.Image+":"+*newArtifact.Tag, logging.InfoLevel)
 
 		valuesCanary := make(map[string]interface{})
 		valuesCanary["image"] = *newArtifact.Image + ":" + *newArtifact.Tag
@@ -94,17 +95,17 @@ Example:
 		eventURL := endPoint
 		eventURL.Path = "v1/event"
 
-		utils.PrintLog(fmt.Sprintf("Connecting to server %s", eventURL.String()), utils.VerboseLevel)
+		logging.PrintLog(fmt.Sprintf("Connecting to server %s", eventURL.String()), logging.VerboseLevel)
 		if !mocking {
 			responseCE, err := utils.Send(eventURL, event, apiToken)
 			if err != nil {
-				utils.PrintLog("Send new-artifact was unsuccessful", utils.QuietLevel)
+				logging.PrintLog("Send new-artifact was unsuccessful", logging.QuietLevel)
 				return err
 			}
 
 			// check for responseCE to include token
 			if responseCE == nil {
-				utils.PrintLog("Response CE is nil", utils.QuietLevel)
+				logging.PrintLog("Response CE is nil", logging.QuietLevel)
 
 				return nil
 			}
@@ -170,7 +171,7 @@ func checkImageAvailability() error {
 		}
 		return errors.New("Provided image not found: " + resp.Status)
 	}
-	utils.PrintLog("Availability of provided image cannot be checked.", utils.InfoLevel)
+	logging.PrintLog("Availability of provided image cannot be checked.", logging.InfoLevel)
 	return nil
 }
 

@@ -13,6 +13,7 @@ import (
 	keptnevents "github.com/keptn/go-utils/pkg/events"
 	"github.com/keptn/go-utils/pkg/models"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
 	"github.com/keptn/keptn/cli/utils/websockethelper"
@@ -68,7 +69,7 @@ Example:
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
-		utils.PrintLog("Starting to create a project", utils.InfoLevel)
+		logging.PrintLog("Starting to create a project", logging.InfoLevel)
 
 		content, _ := utils.ReadFile(keptnutils.ExpandTilde(args[1]))
 		prjData := keptnevents.ProjectCreateEventData{Project: args[0], Shipyard: base64.StdEncoding.EncodeToString([]byte(content))}
@@ -89,7 +90,7 @@ Example:
 		projectURL := endPoint
 		projectURL.Path = "v1/project"
 
-		utils.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), utils.VerboseLevel)
+		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
 			responseCE, err := utils.Send(projectURL, event, apiToken)
@@ -100,7 +101,7 @@ Example:
 
 			// check for responseCE to include token
 			if responseCE == nil {
-				utils.PrintLog("Response CE is nil", utils.QuietLevel)
+				logging.PrintLog("Response CE is nil", logging.QuietLevel)
 				return nil
 			}
 			if responseCE.Data != nil {
