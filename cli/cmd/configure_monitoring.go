@@ -14,6 +14,7 @@ import (
 	"github.com/keptn/go-utils/pkg/events"
 	"github.com/keptn/go-utils/pkg/models"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
 	"github.com/keptn/keptn/cli/utils/websockethelper"
@@ -120,17 +121,17 @@ var monitoringCmd = &cobra.Command{
 		eventURL := endPoint
 		eventURL.Path = "v1/event"
 
-		utils.PrintLog(fmt.Sprintf("Connecting to server %s", eventURL.String()), utils.VerboseLevel)
+		logging.PrintLog(fmt.Sprintf("Connecting to server %s", eventURL.String()), logging.VerboseLevel)
 		if !mocking {
 			responseCE, err := utils.Send(eventURL, event, apiToken)
 			if err != nil {
-				utils.PrintLog("Sending configure-monitoring event was unsuccessful", utils.QuietLevel)
+				logging.PrintLog("Sending configure-monitoring event was unsuccessful", logging.QuietLevel)
 				return err
 			}
 
 			// check for responseCE to include token
 			if responseCE == nil {
-				utils.PrintLog("Response CE is nil", utils.QuietLevel)
+				logging.PrintLog("Response CE is nil", logging.QuietLevel)
 
 				return nil
 			}

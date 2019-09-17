@@ -11,6 +11,7 @@ import (
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 	"github.com/google/uuid"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
 	"github.com/keptn/keptn/cli/utils/websockethelper"
@@ -40,7 +41,7 @@ Example:
 			return errors.New(authErrorMsg)
 		}
 
-		utils.PrintLog("Starting to configure the GitHub organization, the GitHub user, and the GitHub personal access token", utils.InfoLevel)
+		logging.PrintLog("Starting to configure the GitHub organization, the GitHub user, and the GitHub personal access token", logging.InfoLevel)
 
 		source, _ := url.Parse("https://github.com/keptn/keptn/cli#configure")
 
@@ -59,16 +60,16 @@ Example:
 		configURL.Path = "v1/configure"
 
 		if !mocking {
-			utils.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), utils.VerboseLevel)
+			logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 			responseCE, err := utils.Send(configURL, event, apiToken)
 			if err != nil {
-				utils.PrintLog("Configure was unsuccessful", utils.QuietLevel)
+				logging.PrintLog("Configure was unsuccessful", logging.QuietLevel)
 				return err
 			}
 
 			// check for responseCE to include token
 			if responseCE == nil {
-				utils.PrintLog("Response CE is nil", utils.QuietLevel)
+				logging.PrintLog("Response CE is nil", logging.QuietLevel)
 				return nil
 			}
 			if responseCE.Data != nil {

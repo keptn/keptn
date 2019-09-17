@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/keptn/go-utils/pkg/events"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
 	"github.com/keptn/keptn/cli/utils/validator"
@@ -79,7 +80,7 @@ Examples:
 			return errors.New(authErrorMsg)
 		}
 
-		utils.PrintLog("Starting to onboard service", utils.InfoLevel)
+		logging.PrintLog("Starting to onboard service", logging.InfoLevel)
 
 		chartData, err := ioutil.ReadFile(*onboardServiceParams.ChartFilePath)
 		if err != nil {
@@ -109,17 +110,17 @@ Examples:
 		serviceURL := endPoint
 		serviceURL.Path = "v1/service"
 
-		utils.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), utils.VerboseLevel)
+		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 		if !mocking {
 			responseCE, err := utils.Send(serviceURL, event, apiToken)
 			if err != nil {
-				utils.PrintLog("Onboard service was unsuccessful", utils.QuietLevel)
+				logging.PrintLog("Onboard service was unsuccessful", logging.QuietLevel)
 				return err
 			}
 
 			// check for responseCE to include token
 			if responseCE == nil {
-				utils.PrintLog("Response CE is nil", utils.QuietLevel)
+				logging.PrintLog("Response CE is nil", logging.QuietLevel)
 
 				return nil
 			}

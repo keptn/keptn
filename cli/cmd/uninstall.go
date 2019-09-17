@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
-	"github.com/keptn/keptn/cli/utils"
+	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/spf13/cobra"
 )
 
@@ -58,7 +58,7 @@ var uninstallCmd = &cobra.Command{
 			return nil
 		}
 
-		utils.PrintLog("Starting to uninstall keptn", utils.InfoLevel)
+		logging.PrintLog("Starting to uninstall keptn", logging.InfoLevel)
 
 		if !mocking {
 			// Clean up keptn namespace
@@ -83,7 +83,7 @@ var uninstallCmd = &cobra.Command{
 				out, err := keptnutils.ExecuteCommand("kubectl", o)
 				out = strings.TrimSpace(out)
 				if out != "" {
-					utils.PrintLog(out, utils.VerboseLevel)
+					logging.PrintLog(out, logging.VerboseLevel)
 				}
 				if err != nil {
 					return err
@@ -96,13 +96,13 @@ var uninstallCmd = &cobra.Command{
 			out, err := keptnutils.ExecuteCommand("kubectl", o)
 			out = strings.TrimSpace(out)
 			if out != "" {
-				utils.PrintLog(out, utils.VerboseLevel)
+				logging.PrintLog(out, logging.VerboseLevel)
 			}
 			if err != nil {
 				return err
 			}
 		}
-		utils.PrintLog("Successfully uninstalled keptn", utils.InfoLevel)
+		logging.PrintLog("Successfully uninstalled keptn", logging.InfoLevel)
 
 		return nil
 	},
@@ -114,7 +114,7 @@ func deleteResources(namespace string) error {
 	out, err := keptnutils.ExecuteCommand("kubectl", o)
 	out = strings.TrimSpace(out)
 	if out != "" {
-		utils.PrintLog(out, utils.VerboseLevel)
+		logging.PrintLog(out, logging.VerboseLevel)
 	}
 	return err
 }
@@ -125,7 +125,7 @@ func deleteNamespace(namespace string) error {
 	out, err := keptnutils.ExecuteCommand("kubectl", o)
 	out = strings.TrimSpace(out)
 	if out != "" {
-		utils.PrintLog(out, utils.VerboseLevel)
+		logging.PrintLog(out, logging.VerboseLevel)
 	}
 	return err
 }
