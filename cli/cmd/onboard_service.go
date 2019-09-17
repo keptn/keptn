@@ -63,8 +63,12 @@ Examples:
 		if err != nil {
 			return err
 		}
+		ch, err := keptnutils.LoadChart(chartData)
+		if err != nil {
+			return err
+		}
 
-		res, err := validator.ValidateHelmChart(chartData)
+		res, err := validator.ValidateHelmChart(ch)
 		if err != nil {
 			return err
 		}
