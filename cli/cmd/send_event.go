@@ -26,6 +26,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
 	"github.com/keptn/keptn/cli/utils/websockethelper"
@@ -66,11 +67,11 @@ Example:
 		var body interface{}
 		json.Unmarshal([]byte(eventString), &body)
 
-		utils.PrintLog("Starting to send an event", utils.InfoLevel)
+		logging.PrintLog("Starting to send an event", logging.InfoLevel)
 
 		eventURL := endPoint
 		eventURL.Path = "v1/event"
-		utils.PrintLog(fmt.Sprintf("Connecting to server %s", eventURL.String()), utils.VerboseLevel)
+		logging.PrintLog(fmt.Sprintf("Connecting to server %s", eventURL.String()), logging.VerboseLevel)
 		if !mocking {
 			data, err := json.Marshal(body)
 			req, err := http.NewRequest("POST", eventURL.String(), bytes.NewReader(data))
@@ -91,12 +92,12 @@ Example:
 			client := &http.Client{Timeout: timeout * time.Second, Transport: tr}
 			resp, err := client.Do(req)
 			if err != nil {
-				utils.PrintLog("Send event was unsuccessful", utils.QuietLevel)
+				logging.PrintLog("Send event was unsuccessful", logging.QuietLevel)
 				return err
 			}
 			defer resp.Body.Close()
 			if resp.StatusCode != http.StatusOK {
-				utils.PrintLog("Send event was unsuccessful", utils.QuietLevel)
+				logging.PrintLog("Send event was unsuccessful", logging.QuietLevel)
 				return errors.New(resp.Status)
 			}
 
@@ -106,7 +107,7 @@ Example:
 			}
 			// check for responseCE to include token
 			if body == nil || len(body) == 0 {
-				utils.PrintLog("Response is empty", utils.InfoLevel)
+				logging.PrintLog("Response is empty", logging.InfoLevel)
 				return nil
 			}
 			return websockethelper.PrintWSContentByteResponse(body, endPoint)

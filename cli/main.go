@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/keptn/keptn/cli/cmd"
-	"github.com/keptn/keptn/cli/utils"
+	"github.com/keptn/keptn/cli/pkg/logging"
 )
 
 var (
@@ -13,7 +13,7 @@ var (
 )
 
 func init() {
-	utils.InitLoggers(os.Stdout, os.Stdout, os.Stderr)
+	logging.InitLoggers(os.Stdout, os.Stdout, os.Stderr)
 }
 
 func main() {

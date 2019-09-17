@@ -28,6 +28,7 @@ import (
 	"time"
 
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
 	"github.com/spf13/cobra"
@@ -113,7 +114,7 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 
-		utils.PrintLog("Installing keptn...", utils.InfoLevel)
+		logging.PrintLog("Installing keptn...", logging.InfoLevel)
 
 		var err error
 		if !mocking {
@@ -226,7 +227,7 @@ func doInstallation() error {
 		}
 	}
 
-	utils.PrintLog("Deploying keptn installer pod...", utils.InfoLevel)
+	logging.PrintLog("Deploying keptn installer pod...", logging.InfoLevel)
 
 	o := options{"apply", "-f", installerPath}
 	o.appendIfNotEmpty(kubectlOptions)
@@ -234,7 +235,7 @@ func doInstallation() error {
 		return fmt.Errorf("Error while deploying keptn installer pod: %s \nAborting installation", err.Error())
 	}
 
-	utils.PrintLog("Installer pod deployed successfully.", utils.InfoLevel)
+	logging.PrintLog("Installer pod deployed successfully.", logging.InfoLevel)
 
 	installerPodName, err := waitForInstallerPod()
 	if err != nil {
@@ -488,8 +489,8 @@ func copyAndCapture(r io.Reader, fileName string) (bool, error) {
 			var fullSufixReg = regexp.MustCompile(`\[keptn\|[a-zA-Z]+\]\s+\[.*\]`)
 			outputStr := strings.TrimSpace(fullSufixReg.ReplaceAllString(txt, ""))
 
-			utils.PrintLogStringLevel(outputStr, msgLogLevel)
-			if utils.GetLogLevel(msgLogLevel) == utils.QuietLevel {
+			logging.PrintLogStringLevel(outputStr, msgLogLevel)
+			if logging.GetLogLevel(msgLogLevel) == logging.QuietLevel {
 				errorOccured = true
 			}
 			if outputStr == successMsg {
