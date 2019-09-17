@@ -17,6 +17,7 @@ import (
 	"time"
 
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/utils"
 	"github.com/spf13/cobra"
 )
@@ -87,7 +88,7 @@ var domainCmd = &cobra.Command{
 
 		fmt.Println("Please note that the domain of already onboarded services is not updated!")
 
-		utils.PrintLog("Starting to configure domain", utils.InfoLevel)
+		logging.PrintLog("Starting to configure domain", logging.InfoLevel)
 
 		path, err := keptnutils.GetKeptnDirectory()
 		if err != nil {
@@ -138,7 +139,7 @@ var domainCmd = &cobra.Command{
 				fmt.Println("Afterwards, you can login with 'keptn auth --endpoint=https://api.keptn." + args[0] + " --token=" + token + "'")
 
 			} else {
-				utils.PrintLog("Successfully configured domain", utils.InfoLevel)
+				logging.PrintLog("Successfully configured domain", logging.InfoLevel)
 
 				if err := authUsingKube(); err != nil {
 					return err

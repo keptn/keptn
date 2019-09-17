@@ -14,6 +14,7 @@ import (
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/gorilla/websocket"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/utils"
 )
 
@@ -122,7 +123,7 @@ func printCE(ce keptnutils.MyCloudEvent) bool {
 	switch ce.Type {
 	case "sh.keptn.events.log":
 		if strings.TrimSpace(log.Message) != "" {
-			utils.PrintLogStringLevel(log.Message, log.LogLevel)
+			logging.PrintLogStringLevel(log.Message, log.LogLevel)
 		}
 		return log.Terminate
 	default:

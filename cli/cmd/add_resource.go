@@ -10,6 +10,7 @@ import (
 
 	"github.com/keptn/go-utils/pkg/models"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
 	"github.com/spf13/cobra"
@@ -54,7 +55,7 @@ var addResourceCmd = &cobra.Command{
 			return errors.New("File " + *addResourceCmdParams.Resource + " could not be read")
 		}
 
-		utils.PrintLog("Adding resource "+*addResourceCmdParams.Resource+" to service "+*addResourceCmdParams.Service+" in stage "+*addResourceCmdParams.Stage+" in project "+*addResourceCmdParams.Project, utils.InfoLevel)
+		logging.PrintLog("Adding resource "+*addResourceCmdParams.Resource+" to service "+*addResourceCmdParams.Service+" in stage "+*addResourceCmdParams.Stage+" in project "+*addResourceCmdParams.Project, logging.InfoLevel)
 
 		if *addResourceCmdParams.ResourceURI == "" {
 			addResourceCmdParams.ResourceURI = addResourceCmdParams.Resource
@@ -81,7 +82,7 @@ var addResourceCmd = &cobra.Command{
 			}
 			return errors.New("Resource " + *addResourceCmdParams.Resource + " could not be uploaded: " + errorObj.Message)
 		}
-		utils.PrintLog("Resource has been uploaded.", utils.InfoLevel)
+		logging.PrintLog("Resource has been uploaded.", logging.InfoLevel)
 		return nil
 	},
 }
