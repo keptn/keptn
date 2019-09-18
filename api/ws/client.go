@@ -14,6 +14,8 @@ import (
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 )
 
+const wsLogging = false
+
 const (
 	// Time allowed to write a message to the peer.
 	writeWait = 3 * time.Second
@@ -76,7 +78,9 @@ func (c *clientType) readPump(l *keptnutils.Logger) {
 			l.Error(fmt.Sprintf("Received error while reading: %s", err.Error()))
 			break
 		}
-		l.Debug(fmt.Sprintf("Received message from service: %s", message))
+		if wsLogging {
+			l.Debug(fmt.Sprintf("Received message from service: %s", message))
+		}
 		var data receivedData
 		err = json.Unmarshal(message, &data)
 		if err != nil {
@@ -102,7 +106,9 @@ func (c *cliClientType) writePump(l *keptnutils.Logger) {
 	for {
 		select {
 		case message, ok := <-c.send:
-			l.Debug(fmt.Sprintf("Received message to CLI: %s", message))
+			if wsLogging {
+				l.Debug(fmt.Sprintf("Received message to CLI: %s", message))
+			}
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if !ok {
 				// The hub closed the channel.
@@ -133,8 +139,9 @@ func (c *cliClientType) writePump(l *keptnutils.Logger) {
 // ServeWs handles websocket requests from the services.
 func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request) error {
 	l := keptnutils.NewLogger("", "", "api")
-	l.Debug("Serve internal service")
-
+	if wsLogging {
+		l.Debug("Serve internal service")
+	}
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
@@ -150,8 +157,9 @@ func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request) error {
 // ServeWsCLI handles websocket requests from the CLI.
 func ServeWsCLI(hub *Hub, w http.ResponseWriter, r *http.Request, channelID string) error {
 	l := keptnutils.NewLogger("", "", "api")
-	l.Debug("Serve CLI")
-
+	if wsLogging {
+		l.Debug("Serve CLI")
+	}
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
