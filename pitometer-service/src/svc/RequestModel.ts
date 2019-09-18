@@ -6,7 +6,7 @@ const uuidv4 = require('uuid/v4');
 interface Data {
   githuborg: string;
   project: string;
-  teststategy: string;
+  teststrategy: string;
   deploymentstrategy: string;
   stage: string;
   service: string;

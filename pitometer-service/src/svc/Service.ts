@@ -295,19 +295,23 @@ export class Service {
         `https://${dynatraceCredentials.tenant}` +
         `/api/v1/timeseries/com.dynatrace.builtin%3Aservice.server_side_requests?` +
         `Api-Token=${dynatraceCredentials.apiToken}`;
-      const timeseries = await axios.post(dtApiUrl, {
+
+      // TODO: check for real-user test strategy
+      const data = {
         aggregationType: 'count',
         startTimestamp: moment(event.data.startedat).unix() * 1000,
         endTimestamp: moment(event.time).unix() * 1000,
         tags: [
           `service:${event.data.service}`,
           `environment:${event.data.project}-${event.data.stage}`,
-          'test-subject:true',
         ],
         queryMode: 'TOTAL',
         timeseriesId: 'com.dynatrace.builtin:service.server_side_requests',
-      });
-
+      };
+      if (event.data.teststrategy !== 'real-user') {
+        data.tags.push('test-subject:true');
+      }
+      const timeseries = await axios.post(dtApiUrl, data);
       if (timeseries.data &&
         timeseries.data.result &&
         timeseries.data.result.dataPoints) {
