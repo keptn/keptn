@@ -298,6 +298,7 @@ export class Service {
         tags: [
           `service:${event.data.service}`,
           `environment:${event.data.project}-${event.data.stage}`,
+          'test-subject:true',
         ],
         queryMode: 'TOTAL',
         timeseriesId: 'com.dynatrace.builtin:service.server_side_requests',
@@ -350,8 +351,6 @@ export class Service {
   }
 
   async getServiceIndicators(event: RequestModel): Promise<ServiceIndicators> {
-    // TODO: for now we do quality gates with perfspec file since operations SLI/SLO files are not 100% compatible with usage for quality gates
-    return null;
     const indicatorString =
       await this.getServiceResourceContent(event, 'service-indicators.yaml');
 
@@ -381,8 +380,6 @@ export class Service {
   }
 
   async getServiceObjectives(event: RequestModel): Promise<ServiceObjectives> {
-    // TODO: for now we do quality gates with perfspec file since operations SLI/SLO files are not 100% compatible with usage for quality gates
-    return null;
     const objectivesString =
       await this.getServiceResourceContent(event, 'service-objectives.yaml');
 
@@ -460,7 +457,7 @@ export class Service {
         const newPerfspecIndicator = {
           id: indicator.name,
           source: indicator.source,
-          query: indicator.query,
+          query: {},
           grading: {
             type: 'Threshold',
             thresholds: {
@@ -469,9 +466,16 @@ export class Service {
             metricScore: objective.score,
           },
         };
-        const durationRegex = new RegExp('\\$DURATION_MINUTES', 'g');
-        newPerfspecIndicator.query =
-          newPerfspecIndicator.query.replace(durationRegex, objective.timeframe);
+
+        if (indicator.queryObject !== undefined && indicator.queryObject.length > 0) {
+          const newQueryObject = {};
+          for (let j = 0; j < indicator.queryObject.length; j += 1) {
+            newQueryObject[indicator.queryObject[j].key] = indicator.queryObject[j].value;
+          }
+          newPerfspecIndicator.query = newQueryObject;
+        } else {
+          newPerfspecIndicator.query = indicator.query;
+        }
         perfspecObject.indicators.push(newPerfspecIndicator);
       }
     }
