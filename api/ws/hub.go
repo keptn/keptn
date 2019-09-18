@@ -4,6 +4,8 @@
 
 package ws
 
+import keptnutils "github.com/keptn/go-utils/pkg/utils"
+
 // Hub maintains the set of active clients and broadcasts messages to the
 // clients.
 type Hub struct {
@@ -48,11 +50,15 @@ func NewHub() *Hub {
 }
 
 func (h *Hub) Run() {
+	l := keptnutils.NewLogger("", "", "api")
+
 	for {
 		select {
 		case client := <-h.register:
+			l.Debug("Registered service")
 			h.clients[client] = true
 		case cliClient := <-h.registerCLI:
+			l.Debug("Registered CLI")
 			if _, available := h.cliClients[cliClient.channelID]; !available {
 				h.cliClients[cliClient.channelID] = make(map[*cliClientType]bool)
 			}
@@ -68,10 +74,12 @@ func (h *Hub) Run() {
 			}
 
 		case client := <-h.unregister:
+			l.Debug("Unregistered service")
 			if _, ok := h.clients[client]; ok {
 				delete(h.clients, client)
 			}
 		case cliClient := <-h.unregisterCLI:
+			l.Debug("Unregistered CLI")
 			if _, ok := h.cliClients[cliClient.channelID][cliClient]; ok {
 				delete(h.cliClients[cliClient.channelID], cliClient)
 				close(cliClient.send)
@@ -81,7 +89,7 @@ func (h *Hub) Run() {
 				}
 			}
 		case message := <-h.broadcast:
-
+			l.Debug("Breadcast message")
 			if _, available := h.cliClients[message.channelID]; !available {
 				// Buffer message
 				if _, available := h.buffers[message.channelID]; !available {
