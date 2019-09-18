@@ -21,8 +21,8 @@ class DatastoreService {
     const url = `${this.api}/event?type=sh.keptn.event.configuration.change&pageSize=100`;
     const result = await axios.get(url);
     const { data } = result;
-    if (data.events) {
-      return data.events.map(event => DatastoreService.mapEvent(event));
+    if (data.events) {      
+      return data.events.map(event => DatastoreService.mapEvent(event)).filter(e => e.data.stage === "");
     }
     return [];
   }
@@ -38,12 +38,12 @@ class DatastoreService {
   }
 
   async findRoots(contextId) {
-    const url = `${this.api}/event?keptnContext=${contextId}&type=sh.keptn.events.new-artifact&pageSize=10`;
+    const url = `${this.api}/event?keptnContext=${contextId}&type=sh.keptn.event.configuration.change&pageSize=10`;
     console.log(url);
     const result = await axios.get(url);
     const { data } = result;
     if (data.events) {
-      return data.events.map(event => DatastoreService.mapEvent(event));
+      return data.events.map(event => DatastoreService.mapEvent(event)).filter(e => e.data.stage === "");
     }
     return [];
   }
