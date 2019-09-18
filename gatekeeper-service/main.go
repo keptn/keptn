@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
@@ -218,6 +219,7 @@ func sendNewArtifactEvent(shkeptncontext string, project string,
 	event := cloudevents.Event{
 		Context: cloudevents.EventContextV02{
 			ID:          uuid.New().String(),
+			Time:        &types.Timestamp{Time: time.Now()},
 			Type:        keptnevents.ConfigurationChangeEventType,
 			Source:      types.URLRef{URL: *source},
 			ContentType: &contentType,
@@ -246,6 +248,7 @@ func sendCanaryAction(shkeptncontext string, project string,
 	event := cloudevents.Event{
 		Context: cloudevents.EventContextV02{
 			ID:          uuid.New().String(),
+			Time:        &types.Timestamp{Time: time.Now()},
 			Type:        keptnevents.ConfigurationChangeEventType,
 			Source:      types.URLRef{URL: *source},
 			ContentType: &contentType,
