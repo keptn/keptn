@@ -149,6 +149,7 @@ spec:
   selector:
     run: eventbroker-go
 ---
+# gatekeeper-service
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -182,7 +183,6 @@ spec:
         - name: EVENTBROKER
           value: 'http://event-broker.keptn.svc.cluster.local/keptn'
 ---
-# gatekeeper-service
 apiVersion: v1
 kind: Service
 metadata:
@@ -197,6 +197,7 @@ spec:
   selector:
     run: gatekeeper-service
 ---
+# helm-service
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -238,7 +239,6 @@ spec:
         - name: CANARY
           value: 'deployment'
 ---
-# helm-service
 apiVersion: v1
 kind: Service
 metadata:
@@ -253,6 +253,7 @@ spec:
   selector:
     run: helm-service
 ---
+# jmeter-service
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -274,7 +275,6 @@ spec:
         ports:
         - containerPort: 8080
 ---
-# jmeter-service
 apiVersion: v1
 kind: Service
 metadata:
@@ -289,6 +289,7 @@ spec:
   selector:
     run: jmeter-service
 ---
+# wait-service
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -322,7 +323,6 @@ spec:
         - name: WAIT_DURATION
           value: '10s'
 ---
-# wait-service
 apiVersion: v1
 kind: Service
 metadata:
@@ -337,6 +337,7 @@ spec:
   selector:
     run: wait-service
 ---
+# shipyard-service
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -354,7 +355,7 @@ spec:
     spec:
       containers:
       - name: shipyard-service
-        image: keptn/shipyard-service:0.5.0.beta
+        image: jbraeuer/shipyard-service:0.0.1
         ports:
         - containerPort: 8080
         resources:
@@ -372,7 +373,6 @@ spec:
         - name: API
           value: 'ws://api.keptn.svc.cluster.local'
 ---
-# shipyard-service
 apiVersion: v1
 kind: Service
 metadata:
@@ -387,6 +387,7 @@ spec:
   selector:
     run: shipyard-service
 ---
+# pitometer-service
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -415,7 +416,6 @@ spec:
             memory: "128Mi"
             cpu: "500m"
 ---
-# pitometer-service
 apiVersion: v1
 kind: Service
 metadata:
@@ -430,6 +430,7 @@ spec:
   selector:
     run: pitometer-service
 ---
+# configuration-service
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -444,7 +445,6 @@ spec:
       storage: 100Mi
 status: {}
 ---
-# configuration-service
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -462,7 +462,7 @@ spec:
     spec:
       containers:
       - name: configuration-service
-        image: keptn/configuration-service:0.5.0.beta
+        image: jbraeuer/configuration-service:0.0.2
         ports:
         - containerPort: 8080
         resources:
