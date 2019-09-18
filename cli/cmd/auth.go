@@ -3,6 +3,7 @@ package cmd
 import (
 	"bytes"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"net/url"
 	"strings"
@@ -92,33 +93,19 @@ To manually set up your keptn CLI, please follow the instructions at https://kep
 	}
 
 	var keptnEndpoint string
-	apiEndpointRetrieved := false
-	retries := 0
-	for tryGetAPIEndpoint := true; tryGetAPIEndpoint; tryGetAPIEndpoint = !apiEndpointRetrieved {
+	for retries := 0; retries < 15; time.Sleep(5 * time.Second) {
 
 		out, err := getEndpointUsingKube()
-
-		if err != nil {
-			retries++
-			if retries >= 15 {
-				logging.PrintLog("API endpoint not yet available... trying again in 5s", logging.InfoLevel)
-			}
+		if err != nil || strings.TrimSpace(string(out)) == "" {
+			logging.PrintLog("API endpoint not yet available... trying again in 5s", logging.InfoLevel)
 		} else {
-			retries = 0
+			keptnEndpoint = "https://" + strings.TrimSpace(string(out))
+			break
 		}
-		keptnEndpoint = strings.TrimSpace(string(out))
-		if keptnEndpoint == "" {
-			retries++
-			if retries >= 15 {
-				logging.PrintLog("API endpoint not yet available... trying again in 5s", logging.InfoLevel)
-			}
-		} else {
-			keptnEndpoint = "https://" + keptnEndpoint
-			apiEndpointRetrieved = true
-		}
-		if !apiEndpointRetrieved {
-			time.Sleep(5 * time.Second)
-		}
+		retries++
+	}
+	if keptnEndpoint == "" {
+		return errors.New("Cannot obtain endpoint of api")
 	}
 	return authenticate(keptnEndpoint, apiToken)
 }
