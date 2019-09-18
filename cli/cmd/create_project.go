@@ -111,6 +111,7 @@ Example:
 			prjData.GitToken = *createProjectParams.GitToken
 			prjData.GitRemoteURL = *createProjectParams.RemoteURL
 		}
+
 		source, _ := url.Parse("https://github.com/keptn/keptn/cli#createproject")
 
 		contentType := "application/json"
