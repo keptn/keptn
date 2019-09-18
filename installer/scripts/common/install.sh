@@ -2,7 +2,7 @@
 
 source ./common/utils.sh
 
-print_info "Starting installation of keptn"
+print_info "Starting installation of Keptn"
 
 # Test kubectl get namespaces
 print_info "Testing connection to Kubernetes API"
@@ -10,9 +10,9 @@ kubectl get namespaces
 verify_kubectl $? "Could not connect to Kubernetes API."
 print_info "Connection to Kubernetes API successful"
 
-# Create keptn namespaces
+# Create Keptn namespaces
 kubectl apply -f ../manifests/keptn/namespace.yaml
-verify_kubectl $? "Creating keptn namespace failed."
+verify_kubectl $? "Creating Keptn namespace failed."
 
 # Install Istio service mesh
 print_info "Installing Istio"
@@ -20,23 +20,23 @@ print_info "Installing Istio"
 verify_install_step $? "Installing Istio failed."
 print_info "Installing Istio done"
 
-# Install tiller for helm
+# Install Tiller for Helm
 print_info "Installing Tiller"
 kubectl apply -f ../manifests/tiller/tiller.yaml
 helm init --service-account tiller
 print_info "Installing Tiller done"
 
-# Install keptn core services - Install keptn channels
-print_info "Installing keptn"
+# Install Keptn core services - Install Keptn channels
+print_info "Installing Keptn"
 ./common/setupKeptn.sh
-verify_install_step $? "Installing keptn failed."
-print_info "Installing keptn done"
+verify_install_step $? "Installing Keptn failed."
+print_info "Installing Keptn done"
 
-# Install keptn services
+# Install Keptn services
 print_info "Wear uniform"
 ./common/wearUniform.sh
-verify_install_step $? "Installing keptn's uniform failed."
+verify_install_step $? "Installing Keptn's uniform failed."
 print_info "Keptn wears uniform"
 
 # Install done
-print_info "Installation of keptn complete."
+print_info "Installation of Keptn complete."

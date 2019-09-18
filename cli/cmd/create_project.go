@@ -21,16 +21,24 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+type createProjectCmdParams struct {
+	GitUser   *string
+	GitToken  *string
+	RemoteURL *string
+}
+
+var createProjectParams *createProjectCmdParams
+
 // crprojectCmd represents the project command
 var crprojectCmd = &cobra.Command{
-	Use:   "project project_name shipyard_file",
+	Use:   "project <project_name> <shipyard_file> --git-user=<git_user> --git-token=<git_token> --git-remote-url=<git_remote_url>",
 	Short: "Creates a new project.",
 	Long: `Creates a new project with the provided name and shipyard file. 
 The shipyard file describes the used stages. Furthermore, for these stages the shipyard file 
 describes the used deployment and test strategies.
 
 Example:
-	keptn create project sockshop shipyard.yml`,
+	keptn create project project_name shipyard_file.yml`,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
 		_, _, err := credentialmanager.GetCreds()
@@ -40,7 +48,7 @@ Example:
 
 		if len(args) != 2 {
 			cmd.SilenceUsage = false
-			return errors.New("Requires project_name and shipyard_file")
+			return errors.New("Requires project_name and shipyard_file.yml")
 		}
 		if !utils.ValidateK8sName(args[0]) {
 			errorMsg := "Project name includes invalid characters or is not well-formed.\n"
@@ -59,8 +67,32 @@ Example:
 			return err
 		}
 
-		if err := testParseShipYard(content); err != nil {
+		if err := testParseShipyard(content); err != nil {
 			return fmt.Errorf("Invalid shipyard file because parsing failed: %s", err.Error())
+		}
+		return nil
+	},
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		gitUser := true
+		gitToken := true
+		remoteURL := true
+
+		if *createProjectParams.GitUser == "" {
+			gitUser = false
+		}
+		if *createProjectParams.GitToken == "" {
+			gitToken = false
+		}
+		if *createProjectParams.RemoteURL == "" {
+			remoteURL = false
+		}
+
+		if gitUser == false && gitToken == false && remoteURL == false {
+			return nil
+		}
+
+		if gitUser != true || gitToken != true || remoteURL != true {
+			return errors.New("For configuring a Git upstream repository please specify Git user, user token, and remote URL of repository/project")
 		}
 		return nil
 	},
@@ -74,6 +106,11 @@ Example:
 		content, _ := utils.ReadFile(keptnutils.ExpandTilde(args[1]))
 		prjData := keptnevents.ProjectCreateEventData{Project: args[0], Shipyard: base64.StdEncoding.EncodeToString([]byte(content))}
 
+		if *createProjectParams.GitUser != "" && *createProjectParams.GitToken != "" && *createProjectParams.RemoteURL != "" {
+			prjData.GitUser = *createProjectParams.GitUser
+			prjData.GitToken = *createProjectParams.GitToken
+			prjData.GitRemoteURL = *createProjectParams.RemoteURL
+		}
 		source, _ := url.Parse("https://github.com/keptn/keptn/cli#createproject")
 
 		contentType := "application/json"
@@ -114,11 +151,15 @@ Example:
 	},
 }
 
-func testParseShipYard(shipyardContent string) error {
+func testParseShipyard(shipyardContent string) error {
 	shipyard := models.Shipyard{}
 	return yaml.Unmarshal([]byte(shipyardContent), &shipyard)
 }
 
 func init() {
 	createCmd.AddCommand(crprojectCmd)
+	createProjectParams = &createProjectCmdParams{}
+	createProjectParams.GitUser = crprojectCmd.Flags().StringP("git-user", "u", "", "The git user of the upstream target")
+	createProjectParams.GitToken = crprojectCmd.Flags().StringP("git-token", "t", "", "The git token of the git user")
+	createProjectParams.RemoteURL = crprojectCmd.Flags().StringP("git-remote-url", "r", "", "The remote url of the upstream target")
 }

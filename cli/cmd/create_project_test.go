@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -86,6 +87,93 @@ func TestCreateProjectIncorrectProjectNameCmd(t *testing.T) {
 	if err != nil {
 		//t.Errorf("error: %v", err)
 		if !utils.ErrorContains(err, "Project name includes invalid characters or is not well-formed.") {
+			t.Errorf("An error occured: %v", err)
+		}
+	} else {
+		t.Fail()
+	}
+}
+
+func TestCreateProjectCmdWithGitMissingParam(t *testing.T) {
+
+	credentialmanager.MockAuthCreds = true
+
+	// Write temporary shipyardTest.yml file
+	const tmpShipyardFileName = "shipyardTest.yml"
+	shipYardContent := `stages: 
+- name: dev
+  deployment_strategy: direct
+- name: staging
+  deployment_strategy: blue_green_service
+- name: production
+  deployment_strategy: blue_green_service`
+
+	ioutil.WriteFile(tmpShipyardFileName, []byte(shipYardContent), 0644)
+
+	buf := new(bytes.Buffer)
+	rootCmd.SetOutput(buf)
+
+	args := []string{
+		"create",
+		"project",
+		"sockshop",
+		tmpShipyardFileName,
+		fmt.Sprintf("--git-user=%s", "user"),
+		fmt.Sprintf("--git-token=%s", "token"),
+		"--mock",
+	}
+	rootCmd.SetArgs(args)
+	err := rootCmd.Execute()
+
+	// Delete temporary shipyard.yml file
+	os.Remove(tmpShipyardFileName)
+
+	if err != nil {
+		if !utils.ErrorContains(err, "For configuring a Git upstream") {
+			t.Errorf("An error occured: %v", err)
+		}
+	} else {
+		t.Fail()
+	}
+}
+
+func TestCreateProjectCmdWithGit(t *testing.T) {
+
+	credentialmanager.MockAuthCreds = true
+
+	// Write temporary shipyardTest.yml file
+	const tmpShipyardFileName = "shipyardTest.yml"
+	shipYardContent := `stages: 
+- name: dev
+  deployment_strategy: direct
+- name: staging
+  deployment_strategy: blue_green_service
+- name: production
+  deployment_strategy: blue_green_service`
+
+	ioutil.WriteFile(tmpShipyardFileName, []byte(shipYardContent), 0644)
+
+	buf := new(bytes.Buffer)
+	rootCmd.SetOutput(buf)
+
+	args := []string{
+		"create",
+		"project",
+		"sockshop",
+		tmpShipyardFileName,
+		fmt.Sprintf("--git-user=%s", "user"),
+		fmt.Sprintf("--git-token=%s", "token"),
+		fmt.Sprintf("--git-remote-url=%s", "https://"),
+		"--mock",
+	}
+	rootCmd.SetArgs(args)
+	err := rootCmd.Execute()
+
+	// Delete temporary shipyard.yml file
+	os.Remove(tmpShipyardFileName)
+
+	if err != nil {
+		if !utils.ErrorContains(err, "For configuring a Git upstream") {
 			t.Errorf("An error occured: %v", err)
 		}
 	} else {
