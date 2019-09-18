@@ -302,6 +302,7 @@ func createEventCopy(eventSource cloudevents.Event, eventType string) cloudevent
 	event := cloudevents.Event{
 		Context: cloudevents.EventContextV02{
 			ID:          uuid.New().String(),
+			Time:        &types.Timestamp{Time: time.Now()},
 			Type:        eventType,
 			Source:      types.URLRef{URL: *source},
 			ContentType: &contentType,
