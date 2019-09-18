@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"time"
@@ -67,6 +68,7 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 	////////////////////////////////////////////////////
 	// clone existing repo
 	////////////////////////////////////////////////////
+	fmt.Println(fmt.Sprintf("TO BE DELETED user %s, %s, %s", params.Project.GitUser, params.Project.GitToken, params.Project.GitRemoteURI))
 	if params.Project.GitUser != "" && params.Project.GitToken != "" && params.Project.GitRemoteURI != "" {
 		common.StoreGitCredentials(params.Project.ProjectName, params.Project.GitUser, params.Project.GitToken, params.Project.GitRemoteURI)
 		common.CloneRepo(params.Project.ProjectName, params.Project.GitUser, params.Project.GitToken, params.Project.GitRemoteURI)
