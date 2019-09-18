@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import { injectable, inject } from 'inversify';
 import { RequestModel } from './RequestModel';
 import axios, { AxiosRequestConfig, AxiosPromise, AxiosError } from 'axios';
-import YAML from 'yaml'
+import YAML from 'yaml';
 const { base64encode, base64decode } = require('nodejs-base64');
 
 const Pitometer = require('@keptn/pitometer').Pitometer;
@@ -24,6 +24,8 @@ import { ServiceObjectives, Objective } from './ServiceObjectives';
 import { create } from 'domain';
 import { json } from 'body-parser';
 
+let configServiceUrl;
+
 @injectable()
 export class Service {
 
@@ -43,9 +45,11 @@ export class Service {
 
       let prometheusUrl;
       if (process.env.NODE_ENV === 'production') {
+        configServiceUrl = 'http://configuration-service.keptn.svc.cluster.local:8080';
         prometheusUrl =
           `http://prometheus-service.monitoring.svc.cluster.local:8080/api/v1/query`;
       } else {
+        configServiceUrl = 'http://localhost:6060';
         prometheusUrl = 'http://localhost:8080/api/v1/query';
       }
 
@@ -298,6 +302,7 @@ export class Service {
         tags: [
           `service:${event.data.service}`,
           `environment:${event.data.project}-${event.data.stage}`,
+          'test-subject:true',
         ],
         queryMode: 'TOTAL',
         timeseriesId: 'com.dynatrace.builtin:service.server_side_requests',
@@ -350,8 +355,6 @@ export class Service {
   }
 
   async getServiceIndicators(event: RequestModel): Promise<ServiceIndicators> {
-    // TODO: for now we do quality gates with perfspec file since operations SLI/SLO files are not 100% compatible with usage for quality gates
-    return null;
     const indicatorString =
       await this.getServiceResourceContent(event, 'service-indicators.yaml');
 
@@ -381,8 +384,6 @@ export class Service {
   }
 
   async getServiceObjectives(event: RequestModel): Promise<ServiceObjectives> {
-    // TODO: for now we do quality gates with perfspec file since operations SLI/SLO files are not 100% compatible with usage for quality gates
-    return null;
     const objectivesString =
       await this.getServiceResourceContent(event, 'service-objectives.yaml');
 
@@ -446,7 +447,7 @@ export class Service {
 
     const getIndicator = (name: string): Indicator => {
       for (let i = 0; i < indicators.indicators.length; i += 1) {
-        if (indicators.indicators[i].name === name) {
+        if (indicators.indicators[i].metric === name) {
           return indicators.indicators[i];
         }
       }
@@ -455,12 +456,12 @@ export class Service {
 
     for (let i = 0; i < objectives.objectives.length; i += 1) {
       const objective = objectives.objectives[i];
-      const indicator = getIndicator(objective.name);
+      const indicator = getIndicator(objective.metric);
       if (indicator !== null) {
         const newPerfspecIndicator = {
-          id: indicator.name,
+          id: indicator.metric,
           source: indicator.source,
-          query: indicator.query,
+          query: {},
           grading: {
             type: 'Threshold',
             thresholds: {
@@ -469,9 +470,16 @@ export class Service {
             metricScore: objective.score,
           },
         };
-        const durationRegex = new RegExp('\\$DURATION_MINUTES', 'g');
-        newPerfspecIndicator.query =
-          newPerfspecIndicator.query.replace(durationRegex, objective.timeframe);
+
+        if (indicator.queryObject !== undefined && indicator.queryObject.length > 0) {
+          const newQueryObject = {};
+          for (let j = 0; j < indicator.queryObject.length; j += 1) {
+            newQueryObject[indicator.queryObject[j].key] = indicator.queryObject[j].value;
+          }
+          newPerfspecIndicator.query = newQueryObject;
+        } else {
+          newPerfspecIndicator.query = indicator.query;
+        }
         perfspecObject.indicators.push(newPerfspecIndicator);
       }
     }
@@ -481,7 +489,7 @@ export class Service {
 
   async getServiceResourceContent(event: RequestModel, resourceUri: string): Promise<string> {
     // tslint:disable-next-line: max-line-length
-    const url = `http://configuration-service.keptn.svc.cluster.local:8080/v1/project/${event.data.project}/stage/${event.data.stage}/service/${event.data.service}/resource/${resourceUri}`;
+    const url = `${configServiceUrl}/v1/project/${event.data.project}/stage/${event.data.stage}/service/${event.data.service}/resource/${resourceUri}`;
     let response;
 
     try {
