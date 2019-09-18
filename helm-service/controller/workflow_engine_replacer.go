@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
@@ -94,6 +95,7 @@ func sendDeploymentFinishedEvent(shkeptncontext string, project string, stage st
 	event := cloudevents.Event{
 		Context: cloudevents.EventContextV02{
 			ID:          uuid.New().String(),
+			Time:        &types.Timestamp{Time: time.Now()},
 			Type:        "sh.keptn.events.deployment-finished",
 			Source:      types.URLRef{URL: *source},
 			ContentType: &contentType,
