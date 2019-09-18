@@ -36,7 +36,7 @@ var serviceCmd = &cobra.Command{
 	Long: `Onboards a new service in the provided project. Therefore, this command 
 takes a Helm chart as packaged .tgz.
 	
-Examples:
+Example:
 	keptn onboard service service_name --project=carts --chart=chart.tgz`,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
@@ -144,5 +144,5 @@ func init() {
 		"A path to a packed Helm chart. Use `helm package chart_name` to pack your chart")
 	serviceCmd.MarkFlagRequired("chart")
 
-	serviceCmd.PersistentFlags().BoolVarP(&onboardServiceParams.Direct, "direct", "", false, "allows to set the deployment strategy to direct for the onboarded service")
+	serviceCmd.PersistentFlags().BoolVarP(&onboardServiceParams.Direct, "direct", "", false, "Allows to set the deployment strategy to direct for the onboarded service")
 }

@@ -70,7 +70,7 @@ func Execute() {
 func init() {
 	rootCmd.PersistentFlags().BoolVarP(&verboseLogging, "verbose", "v", false, "verbose logging")
 	rootCmd.PersistentFlags().BoolVarP(&quietLogging, "quiet", "q", false, "suppress debug and info output")
-	rootCmd.PersistentFlags().BoolVarP(&mocking, "mock", "", false, "mocking of server communication - ATTENTION: your commands won't be sent to the keptn server")
+	rootCmd.PersistentFlags().BoolVarP(&mocking, "mock", "", false, "mocking of server communication - ATTENTION: your commands will not be sent to the keptn server")
 
 	cobra.OnInitialize(initConfig)
 
