@@ -2,9 +2,7 @@ package cmd
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
-	"net/http"
 	"os"
 	"strings"
 
@@ -15,34 +13,16 @@ import (
 
 var uninstallVersion *string
 
-const istioFolder = "/installer/manifests/istio/"
-
-var istioFiles = [...]string{"crd-10.yaml", "crd-11.yaml", "crd-12.yaml",
-	"crd-certmanager-10.yaml", "crd-certmanager-11.yaml"}
-
-const tillerPath = "/installer/manifests/tiller/tiller.yaml"
-
 // domainCmd represents the domain command
 var uninstallCmd = &cobra.Command{
 	Use:          "uninstall",
 	Short:        "Uninstalls keptn",
 	SilenceUsage: true,
-
-	PreRunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(cmd *cobra.Command, args []string) error {
 
 		if insecureSkipTLSVerify {
 			kubectlOptions = "--insecure-skip-tls-verify=true"
 		}
-
-		resourcesAvailable, err := checkUninstallResourceAvailability()
-		if err != nil || !resourcesAvailable {
-			return errors.New("Resources not found")
-		}
-
-		return nil
-
-	},
-	RunE: func(cmd *cobra.Command, args []string) error {
 
 		ctx, _ := getKubeContext()
 		fmt.Println("Your kubernetes current context is configured to cluster: " + strings.TrimSpace(ctx))
@@ -75,32 +55,6 @@ var uninstallCmd = &cobra.Command{
 			if err := deleteNamespace("keptn-datastore"); err != nil {
 				return err
 			}
-
-			// Clean up istio CRDs
-			for _, val := range istioFiles {
-				o := options{"delete", "-f", getIstioCRD(val), "--ignore-not-found"}
-				o.appendIfNotEmpty(kubectlOptions)
-				out, err := keptnutils.ExecuteCommand("kubectl", o)
-				out = strings.TrimSpace(out)
-				if out != "" {
-					logging.PrintLog(out, logging.VerboseLevel)
-				}
-				if err != nil {
-					return err
-				}
-			}
-
-			// Clean up tiller
-			o := options{"delete", "-f", getTillerResource(), "--ignore-not-found"}
-			o.appendIfNotEmpty(kubectlOptions)
-			out, err := keptnutils.ExecuteCommand("kubectl", o)
-			out = strings.TrimSpace(out)
-			if out != "" {
-				logging.PrintLog(out, logging.VerboseLevel)
-			}
-			if err != nil {
-				return err
-			}
 		}
 		logging.PrintLog("Successfully uninstalled keptn", logging.InfoLevel)
 
@@ -128,37 +82,6 @@ func deleteNamespace(namespace string) error {
 		logging.PrintLog(out, logging.VerboseLevel)
 	}
 	return err
-}
-
-func getIstioCRD(fileName string) string {
-	return installerPrefixURL + *uninstallVersion + istioFolder + fileName
-}
-
-func getTillerResource() string {
-	return installerPrefixURL + *uninstallVersion + tillerPath
-}
-
-func checkUninstallResourceAvailability() (bool, error) {
-
-	for _, val := range istioFiles {
-		resp, err := http.Get(getIstioCRD(val))
-		if err != nil {
-			return false, err
-		}
-		if resp.StatusCode != http.StatusOK {
-			return false, nil
-		}
-	}
-
-	resp, err := http.Get(getTillerResource())
-	if err != nil {
-		return false, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		return false, nil
-	}
-
-	return true, nil
 }
 
 func init() {
