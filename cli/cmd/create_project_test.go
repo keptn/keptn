@@ -173,10 +173,6 @@ func TestCreateProjectCmdWithGit(t *testing.T) {
 	os.Remove(tmpShipyardFileName)
 
 	if err != nil {
-		if !utils.ErrorContains(err, "For configuring a Git upstream") {
-			t.Errorf("An error occured: %v", err)
-		}
-	} else {
 		t.Fail()
 	}
 }

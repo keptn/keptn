@@ -343,6 +343,15 @@ func init() {
                 "shipyard"
               ],
               "properties": {
+                "gitRemoteURL": {
+                  "type": "string"
+                },
+                "gitToken": {
+                  "type": "string"
+                },
+                "gitUser": {
+                  "type": "string"
+                },
                 "project": {
                   "type": "string"
                 },
@@ -851,6 +860,15 @@ func init() {
                 "shipyard"
               ],
               "properties": {
+                "gitRemoteURL": {
+                  "type": "string"
+                },
+                "gitToken": {
+                  "type": "string"
+                },
+                "gitUser": {
+                  "type": "string"
+                },
                 "project": {
                   "type": "string"
                 },
