@@ -12,7 +12,6 @@ import (
 	"github.com/google/uuid"
 	keptnevents "github.com/keptn/go-utils/pkg/events"
 	"github.com/keptn/go-utils/pkg/models"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
@@ -22,6 +21,7 @@ import (
 )
 
 type createProjectCmdParams struct {
+	Shipyard  *string
 	GitUser   *string
 	GitToken  *string
 	RemoteURL *string
@@ -31,14 +31,14 @@ var createProjectParams *createProjectCmdParams
 
 // crprojectCmd represents the project command
 var crprojectCmd = &cobra.Command{
-	Use:   "project <project_name> <shipyard_file> --git-user=<git_user> --git-token=<git_token> --git-remote-url=<git_remote_url>",
+	Use:   "project PROJECTNAME --shipyard=FILEPATH",
 	Short: "Creates a new project.",
 	Long: `Creates a new project with the provided name and shipyard file. 
 The shipyard file describes the used stages. Furthermore, for these stages the shipyard file 
 describes the used deployment and test strategies.
 
 Example:
-	keptn create project project_name shipyard_file.yml`,
+	keptn create project sockshop --shipyard=./shipyard.yaml`,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
 		_, _, err := credentialmanager.GetCreds()
@@ -46,9 +46,9 @@ Example:
 			return errors.New(authErrorMsg)
 		}
 
-		if len(args) != 2 {
+		if len(args) != 1 {
 			cmd.SilenceUsage = false
-			return errors.New("Requires project_name and shipyard_file.yml")
+			return errors.New("Requires PROJECTNAME")
 		}
 		if !utils.ValidateK8sName(args[0]) {
 			errorMsg := "Project name includes invalid characters or is not well-formed.\n"
@@ -58,11 +58,15 @@ Example:
 			errorMsg += "Please update project name and try again."
 			return errors.New(errorMsg)
 		}
-		if _, err := os.Stat(keptnutils.ExpandTilde(args[1])); os.IsNotExist(err) {
-			return fmt.Errorf("Cannot find file %s", keptnutils.ExpandTilde(args[1]))
+		return nil
+	},
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+
+		if _, err := os.Stat(*createProjectParams.Shipyard); os.IsNotExist(err) {
+			return fmt.Errorf("Cannot find file %s", *createProjectParams.Shipyard)
 		}
 
-		content, err := utils.ReadFile(keptnutils.ExpandTilde(args[1]))
+		content, err := utils.ReadFile(*createProjectParams.Shipyard)
 		if err != nil {
 			return err
 		}
@@ -70,9 +74,7 @@ Example:
 		if err := testParseShipyard(content); err != nil {
 			return fmt.Errorf("Invalid shipyard file because parsing failed: %s", err.Error())
 		}
-		return nil
-	},
-	PreRunE: func(cmd *cobra.Command, args []string) error {
+
 		gitUser := true
 		gitToken := true
 		remoteURL := true
@@ -103,7 +105,7 @@ Example:
 		}
 		logging.PrintLog("Starting to create a project", logging.InfoLevel)
 
-		content, _ := utils.ReadFile(keptnutils.ExpandTilde(args[1]))
+		content, _ := utils.ReadFile(*createProjectParams.Shipyard)
 		prjData := keptnevents.ProjectCreateEventData{Project: args[0], Shipyard: base64.StdEncoding.EncodeToString([]byte(content))}
 
 		if *createProjectParams.GitUser != "" && *createProjectParams.GitToken != "" && *createProjectParams.RemoteURL != "" {
@@ -160,6 +162,9 @@ func testParseShipyard(shipyardContent string) error {
 func init() {
 	createCmd.AddCommand(crprojectCmd)
 	createProjectParams = &createProjectCmdParams{}
+	createProjectParams.Shipyard = crprojectCmd.Flags().StringP("shipyard", "s", "", "The shiypard file specifying the environment")
+	crprojectCmd.MarkFlagRequired("shipyard")
+
 	createProjectParams.GitUser = crprojectCmd.Flags().StringP("git-user", "u", "", "The git user of the upstream target")
 	createProjectParams.GitToken = crprojectCmd.Flags().StringP("git-token", "t", "", "The git token of the git user")
 	createProjectParams.RemoteURL = crprojectCmd.Flags().StringP("git-remote-url", "r", "", "The remote url of the upstream target")
