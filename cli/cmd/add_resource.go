@@ -32,13 +32,12 @@ type addResourceError struct {
 var addResourceCmdParams *addResourceCommandParameters
 
 var addResourceCmd = &cobra.Command{
-	Use:   "add-resource",
+	Use:   "add-resource --project=PROJECT --stage=STAGE --service=SERVICE --resource=FILEPATH --resourceUri=FILEPATH",
 	Short: "Adds a resource to a service within your project in the specified stage",
 	Long: `Adds a resource to a service within your project in the specified stage
 	
-	Example: 
-	./keptn add-resource --project=sockshop --stage=dev --service=carts --resource=./jmeter.jmx --resourceUri=jmeter/functional.jmx
-	`,
+Example: 
+	keptn add-resource --project=sockshop --stage=dev --service=carts --resource=./jmeter.jmx --resourceUri=jmeter/functional.jmx`,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		endPoint, apiToken, err := credentialmanager.GetCreds()

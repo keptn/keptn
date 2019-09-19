@@ -24,14 +24,14 @@ var apiToken *string
 
 // authCmd represents the auth command
 var authCmd = &cobra.Command{
-	Use:   "auth",
+	Use:   "auth --endpoint=https://api.keptn.MY.DOMAIN.COM --api-token=SECRET_TOKEN",
 	Short: "Authenticates the keptn CLI against a keptn installation.",
 	Long: `Authenticates the keptn CLI against a keptn installation using an endpoint
 and an API token. Both, the endpoint and API token are exposed during the keptn installation.
 If the authentication is successful, the endpoint and the API token are stored in a password store. 
 
 Example:
-	keptn auth --endpoint=myendpoint.com --api-token=xyz`,
+	keptn auth --endpoint=https://api.keptn.my.domain.com --api-token=xyz0123`,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		logging.PrintLog("Starting to authenticate", logging.InfoLevel)

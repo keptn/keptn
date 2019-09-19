@@ -244,6 +244,15 @@
                 },
                 "shipyard": {
                   "type": "string"
+                },
+                "gitUser": {
+                  "type": "string"
+                },
+                "gitToken": {
+                  "type": "string"
+                },
+                "gitRemoteURL": {
+                  "type": "string"
                 }
               }
             }

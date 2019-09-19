@@ -47,12 +47,12 @@
   version = "v3.0.1"
 
 [[projects]]
-  digest = "1:2635aa12c62c6ed3014ace2bb30887106f9524ce8891d3e3100e41edadf249ce"
+  digest = "1:0e0b19a93aea9399d5e0a78ddedd719f74de4f4a1da9a08d934e40e32c35454e"
   name = "github.com/Masterminds/sprig"
   packages = ["."]
   pruneopts = ""
-  revision = "258b00ffa7318e8b109a141349980ffbd30a35db"
-  version = "v2.20.0"
+  revision = "2691a9cba2adee8d9a60100a1bc49e770f97b7db"
+  version = "v2.21.0"
 
 [[projects]]
   digest = "1:c0952fb3cf9506cff577b4edf4458889570dcbd2902a7b90a1fd96bfbb97ccd8"
@@ -472,7 +472,7 @@
 
 [[projects]]
   branch = "develop"
-  digest = "1:e8c5752d314ef98f4f73c896f8f4f660718b86e9fc5bf6537098c345ff1945fe"
+  digest = "1:04af805a460da76ee00522e8064b27936b4bd284b0a98f0248b0cd9619c5e998"
   name = "github.com/keptn/go-utils"
   packages = [
     "pkg/events",
@@ -480,7 +480,7 @@
     "pkg/utils",
   ]
   pruneopts = ""
-  revision = "4b4a73c7a3c31caf143d51ba5ae8a977dc9bdf54"
+  revision = "7d32e1b7eab0e74d62c8c0bce93700b8ca44801b"
 
 [[projects]]
   digest = "1:91317956b340c9e61a4287fd94c870bfad3f1922280c3e0a65db91c29017e8de"
@@ -626,12 +626,12 @@
   version = "v1.1.0"
 
 [[projects]]
-  digest = "1:1bff633980ce46a718d753a3bc7e3eb6d7e4df34bc7e4a9869e71ccb4314dc40"
+  digest = "1:688428eeb1ca80d92599eb3254bdf91b51d7e232fead3a73844c1f201a281e51"
   name = "github.com/spf13/pflag"
   packages = ["."]
   pruneopts = ""
-  revision = "e8f29969b682c41a730f8f08b76033b120498464"
-  version = "v1.0.4"
+  revision = "2e9d26c8c37aae03e3f9d4e90b7116f5accb7cab"
+  version = "v1.0.5"
 
 [[projects]]
   digest = "1:9b483544fcf4fc0155e566f49ee669c205fba12a36eb18e7f80510796a606db4"
@@ -768,7 +768,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:af83d44f1195692d76697f62af82329be4d55b100d33b9b3db8f5d0f44563fb9"
+  digest = "1:ce26d94b8841936fff59bb524f4b96ac434f411b780b3aa784da90ee96ae2367"
   name = "golang.org/x/net"
   packages = [
     "context",
@@ -781,7 +781,7 @@
     "proxy",
   ]
   pruneopts = ""
-  revision = "c8589233b77dde5edd2205ba8a4fb5c9c2472556"
+  revision = "a8b05e9114ab0cb08faec337c959aed24b68bf50"
 
 [[projects]]
   branch = "master"
@@ -799,7 +799,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:d75336f9fd966011ede7a692794c112e81f0cb80d6e0082ad352e1986fc7b5ee"
+  digest = "1:c04d252619a11f0ba51313ad9ee728c0b7bb61c34c7ab65e841a05ac350e65a0"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
@@ -807,7 +807,7 @@
     "windows",
   ]
   pruneopts = ""
-  revision = "b4ddaad3f8a36719f2b8bc6486c14cc468ca2bb5"
+  revision = "0c1ff786ef13daa914a3351c5e6b0321aed5960e"
 
 [[projects]]
   digest = "1:740b51a55815493a8d0f2b1e0d0ae48fe48953bf7eaf3fcc4198823bf67768c0"
@@ -1107,7 +1107,7 @@
   version = "kubernetes-1.12.0"
 
 [[projects]]
-  digest = "1:c35e91a5a3af23a68b1440fc1a9c5a713853b5447bf4e0606def69cbc84148ef"
+  digest = "1:ccdf880a2361789a52b2a7076c05e77dd608d13a7207004f3b9518e99c12676c"
   name = "k8s.io/helm"
   packages = [
     "pkg/chartutil",

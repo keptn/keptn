@@ -33,8 +33,12 @@ var platformID *string
 
 // domainCmd represents the domain command
 var domainCmd = &cobra.Command{
-	Use:          "domain domain_url",
+	Use:          "domain MY.DOMAIN.COM",
 	Short:        "Configures the domain",
+	Long: `
+	
+Example:
+	keptn configure domain my.domain.com`,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
 
