@@ -76,6 +76,7 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event,
 			return err
 		}
 		if err := c.ApplyConfiguration(e.Project, e.Stage, e.Service, false); err != nil {
+			c.logger.Error(err.Error())
 			return err
 		}
 	}
@@ -85,6 +86,7 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event,
 			return err
 		}
 		if err := c.ApplyConfiguration(e.Project, e.Stage, e.Service, true); err != nil {
+			c.logger.Error(err.Error())
 			return err
 		}
 	}
@@ -97,6 +99,7 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event,
 		if err != nil {
 			c.logger.Error(fmt.Sprintf("Error when checking whether the service %s in stage %s of project %s is duplicated: %s",
 				e.Service, e.Stage, e.Project, err.Error()))
+			return err
 		}
 		if duplicated {
 			c.logger.Debug(fmt.Sprintf("Apply canary action %s for service %s in stage %s of project %s", e.Canary.Action, e.Service, e.Stage, e.Project))
@@ -127,6 +130,7 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event,
 
 		testStrategy, err := getTestStrategy(e.Project, e.Stage)
 		if err != nil {
+			c.logger.Error(err.Error())
 			return err
 		}
 		var shkeptncontext string
@@ -405,8 +409,8 @@ func (c *ConfigurationChanger) ApplyConfiguration(project, stage, service string
 		return fmt.Errorf("Error when saving chart into temporary directory %s: %s", helmChartDir, err.Error())
 	}
 
-	msg, err := keptnutils.ExecuteCommand("helm", []string{"upgrade", "--install", releaseName,
-		chartPath, "--namespace", namespace, "--reset-values", "--wait", "--force"})
+	msg, err := keptnutils.ExecuteCommandStreaming("helm", []string{"upgrade", "--install", releaseName,
+		chartPath, "--namespace", namespace, "--reset-values", "--wait", "--force"}, c.logger)
 	if err != nil {
 		return fmt.Errorf("Error when upgrading chart %s in namespace %s: %s",
 			releaseName, namespace, err.Error())
@@ -458,13 +462,15 @@ func (c *ConfigurationChanger) undoScaling(ch *chart.Chart, namespace string) er
 }
 
 // ApplyDirectory applies the provided directory
-func ApplyDirectory(chartPath, releaseName, namespace string) error {
+func (c *ConfigurationChanger) ApplyDirectory(chartPath, releaseName, namespace string) error {
 
-	if _, err := keptnutils.ExecuteCommand("helm", []string{"upgrade", "--install", releaseName,
-		chartPath, "--namespace", namespace, "--wait"}); err != nil {
+	msg, err := keptnutils.ExecuteCommandStreaming("helm", []string{"upgrade", "--install", releaseName,
+		chartPath, "--namespace", namespace, "--reset-values", "--wait", "--force"}, c.logger)
+	if err != nil {
 		return fmt.Errorf("Error when upgrading chart %s in namespace %s: %s",
 			releaseName, namespace, err.Error())
 	}
+	c.logger.Debug(msg)
 
 	if err := keptnutils.WaitForDeploymentsInNamespace(getInClusterConfig(), namespace); err != nil {
 		return fmt.Errorf("Error when waiting for deployments in namespace %s: %s", namespace, err.Error())
