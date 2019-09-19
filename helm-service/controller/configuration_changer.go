@@ -409,8 +409,8 @@ func (c *ConfigurationChanger) ApplyConfiguration(project, stage, service string
 		return fmt.Errorf("Error when saving chart into temporary directory %s: %s", helmChartDir, err.Error())
 	}
 
-	msg, err := keptnutils.ExecuteCommandStreaming("helm", []string{"upgrade", "--install", releaseName,
-		chartPath, "--namespace", namespace, "--reset-values", "--wait", "--force"}, c.logger)
+	msg, err := keptnutils.ExecuteCommand("helm", []string{"upgrade", "--install", releaseName,
+		chartPath, "--namespace", namespace, "--reset-values", "--wait", "--force"})
 	if err != nil {
 		return fmt.Errorf("Error when upgrading chart %s in namespace %s: %s",
 			releaseName, namespace, err.Error())
@@ -464,8 +464,8 @@ func (c *ConfigurationChanger) undoScaling(ch *chart.Chart, namespace string) er
 // ApplyDirectory applies the provided directory
 func (c *ConfigurationChanger) ApplyDirectory(chartPath, releaseName, namespace string) error {
 
-	msg, err := keptnutils.ExecuteCommandStreaming("helm", []string{"upgrade", "--install", releaseName,
-		chartPath, "--namespace", namespace, "--reset-values", "--wait", "--force"}, c.logger)
+	msg, err := keptnutils.ExecuteCommand("helm", []string{"upgrade", "--install", releaseName,
+		chartPath, "--namespace", namespace, "--reset-values", "--wait", "--force"})
 	if err != nil {
 		return fmt.Errorf("Error when upgrading chart %s in namespace %s: %s",
 			releaseName, namespace, err.Error())
