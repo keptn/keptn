@@ -40,12 +40,12 @@ var openWebSocketConnection bool
 
 // sendEventCmd represents the send command
 var sendEventCmd = &cobra.Command{
-	Use:   "event",
+	Use:   "event --file=FILEPATH --open-web-socket",
 	Short: "Sends a keptn event.",
-	Long: `Allows to send arbitrary keptn events, which are defined in the passed file.
+	Long: `Allows to send an arbitrary keptn events, which are defined in the passed file.
 
 Example:
-	keptn send event --file=new_artifact.json`,
+	keptn send event --file=./new_artifact_event.json --open-web-socket`,
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		eventString, err := utils.ReadFile(*eventFilePath)
