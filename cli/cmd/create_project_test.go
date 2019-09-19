@@ -76,7 +76,7 @@ func TestCreateProjectIncorrectProjectNameCmd(t *testing.T) {
 		"create",
 		"project",
 		"Sockshop", // invalid name, only lowercase is allowed
-		fmt.Sprintf("--shipyard=%s", tmpShipyardFileName)
+		fmt.Sprintf("--shipyard=%s", tmpShipyardFileName),
 	}
 	rootCmd.SetArgs(args)
 	err := rootCmd.Execute()
