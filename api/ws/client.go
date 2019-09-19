@@ -75,7 +75,9 @@ func (c *clientType) readPump(l *keptnutils.Logger) {
 	for {
 		_, message, err := c.conn.ReadMessage()
 		if err != nil {
-			l.Error(fmt.Sprintf("Received error while reading: %s", err.Error()))
+			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+				l.Error(fmt.Sprintf("Received error while reading: %s", err.Error()))
+			}
 			break
 		}
 		if wsLogging {
@@ -129,7 +131,6 @@ func (c *cliClientType) writePump(l *keptnutils.Logger) {
 		case <-ticker.C:
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
-				l.Debug("Cannot write ping to CLI: " + err.Error())
 				return
 			}
 		}
