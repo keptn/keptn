@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/gorilla/websocket"
@@ -83,7 +84,12 @@ func openWS(connData keptnutils.ConnectionData, apiEndPoint url.URL) (*websocket
 	dialer.TLSClientConfig = &tls.Config{
 		InsecureSkipVerify: true,
 	}
-	return dialer.Dial(wsEndPoint.String(), header)
+	conn, resp, err := dialer.Dial(wsEndPoint.String(), header)
+	if err != nil {
+		return nil, nil, err
+	}
+	conn.SetPongHandler(func(string) error { conn.SetReadDeadline(time.Now().Add(60 * time.Second)); return nil })
+	return conn, resp, err
 }
 
 // readAndPrintCE reads a cloud event from the websocket
