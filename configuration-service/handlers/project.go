@@ -68,8 +68,17 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 	// clone existing repo
 	////////////////////////////////////////////////////
 	if params.Project.GitUser != "" && params.Project.GitToken != "" && params.Project.GitRemoteURI != "" {
-		common.StoreGitCredentials(params.Project.ProjectName, params.Project.GitUser, params.Project.GitToken, params.Project.GitRemoteURI)
-		common.CloneRepo(params.Project.ProjectName, params.Project.GitUser, params.Project.GitToken, params.Project.GitRemoteURI)
+		err := common.StoreGitCredentials(params.Project.ProjectName, params.Project.GitUser, params.Project.GitToken, params.Project.GitRemoteURI)
+		if err != nil {
+			logger.Error(err.Error())
+			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not store git credentials")})
+		}
+
+		err = common.CloneRepo(params.Project.ProjectName, params.Project.GitUser, params.Project.GitToken, params.Project.GitRemoteURI)
+		if err != nil {
+			logger.Error(err.Error())
+			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not clone git repository")})
+		}
 	} else {
 		// if no remote URI has been specified, create a new repo
 		///////////////////////////////////////////////////
@@ -86,7 +95,6 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 		}
 	}
 	////////////////////////////////////////////////////
-
 	newProjectMetadata := &projectMetadata{
 		ProjectName:       params.Project.ProjectName,
 		CreationTimestamp: time.Now().String(),
@@ -100,7 +108,7 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not store project metadata")})
 	}
 
-	err = common.StageAndCommitAll(params.Project.ProjectName, "added metadata.yaml")
+	err = common.StageAndCommitAll(params.Project.ProjectName, "Added metadata.yaml")
 	if err != nil {
 		logger.Error(err.Error())
 		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})

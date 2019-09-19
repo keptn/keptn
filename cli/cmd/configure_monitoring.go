@@ -37,8 +37,12 @@ var allowedMonitoringTypes = []string{
 }
 
 var monitoringCmd = &cobra.Command{
-	Use:          "monitoring <monitoring_source> --project=<project> --service=<service> --service-indicators=<service_indicators_file_path> --service-objectives=<service_objectives_file_path> --remediation=<remediation_file_path>",
-	Short:        "Configures monitoring",
+	Use:   "monitoring MONITORING_SOURCE --project=PROJECT --service=SERVICE --service-indicators=FILEPATH --service-objectives=FILEPATH --remediation=FILEPATH",
+	Short: "Configures monitoring",
+	Long: `
+	
+Example:
+  keptn configure monitoring prometheus --project=sockshop --service=carts --service-indicators=./service-indicators.yaml --service-objectives=./service-objectives.yaml --remediation=./remediation.yaml`,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
