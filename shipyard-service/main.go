@@ -150,11 +150,6 @@ func createProjectAndProcessShipyard(event cloudevents.Event, logger keptnutils.
 
 	client := newClient()
 
-	fmt.Println(eventData.Project)
-	fmt.Println(eventData.GitUser)
-	fmt.Println(eventData.GitToken)
-	fmt.Println(eventData.GitRemoteURL)
-
 	// create project
 	project := keptnmodels.Project{
 		ProjectName:  eventData.Project,
@@ -162,11 +157,6 @@ func createProjectAndProcessShipyard(event cloudevents.Event, logger keptnutils.
 		GitToken:     eventData.GitToken,
 		GitRemoteURI: eventData.GitRemoteURL,
 	}
-
-	fmt.Println(project.ProjectName)
-	fmt.Println(project.GitUser)
-	fmt.Println(project.GitToken)
-	fmt.Println(project.GitRemoteURI)
 
 	if err := client.createProject(project, logger); err != nil {
 		return nil, fmt.Errorf("Creating project %s failed. %s", project.ProjectName, err.Error())

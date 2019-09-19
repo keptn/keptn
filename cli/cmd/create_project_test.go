@@ -39,7 +39,7 @@ func TestCreateProjectCmd(t *testing.T) {
 		"create",
 		"project",
 		"sockshop",
-		tmpShipyardFileName,
+		fmt.Sprintf("--shipyard=%s", tmpShipyardFileName),
 		"--mock",
 	}
 	rootCmd.SetArgs(args)
@@ -76,7 +76,7 @@ func TestCreateProjectIncorrectProjectNameCmd(t *testing.T) {
 		"create",
 		"project",
 		"Sockshop", // invalid name, only lowercase is allowed
-		tmpShipyardFileName,
+		fmt.Sprintf("--shipyard=%s", tmpShipyardFileName)
 	}
 	rootCmd.SetArgs(args)
 	err := rootCmd.Execute()
@@ -117,7 +117,7 @@ func TestCreateProjectCmdWithGitMissingParam(t *testing.T) {
 		"create",
 		"project",
 		"sockshop",
-		tmpShipyardFileName,
+		fmt.Sprintf("--shipyard=%s", tmpShipyardFileName),
 		fmt.Sprintf("--git-user=%s", "user"),
 		fmt.Sprintf("--git-token=%s", "token"),
 		"--mock",
@@ -160,7 +160,7 @@ func TestCreateProjectCmdWithGit(t *testing.T) {
 		"create",
 		"project",
 		"sockshop",
-		tmpShipyardFileName,
+		fmt.Sprintf("--shipyard=%s", tmpShipyardFileName),
 		fmt.Sprintf("--git-user=%s", "user"),
 		fmt.Sprintf("--git-token=%s", "token"),
 		fmt.Sprintf("--git-remote-url=%s", "https://"),
