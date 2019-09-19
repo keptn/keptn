@@ -36,6 +36,7 @@ import (
 const timeout = 60
 
 var eventFilePath *string
+var openWebSocketConnection bool
 
 // sendEventCmd represents the send command
 var sendEventCmd = &cobra.Command{
@@ -110,9 +111,15 @@ Example:
 				logging.PrintLog("Response is empty", logging.InfoLevel)
 				return nil
 			}
-			return websockethelper.PrintWSContentByteResponse(body, endPoint)
+
+			// open a web socket connection if the open-web-socket flag is set
+			if openWebSocketConnection {
+				return websockethelper.PrintWSContentByteResponse(body, endPoint)
+			}
+
+		} else {
+			fmt.Println("Skipping send-new artifact due to mocking flag set to true")
 		}
-		fmt.Println("Skipping send-new artifact due to mocking flag set to true")
 		return nil
 	},
 }
@@ -120,4 +127,5 @@ Example:
 func init() {
 	sendCmd.AddCommand(sendEventCmd)
 	eventFilePath = sendEventCmd.Flags().StringP("file", "f", "", "The file containing the event as Cloud Event in JSON.")
+	sendCmd.PersistentFlags().BoolVarP(&openWebSocketConnection, "open-web-socket", "w", false, "Open a web socket communication to receive messages")
 }
