@@ -37,7 +37,7 @@ export default {
         { key: 'data.project', label: 'Project', sortable: true },
         { key: 'data.service', label: 'Service', sortable: true },
         { key: 'data.stage', label: 'Stage', sortable: true },
-        { key: 'data.tag', label: 'tag', sortable: true },
+        { key: 'data.tag', label: 'Tag', sortable: true },
         {
           key: 'timestamp',
           sortable: true,
