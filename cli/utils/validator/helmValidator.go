@@ -17,22 +17,21 @@ var reservedFileNameSuffixes = [...]string{"-istio-destinationrule.yaml", "-isti
 
 // ValidateHelmChart validates keptn's requirements regarding
 // the values, deployment, and service file
-func ValidateHelmChart(helmChart []byte) (bool, error) {
+func ValidateHelmChart(ch *chart.Chart) (bool, error) {
 
-	ch, err := keptnutils.LoadChart(helmChart)
-	if err != nil {
+	if resValues := validateValues(ch); !resValues {
+		return false, nil
+	}
+	if resServices, err := validateServices(ch); !resServices || err != nil {
 		return false, err
 	}
-	resValues := validateValues(ch)
-	resServiecs, err := validateServices(ch)
-	if err != nil {
+	if resDeployment, err := validateDeployments(ch); !resDeployment || err != nil {
 		return false, err
 	}
-	resDeployment, err := validateDeployments(ch)
-	if err != nil {
-		return false, err
+	if !validateTemplateFileNames(ch) {
+		return false, nil
 	}
-	return resValues && resServiecs && resDeployment, nil
+	return true, nil
 }
 
 func validateTemplateFileNames(ch *chart.Chart) bool {

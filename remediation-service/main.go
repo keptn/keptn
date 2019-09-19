@@ -14,6 +14,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
 	kyaml "k8s.io/apimachinery/pkg/util/yaml"
@@ -373,6 +374,7 @@ func createAndSendEvent(shkeptncontext string, project string,
 	event := cloudevents.Event{
 		Context: cloudevents.EventContextV02{
 			ID:          uuid.New().String(),
+			Time:        &types.Timestamp{Time: time.Now()},
 			Type:        keptnevents.ConfigurationChangeEventType,
 			Source:      types.URLRef{URL: *source},
 			ContentType: &contentType,

@@ -5,7 +5,7 @@ export interface ServiceObjectives {
 }
 
 export interface Objective {
-  name: string;
+  metric: string;
   threshold: number;
   timeframe: string;
   score: number;

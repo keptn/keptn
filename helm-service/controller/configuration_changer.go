@@ -405,11 +405,13 @@ func (c *ConfigurationChanger) ApplyConfiguration(project, stage, service string
 		return fmt.Errorf("Error when saving chart into temporary directory %s: %s", helmChartDir, err.Error())
 	}
 
-	if _, err := keptnutils.ExecuteCommand("helm", []string{"upgrade", "--install", releaseName,
-		chartPath, "--namespace", namespace, "--reset-values", "--wait", "--force"}); err != nil {
+	msg, err := keptnutils.ExecuteCommand("helm", []string{"upgrade", "--install", releaseName,
+		chartPath, "--namespace", namespace, "--reset-values", "--wait", "--force"})
+	if err != nil {
 		return fmt.Errorf("Error when upgrading chart %s in namespace %s: %s",
 			releaseName, namespace, err.Error())
 	}
+	c.logger.Debug(msg)
 
 	// Undo manual scalings of deployments becaue helm upgrade does not do
 	if err := c.undoScaling(ch, namespace); err != nil {

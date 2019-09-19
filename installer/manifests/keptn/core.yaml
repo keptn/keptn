@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: bridge
-        image: keptn/bridge:0.5.0.beta
+        image: keptn/bridge:latest
         ports:
         - containerPort: 3000
         resources:
@@ -61,7 +61,7 @@ spec:
     spec:
       containers:
       - name: api
-        image: keptn/api:37faa0e
+        image: keptn/api:latest
         ports:
         - containerPort: 8080
         resources:
@@ -118,7 +118,7 @@ spec:
     spec:
       containers:
       - name: eventbroker-go
-        image: keptn/eventbroker-go:0.5.0.beta
+        image: keptn/eventbroker-go:latest
         ports:
         - containerPort: 8080
         resources:
@@ -167,7 +167,7 @@ spec:
     spec:
       containers:
       - name: gatekeeper-service
-        image: keptn/gatekeeper-service:0.5.0.beta
+        image: keptn/gatekeeper-service:latest
         ports:
         - containerPort: 8080
         resources:
@@ -215,7 +215,7 @@ spec:
     spec:
       containers:
       - name: helm-service
-        image: keptn/helm-service:0.5.0.beta
+        image: keptn/helm-service:latest
         ports:
         - containerPort: 8080
         resources:
@@ -271,7 +271,7 @@ spec:
     spec:
       containers:
       - name: helm-service
-        image: keptn/jmeter-service:0.5.0.beta
+        image: keptn/jmeter-service:latest
         ports:
         - containerPort: 8080
 ---
@@ -307,7 +307,7 @@ spec:
     spec:
       containers:
       - name: wait-service
-        image: keptn/wait-service:0.5.0.beta
+        image: keptn/wait-service:latest
         ports:
         - containerPort: 8080
         resources:
@@ -355,7 +355,7 @@ spec:
     spec:
       containers:
       - name: shipyard-service
-        image: keptn/shipyard-service:37faa0e
+        image: keptn/shipyard-service:latest
         ports:
         - containerPort: 8080
         resources:
@@ -405,7 +405,7 @@ spec:
     spec:
       containers:
       - name: pitometer-service
-        image: keptn/pitometer-service:0.5.0.beta
+        image: keptn/pitometer-service:latest
         ports:
         - containerPort: 8080
         resources:
@@ -462,7 +462,7 @@ spec:
     spec:
       containers:
       - name: configuration-service
-        image: keptn/configuration-service:37faa0e
+        image: keptn/configuration-service:latest
         ports:
         - containerPort: 8080
         resources:
@@ -513,7 +513,7 @@ spec:
     spec:
       containers:
       - name: remediation-service
-        image: keptn/remediation-service:0.5.0.beta
+        image: keptn/remediation-service:latest
         ports:
         - containerPort: 8080
         resources:

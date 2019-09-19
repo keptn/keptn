@@ -118,19 +118,15 @@ Example:
 				return err
 			}
 
-			if err := reDeployGithubService(); err != nil {
-				return err
-			}
-
 			if err := keptnutils.RestartPodsWithSelector(false, "keptn", "run=api"); err != nil {
 				return err
 			}
-
-			if err := keptnutils.WaitForDeploymentsInNamespace(false, "keptn"); err != nil {
+			if err := keptnutils.WaitForPodsWithSelector(false, "keptn", "run=api", 5, 5*time.Second); err != nil {
 				return err
 			}
 
 			if strings.ToLower(*platformID) == openshift {
+				logging.PrintLog("Successfully configured domain", logging.InfoLevel)
 				fmt.Println("Please manually execute the following commands for deleting an old route and creating a new route:")
 				fmt.Println("oc delete route istio-wildcard-ingress-secure-keptn -n istio-system")
 				fmt.Println("oc create route passthrough istio-wildcard-ingress-secure-keptn --service=istio-ingressgateway --hostname=\"www.keptn.ingress-gateway. " +
@@ -143,19 +139,24 @@ Example:
 				fmt.Println("Afterwards, you can login with 'keptn auth --endpoint=https://api.keptn." + args[0] + " --token=" + token + "'")
 
 			} else {
-				logging.PrintLog("Successfully configured domain", logging.InfoLevel)
-
-				if err := authUsingKube(); err != nil {
+				var err error
+				for retries := 0; retries < 3; retries++ {
+					if err = authUsingKube(); err == nil {
+						break
+					}
+					logging.PrintLog("Retry authentication...", logging.InfoLevel)
+					if err := keptnutils.RestartPodsWithSelector(false, "keptn", "run=api"); err != nil {
+						return err
+					}
+					if err := keptnutils.WaitForPodsWithSelector(false, "keptn", "run=api", 5, 5*time.Second); err != nil {
+						return err
+					}
+				}
+				if err != nil {
+					logging.PrintLog("Cannot authenticate to api", logging.QuietLevel)
 					return err
 				}
-			}
-
-			configured, err := checkIfConfiguredUsingKube()
-			if err != nil {
-				return err
-			}
-			if !configured {
-				fmt.Println("No GitHub configuration found on your keptn installation. Please exectue 'keptn configure'")
+				logging.PrintLog("Successfully configured domain", logging.InfoLevel)
 			}
 		}
 
@@ -172,21 +173,6 @@ func reDeployGateway() error {
 	}
 
 	o = options{"apply", "-f", getGatewayURL()}
-	o.appendIfNotEmpty(kubectlOptions)
-	_, err = keptnutils.ExecuteCommand("kubectl", o)
-	return err
-}
-
-func reDeployGithubService() error {
-
-	o := options{"delete", "deployment", "github-service", "-n", "keptn"}
-	o.appendIfNotEmpty(kubectlOptions)
-	_, err := keptnutils.ExecuteCommand("kubectl", o)
-	if err != nil {
-		return err
-	}
-
-	o = options{"apply", "-f", getUniformServicesURL()}
 	o.appendIfNotEmpty(kubectlOptions)
 	_, err = keptnutils.ExecuteCommand("kubectl", o)
 	return err
