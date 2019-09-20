@@ -26,6 +26,7 @@ func TestSend(t *testing.T) {
 
 	newArtifactEvent := `{"id":"` + uuid.New().String() + `",
 "specversion":"0.2",
+"source": "https://github.com/keptn/keptn/cli",
 "time":"` + time.String() + `",
 "contenttype":"application/json",
 "type":"sh.keptn.events.new-artifact",
@@ -50,6 +51,50 @@ func TestSend(t *testing.T) {
 		"send",
 		"event",
 		fmt.Sprintf("--file=%s", tmpCE),
+		"--mock",
+	}
+	rootCmd.SetArgs(args)
+	err = rootCmd.Execute()
+
+	os.Remove(tmpCE)
+
+	if err != nil {
+		log.Fatalf("An error occured %v", err)
+	}
+}
+
+func TestSendAndOpenWebSocket(t *testing.T) {
+
+	time := types.Timestamp{Time: time.Now()}
+
+	newArtifactEvent := `{"id":"` + uuid.New().String() + `",
+"specversion":"0.2",
+"source": "https://github.com/keptn/keptn/cli",
+"time":"` + time.String() + `",
+"contenttype":"application/json",
+"type":"sh.keptn.events.new-artifact",
+"data":{
+	"project":"sockshop",
+	"service":"carts",
+	"image":"docker.io/keptnexamples/carts",
+	"tag":"0.6.0.latest"
+}}`
+
+	const tmpCE = "ce.json"
+	err := ioutil.WriteFile(tmpCE, []byte(newArtifactEvent), 0644)
+	if err != nil {
+		log.Fatalf("An error occured %v", err)
+	}
+
+	credentialmanager.MockAuthCreds = true
+	buf := new(bytes.Buffer)
+	rootCmd.SetOutput(buf)
+
+	args := []string{
+		"send",
+		"event",
+		fmt.Sprintf("--file=%s", tmpCE),
+		"--stream-websocket",
 		"--mock",
 	}
 	rootCmd.SetArgs(args)
