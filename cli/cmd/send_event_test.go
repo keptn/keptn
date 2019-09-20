@@ -26,6 +26,7 @@ func TestSend(t *testing.T) {
 
 	newArtifactEvent := `{"id":"` + uuid.New().String() + `",
 "specversion":"0.2",
+"source": "https://github.com/keptn/keptn/cli",
 "time":"` + time.String() + `",
 "contenttype":"application/json",
 "type":"sh.keptn.events.new-artifact",
@@ -68,6 +69,7 @@ func TestSendAndOpenWebSocket(t *testing.T) {
 
 	newArtifactEvent := `{"id":"` + uuid.New().String() + `",
 "specversion":"0.2",
+"source": "https://github.com/keptn/keptn/cli",
 "time":"` + time.String() + `",
 "contenttype":"application/json",
 "type":"sh.keptn.events.new-artifact",
@@ -92,7 +94,7 @@ func TestSendAndOpenWebSocket(t *testing.T) {
 		"send",
 		"event",
 		fmt.Sprintf("--file=%s", tmpCE),
-		"--open-web-socket",
+		"--stream-websocket",
 		"--mock",
 	}
 	rootCmd.SetArgs(args)
