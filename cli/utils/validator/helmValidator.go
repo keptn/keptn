@@ -107,8 +107,9 @@ func validateService(svc *corev1.Service) bool {
 		logging.PrintLog(fmt.Sprintf("Service %s does not contain \"selector\"", svc.Name), logging.QuietLevel)
 		return false
 	}
-	val, ok := svc.Spec.Selector["app"]
-	if !ok || val == "" {
+	valApp, okApp := svc.Spec.Selector["app"]
+	valAppk8sName, okAppk8sName := svc.Spec.Selector["app.kubernetes.io/name"]
+	if (!okApp || valApp == "") && (!okAppk8sName || valAppk8sName == "") {
 		logging.PrintLog(fmt.Sprintf("Service %s does not have \"spec.selector.app\"", svc.Name), logging.QuietLevel)
 		return false
 	}
@@ -132,13 +133,15 @@ func validateDeployment(depl *appsv1.Deployment) bool {
 		logging.PrintLog(fmt.Sprintf("Deployment %s does not contain \"spec.template.metadata.labels\"", depl.Name), logging.QuietLevel)
 		return false
 	}
-	mLabel, okmLabel := depl.Spec.Selector.MatchLabels["app"]
-	if !okmLabel || mLabel == "" {
+	mLabelApp, okmLabelApp := depl.Spec.Selector.MatchLabels["app"]
+	mLabelAppk8sName, okmLabelAppk8sName := depl.Spec.Selector.MatchLabels["app.kubernetes.io/name"]
+	if (!okmLabelApp || mLabelApp == "") && (!okmLabelAppk8sName || mLabelAppk8sName == "") {
 		logging.PrintLog(fmt.Sprintf("Deployment %s does not contain \"spec.selector.matchLabels.app\"", depl.Name), logging.QuietLevel)
 		return false
 	}
-	podLabel, okPodLabel := depl.Spec.Template.ObjectMeta.Labels["app"]
-	if !okPodLabel || podLabel == "" {
+	podLabelApp, okPodLabelApp := depl.Spec.Template.ObjectMeta.Labels["app"]
+	podLabelAppk8sName, okPodLabelAppk8sName := depl.Spec.Template.ObjectMeta.Labels["app.kubernetes.io/name"]
+	if (!okPodLabelApp || podLabelApp == "") && (!okPodLabelAppk8sName || podLabelAppk8sName == "") {
 		logging.PrintLog(fmt.Sprintf("Deployment %s does not contain \"spec.template.metadata.labels.app\"", depl.Name), logging.QuietLevel)
 		return false
 	}
