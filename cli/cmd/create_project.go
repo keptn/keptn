@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	keptnevents "github.com/keptn/go-utils/pkg/events"
 	"github.com/keptn/go-utils/pkg/models"
+	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
@@ -62,7 +63,7 @@ Example:
 	},
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 
-		if _, err := os.Stat(*createProjectParams.Shipyard); os.IsNotExist(err) {
+		if _, err := os.Stat(keptnutils.ExpandTilde(*createProjectParams.Shipyard)); os.IsNotExist(err) {
 			return fmt.Errorf("Cannot find file %s", *createProjectParams.Shipyard)
 		}
 
