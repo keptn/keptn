@@ -16,8 +16,6 @@ package cmd
 
 import (
 	"bytes"
-	"crypto/hmac"
-	"crypto/sha1"
 	"crypto/tls"
 	"encoding/json"
 	"errors"
@@ -36,15 +34,16 @@ import (
 const timeout = 60
 
 var eventFilePath *string
+var openWebSocketConnection bool
 
 // sendEventCmd represents the send command
 var sendEventCmd = &cobra.Command{
-	Use:   "event",
+	Use:   "event --file=FILEPATH --stream-websocket",
 	Short: "Sends a keptn event.",
-	Long: `Allows to send arbitrary keptn events, which are defined in the passed file.
+	Long: `Allows to send an arbitrary keptn event that is defined in the passed file.
 
 Example:
-	keptn send event --file=new_artifact.json`,
+	keptn send event --file=./new_artifact_event.json --stream-websocket`,
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		eventString, err := utils.ReadFile(*eventFilePath)
@@ -67,23 +66,17 @@ Example:
 		var body interface{}
 		json.Unmarshal([]byte(eventString), &body)
 
-		logging.PrintLog("Starting to send an event", logging.InfoLevel)
-
 		eventURL := endPoint
 		eventURL.Path = "v1/event"
+
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", eventURL.String()), logging.VerboseLevel)
 		if !mocking {
 			data, err := json.Marshal(body)
 			req, err := http.NewRequest("POST", eventURL.String(), bytes.NewReader(data))
 
-			mac := hmac.New(sha1.New, []byte(apiToken))
-			mac.Write(data)
-			signatureVal := mac.Sum(nil)
-			sha1Hash := "sha1=" + fmt.Sprintf("%x", signatureVal)
-
 			// Add signature header
-			req.Header.Set("X-Keptn-Signature", sha1Hash)
-			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("x-token", apiToken)
+			req.Header.Set("Content-Type", "application/cloudevents+json")
 
 			tr := &http.Transport{
 				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
@@ -96,8 +89,9 @@ Example:
 				return err
 			}
 			defer resp.Body.Close()
-			if resp.StatusCode != http.StatusOK {
-				logging.PrintLog("Send event was unsuccessful", logging.QuietLevel)
+
+			if resp.StatusCode != http.StatusCreated {
+				logging.PrintLog("Event could not be processed", logging.QuietLevel)
 				return errors.New(resp.Status)
 			}
 
@@ -110,9 +104,16 @@ Example:
 				logging.PrintLog("Response is empty", logging.InfoLevel)
 				return nil
 			}
-			return websockethelper.PrintWSContentByteResponse(body, endPoint)
+
+			logging.PrintLog("Event sent to keptn", logging.InfoLevel)
+			// open a web socket connection if the open-web-socket flag is set
+			if openWebSocketConnection {
+				return websockethelper.PrintWSContentByteResponse(body, endPoint)
+			}
+
+		} else {
+			fmt.Println("Skipping send-new artifact due to mocking flag set to true")
 		}
-		fmt.Println("Skipping send-new artifact due to mocking flag set to true")
 		return nil
 	},
 }
@@ -120,4 +121,5 @@ Example:
 func init() {
 	sendCmd.AddCommand(sendEventCmd)
 	eventFilePath = sendEventCmd.Flags().StringP("file", "f", "", "The file containing the event as Cloud Event in JSON.")
+	sendCmd.PersistentFlags().BoolVarP(&openWebSocketConnection, "stream-websocket", "s", false, "Stream websocket communication of keptn messages")
 }
