@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"bytes"
-	"log"
 	"os"
 	"testing"
 
@@ -15,7 +14,7 @@ func init() {
 }
 
 // TestOnboardService tests the onboard service command.
-func TestOnboardService(t *testing.T) {
+func TestOnboardServiceWrongPath(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
 	buf := new(bytes.Buffer)
@@ -26,12 +25,17 @@ func TestOnboardService(t *testing.T) {
 		"service",
 		"carts",
 		"--project=sockshop",
-		"--chart=carts",
+		"--chart=cartsX",
 	}
 	rootCmd.SetArgs(args)
 	err := rootCmd.Execute()
 
-	if err != nil {
-		log.Fatalf("An error occured %v", err)
+	if err == nil {
+		t.Errorf("Expected error event, but no one received.")
+	}
+
+	expected := "Provided Helm chart does not exist"
+	if err.Error() != expected {
+		t.Errorf("Error actual = %v, and Expected = %v.", err, expected)
 	}
 }
