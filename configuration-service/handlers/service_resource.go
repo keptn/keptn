@@ -3,6 +3,9 @@ package handlers
 import (
 	"encoding/base64"
 	"io/ioutil"
+	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
@@ -11,6 +14,8 @@ import (
 	"github.com/keptn/keptn/configuration-service/config"
 	"github.com/keptn/keptn/configuration-service/models"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/service_resource"
+
+	"github.com/mholt/archiver"
 )
 
 // GetProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc get list of resources for the service
@@ -35,14 +40,35 @@ func GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHan
 		return service_resource.NewGetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not check out branch")})
 	}
 
+	// archive the Helm chart
+	if strings.ContainsAny(resourcePath, "helm") && strings.ContainsAny(params.ResourceURI, ".tgz") {
+		logger.Debug("Archive the Helm chart: " + params.ResourceURI)
+
+		chartDir := strings.Replace(resourcePath, ".tgz", "", -1)
+		if archiver.Archive([]string{chartDir}, resourcePath) != nil {
+			logger.Error(err.Error())
+			return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could archive the Helm chart directory")})
+		}
+	}
+
 	if !common.FileExists(resourcePath) {
-		return service_resource.NewGetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURINotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project resource not found")})
+		return service_resource.NewGetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURINotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Service resource not found")})
 	}
 
 	dat, err := ioutil.ReadFile(resourcePath)
 	if err != nil {
 		logger.Error(err.Error())
 		return service_resource.NewGetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not read file")})
+	}
+
+	// remove Helch chart .tgz file
+	if strings.ContainsAny(resourcePath, "helm") && strings.ContainsAny(params.ResourceURI, ".tgz") {
+		logger.Debug("Remove Helm chart: " + params.ResourceURI)
+
+		if os.Remove(resourcePath) != nil {
+			logger.Error(err.Error())
+			return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not delete Helm chart package")})
+		}
 	}
 
 	resourceContent := base64.StdEncoding.EncodeToString(dat)
@@ -85,7 +111,38 @@ func PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(p
 	for _, res := range params.Resources.Resources {
 		filePath := serviceConfigPath + "/" + *res.ResourceURI
 		logger.Debug("Adding resource: " + filePath)
-		common.WriteBase64EncodedFile(filePath, res.ResourceContent)
+
+		if strings.ContainsAny(filePath, "helm") && strings.ContainsAny(*res.ResourceURI, ".tgz") {
+			common.WriteBase64EncodedFile(filePath, res.ResourceContent)
+
+			// unarchive the Helm chart
+			logger.Debug("Unarchive the Helm chart: " + *res.ResourceURI)
+			dir, err := filepath.Abs(filepath.Dir(filePath))
+			if err != nil {
+				logger.Error(err.Error())
+				return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Path of Helm chart is invalid")})
+			}
+
+			tarGz := archiver.NewTarGz()
+			tarGz.OverwriteExisting = true
+
+			err = tarGz.Unarchive(filePath, dir)
+			if err != nil {
+				logger.Error(err.Error())
+				return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not unarchive Helm chart")})
+			}
+
+			// remove Helch chart .tgz file
+			logger.Debug("Remove the Helm chart: " + *res.ResourceURI)
+			err = os.Remove(filePath)
+			if err != nil {
+				logger.Error(err.Error())
+				return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not delete Helm chart package")})
+			}
+
+		} else {
+			common.WriteBase64EncodedFile(filePath, res.ResourceContent)
+		}
 	}
 
 	logger.Debug("Staging Changes")
