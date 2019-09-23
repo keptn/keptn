@@ -6,11 +6,9 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"k8s.io/helm/pkg/proto/hapi/chart"
 	"log"
 	"os"
-	"strings"
-
-	"k8s.io/helm/pkg/proto/hapi/chart"
 
 	cloudevents "github.com/cloudevents/sdk-go"
 	"github.com/ghodss/yaml"
@@ -115,10 +113,12 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event,
 		}
 	}
 
-	if os.Getenv("PRE_WORKFLOW_ENGINE") == "true" &&
-		strings.HasSuffix(ce.Source(), "remediation-service") {
-		return nil
-	}
+	/*
+		if os.Getenv("PRE_WORKFLOW_ENGINE") == "true" &&
+			strings.HasSuffix(ce.Source(), "remediation-service") {
+			return nil
+		}
+	*/
 
 	// Send deployment finished event
 	// Note that this condition also stops the keptn-flow if an artifact is discarded
