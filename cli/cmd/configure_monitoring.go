@@ -37,7 +37,8 @@ var allowedMonitoringTypes = []string{
 }
 
 var monitoringCmd = &cobra.Command{
-	Use:          "monitoring <monitoring_source> --project=<project> --service=<service> --service-indicators=<service_indicators_file_path> --service-objectives=<service_objectives_file_path> --remediation=<remediation_file_path>",
+	// Use:          "monitoring <monitoring_source> --project=<project> --service=<service> --service-indicators=<service_indicators_file_path> --service-objectives=<service_objectives_file_path> --remediation=<remediation_file_path>",
+	Use:          "monitoring <monitoring_source> --project=<project> --service=<service>",
 	Short:        "Configures monitoring",
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
@@ -66,24 +67,26 @@ var monitoringCmd = &cobra.Command{
 		if *params.Service == "" {
 			return errors.New("Please specify a service")
 		}
-		if *params.ServiceIndicators == "" {
-			return errors.New("Please specify path to service indicators file")
-		}
-		if *params.ServiceObjectives == "" {
-			return errors.New("Please specify path to service objectives file")
-		}
-		if *params.Remediation == "" {
-			return errors.New("Please specify path to remediation file")
-		}
-		if !fileExists(keptnutils.ExpandTilde(*params.ServiceIndicators)) {
-			return errors.New("Service indicators file " + *params.ServiceIndicators + " not found in local file system")
-		}
-		if !fileExists(keptnutils.ExpandTilde(*params.ServiceObjectives)) {
-			return errors.New("Service objectives file " + *params.ServiceObjectives + " not found in local file system")
-		}
-		if !fileExists(keptnutils.ExpandTilde(*params.Remediation)) {
-			return errors.New("Remediation file " + *params.Remediation + " not found in local file system")
-		}
+		/*
+			if *params.ServiceIndicators == "" {
+				return errors.New("Please specify path to service indicators file")
+			}
+			if *params.ServiceObjectives == "" {
+				return errors.New("Please specify path to service objectives file")
+			}
+			if *params.Remediation == "" {
+				return errors.New("Please specify path to remediation file")
+			}
+			if !fileExists(keptnutils.ExpandTilde(*params.ServiceIndicators)) {
+				return errors.New("Service indicators file " + *params.ServiceIndicators + " not found in local file system")
+			}
+			if !fileExists(keptnutils.ExpandTilde(*params.ServiceObjectives)) {
+				return errors.New("Service objectives file " + *params.ServiceObjectives + " not found in local file system")
+			}
+			if !fileExists(keptnutils.ExpandTilde(*params.Remediation)) {
+				return errors.New("Remediation file " + *params.Remediation + " not found in local file system")
+			}
+		*/
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -92,18 +95,21 @@ var monitoringCmd = &cobra.Command{
 			return errors.New(authErrorMsg)
 		}
 
-		serviceIndicators, serviceObjectives, remediation, err := parseInputFiles(params)
-		if err != nil {
-			return err
-		}
+		/*
+			serviceIndicators, serviceObjectives, remediation, err := parseInputFiles(params)
+			if err != nil {
+				return err
+			}
 
+
+		*/
 		configureMonitoringEventData := &events.ConfigureMonitoringEventData{
-			Type:              args[0],
-			Project:           *params.Project,
-			Service:           *params.Service,
-			ServiceIndicators: serviceIndicators,
-			ServiceObjectives: serviceObjectives,
-			Remediation:       remediation,
+			Type:    args[0],
+			Project: *params.Project,
+			Service: *params.Service,
+			//ServiceIndicators: serviceIndicators,
+			//ServiceObjectives: serviceObjectives,
+			//Remediation:       remediation,
 		}
 
 		source, _ := url.Parse("https://github.com/keptn/keptn/cli#configuremonitoring")
@@ -188,10 +194,13 @@ func init() {
 	monitoringCmd.MarkFlagRequired("project")
 	params.Service = monitoringCmd.Flags().StringP("service", "s", "", "The name of the service within the project")
 	monitoringCmd.MarkFlagRequired("service")
-	params.ServiceIndicators = monitoringCmd.Flags().StringP("service-indicators", "", "", "Path to the service indicators file on your local file system")
-	monitoringCmd.MarkFlagRequired("service-indicators")
-	params.ServiceObjectives = monitoringCmd.Flags().StringP("service-objectives", "", "", "Path to the service objectives file on your local file system")
-	monitoringCmd.MarkFlagRequired("service-objectives")
-	params.Remediation = monitoringCmd.Flags().StringP("remediation", "", "", "Path to the remediation file on your local file system")
-	monitoringCmd.MarkFlagRequired("remediation")
+	/*
+		params.ServiceIndicators = monitoringCmd.Flags().StringP("service-indicators", "", "", "Path to the service indicators file on your local file system")
+		monitoringCmd.MarkFlagRequired("service-indicators")
+		params.ServiceObjectives = monitoringCmd.Flags().StringP("service-objectives", "", "", "Path to the service objectives file on your local file system")
+		monitoringCmd.MarkFlagRequired("service-objectives")
+		params.Remediation = monitoringCmd.Flags().StringP("remediation", "", "", "Path to the remediation file on your local file system")
+		monitoringCmd.MarkFlagRequired("remediation")
+
+	*/
 }

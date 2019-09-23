@@ -398,7 +398,8 @@
   version = "v1.4.0"
 
 [[projects]]
-  digest = "1:7eba0158f93b43d9ac1099c959dec8d7d778b375db7507ac2cbc685263b9c7f5"
+  branch = "develop"
+  digest = "1:fb882de8219bbcbd3679404a5c36491fed4497fbebeb258a6ef1f4311dfd987f"
   name = "github.com/keptn/go-utils"
   packages = [
     "pkg/events",
@@ -406,8 +407,7 @@
     "pkg/utils",
   ]
   pruneopts = "UT"
-  revision = "9a7a6235999065b3f1f69159bc669864c03a4333"
-  version = "0.2.0"
+  revision = "4b4a73c7a3c31caf143d51ba5ae8a977dc9bdf54"
 
 [[projects]]
   branch = "bug/824/build-remediation-svc"
@@ -975,7 +975,7 @@
   version = "kubernetes-1.12.0"
 
 [[projects]]
-  digest = "1:93c14bd5adb4ad2cdce1a57fda1c648781c91999bfdb96db0768f631adc849f0"
+  digest = "1:c780ffd0ea11865bc3d1d5518525b59aa487750fd356b12c74d372c36fc16e74"
   name = "k8s.io/helm"
   packages = [
     "pkg/chartutil",

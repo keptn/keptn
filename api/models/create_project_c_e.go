@@ -128,6 +128,15 @@ func (m *CreateProjectCE) UnmarshalBinary(b []byte) error {
 // swagger:model CreateProjectCEAO1Data
 type CreateProjectCEAO1Data struct {
 
+	// git remote URL
+	GitRemoteURL string `json:"gitRemoteURL,omitempty"`
+
+	// git token
+	GitToken string `json:"gitToken,omitempty"`
+
+	// git user
+	GitUser string `json:"gitUser,omitempty"`
+
 	// project
 	// Required: true
 	Project *string `json:"project"`

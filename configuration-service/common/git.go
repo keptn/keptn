@@ -23,8 +23,13 @@ type GitCredentials struct {
 // CloneRepo clones an upstream repository
 func CloneRepo(project string, user string, token string, uri string) error {
 	uri = getRepoURI(uri, user, token)
+
 	_, err := utils.ExecuteCommandInDirectory("git", []string{"clone", uri}, config.ConfigDir)
+	if err != nil {
+		return err
+	}
 	repoName := getRepoName(uri)
+
 	// rename if necessary
 	if repoName != project {
 		_, err = utils.ExecuteCommandInDirectory("mv", []string{repoName, project}, config.ConfigDir)
@@ -33,9 +38,15 @@ func CloneRepo(project string, user string, token string, uri string) error {
 }
 
 func getRepoURI(uri string, user string, token string) string {
+
+	if strings.Contains(uri, user+"@") {
+		uri = strings.Replace(uri, "https://"+user+"@", "https://"+user+":"+token+"@", 1)
+	}
+
 	if !strings.Contains(uri, user+":"+token+"@") {
 		uri = strings.Replace(uri, "https://", "https://"+user+":"+token+"@", 1)
 	}
+
 	return uri
 }
 
@@ -81,7 +92,7 @@ func CreateBranch(project string, branch string, sourceBranch string) error {
 		repoURI := getRepoURI(credentials.RemoteURI, credentials.User, credentials.Token)
 		_, err = utils.ExecuteCommandInDirectory("git", []string{"push", "--set-upstream", repoURI, branch}, projectConfigPath)
 		if err != nil {
-			return errors.New("could not push to upstream")
+			return errors.New("Could not push to upstream")
 		}
 	}
 
@@ -96,7 +107,7 @@ func StageAndCommitAll(project string, message string) error {
 		return err
 	}
 
-	_, err = utils.ExecuteCommandInDirectory("git", []string{"commit", "-m", `"` + message + `"`}, projectConfigPath)
+	_, err = utils.ExecuteCommandInDirectory("git", []string{"commit", "-m", message}, projectConfigPath)
 	// in this case, ignore errors since the only instance when this can occur at this stage is when there is nothin to commit (no delta)
 	credentials, err := GetCredentials(project)
 	if err == nil && credentials != nil {
