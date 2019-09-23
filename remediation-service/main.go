@@ -343,8 +343,7 @@ func getReplicaCount(logger *keptnutils.Logger, project, stage, service, configS
 			if err := json.Unmarshal(doc, &depl); err == nil && keptnutils.IsDeployment(&depl) {
 				// It is a deployment
 				fmt.Println(depl.Spec.Replicas)
-				return 1, nil
-
+				return int(*depl.Spec.Replicas), nil
 			}
 		}
 	}
