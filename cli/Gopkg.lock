@@ -47,12 +47,12 @@
   version = "v3.0.1"
 
 [[projects]]
-  digest = "1:2635aa12c62c6ed3014ace2bb30887106f9524ce8891d3e3100e41edadf249ce"
+  digest = "1:0e0b19a93aea9399d5e0a78ddedd719f74de4f4a1da9a08d934e40e32c35454e"
   name = "github.com/Masterminds/sprig"
   packages = ["."]
   pruneopts = ""
-  revision = "258b00ffa7318e8b109a141349980ffbd30a35db"
-  version = "v2.20.0"
+  revision = "2691a9cba2adee8d9a60100a1bc49e770f97b7db"
+  version = "v2.21.0"
 
 [[projects]]
   digest = "1:c0952fb3cf9506cff577b4edf4458889570dcbd2902a7b90a1fd96bfbb97ccd8"
@@ -472,7 +472,7 @@
 
 [[projects]]
   branch = "develop"
-  digest = "1:e8c5752d314ef98f4f73c896f8f4f660718b86e9fc5bf6537098c345ff1945fe"
+  digest = "1:eaa4b9b74fd7d9c11a983534bb756c829f4eb9ae4297ebe2a007fc5b1af83fce"
   name = "github.com/keptn/go-utils"
   packages = [
     "pkg/events",
@@ -480,7 +480,7 @@
     "pkg/utils",
   ]
   pruneopts = ""
-  revision = "4b4a73c7a3c31caf143d51ba5ae8a977dc9bdf54"
+  revision = "5087cafa47eb6aed83aa1ad66a210700a2268b1b"
 
 [[projects]]
   digest = "1:91317956b340c9e61a4287fd94c870bfad3f1922280c3e0a65db91c29017e8de"
@@ -626,12 +626,12 @@
   version = "v1.1.0"
 
 [[projects]]
-  digest = "1:1bff633980ce46a718d753a3bc7e3eb6d7e4df34bc7e4a9869e71ccb4314dc40"
+  digest = "1:688428eeb1ca80d92599eb3254bdf91b51d7e232fead3a73844c1f201a281e51"
   name = "github.com/spf13/pflag"
   packages = ["."]
   pruneopts = ""
-  revision = "e8f29969b682c41a730f8f08b76033b120498464"
-  version = "v1.0.4"
+  revision = "2e9d26c8c37aae03e3f9d4e90b7116f5accb7cab"
+  version = "v1.0.5"
 
 [[projects]]
   digest = "1:9b483544fcf4fc0155e566f49ee669c205fba12a36eb18e7f80510796a606db4"
@@ -740,7 +740,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:4a4c4edf69b61bf98e98d22696aa80c4059384895920de4d5e2fe696068d5f13"
+  digest = "1:dfb5b39cdf15fedcf18211253981cd7d4d881fcb3c9fa63140b02ec71aead457"
   name = "golang.org/x/crypto"
   packages = [
     "cast5",
@@ -764,11 +764,11 @@
     "ssh/terminal",
   ]
   pruneopts = ""
-  revision = "227b76d455e791cb042b03e633e2f7fbcfdf74a5"
+  revision = "9ee001bba392397c76f100a2d5b13afc86f167f1"
 
 [[projects]]
   branch = "master"
-  digest = "1:af83d44f1195692d76697f62af82329be4d55b100d33b9b3db8f5d0f44563fb9"
+  digest = "1:c8eb8cf6d1b574fc88540c854d9ae2b08934d7cadf4d6f1cc3fc7836e498eba1"
   name = "golang.org/x/net"
   packages = [
     "context",
@@ -781,7 +781,7 @@
     "proxy",
   ]
   pruneopts = ""
-  revision = "c8589233b77dde5edd2205ba8a4fb5c9c2472556"
+  revision = "1a5e07d1ff72da30f660d3c95b312a20be31173c"
 
 [[projects]]
   branch = "master"
@@ -799,7 +799,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:d75336f9fd966011ede7a692794c112e81f0cb80d6e0082ad352e1986fc7b5ee"
+  digest = "1:bf20afd20e1f437601a6eaff9c2ce2a9df70845f9935a285f444082cb6c32c21"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
@@ -807,7 +807,7 @@
     "windows",
   ]
   pruneopts = ""
-  revision = "b4ddaad3f8a36719f2b8bc6486c14cc468ca2bb5"
+  revision = "0a153f010e6963173baba2306531d173aa843137"
 
 [[projects]]
   digest = "1:740b51a55815493a8d0f2b1e0d0ae48fe48953bf7eaf3fcc4198823bf67768c0"
@@ -837,14 +837,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:9522af4be529c108010f95b05f1022cb872f2b9ff8b101080f554245673466e1"
+  digest = "1:1290297b5048f051e77948812e93c4f09a914d02c8fb02cf2dfdaf23d73a5805"
   name = "golang.org/x/time"
   packages = ["rate"]
   pruneopts = ""
-  revision = "9d24e82272b4f38b78bc8cff74fa936d31ccd8ef"
+  revision = "c4c64cad1fd0a1a8dab2523e04e61d35308e131e"
 
 [[projects]]
-  digest = "1:0568e577f790e9bd0420521cff50580f9b38165a38f217ce68f55c4bbaa97066"
+  digest = "1:d431fe261d516e259536a34770d1e6fd7cdac85d17b11f9e65aff2f1a7eec66f"
   name = "google.golang.org/appengine"
   packages = [
     ".",
@@ -859,8 +859,8 @@
     "urlfetch",
   ]
   pruneopts = ""
-  revision = "5f2a59506353b8d5ba8cbbcd9f3c1f41f1eaf079"
-  version = "v1.6.2"
+  revision = "c71d63e301d75423acb410203c747cad31e9a5e7"
+  version = "v1.6.3"
 
 [[projects]]
   digest = "1:75fb3fcfc73a8c723efde7777b40e8e8ff9babf30d8c56160d01beffea8a95a6"

@@ -62,6 +62,7 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event, loggingDone chan bool) error
 
 	url, err := serviceutils.GetConfigServiceURL()
 	if err != nil {
+		o.logger.Error(fmt.Sprintf("Error when getting config service url: %s", err.Error()))
 		return err
 	}
 
@@ -78,7 +79,7 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event, loggingDone chan bool) error
 		return err
 	}
 	if firstService {
-		o.logger.Info("Create Helm Umbrella charts")
+		o.logger.Info("Create Helm umbrella charts")
 		umbrellaChartHandler := helm.NewUmbrellaChartHandler(o.mesh)
 		if err := o.initAndApplyUmbrellaChart(event, umbrellaChartHandler, stages); err != nil {
 			o.logger.Error(fmt.Sprintf("Error when initalizing and applying umbrella charts for project %s: %s", event.Project, err.Error()))
@@ -87,7 +88,9 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event, loggingDone chan bool) error
 	}
 
 	for _, stage := range stages {
-		o.onboardService(stage.StageName, event, url.String())
+		if err := o.onboardService(stage.StageName, event, url.String()); err != nil {
+			return err
+		}
 	}
 
 	o.logger.Info(fmt.Sprintf("Finished creating service %s in project %s", event.Service, event.Project))
@@ -193,7 +196,8 @@ func (o *Onboarder) initAndApplyUmbrellaChart(event *keptnevents.ServiceCreateEv
 			return fmt.Errorf("Error when getting umbrella chart: %s", err)
 		}
 
-		if err := ApplyDirectory(umbrellaChart, helm.GetUmbrellaReleaseName(event.Project, stage.StageName),
+		configChanger := NewConfigurationChanger(o.mesh, o.canaryLevelGen, o.logger, o.keptnDomain)
+		if err := configChanger.ApplyDirectory(umbrellaChart, helm.GetUmbrellaReleaseName(event.Project, stage.StageName),
 			helm.GetUmbrellaNamespace(event.Project, stage.StageName)); err != nil {
 			return fmt.Errorf("Error when applying umbrella chart in stage %s: %s", stage.StageName, err.Error())
 		}
