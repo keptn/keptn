@@ -63,7 +63,7 @@ func GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHan
 
 	// remove Helch chart .tgz file
 	if strings.ContainsAny(resourcePath, "helm") && strings.ContainsAny(params.ResourceURI, ".tgz") {
-		logger.Debug("Remove Helm chart: " + params.ResourceURI)
+		logger.Debug("Remove the Helm chart: " + params.ResourceURI)
 
 		if os.Remove(resourcePath) != nil {
 			logger.Error(err.Error())
