@@ -453,7 +453,7 @@ func copyAndCapture(r io.Reader, fileName string) (bool, error) {
 	installSuccessful := true
 	firstRead := true
 
-	const successMsg = "Installation of keptn complete."
+	const successMsg = "Installation of Keptn complete."
 
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
@@ -491,6 +491,7 @@ func copyAndCapture(r io.Reader, fileName string) (bool, error) {
 
 			logging.PrintLogStringLevel(outputStr, msgLogLevel)
 			if logging.GetLogLevel(msgLogLevel) == logging.QuietLevel {
+				logging.PrintLog(fmt.Sprintf("Error occured with message: %s", txt), logging.InfoLevel)
 				errorOccured = true
 			}
 			if outputStr == successMsg {
