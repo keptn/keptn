@@ -79,7 +79,7 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event, loggingDone chan bool) error
 		return err
 	}
 	if firstService {
-		o.logger.Info("Create Helm Umbrella charts")
+		o.logger.Info("Create Helm umbrella charts")
 		umbrellaChartHandler := helm.NewUmbrellaChartHandler(o.mesh)
 		if err := o.initAndApplyUmbrellaChart(event, umbrellaChartHandler, stages); err != nil {
 			o.logger.Error(fmt.Sprintf("Error when initalizing and applying umbrella charts for project %s: %s", event.Project, err.Error()))

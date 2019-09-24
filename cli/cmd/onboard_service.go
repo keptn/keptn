@@ -4,7 +4,6 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/url"
 	"os"
 
@@ -31,18 +30,18 @@ var onboardServiceParams *onboardServiceCmdParams
 
 // serviceCmd represents the service command
 var serviceCmd = &cobra.Command{
-	Use:   "service service_name",
+	Use:   "service SERVICENAME --project=PROJECTNAME --chart=FILEPATH",
 	Short: "Onboards a new service.",
 	Long: `Onboards a new service in the provided project. Therefore, this command 
-takes a Helm chart as packaged .tgz.
+takes a folder to a Helm chart or an already packed Helm chart as .tgz.
 	
 Example:
-	keptn onboard service service_name --project=carts --chart=chart.tgz`,
+	keptn onboard service carts --project=sockshop --chart=./carts-chart.tgz`,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
 			cmd.SilenceUsage = false
-			return errors.New("Requires service_name")
+			return errors.New("Requires SERVICENAME")
 		}
 		return nil
 	},
@@ -59,11 +58,7 @@ Example:
 			return errors.New("Provided Helm chart does not exist")
 		}
 
-		chartData, err := ioutil.ReadFile(*onboardServiceParams.ChartFilePath)
-		if err != nil {
-			return err
-		}
-		ch, err := keptnutils.LoadChart(chartData)
+		ch, err := keptnutils.LoadChartFromPath(*onboardServiceParams.ChartFilePath)
 		if err != nil {
 			return err
 		}
@@ -72,6 +67,7 @@ Example:
 		if err != nil {
 			return err
 		}
+
 		if !res {
 			return errors.New("The provided Helm chart is invalid. Please checkout the requirements")
 		}
@@ -86,12 +82,22 @@ Example:
 
 		logging.PrintLog("Starting to onboard service", logging.InfoLevel)
 
-		chartData, err := ioutil.ReadFile(*onboardServiceParams.ChartFilePath)
+		ch, err := keptnutils.LoadChartFromPath(*onboardServiceParams.ChartFilePath)
 		if err != nil {
 			return err
 		}
-		data := events.ServiceCreateEventData{Project: *onboardServiceParams.Project, Service: args[0],
-			HelmChart: base64.StdEncoding.EncodeToString(chartData)}
+
+		chartData, err := keptnutils.PackageChart(ch)
+		if err != nil {
+			return err
+		}
+
+		data := events.ServiceCreateEventData{
+			Project:   *onboardServiceParams.Project,
+			Service:   args[0],
+			HelmChart: base64.StdEncoding.EncodeToString(chartData),
+		}
+
 		if onboardServiceParams.Direct {
 			deplStrategies := make(map[string]events.DeploymentStrategy)
 			deplStrategies["*"] = events.Direct
@@ -144,8 +150,7 @@ func init() {
 	onboardServiceParams.Project = serviceCmd.Flags().StringP("project", "p", "", "The name of the project")
 	serviceCmd.MarkFlagRequired("project")
 
-	onboardServiceParams.ChartFilePath = serviceCmd.Flags().StringP("chart", "", "",
-		"A path to a packed Helm chart. Use `helm package chart_name` to pack your chart")
+	onboardServiceParams.ChartFilePath = serviceCmd.Flags().StringP("chart", "", "", "A path to a Helm chart folder or an already packed Helm chart")
 	serviceCmd.MarkFlagRequired("chart")
 
 	serviceCmd.PersistentFlags().BoolVarP(&onboardServiceParams.Direct, "direct", "", false, "Allows to set the deployment strategy to direct for the onboarded service")
