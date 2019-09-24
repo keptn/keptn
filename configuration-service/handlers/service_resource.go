@@ -41,7 +41,7 @@ func GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHan
 	}
 
 	// archive the Helm chart
-	if strings.ContainsAny(resourcePath, "helm") && strings.ContainsAny(params.ResourceURI, ".tgz") {
+	if strings.Contains(resourcePath, "helm") && strings.Contains(params.ResourceURI, ".tgz") {
 		logger.Debug("Archive the Helm chart: " + params.ResourceURI)
 
 		chartDir := strings.Replace(resourcePath, ".tgz", "", -1)
@@ -62,7 +62,7 @@ func GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHan
 	}
 
 	// remove Helch chart .tgz file
-	if strings.ContainsAny(resourcePath, "helm") && strings.ContainsAny(params.ResourceURI, ".tgz") {
+	if strings.Contains(resourcePath, "helm") && strings.Contains(params.ResourceURI, ".tgz") {
 		logger.Debug("Remove the Helm chart: " + params.ResourceURI)
 
 		if os.Remove(resourcePath) != nil {
@@ -112,7 +112,7 @@ func PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(p
 		filePath := serviceConfigPath + "/" + *res.ResourceURI
 		logger.Debug("Adding resource: " + filePath)
 
-		if strings.ContainsAny(filePath, "helm") && strings.ContainsAny(*res.ResourceURI, ".tgz") {
+		if strings.Contains(filePath, "helm") && strings.Contains(*res.ResourceURI, ".tgz") {
 			common.WriteBase64EncodedFile(filePath, res.ResourceContent)
 
 			// unarchive the Helm chart
