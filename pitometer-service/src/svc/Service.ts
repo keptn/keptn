@@ -33,7 +33,7 @@ export class Service {
 
   public async handleRequest(event: RequestModel): Promise<boolean> {
     try {
-      if (event.data.teststrategy === 'functional') {
+      if (event.data.teststrategy !== 'performance' && event.data.teststrategy !== 'real-user') {
         Logger.log(
           event.shkeptncontext, event.id,
           `No performance gate specified for stage ${event.data.stage}`,
