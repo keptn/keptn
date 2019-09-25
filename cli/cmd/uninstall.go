@@ -13,7 +13,7 @@ import (
 
 var uninstallVersion *string
 
-// domainCmd represents the domain command
+// uninstallCmd represents the uninstall command
 var uninstallCmd = &cobra.Command{
 	Use:          "uninstall",
 	Short:        "Uninstalls keptn",
