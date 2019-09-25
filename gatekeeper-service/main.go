@@ -36,6 +36,7 @@ type evaluationDoneEvent struct {
 	Service            string `json:"service"`
 	DeploymentStrategy string `json:"deploymentstrategy"`
 	EvaluationPassed   bool   `json:"evaluationpassed"`
+	TestStrategy       string `json:"teststrategy"`
 }
 
 func main() {
@@ -96,6 +97,11 @@ func doGateKeeping(event cloudevents.Event, shkeptncontext string, logger *keptn
 		logger.Info(fmt.Sprintf("Service %s of project %s in stage %s has passed the evaluation",
 			data.Service, data.Project, data.Stage))
 
+		if data.TestStrategy == "real-user" {
+			logger.Info("Remediation Action successful")
+			return nil
+		}
+
 		// Promote artifact
 		if err := sendCanaryAction(shkeptncontext, data.Project, data.Service,
 			data.Stage, keptnevents.Promote); err != nil {
@@ -137,6 +143,11 @@ func doGateKeeping(event cloudevents.Event, shkeptncontext string, logger *keptn
 	} else {
 		logger.Info(fmt.Sprintf("Service %s of project %s in stage %s has NOT passed the evaluation",
 			data.Service, data.Project, data.Stage))
+
+		if data.TestStrategy == "real-user" {
+			logger.Info("Remediation Action not successful")
+			return nil
+		}
 
 		if strings.ToLower(data.DeploymentStrategy) == "blue_green_service" {
 			// Discard artifact
