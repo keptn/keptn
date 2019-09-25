@@ -41,6 +41,10 @@ var uninstallCmd = &cobra.Command{
 		logging.PrintLog("Starting to uninstall keptn", logging.InfoLevel)
 
 		if !mocking {
+			// Delete installer pod, ignore if not found
+			if err := deleteKeptnInstallerPod("default"); err != nil {
+				return err
+			}
 			// Clean up keptn namespace
 			if err := deleteResources("keptn"); err != nil {
 				return err
@@ -60,6 +64,17 @@ var uninstallCmd = &cobra.Command{
 
 		return nil
 	},
+}
+
+func deleteKeptnInstallerPod(namespace string) error {
+	o := options{"delete", "job", "installer", "-n", namespace, "--ignore-not-found"}
+	o.appendIfNotEmpty(kubectlOptions)
+	out, err := keptnutils.ExecuteCommand("kubectl", o)
+	out = strings.TrimSpace(out)
+	if out != "" {
+		logging.PrintLog(out, logging.VerboseLevel)
+	}
+	return err
 }
 
 func deleteResources(namespace string) error {
