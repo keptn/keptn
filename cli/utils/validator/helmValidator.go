@@ -2,15 +2,21 @@ package validator
 
 import (
 	"fmt"
+	"io"
+	"log"
+	"regexp"
 	"strings"
-
-	"k8s.io/helm/pkg/proto/hapi/chart"
 
 	"github.com/ghodss/yaml"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	kyaml "k8s.io/apimachinery/pkg/util/yaml"
+	"k8s.io/helm/pkg/chartutil"
+	"k8s.io/helm/pkg/proto/hapi/chart"
+	"k8s.io/helm/pkg/renderutil"
+	"k8s.io/helm/pkg/timeconv"
 )
 
 var reservedFileNameSuffixes = [...]string{"-istio-destinationrule.yaml", "-istio-virtualservice.yaml"}
@@ -22,10 +28,26 @@ func ValidateHelmChart(ch *chart.Chart) (bool, error) {
 	if resValues := validateValues(ch); !resValues {
 		return false, nil
 	}
-	if resServices, err := validateServices(ch); !resServices || err != nil {
+
+	services, err := getRenderedServices(ch)
+	if err != nil {
 		return false, err
 	}
-	if resDeployment, err := validateDeployments(ch); !resDeployment || err != nil {
+	if resSvcBeforeRendering, err := validateServiceBeforeRendering(ch, services); !resSvcBeforeRendering || err != nil {
+		return false, err
+	}
+	if resServices, err := validateServices(services); !resServices || err != nil {
+		return false, err
+	}
+
+	deployments, err := getRenderedDeployments(ch)
+	if err != nil {
+		return false, err
+	}
+	if resDeplBeforeRendering, err := validateDeploymentBeforeRendering(ch, deployments); !resDeplBeforeRendering || err != nil {
+		return false, err
+	}
+	if resDeployment, err := validateDeployments(deployments); !resDeployment || err != nil {
 		return false, err
 	}
 	if !validateTemplateFileNames(ch) {
@@ -48,7 +70,9 @@ func validateTemplateFileNames(ch *chart.Chart) bool {
 
 func validateValues(ch *chart.Chart) bool {
 	values := make(map[string]interface{})
-	yaml.Unmarshal([]byte(ch.Values.Raw), &values)
+	if err := yaml.Unmarshal([]byte(ch.Values.Raw), &values); err != nil {
+		return false
+	}
 	_, containsImage := values["image"]
 	if !containsImage {
 		logging.PrintLog("Provided Helm chart does not contain \"image\" in values.yaml", logging.QuietLevel)
@@ -62,13 +86,8 @@ func validateValues(ch *chart.Chart) bool {
 	return true
 }
 
-func validateServices(ch *chart.Chart) (bool, error) {
-	services, err := keptnutils.GetRenderedServices(ch)
-	if err != nil {
-		logging.PrintLog("Error rendering Helm chart", logging.QuietLevel)
-		return false, err
-	}
-	for _, svc := range services {
+func validateServices(services map[*corev1.Service]string) (bool, error) {
+	for svc := range services {
 		if !validateService(svc) {
 			return false, nil
 		}
@@ -80,13 +99,8 @@ func validateServices(ch *chart.Chart) (bool, error) {
 	return true, nil
 }
 
-func validateDeployments(ch *chart.Chart) (bool, error) {
-	deployments, err := keptnutils.GetRenderedDeployments(ch)
-	if err != nil {
-		logging.PrintLog("Error rendering Helm chart", logging.QuietLevel)
-		return false, err
-	}
-	for _, depl := range deployments {
+func validateDeployments(deployments map[*appsv1.Deployment]string) (bool, error) {
+	for depl := range deployments {
 		if !validateDeployment(depl) {
 			return false, nil
 		}
@@ -96,6 +110,120 @@ func validateDeployments(ch *chart.Chart) (bool, error) {
 		return false, nil
 	}
 	return true, nil
+}
+
+func validateServiceBeforeRendering(ch *chart.Chart, services map[*corev1.Service]string) (bool, error) {
+
+	for k, v := range services {
+		reg, err := regexp.Compile(`name:\s+` + k.ObjectMeta.Name)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if reg.FindString(getTemplateContent(ch, v)) == "" {
+			logging.PrintLog(fmt.Sprintf("For metadata.name no templates are allowed in file %s", v), logging.QuietLevel)
+			return false, nil
+		}
+	}
+	return true, nil
+}
+
+func validateDeploymentBeforeRendering(ch *chart.Chart, deployments map[*appsv1.Deployment]string) (bool, error) {
+
+	for k, v := range deployments {
+		reg, err := regexp.Compile(`name:\s+` + k.ObjectMeta.Name)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if reg.FindString(getTemplateContent(ch, v)) == "" {
+			logging.PrintLog(fmt.Sprintf("For metadata.name no templates are allowed in file %s", v), logging.QuietLevel)
+			return false, nil
+		}
+	}
+	return true, nil
+}
+
+func getTemplateContent(ch *chart.Chart, fileName string) string {
+
+	for _, t := range ch.Templates {
+		if strings.HasSuffix(fileName, t.Name) {
+			return string(t.Data)
+		}
+	}
+	return ""
+}
+
+func getRenderedTemplates(ch *chart.Chart) (map[string]string, error) {
+	renderOpts := renderutil.Options{
+		ReleaseOptions: chartutil.ReleaseOptions{
+			Name:      ch.Metadata.Name,
+			IsInstall: false,
+			IsUpgrade: false,
+			Time:      timeconv.Now(),
+		},
+	}
+
+	return renderutil.Render(ch, ch.Values, renderOpts)
+}
+
+func getRenderedServices(ch *chart.Chart) (map[*corev1.Service]string, error) {
+
+	renderedTemplates, err := getRenderedTemplates(ch)
+	if err != nil {
+		return nil, err
+	}
+
+	services := make(map[*corev1.Service]string)
+
+	for k, v := range renderedTemplates {
+		dec := kyaml.NewYAMLToJSONDecoder(strings.NewReader(v))
+		for {
+			var svc corev1.Service
+			err := dec.Decode(&svc)
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				continue
+			}
+
+			if keptnutils.IsService(&svc) {
+				services[&svc] = k
+			}
+		}
+	}
+
+	return services, nil
+
+}
+
+func getRenderedDeployments(ch *chart.Chart) (map[*appsv1.Deployment]string, error) {
+
+	renderedTemplates, err := getRenderedTemplates(ch)
+	if err != nil {
+		return nil, err
+	}
+
+	deployments := make(map[*appsv1.Deployment]string)
+
+	for k, v := range renderedTemplates {
+		dec := kyaml.NewYAMLToJSONDecoder(strings.NewReader(v))
+		for {
+			var depl appsv1.Deployment
+			err := dec.Decode(&depl)
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				continue
+			}
+
+			if keptnutils.IsDeployment(&depl) {
+				deployments[&depl] = k
+			}
+		}
+	}
+
+	return deployments, nil
 }
 
 func validateService(svc *corev1.Service) bool {
