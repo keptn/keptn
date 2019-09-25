@@ -33,8 +33,8 @@ var platformID *string
 
 // domainCmd represents the domain command
 var domainCmd = &cobra.Command{
-	Use:          "domain MY.DOMAIN.COM",
-	Short:        "Configures the domain",
+	Use:   "domain MY.DOMAIN.COM",
+	Short: "Configures the domain",
 	Long: `
 	
 Example:
@@ -113,7 +113,7 @@ Example:
 			if err := updateKeptnDomainConfigMap(path, args[0]); err != nil {
 				return err
 			}
-
+			// Re-deploy gateway, ingore if not found
 			if err := reDeployGateway(); err != nil {
 				return err
 			}
@@ -121,6 +121,7 @@ Example:
 			if err := keptnutils.RestartPodsWithSelector(false, "keptn", "run=api"); err != nil {
 				return err
 			}
+
 			if err := keptnutils.WaitForPodsWithSelector(false, "keptn", "run=api", 5, 5*time.Second); err != nil {
 				return err
 			}
@@ -165,7 +166,7 @@ Example:
 }
 
 func reDeployGateway() error {
-	o := options{"delete", "-f", getGatewayURL()}
+	o := options{"delete", "-f", getGatewayURL(), "--ignore-not-found"}
 	o.appendIfNotEmpty(kubectlOptions)
 	_, err := keptnutils.ExecuteCommand("kubectl", o)
 	if err != nil {
