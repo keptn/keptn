@@ -115,13 +115,39 @@ func validateDeployments(deployments map[*appsv1.Deployment]string) (bool, error
 func validateServiceBeforeRendering(ch *chart.Chart, services map[*corev1.Service]string) (bool, error) {
 
 	for k, v := range services {
+		svcBeforeRendering := getTemplateContent(ch, v)
+
 		reg, err := regexp.Compile(`name:\s+` + k.ObjectMeta.Name)
 		if err != nil {
 			log.Fatal(err)
 		}
-		if reg.FindString(getTemplateContent(ch, v)) == "" {
+		if !reg.MatchString(svcBeforeRendering) {
 			logging.PrintLog(fmt.Sprintf("For metadata.name no templates are allowed in file %s", v), logging.QuietLevel)
 			return false, nil
+		}
+
+		if _, ok := k.Spec.Selector["app"]; ok {
+			reg, err := regexp.Compile(`app:\s+\{\{.*`)
+			if err != nil {
+				return false, err
+			}
+			if reg.MatchString(svcBeforeRendering) {
+				logging.PrintLog(fmt.Sprintf(
+					"For \"app\" no template is allowed in file %s", v), logging.QuietLevel)
+				return false, nil
+			}
+		}
+
+		if _, ok := k.Spec.Selector["app.kubernetes.io/name"]; ok {
+			reg, err := regexp.Compile(`app.kubernetes.io/name:\s+\{\{.*`)
+			if err != nil {
+				return false, err
+			}
+			if reg.MatchString(svcBeforeRendering) {
+				logging.PrintLog(fmt.Sprintf(
+					"For \"app.kubernetes.io/name\" no template is allowed in file %s", v), logging.QuietLevel)
+				return false, nil
+			}
 		}
 	}
 	return true, nil
@@ -130,13 +156,43 @@ func validateServiceBeforeRendering(ch *chart.Chart, services map[*corev1.Servic
 func validateDeploymentBeforeRendering(ch *chart.Chart, deployments map[*appsv1.Deployment]string) (bool, error) {
 
 	for k, v := range deployments {
-		reg, err := regexp.Compile(`name:\s+` + k.ObjectMeta.Name)
+		dplBeforeRendering := getTemplateContent(ch, v)
+
+		reg, err := regexp.Compile(`name:\s+` + k.Name)
 		if err != nil {
-			log.Fatal(err)
+			return false, err
 		}
-		if reg.FindString(getTemplateContent(ch, v)) == "" {
-			logging.PrintLog(fmt.Sprintf("For metadata.name no templates are allowed in file %s", v), logging.QuietLevel)
+		if !reg.MatchString(dplBeforeRendering) {
+			logging.PrintLog(fmt.Sprintf(
+				"For \"name\" no template is allowed in file %s", v), logging.QuietLevel)
 			return false, nil
+		}
+
+		_, okmLabelApp := k.Spec.Selector.MatchLabels["app"]
+		_, okPodLabelApp := k.Spec.Template.ObjectMeta.Labels["app"]
+		if okmLabelApp || okPodLabelApp {
+			reg, err := regexp.Compile(`app:\s+\{\{.*`)
+			if err != nil {
+				return false, err
+			}
+			if reg.MatchString(dplBeforeRendering) {
+				logging.PrintLog(fmt.Sprintf(
+					"For \"app\" no template is allowed in file %s", v), logging.QuietLevel)
+				return false, nil
+			}
+		}
+		_, okmLabelAppk8sName := k.Spec.Selector.MatchLabels["app.kubernetes.io/name"]
+		_, okPodLabelAppk8sName := k.Spec.Template.ObjectMeta.Labels["app.kubernetes.io/name"]
+		if okmLabelAppk8sName || okPodLabelAppk8sName {
+			reg, err := regexp.Compile(`app.kubernetes.io/name:\s+\{\{.*`)
+			if err != nil {
+				return false, err
+			}
+			if reg.MatchString(dplBeforeRendering) {
+				logging.PrintLog(fmt.Sprintf(
+					"For \"app.kubernetes.io/name\" no template is allowed in file %s", v), logging.QuietLevel)
+				return false, nil
+			}
 		}
 	}
 	return true, nil
