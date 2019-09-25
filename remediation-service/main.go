@@ -97,6 +97,10 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		}
 	}
 
+	if eventData.State != "OPEN" {
+		return nil
+	}
+
 	releasename, err := getReleasename(eventData)
 	if err != nil {
 		logger.Error("could not get release name")
