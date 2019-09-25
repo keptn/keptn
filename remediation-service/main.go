@@ -97,10 +97,6 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		}
 	}
 
-	if eventData.State != "OPEN" {
-		return nil
-	}
-
 	releasename, err := getReleasename(eventData)
 	if err != nil {
 		logger.Error("could not get release name")
@@ -108,6 +104,12 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	}
 
 	projectname, stagename, servicename := splitReleaseName(*releasename)
+
+	if eventData.State != "OPEN" {
+		sendTestsFinishedEvent(shkeptncontext, projectname, stagename, servicename)
+		return nil
+	}
+
 	resourceURI := remediationfilename
 
 	// valide if remediation should be performed
@@ -416,6 +418,33 @@ func sendEvent(event cloudevents.Event) error {
 		return errors.New("Failed to send cloudevent:, " + err.Error())
 	}
 	return nil
+}
+
+// sendTestsFinishedEvent sends a Cloud Event of type sh.keptn.events.tests-finished to the event broker
+func sendTestsFinishedEvent(shkeptncontext string, project string, stage string, service string) error {
+
+	source, _ := url.Parse("remediation-service")
+	contentType := "application/json"
+
+	testFinishedData := keptnevents.TestsFinishedEventData{}
+	testFinishedData.Project = project
+	testFinishedData.Stage = stage
+	testFinishedData.Service = service
+	testFinishedData.TestStrategy = "real-user"
+
+	event := cloudevents.Event{
+		Context: cloudevents.EventContextV02{
+			ID:          uuid.New().String(),
+			Time:        &types.Timestamp{Time: time.Now()},
+			Type:        keptnevents.TestsFinishedEventType,
+			Source:      types.URLRef{URL: *source},
+			ContentType: &contentType,
+			Extensions:  map[string]interface{}{"shkeptncontext": shkeptncontext},
+		}.AsV02(),
+		Data: testFinishedData,
+	}
+
+	return sendEvent(event)
 }
 
 // getServiceEndpoint gets an endpoint stored in an environment variable and sets http as default scheme
