@@ -19,23 +19,25 @@ func init() {
 	logging.InitLoggers(os.Stdout, os.Stdout, os.Stderr)
 }
 
-// TestNewArtifact tests the new-artifact command.
-func TestSend(t *testing.T) {
+// TestSendEvent tests the functionality to send an event defined in JSON file.
+func TestSendEvent(t *testing.T) {
 
 	time := types.Timestamp{Time: time.Now()}
 
 	newArtifactEvent := `{"id":"` + uuid.New().String() + `",
-"specversion":"0.2",
-"source": "https://github.com/keptn/keptn/cli",
-"time":"` + time.String() + `",
-"contenttype":"application/json",
-"type":"sh.keptn.events.new-artifact",
-"data":{
-	"project":"sockshop",
-	"service":"carts",
-	"image":"docker.io/keptnexamples/carts",
-	"tag":"0.6.0.latest"
-}}`
+  "type":"sh.keptn.event.configuration.change",
+  "specversion":"0.2",
+  "source": "https://github.com/keptn/keptn/cli",
+  "time":"` + time.String() + `",
+  "contenttype":"application/json",
+  "data":{
+	   "project":"sockshop",
+	   "service":"carts",
+	   "valuesCanary": {
+		   "image": "docker.io/keptnexamples/carts:0.9.1"
+	  }
+  }
+}`
 
 	const tmpCE = "ce.json"
 	err := ioutil.WriteFile(tmpCE, []byte(newArtifactEvent), 0644)
@@ -63,22 +65,25 @@ func TestSend(t *testing.T) {
 	}
 }
 
-func TestSendAndOpenWebSocket(t *testing.T) {
+// TestSendEventAndOpenWebSocket tests the functionality to send an event defined in JSON file and to open a WebSocket communication
+func TestSendEventAndOpenWebSocket(t *testing.T) {
 
 	time := types.Timestamp{Time: time.Now()}
 
 	newArtifactEvent := `{"id":"` + uuid.New().String() + `",
-"specversion":"0.2",
-"source": "https://github.com/keptn/keptn/cli",
-"time":"` + time.String() + `",
-"contenttype":"application/json",
-"type":"sh.keptn.events.new-artifact",
-"data":{
-	"project":"sockshop",
-	"service":"carts",
-	"image":"docker.io/keptnexamples/carts",
-	"tag":"0.6.0.latest"
-}}`
+  "type":"sh.keptn.event.configuration.change",
+  "specversion":"0.2",
+  "source": "https://github.com/keptn/keptn/cli",
+  "time":"` + time.String() + `",
+  "contenttype":"application/json",
+  "data":{
+	   "project":"sockshop",
+	   "service":"carts",
+	   "valuesCanary": {
+		   "image": "docker.io/keptnexamples/carts:0.9.1"
+	  }
+  }
+}`
 
 	const tmpCE = "ce.json"
 	err := ioutil.WriteFile(tmpCE, []byte(newArtifactEvent), 0644)
