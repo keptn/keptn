@@ -90,7 +90,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 	var eventData *keptnevents.ProblemEventData
 	if event.Type() == keptnevents.ProblemOpenEventType {
-		logger.Debug("Received open problem")
+		logger.Debug("Received problem notification")
 		eventData = &keptnevents.ProblemEventData{}
 		if err := event.DataAs(eventData); err != nil {
 			return err
@@ -106,9 +106,12 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	projectname, stagename, servicename := splitReleaseName(*releasename)
 
 	if eventData.State != "OPEN" {
+		logger.Debug("Received closed problem")
 		sendTestsFinishedEvent(shkeptncontext, projectname, stagename, servicename)
 		return nil
 	}
+
+	logger.Debug("Received open problem")
 
 	resourceURI := remediationfilename
 
@@ -436,7 +439,7 @@ func sendTestsFinishedEvent(shkeptncontext string, project string, stage string,
 		Context: cloudevents.EventContextV02{
 			ID:          uuid.New().String(),
 			Time:        &types.Timestamp{Time: time.Now()},
-			Type:        keptnevents.TestsFinishedEventType,
+			Type:        "sh.keptn.events.tests-finished",
 			Source:      types.URLRef{URL: *source},
 			ContentType: &contentType,
 			Extensions:  map[string]interface{}{"shkeptncontext": shkeptncontext},
