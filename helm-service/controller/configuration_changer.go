@@ -6,11 +6,10 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"k8s.io/helm/pkg/proto/hapi/chart"
 	"log"
 	"os"
 	"strings"
-
-	"k8s.io/helm/pkg/proto/hapi/chart"
 
 	cloudevents "github.com/cloudevents/sdk-go"
 	"github.com/ghodss/yaml"
@@ -120,6 +119,12 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event,
 
 	if os.Getenv("PRE_WORKFLOW_ENGINE") == "true" &&
 		strings.HasSuffix(ce.Source(), "remediation-service") {
+		var shkeptncontext string
+		ce.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
+		if err := sendDeploymentFinishedEvent(shkeptncontext, e.Project, e.Stage, e.Service, "real-user"); err != nil {
+			c.logger.Error(fmt.Sprintf("Cannot send deployment finished event: %s", err.Error()))
+			return err
+		}
 		return nil
 	}
 

@@ -90,7 +90,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 	var eventData *keptnevents.ProblemEventData
 	if event.Type() == keptnevents.ProblemOpenEventType {
-		logger.Debug("Received open problem")
+		logger.Debug("Received problem notification")
 		eventData = &keptnevents.ProblemEventData{}
 		if err := event.DataAs(eventData); err != nil {
 			return err
@@ -104,6 +104,15 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	}
 
 	projectname, stagename, servicename := splitReleaseName(*releasename)
+
+	if eventData.State != "OPEN" {
+		logger.Debug("Received closed problem")
+		sendTestsFinishedEvent(shkeptncontext, projectname, stagename, servicename)
+		return nil
+	}
+
+	logger.Debug("Received open problem")
+
 	resourceURI := remediationfilename
 
 	// valide if remediation should be performed
@@ -343,8 +352,7 @@ func getReplicaCount(logger *keptnutils.Logger, project, stage, service, configS
 			if err := json.Unmarshal(doc, &depl); err == nil && keptnutils.IsDeployment(&depl) {
 				// It is a deployment
 				fmt.Println(depl.Spec.Replicas)
-				return 1, nil
-
+				return int(*depl.Spec.Replicas), nil
 			}
 		}
 	}
@@ -413,6 +421,33 @@ func sendEvent(event cloudevents.Event) error {
 		return errors.New("Failed to send cloudevent:, " + err.Error())
 	}
 	return nil
+}
+
+// sendTestsFinishedEvent sends a Cloud Event of type sh.keptn.events.tests-finished to the event broker
+func sendTestsFinishedEvent(shkeptncontext string, project string, stage string, service string) error {
+
+	source, _ := url.Parse("remediation-service")
+	contentType := "application/json"
+
+	testFinishedData := keptnevents.TestsFinishedEventData{}
+	testFinishedData.Project = project
+	testFinishedData.Stage = stage
+	testFinishedData.Service = service
+	testFinishedData.TestStrategy = "real-user"
+
+	event := cloudevents.Event{
+		Context: cloudevents.EventContextV02{
+			ID:          uuid.New().String(),
+			Time:        &types.Timestamp{Time: time.Now()},
+			Type:        "sh.keptn.events.tests-finished",
+			Source:      types.URLRef{URL: *source},
+			ContentType: &contentType,
+			Extensions:  map[string]interface{}{"shkeptncontext": shkeptncontext},
+		}.AsV02(),
+		Data: testFinishedData,
+	}
+
+	return sendEvent(event)
 }
 
 // getServiceEndpoint gets an endpoint stored in an environment variable and sets http as default scheme
