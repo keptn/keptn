@@ -45,7 +45,7 @@ func GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHan
 		logger.Debug("Archive the Helm chart: " + params.ResourceURI)
 
 		chartDir := strings.Replace(resourcePath, ".tgz", "", -1)
-		if archiver.Archive([]string{chartDir}, resourcePath) != nil {
+		if err := archiver.Archive([]string{chartDir}, resourcePath); err != nil {
 			logger.Error(err.Error())
 			return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could archive the Helm chart directory")})
 		}
@@ -65,7 +65,7 @@ func GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHan
 	if strings.Contains(resourcePath, "helm") && strings.Contains(params.ResourceURI, ".tgz") {
 		logger.Debug("Remove the Helm chart: " + params.ResourceURI)
 
-		if os.Remove(resourcePath) != nil {
+		if err := os.Remove(resourcePath); err != nil {
 			logger.Error(err.Error())
 			return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not delete Helm chart package")})
 		}
@@ -125,14 +125,14 @@ func PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(p
 
 			tarGz := archiver.NewTarGz()
 			tarGz.OverwriteExisting = true
-			if tarGz.Unarchive(filePath, dir) != nil {
+			if err := tarGz.Unarchive(filePath, dir); err != nil {
 				logger.Error(err.Error())
 				return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not unarchive Helm chart")})
 			}
 
 			// remove Helch chart .tgz file
 			logger.Debug("Remove the Helm chart: " + *res.ResourceURI)
-			if os.Remove(filePath) != nil {
+			if err := os.Remove(filePath); err != nil {
 				logger.Error(err.Error())
 				return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not delete Helm chart package")})
 			}
