@@ -123,13 +123,15 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	}
 	defer ws.Close()
 
-	//if event.Type() == "sh.keptn.internal.events.project.create" { // for keptn internal topics
 	if event.Type() == keptnevents.InternalProjectCreateEventType {
 		version, err := createProjectAndProcessShipyard(event, *logger, ws)
 		if err := logErrAndRespondWithDoneEvent(event, version, err, *logger, ws); err != nil {
 			return err
 		}
 
+		return nil
+	} else if event.Type() == keptnevents.InternalProjectDeleteEventType {
+		err := deleteProjectAndLog(event, *logger, ws)
 		return nil
 	}
 
@@ -191,6 +193,30 @@ func createProjectAndProcessShipyard(event cloudevents.Event, logger keptnutils.
 	return storeResourceForProject(project.ProjectName, string(data), logger)
 }
 
+// deleteProjectAndLog processes event and deletes project
+func deleteProjectAndLog(event cloudevents.Event, logger keptnutils.Logger, ws *websocket.Conn) error {
+	eventData := keptnevents.ProjectDeleteEventData{}
+	if err := event.DataAs(&eventData); err != nil {
+		return err
+	}
+
+	client := newClient()
+
+	// delete project
+	project := keptnmodels.Project{
+		ProjectName: eventData.Project,
+	}
+
+	if err := client.deleteProject(project, logger); err != nil {
+		return fmt.Errorf("Deleting project %s failed. %s", project.ProjectName, err.Error())
+	}
+	if err := keptnutils.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), fmt.Sprintf("Project %s deleted", project.ProjectName), false, "INFO"); err != nil {
+		logger.Error(fmt.Sprintf("Could not write log to websocket. %s", err.Error()))
+	}
+
+	return nil
+}
+
 // storeResourceForProject stores the resource for a project using the keptnutils.ResourceHandler
 func storeResourceForProject(projectName, shipyard string, logger keptnutils.Logger) (*keptnmodels.Version, error) {
 	configServiceURL, err := getServiceEndpoint(configservice)
@@ -247,6 +273,26 @@ func (client *Client) createProject(project keptnmodels.Project, logger keptnuti
 
 	if errorObj == nil && err == nil {
 		logger.Info("Project successfully created")
+		return nil
+	} else if errorObj != nil {
+		return errors.New(*errorObj.Message)
+	}
+	return fmt.Errorf("Error in creating new project: %s", err.Error())
+}
+
+// deleteProject deletes a project by using the configuration-service
+func (client *Client) deleteProject(project keptnmodels.Project, logger keptnutils.Logger) error {
+	configServiceURL, err := getServiceEndpoint(configservice)
+	if err != nil {
+		logger.Error(fmt.Sprintf("Could not get service endpoint for %s: %s", configservice, err.Error()))
+		return err
+	}
+	prjHandler := keptnutils.NewProjectHandler(configServiceURL.String())
+	errorObj, err := prjHandler.CreateProject(project)
+	errorObj, err := prjHandler.DeletePRoject(project)
+
+	if errorObj == nil && err == nil {
+		logger.Info("Project successfully deleted")
 		return nil
 	} else if errorObj != nil {
 		return errors.New(*errorObj.Message)
