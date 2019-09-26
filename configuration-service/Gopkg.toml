@@ -41,6 +41,10 @@
   name = "github.com/keptn/go-utils"
   branch = "develop"
 
+[[constraint]]
+  name = "github.com/mholt/archiver"
+  version = "v3.2.0"
+
 [[override]]
  name = "contrib.go.opencensus.io/exporter/ocagent"
  version = "v0.4.12"
