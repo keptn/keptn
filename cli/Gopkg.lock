@@ -472,7 +472,7 @@
 
 [[projects]]
   branch = "develop"
-  digest = "1:eaa4b9b74fd7d9c11a983534bb756c829f4eb9ae4297ebe2a007fc5b1af83fce"
+  digest = "1:38d074f6519a453330d629d3a1ed2cab3c48599249bb2901f3b7f297af0d07e4"
   name = "github.com/keptn/go-utils"
   packages = [
     "pkg/events",
@@ -480,7 +480,7 @@
     "pkg/utils",
   ]
   pruneopts = ""
-  revision = "5087cafa47eb6aed83aa1ad66a210700a2268b1b"
+  revision = "bb68d29c853235768e3254a5bf4fe2bc147f979d"
 
 [[projects]]
   digest = "1:91317956b340c9e61a4287fd94c870bfad3f1922280c3e0a65db91c29017e8de"
@@ -740,7 +740,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:dfb5b39cdf15fedcf18211253981cd7d4d881fcb3c9fa63140b02ec71aead457"
+  digest = "1:126540c0b5701555f216eabd6e3ff1229da48066493ec42fce47849f22c3e5fa"
   name = "golang.org/x/crypto"
   packages = [
     "cast5",
@@ -764,11 +764,11 @@
     "ssh/terminal",
   ]
   pruneopts = ""
-  revision = "9ee001bba392397c76f100a2d5b13afc86f167f1"
+  revision = "fa1a291087948aa85c6e20c1b3749a02403ffc1b"
 
 [[projects]]
   branch = "master"
-  digest = "1:c8eb8cf6d1b574fc88540c854d9ae2b08934d7cadf4d6f1cc3fc7836e498eba1"
+  digest = "1:60eb80cc714e54c1179fca3454bd450ca5c1f9e1a0773266b9e0e6f3e7853a07"
   name = "golang.org/x/net"
   packages = [
     "context",
@@ -781,7 +781,7 @@
     "proxy",
   ]
   pruneopts = ""
-  revision = "1a5e07d1ff72da30f660d3c95b312a20be31173c"
+  revision = "c00fd9afed17cfdca9b3e1e3b8de7ef2b3f0347b"
 
 [[projects]]
   branch = "master"
@@ -799,7 +799,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:bf20afd20e1f437601a6eaff9c2ce2a9df70845f9935a285f444082cb6c32c21"
+  digest = "1:0c3b4c65ce4849683ca607bc62d4156b3a63437627736a59b32c83ccb989cc28"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
@@ -807,7 +807,7 @@
     "windows",
   ]
   pruneopts = ""
-  revision = "0a153f010e6963173baba2306531d173aa843137"
+  revision = "2837fb4f24fee082b8c39b1a6dc9e0ed9f3fbd4f"
 
 [[projects]]
   digest = "1:740b51a55815493a8d0f2b1e0d0ae48fe48953bf7eaf3fcc4198823bf67768c0"
@@ -1107,7 +1107,7 @@
   version = "kubernetes-1.12.0"
 
 [[projects]]
-  digest = "1:c35e91a5a3af23a68b1440fc1a9c5a713853b5447bf4e0606def69cbc84148ef"
+  digest = "1:ccdf880a2361789a52b2a7076c05e77dd608d13a7207004f3b9518e99c12676c"
   name = "k8s.io/helm"
   packages = [
     "pkg/chartutil",
