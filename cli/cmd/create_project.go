@@ -30,8 +30,8 @@ type createProjectCmdParams struct {
 
 var createProjectParams *createProjectCmdParams
 
-// crprojectCmd represents the project command
-var crprojectCmd = &cobra.Command{
+// crProjectCmd represents the project command
+var crProjectCmd = &cobra.Command{
 	Use:   "project PROJECTNAME --shipyard=FILEPATH",
 	Short: "Creates a new project.",
 	Long: `Creates a new project with the provided name and shipyard file. 
@@ -161,12 +161,12 @@ func testParseShipyard(shipyardContent string) error {
 }
 
 func init() {
-	createCmd.AddCommand(crprojectCmd)
+	createCmd.AddCommand(crProjectCmd)
 	createProjectParams = &createProjectCmdParams{}
-	createProjectParams.Shipyard = crprojectCmd.Flags().StringP("shipyard", "s", "", "The shiypard file specifying the environment")
-	crprojectCmd.MarkFlagRequired("shipyard")
+	createProjectParams.Shipyard = crProjectCmd.Flags().StringP("shipyard", "s", "", "The shiypard file specifying the environment")
+	crProjectCmd.MarkFlagRequired("shipyard")
 
-	createProjectParams.GitUser = crprojectCmd.Flags().StringP("git-user", "u", "", "The git user of the upstream target")
-	createProjectParams.GitToken = crprojectCmd.Flags().StringP("git-token", "t", "", "The git token of the git user")
-	createProjectParams.RemoteURL = crprojectCmd.Flags().StringP("git-remote-url", "r", "", "The remote url of the upstream target")
+	createProjectParams.GitUser = crProjectCmd.Flags().StringP("git-user", "u", "", "The git user of the upstream target")
+	createProjectParams.GitToken = crProjectCmd.Flags().StringP("git-token", "t", "", "The git token of the git user")
+	createProjectParams.RemoteURL = crProjectCmd.Flags().StringP("git-remote-url", "r", "", "The remote url of the upstream target")
 }
