@@ -39,7 +39,6 @@ Example:
 		return nil
 	},
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
