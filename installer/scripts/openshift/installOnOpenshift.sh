@@ -71,5 +71,5 @@ verify_install_step $? "Installing keptn's Openshift uniform failed."
 print_info "Keptn wears Openshift uniform"
 
 # Install done
-print_info "Installation of keptn complete."
+print_info "Installation of Keptn complete."
 
