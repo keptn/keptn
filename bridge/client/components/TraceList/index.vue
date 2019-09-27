@@ -15,83 +15,87 @@
             <b>Problem detected:</b> {{traces[0].data.valuesCanary[0].Value}}
           </p>
         </div>
-        <b-list-group >
-          <div v-for="event in traces" v-bind:key="event.id" class="event-item">
-            <b-list-group-item
-              href="#"
-              v-bind:class="{ active: isActive(event.id) }"
 
-              @click="activateEvent(event.id)"
-            >
-              <div class="d-flex w-100 justify-content-between">
-                <h5 class="mb-1">{{event.eventTypeHeadline}}</h5>
-                <small>{{ event.timestamp }}</small>
-              </div>
-              <small>
-                <p class="mb-1">
-                  <b>Project:</b> {{ event.data.project }}
-                  <br>
-                  <b>Service:</b> {{ event.data.service }}
-                  <br>
-                  <b>Stage:</b> {{ event.data.stage }}
-                  <br>
-                  <b>Source: </b> {{ event.source }}
-                </p>
-              </small>
+        <div v-for="stage in getTracesPerStage(traces)" class="traceHeader">
+          <h2>Stage: {{stage.stageName}}</h2>
+          <b-list-group >
+            <div v-for="event in stage.events" v-bind:key="event.id" class="event-item">
+              <b-list-group-item
+                href="#"
+                v-bind:class="{ active: isActive(event.id), error: isError(event), success: isSuccess(event) }"
 
-              <!-- EVENT SPECIFIC DETAILS -->
-              <div v-if="event.type === 'sh.keptn.events.evaluation-done'">
-                <hr>
+                @click="activateEvent(event.id)"
+              >
+                <div class="d-flex w-100 justify-content-between">
+                  <h5 class="mb-1">{{event.eventTypeHeadline}}</h5>
+                  <small>{{ event.timestamp | moment }}</small>
+                </div>
                 <small>
-                  <b>Evaluation passed: </b> {{ event.data.evaluationpassed === true ? 'YES' : 'NO' }}
-                  <br>
-                  <div v-if="event.source === 'pitometer-service'">
-                    <b>Total score: </b> {{ event.data.evaluationdetails | totalScore }}
-                  </div>
+                  <p class="mb-1">
+                    <b>Project:</b> {{ event.data.project }}
+                    <br>
+                    <b>Service:</b> {{ event.data.service }}
+                    <br>
+                    <b>Stage:</b> {{ event.data.stage }}
+                    <br>
+                    <b>Source: </b> {{ event.source }}
+                  </p>
                 </small>
-                <div
-                  v-if="event.data.evaluationpassed === false && event.source === 'pitometer-service'">
-                  <b>Violations:</b>
-                  <div v-for="violation in getViolations(event.data.evaluationdetails)" :key="violation.indicatorId">
-                    <div v-if="violation.type === 'upperSevere'">
-                      <small><b>{{violation.indicatorId}}: </b> Expected value of <b>{{violation.actualValue}}</b> exceeded threshold of <b>{{violation.expectedValue}}</b></small>
+
+                <!-- EVENT SPECIFIC DETAILS -->
+                <div v-if="event.type === 'sh.keptn.events.evaluation-done'">
+                  <hr>
+                  <small>
+                    <b>Evaluation passed: </b> {{ event.data.evaluationpassed === true ? 'YES' : 'NO' }}
+                    <br>
+                    <div v-if="event.source === 'pitometer-service'">
+                      <b>Total score: </b> {{ event.data.evaluationdetails | totalScore }}
                     </div>
-                    <div v-if="violation.type === 'generic'">
-                      <small><b>{{violation.indicatorId}}: </b> {{violation.reason}}</small>
+                  </small>
+                  <div
+                    v-if="event.data.evaluationpassed === false && event.source === 'pitometer-service'">
+                    <b>Violations:</b>
+                    <div v-for="violation in getViolations(event.data.evaluationdetails)" :key="violation.indicatorId">
+                      <div v-if="violation.type === 'upperSevere'">
+                        <small><b>{{violation.indicatorId}}: </b> Expected value of <b>{{violation.actualValue}}</b> exceeded threshold of <b>{{violation.expectedValue}}</b></small>
+                      </div>
+                      <div v-if="violation.type === 'generic'">
+                        <small><b>{{violation.indicatorId}}: </b> {{violation.reason}}</small>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              <div v-if="event.type === 'sh.keptn.events.tests-finished'">
-                <hr>
+                <div v-if="event.type === 'sh.keptn.events.tests-finished'">
+                  <hr>
+                  <small>
+                    <b>Test strategy: </b> {{ event.data.teststrategy }}
+                    <br>
+                    <b>Duration: </b> {{ getDuration(event.time, event.data.startedat) }}
+                  </small>
+                </div>
+
+                <div v-if="event.type === 'sh.keptn.event.configuration.change'">
+                  <hr>
+                  <small>
+                    <b>Action: </b> {{ event.data.canary | canaryAction }}
+                  </small>
+                </div>
+                <!-- EVENT SPECIFIC DETAILS -->
+              </b-list-group-item>
+              <div v-if="isActive(event.id)" class="event-detail">
                 <small>
-                  <b>Test strategy: </b> {{ event.data.teststrategy }}
+                  <b>Event payload:</b>
                   <br>
-                  <b>Duration: </b> {{ getDuration(event.time, event.data.startedat) }}
+                  <vue-json-pretty
+                    :path="'res'"
+                    :data="JSON.parse(event.plainEvent)">
+                  </vue-json-pretty>
                 </small>
               </div>
-
-              <div v-if="event.type === 'sh.keptn.event.configuration.change'">
-                <hr>
-                <small>
-                  <b>Action: </b> {{ event.data.canary | canaryAction }}
-                </small>
-              </div>
-              <!-- EVENT SPECIFIC DETAILS -->
-            </b-list-group-item>
-            <div v-if="isActive(event.id)" class="event-detail">
-              <small>
-                <b>Event payload:</b>
-                <br>
-                <vue-json-pretty
-                  :path="'res'"
-                  :data="JSON.parse(event.plainEvent)">
-                </vue-json-pretty>
-              </small>
             </div>
-          </div>
-        </b-list-group>
+          </b-list-group>
+        </div>
       </div>
 
       <div class="placeholder" v-else>
@@ -168,8 +172,33 @@ export default {
   },
 
   methods: {
+    getTracesPerStage(traces) {
+      const stages = [];
+
+      traces.forEach((traceEvent) => {
+        if (traceEvent.data !== undefined && traceEvent.data.stage !== undefined) {
+          let stage = stages.find(stage => stage.stageName === traceEvent.data.stage);
+          if (stage === undefined) {
+            const newStage = {
+              stageName: traceEvent.data.stage,
+              events: [],
+            };
+            stages.push(newStage);
+            stage = newStage;
+          }
+          stage.events.push(traceEvent);
+        }
+      });
+      return stages;
+    },
     isActive(contextId) {
       return this.$store.state.currentEventId === contextId;
+    },
+    isError(event) {
+      return event.type === 'sh.keptn.events.evaluation-done' && event.data.evaluationpassed === false;
+    },
+    isSuccess(event) {
+        return event.type === 'sh.keptn.events.evaluation-done' && event.data.evaluationpassed === true;
     },
     activateEvent(contextId) {
       return this.$store.dispatch('activateEvent', contextId);
@@ -238,6 +267,17 @@ a {
     color: #000000;
     text-decoration: none !important;
   }
+}
+
+
+.error {
+  background-color: #cd5c5c;
+  color: #ffffff;
+}
+
+.success {
+  background-color: #8fbc8f;
+  color: #ffffff;
 }
 
 .traceHeader {
