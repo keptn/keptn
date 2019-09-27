@@ -46,7 +46,7 @@ Example:
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
-		logging.PrintLog("Starting to delete a project", logging.InfoLevel)
+		logging.PrintLog("Starting to delete project", logging.InfoLevel)
 
 		prjData := keptnevents.ProjectDeleteEventData{Project: args[0]}
 
