@@ -27,7 +27,7 @@ kubectl delete -f deploy/bridge.yaml
 ## Local development
 
 1. Run `kubectl proxy` to create a proxy connection to your Keptn cluster.
-2. Edit `server/config/index.js` to define the elasticsearch API endpoint.
+2. Edit `server/config/index.js` to define the keptn datastore API endpoint.
 3. Run `npm install`.
 4. Run `npm start` to start the express server that provides the API endpoints.
 5. Run `npm run vue-dev` to start the development server.
