@@ -193,7 +193,7 @@ func createProjectAndProcessShipyard(event cloudevents.Event, logger keptnutils.
 	return storeResourceForProject(project.ProjectName, string(data), logger)
 }
 
-// deleteProjectAndLog handles event and deletes project
+// deleteProjectAndLog processes event and deletes project
 func deleteProjectAndLog(event cloudevents.Event, logger keptnutils.Logger, ws *websocket.Conn) error {
 	eventData := keptnevents.ProjectDeleteEventData{}
 	if err := event.DataAs(&eventData); err != nil {

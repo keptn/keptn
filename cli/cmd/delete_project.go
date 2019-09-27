@@ -56,7 +56,7 @@ Example:
 		event := cloudevents.Event{
 			Context: cloudevents.EventContextV02{
 				ID:          uuid.New().String(),
-				Type:        keptnevents.InternalProjectCreateEventType,
+				Type:        keptnevents.InternalProjectDeleteEventType,
 				Source:      types.URLRef{URL: *source},
 				ContentType: &contentType,
 			}.AsV02(),
