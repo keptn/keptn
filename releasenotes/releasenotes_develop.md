@@ -8,6 +8,7 @@
 ## CLI Enhancements
 - Keptn `uninstall` command deletes the installer job when available [#873](https://github.com/keptn/keptn/issues/873)
 - Keptn `send event` command provides a flag to explicitly enable streaming websocket [#728](https://github.com/keptn/keptn/issues/728)
+- Keptn `delete project` command allows to delete a project [#887](https://github.com/keptn/keptn/issues/887)
 
 ## New Services
 
