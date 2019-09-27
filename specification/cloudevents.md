@@ -84,7 +84,9 @@ The *configuration change* event is sent when a desired state for a service is a
     "project": "sockshop",
     "stage": "staging",
     "service": "carts",
-    "valuesCanary": "string",
+    "valuesCanary": {
+      "image": "docker.io/keptnexamples/carts:0.9.1"
+    }
   }
 }
 ```

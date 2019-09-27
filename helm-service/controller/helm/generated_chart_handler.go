@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"regexp"
 	"strings"
 
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
@@ -31,11 +32,11 @@ func NewGeneratedChartHandler(mesh mesh.Mesh, canaryLevelGen CanaryLevelGenerato
 
 // GenerateDuplicateManagedChart generates a duplicated chart which is managed by keptn and used for
 // b/g and canary releases
-func (c *GeneratedChartHandler) GenerateDuplicateManagedChart(ch *chart.Chart, project string, stageName string) ([]byte, error) {
+func (c *GeneratedChartHandler) GenerateDuplicateManagedChart(ch *chart.Chart, project string, stageName string, service string) ([]byte, error) {
 
 	c.changeChartFile(ch)
 
-	if err := c.changeTemplateContent(project, ch, stageName); err != nil {
+	if err := c.changeTemplateContent(ch, project, stageName, service); err != nil {
 		return nil, err
 	}
 
@@ -84,8 +85,19 @@ func (c *GeneratedChartHandler) changeChartFile(ch *chart.Chart) {
 	ch.Metadata.Description = ch.Metadata.Description + " (generated)"
 }
 
-func (c *GeneratedChartHandler) changeTemplateContent(project string,
-	ch *chart.Chart, stageName string) error {
+func insertReleaseName(ch *chart.Chart, project string, stage string, service string, generated bool) {
+
+	releaseName := GetReleaseName(project, stage, service, generated)
+	re := regexp.MustCompile(`\{\{(\s*\.Release\.Name*\s*)\}\}`)
+	for _, template := range ch.Templates {
+		template.Data = []byte(re.ReplaceAllString(string(template.Data), releaseName))
+	}
+}
+
+func (c *GeneratedChartHandler) changeTemplateContent(ch *chart.Chart, project string,
+	stage string, service string) error {
+
+	insertReleaseName(ch, project, stage, service, true)
 
 	renderOpts := renderutil.Options{
 		ReleaseOptions: chartutil.ReleaseOptions{
@@ -95,7 +107,6 @@ func (c *GeneratedChartHandler) changeTemplateContent(project string,
 			Time:      timeconv.Now(),
 		},
 	}
-
 	renderedTemplates, err := renderutil.Render(ch, ch.Values, renderOpts)
 	if err != nil {
 		return err
@@ -121,7 +132,7 @@ func (c *GeneratedChartHandler) changeTemplateContent(project string,
 				return err
 			}
 
-			newServiceTemplateContent, newServiceTemplates, err := c.handleService(doc, project, stageName)
+			newServiceTemplateContent, newServiceTemplates, err := c.handleService(doc, project, stage)
 			if err != nil {
 				return err
 			}
@@ -190,7 +201,13 @@ func (c *GeneratedChartHandler) handleService(document []byte, project string, s
 
 		servicePrimary := svc.DeepCopy()
 		servicePrimary.Name = servicePrimary.Name + "-primary"
-		servicePrimary.Spec.Selector["app"] = servicePrimary.Spec.Selector["app"] + "-primary"
+		if _, ok := servicePrimary.Spec.Selector["app"]; ok {
+			servicePrimary.Spec.Selector["app"] = servicePrimary.Spec.Selector["app"] + "-primary"
+		}
+		if _, ok := servicePrimary.Spec.Selector["app.kubernetes.io/name"]; ok {
+			servicePrimary.Spec.Selector["app.kubernetes.io/name"] = servicePrimary.Spec.Selector["app.kubernetes.io/name"] + "-primary"
+		}
+
 		newTemplateContent, err = objectutils.AppendAsYaml(newTemplateContent, servicePrimary)
 		if err != nil {
 			return nil, nil, err
@@ -236,8 +253,18 @@ func (c *GeneratedChartHandler) handleDeployment(document []byte) ([]byte, error
 	newTemplateContent := make([]byte, 0, 0)
 	if keptnutils.IsDeployment(&depl) {
 		depl.Name = depl.Name + "-primary"
-		depl.Spec.Selector.MatchLabels["app"] = depl.Spec.Selector.MatchLabels["app"] + "-primary"
-		depl.Spec.Template.ObjectMeta.Labels["app"] = depl.Spec.Template.ObjectMeta.Labels["app"] + "-primary"
+		if _, ok := depl.Spec.Selector.MatchLabels["app"]; ok {
+			depl.Spec.Selector.MatchLabels["app"] = depl.Spec.Selector.MatchLabels["app"] + "-primary"
+		}
+		if _, ok := depl.Spec.Selector.MatchLabels["app.kubernetes.io/name"]; ok {
+			depl.Spec.Selector.MatchLabels["app.kubernetes.io/name"] = depl.Spec.Selector.MatchLabels["app.kubernetes.io/name"] + "-primary"
+		}
+		if _, ok := depl.Spec.Template.ObjectMeta.Labels["app"]; ok {
+			depl.Spec.Template.ObjectMeta.Labels["app"] = depl.Spec.Template.ObjectMeta.Labels["app"] + "-primary"
+		}
+		if _, ok := depl.Spec.Template.ObjectMeta.Labels["app.kubernetes.io/name"]; ok {
+			depl.Spec.Template.ObjectMeta.Labels["app.kubernetes.io/name"] = depl.Spec.Template.ObjectMeta.Labels["app.kubernetes.io/name"] + "-primary"
+		}
 		var err error
 		newTemplateContent, err = objectutils.AppendAsYaml(newTemplateContent, depl)
 		if err != nil {

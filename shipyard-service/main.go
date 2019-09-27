@@ -123,13 +123,17 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	}
 	defer ws.Close()
 
-	//if event.Type() == "sh.keptn.internal.events.project.create" { // for keptn internal topics
 	if event.Type() == keptnevents.InternalProjectCreateEventType {
 		version, err := createProjectAndProcessShipyard(event, *logger, ws)
-		if err := logErrAndRespondWithDoneEvent(event, version, err, *logger, ws); err != nil {
+		if err := respondWithDoneEvent(event, version, err, "Shipyard successfully processed", *logger, ws); err != nil {
 			return err
 		}
-
+		return nil
+	} else if event.Type() == keptnevents.InternalProjectDeleteEventType {
+		err := getRemoteURLAndDeleteProject(event, *logger, ws)
+		if err := respondWithDoneEvent(event, nil, err, "Project successfully deleted", *logger, ws); err != nil {
+			return err
+		}
 		return nil
 	}
 
@@ -149,7 +153,6 @@ func createProjectAndProcessShipyard(event cloudevents.Event, logger keptnutils.
 	}
 
 	client := newClient()
-
 	// create project
 	project := keptnmodels.Project{
 		ProjectName:  eventData.Project,
@@ -186,9 +189,41 @@ func createProjectAndProcessShipyard(event cloudevents.Event, logger keptnutils.
 			logger.Error(fmt.Sprintf("Could not write log to websocket. %s", err.Error()))
 		}
 	}
-
 	// store shipyard.yaml
 	return storeResourceForProject(project.ProjectName, string(data), logger)
+}
+
+// getRemoteURLAndDeleteProject processes event and deletes project
+func getRemoteURLAndDeleteProject(event cloudevents.Event, logger keptnutils.Logger, ws *websocket.Conn) error {
+	eventData := keptnevents.ProjectDeleteEventData{}
+	if err := event.DataAs(&eventData); err != nil {
+		return err
+	}
+
+	client := newClient()
+
+	project := keptnmodels.Project{
+		ProjectName: eventData.Project,
+	}
+
+	// get remote url of project
+	projectResp, err := client.getProject(project, logger)
+	if err != nil {
+		return fmt.Errorf("Project %s ist not available", project.ProjectName)
+	}
+	if projectResp != nil && projectResp.GitRemoteURI != "" {
+		if err := keptnutils.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), fmt.Sprintf("The Git upstream of the project will not be deleted: %s", projectResp.GitRemoteURI), false, "INFO"); err != nil {
+			logger.Error(fmt.Sprintf("Could not write log to websocket. %s", err.Error()))
+		}
+	}
+
+	// delete project
+	if err := client.deleteProject(project, logger); err != nil {
+		return fmt.Errorf("Deleting project %s failed. %s", project.ProjectName, err.Error())
+	}
+	logger.Info(fmt.Sprintf("Project %s deleted", project.ProjectName))
+
+	return nil
 }
 
 // storeResourceForProject stores the resource for a project using the keptnutils.ResourceHandler
@@ -210,11 +245,11 @@ func storeResourceForProject(projectName, shipyard string, logger keptnutils.Log
 	return &keptnmodels.Version{Version: versionStr}, nil
 }
 
-// logErrAndRespondWithDoneEvent sends a keptn done event to the keptn eventbroker
-func logErrAndRespondWithDoneEvent(event cloudevents.Event, version *keptnmodels.Version, err error, logger keptnutils.Logger, ws *websocket.Conn) error {
+// respondWithDoneEvent sends a keptn done event to the keptn eventbroker
+func respondWithDoneEvent(event cloudevents.Event, version *keptnmodels.Version, err error, message string, logger keptnutils.Logger, ws *websocket.Conn) error {
 	var result = "success"
-	var webSocketMessage = "Shipyard successfully processed"
-	var eventMessage = "Project created and shipyard successfully processed"
+	var webSocketMessage = message
+	var eventMessage = message
 
 	if err != nil { // error
 		result = "error"
@@ -228,7 +263,7 @@ func logErrAndRespondWithDoneEvent(event cloudevents.Event, version *keptnmodels
 	if err := keptnutils.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), webSocketMessage, true, "INFO"); err != nil {
 		logger.Error(fmt.Sprintf("Could not write log to websocket. %s", err.Error()))
 	}
-	if err := sendDoneEvent(event, result, eventMessage, version); err != nil {
+	if err := sendDoneEvent(event, result, eventMessage, nil); err != nil {
 		logger.Error(fmt.Sprintf("No sh.keptn.event.done event sent. %s", err.Error()))
 	}
 
@@ -252,6 +287,41 @@ func (client *Client) createProject(project keptnmodels.Project, logger keptnuti
 		return errors.New(*errorObj.Message)
 	}
 	return fmt.Errorf("Error in creating new project: %s", err.Error())
+}
+
+// deleteProject deletes a project by using the configuration-service
+func (client *Client) deleteProject(project keptnmodels.Project, logger keptnutils.Logger) error {
+	configServiceURL, err := getServiceEndpoint(configservice)
+	if err != nil {
+		logger.Error(fmt.Sprintf("Could not get service endpoint for %s: %s", configservice, err.Error()))
+		return err
+	}
+	prjHandler := keptnutils.NewProjectHandler(configServiceURL.String())
+	errorObj, err := prjHandler.DeleteProject(project)
+
+	if errorObj == nil && err == nil {
+		return nil
+	} else if errorObj != nil {
+		return errors.New(*errorObj.Message)
+	}
+	return fmt.Errorf("Error in deleting project: %s", err.Error())
+}
+
+// getProject returns a project by using the configuration-service
+func (client *Client) getProject(project keptnmodels.Project, logger keptnutils.Logger) (*keptnmodels.Project, error) {
+	configServiceURL, err := getServiceEndpoint(configservice)
+	if err != nil {
+		logger.Error(fmt.Sprintf("Could not get service endpoint for %s: %s", configservice, err.Error()))
+		return nil, err
+	}
+	prjHandler := keptnutils.NewProjectHandler(configServiceURL.String())
+
+	respProject, respError := prjHandler.GetProject(project)
+	if respError != nil {
+		return nil, fmt.Errorf("Error in getting project: %s", project.ProjectName)
+	}
+
+	return respProject, nil
 }
 
 // createStage creates a stage by using the configuration-service
