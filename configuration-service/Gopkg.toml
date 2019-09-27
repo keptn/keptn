@@ -24,7 +24,6 @@
 #   go-tests = true
 #   unused-packages = true
 
-
 [[constraint]]
   name = "gopkg.in/yaml.v2"
   version = "2.2.2"
@@ -35,7 +34,7 @@
 
 [[constraint]]
   name = "github.com/mholt/archiver"
-  version = "v3.2.0"
+  version = "3.2"
 
 [[override]]
  name = "contrib.go.opencensus.io/exporter/ocagent"
