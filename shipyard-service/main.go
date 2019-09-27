@@ -125,14 +125,16 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 	if event.Type() == keptnevents.InternalProjectCreateEventType {
 		version, err := createProjectAndProcessShipyard(event, *logger, ws)
-		if err := logErrAndRespondWithDoneEvent(event, version, err, *logger, ws); err != nil {
+		if err := respondWithProjectCreateDoneEvent(event, version, err, *logger, ws); err != nil {
 			return err
 		}
 
 		return nil
 	} else if event.Type() == keptnevents.InternalProjectDeleteEventType {
 		err := deleteProjectAndLog(event, *logger, ws)
-		return nil
+		if err := respondWithProjectDeleteDoneEvent(event, err, *logger, ws); err != nil {
+			return err
+		}
 	}
 
 	const errorMsg = "Received unexpected keptn event that cannot be processed"
@@ -151,7 +153,6 @@ func createProjectAndProcessShipyard(event cloudevents.Event, logger keptnutils.
 	}
 
 	client := newClient()
-
 	// create project
 	project := keptnmodels.Project{
 		ProjectName:  eventData.Project,
@@ -188,12 +189,11 @@ func createProjectAndProcessShipyard(event cloudevents.Event, logger keptnutils.
 			logger.Error(fmt.Sprintf("Could not write log to websocket. %s", err.Error()))
 		}
 	}
-
 	// store shipyard.yaml
 	return storeResourceForProject(project.ProjectName, string(data), logger)
 }
 
-// deleteProjectAndLog processes event and deletes project
+// deleteProjectAndLog handles event and deletes project
 func deleteProjectAndLog(event cloudevents.Event, logger keptnutils.Logger, ws *websocket.Conn) error {
 	eventData := keptnevents.ProjectDeleteEventData{}
 	if err := event.DataAs(&eventData); err != nil {
@@ -236,8 +236,8 @@ func storeResourceForProject(projectName, shipyard string, logger keptnutils.Log
 	return &keptnmodels.Version{Version: versionStr}, nil
 }
 
-// logErrAndRespondWithDoneEvent sends a keptn done event to the keptn eventbroker
-func logErrAndRespondWithDoneEvent(event cloudevents.Event, version *keptnmodels.Version, err error, logger keptnutils.Logger, ws *websocket.Conn) error {
+// respondWithProjectCreateDoneEvent sends a keptn done event to the keptn eventbroker
+func respondWithProjectCreateDoneEvent(event cloudevents.Event, version *keptnmodels.Version, err error, logger keptnutils.Logger, ws *websocket.Conn) error {
 	var result = "success"
 	var webSocketMessage = "Shipyard successfully processed"
 	var eventMessage = "Project created and shipyard successfully processed"
@@ -255,6 +255,31 @@ func logErrAndRespondWithDoneEvent(event cloudevents.Event, version *keptnmodels
 		logger.Error(fmt.Sprintf("Could not write log to websocket. %s", err.Error()))
 	}
 	if err := sendDoneEvent(event, result, eventMessage, version); err != nil {
+		logger.Error(fmt.Sprintf("No sh.keptn.event.done event sent. %s", err.Error()))
+	}
+
+	return err
+}
+
+// respondWithProjectDeleteDoneEvent sends a keptn done event to the keptn eventbroker
+func respondWithProjectDeleteDoneEvent(event cloudevents.Event, err error, logger keptnutils.Logger, ws *websocket.Conn) error {
+	var result = "success"
+	var webSocketMessage = "Project successfully deleted"
+	var eventMessage = "Project successfully deleted"
+
+	if err != nil { // error
+		result = "error"
+		eventMessage = fmt.Sprintf("%s.", err.Error())
+		webSocketMessage = eventMessage
+		logger.Error(eventMessage)
+	} else { // success
+		logger.Info(eventMessage)
+	}
+
+	if err := keptnutils.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), webSocketMessage, true, "INFO"); err != nil {
+		logger.Error(fmt.Sprintf("Could not write log to websocket. %s", err.Error()))
+	}
+	if err := sendDoneEvent(event, result, eventMessage, nil); err != nil {
 		logger.Error(fmt.Sprintf("No sh.keptn.event.done event sent. %s", err.Error()))
 	}
 
@@ -288,8 +313,7 @@ func (client *Client) deleteProject(project keptnmodels.Project, logger keptnuti
 		return err
 	}
 	prjHandler := keptnutils.NewProjectHandler(configServiceURL.String())
-	errorObj, err := prjHandler.CreateProject(project)
-	errorObj, err := prjHandler.DeletePRoject(project)
+	errorObj, err := prjHandler.DeleteProject(project)
 
 	if errorObj == nil && err == nil {
 		logger.Info("Project successfully deleted")
@@ -297,7 +321,7 @@ func (client *Client) deleteProject(project keptnmodels.Project, logger keptnuti
 	} else if errorObj != nil {
 		return errors.New(*errorObj.Message)
 	}
-	return fmt.Errorf("Error in creating new project: %s", err.Error())
+	return fmt.Errorf("Error in deleting project: %s", err.Error())
 }
 
 // createStage creates a stage by using the configuration-service
