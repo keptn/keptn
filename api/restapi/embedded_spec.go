@@ -109,7 +109,13 @@ func init() {
         ],
         "responses": {
           "201": {
-            "description": "project created",
+            "description": "Project created",
+            "schema": {
+              "$ref": "#/definitions/ChannelInfo"
+            }
+          },
+          "204": {
+            "description": "Project deleted",
             "schema": {
               "$ref": "#/definitions/ChannelInfo"
             }
@@ -339,8 +345,7 @@ func init() {
           "properties": {
             "data": {
               "required": [
-                "project",
-                "shipyard"
+                "project"
               ],
               "properties": {
                 "gitRemoteURL": {
@@ -590,7 +595,13 @@ func init() {
         ],
         "responses": {
           "201": {
-            "description": "project created",
+            "description": "Project created",
+            "schema": {
+              "$ref": "#/definitions/ChannelInfo"
+            }
+          },
+          "204": {
+            "description": "Project deleted",
             "schema": {
               "$ref": "#/definitions/ChannelInfo"
             }
@@ -856,8 +867,7 @@ func init() {
           "properties": {
             "data": {
               "required": [
-                "project",
-                "shipyard"
+                "project"
               ],
               "properties": {
                 "gitRemoteURL": {
