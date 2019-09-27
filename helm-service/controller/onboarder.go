@@ -133,7 +133,7 @@ func (o *Onboarder) onboardService(stageName string, event *keptnevents.ServiceC
 	var generatedChartData []byte
 	if event.DeploymentStrategies[stageName] == keptnevents.Duplicate {
 		o.logger.Debug(fmt.Sprintf("For stage %s with deployment strategy %s, a duplicate, managed chart is generated", stageName, event.DeploymentStrategies[stageName].String()))
-		generatedChartData, err = chartGenerator.GenerateDuplicateManagedChart(ch, event.Project, stageName)
+		generatedChartData, err = chartGenerator.GenerateDuplicateManagedChart(ch, event.Project, stageName, event.Service)
 		if err != nil {
 			o.logger.Error("Error when generating the keptn managed chart: " + err.Error())
 			return err
