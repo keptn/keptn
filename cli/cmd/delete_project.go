@@ -50,7 +50,7 @@ Example:
 
 		prjData := keptnevents.ProjectDeleteEventData{Project: args[0]}
 
-		source, _ := url.Parse("https://github.com/keptn/keptn/cli#createproject")
+		source, _ := url.Parse("https://github.com/keptn/keptn/cli#deleteproject")
 
 		contentType := "application/json"
 		event := cloudevents.Event{
