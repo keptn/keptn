@@ -442,14 +442,14 @@
 
 [[projects]]
   branch = "develop"
-  digest = "1:64d143ebac066e800bad06837d644e5a2e60cc3755826b9ae6c24f355d169fe8"
+  digest = "1:8f5d96948d1f62b47b9aab977c0486f198919e502d844a5e017faffa8c33659c"
   name = "github.com/keptn/go-utils"
   packages = [
     "pkg/models",
     "pkg/utils",
   ]
   pruneopts = "UT"
-  revision = "0024bff7c44f3db85eddd53c960bb497c2570965"
+  revision = "bb68d29c853235768e3254a5bf4fe2bc147f979d"
 
 [[projects]]
   digest = "1:fd7f169f32c221b096c74e756bda16fe22d3bb448bbf74042fd0700407a1f92f"
@@ -549,6 +549,14 @@
   pruneopts = "UT"
   revision = "cc3e4b2381762c56dbcdf9f93be03349a1dc1c14"
   version = "v1.0.0"
+
+[[projects]]
+  digest = "1:69d7d8f871a15079052dc15c85d4f44915b2bf3fdbd56cf14e424b4326289717"
+  name = "github.com/otiai10/copy"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "f98458f9df5788f53462a1bf427b728f113ab481"
+  version = "v1.0.2"
 
 [[projects]]
   branch = "master"
@@ -682,7 +690,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:cd863a54a2b72fd84256b97e5b7c56a63f77a1f1414eda581800c27e81d2f384"
+  digest = "1:6a28ac2bed8418012e727a6c90d8dc04c3758e130ce04077f6d139bdd2c299e6"
   name = "golang.org/x/crypto"
   packages = [
     "cast5",
@@ -706,7 +714,7 @@
     "ssh/terminal",
   ]
   pruneopts = "UT"
-  revision = "fa1a291087948aa85c6e20c1b3749a02403ffc1b"
+  revision = "cea2066c64117dea9cba47afc7c35e4d2299107d"
 
 [[projects]]
   branch = "master"
@@ -742,7 +750,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:d316a0442d11de60979bec58172150184128011baff0e22dd3c2b06d00dcfcc2"
+  digest = "1:aeadc6dd81092e65915187d29b519925fa2f8ab45a71ee5f5091c11a4d67d0a0"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
@@ -750,7 +758,7 @@
     "windows",
   ]
   pruneopts = "UT"
-  revision = "2837fb4f24fee082b8c39b1a6dc9e0ed9f3fbd4f"
+  revision = "855e68c8590b0d6a9d08863d2982eb8aeddd98d3"
 
 [[projects]]
   digest = "1:66a2f252a58b4fbbad0e4e180e1d85a83c222b6bce09c3dcdef3dc87c72eda7c"
@@ -802,8 +810,8 @@
     "urlfetch",
   ]
   pruneopts = "UT"
-  revision = "c71d63e301d75423acb410203c747cad31e9a5e7"
-  version = "v1.6.3"
+  revision = "bddb1f54ecfd64b1350fd2dd897fa11d426632bc"
+  version = "v1.6.4"
 
 [[projects]]
   digest = "1:2d1fbdc6777e5408cabeb02bf336305e724b925ff4546ded0fa8715a7267922a"
@@ -1084,6 +1092,7 @@
     "github.com/jessevdk/go-flags",
     "github.com/keptn/go-utils/pkg/utils",
     "github.com/mholt/archiver",
+    "github.com/otiai10/copy",
     "golang.org/x/net/netutil",
     "gopkg.in/yaml.v2",
     "k8s.io/api/core/v1",
