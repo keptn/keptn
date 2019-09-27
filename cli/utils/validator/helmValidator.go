@@ -297,6 +297,11 @@ func validateService(svc *corev1.Service) bool {
 		logging.PrintLog(fmt.Sprintf("Service %s does not have \"spec.selector.app\"", svc.Name), logging.QuietLevel)
 		return false
 	}
+	if len(svc.Spec.Selector) > 1 {
+		logging.PrintLog(fmt.Sprintf("Service %s contains multiple \"spec.selector\". "+
+			"Only selector \"app\" or \"app.kubernetes.io/name\" is supported.", svc.Name), logging.QuietLevel)
+		return false
+	}
 	return true
 }
 
@@ -327,6 +332,16 @@ func validateDeployment(depl *appsv1.Deployment) bool {
 	podLabelAppk8sName, okPodLabelAppk8sName := depl.Spec.Template.ObjectMeta.Labels["app.kubernetes.io/name"]
 	if (!okPodLabelApp || podLabelApp == "") && (!okPodLabelAppk8sName || podLabelAppk8sName == "") {
 		logging.PrintLog(fmt.Sprintf("Deployment %s does not contain \"spec.template.metadata.labels.app\"", depl.Name), logging.QuietLevel)
+		return false
+	}
+	if len(depl.Spec.Selector.MatchLabels) > 1 {
+		logging.PrintLog(fmt.Sprintf("Deployment %s contains multiple \"selector.matchLabels\". "+
+			"Only selector \"app\" or \"app.kubernetes.io/name\" is supported.", depl.Name), logging.QuietLevel)
+		return false
+	}
+	if len(depl.Spec.Template.ObjectMeta.Labels) > 1 {
+		logging.PrintLog(fmt.Sprintf("Deployment %s contains multiple \"spec.template.metadata.labels\". "+
+			"Only selector \"app\" or \"app.kubernetes.io/name\" is supported.", depl.Name), logging.QuietLevel)
 		return false
 	}
 	return true
