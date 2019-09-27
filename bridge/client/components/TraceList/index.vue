@@ -17,7 +17,7 @@
         </div>
 
         <div v-for="stage in getTracesPerStage(traces)" class="traceHeader">
-          <h2>Stage: {{stage.stageName}}</h2>
+          <h2 v-if="stage.stageName !== ''">Stage: {{stage.stageName}}</h2>
           <b-list-group >
             <div v-for="event in stage.events" v-bind:key="event.id" class="event-item">
               <b-list-group-item
