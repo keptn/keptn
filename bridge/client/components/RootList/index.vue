@@ -11,11 +11,18 @@
       <b-card class="m-2">
         <b-card-text>
           <small>
-            {{root.timestamp | moment}}
-            <br>
-            {{root.keptnContext}}
+            {{root.eventTypeHeadline}}
+            <hr>
+            <p class="mb-1">
+              <b>Project:</b> {{ root.data.project }}
+              <br>
+              <b>Service:</b> {{ root.data.service }}
+              <br>
+              <b>Timestamp:</b> {{root.timestamp | moment}}
+              <br>
+              <b>KeptnContext:</b> {{root.keptnContext}}
+            </p>
           </small>
-          <hr>
           {{root.message}}
         </b-card-text>
       </b-card>

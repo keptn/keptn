@@ -40,6 +40,7 @@
     "moment": "^2.24.0",
     "morgan": "~1.9.0",
     "vue": "^2.6.10",
+    "vue-json-pretty": "^1.6.2",
     "vue-router": "^3.0.3",
     "vuex": "^3.0.1"
   },
