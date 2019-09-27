@@ -12,6 +12,7 @@ export default new Vuex.Store({
     traces: [],
     remotecall: false,
     currentContextId: '',
+    currentEventId: '',
   },
 
   actions: {
@@ -35,6 +36,7 @@ export default new Vuex.Store({
 
     reset({ commit }) {
       commit('setCurrentContextId', '');
+      commit('setCurrentEventId', '');
       commit('setTraces', []);
       commit('setRoots', []);
     },
@@ -58,6 +60,9 @@ export default new Vuex.Store({
         dispatch('remotecallEnd');
       }
     },
+    activateEvent({ commit }, eventId) {
+      commit('setCurrentEventId', eventId);
+    },
   },
   mutations: {
     setRoots(state, roots) {
@@ -71,6 +76,13 @@ export default new Vuex.Store({
     },
     setCurrentContextId(state, contextId) {
       state.currentContextId = contextId;
+    },
+    setCurrentEventId(state, eventId) {
+      if (state.currentEventId === eventId) {
+        state.currentEventId = '';
+      } else {
+        state.currentEventId = eventId;
+      }
     },
   },
 });
