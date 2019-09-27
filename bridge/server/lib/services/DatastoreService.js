@@ -18,13 +18,17 @@ class DatastoreService {
       plainEvent: JSON.stringify(event, null, 2),
     };
 
-    switch (event.type) {
+    switch (mappedEvent.type) {
       case 'sh.keptn.event.configuration.change': mappedEvent.eventTypeHeadline = 'Configuration change'; break;
       case 'sh.keptn.event.problem.open': mappedEvent.eventTypeHeadline = 'Problem'; break;
       case 'sh.keptn.events.deployment-finished': mappedEvent.eventTypeHeadline = 'Deployment finished'; break;
       case 'sh.keptn.events.evaluation-done': mappedEvent.eventTypeHeadline = 'Evaluation done'; break;
       case 'sh.keptn.events.tests-finished': mappedEvent.eventTypeHeadline = 'Tests finished'; break;
       default: mappedEvent.eventTypeHeadline = event.type; break;
+    }
+
+    if (event.source === 'https://github.com/keptn/keptn/remediation-service') {
+      mappedEvent.eventTypeHeadline = 'Remediation';
     }
 
     return mappedEvent;
@@ -49,11 +53,11 @@ class DatastoreService {
   }
 
   async getProblemRoots() {
-    const url = `${this.api}/event?type=sh.keptn.event.problem.open&pageSize=100`;
+    const url = `${this.api}/event?type=sh.keptn.event.configuration.change&pageSize=100`;
     const result = await axios.get(url);
     const { data } = result;
     if (data.events) {
-      return data.events.map(event => DatastoreService.mapEvent(event)).filter(e => e.data.state === 'OPEN');
+      return data.events.map(event => DatastoreService.mapEvent(event)).filter(e => e.source.includes('remediation-service'));
     }
     return [];
   }
