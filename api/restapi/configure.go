@@ -191,6 +191,7 @@ func addShkeptncontext(ce interface{}, shkeptncontext string) interface{} {
 	ce.(map[string]interface{})["shkeptncontext"] = shkeptncontext
 	return ce
 }
+
 func getChannelInfo(channelID *string, token *string) models.ChannelInfo {
 
 	id := uuid.New().String()

@@ -104,7 +104,7 @@ Example:
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
-		logging.PrintLog("Starting to create a project", logging.InfoLevel)
+		logging.PrintLog("Starting to create project", logging.InfoLevel)
 
 		content, _ := utils.ReadFile(*createProjectParams.Shipyard)
 		prjData := keptnevents.ProjectCreateEventData{Project: args[0], Shipyard: base64.StdEncoding.EncodeToString([]byte(content))}
