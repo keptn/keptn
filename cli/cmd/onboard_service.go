@@ -21,9 +21,9 @@ import (
 )
 
 type onboardServiceCmdParams struct {
-	Project       *string
-	ChartFilePath *string
-	Direct        bool
+	Project            *string
+	ChartFilePath      *string
+	DeploymentStrategy *string
 }
 
 var onboardServiceParams *onboardServiceCmdParams
@@ -52,6 +52,12 @@ Example:
 			return errors.New(authErrorMsg)
 		}
 
+		// validate deployment strategy flag
+		if *onboardServiceParams.DeploymentStrategy != "" && (*onboardServiceParams.DeploymentStrategy != "direct" && *onboardServiceParams.DeploymentStrategy != "blue_green_service") {
+			return errors.New("The provided deployment strategy is not supported. Select: [direct|blue_green_service]")
+		}
+
+		// validate chart flag
 		*onboardServiceParams.ChartFilePath = keptnutils.ExpandTilde(*onboardServiceParams.ChartFilePath)
 
 		if _, err := os.Stat(*onboardServiceParams.ChartFilePath); os.IsNotExist(err) {
@@ -98,9 +104,17 @@ Example:
 			HelmChart: base64.StdEncoding.EncodeToString(chartData),
 		}
 
-		if onboardServiceParams.Direct {
+		if *onboardServiceParams.DeploymentStrategy != "" {
 			deplStrategies := make(map[string]events.DeploymentStrategy)
-			deplStrategies["*"] = events.Direct
+
+			if *onboardServiceParams.DeploymentStrategy == "direct" {
+				deplStrategies["*"] = events.Direct
+			} else if *onboardServiceParams.DeploymentStrategy == "blue_green_service" {
+				deplStrategies["*"] = events.Duplicate
+			} else {
+				return fmt.Errorf("The provided deployment strategy %s is not supported. Select: [direct|blue_green_service]", *onboardServiceParams.DeploymentStrategy)
+			}
+
 			data.DeploymentStrategies = deplStrategies
 		}
 
@@ -150,8 +164,8 @@ func init() {
 	onboardServiceParams.Project = serviceCmd.Flags().StringP("project", "p", "", "The name of the project")
 	serviceCmd.MarkFlagRequired("project")
 
-	onboardServiceParams.ChartFilePath = serviceCmd.Flags().StringP("chart", "", "", "A path to a Helm chart folder or an already packed Helm chart")
+	onboardServiceParams.ChartFilePath = serviceCmd.Flags().StringP("chart", "", "", "A path to a Helm chart folder or an already archived Helm chart")
 	serviceCmd.MarkFlagRequired("chart")
 
-	serviceCmd.PersistentFlags().BoolVarP(&onboardServiceParams.Direct, "direct", "", false, "Allows to set the deployment strategy to direct for the onboarded service")
+	onboardServiceParams.DeploymentStrategy = serviceCmd.Flags().StringP("deployment-strategy", "", "", "Allows to define a deployment strategy that overrides the shipyard definition for this service")
 }
