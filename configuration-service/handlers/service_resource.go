@@ -188,10 +188,13 @@ func untarHelm(res *models.Resource, logger *utils.Logger, filePath string) midd
 	}
 	uri := *res.ResourceURI
 	folderName := filepath.Join(tmpDir, uri[strings.LastIndex(uri, "/")+1:len(uri)-4])
-	if err := os.Rename(filepath.Join(tmpDir, files[0].Name()), folderName); err != nil {
-		logger.Error(err.Error())
-		return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().
-			WithPayload(&models.Error{Code: 400, Message: swag.String("Could not rename unpacked folder")})
+	oldPath := filepath.Join(tmpDir, files[0].Name())
+	if oldPath != folderName {
+		if err := os.Rename(oldPath, folderName); err != nil {
+			logger.Error(err.Error())
+			return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().
+				WithPayload(&models.Error{Code: 400, Message: swag.String("Could not rename unpacked folder")})
+		}
 	}
 
 	dir, err := filepath.Abs(filepath.Dir(filePath))
