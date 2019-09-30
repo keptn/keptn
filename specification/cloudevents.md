@@ -1,6 +1,5 @@
 # Keptn Cloud Events
 
-Keptn Events
 * [Create Project](#create-project)
 * [Create Service](#create-service)
 * [Configuration Change](#configuration-change)
@@ -11,8 +10,6 @@ Keptn Events
 * [Configure Monitoring](#configure-monitoring)
 
 ---
-
-# Keptn Events
 
 ## Create Project
 
