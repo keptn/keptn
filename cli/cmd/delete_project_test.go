@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"bytes"
 	"os"
 	"testing"
 
@@ -13,18 +12,14 @@ func init() {
 	logging.InitLoggers(os.Stdout, os.Stdout, os.Stderr)
 }
 
-func TestConfigureCmd(t *testing.T) {
+func TestDeleteProjectCmd(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
 
-	buf := new(bytes.Buffer)
-	rootCmd.SetOutput(buf)
-
 	args := []string{
-		"configure",
-		"--org=TestORG",
-		"--user=User",
-		"--token=super-secret",
+		"delete",
+		"project",
+		"sockshop",
 		"--mock",
 	}
 	rootCmd.SetArgs(args)

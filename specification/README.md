@@ -1,7 +1,8 @@
 # Keptn Specification
 
-This folder contains all general specification definition, i.e., cloud events, shipyard, and uniform for the Keptn project. 
+This folder contains all general specification definition, i.e., cloud events, shipyard, uniform, and SRE files for the Keptn project. 
 
-* [Specification of keptn cloud events](cloudevents.md)
-* [Specification of shipyard file](shipyard.md)
-* [Specification of uniform file](uniform.md)
+* [Specification of Keptn Cloud Events](cloudevents.md)
+* [Specification of Shipyard](shipyard.md)
+* [Specification of Uniform](uniform.md)
+* [Specifications for Site Reliability Engineering (SRE) with Keptn](sre.md)
