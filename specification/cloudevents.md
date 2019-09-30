@@ -1,6 +1,5 @@
 # Keptn Cloud Events
 
-Keptn Events
 * [Create Project](#create-project)
 * [Create Service](#create-service)
 * [Configuration Change](#configuration-change)
@@ -11,8 +10,6 @@ Keptn Events
 * [Configure Monitoring](#configure-monitoring)
 
 ---
-
-# Keptn Events
 
 ## Create Project
 
@@ -84,7 +81,9 @@ The *configuration change* event is sent when a desired state for a service is a
     "project": "sockshop",
     "stage": "staging",
     "service": "carts",
-    "valuesCanary": "string",
+    "valuesCanary": {
+      "image": "docker.io/keptnexamples/carts:0.9.1"
+    }
   }
 }
 ```

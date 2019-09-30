@@ -16,7 +16,7 @@ import (
 // ProjectCreatedCode is the HTTP code returned for type ProjectCreated
 const ProjectCreatedCode int = 201
 
-/*ProjectCreated project created
+/*ProjectCreated Project created
 
 swagger:response projectCreated
 */
@@ -49,6 +49,50 @@ func (o *ProjectCreated) SetPayload(payload *models.ChannelInfo) {
 func (o *ProjectCreated) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(201)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
+// ProjectNoContentCode is the HTTP code returned for type ProjectNoContent
+const ProjectNoContentCode int = 204
+
+/*ProjectNoContent Project deleted
+
+swagger:response projectNoContent
+*/
+type ProjectNoContent struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.ChannelInfo `json:"body,omitempty"`
+}
+
+// NewProjectNoContent creates ProjectNoContent with default headers values
+func NewProjectNoContent() *ProjectNoContent {
+
+	return &ProjectNoContent{}
+}
+
+// WithPayload adds the payload to the project no content response
+func (o *ProjectNoContent) WithPayload(payload *models.ChannelInfo) *ProjectNoContent {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the project no content response
+func (o *ProjectNoContent) SetPayload(payload *models.ChannelInfo) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *ProjectNoContent) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(204)
 	if o.Payload != nil {
 		payload := o.Payload
 		if err := producer.Produce(rw, payload); err != nil {
