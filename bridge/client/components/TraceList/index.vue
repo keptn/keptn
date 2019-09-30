@@ -71,7 +71,7 @@
                   <small>
                     <b>Test strategy: </b> {{ event.data.teststrategy }}
                     <br>
-                    <b>Duration: </b> {{ getDuration(event.time, event.data.startedat) }}
+                    <b>Duration: </b> {{ getDuration(event.timestamp, event.data.startedat) }}
                   </small>
                 </div>
 
