@@ -3,13 +3,15 @@ package controller
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
-	"k8s.io/helm/pkg/proto/hapi/chart"
 	"log"
 	"os"
 	"strings"
+
+	"k8s.io/helm/pkg/proto/hapi/chart"
 
 	cloudevents "github.com/cloudevents/sdk-go"
 	"github.com/ghodss/yaml"
@@ -35,6 +37,7 @@ func init() {
 
 // ConfigurationChanger is a container of variables required for changing the configuration of a service
 type ConfigurationChanger struct {
+	mesh                  mesh.Mesh
 	generatedChartHandler *helm.GeneratedChartHandler
 	canaryLevelGen        helm.CanaryLevelGenerator
 	logger                keptnutils.LoggerInterface
@@ -45,7 +48,7 @@ type ConfigurationChanger struct {
 func NewConfigurationChanger(mesh mesh.Mesh, canaryLevelGen helm.CanaryLevelGenerator,
 	logger keptnutils.LoggerInterface, keptnDomain string) *ConfigurationChanger {
 	generatedChartHandler := helm.NewGeneratedChartHandler(mesh, canaryLevelGen, keptnDomain)
-	return &ConfigurationChanger{generatedChartHandler: generatedChartHandler, canaryLevelGen: canaryLevelGen,
+	return &ConfigurationChanger{mesh: mesh, generatedChartHandler: generatedChartHandler, canaryLevelGen: canaryLevelGen,
 		logger: logger, keptnDomain: keptnDomain}
 }
 
@@ -69,22 +72,53 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event,
 		e.Stage = stage
 	}
 
+	genChart, err := getGeneratedChart(e)
+	if err != nil {
+		c.logger.Error(err.Error())
+		return err
+	}
+	deploymentStrategy, err := getDeploymentStrategyOfService(genChart)
+	if err != nil {
+		c.logger.Error(err.Error())
+		return err
+	}
+
 	if len(e.ValuesCanary) > 0 {
-		if err := c.updateChart(e, false, changeValue); err != nil {
+
+		ch, err := c.updateChart(e, false, changeValue)
+		if err != nil {
 			c.logger.Error(err.Error())
 			return err
 		}
-		if err := c.ApplyConfiguration(e.Project, e.Stage, e.Service, false); err != nil {
+		upgradeMsg, err := c.ApplyChart(ch, e.Project, e.Stage, e.Service, false)
+		if err != nil {
 			c.logger.Error(err.Error())
 			return err
+		}
+
+		onboarder := NewOnboarder(c.mesh, c.canaryLevelGen, c.logger, c.keptnDomain)
+		if onboarder.IsGeneratedChartEmpty(genChart) {
+			genChart, err = onboarder.OnboardGeneratedService(upgradeMsg, e.Project, e.Stage, e.Service, deploymentStrategy)
+			if err != nil {
+				c.logger.Error(err.Error())
+				return err
+			}
+			if deploymentStrategy == keptnevents.Direct {
+				_, err := c.ApplyChart(genChart, e.Project, e.Stage, e.Service, true)
+				if err != nil {
+					c.logger.Error(err.Error())
+					return err
+				}
+			}
 		}
 	}
 	if len(e.DeploymentChanges) > 0 {
-		if err := c.updateChart(e, true, changePrimaryDeployment); err != nil {
+		ch, err := c.updateChart(e, true, changePrimaryDeployment)
+		if err != nil {
 			c.logger.Error(err.Error())
 			return err
 		}
-		if err := c.ApplyConfiguration(e.Project, e.Stage, e.Service, true); err != nil {
+		if _, err := c.ApplyChart(ch, e.Project, e.Stage, e.Service, true); err != nil {
 			c.logger.Error(err.Error())
 			return err
 		}
@@ -94,14 +128,10 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event,
 	if e.Canary != nil {
 		c.logger.Debug(fmt.Sprintf("Canary action %s for service %s in stage %s of project %s was received",
 			e.Canary.Action, e.Service, e.Stage, e.Project))
-		duplicated, err := isServiceDuplicated(e)
-		if err != nil {
-			c.logger.Error(fmt.Sprintf("Error when checking whether the service %s in stage %s of project %s is duplicated: %s",
-				e.Service, e.Stage, e.Project, err.Error()))
-			return err
-		}
-		if duplicated {
+
+		if deploymentStrategy == keptnevents.Duplicate {
 			c.logger.Debug(fmt.Sprintf("Apply canary action %s for service %s in stage %s of project %s", e.Canary.Action, e.Service, e.Stage, e.Project))
+
 			if err := c.changeCanary(e); err != nil {
 				c.logger.Error(err.Error())
 				return err
@@ -149,23 +179,27 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event,
 	return nil
 }
 
-func isServiceDuplicated(e *keptnevents.ConfigurationChangeEventData) (bool, error) {
+func getGeneratedChart(e *keptnevents.ConfigurationChangeEventData) (*chart.Chart, error) {
 	url, err := serviceutils.GetConfigServiceURL()
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 
 	helmChartName := helm.GetChartName(e.Service, true)
 	// Read chart
-	chart, err := keptnutils.GetChart(e.Project, e.Service, e.Stage, helmChartName, url.String())
-	if err != nil {
-		return false, err
+	return keptnutils.GetChart(e.Project, e.Service, e.Stage, helmChartName, url.String())
+}
+
+func getDeploymentStrategyOfService(ch *chart.Chart) (keptnevents.DeploymentStrategy, error) {
+	for _, keyword := range ch.Metadata.Keywords {
+		if keyword == "deployment_strategy=duplicate" {
+			return keptnevents.Duplicate, nil
+		}
+		if keyword == "deployment_strategy=direct" {
+			return keptnevents.Direct, nil
+		}
 	}
-	depls, err := keptnutils.GetRenderedDeployments(chart)
-	if err != nil {
-		return false, err
-	}
-	return len(depls) > 0, nil
+	return keptnevents.Duplicate, errors.New("Cannot find deployment_strategy in keywords")
 }
 
 func changePrimaryDeployment(e *keptnevents.ConfigurationChangeEventData, chart *chart.Chart) error {
@@ -217,11 +251,11 @@ func changePrimaryDeployment(e *keptnevents.ConfigurationChangeEventData, chart 
 }
 
 func (c *ConfigurationChanger) updateChart(e *keptnevents.ConfigurationChangeEventData, generated bool,
-	editChart func(*keptnevents.ConfigurationChangeEventData, *chart.Chart) error) error {
+	editChart func(*keptnevents.ConfigurationChangeEventData, *chart.Chart) error) (*chart.Chart, error) {
 
 	url, err := serviceutils.GetConfigServiceURL()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	helmChartName := helm.GetChartName(e.Service, generated)
@@ -229,25 +263,25 @@ func (c *ConfigurationChanger) updateChart(e *keptnevents.ConfigurationChangeEve
 	// Read chart
 	chart, err := keptnutils.GetChart(e.Project, e.Service, e.Stage, helmChartName, url.String())
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// Edit chart
 	err = editChart(e, chart)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// Store chart
 	chartData, err := keptnutils.PackageChart(chart)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if err := keptnutils.StoreChart(e.Project, e.Service, e.Stage, helmChartName, chartData, url.String()); err != nil {
-		return err
+		return nil, err
 	}
 	c.logger.Info(fmt.Sprintf("Finished updating chart %s of stage %s", helmChartName, e.Stage))
-	return nil
+	return chart, nil
 }
 
 func changeValue(e *keptnevents.ConfigurationChangeEventData, chart *chart.Chart) error {
@@ -269,11 +303,11 @@ func changeValue(e *keptnevents.ConfigurationChangeEventData, chart *chart.Chart
 	return nil
 }
 
-func (c *ConfigurationChanger) setCanaryWeight(e *keptnevents.ConfigurationChangeEventData, canaryWeight int32) error {
+func (c *ConfigurationChanger) setCanaryWeight(e *keptnevents.ConfigurationChangeEventData, canaryWeight int32) (*chart.Chart, error) {
 
 	url, err := serviceutils.GetConfigServiceURL()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	c.logger.Info(fmt.Sprintf("Start updating canary weight to %d for service %s of project %s in stage %s",
@@ -281,7 +315,7 @@ func (c *ConfigurationChanger) setCanaryWeight(e *keptnevents.ConfigurationChang
 	// Read chart
 	chart, err := keptnutils.GetChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, true), url.String())
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	c.generatedChartHandler.UpdateCanaryWeight(chart, canaryWeight)
@@ -289,14 +323,14 @@ func (c *ConfigurationChanger) setCanaryWeight(e *keptnevents.ConfigurationChang
 	// Store chart
 	chartData, err := keptnutils.PackageChart(chart)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if err := keptnutils.StoreChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, true), chartData, url.String()); err != nil {
-		return err
+		return nil, err
 	}
 	c.logger.Info(fmt.Sprintf("Finished updating canary weight to %d for service %s of project %s in stage %s",
 		canaryWeight, e.Service, e.Project, e.Stage))
-	return nil
+	return chart, nil
 }
 
 func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEventData) error {
@@ -308,65 +342,68 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 
 	switch e.Canary.Action {
 	case keptnevents.Discard:
-		if err := c.setCanaryWeight(e, 0); err != nil {
+		ch, err := c.setCanaryWeight(e, 0)
+		if err != nil {
 			return err
 		}
-		if err := c.ApplyConfiguration(e.Project, e.Stage, e.Service, true); err != nil {
+		if _, err := c.ApplyChart(ch, e.Project, e.Stage, e.Service, true); err != nil {
 			return err
 		}
-		if err := c.deleteRelease(e, false); err != nil {
+		if err := c.deleteCanaryRelease(e); err != nil {
 			return err
 		}
 
 	case keptnevents.Promote:
-		if err := c.setCanaryWeight(e, 100); err != nil {
+		ch, err := c.setCanaryWeight(e, 100)
+		if err != nil {
 			return err
 		}
-		if err := c.ApplyConfiguration(e.Project, e.Stage, e.Service, true); err != nil {
+		if _, err := c.ApplyChart(ch, e.Project, e.Stage, e.Service, true); err != nil {
 			return err
 		}
 
-		userChart, err := keptnutils.GetChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, false), url.String())
+		chartGenerator := helm.NewGeneratedChartHandler(c.mesh, c.canaryLevelGen, c.keptnDomain)
+		upgradeMsg, err := c.SimulateApplyChart(e.Project, e.Stage, e.Service, false)
 		if err != nil {
+			c.logger.Error(err.Error())
 			return err
 		}
-		genChartData, err := c.generatedChartHandler.GenerateDuplicateManagedChart(userChart, e.Project, e.Stage, e.Service)
+		genChart, err := chartGenerator.GenerateDuplicateManagedChart(upgradeMsg, e.Project, e.Stage, e.Service)
 		if err != nil {
-			return err
-		}
-		genChart, err := keptnutils.LoadChart(genChartData)
-		if err != nil {
+			c.logger.Error(err.Error())
 			return err
 		}
 		if err := c.generatedChartHandler.UpdateCanaryWeight(genChart, int32(100)); err != nil {
 			return err
 		}
-		genChartData, err = keptnutils.PackageChart(genChart)
+		genChartData, err := keptnutils.PackageChart(genChart)
 		if err != nil {
 			return err
 		}
 		if err := keptnutils.StoreChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, true), genChartData, url.String()); err != nil {
 			return err
 		}
-		if err := c.ApplyConfiguration(e.Project, e.Stage, e.Service, true); err != nil {
+		if _, err := c.ApplyChart(genChart, e.Project, e.Stage, e.Service, true); err != nil {
 			return err
 		}
 
-		if err := c.setCanaryWeight(e, 0); err != nil {
+		genChart, err = c.setCanaryWeight(e, 0)
+		if err != nil {
 			return err
 		}
-		if err := c.ApplyConfiguration(e.Project, e.Stage, e.Service, true); err != nil {
+		if _, err := c.ApplyChart(genChart, e.Project, e.Stage, e.Service, true); err != nil {
 			return err
 		}
-		if err := c.deleteRelease(e, false); err != nil {
+		if err := c.deleteCanaryRelease(e); err != nil {
 			return err
 		}
 
 	case keptnevents.Set:
-		if err := c.setCanaryWeight(e, e.Canary.Value); err != nil {
+		ch, err := c.setCanaryWeight(e, e.Canary.Value)
+		if err != nil {
 			return err
 		}
-		if err := c.ApplyConfiguration(e.Project, e.Stage, e.Service, true); err != nil {
+		if _, err := c.ApplyChart(ch, e.Project, e.Stage, e.Service, true); err != nil {
 			return err
 		}
 	}
@@ -374,64 +411,94 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 	return nil
 }
 
-// deleteRelease deletes a helm release
-func (c *ConfigurationChanger) deleteRelease(e *keptnevents.ConfigurationChangeEventData, generated bool) error {
+// deleteCanaryRelease deletes a helm release
+func (c *ConfigurationChanger) deleteCanaryRelease(e *keptnevents.ConfigurationChangeEventData) error {
 	c.logger.Info(fmt.Sprintf("Start deleting deployment/release of service %s of project %s in stage %s", e.Service, e.Project, e.Stage))
-	if err := c.canaryLevelGen.DeleteRelease(e.Project, e.Stage, e.Service, generated); err != nil {
+	if err := c.canaryLevelGen.DeleteCanaryRelease(e.Project, e.Stage, e.Service); err != nil {
 		return fmt.Errorf("Error when deleting release %s: %s",
-			helm.GetReleaseName(e.Project, e.Stage, e.Service, generated), err.Error())
+			helm.GetReleaseName(e.Project, e.Stage, e.Service, false), err.Error())
 	}
 	c.logger.Info(fmt.Sprintf("Finished deleting deployment/release of service %s of project %s in stage %s", e.Service, e.Project, e.Stage))
 	return nil
 }
 
-// ApplyConfiguration applies the chart of the provided service.
-// Furthermore, this function waits until all deployments in the namespace are ready.
-func (c *ConfigurationChanger) ApplyConfiguration(project, stage, service string, generated bool) error {
+// SimulateApplyChart
+func (c *ConfigurationChanger) SimulateApplyChart(project, stage, service string, generated bool) (string, error) {
 
 	releaseName := helm.GetReleaseName(project, stage, service, generated)
 	namespace := c.canaryLevelGen.GetNamespace(project, stage, generated)
-	c.logger.Info(fmt.Sprintf("Start upgrading chart %s in namespace %s", releaseName, namespace))
+	c.logger.Info(fmt.Sprintf("Start dry-run of chart %s in namespace %s", releaseName, namespace))
 
 	url, err := serviceutils.GetConfigServiceURL()
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	ch, err := keptnutils.GetChart(project, service, stage, helm.GetChartName(service, generated), url.String())
 	if err != nil {
-		return fmt.Errorf("Error when reading chart %s: %s", helm.GetChartName(service, generated), err.Error())
+		return "", fmt.Errorf("Error when reading chart %s: %s", helm.GetChartName(service, generated), err.Error())
 	}
 
 	helmChartDir, err := ioutil.TempDir("", "")
 	if err != nil {
-		return fmt.Errorf("Error when creating temporary directory: %s", err.Error())
+		return "", fmt.Errorf("Error when creating temporary directory: %s", err.Error())
 	}
 	defer os.RemoveAll(helmChartDir)
 
 	chartPath, err := chartutil.Save(ch, helmChartDir)
 	if err != nil {
-		return fmt.Errorf("Error when saving chart into temporary directory %s: %s", helmChartDir, err.Error())
+		return "", fmt.Errorf("Error when saving chart into temporary directory %s: %s", helmChartDir, err.Error())
+	}
+
+	msg, err := keptnutils.ExecuteCommand("helm", []string{"upgrade", "--install", releaseName,
+		chartPath, "--namespace", namespace, "--reset-values", "--dry-run"})
+	if err != nil {
+		return "", fmt.Errorf("Error when making a dry run of chart %s in namespace %s: %s",
+			releaseName, namespace, err.Error())
+	}
+	c.logger.Debug(msg)
+	return msg, nil
+}
+
+// ApplyConfiguration applies the chart of the provided service.
+// Furthermore, this function waits until all deployments in the namespace are ready.
+func (c *ConfigurationChanger) ApplyChart(ch *chart.Chart, project, stage, service string, generated bool) (string, error) {
+
+	releaseName := helm.GetReleaseName(project, stage, service, generated)
+	namespace := c.canaryLevelGen.GetNamespace(project, stage, generated)
+	c.logger.Info(fmt.Sprintf("Start upgrading chart %s in namespace %s", releaseName, namespace))
+
+	helmChartDir, err := ioutil.TempDir("", "")
+	if err != nil {
+		return "", fmt.Errorf("Error when creating temporary directory: %s", err.Error())
+	}
+	defer os.RemoveAll(helmChartDir)
+
+	chartPath, err := chartutil.Save(ch, helmChartDir)
+	if err != nil {
+		return "", fmt.Errorf("Error when saving chart into temporary directory %s: %s", helmChartDir, err.Error())
 	}
 
 	msg, err := keptnutils.ExecuteCommand("helm", []string{"upgrade", "--install", releaseName,
 		chartPath, "--namespace", namespace, "--reset-values", "--wait", "--force"})
 	if err != nil {
-		return fmt.Errorf("Error when upgrading chart %s in namespace %s: %s",
+		return "", fmt.Errorf("Error when upgrading chart %s in namespace %s: %s",
 			releaseName, namespace, err.Error())
 	}
 	c.logger.Debug(msg)
 
-	// Undo manual scalings of deployments becaue helm upgrade does not do
-	if err := c.undoScaling(ch, namespace); err != nil {
-		return err
+	if generated {
+		// Undo manual scaling of deployments because helm upgrade does not do
+		if err := c.undoScaling(ch, namespace); err != nil {
+			return "", err
+		}
 	}
 
 	if err := keptnutils.WaitForDeploymentsInNamespace(getInClusterConfig(), namespace); err != nil {
-		return fmt.Errorf("Error when waiting for deployments in namespace %s: %s", namespace, err.Error())
+		return "", fmt.Errorf("Error when waiting for deployments in namespace %s: %s", namespace, err.Error())
 	}
 	c.logger.Info(fmt.Sprintf("Finished upgrading chart %s in namespace %s", releaseName, namespace))
-	return nil
+	return msg, nil
 }
 
 func (c *ConfigurationChanger) undoScaling(ch *chart.Chart, namespace string) error {
@@ -443,7 +510,7 @@ func (c *ConfigurationChanger) undoScaling(ch *chart.Chart, namespace string) er
 	if err != nil {
 		return err
 	}
-	chartDepls, err := keptnutils.GetRenderedDeployments(ch)
+	chartDepls, err := getDeployments(ch)
 	if err != nil {
 		return err
 	}
@@ -488,4 +555,29 @@ func getInClusterConfig() bool {
 		return true
 	}
 	return false
+}
+
+func getDeployments(ch *chart.Chart) ([]*appsv1.Deployment, error) {
+
+	deployments := make([]*appsv1.Deployment, 0, 0)
+
+	for _, v := range ch.Templates {
+		dec := kyaml.NewYAMLToJSONDecoder(bytes.NewReader(v.Data))
+		for {
+			var dpl appsv1.Deployment
+			err := dec.Decode(&dpl)
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				continue
+			}
+
+			if keptnutils.IsDeployment(&dpl) {
+				deployments = append(deployments, &dpl)
+			}
+		}
+	}
+
+	return deployments, nil
 }

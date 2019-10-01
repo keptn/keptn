@@ -1,22 +1,20 @@
 package helm
 
 import (
-	"encoding/json"
+	"errors"
 	"fmt"
-	"io"
-	"regexp"
+	"log"
+	"os"
 	"strings"
 
+	keptnevents "github.com/keptn/go-utils/pkg/events"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/helm-service/controller/mesh"
-	"github.com/keptn/keptn/helm-service/pkg/objectutils"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	kyaml "k8s.io/apimachinery/pkg/util/yaml"
-	"k8s.io/helm/pkg/chartutil"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/helm/pkg/proto/hapi/chart"
-	"k8s.io/helm/pkg/renderutil"
-	"k8s.io/helm/pkg/timeconv"
+	"sigs.k8s.io/yaml"
 )
 
 type GeneratedChartHandler struct {
@@ -32,246 +30,277 @@ func NewGeneratedChartHandler(mesh mesh.Mesh, canaryLevelGen CanaryLevelGenerato
 
 // GenerateDuplicateManagedChart generates a duplicated chart which is managed by keptn and used for
 // b/g and canary releases
-func (c *GeneratedChartHandler) GenerateDuplicateManagedChart(ch *chart.Chart, project string, stageName string, service string) ([]byte, error) {
+func (c *GeneratedChartHandler) GenerateDuplicateManagedChart(helmUpgradeMsg string, project string, stageName string, service string) (*chart.Chart, error) {
 
-	c.changeChartFile(ch)
+	if _, ok := c.canaryLevelGen.(*CanaryOnDeploymentGenerator); ok {
 
-	if err := c.changeTemplateContent(ch, project, stageName, service); err != nil {
+		meta := &chart.Metadata{
+			Name:     service + "-generated",
+			Keywords: []string{"deployment_strategy=" + keptnevents.Duplicate.String()},
+			Version:  "0.1.0",
+		}
+		ch := chart.Chart{Metadata: meta}
+
+		svcs, err := getServices(helmUpgradeMsg, project, stageName)
+		if err != nil {
+			return nil, err
+		}
+		depls, err := getDeployments(helmUpgradeMsg, project, stageName)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, svc := range svcs {
+			templates, err := c.generateServices(svc, project, stageName)
+			if err != nil {
+				return nil, err
+			}
+			ch.Templates = append(ch.Templates, templates...)
+		}
+
+		for _, depl := range depls {
+			template, err := c.generateDeployment(depl)
+			if err != nil {
+				return nil, err
+			}
+			ch.Templates = append(ch.Templates, template)
+		}
+
+		return &ch, nil
+	}
+	log.Fatal("Currently canary is only supported on a deployment-level")
+	return nil, nil
+}
+
+func getServices(helmUpgradeMsg string, project string, stageName string) ([]*corev1.Service, error) {
+
+	namespace := project + "-" + stageName
+	serviceNames, err := getServiceNames(helmUpgradeMsg)
+	if err != nil {
+		return nil, err
+	}
+	useInClusterConfig := false
+	if os.Getenv("ENVIRONMENT") == "production" {
+		useInClusterConfig = true
+	}
+	clientset, err := keptnutils.GetClientset(useInClusterConfig)
+	if err != nil {
+		return nil, err
+	}
+	services := []*corev1.Service{}
+	for _, serviceName := range serviceNames {
+		svc, err := clientset.CoreV1().Services(namespace).Get(serviceName, metav1.GetOptions{})
+		if err != nil {
+			return nil, err
+		}
+		services = append(services, svc)
+	}
+	return services, nil
+}
+
+func getServiceNames(helmUpgradeMsg string) ([]string, error) {
+	serviceNames := []string{}
+	startIdx := strings.Index(helmUpgradeMsg, "==> v1/Service")
+	if startIdx > 0 {
+		endIdx := strings.Index(helmUpgradeMsg[startIdx:], "\n\n")
+		serviceBlock := strings.TrimSpace(helmUpgradeMsg[startIdx : startIdx+endIdx])
+		lines := strings.Split(serviceBlock, "\n")
+		if len(lines) < 3 {
+			return nil, errors.New("Unexpected format of helm upgrade message")
+		}
+		for i := 2; i < len(lines); i++ {
+			parts := strings.Split(lines[i], " ")
+			serviceNames = append(serviceNames, strings.TrimSpace(parts[0]))
+		}
+	}
+	return serviceNames, nil
+}
+
+func getDeployments(helmUpgradeMsg string, project string, stageName string) ([]*appsv1.Deployment, error) {
+	namespace := project + "-" + stageName
+	deploymentNames, err := getDeploymentNames(helmUpgradeMsg)
+	if err != nil {
+		return nil, err
+	}
+	useInClusterConfig := false
+	if os.Getenv("ENVIRONMENT") == "production" {
+		useInClusterConfig = true
+	}
+	clientset, err := keptnutils.GetClientset(useInClusterConfig)
+	if err != nil {
+		return nil, err
+	}
+	deployments := []*appsv1.Deployment{}
+	for _, deplName := range deploymentNames {
+		depl, err := clientset.AppsV1().Deployments(namespace).Get(deplName, metav1.GetOptions{})
+		if err != nil {
+			return nil, err
+		}
+		deployments = append(deployments, depl)
+	}
+	return deployments, nil
+}
+
+func getDeploymentNames(helmUpgradeMsg string) ([]string, error) {
+	deploymentNames := []string{}
+	startIdx := strings.Index(helmUpgradeMsg, "==> v1/Deployment")
+	if startIdx > 0 {
+		endIdx := strings.Index(helmUpgradeMsg[startIdx:], "\n\n")
+		deploymentBlock := strings.TrimSpace(helmUpgradeMsg[startIdx : startIdx+endIdx])
+		lines := strings.Split(deploymentBlock, "\n")
+		if len(lines) < 3 {
+			return nil, errors.New("Unexpected format of helm upgrade message")
+		}
+		for i := 2; i < len(lines); i++ {
+			parts := strings.Split(lines[i], " ")
+			deploymentNames = append(deploymentNames, strings.TrimSpace(parts[0]))
+		}
+	}
+	return deploymentNames, nil
+}
+
+func resetService(svc *corev1.Service) {
+	svc.Kind = "Service"
+	svc.APIVersion = "v1"
+	svc.Namespace = ""
+	svc.Spec.ClusterIP = ""
+	svc.Spec.LoadBalancerIP = ""
+	svc.Spec.ExternalIPs = nil
+	svc.Status = corev1.ServiceStatus{}
+}
+
+func resetDeployment(depl *appsv1.Deployment) {
+	depl.Kind = "Deployment"
+	depl.APIVersion = "apps/v1"
+	depl.Namespace = ""
+	depl.Status = appsv1.DeploymentStatus{}
+}
+
+func (c *GeneratedChartHandler) generateServices(svc *corev1.Service, project string, stageName string) ([]*chart.Template, error) {
+
+	templates := make([]*chart.Template, 0, 0)
+	serviceCanary := c.canaryLevelGen.GetCanaryService(*svc, project, stageName)
+	resetService(serviceCanary)
+	data, err := yaml.Marshal(serviceCanary)
+	if err != nil {
+		return nil, err
+	}
+	templates = append(templates, &chart.Template{Name: "templates/" + serviceCanary.Name + "-service" + ".yaml", Data: data})
+
+	// Generate destination rule for canary service
+	hostCanary := serviceCanary.Name + "." + c.canaryLevelGen.GetNamespace(project, stageName, true) + ".svc.cluster.local"
+	destinationRuleCanary, err := c.mesh.GenerateDestinationRule(serviceCanary.Name, hostCanary)
+	if err != nil {
+		return nil, err
+	}
+	templates = append(templates, &chart.Template{Name: "templates/" + serviceCanary.Name + c.mesh.GetDestinationRuleSuffix(), Data: destinationRuleCanary})
+
+	servicePrimary := svc.DeepCopy()
+	servicePrimary.Name = servicePrimary.Name + "-primary"
+	if _, ok := servicePrimary.Spec.Selector["app"]; ok {
+		servicePrimary.Spec.Selector["app"] = servicePrimary.Spec.Selector["app"] + "-primary"
+	}
+	if _, ok := servicePrimary.Spec.Selector["app.kubernetes.io/name"]; ok {
+		servicePrimary.Spec.Selector["app.kubernetes.io/name"] = servicePrimary.Spec.Selector["app.kubernetes.io/name"] + "-primary"
+	}
+	resetService(servicePrimary)
+	data, err = yaml.Marshal(servicePrimary)
+	if err != nil {
+		return nil, err
+	}
+	templates = append(templates, &chart.Template{Name: "templates/" + servicePrimary.Name + "-service" + ".yaml", Data: data})
+
+	// Generate destination rule for primary service
+	hostPrimary := servicePrimary.Name + "." + c.canaryLevelGen.GetNamespace(project, stageName, true) + ".svc.cluster.local"
+	destinationRulePrimary, err := c.mesh.GenerateDestinationRule(servicePrimary.Name, hostPrimary)
+	if err != nil {
+		return nil, err
+	}
+	templates = append(templates, &chart.Template{Name: "templates/" + servicePrimary.Name + c.mesh.GetDestinationRuleSuffix(), Data: destinationRulePrimary})
+
+	// Generate virtual service
+	gws := []string{GetGatewayName(project, stageName) + "." + GetUmbrellaNamespace(project, stageName), "mesh"}
+	hosts := []string{svc.Name + "." + c.canaryLevelGen.GetNamespace(project, stageName, false) + "." + c.keptnDomain,
+		svc.Name, svc.Name + "." + c.canaryLevelGen.GetNamespace(project, stageName, false)}
+	destCanary := mesh.HTTPRouteDestination{Host: hostCanary, Weight: 0}
+	destPrimary := mesh.HTTPRouteDestination{Host: hostPrimary, Weight: 100}
+	httpRouteDestinations := []mesh.HTTPRouteDestination{destCanary, destPrimary}
+
+	vs, err := c.mesh.GenerateVirtualService(svc.Name, gws, hosts, httpRouteDestinations)
+	if err != nil {
 		return nil, err
 	}
 
-	return keptnutils.PackageChart(ch)
+	templates = append(templates, &chart.Template{Name: "templates/" + svc.Name + c.mesh.GetVirtualServiceSuffix(), Data: vs})
+	return templates, nil
+}
+
+func (c *GeneratedChartHandler) generateDeployment(depl *appsv1.Deployment) (*chart.Template, error) {
+	primaryDeployment := depl.DeepCopy()
+
+	primaryDeployment.Name = primaryDeployment.Name + "-primary"
+	if _, ok := primaryDeployment.Spec.Selector.MatchLabels["app"]; ok {
+		primaryDeployment.Spec.Selector.MatchLabels["app"] = primaryDeployment.Spec.Selector.MatchLabels["app"] + "-primary"
+	}
+	if _, ok := primaryDeployment.Spec.Selector.MatchLabels["app.kubernetes.io/name"]; ok {
+		primaryDeployment.Spec.Selector.MatchLabels["app.kubernetes.io/name"] = primaryDeployment.Spec.Selector.MatchLabels["app.kubernetes.io/name"] + "-primary"
+	}
+	if _, ok := primaryDeployment.Spec.Template.ObjectMeta.Labels["app"]; ok {
+		primaryDeployment.Spec.Template.ObjectMeta.Labels["app"] = primaryDeployment.Spec.Template.ObjectMeta.Labels["app"] + "-primary"
+	}
+	if _, ok := primaryDeployment.Spec.Template.ObjectMeta.Labels["app.kubernetes.io/name"]; ok {
+		primaryDeployment.Spec.Template.ObjectMeta.Labels["app.kubernetes.io/name"] = primaryDeployment.Spec.Template.ObjectMeta.Labels["app.kubernetes.io/name"] + "-primary"
+	}
+	resetDeployment(primaryDeployment)
+	data, err := yaml.Marshal(primaryDeployment)
+	if err != nil {
+		return nil, err
+	}
+	return &chart.Template{Name: "templates/" + primaryDeployment.Name + "-deployment" + ".yaml", Data: data}, nil
 }
 
 // GenerateMeshChart generates a chart containing the required mesh setup
-func (c *GeneratedChartHandler) GenerateMeshChart(ch *chart.Chart, project string, stageName string) ([]byte, error) {
+func (c *GeneratedChartHandler) GenerateMeshChart(helmUpgradeMsg string, project string, stageName string,
+	service string) (*chart.Chart, error) {
 
-	c.changeChartFile(ch)
-	newTemplates := make([]*chart.Template, 0, 0)
-
-	services, err := keptnutils.GetRenderedServices(ch)
-	if err != nil {
-		return nil, err
-	}
 	namespace := project + "-" + stageName
 
-	for _, svc := range services {
-		// Generate virtual service
-		gws := []string{GetGatewayName(project, stageName) + "." + GetUmbrellaNamespace(project, stageName), "mesh"}
-		hosts := []string{svc.Name + "." + namespace + "." + c.keptnDomain,
-			svc.Name, svc.Name + "." + namespace}
-		host := svc.Name + "." + namespace + ".svc.cluster.local"
-		dest := mesh.HTTPRouteDestination{Host: host}
-		httpRouteDestinations := []mesh.HTTPRouteDestination{dest}
+	if _, ok := c.canaryLevelGen.(*CanaryOnDeploymentGenerator); ok {
 
-		vs, err := c.mesh.GenerateVirtualService(svc.Name, gws, hosts, httpRouteDestinations)
+		meta := &chart.Metadata{
+			Name:     service + "-generated",
+			Keywords: []string{"deployment_strategy=" + keptnevents.Direct.String()},
+			Version:  "0.1.0",
+		}
+		ch := chart.Chart{Metadata: meta}
+
+		svcs, err := getServices(helmUpgradeMsg, project, stageName)
 		if err != nil {
 			return nil, err
 		}
 
-		vsTemplate := chart.Template{Name: "templates/" + svc.Name + c.mesh.GetVirtualServiceSuffix(), Data: vs}
-		newTemplates = append(newTemplates, &vsTemplate)
-	}
+		for _, svc := range svcs {
+			// Generate virtual service
+			gws := []string{GetGatewayName(project, stageName) + "." + GetUmbrellaNamespace(project, stageName), "mesh"}
+			hosts := []string{svc.Name + "." + namespace + "." + c.keptnDomain,
+				svc.Name, svc.Name + "." + namespace}
+			host := svc.Name + "." + namespace + ".svc.cluster.local"
+			dest := mesh.HTTPRouteDestination{Host: host}
+			httpRouteDestinations := []mesh.HTTPRouteDestination{dest}
 
-	ch.Values.Raw = ""
-	ch.Values.Values = make(map[string]*chart.Value)
-	ch.Templates = newTemplates
-	return keptnutils.PackageChart(ch)
-}
-
-func (c *GeneratedChartHandler) changeChartFile(ch *chart.Chart) {
-
-	ch.Metadata.Name = ch.Metadata.Name + "-generated"
-	ch.Metadata.Description = ch.Metadata.Description + " (generated)"
-}
-
-func insertReleaseName(ch *chart.Chart, project string, stage string, service string, generated bool) {
-
-	releaseName := GetReleaseName(project, stage, service, generated)
-	re := regexp.MustCompile(`\{\{(\s*\.Release\.Name*\s*)\}\}`)
-	for _, template := range ch.Templates {
-		template.Data = []byte(re.ReplaceAllString(string(template.Data), releaseName))
-	}
-}
-
-func (c *GeneratedChartHandler) changeTemplateContent(ch *chart.Chart, project string,
-	stage string, service string) error {
-
-	insertReleaseName(ch, project, stage, service, true)
-
-	renderOpts := renderutil.Options{
-		ReleaseOptions: chartutil.ReleaseOptions{
-			Name:      ch.Metadata.Name,
-			IsInstall: false,
-			IsUpgrade: false,
-			Time:      timeconv.Now(),
-		},
-	}
-	renderedTemplates, err := renderutil.Render(ch, ch.Values, renderOpts)
-	if err != nil {
-		return err
-	}
-
-	newTemplates := make([]*chart.Template, 0, 0)
-
-	for k, v := range renderedTemplates {
-		dec := kyaml.NewYAMLToJSONDecoder(strings.NewReader(v))
-		newContent := make([]byte, 0, 0)
-		for {
-			var document interface{}
-			err := dec.Decode(&document)
-			if err == io.EOF {
-				break
-			}
+			vs, err := c.mesh.GenerateVirtualService(svc.Name, gws, hosts, httpRouteDestinations)
 			if err != nil {
-				return err
+				return nil, err
 			}
 
-			doc, err := json.Marshal(document)
-			if err != nil {
-				return err
-			}
-
-			newServiceTemplateContent, newServiceTemplates, err := c.handleService(doc, project, stage)
-			if err != nil {
-				return err
-			}
-			if len(newServiceTemplateContent) > 0 {
-				newContent = append(newContent, newServiceTemplateContent...)
-				newTemplates = append(newTemplates, newServiceTemplates...)
-				continue
-			}
-
-			newDeploymentTemplateContent, err := c.handleDeployment(doc)
-			if err != nil {
-				return err
-			}
-			if len(newDeploymentTemplateContent) > 0 {
-				newContent = append(newContent, newDeploymentTemplateContent...)
-				continue
-			}
-
-			if c.canaryLevelGen.IsK8sResourceDuplicated() {
-				newContent, err = objectutils.AppendAsYaml(newContent, document)
-				if err != nil {
-					return err
-				}
-			}
+			vsTemplate := chart.Template{Name: "templates/" + svc.Name + c.mesh.GetVirtualServiceSuffix(), Data: vs}
+			ch.Templates = append(ch.Templates, &vsTemplate)
 		}
 
-		if len(newContent) > 0 {
-			newTemplates = append(newTemplates, &chart.Template{Name: k[len(ch.Metadata.Name)+1:], Data: newContent})
-		}
+		return &ch, nil
 	}
-
-	ch.Templates = newTemplates
-	return nil
-}
-
-func (c *GeneratedChartHandler) handleService(document []byte, project string, stageName string) ([]byte, []*chart.Template, error) {
-
-	var svc corev1.Service
-	if err := json.Unmarshal(document, &svc); err != nil {
-		// Ignore unmarshaling error
-		return nil, nil, nil
-	}
-
-	newTemplateContent := make([]byte, 0, 0)
-	newTemplates := make([]*chart.Template, 0, 0)
-
-	if keptnutils.IsService(&svc) {
-		var err error
-
-		serviceCanary := c.canaryLevelGen.GetCanaryService(svc, project, stageName)
-
-		newTemplateContent, err = objectutils.AppendAsYaml(newTemplateContent, serviceCanary)
-		if err != nil {
-			return nil, nil, err
-		}
-
-		// Generate destination rule for canary service
-		hostCanary := serviceCanary.Name + "." + c.canaryLevelGen.GetNamespace(project, stageName, true) + ".svc.cluster.local"
-		destinationRuleCanary, err := c.mesh.GenerateDestinationRule(serviceCanary.Name, hostCanary)
-		if err != nil {
-			return nil, nil, err
-		}
-
-		d1 := chart.Template{Name: "templates/" + serviceCanary.Name + c.mesh.GetDestinationRuleSuffix(), Data: destinationRuleCanary}
-		newTemplates = append(newTemplates, &d1)
-
-		servicePrimary := svc.DeepCopy()
-		servicePrimary.Name = servicePrimary.Name + "-primary"
-		if _, ok := servicePrimary.Spec.Selector["app"]; ok {
-			servicePrimary.Spec.Selector["app"] = servicePrimary.Spec.Selector["app"] + "-primary"
-		}
-		if _, ok := servicePrimary.Spec.Selector["app.kubernetes.io/name"]; ok {
-			servicePrimary.Spec.Selector["app.kubernetes.io/name"] = servicePrimary.Spec.Selector["app.kubernetes.io/name"] + "-primary"
-		}
-
-		newTemplateContent, err = objectutils.AppendAsYaml(newTemplateContent, servicePrimary)
-		if err != nil {
-			return nil, nil, err
-		}
-
-		// Generate destination rule for primary service
-		hostPrimary := servicePrimary.Name + "." + c.canaryLevelGen.GetNamespace(project, stageName, true) + ".svc.cluster.local"
-		destinationRulePrimary, err := c.mesh.GenerateDestinationRule(servicePrimary.Name, hostPrimary)
-		if err != nil {
-			return nil, nil, err
-		}
-
-		d2 := chart.Template{Name: "templates/" + servicePrimary.Name + c.mesh.GetDestinationRuleSuffix(), Data: destinationRulePrimary}
-		newTemplates = append(newTemplates, &d2)
-
-		// Generate virtual service
-		gws := []string{GetGatewayName(project, stageName) + "." + GetUmbrellaNamespace(project, stageName), "mesh"}
-		hosts := []string{svc.Name + "." + c.canaryLevelGen.GetNamespace(project, stageName, false) + "." + c.keptnDomain,
-			svc.Name, svc.Name + "." + c.canaryLevelGen.GetNamespace(project, stageName, true)}
-		destCanary := mesh.HTTPRouteDestination{Host: hostCanary, Weight: 0}
-		destPrimary := mesh.HTTPRouteDestination{Host: hostPrimary, Weight: 100}
-		httpRouteDestinations := []mesh.HTTPRouteDestination{destCanary, destPrimary}
-
-		vs, err := c.mesh.GenerateVirtualService(svc.Name, gws, hosts, httpRouteDestinations)
-		if err != nil {
-			return nil, nil, err
-		}
-
-		vsTemplate := chart.Template{Name: "templates/" + svc.Name + c.mesh.GetVirtualServiceSuffix(), Data: vs}
-		newTemplates = append(newTemplates, &vsTemplate)
-	}
-	return newTemplateContent, newTemplates, nil
-}
-
-func (c *GeneratedChartHandler) handleDeployment(document []byte) ([]byte, error) {
-	// Try to unmarshal Deployment
-	var depl appsv1.Deployment
-	if err := json.Unmarshal(document, &depl); err != nil {
-		// Ignore unmarshaling error
-		return nil, nil
-	}
-
-	newTemplateContent := make([]byte, 0, 0)
-	if keptnutils.IsDeployment(&depl) {
-		depl.Name = depl.Name + "-primary"
-		if _, ok := depl.Spec.Selector.MatchLabels["app"]; ok {
-			depl.Spec.Selector.MatchLabels["app"] = depl.Spec.Selector.MatchLabels["app"] + "-primary"
-		}
-		if _, ok := depl.Spec.Selector.MatchLabels["app.kubernetes.io/name"]; ok {
-			depl.Spec.Selector.MatchLabels["app.kubernetes.io/name"] = depl.Spec.Selector.MatchLabels["app.kubernetes.io/name"] + "-primary"
-		}
-		if _, ok := depl.Spec.Template.ObjectMeta.Labels["app"]; ok {
-			depl.Spec.Template.ObjectMeta.Labels["app"] = depl.Spec.Template.ObjectMeta.Labels["app"] + "-primary"
-		}
-		if _, ok := depl.Spec.Template.ObjectMeta.Labels["app.kubernetes.io/name"]; ok {
-			depl.Spec.Template.ObjectMeta.Labels["app.kubernetes.io/name"] = depl.Spec.Template.ObjectMeta.Labels["app.kubernetes.io/name"] + "-primary"
-		}
-		var err error
-		newTemplateContent, err = objectutils.AppendAsYaml(newTemplateContent, depl)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return newTemplateContent, nil
+	log.Fatal("Currently canary is only supported on a deployment-level")
+	return nil, nil
 }
 
 // UpdateCanaryWeight updates the provided traffic weight in the VirtualService contained in the chart
@@ -291,6 +320,22 @@ func (c *GeneratedChartHandler) UpdateCanaryWeight(ch *chart.Chart, canaryWeight
 			break
 		}
 	}
+	return nil
+}
 
+// GenerateEmptyChart generates an empty chart
+func (c *GeneratedChartHandler) GenerateEmptyChart(project string, stageName string, service string,
+	strategy keptnevents.DeploymentStrategy) *chart.Chart {
+
+	if _, ok := c.canaryLevelGen.(*CanaryOnDeploymentGenerator); ok {
+
+		meta := &chart.Metadata{
+			Name:     service + "-generated",
+			Keywords: []string{"deployment_strategy=" + strategy.String()},
+			Version:  "0.1.0",
+		}
+		return &chart.Chart{Metadata: meta}
+	}
+	log.Fatal("Currently canary is only supported on a deployment-level")
 	return nil
 }

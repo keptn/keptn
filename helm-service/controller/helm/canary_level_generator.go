@@ -9,5 +9,5 @@ type CanaryLevelGenerator interface {
 	GetCanaryService(originalSvc corev1.Service, project string, stageName string) (canaryService *corev1.Service)
 	IsK8sResourceDuplicated() bool
 	GetNamespace(project string, stage string, generated bool) string
-	DeleteRelease(project string, stage string, service string, generated bool) error
+	DeleteCanaryRelease(project string, stage string, service string) error
 }
