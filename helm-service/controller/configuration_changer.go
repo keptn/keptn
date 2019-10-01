@@ -23,7 +23,6 @@ import (
 	"github.com/keptn/keptn/helm-service/pkg/serviceutils"
 	"github.com/tidwall/sjson"
 	appsv1 "k8s.io/api/apps/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kyaml "k8s.io/apimachinery/pkg/util/yaml"
 	"k8s.io/helm/pkg/chartutil"
 )
@@ -487,50 +486,11 @@ func (c *ConfigurationChanger) ApplyChart(ch *chart.Chart, project, stage, servi
 	}
 	c.logger.Debug(msg)
 
-	if generated {
-		// Undo manual scaling of deployments because helm upgrade does not do
-		if err := c.undoScaling(ch, namespace); err != nil {
-			return "", err
-		}
-	}
-
 	if err := keptnutils.WaitForDeploymentsInNamespace(getInClusterConfig(), namespace); err != nil {
 		return "", fmt.Errorf("Error when waiting for deployments in namespace %s: %s", namespace, err.Error())
 	}
 	c.logger.Info(fmt.Sprintf("Finished upgrading chart %s in namespace %s", releaseName, namespace))
 	return msg, nil
-}
-
-func (c *ConfigurationChanger) undoScaling(ch *chart.Chart, namespace string) error {
-	useInClusterConfig := false
-	if os.Getenv("ENVIRONMENT") == "production" {
-		useInClusterConfig = true
-	}
-	clientset, err := keptnutils.GetClientset(useInClusterConfig)
-	if err != nil {
-		return err
-	}
-	chartDepls, err := getDeployments(ch)
-	if err != nil {
-		return err
-	}
-
-	for _, chartDepl := range chartDepls {
-		appliedDeployment, err := clientset.AppsV1().Deployments(namespace).Get(chartDepl.Name, metav1.GetOptions{})
-		if err != nil {
-			return err
-		}
-
-		if *chartDepl.Spec.Replicas != *appliedDeployment.Spec.Replicas {
-			c.logger.Debug(fmt.Sprintf("Reset scaling of deployment %s in namespace %s to %d", chartDepl.Name, namespace, *chartDepl.Spec.Replicas))
-			if err := keptnutils.ScaleDeployment(useInClusterConfig, appliedDeployment.Name, namespace, *chartDepl.Spec.Replicas); err != nil {
-				return err
-			}
-		} else {
-			c.logger.Debug(fmt.Sprintf("Deployment %s in namespace %s is correctly scaled", chartDepl.Name, namespace))
-		}
-	}
-	return nil
 }
 
 // ApplyDirectory applies the provided directory
@@ -555,29 +515,4 @@ func getInClusterConfig() bool {
 		return true
 	}
 	return false
-}
-
-func getDeployments(ch *chart.Chart) ([]*appsv1.Deployment, error) {
-
-	deployments := make([]*appsv1.Deployment, 0, 0)
-
-	for _, v := range ch.Templates {
-		dec := kyaml.NewYAMLToJSONDecoder(bytes.NewReader(v.Data))
-		for {
-			var dpl appsv1.Deployment
-			err := dec.Decode(&dpl)
-			if err == io.EOF {
-				break
-			}
-			if err != nil {
-				continue
-			}
-
-			if keptnutils.IsDeployment(&dpl) {
-				deployments = append(deployments, &dpl)
-			}
-		}
-	}
-
-	return deployments, nil
 }
