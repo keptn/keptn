@@ -421,7 +421,7 @@
   version = "v1.4.0"
 
 [[projects]]
-  digest = "1:7eba0158f93b43d9ac1099c959dec8d7d778b375db7507ac2cbc685263b9c7f5"
+  digest = "1:aa4c68b8f22f7dafc90d2d2f266c65824e81ed8befd25fec2dbb7d8e14675337"
   name = "github.com/keptn/go-utils"
   packages = [
     "pkg/events",
@@ -429,8 +429,8 @@
     "pkg/utils",
   ]
   pruneopts = "UT"
-  revision = "9a7a6235999065b3f1f69159bc669864c03a4333"
-  version = "0.2.0"
+  revision = "f5c220b4f954e52994bad71cf9bac152a1706f78"
+  version = "0.2.1"
 
 [[projects]]
   digest = "1:fd7f169f32c221b096c74e756bda16fe22d3bb448bbf74042fd0700407a1f92f"
@@ -695,7 +695,7 @@
     "ssh/terminal",
   ]
   pruneopts = "UT"
-  revision = "a832865fa7ada6126f4c6124ac49f71be71bff2a"
+  revision = "88343688bb370571259f1a6c98274757b61e3bb1"
 
 [[projects]]
   branch = "master"
@@ -712,7 +712,7 @@
     "proxy",
   ]
   pruneopts = "UT"
-  revision = "c00fd9afed17cfdca9b3e1e3b8de7ef2b3f0347b"
+  revision = "c5a3c61f89f3ed696ec36b629ef1b97541165225"
 
 [[projects]]
   branch = "master"
@@ -874,12 +874,12 @@
   version = "v0.1.2"
 
 [[projects]]
-  digest = "1:4d2e5a73dc1500038e504a8d78b986630e3626dc027bc030ba5c75da257cdb96"
+  digest = "1:1033856ca84153217fda9f527e1c02e11b636e28ad2ab19f2ea4a06e4abbe8e1"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
   pruneopts = "UT"
-  revision = "51d6538a90f86fe93ac480b35f37b2be17fef232"
-  version = "v2.2.2"
+  revision = "bb4e33bf68bf89cad44d386192cbed201f35b241"
+  version = "v2.2.3"
 
 [[projects]]
   digest = "1:a5cc901b8e54c4b73a62f97dc7c8f6c46e347c148a7a38e09b2e942c2587ba03"
@@ -1098,7 +1098,6 @@
     "github.com/kinbiko/jsonassert",
     "github.com/stretchr/testify/assert",
     "github.com/tidwall/sjson",
-    "gopkg.in/yaml.v2",
     "gotest.tools/assert",
     "k8s.io/api/apps/v1",
     "k8s.io/api/core/v1",
