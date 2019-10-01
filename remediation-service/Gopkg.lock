@@ -548,8 +548,7 @@
   version = "v1.4.0"
 
 [[projects]]
-  branch = "develop"
-  digest = "1:0b223e52326224d28403c5958f74619b88d70d6cf8cb7f78acd670235c7757c0"
+  digest = "1:aa4c68b8f22f7dafc90d2d2f266c65824e81ed8befd25fec2dbb7d8e14675337"
   name = "github.com/keptn/go-utils"
   packages = [
     "pkg/events",
@@ -557,7 +556,8 @@
     "pkg/utils",
   ]
   pruneopts = "UT"
-  revision = "c51d3e2c42c7ffead025f6ea18f1576da8a74504"
+  revision = "f5c220b4f954e52994bad71cf9bac152a1706f78"
+  version = "0.2.1"
 
 [[projects]]
   digest = "1:fd7f169f32c221b096c74e756bda16fe22d3bb448bbf74042fd0700407a1f92f"
