@@ -1,10 +1,7 @@
 package helm
 
 import (
-	"os"
-
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
-	"github.com/keptn/keptn/helm-service/pkg/serviceutils"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -35,29 +32,10 @@ func (*CanaryOnDeploymentGenerator) GetNamespace(project string, stage string, g
 }
 
 // DeleteRelease deletes the release by scaling the deployments down to zero
-func (c *CanaryOnDeploymentGenerator) DeleteRelease(project string, stage string, service string, generated bool) error {
-	useInClusterConfig := false
-	if os.Getenv("ENVIRONMENT") == "production" {
-		useInClusterConfig = true
-	}
-
-	url, err := serviceutils.GetConfigServiceURL()
-	if err != nil {
+func (c *CanaryOnDeploymentGenerator) DeleteCanaryRelease(project string, stage string, service string) error {
+	releaseName := GetReleaseName(project, stage, service, false)
+	if _, err := keptnutils.ExecuteCommand("helm", []string{"delete", releaseName, "--purge"}); err != nil {
 		return err
-	}
-
-	ch, err := keptnutils.GetChart(project, service, stage, GetChartName(service, generated), url.String())
-	if err != nil {
-		return err
-	}
-	depls, err := keptnutils.GetRenderedDeployments(ch)
-	if err != nil {
-		return err
-	}
-	for _, dpl := range depls {
-		if err := keptnutils.ScaleDeployment(useInClusterConfig, dpl.Name, c.GetNamespace(project, stage, generated), 0); err != nil {
-			return err
-		}
 	}
 	return nil
 }

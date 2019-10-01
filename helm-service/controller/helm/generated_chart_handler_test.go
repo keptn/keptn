@@ -1,14 +1,8 @@
 package helm
 
 import (
-	"strings"
 	"testing"
 
-	"sigs.k8s.io/yaml"
-
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
-	"github.com/keptn/keptn/helm-service/controller/mesh"
-	"github.com/keptn/keptn/helm-service/pkg/apis/networking/istio/v1alpha3"
 	"github.com/keptn/keptn/helm-service/pkg/helmtest"
 	"github.com/stretchr/testify/assert"
 )
@@ -238,57 +232,35 @@ var valuesGen = helmtest.GeneratedResource{
 }`},
 }
 
-func TestGenerateManagedChart(t *testing.T) {
+func TestGetServiceNames(t *testing.T) {
 
-	data := helmtest.CreateHelmChartData(t)
+	const input = `NAME:   nginx-dev-nginx-service
+LAST DEPLOYED: Fri Sep 27 13:24:57 2019
+NAMESPACE: nginx-dev
+STATUS: DEPLOYED
 
-	h := NewGeneratedChartHandler(mesh.NewIstioMesh(), NewCanaryOnDeploymentGenerator(), "mydomain.sh")
-	inputChart, err := keptnutils.LoadChart(data)
-	if err != nil {
-		t.Error(err)
-	}
-	gen, err := h.GenerateManagedChart(inputChart, projectName, "production")
-	assert.Nil(t, err, "Generating the managed Chart should not return any error")
+RESOURCES:
+==> v1/ConfigMap
+NAME                           DATA  AGE
+nginx-dev-nginx-service-nginx  2     13s
 
-	ch, err := keptnutils.LoadChart(gen)
+==> v1/Service
+NAME   TYPE       CLUSTER-IP    EXTERNAL-IP  PORT(S)   AGE
+nginx  ClusterIP  10.60.32.169  <none>       8888/TCP  13s
 
-	// Compare templates
-	generatedTemplateResources := []helmtest.GeneratedResource{cartsCanaryIstioDestinationRuleGen, cartsIstioVirtualserviceGen, cartsPrimaryIstioDestinationRuleGen,
-		deploymentGen, serviceGen}
-	helmtest.Equals(ch, valuesGen, generatedTemplateResources, t)
-}
+==> v1/Deployment
+NAME   DESIRED  CURRENT  UP-TO-DATE  AVAILABLE  AGE
+nginx  1        1        1           1          13s
 
-func TestUpdateCanaryWeight(t *testing.T) {
-	data := helmtest.CreateHelmChartData(t)
+==> v1/Pod(related)
+NAME                                 READY  STATUS     RESTARTS  AGE
+nginx-7dc78b5869-4f4dp               1/1    Running    0         13s
+nginx-dev-nginx-service-nginx-c6jgz  0/1    Completed  0         11s
 
-	h := NewGeneratedChartHandler(mesh.NewIstioMesh(), NewCanaryOnDeploymentGenerator(), "mydomain.sh")
-	chart, err := keptnutils.LoadChart(data)
-	if err != nil {
-		t.Error(err)
-	}
-	genChartData, err := h.GenerateManagedChart(chart, "sockshop", "production")
-	if err != nil {
-		t.Error(err)
-	}
-	genChart, err := keptnutils.LoadChart(genChartData)
-	if err != nil {
-		t.Error(err)
-	}
 
-	h.UpdateCanaryWeight(genChart, 48)
-	assert.Nil(t, err, "Generating the managed Chart should not return any error")
 
-	template := helmtest.GetTemplateByName(genChart, "templates/carts-istio-virtualservice.yaml")
-	assert.NotNil(t, template, "Template must not be null")
-	vs := v1alpha3.VirtualService{}
-	err = yaml.Unmarshal(template.Data, &vs)
-	if err != nil {
-		t.Error(err)
-	}
-	assert.Equal(t, 1, len(vs.Spec.Http))
-	assert.Equal(t, 2, len(vs.Spec.Http[0].Route))
-	assert.Equal(t, int32(48), vs.Spec.Http[0].Route[0].Weight)
-	assert.True(t, strings.Contains(vs.Spec.Http[0].Route[0].Destination.Host, "canary"))
-	assert.Equal(t, int32(52), vs.Spec.Http[0].Route[1].Weight)
-	assert.True(t, strings.Contains(vs.Spec.Http[0].Route[1].Destination.Host, "primary"))
+`
+	services, err := getServiceNames(input)
+	assert.Nil(t, err)
+	assert.Equal(t, []string{"nginx"}, services)
 }
