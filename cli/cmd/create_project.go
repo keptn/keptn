@@ -35,8 +35,8 @@ var crProjectCmd = &cobra.Command{
 	Use:   "project PROJECTNAME --shipyard=FILEPATH",
 	Short: "Creates a new project.",
 	Long: `Creates a new project with the provided name and shipyard file. 
-The shipyard file describes the used stages. Furthermore, for these stages the shipyard file 
-describes the used deployment and test strategies.
+The shipyard file describes the used stages. These stages are defined by name, 
+deployment-, test-, and remediation strategy.
 
 Example:
 	keptn create project sockshop --shipyard=./shipyard.yaml`,
@@ -52,9 +52,9 @@ Example:
 			return errors.New("Requires PROJECTNAME")
 		}
 		if !utils.ValidateK8sName(args[0]) {
-			errorMsg := "Project name includes invalid characters or is not well-formed.\n"
-			errorMsg += "keptn relies on Helm charts and thus these conventions have to be followed: "
-			errorMsg += "start with a lower case letter, then lower case letters, dash and numbers are allowed.\n"
+			errorMsg := "Project name contains invalid characters or is not well-formed.\n"
+			errorMsg += "Keptn relies on Helm charts and thus these conventions have to be followed: "
+			errorMsg += "start with a lower case letter, then lower case letters and numbers are allowed.\n"
 			errorMsg += "You can find the guidelines here: https://github.com/helm/helm/blob/master/docs/chart_best_practices/conventions.md#chart-names\n"
 			errorMsg += "Please update project name and try again."
 			return errors.New(errorMsg)
@@ -67,15 +67,30 @@ Example:
 			return fmt.Errorf("Cannot find file %s", *createProjectParams.Shipyard)
 		}
 
+		// validate shipyard file
 		content, err := utils.ReadFile(*createProjectParams.Shipyard)
 		if err != nil {
 			return err
 		}
 
-		if err := testParseShipyard(content); err != nil {
+		shipyard, err := parseShipyard(content)
+		if err != nil {
 			return fmt.Errorf("Invalid shipyard file because parsing failed: %s", err.Error())
 		}
 
+		// check stage names
+		for _, stage := range shipyard.Stages {
+			if !utils.ValidateK8sName(stage.Name) {
+				errorMsg := "Stage " + stage.Name + " contains invalid characters or is not well-formed.\n"
+				errorMsg += "Keptn relies on Helm charts and thus these conventions have to be followed: "
+				errorMsg += "start with a lower case letter, then lower case letters and numbers are allowed.\n"
+				errorMsg += "You can find the guidelines here: https://github.com/helm/helm/blob/master/docs/chart_best_practices/conventions.md#chart-names\n"
+				errorMsg += "Please update stage name in your shipyard and try again."
+				return errors.New(errorMsg)
+			}
+		}
+
+		// check git credentials
 		gitUser := true
 		gitToken := true
 		remoteURL := true
@@ -155,9 +170,13 @@ Example:
 	},
 }
 
-func testParseShipyard(shipyardContent string) error {
+func parseShipyard(shipyardContent string) (*models.Shipyard, error) {
 	shipyard := models.Shipyard{}
-	return yaml.Unmarshal([]byte(shipyardContent), &shipyard)
+	err := yaml.Unmarshal([]byte(shipyardContent), &shipyard)
+	if err != nil {
+		return nil, err
+	}
+	return &shipyard, nil
 }
 
 func init() {
