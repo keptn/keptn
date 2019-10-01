@@ -130,3 +130,6 @@ verify_kubectl $? "Deploying keptn api virtualservice failed."
 
 helm init
 oc adm policy  add-cluster-role-to-user cluster-admin system:serviceaccount:kube-system:default
+
+# Inject istio into jmeter-service
+kubectl get deployment -n keptn jmeter-service -oyaml | istioctl kube-inject -f - | kubectl apply -f -
