@@ -5,7 +5,7 @@
 - Verification of remediation action by pitometer service [#850](https://github.com/keptn/keptn/issues/850)
 - Untar Helm chart in configuration-service [#870](https://github.com/keptn/keptn/issues/870)
 - Added additional features to Keptn's Bridge [#875](https://github.com/keptn/keptn/issues/875)
-    - Keptn entrypoints indicate whether it is a configuration-change or remediation-action
+    - Keptn entry points indicate whether it is a configuration-change or remediation-action
     - Include complete JSON payload of events
     - Show evaluation results of pitometer
     - Context-sensitive information for events (e.g. canary action, promotion to next stage, test duration)
