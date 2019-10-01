@@ -441,15 +441,15 @@
   version = "v1.1.7"
 
 [[projects]]
-  branch = "develop"
-  digest = "1:8f5d96948d1f62b47b9aab977c0486f198919e502d844a5e017faffa8c33659c"
+  digest = "1:9ea6cbd53efbdbd7b357e219aaa89c7aa6ca129bbf947ab963a7e4f03083d0ef"
   name = "github.com/keptn/go-utils"
   packages = [
     "pkg/models",
     "pkg/utils",
   ]
   pruneopts = "UT"
-  revision = "bb68d29c853235768e3254a5bf4fe2bc147f979d"
+  revision = "f5c220b4f954e52994bad71cf9bac152a1706f78"
+  version = "0.2.1"
 
 [[projects]]
   digest = "1:fd7f169f32c221b096c74e756bda16fe22d3bb448bbf74042fd0700407a1f92f"
@@ -714,7 +714,7 @@
     "ssh/terminal",
   ]
   pruneopts = "UT"
-  revision = "cea2066c64117dea9cba47afc7c35e4d2299107d"
+  revision = "88343688bb370571259f1a6c98274757b61e3bb1"
 
 [[projects]]
   branch = "master"
@@ -732,7 +732,7 @@
     "proxy",
   ]
   pruneopts = "UT"
-  revision = "c00fd9afed17cfdca9b3e1e3b8de7ef2b3f0347b"
+  revision = "c5a3c61f89f3ed696ec36b629ef1b97541165225"
 
 [[projects]]
   branch = "master"
@@ -750,7 +750,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:aeadc6dd81092e65915187d29b519925fa2f8ab45a71ee5f5091c11a4d67d0a0"
+  digest = "1:14f5ded65a63708325dc97d7a74e49439ad8f4c2493a7401a5535060ff061267"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
@@ -758,7 +758,7 @@
     "windows",
   ]
   pruneopts = "UT"
-  revision = "855e68c8590b0d6a9d08863d2982eb8aeddd98d3"
+  revision = "c990c680b611ac1aeb7d8f2af94a825f98d69720"
 
 [[projects]]
   digest = "1:66a2f252a58b4fbbad0e4e180e1d85a83c222b6bce09c3dcdef3dc87c72eda7c"
@@ -894,12 +894,12 @@
   version = "v0.1.2"
 
 [[projects]]
-  digest = "1:4d2e5a73dc1500038e504a8d78b986630e3626dc027bc030ba5c75da257cdb96"
+  digest = "1:1033856ca84153217fda9f527e1c02e11b636e28ad2ab19f2ea4a06e4abbe8e1"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
   pruneopts = "UT"
-  revision = "51d6538a90f86fe93ac480b35f37b2be17fef232"
-  version = "v2.2.2"
+  revision = "bb4e33bf68bf89cad44d386192cbed201f35b241"
+  version = "v2.2.3"
 
 [[projects]]
   digest = "1:910ec974550174f4ca48b9f4a3caec16b693e584c3762dc726dc0dcf28f8e318"
