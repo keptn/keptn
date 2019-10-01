@@ -42,8 +42,8 @@ func (*CanaryOnNamespaceGenerator) GetNamespace(project string, stage string, ge
 }
 
 // DeleteRelease deletes the release by deleting the helm chart
-func (*CanaryOnNamespaceGenerator) DeleteRelease(project string, stage string, service string, generated bool) error {
-	releaseName := GetReleaseName(project, stage, service, generated)
+func (*CanaryOnNamespaceGenerator) DeleteCanaryRelease(project string, stage string, service string) error {
+	releaseName := GetReleaseName(project, stage, service, false)
 	if _, err := keptnutils.ExecuteCommand("helm", []string{"delete", releaseName, "--purge"}); err != nil {
 		return err
 	}

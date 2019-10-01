@@ -3,7 +3,7 @@
     <div>
       <div v-if="traces && traces.length">
         <div class="traceHeader">
-          <h2>{{traces[0].data.project + ':' + traces[0].data.service}}</h2>
+          <h2>{{traces[1].data.project + ':' + traces[1].data.service}}</h2>
           <p
             v-if="traces[0].type === 'sh.keptn.event.configuration.change'"
           >
@@ -12,11 +12,11 @@
           <p
             v-if="traces[0].type === 'sh.keptn.event.problem.open'"
           >
-            <b>Problem detected:</b> {{traces[0].data.valuesCanary[0].Value}}
+            <b>Problem detected:</b> {{traces[0].data.problemtitle}}
           </p>
         </div>
 
-        <div v-for="stage in getTracesPerStage(traces)" class="traceHeader">
+        <div v-for="stage in getTracesPerStage(traces)" v-bind:key="stage.stageName" class="traceHeader">
           <h2 v-if="stage.stageName !== ''">Stage: {{stage.stageName}}</h2>
           <b-list-group >
             <div v-for="event in stage.events" v-bind:key="event.id" class="event-item">
@@ -71,14 +71,21 @@
                   <small>
                     <b>Test strategy: </b> {{ event.data.teststrategy }}
                     <br>
-                    <b>Duration: </b> {{ getDuration(event.time, event.data.startedat) }}
+                    <b>Duration: </b> {{ getDuration(event.timestamp, event.data.startedat) }}
                   </small>
                 </div>
 
-                <div v-if="event.type === 'sh.keptn.event.configuration.change'">
+                <div v-if="event.type === 'sh.keptn.event.configuration.change' && !event.source.includes('remediation-service')">
                   <hr>
                   <small>
                     <b>Action: </b> {{ event.data.canary | canaryAction }}
+                  </small>
+                </div>
+
+                <div v-if="event.type === 'sh.keptn.event.configuration.change' && event.source.includes('remediation-service')">
+                  <hr>
+                  <small>
+                    <b>Action: </b> {{ event.data.deploymentChanges | remediationAction }}
                   </small>
                 </div>
                 <!-- EVENT SPECIFIC DETAILS -->
@@ -148,7 +155,7 @@ export default {
     },
     canaryAction: function getCanaryAction(canary) {
       if (canary === undefined) {
-        return '';
+        return 'n/a';
       }
       if (canary.length > 0) {
         const canaryAction = canary.find(item => item.Key === 'action');
@@ -168,6 +175,25 @@ export default {
           return 'Discarding deployment and reverting back to latest stable version';
         }
       }
+    },
+    remediationAction: function getRemediationAction(deploymentChanges) {
+      if (deploymentChanges === undefined) {
+        return 'n/a';
+      }
+      if (deploymentChanges.length > 0 && deploymentChanges[0].length > 0) {
+        const attribute = deploymentChanges[0].find(item => item.Key === 'propertyPath');
+        if (attribute === undefined) {
+          return 'n/a';
+        }
+
+        const value = deploymentChanges[0].find(item => item.Key === 'value');
+        if (value === undefined) {
+          return 'n/a';
+        }
+
+        return `Set property ${attribute.Value} to ${value.Value}`;
+      }
+      return 'n/a';
     },
   },
 
@@ -198,7 +224,7 @@ export default {
       return event.type === 'sh.keptn.events.evaluation-done' && event.data.evaluationpassed === false;
     },
     isSuccess(event) {
-        return event.type === 'sh.keptn.events.evaluation-done' && event.data.evaluationpassed === true;
+      return event.type === 'sh.keptn.events.evaluation-done' && event.data.evaluationpassed === true;
     },
     activateEvent(contextId) {
       return this.$store.dispatch('activateEvent', contextId);
