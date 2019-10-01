@@ -471,8 +471,7 @@
   version = "v1.1.7"
 
 [[projects]]
-  branch = "develop"
-  digest = "1:38d074f6519a453330d629d3a1ed2cab3c48599249bb2901f3b7f297af0d07e4"
+  digest = "1:ee13144086fb9a47cdccab0e349db73b75a0a2951cf5a27f4d367834fe985dce"
   name = "github.com/keptn/go-utils"
   packages = [
     "pkg/events",
@@ -480,7 +479,8 @@
     "pkg/utils",
   ]
   pruneopts = ""
-  revision = "bb68d29c853235768e3254a5bf4fe2bc147f979d"
+  revision = "f5c220b4f954e52994bad71cf9bac152a1706f78"
+  version = "0.2.1"
 
 [[projects]]
   digest = "1:91317956b340c9e61a4287fd94c870bfad3f1922280c3e0a65db91c29017e8de"
@@ -716,12 +716,12 @@
   version = "v1.4.0"
 
 [[projects]]
-  digest = "1:22c7effcb4da0eacb2bb1940ee173fac010e9ef3c691f5de4b524d538bd980f5"
+  digest = "1:8fe76ce70e4077341d222a8a1040ac4d5ca66b23d5f58b446ba845a0c4c5884a"
   name = "go.uber.org/multierr"
   packages = ["."]
   pruneopts = ""
-  revision = "3c4937480c32f4c13a875a1829af76c98ca3d40a"
-  version = "v1.1.0"
+  revision = "71e610a0e48dbda460d9c18adca8b5f2de04a7c1"
+  version = "v1.2.0"
 
 [[projects]]
   digest = "1:984e93aca9088b440b894df41f2043b6a3db8f9cf30767032770bfc4796993b0"
@@ -740,7 +740,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:126540c0b5701555f216eabd6e3ff1229da48066493ec42fce47849f22c3e5fa"
+  digest = "1:70050a352600e9e1dd61c809d4694e19e844d4ffa10535f8f08caeeb3b735ee9"
   name = "golang.org/x/crypto"
   packages = [
     "cast5",
@@ -764,11 +764,11 @@
     "ssh/terminal",
   ]
   pruneopts = ""
-  revision = "fa1a291087948aa85c6e20c1b3749a02403ffc1b"
+  revision = "88343688bb370571259f1a6c98274757b61e3bb1"
 
 [[projects]]
   branch = "master"
-  digest = "1:60eb80cc714e54c1179fca3454bd450ca5c1f9e1a0773266b9e0e6f3e7853a07"
+  digest = "1:50abd79513c058e1297d34fc2c5e9a0f8adf9827318aedf3134f84095eff1d18"
   name = "golang.org/x/net"
   packages = [
     "context",
@@ -781,7 +781,7 @@
     "proxy",
   ]
   pruneopts = ""
-  revision = "c00fd9afed17cfdca9b3e1e3b8de7ef2b3f0347b"
+  revision = "c5a3c61f89f3ed696ec36b629ef1b97541165225"
 
 [[projects]]
   branch = "master"
@@ -799,7 +799,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:0c3b4c65ce4849683ca607bc62d4156b3a63437627736a59b32c83ccb989cc28"
+  digest = "1:02a5110b0c8cc83edf31f25794d8486cb57358f2b84250baa4235973f48124fb"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
@@ -807,7 +807,7 @@
     "windows",
   ]
   pruneopts = ""
-  revision = "2837fb4f24fee082b8c39b1a6dc9e0ed9f3fbd4f"
+  revision = "c990c680b611ac1aeb7d8f2af94a825f98d69720"
 
 [[projects]]
   digest = "1:740b51a55815493a8d0f2b1e0d0ae48fe48953bf7eaf3fcc4198823bf67768c0"
@@ -844,7 +844,7 @@
   revision = "c4c64cad1fd0a1a8dab2523e04e61d35308e131e"
 
 [[projects]]
-  digest = "1:d431fe261d516e259536a34770d1e6fd7cdac85d17b11f9e65aff2f1a7eec66f"
+  digest = "1:702a3d272e930e37f4978392f69473eede3f5eea31a345c129085f899580c2cb"
   name = "google.golang.org/appengine"
   packages = [
     ".",
@@ -859,8 +859,8 @@
     "urlfetch",
   ]
   pruneopts = ""
-  revision = "c71d63e301d75423acb410203c747cad31e9a5e7"
-  version = "v1.6.3"
+  revision = "bddb1f54ecfd64b1350fd2dd897fa11d426632bc"
+  version = "v1.6.4"
 
 [[projects]]
   digest = "1:75fb3fcfc73a8c723efde7777b40e8e8ff9babf30d8c56160d01beffea8a95a6"
@@ -943,12 +943,12 @@
   version = "v0.1.2"
 
 [[projects]]
-  digest = "1:cedccf16b71e86db87a24f8d4c70b0a855872eb967cb906a66b95de56aefbd0d"
+  digest = "1:bb4cb0b6ca4975e8e4ff573e6e0e5692ab23843470a869c217923aa5377f70a5"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
   pruneopts = ""
-  revision = "51d6538a90f86fe93ac480b35f37b2be17fef232"
-  version = "v2.2.2"
+  revision = "bb4e33bf68bf89cad44d386192cbed201f35b241"
+  version = "v2.2.3"
 
 [[projects]]
   digest = "1:5f076f6f9c3ac4f2b99d79dc7974eabd3f51be35254aa0d8c4cf920fdb9c7ff8"
@@ -1107,7 +1107,7 @@
   version = "kubernetes-1.12.0"
 
 [[projects]]
-  digest = "1:ccdf880a2361789a52b2a7076c05e77dd608d13a7207004f3b9518e99c12676c"
+  digest = "1:c35e91a5a3af23a68b1440fc1a9c5a713853b5447bf4e0606def69cbc84148ef"
   name = "k8s.io/helm"
   packages = [
     "pkg/chartutil",
@@ -1151,8 +1151,11 @@
     "gopkg.in/yaml.v2",
     "k8s.io/api/apps/v1",
     "k8s.io/api/core/v1",
+    "k8s.io/apimachinery/pkg/util/yaml",
     "k8s.io/helm/pkg/chartutil",
     "k8s.io/helm/pkg/proto/hapi/chart",
+    "k8s.io/helm/pkg/renderutil",
+    "k8s.io/helm/pkg/timeconv",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
