@@ -70,14 +70,12 @@ func check(e error, t *testing.T) {
 
 func TestCheckValues(t *testing.T) {
 
-	const replicas = `
-replicas: 1
-`
+	// wrong name of image property
 	const image = `
-image: docker.io/keptnexamples/carts:0.8.1
+dockerImage: docker.io/keptnexamples/carts:0.8.1
 `
 
-	invalidValues := []string{replicas, image}
+	invalidValues := []string{image}
 
 	for _, invalidValue := range invalidValues {
 		err := os.MkdirAll("carts/templates", 0777)

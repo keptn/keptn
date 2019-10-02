@@ -71,12 +71,6 @@ func validateValues(ch *chart.Chart) bool {
 		logging.PrintLog("Provided Helm chart does not contain \"image\" in values.yaml", logging.QuietLevel)
 		return false
 	}
-	// check replicas property
-	_, containsReplicas := values["replicas"]
-	if !containsReplicas {
-		logging.PrintLog("Provided Helm chart does not contain \"replicas\" in values.yaml", logging.QuietLevel)
-		return false
-	}
 	return true
 }
 
