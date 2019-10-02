@@ -66,7 +66,8 @@ type deploymentFinishedEvent struct {
 	DeploymentStrategy string `json:"deploymentstrategy"`
 }
 
-func sendDeploymentFinishedEvent(shkeptncontext string, project string, stage string, service string, testStrategy string) error {
+func sendDeploymentFinishedEvent(shkeptncontext string, project string, stage string, service string,
+	testStrategy string, deploymentStrategy keptnevents.DeploymentStrategy) error {
 
 	source, _ := url.Parse("helm-service")
 	contentType := "application/json"
@@ -76,9 +77,8 @@ func sendDeploymentFinishedEvent(shkeptncontext string, project string, stage st
 		return err
 	}
 
-	deploymentStrategies, err := GetDeploymentStrategies(project)
 	var deploymentStrategyOldIdentifier string
-	if deploymentStrategies[stage] == keptnevents.Duplicate {
+	if deploymentStrategy == keptnevents.Duplicate {
 		deploymentStrategyOldIdentifier = "blue_green_service"
 	} else {
 		deploymentStrategyOldIdentifier = "direct"
