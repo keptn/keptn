@@ -46,7 +46,7 @@
                 <div v-if="event.type === 'sh.keptn.events.evaluation-done'">
                   <hr>
                   <small>
-                    <b>Evaluation passed: </b> {{ event.data.evaluationpassed === true ? 'YES' : 'NO' }}
+                    <b>Evaluation passed: </b> {{ event.data.evaluationpassed === true ? 'Yes' : 'No' }}
                     <br>
                     <div v-if="event.source === 'pitometer-service'">
                       <b>Total score: </b> {{ event.data.evaluationdetails | totalScore }}
