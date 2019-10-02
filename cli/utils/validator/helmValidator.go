@@ -65,6 +65,7 @@ func validateValues(ch *chart.Chart) bool {
 	if err := yaml.Unmarshal([]byte(ch.Values.Raw), &values); err != nil {
 		return false
 	}
+	// check image property
 	_, containsImage := values["image"]
 	if !containsImage {
 		logging.PrintLog("Provided Helm chart does not contain \"image\" in values.yaml", logging.QuietLevel)
@@ -98,7 +99,6 @@ func validateDeployments(deployments map[*appsv1.Deployment]string) (bool, error
 	}
 	return true, nil
 }
-
 
 func getRenderedTemplates(ch *chart.Chart) (map[string]string, error) {
 	renderOpts := renderutil.Options{
