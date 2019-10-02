@@ -85,7 +85,7 @@ func TestCreateProjectIncorrectProjectNameCmd(t *testing.T) {
 	os.Remove(tmpShipyardFileName)
 
 	if err != nil {
-		if !utils.ErrorContains(err, "Project name includes invalid characters or is not well-formed.") {
+		if !utils.ErrorContains(err, "Project name contains invalid characters or is not well-formed.") {
 			t.Errorf("An error occured: %v", err)
 		}
 	} else {
