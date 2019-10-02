@@ -137,6 +137,14 @@ func getTestInfo(data deploymentFinishedEvent) *TestInfo {
 	}
 }
 
+func getServiceUrl(data deploymentFinishedEvent) string {
+	serviceURL := data.Service + "." + data.Project + "-" + data.Stage
+	if data.DeploymentStrategy == "blue_green_service" {
+		serviceURL = data.Service + "-canary" + "." + data.Project + "-" + data.Stage
+	}
+	return serviceURL
+}
+
 func runHealthCheck(data deploymentFinishedEvent, id string, logger *keptnutils.Logger) (bool, error) {
 	os.RemoveAll("HealthCheck_" + data.Service)
 	os.RemoveAll("HealthCheck_" + data.Service + "_result.tlf")
@@ -144,7 +152,7 @@ func runHealthCheck(data deploymentFinishedEvent, id string, logger *keptnutils.
 
 	testInfo := getTestInfo(data)
 	return executeJMeter(testInfo, "jmeter/basiccheck.jmx", "HealthCheck_"+data.Service,
-		data.Service+"."+data.Project+"-"+data.Stage, 80, "/health", 1, 1, 250, "HealthCheck_"+id,
+		getServiceUrl(data), 80, "/health", 1, 1, 250, "HealthCheck_"+id,
 		true, 0, logger)
 }
 
@@ -156,7 +164,7 @@ func runFunctionalCheck(data deploymentFinishedEvent, id string, logger *keptnut
 
 	testInfo := getTestInfo(data)
 	return executeJMeter(testInfo, "jmeter/load.jmx",
-		"FuncCheck_"+data.Service, data.Service+"."+data.Project+"-"+data.Stage,
+		"FuncCheck_"+data.Service, getServiceUrl(data),
 		80, "/health", 1, 1, 250, "FuncCheck_"+id, true, 0, logger)
 }
 
@@ -166,14 +174,9 @@ func runPerformanceCheck(data deploymentFinishedEvent, id string, logger *keptnu
 	os.RemoveAll("PerfCheck_" + data.Service + "_result.tlf")
 	os.RemoveAll("output.txt")
 
-	gateway, err := getGatewayFromConfigmap()
-	if err != nil {
-		return false, err
-	}
-
 	testInfo := getTestInfo(data)
 	return executeJMeter(testInfo, "jmeter/load.jmx", "PerfCheck_"+data.Service,
-		data.Service+"."+data.Project+"-"+data.Stage+"."+gateway, 80, "/health", 10, 500, 250, "PerfCheck_"+id,
+		getServiceUrl(data), 80, "/health", 10, 500, 250, "PerfCheck_"+id,
 		false, 0, logger)
 }
 
