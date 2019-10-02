@@ -151,7 +151,7 @@ export default {
       if (totalScoreItem !== undefined) {
         return totalScoreItem.Value;
       }
-      return 'n/a (no evaluation performed by pitometer service)';
+      return 'n/a (No evaluation performed by Pitometer service)';
     },
     canaryAction: function getCanaryAction(canary) {
       if (canary === undefined) {
@@ -168,7 +168,7 @@ export default {
         if (canaryAction.Value === 'set') {
           const value = canary.find(item => item.Key === 'value');
           if (value !== undefined) {
-            return `Settting traffic percentage for canary deployment to ${value.Value}`;
+            return `Setting traffic percentage for canary deployment to ${value.Value}`;
           }
         }
         if (canaryAction.Value === 'discard') {
