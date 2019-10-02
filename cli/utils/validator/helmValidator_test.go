@@ -68,16 +68,16 @@ func check(e error, t *testing.T) {
 	}
 }
 
-func TestCheckValues1(t *testing.T) {
+func TestCheckValues(t *testing.T) {
 
-	const invalidValues1 = `
+	const replicas = `
 replicas: 1
 `
-	const invalidValues2 = `
+	const image = `
 image: docker.io/keptnexamples/carts:0.8.1
 `
 
-	invalidValues := []string{invalidValues1, invalidValues2}
+	invalidValues := []string{replicas, image}
 
 	for _, invalidValue := range invalidValues {
 		err := os.MkdirAll("carts/templates", 0777)
@@ -148,8 +148,9 @@ spec:
     app2: carts
 `
 
-	const invalidService6 = `---`
-	invalidServices := []string{invalidService1, invalidService2, invalidService3}
+	const invalidService4 = `---`
+
+	invalidServices := []string{invalidService1, invalidService2, invalidService3, invalidService4}
 
 	for _, invalidService := range invalidServices {
 		err := os.MkdirAll("carts/templates", 0777)
@@ -221,6 +222,7 @@ spec:
         image: "{{ .Values.image }}"
         imagePullPolicy: IfNotPresent        
 `
+
 	const invalidDeployment3 = `--- 
 apiVersion: apps/v1
 kind: Deployment
@@ -245,6 +247,7 @@ spec:
         image: "{{ .Values.image }}"
         imagePullPolicy: IfNotPresent        
 `
+
 	const invalidDeployment4 = `--- 
 apiVersion: apps/v1
 kind: Deployment
@@ -265,6 +268,7 @@ spec:
         image: "{{ .Values.image }}"
         imagePullPolicy: IfNotPresent        
 `
+
 	const invalidDeployment5 = `--- 
 apiVersion: apps/v1
 kind: Deployment
@@ -289,7 +293,9 @@ spec:
         image: "{{ .Values.image }}"
         imagePullPolicy: IfNotPresent        
 `
+
 	const invalidDeployment6 = `---`
+
 	invalidDeployments := []string{invalidDeployment1, invalidDeployment2, invalidDeployment3,
 		invalidDeployment4, invalidDeployment5, invalidDeployment6}
 
