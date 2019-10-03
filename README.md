@@ -13,31 +13,31 @@ We mangage the Keptn core components as well as all services (e.g., github-servi
 The versions of the Keptn core components and the services have to be compatible to each other.
 Therefore, this section shows the compatibility between these versions.
 
-**Keptn in [version 0.5.0.beta](https://github.com/keptn/keptn/releases/tag/0.5.0.beta) requires:**
+**Keptn in [version 0.5.0](https://github.com/keptn/keptn/releases/tag/0.5.0) requires:**
 
 *Keptn core:*
-- keptn/api:0.5.0.beta
-- keptn/bridge:0.5.0.beta
-- keptn/configuration-service:0.5.0.beta
-- keptn/distributor:0.5.0.beta
-- keptn/eventbroker-go:0.5.0.beta
-- keptn/gatekeeper-service:0.5.0.beta
-- keptn/helm-service:0.5.0.beta
-- keptn/jmeter-service:0.5.0.beta
-- keptn/mongodb-datastore:0.5.0.beta
-- keptn/pitometer-service:0.5.0.beta
-- keptn/shipyard-service:0.5.0.beta
-- keptn/wait-service:0.5.0.beta
+- keptn/api:0.5.0
+- keptn/bridge:0.5.0
+- keptn/configuration-service:0.5.0
+- keptn/distributor:0.5.0
+- keptn/eventbroker-go:0.5.0
+- keptn/gatekeeper-service:0.5.0
+- keptn/helm-service:0.5.0
+- keptn/jmeter-service:0.5.0
+- keptn/mongodb-datastore:0.5.0
+- keptn/pitometer-service:0.5.0
+- keptn/shipyard-service:0.5.0
+- keptn/wait-service:0.5.0
 - keptn/remediation-service:0.5.0
 
 
 *Keptn uniform:*
-- keptn/dynatrace-service:0.3.0
-- keptn/prometheus-service:0.1.0
+- keptn/dynatrace-service:0.3.1
+- keptn/prometheus-service:0.2.0
 - keptn/servicenow-service:0.1.4
 
 *for Openshift:*
-- keptn/openshift-route-service:0.5.0.beta
+- keptn/openshift-route-service:0.5.0
 
 <details><summary>Keptn version 0.4.0</summary>
 <p>
