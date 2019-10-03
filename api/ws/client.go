@@ -3,6 +3,7 @@ package ws
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -10,7 +11,10 @@ import (
 
 	"github.com/gbrlsnchs/jwt"
 	"github.com/gorilla/websocket"
+	keptnutils "github.com/keptn/go-utils/pkg/utils"
 )
+
+const wsLogging = false
 
 const (
 	// Time allowed to write a message to the peer.
@@ -21,9 +25,6 @@ const (
 
 	// Send pings to peer with this period. Must be less than pongWait.
 	pingPeriod = (pongWait * 9) / 10
-
-	// Maximum message size allowed from peer.
-	maxMessageSize = 512
 )
 
 var (
@@ -66,25 +67,26 @@ type receivedData struct {
 // The application runs readPump in a per-connection goroutine. The application
 // ensures that there is at most one reader on a connection by executing all
 // reads from this goroutine.
-func (c *clientType) readPump() {
+func (c *clientType) readPump(l *keptnutils.Logger) {
 	defer func() {
 		c.hub.unregister <- c
 		c.conn.Close()
 	}()
-	c.conn.SetReadLimit(maxMessageSize)
 	for {
 		_, message, err := c.conn.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				log.Printf("error: %v", err)
+				l.Error(fmt.Sprintf("Received error while reading: %s", err.Error()))
 			}
 			break
 		}
-
+		if wsLogging {
+			l.Debug(fmt.Sprintf("Received message from service: %s", message))
+		}
 		var data receivedData
 		err = json.Unmarshal(message, &data)
 		if err != nil {
-			log.Fatal(err.Error())
+			l.Error(fmt.Sprintf("Unmarshaling error in websocket communication: %s", err.Error()))
 		}
 		bData := broadcastData{channelIDType(data.Shkeptncontext), message}
 		c.hub.broadcast <- &bData
@@ -96,7 +98,7 @@ func (c *clientType) readPump() {
 // A goroutine running writePump is started for each connection. The
 // application ensures that there is at most one writer to a connection by
 // executing all writes from this goroutine.
-func (c *cliClientType) writePump() {
+func (c *cliClientType) writePump(l *keptnutils.Logger) {
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {
 		ticker.Stop()
@@ -106,9 +108,13 @@ func (c *cliClientType) writePump() {
 	for {
 		select {
 		case message, ok := <-c.send:
+			if wsLogging {
+				l.Debug(fmt.Sprintf("Received message to CLI: %s", message))
+			}
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if !ok {
 				// The hub closed the channel.
+				l.Debug("Cannot write message because hub closed the channel")
 				c.conn.WriteMessage(websocket.CloseMessage, []byte{})
 				return
 			}
@@ -133,6 +139,10 @@ func (c *cliClientType) writePump() {
 
 // ServeWs handles websocket requests from the services.
 func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request) error {
+	l := keptnutils.NewLogger("", "", "api")
+	if wsLogging {
+		l.Debug("Serve internal service")
+	}
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
@@ -141,13 +151,16 @@ func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request) error {
 	client := &clientType{hub: hub, conn: conn}
 	client.hub.register <- client
 
-	go client.readPump()
+	go client.readPump(l)
 	return nil
 }
 
 // ServeWsCLI handles websocket requests from the CLI.
 func ServeWsCLI(hub *Hub, w http.ResponseWriter, r *http.Request, channelID string) error {
-
+	l := keptnutils.NewLogger("", "", "api")
+	if wsLogging {
+		l.Debug("Serve CLI")
+	}
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
@@ -156,7 +169,7 @@ func ServeWsCLI(hub *Hub, w http.ResponseWriter, r *http.Request, channelID stri
 	client := &cliClientType{hub: hub, conn: conn, send: make(chan []byte, 256), channelID: channelIDType(channelID)}
 	client.hub.registerCLI <- client
 
-	go client.writePump()
+	go client.writePump(l)
 	return nil
 }
 

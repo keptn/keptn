@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: distributor
-        image: keptn/distributor:0.5.0.beta
+        image: keptn/distributor:0.5.0
         ports:
         - containerPort: 8080
         resources:
@@ -53,7 +53,7 @@ spec:
     spec:
       containers:
       - name: distributor
-        image: keptn/distributor:0.5.0.beta
+        image: keptn/distributor:0.5.0
         ports:
         - containerPort: 8080
         resources:
@@ -89,7 +89,7 @@ spec:
     spec:
       containers:
       - name: distributor
-        image: keptn/distributor:0.5.0.beta
+        image: keptn/distributor:0.5.0
         ports:
         - containerPort: 8080
         resources:
@@ -125,7 +125,7 @@ spec:
     spec:
       containers:
       - name: distributor
-        image: keptn/distributor:0.5.0.beta
+        image: keptn/distributor:0.5.0
         ports:
         - containerPort: 8080
         resources:
@@ -161,7 +161,7 @@ spec:
     spec:
       containers:
       - name: distributor
-        image: keptn/distributor:0.5.0.beta
+        image: keptn/distributor:0.5.0
         ports:
         - containerPort: 8080
         resources:
@@ -197,7 +197,7 @@ spec:
     spec:
       containers:
       - name: distributor
-        image: keptn/distributor:0.5.0.beta
+        image: keptn/distributor:0.5.0
         ports:
         - containerPort: 8080
         resources:
@@ -212,6 +212,42 @@ spec:
           value: 'nats://keptn-nats-cluster'
         - name: PUBSUB_TOPIC
           value: 'sh.keptn.internal.event.project.create'
+        - name: PUBSUB_RECIPIENT
+          value: 'shipyard-service'
+---
+## shipyard-service: sh.keptn.internal.event.project.delete
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shipyard-service-delete-project-distributor
+  namespace: keptn
+spec:
+  selector:
+    matchLabels:
+      run: distributor
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: distributor
+    spec:
+      containers:
+      - name: distributor
+        image: keptn/distributor:0.5.0
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        env:
+        - name: PUBSUB_URL
+          value: 'nats://keptn-nats-cluster'
+        - name: PUBSUB_TOPIC
+          value: 'sh.keptn.internal.event.project.delete'
         - name: PUBSUB_RECIPIENT
           value: 'shipyard-service'
 ---
@@ -233,7 +269,7 @@ spec:
     spec:
       containers:
       - name: distributor
-        image: keptn/distributor:0.5.0.beta
+        image: keptn/distributor:0.5.0
         ports:
         - containerPort: 8080
         resources:
@@ -269,7 +305,7 @@ spec:
     spec:
       containers:
       - name: distributor
-        image: keptn/distributor:0.5.0.beta
+        image: keptn/distributor:0.5.0
         ports:
         - containerPort: 8080
         resources:

@@ -3,6 +3,7 @@ package cmd
 import (
 	"bytes"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"net/url"
 	"strings"
@@ -12,6 +13,7 @@ import (
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 	"github.com/google/uuid"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
 	"github.com/spf13/cobra"
@@ -22,17 +24,17 @@ var apiToken *string
 
 // authCmd represents the auth command
 var authCmd = &cobra.Command{
-	Use:   "auth",
+	Use:   "auth --endpoint=https://api.keptn.MY.DOMAIN.COM --api-token=SECRET_TOKEN",
 	Short: "Authenticates the keptn CLI against a keptn installation.",
 	Long: `Authenticates the keptn CLI against a keptn installation using an endpoint
 and an API token. Both, the endpoint and API token are exposed during the keptn installation.
 If the authentication is successful, the endpoint and the API token are stored in a password store. 
 
 Example:
-	keptn auth --endpoint=myendpoint.com --api-token=xyz`,
+	keptn auth --endpoint=https://api.keptn.my.domain.com --api-token=xyz0123`,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		utils.PrintLog("Starting to authenticate", utils.InfoLevel)
+		logging.PrintLog("Starting to authenticate", logging.InfoLevel)
 
 		source, _ := url.Parse("https://github.com/keptn/keptn/cli#auth")
 		contentType := "application/json"
@@ -58,10 +60,10 @@ Example:
 		if !mocking {
 			_, err = utils.Send(authURL, event, *apiToken)
 			if err != nil {
-				utils.PrintLog("Authentication was unsuccessful", utils.QuietLevel)
+				logging.PrintLog("Authentication was unsuccessful", logging.QuietLevel)
 				return err
 			}
-			utils.PrintLog("Successfully authenticated", utils.InfoLevel)
+			logging.PrintLog("Successfully authenticated", logging.InfoLevel)
 			return credentialmanager.SetCreds(*u, *apiToken)
 		}
 
@@ -91,33 +93,19 @@ To manually set up your keptn CLI, please follow the instructions at https://kep
 	}
 
 	var keptnEndpoint string
-	apiEndpointRetrieved := false
-	retries := 0
-	for tryGetAPIEndpoint := true; tryGetAPIEndpoint; tryGetAPIEndpoint = !apiEndpointRetrieved {
+	for retries := 0; retries < 15; time.Sleep(5 * time.Second) {
 
 		out, err := getEndpointUsingKube()
-
-		if err != nil {
-			retries++
-			if retries >= 15 {
-				utils.PrintLog("API endpoint not yet available... trying again in 5s", utils.InfoLevel)
-			}
+		if err != nil || strings.TrimSpace(string(out)) == "" {
+			logging.PrintLog("API endpoint not yet available... trying again in 5s", logging.InfoLevel)
 		} else {
-			retries = 0
+			keptnEndpoint = "https://" + strings.TrimSpace(string(out))
+			break
 		}
-		keptnEndpoint = strings.TrimSpace(string(out))
-		if keptnEndpoint == "" {
-			retries++
-			if retries >= 15 {
-				utils.PrintLog("API endpoint not yet available... trying again in 5s", utils.InfoLevel)
-			}
-		} else {
-			keptnEndpoint = "https://" + keptnEndpoint
-			apiEndpointRetrieved = true
-		}
-		if !apiEndpointRetrieved {
-			time.Sleep(5 * time.Second)
-		}
+		retries++
+	}
+	if keptnEndpoint == "" {
+		return errors.New("Cannot obtain endpoint of api")
 	}
 	return authenticate(keptnEndpoint, apiToken)
 }

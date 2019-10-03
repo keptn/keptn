@@ -128,13 +128,21 @@ func (m *CreateProjectCE) UnmarshalBinary(b []byte) error {
 // swagger:model CreateProjectCEAO1Data
 type CreateProjectCEAO1Data struct {
 
+	// git remote URL
+	GitRemoteURL string `json:"gitRemoteURL,omitempty"`
+
+	// git token
+	GitToken string `json:"gitToken,omitempty"`
+
+	// git user
+	GitUser string `json:"gitUser,omitempty"`
+
 	// project
 	// Required: true
 	Project *string `json:"project"`
 
 	// shipyard
-	// Required: true
-	Shipyard *string `json:"shipyard"`
+	Shipyard string `json:"shipyard,omitempty"`
 }
 
 // Validate validates this create project c e a o1 data
@@ -142,10 +150,6 @@ func (m *CreateProjectCEAO1Data) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateProject(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateShipyard(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -158,15 +162,6 @@ func (m *CreateProjectCEAO1Data) Validate(formats strfmt.Registry) error {
 func (m *CreateProjectCEAO1Data) validateProject(formats strfmt.Registry) error {
 
 	if err := validate.Required("data"+"."+"project", "body", m.Project); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *CreateProjectCEAO1Data) validateShipyard(formats strfmt.Registry) error {
-
-	if err := validate.Required("data"+"."+"shipyard", "body", m.Shipyard); err != nil {
 		return err
 	}
 

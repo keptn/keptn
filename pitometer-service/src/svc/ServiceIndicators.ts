@@ -3,7 +3,13 @@ export interface ServiceIndicators {
 }
 
 export interface Indicator {
-  name: string;
+  metric: string;
   source: string;
   query: string;
+  queryObject: ServiceIndicatorQueryObject[];
+}
+
+interface ServiceIndicatorQueryObject {
+  key: string;
+  value: string;
 }

@@ -91,7 +91,7 @@ func configureAPI(api *operations.API) http.Handler {
 	api.EventSendEventHandler = event.SendEventHandlerFunc(func(params event.SendEventParams, principal *models.Principal) middleware.Responder {
 		uuidStr := uuid.New().String()
 		l := keptnutils.NewLogger(uuidStr, *params.Body.ID, "api")
-		l.Info("API received keptn-event")
+		l.Info("API received keptn event")
 
 		token, err := ws.CreateChannelInfo(uuidStr)
 		if err != nil {
@@ -117,7 +117,7 @@ func configureAPI(api *operations.API) http.Handler {
 	api.ProjectProjectHandler = project.ProjectHandlerFunc(func(params project.ProjectParams, principal *models.Principal) middleware.Responder {
 		uuidStr := uuid.New().String()
 		l := keptnutils.NewLogger(uuidStr, *params.Body.ID, "api")
-		l.Info("API received project-event")
+		l.Info("API received project event")
 
 		token, err := ws.CreateChannelInfo(uuidStr)
 		if err != nil {
@@ -143,7 +143,7 @@ func configureAPI(api *operations.API) http.Handler {
 	api.ServiceServiceHandler = service.ServiceHandlerFunc(func(params service.ServiceParams, principal *models.Principal) middleware.Responder {
 		uuidStr := uuid.New().String()
 		l := keptnutils.NewLogger(uuidStr, *params.Body.ID, "api")
-		l.Info("API received service-event")
+		l.Info("API received service event")
 
 		token, err := ws.CreateChannelInfo(uuidStr)
 		if err != nil {
@@ -191,6 +191,7 @@ func addShkeptncontext(ce interface{}, shkeptncontext string) interface{} {
 	ce.(map[string]interface{})["shkeptncontext"] = shkeptncontext
 	return ce
 }
+
 func getChannelInfo(channelID *string, token *string) models.ChannelInfo {
 
 	id := uuid.New().String()

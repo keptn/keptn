@@ -6,12 +6,12 @@ import (
 	"os"
 	"testing"
 
-	"github.com/keptn/keptn/cli/utils"
+	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
 )
 
 func init() {
-	utils.InitLoggers(os.Stdout, os.Stdout, os.Stderr)
+	logging.InitLoggers(os.Stdout, os.Stdout, os.Stderr)
 }
 
 // TestNewArtifact tests the new-artifact command.

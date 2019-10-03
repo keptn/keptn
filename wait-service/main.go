@@ -202,6 +202,7 @@ func sendTestsFinishedEvent(shkeptncontext string, incomingEvent cloudevents.Eve
 	event := cloudevents.Event{
 		Context: cloudevents.EventContextV02{
 			ID:          uuid.New().String(),
+			Time:        &types.Timestamp{Time: time.Now()},
 			Type:        "sh.keptn.events.tests-finished",
 			Source:      types.URLRef{URL: *source},
 			ContentType: &contentType,

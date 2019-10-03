@@ -10,10 +10,12 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/gorilla/websocket"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/utils"
 )
 
@@ -82,7 +84,12 @@ func openWS(connData keptnutils.ConnectionData, apiEndPoint url.URL) (*websocket
 	dialer.TLSClientConfig = &tls.Config{
 		InsecureSkipVerify: true,
 	}
-	return dialer.Dial(wsEndPoint.String(), header)
+	conn, resp, err := dialer.Dial(wsEndPoint.String(), header)
+	if err != nil {
+		return nil, nil, err
+	}
+	conn.SetPongHandler(func(string) error { conn.SetReadDeadline(time.Now().Add(60 * time.Second)); return nil })
+	return conn, resp, err
 }
 
 // readAndPrintCE reads a cloud event from the websocket
@@ -122,7 +129,7 @@ func printCE(ce keptnutils.MyCloudEvent) bool {
 	switch ce.Type {
 	case "sh.keptn.events.log":
 		if strings.TrimSpace(log.Message) != "" {
-			utils.PrintLogStringLevel(log.Message, log.LogLevel)
+			logging.PrintLogStringLevel(log.Message, log.LogLevel)
 		}
 		return log.Terminate
 	default:
