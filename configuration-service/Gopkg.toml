@@ -24,26 +24,25 @@
 #   go-tests = true
 #   unused-packages = true
 
-
-[[constraint]]
-  name = "github.com/kelseyhightower/envconfig"
-  version = "1.4.0"
-
 [[constraint]]
   name = "gopkg.in/yaml.v2"
   version = "2.2.2"
 
-#[[constraint]]
-#  name = "gopkg.in/src-d/go-git.v4"
-#  version = "4.13.1"
-
 [[constraint]]
   name = "github.com/keptn/go-utils"
-  branch = "develop"
+  version = "0.2.1"
+
+[[constraint]]
+  name = "github.com/mholt/archiver"
+  version = "3.2"
 
 [[override]]
  name = "contrib.go.opencensus.io/exporter/ocagent"
  version = "v0.4.12"
+
+[[override]]
+  name =  "github.com/Azure/go-autorest"
+  revision = "bca49d5b51a50dc5bb17bbf6204c711c6dbded06"
 
 [prune]
   go-tests = true

@@ -17,6 +17,7 @@ import (
 	"time"
 
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/utils"
 	"github.com/spf13/cobra"
 )
@@ -32,8 +33,12 @@ var platformID *string
 
 // domainCmd represents the domain command
 var domainCmd = &cobra.Command{
-	Use:          "domain domain_url",
-	Short:        "Configures the domain",
+	Use:   "domain MY.DOMAIN.COM",
+	Short: "Configures the domain",
+	Long: `
+	
+Example:
+	keptn configure domain my.domain.com`,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
 
@@ -87,7 +92,7 @@ var domainCmd = &cobra.Command{
 
 		fmt.Println("Please note that the domain of already onboarded services is not updated!")
 
-		utils.PrintLog("Starting to configure domain", utils.InfoLevel)
+		logging.PrintLog("Starting to configure domain", logging.InfoLevel)
 
 		path, err := keptnutils.GetKeptnDirectory()
 		if err != nil {
@@ -108,12 +113,8 @@ var domainCmd = &cobra.Command{
 			if err := updateKeptnDomainConfigMap(path, args[0]); err != nil {
 				return err
 			}
-
+			// Re-deploy gateway, ingore if not found
 			if err := reDeployGateway(); err != nil {
-				return err
-			}
-
-			if err := reDeployGithubService(); err != nil {
 				return err
 			}
 
@@ -121,11 +122,12 @@ var domainCmd = &cobra.Command{
 				return err
 			}
 
-			if err := keptnutils.WaitForDeploymentsInNamespace(false, "keptn"); err != nil {
+			if err := keptnutils.WaitForPodsWithSelector(false, "keptn", "run=api", 5, 5*time.Second); err != nil {
 				return err
 			}
 
 			if strings.ToLower(*platformID) == openshift {
+				logging.PrintLog("Successfully configured domain", logging.InfoLevel)
 				fmt.Println("Please manually execute the following commands for deleting an old route and creating a new route:")
 				fmt.Println("oc delete route istio-wildcard-ingress-secure-keptn -n istio-system")
 				fmt.Println("oc create route passthrough istio-wildcard-ingress-secure-keptn --service=istio-ingressgateway --hostname=\"www.keptn.ingress-gateway. " +
@@ -138,19 +140,24 @@ var domainCmd = &cobra.Command{
 				fmt.Println("Afterwards, you can login with 'keptn auth --endpoint=https://api.keptn." + args[0] + " --token=" + token + "'")
 
 			} else {
-				utils.PrintLog("Successfully configured domain", utils.InfoLevel)
-
-				if err := authUsingKube(); err != nil {
+				var err error
+				for retries := 0; retries < 3; retries++ {
+					if err = authUsingKube(); err == nil {
+						break
+					}
+					logging.PrintLog("Retry authentication...", logging.InfoLevel)
+					if err := keptnutils.RestartPodsWithSelector(false, "keptn", "run=api"); err != nil {
+						return err
+					}
+					if err := keptnutils.WaitForPodsWithSelector(false, "keptn", "run=api", 5, 5*time.Second); err != nil {
+						return err
+					}
+				}
+				if err != nil {
+					logging.PrintLog("Cannot authenticate to api", logging.QuietLevel)
 					return err
 				}
-			}
-
-			configured, err := checkIfConfiguredUsingKube()
-			if err != nil {
-				return err
-			}
-			if !configured {
-				fmt.Println("No GitHub configuration found on your keptn installation. Please exectue 'keptn configure'")
+				logging.PrintLog("Successfully configured domain", logging.InfoLevel)
 			}
 		}
 
@@ -159,7 +166,7 @@ var domainCmd = &cobra.Command{
 }
 
 func reDeployGateway() error {
-	o := options{"delete", "-f", getGatewayURL()}
+	o := options{"delete", "-f", getGatewayURL(), "--ignore-not-found"}
 	o.appendIfNotEmpty(kubectlOptions)
 	_, err := keptnutils.ExecuteCommand("kubectl", o)
 	if err != nil {
@@ -167,21 +174,6 @@ func reDeployGateway() error {
 	}
 
 	o = options{"apply", "-f", getGatewayURL()}
-	o.appendIfNotEmpty(kubectlOptions)
-	_, err = keptnutils.ExecuteCommand("kubectl", o)
-	return err
-}
-
-func reDeployGithubService() error {
-
-	o := options{"delete", "deployment", "github-service", "-n", "keptn"}
-	o.appendIfNotEmpty(kubectlOptions)
-	_, err := keptnutils.ExecuteCommand("kubectl", o)
-	if err != nil {
-		return err
-	}
-
-	o = options{"apply", "-f", getUniformServicesURL()}
 	o.appendIfNotEmpty(kubectlOptions)
 	_, err = keptnutils.ExecuteCommand("kubectl", o)
 	return err

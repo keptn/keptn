@@ -6,6 +6,8 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/keptn/keptn/cli/pkg/logging"
 )
 
 // ResolveXipIo resolves a xip io address
@@ -35,7 +37,7 @@ func ResolveXipIoWithContext(ctx context.Context, network, addr string) (net.Con
 		if port != "" {
 			newAddr = ip + port
 		}
-		PrintLog("Directly resolve "+addr+" to "+newAddr, VerboseLevel)
+		logging.PrintLog("Directly resolve "+addr+" to "+newAddr, logging.VerboseLevel)
 		addr = newAddr
 	}
 	return dialer.DialContext(ctx, network, addr)

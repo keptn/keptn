@@ -38,7 +38,7 @@
 
 [[override]]
   name = "github.com/keptn/go-utils"
-  version = "0.2.0"
+  version = "0.2.1"
   
 [[override]]
   name =  "github.com/Azure/go-autorest"

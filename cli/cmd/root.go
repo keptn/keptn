@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/keptn/keptn/cli/utils"
+	"github.com/keptn/keptn/cli/pkg/logging"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -70,7 +70,7 @@ func Execute() {
 func init() {
 	rootCmd.PersistentFlags().BoolVarP(&verboseLogging, "verbose", "v", false, "verbose logging")
 	rootCmd.PersistentFlags().BoolVarP(&quietLogging, "quiet", "q", false, "suppress debug and info output")
-	rootCmd.PersistentFlags().BoolVarP(&mocking, "mock", "", false, "mocking of server communication - ATTENTION: your commands won't be sent to the keptn server")
+	rootCmd.PersistentFlags().BoolVarP(&mocking, "mock", "", false, "mocking of server communication - ATTENTION: your commands will not be sent to the keptn server")
 
 	cobra.OnInitialize(initConfig)
 
@@ -78,16 +78,16 @@ func init() {
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
-	utils.LogLevel = utils.InfoLevel
+	logging.LogLevel = logging.InfoLevel
 	if verboseLogging && quietLogging {
 		fmt.Println("Verbose logging and quiet output are mutually exclusive flags. Please use only one.")
 		os.Exit(1)
 	}
 	if verboseLogging {
-		utils.LogLevel = utils.VerboseLevel
+		logging.LogLevel = logging.VerboseLevel
 	}
 	if quietLogging {
-		utils.LogLevel = utils.QuietLevel
+		logging.LogLevel = logging.QuietLevel
 	}
 
 	if cfgFile != "" {
@@ -110,7 +110,7 @@ func initConfig() {
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
-		utils.PrintLog(fmt.Sprintf("Using config file: %s", viper.ConfigFileUsed()), utils.InfoLevel)
+		logging.PrintLog(fmt.Sprintf("Using config file: %s", viper.ConfigFileUsed()), logging.InfoLevel)
 	}
 }
 

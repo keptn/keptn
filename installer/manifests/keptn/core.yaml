@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: bridge
-        image: keptn/bridge:0.5.0.beta
+        image: keptn/bridge:0.5.0
         ports:
         - containerPort: 3000
         resources:
@@ -61,7 +61,7 @@ spec:
     spec:
       containers:
       - name: api
-        image: keptn/api:0.5.0.beta
+        image: keptn/api:0.5.0
         ports:
         - containerPort: 8080
         resources:
@@ -118,7 +118,7 @@ spec:
     spec:
       containers:
       - name: eventbroker-go
-        image: keptn/eventbroker-go:0.5.0.beta
+        image: keptn/eventbroker-go:0.5.0
         ports:
         - containerPort: 8080
         resources:
@@ -149,6 +149,7 @@ spec:
   selector:
     run: eventbroker-go
 ---
+# gatekeeper-service
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -166,7 +167,7 @@ spec:
     spec:
       containers:
       - name: gatekeeper-service
-        image: keptn/gatekeeper-service:0.5.0.beta
+        image: keptn/gatekeeper-service:0.5.0
         ports:
         - containerPort: 8080
         resources:
@@ -182,7 +183,6 @@ spec:
         - name: EVENTBROKER
           value: 'http://event-broker.keptn.svc.cluster.local/keptn'
 ---
-# gatekeeper-service
 apiVersion: v1
 kind: Service
 metadata:
@@ -197,6 +197,7 @@ spec:
   selector:
     run: gatekeeper-service
 ---
+# helm-service
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -214,7 +215,7 @@ spec:
     spec:
       containers:
       - name: helm-service
-        image: keptn/helm-service:0.5.0.beta
+        image: keptn/helm-service:0.5.0
         ports:
         - containerPort: 8080
         resources:
@@ -238,7 +239,6 @@ spec:
         - name: CANARY
           value: 'deployment'
 ---
-# helm-service
 apiVersion: v1
 kind: Service
 metadata:
@@ -253,6 +253,7 @@ spec:
   selector:
     run: helm-service
 ---
+# jmeter-service
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -270,11 +271,10 @@ spec:
     spec:
       containers:
       - name: helm-service
-        image: keptn/jmeter-service:0.5.0.beta
+        image: keptn/jmeter-service:0.5.0
         ports:
         - containerPort: 8080
 ---
-# jmeter-service
 apiVersion: v1
 kind: Service
 metadata:
@@ -289,6 +289,7 @@ spec:
   selector:
     run: jmeter-service
 ---
+# wait-service
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -306,7 +307,7 @@ spec:
     spec:
       containers:
       - name: wait-service
-        image: keptn/wait-service:0.5.0.beta
+        image: keptn/wait-service:0.5.0
         ports:
         - containerPort: 8080
         resources:
@@ -320,9 +321,8 @@ spec:
         - name: EVENTBROKER
           value: 'http://event-broker.keptn.svc.cluster.local/keptn'
         - name: WAIT_DURATION
-          value: '10s'
+          value: '3m'
 ---
-# wait-service
 apiVersion: v1
 kind: Service
 metadata:
@@ -337,6 +337,7 @@ spec:
   selector:
     run: wait-service
 ---
+# shipyard-service
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -354,7 +355,7 @@ spec:
     spec:
       containers:
       - name: shipyard-service
-        image: keptn/shipyard-service:0.5.0.beta
+        image: keptn/shipyard-service:0.5.0
         ports:
         - containerPort: 8080
         resources:
@@ -372,7 +373,6 @@ spec:
         - name: API
           value: 'ws://api.keptn.svc.cluster.local'
 ---
-# shipyard-service
 apiVersion: v1
 kind: Service
 metadata:
@@ -387,6 +387,7 @@ spec:
   selector:
     run: shipyard-service
 ---
+# pitometer-service
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -404,7 +405,7 @@ spec:
     spec:
       containers:
       - name: pitometer-service
-        image: keptn/pitometer-service:0.5.0.beta
+        image: keptn/pitometer-service:0.5.0
         ports:
         - containerPort: 8080
         resources:
@@ -415,7 +416,6 @@ spec:
             memory: "128Mi"
             cpu: "500m"
 ---
-# pitometer-service
 apiVersion: v1
 kind: Service
 metadata:
@@ -430,6 +430,7 @@ spec:
   selector:
     run: pitometer-service
 ---
+# configuration-service
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -444,7 +445,6 @@ spec:
       storage: 100Mi
 status: {}
 ---
-# configuration-service
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -462,7 +462,7 @@ spec:
     spec:
       containers:
       - name: configuration-service
-        image: keptn/configuration-service:0.5.0.beta
+        image: keptn/configuration-service:0.5.0
         ports:
         - containerPort: 8080
         resources:
@@ -513,7 +513,7 @@ spec:
     spec:
       containers:
       - name: remediation-service
-        image: keptn/remediation-service:0.5.0.beta
+        image: keptn/remediation-service:0.5.0
         ports:
         - containerPort: 8080
         resources:

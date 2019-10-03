@@ -58,7 +58,7 @@ spec:
     spec:
       containers:
       - name: prometheus-service
-        image: keptn/prometheus-service:0.1.0
+        image: keptn/prometheus-service:0.2.0
         ports:
         - containerPort: 8080
         - containerPort: 40000
