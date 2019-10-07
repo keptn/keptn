@@ -22,33 +22,34 @@ import (
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 )
 
-type gkeCredentials struct {
-	ClusterName string `json:"clusterName"`
-	ClusterZone string `json:"clusterZone"`
-	GkeProject  string `json:"gkeProject"`
+type pksCredentials struct {
+	ClusterEndpoint string `json:"clusterEndpoint"`
+	ClusterName     string `json:"clusterName"`
+	PksUser         string `json:"pksUser"`
+	PksPassword     string `json:"pksUser"`
 }
 
-type gkePlatform struct {
-	creds *gkeCredentials
+type pksPlatform struct {
+	creds *pksCredentials
 }
 
-func newGKEPlatform() *gkePlatform {
-	return &gkePlatform{
-		creds: &gkeCredentials{},
+func newPKSPlatform() *pksPlatform {
+	return &pksPlatform{
+		creds: &pksCredentials{},
 	}
 }
 
-func (p gkePlatform) getCreds() interface{} {
+func (p pksPlatform) getCreds() interface{} {
 	return p.creds
 }
 
-func (p gkePlatform) checkRequirements() error {
+func (p pksPlatform) checkRequirements() error {
 	_, err := getGcloudUser()
 	return err
 }
 
-func (p gkePlatform) checkCreds() error {
-	if p.creds.ClusterName == "" || p.creds.ClusterZone == "" {
+func (p pksPlatform) checkCreds() error {
+	if p.creds.ClusterName == "" || p.creds.ClusterEndpoint == "" {
 		return errors.New("Incomplete credentials")
 	}
 
@@ -62,22 +63,22 @@ func (p gkePlatform) checkCreds() error {
 	return nil
 }
 
-func (p gkePlatform) readCreds() {
+func (p pksPlatform) readCreds() {
 
-	if p.creds.ClusterName == "" || p.creds.ClusterZone == "" || p.creds.GkeProject == "" {
-		p.creds.ClusterName, p.creds.ClusterZone, p.creds.GkeProject = getGkeClusterInfo()
+	if p.creds.ClusterEndpoint == "" || p.creds.ClusterName == "" || p.creds.PksUser == "" || p.creds.PksPassword == "" {
+		p.creds.ClusterEndpoint, p.creds.ClusterName, p.creds.PksUser, p.creds.PksPassword = getPksClusterInfo()
 	}
 
 	connectionSuccessful := false
 	for !connectionSuccessful {
 		p.readClusterName()
-		p.readClusterZone()
+		p.readClusterEndpoint()
 		p.readGkeProject()
 		connectionSuccessful, _ = p.authenticateAtCluster()
 	}
 }
 
-func (p gkePlatform) readClusterName() {
+func (p pksPlatform) readClusterName() {
 	readUserInput(&p.creds.ClusterName,
 		"^(([a-zA-Z0-9]+-)*[a-zA-Z0-9]+)$",
 		"Cluster Name",
@@ -85,15 +86,15 @@ func (p gkePlatform) readClusterName() {
 	)
 }
 
-func (p gkePlatform) readClusterZone() {
-	readUserInput(&p.creds.ClusterZone,
+func (p pksPlatform) readClusterEndpoint() {
+	readUserInput(&p.creds.ClusterEndpoint,
 		"^(([a-zA-Z0-9]+-)*[a-zA-Z0-9]+)$",
-		"Cluster Zone",
-		"Please enter a valid Cluster Zone.",
+		"Cluster Endpoint",
+		"Please enter a valid Cluster Endpoint.",
 	)
 }
 
-func (p gkePlatform) readGkeProject() {
+func (p pksPlatform) readGkeProject() {
 	readUserInput(&p.creds.GkeProject,
 		"^(([a-zA-Z0-9]+-)*[a-zA-Z0-9]+)$",
 		"GKE Project",
@@ -101,7 +102,7 @@ func (p gkePlatform) readGkeProject() {
 	)
 }
 
-func (p gkePlatform) authenticateAtCluster() (bool, error) {
+func (p pksPlatform) authenticateAtCluster() (bool, error) {
 	_, err := keptnutils.ExecuteCommand("gcloud", []string{
 		"container",
 		"clusters",
@@ -122,24 +123,24 @@ func (p gkePlatform) authenticateAtCluster() (bool, error) {
 	return true, nil
 }
 
-func getGkeClusterInfo() (string, string, string) {
+func getPksClusterInfo() (string, string, string, string) {
 	// try to get current cluster from gcloud config
 	out, err := getKubeContext()
 
 	if err != nil {
-		return "", "", ""
+		return "", "", "", ""
 	}
 	clusterInfo := strings.TrimSpace(strings.Replace(string(out), "\r\n", "\n", -1))
-	if !strings.HasPrefix(clusterInfo, gke) {
-		return "", "", ""
+	if !strings.HasPrefix(clusterInfo, pks) {
+		return "", "", "", ""
 	}
 
 	clusterInfoArray := strings.Split(clusterInfo, "_")
 	if len(clusterInfoArray) < 4 {
-		return "", "", ""
+		return "", "", "", ""
 	}
 
-	return clusterInfoArray[3], clusterInfoArray[2], clusterInfoArray[1]
+	return "", clusterInfoArray[3], clusterInfoArray[2], clusterInfoArray[1]
 }
 
 func getGcloudUser() (string, error) {
@@ -156,8 +157,8 @@ func getGcloudUser() (string, error) {
 	return strings.Split(strings.Replace(string(out), "\r\n", "\n", -1), "\n")[0], nil
 }
 
-func (p gkePlatform) printCreds() {
-	fmt.Println("Cluster Name: " + p.creds.ClusterName)
-	fmt.Println("Cluster Zone: " + p.creds.ClusterZone)
-	fmt.Println("GKE Project: " + p.creds.GkeProject)
+func (p pksPlatform) printCreds() {
+	fmt.Println("Cluster endpoint: " + p.creds.ClusterEndpoint)
+	fmt.Println("Cluster name: " + p.creds.ClusterName)
+	fmt.Println("PKS user: " + p.creds.PksUser)
 }
