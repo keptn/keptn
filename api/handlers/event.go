@@ -44,10 +44,10 @@ func PostEventHandlerFunc(params event.SendEventParams, principal *models.Princi
 			Type:        string(params.Body.Type),
 			Source:      types.URLRef{URL: *source},
 			ContentType: &contentType,
+			Extensions:  map[string]interface{}{"shkeptncontext": keptnContext},
 		}.AsV02(),
 		Data: forwardData,
 	}
-	ev.Extensions()["shkeptncontext"] = keptnContext
 	_, err = utils.PostToEventBroker(ev)
 	if err != nil {
 		l.Error(fmt.Sprintf("Error sending CloudEvent %s", err.Error()))

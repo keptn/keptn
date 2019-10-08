@@ -55,10 +55,10 @@ func PostServiceHandlerFunc(params service.PostProjectProjectNameServiceParams, 
 			Type:        keptnevents.InternalServiceCreateEventType,
 			Source:      types.URLRef{URL: *source},
 			ContentType: &contentType,
+			Extensions:  map[string]interface{}{"shkeptncontext": keptnContext},
 		}.AsV02(),
 		Data: forwardData,
 	}
-	event.Extensions()["shkeptncontext"] = keptnContext
 
 	_, err = utils.PostToEventBroker(event)
 	if err != nil {

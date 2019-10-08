@@ -50,10 +50,10 @@ func PostProjectHandlerFunc(params project.PostProjectParams, p *models.Principa
 			Type:        keptnevents.InternalProjectCreateEventType,
 			Source:      types.URLRef{URL: *source},
 			ContentType: &contentType,
+			Extensions:  map[string]interface{}{"shkeptncontext": keptnContext},
 		}.AsV02(),
 		Data: forwardData,
 	}
-	event.Extensions()["shkeptncontext"] = keptnContext
 
 	_, err = utils.PostToEventBroker(event)
 	if err != nil {
@@ -93,6 +93,7 @@ func DeleteProjectProjectNameHandlerFunc(params project.DeleteProjectProjectName
 			Type:        keptnevents.InternalProjectDeleteEventType,
 			Source:      types.URLRef{URL: *source},
 			ContentType: &contentType,
+			Extensions:  map[string]interface{}{"shkeptncontext": keptnContext},
 		}.AsV02(),
 		Data: forwardData,
 	}
