@@ -23,7 +23,7 @@ type projectCreateEventData struct {
 	ChannelInfo                        models.ChannelInfo `json:"channelInfo"`
 }
 
-type projectedDeleteEventData struct {
+type projectDeleteEventData struct {
 	keptnevents.ProjectDeleteEventData `json:",inline"`
 	ChannelInfo                        models.ChannelInfo `json:"channelInfo"`
 }
@@ -96,7 +96,7 @@ func DeleteProjectProjectNameHandlerFunc(params project.DeleteProjectProjectName
 	prjData := keptnevents.ProjectDeleteEventData{
 		Project: params.ProjectName,
 	}
-	forwardData := projectedDeleteEventData{ProjectDeleteEventData: prjData, ChannelInfo: channelInfo}
+	forwardData := projectDeleteEventData{ProjectDeleteEventData: prjData, ChannelInfo: channelInfo}
 
 	contentType := "application/json"
 	event := cloudevents.Event{
