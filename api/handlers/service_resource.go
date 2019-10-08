@@ -43,15 +43,13 @@ func PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(p
 			ResourceURI:     resource.ResourceURI,
 		})
 	}
-	newVersion, err := resourceHandler.CreateServiceResources(params.ProjectName, params.StageName, params.ServiceName, resourcesToUpload)
+	_, err := resourceHandler.CreateServiceResources(params.ProjectName, params.StageName, params.ServiceName, resourcesToUpload)
 	if err != nil {
 		errorObj := &models.Error{}
 		json.Unmarshal([]byte(err.Error()), errorObj)
 		return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceDefault(500).WithPayload(errorObj)
 	}
-	return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceCreated().WithPayload(&models.Version{
-		Version: newVersion,
-	})
+	return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceCreated()
 }
 
 // PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc updates a list of resources
@@ -69,13 +67,11 @@ func PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(pa
 			ResourceURI:     resource.ResourceURI,
 		})
 	}
-	newVersion, err := resourceHandler.CreateServiceResources(params.ProjectName, params.StageName, params.ServiceName, resourcesToUpload)
+	_, err := resourceHandler.CreateServiceResources(params.ProjectName, params.StageName, params.ServiceName, resourcesToUpload)
 	if err != nil {
 		errorObj := &models.Error{}
 		json.Unmarshal([]byte(err.Error()), errorObj)
 		return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceDefault(500).WithPayload(errorObj)
 	}
-	return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceCreated().WithPayload(&models.Version{
-		Version: newVersion,
-	})
+	return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceCreated()
 }

@@ -13,40 +13,40 @@ import (
 	models "github.com/keptn/keptn/api/models"
 )
 
-// ProjectHandlerFunc turns a function with the right signature into a project handler
-type ProjectHandlerFunc func(ProjectParams, *models.Principal) middleware.Responder
+// PostProjectHandlerFunc turns a function with the right signature into a post project handler
+type PostProjectHandlerFunc func(PostProjectParams, *models.Principal) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn ProjectHandlerFunc) Handle(params ProjectParams, principal *models.Principal) middleware.Responder {
+func (fn PostProjectHandlerFunc) Handle(params PostProjectParams, principal *models.Principal) middleware.Responder {
 	return fn(params, principal)
 }
 
-// ProjectHandler interface for that can handle valid project params
-type ProjectHandler interface {
-	Handle(ProjectParams, *models.Principal) middleware.Responder
+// PostProjectHandler interface for that can handle valid post project params
+type PostProjectHandler interface {
+	Handle(PostProjectParams, *models.Principal) middleware.Responder
 }
 
-// NewProject creates a new http.Handler for the project operation
-func NewProject(ctx *middleware.Context, handler ProjectHandler) *Project {
-	return &Project{Context: ctx, Handler: handler}
+// NewPostProject creates a new http.Handler for the post project operation
+func NewPostProject(ctx *middleware.Context, handler PostProjectHandler) *PostProject {
+	return &PostProject{Context: ctx, Handler: handler}
 }
 
-/*Project swagger:route POST /project project project
+/*PostProject swagger:route POST /project Project postProject
 
-Forwards the received project event to the eventbroker
+Creates a new project
 
 */
-type Project struct {
+type PostProject struct {
 	Context *middleware.Context
-	Handler ProjectHandler
+	Handler PostProjectHandler
 }
 
-func (o *Project) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
+func (o *PostProject) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, rCtx, _ := o.Context.RouteInfo(r)
 	if rCtx != nil {
 		r = rCtx
 	}
-	var Params = NewProjectParams()
+	var Params = NewPostProjectParams()
 
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {

@@ -9,17 +9,22 @@ import (
 	"errors"
 	"net/url"
 	golangswaggerpaths "path"
+	"strings"
 )
 
-// ServiceURL generates an URL for the service operation
-type ServiceURL struct {
+// PostProjectProjectNameServiceURL generates an URL for the post project project name service operation
+type PostProjectProjectNameServiceURL struct {
+	ProjectName string
+
 	_basePath string
+	// avoid unkeyed usage
+	_ struct{}
 }
 
 // WithBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *ServiceURL) WithBasePath(bp string) *ServiceURL {
+func (o *PostProjectProjectNameServiceURL) WithBasePath(bp string) *PostProjectProjectNameServiceURL {
 	o.SetBasePath(bp)
 	return o
 }
@@ -27,15 +32,22 @@ func (o *ServiceURL) WithBasePath(bp string) *ServiceURL {
 // SetBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *ServiceURL) SetBasePath(bp string) {
+func (o *PostProjectProjectNameServiceURL) SetBasePath(bp string) {
 	o._basePath = bp
 }
 
 // Build a url path and query string
-func (o *ServiceURL) Build() (*url.URL, error) {
+func (o *PostProjectProjectNameServiceURL) Build() (*url.URL, error) {
 	var _result url.URL
 
-	var _path = "/service"
+	var _path = "/project/{projectName}/service"
+
+	projectName := o.ProjectName
+	if projectName != "" {
+		_path = strings.Replace(_path, "{projectName}", projectName, -1)
+	} else {
+		return nil, errors.New("projectName is required on PostProjectProjectNameServiceURL")
+	}
 
 	_basePath := o._basePath
 	if _basePath == "" {
@@ -47,7 +59,7 @@ func (o *ServiceURL) Build() (*url.URL, error) {
 }
 
 // Must is a helper function to panic when the url builder returns an error
-func (o *ServiceURL) Must(u *url.URL, err error) *url.URL {
+func (o *PostProjectProjectNameServiceURL) Must(u *url.URL, err error) *url.URL {
 	if err != nil {
 		panic(err)
 	}
@@ -58,17 +70,17 @@ func (o *ServiceURL) Must(u *url.URL, err error) *url.URL {
 }
 
 // String returns the string representation of the path with query string
-func (o *ServiceURL) String() string {
+func (o *PostProjectProjectNameServiceURL) String() string {
 	return o.Must(o.Build()).String()
 }
 
 // BuildFull builds a full url with scheme, host, path and query string
-func (o *ServiceURL) BuildFull(scheme, host string) (*url.URL, error) {
+func (o *PostProjectProjectNameServiceURL) BuildFull(scheme, host string) (*url.URL, error) {
 	if scheme == "" {
-		return nil, errors.New("scheme is required for a full url on ServiceURL")
+		return nil, errors.New("scheme is required for a full url on PostProjectProjectNameServiceURL")
 	}
 	if host == "" {
-		return nil, errors.New("host is required for a full url on ServiceURL")
+		return nil, errors.New("host is required for a full url on PostProjectProjectNameServiceURL")
 	}
 
 	base, err := o.Build()
@@ -82,6 +94,6 @@ func (o *ServiceURL) BuildFull(scheme, host string) (*url.URL, error) {
 }
 
 // StringFull returns the string representation of a complete url
-func (o *ServiceURL) StringFull(scheme, host string) string {
+func (o *PostProjectProjectNameServiceURL) StringFull(scheme, host string) string {
 	return o.Must(o.BuildFull(scheme, host)).String()
 }
