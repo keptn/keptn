@@ -79,14 +79,19 @@
   version = "v9"
 
 [[projects]]
-  digest = "1:c3e52bee89f586d4fc5e4594d645b892ee3f7a195c3f977e4f669f17bf67bee1"
+  digest = "1:9a86dc0a167a6f902f9cc485be61cd5b648527380b2ef60216a12f0ec1bb755d"
   name = "github.com/cloudevents/sdk-go"
   packages = [
     "pkg/cloudevents",
+    "pkg/cloudevents/client",
+    "pkg/cloudevents/codec",
+    "pkg/cloudevents/context",
     "pkg/cloudevents/datacodec",
     "pkg/cloudevents/datacodec/json",
     "pkg/cloudevents/datacodec/xml",
     "pkg/cloudevents/observability",
+    "pkg/cloudevents/transport",
+    "pkg/cloudevents/transport/http",
     "pkg/cloudevents/types",
   ]
   pruneopts = "UT"
@@ -587,6 +592,37 @@
   version = "v0.22.1"
 
 [[projects]]
+  digest = "1:a5158647b553c61877aa9ae74f4015000294e47981e6b8b07525edcbb0747c81"
+  name = "go.uber.org/atomic"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "df976f2515e274675050de7b3f42545de80594fd"
+  version = "v1.4.0"
+
+[[projects]]
+  digest = "1:ed14edb4b5ec8eff801b1e8217ffaf021729c5a1dee9d940af5bb3302ab7297d"
+  name = "go.uber.org/multierr"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "71e610a0e48dbda460d9c18adca8b5f2de04a7c1"
+  version = "v1.2.0"
+
+[[projects]]
+  digest = "1:676160e6a4722b08e0e26b11521d575c2cb2b6f0c679e1ee6178c5d8dee51e5e"
+  name = "go.uber.org/zap"
+  packages = [
+    ".",
+    "buffer",
+    "internal/bufferpool",
+    "internal/color",
+    "internal/exit",
+    "zapcore",
+  ]
+  pruneopts = "UT"
+  revision = "27376062155ad36be76b0f12cf1572a221d3a48c"
+  version = "v1.10.0"
+
+[[projects]]
   branch = "master"
   digest = "1:79acf0671f2501ec8104d3b98d41fc130b4d4dbee0585d3fb6be454258d2261a"
   name = "golang.org/x/crypto"
@@ -977,6 +1013,10 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/cloudevents/sdk-go/pkg/cloudevents",
+    "github.com/cloudevents/sdk-go/pkg/cloudevents/client",
+    "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http",
+    "github.com/cloudevents/sdk-go/pkg/cloudevents/types",
     "github.com/gbrlsnchs/jwt",
     "github.com/go-openapi/errors",
     "github.com/go-openapi/loads",

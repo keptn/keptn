@@ -15,7 +15,7 @@ import (
 )
 
 // Resources resources
-// swagger:model Resources
+// swagger:model resources
 type Resources struct {
 
 	// Pointer to next page, base64 encoded
