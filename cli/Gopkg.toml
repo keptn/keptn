@@ -52,9 +52,9 @@
   name = "gopkg.in/yaml.v2"
   version = "2.2.2"
 
-[[constraint]]
+[[override]]
   name = "github.com/keptn/go-utils"
-  version = "0.2.1"
+  branch = "feature/893/api-interface"
 
 [[constraint]]
   name = "github.com/google/go-github"

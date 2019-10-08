@@ -3,16 +3,11 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"net/url"
 
-	"github.com/cloudevents/sdk-go/pkg/cloudevents"
-	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
-	"github.com/google/uuid"
-	keptnevents "github.com/keptn/go-utils/pkg/events"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/pkg/logging"
-	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
-	"github.com/keptn/keptn/cli/utils/websockethelper"
 	"github.com/spf13/cobra"
 )
 
@@ -42,46 +37,41 @@ Example:
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		endPoint, apiToken, err := credentialmanager.GetCreds()
+		endPoint, _, err := credentialmanager.GetCreds() // endpoint, apitoken, err
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
 		logging.PrintLog("Starting to delete project", logging.InfoLevel)
 
-		prjData := keptnevents.ProjectDeleteEventData{Project: args[0]}
-
-		source, _ := url.Parse("https://github.com/keptn/keptn/cli#deleteproject")
-
-		contentType := "application/json"
-		event := cloudevents.Event{
-			Context: cloudevents.EventContextV02{
-				ID:          uuid.New().String(),
-				Type:        keptnevents.InternalProjectDeleteEventType,
-				Source:      types.URLRef{URL: *source},
-				ContentType: &contentType,
-			}.AsV02(),
-			Data: prjData,
+		project := apimodels.Project{
+			Name: args[0],
 		}
 
-		projectURL := endPoint
-		projectURL.Path = "v1/project"
+		if *createProjectParams.GitUser != "" && *createProjectParams.GitToken != "" && *createProjectParams.RemoteURL != "" {
+			project.GitUser = *createProjectParams.GitUser
+			project.GitToken = *createProjectParams.GitToken
+			project.GitRemoteURL = *createProjectParams.RemoteURL
+		}
 
+		projectHandler := apiutils.NewProjectHandler(endPoint.String())
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
-			responseCE, err := utils.Send(projectURL, event, apiToken)
+			response, err := projectHandler.DeleteProject(project)
 			if err != nil {
 				fmt.Println("Delete project was unsuccessful")
 				return err
 			}
 
 			// check for responseCE to include token
-			if responseCE == nil {
-				logging.PrintLog("Response CE is nil", logging.QuietLevel)
+			if response == nil {
+				logging.PrintLog("Response is nil", logging.QuietLevel)
 				return nil
 			}
-			if responseCE.Data != nil {
-				return websockethelper.PrintWSContentCEResponse(responseCE, endPoint)
+
+			if response.Message != nil {
+				fmt.Sprintf("Delete project was unsuccessful. %s", response.Message)
+				return fmt.Errorf("Delete project was unsuccessfu. %s", response.Message)
 			}
 		} else {
 			fmt.Println("Skipping delete project due to mocking flag set to true")
