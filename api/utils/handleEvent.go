@@ -21,6 +21,8 @@ func getEventBrokerURL() string {
 
 const timeout = 60
 
+const MockSend = false
+
 // PostToEventBroker makes a post request to the eventbroker
 func PostToEventBroker(event cloudevents.Event) (*cloudevents.Event, error) {
 
@@ -43,6 +45,9 @@ func PostToEventBroker(event cloudevents.Event) (*cloudevents.Event, error) {
 	c, err := client.New(t)
 	if err != nil {
 		return nil, err
+	}
+	if MockSend {
+		return nil, nil
 	}
 	return c.Send(context.Background(), event)
 }
