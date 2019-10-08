@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"net/url"
+	"time"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
@@ -16,6 +17,11 @@ import (
 	"github.com/keptn/keptn/api/utils"
 	"github.com/keptn/keptn/api/ws"
 )
+
+type serviceCreateEventData struct {
+	keptnevents.ServiceCreateEventData `json:",inline"`
+	ChannelInfo                        models.ChannelInfo `json:"channelInfo"`
+}
 
 // PostServiceHandlerFunc creates a new service
 func PostServiceHandlerFunc(params service.PostProjectProjectNameServiceParams, principal *models.Principal) middleware.Responder {
@@ -46,12 +52,13 @@ func PostServiceHandlerFunc(params service.PostProjectProjectNameServiceParams, 
 		HelmChart:            params.Service.HelmChart,
 		DeploymentStrategies: deploymentStrategies,
 	}
-	forwardData := EnrichedCEData{Data: serviceData, ChannelInfo: channelInfo}
+	forwardData := serviceCreateEventData{ServiceCreateEventData: serviceData, ChannelInfo: channelInfo}
 
 	contentType := "application/json"
 	event := cloudevents.Event{
 		Context: cloudevents.EventContextV02{
 			ID:          uuid.New().String(),
+			Time:        &types.Timestamp{Time: time.Now()},
 			Type:        keptnevents.InternalServiceCreateEventType,
 			Source:      types.URLRef{URL: *source},
 			ContentType: &contentType,
