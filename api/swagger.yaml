@@ -215,4 +215,4 @@ parameters:
         resources:
           type: array
           items:
-            $ref: "resource_model.yaml#/definitions/resources"
+            $ref: "resource_model.yaml#/definitions/resource"
