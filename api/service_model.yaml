@@ -10,3 +10,7 @@ definitions:
         type: string
       helmChart:
         type: string
+      deploymentStrategies:
+        type: object
+        additionalProperties:
+          type: string
