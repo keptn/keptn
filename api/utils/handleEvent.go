@@ -3,40 +3,46 @@
 package utils
 
 import (
-	"bytes"
-	"encoding/json"
-	"errors"
-	"fmt"
+	"context"
 	"net/http"
 	"os"
+	"time"
 
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	"github.com/cloudevents/sdk-go/pkg/cloudevents"
+	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
+	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
+
+	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
 )
 
+func getEventBrokerURL() string {
+	return "http://" + os.Getenv("EVENTBROKER_URI")
+}
+
+const timeout = 60
+
 // PostToEventBroker makes a post request to the eventbroker
-func PostToEventBroker(e interface{}, logger *keptnutils.Logger) error {
+func PostToEventBroker(event cloudevents.Event) (*cloudevents.Event, error) {
 
-	data, err := json.Marshal(e)
+	ec := event.Context.AsV02()
+	if ec.Time == nil || ec.Time.IsZero() {
+		ec.Time = &types.Timestamp{Time: time.Now()}
+		event.Context = ec
+	}
+
+	t, err := cloudeventshttp.New(
+		cloudeventshttp.WithTarget(getEventBrokerURL()),
+		cloudeventshttp.WithEncoding(cloudeventshttp.StructuredV02),
+	)
+	t.Client = &http.Client{Timeout: timeout * time.Second}
+
 	if err != nil {
-		logger.Error(fmt.Sprintf("Error marshaling data %s", err.Error()))
-		return err
+		return nil, err
 	}
 
-	url := "http://" + os.Getenv("EVENTBROKER_URI")
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(data))
-	req.Header.Set("Content-Type", "application/cloudevents+json")
-
-	client := &http.Client{}
-
-	resp, err := client.Do(req)
+	c, err := client.New(t)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Error making POST %s", err.Error()))
-		return err
+		return nil, err
 	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode >= 200 && resp.StatusCode <= 299 {
-		return nil
-	}
-	return errors.New(resp.Status)
+	return c.Send(context.Background(), event)
 }

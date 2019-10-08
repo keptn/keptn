@@ -31,9 +31,9 @@ func NewSendEvent(ctx *middleware.Context, handler SendEventHandler) *SendEvent 
 	return &SendEvent{Context: ctx, Handler: handler}
 }
 
-/*SendEvent swagger:route POST /event event sendEvent
+/*SendEvent swagger:route POST /event Event sendEvent
 
-Forwards the received event to the eventbroker
+Forwards the received event
 
 */
 type SendEvent struct {
