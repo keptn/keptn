@@ -3,8 +3,6 @@ package validator
 import (
 	"fmt"
 	"io"
-	"log"
-	"regexp"
 	"strings"
 
 	"github.com/ghodss/yaml"
@@ -33,18 +31,12 @@ func ValidateHelmChart(ch *chart.Chart) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	if resSvcBeforeRendering, err := validateServiceBeforeRendering(ch, services); !resSvcBeforeRendering || err != nil {
-		return false, err
-	}
 	if resServices, err := validateServices(services); !resServices || err != nil {
 		return false, err
 	}
 
 	deployments, err := getRenderedDeployments(ch)
 	if err != nil {
-		return false, err
-	}
-	if resDeplBeforeRendering, err := validateDeploymentBeforeRendering(ch, deployments); !resDeplBeforeRendering || err != nil {
 		return false, err
 	}
 	if resDeployment, err := validateDeployments(deployments); !resDeployment || err != nil {
@@ -73,14 +65,10 @@ func validateValues(ch *chart.Chart) bool {
 	if err := yaml.Unmarshal([]byte(ch.Values.Raw), &values); err != nil {
 		return false
 	}
+	// check image property
 	_, containsImage := values["image"]
 	if !containsImage {
 		logging.PrintLog("Provided Helm chart does not contain \"image\" in values.yaml", logging.QuietLevel)
-		return false
-	}
-	_, containsReplicaCount := values["replicas"]
-	if !containsReplicaCount {
-		logging.PrintLog("Provided Helm chart does not contain \"replicas\" in values.yaml", logging.QuietLevel)
 		return false
 	}
 	return true
@@ -92,8 +80,8 @@ func validateServices(services map[*corev1.Service]string) (bool, error) {
 			return false, nil
 		}
 	}
-	if len(services) == 0 {
-		logging.PrintLog("Helm chart must contain at lease one service", logging.QuietLevel)
+	if len(services) != 1 {
+		logging.PrintLog("Helm chart must contain exact one service", logging.QuietLevel)
 		return false, nil
 	}
 	return true, nil
@@ -106,106 +94,10 @@ func validateDeployments(deployments map[*appsv1.Deployment]string) (bool, error
 		}
 	}
 	if len(deployments) != 1 {
-		logging.PrintLog("Helm chart must contain a single deployment", logging.QuietLevel)
+		logging.PrintLog("Helm chart must contain exact one deployment", logging.QuietLevel)
 		return false, nil
 	}
 	return true, nil
-}
-
-func validateServiceBeforeRendering(ch *chart.Chart, services map[*corev1.Service]string) (bool, error) {
-
-	for k, v := range services {
-		svcBeforeRendering := getTemplateContent(ch, v)
-
-		reg, err := regexp.Compile(`name:\s+` + k.ObjectMeta.Name)
-		if err != nil {
-			log.Fatal(err)
-		}
-		if !reg.MatchString(svcBeforeRendering) {
-			logging.PrintLog(fmt.Sprintf("For metadata.name no templates are allowed in file %s", v), logging.QuietLevel)
-			return false, nil
-		}
-
-		if _, ok := k.Spec.Selector["app"]; ok {
-			reg, err := regexp.Compile(`app:\s+\{\{.*`)
-			if err != nil {
-				return false, err
-			}
-			if reg.MatchString(svcBeforeRendering) {
-				logging.PrintLog(fmt.Sprintf(
-					"For \"app\" no template is allowed in file %s", v), logging.QuietLevel)
-				return false, nil
-			}
-		}
-
-		if _, ok := k.Spec.Selector["app.kubernetes.io/name"]; ok {
-			reg, err := regexp.Compile(`app.kubernetes.io/name:\s+\{\{.*`)
-			if err != nil {
-				return false, err
-			}
-			if reg.MatchString(svcBeforeRendering) {
-				logging.PrintLog(fmt.Sprintf(
-					"For \"app.kubernetes.io/name\" no template is allowed in file %s", v), logging.QuietLevel)
-				return false, nil
-			}
-		}
-	}
-	return true, nil
-}
-
-func validateDeploymentBeforeRendering(ch *chart.Chart, deployments map[*appsv1.Deployment]string) (bool, error) {
-
-	for k, v := range deployments {
-		dplBeforeRendering := getTemplateContent(ch, v)
-
-		reg, err := regexp.Compile(`name:\s+` + k.Name)
-		if err != nil {
-			return false, err
-		}
-		if !reg.MatchString(dplBeforeRendering) {
-			logging.PrintLog(fmt.Sprintf(
-				"For \"name\" no template is allowed in file %s", v), logging.QuietLevel)
-			return false, nil
-		}
-
-		_, okmLabelApp := k.Spec.Selector.MatchLabels["app"]
-		_, okPodLabelApp := k.Spec.Template.ObjectMeta.Labels["app"]
-		if okmLabelApp || okPodLabelApp {
-			reg, err := regexp.Compile(`app:\s+\{\{.*`)
-			if err != nil {
-				return false, err
-			}
-			if reg.MatchString(dplBeforeRendering) {
-				logging.PrintLog(fmt.Sprintf(
-					"For \"app\" no template is allowed in file %s", v), logging.QuietLevel)
-				return false, nil
-			}
-		}
-		_, okmLabelAppk8sName := k.Spec.Selector.MatchLabels["app.kubernetes.io/name"]
-		_, okPodLabelAppk8sName := k.Spec.Template.ObjectMeta.Labels["app.kubernetes.io/name"]
-		if okmLabelAppk8sName || okPodLabelAppk8sName {
-			reg, err := regexp.Compile(`app.kubernetes.io/name:\s+\{\{.*`)
-			if err != nil {
-				return false, err
-			}
-			if reg.MatchString(dplBeforeRendering) {
-				logging.PrintLog(fmt.Sprintf(
-					"For \"app.kubernetes.io/name\" no template is allowed in file %s", v), logging.QuietLevel)
-				return false, nil
-			}
-		}
-	}
-	return true, nil
-}
-
-func getTemplateContent(ch *chart.Chart, fileName string) string {
-
-	for _, t := range ch.Templates {
-		if strings.HasSuffix(fileName, t.Name) {
-			return string(t.Data)
-		}
-	}
-	return ""
 }
 
 func getRenderedTemplates(ch *chart.Chart) (map[string]string, error) {
@@ -297,11 +189,6 @@ func validateService(svc *corev1.Service) bool {
 		logging.PrintLog(fmt.Sprintf("Service %s does not have \"spec.selector.app\"", svc.Name), logging.QuietLevel)
 		return false
 	}
-	if len(svc.Spec.Selector) > 1 {
-		logging.PrintLog(fmt.Sprintf("Service %s contains multiple \"spec.selector\". "+
-			"Only selector \"app\" or \"app.kubernetes.io/name\" is supported.", svc.Name), logging.QuietLevel)
-		return false
-	}
 	return true
 }
 
@@ -332,16 +219,6 @@ func validateDeployment(depl *appsv1.Deployment) bool {
 	podLabelAppk8sName, okPodLabelAppk8sName := depl.Spec.Template.ObjectMeta.Labels["app.kubernetes.io/name"]
 	if (!okPodLabelApp || podLabelApp == "") && (!okPodLabelAppk8sName || podLabelAppk8sName == "") {
 		logging.PrintLog(fmt.Sprintf("Deployment %s does not contain \"spec.template.metadata.labels.app\"", depl.Name), logging.QuietLevel)
-		return false
-	}
-	if len(depl.Spec.Selector.MatchLabels) > 1 {
-		logging.PrintLog(fmt.Sprintf("Deployment %s contains multiple \"selector.matchLabels\". "+
-			"Only selector \"app\" or \"app.kubernetes.io/name\" is supported.", depl.Name), logging.QuietLevel)
-		return false
-	}
-	if len(depl.Spec.Template.ObjectMeta.Labels) > 1 {
-		logging.PrintLog(fmt.Sprintf("Deployment %s contains multiple \"spec.template.metadata.labels\". "+
-			"Only selector \"app\" or \"app.kubernetes.io/name\" is supported.", depl.Name), logging.QuietLevel)
 		return false
 	}
 	return true

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"k8s.io/helm/pkg/proto/hapi/chart"
 	"os"
 
 	cloudevents "github.com/cloudevents/sdk-go"
@@ -107,7 +108,13 @@ func (o *Onboarder) onboardService(stageName string, event *keptnevents.ServiceC
 	}
 
 	o.logger.Debug("Creating new keptn service " + event.Service + " in stage " + stageName)
-	serviceHandler.CreateService(event.Project, stageName, event.Service)
+	respErr, err := serviceHandler.CreateService(event.Project, stageName, event.Service)
+	if respErr != nil {
+		return errors.New(*respErr.Message)
+	}
+	if err != nil {
+		return err
+	}
 
 	o.logger.Debug("Storing the Helm chart provided by the user in stage " + stageName)
 	if err := keptnutils.StoreChart(event.Project, event.Service, stageName, helm.GetChartName(event.Service, false),
@@ -121,46 +128,77 @@ func (o *Onboarder) onboardService(stageName string, event *keptnevents.ServiceC
 	}
 
 	chartGenerator := helm.NewGeneratedChartHandler(o.mesh, o.canaryLevelGen, o.keptnDomain)
+	o.logger.Debug(fmt.Sprintf("For stage %s with deployment strategy %s, an empty chart is generated", stageName, event.DeploymentStrategies[stageName].String()))
+	generatedChart := chartGenerator.GenerateEmptyChart(event.Project, stageName, event.Service, event.DeploymentStrategies[stageName])
 
 	helmChartName := helm.GetChartName(event.Service, true)
-	o.logger.Debug(fmt.Sprintf("Generating the keptn-managed Helm chart %s for stage %s", helmChartName, stageName))
-	ch, err := keptnutils.LoadChart(helmChartData)
+	o.logger.Debug(fmt.Sprintf("Storing the keptn generated Helm chart %s for stage %s", helmChartName, stageName))
+
+	generatedChartData, err := keptnutils.PackageChart(generatedChart)
 	if err != nil {
-		o.logger.Error("Error when loading chart: " + err.Error())
+		o.logger.Error("Error when packing the managed chart: " + err.Error())
 		return err
 	}
 
-	var generatedChartData []byte
-	if event.DeploymentStrategies[stageName] == keptnevents.Duplicate {
-		o.logger.Debug(fmt.Sprintf("For stage %s with deployment strategy %s, a duplicate, managed chart is generated", stageName, event.DeploymentStrategies[stageName].String()))
-		generatedChartData, err = chartGenerator.GenerateDuplicateManagedChart(ch, event.Project, stageName, event.Service)
-		if err != nil {
-			o.logger.Error("Error when generating the keptn managed chart: " + err.Error())
-			return err
-		}
-	} else {
-		o.logger.Debug(fmt.Sprintf("For stage %s with deployment strategy %s, a mesh chart is generated", stageName, event.DeploymentStrategies[stageName].String()))
-		generatedChartData, err = chartGenerator.GenerateMeshChart(ch, event.Project, stageName)
-		if err != nil {
-			o.logger.Error("Error when generating the keptn managed chart: " + err.Error())
-			return err
-		}
-	}
-
-	o.logger.Debug(fmt.Sprintf("Storing the keptn generated Helm chart %s for stage %s", helmChartName, stageName))
 	if err := keptnutils.StoreChart(event.Project, event.Service, stageName, helmChartName,
 		generatedChartData, configServiceURL); err != nil {
 		o.logger.Error("Error when storing the Helm chart: " + err.Error())
 		return err
 	}
+	return o.updateUmbrellaChart(event.Project, stageName, helmChartName)
+}
 
-	if event.DeploymentStrategies[stageName] == keptnevents.Direct {
-		// Directly apply the chart which only contains mesh resources
-		configChanger := NewConfigurationChanger(o.mesh, o.canaryLevelGen, o.logger, o.keptnDomain)
-		configChanger.ApplyConfiguration(event.Project, stageName, event.Service, true)
+// IsGeneratedChartEmpty checks whether the generated chart is empty
+func (c *Onboarder) IsGeneratedChartEmpty(chart *chart.Chart) (bool) {
+
+	return len(chart.Templates) == 0
+}
+
+func (o *Onboarder) OnboardGeneratedService(helmUpgradeMsg string, project string, stageName string,
+	service string, strategy keptnevents.DeploymentStrategy) (*chart.Chart, error) {
+
+	chartGenerator := helm.NewGeneratedChartHandler(o.mesh, o.canaryLevelGen, o.keptnDomain)
+
+	helmChartName := helm.GetChartName(service, true)
+	o.logger.Debug(fmt.Sprintf("Generating the keptn-managed Helm chart %s for stage %s", helmChartName, stageName))
+
+	url, err := serviceutils.GetConfigServiceURL()
+	if err != nil {
+		return nil, err
 	}
 
-	return o.updateUmbrellaChart(event.Project, stageName, helmChartName)
+	var generatedChart *chart.Chart
+	if strategy == keptnevents.Duplicate {
+		o.logger.Debug(fmt.Sprintf("For service %s in stage %s with deployment strategy %s, " +
+			"a chart for a duplicate deployment strategy is generated", service, stageName, strategy.String()))
+		generatedChart, err = chartGenerator.GenerateDuplicateManagedChart(helmUpgradeMsg, project, stageName, service)
+		if err != nil {
+			o.logger.Error("Error when generating the managed chart: " + err.Error())
+			return nil, err
+		}
+	} else {
+		o.logger.Debug(fmt.Sprintf("For service %s in stage %s with deployment strategy %s, a mesh chart is generated",
+			service, stageName, strategy.String()))
+		generatedChart, err = chartGenerator.GenerateMeshChart(helmUpgradeMsg, project, stageName, service)
+		if err != nil {
+			o.logger.Error("Error when generating the managed chart: " + err.Error())
+			return nil, err
+		}
+	}
+
+	o.logger.Debug(fmt.Sprintf("Storing the keptn generated Helm chart %s for stage %s", helmChartName, stageName))
+	generatedChartData, err := keptnutils.PackageChart(generatedChart)
+	if err != nil {
+		o.logger.Error("Error when packing the managed chart: " + err.Error())
+		return nil, err
+	}
+
+	if err := keptnutils.StoreChart(project, service, stageName, helmChartName,
+		generatedChartData, url.String()); err != nil {
+		o.logger.Error("Error when storing the Helm chart: " + err.Error())
+		return nil, err
+	}
+	return generatedChart, nil
 }
 
 func (o *Onboarder) updateUmbrellaChart(project, stage, helmChartName string) error {

@@ -398,7 +398,6 @@
   version = "v1.4.0"
 
 [[projects]]
-  branch = "develop"
   digest = "1:aa4c68b8f22f7dafc90d2d2f266c65824e81ed8befd25fec2dbb7d8e14675337"
   name = "github.com/keptn/go-utils"
   packages = [
@@ -407,7 +406,8 @@
     "pkg/utils",
   ]
   pruneopts = "UT"
-  revision = "7366088126f8847d6977030eee87816f5d0db310"
+  revision = "f5c220b4f954e52994bad71cf9bac152a1706f78"
+  version = "0.2.1"
 
 [[projects]]
   branch = "master"
@@ -975,7 +975,7 @@
   version = "kubernetes-1.12.0"
 
 [[projects]]
-  digest = "1:c780ffd0ea11865bc3d1d5518525b59aa487750fd356b12c74d372c36fc16e74"
+  digest = "1:93c14bd5adb4ad2cdce1a57fda1c648781c91999bfdb96db0768f631adc849f0"
   name = "k8s.io/helm"
   packages = [
     "pkg/chartutil",
