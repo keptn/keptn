@@ -37,7 +37,7 @@ func NewPostProjectProjectNameStageStageNameServiceServiceNameResource(ctx *midd
 
 /*PostProjectProjectNameStageStageNameServiceServiceNameResource swagger:route POST /project/{projectName}/stage/{stageName}/service/{serviceName}/resource Service Resource postProjectProjectNameStageStageNameServiceServiceNameResource
 
-Create list of new resources for the service
+Upload a list of new resources for the service
 
 */
 type PostProjectProjectNameStageStageNameServiceServiceNameResource struct {

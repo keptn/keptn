@@ -13,14 +13,14 @@ import (
 	models "github.com/keptn/keptn/api/models"
 )
 
-// SendEventCreatedCode is the HTTP code returned for type SendEventCreated
-const SendEventCreatedCode int = 201
+// SendEventOKCode is the HTTP code returned for type SendEventOK
+const SendEventOKCode int = 200
 
-/*SendEventCreated forwarded
+/*SendEventOK Forwarded
 
-swagger:response sendEventCreated
+swagger:response sendEventOK
 */
-type SendEventCreated struct {
+type SendEventOK struct {
 
 	/*
 	  In: Body
@@ -28,27 +28,27 @@ type SendEventCreated struct {
 	Payload *models.ChannelInfo `json:"body,omitempty"`
 }
 
-// NewSendEventCreated creates SendEventCreated with default headers values
-func NewSendEventCreated() *SendEventCreated {
+// NewSendEventOK creates SendEventOK with default headers values
+func NewSendEventOK() *SendEventOK {
 
-	return &SendEventCreated{}
+	return &SendEventOK{}
 }
 
-// WithPayload adds the payload to the send event created response
-func (o *SendEventCreated) WithPayload(payload *models.ChannelInfo) *SendEventCreated {
+// WithPayload adds the payload to the send event o k response
+func (o *SendEventOK) WithPayload(payload *models.ChannelInfo) *SendEventOK {
 	o.Payload = payload
 	return o
 }
 
-// SetPayload sets the payload to the send event created response
-func (o *SendEventCreated) SetPayload(payload *models.ChannelInfo) {
+// SetPayload sets the payload to the send event o k response
+func (o *SendEventOK) SetPayload(payload *models.ChannelInfo) {
 	o.Payload = payload
 }
 
 // WriteResponse to the client
-func (o *SendEventCreated) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+func (o *SendEventOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
-	rw.WriteHeader(201)
+	rw.WriteHeader(200)
 	if o.Payload != nil {
 		payload := o.Payload
 		if err := producer.Produce(rw, payload); err != nil {
@@ -57,7 +57,7 @@ func (o *SendEventCreated) WriteResponse(rw http.ResponseWriter, producer runtim
 	}
 }
 
-/*SendEventDefault error
+/*SendEventDefault Error
 
 swagger:response sendEventDefault
 */
