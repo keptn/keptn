@@ -36,11 +36,10 @@ func PostToEventBroker(event cloudevents.Event) (*cloudevents.Event, error) {
 		cloudeventshttp.WithTarget(getEventBrokerURL()),
 		cloudeventshttp.WithEncoding(cloudeventshttp.StructuredV02),
 	)
-	t.Client = &http.Client{Timeout: timeout * time.Second}
-
 	if err != nil {
 		return nil, err
 	}
+	t.Client = &http.Client{Timeout: timeout * time.Second}
 
 	c, err := client.New(t)
 	if err != nil {
