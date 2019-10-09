@@ -23,10 +23,10 @@ import (
 )
 
 type pksCredentials struct {
-	ClusterEndpoint string `json:"clusterEndpoint"`
+	PksAPI          string `json:"pksAPI"`
 	ClusterName     string `json:"clusterName"`
 	PksUser         string `json:"pksUser"`
-	PksPassword     string `json:"pksUser"`
+	PksUserPassword string `json:"pksUserPassword"`
 }
 
 type pksPlatform struct {
@@ -44,12 +44,12 @@ func (p pksPlatform) getCreds() interface{} {
 }
 
 func (p pksPlatform) checkRequirements() error {
-	_, err := getGcloudUser()
+	_, err := getPksUser()
 	return err
 }
 
 func (p pksPlatform) checkCreds() error {
-	if p.creds.ClusterName == "" || p.creds.ClusterEndpoint == "" {
+	if p.creds.PksAPI == "" || p.creds.ClusterName == "" || p.creds.PksUser == "" || p.creds.PksUserPassword == "" {
 		return errors.New("Incomplete credentials")
 	}
 
@@ -65,17 +65,26 @@ func (p pksPlatform) checkCreds() error {
 
 func (p pksPlatform) readCreds() {
 
-	if p.creds.ClusterEndpoint == "" || p.creds.ClusterName == "" || p.creds.PksUser == "" || p.creds.PksPassword == "" {
-		p.creds.ClusterEndpoint, p.creds.ClusterName, p.creds.PksUser, p.creds.PksPassword = getPksClusterInfo()
+	if p.creds.PksAPI == "" || p.creds.ClusterName == "" || p.creds.PksUser == "" || p.creds.PksUserPassword == "" {
+		p.creds.ClusterName = getPksClusterInfo()
 	}
 
 	connectionSuccessful := false
 	for !connectionSuccessful {
-		p.readClusterName()
 		p.readClusterEndpoint()
-		p.readGkeProject()
+		p.readClusterName()
+		p.readPksUser()
+		p.readPksUserPassword()
 		connectionSuccessful, _ = p.authenticateAtCluster()
 	}
+}
+
+func (p pksPlatform) readClusterEndpoint() {
+	readUserInput(&p.creds.PksAPI,
+		"",
+		"PKS API",
+		"Please enter a valid PKS API.",
+	)
 }
 
 func (p pksPlatform) readClusterName() {
@@ -86,32 +95,33 @@ func (p pksPlatform) readClusterName() {
 	)
 }
 
-func (p pksPlatform) readClusterEndpoint() {
-	readUserInput(&p.creds.ClusterEndpoint,
+func (p pksPlatform) readPksUser() {
+	readUserInput(&p.creds.PksUser,
 		"^(([a-zA-Z0-9]+-)*[a-zA-Z0-9]+)$",
-		"Cluster Endpoint",
-		"Please enter a valid Cluster Endpoint.",
+		"PKS User",
+		"Please enter your PKS User.",
 	)
 }
 
-func (p pksPlatform) readGkeProject() {
-	readUserInput(&p.creds.GkeProject,
-		"^(([a-zA-Z0-9]+-)*[a-zA-Z0-9]+)$",
-		"GKE Project",
-		"Please enter a valid GKE Project.",
+func (p pksPlatform) readPksUserPassword() {
+	readUserInput(&p.creds.PksUserPassword,
+		"",
+		"PKS User Password",
+		"Please enter your PKS User Password.",
 	)
 }
 
 func (p pksPlatform) authenticateAtCluster() (bool, error) {
-	_, err := keptnutils.ExecuteCommand("gcloud", []string{
-		"container",
+	_, err := keptnutils.ExecuteCommand("pks", []string{
+		"login",
 		"clusters",
-		"get-credentials",
-		p.creds.ClusterName,
-		"--zone",
-		p.creds.ClusterZone,
-		"--project",
-		p.creds.GkeProject,
+		"--api",
+		p.creds.PksAPI,
+		"--username",
+		p.creds.PksUser,
+		"--password",
+		p.creds.PksUserPassword,
+		"--skip-ssl-verification",
 	})
 
 	if err != nil {
@@ -120,45 +130,39 @@ func (p pksPlatform) authenticateAtCluster() (bool, error) {
 		return false, err
 	}
 
-	return true, nil
-}
-
-func getPksClusterInfo() (string, string, string, string) {
-	// try to get current cluster from gcloud config
-	out, err := getKubeContext()
-
-	if err != nil {
-		return "", "", "", ""
-	}
-	clusterInfo := strings.TrimSpace(strings.Replace(string(out), "\r\n", "\n", -1))
-	if !strings.HasPrefix(clusterInfo, pks) {
-		return "", "", "", ""
-	}
-
-	clusterInfoArray := strings.Split(clusterInfo, "_")
-	if len(clusterInfoArray) < 4 {
-		return "", "", "", ""
-	}
-
-	return "", clusterInfoArray[3], clusterInfoArray[2], clusterInfoArray[1]
-}
-
-func getGcloudUser() (string, error) {
-	out, err := keptnutils.ExecuteCommand("gcloud", []string{
-		"config",
-		"get-value",
-		"account",
+	_, err = keptnutils.ExecuteCommand("pks", []string{
+		"get-credentials",
+		p.creds.ClusterName,
 	})
 
 	if err != nil {
-		return "", fmt.Errorf("Please configure your gcloud: %s", err)
+		fmt.Println("Could not update a kubeconfig file. Error: " + err.Error())
+		return false, err
 	}
-	// This command returns the account in the first line
-	return strings.Split(strings.Replace(string(out), "\r\n", "\n", -1), "\n")[0], nil
+
+	return true, nil
+}
+
+func getPksClusterInfo() string {
+	// try to get current cluster from kubectl config
+	out, err := keptnutils.ExecuteCommand("kubectl", []string{
+		"config",
+		"current-context",
+	})
+
+	if err != nil {
+		return ""
+	}
+	return strings.TrimSpace(strings.Replace(string(out), "\r\n", "\n", -1))
+}
+
+func getPksUser() (string, error) {
+	// the PKS CLI does not support it to retrieve the user
+	return "Not implemented yet", nil
 }
 
 func (p pksPlatform) printCreds() {
-	fmt.Println("Cluster endpoint: " + p.creds.ClusterEndpoint)
-	fmt.Println("Cluster name: " + p.creds.ClusterName)
-	fmt.Println("PKS user: " + p.creds.PksUser)
+	fmt.Println("PKS API: " + p.creds.PksAPI)
+	fmt.Println("Cluster Name: " + p.creds.ClusterName)
+	fmt.Println("PKS User: " + p.creds.PksUser)
 }
