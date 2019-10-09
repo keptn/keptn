@@ -179,9 +179,17 @@ func resetDeployment(depl *appsv1.Deployment) {
 func (c *GeneratedChartHandler) generateServices(svc *corev1.Service, project string, stageName string) ([]*chart.Template, error) {
 
 	templates := make([]*chart.Template, 0, 0)
+
+	resetService(svc)
+	data, err := yaml.Marshal(svc)
+	if err != nil {
+		return nil, err
+	}
+	templates = append(templates, &chart.Template{Name: "templates/" + svc.Name + "-service" + ".yaml", Data: data})
+
 	serviceCanary := c.canaryLevelGen.GetCanaryService(*svc, project, stageName)
 	resetService(serviceCanary)
-	data, err := yaml.Marshal(serviceCanary)
+	data, err = yaml.Marshal(serviceCanary)
 	if err != nil {
 		return nil, err
 	}
@@ -282,8 +290,10 @@ func (c *GeneratedChartHandler) GenerateMeshChart(helmUpgradeMsg string, project
 		for _, svc := range svcs {
 			// Generate virtual service
 			gws := []string{GetGatewayName(project, stageName) + "." + GetUmbrellaNamespace(project, stageName), "mesh"}
-			hosts := []string{svc.Name + "." + namespace + "." + c.keptnDomain,
-				svc.Name, svc.Name + "." + namespace}
+			hosts := []string{
+				svc.Name + "." + namespace + "." + c.keptnDomain,
+				svc.Name + "." + namespace,
+			}
 			host := svc.Name + "." + namespace + ".svc.cluster.local"
 			dest := mesh.HTTPRouteDestination{Host: host}
 			httpRouteDestinations := []mesh.HTTPRouteDestination{dest}
