@@ -149,7 +149,7 @@ func (o *Onboarder) onboardService(stageName string, event *keptnevents.ServiceC
 }
 
 // IsGeneratedChartEmpty checks whether the generated chart is empty
-func (c *Onboarder) IsGeneratedChartEmpty(chart *chart.Chart) (bool) {
+func (c *Onboarder) IsGeneratedChartEmpty(chart *chart.Chart) bool {
 
 	return len(chart.Templates) == 0
 }
@@ -169,9 +169,9 @@ func (o *Onboarder) OnboardGeneratedService(helmUpgradeMsg string, project strin
 
 	var generatedChart *chart.Chart
 	if strategy == keptnevents.Duplicate {
-		o.logger.Debug(fmt.Sprintf("For service %s in stage %s with deployment strategy %s, " +
+		o.logger.Debug(fmt.Sprintf("For service %s in stage %s with deployment strategy %s, "+
 			"a chart for a duplicate deployment strategy is generated", service, stageName, strategy.String()))
-		generatedChart, err = chartGenerator.GenerateDuplicateManagedChart(helmUpgradeMsg, project, stageName, service)
+		generatedChart, err = chartGenerator.GenerateDuplicateManagedChart(helmUpgradeMsg, project, stageName, service, false)
 		if err != nil {
 			o.logger.Error("Error when generating the managed chart: " + err.Error())
 			return nil, err

@@ -30,7 +30,7 @@ func NewGeneratedChartHandler(mesh mesh.Mesh, canaryLevelGen CanaryLevelGenerato
 
 // GenerateDuplicateManagedChart generates a duplicated chart which is managed by keptn and used for
 // b/g and canary releases
-func (c *GeneratedChartHandler) GenerateDuplicateManagedChart(helmUpgradeMsg string, project string, stageName string, service string) (*chart.Chart, error) {
+func (c *GeneratedChartHandler) GenerateDuplicateManagedChart(helmUpgradeMsg string, project string, stageName string, service string, createOriginalService bool) (*chart.Chart, error) {
 
 	if _, ok := c.canaryLevelGen.(*CanaryOnDeploymentGenerator); ok {
 
@@ -51,7 +51,7 @@ func (c *GeneratedChartHandler) GenerateDuplicateManagedChart(helmUpgradeMsg str
 		}
 
 		for _, svc := range svcs {
-			templates, err := c.generateServices(svc, project, stageName)
+			templates, err := c.generateServices(svc, project, stageName, false)
 			if err != nil {
 				return nil, err
 			}
@@ -176,19 +176,18 @@ func resetDeployment(depl *appsv1.Deployment) {
 	depl.Status = appsv1.DeploymentStatus{}
 }
 
-func (c *GeneratedChartHandler) generateServices(svc *corev1.Service, project string, stageName string) ([]*chart.Template, error) {
+func (c *GeneratedChartHandler) generateServices(svc *corev1.Service, project string, stageName string, createOriginalService bool) ([]*chart.Template, error) {
 
 	templates := make([]*chart.Template, 0, 0)
 
-	/*
+	if true {
 		resetService(svc)
 		data, err := yaml.Marshal(svc)
 		if err != nil {
 			return nil, err
 		}
 		templates = append(templates, &chart.Template{Name: "templates/" + svc.Name + "-service" + ".yaml", Data: data})
-
-	*/
+	}
 
 	serviceCanary := c.canaryLevelGen.GetCanaryService(*svc, project, stageName)
 	resetService(serviceCanary)
@@ -291,11 +290,10 @@ func (c *GeneratedChartHandler) GenerateMeshChart(helmUpgradeMsg string, project
 		}
 
 		for _, svc := range svcs {
-			// Generate virtual service
-			gws := []string{GetGatewayName(project, stageName) + "." + GetUmbrellaNamespace(project, stageName), "mesh"}
+			// Generate virtual service for external access
+			gws := []string{GetGatewayName(project, stageName) + "." + GetUmbrellaNamespace(project, stageName)}
 			hosts := []string{
 				svc.Name + "." + namespace + "." + c.keptnDomain,
-				svc.Name + "." + namespace,
 			}
 			host := svc.Name + "." + namespace + ".svc.cluster.local"
 			dest := mesh.HTTPRouteDestination{Host: host}
@@ -308,6 +306,20 @@ func (c *GeneratedChartHandler) GenerateMeshChart(helmUpgradeMsg string, project
 
 			vsTemplate := chart.Template{Name: "templates/" + svc.Name + c.mesh.GetVirtualServiceSuffix(), Data: vs}
 			ch.Templates = append(ch.Templates, &vsTemplate)
+
+			// Generate virtual service for internal access
+			gws = []string{"mesh"}
+			hosts = []string{
+				svc.Name + "." + namespace,
+				svc.Name,
+			}
+			meshVs, err := c.mesh.GenerateVirtualService(svc.Name+"-mesh", gws, hosts, httpRouteDestinations)
+			if err != nil {
+				return nil, err
+			}
+
+			meshVsTemplate := chart.Template{Name: "templates/" + svc.Name + "-mesh-" + c.mesh.GetVirtualServiceSuffix(), Data: meshVs}
+			ch.Templates = append(ch.Templates, &meshVsTemplate)
 		}
 
 		return &ch, nil
