@@ -16,7 +16,7 @@ var uninstallVersion *string
 // uninstallCmd represents the uninstall command
 var uninstallCmd = &cobra.Command{
 	Use:          "uninstall",
-	Short:        "Uninstalls keptn",
+	Short:        "Uninstalls Keptn from a Kubernetes cluster",
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 

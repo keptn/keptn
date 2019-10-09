@@ -9,10 +9,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/keptn/keptn/cli/utils/credentialmanager"
+
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/cli/pkg/logging"
-	"github.com/keptn/keptn/cli/utils/credentialmanager"
 	"github.com/spf13/cobra"
 )
 
@@ -38,16 +39,27 @@ Example:
 			return err
 		}
 
-		authHandler := apiutils.NewAuthHandler(url.String())
+		authHandler := apiutils.NewAuthenticatedAuthHandler(url.String(), *apiToken, "x-token", nil, "https")
 
 		if !mocking {
-			_, err = authHandler.Authenticate()
+			response, err := authHandler.Authenticate()
 			if err != nil {
 				logging.PrintLog("Authentication was unsuccessful", logging.QuietLevel)
 				return err
 			}
-			logging.PrintLog("Successfully authenticated", logging.InfoLevel)
-			return credentialmanager.SetCreds(*url, *apiToken)
+
+			// check for response, which is of type apimodels.Error
+			if response == nil {
+				logging.PrintLog("Successfully authenticated", logging.InfoLevel)
+				return credentialmanager.SetCreds(*url, *apiToken)
+			}
+
+			if response.Code > 299 {
+				fmt.Sprintf("Authentication was unsuccessful. %s", *response.Message)
+				return fmt.Errorf("Authentication was unsuccessful. %s", *response.Message)
+			}
+
+			return fmt.Errorf("Received unexpected return code: %d", response.Code)
 		}
 
 		fmt.Println("skipping auth due to mocking flag set to true")

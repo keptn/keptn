@@ -472,7 +472,7 @@
 
 [[projects]]
   branch = "feature/893/api-interface"
-  digest = "1:4d123ec1045cd41b907f6ed9505d7b898b95c55d8de253daefc1a47df98e2b4b"
+  digest = "1:7d94c8a47de833bf238531d7bec747bd44e4943e4485dd046957d6e755e09521"
   name = "github.com/keptn/go-utils"
   packages = [
     "pkg/api/models",
@@ -482,7 +482,7 @@
     "pkg/utils",
   ]
   pruneopts = ""
-  revision = "50bffb0a0b4385675a391719b254b28f81ea60bc"
+  revision = "828d7b4cf809286dc4e5253826be730acd0d21e9"
 
 [[projects]]
   digest = "1:91317956b340c9e61a4287fd94c870bfad3f1922280c3e0a65db91c29017e8de"
