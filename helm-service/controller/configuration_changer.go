@@ -393,9 +393,11 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 		if _, err := c.ApplyChart(genChart, e.Project, e.Stage, e.Service, true); err != nil {
 			return err
 		}
-		if err := c.deleteCanaryRelease(e); err != nil {
-			return err
-		}
+		/*
+			if err := c.deleteCanaryRelease(e); err != nil {
+				return err
+			}
+		*/
 
 	case keptnevents.Set:
 		ch, err := c.setCanaryWeight(e, e.Canary.Value)
