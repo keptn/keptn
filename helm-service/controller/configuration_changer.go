@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"log"
 	"os"
 	"strings"
@@ -398,6 +399,22 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 				return err
 			}
 		*/
+		client, err := keptnutils.GetClientset(true)
+		if err != nil {
+			return err
+		}
+
+		deployment, err := client.AppsV1().Deployments(e.Project+"-"+e.Stage).Get(e.Service, v1.GetOptions{})
+		if err != nil {
+			return err
+		}
+
+		deployment.Spec.Replicas = int32Ptr(0)
+
+		_, err = client.AppsV1().Deployments(e.Project + "-" + e.Stage).Update(deployment)
+		if err != nil {
+			return err
+		}
 
 	case keptnevents.Set:
 		ch, err := c.setCanaryWeight(e, e.Canary.Value)
@@ -518,3 +535,5 @@ func getInClusterConfig() bool {
 	}
 	return false
 }
+
+func int32Ptr(i int32) *int32 { return &i }
