@@ -77,7 +77,7 @@ Example:
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		endPoint, _, err := credentialmanager.GetCreds() // endpoint, apitoken, err
+		endPoint, apiToken, err := credentialmanager.GetCreds()
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
@@ -112,7 +112,7 @@ Example:
 			service.DeploymentStrategies = deplStrategies
 		}
 
-		serviceHandler := apiutils.NewServiceHandler(endPoint.String())
+		serviceHandler := apiutils.NewAuthenticatedServiceHandler(endPoint.String(), apiToken, "x-token", nil, "https")
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
@@ -122,16 +122,17 @@ Example:
 				return err
 			}
 
-			// check for response to include token
+			// check for response, which is of type apimodels.Error
 			if response == nil {
-				logging.PrintLog("Response is nil", logging.QuietLevel)
 				return nil
 			}
 
-			if response.Message != nil {
-				fmt.Sprintf("Onboard service was unsuccessful. %s", response.Message)
-				return fmt.Errorf("Onboarding a service failed. %s", response.Message)
+			if response.Code > 299 {
+				fmt.Sprintf("Onboard service was unsuccessful. %s", *response.Message)
+				return fmt.Errorf("Onboard service was unsuccessful. %s", *response.Message)
 			}
+
+			return fmt.Errorf("Received unexpected return code: %d", response.Code)
 		} else {
 			fmt.Println("Skipping onboard service due to mocking flag set to true")
 		}
