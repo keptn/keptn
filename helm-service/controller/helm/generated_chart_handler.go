@@ -242,6 +242,7 @@ func (c *GeneratedChartHandler) generateServices(svc *corev1.Service, project st
 	}
 
 	templates = append(templates, &chart.Template{Name: "templates/" + svc.Name + c.mesh.GetVirtualServiceSuffix(), Data: vs})
+
 	return templates, nil
 }
 
@@ -291,9 +292,10 @@ func (c *GeneratedChartHandler) GenerateMeshChart(helmUpgradeMsg string, project
 
 		for _, svc := range svcs {
 			// Generate virtual service for external access
-			gws := []string{GetGatewayName(project, stageName) + "." + GetUmbrellaNamespace(project, stageName)}
+			gws := []string{GetGatewayName(project, stageName) + "." + GetUmbrellaNamespace(project, stageName), "mesh"}
 			hosts := []string{
 				svc.Name + "." + namespace + "." + c.keptnDomain,
+				svc.Name,
 			}
 			host := svc.Name + "." + namespace + ".svc.cluster.local"
 			dest := mesh.HTTPRouteDestination{Host: host}
@@ -306,19 +308,6 @@ func (c *GeneratedChartHandler) GenerateMeshChart(helmUpgradeMsg string, project
 
 			vsTemplate := chart.Template{Name: "templates/" + svc.Name + c.mesh.GetVirtualServiceSuffix(), Data: vs}
 			ch.Templates = append(ch.Templates, &vsTemplate)
-
-			// Generate virtual service for internal access
-			gws = []string{"mesh"}
-			hosts = []string{
-				svc.Name,
-			}
-			meshVs, err := c.mesh.GenerateVirtualService(svc.Name+"-mesh", gws, hosts, httpRouteDestinations)
-			if err != nil {
-				return nil, err
-			}
-
-			meshVsTemplate := chart.Template{Name: "templates/" + svc.Name + "-mesh" + c.mesh.GetVirtualServiceSuffix(), Data: meshVs}
-			ch.Templates = append(ch.Templates, &meshVsTemplate)
 		}
 
 		return &ch, nil
