@@ -367,7 +367,7 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 			c.logger.Error(err.Error())
 			return err
 		}
-		genChart, err := chartGenerator.GenerateDuplicateManagedChart(upgradeMsg, e.Project, e.Stage, e.Service)
+		genChart, err := chartGenerator.GenerateDuplicateManagedChart(upgradeMsg, e.Project, e.Stage, e.Service, false)
 		if err != nil {
 			c.logger.Error(err.Error())
 			return err
@@ -481,7 +481,7 @@ func (c *ConfigurationChanger) ApplyChart(ch *chart.Chart, project, stage, servi
 	}
 
 	msg, err := keptnutils.ExecuteCommand("helm", []string{"upgrade", "--install", releaseName,
-		chartPath, "--namespace", namespace, "--reset-values", "--wait", "--force"})
+		chartPath, "--namespace", namespace, "--reset-values", "--wait", "--force", "--replace"})
 	if err != nil {
 		return "", fmt.Errorf("Error when upgrading chart %s in namespace %s: %s",
 			releaseName, namespace, err.Error())
