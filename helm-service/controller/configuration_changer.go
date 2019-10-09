@@ -481,7 +481,7 @@ func (c *ConfigurationChanger) ApplyChart(ch *chart.Chart, project, stage, servi
 	}
 
 	msg, err := keptnutils.ExecuteCommand("helm", []string{"upgrade", "--install", releaseName,
-		chartPath, "--namespace", namespace, "--reset-values", "--wait", "--force", "--replace"})
+		chartPath, "--namespace", namespace, "--reset-values", "--wait", "--force"})
 	if err != nil {
 		return "", fmt.Errorf("Error when upgrading chart %s in namespace %s: %s",
 			releaseName, namespace, err.Error())
