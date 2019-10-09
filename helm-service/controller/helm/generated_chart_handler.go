@@ -230,8 +230,10 @@ func (c *GeneratedChartHandler) generateServices(svc *corev1.Service, project st
 
 	// Generate virtual service
 	gws := []string{GetGatewayName(project, stageName) + "." + GetUmbrellaNamespace(project, stageName), "mesh"}
-	hosts := []string{svc.Name + "." + c.canaryLevelGen.GetNamespace(project, stageName, false) + "." + c.keptnDomain,
-		svc.Name, svc.Name + "." + c.canaryLevelGen.GetNamespace(project, stageName, false)}
+	hosts := []string{
+		svc.Name + "." + c.canaryLevelGen.GetNamespace(project, stageName, false) + "." + c.keptnDomain,
+		svc.Name,
+	}
 	destCanary := mesh.HTTPRouteDestination{Host: hostCanary, Weight: 0}
 	destPrimary := mesh.HTTPRouteDestination{Host: hostPrimary, Weight: 100}
 	httpRouteDestinations := []mesh.HTTPRouteDestination{destCanary, destPrimary}
