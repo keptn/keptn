@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"net/url"
+	"time"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
@@ -16,6 +17,16 @@ import (
 	"github.com/keptn/keptn/api/utils"
 	"github.com/keptn/keptn/api/ws"
 )
+
+type projectCreateEventData struct {
+	keptnevents.ProjectCreateEventData `json:",inline"`
+	ChannelInfo                        models.ChannelInfo `json:"channelInfo"`
+}
+
+type projectDeleteEventData struct {
+	keptnevents.ProjectDeleteEventData `json:",inline"`
+	ChannelInfo                        models.ChannelInfo `json:"channelInfo"`
+}
 
 // PostProjectHandlerFunc creates a new project
 func PostProjectHandlerFunc(params project.PostProjectParams, p *models.Principal) middleware.Responder {
@@ -41,12 +52,13 @@ func PostProjectHandlerFunc(params project.PostProjectParams, p *models.Principa
 		GitToken:     params.Project.GitToken,
 		GitRemoteURL: params.Project.GitRemoteURL,
 	}
-	forwardData := EnrichedCEData{Data: prjData, ChannelInfo: channelInfo}
+	forwardData := projectCreateEventData{ProjectCreateEventData: prjData, ChannelInfo: channelInfo}
 
 	contentType := "application/json"
 	event := cloudevents.Event{
 		Context: cloudevents.EventContextV02{
 			ID:          uuid.New().String(),
+			Time:        &types.Timestamp{Time: time.Now()},
 			Type:        keptnevents.InternalProjectCreateEventType,
 			Source:      types.URLRef{URL: *source},
 			ContentType: &contentType,
@@ -84,12 +96,13 @@ func DeleteProjectProjectNameHandlerFunc(params project.DeleteProjectProjectName
 	prjData := keptnevents.ProjectDeleteEventData{
 		Project: params.ProjectName,
 	}
-	forwardData := EnrichedCEData{Data: prjData, ChannelInfo: channelInfo}
+	forwardData := projectDeleteEventData{ProjectDeleteEventData: prjData, ChannelInfo: channelInfo}
 
 	contentType := "application/json"
 	event := cloudevents.Event{
 		Context: cloudevents.EventContextV02{
 			ID:          uuid.New().String(),
+			Time:        &types.Timestamp{Time: time.Now()},
 			Type:        keptnevents.InternalProjectDeleteEventType,
 			Source:      types.URLRef{URL: *source},
 			ContentType: &contentType,
