@@ -180,7 +180,7 @@ func (c *GeneratedChartHandler) generateServices(svc *corev1.Service, project st
 
 	templates := make([]*chart.Template, 0, 0)
 
-	if true {
+	if createOriginalService {
 		resetService(svc)
 		data, err := yaml.Marshal(svc)
 		if err != nil {
@@ -310,7 +310,6 @@ func (c *GeneratedChartHandler) GenerateMeshChart(helmUpgradeMsg string, project
 			// Generate virtual service for internal access
 			gws = []string{"mesh"}
 			hosts = []string{
-				svc.Name + "." + namespace,
 				svc.Name,
 			}
 			meshVs, err := c.mesh.GenerateVirtualService(svc.Name+"-mesh", gws, hosts, httpRouteDestinations)
@@ -318,7 +317,7 @@ func (c *GeneratedChartHandler) GenerateMeshChart(helmUpgradeMsg string, project
 				return nil, err
 			}
 
-			meshVsTemplate := chart.Template{Name: "templates/" + svc.Name + "-mesh-" + c.mesh.GetVirtualServiceSuffix(), Data: meshVs}
+			meshVsTemplate := chart.Template{Name: "templates/" + svc.Name + "-mesh" + c.mesh.GetVirtualServiceSuffix(), Data: meshVs}
 			ch.Templates = append(ch.Templates, &meshVsTemplate)
 		}
 
