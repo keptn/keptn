@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"net/url"
+	"time"
 
 	"github.com/keptn/keptn/api/utils"
 
@@ -18,6 +19,11 @@ import (
 	"github.com/keptn/keptn/api/restapi/operations/event"
 	"github.com/keptn/keptn/api/ws"
 )
+
+type eventData struct {
+	models.Data `json:",inline"`
+	ChannelInfo models.ChannelInfo `json:"channelInfo"`
+}
 
 func PostEventHandlerFunc(params event.SendEventParams, principal *models.Principal) middleware.Responder {
 
@@ -35,12 +41,13 @@ func PostEventHandlerFunc(params event.SendEventParams, principal *models.Princi
 
 	source, _ := url.Parse("https://github.com/keptn/keptn/api")
 
-	forwardData := EnrichedCEData{Data: params.Body.Data, ChannelInfo: channelInfo}
+	forwardData := eventData{Data: params.Body.Data, ChannelInfo: channelInfo}
 
 	contentType := "application/json"
 	ev := cloudevents.Event{
 		Context: cloudevents.EventContextV02{
 			ID:          uuid.New().String(),
+			Time:        &types.Timestamp{Time: time.Now()},
 			Type:        string(params.Body.Type),
 			Source:      types.URLRef{URL: *source},
 			ContentType: &contentType,
