@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/helm/pkg/proto/hapi/chart"
 	"os"
 
@@ -88,9 +89,25 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event, loggingDone chan bool) error
 		}
 	}
 
+	kubeClient, err := keptnutils.GetKubeAPI(true)
+	if err != nil {
+		return err
+	}
 	for _, stage := range stages {
 		if err := o.onboardService(stage.StageName, event, url.String()); err != nil {
 			return err
+		}
+		if o.isBlueGreenStage(event.Project, stage.StageName) {
+			namespace, err := kubeClient.Namespaces().Get(helm.GetUmbrellaNamespace(event.Project, stage.StageName), v1.GetOptions{})
+			if err != nil {
+				return err
+			}
+
+			namespace.ObjectMeta.Labels["istio-injection"] = "enabled"
+			_, err = kubeClient.Namespaces().Update(namespace)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -244,6 +261,30 @@ func (o *Onboarder) initAndApplyUmbrellaChart(event *keptnevents.ServiceCreateEv
 		}
 	}
 	return nil
+}
+
+func (o *Onboarder) isBlueGreenStage(project string, stageName string) bool {
+	url, err := serviceutils.GetConfigServiceURL()
+	if err != nil {
+		o.logger.Error(fmt.Sprintf("Error when getting config service url: %s", err.Error()))
+		return false
+	}
+
+	resourceHandler := keptnutils.NewResourceHandler(url.String())
+	handler := keptnutils.NewKeptnHandler(resourceHandler)
+
+	shipyard, err := handler.GetShipyard(project)
+	if err != nil {
+		o.logger.Error("Error when retrieving shipyard: " + err.Error())
+		return false
+	}
+
+	for _, stage := range shipyard.Stages {
+		if stage.Name == stageName && stage.DeploymentStrategy == "blue_green_service" {
+			return true
+		}
+	}
+	return false
 }
 
 func (o *Onboarder) isFirstServiceOfProject(event *keptnevents.ServiceCreateEventData, stages []*models.Stage) (bool, error) {
