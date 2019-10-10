@@ -394,24 +394,8 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 		if _, err := c.ApplyChart(genChart, e.Project, e.Stage, e.Service, true); err != nil {
 			return err
 		}
-		/*
-			if err := c.deleteCanaryRelease(e); err != nil {
-				return err
-			}
-		*/
-		client, err := keptnutils.GetClientset(true)
-		if err != nil {
-			return err
-		}
 
-		deployment, err := client.AppsV1().Deployments(e.Project+"-"+e.Stage).Get(e.Service, v1.GetOptions{})
-		if err != nil {
-			return err
-		}
-
-		deployment.Spec.Replicas = int32Ptr(0)
-
-		_, err = client.AppsV1().Deployments(e.Project + "-" + e.Stage).Update(deployment)
+		err = c.scaleDownCanaryDeployment(e)
 		if err != nil {
 			return err
 		}
@@ -426,6 +410,23 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 		}
 	}
 
+	return nil
+}
+
+func (c *ConfigurationChanger) scaleDownCanaryDeployment(e *keptnevents.ConfigurationChangeEventData) error {
+	client, err := keptnutils.GetClientset(true)
+	if err != nil {
+		return err
+	}
+	deployment, err := client.AppsV1().Deployments(e.Project+"-"+e.Stage).Get(e.Service, v1.GetOptions{})
+	if err != nil {
+		return err
+	}
+	deployment.Spec.Replicas = int32Ptr(0)
+	_, err = client.AppsV1().Deployments(e.Project + "-" + e.Stage).Update(deployment)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
