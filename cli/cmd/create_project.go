@@ -52,7 +52,7 @@ Example:
 			return errors.New("Requires PROJECTNAME")
 		}
 		if !utils.ValidateK8sName(args[0]) {
-			errorMsg := "Project name contains invalid characters or is not well-formed.\n"
+			errorMsg := "Project name contains upper case letter(s) or special character(s).\n"
 			errorMsg += "Keptn relies on Helm charts and thus these conventions have to be followed: "
 			errorMsg += "start with a lower case letter, then lower case letters and numbers are allowed.\n"
 			errorMsg += "You can find the guidelines here: https://github.com/helm/helm/blob/master/docs/chart_best_practices/conventions.md#chart-names\n"
@@ -81,7 +81,7 @@ Example:
 		// check stage names
 		for _, stage := range shipyard.Stages {
 			if !utils.ValidateK8sName(stage.Name) {
-				errorMsg := "Stage " + stage.Name + " contains invalid characters or is not well-formed.\n"
+				errorMsg := "Stage " + stage.Name + " contains upper case letter(s) or special character(s).\n"
 				errorMsg += "Keptn relies on Helm charts and thus these conventions have to be followed: "
 				errorMsg += "start with a lower case letter, then lower case letters and numbers are allowed.\n"
 				errorMsg += "You can find the guidelines here: https://github.com/helm/helm/blob/master/docs/chart_best_practices/conventions.md#chart-names\n"
