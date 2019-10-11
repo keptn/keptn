@@ -1,6 +1,13 @@
-# Build files
+# Build, Debug files
 
 vendor
 cmd/configuration-service-server/debug
 
 MANIFEST
+
+deploy/service_debug.yaml
+Dockerfile_dev
+skaffold.yaml
+
+# Idea
+.idea
