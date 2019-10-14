@@ -42,24 +42,17 @@ Example:
 		authHandler := apiutils.NewAuthenticatedAuthHandler(url.String(), *apiToken, "x-token", nil, "https")
 
 		if !mocking {
-			response, err := authHandler.Authenticate()
+			channelInfo, err := authHandler.Authenticate()
 			if err != nil {
 				logging.PrintLog("Authentication was unsuccessful", logging.QuietLevel)
-				return err
+				return fmt.Errorf("Authentication was unsuccessful. %s", *err.Message)
 			}
 
-			// check for response, which is of type apimodels.Error
-			if response == nil {
+			// check for response, which is of type apimodels.ChannelInfo
+			if channelInfo == nil {
 				logging.PrintLog("Successfully authenticated", logging.InfoLevel)
-				return credentialmanager.SetCreds(*url, *apiToken)
 			}
-
-			if response.Code > 299 {
-				fmt.Sprintf("Authentication was unsuccessful. %s", *response.Message)
-				return fmt.Errorf("Authentication was unsuccessful. %s", *response.Message)
-			}
-
-			return fmt.Errorf("Received unexpected return code: %d", response.Code)
+			return credentialmanager.SetCreds(*url, *apiToken)
 		}
 
 		fmt.Println("skipping auth due to mocking flag set to true")

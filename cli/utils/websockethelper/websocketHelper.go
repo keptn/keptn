@@ -14,6 +14,7 @@ import (
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/gorilla/websocket"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/utils"
@@ -22,11 +23,20 @@ import (
 // PrintWSContentCEResponse opens a websocket using the passed
 // connection data (in form of a cloud event) and prints status data
 func PrintWSContentCEResponse(responseCE *cloudevents.Event, apiEndPoint url.URL) error {
+
 	connectionData := &keptnutils.ConnectionData{}
 	err := responseCE.DataAs(connectionData)
+
 	if err != nil {
 		return err
 	}
+	return printWSContent(*connectionData, apiEndPoint)
+}
+
+// PrintWSContentChannelInfo opens a websocket using the passed
+// connection data and prints status data
+func PrintWSContentChannelInfo(channelInfo *apimodels.ChannelInfo, apiEndPoint url.URL) error {
+	connectionData := &keptnutils.ConnectionData{ChannelInfo:*channelInfo}
 	return printWSContent(*connectionData, apiEndPoint)
 }
 
@@ -60,7 +70,7 @@ func printWSContent(connData keptnutils.ConnectionData, apiEndPoint url.URL) err
 }
 
 func validateConnectionData(connData keptnutils.ConnectionData) error {
-	if connData.ChannelInfo.Token == "" && connData.ChannelInfo.ChannelID == "" {
+	if *connData.ChannelInfo.Token == "" && *connData.ChannelInfo.ChannelID == "" {
 		return errors.New("Could not open websocket because Token or Channel ID are missing")
 	}
 	return nil
@@ -73,8 +83,8 @@ func openWS(connData keptnutils.ConnectionData, apiEndPoint url.URL) (*websocket
 	wsEndPoint.Scheme = "wss"
 
 	header := http.Header{}
-	header.Add("Token", connData.ChannelInfo.Token)
-	header.Add("Keptn-Ws-Channel-Id", connData.ChannelInfo.ChannelID)
+	header.Add("Token", *connData.ChannelInfo.Token)
+	header.Add("Keptn-Ws-Channel-Id", *connData.ChannelInfo.ChannelID)
 	dialer := websocket.DefaultDialer
 	dialer.NetDial = utils.ResolveXipIo
 	dialer.TLSClientConfig = &tls.Config{

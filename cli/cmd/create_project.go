@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"github.com/keptn/keptn/cli/utils/websockethelper"
 	"os"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
@@ -134,23 +135,18 @@ Example:
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
-			response, err := projectHandler.CreateProject(project)
+			channelInfo, err := projectHandler.CreateProject(project)
 			if err != nil {
 				fmt.Println("Create project was unsuccessful")
-				return err
+				return fmt.Errorf("Create project was unsuccessful. %s", *err.Message)
 			}
 
-			// check for response, which is of type apimodels.Error
-			if response == nil {
+			// check for response, which is of type apimodels.ChannelInfo
+			if channelInfo == nil {
 				return nil
+			} else {
+				return websockethelper.PrintWSContentChannelInfo(channelInfo, endPoint)
 			}
-
-			if response.Code > 299 {
-				fmt.Sprintf("Create project was unsuccessful. %s", *response.Message)
-				return fmt.Errorf("Create project was unsuccessful. %s", *response.Message)
-			}
-
-			return fmt.Errorf("Received unexpected return code: %d", response.Code)
 		} else {
 			fmt.Println("Skipping create project due to mocking flag set to true")
 		}

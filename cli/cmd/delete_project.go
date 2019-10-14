@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"github.com/keptn/keptn/cli/utils/websockethelper"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
@@ -57,23 +58,18 @@ Example:
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
-			response, err := projectHandler.DeleteProject(project)
+			channelInfo, err := projectHandler.DeleteProject(project)
 			if err != nil {
 				fmt.Println("Delete project was unsuccessful")
-				return err
+				return fmt.Errorf("Delete project was unsuccessful. %s", *err.Message)
 			}
 
-			// check for response, which is of type apimodels.Error
-			if response == nil {
+			// check for response, which is of type apimodels.ChannelInfo
+			if channelInfo == nil {
 				return nil
+			} else {
+				return websockethelper.PrintWSContentChannelInfo(channelInfo, endPoint)
 			}
-
-			if response.Code > 299 {
-				fmt.Sprintf("Delete project was unsuccessful. %s", *response.Message)
-				return fmt.Errorf("Delete project was unsuccessfu. %s", *response.Message)
-			}
-
-			return fmt.Errorf("Received unexpected return code: %d", response.Code)
 		} else {
 			fmt.Println("Skipping delete project due to mocking flag set to true")
 		}
