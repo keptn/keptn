@@ -15,7 +15,7 @@ import (
 // crprojectCmd represents the project command
 var delProjectCmd = &cobra.Command{
 	Use:   "project PROJECTNAME",
-	Short: "Deletes a project.",
+	Short: "Deletes a project",
 	Long: `Deletes a new project with the provided name. 
 
 Example:

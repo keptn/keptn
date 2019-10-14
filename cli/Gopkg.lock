@@ -472,7 +472,7 @@
 
 [[projects]]
   branch = "feature/893/project-service-handler"
-  digest = "1:d9928852d629bd40fba82d11ee43afd0a57eff89c817b4924fecd0a6c542b64c"
+  digest = "1:81fc71a7e4dacbf32ae86e5bb70e2c7b2951ce23f13024a127f2ecb6240ac6dd"
   name = "github.com/keptn/go-utils"
   packages = [
     "pkg/api/models",
@@ -482,7 +482,7 @@
     "pkg/utils",
   ]
   pruneopts = ""
-  revision = "b83c373d7ab9599984c9c13ee659dce5eb5bb03c"
+  revision = "e7f48d09e6b10f9a21cc1ba2bd31764892257fda"
 
 [[projects]]
   digest = "1:91317956b340c9e61a4287fd94c870bfad3f1922280c3e0a65db91c29017e8de"
