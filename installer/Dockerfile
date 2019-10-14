@@ -42,11 +42,6 @@ RUN wget https://github.com/openshift/origin/releases/download/v3.11.0/openshift
   tar xzvf openshift*tar.gz && \
   cp openshift-origin-client-tools-*/oc /bin/oc
 
-ARG ISTIO_VERSION=1.2.5
-RUN curl -L https://git.io/getLatestIstio | ISTIO_VERSION=${ISTIO_VERSION} sh - && \
-  cp istio-${ISTIO_VERSION}/bin/istioctl /bin/istioctl && \
-  chmod +x /bin/istioctl
-
 # Copy core and install
 WORKDIR /usr/keptn
 COPY ./manifests manifests
