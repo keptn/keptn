@@ -3,6 +3,7 @@ package common
 import (
 	"encoding/json"
 	"errors"
+	"net/url"
 	"os"
 	"strings"
 
@@ -38,6 +39,11 @@ func CloneRepo(project string, user string, token string, uri string) error {
 }
 
 func getRepoURI(uri string, user string, token string) string {
+	if strings.Contains(user, "@") {
+		// username contains an @, probably an e-mail; need to encode it
+		// see https://stackoverflow.com/a/29356143
+		user = url.QueryEscape(user)
+	}
 
 	if strings.Contains(uri, user+"@") {
 		uri = strings.Replace(uri, "https://"+user+"@", "https://"+user+":"+token+"@", 1)

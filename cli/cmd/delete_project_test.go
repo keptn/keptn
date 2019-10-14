@@ -13,7 +13,6 @@ func init() {
 }
 
 func TestDeleteProjectCmd(t *testing.T) {
-
 	credentialmanager.MockAuthCreds = true
 
 	args := []string{
