@@ -41,6 +41,7 @@ var platformIdentifier *string
 const gke = "gke"
 const aks = "aks"
 const eks = "eks"
+const pks = "pks"
 const openshift = "openshift"
 const kubernetes = "kubernetes"
 
@@ -145,6 +146,9 @@ func setPlatform() error {
 	case eks:
 		p = newEKSPlatform()
 		return nil
+	case pks:
+		p = newPKSPlatform()
+		return nil
 	case openshift:
 		p = newOpenShiftPlatform()
 		return nil
@@ -152,7 +156,7 @@ func setPlatform() error {
 		p = newKubernetesPlatform()
 		return nil
 	default:
-		return errors.New("Unsupported platform '" + *platformIdentifier + "'. The following platforms are supported: aks, eks, gke, openshift, and kubernetes")
+		return errors.New("Unsupported platform '" + *platformIdentifier + "'. The following platforms are supported: aks, eks, gke, pks, openshift, and kubernetes")
 	}
 }
 
@@ -162,7 +166,7 @@ func init() {
 	installCmd.Flags().MarkHidden("creds")
 	installerVersion = installCmd.Flags().StringP("keptn-version", "k", "master", "The branch or tag of the version which is installed")
 	installCmd.Flags().MarkHidden("keptn-version")
-	platformIdentifier = installCmd.Flags().StringP("platform", "p", "gke", "The platform to run keptn on [aks,eks,gke,openshift,kubernetes]")
+	platformIdentifier = installCmd.Flags().StringP("platform", "p", "gke", "The platform to run keptn on [aks,eks,gke,pks,openshift,kubernetes]")
 	installCmd.PersistentFlags().BoolVarP(&insecureSkipTLSVerify, "insecure-skip-tls-verify", "s", false, "Skip tls verification for kubectl commands")
 }
 
@@ -216,8 +220,9 @@ func doInstallation() error {
 	_, aks := p.(*aksPlatform)
 	_, eks := p.(*eksPlatform)
 	_, gke := p.(*gkePlatform)
+	_, pks := p.(*pksPlatform)
 	_, k8s := p.(*kubernetesPlatform)
-	if gke || aks || k8s || eks {
+	if gke || aks || k8s || eks || pks {
 		options := options{"apply", "-f", getRbacURL()}
 		options.appendIfNotEmpty(kubectlOptions)
 		_, err = keptnutils.ExecuteCommand("kubectl", options)
