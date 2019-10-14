@@ -28,8 +28,8 @@ var onboardServiceParams *onboardServiceCmdParams
 // serviceCmd represents the service command
 var serviceCmd = &cobra.Command{
 	Use:   "service SERVICENAME --project=PROJECTNAME --chart=FILEPATH",
-	Short: "Onboards a new service.",
-	Long: `Onboards a new service in the provided project. Therefore, this command 
+	Short: "Onboards a new service to a project",
+	Long: `Onboards a new service to the provided project. Therefore, this command 
 takes a folder to a Helm chart or an already packed Helm chart as .tgz.
 	
 Example:

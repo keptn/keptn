@@ -30,7 +30,7 @@ var createProjectParams *createProjectCmdParams
 // crProjectCmd represents the project command
 var crProjectCmd = &cobra.Command{
 	Use:   "project PROJECTNAME --shipyard=FILEPATH",
-	Short: "Creates a new project.",
+	Short: "Creates a new project",
 	Long: `Creates a new project with the provided name and shipyard file. 
 The shipyard file describes the used stages. These stages are defined by name, 
 deployment-, test-, and remediation strategy.
