@@ -98,6 +98,7 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event, loggingDone chan bool) error
 			return err
 		}
 		if o.isBlueGreenStage(event.Project, stage.StageName) {
+			// inject istio to the namespace for blue-green deployments
 			namespace, err := kubeClient.Namespaces().Get(helm.GetUmbrellaNamespace(event.Project, stage.StageName), v1.GetOptions{})
 			if err != nil {
 				return err
