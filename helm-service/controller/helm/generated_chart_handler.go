@@ -180,15 +180,6 @@ func (c *GeneratedChartHandler) generateServices(svc *corev1.Service, project st
 
 	templates := make([]*chart.Template, 0, 0)
 
-	if createOriginalService {
-		resetService(svc)
-		data, err := yaml.Marshal(svc)
-		if err != nil {
-			return nil, err
-		}
-		templates = append(templates, &chart.Template{Name: "templates/" + svc.Name + "-service" + ".yaml", Data: data})
-	}
-
 	serviceCanary := c.canaryLevelGen.GetCanaryService(*svc, project, stageName)
 	resetService(serviceCanary)
 	data, err := yaml.Marshal(serviceCanary)
