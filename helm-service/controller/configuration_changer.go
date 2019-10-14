@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"log"
 	"os"
 	"strings"
@@ -393,7 +394,9 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 		if _, err := c.ApplyChart(genChart, e.Project, e.Stage, e.Service, true); err != nil {
 			return err
 		}
-		if err := c.deleteCanaryRelease(e); err != nil {
+
+		err = c.scaleDownCanaryDeployment(e)
+		if err != nil {
 			return err
 		}
 
@@ -407,6 +410,25 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 		}
 	}
 
+	return nil
+}
+
+// scaleDownCanaryDeployment gets the deployment specified in the event and updates it with Replicas: 0
+func (c *ConfigurationChanger) scaleDownCanaryDeployment(e *keptnevents.ConfigurationChangeEventData) error {
+	client, err := keptnutils.GetClientset(true)
+	if err != nil {
+		return err
+	}
+	deployments := client.AppsV1().Deployments(e.Project + "-" + e.Stage)
+	deployment, err := deployments.Get(e.Service, v1.GetOptions{})
+	if err != nil {
+		return err
+	}
+	deployment.Spec.Replicas = int32Ptr(0)
+	_, err = deployments.Update(deployment)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -516,3 +538,5 @@ func getInClusterConfig() bool {
 	}
 	return false
 }
+
+func int32Ptr(i int32) *int32 { return &i }
