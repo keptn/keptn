@@ -368,7 +368,7 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 			c.logger.Error(err.Error())
 			return err
 		}
-		genChart, err := chartGenerator.GenerateDuplicateManagedChart(upgradeMsg, e.Project, e.Stage, e.Service, false)
+		genChart, err := chartGenerator.GenerateDuplicateManagedChart(upgradeMsg, e.Project, e.Stage, e.Service)
 		if err != nil {
 			c.logger.Error(err.Error())
 			return err

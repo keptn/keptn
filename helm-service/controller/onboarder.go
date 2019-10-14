@@ -188,7 +188,7 @@ func (o *Onboarder) OnboardGeneratedService(helmUpgradeMsg string, project strin
 	if strategy == keptnevents.Duplicate {
 		o.logger.Debug(fmt.Sprintf("For service %s in stage %s with deployment strategy %s, "+
 			"a chart for a duplicate deployment strategy is generated", service, stageName, strategy.String()))
-		generatedChart, err = chartGenerator.GenerateDuplicateManagedChart(helmUpgradeMsg, project, stageName, service, false)
+		generatedChart, err = chartGenerator.GenerateDuplicateManagedChart(helmUpgradeMsg, project, stageName, service)
 		if err != nil {
 			o.logger.Error("Error when generating the managed chart: " + err.Error())
 			return nil, err
