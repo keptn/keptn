@@ -100,7 +100,44 @@ func createRoutes(data *keptnevents.ProjectCreateEventData, logger *keptnutils.L
 	}
 	for _, stage := range shipyard.Stages {
 		exposeRoute(data.Project, stage.Name, logger)
+		if stage.DeploymentStrategy == "blue_green_service" {
+			// add required security context constraints to the generated namespace to make istio injection work
+			enableMesh(data.Project, stage.Name, logger)
+		}
 	}
+}
+
+func enableMesh(project string, stage string, logger *keptnutils.Logger) {
+	logger.Info("Enabling mesh for namespace " + project + "-" + stage)
+
+	out, err := keptnutils.ExecuteCommand("oc",
+		[]string{
+			"adm",
+			"policy",
+			"add-scc-to-group",
+			"privileged",
+			"system:serviceaccounts",
+			"-n",
+			project + "-" + stage,
+		})
+	if err != nil {
+		logger.Error("Could not add security context constraint 'privileged' for namespace " + project + "-" + stage + ": " + err.Error())
+	}
+	logger.Debug("oc adm output: " + out)
+	out, err = keptnutils.ExecuteCommand("oc",
+		[]string{
+			"adm",
+			"policy",
+			"add-scc-to-group",
+			"anyuid",
+			"system:serviceaccounts",
+			"-n",
+			project + "-" + stage,
+		})
+	if err != nil {
+		logger.Error("Could not add security context constraint 'anyuid' for namespace " + project + "-" + stage + ": " + err.Error())
+	}
+	logger.Debug("oc adm output: " + out)
 }
 
 func exposeRoute(project string, stage string, logger *keptnutils.Logger) {

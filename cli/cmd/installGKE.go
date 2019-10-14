@@ -100,6 +100,7 @@ func (p gkePlatform) readGkeProject() {
 		"Please enter a valid GKE Project.",
 	)
 }
+
 func (p gkePlatform) authenticateAtCluster() (bool, error) {
 	_, err := keptnutils.ExecuteCommand("gcloud", []string{
 		"container",
