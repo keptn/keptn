@@ -30,7 +30,7 @@ func NewGeneratedChartHandler(mesh mesh.Mesh, canaryLevelGen CanaryLevelGenerato
 
 // GenerateDuplicateManagedChart generates a duplicated chart which is managed by keptn and used for
 // b/g and canary releases
-func (c *GeneratedChartHandler) GenerateDuplicateManagedChart(helmUpgradeMsg string, project string, stageName string, service string, createOriginalService bool) (*chart.Chart, error) {
+func (c *GeneratedChartHandler) GenerateDuplicateManagedChart(helmUpgradeMsg string, project string, stageName string, service string) (*chart.Chart, error) {
 
 	if _, ok := c.canaryLevelGen.(*CanaryOnDeploymentGenerator); ok {
 
@@ -51,7 +51,7 @@ func (c *GeneratedChartHandler) GenerateDuplicateManagedChart(helmUpgradeMsg str
 		}
 
 		for _, svc := range svcs {
-			templates, err := c.generateServices(svc, project, stageName, false)
+			templates, err := c.generateServices(svc, project, stageName)
 			if err != nil {
 				return nil, err
 			}
@@ -176,7 +176,7 @@ func resetDeployment(depl *appsv1.Deployment) {
 	depl.Status = appsv1.DeploymentStatus{}
 }
 
-func (c *GeneratedChartHandler) generateServices(svc *corev1.Service, project string, stageName string, createOriginalService bool) ([]*chart.Template, error) {
+func (c *GeneratedChartHandler) generateServices(svc *corev1.Service, project string, stageName string) ([]*chart.Template, error) {
 
 	templates := make([]*chart.Template, 0, 0)
 
