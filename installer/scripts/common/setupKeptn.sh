@@ -125,6 +125,3 @@ cat ../manifests/keptn/keptn-api-virtualservice.yaml | \
 
 kubectl apply -f ../manifests/keptn/gen/keptn-api-virtualservice.yaml
 verify_kubectl $? "Deploying keptn api virtualservice failed."
-
-# Inject istio into jmeter-service
-kubectl get deployment -n keptn jmeter-service -oyaml | istioctl kube-inject -f - | kubectl apply -f -

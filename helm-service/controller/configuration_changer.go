@@ -413,17 +413,19 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 	return nil
 }
 
+// scaleDownCanaryDeployment gets the deployment specified in the event and updates it with Replicas: 0
 func (c *ConfigurationChanger) scaleDownCanaryDeployment(e *keptnevents.ConfigurationChangeEventData) error {
 	client, err := keptnutils.GetClientset(true)
 	if err != nil {
 		return err
 	}
-	deployment, err := client.AppsV1().Deployments(e.Project+"-"+e.Stage).Get(e.Service, v1.GetOptions{})
+	deployments := client.AppsV1().Deployments(e.Project + "-" + e.Stage)
+	deployment, err := deployments.Get(e.Service, v1.GetOptions{})
 	if err != nil {
 		return err
 	}
 	deployment.Spec.Replicas = int32Ptr(0)
-	_, err = client.AppsV1().Deployments(e.Project + "-" + e.Stage).Update(deployment)
+	_, err = deployments.Update(deployment)
 	if err != nil {
 		return err
 	}

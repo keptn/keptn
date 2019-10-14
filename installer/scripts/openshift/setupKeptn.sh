@@ -132,6 +132,3 @@ helm init
 oc adm policy  add-cluster-role-to-user cluster-admin system:serviceaccount:kube-system:default
 oc adm policy add-scc-to-group privileged system:serviceaccounts -n keptn
 oc adm policy add-scc-to-group anyuid system:serviceaccounts -n keptn
-
-# Inject istio into jmeter-service
-kubectl get deployment -n keptn jmeter-service -oyaml | istioctl kube-inject -f - | kubectl apply -f -
