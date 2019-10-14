@@ -2,12 +2,12 @@
 
 
 [[projects]]
-  digest = "1:fd319661e53f3607b8ddbded6121f8e4fe42978cb66968b20fdee68e10d10f9f"
+  digest = "1:9facd370d4b5aaf82bb6549c358eefc71c771458fc91d1afe724434aece9d886"
   name = "cloud.google.com/go"
   packages = ["compute/metadata"]
   pruneopts = ""
-  revision = "264def2dd949cdb8a803bb9f50fa29a67b798a6a"
-  version = "v0.46.3"
+  revision = "cfe8f6d1fe6976d03af790d7a8b9bf6aa73287bd"
+  version = "v0.47.0"
 
 [[projects]]
   digest = "1:e222cbd536d9e0850e7297290c431aea75ba087c70d6f98525e95b9f2d02a627"
@@ -284,15 +284,15 @@
   version = "v0.2.3"
 
 [[projects]]
-  digest = "1:8a7fe65e9ac2612c4df602cc9f014a92406776d993ff0f28335e5a8831d87c53"
+  digest = "1:d69d2ba23955582a64e367ff2b0808cdbd048458c178cea48f11ab8c40bd7aea"
   name = "github.com/gogo/protobuf"
   packages = [
     "proto",
     "sortkeys",
   ]
   pruneopts = ""
-  revision = "0ca988a254f991240804bf9821f3450d87ccbb1b"
-  version = "v1.3.0"
+  revision = "5628607bb4c51c3157aacc3a50f0ab707582b805"
+  version = "v1.3.1"
 
 [[projects]]
   branch = "master"
@@ -377,7 +377,7 @@
   version = "v0.3.1"
 
 [[projects]]
-  digest = "1:671678fb6238c86b4a9a6013d01b0259b3480964c6f1dfe4634fe3d867f17839"
+  digest = "1:ad680579f2fb9707858a570606bdcc81d893b35d5f530b93be40df8fffb65b61"
   name = "github.com/gophercloud/gophercloud"
   packages = [
     ".",
@@ -389,8 +389,8 @@
     "pagination",
   ]
   pruneopts = ""
-  revision = "a84f8b330d669c6dff53ee9743a7579ac9541b69"
-  version = "v0.4.0"
+  revision = "cf0980d0cbc9d8fd2f8923d04102fa19aa4fae69"
+  version = "v0.5.0"
 
 [[projects]]
   digest = "1:03168f6041f164c06dc6acaaab4ed3ad1c6088b717c365cec892b35c80f4ffc7"
@@ -471,8 +471,8 @@
   version = "v1.1.7"
 
 [[projects]]
-  branch = "feature/893/api-interface"
-  digest = "1:7d94c8a47de833bf238531d7bec747bd44e4943e4485dd046957d6e755e09521"
+  branch = "feature/893/project-service-handler"
+  digest = "1:d9928852d629bd40fba82d11ee43afd0a57eff89c817b4924fecd0a6c542b64c"
   name = "github.com/keptn/go-utils"
   packages = [
     "pkg/api/models",
@@ -482,7 +482,7 @@
     "pkg/utils",
   ]
   pruneopts = ""
-  revision = "828d7b4cf809286dc4e5253826be730acd0d21e9"
+  revision = "b83c373d7ab9599984c9c13ee659dce5eb5bb03c"
 
 [[projects]]
   digest = "1:91317956b340c9e61a4287fd94c870bfad3f1922280c3e0a65db91c29017e8de"
@@ -758,7 +758,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:b4305df2444548cf8f171cd377e19bc7021eaa195aaa78367b3a371d2d6b9ae1"
+  digest = "1:d709f6b44dffe11337b3730ebf5ae6bb1bc9273a1c204266921205158a5a523f"
   name = "golang.org/x/crypto"
   packages = [
     "cast5",
@@ -782,11 +782,11 @@
     "ssh/terminal",
   ]
   pruneopts = ""
-  revision = "34f69633bfdcf9db92f698f8487115767eebef81"
+  revision = "87dc89f01550277dc22b74ffcf4cd89fa2f40f4c"
 
 [[projects]]
   branch = "master"
-  digest = "1:3b22c4b2a448ff2c35e1740c7968afd9053f065d2252726a36ff7b96bf8b4cb1"
+  digest = "1:9775f16f1557e5a16a0c2d6a130488ca4e595916e2d55dd7fe819e60e2fcc1a5"
   name = "golang.org/x/net"
   packages = [
     "context",
@@ -799,7 +799,7 @@
     "proxy",
   ]
   pruneopts = ""
-  revision = "72f939374954d0a1b2a1e27dcda950e2724dd5c1"
+  revision = "491137f692577e390404f177a0515c9f86f79754"
 
 [[projects]]
   branch = "master"
@@ -817,7 +817,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:a8266488eb6ecc85c48cc604c0c0ccd32d9de7933eef15f8f1ff308e337a5c21"
+  digest = "1:055771f25c4d6493a840af5cbdb8da461be2ec1192049dbaebd6ae1a8cbcdea0"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
@@ -825,7 +825,7 @@
     "windows",
   ]
   pruneopts = ""
-  revision = "543471e840be449c53d44b32c7adf1261ad67e37"
+  revision = "b09406accb4736d857a32bf9444cd7edae2ffa79"
 
 [[projects]]
   digest = "1:740b51a55815493a8d0f2b1e0d0ae48fe48953bf7eaf3fcc4198823bf67768c0"

@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"github.com/keptn/keptn/cli/utils/websockethelper"
 	"os"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
@@ -116,23 +117,18 @@ Example:
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
-			response, err := serviceHandler.CreateService(*onboardServiceParams.Project, service)
+			channelInfo, err := serviceHandler.CreateService(*onboardServiceParams.Project, service)
 			if err != nil {
 				logging.PrintLog("Onboard service was unsuccessful", logging.QuietLevel)
-				return err
+				return fmt.Errorf("Onboard service was unsuccessful. %s", *err.Message)
 			}
 
-			// check for response, which is of type apimodels.Error
-			if response == nil {
+			// check for response, which is of type apimodels.ChannelInfo
+			if channelInfo == nil {
 				return nil
+			} else {
+				return websockethelper.PrintWSContentChannelInfo(channelInfo, endPoint)
 			}
-
-			if response.Code > 299 {
-				fmt.Sprintf("Onboard service was unsuccessful. %s", *response.Message)
-				return fmt.Errorf("Onboard service was unsuccessful. %s", *response.Message)
-			}
-
-			return fmt.Errorf("Received unexpected return code: %d", response.Code)
 		} else {
 			fmt.Println("Skipping onboard service due to mocking flag set to true")
 		}
