@@ -124,7 +124,7 @@ func (p aksPlatform) authenticateAtCluster() (bool, error) {
 }
 
 func getAksClusterInfo() string {
-	// try to get current cluster from gcloud config
+	// try to get current cluster from kubectl config
 	out, err := keptnutils.ExecuteCommand("kubectl", []string{
 		"config",
 		"current-context",
