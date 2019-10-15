@@ -64,12 +64,12 @@ Example:
 				return fmt.Errorf("Delete project was unsuccessful. %s", *err.Message)
 			}
 
-			// check for response, which is of type apimodels.ChannelInfo
-			if channelInfo == nil {
-				return nil
-			} else {
+			// if ChannelInfo is available, open WebSocket communication
+			if channelInfo != nil {
 				return websockethelper.PrintWSContentChannelInfo(channelInfo, endPoint)
 			}
+
+			return nil
 		} else {
 			fmt.Println("Skipping delete project due to mocking flag set to true")
 		}

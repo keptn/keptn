@@ -42,16 +42,13 @@ Example:
 		authHandler := apiutils.NewAuthenticatedAuthHandler(url.String(), *apiToken, "x-token", nil, "https")
 
 		if !mocking {
-			channelInfo, err := authHandler.Authenticate()
+			_, err := authHandler.Authenticate()
 			if err != nil {
 				logging.PrintLog("Authentication was unsuccessful", logging.QuietLevel)
 				return fmt.Errorf("Authentication was unsuccessful. %s", *err.Message)
 			}
 
-			// check for response, which is of type apimodels.ChannelInfo
-			if channelInfo == nil {
-				logging.PrintLog("Successfully authenticated", logging.InfoLevel)
-			}
+			logging.PrintLog("Successfully authenticated", logging.InfoLevel)
 			return credentialmanager.SetCreds(*url, *apiToken)
 		}
 
