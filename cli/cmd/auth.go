@@ -9,13 +9,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cloudevents/sdk-go/pkg/cloudevents"
-	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
-	"github.com/google/uuid"
+	"github.com/keptn/keptn/cli/utils/credentialmanager"
+
+	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/cli/pkg/logging"
-	"github.com/keptn/keptn/cli/utils"
-	"github.com/keptn/keptn/cli/utils/credentialmanager"
 	"github.com/spf13/cobra"
 )
 
@@ -25,9 +23,9 @@ var apiToken *string
 // authCmd represents the auth command
 var authCmd = &cobra.Command{
 	Use:   "auth --endpoint=https://api.keptn.MY.DOMAIN.COM --api-token=SECRET_TOKEN",
-	Short: "Authenticates the keptn CLI against a keptn installation.",
-	Long: `Authenticates the keptn CLI against a keptn installation using an endpoint
-and an API token. Both, the endpoint and API token are exposed during the keptn installation.
+	Short: "Authenticates the Keptn CLI against a Keptn installation",
+	Long: `Authenticates the Keptn CLI against a Keptn installation using an endpoint
+and an API token. The endpoint and API token are exposed during the Keptn installation.
 If the authentication is successful, the endpoint and the API token are stored in a password store. 
 
 Example:
@@ -36,35 +34,22 @@ Example:
 	RunE: func(cmd *cobra.Command, args []string) error {
 		logging.PrintLog("Starting to authenticate", logging.InfoLevel)
 
-		source, _ := url.Parse("https://github.com/keptn/keptn/cli#auth")
-		contentType := "application/json"
-		var data interface{}
-		event := cloudevents.Event{
-			Context: cloudevents.EventContextV02{
-				ID:          uuid.New().String(),
-				Type:        "auth",
-				Source:      types.URLRef{URL: *source},
-				ContentType: &contentType,
-			}.AsV02(),
-			Data: data,
-		}
-
-		u, err := url.Parse(*endPoint)
+		url, err := url.Parse(*endPoint)
 		if err != nil {
 			return err
 		}
 
-		authURL := *u
-		authURL.Path = "v1/auth"
+		authHandler := apiutils.NewAuthenticatedAuthHandler(url.String(), *apiToken, "x-token", nil, "https")
 
 		if !mocking {
-			_, err = utils.Send(authURL, event, *apiToken)
+			_, err := authHandler.Authenticate()
 			if err != nil {
 				logging.PrintLog("Authentication was unsuccessful", logging.QuietLevel)
-				return err
+				return fmt.Errorf("Authentication was unsuccessful. %s", *err.Message)
 			}
+
 			logging.PrintLog("Successfully authenticated", logging.InfoLevel)
-			return credentialmanager.SetCreds(*u, *apiToken)
+			return credentialmanager.SetCreds(*url, *apiToken)
 		}
 
 		fmt.Println("skipping auth due to mocking flag set to true")

@@ -31,7 +31,7 @@
 
 [[constraint]]
   name = "github.com/keptn/go-utils"
-  version = "0.2.0"
+  branch = "develop"
 
 [[constraint]]
   name = "github.com/gbrlsnchs/jwt"
@@ -40,6 +40,10 @@
 [[override]]
   name =  "github.com/Azure/go-autorest"
   revision = "bca49d5b51a50dc5bb17bbf6204c711c6dbded06"
+
+[[constraint]]
+  name = "github.com/cloudevents/sdk-go"
+  version = "0.7.0"
 
 [prune]
   go-tests = true

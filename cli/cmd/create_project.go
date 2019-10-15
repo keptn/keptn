@@ -4,19 +4,16 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"net/url"
+	"github.com/keptn/keptn/cli/utils/websockethelper"
 	"os"
 
-	"github.com/cloudevents/sdk-go/pkg/cloudevents"
-	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
-	"github.com/google/uuid"
-	keptnevents "github.com/keptn/go-utils/pkg/events"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/models"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
-	"github.com/keptn/keptn/cli/utils/websockethelper"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 )
@@ -33,7 +30,7 @@ var createProjectParams *createProjectCmdParams
 // crProjectCmd represents the project command
 var crProjectCmd = &cobra.Command{
 	Use:   "project PROJECTNAME --shipyard=FILEPATH",
-	Short: "Creates a new project.",
+	Short: "Creates a new project",
 	Long: `Creates a new project with the provided name and shipyard file. 
 The shipyard file describes the used stages. These stages are defined by name, 
 deployment-, test-, and remediation strategy.
@@ -51,6 +48,7 @@ Example:
 			cmd.SilenceUsage = false
 			return errors.New("Requires PROJECTNAME")
 		}
+
 		if !utils.ValidateK8sName(args[0]) {
 			errorMsg := "Project name contains upper case letter(s) or special character(s).\n"
 			errorMsg += "Keptn relies on Helm charts and thus these conventions have to be followed: "
@@ -122,47 +120,33 @@ Example:
 		logging.PrintLog("Starting to create project", logging.InfoLevel)
 
 		content, _ := utils.ReadFile(*createProjectParams.Shipyard)
-		prjData := keptnevents.ProjectCreateEventData{Project: args[0], Shipyard: base64.StdEncoding.EncodeToString([]byte(content))}
+		project := apimodels.Project{
+			Name:     args[0],
+			Shipyard: base64.StdEncoding.EncodeToString([]byte(content)),
+		}
 
 		if *createProjectParams.GitUser != "" && *createProjectParams.GitToken != "" && *createProjectParams.RemoteURL != "" {
-			prjData.GitUser = *createProjectParams.GitUser
-			prjData.GitToken = *createProjectParams.GitToken
-			prjData.GitRemoteURL = *createProjectParams.RemoteURL
+			project.GitUser = *createProjectParams.GitUser
+			project.GitToken = *createProjectParams.GitToken
+			project.GitRemoteURL = *createProjectParams.RemoteURL
 		}
 
-		source, _ := url.Parse("https://github.com/keptn/keptn/cli#createproject")
-
-		contentType := "application/json"
-		event := cloudevents.Event{
-			Context: cloudevents.EventContextV02{
-				ID:          uuid.New().String(),
-				Type:        keptnevents.InternalProjectCreateEventType,
-				Source:      types.URLRef{URL: *source},
-				ContentType: &contentType,
-			}.AsV02(),
-			Data: prjData,
-		}
-
-		projectURL := endPoint
-		projectURL.Path = "v1/project"
-
+		projectHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, "https")
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
-			responseCE, err := utils.Send(projectURL, event, apiToken)
+			channelInfo, err := projectHandler.CreateProject(project)
 			if err != nil {
 				fmt.Println("Create project was unsuccessful")
-				return err
+				return fmt.Errorf("Create project was unsuccessful. %s", *err.Message)
 			}
 
-			// check for responseCE to include token
-			if responseCE == nil {
-				logging.PrintLog("Response CE is nil", logging.QuietLevel)
-				return nil
+			// if ChannelInfo is available, open WebSocket communication
+			if channelInfo != nil {
+				return websockethelper.PrintWSContentChannelInfo(channelInfo, endPoint)
 			}
-			if responseCE.Data != nil {
-				return websockethelper.PrintWSContentCEResponse(responseCE, endPoint)
-			}
+
+			return nil
 		} else {
 			fmt.Println("Skipping create project due to mocking flag set to true")
 		}
