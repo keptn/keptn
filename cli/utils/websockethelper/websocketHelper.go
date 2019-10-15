@@ -36,7 +36,7 @@ func PrintWSContentCEResponse(responseCE *cloudevents.Event, apiEndPoint url.URL
 // PrintWSContentChannelInfo opens a websocket using the passed
 // connection data and prints status data
 func PrintWSContentChannelInfo(channelInfo *apimodels.ChannelInfo, apiEndPoint url.URL) error {
-	connectionData := &keptnutils.ConnectionData{ChannelInfo:*channelInfo}
+	connectionData := &keptnutils.ConnectionData{ChannelInfo: *channelInfo}
 	return printWSContent(*connectionData, apiEndPoint)
 }
 
@@ -85,6 +85,7 @@ func openWS(connData keptnutils.ConnectionData, apiEndPoint url.URL) (*websocket
 	header := http.Header{}
 	header.Add("Token", *connData.ChannelInfo.Token)
 	header.Add("Keptn-Ws-Channel-Id", *connData.ChannelInfo.ChannelID)
+	header.Add("Host", "api.keptn")
 	dialer := websocket.DefaultDialer
 	dialer.NetDial = utils.ResolveXipIo
 	dialer.TLSClientConfig = &tls.Config{
