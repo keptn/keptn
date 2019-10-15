@@ -48,12 +48,6 @@ Example:
 			Name: args[0],
 		}
 
-		if *createProjectParams.GitUser != "" && *createProjectParams.GitToken != "" && *createProjectParams.RemoteURL != "" {
-			project.GitUser = *createProjectParams.GitUser
-			project.GitToken = *createProjectParams.GitToken
-			project.GitRemoteURL = *createProjectParams.RemoteURL
-		}
-
 		projectHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, "https")
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
