@@ -54,7 +54,7 @@
 
 [[override]]
   name = "github.com/keptn/go-utils"
-  branch = "feature/893/project-service-handler"
+  branch = "develop"
 
 [[constraint]]
   name = "github.com/google/go-github"
