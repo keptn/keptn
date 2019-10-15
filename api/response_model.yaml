@@ -1,0 +1,24 @@
+---
+definitions:
+  channelInfo:
+    type: object
+    required:
+      - token
+      - channelID
+    properties:
+      token:
+        type: string
+      channelID:
+        type: string
+  error:
+    type: object
+    required:
+      - message
+    properties:
+      code:
+        type: integer
+        format: int64
+      message:
+        type: string
+      fields:
+        type: string
