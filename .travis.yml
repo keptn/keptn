@@ -11,11 +11,23 @@ env:
     - DEP_VERSION="0.5.3"
 
 before_install:   
+# Pull Requests to the master branch are only allowed if they come from the develop branch of our repo
+- |
+  if [ $TRAVIS_PULL_REQUEST = "true" ] && [ $TRAVIS_BRANCH = "master" ] && [ $TRAVIS_PULL_REQUEST_SLUG = $TRAVIS_REPO_SLUG ]; then
+      echo "Pull Requests to the 'master' branch are not allowed. If you are a contributor, please set your Pull Request to the 'develop' branch."
+      exit -1
+  fi
+# determine OS type (either osx for linux) - will be used for downloading dependencies
+- |
+  OS_TYPE="linux"
+  if [ "$TRAVIS_OS_NAME" = "osx" ]; then
+    OS_TYPE="darwin"
+  fi
 - |
   if [ ! -d "$HOME/google-cloud-sdk/bin" ]; then 
     rm -rf $HOME/google-cloud-sdk;
     export CLOUDSDK_CORE_DISABLE_PROMPTS=1;
-    curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-247.0.0-darwin-x86_64.tar.gz > gcloud.tar.gz 
+    curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-247.0.0-${OS_TYPE}-x86_64.tar.gz > gcloud.tar.gz 
     gunzip -c gcloud.tar.gz | tar xopf - 
     ./google-cloud-sdk/install.sh
     source ./google-cloud-sdk/completion.bash.inc
@@ -28,7 +40,7 @@ before_install:
 
 # Download dep binary to bin folder in $GOPATH and change mode
 - mkdir -p $GOPATH/bin/
-- curl -L -s https://github.com/golang/dep/releases/download/v${DEP_VERSION}/dep-darwin-amd64 -o $GOPATH/bin/dep
+- curl -L -s https://github.com/golang/dep/releases/download/v${DEP_VERSION}/dep-${OS_TYPE}-amd64 -o $GOPATH/bin/dep
 - chmod +x $GOPATH/bin/dep
 
 # Build variables
@@ -38,11 +50,16 @@ before_install:
 - GIT_SHA="$(git rev-parse --short HEAD)"
 - REGISTRY_USER=jbraeuer
 
-- git diff --name-only $TRAVIS_COMMIT_RANGE > files.txt
+# ensure COMMIT_RANGE works for non-pull-requests too (TRAVIS_COMMIT_RANGE and force pushes are evil)
+- if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then COMMIT_RANGE=$TRAVIS_COMMIT_RANGE; else COMMIT_RANGE="origin/develop...$TRAVIS_BRANCH"; fi;
+# store all changed files from the commit (we are not using TRAVIS_COMMIT_RANGE, as this fails for force pushes)
+- git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
+- git fetch origin develop
+- git diff --name-only $COMMIT_RANGE > files.txt
 - cat files.txt
 - CHANGED_FILES=$(tr '\n' , < files.txt)
-- echo $CHANGED_FILES
 
+# configure folders and image names
 - CLI_FOLDER="cli/"
 - API_IMAGE="keptn/api"
 - API_FOLDER="api/"
@@ -84,6 +101,17 @@ jobs:
     os: osx
     script:
     - source travis-scripts/cronjob_main.sh
+
+  # all commits (including external pull requests) should run basic tests for the CLI (if anything has changed)
+  - stage: CLI tests
+    script:
+    - | 
+      if [[ $CHANGED_FILES == *"${CLI_FOLDER}"*  ]]; then
+        echo "Testing keptn CLI on linux"
+        cd ./cli
+        dep ensure
+        go test ./...
+      fi
 
   - stage: feature/bug/hotfix/patch
     if: branch =~ ^feature.*$ OR branch =~ ^bug.*$ OR branch =~ ^hotfix.*$ OR branch =~ ^patch.*$
