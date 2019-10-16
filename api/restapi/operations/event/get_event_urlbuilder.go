@@ -9,12 +9,12 @@ import (
 	"errors"
 	"net/url"
 	golangswaggerpaths "path"
-	"strings"
 )
 
-// GetEventEventTypeURL generates an URL for the get event event type operation
-type GetEventEventTypeURL struct {
-	EventType string
+// GetEventURL generates an URL for the get event operation
+type GetEventURL struct {
+	KeptnContext *string
+	Type         *string
 
 	_basePath string
 	// avoid unkeyed usage
@@ -24,7 +24,7 @@ type GetEventEventTypeURL struct {
 // WithBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *GetEventEventTypeURL) WithBasePath(bp string) *GetEventEventTypeURL {
+func (o *GetEventURL) WithBasePath(bp string) *GetEventURL {
 	o.SetBasePath(bp)
 	return o
 }
@@ -32,22 +32,15 @@ func (o *GetEventEventTypeURL) WithBasePath(bp string) *GetEventEventTypeURL {
 // SetBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *GetEventEventTypeURL) SetBasePath(bp string) {
+func (o *GetEventURL) SetBasePath(bp string) {
 	o._basePath = bp
 }
 
 // Build a url path and query string
-func (o *GetEventEventTypeURL) Build() (*url.URL, error) {
+func (o *GetEventURL) Build() (*url.URL, error) {
 	var _result url.URL
 
-	var _path = "/event/{eventType}"
-
-	eventType := o.EventType
-	if eventType != "" {
-		_path = strings.Replace(_path, "{eventType}", eventType, -1)
-	} else {
-		return nil, errors.New("eventType is required on GetEventEventTypeURL")
-	}
+	var _path = "/event"
 
 	_basePath := o._basePath
 	if _basePath == "" {
@@ -55,11 +48,31 @@ func (o *GetEventEventTypeURL) Build() (*url.URL, error) {
 	}
 	_result.Path = golangswaggerpaths.Join(_basePath, _path)
 
+	qs := make(url.Values)
+
+	var keptnContextQ string
+	if o.KeptnContext != nil {
+		keptnContextQ = *o.KeptnContext
+	}
+	if keptnContextQ != "" {
+		qs.Set("keptnContext", keptnContextQ)
+	}
+
+	var typeVarQ string
+	if o.Type != nil {
+		typeVarQ = *o.Type
+	}
+	if typeVarQ != "" {
+		qs.Set("type", typeVarQ)
+	}
+
+	_result.RawQuery = qs.Encode()
+
 	return &_result, nil
 }
 
 // Must is a helper function to panic when the url builder returns an error
-func (o *GetEventEventTypeURL) Must(u *url.URL, err error) *url.URL {
+func (o *GetEventURL) Must(u *url.URL, err error) *url.URL {
 	if err != nil {
 		panic(err)
 	}
@@ -70,17 +83,17 @@ func (o *GetEventEventTypeURL) Must(u *url.URL, err error) *url.URL {
 }
 
 // String returns the string representation of the path with query string
-func (o *GetEventEventTypeURL) String() string {
+func (o *GetEventURL) String() string {
 	return o.Must(o.Build()).String()
 }
 
 // BuildFull builds a full url with scheme, host, path and query string
-func (o *GetEventEventTypeURL) BuildFull(scheme, host string) (*url.URL, error) {
+func (o *GetEventURL) BuildFull(scheme, host string) (*url.URL, error) {
 	if scheme == "" {
-		return nil, errors.New("scheme is required for a full url on GetEventEventTypeURL")
+		return nil, errors.New("scheme is required for a full url on GetEventURL")
 	}
 	if host == "" {
-		return nil, errors.New("host is required for a full url on GetEventEventTypeURL")
+		return nil, errors.New("host is required for a full url on GetEventURL")
 	}
 
 	base, err := o.Build()
@@ -94,6 +107,6 @@ func (o *GetEventEventTypeURL) BuildFull(scheme, host string) (*url.URL, error) 
 }
 
 // StringFull returns the string representation of a complete url
-func (o *GetEventEventTypeURL) StringFull(scheme, host string) string {
+func (o *GetEventURL) StringFull(scheme, host string) string {
 	return o.Must(o.BuildFull(scheme, host)).String()
 }

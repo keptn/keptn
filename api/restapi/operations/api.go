@@ -48,8 +48,8 @@ func NewAPI(spec *loads.Document) *API {
 		ProjectDeleteProjectProjectNameHandler: project.DeleteProjectProjectNameHandlerFunc(func(params project.DeleteProjectProjectNameParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation ProjectDeleteProjectProjectName has not yet been implemented")
 		}),
-		EventGetEventEventTypeHandler: event.GetEventEventTypeHandlerFunc(func(params event.GetEventEventTypeParams, principal *models.Principal) middleware.Responder {
-			return middleware.NotImplemented("operation EventGetEventEventType has not yet been implemented")
+		EventGetEventHandler: event.GetEventHandlerFunc(func(params event.GetEventParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation EventGetEvent has not yet been implemented")
 		}),
 		ProjectPostProjectHandler: project.PostProjectHandlerFunc(func(params project.PostProjectParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation ProjectPostProject has not yet been implemented")
@@ -117,8 +117,8 @@ type API struct {
 
 	// ProjectDeleteProjectProjectNameHandler sets the operation handler for the delete project project name operation
 	ProjectDeleteProjectProjectNameHandler project.DeleteProjectProjectNameHandler
-	// EventGetEventEventTypeHandler sets the operation handler for the get event event type operation
-	EventGetEventEventTypeHandler event.GetEventEventTypeHandler
+	// EventGetEventHandler sets the operation handler for the get event operation
+	EventGetEventHandler event.GetEventHandler
 	// ProjectPostProjectHandler sets the operation handler for the post project operation
 	ProjectPostProjectHandler project.PostProjectHandler
 	// ServicePostProjectProjectNameServiceHandler sets the operation handler for the post project project name service operation
@@ -202,8 +202,8 @@ func (o *API) Validate() error {
 		unregistered = append(unregistered, "project.DeleteProjectProjectNameHandler")
 	}
 
-	if o.EventGetEventEventTypeHandler == nil {
-		unregistered = append(unregistered, "event.GetEventEventTypeHandler")
+	if o.EventGetEventHandler == nil {
+		unregistered = append(unregistered, "event.GetEventHandler")
 	}
 
 	if o.ProjectPostProjectHandler == nil {
@@ -351,7 +351,7 @@ func (o *API) initHandlerCache() {
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/event/{eventType}"] = event.NewGetEventEventType(o.context, o.EventGetEventEventTypeHandler)
+	o.handlers["GET"]["/event"] = event.NewGetEvent(o.context, o.EventGetEventHandler)
 
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
