@@ -1,0 +1,175 @@
+{
+	"info": {
+		"_postman_id": "e68701b3-31f4-4102-80d1-b173e9b58d5f",
+		"name": "api-service",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-token",
+						"value": ""
+					}
+				],
+				"url": {
+					"raw": "https:/localhost:9000/v1/auth",
+					"host": [
+						"https:"
+					],
+					"port": "",
+					"path": [
+						"localhost:9000",
+						"v1",
+						"auth"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Project_POST",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-token",
+						"value": ""
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"sockshop\",\n  \"shipyard\": \"c3RhZ2VzOg0KICAtIG5hbWU6ICJkZXYiDQogICAgZGVwbG95bWVudF9zdHJhdGVneTogImRpcmVjdCINCiAgICB0ZXN0X3N0cmF0ZWd5OiAiZnVuY3Rpb25hbCINCiAgLSBuYW1lOiAic3RhZ2luZyINCiAgICBkZXBsb3ltZW50X3N0cmF0ZWd5OiAiYmx1ZV9ncmVlbl9zZXJ2aWNlIg0KICAgIHRlc3Rfc3RyYXRlZ3k6ICJwZXJmb3JtYW5jZSINCiAgLSBuYW1lOiAicHJvZHVjdGlvbiINCiAgICBkZXBsb3ltZW50X3N0cmF0ZWd5OiAiYmx1ZV9ncmVlbl9zZXJ2aWNlIg0KICAgIHJlbWVkaWF0aW9uX3N0cmF0ZWd5OiAiYXV0b21hdGVkIg0K\"\n}"
+				},
+				"url": {
+					"raw": "https://localhost:9000/v1/project",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "9000",
+					"path": [
+						"v1",
+						"project"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Service_POST",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-token",
+						"value": ""
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://localhost:9000/v1/project/sockshop/service",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "9000",
+					"path": [
+						"v1",
+						"project",
+						"sockshop",
+						"service"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Project_DELETE",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "x-token",
+						"value": ""
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://localhost:9000/v1/project/sockshop",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "9000",
+					"path": [
+						"v1",
+						"project",
+						"sockshop"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Event_GET",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "x-token",
+						"value": "",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://localhost:9000/v1/event/",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "9000",
+					"path": [
+						"v1",
+						"event",
+						""
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

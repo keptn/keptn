@@ -42,7 +42,6 @@ func PostProjectHandlerFunc(params project.PostProjectParams, p *models.Principa
 	}
 
 	eventContext := models.EventContext{KeptnContext: &keptnContext, Token: &token}
-
 	source, _ := url.Parse("https://github.com/keptn/keptn/api")
 
 	prjData := keptnevents.ProjectCreateEventData{

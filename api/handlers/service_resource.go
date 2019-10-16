@@ -29,7 +29,7 @@ func DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI
 
 // PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc creates a new resource
 func PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(params service_resource.PostProjectProjectNameStageStageNameServiceServiceNameResourceParams, principal *models.Principal) middleware.Responder {
-	resourceHandler := keptnutils.NewResourceHandler("configuration-service:8080")
+	resourceHandler := keptnutils.NewResourceHandler(getConfigurationURL())
 
 	resourcesToUpload := []*keptnmodels.Resource{}
 	for _, resource := range params.Resources.Resources {
@@ -54,7 +54,7 @@ func PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(p
 
 // PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc updates a list of resources
 func PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(params service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceParams, principal *models.Principal) middleware.Responder {
-	resourceHandler := keptnutils.NewResourceHandler("configuration-service:8080")
+	resourceHandler := keptnutils.NewResourceHandler(getConfigurationURL())
 	resourcesToUpload := []*keptnmodels.Resource{}
 	for _, resource := range params.Resources.Resources {
 		decodedStrBytes, err := b64.StdEncoding.DecodeString(*resource.ResourceContent)
@@ -74,4 +74,8 @@ func PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(pa
 		return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceDefault(500).WithPayload(errorObj)
 	}
 	return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceCreated()
+}
+
+func getConfigurationURL() string {
+	return "configuration-service:8080"
 }
