@@ -15,6 +15,7 @@ import (
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/google/uuid"
+	datastore "github.com/keptn/go-utils/pkg/datastore/utils"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations/event"
@@ -65,16 +66,18 @@ func PostEventHandlerFunc(params event.SendEventParams, principal *models.Princi
 	return event.NewSendEventOK().WithPayload(&eventContext)
 }
 
-// GetEventEventTypeHandlerFunc returns an event specified by keptnContext and eventType
-func GetEventEventTypeHandlerFunc(params event.GetEventEventTypeParams, principal *models.Principal) middleware.Responder {
-	eventHandler := keptnutils.EventHandler(getDatastoreURL())
+// GetEventHandlerFunc returns an event specified by keptnContext and eventType
+func GetEventHandlerFunc(params event.GetEventParams, principal *models.Principal) middleware.Responder {
+	eventHandler := datastore.NewEventHandler(getDatastoreURL())
 
-	resp, err := eventHandler.GetEvent(params.KeptnContext, params.EventType)
+	cloudEvent, err := eventHandler.GetEvent(*params.KeptnContext, *params.Type)
 	if err != nil {
-		return sendInternalError(err)
+		return sendInternalError(fmt.Errorf("%s", err.Message))
 	}
 
-	return event.NewSendEventOK().WithPayload(&resp)
+	fmt.Print(cloudEvent.Shkeptncontext)
+
+	return event.NewSendEventOK().WithPayload(nil)
 }
 
 func sendInternalError(err error) *event.SendEventDefault {

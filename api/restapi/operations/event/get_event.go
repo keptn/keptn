@@ -13,40 +13,40 @@ import (
 	models "github.com/keptn/keptn/api/models"
 )
 
-// GetEventEventTypeHandlerFunc turns a function with the right signature into a get event event type handler
-type GetEventEventTypeHandlerFunc func(GetEventEventTypeParams, *models.Principal) middleware.Responder
+// GetEventHandlerFunc turns a function with the right signature into a get event handler
+type GetEventHandlerFunc func(GetEventParams, *models.Principal) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn GetEventEventTypeHandlerFunc) Handle(params GetEventEventTypeParams, principal *models.Principal) middleware.Responder {
+func (fn GetEventHandlerFunc) Handle(params GetEventParams, principal *models.Principal) middleware.Responder {
 	return fn(params, principal)
 }
 
-// GetEventEventTypeHandler interface for that can handle valid get event event type params
-type GetEventEventTypeHandler interface {
-	Handle(GetEventEventTypeParams, *models.Principal) middleware.Responder
+// GetEventHandler interface for that can handle valid get event params
+type GetEventHandler interface {
+	Handle(GetEventParams, *models.Principal) middleware.Responder
 }
 
-// NewGetEventEventType creates a new http.Handler for the get event event type operation
-func NewGetEventEventType(ctx *middleware.Context, handler GetEventEventTypeHandler) *GetEventEventType {
-	return &GetEventEventType{Context: ctx, Handler: handler}
+// NewGetEvent creates a new http.Handler for the get event operation
+func NewGetEvent(ctx *middleware.Context, handler GetEventHandler) *GetEvent {
+	return &GetEvent{Context: ctx, Handler: handler}
 }
 
-/*GetEventEventType swagger:route GET /event/{eventType} Event getEventEventType
+/*GetEvent swagger:route GET /event Event getEvent
 
 Get the specified event
 
 */
-type GetEventEventType struct {
+type GetEvent struct {
 	Context *middleware.Context
-	Handler GetEventEventTypeHandler
+	Handler GetEventHandler
 }
 
-func (o *GetEventEventType) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
+func (o *GetEvent) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, rCtx, _ := o.Context.RouteInfo(r)
 	if rCtx != nil {
 		r = rCtx
 	}
-	var Params = NewGetEventEventTypeParams()
+	var Params = NewGetEventParams()
 
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {

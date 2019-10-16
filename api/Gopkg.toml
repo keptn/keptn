@@ -29,9 +29,9 @@
   name = "github.com/google/uuid"
   version = "1.1.1"
 
-[[constraint]]
+[[override]]
   name = "github.com/keptn/go-utils"
-  branch = "develop"
+  branch = "feature/949/start-evaluation-support"
 
 [[constraint]]
   name = "github.com/gbrlsnchs/jwt"

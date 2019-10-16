@@ -50,6 +50,46 @@ func init() {
       }
     },
     "/event": {
+      "get": {
+        "tags": [
+          "Event"
+        ],
+        "summary": "Get the specified event",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "KeptnContext of the events to get",
+            "name": "keptnContext",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Type of the Keptn cloud event",
+            "name": "type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "https://raw.githubusercontent.com/cloudevents/spec/v0.2/spec.json#/definitions/event"
+            }
+          },
+          "404": {
+            "description": "Failed. Event could not be found.",
+            "schema": {
+              "$ref": "response_model.yaml#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "response_model.yaml#/definitions/error"
+            }
+          }
+        }
+      },
       "post": {
         "tags": [
           "Event"
@@ -80,44 +120,6 @@ func init() {
           }
         }
       }
-    },
-    "/event/{eventType}": {
-      "get": {
-        "tags": [
-          "Event"
-        ],
-        "summary": "Get the specified event",
-        "parameters": [
-          {
-            "$ref": "#/parameters/keptnContext"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "$ref": "https://raw.githubusercontent.com/cloudevents/spec/v0.2/spec.json#/definitions/event"
-            }
-          },
-          "404": {
-            "description": "Failed. Event could not be found.",
-            "schema": {
-              "$ref": "response_model.yaml#/definitions/error"
-            }
-          },
-          "default": {
-            "description": "Error",
-            "schema": {
-              "$ref": "response_model.yaml#/definitions/error"
-            }
-          }
-        }
-      },
-      "parameters": [
-        {
-          "$ref": "#/parameters/eventType"
-        }
-      ]
     },
     "/project": {
       "post": {
@@ -423,6 +425,46 @@ func init() {
       }
     },
     "/event": {
+      "get": {
+        "tags": [
+          "Event"
+        ],
+        "summary": "Get the specified event",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "KeptnContext of the events to get",
+            "name": "keptnContext",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Type of the Keptn cloud event",
+            "name": "type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/event"
+            }
+          },
+          "404": {
+            "description": "Failed. Event could not be found.",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
       "post": {
         "tags": [
           "Event"
@@ -453,53 +495,6 @@ func init() {
           }
         }
       }
-    },
-    "/event/{eventType}": {
-      "get": {
-        "tags": [
-          "Event"
-        ],
-        "summary": "Get the specified event",
-        "parameters": [
-          {
-            "description": "KeptnContext ID",
-            "name": "keptnContext",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/keptnContext"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "$ref": "#/definitions/event"
-            }
-          },
-          "404": {
-            "description": "Failed. Event could not be found.",
-            "schema": {
-              "$ref": "#/definitions/error"
-            }
-          },
-          "default": {
-            "description": "Error",
-            "schema": {
-              "$ref": "#/definitions/error"
-            }
-          }
-        }
-      },
-      "parameters": [
-        {
-          "type": "string",
-          "description": "Type of the Keptn event",
-          "name": "eventType",
-          "in": "path",
-          "required": true
-        }
-      ]
     },
     "/project": {
       "post": {
