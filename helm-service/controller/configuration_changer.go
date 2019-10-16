@@ -7,10 +7,11 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"log"
 	"os"
 	"strings"
+
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"k8s.io/helm/pkg/proto/hapi/chart"
 
@@ -66,7 +67,7 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event,
 	if os.Getenv("PRE_WORKFLOW_ENGINE") == "true" && e.Stage == "" {
 		stage, err := getFirstStage(e.Project)
 		if err != nil {
-			c.logger.Error(fmt.Sprintf("Error when reading shipyard: %s" + err.Error()))
+			c.logger.Error(fmt.Sprintf("Error when reading shipyard: %s", err.Error()))
 			return err
 		}
 		e.Stage = stage
