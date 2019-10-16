@@ -303,14 +303,6 @@ func init() {
       "in": "path",
       "required": true
     },
-    "keptnContext": {
-      "description": "KeptnContext ID",
-      "name": "keptnContext",
-      "in": "body",
-      "schema": {
-        "$ref": "keptncontext_model.yaml#/definitions/keptnContext"
-      }
-    },
     "project": {
       "description": "Project entity",
       "name": "project",
@@ -808,17 +800,6 @@ func init() {
     "id": {
       "type": "string"
     },
-    "keptnContext": {
-      "type": "object",
-      "required": [
-        "keptnContext"
-      ],
-      "properties": {
-        "keptnContext": {
-          "type": "string"
-        }
-      }
-    },
     "project": {
       "type": "object",
       "required": [
@@ -903,14 +884,6 @@ func init() {
       "name": "eventType",
       "in": "path",
       "required": true
-    },
-    "keptnContext": {
-      "description": "KeptnContext ID",
-      "name": "keptnContext",
-      "in": "body",
-      "schema": {
-        "$ref": "#/definitions/keptnContext"
-      }
     },
     "project": {
       "description": "Project entity",
