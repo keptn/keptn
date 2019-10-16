@@ -251,10 +251,3 @@ parameters:
     required: true
     type: string
     description: Type of the Keptn event
-
-  keptnContext:
-    in: body
-    name: keptnContext
-    description: KeptnContext ID
-    schema:
-      $ref: "keptncontext_model.yaml#/definitions/keptnContext"
