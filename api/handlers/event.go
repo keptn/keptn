@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"net/url"
+	"os"
 	"time"
 
 	"github.com/keptn/keptn/api/utils"
@@ -25,6 +26,7 @@ type eventData struct {
 	EventContext models.EventContext `json:"eventContext"`
 }
 
+// PostEventHandlerFunc forwards a received event to the event broker
 func PostEventHandlerFunc(params event.SendEventParams, principal *models.Principal) middleware.Responder {
 
 	keptnContext := uuid.New().String()
@@ -34,7 +36,7 @@ func PostEventHandlerFunc(params event.SendEventParams, principal *models.Princi
 	token, err := ws.CreateChannelInfo(keptnContext)
 	if err != nil {
 		l.Error(fmt.Sprintf("Error creating channel info %s", err.Error()))
-		return getSendEventInternalError(err)
+		return sendInternalError(err)
 	}
 
 	source, _ := url.Parse("https://github.com/keptn/keptn/api")
@@ -53,19 +55,32 @@ func PostEventHandlerFunc(params event.SendEventParams, principal *models.Princi
 		}.AsV02(),
 		Data: forwardData,
 	}
+
 	_, err = utils.PostToEventBroker(ev)
 	if err != nil {
 		l.Error(fmt.Sprintf("Error sending CloudEvent %s", err.Error()))
-		return getSendEventInternalError(err)
+		return sendInternalError(err)
 	}
 
 	return event.NewSendEventOK().WithPayload(&eventContext)
 }
 
+// GetEventEventTypeHandlerFunc returns an event specified by keptnContext and eventType
 func GetEventEventTypeHandlerFunc(params event.GetEventEventTypeParams, principal *models.Principal) middleware.Responder {
-	return event.NewSendEventOK().WithPayload(nil)
+	eventHandler := keptnutils.EventHandler(getDatastoreURL())
+
+	resp, err := eventHandler.GetEvent(params.KeptnContext, params.EventType)
+	if err != nil {
+		return sendInternalError(err)
+	}
+
+	return event.NewSendEventOK().WithPayload(&resp)
 }
 
-func getSendEventInternalError(err error) *event.SendEventDefault {
+func sendInternalError(err error) *event.SendEventDefault {
 	return event.NewSendEventDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+}
+
+func getDatastoreURL() string {
+	return "http://" + os.Getenv("DATASTORE_URI")
 }

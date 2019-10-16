@@ -17,7 +17,7 @@ import (
 
 const timeout = 60
 
-// Send creates a request including the X-Keptn-Signature and sends the data
+// Send creates a request including the x-token and sends the data
 // struct to the provided target. It returns the obtained http.Response.
 func Send(url url.URL, event cloudevents.Event, apiToken string) (*cloudevents.Event, error) {
 	ec := event.Context.AsV02()
@@ -30,7 +30,8 @@ func Send(url url.URL, event cloudevents.Event, apiToken string) (*cloudevents.E
 		cloudeventshttp.WithTarget(url.String()),
 		cloudeventshttp.WithEncoding(cloudeventshttp.StructuredV02),
 	)
-	// Reset Client because we need TLS
+
+	// Reset client because we need TLS
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 		DialContext:     ResolveXipIoWithContext,
