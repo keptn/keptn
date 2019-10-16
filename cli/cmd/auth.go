@@ -97,11 +97,11 @@ To manually set up your keptn CLI, please follow the instructions at https://kep
 
 func getEndpointUsingKube() (string, error) {
 	ops := options{"get",
-		"virtualservice",
-		"api",
+		"cm",
+		"keptn-domain",
 		"-n",
 		"keptn",
-		"-ojsonpath={.spec.hosts[0]}"}
+		"-ojsonpath={.data.app_domain}"}
 	ops.appendIfNotEmpty(kubectlOptions)
 	return keptnutils.ExecuteCommand("kubectl", ops)
 }
