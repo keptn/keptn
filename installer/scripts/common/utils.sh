@@ -21,7 +21,7 @@ function print_error() {
 function verify_install_step() {
   if [[ $1 != '0' ]]; then
     print_error "$2"
-    print_error "Stopping keptn installation. Already created resources are not deleted; execute the uninstallKeptn.sh script to clean-up."
+    print_error "Stopping keptn installation. Already created resources are not deleted; run keptn uninstall to clean-up."
     exit 1
   fi
 }
@@ -29,7 +29,7 @@ function verify_install_step() {
 function verify_kubectl() {
   if [[ $1 != '0' ]]; then
     print_error "$2"
-    print_error "Stopping keptn installation. Already created resources are not deleted; execute the uninstallKeptn.sh script to clean-up."
+    print_error "Stopping keptn installation. Already created resources are not deleted; run keptn uninstall to clean-up."
     exit 1
   fi
 }
@@ -37,7 +37,7 @@ function verify_kubectl() {
 function verify_variable() {
   if [[ -z "$1" ]]; then
     print_error "$2"
-    print_error "Stopping keptn installation. Already created resources are not deleted; execute the uninstallKeptn.sh script to clean-up."
+    print_error "Stopping keptn installation. Already created resources are not deleted; run keptn uninstall to clean-up."
     exit 1
   fi
 }
