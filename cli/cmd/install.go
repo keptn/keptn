@@ -187,6 +187,7 @@ func init() {
 		"The platform to run keptn on [aks,eks,gke,pks,openshift,kubernetes]")
 	installParams.GatewayType = installCmd.Flags().StringP("gateway", "g", "LoadBalancer",
 		"The ingress-loadbalancer type [LoadBalancer,NodePort]")
+	installCmd.Flags().MarkHidden("gateway")
 	installCmd.PersistentFlags().BoolVarP(&insecureSkipTLSVerify, "insecure-skip-tls-verify", "s",
 		false, "Skip tls verification for kubectl commands")
 }
