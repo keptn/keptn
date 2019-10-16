@@ -20,7 +20,7 @@ if [[ $? != 0 ]]; then
   print_error "Failed to get ingress gateway information." && exit 1
 fi
 
-if [[ "$DOMAIN" == "null" ]]; then
+if [[ "$DOMAIN" == "null" && "$GATEWAY_TYPE" == "LoadBalancer" ]]; then
   print_info "Could not get ingress gateway domain name. Trying to retrieve IP address instead."
   
   wait_for_istio_ingressgateway "ip"
@@ -31,6 +31,10 @@ if [[ "$DOMAIN" == "null" ]]; then
     exit 1
   fi
   DOMAIN="$DOMAIN.xip.io"
+elif [[ "$DOMAIN" == "null" && "$GATEWAY_TYPE" == "NodePort" ]]; then
+  NODE_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')
+  NODE_IP=$(kubectl get nodes -l node-role.kubernetes.io/worker=true -o jsonpath='{ $.items[*].status.addresses[?(@.type=="InternalIP")].address }')
+  DOMAIN="$NODE_IP:$NODE_PORT"
 fi
 
 # Set up SSL

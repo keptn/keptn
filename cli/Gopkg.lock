@@ -1126,7 +1126,7 @@
   version = "kubernetes-1.12.0"
 
 [[projects]]
-  digest = "1:ccdf880a2361789a52b2a7076c05e77dd608d13a7207004f3b9518e99c12676c"
+  digest = "1:c35e91a5a3af23a68b1440fc1a9c5a713853b5447bf4e0606def69cbc84148ef"
   name = "k8s.io/helm"
   packages = [
     "pkg/chartutil",
