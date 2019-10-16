@@ -72,6 +72,9 @@ func PostProjectHandlerFunc(params project.PostProjectParams, p *models.Principa
 		return getProjectPostInternalError(err)
 	}
 
+	fmt.Println(*eventContext.KeptnContext)
+	fmt.Println(*eventContext.Token)
+
 	return project.NewPostProjectOK().WithPayload(&eventContext)
 }
 
