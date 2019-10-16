@@ -13,24 +13,24 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// ChannelInfo channel info
-// swagger:model channelInfo
-type ChannelInfo struct {
+// EventContext event context
+// swagger:model eventContext
+type EventContext struct {
 
-	// channel ID
+	// keptn context
 	// Required: true
-	ChannelID *string `json:"channelID"`
+	KeptnContext *string `json:"keptnContext"`
 
 	// token
 	// Required: true
 	Token *string `json:"token"`
 }
 
-// Validate validates this channel info
-func (m *ChannelInfo) Validate(formats strfmt.Registry) error {
+// Validate validates this event context
+func (m *EventContext) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateChannelID(formats); err != nil {
+	if err := m.validateKeptnContext(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -44,16 +44,16 @@ func (m *ChannelInfo) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ChannelInfo) validateChannelID(formats strfmt.Registry) error {
+func (m *EventContext) validateKeptnContext(formats strfmt.Registry) error {
 
-	if err := validate.Required("channelID", "body", m.ChannelID); err != nil {
+	if err := validate.Required("keptnContext", "body", m.KeptnContext); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ChannelInfo) validateToken(formats strfmt.Registry) error {
+func (m *EventContext) validateToken(formats strfmt.Registry) error {
 
 	if err := validate.Required("token", "body", m.Token); err != nil {
 		return err
@@ -63,7 +63,7 @@ func (m *ChannelInfo) validateToken(formats strfmt.Registry) error {
 }
 
 // MarshalBinary interface implementation
-func (m *ChannelInfo) MarshalBinary() ([]byte, error) {
+func (m *EventContext) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -71,8 +71,8 @@ func (m *ChannelInfo) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ChannelInfo) UnmarshalBinary(b []byte) error {
-	var res ChannelInfo
+func (m *EventContext) UnmarshalBinary(b []byte) error {
+	var res EventContext
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

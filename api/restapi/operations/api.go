@@ -48,6 +48,9 @@ func NewAPI(spec *loads.Document) *API {
 		ProjectDeleteProjectProjectNameHandler: project.DeleteProjectProjectNameHandlerFunc(func(params project.DeleteProjectProjectNameParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation ProjectDeleteProjectProjectName has not yet been implemented")
 		}),
+		EventGetEventEventTypeHandler: event.GetEventEventTypeHandlerFunc(func(params event.GetEventEventTypeParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation EventGetEventEventType has not yet been implemented")
+		}),
 		ProjectPostProjectHandler: project.PostProjectHandlerFunc(func(params project.PostProjectParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation ProjectPostProject has not yet been implemented")
 		}),
@@ -114,6 +117,8 @@ type API struct {
 
 	// ProjectDeleteProjectProjectNameHandler sets the operation handler for the delete project project name operation
 	ProjectDeleteProjectProjectNameHandler project.DeleteProjectProjectNameHandler
+	// EventGetEventEventTypeHandler sets the operation handler for the get event event type operation
+	EventGetEventEventTypeHandler event.GetEventEventTypeHandler
 	// ProjectPostProjectHandler sets the operation handler for the post project operation
 	ProjectPostProjectHandler project.PostProjectHandler
 	// ServicePostProjectProjectNameServiceHandler sets the operation handler for the post project project name service operation
@@ -197,6 +202,10 @@ func (o *API) Validate() error {
 		unregistered = append(unregistered, "project.DeleteProjectProjectNameHandler")
 	}
 
+	if o.EventGetEventEventTypeHandler == nil {
+		unregistered = append(unregistered, "event.GetEventEventTypeHandler")
+	}
+
 	if o.ProjectPostProjectHandler == nil {
 		unregistered = append(unregistered, "project.PostProjectHandler")
 	}
@@ -237,12 +246,11 @@ func (o *API) ServeErrorFor(operationID string) func(http.ResponseWriter, *http.
 func (o *API) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
 
 	result := make(map[string]runtime.Authenticator)
-	for name := range schemes {
+	for name, scheme := range schemes {
 		switch name {
 
 		case "key":
 
-			scheme := schemes[name]
 			result[name] = o.APIKeyAuthenticator(scheme.Name, scheme.In, func(token string) (interface{}, error) {
 				return o.KeyAuth(token)
 			})
@@ -339,6 +347,11 @@ func (o *API) initHandlerCache() {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/project/{projectName}"] = project.NewDeleteProjectProjectName(o.context, o.ProjectDeleteProjectProjectNameHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/event/{eventType}"] = event.NewGetEventEventType(o.context, o.EventGetEventEventTypeHandler)
 
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)

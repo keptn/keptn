@@ -54,7 +54,7 @@
 
 [[override]]
   name = "github.com/keptn/go-utils"
-  branch = "develop"
+  branch = "feature/949/start-evaluation-support"
 
 [[constraint]]
   name = "github.com/google/go-github"

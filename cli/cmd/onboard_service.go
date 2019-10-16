@@ -4,8 +4,9 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"github.com/keptn/keptn/cli/utils/websockethelper"
 	"os"
+
+	"github.com/keptn/keptn/cli/utils/websockethelper"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
@@ -94,9 +95,10 @@ Example:
 			return err
 		}
 
+		helmChart := base64.StdEncoding.EncodeToString(chartData)
 		service := apimodels.Service{
-			ServiceName: args[0],
-			HelmChart:   base64.StdEncoding.EncodeToString(chartData),
+			ServiceName: &args[0],
+			HelmChart:   &helmChart,
 		}
 
 		if *onboardServiceParams.DeploymentStrategy != "" {
@@ -125,7 +127,7 @@ Example:
 
 			// if ChannelInfo is available, open WebSocket communication
 			if channelInfo != nil {
-				return websockethelper.PrintWSContentChannelInfo(channelInfo, endPoint)
+				return websockethelper.PrintWSContentEventContext(channelInfo, endPoint)
 			}
 
 			return nil

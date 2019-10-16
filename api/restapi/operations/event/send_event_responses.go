@@ -25,7 +25,7 @@ type SendEventOK struct {
 	/*
 	  In: Body
 	*/
-	Payload *models.ChannelInfo `json:"body,omitempty"`
+	Payload *models.EventContext `json:"body,omitempty"`
 }
 
 // NewSendEventOK creates SendEventOK with default headers values
@@ -35,13 +35,13 @@ func NewSendEventOK() *SendEventOK {
 }
 
 // WithPayload adds the payload to the send event o k response
-func (o *SendEventOK) WithPayload(payload *models.ChannelInfo) *SendEventOK {
+func (o *SendEventOK) WithPayload(payload *models.EventContext) *SendEventOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the send event o k response
-func (o *SendEventOK) SetPayload(payload *models.ChannelInfo) {
+func (o *SendEventOK) SetPayload(payload *models.EventContext) {
 	o.Payload = payload
 }
 

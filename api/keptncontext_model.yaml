@@ -1,0 +1,9 @@
+---
+definitions:
+  keptnContext:
+    type: object
+    required:
+      - keptnContext
+    properties:
+      keptnContext:
+        type: string

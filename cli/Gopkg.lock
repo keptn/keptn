@@ -471,8 +471,8 @@
   version = "v1.1.7"
 
 [[projects]]
-  branch = "develop"
-  digest = "1:7598ad5e8a2a636615ba8f7212b8e6b672d1b32b241e2d226e6ef3d84051b827"
+  branch = "feature/949/start-evaluation-support"
+  digest = "1:a3aa04f5678e649d06ea9dc3a2effac801e214303e0696a60e3eda82613a4956"
   name = "github.com/keptn/go-utils"
   packages = [
     "pkg/api/models",
@@ -482,7 +482,7 @@
     "pkg/utils",
   ]
   pruneopts = ""
-  revision = "e97a5e95ea3ccb6bff87cda5049a780a89d1fc35"
+  revision = "4a7794d260087dc5ea615db46930e45f1d2f249b"
 
 [[projects]]
   digest = "1:91317956b340c9e61a4287fd94c870bfad3f1922280c3e0a65db91c29017e8de"

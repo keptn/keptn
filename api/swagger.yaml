@@ -45,7 +45,30 @@ paths:
         200:
           description: Forwarded
           schema:
-            $ref: "response_model.yaml#/definitions/channelInfo"
+            $ref: "response_model.yaml#/definitions/eventContext"
+        default:
+          description: Error
+          schema:
+            $ref: "response_model.yaml#/definitions/error"
+  
+  /event/{eventType}:
+    parameters:
+      - $ref: "#/parameters/eventType"
+    get:
+      tags:
+        - Event
+      parameters:
+        - $ref: '#/parameters/keptnContext'
+      summary: Get the specified event
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: "https://raw.githubusercontent.com/cloudevents/spec/v0.2/spec.json#/definitions/event"
+        404:
+          description: Failed. Event could not be found.
+          schema:
+            $ref: "response_model.yaml#/definitions/error"
         default:
           description: Error
           schema:
@@ -62,7 +85,7 @@ paths:
         200:
           description: Creating of project triggered
           schema:
-            $ref: "response_model.yaml#/definitions/channelInfo"
+            $ref: "response_model.yaml#/definitions/eventContext"
         400:
           description: Failed. Project could not be created
           schema:
@@ -83,7 +106,7 @@ paths:
         200:
           description: Deleting of project triggered
           schema:
-            $ref: "response_model.yaml#/definitions/channelInfo"
+            $ref: "response_model.yaml#/definitions/eventContext"
         400:
           description: Failed. Project could not be deleted
           schema:
@@ -106,7 +129,7 @@ paths:
         200:
           description: Creating of service triggered
           schema:
-            $ref: "response_model.yaml#/definitions/channelInfo"
+            $ref: "response_model.yaml#/definitions/eventContext"
         400:
           description: Failed. Project could not be created
           schema:
@@ -216,3 +239,17 @@ parameters:
           type: array
           items:
             $ref: "resource_model.yaml#/definitions/resource"
+   
+  eventType:
+    in: path
+    name: eventType
+    required: true
+    type: string
+    description: Type of the Keptn event
+
+  keptnContext:
+    in: body
+    name: keptnContext
+    description: KeptnContext ID
+    schema:
+      $ref: "keptncontext_model.yaml#/definitions/keptnContext"
