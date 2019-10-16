@@ -69,7 +69,7 @@ func init() {
           "200": {
             "description": "Forwarded",
             "schema": {
-              "$ref": "response_model.yaml#/definitions/channelInfo"
+              "$ref": "response_model.yaml#/definitions/eventContext"
             }
           },
           "default": {
@@ -80,6 +80,44 @@ func init() {
           }
         }
       }
+    },
+    "/event/{eventType}": {
+      "get": {
+        "tags": [
+          "Event"
+        ],
+        "summary": "Get the specified event",
+        "parameters": [
+          {
+            "$ref": "#/parameters/keptnContext"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "https://raw.githubusercontent.com/cloudevents/spec/v0.2/spec.json#/definitions/event"
+            }
+          },
+          "404": {
+            "description": "Failed. Event could not be found.",
+            "schema": {
+              "$ref": "response_model.yaml#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "response_model.yaml#/definitions/error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "$ref": "#/parameters/eventType"
+        }
+      ]
     },
     "/project": {
       "post": {
@@ -96,7 +134,7 @@ func init() {
           "200": {
             "description": "Creating of project triggered",
             "schema": {
-              "$ref": "response_model.yaml#/definitions/channelInfo"
+              "$ref": "response_model.yaml#/definitions/eventContext"
             }
           },
           "400": {
@@ -124,7 +162,7 @@ func init() {
           "200": {
             "description": "Deleting of project triggered",
             "schema": {
-              "$ref": "response_model.yaml#/definitions/channelInfo"
+              "$ref": "response_model.yaml#/definitions/eventContext"
             }
           },
           "400": {
@@ -162,7 +200,7 @@ func init() {
           "200": {
             "description": "Creating of service triggered",
             "schema": {
-              "$ref": "response_model.yaml#/definitions/channelInfo"
+              "$ref": "response_model.yaml#/definitions/eventContext"
             }
           },
           "400": {
@@ -256,6 +294,21 @@ func init() {
     }
   },
   "parameters": {
+    "eventType": {
+      "type": "string",
+      "description": "Type of the Keptn event",
+      "name": "eventType",
+      "in": "path",
+      "required": true
+    },
+    "keptnContext": {
+      "description": "KeptnContext ID",
+      "name": "keptnContext",
+      "in": "body",
+      "schema": {
+        "$ref": "keptncontext_model.yaml#/definitions/keptnContext"
+      }
+    },
     "project": {
       "description": "Project entity",
       "name": "project",
@@ -389,7 +442,7 @@ func init() {
           "200": {
             "description": "Forwarded",
             "schema": {
-              "$ref": "#/definitions/channelInfo"
+              "$ref": "#/definitions/eventContext"
             }
           },
           "default": {
@@ -400,6 +453,53 @@ func init() {
           }
         }
       }
+    },
+    "/event/{eventType}": {
+      "get": {
+        "tags": [
+          "Event"
+        ],
+        "summary": "Get the specified event",
+        "parameters": [
+          {
+            "description": "KeptnContext ID",
+            "name": "keptnContext",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/keptnContext"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/event"
+            }
+          },
+          "404": {
+            "description": "Failed. Event could not be found.",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "description": "Type of the Keptn event",
+          "name": "eventType",
+          "in": "path",
+          "required": true
+        }
+      ]
     },
     "/project": {
       "post": {
@@ -421,7 +521,7 @@ func init() {
           "200": {
             "description": "Creating of project triggered",
             "schema": {
-              "$ref": "#/definitions/channelInfo"
+              "$ref": "#/definitions/eventContext"
             }
           },
           "400": {
@@ -449,7 +549,7 @@ func init() {
           "200": {
             "description": "Deleting of project triggered",
             "schema": {
-              "$ref": "#/definitions/channelInfo"
+              "$ref": "#/definitions/eventContext"
             }
           },
           "400": {
@@ -496,7 +596,7 @@ func init() {
           "200": {
             "description": "Creating of service triggered",
             "schema": {
-              "$ref": "#/definitions/channelInfo"
+              "$ref": "#/definitions/eventContext"
             }
           },
           "400": {
@@ -630,21 +730,6 @@ func init() {
     }
   },
   "definitions": {
-    "channelInfo": {
-      "type": "object",
-      "required": [
-        "token",
-        "channelID"
-      ],
-      "properties": {
-        "channelID": {
-          "type": "string"
-        },
-        "token": {
-          "type": "string"
-        }
-      }
-    },
     "contenttype": {
       "type": "string"
     },
@@ -707,14 +792,44 @@ func init() {
         }
       }
     },
+    "eventContext": {
+      "type": "object",
+      "required": [
+        "token",
+        "keptnContext"
+      ],
+      "properties": {
+        "keptnContext": {
+          "type": "string"
+        },
+        "token": {
+          "type": "string"
+        }
+      }
+    },
     "extensions": {
       "type": "object"
     },
     "id": {
       "type": "string"
     },
+    "keptnContext": {
+      "type": "object",
+      "required": [
+        "keptnContext"
+      ],
+      "properties": {
+        "keptnContext": {
+          "type": "string"
+        }
+      }
+    },
     "project": {
       "type": "object",
+      "required": [
+        "name",
+        "shipyard"
+      ],
       "properties": {
         "gitRemoteURL": {
           "type": "string"
@@ -731,11 +846,7 @@ func init() {
         "shipyard": {
           "type": "string"
         }
-      },
-      "requried": [
-        "name",
-        "shipyard"
-      ]
+      }
     },
     "resource": {
       "type": "object",
@@ -756,6 +867,10 @@ func init() {
     },
     "service": {
       "type": "object",
+      "required": [
+        "serviceName",
+        "helmChart"
+      ],
       "properties": {
         "deploymentStrategies": {
           "type": "object",
@@ -769,11 +884,7 @@ func init() {
         "serviceName": {
           "type": "string"
         }
-      },
-      "requried": [
-        "serviceName",
-        "helmChart"
-      ]
+      }
     },
     "source": {
       "type": "string",
@@ -791,6 +902,21 @@ func init() {
     }
   },
   "parameters": {
+    "eventType": {
+      "type": "string",
+      "description": "Type of the Keptn event",
+      "name": "eventType",
+      "in": "path",
+      "required": true
+    },
+    "keptnContext": {
+      "description": "KeptnContext ID",
+      "name": "keptnContext",
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/keptnContext"
+      }
+    },
     "project": {
       "description": "Project entity",
       "name": "project",

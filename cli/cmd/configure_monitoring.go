@@ -100,8 +100,6 @@ var monitoringCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-
-
 		*/
 		configureMonitoringEventData := &events.ConfigureMonitoringEventData{
 			Type:    args[0],
@@ -129,21 +127,18 @@ var monitoringCmd = &cobra.Command{
 
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", eventURL.String()), logging.VerboseLevel)
 		if !mocking {
-			responseCE, err := utils.Send(eventURL, event, apiToken)
+			response, err := utils.Send(eventURL, event, apiToken)
 			if err != nil {
 				logging.PrintLog("Sending configure-monitoring event was unsuccessful", logging.QuietLevel)
 				return err
 			}
 
-			// check for responseCE to include token
-			if responseCE == nil {
-				logging.PrintLog("Response CE is nil", logging.QuietLevel)
-
+			if response == nil {
+				logging.PrintLog("Response is nil", logging.QuietLevel)
 				return nil
 			}
-			if responseCE.Data != nil {
-				return websockethelper.PrintWSContentCEResponse(responseCE, endPoint)
-			}
+
+			return websockethelper.PrintWSContentCEResponse(response, endPoint)
 		} else {
 			fmt.Println("Skipping send-new artifact due to mocking flag set to true")
 		}

@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+
 	"github.com/keptn/keptn/cli/utils/websockethelper"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
@@ -45,7 +46,7 @@ Example:
 		logging.PrintLog("Starting to delete project", logging.InfoLevel)
 
 		project := apimodels.Project{
-			Name: args[0],
+			Name: &args[0],
 		}
 
 		projectHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, "https")
@@ -60,7 +61,7 @@ Example:
 
 			// if ChannelInfo is available, open WebSocket communication
 			if channelInfo != nil {
-				return websockethelper.PrintWSContentChannelInfo(channelInfo, endPoint)
+				return websockethelper.PrintWSContentEventContext(channelInfo, endPoint)
 			}
 
 			return nil

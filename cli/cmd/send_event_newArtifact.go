@@ -45,11 +45,11 @@ var newArtifact newArtifactStruct
 // newArtifactCmd represents the newArtifact command
 var newArtifactCmd = &cobra.Command{
 	Use: "new-artifact",
-	Short: "Sends a new-artifact event to keptn in order to deploy a new artifact" +
+	Short: "Sends a new-artifact event to Keptn in order to deploy a new artifact" +
 		"for the specified service in the provided project.",
-	Long: `Sends a new-artifact event to keptn in order to deploy a new artifact
+	Long: `Sends a new-artifact event to Keptn in order to deploy a new artifact
 for the specified service in the provided project.
-Therefore, this command takes the project, the service as well as the image and tag of the new artifact.
+Therefore, this command takes the project, service, image, and tag of the new artifact.
 	
 Example:
 	keptn send event new-artifact --project=sockshop --service=carts --image=docker.io/keptnexamples/carts --tag=0.7.0`,
@@ -97,23 +97,20 @@ Example:
 
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", eventURL.String()), logging.VerboseLevel)
 		if !mocking {
-			responseCE, err := utils.Send(eventURL, event, apiToken)
+			response, err := utils.Send(eventURL, event, apiToken)
 			if err != nil {
 				logging.PrintLog("Send new-artifact was unsuccessful", logging.QuietLevel)
 				return err
 			}
 
-			// check for responseCE to include token
-			if responseCE == nil {
-				logging.PrintLog("Response CE is nil", logging.QuietLevel)
-
+			if response == nil {
+				logging.PrintLog("Response is nil", logging.QuietLevel)
 				return nil
 			}
-			if responseCE.Data != nil {
-				return websockethelper.PrintWSContentCEResponse(responseCE, endPoint)
-			}
+
+			return websockethelper.PrintWSContentCEResponse(response, endPoint)
 		} else {
-			fmt.Println("Skipping send-new artifact due to mocking flag set to true")
+			fmt.Println("Skipping send new-artifact due to mocking flag set to true")
 		}
 		return nil
 	},

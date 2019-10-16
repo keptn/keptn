@@ -4,8 +4,9 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"github.com/keptn/keptn/cli/utils/websockethelper"
 	"os"
+
+	"github.com/keptn/keptn/cli/utils/websockethelper"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
@@ -120,9 +121,10 @@ Example:
 		logging.PrintLog("Starting to create project", logging.InfoLevel)
 
 		content, _ := utils.ReadFile(*createProjectParams.Shipyard)
+		shipyard := base64.StdEncoding.EncodeToString([]byte(content))
 		project := apimodels.Project{
-			Name:     args[0],
-			Shipyard: base64.StdEncoding.EncodeToString([]byte(content)),
+			Name:     &args[0],
+			Shipyard: &shipyard,
 		}
 
 		if *createProjectParams.GitUser != "" && *createProjectParams.GitToken != "" && *createProjectParams.RemoteURL != "" {
@@ -143,7 +145,7 @@ Example:
 
 			// if ChannelInfo is available, open WebSocket communication
 			if channelInfo != nil {
-				return websockethelper.PrintWSContentChannelInfo(channelInfo, endPoint)
+				return websockethelper.PrintWSContentEventContext(channelInfo, endPoint)
 			}
 
 			return nil

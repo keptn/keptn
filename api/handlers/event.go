@@ -21,8 +21,8 @@ import (
 )
 
 type eventData struct {
-	models.Data `json:",inline"`
-	ChannelInfo models.ChannelInfo `json:"channelInfo"`
+	models.Data  `json:",inline"`
+	EventContext models.EventContext `json:"eventContext"`
 }
 
 func PostEventHandlerFunc(params event.SendEventParams, principal *models.Principal) middleware.Responder {
@@ -37,13 +37,11 @@ func PostEventHandlerFunc(params event.SendEventParams, principal *models.Princi
 		return getSendEventInternalError(err)
 	}
 
-	channelInfo := models.ChannelInfo{ChannelID: &keptnContext, Token: &token}
-
 	source, _ := url.Parse("https://github.com/keptn/keptn/api")
-
-	forwardData := eventData{Data: params.Body.Data, ChannelInfo: channelInfo}
-
 	contentType := "application/json"
+	eventContext := models.EventContext{KeptnContext: &keptnContext, Token: &token}
+	forwardData := eventData{Data: params.Body.Data, EventContext: eventContext}
+
 	ev := cloudevents.Event{
 		Context: cloudevents.EventContextV02{
 			ID:          uuid.New().String(),
@@ -61,7 +59,11 @@ func PostEventHandlerFunc(params event.SendEventParams, principal *models.Princi
 		return getSendEventInternalError(err)
 	}
 
-	return event.NewSendEventOK().WithPayload(&channelInfo)
+	return event.NewSendEventOK().WithPayload(&eventContext)
+}
+
+func GetEventEventTypeHandlerFunc(params event.GetEventEventTypeParams, principal *models.Principal) middleware.Responder {
+	return event.NewSendEventOK().WithPayload(nil)
 }
 
 func getSendEventInternalError(err error) *event.SendEventDefault {

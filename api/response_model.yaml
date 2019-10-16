@@ -1,14 +1,14 @@
 ---
 definitions:
-  channelInfo:
+  eventContext:
     type: object
     required:
       - token
-      - channelID
+      - keptnContext
     properties:
       token:
         type: string
-      channelID:
+      keptnContext:
         type: string
   error:
     type: object
