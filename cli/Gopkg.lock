@@ -79,15 +79,15 @@
   version = "v9"
 
 [[projects]]
-  digest = "1:502725417249e86a000932108df22d20dbc0b74219b8745062e469057567c48f"
+  digest = "1:11349beb9aa69c5b909419b1a6e6a1b74b522d9c87ef3cee64437a02fd3994c8"
   name = "github.com/cloudevents/sdk-go"
   packages = [
     "pkg/cloudevents",
     "pkg/cloudevents/client",
-    "pkg/cloudevents/codec",
     "pkg/cloudevents/context",
     "pkg/cloudevents/datacodec",
     "pkg/cloudevents/datacodec/json",
+    "pkg/cloudevents/datacodec/text",
     "pkg/cloudevents/datacodec/xml",
     "pkg/cloudevents/observability",
     "pkg/cloudevents/transport",
@@ -95,8 +95,7 @@
     "pkg/cloudevents/types",
   ]
   pruneopts = ""
-  revision = "56931988abe3adf6792b5c6e575ee5f573e9ccbc"
-  version = "0.7.0"
+  revision = "b0ed3376c113528ca45911a44eac70307912b318"
 
 [[projects]]
   digest = "1:a9854984bc40330dde2125537b7f46d0a8d7860b3750de2e7cd0a6f904506212"
@@ -211,20 +210,20 @@
   version = "v0.19.3"
 
 [[projects]]
-  digest = "1:edefe6b2a93c7d161f5dd4074187b64f04f3192e1567f9af8b7a1015f9a7d954"
+  digest = "1:e817403719c4500725cd6ec4a2ac2aeca37ad7b424f3f5abcef895136db71597"
   name = "github.com/go-openapi/loads"
   packages = ["."]
   pruneopts = ""
-  revision = "c763e5411fc5c14c69d5d44f02b9d92e6f122d2c"
-  version = "v0.19.3"
+  revision = "bda4742c39071f7804171d847fb6e9bca84f9f57"
+  version = "v0.19.4"
 
 [[projects]]
-  digest = "1:c3938cea6d36964c5dfbd6a2f861a09a5f1c4a68c23d781a2c0e9cde7bd014c0"
+  digest = "1:c58b4d6c5034c9c4c6e72c4786e8b6e1c540ebfc828be87e97dc4e0d529640aa"
   name = "github.com/go-openapi/runtime"
   packages = ["."]
   pruneopts = ""
-  revision = "c909caa338861d0afbe126b6706e048e54e40f82"
-  version = "v0.19.6"
+  revision = "553c9d1fb273d9550562d9f76949a413af265138"
+  version = "v0.19.7"
 
 [[projects]]
   digest = "1:3697981d0c0ed6a7499642163b576705d670f11498ea16c8a332bb95e8514ca5"
@@ -251,12 +250,12 @@
   version = "v0.19.5"
 
 [[projects]]
-  digest = "1:161841bafe708c1c5c86a26d9f2aa90ab5f23079f056f6c893a8b21d04634c69"
+  digest = "1:babed5aae27150467e7eaef0edd2f4b92ce60c54366911aa537eee33e8c7ebf1"
   name = "github.com/go-openapi/validate"
   packages = ["."]
   pruneopts = ""
-  revision = "d8e712d21b877546d81182812b4a1ae10e42b03f"
-  version = "v0.19.3"
+  revision = "80d596e2af47cef147b636dfd76abce249d2b847"
+  version = "v0.19.4"
 
 [[projects]]
   digest = "1:a01080d20c45c031c13f3828c56e58f4f51d926a482ad10cc0316225097eb7ea"
@@ -377,7 +376,7 @@
   version = "v0.3.1"
 
 [[projects]]
-  digest = "1:ad680579f2fb9707858a570606bdcc81d893b35d5f530b93be40df8fffb65b61"
+  digest = "1:220dccbfc231f373f5ffc0f66bb3d9cd3b1394e38c042a9a458535b57335b05a"
   name = "github.com/gophercloud/gophercloud"
   packages = [
     ".",
@@ -389,8 +388,8 @@
     "pagination",
   ]
   pruneopts = ""
-  revision = "cf0980d0cbc9d8fd2f8923d04102fa19aa4fae69"
-  version = "v0.5.0"
+  revision = "a8bdb516e71d7c586306501b30b80f06f53c013e"
+  version = "v0.6.0"
 
 [[projects]]
   digest = "1:03168f6041f164c06dc6acaaab4ed3ad1c6088b717c365cec892b35c80f4ffc7"
@@ -472,7 +471,7 @@
 
 [[projects]]
   branch = "feature/949/start-evaluation-support"
-  digest = "1:1e95b68680ae2057667a40d526147e98261d8301ee689c9dfa721ed34da2451c"
+  digest = "1:5013a1c5f78a4853a4cb9405147e3dcbf51235e8143b9ff0d6ee2d6ed4116fd9"
   name = "github.com/keptn/go-utils"
   packages = [
     "pkg/api/models",
@@ -485,7 +484,7 @@
     "pkg/utils",
   ]
   pruneopts = ""
-  revision = "fc56a4da8dc675d14cf8742dae49354310580e99"
+  revision = "c2bcef74908d980817278c517ec603468905aba1"
 
 [[projects]]
   digest = "1:91317956b340c9e61a4287fd94c870bfad3f1922280c3e0a65db91c29017e8de"
