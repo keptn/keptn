@@ -136,7 +136,7 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 			}
 			return doInstallation()
 		}
-		fmt.Println("Skipping intallation due to mocking flag")
+		fmt.Println("Skipping installation due to mocking flag")
 		return nil
 	},
 }
