@@ -29,11 +29,9 @@ import (
 	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
 	"github.com/kelseyhightower/envconfig"
 
-	configutils "github.com/keptn/go-utils/pkg/configuration-service/utils"
 	keptnevents "github.com/keptn/go-utils/pkg/events"
 	keptnmodels "github.com/keptn/go-utils/pkg/models"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
-
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/rest"
@@ -118,7 +116,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	resourceURI := remediationfilename
 
 	// valide if remediation should be performed
-	resourceHandler := configutils.NewResourceHandler(os.Getenv(configurationserviceconnection))
+	resourceHandler := keptnutils.NewResourceHandler(os.Getenv(configurationserviceconnection))
 	autoremediate := isRemediationEnabled(resourceHandler, projectname, stagename)
 	logger.Debug(fmt.Sprintf("remediation enabled for project and stage: %t", autoremediate))
 
@@ -267,7 +265,7 @@ func getHelmClient() (*helm.Client, error) {
 
 }
 
-func isRemediationEnabled(rh *configutils.ResourceHandler, project string, stage string) bool {
+func isRemediationEnabled(rh *keptnutils.ResourceHandler, project string, stage string) bool {
 	keptnHandler := keptnutils.NewKeptnHandler(rh)
 	fmt.Println("get shipyard for ", project)
 	shipyard, err := keptnHandler.GetShipyard(project)
