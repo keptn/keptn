@@ -82,7 +82,7 @@ Example:
 
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", eventURL.String()), logging.VerboseLevel)
 		if !mocking {
-			response, err := utils.Send(eventURL, event, apiToken)
+			_, response, err := utils.Send(eventURL, event, apiToken)
 			if err != nil {
 				logging.PrintLog("Send evaluation.start was unsuccessful", logging.QuietLevel)
 				return err

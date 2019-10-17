@@ -19,7 +19,7 @@ const timeout = 60
 
 // Send creates a request including the x-token and sends the data
 // struct to the provided target. It returns the obtained http.Response.
-func Send(url url.URL, event cloudevents.Event, apiToken string) (*cloudevents.Event, error) {
+func Send(url url.URL, event cloudevents.Event, apiToken string) (context.Context, *cloudevents.Event, error) {
 	ec := event.Context.AsV02()
 	if ec.Time == nil || ec.Time.IsZero() {
 		ec.Time = &types.Timestamp{Time: time.Now()}
@@ -30,6 +30,7 @@ func Send(url url.URL, event cloudevents.Event, apiToken string) (*cloudevents.E
 		cloudeventshttp.WithTarget(url.String()),
 		cloudeventshttp.WithEncoding(cloudeventshttp.StructuredV02),
 	)
+	t.Req.Host = "api.keptn"
 
 	// Reset client because we need TLS
 	tr := &http.Transport{
@@ -39,13 +40,13 @@ func Send(url url.URL, event cloudevents.Event, apiToken string) (*cloudevents.E
 	t.Client = &http.Client{Timeout: timeout * time.Second, Transport: tr}
 
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	c, err := client.New(t)
 
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	// Add signature header
