@@ -70,6 +70,31 @@ func GetEvents(params event.GetEventsParams) (result *event.GetEventsOKBody, err
 	if params.Type != nil {
 		searchOptions["type"] = params.Type
 	}
+	if params.Project != nil {
+		searchOptions["data.project"] = params.Project
+	}
+	if params.Stage != nil {
+		searchOptions["data.stage"] = params.Stage
+	}
+	if params.Service != nil {
+		searchOptions["data.service"] = params.Service
+	}
+	/*
+		if params.Project != nil || params.Stage != nil || params.Service != nil {
+			nestedSearchOptions := bson.M{}
+			if params.Project != nil {
+				nestedSearchOptions["project"] = params.Project
+			}
+			if params.Stage != nil {
+				nestedSearchOptions["stage"] = params.Stage
+			}
+			if params.Service != nil {
+				nestedSearchOptions["service"] = params.Service
+			}
+			searchOptions["data"] = nestedSearchOptions
+		}
+
+	*/
 	var newNextPageKey int64
 	var nextPageKey int64 = 0
 	if params.NextPageKey != nil {
