@@ -127,7 +127,7 @@ var monitoringCmd = &cobra.Command{
 
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", eventURL.String()), logging.VerboseLevel)
 		if !mocking {
-			response, err := utils.Send(eventURL, event, apiToken)
+			_, response, err := utils.Send(eventURL, event, apiToken)
 			if err != nil {
 				logging.PrintLog("Sending configure-monitoring event was unsuccessful", logging.QuietLevel)
 				return err
