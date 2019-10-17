@@ -37,9 +37,9 @@
   name = "github.com/kelseyhightower/envconfig"
   version = "1.4.0"
 
-[[constraint]]
+[[override]]
   name = "github.com/keptn/go-utils"
-  version = "0.2.0"
+  branch = "feature/949/start-evaluation-support"
   
 [[override]]
   name = "k8s.io/api"

@@ -149,9 +149,9 @@ Example:
 			}
 
 			return nil
-		} else {
-			fmt.Println("Skipping create project due to mocking flag set to true")
-		}
+		} 
+		
+		fmt.Println("Skipping create project due to mocking flag set to true")
 		return nil
 	},
 }

@@ -109,9 +109,9 @@ Example:
 			}
 
 			return websockethelper.PrintWSContentCEResponse(response, endPoint)
-		} else {
-			fmt.Println("Skipping send new-artifact due to mocking flag set to true")
 		}
+
+		fmt.Println("Skipping send new-artifact due to mocking flag set to true")
 		return nil
 	},
 }

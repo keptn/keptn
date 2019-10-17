@@ -6,19 +6,19 @@ import (
 	"os"
 	"time"
 
-	"github.com/keptn/keptn/api/utils"
-
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 
-	"github.com/go-openapi/swag"
-
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/swag"
 	"github.com/google/uuid"
-	datastore "github.com/keptn/go-utils/pkg/datastore/utils"
+
+	datastore "github.com/keptn/go-utils/pkg/mongodb-datastore/utils"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
+
 	"github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations/event"
+	"github.com/keptn/keptn/api/utils"
 	"github.com/keptn/keptn/api/ws"
 )
 

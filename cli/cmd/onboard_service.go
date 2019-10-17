@@ -131,9 +131,9 @@ Example:
 			}
 
 			return nil
-		} else {
-			fmt.Println("Skipping onboard service due to mocking flag set to true")
-		}
+		} 
+
+		fmt.Println("Skipping onboard service due to mocking flag set to true")
 		return nil
 	},
 }
