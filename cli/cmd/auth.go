@@ -44,7 +44,8 @@ Example:
 		if !mocking {
 			_, err := authHandler.Authenticate()
 			if err != nil {
-				logging.PrintLog("Authentication was unsuccessful", logging.QuietLevel)
+				errMsg := fmt.Sprintf("Authentication was unsuccessful. %s", *err.Message)
+				logging.PrintLog(errMsg, logging.QuietLevel)
 				return fmt.Errorf("Authentication was unsuccessful. %s", *err.Message)
 			}
 
