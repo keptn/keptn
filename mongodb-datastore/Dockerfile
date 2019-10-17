@@ -24,7 +24,7 @@ RUN apk add --no-cache ca-certificates
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /go/src/github.com/keptn/keptn/mongodb-datastore/cmd/mongodb-datastore-server/mongodb-datastore /mongodb-datastore
 COPY --from=builder /go/src/github.com/keptn/keptn/mongodb-datastore/swagger-ui /swagger-ui
-COPY --from=builder /go/src/github.com/keptn/keptn/mongodb-datastore/swagger.json /swagger-ui/swagger.json
+COPY --from=builder /go/src/github.com/keptn/keptn/mongodb-datastore/swagger.yaml /swagger-ui/swagger.yaml
 ADD MANIFEST /
 
 # Run the web service on container startup.
