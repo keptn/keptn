@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: api
-          image: jbraeuer/api:0.0.7
+          image: keptn/api:latest
           ports:
             - containerPort: 8080
           resources:
