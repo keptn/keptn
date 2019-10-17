@@ -3,11 +3,11 @@ package cmd
 import (
 	"bytes"
 	"fmt"
-	"github.com/keptn/keptn/cli/utils/credentialmanager"
 	"os"
 	"testing"
 
 	"github.com/keptn/keptn/cli/pkg/logging"
+	"github.com/keptn/keptn/cli/utils/credentialmanager"
 )
 
 func init() {

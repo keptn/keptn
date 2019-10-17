@@ -416,27 +416,29 @@
   version = "v1.4.0"
 
 [[projects]]
-  digest = "1:709cd2a2c29cc9b89732f6c24846bbb9d6270f28ef5ef2128cc73bd0d6d7bff9"
+  digest = "1:beb5b4f42a25056f0aa291b5eadd21e2f2903a05d15dfe7caf7eaee7e12fa972"
   name = "github.com/json-iterator/go"
   packages = ["."]
   pruneopts = "UT"
-  revision = "27518f6661eba504be5a7a9a9f6d9460d892ade3"
-  version = "v1.1.7"
+  revision = "03217c3e97663914aec3faafde50d081f197a0a2"
+  version = "1.1.8"
 
 [[projects]]
   branch = "feature/949/start-evaluation-support"
-  digest = "1:1b896b29131a7a4575e372079205dca6383eae3a75d2c56448cc73b1e6a07177"
+  digest = "1:0b8b2008309f7bf7c7694979538e6590455ba21c7d1563e65bb82b42385e5529"
   name = "github.com/keptn/go-utils"
   packages = [
     "pkg/api/models",
-    "pkg/datastore/models",
-    "pkg/datastore/utils",
+    "pkg/configuration-service/models",
+    "pkg/configuration-service/utils",
     "pkg/events",
     "pkg/models",
+    "pkg/mongodb-datastore/models",
+    "pkg/mongodb-datastore/utils",
     "pkg/utils",
   ]
   pruneopts = "UT"
-  revision = "97fe21c7822e5f4071913746e8388722501a4b9b"
+  revision = "fc56a4da8dc675d14cf8742dae49354310580e99"
 
 [[projects]]
   digest = "1:fd7f169f32c221b096c74e756bda16fe22d3bb448bbf74042fd0700407a1f92f"
@@ -1051,9 +1053,9 @@
     "github.com/google/uuid",
     "github.com/gorilla/websocket",
     "github.com/jessevdk/go-flags",
-    "github.com/keptn/go-utils/pkg/datastore/utils",
     "github.com/keptn/go-utils/pkg/events",
     "github.com/keptn/go-utils/pkg/models",
+    "github.com/keptn/go-utils/pkg/mongodb-datastore/utils",
     "github.com/keptn/go-utils/pkg/utils",
     "github.com/magiconair/properties/assert",
     "golang.org/x/net/netutil",

@@ -65,9 +65,9 @@ Example:
 			}
 
 			return nil
-		} else {
-			fmt.Println("Skipping delete project due to mocking flag set to true")
-		}
+		} 
+
+		fmt.Println("Skipping delete project due to mocking flag set to true")
 		return nil
 	},
 }

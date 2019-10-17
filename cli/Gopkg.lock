@@ -463,27 +463,29 @@
   revision = "d14ea06fba99483203c19d92cfcd13ebe73135f4"
 
 [[projects]]
-  digest = "1:e716a02584d94519e2ccf7ac461c4028da736d41a58c1ed95e641c1603bdb056"
+  digest = "1:64bdeae058b988b2b198326b1ca6155497e904e697348d838add8a6e4c25842e"
   name = "github.com/json-iterator/go"
   packages = ["."]
   pruneopts = ""
-  revision = "27518f6661eba504be5a7a9a9f6d9460d892ade3"
-  version = "v1.1.7"
+  revision = "03217c3e97663914aec3faafde50d081f197a0a2"
+  version = "1.1.8"
 
 [[projects]]
   branch = "feature/949/start-evaluation-support"
-  digest = "1:6ad9a42bc4c58fbf35c5a4543f99af6933ce6de2246e14c0028c0be5c602daea"
+  digest = "1:1e95b68680ae2057667a40d526147e98261d8301ee689c9dfa721ed34da2451c"
   name = "github.com/keptn/go-utils"
   packages = [
     "pkg/api/models",
     "pkg/api/utils",
-    "pkg/datastore/models",
+    "pkg/configuration-service/models",
+    "pkg/configuration-service/utils",
     "pkg/events",
     "pkg/models",
+    "pkg/mongodb-datastore/models",
     "pkg/utils",
   ]
   pruneopts = ""
-  revision = "97fe21c7822e5f4071913746e8388722501a4b9b"
+  revision = "fc56a4da8dc675d14cf8742dae49354310580e99"
 
 [[projects]]
   digest = "1:91317956b340c9e61a4287fd94c870bfad3f1922280c3e0a65db91c29017e8de"

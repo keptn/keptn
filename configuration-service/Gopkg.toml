@@ -28,9 +28,9 @@
   name = "gopkg.in/yaml.v2"
   version = "2.2.2"
 
-[[constraint]]
+[[override]]
   name = "github.com/keptn/go-utils"
-  version = "0.2.1"
+  branch = "feature/949/start-evaluation-support"
 
 [[constraint]]
   name = "github.com/mholt/archiver"
