@@ -67,7 +67,7 @@ func PostServiceHandlerFunc(params service.PostProjectProjectNameServiceParams, 
 		Data: forwardData,
 	}
 
-	_, err = utils.PostToEventBroker(event)
+	_, _, err = utils.PostToEventBroker(event)
 	if err != nil {
 		l.Error(fmt.Sprintf("Error sending CloudEvent %s", err.Error()))
 		return getServiceInternalError(err)

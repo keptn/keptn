@@ -182,20 +182,20 @@
   version = "v0.19.3"
 
 [[projects]]
-  digest = "1:2367345ad7529f1116a54e138834d3081bf5d65688a8ce5eb2f16b64fbec7907"
+  digest = "1:9dbde8fb0423931f1c23610428cbdd351a0cd066891b4d43c620e0669ca2c3a9"
   name = "github.com/go-openapi/loads"
   packages = ["."]
   pruneopts = "UT"
-  revision = "c763e5411fc5c14c69d5d44f02b9d92e6f122d2c"
-  version = "v0.19.3"
+  revision = "bda4742c39071f7804171d847fb6e9bca84f9f57"
+  version = "v0.19.4"
 
 [[projects]]
-  digest = "1:ec6d89807fef4f4a78d7ce1ea6ef22f30b2efb974721e07773cf8c40e2e21d14"
+  digest = "1:12635fa258f5a48f8c92a45aabba421554c55564295f37303c60b7bdf17a0b96"
   name = "github.com/go-openapi/runtime"
   packages = ["."]
   pruneopts = "UT"
-  revision = "c909caa338861d0afbe126b6706e048e54e40f82"
-  version = "v0.19.6"
+  revision = "553c9d1fb273d9550562d9f76949a413af265138"
+  version = "v0.19.7"
 
 [[projects]]
   digest = "1:c150e7fc0e12aec7e8b4161e12a4ce3e875290a2cf13a7ef5eed314653866838"
@@ -222,12 +222,12 @@
   version = "v0.19.5"
 
 [[projects]]
-  digest = "1:efb940175dd4cc8dd47377a856a2b96c6de0a5f53851464119bb940db0578489"
+  digest = "1:683e8ed8f90886b6338ab90d12aa8f4111383506313173ef02ad0724608512b5"
   name = "github.com/go-openapi/validate"
   packages = ["."]
   pruneopts = "UT"
-  revision = "d8e712d21b877546d81182812b4a1ae10e42b03f"
-  version = "v0.19.3"
+  revision = "80d596e2af47cef147b636dfd76abce249d2b847"
+  version = "v0.19.4"
 
 [[projects]]
   digest = "1:586ea76dbd0374d6fb649a91d70d652b7fe0ccffb8910a77468e7702e7901f3d"
@@ -346,7 +346,7 @@
   version = "v0.3.1"
 
 [[projects]]
-  digest = "1:3c563b7444053b968b162acabb7efb06d7bdb7a0d39f7d5db3e2b10ce4ee7af4"
+  digest = "1:a10e92469ba0d1776fbceb287feefe5f69d3c579254ca4e14863f5f8c2712870"
   name = "github.com/gophercloud/gophercloud"
   packages = [
     ".",
@@ -358,8 +358,8 @@
     "pagination",
   ]
   pruneopts = "UT"
-  revision = "cf0980d0cbc9d8fd2f8923d04102fa19aa4fae69"
-  version = "v0.5.0"
+  revision = "a8bdb516e71d7c586306501b30b80f06f53c013e"
+  version = "v0.6.0"
 
 [[projects]]
   digest = "1:e62657cca9badaa308d86e7716083e4c5933bb78e30a17743fc67f50be26f6f4"
@@ -422,7 +422,7 @@
 
 [[projects]]
   branch = "feature/949/start-evaluation-support"
-  digest = "1:53a929d5ef1a2256fb9f5e4a2bedd8db12ad25f6b557dfbc94cb1a932c8034bf"
+  digest = "1:e56448a4cda594a4a0fa520a640fa50963c2abe94925acd9da4adc3513acd4a3"
   name = "github.com/keptn/go-utils"
   packages = [
     "pkg/api/models",
@@ -433,7 +433,7 @@
     "pkg/utils",
   ]
   pruneopts = "UT"
-  revision = "fc56a4da8dc675d14cf8742dae49354310580e99"
+  revision = "9fd69da633db745386f7ff45de4b79dad4436537"
 
 [[projects]]
   digest = "1:fd7f169f32c221b096c74e756bda16fe22d3bb448bbf74042fd0700407a1f92f"
@@ -749,7 +749,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:a21b8f13c27bde42c8b28fde8f4d3099ec4566747f398eeb8f4326db78baafc2"
+  digest = "1:ccd81361f3f0069550ad22853deeb693678db0cb7e0ca9e2ed3b10b3d06c1056"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
@@ -757,7 +757,7 @@
     "windows",
   ]
   pruneopts = "UT"
-  revision = "b09406accb4736d857a32bf9444cd7edae2ffa79"
+  revision = "727590c5006e77ca5247972f47e877f4929fc985"
 
 [[projects]]
   digest = "1:66a2f252a58b4fbbad0e4e180e1d85a83c222b6bce09c3dcdef3dc87c72eda7c"
@@ -1111,6 +1111,8 @@
     "github.com/google/uuid",
     "github.com/gorilla/websocket",
     "github.com/kelseyhightower/envconfig",
+    "github.com/keptn/go-utils/pkg/configuration-service/models",
+    "github.com/keptn/go-utils/pkg/configuration-service/utils",
     "github.com/keptn/go-utils/pkg/events",
     "github.com/keptn/go-utils/pkg/models",
     "github.com/keptn/go-utils/pkg/utils",
