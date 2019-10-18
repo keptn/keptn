@@ -20,11 +20,6 @@ import (
 	"github.com/keptn/keptn/api/ws"
 )
 
-type eventData struct {
-	models.Data `json:",inline"`
-	ChannelInfo models.ChannelInfo `json:"channelInfo"`
-}
-
 func PostEventHandlerFunc(params event.SendEventParams, principal *models.Principal) middleware.Responder {
 
 	keptnContext := uuid.New().String()
@@ -41,7 +36,7 @@ func PostEventHandlerFunc(params event.SendEventParams, principal *models.Princi
 
 	source, _ := url.Parse("https://github.com/keptn/keptn/api")
 
-	forwardData := eventData{Data: params.Body.Data, ChannelInfo: channelInfo}
+	forwardData := addChannelInfoInCE(params.Body.Data, channelInfo)
 
 	contentType := "application/json"
 	ev := cloudevents.Event{
@@ -66,4 +61,10 @@ func PostEventHandlerFunc(params event.SendEventParams, principal *models.Princi
 
 func getSendEventInternalError(err error) *event.SendEventDefault {
 	return event.NewSendEventDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+}
+
+func addChannelInfoInCE(ceData interface{}, channelInfo models.ChannelInfo) interface{} {
+
+	ceData.(map[string]interface{})["data"].(map[string]interface{})["channelInfo"] = channelInfo
+	return ceData
 }
