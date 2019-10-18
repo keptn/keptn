@@ -45,12 +45,14 @@ func PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(p
 			ResourceURI:     resource.ResourceURI,
 		})
 	}
+
 	_, err := resourceHandler.CreateServiceResources(params.ProjectName, params.StageName, params.ServiceName, resourcesToUpload)
 	if err != nil {
 		errorObj := &models.Error{}
 		json.Unmarshal([]byte(err.Error()), errorObj)
 		return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceDefault(500).WithPayload(errorObj)
 	}
+
 	return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceCreated()
 }
 

@@ -3,6 +3,7 @@ package cmd
 import (
 	"crypto/tls"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -52,30 +53,34 @@ Example:
 
 		logging.PrintLog("Adding resource "+*addResourceCmdParams.Resource+" to service "+*addResourceCmdParams.Service+" in stage "+*addResourceCmdParams.Stage+" in project "+*addResourceCmdParams.Project, logging.InfoLevel)
 
-		if *addResourceCmdParams.ResourceURI == "" {
-			addResourceCmdParams.ResourceURI = addResourceCmdParams.Resource
-		}
-		resources := []*apimodels.Resource{
-			&apimodels.Resource{
-				ResourceContent: &resourceContentStr,
-				ResourceURI:     addResourceCmdParams.ResourceURI,
-			},
+		if !mocking {
+			if *addResourceCmdParams.ResourceURI == "" {
+				addResourceCmdParams.ResourceURI = addResourceCmdParams.Resource
+			}
+			resources := []*apimodels.Resource{
+				&apimodels.Resource{
+					ResourceContent: &resourceContentStr,
+					ResourceURI:     addResourceCmdParams.ResourceURI,
+				},
+			}
+
+			tr := &http.Transport{
+				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+				DialContext:     utils.ResolveXipIoWithContext,
+			}
+
+			client := &http.Client{Transport: tr}
+			resourceHandler := apiutils.NewAuthenticatedResourceHandler(endPoint.Host, apiToken, "x-token", client, "https")
+
+			_, errorObj := resourceHandler.CreateServiceResources(*addResourceCmdParams.Project, *addResourceCmdParams.Stage, *addResourceCmdParams.Service, resources)
+			if errorObj != nil {
+				return errors.New("Resource " + *addResourceCmdParams.Resource + " could not be uploaded: " + *errorObj.Message)
+			}
+			logging.PrintLog("Resource has been uploaded.", logging.InfoLevel)
+			return nil
 		}
 
-		tr := &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-			DialContext:     utils.ResolveXipIoWithContext,
-		}
-
-		client := &http.Client{Transport: tr}
-		resourceHandler := apiutils.NewAuthenticatedResourceHandler(endPoint.Host, apiToken, "x-token", client, "https")
-
-		_, errorObj := resourceHandler.CreateServiceResources(*addResourceCmdParams.Project, *addResourceCmdParams.Stage, *addResourceCmdParams.Service, resources)
-		if errorObj != nil {
-			return errors.New("Resource " + *addResourceCmdParams.Resource + " could not be uploaded: " + *errorObj.Message)
-		}
-		logging.PrintLog("Resource has been uploaded.", logging.InfoLevel)
-
+		fmt.Println("Skipping add resource due to mocking flag set to true")
 		return nil
 	},
 }

@@ -66,14 +66,11 @@ func PostProjectHandlerFunc(params project.PostProjectParams, p *models.Principa
 		Data: forwardData,
 	}
 
-	_, err = utils.PostToEventBroker(event)
+	_, _, err = utils.PostToEventBroker(event)
 	if err != nil {
 		l.Error(fmt.Sprintf("Error sending CloudEvent %s", err.Error()))
 		return getProjectPostInternalError(err)
 	}
-
-	fmt.Println(*eventContext.KeptnContext)
-	fmt.Println(*eventContext.Token)
 
 	return project.NewPostProjectOK().WithPayload(&eventContext)
 }
@@ -114,7 +111,7 @@ func DeleteProjectProjectNameHandlerFunc(params project.DeleteProjectProjectName
 	}
 	event.Extensions()["shkeptncontext"] = keptnContext
 
-	_, err = utils.PostToEventBroker(event)
+	_, _, err = utils.PostToEventBroker(event)
 	if err != nil {
 		l.Error(fmt.Sprintf("Error sending CloudEvent %s", err.Error()))
 		return getProjectDeleteInternalError(err)
