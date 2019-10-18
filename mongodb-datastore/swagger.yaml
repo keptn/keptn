@@ -1,0 +1,199 @@
+---
+swagger: '2.0'
+info:
+  title: mongodb-datastore
+  version: 0.1.0
+schemes:
+  - http
+basePath: "/"
+consumes:
+  - application/cloudevents+json
+  - application/json
+produces:
+  - application/cloudevents+json
+  - application/json
+paths:
+  "/event":
+    post:
+      tags:
+        - event
+      operationId: saveEvent
+      summary: Saves an event to the datastore
+      parameters:
+        - name: body
+          in: body
+          schema:
+            "$ref": "#/definitions/KeptnContextExtendedCE"
+      responses:
+        '201':
+          description: created
+        default:
+          description: error
+          schema:
+            "$ref": "#/definitions/error"
+    get:
+      tags:
+        - event
+      operationId: getEvents
+      summary: Gets events from the data store
+      parameters:
+        - name: keptnContext
+          in: query
+          type: string
+          required: false
+          description: keptnContext of the events to get
+        - name: type
+          in: query
+          type: string
+          required: false
+          description: Type of the keptn cloud event
+        - name: project
+          in: query
+          type: string
+          required: false
+          description: Name of the project
+        - name: stage
+          in: query
+          type: string
+          required: false
+          description: Name of the stage
+        - name: service
+          in: query
+          type: string
+          required: false
+          description: Name of the service
+        - "$ref": "#/parameters/pagesizeParam"
+        - "$ref": "#/parameters/pageParam"
+      responses:
+        '200':
+          description: ok
+          schema:
+            type: object
+            properties:
+              nextPageKey:
+                type: string
+                description: Pointer to the next page
+              totalCount:
+                type: integer
+                description: Total number of events
+              pageSize:
+                type: integer
+                description: Size of the returned page
+              events:
+                type: array
+                items:
+                  "$ref": "#/definitions/KeptnContextExtendedCE"
+        default:
+          description: error
+          schema:
+            "$ref": "#/definitions/error"
+  "/log":
+    post:
+      tags:
+        - logs
+      operationId: saveLog
+      summary: Saves a log to the datastore
+      parameters:
+        - name: body
+          in: body
+          schema:
+            type: array
+            items:
+              "$ref": "#/definitions/LogEntry"
+      responses:
+        '201':
+          description: created
+        default:
+          description: error
+          schema:
+            "$ref": "#/definitions/error"
+    get:
+      tags:
+        - logs
+      operationId: getLogs
+      summary: gets the logs from the datastore
+      parameters:
+        - name: eventId
+          in: query
+          type: string
+          required: false
+          description: EventId of the event the logs belog to
+        - "$ref": "#/parameters/pagesizeParam"
+        - "$ref": "#/parameters/pageParam"
+      responses:
+        '200':
+          description: ok
+          schema:
+            type: object
+            properties:
+              nextPageKey:
+                type: string
+                description: Pointer to the next page
+              totalCount:
+                type: integer
+                description: Total number of logs
+              pageSize:
+                type: integer
+                description: Size of the returned page
+              logs:
+                type: array
+                items:
+                  "$ref": "#/definitions/LogEntry"
+        default:
+          description: error
+          schema:
+            "$ref": "#/definitions/error"
+parameters:
+  pagesizeParam:
+    name: pageSize
+    in: query
+    type: integer
+    required: false
+    default: 20
+    minimum: 1
+    maximum: 100
+    description: Page size to be returned
+  pageParam:
+    name: nextPageKey
+    in: query
+    type: string
+    required: false
+    description: Key of the page to be returned
+definitions:
+  KeptnContextExtendedCE:
+    allOf:
+      - "$ref": https://raw.githubusercontent.com/cloudevents/spec/v0.2/spec.json#/definitions/event
+      - type: object
+        properties:
+          shkeptncontext:
+            type: string
+  LogEntry:
+    type: object
+    properties:
+      timestamp:
+        type: string
+        format: date-time
+      keptnContext:
+        type: string
+      eventId:
+        type: string
+      keptnService:
+        type: string
+      message:
+        type: string
+      logLevel:
+        type: string
+  error:
+    type: object
+    required:
+      - message
+    properties:
+      code:
+        type: integer
+        format: int64
+      message:
+        type: string
+      fields:
+        type: string
+  principal:
+    type: string
