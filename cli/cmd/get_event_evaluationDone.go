@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -71,7 +72,8 @@ Example:
 				return nil
 			}
 
-			fmt.Println("print Event")
+			event, _ := json.Marshal(evaluationDoneEvt)
+			fmt.Println(string(event))
 
 		} else {
 			fmt.Println("Skipping send evaluation-start due to mocking flag set to true")

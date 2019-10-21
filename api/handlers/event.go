@@ -73,7 +73,6 @@ func GetEventHandlerFunc(params event.GetEventParams, principal *models.Principa
 	}
 
 	if cloudEvent == nil {
-		fmt.Println("no CloudEvent found ")
 		return sendInternalGetError(fmt.Errorf("no " + *params.Type + " event found"))
 	}
 
@@ -82,15 +81,11 @@ func GetEventHandlerFunc(params event.GetEventParams, principal *models.Principa
 		return sendInternalGetError(err)
 	}
 
-	fmt.Println("before ")
-
 	apiEvent := &models.Event{}
 	err = json.Unmarshal(eventByte, apiEvent)
 	if err != nil {
 		return sendInternalGetError(err)
 	}
-
-	fmt.Println("after ")
 
 	return event.NewGetEventOK().WithPayload(apiEvent)
 }

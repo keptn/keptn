@@ -215,12 +215,12 @@
   version = "v0.19.7"
 
 [[projects]]
-  digest = "1:c150e7fc0e12aec7e8b4161e12a4ce3e875290a2cf13a7ef5eed314653866838"
+  digest = "1:55d1c09fc8b3320b6842565249a9e4d0f363bead6f9b8be05c3b47f2c4264eda"
   name = "github.com/go-openapi/spec"
   packages = ["."]
   pruneopts = "UT"
-  revision = "2223ab324566e4ace63ab69b9c8fff1b81a40eeb"
-  version = "v0.19.3"
+  revision = "8557d72e4f077c2dbe1e48df09e596b6fb9b7991"
+  version = "v0.19.4"
 
 [[projects]]
   digest = "1:787b399bfeddd801aca6144bd9928f4fe1d40eadcb09c59fcbd421cc528ea11c"
@@ -425,7 +425,7 @@
 
 [[projects]]
   branch = "feature/949/start-evaluation-support"
-  digest = "1:0b8b2008309f7bf7c7694979538e6590455ba21c7d1563e65bb82b42385e5529"
+  digest = "1:92988ea777d20f9b27a7b115da9a7effa8d7f004be995570f50f4afe95693da0"
   name = "github.com/keptn/go-utils"
   packages = [
     "pkg/api/models",
@@ -438,7 +438,7 @@
     "pkg/utils",
   ]
   pruneopts = "UT"
-  revision = "b604e008c1f9891bce3287c24ab984b040cc20fb"
+  revision = "bc6432d7c0072af328451cb7496ddc13d8177cdc"
 
 [[projects]]
   digest = "1:fd7f169f32c221b096c74e756bda16fe22d3bb448bbf74042fd0700407a1f92f"
@@ -697,7 +697,7 @@
     "proxy",
   ]
   pruneopts = "UT"
-  revision = "da9a3fd4c5820e74b24a6cb7fb438dc9b0dd377c"
+  revision = "ec77196f6094c3492a8b61f2c11cf937f78992ae"
 
 [[projects]]
   branch = "master"
@@ -715,7 +715,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:ccd81361f3f0069550ad22853deeb693678db0cb7e0ca9e2ed3b10b3d06c1056"
+  digest = "1:2d4ef744498218d6d0e966e7094911d9a76616ed49c78b54d0697e482fb69b1c"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
@@ -723,7 +723,7 @@
     "windows",
   ]
   pruneopts = "UT"
-  revision = "727590c5006e77ca5247972f47e877f4929fc985"
+  revision = "3e7259c5e7c2076bb2728047a3df75adb1bad8e5"
 
 [[projects]]
   digest = "1:66a2f252a58b4fbbad0e4e180e1d85a83c222b6bce09c3dcdef3dc87c72eda7c"
