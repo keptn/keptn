@@ -12,7 +12,7 @@ The endpoints are implemented in a REST-api manner. More information can be foun
 
 If the `swagger.json` is updated with new endpoints or models, generate the new source by executing:
 ```console
-swagger generate server -A mongodb-datastore -f ./swagger.json --with-expand
+swagger generate server -A mongodb-datastore -f ./swagger.yaml --with-expand
 ```
 
 ### View swagger docs

@@ -50,12 +50,15 @@ before_install:
 - GIT_SHA="$(git rev-parse --short HEAD)"
 - REGISTRY_USER=jbraeuer
 
-# ensure COMMIT_RANGE works for non-pull-requests too (TRAVIS_COMMIT_RANGE and force pushes are evil)
-- if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then COMMIT_RANGE=$TRAVIS_COMMIT_RANGE; else COMMIT_RANGE="origin/develop...$TRAVIS_BRANCH"; fi;
-# store all changed files from the commit (we are not using TRAVIS_COMMIT_RANGE, as this fails for force pushes)
-- git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
-- git fetch origin develop
-- git diff --name-only $COMMIT_RANGE > files.txt
+# store all changed files from this commit in files.txt (careful - travis commit range might fail)
+- git diff --name-only $TRAVIS_COMMIT_RANGE > files.txt || echo "" 
+# for non pull requests, use another type of commit range in addition
+- |
+  if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
+    git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
+    git fetch origin develop
+    git diff --name-only origin/develop...$TRAVIS_BRANCH >> files.txt
+  fi
 - cat files.txt
 - CHANGED_FILES=$(tr '\n' , < files.txt)
 
@@ -95,6 +98,48 @@ before_install:
 
 jobs:
   include:
+  # nightly image builds - build all images
+  - stage: nightly
+    if: branch = develop and type = cron
+    os: linux
+    services:
+      - docker
+    script:
+    - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
+    - ./writeManifest.sh
+    - cat MANIFEST
+    - source ./travis-scripts/build_develop.sh "${API_IMAGE}" "${API_FOLDER}" "${GIT_SHA}" "${DATE}"
+    - cd ..
+    - source ./travis-scripts/build_develop.sh "${OS_ROUTE_SVC_IMAGE}" "${OS_ROUTE_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
+    - cd ../..
+    - source ./travis-scripts/build_develop.sh "${PITOMETER_SVC_IMAGE}" "${PITOMETER_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
+    - cd ..
+    - source ./travis-scripts/build_develop.sh "${BRIDGE_IMAGE}" "${BRIDGE_FOLDER}" "${GIT_SHA}" "${DATE}"
+    - cd ..
+    - source ./travis-scripts/build_develop.sh "${JMETER_SVC_IMAGE}" "${JMETER_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
+    - cd ..
+    - source ./travis-scripts/build_develop.sh "${HELM_SVC_IMAGE}" "${HELM_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
+    - cd ..
+    - source ./travis-scripts/build_develop.sh "${GATEKEEPER_SVC_IMAGE}" "${GATEKEEPER_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
+    - cd ..
+    - source ./travis-scripts/build_develop.sh "${DISTRIBUTOR_IMAGE}" "${DISTRIBUTOR_FOLDER}" "${GIT_SHA}" "${DATE}"
+    - cd ..
+    - source ./travis-scripts/build_develop.sh "${EVENTBROKER_IMAGE}" "${EVENTBROKER_FOLDER}" "${GIT_SHA}" "${DATE}"
+    - cd ..
+    - source ./travis-scripts/build_develop.sh "${SHIPYARD_SVC_IMAGE}" "${SHIPYARD_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
+    - cd ..
+    - source ./travis-scripts/build_develop.sh "${CONFIGURATION_SVC_IMAGE}" "${CONFIGURATION_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
+    - cd ..
+    - source ./travis-scripts/build_develop.sh "${REMEDIATION_SVC_IMAGE}" "${REMEDIATION_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
+    - cd ..
+    - source ./travis-scripts/build_develop.sh "${WAIT_SVC_IMAGE}" "${WAIT_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
+    - cd ..
+    - source ./travis-scripts/build_develop.sh "${MONGODB_DS_IMAGE}" "${MONGODB_DS_FOLDER}" "${GIT_SHA}" "${DATE}"
+    - cd ..
+    - source ./travis-scripts/build_develop.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${GIT_SHA}" "${DATE}"
+    - cd ..
+      ### ATTENTION: please make sure installer is always the last in this list to be built
+
 
   - stage: cron
     if: branch = develop AND type = cron

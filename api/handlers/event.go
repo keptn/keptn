@@ -22,12 +22,6 @@ import (
 	"github.com/keptn/keptn/api/ws"
 )
 
-type eventData struct {
-	models.Data  `json:",inline"`
-	EventContext models.EventContext `json:"eventContext"`
-}
-
-// PostEventHandlerFunc forwards a received event to the event broker
 func PostEventHandlerFunc(params event.SendEventParams, principal *models.Principal) middleware.Responder {
 
 	keptnContext := uuid.New().String()
@@ -40,10 +34,11 @@ func PostEventHandlerFunc(params event.SendEventParams, principal *models.Princi
 		return sendInternalError(err)
 	}
 
-	source, _ := url.Parse("https://github.com/keptn/keptn/api")
-	contentType := "application/json"
 	eventContext := models.EventContext{KeptnContext: &keptnContext, Token: &token}
-	forwardData := eventData{Data: params.Body.Data, EventContext: eventContext}
+
+	source, _ := url.Parse("https://github.com/keptn/keptn/api")
+	forwardData := addEventContextInCE(params.Body.Data, eventContext)
+	contentType := "application/json"
 
 	ev := cloudevents.Event{
 		Context: cloudevents.EventContextV02{
@@ -84,6 +79,12 @@ func GetEventHandlerFunc(params event.GetEventParams, principal *models.Principa
 
 func sendInternalError(err error) *event.SendEventDefault {
 	return event.NewSendEventDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+}
+
+func addEventContextInCE(ceData interface{}, eventContext models.EventContext) interface{} {
+
+	ceData.(map[string]interface{})["data"].(map[string]interface{})["eventContext"] = eventContext
+	return ceData
 }
 
 func getDatastoreURL() string {
