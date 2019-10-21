@@ -11,15 +11,15 @@ import (
 	golangswaggerpaths "path"
 )
 
-// SendEventURL generates an URL for the send event operation
-type SendEventURL struct {
+// PostEventURL generates an URL for the post event operation
+type PostEventURL struct {
 	_basePath string
 }
 
 // WithBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *SendEventURL) WithBasePath(bp string) *SendEventURL {
+func (o *PostEventURL) WithBasePath(bp string) *PostEventURL {
 	o.SetBasePath(bp)
 	return o
 }
@@ -27,12 +27,12 @@ func (o *SendEventURL) WithBasePath(bp string) *SendEventURL {
 // SetBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *SendEventURL) SetBasePath(bp string) {
+func (o *PostEventURL) SetBasePath(bp string) {
 	o._basePath = bp
 }
 
 // Build a url path and query string
-func (o *SendEventURL) Build() (*url.URL, error) {
+func (o *PostEventURL) Build() (*url.URL, error) {
 	var _result url.URL
 
 	var _path = "/event"
@@ -47,7 +47,7 @@ func (o *SendEventURL) Build() (*url.URL, error) {
 }
 
 // Must is a helper function to panic when the url builder returns an error
-func (o *SendEventURL) Must(u *url.URL, err error) *url.URL {
+func (o *PostEventURL) Must(u *url.URL, err error) *url.URL {
 	if err != nil {
 		panic(err)
 	}
@@ -58,17 +58,17 @@ func (o *SendEventURL) Must(u *url.URL, err error) *url.URL {
 }
 
 // String returns the string representation of the path with query string
-func (o *SendEventURL) String() string {
+func (o *PostEventURL) String() string {
 	return o.Must(o.Build()).String()
 }
 
 // BuildFull builds a full url with scheme, host, path and query string
-func (o *SendEventURL) BuildFull(scheme, host string) (*url.URL, error) {
+func (o *PostEventURL) BuildFull(scheme, host string) (*url.URL, error) {
 	if scheme == "" {
-		return nil, errors.New("scheme is required for a full url on SendEventURL")
+		return nil, errors.New("scheme is required for a full url on PostEventURL")
 	}
 	if host == "" {
-		return nil, errors.New("host is required for a full url on SendEventURL")
+		return nil, errors.New("host is required for a full url on PostEventURL")
 	}
 
 	base, err := o.Build()
@@ -82,6 +82,6 @@ func (o *SendEventURL) BuildFull(scheme, host string) (*url.URL, error) {
 }
 
 // StringFull returns the string representation of a complete url
-func (o *SendEventURL) StringFull(scheme, host string) string {
+func (o *PostEventURL) StringFull(scheme, host string) string {
 	return o.Must(o.BuildFull(scheme, host)).String()
 }

@@ -13,40 +13,40 @@ import (
 	models "github.com/keptn/keptn/api/models"
 )
 
-// SendEventHandlerFunc turns a function with the right signature into a send event handler
-type SendEventHandlerFunc func(SendEventParams, *models.Principal) middleware.Responder
+// PostEventHandlerFunc turns a function with the right signature into a post event handler
+type PostEventHandlerFunc func(PostEventParams, *models.Principal) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn SendEventHandlerFunc) Handle(params SendEventParams, principal *models.Principal) middleware.Responder {
+func (fn PostEventHandlerFunc) Handle(params PostEventParams, principal *models.Principal) middleware.Responder {
 	return fn(params, principal)
 }
 
-// SendEventHandler interface for that can handle valid send event params
-type SendEventHandler interface {
-	Handle(SendEventParams, *models.Principal) middleware.Responder
+// PostEventHandler interface for that can handle valid post event params
+type PostEventHandler interface {
+	Handle(PostEventParams, *models.Principal) middleware.Responder
 }
 
-// NewSendEvent creates a new http.Handler for the send event operation
-func NewSendEvent(ctx *middleware.Context, handler SendEventHandler) *SendEvent {
-	return &SendEvent{Context: ctx, Handler: handler}
+// NewPostEvent creates a new http.Handler for the post event operation
+func NewPostEvent(ctx *middleware.Context, handler PostEventHandler) *PostEvent {
+	return &PostEvent{Context: ctx, Handler: handler}
 }
 
-/*SendEvent swagger:route POST /event Event sendEvent
+/*PostEvent swagger:route POST /event Event postEvent
 
 Forwards the received event
 
 */
-type SendEvent struct {
+type PostEvent struct {
 	Context *middleware.Context
-	Handler SendEventHandler
+	Handler PostEventHandler
 }
 
-func (o *SendEvent) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
+func (o *PostEvent) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, rCtx, _ := o.Context.RouteInfo(r)
 	if rCtx != nil {
 		r = rCtx
 	}
-	var Params = NewSendEventParams()
+	var Params = NewPostEventParams()
 
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {

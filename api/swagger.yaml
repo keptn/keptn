@@ -34,7 +34,6 @@ paths:
     post:
       tags:
         - Event
-      operationId: sendEvent
       summary: Forwards the received event
       parameters:
         - name: body
