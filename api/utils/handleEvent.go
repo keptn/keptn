@@ -14,7 +14,7 @@ func getEventBrokerURL() string {
 }
 
 // PostToEventBroker makes a post request to the eventbroker
-func PostToEventBroker(event cloudevents.Event) (context.Context, *cloudevents.Event, error) {
+func PostToEventBroker(event cloudevents.Event) (*cloudevents.Event, error) {
 
 	t, err := cloudevents.NewHTTPTransport(
 		cloudevents.WithTarget(getEventBrokerURL()),
@@ -22,12 +22,12 @@ func PostToEventBroker(event cloudevents.Event) (context.Context, *cloudevents.E
 	)
 
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	c, err := cloudevents.NewClient(t)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	return c.Send(context.Background(), event)
 }

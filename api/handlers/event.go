@@ -53,7 +53,7 @@ func PostEventHandlerFunc(params event.PostEventParams, principal *models.Princi
 		Data: forwardData,
 	}
 
-	_, _, err = utils.PostToEventBroker(ev)
+	_, err = utils.PostToEventBroker(ev)
 	if err != nil {
 		l.Error(fmt.Sprintf("Error sending CloudEvent %s", err.Error()))
 		return sendInternalPostError(err)

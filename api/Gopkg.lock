@@ -79,16 +79,16 @@
   version = "v9"
 
 [[projects]]
-  digest = "1:078db1588b2eca641aadbfd9b5b913417d6a49c3af482c84688c9878d2880561"
+  digest = "1:afdd3095221c5ca4023d3c0e4f1813f9d1c5ece27735dba900fe859da52130e6"
   name = "github.com/cloudevents/sdk-go"
   packages = [
     ".",
     "pkg/cloudevents",
     "pkg/cloudevents/client",
+    "pkg/cloudevents/codec",
     "pkg/cloudevents/context",
     "pkg/cloudevents/datacodec",
     "pkg/cloudevents/datacodec/json",
-    "pkg/cloudevents/datacodec/text",
     "pkg/cloudevents/datacodec/xml",
     "pkg/cloudevents/observability",
     "pkg/cloudevents/transport",
@@ -96,7 +96,8 @@
     "pkg/cloudevents/types",
   ]
   pruneopts = "UT"
-  revision = "b0ed3376c113528ca45911a44eac70307912b318"
+  revision = "56931988abe3adf6792b5c6e575ee5f573e9ccbc"
+  version = "0.7.0"
 
 [[projects]]
   digest = "1:ec66ad050342a3573ed2f5a4337d51b4c6d5d2a717cc6c9ecf86b081235a5759"
@@ -446,6 +447,14 @@
   pruneopts = "UT"
   revision = "6cfae18c12b8934b1afba3ce8159476fdef666ba"
   version = "1.0"
+
+[[projects]]
+  digest = "1:e4dfaf9ab09eca130e78acbcad4f938cd4a6e0d11c0b95e5074cc82185c55dfa"
+  name = "github.com/kinbiko/jsonassert"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "c775cc20ec527cb4016367c7dd0e92509db5da5a"
+  version = "v1.0.1"
 
 [[projects]]
   digest = "1:41b00533ad3d8b3f54b6a02fc093b211feeffb068a3148a7e7084cd7aeef18ec"
@@ -1057,6 +1066,7 @@
     "github.com/keptn/go-utils/pkg/events",
     "github.com/keptn/go-utils/pkg/mongodb-datastore/utils",
     "github.com/keptn/go-utils/pkg/utils",
+    "github.com/kinbiko/jsonassert",
     "github.com/magiconair/properties/assert",
     "golang.org/x/net/netutil",
   ]
