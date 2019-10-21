@@ -125,6 +125,30 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event,
 		}
 	}
 
+	if len(e.FileChangesUserChart) > 0 {
+		ch, err := c.updateChart(e, false, changeUserChart)
+		if err != nil {
+			c.logger.Error(err.Error())
+			return err
+		}
+		if _, err := c.ApplyChart(ch, e.Project, e.Stage, e.Service, false); err != nil {
+			c.logger.Error(err.Error())
+			return err
+		}
+	}
+
+	if len(e.FileChangesGeneratedChart) > 0 {
+		ch, err := c.updateChart(e, true, changeGeneratedChart)
+		if err != nil {
+			c.logger.Error(err.Error())
+			return err
+		}
+		if _, err := c.ApplyChart(ch, e.Project, e.Stage, e.Service, true); err != nil {
+			c.logger.Error(err.Error())
+			return err
+		}
+	}
+
 	// Change canary
 	if e.Canary != nil {
 		c.logger.Debug(fmt.Sprintf("Canary action %s for service %s in stage %s of project %s was received",
@@ -177,6 +201,37 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event,
 		}
 	}
 
+	return nil
+}
+
+func changeUserChart(e *keptnevents.ConfigurationChangeEventData, chart *chart.Chart) error {
+	return applyFileChanges(e.FileChangesUserChart, chart)
+}
+
+func changeGeneratedChart(e *keptnevents.ConfigurationChangeEventData, chart *chart.Chart) error {
+	return applyFileChanges(e.FileChangesGeneratedChart, chart)
+}
+
+func applyFileChanges(newFileContent map[string]string, ch *chart.Chart) error {
+
+	for _, template := range ch.Templates {
+		if val, ok := newFileContent[template.Name]; ok {
+			template.Data = []byte(val)
+			delete(newFileContent, template.Name)
+		}
+	}
+
+	for uri, content := range newFileContent {
+		if strings.HasPrefix(uri, "templates/") {
+			// Add a new file to templates/
+			template := &chart.Template{Name: uri, Data: []byte(content)}
+			ch.Templates = append(ch.Templates, template)
+		} else if uri == "values.yaml" {
+			ch.Values.Raw = content
+		} else {
+			return errors.New(fmt.Sprintf("Unsupported update of file %s", uri))
+		}
+	}
 	return nil
 }
 
