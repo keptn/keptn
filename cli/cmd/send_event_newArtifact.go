@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -25,9 +26,10 @@ import (
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 	"github.com/google/uuid"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	keptnevents "github.com/keptn/go-utils/pkg/events"
 	"github.com/keptn/keptn/cli/pkg/logging"
-	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
 	"github.com/keptn/keptn/cli/utils/websockethelper"
 	"github.com/spf13/cobra"
@@ -82,7 +84,7 @@ Example:
 
 		source, _ := url.Parse("https://github.com/keptn/keptn/cli#configuration-change")
 		contentType := "application/json"
-		event := cloudevents.Event{
+		sdkEvent := cloudevents.Event{
 			Context: cloudevents.EventContextV02{
 				ID:          uuid.New().String(),
 				Type:        keptnevents.ConfigurationChangeEventType,
@@ -92,23 +94,26 @@ Example:
 			Data: configChangedEvent,
 		}
 
-		eventURL := endPoint
-		eventURL.Path = "v1/event"
+		eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, "https")
+		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
-		logging.PrintLog(fmt.Sprintf("Connecting to server %s", eventURL.String()), logging.VerboseLevel)
+		eventByte, err := sdkEvent.MarshalJSON()
+		apiEvent := apimodels.Event{}
+		json.Unmarshal(eventByte, &apiEvent)
+
 		if !mocking {
-			_, response, err := utils.Send(eventURL, event, apiToken)
+			channelInfo, err := eventHandler.SendEvent(apiEvent)
 			if err != nil {
 				logging.PrintLog("Send new-artifact was unsuccessful", logging.QuietLevel)
-				return err
+				return fmt.Errorf("Send new-artifact was unsuccessful. %s", *err.Message)
 			}
 
-			if response == nil {
-				logging.PrintLog("Response is nil", logging.QuietLevel)
-				return nil
+			// if ChannelInfo is available, open WebSocket communication
+			if channelInfo != nil {
+				return websockethelper.PrintWSContentEventContext(channelInfo, endPoint)
 			}
 
-			return websockethelper.PrintWSContentCEResponse(response, endPoint)
+			return nil
 		}
 
 		fmt.Println("Skipping send new-artifact due to mocking flag set to true")

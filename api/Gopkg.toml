@@ -41,9 +41,9 @@
   name =  "github.com/Azure/go-autorest"
   revision = "bca49d5b51a50dc5bb17bbf6204c711c6dbded06"
 
-[[override]]
+[[constraint]]
   name = "github.com/cloudevents/sdk-go"
-  revision = "b0ed3376c113528ca45911a44eac70307912b318"
+  version = "0.7.0"
 
 [prune]
   go-tests = true

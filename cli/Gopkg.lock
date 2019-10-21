@@ -83,15 +83,11 @@
   name = "github.com/cloudevents/sdk-go"
   packages = [
     "pkg/cloudevents",
-    "pkg/cloudevents/client",
-    "pkg/cloudevents/context",
     "pkg/cloudevents/datacodec",
     "pkg/cloudevents/datacodec/json",
     "pkg/cloudevents/datacodec/text",
     "pkg/cloudevents/datacodec/xml",
     "pkg/cloudevents/observability",
-    "pkg/cloudevents/transport",
-    "pkg/cloudevents/transport/http",
     "pkg/cloudevents/types",
   ]
   pruneopts = ""
@@ -226,12 +222,12 @@
   version = "v0.19.7"
 
 [[projects]]
-  digest = "1:3697981d0c0ed6a7499642163b576705d670f11498ea16c8a332bb95e8514ca5"
+  digest = "1:4b44076c920b8d25526a6c492b886e79a41a09164021a614aae8f6aeb42721bd"
   name = "github.com/go-openapi/spec"
   packages = ["."]
   pruneopts = ""
-  revision = "2223ab324566e4ace63ab69b9c8fff1b81a40eeb"
-  version = "v0.19.3"
+  revision = "8557d72e4f077c2dbe1e48df09e596b6fb9b7991"
+  version = "v0.19.4"
 
 [[projects]]
   digest = "1:35dabc22cec2c6b23b0a446b34c2bcff40f72b64e0d5ed1c9ee06729d7d0e100"
@@ -471,7 +467,7 @@
 
 [[projects]]
   branch = "feature/949/start-evaluation-support"
-  digest = "1:67b6d88cc4ad1b9b6bb8f49a0dfcfd6be96f5cd3306e4abb0727b0f61a0493ab"
+  digest = "1:6453796235d9d28e3a9ed0a0c5b25778ec6beeeb3bab58d4c90930f1f3ba61fb"
   name = "github.com/keptn/go-utils"
   packages = [
     "pkg/api/models",
@@ -484,7 +480,7 @@
     "pkg/utils",
   ]
   pruneopts = ""
-  revision = "ef87a9f0950d8ce6874c66dd2a31416bf56b73a8"
+  revision = "57dd4cc56e418da8ceeccf47a8e60a9bb76ca70a"
 
 [[projects]]
   digest = "1:91317956b340c9e61a4287fd94c870bfad3f1922280c3e0a65db91c29017e8de"
@@ -728,37 +724,6 @@
   version = "v0.22.1"
 
 [[projects]]
-  digest = "1:e6ff7840319b6fda979a918a8801005ec2049abca62af19211d96971d8ec3327"
-  name = "go.uber.org/atomic"
-  packages = ["."]
-  pruneopts = ""
-  revision = "df976f2515e274675050de7b3f42545de80594fd"
-  version = "v1.4.0"
-
-[[projects]]
-  digest = "1:8fe76ce70e4077341d222a8a1040ac4d5ca66b23d5f58b446ba845a0c4c5884a"
-  name = "go.uber.org/multierr"
-  packages = ["."]
-  pruneopts = ""
-  revision = "71e610a0e48dbda460d9c18adca8b5f2de04a7c1"
-  version = "v1.2.0"
-
-[[projects]]
-  digest = "1:984e93aca9088b440b894df41f2043b6a3db8f9cf30767032770bfc4796993b0"
-  name = "go.uber.org/zap"
-  packages = [
-    ".",
-    "buffer",
-    "internal/bufferpool",
-    "internal/color",
-    "internal/exit",
-    "zapcore",
-  ]
-  pruneopts = ""
-  revision = "27376062155ad36be76b0f12cf1572a221d3a48c"
-  version = "v1.10.0"
-
-[[projects]]
   branch = "master"
   digest = "1:d709f6b44dffe11337b3730ebf5ae6bb1bc9273a1c204266921205158a5a523f"
   name = "golang.org/x/crypto"
@@ -819,7 +784,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:055771f25c4d6493a840af5cbdb8da461be2ec1192049dbaebd6ae1a8cbcdea0"
+  digest = "1:f7859b24c4f7a2c384c3d6ef5cdd15641e26a22b3649a52b0ac08d35e518a0de"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
@@ -827,7 +792,7 @@
     "windows",
   ]
   pruneopts = ""
-  revision = "b09406accb4736d857a32bf9444cd7edae2ffa79"
+  revision = "3e7259c5e7c2076bb2728047a3df75adb1bad8e5"
 
 [[projects]]
   digest = "1:740b51a55815493a8d0f2b1e0d0ae48fe48953bf7eaf3fcc4198823bf67768c0"
@@ -1149,8 +1114,6 @@
   analyzer-version = 1
   input-imports = [
     "github.com/cloudevents/sdk-go/pkg/cloudevents",
-    "github.com/cloudevents/sdk-go/pkg/cloudevents/client",
-    "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http",
     "github.com/cloudevents/sdk-go/pkg/cloudevents/types",
     "github.com/docker/docker-credential-helpers/credentials",
     "github.com/docker/docker-credential-helpers/osxkeychain",
