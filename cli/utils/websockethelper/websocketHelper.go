@@ -12,26 +12,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/gorilla/websocket"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/utils"
 )
-
-// PrintWSContentCEResponse opens a websocket using the passed
-// connection data (in form of a cloud event) and prints status data
-func PrintWSContentCEResponse(responseCE *cloudevents.Event, apiEndPoint url.URL) error {
-
-	connectionData := &keptnutils.ConnectionData{}
-	err := responseCE.DataAs(connectionData)
-
-	if err != nil {
-		return err
-	}
-	return printWSContent(*connectionData, apiEndPoint)
-}
 
 // PrintWSContentEventContext opens a websocket using the passed
 // connection data and prints status data

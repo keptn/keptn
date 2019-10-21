@@ -98,8 +98,7 @@ Example:
 				return nil
 			}
 
-			fmt.Println(responseEvent)
-
+			fmt.Println("The keptn context is: " + *responseEvent.KeptnContext)
 			return nil
 		}
 

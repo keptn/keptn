@@ -41,6 +41,11 @@ Example:
 	keptn get event evaluation-done --keptn-context 1234-5678-90`,
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
+
+		if *evaluationDone.KeptnContext == "" {
+			return errors.New("Specify a keptn context")
+		}
+
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -55,7 +60,7 @@ Example:
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
-			evaluationDoneEvt, err := eventHandler.GetEvent("", keptnevents.EvaluationDoneEventType)
+			evaluationDoneEvt, err := eventHandler.GetEvent(*evaluationDone.KeptnContext, keptnevents.EvaluationDoneEventType)
 			if err != nil {
 				logging.PrintLog("Get evaluation-done event was unsuccessful", logging.QuietLevel)
 				return fmt.Errorf("Get evaluation-done event was unsuccessful. %s", *err.Message)
@@ -76,7 +81,7 @@ Example:
 }
 
 func init() {
-	sendEventCmd.AddCommand(evaluationDoneCmd)
+	getEventCmd.AddCommand(evaluationDoneCmd)
 
 	evaluationDone.KeptnContext = evaluationDoneCmd.Flags().StringP("keptn-context", "", "",
 		"The ID of a Keptn context of an evaluation step")
