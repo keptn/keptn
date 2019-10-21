@@ -15,18 +15,18 @@ import (
 	models "github.com/keptn/keptn/api/models"
 )
 
-// NewSendEventParams creates a new SendEventParams object
+// NewPostEventParams creates a new PostEventParams object
 // no default values defined in spec.
-func NewSendEventParams() SendEventParams {
+func NewPostEventParams() PostEventParams {
 
-	return SendEventParams{}
+	return PostEventParams{}
 }
 
-// SendEventParams contains all the bound params for the send event operation
+// PostEventParams contains all the bound params for the post event operation
 // typically these are obtained from a http.Request
 //
-// swagger:parameters sendEvent
-type SendEventParams struct {
+// swagger:parameters PostEvent
+type PostEventParams struct {
 
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
@@ -40,8 +40,8 @@ type SendEventParams struct {
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
 // for simple values it will use straight method calls.
 //
-// To ensure default values, the struct must have been initialized with NewSendEventParams() beforehand.
-func (o *SendEventParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
+// To ensure default values, the struct must have been initialized with NewPostEventParams() beforehand.
+func (o *PostEventParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
 
 	o.HTTPRequest = r

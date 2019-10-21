@@ -95,7 +95,6 @@ func init() {
           "Event"
         ],
         "summary": "Forwards the received event",
-        "operationId": "sendEvent",
         "parameters": [
           {
             "name": "body",
@@ -462,7 +461,6 @@ func init() {
           "Event"
         ],
         "summary": "Forwards the received event",
-        "operationId": "sendEvent",
         "parameters": [
           {
             "name": "body",

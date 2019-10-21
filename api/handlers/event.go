@@ -22,7 +22,8 @@ import (
 	"github.com/keptn/keptn/api/ws"
 )
 
-func PostEventHandlerFunc(params event.SendEventParams, principal *models.Principal) middleware.Responder {
+// PostEventHandlerFunc forwards an event to the event broker
+func PostEventHandlerFunc(params event.PostEventParams, principal *models.Principal) middleware.Responder {
 
 	keptnContext := uuid.New().String()
 	l := keptnutils.NewLogger(keptnContext, "", "api")
@@ -31,13 +32,13 @@ func PostEventHandlerFunc(params event.SendEventParams, principal *models.Princi
 	token, err := ws.CreateChannelInfo(keptnContext)
 	if err != nil {
 		l.Error(fmt.Sprintf("Error creating channel info %s", err.Error()))
-		return sendInternalError(err)
+		return sendInternalPostError(err)
 	}
 
 	eventContext := models.EventContext{KeptnContext: &keptnContext, Token: &token}
 
 	source, _ := url.Parse("https://github.com/keptn/keptn/api")
-	forwardData := addEventContextInCE(params.Body.Data, eventContext)
+	forwardData := addEventContextInCE(params.Body, eventContext)
 	contentType := "application/json"
 
 	ev := cloudevents.Event{
@@ -55,10 +56,10 @@ func PostEventHandlerFunc(params event.SendEventParams, principal *models.Princi
 	_, _, err = utils.PostToEventBroker(ev)
 	if err != nil {
 		l.Error(fmt.Sprintf("Error sending CloudEvent %s", err.Error()))
-		return sendInternalError(err)
+		return sendInternalPostError(err)
 	}
 
-	return event.NewSendEventOK().WithPayload(&eventContext)
+	return event.NewPostEventOK().WithPayload(&eventContext)
 }
 
 // GetEventHandlerFunc returns an event specified by keptnContext and eventType
@@ -67,22 +68,26 @@ func GetEventHandlerFunc(params event.GetEventParams, principal *models.Principa
 
 	cloudEvent, err := eventHandler.GetEvent(*params.KeptnContext, *params.Type)
 	if err != nil {
-		return sendInternalError(fmt.Errorf("%s", err.Message))
+		return sendInternalGetError(fmt.Errorf("%s", err.Message))
 	}
 
 	fmt.Print(cloudEvent.Shkeptncontext)
 
-	//response := models.Event{}
+	response := &models.Event{}
+	//json.Unmarshal([]byte(cloudEvent), response)
 
-	return event.NewSendEventOK().WithPayload(nil)
+	return event.NewGetEventOK().WithPayload(response)
 }
 
-func sendInternalError(err error) *event.SendEventDefault {
-	return event.NewSendEventDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+func sendInternalPostError(err error) *event.PostEventDefault {
+	return event.NewPostEventDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+}
+
+func sendInternalGetError(err error) *event.GetEventDefault {
+	return event.NewGetEventDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 }
 
 func addEventContextInCE(ceData interface{}, eventContext models.EventContext) interface{} {
-
 	ceData.(map[string]interface{})["data"].(map[string]interface{})["eventContext"] = eventContext
 	return ceData
 }
