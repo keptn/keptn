@@ -38,7 +38,7 @@ func PostEventHandlerFunc(params event.PostEventParams, principal *models.Princi
 	eventContext := models.EventContext{KeptnContext: &keptnContext, Token: &token}
 
 	source, _ := url.Parse("https://github.com/keptn/keptn/api")
-	forwardData := addEventContextInCE(params.Body, eventContext)
+	forwardData := addEventContextInCE(params.Body.Data, eventContext)
 	contentType := "application/json"
 
 	ev := cloudevents.Event{
@@ -88,7 +88,7 @@ func sendInternalGetError(err error) *event.GetEventDefault {
 }
 
 func addEventContextInCE(ceData interface{}, eventContext models.EventContext) interface{} {
-	ceData.(map[string]interface{})["data"].(map[string]interface{})["eventContext"] = eventContext
+	ceData.(map[string]interface{})["eventContext"] = eventContext
 	return ceData
 }
 
