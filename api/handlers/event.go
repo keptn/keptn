@@ -65,6 +65,6 @@ func getSendEventInternalError(err error) *event.SendEventDefault {
 
 func addChannelInfoInCE(ceData interface{}, channelInfo models.ChannelInfo) interface{} {
 
-	ceData.(map[string]interface{})["data"].(map[string]interface{})["channelInfo"] = channelInfo
+	ceData.(map[string]interface{})["channelInfo"] = channelInfo
 	return ceData
 }
