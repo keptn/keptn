@@ -53,7 +53,8 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 	connData := keptnutils.ConnectionData{}
 	if err := event.DataAs(&connData); err != nil ||
-		connData.ChannelInfo.ChannelID == "" || connData.ChannelInfo.Token == "" {
+		connData.ChannelInfo.ChannelID == nil || connData.ChannelInfo.Token == nil ||
+		*connData.ChannelInfo.ChannelID == "" || *connData.ChannelInfo.Token == "" {
 		logger = stdLogger
 		logger.Debug("No Websocket connection data available")
 	} else {
