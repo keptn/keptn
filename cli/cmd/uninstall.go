@@ -61,9 +61,52 @@ var uninstallCmd = &cobra.Command{
 			}
 		}
 		logging.PrintLog("Successfully uninstalled keptn", logging.InfoLevel)
+		logging.PrintLog("Note: Please review the following namespaces and perform manual deletion if necessary:",
+			logging.InfoLevel)
+
+		namespaces, err := listAllNamespaces()
+
+		for _, namespace := range namespaces {
+			logging.PrintLog(" - " + namespace, logging.InfoLevel)
+			if namespace == "default" || namespace == "kube-public" {
+				// skip
+				logging.PrintLog("      Recommended Action: None (default namespace)", logging.InfoLevel)
+			} else if namespace == "kube-system" {
+				// we need to remove helm / tiller stuff
+				logging.PrintLog("      Recommended Action: Remove tiller/helm using", logging.InfoLevel)
+				logging.PrintLog("                          kubectl delete all -l app=helm -n kube-system", logging.InfoLevel)
+			} else if namespace == "istio-system" {
+				// istio is special, we will refer to the official uninstall docs
+				logging.PrintLog("      WARNING: Please consult the Istio Docs at https://istio.io/docs/setup/install/helm/#uninstall on how to remove istio completely from your cluster.", logging.InfoLevel)
+				logging.PrintLog("      Recommended action: kubectl delete namespace istio-system", logging.InfoLevel)
+			} else {
+				// just delete the namespace
+				logging.PrintLog(fmt.Sprintf("      WARNING: Please review this namespace in detail using 'kubectl get pods -n %s' before deleting it", namespace), logging.InfoLevel)
+				logging.PrintLog(fmt.Sprintf("      Recommended Action: kubectl delete namespace %s", namespace), logging.InfoLevel)
+			}
+		}
 
 		return nil
 	},
+}
+
+// returns a list of all namespaces
+func listAllNamespaces() ([]string, error) {
+	o := options{"get", "namespaces", "-o=jsonpath={.items[*].metadata.name}"}
+	o.appendIfNotEmpty(kubectlOptions)
+	out, err := keptnutils.ExecuteCommand("kubectl", o)
+
+	if err != nil {
+		return nil, err
+	}
+
+	out = strings.TrimSpace(out)
+	// split by spaces
+	arr := strings.Split(out, " ")
+	if out != "" {
+		logging.PrintLog(out, logging.VerboseLevel)
+	}
+	return arr, nil
 }
 
 func deleteKeptnInstallerPod(namespace string) error {
