@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/url"
 	"os"
@@ -66,17 +67,32 @@ func PostEventHandlerFunc(params event.PostEventParams, principal *models.Princi
 func GetEventHandlerFunc(params event.GetEventParams, principal *models.Principal) middleware.Responder {
 	eventHandler := datastore.NewEventHandler(getDatastoreURL())
 
-	cloudEvent, err := eventHandler.GetEvent(*params.KeptnContext, *params.Type)
-	if err != nil {
-		return sendInternalGetError(fmt.Errorf("%s", err.Message))
+	cloudEvent, errObj := eventHandler.GetEvent(*params.KeptnContext, *params.Type)
+	if errObj != nil {
+		return sendInternalGetError(fmt.Errorf("%s", errObj.Message))
 	}
 
-	fmt.Print(cloudEvent.Shkeptncontext)
+	if cloudEvent == nil {
+		fmt.Println("no CloudEvent found ")
+		return sendInternalGetError(fmt.Errorf("no " + *params.Type + " event found"))
+	}
 
-	response := &models.Event{}
-	//json.Unmarshal([]byte(cloudEvent), response)
+	eventByte, err := json.Marshal(cloudEvent)
+	if err != nil {
+		return sendInternalGetError(err)
+	}
 
-	return event.NewGetEventOK().WithPayload(response)
+	fmt.Println("before ")
+
+	apiEvent := &models.Event{}
+	err = json.Unmarshal(eventByte, apiEvent)
+	if err != nil {
+		return sendInternalGetError(err)
+	}
+
+	fmt.Println("after ")
+
+	return event.NewGetEventOK().WithPayload(apiEvent)
 }
 
 func sendInternalPostError(err error) *event.PostEventDefault {
