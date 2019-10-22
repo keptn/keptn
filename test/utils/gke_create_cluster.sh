@@ -1,5 +1,6 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
+# configure gcloud
 gcloud --quiet config set project $PROJECT_NAME
 gcloud --quiet config set container/cluster $CLUSTER_NAME_NIGHTLY
 gcloud --quiet config set compute/zone ${CLOUDSDK_COMPUTE_ZONE}
@@ -7,13 +8,7 @@ gcloud --quiet config set compute/zone ${CLOUDSDK_COMPUTE_ZONE}
 # clean up any nightly clusters
 clusters=$(gcloud container clusters list --zone $CLOUDSDK_COMPUTE_ZONE --project $PROJECT_NAME)
 if echo "$clusters" | grep $CLUSTER_NAME_NIGHTLY; then 
-    echo "First delete old keptn installation"
-    cd ./installer/scripts
-    echo "WARNING: Uninstallation is currently broken..."
-    ./common/uninstallKeptn.sh
-    cd ../..
-
-    echo "Start deleting nightly cluster"
+    echo "Deleting nightly cluster..."
     gcloud container clusters delete $CLUSTER_NAME_NIGHTLY --zone $CLOUDSDK_COMPUTE_ZONE --project $PROJECT_NAME --quiet
     echo "Finished deleting nigtly cluster"
 else 
@@ -27,44 +22,9 @@ if [[ $? != '0' ]]; then
     exit 1
 fi
 
+# get cluster credentials (this will set kubectl context)
 gcloud container clusters get-credentials $CLUSTER_NAME_NIGHTLY --zone $CLOUDSDK_COMPUTE_ZONE --project $PROJECT_NAME
 if [[ $? != '0' ]]; then
     echo "gcloud get credentials failed."
     exit 1
 fi
-
-# Install hub
-HUB_VERSION="v2.11.2"
-HUB_INSTALLER="hub-darwin-amd64-2.11.2"
-
-curl -L -s https://github.com/github/hub/releases/download/${HUB_VERSION}/${HUB_INSTALLER}.tgz  -o ${HUB_INSTALLER}.tgz
-tar xopf ${HUB_INSTALLER}.tgz
-sudo mv ${HUB_INSTALLER}/bin/hub /usr/local/bin/hub
-
-# Build and install keptn CLI
-cd cli/
-dep ensure
-go build -o keptn
-sudo mv keptn /usr/local/bin/keptn
-cd ..
-
-# Prepare creds.json file
-cd ./installer/scripts
-
-export GITU=$GITHUB_USER_NAME_NIGHTLY	
-export GITAT=$GITHUB_TOKEN_NIGHTLY	
-export CLN=$CLUSTER_NAME_NIGHTLY	
-export CLZ=$CLOUDSDK_COMPUTE_ZONE	
-export PROJ=$PROJECT_NAME	
-export GITO=$GITHUB_ORG_NIGHTLY	
-
-source ./gke/defineCredentialsHelper.sh
-replaceCreds
-
-# Install keptn
-keptn install --keptn-version=develop --creds=creds.json --verbose
-cd ../..
-
-# Execute end-to-end test
-cd test
-source ./testOnboarding.sh
