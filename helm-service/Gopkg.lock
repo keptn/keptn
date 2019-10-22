@@ -198,12 +198,12 @@
   version = "v0.19.7"
 
 [[projects]]
-  digest = "1:c150e7fc0e12aec7e8b4161e12a4ce3e875290a2cf13a7ef5eed314653866838"
+  digest = "1:55d1c09fc8b3320b6842565249a9e4d0f363bead6f9b8be05c3b47f2c4264eda"
   name = "github.com/go-openapi/spec"
   packages = ["."]
   pruneopts = "UT"
-  revision = "2223ab324566e4ace63ab69b9c8fff1b81a40eeb"
-  version = "v0.19.3"
+  revision = "8557d72e4f077c2dbe1e48df09e596b6fb9b7991"
+  version = "v0.19.4"
 
 [[projects]]
   digest = "1:787b399bfeddd801aca6144bd9928f4fe1d40eadcb09c59fcbd421cc528ea11c"
@@ -421,7 +421,7 @@
   version = "v1.4.0"
 
 [[projects]]
-  branch = "feature/949/start-evaluation-support"
+  branch = "develop"
   digest = "1:e56448a4cda594a4a0fa520a640fa50963c2abe94925acd9da4adc3513acd4a3"
   name = "github.com/keptn/go-utils"
   packages = [
@@ -433,7 +433,7 @@
     "pkg/utils",
   ]
   pruneopts = "UT"
-  revision = "9fd69da633db745386f7ff45de4b79dad4436537"
+  revision = "b35b59b7b1842974ee9dc2e6017bc4551dbe0f25"
 
 [[projects]]
   digest = "1:fd7f169f32c221b096c74e756bda16fe22d3bb448bbf74042fd0700407a1f92f"
@@ -674,7 +674,7 @@
   version = "v1.2.0"
 
 [[projects]]
-  digest = "1:676160e6a4722b08e0e26b11521d575c2cb2b6f0c679e1ee6178c5d8dee51e5e"
+  digest = "1:d1a4bd372aa90749095a151a43307449a65be3711fd19e6bf582cd5ed68813a6"
   name = "go.uber.org/zap"
   packages = [
     ".",
@@ -685,8 +685,8 @@
     "zapcore",
   ]
   pruneopts = "UT"
-  revision = "27376062155ad36be76b0f12cf1572a221d3a48c"
-  version = "v1.10.0"
+  revision = "0065243e7bbd958fab35324e41201f5eb682c527"
+  version = "v1.11.0"
 
 [[projects]]
   branch = "master"
@@ -731,7 +731,7 @@
     "proxy",
   ]
   pruneopts = "UT"
-  revision = "da9a3fd4c5820e74b24a6cb7fb438dc9b0dd377c"
+  revision = "ec77196f6094c3492a8b61f2c11cf937f78992ae"
 
 [[projects]]
   branch = "master"
@@ -749,7 +749,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:ccd81361f3f0069550ad22853deeb693678db0cb7e0ca9e2ed3b10b3d06c1056"
+  digest = "1:2d4ef744498218d6d0e966e7094911d9a76616ed49c78b54d0697e482fb69b1c"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
@@ -757,7 +757,7 @@
     "windows",
   ]
   pruneopts = "UT"
-  revision = "727590c5006e77ca5247972f47e877f4929fc985"
+  revision = "3e7259c5e7c2076bb2728047a3df75adb1bad8e5"
 
 [[projects]]
   digest = "1:66a2f252a58b4fbbad0e4e180e1d85a83c222b6bce09c3dcdef3dc87c72eda7c"

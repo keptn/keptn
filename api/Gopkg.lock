@@ -424,7 +424,7 @@
   version = "1.1.8"
 
 [[projects]]
-  branch = "feature/949/start-evaluation-support"
+  branch = "develop"
   digest = "1:92988ea777d20f9b27a7b115da9a7effa8d7f004be995570f50f4afe95693da0"
   name = "github.com/keptn/go-utils"
   packages = [
@@ -438,7 +438,7 @@
     "pkg/utils",
   ]
   pruneopts = "UT"
-  revision = "bc6432d7c0072af328451cb7496ddc13d8177cdc"
+  revision = "b35b59b7b1842974ee9dc2e6017bc4551dbe0f25"
 
 [[projects]]
   digest = "1:fd7f169f32c221b096c74e756bda16fe22d3bb448bbf74042fd0700407a1f92f"
@@ -639,7 +639,7 @@
   version = "v1.2.0"
 
 [[projects]]
-  digest = "1:676160e6a4722b08e0e26b11521d575c2cb2b6f0c679e1ee6178c5d8dee51e5e"
+  digest = "1:d1a4bd372aa90749095a151a43307449a65be3711fd19e6bf582cd5ed68813a6"
   name = "go.uber.org/zap"
   packages = [
     ".",
@@ -650,8 +650,8 @@
     "zapcore",
   ]
   pruneopts = "UT"
-  revision = "27376062155ad36be76b0f12cf1572a221d3a48c"
-  version = "v1.10.0"
+  revision = "0065243e7bbd958fab35324e41201f5eb682c527"
+  version = "v1.11.0"
 
 [[projects]]
   branch = "master"
