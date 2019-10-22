@@ -14,11 +14,14 @@ import (
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
 	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
+
+	configutils "github.com/keptn/go-utils/pkg/configuration-service/utils"
+	keptnevents "github.com/keptn/go-utils/pkg/events"
+	keptnutils "github.com/keptn/go-utils/pkg/utils"
+
 	"github.com/ghodss/yaml"
 	"github.com/google/uuid"
 	"github.com/kelseyhightower/envconfig"
-	keptnevents "github.com/keptn/go-utils/pkg/events"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
 )
 
 const configservice = "CONFIGURATION_SERVICE"
@@ -164,7 +167,7 @@ func doGateKeeping(event cloudevents.Event, shkeptncontext string, logger *keptn
 }
 
 func getNextStage(project string, currentStage string) (string, error) {
-	resourceHandler := keptnutils.NewResourceHandler(os.Getenv(configservice))
+	resourceHandler := configutils.NewResourceHandler(os.Getenv(configservice))
 	handler := keptnutils.NewKeptnHandler(resourceHandler)
 
 	shipyard, err := handler.GetShipyard(project)
