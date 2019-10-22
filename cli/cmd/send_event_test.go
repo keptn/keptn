@@ -42,7 +42,7 @@ func TestSendEvent(t *testing.T) {
 	const tmpCE = "ce.json"
 	err := ioutil.WriteFile(tmpCE, []byte(newArtifactEvent), 0644)
 	if err != nil {
-		log.Fatalf("An error occured %v", err)
+		log.Fatalf("An error occured: %v", err)
 	}
 
 	credentialmanager.MockAuthCreds = true
@@ -61,7 +61,7 @@ func TestSendEvent(t *testing.T) {
 	os.Remove(tmpCE)
 
 	if err != nil {
-		log.Fatalf("An error occured %v", err)
+		log.Fatalf("An error occured: %v", err)
 	}
 }
 
@@ -88,7 +88,7 @@ func TestSendEventAndOpenWebSocket(t *testing.T) {
 	const tmpCE = "ce.json"
 	err := ioutil.WriteFile(tmpCE, []byte(newArtifactEvent), 0644)
 	if err != nil {
-		log.Fatalf("An error occured %v", err)
+		log.Fatalf("An error occured: %v", err)
 	}
 
 	credentialmanager.MockAuthCreds = true
@@ -108,6 +108,6 @@ func TestSendEventAndOpenWebSocket(t *testing.T) {
 	os.Remove(tmpCE)
 
 	if err != nil {
-		log.Fatalf("An error occured %v", err)
+		log.Fatalf("An error occured: %v", err)
 	}
 }

@@ -29,7 +29,7 @@ var addResourceCmdParams *addResourceCommandParameters
 
 var addResourceCmd = &cobra.Command{
 	Use:   "add-resource --project=PROJECT --stage=STAGE --service=SERVICE --resource=FILEPATH --resourceUri=FILEPATH",
-	Short: "Adds a resource to a service within your project in the specified stage.",
+	Short: "Adds a resource to a service within your project in the specified stage",
 	Long: `Adds a resource to a service within your project in the specified stage.
 	
 Example: 
@@ -40,11 +40,12 @@ Example:
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
-		*addResourceCmdParams.Resource = keptnutils.ExpandTilde(*addResourceCmdParams.Resource)
 
+		*addResourceCmdParams.Resource = keptnutils.ExpandTilde(*addResourceCmdParams.Resource)
 		if !fileExists(*addResourceCmdParams.Resource) {
-			return errors.New("File " + *addResourceCmdParams.Resource + " not found in local file system")
+			return errors.New("File " + *addResourceCmdParams.Resource + " not found on local file system")
 		}
+
 		resourceContent, err := ioutil.ReadFile(*addResourceCmdParams.Resource)
 		resourceContentStr := string(resourceContent)
 		if err != nil {
@@ -71,11 +72,11 @@ Example:
 
 			client := &http.Client{Transport: tr}
 			resourceHandler := apiutils.NewAuthenticatedResourceHandler(endPoint.Host, apiToken, "x-token", client, "https")
-
 			_, errorObj := resourceHandler.CreateServiceResources(*addResourceCmdParams.Project, *addResourceCmdParams.Stage, *addResourceCmdParams.Service, resources)
 			if errorObj != nil {
 				return errors.New("Resource " + *addResourceCmdParams.Resource + " could not be uploaded: " + *errorObj.Message)
 			}
+
 			logging.PrintLog("Resource has been uploaded.", logging.InfoLevel)
 			return nil
 		}
