@@ -33,7 +33,7 @@ func PostEventHandlerFunc(params event.PostEventParams, principal *models.Princi
 	token, err := ws.CreateChannelInfo(keptnContext)
 	if err != nil {
 		l.Error(fmt.Sprintf("Error creating channel info %s", err.Error()))
-		return sendInternalPostError(err)
+		return sendInternalErrorForPost(err)
 	}
 
 	eventContext := models.EventContext{KeptnContext: &keptnContext, Token: &token}
@@ -57,7 +57,7 @@ func PostEventHandlerFunc(params event.PostEventParams, principal *models.Princi
 	_, err = utils.PostToEventBroker(ev)
 	if err != nil {
 		l.Error(fmt.Sprintf("Error sending CloudEvent %s", err.Error()))
-		return sendInternalPostError(err)
+		return sendInternalErrorForPost(err)
 	}
 
 	return event.NewPostEventOK().WithPayload(&eventContext)
@@ -69,32 +69,32 @@ func GetEventHandlerFunc(params event.GetEventParams, principal *models.Principa
 
 	cloudEvent, errObj := eventHandler.GetEvent(*params.KeptnContext, *params.Type)
 	if errObj != nil {
-		return sendInternalGetError(fmt.Errorf("%s", errObj.Message))
+		return sendInternalErrorForGet(fmt.Errorf("%s", errObj.Message))
 	}
 
 	if cloudEvent == nil {
-		return sendInternalGetError(fmt.Errorf("no " + *params.Type + " event found"))
+		return sendInternalErrorForGet(fmt.Errorf("no " + *params.Type + " event found"))
 	}
 
 	eventByte, err := json.Marshal(cloudEvent)
 	if err != nil {
-		return sendInternalGetError(err)
+		return sendInternalErrorForGet(err)
 	}
 
 	apiEvent := &models.Event{}
 	err = json.Unmarshal(eventByte, apiEvent)
 	if err != nil {
-		return sendInternalGetError(err)
+		return sendInternalErrorForGet(err)
 	}
 
 	return event.NewGetEventOK().WithPayload(apiEvent)
 }
 
-func sendInternalPostError(err error) *event.PostEventDefault {
+func sendInternalErrorForPost(err error) *event.PostEventDefault {
 	return event.NewPostEventDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 }
 
-func sendInternalGetError(err error) *event.GetEventDefault {
+func sendInternalErrorForGet(err error) *event.GetEventDefault {
 	return event.NewGetEventDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 }
 
