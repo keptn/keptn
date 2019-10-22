@@ -466,8 +466,8 @@
   version = "1.1.8"
 
 [[projects]]
-  branch = "feature/949/start-evaluation-support"
-  digest = "1:6453796235d9d28e3a9ed0a0c5b25778ec6beeeb3bab58d4c90930f1f3ba61fb"
+  branch = "develop"
+  digest = "1:d512e4c2b1961f567bda15ef5fb42ca7fb6c2329c93d7fc78a131f35585445e7"
   name = "github.com/keptn/go-utils"
   packages = [
     "pkg/api/models",
@@ -480,7 +480,7 @@
     "pkg/utils",
   ]
   pruneopts = ""
-  revision = "57dd4cc56e418da8ceeccf47a8e60a9bb76ca70a"
+  revision = "b35b59b7b1842974ee9dc2e6017bc4551dbe0f25"
 
 [[projects]]
   digest = "1:91317956b340c9e61a4287fd94c870bfad3f1922280c3e0a65db91c29017e8de"
@@ -753,7 +753,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:d4d68fea45a3a5fc7645cf2538da3715384ac5eb6bcb72ce82b38cdfca8783e7"
+  digest = "1:acd465770451fe2dd4c15565afc8244859dbcf490bde15cc3447741181e10f29"
   name = "golang.org/x/net"
   packages = [
     "context",
@@ -766,7 +766,7 @@
     "proxy",
   ]
   pruneopts = ""
-  revision = "da9a3fd4c5820e74b24a6cb7fb438dc9b0dd377c"
+  revision = "ec77196f6094c3492a8b61f2c11cf937f78992ae"
 
 [[projects]]
   branch = "master"
