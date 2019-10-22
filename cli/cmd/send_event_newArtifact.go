@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -25,9 +26,10 @@ import (
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 	"github.com/google/uuid"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	keptnevents "github.com/keptn/go-utils/pkg/events"
 	"github.com/keptn/keptn/cli/pkg/logging"
-	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
 	"github.com/keptn/keptn/cli/utils/websockethelper"
 	"github.com/spf13/cobra"
@@ -45,11 +47,11 @@ var newArtifact newArtifactStruct
 // newArtifactCmd represents the newArtifact command
 var newArtifactCmd = &cobra.Command{
 	Use: "new-artifact",
-	Short: "Sends a new-artifact event to keptn in order to deploy a new artifact" +
+	Short: "Sends a new-artifact event to Keptn in order to deploy a new artifact" +
 		"for the specified service in the provided project.",
-	Long: `Sends a new-artifact event to keptn in order to deploy a new artifact
+	Long: `Sends a new-artifact event to Keptn in order to deploy a new artifact
 for the specified service in the provided project.
-Therefore, this command takes the project, the service as well as the image and tag of the new artifact.
+Therefore, this command takes the project, service, image, and tag of the new artifact.
 	
 Example:
 	keptn send event new-artifact --project=sockshop --service=carts --image=docker.io/keptnexamples/carts --tag=0.7.0`,
@@ -82,7 +84,7 @@ Example:
 
 		source, _ := url.Parse("https://github.com/keptn/keptn/cli#configuration-change")
 		contentType := "application/json"
-		event := cloudevents.Event{
+		sdkEvent := cloudevents.Event{
 			Context: cloudevents.EventContextV02{
 				ID:          uuid.New().String(),
 				Type:        keptnevents.ConfigurationChangeEventType,
@@ -92,29 +94,29 @@ Example:
 			Data: configChangedEvent,
 		}
 
-		eventURL := endPoint
-		eventURL.Path = "v1/event"
+		eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, "https")
+		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
-		logging.PrintLog(fmt.Sprintf("Connecting to server %s", eventURL.String()), logging.VerboseLevel)
+		eventByte, err := sdkEvent.MarshalJSON()
+		apiEvent := apimodels.Event{}
+		json.Unmarshal(eventByte, &apiEvent)
+
 		if !mocking {
-			responseCE, err := utils.Send(eventURL, event, apiToken)
+			channelInfo, err := eventHandler.SendEvent(apiEvent)
 			if err != nil {
 				logging.PrintLog("Send new-artifact was unsuccessful", logging.QuietLevel)
-				return err
+				return fmt.Errorf("Send new-artifact was unsuccessful. %s", *err.Message)
 			}
 
-			// check for responseCE to include token
-			if responseCE == nil {
-				logging.PrintLog("Response CE is nil", logging.QuietLevel)
+			// if ChannelInfo is available, open WebSocket communication
+			if channelInfo != nil {
+				return websockethelper.PrintWSContentEventContext(channelInfo, endPoint)
+			}
 
-				return nil
-			}
-			if responseCE.Data != nil {
-				return websockethelper.PrintWSContentCEResponse(responseCE, endPoint)
-			}
-		} else {
-			fmt.Println("Skipping send-new artifact due to mocking flag set to true")
+			return nil
 		}
+
+		fmt.Println("Skipping send new-artifact due to mocking flag set to true")
 		return nil
 	},
 }
