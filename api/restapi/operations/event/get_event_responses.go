@@ -25,7 +25,7 @@ type GetEventOK struct {
 	/*
 	  In: Body
 	*/
-	Payload *models.Event `json:"body,omitempty"`
+	Payload *models.KeptnContextExtendedCE `json:"body,omitempty"`
 }
 
 // NewGetEventOK creates GetEventOK with default headers values
@@ -35,13 +35,13 @@ func NewGetEventOK() *GetEventOK {
 }
 
 // WithPayload adds the payload to the get event o k response
-func (o *GetEventOK) WithPayload(payload *models.Event) *GetEventOK {
+func (o *GetEventOK) WithPayload(payload *models.KeptnContextExtendedCE) *GetEventOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the get event o k response
-func (o *GetEventOK) SetPayload(payload *models.Event) {
+func (o *GetEventOK) SetPayload(payload *models.KeptnContextExtendedCE) {
 	o.Payload = payload
 }
 
