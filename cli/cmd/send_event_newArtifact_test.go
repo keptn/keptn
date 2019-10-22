@@ -28,7 +28,7 @@ func TestNewArtifact(t *testing.T) {
 		fmt.Sprintf("--project=%s", "sockshop"),
 		fmt.Sprintf("--service=%s", "carts"),
 		fmt.Sprintf("--image=%s", "docker.io/keptnexamples/carts"),
-		fmt.Sprintf("--tag=%s", "0.7.0"),
+		fmt.Sprintf("--tag=%s", "0.9.1"),
 		"--mock",
 	}
 	rootCmd.SetArgs(args)

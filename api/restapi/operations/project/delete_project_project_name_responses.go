@@ -25,7 +25,7 @@ type DeleteProjectProjectNameOK struct {
 	/*
 	  In: Body
 	*/
-	Payload *models.ChannelInfo `json:"body,omitempty"`
+	Payload *models.EventContext `json:"body,omitempty"`
 }
 
 // NewDeleteProjectProjectNameOK creates DeleteProjectProjectNameOK with default headers values
@@ -35,13 +35,13 @@ func NewDeleteProjectProjectNameOK() *DeleteProjectProjectNameOK {
 }
 
 // WithPayload adds the payload to the delete project project name o k response
-func (o *DeleteProjectProjectNameOK) WithPayload(payload *models.ChannelInfo) *DeleteProjectProjectNameOK {
+func (o *DeleteProjectProjectNameOK) WithPayload(payload *models.EventContext) *DeleteProjectProjectNameOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the delete project project name o k response
-func (o *DeleteProjectProjectNameOK) SetPayload(payload *models.ChannelInfo) {
+func (o *DeleteProjectProjectNameOK) SetPayload(payload *models.EventContext) {
 	o.Payload = payload
 }
 

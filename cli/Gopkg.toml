@@ -24,9 +24,9 @@
 #   go-tests = true
 #   unused-packages = true
 
-[[constraint]]
+[[override]]
   name = "github.com/cloudevents/sdk-go"
-  version = "0.7.0"
+  revision = "b0ed3376c113528ca45911a44eac70307912b318"
 
 [[constraint]]
   name = "github.com/docker/docker-credential-helpers"
@@ -51,8 +51,8 @@
 [[constraint]]
   name = "gopkg.in/yaml.v2"
   version = "2.2.2"
-
-[[override]]
+  
+[[constraint]]
   name = "github.com/keptn/go-utils"
   branch = "develop"
 

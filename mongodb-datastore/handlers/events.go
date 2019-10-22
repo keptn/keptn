@@ -91,7 +91,6 @@ func GetEvents(params event.GetEventsParams) (result *event.GetEventsOKBody, err
 	}
 
 	pagesize := *params.PageSize
-
 	sortOptions := options.Find().SetSort(bson.D{{"time", -1}}).SetSkip(nextPageKey).SetLimit(pagesize)
 
 	totalCount, err := collection.CountDocuments(ctx, searchOptions)
@@ -131,5 +130,4 @@ func GetEvents(params event.GetEventsParams) (result *event.GetEventsOKBody, err
 	}
 
 	return &myresult, nil
-
 }
