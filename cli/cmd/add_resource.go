@@ -2,13 +2,14 @@ package cmd
 
 import (
 	"crypto/tls"
-	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
 
-	"github.com/keptn/go-utils/pkg/models"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/utils"
@@ -22,11 +23,6 @@ type addResourceCommandParameters struct {
 	Service     *string
 	Resource    *string
 	ResourceURI *string
-}
-
-type addResourceError struct {
-	Code    int    `json:"code"`
-	Message string `json:"message"`
 }
 
 var addResourceCmdParams *addResourceCommandParameters
@@ -50,38 +46,41 @@ Example:
 			return errors.New("File " + *addResourceCmdParams.Resource + " not found in local file system")
 		}
 		resourceContent, err := ioutil.ReadFile(*addResourceCmdParams.Resource)
+		resourceContentStr := string(resourceContent)
 		if err != nil {
 			return errors.New("File " + *addResourceCmdParams.Resource + " could not be read")
 		}
 
 		logging.PrintLog("Adding resource "+*addResourceCmdParams.Resource+" to service "+*addResourceCmdParams.Service+" in stage "+*addResourceCmdParams.Stage+" in project "+*addResourceCmdParams.Project, logging.InfoLevel)
 
-		if *addResourceCmdParams.ResourceURI == "" {
-			addResourceCmdParams.ResourceURI = addResourceCmdParams.Resource
-		}
-		resources := []*models.Resource{
-			&models.Resource{
-				ResourceContent: string(resourceContent),
-				ResourceURI:     addResourceCmdParams.ResourceURI,
-			},
+		if !mocking {
+			if *addResourceCmdParams.ResourceURI == "" {
+				addResourceCmdParams.ResourceURI = addResourceCmdParams.Resource
+			}
+			resources := []*apimodels.Resource{
+				&apimodels.Resource{
+					ResourceContent: &resourceContentStr,
+					ResourceURI:     addResourceCmdParams.ResourceURI,
+				},
+			}
+
+			tr := &http.Transport{
+				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+				DialContext:     utils.ResolveXipIoWithContext,
+			}
+
+			client := &http.Client{Transport: tr}
+			resourceHandler := apiutils.NewAuthenticatedResourceHandler(endPoint.Host, apiToken, "x-token", client, "https")
+
+			_, errorObj := resourceHandler.CreateServiceResources(*addResourceCmdParams.Project, *addResourceCmdParams.Stage, *addResourceCmdParams.Service, resources)
+			if errorObj != nil {
+				return errors.New("Resource " + *addResourceCmdParams.Resource + " could not be uploaded: " + *errorObj.Message)
+			}
+			logging.PrintLog("Resource has been uploaded.", logging.InfoLevel)
+			return nil
 		}
 
-		tr := &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-			DialContext:     utils.ResolveXipIoWithContext,
-		}
-		client := &http.Client{Transport: tr}
-		resourceHandler := keptnutils.NewAuthenticatedResourceHandler(endPoint.Host, apiToken, "x-token", client, "https")
-		_, err = resourceHandler.CreateServiceResources(*addResourceCmdParams.Project, *addResourceCmdParams.Stage, *addResourceCmdParams.Service, resources)
-		if err != nil {
-			errorObj := &addResourceError{}
-			err2 := json.Unmarshal([]byte(err.Error()), errorObj)
-			if err2 != nil {
-				return errors.New("Resource " + *addResourceCmdParams.Resource + " could not be uploaded: " + err.Error())
-			}
-			return errors.New("Resource " + *addResourceCmdParams.Resource + " could not be uploaded: " + errorObj.Message)
-		}
-		logging.PrintLog("Resource has been uploaded.", logging.InfoLevel)
+		fmt.Println("Skipping add resource due to mocking flag set to true")
 		return nil
 	},
 }

@@ -25,7 +25,7 @@ type PostProjectOK struct {
 	/*
 	  In: Body
 	*/
-	Payload *models.ChannelInfo `json:"body,omitempty"`
+	Payload *models.EventContext `json:"body,omitempty"`
 }
 
 // NewPostProjectOK creates PostProjectOK with default headers values
@@ -35,13 +35,13 @@ func NewPostProjectOK() *PostProjectOK {
 }
 
 // WithPayload adds the payload to the post project o k response
-func (o *PostProjectOK) WithPayload(payload *models.ChannelInfo) *PostProjectOK {
+func (o *PostProjectOK) WithPayload(payload *models.EventContext) *PostProjectOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the post project o k response
-func (o *PostProjectOK) SetPayload(payload *models.ChannelInfo) {
+func (o *PostProjectOK) SetPayload(payload *models.EventContext) {
 	o.Payload = payload
 }
 
