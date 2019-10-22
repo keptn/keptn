@@ -35,16 +35,16 @@ var evaluationDone evaluationDoneStruct
 // evaluationDoneCmd represents the evaluation-done command
 var evaluationDoneCmd = &cobra.Command{
 	Use:   "evaluation-done",
-	Short: "",
-	Long: `
+	Short: "Returns the latest Keptn sh.keptn.events.evaluation-done event from a specific Keptn context",
+	Long: `Returns the latest Keptn sh.keptn.events.evaluation-done event from a specific Keptn context.
 	
 Example:
-	keptn get event evaluation-done --keptn-context 1234-5678-90`,
+	keptn get event evaluation-done --keptn-context=1234-5678-90ab-cdef`,
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 
 		if *evaluationDone.KeptnContext == "" {
-			return errors.New("Specify a keptn context")
+			return errors.New("Specify a Keptn context from which the event sould be retrieved")
 		}
 
 		return nil
@@ -64,11 +64,11 @@ Example:
 			evaluationDoneEvt, err := eventHandler.GetEvent(*evaluationDone.KeptnContext, keptnevents.EvaluationDoneEventType)
 			if err != nil {
 				logging.PrintLog("Get evaluation-done event was unsuccessful", logging.QuietLevel)
-				return fmt.Errorf("Get evaluation-done event was unsuccessful. %s", *err.Message)
+				return fmt.Errorf("%s", *err.Message)
 			}
 
 			if evaluationDoneEvt == nil {
-				logging.PrintLog("Response is nil", logging.QuietLevel)
+				logging.PrintLog("No event returned", logging.QuietLevel)
 				return nil
 			}
 
@@ -86,6 +86,6 @@ func init() {
 	getEventCmd.AddCommand(evaluationDoneCmd)
 
 	evaluationDone.KeptnContext = evaluationDoneCmd.Flags().StringP("keptn-context", "", "",
-		"The ID of a Keptn context of an evaluation step")
+		"The ID of a Keptn context from which to retrieve an evaluation-done event")
 	evaluationDoneCmd.MarkFlagRequired("keptn-context")
 }
