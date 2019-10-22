@@ -243,10 +243,3 @@ parameters:
           type: array
           items:
             $ref: "resource_model.yaml#/definitions/resource"
-   
-  eventType:
-    in: path
-    name: eventType
-    required: true
-    type: string
-    description: Type of the Keptn event
