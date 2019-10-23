@@ -139,12 +139,11 @@
   version = "v1.12.0"
 
 [[projects]]
-  digest = "1:2cd7915ab26ede7d95b8749e6b1f933f1c6d5398030684e6505940a10f31cfda"
+  digest = "1:c45cef8e0074ea2f8176a051df38553ba997a3616f1ec2d35222b1cf9864881e"
   name = "github.com/ghodss/yaml"
   packages = ["."]
   pruneopts = "UT"
-  revision = "0ca9ea5df5451ffdf184b4428c902747c2c11cd7"
-  version = "v1.0.0"
+  revision = "73d445a93680fa1a78ae23a5839bad48f32ba1ee"
 
 [[projects]]
   digest = "1:adbc24353f685b2045b5881bb15f48cec5267fc70a5ecaf2cf60b1241a43c83a"
@@ -422,7 +421,7 @@
 
 [[projects]]
   branch = "develop"
-  digest = "1:e56448a4cda594a4a0fa520a640fa50963c2abe94925acd9da4adc3513acd4a3"
+  digest = "1:64d689f01373729d4c0dd882d5afecec73eaf64594b3193d53f967c789cf6755"
   name = "github.com/keptn/go-utils"
   packages = [
     "pkg/api/models",
@@ -433,7 +432,7 @@
     "pkg/utils",
   ]
   pruneopts = "UT"
-  revision = "b35b59b7b1842974ee9dc2e6017bc4551dbe0f25"
+  revision = "92070acdbeff4944c0f59dbcedeaff06c2277fa8"
 
 [[projects]]
   digest = "1:fd7f169f32c221b096c74e756bda16fe22d3bb448bbf74042fd0700407a1f92f"
@@ -581,38 +580,6 @@
   version = "v1.4.0"
 
 [[projects]]
-  digest = "1:46aea6ffe39c3d95c13640c2515236ed3c5cdffc3c78c6c0ed4edec2caf7a0dc"
-  name = "github.com/tidwall/gjson"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "c5e72cdf74dff23857243dd662c465b810891c21"
-  version = "v1.3.2"
-
-[[projects]]
-  digest = "1:8453ddbed197809ee8ca28b06bd04e127bec9912deb4ba451fea7a1eca578328"
-  name = "github.com/tidwall/match"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "33827db735fff6510490d69a8622612558a557ed"
-  version = "v1.0.1"
-
-[[projects]]
-  digest = "1:ddfe0a54e5f9b29536a6d7b2defa376f2cb2b6e4234d676d7ff214d5b097cb50"
-  name = "github.com/tidwall/pretty"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "1166b9ac2b65e46a43d8618d30d1554f4652d49b"
-  version = "v1.0.0"
-
-[[projects]]
-  digest = "1:b70c951ba6fdeecfbd50dabe95aa5e1b973866ae9abbece46ad60348112214f2"
-  name = "github.com/tidwall/sjson"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "25fb082a20e29e83fb7b7ef5f5919166aad1f084"
-  version = "v1.0.4"
-
-[[projects]]
   digest = "1:172f94a6b3644a8f9e6b5e5b7fc9fe1e42d424f52a0300b2e7ab1e57db73f85d"
   name = "github.com/xanzy/ssh-agent"
   packages = ["."]
@@ -749,7 +716,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:2d4ef744498218d6d0e966e7094911d9a76616ed49c78b54d0697e482fb69b1c"
+  digest = "1:fee31b48b43f43ff2f1d802c4fccf062b1b42df077acf669b8be40f119da6ab9"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
@@ -757,7 +724,7 @@
     "windows",
   ]
   pruneopts = "UT"
-  revision = "3e7259c5e7c2076bb2728047a3df75adb1bad8e5"
+  revision = "742c48ecaeb7c624c475e02f3eb0827ebb4970d4"
 
 [[projects]]
   digest = "1:66a2f252a58b4fbbad0e4e180e1d85a83c222b6bce09c3dcdef3dc87c72eda7c"
@@ -787,11 +754,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:cdd088b35bbf78713a6861a44a1bbe97e581861b6b8835c7f2211bbeca3671f6"
+  digest = "1:32a1c8a24e8d0259416f84720d6c32e5c52cf10d01c19a7d23dcfa868f6b6235"
   name = "golang.org/x/time"
   packages = ["rate"]
   pruneopts = "UT"
-  revision = "c4c64cad1fd0a1a8dab2523e04e61d35308e131e"
+  revision = "6d3f0bb11be5e03f8353894b7240e7d793e40a8f"
 
 [[projects]]
   digest = "1:3c03b58f57452764a4499c55c582346c0ee78c8a5033affe5bdfd9efd3da5bd1"
@@ -901,7 +868,7 @@
   version = "v2.2.4"
 
 [[projects]]
-  digest = "1:2ad5e4bbe42ffd64b10babe1ec1ac99d64122170cb2524326ad81708ebd0b9cc"
+  digest = "1:a5cc901b8e54c4b73a62f97dc7c8f6c46e347c148a7a38e09b2e942c2587ba03"
   name = "gotest.tools"
   packages = [
     "assert",
@@ -1071,7 +1038,7 @@
   version = "kubernetes-1.12.0"
 
 [[projects]]
-  digest = "1:c780ffd0ea11865bc3d1d5518525b59aa487750fd356b12c74d372c36fc16e74"
+  digest = "1:66cc9a4db2d83ba5a34a0ab43405a653e7b579288db3c0b7de60c05a6ba97f31"
   name = "k8s.io/helm"
   packages = [
     "pkg/chartutil",
@@ -1085,8 +1052,7 @@
     "pkg/version",
   ]
   pruneopts = "UT"
-  revision = "0e7f3b6637f7af8fcfddb3d2941fcc7cbebb0085"
-  version = "v2.14.3"
+  revision = "eecf22f77df5f65c823aacd2dbd30ae6c65f186e"
 
 [[projects]]
   digest = "1:7719608fe0b52a4ece56c2dde37bedd95b938677d1ab0f84b8a7852e4c59f849"
@@ -1118,7 +1084,6 @@
     "github.com/keptn/go-utils/pkg/utils",
     "github.com/kinbiko/jsonassert",
     "github.com/stretchr/testify/assert",
-    "github.com/tidwall/sjson",
     "gotest.tools/assert",
     "k8s.io/api/apps/v1",
     "k8s.io/api/core/v1",

@@ -3,6 +3,7 @@ package handlers
 import (
 	b64 "encoding/base64"
 	"encoding/json"
+	"os"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
@@ -22,6 +23,10 @@ const (
 	serviceNotFound
 )
 
+func getConfigurationServiceURL() string {
+	return "http://" + os.Getenv("CONFIGURATION_URI")
+}
+
 // DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc deletes the specified resource
 /*
 func DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc(params service_resource.DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIParams) middleware.Responder {
@@ -31,7 +36,7 @@ func DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI
 
 // PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc creates a new resource
 func PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(params service_resource.PostProjectProjectNameStageStageNameServiceServiceNameResourceParams, principal *models.Principal) middleware.Responder {
-	resourceHandler := configutils.NewResourceHandler(getConfigurationURL())
+	resourceHandler := configutils.NewResourceHandler(getConfigurationServiceURL())
 
 	resourcesToUpload := []*configmodels.Resource{}
 	for _, resource := range params.Resources.Resources {
@@ -58,7 +63,8 @@ func PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(p
 
 // PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc updates a list of resources
 func PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(params service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceParams, principal *models.Principal) middleware.Responder {
-	resourceHandler := configutils.NewResourceHandler(getConfigurationURL())
+	resourceHandler := configutils.NewResourceHandler(getConfigurationServiceURL())
+
 	resourcesToUpload := []*configmodels.Resource{}
 	for _, resource := range params.Resources.Resources {
 		decodedStrBytes, err := b64.StdEncoding.DecodeString(*resource.ResourceContent)
@@ -71,15 +77,13 @@ func PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(pa
 			ResourceURI:     resource.ResourceURI,
 		})
 	}
+
 	_, err := resourceHandler.CreateServiceResources(params.ProjectName, params.StageName, params.ServiceName, resourcesToUpload)
 	if err != nil {
 		errorObj := &models.Error{}
 		json.Unmarshal([]byte(err.Error()), errorObj)
 		return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceDefault(500).WithPayload(errorObj)
 	}
-	return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceCreated()
-}
 
-func getConfigurationURL() string {
-	return "configuration-service:8080"
+	return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceCreated()
 }
