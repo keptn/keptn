@@ -23,6 +23,10 @@ import (
 	"github.com/keptn/keptn/api/ws"
 )
 
+func getDatastoreURL() string {
+	return "http://" + os.Getenv("DATASTORE_URI")
+}
+
 // PostEventHandlerFunc forwards an event to the event broker
 func PostEventHandlerFunc(params event.PostEventParams, principal *models.Principal) middleware.Responder {
 
@@ -101,8 +105,4 @@ func sendInternalErrorForGet(err error) *event.GetEventDefault {
 func addEventContextInCE(ceData interface{}, eventContext models.EventContext) interface{} {
 	ceData.(map[string]interface{})["eventContext"] = eventContext
 	return ceData
-}
-
-func getDatastoreURL() string {
-	return "http://" + os.Getenv("DATASTORE_URI")
 }

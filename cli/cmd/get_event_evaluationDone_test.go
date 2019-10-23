@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/keptn/keptn/cli/pkg/logging"
+	"github.com/keptn/keptn/cli/utils/credentialmanager"
 )
 
 func init() {
@@ -16,7 +17,7 @@ func init() {
 // TestEvaluationDoneGetEvent tests the evaluation-done command
 func TestEvaluationDoneGetEvent(t *testing.T) {
 
-	//credentialmanager.MockAuthCreds = true
+	credentialmanager.MockAuthCreds = true
 	buf := new(bytes.Buffer)
 	rootCmd.SetOutput(buf)
 
@@ -25,7 +26,7 @@ func TestEvaluationDoneGetEvent(t *testing.T) {
 		"event",
 		"evaluation-done",
 		fmt.Sprintf("--keptn-context=%s", "8929e5e5-3826-488f-9257-708bfa974909"),
-		//		"--mock",
+		"--mock",
 	}
 	rootCmd.SetArgs(args)
 	err := rootCmd.Execute()
