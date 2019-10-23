@@ -1,34 +1,26 @@
 package main
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"log"
-	"net/url"
 	"os"
 	"path/filepath"
 	"runtime"
-	"strconv"
 	"strings"
-	"time"
 
-	appsv1 "k8s.io/api/apps/v1"
-	kyaml "k8s.io/apimachinery/pkg/util/yaml"
-
-	"github.com/google/uuid"
-
+	"github.com/keptn/keptn/remediation-service/actions"
+	"github.com/keptn/keptn/remediation-service/pkg/utils"
 	"gopkg.in/yaml.v2"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
 	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
-	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 	"github.com/kelseyhightower/envconfig"
 
+	configmodels "github.com/keptn/go-utils/pkg/configuration-service/models"
+	configutils "github.com/keptn/go-utils/pkg/configuration-service/utils"
 	keptnevents "github.com/keptn/go-utils/pkg/events"
 	keptnmodels "github.com/keptn/go-utils/pkg/models"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
@@ -43,9 +35,8 @@ import (
 )
 
 const tillernamespace = "kube-system"
-const remediationfilename = "remediation.yaml"
+const remediationFileName = "remediation.yaml"
 const configurationserviceconnection = "CONFIGURATION_SERVICE" //"localhost:6060" // "configuration-service:8080"
-const eventbroker = "EVENTBROKER"
 
 type envConfig struct {
 	Port int    `envconfig:"RCV_PORT" default:"8080"`
@@ -81,6 +72,48 @@ func _main(args []string, env envConfig) int {
 	return 0
 }
 
+func deriveProblemData(problem *keptnevents.ProblemEventData) {
+
+	if !isProjectAndStageAvailable(problem) {
+		deriveFromTags(problem)
+	}
+	if !isProjectAndStageAvailable(problem) {
+		deriveFromImpactedEntity(problem)
+	}
+}
+
+func isProjectAndStageAvailable(problem *keptnevents.ProblemEventData) bool {
+	return problem.Project != "" && problem.Stage != ""
+}
+
+// deriveFromTags allows to derive project, stage, and service information from the tags
+// Input example: "Tags:":"service:carts, environment:sockshop-production, [Environment]application:sockshop"
+func deriveFromTags(problem *keptnevents.ProblemEventData) {
+
+	tags := strings.Split(problem.Tags, ", ")
+
+	for _, tag := range tags {
+		if strings.HasPrefix(tag, "service:") {
+			problem.Service = tag[len("service:"):]
+		} else if strings.HasPrefix(tag, "environment:") {
+			environment := tag[len("environment:"):]
+			envSplits := strings.Split(environment, "-")
+			if len(envSplits) == 2 {
+				problem.Project = envSplits[0]
+				problem.Stage = envSplits[1]
+			}
+		}
+	}
+}
+
+func deriveFromImpactedEntity(problem *keptnevents.ProblemEventData) {
+	releasename, err := getReleasename(problem)
+	if err != nil {
+		// Ignore error as this format is specific for Prometheus
+	}
+	problem.Project, problem.Stage, problem.Service = splitReleaseName(releasename)
+}
+
 func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	var shkeptncontext string
 	event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
@@ -88,81 +121,89 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	logger := keptnutils.NewLogger(shkeptncontext, event.Context.GetID(), "remediation-service")
 	logger.Debug("Received event for shkeptncontext:" + shkeptncontext)
 
-	var eventData *keptnevents.ProblemEventData
+	var problemEvent *keptnevents.ProblemEventData
 	if event.Type() == keptnevents.ProblemOpenEventType {
 		logger.Debug("Received problem notification")
-		eventData = &keptnevents.ProblemEventData{}
-		if err := event.DataAs(eventData); err != nil {
+		problemEvent = &keptnevents.ProblemEventData{}
+		if err := event.DataAs(problemEvent); err != nil {
 			return err
 		}
 	}
 
-	releasename, err := getReleasename(eventData)
-	if err != nil {
-		logger.Error("could not get release name")
-		return err
+	deriveProblemData(problemEvent)
+	if !isProjectAndStageAvailable(problemEvent) {
+		return errors.New("Cannot derive project and stage from tags nor impactedentity")
 	}
 
-	projectname, stagename, servicename := splitReleaseName(*releasename)
-
-	if eventData.State != "OPEN" {
-		logger.Debug("Received closed problem")
-		sendTestsFinishedEvent(shkeptncontext, projectname, stagename, servicename)
+	if problemEvent.State != "OPEN" {
+		logger.Info("Received closed problem")
+		if problemEvent.Service != "" {
+			utils.SendTestsFinishedEvent(shkeptncontext, problemEvent.Project, problemEvent.Stage, problemEvent.Service)
+		}
 		return nil
 	}
 
 	logger.Debug("Received open problem")
 
-	resourceURI := remediationfilename
-
 	// valide if remediation should be performed
-	resourceHandler := keptnutils.NewResourceHandler(os.Getenv(configurationserviceconnection))
-	autoremediate := isRemediationEnabled(resourceHandler, projectname, stagename)
-	logger.Debug(fmt.Sprintf("remediation enabled for project and stage: %t", autoremediate))
+	resourceHandler := configutils.NewResourceHandler(os.Getenv(configurationserviceconnection))
+	autoremediate, err := isRemediationEnabled(resourceHandler, problemEvent.Project, problemEvent.Stage)
+	if err != nil {
+		logger.Error(fmt.Sprintf("Failed to check if remediation is enabled: %s", err.Error()))
+		return err
+	}
 
-	if !autoremediate {
-		return errors.New("remediation not enabled for project and stage")
+	if autoremediate {
+		logger.Info(fmt.Sprintf("Remediation enabled for project %s in stage %s", problemEvent.Project, problemEvent.Stage))
+	} else {
+		logger.Info(fmt.Sprintf("Remediation disabled for project %s in stage %s", problemEvent.Project, problemEvent.Stage))
+		return nil
 	}
 
 	// get remediation.yaml
-	resource, err := resourceHandler.GetServiceResource(projectname, stagename, servicename, resourceURI)
+	var resource *configmodels.Resource
+	if problemEvent.Service != "" {
+		resource, err = resourceHandler.GetServiceResource(problemEvent.Project, problemEvent.Stage,
+			problemEvent.Service, remediationFileName)
+	} else {
+		resource, err = resourceHandler.GetStageResource(problemEvent.Project, problemEvent.Stage, remediationFileName)
+	}
+
 	if err != nil {
-		logger.Error("could not get remediation.yaml file")
+		logger.Error("Failed to get remediation.yaml file")
 		return err
 	}
 	logger.Debug("remediation.yaml for service found")
 
 	// get remediation action from remediation.yaml
 	var remediationData keptnmodels.Remediations
-	yaml.Unmarshal([]byte(resource.ResourceContent), &remediationData)
+	err = yaml.Unmarshal([]byte(resource.ResourceContent), &remediationData)
+	if err != nil {
+		logger.Error("Could not unmarshal remediation.yaml")
+		return err
+	}
+
+	actionExecutors := []actions.ActionExecutor{actions.NewScaler()}
 
 	for _, remediation := range remediationData.Remediations {
-		if remediation.Name == eventData.ProblemTitle {
-			logger.Debug("Remediation for problem found in remediation.yaml")
+		if remediation.Name == problemEvent.ProblemTitle {
+			logger.Debug("Remediation for problem found")
 			// currently only one remediation action is supported
-			if remediation.Actions[0].Action == "scaling" {
-				currentReplicaCount, err := getReplicaCount(logger, projectname, stagename, servicename, os.Getenv(configurationserviceconnection))
-				if err != nil {
-					logger.Error("could not get replica count")
-					return err
-				}
-				adjustment, err := strconv.Atoi(remediation.Actions[0].Value)
-				if err != nil {
-					logger.Error("could not get value for scaling remediation action")
-				}
-				propertyPath := "spec.replicas"
-				propertyValue := currentReplicaCount + adjustment
-				err = createAndSendEvent(shkeptncontext, projectname, servicename, stagename, propertyPath, propertyValue)
-				if err != nil {
-					logger.Error(err.Error())
+			for _, a := range actionExecutors {
+				if a.GetAction() == remediation.Actions[0].Action {
+					if err := a.ExecuteAction(problemEvent, shkeptncontext, remediation.Actions[0]); err != nil {
+						logger.Error(err.Error())
+						return err
+					}
+					logger.Info(fmt.Sprintf("Remediation action %s successfully applied",
+						remediation.Actions[0].Action))
+					return nil
 				}
 			}
-
 		}
 	}
 
-	logger.Debug("remediation service finished")
-
+	logger.Info("No remediation action found")
 	return nil
 }
 
@@ -172,20 +213,19 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("initialization of Helm done")
 }
 
 // get helm release name by impacted entity
-func getReleasename(eventData *keptnevents.ProblemEventData) (*string, error) {
+func getReleasename(eventData *keptnevents.ProblemEventData) (string, error) {
 	switch impact := eventData.ProblemDetails; {
 	case strings.HasPrefix(impact, "Pod"):
 		return getReleaseByPodName(eventData.ImpactedEntity)
 	case strings.HasPrefix(impact, "Service"):
-		return nil, errors.New("Service remediation not yet supported")
+		return "", errors.New("Service remediation not yet supported")
 	case strings.HasPrefix(impact, "Node"):
-		return nil, errors.New("Node remediation not yet supported")
+		return "", errors.New("Node remediation not yet supported")
 	default:
-		return nil, errors.New("could not interpret problem details")
+		return "", errors.New("could not interpret problem details")
 	}
 }
 
@@ -265,49 +305,44 @@ func getHelmClient() (*helm.Client, error) {
 
 }
 
-func isRemediationEnabled(rh *keptnutils.ResourceHandler, project string, stage string) bool {
+func isRemediationEnabled(rh *configutils.ResourceHandler, project string, stage string) (bool, error) {
 	keptnHandler := keptnutils.NewKeptnHandler(rh)
-	fmt.Println("get shipyard for ", project)
 	shipyard, err := keptnHandler.GetShipyard(project)
 	if err != nil {
-		return false
+		return false, err
 	}
-	fmt.Println("shipyard: ", shipyard)
 	for _, s := range shipyard.Stages {
 		if s.Name == stage && s.RemediationStrategy == "automated" {
-			return true
+			return true, nil
 		}
 	}
 
-	return false
+	return false, nil
 }
 
 // gets Helm release name by pod name
-func getReleaseByPodName(podname string) (*string, error) {
+func getReleaseByPodName(podname string) (string, error) {
 	client, err := getHelmClient()
 	if err != nil {
-		fmt.Println("could not get Helm client")
-		return nil, err
+		return "", fmt.Errorf("failed to get Helm client: %v", err)
 	}
 
 	releaseList, err := client.ListReleases()
 	if err != nil {
-		fmt.Println("could not fetch list of releases")
-		return nil, err
+		return "", fmt.Errorf("failed to fetch list of releases: %v", err)
 	}
 
 	for _, r := range releaseList.GetReleases() {
-		rs, err := client.ReleaseStatus(r.Name, helm.StatusReleaseVersion(0))
+		rs, err := client.ReleaseStatus(r.Name)
 		if err != nil {
-			fmt.Println("release status error: ", err)
-			return nil, err
+			return "", fmt.Errorf("failed to get release status: %v", err)
 		}
 		if strings.Contains(rs.Info.Status.Resources, podname) {
-			return &r.Name, nil
+			return r.Name, nil
 		}
 	}
 
-	return nil, errors.New("could not find release for pod")
+	return "", fmt.Errorf("could not find release for pod %s", podname)
 }
 
 // splits helm release name into project, stage and service
@@ -319,147 +354,4 @@ func splitReleaseName(releasename string) (project string, stage string, service
 	// remove the "-generated" suffix
 	service = strings.Replace(s[2], "-generated", "", 1)
 	return project, stage, service
-}
-
-// gets replica count from helm chart
-func getReplicaCount(logger *keptnutils.Logger, project, stage, service, configServiceURL string) (int, error) {
-	helmChartName := service + "-generated"
-	// Read chart
-	chart, err := keptnutils.GetChart(project, service, stage, helmChartName, configServiceURL)
-	if err != nil {
-		return -1, err
-	}
-	logger.Debug("chart found for affected service")
-
-	for _, template := range chart.Templates {
-		dec := kyaml.NewYAMLToJSONDecoder(bytes.NewReader(template.Data))
-		for {
-			var document interface{}
-			err := dec.Decode(&document)
-			if err == io.EOF {
-				break
-			}
-			if err != nil {
-				return -1, err
-			}
-
-			doc, err := json.Marshal(document)
-			if err != nil {
-				return -1, err
-			}
-
-			var depl appsv1.Deployment
-			if err := json.Unmarshal(doc, &depl); err == nil && keptnutils.IsDeployment(&depl) {
-				// It is a deployment
-				fmt.Println(depl.Spec.Replicas)
-				return int(*depl.Spec.Replicas), nil
-			}
-		}
-	}
-
-	return -1, errors.New("could not find replica count")
-}
-
-// creates and sends cloud event
-func createAndSendEvent(shkeptncontext string, project string,
-	service string, stage string, propertyPath string, propertyValue interface{}) error {
-
-	source, _ := url.Parse("https://github.com/keptn/keptn/remediation-service")
-	contentType := "application/json"
-
-	pc := keptnevents.PropertyChange{
-		PropertyPath: propertyPath,
-		Value:        propertyValue,
-	}
-
-	configChangedEvent := keptnevents.ConfigurationChangeEventData{
-		Project:           project,
-		Service:           service,
-		Stage:             stage,
-		DeploymentChanges: []keptnevents.PropertyChange{pc},
-	}
-
-	event := cloudevents.Event{
-		Context: cloudevents.EventContextV02{
-			ID:          uuid.New().String(),
-			Time:        &types.Timestamp{Time: time.Now()},
-			Type:        keptnevents.ConfigurationChangeEventType,
-			Source:      types.URLRef{URL: *source},
-			ContentType: &contentType,
-			Extensions:  map[string]interface{}{"shkeptncontext": shkeptncontext},
-		}.AsV02(),
-		Data: configChangedEvent,
-	}
-
-	return sendEvent(event)
-}
-
-func sendEvent(event cloudevents.Event) error {
-	endPoint, err := getServiceEndpoint(eventbroker)
-	if err != nil {
-		return errors.New("Failed to retrieve endpoint of eventbroker. %s" + err.Error())
-	}
-
-	if endPoint.Host == "" {
-		return errors.New("Host of eventbroker not set")
-	}
-
-	transport, err := cloudeventshttp.New(
-		cloudeventshttp.WithTarget(endPoint.String()),
-		cloudeventshttp.WithEncoding(cloudeventshttp.StructuredV02),
-	)
-	if err != nil {
-		return errors.New("Failed to create transport:" + err.Error())
-	}
-
-	c, err := client.New(transport)
-	if err != nil {
-		return errors.New("Failed to create HTTP client:" + err.Error())
-	}
-
-	if _, err := c.Send(context.Background(), event); err != nil {
-		return errors.New("Failed to send cloudevent:, " + err.Error())
-	}
-	return nil
-}
-
-// sendTestsFinishedEvent sends a Cloud Event of type sh.keptn.events.tests-finished to the event broker
-func sendTestsFinishedEvent(shkeptncontext string, project string, stage string, service string) error {
-
-	source, _ := url.Parse("remediation-service")
-	contentType := "application/json"
-
-	testFinishedData := keptnevents.TestsFinishedEventData{}
-	testFinishedData.Project = project
-	testFinishedData.Stage = stage
-	testFinishedData.Service = service
-	testFinishedData.TestStrategy = "real-user"
-
-	event := cloudevents.Event{
-		Context: cloudevents.EventContextV02{
-			ID:          uuid.New().String(),
-			Time:        &types.Timestamp{Time: time.Now()},
-			Type:        "sh.keptn.events.tests-finished",
-			Source:      types.URLRef{URL: *source},
-			ContentType: &contentType,
-			Extensions:  map[string]interface{}{"shkeptncontext": shkeptncontext},
-		}.AsV02(),
-		Data: testFinishedData,
-	}
-
-	return sendEvent(event)
-}
-
-// getServiceEndpoint gets an endpoint stored in an environment variable and sets http as default scheme
-func getServiceEndpoint(service string) (url.URL, error) {
-	url, err := url.Parse(os.Getenv(service))
-	if err != nil {
-		return *url, fmt.Errorf("Failed to retrieve value from ENVIRONMENT_VARIABLE: %s", service)
-	}
-
-	if url.Scheme == "" {
-		url.Scheme = "http"
-	}
-
-	return *url, nil
 }
