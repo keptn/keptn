@@ -99,7 +99,7 @@ Example:
 			if err != nil {
 				return err
 			}
-			// check for responseCE to include token
+
 			if body == nil || len(body) == 0 {
 				logging.PrintLog("Response is empty", logging.InfoLevel)
 				return nil

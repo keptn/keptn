@@ -20,12 +20,12 @@ import (
 
 type projectCreateEventData struct {
 	keptnevents.ProjectCreateEventData `json:",inline"`
-	ChannelInfo                        models.ChannelInfo `json:"channelInfo"`
+	EventContext                       models.EventContext `json:"eventContext"`
 }
 
 type projectDeleteEventData struct {
 	keptnevents.ProjectDeleteEventData `json:",inline"`
-	ChannelInfo                        models.ChannelInfo `json:"channelInfo"`
+	EventContext                       models.EventContext `json:"eventContext"`
 }
 
 // PostProjectHandlerFunc creates a new project
@@ -41,18 +41,17 @@ func PostProjectHandlerFunc(params project.PostProjectParams, p *models.Principa
 		return getProjectPostInternalError(err)
 	}
 
-	channelInfo := models.ChannelInfo{ChannelID: &keptnContext, Token: &token}
-
+	eventContext := models.EventContext{KeptnContext: &keptnContext, Token: &token}
 	source, _ := url.Parse("https://github.com/keptn/keptn/api")
 
 	prjData := keptnevents.ProjectCreateEventData{
-		Project:      params.Project.Name,
-		Shipyard:     params.Project.Shipyard,
+		Project:      *params.Project.Name,
+		Shipyard:     *params.Project.Shipyard,
 		GitUser:      params.Project.GitUser,
 		GitToken:     params.Project.GitToken,
 		GitRemoteURL: params.Project.GitRemoteURL,
 	}
-	forwardData := projectCreateEventData{ProjectCreateEventData: prjData, ChannelInfo: channelInfo}
+	forwardData := projectCreateEventData{ProjectCreateEventData: prjData, EventContext: eventContext}
 
 	contentType := "application/json"
 	event := cloudevents.Event{
@@ -73,7 +72,7 @@ func PostProjectHandlerFunc(params project.PostProjectParams, p *models.Principa
 		return getProjectPostInternalError(err)
 	}
 
-	return project.NewPostProjectOK().WithPayload(&channelInfo)
+	return project.NewPostProjectOK().WithPayload(&eventContext)
 }
 
 // DeleteProjectProjectNameHandlerFunc deletes a project
@@ -89,14 +88,14 @@ func DeleteProjectProjectNameHandlerFunc(params project.DeleteProjectProjectName
 		return getProjectDeleteInternalError(err)
 	}
 
-	channelInfo := models.ChannelInfo{ChannelID: &keptnContext, Token: &token}
+	eventContext := models.EventContext{KeptnContext: &keptnContext, Token: &token}
 
 	source, _ := url.Parse("https://github.com/keptn/keptn/api")
 
 	prjData := keptnevents.ProjectDeleteEventData{
 		Project: params.ProjectName,
 	}
-	forwardData := projectDeleteEventData{ProjectDeleteEventData: prjData, ChannelInfo: channelInfo}
+	forwardData := projectDeleteEventData{ProjectDeleteEventData: prjData, EventContext: eventContext}
 
 	contentType := "application/json"
 	event := cloudevents.Event{
@@ -118,7 +117,7 @@ func DeleteProjectProjectNameHandlerFunc(params project.DeleteProjectProjectName
 		return getProjectDeleteInternalError(err)
 	}
 
-	return project.NewDeleteProjectProjectNameOK().WithPayload(&channelInfo)
+	return project.NewDeleteProjectProjectNameOK().WithPayload(&eventContext)
 }
 
 func getProjectPostInternalError(err error) *project.PostProjectDefault {
