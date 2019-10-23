@@ -64,8 +64,7 @@ Example:
 		apiEvent := apimodels.Event{}
 		err = json.Unmarshal([]byte(eventString), &apiEvent)
 		if err != nil {
-			logging.PrintLog("Could not unmarshal event", logging.QuietLevel)
-			return fmt.Errorf("Could not unmarshal event. %s", err.Error())
+			return fmt.Errorf("Failed to map CloudEvent to API event model. %s", err.Error())
 		}
 
 		eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, "https")
