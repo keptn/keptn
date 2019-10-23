@@ -466,8 +466,8 @@
   version = "1.1.8"
 
 [[projects]]
-  branch = "feature/1005/xip-resolving"
-  digest = "1:4dc529fd9458250817f84aea99c37b3ff201a86a5899d866b73563b2b7324fa4"
+  branch = "develop"
+  digest = "1:40c3b527af082d959a432d8167883d81665d5adcef949833118408ba72de4701"
   name = "github.com/keptn/go-utils"
   packages = [
     "pkg/api/models",
@@ -479,7 +479,7 @@
     "pkg/utils",
   ]
   pruneopts = ""
-  revision = "0f98862d18b3d9bfc6b0cb379186a0ddb3a68231"
+  revision = "aa38fada9f5dfdf61cf5283c61dd3c66711043e5"
 
 [[projects]]
   digest = "1:91317956b340c9e61a4287fd94c870bfad3f1922280c3e0a65db91c29017e8de"
@@ -783,7 +783,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:f7859b24c4f7a2c384c3d6ef5cdd15641e26a22b3649a52b0ac08d35e518a0de"
+  digest = "1:19c0f90f7eff54a72fb07c6b783bbdd92a89d58966d891d7382583a00b98d719"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
@@ -791,7 +791,7 @@
     "windows",
   ]
   pruneopts = ""
-  revision = "3e7259c5e7c2076bb2728047a3df75adb1bad8e5"
+  revision = "742c48ecaeb7c624c475e02f3eb0827ebb4970d4"
 
 [[projects]]
   digest = "1:740b51a55815493a8d0f2b1e0d0ae48fe48953bf7eaf3fcc4198823bf67768c0"
@@ -821,11 +821,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:1290297b5048f051e77948812e93c4f09a914d02c8fb02cf2dfdaf23d73a5805"
+  digest = "1:cda80f57e101bff19a8ae77dd8aaa57ed2eede63d1fcaaeeb4b294dac799daaa"
   name = "golang.org/x/time"
   packages = ["rate"]
   pruneopts = ""
-  revision = "c4c64cad1fd0a1a8dab2523e04e61d35308e131e"
+  revision = "6d3f0bb11be5e03f8353894b7240e7d793e40a8f"
 
 [[projects]]
   digest = "1:c4404231035fad619a12f82ae3f0f8f9edc1cc7f34e7edad7a28ccac5336cc96"

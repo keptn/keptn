@@ -50,7 +50,7 @@ var newArtifact newArtifactStruct
 var newArtifactCmd = &cobra.Command{
 	Use: "new-artifact",
 	Short: "Sends a new-artifact event to Keptn in order to deploy a new artifact" +
-		"for the specified service in the provided project.",
+		"for the specified service in the provided project",
 	Long: `Sends a new-artifact event to Keptn in order to deploy a new artifact
 for the specified service in the provided project.
 Therefore, this command takes the project, service, image, and tag of the new artifact.
@@ -150,7 +150,7 @@ func setTag() {
 
 func checkImageAvailability() error {
 
-	if strings.HasPrefix(*newArtifact.Image, "docker.io/") || strings.Count(*newArtifact.Image, "/") == 1 {
+	if strings.HasPrefix(*newArtifact.Image, "docker.io/") {
 		resp, err := http.Get("https://index.docker.io/v1/repositories/" +
 			strings.TrimPrefix(*newArtifact.Image, "docker.io/") + "/tags/" + *newArtifact.Tag)
 		if err != nil {

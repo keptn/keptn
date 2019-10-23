@@ -54,7 +54,7 @@ func init() {
         "tags": [
           "Event"
         ],
-        "summary": "Get the specified event",
+        "summary": "Get the youngest event matching the parameters.",
         "parameters": [
           {
             "type": "string",
@@ -73,7 +73,7 @@ func init() {
           "200": {
             "description": "Success",
             "schema": {
-              "$ref": "https://raw.githubusercontent.com/cloudevents/spec/v0.2/spec.json#/definitions/event"
+              "$ref": "response_model.yaml#/definitions/keptnContextExtendedCE"
             }
           },
           "404": {
@@ -295,13 +295,6 @@ func init() {
     }
   },
   "parameters": {
-    "eventType": {
-      "type": "string",
-      "description": "Type of the Keptn event",
-      "name": "eventType",
-      "in": "path",
-      "required": true
-    },
     "project": {
       "description": "Project entity",
       "name": "project",
@@ -420,7 +413,7 @@ func init() {
         "tags": [
           "Event"
         ],
-        "summary": "Get the specified event",
+        "summary": "Get the youngest event matching the parameters.",
         "parameters": [
           {
             "type": "string",
@@ -439,7 +432,7 @@ func init() {
           "200": {
             "description": "Success",
             "schema": {
-              "$ref": "#/definitions/event"
+              "$ref": "#/definitions/keptnContextExtendedCE"
             }
           },
           "404": {
@@ -798,6 +791,21 @@ func init() {
     "id": {
       "type": "string"
     },
+    "keptnContextExtendedCE": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/event"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "shkeptncontext": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
     "project": {
       "type": "object",
       "required": [
@@ -876,13 +884,6 @@ func init() {
     }
   },
   "parameters": {
-    "eventType": {
-      "type": "string",
-      "description": "Type of the Keptn event",
-      "name": "eventType",
-      "in": "path",
-      "required": true
-    },
     "project": {
       "description": "Project entity",
       "name": "project",
