@@ -68,7 +68,7 @@ paths:
         200:
           description: Success
           schema:
-            $ref: "https://raw.githubusercontent.com/cloudevents/spec/v0.2/spec.json#/definitions/event"
+            $ref: "response_model.yaml#/definitions/keptnContextExtendedCE"
         404:
           description: Failed. Event could not be found.
           schema:

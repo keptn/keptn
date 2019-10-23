@@ -51,8 +51,8 @@ func newArtifactEvent(t *testing.T, eventFileName string, eventContent string) f
 
 // TestSendEvent tests the functionality to send an event defined in JSON file.
 func TestSendEvent(t *testing.T) {
-	const tmpCE = "ce.json"
-	defer newArtifactEvent(t, tmpCE, "")
+	const tmpCE = "newArtifactCE.json"
+	defer newArtifactEvent(t, tmpCE, "")()
 
 	credentialmanager.MockAuthCreds = true
 	buf := new(bytes.Buffer)
@@ -68,14 +68,14 @@ func TestSendEvent(t *testing.T) {
 	err := rootCmd.Execute()
 
 	if err != nil {
-		log.Fatalf("An error occured %v", err)
+		log.Fatalf("An error occured: %v", err)
 	}
 }
 
 // TestSendEventAndOpenWebSocket tests the functionality to send an event defined in JSON file and to open a WebSocket communication
 func TestSendEventAndOpenWebSocket(t *testing.T) {
-	const tmpCE = "ce.json"
-	defer newArtifactEvent(t, tmpCE, "")
+	const tmpCE = "newArtifactCE.json"
+	defer newArtifactEvent(t, tmpCE, "")()
 
 	credentialmanager.MockAuthCreds = true
 	buf := new(bytes.Buffer)
@@ -92,6 +92,6 @@ func TestSendEventAndOpenWebSocket(t *testing.T) {
 	err := rootCmd.Execute()
 
 	if err != nil {
-		log.Fatalf("An error occured %v", err)
+		log.Fatalf("An error occured: %v", err)
 	}
 }
