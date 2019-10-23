@@ -23,6 +23,10 @@ import (
 	"github.com/keptn/keptn/api/ws"
 )
 
+func getDatastoreURL() string {
+	return "http://" + os.Getenv("DATASTORE_URI")
+}
+
 // PostEventHandlerFunc forwards an event to the event broker
 func PostEventHandlerFunc(params event.PostEventParams, principal *models.Principal) middleware.Responder {
 
@@ -73,7 +77,7 @@ func GetEventHandlerFunc(params event.GetEventParams, principal *models.Principa
 	}
 
 	if cloudEvent == nil {
-		return sendInternalErrorForGet(fmt.Errorf("no " + *params.Type + " event found"))
+		return sendInternalErrorForGet(fmt.Errorf("No " + *params.Type + " event found for Keptn context: " + *params.KeptnContext))
 	}
 
 	eventByte, err := json.Marshal(cloudEvent)
@@ -81,7 +85,7 @@ func GetEventHandlerFunc(params event.GetEventParams, principal *models.Principa
 		return sendInternalErrorForGet(err)
 	}
 
-	apiEvent := &models.Event{}
+	apiEvent := &models.KeptnContextExtendedCE{}
 	err = json.Unmarshal(eventByte, apiEvent)
 	if err != nil {
 		return sendInternalErrorForGet(err)
@@ -101,8 +105,4 @@ func sendInternalErrorForGet(err error) *event.GetEventDefault {
 func addEventContextInCE(ceData interface{}, eventContext models.EventContext) interface{} {
 	ceData.(map[string]interface{})["eventContext"] = eventContext
 	return ceData
-}
-
-func getDatastoreURL() string {
-	return "http://" + os.Getenv("DATASTORE_URI")
 }

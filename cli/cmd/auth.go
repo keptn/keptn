@@ -29,7 +29,7 @@ and an API token. The endpoint and API token are exposed during the Keptn instal
 If the authentication is successful, the endpoint and the API token are stored in a password store. 
 
 Example:
-	keptn auth --endpoint=https://api.keptn.my.domain.com --api-token=xyz0123`,
+	keptn auth --endpoint=https://api.keptn.my.domain.com --api-token=abcd-0123-wxyz-7890`,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		logging.PrintLog("Starting to authenticate", logging.InfoLevel)
