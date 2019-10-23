@@ -1,22 +1,27 @@
-module keptn/remediation-service
+module github.com/keptn/keptn/remediation-service
 
-go 1.13
+go 1.12
 
 require (
+	github.com/DATA-DOG/go-sqlmock v1.3.3 // indirect
 	github.com/cloudevents/sdk-go v0.10.0
+	github.com/ghodss/yaml v1.0.0
+	github.com/gobuffalo/packr v1.30.1 // indirect
 	github.com/google/uuid v1.1.1
 	github.com/jmoiron/sqlx v1.2.0 // indirect
 	github.com/kelseyhightower/envconfig v1.3.0
 	github.com/keptn/go-utils v0.0.0
 	github.com/lib/pq v1.2.0 // indirect
 	github.com/rubenv/sql-migrate v0.0.0-20191022111038-5cdff0d8cc42 // indirect
+	github.com/stretchr/testify v1.4.0
+	github.com/ziutek/mymysql v1.5.4 // indirect
 	gopkg.in/gorp.v1 v1.7.2 // indirect
 	gopkg.in/yaml.v2 v2.2.4
 	k8s.io/api v0.0.0
 	k8s.io/apimachinery v0.0.0
 	k8s.io/client-go v12.0.0+incompatible
 	k8s.io/helm v2.14.3+incompatible
-	k8s.io/kubernetes v1.15.0
+	k8s.io/kubernetes v1.15.0 // indirect
 )
 
 replace (
