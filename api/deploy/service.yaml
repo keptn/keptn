@@ -31,8 +31,8 @@ spec:
               value: event-broker.keptn.svc.cluster.local
             - name: DATASTORE_URI
               value: mongodb-datastore.keptn-datastore.svc.cluster.local:8080
-#            - name: CONFIGURATION_URI
-#              value: configuration-service.keptn.svc.cluster.local:8080
+            - name: CONFIGURATION_URI
+              value: configuration-service.keptn.svc.cluster.local:8080
             - name: SECRET_TOKEN
               valueFrom:
                 secretKeyRef:

@@ -67,8 +67,8 @@ var p platform
 // installCmd represents the version command
 var installCmd = &cobra.Command{
 	Use:   "install",
-	Short: "Installs Keptn on your Kubernetes cluster",
-	Long: `Installs Keptn on your Kubernetes cluster
+	Short: "Installs Keptn on a Kubernetes cluster",
+	Long: `Installs Keptn on a Kubernetes cluster
 
 Example:
 	keptn install`,

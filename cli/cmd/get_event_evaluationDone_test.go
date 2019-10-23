@@ -14,8 +14,8 @@ func init() {
 	logging.InitLoggers(os.Stdout, os.Stdout, os.Stderr)
 }
 
-// TestEvaluationDone tests the evaluation-done command.
-func TestEvaluationDone(t *testing.T) {
+// TestEvaluationDoneGetEvent tests the evaluation-done command
+func TestEvaluationDoneGetEvent(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
 	buf := new(bytes.Buffer)
@@ -32,6 +32,6 @@ func TestEvaluationDone(t *testing.T) {
 	err := rootCmd.Execute()
 
 	if err != nil {
-		t.Errorf("An error occured %v", err)
+		t.Errorf("An error occured: %v", err)
 	}
 }
