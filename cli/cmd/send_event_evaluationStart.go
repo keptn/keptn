@@ -79,12 +79,12 @@ Example:
 			Data: evaluationStartEvent,
 		}
 
-		eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, "https")
-		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
-
 		eventByte, err := sdkEvent.MarshalJSON()
 		apiEvent := apimodels.Event{}
 		json.Unmarshal(eventByte, &apiEvent)
+
+		eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, "https")
+		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
 			responseEvent, err := eventHandler.SendEvent(apiEvent)
