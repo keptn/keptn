@@ -9,10 +9,25 @@ import (
 	"os"
 	"testing"
 
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	configmodels "github.com/keptn/go-utils/pkg/configuration-service/models"
+	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/magiconair/properties/assert"
 )
+
+// testingHTTPClient builds a test client with a httptest server
+func testingHTTPClient(handler http.Handler) (*http.Client, func()) {
+	server := httptest.NewServer(handler)
+
+	client := &http.Client{
+		Transport: &http.Transport{
+			DialContext: func(_ context.Context, network, _ string) (net.Conn, error) {
+				return net.Dial(network, server.Listener.Addr().String())
+			},
+		},
+	}
+
+	return client, server.Close
+}
 
 func TestGetEndpoint(t *testing.T) {
 	endPoint, err := getServiceEndpoint("CONFIGURATION_SERVICE")
@@ -27,21 +42,6 @@ func TestGetEndpoint(t *testing.T) {
 	assert.Equal(t, err, nil, "Received unexpected error")
 	assert.Equal(t, endPoint.Scheme, "http", "Schema of configuration-service endpoint incorrect")
 	assert.Equal(t, endPoint.Host, "configuration-service.keptn.svc.cluster.local", "Host of configuration-service endpoint incorrect")
-}
-
-// Helper function to build a test client with a httptest server
-func testingHTTPClient(handler http.Handler) (*http.Client, func()) {
-	server := httptest.NewServer(handler)
-
-	client := &http.Client{
-		Transport: &http.Transport{
-			DialContext: func(_ context.Context, network, _ string) (net.Conn, error) {
-				return net.Dial(network, server.Listener.Addr().String())
-			},
-		},
-	}
-
-	return client, server.Close
 }
 
 func TestCreateProjectStatusNoContent(t *testing.T) {
@@ -111,7 +111,7 @@ func TestCreateStageStatusNoContent(t *testing.T) {
 	project.ProjectName = "sockshop"
 	stage := configmodels.Stage{}
 	stage.StageName = "production"
-	err := client.createStage(project, stage, *logger)
+	err := client.createStage(project, stage.StageName, *logger)
 
 	assert.Equal(t, err, nil, "Received unexpected error")
 }

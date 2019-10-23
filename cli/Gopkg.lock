@@ -466,8 +466,8 @@
   version = "1.1.8"
 
 [[projects]]
-  branch = "develop"
-  digest = "1:d512e4c2b1961f567bda15ef5fb42ca7fb6c2329c93d7fc78a131f35585445e7"
+  branch = "feature/1005/xip-resolving"
+  digest = "1:4dc529fd9458250817f84aea99c37b3ff201a86a5899d866b73563b2b7324fa4"
   name = "github.com/keptn/go-utils"
   packages = [
     "pkg/api/models",
@@ -476,11 +476,10 @@
     "pkg/configuration-service/utils",
     "pkg/events",
     "pkg/models",
-    "pkg/mongodb-datastore/models",
     "pkg/utils",
   ]
   pruneopts = ""
-  revision = "b35b59b7b1842974ee9dc2e6017bc4551dbe0f25"
+  revision = "0f98862d18b3d9bfc6b0cb379186a0ddb3a68231"
 
 [[projects]]
   digest = "1:91317956b340c9e61a4287fd94c870bfad3f1922280c3e0a65db91c29017e8de"

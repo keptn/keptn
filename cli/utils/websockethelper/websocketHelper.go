@@ -26,17 +26,6 @@ func PrintWSContentEventContext(eventContext *apimodels.EventContext, apiEndPoin
 	return printWSContent(*connectionData, apiEndPoint)
 }
 
-// PrintWSContentByteResponse opens a websocket using the passed
-// connection data (in form of a byte slice) and prints status data
-func PrintWSContentByteResponse(response []byte, apiEndPoint url.URL) error {
-	connectionData := &keptnutils.IncompleteCE{}
-	err := json.Unmarshal(response, connectionData)
-	if err != nil {
-		return err
-	}
-	return printWSContent(connectionData.ConnData, apiEndPoint)
-}
-
 func printWSContent(connData keptnutils.ConnectionData, apiEndPoint url.URL) error {
 
 	err := validateConnectionData(connData)
