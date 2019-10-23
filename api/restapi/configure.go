@@ -68,7 +68,8 @@ func configureAPI(api *operations.API) http.Handler {
 		return auth.NewAuthOK()
 	})
 
-	api.EventSendEventHandler = event.SendEventHandlerFunc(handlers.PostEventHandlerFunc)
+	api.EventPostEventHandler = event.PostEventHandlerFunc(handlers.PostEventHandlerFunc)
+	api.EventGetEventHandler = event.GetEventHandlerFunc(handlers.GetEventHandlerFunc)
 
 	// Project endpoints
 	api.ProjectDeleteProjectProjectNameHandler = project.DeleteProjectProjectNameHandlerFunc(handlers.DeleteProjectProjectNameHandlerFunc)

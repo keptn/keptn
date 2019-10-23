@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
-	"github.com/keptn/keptn/configuration-service/models"
+	configmodels "github.com/keptn/go-utils/pkg/configuration-service/models"
 	"github.com/magiconair/properties/assert"
 )
 
@@ -60,7 +60,7 @@ func TestCreateProjectStatusNoContent(t *testing.T) {
 	logger := keptnutils.NewLogger("4711-a83b-4bc1-9dc0-1f050c7e789b", "4711-a83b-4bc1-9dc0-1f050c7e781b", "shipyard-service")
 	os.Setenv("CONFIGURATION_SERVICE", "http://configuration-service.keptn.svc.cluster.local")
 
-	project := models.Project{}
+	project := configmodels.Project{}
 	project.ProjectName = "sockshop"
 	err := client.createProject(project, *logger)
 
@@ -84,7 +84,7 @@ func TestCreateProjectBadRequest(t *testing.T) {
 	logger := keptnutils.NewLogger("4711-a83b-4bc1-9dc0-1f050c7e789b", "4711-a83b-4bc1-9dc0-1f050c7e781b", "shipyard-service")
 	os.Setenv("CONFIGURATION_SERVICE", "http://configuration-service.keptn.svc.cluster.local")
 
-	project := models.Project{}
+	project := configmodels.Project{}
 	project.ProjectName = "sockshop"
 	err := client.createProject(project, *logger)
 
@@ -107,9 +107,9 @@ func TestCreateStageStatusNoContent(t *testing.T) {
 	logger := keptnutils.NewLogger("4711-a83b-4bc1-9dc0-1f050c7e789b", "4711-a83b-4bc1-9dc0-1f050c7e781b", "shipyard-service")
 	os.Setenv("CONFIGURATION_SERVICE", "http://configuration-service.keptn.svc.cluster.local")
 
-	project := models.Project{}
+	project := configmodels.Project{}
 	project.ProjectName = "sockshop"
-	stage := models.Stage{}
+	stage := configmodels.Stage{}
 	stage.StageName = "production"
 	err := client.createStage(project, stage, *logger)
 

@@ -31,6 +31,7 @@ func TestAuthCmd(t *testing.T) {
 
 	args := []string{
 		"auth",
+
 		fmt.Sprintf("--endpoint=%s", endPoint.String()),
 		fmt.Sprintf("--api-token=%s", apiToken),
 		"--mock",
