@@ -48,14 +48,15 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	stdLogger := keptnutils.NewLogger(shkeptncontext, event.Context.GetID(), "helm-service")
 
 	var logger keptnutils.LoggerInterface
-
 	loggingDone := make(chan bool)
 
+	// open WebSocket, if connection data is available
 	connData := keptnutils.ConnectionData{}
 	if err := event.DataAs(&connData); err != nil ||
-		connData.ChannelInfo.ChannelID == "" || connData.ChannelInfo.Token == "" {
+		connData.EventContext.KeptnContext == nil || connData.EventContext.Token == nil ||
+		*connData.EventContext.KeptnContext == "" || *connData.EventContext.Token == "" {
 		logger = stdLogger
-		logger.Debug("No Websocket connection data available")
+		logger.Debug("No WebSocket connection data available")
 	} else {
 		apiServiceURL, err := serviceutils.GetAPIURL()
 		if err != nil {
@@ -64,7 +65,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		}
 		ws, _, err := keptnutils.OpenWS(connData, *apiServiceURL)
 		if err != nil {
-			stdLogger.Error(fmt.Sprintf("Opening websocket connection failed. %s", err.Error()))
+			stdLogger.Error(fmt.Sprintf("Opening WebSocket connection failed. %s", err.Error()))
 			return nil
 		}
 		combinedLogger := keptnutils.NewCombinedLogger(stdLogger, ws, shkeptncontext)

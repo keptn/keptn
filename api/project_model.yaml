@@ -2,7 +2,7 @@
 definitions:
   project:
     type: object
-    requried:
+    required:
       - name
       - shipyard
     properties:

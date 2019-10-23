@@ -70,6 +70,16 @@ func GetEvents(params event.GetEventsParams) (result *event.GetEventsOKBody, err
 	if params.Type != nil {
 		searchOptions["type"] = params.Type
 	}
+	if params.Project != nil {
+		searchOptions["data.project"] = params.Project
+	}
+	if params.Stage != nil {
+		searchOptions["data.stage"] = params.Stage
+	}
+	if params.Service != nil {
+		searchOptions["data.service"] = params.Service
+	}
+
 	var newNextPageKey int64
 	var nextPageKey int64 = 0
 	if params.NextPageKey != nil {
@@ -81,7 +91,6 @@ func GetEvents(params event.GetEventsParams) (result *event.GetEventsOKBody, err
 	}
 
 	pagesize := *params.PageSize
-
 	sortOptions := options.Find().SetSort(bson.D{{"time", -1}}).SetSkip(nextPageKey).SetLimit(pagesize)
 
 	totalCount, err := collection.CountDocuments(ctx, searchOptions)
@@ -121,5 +130,4 @@ func GetEvents(params event.GetEventsParams) (result *event.GetEventsOKBody, err
 	}
 
 	return &myresult, nil
-
 }
