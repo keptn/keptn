@@ -129,13 +129,13 @@ var monitoringCmd = &cobra.Command{
 
 		eventByte, err := sdkEvent.MarshalJSON()
 		if err != nil {
-			return fmt.Errorf("Failed to marshal CloudEvent. %s", err.Error())
+			return fmt.Errorf("Failed to marshal cloud event. %s", err.Error())
 		}
 
 		apiEvent := apimodels.Event{}
 		err = json.Unmarshal(eventByte, &apiEvent)
 		if err != nil {
-			return fmt.Errorf("Failed to map CloudEvent to API event model. %s", err.Error())
+			return fmt.Errorf("Failed to map cloud event to API event model. %s", err.Error())
 		}
 
 		if !mocking {
