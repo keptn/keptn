@@ -38,7 +38,7 @@
 
 [[constraint]]
   name = "github.com/keptn/go-utils"
-  branch = "feature/995/configuration-change-event"
+  branch = "develop"
 
 [[override]]
   name = "k8s.io/kubernetes"
@@ -79,18 +79,6 @@
 [[override]]
   name =  "github.com/Azure/go-autorest"
   revision = "bca49d5b51a50dc5bb17bbf6204c711c6dbded06"
-
-[[override]]
-  name = "github.com/Masterminds/sprig"
-  revision = "15f9564e7e9cf0da02a48e0d25f12a7b83559aa6"
-
-[[override]]
-  name = "github.com/Masterminds/semver"
-  revision = "517734cc7d6470c0d07130e40fd40bdeb9bcd3fd"
-
-[[override]]
-  name = "github.com/Masterminds/vcs"
-  revision = "3084677c2c188840777bff30054f2b553729d329"
 
 [[constraint]]
   name = "github.com/ghodss/yaml"

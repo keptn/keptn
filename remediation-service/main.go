@@ -19,6 +19,8 @@ import (
 	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
 	"github.com/kelseyhightower/envconfig"
 
+	configmodels "github.com/keptn/go-utils/pkg/configuration-service/models"
+	configutils "github.com/keptn/go-utils/pkg/configuration-service/utils"
 	keptnevents "github.com/keptn/go-utils/pkg/events"
 	keptnmodels "github.com/keptn/go-utils/pkg/models"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
@@ -144,7 +146,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	logger.Debug("Received open problem")
 
 	// valide if remediation should be performed
-	resourceHandler := keptnutils.NewResourceHandler(os.Getenv(configurationserviceconnection))
+	resourceHandler := configutils.NewResourceHandler(os.Getenv(configurationserviceconnection))
 	autoremediate, err := isRemediationEnabled(resourceHandler, problemEvent.Project, problemEvent.Stage)
 	if err != nil {
 		logger.Error(fmt.Sprintf("Failed to check if remediation is enabled: %s", err.Error()))
@@ -159,7 +161,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	}
 
 	// get remediation.yaml
-	var resource *keptnmodels.Resource
+	var resource *configmodels.Resource
 	if problemEvent.Service != "" {
 		resource, err = resourceHandler.GetServiceResource(problemEvent.Project, problemEvent.Stage,
 			problemEvent.Service, remediationFileName)
@@ -303,7 +305,7 @@ func getHelmClient() (*helm.Client, error) {
 
 }
 
-func isRemediationEnabled(rh *keptnutils.ResourceHandler, project string, stage string) (bool, error) {
+func isRemediationEnabled(rh *configutils.ResourceHandler, project string, stage string) (bool, error) {
 	keptnHandler := keptnutils.NewKeptnHandler(rh)
 	shipyard, err := keptnHandler.GetShipyard(project)
 	if err != nil {
