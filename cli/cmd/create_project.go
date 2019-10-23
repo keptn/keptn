@@ -137,20 +137,20 @@ Example:
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
-			channelInfo, err := projectHandler.CreateProject(project)
+			eventContext, err := projectHandler.CreateProject(project)
 			if err != nil {
 				fmt.Println("Create project was unsuccessful")
 				return fmt.Errorf("Create project was unsuccessful. %s", *err.Message)
 			}
 
-			// if ChannelInfo is available, open WebSocket communication
-			if channelInfo != nil {
-				return websockethelper.PrintWSContentEventContext(channelInfo, endPoint)
+			// if eventContext is available, open WebSocket communication
+			if eventContext != nil {
+				return websockethelper.PrintWSContentEventContext(eventContext, endPoint)
 			}
 
 			return nil
-		} 
-		
+		}
+
 		fmt.Println("Skipping create project due to mocking flag set to true")
 		return nil
 	},

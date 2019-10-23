@@ -1,18 +1,15 @@
 package cmd
 
 import (
-	"crypto/tls"
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"net/http"
 	"os"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/cli/pkg/logging"
-	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
 	"github.com/spf13/cobra"
 )
@@ -47,31 +44,26 @@ Example:
 		}
 
 		resourceContent, err := ioutil.ReadFile(*addResourceCmdParams.Resource)
-		resourceContentStr := string(resourceContent)
 		if err != nil {
 			return errors.New("File " + *addResourceCmdParams.Resource + " could not be read")
 		}
 
+		if *addResourceCmdParams.ResourceURI == "" {
+			addResourceCmdParams.ResourceURI = addResourceCmdParams.Resource
+		}
+
+		resourceContentStr := string(resourceContent)
+		resources := []*apimodels.Resource{
+			&apimodels.Resource{
+				ResourceContent: &resourceContentStr,
+				ResourceURI:     addResourceCmdParams.ResourceURI,
+			},
+		}
+
+		resourceHandler := apiutils.NewAuthenticatedResourceHandler(endPoint.Host, apiToken, "x-token", nil, "https")
 		logging.PrintLog("Adding resource "+*addResourceCmdParams.Resource+" to service "+*addResourceCmdParams.Service+" in stage "+*addResourceCmdParams.Stage+" in project "+*addResourceCmdParams.Project, logging.InfoLevel)
 
 		if !mocking {
-			if *addResourceCmdParams.ResourceURI == "" {
-				addResourceCmdParams.ResourceURI = addResourceCmdParams.Resource
-			}
-			resources := []*apimodels.Resource{
-				&apimodels.Resource{
-					ResourceContent: &resourceContentStr,
-					ResourceURI:     addResourceCmdParams.ResourceURI,
-				},
-			}
-
-			tr := &http.Transport{
-				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-				DialContext:     utils.ResolveXipIoWithContext,
-			}
-
-			client := &http.Client{Transport: tr}
-			resourceHandler := apiutils.NewAuthenticatedResourceHandler(endPoint.Host, apiToken, "x-token", client, "https")
 			_, errorObj := resourceHandler.CreateServiceResources(*addResourceCmdParams.Project, *addResourceCmdParams.Stage, *addResourceCmdParams.Service, resources)
 			if errorObj != nil {
 				return errors.New("Resource " + *addResourceCmdParams.Resource + " could not be uploaded: " + *errorObj.Message)
