@@ -148,7 +148,7 @@ func setTag() {
 
 func checkImageAvailability() error {
 
-	if strings.HasPrefix(*newArtifact.Image, "docker.io/") || strings.Count(*newArtifact.Image, "/") == 1 {
+	if strings.HasPrefix(*newArtifact.Image, "docker.io/") {
 		resp, err := http.Get("https://index.docker.io/v1/repositories/" +
 			strings.TrimPrefix(*newArtifact.Image, "docker.io/") + "/tags/" + *newArtifact.Tag)
 		if err != nil {
