@@ -3,7 +3,6 @@ package actions
 import (
 	"testing"
 
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/helm/pkg/proto/hapi/chart"
 )
@@ -137,8 +136,7 @@ status: {}
 	template := &chart.Template{Name: templateFileName, Data: []byte(deploymentContent)}
 	inputChart.Templates = append(inputChart.Templates, template)
 
-	logger := keptnutils.NewLogger("", "", "remediation-service")
-	scaler := NewScaler(logger)
+	scaler := NewScaler()
 	changedTemplates, err := scaler.increaseReplicaCount(&inputChart, 2)
 
 	assert.Nil(t, err)
@@ -170,7 +168,7 @@ spec:
       labels:
         app: carts
     spec:
-      containers:L
+      containers:
       - image: mongo
         imagePullPolicy: IfNotPresent
         livenessProbe:
@@ -227,8 +225,7 @@ spec:
 	emptyTemplate := &chart.Template{Name: "test.yaml", Data: []byte{}}
 	inputChart.Templates = append(inputChart.Templates, emptyTemplate)
 
-	logger := keptnutils.NewLogger("", "", "remediation-service")
-	scaler := NewScaler(logger)
+	scaler := NewScaler()
 	changedTemplates, err := scaler.increaseReplicaCount(&inputChart, 2)
 
 	assert.Nil(t, err)
