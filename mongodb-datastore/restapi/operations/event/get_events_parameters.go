@@ -56,6 +56,18 @@ type GetEventsParams struct {
 	  Default: 20
 	*/
 	PageSize *int64
+	/*Name of the project
+	  In: query
+	*/
+	Project *string
+	/*Name of the service
+	  In: query
+	*/
+	Service *string
+	/*Name of the stage
+	  In: query
+	*/
+	Stage *string
 	/*Type of the keptn cloud event
 	  In: query
 	*/
@@ -85,6 +97,21 @@ func (o *GetEventsParams) BindRequest(r *http.Request, route *middleware.Matched
 
 	qPageSize, qhkPageSize, _ := qs.GetOK("pageSize")
 	if err := o.bindPageSize(qPageSize, qhkPageSize, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
+	qProject, qhkProject, _ := qs.GetOK("project")
+	if err := o.bindProject(qProject, qhkProject, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
+	qService, qhkService, _ := qs.GetOK("service")
+	if err := o.bindService(qService, qhkService, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
+	qStage, qhkStage, _ := qs.GetOK("stage")
+	if err := o.bindStage(qStage, qhkStage, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -172,6 +199,60 @@ func (o *GetEventsParams) validatePageSize(formats strfmt.Registry) error {
 	if err := validate.MaximumInt("pageSize", "query", int64(*o.PageSize), 100, false); err != nil {
 		return err
 	}
+
+	return nil
+}
+
+// bindProject binds and validates parameter Project from query.
+func (o *GetEventsParams) bindProject(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+
+	// Required: false
+	// AllowEmptyValue: false
+	if raw == "" { // empty values pass all other validations
+		return nil
+	}
+
+	o.Project = &raw
+
+	return nil
+}
+
+// bindService binds and validates parameter Service from query.
+func (o *GetEventsParams) bindService(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+
+	// Required: false
+	// AllowEmptyValue: false
+	if raw == "" { // empty values pass all other validations
+		return nil
+	}
+
+	o.Service = &raw
+
+	return nil
+}
+
+// bindStage binds and validates parameter Stage from query.
+func (o *GetEventsParams) bindStage(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+
+	// Required: false
+	// AllowEmptyValue: false
+	if raw == "" { // empty values pass all other validations
+		return nil
+	}
+
+	o.Stage = &raw
 
 	return nil
 }

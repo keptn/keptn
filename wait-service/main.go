@@ -18,6 +18,7 @@ import (
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
 	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
+
 	"github.com/google/uuid"
 	"github.com/kelseyhightower/envconfig"
 )

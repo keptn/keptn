@@ -5,18 +5,21 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/helm/pkg/proto/hapi/chart"
 	"os"
 
-	cloudevents "github.com/cloudevents/sdk-go"
-	keptnevents "github.com/keptn/go-utils/pkg/events"
-	"github.com/keptn/go-utils/pkg/models"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
-	"github.com/keptn/keptn/helm-service/controller/helm"
-	"github.com/keptn/keptn/helm-service/pkg/serviceutils"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/helm/pkg/proto/hapi/chart"
 
+	cloudevents "github.com/cloudevents/sdk-go"
+
+	configmodels "github.com/keptn/go-utils/pkg/configuration-service/models"
+	configutils "github.com/keptn/go-utils/pkg/configuration-service/utils"
+	keptnevents "github.com/keptn/go-utils/pkg/events"
+	keptnutils "github.com/keptn/go-utils/pkg/utils"
+
+	"github.com/keptn/keptn/helm-service/controller/helm"
 	"github.com/keptn/keptn/helm-service/controller/mesh"
+	"github.com/keptn/keptn/helm-service/pkg/serviceutils"
 )
 
 // Onboarder is a container of variables required for onboarding a new service
@@ -68,7 +71,7 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event, loggingDone chan bool) error
 		return err
 	}
 
-	stageHandler := keptnutils.NewStageHandler(url.String())
+	stageHandler := configutils.NewStageHandler(url.String())
 	stages, err := stageHandler.GetAllStages(event.Project)
 	if err != nil {
 		o.logger.Error("Error when getting all stages: " + err.Error())
@@ -119,7 +122,7 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event, loggingDone chan bool) error
 func (o *Onboarder) onboardService(stageName string, event *keptnevents.ServiceCreateEventData,
 	configServiceURL string) error {
 
-	serviceHandler := keptnutils.NewServiceHandler(configServiceURL)
+	serviceHandler := configutils.NewServiceHandler(configServiceURL)
 	helmChartData, err := base64.StdEncoding.DecodeString(event.HelmChart)
 	if err != nil {
 		o.logger.Error("Error when decoding the Helm chart")
@@ -235,7 +238,7 @@ func (o *Onboarder) updateUmbrellaChart(project, stage, helmChartName string) er
 }
 
 func (o *Onboarder) initAndApplyUmbrellaChart(event *keptnevents.ServiceCreateEventData,
-	umbrellaChartHandler *helm.UmbrellaChartHandler, stages []*models.Stage) error {
+	umbrellaChartHandler *helm.UmbrellaChartHandler, stages []*configmodels.Stage) error {
 
 	// Initalize the umbrella chart
 	if err := umbrellaChartHandler.InitUmbrellaChart(event, stages); err != nil {
@@ -271,7 +274,7 @@ func (o *Onboarder) isBlueGreenStage(project string, stageName string) bool {
 		return false
 	}
 
-	resourceHandler := keptnutils.NewResourceHandler(url.String())
+	resourceHandler := configutils.NewResourceHandler(url.String())
 	handler := keptnutils.NewKeptnHandler(resourceHandler)
 
 	shipyard, err := handler.GetShipyard(project)
@@ -288,7 +291,7 @@ func (o *Onboarder) isBlueGreenStage(project string, stageName string) bool {
 	return false
 }
 
-func (o *Onboarder) isFirstServiceOfProject(event *keptnevents.ServiceCreateEventData, stages []*models.Stage) (bool, error) {
+func (o *Onboarder) isFirstServiceOfProject(event *keptnevents.ServiceCreateEventData, stages []*configmodels.Stage) (bool, error) {
 
 	if len(stages) == 0 {
 		return false, errors.New("Cannot onboard service because no stage is available")
@@ -297,7 +300,7 @@ func (o *Onboarder) isFirstServiceOfProject(event *keptnevents.ServiceCreateEven
 	if err != nil {
 		return false, err
 	}
-	svcHandler := keptnutils.NewServiceHandler(url.String())
+	svcHandler := configutils.NewServiceHandler(url.String())
 	// Use any stage for checking whether there is already a service created
 	services, err := svcHandler.GetAllServices(event.Project, stages[0].StageName)
 	if err != nil {

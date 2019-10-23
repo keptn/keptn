@@ -28,7 +28,7 @@ func TestNewArtifact(t *testing.T) {
 		fmt.Sprintf("--project=%s", "sockshop"),
 		fmt.Sprintf("--service=%s", "carts"),
 		fmt.Sprintf("--image=%s", "docker.io/keptnexamples/carts"),
-		fmt.Sprintf("--tag=%s", "0.7.0"),
+		fmt.Sprintf("--tag=%s", "0.9.1"),
 		"--mock",
 	}
 	rootCmd.SetArgs(args)
@@ -75,7 +75,7 @@ func TestCheckImageAvailability(t *testing.T) {
 
 func TestCheckImageNonAvailability(t *testing.T) {
 
-	invalidImgs := []DockerImg{DockerImg{"keptnexamples/carts", "0.7.5"}, DockerImg{"docker.io/keptnexamples/carts:0.7.5", ""}}
+	invalidImgs := []DockerImg{DockerImg{"docker.io/keptnexamples/carts:0.7.5", ""}}
 
 	credentialmanager.MockAuthCreds = true
 	buf := new(bytes.Buffer)
@@ -90,7 +90,7 @@ func TestCheckImageNonAvailability(t *testing.T) {
 		err := newArtifactCmd.PreRunE(newArtifactCmd, []string{})
 
 		Expected := "Provided image not found: Tag not found"
-		if err.Error() != Expected {
+		if err == nil || err.Error() != Expected {
 			t.Errorf("Error actual = %v, and Expected = %v.", err, Expected)
 		}
 	}

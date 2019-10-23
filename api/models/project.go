@@ -8,7 +8,9 @@ package models
 import (
 	strfmt "github.com/go-openapi/strfmt"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // Project project
@@ -25,14 +27,47 @@ type Project struct {
 	GitUser string `json:"gitUser,omitempty"`
 
 	// name
-	Name string `json:"name,omitempty"`
+	// Required: true
+	Name *string `json:"name"`
 
 	// shipyard
-	Shipyard string `json:"shipyard,omitempty"`
+	// Required: true
+	Shipyard *string `json:"shipyard"`
 }
 
 // Validate validates this project
 func (m *Project) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateShipyard(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *Project) validateName(formats strfmt.Registry) error {
+
+	if err := validate.Required("name", "body", m.Name); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Project) validateShipyard(formats strfmt.Registry) error {
+
+	if err := validate.Required("shipyard", "body", m.Shipyard); err != nil {
+		return err
+	}
+
 	return nil
 }
 
