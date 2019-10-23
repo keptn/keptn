@@ -1,11 +1,8 @@
 package controller
 
 import (
-	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -21,11 +18,7 @@ import (
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/helm-service/controller/helm"
 	"github.com/keptn/keptn/helm-service/controller/mesh"
-	"github.com/keptn/keptn/helm-service/pkg/objectutils"
 	"github.com/keptn/keptn/helm-service/pkg/serviceutils"
-	"github.com/tidwall/sjson"
-	appsv1 "k8s.io/api/apps/v1"
-	kyaml "k8s.io/apimachinery/pkg/util/yaml"
 	"k8s.io/helm/pkg/chartutil"
 )
 
@@ -111,17 +104,6 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event,
 					return err
 				}
 			}
-		}
-	}
-	if len(e.DeploymentChanges) > 0 {
-		ch, err := c.updateChart(e, true, changePrimaryDeployment)
-		if err != nil {
-			c.logger.Error(err.Error())
-			return err
-		}
-		if _, err := c.ApplyChart(ch, e.Project, e.Stage, e.Service, true); err != nil {
-			c.logger.Error(err.Error())
-			return err
 		}
 	}
 
@@ -256,54 +238,6 @@ func getDeploymentStrategyOfService(ch *chart.Chart) (keptnevents.DeploymentStra
 		}
 	}
 	return keptnevents.Duplicate, errors.New("Cannot find deployment_strategy in keywords")
-}
-
-func changePrimaryDeployment(e *keptnevents.ConfigurationChangeEventData, chart *chart.Chart) error {
-
-	for _, template := range chart.Templates {
-		dec := kyaml.NewYAMLToJSONDecoder(bytes.NewReader(template.Data))
-		newContent := make([]byte, 0, 0)
-		for {
-			var document interface{}
-			err := dec.Decode(&document)
-			if err == io.EOF {
-				break
-			}
-			if err != nil {
-				return err
-			}
-
-			doc, err := json.Marshal(document)
-			if err != nil {
-				return err
-			}
-
-			var depl appsv1.Deployment
-			if err := json.Unmarshal(doc, &depl); err == nil && keptnutils.IsDeployment(&depl) {
-				// It is a deployment
-				newDeployment := string(doc)
-				for _, change := range e.DeploymentChanges {
-					newDeployment, err = sjson.Set(newDeployment, change.PropertyPath, change.Value)
-					if err != nil {
-						return err
-					}
-				}
-				newContent, err = objectutils.AppendJSONStringAsYaml(newContent, newDeployment)
-				if err != nil {
-					return err
-				}
-
-			} else {
-				newContent, err = objectutils.AppendAsYaml(newContent, document)
-				if err != nil {
-					return err
-				}
-			}
-		}
-		template.Data = newContent
-	}
-
-	return nil
 }
 
 func (c *ConfigurationChanger) updateChart(e *keptnevents.ConfigurationChangeEventData, generated bool,
