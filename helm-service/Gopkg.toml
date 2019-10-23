@@ -63,7 +63,11 @@
 
 [[constraint]]
   name = "k8s.io/helm"
-  version = "v2.12.3"
+  revision = "eecf22f77df5f65c823aacd2dbd30ae6c65f186e"
+
+[[constraint]]
+  name = "github.com/ghodss/yaml"
+  revision = "73d445a93680fa1a78ae23a5839bad48f32ba1ee"
 
 [prune]
   go-tests = true
