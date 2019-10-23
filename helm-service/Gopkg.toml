@@ -43,7 +43,7 @@
 
 [[constraint]]
   name = "github.com/keptn/go-utils"
-  branch = "feature/995/configuration-change-event"
+  branch = "develop"
 
 [[override]]
   name = "k8s.io/client-go"
