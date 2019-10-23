@@ -211,7 +211,6 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("initialization of Helm done")
 }
 
 // get helm release name by impacted entity
