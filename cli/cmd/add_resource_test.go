@@ -37,7 +37,7 @@ func TestAddResource(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
 
-	resourceFileName := "resource.txt"
+	resourceFileName := "testResource.txt"
 	defer testResource(t, resourceFileName, "")()
 
 	buf := new(bytes.Buffer)
@@ -57,6 +57,6 @@ func TestAddResource(t *testing.T) {
 	err := rootCmd.Execute()
 
 	if err != nil {
-		t.Errorf("An error occured %v", err)
+		t.Errorf("An error occured: %v", err)
 	}
 }

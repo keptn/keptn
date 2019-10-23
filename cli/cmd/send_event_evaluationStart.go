@@ -42,7 +42,7 @@ var evaluationStart evaluationStartStruct
 var evaluationStartCmd = &cobra.Command{
 	Use: "evaluation.start",
 	Short: "Sends an evaluation.start event to Keptn in order to evaluate a test" +
-		"for the specified service in the provided project.",
+		"for the specified service in the provided project",
 	Long: `Sends an evaluation.start event to Keptn in order to evaluate a test
 for the specified service in the provided project.
 	
@@ -98,7 +98,7 @@ Example:
 				return nil
 			}
 
-			fmt.Println("The keptn context is: " + *responseEvent.KeptnContext)
+			fmt.Println("ID of Keptn context: " + *responseEvent.KeptnContext)
 			return nil
 		}
 
