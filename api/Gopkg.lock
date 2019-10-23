@@ -425,7 +425,7 @@
 
 [[projects]]
   branch = "develop"
-  digest = "1:92988ea777d20f9b27a7b115da9a7effa8d7f004be995570f50f4afe95693da0"
+  digest = "1:1d39f26a9a750e1561850576b1a000b0ae6574c051c0e9aca48197773565e7a1"
   name = "github.com/keptn/go-utils"
   packages = [
     "pkg/api/models",
@@ -438,7 +438,7 @@
     "pkg/utils",
   ]
   pruneopts = "UT"
-  revision = "b35b59b7b1842974ee9dc2e6017bc4551dbe0f25"
+  revision = "168f78d35fdf675f1b9956cd83ada8075d91bb7b"
 
 [[projects]]
   digest = "1:fd7f169f32c221b096c74e756bda16fe22d3bb448bbf74042fd0700407a1f92f"
@@ -715,7 +715,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:2d4ef744498218d6d0e966e7094911d9a76616ed49c78b54d0697e482fb69b1c"
+  digest = "1:fee31b48b43f43ff2f1d802c4fccf062b1b42df077acf669b8be40f119da6ab9"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
@@ -723,7 +723,7 @@
     "windows",
   ]
   pruneopts = "UT"
-  revision = "3e7259c5e7c2076bb2728047a3df75adb1bad8e5"
+  revision = "742c48ecaeb7c624c475e02f3eb0827ebb4970d4"
 
 [[projects]]
   digest = "1:66a2f252a58b4fbbad0e4e180e1d85a83c222b6bce09c3dcdef3dc87c72eda7c"
@@ -753,11 +753,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:cdd088b35bbf78713a6861a44a1bbe97e581861b6b8835c7f2211bbeca3671f6"
+  digest = "1:32a1c8a24e8d0259416f84720d6c32e5c52cf10d01c19a7d23dcfa868f6b6235"
   name = "golang.org/x/time"
   packages = ["rate"]
   pruneopts = "UT"
-  revision = "c4c64cad1fd0a1a8dab2523e04e61d35308e131e"
+  revision = "6d3f0bb11be5e03f8353894b7240e7d793e40a8f"
 
 [[projects]]
   digest = "1:3c03b58f57452764a4499c55c582346c0ee78c8a5033affe5bdfd9efd3da5bd1"
