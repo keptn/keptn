@@ -124,7 +124,7 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 
-		logging.PrintLog("Installing keptn...", logging.InfoLevel)
+		logging.PrintLog("Installing Keptn ...", logging.InfoLevel)
 
 		var err error
 		if !mocking {
@@ -260,7 +260,7 @@ func doInstallation() error {
 		}
 	}
 
-	logging.PrintLog("Deploying keptn installer pod...", logging.InfoLevel)
+	logging.PrintLog("Deploying Keptn installer pod ...", logging.InfoLevel)
 
 	o := options{"apply", "-f", installerPath}
 	o.appendIfNotEmpty(kubectlOptions)

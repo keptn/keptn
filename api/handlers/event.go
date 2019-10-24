@@ -31,13 +31,12 @@ func getDatastoreURL() string {
 func PostEventHandlerFunc(params event.PostEventParams, principal *models.Principal) middleware.Responder {
 
 	keptnContext := uuid.New().String()
-	l := keptnutils.NewLogger(keptnContext, "", "api")
-	l.Info("API received a keptn event")
+	logger := keptnutils.NewLogger(keptnContext, "", "api")
+	logger.Info("API received a keptn event")
 
 	token, err := ws.CreateChannelInfo(keptnContext)
 	if err != nil {
-		l.Error(fmt.Sprintf("Error creating channel info %s", err.Error()))
-		return sendInternalErrorForPost(err)
+		return sendInternalErrorForPost(fmt.Errorf("Error creating channel info %s", err.Error()), logger)
 	}
 
 	eventContext := models.EventContext{KeptnContext: &keptnContext, Token: &token}
@@ -60,8 +59,7 @@ func PostEventHandlerFunc(params event.PostEventParams, principal *models.Princi
 
 	_, err = utils.PostToEventBroker(ev)
 	if err != nil {
-		l.Error(fmt.Sprintf("Error sending CloudEvent %s", err.Error()))
-		return sendInternalErrorForPost(err)
+		return sendInternalErrorForPost(err, logger)
 	}
 
 	return event.NewPostEventOK().WithPayload(&eventContext)
@@ -69,36 +67,40 @@ func PostEventHandlerFunc(params event.PostEventParams, principal *models.Princi
 
 // GetEventHandlerFunc returns an event specified by keptnContext and eventType
 func GetEventHandlerFunc(params event.GetEventParams, principal *models.Principal) middleware.Responder {
-	eventHandler := datastore.NewEventHandler(getDatastoreURL())
 
+	logger := keptnutils.NewLogger(*params.KeptnContext, "", "api")
+
+	eventHandler := datastore.NewEventHandler(getDatastoreURL())
 	cloudEvent, errObj := eventHandler.GetEvent(*params.KeptnContext, *params.Type)
 	if errObj != nil {
-		return sendInternalErrorForGet(fmt.Errorf("%s", errObj.Message))
+		return sendInternalErrorForGet(fmt.Errorf("%s", errObj.Message), logger)
 	}
 
 	if cloudEvent == nil {
-		return sendInternalErrorForGet(fmt.Errorf("No " + *params.Type + " event found for Keptn context: " + *params.KeptnContext))
+		return sendInternalErrorForGet(fmt.Errorf("No "+*params.Type+" event found for Keptn context: "+*params.KeptnContext), logger)
 	}
 
 	eventByte, err := json.Marshal(cloudEvent)
 	if err != nil {
-		return sendInternalErrorForGet(err)
+		return sendInternalErrorForGet(err, logger)
 	}
 
 	apiEvent := &models.KeptnContextExtendedCE{}
 	err = json.Unmarshal(eventByte, apiEvent)
 	if err != nil {
-		return sendInternalErrorForGet(err)
+		return sendInternalErrorForGet(err, logger)
 	}
 
 	return event.NewGetEventOK().WithPayload(apiEvent)
 }
 
-func sendInternalErrorForPost(err error) *event.PostEventDefault {
+func sendInternalErrorForPost(err error, logger *keptnutils.Logger) *event.PostEventDefault {
+	logger.Error(err.Error())
 	return event.NewPostEventDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 }
 
-func sendInternalErrorForGet(err error) *event.GetEventDefault {
+func sendInternalErrorForGet(err error, logger *keptnutils.Logger) *event.GetEventDefault {
+	logger.Error(err.Error())
 	return event.NewGetEventDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 }
 

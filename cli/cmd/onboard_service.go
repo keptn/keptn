@@ -39,7 +39,7 @@ Example:
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
 			cmd.SilenceUsage = false
-			return errors.New("Requires SERVICENAME")
+			return errors.New(`required argument "servicename" not set`)
 		}
 		return nil
 	},
