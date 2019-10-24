@@ -42,11 +42,6 @@ Example:
 	keptn get event evaluation-done --keptn-context=1234-5678-90ab-cdef`,
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-
-		if *evaluationDone.KeptnContext == "" {
-			return errors.New("Specify a Keptn context from which the event sould be retrieved")
-		}
-
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {

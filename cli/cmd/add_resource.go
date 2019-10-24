@@ -89,14 +89,19 @@ func fileExists(path string) bool {
 func init() {
 	rootCmd.AddCommand(addResourceCmd)
 	addResourceCmdParams = &addResourceCommandParameters{}
+	
 	addResourceCmdParams.Project = addResourceCmd.Flags().StringP("project", "p", "", "The name of the project")
 	addResourceCmd.MarkFlagRequired("project")
+	
 	addResourceCmdParams.Stage = addResourceCmd.Flags().StringP("stage", "s", "", "The name of the stage")
 	addResourceCmd.MarkFlagRequired("stage")
+	
 	addResourceCmdParams.Service = addResourceCmd.Flags().StringP("service", "", "", "The name of the service within the project")
 	addResourceCmd.MarkFlagRequired("service")
+	
 	addResourceCmdParams.Resource = addResourceCmd.Flags().StringP("resource", "r", "", "Path pointing to the resource on your local file system")
 	addResourceCmd.MarkFlagRequired("resource")
+	
 	addResourceCmdParams.ResourceURI = addResourceCmd.Flags().StringP("resourceUri", "", "", "Optional: Location where the resource should be stored within the config repo. If empty, The name of the resource will be the same as on your local file system")
 
 }
