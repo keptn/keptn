@@ -73,7 +73,7 @@ func GetEventHandlerFunc(params event.GetEventParams, principal *models.Principa
 	eventHandler := datastore.NewEventHandler(getDatastoreURL())
 	cloudEvent, errObj := eventHandler.GetEvent(*params.KeptnContext, *params.Type)
 	if errObj != nil {
-		return sendInternalErrorForGet(fmt.Errorf("%s", errObj.Message), logger)
+		return sendInternalErrorForGet(fmt.Errorf("%s", *errObj.Message), logger)
 	}
 
 	if cloudEvent == nil {
