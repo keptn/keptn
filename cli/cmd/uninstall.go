@@ -77,7 +77,7 @@ var uninstallCmd = &cobra.Command{
 				logging.PrintLog("                          kubectl delete all -l app=helm -n kube-system", logging.InfoLevel)
 			} else if namespace == "istio-system" {
 				// istio is special, we will refer to the official uninstall docs
-				logging.PrintLog("      Please consult the Istio documentation at https://istio.io/docs/setup/install/helm/#uninstall on how to remove Istio.", logging.InfoLevel)
+				logging.PrintLog("      Please consult the Istio Docs at https://istio.io/docs/setup/install/helm/#uninstall on how to remove Istio.", logging.InfoLevel)
 				logging.PrintLog("      Recommended action: kubectl delete namespace istio-system", logging.InfoLevel)
 			} else {
 				// just delete the namespace
