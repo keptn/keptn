@@ -57,9 +57,9 @@
   name = "go.mongodb.org/mongo-driver"
   version = "~1.0.4"
 
-[[constraint]]
+[[override]]
   name = "github.com/keptn/go-utils"
-  version = "0.1.1"
+  branch = "develop"
 
 [[override]]
   name = "contrib.go.opencensus.io/exporter/ocagent"

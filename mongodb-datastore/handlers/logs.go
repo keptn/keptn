@@ -17,11 +17,12 @@ import (
 
 // SaveLog to datastore
 func SaveLog(body []*logs.SaveLogParamsBodyItems0) (err error) {
-	keptnutils.Debug("", "save log to datastore")
+	logger := keptnutils.NewLogger("", "", serviceName)
+	logger.Debug("save log to datastore")
 
 	client, err := mongo.NewClient(options.Client().ApplyURI(mongoDBConnection))
 	if err != nil {
-		keptnutils.Error("", fmt.Sprintf("error creating client: %s", err.Error()))
+		logger.Error(fmt.Sprintf("error creating client: %s", err.Error()))
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -29,7 +30,7 @@ func SaveLog(body []*logs.SaveLogParamsBodyItems0) (err error) {
 
 	err = client.Connect(ctx)
 	if err != nil {
-		keptnutils.Error("", fmt.Sprintf("could not connect: %s", err.Error()))
+		logger.Error(fmt.Sprintf("could not connect: %s", err.Error()))
 	}
 
 	collection := client.Database(mongoDBName).Collection(logsCollectionName)
@@ -38,25 +39,25 @@ func SaveLog(body []*logs.SaveLogParamsBodyItems0) (err error) {
 		if l.KeptnService != "" {
 			res, err := collection.InsertOne(ctx, l)
 			if err != nil {
-				keptnutils.Error("", fmt.Sprintf("could not insert: %s", err.Error()))
+				logger.Error(fmt.Sprintf("could not insert: %s", err.Error()))
 			}
-			keptnutils.Debug("", fmt.Sprintf("insertedID: %s", res.InsertedID))
+			logger.Debug(fmt.Sprintf("insertedID: %s", res.InsertedID))
 		} else {
-			keptnutils.Info("", "no KepntService set, log not stored in datastore")
+			logger.Info("no KepntService set, log not stored in datastore")
 		}
 	}
 
 	return err
-
 }
 
 // GetLogs returns logs
 func GetLogs(params logs.GetLogsParams) (result *logs.GetLogsOKBody, err error) {
-	keptnutils.Debug("", "getting logs from datastore")
+	logger := keptnutils.NewLogger("", "", serviceName)
+	logger.Debug("getting logs from datastore")
 
 	client, err := mongo.NewClient(options.Client().ApplyURI(mongoDBConnection))
 	if err != nil {
-		keptnutils.Error("", fmt.Sprintf("error creating client: %s", err.Error()))
+		logger.Error(fmt.Sprintf("error creating client: %s", err.Error()))
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -64,7 +65,7 @@ func GetLogs(params logs.GetLogsParams) (result *logs.GetLogsOKBody, err error) 
 
 	err = client.Connect(ctx)
 	if err != nil {
-		keptnutils.Error("", fmt.Sprintf("could not connect: %s", err.Error()))
+		logger.Error(fmt.Sprintf("could not connect: %s", err.Error()))
 	}
 
 	collection := client.Database(mongoDBName).Collection(logsCollectionName)
@@ -90,12 +91,12 @@ func GetLogs(params logs.GetLogsParams) (result *logs.GetLogsOKBody, err error) 
 
 	totalCount, err := collection.CountDocuments(ctx, searchOptions)
 	if err != nil {
-		keptnutils.Error("", fmt.Sprintf("error counting elements in logs collection: %s", err.Error()))
+		logger.Error(fmt.Sprintf("error counting elements in logs collection: %s", err.Error()))
 	}
 
 	cur, err := collection.Find(ctx, searchOptions, sortOptions)
 	if err != nil {
-		keptnutils.Error("", fmt.Sprintf("error finding elements in logs collection: %s", err.Error()))
+		logger.Error(fmt.Sprintf("error finding elements in logs collection: %s", err.Error()))
 	}
 
 	var resultLogs []*logs.LogsItems0
