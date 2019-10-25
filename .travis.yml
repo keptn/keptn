@@ -87,8 +87,8 @@ before_install:
 - REMEDIATION_SVC_FOLDER="remediation-service/"
 - WAIT_SVC_IMAGE="keptn/wait-service"
 - WAIT_SVC_FOLDER="wait-service/"
-- EVALUATION_SVC_IMAGE="keptn/evaluation-service"
-- EVALUATION_SVC_FOLDER="evaluation-service/"
+- LIGHTHOUSE_SVC_IMAGE="keptn/lighthouse-service"
+- LIGHTHOUSE_SVC_FOLDER="lighthouse-service/"
 - MONGODB_DS_IMAGE="keptn/mongodb-datastore"
 - MONGODB_DS_FOLDER="mongodb-datastore/"
 - INSTALLER_IMAGE="keptn/installer"
@@ -207,8 +207,8 @@ jobs:
         cd ..
       fi
     - | 
-      if [[ $CHANGED_FILES == *"${EVALUATION_SVC_FOLDER}"*  ]]; then
-        source ./travis-scripts/build_feature.sh "${EVALUATION_SVC_IMAGE}" "${EVALUATION_SVC_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
+      if [[ $CHANGED_FILES == *"${LIGHTHOUSE_SVC_FOLDER}"*  ]]; then
+        source ./travis-scripts/build_feature.sh "${LIGHTHOUSE_SVC_IMAGE}" "${LIGHTHOUSE_SVC_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
         cd ..
       fi
     - | 
@@ -310,8 +310,8 @@ jobs:
         cd ..
       fi
     - |
-      if [[ $CHANGED_FILES == *"${EVALUATION_SVC_FOLDER}"*  ]]; then
-        source ./travis-scripts/build_develop.sh "${EVALUATION_SVC_IMAGE}" "${EVALUATION_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
+      if [[ $CHANGED_FILES == *"${LIGHTHOUSE_SVC_FOLDER}"*  ]]; then
+        source ./travis-scripts/build_develop.sh "${LIGHTHOUSE_SVC_IMAGE}" "${LIGHTHOUSE_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
         cd ..
       fi
     - | 
@@ -370,7 +370,7 @@ jobs:
     - cd ..
     - source ./travis-scripts/build_release.sh "${WAIT_SVC_IMAGE}" "${WAIT_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
     - cd ..
-    - source ./travis-scripts/build_release.sh "${EVALUATION_SVC_IMAGE}" "${EVALUATION_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+    - source ./travis-scripts/build_release.sh "${LIGHTHOUSE_SVC_IMAGE}" "${LIGHTHOUSE_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
     - cd ..
     - source ./travis-scripts/build_release.sh "${MONGODB_DS_IMAGE}" "${MONGODB_DS_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
     - cd ..
@@ -422,7 +422,7 @@ jobs:
     - cd ..
     - source ./travis-scripts/build_master.sh "${WAIT_SVC_IMAGE}" "${WAIT_SVC_FOLDER}" "${VERSION}"
     - cd ..
-    - source ./travis-scripts/build_master.sh "${EVALUATION_SVC_IMAGE}" "${EVALUATION_SVC_FOLDER}" "${VERSION}"
+    - source ./travis-scripts/build_master.sh "${LIGHTHOUSE_SVC_IMAGE}" "${LIGHTHOUSE_SVC_FOLDER}" "${VERSION}"
     - cd ..
     - source ./travis-scripts/build_master.sh "${MONGODB_DS_IMAGE}" "${MONGODB_DS_FOLDER}" "${VERSION}"
     - cd ..
