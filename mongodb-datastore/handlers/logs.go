@@ -17,7 +17,7 @@ import (
 
 // SaveLog to datastore
 func SaveLog(body []*logs.SaveLogParamsBodyItems0) (err error) {
-	logger := keptnutils.NewLogger("", "", "mongodb-datastore")
+	logger := keptnutils.NewLogger("", "", serviceName)
 	logger.Debug("save log to datastore")
 
 	client, err := mongo.NewClient(options.Client().ApplyURI(mongoDBConnection))
@@ -52,7 +52,7 @@ func SaveLog(body []*logs.SaveLogParamsBodyItems0) (err error) {
 
 // GetLogs returns logs
 func GetLogs(params logs.GetLogsParams) (result *logs.GetLogsOKBody, err error) {
-	logger := keptnutils.NewLogger("", "", "mongodb-datastore")
+	logger := keptnutils.NewLogger("", "", serviceName)
 	logger.Debug("getting logs from datastore")
 
 	client, err := mongo.NewClient(options.Client().ApplyURI(mongoDBConnection))
