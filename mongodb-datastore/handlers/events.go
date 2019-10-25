@@ -19,7 +19,7 @@ import (
 
 // SaveEvent to data store
 func SaveEvent(body event.SaveEventBody) error {
-	logger := keptnutils.NewLogger("", "", "mongodb-datastore")
+	logger := keptnutils.NewLogger("", "", serviceName)
 	logger.Debug("save event to datastore")
 
 	client, err := mongo.NewClient(options.Client().ApplyURI(mongoDBConnection))
@@ -48,7 +48,7 @@ func SaveEvent(body event.SaveEventBody) error {
 
 // GetEvents gets all events from the data store sorted by time
 func GetEvents(params event.GetEventsParams) (result *event.GetEventsOKBody, err error) {
-	logger := keptnutils.NewLogger("", "", "mongodb-datastore")
+	logger := keptnutils.NewLogger("", "", serviceName)
 	logger.Debug("getting events from the datastore")
 
 	client, err := mongo.NewClient(options.Client().ApplyURI(mongoDBConnection))
