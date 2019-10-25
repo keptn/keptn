@@ -30,7 +30,7 @@ Example:
 
 		if len(args) != 1 {
 			cmd.SilenceUsage = false
-			return errors.New(`required argument PROJECTNAME not set`)
+			return errors.New("required argument PROJECTNAME not set")
 		}
 
 		return nil
