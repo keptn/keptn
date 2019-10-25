@@ -47,7 +47,7 @@ Example:
 
 		if len(args) != 1 {
 			cmd.SilenceUsage = false
-			return errors.New("Requires PROJECTNAME")
+			return errors.New("required argument PROJECTNAME not set")
 		}
 
 		if !utils.ValidateK8sName(args[0]) {
