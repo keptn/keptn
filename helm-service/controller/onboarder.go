@@ -306,22 +306,3 @@ func (o *Onboarder) isBlueGreenStage(project string, stageName string) bool {
 	}
 	return false
 }
-
-func (o *Onboarder) isFirstServiceOfProject(event *keptnevents.ServiceCreateEventData, stages []*configmodels.Stage) (bool, error) {
-
-	if len(stages) == 0 {
-		return false, errors.New("Cannot onboard service because no stage is available")
-	}
-	url, err := serviceutils.GetConfigServiceURL()
-	if err != nil {
-		return false, err
-	}
-	svcHandler := configutils.NewServiceHandler(url.String())
-
-	// Use any stage for checking whether there is already a service created
-	services, err := svcHandler.GetAllServices(event.Project, stages[0].StageName)
-	if err != nil {
-		return false, err
-	}
-	return len(services) == 0, nil
-}

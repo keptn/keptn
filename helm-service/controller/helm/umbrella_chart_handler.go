@@ -1,7 +1,6 @@
 package helm
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -59,7 +58,6 @@ func (u *UmbrellaChartHandler) InitUmbrellaChart(event *keptnevents.ServiceCreat
 	rHandler := configutils.NewResourceHandler(url.String())
 	for _, stage := range stages {
 
-		// if values is not available
 		gateway, err := u.createGatewayResource(event, stage.StageName)
 		if err != nil {
 			return false, err
@@ -73,43 +71,6 @@ func (u *UmbrellaChartHandler) InitUmbrellaChart(event *keptnevents.ServiceCreat
 		initialized = true
 	}
 	return initialized, nil
-}
-
-// IsUmbrellaChartAvailableInAllStages checks whether all stages contain a umbrella Helm chart
-func (u *UmbrellaChartHandler) IsUmbrellaChartAvailableInAllStages(project string, stages []*configmodels.Stage) (bool, error) {
-	url, err := serviceutils.GetConfigServiceURL()
-	if err != nil {
-		return false, err
-	}
-
-	resourcePrefixes := map[string]bool{
-		"/" + umbrellaChartURI: true,
-		"/" + requirementsURI:  true,
-		"/" + valuesURI:        true,
-	}
-
-	for _, stage := range stages {
-		rHandler := configutils.NewResourceHandler(url.String())
-		resources, err := rHandler.GetAllStageResources(project, stage.StageName)
-		if err != nil {
-			return false, err
-		}
-		fmt.Println(stage.StageName + " got all resources.")
-
-		countChartFiles := 0
-		for _, resource := range resources {
-			_, contained := resourcePrefixes[*resource.ResourceURI]
-			if contained {
-				countChartFiles++
-			}
-			fmt.Println(stage.StageName + " resource available: " + *resource.ResourceURI)
-		}
-
-		if countChartFiles != 3 {
-			return false, nil
-		}
-	}
-	return true, nil
 }
 
 // GetUmbrellaChart stores the resources of the umbrella chart in the provided directory
@@ -277,4 +238,40 @@ func (u *UmbrellaChartHandler) AddChartInUmbrellaValues(project string, helmChar
 	}
 
 	return nil
+}
+
+// IsUmbrellaChartAvailableInAllStages checks whether all stages contain a umbrella Helm chart
+func (u *UmbrellaChartHandler) IsUmbrellaChartAvailableInAllStages(project string, stages []*configmodels.Stage) (bool, error) {
+	url, err := serviceutils.GetConfigServiceURL()
+	if err != nil {
+		return false, err
+	}
+
+	// an umbrella chart is defined by the 3 resources: Chart.yaml, requirements.yaml and values.yaml
+	resourcePrefixes := map[string]bool{
+		"/" + umbrellaChartURI: true,
+		"/" + requirementsURI:  true,
+		"/" + valuesURI:        true,
+	}
+
+	for _, stage := range stages {
+		rHandler := configutils.NewResourceHandler(url.String())
+		resources, err := rHandler.GetAllStageResources(project, stage.StageName)
+		if err != nil {
+			return false, err
+		}
+
+		countChartFiles := 0
+		for _, resource := range resources {
+			_, contained := resourcePrefixes[*resource.ResourceURI]
+			if contained {
+				countChartFiles++
+			}
+		}
+
+		if countChartFiles != 3 {
+			return false, nil
+		}
+	}
+	return true, nil
 }
