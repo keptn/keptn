@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+
 	"github.com/keptn/keptn/cli/utils/websockethelper"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
@@ -14,7 +15,7 @@ import (
 )
 
 type createServiceCmdParams struct {
-	Project  *string
+	Project *string
 }
 
 var createServiceParams *createServiceCmdParams
@@ -45,9 +46,6 @@ Example:
 		}
 		return nil
 	},
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		return nil
-	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		endPoint, apiToken, err := credentialmanager.GetCreds()
 		if err != nil {
@@ -56,7 +54,7 @@ Example:
 		logging.PrintLog("Starting to create service", logging.InfoLevel)
 
 		service := apimodels.Service{
-			ServiceName:     &args[0],
+			ServiceName: &args[0],
 		}
 
 		serviceHandler := apiutils.NewAuthenticatedServiceHandler(endPoint.String(), apiToken, "x-token", nil, "https")
