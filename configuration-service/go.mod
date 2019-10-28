@@ -12,16 +12,14 @@ require (
 	github.com/go-openapi/swag v0.19.5
 	github.com/go-openapi/validate v0.19.4
 	github.com/jessevdk/go-flags v1.4.0
-	github.com/keptn/go-utils v0.0.0
+	github.com/keptn/go-utils v0.2.4
 	github.com/mholt/archiver v3.1.1+incompatible
 	github.com/nwaples/rardecode v1.0.0 // indirect
 	github.com/otiai10/copy v1.0.2
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
 	golang.org/x/net v0.0.0-20191021144547-ec77196f6094
 	gopkg.in/yaml.v2 v2.2.4
-	k8s.io/api v0.0.0-20190620084959-7cf5895f2711
-	k8s.io/apimachinery v0.0.0-20190612205821-1799e75a0719
-	k8s.io/client-go v12.0.0+incompatible
+	k8s.io/api v0.0.0-20190313235455-40a48860b5ab
+	k8s.io/apimachinery v0.0.0-20190313205120-d7deff9243b1
+	k8s.io/client-go v11.0.0+incompatible
 )
-
-replace github.com/keptn/go-utils => ../../go-utils

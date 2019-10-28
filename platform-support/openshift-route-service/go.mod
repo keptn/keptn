@@ -1,14 +1,11 @@
-module keptn/shipyard-service
+module keptn/platform-support/openshift-route-service
 
 go 1.12
 
 require (
 	github.com/cloudevents/sdk-go v0.10.0
-	github.com/google/uuid v1.1.1
-	github.com/gorilla/websocket v1.4.1
 	github.com/kelseyhightower/envconfig v1.3.0
 	github.com/keptn/go-utils v0.2.4
-	github.com/magiconair/properties v1.8.1
 	gopkg.in/yaml.v2 v2.2.4
 )
 
