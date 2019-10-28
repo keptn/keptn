@@ -30,7 +30,7 @@ Example:
 
 		if len(args) != 1 {
 			cmd.SilenceUsage = false
-			return errors.New("Requires PROJECTNAME")
+			return errors.New("required argument PROJECTNAME not set")
 		}
 
 		return nil
@@ -53,19 +53,19 @@ Example:
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
-			channelInfo, err := projectHandler.DeleteProject(project)
+			eventContext, err := projectHandler.DeleteProject(project)
 			if err != nil {
 				fmt.Println("Delete project was unsuccessful")
 				return fmt.Errorf("Delete project was unsuccessful. %s", *err.Message)
 			}
 
-			// if ChannelInfo is available, open WebSocket communication
-			if channelInfo != nil {
-				return websockethelper.PrintWSContentEventContext(channelInfo, endPoint)
+			// if eventContext is available, open WebSocket communication
+			if eventContext != nil {
+				return websockethelper.PrintWSContentEventContext(eventContext, endPoint)
 			}
 
 			return nil
-		} 
+		}
 
 		fmt.Println("Skipping delete project due to mocking flag set to true")
 		return nil

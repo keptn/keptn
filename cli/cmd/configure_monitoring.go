@@ -128,19 +128,26 @@ var monitoringCmd = &cobra.Command{
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		eventByte, err := sdkEvent.MarshalJSON()
+		if err != nil {
+			return fmt.Errorf("Failed to marshal cloud event. %s", err.Error())
+		}
+
 		apiEvent := apimodels.Event{}
-		json.Unmarshal(eventByte, &apiEvent)
+		err = json.Unmarshal(eventByte, &apiEvent)
+		if err != nil {
+			return fmt.Errorf("Failed to map cloud event to API event model. %s", err.Error())
+		}
 
 		if !mocking {
-			channelInfo, err := eventHandler.SendEvent(apiEvent)
+			eventContext, err := eventHandler.SendEvent(apiEvent)
 			if err != nil {
 				logging.PrintLog("Sending configure-monitoring event was unsuccessful", logging.QuietLevel)
 				return fmt.Errorf("Sending configure-monitoring event was unsuccessful. %s", *err.Message)
 			}
 
-			// if ChannelInfo is available, open WebSocket communication
-			if channelInfo != nil {
-				return websockethelper.PrintWSContentEventContext(channelInfo, endPoint)
+			// if eventContext is available, open WebSocket communication
+			if eventContext != nil {
+				return websockethelper.PrintWSContentEventContext(eventContext, endPoint)
 			}
 
 			return nil

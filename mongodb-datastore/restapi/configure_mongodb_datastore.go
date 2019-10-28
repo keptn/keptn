@@ -13,7 +13,6 @@ import (
 	middleware "github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
 
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/mongodb-datastore/handlers"
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations"
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/event"
@@ -27,9 +26,6 @@ func configureFlags(api *operations.MongodbDatastoreAPI) {
 }
 
 func configureAPI(api *operations.MongodbDatastoreAPI) http.Handler {
-	// set service name for logging
-	keptnutils.ServiceName = "mongodb-datastore"
-
 	// configure the api here
 	api.ServeError = errors.ServeError
 

@@ -1,18 +1,15 @@
 package cmd
 
 import (
-	"crypto/tls"
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"net/http"
 	"os"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/cli/pkg/logging"
-	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
 	"github.com/spf13/cobra"
 )
@@ -47,31 +44,26 @@ Example:
 		}
 
 		resourceContent, err := ioutil.ReadFile(*addResourceCmdParams.Resource)
-		resourceContentStr := string(resourceContent)
 		if err != nil {
 			return errors.New("File " + *addResourceCmdParams.Resource + " could not be read")
 		}
 
+		if *addResourceCmdParams.ResourceURI == "" {
+			addResourceCmdParams.ResourceURI = addResourceCmdParams.Resource
+		}
+
+		resourceContentStr := string(resourceContent)
+		resources := []*apimodels.Resource{
+			&apimodels.Resource{
+				ResourceContent: &resourceContentStr,
+				ResourceURI:     addResourceCmdParams.ResourceURI,
+			},
+		}
+
+		resourceHandler := apiutils.NewAuthenticatedResourceHandler(endPoint.Host, apiToken, "x-token", nil, "https")
 		logging.PrintLog("Adding resource "+*addResourceCmdParams.Resource+" to service "+*addResourceCmdParams.Service+" in stage "+*addResourceCmdParams.Stage+" in project "+*addResourceCmdParams.Project, logging.InfoLevel)
 
 		if !mocking {
-			if *addResourceCmdParams.ResourceURI == "" {
-				addResourceCmdParams.ResourceURI = addResourceCmdParams.Resource
-			}
-			resources := []*apimodels.Resource{
-				&apimodels.Resource{
-					ResourceContent: &resourceContentStr,
-					ResourceURI:     addResourceCmdParams.ResourceURI,
-				},
-			}
-
-			tr := &http.Transport{
-				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-				DialContext:     utils.ResolveXipIoWithContext,
-			}
-
-			client := &http.Client{Transport: tr}
-			resourceHandler := apiutils.NewAuthenticatedResourceHandler(endPoint.Host, apiToken, "x-token", client, "https")
 			_, errorObj := resourceHandler.CreateServiceResources(*addResourceCmdParams.Project, *addResourceCmdParams.Stage, *addResourceCmdParams.Service, resources)
 			if errorObj != nil {
 				return errors.New("Resource " + *addResourceCmdParams.Resource + " could not be uploaded: " + *errorObj.Message)
@@ -97,14 +89,19 @@ func fileExists(path string) bool {
 func init() {
 	rootCmd.AddCommand(addResourceCmd)
 	addResourceCmdParams = &addResourceCommandParameters{}
+	
 	addResourceCmdParams.Project = addResourceCmd.Flags().StringP("project", "p", "", "The name of the project")
 	addResourceCmd.MarkFlagRequired("project")
+	
 	addResourceCmdParams.Stage = addResourceCmd.Flags().StringP("stage", "s", "", "The name of the stage")
 	addResourceCmd.MarkFlagRequired("stage")
+	
 	addResourceCmdParams.Service = addResourceCmd.Flags().StringP("service", "", "", "The name of the service within the project")
 	addResourceCmd.MarkFlagRequired("service")
+	
 	addResourceCmdParams.Resource = addResourceCmd.Flags().StringP("resource", "r", "", "Path pointing to the resource on your local file system")
 	addResourceCmd.MarkFlagRequired("resource")
+	
 	addResourceCmdParams.ResourceURI = addResourceCmd.Flags().StringP("resourceUri", "", "", "Optional: Location where the resource should be stored within the config repo. If empty, The name of the resource will be the same as on your local file system")
 
 }
