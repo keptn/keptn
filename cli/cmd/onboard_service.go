@@ -98,7 +98,7 @@ Example:
 		helmChart := base64.StdEncoding.EncodeToString(chartData)
 		service := apimodels.Service{
 			ServiceName: &args[0],
-			HelmChart:   &helmChart,
+			HelmChart:   helmChart,
 		}
 
 		if *onboardServiceParams.DeploymentStrategy != "" {
