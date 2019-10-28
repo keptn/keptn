@@ -49,7 +49,7 @@ func PostServiceHandlerFunc(params service.PostProjectProjectNameServiceParams, 
 	serviceData := keptnevents.ServiceCreateEventData{
 		Project:              params.ProjectName,
 		Service:              *params.Service.ServiceName,
-		HelmChart:            *params.Service.HelmChart,
+		HelmChart:            params.Service.HelmChart,
 		DeploymentStrategies: deploymentStrategies,
 	}
 	forwardData := serviceCreateEventData{ServiceCreateEventData: serviceData, EventContext: eventContext}

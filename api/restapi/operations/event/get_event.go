@@ -33,7 +33,7 @@ func NewGetEvent(ctx *middleware.Context, handler GetEventHandler) *GetEvent {
 
 /*GetEvent swagger:route GET /event Event getEvent
 
-Get the youngest event matching the parameters.
+Get the latest event matching the parameters
 
 */
 type GetEvent struct {

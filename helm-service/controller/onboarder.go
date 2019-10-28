@@ -63,7 +63,7 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event, loggingDone chan bool) error
 		event.DeploymentStrategies = deplStrategies
 	}
 
-	o.logger.Info(fmt.Sprintf("Start creating service %s in project %s", event.Service, event.Project))
+	o.logger.Debug(fmt.Sprintf("Start creating service %s in project %s", event.Service, event.Project))
 
 	url, err := serviceutils.GetConfigServiceURL()
 	if err != nil {
@@ -78,14 +78,20 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event, loggingDone chan bool) error
 		return err
 	}
 
-	firstService, err := o.isFirstServiceOfProject(event, stages)
+	if len(stages) == 0 {
+		o.logger.Info("Cannot onboard service because no stage is available")
+		return errors.New("Cannot onboard service because no stage is available")
+	}
+
+	umbrellaChartHandler := helm.NewUmbrellaChartHandler(o.mesh)
+	isUmbrellaChartAvailable, err := umbrellaChartHandler.IsUmbrellaChartAvailableInAllStages(event.Project, stages)
 	if err != nil {
-		o.logger.Error("Error when checking whether any service was created before: " + err.Error())
+		o.logger.Error("Error when getting Helm chart for stages. " + err.Error())
 		return err
 	}
-	if firstService {
+
+	if !isUmbrellaChartAvailable && event.HelmChart != "" {
 		o.logger.Info("Create Helm umbrella charts")
-		umbrellaChartHandler := helm.NewUmbrellaChartHandler(o.mesh)
 		if err := o.initAndApplyUmbrellaChart(event, umbrellaChartHandler, stages); err != nil {
 			o.logger.Error(fmt.Sprintf("Error when initalizing and applying umbrella charts for project %s: %s", event.Project, err.Error()))
 			return err
@@ -100,17 +106,23 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event, loggingDone chan bool) error
 		if err := o.onboardService(stage.StageName, event, url.String()); err != nil {
 			return err
 		}
-		if o.isBlueGreenStage(event.Project, stage.StageName) {
-			// inject istio to the namespace for blue-green deployments
+		if o.isBlueGreenStage(event.Project, stage.StageName) && event.HelmChart != "" {
+			// inject Istio to the namespace for blue-green deployments
 			namespace, err := kubeClient.Namespaces().Get(helm.GetUmbrellaNamespace(event.Project, stage.StageName), v1.GetOptions{})
 			if err != nil {
+				o.logger.Error(err.Error())
 				return err
 			}
 
-			namespace.ObjectMeta.Labels["istio-injection"] = "enabled"
-			_, err = kubeClient.Namespaces().Update(namespace)
-			if err != nil {
-				return err
+			if namespace != nil {
+				o.logger.Debug(fmt.Sprintf("inject Istio to the %s namespace for blue-green deployments", helm.GetUmbrellaNamespace(event.Project, stage.StageName)))
+
+				namespace.ObjectMeta.Labels["istio-injection"] = "enabled"
+				_, err = kubeClient.Namespaces().Update(namespace)
+				if err != nil {
+					o.logger.Error(err.Error())
+					return err
+				}
 			}
 		}
 	}
@@ -123,10 +135,6 @@ func (o *Onboarder) onboardService(stageName string, event *keptnevents.ServiceC
 	configServiceURL string) error {
 
 	serviceHandler := configutils.NewServiceHandler(configServiceURL)
-	helmChartData, err := base64.StdEncoding.DecodeString(event.HelmChart)
-	if err != nil {
-		o.logger.Error("Error when decoding the Helm chart")
-	}
 
 	o.logger.Debug("Creating new keptn service " + event.Service + " in stage " + stageName)
 	respErr, err := serviceHandler.CreateService(event.Project, stageName, event.Service)
@@ -137,36 +145,45 @@ func (o *Onboarder) onboardService(stageName string, event *keptnevents.ServiceC
 		return err
 	}
 
-	o.logger.Debug("Storing the Helm chart provided by the user in stage " + stageName)
-	if err := keptnutils.StoreChart(event.Project, event.Service, stageName, helm.GetChartName(event.Service, false),
-		helmChartData, configServiceURL); err != nil {
-		o.logger.Error("Error when storing the Helm chart: " + err.Error())
-		return err
+	if event.HelmChart != "" {
+		helmChartData, err := base64.StdEncoding.DecodeString(event.HelmChart)
+		if err != nil {
+			o.logger.Error("Error when decoding the Helm chart")
+		}
+
+		o.logger.Debug("Storing the Helm chart provided by the user in stage " + stageName)
+		if err := keptnutils.StoreChart(event.Project, event.Service, stageName, helm.GetChartName(event.Service, false),
+			helmChartData, configServiceURL); err != nil {
+			o.logger.Error("Error when storing the Helm chart: " + err.Error())
+			return err
+		}
+
+		if err := o.updateUmbrellaChart(event.Project, stageName, helm.GetChartName(event.Service, false)); err != nil {
+			return err
+		}
+
+		chartGenerator := helm.NewGeneratedChartHandler(o.mesh, o.canaryLevelGen, o.keptnDomain)
+		o.logger.Debug(fmt.Sprintf("For stage %s with deployment strategy %s, an empty chart is generated", stageName, event.DeploymentStrategies[stageName].String()))
+		generatedChart := chartGenerator.GenerateEmptyChart(event.Project, stageName, event.Service, event.DeploymentStrategies[stageName])
+
+		helmChartName := helm.GetChartName(event.Service, true)
+		o.logger.Debug(fmt.Sprintf("Storing the keptn generated Helm chart %s for stage %s", helmChartName, stageName))
+
+		generatedChartData, err := keptnutils.PackageChart(generatedChart)
+		if err != nil {
+			o.logger.Error("Error when packing the managed chart: " + err.Error())
+			return err
+		}
+
+		if err := keptnutils.StoreChart(event.Project, event.Service, stageName, helmChartName,
+			generatedChartData, configServiceURL); err != nil {
+			o.logger.Error("Error when storing the Helm chart: " + err.Error())
+			return err
+		}
+		return o.updateUmbrellaChart(event.Project, stageName, helmChartName)
 	}
 
-	if err := o.updateUmbrellaChart(event.Project, stageName, helm.GetChartName(event.Service, false)); err != nil {
-		return err
-	}
-
-	chartGenerator := helm.NewGeneratedChartHandler(o.mesh, o.canaryLevelGen, o.keptnDomain)
-	o.logger.Debug(fmt.Sprintf("For stage %s with deployment strategy %s, an empty chart is generated", stageName, event.DeploymentStrategies[stageName].String()))
-	generatedChart := chartGenerator.GenerateEmptyChart(event.Project, stageName, event.Service, event.DeploymentStrategies[stageName])
-
-	helmChartName := helm.GetChartName(event.Service, true)
-	o.logger.Debug(fmt.Sprintf("Storing the keptn generated Helm chart %s for stage %s", helmChartName, stageName))
-
-	generatedChartData, err := keptnutils.PackageChart(generatedChart)
-	if err != nil {
-		o.logger.Error("Error when packing the managed chart: " + err.Error())
-		return err
-	}
-
-	if err := keptnutils.StoreChart(event.Project, event.Service, stageName, helmChartName,
-		generatedChartData, configServiceURL); err != nil {
-		o.logger.Error("Error when storing the Helm chart: " + err.Error())
-		return err
-	}
-	return o.updateUmbrellaChart(event.Project, stageName, helmChartName)
+	return nil
 }
 
 // IsGeneratedChartEmpty checks whether the generated chart is empty
@@ -264,6 +281,7 @@ func (o *Onboarder) initAndApplyUmbrellaChart(event *keptnevents.ServiceCreateEv
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -289,22 +307,4 @@ func (o *Onboarder) isBlueGreenStage(project string, stageName string) bool {
 		}
 	}
 	return false
-}
-
-func (o *Onboarder) isFirstServiceOfProject(event *keptnevents.ServiceCreateEventData, stages []*configmodels.Stage) (bool, error) {
-
-	if len(stages) == 0 {
-		return false, errors.New("Cannot onboard service because no stage is available")
-	}
-	url, err := serviceutils.GetConfigServiceURL()
-	if err != nil {
-		return false, err
-	}
-	svcHandler := configutils.NewServiceHandler(url.String())
-	// Use any stage for checking whether there is already a service created
-	services, err := svcHandler.GetAllServices(event.Project, stages[0].StageName)
-	if err != nil {
-		return false, err
-	}
-	return len(services) == 0, nil
 }
