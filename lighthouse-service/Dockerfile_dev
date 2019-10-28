@@ -1,7 +1,7 @@
 # Use the offical Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
 # https://hub.docker.com/_/golang
-FROM golang:1.12-alpine as builder
+FROM golang:1.12-alpine
 
 ENV CGO_ENABLED 0
 
@@ -9,12 +9,11 @@ ENV CGO_ENABLED 0
 RUN apk add --no-cache git
 
 # Copy local code to the container image.
-WORKDIR /go/src/github.com/keptn/keptn/evaluation-service
-COPY . .
+COPY ./lighthouse-service /lighthouse-service
 
 # Build the command inside the container.
 # (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
-RUN CGO_ENABLED=0 GOOS=linux go build -gcflags="all=-N -l" -o evaluation-service
+# RUN CGO_ENABLED=0 GOOS=linux go build -gcflags="all=-N -l" -o lighthouse-service
 
 WORKDIR /go/src/
 RUN go get github.com/go-delve/delve/cmd/dlv
@@ -23,4 +22,4 @@ WORKDIR /
 ENV env=production
 EXPOSE 8080 40000
 
-CMD ["/go/bin/dlv", "--listen=:40000", "--headless=true", "--api-version=2", "exec", "/go/src/github.com/keptn/keptn/evaluation-service/evaluation-service"]
+CMD ["/go/bin/dlv", "--listen=:40000", "--headless=true", "--api-version=2", "exec", "/lighthouse-service"]
