@@ -78,6 +78,11 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event, loggingDone chan bool) error
 		return err
 	}
 
+	if len(stages) == 0 {
+		o.logger.Info("Cannot onboard service because no stage is available")
+		return errors.New("Cannot onboard service because no stage is available")
+	}
+
 	umbrellaChartHandler := helm.NewUmbrellaChartHandler(o.mesh)
 	isUmbrellaChartAvailable, err := umbrellaChartHandler.IsUmbrellaChartAvailableInAllStages(event.Project, stages)
 	if err != nil {
@@ -253,30 +258,27 @@ func (o *Onboarder) initAndApplyUmbrellaChart(event *keptnevents.ServiceCreateEv
 	umbrellaChartHandler *helm.UmbrellaChartHandler, stages []*configmodels.Stage) error {
 
 	// Initalize the umbrella chart
-	initialized, err := umbrellaChartHandler.InitUmbrellaChart(event, stages)
-	if err != nil {
+	if err := umbrellaChartHandler.InitUmbrellaChart(event, stages); err != nil {
 		return fmt.Errorf("Error when initializing the umbrella chart: %s", err.Error())
 	}
 
-	if initialized {
-		for _, stage := range stages {
-			// Apply the umbrella chart
-			umbrellaChart, err := ioutil.TempDir("", "")
-			if err != nil {
-				return fmt.Errorf("Error when creating a temporary directory: %s", err.Error())
-			}
-			if err := umbrellaChartHandler.GetUmbrellaChart(umbrellaChart, event.Project, stage.StageName); err != nil {
-				return fmt.Errorf("Error when getting umbrella chart: %s", err)
-			}
+	for _, stage := range stages {
+		// Apply the umbrella chart
+		umbrellaChart, err := ioutil.TempDir("", "")
+		if err != nil {
+			return fmt.Errorf("Error when creating a temporary directory: %s", err.Error())
+		}
+		if err := umbrellaChartHandler.GetUmbrellaChart(umbrellaChart, event.Project, stage.StageName); err != nil {
+			return fmt.Errorf("Error when getting umbrella chart: %s", err)
+		}
 
-			configChanger := NewConfigurationChanger(o.mesh, o.canaryLevelGen, o.logger, o.keptnDomain)
-			if err := configChanger.ApplyDirectory(umbrellaChart, helm.GetUmbrellaReleaseName(event.Project, stage.StageName),
-				helm.GetUmbrellaNamespace(event.Project, stage.StageName)); err != nil {
-				return fmt.Errorf("Error when applying umbrella chart in stage %s: %s", stage.StageName, err.Error())
-			}
-			if err := os.RemoveAll(umbrellaChart); err != nil {
-				return err
-			}
+		configChanger := NewConfigurationChanger(o.mesh, o.canaryLevelGen, o.logger, o.keptnDomain)
+		if err := configChanger.ApplyDirectory(umbrellaChart, helm.GetUmbrellaReleaseName(event.Project, stage.StageName),
+			helm.GetUmbrellaNamespace(event.Project, stage.StageName)); err != nil {
+			return fmt.Errorf("Error when applying umbrella chart in stage %s: %s", stage.StageName, err.Error())
+		}
+		if err := os.RemoveAll(umbrellaChart); err != nil {
+			return err
 		}
 	}
 

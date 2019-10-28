@@ -34,43 +34,40 @@ func NewUmbrellaChartHandler(mesh mesh.Mesh) *UmbrellaChartHandler {
 
 // initUmbrellaChart creates Umbrella charts for each stage of a project.
 // Therefore, it creats for each stage the required resources
-func (u *UmbrellaChartHandler) InitUmbrellaChart(event *keptnevents.ServiceCreateEventData, stages []*configmodels.Stage) (bool, error) {
+func (u *UmbrellaChartHandler) InitUmbrellaChart(event *keptnevents.ServiceCreateEventData, stages []*configmodels.Stage) error {
 
 	rootChart, err := u.createRootChartResource(event)
 	if err != nil {
-		return false, err
+		return err
 	}
 	requirements, err := u.createRequirementsResource()
 	if err != nil {
-		return false, err
+		return err
 	}
 	values, err := u.createValuesResource()
 	if err != nil {
-		return false, err
+		return err
 	}
 
 	url, err := serviceutils.GetConfigServiceURL()
 	if err != nil {
-		return false, err
+		return err
 	}
 
-	initialized := false
 	rHandler := configutils.NewResourceHandler(url.String())
 	for _, stage := range stages {
 
 		gateway, err := u.createGatewayResource(event, stage.StageName)
 		if err != nil {
-			return false, err
+			return err
 		}
 		resources := []*configmodels.Resource{rootChart, requirements, values, gateway}
 		_, err = rHandler.CreateStageResources(event.Project, stage.StageName, resources)
 		if err != nil {
-			return false, err
+			return err
 		}
-
-		initialized = true
 	}
-	return initialized, nil
+	return nil
 }
 
 // GetUmbrellaChart stores the resources of the umbrella chart in the provided directory
@@ -269,7 +266,7 @@ func (u *UmbrellaChartHandler) IsUmbrellaChartAvailableInAllStages(project strin
 			}
 		}
 
-		if countChartFiles != 3 {
+		if countChartFiles != len(resourcePrefixes) {
 			return false, nil
 		}
 	}
