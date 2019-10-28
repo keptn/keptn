@@ -39,7 +39,7 @@ Example:
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
 			cmd.SilenceUsage = false
-			return errors.New("Requires SERVICENAME")
+			return errors.New("required argument SERVICENAME not set")
 		}
 		return nil
 	},
@@ -119,19 +119,19 @@ Example:
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
-			channelInfo, err := serviceHandler.CreateService(*onboardServiceParams.Project, service)
+			eventContext, err := serviceHandler.CreateService(*onboardServiceParams.Project, service)
 			if err != nil {
 				logging.PrintLog("Onboard service was unsuccessful", logging.QuietLevel)
 				return fmt.Errorf("Onboard service was unsuccessful. %s", *err.Message)
 			}
 
-			// if ChannelInfo is available, open WebSocket communication
-			if channelInfo != nil {
-				return websockethelper.PrintWSContentEventContext(channelInfo, endPoint)
+			// if eventContext is available, open WebSocket communication
+			if eventContext != nil {
+				return websockethelper.PrintWSContentEventContext(eventContext, endPoint)
 			}
 
 			return nil
-		} 
+		}
 
 		fmt.Println("Skipping onboard service due to mocking flag set to true")
 		return nil

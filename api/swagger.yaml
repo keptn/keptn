@@ -52,7 +52,7 @@ paths:
     get:
       tags:
         - Event
-      summary: Get the youngest event matching the parameters.
+      summary: Get the latest event matching the parameters
       parameters:
         - name: keptnContext
           in: query

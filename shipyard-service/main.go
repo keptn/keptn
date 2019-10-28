@@ -185,7 +185,7 @@ func createProjectAndProcessShipyard(event cloudevents.Event, logger keptnutils.
 
 	// process shipyard file and create stages
 	for _, shipyardStage := range shipyard.Stages {
-		if err := client.createStage(project.ProjectName, shipyardStage.Name, logger); err != nil {
+		if err := client.createStage(project, shipyardStage.Name, logger); err != nil {
 			return nil, fmt.Errorf("Creating stage %s failed. %s", shipyardStage.Name, err.Error())
 		}
 		if err := keptnutils.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), fmt.Sprintf("Stage %s created", shipyardStage.Name), false, "INFO"); err != nil {
@@ -241,7 +241,7 @@ func storeResourceForProject(projectName, shipyard string, logger keptnutils.Log
 	resource := configmodels.Resource{ResourceURI: &uri, ResourceContent: shipyard}
 	versionStr, err := handler.CreateProjectResources(projectName, []*configmodels.Resource{&resource})
 	if err != nil {
-		return nil, fmt.Errorf("Storing %s file failed. %s", resource.ResourceURI, err.Error())
+		return nil, fmt.Errorf("Storing %s file failed. %s", *resource.ResourceURI, err.Error())
 	}
 
 	logger.Info(fmt.Sprintf("Resource %s successfully stored", *resource.ResourceURI))
@@ -280,7 +280,8 @@ func (client *Client) createProject(project configmodels.Project, logger keptnut
 		logger.Error(fmt.Sprintf("Could not get service endpoint for %s: %s", configservice, err.Error()))
 		return err
 	}
-	prjHandler := configutils.NewProjectHandler(configServiceURL.String())
+
+	prjHandler := configutils.NewAuthenticatedProjectHandler(configServiceURL.String(), "", "", client.httpClient, "http")
 	errorObj, err := prjHandler.CreateProject(project)
 
 	if errorObj == nil && err == nil {
@@ -289,6 +290,7 @@ func (client *Client) createProject(project configmodels.Project, logger keptnut
 	} else if errorObj != nil {
 		return errors.New(*errorObj.Message)
 	}
+
 	return fmt.Errorf("Error in creating new project: %s", err.Error())
 }
 
@@ -299,14 +301,15 @@ func (client *Client) deleteProject(project configmodels.Project, logger keptnut
 		logger.Error(fmt.Sprintf("Could not get service endpoint for %s: %s", configservice, err.Error()))
 		return err
 	}
-	prjHandler := configutils.NewProjectHandler(configServiceURL.String())
-	errorObj, err := prjHandler.DeleteProject(project)
 
+	prjHandler := configutils.NewAuthenticatedProjectHandler(configServiceURL.String(), "", "", client.httpClient, "http")
+	errorObj, err := prjHandler.DeleteProject(project)
 	if errorObj == nil && err == nil {
 		return nil
 	} else if errorObj != nil {
 		return errors.New(*errorObj.Message)
 	}
+
 	return fmt.Errorf("Error in deleting project: %s", err.Error())
 }
 
@@ -317,8 +320,8 @@ func (client *Client) getProject(project configmodels.Project, logger keptnutils
 		logger.Error(fmt.Sprintf("Could not get service endpoint for %s: %s", configservice, err.Error()))
 		return nil, err
 	}
-	prjHandler := configutils.NewProjectHandler(configServiceURL.String())
 
+	prjHandler := configutils.NewAuthenticatedProjectHandler(configServiceURL.String(), "", "", client.httpClient, "http")
 	respProject, respError := prjHandler.GetProject(project)
 	if respError != nil {
 		return nil, fmt.Errorf("Error in getting project: %s", project.ProjectName)
@@ -328,15 +331,16 @@ func (client *Client) getProject(project configmodels.Project, logger keptnutils
 }
 
 // createStage creates a stage by using the configuration-service
-func (client *Client) createStage(project string, stage string, logger keptnutils.Logger) error {
+func (client *Client) createStage(project configmodels.Project, stage string, logger keptnutils.Logger) error {
 
 	configServiceURL, err := getServiceEndpoint(configservice)
 	if err != nil {
 		logger.Error(fmt.Sprintf("Could not get service endpoint for %s: %s", configservice, err.Error()))
 		return err
 	}
-	handler := configutils.NewStageHandler(configServiceURL.String())
-	errorObj, err := handler.CreateStage(project, stage)
+
+	stageHandler := configutils.NewAuthenticatedStageHandler(configServiceURL.String(), "", "", client.httpClient, "http")
+	errorObj, err := stageHandler.CreateStage(project.ProjectName, stage)
 
 	if errorObj == nil && err == nil {
 		logger.Info("Stage successfully created")
@@ -344,6 +348,7 @@ func (client *Client) createStage(project string, stage string, logger keptnutil
 	} else if errorObj != nil {
 		return errors.New(*errorObj.Message)
 	}
+
 	return fmt.Errorf("Error in creating new stage: %s", err.Error())
 }
 
