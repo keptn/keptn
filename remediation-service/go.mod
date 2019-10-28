@@ -20,7 +20,7 @@ require (
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79 // indirect
 	github.com/jmoiron/sqlx v1.2.0 // indirect
 	github.com/kelseyhightower/envconfig v1.3.0
-	github.com/keptn/go-utils v0.0.0
+	github.com/keptn/go-utils v0.2.4
 	github.com/lib/pq v1.2.0 // indirect
 	github.com/liggitt/tabwriter v0.0.0-20181228230101-89fcab3d43de // indirect
 	github.com/mitchellh/go-wordwrap v1.0.0 // indirect
@@ -29,6 +29,8 @@ require (
 	github.com/rubenv/sql-migrate v0.0.0-20191022111038-5cdff0d8cc42 // indirect
 	github.com/stretchr/testify v1.4.0
 	github.com/ziutek/mymysql v1.5.4 // indirect
+	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect
+	golang.org/x/tools v0.0.0-20191004055002-72853e10c5a3 // indirect
 	gopkg.in/gorp.v1 v1.7.2 // indirect
 	gopkg.in/square/go-jose.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v2 v2.2.4
@@ -48,7 +50,6 @@ require (
 
 replace (
 	github.com/cloudevents/sdk-go => github.com/cloudevents/sdk-go v0.0.0-20190509003705-56931988abe3
-	github.com/keptn/go-utils => ../../go-utils
 	k8s.io/api => k8s.io/api v0.0.0-20190313235455-40a48860b5ab
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.0.0-20190315093550-53c4693659ed
 	k8s.io/apimachinery => k8s.io/apimachinery v0.0.0-20190313205120-d7deff9243b1

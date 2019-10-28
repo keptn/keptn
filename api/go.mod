@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	github.com/cloudevents/sdk-go v0.10.0
-	github.com/gbrlsnchs/jwt/v2 v2.0.0+incompatible
+	github.com/gbrlsnchs/jwt/v2 v2.0.0
 	github.com/go-openapi/errors v0.19.2
 	github.com/go-openapi/loads v0.19.2
 	github.com/go-openapi/runtime v0.19.4
@@ -15,12 +15,11 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/gorilla/websocket v1.4.1
 	github.com/jessevdk/go-flags v1.4.0
-	github.com/keptn/go-utils v0.0.0
+	github.com/keptn/go-utils v0.2.4
+	github.com/kinbiko/jsonassert v1.0.1
+	github.com/magiconair/properties v1.8.1
 	golang.org/x/net v0.0.0-20191021144547-ec77196f6094
 )
 
 // replace cloudevents/sdk-go latest version with 0.7.0
-replace (
-	github.com/cloudevents/sdk-go => github.com/cloudevents/sdk-go v0.0.0-20190509003705-56931988abe3
-	github.com/keptn/go-utils => ../../go-utils
-)
+replace github.com/cloudevents/sdk-go => github.com/cloudevents/sdk-go v0.0.0-20190509003705-56931988abe3
