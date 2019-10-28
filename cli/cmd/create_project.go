@@ -63,7 +63,7 @@ Example:
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 
 		if _, err := os.Stat(keptnutils.ExpandTilde(*createProjectParams.Shipyard)); os.IsNotExist(err) {
-			return fmt.Errorf("Cannot find file %s", *createProjectParams.Shipyard)
+			return fmt.Errorf("Cannot find shipyard file %s", *createProjectParams.Shipyard)
 		}
 
 		// validate shipyard file

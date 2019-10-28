@@ -4,7 +4,6 @@ definitions:
     type: object
     required:
       - serviceName
-      - helmChart
     properties:
       serviceName:
         type: string
