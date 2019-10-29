@@ -78,32 +78,10 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event,
 	}
 
 	if len(e.ValuesCanary) > 0 {
-
-		ch, err := c.updateChart(e, false, changeValue)
+		err := c.applyValuesCanary(e, genChart, deploymentStrategy)
 		if err != nil {
 			c.logger.Error(err.Error())
 			return err
-		}
-		upgradeMsg, err := c.ApplyChart(ch, e.Project, e.Stage, e.Service, false)
-		if err != nil {
-			c.logger.Error(err.Error())
-			return err
-		}
-
-		onboarder := NewOnboarder(c.mesh, c.canaryLevelGen, c.logger, c.keptnDomain)
-		if onboarder.IsGeneratedChartEmpty(genChart) {
-			genChart, err = onboarder.OnboardGeneratedService(upgradeMsg, e.Project, e.Stage, e.Service, deploymentStrategy)
-			if err != nil {
-				c.logger.Error(err.Error())
-				return err
-			}
-			if deploymentStrategy == keptnevents.Direct {
-				_, err := c.ApplyChart(genChart, e.Project, e.Stage, e.Service, true)
-				if err != nil {
-					c.logger.Error(err.Error())
-					return err
-				}
-			}
 		}
 	}
 
@@ -128,6 +106,12 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event,
 		if _, err := c.ApplyChart(ch, e.Project, e.Stage, e.Service, true); err != nil {
 			c.logger.Error(err.Error())
 			return err
+		}
+	}
+
+	if len(e.FileChangesUmbrellaChart) > 0 {
+		if err := c.updateUmbrellaChart(e); err != nil {
+			c.logger.Error(err.Error())
 		}
 	}
 
@@ -183,6 +167,54 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event,
 		}
 	}
 
+	return nil
+}
+
+func (c *ConfigurationChanger) updateUmbrellaChart(e *keptnevents.ConfigurationChangeEventData) error {
+
+	umbrellaChartHandler := helm.NewUmbrellaChartHandler(c.mesh)
+
+	if err := umbrellaChartHandler.UpdateUmbrellaChart(e); err != nil {
+		return err
+	}
+
+	umbrellaChart, err := ioutil.TempDir("", "")
+	if err != nil {
+		return fmt.Errorf("error when creating a temporary directory: %s", err.Error())
+	}
+	if err := umbrellaChartHandler.GetUmbrellaChart(umbrellaChart, e.Project, e.Stage); err != nil {
+		return fmt.Errorf("error when getting umbrella chart: %s", err)
+	}
+	if err := c.ApplyDirectory(umbrellaChart, helm.GetUmbrellaReleaseName(e.Project, e.Stage),
+		helm.GetUmbrellaNamespace(e.Project, e.Stage)); err != nil {
+		return fmt.Errorf("error when applying umbrella chart in stage %s: %s", e.Stage, err.Error())
+	}
+	return os.RemoveAll(umbrellaChart)
+}
+
+func (c *ConfigurationChanger) applyValuesCanary(e *keptnevents.ConfigurationChangeEventData,
+	genChart *chart.Chart, deploymentStrategy keptnevents.DeploymentStrategy) error {
+	ch, err := c.updateChart(e, false, changeValue)
+	if err != nil {
+		return err
+	}
+	upgradeMsg, err := c.ApplyChart(ch, e.Project, e.Stage, e.Service, false)
+	if err != nil {
+		return err
+	}
+	onboarder := NewOnboarder(c.mesh, c.canaryLevelGen, c.logger, c.keptnDomain)
+	if onboarder.IsGeneratedChartEmpty(genChart) {
+		genChart, err = onboarder.OnboardGeneratedService(upgradeMsg, e.Project, e.Stage, e.Service, deploymentStrategy)
+		if err != nil {
+			return err
+		}
+		if deploymentStrategy == keptnevents.Direct {
+			_, err := c.ApplyChart(genChart, e.Project, e.Stage, e.Service, true)
+			if err != nil {
+				return err
+			}
+		}
+	}
 	return nil
 }
 

@@ -1,6 +1,7 @@
 package helm
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -32,8 +33,8 @@ func NewUmbrellaChartHandler(mesh mesh.Mesh) *UmbrellaChartHandler {
 	return &UmbrellaChartHandler{mesh: mesh}
 }
 
-// initUmbrellaChart creates Umbrella charts for each stage of a project.
-// Therefore, it creats for each stage the required resources
+// InitUmbrellaChart creates Umbrella charts for each stage of a project.
+// Therefore, it creates for each stage the required resources
 func (u *UmbrellaChartHandler) InitUmbrellaChart(event *keptnevents.ServiceCreateEventData, stages []*configmodels.Stage) error {
 
 	rootChart, err := u.createRootChartResource(event)
@@ -70,6 +71,40 @@ func (u *UmbrellaChartHandler) InitUmbrellaChart(event *keptnevents.ServiceCreat
 	return nil
 }
 
+// UpdateUmbrellaChart updates the changes of the umbrella chart contained in the event.
+func (u *UmbrellaChartHandler) UpdateUmbrellaChart(e *keptnevents.ConfigurationChangeEventData) error {
+
+	url, err := serviceutils.GetConfigServiceURL()
+	if err != nil {
+		return err
+	}
+	handler := configutils.NewResourceHandler(url.String())
+	resources := []*configmodels.Resource{}
+
+	for uri, content := range e.FileChangesUmbrellaChart {
+		if !u.isUmbrellaResource(uri) {
+			return fmt.Errorf("error when updating umbrella chart because file %s does not belong"+
+				"to umbrella chart", uri)
+		}
+		resources = append(resources, &configmodels.Resource{ResourceURI: &uri, ResourceContent: content})
+	}
+	_, err = handler.CreateStageResources(e.Project, e.Stage, resources)
+	if err != nil {
+		return fmt.Errorf("error when updating the stage resources of the umbrella chart %v", err)
+	}
+	return nil
+}
+
+func (u *UmbrellaChartHandler) isUmbrellaResource(uri string) bool {
+	resourcePrefixes := map[string]bool{
+		"/" + umbrellaChartURI: true,
+		"/" + requirementsURI:  true,
+		"/" + valuesURI:        true,
+	}
+	_, contained := resourcePrefixes[uri]
+	return contained || strings.HasPrefix(uri, "/templates/")
+}
+
 // GetUmbrellaChart stores the resources of the umbrella chart in the provided directory
 func (u *UmbrellaChartHandler) GetUmbrellaChart(outputDirectory, project, stage string) error {
 
@@ -84,15 +119,8 @@ func (u *UmbrellaChartHandler) GetUmbrellaChart(outputDirectory, project, stage 
 		return err
 	}
 
-	resourcePrefixes := map[string]bool{
-		"/" + umbrellaChartURI: true,
-		"/" + requirementsURI:  true,
-		"/" + valuesURI:        true,
-	}
-
 	for _, resource := range resources {
-		_, contained := resourcePrefixes[*resource.ResourceURI]
-		if contained || strings.HasPrefix(*resource.ResourceURI, "/templates/") {
+		if u.isUmbrellaResource(*resource.ResourceURI) {
 			rData, err := rHandler.GetStageResource(project, stage, *resource.ResourceURI)
 			if err != nil {
 				return err
