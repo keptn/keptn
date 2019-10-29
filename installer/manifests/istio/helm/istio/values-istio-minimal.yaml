@@ -19,19 +19,15 @@ galley:
 
 mixer:
   policy:
-    enabled: true
+    enabled: false
   telemetry:
     enabled: false
-  adapters:
-    stdio:
-      enabled: true
 
 prometheus:
   enabled: false
 
 # Common settings.
 global:
-  disablePolicyChecks: false
   proxy:
     # Sets the destination Statsd in envoy (the value of the "--statsdUdpAddress" proxy argument
     # would be <host>:<port>).
