@@ -15,7 +15,7 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/gorilla/websocket v1.4.1
 	github.com/jessevdk/go-flags v1.4.0
-	github.com/keptn/go-utils v0.2.4
+	github.com/keptn/go-utils v0.3.0
 	github.com/kinbiko/jsonassert v1.0.1
 	github.com/magiconair/properties v1.8.1
 	golang.org/x/net v0.0.0-20191021144547-ec77196f6094
