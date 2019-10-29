@@ -36,7 +36,7 @@ func (b BlackLister) GetAction() string {
 func (b BlackLister) ExecuteAction(problem *keptnevents.ProblemEventData, shkeptncontext string,
 	action *keptnmodels.RemediationAction) error {
 
-	ip, err := GetIP(problem)
+	ip, err := getIP(problem)
 	if err != nil {
 		return fmt.Errorf("failed to parse ip from ProblemDetails: %v", err)
 	}

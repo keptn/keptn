@@ -3,8 +3,6 @@ package actions
 import (
 	"fmt"
 	"os"
-	"strconv"
-	"strings"
 
 	"sigs.k8s.io/yaml"
 
@@ -16,26 +14,20 @@ import (
 	"github.com/keptn/keptn/remediation-service/pkg/apis/networking/istio/v1alpha3"
 )
 
-type Slower struct {
+type Aborter struct {
 }
 
-// NewScaler creates a new Scaler
-func NewSlower() *Slower {
-	return &Slower{}
+// NewAborter creates a new Aborter
+func NewAborter() *Aborter {
+	return &Aborter{}
 }
 
-func (s Slower) GetAction() string {
-	return "slowdown"
+func (a Aborter) GetAction() string {
+	return "abort"
 }
 
-func (s Slower) ExecuteAction(problem *keptnevents.ProblemEventData, shkeptncontext string,
+func (a Aborter) ExecuteAction(problem *keptnevents.ProblemEventData, shkeptncontext string,
 	action *keptnmodels.RemediationAction) error {
-
-	slowDown := strings.TrimSpace(action.Value)
-	validFormat := s.validateActionFormat(slowDown)
-	if !validFormat {
-		return fmt.Errorf("could not parse action: %s", action.Value)
-	}
 
 	ip, err := getIP(problem)
 	if err != nil {
@@ -69,7 +61,7 @@ func (s Slower) ExecuteAction(problem *keptnevents.ProblemEventData, shkeptncont
 				return fmt.Errorf("could not get virutal service resource: %v", err)
 			}
 
-			newVS, err := s.addDelay(resource.ResourceContent, ip, slowDown)
+			newVS, err := a.addAbort(resource.ResourceContent, ip)
 			if err != nil {
 				return fmt.Errorf("failed to add delay: %v", err)
 			}
@@ -94,7 +86,7 @@ func (s Slower) ExecuteAction(problem *keptnevents.ProblemEventData, shkeptncont
 	return nil
 }
 
-func (s Slower) addDelay(vsContent string, ip string, slowDown string) (string, error) {
+func (a Aborter) addAbort(vsContent string, ip string) (string, error) {
 
 	vs := v1alpha3.VirtualService{}
 	err := yaml.Unmarshal([]byte(vsContent), &vs)
@@ -102,9 +94,9 @@ func (s Slower) addDelay(vsContent string, ip string, slowDown string) (string, 
 		return "", err
 	}
 	fault := v1alpha3.HTTPFaultInjection{
-		Delay: &v1alpha3.HTTPFaultInjection_Delay{
-			FixedDelay: slowDown,
+		Abort: &v1alpha3.HTTPFaultInjection_Abort{
 			Percent:    int32(100),
+			HttpStatus: int32(403),
 		},
 	}
 	match := v1alpha3.HTTPMatchRequest{
@@ -125,16 +117,4 @@ func (s Slower) addDelay(vsContent string, ip string, slowDown string) (string, 
 		return "", err
 	}
 	return string(data), err
-}
-
-func (s Slower) validateActionFormat(action string) bool {
-
-	if !strings.HasSuffix(action, "s") {
-		return false
-	}
-	_, err := strconv.Atoi(action[:len(action)-1])
-	if err != nil {
-		return false
-	}
-	return true
 }
