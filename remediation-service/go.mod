@@ -20,7 +20,7 @@ require (
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79 // indirect
 	github.com/jmoiron/sqlx v1.2.0 // indirect
 	github.com/kelseyhightower/envconfig v1.3.0
-	github.com/keptn/go-utils v0.2.4
+	github.com/keptn/go-utils v0.3.0
 	github.com/lib/pq v1.2.0 // indirect
 	github.com/liggitt/tabwriter v0.0.0-20181228230101-89fcab3d43de // indirect
 	github.com/mitchellh/go-wordwrap v1.0.0 // indirect
