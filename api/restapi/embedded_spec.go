@@ -54,7 +54,7 @@ func init() {
         "tags": [
           "Event"
         ],
-        "summary": "Get the youngest event matching the parameters.",
+        "summary": "Get the latest event matching the parameters",
         "parameters": [
           {
             "type": "string",
@@ -413,7 +413,7 @@ func init() {
         "tags": [
           "Event"
         ],
-        "summary": "Get the youngest event matching the parameters.",
+        "summary": "Get the latest event matching the parameters",
         "parameters": [
           {
             "type": "string",
@@ -850,8 +850,7 @@ func init() {
     "service": {
       "type": "object",
       "required": [
-        "serviceName",
-        "helmChart"
+        "serviceName"
       ],
       "properties": {
         "deploymentStrategies": {

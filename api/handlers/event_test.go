@@ -8,7 +8,7 @@ import (
 	"github.com/kinbiko/jsonassert"
 )
 
-func TestAddingChannelInfo(t *testing.T) {
+func TestAddingEventContext(t *testing.T) {
 
 	ja := jsonassert.New(t)
 	ceData := make(map[string]interface{})
@@ -19,9 +19,9 @@ func TestAddingChannelInfo(t *testing.T) {
 
 	channelID := "id"
 	token := "token"
-	channelInfo := models.ChannelInfo{ChannelID: &channelID, Token: &token}
+	channelInfo := models.EventContext{KeptnContext: &channelID, Token: &token}
 
-	forwardData := addChannelInfoInCE(ceData, channelInfo)
+	forwardData := addEventContextInCE(ceData, channelInfo)
 	actual, _ := json.Marshal(forwardData)
-	ja.Assertf(string(actual), `{"project":"sockshop", "channelInfo":{"channelID":"id", "token":"token"}}`)
+	ja.Assertf(string(actual), `{"project":"sockshop", "eventContext":{"keptnContext":"id", "token":"token"}}`)
 }

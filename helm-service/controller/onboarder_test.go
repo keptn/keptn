@@ -17,7 +17,6 @@ import (
 	configmodels "github.com/keptn/go-utils/pkg/configuration-service/models"
 	configutils "github.com/keptn/go-utils/pkg/configuration-service/utils"
 	keptnevents "github.com/keptn/go-utils/pkg/events"
-	keptnmodels "github.com/keptn/go-utils/pkg/models"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/stretchr/testify/assert"
 )
