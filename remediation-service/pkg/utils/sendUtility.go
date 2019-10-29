@@ -8,8 +8,6 @@ import (
 	"os"
 	"time"
 
-	"k8s.io/helm/pkg/proto/hapi/chart"
-
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 	"github.com/google/uuid"
 
@@ -24,22 +22,10 @@ const eventbroker = "EVENTBROKER"
 
 // CreateAndSendConfigurationChangedEvent creates ConfigurationChangeEvent and sends it
 func CreateAndSendConfigurationChangedEvent(problem *keptnevents.ProblemEventData,
-	shkeptncontext string, changedTemplates []*chart.Template) error {
+	shkeptncontext string, configChangedEvent keptnevents.ConfigurationChangeEventData) error {
 
 	source, _ := url.Parse("https://github.com/keptn/keptn/remediation-service")
 	contentType := "application/json"
-
-	changedFiles := make(map[string]string)
-	for _, template := range changedTemplates {
-		changedFiles[template.Name] = string(template.Data)
-	}
-
-	configChangedEvent := keptnevents.ConfigurationChangeEventData{
-		Project:                   problem.Project,
-		Service:                   problem.Service,
-		Stage:                     problem.Stage,
-		FileChangesGeneratedChart: changedFiles,
-	}
 
 	event := cloudevents.Event{
 		Context: cloudevents.EventContextV02{
