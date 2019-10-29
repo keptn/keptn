@@ -4,7 +4,6 @@ import (
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 	"github.com/google/uuid"
-	"github.com/keptn/go-utils/pkg/configuration-service/utils"
 	keptnevents "github.com/keptn/go-utils/pkg/events"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"net/url"
@@ -27,22 +26,23 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 		eh.Logger.Error("Could not parse event payload: " + err.Error())
 		return err
 	}
-	// get results of previous evaluations from data store (mongodb-datastore.keptn-datastore.svc.cluster.local)
-	resourceHandler := utils.NewResourceHandler("configuration-service")
-	sloFile, err := resourceHandler.GetServiceResource(e.Project, e.Stage, e.Service, "slo.yaml")
-
+	// get SLO file
+	objectives, err := getSLOs(e.Project, e.Stage, e.Service)
 	if err != nil {
-		eh.Logger.Info("No Service Level Objectives found for service  " + e.Service + " in stage " + e.Stage + " in project " + e.Project)
+		return err
 	}
 
-	eh.Logger.Info("SLO File content: " + sloFile.ResourceContent)
+	indicators := []string{}
+	for _, objective := range objectives.Objectives {
+		indicators = append(indicators, objective.SLI)
+	}
 	// get the SLI provider that has been configured for the project (e.g. 'dynatrace' or 'prometheus')
 	sliProvider, err := getSLIProvider(e.Project)
 	if err != nil {
 		eh.Logger.Error("Could not determine SLI provider for project " + e.Project)
 	}
 	// send a new event to trigger the SLI retrieval
-	err = eh.sendInternalGetSLIEvent(keptnContext, e.Project, e.Stage, e.Service, sliProvider)
+	err = eh.sendInternalGetSLIEvent(keptnContext, e.Project, e.Stage, e.Service, sliProvider, indicators, e.Start, e.End)
 	return nil
 }
 
@@ -50,8 +50,7 @@ func getSLIProvider(s string) (string, error) {
 	return "", nil
 }
 
-func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string, project string,
-	stage string, service string, sliProvider string) error {
+func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string, project string, stage string, service string, sliProvider string, indicators []string, start string, end string) error {
 
 	source, _ := url.Parse("lighthouse-service")
 	contentType := "application/json"
@@ -61,7 +60,9 @@ func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string,
 		Project:     project,
 		Service:     service,
 		Stage:       stage,
-		Indicators:  []string{},
+		Start:       start,
+		End:         end,
+		Indicators:  indicators,
 	}
 	event := cloudevents.Event{
 		Context: cloudevents.EventContextV02{

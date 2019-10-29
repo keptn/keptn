@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: evaluation-service
+  name: lighthouse-service
   namespace: keptn
 spec:
   selector:
     matchLabels:
-      run: evaluation-service
+      run: lighthouse-service
   replicas: 1
   template:
     metadata:
       labels:
-        run: evaluation-service
+        run: lighthouse-service
     spec:
       containers:
-        - name: evaluation-service
-          image: evaluation-service
+        - name: lighthouse-service
+          image: keptn/lighthouse-service
           ports:
             - containerPort: 8080
             - containerPort: 40000
@@ -39,13 +39,13 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: evaluation-service
+  name: lighthouse-service
   namespace: keptn
   labels:
-    run: evaluation-service
+    run: lighthouse-service
 spec:
   ports:
     - port: 8080
       protocol: TCP
   selector:
-    run: evaluation-service
+    run: lighthouse-service
