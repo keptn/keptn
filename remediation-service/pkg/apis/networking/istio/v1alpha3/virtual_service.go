@@ -1103,11 +1103,9 @@ type HTTPFaultInjection_Abort struct {
 	// Use of integer `percent` value is deprecated. Use the double `percentage`
 	// field instead.
 	Percent int32 `protobuf:"varint,1,opt,name=percent,proto3" json:"percent,omitempty"` // Deprecated: Do not use.
-	// Types that are valid to be assigned to ErrorType:
-	//	*HTTPFaultInjection_Abort_HttpStatus
-	//	*HTTPFaultInjection_Abort_GrpcStatus
-	//	*HTTPFaultInjection_Abort_Http2Error
-	ErrorType isHTTPFaultInjection_Abort_ErrorType `protobuf_oneof:"error_type"`
+
+	HttpStatus int32 `json:"httpStatus"`
+
 	// Percentage of requests to be aborted with the error code provided.
 	Percentage *Percent `protobuf:"bytes,5,opt,name=percentage,proto3" json:"percentage,omitempty"`
 }

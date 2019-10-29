@@ -268,15 +268,15 @@
   revision = "73d445a93680fa1a78ae23a5839bad48f32ba1ee"
 
 [[projects]]
-  digest = "1:adbc24353f685b2045b5881bb15f48cec5267fc70a5ecaf2cf60b1241a43c83a"
+  digest = "1:ec1763a0b23c3c610dc2a0310c9afd01513c9b95091c05a9207718a61181c276"
   name = "github.com/go-openapi/analysis"
   packages = [
     ".",
     "internal",
   ]
   pruneopts = "UT"
-  revision = "9864a87593df5ab83eac00921906932d1d77fae2"
-  version = "v0.19.5"
+  revision = "1024f3482ddc2c381cc918eb9eca596d51a70272"
+  version = "v0.19.6"
 
 [[projects]]
   digest = "1:3bca1e4623bc7e1f9849a14fe730c093953727991f0592be3dad0168cb67758e"
@@ -376,11 +376,12 @@
   version = "v0.2.3"
 
 [[projects]]
-  digest = "1:582e25eccee928dc12416ea4c23b6dae8f3b5687730632aa1473ebebe80a2359"
+  digest = "1:90d79bbf6abc5fcbf9bc538766e523f7d33d07d7fda462fc299556a80dc03a7d"
   name = "github.com/gogo/protobuf"
   packages = [
     "proto",
     "sortkeys",
+    "types",
   ]
   pruneopts = "UT"
   revision = "5628607bb4c51c3157aacc3a50f0ab707582b805"
@@ -400,7 +401,7 @@
   name = "github.com/golang/groupcache"
   packages = ["lru"]
   pruneopts = "UT"
-  revision = "404acd9df4cc9859d64fb9eed42e5c026187287a"
+  revision = "611e8accdfc92c4187d399e95ce826046d4c8d73"
 
 [[projects]]
   digest = "1:f5ce1529abc1204444ec73779f44f94e2fa8fcdb7aca3c355b0c95947e4005c6"
@@ -547,8 +548,8 @@
   version = "v1.4.0"
 
 [[projects]]
-  branch = "develop"
-  digest = "1:64d689f01373729d4c0dd882d5afecec73eaf64594b3193d53f967c789cf6755"
+  branch = "feature/1006/extend-resource-utils"
+  digest = "1:1d3498309599cad8743d66e2be616619bb6cc767564f78e1b3b758b787a48db9"
   name = "github.com/keptn/go-utils"
   packages = [
     "pkg/api/models",
@@ -559,7 +560,7 @@
     "pkg/utils",
   ]
   pruneopts = "UT"
-  revision = "92070acdbeff4944c0f59dbcedeaff06c2277fa8"
+  revision = "ab34ff05459a926f9600c3be34b7cefdbd7b5283"
 
 [[projects]]
   digest = "1:fd7f169f32c221b096c74e756bda16fe22d3bb448bbf74042fd0700407a1f92f"
@@ -840,7 +841,7 @@
     "ssh/terminal",
   ]
   pruneopts = "UT"
-  revision = "87dc89f01550277dc22b74ffcf4cd89fa2f40f4c"
+  revision = "8986dd9e96cf0a6f74da406c005ba3df38527c04"
 
 [[projects]]
   branch = "master"
@@ -859,7 +860,7 @@
     "trace",
   ]
   pruneopts = "UT"
-  revision = "ec77196f6094c3492a8b61f2c11cf937f78992ae"
+  revision = "fe3aa8a4527195a6057b3fad46619d7d090e99b5"
 
 [[projects]]
   branch = "master"
@@ -877,7 +878,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:fee31b48b43f43ff2f1d802c4fccf062b1b42df077acf669b8be40f119da6ab9"
+  digest = "1:d5e7a8fb63a2fb2a878b04c1f58ce095ede573c01878c93a1d72f6f5ff23e818"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
@@ -885,7 +886,7 @@
     "windows",
   ]
   pruneopts = "UT"
-  revision = "742c48ecaeb7c624c475e02f3eb0827ebb4970d4"
+  revision = "195ce5e7f934b923d8fc432cf5a2561f2b334da9"
 
 [[projects]]
   digest = "1:dfcb3d446a3c6a6c71b74cf7baf366cd630a8cb43c3fcb741f34e49727da168d"
@@ -921,11 +922,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:32a1c8a24e8d0259416f84720d6c32e5c52cf10d01c19a7d23dcfa868f6b6235"
+  digest = "1:a2f668c709f9078828e99cb1768cb02e876cb81030545046a32b54b2ac2a9ea8"
   name = "golang.org/x/time"
   packages = ["rate"]
   pruneopts = "UT"
-  revision = "6d3f0bb11be5e03f8353894b7240e7d793e40a8f"
+  revision = "555d28b269f0569763d25dbe1a237ae74c6bcc82"
 
 [[projects]]
   digest = "1:3c03b58f57452764a4499c55c582346c0ee78c8a5033affe5bdfd9efd3da5bd1"
@@ -952,7 +953,7 @@
   name = "google.golang.org/genproto"
   packages = ["googleapis/rpc/status"]
   pruneopts = "UT"
-  revision = "548a555dbc03994223efbaba0090152849259498"
+  revision = "919d9bdd9fe6f1a5dd95ce5d5e4cdb8fd3c516d0"
 
 [[projects]]
   digest = "1:7fd79262cbb279c8e7143b41eeb0f181d267c83f4d54283ee5a53920b15b8c70"
@@ -1528,6 +1529,14 @@
   revision = "8d271d903fe4c290aa361acfb242cff7bcee96f1"
 
 [[projects]]
+  digest = "1:7719608fe0b52a4ece56c2dde37bedd95b938677d1ab0f84b8a7852e4c59f849"
+  name = "sigs.k8s.io/yaml"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "fd68e9863619f6ec2fdd8625fe1f02e7c877e480"
+  version = "v1.1.0"
+
+[[projects]]
   branch = "master"
   digest = "1:9132eacc44d9bd1e03145ea2e9d4888800da7773d6edebb401f8cd34c9fb8380"
   name = "vbom.ml/util"
@@ -1544,14 +1553,19 @@
     "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http",
     "github.com/cloudevents/sdk-go/pkg/cloudevents/types",
     "github.com/ghodss/yaml",
+    "github.com/gogo/protobuf/proto",
+    "github.com/gogo/protobuf/types",
     "github.com/google/uuid",
     "github.com/kelseyhightower/envconfig",
+    "github.com/keptn/go-utils/pkg/configuration-service/models",
+    "github.com/keptn/go-utils/pkg/configuration-service/utils",
     "github.com/keptn/go-utils/pkg/events",
     "github.com/keptn/go-utils/pkg/models",
     "github.com/keptn/go-utils/pkg/utils",
     "github.com/stretchr/testify/assert",
     "gopkg.in/yaml.v2",
     "k8s.io/api/apps/v1",
+    "k8s.io/apimachinery/pkg/apis/meta/v1",
     "k8s.io/apimachinery/pkg/util/yaml",
     "k8s.io/client-go/kubernetes",
     "k8s.io/client-go/plugin/pkg/client/auth",
@@ -1562,6 +1576,7 @@
     "k8s.io/helm/pkg/helm/portforwarder",
     "k8s.io/helm/pkg/kube",
     "k8s.io/helm/pkg/proto/hapi/chart",
+    "sigs.k8s.io/yaml",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

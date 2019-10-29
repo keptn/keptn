@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestAddDelay(t *testing.T) {
+func TestAddAbortDelay(t *testing.T) {
 
 	const expectedVirtualService = `apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
@@ -22,8 +22,8 @@ spec:
   - carts
   http:
   - fault:
-      delay:
-        fixedDelay: 5s
+      abort:
+        httpStatus: 403
         percent: 100
     match:
     - headers:
@@ -37,8 +37,8 @@ spec:
       weight: 100
 `
 
-	s := NewSlower()
-	newVs, err := s.addDelay(virtualService, "2.2.2.2", "5s")
+	a := NewAborter()
+	newVs, err := a.addAbort(virtualService, "2.2.2.2")
 
 	assert.Nil(t, err)
 	assert.Equal(t, expectedVirtualService, newVs)
