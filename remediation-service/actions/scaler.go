@@ -21,8 +21,6 @@ import (
 	kyaml "k8s.io/apimachinery/pkg/util/yaml"
 )
 
-const envConfigSvcURL = "CONFIGURATION_SERVICE"
-
 type Scaler struct {
 }
 
@@ -53,17 +51,29 @@ func (s Scaler) ExecuteAction(problem *keptnevents.ProblemEventData, shkeptncont
 
 	changedTemplates, err := s.increaseReplicaCount(ch, replicaIncrement)
 	if err != nil {
-		return fmt.Errorf("Failed to increase replica count: %v", err)
+		return fmt.Errorf("failed to increase replica count: %v", err)
 	}
 
-	err = utils.CreateAndSendConfigurationChangedEvent(problem, shkeptncontext, changedTemplates)
+	changedFiles := make(map[string]string)
+	for _, template := range changedTemplates {
+		changedFiles[template.Name] = string(template.Data)
+	}
+
+	data := keptnevents.ConfigurationChangeEventData{
+		Project:                   problem.Project,
+		Service:                   problem.Service,
+		Stage:                     problem.Stage,
+		FileChangesGeneratedChart: changedFiles,
+	}
+
+	err = utils.CreateAndSendConfigurationChangedEvent(problem, shkeptncontext, data)
 	if err != nil {
 		return fmt.Errorf("failed to send configuration change event: %v", err)
 	}
-	return err
+	return nil
 }
 
-// gets replica count from helm chart
+// increases the replica count in the deployments by the provided replicaIncrement
 func (s Scaler) increaseReplicaCount(ch *chart.Chart, replicaIncrement int) ([]*chart.Template, error) {
 
 	changedTemplates := make([]*chart.Template, 0, 0)
