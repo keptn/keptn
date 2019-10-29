@@ -1,0 +1,12 @@
+apiVersion: config.istio.io/v1alpha2
+kind: handler
+metadata:
+  name: blacklistip
+spec:
+  compiledAdapter: listchecker
+  params:
+    # providerUrl: ordinarily black and white lists are maintained
+    # externally and fetched asynchronously using the providerUrl.
+    overrides: []  # overrides provide a static list
+    blacklist: true
+    entryType: IP_ADDRESSES
