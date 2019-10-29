@@ -2,7 +2,7 @@ apiVersion: skaffold/v1beta13
 kind: Config
 build:
   artifacts:
-    - image: evaluation-service
+    - image: keptn/lighthouse-service
       docker:    # 	beta describes an artifact built from a Dockerfile.
         dockerfile: Dockerfile_dev
 deploy:

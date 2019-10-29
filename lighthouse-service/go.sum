@@ -199,6 +199,16 @@ github.com/keptn/go-utils v0.0.0-20191023080314-74864b263dd5 h1:eZm6tb7Ur+cND+4i
 github.com/keptn/go-utils v0.0.0-20191023080314-74864b263dd5/go.mod h1:YwobU0bBWWvx1b7N++ohTcYyEuz7VZjlbjkZAhzBiS8=
 github.com/keptn/go-utils v0.0.0-20191028093434-194ca46743a3 h1:xgPTdSWQ7BN6u5FdejpOJLaJgvq9pbQc/CAGW1ZLlTc=
 github.com/keptn/go-utils v0.0.0-20191028093434-194ca46743a3/go.mod h1:YwobU0bBWWvx1b7N++ohTcYyEuz7VZjlbjkZAhzBiS8=
+github.com/keptn/go-utils v0.0.0-20191028121008-b08cb2f0c642 h1:U+o3oeqpvYrF7Rkbyij0SyJMWp4MpbSdEQbsAUVDjd0=
+github.com/keptn/go-utils v0.0.0-20191028121008-b08cb2f0c642/go.mod h1:YwobU0bBWWvx1b7N++ohTcYyEuz7VZjlbjkZAhzBiS8=
+github.com/keptn/go-utils v0.0.0-20191029090742-cc1c1b5f7a9f h1:3apPS70ythGy2HnJy6XWVHm8Yyz86S7yE131sfmSreE=
+github.com/keptn/go-utils v0.0.0-20191029090742-cc1c1b5f7a9f/go.mod h1:YwobU0bBWWvx1b7N++ohTcYyEuz7VZjlbjkZAhzBiS8=
+github.com/keptn/go-utils v0.0.0-20191029093409-bc463835ea69 h1:vg4kYK+2P8l9mAcjjpUp9dCB6uEDh8lNyrLipHAWcrE=
+github.com/keptn/go-utils v0.0.0-20191029093409-bc463835ea69/go.mod h1:YwobU0bBWWvx1b7N++ohTcYyEuz7VZjlbjkZAhzBiS8=
+github.com/keptn/go-utils v0.0.0-20191029100215-920c5d27f001 h1:ggbxJhZl7mpp6jTBmYhg8tb2eP9plhY5LseWLVHlH8E=
+github.com/keptn/go-utils v0.0.0-20191029100215-920c5d27f001/go.mod h1:YwobU0bBWWvx1b7N++ohTcYyEuz7VZjlbjkZAhzBiS8=
+github.com/keptn/go-utils v0.0.0-20191029120227-cb18f1bbe42f h1:/XScNeLyAAyv776CbJJaJ6vnJpVZ8LT2OyU1+b7WI9g=
+github.com/keptn/go-utils v0.0.0-20191029120227-cb18f1bbe42f/go.mod h1:YwobU0bBWWvx1b7N++ohTcYyEuz7VZjlbjkZAhzBiS8=
 github.com/keptn/go-utils v0.2.3 h1:Jf9sxb+IIrjeR0/2DpDEFVNoqA6gf9hgiDZ2UjK7bIE=
 github.com/keptn/go-utils v0.2.3/go.mod h1:Kk866wN1r/uX0Bn3GaDgOXpEpaaf1wxDRIq4SkFnqzc=
 github.com/kevinburke/ssh_config v0.0.0-20190725054713-01f96b0aa0cd h1:Coekwdh0v2wtGp9Gmz1Ze3eVRAWJMLokvN3QjdzCHLY=

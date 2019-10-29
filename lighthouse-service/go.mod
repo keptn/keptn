@@ -10,7 +10,8 @@ require (
 	github.com/Masterminds/sprig v2.22.0+incompatible // indirect
 	github.com/cloudevents/sdk-go v0.10.0
 	github.com/cyphar/filepath-securejoin v0.2.2 // indirect
-	github.com/go-openapi/strfmt v0.19.3 // indirect
+	github.com/ghodss/yaml v1.0.0
+	github.com/go-openapi/strfmt v0.19.3
 	github.com/go-openapi/validate v0.19.4 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/gogo/protobuf v1.3.1 // indirect
@@ -24,7 +25,7 @@ require (
 	github.com/imdario/mergo v0.3.8 // indirect
 	github.com/json-iterator/go v1.1.7 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.0.0-20191028093434-194ca46743a3
+	github.com/keptn/go-utils v0.0.0-20191029120227-cb18f1bbe42f
 	github.com/mitchellh/copystructure v1.0.0 // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect

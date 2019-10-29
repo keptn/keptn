@@ -1,0 +1,78 @@
+---
+spec_version: '1.0'
+# filter is optional
+# specifies selection criteria for service in the SLI provider; project, stage,
+# and service can be overwritten, if needed
+filter:
+  id: "<prometheus_scrape_job_id>"
+# comparison is mandatory
+comparison:
+  # compare_with is mandatory
+  # possible values:
+  # - single_result: only compare with one previous result
+  # - several_results: compare with several previous results
+  #   this option requires ‘number_of_comparison_results’
+  compare_with: "single_result"
+  # include_result_with_score is optional
+  # default value: all
+  # possible values:
+  # - pass: only use previous results that had a ‘pass’ result in comparison
+  # - pass_or_warn: only use previous results that had a ‘pass’ or a ‘warning’
+  #   result in the comparison
+  # - all: all previous values are used in the comparison
+  include_result_with_score: "pass"
+  # number_of_comparison_results is optional
+  # default value: 3
+  # possible values are positive integers greater than zero
+  # if less than 3 values are available for comparison the evaluation fails
+  number_of_comparison_results: 3
+  # aggregate_function is optional
+  # decides on the aggregate function which is applied to the previous results
+  # before comparison
+  # default value: avg
+  # possible values:
+  # - avg: average
+  # - p90: 90th percentile
+  # - p95: 95th percentile
+  aggregate_function: avg
+# objectives is mandatory
+# describes the objectives for SLIs
+objectives:
+  # sli is mandatory
+  # can be specified several times, if sli is specified without further attributes
+  # the values are fetched and stored but are not taken into account for the
+  # evaluation
+  - sli: responseTime95
+    # pass is optional
+    # it defines the pass criteria for the SLI values
+    pass:        # pass if (relative change <= 10% OR absolute value is < 200)
+      # e.g.: If response time changes by more than 10%, it should still
+      #       be considered as a pass if it is less than 200 ms
+      - criteria:
+          - "<=+10%" # relative values require a prefixed sign (plus or minus)
+      - criteria:
+          - "<200"   # absolute values only require a logical operator
+    warning:     # allow small relative changes, and response time has to be < 500 ms
+      - criteria:  # criteria connected by AND
+          - "<+15%"
+          - ">-8%"
+          - "<500"
+  - sli: security_vulnerabilities
+    weight: 2   # default weight: 1
+    pass:       # do not allow any security vulnerabilities
+      - criteria:
+          - "=0"
+  - sli: sql_statements
+    key_sli: true # if a key sli fails, the whole evaluation fails
+    pass:         # pass
+      - criteria:   # if there has been no change to the number of sql statements
+          - "=0%"
+      - criteria:   # or if the total number of sql statements is below 100
+          - "<100"
+    warning:      # warn if the number of sql statements has changed slightly
+      - criteria:
+          - "<+5%"
+          - ">-5%"
+total_score:  # maximum score = sum of weights
+  pass: "90%" # by default this is interpreted as ">="
+  warning: 75%
