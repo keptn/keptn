@@ -25,7 +25,7 @@ require (
 	github.com/imdario/mergo v0.3.8 // indirect
 	github.com/json-iterator/go v1.1.7 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.0.0-20191029120227-cb18f1bbe42f
+	github.com/keptn/go-utils v0.0.0-20191029142517-7ffc20585ada
 	github.com/mitchellh/copystructure v1.0.0 // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
