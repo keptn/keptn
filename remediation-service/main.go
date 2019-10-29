@@ -183,7 +183,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		return err
 	}
 
-	actionExecutors := []actions.ActionExecutor{actions.NewScaler(), actions.NewSlower()}
+	actionExecutors := []actions.ActionExecutor{actions.NewScaler(), actions.NewSlower(), actions.NewBlackLister()}
 
 	for _, remediation := range remediationData.Remediations {
 		if strings.HasPrefix(problemEvent.ProblemTitle, remediation.Name) {

@@ -28,6 +28,7 @@ RUN wget https://storage.googleapis.com/kubernetes-helm/helm-v$HELM_VERSION-linu
 
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /go/src/github.com/keptn/keptn/remediation-service/remediation-service /remediation-service
+COPY --from=builder /go/src/github.com/keptn/keptn/remediation-service/template /template
 ADD MANIFEST /
 
 # Run the web service on container startup.

@@ -38,7 +38,7 @@
 
 [[constraint]]
   name = "github.com/keptn/go-utils"
-  branch = "develop"
+  branch = "feature/1006/extend-resource-utils"
 
 [[override]]
   name = "k8s.io/kubernetes"

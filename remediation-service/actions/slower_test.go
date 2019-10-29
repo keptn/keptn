@@ -86,8 +86,7 @@ func TestGetIP(t *testing.T) {
 	assert.Equal(t, "18416", problem.PID)
 	assert.Equal(t, "CMD Injection", problem.ProblemTitle)
 
-	slower := NewSlower()
-	ip, err := slower.getIP(&problem)
+	ip, err := GetIP(&problem)
 	assert.Nil(t, err)
 	assert.Equal(t, "127.0.0.1", ip)
 }

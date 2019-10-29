@@ -37,7 +37,7 @@ func (s Slower) ExecuteAction(problem *keptnevents.ProblemEventData, shkeptncont
 		return fmt.Errorf("could not parse action: %s", action.Value)
 	}
 
-	ip, err := getIP(problem)
+	ip, err := GetIP(problem)
 	if err != nil {
 		return fmt.Errorf("could not parse ip from ProblemDetails: %v", err)
 	}
@@ -92,21 +92,6 @@ func (s Slower) ExecuteAction(problem *keptnevents.ProblemEventData, shkeptncont
 		}
 	}
 	return nil
-}
-
-type ProblemDetails struct {
-	ClientIP string `json:"ClientIP"`
-}
-
-func (s Slower) getIP(problem *keptnevents.ProblemEventData) (string, error) {
-
-	details := ProblemDetails{}
-	err := yaml.Unmarshal(problem.ProblemDetails, &details)
-	if err != nil {
-		return "", err
-	}
-
-	return details.ClientIP, nil
 }
 
 func (s Slower) addDelay(vsContent string, ip string, slowDown string) (string, error) {
