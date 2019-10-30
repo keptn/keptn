@@ -13,7 +13,6 @@ import (
 	"time"
 
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
-	"github.com/keptn/keptn/configuration-service/models"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
@@ -41,14 +40,6 @@ type deploymentFinishedEvent struct {
 
 type Client struct {
 	httpClient *http.Client
-}
-
-// ResourceListBody parameter
-// swagger:model ResourceListBody
-type ResourceListBody struct {
-
-	// resources
-	Resources []*models.Resource `json:"resources"`
 }
 
 func main() {
