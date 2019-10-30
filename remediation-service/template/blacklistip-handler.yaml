@@ -5,8 +5,6 @@ metadata:
 spec:
   compiledAdapter: listchecker
   params:
-    # providerUrl: ordinarily black and white lists are maintained
-    # externally and fetched asynchronously using the providerUrl.
-    overrides: []  # overrides provide a static list
+    overrides: []
     blacklist: true
     entryType: IP_ADDRESSES
