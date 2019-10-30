@@ -5,3 +5,6 @@ cmd-server/__debug_bin
 MANIFEST
 
 vendor
+
+#binary - go build
+api

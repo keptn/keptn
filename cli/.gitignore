@@ -3,3 +3,6 @@ carts
 
 # Idea
 .idea
+
+#binary - go build
+cli

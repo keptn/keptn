@@ -16,3 +16,6 @@ MANIFEST
 
 vendor/*
 .DS_Store
+
+#binary - go build
+helm-service
