@@ -2,14 +2,20 @@
 # This is based on Debian and sets the GOPATH to /go.
 FROM golang:1.12 as builder
 
-# Copy local code to the container image.
-WORKDIR /go/src/github.com/keptn/keptn/api
-COPY . .
+WORKDIR /go/src/github.com/keptn/keptn/jmeter-service
 
-ARG DEP_VERSION=0.5.3
-RUN curl -L -s https://github.com/golang/dep/releases/download/v$DEP_VERSION/dep-linux-amd64 -o ./dep && \
-  chmod +x ./dep && \
-  ./dep ensure
+# Force the go compiler to use modules 
+ENV GO111MODULE=on
+
+# Copy `go.mod` for definitions and `go.sum` to invalidate the next layer
+# in case of a change in the dependencies
+COPY go.mod go.sum ./
+
+# Download dependencies
+RUN go mod download 
+
+# Copy local code to the container image.
+COPY . .
 
 # Build the command inside the container. 
 # (You may fetch or manage dependencies here, 
