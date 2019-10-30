@@ -61,8 +61,13 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 	}
 
 	// get results of previous evaluations from data store (mongodb-datastore.keptn-datastore.svc.cluster.local)
-	// TODO: get number of previous events from SLO config (comparison)
-	previousEvaluationEvents, err := eh.getPreviousEvaluations(e)
+	numberOfPreviousResults := 3
+	if sloConfig.Comparison.CompareWith == "single_result" {
+		numberOfPreviousResults = 1
+	} else if sloConfig.Comparison.CompareWith == "several_results" {
+		numberOfPreviousResults = sloConfig.Comparison.NumberOfComparisonResults
+	}
+	previousEvaluationEvents, err := eh.getPreviousEvaluations(e, numberOfPreviousResults)
 	if err != nil {
 		return err
 	}
@@ -82,6 +87,7 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 
 	var sliEvaluationResults []*keptnevents.SLIEvaluationResult
 	maximumAchievableScore := 0.0
+	keySLIFailed := false
 	for _, objective := range sloConfig.Objectives {
 		maximumAchievableScore += float64(objective.Weight)
 		sliEvaluationResult := &keptnevents.SLIEvaluationResult{}
@@ -135,7 +141,9 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 			}
 		}
 
-		// TODO: check if this was a key SLI and fail the complete evaluation if it failed
+		if objective.KeySLI {
+			keySLIFailed = true
+		}
 		sliEvaluationResult.Status = "failed"
 		sliEvaluationResult.Score = 0
 		sliEvaluationResult.Violations = append(warningViolations, passedViolations...)
@@ -163,9 +171,9 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 		return errors.New("could not parse pass target percentage")
 	}
 
-	if achievedPercentage >= passTargetPercentage {
+	if achievedPercentage >= passTargetPercentage && !keySLIFailed {
 		evaluationResult.EvaluationDetails.Result = "pass"
-	} else if sloConfig.TotalScore.Warning != "" {
+	} else if sloConfig.TotalScore.Warning != "" && !keySLIFailed {
 		warnTargetPercentage, err := strconv.ParseFloat(strings.TrimSuffix(sloConfig.TotalScore.Warning, "%"), 64)
 
 		if err != nil {
@@ -216,14 +224,15 @@ func evaluateOrCombinedCriteria(result *keptnevents.SLIResult, sloCriteria []*ke
 
 // evaluateCriteria evaluates a set of criteria strings. Per definition, all criteria clauses within a SLOCriteria object have to be fulfilled to satisfy the SLOCriteria
 func evaluateCriteriaSet(result *keptnevents.SLIResult, sloCriteria *keptnmodelsv2.SLOCriteria, previousResults []*keptnevents.SLIEvaluationResult, comparison *keptnmodelsv2.SLOComparison) (bool, []*keptnevents.SLIViolation, error) {
-	var satisfied bool
+	satisfied := true
 	var violations []*keptnevents.SLIViolation
 	for _, criteria := range sloCriteria.Criteria {
 		violation := &keptnevents.SLIViolation{
 			Criteria: criteria,
 		}
-		satisfied, _ = evaluateSingleCriteria(result, criteria, previousResults, comparison, nil)
-		if !satisfied {
+		criteriaSatisfied, _ := evaluateSingleCriteria(result, criteria, previousResults, comparison, violation)
+		if !criteriaSatisfied {
+			satisfied = false
 			violations = append(violations, violation)
 		}
 	}
@@ -271,10 +280,17 @@ func evaluateComparison(sliResult *keptnevents.SLIResult, co *criteriaObject, pr
 			}
 		}
 	}
+
+	if len(previousResults) == 0 {
+		// if no comparison values are available, the evaluation passes
+		return true, nil
+	}
 	// aggregate the previous values based on the passed aggregation function
 	switch comparison.AggregateFunction {
 	case "avg":
 		aggregatedValue = calculateAverage(previousValues)
+	case "p50":
+		aggregatedValue = calculatePercentile(sort.Float64Slice(previousValues), 0.5)
 	case "p90":
 		aggregatedValue = calculatePercentile(sort.Float64Slice(previousValues), 0.9)
 	case "p95":
@@ -311,6 +327,9 @@ func calculateAverage(values []float64) float64 {
 }
 
 func calculatePercentile(values sort.Float64Slice, perc float64) float64 {
+	if len(values) == 0 {
+		return 0.0
+	}
 	ps := []float64{perc}
 
 	scores := make([]float64, len(ps))
@@ -359,12 +378,12 @@ func parseCriteriaString(criteria string) (*criteriaObject, error) {
 	// example values: <+15%, <500, >-8%, =0
 	// possible operators: <, <=, =, >, >=
 	// regex: ^([<|<=|=|>|>=]{1,2})([+|-]{0,1}\\d*\.?\d*)([%]{0,1})
-	regex := `^([<|<=|=|>|>=]{1,2})([+|-]{0,1}\\d*\.?\d*)([%]{0,1})`
+	regex := `^([<|<=|=|>|>=]{1,2})([+|-]{0,1}\d*\.?\d*)([%]{0,1})`
 	var re *regexp.Regexp
 	re = regexp.MustCompile(regex)
 
 	// remove whitespaces
-	criteria = strings.Trim(criteria, " ")
+	criteria = strings.Replace(criteria, " ", "", -1)
 
 	if !re.MatchString(criteria) {
 		return nil, errors.New("invalid criteria string")
@@ -397,7 +416,7 @@ func parseCriteriaString(criteria string) (*criteriaObject, error) {
 		criteria = strings.TrimPrefix(criteria, "+")
 	} else {
 		c.IsComparison = false
-		c.CheckIncrease = true
+		c.CheckIncrease = false
 	}
 
 	floatValue, err := strconv.ParseFloat(criteria, 64)
@@ -409,8 +428,8 @@ func parseCriteriaString(criteria string) (*criteriaObject, error) {
 	return c, nil
 }
 
-func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptnevents.InternalGetSLIDoneEventData) ([]*keptnevents.EvaluationDoneEventData, error) {
-	queryString := "http://mongodb-datastore.keptn-datastore:8080/event?type=" + keptnevents.EvaluationDoneEventType + "&project=" + e.Project + "&stage=" + e.Stage + "&service=" + e.Service + "&pageSize=20"
+func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptnevents.InternalGetSLIDoneEventData, numberOfPreviousResults int) ([]*keptnevents.EvaluationDoneEventData, error) {
+	queryString := "http://mongodb-datastore.keptn-datastore:8080/event?type=" + keptnevents.EvaluationDoneEventType + "&project=" + e.Project + "&stage=" + e.Stage + "&service=" + e.Service + "&pageSize=" + strconv.FormatInt(int64(numberOfPreviousResults), 10)
 	req, err := http.NewRequest("GET", queryString, nil)
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := eh.HTTPClient.Do(req)
