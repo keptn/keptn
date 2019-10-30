@@ -75,7 +75,7 @@ func (s Slower) ExecuteAction(problem *keptnevents.ProblemEventData, shkeptncont
 			}
 
 			changedFiles := map[string]string{
-				getVirtualServiceUri(service): newVS,
+				getVirtualServiceUriInChart(service): newVS,
 			}
 
 			data := keptnevents.ConfigurationChangeEventData{
@@ -109,7 +109,7 @@ func (s Slower) addDelay(vsContent string, ip string, slowDown string) (string, 
 	}
 	match := v1alpha3.HTTPMatchRequest{
 		Headers: map[string]*v1alpha3.StringMatch_Exact{
-			"X-Forwarded-For": &v1alpha3.StringMatch_Exact{
+			"X-Forwarded-For": {
 				Exact: ip,
 			},
 		},
