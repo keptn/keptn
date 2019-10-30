@@ -74,7 +74,23 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 
 	fmt.Println(sloConfig)
 
-	evaluationResult := keptnevents.EvaluationDoneEventData{
+	evaluationResult, maximumAchievableScore, keySLIFailed := evaluateObjectives(e, sloConfig, previousEvaluationEvents)
+
+	// calculate the total score
+	err = eh.calculateScore(maximumAchievableScore, evaluationResult, sloConfig, keySLIFailed)
+	if err != nil {
+		return err
+	}
+
+	// send the evaluation-done-event
+	var shkeptncontext string
+	eh.Event.Context.ExtensionAs("shkeptncontext", shkeptncontext)
+	err = eh.sendEvaluationDoneEvent(shkeptncontext, evaluationResult)
+	return err
+}
+
+func evaluateObjectives(e *keptnevents.InternalGetSLIDoneEventData, sloConfig *keptnmodelsv2.ServiceLevelObjectives, previousEvaluationEvents []*keptnevents.EvaluationDoneEventData) (*keptnevents.EvaluationDoneEventData, float64, bool) {
+	evaluationResult := &keptnevents.EvaluationDoneEventData{
 		Result:  "",
 		Project: e.Project,
 		Service: e.Service,
@@ -84,7 +100,6 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 			TimeEnd:   e.End,
 		},
 	}
-
 	var sliEvaluationResults []*keptnevents.SLIEvaluationResult
 	maximumAchievableScore := 0.0
 	keySLIFailed := false
@@ -127,6 +142,7 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 			if isPassed {
 				sliEvaluationResult.Score = float64(objective.Weight)
 				sliEvaluationResult.Status = "pass"
+				sliEvaluationResults = append(sliEvaluationResults, sliEvaluationResult)
 				continue
 			}
 		}
@@ -137,6 +153,7 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 			if isWarning {
 				sliEvaluationResult.Score = 0.5 * float64(objective.Weight)
 				sliEvaluationResult.Status = "warning"
+				sliEvaluationResults = append(sliEvaluationResults, sliEvaluationResult)
 				continue
 			}
 		}
@@ -150,27 +167,24 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 
 		sliEvaluationResults = append(sliEvaluationResults, sliEvaluationResult)
 	}
+	evaluationResult.EvaluationDetails.IndicatorResults = sliEvaluationResults
+	return evaluationResult, maximumAchievableScore, keySLIFailed
+}
 
-	// calculate the total score
+func (eh *EvaluateSLIHandler) calculateScore(maximumAchievableScore float64, evaluationResult *keptnevents.EvaluationDoneEventData, sloConfig *keptnmodelsv2.ServiceLevelObjectives, keySLIFailed bool) error {
 	totalScore := 0.0
-	for _, result := range sliEvaluationResults {
+	for _, result := range evaluationResult.EvaluationDetails.IndicatorResults {
 		totalScore += result.Score
 	}
-
 	achievedPercentage := totalScore / maximumAchievableScore
-
 	evaluationResult.EvaluationDetails.Score = achievedPercentage
-
 	if sloConfig.TotalScore == nil || sloConfig.TotalScore.Pass == "" {
 		return errors.New("no target score defined")
 	}
-
 	passTargetPercentage, err := strconv.ParseFloat(strings.TrimSuffix(sloConfig.TotalScore.Pass, "%"), 64)
-
 	if err != nil {
 		return errors.New("could not parse pass target percentage")
 	}
-
 	if achievedPercentage >= passTargetPercentage && !keySLIFailed {
 		evaluationResult.EvaluationDetails.Result = "pass"
 	} else if sloConfig.TotalScore.Warning != "" && !keySLIFailed {
@@ -187,12 +201,7 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 	} else {
 		evaluationResult.EvaluationDetails.Result = "fail"
 	}
-
-	// send the evaluation-done-event
-	var shkeptncontext string
-	eh.Event.Context.ExtensionAs("shkeptncontext", shkeptncontext)
-	err = eh.sendEvaluationDoneEvent(shkeptncontext, &evaluationResult)
-	return err
+	return nil
 }
 
 func getSLIResult(results []*keptnevents.SLIResult, sli string) *keptnevents.SLIResult {
