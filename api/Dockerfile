@@ -2,7 +2,7 @@
 # This is based on Debian and sets the GOPATH to /go.
 FROM golang:1.12 as builder
 
-WORKDIR /go/src/github.com/keptn/keptn/jmeter-service
+WORKDIR /go/src/github.com/keptn/keptn/api
 
 # Force the go compiler to use modules 
 ENV GO111MODULE=on
