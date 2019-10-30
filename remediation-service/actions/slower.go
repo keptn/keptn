@@ -118,12 +118,12 @@ func (s Slower) addDelay(vsContent string, ip string, slowDown string) (string, 
 
 	if len(vs.Spec.Http) > 0 {
 		newRoute := new(v1alpha3.HTTPRoute)
-		deepCopy(vs.Spec.Http[0], newRoute)
+		deepCopy(vs.Spec.Http[len(vs.Spec.Http)-1], newRoute)
 
 		newRoute.Fault = &fault
 		newRoute.Match = append(newRoute.Match, &match)
 
-		vs.Spec.Http = append(vs.Spec.Http, newRoute)
+		vs.Spec.Http = append([]*v1alpha3.HTTPRoute{newRoute}, vs.Spec.Http...)
 
 		data, err := yaml.Marshal(vs)
 		if err != nil {
