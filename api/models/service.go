@@ -21,8 +21,7 @@ type Service struct {
 	DeploymentStrategies map[string]string `json:"deploymentStrategies,omitempty"`
 
 	// helm chart
-	// Required: true
-	HelmChart *string `json:"helmChart"`
+	HelmChart string `json:"helmChart,omitempty"`
 
 	// service name
 	// Required: true
@@ -33,10 +32,6 @@ type Service struct {
 func (m *Service) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateHelmChart(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.validateServiceName(formats); err != nil {
 		res = append(res, err)
 	}
@@ -44,15 +39,6 @@ func (m *Service) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *Service) validateHelmChart(formats strfmt.Registry) error {
-
-	if err := validate.Required("helmChart", "body", m.HelmChart); err != nil {
-		return err
-	}
-
 	return nil
 }
 

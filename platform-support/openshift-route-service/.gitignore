@@ -15,3 +15,6 @@ openshift-route-service
 
 vendor/*
 .DS_Store
+
+#binary - go build
+openshift-route-service

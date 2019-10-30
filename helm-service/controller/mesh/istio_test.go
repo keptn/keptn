@@ -3,7 +3,7 @@ package mesh
 import (
 	"testing"
 
-	"github.com/keptn/keptn/helm-service/controller/jsonutils"
+	"github.com/keptn/keptn/helm-service/pkg/objectutils"
 	"github.com/kinbiko/jsonassert"
 )
 
@@ -14,7 +14,7 @@ func TestGenerateHTTPGateway(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	jsonData, err := jsonutils.ToJSON(data)
+	jsonData, err := objectutils.ToJSON(data)
 	if err != nil {
 		t.Error(err)
 	}
@@ -56,7 +56,7 @@ func TestDestinationRule(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	jsonData, err := jsonutils.ToJSON(data)
+	jsonData, err := objectutils.ToJSON(data)
 	if err != nil {
 		t.Error(err)
 	}
@@ -88,7 +88,7 @@ func TestVirtualService(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	jsonData, err := jsonutils.ToJSON(data)
+	jsonData, err := objectutils.ToJSON(data)
 	if err != nil {
 		t.Error(err)
 	}

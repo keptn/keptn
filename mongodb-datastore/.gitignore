@@ -18,3 +18,6 @@ NOTES.md
 
 # swagger docs (temp files)
 swagger-ui/swagger.json 
+
+#binary - go build
+mongodb-datastore
