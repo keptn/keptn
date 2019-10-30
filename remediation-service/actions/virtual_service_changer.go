@@ -1,6 +1,8 @@
 package actions
 
 import (
+	"encoding/json"
+	"fmt"
 	"os"
 
 	configutils "github.com/keptn/go-utils/pkg/configuration-service/utils"
@@ -8,24 +10,34 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
+func getVirtualServiceUriInChart(service string) string {
+	return "templates/" + service + "-istio-virtualservice.yaml"
+}
+
 func getVirtualServiceUri(service string) string {
 
-	return "helm/" + service + "-generated/templates/" + service + "-istio-virtualservice.yaml"
+	return "helm/" + service + "-generated/" + getVirtualServiceUriInChart(service)
+}
+
+type respError struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
 }
 
 func containsVirtualServices(project, stage, service string) (bool, error) {
 
 	handler := configutils.NewResourceHandler(os.Getenv(envConfigSvcURL))
-	resources, err := handler.GetAllServiceResources(project, stage, service)
+	_, err := handler.GetServiceResource(project, stage, service,
+		getVirtualServiceUri(service))
 	if err != nil {
-		return false, err
-	}
-	for _, resource := range resources {
-		if resource.ResourceURI != nil && *resource.ResourceURI == getVirtualServiceUri(service) {
-			return true, nil
+		respError := respError{}
+		json.Unmarshal([]byte(err.Error()), &respError)
+		if respError.Code == 404 {
+			return false, nil
 		}
+		return false, fmt.Errorf("could not get virutal service resource: %v", err)
 	}
-	return false, nil
+	return true, nil
 }
 
 func getServices(project string, stage string) ([]string, error) {

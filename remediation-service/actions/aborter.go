@@ -67,7 +67,7 @@ func (a Aborter) ExecuteAction(problem *keptnevents.ProblemEventData, shkeptncon
 			}
 
 			changedFiles := map[string]string{
-				getVirtualServiceUri(service): newVS,
+				getVirtualServiceUriInChart(service): newVS,
 			}
 
 			data := keptnevents.ConfigurationChangeEventData{
@@ -101,7 +101,7 @@ func (a Aborter) addAbort(vsContent string, ip string) (string, error) {
 	}
 	match := v1alpha3.HTTPMatchRequest{
 		Headers: map[string]*v1alpha3.StringMatch_Exact{
-			"X-Forwarded-For": &v1alpha3.StringMatch_Exact{
+			"X-Forwarded-For": {
 				Exact: ip,
 			},
 		},
