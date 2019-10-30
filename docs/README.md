@@ -15,7 +15,6 @@ This folder contains docs for developers. If you are looking for the usage docum
 * Docker
 * Dockerhub Account (any other container registry works too)
 * Go (Version 1.12.x)
-* [Go Dep](https://golang.github.io/dep/) for dependency management
 * GitHub Account (required for making Pull Requests)
 
 ### IDE / Code Editor
@@ -50,9 +49,11 @@ The `go-utils` package is available in [keptn/go-utils](https://github.com/keptn
 If you want to contribute to the website or docs provided on the website, the 
  [keptn/keptn.github.io](https://github.com/keptn/keptn.github.io/) is the way to go.
 
-In addition, we have a collection of additional services, such as the 
- [dynatrace-service](https://github.com/keptn-contrib/dynatrace-service), available at 
- [github.com/keptn-contrib](https://github.com/keptn-contrib).
+In addition, we have a collection of additional services at [github.com/keptn-contrib](https://github.com/keptn-contrib), e.g.:
+* [dynatrace-service](https://github.com/keptn-contrib/dynatrace-service)
+* [dynatrace-sli-service](https://github.com/keptn-contrib/dynatrace-sli-service)
+* [prometheus-sli-service](https://github.com/keptn-contrib/prometheus-sli-service)
+
 
 ## Branch Naming Convention
 
