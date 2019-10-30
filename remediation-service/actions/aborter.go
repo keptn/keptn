@@ -110,12 +110,12 @@ func (a Aborter) addAbort(vsContent string, ip string) (string, error) {
 
 	if len(vs.Spec.Http) > 0 {
 		newRoute := new(v1alpha3.HTTPRoute)
-		deepCopy(vs.Spec.Http[0], newRoute)
+		deepCopy(vs.Spec.Http[len(vs.Spec.Http)-1], newRoute)
 
 		newRoute.Fault = &fault
 		newRoute.Match = append(newRoute.Match, &match)
 
-		vs.Spec.Http = append(vs.Spec.Http, newRoute)
+		vs.Spec.Http = append([]*v1alpha3.HTTPRoute{newRoute}, vs.Spec.Http...)
 
 		data, err := yaml.Marshal(vs)
 		if err != nil {
