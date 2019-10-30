@@ -21,6 +21,12 @@ spec:
   - carts.sockshop-production.1.1.1.1.xip.io
   - carts
   http:
+  - route:
+    - destination:
+        host: carts-canary.sockshop-production.svc.cluster.local
+    - destination:
+        host: carts-primary.sockshop-production.svc.cluster.local
+      weight: 100
   - fault:
       abort:
         httpStatus: 403

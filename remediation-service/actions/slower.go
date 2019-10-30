@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -115,16 +116,22 @@ func (s Slower) addDelay(vsContent string, ip string, slowDown string) (string, 
 		},
 	}
 
-	for _, httpRoute := range vs.Spec.Http {
-		httpRoute.Fault = &fault
-		httpRoute.Match = append(httpRoute.Match, &match)
-	}
+	if len(vs.Spec.Http) > 0 {
+		newRoute := new(v1alpha3.HTTPRoute)
+		deepCopy(vs.Spec.Http[0], newRoute)
 
-	data, err := yaml.Marshal(vs)
-	if err != nil {
-		return "", err
+		newRoute.Fault = &fault
+		newRoute.Match = append(newRoute.Match, &match)
+
+		vs.Spec.Http = append(vs.Spec.Http, newRoute)
+
+		data, err := yaml.Marshal(vs)
+		if err != nil {
+			return "", err
+		}
+		return string(data), err
 	}
-	return string(data), err
+	return "", errors.New("failed to add fault because no route is available")
 }
 
 func (s Slower) validateActionFormat(action string) bool {

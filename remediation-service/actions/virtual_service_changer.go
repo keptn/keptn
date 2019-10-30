@@ -24,6 +24,11 @@ type respError struct {
 	Message string `json:"message"`
 }
 
+func deepCopy(a, b interface{}) {
+	byt, _ := json.Marshal(a)
+	json.Unmarshal(byt, b)
+}
+
 func containsVirtualServices(project, stage, service string) (bool, error) {
 
 	handler := configutils.NewResourceHandler(os.Getenv(envConfigSvcURL))
