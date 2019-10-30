@@ -77,7 +77,7 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 	evaluationResult, maximumAchievableScore, keySLIFailed := evaluateObjectives(e, sloConfig, previousEvaluationEvents)
 
 	// calculate the total score
-	err = eh.calculateScore(maximumAchievableScore, evaluationResult, sloConfig, keySLIFailed)
+	err = calculateScore(maximumAchievableScore, evaluationResult, sloConfig, keySLIFailed)
 	if err != nil {
 		return err
 	}
@@ -171,12 +171,12 @@ func evaluateObjectives(e *keptnevents.InternalGetSLIDoneEventData, sloConfig *k
 	return evaluationResult, maximumAchievableScore, keySLIFailed
 }
 
-func (eh *EvaluateSLIHandler) calculateScore(maximumAchievableScore float64, evaluationResult *keptnevents.EvaluationDoneEventData, sloConfig *keptnmodelsv2.ServiceLevelObjectives, keySLIFailed bool) error {
+func calculateScore(maximumAchievableScore float64, evaluationResult *keptnevents.EvaluationDoneEventData, sloConfig *keptnmodelsv2.ServiceLevelObjectives, keySLIFailed bool) error {
 	totalScore := 0.0
 	for _, result := range evaluationResult.EvaluationDetails.IndicatorResults {
 		totalScore += result.Score
 	}
-	achievedPercentage := totalScore / maximumAchievableScore
+	achievedPercentage := 100.0 * (totalScore / maximumAchievableScore)
 	evaluationResult.EvaluationDetails.Score = achievedPercentage
 	if sloConfig.TotalScore == nil || sloConfig.TotalScore.Pass == "" {
 		return errors.New("no target score defined")

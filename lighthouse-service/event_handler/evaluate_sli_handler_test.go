@@ -1478,3 +1478,121 @@ func TestEvaluateObjectives(t *testing.T) {
 		})
 	}
 }
+
+type calculateScoreTestObject struct {
+	Name                     string
+	InMaximumScore           float64
+	InEvaluationResult       *keptnevents.EvaluationDoneEventData
+	InSLOConfig              *keptnmodelsv2.ServiceLevelObjectives
+	InKeySLIFailed           bool
+	ExpectedEvaluationResult *keptnevents.EvaluationDoneEventData
+	ExpectedError            error
+}
+
+func TestCalculateScore(t *testing.T) {
+	tests := []*calculateScoreTestObject{
+		{
+			Name:           "Simple comparison",
+			InMaximumScore: 1,
+			InEvaluationResult: &keptnevents.EvaluationDoneEventData{
+				EvaluationDetails: &keptnevents.EvaluationDetails{
+					TimeStart: "2019-10-20T07:57:27.152330783Z",
+					TimeEnd:   "2019-10-22T08:57:27.152330783Z",
+					Result:    "", // not set by the tested function
+					Score:     0,  // not calculated by tested function
+					IndicatorResults: []*keptnevents.SLIEvaluationResult{
+						{
+							Score: 1,
+							Value: &keptnevents.SLIResult{
+								Metric:  "my-test-metric-1",
+								Value:   10.0,
+								Success: true,
+								Message: "",
+							},
+							Violations: nil,
+							Status:     "pass",
+						},
+					},
+				},
+				Result:       "", // not set by the tested function
+				Project:      "sockshop",
+				Service:      "carts",
+				Stage:        "dev",
+				TestStrategy: "",
+			},
+			InSLOConfig: &keptnmodelsv2.ServiceLevelObjectives{
+				SpecVersion: "1.0",
+				Filter:      nil,
+				Comparison: &keptnmodelsv2.SLOComparison{
+					CompareWith:               "several_results",
+					IncludeResultWithScore:    "pass",
+					NumberOfComparisonResults: 2,
+					AggregateFunction:         "avg",
+				},
+				Objectives: []*keptnmodelsv2.SLO{
+					{
+						SLI: "my-test-metric-1",
+						Pass: []*keptnmodelsv2.SLOCriteria{
+							{
+								Criteria: []string{"<=15.0"},
+							},
+							{
+								Criteria: []string{"<=+10%"},
+							},
+						},
+						Warning: []*keptnmodelsv2.SLOCriteria{
+							{
+								Criteria: []string{"<=20.0"},
+							},
+							{
+								Criteria: []string{"<=+15%"},
+							},
+						},
+						Weight: 1,
+						KeySLI: false,
+					},
+				},
+				TotalScore: &keptnmodelsv2.SLOScore{
+					Pass:    "90%",
+					Warning: "75%",
+				},
+			},
+			InKeySLIFailed: false,
+			ExpectedEvaluationResult: &keptnevents.EvaluationDoneEventData{
+				EvaluationDetails: &keptnevents.EvaluationDetails{
+					TimeStart: "2019-10-20T07:57:27.152330783Z",
+					TimeEnd:   "2019-10-22T08:57:27.152330783Z",
+					Result:    "pass",
+					Score:     100.0,
+					IndicatorResults: []*keptnevents.SLIEvaluationResult{
+						{
+							Score: 1,
+							Value: &keptnevents.SLIResult{
+								Metric:  "my-test-metric-1",
+								Value:   10.0,
+								Success: true,
+								Message: "",
+							},
+							Violations: nil,
+							Status:     "pass",
+						},
+					},
+				},
+				Result:       "", // not set by the tested function
+				Project:      "sockshop",
+				Service:      "carts",
+				Stage:        "dev",
+				TestStrategy: "",
+			},
+			ExpectedError: nil,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			err := calculateScore(test.InMaximumScore, test.InEvaluationResult, test.InSLOConfig, test.InKeySLIFailed)
+
+			assert.EqualValues(t, test.ExpectedError, err)
+			assert.EqualValues(t, test.ExpectedEvaluationResult, test.InEvaluationResult)
+		})
+	}
+}
