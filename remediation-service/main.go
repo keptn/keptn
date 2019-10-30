@@ -218,7 +218,12 @@ func init() {
 
 // get helm release name by impacted entity
 func getReleasename(eventData *keptnevents.ProblemEventData) (string, error) {
-	switch impact := eventData.ProblemDetails; {
+	var details string
+	err := yaml.Unmarshal(eventData.ProblemDetails, &details)
+	if err != nil {
+		return "", err
+	}
+	switch impact := details; {
 	case strings.HasPrefix(impact, "Pod"):
 		return getReleaseByPodName(eventData.ImpactedEntity)
 	case strings.HasPrefix(impact, "Service"):
