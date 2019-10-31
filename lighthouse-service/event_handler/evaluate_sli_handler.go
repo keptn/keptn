@@ -123,10 +123,10 @@ func evaluateObjectives(e *keptnevents.InternalGetSLIDoneEventData, sloConfig *k
 
 		// gather the previous results for the current SLI
 		var previousSLIResults []*keptnevents.SLIEvaluationResult
-		if len(previousEvaluationEvents) == 0 {
+		if len(previousEvaluationEvents) > 0 {
 			for _, event := range previousEvaluationEvents {
 				for _, prevSLIResult := range event.EvaluationDetails.IndicatorResults {
-					if prevSLIResult.Value.Metric == objective.SLI {
+					if strings.Compare(prevSLIResult.Value.Metric, objective.SLI) == 0 {
 						previousSLIResults = append(previousSLIResults, prevSLIResult)
 					}
 				}
@@ -135,35 +135,38 @@ func evaluateObjectives(e *keptnevents.InternalGetSLIDoneEventData, sloConfig *k
 
 		var passedViolations []*keptnevents.SLIViolation
 		var warningViolations []*keptnevents.SLIViolation
+		isPassed := true
+		isWarning := true
 		if objective.Pass != nil {
-			isPassed, passedViolations, _ := evaluateOrCombinedCriteria(sliEvaluationResult.Value, objective.Pass, previousSLIResults, sloConfig.Comparison)
+			isPassed, passedViolations, _ = evaluateOrCombinedCriteria(sliEvaluationResult.Value, objective.Pass, previousSLIResults, sloConfig.Comparison)
 
 			sliEvaluationResult.Violations = passedViolations
 			if isPassed {
 				sliEvaluationResult.Score = float64(objective.Weight)
 				sliEvaluationResult.Status = "pass"
-				sliEvaluationResults = append(sliEvaluationResults, sliEvaluationResult)
-				continue
 			}
 		}
 
-		if objective.Warning != nil {
-			isWarning, warningViolations, _ := evaluateOrCombinedCriteria(sliEvaluationResult.Value, objective.Pass, previousSLIResults, sloConfig.Comparison)
-			sliEvaluationResult.Violations = warningViolations
-			if isWarning {
-				sliEvaluationResult.Score = 0.5 * float64(objective.Weight)
-				sliEvaluationResult.Status = "warning"
-				sliEvaluationResults = append(sliEvaluationResults, sliEvaluationResult)
-				continue
+		if !isPassed {
+			if objective.Warning != nil {
+				isWarning, warningViolations, _ = evaluateOrCombinedCriteria(sliEvaluationResult.Value, objective.Warning, previousSLIResults, sloConfig.Comparison)
+				sliEvaluationResult.Violations = warningViolations
+				if isWarning {
+					sliEvaluationResult.Score = 0.5 * float64(objective.Weight)
+					sliEvaluationResult.Status = "warning"
+				}
 			}
 		}
 
-		if objective.KeySLI {
-			keySLIFailed = true
-		}
-		sliEvaluationResult.Status = "failed"
-		sliEvaluationResult.Score = 0
 		sliEvaluationResult.Violations = append(warningViolations, passedViolations...)
+
+		if !isPassed && !isWarning {
+			if objective.KeySLI {
+				keySLIFailed = true
+			}
+			sliEvaluationResult.Status = "failed"
+			sliEvaluationResult.Score = 0
+		}
 
 		sliEvaluationResults = append(sliEvaluationResults, sliEvaluationResult)
 	}
