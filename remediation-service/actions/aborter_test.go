@@ -6,9 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestAddAbortDelay(t *testing.T) {
-
-	const expectedVirtualService = `apiVersion: networking.istio.io/v1alpha3
+const vsWithFaultAbort = `apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
   creationTimestamp: null
@@ -43,9 +41,38 @@ spec:
       weight: 100
 `
 
+func TestAddAbortDelay(t *testing.T) {
+
 	a := NewAborter()
 	newVs, err := a.addAbort(virtualService, "2.2.2.2")
 
 	assert.Nil(t, err)
-	assert.Equal(t, expectedVirtualService, newVs)
+	assert.Equal(t, vsWithFaultAbort, newVs)
+}
+
+func TestValidRemoveAbort(t *testing.T) {
+
+	a := NewAborter()
+	newVs, err := a.removeAbort(vsWithFaultAbort, "2.2.2.2")
+
+	assert.Nil(t, err)
+	assert.Equal(t, virtualService, newVs)
+}
+
+func TestInvalidRemoveAbort1(t *testing.T) {
+
+	a := NewAborter()
+	newVs, err := a.removeAbort(vsWithFaultAbort, "1.1.1.1")
+
+	assert.Nil(t, err)
+	assert.Equal(t, vsWithFaultAbort, newVs)
+}
+
+func TestInvalidRemoveAbort2(t *testing.T) {
+
+	a := NewAborter()
+	newVs, err := a.removeAbort(virtualService, "1.1.1.1")
+
+	assert.Nil(t, err)
+	assert.Equal(t, virtualService, newVs)
 }

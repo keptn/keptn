@@ -5,8 +5,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/url"
 	"os"
 	"strconv"
+	"time"
+
+	"github.com/cloudevents/sdk-go/pkg/cloudevents"
+	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
+	"github.com/google/uuid"
 
 	"github.com/keptn/keptn/remediation-service/pkg/utils"
 
@@ -71,6 +77,34 @@ func (s Scaler) ExecuteAction(problem *keptnevents.ProblemEventData, shkeptncont
 		return fmt.Errorf("failed to send configuration change event: %v", err)
 	}
 	return nil
+}
+
+func (s Scaler) ResolveAction(problem *keptnevents.ProblemEventData, shkeptncontext string,
+	action *keptnmodels.RemediationAction) error {
+
+	source, _ := url.Parse("remediation-service")
+	contentType := "application/json"
+
+	testFinishedData := keptnevents.TestsFinishedEventData{
+		Project:      problem.Project,
+		Stage:        problem.Stage,
+		Service:      problem.Service,
+		TestStrategy: "real-user",
+	}
+
+	event := cloudevents.Event{
+		Context: cloudevents.EventContextV02{
+			ID:          uuid.New().String(),
+			Time:        &types.Timestamp{Time: time.Now()},
+			Type:        "sh.keptn.events.tests-finished",
+			Source:      types.URLRef{URL: *source},
+			ContentType: &contentType,
+			Extensions:  map[string]interface{}{"shkeptncontext": shkeptncontext},
+		}.AsV02(),
+		Data: testFinishedData,
+	}
+
+	return utils.SendEvent(event)
 }
 
 // increases the replica count in the deployments by the provided replicaIncrement

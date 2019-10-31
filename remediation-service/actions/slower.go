@@ -31,6 +31,16 @@ func (s Slower) GetAction() string {
 
 func (s Slower) ExecuteAction(problem *keptnevents.ProblemEventData, shkeptncontext string,
 	action *keptnmodels.RemediationAction) error {
+	return s.executor(problem, shkeptncontext, action, s.addDelay)
+}
+
+func (s Slower) ResolveAction(problem *keptnevents.ProblemEventData, shkeptncontext string,
+	action *keptnmodels.RemediationAction) error {
+	return s.executor(problem, shkeptncontext, action, s.removeDelay)
+}
+
+func (s Slower) executor(problem *keptnevents.ProblemEventData, shkeptncontext string,
+	action *keptnmodels.RemediationAction, editVs func(vsContent, ip string, slowDown string) (string, error)) error {
 
 	slowDown := strings.TrimSpace(action.Value)
 	validFormat := s.validateActionFormat(slowDown)
@@ -70,7 +80,7 @@ func (s Slower) ExecuteAction(problem *keptnevents.ProblemEventData, shkeptncont
 				return fmt.Errorf("could not get virutal service resource: %v", err)
 			}
 
-			newVS, err := s.addDelay(resource.ResourceContent, ip, slowDown)
+			newVS, err := editVs(resource.ResourceContent, ip, slowDown)
 			if err != nil {
 				return fmt.Errorf("failed to add delay: %v", err)
 			}
@@ -132,6 +142,34 @@ func (s Slower) addDelay(vsContent string, ip string, slowDown string) (string, 
 		return string(data), err
 	}
 	return "", errors.New("failed to add fault because no route is available")
+}
+
+func (s Slower) removeDelay(vsContent string, ip string, slowDown string) (string, error) {
+
+	vs := v1alpha3.VirtualService{}
+	err := yaml.Unmarshal([]byte(vsContent), &vs)
+	if err != nil {
+		return "", err
+	}
+
+	for i, route := range vs.Spec.Http {
+		if route.Fault != nil && route.Fault.Delay != nil && len(route.Match) > 0 {
+			for _, match := range route.Match {
+				if val, ok := match.Headers["X-Forwarded-For"]; ok && val.Exact == ip {
+					// found; delete the route
+					copy(vs.Spec.Http[i:], vs.Spec.Http[i+1:])
+					vs.Spec.Http = vs.Spec.Http[:len(vs.Spec.Http)-1]
+				}
+			}
+		}
+	}
+
+	data, err := yaml.Marshal(vs)
+	if err != nil {
+		return "", err
+	}
+	return string(data), nil
+
 }
 
 func (s Slower) validateActionFormat(action string) bool {

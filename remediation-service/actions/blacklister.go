@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -81,6 +82,11 @@ func (b BlackLister) ExecuteAction(problem *keptnevents.ProblemEventData, shkept
 		return fmt.Errorf("failed to send configuration change event: %v", err)
 	}
 	return nil
+}
+
+func (b BlackLister) ResolveAction(problem *keptnevents.ProblemEventData, shkeptncontext string,
+	action *keptnmodels.RemediationAction) error {
+	return errors.New("no resolving action for action " + b.GetAction() + "implemented")
 }
 
 func (b BlackLister) getMixerTemplates(prefixPath string) (map[string]string, error) {
