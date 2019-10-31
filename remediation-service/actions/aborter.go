@@ -29,7 +29,16 @@ func (a Aborter) GetAction() string {
 
 func (a Aborter) ExecuteAction(problem *keptnevents.ProblemEventData, shkeptncontext string,
 	action *keptnmodels.RemediationAction) error {
+	return a.executor(problem, shkeptncontext, action, a.addAbort)
+}
 
+func (a Aborter) ResolveAction(problem *keptnevents.ProblemEventData, shkeptncontext string,
+	action *keptnmodels.RemediationAction) error {
+	return a.executor(problem, shkeptncontext, action, a.removeAbort)
+}
+
+func (a Aborter) executor(problem *keptnevents.ProblemEventData, shkeptncontext string,
+	action *keptnmodels.RemediationAction, editVS func(vsContent string, ip string) (string, error)) error {
 	ip, err := getIP(problem)
 	if err != nil {
 		return fmt.Errorf("could not parse ip from ProblemDetails: %v", err)
@@ -62,7 +71,7 @@ func (a Aborter) ExecuteAction(problem *keptnevents.ProblemEventData, shkeptncon
 				return fmt.Errorf("could not get virutal service resource: %v", err)
 			}
 
-			newVS, err := a.addAbort(resource.ResourceContent, ip)
+			newVS, err := editVS(resource.ResourceContent, ip)
 			if err != nil {
 				return fmt.Errorf("failed to add delay: %v", err)
 			}
@@ -124,4 +133,31 @@ func (a Aborter) addAbort(vsContent string, ip string) (string, error) {
 		return string(data), err
 	}
 	return "", errors.New("failed to add fault because no route is available")
+}
+
+func (a Aborter) removeAbort(vsContent string, ip string) (string, error) {
+
+	vs := v1alpha3.VirtualService{}
+	err := yaml.Unmarshal([]byte(vsContent), &vs)
+	if err != nil {
+		return "", err
+	}
+
+	for i, route := range vs.Spec.Http {
+		if route.Fault != nil && route.Fault.Abort != nil && len(route.Match) > 0 {
+			for _, match := range route.Match {
+				if val, ok := match.Headers["X-Forwarded-For"]; ok && val.Exact == ip {
+					// found; delete the route
+					copy(vs.Spec.Http[i:], vs.Spec.Http[i+1:])
+					vs.Spec.Http = vs.Spec.Http[:len(vs.Spec.Http)-1]
+				}
+			}
+		}
+	}
+
+	data, err := yaml.Marshal(vs)
+	if err != nil {
+		return "", err
+	}
+	return string(data), nil
 }
