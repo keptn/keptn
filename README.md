@@ -157,6 +157,15 @@ Keptn in [version 0.1.3](https://github.com/keptn/keptn/tree/0.1.3) requires:
 </p>
 </details>
 
-## Further information
-* The [Keptn`s website](https://keptn.sh) has the documentation of Keptn and its use cases.
+## Contributions
 
+You are welcome to contribute using Pull Requests to the respective repositories. Before contributing, please read our [Contributing Guidelines](CONTRIBUTING.md) and our [Code of Conduct](CODE_OF_CONDUCT.md).
+
+## License
+
+Keptn is an Open Source Project. Please see [LICENSE](LICENSE) for more information.
+
+## Further information
+
+* The [Keptn`s website](https://keptn.sh) has the documentation of Keptn and its use cases.
+* Please join the [Keptn community](https://github.com/keptn/community).
