@@ -2,6 +2,7 @@
 # This is based on Debian and sets the GOPATH to /go.
 # https://hub.docker.com/_/golang
 FROM golang:1.12 as builder
+ARG version=develop
 
 WORKDIR /go/src/github.com/keptn/keptn/distributor
 
