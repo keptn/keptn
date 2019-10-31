@@ -1498,8 +1498,8 @@ func TestCalculateScore(t *testing.T) {
 				EvaluationDetails: &keptnevents.EvaluationDetails{
 					TimeStart: "2019-10-20T07:57:27.152330783Z",
 					TimeEnd:   "2019-10-22T08:57:27.152330783Z",
-					Result:    "", // not set by the tested function
-					Score:     0,  // not calculated by tested function
+					Result:    "", // to be calculated
+					Score:     0,  // to be calculated
 					IndicatorResults: []*keptnevents.SLIEvaluationResult{
 						{
 							Score: 1,
@@ -1514,7 +1514,7 @@ func TestCalculateScore(t *testing.T) {
 						},
 					},
 				},
-				Result:       "", // not set by the tested function
+				Result:       "", // to be set
 				Project:      "sockshop",
 				Service:      "carts",
 				Stage:        "dev",
@@ -1578,7 +1578,145 @@ func TestCalculateScore(t *testing.T) {
 						},
 					},
 				},
-				Result:       "", // not set by the tested function
+				Result:       "pass",
+				Project:      "sockshop",
+				Service:      "carts",
+				Stage:        "dev",
+				TestStrategy: "",
+			},
+			ExpectedError: nil,
+		},
+		{
+			Name:           "Key SLI failed",
+			InMaximumScore: 2,
+			InEvaluationResult: &keptnevents.EvaluationDoneEventData{
+				EvaluationDetails: &keptnevents.EvaluationDetails{
+					TimeStart: "2019-10-20T07:57:27.152330783Z",
+					TimeEnd:   "2019-10-22T08:57:27.152330783Z",
+					Result:    "", // to be calculated
+					Score:     0,  // to be calculated
+					IndicatorResults: []*keptnevents.SLIEvaluationResult{
+						{
+							Score: 1,
+							Value: &keptnevents.SLIResult{
+								Metric:  "my-test-metric-1",
+								Value:   10.0,
+								Success: true,
+								Message: "",
+							},
+							Violations: nil,
+							Status:     "pass",
+						},
+						{
+							Score: 0,
+							Value: &keptnevents.SLIResult{
+								Metric:  "my-key-metric",
+								Value:   10.0,
+								Success: true,
+								Message: "",
+							},
+							Violations: nil,
+							Status:     "fail",
+						},
+					},
+				},
+				Result:       "", // to be set
+				Project:      "sockshop",
+				Service:      "carts",
+				Stage:        "dev",
+				TestStrategy: "",
+			},
+			InSLOConfig: &keptnmodelsv2.ServiceLevelObjectives{
+				SpecVersion: "1.0",
+				Filter:      nil,
+				Comparison: &keptnmodelsv2.SLOComparison{
+					CompareWith:               "several_results",
+					IncludeResultWithScore:    "pass",
+					NumberOfComparisonResults: 2,
+					AggregateFunction:         "avg",
+				},
+				Objectives: []*keptnmodelsv2.SLO{
+					{
+						SLI: "my-test-metric-1",
+						Pass: []*keptnmodelsv2.SLOCriteria{
+							{
+								Criteria: []string{"<=15.0"},
+							},
+							{
+								Criteria: []string{"<=+10%"},
+							},
+						},
+						Warning: []*keptnmodelsv2.SLOCriteria{
+							{
+								Criteria: []string{"<=20.0"},
+							},
+							{
+								Criteria: []string{"<=+15%"},
+							},
+						},
+						Weight: 1,
+						KeySLI: false,
+					},
+					{
+						SLI: "my-key-metric",
+						Pass: []*keptnmodelsv2.SLOCriteria{
+							{
+								Criteria: []string{"<=15.0"},
+							},
+							{
+								Criteria: []string{"<=+10%"},
+							},
+						},
+						Warning: []*keptnmodelsv2.SLOCriteria{
+							{
+								Criteria: []string{"<=20.0"},
+							},
+							{
+								Criteria: []string{"<=+15%"},
+							},
+						},
+						Weight: 1,
+						KeySLI: true,
+					},
+				},
+				TotalScore: &keptnmodelsv2.SLOScore{
+					Pass:    "90%",
+					Warning: "75%",
+				},
+			},
+			InKeySLIFailed: true,
+			ExpectedEvaluationResult: &keptnevents.EvaluationDoneEventData{
+				EvaluationDetails: &keptnevents.EvaluationDetails{
+					TimeStart: "2019-10-20T07:57:27.152330783Z",
+					TimeEnd:   "2019-10-22T08:57:27.152330783Z",
+					Result:    "fail",
+					Score:     50.0,
+					IndicatorResults: []*keptnevents.SLIEvaluationResult{
+						{
+							Score: 1,
+							Value: &keptnevents.SLIResult{
+								Metric:  "my-test-metric-1",
+								Value:   10.0,
+								Success: true,
+								Message: "",
+							},
+							Violations: nil,
+							Status:     "pass",
+						},
+						{
+							Score: 0,
+							Value: &keptnevents.SLIResult{
+								Metric:  "my-key-metric",
+								Value:   10.0,
+								Success: true,
+								Message: "",
+							},
+							Violations: nil,
+							Status:     "fail",
+						},
+					},
+				},
+				Result:       "fail",
 				Project:      "sockshop",
 				Service:      "carts",
 				Stage:        "dev",
