@@ -67,12 +67,22 @@ func getSLOs(project string, stage string, service string) (*keptnmodelsv2.Servi
 		return nil, errors.New("No SLO file found for service " + service + " in stage " + stage + " in project " + project)
 	}
 
-	slo := &keptnmodelsv2.ServiceLevelObjectives{}
-
-	err = yaml.Unmarshal([]byte(sloFile.ResourceContent), &slo)
+	slo, err := parseSLO([]byte(sloFile.ResourceContent))
 
 	if err != nil {
 		return nil, errors.New("Could not parse SLO file for service " + service + " in stage " + stage + " in project " + project)
+	}
+
+	return slo, nil
+}
+
+func parseSLO(input []byte) (*keptnmodelsv2.ServiceLevelObjectives, error) {
+	slo := &keptnmodelsv2.ServiceLevelObjectives{}
+
+	err := yaml.Unmarshal([]byte(input), &slo)
+
+	if err != nil {
+		return nil, err
 	}
 
 	if slo.Comparison == nil {

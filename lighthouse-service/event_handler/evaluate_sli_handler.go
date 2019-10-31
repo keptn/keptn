@@ -201,6 +201,7 @@ func calculateScore(maximumAchievableScore float64, evaluationResult *keptnevent
 	} else {
 		evaluationResult.EvaluationDetails.Result = "fail"
 	}
+	evaluationResult.Result = evaluationResult.EvaluationDetails.Result
 	return nil
 }
 
