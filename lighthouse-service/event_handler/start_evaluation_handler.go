@@ -38,6 +38,17 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 	for _, objective := range objectives.Objectives {
 		indicators = append(indicators, objective.SLI)
 	}
+
+	var filters = []*keptnevents.SLIFilter{}
+	if objectives.Filter != nil {
+		for key, value := range objectives.Filter {
+			filter := &keptnevents.SLIFilter{
+				Key:   key,
+				Value: value,
+			}
+			filters = append(filters, filter)
+		}
+	}
 	// get the SLI provider that has been configured for the project (e.g. 'dynatrace' or 'prometheus')
 	sliProvider, err := getSLIProvider(e.Project)
 	if err != nil {
@@ -45,7 +56,7 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 		return err
 	}
 	// send a new event to trigger the SLI retrieval
-	err = eh.sendInternalGetSLIEvent(keptnContext, e.Project, e.Stage, e.Service, sliProvider, indicators, e.Start, e.End)
+	err = eh.sendInternalGetSLIEvent(keptnContext, e.Project, e.Stage, e.Service, sliProvider, indicators, e.Start, e.End, filters)
 	return nil
 }
 
@@ -67,19 +78,20 @@ func getSLIProvider(project string) (string, error) {
 	return sliProvider, nil
 }
 
-func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string, project string, stage string, service string, sliProvider string, indicators []string, start string, end string) error {
+func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string, project string, stage string, service string, sliProvider string, indicators []string, start string, end string, filters []*keptnevents.SLIFilter) error {
 
 	source, _ := url.Parse("lighthouse-service")
 	contentType := "application/json"
 
 	getSLIEvent := keptnevents.InternalGetSLIEventData{
-		SLIProvider: sliProvider,
-		Project:     project,
-		Service:     service,
-		Stage:       stage,
-		Start:       start,
-		End:         end,
-		Indicators:  indicators,
+		SLIProvider:   sliProvider,
+		Project:       project,
+		Service:       service,
+		Stage:         stage,
+		Start:         start,
+		End:           end,
+		Indicators:    indicators,
+		CustomFilters: filters,
 	}
 	event := cloudevents.Event{
 		Context: cloudevents.EventContextV02{
