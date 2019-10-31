@@ -1,8 +1,8 @@
-## evaluation-service: sh.keptn.events.tests-finished
+## lighthouse-service: sh.keptn.events.tests-finished
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: evaluation-service-tests-finished-distributor
+  name: lighthouse-service-tests-finished-distributor
   namespace: keptn
 spec:
   selector:
@@ -32,13 +32,13 @@ spec:
             - name: PUBSUB_TOPIC
               value: 'sh.keptn.events.tests-finished'
             - name: PUBSUB_RECIPIENT
-              value: 'evaluation-service'
+              value: 'lighthouse-service'
 ---
-## evaluation-service: sh.keptn.event.start-evaluation
+## lighthouse-service: sh.keptn.event.start-evaluation
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: evaluation-service-start-evaluation
+  name: lighthouse-service-start-evaluation
   namespace: keptn
 spec:
   selector:
@@ -68,13 +68,13 @@ spec:
             - name: PUBSUB_TOPIC
               value: 'sh.keptn.event.start-evaluation'
             - name: PUBSUB_RECIPIENT
-              value: 'evaluation-service'
+              value: 'lighthouse-service'
 ---
-## evaluation-service: sh.keptn.internal.event.get-sli.done
+## lighthouse-service: sh.keptn.internal.event.get-sli.done
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: evaluation-service-start-evaluation
+  name: lighthouse-service-get-sli-done
   namespace: keptn
 spec:
   selector:
@@ -104,4 +104,4 @@ spec:
             - name: PUBSUB_TOPIC
               value: 'sh.keptn.internal.event.get-sli.done'
             - name: PUBSUB_RECIPIENT
-              value: 'evaluation-service'
+              value: 'lighthouse-service'
