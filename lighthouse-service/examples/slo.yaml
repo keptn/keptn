@@ -4,7 +4,7 @@ spec_version: '1.0'
 # specifies selection criteria for service in the SLI provider; project, stage,
 # and service can be overwritten, if needed
 filter:
-  id: "<prometheus_scrape_job_id>"
+  handler: "ItemsController.addToCart"
 # comparison is mandatory
 comparison:
   # compare_with is mandatory
@@ -42,7 +42,7 @@ objectives:
   # can be specified several times, if sli is specified without further attributes
   # the values are fetched and stored but are not taken into account for the
   # evaluation
-  - sli: responseTime95
+  - sli: request_latency_p95
     # pass is optional
     # it defines the pass criteria for the SLI values
     pass:        # pass if (relative change <= 10% OR absolute value is < 200)
@@ -51,28 +51,15 @@ objectives:
       - criteria:
           - "<=+10%" # relative values require a prefixed sign (plus or minus)
       - criteria:
-          - "<200"   # absolute values only require a logical operator
+          - "<1000"   # absolute values only require a logical operator
     warning:     # allow small relative changes, and response time has to be < 500 ms
       - criteria:  # criteria connected by AND
-          - "<+15%"
-          - ">-8%"
-          - "<500"
-  - sli: security_vulnerabilities
+          - ">=800"
+  - sli: error_rate
     weight: 2   # default weight: 1
     pass:       # do not allow any security vulnerabilities
       - criteria:
           - "=0"
-  - sli: sql_statements
-    key_sli: true # if a key sli fails, the whole evaluation fails
-    pass:         # pass
-      - criteria:   # if there has been no change to the number of sql statements
-          - "=0%"
-      - criteria:   # or if the total number of sql statements is below 100
-          - "<100"
-    warning:      # warn if the number of sql statements has changed slightly
-      - criteria:
-          - "<+5%"
-          - ">-5%"
 total_score:  # maximum score = sum of weights
   pass: "90%" # by default this is interpreted as ">="
   warning: 75%
