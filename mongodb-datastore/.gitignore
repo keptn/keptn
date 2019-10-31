@@ -16,6 +16,12 @@ vendor/*
 launch.json
 NOTES.md
 
+# debug files
+MANIFEST
+deploy/service_debug.yaml
+Dockerfile_dev
+skaffold.yaml
+
 # swagger docs (temp files)
 swagger-ui/swagger.json 
 
