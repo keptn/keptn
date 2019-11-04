@@ -11,7 +11,7 @@ require (
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/google/uuid v1.1.1
 	github.com/gorilla/websocket v1.4.1
-	github.com/keptn/go-utils v0.3.0
+	github.com/keptn/go-utils v0.0.0-20191104142955-42a8bdf6f5ed
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/viper v1.4.0
@@ -22,5 +22,3 @@ require (
 	k8s.io/apimachinery v0.0.0-20190313205120-d7deff9243b1
 	k8s.io/helm v2.14.3+incompatible
 )
-
-replace github.com/keptn/go-utils v0.3.0 => ../../go-utils
