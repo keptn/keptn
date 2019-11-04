@@ -1,0 +1,48 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eventbroker-go
+  namespace: keptn
+spec:
+  selector:
+    matchLabels:
+      run: eventbroker-go
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: eventbroker-go
+    spec:
+      containers:
+      - name: eventbroker-go
+        image: keptn/eventbroker-go:0.1.0
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        env:
+        - name: PUBSUB_URL
+          value: 'nats://keptn-nats-cluster'
+        - name: PUBSUB_IMPL
+          value: 'nats'
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: event-broker
+  namespace: keptn
+  labels:
+    run: eventbroker-go
+spec:
+  ports:
+  - port: 80
+    targetPort: 8080
+    protocol: TCP
+  selector:
+    run: eventbroker-go

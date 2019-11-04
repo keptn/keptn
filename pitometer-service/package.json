@@ -1,0 +1,82 @@
+{
+  "name": "pitometer-service",
+  "version": "0.0.1",
+  "description": "keptn service to validate perfspec files",
+  "main": "dist/server.js",
+  "scripts": {
+    "build-ts": "tsc && npm run html",
+    "start": "npm run serve",
+    "serve": "node dist/server.js",
+    "html": "copyfiles src/**/*.html src/**/*.css dist/",
+    "watch-node": "nodemon dist/server.js",
+    "watch-ts": "tsc -w",
+    "dev": "nodemon",
+    "test": "echo \"Testing...\" && nyc --reporter=text nyc mocha && nyc report",
+    "lint": "tslint --project tslint.json"
+  },
+  "keywords": [
+    "pitometer"
+  ],
+  "author": "Florian Bacher",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "copyfiles": "^2.1.0",
+    "nock": "^10.0.6",
+    "nodemon": "^1.19.1",
+    "nyc": "^13.3.0",
+    "sinon": "^7.3.2",
+    "source-map-support": "^0.5.12",
+    "ts-node": "^8.2.0",
+    "tslint": "^5.16.0",
+    "tslint-config-airbnb": "^5.11.1",
+    "typescript": "^3.4.5"
+  },
+  "dependencies": {
+    "@keptn/pitometer": "^1.0.4",
+    "@keptn/pitometer-grader-threshold": "^1.0.1",
+    "@keptn/pitometer-source-dynatrace": "^1.0.1",
+    "@keptn/pitometer-source-prometheus": "^1.0.0",
+    "@types/chai": "^4.1.7",
+    "@types/express": "^4.16.1",
+    "@types/mocha": "^5.2.6",
+    "@types/node": "^11.9.6",
+    "@types/sinon": "^7.0.6",
+    "axios": "^0.19.0",
+    "body-parser": "^1.18.3",
+    "chai": "^4.2.0",
+    "express": "^4.17.1",
+    "inversify": "^5.0.1",
+    "inversify-express-utils": "^6.3.2",
+    "kubernetes-client": "^7.0.1",
+    "mocha": "^6.1.4",
+    "moment": "^2.24.0",
+    "nodejs-base64": "^1.0.3",
+    "postinstall": "^0.4.2",
+    "reflect-metadata": "^0.1.13",
+    "swagger-express-ts": "^1.0.1",
+    "swagger-ui-dist": "^3.22.2",
+    "uuid": "^3.3.2",
+    "yaml": "^1.6.0"
+  },
+  "nyc": {
+    "include": [
+      "src/**/*.ts"
+    ],
+    "exclude": [
+      "src/server.ts",
+      "src/**/*.spec.ts"
+    ],
+    "extension": [
+      ".ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ],
+    "reporter": [
+      "html",
+      "cobertura"
+    ],
+    "sourceMap": true,
+    "instrument": true
+  }
+}

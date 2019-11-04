@@ -1,14 +1,13 @@
 package credentialmanager
 
 import (
+	"fmt"
 	"net/url"
 	"os"
-	"fmt"
 
 	"io/ioutil"
 
 	"github.com/docker/docker-credential-helpers/pass"
-	"github.com/keptn/keptn/cli/utils"
 )
 
 // TODO: Write documentation
@@ -37,9 +36,25 @@ func SetCreds(endPoint url.URL, apiToken string) error {
 // GetCreds reads the credentials and returns an endpoint, the api token, or potentially an error.
 func GetCreds() (url.URL, string, error) {
 	if _, err := os.Stat(passwordStoreDirectory); os.IsNotExist(err) {
-		utils.Warning.Println("Use a file-based storage for the key because the password-store seems to be not set up.")
-
 		return readCredsFromFile()
 	}
 	return getCreds(pass.Pass{})
+}
+
+// SetInstallCreds sets the install credentials
+func SetInstallCreds(creds string) error {
+	if _, err := os.Stat(passwordStoreDirectory); os.IsNotExist(err) {
+		fmt.Println("Using a file-based storage for the key because the password-store seems to be not set up.")
+
+		return ioutil.WriteFile(credsFileURI, []byte(creds), 0644)
+	}
+	return setInstallCreds(pass.Pass{}, creds)
+}
+
+// GetInstallCreds gets the install credentials
+func GetInstallCreds() (string, error) {
+	if _, err := os.Stat(passwordStoreDirectory); os.IsNotExist(err) {
+		return readInstallCredsFromFile()
+	}
+	return getInstallCreds(pass.Pass{})
 }

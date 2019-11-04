@@ -1,3 +1,0 @@
---full-trace
---bail
-src/**/*.spec.ts

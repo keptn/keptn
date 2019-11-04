@@ -1,0 +1,21 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: installer
+  namespace: default
+spec:
+  template:
+    metadata:
+      labels:
+        app: installer
+    spec:
+      volumes:
+      - name: kubectl
+        emptyDir: {}
+      containers:
+      - name: keptn-installer
+        image: keptn/installer:0.5.0
+        env:       
+        - name: PLATFORM
+          value: PLATFORM_PLACEHOLDER
+      restartPolicy: OnFailure

@@ -5,11 +5,10 @@ import (
 	"io/ioutil"
 	"log"
 	"net/url"
-	"os"
-	"os/user"
 	"strings"
 
 	"github.com/docker/docker-credential-helpers/credentials"
+	keptnutils "github.com/keptn/go-utils/pkg/utils"
 )
 
 var testEndPoint = url.URL{Scheme: "https", Host: "my-endpoint"}
@@ -18,32 +17,54 @@ const testAPIToken = "super-secret"
 
 const credsLab = "keptn"
 const serverURL = "https://keptn.sh"
+const installCredsKey = "https://keptn-install.sh"
 
 type bot interface {
+	SetInstallCreds(creds string) error
+	GetInstallCreds() (string, error)
 	SetCreds(endPoint string, apiToken string) error
 	GetCreds() (string, string, error)
 }
 
-// MockCreds shows whether the get and set should be mocked by a file
-// named "endPoint.txt"
-var MockCreds bool
+// MockAuthCreds shows whether the get and set for the auth-creds should be mocked
+var MockAuthCreds bool
 
 var apiTokenFileURI string
-var mockAPItokenFileURI string
+
+var credsFileURI string
 
 func init() {
-	usr, err := user.Current()
+	dir, err := keptnutils.GetKeptnDirectory()
 	if err != nil {
 		log.Fatal(err)
 	}
-	apiTokenFileURI = usr.HomeDir + string(os.PathSeparator) + ".keptn"
-	mockAPItokenFileURI = usr.HomeDir + string(os.PathSeparator) + ".keptnmock"
+
+	apiTokenFileURI = dir + ".keptn"
+
+	credsFileURI = dir + ".keptn-creds"
 
 	credentials.SetCredsLabel(credsLab)
 }
 
+func setInstallCreds(h credentials.Helper, creds string) error {
+	c := &credentials.Credentials{
+		ServerURL: installCredsKey,
+		Username:  "creds",
+		Secret:    creds,
+	}
+	return h.Add(c)
+}
+
+func getInstallCreds(h credentials.Helper) (string, error) {
+	_, creds, err := h.Get(installCredsKey)
+	if err != nil {
+		return "", err
+	}
+	return creds, err
+}
+
 func setCreds(h credentials.Helper, endPoint url.URL, apiToken string) error {
-	if MockCreds {
+	if MockAuthCreds {
 		// Do nothing
 		return nil
 	}
@@ -58,8 +79,8 @@ func setCreds(h credentials.Helper, endPoint url.URL, apiToken string) error {
 
 func getCreds(h credentials.Helper) (url.URL, string, error) {
 
-	if MockCreds {
-		return readCredsFromFile()
+	if MockAuthCreds {
+		return url.URL{}, "", nil
 	}
 	endPointStr, apiToken, err := h.Get(serverURL)
 	if err != nil {
@@ -74,11 +95,7 @@ func getCreds(h credentials.Helper) (url.URL, string, error) {
 func readCredsFromFile() (url.URL, string, error) {
 	var data []byte
 	var err error
-	if MockCreds {
-		data, err = ioutil.ReadFile(mockAPItokenFileURI)
-	} else {
-		data, err = ioutil.ReadFile(apiTokenFileURI)
-	}
+	data, err = ioutil.ReadFile(apiTokenFileURI)
 	if err != nil {
 		return url.URL{}, "", err
 	}
@@ -89,4 +106,17 @@ func readCredsFromFile() (url.URL, string, error) {
 	}
 	url, err := url.Parse(creds[0])
 	return *url, creds[1], err
+}
+
+// readInstallCredsFromFile reads the credentials from a file named "creds.json".
+// This function is used for testing
+func readInstallCredsFromFile() (string, error) {
+	var data []byte
+	var err error
+	data, err = ioutil.ReadFile(credsFileURI)
+	if err != nil {
+		return "", err
+	}
+	dataStr := strings.TrimSpace(strings.Replace(string(data), "\r\n", "\n", -1))
+	return dataStr, err
 }

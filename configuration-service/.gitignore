@@ -1,0 +1,6 @@
+# Build files
+
+vendor
+cmd/configuration-service-server/debug
+
+MANIFEST
