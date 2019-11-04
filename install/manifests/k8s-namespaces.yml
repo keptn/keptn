@@ -1,5 +1,0 @@
-# Namespace for all core components, as well as the internal docker registry
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: keptn

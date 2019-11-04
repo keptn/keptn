@@ -1,0 +1,547 @@
+---
+# bridge
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bridge
+  namespace: keptn
+spec:
+  selector:
+    matchLabels:
+      run: bridge
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: bridge
+    spec:
+      containers:
+      - name: bridge
+        image: keptn/bridge:0.5.0
+        ports:
+        - containerPort: 3000
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bridge
+  namespace: keptn
+  labels:
+    run: bridge
+spec:
+  ports:
+  - port: 8080
+    targetPort: 3000
+    protocol: TCP
+  selector:
+    run: bridge
+---
+# api
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  namespace: keptn
+spec:
+  selector:
+    matchLabels:
+      run: api
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: api
+    spec:
+      containers:
+      - name: api
+        image: keptn/api:0.5.0
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        env:
+        - name: EVENTBROKER_URI
+          value: event-broker.keptn.svc.cluster.local
+        - name: SECRET_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: keptn-api-token
+              key: keptn-api-token
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api
+  namespace: keptn
+  labels:
+    run: api
+spec:
+  ports:
+  - port: 80
+    name: http
+    targetPort: 8080
+    protocol: TCP
+  - port: 443
+    name: https
+    targetPort: 8080
+    protocol: TCP
+  selector:
+    run: api
+---
+# eventbroker-go
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eventbroker-go
+  namespace: keptn
+spec:
+  selector:
+    matchLabels:
+      run: eventbroker-go
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: eventbroker-go
+    spec:
+      containers:
+      - name: eventbroker-go
+        image: keptn/eventbroker-go:0.5.0
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        env:
+        - name: PUBSUB_URL
+          value: 'nats://keptn-nats-cluster'
+        - name: PUBSUB_IMPL
+          value: 'nats'
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: event-broker
+  namespace: keptn
+  labels:
+    run: eventbroker-go
+spec:
+  ports:
+  - port: 80
+    targetPort: 8080
+    protocol: TCP
+  selector:
+    run: eventbroker-go
+---
+# gatekeeper-service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gatekeeper-service
+  namespace: keptn
+spec:
+  selector:
+    matchLabels:
+      run: gatekeeper-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: gatekeeper-service
+    spec:
+      containers:
+      - name: gatekeeper-service
+        image: keptn/gatekeeper-service:0.5.0
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        env:
+        - name: CONFIGURATION_SERVICE
+          value: 'http://configuration-service.keptn.svc.cluster.local:8080'
+        - name: EVENTBROKER
+          value: 'http://event-broker.keptn.svc.cluster.local/keptn'
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gatekeeper-service
+  namespace: keptn
+  labels:
+    run: gatekeeper-service
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+  selector:
+    run: gatekeeper-service
+---
+# helm-service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: helm-service
+  namespace: keptn
+spec:
+  selector:
+    matchLabels:
+      run: helm-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: helm-service
+    spec:
+      containers:
+      - name: helm-service
+        image: keptn/helm-service:0.5.0
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "50m"
+          limits:
+            memory: "512Mi"
+            cpu: "1000m"
+        env:
+        - name: CONFIGURATION_SERVICE
+          value: 'http://configuration-service.keptn.svc.cluster.local:8080'
+        - name: EVENTBROKER
+          value: 'http://event-broker.keptn.svc.cluster.local/keptn'
+        - name: API
+          value: 'ws://api.keptn.svc.cluster.local'
+        - name: ENVIRONMENT
+          value: 'production'
+        - name: PRE_WORKFLOW_ENGINE
+          value: 'true'
+        - name: CANARY
+          value: 'deployment'
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: helm-service
+  namespace: keptn
+  labels:
+    run: helm-service
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+  selector:
+    run: helm-service
+---
+# jmeter-service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jmeter-service
+  namespace: keptn
+spec:
+  selector:
+    matchLabels:
+      run: jmeter-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: jmeter-service
+    spec:
+      containers:
+      - name: helm-service
+        image: keptn/jmeter-service:0.5.0
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jmeter-service
+  namespace: keptn
+  labels:
+    run: jmeter-service
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+  selector:
+    run: jmeter-service
+---
+# wait-service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wait-service
+  namespace: keptn
+spec:
+  selector:
+    matchLabels:
+      run: wait-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: wait-service
+    spec:
+      containers:
+      - name: wait-service
+        image: keptn/wait-service:0.5.0
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        env:
+        - name: EVENTBROKER
+          value: 'http://event-broker.keptn.svc.cluster.local/keptn'
+        - name: WAIT_DURATION
+          value: '3m'
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wait-service
+  namespace: keptn
+  labels:
+    run: wait-service
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+  selector:
+    run: wait-service
+---
+# shipyard-service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shipyard-service
+  namespace: keptn
+spec:
+  selector:
+    matchLabels:
+      run: shipyard-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: shipyard-service
+    spec:
+      containers:
+      - name: shipyard-service
+        image: keptn/shipyard-service:0.5.0
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        env:
+        - name: CONFIGURATION_SERVICE
+          value: 'http://configuration-service.keptn.svc.cluster.local:8080'
+        - name: EVENTBROKER
+          value: 'http://event-broker.keptn.svc.cluster.local/keptn'
+        - name: API
+          value: 'ws://api.keptn.svc.cluster.local'
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: shipyard-service
+  namespace: keptn
+  labels:
+    run: shipyard-service
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+  selector:
+    run: shipyard-service
+---
+# pitometer-service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pitometer-service
+  namespace: keptn
+spec:
+  selector:
+    matchLabels:
+      run: pitometer-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: pitometer-service
+    spec:
+      containers:
+      - name: pitometer-service
+        image: keptn/pitometer-service:0.5.0
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pitometer-service
+  namespace: keptn
+  labels:
+    run: pitometer-service
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+  selector:
+    run: pitometer-service
+---
+# configuration-service
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  name: configuration-volume
+  namespace: keptn
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+status: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: configuration-service
+  namespace: keptn
+spec:
+  selector:
+    matchLabels:
+      run: configuration-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: configuration-service
+    spec:
+      containers:
+      - name: configuration-service
+        image: keptn/configuration-service:0.5.0
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        volumeMounts:
+        - mountPath: /data/config
+          name: configuration-volume
+      volumes:
+      - name: configuration-volume
+        persistentVolumeClaim:
+          claimName: configuration-volume
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: configuration-service
+  namespace: keptn
+  labels:
+    run: configuration-service
+spec:
+  ports:
+  - port: 8080
+    targetPort: 8080
+    protocol: TCP
+  selector:
+    run: configuration-service
+---
+# remediation-service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: remediation-service
+  namespace: keptn
+spec:
+  selector:
+    matchLabels:
+      run: remediation-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: remediation-service
+    spec:
+      containers:
+      - name: remediation-service
+        image: keptn/remediation-service:0.5.0
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "1024Mi"
+            cpu: "500m"
+        env:
+          - name: EVENTBROKER
+            value: 'http://event-broker.keptn.svc.cluster.local/keptn'
+          - name: CONFIGURATION_SERVICE
+            value: 'http://configuration-service.keptn.svc.cluster.local:8080'
+          - name: ENVIRONMENT
+            value: 'production'
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: remediation-service
+  namespace: keptn
+  labels:
+    run: remediation-service
+spec:
+  ports:
+  - port: 8080
+    targetPort: 8080
+    protocol: TCP
+  selector:
+    run: remediation-service

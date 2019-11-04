@@ -1,0 +1,6 @@
+# Binaries for programs and plugins
+cmd-server/__debug_bin
+
+
+# Build files
+MANIFEST

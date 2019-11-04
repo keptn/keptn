@@ -1,0 +1,486 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "keptn api",
+    "version": "0.1.0"
+  },
+  "schemes": [
+    "http"
+  ],
+  "basePath": "/v1",
+  "consumes": [
+    "application/json",
+    "application/cloudevents+json"
+  ],
+  "produces": [
+    "application/json",
+    "application/cloudevents+json"
+  ],
+  "securityDefinitions": {
+    "key": {
+      "type": "apiKey",
+      "in": "header",
+      "name": "x-token"
+    }
+  },
+  "security": [
+    {
+      "key": []
+    }
+  ],
+  "paths": {
+    "/auth": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "operationId": "auth",
+        "summary": "Checks the provided token",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/CE"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "authenticated"
+          }
+        }
+      }
+    },
+    "/event": {
+      "post": {
+        "tags": [
+          "event"
+        ],
+        "operationId": "sendEvent",
+        "summary": "Forwards the received event to the eventbroker",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/CE"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "forwarded",
+            "schema": {
+              "$ref": "#/definitions/ChannelInfo"
+            }
+          },
+          "default": {
+            "description": "error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/project": {
+      "post": {
+        "tags": [
+          "project"
+        ],
+        "operationId": "project",
+        "summary": "Forwards the received project event to the eventbroker",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/CreateProjectCE"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Project created",
+            "schema": {
+              "$ref": "#/definitions/ChannelInfo"
+            }
+          },
+          "204": {
+            "description": "Project deleted",
+            "schema": {
+              "$ref": "#/definitions/ChannelInfo"
+            }
+          },
+          "default": {
+            "description": "error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/service": {
+      "post": {
+        "tags": [
+          "service"
+        ],
+        "operationId": "service",
+        "summary": "Forwards the received service event to the eventbroker",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/CE"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "service onboarded",
+            "schema": {
+              "$ref": "#/definitions/ChannelInfo"
+            }
+          },
+          "default": {
+            "description": "error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/project/{projectName}/stage/{stageName}/service/{serviceName}/resource": {
+      "parameters": [
+        {
+          "$ref": "#/parameters/projectName"
+        },
+        {
+          "$ref": "#/parameters/stageName"
+        },
+        {
+          "$ref": "#/parameters/serviceName"
+        }
+      ],
+      "post": {
+        "tags": [
+          "Service Resource"
+        ],
+        "summary": "Create list of new resources for the service",
+        "parameters": [
+          {
+            "$ref": "#/parameters/resources"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success. Service resource has been created. The version of the new configuration is returned.",
+            "schema": {
+              "$ref": "#/definitions/Version"
+            }
+          },
+          "400": {
+            "description": "Failed. Service resource could not be created.",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Service Resource"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/resources"
+          }
+        ],
+        "summary": "Update list of service resources",
+        "responses": {
+          "201": {
+            "description": "Success. Service resources have been updated. The version of the new configuration is returned.",
+            "schema": {
+              "$ref": "#/definitions/Version"
+            }
+          },
+          "400": {
+            "description": "Failed. Service resources could not be updated.",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {    
+    "CreateProjectCE": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/CE_without_data"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "data": {
+              "required": [
+                "project"
+              ],
+              "properties": {
+                "project": {
+                  "type": "string"
+                },
+                "shipyard": {
+                  "type": "string"
+                },
+                "gitUser": {
+                  "type": "string"
+                },
+                "gitToken": {
+                  "type": "string"
+                },
+                "gitRemoteURL": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "error": {
+      "type": "object",
+      "required": [
+        "message"
+      ],
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "message": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "string"
+        }
+      }
+    },
+    "ChannelInfo": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/CE_without_data_with_keptncontext"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "data": {
+              "properties": {
+                "channelInfo": {
+                  "required": [
+                    "token",
+                    "channelID"
+                  ],
+                  "properties": {
+                    "token": {
+                      "type": "string"
+                    },
+                    "channelID": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "CE_without_data_with_keptncontext": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/CE_without_data"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "shkeptncontext": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "CE": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/CE_without_data"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "data": {
+              "type": [
+                "object",
+                "string"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "CE_without_data": {
+      "type": "object",
+      "required": [
+        "specversion",
+        "id",
+        "type",
+        "source"
+      ],
+      "properties": {
+        "specversion": {
+          "type": "string"
+        },
+        "contenttype": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "time": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "extensions": {
+          "type": "object"
+        },
+        "source": {
+          "format": "uri-reference",
+          "type": "string"
+        }
+      }
+    },
+    "Resource": {
+      "type": "object",
+      "required": [
+        "resourceURI",
+        "resourceContent"
+      ],
+      "properties": {
+        "resourceURI": {
+          "type": "string",
+          "description": "Resource URI"
+        },
+        "resourceContent": {
+          "type": "string",
+          "description": "Resource content"
+        }
+      }
+    },
+    "Resources": {
+      "type": "object",
+      "properties": {
+        "nextPageKey": {
+          "type": "string",
+          "description": "Pointer to next page, base64 encoded"
+        },
+        "totalCount": {
+          "type": "number",
+          "description": "Total number of resources"
+        },
+        "pageSize": {
+          "type": "number",
+          "description": "Size of returned page"
+        },
+        "resources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Resource"
+          }
+        }
+      }
+    },
+    "Version": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string",
+          "description": "Version identifier"
+        }
+      }
+    }
+  },
+  "parameters": {
+    "projectName": {
+      "in": "path",
+      "name": "projectName",
+      "required": true,
+      "type": "string",
+      "description": "Name of the project"
+    },
+    "stageName": {
+      "in": "path",
+      "name": "stageName",
+      "required": true,
+      "type": "string",
+      "description": "Name of the stage"
+    },
+    "serviceName": {
+      "in": "path",
+      "name": "serviceName",
+      "required": true,
+      "type": "string",
+      "description": "Name of the service"
+    },
+    "resourceURI": {
+      "in": "path",
+      "name": "resourceURI",
+      "required": true,
+      "type": "string",
+      "description": "Resource URI"
+    },
+    "resource": {
+      "in": "body",
+      "name": "resource",
+      "description": "Resource",
+      "schema": {
+        "$ref": "#/definitions/Resource"
+      }
+    },
+    "resources": {
+      "in": "body",
+      "name": "resources",
+      "description": "List of resources",
+      "schema": {
+        "properties": {
+          "resources": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/Resource"
+            }
+          }
+        }
+      }
+    }
+  }
+}

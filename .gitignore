@@ -1,8 +1,11 @@
+.DS_Store
 # Creds files
 scripts/creds.json
-install/scripts/creds.json
+install/scripts/*creds*.json
+install/scripts/creds_dt.json
 
 # Auto-generated files
+install/manifests/gen/installer.yaml
 install/manifests/gen/service_entries_oneagent.yml
 install/manifests/gen/hosts
 install/manifests/gen/service_entries
@@ -15,3 +18,13 @@ install/scripts/keptn-services/*
 
 # Repositories forked by forkGitHubRepositories.sh
 repositories
+cli/vendor/*
+api/vendor/*
+
+# Built artifacts
+*.exe
+cli/onboarding-carts/*
+configuration-service/cmd/configuration-service-server/__debug_bin
+
+# IDE files
+.vscode/

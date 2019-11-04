@@ -1,0 +1,15 @@
+.DS_Store
+
+# Creds files
+scripts/creds.json
+scripts/*creds*.json
+
+# Auto-generated files
+manifests/gen/installer.yaml
+manifests/gen/config-domain.yaml
+manifests/gen/istio-knative.yaml
+manifests/gen/keptn-domain-configmap.yaml
+manifests/keptn/gen/*.yaml
+
+scripts/logs/*.log
+scripts/keptn-services/*

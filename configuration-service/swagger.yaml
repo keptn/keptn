@@ -1,0 +1,989 @@
+swagger: '2.0'
+
+info:
+  title: Configuration Service API
+  version: 0.1.0
+
+basePath: /v1
+produces:
+- application/json
+consumes:
+- application/json
+
+schemes:
+  - http
+
+definitions:
+  Error:
+    type: object
+    required:
+      - message
+    properties: 
+      code:
+        type: integer
+        format: int64
+        description: Error code
+      message:
+        type: string
+        description: Error message
+
+  Version:
+    type: object
+    properties:
+      version:
+        type: string
+        description: Version identifier
+
+  Project:
+    type: object
+    properties:
+      projectName:
+        type: string
+        description: Project name
+      gitUser:
+        type: string
+        description: Git User
+      gitRemoteURI:
+        type: string
+        description: Git remote URI
+      gitToken:
+        type: string
+        description: Git token
+
+  Projects:
+    type: object
+    properties:
+      nextPageKey: 
+        type: string
+        description: Pointer to next page, base64 encoded
+      totalCount: 
+        type: number
+        description: Total number of projects
+      pageSize: 
+        type: number
+        description: Size of returned page
+      projects:
+        type: array
+        items:
+          $ref: '#/definitions/Project'
+
+  Stage:
+    type: object
+    properties:
+      stageName:
+        type: string
+        description: Stage name
+
+  Stages:
+    type: object
+    properties:
+      nextPageKey: 
+        type: string
+        description: Pointer to next page, base64 encoded
+      totalCount: 
+        type: number
+        description: Total number of stages
+      pageSize: 
+        type: number
+        description: Size of returned page
+      stages:
+        type: array
+        items:
+          $ref: '#/definitions/Stage'
+
+  Service:
+    type: object
+    properties:
+      serviceName:
+        type: string
+        description: Service name
+
+  Services:
+    type: object
+    properties:
+      nextPageKey: 
+        type: string
+        description: Pointer to next page, base64 encoded
+      totalCount: 
+        type: number
+        description: Total number of services
+      pageSize: 
+        type: number
+        description: Size of returned page
+      services:
+        type: array
+        items:
+          $ref: '#/definitions/Service'
+
+  Resource:
+    type: object
+    required:
+      - resourceURI
+    properties:
+      resourceURI:
+        type: string
+        description: Resource URI
+      resourceContent:
+        type: string
+        # format: byte
+        description: Resource content
+
+  Resources:
+    type: object
+    properties:
+      nextPageKey: 
+        type: string
+        description: Pointer to next page, base64 encoded
+      totalCount: 
+        type: number
+        description: Total number of resources
+      pageSize: 
+        type: number
+        description: Size of returned page
+      resources:
+        type: array
+        items:
+          $ref: '#/definitions/Resource'
+
+parameters:
+  project:
+    in: body
+    name: project
+    description: Project entity
+    schema:
+      $ref: '#/definitions/Project'
+
+  projectName:
+    in: path
+    name: projectName
+    required: true
+    type: string
+    description: Name of the project
+
+  stage:
+    in: body
+    name: stage
+    description: Stage entity
+    schema:
+      $ref: '#/definitions/Stage'
+    
+  stageName:
+    in: path
+    name: stageName
+    required: true
+    type: string
+    description: Name of the stage
+
+  service:
+    in: body
+    name: service
+    description: Service entity
+    schema:
+      $ref: '#/definitions/Service'
+    
+  serviceName:
+    in: path
+    name: serviceName
+    required: true
+    type: string
+    description: Name of the service
+    
+  resourceURI:
+    in: path
+    name: resourceURI
+    required: true
+    type: string
+    description: Resource URI
+
+  resource:
+    in: body
+    name: resource
+    description: Resource
+    schema:
+      $ref: '#/definitions/Resource'
+    
+  resources:
+    in: body
+    name: resources
+    description: List of resources
+    schema:
+      properties:
+        resources:
+          type: array
+          items:
+            $ref: '#/definitions/Resource'    
+
+  pageSize:
+    in: query
+    name: pageSize
+    type: integer
+    minimum: 1
+    maximum: 50
+    default: 20
+    description: The number of items to return
+    
+  nextPageKey:
+    in: query
+    name: nextPageKey
+    type: string
+    description: Pointer to the next set of items
+
+paths:
+
+  '/project':
+    post:
+      tags:
+        - Project
+      summary: Create a new project by project name
+      parameters:
+        - $ref: '#/parameters/project'
+      responses:
+        '204':
+          description: Success. Project has been created. Response does not have a body.
+        '400':
+          description: Failed. Project could not be created.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
+    get:
+      tags:
+        - Project
+      parameters:
+        - $ref: '#/parameters/pageSize'
+        - $ref: '#/parameters/nextPageKey'
+      summary: Get list of projects
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/Projects'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error' 
+
+  '/project/{projectName}':
+    parameters:
+      - $ref: '#/parameters/projectName'
+    get:
+      tags:
+        - Project
+      summary: Get the specified project
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/Project'
+        '404':
+          description: Failed. Project could not be found.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'  
+    put:
+      tags:
+        - Project
+      summary: Update the specified project
+      parameters:
+        - $ref: '#/parameters/project'     
+      responses:
+        '204':
+          description: Success. Project has been updated. Response does not have a body.
+        '400':
+          description: Failed. Project could not be updated.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error' 
+    delete:
+      tags:
+        - Project
+      summary: Delete the specified project
+      responses:
+        '204':
+          description: Success. Project has been deleted. Response does not have a body.
+        '400':
+          description: Failed. Project could not be deleted.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error' 
+
+  '/project/{projectName}/resource':
+    parameters:
+      - $ref: '#/parameters/projectName'
+    post:
+      tags:
+        - Project Resource
+      summary: Create list of new resources for the project
+      parameters:
+        - $ref: '#/parameters/resources'        
+      responses:
+        '201':
+          description: Success. Project resource has been created. The version of the new configuration is returned.
+          schema:
+            $ref: '#/definitions/Version'
+        '400':
+          description: Failed. Project resource could not be created.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error' 
+    get:
+      tags:
+        - Project Resource
+      parameters:
+        - $ref: '#/parameters/pageSize'
+        - $ref: '#/parameters/nextPageKey'
+      summary: Get list of project resources
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/Resources'
+        '404':
+          description: Failed. Containing project could not be found.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'  
+    put:
+      tags:
+        - Project Resource
+      parameters:
+        - $ref: '#/parameters/resources'
+      summary: Update list of project resources
+      responses:
+        '201':
+          description: Success. Project resources have been updated. The version of the new configuration is returned.
+          schema:
+            $ref: '#/definitions/Version'
+        '400':
+          description: Failed. Project resources could not be updated.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
+
+  '/project/{projectName}/resource/{resourceURI}':
+    parameters:
+      - $ref: '#/parameters/projectName'
+      - $ref: '#/parameters/resourceURI'
+    get:
+      tags:
+        - Project Resource
+      summary: Get the specified resource
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/Resource'
+        '404':
+          description: Failed. Project resource could not be found.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'            
+    put:
+      tags:
+        - Project Resource
+      summary: Update the specified resource
+      parameters:
+        - $ref: '#/parameters/resource' 
+      responses:
+        '201':
+          description: Success. Project resource has been updated. The version of the new configuration is returned.
+          schema:
+            $ref: '#/definitions/Version'
+        '400':
+          description: Failed. Project resource could not be updated.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      tags:
+        - Project Resource
+      summary: Delete the specified resource
+      responses:
+        '204':
+          description: Success. Project resource has been deleted. Response does not have a body.
+        '400':
+          description: Failed. Project resource could not be deleted.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
+          
+  '/project/{projectName}/stage':
+    parameters:
+      - $ref: '#/parameters/projectName'
+    post:
+      tags:
+        - Stage
+      summary: Create a new stage by stage name
+      parameters:
+        - $ref: '#/parameters/stage'
+      responses:
+        '204':
+          description: Success. Stage has been created. Response does not have a body.
+        '400':
+          description: Failed. Stage could not be created.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
+    get:
+      tags:
+        - Stage
+      parameters:
+        - $ref: '#/parameters/pageSize'
+        - $ref: '#/parameters/nextPageKey'
+      summary: Get list of stages
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/Stages'
+        '404':
+          description: Failed. Containing project could not be found.
+          schema:
+            $ref: '#/definitions/Error' 
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
+
+  '/project/{projectName}/stage/{stageName}':
+    parameters:
+      - $ref: '#/parameters/projectName'
+      - $ref: '#/parameters/stageName'
+    get:
+      tags:
+        - Stage
+      summary: Get the specified stage
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/Stage'
+        '404':
+          description: Failed. Project resource could not be found.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error' 
+    put:
+      tags:
+        - Stage
+      summary: Update the specified stage
+      parameters:
+        - $ref: '#/parameters/stage'
+      responses:
+        '204':
+          description: Success. Stage has been updated. Response does not have a body.
+        '400':
+          description: Failed. Stage could not be updated.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      tags:
+        - Stage
+      summary: Delete the specified stage
+      responses:
+        '204':
+          description: Success. Stage has been deleted. Response does not have a body.
+        '400':
+          description: Failed. Stage could not be deleted.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
+
+  '/project/{projectName}/stage/{stageName}/resource':
+    parameters:
+      - $ref: '#/parameters/projectName'
+      - $ref: '#/parameters/stageName'
+    post:
+      tags:
+        - Stage Resource
+      summary: Create list of new resources for the stage
+      parameters:
+        - $ref: '#/parameters/resources'   
+      responses:
+        '201':
+          description: Success. Stage resource has been created. The version of the new configuration is returned.
+          schema:
+            $ref: '#/definitions/Version'
+        '400':
+          description: Failed. Stage resource could not be created.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
+    get:
+      tags:
+        - Stage Resource
+      parameters:
+        - $ref: '#/parameters/pageSize'
+        - $ref: '#/parameters/nextPageKey'
+      summary: Get list of stage resources
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/Resources'
+        '404':
+          description: Failed. Stage could not be found.
+          schema:
+            $ref: '#/definitions/Error' 
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      tags:
+        - Stage Resource
+      parameters:
+        - $ref: '#/parameters/resources'
+      summary: Update list of stage resources
+      responses:
+        '201':
+          description: Success. Stage resources have been updated. The version of the new configuration is returned.
+          schema:
+            $ref: '#/definitions/Version'
+        '400':
+          description: Failed. Stage resources could not be updated.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
+
+  '/project/{projectName}/stage/{stageName}/resource/{resourceURI}':
+    parameters:
+      - $ref: '#/parameters/projectName'
+      - $ref: '#/parameters/stageName'
+      - $ref: '#/parameters/resourceURI'
+    get:
+      tags:
+        - Stage Resource
+      summary: Get the specified resource
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/Resource'
+        '404':
+          description: Failed. Stage resource could not be found.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error' 
+    put:
+      tags:
+        - Stage Resource
+      summary: Update the specified resource
+      parameters:
+        - $ref: '#/parameters/resource'
+      responses:
+        '201':
+          description: Success. Stage resource has been updated. The version of the new configuration is returned.
+          schema:
+            $ref: '#/definitions/Version'
+        '400':
+          description: Failed. Stage resource could not be updated.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      tags:
+        - Stage Resource
+      summary: Delete the specified resource
+      responses:
+        '204':
+          description: Success. Stage resource has been deleted. Response does not have a body.
+        '400':
+          description: Failed. Stage resource could not be deleted.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
+
+  '/project/{projectName}/stage/{stageName}/service':
+    parameters:
+      - $ref: '#/parameters/projectName'
+      - $ref: '#/parameters/stageName'
+    post:
+      tags:
+        - Service
+      summary: Create a new service by service name
+      parameters:
+        - $ref: '#/parameters/service'
+      responses:
+        '204':
+          description: Success. Stage has been created. Response does not have a body.
+        '400':
+          description: Failed. Service could not be created.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
+    get:
+      tags:
+        - Service
+      parameters:
+        - $ref: '#/parameters/pageSize'
+        - $ref: '#/parameters/nextPageKey'
+      summary: Get list of services
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/Services'
+        '404':
+          description: Failed. Containing project could not be found.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error' 
+
+  '/project/{projectName}/stage/{stageName}/service/{serviceName}':
+    parameters:
+      - $ref: '#/parameters/projectName'
+      - $ref: '#/parameters/stageName'
+      - $ref: '#/parameters/serviceName'      
+    get:
+      tags:
+        - Service
+      summary: Get the specified service
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/Service'
+        '404':
+          description: Failed. Service could not be found.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error' 
+    put:
+      tags:
+        - Service
+      summary: Update the specified service
+      parameters:
+        - $ref: '#/parameters/service'
+      responses:
+        '204':
+          description: Success. Service has been updated. Response does not have a body.
+        '400':
+          description: Failed. Service could not be updated.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      tags:
+        - Service
+      summary: Delete the specified service
+      responses:
+        '204':
+          description: Success. Service has been deleted. Response does not have a body.
+        '400':
+          description: Failed. Service could not be deleted.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
+
+  '/project/{projectName}/stage/{stageName}/service/{serviceName}/resource':
+    parameters:
+      - $ref: '#/parameters/projectName'
+      - $ref: '#/parameters/stageName'
+      - $ref: '#/parameters/serviceName'
+    post:
+      tags:
+        - Service Resource
+      summary: Create list of new resources for the service
+      parameters:
+        - $ref: '#/parameters/resources'   
+      responses:
+        '201':
+          description: Success. Service resource has been created. The version of the new configuration is returned.
+          schema:
+            $ref: '#/definitions/Version'
+        '400':
+          description: Failed. Service resource could not be created.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
+    get:
+      tags:
+        - Service Resource
+      parameters:
+        - $ref: '#/parameters/pageSize'
+        - $ref: '#/parameters/nextPageKey'
+      summary: Get list of service resources
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/Resources'
+        '404':
+          description: Failed. Containing Service could not be found.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error' 
+    put:
+      tags:
+        - Service Resource
+      parameters:
+        - $ref: '#/parameters/resources'
+      summary: Update list of service resources
+      responses:
+        '201':
+          description: Success. Service resources have been updated. The version of the new configuration is returned.
+          schema:
+            $ref: '#/definitions/Version'
+        '400':
+          description: Failed. Service resources could not be updated.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
+
+  '/project/{projectName}/stage/{stageName}/service/{serviceName}/resource/{resourceURI}':
+    parameters:
+      - $ref: '#/parameters/projectName'
+      - $ref: '#/parameters/stageName'
+      - $ref: '#/parameters/serviceName'
+      - $ref: '#/parameters/resourceURI'
+    get:
+      tags:
+        - Service Resource
+      summary: Get the specified resource
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/Resource'
+        '404':
+          description: Failed. Service resource could not be found.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error' 
+    put:
+      tags:
+        - Service Resource
+      summary: Update the specified resource
+      parameters:
+        - $ref: '#/parameters/resource'
+      responses:
+        '201':
+          description: Success. Service resource has been updated. The version of the new configuration is returned.
+          schema:
+            $ref: '#/definitions/Version'
+        '400':
+          description: Failed. Service resource could not be updated.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      tags:
+        - Service Resource
+      summary: Delete the specified resource
+      responses:
+        '204':
+          description: Success. Service resource has been deleted. Response does not have a body.
+        '400':
+          description: Failed. Service resource could not be deleted.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
+
+  '/project/{projectName}/service/{serviceName}/resource':
+    parameters:
+      - $ref: '#/parameters/projectName'
+      - $ref: '#/parameters/serviceName'
+    post:
+      tags:
+        - Service Default Resource 
+      summary: Create list of default resources for the service used in all stages
+      parameters:
+        - $ref: '#/parameters/resources' 
+      responses:
+        '201':
+          description: Success. Service default resource has been created. The version of the new configuration is returned.
+          schema:
+            $ref: '#/definitions/Version'
+        '400':
+          description: Failed. Service default resource could not be created.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
+    get:
+      tags:
+        - Service Default Resource 
+      parameters:
+        - $ref: '#/parameters/pageSize'
+        - $ref: '#/parameters/nextPageKey'
+      summary: Get list of default resources for the service used in all stages
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/Resources'
+        '404':
+          description: Failed. Containing service could not be found.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error' 
+    put:
+      tags:
+        - Service Default Resource
+      parameters:
+        - $ref: '#/parameters/resources'
+      summary: Update list of service default resources
+      responses:
+        '201':
+          description: Success. Service default resources have been updated. The version of the new configuration is returned.
+          schema:
+            $ref: '#/definitions/Version'
+        '400':
+          description: Failed. Service default resources could not be updated.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
+
+  '/project/{projectName}/service/{serviceName}/resource/{resourceURI}':
+    parameters:
+      - $ref: '#/parameters/projectName'
+      - $ref: '#/parameters/serviceName'
+      - $ref: '#/parameters/resourceURI'
+    get:
+      tags:
+        - Service Default Resource
+      summary: Get the specified default resource for the service
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/Resource'
+        '404':
+          description: Failed. Default resource could not be found.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error' 
+    put:
+      tags:
+        - Service Default Resource
+      summary: Update the specified default resource for the service
+      responses:
+        '201':
+          description: Success. Service default resource has been updated. The version of the new configuration is returned.
+          schema:
+            $ref: '#/definitions/Version'
+        '400':
+          description: Failed. Service default resource could not be updated.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      tags:
+        - Service Default Resource
+      summary: Delete the specified default resource for the service
+      responses:
+        '204':
+          description: Success. Service default resource has been deleted. Response does not have a body.
+        '400':
+          description: Failed. Service default resource could not be deleted.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
