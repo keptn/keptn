@@ -44,16 +44,18 @@ type evaluationStartStruct struct {
 
 var evaluationStart evaluationStartStruct
 
-// evaluationStartCmd represents the evaluation.start command
+// evaluationStartCmd represents the start-evaluation command
 var evaluationStartCmd = &cobra.Command{
-	Use: "evaluation.start",
-	Short: "Sends an evaluation.start event to Keptn in order to evaluate a test" +
-		"for the specified service in the provided project",
-	Long: `Sends an evaluation.start event to Keptn in order to evaluate a test
-for the specified service in the provided project.
+	Use: "start-evaluation",
+	Short: "Sends an start-evaluation event to Keptn in order to evaluate a test" +
+		"for the specified service in the provided project and stage",
+	Long: `Sends a start-evaluation event to Keptn in order to evaluate a test
+for the specified service in the provided project and stage. The time frame flag defines
+the time frame that is considered in this evaluation. If a specific start point need to be set,
+a start flag is provided that takes a time in the format: 2006-01-02T15:04:05
 	
 Example:
-	keptn send event evaluation.start --project=sockshop --service=carts`,
+	keptn send event start-evaluation --project=sockshop --stage=hardening --service=carts --timeframe=5m --start=2019-10-31T11:59:59`,
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		return nil
@@ -64,7 +66,7 @@ Example:
 			return errors.New(authErrorMsg)
 		}
 
-		logging.PrintLog("Starting to send an evaluation.start event to evaluate the service "+
+		logging.PrintLog("Starting to send a start-evaluation event to evaluate the service "+
 			*evaluationStart.Service+" in project "+*evaluationStart.Project, logging.InfoLevel)
 
 		startPoint := ""
@@ -116,8 +118,8 @@ Example:
 		if !mocking {
 			responseEvent, err := eventHandler.SendEvent(apiEvent)
 			if err != nil {
-				logging.PrintLog("Send evaluation.start was unsuccessful", logging.QuietLevel)
-				return fmt.Errorf("Send evaluation.start was unsuccessful. %s", *err.Message)
+				logging.PrintLog("Send start-evaluation was unsuccessful", logging.QuietLevel)
+				return fmt.Errorf("Send start-evaluation was unsuccessful. %s", *err.Message)
 			}
 
 			if responseEvent == nil {
@@ -129,7 +131,7 @@ Example:
 			return nil
 		}
 
-		fmt.Println("Skipping send evaluation.start due to mocking flag set to true")
+		fmt.Println("Skipping send start-evaluation due to mocking flag set to true")
 		return nil
 	},
 }
