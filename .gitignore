@@ -30,3 +30,5 @@ configuration-service/cmd/configuration-service-server/__debug_bin
 .vscode/
 
 .idea/
+
+vendor/
