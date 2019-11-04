@@ -114,7 +114,7 @@ func GetEvents(params event.GetEventsParams) (result *event.GetEventsOKBody, err
 			return nil, err
 		}
 		// flatten the data property
-		result.Data = flattenRec(result.Data.(bson.D), logger)
+		result.Data = flattenRecursively(result.Data.(bson.D), logger)
 		resultEvents = append(resultEvents, &result)
 	}
 
@@ -129,7 +129,7 @@ func GetEvents(params event.GetEventsParams) (result *event.GetEventsOKBody, err
 	return &myresult, nil
 }
 
-func flattenRec(d bson.D, logger *keptnutils.Logger) map[string]interface{} {
+func flattenRecursively(d bson.D, logger *keptnutils.Logger) map[string]interface{} {
 
 	myMap := d.Map()
 	flat, err := flatten.Flatten(myMap, "", flatten.RailsStyle)
@@ -140,7 +140,7 @@ func flattenRec(d bson.D, logger *keptnutils.Logger) map[string]interface{} {
 	for k, v := range flat {
 		_, ok := v.(bson.D)
 		if ok {
-			flat[k] = flattenRec(v.(bson.D), logger)
+			flat[k] = flattenRecursively(v.(bson.D), logger)
 		}
 	}
 
