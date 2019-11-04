@@ -18,4 +18,6 @@ spec:
         env:       
         - name: PLATFORM
           value: PLATFORM_PLACEHOLDER
+        - name: GATEWAY_TYPE
+          value: GATEWAY_TYPE_PLACEHOLDER
       restartPolicy: OnFailure

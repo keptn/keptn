@@ -2,9 +2,8 @@
 definitions:
   service:
     type: object
-    requried:
+    required:
       - serviceName
-      - helmChart
     properties:
       serviceName:
         type: string

@@ -29,7 +29,7 @@ and an API token. The endpoint and API token are exposed during the Keptn instal
 If the authentication is successful, the endpoint and the API token are stored in a password store. 
 
 Example:
-	keptn auth --endpoint=https://api.keptn.my.domain.com --api-token=xyz0123`,
+	keptn auth --endpoint=https://api.keptn.my.domain.com --api-token=abcd-0123-wxyz-7890`,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		logging.PrintLog("Starting to authenticate", logging.InfoLevel)
@@ -44,7 +44,8 @@ Example:
 		if !mocking {
 			_, err := authHandler.Authenticate()
 			if err != nil {
-				logging.PrintLog("Authentication was unsuccessful", logging.QuietLevel)
+				errMsg := fmt.Sprintf("Authentication was unsuccessful. %s", *err.Message)
+				logging.PrintLog(errMsg, logging.QuietLevel)
 				return fmt.Errorf("Authentication was unsuccessful. %s", *err.Message)
 			}
 
@@ -97,11 +98,11 @@ To manually set up your keptn CLI, please follow the instructions at https://kep
 
 func getEndpointUsingKube() (string, error) {
 	ops := options{"get",
-		"virtualservice",
-		"api",
+		"cm",
+		"keptn-domain",
 		"-n",
 		"keptn",
-		"-ojsonpath={.spec.hosts[0]}"}
+		"-ojsonpath={.data.app_domain}"}
 	ops.appendIfNotEmpty(kubectlOptions)
 	return keptnutils.ExecuteCommand("kubectl", ops)
 }

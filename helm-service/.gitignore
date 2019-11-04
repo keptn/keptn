@@ -6,6 +6,7 @@
 *.dylib
 
 helm-service
+MANIFEST
 
 # Test binary, build with `go test -c`
 *.test
@@ -15,3 +16,6 @@ helm-service
 
 vendor/*
 .DS_Store
+
+#binary - go build
+helm-service

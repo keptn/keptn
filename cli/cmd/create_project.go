@@ -4,8 +4,9 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"github.com/keptn/keptn/cli/utils/websockethelper"
 	"os"
+
+	"github.com/keptn/keptn/cli/utils/websockethelper"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
@@ -46,7 +47,7 @@ Example:
 
 		if len(args) != 1 {
 			cmd.SilenceUsage = false
-			return errors.New("Requires PROJECTNAME")
+			return errors.New("required argument PROJECTNAME not set")
 		}
 
 		if !utils.ValidateK8sName(args[0]) {
@@ -62,7 +63,7 @@ Example:
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 
 		if _, err := os.Stat(keptnutils.ExpandTilde(*createProjectParams.Shipyard)); os.IsNotExist(err) {
-			return fmt.Errorf("Cannot find file %s", *createProjectParams.Shipyard)
+			return fmt.Errorf("Cannot find shipyard file %s", *createProjectParams.Shipyard)
 		}
 
 		// validate shipyard file
@@ -120,9 +121,10 @@ Example:
 		logging.PrintLog("Starting to create project", logging.InfoLevel)
 
 		content, _ := utils.ReadFile(*createProjectParams.Shipyard)
+		shipyard := base64.StdEncoding.EncodeToString([]byte(content))
 		project := apimodels.Project{
-			Name:     args[0],
-			Shipyard: base64.StdEncoding.EncodeToString([]byte(content)),
+			Name:     &args[0],
+			Shipyard: &shipyard,
 		}
 
 		if *createProjectParams.GitUser != "" && *createProjectParams.GitToken != "" && *createProjectParams.RemoteURL != "" {
@@ -135,21 +137,21 @@ Example:
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
-			channelInfo, err := projectHandler.CreateProject(project)
+			eventContext, err := projectHandler.CreateProject(project)
 			if err != nil {
 				fmt.Println("Create project was unsuccessful")
 				return fmt.Errorf("Create project was unsuccessful. %s", *err.Message)
 			}
 
-			// if ChannelInfo is available, open WebSocket communication
-			if channelInfo != nil {
-				return websockethelper.PrintWSContentChannelInfo(channelInfo, endPoint)
+			// if eventContext is available, open WebSocket communication
+			if eventContext != nil {
+				return websockethelper.PrintWSContentEventContext(eventContext, endPoint)
 			}
 
 			return nil
-		} else {
-			fmt.Println("Skipping create project due to mocking flag set to true")
 		}
+
+		fmt.Println("Skipping create project due to mocking flag set to true")
 		return nil
 	},
 }

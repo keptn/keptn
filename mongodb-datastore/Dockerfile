@@ -3,14 +3,20 @@
 # https://hub.docker.com/_/golang
 FROM golang:1.12 as builder
 
-# Copy local code to the container image.
 WORKDIR /go/src/github.com/keptn/keptn/mongodb-datastore
-COPY . .
 
-ARG DEP_VERSION=0.5.3
-RUN curl -L -s https://github.com/golang/dep/releases/download/v$DEP_VERSION/dep-linux-amd64 -o ./dep && \
-  chmod +x ./dep && \
-  ./dep ensure
+# Force the go compiler to use modules 
+ENV GO111MODULE=on
+
+# Copy `go.mod` for definitions and `go.sum` to invalidate the next layer
+# in case of a change in the dependencies
+COPY go.mod go.sum ./
+
+# Download dependencies
+RUN go mod download
+
+# Copy local code to the container image. 
+COPY . .
 
 # Build the command inside the container.
 # (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
@@ -24,7 +30,7 @@ RUN apk add --no-cache ca-certificates
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /go/src/github.com/keptn/keptn/mongodb-datastore/cmd/mongodb-datastore-server/mongodb-datastore /mongodb-datastore
 COPY --from=builder /go/src/github.com/keptn/keptn/mongodb-datastore/swagger-ui /swagger-ui
-COPY --from=builder /go/src/github.com/keptn/keptn/mongodb-datastore/swagger.json /swagger-ui/swagger.json
+COPY --from=builder /go/src/github.com/keptn/keptn/mongodb-datastore/swagger.yaml /swagger-ui/swagger.yaml
 ADD MANIFEST /
 
 # Run the web service on container startup.

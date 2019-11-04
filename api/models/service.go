@@ -8,7 +8,9 @@ package models
 import (
 	strfmt "github.com/go-openapi/strfmt"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // Service service
@@ -22,11 +24,30 @@ type Service struct {
 	HelmChart string `json:"helmChart,omitempty"`
 
 	// service name
-	ServiceName string `json:"serviceName,omitempty"`
+	// Required: true
+	ServiceName *string `json:"serviceName"`
 }
 
 // Validate validates this service
 func (m *Service) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateServiceName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *Service) validateServiceName(formats strfmt.Registry) error {
+
+	if err := validate.Required("serviceName", "body", m.ServiceName); err != nil {
+		return err
+	}
+
 	return nil
 }
 

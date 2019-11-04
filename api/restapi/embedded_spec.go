@@ -50,12 +50,51 @@ func init() {
       }
     },
     "/event": {
+      "get": {
+        "tags": [
+          "Event"
+        ],
+        "summary": "Get the latest event matching the parameters",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "KeptnContext of the events to get",
+            "name": "keptnContext",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Type of the Keptn cloud event",
+            "name": "type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "response_model.yaml#/definitions/keptnContextExtendedCE"
+            }
+          },
+          "404": {
+            "description": "Failed. Event could not be found.",
+            "schema": {
+              "$ref": "response_model.yaml#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "response_model.yaml#/definitions/error"
+            }
+          }
+        }
+      },
       "post": {
         "tags": [
           "Event"
         ],
         "summary": "Forwards the received event",
-        "operationId": "sendEvent",
         "parameters": [
           {
             "name": "body",
@@ -69,7 +108,7 @@ func init() {
           "200": {
             "description": "Forwarded",
             "schema": {
-              "$ref": "response_model.yaml#/definitions/channelInfo"
+              "$ref": "response_model.yaml#/definitions/eventContext"
             }
           },
           "default": {
@@ -96,7 +135,7 @@ func init() {
           "200": {
             "description": "Creating of project triggered",
             "schema": {
-              "$ref": "response_model.yaml#/definitions/channelInfo"
+              "$ref": "response_model.yaml#/definitions/eventContext"
             }
           },
           "400": {
@@ -124,7 +163,7 @@ func init() {
           "200": {
             "description": "Deleting of project triggered",
             "schema": {
-              "$ref": "response_model.yaml#/definitions/channelInfo"
+              "$ref": "response_model.yaml#/definitions/eventContext"
             }
           },
           "400": {
@@ -162,7 +201,7 @@ func init() {
           "200": {
             "description": "Creating of service triggered",
             "schema": {
-              "$ref": "response_model.yaml#/definitions/channelInfo"
+              "$ref": "response_model.yaml#/definitions/eventContext"
             }
           },
           "400": {
@@ -370,12 +409,51 @@ func init() {
       }
     },
     "/event": {
+      "get": {
+        "tags": [
+          "Event"
+        ],
+        "summary": "Get the latest event matching the parameters",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "KeptnContext of the events to get",
+            "name": "keptnContext",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Type of the Keptn cloud event",
+            "name": "type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/keptnContextExtendedCE"
+            }
+          },
+          "404": {
+            "description": "Failed. Event could not be found.",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
       "post": {
         "tags": [
           "Event"
         ],
         "summary": "Forwards the received event",
-        "operationId": "sendEvent",
         "parameters": [
           {
             "name": "body",
@@ -389,7 +467,7 @@ func init() {
           "200": {
             "description": "Forwarded",
             "schema": {
-              "$ref": "#/definitions/channelInfo"
+              "$ref": "#/definitions/eventContext"
             }
           },
           "default": {
@@ -421,7 +499,7 @@ func init() {
           "200": {
             "description": "Creating of project triggered",
             "schema": {
-              "$ref": "#/definitions/channelInfo"
+              "$ref": "#/definitions/eventContext"
             }
           },
           "400": {
@@ -449,7 +527,7 @@ func init() {
           "200": {
             "description": "Deleting of project triggered",
             "schema": {
-              "$ref": "#/definitions/channelInfo"
+              "$ref": "#/definitions/eventContext"
             }
           },
           "400": {
@@ -496,7 +574,7 @@ func init() {
           "200": {
             "description": "Creating of service triggered",
             "schema": {
-              "$ref": "#/definitions/channelInfo"
+              "$ref": "#/definitions/eventContext"
             }
           },
           "400": {
@@ -630,21 +708,6 @@ func init() {
     }
   },
   "definitions": {
-    "channelInfo": {
-      "type": "object",
-      "required": [
-        "token",
-        "channelID"
-      ],
-      "properties": {
-        "channelID": {
-          "type": "string"
-        },
-        "token": {
-          "type": "string"
-        }
-      }
-    },
     "contenttype": {
       "type": "string"
     },
@@ -707,14 +770,48 @@ func init() {
         }
       }
     },
+    "eventContext": {
+      "type": "object",
+      "required": [
+        "token",
+        "keptnContext"
+      ],
+      "properties": {
+        "keptnContext": {
+          "type": "string"
+        },
+        "token": {
+          "type": "string"
+        }
+      }
+    },
     "extensions": {
       "type": "object"
     },
     "id": {
       "type": "string"
     },
+    "keptnContextExtendedCE": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/event"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "shkeptncontext": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
     "project": {
       "type": "object",
+      "required": [
+        "name",
+        "shipyard"
+      ],
       "properties": {
         "gitRemoteURL": {
           "type": "string"
@@ -731,11 +828,7 @@ func init() {
         "shipyard": {
           "type": "string"
         }
-      },
-      "requried": [
-        "name",
-        "shipyard"
-      ]
+      }
     },
     "resource": {
       "type": "object",
@@ -756,6 +849,9 @@ func init() {
     },
     "service": {
       "type": "object",
+      "required": [
+        "serviceName"
+      ],
       "properties": {
         "deploymentStrategies": {
           "type": "object",
@@ -769,11 +865,7 @@ func init() {
         "serviceName": {
           "type": "string"
         }
-      },
-      "requried": [
-        "serviceName",
-        "helmChart"
-      ]
+      }
     },
     "source": {
       "type": "string",

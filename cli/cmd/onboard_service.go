@@ -4,8 +4,9 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"github.com/keptn/keptn/cli/utils/websockethelper"
 	"os"
+
+	"github.com/keptn/keptn/cli/utils/websockethelper"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
@@ -38,7 +39,7 @@ Example:
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
 			cmd.SilenceUsage = false
-			return errors.New("Requires SERVICENAME")
+			return errors.New("required argument SERVICENAME not set")
 		}
 		return nil
 	},
@@ -94,9 +95,10 @@ Example:
 			return err
 		}
 
+		helmChart := base64.StdEncoding.EncodeToString(chartData)
 		service := apimodels.Service{
-			ServiceName: args[0],
-			HelmChart:   base64.StdEncoding.EncodeToString(chartData),
+			ServiceName: &args[0],
+			HelmChart:   helmChart,
 		}
 
 		if *onboardServiceParams.DeploymentStrategy != "" {
@@ -117,21 +119,21 @@ Example:
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
-			channelInfo, err := serviceHandler.CreateService(*onboardServiceParams.Project, service)
+			eventContext, err := serviceHandler.CreateService(*onboardServiceParams.Project, service)
 			if err != nil {
 				logging.PrintLog("Onboard service was unsuccessful", logging.QuietLevel)
 				return fmt.Errorf("Onboard service was unsuccessful. %s", *err.Message)
 			}
 
-			// if ChannelInfo is available, open WebSocket communication
-			if channelInfo != nil {
-				return websockethelper.PrintWSContentChannelInfo(channelInfo, endPoint)
+			// if eventContext is available, open WebSocket communication
+			if eventContext != nil {
+				return websockethelper.PrintWSContentEventContext(eventContext, endPoint)
 			}
 
 			return nil
-		} else {
-			fmt.Println("Skipping onboard service due to mocking flag set to true")
 		}
+
+		fmt.Println("Skipping onboard service due to mocking flag set to true")
 		return nil
 	},
 }
