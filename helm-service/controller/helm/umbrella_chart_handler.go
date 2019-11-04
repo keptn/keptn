@@ -236,3 +236,39 @@ func (u *UmbrellaChartHandler) AddChartInUmbrellaValues(project string, helmChar
 
 	return nil
 }
+
+// IsUmbrellaChartAvailableInAllStages checks whether all stages contain a umbrella Helm chart
+func (u *UmbrellaChartHandler) IsUmbrellaChartAvailableInAllStages(project string, stages []*configmodels.Stage) (bool, error) {
+	url, err := serviceutils.GetConfigServiceURL()
+	if err != nil {
+		return false, err
+	}
+
+	// an umbrella chart is defined by the 3 resources: Chart.yaml, requirements.yaml and values.yaml
+	resourcePrefixes := map[string]bool{
+		"/" + umbrellaChartURI: true,
+		"/" + requirementsURI:  true,
+		"/" + valuesURI:        true,
+	}
+
+	for _, stage := range stages {
+		rHandler := configutils.NewResourceHandler(url.String())
+		resources, err := rHandler.GetAllStageResources(project, stage.StageName)
+		if err != nil {
+			return false, err
+		}
+
+		countChartFiles := 0
+		for _, resource := range resources {
+			_, contained := resourcePrefixes[*resource.ResourceURI]
+			if contained {
+				countChartFiles++
+			}
+		}
+
+		if countChartFiles != len(resourcePrefixes) {
+			return false, nil
+		}
+	}
+	return true, nil
+}

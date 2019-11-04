@@ -16,11 +16,15 @@ vendor/*
 launch.json
 NOTES.md
 
+# debug files
+MANIFEST
+deploy/service_debug.yaml
+deploy/mongodb-datastore_debug.yaml
+Dockerfile_dev
+skaffold.yaml
+
 # swagger docs (temp files)
 swagger-ui/swagger.json 
 
-# Debug files
-Dockerfile_dev
-MANIFEST
-skaffold.yaml
-deploy/mongodb-datastore_debug.yaml
+# binary - go build
+mongodb-datastore
