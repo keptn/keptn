@@ -9,5 +9,5 @@ echo "Build ${IMAGE}"
 cp MANIFEST ./${FOLDER}MANIFEST #$FOLDER contains / at the end
 cd ./${FOLDER}
 cat MANIFEST
-docker build . -t "${IMAGE}:${VERSION}"
+docker build . -t "${IMAGE}:${VERSION}" --build-arg version=$VERSION
 docker push "${IMAGE}:${VERSION}"

@@ -2,6 +2,7 @@ FROM node:10-alpine
 ENV NODE_ENV "production"
 ENV PORT 8080
 EXPOSE 8080
+ARG version=develop
 RUN addgroup mygroup && adduser -D -G mygroup myuser && mkdir -p /usr/src/app && chown -R myuser /usr/src/app
 
 RUN apk update && apk upgrade && \
