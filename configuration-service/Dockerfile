@@ -3,7 +3,7 @@
 FROM golang:1.12 as builder
 ARG version=develop
 
-WORKDIR /go/src/github.com/keptn/keptn/jmeter-service
+WORKDIR /go/src/github.com/keptn/keptn/configuration-service
 
 # Force the go compiler to use modules 
 ENV GO111MODULE=on
