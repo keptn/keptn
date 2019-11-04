@@ -19,6 +19,9 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"strconv"
+	"strings"
+	"time"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
@@ -32,8 +35,10 @@ import (
 )
 
 type evaluationStartStruct struct {
-	Project *string `json:"project"`
-	Service *string `json:"service"`
+	Project   *string `json:"project"`
+	Stage     *string `json:"stage"`
+	Service   *string `json:"service"`
+	Timeframe *string `json:"timeframe"`
 }
 
 var evaluationStart evaluationStartStruct
@@ -61,9 +66,18 @@ Example:
 		logging.PrintLog("Starting to send an evaluation.start event to evaluate the service "+
 			*evaluationStart.Service+" in project "+*evaluationStart.Project, logging.InfoLevel)
 
-		evaluationStartEvent := keptnevents.EvaluationStartEventData{
+		end, start, err := getStartEndTime(*evaluationStart.Timeframe)
+		if end == nil || start == nil || err != nil {
+			logging.PrintLog(fmt.Sprintf("Start and end time of evaluation time frame not set: %s", err.Error()), logging.QuietLevel)
+			return fmt.Errorf("Start and end time of evaluation time frame not set: %s", err.Error())
+		}
+
+		startEvaluationEventData := keptnevents.StartEvaluationEventData{
 			Project: *evaluationStart.Project,
 			Service: *evaluationStart.Service,
+			Stage:   *evaluationStart.Stage,
+			Start:   start.Format("2006-01-02T15:04:05-0700"),
+			End:     end.Format("2006-01-02T15:04:05-0700"),
 		}
 
 		keptnContext := uuid.New().String()
@@ -72,11 +86,11 @@ Example:
 		sdkEvent := cloudevents.Event{
 			Context: cloudevents.EventContextV02{
 				ID:          keptnContext,
-				Type:        keptnevents.EvaluationStartEventType,
+				Type:        keptnevents.StartEvaluationEventType,
 				Source:      types.URLRef{URL: *source},
 				ContentType: &contentType,
 			}.AsV02(),
-			Data: evaluationStartEvent,
+			Data: startEvaluationEventData,
 		}
 
 		eventByte, err := sdkEvent.MarshalJSON()
@@ -114,14 +128,44 @@ Example:
 	},
 }
 
+func getStartEndTime(timeframe string) (*time.Time, *time.Time, error) {
+	end := time.Now()
+	start := time.Now()
+
+	errMsg := "The time frame format is invalid. Use the format [duration]m, e.g.: 5m"
+
+	i := strings.Index(timeframe, "m")
+	if i > -1 {
+		minutesStr := timeframe[:i]
+		minutes, err := strconv.Atoi(minutesStr)
+		if err != nil {
+			return nil, nil, fmt.Errorf(errMsg)
+		}
+		minutesOffset := time.Minute * time.Duration(-minutes)
+		start = start.Add(minutesOffset)
+
+		return &end, &start, nil
+	}
+
+	return nil, nil, fmt.Errorf(errMsg)
+}
+
 func init() {
 	sendEventCmd.AddCommand(evaluationStartCmd)
 
 	evaluationStart.Project = evaluationStartCmd.Flags().StringP("project", "", "",
-		"The project containing the service which will be evaluated")
+		"The project containing the service to be evaluated")
 	evaluationStartCmd.MarkFlagRequired("project")
 
+	evaluationStart.Stage = evaluationStartCmd.Flags().StringP("stage", "", "",
+		"The stage containing the service to be evaluated")
+	evaluationStartCmd.MarkFlagRequired("stage")
+
 	evaluationStart.Service = evaluationStartCmd.Flags().StringP("service", "", "",
-		"The service which will be evaluated")
+		"The service to be evaluated")
+	evaluationStartCmd.MarkFlagRequired("service")
+
+	evaluationStart.Timeframe = evaluationStartCmd.Flags().StringP("timeframe", "", "",
+		"The time frame from which the evaluation data should be gathered")
 	evaluationStartCmd.MarkFlagRequired("service")
 }
