@@ -461,6 +461,23 @@ func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptnevents.InternalGetS
 	}
 	var evaluationDoneEvents []*keptnevents.EvaluationDoneEventData
 	for _, event := range previousEvents.Events {
+		dataMap, ok := event.Data.(map[string]interface{})
+
+		if ok {
+			var indicatorResults []*keptnevents.SLIEvaluationResult
+			evaluationDetails := dataMap["evaluationdetails"].(map[string]interface{})
+			if len(evaluationDetails["indicatorResults"].([]interface{})) > 0 {
+				for _, value := range evaluationDetails["indicatorResults"].([]interface{}) {
+					sliEvaluationResult, err := extractSLIEvaluationResult(value.([]interface{}))
+					if err == nil {
+						indicatorResults = append(indicatorResults, sliEvaluationResult)
+					}
+				}
+				evaluationDetails["indicatorResults"] = indicatorResults
+			}
+			dataMap["evaluationdetails"] = evaluationDetails
+		}
+
 		bytes, err := json.Marshal(event.Data)
 		if err != nil {
 			continue
@@ -474,6 +491,61 @@ func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptnevents.InternalGetS
 		evaluationDoneEvents = append(evaluationDoneEvents, &evaluationDoneEvent)
 	}
 	return evaluationDoneEvents, nil
+}
+
+func extractSLIEvaluationResult(inMap []interface{}) (*keptnevents.SLIEvaluationResult, error) {
+	result := &keptnevents.SLIEvaluationResult{
+		Score:      0,
+		Value:      nil,
+		Violations: nil,
+		Status:     "",
+	}
+
+	for _, value := range inMap {
+		tmp := value.(map[string]interface{})
+		if tmp["Key"] == "score" {
+			result.Score = tmp["Value"].(float64)
+		}
+		if tmp["Key"] == "value" {
+			sliResult, err := extractSLIResult(tmp["Value"].([]interface{}))
+			if err != nil {
+				return nil, err
+			}
+			result.Value = sliResult
+		}
+		if tmp["Key"] == "status" {
+			result.Status = tmp["Value"].(string)
+		}
+	}
+
+	return result, nil
+}
+
+func extractSLIResult(inMap []interface{}) (*keptnevents.SLIResult, error) {
+	sliResult := &keptnevents.SLIResult{
+		Metric:  "",
+		Value:   0,
+		Success: false,
+		Message: "",
+	}
+
+	for _, value := range inMap {
+		tmp := value.(map[string]interface{})
+		if tmp["Key"] == "metric" {
+			sliResult.Metric = tmp["Value"].(string)
+		}
+		if tmp["Key"] == "value" {
+			sliResult.Value = tmp["Value"].(float64)
+		}
+		if tmp["Key"] == "success" {
+			sliResult.Success = tmp["Value"].(bool)
+		}
+		if tmp["Key"] == "message" {
+			sliResult.Message = tmp["Value"].(string)
+		}
+	}
+
+	return sliResult, nil
 }
 
 func (eh *EvaluateSLIHandler) sendEvaluationDoneEvent(shkeptncontext string, data *keptnevents.EvaluationDoneEventData) error {
