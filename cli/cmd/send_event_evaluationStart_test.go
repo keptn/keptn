@@ -14,7 +14,7 @@ func init() {
 	logging.InitLoggers(os.Stdout, os.Stdout, os.Stderr)
 }
 
-// TestEvaluationStart tests the evaluation.start command.
+// TestEvaluationStart tests the start-evaluation command.
 func TestEvaluationStart(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
@@ -24,7 +24,7 @@ func TestEvaluationStart(t *testing.T) {
 	args := []string{
 		"send",
 		"event",
-		"evaluation.start",
+		"start-evaluation",
 		fmt.Sprintf("--project=%s", "sockshop"),
 		fmt.Sprintf("--stage=%s", "hardening"),
 		fmt.Sprintf("--service=%s", "carts"),
@@ -48,7 +48,7 @@ func TestEvaluationStartWrongFormat(t *testing.T) {
 	args := []string{
 		"send",
 		"event",
-		"evaluation.start",
+		"start-evaluation",
 		fmt.Sprintf("--project=%s", "sockshop"),
 		fmt.Sprintf("--stage=%s", "hardening"),
 		fmt.Sprintf("--service=%s", "carts"),
@@ -72,7 +72,7 @@ func TestEvaluationStartTimeSpecified(t *testing.T) {
 	args := []string{
 		"send",
 		"event",
-		"evaluation.start",
+		"start-evaluation",
 		fmt.Sprintf("--project=%s", "sockshop"),
 		fmt.Sprintf("--stage=%s", "hardening"),
 		fmt.Sprintf("--service=%s", "carts"),
