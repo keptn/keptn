@@ -19,6 +19,9 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"strconv"
+	"strings"
+	"time"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
@@ -32,22 +35,27 @@ import (
 )
 
 type evaluationStartStruct struct {
-	Project *string `json:"project"`
-	Service *string `json:"service"`
+	Project   *string `json:"project"`
+	Stage     *string `json:"stage"`
+	Service   *string `json:"service"`
+	Timeframe *string `json:"timeframe"`
+	Start     *string `json:"start"`
 }
 
 var evaluationStart evaluationStartStruct
 
-// evaluationStartCmd represents the evaluation.start command
+// evaluationStartCmd represents the start-evaluation command
 var evaluationStartCmd = &cobra.Command{
-	Use: "evaluation.start",
-	Short: "Sends an evaluation.start event to Keptn in order to evaluate a test" +
-		"for the specified service in the provided project",
-	Long: `Sends an evaluation.start event to Keptn in order to evaluate a test
-for the specified service in the provided project.
+	Use: "start-evaluation",
+	Short: "Sends an start-evaluation event to Keptn in order to evaluate a test" +
+		"for the specified service in the provided project and stage",
+	Long: `Sends a start-evaluation event to Keptn in order to evaluate a test
+for the specified service in the provided project and stage. The time frame flag defines
+the time frame that is considered in this evaluation. If a specific start point need to be set,
+a start flag is provided that takes a time in the format: 2006-01-02T15:04:05
 	
 Example:
-	keptn send event evaluation.start --project=sockshop --service=carts`,
+	keptn send event start-evaluation --project=sockshop --stage=hardening --service=carts --timeframe=5m --start=2019-10-31T11:59:59`,
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		return nil
@@ -58,12 +66,26 @@ Example:
 			return errors.New(authErrorMsg)
 		}
 
-		logging.PrintLog("Starting to send an evaluation.start event to evaluate the service "+
+		logging.PrintLog("Starting to send a start-evaluation event to evaluate the service "+
 			*evaluationStart.Service+" in project "+*evaluationStart.Project, logging.InfoLevel)
 
-		evaluationStartEvent := keptnevents.EvaluationStartEventData{
+		startPoint := ""
+		if evaluationStart.Start != nil {
+			startPoint = *evaluationStart.Start
+		}
+
+		start, end, err := getStartEndTime(startPoint, *evaluationStart.Timeframe)
+		if start == nil || end == nil || err != nil {
+			logging.PrintLog(fmt.Sprintf("Start and end time of evaluation time frame not set: %s", err.Error()), logging.QuietLevel)
+			return fmt.Errorf("Start and end time of evaluation time frame not set: %s", err.Error())
+		}
+
+		startEvaluationEventData := keptnevents.StartEvaluationEventData{
 			Project: *evaluationStart.Project,
 			Service: *evaluationStart.Service,
+			Stage:   *evaluationStart.Stage,
+			Start:   start.Format("2006-01-02T15:04:05.000Z"),
+			End:     end.Format("2006-01-02T15:04:05.000Z"),
 		}
 
 		keptnContext := uuid.New().String()
@@ -72,11 +94,11 @@ Example:
 		sdkEvent := cloudevents.Event{
 			Context: cloudevents.EventContextV02{
 				ID:          keptnContext,
-				Type:        keptnevents.EvaluationStartEventType,
+				Type:        keptnevents.StartEvaluationEventType,
 				Source:      types.URLRef{URL: *source},
 				ContentType: &contentType,
 			}.AsV02(),
-			Data: evaluationStartEvent,
+			Data: startEvaluationEventData,
 		}
 
 		eventByte, err := sdkEvent.MarshalJSON()
@@ -96,8 +118,8 @@ Example:
 		if !mocking {
 			responseEvent, err := eventHandler.SendEvent(apiEvent)
 			if err != nil {
-				logging.PrintLog("Send evaluation.start was unsuccessful", logging.QuietLevel)
-				return fmt.Errorf("Send evaluation.start was unsuccessful. %s", *err.Message)
+				logging.PrintLog("Send start-evaluation was unsuccessful", logging.QuietLevel)
+				return fmt.Errorf("Send start-evaluation was unsuccessful. %s", *err.Message)
 			}
 
 			if responseEvent == nil {
@@ -109,19 +131,69 @@ Example:
 			return nil
 		}
 
-		fmt.Println("Skipping send evaluation.start due to mocking flag set to true")
+		fmt.Println("Skipping send start-evaluation due to mocking flag set to true")
 		return nil
 	},
+}
+
+func getStartEndTime(startingPoint string, timeframe string) (*time.Time, *time.Time, error) {
+	end := time.Now()
+	start := time.Now()
+	var err error
+
+	errMsg := "The time frame format is invalid. Use the format [duration]m, e.g.: 5m"
+
+	i := strings.Index(timeframe, "m")
+	var minutes int
+
+	if i > -1 {
+		minutesStr := timeframe[:i]
+		minutes, err = strconv.Atoi(minutesStr)
+		if err != nil {
+			return nil, nil, fmt.Errorf(errMsg)
+		}
+	} else {
+		return nil, nil, fmt.Errorf(errMsg)
+	}
+
+	if startingPoint != "" {
+		layout := "2006-01-02T15:04:05"
+		start, err = time.Parse(layout, startingPoint)
+
+		if err != nil {
+			return nil, nil, err
+		}
+
+		minutesOffset := time.Minute * time.Duration(minutes)
+		end = start.Add(minutesOffset)
+
+	} else {
+		minutesOffset := time.Minute * time.Duration(-minutes)
+		start = start.Add(minutesOffset)
+	}
+
+	return &start, &end, nil
 }
 
 func init() {
 	sendEventCmd.AddCommand(evaluationStartCmd)
 
 	evaluationStart.Project = evaluationStartCmd.Flags().StringP("project", "", "",
-		"The project containing the service which will be evaluated")
+		"The project containing the service to be evaluated")
 	evaluationStartCmd.MarkFlagRequired("project")
 
+	evaluationStart.Stage = evaluationStartCmd.Flags().StringP("stage", "", "",
+		"The stage containing the service to be evaluated")
+	evaluationStartCmd.MarkFlagRequired("stage")
+
 	evaluationStart.Service = evaluationStartCmd.Flags().StringP("service", "", "",
-		"The service which will be evaluated")
+		"The service to be evaluated")
 	evaluationStartCmd.MarkFlagRequired("service")
+
+	evaluationStart.Timeframe = evaluationStartCmd.Flags().StringP("timeframe", "", "",
+		"The time frame from which the evaluation data should be gathered")
+	evaluationStartCmd.MarkFlagRequired("timeframe")
+
+	evaluationStart.Start = evaluationStartCmd.Flags().StringP("start", "", "",
+		"The starting point from which to start the evaluation")
 }
