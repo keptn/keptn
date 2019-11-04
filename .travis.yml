@@ -291,8 +291,9 @@ jobs:
         echo "Build keptn cli"
         cd ./cli
         go test ./...
-        TAG="${DATE}-latest"
-        source ../travis-scripts/build_cli.sh "${TAG}"
+        TAG="latest"
+        VERSION="${DATE}-latest"
+        source ../travis-scripts/build_cli.sh "${VERSION}"
         cd ..
       fi
   - if: branch = develop AND type = push
