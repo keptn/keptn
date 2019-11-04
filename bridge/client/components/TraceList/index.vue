@@ -7,7 +7,7 @@
           <p
             v-if="traces[0].type === 'sh.keptn.event.configuration.change'"
           >
-            <b>New artifact:</b> {{traces[0].data.valuesCanary[0].Value}}
+            <b>New artifact:</b> {{traces[0].data.valuesCanary.image}}
           </p>
           <p
             v-if="traces[0].type === 'sh.keptn.event.problem.open'"
@@ -146,10 +146,9 @@
             totalScore: function getTotalScore(evaluationDetails) {
                 let totalScoreItem;
                 if (evaluationDetails !== undefined && evaluationDetails.length > 0) {
-                    totalScoreItem = evaluationDetails.find(item => item.Key === 'totalScore');
-                }
-                if (totalScoreItem !== undefined) {
-                    return totalScoreItem.Value;
+                    if (evaluationDetails.hasOwnProperty('totalScore')) {
+                      return evaluationDetails.totalScore;
+                    }
                 }
                 return 'n/a (no evaluation performed by pitometer service)';
             },
@@ -157,23 +156,20 @@
                 if (canary === undefined) {
                     return 'n/a';
                 }
-                if (canary.length > 0) {
-                    const canaryAction = canary.find(item => item.Key === 'action');
-                    if (canaryAction === undefined) {
-                        return '';
-                    }
-                    if (canaryAction.Value === 'promote') {
-                        return 'Promote to next stage';
-                    }
-                    if (canaryAction.Value === 'set') {
-                        const value = canary.find(item => item.Key === 'value');
-                        if (value !== undefined) {
-                            return `Settting traffic percentage for canary deployment to ${value.Value}`;
-                        }
-                    }
-                    if (canaryAction.Value === 'discard') {
-                        return 'Discarding deployment and reverting back to latest stable version';
-                    }
+                if (canary.hasOwnProperty('action')) {
+                  if (canary.action === 'promote') {
+                    return 'Promote to next stage';
+                  }
+                  if (canary.action === 'set') {
+                      if (canary.value !== undefined) {
+                        return `Settting traffic percentage for canary deployment to ${canary.value}`;
+                      } else {
+                        return `Settting traffic percentage for canary deploymen`;
+                      }
+                  }
+                  if (canary.action === 'discard') {
+                      return 'Discarding deployment and reverting back to latest stable version';
+                  }
                 }
             },
             remediationAction: function getRemediationAction(deploymentChanges) {
@@ -181,17 +177,16 @@
                     return 'n/a';
                 }
                 if (deploymentChanges.length > 0 && deploymentChanges[0].length > 0) {
-                    const attribute = deploymentChanges[0].find(item => item.Key === 'propertyPath');
-                    if (attribute === undefined) {
-                        return 'n/a';
-                    }
+                    if(deploymentChanges[0].hasOwnProperty('propertyPath')){
+                      if (deploymentChanges[0].propertyPath === undefined) {
+                          return 'n/a';
+                      }
+                      if (deploymentChanges[0].value === undefined) {
+                          return 'n/a';
+                      }
 
-                    const value = deploymentChanges[0].find(item => item.Key === 'value');
-                    if (value === undefined) {
-                        return 'n/a';
+                      return `Set property ${deploymentChanges[0].propertyPath} to ${deploymentChanges[0].value}`;
                     }
-
-                    return `Set property ${attribute.Value} to ${value.Value}`;
                 }
                 return 'n/a';
             },
@@ -235,37 +230,44 @@
             getViolations(evaluationDetails) {
                 const violationsResult = [];
                 if (evaluationDetails !== undefined && evaluationDetails.length > 1) {
-                    const indicatorResults = evaluationDetails.find(item => item.Key === 'indicatorResults');
-                    if (indicatorResults === undefined) return violationsResult;
-                    indicatorResults.Value.forEach((result) => {
-                        const score = result.find(resultKey => resultKey.Key === 'score').Value;
-                        if (score > 0) return;
-                        const indicatorId = result.find(resultKey => resultKey.Key === 'id').Value;
-                        const violations = result.find(resultKey => resultKey.Key === 'violations').Value;
+                  if (evaluationDetails.hasOwnProperty('indicatorResults')) {
+                    if (evaluationDetails.indicatorResults === undefined) return violationsResult;
+                    
+                    evaluationDetails.indicatorResults.forEach((result) => {
+                      const score = result.score;
+                      if (score > 0) return;
+                      
+                      const indicatorId = result.id;
+                      const violations = result.violations;
 
-                        if (violations.length < 1) return;
+                      if (violations.length < 1) return;
 
-                        for (let i = 0; i < violations.length; i += 1) {
-                            const violation = violations[i];
-                            console.log(violation);
-                            const newViolation = {};
+                      for (let i = 0; i < violations.length; i += 1) {
+                          const violation = violations[i];
+                          console.log(violation);
+                          const newViolation = {};
 
-                            newViolation.indicatorId = indicatorId;
-                            const upperSevereBreach = violation.find(item => item.Key === 'breach' && item.Value === 'upperSevere');
+                          newViolation.indicatorId = indicatorId;
+
+                          if(violation.hasOwnProperty('breach') && violation.hasOwnProperty('upperSevere')) {
+                            const upperSevereBreach = violation
 
                             if (upperSevereBreach !== undefined) {
-                                const expectedValue = violation.find(item => item.Key === 'threshold').Value;
-                                const actualValue = violation.find(item => item.Key === 'value').Value;
-                                newViolation.type = 'upperSevere';
-                                newViolation.expectedValue = expectedValue;
-                                newViolation.actualValue = actualValue;
+                              const expectedValue = upperSevereBreach.threshold;
+                              const actualValue = upperSevereBreach.value;
+                              newViolation.type = 'upperSevere';
+                              newViolation.expectedValue = expectedValue;
+                              newViolation.actualValue = actualValue;
                             } else {
-                                newViolation.type = 'generic';
-                                newViolation.reason = violation.find(item => item.Key === 'breach').Value;
+                              newViolation.type = 'generic';
+                              newViolation.reason = violation.breach;
                             }
                             violationsResult.push(newViolation);
-                        }
+                          }
+                          
+                      }
                     });
+                  }
                 }
                 return violationsResult;
             },
