@@ -39,6 +39,7 @@ type evaluationStartStruct struct {
 	Stage     *string `json:"stage"`
 	Service   *string `json:"service"`
 	Timeframe *string `json:"timeframe"`
+	Start     *string `json:"start"`
 }
 
 var evaluationStart evaluationStartStruct
@@ -66,8 +67,13 @@ Example:
 		logging.PrintLog("Starting to send an evaluation.start event to evaluate the service "+
 			*evaluationStart.Service+" in project "+*evaluationStart.Project, logging.InfoLevel)
 
-		end, start, err := getStartEndTime(*evaluationStart.Timeframe)
-		if end == nil || start == nil || err != nil {
+		startPoint := ""
+		if evaluationStart.Start != nil {
+			startPoint = *evaluationStart.Start
+		}
+
+		start, end, err := getStartEndTime(startPoint, *evaluationStart.Timeframe)
+		if start == nil || end == nil || err != nil {
 			logging.PrintLog(fmt.Sprintf("Start and end time of evaluation time frame not set: %s", err.Error()), logging.QuietLevel)
 			return fmt.Errorf("Start and end time of evaluation time frame not set: %s", err.Error())
 		}
@@ -76,8 +82,8 @@ Example:
 			Project: *evaluationStart.Project,
 			Service: *evaluationStart.Service,
 			Stage:   *evaluationStart.Stage,
-			Start:   start.Format("2006-01-02T15:04:05-0700"),
-			End:     end.Format("2006-01-02T15:04:05-0700"),
+			Start:   start.Format("2006-01-02T15:04:05.000Z"),
+			End:     end.Format("2006-01-02T15:04:05.000Z"),
 		}
 
 		keptnContext := uuid.New().String()
@@ -128,26 +134,43 @@ Example:
 	},
 }
 
-func getStartEndTime(timeframe string) (*time.Time, *time.Time, error) {
+func getStartEndTime(startingPoint string, timeframe string) (*time.Time, *time.Time, error) {
 	end := time.Now()
 	start := time.Now()
+	var err error
 
 	errMsg := "The time frame format is invalid. Use the format [duration]m, e.g.: 5m"
 
 	i := strings.Index(timeframe, "m")
+	var minutes int
+
 	if i > -1 {
 		minutesStr := timeframe[:i]
-		minutes, err := strconv.Atoi(minutesStr)
+		minutes, err = strconv.Atoi(minutesStr)
 		if err != nil {
 			return nil, nil, fmt.Errorf(errMsg)
 		}
-		minutesOffset := time.Minute * time.Duration(-minutes)
-		start = start.Add(minutesOffset)
-
-		return &end, &start, nil
+	} else {
+		return nil, nil, fmt.Errorf(errMsg)
 	}
 
-	return nil, nil, fmt.Errorf(errMsg)
+	if startingPoint != "" {
+		layout := "2006-01-02T15:04:05"
+		start, err = time.Parse(layout, startingPoint)
+
+		if err != nil {
+			return nil, nil, err
+		}
+
+		minutesOffset := time.Minute * time.Duration(minutes)
+		end = start.Add(minutesOffset)
+
+	} else {
+		minutesOffset := time.Minute * time.Duration(-minutes)
+		start = start.Add(minutesOffset)
+	}
+
+	return &start, &end, nil
 }
 
 func init() {
@@ -167,5 +190,8 @@ func init() {
 
 	evaluationStart.Timeframe = evaluationStartCmd.Flags().StringP("timeframe", "", "",
 		"The time frame from which the evaluation data should be gathered")
-	evaluationStartCmd.MarkFlagRequired("service")
+	evaluationStartCmd.MarkFlagRequired("timeframe")
+
+	evaluationStart.Start = evaluationStartCmd.Flags().StringP("start", "", "",
+		"The starting point from which to start the evaluation")
 }

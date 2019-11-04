@@ -62,3 +62,28 @@ func TestEvaluationStartWrongFormat(t *testing.T) {
 		t.Error("An error occured: expect an error due to wrong time frame format")
 	}
 }
+
+func TestEvaluationStartTimeSpecified(t *testing.T) {
+
+	credentialmanager.MockAuthCreds = true
+	buf := new(bytes.Buffer)
+	rootCmd.SetOutput(buf)
+
+	args := []string{
+		"send",
+		"event",
+		"evaluation.start",
+		fmt.Sprintf("--project=%s", "sockshop"),
+		fmt.Sprintf("--stage=%s", "hardening"),
+		fmt.Sprintf("--service=%s", "carts"),
+		fmt.Sprintf("--timeframe=%s", "5m"),
+		fmt.Sprintf("--start=%s", "2019-07-24T10:17:12"),
+		"--mock",
+	}
+	rootCmd.SetArgs(args)
+	err := rootCmd.Execute()
+
+	if err != nil {
+		t.Errorf("An error occured: %v", err)
+	}
+}
