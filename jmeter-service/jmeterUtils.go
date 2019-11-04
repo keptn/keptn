@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	configutils "github.com/keptn/go-utils/pkg/configuration-service/utils"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 )
 
@@ -38,7 +39,7 @@ func executeJMeter(testInfo *TestInfo, scriptName string, resultsDir string, ser
 	os.RemoveAll(resultsDir)
 	os.MkdirAll(resultsDir, 0644)
 
-	resourceHandler := keptnutils.NewResourceHandler(getConfigurationServiceURL())
+	resourceHandler := configutils.NewResourceHandler(getConfigurationServiceURL())
 	testScriptResource, err := resourceHandler.GetServiceResource(testInfo.Project, testInfo.Stage, testInfo.Service, scriptName)
 
 	// if no test file has been found, we assume that no tests should be executed

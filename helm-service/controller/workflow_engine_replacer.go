@@ -12,8 +12,11 @@ import (
 	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 	"github.com/google/uuid"
+
+	configutils "github.com/keptn/go-utils/pkg/configuration-service/utils"
 	keptnevents "github.com/keptn/go-utils/pkg/events"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
+
 	"github.com/keptn/keptn/helm-service/pkg/serviceutils"
 )
 
@@ -24,7 +27,7 @@ func getFirstStage(project string) (string, error) {
 		return "", err
 	}
 
-	resourceHandler := keptnutils.NewResourceHandler(url.String())
+	resourceHandler := configutils.NewResourceHandler(url.String())
 	handler := keptnutils.NewKeptnHandler(resourceHandler)
 
 	shipyard, err := handler.GetShipyard(project)
@@ -42,7 +45,7 @@ func getTestStrategy(project string, stageName string) (string, error) {
 		return "", err
 	}
 
-	resourceHandler := keptnutils.NewResourceHandler(url.String())
+	resourceHandler := configutils.NewResourceHandler(url.String())
 	handler := keptnutils.NewKeptnHandler(resourceHandler)
 
 	shipyard, err := handler.GetShipyard(project)

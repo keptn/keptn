@@ -9,7 +9,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/gbrlsnchs/jwt"
+	"github.com/gbrlsnchs/jwt/v2"
 	"github.com/gorilla/websocket"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 )

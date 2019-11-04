@@ -15,14 +15,12 @@
 package cmd
 
 import (
-	"bytes"
-	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
-	"net/http"
-	"time"
+
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/utils"
@@ -63,57 +61,30 @@ Example:
 			return err
 		}
 
-		var body interface{}
-		json.Unmarshal([]byte(eventString), &body)
+		apiEvent := apimodels.Event{}
+		err = json.Unmarshal([]byte(eventString), &apiEvent)
+		if err != nil {
+			return fmt.Errorf("Failed to map event to API event model. %s", err.Error())
+		}
 
-		eventURL := endPoint
-		eventURL.Path = "v1/event"
+		eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, "https")
+		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
-		logging.PrintLog(fmt.Sprintf("Connecting to server %s", eventURL.String()), logging.VerboseLevel)
 		if !mocking {
-			data, err := json.Marshal(body)
-			req, err := http.NewRequest("POST", eventURL.String(), bytes.NewReader(data))
-
-			// Add signature header
-			req.Header.Set("x-token", apiToken)
-			req.Header.Set("Content-Type", "application/cloudevents+json")
-
-			tr := &http.Transport{
-				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-			}
-
-			client := &http.Client{Timeout: timeout * time.Second, Transport: tr}
-			resp, err := client.Do(req)
+			eventContext, err := eventHandler.SendEvent(apiEvent)
 			if err != nil {
 				logging.PrintLog("Send event was unsuccessful", logging.QuietLevel)
-				return err
-			}
-			defer resp.Body.Close()
-
-			if resp.StatusCode != http.StatusCreated {
-				logging.PrintLog("Event could not be processed", logging.QuietLevel)
-				return errors.New(resp.Status)
+				return fmt.Errorf("Send event was unsuccessful. %s", *err.Message)
 			}
 
-			body, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				return err
+			// if eventContext is available and stream-websocket flag is true, open WebSocket communication
+			if eventContext != nil && openWebSocketConnection {
+				return websockethelper.PrintWSContentEventContext(eventContext, endPoint)
 			}
-			// check for responseCE to include token
-			if body == nil || len(body) == 0 {
-				logging.PrintLog("Response is empty", logging.InfoLevel)
-				return nil
-			}
-
-			logging.PrintLog("Event sent to keptn", logging.InfoLevel)
-			// open a web socket connection if the open-web-socket flag is set
-			if openWebSocketConnection {
-				return websockethelper.PrintWSContentByteResponse(body, endPoint)
-			}
-
-		} else {
-			fmt.Println("Skipping send-new artifact due to mocking flag set to true")
+			return nil
 		}
+
+		fmt.Println("Skipping send-new artifact due to mocking flag set to true")
 		return nil
 	},
 }

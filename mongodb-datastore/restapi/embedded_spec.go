@@ -57,6 +57,24 @@ func init() {
             "in": "query"
           },
           {
+            "type": "string",
+            "description": "Name of the project",
+            "name": "project",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Name of the stage",
+            "name": "stage",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Name of the service",
+            "name": "service",
+            "in": "query"
+          },
+          {
             "$ref": "#/parameters/pagesizeParam"
           },
           {
@@ -331,6 +349,24 @@ func init() {
             "type": "string",
             "description": "Type of the keptn cloud event",
             "name": "type",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Name of the project",
+            "name": "project",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Name of the stage",
+            "name": "stage",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Name of the service",
+            "name": "service",
             "in": "query"
           },
           {

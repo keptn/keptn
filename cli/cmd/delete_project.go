@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+
 	"github.com/keptn/keptn/cli/utils/websockethelper"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
@@ -15,8 +16,8 @@ import (
 // crprojectCmd represents the project command
 var delProjectCmd = &cobra.Command{
 	Use:   "project PROJECTNAME",
-	Short: "Deletes a project",
-	Long: `Deletes a new project with the provided name. 
+	Short: "Deletes a project identified by project name",
+	Long: `Deletes a project identified by project name. 
 
 Example:
 	keptn delete project sockshop`,
@@ -29,7 +30,7 @@ Example:
 
 		if len(args) != 1 {
 			cmd.SilenceUsage = false
-			return errors.New("Requires PROJECTNAME")
+			return errors.New("required argument PROJECTNAME not set")
 		}
 
 		return nil
@@ -45,28 +46,28 @@ Example:
 		logging.PrintLog("Starting to delete project", logging.InfoLevel)
 
 		project := apimodels.Project{
-			Name: args[0],
+			Name: &args[0],
 		}
 
 		projectHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, "https")
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
-			channelInfo, err := projectHandler.DeleteProject(project)
+			eventContext, err := projectHandler.DeleteProject(project)
 			if err != nil {
 				fmt.Println("Delete project was unsuccessful")
 				return fmt.Errorf("Delete project was unsuccessful. %s", *err.Message)
 			}
 
-			// if ChannelInfo is available, open WebSocket communication
-			if channelInfo != nil {
-				return websockethelper.PrintWSContentChannelInfo(channelInfo, endPoint)
+			// if eventContext is available, open WebSocket communication
+			if eventContext != nil {
+				return websockethelper.PrintWSContentEventContext(eventContext, endPoint)
 			}
 
 			return nil
-		} else {
-			fmt.Println("Skipping delete project due to mocking flag set to true")
 		}
+
+		fmt.Println("Skipping delete project due to mocking flag set to true")
 		return nil
 	},
 }

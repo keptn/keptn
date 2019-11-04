@@ -20,7 +20,7 @@ import (
 
 type serviceCreateEventData struct {
 	keptnevents.ServiceCreateEventData `json:",inline"`
-	ChannelInfo                        models.ChannelInfo `json:"channelInfo"`
+	EventContext                       models.EventContext `json:"eventContext"`
 }
 
 // PostServiceHandlerFunc creates a new service
@@ -36,7 +36,7 @@ func PostServiceHandlerFunc(params service.PostProjectProjectNameServiceParams, 
 		return getServiceInternalError(err)
 	}
 
-	channelInfo := models.ChannelInfo{ChannelID: &keptnContext, Token: &token}
+	eventContext := models.EventContext{KeptnContext: &keptnContext, Token: &token}
 
 	source, _ := url.Parse("https://github.com/keptn/keptn/api")
 
@@ -48,11 +48,11 @@ func PostServiceHandlerFunc(params service.PostProjectProjectNameServiceParams, 
 
 	serviceData := keptnevents.ServiceCreateEventData{
 		Project:              params.ProjectName,
-		Service:              params.Service.ServiceName,
+		Service:              *params.Service.ServiceName,
 		HelmChart:            params.Service.HelmChart,
 		DeploymentStrategies: deploymentStrategies,
 	}
-	forwardData := serviceCreateEventData{ServiceCreateEventData: serviceData, ChannelInfo: channelInfo}
+	forwardData := serviceCreateEventData{ServiceCreateEventData: serviceData, EventContext: eventContext}
 
 	contentType := "application/json"
 	event := cloudevents.Event{
@@ -73,7 +73,7 @@ func PostServiceHandlerFunc(params service.PostProjectProjectNameServiceParams, 
 		return getServiceInternalError(err)
 	}
 
-	return service.NewPostProjectProjectNameServiceOK().WithPayload(&channelInfo)
+	return service.NewPostProjectProjectNameServiceOK().WithPayload(&eventContext)
 }
 
 func mapDeploymentStrategies(deploymentStrategies map[string]string) (map[string]keptnevents.DeploymentStrategy, error) {

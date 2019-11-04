@@ -14,9 +14,9 @@ import (
 	"github.com/keptn/keptn/helm-service/controller/mesh"
 	"github.com/keptn/keptn/helm-service/pkg/helmtest"
 
+	configmodels "github.com/keptn/go-utils/pkg/configuration-service/models"
+	configutils "github.com/keptn/go-utils/pkg/configuration-service/utils"
 	keptnevents "github.com/keptn/go-utils/pkg/events"
-	"github.com/keptn/go-utils/pkg/models"
-	keptnmodels "github.com/keptn/go-utils/pkg/models"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/stretchr/testify/assert"
 )
@@ -36,22 +36,22 @@ stages:
 
 func createTestProjet(t *testing.T) {
 
-	prjHandler := keptnutils.NewProjectHandler(configBaseURL)
-	prj := keptnmodels.Project{ProjectName: projectName}
+	prjHandler := configutils.NewProjectHandler(configBaseURL)
+	prj := configmodels.Project{ProjectName: projectName}
 	respErr, err := prjHandler.CreateProject(prj)
 	check(err, t)
 	assert.Nil(t, respErr, "Creating a project failed")
 
 	// Send shipyard
-	rHandler := keptnutils.NewResourceHandler(configBaseURL)
+	rHandler := configutils.NewResourceHandler(configBaseURL)
 	shipyardURI := "shipyard.yaml"
-	shipyardResource := models.Resource{ResourceURI: &shipyardURI, ResourceContent: shipyard}
-	resources := []*models.Resource{&shipyardResource}
+	shipyardResource := configmodels.Resource{ResourceURI: &shipyardURI, ResourceContent: shipyard}
+	resources := []*configmodels.Resource{&shipyardResource}
 	_, err = rHandler.CreateProjectResources(projectName, resources)
 	check(err, t)
 
 	// Create stages
-	stageHandler := keptnutils.NewStageHandler(configBaseURL)
+	stageHandler := configutils.NewStageHandler(configBaseURL)
 	for _, stage := range []string{stage1, stage2, stage3} {
 
 		respErr, err := stageHandler.CreateStage(projectName, stage)

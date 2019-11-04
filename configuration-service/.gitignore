@@ -11,3 +11,6 @@ skaffold.yaml
 
 # Idea
 .idea
+
+#binary - go build
+configuration-service

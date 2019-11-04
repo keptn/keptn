@@ -1,14 +1,14 @@
 ---
 definitions:
-  channelInfo:
+  eventContext:
     type: object
     required:
       - token
-      - channelID
+      - keptnContext
     properties:
       token:
         type: string
-      channelID:
+      keptnContext:
         type: string
   error:
     type: object
@@ -22,3 +22,10 @@ definitions:
         type: string
       fields:
         type: string
+  keptnContextExtendedCE:
+    allOf:
+      - $ref: https://raw.githubusercontent.com/cloudevents/spec/v0.2/spec.json#/definitions/event
+      - type: object
+        properties:
+          shkeptncontext:
+            type: string

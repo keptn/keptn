@@ -34,7 +34,6 @@ paths:
     post:
       tags:
         - Event
-      operationId: sendEvent
       summary: Forwards the received event
       parameters:
         - name: body
@@ -45,7 +44,35 @@ paths:
         200:
           description: Forwarded
           schema:
-            $ref: "response_model.yaml#/definitions/channelInfo"
+            $ref: "response_model.yaml#/definitions/eventContext"
+        default:
+          description: Error
+          schema:
+            $ref: "response_model.yaml#/definitions/error"
+    get:
+      tags:
+        - Event
+      summary: Get the latest event matching the parameters
+      parameters:
+        - name: keptnContext
+          in: query
+          type: string
+          required: false
+          description: KeptnContext of the events to get
+        - name: type
+          in: query
+          type: string
+          required: false
+          description: Type of the Keptn cloud event
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: "response_model.yaml#/definitions/keptnContextExtendedCE"
+        404:
+          description: Failed. Event could not be found.
+          schema:
+            $ref: "response_model.yaml#/definitions/error"
         default:
           description: Error
           schema:
@@ -62,7 +89,7 @@ paths:
         200:
           description: Creating of project triggered
           schema:
-            $ref: "response_model.yaml#/definitions/channelInfo"
+            $ref: "response_model.yaml#/definitions/eventContext"
         400:
           description: Failed. Project could not be created
           schema:
@@ -83,7 +110,7 @@ paths:
         200:
           description: Deleting of project triggered
           schema:
-            $ref: "response_model.yaml#/definitions/channelInfo"
+            $ref: "response_model.yaml#/definitions/eventContext"
         400:
           description: Failed. Project could not be deleted
           schema:
@@ -106,7 +133,7 @@ paths:
         200:
           description: Creating of service triggered
           schema:
-            $ref: "response_model.yaml#/definitions/channelInfo"
+            $ref: "response_model.yaml#/definitions/eventContext"
         400:
           description: Failed. Project could not be created
           schema:

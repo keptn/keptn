@@ -8,7 +8,7 @@ cache:
 env:
   global:
     - GOOGLE_APPLICATION_CREDENTIALS=~/gcloud-service-key.json
-    - DEP_VERSION="0.5.3"
+    - GO111MODULE=on
 
 before_install:   
 # Pull Requests to the master branch are only allowed if they come from the develop branch of our repo
@@ -38,10 +38,6 @@ before_install:
 - echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
 - gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
 
-# Download dep binary to bin folder in $GOPATH and change mode
-- mkdir -p $GOPATH/bin/
-- curl -L -s https://github.com/golang/dep/releases/download/v${DEP_VERSION}/dep-${OS_TYPE}-amd64 -o $GOPATH/bin/dep
-- chmod +x $GOPATH/bin/dep
 
 # Build variables
 - export TZ=Europe/Vienna
@@ -50,12 +46,15 @@ before_install:
 - GIT_SHA="$(git rev-parse --short HEAD)"
 - REGISTRY_USER=jbraeuer
 
-# ensure COMMIT_RANGE works for non-pull-requests too (TRAVIS_COMMIT_RANGE and force pushes are evil)
-- if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then COMMIT_RANGE=$TRAVIS_COMMIT_RANGE; else COMMIT_RANGE="origin/develop...$TRAVIS_BRANCH"; fi;
-# store all changed files from the commit (we are not using TRAVIS_COMMIT_RANGE, as this fails for force pushes)
-- git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
-- git fetch origin develop
-- git diff --name-only $COMMIT_RANGE > files.txt
+# store all changed files from this commit in files.txt (careful - travis commit range might fail)
+- git diff --name-only $TRAVIS_COMMIT_RANGE > files.txt || echo ""
+# for non pull requests, use another type of commit range in addition
+- |
+  if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
+    git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
+    git fetch origin develop
+    git diff --name-only origin/develop...$TRAVIS_BRANCH >> files.txt
+  fi
 - cat files.txt
 - CHANGED_FILES=$(tr '\n' , < files.txt)
 
@@ -97,12 +96,74 @@ before_install:
 
 jobs:
   include:
+  # nightly image builds - build all images
+  - stage: nightly
+    if: branch = develop and type = cron
+    os: linux
+    services:
+      - docker
+    script:
+    - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
+    - ./writeManifest.sh
+    - cat MANIFEST
+    - source ./travis-scripts/build_develop.sh "${API_IMAGE}" "${API_FOLDER}" "${GIT_SHA}" "${DATE}"
+    - cd ..
+    - source ./travis-scripts/build_develop.sh "${OS_ROUTE_SVC_IMAGE}" "${OS_ROUTE_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
+    - cd ../..
+    - source ./travis-scripts/build_develop.sh "${PITOMETER_SVC_IMAGE}" "${PITOMETER_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
+    - cd ..
+    - source ./travis-scripts/build_develop.sh "${BRIDGE_IMAGE}" "${BRIDGE_FOLDER}" "${GIT_SHA}" "${DATE}"
+    - cd ..
+    - source ./travis-scripts/build_develop.sh "${JMETER_SVC_IMAGE}" "${JMETER_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
+    - cd ..
+    - source ./travis-scripts/build_develop.sh "${HELM_SVC_IMAGE}" "${HELM_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
+    - cd ..
+    - source ./travis-scripts/build_develop.sh "${GATEKEEPER_SVC_IMAGE}" "${GATEKEEPER_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
+    - cd ..
+    - source ./travis-scripts/build_develop.sh "${DISTRIBUTOR_IMAGE}" "${DISTRIBUTOR_FOLDER}" "${GIT_SHA}" "${DATE}"
+    - cd ..
+    - source ./travis-scripts/build_develop.sh "${EVENTBROKER_IMAGE}" "${EVENTBROKER_FOLDER}" "${GIT_SHA}" "${DATE}"
+    - cd ..
+    - source ./travis-scripts/build_develop.sh "${SHIPYARD_SVC_IMAGE}" "${SHIPYARD_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
+    - cd ..
+    - source ./travis-scripts/build_develop.sh "${CONFIGURATION_SVC_IMAGE}" "${CONFIGURATION_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
+    - cd ..
+    - source ./travis-scripts/build_develop.sh "${REMEDIATION_SVC_IMAGE}" "${REMEDIATION_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
+    - cd ..
+    - source ./travis-scripts/build_develop.sh "${WAIT_SVC_IMAGE}" "${WAIT_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
+    - cd ..
+    - source ./travis-scripts/build_develop.sh "${MONGODB_DS_IMAGE}" "${MONGODB_DS_FOLDER}" "${GIT_SHA}" "${DATE}"
+    - cd ..
+    - source ./travis-scripts/build_develop.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${GIT_SHA}" "${DATE}"
+    - cd ..
+      ### ATTENTION: please make sure installer is always the last in this list to be built
+
 
   - stage: cron
     if: branch = develop AND type = cron
-    os: osx
+    os: linux
+    before_script:
+    # auth gcloud
+    - echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
+    - gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
+    # create gke cluster on gcloud
+    - test/utils/gke_create_cluster.sh
     script:
-    - source travis-scripts/cronjob_main.sh
+    # test installation on gcloud
+    - test/test_install_gke.sh || travis_terminate 1
+    # test onboarding and new artifcat for sockshop
+    - export PROJECT=sockshop
+    - test/test_onboard_service.sh || travis_terminate 1
+    - test/test_new_artifact.sh || travis_terminate 1
+    after_success:
+    # delete google kubernetes cluster only on success (in case of an error we want to be able to dig into the cluster)
+    - echo "Tests were successful, cleaning up the cluster now..."
+    - test/utils/gke_delete_cluster.sh
+    after_failure:
+    # print some debug info
+    - echo "Keptn Installation Log:"
+    - cat ~/.keptn/keptn-installer.log
+    - cat ~/.keptn/keptn-installer-err.log
 
   # all commits (including external pull requests) should run basic tests for the CLI (if anything has changed)
   - stage: CLI tests
@@ -112,7 +173,6 @@ jobs:
       if [[ $CHANGED_FILES == *"${CLI_FOLDER}"*  ]]; then
         echo "Testing keptn CLI on osx"
         cd ./cli
-        dep ensure
         go test ./...
       fi
 
@@ -126,7 +186,6 @@ jobs:
       if [[ $CHANGED_FILES == *"${CLI_FOLDER}"*  ]]; then
         echo "Build keptn cli"
         cd ./cli
-        dep ensure
         go test ./...
         TAG="${TYPE}-${NUMBER}-${DATE}"
         source ../travis-scripts/build_cli.sh "${TAG}"
@@ -231,7 +290,6 @@ jobs:
       if [[ $CHANGED_FILES == *"${CLI_FOLDER}"*  ]]; then
         echo "Build keptn cli"
         cd ./cli
-        dep ensure
         go test ./...
         TAG="${DATE}-latest"
         source ../travis-scripts/build_cli.sh "${TAG}"
@@ -332,7 +390,6 @@ jobs:
     script:
     - echo "Build keptn cli"
     - cd ./cli
-    - dep ensure
     - go test ./...
     - TAG="${VERSION}-${DATE}"
     - source ../travis-scripts/build_cli.sh "${TAG}"
@@ -384,7 +441,6 @@ jobs:
     script:
     - echo "Build keptn cli"
     - cd ./cli
-    - dep ensure
     - go test ./...
     - TAG="${VERSION}"
     - source ../travis-scripts/build_cli.sh "${TAG}"

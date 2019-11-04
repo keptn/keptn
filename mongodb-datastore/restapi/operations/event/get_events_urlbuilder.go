@@ -18,6 +18,9 @@ type GetEventsURL struct {
 	KeptnContext *string
 	NextPageKey  *string
 	PageSize     *int64
+	Project      *string
+	Service      *string
+	Stage        *string
 	Type         *string
 
 	_basePath string
@@ -76,6 +79,30 @@ func (o *GetEventsURL) Build() (*url.URL, error) {
 	}
 	if pageSize != "" {
 		qs.Set("pageSize", pageSize)
+	}
+
+	var project string
+	if o.Project != nil {
+		project = *o.Project
+	}
+	if project != "" {
+		qs.Set("project", project)
+	}
+
+	var service string
+	if o.Service != nil {
+		service = *o.Service
+	}
+	if service != "" {
+		qs.Set("service", service)
+	}
+
+	var stage string
+	if o.Stage != nil {
+		stage = *o.Stage
+	}
+	if stage != "" {
+		qs.Set("stage", stage)
 	}
 
 	var typeVar string

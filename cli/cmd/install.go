@@ -34,9 +34,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var configFilePath *string
-var installerVersion *string
-var platformIdentifier *string
+type installCmdParams struct {
+	ConfigFilePath     *string
+	InstallerVersion   *string
+	PlatformIdentifier *string
+	GatewayType        *string
+}
+
+var installParams *installCmdParams
 
 const gke = "gke"
 const aks = "aks"
@@ -62,8 +67,8 @@ var p platform
 // installCmd represents the version command
 var installCmd = &cobra.Command{
 	Use:   "install",
-	Short: "Installs Keptn on your Kubernetes cluster",
-	Long: `Installs Keptn on your Kubernetes cluster
+	Short: "Installs Keptn on a Kubernetes cluster",
+	Long: `Installs Keptn on a Kubernetes cluster
 
 Example:
 	keptn install`,
@@ -79,6 +84,10 @@ Example:
 			return err
 		}
 
+		if !checkIfGatewayTypeIsSupported() {
+			return errors.New(`Keptn currently supports 'LoadBalancer' and 'NodePort'`)
+		}
+
 		isInstallerAvailable, err := checkInstallerAvailability()
 		if err != nil || !isInstallerAvailable {
 			return errors.New("Installers not found under:\n" +
@@ -92,13 +101,13 @@ Example:
 		// Check whether kubectl is installed
 		isKubAvailable, err := utils.IsKubectlAvailable()
 		if err != nil || !isKubAvailable {
-			return errors.New(`keptn requires 'kubectl' but it is not available.
+			return errors.New(`Keptn requires 'kubectl' but it is not available.
 Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 		}
 
-		if configFilePath != nil && *configFilePath != "" {
+		if installParams.ConfigFilePath != nil && *installParams.ConfigFilePath != "" {
 			// Config was provided in form of a file
-			err = parseConfig(*configFilePath)
+			err = parseConfig(*installParams.ConfigFilePath)
 			if err != nil {
 				return err
 			}
@@ -115,11 +124,11 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 
-		logging.PrintLog("Installing keptn...", logging.InfoLevel)
+		logging.PrintLog("Installing Keptn ...", logging.InfoLevel)
 
 		var err error
 		if !mocking {
-			if configFilePath == nil || *configFilePath == "" {
+			if installParams.ConfigFilePath == nil || *installParams.ConfigFilePath == "" {
 				err = readCreds()
 				if err != nil {
 					return err
@@ -127,16 +136,20 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 			}
 			return doInstallation()
 		}
-		fmt.Println("Skipping intallation due to mocking flag")
+		fmt.Println("Skipping installation due to mocking flag")
 		return nil
 	},
 }
 
+func checkIfGatewayTypeIsSupported() bool {
+	return *installParams.GatewayType == "NodePort" || *installParams.GatewayType == "LoadBalancer"
+}
+
 func setPlatform() error {
 
-	*platformIdentifier = strings.ToLower(*platformIdentifier)
+	*installParams.PlatformIdentifier = strings.ToLower(*installParams.PlatformIdentifier)
 
-	switch *platformIdentifier {
+	switch *installParams.PlatformIdentifier {
 	case gke:
 		p = newGKEPlatform()
 		return nil
@@ -156,18 +169,27 @@ func setPlatform() error {
 		p = newKubernetesPlatform()
 		return nil
 	default:
-		return errors.New("Unsupported platform '" + *platformIdentifier + "'. The following platforms are supported: aks, eks, gke, pks, openshift, and kubernetes")
+		return errors.New("Unsupported platform '" + *installParams.PlatformIdentifier +
+			"'. The following platforms are supported: aks, eks, gke, pks, openshift, and kubernetes")
 	}
 }
 
 func init() {
 	rootCmd.AddCommand(installCmd)
-	configFilePath = installCmd.Flags().StringP("creds", "c", "", "The name of the creds file")
+	installParams = &installCmdParams{}
+	installParams.ConfigFilePath = installCmd.Flags().StringP("creds", "c", "",
+		"The name of the creds file")
 	installCmd.Flags().MarkHidden("creds")
-	installerVersion = installCmd.Flags().StringP("keptn-version", "k", "master", "The branch or tag of the version which is installed")
+	installParams.InstallerVersion = installCmd.Flags().StringP("keptn-version", "k",
+		"master", "The branch or tag of the version which is installed")
 	installCmd.Flags().MarkHidden("keptn-version")
-	platformIdentifier = installCmd.Flags().StringP("platform", "p", "gke", "The platform to run keptn on [aks,eks,gke,pks,openshift,kubernetes]")
-	installCmd.PersistentFlags().BoolVarP(&insecureSkipTLSVerify, "insecure-skip-tls-verify", "s", false, "Skip tls verification for kubectl commands")
+	installParams.PlatformIdentifier = installCmd.Flags().StringP("platform", "p", "gke",
+		"The platform to run keptn on [aks,eks,gke,pks,openshift,kubernetes]")
+	installParams.GatewayType = installCmd.Flags().StringP("gateway", "g", "LoadBalancer",
+		"The ingress-loadbalancer type [LoadBalancer,NodePort]")
+	installCmd.Flags().MarkHidden("gateway")
+	installCmd.PersistentFlags().BoolVarP(&insecureSkipTLSVerify, "insecure-skip-tls-verify", "s",
+		false, "Skip tls verification for kubectl commands")
 }
 
 func checkInstallerAvailability() (bool, error) {
@@ -191,11 +213,11 @@ func checkInstallerAvailability() (bool, error) {
 }
 
 func getInstallerURL() string {
-	return installerPrefixURL + *installerVersion + installerSuffixPath
+	return installerPrefixURL + *installParams.InstallerVersion + installerSuffixPath
 }
 
 func getRbacURL() string {
-	return installerPrefixURL + *installerVersion + rbacSuffixPath
+	return installerPrefixURL + *installParams.InstallerVersion + rbacSuffixPath
 }
 
 // Preconditions: 1. Already authenticated against the cluster;
@@ -213,7 +235,13 @@ func doInstallation() error {
 	}
 
 	if err := utils.Replace(installerPath,
-		utils.PlaceholderReplacement{PlaceholderValue: "PLATFORM_PLACEHOLDER", DesiredValue: *platformIdentifier}); err != nil {
+		utils.PlaceholderReplacement{PlaceholderValue: "PLATFORM_PLACEHOLDER",
+			DesiredValue: *installParams.PlatformIdentifier}); err != nil {
+		return err
+	}
+	if err := utils.Replace(installerPath,
+		utils.PlaceholderReplacement{PlaceholderValue: "GATEWAY_TYPE_PLACEHOLDER",
+			DesiredValue: *installParams.GatewayType}); err != nil {
 		return err
 	}
 
@@ -232,7 +260,7 @@ func doInstallation() error {
 		}
 	}
 
-	logging.PrintLog("Deploying keptn installer pod...", logging.InfoLevel)
+	logging.PrintLog("Deploying Keptn installer pod ...", logging.InfoLevel)
 
 	o := options{"apply", "-f", installerPath}
 	o.appendIfNotEmpty(kubectlOptions)

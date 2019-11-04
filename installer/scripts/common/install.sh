@@ -15,7 +15,7 @@ kubectl apply -f ../manifests/keptn/namespace.yaml
 verify_kubectl $? "Creating Keptn namespace failed."
 
 # Install Istio service mesh
-print_info "Installing Istio"
+print_info "Installing Istio (this might take a while)"
 ./common/setupIstio.sh
 verify_install_step $? "Installing Istio failed."
 print_info "Installing Istio done"
