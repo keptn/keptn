@@ -3,9 +3,10 @@ ARG version=develop
 
 ENV KEPTN_INSTALL_ENV "cluster"
 
+# install basic tools
 RUN apt-get update \
-  && apt-get install -y curl \
-  && apt-get install -y wget
+  && apt-get install -y curl wget jq git \
+  && rm -rf /var/lib/apt/lists/*
 
 ## Install go
 # RUN mkdir -p /goroot && \
@@ -17,31 +18,29 @@ RUN apt-get update \
 # ENV PATH $GOROOT/bin:$GOPATH/bin:$PATH
 
 # Install tools:
-RUN apt-get install -y jq
-RUN jq --version
-
-RUN apt-get install -y git
-RUN git --version
 
 ARG YQ_VERSION=2.3.0
 RUN wget https://github.com/mikefarah/yq/releases/download/$YQ_VERSION/yq_linux_amd64 && \
   chmod +x yq_linux_amd64 && \
-  cp yq_linux_amd64 /bin/yq
+  mv yq_linux_amd64 /bin/yq
 RUN yq --version
 
 ARG HELM_VERSION=2.12.3
 RUN wget https://storage.googleapis.com/kubernetes-helm/helm-v$HELM_VERSION-linux-amd64.tar.gz && \
   tar -zxvf helm-v$HELM_VERSION-linux-amd64.tar.gz && \
-  cp linux-amd64/helm /bin/helm
+  mv linux-amd64/helm /bin/helm && \
+  rm -rf linux-amd64
 
 ARG KUBE_VERSION=1.14.1
 RUN wget -q https://storage.googleapis.com/kubernetes-release/release/v$KUBE_VERSION/bin/linux/amd64/kubectl -O /bin/kubectl && \
   chmod +x /bin/kubectl
 
 ARG OC_VERSION=3.11.0
-RUN wget https://github.com/openshift/origin/releases/download/v3.11.0/openshift-origin-client-tools-v$OC_VERSION-0cbc58b-linux-64bit.tar.gz -o oc.tar.gz && \ 
-  tar xzvf openshift*tar.gz && \
-  cp openshift-origin-client-tools-*/oc /bin/oc
+RUN wget https://github.com/openshift/origin/releases/download/v3.11.0/openshift-origin-client-tools-v$OC_VERSION-0cbc58b-linux-64bit.tar.gz -O oc.tar.gz && \ 
+  tar xzvf oc.tar.gz && \
+  mv openshift-origin-client-tools-*/oc /bin/oc && \
+  rm -rf openshift-origin-client-tools-* && \
+  rm oc.tar.gz
 
 # Copy core and install
 WORKDIR /usr/keptn
