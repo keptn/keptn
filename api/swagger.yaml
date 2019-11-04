@@ -2,7 +2,7 @@
 swagger: "2.0"
 info:
   title: keptn api
-  version: 0.1.0
+  version: develop
 schemes:
   - http
 basePath: /v1

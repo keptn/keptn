@@ -1,6 +1,7 @@
 # Use the offical Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
 FROM golang:1.12 as builder
+ARG version=develop
 
 WORKDIR /go/src/github.com/keptn/keptn/api
 
@@ -12,10 +13,14 @@ ENV GO111MODULE=on
 COPY go.mod go.sum ./
 
 # Download dependencies
-RUN go mod download 
+RUN go mod download
 
 # Copy local code to the container image.
 COPY . .
+
+ENV REPLACE="version: ${version}"
+RUN sed -i "s/version: develop/${REPLACE}/g" /go/src/github.com/keptn/keptn/api/swagger.yaml
+
 
 # Build the command inside the container. 
 # (You may fetch or manage dependencies here, 

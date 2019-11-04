@@ -1,4 +1,5 @@
 FROM ubuntu:18.04
+ARG version=develop
 
 ENV KEPTN_INSTALL_ENV "cluster"
 

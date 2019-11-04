@@ -2,6 +2,8 @@ FROM node:10-alpine
 ENV DATASTORE "http://mongodb-datastore.keptn-datastore.svc.cluster.local:8080/"
 EXPOSE 8080
 
+ARG version=develop
+
 RUN npm install -g http-server
 RUN addgroup mygroup && adduser -D -G mygroup myuser && mkdir -p /usr/src/app && chown -R myuser /usr/src/app
 
