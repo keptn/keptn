@@ -18,3 +18,9 @@ NOTES.md
 
 # swagger docs (temp files)
 swagger-ui/swagger.json 
+
+# Debug files
+Dockerfile_dev
+MANIFEST
+skaffold.yaml
+deploy/mongodb-datastore_debug.yaml
