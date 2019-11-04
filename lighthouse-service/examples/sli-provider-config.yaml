@@ -1,0 +1,7 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: lighthouse-config-sockshop
+  namespace: keptn
+data:
+  sli-provider: "prometheus"
