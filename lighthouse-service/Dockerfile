@@ -44,7 +44,6 @@ RUN if [ ! -z "$debugBuild" ]; then apk add --no-cache libc6-compat; fi
 
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /go/src/github.com/keptn/keptn/lighthouse-service/lighthouse-service /lighthouse-service
-ADD MANIFEST /
 
 EXPOSE 8080
 

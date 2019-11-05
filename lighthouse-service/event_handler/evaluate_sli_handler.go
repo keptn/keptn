@@ -84,7 +84,7 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 
 	// send the evaluation-done-event
 	var shkeptncontext string
-	eh.Event.Context.ExtensionAs("shkeptncontext", shkeptncontext)
+	eh.Event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
 	err = eh.sendEvaluationDoneEvent(shkeptncontext, evaluationResult)
 	return err
 }
