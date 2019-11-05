@@ -243,7 +243,6 @@ func (u *UmbrellaChartHandler) IsUmbrellaChartAvailableInAllStages(project strin
 	if err != nil {
 		return false, err
 	}
-
 	// an umbrella chart is defined by the 3 resources: Chart.yaml, requirements.yaml and values.yaml
 	resourcePrefixes := map[string]bool{
 		"/" + umbrellaChartURI: true,
@@ -251,13 +250,13 @@ func (u *UmbrellaChartHandler) IsUmbrellaChartAvailableInAllStages(project strin
 		"/" + valuesURI:        true,
 	}
 
+	rHandler := configutils.NewResourceHandler(url.String())
+
 	for _, stage := range stages {
-		rHandler := configutils.NewResourceHandler(url.String())
 		resources, err := rHandler.GetAllStageResources(project, stage.StageName)
 		if err != nil {
 			return false, err
 		}
-
 		countChartFiles := 0
 		for _, resource := range resources {
 			_, contained := resourcePrefixes[*resource.ResourceURI]
