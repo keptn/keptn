@@ -24,6 +24,7 @@ class DatastoreService {
       case 'sh.keptn.events.deployment-finished': mappedEvent.eventTypeHeadline = 'Deployment finished'; break;
       case 'sh.keptn.events.evaluation-done': mappedEvent.eventTypeHeadline = 'Evaluation done'; break;
       case 'sh.keptn.events.tests-finished': mappedEvent.eventTypeHeadline = 'Tests finished'; break;
+      case 'sh.keptn.event.start-evaluation': mappedEvent.eventTypeHeadline = 'Start Evaluation'; break;
       default: mappedEvent.eventTypeHeadline = event.type; break;
     }
 
@@ -37,7 +38,9 @@ class DatastoreService {
   async getRoots() {
     const deploymentRoots = await this.getDeploymentRoots();
     const problemRoots = await this.getProblemRoots();
-    const combinedRoots = deploymentRoots.concat(problemRoots);
+    const evaluationRoots = await this.getEvaluationRoots();
+    let combinedRoots = deploymentRoots.concat(problemRoots);
+    combinedRoots = combinedRoots.concat(evaluationRoots);
     combinedRoots.sort((a, b) => (a.timestamp < b.timestamp ? 1 : -1));
     return combinedRoots;
   }
@@ -58,6 +61,16 @@ class DatastoreService {
     const { data } = result;
     if (data.events) {
       return data.events.map(event => DatastoreService.mapEvent(event)).filter(e => e.source.includes('remediation-service'));
+    }
+    return [];
+  }
+
+  async getEvaluationRoots() {
+    const url = `${this.api}/event?type=sh.keptn.event.start-evaluation&pageSize=100`;
+    const result = await axios.get(url);
+    const { data } = result;
+    if (data.events) {
+      return data.events.map(event => DatastoreService.mapEvent(event));
     }
     return [];
   }
