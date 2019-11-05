@@ -41,6 +41,8 @@ func Paginate(totalCount int, pageSize *int64, nextPageKeyString *string) *Pagin
 	result.NextPageKey = nextPageKey
 	if newNextPageKey < int64(totalCount) {
 		nextPageKey = newNextPageKey
+	} else {
+		nextPageKey = 0
 	}
 
 	result.NewNextPageKey = strconv.FormatInt(nextPageKey, 10)
@@ -90,6 +92,5 @@ func GetPaginatedResources(dir string, pageSize *int64, nextPageKey *string) *mo
 
 	result.TotalCount = float64(totalCount)
 	result.NextPageKey = paginationInfo.NewNextPageKey
-
 	return result
 }
