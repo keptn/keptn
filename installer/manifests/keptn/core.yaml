@@ -215,7 +215,7 @@ spec:
     spec:
       containers:
       - name: helm-service
-        image: keptn/helm-service:0.5.0
+        image: keptn/helm-service:0.5.1
         ports:
         - containerPort: 8080
         resources:
