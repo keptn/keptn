@@ -104,6 +104,7 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event, loggingDone chan bool) error
 	}
 	for _, stage := range stages {
 		if err := o.onboardService(stage.StageName, event, url.String()); err != nil {
+			o.logger.Error(err.Error())
 			return err
 		}
 		if o.isBlueGreenStage(event.Project, stage.StageName) && event.HelmChart != "" {
