@@ -21,7 +21,7 @@ func GetProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resourc
 	if !common.StageExists(params.ProjectName, params.StageName) {
 		return stage_resource.NewGetProjectProjectNameStageStageNameResourceNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Stage does not exist")})
 	}
-
+	logger.Debug("Checking out " + params.StageName + " branch")
 	err := common.CheckoutBranch(params.ProjectName, params.StageName)
 	if err != nil {
 		logger.Error(err.Error())
