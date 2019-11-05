@@ -5,9 +5,17 @@ FROM golang:1.12 as builder
 
 # Copy local code to the container image.
 WORKDIR /go/src/github.com/keptn/keptn/lighthouse-service
+
+# Force the go compiler to use modules
+ENV GO111MODULE=on
+
+# Copy `go.mod` for definitions and `go.sum` to invalidate the next layer
+# in case of a change in the dependencies
+COPY go.mod go.sum ./
+RUN go mod download
+
 COPY . .
 
-RUN go mod download
 RUN go test ./...
 
 # Build the command inside the container.
