@@ -27,7 +27,7 @@ before_install:
   if [ ! -d "$HOME/google-cloud-sdk/bin" ]; then 
     rm -rf $HOME/google-cloud-sdk;
     export CLOUDSDK_CORE_DISABLE_PROMPTS=1;
-    curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-247.0.0-${OS_TYPE}-x86_64.tar.gz > gcloud.tar.gz 
+    curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-270.0.0-${OS_TYPE}-x86_64.tar.gz > gcloud.tar.gz
     gunzip -c gcloud.tar.gz | tar xopf - 
     ./google-cloud-sdk/install.sh
     source ./google-cloud-sdk/completion.bash.inc
@@ -132,11 +132,16 @@ jobs:
     - cd ..
     - source ./travis-scripts/build_develop.sh "${WAIT_SVC_IMAGE}" "${WAIT_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
     - cd ..
+    - source ./travis-scripts/build_develop.sh "${LIGHTHOUSE_SVC_IMAGE}" "${LIGHTHOUSE_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
+    - cd ..
     - source ./travis-scripts/build_develop.sh "${MONGODB_DS_IMAGE}" "${MONGODB_DS_FOLDER}" "${GIT_SHA}" "${DATE}"
     - cd ..
     - source ./travis-scripts/build_develop.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${GIT_SHA}" "${DATE}"
     - cd ..
       ### ATTENTION: please make sure installer is always the last in this list to be built
+    after_script:
+      - echo "The following images have been built and pushed to dockerhub:"
+      - docker images | grep keptn
 
 
   - stage: cron
@@ -281,6 +286,9 @@ jobs:
         cd ..
       fi
       ### ATTENTION: please make sure installer is always the last in this list to be built
+    after_script:
+      - echo "The following images have been built and pushed to dockerhub:"
+      - docker images | grep keptn
 
   - stage: develop
     if: branch = develop AND type = push
@@ -384,6 +392,9 @@ jobs:
         cd ..
       fi
       ### ATTENTION: please make sure installer is always the last in this list to be built
+    after_script:
+      - echo "The following images have been built and pushed to dockerhub:"
+      - docker images | grep keptn
 
   - stage: release
     if: branch =~ ^release.*$ AND NOT type = pull_request
@@ -435,6 +446,9 @@ jobs:
     - source ./travis-scripts/build_release.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
     - cd ..
     ### ATTENTION: please make sure installer is always the last in this list to be built
+    after_script:
+      - echo "The following images have been built and pushed to dockerhub:"
+      - docker images | grep keptn
 
   - stage: master
     if: branch = master AND NOT type = pull_request
