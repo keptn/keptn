@@ -64,10 +64,11 @@ type deploymentFinishedEvent struct {
 	Service            string `json:"service"`
 	TestStrategy       string `json:"teststrategy"`
 	DeploymentStrategy string `json:"deploymentstrategy"`
+	Tag				   string `json:"tag"`
+	Image 		       string `json:"image"`
 }
 
-func sendDeploymentFinishedEvent(shkeptncontext string, project string, stage string, service string,
-	testStrategy string, deploymentStrategy keptnevents.DeploymentStrategy) error {
+func sendDeploymentFinishedEvent(shkeptncontext string, project string, stage string, service string, testStrategy string, deploymentStrategy keptnevents.DeploymentStrategy, image string, tag string) error {
 
 	source, _ := url.Parse("helm-service")
 	contentType := "application/json"
@@ -90,6 +91,8 @@ func sendDeploymentFinishedEvent(shkeptncontext string, project string, stage st
 		Service:            service,
 		TestStrategy:       testStrategy,
 		DeploymentStrategy: deploymentStrategyOldIdentifier,
+		Image: image,
+		Tag: tag,
 	}
 
 	event := cloudevents.Event{
