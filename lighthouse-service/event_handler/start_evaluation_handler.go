@@ -19,7 +19,7 @@ type StartEvaluationHandler struct {
 
 func (eh *StartEvaluationHandler) HandleEvent() error {
 	var keptnContext string
-	_ = eh.Event.ExtensionAs("shkeptncontext", keptnContext)
+	_ = eh.Event.ExtensionAs("shkeptncontext", &keptnContext)
 
 	e := &keptnevents.StartEvaluationEventData{}
 	err := eh.Event.DataAs(e)
