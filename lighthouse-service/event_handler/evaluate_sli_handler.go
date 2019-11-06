@@ -84,7 +84,7 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 
 	// send the evaluation-done-event
 	var shkeptncontext string
-	eh.Event.Context.ExtensionAs("shkeptncontext", shkeptncontext)
+	eh.Event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
 	err = eh.sendEvaluationDoneEvent(shkeptncontext, evaluationResult)
 	return err
 }
@@ -466,7 +466,7 @@ func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptnevents.InternalGetS
 		if ok {
 			var indicatorResults []*keptnevents.SLIEvaluationResult
 			evaluationDetails := dataMap["evaluationdetails"].(map[string]interface{})
-			if len(evaluationDetails["indicatorResults"].([]interface{})) > 0 {
+			if evaluationDetails["indicatorResults"] != nil && len(evaluationDetails["indicatorResults"].([]interface{})) > 0 {
 				for _, value := range evaluationDetails["indicatorResults"].([]interface{}) {
 					sliEvaluationResult, err := extractSLIEvaluationResult(value.([]interface{}))
 					if err == nil {
