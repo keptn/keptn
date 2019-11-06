@@ -152,13 +152,17 @@ func (s Slower) removeDelay(vsContent string, ip string, slowDown string) (strin
 		return "", err
 	}
 
-	for i, route := range vs.Spec.Http {
-		if route.Fault != nil && route.Fault.Delay != nil && len(route.Match) > 0 {
-			for _, match := range route.Match {
+	length := len(vs.Spec.Http)
+	for i := 0; i < length; i++ {
+		if vs.Spec.Http[i].Fault != nil && vs.Spec.Http[i].Fault.Delay != nil && len(vs.Spec.Http[i].Match) > 0 {
+			for _, match := range vs.Spec.Http[i].Match {
 				if val, ok := match.Headers["X-Forwarded-For"]; ok && val.Exact == ip {
 					// found; delete the route
 					copy(vs.Spec.Http[i:], vs.Spec.Http[i+1:])
 					vs.Spec.Http = vs.Spec.Http[:len(vs.Spec.Http)-1]
+					i--
+					length--
+					break
 				}
 			}
 		}
