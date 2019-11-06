@@ -14,9 +14,5 @@ cd ./${FOLDER}
 sed -i '/#travis-uncomment/s/^#travis-uncomment //g' Dockerfile
 
 cat MANIFEST
-docker build . -t "${IMAGE}:${GIT_SHA}" --build-arg version=$VERSION
-docker tag "${IMAGE}:${GIT_SHA}" "${IMAGE}:${DATE}"
-docker tag "${IMAGE}:${GIT_SHA}" "${IMAGE}:latest"
-docker push "${IMAGE}:${GIT_SHA}"
-docker push "${IMAGE}:${DATE}"
-docker push "${IMAGE}:latest"
+docker build . -t "${IMAGE}:${GIT_SHA}" -t "${IMAGE}:${DATE}" -t "${IMAGE}:latest" --build-arg version=$VERSION
+docker push "${IMAGE}"
