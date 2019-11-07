@@ -81,11 +81,12 @@ Example:
 		}
 
 		startEvaluationEventData := keptnevents.StartEvaluationEventData{
-			Project: *evaluationStart.Project,
-			Service: *evaluationStart.Service,
-			Stage:   *evaluationStart.Stage,
-			Start:   start.Format("2006-01-02T15:04:05.000Z"),
-			End:     end.Format("2006-01-02T15:04:05.000Z"),
+			Project:      *evaluationStart.Project,
+			Service:      *evaluationStart.Service,
+			Stage:        *evaluationStart.Stage,
+			TestStrategy: "manual",
+			Start:        start.Format("2006-01-02T15:04:05.000Z"),
+			End:          end.Format("2006-01-02T15:04:05.000Z"),
 		}
 
 		keptnContext := uuid.New().String()
