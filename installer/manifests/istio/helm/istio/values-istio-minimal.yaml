@@ -26,8 +26,10 @@ mixer:
 prometheus:
   enabled: false
 
+
 # Common settings.
 global:
+
   proxy:
     # Sets the destination Statsd in envoy (the value of the "--statsdUdpAddress" proxy argument
     # would be <host>:<port>).
