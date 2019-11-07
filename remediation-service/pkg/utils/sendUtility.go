@@ -8,8 +8,6 @@ import (
 	"os"
 	"time"
 
-	"k8s.io/helm/pkg/proto/hapi/chart"
-
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 	"github.com/google/uuid"
 
@@ -24,22 +22,10 @@ const eventbroker = "EVENTBROKER"
 
 // CreateAndSendConfigurationChangedEvent creates ConfigurationChangeEvent and sends it
 func CreateAndSendConfigurationChangedEvent(problem *keptnevents.ProblemEventData,
-	shkeptncontext string, changedTemplates []*chart.Template) error {
+	shkeptncontext string, configChangedEvent keptnevents.ConfigurationChangeEventData) error {
 
 	source, _ := url.Parse("https://github.com/keptn/keptn/remediation-service")
 	contentType := "application/json"
-
-	changedFiles := make(map[string]string)
-	for _, template := range changedTemplates {
-		changedFiles[template.Name] = string(template.Data)
-	}
-
-	configChangedEvent := keptnevents.ConfigurationChangeEventData{
-		Project:                   problem.Project,
-		Service:                   problem.Service,
-		Stage:                     problem.Stage,
-		FileChangesGeneratedChart: changedFiles,
-	}
 
 	event := cloudevents.Event{
 		Context: cloudevents.EventContextV02{
@@ -53,37 +39,11 @@ func CreateAndSendConfigurationChangedEvent(problem *keptnevents.ProblemEventDat
 		Data: configChangedEvent,
 	}
 
-	return sendEvent(event)
+	return SendEvent(event)
 }
 
-// SendTestsFinishedEvent sends a Cloud Event of type sh.keptn.events.tests-finished to the event broker
-func SendTestsFinishedEvent(shkeptncontext string, project string, stage string, service string) error {
-
-	source, _ := url.Parse("remediation-service")
-	contentType := "application/json"
-
-	testFinishedData := keptnevents.TestsFinishedEventData{}
-	testFinishedData.Project = project
-	testFinishedData.Stage = stage
-	testFinishedData.Service = service
-	testFinishedData.TestStrategy = "real-user"
-
-	event := cloudevents.Event{
-		Context: cloudevents.EventContextV02{
-			ID:          uuid.New().String(),
-			Time:        &types.Timestamp{Time: time.Now()},
-			Type:        "sh.keptn.events.tests-finished",
-			Source:      types.URLRef{URL: *source},
-			ContentType: &contentType,
-			Extensions:  map[string]interface{}{"shkeptncontext": shkeptncontext},
-		}.AsV02(),
-		Data: testFinishedData,
-	}
-
-	return sendEvent(event)
-}
-
-func sendEvent(event cloudevents.Event) error {
+// SendEvent sends a cloudevent to the eventbroker
+func SendEvent(event cloudevents.Event) error {
 	endPoint, err := getServiceEndpoint(eventbroker)
 	if err != nil {
 		return errors.New("Failed to retrieve endpoint of eventbroker. %s" + err.Error())

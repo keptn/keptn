@@ -11,7 +11,6 @@ import (
 	"strings"
 
 	"github.com/keptn/keptn/remediation-service/actions"
-	"github.com/keptn/keptn/remediation-service/pkg/utils"
 	"gopkg.in/yaml.v2"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
@@ -135,25 +134,17 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		return errors.New("Cannot derive project and stage from tags nor impactedentity")
 	}
 
-	if problemEvent.State != "OPEN" {
-		logger.Info("Received closed problem")
-		if problemEvent.Service != "" {
-			utils.SendTestsFinishedEvent(shkeptncontext, problemEvent.Project, problemEvent.Stage, problemEvent.Service)
-		}
-		return nil
-	}
-
-	logger.Debug("Received open problem")
+	logger.Debug("Received problem event with state " + problemEvent.State)
 
 	// valide if remediation should be performed
 	resourceHandler := configutils.NewResourceHandler(os.Getenv(configurationserviceconnection))
-	autoremediate, err := isRemediationEnabled(resourceHandler, problemEvent.Project, problemEvent.Stage)
+	autoRemediate, err := isRemediationEnabled(resourceHandler, problemEvent.Project, problemEvent.Stage)
 	if err != nil {
 		logger.Error(fmt.Sprintf("Failed to check if remediation is enabled: %s", err.Error()))
 		return err
 	}
 
-	if autoremediate {
+	if autoRemediate {
 		logger.Info(fmt.Sprintf("Remediation enabled for project %s in stage %s", problemEvent.Project, problemEvent.Stage))
 	} else {
 		logger.Info(fmt.Sprintf("Remediation disabled for project %s in stage %s", problemEvent.Project, problemEvent.Stage))
@@ -183,21 +174,32 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		return err
 	}
 
-	actionExecutors := []actions.ActionExecutor{actions.NewScaler()}
+	actionExecutors := []actions.ActionExecutor{actions.NewScaler(), actions.NewSlower(), actions.NewAborter()}
 
 	for _, remediation := range remediationData.Remediations {
-		if remediation.Name == problemEvent.ProblemTitle {
+		if strings.HasPrefix(problemEvent.ProblemTitle, remediation.Name) {
 			logger.Debug("Remediation for problem found")
 			// currently only one remediation action is supported
 			for _, a := range actionExecutors {
 				if a.GetAction() == remediation.Actions[0].Action {
-					if err := a.ExecuteAction(problemEvent, shkeptncontext, remediation.Actions[0]); err != nil {
-						logger.Error(err.Error())
-						return err
+					if strings.ToLower(problemEvent.State) == "open" {
+						if err := a.ExecuteAction(problemEvent, shkeptncontext, remediation.Actions[0]); err != nil {
+							logger.Error(err.Error())
+							return err
+						}
+						logger.Info(fmt.Sprintf("Remediation action %s successfully applied",
+							remediation.Actions[0].Action))
+						return nil
+					} else if strings.ToLower(problemEvent.State) == "resolved" ||
+						strings.ToLower(problemEvent.State) == "closed" {
+						if err := a.ResolveAction(problemEvent, shkeptncontext, remediation.Actions[0]); err != nil {
+							logger.Error(err.Error())
+							return err
+						}
+						logger.Info(fmt.Sprintf("Remediation action %s resolved",
+							remediation.Actions[0].Action))
+						return nil
 					}
-					logger.Info(fmt.Sprintf("Remediation action %s successfully applied",
-						remediation.Actions[0].Action))
-					return nil
 				}
 			}
 		}
@@ -217,7 +219,12 @@ func init() {
 
 // get helm release name by impacted entity
 func getReleasename(eventData *keptnevents.ProblemEventData) (string, error) {
-	switch impact := eventData.ProblemDetails; {
+	var details string
+	err := yaml.Unmarshal(eventData.ProblemDetails, &details)
+	if err != nil {
+		return "", err
+	}
+	switch impact := details; {
 	case strings.HasPrefix(impact, "Pod"):
 		return getReleaseByPodName(eventData.ImpactedEntity)
 	case strings.HasPrefix(impact, "Service"):

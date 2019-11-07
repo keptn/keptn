@@ -5,8 +5,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/url"
 	"os"
 	"strconv"
+	"time"
+
+	"github.com/cloudevents/sdk-go/pkg/cloudevents"
+	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
+	"github.com/google/uuid"
 
 	"github.com/keptn/keptn/remediation-service/pkg/utils"
 
@@ -20,8 +26,6 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	kyaml "k8s.io/apimachinery/pkg/util/yaml"
 )
-
-const envConfigSvcURL = "CONFIGURATION_SERVICE"
 
 type Scaler struct {
 }
@@ -53,17 +57,57 @@ func (s Scaler) ExecuteAction(problem *keptnevents.ProblemEventData, shkeptncont
 
 	changedTemplates, err := s.increaseReplicaCount(ch, replicaIncrement)
 	if err != nil {
-		return fmt.Errorf("Failed to increase replica count: %v", err)
+		return fmt.Errorf("failed to increase replica count: %v", err)
 	}
 
-	err = utils.CreateAndSendConfigurationChangedEvent(problem, shkeptncontext, changedTemplates)
+	changedFiles := make(map[string]string)
+	for _, template := range changedTemplates {
+		changedFiles[template.Name] = string(template.Data)
+	}
+
+	data := keptnevents.ConfigurationChangeEventData{
+		Project:                   problem.Project,
+		Service:                   problem.Service,
+		Stage:                     problem.Stage,
+		FileChangesGeneratedChart: changedFiles,
+	}
+
+	err = utils.CreateAndSendConfigurationChangedEvent(problem, shkeptncontext, data)
 	if err != nil {
 		return fmt.Errorf("failed to send configuration change event: %v", err)
 	}
-	return err
+	return nil
 }
 
-// gets replica count from helm chart
+func (s Scaler) ResolveAction(problem *keptnevents.ProblemEventData, shkeptncontext string,
+	action *keptnmodels.RemediationAction) error {
+
+	source, _ := url.Parse("remediation-service")
+	contentType := "application/json"
+
+	testFinishedData := keptnevents.TestsFinishedEventData{
+		Project:      problem.Project,
+		Stage:        problem.Stage,
+		Service:      problem.Service,
+		TestStrategy: "real-user",
+	}
+
+	event := cloudevents.Event{
+		Context: cloudevents.EventContextV02{
+			ID:          uuid.New().String(),
+			Time:        &types.Timestamp{Time: time.Now()},
+			Type:        "sh.keptn.events.tests-finished",
+			Source:      types.URLRef{URL: *source},
+			ContentType: &contentType,
+			Extensions:  map[string]interface{}{"shkeptncontext": shkeptncontext},
+		}.AsV02(),
+		Data: testFinishedData,
+	}
+
+	return utils.SendEvent(event)
+}
+
+// increases the replica count in the deployments by the provided replicaIncrement
 func (s Scaler) increaseReplicaCount(ch *chart.Chart, replicaIncrement int) ([]*chart.Template, error) {
 
 	changedTemplates := make([]*chart.Template, 0, 0)
