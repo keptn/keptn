@@ -5,7 +5,11 @@ The *gatekeeper-service* is a Keptn core component and implements the quality ga
 The *gatekeeper-service* listens to Keptn events of type:
 - `sh.keptn.events.evaluation-done`
 
-The `evaluation-done` contains the result of the evaluation. If the evaluation result is positive, this service sends a `new-artifact` event for the next stage. If the evaluation result is negative and the service is deployed with a blue/green strategy, this service changes the configuration back to the old version and sends a `configuration-changed` event.
+The `evaluation-done` contains the result of the evaluation. If the evaluation result is positive (e.g., 
+ `result = "pass" || result = "warning"`), this service promotes the artifact to the next stage by sending a 
+ `new-artifact` event for the next stage. If the evaluation result is negative (e.g., `result = "fail"`) and the 
+ service is deployed with a blue/green strategy, this service changes the configuration back to the old version and 
+ sends a `configuration-changed` event.
 
 ## Installation
 
