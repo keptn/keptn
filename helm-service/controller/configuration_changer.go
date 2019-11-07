@@ -10,8 +10,6 @@ import (
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	"k8s.io/helm/pkg/proto/hapi/chart"
 
 	cloudevents "github.com/cloudevents/sdk-go"
