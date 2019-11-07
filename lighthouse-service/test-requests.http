@@ -1,0 +1,67 @@
+# For a quick start check out our HTTP Requests collection (Tools|HTTP Client|Open HTTP Requests Collection) or
+# paste cURL into the file and request will be converted to HTTP Request format.
+#
+# Following HTTP Request Live Templates are available:
+# * 'gtrp' and 'gtr' create a GET request with or without query parameters;
+# * 'ptr' and 'ptrp' create a POST request with a simple or parameter-like body;
+# * 'mptr' and 'fptr' create a POST request to submit a form with a text or file field (multipart/form-data);
+# Start Evaluation
+POST http://localhost:8081/
+Accept: application/json
+Cache-Control: no-cache
+Content-Type: application/cloudevents+json
+
+{
+  "contenttype": "application/json",
+  "data": {
+    "sliProvider": "prometheus",
+    "project": "sockshop",
+    "service": "carts",
+    "stage": "dev",
+    "start": "2019-10-20T07:57:27.152330783Z",
+    "end": "2019-10-22T08:57:27.152330783Z"
+  },
+  "id": "b3c3c357-eb3d-4f90-b26e-9ebfedfb8dbf",
+  "source": "helm-service",
+  "specversion": "0.2",
+  "time": "2019-10-14T08:00:09.416Z",
+  "type": "sh.keptn.event.start-evaluation",
+  "shkeptncontext": "71270488-b923-400a-8ac5-7f471b15a181"
+}
+
+###
+
+# Get-SLI-Done
+POST http://localhost:8081/
+Accept: application/json
+Cache-Control: no-cache
+Content-Type: application/cloudevents+json
+
+{
+  "contenttype": "application/json",
+  "data": {
+    "indicatorValues": [
+      {
+        "metric": "throughput",
+        "value": 0.20006236004421896,
+        "success": true,
+        "message": ""
+      }
+    ],
+    "project": "sockshop",
+    "service": "carts",
+    "stage": "dev"
+  },
+  "id": "46ba9ddb-ffe6-4f0a-8360-f110930d387a",
+  "source": "prometheus-sli-service",
+  "specversion": "0.2",
+  "time": "2019-10-24T08:42:10.235Z",
+  "type": "sh.keptn.internal.event.get-sli.done",
+  "shkeptncontext": "71270488-b923-400a-8ac5-7f471b15a181"
+}
+
+###
+
+
+
+

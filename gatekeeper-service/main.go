@@ -33,15 +33,6 @@ type envConfig struct {
 	Path string `envconfig:"RCV_PATH" default:"/"`
 }
 
-type evaluationDoneEvent struct {
-	Project            string `json:"project"`
-	Stage              string `json:"stage"`
-	Service            string `json:"service"`
-	DeploymentStrategy string `json:"deploymentstrategy"`
-	EvaluationPassed   bool   `json:"evaluationpassed"`
-	TestStrategy       string `json:"teststrategy"`
-}
-
 func main() {
 	var env envConfig
 	if err := envconfig.Process("", &env); err != nil {
@@ -89,13 +80,14 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 func doGateKeeping(event cloudevents.Event, shkeptncontext string, logger *keptnutils.Logger) error {
 
-	data := &evaluationDoneEvent{}
+	data := &keptnevents.EvaluationDoneEventData{}
 	if err := event.DataAs(data); err != nil {
 		logger.Error(fmt.Sprintf("Got Data Error: %s", err.Error()))
 		return err
 	}
 
-	if data.EvaluationPassed {
+	// Evaluation has passed if we have result = pass or result = warning
+	if data.Result == "pass" || data.Result == "warning" {
 
 		logger.Info(fmt.Sprintf("Service %s of project %s in stage %s has passed the evaluation",
 			data.Service, data.Project, data.Stage))

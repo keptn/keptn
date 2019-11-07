@@ -2,7 +2,7 @@
 # This is based on Debian and sets the GOPATH to /go.
 # https://hub.docker.com/_/golang
 FROM golang:1.12 as builder
-
+ARG version=develop
 # Copy local code to the container image.
 WORKDIR /go/src/github.com/keptn/keptn/platform-support/openshift-route-service
 
