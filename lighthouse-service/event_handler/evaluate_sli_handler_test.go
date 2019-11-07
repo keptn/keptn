@@ -2,11 +2,12 @@ package event_handler
 
 import (
 	"errors"
+	"sort"
+	"testing"
+
 	keptnevents "github.com/keptn/go-utils/pkg/events"
 	keptnmodelsv2 "github.com/keptn/go-utils/pkg/models/v2"
 	"github.com/stretchr/testify/assert"
-	"sort"
-	"testing"
 )
 
 type operatorParserTest struct {

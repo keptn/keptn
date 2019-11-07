@@ -3,14 +3,15 @@ package event_handler
 import (
 	"encoding/json"
 	"errors"
+	"net/http"
+	"net/url"
+	"time"
+
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 	"github.com/google/uuid"
 	keptnevents "github.com/keptn/go-utils/pkg/events"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
-	"net/http"
-	"net/url"
-	"time"
 )
 
 type EvaluationEventHandler interface {
@@ -30,11 +31,11 @@ func convertTestsFinishedToStartEvaluationEvent(previousEvent cloudevents.Event)
 	_ = previousEvent.DataAs(&data)
 
 	getSLIEvent := keptnevents.StartEvaluationEventData{
-		Project:     data["project"],
-		Service:     data["service"],
-		Stage:       data["stage"],
-		Start:       data["startedat"],
-		End:         endtime,
+		Project:      data["project"],
+		Service:      data["service"],
+		Stage:        data["stage"],
+		Start:        data["startedat"],
+		End:          endtime,
 		TestStrategy: data["teststrategy"],
 	}
 
