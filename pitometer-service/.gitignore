@@ -36,4 +36,5 @@ node_modules
 # Dist directory
 dist/
 
+# Debug files
 MANIFEST

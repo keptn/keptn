@@ -27,7 +27,7 @@ before_install:
   if [ ! -d "$HOME/google-cloud-sdk/bin" ]; then 
     rm -rf $HOME/google-cloud-sdk;
     export CLOUDSDK_CORE_DISABLE_PROMPTS=1;
-    curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-247.0.0-${OS_TYPE}-x86_64.tar.gz > gcloud.tar.gz 
+    curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-270.0.0-${OS_TYPE}-x86_64.tar.gz > gcloud.tar.gz
     gunzip -c gcloud.tar.gz | tar xopf - 
     ./google-cloud-sdk/install.sh
     source ./google-cloud-sdk/completion.bash.inc
@@ -86,6 +86,8 @@ before_install:
 - REMEDIATION_SVC_FOLDER="remediation-service/"
 - WAIT_SVC_IMAGE="keptn/wait-service"
 - WAIT_SVC_FOLDER="wait-service/"
+- LIGHTHOUSE_SVC_IMAGE="keptn/lighthouse-service"
+- LIGHTHOUSE_SVC_FOLDER="lighthouse-service/"
 - MONGODB_DS_IMAGE="keptn/mongodb-datastore"
 - MONGODB_DS_FOLDER="mongodb-datastore/"
 - INSTALLER_IMAGE="keptn/installer"
@@ -130,11 +132,16 @@ jobs:
     - cd ..
     - source ./travis-scripts/build_develop.sh "${WAIT_SVC_IMAGE}" "${WAIT_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
     - cd ..
+    - source ./travis-scripts/build_develop.sh "${LIGHTHOUSE_SVC_IMAGE}" "${LIGHTHOUSE_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
+    - cd ..
     - source ./travis-scripts/build_develop.sh "${MONGODB_DS_IMAGE}" "${MONGODB_DS_FOLDER}" "${GIT_SHA}" "${DATE}"
     - cd ..
     - source ./travis-scripts/build_develop.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${GIT_SHA}" "${DATE}"
     - cd ..
       ### ATTENTION: please make sure installer is always the last in this list to be built
+    after_script:
+      - echo "The following images have been built and pushed to dockerhub:"
+      - docker images | grep keptn
 
 
   - stage: cron
@@ -264,6 +271,11 @@ jobs:
         cd ..
       fi
     - | 
+      if [[ $CHANGED_FILES == *"${LIGHTHOUSE_SVC_FOLDER}"*  ]]; then
+        source ./travis-scripts/build_feature.sh "${LIGHTHOUSE_SVC_IMAGE}" "${LIGHTHOUSE_SVC_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
+        cd ..
+      fi
+    - | 
       if [[ $CHANGED_FILES == *"${MONGODB_DS_FOLDER}"*  ]]; then
         source ./travis-scripts/build_feature.sh "${MONGODB_DS_IMAGE}" "${MONGODB_DS_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
         cd ..
@@ -274,6 +286,9 @@ jobs:
         cd ..
       fi
       ### ATTENTION: please make sure installer is always the last in this list to be built
+    after_script:
+      - echo "The following images have been built and pushed to dockerhub:"
+      - docker images | grep keptn
 
   - stage: develop
     if: branch = develop AND type = push
@@ -284,8 +299,9 @@ jobs:
         echo "Build keptn cli"
         cd ./cli
         go test ./...
-        TAG="${DATE}-latest"
-        source ../travis-scripts/build_cli.sh "${TAG}"
+        TAG="latest"
+        VERSION="${DATE}-latest"
+        source ../travis-scripts/build_cli.sh "${VERSION}"
         cd ..
       fi
   - if: branch = develop AND type = push
@@ -360,6 +376,11 @@ jobs:
         source ./travis-scripts/build_develop.sh "${WAIT_SVC_IMAGE}" "${WAIT_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
         cd ..
       fi
+    - |
+      if [[ $CHANGED_FILES == *"${LIGHTHOUSE_SVC_FOLDER}"*  ]]; then
+        source ./travis-scripts/build_develop.sh "${LIGHTHOUSE_SVC_IMAGE}" "${LIGHTHOUSE_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
+        cd ..
+      fi
     - | 
       if [[ $CHANGED_FILES == *"${MONGODB_DS_FOLDER}"*  ]]; then
         source ./travis-scripts/build_develop.sh "${MONGODB_DS_IMAGE}" "${MONGODB_DS_FOLDER}" "${GIT_SHA}" "${DATE}"
@@ -371,6 +392,9 @@ jobs:
         cd ..
       fi
       ### ATTENTION: please make sure installer is always the last in this list to be built
+    after_script:
+      - echo "The following images have been built and pushed to dockerhub:"
+      - docker images | grep keptn
 
   - stage: release
     if: branch =~ ^release.*$ AND NOT type = pull_request
@@ -415,11 +439,16 @@ jobs:
     - cd ..
     - source ./travis-scripts/build_release.sh "${WAIT_SVC_IMAGE}" "${WAIT_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
     - cd ..
+    - source ./travis-scripts/build_release.sh "${LIGHTHOUSE_SVC_IMAGE}" "${LIGHTHOUSE_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+    - cd ..
     - source ./travis-scripts/build_release.sh "${MONGODB_DS_IMAGE}" "${MONGODB_DS_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
     - cd ..
     - source ./travis-scripts/build_release.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
     - cd ..
     ### ATTENTION: please make sure installer is always the last in this list to be built
+    after_script:
+      - echo "The following images have been built and pushed to dockerhub:"
+      - docker images | grep keptn
 
   - stage: master
     if: branch = master AND NOT type = pull_request
@@ -463,6 +492,8 @@ jobs:
     - source ./travis-scripts/build_master.sh "${REMEDIATION_SVC_IMAGE}" "${REMEDIATION_SVC_FOLDER}" "${VERSION}" 
     - cd ..
     - source ./travis-scripts/build_master.sh "${WAIT_SVC_IMAGE}" "${WAIT_SVC_FOLDER}" "${VERSION}"
+    - cd ..
+    - source ./travis-scripts/build_master.sh "${LIGHTHOUSE_SVC_IMAGE}" "${LIGHTHOUSE_SVC_FOLDER}" "${VERSION}"
     - cd ..
     - source ./travis-scripts/build_master.sh "${MONGODB_DS_IMAGE}" "${MONGODB_DS_FOLDER}" "${VERSION}"
     - cd ..

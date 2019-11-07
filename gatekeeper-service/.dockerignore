@@ -1,0 +1,5 @@
+.vscode/
+.idea/
+docs/
+deploy/
+Dockerfile
