@@ -72,9 +72,29 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 		return err
 	}
 
+	var filteredPreviousEvaluationEvents []*keptnevents.EvaluationDoneEventData
+
+	// verify that we have enough evaluations
+	for _, val := range previousEvaluationEvents {
+		if sloConfig.Comparison.IncludeResultWithScore == "all" {
+			// always include
+			filteredPreviousEvaluationEvents = append(filteredPreviousEvaluationEvents, val)
+		} else if sloConfig.Comparison.IncludeResultWithScore == "pass_or_warn" {
+			// only include warnings and passes
+			if val.Result == "warning" || val.Result == "pass" {
+				filteredPreviousEvaluationEvents = append(filteredPreviousEvaluationEvents, val)
+			}
+		} else if sloConfig.Comparison.IncludeResultWithScore == "pass" {
+			// only include passes
+			if val.Result == "pass" {
+				filteredPreviousEvaluationEvents = append(filteredPreviousEvaluationEvents, val)
+			}
+		}
+	}
+
 	fmt.Println(sloConfig)
 
-	evaluationResult, maximumAchievableScore, keySLIFailed := evaluateObjectives(e, sloConfig, previousEvaluationEvents)
+	evaluationResult, maximumAchievableScore, keySLIFailed := evaluateObjectives(e, sloConfig, filteredPreviousEvaluationEvents)
 
 	// calculate the total score
 	err = calculateScore(maximumAchievableScore, evaluationResult, sloConfig, keySLIFailed)
@@ -123,7 +143,8 @@ func evaluateObjectives(e *keptnevents.InternalGetSLIDoneEventData, sloConfig *k
 
 		// gather the previous results for the current SLI
 		var previousSLIResults []*keptnevents.SLIEvaluationResult
-		if len(previousEvaluationEvents) > 0 {
+
+		if previousEvaluationEvents != nil && len(previousEvaluationEvents) > 0 {
 			for _, event := range previousEvaluationEvents {
 				for _, prevSLIResult := range event.EvaluationDetails.IndicatorResults {
 					if strings.Compare(prevSLIResult.Value.Metric, objective.SLI) == 0 {
@@ -277,27 +298,15 @@ func evaluateComparison(sliResult *keptnevents.SLIResult, co *criteriaObject, pr
 	var targetValue float64
 	var previousValues []float64
 
-	for _, val := range previousResults {
-		if !val.Value.Success {
-			continue
-		}
-		if comparison.IncludeResultWithScore == "all" {
-			previousValues = append(previousValues, val.Value.Value)
-		} else if comparison.IncludeResultWithScore == "pass_or_warn" {
-			if val.Status == "warning" || val.Status == "pass" {
-				previousValues = append(previousValues, val.Value.Value)
-			}
-		} else if comparison.IncludeResultWithScore == "pass" {
-			if val.Status == "pass" {
-				previousValues = append(previousValues, val.Value.Value)
-			}
-		}
-	}
-
 	if len(previousResults) == 0 {
 		// if no comparison values are available, the evaluation passes
 		return true, nil
 	}
+
+	for _, val := range previousResults {
+		previousValues = append(previousValues, val.Value.Value)
+	}
+
 	// aggregate the previous values based on the passed aggregation function
 	switch comparison.AggregateFunction {
 	case "avg":
@@ -441,8 +450,13 @@ func parseCriteriaString(criteria string) (*criteriaObject, error) {
 	return c, nil
 }
 
+// gets previous evaluation-done events from mongodb-datastore
 func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptnevents.InternalGetSLIDoneEventData, numberOfPreviousResults int) ([]*keptnevents.EvaluationDoneEventData, error) {
-	queryString := "http://mongodb-datastore.keptn-datastore:8080/event?type=" + keptnevents.EvaluationDoneEventType + "&project=" + e.Project + "&stage=" + e.Stage + "&service=" + e.Service + "&pageSize=" + strconv.FormatInt(int64(numberOfPreviousResults), 10)
+	// previous results are fetched from mongodb datastore with source=lighthouse-service
+	queryString := fmt.Sprintf("http://mongodb-datastore.keptn-datastore:8080/event?type=%s&source=%s&project=%s&stage=%s&service=%s&pageSize=%d",
+		keptnevents.EvaluationDoneEventType, "lighthouse-service",
+		e.Project, e.Stage, e.Service, numberOfPreviousResults)
+
 	req, err := http.NewRequest("GET", queryString, nil)
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := eh.HTTPClient.Do(req)
@@ -460,22 +474,33 @@ func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptnevents.InternalGetS
 		return nil, err
 	}
 	var evaluationDoneEvents []*keptnevents.EvaluationDoneEventData
+
+	// iterate over previous events
 	for _, event := range previousEvents.Events {
 		dataMap, ok := event.Data.(map[string]interface{})
 
 		if ok {
-			var indicatorResults []*keptnevents.SLIEvaluationResult
-			evaluationDetails := dataMap["evaluationdetails"].(map[string]interface{})
-			if evaluationDetails["indicatorResults"] != nil && len(evaluationDetails["indicatorResults"].([]interface{})) > 0 {
-				for _, value := range evaluationDetails["indicatorResults"].([]interface{}) {
-					sliEvaluationResult, err := extractSLIEvaluationResult(value.([]interface{}))
-					if err == nil {
-						indicatorResults = append(indicatorResults, sliEvaluationResult)
+			// make sure that this event contains evaluationdetails (e.g., old events do not contain that element)
+			if _, ok := dataMap["evaluationdetails"]; ok {
+				evaluationDetails := dataMap["evaluationdetails"].(map[string]interface{})
+
+				// make sure evaluation details contains indicatorResults
+				if evaluationDetails["indicatorResults"] != nil && len(evaluationDetails["indicatorResults"].([]interface{})) > 0 {
+
+					// iterate over each indicatorResult and extract it
+					var indicatorResults []*keptnevents.SLIEvaluationResult
+
+					for _, value := range evaluationDetails["indicatorResults"].([]interface{}) {
+						sliEvaluationResult, err := extractSLIEvaluationResult(value.([]interface{}))
+						if err == nil {
+							indicatorResults = append(indicatorResults, sliEvaluationResult)
+						}
 					}
+					evaluationDetails["indicatorResults"] = indicatorResults
+
+					dataMap["evaluationdetails"] = evaluationDetails
 				}
-				evaluationDetails["indicatorResults"] = indicatorResults
 			}
-			dataMap["evaluationdetails"] = evaluationDetails
 		}
 
 		bytes, err := json.Marshal(event.Data)
