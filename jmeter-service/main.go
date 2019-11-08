@@ -18,8 +18,11 @@ import (
 	"github.com/google/uuid"
 	"github.com/kelseyhightower/envconfig"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	keptnevents "github.com/keptn/go-utils/pkg/events"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
+
+const eventbroker = "EVENTBROKER"
 
 type envConfig struct {
 	// Port on which to listen for cloudevents
@@ -196,22 +199,24 @@ func getGatewayFromConfigmap() (string, error) {
 }
 
 func sendTestsFinishedEvent(shkeptncontext string, incomingEvent cloudevents.Event, startedAt time.Time, logger *keptnutils.Logger) error {
-
 	source, _ := url.Parse("jmeter-service")
 	contentType := "application/json"
 
-	var testFinishedData interface{}
+	testFinishedData := keptnevents.TestsFinishedEventData{}
+	// fill in data from incoming event (e.g., project, service, stage, teststrategy, deploymentstrategy)
 	if err := incomingEvent.DataAs(&testFinishedData); err != nil {
 		logger.Error(fmt.Sprintf("Got Data Error: %s", err.Error()))
 		return err
 	}
-	testFinishedData.(map[string]interface{})["startedat"] = startedAt
+	// fill in timestamps
+	testFinishedData.Start = startedAt.Format(time.RFC3339)
+	testFinishedData.End = time.Now().Format(time.RFC3339)
 
 	event := cloudevents.Event{
 		Context: cloudevents.EventContextV02{
 			ID:          uuid.New().String(),
 			Time:        &types.Timestamp{Time: time.Now()},
-			Type:        "sh.keptn.events.tests-finished",
+			Type:        "sh.keptn.event.tests.finished",
 			Source:      types.URLRef{URL: *source},
 			ContentType: &contentType,
 			Extensions:  map[string]interface{}{"shkeptncontext": shkeptncontext},
@@ -219,23 +224,7 @@ func sendTestsFinishedEvent(shkeptncontext string, incomingEvent cloudevents.Eve
 		Data: testFinishedData,
 	}
 
-	t, err := cloudeventshttp.New(
-		cloudeventshttp.WithTarget("http://event-broker.keptn.svc.cluster.local/keptn"),
-		cloudeventshttp.WithEncoding(cloudeventshttp.StructuredV02),
-	)
-	if err != nil {
-		return errors.New("Failed to create transport:" + err.Error())
-	}
-
-	c, err := client.New(t)
-	if err != nil {
-		return errors.New("Failed to create HTTP client:" + err.Error())
-	}
-
-	if _, err := c.Send(context.Background(), event); err != nil {
-		return errors.New("Failed to send cloudevent:, " + err.Error())
-	}
-	return nil
+	return sendEvent(event)
 }
 
 func sendEvaluationDoneEvent(shkeptncontext string, incomingEvent cloudevents.Event, logger *keptnutils.Logger) error {
@@ -243,12 +232,14 @@ func sendEvaluationDoneEvent(shkeptncontext string, incomingEvent cloudevents.Ev
 	source, _ := url.Parse("jmeter-service")
 	contentType := "application/json"
 
-	var evaluationDoneData interface{}
+	evaluationDoneData := keptnevents.EvaluationDoneEventData{}
+	// fill in data from incoming event (e.g., project, service, stage, teststrategy, deploymentstrategy)
 	if err := incomingEvent.DataAs(&evaluationDoneData); err != nil {
 		logger.Error(fmt.Sprintf("Got Data Error: %s", err.Error()))
 		return err
 	}
-	evaluationDoneData.(map[string]interface{})["evaluationpassed"] = false
+	// set result to fail
+	evaluationDoneData.Result = "fail"
 
 	event := cloudevents.Event{
 		Context: cloudevents.EventContextV02{
@@ -262,23 +253,7 @@ func sendEvaluationDoneEvent(shkeptncontext string, incomingEvent cloudevents.Ev
 		Data: evaluationDoneData,
 	}
 
-	t, err := cloudeventshttp.New(
-		cloudeventshttp.WithTarget("http://event-broker.keptn.svc.cluster.local/keptn"),
-		cloudeventshttp.WithEncoding(cloudeventshttp.StructuredV02),
-	)
-	if err != nil {
-		return errors.New("Failed to create transport:" + err.Error())
-	}
-
-	c, err := client.New(t)
-	if err != nil {
-		return errors.New("Failed to create HTTP client:" + err.Error())
-	}
-
-	if _, err := c.Send(context.Background(), event); err != nil {
-		return errors.New("Failed to send cloudevent:, " + err.Error())
-	}
-	return nil
+	return sendEvent(event)
 }
 
 func _main(args []string, env envConfig) int {
@@ -302,3 +277,47 @@ func _main(args []string, env envConfig) int {
 
 	return 0
 }
+
+func sendEvent(event cloudevents.Event) error {
+	endPoint, err := getServiceEndpoint(eventbroker)
+	if err != nil {
+		return errors.New("Failed to retrieve endpoint of eventbroker. %s" + err.Error())
+	}
+
+	if endPoint.Host == "" {
+		return errors.New("Host of eventbroker not set")
+	}
+
+	transport, err := cloudeventshttp.New(
+		cloudeventshttp.WithTarget(endPoint.String()),
+		cloudeventshttp.WithEncoding(cloudeventshttp.StructuredV02),
+	)
+	if err != nil {
+		return errors.New("Failed to create transport:" + err.Error())
+	}
+
+	c, err := client.New(transport)
+	if err != nil {
+		return errors.New("Failed to create HTTP client:" + err.Error())
+	}
+
+	if _, err := c.Send(context.Background(), event); err != nil {
+		return errors.New("Failed to send cloudevent:, " + err.Error())
+	}
+	return nil
+}
+
+// getServiceEndpoint gets an endpoint stored in an environment variable and sets http as default scheme
+func getServiceEndpoint(service string) (url.URL, error) {
+	url, err := url.Parse(os.Getenv(service))
+	if err != nil {
+		return *url, fmt.Errorf("Failed to retrieve value from ENVIRONMENT_VARIABLE: %s", service)
+	}
+
+	if url.Scheme == "" {
+		url.Scheme = "http"
+	}
+
+	return *url, nil
+}
+

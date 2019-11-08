@@ -2,6 +2,7 @@ package event_handler
 
 import (
 	"errors"
+	"fmt"
 	"net/url"
 	"time"
 
@@ -31,21 +32,22 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 	}
 
 	// functional tests dont need to be evaluated
-	if e.TestStrategy == "functional" {
+	if e.TestStrategy == "functional" || e.TestStrategy == "" {
 		evaluationDetails := keptnevents.EvaluationDetails{
 			IndicatorResults: nil,
 			TimeStart:        e.Start,
 			TimeEnd:          e.End,
-			Result:           "no evaluation performed by lighthouse service (functional test)",
+			Result:           fmt.Sprintf("no evaluation performed by lighthouse service (TestStrategy=%s)", e.TestStrategy),
 		}
 		// send the evaluation-done-event
 		evaluationResult := keptnevents.EvaluationDoneEventData{
-			EvaluationDetails: &evaluationDetails,
-			Result:            "pass",
-			Project:           e.Project,
-			Service:           e.Service,
-			Stage:             e.Stage,
-			TestStrategy:      e.TestStrategy,
+			EvaluationDetails:  &evaluationDetails,
+			Result:             "pass",
+			Project:            e.Project,
+			Service:            e.Service,
+			Stage:              e.Stage,
+			TestStrategy:       e.TestStrategy,
+			DeploymentStrategy: e.DeploymentStrategy,
 		}
 
 		err = eh.sendEvaluationDoneEvent(keptnContext, &evaluationResult)
