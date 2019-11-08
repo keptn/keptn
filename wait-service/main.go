@@ -19,6 +19,8 @@ import (
 	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 
+	keptnevents "github.com/keptn/go-utils/pkg/events"
+
 	"github.com/google/uuid"
 	"github.com/kelseyhightower/envconfig"
 )
@@ -29,13 +31,6 @@ const eventbroker = "EVENTBROKER"
 type envConfig struct {
 	Port int    `envconfig:"RCV_PORT" default:"8080"`
 	Path string `envconfig:"RCV_PATH" default:"/"`
-}
-
-type deploymentFinishedEvent struct {
-	Project      string `json:"project"`
-	Stage        string `json:"stage"`
-	Service      string `json:"service"`
-	TestStrategy string `json:"teststrategy"`
 }
 
 type Client struct {
@@ -86,13 +81,13 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 	logger := keptnutils.NewLogger(shkeptncontext, event.Context.GetID(), "wait-service")
 
-	data := &deploymentFinishedEvent{}
+	data := &keptnevents.DeploymentFinishedEventData{}
 	if err := event.DataAs(data); err != nil {
 		logger.Error(fmt.Sprintf("Got Data Error: %s", err.Error()))
 		return err
 	}
 
-	if event.Type() != "sh.keptn.events.deployment-finished" {
+	if event.Type() != keptnevents.DeploymentFinishedEventType {
 		const errorMsg = "Received unexpected keptn event"
 		logger.Error(errorMsg)
 		return errors.New(errorMsg)
@@ -104,7 +99,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 }
 
 // waitDuration just waits for a the time defined in environment variable WAIT_DURATION
-func waitDuration(event cloudevents.Event, shkeptncontext string, data deploymentFinishedEvent, logger *keptnutils.Logger) {
+func waitDuration(event cloudevents.Event, shkeptncontext string, data keptnevents.DeploymentFinishedEventData, logger *keptnutils.Logger) {
 
 	startedAt := time.Now()
 
@@ -195,7 +190,7 @@ func sendTestsFinishedEvent(shkeptncontext string, incomingEvent cloudevents.Eve
 		Context: cloudevents.EventContextV02{
 			ID:          uuid.New().String(),
 			Time:        &types.Timestamp{Time: time.Now()},
-			Type:        "sh.keptn.events.tests-finished",
+			Type:        keptnevents.TestFinishedEventType_0_5_0_Compatible,
 			Source:      types.URLRef{URL: *source},
 			ContentType: &contentType,
 			Extensions:  map[string]interface{}{"shkeptncontext": shkeptncontext},
