@@ -57,7 +57,25 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 	// get SLO file
 	objectives, err := getSLOs(e.Project, e.Stage, e.Service)
 	if err != nil {
-		// ToDo: We need to provide feedback to the user that evaluation failed because no SLO file found
+		// No SLO file found -> no need to evaluate
+		evaluationDetails := keptnevents.EvaluationDetails{
+			IndicatorResults: nil,
+			TimeStart:        e.Start,
+			TimeEnd:          e.End,
+			Result:           fmt.Sprintf("no evaluation performed by lighthouse service (no slo.yaml found)"),
+		}
+		// send the evaluation-done-event
+		evaluationResult := keptnevents.EvaluationDoneEventData{
+			EvaluationDetails:  &evaluationDetails,
+			Result:             "pass",
+			Project:            e.Project,
+			Service:            e.Service,
+			Stage:              e.Stage,
+			TestStrategy:       e.TestStrategy,
+			DeploymentStrategy: e.DeploymentStrategy,
+		}
+
+		err = eh.sendEvaluationDoneEvent(keptnContext, &evaluationResult)
 		return err
 	}
 
