@@ -115,7 +115,7 @@ wait_for_deployment_in_namespace "gatekeeper-service" "keptn"
 wait_for_deployment_in_namespace "helm-service" "keptn"
 wait_for_deployment_in_namespace "jmeter-service" "keptn"
 wait_for_deployment_in_namespace "shipyard-service" "keptn"
-wait_for_deployment_in_namespace "pitometer-service" "keptn"
+wait_for_deployment_in_namespace "lighthouse-service" "keptn"
 wait_for_deployment_in_namespace "configuration-service" "keptn"
 
 kubectl apply -f ../manifests/keptn/keptn-gateway.yaml

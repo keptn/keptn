@@ -48,12 +48,12 @@
                   <small>
                     <b>Evaluation passed: </b> {{ event.data.evaluationpassed === true ? 'YES' : 'NO' }}
                     <br>
-                    <div v-if="event.source === 'pitometer-service'">
+                    <div v-if="event.source === 'lighthouse-service'">
                       <b>Total score: </b> {{ event.data.evaluationdetails | totalScore }}
                     </div>
                   </small>
                   <div
-                    v-if="event.data.evaluationpassed === false && event.source === 'pitometer-service'">
+                    v-if="event.data.evaluationpassed === false && event.source === 'lighthouse-service'">
                     <b>Violations:</b>
                     <div v-for="violation in getViolations(event.data.evaluationdetails)" :key="violation.indicatorId">
                       <div v-if="violation.type === 'upperSevere'">
@@ -150,7 +150,7 @@
                       return evaluationDetails.totalScore;
                     }
                 }
-                return 'n/a (no evaluation performed by pitometer service)';
+                return 'n/a (no evaluation performed by lighthouse service)';
             },
             canaryAction: function getCanaryAction(canary) {
                 if (canary === undefined) {
@@ -232,11 +232,11 @@
                 if (evaluationDetails !== undefined && evaluationDetails.length > 1) {
                   if (evaluationDetails.hasOwnProperty('indicatorResults')) {
                     if (evaluationDetails.indicatorResults === undefined) return violationsResult;
-                    
+
                     evaluationDetails.indicatorResults.forEach((result) => {
                       const score = result.score;
                       if (score > 0) return;
-                      
+
                       const indicatorId = result.id;
                       const violations = result.violations;
 
@@ -264,7 +264,7 @@
                             }
                             violationsResult.push(newViolation);
                           }
-                          
+
                       }
                     });
                   }

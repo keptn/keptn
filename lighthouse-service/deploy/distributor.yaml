@@ -1,4 +1,4 @@
-## lighthouse-service: sh.keptn.events.tests-finished
+## lighthouse-service: sh.keptn.event.tests-finished
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -30,7 +30,7 @@ spec:
             - name: PUBSUB_URL
               value: 'nats://keptn-nats-cluster'
             - name: PUBSUB_TOPIC
-              value: 'sh.keptn.events.tests-finished'
+              value: 'sh.keptn.event.tests.finished'
             - name: PUBSUB_RECIPIENT
               value: 'lighthouse-service'
 ---
@@ -38,7 +38,7 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: lighthouse-service-start-evaluation
+  name: lighthouse-service-start-evaluation-distributor
   namespace: keptn
 spec:
   selector:
@@ -74,7 +74,7 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: lighthouse-service-get-sli-done
+  name: lighthouse-service-get-sli-done-distributor
   namespace: keptn
 spec:
   selector:
