@@ -2,14 +2,15 @@ package event_handler
 
 import (
 	"errors"
+	"net/url"
+	"time"
+
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 	"github.com/google/uuid"
 	keptnevents "github.com/keptn/go-utils/pkg/events"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"net/url"
-	"time"
 )
 
 type StartEvaluationHandler struct {
@@ -33,9 +34,9 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 	if e.TestStrategy == "functional" {
 		evaluationDetails := keptnevents.EvaluationDetails{
 			IndicatorResults: nil,
-			TimeStart: e.Start,
-			TimeEnd: e.End,
-			Result: "no evaluation performed by lighthouse service (functional test)",
+			TimeStart:        e.Start,
+			TimeEnd:          e.End,
+			Result:           "no evaluation performed by lighthouse service (functional test)",
 		}
 		// send the evaluation-done-event
 		evaluationResult := keptnevents.EvaluationDoneEventData{
@@ -85,7 +86,6 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 	return nil
 }
 
-
 func (eh *StartEvaluationHandler) sendEvaluationDoneEvent(shkeptncontext string, data *keptnevents.EvaluationDoneEventData) error {
 
 	source, _ := url.Parse("lighthouse-service")
@@ -105,7 +105,6 @@ func (eh *StartEvaluationHandler) sendEvaluationDoneEvent(shkeptncontext string,
 
 	return sendEvent(event)
 }
-
 
 func getSLIProvider(project string) (string, error) {
 	kubeClient, err := keptnutils.GetKubeAPI(true)
