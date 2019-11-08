@@ -16,6 +16,11 @@ We mangage the Keptn core components as well as all services (e.g., github-servi
 The versions of the Keptn core components and the services have to be compatible to each other.
 Therefore, this section shows the compatibility between these versions.
 
+**Keptn in [version 0.6.0](https://github.com/keptn/keptn/releases/tag/0.6.0) requires:**
+
+*Keptn core:*
+- keptn/lighthouse-service:0.6.0
+
 **Keptn in [version 0.5.1](https://github.com/keptn/keptn/releases/tag/0.5.1) requires:**
 
 *Keptn core:*
