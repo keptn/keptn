@@ -15,9 +15,13 @@ import (
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
 	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
+
 	"github.com/google/uuid"
 	"github.com/kelseyhightower/envconfig"
+
+	keptnevents "github.com/keptn/go-utils/pkg/events"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -35,27 +39,19 @@ func main() {
 	os.Exit(_main(os.Args[1:], env))
 }
 
-type deploymentFinishedEvent struct {
-	Project            string `json:"project"`
-	TestStrategy       string `json:"teststrategy"`
-	DeploymentStrategy string `json:"deploymentstrategy"`
-	Stage              string `json:"stage"`
-	Service            string `json:"service"`
-}
-
 func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	var shkeptncontext string
 	event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
 
 	logger := keptnutils.NewLogger(shkeptncontext, event.Context.GetID(), "jmeter-service")
 
-	data := &deploymentFinishedEvent{}
+	data := &keptnevents.DeploymentFinishedEventData{}
 	if err := event.DataAs(data); err != nil {
 		logger.Error(fmt.Sprintf("Got Data Error: %s", err.Error()))
 		return err
 	}
 
-	if event.Type() != "sh.keptn.events.deployment-finished" {
+	if event.Type() != keptnevents.DeploymentFinishedEventType {
 		const errorMsg = "Received unexpected keptn event"
 		logger.Error(errorMsg)
 		return errors.New(errorMsg)
@@ -66,7 +62,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	return nil
 }
 
-func runTests(event cloudevents.Event, shkeptncontext string, data deploymentFinishedEvent, logger *keptnutils.Logger) {
+func runTests(event cloudevents.Event, shkeptncontext string, data keptnevents.DeploymentFinishedEventData, logger *keptnutils.Logger) {
 
 	testInfo := getTestInfo(data)
 	id := uuid.New().String()
@@ -128,7 +124,7 @@ func runTests(event cloudevents.Event, shkeptncontext string, data deploymentFin
 	}
 }
 
-func getTestInfo(data deploymentFinishedEvent) *TestInfo {
+func getTestInfo(data keptnevents.DeploymentFinishedEventData) *TestInfo {
 	return &TestInfo{
 		Project:      data.Project,
 		Service:      data.Service,
@@ -137,7 +133,7 @@ func getTestInfo(data deploymentFinishedEvent) *TestInfo {
 	}
 }
 
-func getServiceUrl(data deploymentFinishedEvent) string {
+func getServiceURL(data keptnevents.DeploymentFinishedEventData) string {
 	serviceURL := data.Service + "." + data.Project + "-" + data.Stage
 	if data.DeploymentStrategy == "blue_green_service" {
 		serviceURL = data.Service + "-canary" + "." + data.Project + "-" + data.Stage
@@ -145,18 +141,18 @@ func getServiceUrl(data deploymentFinishedEvent) string {
 	return serviceURL
 }
 
-func runHealthCheck(data deploymentFinishedEvent, id string, logger *keptnutils.Logger) (bool, error) {
+func runHealthCheck(data keptnevents.DeploymentFinishedEventData, id string, logger *keptnutils.Logger) (bool, error) {
 	os.RemoveAll("HealthCheck_" + data.Service)
 	os.RemoveAll("HealthCheck_" + data.Service + "_result.tlf")
 	os.RemoveAll("output.txt")
 
 	testInfo := getTestInfo(data)
 	return executeJMeter(testInfo, "jmeter/basiccheck.jmx", "HealthCheck_"+data.Service,
-		getServiceUrl(data), 80, "/health", 1, 1, 250, "HealthCheck_"+id,
+		getServiceURL(data), 80, "/health", 1, 1, 250, "HealthCheck_"+id,
 		true, 0, logger)
 }
 
-func runFunctionalCheck(data deploymentFinishedEvent, id string, logger *keptnutils.Logger) (bool, error) {
+func runFunctionalCheck(data keptnevents.DeploymentFinishedEventData, id string, logger *keptnutils.Logger) (bool, error) {
 
 	os.RemoveAll("FuncCheck_" + data.Service)
 	os.RemoveAll("FuncCheck_" + data.Service + "_result.tlf")
@@ -164,11 +160,11 @@ func runFunctionalCheck(data deploymentFinishedEvent, id string, logger *keptnut
 
 	testInfo := getTestInfo(data)
 	return executeJMeter(testInfo, "jmeter/load.jmx",
-		"FuncCheck_"+data.Service, getServiceUrl(data),
+		"FuncCheck_"+data.Service, getServiceURL(data),
 		80, "/health", 1, 1, 250, "FuncCheck_"+id, true, 0, logger)
 }
 
-func runPerformanceCheck(data deploymentFinishedEvent, id string, logger *keptnutils.Logger) (bool, error) {
+func runPerformanceCheck(data keptnevents.DeploymentFinishedEventData, id string, logger *keptnutils.Logger) (bool, error) {
 
 	os.RemoveAll("PerfCheck_" + data.Service)
 	os.RemoveAll("PerfCheck_" + data.Service + "_result.tlf")
@@ -176,7 +172,7 @@ func runPerformanceCheck(data deploymentFinishedEvent, id string, logger *keptnu
 
 	testInfo := getTestInfo(data)
 	return executeJMeter(testInfo, "jmeter/load.jmx", "PerfCheck_"+data.Service,
-		getServiceUrl(data), 80, "/health", 10, 500, 250, "PerfCheck_"+id,
+		getServiceURL(data), 80, "/health", 10, 500, 250, "PerfCheck_"+id,
 		false, 0, logger)
 }
 
@@ -211,7 +207,7 @@ func sendTestsFinishedEvent(shkeptncontext string, incomingEvent cloudevents.Eve
 		Context: cloudevents.EventContextV02{
 			ID:          uuid.New().String(),
 			Time:        &types.Timestamp{Time: time.Now()},
-			Type:        "sh.keptn.events.tests-finished",
+			Type:        keptnevents.TestFinishedEventType_0_5_0_Compatible,
 			Source:      types.URLRef{URL: *source},
 			ContentType: &contentType,
 			Extensions:  map[string]interface{}{"shkeptncontext": shkeptncontext},
@@ -254,7 +250,7 @@ func sendEvaluationDoneEvent(shkeptncontext string, incomingEvent cloudevents.Ev
 		Context: cloudevents.EventContextV02{
 			ID:          uuid.New().String(),
 			Time:        &types.Timestamp{Time: time.Now()},
-			Type:        "sh.keptn.events.evaluation-done",
+			Type:        keptnevents.EvaluationDoneEventType,
 			Source:      types.URLRef{URL: *source},
 			ContentType: &contentType,
 			Extensions:  map[string]interface{}{"shkeptncontext": shkeptncontext},
