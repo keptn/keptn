@@ -96,7 +96,7 @@ func (s Scaler) ResolveAction(problem *keptnevents.ProblemEventData, shkeptncont
 		Context: cloudevents.EventContextV02{
 			ID:          uuid.New().String(),
 			Time:        &types.Timestamp{Time: time.Now()},
-			Type:        "sh.keptn.events.tests-finished",
+			Type:        keptnevents.TestsFinishedEventType,
 			Source:      types.URLRef{URL: *source},
 			ContentType: &contentType,
 			Extensions:  map[string]interface{}{"shkeptncontext": shkeptncontext},

@@ -61,16 +61,6 @@ func getTestStrategy(project string, stageName string) (string, error) {
 	return "", fmt.Errorf("Cannot find stage %s in project %s", stageName, project)
 }
 
-type deploymentFinishedEvent struct {
-	Project            string `json:"project"`
-	Stage              string `json:"stage"`
-	Service            string `json:"service"`
-	TestStrategy       string `json:"teststrategy"`
-	DeploymentStrategy string `json:"deploymentstrategy"`
-	Tag				   string `json:"tag"`
-	Image 		       string `json:"image"`
-}
-
 func sendDeploymentFinishedEvent(shkeptncontext string, project string, stage string, service string, testStrategy string, deploymentStrategy keptnevents.DeploymentStrategy, image string, tag string) error {
 
 	source, _ := url.Parse("helm-service")
@@ -88,21 +78,21 @@ func sendDeploymentFinishedEvent(shkeptncontext string, project string, stage st
 		deploymentStrategyOldIdentifier = "direct"
 	}
 
-	depFinishedEvent := deploymentFinishedEvent{
+	depFinishedEvent := keptnevents.DeploymentFinishedEventData{
 		Project:            project,
 		Stage:              stage,
 		Service:            service,
 		TestStrategy:       testStrategy,
 		DeploymentStrategy: deploymentStrategyOldIdentifier,
-		Image: image,
-		Tag: tag,
+		Image:              image,
+		Tag:                tag,
 	}
 
 	event := cloudevents.Event{
 		Context: cloudevents.EventContextV02{
 			ID:          uuid.New().String(),
 			Time:        &types.Timestamp{Time: time.Now()},
-			Type:        "sh.keptn.events.deployment-finished",
+			Type:        keptnevents.DeploymentFinishedEventType,
 			Source:      types.URLRef{URL: *source},
 			ContentType: &contentType,
 			Extensions:  map[string]interface{}{"shkeptncontext": shkeptncontext},
