@@ -108,7 +108,6 @@ spec:
           value: 'jmeter-service'
 ---
 # lighthouse-service: tests-finished distributor
-## lighthouse-service: sh.keptn.events.tests-finished
 apiVersion: apps/v1
 kind: Deployment
 metadata:
