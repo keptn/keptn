@@ -161,3 +161,23 @@ function wait_for_istio_ingressgateway() {
     sleep 5
   done
 }
+
+function wait_for_ingress() {
+  RETRY=0; RETRY_MAX=20;
+  DOMAIN="";
+
+  while [[ $RETRY -lt $RETRY_MAX ]]; do
+    DOMAIN=$(kubectl get ingress api-ingress -n keptn -o json | jq -r .status.loadBalancer.ingress[0].ip)
+    if [[ $DOMAIN = "null" ]]; then
+      DOMAIN=""
+    fi
+
+    if [[ "$DOMAIN" != "" ]]; then
+      print_debug "IP of ingress is available."
+      break
+    fi
+    RETRY=$[$RETRY+1]
+    print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 5s for IP of ingress to be available ..."
+    sleep 5
+  done
+}
