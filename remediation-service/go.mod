@@ -14,13 +14,14 @@ require (
 	github.com/exponent-io/jsonpath v0.0.0-20151013193312-d6023ce2651d // indirect
 	github.com/ghodss/yaml v1.0.0
 	github.com/gobuffalo/packr v1.30.1 // indirect
+	github.com/gogo/protobuf v1.3.1
 	github.com/golang/groupcache v0.0.0-20191027212112-611e8accdfc9 // indirect
 	github.com/google/btree v1.0.0 // indirect
 	github.com/google/uuid v1.1.1
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79 // indirect
 	github.com/jmoiron/sqlx v1.2.0 // indirect
 	github.com/kelseyhightower/envconfig v1.3.0
-	github.com/keptn/go-utils v0.3.0
+	github.com/keptn/go-utils v0.3.1-0.20191111100301-bff0cac85494
 	github.com/lib/pq v1.2.0 // indirect
 	github.com/liggitt/tabwriter v0.0.0-20181228230101-89fcab3d43de // indirect
 	github.com/mitchellh/go-wordwrap v1.0.0 // indirect
@@ -45,6 +46,7 @@ require (
 	k8s.io/kube-openapi v0.0.0-20190918143330-0270cf2f1c1d // indirect
 	k8s.io/kubernetes v1.14.0
 	sigs.k8s.io/kustomize v2.0.3+incompatible // indirect
+	sigs.k8s.io/yaml v1.1.0
 	vbom.ml/util v0.0.0-20180919145318-efcd4e0f9787 // indirect
 )
 
