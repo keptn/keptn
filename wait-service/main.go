@@ -178,12 +178,16 @@ func sendTestsFinishedEvent(shkeptncontext string, incomingEvent cloudevents.Eve
 	source, _ := url.Parse("wait-service")
 	contentType := "application/json"
 
-	var testFinishedData interface{}
+	testFinishedData := keptnevents.TestsFinishedEventData{}
+	// fill in data from incoming event (e.g., project, service, stage, teststrategy, deploymentstrategy)
 	if err := incomingEvent.DataAs(&testFinishedData); err != nil {
 		logger.Error(fmt.Sprintf("Got Data Error: %s", err.Error()))
 		return err
 	}
-	testFinishedData.(map[string]interface{})["startedat"] = startedAt
+
+	// fill in timestamps
+	testFinishedData.Start = startedAt.Format(time.RFC3339)
+	testFinishedData.End = time.Now().Format(time.RFC3339)
 
 	event := cloudevents.Event{
 		Context: cloudevents.EventContextV02{
