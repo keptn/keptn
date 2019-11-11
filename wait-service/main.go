@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	keptnevents "github.com/keptn/go-utils/pkg/events"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
@@ -73,6 +74,13 @@ func newClient() *Client {
 		},
 	}
 	return &client
+}
+
+type deploymentFinishedEvent struct {
+	Project      string `json:"project"`
+	Stage        string `json:"stage"`
+	Service      string `json:"service"`
+	TestStrategy string `json:"teststrategy"`
 }
 
 func gotEvent(ctx context.Context, event cloudevents.Event) error {
@@ -179,18 +187,22 @@ func sendTestsFinishedEvent(shkeptncontext string, incomingEvent cloudevents.Eve
 	source, _ := url.Parse("wait-service")
 	contentType := "application/json"
 
-	var testFinishedData interface{}
+	testFinishedData := keptnevents.TestsFinishedEventData{}
+	// fill in data from incoming event (e.g., project, service, stage, teststrategy, deploymentstrategy)
 	if err := incomingEvent.DataAs(&testFinishedData); err != nil {
 		logger.Error(fmt.Sprintf("Got Data Error: %s", err.Error()))
 		return err
 	}
-	testFinishedData.(map[string]interface{})["startedat"] = startedAt
+
+	// fill in timestamps
+	testFinishedData.Start = startedAt.Format(time.RFC3339)
+	testFinishedData.End = time.Now().Format(time.RFC3339)
 
 	event := cloudevents.Event{
 		Context: cloudevents.EventContextV02{
 			ID:          uuid.New().String(),
 			Time:        &types.Timestamp{Time: time.Now()},
-			Type:        keptnevents.TestFinishedEventType_0_5_0_Compatible,
+			Type:        keptnevents.TestsFinishedEventType,
 			Source:      types.URLRef{URL: *source},
 			ContentType: &contentType,
 			Extensions:  map[string]interface{}{"shkeptncontext": shkeptncontext},
