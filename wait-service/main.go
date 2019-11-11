@@ -12,13 +12,13 @@ import (
 	"strings"
 	"time"
 
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
-	keptnevents "github.com/keptn/go-utils/pkg/events"
-
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
 	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
+
+	keptnevents "github.com/keptn/go-utils/pkg/events"
+	keptnutils "github.com/keptn/go-utils/pkg/utils"
 
 	"github.com/google/uuid"
 	"github.com/kelseyhightower/envconfig"
@@ -31,7 +31,6 @@ type envConfig struct {
 	Port int    `envconfig:"RCV_PORT" default:"8080"`
 	Path string `envconfig:"RCV_PATH" default:"/"`
 }
-
 
 type Client struct {
 	httpClient *http.Client
@@ -75,20 +74,13 @@ func newClient() *Client {
 	return &client
 }
 
-type deploymentFinishedEvent struct {
-	Project      string `json:"project"`
-	Stage        string `json:"stage"`
-	Service      string `json:"service"`
-	TestStrategy string `json:"teststrategy"`
-}
-
 func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	var shkeptncontext string
 	event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
 
 	logger := keptnutils.NewLogger(shkeptncontext, event.Context.GetID(), "wait-service")
 
-	data := &deploymentFinishedEvent{}
+	data := &keptnevents.DeploymentFinishedEventData{}
 	if err := event.DataAs(data); err != nil {
 		logger.Error(fmt.Sprintf("Got Data Error: %s", err.Error()))
 		return err
@@ -106,7 +98,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 }
 
 // waitDuration just waits for a the time defined in environment variable WAIT_DURATION
-func waitDuration(event cloudevents.Event, shkeptncontext string, data deploymentFinishedEvent, logger *keptnutils.Logger) {
+func waitDuration(event cloudevents.Event, shkeptncontext string, data keptnevents.DeploymentFinishedEventData, logger *keptnutils.Logger) {
 
 	startedAt := time.Now()
 
