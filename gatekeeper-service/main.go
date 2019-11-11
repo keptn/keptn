@@ -69,7 +69,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 	logger := keptnutils.NewLogger(shkeptncontext, event.Context.GetID(), "gatekeeper-service")
 
-	if event.Type() == "sh.keptn.events.evaluation-done" {
+	if event.Type() == keptnevents.EvaluationDoneEventType {
 		go doGateKeeping(event, shkeptncontext, logger)
 	} else {
 		logger.Error("Received unexpected keptn event")
