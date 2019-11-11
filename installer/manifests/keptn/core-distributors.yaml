@@ -108,7 +108,7 @@ spec:
           value: 'jmeter-service'
 ---
 # lighthouse-service: tests-finished distributor
-## lighthouse-service: sh.keptn.events.tests.finished
+## lighthouse-service: sh.keptn.events.tests-finished
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -140,7 +140,7 @@ spec:
             - name: PUBSUB_URL
               value: 'nats://keptn-nats-cluster'
             - name: PUBSUB_TOPIC
-              value: 'sh.keptn.event.tests.finished'
+              value: 'sh.keptn.events.tests-finished'
             - name: PUBSUB_RECIPIENT
               value: 'lighthouse-service'
 ---
