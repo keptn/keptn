@@ -6,7 +6,7 @@ require (
 	github.com/cloudevents/sdk-go v0.10.0
 	github.com/google/uuid v1.1.1
 	github.com/kelseyhightower/envconfig v1.3.0
-	github.com/keptn/go-utils v0.0.0-20191107120119-a4a5f8adcc8b
+	github.com/keptn/go-utils v0.0.0-20191111100301-bff0cac85494
 )
 
 // replace cloudevents/sdk-go with version 0.7.0

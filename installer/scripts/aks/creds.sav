@@ -1,7 +1,4 @@
 {
-    "githubUserName": "GITHUB_USER_NAME_PLACEHOLDER",
-    "githubPersonalAccessToken": "PERSONAL_ACCESS_TOKEN_PLACEHOLDER",
-    "githubOrg": "GITHUB_ORG_PLACEHOLDER",
     "clusterName": "CLUSTER_NAME_PLACEHOLDER",
     "azureResourceGroup": "AZURE_RESOURCE_GROUP",
     "azureSubscription": "AZURE_SUBSCRIPTION"
