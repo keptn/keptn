@@ -102,7 +102,7 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 		return err
 	}
 	// send a new event to trigger the SLI retrieval
-	err = eh.sendInternalGetSLIEvent(keptnContext, e.Project, e.Stage, e.Service, sliProvider, indicators, e.Start, e.End, e.TestStrategy, filters)
+	err = eh.sendInternalGetSLIEvent(keptnContext, e.Project, e.Stage, e.Service, sliProvider, indicators, e.Start, e.End, e.TestStrategy, e.DeploymentStrategy, filters)
 	return nil
 }
 
@@ -144,23 +144,22 @@ func getSLIProvider(project string) (string, error) {
 	return sliProvider, nil
 }
 
-func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(
-	shkeptncontext string, project string, stage string, service string, sliProvider string, indicators []string,
-	start string, end string, teststrategy string, filters []*keptnevents.SLIFilter) error {
+func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string, project string, stage string, service string, sliProvider string, indicators []string, start string, end string, teststrategy string, deploymentStrategy string, filters []*keptnevents.SLIFilter) error {
 
 	source, _ := url.Parse("lighthouse-service")
 	contentType := "application/json"
 
 	getSLIEvent := keptnevents.InternalGetSLIEventData{
-		SLIProvider:   sliProvider,
-		Project:       project,
-		Service:       service,
-		Stage:         stage,
-		Start:         start,
-		End:           end,
-		Indicators:    indicators,
-		CustomFilters: filters,
-		TestStrategy:  teststrategy,
+		SLIProvider:        sliProvider,
+		Project:            project,
+		Service:            service,
+		Stage:              stage,
+		Start:              start,
+		End:                end,
+		Indicators:         indicators,
+		CustomFilters:      filters,
+		TestStrategy:       teststrategy,
+		DeploymentStrategy: deploymentStrategy,
 	}
 	event := cloudevents.Event{
 		Context: cloudevents.EventContextV02{
