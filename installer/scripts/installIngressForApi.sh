@@ -4,6 +4,7 @@ source ./common/utils.sh
 kubectl apply -f ../manifests/keptn/api-ingress.yaml
 verify_install_step $? "Installing ingress failed."
 wait_for_ingress
+
 export DOMAIN=$(kubectl get ingress api-ingress -n keptn -o json | jq -r .status.loadBalancer.ingress[0].ip)
 if [[ "$DOMAIN" == "null" ]]; then
     print_error "IP of ingress could not be derived."

@@ -33,7 +33,7 @@ if [[ "$DOMAIN" == "null" && "$GATEWAY_TYPE" == "LoadBalancer" ]]; then
 
     export DOMAIN=$(kubectl get svc istio-ingressgateway -o json -n istio-system | jq -r .status.loadBalancer.ingress[0].ip)
     if [[ "$DOMAIN" == "null" ]]; then
-        print_error "IP of Istio Ingressgateway could not be derived."
+        print_error "IP of Istio ingress gateway could not be derived."
         exit 1
     fi
     export DOMAIN="$DOMAIN.xip.io"

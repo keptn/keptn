@@ -150,7 +150,7 @@ func checkIfGatewayTypeIsSupported() bool {
 }
 
 func checkIfUseCaseIsSUpported() bool {
-	return *installParams.UseCase == "quality-gates" || *installParams.GatewayType == "all"
+	return *installParams.UseCase == "quality-gates" || *installParams.UseCase == "all"
 }
 
 func setPlatform() error {
@@ -265,7 +265,7 @@ func doInstallation() error {
 	// use case specific Keptn installation
 	ingress := "istio"
 	if *installParams.UseCase == "quality-gates" {
-		ingress = "ngnix"
+		ingress = "nginx"
 	}
 	if err := utils.Replace(installerPath,
 		utils.PlaceholderReplacement{PlaceholderValue: "INGRESS_PLACEHOLDER",

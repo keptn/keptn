@@ -14,7 +14,7 @@ kubectl apply -f ../manifests/nats/nats-cluster.yaml
 verify_kubectl $? "Creating NATS Cluster failed."
 
 # Add config map in keptn namespace that contains the domain - this will be used by other services as well
-rm ../manifests/gen/keptn-domain-configmap.yaml
+rm -f ../manifests/gen/keptn-domain-configmap.yaml
 
 cat ../manifests/keptn/keptn-domain-configmap.yaml | \
   sed 's~DOMAIN_PLACEHOLDER~'"$DOMAIN"'~' >> ../manifests/gen/keptn-domain-configmap.yaml
