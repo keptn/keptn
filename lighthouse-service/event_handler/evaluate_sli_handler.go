@@ -119,6 +119,8 @@ func evaluateObjectives(e *keptnevents.InternalGetSLIDoneEventData, sloConfig *k
 			TimeStart: e.Start,
 			TimeEnd:   e.End,
 		},
+		TestStrategy:       e.TestStrategy,
+		DeploymentStrategy: e.DeploymentStrategy,
 	}
 	var sliEvaluationResults []*keptnevents.SLIEvaluationResult
 	maximumAchievableScore := 0.0
