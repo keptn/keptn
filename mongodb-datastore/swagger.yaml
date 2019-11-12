@@ -13,7 +13,7 @@ produces:
   - application/cloudevents+json
   - application/json
 paths:
-  "/event":
+  /event:
     post:
       tags:
         - event
@@ -25,7 +25,7 @@ paths:
           schema:
             "$ref": "#/definitions/KeptnContextExtendedCE"
       responses:
-        '201':
+        201:
           description: created
         default:
           description: error
@@ -62,10 +62,15 @@ paths:
           type: string
           required: false
           description: Name of the service
+        - name: source
+          in: query
+          type: string
+          required: false
+          description: Name of the event source
         - "$ref": "#/parameters/pagesizeParam"
         - "$ref": "#/parameters/pageParam"
       responses:
-        '200':
+        200:
           description: ok
           schema:
             type: object
@@ -87,7 +92,7 @@ paths:
           description: error
           schema:
             "$ref": "#/definitions/error"
-  "/log":
+  /log:
     post:
       tags:
         - logs
@@ -101,7 +106,7 @@ paths:
             items:
               "$ref": "#/definitions/LogEntry"
       responses:
-        '201':
+        201:
           description: created
         default:
           description: error
@@ -121,7 +126,7 @@ paths:
         - "$ref": "#/parameters/pagesizeParam"
         - "$ref": "#/parameters/pageParam"
       responses:
-        '200':
+        200:
           description: ok
           schema:
             type: object

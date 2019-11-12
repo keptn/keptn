@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/keptn/keptn/mongodb-datastore/models"
+
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/logs"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -15,8 +17,8 @@ import (
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 )
 
-// SaveLog to datastore
-func SaveLog(body []*logs.SaveLogParamsBodyItems0) (err error) {
+// SaveLog stores logs in datastore
+func SaveLog(logEntries []*models.LogEntry) (err error) {
 	logger := keptnutils.NewLogger("", "", serviceName)
 	logger.Debug("save log to datastore")
 
@@ -35,7 +37,7 @@ func SaveLog(body []*logs.SaveLogParamsBodyItems0) (err error) {
 
 	collection := client.Database(mongoDBName).Collection(logsCollectionName)
 
-	for _, l := range body {
+	for _, l := range logEntries {
 		if l.KeptnService != "" {
 			res, err := collection.InsertOne(ctx, l)
 			if err != nil {
@@ -99,9 +101,9 @@ func GetLogs(params logs.GetLogsParams) (result *logs.GetLogsOKBody, err error) 
 		logger.Error(fmt.Sprintf("error finding elements in logs collection: %s", err.Error()))
 	}
 
-	var resultLogs []*logs.LogsItems0
+	var resultLogs []*models.LogEntry
 	for cur.Next(ctx) {
-		var result logs.LogsItems0
+		var result models.LogEntry
 		err := cur.Decode(&result)
 		if err != nil {
 			return nil, err

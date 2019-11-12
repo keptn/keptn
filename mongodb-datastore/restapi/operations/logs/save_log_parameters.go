@@ -11,6 +11,8 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+
+	models "github.com/keptn/keptn/mongodb-datastore/models"
 )
 
 // NewSaveLogParams creates a new SaveLogParams object
@@ -32,7 +34,7 @@ type SaveLogParams struct {
 	/*
 	  In: body
 	*/
-	Body []*SaveLogParamsBodyItems0
+	Body []*models.LogEntry
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -46,7 +48,7 @@ func (o *SaveLogParams) BindRequest(r *http.Request, route *middleware.MatchedRo
 
 	if runtime.HasBody(r) {
 		defer r.Body.Close()
-		var body []*SaveLogParamsBodyItems0
+		var body []*models.LogEntry
 		if err := route.Consumer.Consume(r.Body, &body); err != nil {
 			res = append(res, errors.NewParseError("body", "body", "", err))
 		} else {
