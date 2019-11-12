@@ -278,6 +278,11 @@ spec:
         image: keptn/jmeter-service:latest
         ports:
         - containerPort: 8080
+        env:
+        - name: CONFIGURATION_SERVICE
+          value: 'http://configuration-service.keptn.svc.cluster.local:8080'
+        - name: EVENTBROKER
+          value: 'http://event-broker.keptn.svc.cluster.local/keptn'
 ---
 apiVersion: v1
 kind: Service
