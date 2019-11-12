@@ -484,7 +484,10 @@ func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptnevents.InternalGetS
 		if ok {
 			// make sure that this event contains evaluationdetails (e.g., old events do not contain that element)
 			if _, ok := dataMap["evaluationdetails"]; ok {
-				evaluationDetails := dataMap["evaluationdetails"].(map[string]interface{})
+				evaluationDetails, ok := dataMap["evaluationdetails"].(map[string]interface{})
+				if !ok {
+					continue
+				}
 
 				// make sure evaluation details contains indicatorResults
 				if evaluationDetails["indicatorResults"] != nil && len(evaluationDetails["indicatorResults"].([]interface{})) > 0 {
