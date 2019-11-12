@@ -21,20 +21,12 @@ type GitCredentials struct {
 	RemoteURI string `json:"remoteURI,omitempty"`
 }
 
-// CloneRepo clones an upstream repository
+// CloneRepo clones an upstream repository into a local folder "project"
 func CloneRepo(project string, user string, token string, uri string) error {
 	uri = getRepoURI(uri, user, token)
 
-	_, err := utils.ExecuteCommandInDirectory("git", []string{"clone", uri}, config.ConfigDir)
-	if err != nil {
-		return err
-	}
-	repoName := getRepoName(uri)
+	_, err := utils.ExecuteCommandInDirectory("git", []string{"clone", uri, project}, config.ConfigDir)
 
-	// rename if necessary
-	if repoName != project {
-		_, err = utils.ExecuteCommandInDirectory("mv", []string{repoName, project}, config.ConfigDir)
-	}
 	return err
 }
 
@@ -54,12 +46,6 @@ func getRepoURI(uri string, user string, token string) string {
 	}
 
 	return uri
-}
-
-func getRepoName(uri string) string {
-	split := strings.Split(uri, "/")
-	split = strings.Split(split[len(split)-1], ".") // remove ".git, if part of the URI"
-	return split[0]
 }
 
 // CheckoutBranch checks out the given branch
