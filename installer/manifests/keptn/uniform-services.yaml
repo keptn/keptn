@@ -125,16 +125,6 @@ spec:
           value: 'http://configuration-service.keptn.svc.cluster.local:8080'
         - name: EVENTBROKER
           value: 'http://event-broker.keptn.svc.cluster.local/keptn'
-        - name: THROUGHPUT_QUERY
-          value: ""
-        - name: ERROR_RATE_QUERY
-          value: ""
-        - name: REQUEST_LATENCY_P50_QUERY
-          value: ""
-        - name: REQUEST_LATENCY_P90_QUERY
-          value: ""
-        - name: REQUEST_LATENCY_P95_QUERY
-          value: ""
 ---
 apiVersion: v1
 kind: Service
