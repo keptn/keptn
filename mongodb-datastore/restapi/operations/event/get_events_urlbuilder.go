@@ -20,6 +20,7 @@ type GetEventsURL struct {
 	PageSize     *int64
 	Project      *string
 	Service      *string
+	Source       *string
 	Stage        *string
 	Type         *string
 
@@ -57,60 +58,68 @@ func (o *GetEventsURL) Build() (*url.URL, error) {
 
 	qs := make(url.Values)
 
-	var keptnContext string
+	var keptnContextQ string
 	if o.KeptnContext != nil {
-		keptnContext = *o.KeptnContext
+		keptnContextQ = *o.KeptnContext
 	}
-	if keptnContext != "" {
-		qs.Set("keptnContext", keptnContext)
+	if keptnContextQ != "" {
+		qs.Set("keptnContext", keptnContextQ)
 	}
 
-	var nextPageKey string
+	var nextPageKeyQ string
 	if o.NextPageKey != nil {
-		nextPageKey = *o.NextPageKey
+		nextPageKeyQ = *o.NextPageKey
 	}
-	if nextPageKey != "" {
-		qs.Set("nextPageKey", nextPageKey)
+	if nextPageKeyQ != "" {
+		qs.Set("nextPageKey", nextPageKeyQ)
 	}
 
-	var pageSize string
+	var pageSizeQ string
 	if o.PageSize != nil {
-		pageSize = swag.FormatInt64(*o.PageSize)
+		pageSizeQ = swag.FormatInt64(*o.PageSize)
 	}
-	if pageSize != "" {
-		qs.Set("pageSize", pageSize)
+	if pageSizeQ != "" {
+		qs.Set("pageSize", pageSizeQ)
 	}
 
-	var project string
+	var projectQ string
 	if o.Project != nil {
-		project = *o.Project
+		projectQ = *o.Project
 	}
-	if project != "" {
-		qs.Set("project", project)
+	if projectQ != "" {
+		qs.Set("project", projectQ)
 	}
 
-	var service string
+	var serviceQ string
 	if o.Service != nil {
-		service = *o.Service
+		serviceQ = *o.Service
 	}
-	if service != "" {
-		qs.Set("service", service)
+	if serviceQ != "" {
+		qs.Set("service", serviceQ)
 	}
 
-	var stage string
+	var sourceQ string
+	if o.Source != nil {
+		sourceQ = *o.Source
+	}
+	if sourceQ != "" {
+		qs.Set("source", sourceQ)
+	}
+
+	var stageQ string
 	if o.Stage != nil {
-		stage = *o.Stage
+		stageQ = *o.Stage
 	}
-	if stage != "" {
-		qs.Set("stage", stage)
+	if stageQ != "" {
+		qs.Set("stage", stageQ)
 	}
 
-	var typeVar string
+	var typeVarQ string
 	if o.Type != nil {
-		typeVar = *o.Type
+		typeVarQ = *o.Type
 	}
-	if typeVar != "" {
-		qs.Set("type", typeVar)
+	if typeVarQ != "" {
+		qs.Set("type", typeVarQ)
 	}
 
 	_result.RawQuery = qs.Encode()

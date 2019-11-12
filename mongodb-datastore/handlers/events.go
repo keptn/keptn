@@ -12,13 +12,14 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	"github.com/keptn/keptn/mongodb-datastore/models"
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/event"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// SaveEvent to data store
-func SaveEvent(body event.SaveEventBody) error {
+// SaveEvent stores event in data store
+func SaveEvent(event *models.KeptnContextExtendedCE) (error) {
 	logger := keptnutils.NewLogger("", "", serviceName)
 	logger.Debug("save event to datastore")
 
@@ -37,17 +38,30 @@ func SaveEvent(body event.SaveEventBody) error {
 
 	collection := client.Database(mongoDBName).Collection(eventsCollectionName)
 
-	res, err := collection.InsertOne(ctx, body)
+//	bEvent, err := toDoc(event)
+	res, err := collection.InsertOne(ctx, event)
 	if err != nil {
 		logger.Error(fmt.Sprintf("error inserting into collection: %s", err.Error()))
+	} else {
+		logger.Debug(fmt.Sprintf("insertedID: %s", res.InsertedID))
 	}
-	logger.Debug(fmt.Sprintf("insertedID: %s", res.InsertedID))
 
 	return err
 }
 
-// GetEvents gets all events from the data store sorted by time
-func GetEvents(params event.GetEventsParams) (result *event.GetEventsOKBody, err error) {
+/*
+func toDoc(v interface{}) (doc *bson.Document, err error) {
+	data, err := bson.Marshal(v)
+	if err != nil {
+		return
+	}
+	err = bson.Unmarshal(data, &doc)
+	return
+}
+*/
+
+// GetEvents returns all events from the data store sorted by time
+func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 	logger := keptnutils.NewLogger("", "", serviceName)
 	logger.Debug("getting events from the datastore")
 
@@ -106,16 +120,17 @@ func GetEvents(params event.GetEventsParams) (result *event.GetEventsOKBody, err
 		logger.Error(fmt.Sprintf("error finding elements in events collection: %s", err.Error()))
 	}
 
-	var resultEvents []*event.EventsItems0
+	var resultEvents []*models.KeptnContextExtendedCE
 	for cur.Next(ctx) {
-		var result event.EventsItems0
-		err := cur.Decode(&result)
+		var event models.KeptnContextExtendedCE
+		err := cur.Decode(&event)
 		if err != nil {
 			return nil, err
 		}
+
 		// flatten the data property
-		result.Data = flattenRecursively(result.Data.(bson.D), logger)
-		resultEvents = append(resultEvents, &result)
+		//event = flattenRecursively(event.(bson.D), logger)
+		resultEvents = append(resultEvents, &event)
 	}
 
 	var myresult event.GetEventsOKBody
