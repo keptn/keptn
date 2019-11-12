@@ -39,6 +39,7 @@ type installCmdParams struct {
 	InstallerVersion   *string
 	PlatformIdentifier *string
 	GatewayType        *string
+	UseCase            *string
 }
 
 var installParams *installCmdParams
@@ -85,7 +86,11 @@ Example:
 		}
 
 		if !checkIfGatewayTypeIsSupported() {
-			return errors.New(`Keptn currently supports 'LoadBalancer' and 'NodePort'`)
+			return errors.New(`Keptn currently supports: 'LoadBalancer' and 'NodePort'`)
+		}
+
+		if !checkIfUseCaseIsSUpported() {
+			return errors.New(`Keptn currently supports use case: 'quality-gates' and 'all'`)
 		}
 
 		isInstallerAvailable, err := checkInstallerAvailability()
@@ -117,7 +122,6 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 			if err != nil {
 				return err
 			}
-
 		}
 
 		return nil
@@ -143,6 +147,10 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 
 func checkIfGatewayTypeIsSupported() bool {
 	return *installParams.GatewayType == "NodePort" || *installParams.GatewayType == "LoadBalancer"
+}
+
+func checkIfUseCaseIsSUpported() bool {
+	return *installParams.UseCase == "quality-gates" || *installParams.GatewayType == "all"
 }
 
 func setPlatform() error {
@@ -177,17 +185,26 @@ func setPlatform() error {
 func init() {
 	rootCmd.AddCommand(installCmd)
 	installParams = &installCmdParams{}
+
+	installParams.PlatformIdentifier = installCmd.Flags().StringP("platform", "p", "gke",
+		"The platform to run keptn on [aks,eks,gke,pks,openshift,kubernetes]")
+
 	installParams.ConfigFilePath = installCmd.Flags().StringP("creds", "c", "",
 		"The name of the creds file")
 	installCmd.Flags().MarkHidden("creds")
+
 	installParams.InstallerVersion = installCmd.Flags().StringP("keptn-version", "k",
 		"master", "The branch or tag of the version which is installed")
 	installCmd.Flags().MarkHidden("keptn-version")
-	installParams.PlatformIdentifier = installCmd.Flags().StringP("platform", "p", "gke",
-		"The platform to run keptn on [aks,eks,gke,pks,openshift,kubernetes]")
+
 	installParams.GatewayType = installCmd.Flags().StringP("gateway", "g", "LoadBalancer",
 		"The ingress-loadbalancer type [LoadBalancer,NodePort]")
 	installCmd.Flags().MarkHidden("gateway")
+
+	installParams.UseCase = installCmd.Flags().StringP("use-case", "u", "all",
+		"The use case to install Keptn for [quality-gates,all]")
+	installCmd.Flags().MarkHidden("use-case")
+
 	installCmd.PersistentFlags().BoolVarP(&insecureSkipTLSVerify, "insecure-skip-tls-verify", "s",
 		false, "Skip tls verification for kubectl commands")
 }
@@ -220,7 +237,7 @@ func getRbacURL() string {
 	return installerPrefixURL + *installParams.InstallerVersion + rbacSuffixPath
 }
 
-// Preconditions: 1. Already authenticated against the cluster;
+// Preconditions: 1. Already authenticated against the cluster.
 func doInstallation() error {
 
 	path, err := keptnutils.GetKeptnDirectory()
@@ -242,6 +259,17 @@ func doInstallation() error {
 	if err := utils.Replace(installerPath,
 		utils.PlaceholderReplacement{PlaceholderValue: "GATEWAY_TYPE_PLACEHOLDER",
 			DesiredValue: *installParams.GatewayType}); err != nil {
+		return err
+	}
+
+	// use case specific Keptn installation
+	ingress := "istio"
+	if *installParams.UseCase == "quality-gates" {
+		ingress = "ngnix"
+	}
+	if err := utils.Replace(installerPath,
+		utils.PlaceholderReplacement{PlaceholderValue: "INGRESS_PLACEHOLDER",
+			DesiredValue: ingress}); err != nil {
 		return err
 	}
 
@@ -281,6 +309,16 @@ func doInstallation() error {
 
 	if err := os.Remove(installerPath); err != nil {
 		return err
+	}
+
+	// use case specific Keptn modification
+	if *installParams.UseCase == "quality-gates" {
+		o = options{"delete", "deployment", "gatekeeper-service-evaluation-done-distributor", "-n", "keptn"}
+		o.appendIfNotEmpty(kubectlOptions)
+		_, err = keptnutils.ExecuteCommand("kubectl", o)
+		if err != nil {
+			return err
+		}
 	}
 
 	o = options{"delete", "job", "installer", "-n", "default"}
@@ -473,7 +511,7 @@ func getInstallerLogs(podName string) error {
 	}
 
 	if !installSuccessfulStdErr || !installSuccessfulStdOut {
-		return errors.New("keptn installation was unsuccessful")
+		return errors.New("Keptn installation was unsuccessful")
 	}
 	return nil
 }
