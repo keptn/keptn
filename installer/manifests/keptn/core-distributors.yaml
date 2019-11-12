@@ -107,7 +107,7 @@ spec:
         - name: PUBSUB_RECIPIENT
           value: 'jmeter-service'
 ---
-## lighthouse-service: sh.keptn.events.tests-finished
+# lighthouse-service: tests-finished distributor
 apiVersion: apps/v1
 kind: Deployment
 metadata:
