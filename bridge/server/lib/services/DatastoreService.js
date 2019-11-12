@@ -25,6 +25,9 @@ class DatastoreService {
       case 'sh.keptn.events.evaluation-done': mappedEvent.eventTypeHeadline = 'Evaluation done'; break;
       case 'sh.keptn.events.tests-finished': mappedEvent.eventTypeHeadline = 'Tests finished'; break;
       case 'sh.keptn.event.start-evaluation': mappedEvent.eventTypeHeadline = 'Start Evaluation'; break;
+      case 'sh.keptn.internal.event.get-sli': mappedEvent.eventTypeHeadline = 'Start SLI retrieval'; break;
+      case 'sh.keptn.internal.event.get-sli.done': mappedEvent.eventTypeHeadline = 'SLI retrieval done'; break;
+
       default: mappedEvent.eventTypeHeadline = event.type; break;
     }
 
