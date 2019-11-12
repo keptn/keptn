@@ -58,6 +58,9 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		return errors.New(errorMsg)
 	}
 
+	if data.TestStrategy == "real-user" {
+		logger.Info("Received 'real-user' test strategy, hence no tests are triggered")
+	}
 	go runTests(event, shkeptncontext, *data, logger)
 
 	return nil
