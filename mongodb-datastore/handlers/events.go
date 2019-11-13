@@ -7,14 +7,15 @@ import (
 	"strconv"
 	"time"
 
-	"go.mongodb.org/mongo-driver/bson/primitive"
-
 	"github.com/jeremywohl/flatten"
-	"go.mongodb.org/mongo-driver/bson"
 
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
+
 	"github.com/keptn/keptn/mongodb-datastore/models"
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/event"
+
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -22,11 +23,11 @@ import (
 // SaveEvent stores event in data store
 func SaveEvent(event *models.KeptnContextExtendedCE) error {
 	logger := keptnutils.NewLogger("", "", serviceName)
-	logger.Debug("save event to datastore")
+	logger.Debug("save event to data store")
 
 	client, err := mongo.NewClient(options.Client().ApplyURI(mongoDBConnection))
 	if err != nil {
-		err := fmt.Errorf("failed to create mongo client: %s", err.Error())
+		err := fmt.Errorf("failed to create mongo client: %v", err)
 		logger.Error(err.Error())
 		return err
 	}
@@ -36,17 +37,16 @@ func SaveEvent(event *models.KeptnContextExtendedCE) error {
 
 	err = client.Connect(ctx)
 	if err != nil {
-		err := fmt.Errorf("failed to connect: %s", err.Error())
+		err := fmt.Errorf("failed to connect: %v", err)
 		logger.Error(err.Error())
 		return err
 	}
 
 	collection := client.Database(mongoDBName).Collection(eventsCollectionName)
 
-	//	bEvent, err := toDoc(event)
 	data, err := json.Marshal(event)
 	if err != nil {
-		err := fmt.Errorf("failed to marshal event: %s", err.Error())
+		err := fmt.Errorf("failed to marshal event: %v", err)
 		logger.Error(err.Error())
 		return err
 	}
@@ -54,14 +54,14 @@ func SaveEvent(event *models.KeptnContextExtendedCE) error {
 	var eventInterface interface{}
 	err = json.Unmarshal(data, &eventInterface)
 	if err != nil {
-		err := fmt.Errorf("failed to unmarshal event: %s", err.Error())
+		err := fmt.Errorf("failed to unmarshal event: %v", err)
 		logger.Error(err.Error())
 		return err
 	}
 
 	res, err := collection.InsertOne(ctx, eventInterface)
 	if err != nil {
-		err := fmt.Errorf("error inserting into collection: %s", err.Error())
+		err := fmt.Errorf("failed to insert into collection: %v", err)
 		logger.Error(err.Error())
 		return err
 	}
@@ -73,11 +73,13 @@ func SaveEvent(event *models.KeptnContextExtendedCE) error {
 // GetEvents returns all events from the data store sorted by time
 func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 	logger := keptnutils.NewLogger("", "", serviceName)
-	logger.Debug("getting events from the datastore")
+	logger.Debug("getting events from the data store")
 
 	client, err := mongo.NewClient(options.Client().ApplyURI(mongoDBConnection))
 	if err != nil {
-		logger.Error(fmt.Sprintf("error creating client: %s", err.Error()))
+		err := fmt.Errorf("failed to create client: %v", err)
+		logger.Error(err.Error())
+		return nil, err
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -85,7 +87,9 @@ func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 
 	err = client.Connect(ctx)
 	if err != nil {
-		logger.Error(fmt.Sprintf("could not connect: %s", err.Error()))
+		err := fmt.Errorf("failed to connect: %v", err)
+		logger.Error(err.Error())
+		return nil, err
 	}
 
 	collection := client.Database(mongoDBName).Collection(eventsCollectionName)
@@ -120,8 +124,8 @@ func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 		newNextPageKey = *params.PageSize
 	}
 
-	pagesize := *params.PageSize
-	sortOptions := options.Find().SetSort(bson.D{{"time", -1}}).SetSkip(nextPageKey).SetLimit(pagesize)
+	pageSize := *params.PageSize
+	sortOptions := options.Find().SetSort(bson.D{{"time", -1}}).SetSkip(nextPageKey).SetLimit(pageSize)
 
 	totalCount, err := collection.CountDocuments(ctx, searchOptions)
 	if err != nil {
@@ -149,24 +153,24 @@ func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 
 		data, _ := json.Marshal(outputEvent)
 
-		var event models.KeptnContextExtendedCE
-		err = event.UnmarshalJSON(data)
+		var keptnEvent models.KeptnContextExtendedCE
+		err = keptnEvent.UnmarshalJSON(data)
 		if err != nil {
 			logger.Error(fmt.Sprintf("failed to unmarshal %v", err))
 			return nil, err
 		}
-		resultEvents = append(resultEvents, &event)
+		resultEvents = append(resultEvents, &keptnEvent)
 	}
 
-	var myresult event.GetEventsOKBody
-	myresult.Events = resultEvents
-	myresult.PageSize = pagesize
-	myresult.TotalCount = totalCount
+	var myResult event.GetEventsOKBody
+	myResult.Events = resultEvents
+	myResult.PageSize = pageSize
+	myResult.TotalCount = totalCount
 	if newNextPageKey < totalCount {
-		myresult.NextPageKey = strconv.FormatInt(newNextPageKey, 10)
+		myResult.NextPageKey = strconv.FormatInt(newNextPageKey, 10)
 	}
 
-	return &myresult, nil
+	return &myResult, nil
 }
 
 func flattenRecursively(i interface{}, logger *keptnutils.Logger) (interface{}, error) {
@@ -176,7 +180,7 @@ func flattenRecursively(i interface{}, logger *keptnutils.Logger) (interface{}, 
 		myMap := d.Map()
 		flat, err := flatten.Flatten(myMap, "", flatten.RailsStyle)
 		if err != nil {
-			logger.Error(fmt.Sprintf("could not flatten element: %s", err.Error()))
+			logger.Error(fmt.Sprintf("could not flatten element: %v", err))
 			return nil, err
 		}
 		for k, v := range flat {
