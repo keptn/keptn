@@ -20,4 +20,6 @@ spec:
           value: PLATFORM_PLACEHOLDER
         - name: GATEWAY_TYPE
           value: GATEWAY_TYPE_PLACEHOLDER
+        - name: INGRESS
+          value: INGRESS_PLACEHOLDER
       restartPolicy: OnFailure
