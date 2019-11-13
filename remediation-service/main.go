@@ -147,9 +147,10 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		return err
 	}
 
-	actionExecutors := []actions.ActionExecutor{actions.NewScaler(), actions.NewSlower(), actions.NewAborter()}
+	actionExecutors := []actions.ActionExecutor{actions.NewScaler(), actions.NewSlower(), actions.NewAborter(), actions.NewFeatureToggler()}
 
 	for _, remediation := range remediationData.Remediations {
+		logger.Debug("Trying to map remediation '" + remediation.Name + "' to problem '" + problemEvent.ProblemTitle + "'")
 		if strings.HasPrefix(problemEvent.ProblemTitle, remediation.Name) {
 			logger.Debug("Remediation for problem found")
 			// currently only one remediation action is supported
