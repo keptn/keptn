@@ -17,6 +17,7 @@ spec:
       containers:
       - name: remediation-service
         image: keptn/remediation-service:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
         resources:
@@ -33,6 +34,31 @@ spec:
             value: 'http://configuration-service.keptn.svc.cluster.local:8080'
           - name: ENVIRONMENT
             value: 'production'
+          - name: DT_API_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: dynatrace
+                key: DT_API_TOKEN
+          - name: DT_TENANT
+            valueFrom:
+              secretKeyRef:
+                name: dynatrace
+                key: DT_TENANT
+          - name: UNLEASH_SERVER_URL
+            valueFrom:
+              secretKeyRef:
+                name: unleash
+                key: UNLEASH_SERVER_URL
+          - name: UNLEASH_USER
+            valueFrom:
+              secretKeyRef:
+                name: unleash
+                key: UNLEASH_USER
+          - name: UNLEASH_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: unleash
+                key: UNLEASH_TOKEN
 ---
 apiVersion: v1
 kind: Service
