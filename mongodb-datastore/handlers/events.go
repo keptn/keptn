@@ -6,22 +6,21 @@ import (
 	"strconv"
 	"time"
 
-	"go.mongodb.org/mongo-driver/bson/primitive"
-
 	"github.com/jeremywohl/flatten"
-	"go.mongodb.org/mongo-driver/bson"
-
+ 
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/mongodb-datastore/models"
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/event"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 // SaveEvent stores event in data store
-func SaveEvent(event *models.KeptnContextExtendedCE) (error) {
+func SaveEvent(event *models.KeptnContextExtendedCE) error {
 	logger := keptnutils.NewLogger("", "", serviceName)
-	logger.Debug("save event to datastore")
+	logger.Debug("save event to data store")
 
 	client, err := mongo.NewClient(options.Client().ApplyURI(mongoDBConnection))
 	if err != nil {
@@ -38,7 +37,7 @@ func SaveEvent(event *models.KeptnContextExtendedCE) (error) {
 
 	collection := client.Database(mongoDBName).Collection(eventsCollectionName)
 
-//	bEvent, err := toDoc(event)
+	//	bEvent, err := toDoc(event)
 	res, err := collection.InsertOne(ctx, event)
 	if err != nil {
 		logger.Error(fmt.Sprintf("error inserting into collection: %s", err.Error()))
@@ -63,7 +62,7 @@ func toDoc(v interface{}) (doc *bson.Document, err error) {
 // GetEvents returns all events from the data store sorted by time
 func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 	logger := keptnutils.NewLogger("", "", serviceName)
-	logger.Debug("getting events from the datastore")
+	logger.Debug("getting events from the data store")
 
 	client, err := mongo.NewClient(options.Client().ApplyURI(mongoDBConnection))
 	if err != nil {
@@ -87,6 +86,9 @@ func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 	if params.Type != nil {
 		searchOptions["type"] = params.Type
 	}
+	if params.Source != nil {
+		searchOptions["source"] = params.Source
+	}
 	if params.Project != nil {
 		searchOptions["data.project"] = params.Project
 	}
@@ -107,8 +109,8 @@ func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 		newNextPageKey = *params.PageSize
 	}
 
-	pagesize := *params.PageSize
-	sortOptions := options.Find().SetSort(bson.D{{"time", -1}}).SetSkip(nextPageKey).SetLimit(pagesize)
+	pageSize := *params.PageSize
+	sortOptions := options.Find().SetSort(bson.D{{"time", -1}}).SetSkip(nextPageKey).SetLimit(pageSize)
 
 	totalCount, err := collection.CountDocuments(ctx, searchOptions)
 	if err != nil {
@@ -135,7 +137,7 @@ func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 
 	var myresult event.GetEventsOKBody
 	myresult.Events = resultEvents
-	myresult.PageSize = pagesize
+	myresult.PageSize = pageSize
 	myresult.TotalCount = totalCount
 	if newNextPageKey < totalCount {
 		myresult.NextPageKey = strconv.FormatInt(newNextPageKey, 10)
