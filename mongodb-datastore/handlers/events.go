@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"time"
@@ -19,13 +20,15 @@ import (
 )
 
 // SaveEvent stores event in data store
-func SaveEvent(event *models.KeptnContextExtendedCE) (error) {
+func SaveEvent(event *models.KeptnContextExtendedCE) error {
 	logger := keptnutils.NewLogger("", "", serviceName)
 	logger.Debug("save event to datastore")
 
 	client, err := mongo.NewClient(options.Client().ApplyURI(mongoDBConnection))
 	if err != nil {
-		logger.Error(fmt.Sprintf("error creating client: %s", err.Error()))
+		err := fmt.Errorf("failed to create mongo client: %s", err.Error())
+		logger.Error(err.Error())
+		return err
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -33,32 +36,39 @@ func SaveEvent(event *models.KeptnContextExtendedCE) (error) {
 
 	err = client.Connect(ctx)
 	if err != nil {
-		logger.Error(fmt.Sprintf("could not connect: %s", err.Error()))
+		err := fmt.Errorf("failed to connect: %s", err.Error())
+		logger.Error(err.Error())
+		return err
 	}
 
 	collection := client.Database(mongoDBName).Collection(eventsCollectionName)
 
-//	bEvent, err := toDoc(event)
-	res, err := collection.InsertOne(ctx, event)
+	//	bEvent, err := toDoc(event)
+	data, err := json.Marshal(event)
 	if err != nil {
-		logger.Error(fmt.Sprintf("error inserting into collection: %s", err.Error()))
-	} else {
-		logger.Debug(fmt.Sprintf("insertedID: %s", res.InsertedID))
+		err := fmt.Errorf("failed to marshal event: %s", err.Error())
+		logger.Error(err.Error())
+		return err
 	}
 
-	return err
-}
-
-/*
-func toDoc(v interface{}) (doc *bson.Document, err error) {
-	data, err := bson.Marshal(v)
+	var eventInterface interface{}
+	err = json.Unmarshal(data, &eventInterface)
 	if err != nil {
-		return
+		err := fmt.Errorf("failed to unmarshal event: %s", err.Error())
+		logger.Error(err.Error())
+		return err
 	}
-	err = bson.Unmarshal(data, &doc)
-	return
+
+	res, err := collection.InsertOne(ctx, eventInterface)
+	if err != nil {
+		err := fmt.Errorf("error inserting into collection: %s", err.Error())
+		logger.Error(err.Error())
+		return err
+	}
+
+	logger.Debug(fmt.Sprintf("insertedID: %s", res.InsertedID))
+	return nil
 }
-*/
 
 // GetEvents returns all events from the data store sorted by time
 func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
@@ -112,24 +122,36 @@ func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 
 	totalCount, err := collection.CountDocuments(ctx, searchOptions)
 	if err != nil {
-		logger.Error(fmt.Sprintf("error counting elements in events collection: %s", err.Error()))
+		logger.Error(fmt.Sprintf("error counting elements in events collection: %v", err))
 	}
 
 	cur, err := collection.Find(ctx, searchOptions, sortOptions)
 	if err != nil {
-		logger.Error(fmt.Sprintf("error finding elements in events collection: %s", err.Error()))
+		logger.Error(fmt.Sprintf("error finding elements in events collection: %v", err))
 	}
 
 	var resultEvents []*models.KeptnContextExtendedCE
 	for cur.Next(ctx) {
-		var event models.KeptnContextExtendedCE
-		err := cur.Decode(&event)
+		var outputEvent interface{}
+		err := cur.Decode(&outputEvent)
 		if err != nil {
+			logger.Error(fmt.Sprintf("failed to decode event %v", err))
+			return nil, err
+		}
+		outputEvent, err = flattenRecursively(outputEvent, logger)
+		if err != nil {
+			logger.Error(fmt.Sprintf("failed to flatten %v", err))
 			return nil, err
 		}
 
-		// flatten the data property
-		//event = flattenRecursively(event.(bson.D), logger)
+		data, _ := json.Marshal(outputEvent)
+
+		var event models.KeptnContextExtendedCE
+		err = event.UnmarshalJSON(data)
+		if err != nil {
+			logger.Error(fmt.Sprintf("failed to unmarshal %v", err))
+			return nil, err
+		}
 		resultEvents = append(resultEvents, &event)
 	}
 
@@ -144,20 +166,34 @@ func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 	return &myresult, nil
 }
 
-func flattenRecursively(d bson.D, logger *keptnutils.Logger) map[string]interface{} {
+func flattenRecursively(i interface{}, logger *keptnutils.Logger) (interface{}, error) {
 
-	myMap := d.Map()
-	flat, err := flatten.Flatten(myMap, "", flatten.RailsStyle)
-	if err != nil {
-		logger.Error(fmt.Sprintf("could not flatten element: %s", err.Error()))
-	}
-
-	for k, v := range flat {
-		_, ok := v.(bson.D)
-		if ok {
-			flat[k] = flattenRecursively(v.(bson.D), logger)
+	if _, ok := i.(bson.D); ok {
+		d := i.(bson.D)
+		myMap := d.Map()
+		flat, err := flatten.Flatten(myMap, "", flatten.RailsStyle)
+		if err != nil {
+			logger.Error(fmt.Sprintf("could not flatten element: %s", err.Error()))
+			return nil, err
 		}
+		for k, v := range flat {
+			res, err := flattenRecursively(v, logger)
+			if err != nil {
+				return nil, err
+			}
+			flat[k] = res
+		}
+		return flat, nil
+	} else if _, ok := i.(bson.A); ok {
+		a := i.(bson.A)
+		for i := 0; i < len(a); i++ {
+			res, err := flattenRecursively(a[i], logger)
+			if err != nil {
+				return nil, err
+			}
+			a[i] = res
+		}
+		return a, nil
 	}
-
-	return flat
+	return i, nil
 }
