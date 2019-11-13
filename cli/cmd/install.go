@@ -89,7 +89,7 @@ Example:
 			return errors.New(`Keptn currently supports: 'LoadBalancer' and 'NodePort'`)
 		}
 
-		if !checkIfUseCaseIsSUpported() {
+		if !checkIfUseCaseIsSupported() {
 			return errors.New(`Keptn currently supports use case: 'quality-gates' and 'all'`)
 		}
 
@@ -149,7 +149,7 @@ func checkIfGatewayTypeIsSupported() bool {
 	return *installParams.GatewayType == "NodePort" || *installParams.GatewayType == "LoadBalancer"
 }
 
-func checkIfUseCaseIsSUpported() bool {
+func checkIfUseCaseIsSupported() bool {
 	return *installParams.UseCase == "quality-gates" || *installParams.UseCase == "all"
 }
 
