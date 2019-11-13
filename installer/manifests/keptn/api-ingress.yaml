@@ -12,6 +12,13 @@ spec:
         - domain.placeholder
       secretName: sslcerts
   rules:
+    - host: api.keptn.domain.placeholder
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: api
+              servicePort: 443
     - host: api.keptn
       http:
         paths:
