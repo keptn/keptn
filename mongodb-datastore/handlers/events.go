@@ -97,6 +97,9 @@ func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 	if params.Type != nil {
 		searchOptions["type"] = params.Type
 	}
+	if params.Source != nil {
+		searchOptions["source"] = params.Source
+	}
 	if params.Project != nil {
 		searchOptions["data.project"] = params.Project
 	}
