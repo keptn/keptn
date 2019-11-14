@@ -64,6 +64,10 @@ type GetEventsParams struct {
 	  In: query
 	*/
 	Service *string
+	/*Name of the event source
+	  In: query
+	*/
+	Source *string
 	/*Name of the stage
 	  In: query
 	*/
@@ -107,6 +111,11 @@ func (o *GetEventsParams) BindRequest(r *http.Request, route *middleware.Matched
 
 	qService, qhkService, _ := qs.GetOK("service")
 	if err := o.bindService(qService, qhkService, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
+	qSource, qhkSource, _ := qs.GetOK("source")
+	if err := o.bindSource(qSource, qhkSource, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -235,6 +244,24 @@ func (o *GetEventsParams) bindService(rawData []string, hasKey bool, formats str
 	}
 
 	o.Service = &raw
+
+	return nil
+}
+
+// bindSource binds and validates parameter Source from query.
+func (o *GetEventsParams) bindSource(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+
+	// Required: false
+	// AllowEmptyValue: false
+	if raw == "" { // empty values pass all other validations
+		return nil
+	}
+
+	o.Source = &raw
 
 	return nil
 }

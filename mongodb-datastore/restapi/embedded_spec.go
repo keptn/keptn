@@ -75,6 +75,12 @@ func init() {
             "in": "query"
           },
           {
+            "type": "string",
+            "description": "Name of the event source",
+            "name": "source",
+            "in": "query"
+          },
+          {
             "$ref": "#/parameters/pagesizeParam"
           },
           {
@@ -370,6 +376,12 @@ func init() {
             "in": "query"
           },
           {
+            "type": "string",
+            "description": "Name of the event source",
+            "name": "source",
+            "in": "query"
+          },
+          {
             "maximum": 100,
             "minimum": 1,
             "type": "integer",
@@ -394,56 +406,7 @@ func init() {
                 "events": {
                   "type": "array",
                   "items": {
-                    "allOf": [
-                      {
-                        "type": "object",
-                        "required": [
-                          "specversion",
-                          "id",
-                          "type",
-                          "source"
-                        ],
-                        "properties": {
-                          "contenttype": {
-                            "type": "string"
-                          },
-                          "data": {
-                            "type": [
-                              "object",
-                              "string"
-                            ]
-                          },
-                          "extensions": {
-                            "type": "object"
-                          },
-                          "id": {
-                            "type": "string"
-                          },
-                          "source": {
-                            "type": "string",
-                            "format": "uri-reference"
-                          },
-                          "specversion": {
-                            "type": "string"
-                          },
-                          "time": {
-                            "type": "string",
-                            "format": "date-time"
-                          },
-                          "type": {
-                            "type": "string"
-                          }
-                        }
-                      },
-                      {
-                        "type": "object",
-                        "properties": {
-                          "shkeptncontext": {
-                            "type": "string"
-                          }
-                        }
-                      }
-                    ]
+                    "$ref": "#/definitions/KeptnContextExtendedCE"
                   }
                 },
                 "nextPageKey": {
@@ -464,22 +427,7 @@ func init() {
           "default": {
             "description": "error",
             "schema": {
-              "type": "object",
-              "required": [
-                "message"
-              ],
-              "properties": {
-                "code": {
-                  "type": "integer",
-                  "format": "int64"
-                },
-                "fields": {
-                  "type": "string"
-                },
-                "message": {
-                  "type": "string"
-                }
-              }
+              "$ref": "#/definitions/error"
             }
           }
         }
@@ -495,56 +443,7 @@ func init() {
             "name": "body",
             "in": "body",
             "schema": {
-              "allOf": [
-                {
-                  "type": "object",
-                  "required": [
-                    "specversion",
-                    "id",
-                    "type",
-                    "source"
-                  ],
-                  "properties": {
-                    "contenttype": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "type": [
-                        "object",
-                        "string"
-                      ]
-                    },
-                    "extensions": {
-                      "type": "object"
-                    },
-                    "id": {
-                      "type": "string"
-                    },
-                    "source": {
-                      "type": "string",
-                      "format": "uri-reference"
-                    },
-                    "specversion": {
-                      "type": "string"
-                    },
-                    "time": {
-                      "type": "string",
-                      "format": "date-time"
-                    },
-                    "type": {
-                      "type": "string"
-                    }
-                  }
-                },
-                {
-                  "type": "object",
-                  "properties": {
-                    "shkeptncontext": {
-                      "type": "string"
-                    }
-                  }
-                }
-              ]
+              "$ref": "#/definitions/KeptnContextExtendedCE"
             }
           }
         ],
@@ -555,22 +454,7 @@ func init() {
           "default": {
             "description": "error",
             "schema": {
-              "type": "object",
-              "required": [
-                "message"
-              ],
-              "properties": {
-                "code": {
-                  "type": "integer",
-                  "format": "int64"
-                },
-                "fields": {
-                  "type": "string"
-                },
-                "message": {
-                  "type": "string"
-                }
-              }
+              "$ref": "#/definitions/error"
             }
           }
         }
@@ -615,28 +499,7 @@ func init() {
                 "logs": {
                   "type": "array",
                   "items": {
-                    "type": "object",
-                    "properties": {
-                      "eventId": {
-                        "type": "string"
-                      },
-                      "keptnContext": {
-                        "type": "string"
-                      },
-                      "keptnService": {
-                        "type": "string"
-                      },
-                      "logLevel": {
-                        "type": "string"
-                      },
-                      "message": {
-                        "type": "string"
-                      },
-                      "timestamp": {
-                        "type": "string",
-                        "format": "date-time"
-                      }
-                    }
+                    "$ref": "#/definitions/LogEntry"
                   }
                 },
                 "nextPageKey": {
@@ -657,22 +520,7 @@ func init() {
           "default": {
             "description": "error",
             "schema": {
-              "type": "object",
-              "required": [
-                "message"
-              ],
-              "properties": {
-                "code": {
-                  "type": "integer",
-                  "format": "int64"
-                },
-                "fields": {
-                  "type": "string"
-                },
-                "message": {
-                  "type": "string"
-                }
-              }
+              "$ref": "#/definitions/error"
             }
           }
         }
@@ -690,28 +538,7 @@ func init() {
             "schema": {
               "type": "array",
               "items": {
-                "type": "object",
-                "properties": {
-                  "eventId": {
-                    "type": "string"
-                  },
-                  "keptnContext": {
-                    "type": "string"
-                  },
-                  "keptnService": {
-                    "type": "string"
-                  },
-                  "logLevel": {
-                    "type": "string"
-                  },
-                  "message": {
-                    "type": "string"
-                  },
-                  "timestamp": {
-                    "type": "string",
-                    "format": "date-time"
-                  }
-                }
+                "$ref": "#/definitions/LogEntry"
               }
             }
           }
@@ -723,22 +550,7 @@ func init() {
           "default": {
             "description": "error",
             "schema": {
-              "type": "object",
-              "required": [
-                "message"
-              ],
-              "properties": {
-                "code": {
-                  "type": "integer",
-                  "format": "int64"
-                },
-                "fields": {
-                  "type": "string"
-                },
-                "message": {
-                  "type": "string"
-                }
-              }
+              "$ref": "#/definitions/error"
             }
           }
         }
@@ -749,44 +561,7 @@ func init() {
     "KeptnContextExtendedCE": {
       "allOf": [
         {
-          "type": "object",
-          "required": [
-            "specversion",
-            "id",
-            "type",
-            "source"
-          ],
-          "properties": {
-            "contenttype": {
-              "type": "string"
-            },
-            "data": {
-              "type": [
-                "object",
-                "string"
-              ]
-            },
-            "extensions": {
-              "type": "object"
-            },
-            "id": {
-              "type": "string"
-            },
-            "source": {
-              "type": "string",
-              "format": "uri-reference"
-            },
-            "specversion": {
-              "type": "string"
-            },
-            "time": {
-              "type": "string",
-              "format": "date-time"
-            },
-            "type": {
-              "type": "string"
-            }
-          }
+          "$ref": "#/definitions/event"
         },
         {
           "type": "object",
@@ -822,6 +597,15 @@ func init() {
         }
       }
     },
+    "contenttype": {
+      "type": "string"
+    },
+    "data": {
+      "type": [
+        "object",
+        "string"
+      ]
+    },
     "error": {
       "type": "object",
       "required": [
@@ -840,7 +624,62 @@ func init() {
         }
       }
     },
+    "event": {
+      "type": "object",
+      "required": [
+        "specversion",
+        "id",
+        "type",
+        "source"
+      ],
+      "properties": {
+        "contenttype": {
+          "$ref": "#/definitions/contenttype"
+        },
+        "data": {
+          "$ref": "#/definitions/data"
+        },
+        "extensions": {
+          "$ref": "#/definitions/extensions"
+        },
+        "id": {
+          "$ref": "#/definitions/id"
+        },
+        "source": {
+          "$ref": "#/definitions/source"
+        },
+        "specversion": {
+          "$ref": "#/definitions/specversion"
+        },
+        "time": {
+          "$ref": "#/definitions/time"
+        },
+        "type": {
+          "$ref": "#/definitions/type"
+        }
+      }
+    },
+    "extensions": {
+      "type": "object"
+    },
+    "id": {
+      "type": "string"
+    },
     "principal": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string",
+      "format": "uri-reference"
+    },
+    "specversion": {
+      "type": "string"
+    },
+    "time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "type": {
       "type": "string"
     }
   },

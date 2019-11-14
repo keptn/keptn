@@ -9,6 +9,8 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/runtime"
+
+	models "github.com/keptn/keptn/mongodb-datastore/models"
 )
 
 // SaveLogCreatedCode is the HTTP code returned for type SaveLogCreated
@@ -45,7 +47,7 @@ type SaveLogDefault struct {
 	/*
 	  In: Body
 	*/
-	Payload *SaveLogDefaultBody `json:"body,omitempty"`
+	Payload *models.Error `json:"body,omitempty"`
 }
 
 // NewSaveLogDefault creates SaveLogDefault with default headers values
@@ -71,13 +73,13 @@ func (o *SaveLogDefault) SetStatusCode(code int) {
 }
 
 // WithPayload adds the payload to the save log default response
-func (o *SaveLogDefault) WithPayload(payload *SaveLogDefaultBody) *SaveLogDefault {
+func (o *SaveLogDefault) WithPayload(payload *models.Error) *SaveLogDefault {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the save log default response
-func (o *SaveLogDefault) SetPayload(payload *SaveLogDefaultBody) {
+func (o *SaveLogDefault) SetPayload(payload *models.Error) {
 	o.Payload = payload
 }
 
