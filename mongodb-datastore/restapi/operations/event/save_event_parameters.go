@@ -11,6 +11,8 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+
+	models "github.com/keptn/keptn/mongodb-datastore/models"
 )
 
 // NewSaveEventParams creates a new SaveEventParams object
@@ -32,7 +34,7 @@ type SaveEventParams struct {
 	/*
 	  In: body
 	*/
-	Body SaveEventBody
+	Body *models.KeptnContextExtendedCE
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -46,7 +48,7 @@ func (o *SaveEventParams) BindRequest(r *http.Request, route *middleware.Matched
 
 	if runtime.HasBody(r) {
 		defer r.Body.Close()
-		var body SaveEventBody
+		var body models.KeptnContextExtendedCE
 		if err := route.Consumer.Consume(r.Body, &body); err != nil {
 			res = append(res, errors.NewParseError("body", "body", "", err))
 		} else {
@@ -56,7 +58,7 @@ func (o *SaveEventParams) BindRequest(r *http.Request, route *middleware.Matched
 			}
 
 			if len(res) == 0 {
-				o.Body = body
+				o.Body = &body
 			}
 		}
 	}

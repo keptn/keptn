@@ -18,9 +18,6 @@ NOTES.md
 
 # debug files
 MANIFEST
-deploy/service_debug.yaml
-deploy/mongodb-datastore_debug.yaml
-Dockerfile_dev
 skaffold.yaml
 
 # swagger docs (temp files)
