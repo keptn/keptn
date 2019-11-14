@@ -479,36 +479,6 @@ func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptnevents.InternalGetS
 
 	// iterate over previous events
 	for _, event := range previousEvents.Events {
-		/*
-			dataMap, ok := event.Data.(map[string]interface{})
-
-			if ok {
-				// make sure that this event contains evaluationdetails (e.g., old events do not contain that element)
-				if _, ok := dataMap["evaluationdetails"]; ok {
-					evaluationDetails, ok := dataMap["evaluationdetails"].(map[string]interface{})
-					if !ok {
-						continue
-					}
-
-					// make sure evaluation details contains indicatorResults
-					if evaluationDetails["indicatorResults"] != nil && len(evaluationDetails["indicatorResults"].([]interface{})) > 0 {
-
-						// iterate over each indicatorResult and extract it
-						var indicatorResults []*keptnevents.SLIEvaluationResult
-
-						for _, value := range evaluationDetails["indicatorResults"].([]interface{}) {
-							sliEvaluationResult, err := extractSLIEvaluationResult(value.([]interface{}))
-							if err == nil {
-								indicatorResults = append(indicatorResults, sliEvaluationResult)
-							}
-						}
-						evaluationDetails["indicatorResults"] = indicatorResults
-
-						dataMap["evaluationdetails"] = evaluationDetails
-					}
-				}
-			}
-		*/
 		bytes, err := json.Marshal(event.Data)
 		if err != nil {
 			continue
