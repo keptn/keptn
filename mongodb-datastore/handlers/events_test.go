@@ -8,6 +8,7 @@ import (
 	"github.com/magiconair/properties/assert"
 )
 
+// TestFlattenRecursivelyNestedDocuments checks whether the flattening works with nested bson.D (documents)
 func TestFlattenRecursivelyNestedDocuments(t *testing.T) {
 	logger := keptnutils.NewLogger("", "", "mongodb-service")
 
@@ -27,11 +28,13 @@ func TestFlattenRecursivelyNestedDocuments(t *testing.T) {
 	assert.Equal(t, grandchildMap["orange"], "orange", "flatting failed")
 }
 
-func TestFlattenRecursivelyNestedDocumentsAndArray(t *testing.T) {
+// TestFlattenRecursivelyNestedDocuments checks whether the flattening works with nested bson.D (documents)
+// and bson.A (arrays)
+func TestFlattenRecursivelyNestedDocumentsWithArray(t *testing.T) {
 	logger := keptnutils.NewLogger("", "", "mongodb-service")
 
-	grandchild := bson.A{"apple", "red", "orange", "orange"}
-	child := bson.D{{"foo", "bar"}, {"grandchild", grandchild}}
+	grandchild := bson.D{{"apple", "red"}, {"orange", "orange"}}
+	child := bson.A{grandchild, "foo", "bar"}
 	parent := bson.D{{"hello", "world"}, {"child", child}}
 
 	// checks:
@@ -39,6 +42,9 @@ func TestFlattenRecursivelyNestedDocumentsAndArray(t *testing.T) {
 	parentMap, _ := flattened.(map[string]interface{})
 	assert.Equal(t, parentMap["hello"], "world", "flatting failed")
 
-	childMap := parentMap["child"].(map[string]interface{})
-	assert.Equal(t, childMap["foo"], "bar", "flatting failed")
+	childMap := parentMap["child"].(bson.A)
+	assert.Equal(t, len(childMap), 3, "flatting failed")
+
+	grandchildMap := childMap[0].(map[string]interface{})
+	assert.Equal(t, grandchildMap["apple"], "red", "flatting failed")
 }
