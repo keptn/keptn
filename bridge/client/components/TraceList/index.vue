@@ -53,7 +53,20 @@
                     </div>
                   </small>
                   <div
-                    v-if="isError(event) && event.source === 'lighthouse-service'">
+                    v-if="event.source === 'lighthouse-service' && event.data.evaluationdetails !== undefined && event.data.evaluationdetails.indicatorResults !== undefined">
+                    <small><b>Results:</b></small>
+                    <div v-for="indicatorResult in event.data.evaluationdetails.indicatorResults" :key="indicatorResult.value.metric">
+                      <hr>
+                      <small><b>SLI: </b>{{indicatorResult.value.metric}}</small><br>
+                      <small><b>Measured Value: </b>{{indicatorResult.value.value}}</small>
+                      <div v-if="indicatorResult.violations !== undefined && indicatorResult.violations !== null && indicatorResult.violations.length > 0">
+                        <small><b>Violations:</b></small>
+                        <div v-for="violation in indicatorResult.violations" :key="violation.criteria">
+                          <small><b>Criteria: </b>{{violation.criteria}}</small><br>
+                          <small><b>Target Value: </b>{{violation.targetValue}}</small><br>
+                        </div>
+                      </div>
+                    </div>
                     <!--
                     <b>Violations:</b>
                     <div v-for="violation in getViolations(event.data.evaluationdetails)" :key="violation.indicatorId">
