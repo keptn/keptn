@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 
 	"k8s.io/helm/pkg/proto/hapi/chart"
@@ -536,7 +537,7 @@ func (c *ConfigurationChanger) ApplyChartWithReplicas(ch *chart.Chart, project, 
 			chartPath, "--namespace", namespace, "--wait", "--force",
 			"--set", "keptn.project=" + project, "--set", "keptn.stage=" + stage,
 			"--set", "keptn.service=" + service, "--set", "keptn.deployment=" + deploymentName,
-			"--set", "replicaCount=" + string(replicaCount)})
+			"--set", "replicaCount=" + strconv.Itoa(replicaCount)})
 	} else {
 		msg, err = keptnutils.ExecuteCommand("helm", []string{"upgrade", "--install", releaseName,
 			chartPath, "--namespace", namespace, "--wait", "--force",
