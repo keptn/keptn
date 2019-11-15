@@ -396,7 +396,11 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 		if _, err := c.ApplyChart(ch, e.Project, e.Stage, e.Service, deploymentStrategy, true); err != nil {
 			return err
 		}
-		if _, err := c.ApplyChartWithReplicas(ch, e.Project, e.Stage, e.Service,
+		userChart, err := keptnutils.GetChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, false), url.String())
+		if err != nil {
+			return err
+		}
+		if _, err := c.ApplyChartWithReplicas(userChart, e.Project, e.Stage, e.Service,
 			deploymentStrategy, false, 0); err != nil {
 			return err
 		}
@@ -442,7 +446,11 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 		if _, err := c.ApplyChart(genChart, e.Project, e.Stage, e.Service, deploymentStrategy, true); err != nil {
 			return err
 		}
-		if _, err := c.ApplyChartWithReplicas(ch, e.Project, e.Stage, e.Service,
+		userChart, err := keptnutils.GetChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, false), url.String())
+		if err != nil {
+			return err
+		}
+		if _, err := c.ApplyChartWithReplicas(userChart, e.Project, e.Stage, e.Service,
 			deploymentStrategy, false, 0); err != nil {
 			return err
 		}
