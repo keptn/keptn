@@ -20,7 +20,7 @@ class DatastoreService {
 
     switch (mappedEvent.type) {
       case 'sh.keptn.event.configuration.change': mappedEvent.eventTypeHeadline = 'Configuration change'; break;
-      case 'sh.keptn.event.problem.open': mappedEvent.eventTypeHeadline = 'Problem'; break;
+      case 'sh.keptn.event.problem.open': mappedEvent.eventTypeHeadline = 'Problem detected'; break;
       case 'sh.keptn.events.deployment-finished': mappedEvent.eventTypeHeadline = 'Deployment finished'; break;
       case 'sh.keptn.events.evaluation-done': mappedEvent.eventTypeHeadline = 'Evaluation done'; break;
       case 'sh.keptn.events.tests-finished': mappedEvent.eventTypeHeadline = 'Tests finished'; break;
@@ -33,6 +33,26 @@ class DatastoreService {
 
     if (event.source === 'https://github.com/keptn/keptn/remediation-service') {
       mappedEvent.eventTypeHeadline = 'Remediation';
+    }
+
+    //mappedEvent.data.project = "test";
+
+    if (event.source === 'dynatrace') {
+      var dttags = event.data.Tags.split(', ');
+      console.log(dttags);
+      var i;
+      for (i = 0; i < dttags.length; i++) {
+        if (dttags[i].indexOf("service:") == 0) {
+          mappedEvent.data.service = dttags[i].replace("service:","");
+        }
+        if (dttags[i].indexOf("[Environment]application:") == 0) {
+          mappedEvent.data.project = dttags[i].replace("[Environment]application:","");
+        }
+        if (dttags[i].indexOf("environment:") == 0) {
+          mappedEvent.data.stage = dttags[i].replace("environment:","").split('-')[1];
+        }
+      }
+      //mappedEvent.data.project = root.data.Tags.substring(root.data.Tags.indexOf("application:"),)
     }
 
     return mappedEvent;
@@ -59,11 +79,11 @@ class DatastoreService {
   }
 
   async getProblemRoots() {
-    const url = `${this.api}/event?type=sh.keptn.event.configuration.change&pageSize=100`;
+    const url = `${this.api}/event?type=sh.keptn.event.problem.open&pageSize=100`;
     const result = await axios.get(url);
     const { data } = result;
     if (data.events) {
-      return data.events.map(event => DatastoreService.mapEvent(event)).filter(e => e.source.includes('remediation-service'));
+      return data.events.map(event => DatastoreService.mapEvent(event)).filter(e => (e.data.State === 'OPEN' || e.data.state === 'OPEN'));
     }
     return [];
   }
@@ -116,7 +136,7 @@ class DatastoreService {
     const result = await axios.get(url);
     const { data } = result;
     if (data.events) {
-      return data.events.map(event => DatastoreService.mapEvent(event)).filter(e => e.data.state === 'OPEN');
+      return data.events.map(event => DatastoreService.mapEvent(event)).filter(e => (e.data.State === 'OPEN' || e.data.state === 'OPEN'));
     }
     return [];
   }
