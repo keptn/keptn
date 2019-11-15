@@ -109,7 +109,11 @@ func getRenderedTemplates(ch *chart.Chart) (map[string]string, error) {
 			Time:      timeconv.Now(),
 		},
 	}
-
+	ch.Values.Raw += `
+keptn:
+  project: prj,
+  service: svc,
+  deployment: dpl`
 	return renderutil.Render(ch, ch.Values, renderOpts)
 }
 
