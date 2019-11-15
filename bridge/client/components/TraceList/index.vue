@@ -12,7 +12,7 @@
           <p
             v-if="traces[0].type === 'sh.keptn.event.problem.open'"
           >
-            <b>Problem detected:</b> {{traces[0].data.problemtitle}}
+            <b>Problem detected:</b> {{traces[0].data.ProblemTitle}}
           </p>
         </div>
 
