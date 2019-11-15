@@ -23,11 +23,10 @@
               <b-list-group-item
                 href="#"
                 v-bind:class="{ active: isActive(event.id), error: isError(event), success: isSuccess(event), warning: isWarning(event) }"
-
                 @click="activateEvent(event.id)"
               >
                 <div class="d-flex w-100 justify-content-between">
-                  <h5 class="mb-1">{{event.eventTypeHeadline}}</h5>
+                  <h5 class="mb-1" v-bind:class="{ texterror: isError(event), textsuccess: isSuccess(event), textwarning: isWarning(event) }">{{event.eventTypeHeadline}}</h5>
                   <small>{{ event.timestamp | moment }}</small>
                 </div>
                 <small>
@@ -53,18 +52,34 @@
                     </div>
                   </small>
                   <div
-                    v-if="event.source === 'lighthouse-service' && event.data.evaluationdetails !== undefined && event.data.evaluationdetails.indicatorResults !== undefined">
-                    <small><b>Results:</b></small>
-                    <div v-for="indicatorResult in event.data.evaluationdetails.indicatorResults" :key="indicatorResult.value.metric">
-                      <hr>
-                      <small><b>SLI: </b>{{indicatorResult.value.metric}}</small><br>
-                      <small><b>Measured Value: </b>{{indicatorResult.value.value}}</small>
-                      <div v-if="indicatorResult.violations !== undefined && indicatorResult.violations !== null && indicatorResult.violations.length > 0">
-                        <small><b>Violations:</b></small>
-                        <div v-for="violation in indicatorResult.violations" :key="violation.criteria">
-                          <small><b>Criteria: </b>{{violation.criteria}}</small><br>
-                          <small><b>Target Value: </b>{{violation.targetValue}}</small><br>
-                        </div>
+                    v-if="event.source === 'lighthouse-service' && event.data.evaluationdetails !== undefined && event.data.evaluationdetails.indicatorResults !== undefined && event.data.evaluationdetails.indicatorResults !== null">
+                    <hr>
+                    <center><h4>Results</h4></center>
+                    <div>
+                      <div v-for="indicatorResult in event.data.evaluationdetails.indicatorResults" :key="indicatorResult.value.metric" class="indicator-results">
+                          <b-button
+                            class="view-sli-button"
+                            v-bind:class="{ texterror: isSLIError(indicatorResult), textsuccess: isSLISuccess(indicatorResult), textwarning: isSLIWarning(indicatorResult) }"
+                            @click="$bvModal.show(event.id + '-' + indicatorResult.value.metric)">{{indicatorResult.value.metric}} : {{indicatorResult.status}}</b-button>
+
+                          <b-modal :id="event.id + '-' + indicatorResult.value.metric" :title="indicatorResult.value.metric">
+                            <p class="my-4">
+                              <small><b>Result: </b> {{indicatorResult.status}}</small><br>
+                              <small><b>Score: </b> {{indicatorResult.score}}</small><br>
+                              <small><b>Measured Value: </b>{{indicatorResult.value.value}}</small><br>
+                            </p>
+                            <div v-if="indicatorResult.violations !== undefined && indicatorResult.violations !== null && indicatorResult.violations.length > 0">
+                              <small><b>Violations:</b></small>
+                              <ul>
+                                <li v-for="violation in indicatorResult.violations" :key="violation.criteria">
+                                  <small><b>Criteria: </b>{{violation.criteria}}</small><br>
+                                  <div v-if="violation.criteria !== undefined && violation.criteria.includes('-') || violation.criteria.includes('+')">
+                                    <small><b>Target Value: </b>{{violation.targetValue}}</small><br>
+                                  </div>
+                                </li>
+                              </ul>
+                            </div>
+                          </b-modal>
                       </div>
                     </div>
                     <!--
@@ -238,58 +253,20 @@ export default {
     isWarning(event) {
       return event.type === 'sh.keptn.events.evaluation-done' && event.data.result === 'warning';
     },
+    isSLIError(sliResult) {
+      return sliResult.status === 'fail';
+    },
+    isSLISuccess(sliResult) {
+      return sliResult.status === 'pass';
+    },
+    isSLIWarning(sliResult) {
+      return sliResult.status === 'warning';
+    },
     activateEvent(contextId) {
       return this.$store.dispatch('activateEvent', contextId);
     },
     getDuration(endTime, startTime) {
       return moment.utc(moment(endTime).diff(moment(startTime))).format('HH:mm:ss');
-    },
-    getViolations(evaluationDetails) {
-      const violationsResult = [];
-      /*
-      if (evaluationDetails !== undefined) {
-        if (evaluationDetails.indicatorResults !== undefined) {
-          if (evaluationDetails.indicatorResults.length === 0) return violationsResult;
-
-          evaluationDetails.indicatorResults.forEach((result) => {
-
-            const { score } = result;
-            if (score > 0) return;
-
-            const indicatorId = result.id;
-            const { violations } = result;
-
-            if (violations.length < 1) return;
-
-            for (let i = 0; i < violations.length; i += 1) {
-              const violation = violations[i];
-              console.log(violation);
-              const newViolation = {};
-
-              newViolation.indicatorId = indicatorId;
-
-              if (violation.hasOwnProperty('breach') && violation.hasOwnProperty('upperSevere')) {
-                const upperSevereBreach = violation;
-
-                if (upperSevereBreach !== undefined) {
-                  const expectedValue = upperSevereBreach.threshold;
-                  const actualValue = upperSevereBreach.value;
-                  newViolation.type = 'upperSevere';
-                  newViolation.expectedValue = expectedValue;
-                  newViolation.actualValue = actualValue;
-                } else {
-                  newViolation.type = 'generic';
-                  newViolation.reason = violation.breach;
-                }
-                violationsResult.push(newViolation);
-              }
-            }
-
-          });
-        }
-      }
-       */
-      return violationsResult;
     },
   },
 
@@ -317,25 +294,48 @@ export default {
   }
   }
 
+  .view-sli-button {
+    font-size: 13px;
+    padding: 5px;
+    margin-right: 5px;
+    font-weight: bold;
+    background-color: white;
+  }
+
 
   .error {
-    background-color: #cd5c5c;
-    color: #ffffff;
+    border-color: #cd5c5c;
   }
 
   .success {
-    background-color: #8fbc8f;
-    color: #ffffff;
+    border-color: #8fbc8f;
   }
 
   .warning {
-    background-color: #bcac1a;
-    color: #ffffff;
+    border-color: orange;
+  }
+
+  .texterror {
+    font-weight: bold;
+    color: #cd5c5c
+  }
+
+  .textsuccess {
+    color: #8fbc8f;
+  }
+
+  .textwarning {
+    color: orange;
   }
 
   .traceHeader {
     margin-top: 10px;
     padding: 20px;
+  }
+
+  .indicator-results {
+    padding: 5px;
+    border-radius: 3px;
   }
 
   .event-item {

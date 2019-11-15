@@ -157,7 +157,8 @@ func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 		err = keptnEvent.UnmarshalJSON(data)
 		if err != nil {
 			logger.Error(fmt.Sprintf("failed to unmarshal %v", err))
-			return nil, err
+			continue
+			// return nil, err
 		}
 		resultEvents = append(resultEvents, &keptnEvent)
 	}
