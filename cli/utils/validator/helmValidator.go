@@ -66,9 +66,13 @@ func validateValues(ch *chart.Chart) bool {
 		return false
 	}
 	// check image property
-	_, containsImage := values["image"]
-	if !containsImage {
+	if _, containsImage := values["image"]; !containsImage {
 		logging.PrintLog("Provided Helm chart does not contain \"image\" in values.yaml", logging.QuietLevel)
+		return false
+	}
+	// check replicas property
+	if _, containsReplicas := values["replicaCount"]; !containsReplicas {
+		logging.PrintLog("Provided Helm chart does not contain \"replicaCount\" in values.yaml", logging.QuietLevel)
 		return false
 	}
 	return true
