@@ -55,4 +55,4 @@ ENV GOTRACEBACK=all
 #travis-uncomment ENTRYPOINT ["/entrypoint.sh"]
 
 # Run the web service on container startup.
-CMD ["/helm-service"]
+CMD ["/remediation-service"]
