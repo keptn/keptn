@@ -62,7 +62,7 @@
                             v-bind:class="{ texterror: isSLIError(indicatorResult), textsuccess: isSLISuccess(indicatorResult), textwarning: isSLIWarning(indicatorResult) }"
                             @click="$bvModal.show(event.id + '-' + indicatorResult.value.metric)">{{indicatorResult.value.metric}} : {{indicatorResult.status}}</b-button>
 
-                          <b-modal :id="event.id + '-' + indicatorResult.value.metric" :title="indicatorResult.value.metric">
+                          <b-modal :id="event.id + '-' + indicatorResult.value.metric" :title="indicatorResult.value.metric" ok-only>
                             <p class="my-4">
                               <small><b>Result: </b> {{indicatorResult.status}}</small><br>
                               <small><b>Score: </b> {{indicatorResult.score}}</small><br>
