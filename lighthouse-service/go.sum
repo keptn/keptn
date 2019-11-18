@@ -235,6 +235,8 @@ github.com/keptn/go-utils v0.3.1-0.20191111100301-bff0cac85494 h1:iZ//qDbwRLRx41
 github.com/keptn/go-utils v0.3.1-0.20191111100301-bff0cac85494/go.mod h1:R9a1HXkD+KCrhMFbLcEhtBtHGfYwXhO6dwZzmyoE98c=
 github.com/keptn/go-utils v0.3.1-0.20191112090613-cf874a31b830 h1:J9CNDME07rc2w9RzP5O/8FSif2SMOfR+vTJJ7NOCAgw=
 github.com/keptn/go-utils v0.3.1-0.20191112090613-cf874a31b830/go.mod h1:R9a1HXkD+KCrhMFbLcEhtBtHGfYwXhO6dwZzmyoE98c=
+github.com/keptn/go-utils v0.3.1-0.20191118111245-5bcda6484a4a h1:8F8va1vGqKG/VPPNvnNVNOgDw2mS6LroODq3GAaGDqU=
+github.com/keptn/go-utils v0.3.1-0.20191118111245-5bcda6484a4a/go.mod h1:R9a1HXkD+KCrhMFbLcEhtBtHGfYwXhO6dwZzmyoE98c=
 github.com/kevinburke/ssh_config v0.0.0-20190725054713-01f96b0aa0cd h1:Coekwdh0v2wtGp9Gmz1Ze3eVRAWJMLokvN3QjdzCHLY=
 github.com/kevinburke/ssh_config v0.0.0-20190725054713-01f96b0aa0cd/go.mod h1:CT57kijsi8u/K/BOFA39wgDQJ9CxiF4nAY/ojJ6r6mM=
 github.com/kisielk/errcheck v1.2.0/go.mod h1:/BMXB+zMLi60iA8Vv6Ksmxu/1UDYcXs4uQLJ+jE2L00=
