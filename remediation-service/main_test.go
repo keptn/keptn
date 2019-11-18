@@ -10,7 +10,7 @@ import (
 func TestValidTagsDeriving(t *testing.T) {
 
 	problemEvent := keptnevents.ProblemEventData{
-		Tags:    "service:carts, environment:sockshop-production, [Environment]application:sockshop",
+		Tags:    "keptn_service:carts, keptn_stage:dev, keptn_project:sockshop",
 		Project: "",
 		Stage:   "",
 		Service: "",
