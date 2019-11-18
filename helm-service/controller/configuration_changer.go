@@ -6,9 +6,8 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strconv"
 	"strings"
-
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"k8s.io/helm/pkg/proto/hapi/chart"
 
@@ -19,7 +18,6 @@ import (
 	"github.com/keptn/keptn/helm-service/controller/helm"
 	"github.com/keptn/keptn/helm-service/controller/mesh"
 	"github.com/keptn/keptn/helm-service/pkg/serviceutils"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/helm/pkg/chartutil"
 )
 
@@ -398,7 +396,12 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 		if _, err := c.ApplyChart(ch, e.Project, e.Stage, e.Service, deploymentStrategy, true); err != nil {
 			return err
 		}
-		if err := c.scaleDownCanaryDeployment(e); err != nil {
+		userChart, err := keptnutils.GetChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, false), url.String())
+		if err != nil {
+			return err
+		}
+		if _, err := c.ApplyChartWithReplicas(userChart, e.Project, e.Stage, e.Service,
+			deploymentStrategy, false, 0); err != nil {
 			return err
 		}
 
@@ -443,7 +446,12 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 		if _, err := c.ApplyChart(genChart, e.Project, e.Stage, e.Service, deploymentStrategy, true); err != nil {
 			return err
 		}
-		if err := c.scaleDownCanaryDeployment(e); err != nil {
+		userChart, err := keptnutils.GetChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, false), url.String())
+		if err != nil {
+			return err
+		}
+		if _, err := c.ApplyChartWithReplicas(userChart, e.Project, e.Stage, e.Service,
+			deploymentStrategy, false, 0); err != nil {
 			return err
 		}
 
@@ -457,59 +465,6 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 		}
 	}
 
-	return nil
-}
-
-func (c *ConfigurationChanger) undoScaling(ch *chart.Chart, namespace string) error {
-	// Undo manual scalings of deployments becaue helm upgrade does not do
-	useInClusterConfig := false
-	if os.Getenv("ENVIRONMENT") == "production" {
-		useInClusterConfig = true
-	}
-	clientset, err := keptnutils.GetClientset(useInClusterConfig)
-	if err != nil {
-		return err
-	}
-	chartDepls, err := keptnutils.GetRenderedDeployments(ch)
-	if err != nil {
-		return err
-	}
-
-	for _, chartDepl := range chartDepls {
-		c.logger.Debug("Get original deployment " + chartDepl.Name)
-		appliedDeployment, err := clientset.AppsV1().Deployments(namespace).Get(chartDepl.Name, metav1.GetOptions{})
-		if err != nil {
-			return err
-		}
-		c.logger.Debug("Received original deployment " + chartDepl.Name)
-
-		if *chartDepl.Spec.Replicas != *appliedDeployment.Spec.Replicas {
-			c.logger.Debug(fmt.Sprintf("Reset scaling of deployment %s in namespace %s to %d", chartDepl.Name, namespace, *chartDepl.Spec.Replicas))
-			if err := keptnutils.ScaleDeployment(useInClusterConfig, appliedDeployment.Name, namespace, *chartDepl.Spec.Replicas); err != nil {
-				return err
-			}
-		} else {
-			c.logger.Debug(fmt.Sprintf("Deployment %s in namespace %s is correctly scaled", chartDepl.Name, namespace))
-		}
-	}
-	return nil
-}
-
-func (c *ConfigurationChanger) scaleDownCanaryDeployment(e *keptnevents.ConfigurationChangeEventData) error {
-	client, err := keptnutils.GetClientset(true)
-	if err != nil {
-		return err
-	}
-	deployments := client.AppsV1().Deployments(e.Project + "-" + e.Stage)
-	deployment, err := deployments.Get(e.Service, v1.GetOptions{})
-	if err != nil {
-		return err
-	}
-	deployment.Spec.Replicas = int32Ptr(0)
-	_, err = deployments.Update(deployment)
-	if err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -555,10 +510,18 @@ func (c *ConfigurationChanger) SimulateApplyChart(project, stage, service string
 	return msg, nil
 }
 
-// ApplyConfiguration applies the chart of the provided service.
+// ApplyChart applies the chart of the provided service.
 // Furthermore, this function waits until all deployments in the namespace are ready.
 func (c *ConfigurationChanger) ApplyChart(ch *chart.Chart, project, stage, service string,
 	deploymentStrategy keptnevents.DeploymentStrategy, generated bool) (string, error) {
+
+	return c.ApplyChartWithReplicas(ch, project, stage, service, deploymentStrategy, generated, -1)
+}
+
+// ApplyChartWithReplicas applies the chart of the provided service and additionally sets the replicas
+// Furthermore, this function waits until all deployments in the namespace are ready.
+func (c *ConfigurationChanger) ApplyChartWithReplicas(ch *chart.Chart, project, stage, service string,
+	deploymentStrategy keptnevents.DeploymentStrategy, generated bool, replicaCount int) (string, error) {
 
 	releaseName := helm.GetReleaseName(project, stage, service, generated)
 	namespace := c.canaryLevelGen.GetNamespace(project, stage, generated)
@@ -576,18 +539,24 @@ func (c *ConfigurationChanger) ApplyChart(ch *chart.Chart, project, stage, servi
 	}
 
 	deploymentName := getDeploymentName(deploymentStrategy, generated)
-	msg, err := keptnutils.ExecuteCommand("helm", []string{"upgrade", "--install", releaseName,
-		chartPath, "--namespace", namespace, "--wait", "--force",
-		"--set", "keptn.project=" + project, "--set", "keptn.stage=" + stage,
-		"--set", "keptn.service=" + service, "--set", "keptn.deployment=" + deploymentName})
+	var msg string
+	if replicaCount >= 0 {
+		msg, err = keptnutils.ExecuteCommand("helm", []string{"upgrade", "--install", releaseName,
+			chartPath, "--namespace", namespace, "--wait", "--force",
+			"--set", "keptn.project=" + project, "--set", "keptn.stage=" + stage,
+			"--set", "keptn.service=" + service, "--set", "keptn.deployment=" + deploymentName,
+			"--set", "replicaCount=" + strconv.Itoa(replicaCount)})
+	} else {
+		msg, err = keptnutils.ExecuteCommand("helm", []string{"upgrade", "--install", releaseName,
+			chartPath, "--namespace", namespace, "--wait", "--force",
+			"--set", "keptn.project=" + project, "--set", "keptn.stage=" + stage,
+			"--set", "keptn.service=" + service, "--set", "keptn.deployment=" + deploymentName})
+
+	}
+	c.logger.Debug(msg)
 	if err != nil {
 		return "", fmt.Errorf("Error when upgrading chart %s in namespace %s: %s",
 			releaseName, namespace, err.Error())
-	}
-	c.logger.Debug(msg)
-
-	if err = c.undoScaling(ch, namespace); err != nil {
-		return "", err
 	}
 
 	if err := keptnutils.WaitForDeploymentsInNamespace(getInClusterConfig(), namespace); err != nil {
