@@ -68,13 +68,14 @@
                               <small><b>Score: </b> {{indicatorResult.score}}</small><br>
                               <small><b>Measured Value: </b>{{indicatorResult.value.value}}</small><br>
                             </p>
-                            <div v-if="indicatorResult.violations !== undefined && indicatorResult.violations !== null && indicatorResult.violations.length > 0">
-                              <small><b>Violations:</b></small>
+                            <div v-if="indicatorResult.targets !== undefined && indicatorResult.targets !== null && indicatorResult.targets.length > 0">
+                              <small><b>Evaluation Criteria:</b></small>
                               <ul>
-                                <li v-for="violation in indicatorResult.violations" :key="violation.criteria">
-                                  <small><b>Criteria: </b>{{violation.criteria}}</small><br>
-                                  <div v-if="violation.criteria !== undefined && violation.criteria.includes('-') || violation.criteria.includes('+')">
-                                    <small><b>Target Value: </b>{{violation.targetValue}}</small><br>
+                                <li v-for="target in indicatorResult.targets" :key="target.criteria">
+                                  <small><b>Criteria: </b>{{target.criteria}}</small><br>
+                                  <small><b>Violated: </b>{{target.violated}}</small><br>
+                                  <div v-if="target.criteria !== undefined && target.criteria.includes('-') || target.criteria.includes('+')">
+                                    <small><b>Target Value: </b>{{target.targetValue}}</small><br>
                                   </div>
                                 </li>
                               </ul>
@@ -254,7 +255,7 @@ export default {
       return event.type === 'sh.keptn.events.evaluation-done' && event.data.result === 'warning';
     },
     isSLIError(sliResult) {
-      return sliResult.status === 'fail';
+      return sliResult.status === 'failed';
     },
     isSLISuccess(sliResult) {
       return sliResult.status === 'pass';
