@@ -16,12 +16,12 @@ spec:
     spec:
       containers:
       - name: remediation-service
-        image: jbraeuer/remediation-service:0.0.1
+        image: keptn/remediation-service:latest
         ports:
         - containerPort: 8080
         resources:
           requests:
-            memory: "128Mi"
+            memory: "64Mi"
             cpu: "50m"
           limits:
             memory: "1024Mi"
@@ -44,6 +44,7 @@ metadata:
 spec:
   ports:
   - port: 8080
+    targetPort: 8080
     protocol: TCP
   selector:
     run: remediation-service
