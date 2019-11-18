@@ -53,6 +53,15 @@
                   </small>
                   <div
                     v-if="event.source === 'lighthouse-service' && event.data.evaluationdetails !== undefined && event.data.evaluationdetails.indicatorResults !== undefined && event.data.evaluationdetails.indicatorResults !== null">
+                    <div v-if="event.data.evaluationdetails.sloFileContent !== 'undefined' && event.data.evaluationdetails.sloFileContent !== null && event.data.evaluationdetails.sloFileContent !== ''">
+                      <b-button
+                        class="view-slo-button"
+                        @click="$bvModal.show(event.id + '-view-slo')">View SLOs</b-button>
+
+                      <b-modal :id="event.id + '-view-slo'" title="SLO File Content" ok-only>
+                        <pre>{{ event.data.evaluationdetails.sloFileContent | decodeBase64}}</pre>
+                      </b-modal>
+                    </div>
                     <hr>
                     <center><h4>Results</h4></center>
                     <div>
@@ -164,7 +173,7 @@ export default {
         {
           key: 'timestamp',
           sortable: true,
-          formatter: value => moment(value).format('YYYY-MM-DD, hh:mm:ss'),
+          formatter: value => moment(value).format('YYYY-MM-DD, HH:mm:ss'),
         },
       ],
     };
@@ -172,7 +181,7 @@ export default {
 
   filters: {
     moment: function formatDate(date) {
-      return moment(date).format('YYYY-MM-DD, hh:mm:ss');
+      return moment(date).format('YYYY-MM-DD, HH:mm:ss');
     },
     totalScore: function getTotalScore(evaluationDetails) {
       let totalScoreItem;
@@ -201,6 +210,15 @@ export default {
           return 'Discarding deployment and reverting back to latest stable version';
         }
       }
+    },
+    decodeBase64(encoded) {
+      if (encoded === undefined) {
+          return '';
+      }
+      let buff = new Buffer(encoded, 'base64');
+      let text = buff.toString('ascii');
+
+      return text;
     },
     remediationAction: function getRemediationAction(deploymentChanges) {
       if (deploymentChanges === undefined) {
@@ -301,6 +319,13 @@ export default {
     margin-right: 5px;
     font-weight: bold;
     background-color: white;
+  }
+
+  .view-slo-button {
+    font-size: 13px;
+    padding: 5px;
+    margin-right: 5px;
+    font-weight: bold;
   }
 
 
