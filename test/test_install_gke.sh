@@ -43,6 +43,8 @@ verify_deployment_in_namespace "api" "keptn"
 verify_deployment_in_namespace "bridge" "keptn"
 verify_deployment_in_namespace "configuration-service" "keptn"
 verify_deployment_in_namespace "gatekeeper-service" "keptn"
+verify_deployment_in_namespace "jmeter-service" "keptn"
+verify_deployment_in_namespace "lighthouse-service" "keptn"
 
 # verify the pods within the keptn-datastore namespace
 verify_deployment_in_namespace "mongodb" "keptn-datastore"
