@@ -4,7 +4,6 @@
 FROM golang:1.12 as builder
 ARG version=develop
 
-# Copy local code to the container image.
 WORKDIR /go/src/github.com/keptn/keptn/helm-service
 
 # Force the go compiler to use modules 

@@ -23,10 +23,12 @@ import (
 	keptnevents "github.com/keptn/go-utils/pkg/events"
 	keptnmodels "github.com/keptn/go-utils/pkg/models"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
+
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
+
 	"k8s.io/helm/pkg/helm"
 	helm_env "k8s.io/helm/pkg/helm/environment"
 	"k8s.io/helm/pkg/helm/portforwarder"
@@ -85,22 +87,19 @@ func isProjectAndStageAvailable(problem *keptnevents.ProblemEventData) bool {
 	return problem.Project != "" && problem.Stage != ""
 }
 
-// deriveFromTags allows to derive project, stage, and service information from the tags
-// Input example: "Tags:":"service:carts, environment:sockshop-production, [Environment]application:sockshop"
+// deriveFromTags allows to derive project, stage, and service information from tags
+// Input example: "Tags:":"keptn_service:carts, keptn_stage:dev, keptn_stage:sockshop"
 func deriveFromTags(problem *keptnevents.ProblemEventData) {
 
 	tags := strings.Split(problem.Tags, ", ")
 
 	for _, tag := range tags {
-		if strings.HasPrefix(tag, "service:") {
-			problem.Service = tag[len("service:"):]
-		} else if strings.HasPrefix(tag, "environment:") {
-			environment := tag[len("environment:"):]
-			envSplits := strings.Split(environment, "-")
-			if len(envSplits) == 2 {
-				problem.Project = envSplits[0]
-				problem.Stage = envSplits[1]
-			}
+		if strings.HasPrefix(tag, "keptn_service:") {
+			problem.Service = tag[len("keptn_service:"):]
+		} else if strings.HasPrefix(tag, "keptn_stage:") {
+			problem.Stage = tag[len("keptn_stage:"):]
+		} else if strings.HasPrefix(tag, "keptn_project:") {
+			problem.Project = tag[len("keptn_project:"):]
 		}
 	}
 }
@@ -131,7 +130,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 	deriveProblemData(problemEvent)
 	if !isProjectAndStageAvailable(problemEvent) {
-		return errors.New("Cannot derive project and stage from tags nor impactedentity")
+		return errors.New("Cannot derive project and stage from tags nor impacted entity")
 	}
 
 	logger.Debug("Received problem event with state " + problemEvent.State)

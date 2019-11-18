@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: remediation-service
-        image: keptn/remediation-service:latest
+        image: jbraeuer/remediation-service:0.0.1
         ports:
         - containerPort: 8080
         resources:
