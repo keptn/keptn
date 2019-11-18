@@ -9,9 +9,9 @@ filter:
 comparison:
   # compare_with is mandatory
   # possible values:
-  # - single_result: only compare with one previous result
+  # - single_result: only compare with one previous result (implies number_of_comparison_results: 1)
   # - several_results: compare with several previous results
-  #   this option requires ‘number_of_comparison_results’
+  #   this option uses ‘number_of_comparison_results’
   compare_with: "single_result"
   # include_result_with_score is optional
   # default value: all
