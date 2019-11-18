@@ -12,7 +12,7 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.3.1-0.20191118111245-5bcda6484a4a
+	github.com/keptn/go-utils v0.3.1-0.20191118140851-5d8529600c1b
 	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
 	github.com/stretchr/testify v1.4.0

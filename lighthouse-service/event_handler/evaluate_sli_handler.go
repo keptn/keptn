@@ -1,11 +1,13 @@
 package event_handler
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
+	"github.com/ghodss/yaml"
 	"github.com/google/uuid"
 	keptnevents "github.com/keptn/go-utils/pkg/events"
 	keptnmodelsv2 "github.com/keptn/go-utils/pkg/models/v2"
@@ -92,8 +94,6 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 		}
 	}
 
-	fmt.Println(sloConfig)
-
 	evaluationResult, maximumAchievableScore, keySLIFailed := evaluateObjectives(e, sloConfig, filteredPreviousEvaluationEvents)
 
 	// calculate the total score
@@ -102,7 +102,9 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 		return err
 	}
 
-	evaluationResult.EvaluationDetails.ServiceLevelObjectives = *sloConfig
+	sloFileContent, _ := yaml.Marshal(sloConfig)
+	base64.StdEncoding.EncodeToString(sloFileContent)
+	evaluationResult.EvaluationDetails.SLOFileContent = base64.StdEncoding.EncodeToString(sloFileContent)
 
 	// send the evaluation-done-event
 	var shkeptncontext string
