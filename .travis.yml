@@ -156,6 +156,7 @@ jobs:
     - export PROJECT=sockshop
     - test/test_onboard_service.sh || travis_terminate 1
     - test/test_new_artifact.sh || travis_terminate 1
+    - test/test_delete_project.sh || travis_terminate 1
     after_success:
     # delete google kubernetes cluster only on success (in case of an error we want to be able to dig into the cluster)
     - echo "Tests were successful, cleaning up the cluster now..."
