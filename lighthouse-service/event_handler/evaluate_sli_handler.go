@@ -1,11 +1,13 @@
 package event_handler
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
+	"github.com/ghodss/yaml"
 	"github.com/google/uuid"
 	keptnevents "github.com/keptn/go-utils/pkg/events"
 	keptnmodelsv2 "github.com/keptn/go-utils/pkg/models/v2"
@@ -92,8 +94,6 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 		}
 	}
 
-	fmt.Println(sloConfig)
-
 	evaluationResult, maximumAchievableScore, keySLIFailed := evaluateObjectives(e, sloConfig, filteredPreviousEvaluationEvents)
 
 	// calculate the total score
@@ -101,6 +101,10 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 	if err != nil {
 		return err
 	}
+
+	sloFileContent, _ := yaml.Marshal(sloConfig)
+	base64.StdEncoding.EncodeToString(sloFileContent)
+	evaluationResult.EvaluationDetails.SLOFileContent = base64.StdEncoding.EncodeToString(sloFileContent)
 
 	// send the evaluation-done-event
 	var shkeptncontext string
@@ -156,14 +160,12 @@ func evaluateObjectives(e *keptnevents.InternalGetSLIDoneEventData, sloConfig *k
 			}
 		}
 
-		var passedViolations []*keptnevents.SLIViolation
-		var warningViolations []*keptnevents.SLIViolation
+		var passTargets []*keptnevents.SLITarget
+		var warningTargets []*keptnevents.SLITarget
 		isPassed := true
 		isWarning := true
 		if objective.Pass != nil {
-			isPassed, passedViolations, _ = evaluateOrCombinedCriteria(sliEvaluationResult.Value, objective.Pass, previousSLIResults, sloConfig.Comparison)
-
-			sliEvaluationResult.Violations = passedViolations
+			isPassed, passTargets, _ = evaluateOrCombinedCriteria(sliEvaluationResult.Value, objective.Pass, previousSLIResults, sloConfig.Comparison)
 			if isPassed {
 				sliEvaluationResult.Score = float64(objective.Weight)
 				sliEvaluationResult.Status = "pass"
@@ -172,8 +174,7 @@ func evaluateObjectives(e *keptnevents.InternalGetSLIDoneEventData, sloConfig *k
 
 		if !isPassed {
 			if objective.Warning != nil {
-				isWarning, warningViolations, _ = evaluateOrCombinedCriteria(sliEvaluationResult.Value, objective.Warning, previousSLIResults, sloConfig.Comparison)
-				sliEvaluationResult.Violations = warningViolations
+				isWarning, warningTargets, _ = evaluateOrCombinedCriteria(sliEvaluationResult.Value, objective.Warning, previousSLIResults, sloConfig.Comparison)
 				if isWarning {
 					sliEvaluationResult.Score = 0.5 * float64(objective.Weight)
 					sliEvaluationResult.Status = "warning"
@@ -181,7 +182,7 @@ func evaluateObjectives(e *keptnevents.InternalGetSLIDoneEventData, sloConfig *k
 			}
 		}
 
-		sliEvaluationResult.Violations = append(warningViolations, passedViolations...)
+		sliEvaluationResult.Targets = append(warningTargets, passTargets...)
 
 		if !isPassed && !isWarning {
 			if objective.KeySLI {
@@ -240,42 +241,44 @@ func getSLIResult(results []*keptnevents.SLIResult, sli string) *keptnevents.SLI
 	return nil
 }
 
-func evaluateOrCombinedCriteria(result *keptnevents.SLIResult, sloCriteria []*keptnmodelsv2.SLOCriteria, previousResults []*keptnevents.SLIEvaluationResult, comparison *keptnmodelsv2.SLOComparison) (bool, []*keptnevents.SLIViolation, error) {
+func evaluateOrCombinedCriteria(result *keptnevents.SLIResult, sloCriteria []*keptnmodelsv2.SLOCriteria, previousResults []*keptnevents.SLIEvaluationResult, comparison *keptnmodelsv2.SLOComparison) (bool, []*keptnevents.SLITarget, error) {
 	var satisfied bool
 	satisfied = false
-	var violations []*keptnevents.SLIViolation
+	var sliTargets []*keptnevents.SLITarget
 	for _, crit := range sloCriteria {
-		criteriaSatisfied, v, _ := evaluateCriteriaSet(result, crit, previousResults, comparison)
+		criteriaSatisfied, evaluatedTargets, _ := evaluateCriteriaSet(result, crit, previousResults, comparison)
 		if criteriaSatisfied {
 			// one matching criteria set is sufficient to satisfy the evaluation. Other criteria sets are evaluated nevertheless, to get potential violations
 			satisfied = true
-		} else {
-			for _, violation := range v {
-				violations = append(violations, violation)
-			}
+		}
+		for _, evaluatedTarget := range evaluatedTargets {
+			sliTargets = append(sliTargets, evaluatedTarget)
 		}
 	}
-	return satisfied, violations, nil
+	return satisfied, sliTargets, nil
 }
 
 // evaluateCriteria evaluates a set of criteria strings. Per definition, all criteria clauses within a SLOCriteria object have to be fulfilled to satisfy the SLOCriteria
-func evaluateCriteriaSet(result *keptnevents.SLIResult, sloCriteria *keptnmodelsv2.SLOCriteria, previousResults []*keptnevents.SLIEvaluationResult, comparison *keptnmodelsv2.SLOComparison) (bool, []*keptnevents.SLIViolation, error) {
+func evaluateCriteriaSet(result *keptnevents.SLIResult, sloCriteria *keptnmodelsv2.SLOCriteria, previousResults []*keptnevents.SLIEvaluationResult, comparison *keptnmodelsv2.SLOComparison) (bool, []*keptnevents.SLITarget, error) {
 	satisfied := true
-	var violations []*keptnevents.SLIViolation
+	var sliTargets []*keptnevents.SLITarget
 	for _, criteria := range sloCriteria.Criteria {
-		violation := &keptnevents.SLIViolation{
+		target := &keptnevents.SLITarget{
 			Criteria: criteria,
 		}
-		criteriaSatisfied, _ := evaluateSingleCriteria(result, criteria, previousResults, comparison, violation)
+		criteriaSatisfied, _ := evaluateSingleCriteria(result, criteria, previousResults, comparison, target)
 		if !criteriaSatisfied {
+			target.Violated = true
 			satisfied = false
-			violations = append(violations, violation)
+		} else {
+			target.Violated = false
 		}
+		sliTargets = append(sliTargets, target)
 	}
-	return satisfied, violations, nil
+	return satisfied, sliTargets, nil
 }
 
-func evaluateSingleCriteria(sliResult *keptnevents.SLIResult, criteria string, previousResults []*keptnevents.SLIEvaluationResult, comparison *keptnmodelsv2.SLOComparison, violation *keptnevents.SLIViolation) (bool, error) {
+func evaluateSingleCriteria(sliResult *keptnevents.SLIResult, criteria string, previousResults []*keptnevents.SLIEvaluationResult, comparison *keptnmodelsv2.SLOComparison, violation *keptnevents.SLITarget) (bool, error) {
 	if !sliResult.Success {
 		return false, errors.New("cannot evaluate invalid SLI result")
 	}
@@ -294,7 +297,7 @@ func evaluateSingleCriteria(sliResult *keptnevents.SLIResult, criteria string, p
 	return evaluateComparison(sliResult, co, previousResults, comparison, violation)
 }
 
-func evaluateComparison(sliResult *keptnevents.SLIResult, co *criteriaObject, previousResults []*keptnevents.SLIEvaluationResult, comparison *keptnmodelsv2.SLOComparison, violation *keptnevents.SLIViolation) (bool, error) {
+func evaluateComparison(sliResult *keptnevents.SLIResult, co *criteriaObject, previousResults []*keptnevents.SLIEvaluationResult, comparison *keptnmodelsv2.SLOComparison, violation *keptnevents.SLITarget) (bool, error) {
 	// aggregate previous results
 	var aggregatedValue float64
 	var targetValue float64
@@ -376,7 +379,7 @@ func calculatePercentile(values sort.Float64Slice, perc float64) float64 {
 	return scores[0]
 }
 
-func evaluateFixedThreshold(sliResult *keptnevents.SLIResult, co *criteriaObject, violation *keptnevents.SLIViolation) (bool, error) {
+func evaluateFixedThreshold(sliResult *keptnevents.SLIResult, co *criteriaObject, violation *keptnevents.SLITarget) (bool, error) {
 	violation.TargetValue = co.Value
 	return evaluateValue(sliResult.Value, co.Value, co.Operator)
 }
@@ -494,60 +497,6 @@ func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptnevents.InternalGetS
 	return evaluationDoneEvents, nil
 }
 
-func extractSLIEvaluationResult(inMap []interface{}) (*keptnevents.SLIEvaluationResult, error) {
-	result := &keptnevents.SLIEvaluationResult{
-		Score:      0,
-		Value:      nil,
-		Violations: nil,
-		Status:     "",
-	}
-
-	for _, value := range inMap {
-		tmp := value.(map[string]interface{})
-		if tmp["Key"] == "score" {
-			result.Score = tmp["Value"].(float64)
-		}
-		if tmp["Key"] == "value" {
-			sliResult, err := extractSLIResult(tmp["Value"].([]interface{}))
-			if err != nil {
-				return nil, err
-			}
-			result.Value = sliResult
-		}
-		if tmp["Key"] == "status" {
-			result.Status = tmp["Value"].(string)
-		}
-	}
-
-	return result, nil
-}
-
-func extractSLIResult(inMap []interface{}) (*keptnevents.SLIResult, error) {
-	sliResult := &keptnevents.SLIResult{
-		Metric:  "",
-		Value:   0,
-		Success: false,
-		Message: "",
-	}
-
-	for _, value := range inMap {
-		tmp := value.(map[string]interface{})
-		if tmp["Key"] == "metric" {
-			sliResult.Metric = tmp["Value"].(string)
-		}
-		if tmp["Key"] == "value" {
-			sliResult.Value = tmp["Value"].(float64)
-		}
-		if tmp["Key"] == "success" {
-			sliResult.Success = tmp["Value"].(bool)
-		}
-		if tmp["Key"] == "message" {
-			sliResult.Message = tmp["Value"].(string)
-		}
-	}
-
-	return sliResult, nil
-}
 
 func (eh *EvaluateSLIHandler) sendEvaluationDoneEvent(shkeptncontext string, data *keptnevents.EvaluationDoneEventData) error {
 
