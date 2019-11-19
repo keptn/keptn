@@ -62,14 +62,12 @@ replace (
 	k8s.io/cluster-bootstrap => k8s.io/cluster-bootstrap v0.0.0-20190314002537-50662da99b70
 	k8s.io/code-generator => k8s.io/code-generator v0.0.0-20190311093542-50b561225d70
 	k8s.io/component-base => k8s.io/component-base v0.0.0-20190314000054-4a91899592f4
-	//k8s.io/cri-api => k8s.io/cri-api kubernetes-1.14.0
 	k8s.io/csi-translation-lib => k8s.io/csi-translation-lib v0.0.0-20190314002815-ce92c5cfdd61
 	k8s.io/kube-aggregator => k8s.io/kube-aggregator v0.0.0-20190314000639-da8327669ac5
 	k8s.io/kube-controller-manager => k8s.io/kube-controller-manager v0.0.0-20190314002447-97ed623e3835
 	k8s.io/kube-proxy => k8s.io/kube-proxy v0.0.0-20190314002154-4d735c31b054
 	k8s.io/kube-scheduler => k8s.io/kube-scheduler v0.0.0-20190314002350-b74e9e79538d
 	k8s.io/kubelet => k8s.io/kubelet v0.0.0-20190314002251-f6da02f58325
-	//k8s.io/legacy-cloud-providers => k8s.io/legacy-cloud-providers kubernetes-1.14.0
 	k8s.io/metrics => k8s.io/metrics v0.0.0-20190314001731-1bd6a4002213
 	k8s.io/sample-apiserver => k8s.io/sample-apiserver v0.0.0-20190314000836-236f85ce49e5
 )
