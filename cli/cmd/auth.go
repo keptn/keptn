@@ -85,7 +85,7 @@ To manually set up your keptn CLI, please follow the instructions at https://kep
 		if err != nil || strings.TrimSpace(string(out)) == "" {
 			logging.PrintLog("API endpoint not yet available... trying again in 5s", logging.InfoLevel)
 		} else {
-			keptnEndpoint = "https://" + strings.TrimSpace(string(out))
+			keptnEndpoint = "https://api.keptn." + strings.TrimSpace(string(out))
 			break
 		}
 		retries++
