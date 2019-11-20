@@ -1648,6 +1648,233 @@ func TestEvaluateObjectives(t *testing.T) {
 			ExpectedMaximumScore: 1,
 			ExpectedKeySLIFailed: false,
 		},
+		{
+			Name: "Logging SLI with no pass criteria should not affect score",
+			InGetSLIDoneEvent: &keptnevents.InternalGetSLIDoneEventData{
+				Project: "sockshop",
+				Service: "carts",
+				Stage:   "dev",
+				Start:   "2019-10-20T07:57:27.152330783Z",
+				End:     "2019-10-22T08:57:27.152330783Z",
+				IndicatorValues: []*keptnevents.SLIResult{
+					{
+						Metric:  "my-test-metric-1",
+						Value:   10.0,
+						Success: true,
+						Message: "",
+					},
+					{
+						Metric:  "my-log-metric",
+						Value:   30.0,
+						Success: true,
+						Message: "",
+					},
+				},
+			},
+			InSLOConfig: &keptnmodelsv2.ServiceLevelObjectives{
+				SpecVersion: "1.0",
+				Filter:      nil,
+				Comparison: &keptnmodelsv2.SLOComparison{
+					CompareWith:               "several_results",
+					IncludeResultWithScore:    "pass",
+					NumberOfComparisonResults: 2,
+					AggregateFunction:         "avg",
+				},
+				Objectives: []*keptnmodelsv2.SLO{
+					{
+						SLI: "my-test-metric-1",
+						Pass: []*keptnmodelsv2.SLOCriteria{
+							{
+								Criteria: []string{"<=15.0"},
+							},
+							{
+								Criteria: []string{"<=+10%"},
+							},
+						},
+						Warning: []*keptnmodelsv2.SLOCriteria{
+							{
+								Criteria: []string{"<=20.0"},
+							},
+							{
+								Criteria: []string{"<=+15%"},
+							},
+						},
+						Weight: 1,
+						KeySLI: false,
+					},
+					{
+						SLI: "my-log-metric",
+						Weight: 1,
+						KeySLI: false,
+					},
+				},
+				TotalScore: &keptnmodelsv2.SLOScore{
+					Pass:    "90%",
+					Warning: "75%",
+				},
+			},
+			InPreviousEvaluationEvents: []*keptnevents.EvaluationDoneEventData{
+				{
+					EvaluationDetails: &keptnevents.EvaluationDetails{
+						TimeStart: "",
+						TimeEnd:   "",
+						Result:    "pass",
+						Score:     2,
+						IndicatorResults: []*keptnevents.SLIEvaluationResult{
+							{
+								Score: 2,
+								Value: &keptnevents.SLIResult{
+									Metric:  "my-test-metric-1",
+									Value:   10.0,
+									Success: true,
+									Message: "",
+								},
+								Targets: nil,
+								Status:     "pass",
+							},
+						},
+					},
+					Result:       "pass",
+					Project:      "sockshop",
+					Service:      "carts",
+					Stage:        "dev",
+					TestStrategy: "performance",
+				},
+			},
+			ExpectedEvaluationResult: &keptnevents.EvaluationDoneEventData{
+				EvaluationDetails: &keptnevents.EvaluationDetails{
+					TimeStart: "2019-10-20T07:57:27.152330783Z",
+					TimeEnd:   "2019-10-22T08:57:27.152330783Z",
+					Result:    "", // not set by the tested function
+					Score:     0,  // not calculated by tested function
+					IndicatorResults: []*keptnevents.SLIEvaluationResult{
+						{
+							Score: 1,
+							Value: &keptnevents.SLIResult{
+								Metric:  "my-test-metric-1",
+								Value:   10.0,
+								Success: true,
+								Message: "",
+							},
+							Targets: []*keptnevents.SLITarget{
+								{
+									Criteria:    "<=15.0",
+									TargetValue: 15.0,
+									Violated:    false,
+								},
+								{
+									Criteria:    "<=+10%",
+									TargetValue: 11,
+									Violated:    false,
+								},
+							},
+							Status:     "pass",
+						},
+						{
+							Score: 0,
+							Value: &keptnevents.SLIResult{
+								Metric:  "my-log-metric",
+								Value:   30.0,
+								Success: true,
+								Message: "",
+							},
+							Status:     "info",
+						},
+					},
+				},
+				Result:       "", // not set by the tested function
+				Project:      "sockshop",
+				Service:      "carts",
+				Stage:        "dev",
+				TestStrategy: "",
+			},
+			ExpectedMaximumScore: 1,
+			ExpectedKeySLIFailed: false,
+		},
+		{
+			Name: "BUG 1125",
+			InGetSLIDoneEvent: &keptnevents.InternalGetSLIDoneEventData{
+				Project: "sockshop",
+				Service: "carts",
+				Stage:   "dev",
+				Start:   "2019-10-20T07:57:27.152330783Z",
+				End:     "2019-10-22T08:57:27.152330783Z",
+				IndicatorValues: []*keptnevents.SLIResult{
+					{
+						Metric:  "response_time_p50",
+						Value:   1011.0745528937252,
+						Success: true,
+						Message: "",
+					},
+				},
+			},
+			InSLOConfig: &keptnmodelsv2.ServiceLevelObjectives{
+				SpecVersion: "1.0",
+				Filter:      nil,
+				Comparison: &keptnmodelsv2.SLOComparison{
+					CompareWith:               "several_results",
+					IncludeResultWithScore:    "pass",
+					NumberOfComparisonResults: 2,
+					AggregateFunction:         "avg",
+				},
+				Objectives: []*keptnmodelsv2.SLO{
+					{
+						SLI: "response_time_p50",
+						Pass: []*keptnmodelsv2.SLOCriteria{
+							{
+								Criteria: []string{"<=+20%", "<500"},
+							},
+						},
+						Weight: 1,
+						KeySLI: false,
+					},
+				},
+				TotalScore: &keptnmodelsv2.SLOScore{
+					Pass:    "90%",
+					Warning: "75%",
+				},
+			},
+			InPreviousEvaluationEvents: nil,
+			ExpectedEvaluationResult: &keptnevents.EvaluationDoneEventData{
+				EvaluationDetails: &keptnevents.EvaluationDetails{
+					TimeStart: "2019-10-20T07:57:27.152330783Z",
+					TimeEnd:   "2019-10-22T08:57:27.152330783Z",
+					Result:    "", // not set by the tested function
+					Score:     0,  // not calculated by tested function
+					IndicatorResults: []*keptnevents.SLIEvaluationResult{
+						{
+							Score: 0,
+							Value: &keptnevents.SLIResult{
+								Metric:  "response_time_p50",
+								Value:   1011.0745528937252,
+								Success: true,
+								Message: "",
+							},
+							Targets: []*keptnevents.SLITarget{
+								{
+									Criteria:    "<=+20%",
+									TargetValue: 0,
+									Violated:    false,
+								},
+								{
+									Criteria:    "<500",
+									TargetValue: 500,
+									Violated:    true,
+								},
+							},
+							Status:     "fail",
+						},
+					},
+				},
+				Result:       "", // not set by the tested function
+				Project:      "sockshop",
+				Service:      "carts",
+				Stage:        "dev",
+				TestStrategy: "",
+			},
+			ExpectedMaximumScore: 1,
+			ExpectedKeySLIFailed: false,
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.Name, func(t *testing.T) {

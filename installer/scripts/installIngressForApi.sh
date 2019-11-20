@@ -34,5 +34,6 @@ rm certificate.pem
 # Update ingress with updates hosts
 cat ../manifests/keptn/api-ingress.yaml | \
     sed 's~domain.placeholder~'"$DOMAIN"'~' > ../manifests/keptn/gen/api-ingress.yaml
+
 kubectl apply -f ../manifests/keptn/gen/api-ingress.yaml
-verify_kubectl $? "Deploying keptn ingress failed."
+verify_kubectl $? "Deploying Keptn ingress failed."

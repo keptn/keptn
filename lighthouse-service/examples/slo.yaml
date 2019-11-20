@@ -1,5 +1,5 @@
 ---
-spec_version: '1.0'
+spec_version: '0.1.0'
 # filter is optional
 # specifies selection criteria for service in the SLI provider; project, stage,
 # and service can be overwritten, if needed
