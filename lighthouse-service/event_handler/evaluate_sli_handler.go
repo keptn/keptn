@@ -5,13 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/cloudevents/sdk-go/pkg/cloudevents"
-	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
-	"github.com/ghodss/yaml"
-	"github.com/google/uuid"
-	keptnevents "github.com/keptn/go-utils/pkg/events"
-	keptnmodelsv2 "github.com/keptn/go-utils/pkg/models/v2"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"io/ioutil"
 	"math"
 	"net/http"
@@ -21,6 +14,14 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/cloudevents/sdk-go/pkg/cloudevents"
+	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
+	"github.com/ghodss/yaml"
+	"github.com/google/uuid"
+	keptnevents "github.com/keptn/go-utils/pkg/events"
+	keptnmodelsv2 "github.com/keptn/go-utils/pkg/models/v2"
+	keptnutils "github.com/keptn/go-utils/pkg/utils"
 )
 
 type datastoreResult struct {
@@ -56,6 +57,7 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 		return err
 	}
 
+	eh.Logger.Debug("Start to evaluate SLIs")
 	// compare the results based on the evaluation strategy
 	sloConfig, err := getSLOs(e.Project, e.Stage, e.Service)
 	if err != nil {
@@ -80,21 +82,21 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 	for _, val := range previousEvaluationEvents {
 		filteredPreviousEvaluationEvents = append(filteredPreviousEvaluationEvents, val)
 		/*
-		if sloConfig.Comparison.IncludeResultWithScore == "all" {
-			// always include
-			filteredPreviousEvaluationEvents = append(filteredPreviousEvaluationEvents, val)
-		} else if sloConfig.Comparison.IncludeResultWithScore == "pass_or_warn" {
-			// only include warnings and passes
-			if val.Result == "warning" || val.Result == "pass" {
+			if sloConfig.Comparison.IncludeResultWithScore == "all" {
+				// always include
 				filteredPreviousEvaluationEvents = append(filteredPreviousEvaluationEvents, val)
+			} else if sloConfig.Comparison.IncludeResultWithScore == "pass_or_warn" {
+				// only include warnings and passes
+				if val.Result == "warning" || val.Result == "pass" {
+					filteredPreviousEvaluationEvents = append(filteredPreviousEvaluationEvents, val)
+				}
+			} else if sloConfig.Comparison.IncludeResultWithScore == "pass" {
+				// only include passes
+				if val.Result == "pass" {
+					filteredPreviousEvaluationEvents = append(filteredPreviousEvaluationEvents, val)
+				}
 			}
-		} else if sloConfig.Comparison.IncludeResultWithScore == "pass" {
-			// only include passes
-			if val.Result == "pass" {
-				filteredPreviousEvaluationEvents = append(filteredPreviousEvaluationEvents, val)
-			}
-		}
-		 */
+		*/
 	}
 
 	evaluationResult, maximumAchievableScore, keySLIFailed := evaluateObjectives(e, sloConfig, filteredPreviousEvaluationEvents)
@@ -104,6 +106,7 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 	if err != nil {
 		return err
 	}
+	eh.Logger.Debug("Evaluation result: " + evaluationResult.Result)
 
 	sloFileContent, _ := yaml.Marshal(sloConfig)
 	base64.StdEncoding.EncodeToString(sloFileContent)
@@ -521,7 +524,6 @@ func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptnevents.InternalGetS
 	return evaluationDoneEvents, nil
 }
 
-
 func (eh *EvaluateSLIHandler) sendEvaluationDoneEvent(shkeptncontext string, data *keptnevents.EvaluationDoneEventData) error {
 
 	source, _ := url.Parse("lighthouse-service")
@@ -539,5 +541,6 @@ func (eh *EvaluateSLIHandler) sendEvaluationDoneEvent(shkeptncontext string, dat
 		Data: data,
 	}
 
+	eh.Logger.Debug("Send event: " + keptnevents.EvaluationDoneEventType)
 	return sendEvent(event)
 }

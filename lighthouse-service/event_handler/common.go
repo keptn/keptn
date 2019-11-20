@@ -4,14 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/url"
+	"os"
+
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
 	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
 	"github.com/ghodss/yaml"
 	"github.com/keptn/go-utils/pkg/configuration-service/utils"
 	keptnmodelsv2 "github.com/keptn/go-utils/pkg/models/v2"
-	"net/url"
-	"os"
 )
 
 const configservice = "CONFIGURATION_SERVICE"
