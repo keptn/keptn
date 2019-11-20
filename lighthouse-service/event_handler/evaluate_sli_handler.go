@@ -78,6 +78,8 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 
 	// verify that we have enough evaluations
 	for _, val := range previousEvaluationEvents {
+		filteredPreviousEvaluationEvents = append(filteredPreviousEvaluationEvents, val)
+		/*
 		if sloConfig.Comparison.IncludeResultWithScore == "all" {
 			// always include
 			filteredPreviousEvaluationEvents = append(filteredPreviousEvaluationEvents, val)
@@ -92,6 +94,7 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 				filteredPreviousEvaluationEvents = append(filteredPreviousEvaluationEvents, val)
 			}
 		}
+		 */
 	}
 
 	evaluationResult, maximumAchievableScore, keySLIFailed := evaluateObjectives(e, sloConfig, filteredPreviousEvaluationEvents)
@@ -130,7 +133,10 @@ func evaluateObjectives(e *keptnevents.InternalGetSLIDoneEventData, sloConfig *k
 	maximumAchievableScore := 0.0
 	keySLIFailed := false
 	for _, objective := range sloConfig.Objectives {
-		maximumAchievableScore += float64(objective.Weight)
+		// only consider the SLI for the total score if pass criteria have been included
+		if len(objective.Pass) > 0 {
+			maximumAchievableScore += float64(objective.Weight)
+		}
 		sliEvaluationResult := &keptnevents.SLIEvaluationResult{}
 		result := getSLIResult(e.IndicatorValues, objective.SLI)
 
@@ -170,6 +176,8 @@ func evaluateObjectives(e *keptnevents.InternalGetSLIDoneEventData, sloConfig *k
 				sliEvaluationResult.Score = float64(objective.Weight)
 				sliEvaluationResult.Status = "pass"
 			}
+		} else {
+			sliEvaluationResult.Status = "info"
 		}
 
 		if !isPassed {
@@ -179,6 +187,8 @@ func evaluateObjectives(e *keptnevents.InternalGetSLIDoneEventData, sloConfig *k
 					sliEvaluationResult.Score = 0.5 * float64(objective.Weight)
 					sliEvaluationResult.Status = "warning"
 				}
+			} else {
+				isWarning = false
 			}
 		}
 
@@ -188,7 +198,7 @@ func evaluateObjectives(e *keptnevents.InternalGetSLIDoneEventData, sloConfig *k
 			if objective.KeySLI {
 				keySLIFailed = true
 			}
-			sliEvaluationResult.Status = "failed"
+			sliEvaluationResult.Status = "fail"
 			sliEvaluationResult.Score = 0
 		}
 
@@ -309,6 +319,20 @@ func evaluateComparison(sliResult *keptnevents.SLIResult, co *criteriaObject, pr
 	}
 
 	for _, val := range previousResults {
+		if comparison.IncludeResultWithScore == "all" {
+			// always include
+			previousValues = append(previousValues, val.Value.Value)
+		} else if comparison.IncludeResultWithScore == "pass_or_warn" {
+			// only include warnings and passes
+			if val.Status == "warning" || val.Status == "pass" {
+				previousValues = append(previousValues, val.Value.Value)
+			}
+		} else if comparison.IncludeResultWithScore == "pass" {
+			// only include passes
+			if val.Status == "pass" {
+				previousValues = append(previousValues, val.Value.Value)
+			}
+		}
 		previousValues = append(previousValues, val.Value.Value)
 	}
 
