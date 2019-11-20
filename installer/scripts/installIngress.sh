@@ -14,11 +14,11 @@ case $PLATFORM in
         # Install nginx service mesh
         print_info "Installing nginx on AKS"
         kubectl apply -f ../manifests/nginx/nginx.yaml
-        verify_install_step $? "Installing nginx failed."
+        verify_install_step $? "Installing nginx deployment failed."
         wait_for_deployment_in_namespace "nginx-ingress-controller" "ingress-nginx"
-        verify_install_step $? "Installing nginx failed."
-        kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/cloud-generic.yaml
-        verify_install_step $? "Installing nginx failed."
+        verify_install_step $? "Installing nginx failed because deployment not available"
+        kubectl apply -f ../manifests/nginx/nginx-svc.yaml
+        verify_install_step $? "Installing nginx service failed."
 
         source ./installIngressForApi.sh
     fi    
@@ -35,14 +35,14 @@ case $PLATFORM in
         # Install nginx service mesh
         print_info "Installing nginx on EKS"
         kubectl apply -f ../manifests/nginx/nginx.yaml
-        verify_install_step $? "Installing nginx failed."
+        verify_install_step $? "Installing nginx deployment failed."
         wait_for_deployment_in_namespace "nginx-ingress-controller" "ingress-nginx"
-        verify_install_step $? "Installing nginx failed."
-        kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/cloud-generic.yaml
-        verify_install_step $? "Installing nginx failed."
-        kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/aws/service-l4.yaml
-        kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/aws/patch-configmap-l4.yaml
-        verify_install_step $? "Installing nginx failed."
+        verify_install_step $? "Installing nginx failed because deployment not available"
+        kubectl apply -f ../manifests/nginx/nginx-svc.yaml
+        verify_install_step $? "Installing nginx service failed."
+        kubectl apply -f ../manifests/nginx/nginx-svc-eks.yaml
+        kubectl apply -f ../manifests/nginx/nginx-configmap-eks.yaml
+        verify_install_step $? "Installing nginx configmap for EKS failed."
 
         source ./installIngressForApi.sh
     fi
@@ -60,9 +60,11 @@ case $PLATFORM in
         # Install nginx service mesh
         print_info "Installing nginx on OpenShift"
         kubectl apply -f ../manifests/nginx/nginx.yaml
-        verify_install_step $? "Installing nginx failed."
+        verify_install_step $? "Installing nginx deployment failed."
         wait_for_deployment_in_namespace "nginx-ingress-controller" "ingress-nginx"
-        verify_install_step $? "Installing nginx failed."
+        verify_install_step $? "Installing nginx failed because deployment not available"
+        kubectl apply -f ../manifests/nginx/nginx-svc.yaml
+        verify_install_step $? "Installing nginx service failed."
 
         source ./installIngressForApi.sh
     fi 
@@ -79,11 +81,11 @@ case $PLATFORM in
         # Install nginx service mesh
         print_info "Installing nginx on GKE"
         kubectl apply -f ../manifests/nginx/nginx.yaml
-        verify_install_step $? "Installing nginx failed."
+        verify_install_step $? "Installing nginx deployment failed."
         wait_for_deployment_in_namespace "nginx-ingress-controller" "ingress-nginx"
-        verify_install_step $? "Installing nginx failed."
-        kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/cloud-generic.yaml
-        verify_install_step $? "Installing nginx failed."      
+        verify_install_step $? "Installing nginx failed because deployment not available"
+        kubectl apply -f ../manifests/nginx/nginx-svc.yaml
+        verify_install_step $? "Installing nginx service failed."     
 
         source ./installIngressForApi.sh
     fi 
@@ -100,9 +102,11 @@ case $PLATFORM in
         # Install nginx service mesh
         print_info "Installing nginx on PKS"
         kubectl apply -f ../manifests/nginx/nginx.yaml
-        verify_install_step $? "Installing nginx failed."
+        verify_install_step $? "Installing nginx deployment failed."
         wait_for_deployment_in_namespace "nginx-ingress-controller" "ingress-nginx"
-        verify_install_step $? "Installing nginx failed."   
+        verify_install_step $? "Installing nginx failed because deployment not available" 
+        kubectl apply -f ../manifests/nginx/nginx-svc.yaml
+        verify_install_step $? "Installing nginx service failed."   
 
         source ./installIngressForApi.sh     
     fi 
@@ -119,13 +123,16 @@ case $PLATFORM in
         # Install nginx service mesh
         print_info "Installing nginx on Kubernetes"
         kubectl apply -f ../manifests/nginx/nginx.yaml
-        verify_install_step $? "Installing nginx failed."
+        verify_install_step $? "Installing nginx deployment failed."
         wait_for_deployment_in_namespace "nginx-ingress-controller" "ingress-nginx"
-        verify_install_step $? "Installing nginx failed."
+        verify_install_step $? "Installing nginx failed because deployment not available"
 
         if [ "$GATEWAY_TYPE" = "NodePort" ]; then
-          kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/baremetal/service-nodeport.yaml
-          verify_install_step $? "Installing nginx failed."
+          kubectl apply -f ../manifests/nginx/nginx-svc-nodeport.yaml
+          verify_install_step $? "Installing nginx service failed."  
+        else 
+          kubectl apply -f ../manifests/nginx/nginx-svc.yaml
+          verify_install_step $? "Installing nginx service failed."  
         fi
 
         source ./installIngressForApi.sh
