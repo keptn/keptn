@@ -14,7 +14,7 @@ spec:
         emptyDir: {}
       containers:
       - name: keptn-installer
-        image: keptn/installer:latest
+        image: keptn/installer:feature.1124.20191120.0648
         env:       
         - name: PLATFORM
           value: PLATFORM_PLACEHOLDER
