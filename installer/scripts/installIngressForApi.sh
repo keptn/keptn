@@ -2,7 +2,8 @@
 source ./common/utils.sh
 
 kubectl apply -f ../manifests/keptn/api-ingress.yaml
-verify_install_step $? "Installing ingress failed."
+verify_install_step $? "Installing Keptn api-ingress failed."
+
 wait_for_ingress
 
 export DOMAIN=$(kubectl get ingress api-ingress -n keptn -o json | jq -r .status.loadBalancer.ingress[0].ip)
@@ -21,5 +22,6 @@ rm certificate.pem
 # Update ingress with updates hosts
 cat ../manifests/keptn/api-ingress.yaml | \
     sed 's~domain.placeholder~'"$DOMAIN"'~' > ../manifests/keptn/gen/api-ingress.yaml
+
 kubectl apply -f ../manifests/keptn/gen/api-ingress.yaml
-verify_kubectl $? "Deploying keptn ingress failed."
+verify_kubectl $? "Deploying Keptn ingress failed."
