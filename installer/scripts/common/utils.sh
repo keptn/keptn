@@ -140,7 +140,7 @@ function wait_for_crds() {
   fi
 }
 
-# Waits for ip of gateway
+# Waits for ip of Istio ingress gateway (max wait time 20sec)
 function wait_for_istio_ingressgateway() {
   PROPERTY=$1;
   RETRY=0; RETRY_MAX=4;
@@ -162,8 +162,9 @@ function wait_for_istio_ingressgateway() {
   done
 }
 
+# Waits for ip of ingress gateway (max wait time 180sec)
 function wait_for_ingress() {
-  RETRY=0; RETRY_MAX=20;
+  RETRY=0; RETRY_MAX=36;
   DOMAIN="";
 
   while [[ $RETRY -lt $RETRY_MAX ]]; do
