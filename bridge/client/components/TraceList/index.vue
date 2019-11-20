@@ -68,8 +68,11 @@
                       <div v-for="indicatorResult in event.data.evaluationdetails.indicatorResults" :key="indicatorResult.value.metric" class="indicator-results">
                           <b-button
                             class="view-sli-button"
-                            v-bind:class="{ texterror: isSLIError(indicatorResult), textsuccess: isSLISuccess(indicatorResult), textwarning: isSLIWarning(indicatorResult) }"
-                            @click="$bvModal.show(event.id + '-' + indicatorResult.value.metric)">{{indicatorResult.value.metric}} : {{indicatorResult.status}}</b-button>
+                            v-bind:class="{ texterror: isSLIError(indicatorResult), textsuccess: isSLISuccess(indicatorResult), textwarning: isSLIWarning(indicatorResult), textinfo: isSLIInfo(indicatorResult) }"
+                            @click="$bvModal.show(event.id + '-' + indicatorResult.value.metric)">
+                            <div v-if="!isSLIInfo(indicatorResult)">{{indicatorResult.value.metric}} : {{indicatorResult.status}}</div>
+                            <div v-if="isSLIInfo(indicatorResult) && indicatorResult.value !== undefined && indicatorResult.value != null">{{indicatorResult.value.metric}} : {{indicatorResult.value.value}}</div>
+                          </b-button>
 
                           <b-modal :id="event.id + '-' + indicatorResult.value.metric" :title="indicatorResult.value.metric" ok-only>
                             <p class="my-4">
@@ -273,13 +276,16 @@ export default {
       return event.type === 'sh.keptn.events.evaluation-done' && event.data.result === 'warning';
     },
     isSLIError(sliResult) {
-      return sliResult.status === 'failed';
+      return sliResult.status === 'fail' || sliResult.status === 'failed';
     },
     isSLISuccess(sliResult) {
       return sliResult.status === 'pass';
     },
     isSLIWarning(sliResult) {
       return sliResult.status === 'warning';
+    },
+    isSLIInfo(sliResult) {
+      return sliResult.status === 'info';
     },
     activateEvent(contextId) {
       return this.$store.dispatch('activateEvent', contextId);
@@ -352,6 +358,10 @@ export default {
 
   .textwarning {
     color: orange;
+  }
+
+  .textinfo {
+    color: #505050;
   }
 
   .traceHeader {
