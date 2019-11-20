@@ -20,9 +20,63 @@ Therefore, this section shows the compatibility between these versions.
 
 *Keptn core:*
 - keptn/lighthouse-service:0.6.0
+- keptn/api:0.6.0
+- keptn/bridge:0.6.0
+- keptn/configuration-service:0.6.0
+- keptn/distributor:0.6.0
+- keptn/eventbroker-go:0.6.0
+- keptn/gatekeeper-service:0.6.0
+- keptn/helm-service:0.6.0
+- keptn/jmeter-service:0.6.0
+- keptn/mongodb-datastore:0.6.0
+- keptn/pitometer-service:0.6.0
+- keptn/shipyard-service:0.6.0
+- keptn/wait-service:0.6.0
+- keptn/remediation-service:0.6.0
 
-**Keptn in [version 0.5.1](https://github.com/keptn/keptn/releases/tag/0.5.1) requires:**
 
+*Keptn uniform:*
+- keptn/dynatrace-service:0.4.0
+- keptn/dynatrace-sli-service:0.1.0
+- keptn/prometheus-service:0.3.0
+- keptn/prometheus-sli-service:0.1.0
+- keptn/servicenow-service:0.1.4
+
+*for Openshift:*
+- keptn/openshift-route-service:0.6.0
+
+
+<details><summary>Keptn version 0.5.2</summary>
+<p>
+*Keptn core:*
+- keptn/api:0.5.0
+- keptn/bridge:0.5.0
+- keptn/configuration-service:0.5.0
+- keptn/distributor:0.5.0
+- keptn/eventbroker-go:0.5.0
+- keptn/gatekeeper-service:0.5.0
+- keptn/helm-service:0.5.1
+- keptn/jmeter-service:0.5.0
+- keptn/mongodb-datastore:0.5.0
+- keptn/pitometer-service:0.5.0
+- keptn/shipyard-service:0.5.0
+- keptn/wait-service:0.5.0
+- keptn/remediation-service:0.5.0
+
+
+*Keptn uniform:*
+- keptn/dynatrace-service:0.2.0
+- keptn/prometheus-service:0.2.0
+- keptn/servicenow-service:0.1.4
+
+*for Openshift:*
+- keptn/openshift-route-service:0.5.0
+
+</p>
+</details>
+
+<details><summary>Keptn version 0.5.1</summary>
+<p>
 *Keptn core:*
 - keptn/api:0.5.0
 - keptn/bridge:0.5.0
@@ -47,6 +101,8 @@ Therefore, this section shows the compatibility between these versions.
 *for Openshift:*
 - keptn/openshift-route-service:0.5.0
 
+</p>
+</details>
 <details><summary>Keptn version 0.5.0</summary>
 <p>
 
