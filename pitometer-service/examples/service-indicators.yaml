@@ -1,7 +1,0 @@
-indicators:
-- metric: cpu_usage_p95_sockshop_carts_production
-  source: Prometheus
-  query: avg(rate(container_cpu_usage_seconds_total{namespace="sockshop-production",pod_name=~"carts-blue-.*|carts-green-.*"}[$DURATION_MINUTES]))
-- metric: request_latency_seconds
-  source: Prometheus
-  query: rate(requests_latency_seconds_sum{job='carts-$ENVIRONMENT'}[$DURATION_MINUTESm])/rate(requests_latency_seconds_count{job='carts-$ENVIRONMENT'}[$DURATION_MINUTESm])

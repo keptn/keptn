@@ -1,0 +1,17 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="keptn/api [Kube ContDeploy]" type="google-container-tools-skaffold-run-config" factoryName="google-container-tools-skaffold-run-config-dev" show_console_on_std_err="false" show_console_on_std_out="false">
+    <option name="allowRunningInParallel" value="false" />
+    <option name="cleanupDeployments" value="true" />
+    <option name="envVariables">
+      <map>
+        <entry key="debugBuild" value="true" />
+      </map>
+    </option>
+    <option name="imageRepositoryOverride" />
+    <option name="kubernetesContext" />
+    <option name="skaffoldConfigurationFilePath" value="$PROJECT_DIR$/api/skaffold.yaml" />
+    <option name="skaffoldNamespace" />
+    <option name="skaffoldProfile" />
+    <method v="2" />
+  </configuration>
+</component>

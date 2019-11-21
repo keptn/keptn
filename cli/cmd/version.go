@@ -28,8 +28,8 @@ var (
 // versionCmd represents the version command
 var versionCmd = &cobra.Command{
 	Use:   "version",
-	Short: "Prints the CLI version for the current context",
-	Long: `Prints the CLI version for the current context
+	Short: "Shows the CLI version for the current context",
+	Long: `Shows the CLI version for the current context
 
 Example:
 	keptn version`,

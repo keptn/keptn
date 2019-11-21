@@ -13,7 +13,6 @@ func init() {
 }
 
 func TestDeleteProjectCmd(t *testing.T) {
-
 	credentialmanager.MockAuthCreds = true
 
 	args := []string{
@@ -26,6 +25,6 @@ func TestDeleteProjectCmd(t *testing.T) {
 	err := rootCmd.Execute()
 
 	if err != nil {
-		t.Errorf("An error occured %v", err)
+		t.Errorf("An error occured: %v", err)
 	}
 }

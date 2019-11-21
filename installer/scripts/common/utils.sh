@@ -21,7 +21,7 @@ function print_error() {
 function verify_install_step() {
   if [[ $1 != '0' ]]; then
     print_error "$2"
-    print_error "Stopping keptn installation. Already created resources are not deleted; execute the uninstallKeptn.sh script to clean-up."
+    print_error "Stopping keptn installation. Already created resources are not deleted; run keptn uninstall to clean-up."
     exit 1
   fi
 }
@@ -29,7 +29,7 @@ function verify_install_step() {
 function verify_kubectl() {
   if [[ $1 != '0' ]]; then
     print_error "$2"
-    print_error "Stopping keptn installation. Already created resources are not deleted; execute the uninstallKeptn.sh script to clean-up."
+    print_error "Stopping keptn installation. Already created resources are not deleted; run keptn uninstall to clean-up."
     exit 1
   fi
 }
@@ -37,7 +37,7 @@ function verify_kubectl() {
 function verify_variable() {
   if [[ -z "$1" ]]; then
     print_error "$2"
-    print_error "Stopping keptn installation. Already created resources are not deleted; execute the uninstallKeptn.sh script to clean-up."
+    print_error "Stopping keptn installation. Already created resources are not deleted; run keptn uninstall to clean-up."
     exit 1
   fi
 }
@@ -140,7 +140,7 @@ function wait_for_crds() {
   fi
 }
 
-# Waits for ip of gateway
+# Waits for ip of Istio ingress gateway (max wait time 20sec)
 function wait_for_istio_ingressgateway() {
   PROPERTY=$1;
   RETRY=0; RETRY_MAX=4;
@@ -158,6 +158,27 @@ function wait_for_istio_ingressgateway() {
     fi
     RETRY=$[$RETRY+1]
     print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 5s for ${PROPERTY} of Istio Ingressgateway to be available ..."
+    sleep 5
+  done
+}
+
+# Waits for ip of ingress gateway (max wait time 180sec)
+function wait_for_ingress() {
+  RETRY=0; RETRY_MAX=36;
+  DOMAIN="";
+
+  while [[ $RETRY -lt $RETRY_MAX ]]; do
+    DOMAIN=$(kubectl get ingress api-ingress -n keptn -o json | jq -r .status.loadBalancer.ingress[0].ip)
+    if [[ $DOMAIN = "null" ]]; then
+      DOMAIN=""
+    fi
+
+    if [[ "$DOMAIN" != "" ]]; then
+      print_debug "IP of ingress is available."
+      break
+    fi
+    RETRY=$[$RETRY+1]
+    print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 5s for IP of ingress to be available ..."
     sleep 5
   done
 }

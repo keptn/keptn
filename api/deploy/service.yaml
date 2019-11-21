@@ -15,25 +15,29 @@ spec:
         run: api
     spec:
       containers:
-      - name: api
-        image: keptn/api:latest
-        ports:
-        - containerPort: 8080
-        resources:
-          requests:
-            memory: "64Mi"
-            cpu: "50m"
-          limits:
-            memory: "128Mi"
-            cpu: "500m"
-        env:
-        - name: EVENTBROKER_URI
-          value: event-broker.keptn.svc.cluster.local
-        - name: SECRET_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: keptn-api-token
-              key: keptn-api-token
+        - name: api
+          image: keptn/api:latest
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          env:
+            - name: EVENTBROKER_URI
+              value: event-broker.keptn.svc.cluster.local
+            - name: DATASTORE_URI
+              value: mongodb-datastore.keptn-datastore.svc.cluster.local:8080
+            - name: CONFIGURATION_URI
+              value: configuration-service.keptn.svc.cluster.local:8080
+            - name: SECRET_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: keptn-api-token
+                  key: keptn-api-token
 ---
 apiVersion: v1
 kind: Service
@@ -44,13 +48,13 @@ metadata:
     run: api
 spec:
   ports:
-  - port: 80
-    name: http
-    targetPort: 8080
-    protocol: TCP
-  - port: 443
-    name: https
-    targetPort: 8080
-    protocol: TCP
+    - port: 80
+      name: http
+      targetPort: 8080
+      protocol: TCP
+    - port: 443
+      name: https
+      targetPort: 8080
+      protocol: TCP
   selector:
     run: api

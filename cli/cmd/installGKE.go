@@ -100,6 +100,7 @@ func (p gkePlatform) readGkeProject() {
 		"Please enter a valid GKE Project.",
 	)
 }
+
 func (p gkePlatform) authenticateAtCluster() (bool, error) {
 	_, err := keptnutils.ExecuteCommand("gcloud", []string{
 		"container",
@@ -122,7 +123,7 @@ func (p gkePlatform) authenticateAtCluster() (bool, error) {
 }
 
 func getGkeClusterInfo() (string, string, string) {
-	// try to get current cluster from gcloud config
+	// try to get current cluster from kubectl config
 	out, err := getKubeContext()
 
 	if err != nil {

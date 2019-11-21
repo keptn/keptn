@@ -1,6 +1,9 @@
 ![keptn](./assets/keptn.png)
 
 # Keptn
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/keptn/keptn)
+[![Build Status](https://travis-ci.org/keptn/keptn.svg?branch=master)](https://travis-ci.org/keptn/keptn)
+
 Keptn is a fabric for cloud-native lifecycle automation at enterprise scale. In the current version it provides an automated setup of the Keptn core components as well as a demo application. Also included are three pre-configured use cases for the demo application: automated quality gates, runbook automation, and automated evaluation of blue/green deployments.
 
 ## Usage
@@ -13,8 +16,38 @@ We mangage the Keptn core components as well as all services (e.g., github-servi
 The versions of the Keptn core components and the services have to be compatible to each other.
 Therefore, this section shows the compatibility between these versions.
 
-**Keptn in [version 0.5.2](https://github.com/keptn/keptn/releases/tag/0.5.2) requires:**
+**Keptn in [version 0.6.0](https://github.com/keptn/keptn/releases/tag/0.6.0) requires:**
 
+*Keptn core:*
+- keptn/lighthouse-service:0.6.0
+- keptn/api:0.6.0
+- keptn/bridge:0.6.0
+- keptn/configuration-service:0.6.0
+- keptn/distributor:0.6.0
+- keptn/eventbroker-go:0.6.0
+- keptn/gatekeeper-service:0.6.0
+- keptn/helm-service:0.6.0
+- keptn/jmeter-service:0.6.0
+- keptn/mongodb-datastore:0.6.0
+- keptn/pitometer-service:0.6.0
+- keptn/shipyard-service:0.6.0
+- keptn/wait-service:0.6.0
+- keptn/remediation-service:0.6.0
+
+
+*Keptn uniform:*
+- keptn/dynatrace-service:0.4.0
+- keptn/dynatrace-sli-service:0.1.0
+- keptn/prometheus-service:0.3.0
+- keptn/prometheus-sli-service:0.1.0
+- keptn/servicenow-service:0.1.4
+
+*for Openshift:*
+- keptn/openshift-route-service:0.6.0
+
+
+<details><summary>Keptn version 0.5.2</summary>
+<p>
 *Keptn core:*
 - keptn/api:0.5.0
 - keptn/bridge:0.5.0
@@ -38,10 +71,12 @@ Therefore, this section shows the compatibility between these versions.
 
 *for Openshift:*
 - keptn/openshift-route-service:0.5.0
+
+</p>
+</details>
 
 <details><summary>Keptn version 0.5.1</summary>
 <p>
-  
 *Keptn core:*
 - keptn/api:0.5.0
 - keptn/bridge:0.5.0
@@ -59,12 +94,13 @@ Therefore, this section shows the compatibility between these versions.
 
 
 *Keptn uniform:*
-- keptn/dynatrace-service:0.2.0
+- keptn/dynatrace-service:0.3.1
 - keptn/prometheus-service:0.2.0
 - keptn/servicenow-service:0.1.4
 
 *for Openshift:*
 - keptn/openshift-route-service:0.5.0
+
 </p>
 </details>
 <details><summary>Keptn version 0.5.0</summary>
@@ -89,7 +125,7 @@ Keptn in [version 0.5.0](https://github.com/keptn/keptn/releases/tag/0.5.0) requ
 
 
 *Keptn uniform:*
-- keptn/dynatrace-service:0.2.0
+- keptn/dynatrace-service:0.3.1
 - keptn/prometheus-service:0.2.0
 - keptn/servicenow-service:0.1.4
 
@@ -213,6 +249,15 @@ Keptn in [version 0.1.3](https://github.com/keptn/keptn/tree/0.1.3) requires:
 </p>
 </details>
 
-## Further information
-* The [Keptn`s website](https://keptn.sh) has the documentation of Keptn and its use cases.
+## Contributions
 
+You are welcome to contribute using Pull Requests to the respective repositories. Before contributing, please read our [Contributing Guidelines](CONTRIBUTING.md) and our [Code of Conduct](CODE_OF_CONDUCT.md).
+
+## License
+
+Keptn is an Open Source Project. Please see [LICENSE](LICENSE) for more information.
+
+## Further information
+
+* The [Keptn`s website](https://keptn.sh) has the documentation of Keptn and its use cases.
+* Please join the [Keptn community](https://github.com/keptn/community).

@@ -93,6 +93,6 @@ func TestConfigureMonitoringCmd(t *testing.T) {
 	*/
 
 	if err != nil {
-		t.Errorf("An error occured %v", err)
+		t.Errorf("An error occured: %v", err)
 	}
 }

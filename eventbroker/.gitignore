@@ -12,3 +12,7 @@ vendor
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
+
+#binary - go build
+eventbroker
+

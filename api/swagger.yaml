@@ -1,0 +1,245 @@
+---
+swagger: "2.0"
+info:
+  title: keptn api
+  version: develop
+schemes:
+  - http
+basePath: /v1
+consumes:
+  - application/json
+  - application/cloudevents+json
+produces:
+  - application/json
+securityDefinitions:
+  key:
+    type: apiKey
+    in: header
+    name: x-token
+security:
+  - key: []
+
+paths:
+  /auth:
+    post:
+      tags:
+        - Auth
+      operationId: auth
+      summary: Checks the provided token
+      responses:
+        200:
+          description: Authenticated
+
+  /event:
+    post:
+      tags:
+        - Event
+      summary: Forwards the received event
+      parameters:
+        - name: body
+          in: body
+          schema:
+            $ref: "https://raw.githubusercontent.com/cloudevents/spec/v0.2/spec.json#/definitions/event"
+      responses:
+        200:
+          description: Forwarded
+          schema:
+            $ref: "response_model.yaml#/definitions/eventContext"
+        default:
+          description: Error
+          schema:
+            $ref: "response_model.yaml#/definitions/error"
+    get:
+      tags:
+        - Event
+      summary: Get the latest event matching the parameters
+      parameters:
+        - name: keptnContext
+          in: query
+          type: string
+          required: false
+          description: KeptnContext of the events to get
+        - name: type
+          in: query
+          type: string
+          required: false
+          description: Type of the Keptn cloud event
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: "response_model.yaml#/definitions/keptnContextExtendedCE"
+        404:
+          description: Failed. Event could not be found.
+          schema:
+            $ref: "response_model.yaml#/definitions/error"
+        default:
+          description: Error
+          schema:
+            $ref: "response_model.yaml#/definitions/error"
+
+  /project:
+    post:
+      tags:
+        - Project
+      summary: Creates a new project
+      parameters:
+        - $ref: "#/parameters/project"
+      responses:
+        200:
+          description: Creating of project triggered
+          schema:
+            $ref: "response_model.yaml#/definitions/eventContext"
+        400:
+          description: Failed. Project could not be created
+          schema:
+            $ref: "response_model.yaml#/definitions/error"
+        default:
+          description: Error
+          schema:
+            $ref: "response_model.yaml#/definitions/error"
+
+  /project/{projectName}:
+    parameters:
+      - $ref: "#/parameters/projectName"
+    delete:
+      tags:
+        - Project
+      summary: Deletes the specified project
+      responses:
+        200:
+          description: Deleting of project triggered
+          schema:
+            $ref: "response_model.yaml#/definitions/eventContext"
+        400:
+          description: Failed. Project could not be deleted
+          schema:
+            $ref: "response_model.yaml#/definitions/error"
+        default:
+          description: Error
+          schema:
+            $ref: "response_model.yaml#/definitions/error"
+
+  /project/{projectName}/service:
+    parameters:
+      - $ref: "#/parameters/projectName"
+    post:
+      tags:
+        - Service
+      summary: Creates a new service
+      parameters:
+        - $ref: "#/parameters/service"
+      responses:
+        200:
+          description: Creating of service triggered
+          schema:
+            $ref: "response_model.yaml#/definitions/eventContext"
+        400:
+          description: Failed. Project could not be created
+          schema:
+            $ref: "response_model.yaml#/definitions/error"
+        default:
+          description: Error
+          schema:
+            $ref: "response_model.yaml#/definitions/error"
+
+  /project/{projectName}/stage/{stageName}/service/{serviceName}/resource:
+    parameters:
+      - $ref: "#/parameters/projectName"
+      - $ref: "#/parameters/stageName"
+      - $ref: "#/parameters/serviceName"
+    post:
+      tags:
+        - Service Resource
+      summary: Upload a list of new resources for the service
+      parameters:
+        - $ref: "#/parameters/resources"
+      responses:
+        201:
+          description: Success. Service resources have been uploaded
+        400:
+          description: Failed. Service resources could not be uploaded
+          schema:
+            $ref: "response_model.yaml#/definitions/error"
+        default:
+          description: Error
+          schema:
+            $ref: "response_model.yaml#/definitions/error"
+    put:
+      tags:
+        - Service Resource
+      parameters:
+        - $ref: "#/parameters/resources"
+      summary: Update list of service resources
+      responses:
+        201:
+          description: Success. Service resources have been updated
+        400:
+          description: Failed. Service resources could not be updated.
+          schema:
+            $ref: "response_model.yaml#/definitions/error"
+        default:
+          description: Error
+          schema:
+            $ref: "response_model.yaml#/definitions/error"
+
+parameters:
+  project:
+    in: body
+    name: project
+    description: Project entity
+    schema:
+      $ref: "project_model.yaml#/definitions/project"
+
+  projectName:
+    in: path
+    name: projectName
+    required: true
+    type: string
+    description: Name of the project
+
+  stageName:
+    in: path
+    name: stageName
+    required: true
+    type: string
+    description: Name of the stage
+
+  service:
+    in: body
+    name: service
+    description: Service entity
+    schema:
+      $ref: "service_model.yaml#/definitions/service"
+
+  serviceName:
+    in: path
+    name: serviceName
+    required: true
+    type: string
+    description: Name of the service
+
+  resourceURI:
+    in: path
+    name: resourceURI
+    required: true
+    type: string
+    description: Resource URI
+
+  resource:
+    in: body
+    name: resource
+    description: Resource
+    schema:
+      $ref: "resource_model.yaml#/definitions/resource"
+
+  resources:
+    in: body
+    name: resources
+    description: List of resources
+    schema:
+      properties:
+        resources:
+          type: array
+          items:
+            $ref: "resource_model.yaml#/definitions/resource"

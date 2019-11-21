@@ -13,7 +13,7 @@ Package restapi keptn api
     - application/cloudevents+json
 
     Produces:
-    - application/cloudevents+json
+    - application/json
 
 swagger:meta
 */
