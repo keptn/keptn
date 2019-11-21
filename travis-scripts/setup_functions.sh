@@ -49,7 +49,7 @@ function setup_knative {
 
 function uninstall_keptn {
     cd ./installer/scripts
-    ./uninstallKeptn.sh
+    ./uninstallKeptn.sh # uninstallKeptn.sh is no longer available - this will fail
     cd ../..
 }
 

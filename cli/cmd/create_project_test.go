@@ -16,76 +16,70 @@ func init() {
 	logging.InitLoggers(os.Stdout, os.Stdout, os.Stderr)
 }
 
-func TestCreateProjectCmd(t *testing.T) {
+// testShipyard writes a default shipyard file or uses the value from the shipyard parameter.
+// It returns a function to delete the shipyard file.
+func testShipyard(t *testing.T, shipyardFileName string, shipyard string) func() {
+	if shipyard == "" {
+		shipyard = `stages:
+  - name: dev
+    deployment_strategy: direct
+  - name: staging
+    deployment_strategy: blue_green_service
+  - name: production
+    deployment_strategy: blue_green_service`
+	}
 
-	credentialmanager.MockAuthCreds = true
-
-	// Write temporary shipyardTest.yml file
-	const tmpShipyardFileName = "shipyardTest.yml"
-	shipYardContent := `stages: 
-- name: dev
-  deployment_strategy: direct
-- name: staging
-  deployment_strategy: blue_green_service
-- name: production
-  deployment_strategy: blue_green_service`
-
-	ioutil.WriteFile(tmpShipyardFileName, []byte(shipYardContent), 0644)
+	ioutil.WriteFile(shipyardFileName, []byte(shipyard), 0644)
 
 	buf := new(bytes.Buffer)
 	rootCmd.SetOutput(buf)
+
+	return func() {
+		os.Remove(shipyardFileName)
+	}
+}
+
+// TestCreateProjectCmd tests the default use of the create project command
+func TestCreateProjectCmd(t *testing.T) {
+	credentialmanager.MockAuthCreds = true
+
+	shipyardFileName := "shipyard.yaml"
+	defer testShipyard(t, shipyardFileName, "")()
 
 	args := []string{
 		"create",
 		"project",
 		"sockshop",
-		fmt.Sprintf("--shipyard=%s", tmpShipyardFileName),
+		fmt.Sprintf("--shipyard=%s", shipyardFileName),
 		"--mock",
 	}
 	rootCmd.SetArgs(args)
 	err := rootCmd.Execute()
 
-	// Delete temporary shipyard.yml file
-	os.Remove(tmpShipyardFileName)
-
 	if err != nil {
-		t.Errorf("An error occured %v", err)
+		t.Errorf("An error occured: %v", err)
 	}
 }
 
+// TestCreateProjectIncorrectProjectNameCmd tests whether the create project command aborts
+// due to a project name with upper case character
 func TestCreateProjectIncorrectProjectNameCmd(t *testing.T) {
-
 	credentialmanager.MockAuthCreds = true
 
-	// Write temporary shipyardTest.yml file
-	const tmpShipyardFileName = "shipyardTest.yml"
-	shipYardContent := `stages:
-- name: dev
-  deployment_strategy: direct
-- name: staging
-  deployment_strategy: blue_green_service
-- name: production
-  deployment_strategy: blue_green_service`
-
-	ioutil.WriteFile(tmpShipyardFileName, []byte(shipYardContent), 0644)
-
-	buf := new(bytes.Buffer)
-	rootCmd.SetOutput(buf)
+	shipyardFileName := "shipyard.yaml"
+	defer testShipyard(t, shipyardFileName, "")()
 
 	args := []string{
 		"create",
 		"project",
 		"Sockshop", // invalid name, only lowercase is allowed
-		fmt.Sprintf("--shipyard=%s", tmpShipyardFileName),
+		fmt.Sprintf("--shipyard=%s", shipyardFileName),
 	}
 	rootCmd.SetArgs(args)
 	err := rootCmd.Execute()
 
-	// Delete temporary shipyard.yml file
-	os.Remove(tmpShipyardFileName)
-
 	if err != nil {
-		if !utils.ErrorContains(err, "Project name contains invalid characters or is not well-formed.") {
+		if !utils.ErrorContains(err, "contains upper case letter(s) or special character(s)") {
 			t.Errorf("An error occured: %v", err)
 		}
 	} else {
@@ -93,39 +87,33 @@ func TestCreateProjectIncorrectProjectNameCmd(t *testing.T) {
 	}
 }
 
+// TestCreateProjectIncorrectProjectNameCmd tests whether the create project command aborts
+// due to a stage name, which contains a special character (-)
 func TestCreateProjectIncorrectStageNameCmd(t *testing.T) {
-
 	credentialmanager.MockAuthCreds = true
 
-	// Write temporary shipyardTest.yml file
-	const tmpShipyardFileName = "shipyardTest.yml"
-	shipYardContent := `stages:
+	shipyardFileName := "shipyard.yaml"
+	shipyardContent := `stages:
 - name: dev
   deployment_strategy: direct
-- name: staging-team1
+- name: staging-projectA
   deployment_strategy: blue_green_service
 - name: production
   deployment_strategy: blue_green_service`
 
-	ioutil.WriteFile(tmpShipyardFileName, []byte(shipYardContent), 0644)
-
-	buf := new(bytes.Buffer)
-	rootCmd.SetOutput(buf)
+	defer testShipyard(t, shipyardFileName, shipyardContent)()
 
 	args := []string{
 		"create",
 		"project",
 		"sockshop",
-		fmt.Sprintf("--shipyard=%s", tmpShipyardFileName),
+		fmt.Sprintf("--shipyard=%s", shipyardFileName),
 	}
 	rootCmd.SetArgs(args)
 	err := rootCmd.Execute()
 
-	// Delete temporary shipyard.yml file
-	os.Remove(tmpShipyardFileName)
-
 	if err != nil {
-		if !utils.ErrorContains(err, "Stage staging-team1 contains invalid characters or is not well-formed.") {
+		if !utils.ErrorContains(err, "contains upper case letter(s) or special character(s)") {
 			t.Errorf("An error occured: %v", err)
 		}
 	} else {
@@ -133,39 +121,25 @@ func TestCreateProjectIncorrectStageNameCmd(t *testing.T) {
 	}
 }
 
+// TestCreateProjectCmdWithGitMissingParam tests whether the create project command aborts
+// due to a missing parameters for defining a git upstream
 func TestCreateProjectCmdWithGitMissingParam(t *testing.T) {
-
 	credentialmanager.MockAuthCreds = true
 
-	// Write temporary shipyardTest.yml file
-	const tmpShipyardFileName = "shipyardTest.yml"
-	shipYardContent := `stages: 
-- name: dev
-  deployment_strategy: direct
-- name: staging
-  deployment_strategy: blue_green_service
-- name: production
-  deployment_strategy: blue_green_service`
-
-	ioutil.WriteFile(tmpShipyardFileName, []byte(shipYardContent), 0644)
-
-	buf := new(bytes.Buffer)
-	rootCmd.SetOutput(buf)
+	shipyardFileName := "shipyard.yaml"
+	defer testShipyard(t, shipyardFileName, "")()
 
 	args := []string{
 		"create",
 		"project",
 		"sockshop",
-		fmt.Sprintf("--shipyard=%s", tmpShipyardFileName),
+		fmt.Sprintf("--shipyard=%s", shipyardFileName),
 		fmt.Sprintf("--git-user=%s", "user"),
 		fmt.Sprintf("--git-token=%s", "token"),
 		"--mock",
 	}
 	rootCmd.SetArgs(args)
 	err := rootCmd.Execute()
-
-	// Delete temporary shipyard.yml file
-	os.Remove(tmpShipyardFileName)
 
 	if err != nil {
 		if !utils.ErrorContains(err, "For configuring a Git upstream") {
@@ -176,30 +150,19 @@ func TestCreateProjectCmdWithGitMissingParam(t *testing.T) {
 	}
 }
 
+// TestCreateProjectCmdWithGitMissingParam tests a successful create project
+// command with git upstream parameters
 func TestCreateProjectCmdWithGit(t *testing.T) {
-
 	credentialmanager.MockAuthCreds = true
 
-	// Write temporary shipyardTest.yml file
-	const tmpShipyardFileName = "shipyardTest.yml"
-	shipYardContent := `stages: 
-- name: dev
-  deployment_strategy: direct
-- name: staging
-  deployment_strategy: blue_green_service
-- name: production
-  deployment_strategy: blue_green_service`
-
-	ioutil.WriteFile(tmpShipyardFileName, []byte(shipYardContent), 0644)
-
-	buf := new(bytes.Buffer)
-	rootCmd.SetOutput(buf)
+	shipyardFileName := "shipyard.yaml"
+	defer testShipyard(t, shipyardFileName, "")()
 
 	args := []string{
 		"create",
 		"project",
 		"sockshop",
-		fmt.Sprintf("--shipyard=%s", tmpShipyardFileName),
+		fmt.Sprintf("--shipyard=%s", shipyardFileName),
 		fmt.Sprintf("--git-user=%s", "user"),
 		fmt.Sprintf("--git-token=%s", "token"),
 		fmt.Sprintf("--git-remote-url=%s", "https://"),
@@ -207,9 +170,6 @@ func TestCreateProjectCmdWithGit(t *testing.T) {
 	}
 	rootCmd.SetArgs(args)
 	err := rootCmd.Execute()
-
-	// Delete temporary shipyard.yml file
-	os.Remove(tmpShipyardFileName)
 
 	if err != nil {
 		t.Fail()

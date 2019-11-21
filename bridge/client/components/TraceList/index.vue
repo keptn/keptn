@@ -7,12 +7,12 @@
           <p
             v-if="traces[0].type === 'sh.keptn.event.configuration.change'"
           >
-            <b>New artifact:</b> {{traces[0].data.valuesCanary[0].Value}}
+            <b>New artifact:</b> {{traces[0].data.valuesCanary.image}}
           </p>
           <p
             v-if="traces[0].type === 'sh.keptn.event.problem.open'"
           >
-            <b>Problem detected:</b> {{traces[0].data.problemtitle}}
+            <b>Problem detected:</b> {{traces[0].data.ProblemTitle}}
           </p>
         </div>
 
@@ -22,12 +22,11 @@
             <div v-for="event in stage.events" v-bind:key="event.id" class="event-item">
               <b-list-group-item
                 href="#"
-                v-bind:class="{ active: isActive(event.id), error: isError(event), success: isSuccess(event) }"
-
+                v-bind:class="{ active: isActive(event.id), error: isError(event), success: isSuccess(event), warning: isWarning(event) }"
                 @click="activateEvent(event.id)"
               >
                 <div class="d-flex w-100 justify-content-between">
-                  <h5 class="mb-1">{{event.eventTypeHeadline}}</h5>
+                  <h5 class="mb-1" v-bind:class="{ texterror: isError(event), textsuccess: isSuccess(event), textwarning: isWarning(event) }">{{event.eventTypeHeadline}}</h5>
                   <small>{{ event.timestamp | moment }}</small>
                 </div>
                 <small>
@@ -46,14 +45,57 @@
                 <div v-if="event.type === 'sh.keptn.events.evaluation-done'">
                   <hr>
                   <small>
-                    <b>Evaluation passed: </b> {{ event.data.evaluationpassed === true ? 'YES' : 'NO' }}
+                    <b>Evaluation result: </b> {{ event.data.result }}
                     <br>
-                    <div v-if="event.source === 'pitometer-service'">
+                    <div v-if="event.source === 'lighthouse-service'">
                       <b>Total score: </b> {{ event.data.evaluationdetails | totalScore }}
                     </div>
                   </small>
                   <div
-                    v-if="event.data.evaluationpassed === false && event.source === 'pitometer-service'">
+                    v-if="event.source === 'lighthouse-service' && event.data.evaluationdetails !== undefined && event.data.evaluationdetails.indicatorResults !== undefined && event.data.evaluationdetails.indicatorResults !== null">
+                    <div v-if="event.data.evaluationdetails.sloFileContent !== 'undefined' && event.data.evaluationdetails.sloFileContent !== null && event.data.evaluationdetails.sloFileContent !== ''">
+                      <b-button
+                        class="view-slo-button"
+                        @click="$bvModal.show(event.id + '-view-slo')">View SLOs</b-button>
+
+                      <b-modal :id="event.id + '-view-slo'" title="SLO File Content" ok-only>
+                        <pre>{{ event.data.evaluationdetails.sloFileContent | decodeBase64}}</pre>
+                      </b-modal>
+                    </div>
+                    <hr>
+                    <center><h4>Results</h4></center>
+                    <div>
+                      <div v-for="indicatorResult in event.data.evaluationdetails.indicatorResults" :key="indicatorResult.value.metric" class="indicator-results">
+                          <b-button
+                            class="view-sli-button"
+                            v-bind:class="{ texterror: isSLIError(indicatorResult), textsuccess: isSLISuccess(indicatorResult), textwarning: isSLIWarning(indicatorResult), textinfo: isSLIInfo(indicatorResult) }"
+                            @click="$bvModal.show(event.id + '-' + indicatorResult.value.metric)">
+                            <div v-if="!isSLIInfo(indicatorResult)">{{indicatorResult.value.metric}} : {{indicatorResult.status}}</div>
+                            <div v-if="isSLIInfo(indicatorResult) && indicatorResult.value !== undefined && indicatorResult.value != null">{{indicatorResult.value.metric}} : {{indicatorResult.value.value}}</div>
+                          </b-button>
+
+                          <b-modal :id="event.id + '-' + indicatorResult.value.metric" :title="indicatorResult.value.metric" ok-only>
+                            <p class="my-4">
+                              <small><b>Result: </b> {{indicatorResult.status}}</small><br>
+                              <small><b>Score: </b> {{indicatorResult.score}}</small><br>
+                              <small><b>Measured Value: </b>{{indicatorResult.value.value}}</small><br>
+                            </p>
+                            <div v-if="indicatorResult.targets !== undefined && indicatorResult.targets !== null && indicatorResult.targets.length > 0">
+                              <small><b>Evaluation Criteria:</b></small>
+                              <ul>
+                                <li v-for="target in indicatorResult.targets" :key="target.criteria">
+                                  <small><b>Criteria: </b>{{target.criteria}}</small><br>
+                                  <small><b>Violated: </b>{{target.violated}}</small><br>
+                                  <div v-if="target.criteria !== undefined && target.criteria.includes('-') || target.criteria.includes('+')">
+                                    <small><b>Target Value: </b>{{target.targetValue}}</small><br>
+                                  </div>
+                                </li>
+                              </ul>
+                            </div>
+                          </b-modal>
+                      </div>
+                    </div>
+                    <!--
                     <b>Violations:</b>
                     <div v-for="violation in getViolations(event.data.evaluationdetails)" :key="violation.indicatorId">
                       <div v-if="violation.type === 'upperSevere'">
@@ -63,6 +105,7 @@
                         <small><b>{{violation.indicatorId}}: </b> {{violation.reason}}</small>
                       </div>
                     </div>
+                    -->
                   </div>
                 </div>
 
@@ -71,7 +114,7 @@
                   <small>
                     <b>Test strategy: </b> {{ event.data.teststrategy }}
                     <br>
-                    <b>Duration: </b> {{ getDuration(event.timestamp, event.data.startedat) }}
+                    <b>Duration: </b> {{ getDuration(event.data.end, event.data.start) }}
                   </small>
                 </div>
 
@@ -114,170 +157,151 @@
 </template>
 
 <script>
-    import { mapState } from 'vuex';
-    import moment from 'moment';
-    import VueJsonPretty from 'vue-json-pretty';
+import { mapState } from 'vuex';
+import moment from 'moment';
+import VueJsonPretty from 'vue-json-pretty';
 
-    export default {
-        components: { VueJsonPretty },
-        name: 'TraceList',
-        props: {},
-        data() {
-            return {
-                fields: [
-                    { key: 'type', sortable: true },
-                    { key: 'data.project', label: 'Project', sortable: true },
-                    { key: 'data.service', label: 'Service', sortable: true },
-                    { key: 'data.stage', label: 'Stage', sortable: true },
-                    { key: 'data.tag', label: 'Tag', sortable: true },
-                    {
-                        key: 'timestamp',
-                        sortable: true,
-                        formatter: value => moment(value).format('YYYY-MM-DD, hh:mm:ss'),
-                    },
-                ],
-            };
+export default {
+  components: { VueJsonPretty },
+  name: 'TraceList',
+  props: {},
+  data() {
+    return {
+      fields: [
+        { key: 'type', sortable: true },
+        { key: 'data.project', label: 'Project', sortable: true },
+        { key: 'data.service', label: 'Service', sortable: true },
+        { key: 'data.stage', label: 'Stage', sortable: true },
+        { key: 'data.tag', label: 'Tag', sortable: true },
+        {
+          key: 'timestamp',
+          sortable: true,
+          formatter: value => moment(value).format('YYYY-MM-DD, HH:mm:ss'),
         },
-
-        filters: {
-            moment: function formatDate(date) {
-                return moment(date).format('YYYY-MM-DD, hh:mm:ss');
-            },
-            totalScore: function getTotalScore(evaluationDetails) {
-                let totalScoreItem;
-                if (evaluationDetails !== undefined && evaluationDetails.length > 0) {
-                    totalScoreItem = evaluationDetails.find(item => item.Key === 'totalScore');
-                }
-                if (totalScoreItem !== undefined) {
-                    return totalScoreItem.Value;
-                }
-                return 'n/a (no evaluation performed by pitometer service)';
-            },
-            canaryAction: function getCanaryAction(canary) {
-                if (canary === undefined) {
-                    return 'n/a';
-                }
-                if (canary.length > 0) {
-                    const canaryAction = canary.find(item => item.Key === 'action');
-                    if (canaryAction === undefined) {
-                        return '';
-                    }
-                    if (canaryAction.Value === 'promote') {
-                        return 'Promote to next stage';
-                    }
-                    if (canaryAction.Value === 'set') {
-                        const value = canary.find(item => item.Key === 'value');
-                        if (value !== undefined) {
-                            return `Settting traffic percentage for canary deployment to ${value.Value}`;
-                        }
-                    }
-                    if (canaryAction.Value === 'discard') {
-                        return 'Discarding deployment and reverting back to latest stable version';
-                    }
-                }
-            },
-            remediationAction: function getRemediationAction(deploymentChanges) {
-                if (deploymentChanges === undefined) {
-                    return 'n/a';
-                }
-                if (deploymentChanges.length > 0 && deploymentChanges[0].length > 0) {
-                    const attribute = deploymentChanges[0].find(item => item.Key === 'propertyPath');
-                    if (attribute === undefined) {
-                        return 'n/a';
-                    }
-
-                    const value = deploymentChanges[0].find(item => item.Key === 'value');
-                    if (value === undefined) {
-                        return 'n/a';
-                    }
-
-                    return `Set property ${attribute.Value} to ${value.Value}`;
-                }
-                return 'n/a';
-            },
-        },
-
-        methods: {
-            getTracesPerStage(traces) {
-                const stages = [];
-
-                traces.forEach((traceEvent) => {
-                    if (traceEvent.data !== undefined && traceEvent.data.stage !== undefined) {
-                        let stage = stages.find(stage => stage.stageName === traceEvent.data.stage);
-                        if (stage === undefined) {
-                            const newStage = {
-                                stageName: traceEvent.data.stage,
-                                events: [],
-                            };
-                            stages.push(newStage);
-                            stage = newStage;
-                        }
-                        stage.events.push(traceEvent);
-                    }
-                });
-                return stages;
-            },
-            isActive(contextId) {
-                return this.$store.state.currentEventId === contextId;
-            },
-            isError(event) {
-                return event.type === 'sh.keptn.events.evaluation-done' && event.data.evaluationpassed === false;
-            },
-            isSuccess(event) {
-                return event.type === 'sh.keptn.events.evaluation-done' && event.data.evaluationpassed === true;
-            },
-            activateEvent(contextId) {
-                return this.$store.dispatch('activateEvent', contextId);
-            },
-            getDuration(endTime, startTime) {
-                return moment.utc(moment(endTime).diff(moment(startTime))).format('HH:mm:ss');
-            },
-            getViolations(evaluationDetails) {
-                const violationsResult = [];
-                if (evaluationDetails !== undefined && evaluationDetails.length > 1) {
-                    const indicatorResults = evaluationDetails.find(item => item.Key === 'indicatorResults');
-                    if (indicatorResults === undefined) return violationsResult;
-                    indicatorResults.Value.forEach((result) => {
-                        const score = result.find(resultKey => resultKey.Key === 'score').Value;
-                        if (score > 0) return;
-                        const indicatorId = result.find(resultKey => resultKey.Key === 'id').Value;
-                        const violations = result.find(resultKey => resultKey.Key === 'violations').Value;
-
-                        if (violations.length < 1) return;
-
-                        for (let i = 0; i < violations.length; i += 1) {
-                            const violation = violations[i];
-                            console.log(violation);
-                            const newViolation = {};
-
-                            newViolation.indicatorId = indicatorId;
-                            const upperSevereBreach = violation.find(item => item.Key === 'breach' && item.Value === 'upperSevere');
-
-                            if (upperSevereBreach !== undefined) {
-                                const expectedValue = violation.find(item => item.Key === 'threshold').Value;
-                                const actualValue = violation.find(item => item.Key === 'value').Value;
-                                newViolation.type = 'upperSevere';
-                                newViolation.expectedValue = expectedValue;
-                                newViolation.actualValue = actualValue;
-                            } else {
-                                newViolation.type = 'generic';
-                                newViolation.reason = violation.find(item => item.Key === 'breach').Value;
-                            }
-                            violationsResult.push(newViolation);
-                        }
-                    });
-                }
-                return violationsResult;
-            },
-        },
-
-        computed: mapState({
-            traces: state => state.traces.map(trace => ({
-                ...trace,
-                _showDetails: true,
-            })),
-        }),
+      ],
     };
+  },
+
+  filters: {
+    moment: function formatDate(date) {
+      return moment(date).format('YYYY-MM-DD, HH:mm:ss');
+    },
+    totalScore: function getTotalScore(evaluationDetails) {
+      let totalScoreItem;
+      if (evaluationDetails !== undefined) {
+        if (evaluationDetails.hasOwnProperty('score') && evaluationDetails.indicatorResults !== null) {
+          return evaluationDetails.score;
+        }
+      }
+      return 'n/a (no evaluation performed by lighthouse service)';
+    },
+    canaryAction: function getCanaryAction(canary) {
+      if (canary === undefined) {
+        return 'n/a';
+      }
+      if (canary.hasOwnProperty('action')) {
+        if (canary.action === 'promote') {
+          return 'Promote to next stage';
+        }
+        if (canary.action === 'set') {
+          if (canary.value !== undefined) {
+            return `Settting traffic percentage for canary deployment to ${canary.value}`;
+          }
+          return 'Settting traffic percentage for canary deploymen';
+        }
+        if (canary.action === 'discard') {
+          return 'Discarding deployment and reverting back to latest stable version';
+        }
+      }
+    },
+    decodeBase64(encoded) {
+      if (encoded === undefined) {
+          return '';
+      }
+      let buff = new Buffer(encoded, 'base64');
+      let text = buff.toString('ascii');
+
+      return text;
+    },
+    remediationAction: function getRemediationAction(deploymentChanges) {
+      if (deploymentChanges === undefined) {
+        return 'n/a';
+      }
+      if (deploymentChanges.length > 0 && deploymentChanges[0].length > 0) {
+        if (deploymentChanges[0].hasOwnProperty('propertyPath')) {
+          if (deploymentChanges[0].propertyPath === undefined) {
+            return 'n/a';
+          }
+          if (deploymentChanges[0].value === undefined) {
+            return 'n/a';
+          }
+
+          return `Set property ${deploymentChanges[0].propertyPath} to ${deploymentChanges[0].value}`;
+        }
+      }
+      return 'n/a';
+    },
+  },
+
+  methods: {
+    getTracesPerStage(traces) {
+      const stages = [];
+
+      traces.forEach((traceEvent) => {
+        if (traceEvent.data !== undefined && traceEvent.data.stage !== undefined) {
+          let stage = stages.find(stage => stage.stageName === traceEvent.data.stage);
+          if (stage === undefined) {
+            const newStage = {
+              stageName: traceEvent.data.stage,
+              events: [],
+            };
+            stages.push(newStage);
+            stage = newStage;
+          }
+          stage.events.push(traceEvent);
+        }
+      });
+      return stages;
+    },
+    isActive(contextId) {
+      return this.$store.state.currentEventId === contextId;
+    },
+    isError(event) {
+      return event.type === 'sh.keptn.events.evaluation-done' && event.data.result === 'fail';
+    },
+    isSuccess(event) {
+      return event.type === 'sh.keptn.events.evaluation-done' && event.data.result === 'pass';
+    },
+    isWarning(event) {
+      return event.type === 'sh.keptn.events.evaluation-done' && event.data.result === 'warning';
+    },
+    isSLIError(sliResult) {
+      return sliResult.status === 'fail' || sliResult.status === 'failed';
+    },
+    isSLISuccess(sliResult) {
+      return sliResult.status === 'pass';
+    },
+    isSLIWarning(sliResult) {
+      return sliResult.status === 'warning';
+    },
+    isSLIInfo(sliResult) {
+      return sliResult.status === 'info';
+    },
+    activateEvent(contextId) {
+      return this.$store.dispatch('activateEvent', contextId);
+    },
+    getDuration(endTime, startTime) {
+      return moment.utc(moment(endTime).diff(moment(startTime))).format('HH:mm:ss');
+    },
+  },
+
+  computed: mapState({
+    traces: state => state.traces.map(trace => ({
+      ...trace,
+      _showDetails: true,
+    })),
+  }),
+};
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
@@ -295,20 +319,59 @@
   }
   }
 
+  .view-sli-button {
+    font-size: 13px;
+    padding: 5px;
+    margin-right: 5px;
+    font-weight: bold;
+    background-color: white;
+  }
+
+  .view-slo-button {
+    font-size: 13px;
+    padding: 5px;
+    margin-right: 5px;
+    font-weight: bold;
+  }
+
 
   .error {
-    background-color: #cd5c5c;
-    color: #ffffff;
+    border-color: #cd5c5c;
   }
 
   .success {
-    background-color: #8fbc8f;
-    color: #ffffff;
+    border-color: #8fbc8f;
+  }
+
+  .warning {
+    border-color: orange;
+  }
+
+  .texterror {
+    font-weight: bold;
+    color: #cd5c5c
+  }
+
+  .textsuccess {
+    color: #8fbc8f;
+  }
+
+  .textwarning {
+    color: orange;
+  }
+
+  .textinfo {
+    color: #505050;
   }
 
   .traceHeader {
     margin-top: 10px;
     padding: 20px;
+  }
+
+  .indicator-results {
+    padding: 5px;
+    border-radius: 3px;
   }
 
   .event-item {

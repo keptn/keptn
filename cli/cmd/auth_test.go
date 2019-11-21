@@ -31,6 +31,7 @@ func TestAuthCmd(t *testing.T) {
 
 	args := []string{
 		"auth",
+
 		fmt.Sprintf("--endpoint=%s", endPoint.String()),
 		fmt.Sprintf("--api-token=%s", apiToken),
 		"--mock",
@@ -39,6 +40,6 @@ func TestAuthCmd(t *testing.T) {
 	err = rootCmd.Execute()
 
 	if err != nil {
-		t.Errorf("An error occured %v", err)
+		t.Errorf("An error occured: %v", err)
 	}
 }

@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: openshift-route-service
-        image: keptn/openshift-route-service:0.5.0
+        image: keptn/openshift-route-service:0.6.0.beta
         ports:
         - containerPort: 8080
         resources:

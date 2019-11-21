@@ -31,7 +31,7 @@ func NewAuth(ctx *middleware.Context, handler AuthHandler) *Auth {
 	return &Auth{Context: ctx, Handler: handler}
 }
 
-/*Auth swagger:route POST /auth auth auth
+/*Auth swagger:route POST /auth Auth auth
 
 Checks the provided token
 

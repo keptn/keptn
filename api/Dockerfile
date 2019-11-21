@@ -1,30 +1,65 @@
 # Use the offical Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
 FROM golang:1.12 as builder
+ARG version=develop
+
+WORKDIR /go/src/github.com/keptn/keptn/api
+
+# Force the go compiler to use modules 
+ENV GO111MODULE=on
+ENV BUILDFLAGS=""
+
+# Copy `go.mod` for definitions and `go.sum` to invalidate the next layer
+# in case of a change in the dependencies
+COPY go.mod go.sum ./
+
+# Download dependencies
+RUN go mod download
+
+ARG debugBuild
+
+# set buildflags for debug build
+RUN if [ ! -z "$debugBuild" ]; then export BUILDFLAGS='-gcflags "all=-N -l"'; fi
 
 # Copy local code to the container image.
-WORKDIR /go/src/github.com/keptn/keptn/api
 COPY . .
 
-ARG DEP_VERSION=0.5.3
-RUN curl -L -s https://github.com/golang/dep/releases/download/v$DEP_VERSION/dep-linux-amd64 -o ./dep && \
-  chmod +x ./dep && \
-  ./dep ensure
+ENV REPLACE="version: ${version}"
+RUN sed -i "s/version: develop/${REPLACE}/g" /go/src/github.com/keptn/keptn/api/swagger.yaml
 
-# Build the command inside the container. 
+
+# Build the command inside the container.
 # (You may fetch or manage dependencies here, 
 # either manually or with a tool like "godep".)
-RUN CGO_ENABLED=0 GOOS=linux go build -v cmd-server/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build $BUILDFLAGS -v cmd-server/main.go
 
 # Use a Docker multi-stage build to create a lean production image.
-FROM alpine
+FROM alpine:3.7
 RUN apk add --no-cache ca-certificates
+
+ARG debugBuild
+
+# IF we are debugging, we need to install libc6-compat for delve to work on alpine based containers
+RUN if [ ! -z "$debugBuild" ]; then apk add --no-cache libc6-compat; fi
 
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /go/src/github.com/keptn/keptn/api/main /api
 COPY --from=builder /go/src/github.com/keptn/keptn/api/swagger-ui /swagger-ui
-COPY --from=builder /go/src/github.com/keptn/keptn/api/swagger.json /swagger-ui/swagger.json
-ADD MANIFEST /
+COPY --from=builder /go/src/github.com/keptn/keptn/api/swagger.yaml /swagger-ui/swagger.yaml
+COPY --from=builder /go/src/github.com/keptn/keptn/api/project_model.yaml /swagger-ui/project_model.yaml
+COPY --from=builder /go/src/github.com/keptn/keptn/api/resource_model.yaml /swagger-ui/resource_model.yaml
+COPY --from=builder /go/src/github.com/keptn/keptn/api/response_model.yaml /swagger-ui/response_model.yaml
+COPY --from=builder /go/src/github.com/keptn/keptn/api/service_model.yaml /swagger-ui/service_model.yaml
+
+EXPOSE 8080
+
+# required for external tools to detect this as a go binary
+ENV GOTRACEBACK=all
+
+# KEEP THE FOLLOWING LINES COMMENTED OUT!!! (they will be included within the travis-ci build)
+#travis-uncomment ADD MANIFEST /
+#travis-uncomment COPY entrypoint.sh /
+#travis-uncomment ENTRYPOINT ["/entrypoint.sh"]
 
 # Run the web service on container startup.
-CMD ["sh", "-c", "cat MANIFEST && ./api --host=0.0.0.0 --port=8080"]
+CMD ["/api", "--host=0.0.0.0", "--port=8080"]

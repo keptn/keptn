@@ -1,9 +1,6 @@
 #!/bin/bash
 source ./common/utils.sh
 
-# Create subscriptions
-kubectl apply -f ../manifests/keptn/sub-cm.yaml
-
 # Deploy uniform
 kubectl apply -f ../manifests/keptn/uniform-services.yaml
 verify_kubectl $? "Deploying keptn's uniform-services failed."

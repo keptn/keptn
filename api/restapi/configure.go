@@ -4,12 +4,10 @@ package restapi
 
 import (
 	"crypto/tls"
-	"encoding/json"
 	"log"
 	"net/http"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/keptn/keptn/api/handlers"
 	"github.com/keptn/keptn/api/restapi/operations/service_resource"
@@ -19,17 +17,11 @@ import (
 
 	"github.com/keptn/keptn/api/restapi/operations/project"
 
-	"github.com/keptn/keptn/api/utils"
-
 	openapierrors "github.com/go-openapi/errors"
-	runtime "github.com/go-openapi/runtime"
-	middleware "github.com/go-openapi/runtime/middleware"
-	"github.com/go-openapi/strfmt"
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/runtime/middleware"
 
-	"github.com/google/uuid"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
-	models "github.com/keptn/keptn/api/models"
+	"github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations"
 	"github.com/keptn/keptn/api/restapi/operations/event"
 	"github.com/keptn/keptn/api/ws"
@@ -41,18 +33,6 @@ var hub *ws.Hub
 
 func configureFlags(api *operations.API) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
-}
-
-func getSendEventInternalError(err error) *event.SendEventDefault {
-	return event.NewSendEventDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
-}
-
-func getProjectInternalError(err error) *project.ProjectDefault {
-	return project.NewProjectDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
-}
-
-func getServiceInternalError(err error) *service.ServiceDefault {
-	return service.NewServiceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 }
 
 func configureAPI(api *operations.API) http.Handler {
@@ -88,123 +68,28 @@ func configureAPI(api *operations.API) http.Handler {
 		return auth.NewAuthOK()
 	})
 
-	api.EventSendEventHandler = event.SendEventHandlerFunc(func(params event.SendEventParams, principal *models.Principal) middleware.Responder {
-		uuidStr := uuid.New().String()
-		l := keptnutils.NewLogger(uuidStr, *params.Body.ID, "api")
-		l.Info("API received keptn event")
+	api.EventPostEventHandler = event.PostEventHandlerFunc(handlers.PostEventHandlerFunc)
+	api.EventGetEventHandler = event.GetEventHandlerFunc(handlers.GetEventHandlerFunc)
 
-		token, err := ws.CreateChannelInfo(uuidStr)
-		if err != nil {
-			return getSendEventInternalError(err)
-		}
-		channelInfo := getChannelInfo(&uuidStr, &token)
-		bodyData, err := params.Body.MarshalJSON()
-		if err != nil {
-			return getSendEventInternalError(err)
-		}
-		forwardEvent, err := addChannelInfoInCE(bodyData, channelInfo)
-		if err != nil {
-			return getSendEventInternalError(err)
-		}
+	// Project endpoints
+	api.ProjectDeleteProjectProjectNameHandler = project.DeleteProjectProjectNameHandlerFunc(handlers.DeleteProjectProjectNameHandlerFunc)
+	api.ProjectPostProjectHandler = project.PostProjectHandlerFunc(handlers.PostProjectHandlerFunc)
 
-		forwardEvent = addShkeptncontext(forwardEvent, uuidStr)
-		if err := utils.PostToEventBroker(forwardEvent, l); err != nil {
-			return getSendEventInternalError(err)
-		}
-		return event.NewSendEventCreated().WithPayload(&channelInfo)
-	})
+	// Service endpoints
+	api.ServicePostProjectProjectNameServiceHandler = service.PostProjectProjectNameServiceHandlerFunc(handlers.PostServiceHandlerFunc)
 
-	api.ProjectProjectHandler = project.ProjectHandlerFunc(func(params project.ProjectParams, principal *models.Principal) middleware.Responder {
-		uuidStr := uuid.New().String()
-		l := keptnutils.NewLogger(uuidStr, *params.Body.ID, "api")
-		l.Info("API received project event")
+	// Resource endpoints
+	api.ServiceResourcePostProjectProjectNameStageStageNameServiceServiceNameResourceHandler =
+		service_resource.PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
+			handlers.PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc)
 
-		token, err := ws.CreateChannelInfo(uuidStr)
-		if err != nil {
-			return getProjectInternalError(err)
-		}
-		channelInfo := getChannelInfo(&uuidStr, &token)
-		bodyData, err := params.Body.MarshalJSON()
-		if err != nil {
-			return getProjectInternalError(err)
-		}
-		forwardEvent, err := addChannelInfoInCE(bodyData, channelInfo)
-		if err != nil {
-			return getProjectInternalError(err)
-		}
-
-		forwardEvent = addShkeptncontext(forwardEvent, uuidStr)
-		if err := utils.PostToEventBroker(forwardEvent, l); err != nil {
-			return getProjectInternalError(err)
-		}
-		return project.NewProjectCreated().WithPayload(&channelInfo)
-	})
-
-	api.ServiceServiceHandler = service.ServiceHandlerFunc(func(params service.ServiceParams, principal *models.Principal) middleware.Responder {
-		uuidStr := uuid.New().String()
-		l := keptnutils.NewLogger(uuidStr, *params.Body.ID, "api")
-		l.Info("API received service event")
-
-		token, err := ws.CreateChannelInfo(uuidStr)
-		if err != nil {
-			return getServiceInternalError(err)
-		}
-		channelInfo := getChannelInfo(&uuidStr, &token)
-		bodyData, err := params.Body.MarshalJSON()
-		if err != nil {
-			return getServiceInternalError(err)
-		}
-		forwardEvent, err := addChannelInfoInCE(bodyData, channelInfo)
-		if err != nil {
-			return getServiceInternalError(err)
-		}
-
-		forwardEvent = addShkeptncontext(forwardEvent, uuidStr)
-		if err := utils.PostToEventBroker(forwardEvent, l); err != nil {
-			return getServiceInternalError(err)
-		}
-		return service.NewServiceCreated().WithPayload(&channelInfo)
-	})
-
-	api.ServiceResourcePostProjectProjectNameStageStageNameServiceServiceNameResourceHandler = service_resource.PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(handlers.PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc)
-
-	api.ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceHandler = service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(handlers.PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc)
+	api.ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceHandler =
+		service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
+			handlers.PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc)
 
 	api.ServerShutdown = func() {}
 
 	return setupGlobalMiddleware(api.Serve(setupMiddlewares))
-}
-
-func addChannelInfoInCE(ceData []byte, channelInfo models.ChannelInfo) (interface{}, error) {
-
-	var ce interface{}
-	err := json.Unmarshal(ceData, &ce)
-	if err != nil {
-		return nil, err
-	}
-	ce.(map[string]interface{})["data"].(map[string]interface{})["channelInfo"] = channelInfo.Data.ChannelInfo
-	return ce, nil
-}
-
-func addShkeptncontext(ce interface{}, shkeptncontext string) interface{} {
-
-	ce.(map[string]interface{})["shkeptncontext"] = shkeptncontext
-	return ce
-}
-
-func getChannelInfo(channelID *string, token *string) models.ChannelInfo {
-
-	id := uuid.New().String()
-	source := "api"
-	specversion := "0.2"
-	time := strfmt.DateTime(time.Now())
-	typeInfo := "ChannelInfo"
-	channelInfo := models.ChannelInfoAO1DataChannelInfo{ChannelID: channelID, Token: token}
-	data := models.ChannelInfoAO1Data{ChannelInfo: &channelInfo}
-
-	ceContext := models.CEWithoutDataWithKeptncontext{CEWithoutData: models.CEWithoutData{Contenttype: "application/json",
-		ID: &id, Source: &source, Specversion: &specversion, Time: time, Type: &typeInfo}}
-	return models.ChannelInfo{CEWithoutDataWithKeptncontext: ceContext, Data: &data}
 }
 
 // The TLS configuration before HTTPS server starts.

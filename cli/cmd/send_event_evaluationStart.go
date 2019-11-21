@@ -1,0 +1,200 @@
+// Copyright © 2019 NAME HERE <EMAIL ADDRESS>
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package cmd
+
+import (
+	"encoding/json"
+	"errors"
+	"fmt"
+	"net/url"
+	"strconv"
+	"strings"
+	"time"
+
+	"github.com/cloudevents/sdk-go/pkg/cloudevents"
+	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
+	"github.com/google/uuid"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	apiutils "github.com/keptn/go-utils/pkg/api/utils"
+	keptnevents "github.com/keptn/go-utils/pkg/events"
+	"github.com/keptn/keptn/cli/pkg/logging"
+	"github.com/keptn/keptn/cli/utils/credentialmanager"
+	"github.com/spf13/cobra"
+)
+
+type evaluationStartStruct struct {
+	Project   *string `json:"project"`
+	Stage     *string `json:"stage"`
+	Service   *string `json:"service"`
+	Timeframe *string `json:"timeframe"`
+	Start     *string `json:"start"`
+}
+
+var evaluationStart evaluationStartStruct
+
+// evaluationStartCmd represents the start-evaluation command
+var evaluationStartCmd = &cobra.Command{
+	Use: "start-evaluation",
+	Short: "Sends an start-evaluation event to Keptn in order to evaluate a test" +
+		"for the specified service in the provided project and stage",
+	Long: `Sends a start-evaluation event to Keptn in order to evaluate a test
+for the specified service in the provided project and stage. The time frame flag defines
+the time frame that is considered in this evaluation. If a specific start point need to be set,
+a start flag is provided that takes a time in the format: 2006-01-02T15:04:05
+	
+Example:
+	keptn send event start-evaluation --project=sockshop --stage=hardening --service=carts --timeframe=5m --start=2019-10-31T11:59:59`,
+	SilenceUsage: true,
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		return nil
+	},
+	RunE: func(cmd *cobra.Command, args []string) error {
+		endPoint, apiToken, err := credentialmanager.GetCreds()
+		if err != nil {
+			return errors.New(authErrorMsg)
+		}
+
+		logging.PrintLog("Starting to send a start-evaluation event to evaluate the service "+
+			*evaluationStart.Service+" in project "+*evaluationStart.Project, logging.InfoLevel)
+
+		startPoint := ""
+		if evaluationStart.Start != nil {
+			startPoint = *evaluationStart.Start
+		}
+
+		start, end, err := getStartEndTime(startPoint, *evaluationStart.Timeframe)
+		if start == nil || end == nil || err != nil {
+			logging.PrintLog(fmt.Sprintf("Start and end time of evaluation time frame not set: %s", err.Error()), logging.QuietLevel)
+			return fmt.Errorf("Start and end time of evaluation time frame not set: %s", err.Error())
+		}
+
+		startEvaluationEventData := keptnevents.StartEvaluationEventData{
+			Project:      *evaluationStart.Project,
+			Service:      *evaluationStart.Service,
+			Stage:        *evaluationStart.Stage,
+			TestStrategy: "manual",
+			Start:        start.Format("2006-01-02T15:04:05.000Z"),
+			End:          end.Format("2006-01-02T15:04:05.000Z"),
+		}
+
+		keptnContext := uuid.New().String()
+		source, _ := url.Parse("https://github.com/keptn/keptn/cli#configuration-change")
+		contentType := "application/json"
+		sdkEvent := cloudevents.Event{
+			Context: cloudevents.EventContextV02{
+				ID:          keptnContext,
+				Type:        keptnevents.StartEvaluationEventType,
+				Source:      types.URLRef{URL: *source},
+				ContentType: &contentType,
+			}.AsV02(),
+			Data: startEvaluationEventData,
+		}
+
+		eventByte, err := sdkEvent.MarshalJSON()
+		if err != nil {
+			return fmt.Errorf("Failed to marshal cloud event. %s", err.Error())
+		}
+
+		apiEvent := apimodels.Event{}
+		err = json.Unmarshal(eventByte, &apiEvent)
+		if err != nil {
+			return fmt.Errorf("Failed to map cloud event to API event model. %s", err.Error())
+		}
+
+		eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, "https")
+		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
+
+		if !mocking {
+			responseEvent, err := eventHandler.SendEvent(apiEvent)
+			if err != nil {
+				logging.PrintLog("Send start-evaluation was unsuccessful", logging.QuietLevel)
+				return fmt.Errorf("Send start-evaluation was unsuccessful. %s", *err.Message)
+			}
+
+			if responseEvent == nil {
+				logging.PrintLog("No event returned", logging.QuietLevel)
+				return nil
+			}
+
+			fmt.Println("ID of Keptn context: " + *responseEvent.KeptnContext)
+			return nil
+		}
+
+		fmt.Println("Skipping send start-evaluation due to mocking flag set to true")
+		return nil
+	},
+}
+
+func getStartEndTime(startingPoint string, timeframe string) (*time.Time, *time.Time, error) {
+	end := time.Now()
+	start := time.Now()
+	var err error
+
+	errMsg := "The time frame format is invalid. Use the format [duration]m, e.g.: 5m"
+
+	i := strings.Index(timeframe, "m")
+	var minutes int
+
+	if i > -1 {
+		minutesStr := timeframe[:i]
+		minutes, err = strconv.Atoi(minutesStr)
+		if err != nil {
+			return nil, nil, fmt.Errorf(errMsg)
+		}
+	} else {
+		return nil, nil, fmt.Errorf(errMsg)
+	}
+
+	if startingPoint != "" {
+		layout := "2006-01-02T15:04:05"
+		start, err = time.Parse(layout, startingPoint)
+
+		if err != nil {
+			return nil, nil, err
+		}
+
+		minutesOffset := time.Minute * time.Duration(minutes)
+		end = start.Add(minutesOffset)
+
+	} else {
+		minutesOffset := time.Minute * time.Duration(-minutes)
+		start = start.Add(minutesOffset)
+	}
+
+	return &start, &end, nil
+}
+
+func init() {
+	sendEventCmd.AddCommand(evaluationStartCmd)
+
+	evaluationStart.Project = evaluationStartCmd.Flags().StringP("project", "", "",
+		"The project containing the service to be evaluated")
+	evaluationStartCmd.MarkFlagRequired("project")
+
+	evaluationStart.Stage = evaluationStartCmd.Flags().StringP("stage", "", "",
+		"The stage containing the service to be evaluated")
+	evaluationStartCmd.MarkFlagRequired("stage")
+
+	evaluationStart.Service = evaluationStartCmd.Flags().StringP("service", "", "",
+		"The service to be evaluated")
+	evaluationStartCmd.MarkFlagRequired("service")
+
+	evaluationStart.Timeframe = evaluationStartCmd.Flags().StringP("timeframe", "", "",
+		"The time frame from which the evaluation data should be gathered")
+	evaluationStartCmd.MarkFlagRequired("timeframe")
+
+	evaluationStart.Start = evaluationStartCmd.Flags().StringP("start", "", "",
+		"The starting point from which to start the evaluation")
+}

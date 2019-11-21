@@ -1,0 +1,18 @@
+---
+definitions:
+  project:
+    type: object
+    required:
+      - name
+      - shipyard
+    properties:
+      name:
+        type: string
+      shipyard:
+        type: string
+      gitUser:
+        type: string
+      gitToken:
+        type: string
+      gitRemoteURL:
+        type: string

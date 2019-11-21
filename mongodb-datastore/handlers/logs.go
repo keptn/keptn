@@ -6,22 +6,27 @@ import (
 	"strconv"
 	"time"
 
+	keptnutils "github.com/keptn/go-utils/pkg/utils"
+
+	"github.com/keptn/keptn/mongodb-datastore/models"
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/logs"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
 )
 
-// SaveLog to datastore
-func SaveLog(body []*logs.SaveLogParamsBodyItems0) (err error) {
-	keptnutils.Debug("", "save log to datastore")
+// SaveLog stores logs in datastore
+func SaveLog(logEntries []*models.LogEntry) (err error) {
+	logger := keptnutils.NewLogger("", "", serviceName)
+	logger.Debug("save log to data store")
 
 	client, err := mongo.NewClient(options.Client().ApplyURI(mongoDBConnection))
 	if err != nil {
-		keptnutils.Error("", fmt.Sprintf("error creating client: %s", err.Error()))
+		err := fmt.Errorf("failed to create mongo client: %v", err)
+		logger.Error(err.Error())
+		return err
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -29,34 +34,40 @@ func SaveLog(body []*logs.SaveLogParamsBodyItems0) (err error) {
 
 	err = client.Connect(ctx)
 	if err != nil {
-		keptnutils.Error("", fmt.Sprintf("could not connect: %s", err.Error()))
+		err := fmt.Errorf("failed to connect: %v", err)
+		logger.Error(err.Error())
+		return err
 	}
 
 	collection := client.Database(mongoDBName).Collection(logsCollectionName)
 
-	for _, l := range body {
+	for _, l := range logEntries {
 		if l.KeptnService != "" {
 			res, err := collection.InsertOne(ctx, l)
 			if err != nil {
-				keptnutils.Error("", fmt.Sprintf("could not insert: %s", err.Error()))
+				err := fmt.Errorf("failed to insert log: %v", err)
+				logger.Error(err.Error())
+				return err
 			}
-			keptnutils.Debug("", fmt.Sprintf("insertedID: %s", res.InsertedID))
+			logger.Debug(fmt.Sprintf("insertedID: %s", res.InsertedID))
 		} else {
-			keptnutils.Info("", "no KepntService set, log not stored in datastore")
+			logger.Info("no keptn service set, log not stored in data store")
 		}
 	}
 
 	return err
-
 }
 
 // GetLogs returns logs
 func GetLogs(params logs.GetLogsParams) (result *logs.GetLogsOKBody, err error) {
-	keptnutils.Debug("", "getting logs from datastore")
+	logger := keptnutils.NewLogger("", "", serviceName)
+	logger.Debug("getting logs from data store")
 
 	client, err := mongo.NewClient(options.Client().ApplyURI(mongoDBConnection))
 	if err != nil {
-		keptnutils.Error("", fmt.Sprintf("error creating client: %s", err.Error()))
+		err := fmt.Errorf("failed to create mongo client: %v", err)
+		logger.Error(err.Error())
+		return nil, err
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -64,7 +75,9 @@ func GetLogs(params logs.GetLogsParams) (result *logs.GetLogsOKBody, err error) 
 
 	err = client.Connect(ctx)
 	if err != nil {
-		keptnutils.Error("", fmt.Sprintf("could not connect: %s", err.Error()))
+		err := fmt.Errorf("failed to connect: %v", err)
+		logger.Error(err.Error())
+		return nil, err
 	}
 
 	collection := client.Database(mongoDBName).Collection(logsCollectionName)
@@ -84,23 +97,27 @@ func GetLogs(params logs.GetLogsParams) (result *logs.GetLogsOKBody, err error) 
 		newNextPageKey = *params.PageSize
 	}
 
-	pagesize := *params.PageSize
+	pageSize := *params.PageSize
 
-	sortOptions := options.Find().SetSort(bson.D{{"timestamp", -1}}).SetSkip(nextPageKey).SetLimit(pagesize)
+	sortOptions := options.Find().SetSort(bson.D{{"timestamp", -1}}).SetSkip(nextPageKey).SetLimit(pageSize)
 
 	totalCount, err := collection.CountDocuments(ctx, searchOptions)
 	if err != nil {
-		keptnutils.Error("", fmt.Sprintf("error counting elements in logs collection: %s", err.Error()))
+		err := fmt.Errorf("failed to count elements in logs collection: %v", err)
+		logger.Error(err.Error())
+		return nil, err
 	}
 
 	cur, err := collection.Find(ctx, searchOptions, sortOptions)
 	if err != nil {
-		keptnutils.Error("", fmt.Sprintf("error finding elements in logs collection: %s", err.Error()))
+		err := fmt.Errorf("failed to find elements in logs collection: %v", err)
+		logger.Error(err.Error())
+		return nil, err
 	}
 
-	var resultLogs []*logs.LogsItems0
+	var resultLogs []*models.LogEntry
 	for cur.Next(ctx) {
-		var result logs.LogsItems0
+		var result models.LogEntry
 		err := cur.Decode(&result)
 		if err != nil {
 			return nil, err
@@ -108,12 +125,12 @@ func GetLogs(params logs.GetLogsParams) (result *logs.GetLogsOKBody, err error) 
 		resultLogs = append(resultLogs, &result)
 	}
 
-	var myresult logs.GetLogsOKBody
-	myresult.Logs = resultLogs
-	myresult.PageSize = pagesize
-	myresult.TotalCount = totalCount
+	var myResult logs.GetLogsOKBody
+	myResult.Logs = resultLogs
+	myResult.PageSize = pageSize
+	myResult.TotalCount = totalCount
 	if newNextPageKey < totalCount {
-		myresult.NextPageKey = strconv.FormatInt(newNextPageKey, 10)
+		myResult.NextPageKey = strconv.FormatInt(newNextPageKey, 10)
 	}
-	return &myresult, nil
+	return &myResult, nil
 }

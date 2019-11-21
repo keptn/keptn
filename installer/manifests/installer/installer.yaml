@@ -14,8 +14,12 @@ spec:
         emptyDir: {}
       containers:
       - name: keptn-installer
-        image: keptn/installer:0.5.2
+        image: keptn/installer:0.6.0.beta
         env:       
         - name: PLATFORM
           value: PLATFORM_PLACEHOLDER
+        - name: GATEWAY_TYPE
+          value: GATEWAY_TYPE_PLACEHOLDER
+        - name: INGRESS
+          value: INGRESS_PLACEHOLDER
       restartPolicy: OnFailure

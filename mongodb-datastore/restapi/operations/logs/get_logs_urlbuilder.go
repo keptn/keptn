@@ -53,28 +53,28 @@ func (o *GetLogsURL) Build() (*url.URL, error) {
 
 	qs := make(url.Values)
 
-	var eventID string
+	var eventIDQ string
 	if o.EventID != nil {
-		eventID = *o.EventID
+		eventIDQ = *o.EventID
 	}
-	if eventID != "" {
-		qs.Set("eventId", eventID)
+	if eventIDQ != "" {
+		qs.Set("eventId", eventIDQ)
 	}
 
-	var nextPageKey string
+	var nextPageKeyQ string
 	if o.NextPageKey != nil {
-		nextPageKey = *o.NextPageKey
+		nextPageKeyQ = *o.NextPageKey
 	}
-	if nextPageKey != "" {
-		qs.Set("nextPageKey", nextPageKey)
+	if nextPageKeyQ != "" {
+		qs.Set("nextPageKey", nextPageKeyQ)
 	}
 
-	var pageSize string
+	var pageSizeQ string
 	if o.PageSize != nil {
-		pageSize = swag.FormatInt64(*o.PageSize)
+		pageSizeQ = swag.FormatInt64(*o.PageSize)
 	}
-	if pageSize != "" {
-		qs.Set("pageSize", pageSize)
+	if pageSizeQ != "" {
+		qs.Set("pageSize", pageSizeQ)
 	}
 
 	_result.RawQuery = qs.Encode()

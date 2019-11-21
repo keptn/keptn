@@ -1,9 +1,11 @@
 package controller
 
 import (
+	configutils "github.com/keptn/go-utils/pkg/configuration-service/utils"
 	keptnevents "github.com/keptn/go-utils/pkg/events"
 	keptnmodels "github.com/keptn/go-utils/pkg/models"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
+
 	"github.com/keptn/keptn/helm-service/pkg/serviceutils"
 )
 
@@ -52,7 +54,7 @@ func getShipyard(project string) (*keptnmodels.Shipyard, error) {
 		return nil, err
 	}
 
-	resourceHandler := keptnutils.NewResourceHandler(url.String())
+	resourceHandler := configutils.NewResourceHandler(url.String())
 	handler := keptnutils.NewKeptnHandler(resourceHandler)
 
 	return handler.GetShipyard(project)

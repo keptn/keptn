@@ -45,6 +45,21 @@ func NewAPI(spec *loads.Document) *API {
 		BearerAuthenticator: security.BearerAuth,
 		JSONConsumer:        runtime.JSONConsumer(),
 		JSONProducer:        runtime.JSONProducer(),
+		ProjectDeleteProjectProjectNameHandler: project.DeleteProjectProjectNameHandlerFunc(func(params project.DeleteProjectProjectNameParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation ProjectDeleteProjectProjectName has not yet been implemented")
+		}),
+		EventGetEventHandler: event.GetEventHandlerFunc(func(params event.GetEventParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation EventGetEvent has not yet been implemented")
+		}),
+		EventPostEventHandler: event.PostEventHandlerFunc(func(params event.PostEventParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation EventPostEvent has not yet been implemented")
+		}),
+		ProjectPostProjectHandler: project.PostProjectHandlerFunc(func(params project.PostProjectParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation ProjectPostProject has not yet been implemented")
+		}),
+		ServicePostProjectProjectNameServiceHandler: service.PostProjectProjectNameServiceHandlerFunc(func(params service.PostProjectProjectNameServiceParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation ServicePostProjectProjectNameService has not yet been implemented")
+		}),
 		ServiceResourcePostProjectProjectNameStageStageNameServiceServiceNameResourceHandler: service_resource.PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(func(params service_resource.PostProjectProjectNameStageStageNameServiceServiceNameResourceParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation ServiceResourcePostProjectProjectNameStageStageNameServiceServiceNameResource has not yet been implemented")
 		}),
@@ -53,15 +68,6 @@ func NewAPI(spec *loads.Document) *API {
 		}),
 		AuthAuthHandler: auth.AuthHandlerFunc(func(params auth.AuthParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation AuthAuth has not yet been implemented")
-		}),
-		ProjectProjectHandler: project.ProjectHandlerFunc(func(params project.ProjectParams, principal *models.Principal) middleware.Responder {
-			return middleware.NotImplemented("operation ProjectProject has not yet been implemented")
-		}),
-		EventSendEventHandler: event.SendEventHandlerFunc(func(params event.SendEventParams, principal *models.Principal) middleware.Responder {
-			return middleware.NotImplemented("operation EventSendEvent has not yet been implemented")
-		}),
-		ServiceServiceHandler: service.ServiceHandlerFunc(func(params service.ServiceParams, principal *models.Principal) middleware.Responder {
-			return middleware.NotImplemented("operation ServiceService has not yet been implemented")
 		}),
 
 		// Applies when the "x-token" header is set
@@ -99,7 +105,7 @@ type API struct {
 	// JSONConsumer registers a consumer for a "application/cloudevents+json" mime type
 	JSONConsumer runtime.Consumer
 
-	// JSONProducer registers a producer for a "application/cloudevents+json" mime type
+	// JSONProducer registers a producer for a "application/json" mime type
 	JSONProducer runtime.Producer
 
 	// KeyAuth registers a function that takes a token and returns a principal
@@ -109,18 +115,22 @@ type API struct {
 	// APIAuthorizer provides access control (ACL/RBAC/ABAC) by providing access to the request and authenticated principal
 	APIAuthorizer runtime.Authorizer
 
+	// ProjectDeleteProjectProjectNameHandler sets the operation handler for the delete project project name operation
+	ProjectDeleteProjectProjectNameHandler project.DeleteProjectProjectNameHandler
+	// EventGetEventHandler sets the operation handler for the get event operation
+	EventGetEventHandler event.GetEventHandler
+	// EventPostEventHandler sets the operation handler for the post event operation
+	EventPostEventHandler event.PostEventHandler
+	// ProjectPostProjectHandler sets the operation handler for the post project operation
+	ProjectPostProjectHandler project.PostProjectHandler
+	// ServicePostProjectProjectNameServiceHandler sets the operation handler for the post project project name service operation
+	ServicePostProjectProjectNameServiceHandler service.PostProjectProjectNameServiceHandler
 	// ServiceResourcePostProjectProjectNameStageStageNameServiceServiceNameResourceHandler sets the operation handler for the post project project name stage stage name service service name resource operation
 	ServiceResourcePostProjectProjectNameStageStageNameServiceServiceNameResourceHandler service_resource.PostProjectProjectNameStageStageNameServiceServiceNameResourceHandler
 	// ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceHandler sets the operation handler for the put project project name stage stage name service service name resource operation
 	ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceHandler service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceHandler
 	// AuthAuthHandler sets the operation handler for the auth operation
 	AuthAuthHandler auth.AuthHandler
-	// ProjectProjectHandler sets the operation handler for the project operation
-	ProjectProjectHandler project.ProjectHandler
-	// EventSendEventHandler sets the operation handler for the send event operation
-	EventSendEventHandler event.SendEventHandler
-	// ServiceServiceHandler sets the operation handler for the service operation
-	ServiceServiceHandler service.ServiceHandler
 
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
@@ -188,6 +198,26 @@ func (o *API) Validate() error {
 		unregistered = append(unregistered, "XTokenAuth")
 	}
 
+	if o.ProjectDeleteProjectProjectNameHandler == nil {
+		unregistered = append(unregistered, "project.DeleteProjectProjectNameHandler")
+	}
+
+	if o.EventGetEventHandler == nil {
+		unregistered = append(unregistered, "event.GetEventHandler")
+	}
+
+	if o.EventPostEventHandler == nil {
+		unregistered = append(unregistered, "event.PostEventHandler")
+	}
+
+	if o.ProjectPostProjectHandler == nil {
+		unregistered = append(unregistered, "project.PostProjectHandler")
+	}
+
+	if o.ServicePostProjectProjectNameServiceHandler == nil {
+		unregistered = append(unregistered, "service.PostProjectProjectNameServiceHandler")
+	}
+
 	if o.ServiceResourcePostProjectProjectNameStageStageNameServiceServiceNameResourceHandler == nil {
 		unregistered = append(unregistered, "service_resource.PostProjectProjectNameStageStageNameServiceServiceNameResourceHandler")
 	}
@@ -198,18 +228,6 @@ func (o *API) Validate() error {
 
 	if o.AuthAuthHandler == nil {
 		unregistered = append(unregistered, "auth.AuthHandler")
-	}
-
-	if o.ProjectProjectHandler == nil {
-		unregistered = append(unregistered, "project.ProjectHandler")
-	}
-
-	if o.EventSendEventHandler == nil {
-		unregistered = append(unregistered, "event.SendEventHandler")
-	}
-
-	if o.ServiceServiceHandler == nil {
-		unregistered = append(unregistered, "service.ServiceHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -280,9 +298,6 @@ func (o *API) ProducersFor(mediaTypes []string) map[string]runtime.Producer {
 	for _, mt := range mediaTypes {
 		switch mt {
 
-		case "application/cloudevents+json":
-			result["application/cloudevents+json"] = o.JSONProducer
-
 		case "application/json":
 			result["application/json"] = o.JSONProducer
 
@@ -328,6 +343,31 @@ func (o *API) initHandlerCache() {
 		o.handlers = make(map[string]map[string]http.Handler)
 	}
 
+	if o.handlers["DELETE"] == nil {
+		o.handlers["DELETE"] = make(map[string]http.Handler)
+	}
+	o.handlers["DELETE"]["/project/{projectName}"] = project.NewDeleteProjectProjectName(o.context, o.ProjectDeleteProjectProjectNameHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/event"] = event.NewGetEvent(o.context, o.EventGetEventHandler)
+
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/event"] = event.NewPostEvent(o.context, o.EventPostEventHandler)
+
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/project"] = project.NewPostProject(o.context, o.ProjectPostProjectHandler)
+
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/project/{projectName}/service"] = service.NewPostProjectProjectNameService(o.context, o.ServicePostProjectProjectNameServiceHandler)
+
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
@@ -342,21 +382,6 @@ func (o *API) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/auth"] = auth.NewAuth(o.context, o.AuthAuthHandler)
-
-	if o.handlers["POST"] == nil {
-		o.handlers["POST"] = make(map[string]http.Handler)
-	}
-	o.handlers["POST"]["/project"] = project.NewProject(o.context, o.ProjectProjectHandler)
-
-	if o.handlers["POST"] == nil {
-		o.handlers["POST"] = make(map[string]http.Handler)
-	}
-	o.handlers["POST"]["/event"] = event.NewSendEvent(o.context, o.EventSendEventHandler)
-
-	if o.handlers["POST"] == nil {
-		o.handlers["POST"] = make(map[string]http.Handler)
-	}
-	o.handlers["POST"]["/service"] = service.NewService(o.context, o.ServiceServiceHandler)
 
 }
 

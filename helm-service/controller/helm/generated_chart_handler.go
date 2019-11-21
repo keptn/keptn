@@ -179,6 +179,7 @@ func resetDeployment(depl *appsv1.Deployment) {
 func (c *GeneratedChartHandler) generateServices(svc *corev1.Service, project string, stageName string) ([]*chart.Template, error) {
 
 	templates := make([]*chart.Template, 0, 0)
+
 	serviceCanary := c.canaryLevelGen.GetCanaryService(*svc, project, stageName)
 	resetService(serviceCanary)
 	data, err := yaml.Marshal(serviceCanary)
@@ -220,8 +221,10 @@ func (c *GeneratedChartHandler) generateServices(svc *corev1.Service, project st
 
 	// Generate virtual service
 	gws := []string{GetGatewayName(project, stageName) + "." + GetUmbrellaNamespace(project, stageName), "mesh"}
-	hosts := []string{svc.Name + "." + c.canaryLevelGen.GetNamespace(project, stageName, false) + "." + c.keptnDomain,
-		svc.Name, svc.Name + "." + c.canaryLevelGen.GetNamespace(project, stageName, false)}
+	hosts := []string{
+		svc.Name + "." + c.canaryLevelGen.GetNamespace(project, stageName, false) + "." + c.keptnDomain, // service_name.dev.123.45.67.89.xip.io
+		svc.Name, // service-name
+	}
 	destCanary := mesh.HTTPRouteDestination{Host: hostCanary, Weight: 0}
 	destPrimary := mesh.HTTPRouteDestination{Host: hostPrimary, Weight: 100}
 	httpRouteDestinations := []mesh.HTTPRouteDestination{destCanary, destPrimary}
@@ -232,6 +235,7 @@ func (c *GeneratedChartHandler) generateServices(svc *corev1.Service, project st
 	}
 
 	templates = append(templates, &chart.Template{Name: "templates/" + svc.Name + c.mesh.GetVirtualServiceSuffix(), Data: vs})
+
 	return templates, nil
 }
 
@@ -280,10 +284,12 @@ func (c *GeneratedChartHandler) GenerateMeshChart(helmUpgradeMsg string, project
 		}
 
 		for _, svc := range svcs {
-			// Generate virtual service
+			// Generate virtual service for external access
 			gws := []string{GetGatewayName(project, stageName) + "." + GetUmbrellaNamespace(project, stageName), "mesh"}
-			hosts := []string{svc.Name + "." + namespace + "." + c.keptnDomain,
-				svc.Name, svc.Name + "." + namespace}
+			hosts := []string{
+				svc.Name + "." + namespace + "." + c.keptnDomain,
+				svc.Name,
+			}
 			host := svc.Name + "." + namespace + ".svc.cluster.local"
 			dest := mesh.HTTPRouteDestination{Host: host}
 			httpRouteDestinations := []mesh.HTTPRouteDestination{dest}
