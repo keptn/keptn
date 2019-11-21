@@ -126,7 +126,7 @@ class DatastoreService {
     const result = await axios.get(url);
     const { data } = result;
     if (data.events) {
-      return data.events.map(event => DatastoreService.mapEvent(event)).filter(e => e.data.state === 'OPEN');
+      return data.events.map(event => DatastoreService.mapEvent(event));
     }
     return [];
   }
