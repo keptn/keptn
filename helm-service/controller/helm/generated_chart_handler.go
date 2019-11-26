@@ -260,7 +260,9 @@ func (c *GeneratedChartHandler) generateDeployment(depl *appsv1.Deployment) (*ch
 	if err != nil {
 		return nil, err
 	}
-	return &chart.Template{Name: "templates/" + primaryDeployment.Name + "-deployment" + ".yaml", Data: data}, nil
+	// Set the keptn_deployment to primary
+	yamlString := strings.ReplaceAll(string(data), "keptn_deployment=canary", "keptn_deployment=primary")
+	return &chart.Template{Name: "templates/" + primaryDeployment.Name + "-deployment" + ".yaml", Data: []byte(yamlString)}, nil
 }
 
 // GenerateMeshChart generates a chart containing the required mesh setup
