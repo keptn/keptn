@@ -23,9 +23,10 @@ if [[ "$DOMAIN" == "null" && "$GATEWAY_TYPE" == "LoadBalancer" ]]; then
         exit 1
     fi
     export DOMAIN="$DOMAIN.xip.io"
+    export INGRESS_HOST=$DOMAIN
 elif [[ "$DOMAIN" == "null" && "$GATEWAY_TYPE" == "NodePort" ]]; then
     NODE_PORT=$(kubectl -n ingress-nginx get service ingress-nginx -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')
-    NODE_IP=$(kubectl get nodes -o jsonpath='{ $.items[*].status.addresses[?(@.type=="InternalIP")].address }')
+    NODE_IP=$(kubectl get nodes -o jsonpath='{ $.items[0].status.addresses[?(@.type=="InternalIP")].address }')
     export DOMAIN="$NODE_IP.xip.io:$NODE_PORT"
     export INGRESS_HOST="$NODE_IP.xip.io"
 fi
