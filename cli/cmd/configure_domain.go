@@ -25,6 +25,7 @@ import (
 var configVersion *string
 
 const apiVirtualServiceSuffix = "/installer/manifests/keptn/keptn-api-virtualservice.yaml"
+const apiIngressSuffix = "/installer/manifests/keptn/api-ingress.yaml"
 const domainConfigMapSuffix = "/installer/manifests/keptn/keptn-domain-configmap.yaml"
 const uniformServicesSuffix = "/installer/manifests/keptn/uniform-services.yaml"
 const gatewaySuffix = "/installer/manifests/keptn/keptn-gateway.yaml"
@@ -99,22 +100,33 @@ Example:
 			return err
 		}
 
+		ingress, err := getIngressType()
+		if err != nil {
+			return err
+		}
+
 		if !mocking {
 
-			if err := updateKeptnAPIVirtualService(path, args[0]); err != nil {
+			// Generate new certificate
+			if err := updateCertificate(path, args[0], ingress); err != nil {
 				return err
 			}
 
-			// Generate new certificate
-			if err := updateCertificate(path, args[0]); err != nil {
-				return err
+			if ingress == Istio {
+				if err := updateKeptnAPIVirtualService(path, args[0]); err != nil {
+					return err
+				}
+				// Re-deploy gateway, ignore if not found
+				if err := reDeployGateway(); err != nil {
+					return err
+				}
+			} else if ingress == Nginx {
+				if err := updateKeptnAPIIngress(path, args[0]); err != nil {
+					return err
+				}
 			}
 
 			if err := updateKeptnDomainConfigMap(path, args[0]); err != nil {
-				return err
-			}
-			// Re-deploy gateway, ingore if not found
-			if err := reDeployGateway(); err != nil {
 				return err
 			}
 
@@ -163,6 +175,22 @@ Example:
 
 		return nil
 	},
+}
+
+func getIngressType() (Ingress, error) {
+
+	o := options{"get", "ns"}
+	o.appendIfNotEmpty(kubectlOptions)
+	namespaces, err := keptnutils.ExecuteCommand("kubectl", o)
+	if err != nil {
+		return Istio, err
+	}
+	if strings.Contains(namespaces, "istio-system") {
+		return Istio, nil
+	} else if strings.Contains(namespaces, "ingress-nginx") {
+		return Nginx, nil
+	}
+	return Istio, errors.New("Cannot obtain type of ingress.")
 }
 
 func reDeployGateway() error {
@@ -234,7 +262,34 @@ func updateKeptnAPIVirtualService(path, domain string) error {
 	return err
 }
 
-func updateCertificate(path, domain string) error {
+func updateKeptnAPIIngress(path, domain string) error {
+
+	keptnAPIIngress := path + "api-ingress.yaml"
+	if err := utils.DownloadFile(keptnAPIIngress, getAPIIngressURL()); err != nil {
+		return err
+	}
+
+	if err := utils.Replace(keptnAPIIngress,
+		utils.PlaceholderReplacement{PlaceholderValue: "domain.placeholder", DesiredValue: domain}); err != nil {
+		return err
+	}
+
+	// Delete old api ingress
+	o := options{"delete", "-f", keptnAPIIngress}
+	o.appendIfNotEmpty(kubectlOptions)
+	_, err := keptnutils.ExecuteCommand("kubectl", o)
+	if err != nil {
+		return err
+	}
+
+	// Apply new api virtual service
+	o = options{"apply", "-f", keptnAPIIngress}
+	o.appendIfNotEmpty(kubectlOptions)
+	_, err = keptnutils.ExecuteCommand("kubectl", o)
+	return err
+}
+
+func updateCertificate(path, domain string, ingress Ingress) error {
 
 	// Source: https://golang.org/src/crypto/tls/generate_cert.go
 	// We can verify the generated key with 'openssl rsa -in key.pem -check'
@@ -298,13 +353,25 @@ func updateCertificate(path, domain string) error {
 	}
 	defer os.Remove(privateKeyPath)
 
-	// First delete secret
-	o := options{"delete", "--namespace", "istio-system", "secret", "istio-ingressgateway-certs"}
-	o.appendIfNotEmpty(kubectlOptions)
-	_, err = keptnutils.ExecuteCommand("kubectl", o)
+	// First delete secret and afterwards apply new secret with new certificate
+	if ingress == Istio {
+		o := options{"delete", "--namespace", "istio-system", "secret", "istio-ingressgateway-certs"}
+		o.appendIfNotEmpty(kubectlOptions)
+		keptnutils.ExecuteCommand("kubectl", o)
 
-	o = options{"create", "--namespace", "istio-system", "secret", "tls", "istio-ingressgateway-certs",
-		"--key", privateKeyPath, "--cert", certPath}
+		o = options{"create", "--namespace", "istio-system", "secret", "tls", "istio-ingressgateway-certs",
+			"--key", privateKeyPath, "--cert", certPath}
+		o.appendIfNotEmpty(kubectlOptions)
+		_, err = keptnutils.ExecuteCommand("kubectl", o)
+		return err
+	}
+	// Reset secret for nginx
+	o := options{"delete", "secret", "sslcerts", "--namespace", "keptn"}
+	o.appendIfNotEmpty(kubectlOptions)
+	keptnutils.ExecuteCommand("kubectl", o)
+
+	o = options{"create", "secret", "tls", "sslcerts",
+		"--key", privateKeyPath, "--cert", certPath, "--namespace", "keptn"}
 	o.appendIfNotEmpty(kubectlOptions)
 	_, err = keptnutils.ExecuteCommand("kubectl", o)
 	return err
@@ -312,6 +379,10 @@ func updateCertificate(path, domain string) error {
 
 func getAPIVirtualServiceURL() string {
 	return installerPrefixURL + *configVersion + apiVirtualServiceSuffix
+}
+
+func getAPIIngressURL() string {
+	return installerPrefixURL + *configVersion + apiIngressSuffix
 }
 
 func getDomainConfigMapURL() string {
@@ -329,6 +400,13 @@ func getGatewayURL() string {
 func checkConfigureDomainResourceAvailability() (bool, error) {
 
 	resp, err := http.Get(getAPIVirtualServiceURL())
+	if err != nil {
+		return false, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return false, nil
+	}
+	resp, err = http.Get(getAPIIngressURL())
 	if err != nil {
 		return false, err
 	}

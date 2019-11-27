@@ -263,13 +263,13 @@ func doInstallation() error {
 	}
 
 	// use case specific Keptn installation
-	ingress := "istio"
+	ingress := Istio
 	if *installParams.UseCase == "quality-gates" {
-		ingress = "nginx"
+		ingress = Nginx
 	}
 	if err := utils.Replace(installerPath,
 		utils.PlaceholderReplacement{PlaceholderValue: "INGRESS_PLACEHOLDER",
-			DesiredValue: ingress}); err != nil {
+			DesiredValue: ingress.String()}); err != nil {
 		return err
 	}
 
@@ -329,12 +329,23 @@ func doInstallation() error {
 	}
 
 	if eks {
-		o = options{"get", "svc", "istio-ingressgateway", "-n", "istio-system",
-			"-ojsonpath={.status.loadBalancer.ingress[0].hostname}"}
-		o.appendIfNotEmpty(kubectlOptions)
-		hostname, err := keptnutils.ExecuteCommand("kubectl", o)
-		if err != nil {
-			return err
+		var hostname string
+		if ingress == Istio {
+			o = options{"get", "svc", "istio-ingressgateway", "-n", "istio-system",
+				"-ojsonpath={.status.loadBalancer.ingress[0].hostname}"}
+			o.appendIfNotEmpty(kubectlOptions)
+			hostname, err = keptnutils.ExecuteCommand("kubectl", o)
+			if err != nil {
+				return err
+			}
+		} else if ingress == Nginx {
+			o = options{"get", "ingress", "api-ingress", "-n", "keptn",
+				"-ojsonpath={.status.loadBalancer.ingress[0].hostname}"}
+			o.appendIfNotEmpty(kubectlOptions)
+			hostname, err = keptnutils.ExecuteCommand("kubectl", o)
+			if err != nil {
+				return err
+			}
 		}
 
 		fmt.Println()
