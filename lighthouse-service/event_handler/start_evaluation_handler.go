@@ -49,6 +49,7 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 			Stage:              e.Stage,
 			TestStrategy:       e.TestStrategy,
 			DeploymentStrategy: e.DeploymentStrategy,
+			Labels:             e.Labels,
 		}
 		err = eh.sendEvaluationDoneEvent(keptnContext, &evaluationResult)
 		return err
@@ -74,6 +75,7 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 			Stage:              e.Stage,
 			TestStrategy:       e.TestStrategy,
 			DeploymentStrategy: e.DeploymentStrategy,
+			Labels:             e.Labels,
 		}
 
 		err = eh.sendEvaluationDoneEvent(keptnContext, &evaluationResult)
@@ -104,7 +106,7 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 	}
 	// send a new event to trigger the SLI retrieval
 	eh.Logger.Debug("SLI provider for project " + e.Project + " is: " + sliProvider)
-	err = eh.sendInternalGetSLIEvent(keptnContext, e.Project, e.Stage, e.Service, sliProvider, indicators, e.Start, e.End, e.TestStrategy, e.DeploymentStrategy, filters)
+	err = eh.sendInternalGetSLIEvent(keptnContext, e.Project, e.Stage, e.Service, sliProvider, indicators, e.Start, e.End, e.TestStrategy, e.DeploymentStrategy, filters, e.Labels)
 	return nil
 }
 
@@ -147,7 +149,7 @@ func getSLIProvider(project string) (string, error) {
 	return sliProvider, nil
 }
 
-func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string, project string, stage string, service string, sliProvider string, indicators []string, start string, end string, teststrategy string, deploymentStrategy string, filters []*keptnevents.SLIFilter) error {
+func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string, project string, stage string, service string, sliProvider string, indicators []string, start string, end string, teststrategy string, deploymentStrategy string, filters []*keptnevents.SLIFilter, labels map[string]string) error {
 	source, _ := url.Parse("lighthouse-service")
 	contentType := "application/json"
 
@@ -162,6 +164,7 @@ func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string,
 		CustomFilters:      filters,
 		TestStrategy:       teststrategy,
 		DeploymentStrategy: deploymentStrategy,
+		Labels:             labels,
 	}
 	event := cloudevents.Event{
 		Context: cloudevents.EventContextV02{
