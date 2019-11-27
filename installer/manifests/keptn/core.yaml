@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: bridge
-        image: keptn/bridge:latest
+        image: keptn/bridge:0.6.0.beta
         ports:
         - containerPort: 3000
         resources:
@@ -61,7 +61,7 @@ spec:
     spec:
       containers:
         - name: api
-          image: keptn/api:latest
+          image: keptn/api:0.6.0.beta
           ports:
             - containerPort: 8080
           resources:
@@ -122,7 +122,7 @@ spec:
     spec:
       containers:
       - name: eventbroker-go
-        image: keptn/eventbroker-go:latest
+        image: keptn/eventbroker-go:0.6.0.beta
         ports:
         - containerPort: 8080
         resources:
@@ -171,7 +171,7 @@ spec:
     spec:
       containers:
       - name: gatekeeper-service
-        image: keptn/gatekeeper-service:latest
+        image: keptn/gatekeeper-service:0.6.0.beta
         ports:
         - containerPort: 8080
         resources:
@@ -219,7 +219,7 @@ spec:
     spec:
       containers:
       - name: helm-service
-        image: keptn/helm-service:latest
+        image: keptn/helm-service:0.6.0.beta
         ports:
         - containerPort: 8080
         resources:
@@ -275,7 +275,7 @@ spec:
     spec:
       containers:
       - name: helm-service
-        image: keptn/jmeter-service:latest
+        image: keptn/jmeter-service:0.6.0.beta
         ports:
         - containerPort: 8080
         env:
@@ -316,7 +316,7 @@ spec:
     spec:
       containers:
       - name: wait-service
-        image: keptn/wait-service:latest
+        image: keptn/wait-service:0.6.0.beta
         ports:
         - containerPort: 8080
         resources:
@@ -364,7 +364,7 @@ spec:
     spec:
       containers:
       - name: shipyard-service
-        image: keptn/shipyard-service:latest
+        image: keptn/shipyard-service:0.6.0.beta
         ports:
         - containerPort: 8080
         resources:
@@ -414,7 +414,7 @@ spec:
     spec:
       containers:
         - name: lighthouse-service
-          image: keptn/lighthouse-service:latest
+          image: keptn/lighthouse-service:0.6.0.beta
           ports:
             - containerPort: 8080
           resources:
@@ -478,7 +478,7 @@ spec:
     spec:
       containers:
       - name: configuration-service
-        image: keptn/configuration-service:latest
+        image: keptn/configuration-service:0.6.0.beta
         ports:
         - containerPort: 8080
         resources:
@@ -529,7 +529,7 @@ spec:
     spec:
       containers:
       - name: remediation-service
-        image: keptn/remediation-service:latest
+        image: keptn/remediation-service:0.6.0.beta
         ports:
         - containerPort: 8080
         resources:

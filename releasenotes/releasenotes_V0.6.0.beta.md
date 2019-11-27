@@ -1,4 +1,4 @@
-# Release Notes develop
+# Release Notes 0.6.0.beta
 
 ## New Features
 - Keptn support for PKS (Pivotal/VMWare) [#5](https://github.com/keptn/keptn/issues/5)

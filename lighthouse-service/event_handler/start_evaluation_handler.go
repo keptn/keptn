@@ -33,6 +33,7 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 
 	// functional tests dont need to be evaluated
 	if e.TestStrategy == "functional" || e.TestStrategy == "" {
+		eh.Logger.Debug("Functional tests are need evaluated")
 		evaluationDetails := keptnevents.EvaluationDetails{
 			IndicatorResults: nil,
 			TimeStart:        e.Start,
@@ -49,7 +50,6 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 			TestStrategy:       e.TestStrategy,
 			DeploymentStrategy: e.DeploymentStrategy,
 		}
-
 		err = eh.sendEvaluationDoneEvent(keptnContext, &evaluationResult)
 		return err
 	}
@@ -58,6 +58,7 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 	objectives, err := getSLOs(e.Project, e.Stage, e.Service)
 	if err != nil {
 		// No SLO file found -> no need to evaluate
+		eh.Logger.Debug("No SLO file found, no evaluation conducted")
 		evaluationDetails := keptnevents.EvaluationDetails{
 			IndicatorResults: nil,
 			TimeStart:        e.Start,
@@ -102,6 +103,7 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 		return err
 	}
 	// send a new event to trigger the SLI retrieval
+	eh.Logger.Debug("SLI provider for project " + e.Project + " is: " + sliProvider)
 	err = eh.sendInternalGetSLIEvent(keptnContext, e.Project, e.Stage, e.Service, sliProvider, indicators, e.Start, e.End, e.TestStrategy, e.DeploymentStrategy, filters)
 	return nil
 }
@@ -123,6 +125,7 @@ func (eh *StartEvaluationHandler) sendEvaluationDoneEvent(shkeptncontext string,
 		Data: data,
 	}
 
+	eh.Logger.Debug("Send event: " + keptnevents.EvaluationDoneEventType)
 	return sendEvent(event)
 }
 
@@ -145,7 +148,6 @@ func getSLIProvider(project string) (string, error) {
 }
 
 func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string, project string, stage string, service string, sliProvider string, indicators []string, start string, end string, teststrategy string, deploymentStrategy string, filters []*keptnevents.SLIFilter) error {
-
 	source, _ := url.Parse("lighthouse-service")
 	contentType := "application/json"
 
@@ -173,5 +175,6 @@ func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string,
 		Data: getSLIEvent,
 	}
 
+	eh.Logger.Debug("Send event: " + keptnevents.InternalGetSLIEventType)
 	return sendEvent(event)
 }

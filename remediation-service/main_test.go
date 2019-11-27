@@ -19,7 +19,7 @@ func TestValidTagsDeriving(t *testing.T) {
 	deriveFromTags(&problemEvent)
 
 	assert.Equal(t, "sockshop", problemEvent.Project)
-	assert.Equal(t, "production", problemEvent.Stage)
+	assert.Equal(t, "dev", problemEvent.Stage)
 	assert.Equal(t, "carts", problemEvent.Service)
 }
 
