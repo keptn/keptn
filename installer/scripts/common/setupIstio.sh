@@ -43,11 +43,15 @@ elif [[ "$DOMAIN" == "null" && "$GATEWAY_TYPE" == "NodePort" ]]; then
     export DOMAIN="$NODE_IP:$NODE_PORT"
 fi
 
-# Set up SSL
-openssl req -nodes -newkey rsa:2048 -keyout key.pem -out certificate.pem  -x509 -days 365 -subj "/CN=$DOMAIN"
+if [[ "$PLATFORM" == "eks" ]]; then 
+    print_info "For EKS: No SSL certificate created. Please use keptn configure domain at the end of the installation."
+else
+    # Set up SSL
+    openssl req -nodes -newkey rsa:2048 -keyout key.pem -out certificate.pem  -x509 -days 365 -subj "/CN=$DOMAIN"
 
-kubectl create --namespace istio-system secret tls istio-ingressgateway-certs --key key.pem --cert certificate.pem
-#verify_kubectl $? "Creating secret for istio-ingressgateway-certs failed."
+    kubectl create --namespace istio-system secret tls istio-ingressgateway-certs --key key.pem --cert certificate.pem
+    #verify_kubectl $? "Creating secret for istio-ingressgateway-certs failed."
 
-rm key.pem
-rm certificate.pem
+    rm key.pem
+    rm certificate.pem
+fi

@@ -383,17 +383,19 @@ jobs:
       - echo "The following images have been built and pushed to dockerhub:"
       - docker images | grep keptn
 
-  - stage: release
+  - stage: release (cli)
     if: branch =~ ^release.*$ AND NOT type = pull_request
     os: osx
     script:
-    - echo "Build keptn cli"
-    - cd ./cli
-    - go test ./...
-    - TAG="${VERSION}-${DATE}"
-    - source ../travis-scripts/build_cli.sh "${TAG}"
-    - cd ..
-  - if: branch =~ ^release.*$ AND NOT type = pull_request
+      - echo "Build keptn cli"
+      - cd ./cli
+      - go test ./...
+      - TAG="${VERSION}-${DATE}"
+      - source ../travis-scripts/build_cli.sh "${TAG}"
+      - cd ..
+
+  - stage: release (api, os-route-service, bridge, jmeter-service)
+    if: branch =~ ^release.*$ AND NOT type = pull_request
     os: linux
     services:
       - docker
@@ -408,44 +410,85 @@ jobs:
     - cd ..
     - source ./travis-scripts/build_release.sh "${JMETER_SVC_IMAGE}" "${JMETER_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
     - cd ..
-    - source ./travis-scripts/build_release.sh "${HELM_SVC_IMAGE}" "${HELM_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
-    - cd ..
-    - source ./travis-scripts/build_release.sh "${GATEKEEPER_SVC_IMAGE}" "${GATEKEEPER_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
-    - cd ..
-    - source ./travis-scripts/build_release.sh "${DISTRIBUTOR_IMAGE}" "${DISTRIBUTOR_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
-    - cd ..
-    - source ./travis-scripts/build_release.sh "${EVENTBROKER_IMAGE}" "${EVENTBROKER_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
-    - cd ..
-    - source ./travis-scripts/build_release.sh "${SHIPYARD_SVC_IMAGE}" "${SHIPYARD_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
-    - cd ..
-    - source ./travis-scripts/build_release.sh "${CONFIGURATION_SVC_IMAGE}" "${CONFIGURATION_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
-    - cd ..
-    - source ./travis-scripts/build_release.sh "${REMEDIATION_SVC_IMAGE}" "${REMEDIATION_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
-    - cd ..
-    - source ./travis-scripts/build_release.sh "${WAIT_SVC_IMAGE}" "${WAIT_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
-    - cd ..
-    - source ./travis-scripts/build_release.sh "${LIGHTHOUSE_SVC_IMAGE}" "${LIGHTHOUSE_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
-    - cd ..
-    - source ./travis-scripts/build_release.sh "${MONGODB_DS_IMAGE}" "${MONGODB_DS_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
-    - cd ..
-    - source ./travis-scripts/build_release.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
-    - cd ..
     ### ATTENTION: please make sure installer is always the last in this list to be built
     after_script:
       - echo "The following images have been built and pushed to dockerhub:"
       - docker images | grep keptn
 
-  - stage: master
+  - stage: release (helm-service, gatekeeper-service, distributor, eventbroker)
+    if: branch =~ ^release.*$ AND NOT type = pull_request
+    os: linux
+    services:
+      - docker
+    script:
+      - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
+      - ./writeManifest.sh
+      - source ./travis-scripts/build_release.sh "${HELM_SVC_IMAGE}" "${HELM_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+      - cd ..
+      - source ./travis-scripts/build_release.sh "${GATEKEEPER_SVC_IMAGE}" "${GATEKEEPER_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+      - cd ..
+      - source ./travis-scripts/build_release.sh "${DISTRIBUTOR_IMAGE}" "${DISTRIBUTOR_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+      - cd ..
+      - source ./travis-scripts/build_release.sh "${EVENTBROKER_IMAGE}" "${EVENTBROKER_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+      - cd ..
+    ### ATTENTION: please make sure installer is always the last in this list to be built
+    after_script:
+      - echo "The following images have been built and pushed to dockerhub:"
+      - docker images | grep keptn
+
+  - stage: release (shipyard-service, configuration-service, remediation-service, wait-service)
+    if: branch =~ ^release.*$ AND NOT type = pull_request
+    os: linux
+    services:
+      - docker
+    script:
+      - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
+      - ./writeManifest.sh
+      - source ./travis-scripts/build_release.sh "${SHIPYARD_SVC_IMAGE}" "${SHIPYARD_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+      - cd ..
+      - source ./travis-scripts/build_release.sh "${CONFIGURATION_SVC_IMAGE}" "${CONFIGURATION_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+      - cd ..
+      - source ./travis-scripts/build_release.sh "${REMEDIATION_SVC_IMAGE}" "${REMEDIATION_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+      - cd ..
+      - source ./travis-scripts/build_release.sh "${WAIT_SVC_IMAGE}" "${WAIT_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+      - cd ..
+    ### ATTENTION: please make sure installer is always the last in this list to be built
+    after_script:
+      - echo "The following images have been built and pushed to dockerhub:"
+      - docker images | grep keptn
+
+  - stage: release (lighthouse-service, mongodb-datastore, installer)
+    if: branch =~ ^release.*$ AND NOT type = pull_request
+    os: linux
+    services:
+      - docker
+    script:
+      - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
+      - ./writeManifest.sh
+      - source ./travis-scripts/build_release.sh "${LIGHTHOUSE_SVC_IMAGE}" "${LIGHTHOUSE_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+      - cd ..
+      - source ./travis-scripts/build_release.sh "${MONGODB_DS_IMAGE}" "${MONGODB_DS_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+      - cd ..
+      - source ./travis-scripts/build_release.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+      - cd ..
+    ### ATTENTION: please make sure installer is always the last in this list to be built
+    after_script:
+      - echo "The following images have been built and pushed to dockerhub:"
+      - docker images | grep keptn
+
+  - stage: master (cli)
     if: branch = master AND NOT type = pull_request
     os: osx
     script:
-    - echo "Build keptn cli"
-    - cd ./cli
-    - go test ./...
-    - TAG="${VERSION}"
-    - source ../travis-scripts/build_cli.sh "${TAG}"
-    - cd ..
-  - if: branch = master AND NOT type = pull_request
+      - echo "Build keptn cli"
+      - cd ./cli
+      - go test ./...
+      - TAG="${VERSION}"
+      - source ../travis-scripts/build_cli.sh "${TAG}"
+      - cd ..
+
+  - stage: master (api, os-route-service, bridge, jmeter-service)
+    if: branch = master AND NOT type = pull_request
     os: linux
     services:
       - docker
@@ -460,26 +503,63 @@ jobs:
     - cd ..
     - source ./travis-scripts/build_master.sh "${JMETER_SVC_IMAGE}" "${JMETER_SVC_FOLDER}" "${VERSION}"
     - cd ..
-    - source ./travis-scripts/build_master.sh "${HELM_SVC_IMAGE}" "${HELM_SVC_FOLDER}" "${VERSION}"
-    - cd ..
-    - source ./travis-scripts/build_master.sh "${GATEKEEPER_SVC_IMAGE}" "${GATEKEEPER_SVC_FOLDER}" "${VERSION}"
-    - cd ..
-    - source ./travis-scripts/build_master.sh "${DISTRIBUTOR_IMAGE}" "${DISTRIBUTOR_FOLDER}" "${VERSION}"
-    - cd ..
-    - source ./travis-scripts/build_master.sh "${EVENTBROKER_IMAGE}" "${EVENTBROKER_FOLDER}" "${VERSION}"
-    - cd ..
-    - source ./travis-scripts/build_master.sh "${SHIPYARD_SVC_IMAGE}" "${SHIPYARD_SVC_FOLDER}" "${VERSION}"
-    - cd ..
-    - source ./travis-scripts/build_master.sh "${CONFIGURATION_SVC_IMAGE}" "${CONFIGURATION_SVC_FOLDER}" "${VERSION}"
-    - cd ..
-    - source ./travis-scripts/build_master.sh "${REMEDIATION_SVC_IMAGE}" "${REMEDIATION_SVC_FOLDER}" "${VERSION}" 
-    - cd ..
-    - source ./travis-scripts/build_master.sh "${WAIT_SVC_IMAGE}" "${WAIT_SVC_FOLDER}" "${VERSION}"
-    - cd ..
-    - source ./travis-scripts/build_master.sh "${LIGHTHOUSE_SVC_IMAGE}" "${LIGHTHOUSE_SVC_FOLDER}" "${VERSION}"
-    - cd ..
-    - source ./travis-scripts/build_master.sh "${MONGODB_DS_IMAGE}" "${MONGODB_DS_FOLDER}" "${VERSION}"
-    - cd ..
-    - source ./travis-scripts/build_master.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${VERSION}"
-    - cd ..
     ### ATTENTION: please make sure installer is always the last in this list to be built
+
+  - stage: master (helm-service, gatekeeper-service, distributor, eventbroker)
+    if: branch = master AND NOT type = pull_request
+    os: linux
+    services:
+      - docker
+    script:
+      - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
+      - ./writeManifest.sh
+      - source ./travis-scripts/build_master.sh "${HELM_SVC_IMAGE}" "${HELM_SVC_FOLDER}" "${VERSION}"
+      - cd ..
+      - source ./travis-scripts/build_master.sh "${GATEKEEPER_SVC_IMAGE}" "${GATEKEEPER_SVC_FOLDER}" "${VERSION}"
+      - cd ..
+      - source ./travis-scripts/build_master.sh "${DISTRIBUTOR_IMAGE}" "${DISTRIBUTOR_FOLDER}" "${VERSION}"
+      - cd ..
+      - source ./travis-scripts/build_master.sh "${EVENTBROKER_IMAGE}" "${EVENTBROKER_FOLDER}" "${VERSION}"
+      - cd ..
+
+  - stage: master (shipyard-service, configuration-service, remediation-service, wait-service)
+    if: branch = master AND NOT type = pull_request
+    os: linux
+    services:
+      - docker
+    script:
+      - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
+      - ./writeManifest.sh
+      - source ./travis-scripts/build_master.sh "${SHIPYARD_SVC_IMAGE}" "${SHIPYARD_SVC_FOLDER}" "${VERSION}"
+      - cd ..
+      - source ./travis-scripts/build_master.sh "${CONFIGURATION_SVC_IMAGE}" "${CONFIGURATION_SVC_FOLDER}" "${VERSION}"
+      - cd ..
+      - source ./travis-scripts/build_master.sh "${REMEDIATION_SVC_IMAGE}" "${REMEDIATION_SVC_FOLDER}" "${VERSION}"
+      - cd ..
+      - source ./travis-scripts/build_master.sh "${WAIT_SVC_IMAGE}" "${WAIT_SVC_FOLDER}" "${VERSION}"
+      - cd ..
+      - source ./travis-scripts/build_master.sh "${LIGHTHOUSE_SVC_IMAGE}" "${LIGHTHOUSE_SVC_FOLDER}" "${VERSION}"
+      - cd ..
+      - source ./travis-scripts/build_master.sh "${MONGODB_DS_IMAGE}" "${MONGODB_DS_FOLDER}" "${VERSION}"
+      - cd ..
+      - source ./travis-scripts/build_master.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${VERSION}"
+      - cd ..
+    ### ATTENTION: please make sure installer is always the last in this list to be built
+
+  - stage: master (lighthouse-service, mongodb-datastore, installer)
+    if: branch = master AND NOT type = pull_request
+    os: linux
+    services:
+      - docker
+    script:
+      - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
+      - ./writeManifest.sh
+      - source ./travis-scripts/build_master.sh "${LIGHTHOUSE_SVC_IMAGE}" "${LIGHTHOUSE_SVC_FOLDER}" "${VERSION}"
+      - cd ..
+      - source ./travis-scripts/build_master.sh "${MONGODB_DS_IMAGE}" "${MONGODB_DS_FOLDER}" "${VERSION}"
+      - cd ..
+      - source ./travis-scripts/build_master.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${VERSION}"
+      - cd ..
+    ### ATTENTION: please make sure installer is always the last in this list to be built
+
+

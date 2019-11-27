@@ -186,7 +186,7 @@ type evaluateFixedThresholdTestObject struct {
 	Name             string
 	InSLIResult      *keptnevents.SLIResult
 	InCriteriaObject *criteriaObject
-	InTarget      *keptnevents.SLITarget
+	InTarget         *keptnevents.SLITarget
 	ExpectedResult   bool
 	ExpectedError    error
 }
@@ -310,7 +310,7 @@ type evaluateComparisonTestObject struct {
 	InCriteriaObject  *criteriaObject
 	InPreviousResults []*keptnevents.SLIEvaluationResult
 	InComparison      *keptnmodelsv2.SLOComparison
-	InTarget       *keptnevents.SLITarget
+	InTarget          *keptnevents.SLITarget
 	ExpectedResult    bool
 	ExpectedError     error
 }
@@ -342,7 +342,7 @@ func TestEvaluateComparison(t *testing.T) {
 						Message: "",
 					},
 					Targets: nil,
-					Status:     "pass",
+					Status:  "pass",
 				},
 				{
 					Score: 2,
@@ -353,7 +353,7 @@ func TestEvaluateComparison(t *testing.T) {
 						Message: "",
 					},
 					Targets: nil,
-					Status:     "pass",
+					Status:  "pass",
 				},
 			},
 			InComparison: &keptnmodelsv2.SLOComparison{
@@ -393,7 +393,7 @@ func TestEvaluateComparison(t *testing.T) {
 						Message: "",
 					},
 					Targets: nil,
-					Status:     "pass",
+					Status:  "pass",
 				},
 				{
 					Score: 2,
@@ -404,7 +404,7 @@ func TestEvaluateComparison(t *testing.T) {
 						Message: "",
 					},
 					Targets: nil,
-					Status:     "pass",
+					Status:  "pass",
 				},
 			},
 			InComparison: &keptnmodelsv2.SLOComparison{
@@ -444,7 +444,7 @@ func TestEvaluateComparison(t *testing.T) {
 						Message: "",
 					},
 					Targets: nil,
-					Status:     "pass",
+					Status:  "pass",
 				},
 				{
 					Score: 2,
@@ -455,7 +455,7 @@ func TestEvaluateComparison(t *testing.T) {
 						Message: "",
 					},
 					Targets: nil,
-					Status:     "pass",
+					Status:  "pass",
 				},
 			},
 			InComparison: &keptnmodelsv2.SLOComparison{
@@ -495,7 +495,7 @@ func TestEvaluateComparison(t *testing.T) {
 						Message: "",
 					},
 					Targets: nil,
-					Status:     "pass",
+					Status:  "pass",
 				},
 				{
 					Score: 2,
@@ -506,7 +506,7 @@ func TestEvaluateComparison(t *testing.T) {
 						Message: "",
 					},
 					Targets: nil,
-					Status:     "pass",
+					Status:  "pass",
 				},
 			},
 			InComparison: &keptnmodelsv2.SLOComparison{
@@ -546,7 +546,7 @@ func TestEvaluateComparison(t *testing.T) {
 						Message: "",
 					},
 					Targets: nil,
-					Status:     "pass",
+					Status:  "pass",
 				},
 				{
 					Score: 2,
@@ -557,7 +557,7 @@ func TestEvaluateComparison(t *testing.T) {
 						Message: "",
 					},
 					Targets: nil,
-					Status:     "pass",
+					Status:  "pass",
 				},
 			},
 			InComparison: &keptnmodelsv2.SLOComparison{
@@ -597,7 +597,7 @@ func TestEvaluateComparison(t *testing.T) {
 						Message: "",
 					},
 					Targets: nil,
-					Status:     "pass",
+					Status:  "pass",
 				},
 				{
 					Score: 2,
@@ -608,7 +608,7 @@ func TestEvaluateComparison(t *testing.T) {
 						Message: "",
 					},
 					Targets: nil,
-					Status:     "pass",
+					Status:  "pass",
 				},
 			},
 			InComparison: &keptnmodelsv2.SLOComparison{
@@ -648,7 +648,7 @@ func TestEvaluateComparison(t *testing.T) {
 						Message: "",
 					},
 					Targets: nil,
-					Status:     "pass",
+					Status:  "pass",
 				},
 				{
 					Score: 2,
@@ -659,7 +659,7 @@ func TestEvaluateComparison(t *testing.T) {
 						Message: "",
 					},
 					Targets: nil,
-					Status:     "pass",
+					Status:  "pass",
 				},
 			},
 			InComparison: &keptnmodelsv2.SLOComparison{
@@ -690,7 +690,7 @@ type evaluateSingleCriteriaTestObject struct {
 	InCriteria        string
 	InPreviousResults []*keptnevents.SLIEvaluationResult
 	InComparison      *keptnmodelsv2.SLOComparison
-	InTarget       *keptnevents.SLITarget
+	InTarget          *keptnevents.SLITarget
 	ExpectedResult    bool
 	ExpectedError     error
 }
@@ -716,7 +716,7 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 						Message: "",
 					},
 					Targets: nil,
-					Status:     "pass",
+					Status:  "pass",
 				},
 				{
 					Score: 2,
@@ -727,7 +727,7 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 						Message: "",
 					},
 					Targets: nil,
-					Status:     "pass",
+					Status:  "pass",
 				},
 			},
 			InComparison: &keptnmodelsv2.SLOComparison{
@@ -761,7 +761,7 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 						Message: "",
 					},
 					Targets: nil,
-					Status:     "pass",
+					Status:  "pass",
 				},
 				{
 					Score: 2,
@@ -772,7 +772,7 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 						Message: "",
 					},
 					Targets: nil,
-					Status:     "pass",
+					Status:  "pass",
 				},
 			},
 			InComparison: &keptnmodelsv2.SLOComparison{
@@ -806,7 +806,7 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 						Message: "",
 					},
 					Targets: nil,
-					Status:     "pass",
+					Status:  "pass",
 				},
 				{
 					Score: 2,
@@ -817,7 +817,7 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 						Message: "",
 					},
 					Targets: nil,
-					Status:     "pass",
+					Status:  "pass",
 				},
 			},
 			InComparison: &keptnmodelsv2.SLOComparison{
@@ -851,7 +851,7 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 						Message: "",
 					},
 					Targets: nil,
-					Status:     "pass",
+					Status:  "pass",
 				},
 				{
 					Score: 2,
@@ -862,7 +862,7 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 						Message: "",
 					},
 					Targets: nil,
-					Status:     "pass",
+					Status:  "pass",
 				},
 			},
 			InComparison: &keptnmodelsv2.SLOComparison{
@@ -896,7 +896,7 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 						Message: "",
 					},
 					Targets: nil,
-					Status:     "pass",
+					Status:  "pass",
 				},
 				{
 					Score: 2,
@@ -907,7 +907,7 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 						Message: "",
 					},
 					Targets: nil,
-					Status:     "pass",
+					Status:  "pass",
 				},
 			},
 			InComparison: &keptnmodelsv2.SLOComparison{
@@ -941,7 +941,7 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 						Message: "",
 					},
 					Targets: nil,
-					Status:     "pass",
+					Status:  "pass",
 				},
 				{
 					Score: 2,
@@ -952,7 +952,7 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 						Message: "",
 					},
 					Targets: nil,
-					Status:     "pass",
+					Status:  "pass",
 				},
 			},
 			InComparison: &keptnmodelsv2.SLOComparison{
@@ -986,7 +986,7 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 						Message: "",
 					},
 					Targets: nil,
-					Status:     "pass",
+					Status:  "pass",
 				},
 				{
 					Score: 2,
@@ -997,7 +997,7 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 						Message: "",
 					},
 					Targets: nil,
-					Status:     "pass",
+					Status:  "pass",
 				},
 			},
 			InComparison: &keptnmodelsv2.SLOComparison{
@@ -1038,14 +1038,14 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 }
 
 type evaluateCriteriaSetTestObject struct {
-	Name               string
-	InSLIResult        *keptnevents.SLIResult
-	InCriteriaSet      *keptnmodelsv2.SLOCriteria
-	InPreviousResults  []*keptnevents.SLIEvaluationResult
-	InComparison       *keptnmodelsv2.SLOComparison
-	ExpectedTargets []*keptnevents.SLITarget
-	ExpectedResult     bool
-	ExpectedError      error
+	Name              string
+	InSLIResult       *keptnevents.SLIResult
+	InCriteriaSet     *keptnmodelsv2.SLOCriteria
+	InPreviousResults []*keptnevents.SLIEvaluationResult
+	InComparison      *keptnmodelsv2.SLOComparison
+	ExpectedTargets   []*keptnevents.SLITarget
+	ExpectedResult    bool
+	ExpectedError     error
 }
 
 func TestEvaluateCriteriaSet(t *testing.T) {
@@ -1071,7 +1071,7 @@ func TestEvaluateCriteriaSet(t *testing.T) {
 						Message: "",
 					},
 					Targets: nil,
-					Status:     "pass",
+					Status:  "pass",
 				},
 				{
 					Score: 2,
@@ -1082,7 +1082,7 @@ func TestEvaluateCriteriaSet(t *testing.T) {
 						Message: "",
 					},
 					Targets: nil,
-					Status:     "pass",
+					Status:  "pass",
 				},
 			},
 			InComparison: &keptnmodelsv2.SLOComparison{
@@ -1103,8 +1103,8 @@ func TestEvaluateCriteriaSet(t *testing.T) {
 					Violated:    false,
 				},
 			},
-			ExpectedResult:     true,
-			ExpectedError:      nil,
+			ExpectedResult: true,
+			ExpectedError:  nil,
 		},
 		{
 			Name: "Expect false for (11.0 <= avg([10.0, 10.0]) + 10%) && (10.0 <= 10.0)",
@@ -1127,7 +1127,7 @@ func TestEvaluateCriteriaSet(t *testing.T) {
 						Message: "",
 					},
 					Targets: nil,
-					Status:     "pass",
+					Status:  "pass",
 				},
 				{
 					Score: 2,
@@ -1138,7 +1138,7 @@ func TestEvaluateCriteriaSet(t *testing.T) {
 						Message: "",
 					},
 					Targets: nil,
-					Status:     "pass",
+					Status:  "pass",
 				},
 			},
 			InComparison: &keptnmodelsv2.SLOComparison{
@@ -1149,14 +1149,14 @@ func TestEvaluateCriteriaSet(t *testing.T) {
 			},
 			ExpectedTargets: []*keptnevents.SLITarget{
 				{
-					Criteria: "<=+10%",
+					Criteria:    "<=+10%",
 					TargetValue: 11,
-					Violated: false,
+					Violated:    false,
 				},
 				{
 					Criteria:    "<=10.0",
 					TargetValue: 10.0,
-					Violated: true,
+					Violated:    true,
 				},
 			},
 			ExpectedResult: false,
@@ -1174,14 +1174,14 @@ func TestEvaluateCriteriaSet(t *testing.T) {
 }
 
 type evaluateOrCombinedCriteriaTestObject struct {
-	Name               string
-	InSLIResult        *keptnevents.SLIResult
-	InCriteriaSets     []*keptnmodelsv2.SLOCriteria
-	InPreviousResults  []*keptnevents.SLIEvaluationResult
-	InComparison       *keptnmodelsv2.SLOComparison
-	ExpectedTargets []*keptnevents.SLITarget
-	ExpectedResult     bool
-	ExpectedError      error
+	Name              string
+	InSLIResult       *keptnevents.SLIResult
+	InCriteriaSets    []*keptnmodelsv2.SLOCriteria
+	InPreviousResults []*keptnevents.SLIEvaluationResult
+	InComparison      *keptnmodelsv2.SLOComparison
+	ExpectedTargets   []*keptnevents.SLITarget
+	ExpectedResult    bool
+	ExpectedError     error
 }
 
 func TestEvaluateOrCombinedCriteria(t *testing.T) {
@@ -1212,7 +1212,7 @@ func TestEvaluateOrCombinedCriteria(t *testing.T) {
 						Message: "",
 					},
 					Targets: nil,
-					Status:     "pass",
+					Status:  "pass",
 				},
 				{
 					Score: 2,
@@ -1223,7 +1223,7 @@ func TestEvaluateOrCombinedCriteria(t *testing.T) {
 						Message: "",
 					},
 					Targets: nil,
-					Status:     "pass",
+					Status:  "pass",
 				},
 			},
 			InComparison: &keptnmodelsv2.SLOComparison{
@@ -1236,16 +1236,16 @@ func TestEvaluateOrCombinedCriteria(t *testing.T) {
 				{
 					Criteria:    "<=10.0",
 					TargetValue: 10.0,
-					Violated: false,
+					Violated:    false,
 				},
 				{
-					Criteria: "<=+10%",
+					Criteria:    "<=+10%",
 					TargetValue: 11,
-					Violated: false,
+					Violated:    false,
 				},
 			},
-			ExpectedResult:     true,
-			ExpectedError:      nil,
+			ExpectedResult: true,
+			ExpectedError:  nil,
 		},
 		{
 			Name: "Expect true for (11.0 <= avg([10.0, 10.0]) + 10%) || (10.0 <= 10.0)",
@@ -1273,7 +1273,7 @@ func TestEvaluateOrCombinedCriteria(t *testing.T) {
 						Message: "",
 					},
 					Targets: nil,
-					Status:     "pass",
+					Status:  "pass",
 				},
 				{
 					Score: 2,
@@ -1284,7 +1284,7 @@ func TestEvaluateOrCombinedCriteria(t *testing.T) {
 						Message: "",
 					},
 					Targets: nil,
-					Status:     "pass",
+					Status:  "pass",
 				},
 			},
 			InComparison: &keptnmodelsv2.SLOComparison{
@@ -1297,12 +1297,12 @@ func TestEvaluateOrCombinedCriteria(t *testing.T) {
 				{
 					Criteria:    "<=10.0",
 					TargetValue: 10.0,
-					Violated: true,
+					Violated:    true,
 				},
 				{
 					Criteria:    "<=+10%",
 					TargetValue: 11,
-					Violated: false,
+					Violated:    false,
 				},
 			},
 			ExpectedResult: true,
@@ -1334,7 +1334,7 @@ func TestEvaluateOrCombinedCriteria(t *testing.T) {
 						Message: "",
 					},
 					Targets: nil,
-					Status:     "pass",
+					Status:  "pass",
 				},
 				{
 					Score: 2,
@@ -1345,7 +1345,7 @@ func TestEvaluateOrCombinedCriteria(t *testing.T) {
 						Message: "",
 					},
 					Targets: nil,
-					Status:     "pass",
+					Status:  "pass",
 				},
 			},
 			InComparison: &keptnmodelsv2.SLOComparison{
@@ -1358,12 +1358,12 @@ func TestEvaluateOrCombinedCriteria(t *testing.T) {
 				{
 					Criteria:    "<=10.0",
 					TargetValue: 10.0,
-					Violated: true,
+					Violated:    true,
 				},
 				{
 					Criteria:    "<=+10%",
 					TargetValue: 11.0,
-					Violated: true,
+					Violated:    true,
 				},
 			},
 			ExpectedResult: false,
@@ -1465,7 +1465,7 @@ func TestEvaluateObjectives(t *testing.T) {
 									Message: "",
 								},
 								Targets: nil,
-								Status:     "pass",
+								Status:  "pass",
 							},
 						},
 					},
@@ -1503,7 +1503,7 @@ func TestEvaluateObjectives(t *testing.T) {
 									Violated:    false,
 								},
 							},
-							Status:     "pass",
+							Status: "pass",
 						},
 					},
 				},
@@ -1587,7 +1587,7 @@ func TestEvaluateObjectives(t *testing.T) {
 									Message: "",
 								},
 								Targets: nil,
-								Status:     "pass",
+								Status:  "pass",
 							},
 						},
 					},
@@ -1617,22 +1617,22 @@ func TestEvaluateObjectives(t *testing.T) {
 								{
 									Criteria:    "<=20.0",
 									TargetValue: 20,
-									Violated: false,
+									Violated:    false,
 								},
 								{
 									Criteria:    "<=+15%",
 									TargetValue: 11.5,
-									Violated: true,
+									Violated:    true,
 								},
 								{
 									Criteria:    "<=15.0",
 									TargetValue: 15.0,
-									Violated: true,
+									Violated:    true,
 								},
 								{
 									Criteria:    "<=+10%",
 									TargetValue: 11,
-									Violated: true,
+									Violated:    true,
 								},
 							},
 							Status: "warning",
@@ -1703,7 +1703,7 @@ func TestEvaluateObjectives(t *testing.T) {
 						KeySLI: false,
 					},
 					{
-						SLI: "my-log-metric",
+						SLI:    "my-log-metric",
 						Weight: 1,
 						KeySLI: false,
 					},
@@ -1730,7 +1730,7 @@ func TestEvaluateObjectives(t *testing.T) {
 									Message: "",
 								},
 								Targets: nil,
-								Status:     "pass",
+								Status:  "pass",
 							},
 						},
 					},
@@ -1768,7 +1768,7 @@ func TestEvaluateObjectives(t *testing.T) {
 									Violated:    false,
 								},
 							},
-							Status:     "pass",
+							Status: "pass",
 						},
 						{
 							Score: 0,
@@ -1778,7 +1778,7 @@ func TestEvaluateObjectives(t *testing.T) {
 								Success: true,
 								Message: "",
 							},
-							Status:     "info",
+							Status: "info",
 						},
 					},
 				},
@@ -1862,7 +1862,7 @@ func TestEvaluateObjectives(t *testing.T) {
 									Violated:    true,
 								},
 							},
-							Status:     "fail",
+							Status: "fail",
 						},
 					},
 				},
@@ -1917,7 +1917,7 @@ func TestCalculateScore(t *testing.T) {
 								Message: "",
 							},
 							Targets: nil,
-							Status:     "pass",
+							Status:  "pass",
 						},
 					},
 				},
@@ -1981,7 +1981,7 @@ func TestCalculateScore(t *testing.T) {
 								Message: "",
 							},
 							Targets: nil,
-							Status:     "pass",
+							Status:  "pass",
 						},
 					},
 				},
@@ -2012,7 +2012,7 @@ func TestCalculateScore(t *testing.T) {
 								Message: "",
 							},
 							Targets: nil,
-							Status:     "pass",
+							Status:  "pass",
 						},
 						{
 							Score: 0,
@@ -2023,7 +2023,7 @@ func TestCalculateScore(t *testing.T) {
 								Message: "",
 							},
 							Targets: nil,
-							Status:     "fail",
+							Status:  "fail",
 						},
 					},
 				},
@@ -2108,7 +2108,7 @@ func TestCalculateScore(t *testing.T) {
 								Message: "",
 							},
 							Targets: nil,
-							Status:     "pass",
+							Status:  "pass",
 						},
 						{
 							Score: 0,
@@ -2119,7 +2119,7 @@ func TestCalculateScore(t *testing.T) {
 								Message: "",
 							},
 							Targets: nil,
-							Status:     "fail",
+							Status:  "fail",
 						},
 					},
 				},

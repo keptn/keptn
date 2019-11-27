@@ -93,7 +93,9 @@ class DatastoreService {
   async findRoots(contextId) {
     const deploymentRoots = await this.findDeploymentRoots(contextId);
     const problemRoots = await this.findProblemRoots(contextId);
-    const combinedRoots = deploymentRoots.concat(problemRoots);
+    const evaluationRoots = await this.findEvaluationRoots(contextId);
+    let combinedRoots = deploymentRoots.concat(problemRoots);
+    combinedRoots = combinedRoots.concat(evaluationRoots);
     combinedRoots.sort((a, b) => (a.timestamp < b.timestamp ? 1 : -1));
     return combinedRoots;
   }
@@ -115,6 +117,16 @@ class DatastoreService {
     const { data } = result;
     if (data.events) {
       return data.events.map(event => DatastoreService.mapEvent(event)).filter(e => e.data.state === 'OPEN');
+    }
+    return [];
+  }
+
+  async findEvaluationRoots(contextId) {
+    const url = `${this.api}/event?keptnContext=${contextId}&type=sh.keptn.event.start-evaluation&pageSize&pageSize=100`;
+    const result = await axios.get(url);
+    const { data } = result;
+    if (data.events) {
+      return data.events.map(event => DatastoreService.mapEvent(event));
     }
     return [];
   }
