@@ -2,7 +2,7 @@
 source ./common/utils.sh
 
 kubectl apply -f ../manifests/keptn/api-ingress.yaml
-verify_install_step $? "Installing ingress failed."
+verify_install_step $? "Installing Keptn api-ingress failed."
 
 
 wait_for_k8s_ingress "hostname"
