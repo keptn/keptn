@@ -83,7 +83,7 @@ if [ "$INGRESS" = "istio" ]; then
 
   rm -f ../manifests/keptn/gen/keptn-api-virtualservice.yaml
   cat ../manifests/keptn/keptn-api-virtualservice.yaml | \
-    sed 's~DOMAIN_PLACEHOLDER~'"$DOMAIN"'~' > ../manifests/keptn/gen/keptn-api-virtualservice.yaml
+    sed 's~DOMAIN_PLACEHOLDER~'"$INGRESS_HOST"'~' > ../manifests/keptn/gen/keptn-api-virtualservice.yaml
 
   kubectl apply -f ../manifests/keptn/gen/keptn-api-virtualservice.yaml
   verify_kubectl $? "Deploying keptn api virtualservice failed."
