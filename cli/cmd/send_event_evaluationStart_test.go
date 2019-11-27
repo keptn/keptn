@@ -29,6 +29,7 @@ func TestEvaluationStart(t *testing.T) {
 		fmt.Sprintf("--stage=%s", "hardening"),
 		fmt.Sprintf("--service=%s", "carts"),
 		fmt.Sprintf("--timeframe=%s", "5m"),
+		fmt.Sprintf("--labels=foo=bar,bar=foo"),
 		"--mock",
 	}
 	rootCmd.SetArgs(args)
