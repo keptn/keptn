@@ -44,17 +44,6 @@ kubectl apply -f ../manifests/logging/mongodb-openshift/deployment.yaml
 verify_kubectl $? "Creating mongodb deployment failed."
 kubectl apply -f ../manifests/logging/mongodb-openshift/svc.yaml
 verify_kubectl $? "Creating mongodb service failed."
-kubectl apply -f ../manifests/logging/fluent-bit/service-account.yaml
-verify_kubectl $? "Creating fluent-bit service account failed."
-oc adm policy add-scc-to-user privileged -z fluent-bit -n keptn
-kubectl apply -f ../manifests/logging/fluent-bit/role.yaml
-verify_kubectl $? "Creating fluent-bit role failed."
-kubectl apply -f ../manifests/logging/fluent-bit/role-binding.yaml
-verify_kubectl $? "Creating fluent-bit role binding failed."
-kubectl apply -f ../manifests/logging/fluent-bit/configmap.yaml
-verify_kubectl $? "Creating fluent-bit configmap failed."
-kubectl apply -f ../manifests/logging/fluent-bit/ds.yaml
-verify_kubectl $? "Creating fluent-bit daemonset failed."
 kubectl apply -f ../manifests/logging/mongodb-datastore/openshift/mongodb-datastore.yaml
 verify_kubectl $? "Creating mongodb-datastore service failed."
 wait_for_deployment_in_namespace "mongodb-datastore" "keptn-datastore"
