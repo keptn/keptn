@@ -35,11 +35,12 @@ import (
 )
 
 type evaluationStartStruct struct {
-	Project   *string `json:"project"`
-	Stage     *string `json:"stage"`
-	Service   *string `json:"service"`
-	Timeframe *string `json:"timeframe"`
-	Start     *string `json:"start"`
+	Project   *string            `json:"project"`
+	Stage     *string            `json:"stage"`
+	Service   *string            `json:"service"`
+	Timeframe *string            `json:"timeframe"`
+	Start     *string            `json:"start"`
+	Labels    *map[string]string `json:"labels"`
 }
 
 var evaluationStart evaluationStartStruct
@@ -55,7 +56,7 @@ the time frame that is considered in this evaluation. If a specific start point 
 a start flag is provided that takes a time in the format: 2006-01-02T15:04:05
 	
 Example:
-	keptn send event start-evaluation --project=sockshop --stage=hardening --service=carts --timeframe=5m --start=2019-10-31T11:59:59`,
+	keptn send event start-evaluation --project=sockshop --stage=hardening --service=carts --timeframe=5m --start=2019-10-31T11:59:59 --labels=test-id=1234,test-name=performance-test`,
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		return nil
@@ -87,6 +88,7 @@ Example:
 			TestStrategy: "manual",
 			Start:        start.Format("2006-01-02T15:04:05.000Z"),
 			End:          end.Format("2006-01-02T15:04:05.000Z"),
+			Labels:       *evaluationStart.Labels,
 		}
 
 		keptnContext := uuid.New().String()
@@ -197,4 +199,6 @@ func init() {
 
 	evaluationStart.Start = evaluationStartCmd.Flags().StringP("start", "", "",
 		"The starting point from which to start the evaluation")
+
+	evaluationStart.Labels = evaluationStartCmd.Flags().StringToStringP("labels", "l", nil, "Additional labels to be provided to the lighthouse service")
 }
