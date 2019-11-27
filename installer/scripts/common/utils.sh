@@ -163,22 +163,23 @@ function wait_for_istio_ingressgateway() {
 }
 
 # Waits for ip of ingress gateway (max wait time 180sec)
-function wait_for_ingress() {
+function wait_for_k8s_ingress() {
+  PROPERTY=$1;
   RETRY=0; RETRY_MAX=36;
   DOMAIN="";
 
   while [[ $RETRY -lt $RETRY_MAX ]]; do
-    DOMAIN=$(kubectl get ingress api-ingress -n keptn -o json | jq -r .status.loadBalancer.ingress[0].ip)
+    DOMAIN=$(kubectl get ingress api-ingress -n keptn -o json | jq -r .status.loadBalancer.ingress[0].${PROPERTY})
     if [[ $DOMAIN = "null" ]]; then
       DOMAIN=""
     fi
 
     if [[ "$DOMAIN" != "" ]]; then
-      print_debug "IP of ingress is available."
+      print_debug "${PROPERTY} of ingress is available."
       break
     fi
     RETRY=$[$RETRY+1]
-    print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 5s for IP of ingress to be available ..."
+    print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 5s for ${PROPERTY} of ingress to be available ..."
     sleep 5
   done
 }
