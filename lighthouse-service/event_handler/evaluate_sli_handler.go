@@ -100,6 +100,7 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 	}
 
 	evaluationResult, maximumAchievableScore, keySLIFailed := evaluateObjectives(e, sloConfig, filteredPreviousEvaluationEvents)
+	evaluationResult.Labels = e.Labels
 
 	// calculate the total score
 	err = calculateScore(maximumAchievableScore, evaluationResult, sloConfig, keySLIFailed)
