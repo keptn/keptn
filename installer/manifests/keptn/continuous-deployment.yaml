@@ -1,0 +1,289 @@
+---
+# gatekeeper-service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gatekeeper-service
+  namespace: keptn
+spec:
+  selector:
+    matchLabels:
+      run: gatekeeper-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: gatekeeper-service
+    spec:
+      containers:
+      - name: gatekeeper-service
+        image: keptn/gatekeeper-service:0.6.0.beta
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        env:
+        - name: CONFIGURATION_SERVICE
+          value: 'http://configuration-service.keptn.svc.cluster.local:8080'
+        - name: EVENTBROKER
+          value: 'http://event-broker.keptn.svc.cluster.local/keptn'
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gatekeeper-service
+  namespace: keptn
+  labels:
+    run: gatekeeper-service
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+  selector:
+    run: gatekeeper-service
+---
+## gatekeeper-service: sh.keptn.events.evaluation-done
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gatekeeper-service-evaluation-done-distributor
+  namespace: keptn
+spec:
+  selector:
+    matchLabels:
+      run: distributor
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: distributor
+    spec:
+      containers:
+      - name: distributor
+        image: keptn/distributor:0.6.0.beta
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        env:
+        - name: PUBSUB_URL
+          value: 'nats://keptn-nats-cluster'
+        - name: PUBSUB_TOPIC
+          value: 'sh.keptn.events.evaluation-done'
+        - name: PUBSUB_RECIPIENT
+          value: 'gatekeeper-service'
+---
+# helm-service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: helm-service
+  namespace: keptn
+spec:
+  selector:
+    matchLabels:
+      run: helm-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: helm-service
+    spec:
+      containers:
+      - name: helm-service
+        image: keptn/helm-service:0.6.0.beta
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "50m"
+          limits:
+            memory: "512Mi"
+            cpu: "1000m"
+        env:
+        - name: CONFIGURATION_SERVICE
+          value: 'http://configuration-service.keptn.svc.cluster.local:8080'
+        - name: EVENTBROKER
+          value: 'http://event-broker.keptn.svc.cluster.local/keptn'
+        - name: API
+          value: 'ws://api.keptn.svc.cluster.local'
+        - name: ENVIRONMENT
+          value: 'production'
+        - name: PRE_WORKFLOW_ENGINE
+          value: 'true'
+        - name: CANARY
+          value: 'deployment'
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: helm-service
+  namespace: keptn
+  labels:
+    run: helm-service
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+  selector:
+    run: helm-service
+---
+## helm-service: sh.keptn.event.service.create
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: helm-service-service-create-distributor
+  namespace: keptn
+spec:
+  selector:
+    matchLabels:
+      run: distributor
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: distributor
+    spec:
+      containers:
+      - name: distributor
+        image: keptn/distributor:0.6.0.beta
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        env:
+        - name: PUBSUB_URL
+          value: 'nats://keptn-nats-cluster'
+        - name: PUBSUB_TOPIC
+          value: 'sh.keptn.internal.event.service.create'
+        - name: PUBSUB_RECIPIENT
+          value: 'helm-service'   
+---
+## helm-service: sh.keptn.event.configuration.change
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: helm-service-configuration-change-distributor
+  namespace: keptn
+spec:
+  selector:
+    matchLabels:
+      run: distributor
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: distributor
+    spec:
+      containers:
+      - name: distributor
+        image: keptn/distributor:0.6.0.beta
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        env:
+        - name: PUBSUB_URL
+          value: 'nats://keptn-nats-cluster'
+        - name: PUBSUB_TOPIC
+          value: 'sh.keptn.event.configuration.change'
+        - name: PUBSUB_RECIPIENT
+          value: 'helm-service'
+---
+# jmeter-service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jmeter-service
+  namespace: keptn
+spec:
+  selector:
+    matchLabels:
+      run: jmeter-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: jmeter-service
+    spec:
+      containers:
+      - name: helm-service
+        image: keptn/jmeter-service:0.6.0.beta
+        ports:
+        - containerPort: 8080
+        env:
+        - name: CONFIGURATION_SERVICE
+          value: 'http://configuration-service.keptn.svc.cluster.local:8080'
+        - name: EVENTBROKER
+          value: 'http://event-broker.keptn.svc.cluster.local/keptn'
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jmeter-service
+  namespace: keptn
+  labels:
+    run: jmeter-service
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+  selector:
+    run: jmeter-service
+---
+## jmeter-service: sh.keptn.events.deployment-finished
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jmeter-service-deployment-distributor
+  namespace: keptn
+spec:
+  selector:
+    matchLabels:
+      run: distributor
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: distributor
+    spec:
+      containers:
+      - name: distributor
+        image: keptn/distributor:0.6.0.beta
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        env:
+        - name: PUBSUB_URL
+          value: 'nats://keptn-nats-cluster'
+        - name: PUBSUB_TOPIC
+          value: 'sh.keptn.events.deployment-finished'
+        - name: PUBSUB_RECIPIENT
+          value: 'jmeter-service'
