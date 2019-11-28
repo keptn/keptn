@@ -261,6 +261,11 @@ func doInstallation() error {
 			DesiredValue: *installParams.GatewayType}); err != nil {
 		return err
 	}
+	if err := utils.Replace(installerPath,
+		utils.PlaceholderReplacement{PlaceholderValue: "USE_CASE_PLACEHOLDER",
+			DesiredValue: *installParams.UseCase}); err != nil {
+		return err
+	}
 
 	// use case specific Keptn installation
 	ingress := Istio
