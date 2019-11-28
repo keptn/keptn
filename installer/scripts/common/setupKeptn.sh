@@ -75,7 +75,9 @@ case $USE_CASE in
     ## Start validation of Keptn all capabilities ##
     ################################################
     wait_for_all_pods_in_namespace "keptn"
+    wait_for_deployment_in_namespace "helm-service" "keptn"
     wait_for_deployment_in_namespace "lighthouse-service" "keptn"
+    wait_for_deployment_in_namespace "helm-service-service-create-distributor" "keptn"
     wait_for_deployment_in_namespace "lighthouse-service-tests-finished-distributor" "keptn"
     wait_for_deployment_in_namespace "lighthouse-service-start-evaluation-distributor" "keptn"
     wait_for_deployment_in_namespace "lighthouse-service-get-sli-done-distributor" "keptn"
@@ -98,7 +100,6 @@ case $USE_CASE in
     ################################################
     wait_for_all_pods_in_namespace "keptn"
     wait_for_deployment_in_namespace "gatekeeper-service" "keptn"
-    wait_for_deployment_in_namespace "helm-service" "keptn"
     wait_for_deployment_in_namespace "jmeter-service" "keptn"
     wait_for_deployment_in_namespace "lighthouse-service" "keptn"
     wait_for_deployment_in_namespace "remediation-service" "keptn"
@@ -107,7 +108,6 @@ case $USE_CASE in
     wait_for_deployment_in_namespace "lighthouse-service-start-evaluation-distributor" "keptn"
     wait_for_deployment_in_namespace "lighthouse-service-get-sli-done-distributor" "keptn"
     wait_for_deployment_in_namespace "gatekeeper-service-evaluation-done-distributor" "keptn"
-    wait_for_deployment_in_namespace "helm-service-service-create-distributor" "keptn"
     wait_for_deployment_in_namespace "helm-service-configuration-change-distributor" "keptn"
     wait_for_deployment_in_namespace "jmeter-service-deployment-distributor" "keptn"
     wait_for_deployment_in_namespace "remediation-service-problem-distributor" "keptn"

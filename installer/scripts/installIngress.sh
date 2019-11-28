@@ -12,7 +12,7 @@ case $PLATFORM in
         
     elif [ "$INGRESS" = "nginx" ]; then
         # Install nginx service mesh
-        print_info "Installing nginx on AKS"
+        print_info "Installing nginx on AKS (this might take a while)"
         kubectl apply -f ../manifests/nginx/nginx.yaml
         verify_install_step $? "Installing nginx deployment failed."
         wait_for_deployment_in_namespace "nginx-ingress-controller" "ingress-nginx"
@@ -33,7 +33,7 @@ case $PLATFORM in
         
     elif [ "$INGRESS" = "nginx" ]; then
         # Install nginx service mesh
-        print_info "Installing nginx on EKS"
+        print_info "Installing nginx on EKS (this might take a while)"
         kubectl apply -f ../manifests/nginx/nginx.yaml
         verify_install_step $? "Installing nginx deployment failed."
         wait_for_deployment_in_namespace "nginx-ingress-controller" "ingress-nginx"
@@ -58,7 +58,7 @@ case $PLATFORM in
         
     elif [ "$INGRESS" = "nginx" ]; then
         # Install nginx service mesh
-        print_info "Installing nginx on OpenShift"
+        print_info "Installing nginx on OpenShift (this might take a while)"
         kubectl apply -f ../manifests/nginx/nginx.yaml
         verify_install_step $? "Installing nginx deployment failed."
         wait_for_deployment_in_namespace "nginx-ingress-controller" "ingress-nginx"
@@ -79,7 +79,7 @@ case $PLATFORM in
         
     elif [ "$INGRESS" = "nginx" ]; then
         # Install nginx service mesh
-        print_info "Installing nginx on GKE"
+        print_info "Installing nginx on GKE (this might take a while)"
         kubectl apply -f ../manifests/nginx/nginx.yaml
         verify_install_step $? "Installing nginx deployment failed."
         wait_for_deployment_in_namespace "nginx-ingress-controller" "ingress-nginx"
@@ -100,7 +100,7 @@ case $PLATFORM in
         
     elif [ "$INGRESS" = "nginx" ]; then
         # Install nginx service mesh
-        print_info "Installing nginx on PKS"
+        print_info "Installing nginx on PKS (this might take a while)"
         kubectl apply -f ../manifests/nginx/nginx.yaml
         verify_install_step $? "Installing nginx deployment failed."
         wait_for_deployment_in_namespace "nginx-ingress-controller" "ingress-nginx"
@@ -121,7 +121,7 @@ case $PLATFORM in
         
     elif [ "$INGRESS" = "nginx" ]; then
         # Install nginx service mesh
-        print_info "Installing nginx on Kubernetes"
+        print_info "Installing nginx on Kubernetes (this might take a while)"
         kubectl apply -f ../manifests/nginx/nginx.yaml
         verify_install_step $? "Installing nginx deployment failed."
         wait_for_deployment_in_namespace "nginx-ingress-controller" "ingress-nginx"
