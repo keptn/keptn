@@ -316,16 +316,6 @@ func doInstallation() error {
 		return err
 	}
 
-	// use case specific Keptn modification
-	if *installParams.UseCase == "quality-gates" {
-		o = options{"delete", "deployment", "gatekeeper-service-evaluation-done-distributor", "-n", "keptn"}
-		o.appendIfNotEmpty(kubectlOptions)
-		_, err = keptnutils.ExecuteCommand("kubectl", o)
-		if err != nil {
-			return err
-		}
-	}
-
 	o = options{"delete", "job", "installer", "-n", "default"}
 	o.appendIfNotEmpty(kubectlOptions)
 	_, err = keptnutils.ExecuteCommand("kubectl", o)

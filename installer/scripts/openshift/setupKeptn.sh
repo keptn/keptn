@@ -53,26 +53,75 @@ verify_kubectl $? "Creating mongodb-datastore service failed."
 KEPTN_CHANNEL_URI="event-broker.keptn.svc.cluster.local/keptn"
 verify_variable "$KEPTN_CHANNEL_URI" "KEPTN_CHANNEL_URI could not be derived from keptn-channel description."
 
+# Install Keptn core and use case dependent components 
+print_debug "Deploying Keptn core"
 kubectl apply -f ../manifests/keptn/core.yaml 
-verify_kubectl $? "Deploying keptn core components failed."
-
-kubectl apply -f ../manifests/keptn/core-distributors.yaml 
-verify_kubectl $? "Deploying keptn core distributors failed."
+verify_kubectl $? "Deploying Keptn core components failed."
 
 ##############################################
-## Start validation of keptn installation   ##
+## Start validation of Keptn core           ##
 ##############################################
 wait_for_all_pods_in_namespace "keptn"
-
-wait_for_deployment_in_namespace "eventbroker-go" "keptn"
 wait_for_deployment_in_namespace "api" "keptn"
 wait_for_deployment_in_namespace "bridge" "keptn"
-wait_for_deployment_in_namespace "gatekeeper-service" "keptn"
-wait_for_deployment_in_namespace "helm-service" "keptn"
-wait_for_deployment_in_namespace "jmeter-service" "keptn"
+wait_for_deployment_in_namespace "eventbroker-go" "keptn"
 wait_for_deployment_in_namespace "shipyard-service" "keptn"
-wait_for_deployment_in_namespace "lighthouse-service" "keptn"
 wait_for_deployment_in_namespace "configuration-service" "keptn"
+wait_for_deployment_in_namespace "shipyard-service-create-project-distributor" "keptn"
+wait_for_deployment_in_namespace "shipyard-service-delete-project-distributor" "keptn"
+
+case $USE_CASE in
+  quality-gates)
+    print_debug "Deploying Keptn quality gates"
+    kubectl apply -f ../manifests/keptn/quality-gates.yaml 
+    verify_kubectl $? "Deploying Keptn quality gates components failed."
+
+    ################################################
+    ## Start validation of Keptn all capabilities ##
+    ################################################
+    wait_for_all_pods_in_namespace "keptn"
+    wait_for_deployment_in_namespace "lighthouse-service" "keptn"
+    wait_for_deployment_in_namespace "lighthouse-service-tests-finished-distributor" "keptn"
+    wait_for_deployment_in_namespace "lighthouse-service-start-evaluation-distributor" "keptn"
+    wait_for_deployment_in_namespace "lighthouse-service-get-sli-done-distributor" "keptn"
+    ;;
+  all)    
+    print_debug "Deploying Keptn continuous deployment"
+    kubectl apply -f ../manifests/keptn/continuous-deployment.yaml 
+    verify_kubectl $? "Deploying Keptn continuous deployment components failed."
+
+    print_debug "Deploying Keptn quality gates"
+    kubectl apply -f ../manifests/keptn/quality-gates.yaml 
+    verify_kubectl $? "Deploying Keptn quality gates components failed."
+
+    print_debug "Deploying Keptn continuous operations"
+    kubectl apply -f ../manifests/keptn/continuous-operations.yaml 
+    verify_kubectl $? "Deploying Keptn continuous operations components failed."
+
+    ################################################
+    ## Start validation of Keptn all capabilities ##
+    ################################################
+    wait_for_all_pods_in_namespace "keptn"
+    wait_for_deployment_in_namespace "gatekeeper-service" "keptn"
+    wait_for_deployment_in_namespace "helm-service" "keptn"
+    wait_for_deployment_in_namespace "jmeter-service" "keptn"
+    wait_for_deployment_in_namespace "lighthouse-service" "keptn"
+    wait_for_deployment_in_namespace "remediation-service" "keptn"
+    wait_for_deployment_in_namespace "wait-service" "keptn"
+    wait_for_deployment_in_namespace "lighthouse-service-tests-finished-distributor" "keptn"
+    wait_for_deployment_in_namespace "lighthouse-service-start-evaluation-distributor" "keptn"
+    wait_for_deployment_in_namespace "lighthouse-service-get-sli-done-distributor" "keptn"
+    wait_for_deployment_in_namespace "gatekeeper-service-evaluation-done-distributor" "keptn"
+    wait_for_deployment_in_namespace "helm-service-service-create-distributor" "keptn"
+    wait_for_deployment_in_namespace "helm-service-configuration-change-distributor" "keptn"
+    wait_for_deployment_in_namespace "jmeter-service-deployment-distributor" "keptn"
+    wait_for_deployment_in_namespace "remediation-service-problem-distributor" "keptn"
+    wait_for_deployment_in_namespace "wait-service-deployment-distributor" "keptn"
+    ;;
+  *)
+    echo "Use case not provided"
+    ;;
+esac
 
 if [ "$INGRESS" = "istio" ]; then
   kubectl apply -f ../manifests/keptn/keptn-gateway.yaml
