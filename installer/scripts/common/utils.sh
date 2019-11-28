@@ -162,10 +162,10 @@ function wait_for_istio_ingressgateway() {
   done
 }
 
-# Waits for ip of ingress gateway (max wait time 180sec)
+# Waits for ip of ingress gateway (max wait time 120sec)
 function wait_for_k8s_ingress() {
   PROPERTY=$1;
-  RETRY=0; RETRY_MAX=36;
+  RETRY=0; RETRY_MAX=24;
   DOMAIN="";
 
   while [[ $RETRY -lt $RETRY_MAX ]]; do
