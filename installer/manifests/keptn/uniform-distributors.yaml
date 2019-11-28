@@ -1,39 +1,39 @@
----
-## servicenow-service: sh.keptn.events.problem
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: servicenow-service-problem-distributor
-  namespace: keptn
-spec:
-  selector:
-    matchLabels:
-      run: distributor
-  replicas: 1
-  template:
-    metadata:
-      labels:
-        run: distributor
-    spec:
-      containers:
-      - name: distributor
-        image: keptn/distributor:0.6.0.beta
-        ports:
-        - containerPort: 8080
-        resources:
-          requests:
-            memory: "32Mi"
-            cpu: "50m"
-          limits:
-            memory: "128Mi"
-            cpu: "500m"
-        env:
-        - name: PUBSUB_URL
-          value: 'nats://keptn-nats-cluster'
-        - name: PUBSUB_TOPIC
-          value: 'sh.keptn.events.problem'
-        - name: PUBSUB_RECIPIENT
-          value: 'servicenow-service'
+#---
+### servicenow-service: sh.keptn.events.problem
+#apiVersion: apps/v1
+#kind: Deployment
+#metadata:
+#  name: servicenow-service-problem-distributor
+#  namespace: keptn
+#spec:
+#  selector:
+#    matchLabels:
+#      run: distributor
+#  replicas: 1
+#  template:
+#    metadata:
+#      labels:
+#        run: distributor
+#    spec:
+#      containers:
+#      - name: distributor
+#        image: keptn/distributor:0.6.0.beta
+#        ports:
+#        - containerPort: 8080
+#        resources:
+#          requests:
+#            memory: "32Mi"
+#            cpu: "50m"
+#          limits:
+#            memory: "128Mi"
+#           cpu: "500m"
+#        env:
+#        - name: PUBSUB_URL
+#          value: 'nats://keptn-nats-cluster'
+#        - name: PUBSUB_TOPIC
+#          value: 'sh.keptn.events.problem'
+#        - name: PUBSUB_RECIPIENT
+#          value: 'servicenow-service'
 ---
 ## prometheus-service sh.keptn.event.monitoring-configure-distributor
 apiVersion: apps/v1
