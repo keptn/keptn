@@ -60,8 +60,10 @@ wait_for_all_pods_in_namespace "keptn"
 wait_for_deployment_in_namespace "api" "keptn"
 wait_for_deployment_in_namespace "bridge" "keptn"
 wait_for_deployment_in_namespace "eventbroker-go" "keptn"
+wait_for_deployment_in_namespace "helm-service" "keptn"
 wait_for_deployment_in_namespace "shipyard-service" "keptn"
 wait_for_deployment_in_namespace "configuration-service" "keptn"
+wait_for_deployment_in_namespace "helm-service-service-create-distributor" "keptn"
 wait_for_deployment_in_namespace "shipyard-service-create-project-distributor" "keptn"
 wait_for_deployment_in_namespace "shipyard-service-delete-project-distributor" "keptn"
 
@@ -75,9 +77,7 @@ case $USE_CASE in
     ## Start validation of Keptn all capabilities ##
     ################################################
     wait_for_all_pods_in_namespace "keptn"
-    wait_for_deployment_in_namespace "helm-service" "keptn"
     wait_for_deployment_in_namespace "lighthouse-service" "keptn"
-    wait_for_deployment_in_namespace "helm-service-service-create-distributor" "keptn"
     wait_for_deployment_in_namespace "lighthouse-service-tests-finished-distributor" "keptn"
     wait_for_deployment_in_namespace "lighthouse-service-start-evaluation-distributor" "keptn"
     wait_for_deployment_in_namespace "lighthouse-service-get-sli-done-distributor" "keptn"
