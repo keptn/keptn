@@ -22,4 +22,6 @@ spec:
           value: GATEWAY_TYPE_PLACEHOLDER
         - name: INGRESS
           value: INGRESS_PLACEHOLDER
+        - name: USE_CASE
+          value: USE_CASE_PLACEHOLDER
       restartPolicy: OnFailure
