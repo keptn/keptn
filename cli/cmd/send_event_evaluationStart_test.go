@@ -22,6 +22,10 @@ func TestEvaluationStart(t *testing.T) {
 	buf := new(bytes.Buffer)
 	rootCmd.SetOutput(buf)
 
+	*evaluationStart.Timeframe = ""
+	*evaluationStart.Start = ""
+	*evaluationStart.End = ""
+
 	args := []string{
 		"send",
 		"event",
@@ -45,6 +49,10 @@ func TestEvaluationStartWrongFormat(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
 	buf := new(bytes.Buffer)
 	rootCmd.SetOutput(buf)
+
+	*evaluationStart.Timeframe = ""
+	*evaluationStart.Start = ""
+	*evaluationStart.End = ""
 
 	args := []string{
 		"send",
@@ -70,6 +78,10 @@ func TestEvaluationStartTimeSpecified(t *testing.T) {
 	buf := new(bytes.Buffer)
 	rootCmd.SetOutput(buf)
 
+	*evaluationStart.Timeframe = ""
+	*evaluationStart.Start = ""
+	*evaluationStart.End = ""
+
 	args := []string{
 		"send",
 		"event",
@@ -89,12 +101,15 @@ func TestEvaluationStartTimeSpecified(t *testing.T) {
 	}
 }
 
-
 func TestEvaluationStartAndEndTimeSpecified(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
 	buf := new(bytes.Buffer)
 	rootCmd.SetOutput(buf)
+
+	*evaluationStart.Timeframe = ""
+	*evaluationStart.Start = ""
+	*evaluationStart.End = ""
 
 	args := []string{
 		"send",
@@ -107,6 +122,7 @@ func TestEvaluationStartAndEndTimeSpecified(t *testing.T) {
 		fmt.Sprintf("--end=%s", "2019-07-24T10:20:12"),
 		"--mock",
 	}
+
 	rootCmd.SetArgs(args)
 	err := rootCmd.Execute()
 
@@ -120,6 +136,10 @@ func TestEvaluationStartAndEndTimeAndTimeframeSpecified(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
 	buf := new(bytes.Buffer)
 	rootCmd.SetOutput(buf)
+
+	*evaluationStart.Timeframe = ""
+	*evaluationStart.Start = ""
+	*evaluationStart.End = ""
 
 	args := []string{
 		"send",
@@ -149,6 +169,10 @@ func TestEvaluationStartAndEndTimeWrongOrder(t *testing.T) {
 	buf := new(bytes.Buffer)
 	rootCmd.SetOutput(buf)
 
+	*evaluationStart.Timeframe = ""
+	*evaluationStart.Start = ""
+	*evaluationStart.End = ""
+
 	args := []string{
 		"send",
 		"event",
@@ -162,7 +186,6 @@ func TestEvaluationStartAndEndTimeWrongOrder(t *testing.T) {
 	}
 	rootCmd.SetArgs(args)
 	err := rootCmd.Execute()
-
 	if err == nil {
 		t.Error("An error occured: expect an error as end time is before start time")
 	}

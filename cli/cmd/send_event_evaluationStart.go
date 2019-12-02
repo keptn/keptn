@@ -40,7 +40,7 @@ type evaluationStartStruct struct {
 	Service   *string `json:"service"`
 	Timeframe *string `json:"timeframe"`
 	Start     *string `json:"start"`
-	End	      *string `json:"end"`
+	End       *string `json:"end"`
 }
 
 var evaluationStart evaluationStartStruct
@@ -212,7 +212,7 @@ func getStartEndTime(startDatePoint string, endDatePoint string, timeframe strin
 	}
 
 	// last but not least: if a start date and a timeframe is provided, we set the end date to start date + timeframe
-	if startDatePoint != "" && endDatePoint == ""  && timeframe != "" {
+	if startDatePoint != "" && endDatePoint == "" && timeframe != "" {
 		minutesOffset := time.Minute * time.Duration(minutes)
 		end = start.Add(minutesOffset)
 	}
