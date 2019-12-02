@@ -35,11 +35,12 @@ import (
 )
 
 type evaluationStartStruct struct {
-	Project   *string            `json:"project"`
-	Stage     *string            `json:"stage"`
-	Service   *string            `json:"service"`
-	Timeframe *string            `json:"timeframe"`
-	Start     *string            `json:"start"`
+	Project   *string `json:"project"`
+	Stage     *string `json:"stage"`
+	Service   *string `json:"service"`
+	Timeframe *string `json:"timeframe"`
+	Start     *string `json:"start"`
+	End       *string `json:"end"`
 	Labels    *map[string]string `json:"labels"`
 }
 
@@ -56,7 +57,8 @@ the time frame that is considered in this evaluation. If a specific start point 
 a start flag is provided that takes a time in the format: 2006-01-02T15:04:05
 	
 Example:
-	keptn send event start-evaluation --project=sockshop --stage=hardening --service=carts --timeframe=5m --start=2019-10-31T11:59:59 --labels=test-id=1234,test-name=performance-test`,
+	keptn send event start-evaluation --project=sockshop --stage=hardening --service=carts --timeframe=5m --start=2019-10-31T11:59:59
+    keptn send event start-evaluation --project=sockshop --stage=hardening --service=carts --start=2019-10-31T11:59:59 --end=2019-10-31T12:04:59 --labels=test-id=1234,test-name=performance-test`,
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		return nil
@@ -75,7 +77,12 @@ Example:
 			startPoint = *evaluationStart.Start
 		}
 
-		start, end, err := getStartEndTime(startPoint, *evaluationStart.Timeframe)
+		endDatePoint := ""
+		if evaluationStart.End != nil {
+			endDatePoint = *evaluationStart.End
+		}
+
+		start, end, err := getStartEndTime(startPoint, endDatePoint, *evaluationStart.Timeframe)
 		if start == nil || end == nil || err != nil {
 			logging.PrintLog(fmt.Sprintf("Start and end time of evaluation time frame not set: %s", err.Error()), logging.QuietLevel)
 			return fmt.Errorf("Start and end time of evaluation time frame not set: %s", err.Error())
@@ -139,40 +146,86 @@ Example:
 	},
 }
 
-func getStartEndTime(startingPoint string, timeframe string) (*time.Time, *time.Time, error) {
-	end := time.Now()
-	start := time.Now()
+func getStartEndTime(startDatePoint string, endDatePoint string, timeframe string) (*time.Time, *time.Time, error) {
+	// set default values for start and end time
+	dateLayout := "2006-01-02T15:04:05"
 	var err error
 
-	errMsg := "The time frame format is invalid. Use the format [duration]m, e.g.: 5m"
+	minutes := 5 // default timeframe
 
-	i := strings.Index(timeframe, "m")
-	var minutes int
+	// input validation
+	if startDatePoint != "" && endDatePoint == "" {
+		// if a start date is set, but no end date is set, we require the timeframe to be set
+		if timeframe == "" {
+			errMsg := "Please provide a timeframe, e.g., --timeframe=5m, or an end date using --end=..."
 
-	if i > -1 {
-		minutesStr := timeframe[:i]
-		minutes, err = strconv.Atoi(minutesStr)
-		if err != nil {
 			return nil, nil, fmt.Errorf(errMsg)
 		}
-	} else {
+	}
+	if endDatePoint != "" && timeframe != "" {
+		// can not use end date and timeframe at the same time
+		errMsg := "You can not use --end together with --timeframe"
+
+		return nil, nil, fmt.Errorf(errMsg)
+	}
+	if endDatePoint != "" && startDatePoint == "" {
+		errMsg := "start date is required when using an end date"
+
 		return nil, nil, fmt.Errorf(errMsg)
 	}
 
-	if startingPoint != "" {
-		layout := "2006-01-02T15:04:05"
-		start, err = time.Parse(layout, startingPoint)
+	// parse timeframe
+	if timeframe != "" {
+		errMsg := "The time frame format is invalid. Use the format [duration]m, e.g.: 5m"
+
+		i := strings.Index(timeframe, "m")
+
+		if i > -1 {
+			minutesStr := timeframe[:i]
+			minutes, err = strconv.Atoi(minutesStr)
+			if err != nil {
+				return nil, nil, fmt.Errorf(errMsg)
+			}
+		} else {
+			return nil, nil, fmt.Errorf(errMsg)
+		}
+	}
+
+	// initialize default values for end and start time
+	end := time.Now().UTC()
+	start := time.Now().UTC().Add(-time.Duration(minutes) * time.Minute)
+
+	// Parse start date
+	if startDatePoint != "" {
+		start, err = time.Parse(dateLayout, startDatePoint)
 
 		if err != nil {
 			return nil, nil, err
 		}
+	}
 
+	// Parse end date
+	if endDatePoint != "" {
+		end, err = time.Parse(dateLayout, endDatePoint)
+
+		if err != nil {
+			return nil, nil, err
+		}
+	}
+
+	// last but not least: if a start date and a timeframe is provided, we set the end date to start date + timeframe
+	if startDatePoint != "" && endDatePoint == "" && timeframe != "" {
 		minutesOffset := time.Minute * time.Duration(minutes)
 		end = start.Add(minutesOffset)
+	}
 
-	} else {
-		minutesOffset := time.Minute * time.Duration(-minutes)
-		start = start.Add(minutesOffset)
+	// ensure end date is greater than start date
+	diff := end.Sub(start).Minutes()
+
+	if diff < 1 {
+		errMsg := "end date must be at least 1 minute after start date"
+
+		return nil, nil, fmt.Errorf(errMsg)
 	}
 
 	return &start, &end, nil
@@ -194,11 +247,12 @@ func init() {
 	evaluationStartCmd.MarkFlagRequired("service")
 
 	evaluationStart.Timeframe = evaluationStartCmd.Flags().StringP("timeframe", "", "",
-		"The time frame from which the evaluation data should be gathered")
-	evaluationStartCmd.MarkFlagRequired("timeframe")
+		"The time frame from which the evaluation data should be gathered (can not be used together with --end)")
 
 	evaluationStart.Start = evaluationStartCmd.Flags().StringP("start", "", "",
-		"The starting point from which to start the evaluation")
+		"The starting point from which to start the evaluation in UTC")
 
+	evaluationStart.End = evaluationStartCmd.Flags().StringP("end", "", "",
+		"The end point to which the evaluation data should be gathered in UTC (can not be used together with --timeframe)")
 	evaluationStart.Labels = evaluationStartCmd.Flags().StringToStringP("labels", "l", nil, "Additional labels to be provided to the lighthouse service")
 }
