@@ -41,6 +41,7 @@ type evaluationStartStruct struct {
 	Timeframe *string `json:"timeframe"`
 	Start     *string `json:"start"`
 	End       *string `json:"end"`
+	Labels    *map[string]string `json:"labels"`
 }
 
 var evaluationStart evaluationStartStruct
@@ -57,7 +58,7 @@ a start flag is provided that takes a time in the format: 2006-01-02T15:04:05
 	
 Example:
 	keptn send event start-evaluation --project=sockshop --stage=hardening --service=carts --timeframe=5m --start=2019-10-31T11:59:59
-    keptn send event start-evaluation --project=sockshop --stage=hardening --service=carts --start=2019-10-31T11:59:59 --end=2019-10-31T12:04:59`,
+    keptn send event start-evaluation --project=sockshop --stage=hardening --service=carts --start=2019-10-31T11:59:59 --end=2019-10-31T12:04:59 --labels=test-id=1234,test-name=performance-test`,
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		return nil
@@ -94,6 +95,7 @@ Example:
 			TestStrategy: "manual",
 			Start:        start.Format("2006-01-02T15:04:05.000Z"),
 			End:          end.Format("2006-01-02T15:04:05.000Z"),
+			Labels:       *evaluationStart.Labels,
 		}
 
 		keptnContext := uuid.New().String()
@@ -252,4 +254,5 @@ func init() {
 
 	evaluationStart.End = evaluationStartCmd.Flags().StringP("end", "", "",
 		"The end point to which the evaluation data should be gathered in UTC (can not be used together with --timeframe)")
+	evaluationStart.Labels = evaluationStartCmd.Flags().StringToStringP("labels", "l", nil, "Additional labels to be provided to the lighthouse service")
 }

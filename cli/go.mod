@@ -11,7 +11,7 @@ require (
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/google/uuid v1.1.1
 	github.com/gorilla/websocket v1.4.1
-	github.com/keptn/go-utils v0.4.0
+	github.com/keptn/go-utils v0.3.1-0.20191127120342-cc662133f68e
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/viper v1.4.0

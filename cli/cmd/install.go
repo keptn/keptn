@@ -261,15 +261,20 @@ func doInstallation() error {
 			DesiredValue: *installParams.GatewayType}); err != nil {
 		return err
 	}
+	if err := utils.Replace(installerPath,
+		utils.PlaceholderReplacement{PlaceholderValue: "USE_CASE_PLACEHOLDER",
+			DesiredValue: *installParams.UseCase}); err != nil {
+		return err
+	}
 
 	// use case specific Keptn installation
-	ingress := "istio"
+	ingress := Istio
 	if *installParams.UseCase == "quality-gates" {
-		ingress = "nginx"
+		ingress = Nginx
 	}
 	if err := utils.Replace(installerPath,
 		utils.PlaceholderReplacement{PlaceholderValue: "INGRESS_PLACEHOLDER",
-			DesiredValue: ingress}); err != nil {
+			DesiredValue: ingress.String()}); err != nil {
 		return err
 	}
 
@@ -311,16 +316,6 @@ func doInstallation() error {
 		return err
 	}
 
-	// use case specific Keptn modification
-	if *installParams.UseCase == "quality-gates" {
-		o = options{"delete", "deployment", "gatekeeper-service-evaluation-done-distributor", "-n", "keptn"}
-		o.appendIfNotEmpty(kubectlOptions)
-		_, err = keptnutils.ExecuteCommand("kubectl", o)
-		if err != nil {
-			return err
-		}
-	}
-
 	o = options{"delete", "job", "installer", "-n", "default"}
 	o.appendIfNotEmpty(kubectlOptions)
 	_, err = keptnutils.ExecuteCommand("kubectl", o)
@@ -329,12 +324,23 @@ func doInstallation() error {
 	}
 
 	if eks {
-		o = options{"get", "svc", "istio-ingressgateway", "-n", "istio-system",
-			"-ojsonpath={.status.loadBalancer.ingress[0].hostname}"}
-		o.appendIfNotEmpty(kubectlOptions)
-		hostname, err := keptnutils.ExecuteCommand("kubectl", o)
-		if err != nil {
-			return err
+		var hostname string
+		if ingress == Istio {
+			o = options{"get", "svc", "istio-ingressgateway", "-n", "istio-system",
+				"-ojsonpath={.status.loadBalancer.ingress[0].hostname}"}
+			o.appendIfNotEmpty(kubectlOptions)
+			hostname, err = keptnutils.ExecuteCommand("kubectl", o)
+			if err != nil {
+				return err
+			}
+		} else if ingress == Nginx {
+			o = options{"get", "ingress", "api-ingress", "-n", "keptn",
+				"-ojsonpath={.status.loadBalancer.ingress[0].hostname}"}
+			o.appendIfNotEmpty(kubectlOptions)
+			hostname, err = keptnutils.ExecuteCommand("kubectl", o)
+			if err != nil {
+				return err
+			}
 		}
 
 		fmt.Println()

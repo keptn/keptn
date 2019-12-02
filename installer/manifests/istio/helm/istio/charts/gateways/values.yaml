@@ -49,7 +49,7 @@ istio-ingressgateway:
   serviceAnnotations: {}
   podAnnotations: {}
   type: LoadBalancer #change to NodePort, ClusterIP or LoadBalancer if need be
-  externalTrafficPolicy: Local #change to Local to preserve source IP or Cluster for default behaviour or leave commented out
+  externalTrafficPolicy: Cluster #change to Local to preserve source IP or Cluster for default behaviour or leave commented out
   ports:
     ## You can add custom gateway ports
     # Note that AWS ELB will by default perform health checks on the first port
