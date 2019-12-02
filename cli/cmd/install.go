@@ -261,6 +261,11 @@ func doInstallation() error {
 			DesiredValue: *installParams.GatewayType}); err != nil {
 		return err
 	}
+	if err := utils.Replace(installerPath,
+		utils.PlaceholderReplacement{PlaceholderValue: "USE_CASE_PLACEHOLDER",
+			DesiredValue: *installParams.UseCase}); err != nil {
+		return err
+	}
 
 	// use case specific Keptn installation
 	ingress := Istio
@@ -309,16 +314,6 @@ func doInstallation() error {
 
 	if err := os.Remove(installerPath); err != nil {
 		return err
-	}
-
-	// use case specific Keptn modification
-	if *installParams.UseCase == "quality-gates" {
-		o = options{"delete", "deployment", "gatekeeper-service-evaluation-done-distributor", "-n", "keptn"}
-		o.appendIfNotEmpty(kubectlOptions)
-		_, err = keptnutils.ExecuteCommand("kubectl", o)
-		if err != nil {
-			return err
-		}
 	}
 
 	o = options{"delete", "job", "installer", "-n", "default"}
