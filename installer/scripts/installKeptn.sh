@@ -12,11 +12,10 @@ kubectl get namespaces
 verify_kubectl $? "Could not connect to Kubernetes API."
 print_info "Connection to Kubernetes API successful"
 
-# Create Keptn namespaces (the Keptn namespace is needed before
-# installing the ingress as it is installed into the Keptn namespace)
+# Create Keptn namespace 
+# The Keptn namespace is needed before installing the ingress as it is installed into the Keptn namespace
 kubectl apply -f ../manifests/keptn/namespace.yaml
 verify_kubectl $? "Creating Keptn namespace failed."
-
 
 source ./installIngress.sh
 

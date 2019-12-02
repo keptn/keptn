@@ -21,12 +21,17 @@ oc adm policy add-scc-to-group hostpath system:authenticated
 #verify_kubectl $? "Applying knative monitoring components failed."
 #wait_for_all_pods_in_namespace "knative-monitoring"
 
-# Install tiller for helm
-print_info "Installing Tiller"
-kubectl apply -f ../manifests/tiller/tiller.yaml
-helm init --service-account tiller
-print_info "Installing Tiller done"
-oc adm policy add-cluster-role-to-user cluster-admin system:serviceaccount:kube-system:tiller
+
+# Install Tiller for Helm
+if [[ "$USE_CASE" == "all" ]]; then
+  print_info "Installing Tiller"
+  kubectl apply -f ../manifests/tiller/tiller.yaml
+  helm init --service-account tiller
+  print_info "Installing Tiller done"
+  oc adm policy add-cluster-role-to-user cluster-admin system:serviceaccount:kube-system:tiller
+else
+  print_debug "Installing Tiller is skipped since use case ${USE_CASE} does not need it." 
+fi
 
 # Install keptn core services - Install keptn channels
 print_info "Installing keptn"
