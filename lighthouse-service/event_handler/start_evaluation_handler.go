@@ -89,21 +89,18 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 
 	var filters = []*keptnevents.SLIFilter{}
 
+	deployment := ""
 	if e.DeploymentStrategy != "" {
-		filter := &keptnevents.SLIFilter{
-			Key: "deployment",
-		}
 		if e.DeploymentStrategy == "blue_green_service" {
-			if e.TestStrategy == "real-user" { // e.g., remmediation use case -> wait-service
-				filter.Value = "primary"
+			if e.TestStrategy == "real-user" { // e.g., remediation use case -> wait-service
+				deployment = "primary"
 			} else {
-				filter.Value = "canary"
+				deployment = "canary"
 			}
 		} else {
 			// assert deployment_strategy == 'direct'
-			filter.Value = "direct"
+			deployment = "direct"
 		}
-		filters = append(filters, filter)
 	}
 
 	if objectives.Filter != nil {
@@ -125,7 +122,7 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 	}
 	// send a new event to trigger the SLI retrieval
 	eh.Logger.Debug("SLI provider for project " + e.Project + " is: " + sliProvider)
-	err = eh.sendInternalGetSLIEvent(keptnContext, e.Project, e.Stage, e.Service, sliProvider, indicators, e.Start, e.End, e.TestStrategy, e.DeploymentStrategy, filters, e.Labels)
+	err = eh.sendInternalGetSLIEvent(keptnContext, e.Project, e.Stage, e.Service, sliProvider, indicators, e.Start, e.End, e.TestStrategy, e.DeploymentStrategy, filters, e.Labels, deployment)
 	return nil
 }
 
@@ -168,7 +165,7 @@ func getSLIProvider(project string) (string, error) {
 	return sliProvider, nil
 }
 
-func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string, project string, stage string, service string, sliProvider string, indicators []string, start string, end string, teststrategy string, deploymentStrategy string, filters []*keptnevents.SLIFilter, labels map[string]string) error {
+func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string, project string, stage string, service string, sliProvider string, indicators []string, start string, end string, teststrategy string, deploymentStrategy string, filters []*keptnevents.SLIFilter, labels map[string]string, deployment string) error {
 	source, _ := url.Parse("lighthouse-service")
 	contentType := "application/json"
 
@@ -184,6 +181,7 @@ func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string,
 		TestStrategy:       teststrategy,
 		DeploymentStrategy: deploymentStrategy,
 		Labels:             labels,
+		Deployment:         deployment,
 	}
 	event := cloudevents.Event{
 		Context: cloudevents.EventContextV02{
