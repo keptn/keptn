@@ -2,6 +2,7 @@
 
 # Keptn
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/keptn/keptn)
+![Github Downloads](https://img.shields.io/github/downloads/keptn/keptn/total?logo=github&logoColor=white)
 [![Build Status](https://travis-ci.org/keptn/keptn.svg?branch=master)](https://travis-ci.org/keptn/keptn)
 
 Keptn is a fabric for cloud-native lifecycle automation at enterprise scale. In the current version it provides an automated setup of the Keptn core components as well as a demo application. Also included are three pre-configured use cases for the demo application: automated quality gates, runbook automation, and automated evaluation of blue/green deployments.
