@@ -28,6 +28,7 @@ func (f FeatureToggler) GetAction() string {
 	return "featuretoggle"
 }
 
+// ExecuteAction executes the remediation action
 func (f FeatureToggler) ExecuteAction(problem *keptnevents.ProblemEventData, shkeptncontext string,
 	action *keptnmodels.RemediationAction) error {
 
@@ -59,12 +60,18 @@ func (f FeatureToggler) ExecuteAction(problem *keptnevents.ProblemEventData, shk
 	return nil
 }
 
+// ResolveAction ...
 func (f FeatureToggler) ResolveAction(problem *keptnevents.ProblemEventData, shkeptncontext string,
 	action *keptnmodels.RemediationAction) error {
 	return errors.New("no resolving action for action " + f.GetAction() + " implemented")
 }
 
+// ToggleFeature sets a value for a feature flag
 func (f FeatureToggler) ToggleFeature(togglename string, togglevalue string) error {
+
+	if os.Getenv("UNLEASH_SERVER_URL") == "" || os.Getenv("UNLEASH_USER") == "" || os.Getenv("UNLEASH_TOKEN") == "" {
+		return errors.New("Unleash secret not available. Can not execute remediation action")
+	}
 
 	unleashAPIUrl := os.Getenv("UNLEASH_SERVER_URL")
 	unleashUser := os.Getenv("UNLEASH_USER")
@@ -81,10 +88,9 @@ func (f FeatureToggler) ToggleFeature(togglename string, togglevalue string) err
 	if err != nil {
 		return err
 	}
-
 	fmt.Println("unleash status code: " + strconv.Itoa(resp.StatusCode))
 
-	if resp.StatusCode != 200 || resp.StatusCode != 201 {
+	if resp.StatusCode != 200 && resp.StatusCode != 201 {
 		return errors.New("could not update feature toggle")
 	}
 
@@ -92,6 +98,10 @@ func (f FeatureToggler) ToggleFeature(togglename string, togglevalue string) err
 }
 
 func sendDTProblemComment(problemID string, comment string) error {
+	if os.Getenv("DT_TENANT") == "" || os.Getenv("DT_API_TOKEN") == "" {
+		return errors.New("Dynatrace secret not available. Can not post comments to Dyntrace tenant")
+	}
+
 	dtTenant := os.Getenv("DT_TENANT")
 	dtAPIToken := os.Getenv("DT_API_TOKEN")
 	dtAPIUrl := "https://" + dtTenant + "/api/v1/problem/details/" + problemID + "/comments"
@@ -107,11 +117,11 @@ func sendDTProblemComment(problemID string, comment string) error {
 		return err
 	}
 
-	resp, err := client.Do(req)
+	_, err = client.Do(req)
 	if err != nil {
 		return err
 	}
-	fmt.Println("dynatrace status code: " + strconv.Itoa(resp.StatusCode))
+	//fmt.Println("dynatrace status code: " + strconv.Itoa(resp.StatusCode))
 
 	return nil
 
