@@ -88,6 +88,24 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 	}
 
 	var filters = []*keptnevents.SLIFilter{}
+
+	if e.DeploymentStrategy != "" {
+		filter := &keptnevents.SLIFilter{
+			Key: "deployment",
+		}
+		if e.DeploymentStrategy == "blue_green_service" {
+			if e.TestStrategy == "real-user" { // e.g., remmediation use case -> wait-service
+				filter.Value = "primary"
+			} else {
+				filter.Value = "canary"
+			}
+		} else {
+			// assert deployment_strategy == 'direct'
+			filter.Value = "direct"
+		}
+		filters = append(filters, filter)
+	}
+
 	if objectives.Filter != nil {
 		for key, value := range objectives.Filter {
 			filter := &keptnevents.SLIFilter{
@@ -97,6 +115,7 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 			filters = append(filters, filter)
 		}
 	}
+
 	// get the SLI provider that has been configured for the project (e.g. 'dynatrace' or 'prometheus')
 	sliProvider, err := getSLIProvider(e.Project)
 	if err != nil {
