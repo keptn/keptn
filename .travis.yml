@@ -410,7 +410,6 @@ jobs:
     - cd ..
     - source ./travis-scripts/build_release.sh "${JMETER_SVC_IMAGE}" "${JMETER_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
     - cd ..
-    ### ATTENTION: please make sure installer is always the last in this list to be built
     after_script:
       - echo "The following images have been built and pushed to dockerhub:"
       - docker images | grep keptn
@@ -431,7 +430,6 @@ jobs:
       - cd ..
       - source ./travis-scripts/build_release.sh "${EVENTBROKER_IMAGE}" "${EVENTBROKER_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
       - cd ..
-    ### ATTENTION: please make sure installer is always the last in this list to be built
     after_script:
       - echo "The following images have been built and pushed to dockerhub:"
       - docker images | grep keptn
@@ -452,7 +450,6 @@ jobs:
       - cd ..
       - source ./travis-scripts/build_release.sh "${WAIT_SVC_IMAGE}" "${WAIT_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
       - cd ..
-    ### ATTENTION: please make sure installer is always the last in this list to be built
     after_script:
       - echo "The following images have been built and pushed to dockerhub:"
       - docker images | grep keptn
@@ -471,7 +468,6 @@ jobs:
       - cd ..
       - source ./travis-scripts/build_release.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
       - cd ..
-    ### ATTENTION: please make sure installer is always the last in this list to be built
     after_script:
       - echo "The following images have been built and pushed to dockerhub:"
       - docker images | grep keptn
@@ -503,7 +499,6 @@ jobs:
     - cd ..
     - source ./travis-scripts/build_master.sh "${JMETER_SVC_IMAGE}" "${JMETER_SVC_FOLDER}" "${VERSION}"
     - cd ..
-    ### ATTENTION: please make sure installer is always the last in this list to be built
 
   - stage: master (helm-service, gatekeeper-service, distributor, eventbroker)
     if: branch = master AND NOT type = pull_request
@@ -538,13 +533,6 @@ jobs:
       - cd ..
       - source ./travis-scripts/build_master.sh "${WAIT_SVC_IMAGE}" "${WAIT_SVC_FOLDER}" "${VERSION}"
       - cd ..
-      - source ./travis-scripts/build_master.sh "${LIGHTHOUSE_SVC_IMAGE}" "${LIGHTHOUSE_SVC_FOLDER}" "${VERSION}"
-      - cd ..
-      - source ./travis-scripts/build_master.sh "${MONGODB_DS_IMAGE}" "${MONGODB_DS_FOLDER}" "${VERSION}"
-      - cd ..
-      - source ./travis-scripts/build_master.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${VERSION}"
-      - cd ..
-    ### ATTENTION: please make sure installer is always the last in this list to be built
 
   - stage: master (lighthouse-service, mongodb-datastore, installer)
     if: branch = master AND NOT type = pull_request
