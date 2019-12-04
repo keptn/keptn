@@ -5,7 +5,7 @@ go 1.12
 require (
 	github.com/cloudevents/sdk-go v0.10.0
 	github.com/kelseyhightower/envconfig v1.3.0
-	github.com/keptn/go-utils v0.3.0
+	github.com/keptn/go-utils v0.5.0
 	gopkg.in/yaml.v2 v2.2.4
 )
 
