@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: servicenow-service
-        image: keptn/servicenow-service:0.1.4
+        image: keptn/servicenow-service:0.1.4.latest
         ports:
         - containerPort: 8080
         resources:
@@ -58,7 +58,7 @@ spec:
     spec:
       containers:
       - name: prometheus-service
-        image: keptn/prometheus-service:0.3.0
+        image: keptn/prometheus-service:0.3.0.latest
         ports:
         - containerPort: 8080
         - containerPort: 40000
@@ -110,7 +110,7 @@ spec:
     spec:
       containers:
       - name: prometheus-sli-service
-        image: keptn/prometheus-sli-service:0.1.0
+        image: keptn/prometheus-sli-service:0.1.0.latest
         ports:
         - containerPort: 8080
         resources:
