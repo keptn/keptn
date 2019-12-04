@@ -35,10 +35,9 @@ Therefore, this section shows the compatibility between these versions.
 - keptn/wait-service:0.6.0
 - keptn/remediation-service:0.6.0
 
-
 *Keptn uniform:*
-- keptn/dynatrace-service:0.4.0
-- keptn/dynatrace-sli-service:0.1.0
+- keptn/dynatrace-service:0.5.0
+- keptn/dynatrace-sli-service:0.2.0
 - keptn/prometheus-service:0.3.0
 - keptn/prometheus-sli-service:0.1.0
 - keptn/servicenow-service:0.1.4
