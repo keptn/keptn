@@ -16,4 +16,4 @@
 
 ## Known Limitations
 - The Quality-gates standalone version is currently not supported on OpenShift [#1197](https://github.com/keptn/keptn/issues/1197)
-- There is no new-artifact event. keptn send event new-artefact causes a configuration change event.
+- There is no new-artifact cloud event. `keptn send event new-artifact` causes a configuration change event.
