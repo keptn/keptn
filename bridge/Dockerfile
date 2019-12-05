@@ -15,6 +15,7 @@ RUN npm install
 RUN npm run build
 ENV NODE_ENV "production"
 
+# Set user
 USER myuser
 
 CMD ["sh", "-c", "cat MANIFEST && /usr/local/bin/npm start"]
