@@ -58,6 +58,11 @@ before_install:
 - cat files.txt
 - CHANGED_FILES=$(tr '\n' , < files.txt)
 
+# get current git branch name
+- GIT_BRANCH_NAME=$(git branch | grep \* | cut -d ' ' -f2)
+- BRANCH=$(if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then echo $TRAVIS_BRANCH; else echo $TRAVIS_PULL_REQUEST_BRANCH; fi)
+- echo "TRAVIS_BRANCH=$TRAVIS_BRANCH, BRANCH=$BRANCH"
+
 # configure folders and image names
 - CLI_FOLDER="cli/"
 - API_IMAGE="keptn/api"
@@ -387,11 +392,13 @@ jobs:
     if: branch =~ ^release.*$ AND NOT type = pull_request
     os: osx
     script:
+      # overwrite version for release branches based on the branch name
+      - export VERSION=${BRANCH#"release-"}
       - echo "Build keptn cli"
       - cd ./cli
       - go test ./...
       - TAG="${VERSION}-${DATE}"
-      - source ../travis-scripts/build_cli.sh "${TAG}"
+      - source ../travis-scripts/build_cli.sh "${VERSION}"
       - cd ..
 
   - stage: release (api, os-route-service, bridge, jmeter-service)
@@ -401,6 +408,8 @@ jobs:
       - docker
     script:
     - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
+    # overwrite version for release branches based on the branch name
+    - export VERSION=${BRANCH#"release-"}
     - ./writeManifest.sh
     - source ./travis-scripts/build_release.sh "${API_IMAGE}" "${API_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
     - cd ..
@@ -421,6 +430,8 @@ jobs:
       - docker
     script:
       - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
+      # overwrite version for release branches based on the branch name
+      - export VERSION=${BRANCH#"release-"}
       - ./writeManifest.sh
       - source ./travis-scripts/build_release.sh "${HELM_SVC_IMAGE}" "${HELM_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
       - cd ..
@@ -441,6 +452,8 @@ jobs:
       - docker
     script:
       - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
+      # overwrite version for release branches based on the branch name
+      - export VERSION=${BRANCH#"release-"}
       - ./writeManifest.sh
       - source ./travis-scripts/build_release.sh "${SHIPYARD_SVC_IMAGE}" "${SHIPYARD_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
       - cd ..
@@ -461,6 +474,8 @@ jobs:
       - docker
     script:
       - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
+      # overwrite version for release branches based on the branch name
+      - export VERSION=${BRANCH#"release-"}
       - ./writeManifest.sh
       - source ./travis-scripts/build_release.sh "${LIGHTHOUSE_SVC_IMAGE}" "${LIGHTHOUSE_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
       - cd ..
@@ -471,83 +486,3 @@ jobs:
     after_script:
       - echo "The following images have been built and pushed to dockerhub:"
       - docker images | grep keptn
-
-  - stage: master (cli)
-    if: branch = master AND NOT type = pull_request
-    os: osx
-    script:
-      - echo "Build keptn cli"
-      - cd ./cli
-      - go test ./...
-      - TAG="${VERSION}"
-      - source ../travis-scripts/build_cli.sh "${TAG}"
-      - cd ..
-
-  - stage: master (api, os-route-service, bridge, jmeter-service)
-    if: branch = master AND NOT type = pull_request
-    os: linux
-    services:
-      - docker
-    script:
-    - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
-    - ./writeManifest.sh
-    - source ./travis-scripts/build_master.sh "${API_IMAGE}" "${API_FOLDER}" "${VERSION}"
-    - cd ..
-    - source ./travis-scripts/build_master.sh "${OS_ROUTE_SVC_IMAGE}" "${OS_ROUTE_SVC_FOLDER}" "${VERSION}"
-    - cd ../..
-    - source ./travis-scripts/build_master.sh "${BRIDGE_IMAGE}" "${BRIDGE_FOLDER}" "${VERSION}"
-    - cd ..
-    - source ./travis-scripts/build_master.sh "${JMETER_SVC_IMAGE}" "${JMETER_SVC_FOLDER}" "${VERSION}"
-    - cd ..
-
-  - stage: master (helm-service, gatekeeper-service, distributor, eventbroker)
-    if: branch = master AND NOT type = pull_request
-    os: linux
-    services:
-      - docker
-    script:
-      - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
-      - ./writeManifest.sh
-      - source ./travis-scripts/build_master.sh "${HELM_SVC_IMAGE}" "${HELM_SVC_FOLDER}" "${VERSION}"
-      - cd ..
-      - source ./travis-scripts/build_master.sh "${GATEKEEPER_SVC_IMAGE}" "${GATEKEEPER_SVC_FOLDER}" "${VERSION}"
-      - cd ..
-      - source ./travis-scripts/build_master.sh "${DISTRIBUTOR_IMAGE}" "${DISTRIBUTOR_FOLDER}" "${VERSION}"
-      - cd ..
-      - source ./travis-scripts/build_master.sh "${EVENTBROKER_IMAGE}" "${EVENTBROKER_FOLDER}" "${VERSION}"
-      - cd ..
-
-  - stage: master (shipyard-service, configuration-service, remediation-service, wait-service)
-    if: branch = master AND NOT type = pull_request
-    os: linux
-    services:
-      - docker
-    script:
-      - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
-      - ./writeManifest.sh
-      - source ./travis-scripts/build_master.sh "${SHIPYARD_SVC_IMAGE}" "${SHIPYARD_SVC_FOLDER}" "${VERSION}"
-      - cd ..
-      - source ./travis-scripts/build_master.sh "${CONFIGURATION_SVC_IMAGE}" "${CONFIGURATION_SVC_FOLDER}" "${VERSION}"
-      - cd ..
-      - source ./travis-scripts/build_master.sh "${REMEDIATION_SVC_IMAGE}" "${REMEDIATION_SVC_FOLDER}" "${VERSION}"
-      - cd ..
-      - source ./travis-scripts/build_master.sh "${WAIT_SVC_IMAGE}" "${WAIT_SVC_FOLDER}" "${VERSION}"
-      - cd ..
-
-  - stage: master (lighthouse-service, mongodb-datastore, installer)
-    if: branch = master AND NOT type = pull_request
-    os: linux
-    services:
-      - docker
-    script:
-      - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
-      - ./writeManifest.sh
-      - source ./travis-scripts/build_master.sh "${LIGHTHOUSE_SVC_IMAGE}" "${LIGHTHOUSE_SVC_FOLDER}" "${VERSION}"
-      - cd ..
-      - source ./travis-scripts/build_master.sh "${MONGODB_DS_IMAGE}" "${MONGODB_DS_FOLDER}" "${VERSION}"
-      - cd ..
-      - source ./travis-scripts/build_master.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${VERSION}"
-      - cd ..
-    ### ATTENTION: please make sure installer is always the last in this list to be built
-
-
