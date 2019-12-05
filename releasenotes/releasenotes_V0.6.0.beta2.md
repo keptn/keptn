@@ -13,3 +13,6 @@
 
 ## Fixed Issues
 - Reset NodePorts of services in generated Helm chart [#1181](https://github.com/keptn/keptn/issues/1181)
+
+## Known Limitations
+- The Quality-gates standalone version is currently not supported on OpenShift [#1197](https://github.com/keptn/keptn/issues/1197)
