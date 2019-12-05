@@ -113,6 +113,8 @@ function wait_for_all_pods_in_namespace() {
 
   if [[ $RETRY == $RETRY_MAX ]]; then
     print_error "Pods in namespace ${NAMESPACE} are not running."
+    # show the pods that have problems
+    kubectl get pods --field-selector=status.phase!=Running -n ${NAMESPACE}
     exit 1
   fi
 }

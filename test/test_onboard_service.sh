@@ -6,7 +6,7 @@ echo "Testing onboarding for project $PROJECT ..."
 
 # Test keptn create-project and onboard
 rm -rf examples
-git clone --branch develop https://github.com/keptn/examples --single-branch
+git clone --branch master https://github.com/keptn/examples --single-branch
 cd examples/onboarding-carts
 
 echo "Creating a new project without git upstream"
