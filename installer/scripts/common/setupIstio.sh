@@ -26,6 +26,7 @@ if [[ "$GATEWAY_TYPE" == "LoadBalancer" ]]; then
   if [[ $? != 0 ]]; then
       print_error "Failed to get ingress gateway information." && exit 1
   fi
+  export INGRESS_HOST=$DOMAIN
 
   if [[ "$DOMAIN" == "null" ]]; then
       print_info "Could not get ingress gateway domain name. Trying to retrieve IP address instead."
