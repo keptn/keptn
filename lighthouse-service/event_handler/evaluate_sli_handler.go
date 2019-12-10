@@ -213,6 +213,12 @@ func evaluateObjectives(e *keptnevents.InternalGetSLIDoneEventData, sloConfig *k
 }
 
 func calculateScore(maximumAchievableScore float64, evaluationResult *keptnevents.EvaluationDoneEventData, sloConfig *keptnmodelsv2.ServiceLevelObjectives, keySLIFailed bool) error {
+	if maximumAchievableScore == 0 {
+		evaluationResult.EvaluationDetails.Result = "pass"
+		evaluationResult.Result = evaluationResult.EvaluationDetails.Result
+		evaluationResult.EvaluationDetails.Score = 100.0
+		return nil
+	}
 	totalScore := 0.0
 	for _, result := range evaluationResult.EvaluationDetails.IndicatorResults {
 		totalScore += result.Score
