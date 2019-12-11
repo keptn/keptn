@@ -188,12 +188,21 @@ func createProjectAndProcessShipyard(event cloudevents.Event, logger keptnutils.
 		if err := client.createStage(project, shipyardStage.Name, logger); err != nil {
 			return nil, fmt.Errorf("Creating stage %s failed. %s", shipyardStage.Name, err.Error())
 		}
+		if err := createNamespace(project, shipyardStage.Name, logger); err != nil {
+			return nil, err
+		}
 		if err := keptnutils.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), fmt.Sprintf("Stage %s created", shipyardStage.Name), false, "INFO"); err != nil {
 			logger.Error(fmt.Sprintf("Could not write log to websocket. %s", err.Error()))
 		}
 	}
 	// store shipyard.yaml
 	return storeResourceForProject(project.ProjectName, string(data), logger)
+}
+
+func createNamespace(project configmodels.Project, stage string, logger keptnutils.Logger) error {
+
+	namespace := project.ProjectName + "-" + stage
+	return keptnutils.CreateNamespace(true, namespace)
 }
 
 // getRemoteURLAndDeleteProject processes event and deletes project
