@@ -35,7 +35,7 @@ FROM alpine:3.7
 RUN apk add --no-cache ca-certificates
 
 ARG HELM_VERSION=3.0.1
-RUN wget https://get.helm.sh/helm-v$HELM_VERSIOn-linux-amd64.tar.gz && \
+RUN wget https://get.helm.sh/helm-v$HELM_VERSION-linux-amd64.tar.gz && \
   tar -zxvf helm-v$HELM_VERSION-linux-amd64.tar.gz && \
   mv linux-amd64/helm /bin/helm && \
   rm -rf linux-amd64
