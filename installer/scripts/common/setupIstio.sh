@@ -11,7 +11,7 @@ wait_for_crds "adapters.config.istio.io,attributemanifests.config.istio.io,autho
 # However, it did not work out. Therefore, we are using sed
 sed 's/LoadBalancer #change to NodePort, ClusterIP or LoadBalancer if need be/'$GATEWAY_TYPE'/g' ../manifests/istio/helm/istio/charts/gateways/values.yaml  > ../manifests/istio/helm/istio/charts/gateways/values_tmp.yaml
 mv ../manifests/istio/helm/istio/charts/gateways/values_tmp.yaml ../manifests/istio/helm/istio/charts/gateways/values.yaml
-helm template ../manifests/istio/helm/istio --name istio --namespace istio-system --values ../manifests/istio/helm/istio/values-istio-minimal.yaml | kubectl apply -f -
+helm template ../manifests/istio/helm/istio --namespace istio-system --values ../manifests/istio/helm/istio/values-istio-minimal.yaml | kubectl apply -f -
 verify_kubectl $? "Installing Istio failed."
 wait_for_deployment_in_namespace "istio-ingressgateway" "istio-system"
 wait_for_deployment_in_namespace "istio-pilot" "istio-system"
