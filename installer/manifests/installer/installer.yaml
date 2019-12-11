@@ -15,6 +15,7 @@ spec:
       containers:
       - name: keptn-installer
         image: agrimmer/installer:latest
+        imagePullPolicy: Always
         env:       
         - name: PLATFORM
           value: PLATFORM_PLACEHOLDER
