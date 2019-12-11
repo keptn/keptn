@@ -7,8 +7,8 @@ import (
 	"io/ioutil"
 	"os"
 
+	"helm.sh/helm/v3/pkg/chart"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/helm/pkg/proto/hapi/chart"
 
 	cloudevents "github.com/cloudevents/sdk-go"
 
@@ -116,7 +116,7 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event, loggingDone chan bool) error
 			}
 
 			if namespace != nil {
-				o.logger.Debug(fmt.Sprintf("inject Istio to the %s namespace for blue-green deployments", helm.GetUmbrellaNamespace(event.Project, stage.StageName)))
+				o.logger.Debug(fmt.Sprintf("Inject Istio to the %s namespace for blue-green deployments", helm.GetUmbrellaNamespace(event.Project, stage.StageName)))
 
 				namespace.ObjectMeta.Labels["istio-injection"] = "enabled"
 				_, err = kubeClient.Namespaces().Update(namespace)
