@@ -14,7 +14,7 @@ import (
 	"github.com/keptn/keptn/helm-service/controller/mesh"
 	"github.com/keptn/keptn/helm-service/pkg/serviceutils"
 
-	hapichart "k8s.io/helm/pkg/proto/hapi/chart"
+	"helm.sh/helm/v3/pkg/chart"
 
 	"sigs.k8s.io/yaml"
 )
@@ -141,7 +141,7 @@ func (u *UmbrellaChartHandler) GetUmbrellaChart(outputDirectory, project, stage 
 
 func (u *UmbrellaChartHandler) createRootChartResource(event *keptnevents.ServiceCreateEventData) (*configmodels.Resource, error) {
 
-	metadata := hapichart.Metadata{ApiVersion: "v1",
+	metadata := chart.Metadata{APIVersion: "v2",
 		Description: "A Helm chart for project " + event.Project + "-umbrella",
 		Name:        event.Project + "-umbrella",
 		Version:     version}
