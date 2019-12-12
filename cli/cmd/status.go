@@ -26,7 +26,7 @@ Example:
 
 		err = authenticate(endPoint.String(), apiToken)
 		if err != nil {
-			fmt.Printf("CLI cannot authenticated against Keptn cluster %s\n", endPoint.String())
+			fmt.Printf("CLI cannot be authenticated against Keptn cluster %s\n", endPoint.String())
 			return err
 		}
 		fmt.Printf("CLI is authenticated against the Keptn cluster %s\n", endPoint.String())
