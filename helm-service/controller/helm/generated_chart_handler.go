@@ -220,7 +220,7 @@ func (c *GeneratedChartHandler) generateDeployment(depl *appsv1.Deployment) (*ch
 }
 
 // GenerateMeshChart generates a chart containing the required mesh setup
-func (c *GeneratedChartHandler) GenerateMeshChart(helmUpgradeMsg string, project string, stageName string,
+func (c *GeneratedChartHandler) GenerateMeshChart(helmManifest string, project string, stageName string,
 	service string) (*chart.Chart, error) {
 
 	namespace := project + "-" + stageName
@@ -235,7 +235,7 @@ func (c *GeneratedChartHandler) GenerateMeshChart(helmUpgradeMsg string, project
 		}
 		ch := chart.Chart{Metadata: meta}
 
-		svcs := getServices(helmUpgradeMsg)
+		svcs := getServices(helmManifest)
 
 		for _, svc := range svcs {
 			// Generate virtual service for external access

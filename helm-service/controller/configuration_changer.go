@@ -81,7 +81,7 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event,
 			c.logger.Error(err.Error())
 			return err
 		}
-		if _, err := c.ApplyChart(ch, e.Project, e.Stage, e.Service, deploymentStrategy, false); err != nil {
+		if err := c.ApplyChart(ch, e.Project, e.Stage, e.Service, deploymentStrategy, false); err != nil {
 			c.logger.Error(err.Error())
 			return err
 		}
@@ -93,7 +93,7 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event,
 			c.logger.Error(err.Error())
 			return err
 		}
-		if _, err := c.ApplyChart(ch, e.Project, e.Stage, e.Service, deploymentStrategy, true); err != nil {
+		if err := c.ApplyChart(ch, e.Project, e.Stage, e.Service, deploymentStrategy, true); err != nil {
 			c.logger.Error(err.Error())
 			return err
 		}
@@ -201,18 +201,23 @@ func (c *ConfigurationChanger) applyValuesCanary(e *keptnevents.ConfigurationCha
 	if err != nil {
 		return err
 	}
-	upgradeMsg, err := c.ApplyChart(ch, e.Project, e.Stage, e.Service, deploymentStrategy, false)
+	err = c.ApplyChart(ch, e.Project, e.Stage, e.Service, deploymentStrategy, false)
 	if err != nil {
 		return err
 	}
 	onboarder := NewOnboarder(c.mesh, c.canaryLevelGen, c.logger, c.keptnDomain)
 	if onboarder.IsGeneratedChartEmpty(genChart) {
-		genChart, err = onboarder.OnboardGeneratedService(upgradeMsg, e.Project, e.Stage, e.Service, deploymentStrategy)
+		manifest, err := c.getManifest(e.Project, e.Stage, e.Service, false)
+		if err != nil {
+			return err
+		}
+
+		genChart, err = onboarder.OnboardGeneratedService(manifest, e.Project, e.Stage, e.Service, deploymentStrategy)
 		if err != nil {
 			return err
 		}
 		if deploymentStrategy == keptnevents.Direct {
-			_, err := c.ApplyChart(genChart, e.Project, e.Stage, e.Service, deploymentStrategy, true)
+			err := c.ApplyChart(genChart, e.Project, e.Stage, e.Service, deploymentStrategy, true)
 			if err != nil {
 				return err
 			}
@@ -386,14 +391,14 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 		if err != nil {
 			return err
 		}
-		if _, err := c.ApplyChart(ch, e.Project, e.Stage, e.Service, deploymentStrategy, true); err != nil {
+		if err := c.ApplyChart(ch, e.Project, e.Stage, e.Service, deploymentStrategy, true); err != nil {
 			return err
 		}
 		userChart, err := keptnutils.GetChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, false), url.String())
 		if err != nil {
 			return err
 		}
-		if _, err := c.ApplyChartWithReplicas(userChart, e.Project, e.Stage, e.Service,
+		if err := c.ApplyChartWithReplicas(userChart, e.Project, e.Stage, e.Service,
 			deploymentStrategy, false, 0); err != nil {
 			return err
 		}
@@ -403,17 +408,17 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 		if err != nil {
 			return err
 		}
-		if _, err := c.ApplyChart(ch, e.Project, e.Stage, e.Service, deploymentStrategy, true); err != nil {
+		if err := c.ApplyChart(ch, e.Project, e.Stage, e.Service, deploymentStrategy, true); err != nil {
 			return err
 		}
 
 		chartGenerator := helm.NewGeneratedChartHandler(c.mesh, c.canaryLevelGen, c.keptnDomain)
-		upgradeMsg, err := c.getManifest(e.Project, e.Stage, e.Service, false)
+		manifest, err := c.getManifest(e.Project, e.Stage, e.Service, false)
 		if err != nil {
 			c.logger.Error(err.Error())
 			return err
 		}
-		genChart, err := chartGenerator.GenerateDuplicateManagedChart(upgradeMsg, e.Project, e.Stage, e.Service)
+		genChart, err := chartGenerator.GenerateDuplicateManagedChart(manifest, e.Project, e.Stage, e.Service)
 		if err != nil {
 			c.logger.Error(err.Error())
 			return err
@@ -428,7 +433,7 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 		if err := keptnutils.StoreChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, true), genChartData, url.String()); err != nil {
 			return err
 		}
-		if _, err := c.ApplyChart(genChart, e.Project, e.Stage, e.Service, deploymentStrategy, true); err != nil {
+		if err := c.ApplyChart(genChart, e.Project, e.Stage, e.Service, deploymentStrategy, true); err != nil {
 			return err
 		}
 
@@ -436,14 +441,14 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 		if err != nil {
 			return err
 		}
-		if _, err := c.ApplyChart(genChart, e.Project, e.Stage, e.Service, deploymentStrategy, true); err != nil {
+		if err := c.ApplyChart(genChart, e.Project, e.Stage, e.Service, deploymentStrategy, true); err != nil {
 			return err
 		}
 		userChart, err := keptnutils.GetChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, false), url.String())
 		if err != nil {
 			return err
 		}
-		if _, err := c.ApplyChartWithReplicas(userChart, e.Project, e.Stage, e.Service,
+		if err := c.ApplyChartWithReplicas(userChart, e.Project, e.Stage, e.Service,
 			deploymentStrategy, false, 0); err != nil {
 			return err
 		}
@@ -453,7 +458,7 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 		if err != nil {
 			return err
 		}
-		if _, err := c.ApplyChart(ch, e.Project, e.Stage, e.Service, deploymentStrategy, true); err != nil {
+		if err := c.ApplyChart(ch, e.Project, e.Stage, e.Service, deploymentStrategy, true); err != nil {
 			return err
 		}
 	}
@@ -478,7 +483,7 @@ func (c *ConfigurationChanger) getManifest(project, stage, service string, gener
 // ApplyChart applies the chart of the provided service.
 // Furthermore, this function waits until all deployments in the namespace are ready.
 func (c *ConfigurationChanger) ApplyChart(ch *chart.Chart, project, stage, service string,
-	deploymentStrategy keptnevents.DeploymentStrategy, generated bool) (string, error) {
+	deploymentStrategy keptnevents.DeploymentStrategy, generated bool) error {
 
 	return c.ApplyChartWithReplicas(ch, project, stage, service, deploymentStrategy, generated, -1)
 }
@@ -486,7 +491,7 @@ func (c *ConfigurationChanger) ApplyChart(ch *chart.Chart, project, stage, servi
 // ApplyChartWithReplicas applies the chart of the provided service and additionally sets the replicas
 // Furthermore, this function waits until all deployments in the namespace are ready.
 func (c *ConfigurationChanger) ApplyChartWithReplicas(ch *chart.Chart, project, stage, service string,
-	deploymentStrategy keptnevents.DeploymentStrategy, generated bool, replicaCount int) (string, error) {
+	deploymentStrategy keptnevents.DeploymentStrategy, generated bool, replicaCount int) error {
 
 	releaseName := helm.GetReleaseName(project, stage, service, generated)
 	namespace := c.canaryLevelGen.GetNamespace(project, stage, generated)
@@ -495,13 +500,13 @@ func (c *ConfigurationChanger) ApplyChartWithReplicas(ch *chart.Chart, project, 
 	if len(ch.Templates) > 0 {
 		helmChartDir, err := ioutil.TempDir("", "")
 		if err != nil {
-			return "", fmt.Errorf("Error when creating temporary directory: %s", err.Error())
+			return fmt.Errorf("Error when creating temporary directory: %s", err.Error())
 		}
 		defer os.RemoveAll(helmChartDir)
 
 		chartPath, err := chartutil.Save(ch, helmChartDir)
 		if err != nil {
-			return "", fmt.Errorf("Error when saving chart into temporary directory %s: %s", helmChartDir, err.Error())
+			return fmt.Errorf("Error when saving chart into temporary directory %s: %s", helmChartDir, err.Error())
 		}
 
 		deploymentName := getDeploymentName(deploymentStrategy, generated)
@@ -521,18 +526,18 @@ func (c *ConfigurationChanger) ApplyChartWithReplicas(ch *chart.Chart, project, 
 		}
 		c.logger.Debug(msg)
 		if err != nil {
-			return "", fmt.Errorf("Error when upgrading chart %s in namespace %s: %s",
+			return fmt.Errorf("Error when upgrading chart %s in namespace %s: %s",
 				releaseName, namespace, err.Error())
 		}
 
 		if err := keptnutils.WaitForDeploymentsInNamespace(getInClusterConfig(), namespace); err != nil {
-			return "", fmt.Errorf("Error when waiting for deployments in namespace %s: %s", namespace, err.Error())
+			return fmt.Errorf("Error when waiting for deployments in namespace %s: %s", namespace, err.Error())
 		}
 		c.logger.Info(fmt.Sprintf("Finished upgrading chart %s in namespace %s", releaseName, namespace))
-		return msg, nil
+		return nil
 	}
 	c.logger.Debug("Upgrade not done as this is an empty chart")
-	return "", nil
+	return nil
 }
 
 // ApplyDirectory applies the provided directory
