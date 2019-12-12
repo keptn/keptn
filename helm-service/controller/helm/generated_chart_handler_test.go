@@ -3,264 +3,104 @@ package helm
 import (
 	"testing"
 
-	"github.com/keptn/keptn/helm-service/pkg/helmtest"
 	"github.com/stretchr/testify/assert"
 )
 
-const projectName = "sockshop"
-const serviceName = "carts"
+const helmManifestResource = `
+---
+# Source: carts/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata: 
+  name: carts
+spec: 
+  type: ClusterIP
+  ports: 
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: 8080
+  selector: 
+    app: carts
+---
+# Source: carts/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: carts
+spec:
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 0
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: carts
+  template:
+    metadata: 
+      labels:
+        app: carts
+    spec:
+      containers:
+      - name: carts
+        image: "docker.io/keptnexamples/carts:0.10.1"
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http
+          protocol: TCP
+          containerPort: 8080
+        env:
+        - name: DT_CUSTOM_PROP
+          value: "keptn_project=sockshop keptn_service=carts keptn_stage=dev keptn_deployment=direct"
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: "metadata.name"
+        - name: DEPLOYMENT_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: "metadata.labels['deployment']"
+        - name: CONTAINER_IMAGE
+          value: "docker.io/keptnexamples/carts:0.10.1"
+        - name: KEPTN_PROJECT
+          value: "carts"
+        - name: KEPTN_STAGE
+          valueFrom:
+            fieldRef:
+              fieldPath: "metadata.namespace"
+        - name: KEPTN_SERVICE
+          value: "carts"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 15
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 15
+        resources:
+          limits:
+              cpu: 1000m
+              memory: 2048Mi
+          requests:
+              cpu: 500m
+              memory: 1024Mi`
 
-var cartsCanaryIstioDestinationRuleGen = helmtest.GeneratedResource{
-	URI: "templates/carts-canary-istio-destinationrule.yaml",
-	FileContent: []string{`
-{
-  "apiVersion": "networking.istio.io/v1alpha3",
-  "kind": "DestinationRule",
-  "metadata": {
-    "creationTimestamp": null,
-    "name": "carts-canary"
-  },
-  "spec": {
-    "host": "carts-canary.sockshop-production.svc.cluster.local"
-  }
-}
-`},
-}
+func TestGetServices(t *testing.T) {
 
-var cartsIstioVirtualserviceGen = helmtest.GeneratedResource{
-	URI: "templates/carts-istio-virtualservice.yaml",
-	FileContent: []string{`
-{
-  "apiVersion": "networking.istio.io/v1alpha3",
-  "kind": "VirtualService",
-  "metadata": {
-    "creationTimestamp": null,
-    "name": "carts"
-  },
-  "spec": {
-    "gateways": [
-      "sockshop-production-gateway.sockshop-production",
-      "mesh"
-    ],
-    "hosts": [
-      "carts.sockshop-production.mydomain.sh",
-      "carts",
-      "carts.sockshop-production"
-    ],
-    "http": [
-      {
-        "route": [
-          {
-            "destination": {
-              "host": "carts-canary.sockshop-production.svc.cluster.local"
-            }
-          },
-          {
-            "destination": {
-              "host": "carts-primary.sockshop-production.svc.cluster.local"
-            },
-            "weight": 100
-          }
-        ]
-      }
-    ]
-  }
-}
-`},
-}
-
-var cartsPrimaryIstioDestinationRuleGen = helmtest.GeneratedResource{
-	URI: "templates/carts-primary-istio-destinationrule.yaml",
-	FileContent: []string{`
-{
-  "apiVersion": "networking.istio.io/v1alpha3",
-  "kind": "DestinationRule",
-  "metadata": {
-    "creationTimestamp": null,
-    "name": "carts-primary"
-  },
-  "spec": {
-    "host": "carts-primary.sockshop-production.svc.cluster.local"
-  }
-}
-`},
-}
-
-var deploymentGen = helmtest.GeneratedResource{
-	URI: "templates/deployment.yml",
-	FileContent: []string{`
-{
-  "apiVersion": "apps/v1",
-  "kind": "Deployment",
-  "metadata": {
-    "creationTimestamp": null,
-    "name": "carts-primary"
-  },
-  "spec": {
-    "replicas" : 1,
-    "selector": {
-      "matchLabels": {
-        "app": "carts-primary"
-      }
-    },
-    "strategy": {
-      "rollingUpdate": {
-        "maxUnavailable": 0
-      },
-      "type": "RollingUpdate"
-    },
-    "template": {
-      "metadata": {
-        "creationTimestamp": null,
-        "labels": {
-          "app": "carts-primary"
-        }
-      },
-      "spec": {
-        "containers": [
-          {            
-            "image": "docker.io/keptnexamples/carts:0.8.1",
-            "imagePullPolicy": "IfNotPresent",
-            "livenessProbe": {
-              "httpGet": {
-                "path": "/health",
-                "port": 8080
-              },
-              "initialDelaySeconds": 60,
-              "periodSeconds": 10,
-              "timeoutSeconds": 15
-            },
-            "name": "carts",
-            "ports": [
-              {
-                "containerPort": 8080,
-                "name": "http",
-                "protocol": "TCP"
-              }
-            ],
-            "readinessProbe": {
-              "httpGet": {
-                "path": "/health",
-                "port": 8080
-              },
-              "initialDelaySeconds": 60,
-              "periodSeconds": 10,
-              "timeoutSeconds": 15
-            },
-            "resources": {
-              "limits": {
-                "cpu": "500m",
-                "memory": "2Gi"
-              },
-              "requests": {
-                "cpu": "250m",
-                "memory": "1Gi"
-              }
-            }
-          }
-        ]
-      }
-    }
-  },
-  "status": {
-  }
-}`},
+	services := getServices(helmManifestResource)
+	assert.Equal(t, 1, len(services))
 }
 
-var serviceGen = helmtest.GeneratedResource{
-	URI: "templates/service.yaml",
-	FileContent: []string{`
-{
-  "apiVersion": "v1",
-  "kind": "Service",
-  "metadata": {
-    "creationTimestamp": null,
-    "name": "carts-canary"
-  },
-  "spec": {
-    "ports": [
-      {
-        "name": "http",
-        "port": 80,
-        "protocol": "TCP",
-        "targetPort": 8080
-      }
-    ],
-    "selector": {
-      "app": "carts"
-    },
-    "type": "LoadBalancer"
-  },
-  "status": {
-    "loadBalancer": {
-    }
-  }
-}`, `
-{
-  "apiVersion": "v1",
-  "kind": "Service",
-  "metadata": {
-    "creationTimestamp": null,
-    "name": "carts-primary"
-  },
-  "spec": {
-    "ports": [
-      {
-        "name": "http",
-        "port": 80,
-        "protocol": "TCP",
-        "targetPort": 8080
-      }
-    ],
-    "selector": {
-      "app": "carts-primary"
-    },
-    "type": "LoadBalancer"
-  },
-  "status": {
-    "loadBalancer": {
-    }
-  }
-}`}}
+func TestGetDeployments(t *testing.T) {
 
-var valuesGen = helmtest.GeneratedResource{
-	URI: "values.yaml",
-	FileContent: []string{`
-{
-  "image": "docker.io/keptnexamples/carts:0.8.1",
-  "replicas": 1
-}`},
-}
-
-func TestGetServiceNames(t *testing.T) {
-
-	const input = `NAME:   nginx-dev-nginx-service
-LAST DEPLOYED: Fri Sep 27 13:24:57 2019
-NAMESPACE: nginx-dev
-STATUS: DEPLOYED
-
-RESOURCES:
-==> v1/ConfigMap
-NAME                           DATA  AGE
-nginx-dev-nginx-service-nginx  2     13s
-
-==> v1/Service
-NAME   TYPE       CLUSTER-IP    EXTERNAL-IP  PORT(S)   AGE
-nginx  ClusterIP  10.60.32.169  <none>       8888/TCP  13s
-
-==> v1/Deployment
-NAME   DESIRED  CURRENT  UP-TO-DATE  AVAILABLE  AGE
-nginx  1        1        1           1          13s
-
-==> v1/Pod(related)
-NAME                                 READY  STATUS     RESTARTS  AGE
-nginx-7dc78b5869-4f4dp               1/1    Running    0         13s
-nginx-dev-nginx-service-nginx-c6jgz  0/1    Completed  0         11s
-
-
-
-`
-	services, err := getServiceNames(input)
-	assert.Nil(t, err)
-	assert.Equal(t, []string{"nginx"}, services)
+	deployments := getDeployments(helmManifestResource)
+	assert.Equal(t, 1, len(deployments))
 }

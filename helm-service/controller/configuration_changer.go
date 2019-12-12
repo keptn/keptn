@@ -408,7 +408,7 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 		}
 
 		chartGenerator := helm.NewGeneratedChartHandler(c.mesh, c.canaryLevelGen, c.keptnDomain)
-		upgradeMsg, err := c.SimulateApplyChart(e.Project, e.Stage, e.Service, deploymentStrategy, false)
+		upgradeMsg, err := c.getManifest(e.Project, e.Stage, e.Service, false)
 		if err != nil {
 			c.logger.Error(err.Error())
 			return err
@@ -461,49 +461,18 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 	return nil
 }
 
-// SimulateApplyChart
-func (c *ConfigurationChanger) SimulateApplyChart(project, stage, service string,
-	deploymentStrategy keptnevents.DeploymentStrategy, generated bool) (string, error) {
+// getManifest
+func (c *ConfigurationChanger) getManifest(project, stage, service string, generated bool) (string, error) {
 
 	releaseName := helm.GetReleaseName(project, stage, service, generated)
 	namespace := c.canaryLevelGen.GetNamespace(project, stage, generated)
-	c.logger.Info(fmt.Sprintf("Start dry-run of chart %s in namespace %s", releaseName, namespace))
-
-	url, err := serviceutils.GetConfigServiceURL()
+	msg, err := keptnutils.ExecuteCommand("helm", []string{"get", "manifest", releaseName,
+		"--namespace", namespace})
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("Error when quering the manifest of chart %s in namespace %s: %s",
+			releaseName, namespace, err.Error())
 	}
-
-	ch, err := keptnutils.GetChart(project, service, stage, helm.GetChartName(service, generated), url.String())
-	if err != nil {
-		return "", fmt.Errorf("Error when reading chart %s: %s", helm.GetChartName(service, generated), err.Error())
-	}
-	if len(ch.Templates) > 0 {
-		helmChartDir, err := ioutil.TempDir("", "")
-		if err != nil {
-			return "", fmt.Errorf("Error when creating temporary directory: %s", err.Error())
-		}
-		defer os.RemoveAll(helmChartDir)
-
-		chartPath, err := chartutil.Save(ch, helmChartDir)
-		if err != nil {
-			return "", fmt.Errorf("Error when saving chart into temporary directory %s: %s", helmChartDir, err.Error())
-		}
-
-		deploymentName := getDeploymentName(deploymentStrategy, generated)
-		msg, err := keptnutils.ExecuteCommand("helm", []string{"upgrade", "--install", releaseName,
-			chartPath, "--namespace", namespace, "--dry-run",
-			"--set", "keptn.project=" + project, "--set", "keptn.stage=" + stage,
-			"--set", "keptn.service=" + service, "--set", "keptn.deployment=" + deploymentName})
-		if err != nil {
-			return "", fmt.Errorf("Error when making a dry run of chart %s in namespace %s: %s",
-				releaseName, namespace, err.Error())
-		}
-		c.logger.Debug(msg)
-		return msg, nil
-	}
-	c.logger.Debug("Upgrade not done as this is an empty chart")
-	return "", nil
+	return msg, nil
 }
 
 // ApplyChart applies the chart of the provided service.
