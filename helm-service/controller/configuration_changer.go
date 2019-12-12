@@ -562,7 +562,7 @@ func (c *ConfigurationChanger) ApplyChartWithReplicas(ch *chart.Chart, project, 
 		c.logger.Info(fmt.Sprintf("Finished upgrading chart %s in namespace %s", releaseName, namespace))
 		return msg, nil
 	}
-	c.logger.Info("Upgrade not done as this is an empty chart")
+	c.logger.Debug("Upgrade not done as this is an empty chart")
 	return "", nil
 }
 
