@@ -118,6 +118,9 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event, loggingDone chan bool) error
 			if namespace != nil {
 				o.logger.Debug(fmt.Sprintf("Inject Istio to the %s namespace for blue-green deployments", helm.GetUmbrellaNamespace(event.Project, stage.StageName)))
 
+				if namespace.ObjectMeta.Labels == nil {
+					namespace.ObjectMeta.Labels = make(map[string]string)
+				}
 				namespace.ObjectMeta.Labels["istio-injection"] = "enabled"
 				_, err = kubeClient.Namespaces().Update(namespace)
 				if err != nil {
