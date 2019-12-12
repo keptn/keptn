@@ -205,9 +205,9 @@ export default {
         }
         if (canary.action === 'set') {
           if (canary.value !== undefined) {
-            return `Settting traffic percentage for canary deployment to ${canary.value}`;
+            return `Setting traffic percentage for canary deployment to ${canary.value}`;
           }
-          return 'Settting traffic percentage for canary deploymen';
+          return 'Setting traffic percentage for canary deployment';
         }
         if (canary.action === 'discard') {
           return 'Discarding deployment and reverting back to latest stable version';
