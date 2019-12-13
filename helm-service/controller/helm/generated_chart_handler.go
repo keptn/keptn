@@ -114,12 +114,6 @@ func resetService(svc *corev1.Service) {
 	svc.Kind = "Service"
 	svc.APIVersion = "v1"
 	svc.Namespace = ""
-	svc.Spec.ClusterIP = ""
-	svc.Spec.LoadBalancerIP = ""
-	svc.Spec.ExternalIPs = nil
-	for idx := range svc.Spec.Ports {
-		svc.Spec.Ports[idx].NodePort = 0
-	}
 	svc.Status = corev1.ServiceStatus{}
 }
 
