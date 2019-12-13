@@ -136,15 +136,18 @@ Example:
 		}
 
 		// Determine installer version
-		if (installParams.InstallerVersion == nil || *installParams.InstallerVersion == "") &&
-			utils.IsOfficialKeptnVersion(Version) {
-			installParams.Image = "keptn/installer"
-			installParams.Tag = Version
-		} else if installParams.InstallerVersion == nil || *installParams.InstallerVersion == "" {
-			installParams.Image = "keptn/installer"
-			installParams.Tag = "latest"
-		} else {
+		if installParams.InstallerVersion != nil && *installParams.InstallerVersion != "" {
 			installParams.Image, installParams.Tag = utils.SplitImageName(*installParams.InstallerVersion)
+		} else if utils.IsOfficialKeptnVersion(Version) {
+			installParams.Image = "docker.io/keptn/installer"
+			installParams.Tag = Version
+			version := installParams.Image + ":" + installParams.Tag
+			installParams.InstallerVersion = &version
+		} else {
+			installParams.Image = "docker.io/keptn/installer"
+			installParams.Tag = "latest"
+			version := installParams.Image + ":" + installParams.Tag
+			installParams.InstallerVersion = &version
 		}
 
 		err = utils.CheckImageAvailability(installParams.Image, installParams.Tag)
@@ -152,7 +155,8 @@ Example:
 			return fmt.Errorf("Installer image not found under: %v", err)
 		}
 
-		logging.PrintLog(fmt.Sprintf("Used Installer version: %s:%s", installParams.Image, installParams.Tag), logging.InfoLevel)
+		logging.PrintLog(fmt.Sprintf("Used Installer version: %s:%s",
+			installParams.Image, installParams.Tag), logging.InfoLevel)
 
 		if p.checkRequirements() != nil {
 			return err
