@@ -292,20 +292,26 @@ func doInstallation() error {
 	_, pks := p.(*pksPlatform)
 	_, k8s := p.(*kubernetesPlatform)
 	if gke || aks || k8s || eks || pks {
-		options := options{"apply", "-f", "-", rbac}
-		options.appendIfNotEmpty(kubectlOptions)
-		_, err := keptnutils.ExecuteCommand("kubectl", options)
+		o := options{"apply", "-f", "-"}
+		o.appendIfNotEmpty(kubectlOptions)
+
+		cmd := exec.Command("kubectl", o...)
+		cmd.Stdin = strings.NewReader(rbac)
+		out, err := cmd.CombinedOutput()
 		if err != nil {
-			return fmt.Errorf("Error while applying RBAC for installer pod: %s \nAborting installation", err.Error())
+			return fmt.Errorf("Error while applying RBAC: %s \n%s\nAborting installation", err.Error(), string(out))
 		}
 	}
 
 	logging.PrintLog("Deploying Keptn installer pod ...", logging.InfoLevel)
 
-	o := options{"apply", "-f", "-", installerManifest}
+	o := options{"apply", "-f", "-"}
 	o.appendIfNotEmpty(kubectlOptions)
-	if _, err := keptnutils.ExecuteCommand("kubectl", o); err != nil {
-		return fmt.Errorf("Error while deploying keptn installer pod: %s \nAborting installation", err.Error())
+	cmd := exec.Command("kubectl", o...)
+	cmd.Stdin = strings.NewReader(installerManifest)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("Error while applying installer job: %s \n%s\nAborting installation", err.Error(), string(out))
 	}
 
 	logging.PrintLog("Installer pod deployed successfully.", logging.InfoLevel)
