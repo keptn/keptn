@@ -32,6 +32,8 @@ const gatewaySuffix = "/installer/manifests/keptn/keptn-gateway.yaml"
 
 var platformID *string
 
+const installerPrefixURL = "https://raw.githubusercontent.com/keptn/keptn/"
+
 // domainCmd represents the domain command
 var domainCmd = &cobra.Command{
 	Use:   "domain MY.DOMAIN.COM",

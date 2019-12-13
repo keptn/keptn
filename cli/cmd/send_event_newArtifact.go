@@ -18,8 +18,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 	"net/url"
 	"strings"
 
@@ -32,6 +30,7 @@ import (
 	keptnevents "github.com/keptn/go-utils/pkg/events"
 
 	"github.com/keptn/keptn/cli/pkg/logging"
+	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
 	"github.com/keptn/keptn/cli/utils/websockethelper"
 	"github.com/spf13/cobra"
@@ -61,8 +60,11 @@ Example:
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		trimmedImage := strings.TrimSuffix(*newArtifact.Image, "/")
 		newArtifact.Image = &trimmedImage
-		setTag()
-		return checkImageAvailability()
+
+		if newArtifact.Tag == nil || *newArtifact.Tag == "" {
+			*newArtifact.Image, *newArtifact.Tag = utils.SplitImageName(*newArtifact.Image)
+		}
+		return utils.CheckImageAvailability(*newArtifact.Image, *newArtifact.Tag)
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		endPoint, apiToken, err := credentialmanager.GetCreds()
@@ -128,62 +130,6 @@ Example:
 		fmt.Println("Skipping send new-artifact due to mocking flag set to true")
 		return nil
 	},
-}
-
-func setTag() {
-
-	if newArtifact.Tag != nil && *newArtifact.Tag != "" {
-		// The tag is already set
-		return
-	}
-
-	// Get image name without Docker-organization
-	splitsIntoImage := strings.Split(*newArtifact.Image, "/")
-	imageName := splitsIntoImage[len(splitsIntoImage)-1]
-
-	splitsIntoTag := strings.Split(imageName, ":")
-	if len(splitsIntoTag) == 2 {
-		// Tag is provided in the image name
-		tag := splitsIntoTag[len(splitsIntoTag)-1]
-		newArtifact.Tag = &tag
-		imageWithoutTag := strings.TrimSuffix(*newArtifact.Image, ":"+*newArtifact.Tag)
-		newArtifact.Image = &imageWithoutTag
-		return
-	}
-	// Otherwise use latest tag
-	latest := "latest"
-	newArtifact.Tag = &latest
-}
-
-func checkImageAvailability() error {
-
-	if strings.HasPrefix(*newArtifact.Image, "docker.io/") {
-		resp, err := http.Get("https://index.docker.io/v1/repositories/" +
-			strings.TrimPrefix(*newArtifact.Image, "docker.io/") + "/tags/" + *newArtifact.Tag)
-		if err != nil {
-			return err
-		}
-		if resp.StatusCode == http.StatusOK {
-			return nil
-		}
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return err
-		}
-		return errors.New("Provided image not found: " + string(body))
-	} else if strings.HasPrefix(*newArtifact.Image, "quay.io/") {
-		resp, err := http.Get("https://quay.io/api/v1/repository/" +
-			strings.TrimPrefix(*newArtifact.Image, "quay.io/") + "/tag/" + *newArtifact.Tag + "/images")
-		if err != nil {
-			return err
-		}
-		if resp.StatusCode == http.StatusOK {
-			return nil
-		}
-		return errors.New("Provided image not found: " + resp.Status)
-	}
-	logging.PrintLog("Availability of provided image cannot be checked.", logging.InfoLevel)
-	return nil
 }
 
 func init() {
