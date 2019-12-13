@@ -164,9 +164,9 @@ function wait_for_istio_ingressgateway() {
   done
 }
 
-# Waits for hostname or ip of ingress gateway (max wait time 75sec)
+# Waits for hostname or ip of ingress gateway (max wait time 120sec)
 function wait_for_k8s_ingress() {
-  RETRY=0; RETRY_MAX=15;
+  RETRY=0; RETRY_MAX=24;
   DOMAIN="";
 
   while [[ $RETRY -lt $RETRY_MAX ]]; do
