@@ -4,6 +4,8 @@ package restapi
 
 import (
 	"crypto/tls"
+	"github.com/keptn/keptn/api/restapi/operations/project_resource"
+	"github.com/keptn/keptn/api/restapi/operations/stage_resource"
 	"log"
 	"net/http"
 	"os"
@@ -79,6 +81,14 @@ func configureAPI(api *operations.API) http.Handler {
 	api.ServicePostProjectProjectNameServiceHandler = service.PostProjectProjectNameServiceHandlerFunc(handlers.PostServiceHandlerFunc)
 
 	// Resource endpoints
+	api.ProjectResourcePostProjectProjectNameResourceHandler =
+		project_resource.PostProjectProjectNameResourceHandlerFunc(
+			handlers.PostProjectProjectNameResourceHandlerFunc)
+
+	api.StageResourcePostProjectProjectNameStageStageNameResourceHandler =
+		stage_resource.PostProjectProjectNameStageStageNameResourceHandlerFunc(
+			handlers.PostProjectProjectNameStageStageNameResourceHandlerFunc)
+
 	api.ServiceResourcePostProjectProjectNameStageStageNameServiceServiceNameResourceHandler =
 		service_resource.PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 			handlers.PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc)

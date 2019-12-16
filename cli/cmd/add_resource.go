@@ -62,11 +62,11 @@ Example:
 
 		resourceHandler := apiutils.NewAuthenticatedResourceHandler(endPoint.Host, apiToken, "x-token", nil, "https")
 
-		if *addResourceCmdParams.Service != "" && *addResourceCmdParams.Stage != "" && *addResourceCmdParams.Project != "" {
+		if (addResourceCmdParams.Service != nil && *addResourceCmdParams.Service != "") && (addResourceCmdParams.Stage != nil && *addResourceCmdParams.Stage != "") {
 			logging.PrintLog("Adding resource "+*addResourceCmdParams.Resource+" to service "+*addResourceCmdParams.Service+" in stage "+*addResourceCmdParams.Stage+" in project "+*addResourceCmdParams.Project, logging.InfoLevel)
-		} else if *addResourceCmdParams.Service == "" && *addResourceCmdParams.Stage != "" && *addResourceCmdParams.Project != "" {
+		} else if (addResourceCmdParams.Service == nil || *addResourceCmdParams.Service == "") && (addResourceCmdParams.Stage != nil && *addResourceCmdParams.Stage != "") {
 			logging.PrintLog("Adding resource "+*addResourceCmdParams.Resource+" to stage "+*addResourceCmdParams.Stage+" in project "+*addResourceCmdParams.Project, logging.InfoLevel)
-		} else if *addResourceCmdParams.Service == "" && *addResourceCmdParams.Stage == "" && *addResourceCmdParams.Project != "" {
+		} else if (addResourceCmdParams.Service == nil || *addResourceCmdParams.Service == "") && (addResourceCmdParams.Stage == nil || *addResourceCmdParams.Stage == "") {
 			logging.PrintLog("Adding resource "+*addResourceCmdParams.Resource+" to project "+*addResourceCmdParams.Project, logging.InfoLevel)
 		} else {
 			return errors.New("Flag stage not set for service " + *addResourceCmdParams.Service + " in project " + *addResourceCmdParams.Project)

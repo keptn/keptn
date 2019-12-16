@@ -45,7 +45,6 @@ func TestAddResourceToProjectStageService(t *testing.T) {
 
 	args := []string{
 		"add-resource",
-
 		fmt.Sprintf("--project=%s", "sockshop"),
 		fmt.Sprintf("--stage=%s", "dev"),
 		fmt.Sprintf("--service=%s", "carts"),
@@ -74,7 +73,6 @@ func TestAddResourceToProjectStage(t *testing.T) {
 
 	args := []string{
 		"add-resource",
-
 		fmt.Sprintf("--project=%s", "sockshop"),
 		fmt.Sprintf("--stage=%s", "dev"),
 		fmt.Sprintf("--resource=%s", resourceFileName),
@@ -102,7 +100,6 @@ func TestAddResourceToProject(t *testing.T) {
 
 	args := []string{
 		"add-resource",
-
 		fmt.Sprintf("--project=%s", "sockshop"),
 		fmt.Sprintf("--resource=%s", resourceFileName),
 		fmt.Sprintf("--resourceUri=%s", "resource/"+resourceFileName),
@@ -129,7 +126,6 @@ func TestAddResourceToProjectService(t *testing.T) {
 
 	args := []string{
 		"add-resource",
-
 		fmt.Sprintf("--project=%s", "sockshop"),
 		fmt.Sprintf("--service=%s", "carts"),
 		fmt.Sprintf("--resource=%s", resourceFileName),

@@ -22,5 +22,3 @@ require (
 	k8s.io/apimachinery v0.0.0-20190313205120-d7deff9243b1
 	k8s.io/helm v2.14.3+incompatible
 )
-
-replace github.com/keptn/go-utils => ./../../go-utils
