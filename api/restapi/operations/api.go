@@ -22,8 +22,10 @@ import (
 	"github.com/keptn/keptn/api/restapi/operations/auth"
 	"github.com/keptn/keptn/api/restapi/operations/event"
 	"github.com/keptn/keptn/api/restapi/operations/project"
+	"github.com/keptn/keptn/api/restapi/operations/project_resource"
 	"github.com/keptn/keptn/api/restapi/operations/service"
 	"github.com/keptn/keptn/api/restapi/operations/service_resource"
+	"github.com/keptn/keptn/api/restapi/operations/stage_resource"
 
 	models "github.com/keptn/keptn/api/models"
 )
@@ -57,8 +59,14 @@ func NewAPI(spec *loads.Document) *API {
 		ProjectPostProjectHandler: project.PostProjectHandlerFunc(func(params project.PostProjectParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation ProjectPostProject has not yet been implemented")
 		}),
+		ProjectResourcePostProjectProjectNameResourceHandler: project_resource.PostProjectProjectNameResourceHandlerFunc(func(params project_resource.PostProjectProjectNameResourceParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation ProjectResourcePostProjectProjectNameResource has not yet been implemented")
+		}),
 		ServicePostProjectProjectNameServiceHandler: service.PostProjectProjectNameServiceHandlerFunc(func(params service.PostProjectProjectNameServiceParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation ServicePostProjectProjectNameService has not yet been implemented")
+		}),
+		StageResourcePostProjectProjectNameStageStageNameResourceHandler: stage_resource.PostProjectProjectNameStageStageNameResourceHandlerFunc(func(params stage_resource.PostProjectProjectNameStageStageNameResourceParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation StageResourcePostProjectProjectNameStageStageNameResource has not yet been implemented")
 		}),
 		ServiceResourcePostProjectProjectNameStageStageNameServiceServiceNameResourceHandler: service_resource.PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(func(params service_resource.PostProjectProjectNameStageStageNameServiceServiceNameResourceParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation ServiceResourcePostProjectProjectNameStageStageNameServiceServiceNameResource has not yet been implemented")
@@ -123,8 +131,12 @@ type API struct {
 	EventPostEventHandler event.PostEventHandler
 	// ProjectPostProjectHandler sets the operation handler for the post project operation
 	ProjectPostProjectHandler project.PostProjectHandler
+	// ProjectResourcePostProjectProjectNameResourceHandler sets the operation handler for the post project project name resource operation
+	ProjectResourcePostProjectProjectNameResourceHandler project_resource.PostProjectProjectNameResourceHandler
 	// ServicePostProjectProjectNameServiceHandler sets the operation handler for the post project project name service operation
 	ServicePostProjectProjectNameServiceHandler service.PostProjectProjectNameServiceHandler
+	// StageResourcePostProjectProjectNameStageStageNameResourceHandler sets the operation handler for the post project project name stage stage name resource operation
+	StageResourcePostProjectProjectNameStageStageNameResourceHandler stage_resource.PostProjectProjectNameStageStageNameResourceHandler
 	// ServiceResourcePostProjectProjectNameStageStageNameServiceServiceNameResourceHandler sets the operation handler for the post project project name stage stage name service service name resource operation
 	ServiceResourcePostProjectProjectNameStageStageNameServiceServiceNameResourceHandler service_resource.PostProjectProjectNameStageStageNameServiceServiceNameResourceHandler
 	// ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceHandler sets the operation handler for the put project project name stage stage name service service name resource operation
@@ -214,8 +226,16 @@ func (o *API) Validate() error {
 		unregistered = append(unregistered, "project.PostProjectHandler")
 	}
 
+	if o.ProjectResourcePostProjectProjectNameResourceHandler == nil {
+		unregistered = append(unregistered, "project_resource.PostProjectProjectNameResourceHandler")
+	}
+
 	if o.ServicePostProjectProjectNameServiceHandler == nil {
 		unregistered = append(unregistered, "service.PostProjectProjectNameServiceHandler")
+	}
+
+	if o.StageResourcePostProjectProjectNameStageStageNameResourceHandler == nil {
+		unregistered = append(unregistered, "stage_resource.PostProjectProjectNameStageStageNameResourceHandler")
 	}
 
 	if o.ServiceResourcePostProjectProjectNameStageStageNameServiceServiceNameResourceHandler == nil {
@@ -366,7 +386,17 @@ func (o *API) initHandlerCache() {
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
+	o.handlers["POST"]["/project/{projectName}/resource"] = project_resource.NewPostProjectProjectNameResource(o.context, o.ProjectResourcePostProjectProjectNameResourceHandler)
+
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
 	o.handlers["POST"]["/project/{projectName}/service"] = service.NewPostProjectProjectNameService(o.context, o.ServicePostProjectProjectNameServiceHandler)
+
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/project/{projectName}/stage/{stageName}/resource"] = stage_resource.NewPostProjectProjectNameStageStageNameResource(o.context, o.StageResourcePostProjectProjectNameStageStageNameResourceHandler)
 
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)

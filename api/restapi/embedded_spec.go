@@ -31,7 +31,7 @@ func init() {
   "swagger": "2.0",
   "info": {
     "title": "keptn api",
-    "version": "0.1.0"
+    "version": "develop"
   },
   "basePath": "/v1",
   "paths": {
@@ -186,6 +186,41 @@ func init() {
         }
       ]
     },
+    "/project/{projectName}/resource": {
+      "post": {
+        "tags": [
+          "Project Resource"
+        ],
+        "summary": "Upload a list of new resources for the project",
+        "parameters": [
+          {
+            "$ref": "#/parameters/resources"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success. Project resources have been uploaded"
+          },
+          "400": {
+            "description": "Failed. Project resources could not be uploaded",
+            "schema": {
+              "$ref": "response_model.yaml#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "response_model.yaml#/definitions/error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "$ref": "#/parameters/projectName"
+        }
+      ]
+    },
     "/project/{projectName}/service": {
       "post": {
         "tags": [
@@ -221,6 +256,44 @@ func init() {
       "parameters": [
         {
           "$ref": "#/parameters/projectName"
+        }
+      ]
+    },
+    "/project/{projectName}/stage/{stageName}/resource": {
+      "post": {
+        "tags": [
+          "Stage Resource"
+        ],
+        "summary": "Upload a list of new resources for the stage",
+        "parameters": [
+          {
+            "$ref": "#/parameters/resources"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success. Stage resources have been uploaded"
+          },
+          "400": {
+            "description": "Failed. Stage resources could not be uploaded",
+            "schema": {
+              "$ref": "response_model.yaml#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "response_model.yaml#/definitions/error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "$ref": "#/parameters/projectName"
+        },
+        {
+          "$ref": "#/parameters/stageName"
         }
       ]
     },
@@ -390,7 +463,7 @@ func init() {
   "swagger": "2.0",
   "info": {
     "title": "keptn api",
-    "version": "0.1.0"
+    "version": "develop"
   },
   "basePath": "/v1",
   "paths": {
@@ -554,6 +627,57 @@ func init() {
         }
       ]
     },
+    "/project/{projectName}/resource": {
+      "post": {
+        "tags": [
+          "Project Resource"
+        ],
+        "summary": "Upload a list of new resources for the project",
+        "parameters": [
+          {
+            "description": "List of resources",
+            "name": "resources",
+            "in": "body",
+            "schema": {
+              "properties": {
+                "resources": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/resource"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success. Project resources have been uploaded"
+          },
+          "400": {
+            "description": "Failed. Project resources could not be uploaded",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "description": "Name of the project",
+          "name": "projectName",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
     "/project/{projectName}/service": {
       "post": {
         "tags": [
@@ -596,6 +720,64 @@ func init() {
           "type": "string",
           "description": "Name of the project",
           "name": "projectName",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
+    "/project/{projectName}/stage/{stageName}/resource": {
+      "post": {
+        "tags": [
+          "Stage Resource"
+        ],
+        "summary": "Upload a list of new resources for the stage",
+        "parameters": [
+          {
+            "description": "List of resources",
+            "name": "resources",
+            "in": "body",
+            "schema": {
+              "properties": {
+                "resources": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/resource"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success. Stage resources have been uploaded"
+          },
+          "400": {
+            "description": "Failed. Stage resources could not be uploaded",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "description": "Name of the project",
+          "name": "projectName",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "description": "Name of the stage",
+          "name": "stageName",
           "in": "path",
           "required": true
         }
