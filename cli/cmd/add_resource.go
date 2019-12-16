@@ -61,10 +61,19 @@ Example:
 		}
 
 		resourceHandler := apiutils.NewAuthenticatedResourceHandler(endPoint.Host, apiToken, "x-token", nil, "https")
-		logging.PrintLog("Adding resource "+*addResourceCmdParams.Resource+" to service "+*addResourceCmdParams.Service+" in stage "+*addResourceCmdParams.Stage+" in project "+*addResourceCmdParams.Project, logging.InfoLevel)
+
+		if *addResourceCmdParams.Service != "" && *addResourceCmdParams.Stage != "" && *addResourceCmdParams.Project != "" {
+			logging.PrintLog("Adding resource "+*addResourceCmdParams.Resource+" to service "+*addResourceCmdParams.Service+" in stage "+*addResourceCmdParams.Stage+" in project "+*addResourceCmdParams.Project, logging.InfoLevel)
+		} else if *addResourceCmdParams.Service == "" && *addResourceCmdParams.Stage != "" && *addResourceCmdParams.Project != "" {
+			logging.PrintLog("Adding resource "+*addResourceCmdParams.Resource+" to stage "+*addResourceCmdParams.Stage+" in project "+*addResourceCmdParams.Project, logging.InfoLevel)
+		} else if *addResourceCmdParams.Service == "" && *addResourceCmdParams.Stage == "" && *addResourceCmdParams.Project != "" {
+			logging.PrintLog("Adding resource "+*addResourceCmdParams.Resource+" to project "+*addResourceCmdParams.Project, logging.InfoLevel)
+		} else {
+			return errors.New("Flag stage not set for service " + *addResourceCmdParams.Service + " in project " + *addResourceCmdParams.Project)
+		}
 
 		if !mocking {
-			_, errorObj := resourceHandler.CreateServiceResources(*addResourceCmdParams.Project, *addResourceCmdParams.Stage, *addResourceCmdParams.Service, resources)
+			_, errorObj := resourceHandler.CreateResources(*addResourceCmdParams.Project, *addResourceCmdParams.Stage, *addResourceCmdParams.Service, resources)
 			if errorObj != nil {
 				return errors.New("Resource " + *addResourceCmdParams.Resource + " could not be uploaded: " + *errorObj.Message)
 			}
@@ -89,19 +98,17 @@ func fileExists(path string) bool {
 func init() {
 	rootCmd.AddCommand(addResourceCmd)
 	addResourceCmdParams = &addResourceCommandParameters{}
-	
+
 	addResourceCmdParams.Project = addResourceCmd.Flags().StringP("project", "p", "", "The name of the project")
 	addResourceCmd.MarkFlagRequired("project")
-	
+
 	addResourceCmdParams.Stage = addResourceCmd.Flags().StringP("stage", "s", "", "The name of the stage")
-	addResourceCmd.MarkFlagRequired("stage")
-	
+
 	addResourceCmdParams.Service = addResourceCmd.Flags().StringP("service", "", "", "The name of the service within the project")
-	addResourceCmd.MarkFlagRequired("service")
-	
+
 	addResourceCmdParams.Resource = addResourceCmd.Flags().StringP("resource", "r", "", "Path pointing to the resource on your local file system")
 	addResourceCmd.MarkFlagRequired("resource")
-	
+
 	addResourceCmdParams.ResourceURI = addResourceCmd.Flags().StringP("resourceUri", "", "", "Optional: Location where the resource should be stored within the config repo. If empty, The name of the resource will be the same as on your local file system")
 
 }
