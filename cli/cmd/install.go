@@ -35,7 +35,8 @@ import (
 
 type installCmdParams struct {
 	ConfigFilePath     *string
-	InstallerVersion   *string
+	InstallerImage     *string
+	KeptnVersion       *string
 	PlatformIdentifier *string
 	GatewayType        *string
 	UseCase            *string
@@ -118,6 +119,11 @@ Example:
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 
+		if installParams.KeptnVersion != nil && *installParams.KeptnVersion != "" {
+			return errors.New("The flag --keptn-version is not supported anymore but you can specify " +
+				"an image for the installer using the flag 'keptn-installer-image'")
+		}
+
 		if insecureSkipTLSVerify {
 			kubectlOptions = "--insecure-skip-tls-verify=true"
 		}
@@ -136,18 +142,18 @@ Example:
 		}
 
 		// Determine installer version
-		if installParams.InstallerVersion != nil && *installParams.InstallerVersion != "" {
-			installParams.Image, installParams.Tag = utils.SplitImageName(*installParams.InstallerVersion)
+		if installParams.InstallerImage != nil && *installParams.InstallerImage != "" {
+			installParams.Image, installParams.Tag = utils.SplitImageName(*installParams.InstallerImage)
 		} else if utils.IsOfficialKeptnVersion(Version) {
 			installParams.Image = "docker.io/keptn/installer"
 			installParams.Tag = Version
 			version := installParams.Image + ":" + installParams.Tag
-			installParams.InstallerVersion = &version
+			installParams.InstallerImage = &version
 		} else {
 			installParams.Image = "docker.io/keptn/installer"
 			installParams.Tag = "latest"
 			version := installParams.Image + ":" + installParams.Tag
-			installParams.InstallerVersion = &version
+			installParams.InstallerImage = &version
 		}
 
 		err = utils.CheckImageAvailability(installParams.Image, installParams.Tag)
@@ -252,8 +258,13 @@ func init() {
 		"The name of the creds file")
 	installCmd.Flags().MarkHidden("creds")
 
-	installParams.InstallerVersion = installCmd.Flags().StringP("keptn-version", "k",
+	installParams.InstallerImage = installCmd.Flags().StringP("keptn-installer-image", "k",
 		"", "The installer image which is used for the installation")
+	installCmd.Flags().MarkHidden("keptn-installer-image")
+
+	installParams.KeptnVersion = installCmd.Flags().StringP("keptn-version", "",
+		"", "This flag is not supported anymore but you can specify an image for the installer"+
+			"using the flag 'keptn-installer-image'")
 	installCmd.Flags().MarkHidden("keptn-version")
 
 	installParams.GatewayType = installCmd.Flags().StringP("gateway", "g", "LoadBalancer",
