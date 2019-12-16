@@ -4,7 +4,7 @@ info:
   title: keptn api
   version: develop
 schemes:
-  - http
+  - https
 basePath: /v1
 consumes:
   - application/json
