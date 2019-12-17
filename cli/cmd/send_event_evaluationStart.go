@@ -35,12 +35,12 @@ import (
 )
 
 type evaluationStartStruct struct {
-	Project   *string `json:"project"`
-	Stage     *string `json:"stage"`
-	Service   *string `json:"service"`
-	Timeframe *string `json:"timeframe"`
-	Start     *string `json:"start"`
-	End       *string `json:"end"`
+	Project   *string            `json:"project"`
+	Stage     *string            `json:"stage"`
+	Service   *string            `json:"service"`
+	Timeframe *string            `json:"timeframe"`
+	Start     *string            `json:"start"`
+	End       *string            `json:"end"`
 	Labels    *map[string]string `json:"labels"`
 }
 

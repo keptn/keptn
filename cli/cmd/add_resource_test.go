@@ -118,6 +118,8 @@ func TestAddResourceToProjectService(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
 
+	*addResourceCmdParams.Stage = ""
+
 	resourceFileName := "testResource.txt"
 	defer testResource(t, resourceFileName, "")()
 
