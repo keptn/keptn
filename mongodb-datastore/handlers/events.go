@@ -114,64 +114,102 @@ func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 		searchOptions["data.service"] = params.Service
 	}
 
-	var newNextPageKey int64
-	var nextPageKey int64 = 0
-	if params.NextPageKey != nil {
-		tmpNextPageKey, _ := strconv.Atoi(*params.NextPageKey)
-		nextPageKey = int64(tmpNextPageKey)
-		newNextPageKey = nextPageKey + *params.PageSize
+	var result event.GetEventsOKBody
+
+	if params.Root != nil {
+		var values []interface{}
+		values, err = collection.Distinct(ctx, "shkeptncontext", searchOptions)
+
+		if err != nil {
+			logger.Error(fmt.Sprintf("error loading distinct shkeptncontext: %v", err))
+		}
+
+		for _, value := range values {
+			var outputEvent interface{}
+
+			sortOptions := options.FindOne().SetSort(bson.D{{"time", -1}})
+			err = collection.FindOne(ctx, bson.D{{"shkeptncontext", value}}, sortOptions).Decode(&outputEvent)
+
+			if err != nil {
+				logger.Error(fmt.Sprintf("failed to decode event %v", err))
+				return nil, err
+			}
+
+			outputEvent, err = flattenRecursively(outputEvent, logger)
+			if err != nil {
+				logger.Error(fmt.Sprintf("failed to flatten %v", err))
+				return nil, err
+			}
+
+			data, _ := json.Marshal(outputEvent)
+
+			var keptnEvent models.KeptnContextExtendedCE
+			err = keptnEvent.UnmarshalJSON(data)
+			if err != nil {
+				logger.Error(fmt.Sprintf("failed to unmarshal %v", err))
+				continue
+				// return nil, err
+			}
+			result.Events = append(result.Events, &keptnEvent)
+		}
 	} else {
-		newNextPageKey = *params.PageSize
-	}
-
-	pageSize := *params.PageSize
-	sortOptions := options.Find().SetSort(bson.D{{"time", -1}}).SetSkip(nextPageKey).SetLimit(pageSize)
-
-	totalCount, err := collection.CountDocuments(ctx, searchOptions)
-	if err != nil {
-		logger.Error(fmt.Sprintf("error counting elements in events collection: %v", err))
-	}
-
-	cur, err := collection.Find(ctx, searchOptions, sortOptions)
-	if err != nil {
-		logger.Error(fmt.Sprintf("error finding elements in events collection: %v", err))
-	}
-
-	var resultEvents []*models.KeptnContextExtendedCE
-	for cur.Next(ctx) {
-		var outputEvent interface{}
-		err := cur.Decode(&outputEvent)
-		if err != nil {
-			logger.Error(fmt.Sprintf("failed to decode event %v", err))
-			return nil, err
-		}
-		outputEvent, err = flattenRecursively(outputEvent, logger)
-		if err != nil {
-			logger.Error(fmt.Sprintf("failed to flatten %v", err))
-			return nil, err
+		var newNextPageKey int64
+		var nextPageKey int64 = 0
+		if params.NextPageKey != nil {
+			tmpNextPageKey, _ := strconv.Atoi(*params.NextPageKey)
+			nextPageKey = int64(tmpNextPageKey)
+			newNextPageKey = nextPageKey + *params.PageSize
+		} else {
+			newNextPageKey = *params.PageSize
 		}
 
-		data, _ := json.Marshal(outputEvent)
+		pageSize := *params.PageSize
+		sortOptions := options.Find().SetSort(bson.D{{"time", -1}}).SetSkip(nextPageKey).SetLimit(pageSize)
 
-		var keptnEvent models.KeptnContextExtendedCE
-		err = keptnEvent.UnmarshalJSON(data)
+		totalCount, err := collection.CountDocuments(ctx, searchOptions)
 		if err != nil {
-			logger.Error(fmt.Sprintf("failed to unmarshal %v", err))
-			continue
-			// return nil, err
+			logger.Error(fmt.Sprintf("error counting elements in events collection: %v", err))
 		}
-		resultEvents = append(resultEvents, &keptnEvent)
+
+		cur, err := collection.Find(ctx, searchOptions, sortOptions)
+		if err != nil {
+			logger.Error(fmt.Sprintf("error finding elements in events collection: %v", err))
+		}
+
+		for cur.Next(ctx) {
+			var outputEvent interface{}
+			err := cur.Decode(&outputEvent)
+			if err != nil {
+				logger.Error(fmt.Sprintf("failed to decode event %v", err))
+				return nil, err
+			}
+			outputEvent, err = flattenRecursively(outputEvent, logger)
+			if err != nil {
+				logger.Error(fmt.Sprintf("failed to flatten %v", err))
+				return nil, err
+			}
+
+			data, _ := json.Marshal(outputEvent)
+
+			var keptnEvent models.KeptnContextExtendedCE
+			err = keptnEvent.UnmarshalJSON(data)
+			if err != nil {
+				logger.Error(fmt.Sprintf("failed to unmarshal %v", err))
+				continue
+				// return nil, err
+			}
+			result.Events = append(result.Events, &keptnEvent)
+		}
+
+		result.PageSize = pageSize
+		result.TotalCount = totalCount
+
+		if newNextPageKey < totalCount {
+			result.NextPageKey = strconv.FormatInt(newNextPageKey, 10)
+		}
 	}
 
-	var myResult event.GetEventsOKBody
-	myResult.Events = resultEvents
-	myResult.PageSize = pageSize
-	myResult.TotalCount = totalCount
-	if newNextPageKey < totalCount {
-		myResult.NextPageKey = strconv.FormatInt(newNextPageKey, 10)
-	}
-
-	return &myResult, nil
+	return &result, nil
 }
 
 func flattenRecursively(i interface{}, logger *keptnutils.Logger) (interface{}, error) {

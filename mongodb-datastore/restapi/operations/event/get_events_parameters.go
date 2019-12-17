@@ -60,6 +60,10 @@ type GetEventsParams struct {
 	  In: query
 	*/
 	Project *string
+	/*Set to load only root events
+	  In: query
+	*/
+	Root *string
 	/*Name of the service
 	  In: query
 	*/
@@ -106,6 +110,11 @@ func (o *GetEventsParams) BindRequest(r *http.Request, route *middleware.Matched
 
 	qProject, qhkProject, _ := qs.GetOK("project")
 	if err := o.bindProject(qProject, qhkProject, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
+	qRoot, qhkRoot, _ := qs.GetOK("root")
+	if err := o.bindRoot(qRoot, qhkRoot, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -226,6 +235,24 @@ func (o *GetEventsParams) bindProject(rawData []string, hasKey bool, formats str
 	}
 
 	o.Project = &raw
+
+	return nil
+}
+
+// bindRoot binds and validates parameter Root from query.
+func (o *GetEventsParams) bindRoot(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+
+	// Required: false
+	// AllowEmptyValue: false
+	if raw == "" { // empty values pass all other validations
+		return nil
+	}
+
+	o.Root = &raw
 
 	return nil
 }
