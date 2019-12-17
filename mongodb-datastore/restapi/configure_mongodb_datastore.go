@@ -20,7 +20,7 @@ import (
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/logs"
 )
 
-//go:generate swagger generate server --target ../../mongodb-datastore --name mongodb-datastore --spec ../swagger.json
+//go:generate swagger generate server --target ../../mongodb-datastore --name mongodb-datastore --spec ../swagger.yaml
 
 func configureFlags(api *operations.MongodbDatastoreAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
