@@ -183,6 +183,88 @@ jobs:
         go test ./...
       fi
 
+  - stage: Unit tests
+    os: linux
+    script:
+      - |
+        if [[ $CHANGED_FILES == *"${API_FOLDER}"*  ]]; then
+          cd "${API_FOLDER}"
+          go test -race -v ./...
+          cd ..
+        fi
+      - |
+        if [[ $CHANGED_FILES == *"${OS_ROUTE_SVC_FOLDER}"*  ]]; then
+          cd "${OS_ROUTE_SVC_FOLDER}"
+          go test -race -v ./...
+          cd ../..
+        fi
+      - |
+        if [[ $CHANGED_FILES == *"${JMETER_SVC_FOLDER}"*  ]]; then
+          cd "${JMETER_SVC_FOLDER}"
+          go test -race -v ./...
+          cd ..
+        fi
+      - |
+        if [[ $CHANGED_FILES == *"${HELM_SVC_FOLDER}"*  ]]; then
+          cd "${HELM_SVC_FOLDER}"
+          go test -race -v ./...
+          cd ..
+        fi
+      - |
+        if [[ $CHANGED_FILES == *"${GATEKEEPER_SVC_FOLDER}"*  ]]; then
+          cd "${GATEKEEPER_SVC_FOLDER}"
+          go test -race -v ./...
+          cd ..
+        fi
+      - |
+        if [[ $CHANGED_FILES == *"${DISTRIBUTOR_FOLDER}"*  ]]; then
+          cd "${DISTRIBUTOR_FOLDER}"
+          go test -race -v ./...
+          cd ..
+        fi
+      - |
+        if [[ $CHANGED_FILES == *"${EVENTBROKER_FOLDER}"*  ]]; then
+          cd "${EVENTBROKER_FOLDER}"
+          go test -race -v ./...
+          cd ..
+        fi
+      - |
+        if [[ $CHANGED_FILES == *"${SHIPYARD_SVC_FOLDER}"*  ]]; then
+          cd ${SHIPYARD_SVC_FOLDER}
+          go test -race -v ./...
+          cd ..
+        fi
+      - |
+        if [[ $CHANGED_FILES == *"${CONFIGURATION_SVC_FOLDER}"*  ]]; then
+          cd "${CONFIGURATION_SVC_FOLDER}"
+          go test -race -v ./...
+          cd ..
+        fi
+      - |
+        if [[ $CHANGED_FILES == *"${REMEDIATION_SVC_FOLDER}"*  ]]; then
+          cd "${REMEDIATION_SVC_IMAGE}"
+          go test -race -v ./...
+          cd ..
+        fi
+      - |
+        if [[ $CHANGED_FILES == *"${WAIT_SVC_FOLDER}"*  ]]; then
+          cd "${WAIT_SVC_FOLDER}"
+          go test -race -v ./...
+          cd ..
+        fi
+      - |
+        if [[ $CHANGED_FILES == *"${LIGHTHOUSE_SVC_FOLDER}"*  ]]; then
+          cd "${LIGHTHOUSE_SVC_FOLDER}"
+          go test -race -v ./...
+          cd ..
+        fi
+      - |
+        if [[ $CHANGED_FILES == *"${MONGODB_DS_FOLDER}"*  ]]; then
+          cd "${MONGODB_DS_FOLDER}"
+          go test -race -v ./...
+          cd ..
+        fi
+
   - stage: feature/bug/hotfix/patch
     if: branch =~ ^feature.*$ OR branch =~ ^bug.*$ OR branch =~ ^hotfix.*$ OR branch =~ ^patch.*$
     os: osx
