@@ -9,7 +9,7 @@ spec:
   - "api.keptn.DOMAIN_PLACEHOLDER"
   - "api.keptn"
   gateways:
-  - keptn-gateway
+    - public-gateway.istio-system
   http:
     - route:
       - destination:

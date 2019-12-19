@@ -119,8 +119,8 @@ case $USE_CASE in
 esac
 
 if [ "$INGRESS" = "istio" ]; then
-  kubectl apply -f ../manifests/keptn/keptn-gateway.yaml
-  verify_kubectl $? "Deploying keptn gateway failed."
+  kubectl apply -f ../manifests/istio/public-gateway.yaml
+  verify_kubectl $? "Deploying public-gateway failed."
 
   rm -f ../manifests/keptn/gen/keptn-api-virtualservice.yaml
   cat ../manifests/keptn/keptn-api-virtualservice.yaml | \
