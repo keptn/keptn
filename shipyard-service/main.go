@@ -181,7 +181,7 @@ func createProjectAndProcessShipyard(event cloudevents.Event, logger keptnutils.
 		return nil, err
 	}
 	if !areNamespacesAvailable {
-		return nil, fmt.Errorf("Namespaces are not available anymore.")
+		return nil, fmt.Errorf("Namespaces are not available anymore")
 	}
 
 	if err := client.createProject(project, logger); err != nil {
