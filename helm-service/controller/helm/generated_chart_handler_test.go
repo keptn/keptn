@@ -39,7 +39,7 @@ var cartsIstioVirtualserviceGen = helmtest.GeneratedResource{
   },
   "spec": {
     "gateways": [
-      "sockshop-production-gateway.sockshop-production",
+      "public-gateway.istio-system",
       "mesh"
     ],
     "hosts": [

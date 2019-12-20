@@ -22,7 +22,6 @@ import (
 const umbrellaChartURI = "Chart.yaml"
 const requirementsURI = "requirements.yaml"
 const valuesURI = "values.yaml"
-const gatewayURI = "templates/istio-gateway.yaml"
 const version = "0.1.0"
 
 type UmbrellaChartHandler struct {
@@ -58,11 +57,7 @@ func (u *UmbrellaChartHandler) InitUmbrellaChart(event *keptnevents.ServiceCreat
 	rHandler := configutils.NewResourceHandler(url.String())
 	for _, stage := range stages {
 
-		gateway, err := u.createGatewayResource(event, stage.StageName)
-		if err != nil {
-			return err
-		}
-		resources := []*configmodels.Resource{rootChart, requirements, values, gateway}
+		resources := []*configmodels.Resource{rootChart, requirements, values}
 		_, err = rHandler.CreateStageResources(event.Project, stage.StageName, resources)
 		if err != nil {
 			return err
@@ -177,17 +172,6 @@ func (u *UmbrellaChartHandler) createValuesResource() (*configmodels.Resource, e
 	}
 	uri := valuesURI
 	return &configmodels.Resource{ResourceContent: string(valuesData),
-		ResourceURI: &uri}, nil
-}
-
-func (u *UmbrellaChartHandler) createGatewayResource(event *keptnevents.ServiceCreateEventData, stage string) (*configmodels.Resource, error) {
-
-	gwData, err := u.mesh.GenerateHTTPGateway(GetGatewayName(event.Project, stage))
-	if err != nil {
-		return nil, err
-	}
-	uri := gatewayURI
-	return &configmodels.Resource{ResourceContent: string(gwData),
 		ResourceURI: &uri}, nil
 }
 
