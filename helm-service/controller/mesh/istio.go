@@ -19,24 +19,6 @@ func NewIstioMesh() *IstioMesh {
 	return &IstioMesh{}
 }
 
-// GenerateHTTPGateway generates a new Istio Gateway
-func (*IstioMesh) GenerateHTTPGateway(name string) ([]byte, error) {
-
-	selector := map[string]string{
-		"istio": "ingressgateway",
-	}
-
-	port := v1alpha3.Port{Number: 80, Protocol: "HTTP", Name: "http"}
-	server := v1alpha3.Server{Hosts: []string{"*"}, Port: &port}
-
-	spec := v1alpha3.GatewaySpec{Selector: selector, Servers: []*v1alpha3.Server{&server}}
-
-	gw := v1alpha3.Gateway{TypeMeta: metav1.TypeMeta{Kind: "Gateway", APIVersion: "networking.istio.io/v1alpha3"},
-		ObjectMeta: metav1.ObjectMeta{Name: name}, Spec: spec}
-
-	return yaml.Marshal(gw)
-}
-
 // GenerateDestinationRule generates a new Istio DestinationRule
 func (*IstioMesh) GenerateDestinationRule(name string, host string) ([]byte, error) {
 

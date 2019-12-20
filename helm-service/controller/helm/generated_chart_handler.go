@@ -223,7 +223,7 @@ func (c *GeneratedChartHandler) generateServices(svc *corev1.Service, project st
 	templates = append(templates, &chart.Template{Name: "templates/" + servicePrimary.Name + c.mesh.GetDestinationRuleSuffix(), Data: destinationRulePrimary})
 
 	// Generate virtual service
-	gws := []string{GetGatewayName(project, stageName) + "." + GetUmbrellaNamespace(project, stageName), "mesh"}
+	gws := []string{"public-gateway.istio-system", "mesh"}
 	hosts := []string{
 		svc.Name + "." + c.canaryLevelGen.GetNamespace(project, stageName, false) + "." + c.keptnDomain, // service_name.dev.123.45.67.89.xip.io
 		svc.Name, // service-name
@@ -290,7 +290,7 @@ func (c *GeneratedChartHandler) GenerateMeshChart(helmUpgradeMsg string, project
 
 		for _, svc := range svcs {
 			// Generate virtual service for external access
-			gws := []string{GetGatewayName(project, stageName) + "." + GetUmbrellaNamespace(project, stageName), "mesh"}
+			gws := []string{"public-gateway.istio-system", "mesh"}
 			hosts := []string{
 				svc.Name + "." + namespace + "." + c.keptnDomain,
 				svc.Name,

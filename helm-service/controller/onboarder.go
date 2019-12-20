@@ -4,7 +4,6 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -12,7 +11,6 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go"
 
-	configmodels "github.com/keptn/go-utils/pkg/configuration-service/models"
 	configutils "github.com/keptn/go-utils/pkg/configuration-service/utils"
 	keptnevents "github.com/keptn/go-utils/pkg/events"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
@@ -92,9 +90,9 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event, loggingDone chan bool) error
 
 	if !isUmbrellaChartAvailable && event.HelmChart != "" {
 		o.logger.Info("Create Helm umbrella charts")
-		if err := o.initAndApplyUmbrellaChart(event, umbrellaChartHandler, stages); err != nil {
-			o.logger.Error(fmt.Sprintf("Error when initalizing and applying umbrella charts for project %s: %s", event.Project, err.Error()))
-			return err
+		// Initalize the umbrella chart
+		if err := umbrellaChartHandler.InitUmbrellaChart(event, stages); err != nil {
+			return fmt.Errorf("Error when initializing the umbrella chart for project %s: %s", event.Project, err.Error())
 		}
 	}
 
@@ -116,7 +114,11 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event, loggingDone chan bool) error
 			}
 
 			if namespace != nil {
-				o.logger.Debug(fmt.Sprintf("inject Istio to the %s namespace for blue-green deployments", helm.GetUmbrellaNamespace(event.Project, stage.StageName)))
+				o.logger.Debug(fmt.Sprintf("Inject Istio to the %s namespace for blue-green deployments", helm.GetUmbrellaNamespace(event.Project, stage.StageName)))
+
+				if namespace.ObjectMeta.Labels == nil {
+					namespace.ObjectMeta.Labels = make(map[string]string)
+				}
 
 				namespace.ObjectMeta.Labels["istio-injection"] = "enabled"
 				_, err = kubeClient.Namespaces().Update(namespace)
@@ -252,37 +254,6 @@ func (o *Onboarder) updateUmbrellaChart(project, stage, helmChartName string) er
 		o.logger.Error("Error when adding the chart in the Umbrella values file: " + err.Error())
 		return err
 	}
-	return nil
-}
-
-func (o *Onboarder) initAndApplyUmbrellaChart(event *keptnevents.ServiceCreateEventData,
-	umbrellaChartHandler *helm.UmbrellaChartHandler, stages []*configmodels.Stage) error {
-
-	// Initalize the umbrella chart
-	if err := umbrellaChartHandler.InitUmbrellaChart(event, stages); err != nil {
-		return fmt.Errorf("Error when initializing the umbrella chart: %s", err.Error())
-	}
-
-	for _, stage := range stages {
-		// Apply the umbrella chart
-		umbrellaChart, err := ioutil.TempDir("", "")
-		if err != nil {
-			return fmt.Errorf("Error when creating a temporary directory: %s", err.Error())
-		}
-		if err := umbrellaChartHandler.GetUmbrellaChart(umbrellaChart, event.Project, stage.StageName); err != nil {
-			return fmt.Errorf("Error when getting umbrella chart: %s", err)
-		}
-
-		configChanger := NewConfigurationChanger(o.mesh, o.canaryLevelGen, o.logger, o.keptnDomain)
-		if err := configChanger.ApplyDirectory(umbrellaChart, helm.GetUmbrellaReleaseName(event.Project, stage.StageName),
-			helm.GetUmbrellaNamespace(event.Project, stage.StageName)); err != nil {
-			return fmt.Errorf("Error when applying umbrella chart in stage %s: %s", stage.StageName, err.Error())
-		}
-		if err := os.RemoveAll(umbrellaChart); err != nil {
-			return err
-		}
-	}
-
 	return nil
 }
 
