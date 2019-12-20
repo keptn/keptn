@@ -9,18 +9,18 @@ spec:
     istio: ingressgateway
   servers:
   - port:
-      number: 80
       name: http
+      number: 80
       protocol: HTTP
-      hosts:
-        - "*"
-  - port:
-      number: 443
+    hosts:
+    - '*'    
+  - hosts:
+    - '*'
+    port:
       name: https
+      number: 443
       protocol: HTTPS
     tls:
       mode: SIMPLE
       privateKey: /etc/istio/ingressgateway-certs/tls.key
       serverCertificate: /etc/istio/ingressgateway-certs/tls.crt
-    hosts:
-    - "*"
