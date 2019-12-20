@@ -127,7 +127,7 @@ func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 		for _, value := range values {
 			var outputEvent interface{}
 
-			sortOptions := options.FindOne().SetSort(bson.D{{"time", -1}})
+			sortOptions := options.FindOne().SetSort(bson.D{{"time", 1}})
 			err = collection.FindOne(ctx, bson.D{{"shkeptncontext", value}}, sortOptions).Decode(&outputEvent)
 
 			if err != nil {
