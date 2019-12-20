@@ -7,7 +7,7 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/gorilla/websocket v1.4.1
 	github.com/kelseyhightower/envconfig v1.3.0
-	github.com/keptn/go-utils v0.5.0
+	github.com/keptn/go-utils v0.5.1-0.20191220074225-a9c0ea58c00a
 	github.com/magiconair/properties v1.8.1
 	gopkg.in/yaml.v2 v2.2.4
 )
