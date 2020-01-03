@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"path/filepath"
-	"runtime"
 	"strings"
 
 	"github.com/keptn/keptn/remediation-service/actions"
@@ -24,15 +22,7 @@ import (
 	keptnmodels "github.com/keptn/go-utils/pkg/models"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 
-	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
-
-	"k8s.io/helm/pkg/helm"
-	helm_env "k8s.io/helm/pkg/helm/environment"
-	"k8s.io/helm/pkg/helm/portforwarder"
-	"k8s.io/helm/pkg/kube"
 )
 
 const tillernamespace = "kube-system"
@@ -73,16 +63,6 @@ func _main(args []string, env envConfig) int {
 	return 0
 }
 
-func deriveProblemData(problem *keptnevents.ProblemEventData) {
-
-	if !isProjectAndStageAvailable(problem) {
-		deriveFromTags(problem)
-	}
-	if !isProjectAndStageAvailable(problem) {
-		deriveFromImpactedEntity(problem)
-	}
-}
-
 func isProjectAndStageAvailable(problem *keptnevents.ProblemEventData) bool {
 	return problem.Project != "" && problem.Stage != ""
 }
@@ -104,14 +84,6 @@ func deriveFromTags(problem *keptnevents.ProblemEventData) {
 	}
 }
 
-func deriveFromImpactedEntity(problem *keptnevents.ProblemEventData) {
-	releasename, err := getReleasename(problem)
-	if err != nil {
-		// Ignore error as this format is specific for Prometheus
-	}
-	problem.Project, problem.Stage, problem.Service = splitReleaseName(releasename)
-}
-
 func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	var shkeptncontext string
 	event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
@@ -128,7 +100,9 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		}
 	}
 
-	deriveProblemData(problemEvent)
+	if !isProjectAndStageAvailable(problemEvent) {
+		deriveFromTags(problemEvent)
+	}
 	if !isProjectAndStageAvailable(problemEvent) {
 		return errors.New("Cannot derive project and stage from tags nor impacted entity")
 	}
@@ -208,109 +182,6 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	return nil
 }
 
-// initialize helm
-func init() {
-	_, err := keptnutils.ExecuteCommand("helm", []string{"init", "--client-only"})
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-// get helm release name by impacted entity
-func getReleasename(eventData *keptnevents.ProblemEventData) (string, error) {
-	var details string
-	err := yaml.Unmarshal(eventData.ProblemDetails, &details)
-	if err != nil {
-		return "", err
-	}
-	switch impact := details; {
-	case strings.HasPrefix(impact, "Pod"):
-		return getReleaseByPodName(eventData.ImpactedEntity)
-	case strings.HasPrefix(impact, "Service"):
-		return "", errors.New("Service remediation not yet supported")
-	case strings.HasPrefix(impact, "Node"):
-		return "", errors.New("Node remediation not yet supported")
-	default:
-		return "", errors.New("could not interpret problem details")
-	}
-}
-
-// getKubeClient creates a Kubernetes config and client for a given kubeconfig context.
-func getKubeClient(context string, kubeconfig string) (*rest.Config, kubernetes.Interface, error) {
-	var config *rest.Config
-	var err error
-
-	config, err = getK8sConfig()
-	if err != nil {
-		return nil, nil, fmt.Errorf("could not get config for Kubernetes client: %s", err)
-	}
-
-	client, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		return nil, nil, fmt.Errorf("could not get Kubernetes client: %s", err)
-	}
-	return config, client, nil
-}
-
-// UserHomeDir retries home directory of user
-func UserHomeDir() string {
-	if runtime.GOOS == "windows" {
-		home := os.Getenv("HOMEDRIVE") + os.Getenv("HOMEPATH")
-		if home == "" {
-			home = os.Getenv("USERPROFILE")
-		}
-		return home
-	}
-	return os.Getenv("HOME")
-}
-
-func getK8sConfig() (*rest.Config, error) {
-	var useInClusterConfig bool
-	if os.Getenv("ENVIRONMENT") == "production" {
-		useInClusterConfig = true
-	} else {
-		useInClusterConfig = false
-	}
-	var config *rest.Config
-	var err error
-	if useInClusterConfig {
-		config, err = rest.InClusterConfig()
-	} else {
-		kubeconfig := filepath.Join(
-			UserHomeDir(), ".kube", "config",
-		)
-		config, err = clientcmd.BuildConfigFromFlags("", kubeconfig)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return config, nil
-}
-
-func getHelmClient() (*helm.Client, error) {
-	var settings helm_env.EnvSettings
-	var tillerTunnel *kube.Tunnel
-
-	if settings.TillerHost == "" {
-		config, client, err := getKubeClient(settings.KubeContext, settings.KubeConfig)
-		if err != nil {
-			return nil, err
-		}
-		settings.TillerNamespace = tillernamespace
-		tillerTunnel, err = portforwarder.New(settings.TillerNamespace, client, config)
-		if err != nil {
-			return nil, err
-		}
-
-		settings.TillerHost = fmt.Sprintf("127.0.0.1:%d", tillerTunnel.Local)
-	}
-	options := []helm.Option{helm.Host(settings.TillerHost), helm.ConnectTimeout(5)}
-	client := helm.NewClient(options...)
-	return client, nil
-
-}
-
 func isRemediationEnabled(rh *configutils.ResourceHandler, project string, stage string) (bool, error) {
 	keptnHandler := keptnutils.NewKeptnHandler(rh)
 	shipyard, err := keptnHandler.GetShipyard(project)
@@ -324,40 +195,4 @@ func isRemediationEnabled(rh *configutils.ResourceHandler, project string, stage
 	}
 
 	return false, nil
-}
-
-// gets Helm release name by pod name
-func getReleaseByPodName(podname string) (string, error) {
-	client, err := getHelmClient()
-	if err != nil {
-		return "", fmt.Errorf("failed to get Helm client: %v", err)
-	}
-
-	releaseList, err := client.ListReleases()
-	if err != nil {
-		return "", fmt.Errorf("failed to fetch list of releases: %v", err)
-	}
-
-	for _, r := range releaseList.GetReleases() {
-		rs, err := client.ReleaseStatus(r.Name)
-		if err != nil {
-			return "", fmt.Errorf("failed to get release status: %v", err)
-		}
-		if strings.Contains(rs.Info.Status.Resources, podname) {
-			return r.Name, nil
-		}
-	}
-
-	return "", fmt.Errorf("could not find release for pod %s", podname)
-}
-
-// splits helm release name into project, stage and service
-func splitReleaseName(releasename string) (project string, stage string, service string) {
-	// currently no "-" in project and stage name are allowed, thus "-" is used to split
-	s := strings.SplitN(releasename, "-", 3)
-	project = s[0]
-	stage = s[1]
-	// remove the "-generated" suffix
-	service = strings.Replace(s[2], "-generated", "", 1)
-	return project, stage, service
 }
