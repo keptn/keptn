@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"github.com/keptn/keptn/cli/utils"
 	"os"
 
 	"github.com/keptn/keptn/cli/utils/websockethelper"
@@ -40,6 +41,10 @@ Example:
 		if len(args) != 1 {
 			cmd.SilenceUsage = false
 			return errors.New("required argument SERVICENAME not set")
+		}
+		if !utils.ValidateKeptnEntityName(args[0]) {
+			errorMsg := "Service name contains upper case letter(s) or special character(s).\n"
+			return errors.New(errorMsg)
 		}
 		return nil
 	},

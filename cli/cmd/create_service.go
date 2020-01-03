@@ -40,7 +40,7 @@ Example:
 			return errors.New("required argument SERVICENAME not set")
 		}
 
-		if !utils.ValidateK8sName(args[0]) {
+		if !utils.ValidateKeptnEntityName(args[0]) {
 			errorMsg := "Service name contains upper case letter(s) or special character(s).\n"
 			return errors.New(errorMsg)
 		}

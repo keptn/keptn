@@ -12,7 +12,7 @@ func generateStringWithSpecialChars(length int) string {
 	rand.Seed(time.Now().UnixNano())
 
 	digits := "0123456789"
-	specials := "-~=+%^*/()[]{}/!@#$?|"
+	specials := "~=+%^*/()[]{}/!@#$?|"
 	all := "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
 		"abcdefghijklmnopqrstuvwxyz" +
 		digits + specials
@@ -34,12 +34,24 @@ func generateStringWithSpecialChars(length int) string {
 	return str
 }
 
-// TestValidateK8sName tests whether a random string containing a special character or digit
+// TestInvalidKeptnEntityName tests whether a random string containing a special character or digit
 // does not pass the name validation.
-func TestValidateK8sName(t *testing.T) {
+func TestInvalidKeptnEntityName(t *testing.T) {
 	invalidName := generateStringWithSpecialChars(8)
-	if ValidateK8sName(invalidName) {
+	if ValidateKeptnEntityName(invalidName) {
 		t.Fatalf("%s starts with upper case letter(s) or contains special character(s), but passed the name validation", invalidName)
+	}
+}
+
+func TestInvalidKeptnEntityName2(t *testing.T) {
+	if ValidateKeptnEntityName("sockshop-") {
+		t.Fatalf("project name must not end with hyphen")
+	}
+}
+
+func TestValidKeptnEntityName(t *testing.T) {
+	if !ValidateKeptnEntityName("sockshop-test") {
+		t.Fatalf("project should be valid")
 	}
 }
 

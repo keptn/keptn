@@ -50,11 +50,10 @@ Example:
 			return errors.New("required argument PROJECTNAME not set")
 		}
 
-		if !utils.ValidateK8sName(args[0]) {
+		if !utils.ValidateKeptnEntityName(args[0]) {
 			errorMsg := "Project name contains upper case letter(s) or special character(s).\n"
-			errorMsg += "Keptn relies on Helm charts and thus these conventions have to be followed: "
-			errorMsg += "start with a lower case letter, then lower case letters and numbers are allowed.\n"
-			errorMsg += "You can find the guidelines here: https://github.com/helm/helm/blob/master/docs/chart_best_practices/conventions.md#chart-names\n"
+			errorMsg += "Keptn relies on the following conventions: "
+			errorMsg += "start with a lower case letter, then lower case letters, numbers, and hyphens are allowed.\n"
 			errorMsg += "Please update project name and try again."
 			return errors.New(errorMsg)
 		}
@@ -79,11 +78,10 @@ Example:
 
 		// check stage names
 		for _, stage := range shipyard.Stages {
-			if !utils.ValidateK8sName(stage.Name) {
+			if !utils.ValidateKeptnEntityName(stage.Name) {
 				errorMsg := "Stage " + stage.Name + " contains upper case letter(s) or special character(s).\n"
-				errorMsg += "Keptn relies on Helm charts and thus these conventions have to be followed: "
-				errorMsg += "start with a lower case letter, then lower case letters and numbers are allowed.\n"
-				errorMsg += "You can find the guidelines here: https://github.com/helm/helm/blob/master/docs/chart_best_practices/conventions.md#chart-names\n"
+				errorMsg += "Keptn relies on the following conventions: "
+				errorMsg += "start with a lower case letter, then lower case letters, numbers, and hyphens are allowed.\n"
 				errorMsg += "Please update stage name in your shipyard and try again."
 				return errors.New(errorMsg)
 			}
