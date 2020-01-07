@@ -47,6 +47,7 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event, loggingDone chan bool) error
 
 	if err := o.checkAndSetServiceName(event); err != nil {
 		o.logger.Error(fmt.Sprintf("Invalid service name: %s", err.Error()))
+		return err
 	}
 
 	if _, ok := event.DeploymentStrategies["*"]; ok {
