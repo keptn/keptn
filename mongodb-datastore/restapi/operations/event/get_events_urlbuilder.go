@@ -19,6 +19,7 @@ type GetEventsURL struct {
 	NextPageKey  *string
 	PageSize     *int64
 	Project      *string
+	Root         *string
 	Service      *string
 	Source       *string
 	Stage        *string
@@ -88,6 +89,14 @@ func (o *GetEventsURL) Build() (*url.URL, error) {
 	}
 	if projectQ != "" {
 		qs.Set("project", projectQ)
+	}
+
+	var rootQ string
+	if o.Root != nil {
+		rootQ = *o.Root
+	}
+	if rootQ != "" {
+		qs.Set("root", rootQ)
 	}
 
 	var serviceQ string

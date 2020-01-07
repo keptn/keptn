@@ -58,6 +58,12 @@ func init() {
           },
           {
             "type": "string",
+            "description": "Set to load only root events",
+            "name": "root",
+            "in": "query"
+          },
+          {
+            "type": "string",
             "description": "Name of the project",
             "name": "project",
             "in": "query"
@@ -355,6 +361,12 @@ func init() {
             "type": "string",
             "description": "Type of the keptn cloud event",
             "name": "type",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Set to load only root events",
+            "name": "root",
             "in": "query"
           },
           {
