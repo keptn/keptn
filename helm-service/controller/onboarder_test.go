@@ -3,6 +3,7 @@ package controller
 import (
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -87,6 +88,63 @@ func TestDoOnboard(t *testing.T) {
 	err = onboarder.DoOnboard(ce, loggingDone)
 
 	check(err, t)
+}
+
+func TestCheckAndSetServiceName(t *testing.T) {
+
+	errorMsg := "Service name contains upper case letter(s) or special character(s).\n " +
+		"Keptn relies on the following conventions: " +
+		"start with a lower case letter, then lower case letters, numbers, and hyphens are allowed."
+
+	o := NewOnboarder(nil, nil, nil, "")
+	data := helmtest.CreateHelmChartData(t)
+
+	testCases := []struct {
+		name        string
+		event       *keptnevents.ServiceCreateEventData
+		error       error
+		serviceName string
+	}{
+		{"Mismatch", &keptnevents.ServiceCreateEventData{Service: "carts-1", HelmChart: base64.StdEncoding.EncodeToString(data)},
+			errors.New("Provided Keptn service name \"carts-1\" does not match Kubernetes service name \"carts\""), "carts-1"},
+		{"Match", &keptnevents.ServiceCreateEventData{Service: "carts", HelmChart: base64.StdEncoding.EncodeToString(data)},
+			nil, "carts"},
+		{"Set", &keptnevents.ServiceCreateEventData{Service: "", HelmChart: base64.StdEncoding.EncodeToString(data)},
+			nil, "carts"},
+		{"EmptyName", &keptnevents.ServiceCreateEventData{Service: ""},
+			errors.New(errorMsg), ""},
+		{"InvalidName", &keptnevents.ServiceCreateEventData{Service: "carts-"},
+			errors.New(errorMsg), "carts-"},
+		{"InvalidName", &keptnevents.ServiceCreateEventData{Service: "-carts"},
+			errors.New(errorMsg), "-carts"},
+		{"InvalidName", &keptnevents.ServiceCreateEventData{Service: "c%arts"},
+			errors.New(errorMsg), "c%arts"},
+		{"InvalidName", &keptnevents.ServiceCreateEventData{Service: "7carts"},
+			errors.New(errorMsg), "7carts"},
+		{"ValidName", &keptnevents.ServiceCreateEventData{Service: "a"},
+			nil, "a"},
+		{"ValidName", &keptnevents.ServiceCreateEventData{Service: "aa"},
+			nil, "aa"},
+		{"ValidName", &keptnevents.ServiceCreateEventData{Service: "aa7"},
+			nil, "aa7"},
+	}
+
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
+			res := o.checkAndSetServiceName(tt.event)
+			if res == nil && res != tt.error {
+				t.Errorf("got nil, want %s", tt.error.Error())
+			} else if res != nil && tt.error != nil && res.Error() != tt.error.Error() {
+				t.Errorf("got %s, want %s", res.Error(), tt.error.Error())
+			} else if res != nil && tt.error == nil {
+				t.Errorf("got %s, want nil", res.Error())
+			}
+
+			if tt.event.Service != tt.serviceName {
+				t.Errorf("got %s, want %s", tt.event.Service, tt.serviceName)
+			}
+		})
+	}
 }
 
 func check(e error, t *testing.T) {

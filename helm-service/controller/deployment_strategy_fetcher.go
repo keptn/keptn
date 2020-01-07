@@ -9,7 +9,7 @@ import (
 	"github.com/keptn/keptn/helm-service/pkg/serviceutils"
 )
 
-func GetDeploymentStrategies(project string) (map[string]keptnevents.DeploymentStrategy, error) {
+func getDeploymentStrategies(project string) (map[string]keptnevents.DeploymentStrategy, error) {
 
 	shipyard, err := getShipyard(project)
 	if err != nil {
@@ -31,7 +31,7 @@ func GetDeploymentStrategies(project string) (map[string]keptnevents.DeploymentS
 	return res, nil
 }
 
-func FixDeploymentStrategies(project string, deploymentStrategy keptnevents.DeploymentStrategy) (map[string]keptnevents.DeploymentStrategy, error) {
+func fixDeploymentStrategies(project string, deploymentStrategy keptnevents.DeploymentStrategy) (map[string]keptnevents.DeploymentStrategy, error) {
 
 	shipyard, err := getShipyard(project)
 	if err != nil {

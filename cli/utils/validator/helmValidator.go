@@ -2,7 +2,6 @@ package validator
 
 import (
 	"fmt"
-	"io"
 	"strings"
 
 	"github.com/ghodss/yaml"
@@ -10,11 +9,7 @@ import (
 	"github.com/keptn/keptn/cli/pkg/logging"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	kyaml "k8s.io/apimachinery/pkg/util/yaml"
-	"k8s.io/helm/pkg/chartutil"
 	"k8s.io/helm/pkg/proto/hapi/chart"
-	"k8s.io/helm/pkg/renderutil"
-	"k8s.io/helm/pkg/timeconv"
 )
 
 var reservedFileNameSuffixes = [...]string{"-istio-destinationrule.yaml", "-istio-virtualservice.yaml"}
@@ -27,7 +22,7 @@ func ValidateHelmChart(ch *chart.Chart) (bool, error) {
 		return false, nil
 	}
 
-	services, err := getRenderedServices(ch)
+	services, err := keptnutils.GetRenderedServices(ch)
 	if err != nil {
 		return false, err
 	}
@@ -35,7 +30,7 @@ func ValidateHelmChart(ch *chart.Chart) (bool, error) {
 		return false, err
 	}
 
-	deployments, err := getRenderedDeployments(ch)
+	deployments, err := keptnutils.GetRenderedDeployments(ch)
 	if err != nil {
 		return false, err
 	}
@@ -78,8 +73,8 @@ func validateValues(ch *chart.Chart) bool {
 	return true
 }
 
-func validateServices(services map[*corev1.Service]string) (bool, error) {
-	for svc := range services {
+func validateServices(services []*corev1.Service) (bool, error) {
+	for _, svc := range services {
 		if !validateService(svc) {
 			return false, nil
 		}
@@ -91,8 +86,8 @@ func validateServices(services map[*corev1.Service]string) (bool, error) {
 	return true, nil
 }
 
-func validateDeployments(deployments map[*appsv1.Deployment]string) (bool, error) {
-	for depl := range deployments {
+func validateDeployments(deployments []*appsv1.Deployment) (bool, error) {
+	for _, depl := range deployments {
 		if !validateDeployment(depl) {
 			return false, nil
 		}
@@ -102,84 +97,6 @@ func validateDeployments(deployments map[*appsv1.Deployment]string) (bool, error
 		return false, nil
 	}
 	return true, nil
-}
-
-func getRenderedTemplates(ch *chart.Chart) (map[string]string, error) {
-	renderOpts := renderutil.Options{
-		ReleaseOptions: chartutil.ReleaseOptions{
-			Name:      ch.Metadata.Name,
-			IsInstall: false,
-			IsUpgrade: false,
-			Time:      timeconv.Now(),
-		},
-	}
-	ch.Values.Raw += `
-keptn:
-  project: prj,
-  service: svc,
-  deployment: dpl`
-	return renderutil.Render(ch, ch.Values, renderOpts)
-}
-
-func getRenderedServices(ch *chart.Chart) (map[*corev1.Service]string, error) {
-
-	renderedTemplates, err := getRenderedTemplates(ch)
-	if err != nil {
-		return nil, err
-	}
-
-	services := make(map[*corev1.Service]string)
-
-	for k, v := range renderedTemplates {
-		dec := kyaml.NewYAMLToJSONDecoder(strings.NewReader(v))
-		for {
-			var svc corev1.Service
-			err := dec.Decode(&svc)
-			if err == io.EOF {
-				break
-			}
-			if err != nil {
-				continue
-			}
-
-			if keptnutils.IsService(&svc) {
-				services[&svc] = k
-			}
-		}
-	}
-
-	return services, nil
-
-}
-
-func getRenderedDeployments(ch *chart.Chart) (map[*appsv1.Deployment]string, error) {
-
-	renderedTemplates, err := getRenderedTemplates(ch)
-	if err != nil {
-		return nil, err
-	}
-
-	deployments := make(map[*appsv1.Deployment]string)
-
-	for k, v := range renderedTemplates {
-		dec := kyaml.NewYAMLToJSONDecoder(strings.NewReader(v))
-		for {
-			var depl appsv1.Deployment
-			err := dec.Decode(&depl)
-			if err == io.EOF {
-				break
-			}
-			if err != nil {
-				continue
-			}
-
-			if keptnutils.IsDeployment(&depl) {
-				deployments[&depl] = k
-			}
-		}
-	}
-
-	return deployments, nil
 }
 
 func validateService(svc *corev1.Service) bool {
