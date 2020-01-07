@@ -50,7 +50,7 @@ Example:
 			return errors.New("required argument PROJECTNAME not set")
 		}
 
-		if !utils.ValidateKeptnEntityName(args[0]) {
+		if !keptnutils.ValidateKeptnEntityName(args[0]) {
 			errorMsg := "Project name contains upper case letter(s) or special character(s).\n"
 			errorMsg += "Keptn relies on the following conventions: "
 			errorMsg += "start with a lower case letter, then lower case letters, numbers, and hyphens are allowed.\n"
@@ -78,7 +78,7 @@ Example:
 
 		// check stage names
 		for _, stage := range shipyard.Stages {
-			if !utils.ValidateKeptnEntityName(stage.Name) {
+			if !keptnutils.ValidateKeptnEntityName(stage.Name) {
 				errorMsg := "Stage " + stage.Name + " contains upper case letter(s) or special character(s).\n"
 				errorMsg += "Keptn relies on the following conventions: "
 				errorMsg += "start with a lower case letter, then lower case letters, numbers, and hyphens are allowed.\n"

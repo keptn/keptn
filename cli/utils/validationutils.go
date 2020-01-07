@@ -1,21 +1,9 @@
 package utils
 
 import (
-	"log"
 	"regexp"
 	"strings"
 )
-
-// ValidateKeptnEntityName valides if a given name starts with lowercase letter and only contains lowercase letters, numbers or
-// dashes.
-func ValidateKeptnEntityName(name string) bool {
-	reg, err := regexp.Compile(`[a-z][a-z0-9-]+[a-z0-9]`)
-	if err != nil {
-		log.Fatal(err)
-	}
-	processedString := reg.FindString(name)
-	return len(processedString) == len(name)
-}
 
 // ErrorContains checks if the error message in out contains the text in want.
 func ErrorContains(out error, want string) bool {
