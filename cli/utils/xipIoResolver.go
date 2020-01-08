@@ -23,11 +23,12 @@ func ResolveXipIoWithContext(ctx context.Context, network, addr string) (net.Con
 		DualStack: true,
 	}
 
-	if strings.Contains(addr, "xip.io") {
+	if strings.Contains(addr, ".xip.io") {
 
-		regex := `\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b`
+		regex := `\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).xip.io\b`
 		re := regexp.MustCompile(regex)
-		ip := re.FindString(addr)
+		ipWithXipIo := re.FindString(addr)
+		ip := ipWithXipIo[:len(ipWithXipIo)-len(".xip.io")]
 
 		regex = `:\d+$`
 		re = regexp.MustCompile(regex)
