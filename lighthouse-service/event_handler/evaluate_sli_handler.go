@@ -330,20 +330,26 @@ func evaluateComparison(sliResult *keptnevents.SLIResult, co *criteriaObject, pr
 
 	for _, val := range previousResults {
 		if comparison.IncludeResultWithScore == "all" {
-			// always include
-			previousValues = append(previousValues, val.Value.Value)
+			if val.Value.Success == true {
+				// always include
+				previousValues = append(previousValues, val.Value.Value)
+			}
 		} else if comparison.IncludeResultWithScore == "pass_or_warn" {
 			// only include warnings and passes
-			if val.Status == "warning" || val.Status == "pass" {
+			if (val.Status == "warning" || val.Status == "pass") && val.Value.Success == true {
 				previousValues = append(previousValues, val.Value.Value)
 			}
 		} else if comparison.IncludeResultWithScore == "pass" {
 			// only include passes
-			if val.Status == "pass" {
+			if val.Status == "pass" && val.Value.Success == true {
 				previousValues = append(previousValues, val.Value.Value)
 			}
 		}
-		previousValues = append(previousValues, val.Value.Value)
+	}
+
+	if len(previousValues) == 0 {
+		// if no comparison values are available, the evaluation passes
+		return true, nil
 	}
 
 	// aggregate the previous values based on the passed aggregation function
