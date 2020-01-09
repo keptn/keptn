@@ -41,6 +41,10 @@ Example:
 			cmd.SilenceUsage = false
 			return errors.New("required argument SERVICENAME not set")
 		}
+		if !keptnutils.ValidateKeptnEntityName(args[0]) {
+			errorMsg := "Service name contains upper case letter(s) or special character(s).\n"
+			return errors.New(errorMsg)
+		}
 		return nil
 	},
 	PreRunE: func(cmd *cobra.Command, args []string) error {

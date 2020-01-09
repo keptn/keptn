@@ -9,7 +9,7 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/gorilla/websocket v1.4.1
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.5.1-0.20200107141024-c46491472459
+	github.com/keptn/go-utils v0.5.1-0.20200107151217-7a07a50a583d
 	github.com/kinbiko/jsonassert v1.0.1
 	github.com/stretchr/testify v1.4.0
 	golang.org/x/net v0.0.0-20191028085509-fe3aa8a45271 // indirect

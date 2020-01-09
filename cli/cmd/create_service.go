@@ -8,8 +8,8 @@ import (
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
+	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/cli/pkg/logging"
-	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
 	"github.com/spf13/cobra"
 )
@@ -40,7 +40,7 @@ Example:
 			return errors.New("required argument SERVICENAME not set")
 		}
 
-		if !utils.ValidateK8sName(args[0]) {
+		if !keptnutils.ValidateKeptnEntityName(args[0]) {
 			errorMsg := "Service name contains upper case letter(s) or special character(s).\n"
 			return errors.New(errorMsg)
 		}
