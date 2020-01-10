@@ -139,7 +139,7 @@
                   </small>
                   <br>
                   <small>
-                    <b>Impacted entity: </b> {{ event.data.ImpactedEntity }}
+                    <b>Impacted entity: </b> {{ event.data.ImpactedEntities }}
                   </small>
                 </div>
                 <!-- EVENT SPECIFIC DETAILS -->
@@ -259,7 +259,7 @@ export default {
       const stages = [];
 
       traces.forEach((traceEvent) => {
-        if (traceEvent.data !== undefined) {
+        if (traceEvent.data !== undefined && traceEvent.data.stage !== undefined) {
           let stage = stages.find(stage => stage.stageName === traceEvent.data.stage);
           if (stage === undefined) {
             const newStage = {

@@ -35,26 +35,6 @@ class DatastoreService {
       mappedEvent.eventTypeHeadline = 'Remediation';
     }
 
-    //mappedEvent.data.project = "test";
-
-    if (event.source === 'dynatrace') {
-      var dttags = event.data.Tags.split(', ');
-      console.log(dttags);
-      var i;
-      for (i = 0; i < dttags.length; i++) {
-        if (dttags[i].indexOf("service:") == 0) {
-          mappedEvent.data.service = dttags[i].replace("service:","");
-        }
-        if (dttags[i].indexOf("[Environment]application:") == 0) {
-          mappedEvent.data.project = dttags[i].replace("[Environment]application:","");
-        }
-        if (dttags[i].indexOf("environment:") == 0) {
-          mappedEvent.data.stage = dttags[i].replace("environment:","").split('-')[1];
-        }
-      }
-      //mappedEvent.data.project = root.data.Tags.substring(root.data.Tags.indexOf("application:"),)
-    }
-
     return mappedEvent;
   }
 
