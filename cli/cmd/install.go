@@ -34,14 +34,16 @@ import (
 )
 
 type installCmdParams struct {
-	ConfigFilePath     *string
-	InstallerImage     *string
-	KeptnVersion       *string
-	PlatformIdentifier *string
-	GatewayType        *string
-	UseCase            *string
-	Image              string
-	Tag                string
+	ConfigFilePath          *string
+	InstallerImage          *string
+	KeptnVersion            *string
+	PlatformIdentifier      *string
+	GatewayType             *string
+	UseCase                 *string
+	IstioInstallOptionInput *string
+	IstioInstallOption      istioInstallOption
+	Image                   string
+	Tag                     string
 }
 
 var installParams *installCmdParams
@@ -122,6 +124,13 @@ Example:
 		if installParams.KeptnVersion != nil && *installParams.KeptnVersion != "" {
 			return errors.New("The flag --keptn-version is not supported anymore but you can specify " +
 				"an image for the installer using the flag 'keptn-installer-image'")
+		}
+
+		// Parse IstioInstallOption
+		if val, ok := istioInstallOptionToID[*installParams.IstioInstallOptionInput]; ok {
+			installParams.IstioInstallOption = val
+		} else {
+			return errors.New("Istio install option is unknown. Supported options are [StopIfAvailable,Reuse,Overwrite]")
 		}
 
 		if insecureSkipTLSVerify {
@@ -274,6 +283,10 @@ func init() {
 	installParams.UseCase = installCmd.Flags().StringP("use-case", "u", "all",
 		"The use case to install Keptn for [quality-gates,all]")
 	installCmd.Flags().MarkHidden("use-case")
+
+	installParams.IstioInstallOptionInput = installCmd.Flags().StringP("istio-install-option", "",
+		"StopIfAvailable", "Installation options for Istio [StopIfAvailable,Reuse,Overwrite]")
+	installCmd.Flags().MarkHidden("istio-install-option")
 
 	installCmd.PersistentFlags().BoolVarP(&insecureSkipTLSVerify, "insecure-skip-tls-verify", "s",
 		false, "Skip tls verification for kubectl commands")
