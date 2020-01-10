@@ -60,13 +60,15 @@ func init() {
             "type": "string",
             "description": "KeptnContext of the events to get",
             "name": "keptnContext",
-            "in": "query"
+            "in": "query",
+            "required": true
           },
           {
             "type": "string",
             "description": "Type of the Keptn cloud event",
             "name": "type",
-            "in": "query"
+            "in": "query",
+            "required": true
           }
         ],
         "responses": {
@@ -492,13 +494,15 @@ func init() {
             "type": "string",
             "description": "KeptnContext of the events to get",
             "name": "keptnContext",
-            "in": "query"
+            "in": "query",
+            "required": true
           },
           {
             "type": "string",
             "description": "Type of the Keptn cloud event",
             "name": "type",
-            "in": "query"
+            "in": "query",
+            "required": true
           }
         ],
         "responses": {

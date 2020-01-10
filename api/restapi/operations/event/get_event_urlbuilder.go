@@ -13,8 +13,8 @@ import (
 
 // GetEventURL generates an URL for the get event operation
 type GetEventURL struct {
-	KeptnContext *string
-	Type         *string
+	KeptnContext string
+	Type         string
 
 	_basePath string
 	// avoid unkeyed usage
@@ -50,18 +50,12 @@ func (o *GetEventURL) Build() (*url.URL, error) {
 
 	qs := make(url.Values)
 
-	var keptnContextQ string
-	if o.KeptnContext != nil {
-		keptnContextQ = *o.KeptnContext
-	}
+	keptnContextQ := o.KeptnContext
 	if keptnContextQ != "" {
 		qs.Set("keptnContext", keptnContextQ)
 	}
 
-	var typeVarQ string
-	if o.Type != nil {
-		typeVarQ = *o.Type
-	}
+	typeVarQ := o.Type
 	if typeVarQ != "" {
 		qs.Set("type", typeVarQ)
 	}

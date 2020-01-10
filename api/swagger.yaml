@@ -52,17 +52,17 @@ paths:
     get:
       tags:
         - Event
-      summary: Get the latest event matching the parameters
+      summary: Get the latest event matching the required query parameters
       parameters:
         - name: keptnContext
           in: query
           type: string
-          required: false
+          required: true
           description: KeptnContext of the events to get
         - name: type
           in: query
           type: string
-          required: false
+          required: true
           description: Type of the Keptn cloud event
       responses:
         200:

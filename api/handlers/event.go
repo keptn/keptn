@@ -68,16 +68,17 @@ func PostEventHandlerFunc(params event.PostEventParams, principal *models.Princi
 // GetEventHandlerFunc returns an event specified by keptnContext and eventType
 func GetEventHandlerFunc(params event.GetEventParams, principal *models.Principal) middleware.Responder {
 
-	logger := keptnutils.NewLogger(*params.KeptnContext, "", "api")
+	keptnContext := uuid.New().String()
+	logger := keptnutils.NewLogger(keptnContext, "", "api")
 
 	eventHandler := datastore.NewEventHandler(getDatastoreURL())
-	cloudEvent, errObj := eventHandler.GetEvent(*params.KeptnContext, *params.Type)
+	cloudEvent, errObj := eventHandler.GetEvent(params.KeptnContext, params.Type)
 	if errObj != nil {
 		return sendInternalErrorForGet(fmt.Errorf("%s", *errObj.Message), logger)
 	}
 
 	if cloudEvent == nil {
-		return sendInternalErrorForGet(fmt.Errorf("No "+*params.Type+" event found for Keptn context: "+*params.KeptnContext), logger)
+		return sendInternalErrorForGet(fmt.Errorf("No "+params.Type+" event found for Keptn context: "+params.KeptnContext), logger)
 	}
 
 	eventByte, err := json.Marshal(cloudEvent)
