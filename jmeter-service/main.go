@@ -71,6 +71,7 @@ func runTests(event cloudevents.Event, shkeptncontext string, data keptnevents.D
 
 	testInfo := getTestInfo(data)
 	id := uuid.New().String()
+	startedAt := time.Now()
 
 	var res bool
 	var err error
@@ -79,16 +80,17 @@ func runTests(event cloudevents.Event, shkeptncontext string, data keptnevents.D
 		logger.Error(err.Error())
 		return
 	}
+
 	if !res {
-		if err := sendEvaluationDoneEvent(shkeptncontext, event, logger); err != nil {
-			logger.Error(fmt.Sprintf("Error sending evaluation done event: %s", err.Error()))
+		if err := sendTestsFinishedEvent(shkeptncontext, event, startedAt, "fail", logger); err != nil {
+			logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.ToString())
 		}
 		return
 	}
 	logger.Info("Health Check test passed = " + strconv.FormatBool(res) + ". " + testInfo.ToString())
 
 	var sendEvent = false
-	startedAt := time.Now()
+
 	switch strings.ToLower(data.TestStrategy) {
 	case "functional":
 		res, err = runFunctionalCheck(data, id, logger)
@@ -118,12 +120,12 @@ func runTests(event cloudevents.Event, shkeptncontext string, data keptnevents.D
 
 	if sendEvent {
 		if !res {
-			if err := sendEvaluationDoneEvent(shkeptncontext, event, logger); err != nil {
-				logger.Error(fmt.Sprintf("Error sending evaluation done event: %s", err.Error()) + ". " + testInfo.ToString())
+			if err := sendTestsFinishedEvent(shkeptncontext, event, startedAt, "fail", logger); err != nil {
+				logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.ToString())
 			}
 			return
 		}
-		if err := sendTestsFinishedEvent(shkeptncontext, event, startedAt, logger); err != nil {
+		if err := sendTestsFinishedEvent(shkeptncontext, event, startedAt, "pass", logger); err != nil {
 			logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.ToString())
 		}
 	}
@@ -196,7 +198,7 @@ func getGatewayFromConfigmap() (string, error) {
 	return string(cm.Data["app_domain"]), nil
 }
 
-func sendTestsFinishedEvent(shkeptncontext string, incomingEvent cloudevents.Event, startedAt time.Time, logger *keptnutils.Logger) error {
+func sendTestsFinishedEvent(shkeptncontext string, incomingEvent cloudevents.Event, startedAt time.Time, result string, logger *keptnutils.Logger) error {
 	source, _ := url.Parse("jmeter-service")
 	contentType := "application/json"
 
@@ -209,6 +211,8 @@ func sendTestsFinishedEvent(shkeptncontext string, incomingEvent cloudevents.Eve
 	// fill in timestamps
 	testFinishedData.Start = startedAt.Format(time.RFC3339)
 	testFinishedData.End = time.Now().Format(time.RFC3339)
+	// set test result
+	testFinishedData.Result = result
 
 	event := cloudevents.Event{
 		Context: cloudevents.EventContextV02{
@@ -220,35 +224,6 @@ func sendTestsFinishedEvent(shkeptncontext string, incomingEvent cloudevents.Eve
 			Extensions:  map[string]interface{}{"shkeptncontext": shkeptncontext},
 		}.AsV02(),
 		Data: testFinishedData,
-	}
-
-	return sendEvent(event)
-}
-
-func sendEvaluationDoneEvent(shkeptncontext string, incomingEvent cloudevents.Event, logger *keptnutils.Logger) error {
-
-	source, _ := url.Parse("jmeter-service")
-	contentType := "application/json"
-
-	evaluationDoneData := keptnevents.EvaluationDoneEventData{}
-	// fill in data from incoming event (e.g., project, service, stage, teststrategy, deploymentstrategy)
-	if err := incomingEvent.DataAs(&evaluationDoneData); err != nil {
-		logger.Error(fmt.Sprintf("Got Data Error: %s", err.Error()))
-		return err
-	}
-	// set result to fail
-	evaluationDoneData.Result = "fail"
-
-	event := cloudevents.Event{
-		Context: cloudevents.EventContextV02{
-			ID:          uuid.New().String(),
-			Time:        &types.Timestamp{Time: time.Now()},
-			Type:        keptnevents.EvaluationDoneEventType,
-			Source:      types.URLRef{URL: *source},
-			ContentType: &contentType,
-			Extensions:  map[string]interface{}{"shkeptncontext": shkeptncontext},
-		}.AsV02(),
-		Data: evaluationDoneData,
 	}
 
 	return sendEvent(event)

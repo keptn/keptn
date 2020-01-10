@@ -52,7 +52,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	var shkeptncontext string
 	_ = event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
 
-	logger := keptnutils.NewLogger(shkeptncontext, event.Context.GetID(), "prometheus-sli-service")
+	logger := keptnutils.NewLogger(shkeptncontext, event.Context.GetID(), "lighthouse-service")
 
 	handler, err := event_handler.NewEventHandler(event, logger)
 
