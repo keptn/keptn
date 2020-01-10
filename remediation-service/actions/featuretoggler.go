@@ -39,7 +39,7 @@ func (f FeatureToggler) ExecuteAction(problem *keptnevents.ProblemEventData, shk
 	togglename := strings.Split(action.Value, ":")[0]
 	togglevalue := strings.Split(action.Value, ":")[1]
 
-	err := sendDTProblemComment(problem.PID, "Keptn triggering change of feature toggle "+togglename+" to be set to value: "+togglevalue)
+	err := sendProblemComment(problem.PID, "Keptn triggering change of feature toggle "+togglename+" to be set to value: "+togglevalue)
 	if err != nil {
 		fmt.Println(err)
 		return err
@@ -47,11 +47,11 @@ func (f FeatureToggler) ExecuteAction(problem *keptnevents.ProblemEventData, shk
 
 	err = f.ToggleFeature(togglename, togglevalue)
 	if err != nil {
-		sendDTProblemComment(problem.PID, "Keptn could not change feature toggle "+togglename+" to be set to value: "+togglevalue)
+		sendProblemComment(problem.PID, "Keptn could not change feature toggle "+togglename+" to be set to value: "+togglevalue)
 		return err
 	}
 
-	err = sendDTProblemComment(problem.PID, "Keptn finished change of feature toggle "+togglename+" to be set to value: "+togglevalue)
+	err = sendProblemComment(problem.PID, "Keptn finished change of feature toggle "+togglename+" to be set to value: "+togglevalue)
 	if err != nil {
 		fmt.Println(err)
 		return err
@@ -97,9 +97,14 @@ func (f FeatureToggler) ToggleFeature(togglename string, togglevalue string) err
 	return nil
 }
 
-func sendDTProblemComment(problemID string, comment string) error {
+// comment on the dynatrace problem (if a tenant and api token is available)
+func sendProblemComment(problemID string, comment string) error {
 	if os.Getenv("DT_TENANT") == "" || os.Getenv("DT_API_TOKEN") == "" {
 		return errors.New("Dynatrace secret not available. Can not post comments to Dyntrace tenant")
+	}
+
+	if problemID == "" {
+		return errors.New("No PID set - ignoring comment")
 	}
 
 	dtTenant := os.Getenv("DT_TENANT")
