@@ -62,6 +62,7 @@ metadata:
   name: installer
   namespace: default
 spec:
+  backoffLimit: 0
   template:
     metadata:
       labels:
@@ -82,6 +83,8 @@ spec:
           value: INGRESS_PLACEHOLDER
         - name: USE_CASE
           value: USE_CASE_PLACEHOLDER
+        - name: ISTIO_INSTALL_OPTION
+          value: ISTIO_INSTALL_OPTION_PLACEHOLDER
       restartPolicy: Never
 `
 
@@ -130,7 +133,7 @@ Example:
 		if val, ok := istioInstallOptionToID[*installParams.IstioInstallOptionInput]; ok {
 			installParams.IstioInstallOption = val
 		} else {
-			return errors.New("Istio install option is unknown. Supported options are [StopIfAvailable,Reuse,Overwrite]")
+			return errors.New("Istio install option is unknown. Supported options are [StopIfInstalled,Reuse,Overwrite]")
 		}
 
 		if insecureSkipTLSVerify {
@@ -285,7 +288,7 @@ func init() {
 	installCmd.Flags().MarkHidden("use-case")
 
 	installParams.IstioInstallOptionInput = installCmd.Flags().StringP("istio-install-option", "",
-		"StopIfAvailable", "Installation options for Istio [StopIfAvailable,Reuse,Overwrite]")
+		"StopIfInstalled", "Installation options for Istio [StopIfInstalled,Reuse,Overwrite]")
 	installCmd.Flags().MarkHidden("istio-install-option")
 
 	installCmd.PersistentFlags().BoolVarP(&insecureSkipTLSVerify, "insecure-skip-tls-verify", "s",
@@ -303,6 +306,7 @@ func doInstallation() error {
 	installerManifest = strings.ReplaceAll(installerManifest, "PLATFORM_PLACEHOLDER", *installParams.PlatformIdentifier)
 	installerManifest = strings.ReplaceAll(installerManifest, "GATEWAY_TYPE_PLACEHOLDER", *installParams.GatewayType)
 	installerManifest = strings.ReplaceAll(installerManifest, "USE_CASE_PLACEHOLDER", *installParams.UseCase)
+	installerManifest = strings.ReplaceAll(installerManifest, "ISTIO_INSTALL_OPTION_PLACEHOLDER", installParams.IstioInstallOption.String())
 
 	ingress := Istio
 	if *installParams.UseCase == "quality-gates" {
@@ -338,12 +342,12 @@ func doInstallation() error {
 		return fmt.Errorf("Error while applying installer job: %s \n%s\nAborting installation", err.Error(), string(out))
 	}
 
-	logging.PrintLog("Installer pod deployed successfully.", logging.InfoLevel)
-
 	installerPodName, err := waitForInstallerPod()
 	if err != nil {
 		return err
 	}
+
+	logging.PrintLog("Installer pod deployed successfully.", logging.InfoLevel)
 
 	if err := getInstallerLogs(installerPodName); err != nil {
 		return err
@@ -462,11 +466,7 @@ func readUserInput(value *string, regex string, promptMessage string, regexViola
 }
 
 func waitForInstallerPod() (string, error) {
-	podName := ""
-	podRunning := false
-	for ok := true; ok; ok = !podRunning {
-		time.Sleep(5 * time.Second)
-
+	for true {
 		options := options{"get",
 			"pods",
 			"-l",
@@ -489,14 +489,16 @@ func waitForInstallerPod() (string, error) {
 			if len(podStatusArray) > 0 {
 				podStatus := podStatusArray[0].(map[string]interface{})["status"].(map[string]interface{})["phase"].(string)
 				if podStatus == "Running" {
-					podName = podStatusArray[0].(map[string]interface{})["metadata"].(map[string]interface{})["name"].(string)
-					podRunning = true
+					return podStatusArray[0].(map[string]interface{})["metadata"].(map[string]interface{})["name"].(string), nil
+				} else if podStatus == "Failed" {
+					return "", errors.New("Installer pod ran into failure. " +
+						"Please check if a failed installer job exits: \"kubectl get jobs installer -n default\"")
 				}
 			}
-
 		}
+		time.Sleep(1 * time.Second)
 	}
-	return podName, nil
+	return "", nil
 }
 
 func getInstallerLogs(podName string) error {
@@ -601,7 +603,6 @@ func copyAndCapture(r io.Reader, fileName string) (bool, error) {
 
 			logging.PrintLogStringLevel(outputStr, msgLogLevel)
 			if logging.GetLogLevel(msgLogLevel) == logging.QuietLevel {
-				logging.PrintLog(fmt.Sprintf("Error occured with message: %s", txt), logging.InfoLevel)
 				errorOccured = true
 			}
 			if outputStr == successMsg {

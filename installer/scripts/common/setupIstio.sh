@@ -1,20 +1,17 @@
 #!/bin/bash
 source ./common/utils.sh
 
-
-# Values of ISTIO_INSTALL_OPTION: StopIfAvailable, Reuse, Overwrite
-
 kubectl get ns istio-system
 ISTIO_AVAILABLE=$?
 if [[ "$ISTIO_AVAILABLE" == 0 ]] && [[ "$ISTIO_INSTALL_OPTION" == "Reuse" ]]; then
     # An istio-version is already installed
-    print_info "The current Istio installation is reused but its compatibility is not checked"
-elif [[ "$ISTIO_AVAILABLE" == 0 ]] && ([[ "$ISTIO_INSTALL_OPTION" == "StopIfAvailable" ]] || [[ "$ISTIO_INSTALL_OPTION" == "" ]]); then
-    print_error "Istio is already installed"
+    print_info "Istio installation is reused but its compatibility is not checked"
+elif [[ "$ISTIO_AVAILABLE" == 0 ]] && ([[ "$ISTIO_INSTALL_OPTION" == "StopIfInstalled" ]] || [[ "$ISTIO_INSTALL_OPTION" == "" ]]); then
+    print_error "Istio is already installed but is not used due to unknown compatibility"
     exit 1
 else
     if [[ "$ISTIO_AVAILABLE" == 0 ]] && [[ "$ISTIO_INSTALL_OPTION" == "Overwrite" ]]; then
-        print_info "The Istio installation is overwritten"
+        print_info "Istio installation is overwritten"
     fi
 
     # Istio installation
