@@ -439,8 +439,14 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 			return err
 		}
 
-		genChart, err = c.setCanaryWeight(e, 0)
+		if err := c.generatedChartHandler.UpdateCanaryWeight(genChart, int32(0)); err != nil {
+			return err
+		}
+		genChartData, err = keptnutils.PackageChart(genChart)
 		if err != nil {
+			return err
+		}
+		if err := keptnutils.StoreChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, true), genChartData, url.String()); err != nil {
 			return err
 		}
 		if _, err := c.ApplyChart(genChart, e.Project, e.Stage, e.Service, deploymentStrategy, true); err != nil {
