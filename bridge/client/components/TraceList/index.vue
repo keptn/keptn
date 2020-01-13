@@ -131,6 +131,17 @@
                     <b>Action: </b> {{ event.data.deploymentChanges | remediationAction }}
                   </small>
                 </div>
+
+                <div v-if="event.type === 'sh.keptn.event.problem.open'">
+                  <hr>
+                  <small>
+                    <b>Problem: </b> {{ event.data.ProblemTitle }}
+                  </small>
+                  <br>
+                  <small>
+                    <b>Impacted entity: </b> {{ event.data.ImpactedEntities }}
+                  </small>
+                </div>
                 <!-- EVENT SPECIFIC DETAILS -->
               </b-list-group-item>
               <div v-if="isActive(event.id)" class="event-detail">
