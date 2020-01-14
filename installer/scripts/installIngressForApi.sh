@@ -5,21 +5,19 @@ kubectl apply -f ../manifests/keptn/api-ingress.yaml
 verify_install_step $? "Installing Keptn api-ingress failed."
 
 if [[ "$GATEWAY_TYPE" == "LoadBalancer" ]]; then
-  wait_for_k8s_ingress "hostname"
+  wait_for_k8s_ingress
   export DOMAIN=$(kubectl get ingress api-ingress -n keptn -o json | jq -r .status.loadBalancer.ingress[0].hostname)
   if [[ $? != 0 ]]; then
-      print_error "Failed to get k8s ingress gateway information." && exit 1
+      print_error "Failed to get K8s ingress gateway information." && exit 1
   fi
   export INGRESS_HOST=$DOMAIN
 
   if [[ "$DOMAIN" == "null" ]]; then
-      print_info "Could not get ingress gateway domain name. Trying to retrieve IP address instead."
-
-      wait_for_k8s_ingress "ip"
+      print_info "Could not get ingress gateway domain name. Retrieving IP address instead."
 
       export DOMAIN=$(kubectl get ingress api-ingress -n keptn -o json | jq -r .status.loadBalancer.ingress[0].ip)
       if [[ "$DOMAIN" == "null" ]]; then
-          print_error "IP of k8s ingress gateway could not be derived."
+          print_error "IP address of ingress gateway could not be retrieved."
           exit 1
       fi
       export DOMAIN="$DOMAIN.xip.io"

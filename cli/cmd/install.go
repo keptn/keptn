@@ -20,7 +20,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"net/http"
 	"os"
 	"os/exec"
 	"regexp"
@@ -35,11 +34,16 @@ import (
 )
 
 type installCmdParams struct {
-	ConfigFilePath     *string
-	InstallerVersion   *string
-	PlatformIdentifier *string
-	GatewayType        *string
-	UseCase            *string
+	ConfigFilePath          *string
+	InstallerImage          *string
+	KeptnVersion            *string
+	PlatformIdentifier      *string
+	GatewayType             *string
+	UseCase                 *string
+	IstioInstallOptionInput *string
+	IstioInstallOption      istioInstallOption
+	Image                   string
+	Tag                     string
 }
 
 var installParams *installCmdParams
@@ -51,9 +55,53 @@ const pks = "pks"
 const openshift = "openshift"
 const kubernetes = "kubernetes"
 
-const installerPrefixURL = "https://raw.githubusercontent.com/keptn/keptn/"
-const installerSuffixPath = "/installer/manifests/installer/installer.yaml"
-const rbacSuffixPath = "/installer/manifests/installer/rbac.yaml"
+const installerJob = `---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: installer
+  namespace: default
+spec:
+  backoffLimit: 0
+  template:
+    metadata:
+      labels:
+        app: installer
+    spec:
+      volumes:
+      - name: kubectl
+        emptyDir: {}
+      containers:
+      - name: keptn-installer
+        image: INSTALLER_IMAGE_PLACEHOLDER
+        env:       
+        - name: PLATFORM
+          value: PLATFORM_PLACEHOLDER
+        - name: GATEWAY_TYPE
+          value: GATEWAY_TYPE_PLACEHOLDER
+        - name: INGRESS
+          value: INGRESS_PLACEHOLDER
+        - name: USE_CASE
+          value: USE_CASE_PLACEHOLDER
+        - name: ISTIO_INSTALL_OPTION
+          value: ISTIO_INSTALL_OPTION_PLACEHOLDER
+      restartPolicy: Never
+`
+
+const rbac = `---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: rbac-service-account
+subjects:
+  - kind: ServiceAccount
+    name: default
+    namespace: default
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
+`
 
 type platform interface {
 	checkRequirements() error
@@ -76,6 +124,18 @@ Example:
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 
+		if installParams.KeptnVersion != nil && *installParams.KeptnVersion != "" {
+			return errors.New("The flag --keptn-version is not supported anymore but you can specify " +
+				"an image for the installer using the flag 'keptn-installer-image'")
+		}
+
+		// Parse IstioInstallOption
+		if val, ok := istioInstallOptionToID[*installParams.IstioInstallOptionInput]; ok {
+			installParams.IstioInstallOption = val
+		} else {
+			return errors.New("Istio install option is unknown. Supported options are [StopIfInstalled,Reuse,Overwrite]")
+		}
+
 		if insecureSkipTLSVerify {
 			kubectlOptions = "--insecure-skip-tls-verify=true"
 		}
@@ -93,11 +153,28 @@ Example:
 			return errors.New(`Keptn currently supports use case: 'quality-gates' and 'all'`)
 		}
 
-		isInstallerAvailable, err := checkInstallerAvailability()
-		if err != nil || !isInstallerAvailable {
-			return errors.New("Installers not found under:\n" +
-				getInstallerURL() + "\n" + getRbacURL())
+		// Determine installer version
+		if installParams.InstallerImage != nil && *installParams.InstallerImage != "" {
+			installParams.Image, installParams.Tag = utils.SplitImageName(*installParams.InstallerImage)
+		} else if utils.IsOfficialKeptnVersion(Version) {
+			installParams.Image = "docker.io/keptn/installer"
+			installParams.Tag = Version
+			version := installParams.Image + ":" + installParams.Tag
+			installParams.InstallerImage = &version
+		} else {
+			installParams.Image = "docker.io/keptn/installer"
+			installParams.Tag = "latest"
+			version := installParams.Image + ":" + installParams.Tag
+			installParams.InstallerImage = &version
 		}
+
+		err = utils.CheckImageAvailability(installParams.Image, installParams.Tag)
+		if err != nil {
+			return fmt.Errorf("Installer image not found under: %v", err)
+		}
+
+		logging.PrintLog(fmt.Sprintf("Used Installer version: %s:%s",
+			installParams.Image, installParams.Tag), logging.InfoLevel)
 
 		if p.checkRequirements() != nil {
 			return err
@@ -193,8 +270,13 @@ func init() {
 		"The name of the creds file")
 	installCmd.Flags().MarkHidden("creds")
 
-	installParams.InstallerVersion = installCmd.Flags().StringP("keptn-version", "k",
-		"master", "The branch or tag of the version which is installed")
+	installParams.InstallerImage = installCmd.Flags().StringP("keptn-installer-image", "k",
+		"", "The installer image which is used for the installation")
+	installCmd.Flags().MarkHidden("keptn-installer-image")
+
+	installParams.KeptnVersion = installCmd.Flags().StringP("keptn-version", "",
+		"", "This flag is not supported anymore but you can specify an image for the installer"+
+			"using the flag 'keptn-installer-image'")
 	installCmd.Flags().MarkHidden("keptn-version")
 
 	installParams.GatewayType = installCmd.Flags().StringP("gateway", "g", "LoadBalancer",
@@ -205,78 +287,32 @@ func init() {
 		"The use case to install Keptn for [quality-gates,all]")
 	installCmd.Flags().MarkHidden("use-case")
 
+	installParams.IstioInstallOptionInput = installCmd.Flags().StringP("istio-install-option", "",
+		"StopIfInstalled", "Installation options for Istio [StopIfInstalled,Reuse,Overwrite]")
+	installCmd.Flags().MarkHidden("istio-install-option")
+
 	installCmd.PersistentFlags().BoolVarP(&insecureSkipTLSVerify, "insecure-skip-tls-verify", "s",
 		false, "Skip tls verification for kubectl commands")
-}
-
-func checkInstallerAvailability() (bool, error) {
-
-	resp, err := http.Get(getInstallerURL())
-	if err != nil {
-		return false, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		return false, nil
-	}
-
-	resp, err = http.Get(getRbacURL())
-	if err != nil {
-		return false, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		return false, nil
-	}
-	return true, nil
-}
-
-func getInstallerURL() string {
-	return installerPrefixURL + *installParams.InstallerVersion + installerSuffixPath
-}
-
-func getRbacURL() string {
-	return installerPrefixURL + *installParams.InstallerVersion + rbacSuffixPath
 }
 
 // Preconditions: 1. Already authenticated against the cluster.
 func doInstallation() error {
 
-	path, err := keptnutils.GetKeptnDirectory()
-	if err != nil {
-		return err
-	}
-	installerPath := path + "installer.yaml"
+	installerManifest := installerJob
 
-	// get the YAML for the installer pod
-	if err := utils.DownloadFile(installerPath, getInstallerURL()); err != nil {
-		return err
-	}
+	installerManifest = strings.ReplaceAll(installerManifest, "INSTALLER_IMAGE_PLACEHOLDER",
+		installParams.Image+":"+installParams.Tag)
 
-	if err := utils.Replace(installerPath,
-		utils.PlaceholderReplacement{PlaceholderValue: "PLATFORM_PLACEHOLDER",
-			DesiredValue: *installParams.PlatformIdentifier}); err != nil {
-		return err
-	}
-	if err := utils.Replace(installerPath,
-		utils.PlaceholderReplacement{PlaceholderValue: "GATEWAY_TYPE_PLACEHOLDER",
-			DesiredValue: *installParams.GatewayType}); err != nil {
-		return err
-	}
-	if err := utils.Replace(installerPath,
-		utils.PlaceholderReplacement{PlaceholderValue: "USE_CASE_PLACEHOLDER",
-			DesiredValue: *installParams.UseCase}); err != nil {
-		return err
-	}
+	installerManifest = strings.ReplaceAll(installerManifest, "PLATFORM_PLACEHOLDER", *installParams.PlatformIdentifier)
+	installerManifest = strings.ReplaceAll(installerManifest, "GATEWAY_TYPE_PLACEHOLDER", *installParams.GatewayType)
+	installerManifest = strings.ReplaceAll(installerManifest, "USE_CASE_PLACEHOLDER", *installParams.UseCase)
+	installerManifest = strings.ReplaceAll(installerManifest, "ISTIO_INSTALL_OPTION_PLACEHOLDER", installParams.IstioInstallOption.String())
 
-	// use case specific Keptn installation
 	ingress := Istio
 	if *installParams.UseCase == "quality-gates" {
 		ingress = Nginx
 	}
-	if err := utils.Replace(installerPath,
-		utils.PlaceholderReplacement{PlaceholderValue: "INGRESS_PLACEHOLDER",
-			DesiredValue: ingress.String()}); err != nil {
-		return err
-	}
+	installerManifest = strings.ReplaceAll(installerManifest, "INGRESS_PLACEHOLDER", ingress.String())
 
 	_, aks := p.(*aksPlatform)
 	_, eks := p.(*eksPlatform)
@@ -284,35 +320,36 @@ func doInstallation() error {
 	_, pks := p.(*pksPlatform)
 	_, k8s := p.(*kubernetesPlatform)
 	if gke || aks || k8s || eks || pks {
-		options := options{"apply", "-f", getRbacURL()}
-		options.appendIfNotEmpty(kubectlOptions)
-		_, err = keptnutils.ExecuteCommand("kubectl", options)
+		o := options{"apply", "-f", "-"}
+		o.appendIfNotEmpty(kubectlOptions)
 
+		cmd := exec.Command("kubectl", o...)
+		cmd.Stdin = strings.NewReader(rbac)
+		out, err := cmd.CombinedOutput()
 		if err != nil {
-			return fmt.Errorf("Error while applying RBAC for installer pod: %s \nAborting installation", err.Error())
+			return fmt.Errorf("Error while applying RBAC: %s \n%s\nAborting installation", err.Error(), string(out))
 		}
 	}
 
 	logging.PrintLog("Deploying Keptn installer pod ...", logging.InfoLevel)
 
-	o := options{"apply", "-f", installerPath}
+	o := options{"apply", "-f", "-"}
 	o.appendIfNotEmpty(kubectlOptions)
-	if _, err := keptnutils.ExecuteCommand("kubectl", o); err != nil {
-		return fmt.Errorf("Error while deploying keptn installer pod: %s \nAborting installation", err.Error())
+	cmd := exec.Command("kubectl", o...)
+	cmd.Stdin = strings.NewReader(installerManifest)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("Error while applying installer job: %s \n%s\nAborting installation", err.Error(), string(out))
 	}
-
-	logging.PrintLog("Installer pod deployed successfully.", logging.InfoLevel)
 
 	installerPodName, err := waitForInstallerPod()
 	if err != nil {
 		return err
 	}
 
-	if err := getInstallerLogs(installerPodName); err != nil {
-		return err
-	}
+	logging.PrintLog("Installer pod deployed successfully.", logging.InfoLevel)
 
-	if err := os.Remove(installerPath); err != nil {
+	if err := getInstallerLogs(installerPodName); err != nil {
 		return err
 	}
 
@@ -429,11 +466,7 @@ func readUserInput(value *string, regex string, promptMessage string, regexViola
 }
 
 func waitForInstallerPod() (string, error) {
-	podName := ""
-	podRunning := false
-	for ok := true; ok; ok = !podRunning {
-		time.Sleep(5 * time.Second)
-
+	for true {
 		options := options{"get",
 			"pods",
 			"-l",
@@ -456,14 +489,16 @@ func waitForInstallerPod() (string, error) {
 			if len(podStatusArray) > 0 {
 				podStatus := podStatusArray[0].(map[string]interface{})["status"].(map[string]interface{})["phase"].(string)
 				if podStatus == "Running" {
-					podName = podStatusArray[0].(map[string]interface{})["metadata"].(map[string]interface{})["name"].(string)
-					podRunning = true
+					return podStatusArray[0].(map[string]interface{})["metadata"].(map[string]interface{})["name"].(string), nil
+				} else if podStatus == "Failed" {
+					return "", errors.New("Installer pod ran into failure. " +
+						"Please check if a failed installer job exits: \"kubectl get jobs installer -n default\"")
 				}
 			}
-
 		}
+		time.Sleep(1 * time.Second)
 	}
-	return podName, nil
+	return "", nil
 }
 
 func getInstallerLogs(podName string) error {
@@ -568,7 +603,6 @@ func copyAndCapture(r io.Reader, fileName string) (bool, error) {
 
 			logging.PrintLogStringLevel(outputStr, msgLogLevel)
 			if logging.GetLogLevel(msgLogLevel) == logging.QuietLevel {
-				logging.PrintLog(fmt.Sprintf("Error occured with message: %s", txt), logging.InfoLevel)
 				errorOccured = true
 			}
 			if outputStr == successMsg {

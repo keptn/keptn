@@ -127,5 +127,5 @@ objectives:
           - "=0"
 total_score:  # maximum score = sum of weights
   pass: "90%" # by default this is interpreted as ">="
-  warning: 75%
+  warning: "75%"
 ```

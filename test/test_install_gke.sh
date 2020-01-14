@@ -27,7 +27,7 @@ replaceCreds
 echo "Installing keptn on cluster"
 
 # Install keptn (using the develop version, which should point the :latest docker images)
-keptn install --keptn-version=develop --creds=creds.json --verbose
+keptn install --keptn-installer-image=keptn/installer:latest --creds=creds.json --verbose
 
 verify_test_step $? "keptn install failed"
 

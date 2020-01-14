@@ -30,7 +30,7 @@ spec:
         - name: EVENTBROKER
           value: 'http://event-broker.keptn.svc.cluster.local/keptn'
         - name: WAIT_DURATION
-          value: '3m'
+          value: '10m'
 ---
 apiVersion: v1
 kind: Service

@@ -131,6 +131,17 @@
                     <b>Action: </b> {{ event.data.deploymentChanges | remediationAction }}
                   </small>
                 </div>
+
+                <div v-if="event.type === 'sh.keptn.event.problem.open'">
+                  <hr>
+                  <small>
+                    <b>Problem: </b> {{ event.data.ProblemTitle }}
+                  </small>
+                  <br>
+                  <small>
+                    <b>Impacted entity: </b> {{ event.data.ImpactedEntities }}
+                  </small>
+                </div>
                 <!-- EVENT SPECIFIC DETAILS -->
               </b-list-group-item>
               <div v-if="isActive(event.id)" class="event-detail">
@@ -205,9 +216,9 @@ export default {
         }
         if (canary.action === 'set') {
           if (canary.value !== undefined) {
-            return `Settting traffic percentage for canary deployment to ${canary.value}`;
+            return `Setting traffic percentage for canary deployment to ${canary.value}`;
           }
-          return 'Settting traffic percentage for canary deploymen';
+          return 'Setting traffic percentage for canary deployment';
         }
         if (canary.action === 'discard') {
           return 'Discarding deployment and reverting back to latest stable version';

@@ -15,20 +15,24 @@ As a starting point, please read the docs within the [docs/](docs/) folder in th
 
 ### Fork and create a branch
 
-We are following the [git branching model described in this blog post](https://nvie.com/posts/a-successful-git-branching-model/).
+For Keptn, we are following the [git branching model described in this blog post](https://nvie.com/posts/a-successful-git-branching-model/).
+For repositories within the [keptn-contrib](https://github.com/keptn-contrib/) organization we tried to avoid the `develop` branch, and work
+ directly on the `master` branch.
 
-If you work on a new feature or on a bugfix, then fork the repository and branch away from the `develop` branch according to the following schema:
+If you work on a new feature or on a bugfix, then fork the repository and branch away from the `develop` branch (for
+ [keptn-contrib](https://github.com/keptn-contrib/) repos it would be the `master` branch) and use the following schema
+ for naming your branches:
 
 * `feature/###/name` for new features,
 * `bug/###/name` for bugfixes, and
-* `hotfix/###/name` for hotfixes.
+* `hotfix/###/name` for hotfixes (e.g., for releases),
 
 where `###` is the github issue id. E.g., if you work on feature based on issue #123, the branch name could be
 
 * `feature/123/foo`.
 
 ```bash
-git checkout develop
+git checkout develop # or: git checkout master
 git pull
 git checkout -b feature/123/foo
 ```

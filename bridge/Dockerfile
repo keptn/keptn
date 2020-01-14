@@ -10,12 +10,21 @@ RUN addgroup mygroup && adduser -D -G mygroup myuser && mkdir -p /usr/src/app &&
 # Prepare app directory
 WORKDIR /usr/src/app
 
-COPY . /usr/src/app
+COPY package.json package-lock.json /usr/src/app/
 RUN npm install
+
+COPY . /usr/src/app
+
 RUN npm run build
 ENV NODE_ENV "production"
 
 # Set user
 USER myuser
 
-CMD ["sh", "-c", "cat MANIFEST && /usr/local/bin/npm start"]
+
+# KEEP THE FOLLOWING LINES COMMENTED OUT!!! (they will be included within the travis-ci build)
+#travis-uncomment ADD MANIFEST /
+#travis-uncomment COPY entrypoint.sh /
+#travis-uncomment ENTRYPOINT ["/entrypoint.sh"]
+
+CMD ["/usr/local/bin/npm", "start"]

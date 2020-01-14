@@ -14,7 +14,7 @@ spec:
         emptyDir: {}
       containers:
       - name: keptn-installer
-        image: agrimmer/installer:latest
+        image: keptn/installer:latest
         imagePullPolicy: Always
         env:       
         - name: PLATFORM
@@ -25,4 +25,6 @@ spec:
           value: INGRESS_PLACEHOLDER
         - name: USE_CASE
           value: USE_CASE_PLACEHOLDER
-      restartPolicy: OnFailure
+        - name: ISTIO_INSTALL_OPTION
+          value: ISTIO_INSTALL_OPTION_PLACEHOLDER
+      restartPolicy: Never

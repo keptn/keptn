@@ -1,6 +1,7 @@
 package event_handler
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/url"
@@ -20,12 +21,19 @@ type StartEvaluationHandler struct {
 }
 
 func (eh *StartEvaluationHandler) HandleEvent() error {
+
+	// check if test passed
+	passed := eh.hasTestPassed()
+	if !passed {
+		eh.Logger.Debug("Do not perform evaluation due to failed test")
+		return nil
+	}
+
 	var keptnContext string
 	_ = eh.Event.ExtensionAs("shkeptncontext", &keptnContext)
 
 	e := &keptnevents.StartEvaluationEventData{}
 	err := eh.Event.DataAs(e)
-
 	if err != nil {
 		eh.Logger.Error("Could not parse event payload: " + err.Error())
 		return err
@@ -33,7 +41,7 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 
 	// functional tests dont need to be evaluated
 	if e.TestStrategy == "functional" || e.TestStrategy == "" {
-		eh.Logger.Debug("Functional tests are need evaluated")
+		eh.Logger.Debug("Functional tests are not evaluated")
 		evaluationDetails := keptnevents.EvaluationDetails{
 			IndicatorResults: nil,
 			TimeStart:        e.Start,
@@ -126,8 +134,23 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 	return nil
 }
 
-func (eh *StartEvaluationHandler) sendEvaluationDoneEvent(shkeptncontext string, data *keptnevents.EvaluationDoneEventData) error {
+func (eh *StartEvaluationHandler) hasTestPassed() bool {
+	dataByte, err := eh.Event.DataBytes()
+	if err != nil {
+		eh.Logger.Error("Could not get event as byte array: " + err.Error())
+	}
 
+	e := &keptnevents.TestsFinishedEventData{}
+	err = json.Unmarshal(dataByte, e)
+	if err != nil {
+		eh.Logger.Error("Could not unmarshal event payload: " + err.Error())
+	} else if e != nil && e.Result == "fail" {
+		return false
+	}
+	return true
+}
+
+func (eh *StartEvaluationHandler) sendEvaluationDoneEvent(shkeptncontext string, data *keptnevents.EvaluationDoneEventData) error {
 	source, _ := url.Parse("lighthouse-service")
 	contentType := "application/json"
 

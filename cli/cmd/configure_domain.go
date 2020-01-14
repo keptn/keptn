@@ -22,15 +22,21 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var configVersion *string
+type configureDomainCmdParams struct {
+	ConfigVersion *string
+	PlatformID    *string
+	Branch        string
+}
+
+var configureDomainParams *configureDomainCmdParams
+
+const installerPrefixURL = "https://raw.githubusercontent.com/keptn/keptn/"
 
 const apiVirtualServiceSuffix = "/installer/manifests/keptn/keptn-api-virtualservice.yaml"
 const apiIngressSuffix = "/installer/manifests/keptn/api-ingress.yaml"
 const domainConfigMapSuffix = "/installer/manifests/keptn/keptn-domain-configmap.yaml"
 const uniformServicesSuffix = "/installer/manifests/keptn/uniform-services.yaml"
 const gatewaySuffix = "/installer/manifests/keptn/keptn-gateway.yaml"
-
-var platformID *string
 
 // domainCmd represents the domain command
 var domainCmd = &cobra.Command{
@@ -61,6 +67,14 @@ Example:
 			kubectlOptions = "--insecure-skip-tls-verify=true"
 		}
 
+		if (configureDomainParams.ConfigVersion == nil || *configureDomainParams.ConfigVersion == "") &&
+			utils.IsOfficialKeptnVersion(Version) {
+			configureDomainParams.ConfigVersion = &Version
+		} else if configureDomainParams.ConfigVersion == nil || *configureDomainParams.ConfigVersion == "" {
+			dev := "develop"
+			configureDomainParams.ConfigVersion = &dev
+		}
+
 		resourcesAvailable, err := checkConfigureDomainResourceAvailability()
 		if err != nil || !resourcesAvailable {
 			return errors.New("Resources not found under:\n" +
@@ -68,6 +82,8 @@ Example:
 				getDomainConfigMapURL() + "\n" +
 				getUniformServicesURL())
 		}
+		logging.PrintLog(fmt.Sprintf("Used version for manifests: %s",
+			*configureDomainParams.ConfigVersion), logging.InfoLevel)
 
 		kubernetesPlatform := newKubernetesPlatform()
 		return kubernetesPlatform.checkRequirements()
@@ -138,7 +154,7 @@ Example:
 				return err
 			}
 
-			if strings.ToLower(*platformID) == openshift {
+			if strings.ToLower(*configureDomainParams.PlatformID) == openshift {
 				logging.PrintLog("Successfully configured domain", logging.InfoLevel)
 				fmt.Println("Please manually execute the following commands for deleting an old route and creating a new route:")
 				fmt.Println("oc delete route istio-wildcard-ingress-secure-keptn -n istio-system")
@@ -378,23 +394,23 @@ func updateCertificate(path, domain string, ingress Ingress) error {
 }
 
 func getAPIVirtualServiceURL() string {
-	return installerPrefixURL + *configVersion + apiVirtualServiceSuffix
+	return installerPrefixURL + *configureDomainParams.ConfigVersion + apiVirtualServiceSuffix
 }
 
 func getAPIIngressURL() string {
-	return installerPrefixURL + *configVersion + apiIngressSuffix
+	return installerPrefixURL + *configureDomainParams.ConfigVersion + apiIngressSuffix
 }
 
 func getDomainConfigMapURL() string {
-	return installerPrefixURL + *configVersion + domainConfigMapSuffix
+	return installerPrefixURL + *configureDomainParams.ConfigVersion + domainConfigMapSuffix
 }
 
 func getUniformServicesURL() string {
-	return installerPrefixURL + *configVersion + uniformServicesSuffix
+	return installerPrefixURL + *configureDomainParams.ConfigVersion + uniformServicesSuffix
 }
 
 func getGatewayURL() string {
-	return installerPrefixURL + *configVersion + gatewaySuffix
+	return installerPrefixURL + *configureDomainParams.ConfigVersion + gatewaySuffix
 }
 
 func checkConfigureDomainResourceAvailability() (bool, error) {
@@ -442,10 +458,12 @@ func checkConfigureDomainResourceAvailability() (bool, error) {
 
 func init() {
 	configureCmd.AddCommand(domainCmd)
-	configVersion = domainCmd.Flags().StringP("keptn-version", "k", "master",
-		"The branch or tag of the version which is used for updating the domain")
+	configureDomainParams = &configureDomainCmdParams{}
+
+	configureDomainParams.ConfigVersion = domainCmd.Flags().StringP("keptn-version", "k", "",
+		"The branch or tag containing the manifests which are used for updating the domain")
 	domainCmd.Flags().MarkHidden("keptn-version")
 	domainCmd.PersistentFlags().BoolVarP(&insecureSkipTLSVerify, "insecure-skip-tls-verify", "s", false, "Skip tls verification for kubectl commands")
 
-	platformID = domainCmd.Flags().StringP("platform", "p", "gke", "The platform on which keptn is running [gke,openshift,aks,kubernetes]")
+	configureDomainParams.PlatformID = domainCmd.Flags().StringP("platform", "p", "gke", "The platform on which keptn is running [gke,openshift,aks,kubernetes]")
 }

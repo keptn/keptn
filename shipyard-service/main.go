@@ -155,22 +155,6 @@ func createProjectAndProcessShipyard(event cloudevents.Event, logger keptnutils.
 		return nil, err
 	}
 
-	client := newClient()
-	// create project
-	project := configmodels.Project{
-		ProjectName:  eventData.Project,
-		GitUser:      eventData.GitUser,
-		GitToken:     eventData.GitToken,
-		GitRemoteURI: eventData.GitRemoteURL,
-	}
-
-	if err := client.createProject(project, logger); err != nil {
-		return nil, fmt.Errorf("Creating project %s failed. %s", project.ProjectName, err.Error())
-	}
-	if err := keptnutils.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), fmt.Sprintf("Project %s created", project.ProjectName), false, "INFO"); err != nil {
-		logger.Error(fmt.Sprintf("Could not write log to websocket. %s", err.Error()))
-	}
-
 	shipyard := keptnmodels.Shipyard{}
 	data, err := base64.StdEncoding.DecodeString(eventData.Shipyard)
 	if err != nil {
@@ -181,6 +165,30 @@ func createProjectAndProcessShipyard(event cloudevents.Event, logger keptnutils.
 	if err != nil {
 		logger.Error(fmt.Sprintf("Could not unmarshal shipyard. %s", err.Error()))
 		return nil, err
+	}
+	client := newClient()
+	// create project
+	project := configmodels.Project{
+		ProjectName:  eventData.Project,
+		GitUser:      eventData.GitUser,
+		GitToken:     eventData.GitToken,
+		GitRemoteURI: eventData.GitRemoteURL,
+	}
+
+	areNamespacesAvailable, err := areNamespacesAvailable(project.ProjectName, shipyard, logger, ws, event)
+	if err != nil {
+		logger.Error(fmt.Sprintf("Could not check availability of namespaces. %v", err))
+		return nil, err
+	}
+	if !areNamespacesAvailable {
+		return nil, fmt.Errorf("Namespaces are not available anymore")
+	}
+
+	if err := client.createProject(project, logger); err != nil {
+		return nil, fmt.Errorf("Creating project %s failed. %s", project.ProjectName, err.Error())
+	}
+	if err := keptnutils.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), fmt.Sprintf("Project %s created", project.ProjectName), false, "INFO"); err != nil {
+		logger.Error(fmt.Sprintf("Could not write log to websocket. %s", err.Error()))
 	}
 
 	// process shipyard file and create stages
@@ -197,6 +205,34 @@ func createProjectAndProcessShipyard(event cloudevents.Event, logger keptnutils.
 	}
 	// store shipyard.yaml
 	return storeResourceForProject(project.ProjectName, string(data), logger)
+}
+
+// areNamespacesAvailable checks whether the Keptn-managed namespaces are available
+func areNamespacesAvailable(projectName string, shipyard keptnmodels.Shipyard, logger keptnutils.Logger,
+	ws *websocket.Conn, event cloudevents.Event) (bool, error) {
+
+	var allAvailable = true
+	for _, shipyardStage := range shipyard.Stages {
+		namespace := projectName + "-" + shipyardStage.Name
+		exists, err := keptnutils.ExistsNamespace(true, namespace)
+		if err != nil {
+			return false, err
+		}
+		if exists {
+			allAvailable = false
+
+			msg := fmt.Sprintf("Namespace %s already exists. Please first delete this namespace "+
+				"with 'kubectl delete ns %s' and all contained Helm releases with "+
+				"'helm del $(helm ls --namespace %s --short) --purge'", namespace, namespace, namespace)
+
+			if err := keptnutils.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), msg,
+				false, "ERROR"); err != nil {
+				logger.Error(fmt.Sprintf("Could not write log to websocket. %s", err.Error()))
+			}
+
+		}
+	}
+	return allAvailable, nil
 }
 
 func createNamespace(project configmodels.Project, stage string, logger keptnutils.Logger) error {
@@ -224,7 +260,8 @@ func getRemoteURLAndDeleteProject(event cloudevents.Event, logger keptnutils.Log
 		return fmt.Errorf("Project %s is not available", project.ProjectName)
 	}
 	if projectResp != nil && projectResp.GitRemoteURI != "" {
-		if err := keptnutils.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), fmt.Sprintf("The Git upstream of the project will not be deleted: %s", projectResp.GitRemoteURI), false, "INFO"); err != nil {
+		if err := keptnutils.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"),
+			fmt.Sprintf("The Git upstream of the project will not be deleted: %s", projectResp.GitRemoteURI), false, "INFO"); err != nil {
 			logger.Error(fmt.Sprintf("Could not write log to websocket. %s", err.Error()))
 		}
 	}

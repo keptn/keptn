@@ -36,6 +36,7 @@ var params *configureMonitoringCmdParams
 
 var allowedMonitoringTypes = []string{
 	"prometheus",
+	"dynatrace",
 }
 
 var monitoringCmd = &cobra.Command{
@@ -63,32 +64,15 @@ var monitoringCmd = &cobra.Command{
 		return errors.New(errorMsg)
 	},
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if *params.Project == "" {
-			return errors.New("Please specify a project")
+		if args[0] == "prometheus" {
+			if *params.Project == "" {
+				return errors.New("Please specify a project")
+			}
+			if *params.Service == "" {
+				return errors.New("Please specify a service")
+			}
 		}
-		if *params.Service == "" {
-			return errors.New("Please specify a service")
-		}
-		/*
-			if *params.ServiceIndicators == "" {
-				return errors.New("Please specify path to service indicators file")
-			}
-			if *params.ServiceObjectives == "" {
-				return errors.New("Please specify path to service objectives file")
-			}
-			if *params.Remediation == "" {
-				return errors.New("Please specify path to remediation file")
-			}
-			if !fileExists(keptnutils.ExpandTilde(*params.ServiceIndicators)) {
-				return errors.New("Service indicators file " + *params.ServiceIndicators + " not found in local file system")
-			}
-			if !fileExists(keptnutils.ExpandTilde(*params.ServiceObjectives)) {
-				return errors.New("Service objectives file " + *params.ServiceObjectives + " not found in local file system")
-			}
-			if !fileExists(keptnutils.ExpandTilde(*params.Remediation)) {
-				return errors.New("Remediation file " + *params.Remediation + " not found in local file system")
-			}
-		*/
+
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -97,19 +81,10 @@ var monitoringCmd = &cobra.Command{
 			return errors.New(authErrorMsg)
 		}
 
-		/*
-			serviceIndicators, serviceObjectives, remediation, err := parseInputFiles(params)
-			if err != nil {
-				return err
-			}
-		*/
 		configureMonitoringEventData := &events.ConfigureMonitoringEventData{
 			Type:    args[0],
 			Project: *params.Project,
 			Service: *params.Service,
-			//ServiceIndicators: serviceIndicators,
-			//ServiceObjectives: serviceObjectives,
-			//Remediation:       remediation,
 		}
 
 		source, _ := url.Parse("https://github.com/keptn/keptn/cli#configuremonitoring")
@@ -197,9 +172,9 @@ func init() {
 	configureCmd.AddCommand(monitoringCmd)
 	params = &configureMonitoringCmdParams{}
 	params.Project = monitoringCmd.Flags().StringP("project", "p", "", "The name of the project")
-	monitoringCmd.MarkFlagRequired("project")
+	// monitoringCmd.MarkFlagRequired("project")
 	params.Service = monitoringCmd.Flags().StringP("service", "s", "", "The name of the service within the project")
-	monitoringCmd.MarkFlagRequired("service")
+	// monitoringCmd.MarkFlagRequired("service")
 	/*
 		params.ServiceIndicators = monitoringCmd.Flags().StringP("service-indicators", "", "", "Path to the service indicators file on your local file system")
 		monitoringCmd.MarkFlagRequired("service-indicators")

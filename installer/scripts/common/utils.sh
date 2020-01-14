@@ -155,33 +155,46 @@ function wait_for_istio_ingressgateway() {
     fi
 
     if [[ "$DOMAIN" != "" ]]; then
-      print_debug "${PROPERTY} of Istio Ingressgateway is available."
+      print_debug "${PROPERTY} of Istio ingress gateway is available."
       break
     fi
     RETRY=$[$RETRY+1]
-    print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 5s for ${PROPERTY} of Istio Ingressgateway to be available ..."
+    print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 5s for ${PROPERTY} of Istio ingress gateway to be available ..."
     sleep 5
   done
 }
 
-# Waits for ip of ingress gateway (max wait time 120sec)
+# Waits for hostname or ip of ingress gateway (max wait time 120sec)
 function wait_for_k8s_ingress() {
-  PROPERTY=$1;
   RETRY=0; RETRY_MAX=24;
   DOMAIN="";
 
   while [[ $RETRY -lt $RETRY_MAX ]]; do
-    DOMAIN=$(kubectl get ingress api-ingress -n keptn -o json | jq -r .status.loadBalancer.ingress[0].${PROPERTY})
+    # Check availability of hostname
+    DOMAIN=$(kubectl get ingress api-ingress -n keptn -o json | jq -r .status.loadBalancer.ingress[0].hostname)
     if [[ $DOMAIN = "null" ]]; then
       DOMAIN=""
     fi
 
     if [[ "$DOMAIN" != "" ]]; then
-      print_debug "${PROPERTY} of ingress is available."
+      print_debug "Domain name of ingress gateway is available."
       break
     fi
+
+    # Check availability of IP
+    DOMAIN=$(kubectl get ingress api-ingress -n keptn -o json | jq -r .status.loadBalancer.ingress[0].ip)
+    if [[ $DOMAIN = "null" ]]; then
+      DOMAIN=""
+    fi
+
+    if [[ "$DOMAIN" != "" ]]; then
+      print_debug "IP address of ingress gateway is available."
+      break
+    fi
+
     RETRY=$[$RETRY+1]
-    print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 5s for ${PROPERTY} of ingress to be available ..."
+    print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 5s for domain name or IP address of ingress gateway to be available ..."
     sleep 5
+
   done
 }
