@@ -6,7 +6,7 @@ ISTIO_AVAILABLE=$?
 if [[ "$ISTIO_AVAILABLE" == 0 ]] && [[ "$ISTIO_INSTALL_OPTION" == "Reuse" ]]; then
     # An istio-version is already installed
     print_info "Istio installation is reused but its compatibility is not checked"
-elif [[ "$ISTIO_AVAILABLE" == 0 ]] && ([[ "$ISTIO_INSTALL_OPTION" == "StopIfInstalled" ]] || [[ "$ISTIO_INSTALL_OPTION" == "" ]]); then
+elif [[ "$ISTIO_AVAILABLE" == 0 ]] && ([[ "$ISTIO_INSTALL_OPTION" == "StopIfInstalled" ]] || [[ "$ISTIO_INSTALL_OPTION" == "" ]] || [[ "$ISTIO_INSTALL_OPTION" == "ISTIO_INSTALL_OPTION_PLACEHOLDER" ]]); then
     print_error "Istio is already installed but is not used due to unknown compatibility"
     exit 1
 else
