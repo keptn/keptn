@@ -41,7 +41,7 @@ func GetProjectHandlerFunc(params project.GetProjectParams) middleware.Responder
 	totalCount := len(files)
 	if paginationInfo.NextPageKey < int64(totalCount) {
 		for _, f := range files[paginationInfo.NextPageKey:paginationInfo.EndIndex] {
-			if f.IsDir() {
+			if f.IsDir() && common.FileExists(config.ConfigDir+"/"+f.Name()+"/metadata.yaml") {
 				var project = &models.Project{ProjectName: f.Name()}
 				payload.Projects = append(payload.Projects, project)
 			}
