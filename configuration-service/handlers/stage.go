@@ -1,12 +1,16 @@
 package handlers
 
 import (
+	"github.com/ghodss/yaml"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
+	keptnmodels "github.com/keptn/go-utils/pkg/models"
 	"github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/configuration-service/common"
+	"github.com/keptn/keptn/configuration-service/config"
 	"github.com/keptn/keptn/configuration-service/models"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/stage"
+	"io/ioutil"
 )
 
 // PostProjectProjectNameStageHandlerFunc creates a new stage
@@ -43,22 +47,45 @@ func GetProjectProjectNameStageHandlerFunc(params stage.GetProjectProjectNameSta
 	if !common.ProjectExists(params.ProjectName) {
 		return stage.NewGetProjectProjectNameStageNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project does not exist.")})
 	}
-	branches, err := common.GetBranches(params.ProjectName)
+
+	err := common.CheckoutBranch(params.ProjectName, "master")
 	if err != nil {
 		logger.Error(err.Error())
+
 		return stage.NewGetProjectProjectNameStageDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not retrieve stages.")})
 	}
 
-	result := []*models.Stage{}
+	shipyardPath := config.ConfigDir + "/" + params.ProjectName + "/shipyard.yaml"
 
-	for _, branch := range branches {
-		if branch != "master" && branch != "" {
-			stage := &models.Stage{
-				StageName: branch,
-			}
-			result = append(result, stage)
-		}
+	if !common.FileExists(shipyardPath) {
+
+		return stage.NewGetProjectProjectNameStageDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not retrieve stages.")})
 	}
+
+	dat, err := ioutil.ReadFile(shipyardPath)
+	if err != nil {
+		logger.Error(err.Error())
+
+		return stage.NewGetProjectProjectNameStageDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not read shipyard file.")})
+	}
+
+	shipyard := &keptnmodels.Shipyard{}
+
+	err = yaml.Unmarshal(dat, shipyard)
+	if err != nil {
+		logger.Error(err.Error())
+
+		return stage.NewGetProjectProjectNameStageDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not read shipyard file.")})
+	}
+
+	result := []*models.Stage{}
+	for _, stage := range shipyard.Stages {
+		stage := &models.Stage{
+			StageName: stage.Name,
+		}
+		result = append(result, stage)
+	}
+
 	return stage.NewGetProjectProjectNameStageOK().WithPayload(&models.Stages{
 		NextPageKey: "",
 		PageSize:    float64(len(result)),
