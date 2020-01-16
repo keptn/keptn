@@ -1,0 +1,109 @@
+<div class="container" *ngIf="error">
+  <dt-empty-state>
+    <dt-empty-state-item>
+      <dt-empty-state-item-img>
+        <dt-icon name="smiley-unhappy-1"></dt-icon>
+      </dt-empty-state-item-img>
+      <dt-empty-state-item-title aria-level="2">Project not existing</dt-empty-state-item-title>
+      <p>Sorry, we couldn't load your project. Check our <a href="https://keptn.sh/docs/quickstart/">Quick Start instructions</a> or go back to <a [routerLink]="['/dashboard']">your dashboard</a>.</p>
+      <button dt-button (click)="dataService.loadProjects()"><dt-icon name="refresh"></dt-icon> Retry</button>
+    </dt-empty-state-item>
+  </dt-empty-state>
+</div>
+<div class="container" *ngIf="!error && !(project | async)">
+  <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
+    <dt-loading-spinner></dt-loading-spinner>
+    <p>Loading ...</p>
+  </div>
+</div>
+<div class="project-board" fxLayout="row" *ngIf="!error && (project | async)">
+  <div class="container" fxFlex fxLayout="column" fxLayoutGap="15px">
+    <div fxFlex fxLayout="column" fxLayoutGap="15px">
+      <div>
+        <dt-info-group>
+          <dt-info-group-title>
+            <p><span [textContent]="(project | async)?.getServices().length"></span> Services</p>
+          </dt-info-group-title>
+          <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutGap="15px" fxLayoutAlign="space-between">
+            <dt-tile *ngFor="let stage of (project | async)?.stages"
+                     fxFlex="0 1 calc(33.3% - 15px)" fxFlex.lt-md="0 1 calc(50% - 15px)" fxFlex.lt-sm="100%">
+              <dt-tile-title [textContent]="stage.stageName"></dt-tile-title>
+              <p class="m-0" *ngIf="stage.services"><span [textContent]="stage.services.length"></span> Services</p>
+            </dt-tile>
+          </div>
+        </dt-info-group>
+      </div>
+      <ktb-expandable-tile *ngFor="let service of (project | async)?.services">
+        <ktb-expandable-tile-header>
+          <dt-info-group>
+            <dt-info-group-title>
+              <h2 class="m-0" [textContent]="service.serviceName"></h2>
+            </dt-info-group-title>
+            <p class="m-0" *ngIf="service.roots && service.roots[0].data.valuesCanary"><span class="m-0" [textContent]="service.roots[0].data.valuesCanary.image"></span></p>
+          </dt-info-group>
+        </ktb-expandable-tile-header>
+        <ktb-root-events-list [events]="service.roots" [(selectedEvent)]="currentRoot" (selectedEventChange)="loadTraces($event)"></ktb-root-events-list>
+        <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px" *ngIf="!service.roots">
+          <dt-loading-spinner></dt-loading-spinner>
+          <p>Loading ...</p>
+        </div>
+      </ktb-expandable-tile>
+    </div>
+  </div>
+  <div class="container dark" fxFlex fxLayout="column" fxLayoutGap="15px">
+    <div *ngIf="currentRoot" fxFlex fxLayout="column" fxLayoutGap="15px">
+      <div>
+        <dt-info-group>
+          <dt-info-group-title>
+            <div fxFlex fxLayout="row" fxLayoutAlign="flex-start center" fxLayoutGap="15px">
+              <div fxLayout="row" fxLayoutAlign="start center">
+                <button dt-icon-button disabled variant="nested" *ngIf="currentRoot.isFaulty()"><dt-icon name="criticalevent"></dt-icon></button>
+                <p *ngIf="currentRoot.data.project"><span [textContent]="currentRoot.data.project"></span>:<span [textContent]="currentRoot.data.service"></span></p>
+              </div>
+            </div>
+          </dt-info-group-title>
+          <p class="m-0" *ngIf="currentRoot.data.valuesCanary"><span class="bold">New artifact: </span><span [textContent]="currentRoot.data.valuesCanary.image"></span></p>
+          <p class="m-0"><span class="bold">Keptn ID: </span><span [textContent]="currentRoot.shkeptncontext"></span></p>
+        </dt-info-group>
+      </div>
+      <div fxLayout="column" fxLayoutGap="15px" *ngFor="let trace of currentRoot.traces; let i = index">
+        <ktb-horizontal-separator *ngIf="i>0 && trace.data.stage != currentRoot.traces[i-1].data.stage">
+          <ktb-horizontal-separator-title [textContent]="trace.data.stage"></ktb-horizontal-separator-title>
+        </ktb-horizontal-separator>
+        <ktb-expandable-tile [error]="trace.isFaulty()" [success]="trace.isSuccessful()">
+          <ktb-expandable-tile-header>
+            <div fxLayout="row" class="pr-4">
+              <div fxFlex>
+                <h4 class="m-0 mt-1 mb-1" [textContent]="getEventLabel(trace.type)"></h4>
+                <p class="m-0"><span class="bold">Source: </span><span [textContent]="trace.source"></span></p>
+                <div *ngIf="trace.data.canary">
+                  <p class="m-0"><span class="bold">Action: </span><span [textContent]="trace.data.canary.action"></span> <span [textContent]="trace.data.canary.value"></span></p>
+                </div>
+                <div *ngIf="trace.data.teststrategy">
+                  <p class="m-0"><span class="bold">Test strategy: </span><span [textContent]="trace.data.teststrategy"></span></p>
+                </div>
+                <div *ngIf="trace.data.start && trace.data.end">
+                  <p class="m-0 mt-1"><span [textContent]="trace.data.start | amDateFormat:'L LT'"></span> - <span [textContent]="trace.data.end | amDateFormat:'L LT'"></span> (<span [textContent]="trace.data.end | amDifference: trace.data.start :'minutes'"></span> Minutes)</p>
+                </div>
+                <div *ngIf="trace.data.evaluationdetails">
+                  <p class="m-0 mt-1"><span [textContent]="trace.data.evaluationdetails.timeStart | amDateFormat:'L LT'"></span> - <span [textContent]="trace.data.evaluationdetails.timeEnd | amDateFormat:'L LT'"></span> (<span [textContent]="trace.data.evaluationdetails.timeEnd | amDifference: trace.data.evaluationdetails.timeStart :'minutes'"></span> Minutes)</p>
+                  <p class="m-0"><span class="bold">Result: </span><span [textContent]="trace.data.result"></span></p>
+                  <p class="m-0"><span class="bold">Score: </span><span [textContent]="trace.data.evaluationdetails.score"></span></p>
+                  <p class="m-0"><span class="bold">Details: </span><span [textContent]="trace.data.evaluationdetails.result"></span></p>
+                </div>
+              </div>
+              <div fxLayout="column" fxLayoutAlign="start end">
+                <p class="m-0 mt-1 mb-1" [textContent]="trace.time | amDateFormat:'L LT'"></p>
+              </div>
+            </div>
+          </ktb-expandable-tile-header>
+          <p class="m-0 bold">Event payload</p>
+          <pre>{{ trace | json }}</pre>
+        </ktb-expandable-tile>
+      </div>
+      <div class="mb-3">
+        <button dt-button (click)="loadTraces(currentRoot)"><dt-icon name="refresh"></dt-icon> Reload</button>
+      </div>
+    </div>
+  </div>
+</div>

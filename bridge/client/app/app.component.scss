@@ -1,0 +1,10 @@
+#page-content {
+  position: relative;
+}
+
+#page-loading-bar {
+  position: absolute;
+  z-index: 1001;
+  width: 100%;
+  top: 0;
+}
