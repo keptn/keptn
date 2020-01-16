@@ -1,0 +1,35 @@
+<div class="container" *ngIf="error">
+  <dt-empty-state>
+    <dt-empty-state-item>
+      <dt-empty-state-item-img>
+        <dt-icon name="smiley-unhappy-1"></dt-icon>
+      </dt-empty-state-item-img>
+      <dt-empty-state-item-title aria-level="2">No projects existing</dt-empty-state-item-title>
+      <p>Sorry, we couldn't load your projects. Check our <a href="https://keptn.sh/docs/quickstart/">Quick Start</a> instructions or go back to <a [routerLink]="['/dashboard']">your dashboard</a>.</p>
+      <button dt-button (click)="dataService.loadProjects()"><dt-icon name="refresh"></dt-icon> Retry</button>
+    </dt-empty-state-item>
+  </dt-empty-state>
+</div>
+<div class="container" *ngIf="!error && !(projects | async)?.length">
+  <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
+    <dt-loading-spinner></dt-loading-spinner>
+    <p>Loading ...</p>
+  </div>
+</div>
+<div class="container" *ngIf="!error && (projects | async)?.length > 0">
+  <dt-info-group>
+    <dt-info-group-title>
+      <p><span [textContent]="(projects | async)?.length"></span>&nbsp;<span i18n>Projects</span></p>
+    </dt-info-group-title>
+  </dt-info-group>
+  <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutGap="32px" fxLayoutAlign="flex-start">
+    <dt-tile *ngFor="let project of projects | async" [routerLink]="['/project', project.projectName]"
+             fxFlex="0 1 calc(33.3% - 32px)" fxFlex.lt-md="0 1 calc(50% - 32px)" fxFlex.lt-sm="100%">
+      <dt-tile-title [textContent]="project.projectName"></dt-tile-title>
+      <dt-tile-subtitle><span *ngIf="project.stages"><span [textContent]="project.stages.length"></span> Stages, <span [textContent]="project.getServices().length"></span> Services</span></dt-tile-subtitle>
+      <dt-tag-list aria-label="stages">
+        <dt-tag *ngFor="let stage of project.stages" [textContent]="stage.stageName"></dt-tag>
+      </dt-tag-list>
+    </dt-tile>
+  </div>
+</div>

@@ -5,6 +5,7 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 
 const DatastoreService = require('./lib/services/DatastoreService');
+const ConfigurationService = require('./lib/services/ConfigurationService');
 const configs = require('./config');
 
 const apiRouter = require('./api');
@@ -13,6 +14,7 @@ const app = express();
 const config = configs[app.get('env') || 'development'];
 
 const datastoreService = new DatastoreService(config.datastore);
+const configurationService = new ConfigurationService(config.configurationService);
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -20,16 +22,9 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, '../dist')));
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(`${__dirname}/../dist/index.html`));
-});
-
-app.use('/api', apiRouter({ datastoreService }));
-
-
-// catch 404 and forward to error handler
+app.use('/api', apiRouter({ datastoreService, configurationService }));
 app.use((req, res, next) => {
-  next(createError(404));
+  res.sendFile(path.join(`${__dirname}/../dist/index.html`));
 });
 
 // error handler
