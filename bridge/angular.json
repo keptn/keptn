@@ -28,12 +28,12 @@
               "client/assets",
               {
                 "glob": "*.svg",
-                "input": "node_modules/@dynatrace/dt-iconpack",
+                "input": "node_modules/@dynatrace/barista-icons",
                 "output": "/assets/icons"
               },
               {
                 "glob": "**/*",
-                "input": "node_modules/@dynatrace/angular-components/assets/fonts",
+                "input": "node_modules/@dynatrace/barista-fonts/fonts",
                 "output": "/assets/fonts"
               }
             ],
