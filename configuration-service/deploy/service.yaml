@@ -9,6 +9,9 @@ spec:
     matchLabels:
       run: configuration-service
   replicas: 1
+  # recreate the deployment if anything changes (we can not do a rolling upgrade of this deployment as we use a volume)
+  strategy:
+    type: Recreate
   template:
     metadata:
       labels:
