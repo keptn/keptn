@@ -1,4 +1,4 @@
-## logger:
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: distributor
-        image: keptn/distributor:latest
+        image: keptn/distributor:0.6.0
         ports:
         - containerPort: 8080
         resources:

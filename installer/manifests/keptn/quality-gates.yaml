@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: lighthouse-service
-          image: keptn/lighthouse-service:latest
+          image: keptn/lighthouse-service:0.6.0
           ports:
             - containerPort: 8080
           resources:
@@ -67,7 +67,7 @@ spec:
     spec:
       containers:
         - name: distributor
-          image: keptn/distributor:latest
+          image: keptn/distributor:0.6.0
           ports:
             - containerPort: 8080
           resources:
@@ -103,7 +103,7 @@ spec:
     spec:
       containers:
         - name: distributor
-          image: keptn/distributor:latest
+          image: keptn/distributor:0.6.0
           ports:
             - containerPort: 8080
           resources:
@@ -139,7 +139,7 @@ spec:
     spec:
       containers:
         - name: distributor
-          image: keptn/distributor:latest
+          image: keptn/distributor:0.6.0
           ports:
             - containerPort: 8080
           resources:

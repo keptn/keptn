@@ -14,7 +14,7 @@ spec:
         run: jmeter-service
     spec:
       containers:
-      - name: helm-service
+      - name: jmeter-service
         image: keptn/jmeter-service:latest
         ports:
         - containerPort: 8080
