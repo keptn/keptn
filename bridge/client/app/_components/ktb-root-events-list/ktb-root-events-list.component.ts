@@ -2,7 +2,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
-  Directive, EventEmitter,
+  EventEmitter,
   Input,
   OnInit, Output,
   ViewEncapsulation
@@ -35,8 +35,6 @@ export class KtbRootEventsListComponent implements OnInit {
   set events(value: Root[]) {
     const newValue = coerceArray(value);
     if (this._events !== newValue) {
-      // TODO: provide correctly sorted list from API? why is the sorting changed on client side?
-      newValue.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
       this._events = newValue;
       this._changeDetectorRef.markForCheck();
     }
@@ -67,15 +65,15 @@ export class KtbRootEventsListComponent implements OnInit {
     let label = key;
     switch(key) {
       case "sh.keptn.internal.event.service.create": {
-        label = "Service create"
+        label = "Service create";
         break;
       }
       case "sh.keptn.event.configuration.change": {
-        label = "Configuration change"
+        label = "Configuration change";
         break;
       }
       case "sh.keptn.event.monitoring.configure": {
-        label = "Configure monitoring"
+        label = "Configure monitoring";
         break;
       }
       case "sh.keptn.events.deployment-finished": {
@@ -98,16 +96,6 @@ export class KtbRootEventsListComponent implements OnInit {
         label = "SLI retrieval done";
         break;
       }
-      case "sh.keptn.events.done": {
-        label = "Done";
-        break;
-      }
-      case "sh.keptn.events.done": {
-        label = "Done";
-        break;
-      }
-
-
       case "sh.keptn.events.done": {
         label = "Done";
         break;
