@@ -4,7 +4,7 @@
       <div fxLayout="row">
         <div fxFlex>
           <div fxLayout="row" fxLayoutAlign="start center">
-            <h4 class="m-0 mt-1 mb-1" [textContent]="getEventLabel(event.type)"></h4>
+            <h4 class="m-0 mt-1 mb-1" [textContent]="event.getLabel()"></h4>
             <button dt-icon-button disabled variant="nested" *ngIf="event.isFaulty()"><dt-icon name="criticalevent"></dt-icon></button>
           </div>
           <p class="m-0" *ngIf="event.data.valuesCanary"><span class="m-0" [textContent]="event.data.valuesCanary.image"></span></p>
