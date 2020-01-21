@@ -1,6 +1,6 @@
 <div fxLayout="column" fxLayoutGap="5px">
   <div *ngFor="let event of _events">
-    <ktb-selectable-tile (click)="selectEvent(event)" [selected]="_selectedEvent == event" [error]="event.isFaulty()" *ngIf="event">
+    <ktb-selectable-tile (click)="selectEvent(event)" [selected]="_selectedEvent == event" *ngIf="event">
       <div fxLayout="row">
         <div fxFlex>
           <div fxLayout="row" fxLayoutAlign="start center">
@@ -12,7 +12,9 @@
         <div fxLayout="column" fxLayoutAlign="start end">
           <p class="m-0 mr-1 mt-1 mb-1" [textContent]="event.time | amCalendar:getCalendarFormats()"></p>
           <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
-            <dt-tag *ngFor="let stage of event.getStages()" [textContent]="stage"></dt-tag>
+            <div *ngFor="let stage of event.getStages()">
+              <dt-tag [textContent]="stage" [class.error]="stage == event.isFaulty()"></dt-tag>
+            </div>
           </div>
         </div>
       </div>
