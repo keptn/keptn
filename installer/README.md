@@ -7,5 +7,5 @@ The scripts and manifests are finally put into a container, which starts the ini
 * EKS
 * OpenShift
 * GKE
-* PKS (not released yet)
+* PKS
 * Kubernetes
