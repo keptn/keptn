@@ -22,14 +22,5 @@
       <p><span [textContent]="(projects | async)?.length"></span>&nbsp;<span i18n>Projects</span></p>
     </dt-info-group-title>
   </dt-info-group>
-  <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutGap="32px" fxLayoutAlign="flex-start">
-    <dt-tile *ngFor="let project of projects | async" [routerLink]="['/project', project.projectName]"
-             fxFlex="0 1 calc(33.3% - 32px)" fxFlex.lt-md="0 1 calc(50% - 32px)" fxFlex.lt-sm="100%">
-      <dt-tile-title [textContent]="project.projectName"></dt-tile-title>
-      <dt-tile-subtitle><span *ngIf="project.stages"><span [textContent]="project.stages.length"></span> Stages, <span [textContent]="project.getServices().length"></span> Services</span></dt-tile-subtitle>
-      <dt-tag-list aria-label="stages">
-        <dt-tag *ngFor="let stage of project.stages" [textContent]="stage.stageName"></dt-tag>
-      </dt-tag-list>
-    </dt-tile>
-  </div>
+  <ktb-project-list [projects]="projects | async"></ktb-project-list>
 </div>
