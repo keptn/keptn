@@ -34,11 +34,15 @@ RUN CGO_ENABLED=0 GOOS=linux go build $BUILDFLAGS -v -o helm-service
 FROM alpine:3.7
 RUN apk add --no-cache ca-certificates
 
-ARG HELM_VERSION=2.12.3
-RUN wget https://storage.googleapis.com/kubernetes-helm/helm-v$HELM_VERSION-linux-amd64.tar.gz && \
+ARG debugBuild
+# IF we are debugging, we need to install libc6-compat for delve to work on alpine based containers
+RUN if [ ! -z "$debugBuild" ]; then apk add --no-cache libc6-compat; fi
+
+ARG HELM_VERSION=3.0.1
+RUN wget https://get.helm.sh/helm-v$HELM_VERSION-linux-amd64.tar.gz && \
   tar -zxvf helm-v$HELM_VERSION-linux-amd64.tar.gz && \
   mv linux-amd64/helm /bin/helm && \
-  rm -rf linux-amd64 && rm -rf helm-v$HELM_VERSION-linux-amd64.tar.gz
+  rm -rf linux-amd64
 
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /go/src/github.com/keptn/keptn/helm-service/helm-service /helm-service

@@ -15,6 +15,7 @@ spec:
       containers:
       - name: keptn-installer
         image: keptn/installer:latest
+        imagePullPolicy: Always
         env:       
         - name: PLATFORM
           value: PLATFORM_PLACEHOLDER
@@ -24,4 +25,6 @@ spec:
           value: INGRESS_PLACEHOLDER
         - name: USE_CASE
           value: USE_CASE_PLACEHOLDER
+        - name: ISTIO_INSTALL_OPTION
+          value: ISTIO_INSTALL_OPTION_PLACEHOLDER
       restartPolicy: Never

@@ -1,6 +1,6 @@
 module github.com/keptn/keptn/helm-service
 
-go 1.12
+go 1.13
 
 require (
 	github.com/cloudevents/sdk-go v0.10.0
@@ -9,16 +9,19 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/gorilla/websocket v1.4.1
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.5.1-0.20200107151217-7a07a50a583d
+	github.com/keptn/go-utils v0.5.1-0.20200114112413-96a2056eae33
 	github.com/kinbiko/jsonassert v1.0.1
 	github.com/stretchr/testify v1.4.0
-	golang.org/x/net v0.0.0-20191028085509-fe3aa8a45271 // indirect
 	gotest.tools v2.2.0+incompatible
-	k8s.io/api v0.0.0-20190313235455-40a48860b5ab
-	k8s.io/apimachinery v0.0.0-20190313205120-d7deff9243b1
-	k8s.io/helm v2.14.3+incompatible
+	helm.sh/helm/v3 v3.0.1
+	k8s.io/api v0.0.0-20191016110408-35e52d86657a // kubernetes-1.16.2
+	k8s.io/apimachinery v0.0.0-20191004115801-a2eda9f80ab8 // kubernetes-1.16.2
 	sigs.k8s.io/yaml v1.1.0
 )
 
 // replace cloudevents/sdk-go with version 0.7.0
 replace github.com/cloudevents/sdk-go => github.com/cloudevents/sdk-go v0.0.0-20190509003705-56931988abe3
+
+replace github.com/docker/docker => github.com/docker/docker v0.7.3-0.20190327010347-be7ac8be2ae0
+
+replace github.com/keptn/go-utils => github.com/keptn/go-utils v0.5.1-0.20191211092757-ba6110712a4f

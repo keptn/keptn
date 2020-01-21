@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"k8s.io/helm/pkg/proto/hapi/chart"
+	"helm.sh/helm/v3/pkg/chart"
 )
 
 func TestApplyFileChanges(t *testing.T) {
@@ -17,7 +17,7 @@ func TestApplyFileChanges(t *testing.T) {
 	newContent := []byte("newContent")
 
 	inputChart := chart.Chart{Metadata: meta}
-	template := &chart.Template{Name: templateFileName, Data: originalContent}
+	template := &chart.File{Name: templateFileName, Data: originalContent}
 	inputChart.Templates = append(inputChart.Templates, template)
 
 	fileChanges := make(map[string]string)
@@ -37,7 +37,7 @@ func TestAddFile(t *testing.T) {
 	newContent := []byte("newContent")
 
 	inputChart := chart.Chart{Metadata: meta}
-	template := &chart.Template{Name: templateFileName, Data: originalContent}
+	template := &chart.File{Name: templateFileName, Data: originalContent}
 	inputChart.Templates = append(inputChart.Templates, template)
 
 	fileChanges := make(map[string]string)
@@ -56,15 +56,17 @@ func TestChangeValues(t *testing.T) {
 	meta := &chart.Metadata{
 		Name: "test.chart",
 	}
-	originalContent := "image: test:0.2"
-	newContent := "image: test:latest"
+	originalContent := make(map[string]interface{})
+	originalContent["image"] = "test:0.2"
+	newContent := make(map[string]interface{})
+	newContent["image"] = "test:latest"
 
 	inputChart := chart.Chart{Metadata: meta}
-	inputChart.Values = &chart.Config{Raw: originalContent}
+	inputChart.Values = originalContent
 
 	fileChanges := make(map[string]string)
-	fileChanges["values.yaml"] = newContent
+	fileChanges["values.yaml"] = "image: test:latest"
 
 	applyFileChanges(fileChanges, &inputChart)
-	assert.Equal(t, newContent, inputChart.Values.Raw)
+	assert.Equal(t, newContent, inputChart.Values)
 }

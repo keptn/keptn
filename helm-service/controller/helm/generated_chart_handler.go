@@ -1,19 +1,18 @@
 package helm
 
 import (
-	"errors"
 	"fmt"
+	"io"
 	"log"
-	"os"
 	"strings"
 
 	keptnevents "github.com/keptn/go-utils/pkg/events"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/helm-service/controller/mesh"
+	"helm.sh/helm/v3/pkg/chart"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/helm/pkg/proto/hapi/chart"
+	kyaml "k8s.io/apimachinery/pkg/util/yaml"
 	"sigs.k8s.io/yaml"
 )
 
@@ -30,25 +29,20 @@ func NewGeneratedChartHandler(mesh mesh.Mesh, canaryLevelGen CanaryLevelGenerato
 
 // GenerateDuplicateManagedChart generates a duplicated chart which is managed by keptn and used for
 // b/g and canary releases
-func (c *GeneratedChartHandler) GenerateDuplicateManagedChart(helmUpgradeMsg string, project string, stageName string, service string) (*chart.Chart, error) {
+func (c *GeneratedChartHandler) GenerateDuplicateManagedChart(helmManifest string, project string, stageName string, service string) (*chart.Chart, error) {
 
 	if _, ok := c.canaryLevelGen.(*CanaryOnDeploymentGenerator); ok {
 
 		meta := &chart.Metadata{
-			Name:     service + "-generated",
-			Keywords: []string{"deployment_strategy=" + keptnevents.Duplicate.String()},
-			Version:  "0.1.0",
+			APIVersion: "v2",
+			Name:       service + "-generated",
+			Keywords:   []string{"deployment_strategy=" + keptnevents.Duplicate.String()},
+			Version:    "0.1.0",
 		}
 		ch := chart.Chart{Metadata: meta}
 
-		svcs, err := getServices(helmUpgradeMsg, project, stageName)
-		if err != nil {
-			return nil, err
-		}
-		depls, err := getDeployments(helmUpgradeMsg, project, stageName)
-		if err != nil {
-			return nil, err
-		}
+		svcs := getServices(helmManifest)
+		depls := getDeployments(helmManifest)
 
 		for _, svc := range svcs {
 			templates, err := c.generateServices(svc, project, stageName)
@@ -72,91 +66,48 @@ func (c *GeneratedChartHandler) GenerateDuplicateManagedChart(helmUpgradeMsg str
 	return nil, nil
 }
 
-func getServices(helmUpgradeMsg string, project string, stageName string) ([]*corev1.Service, error) {
+func getServices(helmManifest string) []*corev1.Service {
 
-	namespace := project + "-" + stageName
-	serviceNames, err := getServiceNames(helmUpgradeMsg)
-	if err != nil {
-		return nil, err
-	}
-	useInClusterConfig := false
-	if os.Getenv("ENVIRONMENT") == "production" {
-		useInClusterConfig = true
-	}
-	clientset, err := keptnutils.GetClientset(useInClusterConfig)
-	if err != nil {
-		return nil, err
-	}
 	services := []*corev1.Service{}
-	for _, serviceName := range serviceNames {
-		svc, err := clientset.CoreV1().Services(namespace).Get(serviceName, metav1.GetOptions{})
+	dec := kyaml.NewYAMLToJSONDecoder(strings.NewReader(helmManifest))
+	for {
+		var svc corev1.Service
+		err := dec.Decode(&svc)
+		if err == io.EOF {
+			break
+		}
 		if err != nil {
-			return nil, err
+			continue
 		}
-		services = append(services, svc)
+
+		if keptnutils.IsService(&svc) {
+			services = append(services, &svc)
+		}
 	}
-	return services, nil
+
+	return services
 }
 
-func getServiceNames(helmUpgradeMsg string) ([]string, error) {
-	serviceNames := []string{}
-	startIdx := strings.Index(helmUpgradeMsg, "==> v1/Service")
-	if startIdx > 0 {
-		endIdx := strings.Index(helmUpgradeMsg[startIdx:], "\n\n")
-		serviceBlock := strings.TrimSpace(helmUpgradeMsg[startIdx : startIdx+endIdx])
-		lines := strings.Split(serviceBlock, "\n")
-		if len(lines) < 3 {
-			return nil, errors.New("Unexpected format of helm upgrade message")
-		}
-		for i := 2; i < len(lines); i++ {
-			parts := strings.Split(lines[i], " ")
-			serviceNames = append(serviceNames, strings.TrimSpace(parts[0]))
-		}
-	}
-	return serviceNames, nil
-}
+func getDeployments(helmManifest string) []*appsv1.Deployment {
 
-func getDeployments(helmUpgradeMsg string, project string, stageName string) ([]*appsv1.Deployment, error) {
-	namespace := project + "-" + stageName
-	deploymentNames, err := getDeploymentNames(helmUpgradeMsg)
-	if err != nil {
-		return nil, err
-	}
-	useInClusterConfig := false
-	if os.Getenv("ENVIRONMENT") == "production" {
-		useInClusterConfig = true
-	}
-	clientset, err := keptnutils.GetClientset(useInClusterConfig)
-	if err != nil {
-		return nil, err
-	}
 	deployments := []*appsv1.Deployment{}
-	for _, deplName := range deploymentNames {
-		depl, err := clientset.AppsV1().Deployments(namespace).Get(deplName, metav1.GetOptions{})
+	dec := kyaml.NewYAMLToJSONDecoder(strings.NewReader(helmManifest))
+	for {
+		var dpl appsv1.Deployment
+		err := dec.Decode(&dpl)
+		if err == io.EOF {
+			break
+		}
 		if err != nil {
-			return nil, err
+			fmt.Println(err)
+			continue
 		}
-		deployments = append(deployments, depl)
-	}
-	return deployments, nil
-}
 
-func getDeploymentNames(helmUpgradeMsg string) ([]string, error) {
-	deploymentNames := []string{}
-	startIdx := strings.Index(helmUpgradeMsg, "==> v1/Deployment")
-	if startIdx > 0 {
-		endIdx := strings.Index(helmUpgradeMsg[startIdx:], "\n\n")
-		deploymentBlock := strings.TrimSpace(helmUpgradeMsg[startIdx : startIdx+endIdx])
-		lines := strings.Split(deploymentBlock, "\n")
-		if len(lines) < 3 {
-			return nil, errors.New("Unexpected format of helm upgrade message")
-		}
-		for i := 2; i < len(lines); i++ {
-			parts := strings.Split(lines[i], " ")
-			deploymentNames = append(deploymentNames, strings.TrimSpace(parts[0]))
+		if keptnutils.IsDeployment(&dpl) {
+			deployments = append(deployments, &dpl)
 		}
 	}
-	return deploymentNames, nil
+	return deployments
 }
 
 func resetService(svc *corev1.Service) {
@@ -182,9 +133,9 @@ func resetDeployment(depl *appsv1.Deployment) {
 	depl.Status = appsv1.DeploymentStatus{}
 }
 
-func (c *GeneratedChartHandler) generateServices(svc *corev1.Service, project string, stageName string) ([]*chart.Template, error) {
+func (c *GeneratedChartHandler) generateServices(svc *corev1.Service, project string, stageName string) ([]*chart.File, error) {
 
-	templates := make([]*chart.Template, 0, 0)
+	templates := make([]*chart.File, 0, 0)
 
 	serviceCanary := c.canaryLevelGen.GetCanaryService(*svc, project, stageName)
 	resetService(serviceCanary)
@@ -192,7 +143,7 @@ func (c *GeneratedChartHandler) generateServices(svc *corev1.Service, project st
 	if err != nil {
 		return nil, err
 	}
-	templates = append(templates, &chart.Template{Name: "templates/" + serviceCanary.Name + "-service" + ".yaml", Data: data})
+	templates = append(templates, &chart.File{Name: "templates/" + serviceCanary.Name + "-service" + ".yaml", Data: data})
 
 	// Generate destination rule for canary service
 	hostCanary := serviceCanary.Name + "." + c.canaryLevelGen.GetNamespace(project, stageName, true) + ".svc.cluster.local"
@@ -200,7 +151,7 @@ func (c *GeneratedChartHandler) generateServices(svc *corev1.Service, project st
 	if err != nil {
 		return nil, err
 	}
-	templates = append(templates, &chart.Template{Name: "templates/" + serviceCanary.Name + c.mesh.GetDestinationRuleSuffix(), Data: destinationRuleCanary})
+	templates = append(templates, &chart.File{Name: "templates/" + serviceCanary.Name + c.mesh.GetDestinationRuleSuffix(), Data: destinationRuleCanary})
 
 	servicePrimary := svc.DeepCopy()
 	servicePrimary.Name = servicePrimary.Name + "-primary"
@@ -215,7 +166,7 @@ func (c *GeneratedChartHandler) generateServices(svc *corev1.Service, project st
 	if err != nil {
 		return nil, err
 	}
-	templates = append(templates, &chart.Template{Name: "templates/" + servicePrimary.Name + "-service" + ".yaml", Data: data})
+	templates = append(templates, &chart.File{Name: "templates/" + servicePrimary.Name + "-service" + ".yaml", Data: data})
 
 	// Generate destination rule for primary service
 	hostPrimary := servicePrimary.Name + "." + c.canaryLevelGen.GetNamespace(project, stageName, true) + ".svc.cluster.local"
@@ -223,7 +174,7 @@ func (c *GeneratedChartHandler) generateServices(svc *corev1.Service, project st
 	if err != nil {
 		return nil, err
 	}
-	templates = append(templates, &chart.Template{Name: "templates/" + servicePrimary.Name + c.mesh.GetDestinationRuleSuffix(), Data: destinationRulePrimary})
+	templates = append(templates, &chart.File{Name: "templates/" + servicePrimary.Name + c.mesh.GetDestinationRuleSuffix(), Data: destinationRulePrimary})
 
 	// Generate virtual service
 	gws := []string{"public-gateway.istio-system", "mesh"}
@@ -240,12 +191,12 @@ func (c *GeneratedChartHandler) generateServices(svc *corev1.Service, project st
 		return nil, err
 	}
 
-	templates = append(templates, &chart.Template{Name: "templates/" + svc.Name + c.mesh.GetVirtualServiceSuffix(), Data: vs})
+	templates = append(templates, &chart.File{Name: "templates/" + svc.Name + c.mesh.GetVirtualServiceSuffix(), Data: vs})
 
 	return templates, nil
 }
 
-func (c *GeneratedChartHandler) generateDeployment(depl *appsv1.Deployment) (*chart.Template, error) {
+func (c *GeneratedChartHandler) generateDeployment(depl *appsv1.Deployment) (*chart.File, error) {
 	primaryDeployment := depl.DeepCopy()
 
 	primaryDeployment.Name = primaryDeployment.Name + "-primary"
@@ -268,11 +219,11 @@ func (c *GeneratedChartHandler) generateDeployment(depl *appsv1.Deployment) (*ch
 	}
 	// Set the keptn_deployment to primary
 	yamlString := strings.ReplaceAll(string(data), "keptn_deployment=canary", "keptn_deployment=primary")
-	return &chart.Template{Name: "templates/" + primaryDeployment.Name + "-deployment" + ".yaml", Data: []byte(yamlString)}, nil
+	return &chart.File{Name: "templates/" + primaryDeployment.Name + "-deployment" + ".yaml", Data: []byte(yamlString)}, nil
 }
 
 // GenerateMeshChart generates a chart containing the required mesh setup
-func (c *GeneratedChartHandler) GenerateMeshChart(helmUpgradeMsg string, project string, stageName string,
+func (c *GeneratedChartHandler) GenerateMeshChart(helmManifest string, project string, stageName string,
 	service string) (*chart.Chart, error) {
 
 	namespace := project + "-" + stageName
@@ -280,16 +231,14 @@ func (c *GeneratedChartHandler) GenerateMeshChart(helmUpgradeMsg string, project
 	if _, ok := c.canaryLevelGen.(*CanaryOnDeploymentGenerator); ok {
 
 		meta := &chart.Metadata{
-			Name:     service + "-generated",
-			Keywords: []string{"deployment_strategy=" + keptnevents.Direct.String()},
-			Version:  "0.1.0",
+			APIVersion: "v2",
+			Name:       service + "-generated",
+			Keywords:   []string{"deployment_strategy=" + keptnevents.Direct.String()},
+			Version:    "0.1.0",
 		}
 		ch := chart.Chart{Metadata: meta}
 
-		svcs, err := getServices(helmUpgradeMsg, project, stageName)
-		if err != nil {
-			return nil, err
-		}
+		svcs := getServices(helmManifest)
 
 		for _, svc := range svcs {
 			// Generate virtual service for external access
@@ -307,7 +256,7 @@ func (c *GeneratedChartHandler) GenerateMeshChart(helmUpgradeMsg string, project
 				return nil, err
 			}
 
-			vsTemplate := chart.Template{Name: "templates/" + svc.Name + c.mesh.GetVirtualServiceSuffix(), Data: vs}
+			vsTemplate := chart.File{Name: "templates/" + svc.Name + c.mesh.GetVirtualServiceSuffix(), Data: vs}
 			ch.Templates = append(ch.Templates, &vsTemplate)
 		}
 
@@ -344,9 +293,10 @@ func (c *GeneratedChartHandler) GenerateEmptyChart(project string, stageName str
 	if _, ok := c.canaryLevelGen.(*CanaryOnDeploymentGenerator); ok {
 
 		meta := &chart.Metadata{
-			Name:     service + "-generated",
-			Keywords: []string{"deployment_strategy=" + strategy.String()},
-			Version:  "0.1.0",
+			APIVersion: "v2",
+			Name:       service + "-generated",
+			Keywords:   []string{"deployment_strategy=" + strategy.String()},
+			Version:    "0.1.0",
 		}
 		return &chart.Chart{Metadata: meta}
 	}
