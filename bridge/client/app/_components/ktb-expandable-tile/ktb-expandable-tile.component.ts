@@ -7,7 +7,6 @@ import {
   OnInit,
   ViewEncapsulation
 } from '@angular/core';
-import {coerceBooleanProperty} from "@angular/cdk/coercion";
 
 @Directive({
   selector: `ktb-expandable-tile-header, [ktb-expandable-tile-header], [ktbExpandableTileHeader]`,
@@ -40,9 +39,8 @@ export class KtbExpandableTileComponent implements OnInit {
     return this._error;
   }
   set error(value: boolean) {
-    const newValue = coerceBooleanProperty(value);
-    if (this._error !== newValue) {
-      this._error = newValue;
+    if (this._error !== value) {
+      this._error = value;
       this._changeDetectorRef.markForCheck();
     }
   }
@@ -52,9 +50,8 @@ export class KtbExpandableTileComponent implements OnInit {
     return this._success;
   }
   set success(value: boolean) {
-    const newValue = coerceBooleanProperty(value);
-    if (this._success !== newValue) {
-      this._success = newValue;
+    if (this._success !== value) {
+      this._success = value;
       this._changeDetectorRef.markForCheck();
     }
   }
