@@ -14,8 +14,16 @@ spec:
         emptyDir: {}
       containers:
       - name: keptn-installer
-        image: keptn/installer:0.5.2
+        image: keptn/installer:latest
         env:       
         - name: PLATFORM
           value: PLATFORM_PLACEHOLDER
-      restartPolicy: OnFailure
+        - name: GATEWAY_TYPE
+          value: GATEWAY_TYPE_PLACEHOLDER
+        - name: INGRESS
+          value: INGRESS_PLACEHOLDER
+        - name: USE_CASE
+          value: USE_CASE_PLACEHOLDER
+        - name: ISTIO_INSTALL_OPTION
+          value: ISTIO_INSTALL_OPTION_PLACEHOLDER
+      restartPolicy: Never

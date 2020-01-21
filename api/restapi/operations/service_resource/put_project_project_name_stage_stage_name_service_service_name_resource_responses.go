@@ -16,16 +16,11 @@ import (
 // PutProjectProjectNameStageStageNameServiceServiceNameResourceCreatedCode is the HTTP code returned for type PutProjectProjectNameStageStageNameServiceServiceNameResourceCreated
 const PutProjectProjectNameStageStageNameServiceServiceNameResourceCreatedCode int = 201
 
-/*PutProjectProjectNameStageStageNameServiceServiceNameResourceCreated Success. Service resources have been updated. The version of the new configuration is returned.
+/*PutProjectProjectNameStageStageNameServiceServiceNameResourceCreated Success. Service resources have been updated
 
 swagger:response putProjectProjectNameStageStageNameServiceServiceNameResourceCreated
 */
 type PutProjectProjectNameStageStageNameServiceServiceNameResourceCreated struct {
-
-	/*
-	  In: Body
-	*/
-	Payload *models.Version `json:"body,omitempty"`
 }
 
 // NewPutProjectProjectNameStageStageNameServiceServiceNameResourceCreated creates PutProjectProjectNameStageStageNameServiceServiceNameResourceCreated with default headers values
@@ -34,27 +29,12 @@ func NewPutProjectProjectNameStageStageNameServiceServiceNameResourceCreated() *
 	return &PutProjectProjectNameStageStageNameServiceServiceNameResourceCreated{}
 }
 
-// WithPayload adds the payload to the put project project name stage stage name service service name resource created response
-func (o *PutProjectProjectNameStageStageNameServiceServiceNameResourceCreated) WithPayload(payload *models.Version) *PutProjectProjectNameStageStageNameServiceServiceNameResourceCreated {
-	o.Payload = payload
-	return o
-}
-
-// SetPayload sets the payload to the put project project name stage stage name service service name resource created response
-func (o *PutProjectProjectNameStageStageNameServiceServiceNameResourceCreated) SetPayload(payload *models.Version) {
-	o.Payload = payload
-}
-
 // WriteResponse to the client
 func (o *PutProjectProjectNameStageStageNameServiceServiceNameResourceCreated) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
+	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
+
 	rw.WriteHeader(201)
-	if o.Payload != nil {
-		payload := o.Payload
-		if err := producer.Produce(rw, payload); err != nil {
-			panic(err) // let the recovery middleware deal with this
-		}
-	}
 }
 
 // PutProjectProjectNameStageStageNameServiceServiceNameResourceBadRequestCode is the HTTP code returned for type PutProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest

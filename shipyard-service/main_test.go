@@ -9,10 +9,25 @@ import (
 	"os"
 	"testing"
 
+	configmodels "github.com/keptn/go-utils/pkg/configuration-service/models"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
-	"github.com/keptn/keptn/configuration-service/models"
 	"github.com/magiconair/properties/assert"
 )
+
+// testingHTTPClient builds a test client with a httptest server
+func testingHTTPClient(handler http.Handler) (*http.Client, func()) {
+	server := httptest.NewServer(handler)
+
+	client := &http.Client{
+		Transport: &http.Transport{
+			DialContext: func(_ context.Context, network, _ string) (net.Conn, error) {
+				return net.Dial(network, server.Listener.Addr().String())
+			},
+		},
+	}
+
+	return client, server.Close
+}
 
 func TestGetEndpoint(t *testing.T) {
 	endPoint, err := getServiceEndpoint("CONFIGURATION_SERVICE")
@@ -27,21 +42,6 @@ func TestGetEndpoint(t *testing.T) {
 	assert.Equal(t, err, nil, "Received unexpected error")
 	assert.Equal(t, endPoint.Scheme, "http", "Schema of configuration-service endpoint incorrect")
 	assert.Equal(t, endPoint.Host, "configuration-service.keptn.svc.cluster.local", "Host of configuration-service endpoint incorrect")
-}
-
-// Helper function to build a test client with a httptest server
-func testingHTTPClient(handler http.Handler) (*http.Client, func()) {
-	server := httptest.NewServer(handler)
-
-	client := &http.Client{
-		Transport: &http.Transport{
-			DialContext: func(_ context.Context, network, _ string) (net.Conn, error) {
-				return net.Dial(network, server.Listener.Addr().String())
-			},
-		},
-	}
-
-	return client, server.Close
 }
 
 func TestCreateProjectStatusNoContent(t *testing.T) {
@@ -60,7 +60,7 @@ func TestCreateProjectStatusNoContent(t *testing.T) {
 	logger := keptnutils.NewLogger("4711-a83b-4bc1-9dc0-1f050c7e789b", "4711-a83b-4bc1-9dc0-1f050c7e781b", "shipyard-service")
 	os.Setenv("CONFIGURATION_SERVICE", "http://configuration-service.keptn.svc.cluster.local")
 
-	project := models.Project{}
+	project := configmodels.Project{}
 	project.ProjectName = "sockshop"
 	err := client.createProject(project, *logger)
 
@@ -84,7 +84,7 @@ func TestCreateProjectBadRequest(t *testing.T) {
 	logger := keptnutils.NewLogger("4711-a83b-4bc1-9dc0-1f050c7e789b", "4711-a83b-4bc1-9dc0-1f050c7e781b", "shipyard-service")
 	os.Setenv("CONFIGURATION_SERVICE", "http://configuration-service.keptn.svc.cluster.local")
 
-	project := models.Project{}
+	project := configmodels.Project{}
 	project.ProjectName = "sockshop"
 	err := client.createProject(project, *logger)
 
@@ -107,11 +107,11 @@ func TestCreateStageStatusNoContent(t *testing.T) {
 	logger := keptnutils.NewLogger("4711-a83b-4bc1-9dc0-1f050c7e789b", "4711-a83b-4bc1-9dc0-1f050c7e781b", "shipyard-service")
 	os.Setenv("CONFIGURATION_SERVICE", "http://configuration-service.keptn.svc.cluster.local")
 
-	project := models.Project{}
+	project := configmodels.Project{}
 	project.ProjectName = "sockshop"
-	stage := models.Stage{}
+	stage := configmodels.Stage{}
 	stage.StageName = "production"
-	err := client.createStage(project, stage, *logger)
+	err := client.createStage(project, stage.StageName, *logger)
 
 	assert.Equal(t, err, nil, "Received unexpected error")
 }

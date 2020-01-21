@@ -16,7 +16,7 @@ var uninstallVersion *string
 // uninstallCmd represents the uninstall command
 var uninstallCmd = &cobra.Command{
 	Use:          "uninstall",
-	Short:        "Uninstalls keptn",
+	Short:        "Uninstalls Keptn from a Kubernetes cluster",
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 
@@ -26,7 +26,7 @@ var uninstallCmd = &cobra.Command{
 
 		ctx, _ := getKubeContext()
 		fmt.Println("Your kubernetes current context is configured to cluster: " + strings.TrimSpace(ctx))
-		fmt.Println("Would you like to uninstall keptn from this cluster? (y/n)")
+		fmt.Println("Would you like to uninstall Keptn from this cluster? (y/n)")
 
 		reader := bufio.NewReader(os.Stdin)
 		in, err := reader.ReadString('\n')
@@ -38,7 +38,7 @@ var uninstallCmd = &cobra.Command{
 			return nil
 		}
 
-		logging.PrintLog("Starting to uninstall keptn", logging.InfoLevel)
+		logging.PrintLog("Starting to uninstall Keptn", logging.InfoLevel)
 
 		if !mocking {
 			// Delete installer pod, ignore if not found
@@ -60,10 +60,53 @@ var uninstallCmd = &cobra.Command{
 				return err
 			}
 		}
-		logging.PrintLog("Successfully uninstalled keptn", logging.InfoLevel)
+		logging.PrintLog("Successfully uninstalled Keptn", logging.InfoLevel)
+		logging.PrintLog("Note: Please review the following namespaces and perform manual deletion if necessary:",
+			logging.InfoLevel)
+
+		namespaces, err := listAllNamespaces()
+
+		for _, namespace := range namespaces {
+			logging.PrintLog(" - "+namespace, logging.InfoLevel)
+			if namespace == "default" || namespace == "kube-public" {
+				// skip
+				logging.PrintLog("      Recommended action: None (default namespace)", logging.InfoLevel)
+			} else if namespace == "kube-system" {
+				// we need to remove helm / tiller stuff
+				logging.PrintLog("      Recommended action: Remove Tiller/Helm using", logging.InfoLevel)
+				logging.PrintLog("                          kubectl delete all -l app=helm -n kube-system", logging.InfoLevel)
+			} else if namespace == "istio-system" {
+				// istio is special, we will refer to the official uninstall docs
+				logging.PrintLog("      Please consult the Istio Docs at https://istio.io/docs/setup/install/helm/#uninstall on how to remove Istio.", logging.InfoLevel)
+				logging.PrintLog("      Recommended action: kubectl delete namespace istio-system", logging.InfoLevel)
+			} else {
+				// just delete the namespace
+				logging.PrintLog(fmt.Sprintf("      Please review this namespace in detail using 'kubectl get pods -n %s' before deleting it", namespace), logging.InfoLevel)
+				logging.PrintLog(fmt.Sprintf("      Recommended action: kubectl delete namespace %s", namespace), logging.InfoLevel)
+			}
+		}
 
 		return nil
 	},
+}
+
+// returns a list of all namespaces
+func listAllNamespaces() ([]string, error) {
+	o := options{"get", "namespaces", "-o=jsonpath={.items[*].metadata.name}"}
+	o.appendIfNotEmpty(kubectlOptions)
+	out, err := keptnutils.ExecuteCommand("kubectl", o)
+
+	if err != nil {
+		return nil, err
+	}
+
+	out = strings.TrimSpace(out)
+	// split by spaces
+	arr := strings.Split(out, " ")
+	if out != "" {
+		logging.PrintLog(out, logging.VerboseLevel)
+	}
+	return arr, nil
 }
 
 func deleteKeptnInstallerPod(namespace string) error {

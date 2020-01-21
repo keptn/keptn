@@ -9,6 +9,8 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/runtime"
+
+	models "github.com/keptn/keptn/mongodb-datastore/models"
 )
 
 // GetEventsOKCode is the HTTP code returned for type GetEventsOK
@@ -65,7 +67,7 @@ type GetEventsDefault struct {
 	/*
 	  In: Body
 	*/
-	Payload *GetEventsDefaultBody `json:"body,omitempty"`
+	Payload *models.Error `json:"body,omitempty"`
 }
 
 // NewGetEventsDefault creates GetEventsDefault with default headers values
@@ -91,13 +93,13 @@ func (o *GetEventsDefault) SetStatusCode(code int) {
 }
 
 // WithPayload adds the payload to the get events default response
-func (o *GetEventsDefault) WithPayload(payload *GetEventsDefaultBody) *GetEventsDefault {
+func (o *GetEventsDefault) WithPayload(payload *models.Error) *GetEventsDefault {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the get events default response
-func (o *GetEventsDefault) SetPayload(payload *GetEventsDefaultBody) {
+func (o *GetEventsDefault) SetPayload(payload *models.Error) {
 	o.Payload = payload
 }
 

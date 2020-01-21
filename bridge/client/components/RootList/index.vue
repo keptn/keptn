@@ -11,8 +11,7 @@
       <b-card class="m-2">
         <b-card-text>
           <small>
-            {{root.eventTypeHeadline}}
-            <hr>
+            <h5>{{root.eventTypeHeadline}}</h5>
             <p class="mb-1">
               <b>Project:</b> {{ root.data.project }}
               <br>

@@ -14,7 +14,7 @@ import (
 // AuthOKCode is the HTTP code returned for type AuthOK
 const AuthOKCode int = 200
 
-/*AuthOK authenticated
+/*AuthOK Authenticated
 
 swagger:response authOK
 */

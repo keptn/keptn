@@ -13,3 +13,6 @@
 
 vendor/*
 .DS_Store
+
+#binary - go build
+jmeter-service

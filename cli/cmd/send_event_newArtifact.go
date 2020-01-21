@@ -15,17 +15,20 @@
 package cmd
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 	"net/url"
 	"strings"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 	"github.com/google/uuid"
+
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	keptnevents "github.com/keptn/go-utils/pkg/events"
+
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
@@ -45,11 +48,11 @@ var newArtifact newArtifactStruct
 // newArtifactCmd represents the newArtifact command
 var newArtifactCmd = &cobra.Command{
 	Use: "new-artifact",
-	Short: "Sends a new-artifact event to keptn in order to deploy a new artifact" +
-		"for the specified service in the provided project.",
-	Long: `Sends a new-artifact event to keptn in order to deploy a new artifact
+	Short: "Sends a new-artifact event to Keptn in order to deploy a new artifact" +
+		"for the specified service in the provided project",
+	Long: `Sends a new-artifact event to Keptn in order to deploy a new artifact
 for the specified service in the provided project.
-Therefore, this command takes the project, the service as well as the image and tag of the new artifact.
+Therefore, this command takes the project, service, image, and tag of the new artifact.
 	
 Example:
 	keptn send event new-artifact --project=sockshop --service=carts --image=docker.io/keptnexamples/carts --tag=0.7.0`,
@@ -57,8 +60,11 @@ Example:
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		trimmedImage := strings.TrimSuffix(*newArtifact.Image, "/")
 		newArtifact.Image = &trimmedImage
-		setTag()
-		return checkImageAvailability()
+
+		if newArtifact.Tag == nil || *newArtifact.Tag == "" {
+			*newArtifact.Image, *newArtifact.Tag = utils.SplitImageName(*newArtifact.Image)
+		}
+		return utils.CheckImageAvailability(*newArtifact.Image, *newArtifact.Tag)
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		endPoint, apiToken, err := credentialmanager.GetCreds()
@@ -82,7 +88,7 @@ Example:
 
 		source, _ := url.Parse("https://github.com/keptn/keptn/cli#configuration-change")
 		contentType := "application/json"
-		event := cloudevents.Event{
+		sdkEvent := cloudevents.Event{
 			Context: cloudevents.EventContextV02{
 				ID:          uuid.New().String(),
 				Type:        keptnevents.ConfigurationChangeEventType,
@@ -92,87 +98,38 @@ Example:
 			Data: configChangedEvent,
 		}
 
-		eventURL := endPoint
-		eventURL.Path = "v1/event"
+		eventByte, err := sdkEvent.MarshalJSON()
+		if err != nil {
+			return fmt.Errorf("Failed to marshal cloud event. %s", err.Error())
+		}
 
-		logging.PrintLog(fmt.Sprintf("Connecting to server %s", eventURL.String()), logging.VerboseLevel)
+		apiEvent := apimodels.Event{}
+		err = json.Unmarshal(eventByte, &apiEvent)
+		if err != nil {
+			return fmt.Errorf("Failed to map cloud event to API event model. %s", err.Error())
+		}
+
+		eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, "https")
+		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
+
 		if !mocking {
-			responseCE, err := utils.Send(eventURL, event, apiToken)
+			eventContext, err := eventHandler.SendEvent(apiEvent)
 			if err != nil {
 				logging.PrintLog("Send new-artifact was unsuccessful", logging.QuietLevel)
-				return err
+				return fmt.Errorf("Send new-artifact was unsuccessful. %s", *err.Message)
 			}
 
-			// check for responseCE to include token
-			if responseCE == nil {
-				logging.PrintLog("Response CE is nil", logging.QuietLevel)
+			// if eventContext is available, open WebSocket communication
+			if eventContext != nil {
+				return websockethelper.PrintWSContentEventContext(eventContext, endPoint)
+			}
 
-				return nil
-			}
-			if responseCE.Data != nil {
-				return websockethelper.PrintWSContentCEResponse(responseCE, endPoint)
-			}
-		} else {
-			fmt.Println("Skipping send-new artifact due to mocking flag set to true")
+			return nil
 		}
+
+		fmt.Println("Skipping send new-artifact due to mocking flag set to true")
 		return nil
 	},
-}
-
-func setTag() {
-
-	if newArtifact.Tag != nil && *newArtifact.Tag != "" {
-		// The tag is already set
-		return
-	}
-
-	// Get image name without Docker-organization
-	splitsIntoImage := strings.Split(*newArtifact.Image, "/")
-	imageName := splitsIntoImage[len(splitsIntoImage)-1]
-
-	splitsIntoTag := strings.Split(imageName, ":")
-	if len(splitsIntoTag) == 2 {
-		// Tag is provided in the image name
-		tag := splitsIntoTag[len(splitsIntoTag)-1]
-		newArtifact.Tag = &tag
-		imageWithoutTag := strings.TrimSuffix(*newArtifact.Image, ":"+*newArtifact.Tag)
-		newArtifact.Image = &imageWithoutTag
-		return
-	}
-	// Otherwise use latest tag
-	latest := "latest"
-	newArtifact.Tag = &latest
-}
-
-func checkImageAvailability() error {
-
-	if strings.HasPrefix(*newArtifact.Image, "docker.io/") || strings.Count(*newArtifact.Image, "/") == 1 {
-		resp, err := http.Get("https://index.docker.io/v1/repositories/" +
-			strings.TrimPrefix(*newArtifact.Image, "docker.io/") + "/tags/" + *newArtifact.Tag)
-		if err != nil {
-			return err
-		}
-		if resp.StatusCode == http.StatusOK {
-			return nil
-		}
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return err
-		}
-		return errors.New("Provided image not found: " + string(body))
-	} else if strings.HasPrefix(*newArtifact.Image, "quay.io/") {
-		resp, err := http.Get("https://quay.io/api/v1/repository/" +
-			strings.TrimPrefix(*newArtifact.Image, "quay.io/") + "/tag/" + *newArtifact.Tag + "/images")
-		if err != nil {
-			return err
-		}
-		if resp.StatusCode == http.StatusOK {
-			return nil
-		}
-		return errors.New("Provided image not found: " + resp.Status)
-	}
-	logging.PrintLog("Availability of provided image cannot be checked.", logging.InfoLevel)
-	return nil
 }
 
 func init() {

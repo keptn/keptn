@@ -9,11 +9,11 @@ VERSION=$5
 
 echo "Build ${IMAGE}"
 cp MANIFEST ./${FOLDER}MANIFEST #$FOLDER contains / at the end
+cp travis-scripts/entrypoint.sh ./${FOLDER}entrypoint.sh #$FOLDER contains / at the end
 cd ./${FOLDER}
+# uncomment certain lines from Dockerfile that are for travis builds only
+sed -i '/#travis-uncomment/s/^#travis-uncomment //g' Dockerfile
+
 cat MANIFEST
-docker build . -t "${IMAGE}:${GIT_SHA}"
-docker tag "${IMAGE}:${GIT_SHA}" "${IMAGE}:${VERSION}.${DATE}"
-docker tag "${IMAGE}:${GIT_SHA}" "${IMAGE}:${VERSION}.latest"
-docker push "${IMAGE}:${GIT_SHA}"
-docker push "${IMAGE}:${VERSION}.${DATE}"
-docker push "${IMAGE}:${VERSION}.latest"
+docker build . -t "${IMAGE}:${GIT_SHA}" -t "${IMAGE}:${VERSION}.${DATE}" -t "${IMAGE}:${VERSION}" --build-arg version=$VERSION
+docker push "${IMAGE}"

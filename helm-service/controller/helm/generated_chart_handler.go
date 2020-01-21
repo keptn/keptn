@@ -166,6 +166,9 @@ func resetService(svc *corev1.Service) {
 	svc.Spec.ClusterIP = ""
 	svc.Spec.LoadBalancerIP = ""
 	svc.Spec.ExternalIPs = nil
+	for idx := range svc.Spec.Ports {
+		svc.Spec.Ports[idx].NodePort = 0
+	}
 	svc.Status = corev1.ServiceStatus{}
 }
 
@@ -179,6 +182,7 @@ func resetDeployment(depl *appsv1.Deployment) {
 func (c *GeneratedChartHandler) generateServices(svc *corev1.Service, project string, stageName string) ([]*chart.Template, error) {
 
 	templates := make([]*chart.Template, 0, 0)
+
 	serviceCanary := c.canaryLevelGen.GetCanaryService(*svc, project, stageName)
 	resetService(serviceCanary)
 	data, err := yaml.Marshal(serviceCanary)
@@ -219,9 +223,11 @@ func (c *GeneratedChartHandler) generateServices(svc *corev1.Service, project st
 	templates = append(templates, &chart.Template{Name: "templates/" + servicePrimary.Name + c.mesh.GetDestinationRuleSuffix(), Data: destinationRulePrimary})
 
 	// Generate virtual service
-	gws := []string{GetGatewayName(project, stageName) + "." + GetUmbrellaNamespace(project, stageName), "mesh"}
-	hosts := []string{svc.Name + "." + c.canaryLevelGen.GetNamespace(project, stageName, false) + "." + c.keptnDomain,
-		svc.Name, svc.Name + "." + c.canaryLevelGen.GetNamespace(project, stageName, false)}
+	gws := []string{"public-gateway.istio-system", "mesh"}
+	hosts := []string{
+		svc.Name + "." + c.canaryLevelGen.GetNamespace(project, stageName, false) + "." + c.keptnDomain, // service_name.dev.123.45.67.89.xip.io
+		svc.Name, // service-name
+	}
 	destCanary := mesh.HTTPRouteDestination{Host: hostCanary, Weight: 0}
 	destPrimary := mesh.HTTPRouteDestination{Host: hostPrimary, Weight: 100}
 	httpRouteDestinations := []mesh.HTTPRouteDestination{destCanary, destPrimary}
@@ -232,6 +238,7 @@ func (c *GeneratedChartHandler) generateServices(svc *corev1.Service, project st
 	}
 
 	templates = append(templates, &chart.Template{Name: "templates/" + svc.Name + c.mesh.GetVirtualServiceSuffix(), Data: vs})
+
 	return templates, nil
 }
 
@@ -256,7 +263,9 @@ func (c *GeneratedChartHandler) generateDeployment(depl *appsv1.Deployment) (*ch
 	if err != nil {
 		return nil, err
 	}
-	return &chart.Template{Name: "templates/" + primaryDeployment.Name + "-deployment" + ".yaml", Data: data}, nil
+	// Set the keptn_deployment to primary
+	yamlString := strings.ReplaceAll(string(data), "keptn_deployment=canary", "keptn_deployment=primary")
+	return &chart.Template{Name: "templates/" + primaryDeployment.Name + "-deployment" + ".yaml", Data: []byte(yamlString)}, nil
 }
 
 // GenerateMeshChart generates a chart containing the required mesh setup
@@ -280,10 +289,12 @@ func (c *GeneratedChartHandler) GenerateMeshChart(helmUpgradeMsg string, project
 		}
 
 		for _, svc := range svcs {
-			// Generate virtual service
-			gws := []string{GetGatewayName(project, stageName) + "." + GetUmbrellaNamespace(project, stageName), "mesh"}
-			hosts := []string{svc.Name + "." + namespace + "." + c.keptnDomain,
-				svc.Name, svc.Name + "." + namespace}
+			// Generate virtual service for external access
+			gws := []string{"public-gateway.istio-system", "mesh"}
+			hosts := []string{
+				svc.Name + "." + namespace + "." + c.keptnDomain,
+				svc.Name,
+			}
 			host := svc.Name + "." + namespace + ".svc.cluster.local"
 			dest := mesh.HTTPRouteDestination{Host: host}
 			httpRouteDestinations := []mesh.HTTPRouteDestination{dest}

@@ -19,13 +19,14 @@ import (
 	"log"
 	"os"
 
+	keptnutils "github.com/keptn/go-utils/pkg/utils"
+
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/transport"
 	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
 	cloudeventsnats "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/nats"
 	"github.com/kelseyhightower/envconfig"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
 )
 
 type envConfig struct {
@@ -72,6 +73,7 @@ func createPubSubConnection(topic string, logger *keptnutils.Logger) (transport.
 		return nil, errors.New("no PubSub URL defined")
 	}
 
+	
 	if topic == "" {
 		return nil, errors.New("no PubSub Topic defined")
 	}

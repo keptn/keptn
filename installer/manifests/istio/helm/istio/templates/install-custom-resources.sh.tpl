@@ -4,7 +4,7 @@
 set -x
 
 if [ "$#" -ne "1" ]; then
-    echo "first argument should be path to custom resource yaml"
+    echo "First argument should be path to custom resource yaml"
     exit 1
 fi
 

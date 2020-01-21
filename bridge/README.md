@@ -1,8 +1,6 @@
 # Keptn's Bridge
 
-Right now, Keptn's bridge lets you browse the Keptn's log.
-
-In the future it should provide realtime information and metrics about what is going on in your deployment.
+Keptn's bridge allows to browse the Keptn events.
 
 ## Installation
 

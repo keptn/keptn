@@ -13,23 +13,20 @@ import (
 	middleware "github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
 
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/mongodb-datastore/handlers"
+	"github.com/keptn/keptn/mongodb-datastore/models"
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations"
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/event"
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/logs"
 )
 
-//go:generate swagger generate server --target ../../mongodb-datastore --name mongodb-datastore --spec ../swagger.json
+//go:generate swagger generate server --target ../../mongodb-datastore --name mongodb-datastore --spec ../swagger.yaml
 
 func configureFlags(api *operations.MongodbDatastoreAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
 }
 
 func configureAPI(api *operations.MongodbDatastoreAPI) http.Handler {
-	// set service name for logging
-	keptnutils.ServiceName = "mongodb-datastore"
-
 	// configure the api here
 	api.ServeError = errors.ServeError
 
@@ -45,7 +42,7 @@ func configureAPI(api *operations.MongodbDatastoreAPI) http.Handler {
 
 	api.EventSaveEventHandler = event.SaveEventHandlerFunc(func(params event.SaveEventParams) middleware.Responder {
 		if err := handlers.SaveEvent(params.Body); err != nil {
-			return event.NewSaveEventDefault(500).WithPayload(&event.SaveEventDefaultBody{Code: 500, Message: swag.String(err.Error())})
+			return event.NewSaveEventDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 		}
 		return event.NewSaveEventCreated()
 	})
@@ -53,14 +50,14 @@ func configureAPI(api *operations.MongodbDatastoreAPI) http.Handler {
 	api.EventGetEventsHandler = event.GetEventsHandlerFunc(func(params event.GetEventsParams) middleware.Responder {
 		events, err := handlers.GetEvents(params)
 		if err != nil {
-			return event.NewGetEventsDefault(500).WithPayload(&event.GetEventsDefaultBody{Code: 500, Message: swag.String(err.Error())})
+			return event.NewGetEventsDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 		}
 		return event.NewGetEventsOK().WithPayload(events)
 	})
 
 	api.LogsSaveLogHandler = logs.SaveLogHandlerFunc(func(params logs.SaveLogParams) middleware.Responder {
 		if err := handlers.SaveLog(params.Body); err != nil {
-			return logs.NewSaveLogDefault(500).WithPayload(&logs.SaveLogDefaultBody{Code: 500, Message: swag.String(err.Error())})
+			return logs.NewSaveLogDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 		}
 		return logs.NewSaveLogCreated()
 	})
@@ -68,7 +65,7 @@ func configureAPI(api *operations.MongodbDatastoreAPI) http.Handler {
 	api.LogsGetLogsHandler = logs.GetLogsHandlerFunc(func(params logs.GetLogsParams) middleware.Responder {
 		mylogs, err := handlers.GetLogs(params)
 		if err != nil {
-			return logs.NewGetLogsDefault(500).WithPayload(&logs.GetLogsDefaultBody{Code: 500, Message: swag.String(err.Error())})
+			return logs.NewGetLogsDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 		}
 		return logs.NewGetLogsOK().WithPayload(mylogs)
 	})

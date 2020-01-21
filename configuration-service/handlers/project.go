@@ -41,7 +41,7 @@ func GetProjectHandlerFunc(params project.GetProjectParams) middleware.Responder
 	totalCount := len(files)
 	if paginationInfo.NextPageKey < int64(totalCount) {
 		for _, f := range files[paginationInfo.NextPageKey:paginationInfo.EndIndex] {
-			if f.IsDir() {
+			if f.IsDir() && common.FileExists(config.ConfigDir+"/"+f.Name()+"/metadata.yaml") {
 				var project = &models.Project{ProjectName: f.Name()}
 				payload.Projects = append(payload.Projects, project)
 			}
@@ -57,9 +57,11 @@ func GetProjectHandlerFunc(params project.GetProjectParams) middleware.Responder
 func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Responder {
 	common.Lock()
 	defer common.UnLock()
+	credentialsCreated := false
 	logger := utils.NewLogger("", "", "configuration-service")
 	projectConfigPath := config.ConfigDir + "/" + params.Project.ProjectName
 
+	// check if the project already exists
 	if common.ProjectExists(params.Project.ProjectName) {
 		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Project already exists")})
 	}
@@ -68,17 +70,20 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 	// clone existing repo
 	////////////////////////////////////////////////////
 	if params.Project.GitUser != "" && params.Project.GitToken != "" && params.Project.GitRemoteURI != "" {
-		err := common.StoreGitCredentials(params.Project.ProjectName, params.Project.GitUser, params.Project.GitToken, params.Project.GitRemoteURI)
-		if err != nil {
-			logger.Error(err.Error())
-			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not store git credentials")})
-		}
-
-		err = common.CloneRepo(params.Project.ProjectName, params.Project.GitUser, params.Project.GitToken, params.Project.GitRemoteURI)
+		// try to clone the repo
+		err := common.CloneRepo(params.Project.ProjectName, params.Project.GitUser, params.Project.GitToken, params.Project.GitRemoteURI)
 		if err != nil {
 			logger.Error(err.Error())
 			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not clone git repository")})
 		}
+
+		// store credentials (e.g., as a kubernetes secret)
+		err = common.StoreGitCredentials(params.Project.ProjectName, params.Project.GitUser, params.Project.GitToken, params.Project.GitRemoteURI)
+		if err != nil {
+			logger.Error(err.Error())
+			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not store git credentials")})
+		}
+		credentialsCreated = true
 	} else {
 		// if no remote URI has been specified, create a new repo
 		///////////////////////////////////////////////////
@@ -105,12 +110,29 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 
 	if err != nil {
 		logger.Error(err.Error())
+		// Cleanup credentials before we exit
+		if credentialsCreated {
+			err = common.DeleteCredentials(params.Project.ProjectName)
+
+			if err != nil {
+				logger.Error(err.Error())
+			}
+		}
+
 		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not store project metadata")})
 	}
 
 	err = common.StageAndCommitAll(params.Project.ProjectName, "Added metadata.yaml")
 	if err != nil {
 		logger.Error(err.Error())
+		// Cleanup credentials before we exit
+		if credentialsCreated {
+			err = common.DeleteCredentials(params.Project.ProjectName)
+
+			if err != nil {
+				logger.Error(err.Error())
+			}
+		}
 		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
 	}
 	return project.NewPostProjectNoContent()

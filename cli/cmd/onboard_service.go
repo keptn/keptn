@@ -4,19 +4,17 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"net/url"
 	"os"
 
-	"github.com/cloudevents/sdk-go/pkg/cloudevents"
-	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
-	"github.com/google/uuid"
+	"github.com/keptn/keptn/cli/utils/websockethelper"
+
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/events"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/cli/pkg/logging"
-	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
 	"github.com/keptn/keptn/cli/utils/validator"
-	"github.com/keptn/keptn/cli/utils/websockethelper"
 	"github.com/spf13/cobra"
 )
 
@@ -31,8 +29,8 @@ var onboardServiceParams *onboardServiceCmdParams
 // serviceCmd represents the service command
 var serviceCmd = &cobra.Command{
 	Use:   "service SERVICENAME --project=PROJECTNAME --chart=FILEPATH",
-	Short: "Onboards a new service.",
-	Long: `Onboards a new service in the provided project. Therefore, this command 
+	Short: "Onboards a new service to a project",
+	Long: `Onboards a new service to the provided project. Therefore, this command 
 takes a folder to a Helm chart or an already packed Helm chart as .tgz.
 	
 Example:
@@ -41,7 +39,11 @@ Example:
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
 			cmd.SilenceUsage = false
-			return errors.New("Requires SERVICENAME")
+			return errors.New("required argument SERVICENAME not set")
+		}
+		if !keptnutils.ValidateKeptnEntityName(args[0]) {
+			errorMsg := "Service name contains upper case letter(s) or special character(s).\n"
+			return errors.New(errorMsg)
 		}
 		return nil
 	},
@@ -85,75 +87,57 @@ Example:
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
-
 		logging.PrintLog("Starting to onboard service", logging.InfoLevel)
 
-		ch, err := keptnutils.LoadChartFromPath(*onboardServiceParams.ChartFilePath)
+		chart, err := keptnutils.LoadChartFromPath(*onboardServiceParams.ChartFilePath)
 		if err != nil {
 			return err
 		}
 
-		chartData, err := keptnutils.PackageChart(ch)
+		chartData, err := keptnutils.PackageChart(chart)
 		if err != nil {
 			return err
 		}
 
-		data := events.ServiceCreateEventData{
-			Project:   *onboardServiceParams.Project,
-			Service:   args[0],
-			HelmChart: base64.StdEncoding.EncodeToString(chartData),
+		helmChart := base64.StdEncoding.EncodeToString(chartData)
+		service := apimodels.Service{
+			ServiceName: &args[0],
+			HelmChart:   helmChart,
 		}
 
 		if *onboardServiceParams.DeploymentStrategy != "" {
-			deplStrategies := make(map[string]events.DeploymentStrategy)
+			deplStrategies := make(map[string]string)
 
 			if *onboardServiceParams.DeploymentStrategy == "direct" {
-				deplStrategies["*"] = events.Direct
+				deplStrategies["*"] = events.Direct.String()
 			} else if *onboardServiceParams.DeploymentStrategy == "blue_green_service" {
-				deplStrategies["*"] = events.Duplicate
+				deplStrategies["*"] = events.Duplicate.String()
 			} else {
 				return fmt.Errorf("The provided deployment strategy %s is not supported. Select: [direct|blue_green_service]", *onboardServiceParams.DeploymentStrategy)
 			}
 
-			data.DeploymentStrategies = deplStrategies
+			service.DeploymentStrategies = deplStrategies
 		}
 
-		source, _ := url.Parse("https://github.com/keptn/keptn/cli#onboardservice")
-
-		contentType := "application/json"
-		event := cloudevents.Event{
-			Context: cloudevents.EventContextV02{
-				ID:          uuid.New().String(),
-				Type:        events.InternalServiceCreateEventType,
-				Source:      types.URLRef{URL: *source},
-				ContentType: &contentType,
-			}.AsV02(),
-			Data: data,
-		}
-
-		serviceURL := endPoint
-		serviceURL.Path = "v1/service"
-
+		serviceHandler := apiutils.NewAuthenticatedServiceHandler(endPoint.String(), apiToken, "x-token", nil, "https")
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
+
 		if !mocking {
-			responseCE, err := utils.Send(serviceURL, event, apiToken)
+			eventContext, err := serviceHandler.CreateService(*onboardServiceParams.Project, service)
 			if err != nil {
 				logging.PrintLog("Onboard service was unsuccessful", logging.QuietLevel)
-				return err
+				return fmt.Errorf("Onboard service was unsuccessful. %s", *err.Message)
 			}
 
-			// check for responseCE to include token
-			if responseCE == nil {
-				logging.PrintLog("Response CE is nil", logging.QuietLevel)
+			// if eventContext is available, open WebSocket communication
+			if eventContext != nil {
+				return websockethelper.PrintWSContentEventContext(eventContext, endPoint)
+			}
 
-				return nil
-			}
-			if responseCE.Data != nil {
-				return websockethelper.PrintWSContentCEResponse(responseCE, endPoint)
-			}
-		} else {
-			fmt.Println("Skipping onboard service due to mocking flag set to true")
+			return nil
 		}
+
+		fmt.Println("Skipping onboard service due to mocking flag set to true")
 		return nil
 	},
 }

@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: eventbroker-go
-        image: keptn/eventbroker-go:0.1.0
+        image: keptn/eventbroker-go:latest
         ports:
         - containerPort: 8080
         resources:

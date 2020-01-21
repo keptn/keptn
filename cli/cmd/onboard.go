@@ -7,8 +7,8 @@ import (
 // onboardCmd represents the onboard command
 var onboardCmd = &cobra.Command{
 	Use:   "onboard [service]",
-	Short: "onboard allows to onbard a new service",
-	Long:  `onbaord currently allows to onboard a new service with "onboard service". onboard without subcommand cannot be used.`,
+	Short: "onboard allows to create a new service",
+	Long:  `onboard currently allows to create a new service with "onboard service". onboard without sub-command cannot be used.`,
 }
 
 func init() {

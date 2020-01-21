@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   creationTimestamp: null
@@ -6,6 +6,9 @@ metadata:
   namespace: keptn-datastore
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      name: mongodb
   strategy:
     type: Recreate
   template:

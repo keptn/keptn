@@ -28,3 +28,12 @@ configuration-service/cmd/configuration-service-server/__debug_bin
 
 # IDE files
 .vscode/
+*.iml
+# ignore idea in all subfolders
+*/.idea
+# only ignore contents of local .idea
+.idea/*
+# but allow .idea shared run configurations
+!.idea/runConfigurations/
+
+vendor/

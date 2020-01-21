@@ -9,6 +9,8 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/runtime"
+
+	models "github.com/keptn/keptn/mongodb-datastore/models"
 )
 
 // SaveEventCreatedCode is the HTTP code returned for type SaveEventCreated
@@ -45,7 +47,7 @@ type SaveEventDefault struct {
 	/*
 	  In: Body
 	*/
-	Payload *SaveEventDefaultBody `json:"body,omitempty"`
+	Payload *models.Error `json:"body,omitempty"`
 }
 
 // NewSaveEventDefault creates SaveEventDefault with default headers values
@@ -71,13 +73,13 @@ func (o *SaveEventDefault) SetStatusCode(code int) {
 }
 
 // WithPayload adds the payload to the save event default response
-func (o *SaveEventDefault) WithPayload(payload *SaveEventDefaultBody) *SaveEventDefault {
+func (o *SaveEventDefault) WithPayload(payload *models.Error) *SaveEventDefault {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the save event default response
-func (o *SaveEventDefault) SetPayload(payload *SaveEventDefaultBody) {
+func (o *SaveEventDefault) SetPayload(payload *models.Error) {
 	o.Payload = payload
 }
 

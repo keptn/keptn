@@ -1,0 +1,107 @@
+## lighthouse-service: sh.keptn.event.tests-finished
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lighthouse-service-tests-finished-distributor
+  namespace: keptn
+spec:
+  selector:
+    matchLabels:
+      run: distributor
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: distributor
+    spec:
+      containers:
+        - name: distributor
+          image: keptn/distributor:latest
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          env:
+            - name: PUBSUB_URL
+              value: 'nats://keptn-nats-cluster'
+            - name: PUBSUB_TOPIC
+              value: 'sh.keptn.events.tests-finished'
+            - name: PUBSUB_RECIPIENT
+              value: 'lighthouse-service'
+---
+## lighthouse-service: sh.keptn.event.start-evaluation
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lighthouse-service-start-evaluation-distributor
+  namespace: keptn
+spec:
+  selector:
+    matchLabels:
+      run: distributor
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: distributor
+    spec:
+      containers:
+        - name: distributor
+          image: keptn/distributor:latest
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          env:
+            - name: PUBSUB_URL
+              value: 'nats://keptn-nats-cluster'
+            - name: PUBSUB_TOPIC
+              value: 'sh.keptn.event.start-evaluation'
+            - name: PUBSUB_RECIPIENT
+              value: 'lighthouse-service'
+---
+## lighthouse-service: sh.keptn.internal.event.get-sli.done
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lighthouse-service-get-sli-done-distributor
+  namespace: keptn
+spec:
+  selector:
+    matchLabels:
+      run: distributor
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: distributor
+    spec:
+      containers:
+        - name: distributor
+          image: keptn/distributor:latest
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          env:
+            - name: PUBSUB_URL
+              value: 'nats://keptn-nats-cluster'
+            - name: PUBSUB_TOPIC
+              value: 'sh.keptn.internal.event.get-sli.done'
+            - name: PUBSUB_RECIPIENT
+              value: 'lighthouse-service'

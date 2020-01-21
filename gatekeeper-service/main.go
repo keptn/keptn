@@ -14,11 +14,14 @@ import (
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
 	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
+
+	configutils "github.com/keptn/go-utils/pkg/configuration-service/utils"
+	keptnevents "github.com/keptn/go-utils/pkg/events"
+	keptnutils "github.com/keptn/go-utils/pkg/utils"
+
 	"github.com/ghodss/yaml"
 	"github.com/google/uuid"
 	"github.com/kelseyhightower/envconfig"
-	keptnevents "github.com/keptn/go-utils/pkg/events"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
 )
 
 const configservice = "CONFIGURATION_SERVICE"
@@ -28,15 +31,6 @@ type envConfig struct {
 	// Port on which to listen for cloudevents
 	Port int    `envconfig:"RCV_PORT" default:"8080"`
 	Path string `envconfig:"RCV_PATH" default:"/"`
-}
-
-type evaluationDoneEvent struct {
-	Project            string `json:"project"`
-	Stage              string `json:"stage"`
-	Service            string `json:"service"`
-	DeploymentStrategy string `json:"deploymentstrategy"`
-	EvaluationPassed   bool   `json:"evaluationpassed"`
-	TestStrategy       string `json:"teststrategy"`
 }
 
 func main() {
@@ -75,7 +69,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 	logger := keptnutils.NewLogger(shkeptncontext, event.Context.GetID(), "gatekeeper-service")
 
-	if event.Type() == "sh.keptn.events.evaluation-done" {
+	if event.Type() == keptnevents.EvaluationDoneEventType {
 		go doGateKeeping(event, shkeptncontext, logger)
 	} else {
 		logger.Error("Received unexpected keptn event")
@@ -86,13 +80,14 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 func doGateKeeping(event cloudevents.Event, shkeptncontext string, logger *keptnutils.Logger) error {
 
-	data := &evaluationDoneEvent{}
+	data := &keptnevents.EvaluationDoneEventData{}
 	if err := event.DataAs(data); err != nil {
 		logger.Error(fmt.Sprintf("Got Data Error: %s", err.Error()))
 		return err
 	}
 
-	if data.EvaluationPassed {
+	// Evaluation has passed if we have result = pass or result = warning
+	if data.Result == "pass" || data.Result == "warning" {
 
 		logger.Info(fmt.Sprintf("Service %s of project %s in stage %s has passed the evaluation",
 			data.Service, data.Project, data.Stage))
@@ -164,7 +159,7 @@ func doGateKeeping(event cloudevents.Event, shkeptncontext string, logger *keptn
 }
 
 func getNextStage(project string, currentStage string) (string, error) {
-	resourceHandler := keptnutils.NewResourceHandler(os.Getenv(configservice))
+	resourceHandler := configutils.NewResourceHandler(os.Getenv(configservice))
 	handler := keptnutils.NewKeptnHandler(resourceHandler)
 
 	shipyard, err := handler.GetShipyard(project)
