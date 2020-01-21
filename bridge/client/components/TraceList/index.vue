@@ -168,7 +168,7 @@
                     if (canaryAction.Value === 'set') {
                         const value = canary.find(item => item.Key === 'value');
                         if (value !== undefined) {
-                            return `Settting traffic percentage for canary deployment to ${value.Value}`;
+                            return `Setting traffic percentage for canary deployment to ${value.Value}`;
                         }
                     }
                     if (canaryAction.Value === 'discard') {
