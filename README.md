@@ -15,7 +15,7 @@ Please find the documentation of how to get started with Keptn in the [Quick Sta
 Furthermore, you can learn about our current releases, release candidates and pre-releases on the [release section](https://github.com/keptn/keptn/releases).
 
 ## Versions compatibilities
-We mangage the Keptn core components as well as all services (e.g., jmeter-service, helm-service, etc.) in versions. The respective images in their versions are stored on [DockerHub](https://hub.docker.com/?namespace=keptn).
+We mangage the Keptn core components in versions. The respective images in their versions are stored on [DockerHub](https://hub.docker.com/?namespace=keptn).
 The versions of the Keptn core components and the services have to be compatible to each other.
 Therefore, this section shows the compatibility between these versions.
 
