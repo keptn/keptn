@@ -19,7 +19,7 @@ where **command**, **entity**, **name**, and **flags** are:
     ```console
     keptn create project 
     keptn onboard service
-    keptn update domain
+    keptn configure domain
     ```
 
 - **name**: Specifies the name of the enitiy. Names are case-sensitive. 
@@ -41,6 +41,7 @@ The following table includes short descriptions and the general syntax for all o
 | `install`  | Install Keptn on your Kubernetes cluster |
 | `onboard`  | Onboard allows to onbard a new service |
 | `send`  | Send a Keptn event in combination with the subcommand *event* |
+| `status`  | Checks the status of the CLI |
 | `uninstall`  | Uninstalls Keptn on your Kubernetes cluster |
 | `version`  | Prints the CLI version for the current context |
 
