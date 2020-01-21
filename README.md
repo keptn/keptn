@@ -13,14 +13,13 @@ Please find the documentation of how to get started with Keptn in [our official 
 Furthermore, please use the [release section](https://github.com/keptn/keptn/releases) to learn about our current releases, release candidates and pre-releases to get the latest version of Keptn.
 
 ## Versions compatibilities
-We mangage the Keptn core components as well as all services (e.g., github-service, helm-service, etc.) in versions. The respective images in their versions are stored on [DockerHub](https://hub.docker.com/?namespace=keptn).
+We mangage the Keptn core components as well as all services (e.g., jmeter-service, helm-service, etc.) in versions. The respective images in their versions are stored on [DockerHub](https://hub.docker.com/?namespace=keptn).
 The versions of the Keptn core components and the services have to be compatible to each other.
 Therefore, this section shows the compatibility between these versions.
 
 **Keptn in [version 0.6.0](https://github.com/keptn/keptn/releases/tag/0.6.0) requires:**
 
 *Keptn core:*
-- keptn/lighthouse-service:0.6.0
 - keptn/api:0.6.0
 - keptn/bridge:0.6.0
 - keptn/configuration-service:0.6.0
@@ -29,22 +28,14 @@ Therefore, this section shows the compatibility between these versions.
 - keptn/gatekeeper-service:0.6.0
 - keptn/helm-service:0.6.0
 - keptn/jmeter-service:0.6.0
+- keptn/lighthouse-service:0.6.0
 - keptn/mongodb-datastore:0.6.0
-- keptn/pitometer-service:0.6.0
 - keptn/shipyard-service:0.6.0
 - keptn/wait-service:0.6.0
 - keptn/remediation-service:0.6.0
 
-*Keptn uniform:*
-- keptn/dynatrace-service:0.5.0
-- keptn/dynatrace-sli-service:0.2.0
-- keptn/prometheus-service:0.3.0
-- keptn/prometheus-sli-service:0.1.0
-- keptn/servicenow-service:0.1.4
-
 *for Openshift:*
 - keptn/openshift-route-service:0.6.0
-
 
 <details><summary>Keptn version 0.5.2</summary>
 <p>
