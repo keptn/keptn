@@ -1,5 +1,4 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, ViewEncapsulation} from '@angular/core';
-import {coerceBooleanProperty} from "@angular/cdk/coercion";
 
 @Component({
   selector: 'ktb-selectable-tile',
@@ -30,9 +29,8 @@ export class KtbSelectableTileComponent implements OnInit {
     return this._selected && !this.disabled;
   }
   set selected(value: boolean) {
-    const newValue = coerceBooleanProperty(value);
-    if (this._selected !== newValue) {
-      this._selected = newValue;
+    if (this._selected !== value) {
+      this._selected = value;
       this._changeDetectorRef.markForCheck();
     }
   }
@@ -43,7 +41,6 @@ export class KtbSelectableTileComponent implements OnInit {
     return this._disabled;
   }
   set disabled(value: boolean) {
-    this._disabled = coerceBooleanProperty(value);
     if (this._disabled && this._selected) {
       this._selected = false;
       this._changeDetectorRef.markForCheck();
@@ -55,9 +52,8 @@ export class KtbSelectableTileComponent implements OnInit {
     return this._error;
   }
   set error(value: boolean) {
-    const newValue = coerceBooleanProperty(value);
-    if (this._error !== newValue) {
-      this._error = newValue;
+    if (this._error !== value) {
+      this._error = value;
       this._changeDetectorRef.markForCheck();
     }
   }

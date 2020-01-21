@@ -7,8 +7,8 @@ import {
   OnInit, Output,
   ViewEncapsulation
 } from '@angular/core';
-import {coerceArray} from "@angular/cdk/coercion";
 import {Root} from "../../_models/root";
+import DateUtil from "../../_utils/date.utils";
 
 @Component({
   selector: 'ktb-root-events-list',
@@ -33,9 +33,8 @@ export class KtbRootEventsListComponent implements OnInit {
     return this._events;
   }
   set events(value: Root[]) {
-    const newValue = coerceArray(value);
-    if (this._events !== newValue) {
-      this._events = newValue;
+    if (this._events !== value) {
+      this._events = value;
       this._changeDetectorRef.markForCheck();
     }
   }
@@ -61,4 +60,7 @@ export class KtbRootEventsListComponent implements OnInit {
     this.selectedEventChange.emit(this.selectedEvent);
   }
 
+  getCalendarFormats() {
+    return DateUtil.getCalendarFormats();
+  }
 }
