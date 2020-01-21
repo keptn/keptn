@@ -13,6 +13,7 @@ import {DashboardComponent} from './dashboard/dashboard.component';
 import {AppHeaderComponent} from './app-header/app-header.component';
 import {ProjectBoardComponent} from './project-board/project-board.component';
 
+import {KtbProjectTileComponent} from './_components/ktb-project-tile/ktb-project-tile.component';
 import {KtbSelectableTileComponent} from "./_components/ktb-selectable-tile/ktb-selectable-tile.component";
 import {KtbHttpLoadingBarComponent} from "./_components/ktb-http-loading-bar/ktb-http-loading-bar.component";
 import {KtbRootEventsListComponent} from "./_components/ktb-root-events-list/ktb-root-events-list.component";
@@ -47,6 +48,7 @@ import {DtIconModule} from "@dynatrace/barista-components/icon";
 
 import {registerLocaleData} from "@angular/common";
 import localeEn from '@angular/common/locales/en';
+import { KtbProjectListComponent } from './_components/ktb-project-list/ktb-project-list.component';
 
 registerLocaleData(localeEn, 'en');
 
@@ -66,6 +68,8 @@ registerLocaleData(localeEn, 'en');
     KtbHorizontalSeparatorComponent,
     KtbHorizontalSeparatorTitle,
     KtbRootEventsListComponent,
+    KtbProjectTileComponent,
+    KtbProjectListComponent,
   ],
   imports: [
     BrowserModule,
