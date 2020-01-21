@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "node server/bin/www",
-    "start:dev": "npm-run-all -p start:server:dev start:client:dev",
+    "start:dev": "npm-run-all -p start:server:dev start:client:dev connect:bridge connect:datastore connect:configurationservice",
     "start:server:dev": "nodemon server/bin/www --watch server/",
     "start:client:dev": "ng build --watch",
     "ng": "ng",
@@ -12,10 +12,9 @@
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "connect:all": "npm-run-all -p connect-keptn-bridge connect-datastore connect-configuration-service",
-    "connect-keptn-bridge": "kubectl port-forward -n keptn svc/bridge 9000:8080",
-    "connect-datastore": "kubectl port-forward -n keptn-datastore svc/mongodb-datastore 8085:8080",
-    "connect-configuration-service": "kubectl port-forward -n keptn svc/configuration-service 8086:8080"
+    "connect:bridge": "kubectl port-forward -n keptn svc/bridge 9000:8080",
+    "connect:datastore": "kubectl port-forward -n keptn-datastore svc/mongodb-datastore 8085:8080",
+    "connect:configurationservice": "kubectl port-forward -n keptn svc/configuration-service 8086:8080"
   },
   "license": "Apache-2.0",
   "author": "Ermin Muratovic <ermin.muratovic@dynatrace.com>",

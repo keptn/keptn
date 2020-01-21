@@ -12,38 +12,8 @@
     </p>
   </div>
   <div fxFlex="50">
-    <input type="text" dtInput placeholder="Search" aria-label="Search" />
+    <!-- TODO: create search input to filter events in bridge -->
   </div>
-  <div fxLayout="row" fxLayoutGap="12px" fxLayoutAlign="space-around">
-    <div>
-      <button
-        dt-button
-        [dtContextDialogTrigger]="interactiveDialog1"
-        variant="secondary"
-        aria-label="Open context dialog">
-        <dt-icon name="healthstatus"></dt-icon>
-        Last 30 days
-      </button>
-      <dt-context-dialog #interactiveDialog1 aria-label="Show more details" aria-label-close-button="Close context dialog">
-        <dt-context-dialog-header>
-          <dt-context-dialog-header-title>Analyse</dt-context-dialog-header-title>
-          Today, 12:03 - 14:08
-        </dt-context-dialog-header>
-        <p>Your dashboard "real user monitoring" is only visible to you</p>
-      </dt-context-dialog>
-    </div>
-    <div>
-      <button
-        dt-button
-        [dtContextDialogTrigger]="interactiveDialog2"
-        variant="secondary"
-        aria-label="Open context dialog">
-        <dt-icon name="alarm-on"></dt-icon>
-        Notifications
-      </button>
-      <dt-context-dialog #interactiveDialog2 aria-label="Show more details" aria-label-close-button="Close context dialog">
-        <p>Your dashboard "real user monitoring" <br /> is only visible to you</p>
-      </dt-context-dialog>
-    </div>
+  <div fxLayout="row">
   </div>
 </header>
