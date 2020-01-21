@@ -10,9 +10,9 @@ Implemented [Keptn spec](https://github.com/keptn/spec/tree/0.1.2) version: 0.1.
 - Service Level Indicators (SLI) are stored in Keptn's git repository [#1192](https://github.com/keptn/keptn/issues/1192)
 - HTTPS support for onboarded services [#1231](https://github.com/keptn/keptn/issues/1231)
 - Check if Istio is already installed before installing it [#1208](https://github.com/keptn/keptn/issues/1208)
-- *jmeter-service*: Sends a test-finsihed with status `fail` if test execution failed [#542](https://github.com/keptn/keptn/issues/542)
 - Self-healing use-case with Dynatrace [#1185](https://github.com/keptn/keptn/issues/1185)
 - Self-healing use-case based on feature toggle remediation with Unleash [#1104](https://github.com/keptn/keptn/issues/1104)
+- *jmeter-service*: Sends a test-finished with status `fail` if test execution failed [#542](https://github.com/keptn/keptn/issues/542)
 
 ## CLI Enhancements
 - Setup Dynatrace monitoring using the Keptn CLI `configure monitoring` command [#443](https://github.com/keptn/keptn/issues/443)
