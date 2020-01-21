@@ -437,11 +437,17 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 			return err
 		}
 
-		genChart, err = c.setCanaryWeight(e, 0)
+		if err := c.generatedChartHandler.UpdateCanaryWeight(genChart, int32(0)); err != nil {
+			return err
+		}
+		genChartData, err = keptnutils.PackageChart(genChart)
 		if err != nil {
 			return err
 		}
-		if err := c.ApplyChart(genChart, e.Project, e.Stage, e.Service, deploymentStrategy, true); err != nil {
+		if err := keptnutils.StoreChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, true), genChartData, url.String()); err != nil {
+			return err
+		}
+		if _, err := c.ApplyChart(genChart, e.Project, e.Stage, e.Service, deploymentStrategy, true); err != nil {
 			return err
 		}
 		userChart, err := keptnutils.GetChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, false), url.String())
@@ -509,20 +515,19 @@ func (c *ConfigurationChanger) ApplyChartWithReplicas(ch *chart.Chart, project, 
 			return fmt.Errorf("Error when saving chart into temporary directory %s: %s", helmChartDir, err.Error())
 		}
 
-		deploymentName := getDeploymentName(deploymentStrategy, generated)
-		var msg string
-		if replicaCount >= 0 {
-			msg, err = keptnutils.ExecuteCommand("helm", []string{"upgrade", "--install", releaseName,
-				chartPath, "--namespace", namespace, "--wait", "--force",
-				"--set", "keptn.project=" + project, "--set", "keptn.stage=" + stage,
-				"--set", "keptn.service=" + service, "--set", "keptn.deployment=" + deploymentName,
-				"--set", "replicaCount=" + strconv.Itoa(replicaCount)})
-		} else {
-			msg, err = keptnutils.ExecuteCommand("helm", []string{"upgrade", "--install", releaseName,
-				chartPath, "--namespace", namespace, "--wait", "--force",
-				"--set", "keptn.project=" + project, "--set", "keptn.stage=" + stage,
-				"--set", "keptn.service=" + service, "--set", "keptn.deployment=" + deploymentName})
-
+	deploymentName := getDeploymentName(deploymentStrategy, generated)
+	var msg string
+	if replicaCount >= 0 {
+		msg, err = keptnutils.ExecuteCommand("helm", []string{"upgrade", "--install", releaseName,
+			chartPath, "--namespace", namespace, "--wait",
+			"--set", "keptn.project=" + project, "--set", "keptn.stage=" + stage,
+			"--set", "keptn.service=" + service, "--set", "keptn.deployment=" + deploymentName,
+			"--set", "replicaCount=" + strconv.Itoa(replicaCount)})
+	} else {
+		msg, err = keptnutils.ExecuteCommand("helm", []string{"upgrade", "--install", releaseName,
+			chartPath, "--namespace", namespace, "--wait",
+			"--set", "keptn.project=" + project, "--set", "keptn.stage=" + stage,
+			"--set", "keptn.service=" + service, "--set", "keptn.deployment=" + deploymentName})
 		}
 		c.logger.Debug(msg)
 		if err != nil {
@@ -544,7 +549,7 @@ func (c *ConfigurationChanger) ApplyChartWithReplicas(ch *chart.Chart, project, 
 func (c *ConfigurationChanger) ApplyDirectory(chartPath, releaseName, namespace string) error {
 
 	msg, err := keptnutils.ExecuteCommand("helm", []string{"upgrade", "--install", releaseName,
-		chartPath, "--namespace", namespace, "--reset-values", "--wait", "--force"})
+		chartPath, "--namespace", namespace, "--reset-values", "--wait"})
 	if err != nil {
 		return fmt.Errorf("Error when upgrading chart %s in namespace %s: %s",
 			releaseName, namespace, err.Error())

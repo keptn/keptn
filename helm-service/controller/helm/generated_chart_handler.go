@@ -114,6 +114,13 @@ func resetService(svc *corev1.Service) {
 	svc.Kind = "Service"
 	svc.APIVersion = "v1"
 	svc.Namespace = ""
+	svc.Spec.ClusterIP = ""
+	svc.Spec.LoadBalancerIP = ""
+	svc.Spec.ExternalIPs = nil
+	for idx := range svc.Spec.Ports {
+		svc.Spec.Ports[idx].NodePort = 0
+	}
+	svc.ObjectMeta = metav1.ObjectMeta{Name: svc.Name}
 	svc.Status = corev1.ServiceStatus{}
 }
 
@@ -121,6 +128,8 @@ func resetDeployment(depl *appsv1.Deployment) {
 	depl.Kind = "Deployment"
 	depl.APIVersion = "apps/v1"
 	depl.Namespace = ""
+	depl.ResourceVersion = ""
+	depl.ObjectMeta = metav1.ObjectMeta{Name: depl.Name}
 	depl.Status = appsv1.DeploymentStatus{}
 }
 
