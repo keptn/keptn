@@ -1,5 +1,4 @@
 import {ChangeDetectorRef, Component, Input, OnInit} from '@angular/core';
-import {coerceElement} from "@angular/cdk/coercion";
 import {Project} from "../../_models/project";
 
 @Component({
@@ -16,9 +15,8 @@ export class KtbProjectTileComponent implements OnInit {
     return this._project;
   }
   set project(value: Project) {
-    const newValue = coerceElement<Project>(value);
-    if (this._project !== newValue) {
-      this._project = newValue;
+    if (this._project !== value) {
+      this._project = value;
       this._changeDetectorRef.markForCheck();
     }
   }

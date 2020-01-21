@@ -10,7 +10,7 @@
           <p class="m-0" *ngIf="event.data.valuesCanary"><span class="m-0" [textContent]="event.data.valuesCanary.image"></span></p>
         </div>
         <div fxLayout="column" fxLayoutAlign="start end">
-          <p class="m-0 mr-1 mt-1 mb-1" [textContent]="event.time | amCalendar"></p>
+          <p class="m-0 mr-1 mt-1 mb-1" [textContent]="event.time | amCalendar:getCalendarFormats()"></p>
           <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
             <dt-tag *ngFor="let stage of event.getStages()" [textContent]="stage"></dt-tag>
           </div>
