@@ -34,7 +34,7 @@ export class Trace {
     };
 
     evaluationdetails: {
-      indicatorResults: string;
+      indicatorResults: any;
       result: string;
       score: number;
       sloFileContent: string;
@@ -43,11 +43,11 @@ export class Trace {
     };
   };
 
-  isFaulty(): boolean {
-    let result: boolean = false;
+  isFaulty(): string {
+    let result: string = null;
     if(this.data) {
       if(this.data.result == "fail") {
-        result = true;
+        result = this.data.stage;
       }
     }
     return result;

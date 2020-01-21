@@ -49,6 +49,8 @@ import {DtIconModule} from "@dynatrace/barista-components/icon";
 import {registerLocaleData} from "@angular/common";
 import localeEn from '@angular/common/locales/en';
 import { KtbProjectListComponent } from './_components/ktb-project-list/ktb-project-list.component';
+import {DtIndicatorModule} from "@dynatrace/barista-components/core";
+import {DtProgressCircleModule} from "@dynatrace/barista-components/progress-circle";
 
 registerLocaleData(localeEn, 'en');
 
@@ -95,6 +97,8 @@ registerLocaleData(localeEn, 'en');
     DtExpandableTextModule,
     DtExpandablePanelModule,
     DtShowMoreModule,
+    DtIndicatorModule,
+    DtProgressCircleModule,
     DtIconModule.forRoot({
       svgIconLocation: `/assets/icons/{{name}}.svg`,
     }),

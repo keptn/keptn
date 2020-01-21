@@ -3,12 +3,12 @@ import {Trace} from "./trace";
 export class Root extends Trace {
   traces: Trace[];
 
-  isFaulty(): boolean {
-    let result: boolean = false;
+  isFaulty(): string {
+    let result: string = null;
     if(this.traces) {
       this.traces.forEach((trace) => {
         if(trace.isFaulty()) {
-          result = true;
+          result = trace.data.stage;
         }
       });
     }
