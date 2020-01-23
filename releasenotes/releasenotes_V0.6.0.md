@@ -3,13 +3,13 @@
 This release focuses on improvements of the **Keptn Quality Gates** capability that allows the evaluation of **Service Level Objectives** (SLOs), which are determined by **Service Level Indicators** (SLI). For these improvements, the **Lighthouse** service has been introduced, which is a service that is responsible for conducting an evaluation based on data from SLI-providers. The Lighthouse service supersedes Pitometer.
 Furthermore, the following highlights should be noticed:
 
-- Because of popular demand, Keptn Quality Gates is now available as a standalone feature. That allows enriching existing CD pipelines with quality gates that ensure that services are only promoted if they meet defined SLOs. To integrate Keptn in an existing pipeline, REST endpoints are provided to trigger an evaluation and to pull the evaluation results.
+- Due to user demand, Keptn Quality Gates is now available as a standalone feature. That allows enriching existing CD pipelines with quality gates that ensure that services are only promoted if they meet defined SLOs. To integrate Keptn in an existing pipeline, REST endpoints are provided to trigger an evaluation and to pull the evaluation results.d
 
-- The Keptn Quality Gates capability doesn't require deployment and testing features. We've provided an installation option in the Keptn installer that excludes the deployment and testing components, which results in a smaller resource footprint.
+- The Keptn Quality Gates capability doesn't require deployment and testing features. We've provided an installation option in the Keptn installer (`keptn install ... --use-case=quality-gates`) that excludes the deployment and testing components, which results in a smaller resource footprint.
 
-- The Keptn's bridge has been enhanced in order to get better visibility into evaluation results. Thus, it is possible to see why an SLO has not been met.
+- The Keptn's bridge has been enhanced for better visibility into evaluation results. Thus, it is possible to see why an SLO has not been met.
 
-- Due to the flexible architecture of Keptn, it is possible to exchange an SLI-provider to gather data for the quality gate from another monitoring or testing provider.
+- Due to the flexible architecture of Keptn, it is possible to exchange an SLI-provider and gather data for the quality gate from another monitoring or testing provider.
 
 ## Keptn Specification
 
@@ -19,8 +19,9 @@ Implemented [Keptn spec](https://github.com/keptn/spec/tree/0.1.2) version: 0.1.
 
 <details><summary>Quality Gates</summary>
 <p>
+
 - REST API support for start-evaluation and evaluation-done [#949](https://github.com/keptn/keptn/issues/949)
-- *ligthouse-service*: Default behaviour if no slo.yml found -> evaluation pass [#1081](https://github.com/keptn/keptn/issues/1081)
+- *lighthouse-service*: Default behaviour if no slo.yml found -> evaluation pass [#1081](https://github.com/keptn/keptn/issues/1081)
 - *bridge*: Improve bridge for lighthouse and SLI events [#1058](https://github.com/keptn/keptn/issues/1058)
 - Lighthouse-service forwards custom data to SLI providers [#1147](https://github.com/keptn/keptn/issues/1147)
 - Lighthouse-service forwards environment variable keptn_deployment to SLI providers [#1161](https://github.com/keptn/keptn/issues/1161)
@@ -29,12 +30,14 @@ Implemented [Keptn spec](https://github.com/keptn/spec/tree/0.1.2) version: 0.1.
 - Forward testStrategy and deployment strategy in evaluation-events[#1098](https://github.com/keptn/keptn/issues/1098)
 - *lighthouse-service*: Prevent previous failed SLI results to be used for comparison-based evaluation [#1263](https://github.com/keptn/keptn/issues/1263)
 - *lighthouse-service*: can deal with an SLO file that has no SLI criteria defined [#1213](https://github.com/keptn/keptn/issues/1213)
+
 </p>
 </details>
 
 
 <details><summary>Platform Support / Installer (Uniform)</summary>
 <p>
+
 - Keptn support for PKS (Pivotal/VMWare) [#5](https://github.com/keptn/keptn/issues/5)
 - Keptn support for Rancher [#462](https://github.com/keptn/keptn/issues/462)
 - Keptn installation using a NodePort for Istio ingressgateway [#462](https://github.com/keptn/keptn/issues/462)
@@ -57,6 +60,7 @@ Implemented [Keptn spec](https://github.com/keptn/spec/tree/0.1.2) version: 0.1.
 
 <details><summary>Control-plane enhancements/changes</summary>
 <p>
+
 - *helm-service*: Allow changing any file in Helm Chart [#995](https://github.com/keptn/keptn/issues/995)
 - *remediation-service*: Remediation action for slowing down requests[#1006](https://github.com/keptn/keptn/issues/1006)
 - Self-healing use-case with Dynatrace [#1185](https://github.com/keptn/keptn/issues/1185)
@@ -67,12 +71,14 @@ Implemented [Keptn spec](https://github.com/keptn/spec/tree/0.1.2) version: 0.1.
 - *mongodb-datastore*: Allow event-retrieval filtering by source [#1061](https://github.com/keptn/keptn/issues/1061)
 - Adapt DT integration to create rules based on DT_CUSTOM_PROP [#1110](https://github.com/keptn/keptn/issues/1110)
 - *jmeter-service*: Sends a test-finished with status `fail` if test execution failed [#542](https://github.com/keptn/keptn/issues/542)
+
 </p>
 </details>
 
 
 <details><summary>CLI Enhancements</summary>
 <p>
+
 - Only check image availability on Docker if image contains docker.io [#991](https://github.com/keptn/keptn/issues/991)
 - Keptn uninstall commands shows that not everything is uninstalled [#971](https://github.com/keptn/keptn/issues/971)
 - Support for start-evaluation and get evaluation-done [#948](https://github.com/keptn/keptn/issues/948)
@@ -81,6 +87,7 @@ Implemented [Keptn spec](https://github.com/keptn/spec/tree/0.1.2) version: 0.1.
 - Allow start and end datetime (instead of timeframe) for start-evaluation [#1131](https://github.com/keptn/keptn/issues/1131)
 - Setup Dynatrace monitoring using the Keptn CLI `configure monitoring` command [#443](https://github.com/keptn/keptn/issues/443)
 - Configure domain assumes dedicated Keptn gateway [#1295](https://github.com/keptn/keptn/issues/1295)
+
 </p>
 </details>
 
@@ -116,7 +123,7 @@ Implemented [Keptn spec](https://github.com/keptn/spec/tree/0.1.2) version: 0.1.
 - Unified Dockerfiles and add Skaffold YAMLs for easy in-cluster debugging [#1026](https://github.com/keptn/keptn/issues/1026)
 
 
-## Known Limitations
+## Good to know / known limitations
 
 - There is no new-artifact cloud event - `keptn send event new-artifact` causes a configuration change event [#1218](https://github.com/keptn/keptn/issues/1218)
 - Currently, Helm v2 is used, which is now entering maintenance mode as Helm v3 has been released. This means that Helm v2 is going to be unmaintained at the end of 2020 (Source: https://helm.sh/blog/2019-10-22-helm-2150-released/#helm-2-support-plan ).
@@ -127,3 +134,4 @@ Implemented [Keptn spec](https://github.com/keptn/spec/tree/0.1.2) version: 0.1.
 - Sending multiple new-artifacts events can cause problems which result in a "no healthy upstream" error [#1229](https://github.com/keptn/keptn/issues/1229), [#1219](https://github.com/keptn/keptn/issues/1219)
 - Istio can potentially cause the kube-apiserver to experience downtimes (see https://github.com/istio/istio/issues/19481 ) [#1298](https://github.com/keptn/keptn/issues/1298)
 - The Quality-gates standalone version is currently not supported on OpenShift and PKS [#1197](https://github.com/keptn/keptn/issues/1197)
+
