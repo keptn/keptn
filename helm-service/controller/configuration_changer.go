@@ -515,19 +515,19 @@ func (c *ConfigurationChanger) ApplyChartWithReplicas(ch *chart.Chart, project, 
 			return fmt.Errorf("Error when saving chart into temporary directory %s: %s", helmChartDir, err.Error())
 		}
 
-	deploymentName := getDeploymentName(deploymentStrategy, generated)
-	var msg string
-	if replicaCount >= 0 {
-		msg, err = keptnutils.ExecuteCommand("helm", []string{"upgrade", "--install", releaseName,
-			chartPath, "--namespace", namespace, "--wait",
-			"--set", "keptn.project=" + project, "--set", "keptn.stage=" + stage,
-			"--set", "keptn.service=" + service, "--set", "keptn.deployment=" + deploymentName,
-			"--set", "replicaCount=" + strconv.Itoa(replicaCount)})
-	} else {
-		msg, err = keptnutils.ExecuteCommand("helm", []string{"upgrade", "--install", releaseName,
-			chartPath, "--namespace", namespace, "--wait",
-			"--set", "keptn.project=" + project, "--set", "keptn.stage=" + stage,
-			"--set", "keptn.service=" + service, "--set", "keptn.deployment=" + deploymentName})
+		deploymentName := getDeploymentName(deploymentStrategy, generated)
+		var msg string
+		if replicaCount >= 0 {
+			msg, err = keptnutils.ExecuteCommand("helm", []string{"upgrade", "--install", releaseName,
+				chartPath, "--namespace", namespace, "--wait",
+				"--set", "keptn.project=" + project, "--set", "keptn.stage=" + stage,
+				"--set", "keptn.service=" + service, "--set", "keptn.deployment=" + deploymentName,
+				"--set", "replicaCount=" + strconv.Itoa(replicaCount)})
+		} else {
+			msg, err = keptnutils.ExecuteCommand("helm", []string{"upgrade", "--install", releaseName,
+				chartPath, "--namespace", namespace, "--wait",
+				"--set", "keptn.project=" + project, "--set", "keptn.stage=" + stage,
+				"--set", "keptn.service=" + service, "--set", "keptn.deployment=" + deploymentName})
 		}
 		c.logger.Debug(msg)
 		if err != nil {
