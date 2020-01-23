@@ -14,7 +14,7 @@ spec:
         emptyDir: {}
       containers:
       - name: keptn-installer
-        image: keptn/installer:latest
+        image: keptn/installer:0.5.2
         imagePullPolicy: Always
         env:       
         - name: PLATFORM

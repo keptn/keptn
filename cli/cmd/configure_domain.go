@@ -35,8 +35,6 @@ const installerPrefixURL = "https://raw.githubusercontent.com/keptn/keptn/"
 const apiVirtualServiceSuffix = "/installer/manifests/keptn/keptn-api-virtualservice.yaml"
 const apiIngressSuffix = "/installer/manifests/keptn/api-ingress.yaml"
 const domainConfigMapSuffix = "/installer/manifests/keptn/keptn-domain-configmap.yaml"
-const uniformServicesSuffix = "/installer/manifests/keptn/uniform-services.yaml"
-const gatewaySuffix = "/installer/manifests/keptn/keptn-gateway.yaml"
 
 // domainCmd represents the domain command
 var domainCmd = &cobra.Command{
@@ -79,8 +77,8 @@ Example:
 		if err != nil || !resourcesAvailable {
 			return errors.New("Resources not found under:\n" +
 				getAPIVirtualServiceURL() + "\n" +
-				getDomainConfigMapURL() + "\n" +
-				getUniformServicesURL())
+				getAPIIngressURL() + "\n" +
+				getDomainConfigMapURL())
 		}
 		logging.PrintLog(fmt.Sprintf("Used version for manifests: %s",
 			*configureDomainParams.ConfigVersion), logging.InfoLevel)
@@ -130,10 +128,6 @@ Example:
 
 			if ingress == Istio {
 				if err := updateKeptnAPIVirtualService(path, args[0]); err != nil {
-					return err
-				}
-				// Re-deploy gateway, ignore if not found
-				if err := reDeployGateway(); err != nil {
 					return err
 				}
 			} else if ingress == Nginx {
@@ -207,20 +201,6 @@ func getIngressType() (Ingress, error) {
 		return Nginx, nil
 	}
 	return Istio, errors.New("Cannot obtain type of ingress.")
-}
-
-func reDeployGateway() error {
-	o := options{"delete", "-f", getGatewayURL(), "--ignore-not-found"}
-	o.appendIfNotEmpty(kubectlOptions)
-	_, err := keptnutils.ExecuteCommand("kubectl", o)
-	if err != nil {
-		return err
-	}
-
-	o = options{"apply", "-f", getGatewayURL()}
-	o.appendIfNotEmpty(kubectlOptions)
-	_, err = keptnutils.ExecuteCommand("kubectl", o)
-	return err
 }
 
 func updateKeptnDomainConfigMap(path, domain string) error {
@@ -405,14 +385,6 @@ func getDomainConfigMapURL() string {
 	return installerPrefixURL + *configureDomainParams.ConfigVersion + domainConfigMapSuffix
 }
 
-func getUniformServicesURL() string {
-	return installerPrefixURL + *configureDomainParams.ConfigVersion + uniformServicesSuffix
-}
-
-func getGatewayURL() string {
-	return installerPrefixURL + *configureDomainParams.ConfigVersion + gatewaySuffix
-}
-
 func checkConfigureDomainResourceAvailability() (bool, error) {
 
 	resp, err := http.Get(getAPIVirtualServiceURL())
@@ -438,21 +410,6 @@ func checkConfigureDomainResourceAvailability() (bool, error) {
 		return false, nil
 	}
 
-	resp, err = http.Get(getUniformServicesURL())
-	if err != nil {
-		return false, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		return false, nil
-	}
-
-	resp, err = http.Get(getGatewayURL())
-	if err != nil {
-		return false, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		return false, nil
-	}
 	return true, nil
 }
 

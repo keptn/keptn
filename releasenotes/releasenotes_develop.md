@@ -1,10 +1,10 @@
-# Release Notes develop
+# Release Notes DEVELOP
+
+
+## Keptn Specification
+
 
 ## New Features
-
-
-## CLI Enhancements
-- Setup Dynatrace monitoring using the `configure-monitoring-command` [#443](https://github.com/keptn/keptn/issues/443)
 
 
 ## New Services
@@ -16,4 +16,5 @@
 ## Development process
 
 
-## Known Limitations
+## Good to know / known limitations
+

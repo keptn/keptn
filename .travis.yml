@@ -10,13 +10,7 @@ env:
     - GOOGLE_APPLICATION_CREDENTIALS=~/gcloud-service-key.json
     - GO111MODULE=on
 
-before_install:   
-# Pull Requests to the master branch are only allowed if they come from the develop branch of our repo
-- |
-  if [ $TRAVIS_PULL_REQUEST = "true" ] && [ $TRAVIS_BRANCH = "master" ] && [ $TRAVIS_PULL_REQUEST_SLUG = $TRAVIS_REPO_SLUG ]; then
-      echo "Pull Requests to the 'master' branch are not allowed. If you are a contributor, please set your Pull Request to the 'develop' branch."
-      exit -1
-  fi
+before_install:
 # determine OS type (either osx for linux) - will be used for downloading dependencies
 - |
   OS_TYPE="linux"
@@ -52,8 +46,8 @@ before_install:
 - |
   if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
     git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
-    git fetch origin develop
-    git diff --name-only origin/develop...$TRAVIS_BRANCH >> files.txt
+    git fetch origin master
+    git diff --name-only origin/master...$TRAVIS_BRANCH >> files.txt
   fi
 - cat files.txt
 - CHANGED_FILES=$(tr '\n' , < files.txt)
@@ -101,7 +95,7 @@ jobs:
   include:
   # nightly image builds - build all images
   - stage: nightly
-    if: branch = develop and type = cron
+    if: branch = master and type = cron
     os: linux
     services:
       - docker
@@ -146,7 +140,7 @@ jobs:
 
 
   - stage: cron
-    if: branch = develop AND type = cron
+    if: branch = master AND type = cron
     os: linux
     before_script:
     # auth gcloud
@@ -369,8 +363,8 @@ jobs:
       - echo "The following images have been built and pushed to dockerhub:"
       - docker images | grep keptn
 
-  - stage: develop
-    if: branch = develop AND type = push
+  - stage: master
+    if: branch = master AND type = push
     os: osx
     script:
     - | 
@@ -383,7 +377,7 @@ jobs:
         source ../travis-scripts/build_cli.sh "${VERSION}"
         cd ..
       fi
-  - if: branch = develop AND type = push
+  - if: branch = master AND type = push
     os: linux
     services:
       - docker

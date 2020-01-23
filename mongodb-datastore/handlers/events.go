@@ -150,6 +150,7 @@ func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 				continue
 				// return nil, err
 			}
+
 			result.Events = append(result.Events, &keptnEvent)
 		}
 	} else {
@@ -198,6 +199,7 @@ func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 				continue
 				// return nil, err
 			}
+
 			result.Events = append(result.Events, &keptnEvent)
 		}
 
@@ -227,7 +229,11 @@ func flattenRecursively(i interface{}, logger *keptnutils.Logger) (interface{}, 
 			if err != nil {
 				return nil, err
 			}
-			flat[k] = res
+			if k == "eventContext" {
+				flat[k] = nil
+			} else {
+				flat[k] = res
+			}
 		}
 		return flat, nil
 	} else if _, ok := i.(bson.A); ok {
