@@ -40,6 +40,11 @@ RUN wget https://storage.googleapis.com/kubernetes-helm/helm-v$HELM_VERSION-linu
   mv linux-amd64/helm /bin/helm && \
   rm -rf linux-amd64 && rm -rf helm-v$HELM_VERSION-linux-amd64.tar.gz
 
+ARG debugBuild
+
+# IF we are debugging, we need to install libc6-compat for delve to work on alpine based containers
+RUN if [ ! -z "$debugBuild" ]; then apk add --no-cache libc6-compat; fi
+
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /go/src/github.com/keptn/keptn/helm-service/helm-service /helm-service
 
