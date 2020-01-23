@@ -38,7 +38,7 @@ ARG debugBuild
 # IF we are debugging, we need to install libc6-compat for delve to work on alpine based containers
 RUN if [ ! -z "$debugBuild" ]; then apk add --no-cache libc6-compat; fi
 
-ARG HELM_VERSION=3.0.1
+ARG HELM_VERSION=3.0.2
 RUN wget https://get.helm.sh/helm-v$HELM_VERSION-linux-amd64.tar.gz && \
   tar -zxvf helm-v$HELM_VERSION-linux-amd64.tar.gz && \
   mv linux-amd64/helm /bin/helm && \
