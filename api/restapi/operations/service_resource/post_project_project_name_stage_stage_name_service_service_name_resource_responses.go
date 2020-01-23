@@ -16,16 +16,11 @@ import (
 // PostProjectProjectNameStageStageNameServiceServiceNameResourceCreatedCode is the HTTP code returned for type PostProjectProjectNameStageStageNameServiceServiceNameResourceCreated
 const PostProjectProjectNameStageStageNameServiceServiceNameResourceCreatedCode int = 201
 
-/*PostProjectProjectNameStageStageNameServiceServiceNameResourceCreated Success. Service resource has been created. The version of the new configuration is returned.
+/*PostProjectProjectNameStageStageNameServiceServiceNameResourceCreated Success. Service resources have been uploaded
 
 swagger:response postProjectProjectNameStageStageNameServiceServiceNameResourceCreated
 */
 type PostProjectProjectNameStageStageNameServiceServiceNameResourceCreated struct {
-
-	/*
-	  In: Body
-	*/
-	Payload *models.Version `json:"body,omitempty"`
 }
 
 // NewPostProjectProjectNameStageStageNameServiceServiceNameResourceCreated creates PostProjectProjectNameStageStageNameServiceServiceNameResourceCreated with default headers values
@@ -34,33 +29,18 @@ func NewPostProjectProjectNameStageStageNameServiceServiceNameResourceCreated() 
 	return &PostProjectProjectNameStageStageNameServiceServiceNameResourceCreated{}
 }
 
-// WithPayload adds the payload to the post project project name stage stage name service service name resource created response
-func (o *PostProjectProjectNameStageStageNameServiceServiceNameResourceCreated) WithPayload(payload *models.Version) *PostProjectProjectNameStageStageNameServiceServiceNameResourceCreated {
-	o.Payload = payload
-	return o
-}
-
-// SetPayload sets the payload to the post project project name stage stage name service service name resource created response
-func (o *PostProjectProjectNameStageStageNameServiceServiceNameResourceCreated) SetPayload(payload *models.Version) {
-	o.Payload = payload
-}
-
 // WriteResponse to the client
 func (o *PostProjectProjectNameStageStageNameServiceServiceNameResourceCreated) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
+	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
+
 	rw.WriteHeader(201)
-	if o.Payload != nil {
-		payload := o.Payload
-		if err := producer.Produce(rw, payload); err != nil {
-			panic(err) // let the recovery middleware deal with this
-		}
-	}
 }
 
 // PostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequestCode is the HTTP code returned for type PostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest
 const PostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequestCode int = 400
 
-/*PostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest Failed. Service resource could not be created.
+/*PostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest Failed. Service resources could not be uploaded
 
 swagger:response postProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest
 */

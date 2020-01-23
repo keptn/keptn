@@ -9,6 +9,8 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/runtime"
+
+	models "github.com/keptn/keptn/mongodb-datastore/models"
 )
 
 // GetLogsOKCode is the HTTP code returned for type GetLogsOK
@@ -65,7 +67,7 @@ type GetLogsDefault struct {
 	/*
 	  In: Body
 	*/
-	Payload *GetLogsDefaultBody `json:"body,omitempty"`
+	Payload *models.Error `json:"body,omitempty"`
 }
 
 // NewGetLogsDefault creates GetLogsDefault with default headers values
@@ -91,13 +93,13 @@ func (o *GetLogsDefault) SetStatusCode(code int) {
 }
 
 // WithPayload adds the payload to the get logs default response
-func (o *GetLogsDefault) WithPayload(payload *GetLogsDefaultBody) *GetLogsDefault {
+func (o *GetLogsDefault) WithPayload(payload *models.Error) *GetLogsDefault {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the get logs default response
-func (o *GetLogsDefault) SetPayload(payload *GetLogsDefaultBody) {
+func (o *GetLogsDefault) SetPayload(payload *models.Error) {
 	o.Payload = payload
 }
 

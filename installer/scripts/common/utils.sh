@@ -21,7 +21,7 @@ function print_error() {
 function verify_install_step() {
   if [[ $1 != '0' ]]; then
     print_error "$2"
-    print_error "Stopping keptn installation. Already created resources are not deleted; execute the uninstallKeptn.sh script to clean-up."
+    print_error "Stopping keptn installation. Already created resources are not deleted; run keptn uninstall to clean-up."
     exit 1
   fi
 }
@@ -29,7 +29,7 @@ function verify_install_step() {
 function verify_kubectl() {
   if [[ $1 != '0' ]]; then
     print_error "$2"
-    print_error "Stopping keptn installation. Already created resources are not deleted; execute the uninstallKeptn.sh script to clean-up."
+    print_error "Stopping keptn installation. Already created resources are not deleted; run keptn uninstall to clean-up."
     exit 1
   fi
 }
@@ -37,7 +37,7 @@ function verify_kubectl() {
 function verify_variable() {
   if [[ -z "$1" ]]; then
     print_error "$2"
-    print_error "Stopping keptn installation. Already created resources are not deleted; execute the uninstallKeptn.sh script to clean-up."
+    print_error "Stopping keptn installation. Already created resources are not deleted; run keptn uninstall to clean-up."
     exit 1
   fi
 }
@@ -113,6 +113,8 @@ function wait_for_all_pods_in_namespace() {
 
   if [[ $RETRY == $RETRY_MAX ]]; then
     print_error "Pods in namespace ${NAMESPACE} are not running."
+    # show the pods that have problems
+    kubectl get pods --field-selector=status.phase!=Running -n ${NAMESPACE}
     exit 1
   fi
 }
@@ -140,7 +142,7 @@ function wait_for_crds() {
   fi
 }
 
-# Waits for ip of gateway
+# Waits for ip of Istio ingress gateway (max wait time 20sec)
 function wait_for_istio_ingressgateway() {
   PROPERTY=$1;
   RETRY=0; RETRY_MAX=4;
@@ -153,11 +155,46 @@ function wait_for_istio_ingressgateway() {
     fi
 
     if [[ "$DOMAIN" != "" ]]; then
-      print_debug "${PROPERTY} of Istio Ingressgateway is available."
+      print_debug "${PROPERTY} of Istio ingress gateway is available."
       break
     fi
     RETRY=$[$RETRY+1]
-    print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 5s for ${PROPERTY} of Istio Ingressgateway to be available ..."
+    print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 5s for ${PROPERTY} of Istio ingress gateway to be available ..."
     sleep 5
+  done
+}
+
+# Waits for hostname or ip of ingress gateway (max wait time 120sec)
+function wait_for_k8s_ingress() {
+  RETRY=0; RETRY_MAX=24;
+  DOMAIN="";
+
+  while [[ $RETRY -lt $RETRY_MAX ]]; do
+    # Check availability of hostname
+    DOMAIN=$(kubectl get ingress api-ingress -n keptn -o json | jq -r .status.loadBalancer.ingress[0].hostname)
+    if [[ $DOMAIN = "null" ]]; then
+      DOMAIN=""
+    fi
+
+    if [[ "$DOMAIN" != "" ]]; then
+      print_debug "Domain name of ingress gateway is available."
+      break
+    fi
+
+    # Check availability of IP
+    DOMAIN=$(kubectl get ingress api-ingress -n keptn -o json | jq -r .status.loadBalancer.ingress[0].ip)
+    if [[ $DOMAIN = "null" ]]; then
+      DOMAIN=""
+    fi
+
+    if [[ "$DOMAIN" != "" ]]; then
+      print_debug "IP address of ingress gateway is available."
+      break
+    fi
+
+    RETRY=$[$RETRY+1]
+    print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 5s for domain name or IP address of ingress gateway to be available ..."
+    sleep 5
+
   done
 }

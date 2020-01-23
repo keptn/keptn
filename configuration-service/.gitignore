@@ -1,6 +1,12 @@
-# Build files
+# Build, Debug files
 
 vendor
 cmd/configuration-service-server/debug
 
 MANIFEST
+
+# Idea
+.idea
+
+#binary - go build
+configuration-service

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -11,11 +12,12 @@ import (
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 	"github.com/google/uuid"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/events"
 	"github.com/keptn/go-utils/pkg/models"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/cli/pkg/logging"
-	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
 	"github.com/keptn/keptn/cli/utils/websockethelper"
 	"github.com/spf13/cobra"
@@ -34,6 +36,7 @@ var params *configureMonitoringCmdParams
 
 var allowedMonitoringTypes = []string{
 	"prometheus",
+	"dynatrace",
 }
 
 var monitoringCmd = &cobra.Command{
@@ -61,32 +64,15 @@ var monitoringCmd = &cobra.Command{
 		return errors.New(errorMsg)
 	},
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if *params.Project == "" {
-			return errors.New("Please specify a project")
+		if args[0] == "prometheus" {
+			if *params.Project == "" {
+				return errors.New("Please specify a project")
+			}
+			if *params.Service == "" {
+				return errors.New("Please specify a service")
+			}
 		}
-		if *params.Service == "" {
-			return errors.New("Please specify a service")
-		}
-		/*
-			if *params.ServiceIndicators == "" {
-				return errors.New("Please specify path to service indicators file")
-			}
-			if *params.ServiceObjectives == "" {
-				return errors.New("Please specify path to service objectives file")
-			}
-			if *params.Remediation == "" {
-				return errors.New("Please specify path to remediation file")
-			}
-			if !fileExists(keptnutils.ExpandTilde(*params.ServiceIndicators)) {
-				return errors.New("Service indicators file " + *params.ServiceIndicators + " not found in local file system")
-			}
-			if !fileExists(keptnutils.ExpandTilde(*params.ServiceObjectives)) {
-				return errors.New("Service objectives file " + *params.ServiceObjectives + " not found in local file system")
-			}
-			if !fileExists(keptnutils.ExpandTilde(*params.Remediation)) {
-				return errors.New("Remediation file " + *params.Remediation + " not found in local file system")
-			}
-		*/
+
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -95,26 +81,15 @@ var monitoringCmd = &cobra.Command{
 			return errors.New(authErrorMsg)
 		}
 
-		/*
-			serviceIndicators, serviceObjectives, remediation, err := parseInputFiles(params)
-			if err != nil {
-				return err
-			}
-
-
-		*/
 		configureMonitoringEventData := &events.ConfigureMonitoringEventData{
 			Type:    args[0],
 			Project: *params.Project,
 			Service: *params.Service,
-			//ServiceIndicators: serviceIndicators,
-			//ServiceObjectives: serviceObjectives,
-			//Remediation:       remediation,
 		}
 
 		source, _ := url.Parse("https://github.com/keptn/keptn/cli#configuremonitoring")
 		contentType := "application/json"
-		event := cloudevents.Event{
+		sdkEvent := cloudevents.Event{
 			Context: cloudevents.EventContextV02{
 				ID:          uuid.New().String(),
 				Type:        events.ConfigureMonitoringEventType,
@@ -124,30 +99,36 @@ var monitoringCmd = &cobra.Command{
 			Data: configureMonitoringEventData,
 		}
 
-		eventURL := endPoint
-		eventURL.Path = "v1/event"
+		eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, "https")
+		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
-		logging.PrintLog(fmt.Sprintf("Connecting to server %s", eventURL.String()), logging.VerboseLevel)
-		if !mocking {
-			responseCE, err := utils.Send(eventURL, event, apiToken)
-			if err != nil {
-				logging.PrintLog("Sending configure-monitoring event was unsuccessful", logging.QuietLevel)
-				return err
-			}
-
-			// check for responseCE to include token
-			if responseCE == nil {
-				logging.PrintLog("Response CE is nil", logging.QuietLevel)
-
-				return nil
-			}
-			if responseCE.Data != nil {
-				return websockethelper.PrintWSContentCEResponse(responseCE, endPoint)
-			}
-		} else {
-			fmt.Println("Skipping send-new artifact due to mocking flag set to true")
+		eventByte, err := sdkEvent.MarshalJSON()
+		if err != nil {
+			return fmt.Errorf("Failed to marshal cloud event. %s", err.Error())
 		}
 
+		apiEvent := apimodels.Event{}
+		err = json.Unmarshal(eventByte, &apiEvent)
+		if err != nil {
+			return fmt.Errorf("Failed to map cloud event to API event model. %s", err.Error())
+		}
+
+		if !mocking {
+			eventContext, err := eventHandler.SendEvent(apiEvent)
+			if err != nil {
+				logging.PrintLog("Sending configure-monitoring event was unsuccessful", logging.QuietLevel)
+				return fmt.Errorf("Sending configure-monitoring event was unsuccessful. %s", *err.Message)
+			}
+
+			// if eventContext is available, open WebSocket communication
+			if eventContext != nil {
+				return websockethelper.PrintWSContentEventContext(eventContext, endPoint)
+			}
+
+			return nil
+		}
+
+		fmt.Println("Skipping send-new artifact due to mocking flag set to true")
 		return nil
 	},
 }
@@ -191,9 +172,9 @@ func init() {
 	configureCmd.AddCommand(monitoringCmd)
 	params = &configureMonitoringCmdParams{}
 	params.Project = monitoringCmd.Flags().StringP("project", "p", "", "The name of the project")
-	monitoringCmd.MarkFlagRequired("project")
+	// monitoringCmd.MarkFlagRequired("project")
 	params.Service = monitoringCmd.Flags().StringP("service", "s", "", "The name of the service within the project")
-	monitoringCmd.MarkFlagRequired("service")
+	// monitoringCmd.MarkFlagRequired("service")
 	/*
 		params.ServiceIndicators = monitoringCmd.Flags().StringP("service-indicators", "", "", "Path to the service indicators file on your local file system")
 		monitoringCmd.MarkFlagRequired("service-indicators")

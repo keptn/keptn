@@ -22,14 +22,19 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var configVersion *string
+type configureDomainCmdParams struct {
+	ConfigVersion *string
+	PlatformID    *string
+	Branch        string
+}
+
+var configureDomainParams *configureDomainCmdParams
+
+const installerPrefixURL = "https://raw.githubusercontent.com/keptn/keptn/"
 
 const apiVirtualServiceSuffix = "/installer/manifests/keptn/keptn-api-virtualservice.yaml"
+const apiIngressSuffix = "/installer/manifests/keptn/api-ingress.yaml"
 const domainConfigMapSuffix = "/installer/manifests/keptn/keptn-domain-configmap.yaml"
-const uniformServicesSuffix = "/installer/manifests/keptn/uniform-services.yaml"
-const gatewaySuffix = "/installer/manifests/keptn/keptn-gateway.yaml"
-
-var platformID *string
 
 // domainCmd represents the domain command
 var domainCmd = &cobra.Command{
@@ -60,13 +65,23 @@ Example:
 			kubectlOptions = "--insecure-skip-tls-verify=true"
 		}
 
+		if (configureDomainParams.ConfigVersion == nil || *configureDomainParams.ConfigVersion == "") &&
+			utils.IsOfficialKeptnVersion(Version) {
+			configureDomainParams.ConfigVersion = &Version
+		} else if configureDomainParams.ConfigVersion == nil || *configureDomainParams.ConfigVersion == "" {
+			dev := "develop"
+			configureDomainParams.ConfigVersion = &dev
+		}
+
 		resourcesAvailable, err := checkConfigureDomainResourceAvailability()
 		if err != nil || !resourcesAvailable {
 			return errors.New("Resources not found under:\n" +
 				getAPIVirtualServiceURL() + "\n" +
-				getDomainConfigMapURL() + "\n" +
-				getUniformServicesURL())
+				getAPIIngressURL() + "\n" +
+				getDomainConfigMapURL())
 		}
+		logging.PrintLog(fmt.Sprintf("Used version for manifests: %s",
+			*configureDomainParams.ConfigVersion), logging.InfoLevel)
 
 		kubernetesPlatform := newKubernetesPlatform()
 		return kubernetesPlatform.checkRequirements()
@@ -99,22 +114,29 @@ Example:
 			return err
 		}
 
+		ingress, err := getIngressType()
+		if err != nil {
+			return err
+		}
+
 		if !mocking {
 
-			if err := updateKeptnAPIVirtualService(path, args[0]); err != nil {
+			// Generate new certificate
+			if err := updateCertificate(path, args[0], ingress); err != nil {
 				return err
 			}
 
-			// Generate new certificate
-			if err := updateCertificate(path, args[0]); err != nil {
-				return err
+			if ingress == Istio {
+				if err := updateKeptnAPIVirtualService(path, args[0]); err != nil {
+					return err
+				}
+			} else if ingress == Nginx {
+				if err := updateKeptnAPIIngress(path, args[0]); err != nil {
+					return err
+				}
 			}
 
 			if err := updateKeptnDomainConfigMap(path, args[0]); err != nil {
-				return err
-			}
-			// Re-deploy gateway, ingore if not found
-			if err := reDeployGateway(); err != nil {
 				return err
 			}
 
@@ -126,7 +148,7 @@ Example:
 				return err
 			}
 
-			if strings.ToLower(*platformID) == openshift {
+			if strings.ToLower(*configureDomainParams.PlatformID) == openshift {
 				logging.PrintLog("Successfully configured domain", logging.InfoLevel)
 				fmt.Println("Please manually execute the following commands for deleting an old route and creating a new route:")
 				fmt.Println("oc delete route istio-wildcard-ingress-secure-keptn -n istio-system")
@@ -165,18 +187,20 @@ Example:
 	},
 }
 
-func reDeployGateway() error {
-	o := options{"delete", "-f", getGatewayURL(), "--ignore-not-found"}
-	o.appendIfNotEmpty(kubectlOptions)
-	_, err := keptnutils.ExecuteCommand("kubectl", o)
-	if err != nil {
-		return err
-	}
+func getIngressType() (Ingress, error) {
 
-	o = options{"apply", "-f", getGatewayURL()}
+	o := options{"get", "ns"}
 	o.appendIfNotEmpty(kubectlOptions)
-	_, err = keptnutils.ExecuteCommand("kubectl", o)
-	return err
+	namespaces, err := keptnutils.ExecuteCommand("kubectl", o)
+	if err != nil {
+		return Istio, err
+	}
+	if strings.Contains(namespaces, "istio-system") {
+		return Istio, nil
+	} else if strings.Contains(namespaces, "ingress-nginx") {
+		return Nginx, nil
+	}
+	return Istio, errors.New("Cannot obtain type of ingress.")
 }
 
 func updateKeptnDomainConfigMap(path, domain string) error {
@@ -234,7 +258,34 @@ func updateKeptnAPIVirtualService(path, domain string) error {
 	return err
 }
 
-func updateCertificate(path, domain string) error {
+func updateKeptnAPIIngress(path, domain string) error {
+
+	keptnAPIIngress := path + "api-ingress.yaml"
+	if err := utils.DownloadFile(keptnAPIIngress, getAPIIngressURL()); err != nil {
+		return err
+	}
+
+	if err := utils.Replace(keptnAPIIngress,
+		utils.PlaceholderReplacement{PlaceholderValue: "domain.placeholder", DesiredValue: domain}); err != nil {
+		return err
+	}
+
+	// Delete old api ingress
+	o := options{"delete", "-f", keptnAPIIngress}
+	o.appendIfNotEmpty(kubectlOptions)
+	_, err := keptnutils.ExecuteCommand("kubectl", o)
+	if err != nil {
+		return err
+	}
+
+	// Apply new api virtual service
+	o = options{"apply", "-f", keptnAPIIngress}
+	o.appendIfNotEmpty(kubectlOptions)
+	_, err = keptnutils.ExecuteCommand("kubectl", o)
+	return err
+}
+
+func updateCertificate(path, domain string, ingress Ingress) error {
 
 	// Source: https://golang.org/src/crypto/tls/generate_cert.go
 	// We can verify the generated key with 'openssl rsa -in key.pem -check'
@@ -298,37 +349,52 @@ func updateCertificate(path, domain string) error {
 	}
 	defer os.Remove(privateKeyPath)
 
-	// First delete secret
-	o := options{"delete", "--namespace", "istio-system", "secret", "istio-ingressgateway-certs"}
-	o.appendIfNotEmpty(kubectlOptions)
-	_, err = keptnutils.ExecuteCommand("kubectl", o)
+	// First delete secret and afterwards apply new secret with new certificate
+	if ingress == Istio {
+		o := options{"delete", "--namespace", "istio-system", "secret", "istio-ingressgateway-certs"}
+		o.appendIfNotEmpty(kubectlOptions)
+		keptnutils.ExecuteCommand("kubectl", o)
 
-	o = options{"create", "--namespace", "istio-system", "secret", "tls", "istio-ingressgateway-certs",
-		"--key", privateKeyPath, "--cert", certPath}
+		o = options{"create", "--namespace", "istio-system", "secret", "tls", "istio-ingressgateway-certs",
+			"--key", privateKeyPath, "--cert", certPath}
+		o.appendIfNotEmpty(kubectlOptions)
+		_, err = keptnutils.ExecuteCommand("kubectl", o)
+		return err
+	}
+	// Reset secret for nginx
+	o := options{"delete", "secret", "sslcerts", "--namespace", "keptn"}
+	o.appendIfNotEmpty(kubectlOptions)
+	keptnutils.ExecuteCommand("kubectl", o)
+
+	o = options{"create", "secret", "tls", "sslcerts",
+		"--key", privateKeyPath, "--cert", certPath, "--namespace", "keptn"}
 	o.appendIfNotEmpty(kubectlOptions)
 	_, err = keptnutils.ExecuteCommand("kubectl", o)
 	return err
 }
 
 func getAPIVirtualServiceURL() string {
-	return installerPrefixURL + *configVersion + apiVirtualServiceSuffix
+	return installerPrefixURL + *configureDomainParams.ConfigVersion + apiVirtualServiceSuffix
+}
+
+func getAPIIngressURL() string {
+	return installerPrefixURL + *configureDomainParams.ConfigVersion + apiIngressSuffix
 }
 
 func getDomainConfigMapURL() string {
-	return installerPrefixURL + *configVersion + domainConfigMapSuffix
-}
-
-func getUniformServicesURL() string {
-	return installerPrefixURL + *configVersion + uniformServicesSuffix
-}
-
-func getGatewayURL() string {
-	return installerPrefixURL + *configVersion + gatewaySuffix
+	return installerPrefixURL + *configureDomainParams.ConfigVersion + domainConfigMapSuffix
 }
 
 func checkConfigureDomainResourceAvailability() (bool, error) {
 
 	resp, err := http.Get(getAPIVirtualServiceURL())
+	if err != nil {
+		return false, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return false, nil
+	}
+	resp, err = http.Get(getAPIIngressURL())
 	if err != nil {
 		return false, err
 	}
@@ -344,30 +410,17 @@ func checkConfigureDomainResourceAvailability() (bool, error) {
 		return false, nil
 	}
 
-	resp, err = http.Get(getUniformServicesURL())
-	if err != nil {
-		return false, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		return false, nil
-	}
-
-	resp, err = http.Get(getGatewayURL())
-	if err != nil {
-		return false, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		return false, nil
-	}
 	return true, nil
 }
 
 func init() {
 	configureCmd.AddCommand(domainCmd)
-	configVersion = domainCmd.Flags().StringP("keptn-version", "k", "master",
-		"The branch or tag of the version which is used for updating the domain")
+	configureDomainParams = &configureDomainCmdParams{}
+
+	configureDomainParams.ConfigVersion = domainCmd.Flags().StringP("keptn-version", "k", "",
+		"The branch or tag containing the manifests which are used for updating the domain")
 	domainCmd.Flags().MarkHidden("keptn-version")
 	domainCmd.PersistentFlags().BoolVarP(&insecureSkipTLSVerify, "insecure-skip-tls-verify", "s", false, "Skip tls verification for kubectl commands")
 
-	platformID = domainCmd.Flags().StringP("platform", "p", "gke", "The platform on which keptn is running [gke,openshift,aks,kubernetes]")
+	configureDomainParams.PlatformID = domainCmd.Flags().StringP("platform", "p", "gke", "The platform on which keptn is running [gke,openshift,aks,kubernetes]")
 }

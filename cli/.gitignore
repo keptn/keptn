@@ -1,2 +1,8 @@
 # Folder to test service onboarding with Helm chart
 carts
+
+# Idea
+.idea
+
+#binary - go build
+cli

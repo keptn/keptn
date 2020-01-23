@@ -4,19 +4,17 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"net/url"
 	"os"
 
-	"github.com/cloudevents/sdk-go/pkg/cloudevents"
-	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
-	"github.com/google/uuid"
-	keptnevents "github.com/keptn/go-utils/pkg/events"
+	"github.com/keptn/keptn/cli/utils/websockethelper"
+
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/models"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
-	"github.com/keptn/keptn/cli/utils/websockethelper"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 )
@@ -33,7 +31,7 @@ var createProjectParams *createProjectCmdParams
 // crProjectCmd represents the project command
 var crProjectCmd = &cobra.Command{
 	Use:   "project PROJECTNAME --shipyard=FILEPATH",
-	Short: "Creates a new project.",
+	Short: "Creates a new project",
 	Long: `Creates a new project with the provided name and shipyard file. 
 The shipyard file describes the used stages. These stages are defined by name, 
 deployment-, test-, and remediation strategy.
@@ -49,13 +47,13 @@ Example:
 
 		if len(args) != 1 {
 			cmd.SilenceUsage = false
-			return errors.New("Requires PROJECTNAME")
+			return errors.New("required argument PROJECTNAME not set")
 		}
-		if !utils.ValidateK8sName(args[0]) {
-			errorMsg := "Project name contains invalid characters or is not well-formed.\n"
-			errorMsg += "Keptn relies on Helm charts and thus these conventions have to be followed: "
-			errorMsg += "start with a lower case letter, then lower case letters and numbers are allowed.\n"
-			errorMsg += "You can find the guidelines here: https://github.com/helm/helm/blob/master/docs/chart_best_practices/conventions.md#chart-names\n"
+
+		if !keptnutils.ValidateKeptnEntityName(args[0]) {
+			errorMsg := "Project name contains upper case letter(s) or special character(s).\n"
+			errorMsg += "Keptn relies on the following conventions: "
+			errorMsg += "start with a lower case letter, then lower case letters, numbers, and hyphens are allowed.\n"
 			errorMsg += "Please update project name and try again."
 			return errors.New(errorMsg)
 		}
@@ -64,7 +62,7 @@ Example:
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 
 		if _, err := os.Stat(keptnutils.ExpandTilde(*createProjectParams.Shipyard)); os.IsNotExist(err) {
-			return fmt.Errorf("Cannot find file %s", *createProjectParams.Shipyard)
+			return fmt.Errorf("Cannot find shipyard file %s", *createProjectParams.Shipyard)
 		}
 
 		// validate shipyard file
@@ -80,11 +78,10 @@ Example:
 
 		// check stage names
 		for _, stage := range shipyard.Stages {
-			if !utils.ValidateK8sName(stage.Name) {
-				errorMsg := "Stage " + stage.Name + " contains invalid characters or is not well-formed.\n"
-				errorMsg += "Keptn relies on Helm charts and thus these conventions have to be followed: "
-				errorMsg += "start with a lower case letter, then lower case letters and numbers are allowed.\n"
-				errorMsg += "You can find the guidelines here: https://github.com/helm/helm/blob/master/docs/chart_best_practices/conventions.md#chart-names\n"
+			if !keptnutils.ValidateKeptnEntityName(stage.Name) {
+				errorMsg := "Stage " + stage.Name + " contains upper case letter(s) or special character(s).\n"
+				errorMsg += "Keptn relies on the following conventions: "
+				errorMsg += "start with a lower case letter, then lower case letters, numbers, and hyphens are allowed.\n"
 				errorMsg += "Please update stage name in your shipyard and try again."
 				return errors.New(errorMsg)
 			}
@@ -122,50 +119,37 @@ Example:
 		logging.PrintLog("Starting to create project", logging.InfoLevel)
 
 		content, _ := utils.ReadFile(*createProjectParams.Shipyard)
-		prjData := keptnevents.ProjectCreateEventData{Project: args[0], Shipyard: base64.StdEncoding.EncodeToString([]byte(content))}
+		shipyard := base64.StdEncoding.EncodeToString([]byte(content))
+		project := apimodels.Project{
+			Name:     &args[0],
+			Shipyard: &shipyard,
+		}
 
 		if *createProjectParams.GitUser != "" && *createProjectParams.GitToken != "" && *createProjectParams.RemoteURL != "" {
-			prjData.GitUser = *createProjectParams.GitUser
-			prjData.GitToken = *createProjectParams.GitToken
-			prjData.GitRemoteURL = *createProjectParams.RemoteURL
+			project.GitUser = *createProjectParams.GitUser
+			project.GitToken = *createProjectParams.GitToken
+			project.GitRemoteURL = *createProjectParams.RemoteURL
 		}
 
-		source, _ := url.Parse("https://github.com/keptn/keptn/cli#createproject")
-
-		contentType := "application/json"
-		event := cloudevents.Event{
-			Context: cloudevents.EventContextV02{
-				ID:          uuid.New().String(),
-				Type:        keptnevents.InternalProjectCreateEventType,
-				Source:      types.URLRef{URL: *source},
-				ContentType: &contentType,
-			}.AsV02(),
-			Data: prjData,
-		}
-
-		projectURL := endPoint
-		projectURL.Path = "v1/project"
-
+		projectHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, "https")
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
-			responseCE, err := utils.Send(projectURL, event, apiToken)
+			eventContext, err := projectHandler.CreateProject(project)
 			if err != nil {
 				fmt.Println("Create project was unsuccessful")
-				return err
+				return fmt.Errorf("Create project was unsuccessful. %s", *err.Message)
 			}
 
-			// check for responseCE to include token
-			if responseCE == nil {
-				logging.PrintLog("Response CE is nil", logging.QuietLevel)
-				return nil
+			// if eventContext is available, open WebSocket communication
+			if eventContext != nil {
+				return websockethelper.PrintWSContentEventContext(eventContext, endPoint)
 			}
-			if responseCE.Data != nil {
-				return websockethelper.PrintWSContentCEResponse(responseCE, endPoint)
-			}
-		} else {
-			fmt.Println("Skipping create project due to mocking flag set to true")
+
+			return nil
 		}
+
+		fmt.Println("Skipping create project due to mocking flag set to true")
 		return nil
 	},
 }

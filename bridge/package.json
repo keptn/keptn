@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "connect-datastore": "kubectl port-forward -n keptn-datastore svc/mongodb-datastore 8085:8080",
     "start": "node server/bin/www",
     "vue-dev": "vue-cli-service serve",
     "server": "node server/bin/www",

@@ -23,8 +23,7 @@ func init() {
     "application/cloudevents+json"
   ],
   "produces": [
-    "application/json",
-    "application/cloudevents+json"
+    "application/json"
   ],
   "schemes": [
     "http"
@@ -32,60 +31,92 @@ func init() {
   "swagger": "2.0",
   "info": {
     "title": "keptn api",
-    "version": "0.1.0"
+    "version": "develop"
   },
   "basePath": "/v1",
   "paths": {
     "/auth": {
       "post": {
         "tags": [
-          "auth"
+          "Auth"
         ],
         "summary": "Checks the provided token",
         "operationId": "auth",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/CE"
-            }
-          }
-        ],
         "responses": {
           "200": {
-            "description": "authenticated"
+            "description": "Authenticated"
           }
         }
       }
     },
     "/event": {
+      "get": {
+        "tags": [
+          "Event"
+        ],
+        "summary": "Get the latest event matching the parameters",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "KeptnContext of the events to get",
+            "name": "keptnContext",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Type of the Keptn cloud event",
+            "name": "type",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "response_model.yaml#/definitions/keptnContextExtendedCE"
+            }
+          },
+          "404": {
+            "description": "Failed. Event could not be found.",
+            "schema": {
+              "$ref": "response_model.yaml#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "response_model.yaml#/definitions/error"
+            }
+          }
+        }
+      },
       "post": {
         "tags": [
-          "event"
+          "Event"
         ],
-        "summary": "Forwards the received event to the eventbroker",
-        "operationId": "sendEvent",
+        "summary": "Forwards the received event",
         "parameters": [
           {
             "name": "body",
             "in": "body",
             "schema": {
-              "$ref": "#/definitions/CE"
+              "$ref": "https://raw.githubusercontent.com/cloudevents/spec/v0.2/spec.json#/definitions/event"
             }
           }
         ],
         "responses": {
-          "201": {
-            "description": "forwarded",
+          "200": {
+            "description": "Forwarded",
             "schema": {
-              "$ref": "#/definitions/ChannelInfo"
+              "$ref": "response_model.yaml#/definitions/eventContext"
             }
           },
           "default": {
-            "description": "error",
+            "description": "Error",
             "schema": {
-              "$ref": "#/definitions/error"
+              "$ref": "response_model.yaml#/definitions/error"
             }
           }
         }
@@ -94,40 +125,179 @@ func init() {
     "/project": {
       "post": {
         "tags": [
-          "project"
+          "Project"
         ],
-        "summary": "Forwards the received project event to the eventbroker",
-        "operationId": "project",
+        "summary": "Creates a new project",
         "parameters": [
           {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/CreateProjectCE"
-            }
+            "$ref": "#/parameters/project"
           }
         ],
         "responses": {
-          "201": {
-            "description": "Project created",
+          "200": {
+            "description": "Creating of project triggered",
             "schema": {
-              "$ref": "#/definitions/ChannelInfo"
+              "$ref": "response_model.yaml#/definitions/eventContext"
             }
           },
-          "204": {
-            "description": "Project deleted",
+          "400": {
+            "description": "Failed. Project could not be created",
             "schema": {
-              "$ref": "#/definitions/ChannelInfo"
+              "$ref": "response_model.yaml#/definitions/error"
             }
           },
           "default": {
-            "description": "error",
+            "description": "Error",
             "schema": {
-              "$ref": "#/definitions/error"
+              "$ref": "response_model.yaml#/definitions/error"
             }
           }
         }
       }
+    },
+    "/project/{projectName}": {
+      "delete": {
+        "tags": [
+          "Project"
+        ],
+        "summary": "Deletes the specified project",
+        "responses": {
+          "200": {
+            "description": "Deleting of project triggered",
+            "schema": {
+              "$ref": "response_model.yaml#/definitions/eventContext"
+            }
+          },
+          "400": {
+            "description": "Failed. Project could not be deleted",
+            "schema": {
+              "$ref": "response_model.yaml#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "response_model.yaml#/definitions/error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "$ref": "#/parameters/projectName"
+        }
+      ]
+    },
+    "/project/{projectName}/resource": {
+      "post": {
+        "tags": [
+          "Project Resource"
+        ],
+        "summary": "Upload a list of new resources for the project",
+        "parameters": [
+          {
+            "$ref": "#/parameters/resources"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success. Project resources have been uploaded"
+          },
+          "400": {
+            "description": "Failed. Project resources could not be uploaded",
+            "schema": {
+              "$ref": "response_model.yaml#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "response_model.yaml#/definitions/error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "$ref": "#/parameters/projectName"
+        }
+      ]
+    },
+    "/project/{projectName}/service": {
+      "post": {
+        "tags": [
+          "Service"
+        ],
+        "summary": "Creates a new service",
+        "parameters": [
+          {
+            "$ref": "#/parameters/service"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Creating of service triggered",
+            "schema": {
+              "$ref": "response_model.yaml#/definitions/eventContext"
+            }
+          },
+          "400": {
+            "description": "Failed. Project could not be created",
+            "schema": {
+              "$ref": "response_model.yaml#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "response_model.yaml#/definitions/error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "$ref": "#/parameters/projectName"
+        }
+      ]
+    },
+    "/project/{projectName}/stage/{stageName}/resource": {
+      "post": {
+        "tags": [
+          "Stage Resource"
+        ],
+        "summary": "Upload a list of new resources for the stage",
+        "parameters": [
+          {
+            "$ref": "#/parameters/resources"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success. Stage resources have been uploaded"
+          },
+          "400": {
+            "description": "Failed. Stage resources could not be uploaded",
+            "schema": {
+              "$ref": "response_model.yaml#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "response_model.yaml#/definitions/error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "$ref": "#/parameters/projectName"
+        },
+        {
+          "$ref": "#/parameters/stageName"
+        }
+      ]
     },
     "/project/{projectName}/stage/{stageName}/service/{serviceName}/resource": {
       "put": {
@@ -142,21 +312,18 @@ func init() {
         ],
         "responses": {
           "201": {
-            "description": "Success. Service resources have been updated. The version of the new configuration is returned.",
-            "schema": {
-              "$ref": "#/definitions/Version"
-            }
+            "description": "Success. Service resources have been updated"
           },
           "400": {
             "description": "Failed. Service resources could not be updated.",
             "schema": {
-              "$ref": "#/definitions/error"
+              "$ref": "response_model.yaml#/definitions/error"
             }
           },
           "default": {
             "description": "Error",
             "schema": {
-              "$ref": "#/definitions/error"
+              "$ref": "response_model.yaml#/definitions/error"
             }
           }
         }
@@ -165,7 +332,7 @@ func init() {
         "tags": [
           "Service Resource"
         ],
-        "summary": "Create list of new resources for the service",
+        "summary": "Upload a list of new resources for the service",
         "parameters": [
           {
             "$ref": "#/parameters/resources"
@@ -173,21 +340,18 @@ func init() {
         ],
         "responses": {
           "201": {
-            "description": "Success. Service resource has been created. The version of the new configuration is returned.",
-            "schema": {
-              "$ref": "#/definitions/Version"
-            }
+            "description": "Success. Service resources have been uploaded"
           },
           "400": {
-            "description": "Failed. Service resource could not be created.",
+            "description": "Failed. Service resources could not be uploaded",
             "schema": {
-              "$ref": "#/definitions/error"
+              "$ref": "response_model.yaml#/definitions/error"
             }
           },
           "default": {
             "description": "Error",
             "schema": {
-              "$ref": "#/definitions/error"
+              "$ref": "response_model.yaml#/definitions/error"
             }
           }
         }
@@ -203,241 +367,17 @@ func init() {
           "$ref": "#/parameters/serviceName"
         }
       ]
-    },
-    "/service": {
-      "post": {
-        "tags": [
-          "service"
-        ],
-        "summary": "Forwards the received service event to the eventbroker",
-        "operationId": "service",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/CE"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "service onboarded",
-            "schema": {
-              "$ref": "#/definitions/ChannelInfo"
-            }
-          },
-          "default": {
-            "description": "error",
-            "schema": {
-              "$ref": "#/definitions/error"
-            }
-          }
-        }
-      }
-    }
-  },
-  "definitions": {
-    "CE": {
-      "allOf": [
-        {
-          "$ref": "#/definitions/CE_without_data"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "data": {
-              "type": [
-                "object",
-                "string"
-              ]
-            }
-          }
-        }
-      ]
-    },
-    "CE_without_data": {
-      "type": "object",
-      "required": [
-        "specversion",
-        "id",
-        "type",
-        "source"
-      ],
-      "properties": {
-        "contenttype": {
-          "type": "string"
-        },
-        "extensions": {
-          "type": "object"
-        },
-        "id": {
-          "type": "string"
-        },
-        "source": {
-          "type": "string",
-          "format": "uri-reference"
-        },
-        "specversion": {
-          "type": "string"
-        },
-        "time": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "type": {
-          "type": "string"
-        }
-      }
-    },
-    "CE_without_data_with_keptncontext": {
-      "allOf": [
-        {
-          "$ref": "#/definitions/CE_without_data"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "shkeptncontext": {
-              "type": "string"
-            }
-          }
-        }
-      ]
-    },
-    "ChannelInfo": {
-      "allOf": [
-        {
-          "$ref": "#/definitions/CE_without_data_with_keptncontext"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "data": {
-              "properties": {
-                "channelInfo": {
-                  "required": [
-                    "token",
-                    "channelID"
-                  ],
-                  "properties": {
-                    "channelID": {
-                      "type": "string"
-                    },
-                    "token": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      ]
-    },
-    "CreateProjectCE": {
-      "allOf": [
-        {
-          "$ref": "#/definitions/CE_without_data"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "data": {
-              "required": [
-                "project"
-              ],
-              "properties": {
-                "gitRemoteURL": {
-                  "type": "string"
-                },
-                "gitToken": {
-                  "type": "string"
-                },
-                "gitUser": {
-                  "type": "string"
-                },
-                "project": {
-                  "type": "string"
-                },
-                "shipyard": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        }
-      ]
-    },
-    "Resource": {
-      "type": "object",
-      "required": [
-        "resourceURI",
-        "resourceContent"
-      ],
-      "properties": {
-        "resourceContent": {
-          "description": "Resource content",
-          "type": "string"
-        },
-        "resourceURI": {
-          "description": "Resource URI",
-          "type": "string"
-        }
-      }
-    },
-    "Resources": {
-      "type": "object",
-      "properties": {
-        "nextPageKey": {
-          "description": "Pointer to next page, base64 encoded",
-          "type": "string"
-        },
-        "pageSize": {
-          "description": "Size of returned page",
-          "type": "number"
-        },
-        "resources": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Resource"
-          }
-        },
-        "totalCount": {
-          "description": "Total number of resources",
-          "type": "number"
-        }
-      }
-    },
-    "Version": {
-      "type": "object",
-      "properties": {
-        "version": {
-          "description": "Version identifier",
-          "type": "string"
-        }
-      }
-    },
-    "error": {
-      "type": "object",
-      "required": [
-        "message"
-      ],
-      "properties": {
-        "code": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "fields": {
-          "type": "string"
-        },
-        "message": {
-          "type": "string"
-        }
-      }
     }
   },
   "parameters": {
+    "project": {
+      "description": "Project entity",
+      "name": "project",
+      "in": "body",
+      "schema": {
+        "$ref": "project_model.yaml#/definitions/project"
+      }
+    },
     "projectName": {
       "type": "string",
       "description": "Name of the project",
@@ -450,7 +390,7 @@ func init() {
       "name": "resource",
       "in": "body",
       "schema": {
-        "$ref": "#/definitions/Resource"
+        "$ref": "resource_model.yaml#/definitions/resource"
       }
     },
     "resourceURI": {
@@ -469,10 +409,18 @@ func init() {
           "resources": {
             "type": "array",
             "items": {
-              "$ref": "#/definitions/Resource"
+              "$ref": "resource_model.yaml#/definitions/resource"
             }
           }
         }
+      }
+    },
+    "service": {
+      "description": "Service entity",
+      "name": "service",
+      "in": "body",
+      "schema": {
+        "$ref": "service_model.yaml#/definitions/service"
       }
     },
     "serviceName": {
@@ -509,8 +457,7 @@ func init() {
     "application/cloudevents+json"
   ],
   "produces": [
-    "application/json",
-    "application/cloudevents+json"
+    "application/json"
   ],
   "schemes": [
     "http"
@@ -518,58 +465,90 @@ func init() {
   "swagger": "2.0",
   "info": {
     "title": "keptn api",
-    "version": "0.1.0"
+    "version": "develop"
   },
   "basePath": "/v1",
   "paths": {
     "/auth": {
       "post": {
         "tags": [
-          "auth"
+          "Auth"
         ],
         "summary": "Checks the provided token",
         "operationId": "auth",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/CE"
-            }
-          }
-        ],
         "responses": {
           "200": {
-            "description": "authenticated"
+            "description": "Authenticated"
           }
         }
       }
     },
     "/event": {
+      "get": {
+        "tags": [
+          "Event"
+        ],
+        "summary": "Get the latest event matching the parameters",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "KeptnContext of the events to get",
+            "name": "keptnContext",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Type of the Keptn cloud event",
+            "name": "type",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/keptnContextExtendedCE"
+            }
+          },
+          "404": {
+            "description": "Failed. Event could not be found.",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
       "post": {
         "tags": [
-          "event"
+          "Event"
         ],
-        "summary": "Forwards the received event to the eventbroker",
-        "operationId": "sendEvent",
+        "summary": "Forwards the received event",
         "parameters": [
           {
             "name": "body",
             "in": "body",
             "schema": {
-              "$ref": "#/definitions/CE"
+              "$ref": "#/definitions/event"
             }
           }
         ],
         "responses": {
-          "201": {
-            "description": "forwarded",
+          "200": {
+            "description": "Forwarded",
             "schema": {
-              "$ref": "#/definitions/ChannelInfo"
+              "$ref": "#/definitions/eventContext"
             }
           },
           "default": {
-            "description": "error",
+            "description": "Error",
             "schema": {
               "$ref": "#/definitions/error"
             }
@@ -580,40 +559,233 @@ func init() {
     "/project": {
       "post": {
         "tags": [
-          "project"
+          "Project"
         ],
-        "summary": "Forwards the received project event to the eventbroker",
-        "operationId": "project",
+        "summary": "Creates a new project",
         "parameters": [
           {
-            "name": "body",
+            "description": "Project entity",
+            "name": "project",
             "in": "body",
             "schema": {
-              "$ref": "#/definitions/CreateProjectCE"
+              "$ref": "#/definitions/project"
             }
           }
         ],
         "responses": {
-          "201": {
-            "description": "Project created",
+          "200": {
+            "description": "Creating of project triggered",
             "schema": {
-              "$ref": "#/definitions/ChannelInfo"
+              "$ref": "#/definitions/eventContext"
             }
           },
-          "204": {
-            "description": "Project deleted",
+          "400": {
+            "description": "Failed. Project could not be created",
             "schema": {
-              "$ref": "#/definitions/ChannelInfo"
+              "$ref": "#/definitions/error"
             }
           },
           "default": {
-            "description": "error",
+            "description": "Error",
             "schema": {
               "$ref": "#/definitions/error"
             }
           }
         }
       }
+    },
+    "/project/{projectName}": {
+      "delete": {
+        "tags": [
+          "Project"
+        ],
+        "summary": "Deletes the specified project",
+        "responses": {
+          "200": {
+            "description": "Deleting of project triggered",
+            "schema": {
+              "$ref": "#/definitions/eventContext"
+            }
+          },
+          "400": {
+            "description": "Failed. Project could not be deleted",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "description": "Name of the project",
+          "name": "projectName",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
+    "/project/{projectName}/resource": {
+      "post": {
+        "tags": [
+          "Project Resource"
+        ],
+        "summary": "Upload a list of new resources for the project",
+        "parameters": [
+          {
+            "description": "List of resources",
+            "name": "resources",
+            "in": "body",
+            "schema": {
+              "properties": {
+                "resources": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/resource"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success. Project resources have been uploaded"
+          },
+          "400": {
+            "description": "Failed. Project resources could not be uploaded",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "description": "Name of the project",
+          "name": "projectName",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
+    "/project/{projectName}/service": {
+      "post": {
+        "tags": [
+          "Service"
+        ],
+        "summary": "Creates a new service",
+        "parameters": [
+          {
+            "description": "Service entity",
+            "name": "service",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/service"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Creating of service triggered",
+            "schema": {
+              "$ref": "#/definitions/eventContext"
+            }
+          },
+          "400": {
+            "description": "Failed. Project could not be created",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "description": "Name of the project",
+          "name": "projectName",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
+    "/project/{projectName}/stage/{stageName}/resource": {
+      "post": {
+        "tags": [
+          "Stage Resource"
+        ],
+        "summary": "Upload a list of new resources for the stage",
+        "parameters": [
+          {
+            "description": "List of resources",
+            "name": "resources",
+            "in": "body",
+            "schema": {
+              "properties": {
+                "resources": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/resource"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success. Stage resources have been uploaded"
+          },
+          "400": {
+            "description": "Failed. Stage resources could not be uploaded",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "description": "Name of the project",
+          "name": "projectName",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "description": "Name of the stage",
+          "name": "stageName",
+          "in": "path",
+          "required": true
+        }
+      ]
     },
     "/project/{projectName}/stage/{stageName}/service/{serviceName}/resource": {
       "put": {
@@ -631,7 +803,7 @@ func init() {
                 "resources": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/definitions/Resource"
+                    "$ref": "#/definitions/resource"
                   }
                 }
               }
@@ -640,10 +812,7 @@ func init() {
         ],
         "responses": {
           "201": {
-            "description": "Success. Service resources have been updated. The version of the new configuration is returned.",
-            "schema": {
-              "$ref": "#/definitions/Version"
-            }
+            "description": "Success. Service resources have been updated"
           },
           "400": {
             "description": "Failed. Service resources could not be updated.",
@@ -663,7 +832,7 @@ func init() {
         "tags": [
           "Service Resource"
         ],
-        "summary": "Create list of new resources for the service",
+        "summary": "Upload a list of new resources for the service",
         "parameters": [
           {
             "description": "List of resources",
@@ -674,7 +843,7 @@ func init() {
                 "resources": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/definitions/Resource"
+                    "$ref": "#/definitions/resource"
                   }
                 }
               }
@@ -683,13 +852,10 @@ func init() {
         ],
         "responses": {
           "201": {
-            "description": "Success. Service resource has been created. The version of the new configuration is returned.",
-            "schema": {
-              "$ref": "#/definitions/Version"
-            }
+            "description": "Success. Service resources have been uploaded"
           },
           "400": {
-            "description": "Failed. Service resource could not be created.",
+            "description": "Failed. Service resources could not be uploaded",
             "schema": {
               "$ref": "#/definitions/error"
             }
@@ -725,220 +891,17 @@ func init() {
           "required": true
         }
       ]
-    },
-    "/service": {
-      "post": {
-        "tags": [
-          "service"
-        ],
-        "summary": "Forwards the received service event to the eventbroker",
-        "operationId": "service",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/CE"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "service onboarded",
-            "schema": {
-              "$ref": "#/definitions/ChannelInfo"
-            }
-          },
-          "default": {
-            "description": "error",
-            "schema": {
-              "$ref": "#/definitions/error"
-            }
-          }
-        }
-      }
     }
   },
   "definitions": {
-    "CE": {
-      "allOf": [
-        {
-          "$ref": "#/definitions/CE_without_data"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "data": {
-              "type": [
-                "object",
-                "string"
-              ]
-            }
-          }
-        }
+    "contenttype": {
+      "type": "string"
+    },
+    "data": {
+      "type": [
+        "object",
+        "string"
       ]
-    },
-    "CE_without_data": {
-      "type": "object",
-      "required": [
-        "specversion",
-        "id",
-        "type",
-        "source"
-      ],
-      "properties": {
-        "contenttype": {
-          "type": "string"
-        },
-        "extensions": {
-          "type": "object"
-        },
-        "id": {
-          "type": "string"
-        },
-        "source": {
-          "type": "string",
-          "format": "uri-reference"
-        },
-        "specversion": {
-          "type": "string"
-        },
-        "time": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "type": {
-          "type": "string"
-        }
-      }
-    },
-    "CE_without_data_with_keptncontext": {
-      "allOf": [
-        {
-          "$ref": "#/definitions/CE_without_data"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "shkeptncontext": {
-              "type": "string"
-            }
-          }
-        }
-      ]
-    },
-    "ChannelInfo": {
-      "allOf": [
-        {
-          "$ref": "#/definitions/CE_without_data_with_keptncontext"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "data": {
-              "properties": {
-                "channelInfo": {
-                  "required": [
-                    "token",
-                    "channelID"
-                  ],
-                  "properties": {
-                    "channelID": {
-                      "type": "string"
-                    },
-                    "token": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      ]
-    },
-    "CreateProjectCE": {
-      "allOf": [
-        {
-          "$ref": "#/definitions/CE_without_data"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "data": {
-              "required": [
-                "project"
-              ],
-              "properties": {
-                "gitRemoteURL": {
-                  "type": "string"
-                },
-                "gitToken": {
-                  "type": "string"
-                },
-                "gitUser": {
-                  "type": "string"
-                },
-                "project": {
-                  "type": "string"
-                },
-                "shipyard": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        }
-      ]
-    },
-    "Resource": {
-      "type": "object",
-      "required": [
-        "resourceURI",
-        "resourceContent"
-      ],
-      "properties": {
-        "resourceContent": {
-          "description": "Resource content",
-          "type": "string"
-        },
-        "resourceURI": {
-          "description": "Resource URI",
-          "type": "string"
-        }
-      }
-    },
-    "Resources": {
-      "type": "object",
-      "properties": {
-        "nextPageKey": {
-          "description": "Pointer to next page, base64 encoded",
-          "type": "string"
-        },
-        "pageSize": {
-          "description": "Size of returned page",
-          "type": "number"
-        },
-        "resources": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Resource"
-          }
-        },
-        "totalCount": {
-          "description": "Total number of resources",
-          "type": "number"
-        }
-      }
-    },
-    "Version": {
-      "type": "object",
-      "properties": {
-        "version": {
-          "description": "Version identifier",
-          "type": "string"
-        }
-      }
     },
     "error": {
       "type": "object",
@@ -957,9 +920,163 @@ func init() {
           "type": "string"
         }
       }
+    },
+    "event": {
+      "type": "object",
+      "required": [
+        "specversion",
+        "id",
+        "type",
+        "source"
+      ],
+      "properties": {
+        "contenttype": {
+          "$ref": "#/definitions/contenttype"
+        },
+        "data": {
+          "$ref": "#/definitions/data"
+        },
+        "extensions": {
+          "$ref": "#/definitions/extensions"
+        },
+        "id": {
+          "$ref": "#/definitions/id"
+        },
+        "source": {
+          "$ref": "#/definitions/source"
+        },
+        "specversion": {
+          "$ref": "#/definitions/specversion"
+        },
+        "time": {
+          "$ref": "#/definitions/time"
+        },
+        "type": {
+          "$ref": "#/definitions/type"
+        }
+      }
+    },
+    "eventContext": {
+      "type": "object",
+      "required": [
+        "token",
+        "keptnContext"
+      ],
+      "properties": {
+        "keptnContext": {
+          "type": "string"
+        },
+        "token": {
+          "type": "string"
+        }
+      }
+    },
+    "extensions": {
+      "type": "object"
+    },
+    "id": {
+      "type": "string"
+    },
+    "keptnContextExtendedCE": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/event"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "shkeptncontext": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "project": {
+      "type": "object",
+      "required": [
+        "name",
+        "shipyard"
+      ],
+      "properties": {
+        "gitRemoteURL": {
+          "type": "string"
+        },
+        "gitToken": {
+          "type": "string"
+        },
+        "gitUser": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "shipyard": {
+          "type": "string"
+        }
+      }
+    },
+    "resource": {
+      "type": "object",
+      "required": [
+        "resourceURI",
+        "resourceContent"
+      ],
+      "properties": {
+        "resourceContent": {
+          "description": "Resource content",
+          "type": "string"
+        },
+        "resourceURI": {
+          "description": "Resource URI",
+          "type": "string"
+        }
+      }
+    },
+    "service": {
+      "type": "object",
+      "required": [
+        "serviceName"
+      ],
+      "properties": {
+        "deploymentStrategies": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "helmChart": {
+          "type": "string"
+        },
+        "serviceName": {
+          "type": "string"
+        }
+      }
+    },
+    "source": {
+      "type": "string",
+      "format": "uri-reference"
+    },
+    "specversion": {
+      "type": "string"
+    },
+    "time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "type": {
+      "type": "string"
     }
   },
   "parameters": {
+    "project": {
+      "description": "Project entity",
+      "name": "project",
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/project"
+      }
+    },
     "projectName": {
       "type": "string",
       "description": "Name of the project",
@@ -972,7 +1089,7 @@ func init() {
       "name": "resource",
       "in": "body",
       "schema": {
-        "$ref": "#/definitions/Resource"
+        "$ref": "#/definitions/resource"
       }
     },
     "resourceURI": {
@@ -991,10 +1108,18 @@ func init() {
           "resources": {
             "type": "array",
             "items": {
-              "$ref": "#/definitions/Resource"
+              "$ref": "#/definitions/resource"
             }
           }
         }
+      }
+    },
+    "service": {
+      "description": "Service entity",
+      "name": "service",
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/service"
       }
     },
     "serviceName": {

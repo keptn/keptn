@@ -7,13 +7,13 @@ Package restapi keptn api
       http
     Host: localhost
     BasePath: /v1
-    Version: 0.1.0
+    Version: develop
 
     Consumes:
     - application/cloudevents+json
 
     Produces:
-    - application/cloudevents+json
+    - application/json
 
 swagger:meta
 */

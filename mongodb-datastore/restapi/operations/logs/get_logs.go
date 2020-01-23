@@ -13,7 +13,8 @@ import (
 	middleware "github.com/go-openapi/runtime/middleware"
 	strfmt "github.com/go-openapi/strfmt"
 	swag "github.com/go-openapi/swag"
-	validate "github.com/go-openapi/validate"
+
+	models "github.com/keptn/keptn/mongodb-datastore/models"
 )
 
 // GetLogsHandlerFunc turns a function with the right signature into a get logs handler
@@ -62,68 +63,12 @@ func (o *GetLogs) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 }
 
-// GetLogsDefaultBody get logs default body
-// swagger:model GetLogsDefaultBody
-type GetLogsDefaultBody struct {
-
-	// code
-	Code int64 `json:"code,omitempty"`
-
-	// fields
-	Fields string `json:"fields,omitempty"`
-
-	// message
-	// Required: true
-	Message *string `json:"message"`
-}
-
-// Validate validates this get logs default body
-func (o *GetLogsDefaultBody) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := o.validateMessage(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (o *GetLogsDefaultBody) validateMessage(formats strfmt.Registry) error {
-
-	if err := validate.Required("getLogs default"+"."+"message", "body", o.Message); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (o *GetLogsDefaultBody) MarshalBinary() ([]byte, error) {
-	if o == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(o)
-}
-
-// UnmarshalBinary interface implementation
-func (o *GetLogsDefaultBody) UnmarshalBinary(b []byte) error {
-	var res GetLogsDefaultBody
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*o = res
-	return nil
-}
-
 // GetLogsOKBody get logs o k body
 // swagger:model GetLogsOKBody
 type GetLogsOKBody struct {
 
 	// logs
-	Logs []*LogsItems0 `json:"logs"`
+	Logs []*models.LogEntry `json:"logs"`
 
 	// Pointer to the next page
 	NextPageKey string `json:"nextPageKey,omitempty"`
@@ -185,75 +130,6 @@ func (o *GetLogsOKBody) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (o *GetLogsOKBody) UnmarshalBinary(b []byte) error {
 	var res GetLogsOKBody
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*o = res
-	return nil
-}
-
-// LogsItems0 logs items0
-// swagger:model LogsItems0
-type LogsItems0 struct {
-
-	// event Id
-	EventID string `json:"eventId,omitempty"`
-
-	// keptn context
-	KeptnContext string `json:"keptnContext,omitempty"`
-
-	// keptn service
-	KeptnService string `json:"keptnService,omitempty"`
-
-	// log level
-	LogLevel string `json:"logLevel,omitempty"`
-
-	// message
-	Message string `json:"message,omitempty"`
-
-	// timestamp
-	// Format: date-time
-	Timestamp strfmt.DateTime `json:"timestamp,omitempty"`
-}
-
-// Validate validates this logs items0
-func (o *LogsItems0) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := o.validateTimestamp(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (o *LogsItems0) validateTimestamp(formats strfmt.Registry) error {
-
-	if swag.IsZero(o.Timestamp) { // not required
-		return nil
-	}
-
-	if err := validate.FormatOf("timestamp", "body", "date-time", o.Timestamp.String(), formats); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (o *LogsItems0) MarshalBinary() ([]byte, error) {
-	if o == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(o)
-}
-
-// UnmarshalBinary interface implementation
-func (o *LogsItems0) UnmarshalBinary(b []byte) error {
-	var res LogsItems0
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

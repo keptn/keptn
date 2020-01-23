@@ -1,0 +1,158 @@
+---
+# lighthouse-service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lighthouse-service
+  namespace: keptn
+spec:
+  selector:
+    matchLabels:
+      run: lighthouse-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: lighthouse-service
+    spec:
+      containers:
+        - name: lighthouse-service
+          image: keptn/lighthouse-service:0.6.0
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "50m"
+            limits:
+              memory: "1024Mi"
+              cpu: "500m"
+          env:
+            - name: EVENTBROKER
+              value: 'http://event-broker.keptn.svc.cluster.local/keptn'
+            - name: CONFIGURATION_SERVICE
+              value: 'http://configuration-service.keptn.svc.cluster.local:8080'
+            - name: ENVIRONMENT
+              value: 'production'
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lighthouse-service
+  namespace: keptn
+  labels:
+    run: lighthouse-service
+spec:
+  ports:
+    - port: 8080
+      protocol: TCP
+  selector:
+    run: lighthouse-service
+---
+# lighthouse-service: tests-finished distributor
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lighthouse-service-tests-finished-distributor
+  namespace: keptn
+spec:
+  selector:
+    matchLabels:
+      run: distributor
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: distributor
+    spec:
+      containers:
+        - name: distributor
+          image: keptn/distributor:0.6.0
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          env:
+            - name: PUBSUB_URL
+              value: 'nats://keptn-nats-cluster'
+            - name: PUBSUB_TOPIC
+              value: 'sh.keptn.events.tests-finished'
+            - name: PUBSUB_RECIPIENT
+              value: 'lighthouse-service'
+---
+## lighthouse-service: sh.keptn.event.start-evaluation
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lighthouse-service-start-evaluation-distributor
+  namespace: keptn
+spec:
+  selector:
+    matchLabels:
+      run: distributor
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: distributor
+    spec:
+      containers:
+        - name: distributor
+          image: keptn/distributor:0.6.0
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          env:
+            - name: PUBSUB_URL
+              value: 'nats://keptn-nats-cluster'
+            - name: PUBSUB_TOPIC
+              value: 'sh.keptn.event.start-evaluation'
+            - name: PUBSUB_RECIPIENT
+              value: 'lighthouse-service'
+---
+## lighthouse-service: sh.keptn.internal.event.get-sli.done
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lighthouse-service-get-sli-done-distributor
+  namespace: keptn
+spec:
+  selector:
+    matchLabels:
+      run: distributor
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: distributor
+    spec:
+      containers:
+        - name: distributor
+          image: keptn/distributor:0.6.0
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          env:
+            - name: PUBSUB_URL
+              value: 'nats://keptn-nats-cluster'
+            - name: PUBSUB_TOPIC
+              value: 'sh.keptn.internal.event.get-sli.done'
+            - name: PUBSUB_RECIPIENT
+              value: 'lighthouse-service'

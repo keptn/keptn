@@ -3,6 +3,7 @@ package controller
 import (
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -14,9 +15,9 @@ import (
 	"github.com/keptn/keptn/helm-service/controller/mesh"
 	"github.com/keptn/keptn/helm-service/pkg/helmtest"
 
+	configmodels "github.com/keptn/go-utils/pkg/configuration-service/models"
+	configutils "github.com/keptn/go-utils/pkg/configuration-service/utils"
 	keptnevents "github.com/keptn/go-utils/pkg/events"
-	"github.com/keptn/go-utils/pkg/models"
-	keptnmodels "github.com/keptn/go-utils/pkg/models"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/stretchr/testify/assert"
 )
@@ -36,22 +37,22 @@ stages:
 
 func createTestProjet(t *testing.T) {
 
-	prjHandler := keptnutils.NewProjectHandler(configBaseURL)
-	prj := keptnmodels.Project{ProjectName: projectName}
+	prjHandler := configutils.NewProjectHandler(configBaseURL)
+	prj := configmodels.Project{ProjectName: projectName}
 	respErr, err := prjHandler.CreateProject(prj)
 	check(err, t)
 	assert.Nil(t, respErr, "Creating a project failed")
 
 	// Send shipyard
-	rHandler := keptnutils.NewResourceHandler(configBaseURL)
+	rHandler := configutils.NewResourceHandler(configBaseURL)
 	shipyardURI := "shipyard.yaml"
-	shipyardResource := models.Resource{ResourceURI: &shipyardURI, ResourceContent: shipyard}
-	resources := []*models.Resource{&shipyardResource}
+	shipyardResource := configmodels.Resource{ResourceURI: &shipyardURI, ResourceContent: shipyard}
+	resources := []*configmodels.Resource{&shipyardResource}
 	_, err = rHandler.CreateProjectResources(projectName, resources)
 	check(err, t)
 
 	// Create stages
-	stageHandler := keptnutils.NewStageHandler(configBaseURL)
+	stageHandler := configutils.NewStageHandler(configBaseURL)
 	for _, stage := range []string{stage1, stage2, stage3} {
 
 		respErr, err := stageHandler.CreateStage(projectName, stage)
@@ -87,6 +88,63 @@ func TestDoOnboard(t *testing.T) {
 	err = onboarder.DoOnboard(ce, loggingDone)
 
 	check(err, t)
+}
+
+func TestCheckAndSetServiceName(t *testing.T) {
+
+	errorMsg := "Service name contains upper case letter(s) or special character(s).\n " +
+		"Keptn relies on the following conventions: " +
+		"start with a lower case letter, then lower case letters, numbers, and hyphens are allowed."
+
+	o := NewOnboarder(nil, nil, nil, "")
+	data := helmtest.CreateHelmChartData(t)
+
+	testCases := []struct {
+		name        string
+		event       *keptnevents.ServiceCreateEventData
+		error       error
+		serviceName string
+	}{
+		{"Mismatch", &keptnevents.ServiceCreateEventData{Service: "carts-1", HelmChart: base64.StdEncoding.EncodeToString(data)},
+			errors.New("Provided Keptn service name \"carts-1\" does not match Kubernetes service name \"carts\""), "carts-1"},
+		{"Match", &keptnevents.ServiceCreateEventData{Service: "carts", HelmChart: base64.StdEncoding.EncodeToString(data)},
+			nil, "carts"},
+		{"Set", &keptnevents.ServiceCreateEventData{Service: "", HelmChart: base64.StdEncoding.EncodeToString(data)},
+			nil, "carts"},
+		{"EmptyName", &keptnevents.ServiceCreateEventData{Service: ""},
+			errors.New(errorMsg), ""},
+		{"InvalidName", &keptnevents.ServiceCreateEventData{Service: "carts-"},
+			errors.New(errorMsg), "carts-"},
+		{"InvalidName", &keptnevents.ServiceCreateEventData{Service: "-carts"},
+			errors.New(errorMsg), "-carts"},
+		{"InvalidName", &keptnevents.ServiceCreateEventData{Service: "c%arts"},
+			errors.New(errorMsg), "c%arts"},
+		{"InvalidName", &keptnevents.ServiceCreateEventData{Service: "7carts"},
+			errors.New(errorMsg), "7carts"},
+		{"ValidName", &keptnevents.ServiceCreateEventData{Service: "a"},
+			nil, "a"},
+		{"ValidName", &keptnevents.ServiceCreateEventData{Service: "aa"},
+			nil, "aa"},
+		{"ValidName", &keptnevents.ServiceCreateEventData{Service: "aa7"},
+			nil, "aa7"},
+	}
+
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
+			res := o.checkAndSetServiceName(tt.event)
+			if res == nil && res != tt.error {
+				t.Errorf("got nil, want %s", tt.error.Error())
+			} else if res != nil && tt.error != nil && res.Error() != tt.error.Error() {
+				t.Errorf("got %s, want %s", res.Error(), tt.error.Error())
+			} else if res != nil && tt.error == nil {
+				t.Errorf("got %s, want nil", res.Error())
+			}
+
+			if tt.event.Service != tt.serviceName {
+				t.Errorf("got %s, want %s", tt.event.Service, tt.serviceName)
+			}
+		})
+	}
 }
 
 func check(e error, t *testing.T) {

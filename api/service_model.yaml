@@ -1,0 +1,15 @@
+---
+definitions:
+  service:
+    type: object
+    required:
+      - serviceName
+    properties:
+      serviceName:
+        type: string
+      helmChart:
+        type: string
+      deploymentStrategies:
+        type: object
+        additionalProperties:
+          type: string

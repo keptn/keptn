@@ -1,6 +1,6 @@
 # Eventbroker
 
-The *eventbroker* is a Keptn core component that is responsible for receiving all events, transferring non-Keptn events into valid Keptn Cloud Events, and sending those into NATS. 
+The *eventbroker* is a Keptn core component that is responsible for receiving all events and sending those into NATS. 
 
 ## Installation
 
