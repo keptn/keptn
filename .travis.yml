@@ -49,7 +49,7 @@ before_install:
 - API_FOLDER="api/"
 - OS_ROUTE_SVC_IMAGE="keptn/openshift-route-service"
 - OS_ROUTE_SVC_FOLDER="platform-support/openshift-route-service/"
-- BRIDGE_IMAGE="keptn/bridge"
+- BRIDGE_IMAGE="keptn/bridge2"
 - BRIDGE_FOLDER="bridge/"
 - JMETER_SVC_IMAGE="keptn/jmeter-service"
 - JMETER_SVC_FOLDER="jmeter-service/"
@@ -425,7 +425,7 @@ jobs:
     script:
       - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
       - ./writeManifest.sh
-      - source ./travis-scripts/build_develop.sh "keptn/bridge2" "${BRIDGE_FOLDER}" "${GIT_SHA}" "${DATE}"
+      - source ./travis-scripts/build_develop.sh "${BRIDGE_IMAGE}" "${BRIDGE_FOLDER}" "${GIT_SHA}" "${DATE}"
       - cd ..
   - if: branch = master AND type = push
     os: linux
