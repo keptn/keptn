@@ -82,7 +82,8 @@ export class DataService {
         map(roots => roots.map(root => Root.fromJSON(root)))
       )
       .subscribe((roots: Root[]) => {
-        service.roots = roots;
+        // TODO: investigate why is the sorting changed?
+        service.roots = roots.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());;
         // TODO: return Subject with proper value handling
         // this._projects.next([...this._projects.getValue(), ...projects]);
       }, (err) => {
