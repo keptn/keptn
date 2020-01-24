@@ -13,6 +13,8 @@ import {DashboardComponent} from './dashboard/dashboard.component';
 import {AppHeaderComponent} from './app-header/app-header.component';
 import {ProjectBoardComponent} from './project-board/project-board.component';
 
+import {KtbEventsListComponent} from "./_components/ktb-events-list/ktb-events-list.component";
+import {KtbProjectListComponent} from './_components/ktb-project-list/ktb-project-list.component';
 import {KtbProjectTileComponent} from './_components/ktb-project-tile/ktb-project-tile.component';
 import {KtbSelectableTileComponent} from "./_components/ktb-selectable-tile/ktb-selectable-tile.component";
 import {KtbHttpLoadingBarComponent} from "./_components/ktb-http-loading-bar/ktb-http-loading-bar.component";
@@ -45,12 +47,13 @@ import {DtExpandableTextModule} from "@dynatrace/barista-components/expandable-t
 import {DtExpandablePanelModule} from "@dynatrace/barista-components/expandable-panel";
 import {DtShowMoreModule} from "@dynatrace/barista-components/show-more";
 import {DtIconModule} from "@dynatrace/barista-components/icon";
+import {DtIndicatorModule} from "@dynatrace/barista-components/core";
+import {DtProgressCircleModule} from "@dynatrace/barista-components/progress-circle";
+import {DtConsumptionModule} from "@dynatrace/barista-components/consumption";
+import {DtKeyValueListModule} from "@dynatrace/barista-components/key-value-list";
 
 import {registerLocaleData} from "@angular/common";
 import localeEn from '@angular/common/locales/en';
-import { KtbProjectListComponent } from './_components/ktb-project-list/ktb-project-list.component';
-import {DtIndicatorModule} from "@dynatrace/barista-components/core";
-import {DtProgressCircleModule} from "@dynatrace/barista-components/progress-circle";
 
 registerLocaleData(localeEn, 'en');
 
@@ -72,6 +75,7 @@ registerLocaleData(localeEn, 'en');
     KtbRootEventsListComponent,
     KtbProjectTileComponent,
     KtbProjectListComponent,
+    KtbEventsListComponent,
   ],
   imports: [
     BrowserModule,
@@ -99,6 +103,8 @@ registerLocaleData(localeEn, 'en');
     DtShowMoreModule,
     DtIndicatorModule,
     DtProgressCircleModule,
+    DtConsumptionModule,
+    DtKeyValueListModule,
     DtIconModule.forRoot({
       svgIconLocation: `/assets/icons/{{name}}.svg`,
     }),

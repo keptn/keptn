@@ -66,41 +66,7 @@
           <p class="m-0"><span class="bold">Keptn ID: </span><span [textContent]="currentRoot.shkeptncontext"></span></p>
         </dt-info-group>
       </div>
-      <div fxLayout="column" fxLayoutGap="15px" *ngFor="let trace of currentRoot.traces; let i = index">
-        <ktb-horizontal-separator *ngIf="i>0 && trace.data.stage != currentRoot.traces[i-1].data.stage">
-          <ktb-horizontal-separator-title [textContent]="trace.data.stage"></ktb-horizontal-separator-title>
-        </ktb-horizontal-separator>
-        <ktb-expandable-tile [error]="trace.isFaulty()" [success]="trace.isSuccessful()">
-          <ktb-expandable-tile-header>
-            <div fxLayout="row" class="pr-4">
-              <div fxFlex>
-                <h4 class="m-0 mt-1 mb-1" [textContent]="getEventLabel(trace.type)"></h4>
-                <p class="m-0"><span class="bold">Source: </span><span [textContent]="trace.source"></span></p>
-                <div *ngIf="trace.data.canary">
-                  <p class="m-0"><span class="bold">Action: </span><span [textContent]="trace.data.canary.action"></span> <span [textContent]="trace.data.canary.value"></span></p>
-                </div>
-                <div *ngIf="trace.data.teststrategy">
-                  <p class="m-0"><span class="bold">Test strategy: </span><span [textContent]="trace.data.teststrategy"></span></p>
-                </div>
-                <div *ngIf="trace.data.start && trace.data.end">
-                  <p class="m-0 mt-1"><span [textContent]="trace.data.start | amDateFormat:'L LT'"></span> - <span [textContent]="trace.data.end | amDateFormat:'L LT'"></span> (<span [textContent]="trace.data.end | amDifference: trace.data.start :'minutes'"></span> Minutes)</p>
-                </div>
-                <div *ngIf="trace.data.evaluationdetails">
-                  <p class="m-0 mt-1"><span [textContent]="trace.data.evaluationdetails.timeStart | amDateFormat:'L LT'"></span> - <span [textContent]="trace.data.evaluationdetails.timeEnd | amDateFormat:'L LT'"></span> (<span [textContent]="trace.data.evaluationdetails.timeEnd | amDifference: trace.data.evaluationdetails.timeStart :'minutes'"></span> Minutes)</p>
-                  <p class="m-0"><span class="bold">Result: </span><span [textContent]="trace.data.result"></span></p>
-                  <p class="m-0"><span class="bold">Score: </span><span [textContent]="trace.data.evaluationdetails.score"></span></p>
-                  <p class="m-0"><span class="bold">Details: </span><span [textContent]="trace.data.evaluationdetails.result"></span></p>
-                </div>
-              </div>
-              <div fxLayout="column" fxLayoutAlign="start end">
-                <p class="m-0 mt-1 mb-1" [textContent]="trace.time | amDateFormat:'L LT'"></p>
-              </div>
-            </div>
-          </ktb-expandable-tile-header>
-          <p class="m-0 bold">Event payload</p>
-          <pre>{{ trace | json }}</pre>
-        </ktb-expandable-tile>
-      </div>
+      <ktb-events-list [events]="currentRoot.traces"></ktb-events-list>
       <div class="mb-3">
         <button dt-button (click)="loadTraces(currentRoot)"><dt-icon name="refresh"></dt-icon> Reload</button>
       </div>
