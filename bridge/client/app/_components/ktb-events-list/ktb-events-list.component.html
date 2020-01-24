@@ -19,7 +19,20 @@
               <p class="m-0 mt-1"><span [textContent]="event.data.start | amDateFormat:'L LT'"></span> - <span [textContent]="event.data.end | amDateFormat:'L LT'"></span> (<span [textContent]="event.data.end | amDifference: event.data.start :'minutes'"></span> Minutes)</p>
             </div>
             <div *ngIf="event.data.evaluationdetails">
-              <p class="mt-1"><span [textContent]="event.data.evaluationdetails.timeStart | amDateFormat:'L LT'"></span> - <span [textContent]="event.data.evaluationdetails.timeEnd | amDateFormat:'L LT'"></span> (<span [textContent]="event.data.evaluationdetails.timeEnd | amDifference: event.data.evaluationdetails.timeStart :'minutes'"></span> Minutes)</p>
+              <p class="m-0 mt-1"><span [textContent]="event.data.evaluationdetails.timeStart | amDateFormat:'L LT'"></span> - <span [textContent]="event.data.evaluationdetails.timeEnd | amDateFormat:'L LT'"></span> (<span [textContent]="event.data.evaluationdetails.timeEnd | amDifference: event.data.evaluationdetails.timeStart :'minutes'"></span> Minutes)</p>
+              <div class="mb-1" *ngIf="event.data.evaluationdetails.sloFileContent">
+                <p class="m-0 mb-1">
+                  <a class="dt-link" (click)="$event.stopPropagation();sloFile.toggle();">
+                    <span *ngIf="!sloFile.expanded">Show SLOs</span>
+                    <span *ngIf="sloFile.expanded">Hide SLOs</span>
+                  </a>
+                </p>
+                <dt-expandable-panel #sloFile>
+                  <div class="container dark">
+                    <pre>{{ event.data.evaluationdetails.sloFileContent | atob }}</pre>
+                  </div>
+                </dt-expandable-panel>
+              </div>
               <dt-consumption [max]="event.data.evaluationdetails.indicatorResults ? 100 : 0" [value]="event.data.evaluationdetails.score" [color]="event.data.result == 'fail' ? 'error' : 'recovered'">
                 <dt-consumption-icon aria-label="Test">
                   <dt-icon name="summary"></dt-icon>
@@ -33,13 +46,33 @@
               <div *ngIf="event.data.evaluationdetails.indicatorResults">
                 <p><span [textContent]="event.data.teststrategy"></span> test breakdown</p>
                 <dt-key-value-list>
-                  <dt-key-value-list-item *ngFor="let result of event.data.evaluationdetails.indicatorResults">
-                    <dt-key-value-list-key [textContent]="result.value.metric"></dt-key-value-list-key>
-                    <dt-key-value-list-value>
-                      <span [textContent]="result.value.value | number:'1.0-0'"></span>/<span *ngIf="result.targets" [textContent]="result.targets[0].targetValue"></span>
-                    </dt-key-value-list-value>
-                  </dt-key-value-list-item>
+                  <ng-container *ngFor="let result of event.data.evaluationdetails.indicatorResults">
+                    <dt-key-value-list-item *ngIf="result.status != 'pass'">
+                      <dt-key-value-list-key [textContent]="result.value.metric"></dt-key-value-list-key>
+                      <dt-key-value-list-value>
+                        <span [textContent]="result.value.value | number:'1.0-0'"></span>/<span *ngIf="result.targets" [textContent]="result.targets[0].targetValue"></span>
+                      </dt-key-value-list-value>
+                    </dt-key-value-list-item>
+                  </ng-container>
                 </dt-key-value-list>
+                <dt-expandable-panel #indicatorResults>
+                  <dt-key-value-list>
+                    <ng-container *ngFor="let result of event.data.evaluationdetails.indicatorResults">
+                      <dt-key-value-list-item *ngIf="result.status == 'pass'">
+                        <dt-key-value-list-key [textContent]="result.value.metric"></dt-key-value-list-key>
+                        <dt-key-value-list-value>
+                          <span [textContent]="result.value.value | number:'1.0-0'"></span>/<span *ngIf="result.targets" [textContent]="result.targets[0].targetValue"></span>
+                        </dt-key-value-list-value>
+                      </dt-key-value-list-item>
+                    </ng-container>
+                  </dt-key-value-list>
+                </dt-expandable-panel>
+                <p class="m-0 mt-1 mb-1">
+                  <a class="dt-link" (click)="$event.stopPropagation();indicatorResults.toggle();">
+                    <span *ngIf="!indicatorResults.expanded">Show all</span>
+                    <span *ngIf="indicatorResults.expanded">Show only failed</span>
+                  </a>
+                </p>
               </div>
             </div>
           </div>
