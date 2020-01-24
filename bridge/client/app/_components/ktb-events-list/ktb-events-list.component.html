@@ -1,0 +1,57 @@
+<div fxLayout="column" fxLayoutGap="15px">
+  <div *ngFor="let event of _events; let i = index" fxLayout="column" fxLayoutGap="15px">
+    <ktb-horizontal-separator *ngIf="i>0 && event.data.stage != _events[i-1].data.stage">
+      <ktb-horizontal-separator-title [textContent]="event.data.stage"></ktb-horizontal-separator-title>
+    </ktb-horizontal-separator>
+    <ktb-expandable-tile [error]="event.isFaulty()" [success]="event.isSuccessful()">
+      <ktb-expandable-tile-header>
+        <div fxLayout="row" class="pr-4">
+          <div fxFlex>
+            <h4 class="m-0 mt-1 mb-1" [textContent]="getEventLabel(event.type)"></h4>
+            <p class="m-0"><span class="bold">Source: </span><span [textContent]="event.source"></span></p>
+            <div *ngIf="event.data.canary">
+              <p class="m-0"><span class="bold">Action: </span><span [textContent]="event.data.canary.action"></span> <span [textContent]="event.data.canary.value"></span></p>
+            </div>
+            <div *ngIf="event.data.teststrategy">
+              <p class="m-0"><span class="bold">Test strategy: </span><span [textContent]="event.data.teststrategy"></span></p>
+            </div>
+            <div *ngIf="event.data.start && event.data.end">
+              <p class="m-0 mt-1"><span [textContent]="event.data.start | amDateFormat:'L LT'"></span> - <span [textContent]="event.data.end | amDateFormat:'L LT'"></span> (<span [textContent]="event.data.end | amDifference: event.data.start :'minutes'"></span> Minutes)</p>
+            </div>
+            <div *ngIf="event.data.evaluationdetails">
+              <p class="mt-1"><span [textContent]="event.data.evaluationdetails.timeStart | amDateFormat:'L LT'"></span> - <span [textContent]="event.data.evaluationdetails.timeEnd | amDateFormat:'L LT'"></span> (<span [textContent]="event.data.evaluationdetails.timeEnd | amDifference: event.data.evaluationdetails.timeStart :'minutes'"></span> Minutes)</p>
+              <dt-consumption [max]="event.data.evaluationdetails.indicatorResults ? 100 : 0" [value]="event.data.evaluationdetails.score" [color]="event.data.result == 'fail' ? 'error' : 'recovered'">
+                <dt-consumption-icon aria-label="Host">
+                  <dt-icon name="host"></dt-icon>
+                </dt-consumption-icon>
+                <dt-consumption-title><span [textContent]="event.data.teststrategy"></span> test</dt-consumption-title>
+                <dt-consumption-count>
+                  <span [textContent]="event.data.evaluationdetails.score"></span>/<span [textContent]="event.data.evaluationdetails.indicatorResults ? 100 : 0"></span>
+                </dt-consumption-count>
+                <dt-consumption-label><span [textContent]="event.data.teststrategy"></span> test <span [textContent]="event.data.result"></span></dt-consumption-label>
+                <dt-consumption-overlay>
+                  <div class="overlay-value-panel">
+                    <div><span [textContent]="event.data.teststrategy"></span> test breakdown</div>
+                    <dt-key-value-list>
+                      <dt-key-value-list-item *ngFor="let result of event.data.evaluationdetails.indicatorResults">
+                        <dt-key-value-list-key [textContent]="result.value.metric"></dt-key-value-list-key>
+                        <dt-key-value-list-value>
+                          <span [textContent]="result.value.value | number:'1.0-0'"></span>/<span *ngIf="result.targets" [textContent]="result.targets[0].targetValue"></span>
+                        </dt-key-value-list-value>
+                      </dt-key-value-list-item>
+                    </dt-key-value-list>
+                  </div>
+                </dt-consumption-overlay>
+              </dt-consumption>
+            </div>
+          </div>
+          <div fxLayout="column" fxLayoutAlign="start end">
+            <p class="m-0 mt-1 mb-1" [textContent]="event.time | amDateFormat:'L LT'"></p>
+          </div>
+        </div>
+      </ktb-expandable-tile-header>
+      <p class="m-0 bold">Event payload</p>
+      <pre>{{ event | json }}</pre>
+    </ktb-expandable-tile>
+  </div>
+</div>
