@@ -35,10 +35,9 @@ before_install:
 
 # Build variables
 - export TZ=Europe/Vienna
-- VERSION="$(cat ./version | tr -d '[:space:]')"
+- VERSION="unknownversion"
 - DATE="$(date +'%Y%m%d.%H%M')"
 - GIT_SHA="$(git rev-parse --short HEAD)"
-- REGISTRY_USER=jbraeuer
 
 # store all changed files from this commit in files.txt (careful - travis commit range might fail)
 - git diff --name-only $TRAVIS_COMMIT_RANGE > files.txt || echo ""
