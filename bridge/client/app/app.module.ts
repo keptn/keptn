@@ -13,6 +13,8 @@ import {DashboardComponent} from './dashboard/dashboard.component';
 import {AppHeaderComponent} from './app-header/app-header.component';
 import {ProjectBoardComponent} from './project-board/project-board.component';
 
+import {AtobPipe} from "./_pipes/atob.pipe";
+
 import {KtbEventsListComponent} from "./_components/ktb-events-list/ktb-events-list.component";
 import {KtbProjectListComponent} from './_components/ktb-project-list/ktb-project-list.component';
 import {KtbProjectTileComponent} from './_components/ktb-project-tile/ktb-project-tile.component';
@@ -76,6 +78,7 @@ registerLocaleData(localeEn, 'en');
     KtbProjectTileComponent,
     KtbProjectListComponent,
     KtbEventsListComponent,
+    AtobPipe,
   ],
   imports: [
     BrowserModule,
