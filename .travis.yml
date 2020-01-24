@@ -418,6 +418,15 @@ jobs:
         source ../travis-scripts/build_cli.sh "${VERSION}" "${KUBE_CONSTRAINTS}"
         cd ..
       fi
+  - if: branch = bridge2
+    os: linux
+    services:
+      - docker
+    script:
+      - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
+      - ./writeManifest.sh
+      - source ./travis-scripts/build_develop.sh "keptn/bridge2" "${BRIDGE_FOLDER}" "${GIT_SHA}" "${DATE}"
+      - cd ..
   - if: branch = master AND type = push
     os: linux
     services:
