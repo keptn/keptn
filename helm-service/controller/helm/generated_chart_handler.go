@@ -1,18 +1,14 @@
 package helm
 
 import (
-	"errors"
 	"fmt"
 	"log"
-	"os"
 	"strings"
 
 	keptnevents "github.com/keptn/go-utils/pkg/events"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/helm-service/controller/mesh"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/helm/pkg/proto/hapi/chart"
 	"sigs.k8s.io/yaml"
 )
@@ -30,7 +26,7 @@ func NewGeneratedChartHandler(mesh mesh.Mesh, canaryLevelGen CanaryLevelGenerato
 
 // GenerateDuplicateManagedChart generates a duplicated chart which is managed by keptn and used for
 // b/g and canary releases
-func (c *GeneratedChartHandler) GenerateDuplicateManagedChart(helmUpgradeMsg string, project string, stageName string, service string) (*chart.Chart, error) {
+func (c *GeneratedChartHandler) GenerateDuplicateManagedChart(helmManifest string, project string, stageName string, service string) (*chart.Chart, error) {
 
 	if _, ok := c.canaryLevelGen.(*CanaryOnDeploymentGenerator); ok {
 
@@ -41,14 +37,8 @@ func (c *GeneratedChartHandler) GenerateDuplicateManagedChart(helmUpgradeMsg str
 		}
 		ch := chart.Chart{Metadata: meta}
 
-		svcs, err := getServices(helmUpgradeMsg, project, stageName)
-		if err != nil {
-			return nil, err
-		}
-		depls, err := getDeployments(helmUpgradeMsg, project, stageName)
-		if err != nil {
-			return nil, err
-		}
+		svcs := GetServices(helmManifest)
+		depls := GetDeployments(helmManifest)
 
 		for _, svc := range svcs {
 			templates, err := c.generateServices(svc, project, stageName)
@@ -70,93 +60,6 @@ func (c *GeneratedChartHandler) GenerateDuplicateManagedChart(helmUpgradeMsg str
 	}
 	log.Fatal("Currently canary is only supported on a deployment-level")
 	return nil, nil
-}
-
-func getServices(helmUpgradeMsg string, project string, stageName string) ([]*corev1.Service, error) {
-
-	namespace := project + "-" + stageName
-	serviceNames, err := getServiceNames(helmUpgradeMsg)
-	if err != nil {
-		return nil, err
-	}
-	useInClusterConfig := false
-	if os.Getenv("ENVIRONMENT") == "production" {
-		useInClusterConfig = true
-	}
-	clientset, err := keptnutils.GetClientset(useInClusterConfig)
-	if err != nil {
-		return nil, err
-	}
-	services := []*corev1.Service{}
-	for _, serviceName := range serviceNames {
-		svc, err := clientset.CoreV1().Services(namespace).Get(serviceName, metav1.GetOptions{})
-		if err != nil {
-			return nil, err
-		}
-		services = append(services, svc)
-	}
-	return services, nil
-}
-
-func getServiceNames(helmUpgradeMsg string) ([]string, error) {
-	serviceNames := []string{}
-	startIdx := strings.Index(helmUpgradeMsg, "==> v1/Service")
-	if startIdx > 0 {
-		endIdx := strings.Index(helmUpgradeMsg[startIdx:], "\n\n")
-		serviceBlock := strings.TrimSpace(helmUpgradeMsg[startIdx : startIdx+endIdx])
-		lines := strings.Split(serviceBlock, "\n")
-		if len(lines) < 3 {
-			return nil, errors.New("Unexpected format of helm upgrade message")
-		}
-		for i := 2; i < len(lines); i++ {
-			parts := strings.Split(lines[i], " ")
-			serviceNames = append(serviceNames, strings.TrimSpace(parts[0]))
-		}
-	}
-	return serviceNames, nil
-}
-
-func getDeployments(helmUpgradeMsg string, project string, stageName string) ([]*appsv1.Deployment, error) {
-	namespace := project + "-" + stageName
-	deploymentNames, err := getDeploymentNames(helmUpgradeMsg)
-	if err != nil {
-		return nil, err
-	}
-	useInClusterConfig := false
-	if os.Getenv("ENVIRONMENT") == "production" {
-		useInClusterConfig = true
-	}
-	clientset, err := keptnutils.GetClientset(useInClusterConfig)
-	if err != nil {
-		return nil, err
-	}
-	deployments := []*appsv1.Deployment{}
-	for _, deplName := range deploymentNames {
-		depl, err := clientset.AppsV1().Deployments(namespace).Get(deplName, metav1.GetOptions{})
-		if err != nil {
-			return nil, err
-		}
-		deployments = append(deployments, depl)
-	}
-	return deployments, nil
-}
-
-func getDeploymentNames(helmUpgradeMsg string) ([]string, error) {
-	deploymentNames := []string{}
-	startIdx := strings.Index(helmUpgradeMsg, "==> v1/Deployment")
-	if startIdx > 0 {
-		endIdx := strings.Index(helmUpgradeMsg[startIdx:], "\n\n")
-		deploymentBlock := strings.TrimSpace(helmUpgradeMsg[startIdx : startIdx+endIdx])
-		lines := strings.Split(deploymentBlock, "\n")
-		if len(lines) < 3 {
-			return nil, errors.New("Unexpected format of helm upgrade message")
-		}
-		for i := 2; i < len(lines); i++ {
-			parts := strings.Split(lines[i], " ")
-			deploymentNames = append(deploymentNames, strings.TrimSpace(parts[0]))
-		}
-	}
-	return deploymentNames, nil
 }
 
 func resetService(svc *corev1.Service) {
@@ -269,7 +172,7 @@ func (c *GeneratedChartHandler) generateDeployment(depl *appsv1.Deployment) (*ch
 }
 
 // GenerateMeshChart generates a chart containing the required mesh setup
-func (c *GeneratedChartHandler) GenerateMeshChart(helmUpgradeMsg string, project string, stageName string,
+func (c *GeneratedChartHandler) GenerateMeshChart(helmManifest string, project string, stageName string,
 	service string) (*chart.Chart, error) {
 
 	namespace := project + "-" + stageName
@@ -283,10 +186,7 @@ func (c *GeneratedChartHandler) GenerateMeshChart(helmUpgradeMsg string, project
 		}
 		ch := chart.Chart{Metadata: meta}
 
-		svcs, err := getServices(helmUpgradeMsg, project, stageName)
-		if err != nil {
-			return nil, err
-		}
+		svcs := GetServices(helmManifest)
 
 		for _, svc := range svcs {
 			// Generate virtual service for external access
