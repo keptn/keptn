@@ -34,6 +34,25 @@ app-root {
   place-content: stretch stretch;
 }
 
+p.small,
+span.small {
+  font-family: BerninaSansWeb,OpenSans,sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 28px;
+  color: $gray-700;
+}
+
+p.error,
+span.error {
+  color: $error-color;
+}
+
+p.error-line,
+span.error-line {
+  text-decoration: line-through;
+}
+
 .m-0 {
   margin: 0;
 }
