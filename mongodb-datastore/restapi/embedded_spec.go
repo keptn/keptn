@@ -58,6 +58,12 @@ func init() {
           },
           {
             "type": "string",
+            "description": "From time to fetch keptn cloud events",
+            "name": "fromTime",
+            "in": "query"
+          },
+          {
+            "type": "string",
             "description": "Set to load only root events",
             "name": "root",
             "in": "query"
@@ -361,6 +367,12 @@ func init() {
             "type": "string",
             "description": "Type of the keptn cloud event",
             "name": "type",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "From time to fetch keptn cloud events",
+            "name": "fromTime",
             "in": "query"
           },
           {
