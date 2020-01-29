@@ -63,4 +63,8 @@ export class KtbRootEventsListComponent implements OnInit {
   getCalendarFormats() {
     return DateUtil.getCalendarFormats();
   }
+
+  identifyEvent(index, item) {
+    return item ? item.time : null;
+  }
 }

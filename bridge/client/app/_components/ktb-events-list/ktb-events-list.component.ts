@@ -40,6 +40,10 @@ export class KtbEventsListComponent implements OnInit {
   ngOnInit() {
   }
 
+  identifyEvent(index, item) {
+    return item ? item.time : null;
+  }
+
   getCalendarFormats() {
     return DateUtil.getCalendarFormats();
   }

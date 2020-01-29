@@ -16,7 +16,8 @@ import {ApiService} from "./api.service";
 export class DataService {
 
   private _projects = new BehaviorSubject<Project[]>([]);
-  private _projectsLastUpdated: Date;
+  private _rootsLastUpdated: Object = {};
+  private _tracesLastUpdated: Object = {};
 
   constructor(private apiService: ApiService) {
     this.loadProjects();
@@ -24,6 +25,14 @@ export class DataService {
 
   get projects(): Observable<Project[]> {
     return this._projects.asObservable();
+  }
+
+  public getRootsLastUpdated(project: Project, service: Service): Date {
+    return this._rootsLastUpdated[project.projectName+":"+service.serviceName];
+  }
+
+  public getTracesLastUpdated(root: Root): Date {
+    return this._tracesLastUpdated[root.shkeptncontext];
   }
 
   public loadProjects() {
@@ -64,17 +73,25 @@ export class DataService {
   }
 
   public loadRoots(project: Project, service: Service) {
-    this.apiService.getRoots(project.projectName, service.serviceName)
+    let fromTime: Date = this._rootsLastUpdated[project.projectName+":"+service.serviceName];
+    this._rootsLastUpdated[project.projectName+":"+service.serviceName] = new Date();
+
+    this.apiService.getRoots(project.projectName, service.serviceName, fromTime ? fromTime.toISOString() : null)
       .pipe(
         debounce(() => timer(10000)),
         mergeMap((roots) =>
           from(roots).pipe(
             mergeMap(
-              root => this.apiService.getTraces(root.shkeptncontext)
-                .pipe(
-                  map(traces => traces.map(trace => Trace.fromJSON(trace))),
-                  map(traces => ({ ...root, traces}))
-                )
+              root => {
+                let fromTime: Date = this._tracesLastUpdated[root.shkeptncontext];
+                this._tracesLastUpdated[root.shkeptncontext] = new Date();
+
+                return this.apiService.getTraces(root.shkeptncontext, fromTime ? fromTime.toISOString() : null)
+                  .pipe(
+                    map(traces => traces.map(trace => Trace.fromJSON(trace))),
+                    map(traces => ({ ...root, traces}))
+                  )
+              }
             ),
             toArray()
           )
@@ -83,7 +100,7 @@ export class DataService {
       )
       .subscribe((roots: Root[]) => {
         // TODO: investigate why is the sorting changed?
-        service.roots = roots.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());;
+        service.roots = roots.concat(service.roots).sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
         // TODO: return Subject with proper value handling
         // this._projects.next([...this._projects.getValue(), ...projects]);
       }, (err) => {
@@ -93,10 +110,13 @@ export class DataService {
   }
 
   public loadTraces(root: Root) {
-    this.apiService.getTraces(root.shkeptncontext)
+    let fromTime: Date = this._tracesLastUpdated[root.shkeptncontext];
+    this._tracesLastUpdated[root.shkeptncontext] = new Date();
+
+    this.apiService.getTraces(root.shkeptncontext, fromTime ? fromTime.toISOString() : null)
       .pipe(map(traces => traces.map(trace => Trace.fromJSON(trace))))
       .subscribe((traces: Trace[]) => {
-        root.traces = traces;
+        root.traces = traces.concat(root.traces).sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
       });
   }
 }
