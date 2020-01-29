@@ -1,5 +1,6 @@
 import {ChangeDetectorRef, Component, Directive, Input, OnInit} from '@angular/core';
 import {Trace} from "../../_models/trace";
+import DateUtil from "../../_utils/date.utils";
 
 @Directive({
   selector: `ktb-event-item-detail, [ktb-event-item-detail], [ktbEventItemDetail]`,
@@ -96,6 +97,10 @@ export class KtbEventItemComponent implements OnInit {
     }
 
     return label;
+  }
+
+  getCalendarFormat() {
+    return DateUtil.getCalendarFormats().sameElse;
   }
 
 }

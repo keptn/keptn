@@ -19,7 +19,7 @@
           [ktbEventItemDetail]"></ng-content>
       </div>
       <div fxLayout="column" fxLayoutAlign="start end">
-        <p class="m-0 mt-1 mb-1" [textContent]="_event.time | amDateFormat:'L LT'"></p>
+        <p class="m-0 mt-1 mb-1" [textContent]="_event.time | amDateFormat:getCalendarFormat()"></p>
       </div>
     </div>
   </ktb-expandable-tile-header>
