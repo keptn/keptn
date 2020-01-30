@@ -1,0 +1,26 @@
+@import '../../../variables';
+@import '~@dynatrace/barista-components/core/src/style/variables';
+
+.ktb-horizontal-separator-container {
+  position: relative;
+  padding: 0px 5px;
+
+  hr {
+    position: absolute;
+    top: 25%;
+    width: 100%;
+    border-top: 1px solid $gray-300;
+  }
+
+  .ktb-horizontal-separator-title {
+    z-index: 3;
+    padding: 2px 8px;
+    border-radius: 12px;
+    border: 1px solid $gray-300;
+    background-color: $gray-100;
+    text-transform: uppercase;
+
+    font-size: smaller;
+    font-weight: bold;
+  }
+}

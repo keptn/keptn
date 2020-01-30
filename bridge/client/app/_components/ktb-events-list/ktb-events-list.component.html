@@ -1,0 +1,72 @@
+<div fxLayout="column" fxLayoutGap="15px">
+  <div *ngFor="let _event of _events; let i = index" fxLayout="column" fxLayoutGap="15px">
+    <ktb-horizontal-separator *ngIf="i>0 && _event.data.stage != _events[i-1].data.stage">
+      <ktb-horizontal-separator-title [textContent]="_event.data.stage"></ktb-horizontal-separator-title>
+    </ktb-horizontal-separator>
+    <ktb-event-item [event]="_event">
+      <ktb-event-item-detail>
+        <div *ngIf="_event.data.evaluationdetails">
+          <p class="m-0 mt-1"><span [textContent]="_event.data.evaluationdetails.timeStart | amDateFormat:'L LT'"></span> - <span [textContent]="_event.data.evaluationdetails.timeEnd | amDateFormat:'L LT'"></span> (<span [textContent]="_event.data.evaluationdetails.timeEnd | amDifference: _event.data.evaluationdetails.timeStart :'minutes'"></span> Minutes)</p>
+          <div class="mb-1" *ngIf="_event.data.evaluationdetails.sloFileContent">
+            <p class="m-0 mb-1">
+              <a class="dt-link" (click)="$event.stopPropagation();sloFile.toggle();">
+                <span *ngIf="!sloFile.expanded">Show SLOs</span>
+                <span *ngIf="sloFile.expanded">Hide SLOs</span>
+              </a>
+            </p>
+            <dt-expandable-panel #sloFile>
+              <div class="container dark">
+                <pre>{{ _event.data.evaluationdetails.sloFileContent | atob }}</pre>
+              </div>
+            </dt-expandable-panel>
+          </div>
+          <dt-consumption [max]="_event.data.evaluationdetails.indicatorResults ? 100 : 0" [value]="_event.data.evaluationdetails.score" [color]="_event.data.result == 'fail' ? 'error' : 'recovered'">
+            <dt-consumption-icon aria-label="Test">
+              <dt-icon name="summary"></dt-icon>
+            </dt-consumption-icon>
+            <dt-consumption-title><span [textContent]="_event.data.teststrategy"></span> test</dt-consumption-title>
+            <dt-consumption-count>
+              <span [textContent]="_event.data.evaluationdetails.score | number:'1.0-0'"></span>/<span [textContent]="_event.data.evaluationdetails.indicatorResults ? 100 : 0"></span>
+            </dt-consumption-count>
+            <dt-consumption-label><span [textContent]="_event.data.teststrategy"></span> evaluation <span [textContent]="_event.data.result"></span></dt-consumption-label>
+          </dt-consumption>
+          <div *ngIf="_event.data.evaluationdetails.indicatorResults">
+            <p><span [textContent]="_event.data.teststrategy"></span> evaluation breakdown</p>
+            <dt-key-value-list>
+              <ng-container *ngFor="let result of _event.data.evaluationdetails.indicatorResults">
+                <dt-key-value-list-item *ngIf="result.status == 'fail'">
+                  <dt-key-value-list-key>
+                    <p class="m-0 error" [textContent]="result.value.metric"></p>
+                  </dt-key-value-list-key>
+                  <dt-key-value-list-value>
+                    <span [textContent]="result.value.value | number:'1.0-0'"></span>
+                    <span class="small m-0 ml-1" *ngFor="let _target of result.targets" [textContent]="_target.criteria" [class.error]="_target.violated" [class.error-line]="_target.violated"></span>
+                  </dt-key-value-list-value>
+                </dt-key-value-list-item>
+              </ng-container>
+            </dt-key-value-list>
+            <dt-expandable-panel #indicatorResults>
+              <dt-key-value-list>
+                <ng-container *ngFor="let result of _event.data.evaluationdetails.indicatorResults">
+                  <dt-key-value-list-item *ngIf="result.status != 'fail'">
+                    <dt-key-value-list-key [textContent]="result.value.metric"></dt-key-value-list-key>
+                    <dt-key-value-list-value>
+                      <span [textContent]="result.value.value | number:'1.0-0'"></span>
+                      <span class="small m-0 ml-1" *ngFor="let _target of result.targets" [textContent]="_target.criteria"></span>
+                    </dt-key-value-list-value>
+                  </dt-key-value-list-item>
+                </ng-container>
+              </dt-key-value-list>
+            </dt-expandable-panel>
+            <p class="m-0 mt-1 mb-1">
+              <a class="dt-link" (click)="$event.stopPropagation();indicatorResults.toggle();">
+                <span *ngIf="!indicatorResults.expanded">Show all evaluation results</span>
+                <span *ngIf="indicatorResults.expanded">Show only failed evaluation results</span>
+              </a>
+            </p>
+          </div>
+        </div>
+      </ktb-event-item-detail>
+    </ktb-event-item>
+  </div>
+</div>
