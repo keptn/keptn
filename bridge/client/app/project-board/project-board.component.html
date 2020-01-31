@@ -33,7 +33,13 @@
           </div>
         </dt-info-group>
       </div>
-      <p><span [textContent]="(project | async)?.getServices().length"></span> Services</p>
+      <div>
+        <dt-info-group>
+          <dt-info-group-title>
+            <p class="mb-0"><span [textContent]="(project | async)?.getServices().length"></span> Services</p>
+          </dt-info-group-title>
+        </dt-info-group>
+      </div>
       <ktb-expandable-tile *ngFor="let service of (project | async)?.services">
         <ktb-expandable-tile-header>
           <dt-info-group>
@@ -54,6 +60,8 @@
           <p>Loading ...</p>
         </div>
       </ktb-expandable-tile>
+      <div class="mb-3">
+      </div>
     </div>
   </div>
   <div class="container dark" fxFlex fxLayout="column" fxLayoutGap="15px">
