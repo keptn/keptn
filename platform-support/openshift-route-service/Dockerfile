@@ -8,6 +8,7 @@ WORKDIR /go/src/github.com/keptn/keptn/platform-support/openshift-route-service
 
 # Force the go compiler to use modules 
 ENV GO111MODULE=on
+ENV GOPROXY=https://proxy.golang.org
 
 # Copy `go.mod` for definitions and `go.sum` to invalidate the next layer
 # in case of a change in the dependencies

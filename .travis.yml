@@ -9,6 +9,7 @@ env:
   global:
     - GOOGLE_APPLICATION_CREDENTIALS=~/gcloud-service-key.json
     - GO111MODULE=on
+    - GOPROXY=https://proxy.golang.org
 
 before_install:
 # determine OS type (either osx for linux) - will be used for downloading dependencies
