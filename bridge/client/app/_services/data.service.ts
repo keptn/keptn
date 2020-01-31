@@ -39,7 +39,7 @@ export class DataService {
     this.apiService.getProjects()
       .pipe(
         debounce(() => timer(10000)),
-        map((projects) => projects.filter(project => project.projectName != 'lost+found')), // TODO: API_FIX: don't provide lost+found project in result, see https://github.com/keptn/keptn/issues/1275
+        map((projects) => projects.sort((a, b) => a.projectName < b.projectName ? -1 : 1)),
         mergeMap((projects) =>
           from(projects).pipe(
             mergeMap(
