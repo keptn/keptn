@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: bridge
-        image: keptn/bridge2:latest
+        image: keptn/bridge2:0.6.1.EAP
         imagePullPolicy: Always
         ports:
         - containerPort: 3000
