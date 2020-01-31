@@ -22,7 +22,7 @@
       <div>
         <dt-info-group>
           <dt-info-group-title>
-            <p><span [textContent]="(project | async)?.getServices().length"></span> Services</p>
+            <p><span [textContent]="(project | async)?.stages.length"></span> Stages</p>
           </dt-info-group-title>
           <div class="mr-minus-15" fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutGap="15px" fxLayoutAlign="start center">
             <dt-tile *ngFor="let stage of (project | async)?.stages"
@@ -33,6 +33,7 @@
           </div>
         </dt-info-group>
       </div>
+      <p><span [textContent]="(project | async)?.getServices().length"></span> Services</p>
       <ktb-expandable-tile *ngFor="let service of (project | async)?.services">
         <ktb-expandable-tile-header>
           <dt-info-group>
