@@ -51,15 +51,19 @@ export class ApiService {
       .pipe(catchError(this.handleError<Service[]>('getServices')));
   }
 
-  public getRoots(projectName: string, serviceName: string): Observable<Root[]> {
+  public getRoots(projectName: string, serviceName: string, fromTime?: String): Observable<Root[]> {
     let url = `${this.baseUrl}/api/roots/${projectName}/${serviceName}`;
+    if(fromTime)
+      url += `?fromTime=${fromTime}`;
     return this.http
       .get<Root[]>(url, { headers: this.headers })
       .pipe(catchError(this.handleError<Root[]>('getRoots')));
   }
 
-  public getTraces(contextId: string): Observable<Trace[]> {
+  public getTraces(contextId: string, fromTime?: String): Observable<Trace[]> {
     let url = `${this.baseUrl}/api/traces/${contextId}`;
+    if(fromTime)
+      url += `?fromTime=${fromTime}`;
     return this.http
       .get<Trace[]>(url, { headers: this.headers })
       .pipe(catchError(this.handleError<Trace[]>('getTraces')));

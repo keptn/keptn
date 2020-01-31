@@ -47,6 +47,11 @@ paths:
           type: string
           required: false
           description: Type of the keptn cloud event
+        - name: fromTime
+          in: query
+          type: string
+          required: false
+          description: From time to fetch keptn cloud events
         - name: root
           in: query
           type: string

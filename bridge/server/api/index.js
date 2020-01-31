@@ -7,7 +7,7 @@ module.exports = (params) => {
 
   router.get('/roots/:projectName/:serviceName', async (req, res, next) => {
     try {
-      const roots = await datastoreService.getRoots(req.params.projectName, req.params.serviceName);
+      const roots = await datastoreService.getRoots(req.params.projectName, req.params.serviceName, req.query.fromTime);
       return res.json(roots);
     } catch (err) {
       return next(err);
@@ -16,7 +16,7 @@ module.exports = (params) => {
 
   router.get('/traces/:contextId', async (req, res, next) => {
     try {
-      const traces = await datastoreService.getTraces(req.params.contextId);
+      const traces = await datastoreService.getTraces(req.params.contextId, req.query.fromTime);
       return res.json(traces);
     } catch (err) {
       return next(err);

@@ -42,6 +42,11 @@
             <p class="m-0" *ngIf="service.roots && service.roots[0].data.valuesCanary"><span class="m-0" [textContent]="service.roots[0].data.valuesCanary.image"></span></p>
           </dt-info-group>
         </ktb-expandable-tile-header>
+        <div class="mb-1" fxLayout="row" fxLayoutAlign="end center">
+          <dt-tag-list aria-label="test">
+            <dt-tag>Last time fetched: <span [textContent]="getRootsLastUpdated((project | async), service) | amCalendar:getCalendarFormats()"></span></dt-tag>
+          </dt-tag-list>
+        </div>
         <ktb-root-events-list [events]="service.roots" [(selectedEvent)]="currentRoot" (selectedEventChange)="loadTraces($event)"></ktb-root-events-list>
         <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px" *ngIf="!service.roots">
           <dt-loading-spinner></dt-loading-spinner>
@@ -67,6 +72,11 @@
         </dt-info-group>
       </div>
       <ktb-events-list [events]="currentRoot.traces"></ktb-events-list>
+      <div class="mb-1" fxLayout="row" fxLayoutAlign="end center">
+        <dt-tag-list aria-label="test">
+          <dt-tag>Last time fetched: <span [textContent]="getTracesLastUpdated(currentRoot) | amCalendar:getCalendarFormats()"></span></dt-tag>
+        </dt-tag-list>
+      </div>
       <div class="mb-3">
         <button dt-button (click)="loadTraces(currentRoot)"><dt-icon name="refresh"></dt-icon> Reload</button>
       </div>

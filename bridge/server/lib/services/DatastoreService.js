@@ -52,14 +52,18 @@ class DatastoreService {
     return mappedEvent;
   }
 
-  async getRoots(projectName, serviceName) {
-    const url = `${this.api}/event?root=true&project=${projectName}&service=${serviceName}&pageSize=100`;
+  async getRoots(projectName, serviceName, fromTime) {
+    let url = `${this.api}/event?root=true&project=${projectName}&service=${serviceName}&pageSize=100`;
+    if(fromTime)
+      url += `&fromTime=${fromTime}`;
     const result = await axios.get(url);
     return DatastoreService.mapEventsResult(result, (a, b) => (a.time < b.time ? 1 : -1));
   }
 
-  async getTraces(contextId) {
-    const url = `${this.api}/event?keptnContext=${contextId}&pageSize=100`;
+  async getTraces(contextId, fromTime) {
+    let url = `${this.api}/event?keptnContext=${contextId}&pageSize=100`;
+    if(fromTime)
+      url += `&fromTime=${fromTime}`;
     const result = await axios.get(url);
     return DatastoreService.mapEventsResult(result, (a, b) => (a.time > b.time ? 1 : -1));
   }
