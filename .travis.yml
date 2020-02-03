@@ -8,6 +8,7 @@ cache:
 env:
   global:
     - GO111MODULE=on
+    - GOPROXY=https://proxy.golang.org
 
 before_install:
 # determine OS type (either osx for linux) - will be used for downloading dependencies
