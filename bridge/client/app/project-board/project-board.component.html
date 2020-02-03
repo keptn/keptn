@@ -22,15 +22,22 @@
       <div>
         <dt-info-group>
           <dt-info-group-title>
-            <p><span [textContent]="(project | async)?.getServices().length"></span> Services</p>
+            <p><span [textContent]="(project | async)?.stages.length"></span> Stages</p>
           </dt-info-group-title>
-          <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutGap="15px" fxLayoutAlign="space-between">
+          <div class="mr-minus-15" fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutGap="15px" fxLayoutAlign="start center">
             <dt-tile *ngFor="let stage of (project | async)?.stages"
                      fxFlex="0 1 calc(33.3% - 15px)" fxFlex.lt-md="0 1 calc(50% - 15px)" fxFlex.lt-sm="100%">
               <dt-tile-title [textContent]="stage.stageName"></dt-tile-title>
               <p class="m-0" *ngIf="stage.services"><span [textContent]="stage.services.length"></span> Services</p>
             </dt-tile>
           </div>
+        </dt-info-group>
+      </div>
+      <div>
+        <dt-info-group>
+          <dt-info-group-title>
+            <p class="mb-0"><span [textContent]="(project | async)?.getServices().length"></span> Services</p>
+          </dt-info-group-title>
         </dt-info-group>
       </div>
       <ktb-expandable-tile *ngFor="let service of (project | async)?.services">
@@ -53,6 +60,8 @@
           <p>Loading ...</p>
         </div>
       </ktb-expandable-tile>
+      <div class="mb-3">
+      </div>
     </div>
   </div>
   <div class="container dark" fxFlex fxLayout="column" fxLayoutGap="15px">
@@ -72,13 +81,11 @@
         </dt-info-group>
       </div>
       <ktb-events-list [events]="currentRoot.traces"></ktb-events-list>
-      <div class="mb-1" fxLayout="row" fxLayoutAlign="end center">
+      <div class="mb-3" fxLayout="row" fxLayoutAlign="end center">
         <dt-tag-list aria-label="test">
           <dt-tag>Last time fetched: <span [textContent]="getTracesLastUpdated(currentRoot) | amCalendar:getCalendarFormats()"></span></dt-tag>
+          <dt-tag *ngIf="showReloadButton(currentRoot)"><button dt-button (click)="loadTraces(currentRoot)"><dt-icon name="refresh"></dt-icon> Reload</button></dt-tag>
         </dt-tag-list>
-      </div>
-      <div class="mb-3">
-        <button dt-button (click)="loadTraces(currentRoot)"><dt-icon name="refresh"></dt-icon> Reload</button>
       </div>
     </div>
   </div>

@@ -3,6 +3,8 @@ import {filter, map, startWith, switchMap} from "rxjs/operators";
 import {Observable, Subscription, timer} from "rxjs";
 import {ActivatedRoute} from "@angular/router";
 
+import * as moment from 'moment';
+
 import {Root} from "../_models/root";
 import {Project} from "../_models/project";
 
@@ -60,7 +62,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
 
   loadTraces(root): void {
     this._tracesTimer.unsubscribe();
-    if(new Date(root.time).getTime() > (new Date().getTime() - DateUtil.ONE_DAY)) {
+    if(moment().subtract(1, 'day').isBefore(root.time)) {
       this._tracesTimer = timer(0, this._tracesTimerInterval*1000)
         .subscribe(() => {
           this.dataService.loadTraces(root);
@@ -75,12 +77,16 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
     return DateUtil.getCalendarFormats(true);
   }
 
-  public getRootsLastUpdated(project: Project, service: Service): Date {
+  getRootsLastUpdated(project: Project, service: Service): Date {
     return this.dataService.getRootsLastUpdated(project, service);
   }
 
-  public getTracesLastUpdated(root: Root): Date {
+  getTracesLastUpdated(root: Root): Date {
     return this.dataService.getTracesLastUpdated(root);
+  }
+
+  showReloadButton(root: Root) {
+    return moment().subtract(1, 'day').isAfter(root.time);
   }
 
   ngOnDestroy(): void {
