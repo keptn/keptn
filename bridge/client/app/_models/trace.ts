@@ -41,6 +41,9 @@ export class Trace {
       timeEnd: Date;
       timeStart: Date;
     };
+
+    ImpactedEntity: string;
+    Tags: string;
   };
 
   isFaulty(): string {
@@ -109,6 +112,10 @@ export class Trace {
         }
         case "sh.keptn.events.problem": {
           this.label = "Problem detected";
+          break;
+        }
+        case "sh.keptn.event.problem.close": {
+          this.label = "Problem closed";
           break;
         }
         default: {
