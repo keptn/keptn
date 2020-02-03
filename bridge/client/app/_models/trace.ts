@@ -41,12 +41,15 @@ export class Trace {
       timeEnd: Date;
       timeStart: Date;
     };
+
+    ImpactedEntity: string;
+    Tags: [string];
   };
 
   isFaulty(): string {
     let result: string = null;
     if(this.data) {
-      if(this.data.result == "fail") {
+      if(this.data.result == "fail" || this.type.indexOf('problem.open') != -1) {
         result = this.data.stage;
       }
     }
@@ -56,7 +59,7 @@ export class Trace {
   isSuccessful(): boolean {
     let result: boolean = false;
     if(this.data) {
-      if(this.data.result == "pass") {
+      if(this.data.result == "pass" || this.type.indexOf('problem.close') != -1) {
         result = true;
       }
     }
@@ -109,6 +112,10 @@ export class Trace {
         }
         case "sh.keptn.events.problem": {
           this.label = "Problem detected";
+          break;
+        }
+        case "sh.keptn.event.problem.close": {
+          this.label = "Problem closed";
           break;
         }
         default: {

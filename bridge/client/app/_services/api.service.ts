@@ -11,6 +11,7 @@ import {Project} from "../_models/project";
 import {Resource} from "../_models/resource";
 import {Stage} from "../_models/stage";
 import {Service} from "../_models/service";
+import * as moment from "moment";
 
 @Injectable({
   providedIn: 'root'
@@ -51,21 +52,23 @@ export class ApiService {
       .pipe(catchError(this.handleError<Service[]>('getServices')));
   }
 
-  public getRoots(projectName: string, serviceName: string, fromTime?: String): Observable<Root[]> {
+  public getRoots(projectName: string, serviceName: string, fromTime?: string): Observable<Root[]> {
     let url = `${this.baseUrl}/api/roots/${projectName}/${serviceName}`;
     if(fromTime)
       url += `?fromTime=${fromTime}`;
     return this.http
       .get<Root[]>(url, { headers: this.headers })
+      .pipe(map((roots) => roots.filter(root => !fromTime || moment(fromTime).isBefore(root.time))))
       .pipe(catchError(this.handleError<Root[]>('getRoots')));
   }
 
-  public getTraces(contextId: string, fromTime?: String): Observable<Trace[]> {
+  public getTraces(contextId: string, fromTime?: string): Observable<Trace[]> {
     let url = `${this.baseUrl}/api/traces/${contextId}`;
     if(fromTime)
       url += `?fromTime=${fromTime}`;
     return this.http
       .get<Trace[]>(url, { headers: this.headers })
+      .pipe(map((traces) => traces.filter(trace => !fromTime || moment(fromTime).isBefore(trace.time))))
       .pipe(catchError(this.handleError<Trace[]>('getTraces')));
   }
 

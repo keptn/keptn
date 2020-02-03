@@ -76,8 +76,6 @@ export class KtbEventItemComponent implements OnInit {
         label = "Done";
         break;
       }
-
-
       case "sh.keptn.events.done": {
         label = "Done";
         break;
@@ -88,6 +86,10 @@ export class KtbEventItemComponent implements OnInit {
       }
       case "sh.keptn.events.problem": {
         label = "Problem detected";
+        break;
+      }
+      case "sh.keptn.event.problem.close": {
+        label = "Problem closed";
         break;
       }
       default: {
