@@ -49,7 +49,7 @@ export class Trace {
   isFaulty(): string {
     let result: string = null;
     if(this.data) {
-      if(this.data.result == "fail") {
+      if(this.data.result == "fail" || this.type.indexOf('problem.open') != -1) {
         result = this.data.stage;
       }
     }
