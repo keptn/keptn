@@ -46,7 +46,7 @@
             <dt-info-group-title>
               <h2 class="m-0" [textContent]="service.serviceName"></h2>
             </dt-info-group-title>
-            <p class="m-0" *ngIf="service.roots && service.roots[0].data.valuesCanary"><span class="m-0" [textContent]="service.roots[0].data.valuesCanary.image"></span></p>
+            <p class="m-0" *ngIf="service.roots && service.roots.length > 0 && service.roots[0].data.valuesCanary"><span class="m-0" [textContent]="service.roots[0].data.valuesCanary.image"></span></p>
           </dt-info-group>
         </ktb-expandable-tile-header>
         <div class="mb-1" fxLayout="row" fxLayoutAlign="end center">
