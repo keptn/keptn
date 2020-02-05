@@ -40,10 +40,12 @@ verify_install_step $? "Installing keptn failed."
 print_info "Installing keptn done"
 
 # Install keptn services
-print_info "Wear uniform"
-./common/wearUniform.sh
-verify_install_step $? "Installing keptn's uniform failed."
-print_info "Keptn wears uniform"
+if [[ "$USE_CASE" == "all" ]]; then
+  print_info "Wear uniform"
+  ./common/wearUniform.sh
+  verify_install_step $? "Installing keptn's uniform failed."
+  print_info "Keptn wears uniform"
+fi
 
 # Install additional keptn services for openshift
 print_info "Wear Openshift uniform"
