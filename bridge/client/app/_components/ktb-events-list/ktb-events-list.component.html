@@ -20,6 +20,10 @@
               </div>
             </dt-expandable-panel>
           </div>
+          <dt-button-group (valueChange)="switchEvaluationView($event)">
+            <dt-button-group-item><dt-icon name="availability"></dt-icon> Single evaluation</dt-button-group-item>
+            <dt-button-group-item><dt-icon name="chart-bar"></dt-icon> Evaluation comparison</dt-button-group-item>
+          </dt-button-group>
           <dt-consumption [max]="_event.data.evaluationdetails.indicatorResults ? 100 : 0" [value]="_event.data.evaluationdetails.score" [color]="_event.data.result == 'fail' ? 'error' : 'recovered'">
             <dt-consumption-icon aria-label="Test">
               <dt-icon name="summary"></dt-icon>
