@@ -57,6 +57,7 @@ import {DtKeyValueListModule} from "@dynatrace/barista-components/key-value-list
 
 import {registerLocaleData} from "@angular/common";
 import localeEn from '@angular/common/locales/en';
+import {DtButtonGroupModule} from "@dynatrace/barista-components/button-group";
 
 registerLocaleData(localeEn, 'en');
 
@@ -92,6 +93,7 @@ registerLocaleData(localeEn, 'en');
     MomentModule,
     DtThemingModule,
     DtButtonModule,
+    DtButtonGroupModule,
     DtSelectModule,
     DtMenuModule,
     DtDrawerModule,
