@@ -7,8 +7,8 @@ cache:
     - "$HOME/google-cloud-sdk/"
 env:
   global:
-    - GOOGLE_APPLICATION_CREDENTIALS=~/gcloud-service-key.json
     - GO111MODULE=on
+    - GOPROXY=https://proxy.golang.org
 
 before_install:
 # determine OS type (either osx for linux) - will be used for downloading dependencies
@@ -17,21 +17,7 @@ before_install:
   if [ "$TRAVIS_OS_NAME" = "osx" ]; then
     OS_TYPE="darwin"
   fi
-- |
-  if [ ! -d "$HOME/google-cloud-sdk/bin" ]; then 
-    rm -rf $HOME/google-cloud-sdk;
-    export CLOUDSDK_CORE_DISABLE_PROMPTS=1;
-    curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-270.0.0-${OS_TYPE}-x86_64.tar.gz > gcloud.tar.gz
-    gunzip -c gcloud.tar.gz | tar xopf - 
-    ./google-cloud-sdk/install.sh
-    source ./google-cloud-sdk/completion.bash.inc
-    source ./google-cloud-sdk/path.bash.inc
-  fi
-- gcloud --quiet components update
-- gcloud --quiet components update kubectl
-- echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
-- gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
-
+  export OS_TYPE
 
 # Build variables
 - export TZ=Europe/Vienna
@@ -142,6 +128,7 @@ jobs:
     if: branch = master AND type = cron
     os: linux
     before_script:
+    - source ./travis-scripts/install_gcloud.sh
     # auth gcloud
     - echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
     - gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
@@ -261,6 +248,10 @@ jobs:
   - stage: feature/bug/hotfix/patch
     if: branch =~ ^feature.*$ OR branch =~ ^bug.*$ OR branch =~ ^hotfix.*$ OR branch =~ ^patch.*$
     os: osx
+    before_script:
+      - source ./travis-scripts/install_gcloud.sh
+      - echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
+      - gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
     script:
     - TYPE="$(echo $TRAVIS_BRANCH | cut -d'/' -f1)"
     - NUMBER="$(echo $TRAVIS_BRANCH | cut -d'/' -f2)"
@@ -365,6 +356,10 @@ jobs:
   - stage: master
     if: branch = master AND type = push
     os: osx
+    before_script:
+      - source ./travis-scripts/install_gcloud.sh
+      - echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
+      - gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
     script:
     - | 
       if [[ $CHANGED_FILES == *"${CLI_FOLDER}"*  ]]; then
@@ -466,6 +461,10 @@ jobs:
   - stage: release (cli)
     if: branch =~ ^release.*$ AND NOT type = pull_request
     os: osx
+    before_script:
+      - source ./travis-scripts/install_gcloud.sh
+      - echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
+      - gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
     script:
       # overwrite version for release branches based on the branch name
       - export VERSION=${BRANCH#"release-"}
