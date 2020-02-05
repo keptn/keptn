@@ -14,7 +14,7 @@ export class Trace {
     stage: string;
 
     deploymentstrategy: string;
-    labels: string;
+    labels: object;
     result: string;
     teststrategy: string;
 
