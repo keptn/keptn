@@ -62,6 +62,33 @@ Content-Type: application/cloudevents+json
 
 ###
 
+POST http://localhost:8081/
+Accept: application/json
+Cache-Control: no-cache
+Content-Type: application/cloudevents+json
 
+
+{
+  "contenttype": "application/json",
+  "data": {
+    "deploymentstrategy": "blue_green_service",
+    "end": "2020-01-27T13:54:53Z",
+    "labels": null,
+    "project": "simpleproject",
+    "result": "fail",
+    "service": "simplenode",
+    "stage": "staging",
+    "start": "2020-01-27T13:54:15Z",
+    "teststrategy": "performance"
+  },
+  "id": "e2d3c3e1-8dcf-4b21-9afd-77d234db057c",
+  "source": "jmeter-service",
+  "specversion": "0.2",
+  "time": "2020-01-27T13:54:53.140Z",
+  "type": "sh.keptn.events.tests-finished",
+  "shkeptncontext": "4b51d9ad-8148-4877-8582-b78edebfde1c"
+}
+
+###
 
 

@@ -81,22 +81,6 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 	// verify that we have enough evaluations
 	for _, val := range previousEvaluationEvents {
 		filteredPreviousEvaluationEvents = append(filteredPreviousEvaluationEvents, val)
-		/*
-			if sloConfig.Comparison.IncludeResultWithScore == "all" {
-				// always include
-				filteredPreviousEvaluationEvents = append(filteredPreviousEvaluationEvents, val)
-			} else if sloConfig.Comparison.IncludeResultWithScore == "pass_or_warn" {
-				// only include warnings and passes
-				if val.Result == "warning" || val.Result == "pass" {
-					filteredPreviousEvaluationEvents = append(filteredPreviousEvaluationEvents, val)
-				}
-			} else if sloConfig.Comparison.IncludeResultWithScore == "pass" {
-				// only include passes
-				if val.Result == "pass" {
-					filteredPreviousEvaluationEvents = append(filteredPreviousEvaluationEvents, val)
-				}
-			}
-		*/
 	}
 
 	evaluationResult, maximumAchievableScore, keySLIFailed := evaluateObjectives(e, sloConfig, filteredPreviousEvaluationEvents)
@@ -116,6 +100,17 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 	// send the evaluation-done-event
 	var shkeptncontext string
 	eh.Event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
+
+	// #1289: check if test execution that preceded the evaluation was successful or failed
+	testsFinishedEvent, _ := eh.getPreviousTestExecutionResult(e, shkeptncontext)
+	if testsFinishedEvent != nil {
+		if testsFinishedEvent.Result == "fail" {
+			eh.Logger.Debug("Setting evaluation result to 'fail' because of failed preceding test execution")
+			evaluationResult.Result = "fail"
+			evaluationResult.EvaluationDetails.Result = "fail"
+		}
+	}
+
 	err = eh.sendEvaluationDoneEvent(shkeptncontext, evaluationResult)
 	return err
 }
@@ -535,6 +530,45 @@ func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptnevents.InternalGetS
 		evaluationDoneEvents = append(evaluationDoneEvents, &evaluationDoneEvent)
 	}
 	return evaluationDoneEvents, nil
+}
+
+func (eh *EvaluateSLIHandler) getPreviousTestExecutionResult(e *keptnevents.InternalGetSLIDoneEventData, keptnContext string) (*keptnevents.TestsFinishedEventData, error) {
+	queryString := fmt.Sprintf("http://mongodb-datastore.keptn-datastore:8080/event?type=%s&project=%s&stage=%s&service=%s&keptnContext=%s&pageSize=%d",
+		keptnevents.TestsFinishedEventType,
+		e.Project, e.Stage, e.Service, keptnContext, 1)
+
+	req, err := http.NewRequest("GET", queryString, nil)
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := eh.HTTPClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, _ := ioutil.ReadAll(resp.Body)
+	if resp.StatusCode != 200 {
+		return nil, errors.New("could not retrieve previous evaluation-done events")
+	}
+	previousEvents := &datastoreResult{}
+	err = json.Unmarshal(body, previousEvents)
+	if err != nil {
+		return nil, err
+	}
+	if len(previousEvents.Events) == 0 {
+		return nil, nil
+	}
+
+	bytes, err := json.Marshal(previousEvents.Events[0].Data)
+	if err != nil {
+		return nil, err
+	}
+
+	testsFinishedEvent := &keptnevents.TestsFinishedEventData{}
+	err = json.Unmarshal(bytes, &testsFinishedEvent)
+	if err != nil {
+		return nil, err
+	}
+	return testsFinishedEvent, nil
+
 }
 
 func (eh *EvaluateSLIHandler) sendEvaluationDoneEvent(shkeptncontext string, data *keptnevents.EvaluationDoneEventData) error {
