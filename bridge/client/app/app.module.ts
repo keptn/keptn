@@ -29,6 +29,7 @@ import {KtbHorizontalSeparatorComponent, KtbHorizontalSeparatorTitle} from "./_c
 import {KtbShowHttpLoadingDirective} from './_directives/ktb-show-http-loading/ktb-show-http-loading.directive';
 import {KtbHideHttpLoadingDirective} from "./_directives/ktb-hide-http-loading/ktb-hide-http-loading.directive";
 
+import {HttpMockInterceptor} from "./_interceptors/http-mock-interceptor";
 import {HttpErrorInterceptor} from "./_interceptors/http-error-interceptor";
 import {HttpLoadingInterceptor} from "./_interceptors/http-loading-interceptor";
 
@@ -126,7 +127,11 @@ registerLocaleData(localeEn, 'en');
       provide: HTTP_INTERCEPTORS,
       useClass: HttpLoadingInterceptor,
       multi: true
-    },
+    },{
+      provide: HTTP_INTERCEPTORS,
+      useClass: HttpMockInterceptor,
+      multi: true
+    }
   ],
   bootstrap: [AppComponent]
 })
