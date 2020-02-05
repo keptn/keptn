@@ -127,10 +127,6 @@ registerLocaleData(localeEn, 'en');
       provide: HTTP_INTERCEPTORS,
       useClass: HttpLoadingInterceptor,
       multi: true
-    },{
-      provide: HTTP_INTERCEPTORS,
-      useClass: HttpMockInterceptor,
-      multi: true
     }
   ],
   bootstrap: [AppComponent]
