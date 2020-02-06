@@ -34,21 +34,23 @@ else
 fi
 
 # Install keptn core services - Install keptn channels
-print_info "Installing keptn"
+print_info "Installing Keptn"
 ./openshift/setupKeptn.sh
-verify_install_step $? "Installing keptn failed."
-print_info "Installing keptn done"
+verify_install_step $? "Installing Keptn failed."
+print_info "Installing Keptn done"
 
 # Install keptn services
-print_info "Wear uniform"
-./common/wearUniform.sh
-verify_install_step $? "Installing keptn's uniform failed."
-print_info "Keptn wears uniform"
+if [[ "$USE_CASE" == "all" ]]; then
+  print_info "Wear uniform"
+  ./common/wearUniform.sh
+  verify_install_step $? "Installing Keptn's uniform failed."
+  print_info "Keptn wears uniform"
+fi
 
 # Install additional keptn services for openshift
 print_info "Wear Openshift uniform"
 ./openshift/wearUniform.sh
-verify_install_step $? "Installing keptn's Openshift uniform failed."
+verify_install_step $? "Installing Keptn's Openshift uniform failed."
 print_info "Keptn wears Openshift uniform"
 
 # Install done

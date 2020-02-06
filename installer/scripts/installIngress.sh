@@ -54,19 +54,7 @@ case $PLATFORM in
         print_info "Installing Istio on OpenShift (this might take a while)"
         source ./openshift/setupIstio.sh
         verify_install_step $? "Installing Istio failed."
-        print_info "Installing Istio done"    
-        
-    elif [ "$INGRESS" = "nginx" ]; then
-        # Install nginx service mesh
-        print_info "Installing nginx on OpenShift (this might take a while)"
-        kubectl apply -f ../manifests/nginx/nginx.yaml
-        verify_install_step $? "Installing nginx deployment failed."
-        wait_for_deployment_in_namespace "nginx-ingress-controller" "ingress-nginx"
-        verify_install_step $? "Installing nginx failed because deployment not available"
-        kubectl apply -f ../manifests/nginx/nginx-svc.yaml
-        verify_install_step $? "Installing nginx service failed."
-
-        source ./installIngressForApi.sh
+        print_info "Installing Istio done"
     fi 
     ;;
   gke)
