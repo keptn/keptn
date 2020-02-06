@@ -493,7 +493,7 @@ func parseCriteriaString(criteria string) (*criteriaObject, error) {
 // gets previous evaluation-done events from mongodb-datastore
 func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptnevents.InternalGetSLIDoneEventData, numberOfPreviousResults int) ([]*keptnevents.EvaluationDoneEventData, error) {
 	// previous results are fetched from mongodb datastore with source=lighthouse-service
-	queryString := fmt.Sprintf("http://mongodb-datastore.keptn-datastore:8080/event?type=%s&source=%s&project=%s&stage=%s&service=%s&pageSize=%d",
+	queryString := fmt.Sprintf(getDatastoreURL()+"/event?type=%s&source=%s&project=%s&stage=%s&service=%s&pageSize=%d",
 		keptnevents.EvaluationDoneEventType, "lighthouse-service",
 		e.Project, e.Stage, e.Service, numberOfPreviousResults)
 
@@ -533,7 +533,7 @@ func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptnevents.InternalGetS
 }
 
 func (eh *EvaluateSLIHandler) getPreviousTestExecutionResult(e *keptnevents.InternalGetSLIDoneEventData, keptnContext string) (*keptnevents.TestsFinishedEventData, error) {
-	queryString := fmt.Sprintf("http://mongodb-datastore.keptn-datastore:8080/event?type=%s&project=%s&stage=%s&service=%s&keptnContext=%s&pageSize=%d",
+	queryString := fmt.Sprintf(getDatastoreURL()+"/event?type=%s&project=%s&stage=%s&service=%s&keptnContext=%s&pageSize=%d",
 		keptnevents.TestsFinishedEventType,
 		e.Project, e.Stage, e.Service, keptnContext, 1)
 
