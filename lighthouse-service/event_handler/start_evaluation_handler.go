@@ -1,7 +1,6 @@
 package event_handler
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/url"
@@ -21,13 +20,6 @@ type StartEvaluationHandler struct {
 }
 
 func (eh *StartEvaluationHandler) HandleEvent() error {
-
-	// check if test passed
-	passed := eh.hasTestPassed()
-	if !passed {
-		eh.Logger.Debug("Do not perform evaluation due to failed test")
-		return nil
-	}
 
 	var keptnContext string
 	_ = eh.Event.ExtensionAs("shkeptncontext", &keptnContext)
@@ -132,22 +124,6 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 	eh.Logger.Debug("SLI provider for project " + e.Project + " is: " + sliProvider)
 	err = eh.sendInternalGetSLIEvent(keptnContext, e.Project, e.Stage, e.Service, sliProvider, indicators, e.Start, e.End, e.TestStrategy, e.DeploymentStrategy, filters, e.Labels, deployment)
 	return nil
-}
-
-func (eh *StartEvaluationHandler) hasTestPassed() bool {
-	dataByte, err := eh.Event.DataBytes()
-	if err != nil {
-		eh.Logger.Error("Could not get event as byte array: " + err.Error())
-	}
-
-	e := &keptnevents.TestsFinishedEventData{}
-	err = json.Unmarshal(dataByte, e)
-	if err != nil {
-		eh.Logger.Error("Could not unmarshal event payload: " + err.Error())
-	} else if e != nil && e.Result == "fail" {
-		return false
-	}
-	return true
 }
 
 func (eh *StartEvaluationHandler) sendEvaluationDoneEvent(shkeptncontext string, data *keptnevents.EvaluationDoneEventData) error {
