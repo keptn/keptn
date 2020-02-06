@@ -39,7 +39,7 @@ paths:
         - name: body
           in: body
           schema:
-            $ref: "https://raw.githubusercontent.com/cloudevents/spec/v0.2/spec.json#/definitions/event"
+            $ref: "response_model.yaml#/definitions/keptnContextExtendedCE"
       responses:
         200:
           description: Forwarded

@@ -32,7 +32,7 @@ RUN sed -i "s/version: develop/${REPLACE}/g" /go/src/github.com/keptn/keptn/api/
 # Build the command inside the container.
 # (You may fetch or manage dependencies here, 
 # either manually or with a tool like "godep".)
-RUN CGO_ENABLED=0 GOOS=linux go build $BUILDFLAGS -v cmd-server/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build $BUILDFLAGS -v cmd/api-server/main.go
 
 # Use a Docker multi-stage build to create a lean production image.
 FROM alpine:3.7

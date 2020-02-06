@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
@@ -30,7 +31,19 @@ func getDatastoreURL() string {
 // PostEventHandlerFunc forwards an event to the event broker
 func PostEventHandlerFunc(params event.PostEventParams, principal *models.Principal) middleware.Responder {
 
+	uuid.SetRand(nil)
 	keptnContext := uuid.New().String()
+	if params.Body.Shkeptncontext != "" {
+		_, err := uuid.Parse(params.Body.Shkeptncontext)
+		if err != nil {
+			uuid.SetRand(strings.NewReader(params.Body.Shkeptncontext))
+			keptnContext = uuid.New().String()
+			uuid.SetRand(nil)
+		} else {
+			keptnContext = params.Body.Shkeptncontext
+		}
+	}
+
 	logger := keptnutils.NewLogger(keptnContext, "", "api")
 	logger.Info("API received a keptn event")
 

@@ -4,48 +4,45 @@ package restapi
 
 import (
 	"crypto/tls"
-	"github.com/keptn/keptn/api/restapi/operations/project_resource"
-	"github.com/keptn/keptn/api/restapi/operations/stage_resource"
-	"log"
+	"github.com/keptn/keptn/api/handlers"
+	"github.com/keptn/keptn/api/ws"
 	"net/http"
 	"os"
 	"strings"
 
-	"github.com/keptn/keptn/api/handlers"
-	"github.com/keptn/keptn/api/restapi/operations/service_resource"
-
-	"github.com/keptn/keptn/api/restapi/operations/auth"
-	"github.com/keptn/keptn/api/restapi/operations/service"
-
-	"github.com/keptn/keptn/api/restapi/operations/project"
-
+	"github.com/go-openapi/errors"
 	openapierrors "github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 
 	"github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations"
+	"github.com/keptn/keptn/api/restapi/operations/auth"
 	"github.com/keptn/keptn/api/restapi/operations/event"
-	"github.com/keptn/keptn/api/ws"
+	"github.com/keptn/keptn/api/restapi/operations/project"
+	"github.com/keptn/keptn/api/restapi/operations/project_resource"
+	"github.com/keptn/keptn/api/restapi/operations/service"
+	"github.com/keptn/keptn/api/restapi/operations/service_resource"
+	"github.com/keptn/keptn/api/restapi/operations/stage_resource"
 )
 
-//go:generate swagger generate server --target ../../api --name  --spec ../swagger.json --principal models.Principal
+//go:generate swagger generate server --target ../../api --name  --spec ../swagger.yaml --principal models.Principal
 
 var hub *ws.Hub
 
-func configureFlags(api *operations.API) {
+func configureFlags(api *operations.EmptyAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
 }
 
-func configureAPI(api *operations.API) http.Handler {
+func configureAPI(api *operations.EmptyAPI) http.Handler {
 	// configure the api here
-	api.ServeError = openapierrors.ServeError
+	api.ServeError = errors.ServeError
 
 	// Set your custom logger if needed. Default one is log.Printf
 	// Expected interface func(string, ...interface{})
 	//
 	// Example:
-	api.Logger = log.Printf
+	// api.Logger = log.Printf
 
 	api.JSONConsumer = runtime.JSONConsumer()
 
@@ -96,6 +93,8 @@ func configureAPI(api *operations.API) http.Handler {
 	api.ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceHandler =
 		service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 			handlers.PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc)
+
+	api.PreServerShutdown = func() {}
 
 	api.ServerShutdown = func() {}
 
