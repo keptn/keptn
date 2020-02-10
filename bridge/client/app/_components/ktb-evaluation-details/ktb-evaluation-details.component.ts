@@ -1,15 +1,7 @@
 import * as Highcharts from "highcharts";
 
 import * as moment from 'moment';
-import {
-  ChangeDetectorRef,
-  Component,
-  Input,
-  KeyValueChanges,
-  KeyValueDiffer,
-  KeyValueDiffers,
-  OnInit
-} from '@angular/core';
+import {ChangeDetectorRef, Component, Input, OnInit} from '@angular/core';
 import {DtChartSeriesVisibilityChangeEvent} from "@dynatrace/barista-components/chart";
 
 import {DataService} from "../../_services/data.service";
@@ -27,7 +19,6 @@ export class KtbEvaluationDetailsComponent implements OnInit {
 
   public _selectedEvaluationData: any;
 
-  private _dataDiffer: KeyValueDiffer<string, any>;
   public _view: string = "singleevaluation";
 
   public _chartOptions: Highcharts.Options = {
@@ -40,6 +31,8 @@ export class KtbEvaluationDetailsComponent implements OnInit {
         labels: {
           format: '{value}',
         },
+        min: 0,
+        max: 100,
         tickInterval: 10,
       }
     ],
