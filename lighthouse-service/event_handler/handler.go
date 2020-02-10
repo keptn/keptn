@@ -22,6 +22,8 @@ func NewEventHandler(event cloudevents.Event, logger *keptnutils.Logger) (Evalua
 		return &StartEvaluationHandler{Logger: logger, Event: event}, nil // new event type in Keptn versions >= 0.6
 	case keptnevents.InternalGetSLIDoneEventType:
 		return &EvaluateSLIHandler{Logger: logger, Event: event, HTTPClient: &http.Client{}}, nil
+	case keptnevents.ConfigureMonitoringEventType:
+		return &ConfigureMonitoringHandler{Logger: logger, Event: event}, nil
 	default:
 		return nil, errors.New("received unknown event type")
 	}
