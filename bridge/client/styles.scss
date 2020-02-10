@@ -34,6 +34,10 @@ app-root {
   place-content: stretch stretch;
 }
 
+.nobreak {
+  white-space: nowrap;
+}
+
 p.small,
 span.small {
   font-family: BerninaSansWeb,OpenSans,sans-serif;
@@ -69,6 +73,9 @@ span.error-line {
   margin-top: 0;
 }
 
+.m-1 {
+  margin: .3em;
+}
 .mr-1 {
   margin-right: .3em;
 }
