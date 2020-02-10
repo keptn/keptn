@@ -30,11 +30,11 @@ kubectl create secret generic -n keptn keptn-api-token --from-literal=keptn-api-
 print_info "Installing Logging"
 kubectl apply -f ../manifests/logging/namespace.yaml
 verify_kubectl $? "Creating logging namespace failed."
-kubectl apply -f ../manifests/logging/mongodb-openshift/pvc.yaml
+kubectl apply -f ../manifests/logging/mongodb/pvc.yaml
 verify_kubectl $? "Creating mongodb PVC failed."
-kubectl apply -f ../manifests/logging/mongodb-openshift/deployment.yaml
+kubectl apply -f ../manifests/logging/mongodb/deployment.yaml
 verify_kubectl $? "Creating mongodb deployment failed."
-kubectl apply -f ../manifests/logging/mongodb-openshift/svc.yaml
+kubectl apply -f ../manifests/logging/mongodb/svc.yaml
 verify_kubectl $? "Creating mongodb service failed."
 kubectl apply -f ../manifests/logging/mongodb-datastore/openshift/mongodb-datastore.yaml
 verify_kubectl $? "Creating mongodb-datastore service failed."

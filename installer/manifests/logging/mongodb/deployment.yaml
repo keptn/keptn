@@ -1,12 +1,13 @@
-
----
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: mongodb
   namespace: keptn-datastore
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      name: mongodb
   strategy:
     type: Recreate
   template:
@@ -14,6 +15,8 @@ spec:
       labels:
         name: mongodb
     spec:
+      securityContext:
+        fsGroup: 184
       containers:
       - image: centos/mongodb-36-centos7:1
         name: mongodb
@@ -30,7 +33,7 @@ spec:
         - containerPort: 27017
         resources: {}
         volumeMounts:
-        - mountPath: /data/db
+        - mountPath: /var/lib/mongodb/data
           name: mongodata
       restartPolicy: Always
       volumes:
