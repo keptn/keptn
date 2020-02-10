@@ -72,13 +72,14 @@
     (seriesVisibilityChange)="seriesVisibilityChanged($event)">
     <dt-chart-tooltip>
       <ng-template let-tooltip>
+        <p><span [textContent]="tooltip.points[1].point.evaluationData.data.teststrategy"></span> test from <span class="m-0 mt-1 mb-1" [textContent]="tooltip.points[1].point.evaluationData.time | amDateFormat:getCalendarFormat()"></span></p>
         <dt-key-value-list style="min-width: 100px;">
-          <dt-key-value-list-item *ngFor="let data of tooltip.points">
+          <dt-key-value-list-item>
             <dt-key-value-list-key>
-              {{ data.series.name }}
+              {{ tooltip.points[1].series.name }}
             </dt-key-value-list-key>
             <dt-key-value-list-value>
-              {{ data.point.y }}
+              {{ tooltip.points[1].point.y }}
             </dt-key-value-list-value>
           </dt-key-value-list-item>
         </dt-key-value-list>

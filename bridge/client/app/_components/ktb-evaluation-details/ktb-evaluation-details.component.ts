@@ -46,8 +46,11 @@ export class KtbEvaluationDetailsComponent implements OnInit {
     plotOptions: {
       column: {
         stacking: 'normal',
+        pointWidth: 5,
+        minPointLength: 2,
       },
       series: {
+        lineWidth: 2,
         marker: {
           enabled: false,
         },
@@ -62,18 +65,21 @@ export class KtbEvaluationDetailsComponent implements OnInit {
       },
     },
   };
+
   public _chartSeries: Highcharts.IndividualSeriesOptions[] = [
     {
       name: 'Evaluation passed',
       type: 'column',
       data: [],
-      color: '#006bb8'
+      color: '#006bb8',
+      cursor: 'pointer'
     },
     {
       name: 'Evaluation failed',
       type: 'column',
       data: [],
-      color: '#c41425'
+      color: '#c41425',
+      cursor: 'pointer'
     },
     {
       name: 'Evaluation score',
@@ -105,10 +111,15 @@ export class KtbEvaluationDetailsComponent implements OnInit {
     }
   }
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private differs: KeyValueDiffers) { }
+  constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService) { }
 
   ngOnInit() {
-    this._dataDiffer = this.differs.find(this._evaluationData).create();
+    this.dataService.evaluationResults.subscribe((evaluationData) => {
+      if(this.evaluationData === evaluationData) {
+        this.updateChartData(evaluationData.evaluationHistory);
+        this._changeDetectorRef.markForCheck();
+      }
+    });
   }
 
   updateChartData(evaluationHistory) {
@@ -132,13 +143,15 @@ export class KtbEvaluationDetailsComponent implements OnInit {
         name: 'Evaluation passed',
         type: 'column',
         data: evaluationPassed,
-        color: '#006bb8'
+        color: '#7dc540',
+        cursor: 'pointer'
       },
       {
         name: 'Evaluation failed',
         type: 'column',
         data: evaluationFailed,
-        color: '#c41425'
+        color: '#c41425',
+        cursor: 'pointer'
       },
       {
         name: 'Evaluation score',
@@ -161,39 +174,18 @@ export class KtbEvaluationDetailsComponent implements OnInit {
     // NOOP
   }
 
-  dataChanged(changes: KeyValueChanges<string, any>) {
-    changes.forEachRemovedItem((record) => {
-      if(record.key == "evaluationHistory") {
-        this.updateChartData(record.currentValue);
-      }
-    });
-    changes.forEachAddedItem((record) => {
-      if(record.key == "evaluationHistory") {
-        this.updateChartData(record.currentValue);
-      }
-    });
-    changes.forEachChangedItem((record) => {
-      if(record.key == "evaluationHistory") {
-        this.updateChartData(record.currentValue);
-      }
-    });
-  }
-
-  ngDoCheck(): void {
-    const changes = this._dataDiffer.diff(this._evaluationData);
-    if (changes) {
-      this.dataChanged(changes);
-    }
-  }
-
   _chartSeriesClicked(event): boolean {
     this._selectedEvaluationData = event.point.evaluationData.data;
-    console.log("data", this._selectedEvaluationData);
     return true;
   }
 
   getCalendarFormat() {
     return DateUtil.getCalendarFormats().sameElse;
+  }
+
+  log(tooltip){
+    console.log("tooltip", tooltip);
+    return tooltip.points;
   }
 
 }

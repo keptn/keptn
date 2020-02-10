@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {BehaviorSubject, from, Observable, timer} from "rxjs";
+import {BehaviorSubject, from, Observable, Subject, timer} from "rxjs";
 import {debounce, map, mergeMap, toArray} from "rxjs/operators";
 
 import {Root} from "../_models/root";
@@ -19,12 +19,18 @@ export class DataService {
   private _rootsLastUpdated: Object = {};
   private _tracesLastUpdated: Object = {};
 
+  private _evaluationResults = new Subject();
+
   constructor(private apiService: ApiService) {
     this.loadProjects();
   }
 
   get projects(): Observable<Project[]> {
     return this._projects.asObservable();
+  }
+
+  get evaluationResults(): Observable<any> {
+    return this._evaluationResults;
   }
 
   public getRootsLastUpdated(project: Project, service: Service): Date {
@@ -123,12 +129,13 @@ export class DataService {
   public loadEvaluationResults(evaluationData, evaluationSource) {
     let fromTime: Date;
     if(evaluationData.evaluationHistory)
-      fromTime = evaluationData.evaluationHistory[evaluationData.evaluationHistory.length-1].time;
+      fromTime = new Date(evaluationData.evaluationHistory[evaluationData.evaluationHistory.length-1].time);
 
     this.apiService.getEvaluationResults(evaluationData.project, evaluationData.service, evaluationData.stage, evaluationSource, fromTime ? fromTime.toISOString() : null)
       .pipe(map(traces => traces.map(trace => Trace.fromJSON(trace))))
       .subscribe((traces: Trace[]) => {
         evaluationData.evaluationHistory = [...traces||[], ...evaluationData.evaluationHistory||[]].sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
+        this._evaluationResults.next(evaluationData);
       });
   }
 }
