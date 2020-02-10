@@ -124,7 +124,7 @@ jobs:
       - docker images | grep keptn
 
 
-  - stage: cron
+  - stage: cron (full installation on GKE)
     if: branch = master AND type = cron
     os: linux
     before_script:
@@ -151,6 +151,29 @@ jobs:
     - echo "Keptn Installation Log:"
     - cat ~/.keptn/keptn-installer.log
     - cat ~/.keptn/keptn-installer-err.log
+
+  - stage: cron (quality gates standalone on K8s)
+    # if: branch = master AND type = cron
+    os: linux
+    before_script:
+      # download and install kubectl
+      - curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.17.0/bin/linux/amd64/kubectl && chmod +x ./kubectl && sudo mv ./kubectl /usr/local/bin/kubectl
+      - test/utils/microk8s_create_cluster.sh
+      - export KUBECONFIG=./kubeconfig
+    script:
+      - kubectl get nodes
+      - test/test_install_microk8s.sh || travis_terminate 1
+      - keptn status
+      - export PROJECT=musicshop
+      - test/test_quality_gates_standalone.sh
+    after_success:
+      # delete google kubernetes cluster only on success (in case of an error we want to be able to dig into the cluster)
+      - echo "Tests were successful, cleaning up the cluster now..."
+    after_failure:
+      # print some debug info
+      - echo "Keptn Installation Log:"
+      - cat ~/.keptn/keptn-installer.log
+      - cat ~/.keptn/keptn-installer-err.log
 
   # all commits (including external pull requests) should run basic tests for the CLI (if anything has changed)
   - stage: CLI tests
