@@ -22,14 +22,13 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	api := operations.NewAPI(swaggerSpec)
+	api := operations.NewEmptyAPI(swaggerSpec)
 	server := restapi.NewServer(api)
 	defer server.Shutdown()
 
 	parser := flags.NewParser(server, flags.Default)
 	parser.ShortDescription = "keptn api"
 	parser.LongDescription = swaggerSpec.Spec().Info.Description
-
 	server.ConfigureFlags()
 	for _, optsGroup := range api.CommandLineOptionsGroups {
 		_, err := parser.AddGroup(optsGroup.ShortDescription, optsGroup.LongDescription, optsGroup.Options)

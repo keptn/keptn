@@ -18,7 +18,7 @@ spec:
       serviceAccountName: nats-operator
       containers:
       - name: nats-operator
-        image: connecteverything/nats-operator:0.6.0
+        image: connecteverything/nats-operator:latest
         imagePullPolicy: IfNotPresent
         args:
         - nats-operator

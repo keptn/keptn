@@ -15,14 +15,6 @@ verify_kubectl $? "Creating NATS Cluster failed."
 
 #verify_kubectl $? "Creation of keptn ingress route failed."
 
-
-# Add config map in keptn namespace that contains the domain - this will be used by other services as well
-cat ../manifests/keptn/keptn-domain-configmap.yaml | \
-  sed 's~DOMAIN_PLACEHOLDER~'"$DOMAIN"'~' > ../manifests/gen/keptn-domain-configmap.yaml
-
-kubectl apply -f ../manifests/gen/keptn-domain-configmap.yaml
-verify_kubectl $? "Creating configmap keptn-domain in keptn namespace failed."
-
 # Creating cluster role binding
 kubectl apply -f ../manifests/keptn/rbac.yaml
 verify_kubectl $? "Creating cluster role for keptn failed."
@@ -133,9 +125,29 @@ if [ "$INGRESS" = "istio" ]; then
 
   kubectl apply -f ../manifests/keptn/gen/keptn-api-virtualservice.yaml
   verify_kubectl $? "Deploying keptn api virtualservice failed."
+  helm init
+elif [ "$INGRESS" = "nginx" ]; then
+    # Install nginx service mesh
+    print_info "Creating route to Keptn API"
+    oc create route edge api --service=api --port=https --insecure-policy='None' -n keptn
+
+    BASE_URL=$(oc get route -n keptn api -oyaml | yq r - spec.host | sed 's~api-keptn.~~')
+    DOMAIN=$BASE_URL
+
+    oc delete route api -n keptn
+
+    oc create route edge api --service=api --port=https --insecure-policy='None' -n keptn --hostname="api.keptn.$BASE_URL"
+    oc create route edge api2 --service=api --port=https --insecure-policy='None' -n keptn --hostname="api.keptn"
 fi
 
-helm init
+# Add config map in keptn namespace that contains the domain - this will be used by other services as well
+cat ../manifests/keptn/keptn-domain-configmap.yaml | \
+  sed 's~DOMAIN_PLACEHOLDER~'"$DOMAIN"'~' > ../manifests/gen/keptn-domain-configmap.yaml
+
+kubectl apply -f ../manifests/gen/keptn-domain-configmap.yaml
+verify_kubectl $? "Creating configmap keptn-domain in keptn namespace failed."
+
+
 oc adm policy  add-cluster-role-to-user cluster-admin system:serviceaccount:kube-system:default
 oc adm policy add-scc-to-group privileged system:serviceaccounts -n keptn
 oc adm policy add-scc-to-group anyuid system:serviceaccounts -n keptn

@@ -17,6 +17,14 @@ import (
 
 const configservice = "CONFIGURATION_SERVICE"
 const eventbroker = "EVENTBROKER"
+const datastore = "MONGODB_DATASTORE"
+
+func getDatastoreURL() string {
+	if os.Getenv(datastore) != "" {
+		return "http://" + os.Getenv("MONGODB_DATASTORE")
+	}
+	return "http://mongodb-datastore.keptn-datastore.svc.cluster.local:8080"
+}
 
 func sendEvent(event cloudevents.Event) error {
 	endPoint, err := getServiceEndpoint(eventbroker)
