@@ -186,7 +186,7 @@ export class KtbEvaluationDetailsComponent implements OnInit {
     }
   }
 
-  _chartSeriesClicked(event: Event): boolean {
+  _chartSeriesClicked(event): boolean {
     this._selectedEvaluationData = event.point.evaluationData.data;
     console.log("data", this._selectedEvaluationData);
     return true;
