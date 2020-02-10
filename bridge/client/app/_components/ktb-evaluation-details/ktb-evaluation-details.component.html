@@ -18,7 +18,7 @@
     <dt-button-group-item>Evaluation comparison</dt-button-group-item>
   </dt-button-group>
 </div>
-<div *ngIf="_view == 'singleevaluation'">
+<div class="p-2" *ngIf="_view == 'singleevaluation'">
   <dt-consumption [max]="evaluationData.evaluationdetails.indicatorResults ? 100 : 0" [value]="evaluationData.evaluationdetails.score" [color]="evaluationData.result == 'fail' ? 'error' : 'recovered'">
     <dt-consumption-icon aria-label="Test">
       <dt-icon name="summary"></dt-icon>
@@ -85,7 +85,7 @@
       </ng-template>
     </dt-chart-tooltip>
   </dt-chart>
-  <div *ngIf="_selectedEvaluationData">
+  <div class="p-3" *ngIf="_selectedEvaluationData">
     <dt-consumption [max]="_selectedEvaluationData.evaluationdetails.indicatorResults ? 100 : 0" [value]="_selectedEvaluationData.evaluationdetails.score" [color]="_selectedEvaluationData.result == 'fail' ? 'error' : 'recovered'">
       <dt-consumption-icon aria-label="Test">
         <dt-icon name="summary"></dt-icon>
