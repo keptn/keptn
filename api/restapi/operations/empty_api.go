@@ -10,15 +10,16 @@ import (
 	"net/http"
 	"strings"
 
-	errors "github.com/go-openapi/errors"
-	loads "github.com/go-openapi/loads"
-	runtime "github.com/go-openapi/runtime"
-	middleware "github.com/go-openapi/runtime/middleware"
-	security "github.com/go-openapi/runtime/security"
-	spec "github.com/go-openapi/spec"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/loads"
+	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/security"
+	"github.com/go-openapi/spec"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
+	"github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations/auth"
 	"github.com/keptn/keptn/api/restapi/operations/event"
 	"github.com/keptn/keptn/api/restapi/operations/project"
@@ -26,19 +27,18 @@ import (
 	"github.com/keptn/keptn/api/restapi/operations/service"
 	"github.com/keptn/keptn/api/restapi/operations/service_resource"
 	"github.com/keptn/keptn/api/restapi/operations/stage_resource"
-
-	models "github.com/keptn/keptn/api/models"
 )
 
-// NewAPI creates a new  instance
-func NewAPI(spec *loads.Document) *API {
-	return &API{
+// NewEmptyAPI creates a new Empty instance
+func NewEmptyAPI(spec *loads.Document) *EmptyAPI {
+	return &EmptyAPI{
 		handlers:            make(map[string]map[string]http.Handler),
 		formats:             strfmt.Default,
 		defaultConsumes:     "application/json",
 		defaultProduces:     "application/json",
 		customConsumers:     make(map[string]runtime.Consumer),
 		customProducers:     make(map[string]runtime.Producer),
+		PreServerShutdown:   func() {},
 		ServerShutdown:      func() {},
 		spec:                spec,
 		ServeError:          errors.ServeError,
@@ -48,37 +48,35 @@ func NewAPI(spec *loads.Document) *API {
 		JSONConsumer:        runtime.JSONConsumer(),
 		JSONProducer:        runtime.JSONProducer(),
 		ProjectDeleteProjectProjectNameHandler: project.DeleteProjectProjectNameHandlerFunc(func(params project.DeleteProjectProjectNameParams, principal *models.Principal) middleware.Responder {
-			return middleware.NotImplemented("operation ProjectDeleteProjectProjectName has not yet been implemented")
+			return middleware.NotImplemented("operation project.DeleteProjectProjectName has not yet been implemented")
 		}),
 		EventGetEventHandler: event.GetEventHandlerFunc(func(params event.GetEventParams, principal *models.Principal) middleware.Responder {
-			return middleware.NotImplemented("operation EventGetEvent has not yet been implemented")
+			return middleware.NotImplemented("operation event.GetEvent has not yet been implemented")
 		}),
 		EventPostEventHandler: event.PostEventHandlerFunc(func(params event.PostEventParams, principal *models.Principal) middleware.Responder {
-			return middleware.NotImplemented("operation EventPostEvent has not yet been implemented")
+			return middleware.NotImplemented("operation event.PostEvent has not yet been implemented")
 		}),
 		ProjectPostProjectHandler: project.PostProjectHandlerFunc(func(params project.PostProjectParams, principal *models.Principal) middleware.Responder {
-			return middleware.NotImplemented("operation ProjectPostProject has not yet been implemented")
+			return middleware.NotImplemented("operation project.PostProject has not yet been implemented")
 		}),
 		ProjectResourcePostProjectProjectNameResourceHandler: project_resource.PostProjectProjectNameResourceHandlerFunc(func(params project_resource.PostProjectProjectNameResourceParams, principal *models.Principal) middleware.Responder {
-			return middleware.NotImplemented("operation ProjectResourcePostProjectProjectNameResource has not yet been implemented")
+			return middleware.NotImplemented("operation project_resource.PostProjectProjectNameResource has not yet been implemented")
 		}),
 		ServicePostProjectProjectNameServiceHandler: service.PostProjectProjectNameServiceHandlerFunc(func(params service.PostProjectProjectNameServiceParams, principal *models.Principal) middleware.Responder {
-			return middleware.NotImplemented("operation ServicePostProjectProjectNameService has not yet been implemented")
+			return middleware.NotImplemented("operation service.PostProjectProjectNameService has not yet been implemented")
 		}),
 		StageResourcePostProjectProjectNameStageStageNameResourceHandler: stage_resource.PostProjectProjectNameStageStageNameResourceHandlerFunc(func(params stage_resource.PostProjectProjectNameStageStageNameResourceParams, principal *models.Principal) middleware.Responder {
-			return middleware.NotImplemented("operation StageResourcePostProjectProjectNameStageStageNameResource has not yet been implemented")
+			return middleware.NotImplemented("operation stage_resource.PostProjectProjectNameStageStageNameResource has not yet been implemented")
 		}),
 		ServiceResourcePostProjectProjectNameStageStageNameServiceServiceNameResourceHandler: service_resource.PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(func(params service_resource.PostProjectProjectNameStageStageNameServiceServiceNameResourceParams, principal *models.Principal) middleware.Responder {
-			return middleware.NotImplemented("operation ServiceResourcePostProjectProjectNameStageStageNameServiceServiceNameResource has not yet been implemented")
+			return middleware.NotImplemented("operation service_resource.PostProjectProjectNameStageStageNameServiceServiceNameResource has not yet been implemented")
 		}),
 		ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceHandler: service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(func(params service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceParams, principal *models.Principal) middleware.Responder {
-			return middleware.NotImplemented("operation ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResource has not yet been implemented")
+			return middleware.NotImplemented("operation service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResource has not yet been implemented")
 		}),
 		AuthAuthHandler: auth.AuthHandlerFunc(func(params auth.AuthParams, principal *models.Principal) middleware.Responder {
-			return middleware.NotImplemented("operation AuthAuth has not yet been implemented")
-		}),
-
-		// Applies when the "x-token" header is set
+			return middleware.NotImplemented("operation auth.Auth has not yet been implemented")
+		}), // Applies when the "x-token" header is set
 		KeyAuth: func(token string) (*models.Principal, error) {
 			return nil, errors.NotImplemented("api key auth (key) x-token from header param [x-token] has not yet been implemented")
 		},
@@ -88,8 +86,8 @@ func NewAPI(spec *loads.Document) *API {
 	}
 }
 
-/*API the  API */
-type API struct {
+/*EmptyAPI the  API */
+type EmptyAPI struct {
 	spec            *loads.Document
 	context         *middleware.Context
 	handlers        map[string]map[string]http.Handler
@@ -109,11 +107,12 @@ type API struct {
 	// BearerAuthenticator generates a runtime.Authenticator from the supplied bearer token auth function.
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
 	BearerAuthenticator func(string, security.ScopedTokenAuthentication) runtime.Authenticator
-
-	// JSONConsumer registers a consumer for a "application/cloudevents+json" mime type
+	// JSONConsumer registers a consumer for the following mime types:
+	//   - application/cloudevents+json
+	//   - application/json
 	JSONConsumer runtime.Consumer
-
-	// JSONProducer registers a producer for a "application/json" mime type
+	// JSONProducer registers a producer for the following mime types:
+	//   - application/json
 	JSONProducer runtime.Producer
 
 	// KeyAuth registers a function that takes a token and returns a principal
@@ -143,10 +142,13 @@ type API struct {
 	ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceHandler service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceHandler
 	// AuthAuthHandler sets the operation handler for the auth operation
 	AuthAuthHandler auth.AuthHandler
-
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
 	ServeError func(http.ResponseWriter, *http.Request, error)
+
+	// PreServerShutdown is called before the HTTP(S) server is shutdown
+	// This allows for custom functions to get executed before the HTTP(S) server stops accepting traffic
+	PreServerShutdown func()
 
 	// ServerShutdown is called when the HTTP(S) server is shut down and done
 	// handling all active connections and does not accept connections any more
@@ -160,42 +162,42 @@ type API struct {
 }
 
 // SetDefaultProduces sets the default produces media type
-func (o *API) SetDefaultProduces(mediaType string) {
+func (o *EmptyAPI) SetDefaultProduces(mediaType string) {
 	o.defaultProduces = mediaType
 }
 
 // SetDefaultConsumes returns the default consumes media type
-func (o *API) SetDefaultConsumes(mediaType string) {
+func (o *EmptyAPI) SetDefaultConsumes(mediaType string) {
 	o.defaultConsumes = mediaType
 }
 
 // SetSpec sets a spec that will be served for the clients.
-func (o *API) SetSpec(spec *loads.Document) {
+func (o *EmptyAPI) SetSpec(spec *loads.Document) {
 	o.spec = spec
 }
 
 // DefaultProduces returns the default produces media type
-func (o *API) DefaultProduces() string {
+func (o *EmptyAPI) DefaultProduces() string {
 	return o.defaultProduces
 }
 
 // DefaultConsumes returns the default consumes media type
-func (o *API) DefaultConsumes() string {
+func (o *EmptyAPI) DefaultConsumes() string {
 	return o.defaultConsumes
 }
 
 // Formats returns the registered string formats
-func (o *API) Formats() strfmt.Registry {
+func (o *EmptyAPI) Formats() strfmt.Registry {
 	return o.formats
 }
 
 // RegisterFormat registers a custom format validator
-func (o *API) RegisterFormat(name string, format strfmt.Format, validator strfmt.Validator) {
+func (o *EmptyAPI) RegisterFormat(name string, format strfmt.Format, validator strfmt.Validator) {
 	o.formats.Add(name, format, validator)
 }
 
-// Validate validates the registrations in the API
-func (o *API) Validate() error {
+// Validate validates the registrations in the EmptyAPI
+func (o *EmptyAPI) Validate() error {
 	var unregistered []string
 
 	if o.JSONConsumer == nil {
@@ -211,43 +213,43 @@ func (o *API) Validate() error {
 	}
 
 	if o.ProjectDeleteProjectProjectNameHandler == nil {
-		unregistered = append(unregistered, "project.DeleteProjectProjectNameHandler")
+		unregistered = append(unregistered, "Project.DeleteProjectProjectNameHandler")
 	}
 
 	if o.EventGetEventHandler == nil {
-		unregistered = append(unregistered, "event.GetEventHandler")
+		unregistered = append(unregistered, "Event.GetEventHandler")
 	}
 
 	if o.EventPostEventHandler == nil {
-		unregistered = append(unregistered, "event.PostEventHandler")
+		unregistered = append(unregistered, "Event.PostEventHandler")
 	}
 
 	if o.ProjectPostProjectHandler == nil {
-		unregistered = append(unregistered, "project.PostProjectHandler")
+		unregistered = append(unregistered, "Project.PostProjectHandler")
 	}
 
 	if o.ProjectResourcePostProjectProjectNameResourceHandler == nil {
-		unregistered = append(unregistered, "project_resource.PostProjectProjectNameResourceHandler")
+		unregistered = append(unregistered, "ProjectResource.PostProjectProjectNameResourceHandler")
 	}
 
 	if o.ServicePostProjectProjectNameServiceHandler == nil {
-		unregistered = append(unregistered, "service.PostProjectProjectNameServiceHandler")
+		unregistered = append(unregistered, "Service.PostProjectProjectNameServiceHandler")
 	}
 
 	if o.StageResourcePostProjectProjectNameStageStageNameResourceHandler == nil {
-		unregistered = append(unregistered, "stage_resource.PostProjectProjectNameStageStageNameResourceHandler")
+		unregistered = append(unregistered, "StageResource.PostProjectProjectNameStageStageNameResourceHandler")
 	}
 
 	if o.ServiceResourcePostProjectProjectNameStageStageNameServiceServiceNameResourceHandler == nil {
-		unregistered = append(unregistered, "service_resource.PostProjectProjectNameStageStageNameServiceServiceNameResourceHandler")
+		unregistered = append(unregistered, "ServiceResource.PostProjectProjectNameStageStageNameServiceServiceNameResourceHandler")
 	}
 
 	if o.ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceHandler == nil {
-		unregistered = append(unregistered, "service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceHandler")
+		unregistered = append(unregistered, "ServiceResource.PutProjectProjectNameStageStageNameServiceServiceNameResourceHandler")
 	}
 
 	if o.AuthAuthHandler == nil {
-		unregistered = append(unregistered, "auth.AuthHandler")
+		unregistered = append(unregistered, "Auth.AuthHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -258,19 +260,20 @@ func (o *API) Validate() error {
 }
 
 // ServeErrorFor gets a error handler for a given operation id
-func (o *API) ServeErrorFor(operationID string) func(http.ResponseWriter, *http.Request, error) {
+func (o *EmptyAPI) ServeErrorFor(operationID string) func(http.ResponseWriter, *http.Request, error) {
 	return o.ServeError
 }
 
 // AuthenticatorsFor gets the authenticators for the specified security schemes
-func (o *API) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
+func (o *EmptyAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
 
 	result := make(map[string]runtime.Authenticator)
-	for name, scheme := range schemes {
+	for name := range schemes {
 		switch name {
 
 		case "key":
 
+			scheme := schemes[name]
 			result[name] = o.APIKeyAuthenticator(scheme.Name, scheme.In, func(token string) (interface{}, error) {
 				return o.KeyAuth(token)
 			})
@@ -282,25 +285,22 @@ func (o *API) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[stri
 }
 
 // Authorizer returns the registered authorizer
-func (o *API) Authorizer() runtime.Authorizer {
+func (o *EmptyAPI) Authorizer() runtime.Authorizer {
 
 	return o.APIAuthorizer
 
 }
 
-// ConsumersFor gets the consumers for the specified media types
-func (o *API) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer {
-
-	result := make(map[string]runtime.Consumer)
+// ConsumersFor gets the consumers for the specified media types.
+// MIME type parameters are ignored here.
+func (o *EmptyAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer {
+	result := make(map[string]runtime.Consumer, len(mediaTypes))
 	for _, mt := range mediaTypes {
 		switch mt {
-
 		case "application/cloudevents+json":
 			result["application/cloudevents+json"] = o.JSONConsumer
-
 		case "application/json":
 			result["application/json"] = o.JSONConsumer
-
 		}
 
 		if c, ok := o.customConsumers[mt]; ok {
@@ -308,19 +308,16 @@ func (o *API) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer {
 		}
 	}
 	return result
-
 }
 
-// ProducersFor gets the producers for the specified media types
-func (o *API) ProducersFor(mediaTypes []string) map[string]runtime.Producer {
-
-	result := make(map[string]runtime.Producer)
+// ProducersFor gets the producers for the specified media types.
+// MIME type parameters are ignored here.
+func (o *EmptyAPI) ProducersFor(mediaTypes []string) map[string]runtime.Producer {
+	result := make(map[string]runtime.Producer, len(mediaTypes))
 	for _, mt := range mediaTypes {
 		switch mt {
-
 		case "application/json":
 			result["application/json"] = o.JSONProducer
-
 		}
 
 		if p, ok := o.customProducers[mt]; ok {
@@ -328,11 +325,10 @@ func (o *API) ProducersFor(mediaTypes []string) map[string]runtime.Producer {
 		}
 	}
 	return result
-
 }
 
 // HandlerFor gets a http.Handler for the provided operation method and path
-func (o *API) HandlerFor(method, path string) (http.Handler, bool) {
+func (o *EmptyAPI) HandlerFor(method, path string) (http.Handler, bool) {
 	if o.handlers == nil {
 		return nil, false
 	}
@@ -348,7 +344,7 @@ func (o *API) HandlerFor(method, path string) (http.Handler, bool) {
 }
 
 // Context returns the middleware context for the  API
-func (o *API) Context() *middleware.Context {
+func (o *EmptyAPI) Context() *middleware.Context {
 	if o.context == nil {
 		o.context = middleware.NewRoutableContext(o.spec, o, nil)
 	}
@@ -356,7 +352,7 @@ func (o *API) Context() *middleware.Context {
 	return o.context
 }
 
-func (o *API) initHandlerCache() {
+func (o *EmptyAPI) initHandlerCache() {
 	o.Context() // don't care about the result, just that the initialization happened
 
 	if o.handlers == nil {
@@ -417,7 +413,7 @@ func (o *API) initHandlerCache() {
 
 // Serve creates a http handler to serve the API over HTTP
 // can be used directly in http.ListenAndServe(":8000", api.Serve(nil))
-func (o *API) Serve(builder middleware.Builder) http.Handler {
+func (o *EmptyAPI) Serve(builder middleware.Builder) http.Handler {
 	o.Init()
 
 	if o.Middleware != nil {
@@ -427,18 +423,18 @@ func (o *API) Serve(builder middleware.Builder) http.Handler {
 }
 
 // Init allows you to just initialize the handler cache, you can then recompose the middleware as you see fit
-func (o *API) Init() {
+func (o *EmptyAPI) Init() {
 	if len(o.handlers) == 0 {
 		o.initHandlerCache()
 	}
 }
 
 // RegisterConsumer allows you to add (or override) a consumer for a media type.
-func (o *API) RegisterConsumer(mediaType string, consumer runtime.Consumer) {
+func (o *EmptyAPI) RegisterConsumer(mediaType string, consumer runtime.Consumer) {
 	o.customConsumers[mediaType] = consumer
 }
 
 // RegisterProducer allows you to add (or override) a producer for a media type.
-func (o *API) RegisterProducer(mediaType string, producer runtime.Producer) {
+func (o *EmptyAPI) RegisterProducer(mediaType string, producer runtime.Producer) {
 	o.customProducers[mediaType] = producer
 }

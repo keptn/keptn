@@ -14,7 +14,7 @@ import (
 	strfmt "github.com/go-openapi/strfmt"
 	swag "github.com/go-openapi/swag"
 
-	models "github.com/keptn/keptn/api/models"
+	"github.com/keptn/keptn/api/models"
 )
 
 // PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc turns a function with the right signature into a put project project name stage stage name service service name resource handler

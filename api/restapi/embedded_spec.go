@@ -26,7 +26,7 @@ func init() {
     "application/json"
   ],
   "schemes": [
-    "http"
+    "https"
   ],
   "swagger": "2.0",
   "info": {
@@ -54,7 +54,7 @@ func init() {
         "tags": [
           "Event"
         ],
-        "summary": "Get the latest event matching the parameters",
+        "summary": "Get the latest event matching the required query parameters",
         "parameters": [
           {
             "type": "string",
@@ -102,7 +102,7 @@ func init() {
             "name": "body",
             "in": "body",
             "schema": {
-              "$ref": "https://raw.githubusercontent.com/cloudevents/spec/v0.2/spec.json#/definitions/event"
+              "$ref": "response_model.yaml#/definitions/keptnContextExtendedCE"
             }
           }
         ],
@@ -453,14 +453,14 @@ func init() {
 }`))
 	FlatSwaggerJSON = json.RawMessage([]byte(`{
   "consumes": [
-    "application/json",
-    "application/cloudevents+json"
+    "application/cloudevents+json",
+    "application/json"
   ],
   "produces": [
     "application/json"
   ],
   "schemes": [
-    "http"
+    "https"
   ],
   "swagger": "2.0",
   "info": {
@@ -488,7 +488,7 @@ func init() {
         "tags": [
           "Event"
         ],
-        "summary": "Get the latest event matching the parameters",
+        "summary": "Get the latest event matching the required query parameters",
         "parameters": [
           {
             "type": "string",
@@ -536,7 +536,7 @@ func init() {
             "name": "body",
             "in": "body",
             "schema": {
-              "$ref": "#/definitions/event"
+              "$ref": "#/definitions/keptnContextExtendedCE"
             }
           }
         ],

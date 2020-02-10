@@ -14,7 +14,7 @@ import (
 	strfmt "github.com/go-openapi/strfmt"
 	swag "github.com/go-openapi/swag"
 
-	models "github.com/keptn/keptn/api/models"
+	"github.com/keptn/keptn/api/models"
 )
 
 // PostProjectProjectNameStageStageNameResourceHandlerFunc turns a function with the right signature into a post project project name stage stage name resource handler

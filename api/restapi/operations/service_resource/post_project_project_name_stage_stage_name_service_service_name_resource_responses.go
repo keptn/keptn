@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	models "github.com/keptn/keptn/api/models"
+	"github.com/keptn/keptn/api/models"
 )
 
 // PostProjectProjectNameStageStageNameServiceServiceNameResourceCreatedCode is the HTTP code returned for type PostProjectProjectNameStageStageNameServiceServiceNameResourceCreated
