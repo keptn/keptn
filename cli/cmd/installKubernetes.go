@@ -22,15 +22,20 @@ import (
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 )
 
+type kubernetesCredentials struct{}
+
 type kubernetesPlatform struct {
+	creds *kubernetesCredentials
 }
 
 func newKubernetesPlatform() *kubernetesPlatform {
-	return &kubernetesPlatform{}
+	return &kubernetesPlatform{
+		creds: &kubernetesCredentials{},
+	}
 }
 
 func (p kubernetesPlatform) getCreds() interface{} {
-	return nil
+	return p.creds
 }
 
 func (p kubernetesPlatform) checkRequirements() error {
