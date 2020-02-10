@@ -100,7 +100,7 @@ export class DataService {
       )
       .subscribe((roots: Root[]) => {
         // TODO: investigate why is the sorting changed?
-        service.roots = roots.concat(service.roots).sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
+        service.roots = [...roots||[], ...service.roots||[]].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
         // TODO: return Subject with proper value handling
         // this._projects.next([...this._projects.getValue(), ...projects]);
       }, (err) => {
@@ -116,7 +116,19 @@ export class DataService {
     this.apiService.getTraces(root.shkeptncontext, fromTime ? fromTime.toISOString() : null)
       .pipe(map(traces => traces.map(trace => Trace.fromJSON(trace))))
       .subscribe((traces: Trace[]) => {
-        root.traces = traces.concat(root.traces).sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
+        root.traces = [...traces||[], ...root.traces||[]].sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
+      });
+  }
+
+  public loadEvaluationResults(evaluationData, evaluationSource) {
+    let fromTime: Date;
+    if(evaluationData.evaluationHistory)
+      fromTime = evaluationData.evaluationHistory[evaluationData.evaluationHistory.length-1].time;
+
+    this.apiService.getEvaluationResults(evaluationData.project, evaluationData.service, evaluationData.stage, evaluationSource, fromTime ? fromTime.toISOString() : null)
+      .pipe(map(traces => traces.map(trace => Trace.fromJSON(trace))))
+      .subscribe((traces: Trace[]) => {
+        evaluationData.evaluationHistory = [...traces||[], ...evaluationData.evaluationHistory||[]].sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
       });
   }
 }
