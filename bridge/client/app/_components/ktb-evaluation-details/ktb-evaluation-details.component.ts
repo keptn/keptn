@@ -41,12 +41,6 @@ export class KtbEvaluationDetailsComponent implements OnInit {
         stacking: 'normal',
         pointWidth: 5,
         minPointLength: 2,
-      },
-      series: {
-        lineWidth: 2,
-        marker: {
-          enabled: false,
-        },
         point: {
           events: {
             click: (event) => {
@@ -54,7 +48,7 @@ export class KtbEvaluationDetailsComponent implements OnInit {
               return true;
             }
           }
-        }
+        },
       },
     },
   };
@@ -73,12 +67,6 @@ export class KtbEvaluationDetailsComponent implements OnInit {
       data: [],
       color: '#c41425',
       cursor: 'pointer'
-    },
-    {
-      name: 'Evaluation score',
-      type: 'line',
-      data: [],
-      color: '#006bb8'
     },
   ];
 
@@ -145,12 +133,6 @@ export class KtbEvaluationDetailsComponent implements OnInit {
         data: evaluationFailed,
         color: '#c41425',
         cursor: 'pointer'
-      },
-      {
-        name: 'Evaluation score',
-        type: 'line',
-        data: evaluationData,
-        color: '#006bb8'
       },
     ];
   }
