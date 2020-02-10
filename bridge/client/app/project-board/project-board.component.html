@@ -50,7 +50,7 @@
           </dt-info-group>
         </ktb-expandable-tile-header>
         <div class="mb-1" fxLayout="row" fxLayoutAlign="end center">
-          <dt-tag-list aria-label="test">
+          <dt-tag-list aria-label="fetch-info">
             <dt-tag>Last time fetched: <span [textContent]="getRootsLastUpdated((project | async), service) | amCalendar:getCalendarFormats()"></span></dt-tag>
           </dt-tag-list>
         </div>
@@ -82,7 +82,7 @@
       </div>
       <ktb-events-list [events]="currentRoot.traces"></ktb-events-list>
       <div class="mb-3" fxLayout="row" fxLayoutAlign="end center">
-        <dt-tag-list aria-label="test">
+        <dt-tag-list aria-label="fetch-info">
           <dt-tag>Last time fetched: <span [textContent]="getTracesLastUpdated(currentRoot) | amCalendar:getCalendarFormats()"></span></dt-tag>
           <dt-tag *ngIf="showReloadButton(currentRoot)"><button dt-button (click)="loadTraces(currentRoot)"><dt-icon name="refresh"></dt-icon> Reload</button></dt-tag>
         </dt-tag-list>
