@@ -69,6 +69,15 @@ export class ApiService {
       .pipe(catchError(this.handleError<Trace[]>('getTraces')));
   }
 
+  public getEvaluationResults(projectName: string, serviceName: string, stageName: string, source: string, fromTime?: String) {
+    let url = `${this.baseUrl}/api/events?type=sh.keptn.events.evaluation-done&projectName=${projectName}&serviceName=${serviceName}&stageName=${stageName}&source=${source}`;
+    if(fromTime)
+      url += `&fromTime=${fromTime}`;
+    return this.http
+      .get<Trace[]>(url, { headers: this.headers })
+      .pipe(catchError(this.handleError<Trace[]>('getEvaluationResults')));
+  }
+
   private handleError<T>(operation = 'operation', result?: T) {
     return (error: any): Observable<T> => {
       // TODO: handel error and show to the user?!

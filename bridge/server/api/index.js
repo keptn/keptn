@@ -5,10 +5,10 @@ const router = express.Router();
 module.exports = (params) => {
   const { datastoreService, configurationService } = params;
 
-  router.get('/roots/:projectName/:serviceName', async (req, res, next) => {
+  router.get('/events', async (req, res, next) => {
     try {
-      const roots = await datastoreService.getRoots(req.params.projectName, req.params.serviceName, req.query.fromTime);
-      return res.json(roots);
+      const traces = await datastoreService.getEvents(req.query);
+      return res.json(traces);
     } catch (err) {
       return next(err);
     }
@@ -18,6 +18,15 @@ module.exports = (params) => {
     try {
       const traces = await datastoreService.getTraces(req.params.contextId, req.query.fromTime);
       return res.json(traces);
+    } catch (err) {
+      return next(err);
+    }
+  });
+
+  router.get('/roots/:projectName/:serviceName', async (req, res, next) => {
+    try {
+      const roots = await datastoreService.getRoots(req.params.projectName, req.params.serviceName, req.query.fromTime);
+      return res.json(roots);
     } catch (err) {
       return next(err);
     }
