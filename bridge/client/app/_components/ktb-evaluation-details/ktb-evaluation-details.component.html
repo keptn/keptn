@@ -29,8 +29,6 @@
     </dt-consumption-count>
     <dt-consumption-label><span [textContent]="evaluationData.teststrategy"></span> evaluation <span [textContent]="evaluationData.result"></span></dt-consumption-label>
   </dt-consumption>
-
-
   <div *ngIf="evaluationData.evaluationdetails.indicatorResults">
     <p><span [textContent]="evaluationData.teststrategy"></span> evaluation breakdown</p>
     <dt-key-value-list>
