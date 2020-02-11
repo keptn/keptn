@@ -1,7 +1,7 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {Router, RoutesRecognized} from "@angular/router";
 import {Observable, Subscription} from "rxjs";
-import {map} from "rxjs/operators";
+import {filter, map} from "rxjs/operators";
 
 import {Project} from "../_models/project";
 import {DataService} from "../_services/data.service";
@@ -26,6 +26,7 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
       if(event instanceof RoutesRecognized) {
         let projectName = event.state.root.children[0].params['projectName'];
         this.project = this.dataService.projects.pipe(
+          filter(projects => !!projects),
           map(projects => projects.find(p => {
             return p.projectName === projectName;
           }))
