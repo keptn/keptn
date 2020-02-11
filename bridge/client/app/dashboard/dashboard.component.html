@@ -2,10 +2,10 @@
   <dt-empty-state>
     <dt-empty-state-item>
       <dt-empty-state-item-img>
-        <dt-icon name="smiley-unhappy-1"></dt-icon>
+        <dt-icon class="mt-2" name="smiley-unhappy-1"></dt-icon>
       </dt-empty-state-item-img>
-      <dt-empty-state-item-title aria-level="2">No projects existing</dt-empty-state-item-title>
-      <p>Sorry, we couldn't load your projects. Check our <a href="https://keptn.sh/docs/quickstart/">Quick Start</a> instructions or go back to <a [routerLink]="['/dashboard']">your dashboard</a>.</p>
+      <dt-empty-state-item-title class="mt-3" aria-level="2">No projects existing</dt-empty-state-item-title>
+      <p>Sorry, we couldn't load any projects. Check our <a href="https://keptn.sh/docs/quickstart/" target="_blank">Quick Start</a> instructions on how to <a href="https://keptn.sh/docs/0.6.0/manage/project/" target="_blank">setup a project</a> and <a href="https://keptn.sh/docs/0.6.0/usecases/onboard-carts-service/" target="_blank">onboard a sample app</a>.</p>
       <button dt-button (click)="dataService.loadProjects()"><dt-icon name="refresh"></dt-icon> Retry</button>
     </dt-empty-state-item>
   </dt-empty-state>
