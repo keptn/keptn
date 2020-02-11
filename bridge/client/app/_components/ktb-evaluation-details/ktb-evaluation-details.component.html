@@ -29,6 +29,8 @@
     </dt-consumption-count>
     <dt-consumption-label><span [textContent]="evaluationData.teststrategy"></span> evaluation <span [textContent]="evaluationData.result"></span></dt-consumption-label>
   </dt-consumption>
+
+
   <div *ngIf="evaluationData.evaluationdetails.indicatorResults">
     <p><span [textContent]="evaluationData.teststrategy"></span> evaluation breakdown</p>
     <dt-key-value-list>
@@ -37,9 +39,12 @@
           <dt-key-value-list-key>
             <p class="m-0 error" [textContent]="result.value.metric"></p>
           </dt-key-value-list-key>
-          <dt-key-value-list-value>
+          <dt-key-value-list-value *ngIf="result.value.success">
             <span [textContent]="result.value.value | number:'1.0-0'"></span>
             <span class="small m-0 ml-1" *ngFor="let _target of result.targets" [textContent]="_target.criteria" [class.error]="_target.violated" [class.error-line]="_target.violated"></span>
+          </dt-key-value-list-value>
+          <dt-key-value-list-value *ngIf="!result.value.success">
+            <span class="small" [textContent]="result.value.message"></span>
           </dt-key-value-list-value>
         </dt-key-value-list-item>
       </ng-container>
