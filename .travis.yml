@@ -124,7 +124,7 @@ jobs:
       - docker images | grep keptn
 
 
-  - stage: cron (full installation on GKE)
+  - stage: Cron GKE Full (--platform=gke)
     if: branch = master AND type = cron
     os: linux
     before_script:
@@ -152,7 +152,7 @@ jobs:
     - cat ~/.keptn/keptn-installer.log
     - cat ~/.keptn/keptn-installer-err.log
 
-  - stage: cron MicroK8s (quality gates standalone on K8s)
+  - stage: Cron MicroK8s Standalone (--platform=kubernetes --use-case=quality-gates)
     # if: branch = master AND type = cron
     os: linux
     before_script:
@@ -161,8 +161,8 @@ jobs:
       - test/utils/microk8s_create_cluster.sh
       - export KUBECONFIG=./kubeconfig
     script:
-      - kubectl get nodes
-      - test/test_install_kubernetes.sh || travis_terminate 1
+      - kubectl get nodes || travis_terminate 1
+      - test/test_install_kubernetes_quality_gates.sh || travis_terminate 1
       - keptn status || travis_terminate 1
       - export PROJECT=musicshop
       - test/test_quality_gates_standalone.sh || travis_terminate 1
@@ -175,16 +175,17 @@ jobs:
       - cat ~/.keptn/keptn-installer.log
       - cat ~/.keptn/keptn-installer-err.log
 
-  - stage: cron Minikube (quality gates standalone on K8s)
+  - stage: Cron Minikube Standalone (--platform=kubernetes --use-case=quality-gates)
     # if: branch = master AND type = cron
     os: linux
     before_script:
       # download and install kubectl
       - curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.17.0/bin/linux/amd64/kubectl && chmod +x ./kubectl && sudo mv ./kubectl /usr/local/bin/kubectl
+      - export USE_CASE=quality-gates
       - test/utils/minikube_create_cluster.sh
     script:
-      - kubectl get nodes
-      - test/test_install_kubernetes.sh || travis_terminate 1
+      - kubectl get nodes || travis_terminate 1
+      - test/test_install_kubernetes_quality_gates.sh || travis_terminate 1
       - keptn status || travis_terminate 1
       - export PROJECT=musicshop
       - test/test_quality_gates_standalone.sh || travis_terminate 1

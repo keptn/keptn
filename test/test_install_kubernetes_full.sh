@@ -9,23 +9,11 @@ unzip keptn-linux.zip
 
 sudo mv keptn /usr/local/bin/keptn
 
-# Prepare creds.json file
-cd ./installer/scripts
-
-export GITU=$GITHUB_USER_NAME_NIGHTLY	
-export GITAT=$GITHUB_TOKEN_NIGHTLY	
-export CLN=$CLUSTER_NAME_NIGHTLY	
-export CLZ=$CLOUDSDK_COMPUTE_ZONE	
-export PROJ=$PROJECT_NAME	
-export GITO=$GITHUB_ORG_NIGHTLY	
-
-source ./gke/defineCredentialsHelper.sh
-replaceCreds
 
 echo "Installing keptn on cluster"
-
+echo "{}" > creds.json # empty credentials file
 # Install keptn (using the develop version, which should point the :latest docker images)
-keptn install --keptn-installer-image=keptn/installer:latest --creds=creds.json --verbose
+keptn install --keptn-installer-image=keptn/installer:latest --platform=kubernetes --creds=creds.json --gateway=NodePort --verbose
 
 verify_test_step $? "keptn install failed"
 
@@ -53,7 +41,6 @@ verify_deployment_in_namespace "istio-ingressgateway" "istio-system"
 verify_deployment_in_namespace "istio-pilot" "istio-system"
 verify_deployment_in_namespace "istio-citadel" "istio-system"
 verify_deployment_in_namespace "istio-sidecar-injector" "istio-system"
-
 
 cd ../..
 
