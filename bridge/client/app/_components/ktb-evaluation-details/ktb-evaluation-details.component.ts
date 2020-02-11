@@ -34,7 +34,15 @@ export class KtbEvaluationDetailsComponent implements OnInit {
         min: 0,
         max: 100,
         tickInterval: 10,
-      }
+      },
+      {
+        title: null,
+        labels: {
+          format: '{value}',
+        },
+        opposite: true,
+        tickInterval: 50,
+      },
     ],
     plotOptions: {
       column: {
@@ -104,20 +112,40 @@ export class KtbEvaluationDetailsComponent implements OnInit {
   }
 
   updateChartData(evaluationHistory) {
+    let chartSeries = [];
+
     let evaluationPassed = [];
     let evaluationFailed = [];
-    let evaluationData = [];
+
     evaluationHistory.forEach((evaluation) => {
       let data = {
         x: moment(evaluation.time).unix()*1000,
         y: evaluation.data.evaluationdetails ? evaluation.data.evaluationdetails.score : 0,
         evaluationData: evaluation
       };
-      evaluationData.push(data);
       if(evaluation.data.result == 'pass')
         evaluationPassed.push(data);
       else
         evaluationFailed.push(data);
+
+      evaluation.data.evaluationdetails.indicatorResults.forEach((indicatorResult) => {
+        let indicatorData = {
+          x: moment(evaluation.time).unix()*1000,
+          y: indicatorResult.value.value,
+          indicatorResult: indicatorResult
+        };
+        let indicatorChartSeries = chartSeries.find(series => series.name == indicatorResult.value.metric);
+        if(!indicatorChartSeries) {
+          indicatorChartSeries = {
+            name: indicatorResult.value.metric,
+            type: 'line',
+            yAxis: 1,
+            data: [],
+          };
+          chartSeries.push(indicatorChartSeries);
+        }
+        indicatorChartSeries.data.push(indicatorData);
+      });
     });
     this._chartSeries = [
       {
@@ -134,6 +162,7 @@ export class KtbEvaluationDetailsComponent implements OnInit {
         color: '#c41425',
         cursor: 'pointer'
       },
+      ...chartSeries
     ];
   }
 
