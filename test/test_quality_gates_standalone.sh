@@ -26,10 +26,24 @@ keptn add-resource --project=$PROJECT --stage=hardening --service=catalogue --re
 verify_test_step $? "keptn add-resource failed."
 
 # send start evaluation command
-keptn send event start-evaluation --project=$PROJECT --stage=hardening --service=catalogue --timeframe=5m
+response=$(keptn send event start-evaluation --project=$PROJECT --stage=hardening --service=catalogue --timeframe=5m)
+
+echo $response
+
+keptn_context_id=$(echo $response | awk -F'Keptn context:' '{ print $2 }' | xargs)
 
 sleep 10
-# Todo: parse output of above command and extract keptn context)
-# keptn get event evaluation-done --keptn-context=...
+# parse output of above command and extract keptn context)
+response=$(keptn get event evaluation-done --keptn-context=${keptn_context_id})
+
+# ToDo: right now get event evaluation-done does not work as lighthouse does not send the event when there is no sli provider
+#       see issue https://github.com/keptn/keptn/issues/1212
+
+#if [[ $? -eq 0 ]]; then
+#  echo "Got result"
+#  echo $response
+#else
+#  exit 1
+#fi
 
 exit 0
