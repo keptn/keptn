@@ -19,7 +19,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]
 then
     CREDS=./creds.json
     rm $CREDS 2> /dev/null
-    cat ./aks/creds.sav | sed 's~CLUSTER_NAME_PLACEHOLDER~'"$CLN"'~' | \
+    cat ./eks/creds.sav | sed 's~CLUSTER_NAME_PLACEHOLDER~'"$CLN"'~' | \
       sed 's~AWS_REGION~'"$RG"'~' >> $CREDS
 
 fi
