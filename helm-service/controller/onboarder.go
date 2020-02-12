@@ -247,7 +247,7 @@ func (c *Onboarder) IsGeneratedChartEmpty(chart *chart.Chart) bool {
 	return len(chart.Templates) == 0
 }
 
-func (o *Onboarder) OnboardGeneratedService(helmManifest string, project string, stageName string,
+func (o *Onboarder) OnboardGeneratedService(helmUpgradeMsg string, project string, stageName string,
 	service string, strategy keptnevents.DeploymentStrategy) (*chart.Chart, error) {
 
 	chartGenerator := helm.NewGeneratedChartHandler(o.mesh, o.canaryLevelGen, o.keptnDomain)
@@ -264,7 +264,7 @@ func (o *Onboarder) OnboardGeneratedService(helmManifest string, project string,
 	if strategy == keptnevents.Duplicate {
 		o.logger.Debug(fmt.Sprintf("For service %s in stage %s with deployment strategy %s, "+
 			"a chart for a duplicate deployment strategy is generated", service, stageName, strategy.String()))
-		generatedChart, err = chartGenerator.GenerateDuplicateManagedChart(helmManifest, project, stageName, service)
+		generatedChart, err = chartGenerator.GenerateDuplicateManagedChart(helmUpgradeMsg, project, stageName, service)
 		if err != nil {
 			o.logger.Error("Error when generating the managed chart: " + err.Error())
 			return nil, err
@@ -272,7 +272,7 @@ func (o *Onboarder) OnboardGeneratedService(helmManifest string, project string,
 	} else {
 		o.logger.Debug(fmt.Sprintf("For service %s in stage %s with deployment strategy %s, a mesh chart is generated",
 			service, stageName, strategy.String()))
-		generatedChart, err = chartGenerator.GenerateMeshChart(helmManifest, project, stageName, service)
+		generatedChart, err = chartGenerator.GenerateMeshChart(helmUpgradeMsg, project, stageName, service)
 		if err != nil {
 			o.logger.Error("Error when generating the managed chart: " + err.Error())
 			return nil, err
