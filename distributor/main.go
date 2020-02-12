@@ -16,8 +16,9 @@ package main
 import (
 	"context"
 	"errors"
-	"log"
+	"fmt"
 	"os"
+	"time"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
@@ -25,7 +26,7 @@ import (
 	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
 	cloudeventsnats "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/nats"
 	"github.com/kelseyhightower/envconfig"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	"github.com/nats-io/nats.go"
 )
 
 // Subscriber establishes a connection to a PubSub server
@@ -46,100 +47,127 @@ type uniform []struct {
 
 var httpClient client.Client
 
+var nc *nats.Conn
+var uptimeTicker *time.Ticker
+
 func main() {
 	var env envConfig
-	logger := keptnutils.NewLogger("", "", "distributor")
 	if err := envconfig.Process("", &env); err != nil {
-		logger.Error("Failed to process env var: " + err.Error())
+		fmt.Println("Failed to process env var: " + err.Error())
 		os.Exit(1)
 	}
 	os.Exit(_main(os.Args[1:], env))
 }
 
 func _main(args []string, env envConfig) int {
-	ctx := context.Background()
-	logger := keptnutils.NewLogger("", "", "distributor")
+	//ctx := context.Background()
 	// initialize the http client
-	createRecipientConnection(logger)
+	uptimeTicker = time.NewTicker(10 * time.Second)
+	createRecipientConnection()
 
-	subscribeToTopics(ctx, logger)
 	return 0
 }
 
-func createRecipientConnection(logger *keptnutils.Logger) {
+func createRecipientConnection() {
 	recipientURL, err := getPubSubRecipientURL()
 	if err != nil {
-		logger.Error(err.Error())
+		fmt.Println(err.Error())
 		os.Exit(1)
 	}
+
 	httpTransport, err := cloudeventshttp.New(
 		cloudeventshttp.WithTarget(recipientURL),
 		cloudeventshttp.WithStructuredEncoding(),
 	)
 	if err != nil {
-		logger.Error("failed to create Http connection: " + err.Error())
+		fmt.Println("failed to create Http connection: " + err.Error())
 		os.Exit(1)
 	}
 	httpClient, err = client.New(httpTransport)
 	if err != nil {
-		logger.Error("failed to create client: " + err.Error())
+		fmt.Println("failed to create client: " + err.Error())
 		os.Exit(1)
 	}
+
+	subscribeToTopics(context.Background())
 }
 
-func subscribeToTopics(ctx context.Context, logger *keptnutils.Logger) {
+func subscribeToTopics(ctx context.Context) {
 	pubSubURL := os.Getenv("PUBSUB_URL")
 	pubSubTopic := os.Getenv("PUBSUB_TOPIC")
 
 	if pubSubURL == "" {
-		logger.Error("no PubSub URL defined")
+		fmt.Println("no PubSub URL defined")
 		os.Exit(1)
 	}
 
 	if pubSubTopic == "" {
-		logger.Error("no PubSub Topic defined")
+		fmt.Println("no PubSub Topic defined")
 		os.Exit(1)
 	}
 
-	createPubSubConnection(ctx, pubSubURL, pubSubTopic, logger)
+	createPubSubConnection(ctx, pubSubURL, pubSubTopic)
 }
 
-func createPubSubConnection(ctx context.Context, pubSubURL string, pubSubTopic string, logger *keptnutils.Logger) {
-	logger.Debug("Subscribing to topic " + pubSubTopic)
-	natsConnection, err := cloudeventsnats.New(
-		pubSubURL,
-		pubSubTopic,
-	)
+func createPubSubConnection(ctx context.Context, pubSubURL string, pubSubTopic string) {
+	fmt.Println("Subscribing to topic " + pubSubTopic)
+	var err error
 
-	if err != nil {
-		logger.Error("failed to create transport: " + err.Error())
-		os.Exit(1)
-	}
-	eventClient, err := client.New(natsConnection)
-	if err != nil {
-		logger.Error("failed to create client: " + err.Error())
-		os.Exit(1)
+	if nc == nil || !nc.IsConnected() {
+		nc, err = nats.Connect(pubSubURL)
+
+		if err != nil {
+			fmt.Println("failed to create NATS connection: " + err.Error())
+		}
+
+		sub, err := nc.Subscribe(os.Getenv("PUBSUB_TOPIC"), func(m *nats.Msg) {
+			fmt.Printf("Received a message: %s\n", string(m.Data))
+			ceMsg := &cloudeventsnats.Message{
+				Body: m.Data,
+			}
+			codec := &cloudeventsnats.CodecV02{}
+			e, err := codec.Decode(ceMsg)
+
+			if err != nil {
+				fmt.Println("Could not unmarshal CloudEvent: " + err.Error())
+			}
+			gotEvent(ctx, *e)
+		})
+		if err != nil {
+			fmt.Println("failed to create NATS connection: " + err.Error())
+		}
+		defer func() {
+			// Unsubscribe
+			sub.Unsubscribe()
+			fmt.Println("Unsubscribed from NATS ")
+			// Close connection
+			nc.Close()
+		}()
+
+		for {
+			select {
+			case <-uptimeTicker.C:
+				subscribeToTopics(ctx)
+			}
+		}
+		<-ctx.Done()
 	}
 
-	logger.Info("Subscribed to topic: " + pubSubTopic + "; NATS-URL=" + pubSubURL)
-	log.Fatalf("failed to start receiver: %s", eventClient.StartReceiver(ctx, gotEvent))
 }
 
 func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	var shkeptncontext string
 	event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
 
-	logger := keptnutils.NewLogger(shkeptncontext, event.Context.GetID(), "distributor")
-
-	sendEvent(ctx, event, shkeptncontext, logger)
+	sendEvent(ctx, event)
 
 	return nil
 }
 
-func sendEvent(ctx context.Context, event cloudevents.Event, keptnContext string, logger *keptnutils.Logger) error {
+func sendEvent(ctx context.Context, event cloudevents.Event) error {
 	_, err := httpClient.Send(ctx, event)
 	if err != nil {
-		logger.Error("failed to send event: " + err.Error())
+		fmt.Println("failed to send event: " + err.Error())
 	}
 	return nil
 }
