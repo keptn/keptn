@@ -15,7 +15,7 @@ import {ApiService} from "./api.service";
 })
 export class DataService {
 
-  private _projects = new BehaviorSubject<Project[]>([]);
+  private _projects = new BehaviorSubject<Project[]>(null);
   private _rootsLastUpdated: Object = {};
   private _tracesLastUpdated: Object = {};
 
@@ -66,7 +66,7 @@ export class DataService {
         ),
         map(projects => projects.map(project => Project.fromJSON(project)))
       ).subscribe((projects: Project[]) => {
-        this._projects.next([...this._projects.getValue(), ...projects]);
+        this._projects.next([...this._projects.getValue() ? this._projects.getValue() : [], ...projects]);
       }, (err) => {
         this._projects.error(err);
       });
