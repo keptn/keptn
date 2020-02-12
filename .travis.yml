@@ -124,7 +124,7 @@ jobs:
       - docker images | grep keptn
 
 
-  - stage: cron
+  - stage: Cron GKE Full (--platform=gke)
     if: branch = master AND type = cron
     os: linux
     before_script:
@@ -151,6 +151,52 @@ jobs:
     - echo "Keptn Installation Log:"
     - cat ~/.keptn/keptn-installer.log
     - cat ~/.keptn/keptn-installer-err.log
+
+  - stage: Cron MicroK8s Standalone (--platform=kubernetes --use-case=quality-gates)
+    if: branch = master AND type = cron
+    os: linux
+    before_script:
+      # download and install kubectl
+      - curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.17.0/bin/linux/amd64/kubectl && chmod +x ./kubectl && sudo mv ./kubectl /usr/local/bin/kubectl
+      - test/utils/microk8s_create_cluster.sh
+      - export KUBECONFIG=./kubeconfig
+    script:
+      - kubectl get nodes || travis_terminate 1
+      - test/test_install_kubernetes_quality_gates.sh || travis_terminate 1
+      - keptn status || travis_terminate 1
+      - export PROJECT=musicshop
+      - test/test_quality_gates_standalone.sh || travis_terminate 1
+    after_success:
+      # delete google kubernetes cluster only on success (in case of an error we want to be able to dig into the cluster)
+      - echo "Tests were successful, cleaning up the cluster now..."
+    after_failure:
+      # print some debug info
+      - echo "Keptn Installation Log:"
+      - cat ~/.keptn/keptn-installer.log
+      - cat ~/.keptn/keptn-installer-err.log
+
+  - stage: Cron Minikube Standalone (--platform=kubernetes --use-case=quality-gates)
+    if: branch = master AND type = cron
+    os: linux
+    before_script:
+      # download and install kubectl
+      - curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.17.0/bin/linux/amd64/kubectl && chmod +x ./kubectl && sudo mv ./kubectl /usr/local/bin/kubectl
+      - export USE_CASE=quality-gates
+      - test/utils/minikube_create_cluster.sh
+    script:
+      - kubectl get nodes || travis_terminate 1
+      - test/test_install_kubernetes_quality_gates.sh || travis_terminate 1
+      - keptn status || travis_terminate 1
+      - export PROJECT=musicshop
+      - test/test_quality_gates_standalone.sh || travis_terminate 1
+    after_success:
+      # delete google kubernetes cluster only on success (in case of an error we want to be able to dig into the cluster)
+      - echo "Tests were successful, cleaning up the cluster now..."
+    after_failure:
+      # print some debug info
+      - echo "Keptn Installation Log:"
+      - cat ~/.keptn/keptn-installer.log
+      - cat ~/.keptn/keptn-installer-err.log
 
   # all commits (including external pull requests) should run basic tests for the CLI (if anything has changed)
   - stage: CLI tests
