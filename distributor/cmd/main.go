@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
@@ -48,6 +49,8 @@ var subscriptions []*nats.Subscription
 
 var uptimeTicker *time.Ticker
 var ctx context.Context
+
+var mux sync.Mutex
 
 func main() {
 	var env envConfig
@@ -106,12 +109,15 @@ func createRecipientConnection() {
 }
 
 func removeAllSubscriptions() {
+	mux.Lock()
+	defer mux.Unlock()
 	for _, sub := range subscriptions {
 		// Unsubscribe
 		_ = sub.Unsubscribe()
 		fmt.Println("Unsubscribed from NATS topic: " + sub.Subject)
 	}
 	nc.Close()
+	subscriptions = subscriptions[:0]
 }
 
 func subscribeToTopics() {
@@ -132,6 +138,8 @@ func subscribeToTopics() {
 
 	if nc == nil || !nc.IsConnected() {
 		removeAllSubscriptions()
+		mux.Lock()
+		defer mux.Unlock()
 		fmt.Println("Connecting to NATS server at " + pubSubURL + "...")
 		nc, err = nats.Connect(pubSubURL)
 
@@ -146,7 +154,7 @@ func subscribeToTopics() {
 		for _, topic := range topics {
 			fmt.Println("Subscribing to topic " + topic + "...")
 			sub, err := nc.Subscribe(topic, func(m *nats.Msg) {
-				fmt.Printf("Received a message for topic [%s]: %s\n", topic, string(m.Data))
+				fmt.Printf("Received a message for topic [%s]: %s\n", m.Subject, string(m.Data))
 				ceMsg := &cloudeventsnats.Message{
 					Body: m.Data,
 				}
