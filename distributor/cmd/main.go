@@ -41,11 +41,6 @@ type envConfig struct {
 	Path string `envconfig:"RCV_PATH" default:"/"`
 }
 
-type uniform []struct {
-	EventType   string   `json:"eventType"`
-	Subscribers []string `json:"subscribers"`
-}
-
 var httpClient client.Client
 
 var nc *nats.Conn
@@ -149,17 +144,27 @@ func subscribeToTopics() {
 				ceMsg := &cloudeventsnats.Message{
 					Body: m.Data,
 				}
-				codec := &cloudeventsnats.CodecV02{}
-				e, err := codec.Decode(ceMsg)
+
+				codec := &cloudeventsnats.Codec{}
+				switch ceMsg.CloudEventsVersion() {
+				default:
+					fmt.Println("Cannot parse incoming payload: CloudEvent Spec version not set")
+					return
+				case cloudevents.CloudEventsVersionV02:
+					codec.Encoding = cloudeventsnats.StructuredV02
+				case cloudevents.CloudEventsVersionV03:
+					codec.Encoding = cloudeventsnats.StructuredV03
+				case cloudevents.CloudEventsVersionV1:
+					codec.Encoding = cloudeventsnats.StructuredV1
+				}
+
+				e, err := codec.Decode(ctx, ceMsg)
 
 				if err != nil {
 					fmt.Println("Could not unmarshal CloudEvent: " + err.Error())
 					return
 				}
 				if e != nil {
-					var shkeptncontext string
-					e.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
-
 					err = sendEvent(*e)
 					if err != nil {
 						fmt.Println("Could not send CloudEvent: " + err.Error())
@@ -177,7 +182,7 @@ func subscribeToTopics() {
 }
 
 func sendEvent(event cloudevents.Event) error {
-	_, err := httpClient.Send(ctx, event)
+	_, _, err := httpClient.Send(ctx, event)
 	if err != nil {
 		fmt.Println("failed to send event: " + err.Error())
 	}
