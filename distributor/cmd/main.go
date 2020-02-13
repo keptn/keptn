@@ -91,13 +91,9 @@ func createRecipientConnection() {
 	subscribeToTopics()
 
 	defer func() {
-		for _, sub := range subscriptions {
-			// Unsubscribe
-			sub.Unsubscribe()
-			fmt.Println("Unsubscribed from NATS topic: " + sub.Subject)
-		}
+		removeAllSubscriptions()
 		// Close connection
-		nc.Close()
+
 		fmt.Println("Disconnected from NATS")
 	}()
 
@@ -107,6 +103,15 @@ func createRecipientConnection() {
 			subscribeToTopics()
 		}
 	}
+}
+
+func removeAllSubscriptions() {
+	for _, sub := range subscriptions {
+		// Unsubscribe
+		_ = sub.Unsubscribe()
+		fmt.Println("Unsubscribed from NATS topic: " + sub.Subject)
+	}
+	nc.Close()
 }
 
 func subscribeToTopics() {
@@ -126,6 +131,7 @@ func subscribeToTopics() {
 	var err error
 
 	if nc == nil || !nc.IsConnected() {
+		removeAllSubscriptions()
 		fmt.Println("Connecting to NATS server at " + pubSubURL + "...")
 		nc, err = nats.Connect(pubSubURL)
 
