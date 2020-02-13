@@ -1,4 +1,4 @@
-module keptn/distributor
+module github.com/keptn/keptn/distributor
 
 go 1.12
 

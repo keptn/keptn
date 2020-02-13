@@ -30,6 +30,6 @@ spec:
         - name: PUBSUB_URL
           value: 'nats://keptn-nats-cluster'
         - name: PUBSUB_TOPIC
-          value: '>'
+          value: 'sh.keptn.event.configuration.change,sh.keptn.events.deployment-finished'
         - name: PUBSUB_RECIPIENT
           value: 'helm-service'

@@ -18,6 +18,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
@@ -48,7 +49,10 @@ type uniform []struct {
 var httpClient client.Client
 
 var nc *nats.Conn
+var subscriptions []*nats.Subscription
+
 var uptimeTicker *time.Ticker
+var ctx context.Context
 
 func main() {
 	var env envConfig
@@ -60,7 +64,7 @@ func main() {
 }
 
 func _main(args []string, env envConfig) int {
-	//ctx := context.Background()
+	ctx = context.Background()
 	// initialize the http client
 	uptimeTicker = time.NewTicker(10 * time.Second)
 	createRecipientConnection()
@@ -89,10 +93,28 @@ func createRecipientConnection() {
 		os.Exit(1)
 	}
 
-	subscribeToTopics(context.Background())
+	subscribeToTopics()
+
+	defer func() {
+		for _, sub := range subscriptions {
+			// Unsubscribe
+			sub.Unsubscribe()
+			fmt.Println("Unsubscribed from NATS topic: " + sub.Subject)
+		}
+		// Close connection
+		nc.Close()
+		fmt.Println("Disconnected from NATS")
+	}()
+
+	for {
+		select {
+		case <-uptimeTicker.C:
+			subscribeToTopics()
+		}
+	}
 }
 
-func subscribeToTopics(ctx context.Context) {
+func subscribeToTopics() {
 	pubSubURL := os.Getenv("PUBSUB_URL")
 	pubSubTopic := os.Getenv("PUBSUB_TOPIC")
 
@@ -106,65 +128,55 @@ func subscribeToTopics(ctx context.Context) {
 		os.Exit(1)
 	}
 
-	createPubSubConnection(ctx, pubSubURL, pubSubTopic)
-}
-
-func createPubSubConnection(ctx context.Context, pubSubURL string, pubSubTopic string) {
-	fmt.Println("Subscribing to topic " + pubSubTopic)
 	var err error
 
 	if nc == nil || !nc.IsConnected() {
+		fmt.Println("Connecting to NATS server at " + pubSubURL + "...")
 		nc, err = nats.Connect(pubSubURL)
 
 		if err != nil {
 			fmt.Println("failed to create NATS connection: " + err.Error())
+			return
 		}
 
-		sub, err := nc.Subscribe(os.Getenv("PUBSUB_TOPIC"), func(m *nats.Msg) {
-			fmt.Printf("Received a message: %s\n", string(m.Data))
-			ceMsg := &cloudeventsnats.Message{
-				Body: m.Data,
-			}
-			codec := &cloudeventsnats.CodecV02{}
-			e, err := codec.Decode(ceMsg)
+		fmt.Println("Connected to NATS server")
+		topics := strings.Split(os.Getenv("PUBSUB_TOPIC"), ",")
 
+		for _, topic := range topics {
+			fmt.Println("Subscribing to topic " + topic + "...")
+			sub, err := nc.Subscribe(topic, func(m *nats.Msg) {
+				fmt.Printf("Received a message for topic [%s]: %s\n", topic, string(m.Data))
+				ceMsg := &cloudeventsnats.Message{
+					Body: m.Data,
+				}
+				codec := &cloudeventsnats.CodecV02{}
+				e, err := codec.Decode(ceMsg)
+
+				if err != nil {
+					fmt.Println("Could not unmarshal CloudEvent: " + err.Error())
+					return
+				}
+				if e != nil {
+					var shkeptncontext string
+					e.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
+
+					err = sendEvent(*e)
+					if err != nil {
+						fmt.Println("Could not send CloudEvent: " + err.Error())
+					}
+				}
+			})
 			if err != nil {
-				fmt.Println("Could not unmarshal CloudEvent: " + err.Error())
+				fmt.Println("failed to subscribe to topic: " + err.Error())
+				return
 			}
-			gotEvent(ctx, *e)
-		})
-		if err != nil {
-			fmt.Println("failed to create NATS connection: " + err.Error())
+			fmt.Println("Subscribed to topic " + topic)
+			subscriptions = append(subscriptions, sub)
 		}
-		defer func() {
-			// Unsubscribe
-			sub.Unsubscribe()
-			fmt.Println("Unsubscribed from NATS ")
-			// Close connection
-			nc.Close()
-		}()
-
-		for {
-			select {
-			case <-uptimeTicker.C:
-				subscribeToTopics(ctx)
-			}
-		}
-		<-ctx.Done()
 	}
-
 }
 
-func gotEvent(ctx context.Context, event cloudevents.Event) error {
-	var shkeptncontext string
-	event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
-
-	sendEvent(ctx, event)
-
-	return nil
-}
-
-func sendEvent(ctx context.Context, event cloudevents.Event) error {
+func sendEvent(event cloudevents.Event) error {
 	_, err := httpClient.Send(ctx, event)
 	if err != nil {
 		fmt.Println("failed to send event: " + err.Error())
