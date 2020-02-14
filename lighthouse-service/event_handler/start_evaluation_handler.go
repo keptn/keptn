@@ -1,6 +1,7 @@
 package event_handler
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/url"
@@ -43,7 +44,7 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 		// send the evaluation-done-event
 		evaluationResult := keptnevents.EvaluationDoneEventData{
 			EvaluationDetails:  &evaluationDetails,
-			Result:             "pass",
+			Result:             eh.getTestExecutionResult(),
 			Project:            e.Project,
 			Service:            e.Service,
 			Stage:              e.Stage,
@@ -69,7 +70,7 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 		// send the evaluation-done-event
 		evaluationResult := keptnevents.EvaluationDoneEventData{
 			EvaluationDetails:  &evaluationDetails,
-			Result:             "pass",
+			Result:             eh.getTestExecutionResult(),
 			Project:            e.Project,
 			Service:            e.Service,
 			Stage:              e.Stage,
@@ -196,4 +197,18 @@ func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string,
 
 	eh.Logger.Debug("Send event: " + keptnevents.InternalGetSLIEventType)
 	return sendEvent(event)
+}
+
+func (eh *StartEvaluationHandler) getTestExecutionResult() string {
+	dataByte, err := eh.Event.DataBytes()
+	if err != nil {
+		eh.Logger.Error("Could not get event as byte array: " + err.Error())
+	}
+
+	e := &keptnevents.TestsFinishedEventData{}
+	err = json.Unmarshal(dataByte, e)
+	if err != nil {
+		eh.Logger.Error("Could not unmarshal event payload: " + err.Error())
+	}
+	return e.Result
 }
