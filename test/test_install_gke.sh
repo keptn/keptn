@@ -12,12 +12,9 @@ sudo mv keptn /usr/local/bin/keptn
 # Prepare creds.json file
 cd ./installer/scripts
 
-export GITU=$GITHUB_USER_NAME_NIGHTLY	
-export GITAT=$GITHUB_TOKEN_NIGHTLY	
-export CLN=$CLUSTER_NAME_NIGHTLY	
+export CLN=$CLUSTER_NAME_NIGHTLY
 export CLZ=$CLOUDSDK_COMPUTE_ZONE	
 export PROJ=$PROJECT_NAME	
-export GITO=$GITHUB_ORG_NIGHTLY	
 
 source ./gke/defineCredentialsHelper.sh
 replaceCreds
