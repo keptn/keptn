@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	kubeServerVersion  = regexp.MustCompile(`Server Version: version\.Info{Major:"(\d+)", Minor:"(\d+)"`)
+	kubeServerVersion  = regexp.MustCompile(`Server Version: version\.Info{Major:"(\d+)", Minor:"(\d+.*?)\+{0,1}"`)
 	executeCommandFunc = keptnutils.ExecuteCommand
 )
 
