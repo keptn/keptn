@@ -5,18 +5,6 @@ echo "Testing onboarding..."
 
 PROJECT=sockshop
 
-# Delete old project
-git ls-remote https://github.com/$GITHUB_ORG_NIGHTLY/$PROJECT > /dev/null 2>&1
-if [ $? = 0 ]; then 
-    echo "Delete project $PROJECT" 
-    GITHUB_USER=GITHUB_USER_NAME_NIGHTLY
-    GITHUB_PASSWORD=GITHUB_TOKEN_NIGHTLY
-    hub delete -y $GITHUB_ORG_NIGHTLY/$PROJECT
-    echo "Finished deleting project $PROJECT"
-else 
-    echo "No project to delete"
-fi
-
 # Test keptn create-project and onboard
 rm -rf examples
 git clone https://github.com/keptn/examples
