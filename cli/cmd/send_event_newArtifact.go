@@ -48,7 +48,7 @@ var newArtifact newArtifactStruct
 // newArtifactCmd represents the newArtifact command
 var newArtifactCmd = &cobra.Command{
 	Use: "new-artifact",
-	Short: "Sends a new-artifact event to Keptn in order to deploy a new artifact" +
+	Short: "Sends a new-artifact event to Keptn in order to deploy a new artifact " +
 		"for the specified service in the provided project",
 	Long: `Sends a new-artifact event to Keptn in order to deploy a new artifact
 for the specified service in the provided project.

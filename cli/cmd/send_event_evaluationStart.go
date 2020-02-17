@@ -49,7 +49,7 @@ var evaluationStart evaluationStartStruct
 // evaluationStartCmd represents the start-evaluation command
 var evaluationStartCmd = &cobra.Command{
 	Use: "start-evaluation",
-	Short: "Sends an start-evaluation event to Keptn in order to evaluate a test" +
+	Short: "Sends an start-evaluation event to Keptn in order to evaluate a test " +
 		"for the specified service in the provided project and stage",
 	Long: `Sends a start-evaluation event to Keptn in order to evaluate a test
 for the specified service in the provided project and stage. The time frame flag defines
