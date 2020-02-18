@@ -13,10 +13,20 @@
   </dt-expandable-panel>
 </div>
 <div class="mb-1 mt-1">
-  <dt-button-group (valueChange)="switchEvaluationView($event)">
-    <dt-button-group-item>Single evaluation</dt-button-group-item>
-    <dt-button-group-item>Evaluation comparison</dt-button-group-item>
-  </dt-button-group>
+  <div fxLayout="row" class="pr-4">
+    <div fxFlex>
+      <dt-button-group (valueChange)="switchEvaluationView($event)">
+        <dt-button-group-item>Single evaluation</dt-button-group-item>
+        <dt-button-group-item>Evaluation comparison</dt-button-group-item>
+      </dt-button-group>
+    </div>
+    <div fxLayout="column" fxLayoutAlign="start end">
+      <dt-button-group *ngIf="_view == 'evaluationcomparison'" [(value)]="_comparisonView">
+        <dt-button-group-item [value]="'heatmap'" (click)="_comparisonView = 'heatmap'">Heatmap</dt-button-group-item>
+        <dt-button-group-item [value]="'chart'" (click)="_comparisonView = 'chart'">Chart</dt-button-group-item>
+      </dt-button-group>
+    </div>
+  </div>
 </div>
 <div class="p-2" *ngIf="_view == 'singleevaluation'">
   <dt-consumption [max]="evaluationData.evaluationdetails.indicatorResults ? 100 : 0" [value]="evaluationData.evaluationdetails.score" [color]="evaluationData.result == 'fail' ? 'error' : 'recovered'">
@@ -69,7 +79,27 @@
   </div>
 </div>
 <div *ngIf="_view == 'evaluationcomparison'" (click)="$event.stopPropagation();">
-  <dt-chart
+  <dt-chart *ngIf="_comparisonView == 'heatmap'"
+    [options]="_heatmapOptions"
+    [series]="_heatmapSeries"
+    (seriesVisibilityChange)="seriesVisibilityChanged($event)">
+    <dt-chart-tooltip>
+      <ng-template let-tooltip>
+        <p><span [textContent]="tooltip.points[0].point.evaluationData.data.teststrategy"></span> test from <span class="m-0 mt-1 mb-1" [textContent]="tooltip.points[0].point.evaluationData.time | amDateFormat:getCalendarFormat()"></span></p>
+        <dt-key-value-list style="min-width: 100px;">
+          <dt-key-value-list-item>
+            <dt-key-value-list-key>
+              {{ tooltip.points[0].series.name }}
+            </dt-key-value-list-key>
+            <dt-key-value-list-value>
+              {{ tooltip.points[0].point.y }}
+            </dt-key-value-list-value>
+          </dt-key-value-list-item>
+        </dt-key-value-list>
+      </ng-template>
+    </dt-chart-tooltip>
+  </dt-chart>
+  <dt-chart *ngIf="_comparisonView == 'chart'"
     [options]="_chartOptions"
     [series]="_chartSeries"
     (seriesVisibilityChange)="seriesVisibilityChanged($event)">
