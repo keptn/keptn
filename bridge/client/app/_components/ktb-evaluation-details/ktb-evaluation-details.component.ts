@@ -1,5 +1,20 @@
 import * as Highcharts from "highcharts";
 
+declare var require: any;
+const Boost = require('highcharts/modules/boost');
+const noData = require('highcharts/modules/no-data-to-display');
+const More = require('highcharts/highcharts-more');
+const Heatmap = require("highcharts/modules/heatmap");
+const Treemap = require("highcharts/modules/treemap");
+
+
+Boost(Highcharts);
+noData(Highcharts);
+More(Highcharts);
+noData(Highcharts);
+Heatmap(Highcharts);
+Treemap(Highcharts);
+
 import * as moment from 'moment';
 import {ChangeDetectorRef, Component, Input, OnInit} from '@angular/core';
 import {DtChartSeriesVisibilityChangeEvent} from "@dynatrace/barista-components/chart";
@@ -20,6 +35,7 @@ export class KtbEvaluationDetailsComponent implements OnInit {
   public _selectedEvaluationData: any;
 
   public _view: string = "singleevaluation";
+  public _comparisonView: string = "heatmap";
 
   public _chartOptions: Highcharts.Options = {
     xAxis: {
@@ -60,7 +76,6 @@ export class KtbEvaluationDetailsComponent implements OnInit {
       },
     },
   };
-
   public _chartSeries: Highcharts.IndividualSeriesOptions[] = [
     {
       name: 'Evaluation passed',
@@ -77,6 +92,51 @@ export class KtbEvaluationDetailsComponent implements OnInit {
       cursor: 'pointer'
     },
   ];
+
+  public _heatmapOptions: Highcharts.Options = {
+    chart: {
+      type: 'heatmap'
+    },
+
+    title: {
+      text: 'Heatmap',
+      align: 'left'
+    },
+
+    subtitle: {
+      text: 'Evalution results',
+      align: 'left'
+    },
+
+    xAxis: {
+      categories: []
+    },
+
+    yAxis: {
+      categories: [],
+      title: null,
+      labels: {
+        format: '{value}'
+      },
+      minPadding: 0,
+      maxPadding: 0,
+      startOnTick: false,
+      endOnTick: false,
+    },
+
+    colorAxis: {
+      stops: [
+        [0, '#00ff00'],
+        [0.5, '#ffaa00'],
+        [1, '#ff0000']
+      ],
+      min: 0
+    },
+
+    plotOptions: {
+    },
+  };
+  public _heatmapSeries: Highcharts.IndividualSeriesOptions[] = [];
 
   @Input()
   get evaluationData(): any {
@@ -134,6 +194,9 @@ export class KtbEvaluationDetailsComponent implements OnInit {
           y: indicatorResult.value.value,
           indicatorResult: indicatorResult
         };
+        let mapData = {
+
+        };
         let indicatorChartSeries = chartSeries.find(series => series.name == indicatorResult.value.metric);
         if(!indicatorChartSeries) {
           indicatorChartSeries = {
@@ -164,6 +227,12 @@ export class KtbEvaluationDetailsComponent implements OnInit {
       },
       ...chartSeries
     ];
+    this._heatmapSeries = [
+      {
+        name: 'Heatmap',
+        data: chartSeries.reverse().reduce((r, d, i) => [...r, ...d.data.map((s, j) => [j, i, s.indicatorResult.score])], [])
+      }
+    ]
   }
 
   switchEvaluationView(event) {
