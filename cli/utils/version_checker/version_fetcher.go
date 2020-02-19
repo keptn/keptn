@@ -29,14 +29,19 @@ type VersionInfo struct {
 }
 
 type CLIVersionInfo struct {
-	Stable string `json:"stable"`
-	Beta   string `json:"beta"`
+	StableVersions []string `json:"stable_versions"`
+	BetaVersions   []string `json:"beta_versions"`
 }
 
-func (client *Client) GetCLIVersionInfo() (*CLIVersionInfo, error) {
+func (client *Client) GetCLIVersionInfo(cliVersion string) (*CLIVersionInfo, error) {
 
 	versionInfo := &VersionInfo{}
-	resp, err := client.httpClient.Get(client.versionUrl)
+	req, err := http.NewRequest("GET", client.versionUrl, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("user-agent", "KeptnCLI/"+cliVersion)
+	resp, err := client.httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
