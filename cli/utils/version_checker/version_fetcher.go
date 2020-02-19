@@ -29,8 +29,8 @@ type VersionInfo struct {
 }
 
 type CLIVersionInfo struct {
-	StableVersions []string `json:"stable_versions"`
-	BetaVersions   []string `json:"beta_versions"`
+	StableVersions     []string `json:"stable_versions"`
+	PrereleaseVersions []string `json:"prerelease_versions"`
 }
 
 func (client *Client) GetCLIVersionInfo(cliVersion string) (*CLIVersionInfo, error) {
