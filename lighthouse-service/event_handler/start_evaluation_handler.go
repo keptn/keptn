@@ -1,11 +1,12 @@
 package event_handler
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/url"
+	"strconv"
 	"time"
+	"os"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
@@ -14,6 +15,8 @@ import (
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
+
+const slo_required = "SLO_REQUIRED"
 
 type StartEvaluationHandler struct {
 	Logger *keptnutils.Logger
@@ -32,19 +35,20 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 		return err
 	}
 
-	// functional tests dont need to be evaluated
+	// functional tests do not need to be evaluated
 	if e.TestStrategy == "functional" || e.TestStrategy == "" {
-		eh.Logger.Debug("Functional tests are not evaluated")
+		eh.Logger.Debug("Functional test was executed, no evaluation conducted")
 		evaluationDetails := keptnevents.EvaluationDetails{
 			IndicatorResults: nil,
 			TimeStart:        e.Start,
 			TimeEnd:          e.End,
-			Result:           fmt.Sprintf("no evaluation performed by lighthouse service (TestStrategy=%s)", e.TestStrategy),
+			Result:           fmt.Sprintf("no evaluation performed by lighthouse because a %s test was executed", e.TestStrategy),
 		}
+
 		// send the evaluation-done-event
 		evaluationResult := keptnevents.EvaluationDoneEventData{
 			EvaluationDetails:  &evaluationDetails,
-			Result:             eh.getTestExecutionResult(),
+			Result:             "pass",
 			Project:            e.Project,
 			Service:            e.Service,
 			Stage:              e.Stage,
@@ -59,18 +63,23 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 	// get SLO file
 	objectives, err := getSLOs(e.Project, e.Stage, e.Service)
 	if err != nil {
-		// No SLO file found -> no need to evaluate
+		// if no SLO file found, no need to evaluate
 		eh.Logger.Debug("No SLO file found, no evaluation conducted")
 		evaluationDetails := keptnevents.EvaluationDetails{
 			IndicatorResults: nil,
 			TimeStart:        e.Start,
 			TimeEnd:          e.End,
-			Result:           fmt.Sprintf("no evaluation performed by lighthouse service (no slo.yaml found)"),
+			Result:           fmt.Sprintf("no evaluation performed by lighthouse because no SLO found for service %s", e.Service),
+		}
+
+		result:= "warning"
+		if eh.isSLORequired() {
+			result= "failed"
 		}
 		// send the evaluation-done-event
 		evaluationResult := keptnevents.EvaluationDoneEventData{
 			EvaluationDetails:  &evaluationDetails,
-			Result:             eh.getTestExecutionResult(),
+			Result:             result,
 			Project:            e.Project,
 			Service:            e.Service,
 			Stage:              e.Stage,
@@ -118,7 +127,26 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 	sliProvider, err := getSLIProvider(e.Project)
 	if err != nil {
 		// ToDo: We need to provide feedback to the user that this failed becuase no sli provider was set for project
-		eh.Logger.Error("Could not determine SLI provider for project " + e.Project)
+		eh.Logger.Error("no SLI-provider configured for project " + e.Project + ", no evaluation conducted")
+		evaluationDetails := keptnevents.EvaluationDetails{
+			IndicatorResults: nil,
+			TimeStart:        e.Start,
+			TimeEnd:          e.End,
+			Result:           fmt.Sprintf("no evaluation performed by lighthouse because no SLI-provider configured for project %s", e.Project),
+		}
+		// send the evaluation-done-event
+		evaluationResult := keptnevents.EvaluationDoneEventData{
+			EvaluationDetails:  &evaluationDetails,
+			Result:             "failed",
+			Project:            e.Project,
+			Service:            e.Service,
+			Stage:              e.Stage,
+			TestStrategy:       e.TestStrategy,
+			DeploymentStrategy: e.DeploymentStrategy,
+			Labels:             e.Labels,
+		}
+
+		err = eh.sendEvaluationDoneEvent(keptnContext, &evaluationResult)
 		return err
 	}
 	// send a new event to trigger the SLI retrieval
@@ -199,16 +227,17 @@ func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string,
 	return sendEvent(event)
 }
 
-func (eh *StartEvaluationHandler) getTestExecutionResult() string {
-	dataByte, err := eh.Event.DataBytes()
-	if err != nil {
-		eh.Logger.Error("Could not get event as byte array: " + err.Error())
+func (eh *StartEvaluationHandler) isSLORequired() bool {
+	if os.Getenv(slo_required) != "" {
+		isSLORequired, err := strconv.ParseBool(os.Getenv(slo_required))
+		if err != nil {
+			eh.Logger.Debug(fmt.Sprintf("Failure when parsing value of environment variable %s into boolean.", slo_required))
+			eh.Logger.Debug("isSLORequired is set to true")
+			return true
+		}
+		return isSLORequired
 	}
 
-	e := &keptnevents.TestsFinishedEventData{}
-	err = json.Unmarshal(dataByte, e)
-	if err != nil {
-		eh.Logger.Error("Could not unmarshal event payload: " + err.Error())
-	}
-	return e.Result
+	eh.Logger.Debug("isSLORequired is set to true")
+	return true
 }

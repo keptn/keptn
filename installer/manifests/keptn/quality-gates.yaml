@@ -36,6 +36,8 @@ spec:
               value: 'mongodb-datastore.keptn-datastore.svc.cluster.local:8080'
             - name: ENVIRONMENT
               value: 'production'
+            - name: SLO_REQUIRED
+              value: 'true'
 ---
 apiVersion: v1
 kind: Service
