@@ -21,6 +21,7 @@ import {DtChartSeriesVisibilityChangeEvent} from "@dynatrace/barista-components/
 
 import {DataService} from "../../_services/data.service";
 import DateUtil from "../../_utils/date.utils";
+import {AxisOptions} from "highcharts";
 
 @Component({
   selector: 'ktb-evaluation-details',
@@ -95,7 +96,8 @@ export class KtbEvaluationDetailsComponent implements OnInit {
 
   public _heatmapOptions: Highcharts.Options = {
     chart: {
-      type: 'heatmap'
+      type: 'heatmap',
+      height: 400
     },
 
     title: {
@@ -108,12 +110,12 @@ export class KtbEvaluationDetailsComponent implements OnInit {
       align: 'left'
     },
 
-    xAxis: {
+    xAxis: [{
       categories: []
-    },
+    }],
 
-    yAxis: {
-      categories: [],
+    yAxis: [{
+      categories: ["Score"],
       title: null,
       labels: {
         format: '{value}'
@@ -122,7 +124,7 @@ export class KtbEvaluationDetailsComponent implements OnInit {
       maxPadding: 0,
       startOnTick: false,
       endOnTick: false,
-    },
+    }],
 
     colorAxis: {
       stops: [
@@ -188,14 +190,27 @@ export class KtbEvaluationDetailsComponent implements OnInit {
       else
         evaluationFailed.push(data);
 
+      let scoreChartSeries = chartSeries.find(series => series.name == "Score");
+      if(!scoreChartSeries) {
+        scoreChartSeries = {
+          name: "Score",
+          type: 'line',
+          yAxis: 1,
+          data: [],
+        };
+        chartSeries.push(scoreChartSeries);
+      }
+      scoreChartSeries.data.push({
+        x: moment(evaluation.time).unix()*1000,
+        y: evaluation.data.evaluationdetails.score,
+        evaluation: evaluation
+      });
+
       evaluation.data.evaluationdetails.indicatorResults.forEach((indicatorResult) => {
         let indicatorData = {
           x: moment(evaluation.time).unix()*1000,
           y: indicatorResult.value.value,
           indicatorResult: indicatorResult
-        };
-        let mapData = {
-
         };
         let indicatorChartSeries = chartSeries.find(series => series.name == indicatorResult.value.metric);
         if(!indicatorChartSeries) {
@@ -227,12 +242,40 @@ export class KtbEvaluationDetailsComponent implements OnInit {
       },
       ...chartSeries
     ];
+
+    this.updateHeatmapOptions(chartSeries);
     this._heatmapSeries = [
       {
         name: 'Heatmap',
-        data: chartSeries.reverse().reduce((r, d, i) => [...r, ...d.data.map((s, j) => [j, i, s.indicatorResult.score])], [])
+        data: chartSeries.reverse().reduce((r, d, i) => [...r, ...d.data.map((s) => {
+          if(s.indicatorResult) {
+            let time = moment(s.x).format();
+            let index = this._heatmapOptions.yAxis[0].categories.indexOf(s.indicatorResult.value.metric);
+            let x = this._heatmapOptions.xAxis[0].categories.indexOf(time);
+            return [x, index, s.indicatorResult.score];
+          } else if(s.evaluation) {
+            let time = moment(s.x).format();
+            let index = this._heatmapOptions.yAxis[0].categories.indexOf("Score");
+            let x = this._heatmapOptions.xAxis[0].categories.indexOf(time);
+            return [x, index, s.y];
+          }
+        })], [])
       }
-    ]
+    ];
+  }
+
+  updateHeatmapOptions(chartSeries) {
+    chartSeries.forEach((d) =>
+      d.data.forEach((s) => {
+        if(s.indicatorResult) {
+          let time = moment(s.x).format();
+          if(this._heatmapOptions.yAxis[0].categories.indexOf(s.indicatorResult.value.metric) == -1)
+            this._heatmapOptions.yAxis[0].categories.unshift(s.indicatorResult.value.metric);
+          if(this._heatmapOptions.xAxis[0].categories.indexOf(time) == -1)
+            this._heatmapOptions.xAxis[0].categories.splice(this.binarySearch(this._heatmapOptions.xAxis[0].categories, time, (a, b) => moment(a).unix() - moment(b).unix()), 0, time);
+        }
+      })
+    )
   }
 
   switchEvaluationView(event) {
@@ -259,6 +302,27 @@ export class KtbEvaluationDetailsComponent implements OnInit {
   log(tooltip){
     console.log("tooltip", tooltip);
     return tooltip.points;
+  }
+
+  private binarySearch(ar, el, compare_fn) {
+    if(compare_fn(el, ar[0]) < 0)
+      return 0;
+    if(compare_fn(el, ar[ar.length-1]) > 0)
+      return ar.length;
+    var m = 0;
+    var n = ar.length - 1;
+    while (m <= n) {
+      var k = (n + m) >> 1;
+      var cmp = compare_fn(el, ar[k]);
+      if (cmp > 0) {
+        m = k + 1;
+      } else if(cmp < 0) {
+        n = k - 1;
+      } else {
+        return k;
+      }
+    }
+    return -m - 1;
   }
 
 }
