@@ -140,6 +140,13 @@ export class KtbEvaluationDetailsComponent implements OnInit {
   };
   public _heatmapSeries: Highcharts.IndividualSeriesOptions[] = [];
 
+  public _evaluationColor = {
+    'fail': '#ff0000',
+    'pass': '#00ff00',
+    'warning': '#ff9900',
+    'info': '#ffff00'
+  };
+
   @Input()
   get evaluationData(): any {
     return this._evaluationData;
@@ -206,24 +213,26 @@ export class KtbEvaluationDetailsComponent implements OnInit {
         evaluation: evaluation
       });
 
-      evaluation.data.evaluationdetails.indicatorResults.forEach((indicatorResult) => {
-        let indicatorData = {
-          x: moment(evaluation.time).unix()*1000,
-          y: indicatorResult.value.value,
-          indicatorResult: indicatorResult
-        };
-        let indicatorChartSeries = chartSeries.find(series => series.name == indicatorResult.value.metric);
-        if(!indicatorChartSeries) {
-          indicatorChartSeries = {
-            name: indicatorResult.value.metric,
-            type: 'line',
-            yAxis: 1,
-            data: [],
+      if(evaluation.data.evaluationdetails.indicatorResults) {
+        evaluation.data.evaluationdetails.indicatorResults.forEach((indicatorResult) => {
+          let indicatorData = {
+            x: moment(evaluation.time).unix()*1000,
+            y: indicatorResult.value.value,
+            indicatorResult: indicatorResult
           };
-          chartSeries.push(indicatorChartSeries);
-        }
-        indicatorChartSeries.data.push(indicatorData);
-      });
+          let indicatorChartSeries = chartSeries.find(series => series.name == indicatorResult.value.metric);
+          if(!indicatorChartSeries) {
+            indicatorChartSeries = {
+              name: indicatorResult.value.metric,
+              type: 'line',
+              yAxis: 1,
+              data: [],
+            };
+            chartSeries.push(indicatorChartSeries);
+          }
+          indicatorChartSeries.data.push(indicatorData);
+        });
+      }
     });
     this._chartSeries = [
       {
@@ -252,12 +261,22 @@ export class KtbEvaluationDetailsComponent implements OnInit {
             let time = moment(s.x).format();
             let index = this._heatmapOptions.yAxis[0].categories.indexOf(s.indicatorResult.value.metric);
             let x = this._heatmapOptions.xAxis[0].categories.indexOf(time);
-            return [x, index, s.indicatorResult.score];
+            return {
+              x: x,
+              y: index,
+              z: s.indicatorResult.score,
+              color: this._evaluationColor[s.indicatorResult.status]
+            };
           } else if(s.evaluation) {
             let time = moment(s.x).format();
             let index = this._heatmapOptions.yAxis[0].categories.indexOf("Score");
             let x = this._heatmapOptions.xAxis[0].categories.indexOf(time);
-            return [x, index, s.y];
+            return {
+              x: x,
+              y: index,
+              z: s.y,
+              color: this._evaluationColor[s.evaluation.data.result]
+            };
           }
         })], [])
       }
