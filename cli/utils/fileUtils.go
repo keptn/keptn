@@ -16,6 +16,15 @@ type PlaceholderReplacement struct {
 	DesiredValue     string
 }
 
+// FileExists checks whether a file exists
+func FileExists(filename string) bool {
+	info, err := os.Stat(keptnutils.ExpandTilde(filename))
+	if os.IsNotExist(err) {
+		return false
+	}
+	return !info.IsDir()
+}
+
 // ReadFile reads a file and returns the content as string
 func ReadFile(fileName string) (string, error) {
 
