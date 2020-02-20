@@ -120,7 +120,7 @@ export class KtbEvaluationDetailsComponent implements OnInit {
       categories: [],
       labels: {
         enabled: false
-      }
+      },
     }],
 
     yAxis: [{
@@ -134,8 +134,21 @@ export class KtbEvaluationDetailsComponent implements OnInit {
     colorAxis: {
       dataClasses: Object.keys(this._evaluationColor).map((key) => { return { color: this._evaluationColor[key], name: key } })
     },
+
+    plotOptions: {
+      heatmap: {
+        point: {
+          events: {
+            click: (event) => {
+              this._heatmapTileClicked(event);
+              return true;
+            }
+          }
+        },
+      },
+    },
   };
-  public _heatmapSeries: Highcharts.IndividualSeriesOptions[] = [];
+  public _heatmapSeries: Highcharts.HeatMapSeriesOptions[] = [];
 
   @Input()
   get evaluationData(): any {
@@ -245,31 +258,35 @@ export class KtbEvaluationDetailsComponent implements OnInit {
     this.updateHeatmapOptions(chartSeries);
     this._heatmapSeries = [
       {
-        name: 'Heatmap',
-        data: chartSeries.reverse().reduce((r, d) => [...r, ...d.data.map((s) => {
-          if(s.indicatorResult) {
-            let time = moment(s.x).format();
-            let index = this._heatmapOptions.yAxis[0].categories.indexOf(s.indicatorResult.value.metric);
-            let x = this._heatmapOptions.xAxis[0].categories.indexOf(time);
-            return {
-              x: x,
-              y: index,
-              z: s.indicatorResult.score,
-              color: this._evaluationColor[s.indicatorResult.status]
-            };
-          } else if(s.evaluation) {
-            let time = moment(s.x).format();
-            let index = this._heatmapOptions.yAxis[0].categories.indexOf("Score");
-            let x = this._heatmapOptions.xAxis[0].categories.indexOf(time);
-            return {
-              x: x,
-              y: index,
-              z: s.y,
-              color: this._evaluationColor[s.evaluation.data.result]
-            };
-          }
+        name: 'Score',
+        rowsize: 0.85,
+        data: chartSeries.reverse().reduce((r, d) => [...r, ...d.data.filter(s => s.evaluation).map((s) => {
+          let time = moment(s.x).format();
+          let index = this._heatmapOptions.yAxis[0].categories.indexOf("Score");
+          let x = this._heatmapOptions.xAxis[0].categories.indexOf(time);
+          return {
+            x: x,
+            y: index,
+            z: s.y,
+            evaluation: s.evaluation,
+            color: this._evaluationColor[s.evaluation.data.result]
+          };
         })], [])
-      }
+      },
+      {
+        name: 'SLOs',
+        data: chartSeries.reverse().reduce((r, d) => [...r, ...d.data.filter(s => s.indicatorResult).map((s) => {
+          let time = moment(s.x).format();
+          let index = this._heatmapOptions.yAxis[0].categories.indexOf(s.indicatorResult.value.metric);
+          let x = this._heatmapOptions.xAxis[0].categories.indexOf(time);
+          return {
+            x: x,
+            y: index,
+            z: s.indicatorResult.score,
+            color: this._evaluationColor[s.indicatorResult.status]
+          };
+        })], [])
+      },
     ];
   }
 
@@ -301,18 +318,16 @@ export class KtbEvaluationDetailsComponent implements OnInit {
     // NOOP
   }
 
-  _chartSeriesClicked(event): boolean {
+  _chartSeriesClicked(event) {
     this._selectedEvaluationData = event.point.evaluationData.data;
-    return true;
+  }
+
+  _heatmapTileClicked(event) {
+    this._selectedEvaluationData = this._heatmapSeries[0].data[event.point.x]['evaluation'].data;
   }
 
   getCalendarFormat() {
     return DateUtil.getCalendarFormats().sameElse;
-  }
-
-  log(tooltip){
-    console.log("tooltip", tooltip);
-    return tooltip.points;
   }
 
   private binarySearch(ar, el, compare_fn) {
