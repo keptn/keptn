@@ -46,6 +46,9 @@ type installCmdParams struct {
 	Tag                     string
 }
 
+// KubeServerVersionConstraints the Kubernetes Cluster version's constraints is passed by ldflags
+var KubeServerVersionConstraints string
+
 var installParams *installCmdParams
 
 const gke = "gke"
@@ -74,7 +77,7 @@ spec:
       containers:
       - name: keptn-installer
         image: INSTALLER_IMAGE_PLACEHOLDER
-        env:       
+        env:
         - name: PLATFORM
           value: PLATFORM_PLACEHOLDER
         - name: GATEWAY_TYPE
@@ -185,6 +188,11 @@ Example:
 		if err != nil || !isKubAvailable {
 			return errors.New(`Keptn requires 'kubectl' but it is not available.
 Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
+		}
+
+		if err := utils.CheckKubeServerVersion(KubeServerVersionConstraints); err != nil {
+			logging.PrintLog(err.Error(), logging.VerboseLevel)
+			return errors.New(`Keptn requires Kubernetes Server Version: ` + KubeServerVersionConstraints)
 		}
 
 		if installParams.ConfigFilePath != nil && *installParams.ConfigFilePath != "" {
