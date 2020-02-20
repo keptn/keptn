@@ -21,7 +21,6 @@ import {DtChartSeriesVisibilityChangeEvent} from "@dynatrace/barista-components/
 
 import {DataService} from "../../_services/data.service";
 import DateUtil from "../../_utils/date.utils";
-import {AxisOptions} from "highcharts";
 
 @Component({
   selector: 'ktb-evaluation-details',
@@ -256,7 +255,7 @@ export class KtbEvaluationDetailsComponent implements OnInit {
     this._heatmapSeries = [
       {
         name: 'Heatmap',
-        data: chartSeries.reverse().reduce((r, d, i) => [...r, ...d.data.map((s) => {
+        data: chartSeries.reverse().reduce((r, d) => [...r, ...d.data.map((s) => {
           if(s.indicatorResult) {
             let time = moment(s.x).format();
             let index = this._heatmapOptions.yAxis[0].categories.indexOf(s.indicatorResult.value.metric);
@@ -297,7 +296,7 @@ export class KtbEvaluationDetailsComponent implements OnInit {
     )
   }
 
-  switchEvaluationView(event) {
+  switchEvaluationView() {
     this._view = this._view == "singleevaluation" ? "evaluationcomparison" : "singleevaluation";
     if(this._view == "evaluationcomparison") {
       this.dataService.loadEvaluationResults(this._evaluationData, this._evaluationSource);
@@ -328,11 +327,11 @@ export class KtbEvaluationDetailsComponent implements OnInit {
       return 0;
     if(compare_fn(el, ar[ar.length-1]) > 0)
       return ar.length;
-    var m = 0;
-    var n = ar.length - 1;
+    let m = 0;
+    let n = ar.length - 1;
     while (m <= n) {
-      var k = (n + m) >> 1;
-      var cmp = compare_fn(el, ar[k]);
+      let k = (n + m) >> 1;
+      let cmp = compare_fn(el, ar[k]);
       if (cmp > 0) {
         m = k + 1;
       } else if(cmp < 0) {
