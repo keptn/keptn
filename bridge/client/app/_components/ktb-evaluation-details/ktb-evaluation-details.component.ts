@@ -29,6 +29,13 @@ import DateUtil from "../../_utils/date.utils";
 })
 export class KtbEvaluationDetailsComponent implements OnInit {
 
+  public _evaluationColor = {
+    'pass': '#7dc540',
+    'warning': '#fd8232',
+    'fail': '#dc172a',
+    'info': '#f8f8f8'
+  };
+
   public _evaluationData: any;
   public _evaluationSource: string;
 
@@ -110,7 +117,10 @@ export class KtbEvaluationDetailsComponent implements OnInit {
     },
 
     xAxis: [{
-      categories: []
+      categories: [],
+      labels: {
+        enabled: false
+      }
     }],
 
     yAxis: [{
@@ -119,32 +129,13 @@ export class KtbEvaluationDetailsComponent implements OnInit {
       labels: {
         format: '{value}'
       },
-      minPadding: 0,
-      maxPadding: 0,
-      startOnTick: false,
-      endOnTick: false,
     }],
 
     colorAxis: {
-      stops: [
-        [0, '#00ff00'],
-        [0.5, '#ffaa00'],
-        [1, '#ff0000']
-      ],
-      min: 0
-    },
-
-    plotOptions: {
+      dataClasses: Object.keys(this._evaluationColor).map((key) => { return { color: this._evaluationColor[key], name: key } })
     },
   };
   public _heatmapSeries: Highcharts.IndividualSeriesOptions[] = [];
-
-  public _evaluationColor = {
-    'fail': '#ff0000',
-    'pass': '#00ff00',
-    'warning': '#ff9900',
-    'info': '#ffff00'
-  };
 
   @Input()
   get evaluationData(): any {
@@ -294,6 +285,8 @@ export class KtbEvaluationDetailsComponent implements OnInit {
         }
       })
     )
+
+    this._heatmapOptions.chart.height = this._heatmapOptions.yAxis[0].categories.length*28 + 100;
   }
 
   switchEvaluationView() {
