@@ -97,7 +97,7 @@
               {{ tooltip.points[0].series.name }}
             </dt-key-value-list-key>
             <dt-key-value-list-value>
-              {{ tooltip.points[0].point.y }}
+              {{ tooltip.points[0].point.y | number:'1.0-0' }}
             </dt-key-value-list-value>
           </dt-key-value-list-item>
         </dt-key-value-list>
@@ -105,7 +105,7 @@
     </dt-chart-tooltip>
   </dt-chart>
   <div class="p-3" *ngIf="_selectedEvaluationData">
-    <dt-consumption [max]="_selectedEvaluationData.evaluationdetails.indicatorResults ? 100 : 0" [value]="_selectedEvaluationData.evaluationdetails.score" [color]="_selectedEvaluationData.result == 'fail' ? 'error' : 'recovered'">
+    <dt-consumption [max]="_selectedEvaluationData.evaluationdetails.indicatorResults ? 100 : 0" [value]="_selectedEvaluationData.evaluationdetails.score" [color]="_evaluationState[_selectedEvaluationData.result]">
       <dt-consumption-icon aria-label="Test">
         <dt-icon name="summary"></dt-icon>
       </dt-consumption-icon>
