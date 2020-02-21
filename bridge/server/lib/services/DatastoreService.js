@@ -53,17 +53,32 @@ class DatastoreService {
   }
 
   async getRoots(projectName, serviceName, fromTime) {
-    let url = `${this.api}/event?root=true&project=${projectName}&service=${serviceName}&pageSize=100`;
-    if(fromTime)
-      url += `&fromTime=${fromTime}`;
-    const result = await axios.get(url);
-    return DatastoreService.mapEventsResult(result, (a, b) => (a.time < b.time ? 1 : -1));
+    return this.getEvents({projectName, serviceName, fromTime, root: true});
   }
 
   async getTraces(contextId, fromTime) {
-    let url = `${this.api}/event?keptnContext=${contextId}&pageSize=100`;
-    if(fromTime)
-      url += `&fromTime=${fromTime}`;
+    return this.getEvents({contextId, fromTime});
+  }
+
+  async getEvents(options) {
+    let url = `${this.api}/event?pageSize=100`;
+    if(options.type)
+      url += `&type=${options.type}`;
+    if(options.root)
+      url += `&root=${options.root}`;
+    if(options.contextId)
+      url += `&keptnContext=${options.contextId}`;
+    if(options.projectName)
+      url += `&project=${options.projectName}`;
+    if(options.serviceName)
+      url += `&service=${options.serviceName}`;
+    if(options.stageName)
+      url += `&stage=${options.stageName}`;
+    if(options.source)
+      url += `&source=${options.source}`;
+    if(options.fromTime)
+      url += `&fromTime=${options.fromTime}`;
+
     const result = await axios.get(url);
     return DatastoreService.mapEventsResult(result, (a, b) => (a.time > b.time ? 1 : -1));
   }

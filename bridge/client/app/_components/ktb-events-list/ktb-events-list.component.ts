@@ -47,4 +47,9 @@ export class KtbEventsListComponent implements OnInit {
   getCalendarFormats() {
     return DateUtil.getCalendarFormats();
   }
+
+  switchEvaluationView(event) {
+
+  }
+
 }

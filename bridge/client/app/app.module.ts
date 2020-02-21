@@ -22,6 +22,7 @@ import {KtbSelectableTileComponent} from "./_components/ktb-selectable-tile/ktb-
 import {KtbHttpLoadingBarComponent} from "./_components/ktb-http-loading-bar/ktb-http-loading-bar.component";
 import {KtbRootEventsListComponent} from "./_components/ktb-root-events-list/ktb-root-events-list.component";
 import {KtbEventItemComponent, KtbEventItemDetail} from './_components/ktb-event-item/ktb-event-item.component';
+import {KtbEvaluationDetailsComponent} from './_components/ktb-evaluation-details/ktb-evaluation-details.component';
 import {KtbHttpLoadingSpinnerComponent} from './_components/ktb-http-loading-spinner/ktb-http-loading-spinner.component';
 import {KtbExpandableTileComponent, KtbExpandableTileHeader} from './_components/ktb-expandable-tile/ktb-expandable-tile.component';
 import {KtbHorizontalSeparatorComponent, KtbHorizontalSeparatorTitle} from "./_components/ktb-horizontal-separator/ktb-horizontal-separator.component";
@@ -57,6 +58,8 @@ import {DtKeyValueListModule} from "@dynatrace/barista-components/key-value-list
 
 import {registerLocaleData} from "@angular/common";
 import localeEn from '@angular/common/locales/en';
+import {DtButtonGroupModule} from "@dynatrace/barista-components/button-group";
+import {DtChartModule} from "@dynatrace/barista-components/chart";
 
 registerLocaleData(localeEn, 'en');
 
@@ -82,6 +85,7 @@ registerLocaleData(localeEn, 'en');
     AtobPipe,
     KtbEventItemComponent,
     KtbEventItemDetail,
+    KtbEvaluationDetailsComponent,
   ],
   imports: [
     BrowserModule,
@@ -92,6 +96,7 @@ registerLocaleData(localeEn, 'en');
     MomentModule,
     DtThemingModule,
     DtButtonModule,
+    DtButtonGroupModule,
     DtSelectModule,
     DtMenuModule,
     DtDrawerModule,
@@ -111,6 +116,7 @@ registerLocaleData(localeEn, 'en');
     DtProgressCircleModule,
     DtConsumptionModule,
     DtKeyValueListModule,
+    DtChartModule,
     DtIconModule.forRoot({
       svgIconLocation: `/assets/icons/{{name}}.svg`,
     }),
