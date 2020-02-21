@@ -9,22 +9,6 @@ the respective data source services to retrieve the values for the SLIs defined 
 When a data source service is finished with the retrieval of the SLI values, and has sent them as an event of the type `sh.keptn.internal.event.get-sli.done`,
 the lighthouse-service will evaluate the SLI values based on the evaluation strategy that has been defined in the  `slo.yaml` file.
 
-# Configuring behavior
-
-The service supports the environment variable `SLO_REQUIRED`, which accepts a boolean value: 
-
-```yaml
-env:
-  - name: SLO_REQUIRED
-    value: 'false'
-```
-
-* If the environment variable `SLO_REQUIRED` is not configured, it is automatically set to *true*. 
-
-* If `SLO_REQUIRED` is set to `true` and no SLO file for the service is available, the lighthouse-service sends a `sh.keptn.events.evaluation-done` event with result **failed**. 
-
-* If `SLO_REQUIRED` is set to `false` and an no SLO file for the service is available, the lighthouse-service sends a `sh.keptn.events.evaluation-done` event with result **warning**. 
-
 # Configuring a data source
 For each project, one data source (e.g., Prometheus or Dynatrace) can be defined. To tell Keptn which data source should be used, 
 a config map with the name `lighthouse-config-<project-name>` and the following format 
