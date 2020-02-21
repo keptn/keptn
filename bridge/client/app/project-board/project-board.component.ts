@@ -1,5 +1,5 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {filter, map, startWith, switchMap} from "rxjs/operators";
+import {filter, first, map, startWith, switchMap} from "rxjs/operators";
 import {Observable, Subscription, timer} from "rxjs";
 import {ActivatedRoute} from "@angular/router";
 
@@ -38,9 +38,9 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
         this.currentRoot = null;
 
         this.project = this.dataService.projects.pipe(
-          map(projects => projects.find(project => {
+          map(projects => projects ? projects.find(project => {
             return project.projectName === params['projectName'];
-          }))
+          }) : null)
         );
 
         this._rootEventsTimer = timer(0, this._rootEventsTimerInterval*1000)
@@ -50,11 +50,9 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
             filter(project => !!project && !!project.getServices())
           )
           .subscribe(project => {
-            if(project && project.getServices()) {
-              project.getServices().forEach(service => {
-                this.dataService.loadRoots(project, service);
-              });
-            }
+            project.getServices().forEach(service => {
+              this.dataService.loadRoots(project, service);
+            });
           });
       }
     });
