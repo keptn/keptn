@@ -1,4 +1,4 @@
-package config_manager
+package config
 
 import (
 	"encoding/json"
@@ -21,7 +21,7 @@ type CLIConfigManager struct {
 	cliConfigPath string
 }
 
-func newCLIConfigManager() *CLIConfigManager {
+func NewCLIConfigManager() *CLIConfigManager {
 	cliConfigManager := CLIConfigManager{}
 
 	dir, err := keptnutils.GetKeptnDirectory()

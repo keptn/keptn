@@ -1,4 +1,4 @@
-package config_manager
+package config
 
 import (
 	"io/ioutil"
@@ -21,7 +21,7 @@ func init() {
 
 func TestLoadNonExistingCLIConfig(t *testing.T) {
 
-	mng := newCLIConfigManager()
+	mng := NewCLIConfigManager()
 	tmpDir, err := ioutil.TempDir("", "")
 	if err != nil {
 		log.Fatal(err)
@@ -45,7 +45,7 @@ func TestLoadNonExistingCLIConfig(t *testing.T) {
 
 func TestStoreCLIConfig(t *testing.T) {
 
-	mng := newCLIConfigManager()
+	mng := NewCLIConfigManager()
 	tmpDir, err := ioutil.TempDir("", "")
 	if err != nil {
 		log.Fatal(err)
@@ -70,7 +70,7 @@ func TestStoreCLIConfig(t *testing.T) {
 
 func TestLoadCLIConfig(t *testing.T) {
 
-	mng := newCLIConfigManager()
+	mng := NewCLIConfigManager()
 	tmpDir, err := ioutil.TempDir("", "")
 	if err != nil {
 		log.Fatal(err)
