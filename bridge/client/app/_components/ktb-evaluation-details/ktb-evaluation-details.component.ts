@@ -36,6 +36,12 @@ export class KtbEvaluationDetailsComponent implements OnInit {
     'info': '#f8f8f8'
   };
 
+  public _evaluationState = {
+    'pass': 'recovered',
+    'warning': 'warning',
+    'fail': 'error'
+  };
+
   public _evaluationData: any;
   public _evaluationSource: string;
 
@@ -84,20 +90,6 @@ export class KtbEvaluationDetailsComponent implements OnInit {
     },
   };
   public _chartSeries: Highcharts.IndividualSeriesOptions[] = [
-    {
-      name: 'Evaluation passed',
-      type: 'column',
-      data: [],
-      color: '#006bb8',
-      cursor: 'pointer'
-    },
-    {
-      name: 'Evaluation failed',
-      type: 'column',
-      data: [],
-      color: '#c41425',
-      cursor: 'pointer'
-    },
   ];
 
   public _heatmapOptions: Highcharts.Options = {
@@ -185,35 +177,14 @@ export class KtbEvaluationDetailsComponent implements OnInit {
 
   updateChartData(evaluationHistory) {
     let chartSeries = [];
-
-    let evaluationPassed = [];
-    let evaluationFailed = [];
+    let evaluationScoreData = [];
 
     evaluationHistory.forEach((evaluation) => {
-      let data = {
+      evaluationScoreData.push({
         x: moment(evaluation.time).unix()*1000,
         y: evaluation.data.evaluationdetails ? evaluation.data.evaluationdetails.score : 0,
-        evaluationData: evaluation
-      };
-      if(evaluation.data.result == 'pass')
-        evaluationPassed.push(data);
-      else
-        evaluationFailed.push(data);
-
-      let scoreChartSeries = chartSeries.find(series => series.name == "Score");
-      if(!scoreChartSeries) {
-        scoreChartSeries = {
-          name: "Score",
-          type: 'line',
-          yAxis: 1,
-          data: [],
-        };
-        chartSeries.push(scoreChartSeries);
-      }
-      scoreChartSeries.data.push({
-        x: moment(evaluation.time).unix()*1000,
-        y: evaluation.data.evaluationdetails.score,
-        evaluation: evaluation
+        evaluationData: evaluation,
+        color: this._evaluationColor[evaluation.data.evaluationdetails.result]
       });
 
       if(evaluation.data.evaluationdetails.indicatorResults) {
@@ -230,6 +201,7 @@ export class KtbEvaluationDetailsComponent implements OnInit {
               type: 'line',
               yAxis: 1,
               data: [],
+              visible: false,
             };
             chartSeries.push(indicatorChartSeries);
           }
@@ -239,18 +211,17 @@ export class KtbEvaluationDetailsComponent implements OnInit {
     });
     this._chartSeries = [
       {
-        name: 'Evaluation passed',
+        name: 'Score',
         type: 'column',
-        data: evaluationPassed,
-        color: '#7dc540',
+        data: evaluationScoreData,
         cursor: 'pointer'
       },
       {
-        name: 'Evaluation failed',
-        type: 'column',
-        data: evaluationFailed,
-        color: '#c41425',
-        cursor: 'pointer'
+        name: 'Score',
+        type: 'line',
+        data: evaluationScoreData,
+        cursor: 'pointer',
+        visible: false,
       },
       ...chartSeries
     ];
