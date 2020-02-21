@@ -154,7 +154,7 @@ jobs:
     - cat ~/.keptn/keptn-installer-err.log
 
   - stage: Cron MicroK8s Standalone (--platform=kubernetes --use-case=quality-gates)
-    if: branch = master AND type = cron
+    # if: branch = master AND type = cron
     os: linux
     before_script:
       # download and install kubectl

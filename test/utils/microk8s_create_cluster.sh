@@ -1,7 +1,9 @@
 #!/bin/bash
 
 # install micro k8s via snap
-sudo snap install microk8s --classic
+sudo snap install microk8s --channel=1.15/stable --classic
+
+sudo microk8s.start
 
 sudo iptables -P FORWARD ACCEPT
 sudo microk8s.enable dns
