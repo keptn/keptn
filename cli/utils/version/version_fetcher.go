@@ -1,4 +1,4 @@
-package version_checker
+package version
 
 import (
 	"encoding/json"
@@ -9,13 +9,22 @@ import (
 
 const versionURL = "https://get.keptn.sh/version.json"
 
-type Client struct {
+type versionInfo struct {
+	CLIVersionInfo cliVersionInfo `json:"cli"`
+}
+
+type cliVersionInfo struct {
+	Stable     []string `json:"stable"`
+	Prerelease []string `json:"prerelease"`
+}
+
+type versionFetcherClient struct {
 	httpClient *http.Client
 	versionUrl string
 }
 
-func newClient() *Client {
-	client := Client{
+func newVersionFetcherClient() *versionFetcherClient {
+	client := versionFetcherClient{
 		httpClient: &http.Client{
 			Timeout: 5 * time.Second,
 		},
@@ -24,18 +33,9 @@ func newClient() *Client {
 	return &client
 }
 
-type VersionInfo struct {
-	CLIVersionInfo CLIVersionInfo `json:"cli"`
-}
+func (client *versionFetcherClient) getCLIVersionInfo(cliVersion string) (*cliVersionInfo, error) {
 
-type CLIVersionInfo struct {
-	StableVersions     []string `json:"stable_versions"`
-	PrereleaseVersions []string `json:"prerelease_versions"`
-}
-
-func (client *Client) GetCLIVersionInfo(cliVersion string) (*CLIVersionInfo, error) {
-
-	versionInfo := &VersionInfo{}
+	versionInfo := &versionInfo{}
 	req, err := http.NewRequest("GET", client.versionUrl, nil)
 	if err != nil {
 		return nil, err

@@ -1,4 +1,4 @@
-package version_checker
+package version
 
 import (
 	"context"
@@ -45,18 +45,18 @@ func TestGetCLIVersionInfo(t *testing.T) {
 		assert.Equal(t, r.Method, "GET", "Expect GET request")
 		assert.Equal(t, r.Header.Get("user-agent"), "KeptnCLI/0.6.0", "Expect user-agent header")
 		w.WriteHeader(http.StatusOK)
-		io.WriteString(w, `{ "cli": { "stable_versions": ["0.5.2", "0.6.0"], "prerelease_versions": ["0.6.0-beta2"] } }`)
+		io.WriteString(w, `{ "cli": { "stable": ["0.5.2", "0.6.0"], "prerelease": ["0.6.0-beta2"] } }`)
 	})
 
 	httpClient, url, teardown := testingHTTPClient(handler)
 	defer teardown()
 
-	client := newClient()
+	client := newVersionFetcherClient()
 	client.httpClient = httpClient
 	client.versionUrl = url
 
-	cliVersionInfo, err := client.GetCLIVersionInfo("0.6.0")
+	cliVersionInfo, err := client.getCLIVersionInfo("0.6.0")
 	assert.Equal(t, err, nil, "Received unexpected error")
-	assert.Equal(t, cliVersionInfo.PrereleaseVersions, []string{"0.6.0-beta2"}, "Received unexpected content")
-	assert.Equal(t, cliVersionInfo.StableVersions, []string{"0.5.2", "0.6.0"}, "Received unexpected content")
+	assert.Equal(t, cliVersionInfo.Prerelease, []string{"0.6.0-beta2"}, "Received unexpected content")
+	assert.Equal(t, cliVersionInfo.Stable, []string{"0.5.2", "0.6.0"}, "Received unexpected content")
 }
