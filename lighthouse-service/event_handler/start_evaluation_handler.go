@@ -15,8 +15,6 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-const slo_required = "SLO_REQUIRED"
-
 type StartEvaluationHandler struct {
 	Logger *keptnutils.Logger
 	Event  cloudevents.Event
