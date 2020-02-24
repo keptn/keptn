@@ -2,11 +2,11 @@ package cmd
 
 import "github.com/spf13/cobra"
 
-// sendCmd represents the send command
+// sendCmd implements the send command
 var sendCmd = &cobra.Command{
 	Use:   "send [event]",
-	Short: `send in combination with the subcommand "event" allows to send a Keptn event`,
-	Long:  `send in combination with the subcommand "event" allows to send a Keptn event. Send without subcommand cannot be used.`,
+	Short: `"send" can be used with the subcommand "event"`,
+	Long:  `"send" can be used with the subcommand "event"`,
 }
 
 func init() {
