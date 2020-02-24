@@ -22,8 +22,6 @@ type projectMetadata struct {
 
 // GetProjectHandlerFunc gets a list of projects
 func GetProjectHandlerFunc(params project.GetProjectParams) middleware.Responder {
-	common.Lock()
-	defer common.UnLock()
 	var payload = &models.Projects{
 		PageSize:    0,
 		NextPageKey: "0",
@@ -55,8 +53,6 @@ func GetProjectHandlerFunc(params project.GetProjectParams) middleware.Responder
 
 // PostProjectHandlerFunc creates a new project
 func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Responder {
-	common.Lock()
-	defer common.UnLock()
 	credentialsCreated := false
 	logger := utils.NewLogger("", "", "configuration-service")
 	projectConfigPath := config.ConfigDir + "/" + params.Project.ProjectName
@@ -66,6 +62,8 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Project already exists")})
 	}
 
+	common.LockProject(params.Project.ProjectName)
+	defer common.UnlockProject(params.Project.ProjectName)
 	////////////////////////////////////////////////////
 	// clone existing repo
 	////////////////////////////////////////////////////
@@ -140,8 +138,6 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 
 // GetProjectProjectNameHandlerFunc gets a project by its name
 func GetProjectProjectNameHandlerFunc(params project.GetProjectProjectNameParams) middleware.Responder {
-	common.Lock()
-	defer common.UnLock()
 	if !common.ProjectExists(params.ProjectName) {
 		return project.NewGetProjectProjectNameNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project not found")})
 	}
@@ -160,8 +156,6 @@ func PutProjectProjectNameHandlerFunc(params project.PutProjectProjectNameParams
 
 // DeleteProjectProjectNameHandlerFunc deletes a project
 func DeleteProjectProjectNameHandlerFunc(params project.DeleteProjectProjectNameParams) middleware.Responder {
-	common.Lock()
-	defer common.UnLock()
 	logger := utils.NewLogger("", "", "configuration-service")
 	logger.Debug("Deleting project " + params.ProjectName)
 	err := os.RemoveAll(config.ConfigDir + "/" + params.ProjectName)

@@ -22,8 +22,8 @@ type serviceMetadata struct {
 
 // GetProjectProjectNameStageStageNameServiceHandlerFunc get list of services
 func GetProjectProjectNameStageStageNameServiceHandlerFunc(params service.GetProjectProjectNameStageStageNameServiceParams) middleware.Responder {
-	common.Lock()
-	defer common.UnLock()
+	common.LockProject(params.ProjectName)
+	defer common.UnlockProject(params.ProjectName)
 	logger := utils.NewLogger("", "", "configuration-service")
 	if !common.ProjectExists(params.ProjectName) {
 		return service.NewGetProjectProjectNameStageStageNameServiceNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project not found")})
@@ -73,8 +73,8 @@ func GetProjectProjectNameStageStageNameServiceHandlerFunc(params service.GetPro
 
 // GetProjectProjectNameStageStageNameServiceServiceNameHandlerFunc get the specified service
 func GetProjectProjectNameStageStageNameServiceServiceNameHandlerFunc(params service.GetProjectProjectNameStageStageNameServiceServiceNameParams) middleware.Responder {
-	common.Lock()
-	defer common.UnLock()
+	common.LockProject(params.ProjectName)
+	defer common.UnlockProject(params.ProjectName)
 	if !common.ProjectExists(params.ProjectName) {
 		return service.NewGetProjectProjectNameStageStageNameServiceServiceNameNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project not found")})
 	}
@@ -92,8 +92,8 @@ func GetProjectProjectNameStageStageNameServiceServiceNameHandlerFunc(params ser
 
 // PostProjectProjectNameStageStageNameServiceHandlerFunc creates a new service
 func PostProjectProjectNameStageStageNameServiceHandlerFunc(params service.PostProjectProjectNameStageStageNameServiceParams) middleware.Responder {
-	common.Lock()
-	defer common.UnLock()
+	common.LockProject(params.ProjectName)
+	defer common.UnlockProject(params.ProjectName)
 	logger := utils.NewLogger("", "", "configuration-service")
 	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
 	servicePath := projectConfigPath + "/" + params.Service.ServiceName
