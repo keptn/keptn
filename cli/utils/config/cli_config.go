@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"time"
@@ -18,7 +19,7 @@ type CLIConfig struct {
 }
 
 type CLIConfigManager struct {
-	cliConfigPath string
+	CLIConfigPath string
 }
 
 func NewCLIConfigManager() *CLIConfigManager {
@@ -28,31 +29,37 @@ func NewCLIConfigManager() *CLIConfigManager {
 	if err != nil {
 		log.Fatal(err)
 	}
-	cliConfigManager.cliConfigPath = dir + "config"
+	cliConfigManager.CLIConfigPath = dir + "config"
 	return &cliConfigManager
 }
 
 // LoadCLIConfig loads the configuration from file
 func (c *CLIConfigManager) LoadCLIConfig() (CLIConfig, error) {
 
-	cliConfig := CLIConfig{}
-	if !utils.FileExists(c.cliConfigPath) {
+	cliConfig := CLIConfig{AutomaticVersionCheck: true}
+	if !utils.FileExists(c.CLIConfigPath) {
 		return cliConfig, nil
 	}
 
-	data, err := utils.ReadFile(c.cliConfigPath)
+	data, err := utils.ReadFile(c.CLIConfigPath)
 	if err != nil {
-		return cliConfig, err
+		return cliConfig, fmt.Errorf("error when reading config file: %v", err)
 	}
-	err = json.Unmarshal([]byte(data), &cliConfig)
-	return cliConfig, err
+	if err := json.Unmarshal([]byte(data), &cliConfig); err != nil {
+		return cliConfig, fmt.Errorf("error when unmarshalling config file: %v", err)
+	}
+
+	return cliConfig, nil
 }
 
 // StoreCLIConfig stores the configuration into the file
 func (c *CLIConfigManager) StoreCLIConfig(config CLIConfig) error {
 	data, err := json.Marshal(config)
 	if err != nil {
-		return err
+		return fmt.Errorf("error when marshalling config file: %v", err)
 	}
-	return ioutil.WriteFile(c.cliConfigPath, []byte(data), 0644)
+	if err := ioutil.WriteFile(c.CLIConfigPath, []byte(data), 0644); err != nil {
+		return fmt.Errorf("error when writing config file: %v", err)
+	}
+	return nil
 }

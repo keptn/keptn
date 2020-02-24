@@ -29,13 +29,13 @@ func TestLoadNonExistingCLIConfig(t *testing.T) {
 
 	defer os.RemoveAll(tmpDir)
 
-	mng.cliConfigPath = filepath.Join(tmpDir, "config")
+	mng.CLIConfigPath = filepath.Join(tmpDir, "config")
 
 	cliConfig, err := mng.LoadCLIConfig()
 	if err != nil {
 		t.Errorf("Unexpected error %v", err)
 	}
-	if cliConfig.AutomaticVersionCheck {
+	if !cliConfig.AutomaticVersionCheck {
 		t.Errorf("Unexpected value of AutomaticVersionCheck")
 	}
 	if cliConfig.LastVersionCheck != nil {
@@ -53,7 +53,7 @@ func TestStoreCLIConfig(t *testing.T) {
 
 	defer os.RemoveAll(tmpDir)
 
-	mng.cliConfigPath = filepath.Join(tmpDir, "config")
+	mng.CLIConfigPath = filepath.Join(tmpDir, "config")
 
 	cliConfig := CLIConfig{AutomaticVersionCheck: true, LastVersionCheck: &testTime}
 
@@ -62,7 +62,7 @@ func TestStoreCLIConfig(t *testing.T) {
 		t.Errorf("Unexpected error %v", err)
 	}
 
-	data, err := utils.ReadFile(mng.cliConfigPath)
+	data, err := utils.ReadFile(mng.CLIConfigPath)
 	if data != testConfig {
 		t.Errorf("Different config stored")
 	}
@@ -78,8 +78,8 @@ func TestLoadCLIConfig(t *testing.T) {
 
 	defer os.RemoveAll(tmpDir)
 
-	mng.cliConfigPath = filepath.Join(tmpDir, "config")
-	ioutil.WriteFile(mng.cliConfigPath, []byte(testConfig), 0644)
+	mng.CLIConfigPath = filepath.Join(tmpDir, "config")
+	ioutil.WriteFile(mng.CLIConfigPath, []byte(testConfig), 0644)
 
 	cliConfig, err := mng.LoadCLIConfig()
 	if err != nil {
