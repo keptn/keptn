@@ -13,4 +13,6 @@ If any organization would like get added or removed please make a pull request b
 | Organization          | Reference                                                                        |
 |-----------------------|----------------------------------------------------------------------------------|
 |Avodaq                 | https://www.youtube.com/watch?v=bYmFYXLmGb0&feature=youtu.be&t=247               |
+|ERT                    | https://www.dynatrace.com/news/blog/making-ops-life-easier-automating-sla-monitoring-for-deployed-services-on-kubernetes/ |
 |Neotys                 | https://www.neotys.com/neotys-keptn-webinar                                      |
+
