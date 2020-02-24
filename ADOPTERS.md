@@ -1,8 +1,6 @@
-ADOPTERS
-========
+# Adopters
 
-PUBLIC REFERENCES
------------------
+## Public References
 
 This document lists the organizations that use Keptn based on public information available in blog posts and videos. 
 If any organization would like get added or removed please make a pull request by following these guidelines:
