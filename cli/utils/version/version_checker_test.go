@@ -15,7 +15,7 @@ import (
 var versionTests = []struct {
 	usedVersionString string
 	versionInfo       cliVersionInfo
-	res               AvailableVersions
+	res               availableNewestVersions
 }{
 	{"0.6.0", cliVersionInfo{Stable: []string{"0.7.0", "0.6.1"}}, availableVersionInitHelper("0.6.1", "0.7.0", "", "")},
 	{"0.6.0-beta", cliVersionInfo{Stable: []string{"0.7.0", "0.6.0"}, Prerelease: []string{"0.6.0-beta2"}}, availableVersionInitHelper("0.6.0", "0.7.0", "0.6.0-beta2", "")},
@@ -30,7 +30,7 @@ var versionTests = []struct {
 }
 
 func availableVersionInitHelper(newestCompatibleStable string, newestIncompatibleStable string,
-	newestCompatiblePrerelease string, newestIncompatiblePrerelease string) AvailableVersions {
+	newestCompatiblePrerelease string, newestIncompatiblePrerelease string) availableNewestVersions {
 	var nCS *version.Version
 	var nIS *version.Version
 	var nCP *version.Version
@@ -47,9 +47,9 @@ func availableVersionInitHelper(newestCompatibleStable string, newestIncompatibl
 	if newestIncompatiblePrerelease != "" {
 		nIP, _ = version.NewSemver(newestIncompatiblePrerelease)
 	}
-	return AvailableVersions{
-		Stable:     VersionInfo{newestCompatible: nCS, newestIncompatible: nIS},
-		Prerelease: VersionInfo{newestCompatible: nCP, newestIncompatible: nIP},
+	return availableNewestVersions{
+		stable:     newestVersions{newestCompatible: nCS, newestIncompatible: nIS},
+		prerelease: newestVersions{newestCompatible: nCP, newestIncompatible: nIP},
 	}
 }
 
@@ -60,7 +60,7 @@ func TestGetNewerVersion(t *testing.T) {
 			if err != nil {
 				t.Errorf("Unexpected error %v", err)
 			}
-			if !res.Equal(tt.res) {
+			if !res.equal(tt.res) {
 				t.Errorf("got %v, want %v for %s", res, tt.res, tt.usedVersionString)
 			}
 		})
@@ -84,14 +84,14 @@ func TestCheckCLIVersion(t *testing.T) {
 	lastChecked := time.Date(1970, time.January, 1, 0, 0, 0, 0, time.UTC)
 
 	cliConfig := config.CLIConfig{AutomaticVersionCheck: true, LastVersionCheck: &lastChecked}
-	res, err := versionChecker.GetNewerCLIVersion(&cliConfig, "0.6.0")
+	res, newTime, err := versionChecker.getNewerCLIVersion(cliConfig, "0.6.0")
 
 	expectedRes := availableVersionInitHelper("0.6.1", "", "", "")
 
 	assert.Equal(t, err, nil, "Unexpected error")
-	assert.Equal(t, res.Equal(expectedRes), true, "Wrong versions")
+	assert.Equal(t, res.equal(expectedRes), true, "Wrong versions")
 	assert.Equal(t, cliConfig.AutomaticVersionCheck, true, "Flag must not be changed")
-	if time.Now().Sub(*cliConfig.LastVersionCheck) > time.Minute {
+	if time.Now().Sub(*newTime) > time.Minute {
 		t.Errorf("LastVersionCheck has not been updated")
 	}
 }

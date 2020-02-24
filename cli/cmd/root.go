@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/keptn/keptn/cli/utils/version"
+
 	"github.com/keptn/keptn/cli/pkg/logging"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
@@ -62,6 +64,9 @@ to create projects, and to onboard services.
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
+
+	vChecker := version.NewVersionChecker()
+	vChecker.CheckCLIVersion(Version)
 	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
 	}
