@@ -113,31 +113,24 @@ func NewVersionChecker() *VersionChecker {
 }
 
 // getNewerCLIVersion checks for newer CLI versions if the automatic version check is enabled in the config
-func (v *VersionChecker) getNewerCLIVersion(cliConfig config.CLIConfig, usedVersionString string) (availableNewestVersions, *time.Time, error) {
+func (v *VersionChecker) getNewerCLIVersion(cliConfig config.CLIConfig, usedVersionString string) (availableNewestVersions, error) {
 
-	if cliConfig.AutomaticVersionCheck {
-		checkTime := time.Now()
-		if cliConfig.LastVersionCheck == nil || checkTime.Sub(*cliConfig.LastVersionCheck) >= checkInterval {
-			cliVersionInfo, err := v.versionFetcherClient.getCLIVersionInfo(usedVersionString)
-			if err != nil {
-				return availableNewestVersions{}, nil, fmt.Errorf("error when fetching CLI version infos: %v", err)
-			}
-
-			res, err := getAvailableVersions(usedVersionString, *cliVersionInfo)
-			if err != nil {
-				return availableNewestVersions{}, nil, fmt.Errorf("error when analyzing the available versions: %v", err)
-			}
-			return res, &checkTime, nil
-		}
+	cliVersionInfo, err := v.versionFetcherClient.getCLIVersionInfo(usedVersionString)
+	if err != nil {
+		return availableNewestVersions{}, fmt.Errorf("error when fetching CLI version infos: %v", err)
 	}
 
-	return availableNewestVersions{}, nil, nil
+	res, err := getAvailableVersions(usedVersionString, *cliVersionInfo)
+	if err != nil {
+		return availableNewestVersions{}, fmt.Errorf("error when analyzing the available versions: %v", err)
+	}
+	return res, nil
 }
 
-const newCompatibleVersionMsg = `A new version of the CLI  %s is available. Please visit https://keptn.sh for more information.\n`
-const newIncompatibleVersionMsg = `A new version of the CLI %s is available. Please note that this version is incompatible with your Keptn cluster` +
-	`version and requires to update the cluster too. Please visit https://keptn.sh for more information.\n`
-const disableMsg = `To disable this notice, run: 'keptn config set AutomaticVersionCheck false'`
+const newCompatibleVersionMsg = `keptn version %s is available! Please visit https://keptn.sh for more information.`
+const newIncompatibleVersionMsg = `keptn version %s is available! Please note that this version is incompatible with your Keptn cluster` +
+	`version and requires to update the cluster too. Please visit https://keptn.sh for more information.`
+const disableMsg = `To disable this notice, run: 'keptn set config AutomaticVersionCheck false'`
 
 func (v *VersionChecker) CheckCLIVersion(cliVersion string) {
 
@@ -147,31 +140,37 @@ func (v *VersionChecker) CheckCLIVersion(cliVersion string) {
 		logging.PrintLog(err.Error(), logging.InfoLevel)
 		return
 	}
-	newVersions, checkTime, err := v.getNewerCLIVersion(cliConfig, cliVersion)
-	if err != nil {
-		logging.PrintLog(err.Error(), logging.InfoLevel)
-		return
-	}
-	msgPrinted := false
-	if newVersions.stable.newestCompatible != nil {
-		fmt.Printf(newCompatibleVersionMsg, newVersions.stable.newestCompatible.String())
-		msgPrinted = true
-	}
-	if newVersions.prerelease.newestCompatible != nil {
-		fmt.Printf(newCompatibleVersionMsg, newVersions.prerelease.newestCompatible)
-		msgPrinted = true
-	}
-	if newVersions.stable.newestIncompatible != nil {
-		fmt.Printf(newIncompatibleVersionMsg, newVersions.stable.newestIncompatible.String())
-		msgPrinted = true
-	}
-	if msgPrinted {
-		fmt.Println(disableMsg)
-	}
 
-	cliConfig.LastVersionCheck = checkTime
-	if err := configMng.StoreCLIConfig(cliConfig); err != nil {
-		logging.PrintLog(err.Error(), logging.InfoLevel)
-		return
+	if cliConfig.AutomaticVersionCheck {
+		checkTime := time.Now()
+		if cliConfig.LastVersionCheck == nil || checkTime.Sub(*cliConfig.LastVersionCheck) >= checkInterval {
+			newVersions, err := v.getNewerCLIVersion(cliConfig, cliVersion)
+			if err != nil {
+				logging.PrintLog(err.Error(), logging.InfoLevel)
+				return
+			}
+			msgPrinted := false
+			if newVersions.stable.newestCompatible != nil {
+				fmt.Printf(newCompatibleVersionMsg+"\n", newVersions.stable.newestCompatible.String())
+				msgPrinted = true
+			}
+			if newVersions.prerelease.newestCompatible != nil {
+				fmt.Printf(newCompatibleVersionMsg+"\n", newVersions.prerelease.newestCompatible)
+				msgPrinted = true
+			}
+			if newVersions.stable.newestIncompatible != nil {
+				fmt.Printf(newIncompatibleVersionMsg+"\n", newVersions.stable.newestIncompatible.String())
+				msgPrinted = true
+			}
+			if msgPrinted {
+				fmt.Println(disableMsg)
+			}
+
+			cliConfig.LastVersionCheck = &checkTime
+			if err := configMng.StoreCLIConfig(cliConfig); err != nil {
+				logging.PrintLog(err.Error(), logging.InfoLevel)
+				return
+			}
+		}
 	}
 }

@@ -84,14 +84,10 @@ func TestCheckCLIVersion(t *testing.T) {
 	lastChecked := time.Date(1970, time.January, 1, 0, 0, 0, 0, time.UTC)
 
 	cliConfig := config.CLIConfig{AutomaticVersionCheck: true, LastVersionCheck: &lastChecked}
-	res, newTime, err := versionChecker.getNewerCLIVersion(cliConfig, "0.6.0")
+	res, err := versionChecker.getNewerCLIVersion(cliConfig, "0.6.0")
 
 	expectedRes := availableVersionInitHelper("0.6.1", "", "", "")
 
 	assert.Equal(t, err, nil, "Unexpected error")
 	assert.Equal(t, res.equal(expectedRes), true, "Wrong versions")
-	assert.Equal(t, cliConfig.AutomaticVersionCheck, true, "Flag must not be changed")
-	if time.Now().Sub(*newTime) > time.Minute {
-		t.Errorf("LastVersionCheck has not been updated")
-	}
 }

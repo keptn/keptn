@@ -16,7 +16,7 @@ var configMng *config.CLIConfigManager
 
 // setConfig implements the config command
 var setConfigCmd = &cobra.Command{
-	Use:   "set config",
+	Use:   "config",
 	Short: "Allows to set the CLI configuration",
 	Long: `Allows to set the CLI configuration, which is stored in $HOME/.keptn/config.
 Therefore, this command takes a key and a new value as arguments. 
@@ -29,10 +29,8 @@ Example:
 			cmd.SilenceUsage = false
 			return errors.New("required arguments KEY and VALUE")
 		}
-		return nil
-	},
-	PreRun: func(cmd *cobra.Command, args []string) {
 		configMng = config.NewCLIConfigManager()
+		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 
