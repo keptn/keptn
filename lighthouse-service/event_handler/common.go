@@ -15,13 +15,12 @@ import (
 	keptnmodelsv2 "github.com/keptn/go-utils/pkg/models/v2"
 )
 
-const configservice = "CONFIGURATION_SERVICE"
 const eventbroker = "EVENTBROKER"
 const datastore = "MONGODB_DATASTORE"
 
 func getDatastoreURL() string {
 	if os.Getenv(datastore) != "" {
-		return "http://" + os.Getenv("MONGODB_DATASTORE")
+		return "http://" + os.Getenv(datastore)
 	}
 	return "http://mongodb-datastore.keptn-datastore.svc.cluster.local:8080"
 }
@@ -87,7 +86,6 @@ func getSLOs(project string, stage string, service string) (*keptnmodelsv2.Servi
 
 func parseSLO(input []byte) (*keptnmodelsv2.ServiceLevelObjectives, error) {
 	slo := &keptnmodelsv2.ServiceLevelObjectives{}
-
 	err := yaml.Unmarshal([]byte(input), &slo)
 
 	if err != nil {
@@ -114,6 +112,7 @@ func parseSLO(input []byte) (*keptnmodelsv2.ServiceLevelObjectives, error) {
 			slo.Comparison.AggregateFunction = "avg"
 		}
 	}
+
 	for _, objective := range slo.Objectives {
 		if objective.Weight == 0 {
 			objective.Weight = 1

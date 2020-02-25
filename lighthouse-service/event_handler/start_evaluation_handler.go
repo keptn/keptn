@@ -1,11 +1,11 @@
 package event_handler
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/url"
 	"time"
+	"encoding/json"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
@@ -32,14 +32,13 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 		return err
 	}
 
-	// functional tests dont need to be evaluated
-	if e.TestStrategy == "functional" || e.TestStrategy == "" {
-		eh.Logger.Debug("Functional tests are not evaluated")
+	if e.TestStrategy == "" {
+		eh.Logger.Debug("No test has been executed, no evaluation conducted")
 		evaluationDetails := keptnevents.EvaluationDetails{
 			IndicatorResults: nil,
 			TimeStart:        e.Start,
 			TimeEnd:          e.End,
-			Result:           fmt.Sprintf("no evaluation performed by lighthouse service (TestStrategy=%s)", e.TestStrategy),
+			Result:           fmt.Sprintf("no evaluation performed by lighthouse because no test has been executed"),
 		}
 		// send the evaluation-done-event
 		evaluationResult := keptnevents.EvaluationDoneEventData{
@@ -59,15 +58,15 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 	// get SLO file
 	objectives, err := getSLOs(e.Project, e.Stage, e.Service)
 	if err != nil {
-		// No SLO file found -> no need to evaluate
+		// no SLO file found (assumption that this is an empty SLO file) -> no need to evaluate
 		eh.Logger.Debug("No SLO file found, no evaluation conducted")
 		evaluationDetails := keptnevents.EvaluationDetails{
 			IndicatorResults: nil,
 			TimeStart:        e.Start,
 			TimeEnd:          e.End,
-			Result:           fmt.Sprintf("no evaluation performed by lighthouse service (no slo.yaml found)"),
+			Result:           fmt.Sprintf("no evaluation performed by lighthouse because no SLO found for service %s", e.Service),
 		}
-		// send the evaluation-done-event
+
 		evaluationResult := keptnevents.EvaluationDoneEventData{
 			EvaluationDetails:  &evaluationDetails,
 			Result:             eh.getTestExecutionResult(),
@@ -117,8 +116,26 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 	// get the SLI provider that has been configured for the project (e.g. 'dynatrace' or 'prometheus')
 	sliProvider, err := getSLIProvider(e.Project)
 	if err != nil {
-		// ToDo: We need to provide feedback to the user that this failed becuase no sli provider was set for project
-		eh.Logger.Error("Could not determine SLI provider for project " + e.Project)
+		eh.Logger.Error("no SLI-provider configured for project " + e.Project + ", no evaluation conducted")
+		evaluationDetails := keptnevents.EvaluationDetails{
+			IndicatorResults: nil,
+			TimeStart:        e.Start,
+			TimeEnd:          e.End,
+			Result:           fmt.Sprintf("no evaluation performed by lighthouse because no SLI-provider configured for project %s", e.Project),
+		}
+
+		evaluationResult := keptnevents.EvaluationDoneEventData{
+			EvaluationDetails:  &evaluationDetails,
+			Result:             "failed",
+			Project:            e.Project,
+			Service:            e.Service,
+			Stage:              e.Stage,
+			TestStrategy:       e.TestStrategy,
+			DeploymentStrategy: e.DeploymentStrategy,
+			Labels:             e.Labels,
+		}
+
+		err = eh.sendEvaluationDoneEvent(keptnContext, &evaluationResult)
 		return err
 	}
 	// send a new event to trigger the SLI retrieval
