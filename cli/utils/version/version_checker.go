@@ -141,7 +141,7 @@ func (v *VersionChecker) CheckCLIVersion(cliVersion string) {
 		return
 	}
 
-	if cliConfig.AutomaticVersionCheck {
+	if cliConfig.AutomaticVersionCheck && IsOfficialKeptnVersion(cliVersion) {
 		checkTime := time.Now()
 		if cliConfig.LastVersionCheck == nil || checkTime.Sub(*cliConfig.LastVersionCheck) >= checkInterval {
 			newVersions, err := v.getNewerCLIVersion(cliConfig, cliVersion)
