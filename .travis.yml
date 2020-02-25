@@ -307,7 +307,7 @@ jobs:
         echo "Build keptn cli"
         cd ./cli
         go test ./...
-        TAG="${TYPE}-${NUMBER}-${DATE}"
+        TAG="${TYPE}-${NUMBER}+${DATE}"
         source ../travis-scripts/build_cli.sh "${TAG}" "${KUBE_CONSTRAINTS}"
         cd ..
       fi
@@ -414,7 +414,7 @@ jobs:
         cd ./cli
         go test ./...
         TAG="latest"
-        VERSION="${DATE}-latest"
+        VERSION="master+${DATE}"
         source ../travis-scripts/build_cli.sh "${VERSION}" "${KUBE_CONSTRAINTS}"
         cd ..
       fi

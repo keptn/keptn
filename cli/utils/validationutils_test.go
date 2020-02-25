@@ -8,11 +8,12 @@ var keptnVersions = []struct {
 	in  string
 	res bool
 }{
-	{"20191212.1033-latest", false},
-	{"0.6.0.beta2", true},
-	{"feature-443-20191213.1105", false},
-	{"0.6.0.beta2-20191204.1329", false},
-	{"0.6.0.beta2-201912044.1329", true},
+	{"master+20191212.1033", false},
+	{"0.6.0-beta2", true},
+	{"0.6.0", true},
+	{"feature-443+20191213.1105", false},
+	{"0.6.0-beta2+20191204.1329", true},
+	{"0.6.0-beta2+201912044.1329", true},
 }
 
 func TestIsOfficialKeptnVersion(t *testing.T) {

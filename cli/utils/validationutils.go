@@ -1,8 +1,9 @@
 package utils
 
 import (
-	"regexp"
 	"strings"
+
+	"github.com/hashicorp/go-version"
 )
 
 // ErrorContains checks if the error message in out contains the text in want.
@@ -18,13 +19,8 @@ func ErrorContains(out error, want string) bool {
 
 // IsOfficialKeptnVersion checks whether the provided version string follows a
 // Keptn version pattern
-func IsOfficialKeptnVersion(version string) bool {
+func IsOfficialKeptnVersion(versionStr string) bool {
 	// First check if version ends with time stamp
-	reg, _ := regexp.Compile(`(\-[0-9]{8}\.[0-9]{4})$`)
-	if reg.MatchString(version) {
-		return false
-	}
-
-	reg, _ = regexp.Compile(`([0-9]+\.){2}(([0-9]+\.[[:alpha:]])|([0-9]+))`)
-	return reg.MatchString(version)
+	_, err := version.NewSemver(versionStr)
+	return err == nil
 }
