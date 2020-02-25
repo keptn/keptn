@@ -15,12 +15,12 @@ import (
 
 // PostProjectProjectNameStageHandlerFunc creates a new stage
 func PostProjectProjectNameStageHandlerFunc(params stage.PostProjectProjectNameStageParams) middleware.Responder {
-	common.Lock()
-	defer common.UnLock()
 	logger := utils.NewLogger("", "", "configuration-service")
 	if !common.ProjectExists(params.ProjectName) {
 		return stage.NewPostProjectProjectNameStageBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Project does not exist.")})
 	}
+	common.LockProject(params.ProjectName)
+	defer common.UnlockProject(params.ProjectName)
 	err := common.CreateBranch(params.ProjectName, params.Stage.StageName, "master")
 	if err != nil {
 		logger.Error(err.Error())
@@ -41,13 +41,13 @@ func DeleteProjectProjectNameStageStageNameHandlerFunc(params stage.DeleteProjec
 
 // GetProjectProjectNameStageHandlerFunc gets list of stages for a project
 func GetProjectProjectNameStageHandlerFunc(params stage.GetProjectProjectNameStageParams) middleware.Responder {
-	common.Lock()
-	defer common.UnLock()
 	logger := utils.NewLogger("", "", "configuration-service")
 	if !common.ProjectExists(params.ProjectName) {
 		return stage.NewGetProjectProjectNameStageNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project does not exist.")})
 	}
 
+	common.LockProject(params.ProjectName)
+	defer common.UnlockProject(params.ProjectName)
 	err := common.CheckoutBranch(params.ProjectName, "master")
 	if err != nil {
 		logger.Error(err.Error())
@@ -96,8 +96,8 @@ func GetProjectProjectNameStageHandlerFunc(params stage.GetProjectProjectNameSta
 
 // GetProjectProjectNameStageStageNameHandlerFunc gets the specified stage
 func GetProjectProjectNameStageStageNameHandlerFunc(params stage.GetProjectProjectNameStageStageNameParams) middleware.Responder {
-	common.Lock()
-	defer common.UnLock()
+	common.LockProject(params.ProjectName)
+	defer common.UnlockProject(params.ProjectName)
 	if !common.ProjectExists(params.ProjectName) {
 		return stage.NewGetProjectProjectNameStageStageNameNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project not found")})
 	}

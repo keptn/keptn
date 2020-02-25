@@ -28,8 +28,8 @@ func GetProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 // GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc gets the specified resource
 func GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc(
 	params service_resource.GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIParams) middleware.Responder {
-	common.Lock()
-	defer common.UnLock()
+	common.LockProject(params.ProjectName)
+	defer common.UnlockProject(params.ProjectName)
 	logger := utils.NewLogger("", "", "configuration-service")
 	serviceConfigPath := config.ConfigDir + "/" + params.ProjectName + "/" + params.ServiceName
 	resourcePath := serviceConfigPath + "/" + params.ResourceURI
@@ -98,8 +98,8 @@ func DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI
 // PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc creates a new resource
 func PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 	params service_resource.PostProjectProjectNameStageStageNameServiceServiceNameResourceParams) middleware.Responder {
-	common.Lock()
-	defer common.UnLock()
+	common.LockProject(params.ProjectName)
+	defer common.UnlockProject(params.ProjectName)
 	logger := utils.NewLogger("", "", "configuration-service")
 	if !common.ProjectExists(params.ProjectName) {
 		return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().
@@ -222,8 +222,8 @@ func untarHelm(res *models.Resource, logger *utils.Logger, filePath string) midd
 // PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc updates a list of resources
 func PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 	params service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceParams) middleware.Responder {
-	common.Lock()
-	defer common.UnLock()
+	common.LockProject(params.ProjectName)
+	defer common.UnlockProject(params.ProjectName)
 	logger := utils.NewLogger("", "", "configuration-service")
 	if !common.ProjectExists(params.ProjectName) {
 		return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().
@@ -282,8 +282,8 @@ func PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 // PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc updates a specified resource
 func PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc(
 	params service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIParams) middleware.Responder {
-	common.Lock()
-	defer common.UnLock()
+	common.LockProject(params.ProjectName)
+	defer common.UnlockProject(params.ProjectName)
 	logger := utils.NewLogger("", "", "configuration-service")
 	if !common.ServiceExists(params.ProjectName, params.StageName, params.ServiceName) {
 		return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIBadRequest().
