@@ -52,20 +52,20 @@ func (o *GetProjectURL) Build() (*url.URL, error) {
 
 	qs := make(url.Values)
 
-	var nextPageKey string
+	var nextPageKeyQ string
 	if o.NextPageKey != nil {
-		nextPageKey = *o.NextPageKey
+		nextPageKeyQ = *o.NextPageKey
 	}
-	if nextPageKey != "" {
-		qs.Set("nextPageKey", nextPageKey)
+	if nextPageKeyQ != "" {
+		qs.Set("nextPageKey", nextPageKeyQ)
 	}
 
-	var pageSize string
+	var pageSizeQ string
 	if o.PageSize != nil {
-		pageSize = swag.FormatInt64(*o.PageSize)
+		pageSizeQ = swag.FormatInt64(*o.PageSize)
 	}
-	if pageSize != "" {
-		qs.Set("pageSize", pageSize)
+	if pageSizeQ != "" {
+		qs.Set("pageSize", pageSizeQ)
 	}
 
 	_result.RawQuery = qs.Encode()

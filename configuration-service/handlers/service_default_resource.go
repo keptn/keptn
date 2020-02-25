@@ -40,14 +40,14 @@ func PostProjectProjectNameServiceServiceNameResourceHandlerFunc(params service_
 		if branch == "master" || branch == "" {
 			continue
 		}
-		if !common.ServiceExists(params.ProjectName, branch, params.ServiceName) {
+		if !common.ServiceExists(params.ProjectName, branch, params.ServiceName, false) {
 			return service_default_resource.NewPostProjectProjectNameServiceServiceNameResourceDefault(404).WithPayload(&models.Error{Code: 400, Message: swag.String("Service does not exist")})
 		}
 		serviceConfigPath := config.ConfigDir + "/" + params.ProjectName + "/" + params.ServiceName
 
 		logger.Debug("Creating new resource(s) in: " + serviceConfigPath + " in stage " + branch)
 		logger.Debug("Checking out branch: " + branch)
-		err := common.CheckoutBranch(params.ProjectName, branch)
+		err := common.CheckoutBranch(params.ProjectName, branch, false)
 		if err != nil {
 			logger.Error(err.Error())
 			return service_default_resource.NewPostProjectProjectNameServiceServiceNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not check out branch")})

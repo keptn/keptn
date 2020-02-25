@@ -23,7 +23,7 @@ func GetProjectProjectNameResourceHandlerFunc(params project_resource.GetProject
 
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
-	err := common.CheckoutBranch(params.ProjectName, "master")
+	err := common.CheckoutBranch(params.ProjectName, "master", *params.DisableUpstreamSync)
 	if err != nil {
 		logger.Error(err.Error())
 
@@ -48,9 +48,9 @@ func PutProjectProjectNameResourceHandlerFunc(params project_resource.PutProject
 	}
 	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
 
-	logger.Debug("Updatingresource(s) in: " + projectConfigPath)
+	logger.Debug("Updating resource(s) in: " + projectConfigPath)
 	logger.Debug("Checking out master branch")
-	err := common.CheckoutBranch(params.ProjectName, "master")
+	err := common.CheckoutBranch(params.ProjectName, "master", false)
 	if err != nil {
 		logger.Error(err.Error())
 
@@ -97,7 +97,7 @@ func PostProjectProjectNameResourceHandlerFunc(params project_resource.PostProje
 	defer common.UnlockProject(params.ProjectName)
 	logger.Debug("Creating new resource(s) in: " + projectConfigPath)
 	logger.Debug("Checking out master branch")
-	err := common.CheckoutBranch(params.ProjectName, "master")
+	err := common.CheckoutBranch(params.ProjectName, "master", false)
 	if err != nil {
 		logger.Error(err.Error())
 
@@ -144,7 +144,7 @@ func GetProjectProjectNameResourceResourceURIHandlerFunc(params project_resource
 
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
-	err := common.CheckoutBranch(params.ProjectName, "master")
+	err := common.CheckoutBranch(params.ProjectName, "master", *params.DisableUpstreamSync)
 	if err != nil {
 		logger.Error(err.Error())
 
@@ -186,7 +186,7 @@ func PutProjectProjectNameResourceResourceURIHandlerFunc(params project_resource
 
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
-	err := common.CheckoutBranch(params.ProjectName, "master")
+	err := common.CheckoutBranch(params.ProjectName, "master", false)
 	if err != nil {
 		logger.Error(err.Error())
 
@@ -230,7 +230,7 @@ func DeleteProjectProjectNameResourceResourceURIHandlerFunc(params project_resou
 
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
-	err := common.CheckoutBranch(params.ProjectName, "master")
+	err := common.CheckoutBranch(params.ProjectName, "master", false)
 	if err != nil {
 		logger.Error(err.Error())
 

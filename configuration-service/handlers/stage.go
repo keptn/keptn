@@ -48,7 +48,7 @@ func GetProjectProjectNameStageHandlerFunc(params stage.GetProjectProjectNameSta
 
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
-	err := common.CheckoutBranch(params.ProjectName, "master")
+	err := common.CheckoutBranch(params.ProjectName, "master", *params.DisableUpstreamSync)
 	if err != nil {
 		logger.Error(err.Error())
 
@@ -101,7 +101,7 @@ func GetProjectProjectNameStageStageNameHandlerFunc(params stage.GetProjectProje
 	if !common.ProjectExists(params.ProjectName) {
 		return stage.NewGetProjectProjectNameStageStageNameNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project not found")})
 	}
-	if !common.StageExists(params.ProjectName, params.StageName) {
+	if !common.StageExists(params.ProjectName, params.StageName, *params.DisableUpstreamSync) {
 		return stage.NewGetProjectProjectNameStageStageNameNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Stage not found")})
 	}
 

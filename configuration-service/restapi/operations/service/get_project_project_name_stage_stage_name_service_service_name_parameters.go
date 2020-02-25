@@ -9,16 +9,26 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/swag"
 
 	strfmt "github.com/go-openapi/strfmt"
 )
 
 // NewGetProjectProjectNameStageStageNameServiceServiceNameParams creates a new GetProjectProjectNameStageStageNameServiceServiceNameParams object
-// no default values defined in spec.
+// with the default values initialized.
 func NewGetProjectProjectNameStageStageNameServiceServiceNameParams() GetProjectProjectNameStageStageNameServiceServiceNameParams {
 
-	return GetProjectProjectNameStageStageNameServiceServiceNameParams{}
+	var (
+		// initialize parameters with default values
+
+		disableUpstreamSyncDefault = bool(false)
+	)
+
+	return GetProjectProjectNameStageStageNameServiceServiceNameParams{
+		DisableUpstreamSync: &disableUpstreamSyncDefault,
+	}
 }
 
 // GetProjectProjectNameStageStageNameServiceServiceNameParams contains all the bound params for the get project project name stage stage name service service name operation
@@ -30,6 +40,11 @@ type GetProjectProjectNameStageStageNameServiceServiceNameParams struct {
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
+	/*Disable sync of upstream repo before reading content
+	  In: query
+	  Default: false
+	*/
+	DisableUpstreamSync *bool
 	/*Name of the project
 	  Required: true
 	  In: path
@@ -56,6 +71,13 @@ func (o *GetProjectProjectNameStageStageNameServiceServiceNameParams) BindReques
 
 	o.HTTPRequest = r
 
+	qs := runtime.Values(r.URL.Query())
+
+	qDisableUpstreamSync, qhkDisableUpstreamSync, _ := qs.GetOK("disableUpstreamSync")
+	if err := o.bindDisableUpstreamSync(qDisableUpstreamSync, qhkDisableUpstreamSync, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
 	rProjectName, rhkProjectName, _ := route.Params.GetOK("projectName")
 	if err := o.bindProjectName(rProjectName, rhkProjectName, route.Formats); err != nil {
 		res = append(res, err)
@@ -74,6 +96,29 @@ func (o *GetProjectProjectNameStageStageNameServiceServiceNameParams) BindReques
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+// bindDisableUpstreamSync binds and validates parameter DisableUpstreamSync from query.
+func (o *GetProjectProjectNameStageStageNameServiceServiceNameParams) bindDisableUpstreamSync(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+
+	// Required: false
+	// AllowEmptyValue: false
+	if raw == "" { // empty values pass all other validations
+		// Default values have been previously initialized by NewGetProjectProjectNameStageStageNameServiceServiceNameParams()
+		return nil
+	}
+
+	value, err := swag.ConvertBool(raw)
+	if err != nil {
+		return errors.InvalidType("disableUpstreamSync", "query", "bool", raw)
+	}
+	o.DisableUpstreamSync = &value
+
 	return nil
 }
 

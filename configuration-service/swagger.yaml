@@ -195,6 +195,14 @@ parameters:
     type: string
     description: Resource URI
 
+  disableUpstreamSync:
+    in: query
+    name: disableUpstreamSync
+    required: false
+    default: false
+    type: boolean
+    description: Disable sync of upstream repo before reading content
+
   resource:
     in: body
     name: resource
@@ -346,6 +354,7 @@ paths:
       parameters:
         - $ref: '#/parameters/pageSize'
         - $ref: '#/parameters/nextPageKey'
+        - $ref: '#/parameters/disableUpstreamSync'
       summary: Get list of project resources
       responses:
         '200':
@@ -384,6 +393,7 @@ paths:
     parameters:
       - $ref: '#/parameters/projectName'
       - $ref: '#/parameters/resourceURI'
+      - $ref: '#/parameters/disableUpstreamSync'
     get:
       tags:
         - Project Resource
@@ -462,6 +472,7 @@ paths:
       parameters:
         - $ref: '#/parameters/pageSize'
         - $ref: '#/parameters/nextPageKey'
+        - $ref: '#/parameters/disableUpstreamSync'
       summary: Get list of stages
       responses:
         '200':
@@ -485,6 +496,8 @@ paths:
       tags:
         - Stage
       summary: Get the specified stage
+      parameters:
+        - $ref: '#/parameters/disableUpstreamSync'
       responses:
         '200':
           description: Success
@@ -560,6 +573,7 @@ paths:
       parameters:
         - $ref: '#/parameters/pageSize'
         - $ref: '#/parameters/nextPageKey'
+        - $ref: '#/parameters/disableUpstreamSync'
       summary: Get list of stage resources
       responses:
         '200':
@@ -603,6 +617,8 @@ paths:
       tags:
         - Stage Resource
       summary: Get the specified resource
+      parameters:
+        - $ref: '#/parameters/disableUpstreamSync'
       responses:
         '200':
           description: Success
@@ -678,6 +694,7 @@ paths:
       parameters:
         - $ref: '#/parameters/pageSize'
         - $ref: '#/parameters/nextPageKey'
+        - $ref: '#/parameters/disableUpstreamSync'
       summary: Get list of services
       responses:
         '200':
@@ -702,6 +719,8 @@ paths:
       tags:
         - Service
       summary: Get the specified service
+      parameters:
+        - $ref: '#/parameters/disableUpstreamSync'
       responses:
         '200':
           description: Success
@@ -778,6 +797,7 @@ paths:
       parameters:
         - $ref: '#/parameters/pageSize'
         - $ref: '#/parameters/nextPageKey'
+        - $ref: '#/parameters/disableUpstreamSync'
       summary: Get list of service resources
       responses:
         '200':
@@ -822,6 +842,8 @@ paths:
       tags:
         - Service Resource
       summary: Get the specified resource
+      parameters:
+        - $ref: '#/parameters/disableUpstreamSync'
       responses:
         '200':
           description: Success
@@ -899,6 +921,7 @@ paths:
       parameters:
         - $ref: '#/parameters/pageSize'
         - $ref: '#/parameters/nextPageKey'
+        - $ref: '#/parameters/disableUpstreamSync'
       summary: Get list of default resources for the service used in all stages
       responses:
         '200':
@@ -942,6 +965,8 @@ paths:
       tags:
         - Service Default Resource
       summary: Get the specified default resource for the service
+      parameters:
+        - $ref: '#/parameters/disableUpstreamSync'
       responses:
         '200':
           description: Success

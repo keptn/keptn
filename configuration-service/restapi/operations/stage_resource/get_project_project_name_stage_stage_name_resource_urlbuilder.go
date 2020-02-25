@@ -19,8 +19,9 @@ type GetProjectProjectNameStageStageNameResourceURL struct {
 	ProjectName string
 	StageName   string
 
-	NextPageKey *string
-	PageSize    *int64
+	DisableUpstreamSync *bool
+	NextPageKey         *string
+	PageSize            *int64
 
 	_basePath string
 	// avoid unkeyed usage
@@ -70,20 +71,28 @@ func (o *GetProjectProjectNameStageStageNameResourceURL) Build() (*url.URL, erro
 
 	qs := make(url.Values)
 
-	var nextPageKey string
-	if o.NextPageKey != nil {
-		nextPageKey = *o.NextPageKey
+	var disableUpstreamSyncQ string
+	if o.DisableUpstreamSync != nil {
+		disableUpstreamSyncQ = swag.FormatBool(*o.DisableUpstreamSync)
 	}
-	if nextPageKey != "" {
-		qs.Set("nextPageKey", nextPageKey)
+	if disableUpstreamSyncQ != "" {
+		qs.Set("disableUpstreamSync", disableUpstreamSyncQ)
 	}
 
-	var pageSize string
-	if o.PageSize != nil {
-		pageSize = swag.FormatInt64(*o.PageSize)
+	var nextPageKeyQ string
+	if o.NextPageKey != nil {
+		nextPageKeyQ = *o.NextPageKey
 	}
-	if pageSize != "" {
-		qs.Set("pageSize", pageSize)
+	if nextPageKeyQ != "" {
+		qs.Set("nextPageKey", nextPageKeyQ)
+	}
+
+	var pageSizeQ string
+	if o.PageSize != nil {
+		pageSizeQ = swag.FormatInt64(*o.PageSize)
+	}
+	if pageSizeQ != "" {
+		qs.Set("pageSize", pageSizeQ)
 	}
 
 	_result.RawQuery = qs.Encode()
