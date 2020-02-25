@@ -174,3 +174,24 @@ func (v *VersionChecker) CheckCLIVersion(cliVersion string) {
 		}
 	}
 }
+
+// IsOfficialKeptnVersion checks whether the provided version string follows a Keptn version pattern
+func IsOfficialKeptnVersion(versionStr string) bool {
+	_, err := version.NewSemver(versionStr)
+	return err == nil
+}
+
+// GetOfficialKeptnVersion extracts the Keptn version from the provided string
+// More precisely, this method returns the segments and prerelease info w/o metadata
+func GetOfficialKeptnVersion(versionStr string) (string, error) {
+	s, err := version.NewSemver(versionStr)
+	if err != nil {
+		return "", err
+	}
+	v := s.String()
+	metadata := s.Metadata()
+	if metadata != "" {
+		metadata = "+" + metadata
+	}
+	return v[:len(v)-len(metadata)], nil
+}

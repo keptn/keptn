@@ -26,6 +26,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/keptn/keptn/cli/utils/version"
+
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/utils"
@@ -159,9 +161,13 @@ Example:
 		// Determine installer version
 		if installParams.InstallerImage != nil && *installParams.InstallerImage != "" {
 			installParams.Image, installParams.Tag = utils.SplitImageName(*installParams.InstallerImage)
-		} else if utils.IsOfficialKeptnVersion(Version) {
+		} else if version.IsOfficialKeptnVersion(Version) {
 			installParams.Image = "docker.io/keptn/installer"
-			installParams.Tag = Version
+			tag, err := version.GetOfficialKeptnVersion(Version)
+			if err != nil {
+				return fmt.Errorf("Error when parsing installer tag: %v", err)
+			}
+			installParams.Tag = tag
 			version := installParams.Image + ":" + installParams.Tag
 			installParams.InstallerImage = &version
 		} else {

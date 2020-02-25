@@ -91,3 +91,49 @@ func TestCheckCLIVersion(t *testing.T) {
 	assert.Equal(t, err, nil, "Unexpected error")
 	assert.Equal(t, res.equal(expectedRes), true, "Wrong versions")
 }
+
+var iskeptnVersions = []struct {
+	in  string
+	res bool
+}{
+	{"master+20191212.1033", false},
+	{"0.6.0-beta2", true},
+	{"0.6.0", true},
+	{"feature-443+20191213.1105", false},
+	{"0.6.0-beta2+20191204.1329", true},
+	{"0.6.0-beta2+201912044.1329", true},
+}
+
+func TestIsOfficialKeptnVersion(t *testing.T) {
+	for _, tt := range iskeptnVersions {
+		t.Run(tt.in, func(t *testing.T) {
+			res := IsOfficialKeptnVersion(tt.in)
+			if res != tt.res {
+				t.Errorf("got %t, want %t", res, tt.res)
+			}
+		})
+	}
+}
+
+var getkeptnVersions = []struct {
+	in  string
+	res string
+}{
+	{"master+20191212.1033", ""},
+	{"0.6.0-beta2", "0.6.0-beta2"},
+	{"0.6.0", "0.6.0"},
+	{"feature-443+20191213.1105", ""},
+	{"0.6.0-beta2+20191204.1329", "0.6.0-beta2"},
+	{"0.6.0-beta2+201912044.1329", "0.6.0-beta2"},
+}
+
+func TestGetOfficialKeptnVersion(t *testing.T) {
+	for _, tt := range getkeptnVersions {
+		t.Run(tt.in, func(t *testing.T) {
+			res, _ := GetOfficialKeptnVersion(tt.in)
+			if res != tt.res {
+				t.Errorf("got %s, want %s", res, tt.res)
+			}
+		})
+	}
+}
