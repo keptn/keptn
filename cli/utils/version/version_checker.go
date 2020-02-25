@@ -130,7 +130,7 @@ func (v *VersionChecker) getNewerCLIVersion(cliConfig config.CLIConfig, usedVers
 }
 
 const newCompatibleVersionMsg = `keptn version %s is available! Please visit https://keptn.sh for more information.`
-const newIncompatibleVersionMsg = `keptn version %s is available! Please note that this version is incompatible with your Keptn cluster` +
+const newIncompatibleVersionMsg = `keptn version %s is available! Please note that this version might be incompatible with your Keptn cluster ` +
 	`version and requires to update the cluster too. Please visit https://keptn.sh for more information.`
 const disableMsg = `To disable this notice, run: '%s set config AutomaticVersionCheck false'`
 
