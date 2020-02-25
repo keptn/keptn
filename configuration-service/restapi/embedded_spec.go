@@ -1368,6 +1368,12 @@ func init() {
         "projectName": {
           "description": "Project name",
           "type": "string"
+        },
+        "stages": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Stage"
+          }
         }
       }
     },
@@ -1468,6 +1474,12 @@ func init() {
     "Stage": {
       "type": "object",
       "properties": {
+        "services": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Service"
+          }
+        },
         "stageName": {
           "description": "Stage name",
           "type": "string"
@@ -3326,6 +3338,12 @@ func init() {
         "projectName": {
           "description": "Project name",
           "type": "string"
+        },
+        "stages": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Stage"
+          }
         }
       }
     },
@@ -3426,6 +3444,12 @@ func init() {
     "Stage": {
       "type": "object",
       "properties": {
+        "services": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Service"
+          }
+        },
         "stageName": {
           "description": "Stage name",
           "type": "string"

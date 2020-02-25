@@ -49,6 +49,10 @@ definitions:
       gitToken:
         type: string
         description: Git token
+      stages:
+        type: array
+        items:
+          $ref: '#/definitions/Stage'
 
   Projects:
     type: object
@@ -73,6 +77,10 @@ definitions:
       stageName:
         type: string
         description: Stage name
+      services:
+        type: array
+        items:
+          $ref: '#/definitions/Service'
 
   Stages:
     type: object

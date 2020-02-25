@@ -45,27 +45,22 @@ export class DataService {
     this.apiService.getProjects()
       .pipe(
         debounce(() => timer(10000)),
-        map((projects) => projects.sort((a, b) => a.projectName < b.projectName ? -1 : 1)),
-        mergeMap((projects) =>
+        map(projects => projects.sort((a, b) => a.projectName < b.projectName ? -1 : 1)),
+        mergeMap(projects =>
           from(projects).pipe(
-            mergeMap(
-              project => this.apiService.getStages(project.projectName)
-                .pipe(
-                  mergeMap((stages) =>
-                    from(stages).pipe(
-                      mergeMap(
-                        stage => this.apiService.getServices(project.projectName, stage.stageName)
-                          .pipe(
-                            map(services => services.map(service => Service.fromJSON(service))),
-                            map(services => ({ ...stage, services}))
-                          )
-                      ),
-                      toArray()
+            mergeMap((project) =>
+              from(project.stages).pipe(
+                mergeMap(
+                  stage => this.apiService.getServices(project.projectName, stage.stageName)
+                    .pipe(
+                      map(services => services.map(service => Service.fromJSON(service))),
+                      map(services => ({ ...stage, services}))
                     )
-                  ),
-                  map(stages => stages.map(stage => Stage.fromJSON(stage))),
-                  map(stages => ({ ...project, stages}))
-                )
+                ),
+                toArray(),
+                map(stages => stages.map(stage => Stage.fromJSON(stage))),
+                map(stages => ({ ...project, stages}))
+              )
             ),
             toArray()
           )
