@@ -42,3 +42,11 @@ kubectl delete -f deploy/pvc.yaml
 
 kubectl delete -f deploy/service.yaml
 ```
+
+### Generate source from Swagger
+
+If the `swagger.yaml` is updated with new endpoints or models, generate the new source by executing:
+
+```console
+swagger generate server -A configuration-service -f ./swagger.yaml
+```

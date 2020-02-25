@@ -10,6 +10,8 @@ import (
 	"net/url"
 	golangswaggerpaths "path"
 	"strings"
+
+	"github.com/go-openapi/swag"
 )
 
 // GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIURL generates an URL for the get project project name stage stage name service service name resource resource URI operation
@@ -18,6 +20,8 @@ type GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIURL
 	ResourceURI string
 	ServiceName string
 	StageName   string
+
+	DisableUpstreamSync *bool
 
 	_basePath string
 	// avoid unkeyed usage
@@ -78,6 +82,18 @@ func (o *GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceUR
 		_basePath = "/v1"
 	}
 	_result.Path = golangswaggerpaths.Join(_basePath, _path)
+
+	qs := make(url.Values)
+
+	var disableUpstreamSyncQ string
+	if o.DisableUpstreamSync != nil {
+		disableUpstreamSyncQ = swag.FormatBool(*o.DisableUpstreamSync)
+	}
+	if disableUpstreamSyncQ != "" {
+		qs.Set("disableUpstreamSync", disableUpstreamSyncQ)
+	}
+
+	_result.RawQuery = qs.Encode()
 
 	return &_result, nil
 }

@@ -49,11 +49,14 @@ func getRepoURI(uri string, user string, token string) string {
 }
 
 // CheckoutBranch checks out the given branch
-func CheckoutBranch(project string, branch string) error {
+func CheckoutBranch(project string, branch string, disableUpstreamSync bool) error {
 	projectConfigPath := config.ConfigDir + "/" + project
 	_, err := utils.ExecuteCommandInDirectory("git", []string{"checkout", branch}, projectConfigPath)
 	if err != nil {
 		return err
+	}
+	if disableUpstreamSync {
+		return nil
 	}
 	credentials, err := GetCredentials(project)
 	if err == nil && credentials != nil {
@@ -69,7 +72,7 @@ func CheckoutBranch(project string, branch string) error {
 // CreateBranch creates a new branch
 func CreateBranch(project string, branch string, sourceBranch string) error {
 	projectConfigPath := config.ConfigDir + "/" + project
-	err := CheckoutBranch(project, sourceBranch)
+	err := CheckoutBranch(project, sourceBranch, false)
 	if err != nil {
 		return err
 	}
@@ -139,12 +142,12 @@ func ProjectExists(project string) bool {
 }
 
 // StageExists checks if a stage in a given project exists
-func StageExists(project string, stage string) bool {
+func StageExists(project string, stage string, disableUpstreamSync bool) bool {
 	if !ProjectExists(project) {
 		return false
 	}
 	// try to checkout the branch containing the stage config
-	err := CheckoutBranch(project, stage)
+	err := CheckoutBranch(project, stage, disableUpstreamSync)
 	if err != nil {
 		return false
 	}
@@ -152,12 +155,12 @@ func StageExists(project string, stage string) bool {
 }
 
 // ServiceExists checks if a service exists in a given stage of a project
-func ServiceExists(project string, stage string, service string) bool {
+func ServiceExists(project string, stage string, service string, disableUpstreamSync bool) bool {
 	if !ProjectExists(project) {
 		return false
 	}
 	// try to checkout the branch containing the stage config
-	err := CheckoutBranch(project, stage)
+	err := CheckoutBranch(project, stage, disableUpstreamSync)
 	if err != nil {
 		return false
 	}
