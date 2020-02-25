@@ -3,6 +3,8 @@ package version
 import (
 	"errors"
 	"fmt"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/keptn/keptn/cli/pkg/logging"
@@ -130,7 +132,7 @@ func (v *VersionChecker) getNewerCLIVersion(cliConfig config.CLIConfig, usedVers
 const newCompatibleVersionMsg = `keptn version %s is available! Please visit https://keptn.sh for more information.`
 const newIncompatibleVersionMsg = `keptn version %s is available! Please note that this version is incompatible with your Keptn cluster` +
 	`version and requires to update the cluster too. Please visit https://keptn.sh for more information.`
-const disableMsg = `To disable this notice, run: 'keptn set config AutomaticVersionCheck false'`
+const disableMsg = `To disable this notice, run: '%s set config AutomaticVersionCheck false'`
 
 func (v *VersionChecker) CheckCLIVersion(cliVersion string) {
 
@@ -163,7 +165,13 @@ func (v *VersionChecker) CheckCLIVersion(cliVersion string) {
 				msgPrinted = true
 			}
 			if msgPrinted {
-				fmt.Println(disableMsg)
+
+				if dir, err := filepath.Abs(filepath.Dir(os.Args[0])); err == nil {
+					fmt.Printf(disableMsg+"\n", dir+"/"+filepath.Base(os.Args[0]))
+				} else {
+					fmt.Printf(disableMsg+"\n", "keptn")
+				}
+
 			}
 
 			cliConfig.LastVersionCheck = &checkTime
