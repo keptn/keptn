@@ -158,6 +158,8 @@ func PutProjectProjectNameHandlerFunc(params project.PutProjectProjectNameParams
 func DeleteProjectProjectNameHandlerFunc(params project.DeleteProjectProjectNameParams) middleware.Responder {
 	logger := utils.NewLogger("", "", "configuration-service")
 	logger.Debug("Deleting project " + params.ProjectName)
+	common.LockProject(params.ProjectName)
+	defer common.UnlockProject(params.ProjectName)
 	err := os.RemoveAll(config.ConfigDir + "/" + params.ProjectName)
 	if err != nil {
 		logger.Error(err.Error())
