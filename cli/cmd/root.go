@@ -66,7 +66,7 @@ to create projects, and to onboard services.
 func Execute() {
 
 	vChecker := version.NewVersionChecker()
-	vChecker.CheckCLIVersion(Version)
+	vChecker.CheckCLIVersion(Version, true)
 	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
 	}

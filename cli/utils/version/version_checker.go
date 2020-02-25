@@ -134,7 +134,7 @@ const newIncompatibleVersionMsg = `keptn version %s is available! Please note th
 	`version and requires to update the cluster too. Please visit https://keptn.sh for more information.`
 const disableMsg = `To disable this notice, run: '%s set config AutomaticVersionCheck false'`
 
-func (v *VersionChecker) CheckCLIVersion(cliVersion string) {
+func (v *VersionChecker) CheckCLIVersion(cliVersion string, considerPrevCheckDuration bool) {
 
 	configMng := config.NewCLIConfigManager()
 	cliConfig, err := configMng.LoadCLIConfig()
@@ -145,7 +145,8 @@ func (v *VersionChecker) CheckCLIVersion(cliVersion string) {
 
 	if cliConfig.AutomaticVersionCheck && IsOfficialKeptnVersion(cliVersion) {
 		checkTime := time.Now()
-		if cliConfig.LastVersionCheck == nil || checkTime.Sub(*cliConfig.LastVersionCheck) >= checkInterval {
+		if !considerPrevCheckDuration || cliConfig.LastVersionCheck == nil ||
+			checkTime.Sub(*cliConfig.LastVersionCheck) >= checkInterval {
 			newVersions, err := v.getNewerCLIVersion(cliConfig, cliVersion)
 			if err != nil {
 				logging.PrintLog(err.Error(), logging.InfoLevel)
@@ -164,7 +165,7 @@ func (v *VersionChecker) CheckCLIVersion(cliVersion string) {
 				fmt.Printf(newIncompatibleVersionMsg+"\n", newVersions.stable.newestIncompatible.String())
 				msgPrinted = true
 			}
-			if msgPrinted {
+			if msgPrinted && considerPrevCheckDuration {
 
 				if dir, err := filepath.Abs(filepath.Dir(os.Args[0])); err == nil {
 					fmt.Printf(disableMsg+"\n", dir+"/"+filepath.Base(os.Args[0]))

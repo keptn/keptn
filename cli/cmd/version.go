@@ -16,7 +16,12 @@ package cmd
 
 import (
 	"fmt"
+	"time"
 
+	"github.com/keptn/keptn/cli/pkg/logging"
+
+	"github.com/keptn/keptn/cli/utils/config"
+	"github.com/keptn/keptn/cli/utils/version"
 	"github.com/spf13/cobra"
 )
 
@@ -35,6 +40,18 @@ Example:
 	keptn version`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("CLI version: " + Version)
+
+		configMng := config.NewCLIConfigManager()
+		cliConfig, err := configMng.LoadCLIConfig()
+		if err != nil {
+			logging.PrintLog(err.Error(), logging.InfoLevel)
+			return
+		}
+		checkTime := time.Now()
+		if cliConfig.LastVersionCheck == nil || checkTime.Sub(*cliConfig.LastVersionCheck) >= time.Second {
+			vChecker := version.NewVersionChecker()
+			vChecker.CheckCLIVersion(Version, false)
+		}
 	},
 }
 
