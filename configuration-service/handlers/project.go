@@ -41,7 +41,7 @@ func GetProjectHandlerFunc(params project.GetProjectParams) middleware.Responder
 	if paginationInfo.NextPageKey < int64(totalCount) {
 		for _, f := range files[paginationInfo.NextPageKey:paginationInfo.EndIndex] {
 			if f.IsDir() && common.FileExists(config.ConfigDir+"/"+f.Name()+"/metadata.yaml") {
-				stages, _ := getStages(stage.GetProjectProjectNameStageParams{ProjectName: f.Name()})
+				stages, _ := getStages(stage.GetProjectProjectNameStageParams{ProjectName: f.Name(), DisableUpstreamSync: params.DisableUpstreamSync})
 				var project = &models.Project{ProjectName: f.Name(), Stages: stages}
 				payload.Projects = append(payload.Projects, project)
 			}

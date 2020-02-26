@@ -270,6 +270,7 @@ paths:
       parameters:
         - $ref: '#/parameters/pageSize'
         - $ref: '#/parameters/nextPageKey'
+        - $ref: '#/parameters/disableUpstreamSync'
       summary: Get list of projects
       responses:
         '200':

@@ -46,6 +46,9 @@ func init() {
           },
           {
             "$ref": "#/parameters/nextPageKey"
+          },
+          {
+            "$ref": "#/parameters/disableUpstreamSync"
           }
         ],
         "responses": {
@@ -1656,6 +1659,13 @@ func init() {
             "type": "string",
             "description": "Pointer to the next set of items",
             "name": "nextPageKey",
+            "in": "query"
+          },
+          {
+            "type": "boolean",
+            "default": false,
+            "description": "Disable sync of upstream repo before reading content",
+            "name": "disableUpstreamSync",
             "in": "query"
           }
         ],
