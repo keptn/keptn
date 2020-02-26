@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"path/filepath"
 	"time"
 
 	"github.com/keptn/keptn/cli/pkg/logging"
@@ -166,9 +165,8 @@ func (v *VersionChecker) CheckCLIVersion(cliVersion string, considerPrevCheck bo
 				msgPrinted = true
 			}
 			if msgPrinted && considerPrevCheck {
-
-				if dir, err := filepath.Abs(filepath.Dir(os.Args[0])); err == nil {
-					fmt.Printf(disableMsg+"\n", dir+"/"+filepath.Base(os.Args[0]))
+				if len(os.Args) > 0 {
+					fmt.Printf(disableMsg+"\n", os.Args[0])
 				} else {
 					fmt.Printf(disableMsg+"\n", "keptn")
 				}
