@@ -40,7 +40,7 @@ func (client *versionFetcherClient) getCLIVersionInfo(cliVersion string) (*cliVe
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("user-agent", "KeptnCLI/"+cliVersion)
+	req.Header.Set("user-agent", "keptn/cli:"+cliVersion)
 	resp, err := client.httpClient.Do(req)
 	if err != nil {
 		return nil, err

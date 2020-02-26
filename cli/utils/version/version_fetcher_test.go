@@ -43,7 +43,7 @@ func testingHTTPClient(handler http.Handler) (*http.Client, string, func()) {
 func TestGetCLIVersionInfo(t *testing.T) {
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, r.Method, "GET", "Expect GET request")
-		assert.Equal(t, r.Header.Get("user-agent"), "KeptnCLI/0.6.0", "Expect user-agent header")
+		assert.Equal(t, r.Header.Get("user-agent"), "keptn/cli:0.6.0", "Expect user-agent header")
 		w.WriteHeader(http.StatusOK)
 		io.WriteString(w, `{ "cli": { "stable": ["0.5.2", "0.6.0"], "prerelease": ["0.6.0-beta2"] } }`)
 	})
