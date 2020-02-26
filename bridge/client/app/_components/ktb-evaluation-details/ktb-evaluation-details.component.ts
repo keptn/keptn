@@ -231,7 +231,7 @@ export class KtbEvaluationDetailsComponent implements OnInit {
       {
         name: 'Score',
         rowsize: 0.85,
-        data: chartSeries.reverse().reduce((r, d) => [...r, ...d.data.filter(s => s.evaluation).map((s) => {
+        data: evaluationScoreData.map((s) => {
           let time = moment(s.x).format();
           let index = this._heatmapOptions.yAxis[0].categories.indexOf("Score");
           let x = this._heatmapOptions.xAxis[0].categories.indexOf(time);
@@ -239,10 +239,10 @@ export class KtbEvaluationDetailsComponent implements OnInit {
             x: x,
             y: index,
             z: s.y,
-            evaluation: s.evaluation,
-            color: this._evaluationColor[s.evaluation.data.result]
+            evaluation: s.evaluationData,
+            color: this._evaluationColor[s.evaluationData.data.result]
           };
-        })], [])
+        })
       },
       {
         name: 'SLOs',
