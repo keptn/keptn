@@ -1,4 +1,4 @@
-<dt-tile  [routerLink]="['/project', project.projectName]">
+<dt-tile [routerLink]="['/project', project.projectName]">
   <dt-tile-title [textContent]="project.projectName"></dt-tile-title>
   <dt-tile-subtitle><span *ngIf="project.stages"><span [textContent]="project.stages.length"></span> Stages, <span [textContent]="project.getServices().length"></span> Services</span></dt-tile-subtitle>
   <dt-tag-list aria-label="stages">
