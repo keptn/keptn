@@ -141,6 +141,14 @@ func getTestInfo(data keptnevents.DeploymentFinishedEventData) *TestInfo {
 }
 
 func getServiceURL(data keptnevents.DeploymentFinishedEventData) string {
+
+	if data.DeploymentURILocal != "" {
+		return data.DeploymentURILocal
+	} else if data.DeploymentURIPublic != "" {
+		return data.DeploymentURIPublic
+	}
+
+	// Use educated guess of the service url based on stage, service name, deployment type
 	serviceURL := data.Service + "." + data.Project + "-" + data.Stage
 	if data.DeploymentStrategy == "blue_green_service" {
 		serviceURL = data.Service + "-canary" + "." + data.Project + "-" + data.Stage
