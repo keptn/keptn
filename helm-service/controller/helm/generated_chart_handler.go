@@ -206,6 +206,13 @@ func (c *GeneratedChartHandler) GenerateMeshChart(helmManifest string, project s
 
 			vsTemplate := chart.Template{Name: "templates/" + svc.Name + c.mesh.GetVirtualServiceSuffix(), Data: vs}
 			ch.Templates = append(ch.Templates, &vsTemplate)
+
+			dr, err := c.mesh.GenerateDestinationRule(svc.Name, host)
+			if err != nil {
+				return nil, err
+			}
+			drTemplate := chart.Template{Name: "templates/" + svc.Name + c.mesh.GetDestinationRuleSuffix(), Data: dr}
+			ch.Templates = append(ch.Templates, &drTemplate)
 		}
 
 		return &ch, nil
