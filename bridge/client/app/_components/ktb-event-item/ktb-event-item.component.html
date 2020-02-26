@@ -2,7 +2,10 @@
   <ktb-expandable-tile-header>
     <div fxLayout="row" class="pr-4">
       <div fxFlex>
-        <h4 class="m-0 mt-1 mb-1" [textContent]="getEventLabel(_event.type)"></h4>
+        <div fxLayout="row" fxLayoutAlign="start" fxLayoutGap="5px">
+          <h4 class="m-0 mt-1 mb-1" [textContent]="getEventLabel(_event.type)"></h4>
+          <a *ngIf="_event.data.deploymentURIPublic" [href]="_event.data.deploymentURIPublic" target="_blank"><button dt-icon-button variant="nested"><dt-icon name="externallink"></dt-icon></button></a>
+        </div>
         <p class="m-0 nobreak"><span class="bold">Source: </span><span [textContent]="_event.source"></span></p>
         <div *ngIf="_event.data.canary">
           <p class="m-0 nobreak"><span class="bold">Action: </span><span [textContent]="_event.data.canary.action"></span> <span [textContent]="_event.data.canary.value"></span></p>
