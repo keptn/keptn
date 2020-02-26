@@ -15,3 +15,11 @@ spec:
       - destination:
           host: api.keptn.svc.cluster.local
       websocketUpgrade: true
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: api
+  namespace: keptn
+spec:
+  host: api.keptn.svc.cluster.local
