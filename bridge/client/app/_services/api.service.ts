@@ -24,7 +24,7 @@ export class ApiService {
   }
 
   public getProjects(): Observable<Project[]> {
-    let url = `${this.baseUrl}/api/project`;
+    let url = `${this.baseUrl}/api/project?DisableUpstreamSync=true`;
     return this.http
       .get<Project[]>(url, { headers: this.headers })
       .pipe(catchError(this.handleError<Project[]>('getProjects')));

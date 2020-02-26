@@ -49,6 +49,10 @@ definitions:
       gitToken:
         type: string
         description: Git token
+      stages:
+        type: array
+        items:
+          $ref: '#/definitions/Stage'
 
   Projects:
     type: object
@@ -73,6 +77,10 @@ definitions:
       stageName:
         type: string
         description: Stage name
+      services:
+        type: array
+        items:
+          $ref: '#/definitions/Service'
 
   Stages:
     type: object
@@ -262,6 +270,7 @@ paths:
       parameters:
         - $ref: '#/parameters/pageSize'
         - $ref: '#/parameters/nextPageKey'
+        - $ref: '#/parameters/disableUpstreamSync'
       summary: Get list of projects
       responses:
         '200':
