@@ -210,87 +210,84 @@ jobs:
         go test ./...
       fi
 
+  # always check code style for all directories
+  - stage: codestyle
+    # Check Codestyle using go fmt
+    services: []
+    language: go
+    go:
+      - 1.12.x
+    # skip install
+    install: true
+    script:
+      - echo "Checking code style..."
+      - unformatted=$(gofmt -l .)
+      - |
+        if [ ! -z "$unformatted" ]; then
+          echo "Code Style Check failed for the following files: ${unformatted}".
+          echo "Please run: gofmt -w ."
+          echo "After that ammend your commit (e.g.: git add ${unformatted} && git commit --amend --no-edit) and force push the changes (git push -f)."
+          travis_terminate 1
+        fi
+
+    # always execute unit tests for all directories
   - stage: Unit tests
     os: linux
     script:
       - |
-        if [[ $CHANGED_FILES == *"${API_FOLDER}"*  ]]; then
           cd "${API_FOLDER}"
-          go test -race -v ./...
+          go test -race -coverprofile=coverage.txt -covermode=atomic -v ./...
           cd ..
-        fi
       - |
-        if [[ $CHANGED_FILES == *"${OS_ROUTE_SVC_FOLDER}"*  ]]; then
           cd "${OS_ROUTE_SVC_FOLDER}"
-          go test -race -v ./...
+          go test -race -coverprofile=coverage.txt -covermode=atomic -v ./...
           cd ../..
-        fi
       - |
-        if [[ $CHANGED_FILES == *"${JMETER_SVC_FOLDER}"*  ]]; then
           cd "${JMETER_SVC_FOLDER}"
-          go test -race -v ./...
+          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
           cd ..
-        fi
       - |
-        if [[ $CHANGED_FILES == *"${HELM_SVC_FOLDER}"*  ]]; then
           cd "${HELM_SVC_FOLDER}"
-          go test -race -v ./...
+          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
           cd ..
-        fi
       - |
-        if [[ $CHANGED_FILES == *"${GATEKEEPER_SVC_FOLDER}"*  ]]; then
           cd "${GATEKEEPER_SVC_FOLDER}"
-          go test -race -v ./...
+          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
           cd ..
-        fi
       - |
-        if [[ $CHANGED_FILES == *"${DISTRIBUTOR_FOLDER}"*  ]]; then
           cd "${DISTRIBUTOR_FOLDER}"
-          go test -race -v ./...
+          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
           cd ..
-        fi
       - |
-        if [[ $CHANGED_FILES == *"${EVENTBROKER_FOLDER}"*  ]]; then
           cd "${EVENTBROKER_FOLDER}"
-          go test -race -v ./...
+          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
           cd ..
-        fi
       - |
-        if [[ $CHANGED_FILES == *"${SHIPYARD_SVC_FOLDER}"*  ]]; then
           cd ${SHIPYARD_SVC_FOLDER}
-          go test -race -v ./...
+          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
           cd ..
-        fi
       - |
-        if [[ $CHANGED_FILES == *"${CONFIGURATION_SVC_FOLDER}"*  ]]; then
           cd "${CONFIGURATION_SVC_FOLDER}"
-          go test -race -v ./...
+          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
           cd ..
-        fi
       - |
-        if [[ $CHANGED_FILES == *"${REMEDIATION_SVC_FOLDER}"*  ]]; then
           cd "${REMEDIATION_SVC_IMAGE}"
-          go test -race -v ./...
+          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
           cd ..
-        fi
       - |
-        if [[ $CHANGED_FILES == *"${WAIT_SVC_FOLDER}"*  ]]; then
           cd "${WAIT_SVC_FOLDER}"
-          go test -race -v ./...
+          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
           cd ..
-        fi
       - |
-        if [[ $CHANGED_FILES == *"${LIGHTHOUSE_SVC_FOLDER}"*  ]]; then
           cd "${LIGHTHOUSE_SVC_FOLDER}"
-          go test -race -v ./...
+          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
           cd ..
-        fi
       - |
-        if [[ $CHANGED_FILES == *"${MONGODB_DS_FOLDER}"*  ]]; then
           cd "${MONGODB_DS_FOLDER}"
-          go test -race -v ./...
+          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
           cd ..
-        fi
+    after_success:
+      - bash <(curl -s https://codecov.io/bash)
 
   - stage: feature/bug/hotfix/patch
     if: branch =~ ^feature.*$ OR branch =~ ^bug.*$ OR branch =~ ^hotfix.*$ OR branch =~ ^patch.*$
