@@ -1,0 +1,47 @@
+@import "../../variables";
+
+header {
+  color: #fff;
+  background-color: $primary-color;
+  position: sticky;
+  z-index: 100;
+  top: 0;
+
+  box-shadow: 0px 2px 5px rgba(0,0,0,0.5);
+
+  &.container {
+    padding: .2rem 1rem;
+  }
+
+  .brand {
+    color: #fff;
+    text-decoration: none;
+
+    img {
+      width: 2rem;
+    }
+  }
+
+  p {
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+}
+
+dt-select#projectSelect {
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font-size: 1.25rem;
+  font-weight: 600;
+
+  ::ng-deep .dt-select-trigger {
+    padding: 0;
+  }
+  ::ng-deep .dt-select-panel {
+    border-radius: 3px;
+  }
+  ::ng-deep .dt-select-arrow svg {
+    fill: #fff;
+  }
+}

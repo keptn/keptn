@@ -1,0 +1,152 @@
+<p class="m-0 mt-1"><span [textContent]="evaluationData.evaluationdetails.timeStart | amDateFormat:'L LT'"></span> - <span [textContent]="evaluationData.evaluationdetails.timeEnd | amDateFormat:'L LT'"></span> (<span [textContent]="evaluationData.evaluationdetails.timeEnd | amDifference: evaluationData.evaluationdetails.timeStart :'minutes'"></span> Minutes)</p>
+<div class="mb-1" *ngIf="evaluationData.evaluationdetails.sloFileContent">
+  <p class="m-0 mb-1">
+    <a class="dt-link" (click)="$event.stopPropagation();sloFile.toggle();">
+      <span *ngIf="!sloFile.expanded">Show SLOs</span>
+      <span *ngIf="sloFile.expanded">Hide SLOs</span>
+    </a>
+  </p>
+  <dt-expandable-panel #sloFile>
+    <div class="container dark">
+      <pre>{{ evaluationData.evaluationdetails.sloFileContent | atob }}</pre>
+    </div>
+  </dt-expandable-panel>
+</div>
+<div class="mb-1 mt-1">
+  <div fxLayout="row" class="pr-4">
+    <div fxFlex>
+      <dt-button-group (valueChange)="switchEvaluationView($event)">
+        <dt-button-group-item>Single evaluation</dt-button-group-item>
+        <dt-button-group-item>Evaluation comparison</dt-button-group-item>
+      </dt-button-group>
+    </div>
+    <div fxLayout="column" fxLayoutAlign="start end">
+      <dt-button-group *ngIf="_view == 'evaluationcomparison'" [(value)]="_comparisonView">
+        <dt-button-group-item [value]="'heatmap'" (click)="_comparisonView = 'heatmap'">Heatmap</dt-button-group-item>
+        <dt-button-group-item [value]="'chart'" (click)="_comparisonView = 'chart'">Chart</dt-button-group-item>
+      </dt-button-group>
+    </div>
+  </div>
+</div>
+<div class="p-2" *ngIf="_view == 'singleevaluation'">
+  <dt-consumption [max]="evaluationData.evaluationdetails.indicatorResults ? 100 : 0" [value]="evaluationData.evaluationdetails.score" [color]="evaluationData.result == 'fail' ? 'error' : 'recovered'">
+    <dt-consumption-icon aria-label="Test">
+      <dt-icon name="summary"></dt-icon>
+    </dt-consumption-icon>
+    <dt-consumption-title><span [textContent]="evaluationData.teststrategy"></span> test</dt-consumption-title>
+    <dt-consumption-count>
+      <span [textContent]="evaluationData.evaluationdetails.score | number:'1.0-0'"></span>/<span [textContent]="evaluationData.evaluationdetails.indicatorResults ? 100 : 0"></span>
+    </dt-consumption-count>
+    <dt-consumption-label><span [textContent]="evaluationData.teststrategy"></span> evaluation <span [textContent]="evaluationData.result"></span></dt-consumption-label>
+  </dt-consumption>
+  <div *ngIf="evaluationData.evaluationdetails.indicatorResults">
+    <p><span [textContent]="evaluationData.teststrategy"></span> evaluation breakdown</p>
+    <dt-key-value-list>
+      <ng-container *ngFor="let result of evaluationData.evaluationdetails.indicatorResults">
+        <dt-key-value-list-item *ngIf="result.status == 'fail'">
+          <dt-key-value-list-key>
+            <p class="m-0 error" [textContent]="result.value.metric"></p>
+          </dt-key-value-list-key>
+          <dt-key-value-list-value *ngIf="result.value.success">
+            <span [textContent]="result.value.value | number:'1.0-0'"></span>
+            <span class="small m-0 ml-1" *ngFor="let _target of result.targets" [textContent]="_target.criteria" [class.error]="_target.violated" [class.error-line]="_target.violated"></span>
+          </dt-key-value-list-value>
+          <dt-key-value-list-value *ngIf="!result.value.success">
+            <span class="small" [textContent]="result.value.message"></span>
+          </dt-key-value-list-value>
+        </dt-key-value-list-item>
+      </ng-container>
+    </dt-key-value-list>
+    <dt-expandable-panel #indicatorResults>
+      <dt-key-value-list>
+        <ng-container *ngFor="let result of evaluationData.evaluationdetails.indicatorResults">
+          <dt-key-value-list-item *ngIf="result.status != 'fail'">
+            <dt-key-value-list-key [textContent]="result.value.metric"></dt-key-value-list-key>
+            <dt-key-value-list-value>
+              <span [textContent]="result.value.value | number:'1.0-0'"></span>
+              <span class="small m-0 ml-1" *ngFor="let _target of result.targets" [textContent]="_target.criteria"></span>
+            </dt-key-value-list-value>
+          </dt-key-value-list-item>
+        </ng-container>
+      </dt-key-value-list>
+    </dt-expandable-panel>
+    <p class="m-0 mt-1 mb-1">
+      <a class="dt-link" (click)="$event.stopPropagation();indicatorResults.toggle();">
+        <span *ngIf="!indicatorResults.expanded">Show all evaluation results</span>
+        <span *ngIf="indicatorResults.expanded">Show only failed evaluation results</span>
+      </a>
+    </p>
+  </div>
+</div>
+<div *ngIf="_view == 'evaluationcomparison'" (click)="$event.stopPropagation();">
+  <dt-chart *ngIf="_comparisonView == 'heatmap'"
+    [options]="_heatmapOptions"
+    [series]="_heatmapSeries"
+    (seriesVisibilityChange)="seriesVisibilityChanged($event)">
+  </dt-chart>
+  <dt-chart *ngIf="_comparisonView == 'chart'"
+    [options]="_chartOptions"
+    [series]="_chartSeries"
+    (seriesVisibilityChange)="seriesVisibilityChanged($event)">
+    <dt-chart-tooltip>
+      <ng-template let-tooltip>
+        <p><span [textContent]="tooltip.points[0].point.evaluationData.data.teststrategy"></span> test from <span class="m-0 mt-1 mb-1" [textContent]="tooltip.points[0].point.evaluationData.time | amDateFormat:getCalendarFormat()"></span></p>
+        <dt-key-value-list style="min-width: 100px;">
+          <dt-key-value-list-item>
+            <dt-key-value-list-key>
+              {{ tooltip.points[0].series.name }}
+            </dt-key-value-list-key>
+            <dt-key-value-list-value>
+              {{ tooltip.points[0].point.y | number:'1.0-0' }}
+            </dt-key-value-list-value>
+          </dt-key-value-list-item>
+        </dt-key-value-list>
+      </ng-template>
+    </dt-chart-tooltip>
+  </dt-chart>
+  <div class="p-3" *ngIf="_selectedEvaluationData">
+    <dt-consumption [max]="_selectedEvaluationData.evaluationdetails.indicatorResults ? 100 : 0" [value]="_selectedEvaluationData.evaluationdetails.score" [color]="_evaluationState[_selectedEvaluationData.result]">
+      <dt-consumption-icon aria-label="Test">
+        <dt-icon name="summary"></dt-icon>
+      </dt-consumption-icon>
+      <dt-consumption-title><span [textContent]="_selectedEvaluationData.teststrategy"></span> test from <span class="m-0 mt-1 mb-1" [textContent]="_selectedEvaluationData.evaluationdetails.timeStart | amDateFormat:getCalendarFormat()"></span></dt-consumption-title>
+      <dt-consumption-count>
+        <span [textContent]="_selectedEvaluationData.evaluationdetails.score | number:'1.0-0'"></span>/<span [textContent]="_selectedEvaluationData.evaluationdetails.indicatorResults ? 100 : 0"></span>
+      </dt-consumption-count>
+      <dt-consumption-label><span [textContent]="_selectedEvaluationData.teststrategy"></span> evaluation <span [textContent]="_selectedEvaluationData.result"></span></dt-consumption-label>
+    </dt-consumption>
+    <p><span [textContent]="_selectedEvaluationData.teststrategy"></span> evaluation breakdown</p>
+    <dt-key-value-list>
+      <ng-container *ngFor="let result of _selectedEvaluationData.evaluationdetails.indicatorResults">
+        <dt-key-value-list-item *ngIf="result.status == 'fail'">
+          <dt-key-value-list-key>
+            <p class="m-0 error" [textContent]="result.value.metric"></p>
+          </dt-key-value-list-key>
+          <dt-key-value-list-value>
+            <span [textContent]="result.value.value | number:'1.0-0'"></span>
+            <span class="small m-0 ml-1" *ngFor="let _target of result.targets" [textContent]="_target.criteria" [class.error]="_target.violated" [class.error-line]="_target.violated"></span>
+          </dt-key-value-list-value>
+        </dt-key-value-list-item>
+      </ng-container>
+    </dt-key-value-list>
+    <dt-expandable-panel #indicatorResults>
+      <dt-key-value-list>
+        <ng-container *ngFor="let result of _selectedEvaluationData.evaluationdetails.indicatorResults">
+          <dt-key-value-list-item *ngIf="result.status != 'fail'">
+            <dt-key-value-list-key [textContent]="result.value.metric"></dt-key-value-list-key>
+            <dt-key-value-list-value>
+              <span [textContent]="result.value.value | number:'1.0-0'"></span>
+              <span class="small m-0 ml-1" *ngFor="let _target of result.targets" [textContent]="_target.criteria"></span>
+            </dt-key-value-list-value>
+          </dt-key-value-list-item>
+        </ng-container>
+      </dt-key-value-list>
+    </dt-expandable-panel>
+    <p class="m-0 mt-1 mb-1">
+      <a class="dt-link" (click)="$event.stopPropagation();indicatorResults.toggle();">
+        <span *ngIf="!indicatorResults.expanded">Show all evaluation results</span>
+        <span *ngIf="indicatorResults.expanded">Show only failed evaluation results</span>
+      </a>
+    </p>
+  </div>
+</div>

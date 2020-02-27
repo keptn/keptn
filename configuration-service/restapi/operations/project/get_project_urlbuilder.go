@@ -15,8 +15,9 @@ import (
 
 // GetProjectURL generates an URL for the get project operation
 type GetProjectURL struct {
-	NextPageKey *string
-	PageSize    *int64
+	DisableUpstreamSync *bool
+	NextPageKey         *string
+	PageSize            *int64
 
 	_basePath string
 	// avoid unkeyed usage
@@ -51,6 +52,14 @@ func (o *GetProjectURL) Build() (*url.URL, error) {
 	_result.Path = golangswaggerpaths.Join(_basePath, _path)
 
 	qs := make(url.Values)
+
+	var disableUpstreamSyncQ string
+	if o.DisableUpstreamSync != nil {
+		disableUpstreamSyncQ = swag.FormatBool(*o.DisableUpstreamSync)
+	}
+	if disableUpstreamSyncQ != "" {
+		qs.Set("disableUpstreamSync", disableUpstreamSyncQ)
+	}
 
 	var nextPageKeyQ string
 	if o.NextPageKey != nil {
