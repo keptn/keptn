@@ -4,11 +4,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// createCmd represents the create command
+// createCmd implements the create command
 var createCmd = &cobra.Command{
-	Use:   "create [project]",
-	Short: "create is the parent command of \"create project\"",
-	Long:  `create is the parent command of \"create project\". \"create\" without subcommand cannot be used.`,
+	Use:   "create [project,service]",
+	Short: `"create" can be used with the subcommand "project" or "service"`,
+	Long:  `"create" can be used with the subcommand "project" or "service"`,
 }
 
 func init() {
