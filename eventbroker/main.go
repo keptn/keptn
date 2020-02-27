@@ -73,7 +73,6 @@ func createPubSubConnection(topic string, logger *keptnutils.Logger) (transport.
 		return nil, errors.New("no PubSub URL defined")
 	}
 
-	
 	if topic == "" {
 		return nil, errors.New("no PubSub Topic defined")
 	}
