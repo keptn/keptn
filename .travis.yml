@@ -418,21 +418,6 @@ jobs:
         source ../travis-scripts/build_cli.sh "${VERSION}" "${KUBE_CONSTRAINTS}"
         cd ..
       fi
-  # bridge2 eap
-  - if: branch = bridge2 AND type = push
-    os: linux
-    services:
-      - docker
-    script:
-      - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
-      - ./writeManifest.sh
-      - source ./travis-scripts/build_release.sh "${BRIDGE_IMAGE}" "${BRIDGE_FOLDER}" "${GIT_SHA}" "${DATE}" "0.6.1.EAP"
-      - cd ..
-      - source ./travis-scripts/build_release.sh "${MONGODB_DS_IMAGE}" "${MONGODB_DS_FOLDER}" "${GIT_SHA}" "${DATE}" "0.6.1.EAP"
-      - cd ..
-    after_script:
-      - echo "The following images have been built and pushed to dockerhub:"
-      - docker images | grep keptn
 
   - if: branch = master AND type = push
     os: linux
