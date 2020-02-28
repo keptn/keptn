@@ -1,5 +1,6 @@
 FROM node:10-alpine
 ENV DATASTORE "http://mongodb-datastore.keptn-datastore.svc.cluster.local:8080/"
+ENV CONFIGURATION_SERVICE "http://configuration-service.keptn.svc.cluster.local:8080/v1/"
 EXPOSE 8080
 
 ARG version=develop

@@ -1,0 +1,24 @@
+<div fxLayout="column" fxLayoutGap="5px">
+  <div *ngFor="let event of _events;trackBy: identifyEvent">
+    <ktb-selectable-tile (click)="selectEvent(event)" [selected]="_selectedEvent == event" *ngIf="event">
+      <div fxLayout="row">
+        <div fxFlex>
+          <div fxLayout="row" fxLayoutAlign="start center">
+            <h4 class="m-0 mt-1 mb-1" [textContent]="event.getLabel()"></h4>
+            <button dt-icon-button disabled variant="nested" *ngIf="event.isFaulty()"><dt-icon name="criticalevent"></dt-icon></button>
+          </div>
+          <p class="m-0" *ngIf="event.data.valuesCanary"><span class="m-0" [textContent]="event.data.valuesCanary.image"></span></p>
+          <p class="m-0" *ngIf="event.data.ProblemTitle" [textContent]="event.data.ProblemTitle"></p>
+        </div>
+        <div fxLayout="column" fxLayoutAlign="start end">
+          <p class="m-0 mr-2 mt-1" [textContent]="event.time | amCalendar:getCalendarFormats()"></p>
+          <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
+            <dt-tag-list aria-label="stages">
+              <dt-tag *ngFor="let stage of event.getStages()" [textContent]="stage" [class.error]="stage == event.isFaulty()"></dt-tag>
+            </dt-tag-list>
+          </div>
+        </div>
+      </div>
+    </ktb-selectable-tile>
+  </div>
+</div>

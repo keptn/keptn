@@ -22,11 +22,11 @@ import (
 var getEventCmd = &cobra.Command{
 	Use:   "event [eventType]",
 	Short: `Get event in combination with "eventType" allows to retrieve a Keptn event`,
-	Long:  `Get event in combination with "eventType" allows to retrieve a Keptn event. Get event without subcommand cannot be used.
+	Long: `Get event in combination with "eventType" allows to retrieve a Keptn event. Get event without subcommand cannot be used.
 
 Example:
 	keptn get event [eventType]`,
-	}
+}
 
 func init() {
 	getCmd.AddCommand(getEventCmd)
