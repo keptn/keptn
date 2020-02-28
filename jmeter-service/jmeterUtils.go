@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"net/url"
 	"os"
 	"regexp"
 	"strconv"
@@ -34,8 +35,8 @@ func getConfigurationServiceURL() string {
 	return "localhost:8080"
 }
 
-func executeJMeter(testInfo *TestInfo, scriptName string, resultsDir string, serverURL string, serverPort int, checkPath string, vuCount int,
-	loopCount int, thinkTime int, LTN string, funcValidation bool, avgRtValidation int, logger *keptnutils.Logger) (bool, error) {
+func executeJMeter(testInfo *TestInfo, scriptName string, resultsDir string, url *url.URL, vuCount int, loopCount int,
+	thinkTime int, LTN string, funcValidation bool, avgRtValidation int, logger *keptnutils.Logger) (bool, error) {
 	os.RemoveAll(resultsDir)
 	os.MkdirAll(resultsDir, 0644)
 
@@ -73,17 +74,18 @@ func executeJMeter(testInfo *TestInfo, scriptName string, resultsDir string, ser
 		return false, err
 	}
 
-	testInfoStr := testInfo.ToString() + ", scriptName: " + scriptName + ", serverURL: " + serverURL
+	testInfoStr := testInfo.ToString() + ", scriptName: " + scriptName + ", serverURL: " + url.String()
 	logger.Debug("Starting JMeter test. " + testInfoStr)
 	res, err := keptnutils.ExecuteCommand("jmeter", []string{"-n", "-t", "./" + scriptName,
 		// "-e", "-o", resultsDir,
 		"-l", resultsDir + "_result.tlf",
-		"-JSERVER_URL=" + serverURL,
+		"-JPROTOCOL=" + url.Scheme,
+		"-JSERVER_URL=" + url.Hostname(),
 		"-JDT_LTN=" + LTN,
 		"-JVUCount=" + strconv.Itoa(vuCount),
 		"-JLoopCount=" + strconv.Itoa(loopCount),
-		"-JCHECK_PATH=" + checkPath,
-		"-JSERVER_PORT=" + strconv.Itoa(serverPort),
+		"-JCHECK_PATH=" + url.Path,
+		"-JSERVER_PORT=" + derivePort(url),
 		"-JThinkTime=" + strconv.Itoa(thinkTime)})
 
 	logger.Info(res)
@@ -133,6 +135,19 @@ func executeJMeter(testInfo *TestInfo, scriptName string, resultsDir string, ser
 
 	logger.Debug("Successfully executed JMeter test. " + testInfo.ToString())
 	return true, nil
+}
+
+func derivePort(url *url.URL) string {
+	if url.Port() != "" {
+		return url.Port()
+	}
+	switch strings.ToLower(url.Scheme) {
+	case "http":
+		return "80"
+	case "https":
+		return "443"
+	}
+	return ""
 }
 
 func getLastOccurence(vs []string, prefix string) string {
