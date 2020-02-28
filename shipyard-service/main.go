@@ -333,9 +333,10 @@ func (client *Client) printDeleteInfoMessage(configServiceURL string, projectNam
 			return fmt.Errorf("error when checking availablity of namespace: %v", err)
 		}
 		if exists {
-			logger.Info(fmt.Sprintf("Namespace %s and Helm releases are not deleted. "+
-				"If you would like to re-create the project, please first delete this namespace "+
-				"with 'kubectl delete ns %s' and all contained Helm releases with "+
+			logger.Info(fmt.Sprintf("Namespace %s and Helm releases are not deleted. This may cause problems if "+
+				"a project with the same name is created later."+
+				"If you would like to delete the namespace and Helm releases, please exuecute "+
+				"'kubectl delete ns %s' and "+
 				"'helm del $(helm ls --namespace %s --short) --purge'", namespace, namespace, namespace))
 		}
 	}
