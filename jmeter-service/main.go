@@ -140,12 +140,13 @@ func getTestInfo(data keptnevents.DeploymentFinishedEventData) *TestInfo {
 	}
 }
 
-func getServiceURL(data keptnevents.DeploymentFinishedEventData) string {
+func getServiceURL(data keptnevents.DeploymentFinishedEventData) (*url.URL, error) {
 
 	if data.DeploymentURILocal != "" {
-		return data.DeploymentURILocal
+		return url.Parse(data.DeploymentURILocal)
+
 	} else if data.DeploymentURIPublic != "" {
-		return data.DeploymentURIPublic
+		return url.Parse(data.DeploymentURIPublic)
 	}
 
 	// Use educated guess of the service url based on stage, service name, deployment type
@@ -153,7 +154,8 @@ func getServiceURL(data keptnevents.DeploymentFinishedEventData) string {
 	if data.DeploymentStrategy == "blue_green_service" {
 		serviceURL = data.Service + "-canary" + "." + data.Project + "-" + data.Stage
 	}
-	return serviceURL
+	serviceURL = "http://" + serviceURL + "/health"
+	return url.Parse(serviceURL)
 }
 
 func runHealthCheck(data keptnevents.DeploymentFinishedEventData, id string, logger *keptnutils.Logger) (bool, error) {
@@ -162,8 +164,12 @@ func runHealthCheck(data keptnevents.DeploymentFinishedEventData, id string, log
 	os.RemoveAll("output.txt")
 
 	testInfo := getTestInfo(data)
-	return executeJMeter(testInfo, "jmeter/basiccheck.jmx", "HealthCheck_"+data.Service,
-		getServiceURL(data), 80, "/health", 1, 1, 250, "HealthCheck_"+id,
+	url, err := getServiceURL(data)
+	if err != nil {
+		return false, err
+	}
+	return executeJMeter(testInfo, "jmeter/basiccheck.jmx", "HealthCheck_"+data.Service, url,
+		1, 1, 250, "HealthCheck_"+id,
 		true, 0, logger)
 }
 
@@ -174,9 +180,12 @@ func runFunctionalCheck(data keptnevents.DeploymentFinishedEventData, id string,
 	os.RemoveAll("output.txt")
 
 	testInfo := getTestInfo(data)
-	return executeJMeter(testInfo, "jmeter/load.jmx",
-		"FuncCheck_"+data.Service, getServiceURL(data),
-		80, "/health", 1, 1, 250, "FuncCheck_"+id, true, 0, logger)
+	url, err := getServiceURL(data)
+	if err != nil {
+		return false, err
+	}
+	return executeJMeter(testInfo, "jmeter/load.jmx", "FuncCheck_"+data.Service, url,
+		1, 1, 250, "FuncCheck_"+id, true, 0, logger)
 }
 
 func runPerformanceCheck(data keptnevents.DeploymentFinishedEventData, id string, logger *keptnutils.Logger) (bool, error) {
@@ -186,8 +195,12 @@ func runPerformanceCheck(data keptnevents.DeploymentFinishedEventData, id string
 	os.RemoveAll("output.txt")
 
 	testInfo := getTestInfo(data)
-	return executeJMeter(testInfo, "jmeter/load.jmx", "PerfCheck_"+data.Service,
-		getServiceURL(data), 80, "/health", 10, 500, 250, "PerfCheck_"+id,
+	url, err := getServiceURL(data)
+	if err != nil {
+		return false, err
+	}
+	return executeJMeter(testInfo, "jmeter/load.jmx", "PerfCheck_"+data.Service, url,
+		10, 500, 250, "PerfCheck_"+id,
 		false, 0, logger)
 }
 
