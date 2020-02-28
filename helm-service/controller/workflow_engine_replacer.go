@@ -65,7 +65,7 @@ func getInternalDeploymentUrl(project string, service string, stage string, depl
 
 	// Use educated guess of the service url based on stage, service name, deployment type
 	serviceURL := service + "." + project + "-" + stage
-	if deploymentStrategy ==  keptnevents.Duplicate {
+	if deploymentStrategy == keptnevents.Duplicate {
 		if testStrategy == "real-user" {
 			// real-user tests will always be conducted on the primary deployment
 			serviceURL = service + "-primary" + "." + project + "-" + stage
