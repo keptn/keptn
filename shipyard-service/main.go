@@ -302,6 +302,11 @@ func (client *Client) deleteProject(project configmodels.Project, logger keptnut
 		return err
 	}
 
+	if err := client.printDeleteInfoMessage(configServiceURL.String(), project.ProjectName, logger); err != nil {
+		logger.Error(fmt.Sprintf("Could not print delete info message: %v", err))
+		return err
+	}
+
 	prjHandler := configutils.NewAuthenticatedProjectHandler(configServiceURL.String(), "", "", client.httpClient, "http")
 	errorObj, err := prjHandler.DeleteProject(project)
 	if errorObj == nil && err == nil {
@@ -311,6 +316,30 @@ func (client *Client) deleteProject(project configmodels.Project, logger keptnut
 	}
 
 	return fmt.Errorf("Error in deleting project: %s", err.Error())
+}
+
+func (client *Client) printDeleteInfoMessage(configServiceURL string, projectName string, logger keptnutils.Logger) error {
+
+	rh := configutils.NewResourceHandler(configServiceURL)
+	kh := keptnutils.NewKeptnHandler(rh)
+	shipyard, err := kh.GetShipyard(projectName)
+	if err != nil {
+		return fmt.Errorf("error when getting shipyard: %v", err)
+	}
+	for _, stage := range shipyard.Stages {
+		namespace := projectName + "-" + stage.Name
+		exists, err := keptnutils.ExistsNamespace(true, namespace)
+		if err != nil {
+			return fmt.Errorf("error when checking availablity of namespace: %v", err)
+		}
+		if exists {
+			logger.Info(fmt.Sprintf("Namespace %s and Helm releases are not deleted. "+
+				"If you would like to re-create the project, please first delete this namespace "+
+				"with 'kubectl delete ns %s' and all contained Helm releases with "+
+				"'helm del $(helm ls --namespace %s --short) --purge'", namespace, namespace, namespace))
+		}
+	}
+	return nil
 }
 
 // getProject returns a project by using the configuration-service
