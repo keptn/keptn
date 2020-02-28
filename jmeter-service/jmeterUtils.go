@@ -84,7 +84,7 @@ func executeJMeter(testInfo *TestInfo, scriptName string, resultsDir string, url
 		"-JDT_LTN=" + LTN,
 		"-JVUCount=" + strconv.Itoa(vuCount),
 		"-JLoopCount=" + strconv.Itoa(loopCount),
-		"-JCHECK_PATH=" + url.Path,
+		"-JCHECK_PATH=" + derivePath(url),
 		"-JSERVER_PORT=" + derivePort(url),
 		"-JThinkTime=" + strconv.Itoa(thinkTime)})
 
@@ -148,6 +148,13 @@ func derivePort(url *url.URL) string {
 		return "443"
 	}
 	return ""
+}
+
+func derivePath(url *url.URL) string {
+	if url.Path != "" {
+		return url.Path
+	}
+	return "/health"
 }
 
 func getLastOccurence(vs []string, prefix string) string {
