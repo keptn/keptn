@@ -30,9 +30,9 @@ func (p *NamespaceManager) InitNamespaces(project string, stages []*models.Stage
 			return fmt.Errorf("error when checking availablity of namespace: %v", err)
 		}
 		if exists {
-			p.logger.Info(fmt.Sprintf("Reuse existing namespace %s", namespace))
+			p.logger.Debug(fmt.Sprintf("Reuse existing namespace %s", namespace))
 		} else {
-			p.logger.Info(fmt.Sprintf("Create new namespace %s", namespace))
+			p.logger.Debug(fmt.Sprintf("Create new namespace %s", namespace))
 			if err != keptnutils.CreateNamespace(true, namespace) {
 				return fmt.Errorf("error when creating namespace %s: %v", namespace, err)
 			}
