@@ -101,7 +101,6 @@ func sendDeploymentFinishedEvent(shkeptncontext string, project string, stage st
 		DeploymentStrategy: deploymentStrategyOldIdentifier,
 		Image:              image,
 		Tag:                tag,
-		DeploymentURILocal: getInternalDeploymentUrl(project, service, stage, deploymentStrategy, testStrategy),
 	}
 
 	event := cloudevents.Event{
