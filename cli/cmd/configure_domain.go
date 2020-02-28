@@ -19,6 +19,7 @@ import (
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/utils"
+	"github.com/keptn/keptn/cli/utils/version"
 	"github.com/spf13/cobra"
 )
 
@@ -66,11 +67,15 @@ Example:
 		}
 
 		if (configureDomainParams.ConfigVersion == nil || *configureDomainParams.ConfigVersion == "") &&
-			utils.IsOfficialKeptnVersion(Version) {
-			configureDomainParams.ConfigVersion = &Version
+			version.IsOfficialKeptnVersion(Version) {
+			branch, err := version.GetOfficialKeptnVersion(Version)
+			if err != nil {
+				return fmt.Errorf("Error when parsing installer tag: %v", err)
+			}
+			configureDomainParams.ConfigVersion = &branch
 		} else if configureDomainParams.ConfigVersion == nil || *configureDomainParams.ConfigVersion == "" {
-			dev := "develop"
-			configureDomainParams.ConfigVersion = &dev
+			branch := "master"
+			configureDomainParams.ConfigVersion = &branch
 		}
 
 		resourcesAvailable, err := checkConfigureDomainResourceAvailability()

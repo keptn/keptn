@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"github.com/ghodss/yaml"
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
 	keptnmodels "github.com/keptn/go-utils/pkg/models"
@@ -12,6 +13,49 @@ import (
 	"github.com/keptn/keptn/configuration-service/restapi/operations/stage"
 	"io/ioutil"
 )
+
+func getStages(params stage.GetProjectProjectNameStageParams) ([]*models.Stage, errors.Error) {
+	logger := utils.NewLogger("", "", "configuration-service")
+	if !common.ProjectExists(params.ProjectName) {
+		return nil, errors.New(404, "Project does not exist.")
+	}
+
+	err := common.CheckoutBranch(params.ProjectName, "master", *params.DisableUpstreamSync)
+	if err != nil {
+		logger.Error(err.Error())
+		return nil, errors.New(500, "Could not retrieve stages.")
+	}
+
+	shipyardPath := config.ConfigDir + "/" + params.ProjectName + "/shipyard.yaml"
+
+	if !common.FileExists(shipyardPath) {
+		return nil, errors.New(500, "Could not retrieve stages.")
+	}
+
+	dat, err := ioutil.ReadFile(shipyardPath)
+	if err != nil {
+		logger.Error(err.Error())
+		return nil, errors.New(500, "Could not read shipyard file.")
+	}
+
+	shipyard := &keptnmodels.Shipyard{}
+
+	err = yaml.Unmarshal(dat, shipyard)
+	if err != nil {
+		logger.Error(err.Error())
+		return nil, errors.New(500, "Could not read shipyard file.")
+	}
+
+	var result []*models.Stage
+	for _, stage := range shipyard.Stages {
+		stage := &models.Stage{
+			StageName: stage.Name,
+		}
+		result = append(result, stage)
+	}
+
+	return result, nil
+}
 
 // PostProjectProjectNameStageHandlerFunc creates a new stage
 func PostProjectProjectNameStageHandlerFunc(params stage.PostProjectProjectNameStageParams) middleware.Responder {
@@ -41,49 +85,16 @@ func DeleteProjectProjectNameStageStageNameHandlerFunc(params stage.DeleteProjec
 
 // GetProjectProjectNameStageHandlerFunc gets list of stages for a project
 func GetProjectProjectNameStageHandlerFunc(params stage.GetProjectProjectNameStageParams) middleware.Responder {
-	logger := utils.NewLogger("", "", "configuration-service")
-	if !common.ProjectExists(params.ProjectName) {
-		return stage.NewGetProjectProjectNameStageNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project does not exist.")})
-	}
-
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
-	err := common.CheckoutBranch(params.ProjectName, "master", *params.DisableUpstreamSync)
+	result, err := getStages(params)
+
 	if err != nil {
-		logger.Error(err.Error())
-
-		return stage.NewGetProjectProjectNameStageDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not retrieve stages.")})
-	}
-
-	shipyardPath := config.ConfigDir + "/" + params.ProjectName + "/shipyard.yaml"
-
-	if !common.FileExists(shipyardPath) {
-
-		return stage.NewGetProjectProjectNameStageDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not retrieve stages.")})
-	}
-
-	dat, err := ioutil.ReadFile(shipyardPath)
-	if err != nil {
-		logger.Error(err.Error())
-
-		return stage.NewGetProjectProjectNameStageDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not read shipyard file.")})
-	}
-
-	shipyard := &keptnmodels.Shipyard{}
-
-	err = yaml.Unmarshal(dat, shipyard)
-	if err != nil {
-		logger.Error(err.Error())
-
-		return stage.NewGetProjectProjectNameStageDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not read shipyard file.")})
-	}
-
-	result := []*models.Stage{}
-	for _, stage := range shipyard.Stages {
-		stage := &models.Stage{
-			StageName: stage.Name,
+		if err.Code() == 404 {
+			return stage.NewGetProjectProjectNameStageNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String(err.Error())})
+		} else {
+			return stage.NewGetProjectProjectNameStageDefault(int(err.Code())).WithPayload(&models.Error{Code: int64(err.Code()), Message: swag.String(err.Error())})
 		}
-		result = append(result, stage)
 	}
 
 	return stage.NewGetProjectProjectNameStageOK().WithPayload(&models.Stages{

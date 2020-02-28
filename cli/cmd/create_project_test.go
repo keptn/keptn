@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/keptn/keptn/cli/pkg/logging"
-	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
 )
 
@@ -79,7 +79,7 @@ func TestCreateProjectIncorrectProjectNameCmd(t *testing.T) {
 	err := rootCmd.Execute()
 
 	if err != nil {
-		if !utils.ErrorContains(err, "contains upper case letter(s) or special character(s)") {
+		if !errorContains(err, "contains upper case letter(s) or special character(s)") {
 			t.Errorf("An error occured: %v", err)
 		}
 	} else {
@@ -113,7 +113,7 @@ func TestCreateProjectIncorrectStageNameCmd(t *testing.T) {
 	err := rootCmd.Execute()
 
 	if err != nil {
-		if !utils.ErrorContains(err, "contains upper case letter(s) or special character(s)") {
+		if !errorContains(err, "contains upper case letter(s) or special character(s)") {
 			t.Errorf("An error occured: %v", err)
 		}
 	} else {
@@ -142,7 +142,7 @@ func TestCreateProjectCmdWithGitMissingParam(t *testing.T) {
 	err := rootCmd.Execute()
 
 	if err != nil {
-		if !utils.ErrorContains(err, "For configuring a Git upstream") {
+		if !errorContains(err, "For configuring a Git upstream") {
 			t.Errorf("An error occured: %v", err)
 		}
 	} else {
@@ -174,4 +174,14 @@ func TestCreateProjectCmdWithGit(t *testing.T) {
 	if err != nil {
 		t.Fail()
 	}
+}
+
+func errorContains(out error, want string) bool {
+	if out == nil {
+		return want == ""
+	}
+	if want == "" {
+		return false
+	}
+	return strings.Contains(out.Error(), want)
 }

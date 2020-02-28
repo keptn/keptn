@@ -61,6 +61,21 @@ func getTestStrategy(project string, stageName string) (string, error) {
 	return "", fmt.Errorf("Cannot find stage %s in project %s", stageName, project)
 }
 
+func getInternalDeploymentUrl(project string, service string, stage string, deploymentStrategy keptnevents.DeploymentStrategy, testStrategy string) string {
+
+	// Use educated guess of the service url based on stage, service name, deployment type
+	serviceURL := service + "." + project + "-" + stage
+	if deploymentStrategy == keptnevents.Duplicate {
+		if testStrategy == "real-user" {
+			// real-user tests will always be conducted on the primary deployment
+			serviceURL = service + "-primary" + "." + project + "-" + stage
+		} else {
+			serviceURL = service + "-canary" + "." + project + "-" + stage
+		}
+	}
+	return serviceURL
+}
+
 func sendDeploymentFinishedEvent(shkeptncontext string, project string, stage string, service string, testStrategy string, deploymentStrategy keptnevents.DeploymentStrategy, image string, tag string) error {
 
 	source, _ := url.Parse("helm-service")
@@ -86,6 +101,7 @@ func sendDeploymentFinishedEvent(shkeptncontext string, project string, stage st
 		DeploymentStrategy: deploymentStrategyOldIdentifier,
 		Image:              image,
 		Tag:                tag,
+		DeploymentURILocal: getInternalDeploymentUrl(project, service, stage, deploymentStrategy, testStrategy),
 	}
 
 	event := cloudevents.Event{

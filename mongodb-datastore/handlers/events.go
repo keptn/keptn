@@ -113,6 +113,12 @@ func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 	if params.Service != nil {
 		searchOptions["data.service"] = params.Service
 	}
+	if params.FromTime != nil {
+		logger.Debug("filter FromTime")
+		searchOptions["time"] = bson.M{
+			"$gt": params.FromTime,
+		}
+	}
 
 	var result event.GetEventsOKBody
 
@@ -151,7 +157,19 @@ func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 				// return nil, err
 			}
 
-			result.Events = append(result.Events, &keptnEvent)
+			if params.FromTime != nil {
+				fromTime, err := time.Parse(time.RFC3339, *params.FromTime)
+				if err != nil {
+					fmt.Println("Error while parsing date :", err)
+					return nil, err
+				}
+
+				if time.Time(keptnEvent.Time).After(fromTime) {
+					result.Events = append(result.Events, &keptnEvent)
+				}
+			} else {
+				result.Events = append(result.Events, &keptnEvent)
+			}
 		}
 	} else {
 		var newNextPageKey int64

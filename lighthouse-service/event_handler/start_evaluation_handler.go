@@ -1,11 +1,11 @@
 package event_handler
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/url"
 	"time"
-	"encoding/json"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"

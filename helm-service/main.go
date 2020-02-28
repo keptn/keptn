@@ -87,11 +87,17 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		return nil
 	}
 
+	url, err := serviceutils.GetConfigServiceURL()
+	if err != nil {
+		logger.Error(fmt.Sprintf("Error when getting config service url: %s", err.Error()))
+		return err
+	}
+
 	if event.Type() == keptnevents.ConfigurationChangeEventType {
-		configChanger := controller.NewConfigurationChanger(mesh, canaryLevelGen, logger, keptnDomain)
+		configChanger := controller.NewConfigurationChanger(mesh, canaryLevelGen, logger, keptnDomain, url.String())
 		go configChanger.ChangeAndApplyConfiguration(event, loggingDone)
 	} else if event.Type() == keptnevents.InternalServiceCreateEventType {
-		onboarder := controller.NewOnboarder(mesh, canaryLevelGen, logger, keptnDomain)
+		onboarder := controller.NewOnboarder(mesh, canaryLevelGen, logger, keptnDomain, url.String())
 		go onboarder.DoOnboard(event, loggingDone)
 	} else {
 		logger.Error("Received unexpected keptn event")

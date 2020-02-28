@@ -4,9 +4,12 @@
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/keptn/keptn)
 ![Github Downloads](https://img.shields.io/github/downloads/keptn/keptn/total?logo=github&logoColor=white)
 [![Build Status](https://travis-ci.org/keptn/keptn.svg?branch=master)](https://travis-ci.org/keptn/keptn)
+[![codecov](https://codecov.io/gh/keptn/keptn/branch/master/graph/badge.svg)](https://codecov.io/gh/keptn/keptn)
+[![Go Report Card](https://goreportcard.com/badge/github.com/keptn/keptn)](https://goreportcard.com/report/github.com/keptn/keptn)
 
 Keptn is an event-based control plane for continuous delivery and automated operations for cloud-native applications. 
-Please find the documentation on our [website](https://keptn.sh), which provides also information on [Why Keptn?](https://keptn.sh/why-keptn/).
+Please find the documentation on our [website](https://keptn.sh), and read the motivation about Keptn on our 
+[Why Keptn?](https://keptn.sh/why-keptn/) page.
 
 ## Usage
 
