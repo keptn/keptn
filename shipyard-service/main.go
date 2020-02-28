@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -220,8 +221,24 @@ func getRemoteURLAndDeleteProject(event cloudevents.Event, logger keptnutils.Log
 		}
 	}
 
+	configServiceURL, err := getServiceEndpoint(configservice)
+	if err != nil {
+		logger.Error(fmt.Sprintf("Could not get service endpoint for %s: %s", configservice, err.Error()))
+		return err
+	}
+
+	msg, err := client.getDeleteInfoMessage(configServiceURL.String(), project.ProjectName)
+	if err != nil {
+		logger.Error(fmt.Sprintf("Could not print delete info message: %v", err))
+		return err
+	}
+	if err := keptnutils.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"),
+		msg, false, "INFO"); err != nil {
+		logger.Error(fmt.Sprintf("Could not write log to websocket. %s", err.Error()))
+	}
+
 	// delete project
-	if err := client.deleteProject(project, logger); err != nil {
+	if err := client.deleteProject(project, logger, configServiceURL.String()); err != nil {
 		return fmt.Errorf("Deleting project %s failed. %s", project.ProjectName, err.Error())
 	}
 	logger.Info(fmt.Sprintf("Project %s deleted", project.ProjectName))
@@ -295,19 +312,9 @@ func (client *Client) createProject(project configmodels.Project, logger keptnut
 }
 
 // deleteProject deletes a project by using the configuration-service
-func (client *Client) deleteProject(project configmodels.Project, logger keptnutils.Logger) error {
-	configServiceURL, err := getServiceEndpoint(configservice)
-	if err != nil {
-		logger.Error(fmt.Sprintf("Could not get service endpoint for %s: %s", configservice, err.Error()))
-		return err
-	}
+func (client *Client) deleteProject(project configmodels.Project, logger keptnutils.Logger, configServiceURL string) error {
 
-	if err := client.printDeleteInfoMessage(configServiceURL.String(), project.ProjectName, logger); err != nil {
-		logger.Error(fmt.Sprintf("Could not print delete info message: %v", err))
-		return err
-	}
-
-	prjHandler := configutils.NewAuthenticatedProjectHandler(configServiceURL.String(), "", "", client.httpClient, "http")
+	prjHandler := configutils.NewAuthenticatedProjectHandler(configServiceURL, "", "", client.httpClient, "http")
 	errorObj, err := prjHandler.DeleteProject(project)
 	if errorObj == nil && err == nil {
 		return nil
@@ -318,29 +325,30 @@ func (client *Client) deleteProject(project configmodels.Project, logger keptnut
 	return fmt.Errorf("Error in deleting project: %s", err.Error())
 }
 
-func (client *Client) printDeleteInfoMessage(configServiceURL string, projectName string, logger keptnutils.Logger) error {
+func (client *Client) getDeleteInfoMessage(configServiceURL string, projectName string) (string, error) {
 
 	rh := configutils.NewResourceHandler(configServiceURL)
 	kh := keptnutils.NewKeptnHandler(rh)
 	shipyard, err := kh.GetShipyard(projectName)
 	if err != nil {
-		return fmt.Errorf("error when getting shipyard: %v", err)
+		return "", fmt.Errorf("error when getting shipyard: %v", err)
 	}
+	msg := ""
 	for _, stage := range shipyard.Stages {
 		namespace := projectName + "-" + stage.Name
 		exists, err := keptnutils.ExistsNamespace(true, namespace)
 		if err != nil {
-			return fmt.Errorf("error when checking availablity of namespace: %v", err)
+			return "", fmt.Errorf("error when checking availablity of namespace: %v", err)
 		}
 		if exists {
-			logger.Info(fmt.Sprintf("Namespace %s and Helm releases are not deleted. This may cause problems if "+
-				"a project with the same name is created later."+
+			msg += fmt.Sprintf("Namespace %s and Helm releases are not deleted. This may cause problems if "+
+				"a project with the same name is created later. "+
 				"If you would like to delete the namespace and Helm releases, please exuecute "+
 				"'kubectl delete ns %s' and "+
-				"'helm del $(helm ls --namespace %s --short) --purge'", namespace, namespace, namespace))
+				"'helm del $(helm ls --namespace %s --short) --purge'\n", namespace, namespace, namespace)
 		}
 	}
-	return nil
+	return strings.TrimSpace(msg), nil
 }
 
 // getProject returns a project by using the configuration-service
