@@ -226,7 +226,7 @@ jobs:
         if [ ! -z "$unformatted" ]; then
           echo "Code Style Check failed for the following files: ${unformatted}".
           echo "Please run: gofmt -w ."
-          echo "After that ammend your commit (e.g.: git add ${unformatted} && git commit --amend --no-edit) and force push the changes (git push -f)."
+          echo "After that amend your commit (e.g.: git add ${unformatted} && git commit --amend --no-edit) and force push the changes (git push -f)."
           travis_terminate 1
         fi
 
