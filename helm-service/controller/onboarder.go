@@ -58,7 +58,7 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event, loggingDone chan bool) error
 			return err
 		}
 		event.DeploymentStrategies = deplStrategies
-	} else if os.Getenv("PRE_WORKFLOW_ENGINE") == "true" && (event.DeploymentStrategies == nil || len(event.DeploymentStrategies) == 0) {
+	} else if os.Getenv("PRE_WORKFLOW_ENGINE") == "true" && len(event.DeploymentStrategies) == 0 {
 		deplStrategies, err := getDeploymentStrategies(event.Project)
 		if err != nil {
 			o.logger.Error(fmt.Sprintf("Error when getting deployment strategies: %s" + err.Error()))
@@ -88,7 +88,7 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event, loggingDone chan bool) error
 	}
 
 	if event.HelmChart != "" {
-		umbrellaChartHandler := helm.NewUmbrellaChartHandler(o.mesh)
+		umbrellaChartHandler := helm.NewUmbrellaChartHandler(url.String())
 		isUmbrellaChartAvailable, err := umbrellaChartHandler.IsUmbrellaChartAvailableInAllStages(event.Project, stages)
 		if err != nil {
 			o.logger.Error("Error when getting Helm chart for stages. " + err.Error())
@@ -112,7 +112,7 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event, loggingDone chan bool) error
 			o.logger.Error(err.Error())
 			return err
 		}
-		if o.isBlueGreenStage(event.Project, stage.StageName) && event.HelmChart != "" {
+		if event.DeploymentStrategies[stage.StageName] == keptnevents.Duplicate && event.HelmChart != "" {
 			// inject Istio to the namespace for blue-green deployments
 			namespace, err := kubeClient.Namespaces().Get(helm.GetUmbrellaNamespace(event.Project, stage.StageName), v1.GetOptions{})
 			if err != nil {
@@ -213,7 +213,7 @@ func (o *Onboarder) onboardService(stageName string, event *keptnevents.ServiceC
 			return err
 		}
 
-		if err := o.updateUmbrellaChart(event.Project, stageName, helm.GetChartName(event.Service, false)); err != nil {
+		if err := o.updateUmbrellaChart(event.Project, stageName, helm.GetChartName(event.Service, false), configServiceURL); err != nil {
 			return err
 		}
 
@@ -235,7 +235,7 @@ func (o *Onboarder) onboardService(stageName string, event *keptnevents.ServiceC
 			o.logger.Error("Error when storing the Helm chart: " + err.Error())
 			return err
 		}
-		return o.updateUmbrellaChart(event.Project, stageName, helmChartName)
+		return o.updateUmbrellaChart(event.Project, stageName, helmChartName, configServiceURL)
 	}
 
 	return nil
@@ -294,9 +294,9 @@ func (o *Onboarder) OnboardGeneratedService(helmManifest string, project string,
 	return generatedChart, nil
 }
 
-func (o *Onboarder) updateUmbrellaChart(project, stage, helmChartName string) error {
+func (o *Onboarder) updateUmbrellaChart(project, stage, helmChartName, configServiceURL string) error {
 
-	umbrellaChartHandler := helm.NewUmbrellaChartHandler(o.mesh)
+	umbrellaChartHandler := helm.NewUmbrellaChartHandler(configServiceURL)
 	o.logger.Debug(fmt.Sprintf("Updating the Umbrella chart with the new Helm chart %s in stage %s", helmChartName, stage))
 	// if err := helm.AddChartInUmbrellaRequirements(event.Project, helmChartName, stage, url.String()); err != nil {
 	// 	o.logger.Error("Error when adding the chart in the Umbrella requirements file: " + err.Error())
@@ -307,28 +307,4 @@ func (o *Onboarder) updateUmbrellaChart(project, stage, helmChartName string) er
 		return err
 	}
 	return nil
-}
-
-func (o *Onboarder) isBlueGreenStage(project string, stageName string) bool {
-	url, err := serviceutils.GetConfigServiceURL()
-	if err != nil {
-		o.logger.Error(fmt.Sprintf("Error when getting config service url: %s", err.Error()))
-		return false
-	}
-
-	resourceHandler := configutils.NewResourceHandler(url.String())
-	handler := keptnutils.NewKeptnHandler(resourceHandler)
-
-	shipyard, err := handler.GetShipyard(project)
-	if err != nil {
-		o.logger.Error("Error when retrieving shipyard: " + err.Error())
-		return false
-	}
-
-	for _, stage := range shipyard.Stages {
-		if stage.Name == stageName && stage.DeploymentStrategy == "blue_green_service" {
-			return true
-		}
-	}
-	return false
 }
