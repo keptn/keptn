@@ -15,7 +15,7 @@
 <div class="mb-1 mt-1">
   <div fxLayout="row" class="pr-4">
     <div fxFlex>
-      <dt-button-group (valueChange)="switchEvaluationView($event)">
+      <dt-button-group (valueChange)="switchEvaluationView()">
         <dt-button-group-item>Single evaluation</dt-button-group-item>
         <dt-button-group-item>Evaluation comparison</dt-button-group-item>
       </dt-button-group>
@@ -43,13 +43,13 @@
     <p><span [textContent]="evaluationData.teststrategy"></span> evaluation breakdown</p>
     <dt-key-value-list>
       <ng-container *ngFor="let result of evaluationData.evaluationdetails.indicatorResults">
-        <dt-key-value-list-item *ngIf="result.status == 'fail'">
+        <dt-key-value-list-item *ngIf="result.status == 'fail' || result.status == 'warning'">
           <dt-key-value-list-key>
-            <p class="m-0 error" [textContent]="result.value.metric"></p>
+            <p [className]="'m-0 '+result.status" [textContent]="result.value.metric"></p>
           </dt-key-value-list-key>
           <dt-key-value-list-value *ngIf="result.value.success">
             <span [textContent]="result.value.value | number:'1.0-0'"></span>
-            <span class="small m-0 ml-1" *ngFor="let _target of result.targets" [textContent]="_target.criteria" [class.error]="_target.violated" [class.error-line]="_target.violated"></span>
+            <span class="small m-0 ml-1" *ngFor="let _target of result.targets" [textContent]="_target.criteria" [class.error]="result.status == 'fail' && _target.violated" [class.warning]="result.status == 'warning' && _target.violated" [class.error-line]="_target.violated"></span>
           </dt-key-value-list-value>
           <dt-key-value-list-value *ngIf="!result.value.success">
             <span class="small" [textContent]="result.value.message"></span>
@@ -60,7 +60,7 @@
     <dt-expandable-panel #indicatorResults>
       <dt-key-value-list>
         <ng-container *ngFor="let result of evaluationData.evaluationdetails.indicatorResults">
-          <dt-key-value-list-item *ngIf="result.status != 'fail'">
+          <dt-key-value-list-item *ngIf="result.status != 'fail' && result.status != 'warning'">
             <dt-key-value-list-key [textContent]="result.value.metric"></dt-key-value-list-key>
             <dt-key-value-list-value>
               <span [textContent]="result.value.value | number:'1.0-0'"></span>
@@ -118,13 +118,16 @@
     <p><span [textContent]="_selectedEvaluationData.teststrategy"></span> evaluation breakdown</p>
     <dt-key-value-list>
       <ng-container *ngFor="let result of _selectedEvaluationData.evaluationdetails.indicatorResults">
-        <dt-key-value-list-item *ngIf="result.status == 'fail'">
+        <dt-key-value-list-item *ngIf="result.status == 'fail' || result.status == 'warning'">
           <dt-key-value-list-key>
-            <p class="m-0 error" [textContent]="result.value.metric"></p>
+            <p [className]="'m-0 '+result.status" [textContent]="result.value.metric"></p>
           </dt-key-value-list-key>
-          <dt-key-value-list-value>
+          <dt-key-value-list-value *ngIf="result.value.success">
             <span [textContent]="result.value.value | number:'1.0-0'"></span>
-            <span class="small m-0 ml-1" *ngFor="let _target of result.targets" [textContent]="_target.criteria" [class.error]="_target.violated" [class.error-line]="_target.violated"></span>
+            <span class="small m-0 ml-1" *ngFor="let _target of result.targets" [textContent]="_target.criteria" [class.error]="result.status == 'fail' && _target.violated" [class.warning]="result.status == 'warning' && _target.violated" [class.error-line]="_target.violated"></span>
+          </dt-key-value-list-value>
+          <dt-key-value-list-value *ngIf="!result.value.success">
+            <span class="small" [textContent]="result.value.message"></span>
           </dt-key-value-list-value>
         </dt-key-value-list-item>
       </ng-container>
@@ -132,7 +135,7 @@
     <dt-expandable-panel #indicatorResults>
       <dt-key-value-list>
         <ng-container *ngFor="let result of _selectedEvaluationData.evaluationdetails.indicatorResults">
-          <dt-key-value-list-item *ngIf="result.status != 'fail'">
+          <dt-key-value-list-item *ngIf="result.status != 'fail' && result.status != 'warning'">
             <dt-key-value-list-key [textContent]="result.value.metric"></dt-key-value-list-key>
             <dt-key-value-list-value>
               <span [textContent]="result.value.value | number:'1.0-0'"></span>
