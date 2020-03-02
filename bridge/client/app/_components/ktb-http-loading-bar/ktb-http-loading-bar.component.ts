@@ -9,15 +9,15 @@ import {HttpProgressState, HttpState} from "../../_models/http-progress-state";
 })
 export class KtbHttpLoadingBarComponent implements OnInit {
 
-  public loading = false;
-  @Input() public filterBy: string | null = null;
-
   private hideLoadingTimer;
   private animateLoadingBarInterval;
 
-  private value = 0;
-  private align = 'start';
-  private state = 'recovered';
+  public loading = false;
+  @Input() public filterBy: string | null = null;
+
+  public value = 0;
+  public align = 'start';
+  public state = 'recovered';
 
   constructor(private httpStateService: HttpStateService) { }
 
