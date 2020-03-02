@@ -16,11 +16,11 @@ const config = configs[app.get('env') || 'development'];
 const datastoreService = new DatastoreService(config.datastore);
 const configurationService = new ConfigurationService(config.configurationService);
 
+app.use(express.static(path.join(__dirname, '../dist')));
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, '../dist')));
 
 app.use('/api', apiRouter({ datastoreService, configurationService }));
 app.use((req, res, next) => {
