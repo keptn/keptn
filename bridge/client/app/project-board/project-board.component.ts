@@ -87,6 +87,10 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
     return moment().subtract(1, 'day').isAfter(root.time);
   }
 
+  loadProjects() {
+    this.dataService.loadProjects();
+  }
+
   ngOnDestroy(): void {
     this._routeSubs.unsubscribe();
     this._rootEventsTimer.unsubscribe();

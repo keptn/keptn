@@ -8,7 +8,7 @@
     "start:server:dev": "nodemon server/bin/www --watch server/",
     "start:client:dev": "ng build --watch",
     "ng": "ng",
-    "build": "ng build",
+    "build": "ng build --prod",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",

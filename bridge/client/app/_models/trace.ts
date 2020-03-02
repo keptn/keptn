@@ -17,7 +17,7 @@ export class Trace {
     deploymentURIPublic: string;
 
     deploymentstrategy: string;
-    labels: object;
+    labels: Map<any, any>;
     result: string;
     teststrategy: string;
 
