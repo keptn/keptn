@@ -37,7 +37,7 @@
     <dt-consumption-count>
       <span [textContent]="evaluationData.evaluationdetails.score | number:'1.0-0'"></span>/<span [textContent]="evaluationData.evaluationdetails.indicatorResults ? 100 : 0"></span>
     </dt-consumption-count>
-    <dt-consumption-label><span [textContent]="evaluationData.teststrategy"></span> evaluation <span [textContent]="evaluationData.result"></span></dt-consumption-label>
+    <dt-consumption-label>SLO evaluation result: <span [textContent]="evaluationData.result"></span></dt-consumption-label>
   </dt-consumption>
   <ktb-sli-breakdown *ngIf="evaluationData.evaluationdetails.indicatorResults" [indicatorResults]="evaluationData.evaluationdetails.indicatorResults"></ktb-sli-breakdown>
 </div>
