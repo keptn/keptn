@@ -33,7 +33,7 @@
     <dt-consumption-icon aria-label="Test">
       <dt-icon name="summary"></dt-icon>
     </dt-consumption-icon>
-    <dt-consumption-title>SLO evaluation of <span [textContent]="evaluationData.teststrategy"></span> test from <span class="m-0 mt-1 mb-1" [textContent]="evaluationData.time | amDateFormat:getCalendarFormat()"></span></dt-consumption-title>
+    <dt-consumption-title>SLO evaluation of <span [textContent]="evaluationData.teststrategy"></span> test</dt-consumption-title>
     <dt-consumption-count>
       <span [textContent]="evaluationData.evaluationdetails.score | number:'1.0-0'"></span>/<span [textContent]="evaluationData.evaluationdetails.indicatorResults ? 100 : 0"></span>
     </dt-consumption-count>
