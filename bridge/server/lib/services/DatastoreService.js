@@ -53,7 +53,7 @@ class DatastoreService {
   }
 
   async getRoots(projectName, serviceName, fromTime) {
-    return this.getEvents({projectName, serviceName, fromTime, root: true});
+    return this.getEvents({projectName, serviceName, fromTime, root: true, pageSize: 20});
   }
 
   async getTraces(contextId, fromTime) {
@@ -61,7 +61,13 @@ class DatastoreService {
   }
 
   async getEvents(options) {
-    let url = `${this.api}/event?pageSize=100`;
+    let url = `${this.api}/event`;
+
+    if(options.pageSize)
+        url += `?pageSize=${options.pageSize}`;
+    else
+        url += `?pageSize=100`;
+
     if(options.type)
       url += `&type=${options.type}`;
     if(options.root)
