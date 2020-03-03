@@ -40,7 +40,7 @@
     <dt-consumption-label><span [textContent]="evaluationData.teststrategy"></span> evaluation <span [textContent]="evaluationData.result"></span></dt-consumption-label>
   </dt-consumption>
   <div *ngIf="evaluationData.evaluationdetails.indicatorResults">
-    <p><span [textContent]="evaluationData.teststrategy"></span> evaluation breakdown</p>
+    <p>SLI breakdown</p>
     <dt-key-value-list>
       <ng-container *ngFor="let result of evaluationData.evaluationdetails.indicatorResults">
         <dt-key-value-list-item *ngIf="result.status == 'fail' || result.status == 'warning'">
@@ -72,7 +72,7 @@
     </dt-expandable-panel>
     <p class="m-0 mt-1 mb-1">
       <a class="dt-link" (click)="$event.stopPropagation();indicatorResults.toggle();">
-        <span *ngIf="!indicatorResults.expanded">Show all evaluation results</span>
+        <span *ngIf="!indicatorResults.expanded">Show all <span [textContent]="evaluationData.evaluationdetails.indicatorResults.length"></span> evaluation results</span>
         <span *ngIf="indicatorResults.expanded">Show only failed evaluation results</span>
       </a>
     </p>
@@ -90,7 +90,7 @@
     (seriesVisibilityChange)="seriesVisibilityChanged($event)">
     <dt-chart-tooltip>
       <ng-template let-tooltip>
-        <p><span [textContent]="tooltip.points[0].point.evaluationData.data.teststrategy"></span> test from <span class="m-0 mt-1 mb-1" [textContent]="tooltip.points[0].point.evaluationData.time | amDateFormat:getCalendarFormat()"></span></p>
+        <p>SLO evaluation of <span [textContent]="tooltip.points[0].point.evaluationData.data.teststrategy"></span> test from <span class="m-0 mt-1 mb-1" [textContent]="tooltip.points[0].point.evaluationData.time | amDateFormat:getCalendarFormat()"></span></p>
         <dt-key-value-list style="min-width: 100px;">
           <dt-key-value-list-item>
             <dt-key-value-list-key>
@@ -109,13 +109,13 @@
       <dt-consumption-icon aria-label="Test">
         <dt-icon name="summary"></dt-icon>
       </dt-consumption-icon>
-      <dt-consumption-title><span [textContent]="_selectedEvaluationData.teststrategy"></span> test from <span class="m-0 mt-1 mb-1" [textContent]="_selectedEvaluationData.evaluationdetails.timeStart | amDateFormat:getCalendarFormat()"></span></dt-consumption-title>
+      <dt-consumption-title>SLO evaluation of <span [textContent]="_selectedEvaluationData.teststrategy"></span> test from <span class="m-0 mt-1 mb-1" [textContent]="_selectedEvaluationData.evaluationdetails.timeStart | amDateFormat:getCalendarFormat()"></span></dt-consumption-title>
       <dt-consumption-count>
         <span [textContent]="_selectedEvaluationData.evaluationdetails.score | number:'1.0-0'"></span>/<span [textContent]="_selectedEvaluationData.evaluationdetails.indicatorResults ? 100 : 0"></span>
       </dt-consumption-count>
       <dt-consumption-label><span [textContent]="_selectedEvaluationData.teststrategy"></span> evaluation <span [textContent]="_selectedEvaluationData.result"></span></dt-consumption-label>
     </dt-consumption>
-    <p><span [textContent]="_selectedEvaluationData.teststrategy"></span> evaluation breakdown</p>
+    <p>SLI breakdown</p>
     <dt-key-value-list>
       <ng-container *ngFor="let result of _selectedEvaluationData.evaluationdetails.indicatorResults">
         <dt-key-value-list-item *ngIf="result.status == 'fail' || result.status == 'warning'">
@@ -147,7 +147,7 @@
     </dt-expandable-panel>
     <p class="m-0 mt-1 mb-1">
       <a class="dt-link" (click)="$event.stopPropagation();indicatorResults.toggle();">
-        <span *ngIf="!indicatorResults.expanded">Show all evaluation results</span>
+        <span *ngIf="!indicatorResults.expanded">Show all <span [textContent]="_selectedEvaluationData.evaluationdetails.indicatorResults.length"></span> evaluation results</span>
         <span *ngIf="indicatorResults.expanded">Show only failed evaluation results</span>
       </a>
     </p>
