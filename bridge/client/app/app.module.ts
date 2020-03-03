@@ -18,6 +18,7 @@ import {AtobPipe} from "./_pipes/atob.pipe";
 import {KtbEventsListComponent} from "./_components/ktb-events-list/ktb-events-list.component";
 import {KtbProjectListComponent} from './_components/ktb-project-list/ktb-project-list.component';
 import {KtbProjectTileComponent} from './_components/ktb-project-tile/ktb-project-tile.component';
+import {KtbSliBreakdownComponent} from "./_components/ktb-sli-breakdown/ktb-sli-breakdown.component";
 import {KtbSelectableTileComponent} from "./_components/ktb-selectable-tile/ktb-selectable-tile.component";
 import {KtbHttpLoadingBarComponent} from "./_components/ktb-http-loading-bar/ktb-http-loading-bar.component";
 import {KtbRootEventsListComponent} from "./_components/ktb-root-events-list/ktb-root-events-list.component";
@@ -86,6 +87,7 @@ registerLocaleData(localeEn, 'en');
     KtbEventItemComponent,
     KtbEventItemDetail,
     KtbEvaluationDetailsComponent,
+    KtbSliBreakdownComponent,
   ],
   imports: [
     BrowserModule,

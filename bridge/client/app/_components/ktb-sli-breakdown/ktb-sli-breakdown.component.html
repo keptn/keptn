@@ -1,0 +1,59 @@
+<p>SLI breakdown</p>
+<dt-key-value-list>
+  <ng-container *ngFor="let result of _indicatorResultsFail">
+    <dt-key-value-list-item>
+      <dt-key-value-list-key>
+        <p class="m-0 fail" [textContent]="result.value.metric"></p>
+      </dt-key-value-list-key>
+      <dt-key-value-list-value *ngIf="result.value.success">
+        <span [textContent]="result.value.value | number:'1.0-0'"></span>
+        <span class="small m-0 ml-1" *ngFor="let _target of result.targets" [textContent]="_target.criteria" [class.error]="_target.violated" [class.error-line]="_target.violated"></span>
+      </dt-key-value-list-value>
+      <dt-key-value-list-value *ngIf="!result.value.success">
+        <span class="small" [textContent]="result.value.message"></span>
+      </dt-key-value-list-value>
+    </dt-key-value-list-item>
+  </ng-container>
+  <ng-container *ngFor="let result of _indicatorResultsWarning">
+    <dt-key-value-list-item>
+      <dt-key-value-list-key>
+        <p class="m-0 warning" [textContent]="result.value.metric"></p>
+      </dt-key-value-list-key>
+      <dt-key-value-list-value *ngIf="result.value.success">
+        <span [textContent]="result.value.value | number:'1.0-0'"></span>
+        <span class="small m-0 ml-1" *ngFor="let _target of result.targets" [textContent]="_target.criteria" [class.warning]="_target.violated" [class.error-line]="_target.violated"></span>
+      </dt-key-value-list-value>
+      <dt-key-value-list-value *ngIf="!result.value.success">
+        <span class="small" [textContent]="result.value.message"></span>
+      </dt-key-value-list-value>
+    </dt-key-value-list-item>
+  </ng-container>
+  <ng-container *ngFor="let result of _indicatorResultsPass; index as i">
+    <dt-key-value-list-item *ngIf="i < (3 - _indicatorResultsFail.length - _indicatorResultsWarning.length)">
+      <dt-key-value-list-key [textContent]="result.value.metric"></dt-key-value-list-key>
+      <dt-key-value-list-value>
+        <span [textContent]="result.value.value | number:'1.0-0'"></span>
+        <span class="small m-0 ml-1" *ngFor="let _target of result.targets" [textContent]="_target.criteria"></span>
+      </dt-key-value-list-value>
+    </dt-key-value-list-item>
+  </ng-container>
+</dt-key-value-list>
+<dt-expandable-panel #indicatorResultsPanel>
+  <dt-key-value-list>
+    <ng-container *ngFor="let result of _indicatorResultsPass; index as i">
+      <dt-key-value-list-item *ngIf="i >= (3 - _indicatorResultsFail.length - _indicatorResultsWarning.length)">
+        <dt-key-value-list-key [textContent]="result.value.metric"></dt-key-value-list-key>
+        <dt-key-value-list-value>
+          <span [textContent]="result.value.value | number:'1.0-0'"></span>
+          <span class="small m-0 ml-1" *ngFor="let _target of result.targets" [textContent]="_target.criteria"></span>
+        </dt-key-value-list-value>
+      </dt-key-value-list-item>
+    </ng-container>
+  </dt-key-value-list>
+</dt-expandable-panel>
+<p class="m-0 mt-1 mb-1">
+  <a class="dt-link" (click)="$event.stopPropagation();indicatorResultsPanel.toggle();">
+    <span *ngIf="!indicatorResultsPanel.expanded">Show all <span [textContent]="indicatorResults.length"></span> evaluation results</span>
+    <span *ngIf="indicatorResultsPanel.expanded">Collapse evaluation results</span>
+  </a>
+</p>
