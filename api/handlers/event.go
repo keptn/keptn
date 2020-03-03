@@ -51,7 +51,7 @@ func PostEventHandlerFunc(params event.PostEventParams, principal *models.Princi
 		Context: cloudevents.EventContextV02{
 			ID:          uuid.New().String(),
 			Time:        &types.Timestamp{Time: time.Now()},
-			Type:        string(params.Body.Type),
+			Type:        *params.Body.Type,
 			Source:      types.URLRef{URL: *source},
 			ContentType: &contentType,
 			Extensions:  map[string]interface{}{"shkeptncontext": keptnContext},
