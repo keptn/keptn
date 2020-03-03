@@ -9,76 +9,108 @@ import (
 	"github.com/go-openapi/errors"
 	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // KeptnContextExtendedCE keptn context extended c e
 // swagger:model keptnContextExtendedCE
 type KeptnContextExtendedCE struct {
-	Event
+
+	// contenttype
+	Contenttype string `json:"contenttype,omitempty"`
+
+	// data
+	// Required: true
+	Data interface{} `json:"data"`
+
+	// extensions
+	Extensions interface{} `json:"extensions,omitempty"`
+
+	// id
+	ID string `json:"id,omitempty"`
 
 	// shkeptncontext
 	Shkeptncontext string `json:"shkeptncontext,omitempty"`
-}
 
-// UnmarshalJSON unmarshals this object from a JSON structure
-func (m *KeptnContextExtendedCE) UnmarshalJSON(raw []byte) error {
-	// AO0
-	var aO0 Event
-	if err := swag.ReadJSON(raw, &aO0); err != nil {
-		return err
-	}
-	m.Event = aO0
+	// source
+	// Required: true
+	Source *string `json:"source"`
 
-	// AO1
-	var dataAO1 struct {
-		Shkeptncontext string `json:"shkeptncontext,omitempty"`
-	}
-	if err := swag.ReadJSON(raw, &dataAO1); err != nil {
-		return err
-	}
+	// specversion
+	Specversion string `json:"specversion,omitempty"`
 
-	m.Shkeptncontext = dataAO1.Shkeptncontext
+	// time
+	// Format: date-time
+	Time strfmt.DateTime `json:"time,omitempty"`
 
-	return nil
-}
-
-// MarshalJSON marshals this object to a JSON structure
-func (m KeptnContextExtendedCE) MarshalJSON() ([]byte, error) {
-	_parts := make([][]byte, 0, 2)
-
-	aO0, err := swag.WriteJSON(m.Event)
-	if err != nil {
-		return nil, err
-	}
-	_parts = append(_parts, aO0)
-
-	var dataAO1 struct {
-		Shkeptncontext string `json:"shkeptncontext,omitempty"`
-	}
-
-	dataAO1.Shkeptncontext = m.Shkeptncontext
-
-	jsonDataAO1, errAO1 := swag.WriteJSON(dataAO1)
-	if errAO1 != nil {
-		return nil, errAO1
-	}
-	_parts = append(_parts, jsonDataAO1)
-
-	return swag.ConcatJSON(_parts...), nil
+	// type
+	// Required: true
+	Type *string `json:"type"`
 }
 
 // Validate validates this keptn context extended c e
 func (m *KeptnContextExtendedCE) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	// validation for a type composition with Event
-	if err := m.Event.Validate(formats); err != nil {
+	if err := m.validateData(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSource(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTime(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateType(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *KeptnContextExtendedCE) validateData(formats strfmt.Registry) error {
+
+	if err := validate.Required("data", "body", m.Data); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *KeptnContextExtendedCE) validateSource(formats strfmt.Registry) error {
+
+	if err := validate.Required("source", "body", m.Source); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *KeptnContextExtendedCE) validateTime(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Time) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("time", "body", "date-time", m.Time.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *KeptnContextExtendedCE) validateType(formats strfmt.Registry) error {
+
+	if err := validate.Required("type", "body", m.Type); err != nil {
+		return err
+	}
+
 	return nil
 }
 
