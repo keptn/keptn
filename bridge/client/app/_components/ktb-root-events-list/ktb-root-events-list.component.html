@@ -7,7 +7,7 @@
             <h4 class="m-0 mt-1 mb-1" [textContent]="event.getLabel()"></h4>
             <button dt-icon-button disabled variant="nested" *ngIf="event.isFaulty()"><dt-icon name="criticalevent"></dt-icon></button>
           </div>
-          <p class="m-0" *ngIf="event.data.valuesCanary"><span class="m-0" [textContent]="event.data.valuesCanary.image"></span></p>
+          <p class="m-0" *ngIf="event.data.valuesCanary"><span class="m-0" [textContent]="getShortImageName(event.data.valuesCanary.image)"></span></p>
           <p class="m-0" *ngIf="event.data.ProblemTitle" [textContent]="event.data.ProblemTitle"></p>
         </div>
         <div fxLayout="column" fxLayoutAlign="start end">

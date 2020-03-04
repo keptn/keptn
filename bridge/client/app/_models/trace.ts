@@ -13,6 +13,9 @@ export class Trace {
     service: string;
     stage: string;
 
+    image: string;
+    tag: string;
+
     deploymentURILocal: string;
     deploymentURIPublic: string;
 

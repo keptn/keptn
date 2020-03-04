@@ -38,11 +38,20 @@
           <dt-info-group-title>
             <p><span [textContent]="project.stages.length"></span> Stages</p>
           </dt-info-group-title>
-          <div class="mr-minus-15" fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutGap="15px" fxLayoutAlign="start center">
-            <dt-tile *ngFor="let stage of project.stages"
+          <div class="mr-minus-15" fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutGap="15px" fxLayoutAlign="start">
+            <dt-tile *ngFor="let stage of project.stages; trackBy:trackStage"
                      fxFlex="0 1 calc(33.3% - 15px)" fxFlex.lt-md="0 1 calc(50% - 15px)" fxFlex.lt-sm="100%">
               <dt-tile-title [textContent]="stage.stageName"></dt-tile-title>
-              <p class="m-0" *ngIf="stage.services"><span [textContent]="stage.services.length"></span> Services</p>
+              <ng-container *ngIf="stage.services">
+                <p class="m-0 ml-2"><span [textContent]="stage.services.length"></span> Services</p>
+                <dt-tag-list aria-label="services">
+                  <dt-tag *ngFor="let service of stage.services">
+                    <ng-container *ngIf="getLatestDeployment(project, service, stage) as deployment">
+                      <span [textContent]="getShortImageName(deployment.data.image)"></span>:<span [textContent]="deployment.data.tag"></span>
+                    </ng-container>
+                  </dt-tag>
+                </dt-tag-list>
+              </ng-container>
             </dt-tile>
           </div>
         </dt-info-group>
@@ -60,7 +69,13 @@
             <dt-info-group-title>
               <h2 class="m-0" [textContent]="service.serviceName"></h2>
             </dt-info-group-title>
-            <p class="m-0" *ngIf="service.roots && service.roots[0] && service.roots[0].data.valuesCanary"><span class="m-0" [textContent]="service.roots[0].data.valuesCanary.image"></span></p>
+            <p class="m-0 mb-1 mt-1" *ngIf="getLatestDeployment(project, service) as deployment">
+              <span class="bold">Last relevant artifact: </span><span [textContent]="getShortImageName(deployment.data.image)"></span>:<span [textContent]="deployment.data.tag"></span>
+            </p>
+            <button dt-button disabled variant="nested" *ngIf="!service.roots">
+              <dt-loading-spinner></dt-loading-spinner>
+              Loading ...
+            </button>
           </dt-info-group>
         </ktb-expandable-tile-header>
         <div class="mb-1" fxLayout="row" fxLayoutAlign="end center">
@@ -68,11 +83,11 @@
             <dt-tag>Last time fetched: <span [textContent]="getRootsLastUpdated(project, service) | amCalendar:getCalendarFormats()"></span></dt-tag>
           </dt-tag-list>
         </div>
-        <ktb-root-events-list [events]="service.roots" (selectedEventChange)="selectRoot($event)"></ktb-root-events-list>
-        <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px" *ngIf="!service.roots">
+        <ktb-root-events-list [events]="service.roots" [(selectedEvent)]="currentRoot" (selectedEventChange)="loadTraces($event)"></ktb-root-events-list>
+        <button dt-button disabled variant="nested" *ngIf="!service.roots">
           <dt-loading-spinner></dt-loading-spinner>
-          <p>Loading ...</p>
-        </div>
+          Loading ...
+        </button>
       </ktb-expandable-tile>
       <div class="mb-3">
       </div>
