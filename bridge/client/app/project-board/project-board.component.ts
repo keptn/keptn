@@ -83,9 +83,9 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
         );
 
         this._projectSub = this.project$.subscribe(projects => {
-          this.error = false;
+          this._changeDetectorRef.markForCheck();
         }, error => {
-          this.error = true;
+          this.error = "project";
         });
 
         this._rootsSubs.unsubscribe();
@@ -197,7 +197,6 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
     this._routeSubs.unsubscribe();
     this._tracesTimer.unsubscribe();
     this._rootEventsTimer.unsubscribe();
-
   }
 
 }
