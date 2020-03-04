@@ -23,6 +23,13 @@ export class ApiService {
   constructor(private http: HttpClient) {
   }
 
+  public getVersion(): Observable<Object> {
+    let url = `${this.baseUrl}/api/`;
+    return this.http
+      .get<Object>(url, { headers: this.headers })
+      .pipe(catchError(this.handleError<Object>('getVersion')));
+  }
+
   public getProjects(): Observable<Project[]> {
     let url = `${this.baseUrl}/api/project?DisableUpstreamSync=true`;
     return this.http

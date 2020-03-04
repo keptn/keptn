@@ -4,6 +4,7 @@ ENV CONFIGURATION_SERVICE "http://configuration-service.keptn.svc.cluster.local:
 EXPOSE 3000
 
 ARG version=develop
+ENV VERSION="${version}"
 
 RUN addgroup mygroup && adduser -D -G mygroup myuser && mkdir -p /usr/src/app && chown -R myuser /usr/src/app
 

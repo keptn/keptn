@@ -179,6 +179,10 @@ export class KtbEvaluationDetailsComponent implements OnInit {
     let chartSeries = [];
     let evaluationScoreData = [];
 
+    if(!this._selectedEvaluationData) {
+      this._selectedEvaluationData = evaluationHistory[evaluationHistory.length-1].data;
+    }
+
     evaluationHistory.forEach((evaluation) => {
       evaluationScoreData.push({
         x: moment(evaluation.time).unix()*1000,

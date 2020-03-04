@@ -47,9 +47,14 @@ span.small {
   color: $gray-700;
 }
 
-p.error,
-span.error {
+p.error, p.fail,
+span.error, span.fail {
   color: $error-color;
+}
+
+p.warning,
+span.warning {
+  color: $warning-color;
 }
 
 p.error-line,
