@@ -1,4 +1,4 @@
-<div class="container" *ngIf="error || (project | async) === undefined">
+<div class="container" *ngIf="error || (project$ | async) === undefined">
   <dt-empty-state>
     <dt-empty-state-item>
       <dt-empty-state-item-img>
@@ -24,22 +24,22 @@
     </dt-empty-state-item>
   </dt-empty-state>
 </div>
-<div class="container" *ngIf="!error && (project | async) === null">
+<div class="container" *ngIf="!error && (project$ | async) === null">
   <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
     <dt-loading-spinner></dt-loading-spinner>
     <p>Loading ...</p>
   </div>
 </div>
-<div class="project-board" fxLayout="row" *ngIf="!error && (project | async)">
+<div class="project-board" fxLayout="row" *ngIf="project$ | async as project">
   <div class="container" fxFlex fxLayout="column" fxLayoutGap="15px">
     <div fxFlex fxLayout="column" fxLayoutGap="15px">
       <div>
         <dt-info-group>
           <dt-info-group-title>
-            <p><span [textContent]="(project | async)?.stages.length"></span> Stages</p>
+            <p><span [textContent]="project.stages.length"></span> Stages</p>
           </dt-info-group-title>
           <div class="mr-minus-15" fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutGap="15px" fxLayoutAlign="start center">
-            <dt-tile *ngFor="let stage of (project | async)?.stages"
+            <dt-tile *ngFor="let stage of project.stages"
                      fxFlex="0 1 calc(33.3% - 15px)" fxFlex.lt-md="0 1 calc(50% - 15px)" fxFlex.lt-sm="100%">
               <dt-tile-title [textContent]="stage.stageName"></dt-tile-title>
               <p class="m-0" *ngIf="stage.services"><span [textContent]="stage.services.length"></span> Services</p>
@@ -50,11 +50,11 @@
       <div>
         <dt-info-group>
           <dt-info-group-title>
-            <p class="mb-0"><span [textContent]="(project | async)?.getServices().length"></span> Services</p>
+            <p class="mb-0"><span [textContent]="project.getServices().length"></span> Services</p>
           </dt-info-group-title>
         </dt-info-group>
       </div>
-      <ktb-expandable-tile *ngFor="let service of (project | async)?.services" [expanded]="service.serviceName == serviceName">
+      <ktb-expandable-tile *ngFor="let service of project.getServices()">
         <ktb-expandable-tile-header>
           <dt-info-group>
             <dt-info-group-title>
@@ -65,7 +65,7 @@
         </ktb-expandable-tile-header>
         <div class="mb-1" fxLayout="row" fxLayoutAlign="end center">
           <dt-tag-list aria-label="fetch-info">
-            <dt-tag>Last time fetched: <span [textContent]="getRootsLastUpdated((project | async), service) | amCalendar:getCalendarFormats()"></span></dt-tag>
+            <dt-tag>Last time fetched: <span [textContent]="getRootsLastUpdated(project, service) | amCalendar:getCalendarFormats()"></span></dt-tag>
           </dt-tag-list>
         </div>
         <ktb-root-events-list [events]="service.roots" (selectedEventChange)="selectRoot($event)"></ktb-root-events-list>
