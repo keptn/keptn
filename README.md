@@ -130,124 +130,13 @@ Keptn in [version 0.5.0](https://github.com/keptn/keptn/releases/tag/0.5.0) requ
 
 </p>
 </details>
-<details><summary>Keptn version 0.4.0</summary>
-<p>
 
-Keptn in [version 0.4.0](https://github.com/keptn/keptn/releases/tag/0.4.0) requires:
-
-*Keptn core:*
-- keptn/authenticator:0.2.3
-- keptn/bridge:0.1.3
-- keptn/control:0.3.0
-- keptn/eventbroker-go:0.1.0
-- keptn/eventbroker-ext:0.3.0
-
-*Keptn uniform:*
-- keptn/gatekeeper-service:0.1.1
-- keptn/github-service:0.3.0
-- keptn/helm-service:0.1.1
-- keptn/jmeter-service:0.1.1
-- keptn/pitometer-service:0.2.0
-- keptn/servicenow-service:0.1.3
-
-*for Openshift:*
-- keptn/openshift-route-service:0.1.1
-
-</p>
-</details>
-
-<details><summary>Keptn version 0.3.0</summary>
-<p>
-
-Keptn in [version 0.3.0](https://github.com/keptn/keptn/releases/tag/0.3.0) requires:
-
-*Keptn core:*
-- keptn/authenticator:0.2.2
-- keptn/bridge:0.1.2
-- keptn/control:0.2.4
-- keptn/eventbroker:0.2.3
-- keptn/eventbroker-ext:0.2.3
-
-*Keptn uniform:*
-- keptn/gatekeeper-service:0.1.0
-- keptn/github-service:0.2.2
-- keptn/helm-service:0.1.0
-- keptn/jmeter-service:0.1.0
-- keptn/pitometer-service:0.1.3
-- keptn/servicenow-service:0.1.2
-
-*for Openshift:*
-- keptn/openshift-route-service:0.1.0
-
-</p>
-</details>
-
-<details><summary>Keptn version 0.2.2</summary>
-<p>
-
-Keptn in [version 0.2.2](https://github.com/keptn/keptn/releases/tag/0.2.2) requires:
-- keptn/authenticator:0.2.2
-- keptn/bridge:0.1.2
-- keptn/control:0.2.3
-- keptn/eventbroker:0.2.2
-- keptn/eventbroker-ext:0.2.2
-- keptn/pitometer-service:0.1.2
-- keptn/servicenow-service:0.1.1
-- keptn/github-service:0.2.1 
-- keptn/jenkins-service:0.3.0
-  - keptn/jenkins-0.6.0
-
-</p>
-</details>
-
-<details><summary>Keptn version 0.2.1</summary>
-<p>
-
-Keptn in [version 0.2.1](https://github.com/keptn/keptn/releases/tag/0.2.1) requires:
-- keptn/keptn-authenticator:0.2.1
-- keptn/keptn-control:0.2.1
-- keptn/keptn-event-broker:0.2.1
-- keptn/keptn-event-broker-ext:0.2.1
-- keptn/pitometer-service:0.1.1 
-- keptn/servicenow-service:0.1.0
-- keptn/github-service:0.1.1 
-- keptn/jenkins-service:0.2.0
-  - keptn/jenkins-0.5.0
-
-</p>
-</details>
-
-<details><summary>Keptn version 0.2.0</summary>
-<p>
-
-Keptn in [version 0.2.0](https://github.com/keptn/keptn/releases/tag/0.2.0) requires:
-- keptn/keptn-authenticator:0.2.0
-- keptn/keptn-control:0.2.0
-- keptn/keptn-event-broker:0.2.0
-- keptn/keptn-event-broker-ext:0.2.0
-- keptn/pitometer-service:0.1.0
-- keptn/servicenow-service:0.1.0
-- keptn/github-service:0.1.0
-- keptn/jenkins-service:0.1.0
-    - keptn/jenkins:0.4.0
-
-</p>
-</details>
-
-<details><summary>Keptn version 0.1.3</summary>
-<p>
-
-Keptn in [version 0.1.3](https://github.com/keptn/keptn/tree/0.1.3) requires:
-
-- keptn/jenkins:0.2
-- dynatraceacm/ansibletower:3.3.1-1-2
-
-</p>
-</details>
+Please check out the [GitHub releases page](https://github.com/keptn/keptn/releases) if you need information for older Keptn versions.
 
 ## Contributions
 
 You are welcome to contribute using Pull Requests to the respective repositories. Before contributing, please read our [Contributing Guidelines](CONTRIBUTING.md) and our [Code of Conduct](CODE_OF_CONDUCT.md).
+Please also check out our list of [Good first issues](https://github.com/keptn/keptn/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22).
 
 ## License
 
