@@ -197,6 +197,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
     this._routeSubs.unsubscribe();
     this._tracesTimer.unsubscribe();
     this._rootEventsTimer.unsubscribe();
+
   }
 
 }

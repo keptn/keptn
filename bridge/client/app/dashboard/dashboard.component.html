@@ -1,22 +1,22 @@
-<div class="container" *ngIf="!(projects$ | async)">
+<div class="container" *ngIf="!error && !(projects$ | async)">
   <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
     <dt-loading-spinner></dt-loading-spinner>
     <p>Loading ...</p>
   </div>
 </div>
+<div class="container" *ngIf="error || (projects$ | async)?.length == 0">
+  <dt-empty-state>
+    <dt-empty-state-item>
+      <dt-empty-state-item-img>
+        <img class="mt-2" src="/assets/keptn_logo.png" />
+      </dt-empty-state-item-img>
+      <dt-empty-state-item-title class="mt-2" aria-level="2">No projects existing</dt-empty-state-item-title>
+      <p>Sorry, we couldn't load any projects. Check our <a href="https://keptn.sh/docs/quickstart/" target="_blank">Quick Start</a> instructions on how to <a href="https://keptn.sh/docs/0.6.0/manage/project/" target="_blank">setup a project</a> and <a href="https://keptn.sh/docs/0.6.0/usecases/onboard-carts-service/" target="_blank">onboard a sample app</a>.</p>
+      <button dt-button (click)="loadProjects()"><dt-icon name="refresh"></dt-icon> Retry</button>
+    </dt-empty-state-item>
+  </dt-empty-state>
+</div>
 <ng-container *ngIf="projects$ | async as projects">
-  <div class="container" *ngIf="error || projects.length == 0">
-    <dt-empty-state>
-      <dt-empty-state-item>
-        <dt-empty-state-item-img>
-          <img class="mt-2" src="/assets/keptn_logo.png" />
-        </dt-empty-state-item-img>
-        <dt-empty-state-item-title class="mt-2" aria-level="2">No projects existing</dt-empty-state-item-title>
-        <p>Sorry, we couldn't load any projects. Check our <a href="https://keptn.sh/docs/quickstart/" target="_blank">Quick Start</a> instructions on how to <a href="https://keptn.sh/docs/0.6.0/manage/project/" target="_blank">setup a project</a> and <a href="https://keptn.sh/docs/0.6.0/usecases/onboard-carts-service/" target="_blank">onboard a sample app</a>.</p>
-        <button dt-button (click)="loadProjects()"><dt-icon name="refresh"></dt-icon> Retry</button>
-      </dt-empty-state-item>
-    </dt-empty-state>
-  </div>
   <div class="container" *ngIf="!error && projects.length > 0">
     <dt-info-group>
       <dt-info-group-title>
