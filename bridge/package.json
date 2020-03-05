@@ -41,9 +41,9 @@
     "@angular/platform-browser": "~8.2.14",
     "@angular/platform-browser-dynamic": "~8.2.14",
     "@angular/router": "~8.2.14",
-    "@dynatrace/barista-components": "^5.1.1",
+    "@dynatrace/barista-components": "^5.3.1",
     "@dynatrace/barista-fonts": ">= 1.0.0 < 2",
-    "@dynatrace/barista-icons": ">= 3.0.0 < 4",
+    "@dynatrace/barista-icons": "^3.6.1",
     "@ngrx/core": "^1.2.0",
     "@ngrx/effects": "^8.6.0",
     "@ngrx/router-store": "^8.6.0",
@@ -61,7 +61,7 @@
     "ngx-moment": "^3.5.0",
     "normalize.css": "^8.0.1",
     "rxjs": "~6.4.0",
-    "tslib": "^1.9.0",
+    "tslib": "^1.11.1",
     "zone.js": "~0.9.1"
   },
   "devDependencies": {
