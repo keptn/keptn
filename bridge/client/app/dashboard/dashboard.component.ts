@@ -24,7 +24,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.projects$ = this.dataService.projects;
     this._projectsSubs = this.projects$.subscribe(projects => {
       this.error = false;
-      this._changeDetectorRef.markForCheck();
     }, error => {
       this.error = true;
     });
