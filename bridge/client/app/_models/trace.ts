@@ -54,6 +54,7 @@ export class Trace {
       }
     };
     Tags: string;
+    State: string;
   };
 
   isFaulty(): string {
