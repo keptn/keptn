@@ -28,7 +28,7 @@ COPY . .
 
 # Build the command inside the container.
 # (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
-RUN CGO_ENABLED=0 GOOS=linux go build $BUILDFLAGS -v -o jmeter-service
+RUN GOOS=linux go build $BUILDFLAGS -v -o jmeter-service
 
 # Use a Docker multi-stage build to create a lean production image.
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
@@ -45,7 +45,7 @@ ENV	JMETER_DOWNLOAD_URL  https://archive.apache.org/dist/jmeter/binaries/apache-
 ARG TZ="Europe/Amsterdam"
 RUN    apk update \
 	&& apk upgrade \
-	&& apk add ca-certificates \
+	&& apk add ca-certificates libc6-compat \
 	&& update-ca-certificates \
 	&& apk add --update openjdk8-jre tzdata curl unzip bash \
 	&& apk add --no-cache nss \
@@ -58,9 +58,6 @@ RUN    apk update \
 
 # Set global PATH such that "jmeter" command is found
 ENV PATH $PATH:$JMETER_BIN
-
-# IF we are debugging, we need to install libc6-compat for delve to work on alpine based containers
-RUN if [ ! -z "$debugBuild" ]; then apk add --no-cache libc6-compat; fi
 
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /go/src/github.com/keptn/keptn/jmeter-service/jmeter-service /jmeter-service

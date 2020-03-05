@@ -27,12 +27,13 @@ COPY . .
 
 # Build the command inside the container. 
 # (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
-RUN CGO_ENABLED=0 GOOS=linux go build $BUILDFLAGS -v -o remediation-service
+RUN GOOS=linux go build $BUILDFLAGS -v -o remediation-service
 
 # Use a Docker multi-stage build to create a lean production image.
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
 FROM alpine
-RUN apk add --no-cache ca-certificates
+# we need to install ca-certificates and libc6-compat for go programs to work properly
+RUN apk add --no-cache ca-certificates libc6-compat
 
 ARG HELM_VERSION=2.12.3
 RUN wget https://storage.googleapis.com/kubernetes-helm/helm-v$HELM_VERSION-linux-amd64.tar.gz && \
