@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/jeremywohl/flatten"
@@ -20,24 +21,49 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+var client *mongo.Client
+var mutex sync.Mutex
+
+func ensureDBConnection(logger *keptnutils.Logger) error {
+	mutex.Lock()
+	defer mutex.Unlock()
+	var err error
+	if client == nil {
+		logger.Debug("No MongoDB client has been initialized yet. Creating a new one.")
+		return connectMongoDBClient()
+	} else if err = client.Ping(context.TODO(), nil); err != nil {
+		logger.Debug("MongoDB client lost connection. Attempt reconnect.")
+		return connectMongoDBClient()
+	}
+	return nil
+}
+
+func connectMongoDBClient() error {
+	var err error
+	client, err = mongo.NewClient(options.Client().ApplyURI(mongoDBConnection))
+	if err != nil {
+		err := fmt.Errorf("failed to create mongo client: %v", err)
+		return err
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+
+	defer cancel()
+
+	err = client.Connect(ctx)
+	if err != nil {
+		err := fmt.Errorf("failed to connect client to MongoDB: %v", err)
+		return err
+	}
+	return nil
+}
+
 // SaveEvent stores event in data store
 func SaveEvent(event *models.KeptnContextExtendedCE) error {
 	logger := keptnutils.NewLogger("", "", serviceName)
 	logger.Debug("save event to data store")
 
-	client, err := mongo.NewClient(options.Client().ApplyURI(mongoDBConnection))
-	if err != nil {
-		err := fmt.Errorf("failed to create mongo client: %v", err)
-		logger.Error(err.Error())
-		return err
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	err = client.Connect(ctx)
-	if err != nil {
-		err := fmt.Errorf("failed to connect: %v", err)
+	if err := ensureDBConnection(logger); err != nil {
+		err := fmt.Errorf("failed to establish MongoDB connection: %v", err)
 		logger.Error(err.Error())
 		return err
 	}
@@ -59,6 +85,9 @@ func SaveEvent(event *models.KeptnContextExtendedCE) error {
 		return err
 	}
 
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
 	res, err := collection.InsertOne(ctx, eventInterface)
 	if err != nil {
 		err := fmt.Errorf("failed to insert into collection: %v", err)
@@ -75,19 +104,8 @@ func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 	logger := keptnutils.NewLogger("", "", serviceName)
 	logger.Debug("getting events from the data store")
 
-	client, err := mongo.NewClient(options.Client().ApplyURI(mongoDBConnection))
-	if err != nil {
-		err := fmt.Errorf("failed to create client: %v", err)
-		logger.Error(err.Error())
-		return nil, err
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	err = client.Connect(ctx)
-	if err != nil {
-		err := fmt.Errorf("failed to connect: %v", err)
+	if err := ensureDBConnection(logger); err != nil {
+		err := fmt.Errorf("failed to establish MongoDB connection: %v", err)
 		logger.Error(err.Error())
 		return nil, err
 	}
@@ -124,6 +142,10 @@ func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 
 	if params.Root != nil {
 		var values []interface{}
+		var err error
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
 		values, err = collection.Distinct(ctx, "shkeptncontext", searchOptions)
 
 		if err != nil {
@@ -185,6 +207,9 @@ func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 		pageSize := *params.PageSize
 		sortOptions := options.Find().SetSort(bson.D{{"time", -1}}).SetSkip(nextPageKey).SetLimit(pageSize)
 
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
 		totalCount, err := collection.CountDocuments(ctx, searchOptions)
 		if err != nil {
 			logger.Error(fmt.Sprintf("error counting elements in events collection: %v", err))
@@ -193,8 +218,10 @@ func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 		cur, err := collection.Find(ctx, searchOptions, sortOptions)
 		if err != nil {
 			logger.Error(fmt.Sprintf("error finding elements in events collection: %v", err))
+			return nil, err
 		}
-
+		// close the cursor after the function has completed to avoid memory leaks
+		defer cur.Close(ctx)
 		for cur.Next(ctx) {
 			var outputEvent interface{}
 			err := cur.Decode(&outputEvent)
