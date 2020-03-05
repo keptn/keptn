@@ -1,5 +1,5 @@
 import {ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
-import {filter, first, map, startWith, switchMap} from "rxjs/operators";
+import {filter, map, startWith, switchMap} from "rxjs/operators";
 import {Observable, Subscription, timer} from "rxjs";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Location} from "@angular/common";
@@ -149,7 +149,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
     return DateUtil.getCalendarFormats(true);
   }
 
-  getLatestDeployment(project: Project, service: Service, stage?: Stage) {
+  getLatestDeployment(project: Project, service: Service, stage?: Stage): Trace {
     let currentService = project.getServices()
       .find(s => s.serviceName == service.serviceName);
 

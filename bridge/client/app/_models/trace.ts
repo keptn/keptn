@@ -1,5 +1,3 @@
-import {Stage} from "./stage";
-
 export class Trace {
   id: string;
   shkeptncontext: string;

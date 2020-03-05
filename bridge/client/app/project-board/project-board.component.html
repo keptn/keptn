@@ -47,7 +47,9 @@
                 <dt-tag-list aria-label="services">
                   <dt-tag *ngFor="let service of stage.services">
                     <ng-container *ngIf="getLatestDeployment(project, service, stage) as deployment">
-                      <span [textContent]="getShortImageName(deployment.data.image)"></span>:<span [textContent]="deployment.data.tag"></span>
+                      <a [attr.href]="deployment.data.deploymentURIPublic" target="_blank">
+                        <span [textContent]="getShortImageName(deployment.data.image)"></span>:<span [textContent]="deployment.data.tag"></span>
+                      </a>
                     </ng-container>
                   </dt-tag>
                 </dt-tag-list>
