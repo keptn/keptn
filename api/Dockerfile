@@ -1,6 +1,6 @@
 # Use the offical Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
-FROM golang:1.12 as builder
+FROM golang:1.12.13-alpine as builder
 ARG version=develop
 
 WORKDIR /go/src/github.com/keptn/keptn/api
@@ -9,6 +9,8 @@ WORKDIR /go/src/github.com/keptn/keptn/api
 ENV GO111MODULE=on
 ENV BUILDFLAGS=""
 ENV GOPROXY=https://proxy.golang.org
+
+RUN apk add --no-cache gcc libc-dev git
 
 # Copy `go.mod` for definitions and `go.sum` to invalidate the next layer
 # in case of a change in the dependencies
@@ -32,10 +34,10 @@ RUN sed -i "s/version: develop/${REPLACE}/g" /go/src/github.com/keptn/keptn/api/
 # Build the command inside the container.
 # (You may fetch or manage dependencies here, 
 # either manually or with a tool like "godep".)
-RUN GOOS=linux go build $BUILDFLAGS -v cmd/api-server/main.go
+RUN GOOS=linux go build -ldflags '-linkmode=external' $BUILDFLAGS -v cmd/api-server/main.go
 
 # Use a Docker multi-stage build to create a lean production image.
-FROM alpine:3.7
+FROM alpine:3.11
 # we need to install ca-certificates and libc6-compat for go programs to work properly
 RUN apk add --no-cache ca-certificates libc6-compat
 
