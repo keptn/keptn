@@ -1,3 +1,32 @@
+import {Stage} from "./stage";
+
+let labels = {
+  "sh.keptn.internal.event.service.create": "Service create",
+  "sh.keptn.event.configuration.change": "Configuration change",
+  "sh.keptn.event.monitoring.configure": "Configure monitoring",
+  "sh.keptn.events.deployment-finished": "Deployment finished",
+  "sh.keptn.events.tests-finished": "Tests finished",
+  "sh.keptn.events.evaluation-done": "Evaluation done",
+  "sh.keptn.internal.event.get-sli": "Start SLI retrieval",
+  "sh.keptn.internal.event.get-sli.done": "SLI retrieval done",
+  "sh.keptn.events.done": "Done",
+  "sh.keptn.event.problem.open": "Problem open",
+  "sh.keptn.events.problem": "Problem detected",
+  "sh.keptn.events.problem.resolved": "Problem resolved",
+  "sh.keptn.event.problem.close": "Problem closed"
+};
+let icons = {
+  "sh.keptn.event.configuration.change": "duplicate",
+  "sh.keptn.events.deployment-finished": "deploy",
+  "sh.keptn.events.tests-finished": "perfromance-health",
+  "sh.keptn.events.evaluation-done": "traffic-light",
+  "sh.keptn.internal.event.get-sli": "collector",
+  "sh.keptn.internal.event.get-sli.done": "collector",
+  "sh.keptn.event.problem.open": "criticalevent",
+  "sh.keptn.events.problem": "criticalevent",
+  "sh.keptn.event.problem.close": "applicationhealth"
+};
+
 export class Trace {
   id: string;
   shkeptncontext: string;
@@ -5,6 +34,7 @@ export class Trace {
   time: Date;
   type: string;
   label: string;
+  icon: string;
   plainEvent: string;
   data: {
     project: string;
@@ -82,69 +112,28 @@ export class Trace {
     // TODO: use translation file
     if(!this.label) {
       switch(this.type) {
-        case "sh.keptn.internal.event.service.create": {
-          this.label = "Service create";
-          break;
-        }
-        case "sh.keptn.event.configuration.change": {
-          this.label = "Configuration change";
-          break;
-        }
-        case "sh.keptn.event.monitoring.configure": {
-          this.label = "Configure monitoring";
-          break;
-        }
-        case "sh.keptn.events.deployment-finished": {
-          this.label = "Deployment finished";
-          break;
-        }
-        case "sh.keptn.events.tests-finished": {
-          this.label = "Tests finished";
-          break;
-        }
-        case "sh.keptn.event.start-evaluation": {
-          this.label = "Start evaluation";
-          break;
-        }
-        case "sh.keptn.events.evaluation-done": {
-          this.label = "Evaluation done";
-          break;
-        }
-        case "sh.keptn.internal.event.get-sli": {
-          this.label = "Start SLI retrieval";
-          break;
-        }
-        case "sh.keptn.internal.event.get-sli.done": {
-          this.label = "SLI retrieval done";
-          break;
-        }
-        case "sh.keptn.events.done": {
-          this.label = "Done";
-          break;
-        }
-        case "sh.keptn.event.problem.open": {
-          this.label = "Problem open";
-          break;
-        }
         case "sh.keptn.events.problem": {
           if(this.data.State === "RESOLVED")
-            this.label = "Problem resolved";
+            this.label = labels["sh.keptn.events.problem.resolved"];
           else
-            this.label = "Problem detected";
-          break;
-        }
-        case "sh.keptn.event.problem.close": {
-          this.label = "Problem closed";
+            this.label = labels[this.type];
           break;
         }
         default: {
-          this.label = this.type;
+          this.label = labels[this.type] || this.type;
           break;
         }
       }
     }
 
     return this.label;
+  }
+
+  getIcon() {
+    if(!this.icon) {
+      this.icon = icons[this.type] || "information";
+    }
+    return this.icon;
   }
 
   getShortImageName() {
