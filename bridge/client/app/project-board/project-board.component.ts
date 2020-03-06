@@ -158,9 +158,13 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
         .reduce((traces: Trace[], root: Root) => {
           return [...traces, ...root.traces];
         }, [])
-        .find(trace => trace.type == 'sh.keptn.events.deployment-finished' && (!stage || trace.data.stage == stage.stageName));
+        .find(trace => trace.type == 'sh.keptn.events.deployment-finished' && (!stage || (trace.data.stage == stage.stageName && currentService.roots.find(r => r.shkeptncontext == trace.shkeptncontext).isFaulty() != stage.stageName)));
     else
       return null;
+  }
+
+  getDeployedServices(project: Project, stage: Stage) {
+    return stage.services.filter(service => !!this.getLatestDeployment(project, service, stage));
   }
 
   getShortImageName(image) {
