@@ -40,7 +40,7 @@
           </dt-info-group-title>
         </dt-info-group>
       </div>
-      <ktb-expandable-tile *ngFor="let service of (project | async)?.services">
+      <ktb-expandable-tile *ngFor="let service of (project | async)?.services" [expanded]="service.serviceName == serviceName">
         <ktb-expandable-tile-header>
           <dt-info-group>
             <dt-info-group-title>
