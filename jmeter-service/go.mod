@@ -7,7 +7,7 @@ require (
 	github.com/cloudevents/sdk-go v0.10.0
 	github.com/google/uuid v1.1.1
 	github.com/kelseyhightower/envconfig v1.3.0
-	github.com/keptn/go-utils v0.6.1-0.20200226071620-bdaeb16ba70d
+	github.com/keptn/go-utils v0.6.1
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45 // indirect
 	google.golang.org/appengine v1.5.0 // indirect
 	k8s.io/apimachinery v0.0.0-20190313205120-d7deff9243b1
