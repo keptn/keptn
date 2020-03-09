@@ -77,7 +77,7 @@ export class ApiService {
   }
 
   public getEvaluationResults(projectName: string, serviceName: string, stageName: string, source: string, fromTime?: String) {
-    let url = `${this.baseUrl}/api/events?type=sh.keptn.events.evaluation-done&projectName=${projectName}&serviceName=${serviceName}&stageName=${stageName}&source=${source}`;
+    let url = `${this.baseUrl}/api/events?type=sh.keptn.events.evaluation-done&projectName=${projectName}&serviceName=${serviceName}&stageName=${stageName}&source=${source}&pageSize=50`;
     if(fromTime)
       url += `&fromTime=${fromTime}`;
     return this.http
