@@ -19,7 +19,7 @@ do
      then
       continue
      else
-      print_error "Required manifest not found. Aborting upgrade."
+      print_error "Required manifest $manifest not available. Aborting upgrade."
       exit 1
     fi
 done
