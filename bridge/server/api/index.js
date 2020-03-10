@@ -5,6 +5,16 @@ const router = express.Router();
 module.exports = (params) => {
   const { datastoreService, configurationService } = params;
 
+  router.get('/', async (req, res, next) => {
+    try {
+      return res.json({
+        version: process.env.VERSION
+      });
+    } catch (err) {
+      return next(err);
+    }
+  });
+
   router.get('/events', async (req, res, next) => {
     try {
       const traces = await datastoreService.getEvents(req.query);

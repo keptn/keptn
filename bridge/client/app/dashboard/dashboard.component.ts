@@ -33,4 +33,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this._projectsSubs.unsubscribe();
   }
 
+  loadProjects() {
+    this.dataService.loadProjects();
+  }
+
 }

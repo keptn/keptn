@@ -894,15 +894,6 @@ func init() {
     }
   },
   "definitions": {
-    "contenttype": {
-      "type": "string"
-    },
-    "data": {
-      "type": [
-        "object",
-        "string"
-      ]
-    },
     "error": {
       "type": "object",
       "required": [
@@ -921,41 +912,6 @@ func init() {
         }
       }
     },
-    "event": {
-      "type": "object",
-      "required": [
-        "specversion",
-        "id",
-        "type",
-        "source"
-      ],
-      "properties": {
-        "contenttype": {
-          "$ref": "#/definitions/contenttype"
-        },
-        "data": {
-          "$ref": "#/definitions/data"
-        },
-        "extensions": {
-          "$ref": "#/definitions/extensions"
-        },
-        "id": {
-          "$ref": "#/definitions/id"
-        },
-        "source": {
-          "$ref": "#/definitions/source"
-        },
-        "specversion": {
-          "$ref": "#/definitions/specversion"
-        },
-        "time": {
-          "$ref": "#/definitions/time"
-        },
-        "type": {
-          "$ref": "#/definitions/type"
-        }
-      }
-    },
     "eventContext": {
       "type": "object",
       "required": [
@@ -971,26 +927,47 @@ func init() {
         }
       }
     },
-    "extensions": {
-      "type": "object"
-    },
-    "id": {
-      "type": "string"
-    },
     "keptnContextExtendedCE": {
-      "allOf": [
-        {
-          "$ref": "#/definitions/event"
+      "type": "object",
+      "required": [
+        "data",
+        "source",
+        "type"
+      ],
+      "properties": {
+        "contenttype": {
+          "type": "string"
         },
-        {
-          "type": "object",
-          "properties": {
-            "shkeptncontext": {
-              "type": "string"
-            }
-          }
+        "data": {
+          "type": [
+            "object",
+            "string"
+          ]
+        },
+        "extensions": {
+          "type": "object"
+        },
+        "id": {
+          "type": "string"
+        },
+        "shkeptncontext": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string",
+          "format": "uri-reference"
+        },
+        "specversion": {
+          "type": "string"
+        },
+        "time": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "type": {
+          "type": "string"
         }
-      ]
+      }
     },
     "project": {
       "type": "object",
@@ -1052,20 +1029,6 @@ func init() {
           "type": "string"
         }
       }
-    },
-    "source": {
-      "type": "string",
-      "format": "uri-reference"
-    },
-    "specversion": {
-      "type": "string"
-    },
-    "time": {
-      "type": "string",
-      "format": "date-time"
-    },
-    "type": {
-      "type": "string"
     }
   },
   "parameters": {

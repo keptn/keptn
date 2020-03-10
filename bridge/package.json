@@ -1,14 +1,14 @@
 {
   "name": "bridge",
-  "version": "0.1.0",
+  "version": "0.6.1",
   "private": true,
   "scripts": {
-    "start": "node server/bin/www",
+    "start": "node server/server.js",
     "start:dev": "npm-run-all -p start:server:dev start:client:dev connect:bridge connect:datastore connect:configurationservice",
-    "start:server:dev": "nodemon server/bin/www --watch server/",
+    "start:server:dev": "nodemon server/server.js --watch server/",
     "start:client:dev": "ng build --watch",
     "ng": "ng",
-    "build": "ng build",
+    "build": "ng build --prod",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
@@ -20,10 +20,10 @@
   "author": "Ermin Muratovic <ermin.muratovic@dynatrace.com>",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/keptn/bridge.git"
+    "url": "git+https://github.com/keptn/keptn.git"
   },
   "bugs": {
-    "url": "https://github.com/keptn/bridge/issues"
+    "url": "https://github.com/keptn/keptn/issues"
   },
   "keywords": [
     "keptn",
@@ -41,9 +41,9 @@
     "@angular/platform-browser": "~8.2.14",
     "@angular/platform-browser-dynamic": "~8.2.14",
     "@angular/router": "~8.2.14",
-    "@dynatrace/barista-components": "^5.1.1",
+    "@dynatrace/barista-components": "^5.3.1",
     "@dynatrace/barista-fonts": ">= 1.0.0 < 2",
-    "@dynatrace/barista-icons": ">= 3.0.0 < 4",
+    "@dynatrace/barista-icons": "^3.6.1",
     "@ngrx/core": "^1.2.0",
     "@ngrx/effects": "^8.6.0",
     "@ngrx/router-store": "^8.6.0",
@@ -61,7 +61,7 @@
     "ngx-moment": "^3.5.0",
     "normalize.css": "^8.0.1",
     "rxjs": "~6.4.0",
-    "tslib": "^1.9.0",
+    "tslib": "^1.11.1",
     "zone.js": "~0.9.1"
   },
   "devDependencies": {
@@ -85,6 +85,7 @@
     "protractor": "^5.4.3",
     "ts-node": "~7.0.0",
     "tslint": "~5.15.0",
-    "typescript": "~3.5.3"
+    "typescript": "~3.5.3",
+    "express": "^4.17.1"
   }
 }

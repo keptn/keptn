@@ -3,7 +3,7 @@
     <div fxLayout="row" class="pr-4">
       <div fxFlex>
         <div fxLayout="row" fxLayoutAlign="start" fxLayoutGap="5px">
-          <h4 class="m-0 mt-1 mb-1" [textContent]="getEventLabel(_event.type)"></h4>
+          <h4 class="m-0 mt-1 mb-1" [textContent]="getEventLabel(_event)"></h4>
           <a *ngIf="_event.data.deploymentURIPublic" [href]="_event.data.deploymentURIPublic" target="_blank"><button dt-icon-button variant="nested"><dt-icon name="externallink"></dt-icon></button></a>
         </div>
         <p class="m-0 nobreak"><span class="bold">Source: </span><span [textContent]="_event.source"></span></p>

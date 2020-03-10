@@ -1,5 +1,6 @@
 import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {Component, OnInit} from '@angular/core';
+import {ApiService} from "./_services/api.service";
 
 declare var dT_;
 
@@ -10,10 +11,16 @@ declare var dT_;
 })
 export class AppComponent implements OnInit {
 
-  constructor(private http: HttpClient) {
+  public version: string;
+
+  constructor(private http: HttpClient, private apiService: ApiService) {
     if(typeof dT_!='undefined' && dT_.initAngularNg){dT_.initAngularNg(http, HttpHeaders);}
   }
 
   ngOnInit(): void {
+    this.apiService.getVersion()
+      .subscribe((response: any) => {
+        this.version = response.version;
+      });
   }
 }

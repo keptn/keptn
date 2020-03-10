@@ -33,9 +33,9 @@ export class KtbEventItemComponent implements OnInit {
   ngOnInit() {
   }
 
-  getEventLabel(key: string): string {
-    let label = key;
-    switch(key) {
+  getEventLabel(event: Trace): string {
+    let label = event.type;
+    switch(event.type) {
       case "sh.keptn.internal.event.service.create": {
         label = "Service create"
         break;
@@ -85,7 +85,10 @@ export class KtbEventItemComponent implements OnInit {
         break;
       }
       case "sh.keptn.events.problem": {
-        label = "Problem detected";
+        if(event.data.State === "RESOLVED")
+          label = "Problem resolved";
+        else
+          label = "Problem detected";
         break;
       }
       case "sh.keptn.event.problem.close": {

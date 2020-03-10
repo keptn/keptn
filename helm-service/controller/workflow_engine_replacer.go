@@ -61,19 +61,28 @@ func getTestStrategy(project string, stageName string) (string, error) {
 	return "", fmt.Errorf("Cannot find stage %s in project %s", stageName, project)
 }
 
-func getInternalDeploymentUrl(project string, service string, stage string, deploymentStrategy keptnevents.DeploymentStrategy, testStrategy string) string {
+func getLocalDeploymentURI(project string, service string, stage string, deploymentStrategy keptnevents.DeploymentStrategy, testStrategy string) string {
 
 	// Use educated guess of the service url based on stage, service name, deployment type
-	serviceURL := service + "." + project + "-" + stage
+	serviceURL := "http://" + service + "." + project + "-" + stage
 	if deploymentStrategy == keptnevents.Duplicate {
 		if testStrategy == "real-user" {
 			// real-user tests will always be conducted on the primary deployment
-			serviceURL = service + "-primary" + "." + project + "-" + stage
+			serviceURL = "http://" + service + "-primary" + "." + project + "-" + stage
 		} else {
-			serviceURL = service + "-canary" + "." + project + "-" + stage
+			serviceURL = "http://" + service + "-canary" + "." + project + "-" + stage
 		}
 	}
 	return serviceURL
+}
+
+func getPublicDeploymentURI(project string, service string, stage string) (string, error) {
+	keptnDomain, err := keptnutils.GetKeptnDomain(true)
+	if err != nil {
+		return "", err
+	}
+
+	return "http://" + service + "." + project + "-" + stage + "." + keptnDomain, nil
 }
 
 func sendDeploymentFinishedEvent(shkeptncontext string, project string, stage string, service string, testStrategy string, deploymentStrategy keptnevents.DeploymentStrategy, image string, tag string) error {
@@ -101,6 +110,13 @@ func sendDeploymentFinishedEvent(shkeptncontext string, project string, stage st
 		DeploymentStrategy: deploymentStrategyOldIdentifier,
 		Image:              image,
 		Tag:                tag,
+		DeploymentURILocal: getLocalDeploymentURI(project, service, stage, deploymentStrategy, testStrategy),
+	}
+
+	publicDeploymentURI, err := getPublicDeploymentURI(project, service, stage)
+
+	if err == nil {
+		depFinishedEvent.DeploymentURIPublic = publicDeploymentURI
 	}
 
 	event := cloudevents.Event{

@@ -23,6 +23,13 @@ export class ApiService {
   constructor(private http: HttpClient) {
   }
 
+  public getVersion(): Observable<Object> {
+    let url = `${this.baseUrl}/api/`;
+    return this.http
+      .get<Object>(url, { headers: this.headers })
+      .pipe(catchError(this.handleError<Object>('getVersion')));
+  }
+
   public getProjects(): Observable<Project[]> {
     let url = `${this.baseUrl}/api/project?DisableUpstreamSync=true`;
     return this.http
@@ -70,7 +77,7 @@ export class ApiService {
   }
 
   public getEvaluationResults(projectName: string, serviceName: string, stageName: string, source: string, fromTime?: String) {
-    let url = `${this.baseUrl}/api/events?type=sh.keptn.events.evaluation-done&projectName=${projectName}&serviceName=${serviceName}&stageName=${stageName}&source=${source}`;
+    let url = `${this.baseUrl}/api/events?type=sh.keptn.events.evaluation-done&projectName=${projectName}&serviceName=${serviceName}&stageName=${stageName}&source=${source}&pageSize=50`;
     if(fromTime)
       url += `&fromTime=${fromTime}`;
     return this.http
