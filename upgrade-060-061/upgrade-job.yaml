@@ -1,0 +1,22 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: keptn-061-upgrade
+  namespace: default
+spec:
+  template:
+    metadata:
+      labels:
+        app: keptn-061-upgrade
+    spec:
+      volumes:
+        - name: kubectl
+          emptyDir: {}
+      containers:
+        - name: keptn-upgrade
+          image: keptn/060-to-061-upgrade
+          imagePullPolicy: Always
+          env:
+            - name: KEPTN_VERSION
+              value: "master"
+      restartPolicy: Never
