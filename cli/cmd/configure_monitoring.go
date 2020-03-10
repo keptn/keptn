@@ -40,14 +40,14 @@ var allowedMonitoringTypes = []string{
 }
 
 var monitoringCmd = &cobra.Command{
-	// Use:          "monitoring <monitoring_source> --project=<project> --service=<service> --service-indicators=<service_indicators_file_path> --service-objectives=<service_objectives_file_path> --remediation=<remediation_file_path>",
-	Use:          "monitoring <monitoring_source> --project=<project> --service=<service>",
+	// Use:          "monitoring <monitoring_provider> --project=<project> --service=<service> --service-indicators=<service_indicators_file_path> --service-objectives=<service_objectives_file_path> --remediation=<remediation_file_path>",
+	Use:          "monitoring <monitoring_provider> --project=<project> --service=<service>",
 	Short:        "Configures monitoring",
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
 			cmd.SilenceUsage = false
-			return errors.New("Requires a monitoring type as argument")
+			return errors.New("Requires a monitoring provider as argument")
 		}
 
 		for _, monitoringType := range allowedMonitoringTypes {
