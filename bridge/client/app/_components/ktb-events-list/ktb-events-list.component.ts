@@ -23,6 +23,7 @@ import DateUtil from "../../_utils/date.utils";
 export class KtbEventsListComponent implements OnInit {
 
   public _events: Trace[] = [];
+  public _focusedEventId: string;
 
   @Input()
   get events(): Trace[] {
@@ -31,6 +32,17 @@ export class KtbEventsListComponent implements OnInit {
   set events(value: Trace[]) {
     if (this._events !== value) {
       this._events = value;
+      this._changeDetectorRef.markForCheck();
+    }
+  }
+
+  @Input()
+  get focusedEventId(): string {
+    return this._focusedEventId;
+  }
+  set focusedEventId(value: string) {
+    if (this._focusedEventId !== value) {
+      this._focusedEventId = value;
       this._changeDetectorRef.markForCheck();
     }
   }
@@ -48,8 +60,9 @@ export class KtbEventsListComponent implements OnInit {
     return DateUtil.getCalendarFormats();
   }
 
-  switchEvaluationView(event) {
-
+  scrollIntoView(element) {
+    element.scrollIntoView({ behavior: 'smooth' });
+    return true;
   }
 
 }

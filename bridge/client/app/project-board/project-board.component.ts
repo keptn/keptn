@@ -35,6 +35,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   public projectName: string;
   public serviceName: string;
   public contextId: string;
+  public eventId: string;
 
   constructor(private router: Router, private location: Location, private route: ActivatedRoute, private dataService: DataService) { }
 
@@ -43,6 +44,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
       this.projectName = params["projectName"];
       this.serviceName = params["serviceName"];
       this.contextId = params["contextId"];
+      this.eventId = params["eventId"];
       this.currentRoot = null;
 
       this.project = this.dataService.projects.pipe(

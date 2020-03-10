@@ -80,7 +80,7 @@
           <p class="m-0"><span class="bold">Keptn ID: </span><span [textContent]="currentRoot.shkeptncontext"></span></p>
         </dt-info-group>
       </div>
-      <ktb-events-list [events]="currentRoot.traces"></ktb-events-list>
+      <ktb-events-list [events]="currentRoot.traces" [focusedEventId]="eventId"></ktb-events-list>
       <div class="mb-3" fxLayout="row" fxLayoutAlign="end center">
         <dt-tag-list aria-label="fetch-info">
           <dt-tag>Last time fetched: <span [textContent]="getTracesLastUpdated(currentRoot) | amCalendar:getCalendarFormats()"></span></dt-tag>

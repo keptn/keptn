@@ -10,6 +10,7 @@ const routes: Routes = [
   {path: 'project/:projectName', component: ProjectBoardComponent},
   {path: 'project/:projectName/:serviceName', component: ProjectBoardComponent},
   {path: 'project/:projectName/:serviceName/:contextId', component: ProjectBoardComponent},
+  {path: 'project/:projectName/:serviceName/:contextId/:eventId', component: ProjectBoardComponent},
   {path: '**', redirectTo: ''}
 ];
 
