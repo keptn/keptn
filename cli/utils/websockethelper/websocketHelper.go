@@ -76,7 +76,7 @@ func openWS(connData keptnutils.ConnectionData, apiEndPoint url.URL) (*websocket
 	return conn, resp, err
 }
 
-const readDeadline = 60 * time.Second
+const readDeadline = 90 * time.Second
 
 // readAndPrintCE reads a cloud event from the websocket
 func readAndPrintCE(ws *websocket.Conn) error {
@@ -84,7 +84,7 @@ func readAndPrintCE(ws *websocket.Conn) error {
 		messageType, message, err := ws.ReadMessage()
 		if err != nil {
 			if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
-				return errors.New("Webscocket connection timed out")
+				return errors.New("Websocket connection timed out")
 			}
 			return err
 		}
