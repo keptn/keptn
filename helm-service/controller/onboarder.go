@@ -127,7 +127,9 @@ func (o *Onboarder) checkAndSetServiceName(event *keptnevents.ServiceCreateEvent
 	if event.HelmChart == "" {
 		// Case when only a service is created but not onboarded (i.e. no Helm chart is available)
 		if !keptnutils.ValididateUnixDirectoryName(event.Service) {
-			return errors.New("Service name contains special character(s)")
+			return errors.New("Service name contains special character(s)." +
+				"The service name has to be a valid Unix directory name. For details see " +
+				"https://www.cyberciti.biz/faq/linuxunix-rules-for-naming-file-and-directory-names/")
 		}
 		return nil
 	}
