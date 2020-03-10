@@ -121,7 +121,7 @@ var monitoringCmd = &cobra.Command{
 			}
 
 			// if eventContext is available, open WebSocket communication
-			if eventContext != nil {
+			if eventContext != nil && !SuppressWSCommunication {
 				return websockethelper.PrintWSContentEventContext(eventContext, endPoint)
 			}
 

@@ -17,6 +17,8 @@ var verboseLogging bool
 var quietLogging bool
 var mocking bool
 
+var SuppressWSCommunication bool
+
 var insecureSkipTLSVerify bool
 var kubectlOptions string
 
@@ -76,6 +78,8 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&verboseLogging, "verbose", "v", false, "verbose logging")
 	rootCmd.PersistentFlags().BoolVarP(&quietLogging, "quiet", "q", false, "suppress debug and info output")
 	rootCmd.PersistentFlags().BoolVarP(&mocking, "mock", "", false, "mocking of server communication - ATTENTION: your commands will not be sent to the keptn server")
+	rootCmd.PersistentFlags().BoolVarP(&SuppressWSCommunication, "suppress-websocket", "", false,
+		"disables websocket communication - use the ID of Keptn context (if provided) for checking the result of your command")
 
 	cobra.OnInitialize(initConfig)
 
