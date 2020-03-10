@@ -36,14 +36,50 @@ sleep 10
 # parse output of above command and extract keptn context)
 response=$(keptn get event evaluation-done --keptn-context=${keptn_context_id})
 
-# ToDo: right now get event evaluation-done does not work as lighthouse does not send the event when there is no sli provider
-#       see issue https://github.com/keptn/keptn/issues/1212
+verify_test_step $? "ERROR: Command keptn get event evaluation-done --keptn-context=${keptn_context_id}) returned a non-zero exit code"
 
-#if [[ $? -eq 0 ]]; then
-#  echo "Got result"
-#  echo $response
-#else
-#  exit 1
-#fi
+echo $response | grep "no SLI-provider configured for project $PROJECT"
+
+if [[ $? -eq 0 ]]; then
+  echo "Result was as expected (no SLI-provider found)"
+else
+  echo "Got result"
+  echo $response
+  echo "ERROR: Expected string 'no SLI-provider configured for project $PROJECT' in output"
+  exit 1
+fi
+
+# okay so far, now we install a SLI provider
+kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/dynatrace-sli-service/0.3.0/deploy/service.yaml
+sleep 10
+
+wait_for_deployment_in_namespace "dynatrace-sli-service" "keptn"
+
+echo "Sending 'configure monitoring'..."
+
+# now configure monitoring for Dynatrace
+keptn configure monitoring dynatrace --project=$PROJECT
+sleep 5
+# this should set the configmap
+
+kubectl -n keptn get configmap lighthouse-config-$PROJECT -oyaml
+verify_test_step $? "ERROR: Could not find configmap lighthouse-config-$PROJECT (this is expected to be created by keptn configure monitoring dynatrace --project=$PROJECT)"
+
+# now that this is set, let's send the start evaluation command again
+response=$(keptn send event start-evaluation --project=$PROJECT --stage=hardening --service=catalogue --timeframe=5m)
+
+echo $response
+
+keptn_context_id=$(echo $response | awk -F'Keptn context:' '{ print $2 }' | xargs)
+
+sleep 10
+# parse output of above command and extract keptn context)
+response=$(keptn get event evaluation-done --keptn-context=${keptn_context_id})
+
+echo $response
+
+verify_test_step $? "ERROR: Command keptn get event evaluation-done --keptn-context=${keptn_context_id}) returned a non-zero exit code"
+
+
 
 exit 0

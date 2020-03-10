@@ -160,7 +160,7 @@ jobs:
       # download and install kubectl
       - curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.17.0/bin/linux/amd64/kubectl && chmod +x ./kubectl && sudo mv ./kubectl /usr/local/bin/kubectl
       - test/utils/microk8s_create_cluster.sh
-      - export KUBECONFIG=./kubeconfig
+      - export KUBECONFIG=~/kubeconfig
     script:
       - kubectl get nodes || travis_terminate 1
       - test/test_install_kubernetes_quality_gates.sh || travis_terminate 1
