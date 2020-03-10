@@ -25,14 +25,12 @@ import (
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/utils"
 	"github.com/keptn/keptn/cli/utils/credentialmanager"
-	"github.com/keptn/keptn/cli/utils/websockethelper"
 	"github.com/spf13/cobra"
 )
 
 const timeout = 60
 
 var eventFilePath *string
-var openWebSocketConnection bool
 
 // sendEventCmd represents the send command
 var sendEventCmd = &cobra.Command{
@@ -71,16 +69,12 @@ Example:
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
-			eventContext, err := eventHandler.SendEvent(apiEvent)
+			_, err := eventHandler.SendEvent(apiEvent)
 			if err != nil {
 				logging.PrintLog("Send event was unsuccessful", logging.QuietLevel)
 				return fmt.Errorf("Send event was unsuccessful. %s", *err.Message)
 			}
 
-			// if eventContext is available and stream-websocket flag is true, open WebSocket communication
-			if eventContext != nil && openWebSocketConnection {
-				return websockethelper.PrintWSContentEventContext(eventContext, endPoint)
-			}
 			return nil
 		}
 
@@ -92,5 +86,4 @@ Example:
 func init() {
 	sendCmd.AddCommand(sendEventCmd)
 	eventFilePath = sendEventCmd.Flags().StringP("file", "f", "", "The file containing the event as Cloud Event in JSON.")
-	sendCmd.PersistentFlags().BoolVarP(&openWebSocketConnection, "stream-websocket", "s", false, "Stream websocket communication of keptn messages")
 }

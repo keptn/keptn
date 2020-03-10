@@ -137,7 +137,6 @@ Example:
 				return nil
 			}
 
-			fmt.Println("ID of Keptn context: " + *responseEvent.KeptnContext)
 			return nil
 		}
 
