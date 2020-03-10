@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"net/http"
 	"net/url"
 	"strings"
@@ -71,14 +72,24 @@ func openWS(connData keptnutils.ConnectionData, apiEndPoint url.URL) (*websocket
 	if err != nil {
 		return nil, nil, err
 	}
-	conn.SetPongHandler(func(string) error { conn.SetReadDeadline(time.Now().Add(60 * time.Second)); return nil })
+	conn.SetReadDeadline(time.Now().Add(readDeadline))
+	conn.SetPongHandler(func(string) error { conn.SetReadDeadline(time.Now().Add(readDeadline)); return nil })
 	return conn, resp, err
 }
+
+const readDeadline = 60 * time.Second
 
 // readAndPrintCE reads a cloud event from the websocket
 func readAndPrintCE(ws *websocket.Conn) error {
 	for {
 		messageType, message, err := ws.ReadMessage()
+		if err != nil {
+			if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
+				return errors.New("Webscocket connection timed out")
+			}
+			return err
+		}
+		ws.SetReadDeadline(time.Now().Add(readDeadline))
 		if messageType == 1 { // 1.. textmessage
 			var messageCE keptnutils.MyCloudEvent
 
@@ -93,12 +104,6 @@ func readAndPrintCE(ws *websocket.Conn) error {
 				return nil
 			}
 		}
-
-		if err != nil {
-			log.Println("read: ", err)
-			return err
-		}
-
 	}
 	return nil
 }
