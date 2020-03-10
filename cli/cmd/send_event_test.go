@@ -71,27 +71,3 @@ func TestSendEvent(t *testing.T) {
 		log.Fatalf("An error occured: %v", err)
 	}
 }
-
-// TestSendEventAndOpenWebSocket tests the functionality to send an event defined in JSON file and to open a WebSocket communication
-func TestSendEventAndOpenWebSocket(t *testing.T) {
-	const tmpCE = "newArtifactCE.json"
-	defer newArtifactEvent(t, tmpCE, "")()
-
-	credentialmanager.MockAuthCreds = true
-	buf := new(bytes.Buffer)
-	rootCmd.SetOutput(buf)
-
-	args := []string{
-		"send",
-		"event",
-		fmt.Sprintf("--file=%s", tmpCE),
-		"--stream-websocket",
-		"--mock",
-	}
-	rootCmd.SetArgs(args)
-	err := rootCmd.Execute()
-
-	if err != nil {
-		log.Fatalf("An error occured: %v", err)
-	}
-}
