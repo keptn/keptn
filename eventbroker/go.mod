@@ -5,7 +5,7 @@ go 1.13
 require (
 	github.com/cloudevents/sdk-go v0.10.0
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.6.1
+	github.com/keptn/go-utils v0.6.1-0.20200310164337-e6ef292da6a0
 )
 
 // replace cloudevents/sdk-go latest version with 0.7.0
