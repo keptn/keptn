@@ -10,6 +10,8 @@ manifests=(
   "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/logging/mongodb/svc.yaml"
   "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/core.yaml"
   "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/quality-gates.yaml"
+  "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/continuous-deployment.yaml"
+  "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/continuous-operations.yaml"
   )
 
 for manifest in "${manifests[@]}"
