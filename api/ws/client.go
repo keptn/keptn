@@ -129,10 +129,10 @@ func (c *cliClientType) writePump(l *keptnutils.Logger) {
 				return
 			}
 		case <-ticker.C:
-			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
-			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
+			if err := c.conn.WriteControl(websocket.PingMessage, []byte{}, time.Now().Add(writeWait)); err != nil {
 				return
 			}
+
 		}
 	}
 }

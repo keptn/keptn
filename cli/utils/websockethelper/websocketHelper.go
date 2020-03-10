@@ -73,7 +73,7 @@ func openWS(connData keptnutils.ConnectionData, apiEndPoint url.URL) (*websocket
 		return nil, nil, err
 	}
 	conn.SetReadDeadline(time.Now().Add(readDeadline))
-	conn.SetPongHandler(func(string) error { conn.SetReadDeadline(time.Now().Add(readDeadline)); return nil })
+	conn.SetPingHandler(func(string) error { conn.SetReadDeadline(time.Now().Add(readDeadline)); return nil })
 	return conn, resp, err
 }
 
@@ -89,7 +89,6 @@ func readAndPrintCE(ws *websocket.Conn) error {
 			}
 			return err
 		}
-		ws.SetReadDeadline(time.Now().Add(readDeadline))
 		if messageType == 1 { // 1.. textmessage
 			var messageCE keptnutils.MyCloudEvent
 
