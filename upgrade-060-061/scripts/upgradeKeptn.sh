@@ -1,8 +1,8 @@
 #!/bin/bash
 source ./utils.sh
 
+KEPTN_VERSION="0.6.1"
 print_debug "Upgrading from Keptn 0.6.0 to $KEPTN_VERSION"
-
 
 manifests=(
   "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/logging/mongodb/pvc.yaml"

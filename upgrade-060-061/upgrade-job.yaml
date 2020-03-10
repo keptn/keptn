@@ -16,7 +16,4 @@ spec:
         - name: keptn-upgrade
           image: keptn/060-to-061-upgrade
           imagePullPolicy: Always
-          env:
-            - name: KEPTN_VERSION
-              value: "master"
       restartPolicy: Never
