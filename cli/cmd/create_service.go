@@ -40,9 +40,8 @@ Example:
 			return errors.New("required argument SERVICENAME not set")
 		}
 
-		if !keptnutils.ValidateKeptnEntityName(args[0]) {
-			errorMsg := "Service name contains upper case letter(s) or special character(s).\n"
-			return errors.New(errorMsg)
+		if !keptnutils.ValididateUnixDirectoryName(args[0]) {
+			return errors.New("Service name contains special character(s)")
 		}
 		return nil
 	},
