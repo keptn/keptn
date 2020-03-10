@@ -84,7 +84,8 @@ func readAndPrintCE(ws *websocket.Conn) error {
 		messageType, message, err := ws.ReadMessage()
 		if err != nil {
 			if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
-				return errors.New("Websocket connection timed out")
+				fmt.Println("Warning: Websocket connection timed out")
+				return nil
 			}
 			return err
 		}
