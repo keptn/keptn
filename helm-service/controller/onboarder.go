@@ -124,17 +124,19 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event, loggingDone chan bool) error
 
 func (o *Onboarder) checkAndSetServiceName(event *keptnevents.ServiceCreateEventData) error {
 
-	errorMsg := "Service name contains upper case letter(s) or special character(s).\n " +
-		"Keptn relies on the following conventions: " +
-		"start with a lower case letter, then lower case letters, numbers, and hyphens are allowed."
-
 	if event.HelmChart == "" {
 		// Case when only a service is created but not onboarded (i.e. no Helm chart is available)
-		if !keptnutils.ValidateKeptnEntityName(event.Service) {
-			return errors.New(errorMsg)
+		if !keptnutils.ValididateUnixDirectoryName(event.Service) {
+			return errors.New("Service name contains special character(s)." +
+				"The service name has to be a valid Unix directory name. For details see " +
+				"https://www.cyberciti.biz/faq/linuxunix-rules-for-naming-file-and-directory-names/")
 		}
 		return nil
 	}
+
+	errorMsg := "Service name contains upper case letter(s) or special character(s).\n " +
+		"Keptn relies on the following conventions: " +
+		"start with a lower case letter, then lower case letters, numbers, and hyphens are allowed."
 
 	helmChartData, err := base64.StdEncoding.DecodeString(event.HelmChart)
 	if err != nil {
