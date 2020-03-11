@@ -78,7 +78,7 @@ spec:
     spec:
       containers:
       - name: bridge
-        image: keptn/bridge:0.6.1
+        image: keptn/bridge2:0.6.1
         ports:
         - containerPort: 3000
         resources:
