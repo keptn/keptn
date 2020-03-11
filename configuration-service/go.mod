@@ -14,7 +14,7 @@ require (
 	github.com/go-openapi/validate v0.19.4
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/jessevdk/go-flags v1.4.0
-	github.com/keptn/go-utils v0.6.1
+	github.com/keptn/go-utils v0.6.1-a
 	github.com/mholt/archiver v3.1.1+incompatible
 	github.com/nwaples/rardecode v1.0.0 // indirect
 	github.com/otiai10/copy v1.0.2
