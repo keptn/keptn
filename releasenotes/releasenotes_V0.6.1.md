@@ -2,7 +2,7 @@
 
 This release introduces the new and shiny :sparkles: **Keptn's Bridge** :sparkles:
 
-* This new Keptn's Bridge is implemented on an AngularJS and NodeJS stack. An excerpt of its feature set shows: 
+* This new Keptn's Bridge is implemented on an Angular and NodeJS stack. An excerpt of its feature set shows: 
   * Auto-reload Keptn events 
   * Display labels attached to Keptn events
   * Breakdown of an SLO evaluation into SLIs
