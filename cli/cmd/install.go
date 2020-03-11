@@ -196,7 +196,7 @@ Example:
 Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 		}
 
-		if *installParams.UseCase == "all" {
+		if *installParams.UseCase == "all" && *installParams.PlatformIdentifier != "openshift" {
 			if err := utils.CheckKubeServerVersion(KubeServerVersionConstraints); err != nil {
 				logging.PrintLog(err.Error(), logging.VerboseLevel)
 				return errors.New(`Keptn requires Kubernetes Server Version: ` + KubeServerVersionConstraints)
