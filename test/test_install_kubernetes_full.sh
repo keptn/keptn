@@ -2,14 +2,6 @@
 
 source test/utils.sh
 
-echo "Download the CLI"
-# Download latest KEPTN cli for linux
-wget https://storage.googleapis.com/keptn-cli/latest/keptn-linux.zip
-unzip keptn-linux.zip
-
-sudo mv keptn /usr/local/bin/keptn
-
-
 echo "Installing keptn on cluster"
 echo "{}" > creds.json # empty credentials file
 # Install keptn (using the develop version, which should point the :latest docker images)

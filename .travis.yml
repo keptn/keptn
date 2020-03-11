@@ -133,6 +133,7 @@ jobs:
     # auth gcloud
     - echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
     - gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
+    - test/utils/download_and_install_keptn_cli.sh
     # create gke cluster on gcloud
     - test/utils/gke_create_cluster.sh
     script:
@@ -153,12 +154,38 @@ jobs:
     - cat ~/.keptn/keptn-installer.log
     - cat ~/.keptn/keptn-installer-err.log
 
+  - stage: Cron Minishift Standalone (--platform=openshift --use-case=quality-gates)
+    if: branch = master AND type = cron
+    os: linux
+    before_script:
+      # download and install kubectl
+      - curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.17.0/bin/linux/amd64/kubectl && chmod +x ./kubectl && sudo mv ./kubectl /usr/local/bin/kubectl
+      - test/utils/download_and_install_keptn_cli.sh
+      - test/utils/download_and_install_oc_cli.sh
+      - test/utils/minishift_create_cluster.sh
+    script:
+      - kubectl get nodes || travis_terminate 1
+      # finally install keptn
+      - test/test_install_minishift_quality_gates.sh || travis_terminate 1
+      - keptn status || travis_terminate 1
+      - export PROJECT=musicshop
+      - test/test_quality_gates_standalone.sh || travis_terminate 1
+    after_success:
+      # delete google kubernetes cluster only on success (in case of an error we want to be able to dig into the cluster)
+      - echo "Tests were successful, cleaning up the cluster now..."
+    after_failure:
+      # print some debug info
+      - echo "Keptn Installation Log:"
+      - cat ~/.keptn/keptn-installer.log
+      - cat ~/.keptn/keptn-installer-err.log
+
   - stage: Cron MicroK8s Standalone (--platform=kubernetes --use-case=quality-gates)
     if: branch = master AND type = cron
     os: linux
     before_script:
       # download and install kubectl
       - curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.17.0/bin/linux/amd64/kubectl && chmod +x ./kubectl && sudo mv ./kubectl /usr/local/bin/kubectl
+      - test/utils/download_and_install_keptn_cli.sh
       - test/utils/microk8s_create_cluster.sh
       - export KUBECONFIG=~/kubeconfig
     script:
@@ -182,6 +209,7 @@ jobs:
     before_script:
       # download and install kubectl
       - curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.17.0/bin/linux/amd64/kubectl && chmod +x ./kubectl && sudo mv ./kubectl /usr/local/bin/kubectl
+      - test/utils/download_and_install_keptn_cli.sh
       - export USE_CASE=quality-gates
       - test/utils/minikube_create_cluster.sh
     script:
