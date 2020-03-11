@@ -77,7 +77,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   }
 
   loadTraces(root: Root): void {
-    let routeUrl = this.router.createUrlTree(['/project', this.projectName, root.data.service, root.shkeptncontext]);
+    let routeUrl = this.router.createUrlTree(['/project', root.data.project, root.data.service, root.shkeptncontext]);
     this.location.go(routeUrl.toString());
 
     this._tracesTimer.unsubscribe();

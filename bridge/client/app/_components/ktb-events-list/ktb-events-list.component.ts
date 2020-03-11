@@ -1,13 +1,8 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  Input,
-  OnInit,
-  ViewEncapsulation
-} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, ViewEncapsulation} from '@angular/core';
 import {Trace} from "../../_models/trace";
 import DateUtil from "../../_utils/date.utils";
+import {Router} from "@angular/router";
+import {Location} from "@angular/common";
 
 @Component({
   selector: 'ktb-events-list',
@@ -47,7 +42,7 @@ export class KtbEventsListComponent implements OnInit {
     }
   }
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef) { }
+  constructor(private router: Router, private location: Location, private _changeDetectorRef: ChangeDetectorRef) { }
 
   ngOnInit() {
   }
@@ -63,6 +58,11 @@ export class KtbEventsListComponent implements OnInit {
   scrollIntoView(element) {
     element.scrollIntoView({ behavior: 'smooth' });
     return true;
+  }
+
+  focusEvent(event) {
+    let routeUrl = this.router.createUrlTree(['/project', event.data.project, event.data.service, event.shkeptncontext, event.id]);
+    this.location.go(routeUrl.toString());
   }
 
 }
