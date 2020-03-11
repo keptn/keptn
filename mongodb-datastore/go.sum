@@ -223,13 +223,9 @@ github.com/julienschmidt/httprouter v1.2.0/go.mod h1:SYymIcj16QtmaHHD7aYtjjsJG7V
 github.com/karrick/godirwalk v1.8.0/go.mod h1:H5KPZjojv4lE+QYImBI8xVtrBRgYrIVsaRPx4tDPEn4=
 github.com/karrick/godirwalk v1.10.3/go.mod h1:RoGL9dQei4vP9ilrpETWE8CLOZ1kiN0LhBygSwrAsHA=
 github.com/kelseyhightower/envconfig v1.4.0/go.mod h1:cccZRl6mQpaq41TPp5QxidR+Sa3axMbJDNb//FQX6Gg=
-github.com/keptn/go-utils v0.3.0 h1:0Gm3Kmv3EXmlq1i3YcHiwLs9j6wCw0COe+IR2pNKq5k=
-github.com/keptn/go-utils v0.3.0/go.mod h1:R9a1HXkD+KCrhMFbLcEhtBtHGfYwXhO6dwZzmyoE98c=
-github.com/keptn/go-utils v0.5.0 h1:Wbl73vOCg2l+iZJ5jdQKUNNZE5PnSVmWmpWdShCPlOg=
-github.com/keptn/go-utils v0.5.0/go.mod h1:R9a1HXkD+KCrhMFbLcEhtBtHGfYwXhO6dwZzmyoE98c=
-github.com/keptn/go-utils v0.6.0 h1:FTnr1tiGdIqWiUNccNw8KcTzrRDZSjif3v1KbJsAnQs=
-github.com/keptn/go-utils v0.6.0/go.mod h1:R9a1HXkD+KCrhMFbLcEhtBtHGfYwXhO6dwZzmyoE98c=
-github.com/keptn/go-utils v0.6.1 h1:zpMDtWbrrp+C9R4A8fiBje720BQjsRLUb1NAWpHtIkI=
+github.com/keptn/go-utils v0.6.1-a h1:nxLpQhg3i/14f5fpZhSCYql5qP0hxji1gaEsj5pd//Q=
+github.com/keptn/go-utils v0.6.1-a/go.mod h1:R9a1HXkD+KCrhMFbLcEhtBtHGfYwXhO6dwZzmyoE98c=
+github.com/keptn/go-utils v0.6.1 h1:ukBe1qtBiUyltabVMhTsx09pwlQTTRn3hJJc/XD81EY=
 github.com/keptn/go-utils v0.6.1/go.mod h1:R9a1HXkD+KCrhMFbLcEhtBtHGfYwXhO6dwZzmyoE98c=
 github.com/keptn/keptn v0.0.0-20191107135234-c0939707dff0 h1:Q5MSMeWKpgleVkZLE2kw/ELOGdBPyegqGc3+132geqE=
 github.com/keptn/keptn v0.0.0-20191108092506-3f8146d90389 h1:E/mUFUNxm76CvuxWjYrklg9agNNuz7wMxnZEOmsq3Rk=
