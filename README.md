@@ -22,8 +22,28 @@ We mangage the Keptn core components in versions. The respective images in their
 The versions of the Keptn core components and the services have to be compatible to each other.
 Therefore, this section shows the compatibility between these versions.
 
-**Keptn in [version 0.6.0](https://github.com/keptn/keptn/releases/tag/0.6.0) requires:**
+**Keptn in [version 0.6.1](https://github.com/keptn/keptn/releases/tag/0.6.1) requires:**
 
+*Keptn core:*
+- keptn/api:0.6.1
+- keptn/bridge:0.6.1
+- keptn/configuration-service:0.6.1
+- keptn/distributor:0.6.1
+- keptn/eventbroker-go:0.6.1
+- keptn/gatekeeper-service:0.6.1
+- keptn/helm-service:0.6.1
+- keptn/jmeter-service:0.6.1
+- keptn/lighthouse-service:0.6.1
+- keptn/mongodb-datastore:0.6.1
+- keptn/shipyard-service:0.6.1
+- keptn/wait-service:0.6.1
+- keptn/remediation-service:0.6.1
+
+*for Openshift:*
+- keptn/openshift-route-service:0.6.1
+
+<details><summary>Keptn version 0.6.0</summary>
+<p>
 *Keptn core:*
 - keptn/api:0.6.0
 - keptn/bridge:0.6.0
@@ -41,6 +61,8 @@ Therefore, this section shows the compatibility between these versions.
 
 *for Openshift:*
 - keptn/openshift-route-service:0.6.0
+</p>
+</details>
 
 <details><summary>Keptn version 0.5.2</summary>
 <p>
