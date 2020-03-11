@@ -42,7 +42,6 @@ Implemented **Keptn spec** version: [0.1.3](https://github.com/keptn/spec/tree/0
 </p>
 </details>
 
-
 <details><summary>Keptn Core</summary>
 <p>
 
@@ -90,12 +89,10 @@ Implemented **Keptn spec** version: [0.1.3](https://github.com/keptn/spec/tree/0
 - Use right mount path for persistant volume in *mongodb-datastore* [#1360](https://github.com/keptn/keptn/issues/1360)
 
 ## Fixed Limitations
-
-* ~~Distributors can not automatically reconnect to NATS cluster [#1209](https://github.com/keptn/keptn/issues/1209)~~
-* ~~Dynatrace SLI Service / Metrics API will change at the end of Q1 [#1282](https://github.com/keptn/keptn/issues/1282)~~ 
-* ~~The Quality-gates standalone version is currently not supported on OpenShift [#1197](https://github.com/keptn/keptn/issues/1197)~~
+- Distributors can not automatically reconnect to NATS cluster [#1209](https://github.com/keptn/keptn/issues/1209)
+- Dynatrace SLI Service / Metrics API will change at the end of Q1 [#1282](https://github.com/keptn/keptn/issues/1282)
+- The Quality-gates standalone version is currently not supported on OpenShift [#1197](https://github.com/keptn/keptn/issues/1197)
 
 ## Good to know / known limitations
-* Installation on AKS with K8s version before 1.15.5 might fail [#1429](https://github.com/keptn/keptn/issues/1429)
-
-For the remaining limitations please see [Release 0.6.0](https://github.com/keptn/keptn/releases/tag/0.6.0). 
+- Installation on AKS with K8s version before 1.15.5 might fail [#1429](https://github.com/keptn/keptn/issues/1429)
+- For old limitations, please see [Release 0.6.0](https://github.com/keptn/keptn/releases/tag/0.6.0). 
