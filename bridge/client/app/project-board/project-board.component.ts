@@ -12,6 +12,7 @@ import {Project} from "../_models/project";
 import {DataService} from "../_services/data.service";
 import DateUtil from "../_utils/date.utils";
 import {Service} from "../_models/service";
+import {ApiService} from "../_services/api.service";
 
 @Component({
   selector: 'app-project-board',
@@ -22,7 +23,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
 
   public project: Observable<Project>;
   public currentRoot: Root;
-  public error: boolean = false;
+  public error: string = null;
 
   private _routeSubs: Subscription = Subscription.EMPTY;
   private _rootsSubs: Subscription = Subscription.EMPTY;
@@ -37,42 +38,53 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   public contextId: string;
   public eventId: string;
 
-  constructor(private router: Router, private location: Location, private route: ActivatedRoute, private dataService: DataService) { }
+  constructor(private router: Router, private location: Location, private route: ActivatedRoute, private dataService: DataService, private apiService: ApiService) { }
 
   ngOnInit() {
     this._routeSubs = this.route.params.subscribe(params => {
-      this.projectName = params["projectName"];
-      this.serviceName = params["serviceName"];
-      this.contextId = params["contextId"];
-      this.eventId = params["eventId"];
-      this.currentRoot = null;
-
-      this.project = this.dataService.projects.pipe(
-        map(projects => projects ? projects.find(project => {
-          return project.projectName === params['projectName'];
-        }) : null)
-      );
-
-      this._rootsSubs.unsubscribe();
-      this._rootsSubs = this.dataService.roots.subscribe(roots => {
-        if(roots && !this.currentRoot)
-          this.currentRoot = roots.find(r => r.shkeptncontext == params["contextId"]);
-      });
-
-      this._rootEventsTimer.unsubscribe();
-      this._rootEventsTimer = timer(0, this._rootEventsTimerInterval*1000)
-        .pipe(
-          startWith(0),
-          switchMap(() => this.project),
-          filter(project => !!project && !!project.getServices())
-        )
-        .subscribe(project => {
-          project.getServices().forEach(service => {
-            this.dataService.loadRoots(project, service);
-            if(service.roots && !this.currentRoot)
-              this.currentRoot = service.roots.find(r => r.shkeptncontext == params["contextId"]);
+      if(params["shkeptncontext"]) {
+        this.contextId = params["shkeptncontext"];
+        this.apiService.getTraces(this.contextId)
+          .subscribe(traces => {
+            if(traces.length > 0)
+              this.router.navigate(['/project', traces[0].data.project, traces[0].data.service, traces[0].shkeptncontext]);
+            else
+              this.error = "trace";
           });
+      } else {
+        this.projectName = params["projectName"];
+        this.serviceName = params["serviceName"];
+        this.contextId = params["contextId"];
+        this.eventId = params["eventId"];
+        this.currentRoot = null;
+
+        this.project = this.dataService.projects.pipe(
+          map(projects => projects ? projects.find(project => {
+            return project.projectName === params['projectName'];
+          }) : null)
+        );
+
+        this._rootsSubs.unsubscribe();
+        this._rootsSubs = this.dataService.roots.subscribe(roots => {
+          if(roots && !this.currentRoot)
+            this.currentRoot = roots.find(r => r.shkeptncontext == params["contextId"]);
         });
+
+        this._rootEventsTimer.unsubscribe();
+        this._rootEventsTimer = timer(0, this._rootEventsTimerInterval*1000)
+          .pipe(
+            startWith(0),
+            switchMap(() => this.project),
+            filter(project => !!project && !!project.getServices())
+          )
+          .subscribe(project => {
+            project.getServices().forEach(service => {
+              this.dataService.loadRoots(project, service);
+              if(service.roots && !this.currentRoot)
+                this.currentRoot = service.roots.find(r => r.shkeptncontext == params["contextId"]);
+            });
+          });
+      }
     });
   }
 
