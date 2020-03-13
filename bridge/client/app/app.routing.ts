@@ -12,6 +12,7 @@ const routes: Routes = [
   {path: 'project/:projectName/:serviceName/:contextId', component: ProjectBoardComponent},
   {path: 'project/:projectName/:serviceName/:contextId/:eventId', component: ProjectBoardComponent},
   {path: 'trace/:shkeptncontext', component: ProjectBoardComponent},
+  {path: 'trace/:shkeptncontext/:eventselector', component: ProjectBoardComponent},
   {path: '**', redirectTo: ''}
 ];
 

@@ -13,6 +13,7 @@ import {DataService} from "../_services/data.service";
 import DateUtil from "../_utils/date.utils";
 import {Service} from "../_models/service";
 import {ApiService} from "../_services/api.service";
+import {Trace} from "../_models/trace";
 
 @Component({
   selector: 'app-project-board',
@@ -45,11 +46,26 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
       if(params["shkeptncontext"]) {
         this.contextId = params["shkeptncontext"];
         this.apiService.getTraces(this.contextId)
-          .subscribe(traces => {
-            if(traces.length > 0)
-              this.router.navigate(['/project', traces[0].data.project, traces[0].data.service, traces[0].shkeptncontext]);
-            else
+          .pipe(
+            map(traces => traces.map(trace => Trace.fromJSON(trace)))
+          )
+          .subscribe((traces: Trace[]) => {
+            if(traces.length > 0) {
+              if(params["eventselector"]) {
+                let trace = traces.find((t: Trace) => t.data.stage == params["eventselector"]);
+                if(!trace)
+                  trace = traces.reverse().find((t: Trace) => t.type == params["eventselector"]);
+
+                if(trace)
+                  this.router.navigate(['/project', trace.data.project, trace.data.service, trace.shkeptncontext, trace.id]);
+                else
+                  this.error = "trace";
+              } else {
+                this.router.navigate(['/project', traces[0].data.project, traces[0].data.service, traces[0].shkeptncontext]);
+              }
+            } else {
               this.error = "trace";
+            }
           });
       } else {
         this.projectName = params["projectName"];
