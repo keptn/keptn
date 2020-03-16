@@ -93,8 +93,8 @@ kubectl -n keptn get svc dynatrace-sli-service
 kubectl -n keptn get svc prometheus-service
 
   if [[ $? == '0' ]]; then
-      print_debug "Prometheus-service detected. Upgrading to 0.3.1"
-      kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/prometheus-service/release-0.3.1/deploy/service.yaml
+      print_debug "Prometheus-service detected. Upgrading to 0.3.2"
+      kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/prometheus-service/release-0.3.2/deploy/service.yaml
   fi
 
 kubectl -n keptn get svc prometheus-sli-service
