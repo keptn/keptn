@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {BehaviorSubject, from, Observable, Subject, Subscription, timer} from "rxjs";
+import {BehaviorSubject, from, Observable, Subject, timer} from "rxjs";
 import {debounce, map, mergeMap, toArray} from "rxjs/operators";
 
 import {Root} from "../_models/root";
@@ -45,7 +45,6 @@ export class DataService {
     this.apiService.getProjects()
       .pipe(
         debounce(() => timer(10000)),
-        map(projects => projects.sort((a, b) => a.projectName < b.projectName ? -1 : 1)),
         mergeMap(projects =>
           from(projects).pipe(
             mergeMap((project) =>
@@ -59,10 +58,14 @@ export class DataService {
                 ),
                 toArray(),
                 map(stages => stages.map(stage => Stage.fromJSON(stage))),
-                map(stages => ({ ...project, stages}))
+                map(stages => {
+                  project.stages = project.stages.map(s => stages.find(stage => stage.stageName == s.stageName));
+                  return project;
+                })
               )
             ),
-            toArray()
+            toArray(),
+            map(val => projects)
           )
         ),
         map(projects => projects.map(project => Project.fromJSON(project)))

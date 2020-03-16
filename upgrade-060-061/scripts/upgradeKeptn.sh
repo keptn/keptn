@@ -5,13 +5,13 @@ KEPTN_VERSION="0.6.1"
 print_debug "Upgrading from Keptn 0.6.0 to $KEPTN_VERSION"
 
 manifests=(
-  "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/logging/mongodb/pvc.yaml"
-  "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/logging/mongodb/deployment.yaml"
-  "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/logging/mongodb/svc.yaml"
-  "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/core.yaml"
-  "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/quality-gates.yaml"
-  "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/continuous-deployment.yaml"
-  "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/continuous-operations.yaml"
+  "https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/logging/mongodb/pvc.yaml"
+  "https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/logging/mongodb/deployment.yaml"
+  "https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/logging/mongodb/svc.yaml"
+  "https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/keptn/core.yaml"
+  "https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/keptn/quality-gates.yaml"
+  "https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/keptn/continuous-deployment.yaml"
+  "https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/keptn/continuous-operations.yaml"
   )
 
 for manifest in "${manifests[@]}"
@@ -44,9 +44,9 @@ verify_install_step $? "Mongodb export failed."
 print_debug "Updating MongoDB."
 kubectl delete deployment -n keptn-datastore mongodb
 # deploy 0.6.1 mongodb
-kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/logging/mongodb/pvc.yaml
-kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/logging/mongodb/deployment.yaml
-kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/logging/mongodb/svc.yaml
+kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/logging/mongodb/pvc.yaml
+kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/logging/mongodb/deployment.yaml
+kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/logging/mongodb/svc.yaml
 wait_for_deployment_in_namespace "mongodb" "keptn-datastore"
 
 # import previous data to new mongodb
@@ -60,16 +60,19 @@ kubectl -n keptn-datastore set image deployment/mongodb-datastore-distributor di
 
 
 print_debug "Updating Keptn core."
-kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/core.yaml
-kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/quality-gates.yaml
+kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/keptn/core.yaml
+kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/keptn/quality-gates.yaml
+kubectl -n keptn delete deployment lighthouse-service-get-sli-done-distributor
+kubectl -n keptn delete deployment lighthouse-service-start-evaluation-distributor
+kubectl -n keptn delete deployment lighthouse-service-tests-finished-distributor
 
 # check if full installation is available
 kubectl -n keptn get svc gatekeeper-service
 
   if [[ $? == '0' ]]; then
       print_debug "Full installation detected. Upgrading CD and CO services"
-      kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/continuous-deployment.yaml
-      kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/continuous-operations.yaml
+      kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/keptn/continuous-deployment.yaml
+      kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/keptn/continuous-operations.yaml
   fi
 
 # check for keptn-contrib services
@@ -90,8 +93,8 @@ kubectl -n keptn get svc dynatrace-sli-service
 kubectl -n keptn get svc prometheus-service
 
   if [[ $? == '0' ]]; then
-      print_debug "Prometheus-service detected. Upgrading to 0.3.1"
-      kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/prometheus-service/release-0.3.1/deploy/service.yaml
+      print_debug "Prometheus-service detected. Upgrading to 0.3.2"
+      kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/prometheus-service/release-0.3.2/deploy/service.yaml
   fi
 
 kubectl -n keptn get svc prometheus-sli-service
