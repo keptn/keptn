@@ -18,7 +18,7 @@
         </div>
         <div *ngIf="_event.data.ProblemDetails">
           <div fxLayout="row" fxLayoutAlign="start start" *ngIf="_event.data.ProblemDetails.tagsOfAffectedEntities">
-            <p class="bold nobreak m-0 mt-1 mb-1">Affected Entities: </p>
+            <p class="bold nobreak m-0 mt-1 mb-1">Labels: </p>
             <dt-tag-list aria-label="affected-entities" (click)="$event.stopPropagation();">
               <dt-tag *ngFor="let tag of _event.data.ProblemDetails.tagsOfAffectedEntities">
                 <span [textContent]="tag.key"></span>:&nbsp;<span [textContent]="tag.value"></span>
