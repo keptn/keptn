@@ -37,15 +37,19 @@ export class KtbEventItemComponent implements OnInit {
     let label = event.type;
     switch(event.type) {
       case "sh.keptn.internal.event.service.create": {
-        label = "Service create"
+        label = "Service create";
         break;
       }
       case "sh.keptn.event.configuration.change": {
-        label = "Configuration change"
+        label = "Configuration change";
         break;
       }
       case "sh.keptn.event.monitoring.configure": {
-        label = "Configure monitoring"
+        label = "Configure monitoring";
+        break;
+      }
+      case "sh.keptn.event.start-evaluation": {
+        label = "Start evaluation";
         break;
       }
       case "sh.keptn.events.deployment-finished": {
@@ -66,14 +70,6 @@ export class KtbEventItemComponent implements OnInit {
       }
       case "sh.keptn.internal.event.get-sli.done": {
         label = "SLI retrieval done";
-        break;
-      }
-      case "sh.keptn.events.done": {
-        label = "Done";
-        break;
-      }
-      case "sh.keptn.events.done": {
-        label = "Done";
         break;
       }
       case "sh.keptn.events.done": {
