@@ -101,6 +101,10 @@ export class Trace {
           this.label = "Tests finished";
           break;
         }
+        case "sh.keptn.event.start-evaluation": {
+          this.label = "Start evaluation";
+          break;
+        }
         case "sh.keptn.events.evaluation-done": {
           this.label = "Evaluation done";
           break;
