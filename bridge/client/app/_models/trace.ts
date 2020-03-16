@@ -126,7 +126,10 @@ export class Trace {
           break;
         }
         case "sh.keptn.events.problem": {
-          this.label = "Problem detected";
+          if(this.data.State === "RESOLVED")
+            this.label = "Problem resolved";
+          else
+            this.label = "Problem detected";
           break;
         }
         case "sh.keptn.event.problem.close": {
