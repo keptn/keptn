@@ -177,19 +177,43 @@ export class KtbEvaluationDetailsComponent implements OnInit {
 
   updateChartData(evaluationHistory) {
     let chartSeries = [];
-    let evaluationScoreData = [];
 
     if(!this._selectedEvaluationData) {
       this._selectedEvaluationData = evaluationHistory[evaluationHistory.length-1].data;
     }
 
     evaluationHistory.forEach((evaluation) => {
-      evaluationScoreData.push({
+      let scoreData = {
         x: moment(evaluation.time).unix()*1000,
         y: evaluation.data.evaluationdetails ? evaluation.data.evaluationdetails.score : 0,
         evaluationData: evaluation,
         color: this._evaluationColor[evaluation.data.evaluationdetails.result]
-      });
+      };
+
+      let indicatorScoreSeriesColumn = chartSeries.find(series => series.name == 'Score' && series.type == 'column');
+      let indicatorScoreSeriesLine = chartSeries.find(series => series.name == 'Score' && series.type == 'line');
+      if(!indicatorScoreSeriesColumn) {
+        indicatorScoreSeriesColumn = {
+          name: 'Score',
+          type: 'column',
+          data: [],
+          cursor: 'pointer'
+        };
+        chartSeries.push(indicatorScoreSeriesColumn);
+      }
+      if(!indicatorScoreSeriesLine) {
+        indicatorScoreSeriesLine = {
+          name: 'Score',
+          type: 'line',
+          data: [],
+          cursor: 'pointer',
+          visible: false,
+        };
+        chartSeries.push(indicatorScoreSeriesLine);
+      }
+
+      indicatorScoreSeriesColumn.data.push(scoreData);
+      indicatorScoreSeriesLine.data.push(scoreData);
 
       if(evaluation.data.evaluationdetails.indicatorResults) {
         evaluation.data.evaluationdetails.indicatorResults.forEach((indicatorResult) => {
@@ -213,29 +237,14 @@ export class KtbEvaluationDetailsComponent implements OnInit {
         });
       }
     });
-    this._chartSeries = [
-      {
-        name: 'Score',
-        type: 'column',
-        data: evaluationScoreData,
-        cursor: 'pointer'
-      },
-      {
-        name: 'Score',
-        type: 'line',
-        data: evaluationScoreData,
-        cursor: 'pointer',
-        visible: false,
-      },
-      ...chartSeries
-    ];
+    this._chartSeries = [...chartSeries];
 
     this.updateHeatmapOptions(chartSeries);
     this._heatmapSeries = [
       {
         name: 'Score',
         rowsize: 0.85,
-        data: evaluationScoreData.map((s) => {
+        data: chartSeries.find(series => series.name == 'Score').data.map((s) => {
           let time = moment(s.x).format();
           let index = this._heatmapOptions.yAxis[0].categories.indexOf("Score");
           let x = this._heatmapOptions.xAxis[0].categories.indexOf(time);
@@ -268,13 +277,11 @@ export class KtbEvaluationDetailsComponent implements OnInit {
   updateHeatmapOptions(chartSeries) {
     chartSeries.forEach((d) =>
       d.data.forEach((s) => {
-        if(s.indicatorResult) {
-          let time = moment(s.x).format();
-          if(this._heatmapOptions.yAxis[0].categories.indexOf(s.indicatorResult.value.metric) == -1)
-            this._heatmapOptions.yAxis[0].categories.unshift(s.indicatorResult.value.metric);
-          if(this._heatmapOptions.xAxis[0].categories.indexOf(time) == -1)
-            this._heatmapOptions.xAxis[0].categories.splice(this.binarySearch(this._heatmapOptions.xAxis[0].categories, time, (a, b) => moment(a).unix() - moment(b).unix()), 0, time);
-        }
+        let time = moment(s.x).format();
+        if(s.indicatorResult && this._heatmapOptions.yAxis[0].categories.indexOf(s.indicatorResult.value.metric) == -1)
+          this._heatmapOptions.yAxis[0].categories.unshift(s.indicatorResult.value.metric);
+        if(this._heatmapOptions.xAxis[0].categories.indexOf(time) == -1)
+          this._heatmapOptions.xAxis[0].categories.splice(this.binarySearch(this._heatmapOptions.xAxis[0].categories, time, (a, b) => moment(a).unix() - moment(b).unix()), 0, time);
       })
     )
 
