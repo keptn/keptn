@@ -271,7 +271,7 @@ jobs:
           go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
           cd ..
       - |
-          cd "${REMEDIATION_SVC_IMAGE}"
+          cd "${REMEDIATION_SVC_FOLDER}"
           go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
           cd ..
       - |
