@@ -2,7 +2,6 @@ package helm
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	keptnevents "github.com/keptn/go-utils/pkg/events"
@@ -14,52 +13,44 @@ import (
 )
 
 type GeneratedChartHandler struct {
-	mesh           mesh.Mesh
-	canaryLevelGen CanaryLevelGenerator
-	keptnDomain    string
+	mesh        mesh.Mesh
+	keptnDomain string
 }
 
-func NewGeneratedChartHandler(mesh mesh.Mesh, canaryLevelGen CanaryLevelGenerator,
-	keptnDomain string) *GeneratedChartHandler {
-	return &GeneratedChartHandler{mesh: mesh, canaryLevelGen: canaryLevelGen, keptnDomain: keptnDomain}
+func NewGeneratedChartHandler(mesh mesh.Mesh, keptnDomain string) *GeneratedChartHandler {
+	return &GeneratedChartHandler{mesh: mesh, keptnDomain: keptnDomain}
 }
 
 // GenerateDuplicateManagedChart generates a duplicated chart which is managed by keptn and used for
 // b/g and canary releases
 func (c *GeneratedChartHandler) GenerateDuplicateManagedChart(helmManifest string, project string, stageName string, service string) (*chart.Chart, error) {
-
-	if _, ok := c.canaryLevelGen.(*CanaryOnDeploymentGenerator); ok {
-
-		meta := &chart.Metadata{
-			Name:     service + "-generated",
-			Keywords: []string{"deployment_strategy=" + keptnevents.Duplicate.String()},
-			Version:  "0.1.0",
-		}
-		ch := chart.Chart{Metadata: meta}
-
-		svcs := GetServices(helmManifest)
-		depls := GetDeployments(helmManifest)
-
-		for _, svc := range svcs {
-			templates, err := c.generateServices(svc, project, stageName)
-			if err != nil {
-				return nil, err
-			}
-			ch.Templates = append(ch.Templates, templates...)
-		}
-
-		for _, depl := range depls {
-			template, err := c.generateDeployment(depl)
-			if err != nil {
-				return nil, err
-			}
-			ch.Templates = append(ch.Templates, template)
-		}
-
-		return &ch, nil
+	meta := &chart.Metadata{
+		Name:     service + "-generated",
+		Keywords: []string{"deployment_strategy=" + keptnevents.Duplicate.String()},
+		Version:  "0.1.0",
 	}
-	log.Fatal("Currently canary is only supported on a deployment-level")
-	return nil, nil
+	ch := chart.Chart{Metadata: meta}
+
+	svcs := GetServices(helmManifest)
+	depls := GetDeployments(helmManifest)
+
+	for _, svc := range svcs {
+		templates, err := c.generateServices(svc, project, stageName)
+		if err != nil {
+			return nil, err
+		}
+		ch.Templates = append(ch.Templates, templates...)
+	}
+
+	for _, depl := range depls {
+		template, err := c.generateDeployment(depl)
+		if err != nil {
+			return nil, err
+		}
+		ch.Templates = append(ch.Templates, template)
+	}
+
+	return &ch, nil
 }
 
 func resetService(svc *corev1.Service) {
@@ -82,11 +73,17 @@ func resetDeployment(depl *appsv1.Deployment) {
 	depl.Status = appsv1.DeploymentStatus{}
 }
 
+func (*GeneratedChartHandler) getNamespace(project string, stage string) string {
+	return project + "-" + stage
+}
+
 func (c *GeneratedChartHandler) generateServices(svc *corev1.Service, project string, stageName string) ([]*chart.Template, error) {
 
 	templates := make([]*chart.Template, 0, 0)
 
-	serviceCanary := c.canaryLevelGen.GetCanaryService(*svc, project, stageName)
+	serviceCanary := svc.DeepCopy()
+	serviceCanary.Name = serviceCanary.Name + "-canary"
+
 	resetService(serviceCanary)
 	data, err := yaml.Marshal(serviceCanary)
 	if err != nil {
@@ -95,7 +92,7 @@ func (c *GeneratedChartHandler) generateServices(svc *corev1.Service, project st
 	templates = append(templates, &chart.Template{Name: "templates/" + serviceCanary.Name + "-service" + ".yaml", Data: data})
 
 	// Generate destination rule for canary service
-	hostCanary := serviceCanary.Name + "." + c.canaryLevelGen.GetNamespace(project, stageName, true) + ".svc.cluster.local"
+	hostCanary := serviceCanary.Name + "." + c.getNamespace(project, stageName) + ".svc.cluster.local"
 	destinationRuleCanary, err := c.mesh.GenerateDestinationRule(serviceCanary.Name, hostCanary)
 	if err != nil {
 		return nil, err
@@ -118,7 +115,7 @@ func (c *GeneratedChartHandler) generateServices(svc *corev1.Service, project st
 	templates = append(templates, &chart.Template{Name: "templates/" + servicePrimary.Name + "-service" + ".yaml", Data: data})
 
 	// Generate destination rule for primary service
-	hostPrimary := servicePrimary.Name + "." + c.canaryLevelGen.GetNamespace(project, stageName, true) + ".svc.cluster.local"
+	hostPrimary := servicePrimary.Name + "." + c.getNamespace(project, stageName) + ".svc.cluster.local"
 	destinationRulePrimary, err := c.mesh.GenerateDestinationRule(servicePrimary.Name, hostPrimary)
 	if err != nil {
 		return nil, err
@@ -128,7 +125,7 @@ func (c *GeneratedChartHandler) generateServices(svc *corev1.Service, project st
 	// Generate virtual service
 	gws := []string{"public-gateway.istio-system", "mesh"}
 	hosts := []string{
-		svc.Name + "." + c.canaryLevelGen.GetNamespace(project, stageName, false) + "." + c.keptnDomain, // service_name.dev.123.45.67.89.xip.io
+		svc.Name + "." + c.getNamespace(project, stageName) + "." + c.keptnDomain, // service_name.dev.123.45.67.89.xip.io
 		svc.Name, // service-name
 	}
 	destCanary := mesh.HTTPRouteDestination{Host: hostCanary, Weight: 0}
@@ -175,50 +172,43 @@ func (c *GeneratedChartHandler) generateDeployment(depl *appsv1.Deployment) (*ch
 func (c *GeneratedChartHandler) GenerateMeshChart(helmManifest string, project string, stageName string,
 	service string) (*chart.Chart, error) {
 
-	namespace := project + "-" + stageName
-
-	if _, ok := c.canaryLevelGen.(*CanaryOnDeploymentGenerator); ok {
-
-		meta := &chart.Metadata{
-			Name:     service + "-generated",
-			Keywords: []string{"deployment_strategy=" + keptnevents.Direct.String()},
-			Version:  "0.1.0",
-		}
-		ch := chart.Chart{Metadata: meta}
-
-		svcs := GetServices(helmManifest)
-
-		for _, svc := range svcs {
-			// Generate virtual service for external access
-			gws := []string{"public-gateway.istio-system", "mesh"}
-			hosts := []string{
-				svc.Name + "." + namespace + "." + c.keptnDomain,
-				svc.Name,
-			}
-			host := svc.Name + "." + namespace + ".svc.cluster.local"
-			dest := mesh.HTTPRouteDestination{Host: host}
-			httpRouteDestinations := []mesh.HTTPRouteDestination{dest}
-
-			vs, err := c.mesh.GenerateVirtualService(svc.Name, gws, hosts, httpRouteDestinations)
-			if err != nil {
-				return nil, err
-			}
-
-			vsTemplate := chart.Template{Name: "templates/" + svc.Name + c.mesh.GetVirtualServiceSuffix(), Data: vs}
-			ch.Templates = append(ch.Templates, &vsTemplate)
-
-			dr, err := c.mesh.GenerateDestinationRule(svc.Name, host)
-			if err != nil {
-				return nil, err
-			}
-			drTemplate := chart.Template{Name: "templates/" + svc.Name + c.mesh.GetDestinationRuleSuffix(), Data: dr}
-			ch.Templates = append(ch.Templates, &drTemplate)
-		}
-
-		return &ch, nil
+	meta := &chart.Metadata{
+		Name:     service + "-generated",
+		Keywords: []string{"deployment_strategy=" + keptnevents.Direct.String()},
+		Version:  "0.1.0",
 	}
-	log.Fatal("Currently canary is only supported on a deployment-level")
-	return nil, nil
+	ch := chart.Chart{Metadata: meta}
+
+	svcs := GetServices(helmManifest)
+
+	for _, svc := range svcs {
+		// Generate virtual service for external access
+		gws := []string{"public-gateway.istio-system", "mesh"}
+		hosts := []string{
+			svc.Name + "." + c.getNamespace(project, stageName) + "." + c.keptnDomain,
+			svc.Name,
+		}
+		host := svc.Name + "." + c.getNamespace(project, stageName) + ".svc.cluster.local"
+		dest := mesh.HTTPRouteDestination{Host: host}
+		httpRouteDestinations := []mesh.HTTPRouteDestination{dest}
+
+		vs, err := c.mesh.GenerateVirtualService(svc.Name, gws, hosts, httpRouteDestinations)
+		if err != nil {
+			return nil, err
+		}
+
+		vsTemplate := chart.Template{Name: "templates/" + svc.Name + c.mesh.GetVirtualServiceSuffix(), Data: vs}
+		ch.Templates = append(ch.Templates, &vsTemplate)
+
+		dr, err := c.mesh.GenerateDestinationRule(svc.Name, host)
+		if err != nil {
+			return nil, err
+		}
+		drTemplate := chart.Template{Name: "templates/" + svc.Name + c.mesh.GetDestinationRuleSuffix(), Data: dr}
+		ch.Templates = append(ch.Templates, &drTemplate)
+	}
+
+	return &ch, nil
 }
 
 // UpdateCanaryWeight updates the provided traffic weight in the VirtualService contained in the chart
@@ -245,15 +235,11 @@ func (c *GeneratedChartHandler) UpdateCanaryWeight(ch *chart.Chart, canaryWeight
 func (c *GeneratedChartHandler) GenerateEmptyChart(project string, stageName string, service string,
 	strategy keptnevents.DeploymentStrategy) *chart.Chart {
 
-	if _, ok := c.canaryLevelGen.(*CanaryOnDeploymentGenerator); ok {
-
-		meta := &chart.Metadata{
-			Name:     service + "-generated",
-			Keywords: []string{"deployment_strategy=" + strategy.String()},
-			Version:  "0.1.0",
-		}
-		return &chart.Chart{Metadata: meta}
+	meta := &chart.Metadata{
+		Name:     service + "-generated",
+		Keywords: []string{"deployment_strategy=" + strategy.String()},
+		Version:  "0.1.0",
 	}
-	log.Fatal("Currently canary is only supported on a deployment-level")
-	return nil
+	return &chart.Chart{Metadata: meta}
+
 }

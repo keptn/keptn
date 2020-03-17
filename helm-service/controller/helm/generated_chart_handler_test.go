@@ -1,20 +1,20 @@
 package helm
 
 import (
+	"reflect"
+	"testing"
+
 	"github.com/keptn/keptn/helm-service/controller/mesh"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/helm/pkg/proto/hapi/chart"
-	"reflect"
-	"testing"
 )
 
 func TestGeneratedChartHandler_generateServices(t *testing.T) {
 	type fields struct {
-		mesh           mesh.Mesh
-		canaryLevelGen CanaryLevelGenerator
-		keptnDomain    string
+		mesh        mesh.Mesh
+		keptnDomain string
 	}
 	type args struct {
 		svc       *corev1.Service
@@ -31,9 +31,8 @@ func TestGeneratedChartHandler_generateServices(t *testing.T) {
 		{
 			name: "Create a service",
 			fields: fields{
-				mesh:           mesh.NewIstioMesh(),
-				canaryLevelGen: NewCanaryOnDeploymentGenerator(),
-				keptnDomain:    "keptn.com",
+				mesh:        mesh.NewIstioMesh(),
+				keptnDomain: "keptn.com",
 			},
 			args: args{
 				svc: &corev1.Service{
@@ -92,9 +91,8 @@ func TestGeneratedChartHandler_generateServices(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c := &GeneratedChartHandler{
-				mesh:           tt.fields.mesh,
-				canaryLevelGen: tt.fields.canaryLevelGen,
-				keptnDomain:    tt.fields.keptnDomain,
+				mesh:        tt.fields.mesh,
+				keptnDomain: tt.fields.keptnDomain,
 			}
 			got, err := c.generateServices(tt.args.svc, tt.args.project, tt.args.stageName)
 			if (err != nil) != tt.wantErr {
@@ -110,9 +108,8 @@ func TestGeneratedChartHandler_generateServices(t *testing.T) {
 
 func TestGeneratedChartHandler_generateDeployment(t *testing.T) {
 	type fields struct {
-		mesh           mesh.Mesh
-		canaryLevelGen CanaryLevelGenerator
-		keptnDomain    string
+		mesh        mesh.Mesh
+		keptnDomain string
 	}
 	type args struct {
 		depl *appsv1.Deployment
@@ -127,9 +124,8 @@ func TestGeneratedChartHandler_generateDeployment(t *testing.T) {
 		{
 			name: "Create deployment",
 			fields: fields{
-				mesh:           mesh.NewIstioMesh(),
-				canaryLevelGen: NewCanaryOnDeploymentGenerator(),
-				keptnDomain:    "keptn.com",
+				mesh:        mesh.NewIstioMesh(),
+				keptnDomain: "keptn.com",
 			},
 			args: args{
 				depl: &appsv1.Deployment{
@@ -159,9 +155,8 @@ func TestGeneratedChartHandler_generateDeployment(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c := &GeneratedChartHandler{
-				mesh:           tt.fields.mesh,
-				canaryLevelGen: tt.fields.canaryLevelGen,
-				keptnDomain:    tt.fields.keptnDomain,
+				mesh:        tt.fields.mesh,
+				keptnDomain: tt.fields.keptnDomain,
 			}
 			got, err := c.generateDeployment(tt.args.depl)
 			if (err != nil) != tt.wantErr {

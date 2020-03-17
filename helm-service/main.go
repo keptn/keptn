@@ -14,7 +14,6 @@ import (
 	keptnevents "github.com/keptn/go-utils/pkg/events"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/helm-service/controller"
-	"github.com/keptn/keptn/helm-service/controller/helm"
 	"github.com/keptn/keptn/helm-service/controller/mesh"
 	"github.com/keptn/keptn/helm-service/pkg/serviceutils"
 )
@@ -74,12 +73,6 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	}
 
 	mesh := mesh.NewIstioMesh()
-	var canaryLevelGen helm.CanaryLevelGenerator
-	if os.Getenv("CANARY") == "deployment" {
-		canaryLevelGen = helm.NewCanaryOnDeploymentGenerator()
-	} else {
-		canaryLevelGen = helm.NewCanaryOnNamespaceGenerator()
-	}
 
 	keptnDomain, err := getKeptnDomain()
 	if err != nil {
@@ -94,10 +87,10 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	}
 
 	if event.Type() == keptnevents.ConfigurationChangeEventType {
-		configChanger := controller.NewConfigurationChanger(mesh, canaryLevelGen, logger, keptnDomain, url.String())
+		configChanger := controller.NewConfigurationChanger(mesh, logger, keptnDomain, url.String())
 		go configChanger.ChangeAndApplyConfiguration(event, loggingDone)
 	} else if event.Type() == keptnevents.InternalServiceCreateEventType {
-		onboarder := controller.NewOnboarder(mesh, canaryLevelGen, logger, keptnDomain, url.String())
+		onboarder := controller.NewOnboarder(mesh, logger, keptnDomain, url.String())
 		go onboarder.DoOnboard(event, loggingDone)
 	} else {
 		logger.Error("Received unexpected keptn event")
