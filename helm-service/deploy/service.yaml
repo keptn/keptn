@@ -36,8 +36,6 @@ spec:
           value: 'production'
         - name: PRE_WORKFLOW_ENGINE
           value: 'true'
-        - name: CANARY
-          value: 'deployment'
 ---
 apiVersion: v1
 kind: Service

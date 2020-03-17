@@ -11,7 +11,6 @@ import (
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/google/uuid"
-	"github.com/keptn/keptn/helm-service/controller/helm"
 	"github.com/keptn/keptn/helm-service/controller/mesh"
 	"github.com/keptn/keptn/helm-service/pkg/helmtest"
 
@@ -82,8 +81,8 @@ func TestDoOnboard(t *testing.T) {
 	ce.Data = dataBytes
 
 	id := uuid.New().String()
-	onboarder := NewOnboarder(mesh.NewIstioMesh(), helm.NewCanaryOnNamespaceGenerator(),
-		keptnutils.NewLogger(id, "service.create", "helm-service"), "test.keptn.sh")
+	onboarder := NewOnboarder(mesh.NewIstioMesh(),
+		keptnutils.NewLogger(id, "service.create", "helm-service"), "test.keptn.sh", "")
 	loggingDone := make(chan bool)
 	err = onboarder.DoOnboard(ce, loggingDone)
 
@@ -92,11 +91,11 @@ func TestDoOnboard(t *testing.T) {
 
 func TestCheckAndSetServiceName(t *testing.T) {
 
-	errorMsg := "Service name contains upper case letter(s) or special character(s).\n " +
-		"Keptn relies on the following conventions: " +
-		"start with a lower case letter, then lower case letters, numbers, and hyphens are allowed."
+	createErrorMsg := "Service name contains special character(s). " +
+		"The service name has to be a valid Unix directory name. For details see " +
+		"https://www.cyberciti.biz/faq/linuxunix-rules-for-naming-file-and-directory-names/"
 
-	o := NewOnboarder(nil, nil, nil, "")
+	o := NewOnboarder(nil, nil, "test.keptn.sh", "")
 	data := helmtest.CreateHelmChartData(t)
 
 	testCases := []struct {
@@ -112,15 +111,7 @@ func TestCheckAndSetServiceName(t *testing.T) {
 		{"Set", &keptnevents.ServiceCreateEventData{Service: "", HelmChart: base64.StdEncoding.EncodeToString(data)},
 			nil, "carts"},
 		{"EmptyName", &keptnevents.ServiceCreateEventData{Service: ""},
-			errors.New(errorMsg), ""},
-		{"InvalidName", &keptnevents.ServiceCreateEventData{Service: "carts-"},
-			errors.New(errorMsg), "carts-"},
-		{"InvalidName", &keptnevents.ServiceCreateEventData{Service: "-carts"},
-			errors.New(errorMsg), "-carts"},
-		{"InvalidName", &keptnevents.ServiceCreateEventData{Service: "c%arts"},
-			errors.New(errorMsg), "c%arts"},
-		{"InvalidName", &keptnevents.ServiceCreateEventData{Service: "7carts"},
-			errors.New(errorMsg), "7carts"},
+			errors.New(createErrorMsg), ""},
 		{"ValidName", &keptnevents.ServiceCreateEventData{Service: "a"},
 			nil, "a"},
 		{"ValidName", &keptnevents.ServiceCreateEventData{Service: "aa"},

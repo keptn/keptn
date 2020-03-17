@@ -31,17 +31,16 @@ func init() {
 type ConfigurationChanger struct {
 	mesh                  mesh.Mesh
 	generatedChartHandler *helm.GeneratedChartHandler
-	canaryLevelGen        helm.CanaryLevelGenerator
 	logger                keptnutils.LoggerInterface
 	keptnDomain           string
 	configServiceURL      string
 }
 
 // NewConfigurationChanger creates a new ConfigurationChanger
-func NewConfigurationChanger(mesh mesh.Mesh, canaryLevelGen helm.CanaryLevelGenerator,
-	logger keptnutils.LoggerInterface, keptnDomain string, configServiceURL string) *ConfigurationChanger {
-	generatedChartHandler := helm.NewGeneratedChartHandler(mesh, canaryLevelGen, keptnDomain)
-	return &ConfigurationChanger{mesh: mesh, generatedChartHandler: generatedChartHandler, canaryLevelGen: canaryLevelGen,
+func NewConfigurationChanger(mesh mesh.Mesh, logger keptnutils.LoggerInterface,
+	keptnDomain string, configServiceURL string) *ConfigurationChanger {
+	generatedChartHandler := helm.NewGeneratedChartHandler(mesh, keptnDomain)
+	return &ConfigurationChanger{mesh: mesh, generatedChartHandler: generatedChartHandler,
 		logger: logger, keptnDomain: keptnDomain, configServiceURL: configServiceURL}
 }
 
@@ -213,7 +212,7 @@ func (c *ConfigurationChanger) applyValuesCanary(e *keptnevents.ConfigurationCha
 	if err := c.ApplyChart(ch, e.Project, e.Stage, e.Service, deploymentStrategy, false); err != nil {
 		return err
 	}
-	onboarder := NewOnboarder(c.mesh, c.canaryLevelGen, c.logger, c.keptnDomain, c.configServiceURL)
+	onboarder := NewOnboarder(c.mesh, c.logger, c.keptnDomain, c.configServiceURL)
 	if onboarder.IsGeneratedChartEmpty(genChart) {
 		userChartManifest, err := c.getManifest(helm.GetReleaseName(e.Project, e.Stage, e.Service, false))
 		if err != nil {
@@ -396,7 +395,7 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 			return err
 		}
 
-		chartGenerator := helm.NewGeneratedChartHandler(c.mesh, c.canaryLevelGen, c.keptnDomain)
+		chartGenerator := helm.NewGeneratedChartHandler(c.mesh, c.keptnDomain)
 		userChartManifest, err := c.getManifest(helm.GetReleaseName(e.Project, e.Stage, e.Service, false))
 		if err != nil {
 			c.logger.Error(err.Error())
@@ -475,7 +474,7 @@ func (c *ConfigurationChanger) ApplyChartWithReplicas(ch *chart.Chart, project, 
 	deploymentStrategy keptnevents.DeploymentStrategy, generated bool, replicaCount int) error {
 
 	releaseName := helm.GetReleaseName(project, stage, service, generated)
-	namespace := c.canaryLevelGen.GetNamespace(project, stage, generated)
+	namespace := project + "-" + stage
 	c.logger.Info(fmt.Sprintf("Start upgrading chart %s in namespace %s", releaseName, namespace))
 
 	helmChartDir, err := ioutil.TempDir("", "")

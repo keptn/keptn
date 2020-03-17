@@ -22,15 +22,14 @@ import (
 type Onboarder struct {
 	mesh             mesh.Mesh
 	logger           keptnutils.LoggerInterface
-	canaryLevelGen   helm.CanaryLevelGenerator
 	keptnDomain      string
 	configServiceURL string
 }
 
 // NewOnboarder creates a new Onboarder
-func NewOnboarder(mesh mesh.Mesh, canaryLevelGen helm.CanaryLevelGenerator,
-	logger keptnutils.LoggerInterface, keptnDomain string, configServiceURL string) *Onboarder {
-	return &Onboarder{mesh: mesh, canaryLevelGen: canaryLevelGen, logger: logger, keptnDomain: keptnDomain, configServiceURL: configServiceURL}
+func NewOnboarder(mesh mesh.Mesh, logger keptnutils.LoggerInterface,
+	keptnDomain string, configServiceURL string) *Onboarder {
+	return &Onboarder{mesh: mesh, logger: logger, keptnDomain: keptnDomain, configServiceURL: configServiceURL}
 }
 
 // DoOnboard onboards a new service
@@ -126,8 +125,8 @@ func (o *Onboarder) checkAndSetServiceName(event *keptnevents.ServiceCreateEvent
 
 	if event.HelmChart == "" {
 		// Case when only a service is created but not onboarded (i.e. no Helm chart is available)
-		if !keptnutils.ValididateUnixDirectoryName(event.Service) {
-			return errors.New("Service name contains special character(s)." +
+		if len(event.Service) == 0 || !keptnutils.ValididateUnixDirectoryName(event.Service) {
+			return errors.New("Service name contains special character(s). " +
 				"The service name has to be a valid Unix directory name. For details see " +
 				"https://www.cyberciti.biz/faq/linuxunix-rules-for-naming-file-and-directory-names/")
 		}
@@ -199,7 +198,7 @@ func (o *Onboarder) onboardService(stageName string, event *keptnevents.ServiceC
 			return err
 		}
 
-		chartGenerator := helm.NewGeneratedChartHandler(o.mesh, o.canaryLevelGen, o.keptnDomain)
+		chartGenerator := helm.NewGeneratedChartHandler(o.mesh, o.keptnDomain)
 		o.logger.Debug(fmt.Sprintf("For stage %s with deployment strategy %s, an empty chart is generated", stageName, event.DeploymentStrategies[stageName].String()))
 		generatedChart := chartGenerator.GenerateEmptyChart(event.Project, stageName, event.Service, event.DeploymentStrategies[stageName])
 
@@ -232,7 +231,7 @@ func (c *Onboarder) IsGeneratedChartEmpty(chart *chart.Chart) bool {
 func (o *Onboarder) OnboardGeneratedService(helmManifest string, project string, stageName string,
 	service string, strategy keptnevents.DeploymentStrategy) (*chart.Chart, error) {
 
-	chartGenerator := helm.NewGeneratedChartHandler(o.mesh, o.canaryLevelGen, o.keptnDomain)
+	chartGenerator := helm.NewGeneratedChartHandler(o.mesh, o.keptnDomain)
 
 	helmChartName := helm.GetChartName(service, true)
 	o.logger.Debug(fmt.Sprintf("Generating the keptn-managed Helm chart %s for stage %s", helmChartName, stageName))
