@@ -1,18 +1,16 @@
 # Release Notes 0.6.1
 
-This release introduces the new and shiny :sparkles: **Keptn's Bridge** :sparkles:
+This release introduces the new and shiny :sparkles: **Keptn's Bridge** :sparkles: - the new Keptn's Bridge is implemented on an Angular and NodeJS stack. An excerpt of its feature set shows: 
+* Auto-reload Keptn events 
+* Breakdown of an SLO evaluation into SLIs
+* Comparison of evaluation results across multiple evaluations
+* Eye-catching visuals to highlight noticeable elements
+* Deep-link to a Keptn project
+* Link to Keptn-deployed services
 
-* This new Keptn's Bridge is implemented on an Angular and NodeJS stack. An excerpt of its feature set shows: 
-  * Auto-reload Keptn events 
-  * Breakdown of an SLO evaluation into SLIs
-  * Comparison of evaluation results across multiple evaluations
-  * Eye-catching visuals to highlight noticeable elements
-  * Deep-link to a Keptn project
-  * Link to Keptn-deployed services
+This release also provides documentation on how to run Keptn on a **Minikube 1.2**. With Minikube, Keptn can be installed on a single-node Kubernetes cluster inside a Virtual Machine (VM) that is hosted locally. Next to Minikube, this release provides documentation on how to run Keptn on **MicroK8s** for the Keptn Quality Gates use-case. This also allows running Keptn as an offline deployment.   
 
-* Next to the Keptn's Bridge, this release provides documentation on how to run Keptn on a **Microkube 1.2**. This allows deploying Keptn on a single-node Kubernetes cluster inside a Virtual Machine (VM) that is hosted locally. 
-
-* Last but not least, this release addresses known limitations and issues in using Keptn Quality Gates. Also many thanks for the [Keptn Enhancement Proposals](https://github.com/keptn/enhancement-proposals) that were submitted and implemented!
+Last but not least, this release addresses known limitations and issues in using Keptn Quality Gates. Thanks to the community for the hints. Also many thanks for the [Keptn Enhancement Proposals](https://github.com/keptn/enhancement-proposals) that were submitted and implemented!
 
 ## Keptn Specification
 
