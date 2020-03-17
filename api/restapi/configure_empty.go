@@ -54,7 +54,7 @@ func configureAPI(api *operations.EmptyAPI) http.Handler {
 			prin := models.Principal(token)
 			return &prin, nil
 		}
-		api.Logger("Access attempt with incorrect api key auth: %s", token)
+		log.Printf("Access attempt with incorrect api key auth: %s", token)
 		return nil, openapierrors.New(401, "incorrect api key auth")
 	}
 
