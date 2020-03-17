@@ -4,7 +4,6 @@ This release introduces the new and shiny :sparkles: **Keptn's Bridge** :sparkle
 
 * This new Keptn's Bridge is implemented on an Angular and NodeJS stack. An excerpt of its feature set shows: 
   * Auto-reload Keptn events 
-  * Display labels attached to Keptn events
   * Breakdown of an SLO evaluation into SLIs
   * Comparison of evaluation results across multiple evaluations
   * Eye-catching visuals to highlight noticeable elements
@@ -35,7 +34,7 @@ Implemented **Keptn spec** version: [0.1.3](https://github.com/keptn/spec/tree/0
 <details><summary>Platform Support / Installer</summary>
 <p>
 
-- Restarting the NATS cluster requires distributors to reconnect [#1209](https://github.com/keptn/keptn/issues/1209)
+- Distributors now reconnect to the NATS cluster when they lose connection to NATS (e.g., due to restart of NATS cluster) [#1209](https://github.com/keptn/keptn/issues/1209)
 - OpenShift support for Keptn quality gates standalone [#1197](https://github.com/keptn/keptn/issues/1197)
 - Create *DestinationRule* for exposed services when using Istio [#1408](https://github.com/keptn/keptn/issues/1408)
 
