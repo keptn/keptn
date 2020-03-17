@@ -24,17 +24,11 @@ import (
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
-	"github.com/cloudevents/sdk-go/pkg/cloudevents/transport"
 	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
 	cloudeventsnats "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/nats"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/nats-io/nats.go"
 )
-
-// Subscriber establishes a connection to a PubSub server
-type Subscriber interface {
-	CreatePubSubConnection() (transport.Transport, error)
-}
 
 type envConfig struct {
 	// Port on which to listen for cloudevents
@@ -71,7 +65,13 @@ func _main(args []string, env envConfig) int {
 }
 
 func createRecipientConnection() {
-	recipientURL, err := getPubSubRecipientURL()
+
+	recipientURL, err := getPubSubRecipientURL(
+		os.Getenv("PUBSUB_RECIPIENT"),
+		os.Getenv("PUBSUB_RECIPIENT_PORT"),
+		os.Getenv("PUBSUB_RECIPIENT_PATH"),
+	)
+
 	if err != nil {
 		fmt.Println(err.Error())
 		os.Exit(1)
@@ -153,38 +153,7 @@ func subscribeToTopics() {
 
 		for _, topic := range topics {
 			fmt.Println("Subscribing to topic " + topic + "...")
-			sub, err := nc.Subscribe(topic, func(m *nats.Msg) {
-				fmt.Printf("Received a message for topic [%s]: %s\n", m.Subject, string(m.Data))
-				ceMsg := &cloudeventsnats.Message{
-					Body: m.Data,
-				}
-
-				codec := &cloudeventsnats.Codec{}
-				switch ceMsg.CloudEventsVersion() {
-				default:
-					fmt.Println("Cannot parse incoming payload: CloudEvent Spec version not set")
-					return
-				case cloudevents.CloudEventsVersionV02:
-					codec.Encoding = cloudeventsnats.StructuredV02
-				case cloudevents.CloudEventsVersionV03:
-					codec.Encoding = cloudeventsnats.StructuredV03
-				case cloudevents.CloudEventsVersionV1:
-					codec.Encoding = cloudeventsnats.StructuredV1
-				}
-
-				e, err := codec.Decode(ctx, ceMsg)
-
-				if err != nil {
-					fmt.Println("Could not unmarshal CloudEvent: " + err.Error())
-					return
-				}
-				if e != nil {
-					err = sendEvent(*e)
-					if err != nil {
-						fmt.Println("Could not send CloudEvent: " + err.Error())
-					}
-				}
-			})
+			sub, err := nc.Subscribe(topic, handleMessage)
 			if err != nil {
 				fmt.Println("failed to subscribe to topic: " + err.Error())
 				return
@@ -195,6 +164,45 @@ func subscribeToTopics() {
 	}
 }
 
+func handleMessage(m *nats.Msg) {
+	fmt.Printf("Received a message for topic [%s]: %s\n", m.Subject, string(m.Data))
+	e, err := decodeCloudEvent(m.Data)
+
+	if e != nil {
+		err = sendEvent(*e)
+		if err != nil {
+			fmt.Println("Could not send CloudEvent: " + err.Error())
+		}
+	}
+}
+
+func decodeCloudEvent(data []byte) (*cloudevents.Event, error) {
+	ceMsg := &cloudeventsnats.Message{
+		Body: data,
+	}
+
+	codec := &cloudeventsnats.Codec{}
+	switch ceMsg.CloudEventsVersion() {
+	default:
+		fmt.Println("Cannot parse incoming payload: CloudEvent Spec version not set")
+		return nil, errors.New("CloudEvent version not set")
+	case cloudevents.CloudEventsVersionV02:
+		codec.Encoding = cloudeventsnats.StructuredV02
+	case cloudevents.CloudEventsVersionV03:
+		codec.Encoding = cloudeventsnats.StructuredV03
+	case cloudevents.CloudEventsVersionV1:
+		codec.Encoding = cloudeventsnats.StructuredV1
+	}
+
+	event, err := codec.Decode(ctx, ceMsg)
+
+	if err != nil {
+		fmt.Println("Could not unmarshal CloudEvent: " + err.Error())
+		return nil, err
+	}
+	return event, nil
+}
+
 func sendEvent(event cloudevents.Event) error {
 	_, _, err := httpClient.Send(ctx, event)
 	if err != nil {
@@ -203,16 +211,19 @@ func sendEvent(event cloudevents.Event) error {
 	return nil
 }
 
-func getPubSubRecipientURL() (string, error) {
-	recipientService := os.Getenv("PUBSUB_RECIPIENT")
+func getPubSubRecipientURL(recipientService string, port string, path string) (string, error) {
 	if recipientService == "" {
 		return "", errors.New("no recipient service defined")
 	}
-	port := os.Getenv("PUBSUB_RECIPIENT_PORT")
+
+	if !strings.HasPrefix(recipientService, "https://") && !strings.HasPrefix(recipientService, "http://") {
+		recipientService = "http://" + recipientService
+	}
 	if port == "" {
 		port = "8080"
 	}
-	path := os.Getenv("PUBSUB_RECIPIENT_PATH")
-
-	return "http://" + recipientService + ":" + port + path, nil
+	if path != "" && !strings.HasPrefix(path, "/") {
+		path = "/" + path
+	}
+	return recipientService + ":" + port + path, nil
 }
