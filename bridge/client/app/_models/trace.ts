@@ -101,6 +101,10 @@ export class Trace {
           this.label = "Tests finished";
           break;
         }
+        case "sh.keptn.event.start-evaluation": {
+          this.label = "Start evaluation";
+          break;
+        }
         case "sh.keptn.events.evaluation-done": {
           this.label = "Evaluation done";
           break;
@@ -122,7 +126,10 @@ export class Trace {
           break;
         }
         case "sh.keptn.events.problem": {
-          this.label = "Problem detected";
+          if(this.data.State === "RESOLVED")
+            this.label = "Problem resolved";
+          else
+            this.label = "Problem detected";
           break;
         }
         case "sh.keptn.event.problem.close": {

@@ -6,6 +6,7 @@ import (
 	"crypto/tls"
 	"github.com/keptn/keptn/api/handlers"
 	"github.com/keptn/keptn/api/ws"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -54,7 +55,7 @@ func configureAPI(api *operations.EmptyAPI) http.Handler {
 			prin := models.Principal(token)
 			return &prin, nil
 		}
-		api.Logger("Access attempt with incorrect api key auth: %s", token)
+		log.Printf("Access attempt with incorrect api key auth: %s", token)
 		return nil, openapierrors.New(401, "incorrect api key auth")
 	}
 
