@@ -6,6 +6,7 @@ import (
 	"crypto/tls"
 	"github.com/keptn/keptn/api/handlers"
 	"github.com/keptn/keptn/api/ws"
+	"log"
 	"net/http"
 	"os"
 	"strings"
