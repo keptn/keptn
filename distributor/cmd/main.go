@@ -17,6 +17,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/keptn/keptn/distributor/pkg/lib"
 	"os"
 	"strings"
 	"sync"
@@ -91,75 +92,29 @@ func createRecipientConnection() {
 		os.Exit(1)
 	}
 
-	subscribeToTopics()
+	natsURL := os.Getenv("PUBSUB_URL")
+	topics := strings.Split(os.Getenv("PUBSUB_TOPIC"), ",")
+	nch := lib.NewNatsConnectionHandler(natsURL, topics)
+
+	nch.MessageHandler = handleMessage
+
+	err = nch.SubscribeToTopics()
+
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
 
 	defer func() {
-		removeAllSubscriptions()
+		nch.RemoveAllSubscriptions()
 		// Close connection
-
 		fmt.Println("Disconnected from NATS")
 	}()
 
 	for {
 		select {
 		case <-uptimeTicker.C:
-			subscribeToTopics()
-		}
-	}
-}
-
-func removeAllSubscriptions() {
-	mux.Lock()
-	defer mux.Unlock()
-	for _, sub := range subscriptions {
-		// Unsubscribe
-		_ = sub.Unsubscribe()
-		fmt.Println("Unsubscribed from NATS topic: " + sub.Subject)
-	}
-	nc.Close()
-	subscriptions = subscriptions[:0]
-}
-
-func subscribeToTopics() {
-	pubSubURL := os.Getenv("PUBSUB_URL")
-	pubSubTopic := os.Getenv("PUBSUB_TOPIC")
-
-	if pubSubURL == "" {
-		fmt.Println("no PubSub URL defined")
-		os.Exit(1)
-	}
-
-	if pubSubTopic == "" {
-		fmt.Println("no PubSub Topic defined")
-		os.Exit(1)
-	}
-
-	var err error
-
-	if nc == nil || !nc.IsConnected() {
-		removeAllSubscriptions()
-		mux.Lock()
-		defer mux.Unlock()
-		fmt.Println("Connecting to NATS server at " + pubSubURL + "...")
-		nc, err = nats.Connect(pubSubURL)
-
-		if err != nil {
-			fmt.Println("failed to create NATS connection: " + err.Error())
-			return
-		}
-
-		fmt.Println("Connected to NATS server")
-		topics := strings.Split(os.Getenv("PUBSUB_TOPIC"), ",")
-
-		for _, topic := range topics {
-			fmt.Println("Subscribing to topic " + topic + "...")
-			sub, err := nc.Subscribe(topic, handleMessage)
-			if err != nil {
-				fmt.Println("failed to subscribe to topic: " + err.Error())
-				return
-			}
-			fmt.Println("Subscribed to topic " + topic)
-			subscriptions = append(subscriptions, sub)
+			_ = nch.SubscribeToTopics()
 		}
 	}
 }
