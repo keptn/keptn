@@ -45,6 +45,8 @@ var subscriptions []*nats.Subscription
 var uptimeTicker *time.Ticker
 var ctx context.Context
 
+var close = make(chan bool)
+
 var mux sync.Mutex
 
 func main() {
@@ -115,6 +117,9 @@ func createRecipientConnection() {
 		select {
 		case <-uptimeTicker.C:
 			_ = nch.SubscribeToTopics()
+		case <-close:
+			return
+
 		}
 	}
 }

@@ -1,11 +1,20 @@
 package main
 
 import (
+	"fmt"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
+	"github.com/nats-io/gnatsd/server"
+	natsserver "github.com/nats-io/nats-server/test"
+	"github.com/nats-io/nats.go"
+	"net/http"
+	"net/http/httptest"
 	"net/url"
+	"os"
 	"reflect"
+	"strings"
 	"testing"
+	"time"
 )
 
 func Test_getPubSubRecipientURL(t *testing.T) {
@@ -174,4 +183,65 @@ func Test_decodeCloudEvent(t *testing.T) {
 			}
 		})
 	}
+}
+
+const TEST_PORT = 8370
+const TEST_TOPIC = "test-topic"
+
+func RunServerOnPort(port int) *server.Server {
+	opts := natsserver.DefaultTestOptions
+	opts.Port = port
+	return RunServerWithOptions(&opts)
+}
+
+func RunServerWithOptions(opts *server.Options) *server.Server {
+	return natsserver.RunServer(opts)
+}
+
+func Test__main(t *testing.T) {
+
+	messageReceived := make(chan bool)
+	// Mock http server
+	ts := httptest.NewServer(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			messageReceived <- true
+			w.Header().Add("Content-Type", "application/json")
+			w.Write([]byte(`{}`))
+		}),
+	)
+	defer ts.Close()
+
+	natsServer := RunServerOnPort(TEST_PORT)
+	defer natsServer.Shutdown()
+	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", TEST_PORT)
+
+	hostAndPort := strings.Split(ts.URL, ":")
+	os.Setenv("PUBSUB_RECIPIENT", strings.TrimPrefix(hostAndPort[1], "//"))
+	os.Setenv("PUBSUB_RECIPIENT_PORT", hostAndPort[2])
+	os.Setenv("PUBSUB_TOPIC", "test-topic")
+	os.Setenv("PUBSUB_URL", natsURL)
+
+	natsPublisher, _ := nats.Connect(natsURL)
+
+	go _main(nil, envConfig{})
+
+	<-time.After(2 * time.Second)
+
+	_ = natsPublisher.Publish(TEST_TOPIC, []byte(`{
+				"data": "",
+				"id": "6de83495-4f83-481c-8dbe-fcceb2e0243b",
+				"source": "helm-service",
+				"specversion": "0.2",
+				"type": "sh.keptn.events.deployment-finished",
+				"shkeptncontext": "3c9ffbbb-6e1d-4789-9fee-6e63b4bcc1fb"
+			}`))
+
+	select {
+	case <-messageReceived:
+		return
+	case <-time.After(5 * time.Second):
+		t.Error("SubscribeToTopics(): timed out waiting for messages")
+	}
+
+	close <- true
 }
