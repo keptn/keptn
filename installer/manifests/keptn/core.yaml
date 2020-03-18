@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: api
-          image: keptn/api:0.6.1
+          image: keptn/api:latest
           ports:
             - containerPort: 8080
           resources:
@@ -78,7 +78,7 @@ spec:
     spec:
       containers:
       - name: bridge
-        image: keptn/bridge2:0.6.1
+        image: keptn/bridge2:latest
         ports:
         - containerPort: 3000
         resources:
@@ -122,7 +122,7 @@ spec:
     spec:
       containers:
       - name: eventbroker-go
-        image: keptn/eventbroker-go:0.6.1
+        image: keptn/eventbroker-go:latest
         ports:
         - containerPort: 8080
         resources:
@@ -171,7 +171,7 @@ spec:
     spec:
       containers:
       - name: helm-service
-        image: keptn/helm-service:0.6.1
+        image: keptn/helm-service:latest
         ports:
         - containerPort: 8080
         resources:
@@ -227,7 +227,7 @@ spec:
     spec:
       containers:
       - name: distributor
-        image: keptn/distributor:0.6.1
+        image: keptn/distributor:latest
         ports:
         - containerPort: 8080
         resources:
@@ -263,7 +263,7 @@ spec:
     spec:
       containers:
       - name: shipyard-service
-        image: keptn/shipyard-service:0.6.1
+        image: keptn/shipyard-service:latest
         ports:
         - containerPort: 8080
         resources:
@@ -313,7 +313,7 @@ spec:
     spec:
       containers:
       - name: distributor
-        image: keptn/distributor:0.6.1
+        image: keptn/distributor:latest
         ports:
         - containerPort: 8080
         resources:
@@ -349,7 +349,7 @@ spec:
     spec:
       containers:
       - name: distributor
-        image: keptn/distributor:0.6.1
+        image: keptn/distributor:latest
         ports:
         - containerPort: 8080
         resources:
@@ -402,7 +402,7 @@ spec:
     spec:
       containers:
       - name: configuration-service
-        image: keptn/configuration-service:0.6.1
+        image: keptn/configuration-service:latest
         ports:
         - containerPort: 8080
         resources:
