@@ -11,10 +11,20 @@ spec:
   gateways:
     - public-gateway.istio-system
   http:
-    - route:
-      - destination:
-          host: api.keptn.svc.cluster.local
-      websocketUpgrade: true
+  - match:
+    - uri:
+        regex: "/v1/project/\\w+/resource"
+    - uri:
+        regex: "/v1/project/\\w+/stage/\\w+/resource"
+    - uri:
+        regex: "/v1/project/\\w+/stage/\\w+/service/\\w+/resource"
+    route:
+    - destination:
+        host: configuration-service.keptn.svc.cluster.local
+  - route:
+    - destination:
+        host: api.keptn.svc.cluster.local
+        websocketUpgrade: true
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
@@ -23,3 +33,19 @@ metadata:
   namespace: keptn
 spec:
   host: api.keptn.svc.cluster.local
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: configuration-service
+  namespace: keptn
+spec:
+  host: configuration-service.keptn.svc.cluster.local
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: swagger-ui
+  namespace: keptn
+spec:
+  host: swagger-ui.keptn.svc.cluster.local
