@@ -77,6 +77,36 @@ before_install:
 - INSTALLER_FOLDER="installer/"
 ### ATTENTION: please make sure installer is always the last in this list
 
+
+# template for gke tests
+gke_full: &gke_full
+  os: linux
+  before_script:
+    - source ./travis-scripts/install_gcloud.sh
+    # auth gcloud
+    - echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
+    - gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
+    - test/utils/download_and_install_keptn_cli.sh
+    # create gke cluster on gcloud
+    - test/utils/gke_create_cluster.sh
+  script:
+    # test installation on gcloud
+    - test/test_install_gke.sh || travis_terminate 1
+    # test onboarding and new artifcat for sockshop
+    - export PROJECT=sockshop
+    - test/test_onboard_service.sh || travis_terminate 1
+    - test/test_new_artifact.sh || travis_terminate 1
+    - test/test_delete_project.sh || travis_terminate 1
+  after_success:
+    # delete google kubernetes cluster only on success (in case of an error we want to be able to dig into the cluster)
+    - echo "Tests were successful, cleaning up the cluster now..."
+    - test/utils/gke_delete_cluster.sh
+  after_failure:
+    # print some debug info
+    - echo "Keptn Installation Log:"
+    - cat ~/.keptn/keptn-installer.log
+    - cat ~/.keptn/keptn-installer-err.log
+
 jobs:
   include:
   # nightly image builds - build all images
@@ -127,32 +157,13 @@ jobs:
 
   - stage: Cron GKE Full (--platform=gke)
     if: branch = master AND type = cron
-    os: linux
-    before_script:
-    - source ./travis-scripts/install_gcloud.sh
-    # auth gcloud
-    - echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
-    - gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
-    - test/utils/download_and_install_keptn_cli.sh
-    # create gke cluster on gcloud
-    - test/utils/gke_create_cluster.sh
-    script:
-    # test installation on gcloud
-    - test/test_install_gke.sh || travis_terminate 1
-    # test onboarding and new artifcat for sockshop
-    - export PROJECT=sockshop
-    - test/test_onboard_service.sh || travis_terminate 1
-    - test/test_new_artifact.sh || travis_terminate 1
-    - test/test_delete_project.sh || travis_terminate 1
-    after_success:
-    # delete google kubernetes cluster only on success (in case of an error we want to be able to dig into the cluster)
-    - echo "Tests were successful, cleaning up the cluster now..."
-    - test/utils/gke_delete_cluster.sh
-    after_failure:
-    # print some debug info
-    - echo "Keptn Installation Log:"
-    - cat ~/.keptn/keptn-installer.log
-    - cat ~/.keptn/keptn-installer-err.log
+    env: KEPTN_INSTALLATION_TYPE=FULL
+    <<: *gke_full # use template
+
+  - stage: Cron GKE Full with Istio (--platform=gke --istio-install-option=Reuse)
+    if: branch = master AND type = cron
+    env: KEPTN_INSTALLATION_TYPE=REUSE-ISTIO
+    <<: *gke_full # use template
 
   - stage: Cron Minishift Standalone (--platform=openshift --use-case=quality-gates)
     if: branch = master AND type = cron
