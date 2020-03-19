@@ -25,12 +25,7 @@ import (
 )
 
 func getDatastoreURL() string {
-	uri := os.Getenv("DATASTORE_URI")
-
-	if strings.HasPrefix(uri, "https://") || strings.HasPrefix(uri, "http://") {
-		return uri
-	}
-	return "http://" + uri
+	return sanitizeURL(os.Getenv("DATASTORE_URI"))
 }
 
 // PostEventHandlerFunc forwards an event to the event broker
