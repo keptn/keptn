@@ -80,7 +80,7 @@
   </div>
   <div class="container dark" fxFlex fxLayout="column" fxLayoutGap="15px">
     <div *ngIf="currentRoot" fxFlex fxLayout="column" fxLayoutGap="15px">
-      <div #eventListHeader>
+      <div>
         <dt-info-group>
           <dt-info-group-title>
             <div fxFlex fxLayout="row" fxLayoutAlign="flex-start center" fxLayoutGap="15px">
@@ -95,7 +95,7 @@
         </dt-info-group>
       </div>
       <ktb-events-list [events]="currentRoot.traces" [focusedEventId]="eventId"></ktb-events-list>
-      <div class="mb-3" fxLayout="row" fxLayoutAlign="end center" #eventListFooter [class.focused]="eventId == null && scrollIntoView(eventListFooter)">
+      <div class="mb-3" fxLayout="row" fxLayoutAlign="end center">
         <dt-tag-list aria-label="fetch-info">
           <dt-tag>Last time fetched: <span [textContent]="getTracesLastUpdated(currentRoot) | amCalendar:getCalendarFormats()"></span></dt-tag>
           <dt-tag *ngIf="showReloadButton(currentRoot)"><button dt-button (click)="loadTraces(currentRoot)"><dt-icon name="refresh"></dt-icon> Reload</button></dt-tag>

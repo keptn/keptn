@@ -55,8 +55,14 @@ export class KtbEventsListComponent implements OnInit {
     return DateUtil.getCalendarFormats();
   }
 
+  private currentScrollElement;
   scrollIntoView(element) {
-    element.scrollIntoView({ behavior: 'smooth' });
+    if(element != this.currentScrollElement) {
+      this.currentScrollElement = element;
+      setTimeout(() => {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }, 0);
+    }
     return true;
   }
 
