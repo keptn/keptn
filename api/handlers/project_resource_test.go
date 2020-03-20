@@ -57,13 +57,7 @@ func TestPostProjectProjectNameResourceHandlerFunc(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := PostProjectProjectNameResourceHandlerFunc(tt.args.params, tt.args.principal)
 
-			producer := &mockProducer{}
-			recorder := &httptest.ResponseRecorder{}
-			got.WriteResponse(recorder, producer)
-
-			if recorder.Result().StatusCode != tt.wantStatus {
-				t.Errorf("PostEventHandlerFunc() = %v, want %v", recorder.Result().StatusCode, tt.wantStatus)
-			}
+			verifyHTTPResponse(got, tt.wantStatus, t)
 		})
 	}
 }

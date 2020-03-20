@@ -63,13 +63,7 @@ func TestPostProjectHandlerFunc(t *testing.T) {
 
 			got := PostProjectHandlerFunc(tt.args.params, tt.args.p)
 
-			producer := &mockProducer{}
-			recorder := &httptest.ResponseRecorder{}
-			got.WriteResponse(recorder, producer)
-
-			if recorder.Result().StatusCode != tt.wantStatus {
-				t.Errorf("PostEventHandlerFunc() = %v, want %v", recorder.Result().StatusCode, tt.wantStatus)
-			}
+			verifyHTTPResponse(got, tt.wantStatus, t)
 		})
 	}
 }
@@ -116,13 +110,7 @@ func TestDeleteProjectProjectNameHandlerFunc(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := DeleteProjectProjectNameHandlerFunc(tt.args.params, tt.args.p)
 
-			producer := &mockProducer{}
-			recorder := &httptest.ResponseRecorder{}
-			got.WriteResponse(recorder, producer)
-
-			if recorder.Result().StatusCode != tt.wantStatus {
-				t.Errorf("PostEventHandlerFunc() = %v, want %v", recorder.Result().StatusCode, tt.wantStatus)
-			}
+			verifyHTTPResponse(got, tt.wantStatus, t)
 		})
 	}
 }
