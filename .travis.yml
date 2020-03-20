@@ -239,17 +239,6 @@ jobs:
       - cat ~/.keptn/keptn-installer.log
       - cat ~/.keptn/keptn-installer-err.log
 
-  # all commits (including external pull requests) should run basic tests for the CLI (if anything has changed)
-  - stage: CLI tests
-    os: osx # ToDo: cli tests fail for os: linux
-    script:
-    - |
-      if [[ $CHANGED_FILES == *"${CLI_FOLDER}"*  ]]; then
-        echo "Testing keptn CLI on osx"
-        cd ./cli
-        go test ./...
-      fi
-
   # always check code style for all directories
   - stage: codestyle
     # Check Codestyle using go fmt
@@ -274,6 +263,10 @@ jobs:
   - stage: Unit tests
     os: linux
     script:
+      - |
+          cd "${CLI_FOLDER}"
+          go test -race -coverprofile=coverage.txt -covermode=atomic -v ./...
+          cd ..
       - |
           cd "${API_FOLDER}"
           go test -coverprofile=coverage.txt -covermode=atomic -v ./handlers/... ./ws/... ./utils/...
@@ -329,9 +322,10 @@ jobs:
     after_success:
       - bash <(curl -s https://codecov.io/bash)
 
-  - stage: feature/bug/hotfix/patch
+    # build CLI for linux, windows and osx
+  - stage: feature/bug/hotfix/patch (build cli)
     if: branch =~ ^feature.*$ OR branch =~ ^bug.*$ OR branch =~ ^hotfix.*$ OR branch =~ ^patch.*$
-    os: osx
+    os: linux
     before_script:
       - source ./travis-scripts/install_gcloud.sh
       - echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
@@ -343,12 +337,13 @@ jobs:
       if [[ $CHANGED_FILES == *"${CLI_FOLDER}"*  ]]; then
         echo "Build keptn cli"
         cd ./cli
-        go test ./...
         TAG="${TYPE}-${NUMBER}+${DATE}"
-        source ../travis-scripts/build_cli.sh "${TAG}" "${KUBE_CONSTRAINTS}"
+        ../travis-scripts/build_cli.sh "${TAG}" "${KUBE_CONSTRAINTS}" || travis_terminate 1
         cd ..
       fi
-  - if: branch =~ ^feature.*$ OR branch =~ ^bug.*$ OR branch =~ ^hotfix.*$ OR branch =~ ^patch.*$
+
+  - stage: feature/bug/hotfix/patch (build docker images)
+    if: branch =~ ^feature.*$ OR branch =~ ^bug.*$ OR branch =~ ^hotfix.*$ OR branch =~ ^patch.*$
     os: linux
     services:
       - docker
@@ -437,9 +432,10 @@ jobs:
       - echo "The following images have been built and pushed to dockerhub:"
       - docker images | grep keptn
 
-  - stage: master
+  # build CLI for linux, windows and osx
+  - stage: master (build cli)
     if: branch = master AND type = push
-    os: osx
+    os: linux
     before_script:
       - source ./travis-scripts/install_gcloud.sh
       - echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
@@ -449,14 +445,14 @@ jobs:
       if [[ $CHANGED_FILES == *"${CLI_FOLDER}"*  ]]; then
         echo "Build keptn cli"
         cd ./cli
-        go test ./...
         TAG="latest"
         VERSION="master+${DATE}"
-        source ../travis-scripts/build_cli.sh "${VERSION}" "${KUBE_CONSTRAINTS}"
+        ../travis-scripts/build_cli.sh "${VERSION}" "${KUBE_CONSTRAINTS}" || travis_terminate 1
         cd ..
       fi
 
-  - if: branch = master AND type = push
+  - stage: master (build docker images)
+    if: branch = master AND type = push
     os: linux
     services:
       - docker
@@ -543,9 +539,10 @@ jobs:
       - echo "The following images have been built and pushed to dockerhub:"
       - docker images | grep keptn
 
+  # build CLI for linux, windows and osx
   - stage: release (cli)
     if: branch =~ ^release.*$ AND NOT type = pull_request
-    os: osx
+    os: linux
     before_script:
       - source ./travis-scripts/install_gcloud.sh
       - echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
@@ -555,9 +552,8 @@ jobs:
       - export VERSION=${BRANCH#"release-"}
       - echo "Build keptn cli"
       - cd ./cli
-      - go test ./...
       - TAG="${VERSION}"
-      - source ../travis-scripts/build_cli.sh "${VERSION}" "${KUBE_CONSTRAINTS}"
+      - ../travis-scripts/build_cli.sh "${VERSION}" "${KUBE_CONSTRAINTS}" || travis_terminate 1
       - cd ..
 
   - stage: release (api, os-route-service, bridge, jmeter-service)
