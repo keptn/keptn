@@ -3,10 +3,9 @@ package handlers
 import (
 	b64 "encoding/base64"
 	"encoding/json"
-	"os"
-
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
+	"os"
 
 	configmodels "github.com/keptn/go-utils/pkg/configuration-service/models"
 	configutils "github.com/keptn/go-utils/pkg/configuration-service/utils"
@@ -24,7 +23,7 @@ const (
 )
 
 func getConfigurationServiceURL() string {
-	return "http://" + os.Getenv("CONFIGURATION_URI")
+	return sanitizeURL(os.Getenv("CONFIGURATION_URI"))
 }
 
 // DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc deletes the specified resource

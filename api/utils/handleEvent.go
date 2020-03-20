@@ -5,12 +5,18 @@ package utils
 import (
 	"context"
 	"os"
+	"strings"
 
 	cloudevents "github.com/cloudevents/sdk-go"
 )
 
 func getEventBrokerURL() string {
-	return "http://" + os.Getenv("EVENTBROKER_URI")
+	uri := os.Getenv("EVENTBROKER_URI")
+
+	if strings.HasPrefix(uri, "https://") || strings.HasPrefix(uri, "http://") {
+		return uri
+	}
+	return "http://" + uri
 }
 
 // PostToEventBroker makes a post request to the eventbroker
