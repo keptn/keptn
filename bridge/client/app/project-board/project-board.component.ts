@@ -116,13 +116,12 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
       this.location.go(routeUrl.toString());
     } else {
       let routeUrl = this.router.createUrlTree(['/project', event.root.data.project, event.root.data.service, event.root.shkeptncontext]);
+      this.eventId = event.root.traces[event.root.traces.length-1].id;
       this.location.go(routeUrl.toString());
     }
 
-    setTimeout(() => {
-      this.currentRoot = event.root;
-      this.loadTraces(this.currentRoot);
-    }, 10);
+    this.currentRoot = event.root;
+    this.loadTraces(this.currentRoot);
   }
 
   loadTraces(root: Root): void {
@@ -156,11 +155,6 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
 
   loadProjects() {
     this.dataService.loadProjects();
-  }
-
-  scrollIntoView(element) {
-    element.scrollIntoView({ behavior: 'smooth' });
-    return true;
   }
 
   ngOnDestroy(): void {
