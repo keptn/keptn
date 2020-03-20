@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/keptn/keptn/cli/utils/credentialmanager"
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 
 	"github.com/spf13/cobra"
 )

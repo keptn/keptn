@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/keptn/keptn/cli/utils/version"
+	"github.com/keptn/keptn/cli/pkg/version"
 
 	"github.com/keptn/keptn/cli/pkg/logging"
 	homedir "github.com/mitchellh/go-homedir"

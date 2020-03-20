@@ -8,7 +8,7 @@ import (
 
 	"github.com/hashicorp/go-version"
 
-	"github.com/keptn/keptn/cli/utils/config"
+	"github.com/keptn/keptn/cli/pkg/config"
 	"github.com/magiconair/properties/assert"
 )
 

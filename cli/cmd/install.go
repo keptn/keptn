@@ -26,12 +26,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/keptn/keptn/cli/utils/version"
+	"github.com/keptn/keptn/cli/pkg/docker"
+	"github.com/keptn/keptn/cli/pkg/file"
+	"github.com/keptn/keptn/cli/pkg/kube"
+
+	"github.com/keptn/keptn/cli/pkg/version"
 
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
-	"github.com/keptn/keptn/cli/utils"
-	"github.com/keptn/keptn/cli/utils/credentialmanager"
 	"github.com/spf13/cobra"
 )
 
@@ -160,7 +163,7 @@ Example:
 
 		// Determine installer version
 		if installParams.InstallerImage != nil && *installParams.InstallerImage != "" {
-			installParams.Image, installParams.Tag = utils.SplitImageName(*installParams.InstallerImage)
+			installParams.Image, installParams.Tag = docker.SplitImageName(*installParams.InstallerImage)
 		} else if version.IsOfficialKeptnVersion(Version) {
 			installParams.Image = "docker.io/keptn/installer"
 			tag, err := version.GetOfficialKeptnVersion(Version)
@@ -177,7 +180,7 @@ Example:
 			installParams.InstallerImage = &version
 		}
 
-		err = utils.CheckImageAvailability(installParams.Image, installParams.Tag)
+		err = docker.CheckImageAvailability(installParams.Image, installParams.Tag)
 		if err != nil {
 			return fmt.Errorf("Installer image not found under: %v", err)
 		}
@@ -190,14 +193,14 @@ Example:
 		}
 
 		// Check whether kubectl is installed
-		isKubAvailable, err := utils.IsKubectlAvailable()
+		isKubAvailable, err := kube.IsKubectlAvailable()
 		if err != nil || !isKubAvailable {
 			return errors.New(`Keptn requires 'kubectl' but it is not available.
 Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 		}
 
 		if *installParams.UseCase == "all" && *installParams.PlatformIdentifier != "openshift" {
-			if err := utils.CheckKubeServerVersion(KubeServerVersionConstraints); err != nil {
+			if err := kube.CheckKubeServerVersion(KubeServerVersionConstraints); err != nil {
 				logging.PrintLog(err.Error(), logging.VerboseLevel)
 				return errors.New(`Keptn requires Kubernetes Server Version: ` + KubeServerVersionConstraints)
 			}
@@ -409,7 +412,7 @@ func doInstallation() error {
 }
 
 func parseConfig(configFile string) error {
-	data, err := utils.ReadFile(configFile)
+	data, err := file.ReadFile(configFile)
 	if err != nil {
 		return err
 	}

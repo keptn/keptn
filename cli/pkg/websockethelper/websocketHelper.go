@@ -13,11 +13,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/keptn/keptn/cli/pkg/xipio"
+
 	"github.com/gorilla/websocket"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/cli/pkg/logging"
-	"github.com/keptn/keptn/cli/utils"
 )
 
 // PrintWSContentEventContext opens a websocket using the passed
@@ -64,7 +65,7 @@ func openWS(connData keptnutils.ConnectionData, apiEndPoint url.URL) (*websocket
 	header.Add("Host", "api.keptn")
 
 	dialer := websocket.DefaultDialer
-	dialer.NetDial = utils.ResolveXipIo
+	dialer.NetDial = xipio.ResolveXipIo
 	dialer.TLSClientConfig = &tls.Config{
 		InsecureSkipVerify: true,
 	}

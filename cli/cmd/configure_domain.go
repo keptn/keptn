@@ -16,10 +16,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/keptn/keptn/cli/pkg/file"
+
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/cli/pkg/logging"
-	"github.com/keptn/keptn/cli/utils"
-	"github.com/keptn/keptn/cli/utils/version"
+	"github.com/keptn/keptn/cli/pkg/version"
 	"github.com/spf13/cobra"
 )
 
@@ -212,12 +213,12 @@ func updateKeptnDomainConfigMap(path, domain string) error {
 
 	keptnDomainConfigMap := path + "keptn-domain-configmap.yaml"
 
-	if err := utils.DownloadFile(keptnDomainConfigMap, getDomainConfigMapURL()); err != nil {
+	if err := file.DownloadFile(keptnDomainConfigMap, getDomainConfigMapURL()); err != nil {
 		return err
 	}
 
-	if err := utils.Replace(keptnDomainConfigMap,
-		utils.PlaceholderReplacement{PlaceholderValue: "DOMAIN_PLACEHOLDER", DesiredValue: domain}); err != nil {
+	if err := file.Replace(keptnDomainConfigMap,
+		file.PlaceholderReplacement{PlaceholderValue: "DOMAIN_PLACEHOLDER", DesiredValue: domain}); err != nil {
 		return err
 	}
 
@@ -239,12 +240,12 @@ func updateKeptnAPIVirtualService(path, domain string) error {
 
 	keptnAPIVSPath := path + "keptn-api-virtualservice.yaml"
 
-	if err := utils.DownloadFile(keptnAPIVSPath, getAPIVirtualServiceURL()); err != nil {
+	if err := file.DownloadFile(keptnAPIVSPath, getAPIVirtualServiceURL()); err != nil {
 		return err
 	}
 
-	if err := utils.Replace(keptnAPIVSPath,
-		utils.PlaceholderReplacement{PlaceholderValue: "DOMAIN_PLACEHOLDER", DesiredValue: domain}); err != nil {
+	if err := file.Replace(keptnAPIVSPath,
+		file.PlaceholderReplacement{PlaceholderValue: "DOMAIN_PLACEHOLDER", DesiredValue: domain}); err != nil {
 		return err
 	}
 
@@ -266,12 +267,12 @@ func updateKeptnAPIVirtualService(path, domain string) error {
 func updateKeptnAPIIngress(path, domain string) error {
 
 	keptnAPIIngress := path + "api-ingress.yaml"
-	if err := utils.DownloadFile(keptnAPIIngress, getAPIIngressURL()); err != nil {
+	if err := file.DownloadFile(keptnAPIIngress, getAPIIngressURL()); err != nil {
 		return err
 	}
 
-	if err := utils.Replace(keptnAPIIngress,
-		utils.PlaceholderReplacement{PlaceholderValue: "domain.placeholder", DesiredValue: domain}); err != nil {
+	if err := file.Replace(keptnAPIIngress,
+		file.PlaceholderReplacement{PlaceholderValue: "domain.placeholder", DesiredValue: domain}); err != nil {
 		return err
 	}
 

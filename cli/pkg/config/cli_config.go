@@ -7,7 +7,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/keptn/keptn/cli/utils"
+	"github.com/keptn/keptn/cli/pkg/file"
 
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 )
@@ -37,11 +37,11 @@ func NewCLIConfigManager() *CLIConfigManager {
 func (c *CLIConfigManager) LoadCLIConfig() (CLIConfig, error) {
 
 	cliConfig := CLIConfig{AutomaticVersionCheck: true}
-	if !utils.FileExists(c.CLIConfigPath) {
+	if !file.FileExists(c.CLIConfigPath) {
 		return cliConfig, nil
 	}
 
-	data, err := utils.ReadFile(c.CLIConfigPath)
+	data, err := file.ReadFile(c.CLIConfigPath)
 	if err != nil {
 		return cliConfig, fmt.Errorf("error when reading config file: %v", err)
 	}

@@ -6,15 +6,16 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/keptn/keptn/cli/utils/websockethelper"
+	"github.com/keptn/keptn/cli/pkg/file"
+
+	"github.com/keptn/keptn/cli/pkg/websockethelper"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/models"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
-	"github.com/keptn/keptn/cli/utils"
-	"github.com/keptn/keptn/cli/utils/credentialmanager"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 )
@@ -66,7 +67,7 @@ Example:
 		}
 
 		// validate shipyard file
-		content, err := utils.ReadFile(*createProjectParams.Shipyard)
+		content, err := file.ReadFile(*createProjectParams.Shipyard)
 		if err != nil {
 			return err
 		}
@@ -118,7 +119,7 @@ Example:
 		}
 		logging.PrintLog("Starting to create project", logging.InfoLevel)
 
-		content, _ := utils.ReadFile(*createProjectParams.Shipyard)
+		content, _ := file.ReadFile(*createProjectParams.Shipyard)
 		shipyard := base64.StdEncoding.EncodeToString([]byte(content))
 		project := apimodels.Project{
 			Name:     &args[0],
