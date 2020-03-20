@@ -50,7 +50,7 @@ Example:
 			}
 
 			logging.PrintLog("Successfully authenticated", logging.InfoLevel)
-			return credentialmanager.SetCreds(*url, *apiToken)
+			return credentialmanager.NewCredentialManager().SetCreds(*url, *apiToken)
 		}
 
 		fmt.Println("skipping auth due to mocking flag set to true")

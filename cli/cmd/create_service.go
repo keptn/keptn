@@ -30,7 +30,7 @@ Example:
 	keptn create service carts --project=sockshop`,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
-		_, _, err := credentialmanager.GetCreds()
+		_, _, err := credentialmanager.NewCredentialManager().GetCreds()
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
@@ -48,7 +48,7 @@ Example:
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		endPoint, apiToken, err := credentialmanager.GetCreds()
+		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}

@@ -421,7 +421,8 @@ func parseConfig(configFile string) error {
 
 func readCreds() error {
 
-	credsStr, err := credentialmanager.GetInstallCreds()
+	cm := credentialmanager.NewCredentialManager()
+	credsStr, err := cm.GetInstallCreds()
 	if err != nil {
 		credsStr = ""
 	}
@@ -455,7 +456,7 @@ func readCreds() error {
 	newCreds, _ := json.Marshal(p.getCreds())
 	newCredsStr := strings.Replace(string(newCreds), "\r\n", "\n", -1)
 	newCredsStr = strings.Replace(newCredsStr, "\n", "", -1)
-	return credentialmanager.SetInstallCreds(newCredsStr)
+	return cm.SetInstallCreds(newCredsStr)
 }
 
 func readUserInput(value *string, regex string, promptMessage string, regexViolationMessage string) {

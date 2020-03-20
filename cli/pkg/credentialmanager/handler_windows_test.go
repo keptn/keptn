@@ -13,11 +13,12 @@ func init() {
 
 func TestSetAndGetCreds(t *testing.T) {
 
-	if err := SetCreds(testEndPoint, testAPIToken); err != nil {
+	cm := NewCredentialManager()
+	if err := cm.SetCreds(testEndPoint, testAPIToken); err != nil {
 		t.Fatal(err)
 	}
 
-	endPoint, apiToken, err := GetCreds()
+	endPoint, apiToken, err := cm.GetCreds()
 	if err != nil {
 		t.Fatal(err)
 	}
