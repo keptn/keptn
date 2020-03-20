@@ -264,7 +264,7 @@ jobs:
     script:
       - |
           cd "${API_FOLDER}"
-          go test -race -coverprofile=coverage.txt -covermode=atomic -v ./...
+          go test -coverprofile=coverage.txt -covermode=atomic -v ./handlers/... ./ws/... ./utils/...
           cd ..
       - |
           cd "${OS_ROUTE_SVC_FOLDER}"
