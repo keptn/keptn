@@ -68,7 +68,7 @@
             <dt-tag>Last time fetched: <span [textContent]="getRootsLastUpdated((project | async), service) | amCalendar:getCalendarFormats()"></span></dt-tag>
           </dt-tag-list>
         </div>
-        <ktb-root-events-list [events]="service.roots" [(selectedEvent)]="currentRoot" (selectedEventChange)="loadTraces($event)"></ktb-root-events-list>
+        <ktb-root-events-list [events]="service.roots" (selectedEventChange)="selectRoot($event)"></ktb-root-events-list>
         <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px" *ngIf="!service.roots">
           <dt-loading-spinner></dt-loading-spinner>
           <p>Loading ...</p>
@@ -80,7 +80,7 @@
   </div>
   <div class="container dark" fxFlex fxLayout="column" fxLayoutGap="15px">
     <div *ngIf="currentRoot" fxFlex fxLayout="column" fxLayoutGap="15px">
-      <div>
+      <div #eventListHeader>
         <dt-info-group>
           <dt-info-group-title>
             <div fxFlex fxLayout="row" fxLayoutAlign="flex-start center" fxLayoutGap="15px">
@@ -95,7 +95,7 @@
         </dt-info-group>
       </div>
       <ktb-events-list [events]="currentRoot.traces" [focusedEventId]="eventId"></ktb-events-list>
-      <div class="mb-3" fxLayout="row" fxLayoutAlign="end center">
+      <div class="mb-3" fxLayout="row" fxLayoutAlign="end center" #eventListFooter [class.focused]="eventId == null && scrollIntoView(eventListFooter)">
         <dt-tag-list aria-label="fetch-info">
           <dt-tag>Last time fetched: <span [textContent]="getTracesLastUpdated(currentRoot) | amCalendar:getCalendarFormats()"></span></dt-tag>
           <dt-tag *ngIf="showReloadButton(currentRoot)"><button dt-button (click)="loadTraces(currentRoot)"><dt-icon name="refresh"></dt-icon> Reload</button></dt-tag>

@@ -104,10 +104,28 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
     });
   }
 
-  loadTraces(root: Root): void {
-    let routeUrl = this.router.createUrlTree(['/project', root.data.project, root.data.service, root.shkeptncontext]);
-    this.location.go(routeUrl.toString());
+  selectRoot(event: any): void {
+    this.projectName = event.root.data.project;
+    this.serviceName = event.root.data.service;
+    this.contextId = event.root.data.shkeptncontext;
+    this.eventId = null;
+    if(event.stage) {
+      let focusEvent = event.root.traces.find(trace => trace.data.stage == event.stage);
+      let routeUrl = this.router.createUrlTree(['/project', focusEvent.data.project, focusEvent.data.service, focusEvent.shkeptncontext, focusEvent.id]);
+      this.eventId = focusEvent.id;
+      this.location.go(routeUrl.toString());
+    } else {
+      let routeUrl = this.router.createUrlTree(['/project', event.root.data.project, event.root.data.service, event.root.shkeptncontext]);
+      this.location.go(routeUrl.toString());
+    }
 
+    setTimeout(() => {
+      this.currentRoot = event.root;
+      this.loadTraces(this.currentRoot);
+    }, 10);
+  }
+
+  loadTraces(root: Root): void {
     this._tracesTimer.unsubscribe();
     if(moment().subtract(1, 'day').isBefore(root.time)) {
       this._tracesTimer = timer(0, this._tracesTimerInterval*1000)
@@ -138,6 +156,11 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
 
   loadProjects() {
     this.dataService.loadProjects();
+  }
+
+  scrollIntoView(element) {
+    element.scrollIntoView({ behavior: 'smooth' });
+    return true;
   }
 
   ngOnDestroy(): void {
