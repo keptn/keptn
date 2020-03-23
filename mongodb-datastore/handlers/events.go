@@ -24,6 +24,10 @@ import (
 var client *mongo.Client
 var mutex sync.Mutex
 
+type ProjectEventData struct {
+	Project *string `json:"project,omitempty"`
+}
+
 func ensureDBConnection(logger *keptnutils.Logger) error {
 	mutex.Lock()
 	defer mutex.Unlock()
@@ -68,7 +72,10 @@ func SaveEvent(event *models.KeptnContextExtendedCE) error {
 		return err
 	}
 
-	collection := client.Database(mongoDBName).Collection(eventsCollectionName)
+	collectionName := getProjectOfEvent(event)
+	logger.Debug("Storing event to collection " + collectionName)
+
+	collection := client.Database(mongoDBName).Collection(collectionName)
 
 	data, err := json.Marshal(event)
 	if err != nil {
@@ -99,6 +106,20 @@ func SaveEvent(event *models.KeptnContextExtendedCE) error {
 	return nil
 }
 
+func getProjectOfEvent(event *models.KeptnContextExtendedCE) string {
+	collectionName := eventsCollectionName
+	// check if the data object contains the project name.
+	// if yes, store the event in the collection for the project, otherwise in /events
+	eventData, ok := event.Data.(map[string]interface{})
+	if ok && eventData["project"] != nil {
+		collectionNameStr, ok := eventData["project"].(string)
+		if ok && collectionNameStr != "" {
+			collectionName = collectionNameStr
+		}
+	}
+	return collectionName
+}
+
 // GetEvents returns all events from the data store sorted by time
 func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 	logger := keptnutils.NewLogger("", "", serviceName)
@@ -110,7 +131,7 @@ func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 		return nil, err
 	}
 
-	collection := client.Database(mongoDBName).Collection(eventsCollectionName)
+	collectionName := eventsCollectionName
 
 	searchOptions := bson.M{}
 	if params.KeptnContext != nil {
@@ -124,6 +145,8 @@ func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 	}
 	if params.Project != nil {
 		searchOptions["data.project"] = params.Project
+		// if a project has been specified, query the collection for that project
+		collectionName = *params.Project
 	}
 	if params.Stage != nil {
 		searchOptions["data.stage"] = params.Stage
@@ -137,6 +160,8 @@ func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 			"$gt": params.FromTime,
 		}
 	}
+
+	collection := client.Database(mongoDBName).Collection(collectionName)
 
 	var result event.GetEventsOKBody
 
