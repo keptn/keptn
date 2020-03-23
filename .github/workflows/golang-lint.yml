@@ -1,0 +1,59 @@
+name: "GoLang Linter"
+
+on: pull_request
+
+jobs:
+  golang_linter:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Set up Go
+      uses: actions/setup-go@v1
+      with:
+        go-version: '1.12'
+
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        path: src/github.com/keptn/keptn
+
+    - name: Post Comment
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        OUTPUT="Hello World"
+        COMMENTS_URL=$(cat ${GITHUB_EVENT_PATH} | jq -r .pull_request.comments_url)
+        echo $COMMENTS_URL
+        PAYLOAD=$(echo '{}' | jq --arg body "$OUTPUT" '.body = $body')
+        curl -s -S -H "Authorization: token $GITHUB_TOKEN" --header "Content-Type: application/json" --data "$PAYLOAD" "$COMMENTS_URL"
+
+    - name: Check codestyle
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        cd src/github.com/keptn/keptn
+        pwd
+        go env
+        unformatted=$(gofmt -l .)
+        if [ ! -z "$unformatted" ]; then
+          echo "" > output.md
+          echo "Code Style Check failed for the following files: ${unformatted}" >> output.md
+          echo "" >> output.md
+          echo "Please run: gofmt -w ." >> output.md
+          echo "After that amend your commit (e.g.: git add ${unformatted} && git commit --amend --no-edit) and force push the changes (git push -f)." >> output.md
+          OUTPUT=$(cat output.md)
+          # ToDo: comment ont he PR
+          COMMENTS_URL=$(cat ${GITHUB_EVENT_PATH} | jq -r .pull_request.comments_url)
+          PAYLOAD=$(echo '{}' | jq --arg body "$OUTPUT" '.body = $body')
+          curl -s -S -H "Authorization: token $GITHUB_TOKEN" --header "Content-Type: application/json" --data "$PAYLOAD" "$COMMENTS_URL"
+
+          exit 1
+        fi
+
+    - name: Check for spelling errors
+      shell: bash
+      run: |
+        curl -L -o ./install-misspell.sh https://git.io/misspell && sh ./install-misspell.sh
+        output=$(./bin/misspell -error -locale US .)
+        echo $output
