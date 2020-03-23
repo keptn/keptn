@@ -1,7 +1,11 @@
 package handlers
 
 import (
+	"github.com/keptn/keptn/mongodb-datastore/models"
+	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/event"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"reflect"
 	"testing"
 
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
@@ -47,4 +51,115 @@ func TestFlattenRecursivelyNestedDocumentsWithArray(t *testing.T) {
 
 	grandchildMap := childMap[0].(map[string]interface{})
 	assert.Equal(t, grandchildMap["apple"], "red", "flatting failed")
+}
+
+func Test_getProjectOfEvent(t *testing.T) {
+	type args struct {
+		event *models.KeptnContextExtendedCE
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "Use project property in data object",
+			args: args{
+				event: &models.KeptnContextExtendedCE{
+					Event: models.Event{
+						Contenttype: "",
+						Data: map[string]interface{}{
+							"project": "sockshop",
+						},
+						Extensions:  nil,
+						ID:          "",
+						Source:      "",
+						Specversion: "",
+						Time:        models.Time{},
+						Type:        "",
+					},
+					Shkeptncontext: "",
+				},
+			},
+			want: "sockshop",
+		},
+		{
+			name: "Use generic events collection",
+			args: args{
+				event: &models.KeptnContextExtendedCE{
+					Event: models.Event{
+						Contenttype: "",
+						Data:        nil,
+						Extensions:  nil,
+						ID:          "",
+						Source:      "",
+						Specversion: "",
+						Time:        models.Time{},
+						Type:        "",
+					},
+					Shkeptncontext: "",
+				},
+			},
+			want: "events",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := getProjectOfEvent(tt.args.event); got != tt.want {
+				t.Errorf("getProjectOfEvent() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_getSearchOptions(t *testing.T) {
+	type args struct {
+		params event.GetEventsParams
+	}
+	tests := []struct {
+		name string
+		args args
+		want bson.M
+	}{
+		{
+			name: "get search options",
+			args: args{
+				params: event.GetEventsParams{
+					HTTPRequest:  nil,
+					FromTime:     stringp("1"),
+					KeptnContext: stringp("test-context"),
+					NextPageKey:  nil,
+					PageSize:     nil,
+					Project:      stringp("sockshop"),
+					Root:         nil,
+					Service:      stringp("carts"),
+					Source:       stringp("test-service"),
+					Stage:        stringp("dev"),
+					Type:         stringp("test-event"),
+				},
+			},
+			want: bson.M{
+				"data.project":   "sockshop",
+				"data.stage":     "dev",
+				"data.service":   "carts",
+				"source":         "test-service",
+				"type":           "test-event",
+				"shkeptncontext": primitive.Regex{Pattern: "test-context", Options: ""},
+				"time": bson.M{
+					"$gt": "1",
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := getSearchOptions(tt.args.params); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getSearchOptions() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func stringp(s string) *string {
+	return &s
 }

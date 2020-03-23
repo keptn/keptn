@@ -133,32 +133,11 @@ func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 
 	collectionName := eventsCollectionName
 
-	searchOptions := bson.M{}
-	if params.KeptnContext != nil {
-		searchOptions["shkeptncontext"] = primitive.Regex{Pattern: *params.KeptnContext, Options: ""}
-	}
-	if params.Type != nil {
-		searchOptions["type"] = params.Type
-	}
-	if params.Source != nil {
-		searchOptions["source"] = params.Source
-	}
-	if params.Project != nil {
-		searchOptions["data.project"] = params.Project
+	searchOptions := getSearchOptions(params)
+
+	if searchOptions["data.project"] != nil && searchOptions["data.project"] != "" {
 		// if a project has been specified, query the collection for that project
-		collectionName = *params.Project
-	}
-	if params.Stage != nil {
-		searchOptions["data.stage"] = params.Stage
-	}
-	if params.Service != nil {
-		searchOptions["data.service"] = params.Service
-	}
-	if params.FromTime != nil {
-		logger.Debug("filter FromTime")
-		searchOptions["time"] = bson.M{
-			"$gt": params.FromTime,
-		}
+		collectionName = searchOptions["data.project"].(string)
 	}
 
 	collection := client.Database(mongoDBName).Collection(collectionName)
@@ -282,6 +261,34 @@ func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 	}
 
 	return &result, nil
+}
+
+func getSearchOptions(params event.GetEventsParams) bson.M {
+	searchOptions := bson.M{}
+	if params.KeptnContext != nil {
+		searchOptions["shkeptncontext"] = primitive.Regex{Pattern: *params.KeptnContext, Options: ""}
+	}
+	if params.Type != nil {
+		searchOptions["type"] = *params.Type
+	}
+	if params.Source != nil {
+		searchOptions["source"] = *params.Source
+	}
+	if params.Project != nil {
+		searchOptions["data.project"] = *params.Project
+	}
+	if params.Stage != nil {
+		searchOptions["data.stage"] = *params.Stage
+	}
+	if params.Service != nil {
+		searchOptions["data.service"] = *params.Service
+	}
+	if params.FromTime != nil {
+		searchOptions["time"] = bson.M{
+			"$gt": *params.FromTime,
+		}
+	}
+	return searchOptions
 }
 
 func flattenRecursively(i interface{}, logger *keptnutils.Logger) (interface{}, error) {
