@@ -272,6 +272,9 @@ jobs:
     # always execute unit tests for all directories
   - stage: Unit tests
     os: linux
+    addons:
+      sonarcloud:
+        organization: "keptn"
     script:
       - |
           cd "${API_FOLDER}"
@@ -325,6 +328,8 @@ jobs:
           cd "${MONGODB_DS_FOLDER}"
           go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
           cd ..
+      # finally run sonar-scanner
+      - sonar-scanner
     after_success:
       - bash <(curl -s https://codecov.io/bash)
 
