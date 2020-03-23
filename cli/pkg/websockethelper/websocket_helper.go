@@ -13,10 +13,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/keptn/keptn/cli/pkg/xipio"
-
 	"github.com/gorilla/websocket"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/cli/pkg/logging"
 )
@@ -65,7 +64,7 @@ func openWS(connData keptnutils.ConnectionData, apiEndPoint url.URL) (*websocket
 	header.Add("Host", "api.keptn")
 
 	dialer := websocket.DefaultDialer
-	dialer.NetDial = xipio.ResolveXipIo
+	dialer.NetDial = apiutils.ResolveXipIo
 	dialer.TLSClientConfig = &tls.Config{
 		InsecureSkipVerify: true,
 	}
