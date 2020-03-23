@@ -4,9 +4,23 @@
       <dt-empty-state-item-img>
         <img class="mt-2" src="/assets/keptn_logo.png" />
       </dt-empty-state-item-img>
-      <dt-empty-state-item-title class="mt-2" aria-level="2">Project doesn't existing</dt-empty-state-item-title>
-      <p>Sorry, we couldn't load your project. Check our <a href="https://keptn.sh/docs/quickstart/" target="_blank">Quick Start</a> instructions on how to <a href="https://keptn.sh/docs/0.6.0/manage/project/" target="_blank">setup a project</a> or go back to <a [routerLink]="['/dashboard']">your dashboard</a>.</p>
-      <button dt-button (click)="loadProjects()"><dt-icon name="refresh"></dt-icon> Retry</button>
+      <ng-container [ngSwitch]="error">
+        <ng-container *ngSwitchCase="'project'">
+          <dt-empty-state-item-title class="mt-2" aria-level="2">Project doesn't existing</dt-empty-state-item-title>
+          <p>Sorry, we couldn't load your project. Check our <a href="https://keptn.sh/docs/quickstart/" target="_blank">Quick Start</a> instructions on how to <a href="https://keptn.sh/docs/0.6.0/manage/project/" target="_blank">setup a project</a> or go back to <a [routerLink]="['/dashboard']">your dashboard</a>.</p>
+          <button dt-button (click)="loadProjects()"><dt-icon name="refresh"></dt-icon> Retry</button>
+        </ng-container>
+        <ng-container *ngSwitchCase="'trace'">
+          <dt-empty-state-item-title class="mt-2" aria-level="2">Traces for <span class="italic" [textContent]="contextId"></span> not found</dt-empty-state-item-title>
+          <p>Sorry, we couldn't load any traces with that shkeptncontext. Check our <a href="https://keptn.sh/docs/quickstart/" target="_blank">Quick Start</a> instructions on how to <a href="https://keptn.sh/docs/0.6.0/manage/project/" target="_blank">setup a project</a> or go back to <a [routerLink]="['/dashboard']">your dashboard</a>.</p>
+          <button dt-button (click)="loadProjects()"><dt-icon name="refresh"></dt-icon> Retry</button>
+        </ng-container>
+        <ng-container *ngSwitchDefault>
+          <dt-empty-state-item-title class="mt-2" aria-level="2">Some error occured</dt-empty-state-item-title>
+          <p>Sorry, some error occured. Check our <a href="https://keptn.sh/docs/quickstart/" target="_blank">Quick Start</a> instructions on how to <a href="https://keptn.sh/docs/0.6.0/manage/project/" target="_blank">setup a project</a> or go back to <a [routerLink]="['/dashboard']">your dashboard</a>.</p>
+          <button dt-button (click)="loadProjects()"><dt-icon name="refresh"></dt-icon> Retry</button>
+        </ng-container>
+      </ng-container>
     </dt-empty-state-item>
   </dt-empty-state>
 </div>
@@ -40,7 +54,7 @@
           </dt-info-group-title>
         </dt-info-group>
       </div>
-      <ktb-expandable-tile *ngFor="let service of (project | async)?.services">
+      <ktb-expandable-tile *ngFor="let service of (project | async)?.services" [expanded]="service.serviceName == serviceName">
         <ktb-expandable-tile-header>
           <dt-info-group>
             <dt-info-group-title>
@@ -54,7 +68,7 @@
             <dt-tag>Last time fetched: <span [textContent]="getRootsLastUpdated((project | async), service) | amCalendar:getCalendarFormats()"></span></dt-tag>
           </dt-tag-list>
         </div>
-        <ktb-root-events-list [events]="service.roots" [(selectedEvent)]="currentRoot" (selectedEventChange)="loadTraces($event)"></ktb-root-events-list>
+        <ktb-root-events-list [events]="service.roots" (selectedEventChange)="selectRoot($event)"></ktb-root-events-list>
         <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px" *ngIf="!service.roots">
           <dt-loading-spinner></dt-loading-spinner>
           <p>Loading ...</p>
@@ -80,7 +94,7 @@
           <p class="m-0"><span class="bold">Keptn ID: </span><span [textContent]="currentRoot.shkeptncontext"></span></p>
         </dt-info-group>
       </div>
-      <ktb-events-list [events]="currentRoot.traces"></ktb-events-list>
+      <ktb-events-list [events]="currentRoot.traces" [focusedEventId]="eventId"></ktb-events-list>
       <div class="mb-3" fxLayout="row" fxLayoutAlign="end center">
         <dt-tag-list aria-label="fetch-info">
           <dt-tag>Last time fetched: <span [textContent]="getTracesLastUpdated(currentRoot) | amCalendar:getCalendarFormats()"></span></dt-tag>

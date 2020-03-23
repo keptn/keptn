@@ -1,11 +1,11 @@
 <div fxLayout="column" fxLayoutGap="15px">
-  <div *ngFor="let _event of _events; let i = index; trackBy: identifyEvent" fxLayout="column" fxLayoutGap="15px">
-    <ktb-horizontal-separator *ngIf="i>0 && _event.data.stage != _events[i-1].data.stage">
-      <ktb-horizontal-separator-title [textContent]="_event.data.stage"></ktb-horizontal-separator-title>
+  <div #eventRef fxLayout="column" fxLayoutGap="15px" *ngFor="let event of events; let i = index; trackBy: identifyEvent">
+    <ktb-horizontal-separator *ngIf="i>0 && event.data.stage != events[i-1].data.stage">
+      <ktb-horizontal-separator-title [textContent]="event.data.stage"></ktb-horizontal-separator-title>
     </ktb-horizontal-separator>
-    <ktb-event-item [event]="_event">
+    <ktb-event-item [event]="event" [class.focused]="event.id == focusedEventId && scrollIntoView(eventRef)" (click)="focusEvent(event)">
       <ktb-event-item-detail>
-        <ktb-evaluation-details *ngIf="_event.data.evaluationdetails" [evaluationData]="_event.data" [evaluationSource]="_event.source"></ktb-evaluation-details>
+        <ktb-evaluation-details *ngIf="event.data.evaluationdetails" [evaluationData]="event.data" [evaluationSource]="event.source"></ktb-evaluation-details>
       </ktb-event-item-detail>
     </ktb-event-item>
   </div>

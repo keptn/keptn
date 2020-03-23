@@ -1,7 +1,8 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {filter, first, map, startWith, switchMap} from "rxjs/operators";
+import {filter, map, startWith, switchMap} from "rxjs/operators";
 import {Observable, Subscription, timer} from "rxjs";
-import {ActivatedRoute} from "@angular/router";
+import {ActivatedRoute, Router} from "@angular/router";
+import {Location} from "@angular/common";
 
 import * as moment from 'moment';
 
@@ -11,6 +12,8 @@ import {Project} from "../_models/project";
 import {DataService} from "../_services/data.service";
 import DateUtil from "../_utils/date.utils";
 import {Service} from "../_models/service";
+import {ApiService} from "../_services/api.service";
+import {Trace} from "../_models/trace";
 
 @Component({
   selector: 'app-project-board',
@@ -21,20 +24,54 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
 
   public project: Observable<Project>;
   public currentRoot: Root;
-  public error: boolean = false;
+  public error: string = null;
 
   private _routeSubs: Subscription = Subscription.EMPTY;
+  private _rootsSubs: Subscription = Subscription.EMPTY;
   private _rootEventsTimer: Subscription = Subscription.EMPTY;
   private _rootEventsTimerInterval = 30;
 
   private _tracesTimer: Subscription = Subscription.EMPTY;
   private _tracesTimerInterval = 10;
 
-  constructor(private route: ActivatedRoute, private dataService: DataService) { }
+  public projectName: string;
+  public serviceName: string;
+  public contextId: string;
+  public eventId: string;
+
+  constructor(private router: Router, private location: Location, private route: ActivatedRoute, private dataService: DataService, private apiService: ApiService) { }
 
   ngOnInit() {
     this._routeSubs = this.route.params.subscribe(params => {
-      if(params['projectName']) {
+      if(params["shkeptncontext"]) {
+        this.contextId = params["shkeptncontext"];
+        this.apiService.getTraces(this.contextId)
+          .pipe(
+            map(traces => traces.map(trace => Trace.fromJSON(trace)))
+          )
+          .subscribe((traces: Trace[]) => {
+            if(traces.length > 0) {
+              if(params["eventselector"]) {
+                let trace = traces.find((t: Trace) => t.data.stage == params["eventselector"]);
+                if(!trace)
+                  trace = traces.reverse().find((t: Trace) => t.type == params["eventselector"]);
+
+                if(trace)
+                  this.router.navigate(['/project', trace.data.project, trace.data.service, trace.shkeptncontext, trace.id]);
+                else
+                  this.error = "trace";
+              } else {
+                this.router.navigate(['/project', traces[0].data.project, traces[0].data.service, traces[0].shkeptncontext]);
+              }
+            } else {
+              this.error = "trace";
+            }
+          });
+      } else {
+        this.projectName = params["projectName"];
+        this.serviceName = params["serviceName"];
+        this.contextId = params["contextId"];
+        this.eventId = params["eventId"];
         this.currentRoot = null;
 
         this.project = this.dataService.projects.pipe(
@@ -43,6 +80,13 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
           }) : null)
         );
 
+        this._rootsSubs.unsubscribe();
+        this._rootsSubs = this.dataService.roots.subscribe(roots => {
+          if(roots && !this.currentRoot)
+            this.currentRoot = roots.find(r => r.shkeptncontext == params["contextId"]);
+        });
+
+        this._rootEventsTimer.unsubscribe();
         this._rootEventsTimer = timer(0, this._rootEventsTimerInterval*1000)
           .pipe(
             startWith(0),
@@ -52,13 +96,35 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
           .subscribe(project => {
             project.getServices().forEach(service => {
               this.dataService.loadRoots(project, service);
+              if(service.roots && !this.currentRoot)
+                this.currentRoot = service.roots.find(r => r.shkeptncontext == params["contextId"]);
             });
           });
       }
     });
   }
 
-  loadTraces(root): void {
+  selectRoot(event: any): void {
+    this.projectName = event.root.data.project;
+    this.serviceName = event.root.data.service;
+    this.contextId = event.root.data.shkeptncontext;
+    this.eventId = null;
+    if(event.stage) {
+      let focusEvent = event.root.traces.find(trace => trace.data.stage == event.stage);
+      let routeUrl = this.router.createUrlTree(['/project', focusEvent.data.project, focusEvent.data.service, focusEvent.shkeptncontext, focusEvent.id]);
+      this.eventId = focusEvent.id;
+      this.location.go(routeUrl.toString());
+    } else {
+      let routeUrl = this.router.createUrlTree(['/project', event.root.data.project, event.root.data.service, event.root.shkeptncontext]);
+      this.eventId = event.root.traces[event.root.traces.length-1].id;
+      this.location.go(routeUrl.toString());
+    }
+
+    this.currentRoot = event.root;
+    this.loadTraces(this.currentRoot);
+  }
+
+  loadTraces(root: Root): void {
     this._tracesTimer.unsubscribe();
     if(moment().subtract(1, 'day').isBefore(root.time)) {
       this._tracesTimer = timer(0, this._tracesTimerInterval*1000)

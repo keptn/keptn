@@ -16,6 +16,7 @@ import {ApiService} from "./api.service";
 export class DataService {
 
   private _projects = new BehaviorSubject<Project[]>(null);
+  private _roots = new BehaviorSubject<Root[]>(null);
   private _rootsLastUpdated: Object = {};
   private _tracesLastUpdated: Object = {};
 
@@ -27,6 +28,10 @@ export class DataService {
 
   get projects(): Observable<Project[]> {
     return this._projects.asObservable();
+  }
+
+  get roots(): Observable<Root[]> {
+    return this._roots.asObservable();
   }
 
   get evaluationResults(): Observable<any> {
@@ -103,6 +108,7 @@ export class DataService {
         map(roots => roots.map(root => Root.fromJSON(root)))
       )
       .subscribe((roots: Root[]) => {
+        this._roots.next(roots);
         service.roots = [...roots||[], ...service.roots||[]].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
       });
   }

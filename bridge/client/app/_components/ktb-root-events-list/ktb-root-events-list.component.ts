@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import {Root} from "../../_models/root";
 import DateUtil from "../../_utils/date.utils";
+import {Stage} from "../../_models/stage";
 
 @Component({
   selector: 'ktb-root-events-list',
@@ -26,7 +27,7 @@ export class KtbRootEventsListComponent implements OnInit {
   public _events: Root[] = [];
   public _selectedEvent: Root = null;
 
-  @Output() readonly selectedEventChange = new EventEmitter<Root>();
+  @Output() readonly selectedEventChange = new EventEmitter<any>();
 
   @Input()
   get events(): Root[] {
@@ -55,9 +56,9 @@ export class KtbRootEventsListComponent implements OnInit {
   ngOnInit() {
   }
 
-  selectEvent(event: Root) {
+  selectEvent(event: Root, stage?: String) {
     this.selectedEvent = event;
-    this.selectedEventChange.emit(this.selectedEvent);
+    this.selectedEventChange.emit({ root: event, stage: stage });
   }
 
   getCalendarFormats() {
