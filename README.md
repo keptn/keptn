@@ -44,6 +44,7 @@ Therefore, this section shows the compatibility between these versions.
 
 <details><summary>Keptn version 0.6.0</summary>
 <p>
+
 *Keptn core:*
 - keptn/api:0.6.0
 - keptn/bridge:0.6.0
@@ -61,11 +62,13 @@ Therefore, this section shows the compatibility between these versions.
 
 *for Openshift:*
 - keptn/openshift-route-service:0.6.0
+
 </p>
 </details>
 
 <details><summary>Keptn version 0.5.2</summary>
 <p>
+
 *Keptn core:*
 - keptn/api:0.5.0
 - keptn/bridge:0.5.0
@@ -95,6 +98,7 @@ Therefore, this section shows the compatibility between these versions.
 
 <details><summary>Keptn version 0.5.1</summary>
 <p>
+
 *Keptn core:*
 - keptn/api:0.5.0
 - keptn/bridge:0.5.0
