@@ -66,6 +66,9 @@ func TestStoreCLIConfig(t *testing.T) {
 	if data != testConfig {
 		t.Errorf("Different config stored")
 	}
+	if err != nil {
+		t.Errorf("Unexpected error %v", err)
+	}
 }
 
 func TestLoadCLIConfig(t *testing.T) {

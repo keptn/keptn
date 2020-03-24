@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"testing"
 	"time"
@@ -68,6 +67,6 @@ func TestSendEvent(t *testing.T) {
 	err := rootCmd.Execute()
 
 	if err != nil {
-		log.Fatalf("An error occured: %v", err)
+		t.Errorf("unexpected error, got '%v'", err)
 	}
 }

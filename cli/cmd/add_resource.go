@@ -69,7 +69,7 @@ Example:
 		} else if (addResourceCmdParams.Service == nil || *addResourceCmdParams.Service == "") && (addResourceCmdParams.Stage == nil || *addResourceCmdParams.Stage == "") {
 			logging.PrintLog("Adding resource "+*addResourceCmdParams.Resource+" to project "+*addResourceCmdParams.Project, logging.InfoLevel)
 		} else {
-			return errors.New("Flag stage not set for service " + *addResourceCmdParams.Service + " in project " + *addResourceCmdParams.Project)
+			return errors.New("Flag 'stage' is missing")
 		}
 
 		if !mocking {

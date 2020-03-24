@@ -42,7 +42,7 @@ func TestEvaluationStart(t *testing.T) {
 	err := rootCmd.Execute()
 
 	if err != nil {
-		t.Errorf("An error occured: %v", err)
+		t.Errorf("unexpected error, got '%v'", err)
 	}
 }
 
@@ -99,7 +99,7 @@ func TestEvaluationStartTimeSpecified(t *testing.T) {
 	err := rootCmd.Execute()
 
 	if err != nil {
-		t.Errorf("An error occured: %v", err)
+		t.Errorf("unexpected error, got '%v'", err)
 	}
 }
 
@@ -129,7 +129,7 @@ func TestEvaluationStartAndEndTimeSpecified(t *testing.T) {
 	err := rootCmd.Execute()
 
 	if err != nil {
-		t.Errorf("An error occured: %v", err)
+		t.Errorf("unexpected error, got '%v'", err)
 	}
 }
 
@@ -159,7 +159,7 @@ func TestEvaluationStartAndEndTimeAndTimeframeSpecified(t *testing.T) {
 	err := rootCmd.Execute()
 
 	if err == nil {
-		t.Error("An error occured: expect an error due to too many parameters (start, end and timeframe) used at the same time")
+		t.Error("An error occurred: expect an error due to too many parameters (start, end and timeframe) used at the same time")
 	}
 
 	assert.EqualValues(t, "Start and end time of evaluation time frame not set: You can not use --end together with --timeframe", err.Error())
@@ -189,7 +189,7 @@ func TestEvaluationStartAndEndTimeWrongOrder(t *testing.T) {
 	rootCmd.SetArgs(args)
 	err := rootCmd.Execute()
 	if err == nil {
-		t.Error("An error occured: expect an error as end time is before start time")
+		t.Error("An error occurred: expect an error as end time is before start time")
 	}
 
 	assert.EqualValues(t, "Start and end time of evaluation time frame not set: end date must be at least 1 minute after start date", err.Error())
