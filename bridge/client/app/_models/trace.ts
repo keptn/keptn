@@ -91,11 +91,19 @@ export class Trace {
   isFaulty(): string {
     let result: string = null;
     if(this.data) {
-      if(this.data.result == 'fail' || this.type.indexOf('problem.open') != -1) {
+      if(this.isFailed() || this.isProblem()) {
         result = this.data.stage;
       }
     }
     return result;
+  }
+
+  isFailed(): boolean {
+    return this.data.result == 'fail';
+  }
+
+  isProblem(): boolean {
+    return this.type.indexOf('problem') != -1;
   }
 
   isSuccessful(): boolean {

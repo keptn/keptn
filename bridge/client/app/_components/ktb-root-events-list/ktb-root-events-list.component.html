@@ -1,10 +1,10 @@
 <div fxLayout="column" fxLayoutGap="5px">
   <div *ngFor="let event of _events;trackBy: identifyEvent">
-    <ktb-selectable-tile (click)="selectEvent(event)" [selected]="_selectedEvent == event" *ngIf="event">
+    <ktb-selectable-tile (click)="selectEvent(event)" [selected]="_selectedEvent == event" [error]="event.isProblem()" *ngIf="event">
       <div fxLayout="row">
         <div fxFlex>
           <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
-            <dt-icon class="event-icon" [name]="event.getIcon()"></dt-icon>
+            <dt-icon class="event-icon" [class.error]="event.isProblem()" [name]="event.getIcon()"></dt-icon>
             <h4 class="m-0 mt-1 mb-1" [textContent]="event.getLabel()"></h4>
           </div>
           <p class="m-0" *ngIf="event.data.valuesCanary"><span class="m-0" [textContent]="event.getShortImageName()"></span></p>
