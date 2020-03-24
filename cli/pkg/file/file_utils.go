@@ -11,6 +11,7 @@ import (
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 )
 
+// PlaceholderReplacement is a helper type for replacing a placeholder with a desired value
 type PlaceholderReplacement struct {
 	PlaceholderValue string
 	DesiredValue     string

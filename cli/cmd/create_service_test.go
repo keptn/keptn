@@ -18,19 +18,9 @@ func init() {
 func TestCreateServiceCmd(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
 
-	project := "sockshop"
-
-	args := []string{
-		"create",
-		"service",
-		"carts",
-		fmt.Sprintf("--project=%s", project),
-		"--mock",
-	}
-	rootCmd.SetArgs(args)
-	err := rootCmd.Execute()
-
+	cmd := fmt.Sprintf("create service carts --project=%s --mock", "sockshop")
+	_, err := executeActionCommandC(cmd)
 	if err != nil {
-		t.Errorf("An error occured: %v", err)
+		t.Errorf("unexpected error, got '%v'", err)
 	}
 }

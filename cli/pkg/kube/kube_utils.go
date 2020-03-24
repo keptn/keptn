@@ -37,7 +37,7 @@ func getKubeServerVersion() (string, error) {
 	return submatches[1] + "." + submatches[2], nil
 }
 
-// CheckKubeServerVersion checks the Kubernetes Server version aginst the given constraints
+// CheckKubeServerVersion checks the Kubernetes Server version against the given constraints
 func CheckKubeServerVersion(constraints string) error {
 
 	serverVersion, err := getKubeServerVersion()

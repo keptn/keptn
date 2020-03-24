@@ -18,10 +18,12 @@ type CLIConfig struct {
 	LastVersionCheck      *time.Time `json:"last_version_check"`
 }
 
+// CLIConfigManager manages the path of the CLI config
 type CLIConfigManager struct {
 	CLIConfigPath string
 }
 
+// NewCLIConfigManager creates a new CLIConfigManager
 func NewCLIConfigManager() *CLIConfigManager {
 	cliConfigManager := CLIConfigManager{}
 

@@ -1,14 +1,14 @@
 package cmd
 
-// istioInstallOption is an enum for the Istio installation
+// istioInstallOption is an enum for the istio installation
 type istioInstallOption int
 
 const (
-	// StopIfInstalled stops the Keptn installation if Istio is already installed
-	StopIfInstalled = iota
-	// Reuse reuses the available Istio installation
+	// StopIfInstalled stops the Keptn installation if istio is already installed
+	StopIfInstalled istioInstallOption = iota
+	// Reuse reuses the available istio installation
 	Reuse
-	// Overwrite overwrites the Istio installation
+	// Overwrite overwrites the istio installation
 	Overwrite
 )
 

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -15,16 +16,9 @@ func init() {
 func TestDeleteProjectCmd(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
 
-	args := []string{
-		"delete",
-		"project",
-		"sockshop",
-		"--mock",
-	}
-	rootCmd.SetArgs(args)
-	err := rootCmd.Execute()
-
+	cmd := fmt.Sprintf("delete project %s --mock", "sockshop")
+	_, err := executeActionCommandC(cmd)
 	if err != nil {
-		t.Errorf("An error occured: %v", err)
+		t.Errorf("unexpected error, got '%v'", err)
 	}
 }

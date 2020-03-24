@@ -35,7 +35,7 @@ func TestNewArtifact(t *testing.T) {
 	err := rootCmd.Execute()
 
 	if err != nil {
-		t.Errorf("An error occured: %v", err)
+		t.Errorf("unexpected error, got '%v'", err)
 	}
 }
 
@@ -68,7 +68,7 @@ func TestCheckImageAvailability(t *testing.T) {
 		err := newArtifactCmd.PreRunE(newArtifactCmd, []string{})
 
 		if err != nil {
-			t.Errorf("An error occured: %v", err)
+			t.Errorf("unexpected error, got '%v'", err)
 		}
 	}
 }

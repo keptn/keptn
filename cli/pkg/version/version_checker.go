@@ -103,10 +103,12 @@ func browseVersions(usedVersion *version.Version, versions []string) (newestVers
 
 const checkInterval = time.Hour * 24
 
+// VersionChecker manages data for checking the version
 type VersionChecker struct {
 	versionFetcherClient *versionFetcherClient
 }
 
+// NewVersionChecker creates a new VersionChecker
 func NewVersionChecker() *VersionChecker {
 	versionChecker := VersionChecker{}
 	versionChecker.versionFetcherClient = newVersionFetcherClient()
@@ -133,6 +135,8 @@ const newIncompatibleVersionMsg = `keptn version %s is available! Please note th
 	`version and requires to update the cluster too. Please visit https://keptn.sh for more information.`
 const disableMsg = `To disable this notice, run: '%s set config AutomaticVersionCheck false'`
 
+// CheckCLIVersion checks whether there is a new CLI version available and prints corresponding
+// messages to the stdout
 func (v *VersionChecker) CheckCLIVersion(cliVersion string, considerPrevCheck bool) {
 
 	configMng := config.NewCLIConfigManager()

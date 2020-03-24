@@ -4,8 +4,8 @@ package cmd
 type Ingress int
 
 const (
-	Istio Ingress = iota
-	Nginx
+	istio Ingress = iota
+	nginx
 )
 
 func (i Ingress) String() string {
