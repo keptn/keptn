@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {BehaviorSubject, from, Observable, Subject, timer} from "rxjs";
-import {debounce, flatMap, map, mergeMap, toArray} from "rxjs/operators";
+import {debounce, map, mergeMap, toArray} from "rxjs/operators";
 
 import {Root} from "../_models/root";
 import {Trace} from "../_models/trace";
