@@ -49,6 +49,15 @@ span.small {
   color: $gray-700;
 }
 
+p.error,
+span.error,
+h1.error,
+h2.error,
+h3.error,
+h4.error {
+  color: $error-color;
+}
+
 p.error, p.fail,
 span.error, span.fail {
   color: $error-color;

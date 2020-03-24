@@ -11,12 +11,7 @@
 }
 
 .event-icon.error {
-  fill: $white;
-  background: $error-color;
-  border: 10px solid $error-color;
-  box-sizing: content-box;
-  margin-top: -8px;
-  margin-left: -11px;
+  fill: $error-color;
 }
 
 .event-icon.success {
