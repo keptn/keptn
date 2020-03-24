@@ -14,6 +14,34 @@ To deploy the current version of the bridge in your Keptn Kubernetes cluster, us
 kubectl apply -f deploy/bridge.yaml
 ```
 
+### Setting up Basic Authentication
+
+Keptn's Bridge comes with a very simple basic authentication feature. To enable it, edit the deployment using
+```console
+kubectl -n keptn edit deployment bridge
+```
+and add two environment variables to the `bridge` container:
+
+* `BASIC_AUTH_USERNAME` - username
+* `BASIC_AUTH_PASSWORD` - password
+
+In the end, your container spec should look something like this:
+
+```yaml
+    spec:
+      containers:
+      - name: bridge
+        image: keptn/bridge2:0.6.1
+        imagePullPolicy: Always
+        env:
+          - name: BASIC_AUTH_USERNAME
+            value: YourKeptnUser
+          - name: BASIC_AUTH_PASSWORD
+            value: YourKeptnpassword
+        ports:
+        - containerPort: 3000
+```
+
 ### Delete in your Kubernetes cluster
 
 To delete a deployed bridge, use the file `deploy/bridge.yaml` from this repository and delete the Kubernetes resources:

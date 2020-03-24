@@ -18,6 +18,11 @@ spec:
       - name: bridge
         image: keptn/bridge2:latest
         imagePullPolicy: Always
+        env:
+          - name: BASIC_AUTH_USERNAME
+            value: Keptn
+          - name: BASIC_AUTH_PASSWORD
+            value: Password
         ports:
         - containerPort: 3000
         resources:
