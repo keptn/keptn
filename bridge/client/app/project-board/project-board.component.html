@@ -46,7 +46,7 @@
                 <dt-tag-list aria-label="services">
                   <dt-tag *ngFor="let service of getDeployedServices(project, stage)">
                     <span *ngIf="getLatestDeployment(project, service, stage) as deployment" (click)="selectDeployment(deployment, project)">
-                      <span [textContent]="getShortImageName(deployment.data.image)"></span>:<span [textContent]="deployment.data.tag"></span>
+                      <span [textContent]="deployment.getShortImageName()"></span>:<span [textContent]="deployment.data.tag"></span>
                     </span>
                   </dt-tag>
                 </dt-tag-list>
@@ -69,7 +69,7 @@
               <h2 class="m-0" [textContent]="service.serviceName"></h2>
             </dt-info-group-title>
             <p class="m-0 mb-1 mt-1" *ngIf="getLatestDeployment(project, service) as deployment">
-              <span class="bold">Last relevant artifact: </span><span [textContent]="getShortImageName(deployment.data.image)"></span>:<span [textContent]="deployment.data.tag"></span>
+              <span class="bold">Last relevant artifact: </span><span [textContent]="deployment.getShortImageName()"></span>:<span [textContent]="deployment.data.tag"></span>
             </p>
             <button dt-button disabled variant="nested" *ngIf="!service.roots">
               <dt-loading-spinner></dt-loading-spinner>

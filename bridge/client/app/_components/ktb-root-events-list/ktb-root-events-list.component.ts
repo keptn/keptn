@@ -68,9 +68,4 @@ export class KtbRootEventsListComponent implements OnInit {
   identifyEvent(index, item) {
     return item ? item.time : null;
   }
-
-  getShortImageName(image) {
-    let parts = image.split("/");
-    return parts[parts.length-1];
-  }
 }

@@ -176,11 +176,6 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
     return stage.services.filter(service => !!this.getLatestDeployment(project, service, stage));
   }
 
-  getShortImageName(image) {
-    let parts = image.split("/");
-    return parts[parts.length-1];
-  }
-
   getRootsLastUpdated(project: Project, service: Service): Date {
     return this.dataService.getRootsLastUpdated(project, service);
   }
@@ -206,7 +201,6 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
     this._routeSubs.unsubscribe();
     this._tracesTimer.unsubscribe();
     this._rootEventsTimer.unsubscribe();
-
   }
 
 }
