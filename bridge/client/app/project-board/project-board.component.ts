@@ -82,16 +82,20 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
           }) : null)
         );
 
-        this._projectSub = this.project$.subscribe(projects => {
+        this._projectSub = this.project$.subscribe(project => {
+          if(project === undefined)
+            this.error = 'project';
           this._changeDetectorRef.markForCheck();
         }, error => {
-          this.error = "project";
+          this.error = 'projects';
         });
 
         this._rootsSubs.unsubscribe();
         this._rootsSubs = this.dataService.roots.subscribe(roots => {
           if(roots && !this.currentRoot)
             this.currentRoot = roots.find(r => r.shkeptncontext == params["contextId"]);
+          if(this.currentRoot && !this.eventId)
+            this.eventId = this.currentRoot.traces[this.currentRoot.traces.length-1].id;
         });
 
         this._rootEventsTimer.unsubscribe();
@@ -104,8 +108,6 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
           .subscribe(project => {
             project.getServices().forEach(service => {
               this.dataService.loadRoots(project, service);
-              if(service.roots && !this.currentRoot)
-                this.currentRoot = service.roots.find(r => r.shkeptncontext == params["contextId"]);
             });
           });
       }
@@ -130,6 +132,13 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
 
     this.currentRoot = event.root;
     this.loadTraces(this.currentRoot);
+  }
+
+  selectDeployment(deployment: Trace, project: Project) {
+    this.selectRoot({
+      root: project.getServices().find(service => service.serviceName === deployment.data.service).roots.find(root => root.shkeptncontext === deployment.shkeptncontext),
+      stage: deployment.data.stage
+    });
   }
 
   loadTraces(root: Root): void {

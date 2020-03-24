@@ -108,8 +108,8 @@ export class DataService {
         map(roots => roots.map(root => Root.fromJSON(root)))
       )
       .subscribe((roots: Root[]) => {
-        this._roots.next(roots);
         service.roots = [...roots||[], ...service.roots||[]].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
+        this._roots.next(service.roots);
       });
   }
 
