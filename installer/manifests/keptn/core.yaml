@@ -79,6 +79,10 @@ spec:
       containers:
       - name: bridge
         image: keptn/bridge2:latest
+        envFrom:
+          - secretRef:
+              name: bridge-credentials
+              optional: true
         ports:
         - containerPort: 3000
         resources:

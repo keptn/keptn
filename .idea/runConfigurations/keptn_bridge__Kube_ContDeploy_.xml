@@ -1,0 +1,15 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="keptn/bridge [Kube ContDeploy]" type="google-container-tools-skaffold-run-config" factoryName="google-container-tools-skaffold-run-config-dev" show_console_on_std_err="false" show_console_on_std_out="false">
+    <option name="allowRunningInParallel" value="false" />
+    <option name="cleanupDeployments" value="true" />
+    <option name="envVariables" />
+    <option name="imageRepositoryOverride" />
+    <option name="kubeconfigFile" />
+    <option name="kubernetesContext" />
+    <option name="redeployOnChanges" value="true" />
+    <option name="skaffoldConfigurationFilePath" value="$PROJECT_DIR$/bridge/skaffold.yaml" />
+    <option name="skaffoldNamespace" />
+    <option name="skaffoldProfile" />
+    <method v="2" />
+  </configuration>
+</component>
