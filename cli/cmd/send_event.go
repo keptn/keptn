@@ -87,4 +87,5 @@ Example:
 func init() {
 	sendCmd.AddCommand(sendEventCmd)
 	eventFilePath = sendEventCmd.Flags().StringP("file", "f", "", "The file containing the event as Cloud Event in JSON.")
+	sendEventCmd.MarkFlagRequired("file")
 }

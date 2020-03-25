@@ -18,7 +18,7 @@ func TestOnboardServiceWrongHelmChartPath(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
 
-	cmd := fmt.Sprintf("onboard service carts --project=sockshop --charts=cartsX")
+	cmd := fmt.Sprintf("onboard service carts --project=sockshop --chart=cartsX")
 	_, err := executeActionCommandC(cmd)
 	if err == nil {
 		t.Errorf("Expected error event, but no one received.")
