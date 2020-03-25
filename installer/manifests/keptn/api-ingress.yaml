@@ -4,6 +4,7 @@ kind: Ingress
 metadata:
   annotations:
     kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/use-regex: "true"
   name: api-ingress
   namespace: keptn
 spec:
@@ -15,10 +16,14 @@ spec:
     - host: api.keptn.domain.placeholder
       http:
         paths:
-          - path: /
+          - path: "/v1/project/\\w+/resource"
+            backend:
+              serviceName: configuration-service
+              servicePort: 8080
+          - path: "/"
             backend:
               serviceName: api
-              servicePort: 443
+              servicePort: 8080
     - host: api.keptn
       http:
         paths:
