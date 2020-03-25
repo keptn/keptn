@@ -43,6 +43,6 @@ func TestSendEvent(t *testing.T) {
 	cmd := fmt.Sprintf("send event --file=%s --mock", resourceFileName)
 	_, err := executeActionCommandC(cmd)
 	if err != nil {
-		t.Errorf("unexpected error, got '%v'", err)
+		t.Errorf(unexpectedErrMsg, err)
 	}
 }

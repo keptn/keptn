@@ -21,7 +21,7 @@ func TestConfigureDomainNoParamCmd(t *testing.T) {
 	cmd := fmt.Sprintf("configure domain")
 	_, err := executeActionCommandC(cmd)
 	if err == nil || err.Error() != "Requires a domain as argument" {
-		t.Errorf("unexpected error, got '%v'", err)
+		t.Errorf(unexpectedErrMsg, err)
 	}
 }
 
@@ -36,7 +36,7 @@ func TestConfigureDomainCmdWithVersion(t *testing.T) {
 	*configureDomainParams.ConfigVersion = ""
 	_, err := executeActionCommandC(cmd)
 	if err != nil {
-		t.Errorf("unexpected error, got '%v'", err)
+		t.Errorf(unexpectedErrMsg, err)
 	}
 
 	out := r.revertStdOut()
@@ -57,7 +57,7 @@ func TestConfigureDomainCmdWithoutVersion(t *testing.T) {
 	*configureDomainParams.ConfigVersion = ""
 	_, err := executeActionCommandC(cmd)
 	if err != nil {
-		t.Errorf("unexpected error, got '%v'", err)
+		t.Errorf(unexpectedErrMsg, err)
 	}
 
 	out := r.revertStdOut()

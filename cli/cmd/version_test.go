@@ -33,7 +33,7 @@ func TestVersionCmd(t *testing.T) {
 
 	_, err := executeActionCommandC(cmd)
 	if err != nil {
-		t.Errorf("unexpected error, got '%v'", err)
+		t.Errorf(unexpectedErrMsg, err)
 	}
 
 	out := r.revertStdOut()

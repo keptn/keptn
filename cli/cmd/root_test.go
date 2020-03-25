@@ -8,6 +8,8 @@ import (
 	"github.com/mattn/go-shellwords"
 )
 
+const unexpectedErrMsg = "unexpected error, got '%v'"
+
 func executeActionCommandC(cmd string) (string, error) {
 	args, err := shellwords.Parse(cmd)
 	if err != nil {

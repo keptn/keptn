@@ -44,7 +44,7 @@ func TestAddResourceToProjectStageService(t *testing.T) {
 		"--resourceUri=%s --mock", "sockshop", "dev", "carts", resourceFileName, "resource/"+resourceFileName)
 	_, err := executeActionCommandC(cmd)
 	if err != nil {
-		t.Errorf("unexpected error, got '%v'", err)
+		t.Errorf(unexpectedErrMsg, err)
 	}
 }
 
@@ -60,7 +60,7 @@ func TestAddResourceToProjectStage(t *testing.T) {
 		"--resourceUri=%s --mock", "sockshop", "dev", resourceFileName, "resource/"+resourceFileName)
 	_, err := executeActionCommandC(cmd)
 	if err != nil {
-		t.Errorf("unexpected error, got '%v'", err)
+		t.Errorf(unexpectedErrMsg, err)
 	}
 }
 
@@ -76,7 +76,7 @@ func TestAddResourceToProject(t *testing.T) {
 		"--resourceUri=%s --mock", "sockshop", resourceFileName, "resource/"+resourceFileName)
 	_, err := executeActionCommandC(cmd)
 	if err != nil {
-		t.Errorf("unexpected error, got '%v'", err)
+		t.Errorf(unexpectedErrMsg, err)
 	}
 }
 
@@ -94,6 +94,6 @@ func TestAddResourceToProjectService(t *testing.T) {
 		"--resourceUri=%s --mock", "sockshop", "carts", resourceFileName, "resource/"+resourceFileName)
 	_, err := executeActionCommandC(cmd)
 	if err.Error() != "Flag 'stage' is missing" {
-		t.Errorf("unexpected error, got '%v'", err)
+		t.Errorf(unexpectedErrMsg, err)
 	}
 }

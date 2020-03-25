@@ -104,7 +104,7 @@ func TestInstallCmd(t *testing.T) {
 
 	_, err := executeActionCommandC(cmd)
 	if err != nil {
-		t.Errorf("unexpected error, got '%v'", err)
+		t.Errorf(unexpectedErrMsg, err)
 	}
 
 	out := r.revertStdOut()
@@ -125,7 +125,7 @@ func TestInstallCmdWithKeptnVersion(t *testing.T) {
 
 	_, err := executeActionCommandC(cmd)
 	if err != nil {
-		t.Errorf("unexpected error, got '%v'", err)
+		t.Errorf(unexpectedErrMsg, err)
 	}
 
 	out := r.revertStdOut()
@@ -143,7 +143,7 @@ func TestInstallCmdWithGateway(t *testing.T) {
 
 	_, err := executeActionCommandC(cmd)
 	if err != nil {
-		t.Errorf("unexpected error, got '%v'", err)
+		t.Errorf(unexpectedErrMsg, err)
 	}
 
 	res := prepareInstallerManifest()
@@ -193,7 +193,7 @@ func TestInstallCmdWithUseCase(t *testing.T) {
 
 	_, err := executeActionCommandC(cmd)
 	if err != nil {
-		t.Errorf("unexpected error, got '%v'", err)
+		t.Errorf(unexpectedErrMsg, err)
 	}
 
 	res := prepareInstallerManifest()
@@ -243,7 +243,7 @@ func TestInstallCmdWithIstioInstallOption(t *testing.T) {
 
 	_, err := executeActionCommandC(cmd)
 	if err != nil {
-		t.Errorf("unexpected error, got '%v'", err)
+		t.Errorf(unexpectedErrMsg, err)
 	}
 
 	res := prepareInstallerManifest()

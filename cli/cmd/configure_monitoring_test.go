@@ -22,7 +22,7 @@ func TestConfigureMonitoringCmd(t *testing.T) {
 	cmd := fmt.Sprintf("configure monitoring prometheus --project=%s --service=%s --mock", "sockshop", "carts")
 	_, err := executeActionCommandC(cmd)
 	if err != nil {
-		t.Errorf("unexpected error, got '%v'", err)
+		t.Errorf(unexpectedErrMsg, err)
 	}
 }
 
@@ -35,6 +35,6 @@ func TestConfigureMonitoringCmdForPrometheus(t *testing.T) {
 	cmd := fmt.Sprintf("configure monitoring prometheus --project=%s --mock", "sockshop")
 	_, err := executeActionCommandC(cmd)
 	if err.Error() != "Please specify a service" {
-		t.Errorf("unexpected error, got '%v'", err)
+		t.Errorf(unexpectedErrMsg, err)
 	}
 }

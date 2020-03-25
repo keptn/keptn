@@ -19,6 +19,6 @@ func TestDeleteProjectCmd(t *testing.T) {
 	cmd := fmt.Sprintf("delete project %s --mock", "sockshop")
 	_, err := executeActionCommandC(cmd)
 	if err != nil {
-		t.Errorf("unexpected error, got '%v'", err)
+		t.Errorf(unexpectedErrMsg, err)
 	}
 }

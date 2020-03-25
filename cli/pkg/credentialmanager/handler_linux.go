@@ -14,7 +14,6 @@ import (
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 )
 
-// TODO: Write documentation
 // For using pass.Pass{} the following commands need to executed:
 // 1. sudo apt-get install gpg pass -y
 // 2. gpg --generate-key (Use your name and e-mail); Use "find / | xargs file" for generating random bytes; Copy generate pub key

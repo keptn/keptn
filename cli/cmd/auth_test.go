@@ -27,6 +27,6 @@ func TestAuthCmd(t *testing.T) {
 	cmd := fmt.Sprintf("auth --endpoint=%s --api-token=%s --mock", endPoint.String(), apiToken)
 	_, err = executeActionCommandC(cmd)
 	if err != nil {
-		t.Errorf("unexpected error, got '%v'", err)
+		t.Errorf(unexpectedErrMsg, err)
 	}
 }

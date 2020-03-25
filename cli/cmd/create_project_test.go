@@ -49,7 +49,7 @@ func TestCreateProjectCmd(t *testing.T) {
 	cmd := fmt.Sprintf("create project sockshop --shipyard=%s --mock", shipyardFileName)
 	_, err := executeActionCommandC(cmd)
 	if err != nil {
-		t.Errorf("unexpected error, got '%v'", err)
+		t.Errorf(unexpectedErrMsg, err)
 	}
 }
 
@@ -123,7 +123,7 @@ func TestCreateProjectCmdWithGit(t *testing.T) {
 	_, err := executeActionCommandC(cmd)
 
 	if err != nil {
-		t.Errorf("unexpected error, got '%v'", err)
+		t.Errorf(unexpectedErrMsg, err)
 	}
 }
 

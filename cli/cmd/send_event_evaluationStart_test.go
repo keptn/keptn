@@ -28,7 +28,7 @@ func TestEvaluationStart(t *testing.T) {
 		"--timeframe=%s --labels=foo=bar,bar=foo --mock", "sockshop", "hardening", "carts", "5m")
 	_, err := executeActionCommandC(cmd)
 	if err != nil {
-		t.Errorf("unexpected error, got '%v'", err)
+		t.Errorf(unexpectedErrMsg, err)
 	}
 }
 
@@ -62,7 +62,7 @@ func TestEvaluationStartTimeSpecified(t *testing.T) {
 	_, err := executeActionCommandC(cmd)
 
 	if err != nil {
-		t.Errorf("unexpected error, got '%v'", err)
+		t.Errorf(unexpectedErrMsg, err)
 	}
 }
 
@@ -79,7 +79,7 @@ func TestEvaluationStartAndEndTimeSpecified(t *testing.T) {
 	_, err := executeActionCommandC(cmd)
 
 	if err != nil {
-		t.Errorf("unexpected error, got '%v'", err)
+		t.Errorf(unexpectedErrMsg, err)
 	}
 }
 

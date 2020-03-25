@@ -24,7 +24,7 @@ func TestNewArtifact(t *testing.T) {
 	_, err := executeActionCommandC(cmd)
 
 	if err != nil {
-		t.Errorf("unexpected error, got '%v'", err)
+		t.Errorf(unexpectedErrMsg, err)
 	}
 }
 
@@ -40,8 +40,8 @@ func TestCheckImageAvailability(t *testing.T) {
 		{"keptnexamples/carts", ""},
 		{"keptnexamples/carts", "0.7.0"},
 		{"keptnexamples/carts:0.7.0", ""},
-		{"10.10.10.10:10/keptnexamples/carts", "0.7.5"},
-		{"10.10.10.10:10/keptnexamples/carts:0.7.5", ""},
+		{"127.0.0.1:10/keptnexamples/carts", "0.7.5"},
+		{"127.0.0.1:10/keptnexamples/carts:0.7.5", ""},
 		{"httpd", ""}}
 
 	credentialmanager.MockAuthCreds = true
@@ -57,7 +57,7 @@ func TestCheckImageAvailability(t *testing.T) {
 		err := newArtifactCmd.PreRunE(newArtifactCmd, []string{})
 
 		if err != nil {
-			t.Errorf("unexpected error, got '%v'", err)
+			t.Errorf(unexpectedErrMsg, err)
 		}
 	}
 }
