@@ -1,5 +1,3 @@
-import {Stage} from "./stage";
-
 let labels = {
   "sh.keptn.internal.event.service.create": "Service create",
   "sh.keptn.event.configuration.change": "Configuration change",
