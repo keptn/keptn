@@ -117,18 +117,10 @@ export class Trace {
   getLabel(): string {
     // TODO: use translation file
     if(!this.label) {
-      switch(this.type) {
-        case "sh.keptn.events.problem": {
-          if(this.data.State === "RESOLVED")
-            this.label = labels["sh.keptn.events.problem.resolved"];
-          else
-            this.label = labels[this.type];
-          break;
-        }
-        default: {
-          this.label = labels[this.type] || this.type;
-          break;
-        }
+      if(this.type === "sh.keptn.events.problem" && this.data.State === "RESOLVED") {
+        this.label = labels["sh.keptn.events.problem.resolved"];
+      } else {
+        this.label = labels[this.type] || this.type;
       }
     }
 
