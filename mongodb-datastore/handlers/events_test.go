@@ -163,3 +163,57 @@ func Test_getSearchOptions(t *testing.T) {
 func stringp(s string) *string {
 	return &s
 }
+
+func Test_transformEventToInterface(t *testing.T) {
+	type args struct {
+		event *models.KeptnContextExtendedCE
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    interface{}
+		wantErr bool
+	}{
+		{
+			name: "transform event",
+			args: args{
+				event: &models.KeptnContextExtendedCE{
+					Event: models.Event{
+						Contenttype: "application/json",
+						Data:        "test-content",
+						Extensions:  nil,
+						ID:          "1",
+						Source:      "test-source",
+						Specversion: "0.2",
+						Time:        models.Time{},
+						Type:        "test-type",
+					},
+					Shkeptncontext: "123",
+				},
+			},
+			want: map[string]interface{}{
+				"contenttype":    "application/json",
+				"data":           "test-content",
+				"id":             "1",
+				"shkeptncontext": "123",
+				"source":         "test-source",
+				"specversion":    "0.2",
+				"time":           "0001-01-01T00:00:00.000Z",
+				"type":           "test-type",
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := transformEventToInterface(tt.args.event)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("transformEventToInterface() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("transformEventToInterface() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

@@ -77,19 +77,10 @@ func SaveEvent(event *models.KeptnContextExtendedCE) error {
 
 	collection := client.Database(mongoDBName).Collection(collectionName)
 
-	data, err := json.Marshal(event)
+	eventInterface, err := transformEventToInterface(event)
 	if err != nil {
-		err := fmt.Errorf("failed to marshal event: %v", err)
+		err := fmt.Errorf("failed to transform event: %v", err)
 		logger.Error(err.Error())
-		return err
-	}
-
-	var eventInterface interface{}
-	err = json.Unmarshal(data, &eventInterface)
-	if err != nil {
-		err := fmt.Errorf("failed to unmarshal event: %v", err)
-		logger.Error(err.Error())
-		return err
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -104,6 +95,22 @@ func SaveEvent(event *models.KeptnContextExtendedCE) error {
 
 	logger.Debug(fmt.Sprintf("insertedID: %s", res.InsertedID))
 	return nil
+}
+
+func transformEventToInterface(event *models.KeptnContextExtendedCE) (interface{}, error) {
+	data, err := json.Marshal(event)
+	if err != nil {
+		err := fmt.Errorf("failed to marshal event: %v", err)
+		return nil, err
+	}
+
+	var eventInterface interface{}
+	err = json.Unmarshal(data, &eventInterface)
+	if err != nil {
+		err := fmt.Errorf("failed to unmarshal event: %v", err)
+		return nil, err
+	}
+	return eventInterface, nil
 }
 
 func getProjectOfEvent(event *models.KeptnContextExtendedCE) string {
@@ -180,7 +187,6 @@ func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 			if err != nil {
 				logger.Error(fmt.Sprintf("failed to unmarshal %v", err))
 				continue
-				// return nil, err
 			}
 
 			if params.FromTime != nil {
@@ -246,7 +252,6 @@ func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 			if err != nil {
 				logger.Error(fmt.Sprintf("failed to unmarshal %v", err))
 				continue
-				// return nil, err
 			}
 
 			result.Events = append(result.Events, &keptnEvent)
