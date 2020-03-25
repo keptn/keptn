@@ -21,7 +21,8 @@ import (
 )
 
 func init() {
-	_, err := keptnutils.ExecuteCommand("helm", []string{"init", "--client-only"})
+	// try to init helm and verify that it works
+	_, err := keptnutils.ExecuteCommand("helm", []string{"init", "--client-only", "--skip-refresh"})
 	if err != nil {
 		log.Fatal(err)
 	}
