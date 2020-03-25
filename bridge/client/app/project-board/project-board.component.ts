@@ -1,4 +1,4 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
 import {filter, map, startWith, switchMap} from "rxjs/operators";
 import {Observable, Subscription, timer} from "rxjs";
 import {ActivatedRoute, Router} from "@angular/router";
@@ -10,10 +10,11 @@ import {Root} from "../_models/root";
 import {Project} from "../_models/project";
 
 import {DataService} from "../_services/data.service";
+import {ApiService} from "../_services/api.service";
 import DateUtil from "../_utils/date.utils";
 import {Service} from "../_models/service";
-import {ApiService} from "../_services/api.service";
 import {Trace} from "../_models/trace";
+import {Stage} from "../_models/stage";
 
 @Component({
   selector: 'app-project-board',
@@ -22,10 +23,11 @@ import {Trace} from "../_models/trace";
 })
 export class ProjectBoardComponent implements OnInit, OnDestroy {
 
-  public project: Observable<Project>;
+  public project$: Observable<Project>;
   public currentRoot: Root;
   public error: string = null;
 
+  private _projectSub: Subscription = Subscription.EMPTY;
   private _routeSubs: Subscription = Subscription.EMPTY;
   private _rootsSubs: Subscription = Subscription.EMPTY;
   private _rootEventsTimer: Subscription = Subscription.EMPTY;
@@ -39,7 +41,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   public contextId: string;
   public eventId: string;
 
-  constructor(private router: Router, private location: Location, private route: ActivatedRoute, private dataService: DataService, private apiService: ApiService) { }
+  constructor(private _changeDetectorRef: ChangeDetectorRef, private router: Router, private location: Location, private route: ActivatedRoute, private dataService: DataService, private apiService: ApiService) { }
 
   ngOnInit() {
     this._routeSubs = this.route.params.subscribe(params => {
@@ -74,30 +76,38 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
         this.eventId = params["eventId"];
         this.currentRoot = null;
 
-        this.project = this.dataService.projects.pipe(
+        this.project$ = this.dataService.projects.pipe(
           map(projects => projects ? projects.find(project => {
             return project.projectName === params['projectName'];
           }) : null)
         );
 
+        this._projectSub = this.project$.subscribe(project => {
+          if(project === undefined)
+            this.error = 'project';
+          this._changeDetectorRef.markForCheck();
+        }, error => {
+          this.error = 'projects';
+        });
+
         this._rootsSubs.unsubscribe();
         this._rootsSubs = this.dataService.roots.subscribe(roots => {
           if(roots && !this.currentRoot)
             this.currentRoot = roots.find(r => r.shkeptncontext == params["contextId"]);
+          if(this.currentRoot && !this.eventId)
+            this.eventId = this.currentRoot.traces[this.currentRoot.traces.length-1].id;
         });
 
         this._rootEventsTimer.unsubscribe();
         this._rootEventsTimer = timer(0, this._rootEventsTimerInterval*1000)
           .pipe(
             startWith(0),
-            switchMap(() => this.project),
+            switchMap(() => this.project$),
             filter(project => !!project && !!project.getServices())
           )
           .subscribe(project => {
             project.getServices().forEach(service => {
               this.dataService.loadRoots(project, service);
-              if(service.roots && !this.currentRoot)
-                this.currentRoot = service.roots.find(r => r.shkeptncontext == params["contextId"]);
             });
           });
       }
@@ -124,6 +134,13 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
     this.loadTraces(this.currentRoot);
   }
 
+  selectDeployment(deployment: Trace, project: Project) {
+    this.selectRoot({
+      root: project.getServices().find(service => service.serviceName === deployment.data.service).roots.find(root => root.shkeptncontext === deployment.shkeptncontext),
+      stage: deployment.data.stage
+    });
+  }
+
   loadTraces(root: Root): void {
     this._tracesTimer.unsubscribe();
     if(moment().subtract(1, 'day').isBefore(root.time)) {
@@ -139,6 +156,24 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
 
   getCalendarFormats() {
     return DateUtil.getCalendarFormats(true);
+  }
+
+  getLatestDeployment(project: Project, service: Service, stage?: Stage): Trace {
+    let currentService = project.getServices()
+      .find(s => s.serviceName == service.serviceName);
+
+    if(currentService.roots)
+      return currentService.roots
+        .reduce((traces: Trace[], root: Root) => {
+          return [...traces, ...root.traces];
+        }, [])
+        .find(trace => trace.type == 'sh.keptn.events.deployment-finished' && (!stage || (trace.data.stage == stage.stageName && currentService.roots.find(r => r.shkeptncontext == trace.shkeptncontext).isFaulty() != stage.stageName)));
+    else
+      return null;
+  }
+
+  getDeployedServices(project: Project, stage: Stage) {
+    return stage.services.filter(service => !!this.getLatestDeployment(project, service, stage));
   }
 
   getRootsLastUpdated(project: Project, service: Service): Date {
@@ -157,10 +192,15 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
     this.dataService.loadProjects();
   }
 
+  trackStage(index: number, stage: Stage) {
+    return stage.stageName;
+  }
+
   ngOnDestroy(): void {
+    this._projectSub.unsubscribe();
     this._routeSubs.unsubscribe();
-    this._rootEventsTimer.unsubscribe();
     this._tracesTimer.unsubscribe();
+    this._rootEventsTimer.unsubscribe();
   }
 
 }

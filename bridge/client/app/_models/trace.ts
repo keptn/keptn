@@ -1,5 +1,3 @@
-import {Stage} from "./stage";
-
 export class Trace {
   id: string;
   shkeptncontext: string;
@@ -12,6 +10,9 @@ export class Trace {
     project: string;
     service: string;
     stage: string;
+
+    image: string;
+    tag: string;
 
     deploymentURILocal: string;
     deploymentURIPublic: string;
@@ -144,6 +145,16 @@ export class Trace {
     }
 
     return this.label;
+  }
+
+  getShortImageName() {
+    let image = '';
+    if(this.data.image)
+      image = this.data.image;
+    else if(this.data.valuesCanary)
+      image = this.data.valuesCanary.image;
+    let parts = image.split("/");
+    return parts[parts.length-1];
   }
 
   static fromJSON(data: any) {
