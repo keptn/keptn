@@ -323,7 +323,7 @@ jobs:
           cd ..
       - |
           cd "${MONGODB_DS_FOLDER}"
-          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+          go test -coverprofile=coverage.txt -covermode=atomic -v ./handlers/...
           cd ..
     after_success:
       - bash <(curl -s https://codecov.io/bash)
