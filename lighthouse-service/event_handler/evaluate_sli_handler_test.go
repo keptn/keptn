@@ -107,7 +107,7 @@ func TestParseCriteriaString(t *testing.T) {
 				Value:           10,
 				CheckPercentage: true,
 				IsComparison:    true,
-				CheckIncrease:   false,
+				CheckIncrease:   true,
 			},
 		},
 	}

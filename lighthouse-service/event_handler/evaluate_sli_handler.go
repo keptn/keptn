@@ -466,6 +466,7 @@ func parseCriteriaString(criteria string) (*criteriaObject, error) {
 	if strings.HasSuffix(criteria, "%") {
 		c.CheckPercentage = true
 		c.IsComparison = true // Issue #1498: criteria containing '%' is always a comparison
+		c.CheckIncrease = true
 		criteria = strings.TrimSuffix(criteria, "%")
 	}
 
