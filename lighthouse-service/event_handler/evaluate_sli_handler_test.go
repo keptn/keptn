@@ -100,6 +100,16 @@ func TestParseCriteriaString(t *testing.T) {
 				CheckIncrease:   true,
 			},
 		},
+		{
+			Criteria: "  <=10%",
+			ExpectedCriteriaObject: &criteriaObject{
+				Operator:        "<=",
+				Value:           10,
+				CheckPercentage: true,
+				IsComparison:    true,
+				CheckIncrease:   false,
+			},
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.Criteria, func(t *testing.T) {
