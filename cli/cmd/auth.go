@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/keptn/keptn/cli/utils/credentialmanager"
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
@@ -82,7 +82,7 @@ Example:
 			}
 
 			logging.PrintLog("Successfully authenticated", logging.InfoLevel)
-			return credentialmanager.SetCreds(*url, *apiToken)
+			return credentialmanager.NewCredentialManager().SetCreds(*url, *apiToken)
 		}
 
 		fmt.Println("skipping auth due to mocking flag set to true")

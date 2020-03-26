@@ -1,4 +1,4 @@
-package utils
+package docker
 
 import (
 	"errors"
@@ -27,7 +27,7 @@ func SplitImageName(imageWithTag string) (string, string) {
 	return imageWithTag, "latest"
 }
 
-// CheckImageAvailability checks the availablity of a image which is hosted on Docker or on Quay
+// CheckImageAvailability checks the availability of a image which is hosted on Docker or on Quay
 func CheckImageAvailability(image, tag string) error {
 
 	if strings.HasPrefix(image, "docker.io/") {

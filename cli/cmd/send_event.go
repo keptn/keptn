@@ -19,12 +19,13 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/keptn/keptn/cli/pkg/file"
+
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
-	"github.com/keptn/keptn/cli/utils"
-	"github.com/keptn/keptn/cli/utils/credentialmanager"
 	"github.com/spf13/cobra"
 )
 
@@ -42,7 +43,7 @@ Example:
 	keptn send event --file=./new_artifact_event.json --stream-websocket`,
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		eventString, err := utils.ReadFile(*eventFilePath)
+		eventString, err := file.ReadFile(*eventFilePath)
 		if err != nil {
 			return err
 		}
@@ -50,11 +51,11 @@ Example:
 		return json.Unmarshal([]byte(eventString), &body)
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		endPoint, apiToken, err := credentialmanager.GetCreds()
+		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
-		eventString, err := utils.ReadFile(*eventFilePath)
+		eventString, err := file.ReadFile(*eventFilePath)
 		if err != nil {
 			return err
 		}
@@ -86,4 +87,5 @@ Example:
 func init() {
 	sendCmd.AddCommand(sendEventCmd)
 	eventFilePath = sendEventCmd.Flags().StringP("file", "f", "", "The file containing the event as Cloud Event in JSON.")
+	sendEventCmd.MarkFlagRequired("file")
 }

@@ -21,6 +21,8 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/keptn/keptn/cli/pkg/docker"
+
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 	"github.com/google/uuid"
@@ -29,10 +31,9 @@ import (
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	keptnevents "github.com/keptn/go-utils/pkg/events"
 
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
-	"github.com/keptn/keptn/cli/utils"
-	"github.com/keptn/keptn/cli/utils/credentialmanager"
-	"github.com/keptn/keptn/cli/utils/websockethelper"
+	"github.com/keptn/keptn/cli/pkg/websockethelper"
 	"github.com/spf13/cobra"
 )
 
@@ -62,12 +63,12 @@ Example:
 		newArtifact.Image = &trimmedImage
 
 		if newArtifact.Tag == nil || *newArtifact.Tag == "" {
-			*newArtifact.Image, *newArtifact.Tag = utils.SplitImageName(*newArtifact.Image)
+			*newArtifact.Image, *newArtifact.Tag = docker.SplitImageName(*newArtifact.Image)
 		}
-		return utils.CheckImageAvailability(*newArtifact.Image, *newArtifact.Tag)
+		return docker.CheckImageAvailability(*newArtifact.Image, *newArtifact.Tag)
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		endPoint, apiToken, err := credentialmanager.GetCreds()
+		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}

@@ -1,11 +1,12 @@
 package cmd
 
 import (
-	"bytes"
-	"github.com/keptn/keptn/cli/pkg/logging"
-	"github.com/keptn/keptn/cli/utils/credentialmanager"
+	"fmt"
 	"os"
 	"testing"
+
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
+	"github.com/keptn/keptn/cli/pkg/logging"
 )
 
 func init() {
@@ -15,21 +16,25 @@ func init() {
 func TestConfigureMonitoringCmd(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
-	mocking = true
-	buf := new(bytes.Buffer)
-	rootCmd.SetOutput(buf)
 
-	args := []string{
-		"configure",
-		"monitoring",
-		"prometheus",
-		"--project=sockshop",
-		"--service=carts",
-	}
-	rootCmd.SetArgs(args)
-	err := rootCmd.Execute()
-
+	*params.Project = ""
+	*params.Service = ""
+	cmd := fmt.Sprintf("configure monitoring prometheus --project=%s --service=%s --mock", "sockshop", "carts")
+	_, err := executeActionCommandC(cmd)
 	if err != nil {
-		t.Errorf("An error occured: %v", err)
+		t.Errorf(unexpectedErrMsg, err)
+	}
+}
+
+func TestConfigureMonitoringCmdForPrometheus(t *testing.T) {
+
+	credentialmanager.MockAuthCreds = true
+
+	*params.Project = ""
+	*params.Service = ""
+	cmd := fmt.Sprintf("configure monitoring prometheus --project=%s --mock", "sockshop")
+	_, err := executeActionCommandC(cmd)
+	if err.Error() != "Please specify a service" {
+		t.Errorf(unexpectedErrMsg, err)
 	}
 }

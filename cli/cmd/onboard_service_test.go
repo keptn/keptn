@@ -1,12 +1,12 @@
 package cmd
 
 import (
-	"bytes"
+	"fmt"
 	"os"
 	"testing"
 
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
-	"github.com/keptn/keptn/cli/utils/credentialmanager"
 )
 
 func init() {
@@ -17,19 +17,9 @@ func init() {
 func TestOnboardServiceWrongHelmChartPath(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
-	buf := new(bytes.Buffer)
-	rootCmd.SetOutput(buf)
 
-	args := []string{
-		"onboard",
-		"service",
-		"carts",
-		"--project=sockshop",
-		"--chart=cartsX",
-	}
-	rootCmd.SetArgs(args)
-	err := rootCmd.Execute()
-
+	cmd := fmt.Sprintf("onboard service carts --project=sockshop --chart=cartsX")
+	_, err := executeActionCommandC(cmd)
 	if err == nil {
 		t.Errorf("Expected error event, but no one received.")
 	}
@@ -44,19 +34,9 @@ func TestOnboardServiceWrongHelmChartPath(t *testing.T) {
 func TestOnboardServiceDeploymentStrategy(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
-	buf := new(bytes.Buffer)
-	rootCmd.SetOutput(buf)
 
-	args := []string{
-		"onboard",
-		"service",
-		"carts",
-		"--project=sockshop",
-		"--deployment-strategy=directX",
-	}
-	rootCmd.SetArgs(args)
-	err := rootCmd.Execute()
-
+	cmd := fmt.Sprintf("onboard service carts --project=sockshop --deployment-strategy=directX")
+	_, err := executeActionCommandC(cmd)
 	if err == nil {
 		t.Errorf("Expected error event, but no one received.")
 	}

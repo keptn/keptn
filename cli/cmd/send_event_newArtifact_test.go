@@ -6,8 +6,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
-	"github.com/keptn/keptn/cli/utils/credentialmanager"
 )
 
 func init() {
@@ -18,24 +18,13 @@ func init() {
 func TestNewArtifact(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
-	buf := new(bytes.Buffer)
-	rootCmd.SetOutput(buf)
 
-	args := []string{
-		"send",
-		"event",
-		"new-artifact",
-		fmt.Sprintf("--project=%s", "sockshop"),
-		fmt.Sprintf("--service=%s", "carts"),
-		fmt.Sprintf("--image=%s", "docker.io/keptnexamples/carts"),
-		fmt.Sprintf("--tag=%s", "0.9.1"),
-		"--mock",
-	}
-	rootCmd.SetArgs(args)
-	err := rootCmd.Execute()
+	cmd := fmt.Sprintf("send event new-artifact --project=%s --service=%s "+
+		"--image=%s --tag=%s  --mock", "sockshop", "carts", "docker.io/keptnexamples/carts", "0.9.1")
+	_, err := executeActionCommandC(cmd)
 
 	if err != nil {
-		t.Errorf("An error occured: %v", err)
+		t.Errorf(unexpectedErrMsg, err)
 	}
 }
 
@@ -46,14 +35,14 @@ type DockerImg struct {
 
 func TestCheckImageAvailability(t *testing.T) {
 
-	validImgs := []DockerImg{DockerImg{"docker.io/keptnexamples/carts", "0.7.0"},
-		DockerImg{"docker.io/keptnexamples/carts:0.7.0", ""},
-		DockerImg{"keptnexamples/carts", ""},
-		DockerImg{"keptnexamples/carts", "0.7.0"},
-		DockerImg{"keptnexamples/carts:0.7.0", ""},
-		DockerImg{"10.10.10.10:10/keptnexamples/carts", "0.7.5"},
-		DockerImg{"10.10.10.10:10/keptnexamples/carts:0.7.5", ""},
-		DockerImg{"httpd", ""}}
+	validImgs := []DockerImg{{"docker.io/keptnexamples/carts", "0.7.0"},
+		{"docker.io/keptnexamples/carts:0.7.0", ""},
+		{"keptnexamples/carts", ""},
+		{"keptnexamples/carts", "0.7.0"},
+		{"keptnexamples/carts:0.7.0", ""},
+		{"127.0.0.1:10/keptnexamples/carts", "0.7.5"},
+		{"127.0.0.1:10/keptnexamples/carts:0.7.5", ""},
+		{"httpd", ""}}
 
 	credentialmanager.MockAuthCreds = true
 	buf := new(bytes.Buffer)
@@ -68,7 +57,7 @@ func TestCheckImageAvailability(t *testing.T) {
 		err := newArtifactCmd.PreRunE(newArtifactCmd, []string{})
 
 		if err != nil {
-			t.Errorf("An error occured: %v", err)
+			t.Errorf(unexpectedErrMsg, err)
 		}
 	}
 }
