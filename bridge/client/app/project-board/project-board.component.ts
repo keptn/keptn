@@ -49,6 +49,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
         this.contextId = params["shkeptncontext"];
         this.apiService.getTraces(this.contextId)
           .pipe(
+            map(response => response.body),
             map(traces => traces.map(trace => Trace.fromJSON(trace)))
           )
           .subscribe((traces: Trace[]) => {

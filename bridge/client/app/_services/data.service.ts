@@ -83,20 +83,26 @@ export class DataService {
 
   public loadRoots(project: Project, service: Service) {
     let fromTime: Date = this._rootsLastUpdated[project.projectName+":"+service.serviceName];
-    this._rootsLastUpdated[project.projectName+":"+service.serviceName] = new Date();
 
     this.apiService.getRoots(project.projectName, service.serviceName, fromTime ? fromTime.toISOString() : null)
       .pipe(
         debounce(() => timer(10000)),
+        map(response => {
+          this._rootsLastUpdated[project.projectName+":"+service.serviceName] = new Date(response.headers.get("date"));
+          return response.body;
+        }),
         mergeMap((roots) =>
           from(roots).pipe(
             mergeMap(
               root => {
                 let fromTime: Date = this._tracesLastUpdated[root.shkeptncontext];
-                this._tracesLastUpdated[root.shkeptncontext] = new Date();
 
                 return this.apiService.getTraces(root.shkeptncontext, fromTime ? fromTime.toISOString() : null)
                   .pipe(
+                    map(response => {
+                      this._tracesLastUpdated[root.shkeptncontext] = new Date(response.headers.get("date"));
+                      return response.body;
+                    }),
                     map(traces => traces.map(trace => Trace.fromJSON(trace))),
                     map(traces => ({ ...root, traces}))
                   )
@@ -115,10 +121,15 @@ export class DataService {
 
   public loadTraces(root: Root) {
     let fromTime: Date = this._tracesLastUpdated[root.shkeptncontext];
-    this._tracesLastUpdated[root.shkeptncontext] = new Date();
 
     this.apiService.getTraces(root.shkeptncontext, fromTime ? fromTime.toISOString() : null)
-      .pipe(map(traces => traces.map(trace => Trace.fromJSON(trace))))
+      .pipe(
+        map(response => {
+          this._tracesLastUpdated[root.shkeptncontext] = new Date(response.headers.get("date"));
+          return response.body;
+        }),
+        map(traces => traces.map(trace => Trace.fromJSON(trace)))
+      )
       .subscribe((traces: Trace[]) => {
         root.traces = [...traces||[], ...root.traces||[]].sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
       });
