@@ -6,15 +6,16 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/keptn/keptn/cli/utils/websockethelper"
+	"github.com/keptn/keptn/cli/pkg/file"
+
+	"github.com/keptn/keptn/cli/pkg/websockethelper"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/models"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
-	"github.com/keptn/keptn/cli/utils"
-	"github.com/keptn/keptn/cli/utils/credentialmanager"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 )
@@ -28,6 +29,8 @@ type createProjectCmdParams struct {
 
 var createProjectParams *createProjectCmdParams
 
+const gitErrMsg = `Please specify a 'git-user', 'git-token', and 'git-remote-url' as flags for configuring a Git upstream repository`
+
 // crProjectCmd represents the project command
 var crProjectCmd = &cobra.Command{
 	Use:   "project PROJECTNAME --shipyard=FILEPATH",
@@ -40,7 +43,7 @@ Example:
 	keptn create project sockshop --shipyard=./shipyard.yaml`,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
-		_, _, err := credentialmanager.GetCreds()
+		_, _, err := credentialmanager.NewCredentialManager().GetCreds()
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
@@ -66,7 +69,7 @@ Example:
 		}
 
 		// validate shipyard file
-		content, err := utils.ReadFile(*createProjectParams.Shipyard)
+		content, err := file.ReadFile(*createProjectParams.Shipyard)
 		if err != nil {
 			return err
 		}
@@ -87,38 +90,16 @@ Example:
 			}
 		}
 
-		// check git credentials
-		gitUser := true
-		gitToken := true
-		remoteURL := true
-
-		if *createProjectParams.GitUser == "" {
-			gitUser = false
-		}
-		if *createProjectParams.GitToken == "" {
-			gitToken = false
-		}
-		if *createProjectParams.RemoteURL == "" {
-			remoteURL = false
-		}
-
-		if gitUser == false && gitToken == false && remoteURL == false {
-			return nil
-		}
-
-		if gitUser != true || gitToken != true || remoteURL != true {
-			return errors.New("For configuring a Git upstream repository please specify Git user, user token, and remote URL of repository/project")
-		}
-		return nil
+		return checkGitCredentials()
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		endPoint, apiToken, err := credentialmanager.GetCreds()
+		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
 		logging.PrintLog("Starting to create project", logging.InfoLevel)
 
-		content, _ := utils.ReadFile(*createProjectParams.Shipyard)
+		content, _ := file.ReadFile(*createProjectParams.Shipyard)
 		shipyard := base64.StdEncoding.EncodeToString([]byte(content))
 		project := apimodels.Project{
 			Name:     &args[0],
@@ -152,6 +133,17 @@ Example:
 		fmt.Println("Skipping create project due to mocking flag set to true")
 		return nil
 	},
+}
+
+func checkGitCredentials() error {
+	if *createProjectParams.GitUser == "" && *createProjectParams.GitToken == "" && *createProjectParams.RemoteURL == "" {
+		return nil
+	}
+
+	if *createProjectParams.GitUser != "" && *createProjectParams.GitToken != "" && *createProjectParams.RemoteURL != "" {
+		return nil
+	}
+	return errors.New(gitErrMsg)
 }
 
 func parseShipyard(shipyardContent string) (*models.Shipyard, error) {

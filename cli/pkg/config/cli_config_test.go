@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/keptn/keptn/cli/utils"
+	"github.com/keptn/keptn/cli/pkg/file"
 )
 
 const testConfig = `{"automatic_version_check":true,"last_version_check":"2020-02-20T00:00:00Z"}`
@@ -62,9 +62,12 @@ func TestStoreCLIConfig(t *testing.T) {
 		t.Errorf("Unexpected error %v", err)
 	}
 
-	data, err := utils.ReadFile(mng.CLIConfigPath)
+	data, err := file.ReadFile(mng.CLIConfigPath)
 	if data != testConfig {
 		t.Errorf("Different config stored")
+	}
+	if err != nil {
+		t.Errorf("Unexpected error %v", err)
 	}
 }
 

@@ -26,12 +26,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/keptn/keptn/cli/utils/version"
+	"github.com/keptn/keptn/cli/pkg/docker"
+	"github.com/keptn/keptn/cli/pkg/file"
+	"github.com/keptn/keptn/cli/pkg/kube"
+
+	"github.com/keptn/keptn/cli/pkg/version"
 
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
-	"github.com/keptn/keptn/cli/utils"
-	"github.com/keptn/keptn/cli/utils/credentialmanager"
 	"github.com/spf13/cobra"
 )
 
@@ -40,18 +43,18 @@ type installCmdParams struct {
 	InstallerImage          *string
 	KeptnVersion            *string
 	PlatformIdentifier      *string
-	GatewayType             *string
-	UseCase                 *string
+	GatewayInput            *string
+	Gateway                 gateway
+	UseCaseInput            *string
+	UseCase                 usecase
 	IstioInstallOptionInput *string
 	IstioInstallOption      istioInstallOption
-	Image                   string
-	Tag                     string
 }
 
 // KubeServerVersionConstraints the Kubernetes Cluster version's constraints is passed by ldflags
 var KubeServerVersionConstraints string
 
-var installParams *installCmdParams
+var installParams installCmdParams
 
 const gke = "gke"
 const aks = "aks"
@@ -138,7 +141,8 @@ Example:
 		if val, ok := istioInstallOptionToID[*installParams.IstioInstallOptionInput]; ok {
 			installParams.IstioInstallOption = val
 		} else {
-			return errors.New("Istio install option is unknown. Supported options are [StopIfInstalled,Reuse,Overwrite]")
+			return errors.New("value of 'istio-install-option' flag is unknown. Supported values are " +
+				"[" + StopIfInstalled.String() + "," + Reuse.String() + "," + Overwrite.String() + "]")
 		}
 
 		if insecureSkipTLSVerify {
@@ -150,56 +154,62 @@ Example:
 			return err
 		}
 
-		if !checkIfGatewayTypeIsSupported() {
-			return errors.New(`Keptn currently supports: 'LoadBalancer' and 'NodePort'`)
+		if val, ok := gatewayToID[*installParams.GatewayInput]; ok {
+			installParams.Gateway = val
+		} else {
+			return errors.New("value of 'gateway' flag is unknown. Supported values are " +
+				"[" + NodePort.String() + "," + LoadBalancer.String() + "]")
 		}
 
-		if !checkIfUseCaseIsSupported() {
-			return errors.New(`Keptn currently supports use case: 'quality-gates' and 'all'`)
+		if val, ok := usecaseToID[*installParams.UseCaseInput]; ok {
+			installParams.UseCase = val
+		} else {
+			return errors.New("value of 'use-case' flag is unknown. Supported values are " +
+				"[" + AllUseCases.String() + "," + QualityGates.String() + "]")
 		}
 
+		var image, tag string
 		// Determine installer version
 		if installParams.InstallerImage != nil && *installParams.InstallerImage != "" {
-			installParams.Image, installParams.Tag = utils.SplitImageName(*installParams.InstallerImage)
+			image, tag = docker.SplitImageName(*installParams.InstallerImage)
 		} else if version.IsOfficialKeptnVersion(Version) {
-			installParams.Image = "docker.io/keptn/installer"
-			tag, err := version.GetOfficialKeptnVersion(Version)
+			image = "docker.io/keptn/installer"
+			tag, err = version.GetOfficialKeptnVersion(Version)
 			if err != nil {
 				return fmt.Errorf("Error when parsing installer tag: %v", err)
 			}
-			installParams.Tag = tag
-			version := installParams.Image + ":" + installParams.Tag
-			installParams.InstallerImage = &version
+			*installParams.InstallerImage = image + ":" + tag
 		} else {
-			installParams.Image = "docker.io/keptn/installer"
-			installParams.Tag = "latest"
-			version := installParams.Image + ":" + installParams.Tag
-			installParams.InstallerImage = &version
+			image = "docker.io/keptn/installer"
+			tag = "latest"
+			*installParams.InstallerImage = image + ":" + tag
 		}
 
-		err = utils.CheckImageAvailability(installParams.Image, installParams.Tag)
+		err = docker.CheckImageAvailability(image, tag)
 		if err != nil {
 			return fmt.Errorf("Installer image not found under: %v", err)
 		}
 
-		logging.PrintLog(fmt.Sprintf("Used Installer version: %s:%s",
-			installParams.Image, installParams.Tag), logging.InfoLevel)
+		logging.PrintLog(fmt.Sprintf("Used Installer version: %s",
+			*installParams.InstallerImage), logging.InfoLevel)
 
-		if p.checkRequirements() != nil {
-			return err
-		}
+		if !mocking {
+			if p.checkRequirements() != nil {
+				return err
+			}
 
-		// Check whether kubectl is installed
-		isKubAvailable, err := utils.IsKubectlAvailable()
-		if err != nil || !isKubAvailable {
-			return errors.New(`Keptn requires 'kubectl' but it is not available.
+			// Check whether kubectl is installed
+			isKubAvailable, err := kube.IsKubectlAvailable()
+			if err != nil || !isKubAvailable {
+				return errors.New(`Keptn requires 'kubectl' but it is not available.
 Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
-		}
+			}
 
-		if *installParams.UseCase == "all" && *installParams.PlatformIdentifier != "openshift" {
-			if err := utils.CheckKubeServerVersion(KubeServerVersionConstraints); err != nil {
-				logging.PrintLog(err.Error(), logging.VerboseLevel)
-				return errors.New(`Keptn requires Kubernetes Server Version: ` + KubeServerVersionConstraints)
+			if installParams.UseCase == AllUseCases && *installParams.PlatformIdentifier != "openshift" {
+				if err := kube.CheckKubeServerVersion(KubeServerVersionConstraints); err != nil {
+					logging.PrintLog(err.Error(), logging.VerboseLevel)
+					return errors.New(`Keptn requires Kubernetes Server Version: ` + KubeServerVersionConstraints)
+				}
 			}
 		}
 
@@ -238,14 +248,6 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 	},
 }
 
-func checkIfGatewayTypeIsSupported() bool {
-	return *installParams.GatewayType == "NodePort" || *installParams.GatewayType == "LoadBalancer"
-}
-
-func checkIfUseCaseIsSupported() bool {
-	return *installParams.UseCase == "quality-gates" || *installParams.UseCase == "all"
-}
-
 func setPlatform() error {
 
 	*installParams.PlatformIdentifier = strings.ToLower(*installParams.PlatformIdentifier)
@@ -277,7 +279,7 @@ func setPlatform() error {
 
 func init() {
 	rootCmd.AddCommand(installCmd)
-	installParams = &installCmdParams{}
+	installParams = installCmdParams{}
 
 	installParams.PlatformIdentifier = installCmd.Flags().StringP("platform", "p", "gke",
 		"The platform to run keptn on [aks,eks,gke,pks,openshift,kubernetes]")
@@ -295,56 +297,53 @@ func init() {
 			"using the flag 'keptn-installer-image'")
 	installCmd.Flags().MarkHidden("keptn-version")
 
-	installParams.GatewayType = installCmd.Flags().StringP("gateway", "g", "LoadBalancer",
-		"The ingress-loadbalancer type [LoadBalancer,NodePort]")
+	installParams.GatewayInput = installCmd.Flags().StringP("gateway", "g", LoadBalancer.String(),
+		"The ingress-loadbalancer type ["+LoadBalancer.String()+","+NodePort.String()+"]")
 	installCmd.Flags().MarkHidden("gateway")
 
-	installParams.UseCase = installCmd.Flags().StringP("use-case", "u", "all",
-		"The use case to install Keptn for [quality-gates,all]")
+	installParams.UseCaseInput = installCmd.Flags().StringP("use-case", "u", "all",
+		"The use case to install Keptn for ["+AllUseCases.String()+","+QualityGates.String()+"]")
 	installCmd.Flags().MarkHidden("use-case")
 
 	installParams.IstioInstallOptionInput = installCmd.Flags().StringP("istio-install-option", "",
-		"StopIfInstalled", "Installation options for Istio [StopIfInstalled,Reuse,Overwrite]")
+		StopIfInstalled.String(), "Installation options for istio ["+StopIfInstalled.String()+","+
+			Reuse.String()+","+Overwrite.String()+"]")
 	installCmd.Flags().MarkHidden("istio-install-option")
 
 	installCmd.PersistentFlags().BoolVarP(&insecureSkipTLSVerify, "insecure-skip-tls-verify", "s",
 		false, "Skip tls verification for kubectl commands")
 }
 
+func prepareInstallerManifest() (installerManifest string) {
+
+	installerManifest = installerJob
+
+	installerManifest = strings.ReplaceAll(installerManifest, "INSTALLER_IMAGE_PLACEHOLDER",
+		*installParams.InstallerImage)
+
+	installerManifest = strings.ReplaceAll(installerManifest, "PLATFORM_PLACEHOLDER", strings.ToLower(*installParams.PlatformIdentifier))
+	installerManifest = strings.ReplaceAll(installerManifest, "GATEWAY_TYPE_PLACEHOLDER", installParams.Gateway.String())
+	installerManifest = strings.ReplaceAll(installerManifest, "USE_CASE_PLACEHOLDER", installParams.UseCase.String())
+	installerManifest = strings.ReplaceAll(installerManifest, "ISTIO_INSTALL_OPTION_PLACEHOLDER", installParams.IstioInstallOption.String())
+
+	installerManifest = strings.ReplaceAll(installerManifest, "INGRESS_PLACEHOLDER", getIngress().String())
+	return
+}
+
+func getIngress() (ingress Ingress) {
+	ingress = istio
+	if installParams.UseCase == QualityGates {
+		ingress = nginx
+	}
+	return
+}
+
 // Preconditions: 1. Already authenticated against the cluster.
 func doInstallation() error {
 
-	installerManifest := installerJob
-
-	installerManifest = strings.ReplaceAll(installerManifest, "INSTALLER_IMAGE_PLACEHOLDER",
-		installParams.Image+":"+installParams.Tag)
-
-	installerManifest = strings.ReplaceAll(installerManifest, "PLATFORM_PLACEHOLDER", *installParams.PlatformIdentifier)
-	installerManifest = strings.ReplaceAll(installerManifest, "GATEWAY_TYPE_PLACEHOLDER", *installParams.GatewayType)
-	installerManifest = strings.ReplaceAll(installerManifest, "USE_CASE_PLACEHOLDER", *installParams.UseCase)
-	installerManifest = strings.ReplaceAll(installerManifest, "ISTIO_INSTALL_OPTION_PLACEHOLDER", installParams.IstioInstallOption.String())
-
-	ingress := Istio
-	if *installParams.UseCase == "quality-gates" {
-		ingress = Nginx
-	}
-	installerManifest = strings.ReplaceAll(installerManifest, "INGRESS_PLACEHOLDER", ingress.String())
-
-	_, aks := p.(*aksPlatform)
-	_, eks := p.(*eksPlatform)
-	_, gke := p.(*gkePlatform)
-	_, pks := p.(*pksPlatform)
-	_, k8s := p.(*kubernetesPlatform)
-	if gke || aks || k8s || eks || pks {
-		o := options{"apply", "-f", "-"}
-		o.appendIfNotEmpty(kubectlOptions)
-
-		cmd := exec.Command("kubectl", o...)
-		cmd.Stdin = strings.NewReader(rbac)
-		out, err := cmd.CombinedOutput()
-		if err != nil {
-			return fmt.Errorf("Error while applying RBAC: %s \n%s\nAborting installation", err.Error(), string(out))
-		}
+	err := applyRbac()
+	if err != nil {
+		return err
 	}
 
 	logging.PrintLog("Deploying Keptn installer pod ...", logging.InfoLevel)
@@ -352,7 +351,7 @@ func doInstallation() error {
 	o := options{"apply", "-f", "-"}
 	o.appendIfNotEmpty(kubectlOptions)
 	cmd := exec.Command("kubectl", o...)
-	cmd.Stdin = strings.NewReader(installerManifest)
+	cmd.Stdin = strings.NewReader(prepareInstallerManifest())
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("Error while applying installer job: %s \n%s\nAborting installation", err.Error(), string(out))
@@ -376,9 +375,9 @@ func doInstallation() error {
 		return err
 	}
 
-	if eks {
+	if _, eks := p.(*eksPlatform); eks {
 		var hostname string
-		if ingress == Istio {
+		if getIngress() == istio {
 			o = options{"get", "svc", "istio-ingressgateway", "-n", "istio-system",
 				"-ojsonpath={.status.loadBalancer.ingress[0].hostname}"}
 			o.appendIfNotEmpty(kubectlOptions)
@@ -386,7 +385,7 @@ func doInstallation() error {
 			if err != nil {
 				return err
 			}
-		} else if ingress == Nginx {
+		} else if getIngress() == nginx {
 			o = options{"get", "ingress", "api-ingress", "-n", "keptn",
 				"-ojsonpath={.status.loadBalancer.ingress[0].hostname}"}
 			o.appendIfNotEmpty(kubectlOptions)
@@ -408,8 +407,28 @@ func doInstallation() error {
 	return nil
 }
 
+func applyRbac() error {
+	_, aks := p.(*aksPlatform)
+	_, eks := p.(*eksPlatform)
+	_, gke := p.(*gkePlatform)
+	_, pks := p.(*pksPlatform)
+	_, k8s := p.(*kubernetesPlatform)
+	if gke || aks || k8s || eks || pks {
+		o := options{"apply", "-f", "-"}
+		o.appendIfNotEmpty(kubectlOptions)
+
+		cmd := exec.Command("kubectl", o...)
+		cmd.Stdin = strings.NewReader(rbac)
+		out, err := cmd.CombinedOutput()
+		if err != nil {
+			return fmt.Errorf("Error while applying RBAC: %s \n%s\nAborting installation", err.Error(), string(out))
+		}
+	}
+	return nil
+}
+
 func parseConfig(configFile string) error {
-	data, err := utils.ReadFile(configFile)
+	data, err := file.ReadFile(configFile)
 	if err != nil {
 		return err
 	}
@@ -418,7 +437,8 @@ func parseConfig(configFile string) error {
 
 func readCreds() error {
 
-	credsStr, err := credentialmanager.GetInstallCreds()
+	cm := credentialmanager.NewCredentialManager()
+	credsStr, err := cm.GetInstallCreds()
 	if err != nil {
 		credsStr = ""
 	}
@@ -452,7 +472,7 @@ func readCreds() error {
 	newCreds, _ := json.Marshal(p.getCreds())
 	newCredsStr := strings.Replace(string(newCreds), "\r\n", "\n", -1)
 	newCredsStr = strings.Replace(newCredsStr, "\n", "", -1)
-	return credentialmanager.SetInstallCreds(newCredsStr)
+	return cm.SetInstallCreds(newCredsStr)
 }
 
 func readUserInput(value *string, regex string, promptMessage string, regexViolationMessage string) {

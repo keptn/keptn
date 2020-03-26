@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {HttpClient, HttpHeaders} from "@angular/common/http";
+import {HttpClient, HttpHeaders, HttpResponse} from "@angular/common/http";
 import {BehaviorSubject, Observable, of, throwError} from "rxjs";
 import {catchError, map, retry} from "rxjs/operators";
 
@@ -58,22 +58,22 @@ export class ApiService {
       .pipe(catchError(this.handleError<Service[]>('getServices')));
   }
 
-  public getRoots(projectName: string, serviceName: string, fromTime?: String): Observable<Root[]> {
+  public getRoots(projectName: string, serviceName: string, fromTime?: String): Observable<HttpResponse<Root[]>> {
     let url = `${this.baseUrl}/api/roots/${projectName}/${serviceName}`;
     if(fromTime)
       url += `?fromTime=${fromTime}`;
     return this.http
-      .get<Root[]>(url, { headers: this.headers })
-      .pipe(catchError(this.handleError<Root[]>('getRoots')));
+      .get<Root[]>(url, { headers: this.headers, observe: 'response' })
+      .pipe(catchError(this.handleError<HttpResponse<Root[]>>('getRoots')));
   }
 
-  public getTraces(contextId: string, fromTime?: String): Observable<Trace[]> {
+  public getTraces(contextId: string, fromTime?: String): Observable<HttpResponse<Trace[]>> {
     let url = `${this.baseUrl}/api/traces/${contextId}`;
     if(fromTime)
       url += `?fromTime=${fromTime}`;
     return this.http
-      .get<Trace[]>(url, { headers: this.headers })
-      .pipe(catchError(this.handleError<Trace[]>('getTraces')));
+      .get<Trace[]>(url, { headers: this.headers, observe: 'response' })
+      .pipe(catchError(this.handleError<HttpResponse<Trace[]>>('getTraces')));
   }
 
   public getEvaluationResults(projectName: string, serviceName: string, stageName: string, source: string, fromTime?: String) {

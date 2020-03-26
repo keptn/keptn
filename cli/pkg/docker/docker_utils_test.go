@@ -1,6 +1,9 @@
-package utils
+package docker
 
-import "testing"
+import (
+	"errors"
+	"testing"
+)
 
 var imageSplitTests = []struct {
 	in       string
@@ -24,6 +27,30 @@ func TestSplitImageName(t *testing.T) {
 			}
 			if outTag != tt.outTag {
 				t.Errorf("got %q, want %q", outTag, tt.outTag)
+			}
+		})
+	}
+}
+
+var imageAvailabilityTests = []struct {
+	image string
+	tag   string
+	err   error
+}{
+	{"docker.io/keptn/installer", "0.6.1", nil},
+	{"docker.io/keptn/installer", "-1", errors.New("Provided image not found: Tag not found")},
+	{"quay.io/keptn/installer", "-1", errors.New("Provided image not found: 401 Unauthorized")},
+	{"keptn/installer", "0.6.1", nil},
+}
+
+func TestCheckImageAvailablity(t *testing.T) {
+	for _, tt := range imageAvailabilityTests {
+		t.Run(tt.image, func(t *testing.T) {
+			err := CheckImageAvailability(tt.image, tt.tag)
+			if err != tt.err {
+				if !(err != nil && tt.err != nil && err.Error() == tt.err.Error()) {
+					t.Errorf("got %q, want %q", err, tt.err)
+				}
 			}
 		})
 	}

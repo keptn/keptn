@@ -86,6 +86,8 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		return err
 	}
 
+	logger.Debug("Got event of type " + event.Type())
+
 	if event.Type() == keptnevents.ConfigurationChangeEventType {
 		configChanger := controller.NewConfigurationChanger(mesh, logger, keptnDomain, url.String())
 		go configChanger.ChangeAndApplyConfiguration(event, loggingDone)

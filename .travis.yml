@@ -116,6 +116,7 @@ jobs:
     services:
       - docker
     script:
+    - export VERSION="master+${DATE}"
     - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
     - ./writeManifest.sh
     - cat MANIFEST

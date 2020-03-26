@@ -1,14 +1,14 @@
 package cmd
 
 import (
-	"bytes"
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
-	"github.com/keptn/keptn/cli/utils/credentialmanager"
 )
 
 func init() {
@@ -19,54 +19,30 @@ func init() {
 func TestEvaluationStart(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
-	buf := new(bytes.Buffer)
-	rootCmd.SetOutput(buf)
 
 	*evaluationStart.Timeframe = ""
 	*evaluationStart.Start = ""
 	*evaluationStart.End = ""
 
-	args := []string{
-		"send",
-		"event",
-		"start-evaluation",
-		fmt.Sprintf("--project=%s", "sockshop"),
-		fmt.Sprintf("--stage=%s", "hardening"),
-		fmt.Sprintf("--service=%s", "carts"),
-		fmt.Sprintf("--timeframe=%s", "5m"),
-		fmt.Sprintf("--labels=foo=bar,bar=foo"),
-		"--mock",
-	}
-	rootCmd.SetArgs(args)
-	err := rootCmd.Execute()
-
+	cmd := fmt.Sprintf("send event start-evaluation --project=%s --stage=%s --service=%s "+
+		"--timeframe=%s --labels=foo=bar,bar=foo --mock", "sockshop", "hardening", "carts", "5m")
+	_, err := executeActionCommandC(cmd)
 	if err != nil {
-		t.Errorf("An error occured: %v", err)
+		t.Errorf(unexpectedErrMsg, err)
 	}
 }
 
 func TestEvaluationStartWrongFormat(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
-	buf := new(bytes.Buffer)
-	rootCmd.SetOutput(buf)
 
 	*evaluationStart.Timeframe = ""
 	*evaluationStart.Start = ""
 	*evaluationStart.End = ""
 
-	args := []string{
-		"send",
-		"event",
-		"start-evaluation",
-		fmt.Sprintf("--project=%s", "sockshop"),
-		fmt.Sprintf("--stage=%s", "hardening"),
-		fmt.Sprintf("--service=%s", "carts"),
-		fmt.Sprintf("--timeframe=%s", "5h"),
-		"--mock",
-	}
-	rootCmd.SetArgs(args)
-	err := rootCmd.Execute()
+	cmd := fmt.Sprintf("send event start-evaluation --project=%s --stage=%s --service=%s "+
+		"--timeframe=%s --mock", "sockshop", "hardening", "carts", "5h")
+	_, err := executeActionCommandC(cmd)
 
 	if err == nil {
 		t.Error("An error occured: expect an error due to wrong time frame format")
@@ -76,89 +52,52 @@ func TestEvaluationStartWrongFormat(t *testing.T) {
 func TestEvaluationStartTimeSpecified(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
-	buf := new(bytes.Buffer)
-	rootCmd.SetOutput(buf)
 
 	*evaluationStart.Timeframe = ""
 	*evaluationStart.Start = ""
 	*evaluationStart.End = ""
 
-	args := []string{
-		"send",
-		"event",
-		"start-evaluation",
-		fmt.Sprintf("--project=%s", "sockshop"),
-		fmt.Sprintf("--stage=%s", "hardening"),
-		fmt.Sprintf("--service=%s", "carts"),
-		fmt.Sprintf("--timeframe=%s", "5m"),
-		fmt.Sprintf("--start=%s", "2019-07-24T10:17:12"),
-		"--mock",
-	}
-	rootCmd.SetArgs(args)
-	err := rootCmd.Execute()
+	cmd := fmt.Sprintf("send event start-evaluation --project=%s --stage=%s --service=%s "+
+		"--timeframe=%s --start=%s --mock", "sockshop", "hardening", "carts", "5m", "2019-07-24T10:17:12")
+	_, err := executeActionCommandC(cmd)
 
 	if err != nil {
-		t.Errorf("An error occured: %v", err)
+		t.Errorf(unexpectedErrMsg, err)
 	}
 }
 
 func TestEvaluationStartAndEndTimeSpecified(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
-	buf := new(bytes.Buffer)
-	rootCmd.SetOutput(buf)
 
 	*evaluationStart.Timeframe = ""
 	*evaluationStart.Start = ""
 	*evaluationStart.End = ""
 
-	args := []string{
-		"send",
-		"event",
-		"start-evaluation",
-		fmt.Sprintf("--project=%s", "sockshop"),
-		fmt.Sprintf("--stage=%s", "hardening"),
-		fmt.Sprintf("--service=%s", "carts"),
-		fmt.Sprintf("--start=%s", "2019-07-24T10:17:12"),
-		fmt.Sprintf("--end=%s", "2019-07-24T10:20:12"),
-		"--mock",
-	}
-
-	rootCmd.SetArgs(args)
-	err := rootCmd.Execute()
+	cmd := fmt.Sprintf("send event start-evaluation --project=%s --stage=%s --service=%s "+
+		"--start=%s --end=%s --mock", "sockshop", "hardening", "carts", "2019-07-24T10:17:12", "2019-07-24T10:20:12")
+	_, err := executeActionCommandC(cmd)
 
 	if err != nil {
-		t.Errorf("An error occured: %v", err)
+		t.Errorf(unexpectedErrMsg, err)
 	}
 }
 
 func TestEvaluationStartAndEndTimeAndTimeframeSpecified(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
-	buf := new(bytes.Buffer)
-	rootCmd.SetOutput(buf)
 
 	*evaluationStart.Timeframe = ""
 	*evaluationStart.Start = ""
 	*evaluationStart.End = ""
 
-	args := []string{
-		"send",
-		"event",
-		"start-evaluation",
-		fmt.Sprintf("--project=%s", "sockshop"),
-		fmt.Sprintf("--stage=%s", "hardening"),
-		fmt.Sprintf("--service=%s", "carts"),
-		fmt.Sprintf("--start=%s", "2019-07-24T10:17:12"),
-		fmt.Sprintf("--end=%s", "2019-07-24T10:20:12"),
-		fmt.Sprintf("--timeframe=%s", "5m"),
-		"--mock",
-	}
-	rootCmd.SetArgs(args)
-	err := rootCmd.Execute()
+	cmd := fmt.Sprintf("send event start-evaluation --project=%s --stage=%s --service=%s "+
+		"--start=%s --end=%s --timeframe=%s --mock", "sockshop", "hardening", "carts", "2019-07-24T10:17:12",
+		"2019-07-24T10:20:12", "5m")
+	_, err := executeActionCommandC(cmd)
 
 	if err == nil {
-		t.Error("An error occured: expect an error due to too many parameters (start, end and timeframe) used at the same time")
+		t.Error("An error occurred: expect an error due to too many parameters (start, end and timeframe) used at the same time")
 	}
 
 	assert.EqualValues(t, "Start and end time of evaluation time frame not set: You can not use --end together with --timeframe", err.Error())
@@ -167,28 +106,17 @@ func TestEvaluationStartAndEndTimeAndTimeframeSpecified(t *testing.T) {
 func TestEvaluationStartAndEndTimeWrongOrder(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
-	buf := new(bytes.Buffer)
-	rootCmd.SetOutput(buf)
 
 	*evaluationStart.Timeframe = ""
 	*evaluationStart.Start = ""
 	*evaluationStart.End = ""
 
-	args := []string{
-		"send",
-		"event",
-		"start-evaluation",
-		fmt.Sprintf("--project=%s", "sockshop"),
-		fmt.Sprintf("--stage=%s", "hardening"),
-		fmt.Sprintf("--service=%s", "carts"),
-		fmt.Sprintf("--start=%s", "2019-07-24T10:17:12"),
-		fmt.Sprintf("--end=%s", "2019-07-24T10:10:12"),
-		"--mock",
-	}
-	rootCmd.SetArgs(args)
-	err := rootCmd.Execute()
+	cmd := fmt.Sprintf("send event start-evaluation --project=%s --stage=%s --service=%s "+
+		"--start=%s --end=%s  --mock", "sockshop", "hardening", "carts", "2019-07-24T10:17:12", "2019-07-24T10:10:12")
+	_, err := executeActionCommandC(cmd)
+
 	if err == nil {
-		t.Error("An error occured: expect an error as end time is before start time")
+		t.Error("An error occurred: expect an error as end time is before start time")
 	}
 
 	assert.EqualValues(t, "Start and end time of evaluation time frame not set: end date must be at least 1 minute after start date", err.Error())

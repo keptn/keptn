@@ -14,12 +14,13 @@ require (
 	github.com/hashicorp/go-version v1.2.0
 	github.com/keptn/go-utils v0.6.1-a
 	github.com/magiconair/properties v1.8.1
+	github.com/mattn/go-shellwords v1.0.10
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/viper v1.4.0
 	github.com/stretchr/testify v1.4.0
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
-	gopkg.in/yaml.v2 v2.2.4
+	gopkg.in/yaml.v2 v2.2.5
 	gotest.tools v2.2.0+incompatible
 	k8s.io/api v0.0.0-20190313235455-40a48860b5ab
 	k8s.io/apimachinery v0.0.0-20190313205120-d7deff9243b1

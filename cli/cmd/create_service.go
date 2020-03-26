@@ -4,13 +4,13 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/keptn/keptn/cli/utils/websockethelper"
+	"github.com/keptn/keptn/cli/pkg/websockethelper"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
-	"github.com/keptn/keptn/cli/utils/credentialmanager"
 	"github.com/spf13/cobra"
 )
 
@@ -30,7 +30,7 @@ Example:
 	keptn create service carts --project=sockshop`,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
-		_, _, err := credentialmanager.GetCreds()
+		_, _, err := credentialmanager.NewCredentialManager().GetCreds()
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
@@ -48,7 +48,7 @@ Example:
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		endPoint, apiToken, err := credentialmanager.GetCreds()
+		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}

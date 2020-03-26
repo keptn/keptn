@@ -16,10 +16,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/keptn/keptn/cli/pkg/file"
+
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/cli/pkg/logging"
-	"github.com/keptn/keptn/cli/utils"
-	"github.com/keptn/keptn/cli/utils/version"
+	"github.com/keptn/keptn/cli/pkg/version"
 	"github.com/spf13/cobra"
 )
 
@@ -41,7 +42,7 @@ const domainConfigMapSuffix = "/installer/manifests/keptn/keptn-domain-configmap
 var domainCmd = &cobra.Command{
 	Use:   "domain MY.DOMAIN.COM",
 	Short: "Configures the domain",
-	Long: `
+	Long: `Configures the domain of Keptn.
 	
 Example:
 	keptn configure domain my.domain.com`,
@@ -88,54 +89,56 @@ Example:
 		logging.PrintLog(fmt.Sprintf("Used version for manifests: %s",
 			*configureDomainParams.ConfigVersion), logging.InfoLevel)
 
+		if mocking {
+			return nil
+		}
 		kubernetesPlatform := newKubernetesPlatform()
 		return kubernetesPlatform.checkRequirements()
 
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 
-		ctx, _ := getKubeContext()
-		fmt.Println("Your kubernetes current context is configured to cluster: " + strings.TrimSpace(ctx))
-		fmt.Println("Would you like to update the keptn domain for this cluster? (y/n)")
-
-		reader := bufio.NewReader(os.Stdin)
-		in, err := reader.ReadString('\n')
-		if err != nil {
-			return err
-		}
-		in = strings.TrimSpace(in)
-		if in != "y" && in != "yes" {
-			fmt.Println("Please first configure your kubernetes current context so that it" +
-				"points to the cluster where you would like to update the keptn domain.")
-			return nil
-		}
-
-		fmt.Println("Please note that the domain of already onboarded services is not updated!")
-
-		logging.PrintLog("Starting to configure domain", logging.InfoLevel)
-
-		path, err := keptnutils.GetKeptnDirectory()
-		if err != nil {
-			return err
-		}
-
-		ingress, err := getIngressType()
-		if err != nil {
-			return err
-		}
-
 		if !mocking {
+			ctx, _ := getKubeContext()
+			fmt.Println("Your kubernetes current context is configured to cluster: " + strings.TrimSpace(ctx))
+			fmt.Println("Would you like to update the keptn domain for this cluster? (y/n)")
+
+			reader := bufio.NewReader(os.Stdin)
+			in, err := reader.ReadString('\n')
+			if err != nil {
+				return err
+			}
+			in = strings.TrimSpace(in)
+			if in != "y" && in != "yes" {
+				fmt.Println("Please first configure your kubernetes current context so that it" +
+					"points to the cluster where you would like to update the keptn domain.")
+				return nil
+			}
+
+			fmt.Println("Please note that the domain of already onboarded services is not updated!")
+
+			logging.PrintLog("Starting to configure domain", logging.InfoLevel)
+
+			path, err := keptnutils.GetKeptnDirectory()
+			if err != nil {
+				return err
+			}
+
+			ingress, err := getIngressType()
+			if err != nil {
+				return err
+			}
 
 			// Generate new certificate
 			if err := updateCertificate(path, args[0], ingress); err != nil {
 				return err
 			}
 
-			if ingress == Istio {
+			if ingress == istio {
 				if err := updateKeptnAPIVirtualService(path, args[0]); err != nil {
 					return err
 				}
-			} else if ingress == Nginx {
+			} else if ingress == nginx {
 				if err := updateKeptnAPIIngress(path, args[0]); err != nil {
 					return err
 				}
@@ -198,26 +201,26 @@ func getIngressType() (Ingress, error) {
 	o.appendIfNotEmpty(kubectlOptions)
 	namespaces, err := keptnutils.ExecuteCommand("kubectl", o)
 	if err != nil {
-		return Istio, err
+		return istio, err
 	}
 	if strings.Contains(namespaces, "istio-system") {
-		return Istio, nil
+		return istio, nil
 	} else if strings.Contains(namespaces, "ingress-nginx") {
-		return Nginx, nil
+		return nginx, nil
 	}
-	return Istio, errors.New("Cannot obtain type of ingress.")
+	return istio, errors.New("Cannot obtain type of ingress.")
 }
 
 func updateKeptnDomainConfigMap(path, domain string) error {
 
 	keptnDomainConfigMap := path + "keptn-domain-configmap.yaml"
 
-	if err := utils.DownloadFile(keptnDomainConfigMap, getDomainConfigMapURL()); err != nil {
+	if err := file.DownloadFile(keptnDomainConfigMap, getDomainConfigMapURL()); err != nil {
 		return err
 	}
 
-	if err := utils.Replace(keptnDomainConfigMap,
-		utils.PlaceholderReplacement{PlaceholderValue: "DOMAIN_PLACEHOLDER", DesiredValue: domain}); err != nil {
+	if err := file.Replace(keptnDomainConfigMap,
+		file.PlaceholderReplacement{PlaceholderValue: "DOMAIN_PLACEHOLDER", DesiredValue: domain}); err != nil {
 		return err
 	}
 
@@ -239,12 +242,12 @@ func updateKeptnAPIVirtualService(path, domain string) error {
 
 	keptnAPIVSPath := path + "keptn-api-virtualservice.yaml"
 
-	if err := utils.DownloadFile(keptnAPIVSPath, getAPIVirtualServiceURL()); err != nil {
+	if err := file.DownloadFile(keptnAPIVSPath, getAPIVirtualServiceURL()); err != nil {
 		return err
 	}
 
-	if err := utils.Replace(keptnAPIVSPath,
-		utils.PlaceholderReplacement{PlaceholderValue: "DOMAIN_PLACEHOLDER", DesiredValue: domain}); err != nil {
+	if err := file.Replace(keptnAPIVSPath,
+		file.PlaceholderReplacement{PlaceholderValue: "DOMAIN_PLACEHOLDER", DesiredValue: domain}); err != nil {
 		return err
 	}
 
@@ -266,12 +269,12 @@ func updateKeptnAPIVirtualService(path, domain string) error {
 func updateKeptnAPIIngress(path, domain string) error {
 
 	keptnAPIIngress := path + "api-ingress.yaml"
-	if err := utils.DownloadFile(keptnAPIIngress, getAPIIngressURL()); err != nil {
+	if err := file.DownloadFile(keptnAPIIngress, getAPIIngressURL()); err != nil {
 		return err
 	}
 
-	if err := utils.Replace(keptnAPIIngress,
-		utils.PlaceholderReplacement{PlaceholderValue: "domain.placeholder", DesiredValue: domain}); err != nil {
+	if err := file.Replace(keptnAPIIngress,
+		file.PlaceholderReplacement{PlaceholderValue: "domain.placeholder", DesiredValue: domain}); err != nil {
 		return err
 	}
 
@@ -355,7 +358,7 @@ func updateCertificate(path, domain string, ingress Ingress) error {
 	defer os.Remove(privateKeyPath)
 
 	// First delete secret and afterwards apply new secret with new certificate
-	if ingress == Istio {
+	if ingress == istio {
 		o := options{"delete", "--namespace", "istio-system", "secret", "istio-ingressgateway-certs"}
 		o.appendIfNotEmpty(kubectlOptions)
 		keptnutils.ExecuteCommand("kubectl", o)
