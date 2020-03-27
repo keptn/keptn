@@ -346,7 +346,7 @@ func doInstallation() error {
 		return err
 	}
 
-	logging.PrintLog("Deploying Keptn installer pod ...", logging.InfoLevel)
+	logging.PrintLog("Deploying Keptn installer job ...", logging.InfoLevel)
 
 	o := options{"apply", "-f", "-"}
 	o.appendIfNotEmpty(kubectlOptions)
@@ -357,12 +357,13 @@ func doInstallation() error {
 		return fmt.Errorf("Error while applying installer job: %s \n%s\nAborting installation", err.Error(), string(out))
 	}
 
+	logging.PrintLog("Waiting for installer pod to be started ...", logging.InfoLevel)
 	installerPodName, err := waitForInstallerPod()
 	if err != nil {
 		return err
 	}
 
-	logging.PrintLog("Installer pod deployed successfully.", logging.InfoLevel)
+	logging.PrintLog("Installer pod started successfully.", logging.InfoLevel)
 
 	if err := getInstallerLogs(installerPodName); err != nil {
 		return err
@@ -399,6 +400,7 @@ func doInstallation() error {
 		fmt.Println("Please create a Route53 Hosted Zone with a wildcard record set for " + hostname)
 		fmt.Println("Afterwards, call 'keptn configure domain YOUR_ROUTE53_DOMAIN'")
 	} else {
+		fmt.Println("Trying to get auth-token and API endpoint from Kubernetes.")
 		// installation finished, get auth token and endpoint
 		if err := authUsingKube(); err != nil {
 			return err
@@ -526,9 +528,13 @@ func waitForInstallerPod() (string, error) {
 				podStatus := podStatusArray[0].(map[string]interface{})["status"].(map[string]interface{})["phase"].(string)
 				if podStatus == "Running" {
 					return podStatusArray[0].(map[string]interface{})["metadata"].(map[string]interface{})["name"].(string), nil
+				} else if podStatus == "ImagePullBackOff" {
+					return "", errors.New("Installer pod could not be deployed (Status: ImagePullBackOff). " +
+						"Please verify that your Kubernetes cluster has a working Internet connection.")
 				} else if podStatus == "Failed" {
 					return "", errors.New("Installer pod ran into failure. " +
-						"Please check if a failed installer job exits: \"kubectl get jobs installer -n default\"")
+						"Please check if a failed installer job exits: \"kubectl get jobs installer -n default\"." +
+						"Please also check the log output: \"kubectl logs jobs/installer -n default\".")
 				}
 			}
 		}

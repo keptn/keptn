@@ -9,6 +9,8 @@ if [[ "$USE_CASE" == "all" ]]; then
   print_info "Installing Tiller"
   kubectl apply -f ../manifests/tiller/tiller.yaml
   verify_kubectl $? "Applying Tiller manifest failed."
+  kubectl get pods
+  print_info "Initializing helm/tiller"
   helm init --service-account tiller
   verify_install_step $? "Installing Tiller failed"
   print_info "Installing Tiller done"
