@@ -239,17 +239,6 @@ jobs:
       - cat ~/.keptn/keptn-installer.log
       - cat ~/.keptn/keptn-installer-err.log
 
-  # all commits (including external pull requests) should run basic tests for the CLI (if anything has changed)
-  - stage: CLI tests
-    os: osx # ToDo: cli tests fail for os: linux
-    script:
-    - |
-      if [[ $CHANGED_FILES == *"${CLI_FOLDER}"*  ]]; then
-        echo "Testing keptn CLI on osx"
-        cd ./cli
-        go test ./...
-      fi
-
   # always check code style for all directories
   - stage: codestyle
     # Check Codestyle using go fmt
@@ -274,6 +263,10 @@ jobs:
   - stage: Unit tests
     os: linux
     script:
+      - |
+          cd "${CLI_FOLDER}"
+          go test -race -coverprofile=coverage.txt -covermode=atomic -v ./...
+          cd ..
       - |
           cd "${API_FOLDER}"
           go test -coverprofile=coverage.txt -covermode=atomic -v ./handlers/... ./ws/... ./utils/...
