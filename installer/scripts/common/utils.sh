@@ -155,7 +155,7 @@ function wait_for_istio_ingressgateway() {
     fi
 
     if [[ "$DOMAIN" != "" ]]; then
-      print_debug "${PROPERTY} of Istio ingress gateway is available."
+      print_debug "${PROPERTY} of Istio ingress gateway is available: ${DOMAIN}"
       break
     fi
     RETRY=$[$RETRY+1]
