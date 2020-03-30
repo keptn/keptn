@@ -6,8 +6,8 @@ import (
 	"os"
 	"strings"
 
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/cli/pkg/logging"
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"github.com/spf13/cobra"
 )
 

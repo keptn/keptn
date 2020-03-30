@@ -60,7 +60,7 @@ Example:
 			return err
 		}
 
-		apiEvent := apimodels.Event{}
+		apiEvent := apimodels.KeptnContextExtendedCE{}
 		err = json.Unmarshal([]byte(eventString), &apiEvent)
 		if err != nil {
 			return fmt.Errorf("Failed to map event to API event model. %s", err.Error())

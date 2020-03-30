@@ -18,9 +18,9 @@ import (
 
 	"github.com/keptn/keptn/cli/pkg/file"
 
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/pkg/version"
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"github.com/spf13/cobra"
 )
 

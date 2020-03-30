@@ -6,7 +6,7 @@ import (
 	"regexp"
 
 	"github.com/hashicorp/go-version"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 )
 
 var (

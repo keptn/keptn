@@ -3,12 +3,12 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	keptn "github.com/keptn/go-utils/pkg/lib"
 
 	"github.com/keptn/keptn/cli/pkg/websockethelper"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/spf13/cobra"
@@ -40,7 +40,7 @@ Example:
 			return errors.New("required argument SERVICENAME not set")
 		}
 
-		if !keptnutils.ValididateUnixDirectoryName(args[0]) {
+		if !keptn.ValididateUnixDirectoryName(args[0]) {
 			return errors.New("Service name contains special character(s)." +
 				"The service name has to be a valid Unix directory name. For details see " +
 				"https://www.cyberciti.biz/faq/linuxunix-rules-for-naming-file-and-directory-names/")
@@ -54,7 +54,7 @@ Example:
 		}
 		logging.PrintLog("Starting to create service", logging.InfoLevel)
 
-		service := apimodels.Service{
+		service := apimodels.CreateService{
 			ServiceName: &args[0],
 		}
 

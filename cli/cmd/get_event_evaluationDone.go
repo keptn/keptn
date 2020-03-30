@@ -20,7 +20,7 @@ import (
 	"fmt"
 
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
-	keptnevents "github.com/keptn/go-utils/pkg/events"
+	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/spf13/cobra"

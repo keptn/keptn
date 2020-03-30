@@ -10,11 +10,11 @@ import (
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
-	"github.com/keptn/go-utils/pkg/events"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	keptn "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/pkg/validator"
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"github.com/spf13/cobra"
 )
 
@@ -41,7 +41,7 @@ Example:
 			cmd.SilenceUsage = false
 			return errors.New("required argument SERVICENAME not set")
 		}
-		if !keptnutils.ValidateKeptnEntityName(args[0]) {
+		if !keptn.ValidateKeptnEntityName(args[0]) {
 			errorMsg := "Service name contains upper case letter(s) or special character(s).\n"
 			return errors.New(errorMsg)
 		}
@@ -100,7 +100,7 @@ Example:
 		}
 
 		helmChart := base64.StdEncoding.EncodeToString(chartData)
-		service := apimodels.Service{
+		service := apimodels.CreateService{
 			ServiceName: &args[0],
 			HelmChart:   helmChart,
 		}
@@ -109,9 +109,9 @@ Example:
 			deplStrategies := make(map[string]string)
 
 			if *onboardServiceParams.DeploymentStrategy == "direct" {
-				deplStrategies["*"] = events.Direct.String()
+				deplStrategies["*"] = keptn.Direct.String()
 			} else if *onboardServiceParams.DeploymentStrategy == "blue_green_service" {
-				deplStrategies["*"] = events.Duplicate.String()
+				deplStrategies["*"] = keptn.Duplicate.String()
 			} else {
 				return fmt.Errorf("The provided deployment strategy %s is not supported. Select: [direct|blue_green_service]", *onboardServiceParams.DeploymentStrategy)
 			}
