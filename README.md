@@ -18,8 +18,8 @@ Please find the documentation of how to get started with Keptn in the [Quick Sta
 Furthermore, you can learn about our current releases, release candidates and pre-releases on the [release section](https://github.com/keptn/keptn/releases).
 
 ## Versions compatibilities
-We mangage the Keptn core components in versions. The respective images in their versions are stored on [DockerHub](https://hub.docker.com/?namespace=keptn).
-The versions of the Keptn core components and the services have to be compatible to each other.
+We manage the Keptn core components in versions. The respective images in their versions are stored on [DockerHub](https://hub.docker.com/?namespace=keptn).
+The versions of the Keptn core components and the services have to be compatible with each other.
 Therefore, this section shows the compatibility between these versions.
 
 **Keptn in [version 0.6.1](https://github.com/keptn/keptn/releases/tag/0.6.1) requires:**
@@ -159,10 +159,14 @@ Keptn in [version 0.5.0](https://github.com/keptn/keptn/releases/tag/0.5.0) requ
 
 Please check out the [GitHub releases page](https://github.com/keptn/keptn/releases) if you need information for older Keptn versions.
 
+## Roadmap
+
+The roadmap of the Keptn project can be found [here](https://github.com/orgs/keptn/projects/1). It gives you an overview of user stories that are currently in the focus of development for the next release.
+
 ## Contributions
 
 You are welcome to contribute using Pull Requests to the respective repositories. Before contributing, please read our [Contributing Guidelines](CONTRIBUTING.md) and our [Code of Conduct](CODE_OF_CONDUCT.md).
-Please also check out our list of [Good first issues](https://github.com/keptn/keptn/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22).
+Please also check out our list of [good first issues](https://github.com/keptn/keptn/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22).
 
 ## License
 
