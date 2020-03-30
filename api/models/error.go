@@ -6,6 +6,7 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"fmt"
 	"github.com/go-openapi/errors"
 	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
@@ -66,4 +67,6 @@ func (m *Error) UnmarshalBinary(b []byte) error {
 	}
 	*m = res
 	return nil
+
+	fmt.Print("hello world")
 }

@@ -16,7 +16,7 @@ var (
 )
 
 func init() {
-	logging.InitLoggers(os.Stdout, os.Stdout, os.Stderr)
+	logging.InitLoggers(os.Stdout, os.Stdout, os.Stderr);
 }
 
 func main() {
