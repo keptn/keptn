@@ -1,11 +1,19 @@
 #!/bin/bash
 source ./common/utils.sh
 
+# determine whether istio is already installed
 kubectl get ns istio-system
 ISTIO_AVAILABLE=$?
+
 if [[ "$ISTIO_AVAILABLE" == 0 ]] && [[ "$ISTIO_INSTALL_OPTION" == "Reuse" ]]; then
     # An istio-version is already installed
     print_info "Istio installation is reused but its compatibility is not checked"
+    wait_for_deployment_in_namespace "istio-ingressgateway" "istio-system"
+    wait_for_deployment_in_namespace "istio-pilot" "istio-system"
+    wait_for_deployment_in_namespace "istio-citadel" "istio-system"
+    wait_for_deployment_in_namespace "istio-sidecar-injector" "istio-system"
+    wait_for_all_pods_in_namespace "istio-system"
+
 elif [[ "$ISTIO_AVAILABLE" == 0 ]] && ([[ "$ISTIO_INSTALL_OPTION" == "StopIfInstalled" ]] || [[ "$ISTIO_INSTALL_OPTION" == "" ]] || [[ "$ISTIO_INSTALL_OPTION" == "ISTIO_INSTALL_OPTION_PLACEHOLDER" ]]); then
     print_error "Istio is already installed but is not used due to unknown compatibility"
     exit 1
@@ -35,6 +43,8 @@ else
     wait_for_all_pods_in_namespace "istio-system"
 fi
 
+
+print_info "Determining ingress hostname/ip for Keptn api (using ${GATEWAY_TYPE})"
 # Domain used for routing to keptn services
 if [[ "$GATEWAY_TYPE" == "LoadBalancer" ]]; then
   wait_for_istio_ingressgateway "hostname"
@@ -64,13 +74,13 @@ elif [[ "$GATEWAY_TYPE" == "NodePort" ]]; then
     export INGRESS_HOST="$NODE_IP.xip.io"
 fi
 
-echo $DOMAIN
-echo $INGRESS_HOST
+print_info "Determined ${DOMAIN} and ${INGRESS_HOST}"
 
 if [[ "$PLATFORM" == "eks" ]]; then 
     print_info "For EKS: No SSL certificate created. Please use keptn configure domain at the end of the installation."
 else
     # Set up SSL
+    print_info "Setting up self-signed SSL certificate."
     openssl req -nodes -newkey rsa:2048 -keyout key.pem -out certificate.pem  -x509 -days 365 -subj "/CN=$INGRESS_HOST"
 
     kubectl create --namespace istio-system secret tls istio-ingressgateway-certs --key key.pem --cert certificate.pem

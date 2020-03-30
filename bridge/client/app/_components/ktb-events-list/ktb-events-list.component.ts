@@ -1,13 +1,8 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  Input,
-  OnInit,
-  ViewEncapsulation
-} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, ViewEncapsulation} from '@angular/core';
 import {Trace} from "../../_models/trace";
 import DateUtil from "../../_utils/date.utils";
+import {Router} from "@angular/router";
+import {Location} from "@angular/common";
 
 @Component({
   selector: 'ktb-events-list',
@@ -23,6 +18,7 @@ import DateUtil from "../../_utils/date.utils";
 export class KtbEventsListComponent implements OnInit {
 
   public _events: Trace[] = [];
+  public _focusedEventId: string;
 
   @Input()
   get events(): Trace[] {
@@ -35,7 +31,18 @@ export class KtbEventsListComponent implements OnInit {
     }
   }
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef) { }
+  @Input()
+  get focusedEventId(): string {
+    return this._focusedEventId;
+  }
+  set focusedEventId(value: string) {
+    if (this._focusedEventId !== value) {
+      this._focusedEventId = value;
+      this._changeDetectorRef.markForCheck();
+    }
+  }
+
+  constructor(private router: Router, private location: Location, private _changeDetectorRef: ChangeDetectorRef) { }
 
   ngOnInit() {
   }
@@ -48,8 +55,20 @@ export class KtbEventsListComponent implements OnInit {
     return DateUtil.getCalendarFormats();
   }
 
-  switchEvaluationView(event) {
+  private currentScrollElement;
+  scrollIntoView(element) {
+    if(element != this.currentScrollElement) {
+      this.currentScrollElement = element;
+      setTimeout(() => {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }, 0);
+    }
+    return true;
+  }
 
+  focusEvent(event) {
+    let routeUrl = this.router.createUrlTree(['/project', event.data.project, event.data.service, event.shkeptncontext, event.id]);
+    this.location.go(routeUrl.toString());
   }
 
 }

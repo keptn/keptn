@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/keptn/keptn/cli/utils/config"
+	"github.com/keptn/keptn/cli/pkg/config"
 
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"gotest.tools/assert"

@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
-	"github.com/keptn/keptn/cli/utils/credentialmanager"
 )
 
 func init() {
@@ -46,18 +46,10 @@ func TestCreateProjectCmd(t *testing.T) {
 	shipyardFileName := "shipyard.yaml"
 	defer testShipyard(t, shipyardFileName, "")()
 
-	args := []string{
-		"create",
-		"project",
-		"sockshop",
-		fmt.Sprintf("--shipyard=%s", shipyardFileName),
-		"--mock",
-	}
-	rootCmd.SetArgs(args)
-	err := rootCmd.Execute()
-
+	cmd := fmt.Sprintf("create project sockshop --shipyard=%s --mock", shipyardFileName)
+	_, err := executeActionCommandC(cmd)
 	if err != nil {
-		t.Errorf("An error occured: %v", err)
+		t.Errorf(unexpectedErrMsg, err)
 	}
 }
 
@@ -69,21 +61,11 @@ func TestCreateProjectIncorrectProjectNameCmd(t *testing.T) {
 	shipyardFileName := "shipyard.yaml"
 	defer testShipyard(t, shipyardFileName, "")()
 
-	args := []string{
-		"create",
-		"project",
-		"Sockshop", // invalid name, only lowercase is allowed
-		fmt.Sprintf("--shipyard=%s", shipyardFileName),
-	}
-	rootCmd.SetArgs(args)
-	err := rootCmd.Execute()
+	cmd := fmt.Sprintf("create project Sockshop --shipyard=%s --mock", shipyardFileName)
+	_, err := executeActionCommandC(cmd)
 
-	if err != nil {
-		if !errorContains(err, "contains upper case letter(s) or special character(s)") {
-			t.Errorf("An error occured: %v", err)
-		}
-	} else {
-		t.Fail()
+	if !errorContains(err, "contains upper case letter(s) or special character(s)") {
+		t.Errorf("missing expected error, but got %v", err)
 	}
 }
 
@@ -103,50 +85,28 @@ func TestCreateProjectIncorrectStageNameCmd(t *testing.T) {
 
 	defer testShipyard(t, shipyardFileName, shipyardContent)()
 
-	args := []string{
-		"create",
-		"project",
-		"sockshop",
-		fmt.Sprintf("--shipyard=%s", shipyardFileName),
-	}
-	rootCmd.SetArgs(args)
-	err := rootCmd.Execute()
+	cmd := fmt.Sprintf("create project Sockshop --shipyard=%s --mock", shipyardFileName)
+	_, err := executeActionCommandC(cmd)
 
-	if err != nil {
-		if !errorContains(err, "contains upper case letter(s) or special character(s)") {
-			t.Errorf("An error occured: %v", err)
-		}
-	} else {
-		t.Fail()
+	if !errorContains(err, "contains upper case letter(s) or special character(s)") {
+		t.Errorf("missing expected error, but got %v", err)
 	}
 }
 
 // TestCreateProjectCmdWithGitMissingParam tests whether the create project command aborts
-// due to a missing parameters for defining a git upstream
+// due to a missing flag for defining a git upstream
 func TestCreateProjectCmdWithGitMissingParam(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
 
 	shipyardFileName := "shipyard.yaml"
 	defer testShipyard(t, shipyardFileName, "")()
 
-	args := []string{
-		"create",
-		"project",
-		"sockshop",
-		fmt.Sprintf("--shipyard=%s", shipyardFileName),
-		fmt.Sprintf("--git-user=%s", "user"),
-		fmt.Sprintf("--git-token=%s", "token"),
-		"--mock",
-	}
-	rootCmd.SetArgs(args)
-	err := rootCmd.Execute()
+	cmd := fmt.Sprintf("create project sockshop --shipyard=%s --git-user=%s --git-token=%s --mock",
+		shipyardFileName, "user", "token")
+	_, err := executeActionCommandC(cmd)
 
-	if err != nil {
-		if !errorContains(err, "For configuring a Git upstream") {
-			t.Errorf("An error occured: %v", err)
-		}
-	} else {
-		t.Fail()
+	if !errorContains(err, gitErrMsg) {
+		t.Errorf("missing expected error, but got %v", err)
 	}
 }
 
@@ -158,21 +118,12 @@ func TestCreateProjectCmdWithGit(t *testing.T) {
 	shipyardFileName := "shipyard.yaml"
 	defer testShipyard(t, shipyardFileName, "")()
 
-	args := []string{
-		"create",
-		"project",
-		"sockshop",
-		fmt.Sprintf("--shipyard=%s", shipyardFileName),
-		fmt.Sprintf("--git-user=%s", "user"),
-		fmt.Sprintf("--git-token=%s", "token"),
-		fmt.Sprintf("--git-remote-url=%s", "https://"),
-		"--mock",
-	}
-	rootCmd.SetArgs(args)
-	err := rootCmd.Execute()
+	cmd := fmt.Sprintf("create project sockshop --shipyard=%s --git-user=%s --git-token=%s --git-remote-url=%s --mock",
+		shipyardFileName, "user", "token", "https://")
+	_, err := executeActionCommandC(cmd)
 
 	if err != nil {
-		t.Fail()
+		t.Errorf(unexpectedErrMsg, err)
 	}
 }
 

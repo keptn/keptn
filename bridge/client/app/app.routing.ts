@@ -8,6 +8,11 @@ const routes: Routes = [
   {path: '', pathMatch: 'full', redirectTo: 'dashboard'},
   {path: 'dashboard', component: DashboardComponent},
   {path: 'project/:projectName', component: ProjectBoardComponent},
+  {path: 'project/:projectName/:serviceName', component: ProjectBoardComponent},
+  {path: 'project/:projectName/:serviceName/:contextId', component: ProjectBoardComponent},
+  {path: 'project/:projectName/:serviceName/:contextId/:eventId', component: ProjectBoardComponent},
+  {path: 'trace/:shkeptncontext', component: ProjectBoardComponent},
+  {path: 'trace/:shkeptncontext/:eventselector', component: ProjectBoardComponent},
   {path: '**', redirectTo: ''}
 ];
 

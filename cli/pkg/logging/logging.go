@@ -14,7 +14,7 @@ var (
 	Error *log.Logger
 )
 
-// InitLoggers initalizes the loggers
+// InitLoggers initializes the loggers
 func InitLoggers(
 	infoHandle io.Writer,
 	warningHandle io.Writer,

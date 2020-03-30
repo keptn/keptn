@@ -4,3 +4,10 @@
 .dt-tag.error {
   border-color: $error-color;
 }
+
+ktb-event-item.focused {
+  box-shadow: 0 0 0 0 rgba(180, 180, 180, 1);
+  transform: scale(1);
+  animation: pulse 2s;
+  animation-delay: .5s;
+}

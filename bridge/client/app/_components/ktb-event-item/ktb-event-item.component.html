@@ -2,8 +2,9 @@
   <ktb-expandable-tile-header>
     <div fxLayout="row" class="pr-4">
       <div fxFlex>
-        <div fxLayout="row" fxLayoutAlign="start" fxLayoutGap="5px">
-          <h4 class="m-0 mt-1 mb-1" [textContent]="_event.getLabel()"></h4>
+        <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
+          <dt-icon class="event-icon" [class.error]="_event.isFaulty()" [class.success]="_event.isSuccessful()" [name]="_event.getIcon()"></dt-icon>
+          <h4 class="m-0 mt-1 mb-1" [class.error]="_event.isFaulty()" [textContent]="_event.getLabel()"></h4>
           <a *ngIf="_event.data.deploymentURIPublic" [href]="_event.data.deploymentURIPublic" target="_blank"><button dt-icon-button variant="nested"><dt-icon name="externallink"></dt-icon></button></a>
         </div>
         <p class="m-0 nobreak"><span class="bold">Source: </span><span [textContent]="_event.source"></span></p>

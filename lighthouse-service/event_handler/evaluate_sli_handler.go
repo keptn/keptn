@@ -453,11 +453,6 @@ func parseCriteriaString(criteria string) (*criteriaObject, error) {
 
 	c := &criteriaObject{}
 
-	if strings.HasSuffix(criteria, "%") {
-		c.CheckPercentage = true
-		criteria = strings.TrimSuffix(criteria, "%")
-	}
-
 	operators := []string{"<=", "<", "=", ">=", ">"}
 
 	for _, operator := range operators {
@@ -468,6 +463,13 @@ func parseCriteriaString(criteria string) (*criteriaObject, error) {
 		}
 	}
 
+	if strings.HasSuffix(criteria, "%") {
+		c.CheckPercentage = true
+		c.IsComparison = true // Issue #1498: criteria containing '%' is always a comparison
+		c.CheckIncrease = true
+		criteria = strings.TrimSuffix(criteria, "%")
+	}
+
 	if strings.HasPrefix(criteria, "-") {
 		c.IsComparison = true
 		c.CheckIncrease = false
@@ -476,9 +478,6 @@ func parseCriteriaString(criteria string) (*criteriaObject, error) {
 		c.IsComparison = true
 		c.CheckIncrease = true
 		criteria = strings.TrimPrefix(criteria, "+")
-	} else {
-		c.IsComparison = false
-		c.CheckIncrease = false
 	}
 
 	floatValue, err := strconv.ParseFloat(criteria, 64)

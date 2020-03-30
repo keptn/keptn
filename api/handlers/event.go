@@ -25,13 +25,13 @@ import (
 )
 
 func getDatastoreURL() string {
-	return "http://" + os.Getenv("DATASTORE_URI")
+	return sanitizeURL(os.Getenv("DATASTORE_URI"))
 }
 
 // PostEventHandlerFunc forwards an event to the event broker
 func PostEventHandlerFunc(params event.PostEventParams, principal *models.Principal) middleware.Responder {
 
-	keptnContext := createOrApplyKeptnContext(params)
+	keptnContext := createOrApplyKeptnContext(params.Body.Shkeptncontext)
 
 	logger := keptnutils.NewLogger(keptnContext, "", "api")
 	logger.Info("API received a keptn event")
@@ -67,23 +67,23 @@ func PostEventHandlerFunc(params event.PostEventParams, principal *models.Princi
 	return event.NewPostEventOK().WithPayload(&eventContext)
 }
 
-func createOrApplyKeptnContext(params event.PostEventParams) string {
+func createOrApplyKeptnContext(eventKeptnContext string) string {
 	uuid.SetRand(nil)
 	keptnContext := uuid.New().String()
-	if params.Body.Shkeptncontext != "" {
-		_, err := uuid.Parse(params.Body.Shkeptncontext)
+	if eventKeptnContext != "" {
+		_, err := uuid.Parse(eventKeptnContext)
 		if err != nil {
-			if len(params.Body.Shkeptncontext) < 16 {
-				paddedContext := fmt.Sprintf("%-16v", params.Body.Shkeptncontext)
+			if len(eventKeptnContext) < 16 {
+				paddedContext := fmt.Sprintf("%-16v", eventKeptnContext)
 				uuid.SetRand(strings.NewReader(paddedContext))
 			} else {
-				uuid.SetRand(strings.NewReader(params.Body.Shkeptncontext))
+				uuid.SetRand(strings.NewReader(eventKeptnContext))
 			}
 
 			keptnContext = uuid.New().String()
 			uuid.SetRand(nil)
 		} else {
-			keptnContext = params.Body.Shkeptncontext
+			keptnContext = eventKeptnContext
 		}
 	}
 	return keptnContext

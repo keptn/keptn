@@ -4,6 +4,8 @@
 @import '~@dynatrace/barista-components/style/main';
 @import '~@dynatrace/barista-components/style/index';
 
+@import 'barista';
+
 html {
   box-sizing: border-box;
 }
@@ -47,6 +49,15 @@ span.small {
   color: $gray-700;
 }
 
+p.error,
+span.error,
+h1.error,
+h2.error,
+h3.error,
+h4.error {
+  color: $error-color;
+}
+
 p.error, p.fail,
 span.error, span.fail {
   color: $error-color;
@@ -60,6 +71,11 @@ span.warning {
 p.error-line,
 span.error-line {
   text-decoration: line-through;
+}
+
+p.italic,
+span.italic {
+  font-style: italic;;
 }
 
 .m-0 {
@@ -176,4 +192,18 @@ span.error-line {
 
 [fxFLex] {
   min-height: 0;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(180, 180, 180, 0.6);
+  }
+
+  70% {
+    box-shadow: 0 0 0 25px rgba(180, 180, 180, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(180, 180, 180, 0);
+  }
 }

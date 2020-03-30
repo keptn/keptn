@@ -2,7 +2,33 @@
 
 The `keptn` cli is a command line interface for running commands against a Keptn installation.
 
-## Synatax
+## Development
+
+Using Go 1.12 (or newer), ensure that you have GO Modules enabled by executing
+```console
+export GO111MODULE=on
+```
+
+You can build the CLI using
+```console
+go build -o keptn
+```
+
+You can execute unit tests using
+```console
+go test ./...
+```
+
+### Structure
+
+The cli consists of 
+
+* the entrypoint defined in [main.go](main.go), 
+* the root command defined in [cmd/root.go](cmd/root.go),
+* all the other commands defined in the [cmd/](cmd/) folder, and
+* some utility and helper functions in the [pkg/](pkg/) folder.
+
+## Usage
 
 Use the following syntax to run Keptn commands from your terminal window:
 
@@ -28,7 +54,7 @@ where **command**, **entity**, **name**, and **flags** are:
 
 If you need help, just run `keptn --help` help from the terminal window.
 
-## Operations
+### Operations
 
 The following table includes short descriptions and the general syntax for all of the `keptn` operations:
 

@@ -77,7 +77,7 @@ func (s Slower) executor(problem *keptnevents.ProblemEventData, shkeptncontext s
 			resource, err := handler.GetServiceResource(problem.Project, problem.Stage, service,
 				getVirtualServiceUri(service))
 			if err != nil {
-				return fmt.Errorf("could not get virutal service resource: %v", err)
+				return fmt.Errorf("could not get VirtualService resource: %v", err)
 			}
 
 			newVS, err := editVs(resource.ResourceContent, ip, slowDown)

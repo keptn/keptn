@@ -5,11 +5,12 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"net"
 	"net/url"
 	"strings"
 	"time"
 
-	"github.com/keptn/keptn/cli/utils/credentialmanager"
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
@@ -42,15 +43,46 @@ Example:
 		authHandler := apiutils.NewAuthenticatedAuthHandler(url.String(), *apiToken, "x-token", nil, "https")
 
 		if !mocking {
-			_, err := authHandler.Authenticate()
-			if err != nil {
-				errMsg := fmt.Sprintf("Authentication was unsuccessful. %s", *err.Message)
-				logging.PrintLog(errMsg, logging.QuietLevel)
-				return fmt.Errorf("Authentication was unsuccessful. %s", *err.Message)
+			authenticated := false
+			dnsResolved := false
+
+			// first, try to resolve the domain (and retry it)
+			for retries := 0; retries < 3; time.Sleep(5 * time.Second) {
+				_, err := net.LookupHost(url.Host)
+				if err != nil {
+					logging.PrintLog("Failed to resolve hostname "+url.Host, logging.InfoLevel)
+					logging.PrintLog("Retrying...", logging.InfoLevel)
+					retries++
+				} else {
+					dnsResolved = true
+					break
+				}
+			}
+
+			if !dnsResolved {
+				return fmt.Errorf("Authentication was unsuccessful - could not resolve hostname.")
+			}
+
+			// try to authenticate (and retry it)
+			for retries := 0; retries < 3; time.Sleep(5 * time.Second) {
+				_, err := authHandler.Authenticate()
+				if err != nil {
+					errMsg := fmt.Sprintf("Authentication was unsuccessful. %s", *err.Message)
+					logging.PrintLog(errMsg, logging.QuietLevel)
+					logging.PrintLog("Retrying...", logging.InfoLevel)
+					retries++
+				} else {
+					authenticated = true
+					break
+				}
+			}
+
+			if !authenticated {
+				return fmt.Errorf("Authentication was unsuccessful - could not authenticate against the server.")
 			}
 
 			logging.PrintLog("Successfully authenticated", logging.InfoLevel)
-			return credentialmanager.SetCreds(*url, *apiToken)
+			return credentialmanager.NewCredentialManager().SetCreds(*url, *apiToken)
 		}
 
 		fmt.Println("skipping auth due to mocking flag set to true")
@@ -67,8 +99,10 @@ func init() {
 	authCmd.MarkFlagRequired("api-token")
 }
 
+// authenticate using secrets obtained via kubectl
 func authUsingKube() error {
 
+	// get api token
 	apiToken, err := getAPITokenUsingKube()
 
 	const errorMsg = `Could not retrieve keptn API token: %s
@@ -78,6 +112,7 @@ To manually set up your keptn CLI, please follow the instructions at https://kep
 		return fmt.Errorf(errorMsg, err)
 	}
 
+	// try to obtain endpoint using kubectl (retry a couple of times in case it is not yet available)
 	var keptnEndpoint string
 	for retries := 0; retries < 15; time.Sleep(5 * time.Second) {
 
@@ -85,14 +120,17 @@ To manually set up your keptn CLI, please follow the instructions at https://kep
 		if err != nil || strings.TrimSpace(string(out)) == "" {
 			logging.PrintLog("API endpoint not yet available... trying again in 5s", logging.InfoLevel)
 		} else {
+			logging.PrintLog("Received Keptn Domain: "+string(out), logging.InfoLevel)
 			keptnEndpoint = "https://api.keptn." + strings.TrimSpace(string(out))
 			break
 		}
 		retries++
 	}
+	// fail if we did not receive a correct endpoint
 	if keptnEndpoint == "" {
 		return errors.New("Cannot obtain endpoint of api")
 	}
+
 	return authenticate(keptnEndpoint, apiToken)
 }
 
@@ -126,6 +164,7 @@ func getAPITokenUsingKube() (string, error) {
 	return string(apiToken), nil
 }
 
+// try to authenticate towards the given endpoint with the provided apiToken
 func authenticate(endPoint string, apiToken string) error {
 	buf := new(bytes.Buffer)
 	rootCmd.SetOutput(buf)
