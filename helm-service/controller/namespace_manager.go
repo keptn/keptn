@@ -27,7 +27,7 @@ func (p *NamespaceManager) InitNamespaces(project string, stages []*models.Stage
 		namespace := helm.GetUmbrellaNamespace(project, shipyardStage.StageName)
 		exists, err := keptnutils.ExistsNamespace(true, namespace)
 		if err != nil {
-			return fmt.Errorf("error when checking availablity of namespace: %v", err)
+			return fmt.Errorf("error when checking availability of namespace: %v", err)
 		}
 		if exists {
 			p.logger.Debug(fmt.Sprintf("Reuse existing namespace %s", namespace))

@@ -45,7 +45,7 @@ func TestEvaluationStartWrongFormat(t *testing.T) {
 	_, err := executeActionCommandC(cmd)
 
 	if err == nil {
-		t.Error("An error occured: expect an error due to wrong time frame format")
+		t.Error("An error occurred: expect an error due to wrong time frame format")
 	}
 }
 

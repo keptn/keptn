@@ -28,7 +28,7 @@ var addResourceCmd = &cobra.Command{
 	Use:   "add-resource --project=PROJECT --stage=STAGE --service=SERVICE --resource=FILEPATH --resourceUri=FILEPATH",
 	Short: "Adds a resource to a service within your project in the specified stage",
 	Long: `Adds a resource to a service within your project in the specified stage.
-	
+        
 Example: 
 	keptn add-resource --project=sockshop --stage=dev --service=carts --resource=./jmeter.jmx --resourceUri=jmeter/functional.jmx`,
 	SilenceUsage: true,
@@ -54,7 +54,7 @@ Example:
 
 		resourceContentStr := string(resourceContent)
 		resources := []*apimodels.Resource{
-			&apimodels.Resource{
+			{
 				ResourceContent: &resourceContentStr,
 				ResourceURI:     addResourceCmdParams.ResourceURI,
 			},
