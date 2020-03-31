@@ -3,15 +3,14 @@ module github.com/keptn/keptn/jmeter-service
 go 1.12
 
 require (
-	cloud.google.com/go v0.38.0 // indirect
 	github.com/cloudevents/sdk-go v0.10.0
 	github.com/google/uuid v1.1.1
-	github.com/kelseyhightower/envconfig v1.3.0
+	github.com/json-iterator/go v1.1.9 // indirect
+	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/keptn/go-utils v0.6.1-a
-	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45 // indirect
-	google.golang.org/appengine v1.5.0 // indirect
-	k8s.io/apimachinery v0.0.0-20190313205120-d7deff9243b1
+	k8s.io/apimachinery v0.18.0
+	k8s.io/client-go v0.18.0
+	k8s.io/utils v0.0.0-20200327001022-6496210b90e8 // indirect
 )
 
-// replace cloudevents/sdk-go latest version with 0.7.0
-replace github.com/cloudevents/sdk-go => github.com/cloudevents/sdk-go v0.0.0-20190509003705-56931988abe3
+replace github.com/keptn/go-utils => github.com/keptn/go-utils v0.6.1-0.20200331064125-beb163c41650
