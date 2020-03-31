@@ -13,15 +13,6 @@ wait_for_deployment_in_namespace "nats-operator" "keptn"
 kubectl apply -f ../manifests/nats/nats-cluster.yaml
 verify_kubectl $? "Creating NATS Cluster failed."
 
-# Add config map in keptn namespace that contains the domain - this will be used by other services as well
-rm -f ../manifests/gen/keptn-domain-configmap.yaml
-
-cat ../manifests/keptn/keptn-domain-configmap.yaml | \
-  sed 's~DOMAIN_PLACEHOLDER~'"$DOMAIN"'~' >> ../manifests/gen/keptn-domain-configmap.yaml
-
-kubectl apply -f ../manifests/gen/keptn-domain-configmap.yaml
-verify_kubectl $? "Creating configmap keptn-domain in keptn namespace failed."
-
 # Creating cluster role binding
 kubectl apply -f ../manifests/keptn/rbac.yaml
 verify_kubectl $? "Creating cluster role for keptn failed."
@@ -113,15 +104,3 @@ case $USE_CASE in
     echo "Use case not provided"
     ;;
 esac
-
-if [ "$INGRESS" = "istio" ]; then
-  kubectl apply -f ../manifests/istio/public-gateway.yaml
-  verify_kubectl $? "Deploying public-gateway failed."
-
-  rm -f ../manifests/keptn/gen/keptn-api-virtualservice.yaml
-  cat ../manifests/keptn/keptn-api-virtualservice.yaml | \
-    sed 's~DOMAIN_PLACEHOLDER~'"$INGRESS_HOST"'~' > ../manifests/keptn/gen/keptn-api-virtualservice.yaml
-
-  kubectl apply -f ../manifests/keptn/gen/keptn-api-virtualservice.yaml
-  verify_kubectl $? "Deploying keptn api virtualservice failed."
-fi

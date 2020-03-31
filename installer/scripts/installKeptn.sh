@@ -32,39 +32,12 @@ print_info "Keptn Namespace created"
 source ./installNginx.sh
 
 case $PLATFORM in
-  aks)    
-    installNginxPublicCloud
-    source ./installIngressForKeptn.sh
-    echo "Installing Keptn on AKS"
-    ./common/install.sh
-    ;;
-  eks)
-    installNginxPublicCloud
-    source ./installIngressForKeptn.sh
-    echo "Install Keptn on EKS"
+  aks|eks|gke|pks|kubernetes)
     ./common/install.sh
     ;;
   openshift)
     echo "Install Keptn on OpenShift"
     ./openshift/installOnOpenshift.sh
-    ;;
-  gke)    
-    installNginxPublicCloud
-    source ./installIngressForKeptn.sh
-    echo "Install Keptn on GKE"
-    ./common/install.sh
-    ;;
-  pks)
-    installNginxPublicCloud
-    source ./installIngressForKeptn.sh
-    echo "Install Keptn on PKS"
-    ./common/install.sh
-    ;;
-  kubernetes)
-    installNginxKubernetes
-    source ./installIngressForKeptn.sh
-    echo "Install Keptn on Kubernetes"
-    ./common/install.sh
     ;;
   *)
     echo "Platform not provided"

@@ -43,49 +43,5 @@ else
     wait_for_all_pods_in_namespace "istio-system"
 fi
 
-
-print_info "Determining ingress hostname/ip for Keptn api (using ${GATEWAY_TYPE})"
-# Domain used for routing to keptn services
-if [[ "$GATEWAY_TYPE" == "LoadBalancer" ]]; then
-  wait_for_istio_ingressgateway "hostname"
-  export DOMAIN=$(kubectl get svc istio-ingressgateway -o json -n istio-system | jq -r .status.loadBalancer.ingress[0].hostname)
-  if [[ $? != 0 ]]; then
-      print_error "Failed to get ingress gateway information." && exit 1
-  fi
-  export INGRESS_HOST=$DOMAIN
-
-  if [[ "$DOMAIN" == "null" ]]; then
-      print_info "Could not get ingress gateway domain name. Trying to retrieve IP address instead."
-
-      wait_for_istio_ingressgateway "ip"
-
-      export DOMAIN=$(kubectl get svc istio-ingressgateway -o json -n istio-system | jq -r .status.loadBalancer.ingress[0].ip)
-      if [[ "$DOMAIN" == "null" ]]; then
-          print_error "IP of Istio ingress gateway could not be derived."
-          exit 1
-      fi
-      export DOMAIN="$DOMAIN.xip.io"
-      export INGRESS_HOST=$DOMAIN
-  fi
-elif [[ "$GATEWAY_TYPE" == "NodePort" ]]; then
-    NODE_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')
-    NODE_IP=$(kubectl get nodes -l node-role.kubernetes.io/worker=true -o jsonpath='{ $.items[0].status.addresses[?(@.type=="InternalIP")].address }')
-    export DOMAIN="$NODE_IP.xip.io:$NODE_PORT"
-    export INGRESS_HOST="$NODE_IP.xip.io"
-fi
-
-print_info "Determined ${DOMAIN} and ${INGRESS_HOST}"
-
-if [[ "$PLATFORM" == "eks" ]]; then 
-    print_info "For EKS: No SSL certificate created. Please use keptn configure domain at the end of the installation."
-else
-    # Set up SSL
-    print_info "Setting up self-signed SSL certificate."
-    openssl req -nodes -newkey rsa:2048 -keyout key.pem -out certificate.pem  -x509 -days 365 -subj "/CN=$INGRESS_HOST"
-
-    kubectl create --namespace istio-system secret tls istio-ingressgateway-certs --key key.pem --cert certificate.pem
-    #verify_kubectl $? "Creating secret for istio-ingressgateway-certs failed."
-
-    rm key.pem
-    rm certificate.pem
-fi
+kubectl apply -f ../manifests/istio/public-gateway.yaml
+verify_kubectl $? "Deploying public-gateway failed."
