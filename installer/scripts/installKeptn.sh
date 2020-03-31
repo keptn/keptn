@@ -29,8 +29,6 @@ kubectl apply -f ../manifests/keptn/namespace.yaml
 verify_kubectl $? "Creating Keptn namespace failed."
 print_info "Keptn Namespace created"
 
-source ./installNginx.sh
-
 case $PLATFORM in
   aks|eks|gke|pks|kubernetes)
     ./common/install.sh

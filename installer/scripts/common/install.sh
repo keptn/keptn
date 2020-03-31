@@ -4,11 +4,11 @@ source ./common/utils.sh
 
 if [[ "$USE_CASE" == "all" ]]; then
   # Install istio
-  source ./setupIstio.sh
+  source ./common/setupIstio.sh
   setupKeptnIngress "istio" "istio-ingressgateway" "istio-system"
 else
   # Install NGINX
-  source ./setupNginx.sh
+  source ./common/setupNginx.sh
   setupKeptnIngress "nginx" "ingress-nginx" "ingress-nginx"
 fi
 
