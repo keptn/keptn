@@ -7,15 +7,16 @@ import (
 	"github.com/keptn/keptn/helm-service/controller/helm"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/keptn/go-utils/pkg/configuration-service/models"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	"github.com/keptn/go-utils/pkg/api/models"
+	keptn "github.com/keptn/go-utils/pkg/lib"
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 )
 
 type NamespaceManager struct {
-	logger keptnutils.LoggerInterface
+	logger keptn.LoggerInterface
 }
 
-func NewNamespaceManager(logger keptnutils.LoggerInterface) *NamespaceManager {
+func NewNamespaceManager(logger keptn.LoggerInterface) *NamespaceManager {
 	return &NamespaceManager{logger: logger}
 }
 

@@ -14,10 +14,10 @@ import (
 	"github.com/keptn/keptn/helm-service/controller/mesh"
 	"github.com/keptn/keptn/helm-service/pkg/helmtest"
 
-	configmodels "github.com/keptn/go-utils/pkg/configuration-service/models"
-	configutils "github.com/keptn/go-utils/pkg/configuration-service/utils"
-	keptnevents "github.com/keptn/go-utils/pkg/events"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	configmodels "github.com/keptn/go-utils/pkg/api/models"
+	configutils "github.com/keptn/go-utils/pkg/api/utils"
+	keptnevents "github.com/keptn/go-utils/pkg/lib"
+	keptnutils "github.com/keptn/go-utils/pkg/lib"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -37,7 +37,7 @@ stages:
 func createTestProjet(t *testing.T) {
 
 	prjHandler := configutils.NewProjectHandler(configBaseURL)
-	prj := configmodels.Project{ProjectName: projectName}
+	prj := configmodels.CreateProject{Name: stringp(projectName)}
 	respErr, err := prjHandler.CreateProject(prj)
 	check(err, t)
 	assert.Nil(t, respErr, "Creating a project failed")
@@ -47,8 +47,10 @@ func createTestProjet(t *testing.T) {
 	shipyardURI := "shipyard.yaml"
 	shipyardResource := configmodels.Resource{ResourceURI: &shipyardURI, ResourceContent: shipyard}
 	resources := []*configmodels.Resource{&shipyardResource}
-	_, err = rHandler.CreateProjectResources(projectName, resources)
-	check(err, t)
+	_, err2 := rHandler.CreateProjectResources(projectName, resources)
+	if err2 != nil {
+		t.Error(err)
+	}
 
 	// Create stages
 	stageHandler := configutils.NewStageHandler(configBaseURL)
@@ -77,7 +79,9 @@ func TestDoOnboard(t *testing.T) {
 	fmt.Println(encodedChart)
 	ce := cloudevents.New("0.2")
 	dataBytes, err := json.Marshal(keptnevents.ServiceCreateEventData{Project: projectName, Service: serviceName, HelmChart: encodedChart})
-	check(err, t)
+	if err != nil {
+		t.Error(err)
+	}
 	ce.Data = dataBytes
 
 	id := uuid.New().String()
@@ -85,8 +89,9 @@ func TestDoOnboard(t *testing.T) {
 		keptnutils.NewLogger(id, "service.create", "helm-service"), "test.keptn.sh", "")
 	loggingDone := make(chan bool)
 	err = onboarder.DoOnboard(ce, loggingDone)
-
-	check(err, t)
+	if err != nil {
+		t.Error(err)
+	}
 }
 
 func TestCheckAndSetServiceName(t *testing.T) {
@@ -138,8 +143,12 @@ func TestCheckAndSetServiceName(t *testing.T) {
 	}
 }
 
-func check(e error, t *testing.T) {
+func stringp(s string) *string {
+	return &s
+}
+
+func check(e *configmodels.Error, t *testing.T) {
 	if e != nil {
-		t.Error(e)
+		t.Error(e.Message)
 	}
 }

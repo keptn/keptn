@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	configmodels "github.com/keptn/go-utils/pkg/configuration-service/models"
-	configutils "github.com/keptn/go-utils/pkg/configuration-service/utils"
-	keptnevents "github.com/keptn/go-utils/pkg/events"
+	configmodels "github.com/keptn/go-utils/pkg/api/models"
+	configutils "github.com/keptn/go-utils/pkg/api/utils"
+	keptnevents "github.com/keptn/go-utils/pkg/lib"
 
 	hapichart "k8s.io/helm/pkg/proto/hapi/chart"
 

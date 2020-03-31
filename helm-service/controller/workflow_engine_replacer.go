@@ -13,24 +13,14 @@ import (
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 	"github.com/google/uuid"
 
-	configutils "github.com/keptn/go-utils/pkg/configuration-service/utils"
-	keptnevents "github.com/keptn/go-utils/pkg/events"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	keptnevents "github.com/keptn/go-utils/pkg/lib"
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 
 	"github.com/keptn/keptn/helm-service/pkg/serviceutils"
 )
 
-func getFirstStage(project string) (string, error) {
-
-	url, err := serviceutils.GetConfigServiceURL()
-	if err != nil {
-		return "", err
-	}
-
-	resourceHandler := configutils.NewResourceHandler(url.String())
-	handler := keptnutils.NewKeptnHandler(resourceHandler)
-
-	shipyard, err := handler.GetShipyard(project)
+func getFirstStage(keptnHandler *keptnevents.Keptn) (string, error) {
+	shipyard, err := keptnHandler.GetShipyard()
 	if err != nil {
 		return "", err
 	}
@@ -38,17 +28,13 @@ func getFirstStage(project string) (string, error) {
 	return shipyard.Stages[0].Name, nil
 }
 
-func getTestStrategy(project string, stageName string) (string, error) {
+func getTestStrategy(keptnHandler *keptnevents.Keptn, stageName string) (string, error) {
 
-	url, err := serviceutils.GetConfigServiceURL()
+	shipyard, err := keptnHandler.GetShipyard()
 	if err != nil {
 		return "", err
 	}
 
-	resourceHandler := configutils.NewResourceHandler(url.String())
-	handler := keptnutils.NewKeptnHandler(resourceHandler)
-
-	shipyard, err := handler.GetShipyard(project)
 	if err != nil {
 		return "", err
 	}
@@ -58,7 +44,7 @@ func getTestStrategy(project string, stageName string) (string, error) {
 		}
 	}
 
-	return "", fmt.Errorf("Cannot find stage %s in project %s", stageName, project)
+	return "", fmt.Errorf("Cannot find stage %s in project %s", stageName, keptnHandler.KeptnBase.Project)
 }
 
 func getLocalDeploymentURI(project string, service string, stage string, deploymentStrategy keptnevents.DeploymentStrategy, testStrategy string) string {
@@ -144,7 +130,7 @@ func sendDeploymentFinishedEvent(shkeptncontext string, project string, stage st
 		return errors.New("Failed to create HTTP client:" + err.Error())
 	}
 
-	if _, err := c.Send(context.Background(), event); err != nil {
+	if _, _, err := c.Send(context.Background(), event); err != nil {
 		return errors.New("Failed to send cloudevent:, " + err.Error())
 	}
 	return nil
