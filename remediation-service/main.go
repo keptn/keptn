@@ -16,11 +16,9 @@ import (
 	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
 	"github.com/kelseyhightower/envconfig"
 
-	configmodels "github.com/keptn/go-utils/pkg/configuration-service/models"
-	configutils "github.com/keptn/go-utils/pkg/configuration-service/utils"
-	keptnevents "github.com/keptn/go-utils/pkg/events"
-	keptnmodels "github.com/keptn/go-utils/pkg/models"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	configmodels "github.com/keptn/go-utils/pkg/api/models"
+	configutils "github.com/keptn/go-utils/pkg/api/utils"
+	"github.com/keptn/go-utils/pkg/lib"
 
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 )
@@ -63,13 +61,13 @@ func _main(args []string, env envConfig) int {
 	return 0
 }
 
-func isProjectAndStageAvailable(problem *keptnevents.ProblemEventData) bool {
+func isProjectAndStageAvailable(problem *keptn.ProblemEventData) bool {
 	return problem.Project != "" && problem.Stage != ""
 }
 
 // deriveFromTags allows to derive project, stage, and service information from tags
 // Input example: "Tags:":"keptn_service:carts, keptn_stage:dev, keptn_stage:sockshop"
-func deriveFromTags(problem *keptnevents.ProblemEventData) {
+func deriveFromTags(problem *keptn.ProblemEventData) {
 
 	tags := strings.Split(problem.Tags, ", ")
 
@@ -88,13 +86,13 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	var shkeptncontext string
 	event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
 
-	logger := keptnutils.NewLogger(shkeptncontext, event.Context.GetID(), "remediation-service")
+	logger := keptn.NewLogger(shkeptncontext, event.Context.GetID(), "remediation-service")
 	logger.Debug("Received event for shkeptncontext:" + shkeptncontext)
 
-	var problemEvent *keptnevents.ProblemEventData
-	if event.Type() == keptnevents.ProblemOpenEventType {
+	var problemEvent *keptn.ProblemEventData
+	if event.Type() == keptn.ProblemOpenEventType {
 		logger.Debug("Received problem notification")
-		problemEvent = &keptnevents.ProblemEventData{}
+		problemEvent = &keptn.ProblemEventData{}
 		if err := event.DataAs(problemEvent); err != nil {
 			return err
 		}
@@ -109,9 +107,14 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 	logger.Debug("Received problem event with state " + problemEvent.State)
 
+	keptnHandler, err := keptn.NewKeptn(&event, keptn.KeptnOpts{})
+	if err != nil {
+		logger.Error("Could not initialize Keptn handler: " + err.Error())
+	}
+
 	// valide if remediation should be performed
 	resourceHandler := configutils.NewResourceHandler(os.Getenv(configurationserviceconnection))
-	autoRemediate, err := isRemediationEnabled(resourceHandler, problemEvent.Project, problemEvent.Stage)
+	autoRemediate, err := isRemediationEnabled(keptnHandler)
 	if err != nil {
 		logger.Error(fmt.Sprintf("Failed to check if remediation is enabled: %s", err.Error()))
 		return err
@@ -140,7 +143,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	logger.Debug("remediation.yaml for service found")
 
 	// get remediation action from remediation.yaml
-	var remediationData keptnmodels.Remediations
+	var remediationData keptn.Remediations
 	err = yaml.Unmarshal([]byte(resource.ResourceContent), &remediationData)
 	if err != nil {
 		logger.Error("Could not unmarshal remediation.yaml")
@@ -183,14 +186,13 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	return nil
 }
 
-func isRemediationEnabled(rh *configutils.ResourceHandler, project string, stage string) (bool, error) {
-	keptnHandler := keptnutils.NewKeptnHandler(rh)
-	shipyard, err := keptnHandler.GetShipyard(project)
+func isRemediationEnabled(keptn *keptn.Keptn) (bool, error) {
+	shipyard, err := keptn.GetShipyard()
 	if err != nil {
 		return false, err
 	}
 	for _, s := range shipyard.Stages {
-		if s.Name == stage && s.RemediationStrategy == "automated" {
+		if s.Name == keptn.KeptnBase.Stage && s.RemediationStrategy == "automated" {
 			return true, nil
 		}
 	}
