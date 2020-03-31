@@ -1,5 +1,148 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-nginx-config
+  namespace: keptn
+data:
+  nginx.conf: |
+    user nginx;
+    worker_processes  3;
+    error_log /dev/stdout info;
+    events {
+      worker_connections  10240;
+    }
+
+    http {
+      log_format  main
+              'remote_addr:$remote_addr\t'
+              'time_local:$time_local\t'
+              'method:$request_method\t'
+              'uri:$request_uri\t'
+              'host:$host\t'
+              'status:$status\t'
+              'bytes_sent:$body_bytes_sent\t'
+              'referer:$http_referer\t'
+              'useragent:$http_user_agent\t'
+              'forwardedfor:$http_x_forwarded_for\t'
+              'request_time:$request_time';
+      access_log /dev/stdout;
+      server {
+          listen       80;
+          server_name  _;
+
+          location /configuration-service/swagger-ui/swagger.yaml {
+            # auth via backend (if the subrequest returns a 2xx response code, the access is allowed. If it returns 401 or 403,
+            # the access is denied) before we store the file
+            # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
+
+            rewrite /configuration-service/(.*) /$1  break;
+            proxy_pass         http://configuration-service:8080;
+            proxy_redirect     off;
+            proxy_set_header   Host $host;
+            proxy_http_version 1.1;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+          }
+
+          location  /configuration-service {
+            # auth via backend (if the subrequest returns a 2xx response code, the access is allowed. If it returns 401 or 403,
+            # the access is denied) before we store the file
+            # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
+            auth_request               /v1/auth;
+
+            rewrite /configuration-service/(.*) /$1  break;
+            proxy_pass         http://configuration-service:8080;
+            proxy_redirect     off;
+            proxy_set_header   Host $host;
+            proxy_http_version 1.1;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+          }
+
+          location ~* /v1/project/[a-z0-9]+/resource {
+            # auth via backend (if the subrequest returns a 2xx response code, the access is allowed. If it returns 401 or 403,
+            # the access is denied) before we store the file
+            # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
+            auth_request               /v1/auth;
+
+            rewrite /configuration-service/(.*) /$1  break;
+            proxy_pass         http://configuration-service:8080;
+            proxy_redirect     off;
+            proxy_set_header   Host $host;
+            proxy_http_version 1.1;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+          }
+
+          location ~* /v1/project/[a-z0-9]+/stage/[a-z0-9]+/resource {
+            # auth via backend (if the subrequest returns a 2xx response code, the access is allowed. If it returns 401 or 403,
+            # the access is denied) before we store the file
+            # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
+            auth_request               /v1/auth;
+
+            rewrite /configuration-service/(.*) /$1  break;
+            proxy_pass         http://configuration-service:8080;
+            proxy_redirect     off;
+            proxy_set_header   Host $host;
+            proxy_http_version 1.1;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+          }
+
+          location ~* /v1/project/[a-z0-9]+/stage/[a-z0-9]+/service/[a-z0-9]+/resource {
+            # auth via backend (if the subrequest returns a 2xx response code, the access is allowed. If it returns 401 or 403,
+            # the access is denied) before we store the file
+            # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
+            auth_request               /v1/auth;
+
+            rewrite /configuration-service/(.*) /$1  break;
+            proxy_pass         http://configuration-service:8080;
+            proxy_redirect     off;
+            proxy_set_header   Host $host;
+            proxy_http_version 1.1;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+          }
+
+          # special configuration for /v1/auth to always use POST requests
+          location /v1/auth {
+            rewrite /v1/auth/(.*) /$1  break;
+
+            proxy_method POST;
+            proxy_pass_request_body off;
+
+            proxy_pass http://api-service:8080;
+            proxy_http_version 1.1;
+            proxy_pass_request_headers on; # only pass reuquest headers to this service
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+          }
+
+          location /v2 {
+            # ToDo
+            rewrite /v2/(.*) /$1  break;
+          }
+
+          # default location: use existing api
+          location / {
+            proxy_pass http://api-service:8080;
+            proxy_http_version 1.1;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "Upgrade";
+            proxy_set_header Host $host;
+          }
+      }
+    }
 ---
-# api
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -17,6 +160,68 @@ spec:
     spec:
       containers:
         - name: api
+          image: nginx:1.17.9
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - mountPath: /etc/nginx # mount api-nginx-config volume to /etc/nginx
+              readOnly: true
+              name: api-nginx-config
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          env:
+            - name: API_SERVICE_URI
+              value: api-service.keptn.svc.cluster.local:8080
+            - name: DATASTORE_URI
+              value: mongodb-datastore.keptn-datastore.svc.cluster.local:8080
+            - name: CONFIGURATION_URI
+              value: configuration-service.keptn.svc.cluster.local:8080
+      volumes:
+        - name: api-nginx-config
+          configMap:
+            name: api-nginx-config # place ConfigMap `api-nginx-config` on /etc/nginx
+            items:
+              - key: nginx.conf
+                path: nginx.conf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api
+  namespace: keptn
+  labels:
+    run: api
+spec:
+  ports:
+    - port: 443
+      name: https
+      targetPort: 80
+      protocol: TCP
+  selector:
+    run: api
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-service
+  namespace: keptn
+spec:
+  selector:
+    matchLabels:
+      run: api-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: api-service
+    spec:
+      containers:
+        - name: api-service
           image: keptn/api:latest
           ports:
             - containerPort: 8080
@@ -25,7 +230,7 @@ spec:
               memory: "64Mi"
               cpu: "50m"
             limits:
-              memory: "128Mi"
+              memory: "256Mi"
               cpu: "500m"
           env:
             - name: EVENTBROKER_URI
@@ -43,22 +248,18 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: api
+  name: api-service
   namespace: keptn
   labels:
-    run: api
+    run: api-service
 spec:
   ports:
-  - port: 80
-    name: http
-    targetPort: 8080
-    protocol: TCP
-  - port: 443
-    name: https
-    targetPort: 8080
-    protocol: TCP
+    - port: 8080
+      name: http
+      targetPort: 8080
+      protocol: TCP
   selector:
-    run: api
+    run: api-service
 ---
 # bridge
 apiVersion: apps/v1
@@ -77,21 +278,21 @@ spec:
         run: bridge
     spec:
       containers:
-      - name: bridge
-        image: keptn/bridge2:latest
-        envFrom:
-          - secretRef:
-              name: bridge-credentials
-              optional: true
-        ports:
-        - containerPort: 3000
-        resources:
-          requests:
-            memory: "64Mi"
-            cpu: "50m"
-          limits:
-            memory: "128Mi"
-            cpu: "500m"
+        - name: bridge
+          image: keptn/bridge2:latest
+          envFrom:
+            - secretRef:
+                name: bridge-credentials
+                optional: true
+          ports:
+            - containerPort: 3000
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
 ---
 apiVersion: v1
 kind: Service
@@ -102,9 +303,9 @@ metadata:
     run: bridge
 spec:
   ports:
-  - port: 8080
-    targetPort: 3000
-    protocol: TCP
+    - port: 8080
+      targetPort: 3000
+      protocol: TCP
   selector:
     run: bridge
 ---
@@ -125,22 +326,22 @@ spec:
         run: eventbroker-go
     spec:
       containers:
-      - name: eventbroker-go
-        image: keptn/eventbroker-go:latest
-        ports:
-        - containerPort: 8080
-        resources:
-          requests:
-            memory: "32Mi"
-            cpu: "50m"
-          limits:
-            memory: "128Mi"
-            cpu: "500m"
-        env:
-        - name: PUBSUB_URL
-          value: 'nats://keptn-nats-cluster'
-        - name: PUBSUB_IMPL
-          value: 'nats'
+        - name: eventbroker-go
+          image: keptn/eventbroker-go:latest
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          env:
+            - name: PUBSUB_URL
+              value: 'nats://keptn-nats-cluster'
+            - name: PUBSUB_IMPL
+              value: 'nats'
 ---
 apiVersion: v1
 kind: Service
@@ -151,9 +352,9 @@ metadata:
     run: eventbroker-go
 spec:
   ports:
-  - port: 80
-    targetPort: 8080
-    protocol: TCP
+    - port: 80
+      targetPort: 8080
+      protocol: TCP
   selector:
     run: eventbroker-go
 ---
@@ -174,30 +375,30 @@ spec:
         run: helm-service
     spec:
       containers:
-      - name: helm-service
-        image: keptn/helm-service:latest
-        ports:
-        - containerPort: 8080
-        resources:
-          requests:
-            memory: "128Mi"
-            cpu: "50m"
-          limits:
-            memory: "512Mi"
-            cpu: "1000m"
-        env:
-        - name: CONFIGURATION_SERVICE
-          value: 'http://configuration-service.keptn.svc.cluster.local:8080'
-        - name: EVENTBROKER
-          value: 'http://event-broker.keptn.svc.cluster.local/keptn'
-        - name: API
-          value: 'ws://api.keptn.svc.cluster.local'
-        - name: ENVIRONMENT
-          value: 'production'
-        - name: PRE_WORKFLOW_ENGINE
-          value: 'true'
-        - name: CANARY
-          value: 'deployment'
+        - name: helm-service
+          image: keptn/helm-service:latest
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "50m"
+            limits:
+              memory: "512Mi"
+              cpu: "1000m"
+          env:
+            - name: CONFIGURATION_SERVICE
+              value: 'http://configuration-service.keptn.svc.cluster.local:8080'
+            - name: EVENTBROKER
+              value: 'http://event-broker.keptn.svc.cluster.local/keptn'
+            - name: API
+              value: 'ws://api.keptn.svc.cluster.local'
+            - name: ENVIRONMENT
+              value: 'production'
+            - name: PRE_WORKFLOW_ENGINE
+              value: 'true'
+            - name: CANARY
+              value: 'deployment'
 ---
 apiVersion: v1
 kind: Service
@@ -208,8 +409,8 @@ metadata:
     run: helm-service
 spec:
   ports:
-  - port: 8080
-    protocol: TCP
+    - port: 8080
+      protocol: TCP
   selector:
     run: helm-service
 ---
@@ -230,24 +431,24 @@ spec:
         run: distributor
     spec:
       containers:
-      - name: distributor
-        image: keptn/distributor:latest
-        ports:
-        - containerPort: 8080
-        resources:
-          requests:
-            memory: "32Mi"
-            cpu: "50m"
-          limits:
-            memory: "128Mi"
-            cpu: "500m"
-        env:
-        - name: PUBSUB_URL
-          value: 'nats://keptn-nats-cluster'
-        - name: PUBSUB_TOPIC
-          value: 'sh.keptn.internal.event.service.create'
-        - name: PUBSUB_RECIPIENT
-          value: 'helm-service'
+        - name: distributor
+          image: keptn/distributor:latest
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          env:
+            - name: PUBSUB_URL
+              value: 'nats://keptn-nats-cluster'
+            - name: PUBSUB_TOPIC
+              value: 'sh.keptn.internal.event.service.create'
+            - name: PUBSUB_RECIPIENT
+              value: 'helm-service'
 ---
 # shipyard-service
 apiVersion: apps/v1
@@ -266,24 +467,24 @@ spec:
         run: shipyard-service
     spec:
       containers:
-      - name: shipyard-service
-        image: keptn/shipyard-service:latest
-        ports:
-        - containerPort: 8080
-        resources:
-          requests:
-            memory: "32Mi"
-            cpu: "50m"
-          limits:
-            memory: "128Mi"
-            cpu: "500m"
-        env:
-        - name: CONFIGURATION_SERVICE
-          value: 'http://configuration-service.keptn.svc.cluster.local:8080'
-        - name: EVENTBROKER
-          value: 'http://event-broker.keptn.svc.cluster.local/keptn'
-        - name: API
-          value: 'ws://api.keptn.svc.cluster.local'
+        - name: shipyard-service
+          image: keptn/shipyard-service:latest
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          env:
+            - name: CONFIGURATION_SERVICE
+              value: 'http://configuration-service.keptn.svc.cluster.local:8080'
+            - name: EVENTBROKER
+              value: 'http://event-broker.keptn.svc.cluster.local/keptn'
+            - name: API
+              value: 'ws://api.keptn.svc.cluster.local'
 ---
 apiVersion: v1
 kind: Service
@@ -294,8 +495,8 @@ metadata:
     run: shipyard-service
 spec:
   ports:
-  - port: 8080
-    protocol: TCP
+    - port: 8080
+      protocol: TCP
   selector:
     run: shipyard-service
 ---
@@ -316,24 +517,24 @@ spec:
         run: distributor
     spec:
       containers:
-      - name: distributor
-        image: keptn/distributor:latest
-        ports:
-        - containerPort: 8080
-        resources:
-          requests:
-            memory: "32Mi"
-            cpu: "50m"
-          limits:
-            memory: "128Mi"
-            cpu: "500m"
-        env:
-        - name: PUBSUB_URL
-          value: 'nats://keptn-nats-cluster'
-        - name: PUBSUB_TOPIC
-          value: 'sh.keptn.internal.event.project.create'
-        - name: PUBSUB_RECIPIENT
-          value: 'shipyard-service'
+        - name: distributor
+          image: keptn/distributor:latest
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          env:
+            - name: PUBSUB_URL
+              value: 'nats://keptn-nats-cluster'
+            - name: PUBSUB_TOPIC
+              value: 'sh.keptn.internal.event.project.create'
+            - name: PUBSUB_RECIPIENT
+              value: 'shipyard-service'
 ---
 ## shipyard-service: sh.keptn.internal.event.project.delete
 apiVersion: apps/v1
@@ -352,24 +553,24 @@ spec:
         run: distributor
     spec:
       containers:
-      - name: distributor
-        image: keptn/distributor:latest
-        ports:
-        - containerPort: 8080
-        resources:
-          requests:
-            memory: "32Mi"
-            cpu: "50m"
-          limits:
-            memory: "128Mi"
-            cpu: "500m"
-        env:
-        - name: PUBSUB_URL
-          value: 'nats://keptn-nats-cluster'
-        - name: PUBSUB_TOPIC
-          value: 'sh.keptn.internal.event.project.delete'
-        - name: PUBSUB_RECIPIENT
-          value: 'shipyard-service'
+        - name: distributor
+          image: keptn/distributor:latest
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          env:
+            - name: PUBSUB_URL
+              value: 'nats://keptn-nats-cluster'
+            - name: PUBSUB_TOPIC
+              value: 'sh.keptn.internal.event.project.delete'
+            - name: PUBSUB_RECIPIENT
+              value: 'shipyard-service'
 ---
 # configuration-service
 apiVersion: v1
@@ -380,7 +581,7 @@ metadata:
   namespace: keptn
 spec:
   accessModes:
-  - ReadWriteOnce
+    - ReadWriteOnce
   resources:
     requests:
       storage: 100Mi
@@ -405,24 +606,24 @@ spec:
         run: configuration-service
     spec:
       containers:
-      - name: configuration-service
-        image: keptn/configuration-service:latest
-        ports:
-        - containerPort: 8080
-        resources:
-          requests:
-            memory: "64Mi"
-            cpu: "50m"
-          limits:
-            memory: "128Mi"
-            cpu: "500m"
-        volumeMounts:
-        - mountPath: /data/config
-          name: configuration-volume
+        - name: configuration-service
+          image: keptn/configuration-service:latest
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          volumeMounts:
+            - mountPath: /data/config
+              name: configuration-volume
       volumes:
-      - name: configuration-volume
-        persistentVolumeClaim:
-          claimName: configuration-volume
+        - name: configuration-volume
+          persistentVolumeClaim:
+            claimName: configuration-volume
 ---
 apiVersion: v1
 kind: Service
@@ -433,8 +634,8 @@ metadata:
     run: configuration-service
 spec:
   ports:
-  - port: 8080
-    targetPort: 8080
-    protocol: TCP
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
   selector:
     run: configuration-service

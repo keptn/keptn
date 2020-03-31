@@ -4,15 +4,15 @@ kind: Ingress
 metadata:
   annotations:
     kubernetes.io/ingress.class: nginx
-  name: api-ingress
+  name: keptn-ingress
   namespace: keptn
 spec:
   tls:
     - hosts:
-        - domain.placeholder
+        - '*.keptn.domain.placeholder'
       secretName: sslcerts
   rules:
-    - host: api.keptn.domain.placeholder
+    - host: '*.keptn.domain.placeholder'
       http:
         paths:
           - path: /
@@ -22,7 +22,7 @@ spec:
     - host: api.keptn
       http:
         paths:
-          - path: /
-            backend:
+          - backend:
               serviceName: api
               servicePort: 443
+            path: /

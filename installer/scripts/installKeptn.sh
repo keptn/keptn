@@ -29,14 +29,18 @@ kubectl apply -f ../manifests/keptn/namespace.yaml
 verify_kubectl $? "Creating Keptn namespace failed."
 print_info "Keptn Namespace created"
 
-source ./installIngress.sh
+source ./installNginx.sh
 
 case $PLATFORM in
   aks)    
+    installNginxPublicCloud
+    source ./installIngressForKeptn.sh
     echo "Installing Keptn on AKS"
     ./common/install.sh
     ;;
   eks)
+    installNginxPublicCloud
+    source ./installIngressForKeptn.sh
     echo "Install Keptn on EKS"
     ./common/install.sh
     ;;
@@ -45,14 +49,20 @@ case $PLATFORM in
     ./openshift/installOnOpenshift.sh
     ;;
   gke)    
+    installNginxPublicCloud
+    source ./installIngressForKeptn.sh
     echo "Install Keptn on GKE"
     ./common/install.sh
     ;;
   pks)
+    installNginxPublicCloud
+    source ./installIngressForKeptn.sh
     echo "Install Keptn on PKS"
     ./common/install.sh
     ;;
   kubernetes)
+    installNginxKubernetes
+    source ./installIngressForKeptn.sh
     echo "Install Keptn on Kubernetes"
     ./common/install.sh
     ;;

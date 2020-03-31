@@ -6,6 +6,11 @@ print_info "Starting installation of Keptn"
 
 # Install Tiller for Helm
 if [[ "$USE_CASE" == "all" ]]; then
+  print_info "Installing Istio (this might take a while)"
+  source ./common/setupIstio.sh
+  verify_install_step $? "Installing Istio failed."
+  print_info "Installing Istio done"
+
   print_info "Installing Tiller"
   kubectl apply -f ../manifests/tiller/tiller.yaml
   verify_kubectl $? "Applying Tiller manifest failed."

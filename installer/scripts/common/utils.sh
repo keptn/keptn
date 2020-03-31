@@ -166,12 +166,12 @@ function wait_for_istio_ingressgateway() {
 
 # Waits for hostname or ip of ingress gateway (max wait time 120sec)
 function wait_for_k8s_ingress() {
-  RETRY=0; RETRY_MAX=24;
+  RETRY=0; RETRY_MAX=6;
   DOMAIN="";
 
   while [[ $RETRY -lt $RETRY_MAX ]]; do
     # Check availability of hostname
-    DOMAIN=$(kubectl get ingress api-ingress -n keptn -o json | jq -r .status.loadBalancer.ingress[0].hostname)
+    DOMAIN=$(kubectl get svc ingress-nginx  -n ingress-nginx -o json  | jq -r .status.loadBalancer.ingress[0].hostname)
     if [[ $DOMAIN = "null" ]]; then
       DOMAIN=""
     fi
@@ -182,7 +182,7 @@ function wait_for_k8s_ingress() {
     fi
 
     # Check availability of IP
-    DOMAIN=$(kubectl get ingress api-ingress -n keptn -o json | jq -r .status.loadBalancer.ingress[0].ip)
+    DOMAIN=$(kubectl get svc ingress-nginx  -n ingress-nginx -o json  | jq -r .status.loadBalancer.ingress[0].ip)
     if [[ $DOMAIN = "null" ]]; then
       DOMAIN=""
     fi
