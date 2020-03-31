@@ -74,6 +74,8 @@ export class Trace {
       timeStart: Date;
     };
 
+    evaluationHistory: Trace[];
+
     ProblemTitle: string;
     ImpactedEntity: string;
     ProblemDetails: {
