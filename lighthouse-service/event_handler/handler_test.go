@@ -2,8 +2,7 @@ package event_handler
 
 import (
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
-	keptnevents "github.com/keptn/go-utils/pkg/events"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	"github.com/keptn/go-utils/pkg/lib"
 	"net/http"
 	"reflect"
 	"testing"
@@ -12,7 +11,7 @@ import (
 func TestNewEventHandler(t *testing.T) {
 	type args struct {
 		event  cloudevents.Event
-		logger *keptnutils.Logger
+		logger *keptn.Logger
 	}
 	tests := []struct {
 		name    string
@@ -25,7 +24,7 @@ func TestNewEventHandler(t *testing.T) {
 			args: args{
 				event: cloudevents.Event{
 					Context: &cloudevents.EventContextV02{
-						Type: keptnevents.TestsFinishedEventType,
+						Type: keptn.TestsFinishedEventType,
 					},
 					Data:        nil,
 					DataEncoded: false,
@@ -36,7 +35,7 @@ func TestNewEventHandler(t *testing.T) {
 				Logger: nil,
 				Event: cloudevents.Event{
 					Context: &cloudevents.EventContextV02{
-						Type: keptnevents.TestsFinishedEventType,
+						Type: keptn.TestsFinishedEventType,
 					},
 					Data:        nil,
 					DataEncoded: false,
@@ -49,7 +48,7 @@ func TestNewEventHandler(t *testing.T) {
 			args: args{
 				event: cloudevents.Event{
 					Context: &cloudevents.EventContextV02{
-						Type: keptnevents.StartEvaluationEventType,
+						Type: keptn.StartEvaluationEventType,
 					},
 					Data:        nil,
 					DataEncoded: false,
@@ -60,7 +59,7 @@ func TestNewEventHandler(t *testing.T) {
 				Logger: nil,
 				Event: cloudevents.Event{
 					Context: &cloudevents.EventContextV02{
-						Type: keptnevents.StartEvaluationEventType,
+						Type: keptn.StartEvaluationEventType,
 					},
 					Data:        nil,
 					DataEncoded: false,
@@ -73,7 +72,7 @@ func TestNewEventHandler(t *testing.T) {
 			args: args{
 				event: cloudevents.Event{
 					Context: &cloudevents.EventContextV02{
-						Type: keptnevents.InternalGetSLIDoneEventType,
+						Type: keptn.InternalGetSLIDoneEventType,
 					},
 					Data:        nil,
 					DataEncoded: false,
@@ -84,7 +83,7 @@ func TestNewEventHandler(t *testing.T) {
 				Logger: nil,
 				Event: cloudevents.Event{
 					Context: &cloudevents.EventContextV02{
-						Type: keptnevents.InternalGetSLIDoneEventType,
+						Type: keptn.InternalGetSLIDoneEventType,
 					},
 					Data:        nil,
 					DataEncoded: false,
@@ -98,7 +97,7 @@ func TestNewEventHandler(t *testing.T) {
 			args: args{
 				event: cloudevents.Event{
 					Context: &cloudevents.EventContextV02{
-						Type: keptnevents.ConfigureMonitoringEventType,
+						Type: keptn.ConfigureMonitoringEventType,
 					},
 					Data:        nil,
 					DataEncoded: false,
@@ -109,7 +108,7 @@ func TestNewEventHandler(t *testing.T) {
 				Logger: nil,
 				Event: cloudevents.Event{
 					Context: &cloudevents.EventContextV02{
-						Type: keptnevents.ConfigureMonitoringEventType,
+						Type: keptn.ConfigureMonitoringEventType,
 					},
 					Data:        nil,
 					DataEncoded: false,

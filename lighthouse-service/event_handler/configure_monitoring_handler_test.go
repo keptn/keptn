@@ -2,8 +2,7 @@ package event_handler
 
 import (
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
-	keptnevents "github.com/keptn/go-utils/pkg/events"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	keptn "github.com/keptn/go-utils/pkg/lib"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"reflect"
@@ -12,11 +11,11 @@ import (
 
 func TestConfigureMonitoringHandler_getSLISourceConfigMap(t *testing.T) {
 	type fields struct {
-		Logger *keptnutils.Logger
+		Logger *keptn.Logger
 		Event  cloudevents.Event
 	}
 	type args struct {
-		e *keptnevents.ConfigureMonitoringEventData
+		e *keptn.ConfigureMonitoringEventData
 	}
 	tests := []struct {
 		name   string
@@ -31,7 +30,7 @@ func TestConfigureMonitoringHandler_getSLISourceConfigMap(t *testing.T) {
 				Event:  cloudevents.Event{},
 			},
 			args: args{
-				e: &keptnevents.ConfigureMonitoringEventData{
+				e: &keptn.ConfigureMonitoringEventData{
 					Type:    "prometheus",
 					Project: "sockshop",
 					Service: "",
@@ -54,7 +53,7 @@ func TestConfigureMonitoringHandler_getSLISourceConfigMap(t *testing.T) {
 				Event:  cloudevents.Event{},
 			},
 			args: args{
-				e: &keptnevents.ConfigureMonitoringEventData{
+				e: &keptn.ConfigureMonitoringEventData{
 					Type:    "dynatrace",
 					Project: "sockshop",
 					Service: "",

@@ -1,7 +1,7 @@
 package event_handler
 
 import (
-	keptnmodelsv2 "github.com/keptn/go-utils/pkg/models/v2"
+	"github.com/keptn/go-utils/pkg/lib"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -9,7 +9,7 @@ import (
 type getSLOTestObject struct {
 	Name           string
 	SLOFileContent string
-	ExpectedSLO    *keptnmodelsv2.ServiceLevelObjectives
+	ExpectedSLO    *keptn.ServiceLevelObjectives
 	ExpectedError  error
 }
 
@@ -57,21 +57,21 @@ objectives:
 total_score:
   pass: "90%"
   warning: 75%`,
-			ExpectedSLO: &keptnmodelsv2.ServiceLevelObjectives{
+			ExpectedSLO: &keptn.ServiceLevelObjectives{
 				SpecVersion: "1.0",
 				Filter: map[string]string{
 					"id": "<prometheus_scrape_job_id>",
 				},
-				Comparison: &keptnmodelsv2.SLOComparison{
+				Comparison: &keptn.SLOComparison{
 					CompareWith:               "single_result",
 					IncludeResultWithScore:    "pass",
 					NumberOfComparisonResults: 3,
 					AggregateFunction:         "avg",
 				},
-				Objectives: []*keptnmodelsv2.SLO{
+				Objectives: []*keptn.SLO{
 					{
 						SLI: "responseTime95",
-						Pass: []*keptnmodelsv2.SLOCriteria{
+						Pass: []*keptn.SLOCriteria{
 							{
 								Criteria: []string{"<=+10%"},
 							},
@@ -79,7 +79,7 @@ total_score:
 								Criteria: []string{"<200"},
 							},
 						},
-						Warning: []*keptnmodelsv2.SLOCriteria{
+						Warning: []*keptn.SLOCriteria{
 							{
 								Criteria: []string{"<+15%", ">-8%", "<500"},
 							},
@@ -89,7 +89,7 @@ total_score:
 					},
 					{
 						SLI: "security_vulnerabilities",
-						Pass: []*keptnmodelsv2.SLOCriteria{
+						Pass: []*keptn.SLOCriteria{
 							{
 								Criteria: []string{"=0"},
 							},
@@ -99,7 +99,7 @@ total_score:
 					},
 					{
 						SLI: "sql_statements",
-						Pass: []*keptnmodelsv2.SLOCriteria{
+						Pass: []*keptn.SLOCriteria{
 							{
 								Criteria: []string{"=0%"},
 							},
@@ -107,7 +107,7 @@ total_score:
 								Criteria: []string{"<100"},
 							},
 						},
-						Warning: []*keptnmodelsv2.SLOCriteria{
+						Warning: []*keptn.SLOCriteria{
 							{
 								Criteria: []string{"<+5%", ">-5%"},
 							},
@@ -116,7 +116,7 @@ total_score:
 						KeySLI: true,
 					},
 				},
-				TotalScore: &keptnmodelsv2.SLOScore{
+				TotalScore: &keptn.SLOScore{
 					Pass:    "90%",
 					Warning: "75%",
 				},
@@ -160,21 +160,21 @@ objectives:
 total_score:
   pass: "90%"
   warning: 75%`,
-			ExpectedSLO: &keptnmodelsv2.ServiceLevelObjectives{
+			ExpectedSLO: &keptn.ServiceLevelObjectives{
 				SpecVersion: "1.0",
 				Filter: map[string]string{
 					"id": "<prometheus_scrape_job_id>",
 				},
-				Comparison: &keptnmodelsv2.SLOComparison{
+				Comparison: &keptn.SLOComparison{
 					CompareWith:               "single_result",
 					IncludeResultWithScore:    "all",
 					NumberOfComparisonResults: 1,
 					AggregateFunction:         "avg",
 				},
-				Objectives: []*keptnmodelsv2.SLO{
+				Objectives: []*keptn.SLO{
 					{
 						SLI: "responseTime95",
-						Pass: []*keptnmodelsv2.SLOCriteria{
+						Pass: []*keptn.SLOCriteria{
 							{
 								Criteria: []string{"<=+10%"},
 							},
@@ -182,7 +182,7 @@ total_score:
 								Criteria: []string{"<200"},
 							},
 						},
-						Warning: []*keptnmodelsv2.SLOCriteria{
+						Warning: []*keptn.SLOCriteria{
 							{
 								Criteria: []string{"<+15%", ">-8%", "<500"},
 							},
@@ -192,7 +192,7 @@ total_score:
 					},
 					{
 						SLI: "security_vulnerabilities",
-						Pass: []*keptnmodelsv2.SLOCriteria{
+						Pass: []*keptn.SLOCriteria{
 							{
 								Criteria: []string{"=0"},
 							},
@@ -202,7 +202,7 @@ total_score:
 					},
 					{
 						SLI: "sql_statements",
-						Pass: []*keptnmodelsv2.SLOCriteria{
+						Pass: []*keptn.SLOCriteria{
 							{
 								Criteria: []string{"=0%"},
 							},
@@ -210,7 +210,7 @@ total_score:
 								Criteria: []string{"<100"},
 							},
 						},
-						Warning: []*keptnmodelsv2.SLOCriteria{
+						Warning: []*keptn.SLOCriteria{
 							{
 								Criteria: []string{"<+5%", ">-5%"},
 							},
@@ -219,7 +219,7 @@ total_score:
 						KeySLI: true,
 					},
 				},
-				TotalScore: &keptnmodelsv2.SLOScore{
+				TotalScore: &keptn.SLOScore{
 					Pass:    "90%",
 					Warning: "75%",
 				},
@@ -265,21 +265,21 @@ objectives:
 total_score:
   pass: "90%"
   warning: 75%`,
-			ExpectedSLO: &keptnmodelsv2.ServiceLevelObjectives{
+			ExpectedSLO: &keptn.ServiceLevelObjectives{
 				SpecVersion: "1.0",
 				Filter: map[string]string{
 					"id": "<prometheus_scrape_job_id>",
 				},
-				Comparison: &keptnmodelsv2.SLOComparison{
+				Comparison: &keptn.SLOComparison{
 					CompareWith:               "single_result",
 					IncludeResultWithScore:    "all",
 					NumberOfComparisonResults: 3,
 					AggregateFunction:         "avg",
 				},
-				Objectives: []*keptnmodelsv2.SLO{
+				Objectives: []*keptn.SLO{
 					{
 						SLI: "responseTime95",
-						Pass: []*keptnmodelsv2.SLOCriteria{
+						Pass: []*keptn.SLOCriteria{
 							{
 								Criteria: []string{"<=+10%"},
 							},
@@ -287,7 +287,7 @@ total_score:
 								Criteria: []string{"<200"},
 							},
 						},
-						Warning: []*keptnmodelsv2.SLOCriteria{
+						Warning: []*keptn.SLOCriteria{
 							{
 								Criteria: []string{"<+15%", ">-8%", "<500"},
 							},
@@ -297,7 +297,7 @@ total_score:
 					},
 					{
 						SLI: "security_vulnerabilities",
-						Pass: []*keptnmodelsv2.SLOCriteria{
+						Pass: []*keptn.SLOCriteria{
 							{
 								Criteria: []string{"=0"},
 							},
@@ -307,7 +307,7 @@ total_score:
 					},
 					{
 						SLI: "sql_statements",
-						Pass: []*keptnmodelsv2.SLOCriteria{
+						Pass: []*keptn.SLOCriteria{
 							{
 								Criteria: []string{"=0%"},
 							},
@@ -315,7 +315,7 @@ total_score:
 								Criteria: []string{"<100"},
 							},
 						},
-						Warning: []*keptnmodelsv2.SLOCriteria{
+						Warning: []*keptn.SLOCriteria{
 							{
 								Criteria: []string{"<+5%", ">-5%"},
 							},
@@ -324,7 +324,7 @@ total_score:
 						KeySLI: true,
 					},
 				},
-				TotalScore: &keptnmodelsv2.SLOScore{
+				TotalScore: &keptn.SLOScore{
 					Pass:    "90%",
 					Warning: "75%",
 				},
