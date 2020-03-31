@@ -3,6 +3,7 @@ module github.com/keptn/keptn/cli
 go 1.12
 
 require (
+	github.com/Azure/go-autorest/autorest v0.10.0 // indirect
 	github.com/cloudevents/sdk-go v0.10.0
 	github.com/danieljoos/wincred v1.0.2 // indirect
 	github.com/docker/docker-credential-helpers v0.6.3
@@ -13,7 +14,7 @@ require (
 	github.com/gorilla/websocket v1.4.1
 	github.com/hashicorp/go-version v1.2.0
 	github.com/keptn/go-utils v0.6.1-0.20200330141040-86c024b3622b
-	github.com/keptn/kubernetes-utils v0.0.0-20200330150655-bbd32f864bac
+	github.com/keptn/kubernetes-utils v0.0.0-20200331061313-d431a8f57bef
 	github.com/magiconair/properties v1.8.1
 	github.com/mattn/go-shellwords v1.0.10
 	github.com/mitchellh/go-homedir v1.1.0
@@ -22,6 +23,8 @@ require (
 	github.com/stretchr/testify v1.4.0
 	gopkg.in/yaml.v2 v2.2.8
 	gotest.tools v2.2.0+incompatible
-	k8s.io/api v0.18.0
-	k8s.io/helm v2.16.5+incompatible
+	k8s.io/api v0.0.0-20190313235455-40a48860b5ab
+	k8s.io/apimachinery v0.0.0-20190313205120-d7deff9243b1
+	k8s.io/helm v2.14.3+incompatible
+	k8s.io/utils v0.0.0-20200327001022-6496210b90e8 // indirect
 )
