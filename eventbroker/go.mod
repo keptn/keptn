@@ -12,4 +12,4 @@ require (
 )
 
 // replace cloudevents/sdk-go latest version with 0.7.0
-replace github.com/cloudevents/sdk-go => github.com/cloudevents/sdk-go v0.0.0-20190509003705-56931988abe3
+replace github.com/keptn/go-utils => github.com/keptn/go-utils v0.6.1-0.20200331064125-beb163c41650
