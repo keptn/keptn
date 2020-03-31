@@ -15,8 +15,8 @@ import (
 	"github.com/go-openapi/swag"
 	"github.com/google/uuid"
 
-	datastore "github.com/keptn/go-utils/pkg/mongodb-datastore/utils"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	datastore "github.com/keptn/go-utils/pkg/api/utils"
+	keptnutils "github.com/keptn/go-utils/pkg/lib"
 
 	"github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations/event"
