@@ -5,6 +5,7 @@ go 1.12
 require (
 	cloud.google.com/go v0.38.0 // indirect
 	github.com/cloudevents/sdk-go v0.10.0
+	github.com/ghodss/yaml v1.0.0
 	github.com/google/uuid v1.1.1
 	github.com/kelseyhightower/envconfig v1.3.0
 	github.com/keptn/go-utils v0.6.1-a

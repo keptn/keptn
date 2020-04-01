@@ -35,13 +35,12 @@ func getConfigurationServiceURL() string {
 	return "localhost:8080"
 }
 
-func executeJMeter(testInfo *TestInfo, scriptName string, resultsDir string, url *url.URL, vuCount int, loopCount int,
-	thinkTime int, LTN string, funcValidation bool, avgRtValidation int, logger *keptnutils.Logger) (bool, error) {
+func executeJMeter(testInfo *TestInfo, workload *Workload, resultsDir string, url *url.URL, LTN string, funcValidation bool, logger *keptnutils.Logger) (bool, error) {
 	os.RemoveAll(resultsDir)
 	os.MkdirAll(resultsDir, 0644)
 
 	resourceHandler := configutils.NewResourceHandler(getConfigurationServiceURL())
-	testScriptResource, err := resourceHandler.GetServiceResource(testInfo.Project, testInfo.Stage, testInfo.Service, scriptName)
+	testScriptResource, err := resourceHandler.GetServiceResource(testInfo.Project, testInfo.Stage, testInfo.Service, workload.Script)
 
 	// if no test file has been found, we assume that no tests should be executed
 	if err != nil || testScriptResource == nil || testScriptResource.ResourceContent == "" {
@@ -49,8 +48,8 @@ func executeJMeter(testInfo *TestInfo, scriptName string, resultsDir string, url
 		return true, nil
 	}
 
-	os.RemoveAll(scriptName)
-	pathArr := strings.Split(scriptName, "/")
+	os.RemoveAll(workload.Script)
+	pathArr := strings.Split(workload.Script, "/")
 	directory := ""
 	for _, pathItem := range pathArr[0 : len(pathArr)-1] {
 		directory += pathItem + "/"
@@ -60,7 +59,7 @@ func executeJMeter(testInfo *TestInfo, scriptName string, resultsDir string, url
 	if err != nil {
 		return false, err
 	}
-	testScriptFile, err := os.Create(scriptName)
+	testScriptFile, err := os.Create(workload.Script)
 	if err != nil {
 		logger.Error(err.Error())
 		return false, err
@@ -74,19 +73,19 @@ func executeJMeter(testInfo *TestInfo, scriptName string, resultsDir string, url
 		return false, err
 	}
 
-	testInfoStr := testInfo.ToString() + ", scriptName: " + scriptName + ", serverURL: " + url.String()
+	testInfoStr := testInfo.ToString() + ", scriptName: " + workload.Script + ", serverURL: " + url.String()
 	logger.Debug("Starting JMeter test. " + testInfoStr)
-	res, err := keptnutils.ExecuteCommand("jmeter", []string{"-n", "-t", "./" + scriptName,
+	res, err := keptnutils.ExecuteCommand("jmeter", []string{"-n", "-t", "./" + workload.Script,
 		// "-e", "-o", resultsDir,
 		"-l", resultsDir + "_result.tlf",
 		"-JPROTOCOL=" + url.Scheme,
 		"-JSERVER_URL=" + url.Hostname(),
 		"-JDT_LTN=" + LTN,
-		"-JVUCount=" + strconv.Itoa(vuCount),
-		"-JLoopCount=" + strconv.Itoa(loopCount),
+		"-JVUCount=" + strconv.Itoa(workload.VUser),
+		"-JLoopCount=" + strconv.Itoa(workload.LoopCount),
 		"-JCHECK_PATH=" + derivePath(url),
 		"-JSERVER_PORT=" + derivePort(url),
-		"-JThinkTime=" + strconv.Itoa(thinkTime)})
+		"-JThinkTime=" + strconv.Itoa(workload.ThinkTime)})
 
 	logger.Info(res)
 	if err != nil {
@@ -122,14 +121,14 @@ func executeJMeter(testInfo *TestInfo, scriptName string, resultsDir string, url
 		return false, nil
 	}
 
-	maxAcceptedErrors := maxAcceptedErrorRate * float64(runs)
+	maxAcceptedErrors := float64(workload.AcceptedErrorRate) * float64(runs)
 	if errorCount > int(maxAcceptedErrors) {
 		logger.Debug(fmt.Sprintf("jmeter test failed because we got a too high error rate of %.2f.", float64(errorCount)/float64(runs)) + ". " + testInfo.ToString())
 		return false, nil
 	}
 
-	if avgRtValidation > 0 && avg > avgRtValidation {
-		logger.Debug(fmt.Sprintf("Avg rt validation failed because we got an avg rt of %d", avgRtValidation) + ". " + testInfo.ToString())
+	if workload.AvgRtValidation > 0 && avg > workload.AvgRtValidation {
+		logger.Debug(fmt.Sprintf("Avg rt validation failed because we got an avg rt of %d", workload.AvgRtValidation) + ". " + testInfo.ToString())
 		return false, nil
 	}
 
