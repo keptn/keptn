@@ -21,6 +21,7 @@ const JMeterConfFilename = "jmeter/jmeter.conf.yaml"
 const TestStrategy_Performance = "performance"
 const TestStrategy_Functional = "functional"
 const TestStrategy_HealthCheck = "healthcheck"
+const TestStrategy_RealUser = "real-user"
 
 type JMeterConf struct {
 	SpecVersion string      `json:"spec_version" yaml:"spec_version"`
