@@ -14,7 +14,6 @@ require (
 	github.com/go-openapi/swag v0.19.5
 	github.com/go-openapi/validate v0.19.4
 	github.com/golang/snappy v0.0.1 // indirect
-	github.com/googleapis/gnostic v0.4.1 // indirect
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/keptn/go-utils v0.6.1-a
 	github.com/keptn/kubernetes-utils v0.0.0-20200401103501-ae44a5ee0656
