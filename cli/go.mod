@@ -13,7 +13,7 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/gorilla/websocket v1.4.1
 	github.com/hashicorp/go-version v1.2.0
-	github.com/keptn/go-utils v0.6.1-0.20200330141040-86c024b3622b
+	github.com/keptn/go-utils v0.6.1-a
 	github.com/keptn/kubernetes-utils v0.0.0-20200331061313-d431a8f57bef
 	github.com/magiconair/properties v1.8.1
 	github.com/mattn/go-shellwords v1.0.10
@@ -28,3 +28,5 @@ require (
 	k8s.io/helm v2.14.3+incompatible
 	k8s.io/utils v0.0.0-20200327001022-6496210b90e8 // indirect
 )
+
+replace github.com/keptn/go-utils => github.com/keptn/go-utils v0.6.1-0.20200401063654-dcd515a62214
