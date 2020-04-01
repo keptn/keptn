@@ -11,7 +11,7 @@ import (
 	"io/ioutil"
 
 	"github.com/docker/docker-credential-helpers/pass"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	keptnutils "github.com/keptn/go-utils/pkg/lib"
 )
 
 // For using pass.Pass{} the following commands need to executed:

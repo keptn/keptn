@@ -3,51 +3,27 @@ module github.com/keptn/keptn/remediation-service
 go 1.13
 
 require (
-	github.com/DATA-DOG/go-sqlmock v1.3.3 // indirect
-	github.com/MakeNowJust/heredoc v1.0.0 // indirect
-	github.com/chai2010/gettext-go v0.0.0-20170215093142-bf70f2a70fb1 // indirect
 	github.com/cloudevents/sdk-go v0.10.0
-	github.com/docker/distribution v2.7.1+incompatible // indirect
-	github.com/docker/docker v1.13.1 // indirect
-	github.com/docker/spdystream v0.0.0-20181023171402-6480d4af844c // indirect
-	github.com/evanphx/json-patch v4.5.0+incompatible // indirect
-	github.com/exponent-io/jsonpath v0.0.0-20151013193312-d6023ce2651d // indirect
 	github.com/ghodss/yaml v1.0.0
-	github.com/gobuffalo/packr v1.30.1 // indirect
 	github.com/gogo/protobuf v1.3.1
-	github.com/golang/groupcache v0.0.0-20191027212112-611e8accdfc9 // indirect
-	github.com/google/btree v1.0.0 // indirect
 	github.com/google/uuid v1.1.1
-	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79 // indirect
-	github.com/jmoiron/sqlx v1.2.0 // indirect
+	github.com/googleapis/gnostic v0.0.0-20170729233727-0c5108395e2d // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/keptn/go-utils v0.6.1-a
-	github.com/keptn/kubernetes-utils v0.0.0-20200331061313-d431a8f57bef
-	github.com/lib/pq v1.2.0 // indirect
-	github.com/liggitt/tabwriter v0.0.0-20181228230101-89fcab3d43de // indirect
-	github.com/mitchellh/go-wordwrap v1.0.0 // indirect
-	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
-	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
-	github.com/rubenv/sql-migrate v0.0.0-20191022111038-5cdff0d8cc42 // indirect
+	github.com/keptn/kubernetes-utils v0.0.0-20200401103501-ae44a5ee0656
+	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
+	github.com/modern-go/reflect2 v1.0.1 // indirect
+	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/testify v1.4.0
-	github.com/ziutek/mymysql v1.5.4 // indirect
-	gopkg.in/gorp.v1 v1.7.2 // indirect
-	gopkg.in/square/go-jose.v2 v2.4.0 // indirect
-	gopkg.in/yaml.v2 v2.2.7
-	k8s.io/api v0.0.0
-	k8s.io/apiextensions-apiserver v0.0.0-00010101000000-000000000000 // indirect
-	k8s.io/apimachinery v0.0.0
-	k8s.io/apiserver v0.0.0-00010101000000-000000000000 // indirect
-	k8s.io/cli-runtime v0.0.0-00010101000000-000000000000 // indirect
+	gopkg.in/inf.v0 v0.9.1 // indirect
+	gopkg.in/yaml.v2 v2.2.8
+	k8s.io/api v0.17.0
+	k8s.io/apimachinery v0.17.0
 	k8s.io/client-go v11.0.0+incompatible
-	k8s.io/cloud-provider v0.0.0-00010101000000-000000000000 // indirect
 	k8s.io/helm v2.14.3+incompatible
-	k8s.io/kube-openapi v0.0.0-20190918143330-0270cf2f1c1d // indirect
-	k8s.io/kubernetes v1.14.0 // indirect
+	k8s.io/klog v1.0.0 // indirect
 	k8s.io/utils v0.0.0-20200327001022-6496210b90e8 // indirect
-	sigs.k8s.io/kustomize v2.0.3+incompatible // indirect
-	sigs.k8s.io/yaml v1.1.0
-	vbom.ml/util v0.0.0-20180919145318-efcd4e0f9787 // indirect
+	sigs.k8s.io/yaml v1.2.0
 )
 
 replace (
