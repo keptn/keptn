@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"testing"
 
-	keptnevents "github.com/keptn/go-utils/pkg/events"
+	keptnevents "github.com/keptn/go-utils/pkg/lib"
 )
 
 var serviceURLTests = []struct {

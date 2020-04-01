@@ -1,6 +1,6 @@
 module keptn/wait-service
 
-go 1.12
+go 1.13
 
 require (
 	github.com/cloudevents/sdk-go v0.10.0
