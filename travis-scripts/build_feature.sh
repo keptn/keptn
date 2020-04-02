@@ -18,3 +18,5 @@ sed -i '/#travis-uncomment/s/^#travis-uncomment //g' Dockerfile
 cat MANIFEST
 docker build . -t "${IMAGE}:${GIT_SHA}" -t "${IMAGE}:${TYPE}.${NUMBER}.${DATE}" --build-arg version=$DATE || travis_terminate 1
 docker push "${IMAGE}"
+# change back to previous directory
+cd -
