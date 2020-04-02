@@ -7,10 +7,8 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/json-iterator/go v1.1.9 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.6.1-a
+	github.com/keptn/go-utils v0.6.1-compat
 	k8s.io/apimachinery v0.18.0
 	k8s.io/client-go v0.18.0
 	k8s.io/utils v0.0.0-20200327001022-6496210b90e8 // indirect
 )
-
-replace github.com/keptn/go-utils => github.com/keptn/go-utils v0.6.1-0.20200402063250-be7a84038be8
