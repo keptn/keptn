@@ -239,26 +239,6 @@ jobs:
       - cat ~/.keptn/keptn-installer.log
       - cat ~/.keptn/keptn-installer-err.log
 
-  # always check code style for all directories
-  - stage: codestyle
-    # Check Codestyle using go fmt
-    services: []
-    language: go
-    go:
-      - 1.12.x
-    # skip install
-    install: true
-    script:
-      - echo "Checking code style..."
-      - unformatted=$(gofmt -l .)
-      - |
-        if [ ! -z "$unformatted" ]; then
-          echo "Code Style Check failed for the following files: ${unformatted}".
-          echo "Please run: gofmt -w ."
-          echo "After that amend your commit (e.g.: git add ${unformatted} && git commit --amend --no-edit) and force push the changes (git push -f)."
-          travis_terminate 1
-        fi
-
     # always execute unit tests for all directories
   - stage: Unit tests
     os: linux

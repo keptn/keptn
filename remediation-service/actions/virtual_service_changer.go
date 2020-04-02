@@ -40,7 +40,7 @@ func containsVirtualServices(project, stage, service string) (bool, error) {
 		if respError.Code == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("could not get virutal service resource: %v", err)
+		return false, fmt.Errorf("could not get VirtualService resource: %v", err)
 	}
 	return true, nil
 }

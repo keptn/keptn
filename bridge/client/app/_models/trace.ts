@@ -74,6 +74,8 @@ export class Trace {
       timeStart: Date;
     };
 
+    evaluationHistory: Trace[];
+
     ProblemTitle: string;
     ImpactedEntity: string;
     ProblemDetails: {
@@ -142,6 +144,14 @@ export class Trace {
       image = this.data.valuesCanary.image;
     let parts = image.split("/");
     return parts[parts.length-1];
+  }
+
+  getProject(): string {
+    return this.data.project;
+  }
+
+  getService(): string {
+    return this.data.service;
   }
 
   static fromJSON(data: any) {

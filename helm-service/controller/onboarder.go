@@ -101,7 +101,7 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event, loggingDone chan bool) error
 		}
 		if !isUmbrellaChartAvailable {
 			o.logger.Info("Create Helm umbrella charts")
-			// Initalize the umbrella chart
+			// Initialize the umbrella chart
 			if err := umbrellaChartHandler.InitUmbrellaChart(event, stages); err != nil {
 				return fmt.Errorf("Error when initializing the umbrella chart for project %s: %s", event.Project, err.Error())
 			}

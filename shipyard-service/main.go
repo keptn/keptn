@@ -335,7 +335,7 @@ func (client *Client) getDeleteInfoMessage(keptnHandler *keptn.Keptn) (string, e
 		namespace := keptnHandler.KeptnBase.Project + "-" + stage.Name
 		exists, err := kubeutils.ExistsNamespace(true, namespace)
 		if err != nil {
-			return "", fmt.Errorf("error when checking availablity of namespace: %v", err)
+			return "", fmt.Errorf("error when checking availability of namespace: %v", err)
 		}
 		if exists {
 			msg += fmt.Sprintf("Namespace %s and Helm releases are not deleted. This may cause problems if "+
