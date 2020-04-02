@@ -15,14 +15,12 @@ spec:
     - host: '*.keptn.domain.placeholder'
       http:
         paths:
-          - path: /
-            backend:
-              serviceName: api
-              servicePort: 443
+          - backend:
+              serviceName: api-gateway-nginx
+              servicePort: 80
     - host: api.keptn
       http:
         paths:
           - backend:
-              serviceName: api
-              servicePort: 443
-            path: /
+              serviceName: api-gateway-nginx
+              servicePort: 80

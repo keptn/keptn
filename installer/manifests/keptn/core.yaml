@@ -146,20 +146,20 @@ data:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: api
+  name: api-gateway-nginx
   namespace: keptn
 spec:
   selector:
     matchLabels:
-      run: api
+      run: api-gateway-nginx
   replicas: 1
   template:
     metadata:
       labels:
-        run: api
+        run: api-gateway-nginx
     spec:
       containers:
-        - name: api
+        - name: api-gateway-nginx
           image: nginx:1.17.9
           ports:
             - containerPort: 80
@@ -174,13 +174,6 @@ spec:
             limits:
               memory: "128Mi"
               cpu: "500m"
-          env:
-            - name: API_SERVICE_URI
-              value: api-service.keptn.svc.cluster.local:8080
-            - name: DATASTORE_URI
-              value: mongodb-datastore.keptn-datastore.svc.cluster.local:8080
-            - name: CONFIGURATION_URI
-              value: configuration-service.keptn.svc.cluster.local:8080
       volumes:
         - name: api-nginx-config
           configMap:
@@ -192,18 +185,18 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: api
+  name: api-gateway-nginx
   namespace: keptn
   labels:
-    run: api
+    run: api-gateway-nginx
 spec:
   ports:
-    - port: 443
-      name: https
+    - port: 80
+      name: http
       targetPort: 80
       protocol: TCP
   selector:
-    run: api
+    run: api-gateway-nginx
 ---
 apiVersion: apps/v1
 kind: Deployment

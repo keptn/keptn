@@ -5,11 +5,21 @@ source ./common/utils.sh
 if [[ "$USE_CASE" == "all" ]]; then
   # Install istio
   source ./common/setupIstio.sh
-  setupKeptnIngress "istio" "istio-ingressgateway" "istio-system"
+  setupKeptnDomain "istio" "istio-ingressgateway" "istio-system"
+
+  cat ../manifests/keptn/keptn-api-virtualservice.yaml | \
+    sed 's~DOMAIN_PLACEHOLDER~'"$INGRESS_HOST"'~' | kubectl apply -f -
+  verify_kubectl $? "Deploying keptn api virtualservice failed."
 else
   # Install NGINX
   source ./common/setupNginx.sh
-  setupKeptnIngress "nginx" "ingress-nginx" "ingress-nginx"
+  setupKeptnDomain "nginx" "ingress-nginx" "ingress-nginx"
+
+  # Add config map in keptn namespace that contains the domain - this will be used by other services as well
+  # Update ingress with updated hosts
+  cat ../manifests/keptn/keptn-ingress.yaml | \
+    sed 's~domain.placeholder~'"$INGRESS_HOST"'~' | sed 's~ingress.placeholder~'"$PROVIDER"'~' | kubectl apply -f -
+  verify_kubectl $? "Deploying ingress failed."
 fi
 
 print_info "Starting installation of Keptn"

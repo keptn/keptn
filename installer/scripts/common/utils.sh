@@ -164,7 +164,7 @@ function wait_for_ingressgateway() {
   done
 }
 
-function setupKeptnIngress() {
+function setupKeptnDomain() {
   PROVIDER=$1;SVC=$2;NAMESPACE=$3;
 
   print_info "Determining ingress hostname/ip for Keptn (using ${PROVIDER})"
@@ -216,12 +216,6 @@ function setupKeptnIngress() {
       rm key.pem
       rm certificate.pem
   fi
-
-  # Add config map in keptn namespace that contains the domain - this will be used by other services as well
-  # Update ingress with updated hosts
-  cat ../manifests/keptn/keptn-ingress.yaml | \
-    sed 's~domain.placeholder~'"$INGRESS_HOST"'~' | sed 's~ingress.placeholder~'"$PROVIDER"'~' | kubectl apply -f -
-
 
   # Add config map in keptn namespace that contains the domain - this will be used by other services as well
   cat ../manifests/keptn/keptn-domain-configmap.yaml | \
