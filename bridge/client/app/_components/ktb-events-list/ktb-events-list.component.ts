@@ -67,8 +67,10 @@ export class KtbEventsListComponent implements OnInit {
   }
 
   focusEvent(event) {
-    let routeUrl = this.router.createUrlTree(['/project', event.data.project, event.data.service, event.shkeptncontext, event.id]);
-    this.location.go(routeUrl.toString());
+    if(event.getProject() && event.getService()) {
+      let routeUrl = this.router.createUrlTree(['/project', event.getProject(), event.getService(), event.shkeptncontext, event.id]);
+      this.location.go(routeUrl.toString());
+    }
   }
 
 }

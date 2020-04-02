@@ -83,6 +83,7 @@ export class DataService {
 
   public loadRoots(project: Project, service: Service) {
     let fromTime: Date = this._rootsLastUpdated[project.projectName+":"+service.serviceName];
+    this._rootsLastUpdated[project.projectName+":"+service.serviceName] = new Date();
 
     this.apiService.getRoots(project.projectName, service.serviceName, fromTime ? fromTime.toISOString() : null)
       .pipe(
@@ -96,6 +97,7 @@ export class DataService {
             mergeMap(
               root => {
                 let fromTime: Date = this._tracesLastUpdated[root.shkeptncontext];
+                this._tracesLastUpdated[root.shkeptncontext] = new Date();
 
                 return this.apiService.getTraces(root.shkeptncontext, fromTime ? fromTime.toISOString() : null)
                   .pipe(
@@ -121,6 +123,7 @@ export class DataService {
 
   public loadTraces(root: Root) {
     let fromTime: Date = this._tracesLastUpdated[root.shkeptncontext];
+    this._tracesLastUpdated[root.shkeptncontext] = new Date();
 
     this.apiService.getTraces(root.shkeptncontext, fromTime ? fromTime.toISOString() : null)
       .pipe(

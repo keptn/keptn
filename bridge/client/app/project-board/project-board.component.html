@@ -100,7 +100,7 @@
             <div fxFlex fxLayout="row" fxLayoutAlign="flex-start center" fxLayoutGap="15px">
               <div fxLayout="row" fxLayoutAlign="start center">
                 <button dt-icon-button disabled variant="nested" *ngIf="currentRoot.isFaulty()"><dt-icon name="criticalevent"></dt-icon></button>
-                <p *ngIf="currentRoot.data.project"><span [textContent]="currentRoot.data.project"></span>:<span [textContent]="currentRoot.data.service"></span></p>
+                <p><span [textContent]="currentRoot.getProject()"></span><span *ngIf="currentRoot.getService()">:</span><span [textContent]="currentRoot.getService()"></span></p>
               </div>
             </div>
           </dt-info-group-title>
