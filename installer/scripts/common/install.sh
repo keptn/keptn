@@ -18,7 +18,7 @@ else
   # Add config map in keptn namespace that contains the domain - this will be used by other services as well
   # Update ingress with updated hosts
   cat ../manifests/keptn/keptn-ingress.yaml | \
-    sed 's~domain.placeholder~'"$INGRESS_HOST"'~' | sed 's~ingress.placeholder~'"$PROVIDER"'~' | kubectl apply -f -
+    sed 's~domain.placeholder~'"$INGRESS_HOST"'~' | sed 's~ingress.placeholder~nginx~' | kubectl apply -f -
   verify_kubectl $? "Deploying ingress failed."
 fi
 

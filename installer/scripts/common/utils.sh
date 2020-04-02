@@ -178,13 +178,13 @@ function setupKeptnDomain() {
     export INGRESS_HOST=$DOMAIN
 
     if [[ "$DOMAIN" == "null" ]]; then
-        print_info "Could not get ingress gateway domain name. Trying to retrieve IP address instead."
+        print_info "Could not get domain name. Trying to retrieve IP address instead."
 
-        wait_for_istio_ingressgateway "ip" $SVC $NAMESPACE
+        wait_for_ingressgateway "ip" $SVC $NAMESPACE
 
         export DOMAIN=$(kubectl get svc $SVC -o json -n $NAMESPACE | jq -r .status.loadBalancer.ingress[0].ip)
         if [[ "$DOMAIN" == "null" ]]; then
-            print_error "IP of Istio ingress gateway could not be derived."
+            print_error "Could not get IP."
             exit 1
         fi
         export DOMAIN="$DOMAIN.xip.io"
