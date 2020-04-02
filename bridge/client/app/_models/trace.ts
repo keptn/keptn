@@ -144,11 +144,11 @@ export class Trace {
     return parts[parts.length-1];
   }
 
-  getProject(): String {
+  getProject(): string {
     return this.data.project;
   }
 
-  getService(): String {
+  getService(): string {
     return this.data.service;
   }
 

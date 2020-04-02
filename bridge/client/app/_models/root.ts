@@ -35,13 +35,13 @@ export class Root extends Trace {
     return result;
   }
 
-  getProject(): String {
+  getProject(): string {
     if(!this.data.project)
       this.data.project = this.traces.find(trace => !!trace.data.project).data.project;
     return this.data.project;
   }
 
-  getService(): String {
+  getService(): string {
     if(!this.data.service)
       this.data.service = this.traces.find(trace => !!trace.data.project).data.service;
     return this.data.service;
