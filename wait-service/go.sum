@@ -127,6 +127,7 @@ github.com/go-openapi/validate v0.19.4 h1:LGjO87VyXY3bIKjlYpXSFuLRG2mTeuYlZyeNwF
 github.com/go-openapi/validate v0.19.4/go.mod h1:BkJ0ZmXui7yB0bJXWSXgLPNTmbLVeX/3D1xn/N9mMUM=
 github.com/go-stack/stack v1.8.0 h1:5SgMzNM5HxrEjV0ww2lTmX6E2Izsfxas4+YHWRs3Lsk=
 github.com/go-stack/stack v1.8.0/go.mod h1:v0f6uXyyMGvRgIKkXu+yp6POWl0qKG85gN/melR3HDY=
+github.com/go-test/deep v1.0.5/go.mod h1:QV8Hv/iy04NyLBxAdO9njL0iVPN1S4d/A3NVv1V36o8=
 github.com/gobwas/glob v0.2.3 h1:A4xDbljILXROh+kObIiy5kIaPYD8e96x1tgBhUI5J+Y=
 github.com/gobwas/glob v0.2.3/go.mod h1:d3Ez4x06l9bZtSvzIay5+Yzi0fmZzPgnTbPcKjJAkT8=
 github.com/gogo/protobuf v1.1.1/go.mod h1:r8qH/GZQm5c6nD/R0oafs1akxWv10x8SbQlK7atdtwQ=
@@ -173,6 +174,8 @@ github.com/json-iterator/go v1.1.7/go.mod h1:KdQUCv79m/52Kvf8AW2vK1V8akMuk1QjK/u
 github.com/julienschmidt/httprouter v1.2.0/go.mod h1:SYymIcj16QtmaHHD7aYtjjsJG7VTCxuUUipMqKk8s4w=
 github.com/kelseyhightower/envconfig v1.3.0 h1:IvRS4f2VcIQy6j4ORGIf9145T/AsUB+oY8LyvN8BXNM=
 github.com/kelseyhightower/envconfig v1.3.0/go.mod h1:cccZRl6mQpaq41TPp5QxidR+Sa3axMbJDNb//FQX6Gg=
+github.com/keptn/go-utils v0.6.1-0.20200402095926-a4ac0d7044a0 h1:Y1lVfmAeifhfWMV/OWCXlFYAtGUkHmaQ0FT10wLwaUw=
+github.com/keptn/go-utils v0.6.1-0.20200402095926-a4ac0d7044a0/go.mod h1:aDNFm3olvCZd7AE6/Xyir4g5Mw6E89mjhKt0zoJHC6g=
 github.com/keptn/go-utils v0.6.1-a h1:nxLpQhg3i/14f5fpZhSCYql5qP0hxji1gaEsj5pd//Q=
 github.com/keptn/go-utils v0.6.1-a/go.mod h1:R9a1HXkD+KCrhMFbLcEhtBtHGfYwXhO6dwZzmyoE98c=
 github.com/keptn/go-utils v0.6.1 h1:ukBe1qtBiUyltabVMhTsx09pwlQTTRn3hJJc/XD81EY=

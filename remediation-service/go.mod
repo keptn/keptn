@@ -3,10 +3,15 @@ module github.com/keptn/keptn/remediation-service
 go 1.12
 
 require (
+	github.com/Azure/go-autorest/autorest v0.2.0 // indirect
 	github.com/DATA-DOG/go-sqlmock v1.3.3 // indirect
 	github.com/MakeNowJust/heredoc v1.0.0 // indirect
+	github.com/Masterminds/goutils v1.1.0 // indirect
+	github.com/Masterminds/semver v1.5.0 // indirect
+	github.com/Masterminds/sprig v2.22.0+incompatible // indirect
 	github.com/chai2010/gettext-go v0.0.0-20170215093142-bf70f2a70fb1 // indirect
 	github.com/cloudevents/sdk-go v0.10.0
+	github.com/cyphar/filepath-securejoin v0.2.2 // indirect
 	github.com/docker/distribution v2.7.1+incompatible // indirect
 	github.com/docker/docker v1.13.1 // indirect
 	github.com/docker/spdystream v0.0.0-20181023171402-6480d4af844c // indirect
@@ -14,26 +19,38 @@ require (
 	github.com/exponent-io/jsonpath v0.0.0-20151013193312-d6023ce2651d // indirect
 	github.com/ghodss/yaml v1.0.0
 	github.com/gobuffalo/packr v1.30.1 // indirect
+	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/gogo/protobuf v1.3.1
 	github.com/golang/groupcache v0.0.0-20191027212112-611e8accdfc9 // indirect
 	github.com/google/btree v1.0.0 // indirect
 	github.com/google/uuid v1.1.1
+	github.com/googleapis/gnostic v0.3.1 // indirect
+	github.com/gophercloud/gophercloud v0.6.0 // indirect
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79 // indirect
+	github.com/huandu/xstrings v1.2.0 // indirect
+	github.com/imdario/mergo v0.3.8 // indirect
 	github.com/jmoiron/sqlx v1.2.0 // indirect
+	github.com/json-iterator/go v1.1.7 // indirect
 	github.com/kelseyhightower/envconfig v1.3.0
-	github.com/keptn/go-utils v0.6.1-a
+	github.com/keptn/go-utils v0.6.1-0.20200402095926-a4ac0d7044a0
 	github.com/lib/pq v1.2.0 // indirect
 	github.com/liggitt/tabwriter v0.0.0-20181228230101-89fcab3d43de // indirect
+	github.com/magiconair/properties v1.8.1 // indirect
+	github.com/mitchellh/copystructure v1.0.0 // indirect
 	github.com/mitchellh/go-wordwrap v1.0.0 // indirect
 	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
 	github.com/rubenv/sql-migrate v0.0.0-20191022111038-5cdff0d8cc42 // indirect
+	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/testify v1.4.0
 	github.com/ziutek/mymysql v1.5.4 // indirect
+	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550 // indirect
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect
 	golang.org/x/tools v0.0.0-20191004055002-72853e10c5a3 // indirect
 	gopkg.in/gorp.v1 v1.7.2 // indirect
+	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/square/go-jose.v2 v2.4.0 // indirect
+	gopkg.in/src-d/go-git.v4 v4.13.1 // indirect
 	gopkg.in/yaml.v2 v2.2.4
 	k8s.io/api v0.0.0
 	k8s.io/apiextensions-apiserver v0.0.0-00010101000000-000000000000 // indirect
@@ -43,8 +60,10 @@ require (
 	k8s.io/client-go v11.0.0+incompatible
 	k8s.io/cloud-provider v0.0.0-00010101000000-000000000000 // indirect
 	k8s.io/helm v2.14.3+incompatible
+	k8s.io/klog v1.0.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20190918143330-0270cf2f1c1d // indirect
 	k8s.io/kubernetes v1.14.0
+	k8s.io/utils v0.0.0-20191010214722-8d271d903fe4 // indirect
 	sigs.k8s.io/kustomize v2.0.3+incompatible // indirect
 	sigs.k8s.io/yaml v1.1.0
 	vbom.ml/util v0.0.0-20180919145318-efcd4e0f9787 // indirect
