@@ -46,7 +46,7 @@ Example:
 		if !mocking {
 			authenticated := false
 
-			if !lookupHostname(url.Host) {
+			if !lookupHostname(url.Hostname()) {
 				return fmt.Errorf("Authentication was unsuccessful - could not resolve hostname.")
 			}
 
