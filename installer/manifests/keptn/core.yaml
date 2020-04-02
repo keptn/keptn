@@ -61,7 +61,7 @@ data:
             proxy_set_header X-Forwarded-Proto $scheme;
           }
 
-          location ~* /v1/project/[a-z0-9]+/resource {
+          location ~* /v1/project/[a-z0-9-]+/resource {
             # auth via backend (if the subrequest returns a 2xx response code, the access is allowed. If it returns 401 or 403,
             # the access is denied) before we store the file
             # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
@@ -77,7 +77,7 @@ data:
             proxy_set_header X-Forwarded-Proto $scheme;
           }
 
-          location ~* /v1/project/[a-z0-9]+/stage/[a-z0-9]+/resource {
+          location ~* /v1/project/[a-z0-9-]+/stage/[a-z0-9-]+/resource {
             # auth via backend (if the subrequest returns a 2xx response code, the access is allowed. If it returns 401 or 403,
             # the access is denied) before we store the file
             # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
@@ -93,7 +93,7 @@ data:
             proxy_set_header X-Forwarded-Proto $scheme;
           }
 
-          location ~* /v1/project/[a-z0-9]+/stage/[a-z0-9]+/service/[a-z0-9]+/resource {
+          location ~* /v1/project/[a-z0-9-]+/stage/[a-z0-9-]+/service/[a-z0-9-]+/resource {
             # auth via backend (if the subrequest returns a 2xx response code, the access is allowed. If it returns 401 or 403,
             # the access is denied) before we store the file
             # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
