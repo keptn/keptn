@@ -19,4 +19,4 @@ require (
 	sigs.k8s.io/yaml v1.2.0 // indirect
 )
 
-replace github.com/keptn/go-utils => github.com/keptn/go-utils v0.6.1-0.20200331064125-beb163c41650
+replace github.com/keptn/go-utils => github.com/keptn/go-utils v0.6.1-0.20200402063250-be7a84038be8

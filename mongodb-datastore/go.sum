@@ -226,6 +226,7 @@ github.com/karrick/godirwalk v1.10.3/go.mod h1:RoGL9dQei4vP9ilrpETWE8CLOZ1kiN0Lh
 github.com/kelseyhightower/envconfig v1.4.0/go.mod h1:cccZRl6mQpaq41TPp5QxidR+Sa3axMbJDNb//FQX6Gg=
 github.com/keptn/go-utils v0.6.1-0.20200331064125-beb163c41650 h1:1/0Z8IKK5zXeqErotLnPJGdUfl3OuycDpsYtZXbZ0fI=
 github.com/keptn/go-utils v0.6.1-0.20200331064125-beb163c41650/go.mod h1:aDNFm3olvCZd7AE6/Xyir4g5Mw6E89mjhKt0zoJHC6g=
+github.com/keptn/go-utils v0.6.1-0.20200402063250-be7a84038be8/go.mod h1:aDNFm3olvCZd7AE6/Xyir4g5Mw6E89mjhKt0zoJHC6g=
 github.com/keptn/go-utils v0.6.1-a h1:nxLpQhg3i/14f5fpZhSCYql5qP0hxji1gaEsj5pd//Q=
 github.com/keptn/go-utils v0.6.1-a/go.mod h1:R9a1HXkD+KCrhMFbLcEhtBtHGfYwXhO6dwZzmyoE98c=
 github.com/keptn/go-utils v0.6.1 h1:ukBe1qtBiUyltabVMhTsx09pwlQTTRn3hJJc/XD81EY=

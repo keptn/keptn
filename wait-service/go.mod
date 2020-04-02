@@ -9,4 +9,4 @@ require (
 	github.com/keptn/go-utils v0.6.1-a
 )
 
-replace github.com/keptn/go-utils => github.com/keptn/go-utils v0.6.1-0.20200401063654-dcd515a62214
+replace github.com/keptn/go-utils => github.com/keptn/go-utils v0.6.1-0.20200402063250-be7a84038be8

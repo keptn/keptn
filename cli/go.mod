@@ -26,4 +26,4 @@ require (
 	k8s.io/utils v0.0.0-20200327001022-6496210b90e8 // indirect
 )
 
-replace github.com/keptn/go-utils => github.com/keptn/go-utils v0.6.1-0.20200401063654-dcd515a62214
+replace github.com/keptn/go-utils => github.com/keptn/go-utils v0.6.1-0.20200402063250-be7a84038be8
