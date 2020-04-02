@@ -12,15 +12,25 @@ declare var dT_;
 export class AppComponent implements OnInit {
 
   public version: string;
+  public notes;
 
   constructor(private http: HttpClient, private apiService: ApiService) {
     if(typeof dT_!='undefined' && dT_.initAngularNg){dT_.initAngularNg(http, HttpHeaders);}
+    this.notes = [];
   }
 
   ngOnInit(): void {
     this.apiService.getVersion()
       .subscribe((response: any) => {
         this.version = response.version;
+        this.showNote();
       });
+  }
+
+  showNote() {
+    this.notes.push({
+      type: "warning",
+      message: "Test"
+    });
   }
 }

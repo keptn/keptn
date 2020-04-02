@@ -1,4 +1,8 @@
-<app-header></app-header>
+<app-header>
+  <div [className]="'page-note '+note.type+'-note'" *ngFor="let note of notes">
+    {{ note.message }}
+  </div>
+</app-header>
 <div id="page-content" fxFlex fxFlexFill>
   <ktb-http-loading-bar id="page-loading-bar" [filterBy]="'api/project'"></ktb-http-loading-bar>
   <router-outlet></router-outlet>
