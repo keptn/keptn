@@ -146,6 +146,14 @@ export class Trace {
     return parts[parts.length-1];
   }
 
+  getProject(): string {
+    return this.data.project;
+  }
+
+  getService(): string {
+    return this.data.service;
+  }
+
   static fromJSON(data: any) {
     return Object.assign(new this, data);
   }

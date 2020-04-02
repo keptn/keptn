@@ -55,16 +55,17 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
           .subscribe((traces: Trace[]) => {
             if(traces.length > 0) {
               if(params["eventselector"]) {
-                let trace = traces.find((t: Trace) => t.data.stage == params["eventselector"]);
+                let trace = traces.find((t: Trace) => t.data.stage == params["eventselector"] && !!t.getProject() && !!t.getService());
                 if(!trace)
-                  trace = traces.reverse().find((t: Trace) => t.type == params["eventselector"]);
+                  trace = traces.reverse().find((t: Trace) => t.type == params["eventselector"] && !!t.getProject() && !!t.getService());
 
                 if(trace)
-                  this.router.navigate(['/project', trace.data.project, trace.data.service, trace.shkeptncontext, trace.id]);
+                  this.router.navigate(['/project', trace.getProject(), trace.getService(), trace.shkeptncontext, trace.id]);
                 else
                   this.error = "trace";
               } else {
-                this.router.navigate(['/project', traces[0].data.project, traces[0].data.service, traces[0].shkeptncontext]);
+                let trace = traces.find((t: Trace) => !!t.getProject() && !!t.getService());
+                this.router.navigate(['/project', trace.getProject(), trace.getService(), trace.shkeptncontext]);
               }
             } else {
               this.error = "trace";
@@ -116,17 +117,17 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   }
 
   selectRoot(event: any): void {
-    this.projectName = event.root.data.project;
-    this.serviceName = event.root.data.service;
+    this.projectName = event.root.getProject();
+    this.serviceName = event.root.getService();
     this.contextId = event.root.data.shkeptncontext;
     this.eventId = null;
     if(event.stage) {
       let focusEvent = event.root.traces.find(trace => trace.data.stage == event.stage);
-      let routeUrl = this.router.createUrlTree(['/project', focusEvent.data.project, focusEvent.data.service, focusEvent.shkeptncontext, focusEvent.id]);
+      let routeUrl = this.router.createUrlTree(['/project', focusEvent.getProject(), focusEvent.getService(), focusEvent.shkeptncontext, focusEvent.id]);
       this.eventId = focusEvent.id;
       this.location.go(routeUrl.toString());
     } else {
-      let routeUrl = this.router.createUrlTree(['/project', event.root.data.project, event.root.data.service, event.root.shkeptncontext]);
+      let routeUrl = this.router.createUrlTree(['/project', event.root.getProject(), event.root.getService(), event.root.shkeptncontext]);
       this.eventId = event.root.traces[event.root.traces.length-1].id;
       this.location.go(routeUrl.toString());
     }
