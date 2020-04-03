@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: api-service
-          image: keptn/api-service:latest
+          image: keptn/api:latest
           ports:
             - containerPort: 8080
           resources:

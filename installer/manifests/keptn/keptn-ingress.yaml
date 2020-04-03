@@ -9,10 +9,10 @@ metadata:
 spec:
   tls:
     - hosts:
-        - '*.keptn.domain.placeholder'
+        - '.keptn.domain.placeholder'
       secretName: sslcerts
   rules:
-    - host: '*.keptn.domain.placeholder'
+    - host: 'api.keptn.domain.placeholder'
       http:
         paths:
           - backend:
