@@ -23,7 +23,7 @@ else
     fi
 
     # Istio installation
-    echo "Install Istio"
+    print_info "Install Istio"
     kubectl create namespace istio-system
 
     helm template ../manifests/istio/helm/istio-init --name istio-init --namespace istio-system | kubectl apply -f -
