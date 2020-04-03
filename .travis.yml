@@ -109,9 +109,76 @@ gke_full: &gke_full
 
 jobs:
   include:
-  # nightly image builds - build all images
-  - stage: nightly
-    if: branch = master and type = cron
+  ##################################################################################
+  # Jobs that are always executed
+  ##################################################################################
+  - stage: Unit tests
+    os: linux
+    script:
+      - |
+        cd "${CLI_FOLDER}"
+        go test -race -coverprofile=coverage.txt -covermode=atomic -v ./...
+        cd ..
+      - |
+        cd "${API_FOLDER}"
+        go test -coverprofile=coverage.txt -covermode=atomic -v ./handlers/... ./ws/... ./utils/...
+        cd ..
+      - |
+        cd "${OS_ROUTE_SVC_FOLDER}"
+        go test -race -coverprofile=coverage.txt -covermode=atomic -v ./...
+        cd ../..
+      - |
+        cd "${JMETER_SVC_FOLDER}"
+        go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        cd ..
+      - |
+        cd "${HELM_SVC_FOLDER}"
+        go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        cd ..
+      - |
+        cd "${GATEKEEPER_SVC_FOLDER}"
+        go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        cd ..
+      - |
+        cd "${DISTRIBUTOR_FOLDER}"
+        go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        cd ..
+      - |
+        cd "${EVENTBROKER_FOLDER}"
+        go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        cd ..
+      - |
+        cd ${SHIPYARD_SVC_FOLDER}
+        go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        cd ..
+      - |
+        cd "${CONFIGURATION_SVC_FOLDER}"
+        go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        cd ..
+      - |
+        cd "${REMEDIATION_SVC_FOLDER}"
+        go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        cd ..
+      - |
+        cd "${WAIT_SVC_FOLDER}"
+        go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        cd ..
+      - |
+        cd "${LIGHTHOUSE_SVC_FOLDER}"
+        go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        cd ..
+      - |
+        cd "${MONGODB_DS_FOLDER}"
+        go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        cd ..
+    after_success:
+      - bash <(curl -s https://codecov.io/bash)
+
+  ##################################################################################
+  # Jobs for the master branch
+  ##################################################################################
+  - stage: Build Docker Images
+    if: branch = master AND (type = cron or type = push)
     os: linux
     services:
       - docker
@@ -121,53 +188,56 @@ jobs:
     - ./writeManifest.sh
     - cat MANIFEST
     - source ./travis-scripts/build_develop.sh "${API_IMAGE}" "${API_FOLDER}" "${GIT_SHA}" "${DATE}"
-    - cd ..
     - source ./travis-scripts/build_develop.sh "${OS_ROUTE_SVC_IMAGE}" "${OS_ROUTE_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
-    - cd ../..
     - source ./travis-scripts/build_develop.sh "${BRIDGE_IMAGE}" "${BRIDGE_FOLDER}" "${GIT_SHA}" "${DATE}"
-    - cd ..
     - source ./travis-scripts/build_develop.sh "${JMETER_SVC_IMAGE}" "${JMETER_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
-    - cd ..
     - source ./travis-scripts/build_develop.sh "${HELM_SVC_IMAGE}" "${HELM_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
-    - cd ..
     - source ./travis-scripts/build_develop.sh "${GATEKEEPER_SVC_IMAGE}" "${GATEKEEPER_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
-    - cd ..
     - source ./travis-scripts/build_develop.sh "${DISTRIBUTOR_IMAGE}" "${DISTRIBUTOR_FOLDER}" "${GIT_SHA}" "${DATE}"
-    - cd ..
     - source ./travis-scripts/build_develop.sh "${EVENTBROKER_IMAGE}" "${EVENTBROKER_FOLDER}" "${GIT_SHA}" "${DATE}"
-    - cd ..
     - source ./travis-scripts/build_develop.sh "${SHIPYARD_SVC_IMAGE}" "${SHIPYARD_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
-    - cd ..
     - source ./travis-scripts/build_develop.sh "${CONFIGURATION_SVC_IMAGE}" "${CONFIGURATION_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
-    - cd ..
     - source ./travis-scripts/build_develop.sh "${REMEDIATION_SVC_IMAGE}" "${REMEDIATION_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
-    - cd ..
     - source ./travis-scripts/build_develop.sh "${WAIT_SVC_IMAGE}" "${WAIT_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
-    - cd ..
     - source ./travis-scripts/build_develop.sh "${LIGHTHOUSE_SVC_IMAGE}" "${LIGHTHOUSE_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
-    - cd ..
     - source ./travis-scripts/build_develop.sh "${MONGODB_DS_IMAGE}" "${MONGODB_DS_FOLDER}" "${GIT_SHA}" "${DATE}"
-    - cd ..
     - source ./travis-scripts/build_develop.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${GIT_SHA}" "${DATE}"
-    - cd ..
       ### ATTENTION: please make sure installer is always the last in this list to be built
     after_script:
       - echo "The following images have been built and pushed to dockerhub:"
       - docker images | grep keptn
 
+  - stage: Build CLI (OSX, Windows, Linux)
+    if: branch = master AND (type = cron OR type = push)
+    os: osx
+    before_script:
+      - source ./travis-scripts/install_gcloud.sh
+      - echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
+      - gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
+    script:
+      - |
+        if [[ $CHANGED_FILES == *"${CLI_FOLDER}"*  ]]; then
+          echo "Build keptn cli"
+          cd ./cli
+          go test ./...
+          TAG="latest"
+          VERSION="master+${DATE}"
+          source ../travis-scripts/build_cli.sh "${VERSION}" "${KUBE_CONSTRAINTS}"
+          cd ..
+        fi
 
-  - stage: Cron GKE Full (--platform=gke)
-    if: branch = master AND type = cron
+  - stage: Test GKE Full (--platform=gke)
+    if: branch = master AND type = cron # run for cron
     env: KEPTN_INSTALLATION_TYPE=FULL
     <<: *gke_full # use template
 
-  - stage: Cron GKE Full with Istio (--platform=gke --istio-install-option=Reuse)
-    if: branch = master AND type = cron
+  - stage: Test GKE Full with Istio (--platform=gke --istio-install-option=Reuse)
+    if: branch = master AND type = cron # run for cron
     env: KEPTN_INSTALLATION_TYPE=REUSE-ISTIO
     <<: *gke_full # use template
 
-  - stage: Cron Minishift Standalone (--platform=openshift --use-case=quality-gates)
-    if: branch = master AND type = cron
+  - stage: Test Minishift Standalone (--platform=openshift --use-case=quality-gates)
+    if: branch = master AND (type = cron OR type = push) # run for any change on master and cron
     os: linux
     before_script:
       # download and install kubectl
@@ -191,8 +261,8 @@ jobs:
       - cat ~/.keptn/keptn-installer.log
       - cat ~/.keptn/keptn-installer-err.log
 
-  - stage: Cron MicroK8s Standalone (--platform=kubernetes --use-case=quality-gates)
-    if: branch = master AND type = cron
+  - stage: Test MicroK8s Standalone (--platform=kubernetes --use-case=quality-gates)
+    if: branch = master AND (type = cron OR type = push) # run for any change on master and cron
     os: linux
     before_script:
       # download and install kubectl
@@ -215,8 +285,8 @@ jobs:
       - cat ~/.keptn/keptn-installer.log
       - cat ~/.keptn/keptn-installer-err.log
 
-  - stage: Cron Minikube Standalone (--platform=kubernetes --use-case=quality-gates)
-    if: branch = master AND type = cron
+  - stage: Test Minikube Standalone (--platform=kubernetes --use-case=quality-gates)
+    if: branch = master AND (type = cron OR type = push) # run for any change on master and cron
     os: linux
     before_script:
       # download and install kubectl
@@ -239,70 +309,10 @@ jobs:
       - cat ~/.keptn/keptn-installer.log
       - cat ~/.keptn/keptn-installer-err.log
 
-    # always execute unit tests for all directories
-  - stage: Unit tests
-    os: linux
-    script:
-      - |
-          cd "${CLI_FOLDER}"
-          go test -race -coverprofile=coverage.txt -covermode=atomic -v ./...
-          cd ..
-      - |
-          cd "${API_FOLDER}"
-          go test -coverprofile=coverage.txt -covermode=atomic -v ./handlers/... ./ws/... ./utils/...
-          cd ..
-      - |
-          cd "${OS_ROUTE_SVC_FOLDER}"
-          go test -race -coverprofile=coverage.txt -covermode=atomic -v ./...
-          cd ../..
-      - |
-          cd "${JMETER_SVC_FOLDER}"
-          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          cd ..
-      - |
-          cd "${HELM_SVC_FOLDER}"
-          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          cd ..
-      - |
-          cd "${GATEKEEPER_SVC_FOLDER}"
-          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          cd ..
-      - |
-          cd "${DISTRIBUTOR_FOLDER}"
-          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          cd ..
-      - |
-          cd "${EVENTBROKER_FOLDER}"
-          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          cd ..
-      - |
-          cd ${SHIPYARD_SVC_FOLDER}
-          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          cd ..
-      - |
-          cd "${CONFIGURATION_SVC_FOLDER}"
-          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          cd ..
-      - |
-          cd "${REMEDIATION_SVC_FOLDER}"
-          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          cd ..
-      - |
-          cd "${WAIT_SVC_FOLDER}"
-          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          cd ..
-      - |
-          cd "${LIGHTHOUSE_SVC_FOLDER}"
-          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          cd ..
-      - |
-          cd "${MONGODB_DS_FOLDER}"
-          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          cd ..
-    after_success:
-      - bash <(curl -s https://codecov.io/bash)
-
-  - stage: feature/bug/hotfix/patch
+  ##################################################################################
+  # feature/bug/hotfix/patch branches build jobs
+  ##################################################################################
+  - stage: Partial Build for feature/bug/hotfix/patch branches (CLI + Docker Images)
     if: branch =~ ^feature.*$ OR branch =~ ^bug.*$ OR branch =~ ^hotfix.*$ OR branch =~ ^patch.*$
     os: osx
     before_script:
@@ -333,190 +343,72 @@ jobs:
     - |
       if [[ $CHANGED_FILES == *"${API_FOLDER}"*  ]]; then
         source ./travis-scripts/build_feature.sh "${API_IMAGE}" "${API_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
-        cd ..
       fi
     - |
       if [[ $CHANGED_FILES == *"${OS_ROUTE_SVC_FOLDER}"*  ]]; then
         source ./travis-scripts/build_feature.sh "${OS_ROUTE_SVC_IMAGE}" "${OS_ROUTE_SVC_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
-        cd ../..
       fi
     - |
       if [[ $CHANGED_FILES == *"${BRIDGE_FOLDER}"*  ]]; then
         source ./travis-scripts/build_feature.sh "${BRIDGE_IMAGE}" "${BRIDGE_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
-        cd ..
       fi
     - |
       if [[ $CHANGED_FILES == *"${JMETER_SVC_FOLDER}"*  ]]; then
         source ./travis-scripts/build_feature.sh "${JMETER_SVC_IMAGE}" "${JMETER_SVC_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
-        cd ..
       fi
     - |
       if [[ $CHANGED_FILES == *"${HELM_SVC_FOLDER}"*  ]]; then
         source ./travis-scripts/build_feature.sh "${HELM_SVC_IMAGE}" "${HELM_SVC_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
-        cd ..
       fi
     - |
       if [[ $CHANGED_FILES == *"${GATEKEEPER_SVC_FOLDER}"*  ]]; then
         source ./travis-scripts/build_feature.sh "${GATEKEEPER_SVC_IMAGE}" "${GATEKEEPER_SVC_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
-        cd ..
       fi
     - |
       if [[ $CHANGED_FILES == *"${DISTRIBUTOR_FOLDER}"*  ]]; then
         source ./travis-scripts/build_feature.sh "${DISTRIBUTOR_IMAGE}" "${DISTRIBUTOR_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
-        cd ..
       fi
     - |
       if [[ $CHANGED_FILES == *"${EVENTBROKER_FOLDER}"*  ]]; then
         source ./travis-scripts/build_feature.sh "${EVENTBROKER_IMAGE}" "${EVENTBROKER_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
-        cd ..
       fi
     - |
       if [[ $CHANGED_FILES == *"${SHIPYARD_SVC_FOLDER}"*  ]]; then
         source ./travis-scripts/build_feature.sh "${SHIPYARD_SVC_IMAGE}" "${SHIPYARD_SVC_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
-        cd ..
       fi
     - |
       if [[ $CHANGED_FILES == *"${CONFIGURATION_SVC_FOLDER}"*  ]]; then
         source ./travis-scripts/build_feature.sh "${CONFIGURATION_SVC_IMAGE}" "${CONFIGURATION_SVC_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
-        cd ..
       fi
     - |
       if [[ $CHANGED_FILES == *"${REMEDIATION_SVC_FOLDER}"*  ]]; then
         source ./travis-scripts/build_feature.sh "${REMEDIATION_SVC_IMAGE}" "${REMEDIATION_SVC_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
-        cd ..
       fi
     - |
       if [[ $CHANGED_FILES == *"${WAIT_SVC_FOLDER}"*  ]]; then
         source ./travis-scripts/build_feature.sh "${WAIT_SVC_IMAGE}" "${WAIT_SVC_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
-        cd ..
       fi
     - |
       if [[ $CHANGED_FILES == *"${LIGHTHOUSE_SVC_FOLDER}"*  ]]; then
         source ./travis-scripts/build_feature.sh "${LIGHTHOUSE_SVC_IMAGE}" "${LIGHTHOUSE_SVC_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
-        cd ..
       fi
     - |
       if [[ $CHANGED_FILES == *"${MONGODB_DS_FOLDER}"*  ]]; then
         source ./travis-scripts/build_feature.sh "${MONGODB_DS_IMAGE}" "${MONGODB_DS_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
-        cd ..
       fi
     - |
       if [[ $CHANGED_FILES == *"${INSTALLER_FOLDER}"*  ]]; then
         source ./travis-scripts/build_feature.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
-        cd ..
       fi
       ### ATTENTION: please make sure installer is always the last in this list to be built
     after_script:
       - echo "The following images have been built and pushed to dockerhub:"
       - docker images | grep keptn
 
-  - stage: master
-    if: branch = master AND type = push
-    os: osx
-    before_script:
-      - source ./travis-scripts/install_gcloud.sh
-      - echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
-      - gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
-    script:
-    - |
-      if [[ $CHANGED_FILES == *"${CLI_FOLDER}"*  ]]; then
-        echo "Build keptn cli"
-        cd ./cli
-        go test ./...
-        TAG="latest"
-        VERSION="master+${DATE}"
-        source ../travis-scripts/build_cli.sh "${VERSION}" "${KUBE_CONSTRAINTS}"
-        cd ..
-      fi
-
-  - if: branch = master AND type = push
-    os: linux
-    services:
-      - docker
-    script:
-    - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
-    - ./writeManifest.sh
-    - |
-      if [[ $CHANGED_FILES == *"${API_FOLDER}"*  ]]; then
-        source ./travis-scripts/build_develop.sh "${API_IMAGE}" "${API_FOLDER}" "${GIT_SHA}" "${DATE}"
-        cd ..
-      fi
-    - |
-      if [[ $CHANGED_FILES == *"${OS_ROUTE_SVC_FOLDER}"*  ]]; then
-        source ./travis-scripts/build_develop.sh "${OS_ROUTE_SVC_IMAGE}" "${OS_ROUTE_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
-        cd ../..
-      fi
-    - |
-      if [[ $CHANGED_FILES == *"${BRIDGE_FOLDER}"*  ]]; then
-        source ./travis-scripts/build_develop.sh "${BRIDGE_IMAGE}" "${BRIDGE_FOLDER}" "${GIT_SHA}" "${DATE}"
-        cd ..
-      fi
-    - |
-      if [[ $CHANGED_FILES == *"${JMETER_SVC_FOLDER}"*  ]]; then
-        source ./travis-scripts/build_develop.sh "${JMETER_SVC_IMAGE}" "${JMETER_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
-        cd ..
-      fi
-    - |
-      if [[ $CHANGED_FILES == *"${HELM_SVC_FOLDER}"*  ]]; then
-        source ./travis-scripts/build_develop.sh "${HELM_SVC_IMAGE}" "${HELM_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
-        cd ..
-      fi
-    - |
-      if [[ $CHANGED_FILES == *"${GATEKEEPER_SVC_FOLDER}"*  ]]; then
-        source ./travis-scripts/build_develop.sh "${GATEKEEPER_SVC_IMAGE}" "${GATEKEEPER_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
-        cd ..
-      fi
-    - |
-      if [[ $CHANGED_FILES == *"${DISTRIBUTOR_FOLDER}"*  ]]; then
-        source ./travis-scripts/build_develop.sh "${DISTRIBUTOR_IMAGE}" "${DISTRIBUTOR_FOLDER}" "${GIT_SHA}" "${DATE}"
-        cd ..
-      fi
-    - |
-      if [[ $CHANGED_FILES == *"${EVENTBROKER_FOLDER}"*  ]]; then
-        source ./travis-scripts/build_develop.sh "${EVENTBROKER_IMAGE}" "${EVENTBROKER_FOLDER}" "${GIT_SHA}" "${DATE}"
-        cd ..
-      fi
-    - |
-      if [[ $CHANGED_FILES == *"${SHIPYARD_SVC_FOLDER}"*  ]]; then
-        source ./travis-scripts/build_develop.sh "${SHIPYARD_SVC_IMAGE}" "${SHIPYARD_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
-        cd ..
-      fi
-    - |
-      if [[ $CHANGED_FILES == *"${CONFIGURATION_SVC_FOLDER}"*  ]]; then
-        source ./travis-scripts/build_develop.sh "${CONFIGURATION_SVC_IMAGE}" "${CONFIGURATION_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
-        cd ..
-      fi
-    - |
-      if [[ $CHANGED_FILES == *"${REMEDIATION_SVC_FOLDER}"*  ]]; then
-        source ./travis-scripts/build_develop.sh "${REMEDIATION_SVC_IMAGE}" "${REMEDIATION_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
-        cd ..
-      fi
-    - |
-      if [[ $CHANGED_FILES == *"${WAIT_SVC_FOLDER}"*  ]]; then
-        source ./travis-scripts/build_develop.sh "${WAIT_SVC_IMAGE}" "${WAIT_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
-        cd ..
-      fi
-    - |
-      if [[ $CHANGED_FILES == *"${LIGHTHOUSE_SVC_FOLDER}"*  ]]; then
-        source ./travis-scripts/build_develop.sh "${LIGHTHOUSE_SVC_IMAGE}" "${LIGHTHOUSE_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
-        cd ..
-      fi
-    - |
-      if [[ $CHANGED_FILES == *"${MONGODB_DS_FOLDER}"*  ]]; then
-        source ./travis-scripts/build_develop.sh "${MONGODB_DS_IMAGE}" "${MONGODB_DS_FOLDER}" "${GIT_SHA}" "${DATE}"
-        cd ..
-      fi
-    - |
-      if [[ $CHANGED_FILES == *"${INSTALLER_FOLDER}"*  ]]; then
-        source ./travis-scripts/build_develop.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${GIT_SHA}" "${DATE}"
-        cd ..
-      fi
-      ### ATTENTION: please make sure installer is always the last in this list to be built
-    after_script:
-      - echo "The following images have been built and pushed to dockerhub:"
-      - docker images | grep keptn
-
-  - stage: release (cli)
+  ##################################################################################
+  # Release specific jobs
+  ##################################################################################
+  - stage: Release Build CLI
     if: branch =~ ^release.*$ AND NOT type = pull_request
     os: osx
     before_script:
@@ -533,7 +425,7 @@ jobs:
       - source ../travis-scripts/build_cli.sh "${VERSION}" "${KUBE_CONSTRAINTS}"
       - cd ..
 
-  - stage: release (api, os-route-service, bridge, jmeter-service)
+  - stage: Release Build Docker Images (Part 1/2)
     if: branch =~ ^release.*$ AND NOT type = pull_request
     os: linux
     services:
@@ -544,40 +436,18 @@ jobs:
     - export VERSION=${BRANCH#"release-"}
     - ./writeManifest.sh
     - source ./travis-scripts/build_release.sh "${API_IMAGE}" "${API_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
-    - cd ..
     - source ./travis-scripts/build_release.sh "${OS_ROUTE_SVC_IMAGE}" "${OS_ROUTE_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
-    - cd ../..
     - source ./travis-scripts/build_release.sh "${BRIDGE_IMAGE}" "${BRIDGE_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
-    - cd ..
     - source ./travis-scripts/build_release.sh "${JMETER_SVC_IMAGE}" "${JMETER_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
-    - cd ..
+    - source ./travis-scripts/build_release.sh "${HELM_SVC_IMAGE}" "${HELM_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+    - source ./travis-scripts/build_release.sh "${GATEKEEPER_SVC_IMAGE}" "${GATEKEEPER_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+    - source ./travis-scripts/build_release.sh "${DISTRIBUTOR_IMAGE}" "${DISTRIBUTOR_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+    - source ./travis-scripts/build_release.sh "${EVENTBROKER_IMAGE}" "${EVENTBROKER_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
     after_script:
       - echo "The following images have been built and pushed to dockerhub:"
       - docker images | grep keptn
 
-  - stage: release (helm-service, gatekeeper-service, distributor, eventbroker)
-    if: branch =~ ^release.*$ AND NOT type = pull_request
-    os: linux
-    services:
-      - docker
-    script:
-      - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
-      # overwrite version for release branches based on the branch name
-      - export VERSION=${BRANCH#"release-"}
-      - ./writeManifest.sh
-      - source ./travis-scripts/build_release.sh "${HELM_SVC_IMAGE}" "${HELM_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
-      - cd ..
-      - source ./travis-scripts/build_release.sh "${GATEKEEPER_SVC_IMAGE}" "${GATEKEEPER_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
-      - cd ..
-      - source ./travis-scripts/build_release.sh "${DISTRIBUTOR_IMAGE}" "${DISTRIBUTOR_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
-      - cd ..
-      - source ./travis-scripts/build_release.sh "${EVENTBROKER_IMAGE}" "${EVENTBROKER_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
-      - cd ..
-    after_script:
-      - echo "The following images have been built and pushed to dockerhub:"
-      - docker images | grep keptn
-
-  - stage: release (shipyard-service, configuration-service, remediation-service, wait-service)
+  - stage: Release Build Docker Images (Part 2/2)
     if: branch =~ ^release.*$ AND NOT type = pull_request
     os: linux
     services:
@@ -588,33 +458,12 @@ jobs:
       - export VERSION=${BRANCH#"release-"}
       - ./writeManifest.sh
       - source ./travis-scripts/build_release.sh "${SHIPYARD_SVC_IMAGE}" "${SHIPYARD_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
-      - cd ..
       - source ./travis-scripts/build_release.sh "${CONFIGURATION_SVC_IMAGE}" "${CONFIGURATION_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
-      - cd ..
       - source ./travis-scripts/build_release.sh "${REMEDIATION_SVC_IMAGE}" "${REMEDIATION_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
-      - cd ..
       - source ./travis-scripts/build_release.sh "${WAIT_SVC_IMAGE}" "${WAIT_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
-      - cd ..
-    after_script:
-      - echo "The following images have been built and pushed to dockerhub:"
-      - docker images | grep keptn
-
-  - stage: release (lighthouse-service, mongodb-datastore, installer)
-    if: branch =~ ^release.*$ AND NOT type = pull_request
-    os: linux
-    services:
-      - docker
-    script:
-      - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
-      # overwrite version for release branches based on the branch name
-      - export VERSION=${BRANCH#"release-"}
-      - ./writeManifest.sh
       - source ./travis-scripts/build_release.sh "${LIGHTHOUSE_SVC_IMAGE}" "${LIGHTHOUSE_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
-      - cd ..
       - source ./travis-scripts/build_release.sh "${MONGODB_DS_IMAGE}" "${MONGODB_DS_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
-      - cd ..
       - source ./travis-scripts/build_release.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
-      - cd ..
     after_script:
       - echo "The following images have been built and pushed to dockerhub:"
       - docker images | grep keptn

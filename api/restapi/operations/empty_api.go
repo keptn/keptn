@@ -23,10 +23,10 @@ import (
 	"github.com/keptn/keptn/api/restapi/operations/auth"
 	"github.com/keptn/keptn/api/restapi/operations/event"
 	"github.com/keptn/keptn/api/restapi/operations/project"
-	"github.com/keptn/keptn/api/restapi/operations/project_resource"
 	"github.com/keptn/keptn/api/restapi/operations/service"
-	"github.com/keptn/keptn/api/restapi/operations/service_resource"
-	"github.com/keptn/keptn/api/restapi/operations/stage_resource"
+	"github.com/keptn/keptn/configuration-service/restapi/operations/project_resource"
+	"github.com/keptn/keptn/configuration-service/restapi/operations/service_resource"
+	"github.com/keptn/keptn/configuration-service/restapi/operations/stage_resource"
 )
 
 // NewEmptyAPI creates a new Empty instance
@@ -59,20 +59,8 @@ func NewEmptyAPI(spec *loads.Document) *EmptyAPI {
 		ProjectPostProjectHandler: project.PostProjectHandlerFunc(func(params project.PostProjectParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation project.PostProject has not yet been implemented")
 		}),
-		ProjectResourcePostProjectProjectNameResourceHandler: project_resource.PostProjectProjectNameResourceHandlerFunc(func(params project_resource.PostProjectProjectNameResourceParams, principal *models.Principal) middleware.Responder {
-			return middleware.NotImplemented("operation project_resource.PostProjectProjectNameResource has not yet been implemented")
-		}),
 		ServicePostProjectProjectNameServiceHandler: service.PostProjectProjectNameServiceHandlerFunc(func(params service.PostProjectProjectNameServiceParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation service.PostProjectProjectNameService has not yet been implemented")
-		}),
-		StageResourcePostProjectProjectNameStageStageNameResourceHandler: stage_resource.PostProjectProjectNameStageStageNameResourceHandlerFunc(func(params stage_resource.PostProjectProjectNameStageStageNameResourceParams, principal *models.Principal) middleware.Responder {
-			return middleware.NotImplemented("operation stage_resource.PostProjectProjectNameStageStageNameResource has not yet been implemented")
-		}),
-		ServiceResourcePostProjectProjectNameStageStageNameServiceServiceNameResourceHandler: service_resource.PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(func(params service_resource.PostProjectProjectNameStageStageNameServiceServiceNameResourceParams, principal *models.Principal) middleware.Responder {
-			return middleware.NotImplemented("operation service_resource.PostProjectProjectNameStageStageNameServiceServiceNameResource has not yet been implemented")
-		}),
-		ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceHandler: service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(func(params service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceParams, principal *models.Principal) middleware.Responder {
-			return middleware.NotImplemented("operation service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResource has not yet been implemented")
 		}),
 		AuthAuthHandler: auth.AuthHandlerFunc(func(params auth.AuthParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation auth.Auth has not yet been implemented")
