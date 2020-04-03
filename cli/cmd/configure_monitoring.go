@@ -11,7 +11,7 @@ import (
 	"github.com/google/uuid"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
-	"github.com/keptn/go-utils/pkg/events"
+	"github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/pkg/websockethelper"
@@ -76,7 +76,7 @@ var monitoringCmd = &cobra.Command{
 			return errors.New(authErrorMsg)
 		}
 
-		configureMonitoringEventData := &events.ConfigureMonitoringEventData{
+		configureMonitoringEventData := &keptn.ConfigureMonitoringEventData{
 			Type:    args[0],
 			Project: *params.Project,
 			Service: *params.Service,
@@ -87,7 +87,7 @@ var monitoringCmd = &cobra.Command{
 		sdkEvent := cloudevents.Event{
 			Context: cloudevents.EventContextV02{
 				ID:          uuid.New().String(),
-				Type:        events.ConfigureMonitoringEventType,
+				Type:        keptn.ConfigureMonitoringEventType,
 				Source:      types.URLRef{URL: *source},
 				ContentType: &contentType,
 			}.AsV02(),
@@ -102,7 +102,7 @@ var monitoringCmd = &cobra.Command{
 			return fmt.Errorf("Failed to marshal cloud event. %s", err.Error())
 		}
 
-		apiEvent := apimodels.Event{}
+		apiEvent := apimodels.KeptnContextExtendedCE{}
 		err = json.Unmarshal(eventByte, &apiEvent)
 		if err != nil {
 			return fmt.Errorf("Failed to map cloud event to API event model. %s", err.Error())

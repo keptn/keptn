@@ -9,8 +9,8 @@ import (
 	"os"
 	"testing"
 
-	configmodels "github.com/keptn/go-utils/pkg/configuration-service/models"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	configmodels "github.com/keptn/go-utils/pkg/api/models"
+	keptnutils "github.com/keptn/go-utils/pkg/lib"
 	"github.com/magiconair/properties/assert"
 )
 
@@ -45,20 +45,19 @@ func TestGetEndpoint(t *testing.T) {
 }
 
 func TestCreateProjectStatusNoContent(t *testing.T) {
-	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, r.Method, "POST", "Expect POST request")
-		assert.Equal(t, r.URL.EscapedPath(), "/v1/project", "Expect /v1/project endpoint")
-		w.WriteHeader(http.StatusNoContent) // 204 - StatusNoContent
-	})
-
-	httpClient, teardown := testingHTTPClient(handler)
-	defer teardown()
+	ts := httptest.NewServer(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal(t, r.Method, "POST", "Expect POST request")
+			assert.Equal(t, r.URL.EscapedPath(), "/v1/project", "Expect /v1/project endpoint")
+			w.WriteHeader(http.StatusNoContent)
+		}),
+	)
+	defer ts.Close()
 
 	client := newClient()
-	client.httpClient = httpClient
 
 	logger := keptnutils.NewLogger("4711-a83b-4bc1-9dc0-1f050c7e789b", "4711-a83b-4bc1-9dc0-1f050c7e781b", "shipyard-service")
-	os.Setenv("CONFIGURATION_SERVICE", "http://configuration-service.keptn.svc.cluster.local")
+	os.Setenv("CONFIGURATION_SERVICE", ts.URL)
 
 	project := configmodels.Project{}
 	project.ProjectName = "sockshop"
@@ -68,21 +67,20 @@ func TestCreateProjectStatusNoContent(t *testing.T) {
 }
 
 func TestCreateProjectBadRequest(t *testing.T) {
-	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, r.Method, "POST", "Expect POST request")
-		assert.Equal(t, r.URL.EscapedPath(), "/v1/project", "Expect /v1/project endpoint")
-		w.WriteHeader(http.StatusBadRequest) // 400 - BadRequest
-		io.WriteString(w, `{"code": 400, "message": "creating project failed due to error in configuration-service"}`)
-	})
-
-	httpClient, teardown := testingHTTPClient(handler)
-	defer teardown()
+	ts := httptest.NewServer(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal(t, r.Method, "POST", "Expect POST request")
+			assert.Equal(t, r.URL.EscapedPath(), "/v1/project", "Expect /v1/project endpoint")
+			w.WriteHeader(http.StatusBadRequest) // 400 - BadRequest
+			io.WriteString(w, `{"code": 400, "message": "creating project failed due to error in configuration-service"}`)
+		}),
+	)
+	defer ts.Close()
 
 	client := newClient()
-	client.httpClient = httpClient
 
 	logger := keptnutils.NewLogger("4711-a83b-4bc1-9dc0-1f050c7e789b", "4711-a83b-4bc1-9dc0-1f050c7e781b", "shipyard-service")
-	os.Setenv("CONFIGURATION_SERVICE", "http://configuration-service.keptn.svc.cluster.local")
+	os.Setenv("CONFIGURATION_SERVICE", ts.URL)
 
 	project := configmodels.Project{}
 	project.ProjectName = "sockshop"

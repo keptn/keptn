@@ -3,7 +3,7 @@ package main
 import (
 	"testing"
 
-	keptnevents "github.com/keptn/go-utils/pkg/events"
+	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	"github.com/stretchr/testify/assert"
 )
 

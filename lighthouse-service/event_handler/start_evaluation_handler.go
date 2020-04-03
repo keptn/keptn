@@ -10,8 +10,8 @@ import (
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 	"github.com/google/uuid"
-	keptnevents "github.com/keptn/go-utils/pkg/events"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	keptnevents "github.com/keptn/go-utils/pkg/lib"
+	keptnutils "github.com/keptn/go-utils/pkg/lib"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -165,13 +165,12 @@ func (eh *StartEvaluationHandler) sendEvaluationDoneEvent(shkeptncontext string,
 }
 
 func getSLIProvider(project string) (string, error) {
-	kubeClient, err := keptnutils.GetKubeAPI(true)
-
+	kubeAPI, err := getKubeAPI()
 	if err != nil {
 		return "", err
 	}
 
-	configMap, err := kubeClient.ConfigMaps("keptn").Get("lighthouse-config-"+project, v1.GetOptions{})
+	configMap, err := kubeAPI.CoreV1().ConfigMaps("keptn").Get("lighthouse-config-"+project, v1.GetOptions{})
 
 	if err != nil {
 		return "", errors.New("No SLI provider specified for project " + project)

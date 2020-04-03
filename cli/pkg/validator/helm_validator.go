@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"github.com/ghodss/yaml"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/cli/pkg/logging"
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/helm/pkg/proto/hapi/chart"

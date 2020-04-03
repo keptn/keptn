@@ -20,9 +20,8 @@ import (
 
 	"k8s.io/helm/pkg/proto/hapi/chart"
 
-	keptnevents "github.com/keptn/go-utils/pkg/events"
-	keptnmodels "github.com/keptn/go-utils/pkg/models"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	"github.com/keptn/go-utils/pkg/lib"
+	kubeutils "github.com/keptn/kubernetes-utils/pkg"
 	appsv1 "k8s.io/api/apps/v1"
 	kyaml "k8s.io/apimachinery/pkg/util/yaml"
 )
@@ -39,8 +38,8 @@ func (s Scaler) GetAction() string {
 	return "scaling"
 }
 
-func (s Scaler) ExecuteAction(problem *keptnevents.ProblemEventData, shkeptncontext string,
-	action *keptnmodels.RemediationAction) error {
+func (s Scaler) ExecuteAction(problem *keptn.ProblemEventData, shkeptncontext string,
+	action *keptn.RemediationAction) error {
 
 	replicaIncrement, err := strconv.Atoi(action.Value)
 	if err != nil {
@@ -49,7 +48,7 @@ func (s Scaler) ExecuteAction(problem *keptnevents.ProblemEventData, shkeptncont
 
 	helmChartName := problem.Service + "-generated"
 	// Read chart
-	ch, err := keptnutils.GetChart(problem.Project, problem.Service, problem.Stage, helmChartName, os.Getenv(envConfigSvcURL))
+	ch, err := kubeutils.GetChart(problem.Project, problem.Service, problem.Stage, helmChartName, os.Getenv(envConfigSvcURL))
 	if err != nil {
 		return fmt.Errorf("cannot get chart %s for service %s in stage %s of project %s: %v", helmChartName,
 			problem.Service, problem.Stage, problem.Project, err)
@@ -65,7 +64,7 @@ func (s Scaler) ExecuteAction(problem *keptnevents.ProblemEventData, shkeptncont
 		changedFiles[template.Name] = string(template.Data)
 	}
 
-	data := keptnevents.ConfigurationChangeEventData{
+	data := keptn.ConfigurationChangeEventData{
 		Project:                   problem.Project,
 		Service:                   problem.Service,
 		Stage:                     problem.Stage,
@@ -79,13 +78,13 @@ func (s Scaler) ExecuteAction(problem *keptnevents.ProblemEventData, shkeptncont
 	return nil
 }
 
-func (s Scaler) ResolveAction(problem *keptnevents.ProblemEventData, shkeptncontext string,
-	action *keptnmodels.RemediationAction) error {
+func (s Scaler) ResolveAction(problem *keptn.ProblemEventData, shkeptncontext string,
+	action *keptn.RemediationAction) error {
 
 	source, _ := url.Parse("remediation-service")
 	contentType := "application/json"
 
-	testFinishedData := keptnevents.TestsFinishedEventData{
+	testFinishedData := keptn.TestsFinishedEventData{
 		Project:      problem.Project,
 		Stage:        problem.Stage,
 		Service:      problem.Service,
@@ -96,7 +95,7 @@ func (s Scaler) ResolveAction(problem *keptnevents.ProblemEventData, shkeptncont
 		Context: cloudevents.EventContextV02{
 			ID:          uuid.New().String(),
 			Time:        &types.Timestamp{Time: time.Now()},
-			Type:        keptnevents.TestsFinishedEventType,
+			Type:        keptn.TestsFinishedEventType,
 			Source:      types.URLRef{URL: *source},
 			ContentType: &contentType,
 			Extensions:  map[string]interface{}{"shkeptncontext": shkeptncontext},
@@ -132,7 +131,7 @@ func (s Scaler) increaseReplicaCount(ch *chart.Chart, replicaIncrement int) ([]*
 			}
 
 			var depl appsv1.Deployment
-			if err := json.Unmarshal(doc, &depl); err == nil && keptnutils.IsDeployment(&depl) {
+			if err := json.Unmarshal(doc, &depl); err == nil && kubeutils.IsDeployment(&depl) {
 				// Deployment found
 				containsDepl = true
 				depl.Spec.Replicas = getPtr(*depl.Spec.Replicas + int32(replicaIncrement))

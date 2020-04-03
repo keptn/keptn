@@ -11,7 +11,7 @@ import (
 
 	"github.com/gbrlsnchs/jwt/v2"
 	"github.com/gorilla/websocket"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	keptnutils "github.com/keptn/go-utils/pkg/lib"
 )
 
 const wsLogging = false

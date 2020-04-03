@@ -12,10 +12,10 @@ import (
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
-	"github.com/keptn/go-utils/pkg/models"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	"github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 )
@@ -53,7 +53,7 @@ Example:
 			return errors.New("required argument PROJECTNAME not set")
 		}
 
-		if !keptnutils.ValidateKeptnEntityName(args[0]) {
+		if !keptn.ValidateKeptnEntityName(args[0]) {
 			errorMsg := "Project name contains upper case letter(s) or special character(s).\n"
 			errorMsg += "Keptn relies on the following conventions: "
 			errorMsg += "start with a lower case letter, then lower case letters, numbers, and hyphens are allowed.\n"
@@ -81,7 +81,7 @@ Example:
 
 		// check stage names
 		for _, stage := range shipyard.Stages {
-			if !keptnutils.ValidateKeptnEntityName(stage.Name) {
+			if !keptn.ValidateKeptnEntityName(stage.Name) {
 				errorMsg := "Stage " + stage.Name + " contains upper case letter(s) or special character(s).\n"
 				errorMsg += "Keptn relies on the following conventions: "
 				errorMsg += "start with a lower case letter, then lower case letters, numbers, and hyphens are allowed.\n"
@@ -101,7 +101,7 @@ Example:
 
 		content, _ := file.ReadFile(*createProjectParams.Shipyard)
 		shipyard := base64.StdEncoding.EncodeToString([]byte(content))
-		project := apimodels.Project{
+		project := apimodels.CreateProject{
 			Name:     &args[0],
 			Shipyard: &shipyard,
 		}
@@ -146,8 +146,8 @@ func checkGitCredentials() error {
 	return errors.New(gitErrMsg)
 }
 
-func parseShipyard(shipyardContent string) (*models.Shipyard, error) {
-	shipyard := models.Shipyard{}
+func parseShipyard(shipyardContent string) (*keptn.Shipyard, error) {
+	shipyard := keptn.Shipyard{}
 	err := yaml.Unmarshal([]byte(shipyardContent), &shipyard)
 	if err != nil {
 		return nil, err

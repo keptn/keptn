@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	configutils "github.com/keptn/go-utils/pkg/configuration-service/utils"
-	keptnevents "github.com/keptn/go-utils/pkg/events"
+	configutils "github.com/keptn/go-utils/pkg/api/utils"
+	"github.com/keptn/go-utils/pkg/lib"
 	"sigs.k8s.io/yaml"
 )
 
@@ -63,7 +63,7 @@ type ProblemDetails struct {
 	ClientIP string `json:"ClientIP"`
 }
 
-func getIP(problem *keptnevents.ProblemEventData) (string, error) {
+func getIP(problem *keptn.ProblemEventData) (string, error) {
 
 	details := ProblemDetails{}
 	err := yaml.Unmarshal(problem.ProblemDetails, &details)

@@ -11,8 +11,8 @@ import (
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
 	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
 	"github.com/ghodss/yaml"
-	"github.com/keptn/go-utils/pkg/configuration-service/utils"
-	keptnmodelsv2 "github.com/keptn/go-utils/pkg/models/v2"
+	utils "github.com/keptn/go-utils/pkg/api/utils"
+	keptnmodelsv2 "github.com/keptn/go-utils/pkg/lib"
 )
 
 const eventbroker = "EVENTBROKER"
@@ -48,7 +48,7 @@ func sendEvent(event cloudevents.Event) error {
 		return errors.New("Failed to create HTTP client:" + err.Error())
 	}
 
-	if _, err := c.Send(context.Background(), event); err != nil {
+	if _, _, err := c.Send(context.Background(), event); err != nil {
 		return errors.New("Failed to send cloudevent:, " + err.Error())
 	}
 	return nil

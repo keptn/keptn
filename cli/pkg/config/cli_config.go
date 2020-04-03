@@ -9,7 +9,7 @@ import (
 
 	"github.com/keptn/keptn/cli/pkg/file"
 
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 )
 
 // CLIConfig holds infos of the CLI config

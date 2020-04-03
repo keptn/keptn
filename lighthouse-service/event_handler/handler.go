@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
-	keptnevents "github.com/keptn/go-utils/pkg/events"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	keptnevents "github.com/keptn/go-utils/pkg/lib"
+	keptnutils "github.com/keptn/go-utils/pkg/lib"
 )
 
 type EvaluationEventHandler interface {

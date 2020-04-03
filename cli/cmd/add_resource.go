@@ -3,12 +3,12 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"io/ioutil"
 	"os"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/spf13/cobra"
@@ -28,7 +28,7 @@ var addResourceCmd = &cobra.Command{
 	Use:   "add-resource --project=PROJECT --stage=STAGE --service=SERVICE --resource=FILEPATH --resourceUri=FILEPATH",
 	Short: "Adds a resource to a service within your project in the specified stage",
 	Long: `Adds a resource to a service within your project in the specified stage.
-        
+	
 Example: 
 	keptn add-resource --project=sockshop --stage=dev --service=carts --resource=./jmeter.jmx --resourceUri=jmeter/functional.jmx`,
 	SilenceUsage: true,
@@ -55,7 +55,7 @@ Example:
 		resourceContentStr := string(resourceContent)
 		resources := []*apimodels.Resource{
 			{
-				ResourceContent: &resourceContentStr,
+				ResourceContent: resourceContentStr,
 				ResourceURI:     addResourceCmdParams.ResourceURI,
 			},
 		}

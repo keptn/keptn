@@ -7,8 +7,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/configuration-service/config"
+	utils "github.com/keptn/kubernetes-utils/pkg"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"

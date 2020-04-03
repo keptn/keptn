@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	keptnutils "github.com/keptn/go-utils/pkg/lib"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -13,8 +13,8 @@ import (
 	"strings"
 	"testing"
 
-	keptnevents "github.com/keptn/go-utils/pkg/events"
-	keptnmodelsv2 "github.com/keptn/go-utils/pkg/models/v2"
+	keptnevents "github.com/keptn/go-utils/pkg/lib"
+	keptnmodelsv2 "github.com/keptn/go-utils/pkg/lib"
 	"github.com/stretchr/testify/assert"
 )
 

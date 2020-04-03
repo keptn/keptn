@@ -5,7 +5,7 @@ import (
 	"net/url"
 
 	"github.com/docker/docker-credential-helpers/credentials"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 )
 
 var testEndPoint = url.URL{Scheme: "https", Host: "my-endpoint"}

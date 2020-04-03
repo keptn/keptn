@@ -8,7 +8,7 @@ import (
 	"os"
 	"strings"
 
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 )
 
 // PlaceholderReplacement is a helper type for replacing a placeholder with a desired value

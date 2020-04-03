@@ -2,13 +2,14 @@ package handlers
 
 import (
 	"github.com/keptn/keptn/configuration-service/restapi/operations/stage"
+	k8sutils "github.com/keptn/kubernetes-utils/pkg"
 	"io/ioutil"
 	"os"
 	"time"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
-	"github.com/keptn/go-utils/pkg/utils"
+	"github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/configuration-service/common"
 	"github.com/keptn/keptn/configuration-service/config"
 	"github.com/keptn/keptn/configuration-service/models"
@@ -56,7 +57,7 @@ func GetProjectHandlerFunc(params project.GetProjectParams) middleware.Responder
 // PostProjectHandlerFunc creates a new project
 func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Responder {
 	credentialsCreated := false
-	logger := utils.NewLogger("", "", "configuration-service")
+	logger := keptn.NewLogger("", "", "configuration-service")
 	projectConfigPath := config.ConfigDir + "/" + params.Project.ProjectName
 
 	// check if the project already exists
@@ -93,7 +94,7 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not create project")})
 		}
 
-		_, err = utils.ExecuteCommandInDirectory("git", []string{"init"}, projectConfigPath)
+		_, err = k8sutils.ExecuteCommandInDirectory("git", []string{"init"}, projectConfigPath)
 		if err != nil {
 			logger.Error(err.Error())
 			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not initialize git repo")})
@@ -158,7 +159,7 @@ func PutProjectProjectNameHandlerFunc(params project.PutProjectProjectNameParams
 
 // DeleteProjectProjectNameHandlerFunc deletes a project
 func DeleteProjectProjectNameHandlerFunc(params project.DeleteProjectProjectNameParams) middleware.Responder {
-	logger := utils.NewLogger("", "", "configuration-service")
+	logger := keptn.NewLogger("", "", "configuration-service")
 	logger.Debug("Deleting project " + params.ProjectName)
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)

@@ -36,14 +36,14 @@ func TestLookupHostname(t *testing.T) {
 		in  string
 		out bool
 	}{
-		{"xip.io", true },
-		{ "127.0.0.1.xip.io", true },
-		{ "127.0.0.2.xip.io", true },
-		{ "192.168.0.0.xip.io", true },
-		{ "api.keptn.192.168.0.0.xip.io", true },
-		{ "a.b.c.d", false },
-		{ "test.com", true },
-		{ "keptn.github.io", true },
+		{"xip.io", true},
+		{"127.0.0.1.xip.io", true},
+		{"127.0.0.2.xip.io", true},
+		{"192.168.0.0.xip.io", true},
+		{"api.keptn.192.168.0.0.xip.io", true},
+		{"a.b.c.d", false},
+		{"test.com", true},
+		{"keptn.github.io", true},
 	}
 
 	for _, tt := range tests {

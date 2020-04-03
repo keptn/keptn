@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"strings"
 
-	configutils "github.com/keptn/go-utils/pkg/configuration-service/utils"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	configutils "github.com/keptn/go-utils/pkg/api/utils"
+	keptnutils "github.com/keptn/go-utils/pkg/lib"
 )
 
 const maxAcceptedErrorRate = 0.1

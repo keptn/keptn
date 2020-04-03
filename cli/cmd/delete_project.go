@@ -46,7 +46,7 @@ Example:
 		logging.PrintLog("Starting to delete project", logging.InfoLevel)
 
 		project := apimodels.Project{
-			Name: &args[0],
+			ProjectName: args[0],
 		}
 
 		projectHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, "https")

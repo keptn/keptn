@@ -2,10 +2,12 @@ package event_handler
 
 import (
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
-	keptnevents "github.com/keptn/go-utils/pkg/events"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	keptnevents "github.com/keptn/go-utils/pkg/lib"
+	keptnutils "github.com/keptn/go-utils/pkg/lib"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 )
 
 type ConfigureMonitoringHandler struct {
@@ -27,21 +29,39 @@ func (eh *ConfigureMonitoringHandler) HandleEvent() error {
 
 	configMap := eh.getSLISourceConfigMap(e)
 
-	kubeAPI, err := keptnutils.GetKubeAPI(true)
+	kubeAPI, err := getKubeAPI()
+	if err != nil {
+		return err
+	}
 
 	if err != nil {
 		eh.Logger.Error("Could not create Kube API")
 		return err
 	}
-	_, err = kubeAPI.ConfigMaps("keptn").Create(configMap)
+	_, err = kubeAPI.CoreV1().ConfigMaps("keptn").Create(configMap)
 
 	if err != nil {
-		_, err = kubeAPI.ConfigMaps("keptn").Update(configMap)
+		_, err = kubeAPI.CoreV1().ConfigMaps("keptn").Update(configMap)
 		if err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+func getKubeAPI() (*kubernetes.Clientset, error) {
+	var config *rest.Config
+	config, err := rest.InClusterConfig()
+
+	if err != nil {
+		return nil, err
+	}
+
+	kubeAPI, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		return nil, err
+	}
+	return kubeAPI, nil
 }
 
 func (eh *ConfigureMonitoringHandler) getSLISourceConfigMap(e *keptnevents.ConfigureMonitoringEventData) *v1.ConfigMap {

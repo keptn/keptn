@@ -19,7 +19,7 @@ import (
 	"log"
 	"os"
 
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	keptnutils "github.com/keptn/go-utils/pkg/lib"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
@@ -101,7 +101,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	if err != nil {
 		logger.Error("Unable to create cloudevent client: " + err.Error())
 	}
-	_, err = eventClient.Send(ctx, event)
+	_, _, err = eventClient.Send(ctx, event)
 	if err != nil {
 		logger.Error("Failed to send cloudevent: " + err.Error())
 	}
