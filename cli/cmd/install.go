@@ -387,7 +387,7 @@ func doInstallation() error {
 				return err
 			}
 		} else if getIngress() == nginx {
-			o = options{"get", "ingress", "api-ingress", "-n", "keptn",
+			o = options{"get", "svc", "ingress-nginx", "-n", "ingress-nginx",
 				"-ojsonpath={.status.loadBalancer.ingress[0].hostname}"}
 			o.appendIfNotEmpty(kubectlOptions)
 			hostname, err = keptnutils.ExecuteCommand("kubectl", o)

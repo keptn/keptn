@@ -35,7 +35,7 @@ var configureDomainParams *configureDomainCmdParams
 const installerPrefixURL = "https://raw.githubusercontent.com/keptn/keptn/"
 
 const apiVirtualServiceSuffix = "/installer/manifests/keptn/keptn-api-virtualservice.yaml"
-const apiIngressSuffix = "/installer/manifests/keptn/api-ingress.yaml"
+const apiIngressSuffix = "/installer/manifests/keptn/keptn-ingress.yaml"
 const domainConfigMapSuffix = "/installer/manifests/keptn/keptn-domain-configmap.yaml"
 
 // domainCmd represents the domain command
@@ -145,14 +145,6 @@ Example:
 			}
 
 			if err := updateKeptnDomainConfigMap(path, args[0]); err != nil {
-				return err
-			}
-
-			if err := keptnutils.RestartPodsWithSelector(false, "keptn", "run=api"); err != nil {
-				return err
-			}
-
-			if err := keptnutils.WaitForPodsWithSelector(false, "keptn", "run=api", 5, 5*time.Second); err != nil {
 				return err
 			}
 
@@ -274,7 +266,8 @@ func updateKeptnAPIIngress(path, domain string) error {
 	}
 
 	if err := file.Replace(keptnAPIIngress,
-		file.PlaceholderReplacement{PlaceholderValue: "domain.placeholder", DesiredValue: domain}); err != nil {
+		file.PlaceholderReplacement{PlaceholderValue: "domain.placeholder", DesiredValue: domain},
+		file.PlaceholderReplacement{PlaceholderValue: "ingress.placeholder", DesiredValue: "nginx"}); err != nil {
 		return err
 	}
 
