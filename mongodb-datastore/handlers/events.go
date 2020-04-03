@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 	"sync"
@@ -20,6 +21,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
+
+const contextToProjectCollection = "contextToProject"
 
 var client *mongo.Client
 var mutex sync.Mutex
@@ -72,6 +75,7 @@ func SaveEvent(event *models.KeptnContextExtendedCE) error {
 		return err
 	}
 
+	// insert in project collection
 	collectionName := getProjectOfEvent(event)
 	logger.Debug("Storing event to collection " + collectionName)
 
@@ -93,6 +97,14 @@ func SaveEvent(event *models.KeptnContextExtendedCE) error {
 		return err
 	}
 
+	// store mapping between context ID and project in separate table
+
+	contextToProjectCollection := client.Database(mongoDBName).Collection(contextToProjectCollection)
+
+	contextToProjectCollection.FindOneAndUpdate(ctx,
+		bson.M{"shkeptncontext": event.Shkeptncontext},
+		bson.M{"shkeptncontext": event.Shkeptncontext, "project": collectionName},
+	)
 	logger.Debug(fmt.Sprintf("insertedID: %s", res.InsertedID))
 	return nil
 }
@@ -145,6 +157,13 @@ func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 	if searchOptions["data.project"] != nil && searchOptions["data.project"] != "" {
 		// if a project has been specified, query the collection for that project
 		collectionName = searchOptions["data.project"].(string)
+	} else if params.KeptnContext != nil && *params.KeptnContext != "" {
+		var err error
+		collectionName, err = getProjectForContext(*params.KeptnContext)
+		if err != nil {
+			logger.Error(fmt.Sprintf("error loading project for shkeptncontext: %v", err))
+			return nil, err
+		}
 	}
 
 	collection := client.Database(mongoDBName).Collection(collectionName)
@@ -266,6 +285,23 @@ func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 	}
 
 	return &result, nil
+}
+
+func getProjectForContext(keptnContext string) (string, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	contextToProjectCollection := client.Database(mongoDBName).Collection(contextToProjectCollection)
+	result := contextToProjectCollection.FindOne(ctx, bson.M{"shkeptncontext": keptnContext})
+	var resultMap bson.M
+	err := result.Decode(resultMap)
+	if err != nil {
+		return "", err
+	}
+	if project, ok := resultMap["project"].(string); !ok {
+		return "", errors.New("Could not find entry for keptnContext: " + keptnContext)
+	} else {
+		return project, nil
+	}
 }
 
 func getSearchOptions(params event.GetEventsParams) bson.M {
