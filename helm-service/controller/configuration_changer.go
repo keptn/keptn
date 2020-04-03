@@ -58,7 +58,7 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event,
 
 	keptnHandler, err := keptnevents.NewKeptn(&ce, keptnevents.KeptnOpts{})
 	if err != nil {
-		c.logger.Error("Could not initialiue keptn handler: " + err.Error())
+		c.logger.Error("Could not initialize keptn handler: " + err.Error())
 	}
 
 	if os.Getenv("PRE_WORKFLOW_ENGINE") == "true" && e.Stage == "" {
