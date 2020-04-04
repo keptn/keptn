@@ -67,3 +67,6 @@ kubectl create --namespace istio-system secret tls istio-ingressgateway-certs --
 
 rm key.pem
 rm certificate.pem
+
+kubectl apply -f ../manifests/istio/public-gateway.yaml
+verify_kubectl $? "Deploying public-gateway failed."
