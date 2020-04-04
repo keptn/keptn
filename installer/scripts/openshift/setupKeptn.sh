@@ -54,8 +54,7 @@ verify_kubectl $? "Deploying Keptn core components failed."
 ## Start validation of Keptn core           ##
 ##############################################
 wait_for_all_pods_in_namespace "keptn"
-wait_for_deployment_in_namespace "api-gateway-nginx" "keptn"
-wait_for_deployment_in_namespace "api-service" "keptn"
+wait_for_deployment_in_namespace "api" "keptn"
 wait_for_deployment_in_namespace "bridge" "keptn"
 wait_for_deployment_in_namespace "eventbroker-go" "keptn"
 wait_for_deployment_in_namespace "helm-service" "keptn"
