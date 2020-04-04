@@ -22,7 +22,7 @@ if [ "$INGRESS" = "istio" ]; then
 elif [ "$INGRESS" = "nginx" ]; then
     # Install nginx service mesh
     print_info "Creating route to api-gateway-nginx"
-    oc create route edge api --service=api-gateway-nginx --port=https --insecure-policy='None' -n keptn
+    oc create route edge api --service=api-gateway-nginx --port=http --insecure-policy='None' -n keptn
 
     BASE_URL=$(oc get route -n keptn api -oyaml | yq r - spec.host | sed 's~api-keptn.~~')
     DOMAIN=$BASE_URL
@@ -30,8 +30,8 @@ elif [ "$INGRESS" = "nginx" ]; then
     print_info "Used domain for api OC route ${DOMAIN}"
     oc delete route api -n keptn
 
-    oc create route edge api --service=api-gateway-nginx --port=https --insecure-policy='None' -n keptn --hostname="api.keptn.$BASE_URL"
-    oc create route edge api2 --service=api-gateway-nginx --port=https --insecure-policy='None' -n keptn --hostname="api.keptn"
+    oc create route edge api --service=api-gateway-nginx --port=http --insecure-policy='None' -n keptn --hostname="api.keptn.$BASE_URL"
+    oc create route edge api2 --service=api-gateway-nginx --port=http --insecure-policy='None' -n keptn --hostname="api.keptn"
 fi
 
 # Add config map in keptn namespace that contains the domain - this will be used by other services as well
