@@ -17,7 +17,8 @@ verify_test_step $? "Could not find keptn credentials in ~/.keptn folder"
 echo "Verifying that services and namespaces have been created"
 
 # verify the deployments within the keptn namespace
-verify_deployment_in_namespace "api" "keptn"
+verify_deployment_in_namespace "api-gateway-nginx" "keptn"
+verify_deployment_in_namespace "api-service" "keptn"
 verify_deployment_in_namespace "bridge" "keptn"
 verify_deployment_in_namespace "configuration-service" "keptn"
 verify_deployment_in_namespace "gatekeeper-service" "keptn"
