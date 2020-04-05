@@ -192,7 +192,7 @@ function setupKeptnDomain() {
     fi
   elif [[ "$GATEWAY_TYPE" == "NodePort" ]]; then
       NODE_PORT=$(kubectl -n $NAMESPACE get service $SVC -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')
-      NODE_IP=$(kubectl get nodes -l node-role.kubernetes.io/worker=true -o jsonpath='{ $.items[0].status.addresses[?(@.type=="InternalIP")].address }')
+      NODE_IP=$(kubectl get nodes -o jsonpath='{ $.items[0].status.addresses[?(@.type=="InternalIP")].address }')
       export DOMAIN="$NODE_IP.xip.io:$NODE_PORT"
       export INGRESS_HOST="$NODE_IP.xip.io"
   fi
