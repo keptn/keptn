@@ -8,7 +8,7 @@
     <button dt-show-more [showLess]="panel.expanded"></button>
   </div>
   <div class="ktb-expandable-tile-content">
-    <dt-expandable-panel #panel>
+    <dt-expandable-panel #panel [expanded]="expanded">
       <div class="container dark">
         <ng-content></ng-content>
       </div>

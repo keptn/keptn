@@ -33,6 +33,7 @@ export class KtbExpandableTileComponent implements OnInit {
 
   private _error = false;
   private _success = false;
+  private _expanded = false;
 
   @Input()
   get error(): boolean {
@@ -56,6 +57,16 @@ export class KtbExpandableTileComponent implements OnInit {
     }
   }
 
+  @Input()
+  get expanded(): boolean {
+    return this._expanded;
+  }
+  set expanded(value: boolean) {
+    if (this._expanded !== value) {
+      this._expanded = value;
+      this._changeDetectorRef.markForCheck();
+    }
+  }
   constructor(private _changeDetectorRef: ChangeDetectorRef) { }
 
   ngOnInit() {

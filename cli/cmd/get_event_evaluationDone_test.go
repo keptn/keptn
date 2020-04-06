@@ -1,13 +1,12 @@
 package cmd
 
 import (
-	"bytes"
 	"fmt"
 	"os"
 	"testing"
 
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
-	"github.com/keptn/keptn/cli/utils/credentialmanager"
 )
 
 func init() {
@@ -18,20 +17,10 @@ func init() {
 func TestEvaluationDoneGetEvent(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
-	buf := new(bytes.Buffer)
-	rootCmd.SetOutput(buf)
 
-	args := []string{
-		"get",
-		"event",
-		"evaluation-done",
-		fmt.Sprintf("--keptn-context=%s", "8929e5e5-3826-488f-9257-708bfa974909"),
-		"--mock",
-	}
-	rootCmd.SetArgs(args)
-	err := rootCmd.Execute()
-
+	cmd := fmt.Sprintf("get event evaluation-done --keptn-context=%s --mock", "8929e5e5-3826-488f-9257-708bfa974909")
+	_, err := executeActionCommandC(cmd)
 	if err != nil {
-		t.Errorf("An error occured: %v", err)
+		t.Errorf(unexpectedErrMsg, err)
 	}
 }

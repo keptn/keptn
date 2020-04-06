@@ -1,7 +1,7 @@
 package event_handler
 
 import (
-	keptnmodelsv2 "github.com/keptn/go-utils/pkg/models/v2"
+	"github.com/keptn/go-utils/pkg/lib"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -9,7 +9,7 @@ import (
 type getSLOTestObject struct {
 	Name           string
 	SLOFileContent string
-	ExpectedSLO    *keptnmodelsv2.ServiceLevelObjectives
+	ExpectedSLO    *keptn.ServiceLevelObjectives
 	ExpectedError  error
 }
 
@@ -57,21 +57,21 @@ objectives:
 total_score:
   pass: "90%"
   warning: 75%`,
-			ExpectedSLO: &keptnmodelsv2.ServiceLevelObjectives{
+			ExpectedSLO: &keptn.ServiceLevelObjectives{
 				SpecVersion: "1.0",
 				Filter: map[string]string{
 					"id": "<prometheus_scrape_job_id>",
 				},
-				Comparison: &keptnmodelsv2.SLOComparison{
+				Comparison: &keptn.SLOComparison{
 					CompareWith:               "single_result",
 					IncludeResultWithScore:    "pass",
 					NumberOfComparisonResults: 3,
 					AggregateFunction:         "avg",
 				},
-				Objectives: []*keptnmodelsv2.SLO{
+				Objectives: []*keptn.SLO{
 					{
 						SLI: "responseTime95",
-						Pass: []*keptnmodelsv2.SLOCriteria{
+						Pass: []*keptn.SLOCriteria{
 							{
 								Criteria: []string{"<=+10%"},
 							},
@@ -79,7 +79,7 @@ total_score:
 								Criteria: []string{"<200"},
 							},
 						},
-						Warning: []*keptnmodelsv2.SLOCriteria{
+						Warning: []*keptn.SLOCriteria{
 							{
 								Criteria: []string{"<+15%", ">-8%", "<500"},
 							},
@@ -89,7 +89,7 @@ total_score:
 					},
 					{
 						SLI: "security_vulnerabilities",
-						Pass: []*keptnmodelsv2.SLOCriteria{
+						Pass: []*keptn.SLOCriteria{
 							{
 								Criteria: []string{"=0"},
 							},
@@ -99,7 +99,7 @@ total_score:
 					},
 					{
 						SLI: "sql_statements",
-						Pass: []*keptnmodelsv2.SLOCriteria{
+						Pass: []*keptn.SLOCriteria{
 							{
 								Criteria: []string{"=0%"},
 							},
@@ -107,7 +107,7 @@ total_score:
 								Criteria: []string{"<100"},
 							},
 						},
-						Warning: []*keptnmodelsv2.SLOCriteria{
+						Warning: []*keptn.SLOCriteria{
 							{
 								Criteria: []string{"<+5%", ">-5%"},
 							},
@@ -116,7 +116,215 @@ total_score:
 						KeySLI: true,
 					},
 				},
-				TotalScore: &keptnmodelsv2.SLOScore{
+				TotalScore: &keptn.SLOScore{
+					Pass:    "90%",
+					Warning: "75%",
+				},
+			},
+			ExpectedError: nil,
+		},
+		{
+			Name: "Simple SLO file without comparison spec",
+			SLOFileContent: `---
+spec_version: '1.0'
+filter:
+  id: "<prometheus_scrape_job_id>"
+objectives:
+  - sli: responseTime95
+    pass:
+      - criteria:
+          - "<=+10%"
+      - criteria:
+          - "<200"
+    warning:
+      - criteria:
+          - "<+15%"
+          - ">-8%"
+          - "<500"
+  - sli: security_vulnerabilities
+    weight: 2
+    pass:
+      - criteria:
+          - "=0"
+  - sli: sql_statements
+    key_sli: true
+    pass:
+      - criteria:
+          - "=0%"
+      - criteria:
+          - "<100"
+    warning:
+      - criteria:
+          - "<+5%"
+          - ">-5%"
+total_score:
+  pass: "90%"
+  warning: 75%`,
+			ExpectedSLO: &keptn.ServiceLevelObjectives{
+				SpecVersion: "1.0",
+				Filter: map[string]string{
+					"id": "<prometheus_scrape_job_id>",
+				},
+				Comparison: &keptn.SLOComparison{
+					CompareWith:               "single_result",
+					IncludeResultWithScore:    "all",
+					NumberOfComparisonResults: 1,
+					AggregateFunction:         "avg",
+				},
+				Objectives: []*keptn.SLO{
+					{
+						SLI: "responseTime95",
+						Pass: []*keptn.SLOCriteria{
+							{
+								Criteria: []string{"<=+10%"},
+							},
+							{
+								Criteria: []string{"<200"},
+							},
+						},
+						Warning: []*keptn.SLOCriteria{
+							{
+								Criteria: []string{"<+15%", ">-8%", "<500"},
+							},
+						},
+						Weight: 1,
+						KeySLI: false,
+					},
+					{
+						SLI: "security_vulnerabilities",
+						Pass: []*keptn.SLOCriteria{
+							{
+								Criteria: []string{"=0"},
+							},
+						},
+						Weight: 2,
+						KeySLI: false,
+					},
+					{
+						SLI: "sql_statements",
+						Pass: []*keptn.SLOCriteria{
+							{
+								Criteria: []string{"=0%"},
+							},
+							{
+								Criteria: []string{"<100"},
+							},
+						},
+						Warning: []*keptn.SLOCriteria{
+							{
+								Criteria: []string{"<+5%", ">-5%"},
+							},
+						},
+						Weight: 1,
+						KeySLI: true,
+					},
+				},
+				TotalScore: &keptn.SLOScore{
+					Pass:    "90%",
+					Warning: "75%",
+				},
+			},
+			ExpectedError: nil,
+		},
+		{
+			Name: "Simple SLO file",
+			SLOFileContent: `---
+spec_version: '1.0'
+filter:
+  id: "<prometheus_scrape_job_id>"
+comparison:
+  compare_with: "single_result"
+objectives:
+  - sli: responseTime95
+    pass:
+      - criteria:
+          - "<=+10%"
+      - criteria:
+          - "<200"
+    warning:
+      - criteria:
+          - "<+15%"
+          - ">-8%"
+          - "<500"
+  - sli: security_vulnerabilities
+    weight: 2
+    pass:
+      - criteria:
+          - "=0"
+  - sli: sql_statements
+    key_sli: true
+    pass:
+      - criteria:
+          - "=0%"
+      - criteria:
+          - "<100"
+    warning:
+      - criteria:
+          - "<+5%"
+          - ">-5%"
+total_score:
+  pass: "90%"
+  warning: 75%`,
+			ExpectedSLO: &keptn.ServiceLevelObjectives{
+				SpecVersion: "1.0",
+				Filter: map[string]string{
+					"id": "<prometheus_scrape_job_id>",
+				},
+				Comparison: &keptn.SLOComparison{
+					CompareWith:               "single_result",
+					IncludeResultWithScore:    "all",
+					NumberOfComparisonResults: 3,
+					AggregateFunction:         "avg",
+				},
+				Objectives: []*keptn.SLO{
+					{
+						SLI: "responseTime95",
+						Pass: []*keptn.SLOCriteria{
+							{
+								Criteria: []string{"<=+10%"},
+							},
+							{
+								Criteria: []string{"<200"},
+							},
+						},
+						Warning: []*keptn.SLOCriteria{
+							{
+								Criteria: []string{"<+15%", ">-8%", "<500"},
+							},
+						},
+						Weight: 1,
+						KeySLI: false,
+					},
+					{
+						SLI: "security_vulnerabilities",
+						Pass: []*keptn.SLOCriteria{
+							{
+								Criteria: []string{"=0"},
+							},
+						},
+						Weight: 2,
+						KeySLI: false,
+					},
+					{
+						SLI: "sql_statements",
+						Pass: []*keptn.SLOCriteria{
+							{
+								Criteria: []string{"=0%"},
+							},
+							{
+								Criteria: []string{"<100"},
+							},
+						},
+						Warning: []*keptn.SLOCriteria{
+							{
+								Criteria: []string{"<+5%", ">-5%"},
+							},
+						},
+						Weight: 1,
+						KeySLI: true,
+					},
+				},
+				TotalScore: &keptn.SLOScore{
 					Pass:    "90%",
 					Warning: "75%",
 				},

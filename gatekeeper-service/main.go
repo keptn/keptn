@@ -15,9 +15,8 @@ import (
 	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 
-	configutils "github.com/keptn/go-utils/pkg/configuration-service/utils"
-	keptnevents "github.com/keptn/go-utils/pkg/events"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	keptnevents "github.com/keptn/go-utils/pkg/lib"
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 
 	"github.com/ghodss/yaml"
 	"github.com/google/uuid"
@@ -67,7 +66,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	var shkeptncontext string
 	event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
 
-	logger := keptnutils.NewLogger(shkeptncontext, event.Context.GetID(), "gatekeeper-service")
+	logger := keptnevents.NewLogger(shkeptncontext, event.Context.GetID(), "gatekeeper-service")
 
 	if event.Type() == keptnevents.EvaluationDoneEventType {
 		go doGateKeeping(event, shkeptncontext, logger)
@@ -78,7 +77,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	return nil
 }
 
-func doGateKeeping(event cloudevents.Event, shkeptncontext string, logger *keptnutils.Logger) error {
+func doGateKeeping(event cloudevents.Event, shkeptncontext string, logger *keptnevents.Logger) error {
 
 	data := &keptnevents.EvaluationDoneEventData{}
 	if err := event.DataAs(data); err != nil {
@@ -106,7 +105,12 @@ func doGateKeeping(event cloudevents.Event, shkeptncontext string, logger *keptn
 			return err
 		}
 
-		nextStage, err := getNextStage(data.Project, data.Stage)
+		keptnHandler, err := keptnevents.NewKeptn(&event, keptnevents.KeptnOpts{})
+		if err != nil {
+			logger.Error(fmt.Sprintf("Error obtaining the next stage: %s", err.Error()))
+			return err
+		}
+		nextStage, err := getNextStage(keptnHandler)
 		if err != nil {
 			logger.Error(fmt.Sprintf("Error obtaining the next stage: %s", err.Error()))
 			return err
@@ -158,11 +162,8 @@ func doGateKeeping(event cloudevents.Event, shkeptncontext string, logger *keptn
 	return nil
 }
 
-func getNextStage(project string, currentStage string) (string, error) {
-	resourceHandler := configutils.NewResourceHandler(os.Getenv(configservice))
-	handler := keptnutils.NewKeptnHandler(resourceHandler)
-
-	shipyard, err := handler.GetShipyard(project)
+func getNextStage(keptnHandler *keptnevents.Keptn) (string, error) {
+	shipyard, err := keptnHandler.GetShipyard()
 	if err != nil {
 		return "", err
 	}
@@ -173,7 +174,7 @@ func getNextStage(project string, currentStage string) (string, error) {
 			// Here, we return the next stage
 			return stage.Name, nil
 		}
-		if stage.Name == currentStage {
+		if stage.Name == keptnHandler.KeptnBase.Stage {
 			currentFound = true
 		}
 	}
@@ -289,7 +290,7 @@ func sendEvent(event cloudevents.Event) error {
 		return errors.New("Failed to create HTTP client:" + err.Error())
 	}
 
-	if _, err := c.Send(context.Background(), event); err != nil {
+	if _, _, err := c.Send(context.Background(), event); err != nil {
 		return errors.New("Failed to send cloudevent:, " + err.Error())
 	}
 	return nil

@@ -11,11 +11,11 @@ import (
 	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
 	"github.com/gorilla/websocket"
 	"github.com/kelseyhightower/envconfig"
-	keptnevents "github.com/keptn/go-utils/pkg/events"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/helm-service/controller"
 	"github.com/keptn/keptn/helm-service/controller/mesh"
 	"github.com/keptn/keptn/helm-service/pkg/serviceutils"
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 )
 
 type envConfig struct {
@@ -44,13 +44,13 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	var shkeptncontext string
 	event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
 
-	stdLogger := keptnutils.NewLogger(shkeptncontext, event.Context.GetID(), "helm-service")
+	stdLogger := keptnevents.NewLogger(shkeptncontext, event.Context.GetID(), "helm-service")
 
-	var logger keptnutils.LoggerInterface
+	var logger keptnevents.LoggerInterface
 	loggingDone := make(chan bool)
 
 	// open WebSocket, if connection data is available
-	connData := keptnutils.ConnectionData{}
+	connData := keptnevents.ConnectionData{}
 	if err := event.DataAs(&connData); err != nil ||
 		connData.EventContext.KeptnContext == nil || connData.EventContext.Token == nil ||
 		*connData.EventContext.KeptnContext == "" || *connData.EventContext.Token == "" {
@@ -62,12 +62,12 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 			logger.Error(err.Error())
 			return nil
 		}
-		ws, _, err := keptnutils.OpenWS(connData, *apiServiceURL)
+		ws, _, err := keptnevents.OpenWS(connData, *apiServiceURL)
 		if err != nil {
 			stdLogger.Error(fmt.Sprintf("Opening WebSocket connection failed. %s", err.Error()))
 			return nil
 		}
-		combinedLogger := keptnutils.NewCombinedLogger(stdLogger, ws, shkeptncontext)
+		combinedLogger := keptnevents.NewCombinedLogger(stdLogger, ws, shkeptncontext)
 		logger = combinedLogger
 		go closeLogger(loggingDone, combinedLogger, ws)
 	}
@@ -86,6 +86,8 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		return err
 	}
 
+	logger.Debug("Got event of type " + event.Type())
+
 	if event.Type() == keptnevents.ConfigurationChangeEventType {
 		configChanger := controller.NewConfigurationChanger(mesh, logger, keptnDomain, url.String())
 		go configChanger.ChangeAndApplyConfiguration(event, loggingDone)
@@ -100,7 +102,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	return nil
 }
 
-func closeLogger(loggingDone chan bool, combinedLogger *keptnutils.CombinedLogger, ws *websocket.Conn) {
+func closeLogger(loggingDone chan bool, combinedLogger *keptnevents.CombinedLogger, ws *websocket.Conn) {
 	<-loggingDone
 	combinedLogger.Terminate()
 	ws.Close()

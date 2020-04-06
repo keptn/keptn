@@ -35,5 +35,6 @@ func PostToEventBroker(event cloudevents.Event) (*cloudevents.Event, error) {
 	if err != nil {
 		return nil, err
 	}
-	return c.Send(context.Background(), event)
+	_, sent, err := c.Send(context.Background(), event)
+	return sent, err
 }

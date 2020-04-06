@@ -11,9 +11,8 @@ import (
 
 	"github.com/keptn/keptn/remediation-service/pkg/utils"
 
-	configutils "github.com/keptn/go-utils/pkg/configuration-service/utils"
-	keptnevents "github.com/keptn/go-utils/pkg/events"
-	keptnmodels "github.com/keptn/go-utils/pkg/models"
+	configutils "github.com/keptn/go-utils/pkg/api/utils"
+	"github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/remediation-service/pkg/apis/networking/istio/v1alpha3"
 )
 
@@ -29,18 +28,18 @@ func (s Slower) GetAction() string {
 	return "slowdown"
 }
 
-func (s Slower) ExecuteAction(problem *keptnevents.ProblemEventData, shkeptncontext string,
-	action *keptnmodels.RemediationAction) error {
+func (s Slower) ExecuteAction(problem *keptn.ProblemEventData, shkeptncontext string,
+	action *keptn.RemediationAction) error {
 	return s.executor(problem, shkeptncontext, action, s.addDelay)
 }
 
-func (s Slower) ResolveAction(problem *keptnevents.ProblemEventData, shkeptncontext string,
-	action *keptnmodels.RemediationAction) error {
+func (s Slower) ResolveAction(problem *keptn.ProblemEventData, shkeptncontext string,
+	action *keptn.RemediationAction) error {
 	return s.executor(problem, shkeptncontext, action, s.removeDelay)
 }
 
-func (s Slower) executor(problem *keptnevents.ProblemEventData, shkeptncontext string,
-	action *keptnmodels.RemediationAction, editVs func(vsContent, ip string, slowDown string) (string, error)) error {
+func (s Slower) executor(problem *keptn.ProblemEventData, shkeptncontext string,
+	action *keptn.RemediationAction, editVs func(vsContent, ip string, slowDown string) (string, error)) error {
 
 	slowDown := strings.TrimSpace(action.Value)
 	validFormat := s.validateActionFormat(slowDown)
@@ -77,7 +76,7 @@ func (s Slower) executor(problem *keptnevents.ProblemEventData, shkeptncontext s
 			resource, err := handler.GetServiceResource(problem.Project, problem.Stage, service,
 				getVirtualServiceUri(service))
 			if err != nil {
-				return fmt.Errorf("could not get virutal service resource: %v", err)
+				return fmt.Errorf("could not get VirtualService resource: %v", err)
 			}
 
 			newVS, err := editVs(resource.ResourceContent, ip, slowDown)
@@ -89,7 +88,7 @@ func (s Slower) executor(problem *keptnevents.ProblemEventData, shkeptncontext s
 				getVirtualServiceUriInChart(service): newVS,
 			}
 
-			data := keptnevents.ConfigurationChangeEventData{
+			data := keptn.ConfigurationChangeEventData{
 				Project:                   problem.Project,
 				Service:                   problem.Service,
 				Stage:                     problem.Stage,

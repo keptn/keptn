@@ -13,15 +13,16 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go"
 	"github.com/ghodss/yaml"
-	keptnevents "github.com/keptn/go-utils/pkg/events"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/helm-service/controller/helm"
 	"github.com/keptn/keptn/helm-service/controller/mesh"
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"k8s.io/helm/pkg/chartutil"
 )
 
 func init() {
-	_, err := keptnutils.ExecuteCommand("helm", []string{"init", "--client-only"})
+	// try to init helm and verify that it works
+	_, err := keptnutils.ExecuteCommand("helm", []string{"init", "--client-only", "--skip-refresh"})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -31,13 +32,13 @@ func init() {
 type ConfigurationChanger struct {
 	mesh                  mesh.Mesh
 	generatedChartHandler *helm.GeneratedChartHandler
-	logger                keptnutils.LoggerInterface
+	logger                keptnevents.LoggerInterface
 	keptnDomain           string
 	configServiceURL      string
 }
 
 // NewConfigurationChanger creates a new ConfigurationChanger
-func NewConfigurationChanger(mesh mesh.Mesh, logger keptnutils.LoggerInterface,
+func NewConfigurationChanger(mesh mesh.Mesh, logger keptnevents.LoggerInterface,
 	keptnDomain string, configServiceURL string) *ConfigurationChanger {
 	generatedChartHandler := helm.NewGeneratedChartHandler(mesh, keptnDomain)
 	return &ConfigurationChanger{mesh: mesh, generatedChartHandler: generatedChartHandler,
@@ -55,8 +56,13 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event,
 		return err
 	}
 
+	keptnHandler, err := keptnevents.NewKeptn(&ce, keptnevents.KeptnOpts{})
+	if err != nil {
+		c.logger.Error("Could not initialize keptn handler: " + err.Error())
+	}
+
 	if os.Getenv("PRE_WORKFLOW_ENGINE") == "true" && e.Stage == "" {
-		stage, err := getFirstStage(e.Project)
+		stage, err := getFirstStage(keptnHandler)
 		if err != nil {
 			c.logger.Error(fmt.Sprintf("Error when reading shipyard: %s", err.Error()))
 			return err
@@ -152,7 +158,7 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event,
 	if os.Getenv("PRE_WORKFLOW_ENGINE") == "true" &&
 		!(e.Canary != nil && (e.Canary.Action == keptnevents.Discard || e.Canary.Action == keptnevents.Promote)) {
 
-		testStrategy, err := getTestStrategy(e.Project, e.Stage)
+		testStrategy, err := getTestStrategy(keptnHandler, e.Stage)
 		if err != nil {
 			c.logger.Error(err.Error())
 			return err

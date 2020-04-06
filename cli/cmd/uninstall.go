@@ -6,8 +6,8 @@ import (
 	"os"
 	"strings"
 
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/cli/pkg/logging"
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"github.com/spf13/cobra"
 )
 
@@ -65,6 +65,9 @@ var uninstallCmd = &cobra.Command{
 			logging.InfoLevel)
 
 		namespaces, err := listAllNamespaces()
+		if err != nil {
+			return fmt.Errorf("Error when listing all namespaces: %v", err)
+		}
 
 		for _, namespace := range namespaces {
 			logging.PrintLog(" - "+namespace, logging.InfoLevel)
@@ -77,7 +80,7 @@ var uninstallCmd = &cobra.Command{
 				logging.PrintLog("                          kubectl delete all -l app=helm -n kube-system", logging.InfoLevel)
 			} else if namespace == "istio-system" {
 				// istio is special, we will refer to the official uninstall docs
-				logging.PrintLog("      Please consult the Istio Docs at https://istio.io/docs/setup/install/helm/#uninstall on how to remove Istio.", logging.InfoLevel)
+				logging.PrintLog("      Please consult the istio Docs at https://istio.io/docs/setup/install/helm/#uninstall on how to remove istio.", logging.InfoLevel)
 				logging.PrintLog("      Recommended action: kubectl delete namespace istio-system", logging.InfoLevel)
 			} else {
 				// just delete the namespace

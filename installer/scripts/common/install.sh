@@ -2,6 +2,26 @@
 
 source ./common/utils.sh
 
+if [[ "$USE_CASE" == "all" ]]; then
+  # Install istio
+  source ./common/setupIstio.sh
+  setupKeptnDomain "istio" "istio-ingressgateway" "istio-system"
+
+  cat ../manifests/keptn/keptn-api-virtualservice.yaml | \
+    sed 's~DOMAIN_PLACEHOLDER~'"$INGRESS_HOST"'~' | kubectl apply -f -
+  verify_kubectl $? "Deploying keptn api virtualservice failed."
+else
+  # Install NGINX
+  source ./common/setupNginx.sh
+  setupKeptnDomain "nginx" "ingress-nginx" "ingress-nginx"
+
+  # Add config map in keptn namespace that contains the domain - this will be used by other services as well
+  # Update ingress with updated hosts
+  cat ../manifests/keptn/keptn-ingress.yaml | \
+    sed 's~domain.placeholder~'"$INGRESS_HOST"'~' | sed 's~ingress.placeholder~nginx~' | kubectl apply -f -
+  verify_kubectl $? "Deploying ingress failed."
+fi
+
 print_info "Starting installation of Keptn"
 
 # Install Tiller for Helm
@@ -9,6 +29,8 @@ if [[ "$USE_CASE" == "all" ]]; then
   print_info "Installing Tiller"
   kubectl apply -f ../manifests/tiller/tiller.yaml
   verify_kubectl $? "Applying Tiller manifest failed."
+  kubectl get pods
+  print_info "Initializing helm/tiller"
   helm init --service-account tiller
   verify_install_step $? "Installing Tiller failed"
   print_info "Installing Tiller done"

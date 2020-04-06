@@ -7,9 +7,7 @@ import (
 	"log"
 	"os"
 
-	keptnevents "github.com/keptn/go-utils/pkg/events"
-	keptnmodels "github.com/keptn/go-utils/pkg/models"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	"github.com/keptn/go-utils/pkg/lib"
 
 	b64 "encoding/base64"
 
@@ -69,16 +67,16 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	var shkeptncontext string
 	event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
 
-	logger := keptnutils.NewLogger(shkeptncontext, event.Context.GetID(), "openshift-route-service")
+	logger := keptn.NewLogger(shkeptncontext, event.Context.GetID(), "openshift-route-service")
 
 	logger.Debug(fmt.Sprintf("Got Event Context: %+v", event.Context))
 
-	data := &keptnevents.ProjectCreateEventData{}
+	data := &keptn.ProjectCreateEventData{}
 	if err := event.DataAs(data); err != nil {
 		logger.Error(fmt.Sprintf("Got Data Error: %s", err.Error()))
 		return err
 	}
-	if event.Type() != keptnevents.InternalProjectCreateEventType {
+	if event.Type() != keptn.InternalProjectCreateEventType {
 		const errorMsg = "Received unexpected keptn event"
 		logger.Error(errorMsg)
 		return errors.New(errorMsg)
@@ -93,8 +91,8 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	return nil
 }
 
-func createRoutes(data *keptnevents.ProjectCreateEventData) error {
-	shipyard := keptnmodels.Shipyard{}
+func createRoutes(data *keptn.ProjectCreateEventData) error {
+	shipyard := keptn.Shipyard{}
 	decodedStr, err := b64.StdEncoding.DecodeString(data.Shipyard)
 	if err != nil {
 		return err
@@ -118,7 +116,7 @@ func createRoutes(data *keptnevents.ProjectCreateEventData) error {
 }
 
 func enableMesh(project string, stage string) error {
-	_, err := keptnutils.ExecuteCommand("oc",
+	_, err := keptn.ExecuteCommand("oc",
 		[]string{
 			"adm",
 			"policy",
@@ -131,7 +129,7 @@ func enableMesh(project string, stage string) error {
 	if err != nil {
 		return errors.New("Could not add security context constraint 'privileged' for namespace " + project + "-" + stage + ": " + err.Error())
 	}
-	out, err := keptnutils.ExecuteCommand("oc",
+	out, err := keptn.ExecuteCommand("oc",
 		getEnableMeshCommandArgs(project, stage))
 	if err != nil {
 		return errors.New("Could not add security context constraint 'anyuid' for namespace " + project + "-" + stage + ": " + err.Error())
@@ -159,7 +157,7 @@ func exposeRoute(project string, stage string) error {
 	}
 	// oc create route edge istio-wildcard-ingress-secure-keptn --service=istio-ingressgateway --hostname="www.keptn.ingress-gateway.$BASE_URL" --port=http2 --wildcard-policy=Subdomain --insecure-policy='Allow'
 
-	out, err := keptnutils.ExecuteCommand("oc",
+	out, err := keptn.ExecuteCommand("oc",
 		getCreateRouteCommandArgs(project, stage, appDomain))
 	if err != nil {
 		return err

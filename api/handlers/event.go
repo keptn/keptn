@@ -15,8 +15,7 @@ import (
 	"github.com/go-openapi/swag"
 	"github.com/google/uuid"
 
-	datastore "github.com/keptn/go-utils/pkg/mongodb-datastore/utils"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	keptnutils "github.com/keptn/go-utils/pkg/lib"
 
 	"github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations/event"
@@ -93,8 +92,9 @@ func createOrApplyKeptnContext(eventKeptnContext string) string {
 func GetEventHandlerFunc(params event.GetEventParams, principal *models.Principal) middleware.Responder {
 
 	logger := keptnutils.NewLogger(params.KeptnContext, "", "api")
+	logger.Info("API received a GET keptn event")
 
-	eventHandler := datastore.NewEventHandler(getDatastoreURL())
+	eventHandler := keptnutils.NewEventHandler(getDatastoreURL())
 	cloudEvent, errObj := eventHandler.GetEvent(params.KeptnContext, params.Type)
 	if errObj != nil {
 		return sendInternalErrorForGet(fmt.Errorf("%s", *errObj.Message), logger)

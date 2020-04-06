@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	"log"
 	"net/url"
 	"os"
@@ -19,8 +21,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/kelseyhightower/envconfig"
 
-	keptnevents "github.com/keptn/go-utils/pkg/events"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	keptnevents "github.com/keptn/go-utils/pkg/lib"
+	keptnutils "github.com/keptn/go-utils/pkg/lib"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -206,17 +208,25 @@ func runPerformanceCheck(data keptnevents.DeploymentFinishedEventData, id string
 
 func getGatewayFromConfigmap() (string, error) {
 
-	api, err := keptnutils.GetKubeAPI(true)
+	var config *rest.Config
+	var err error
+	config, err = rest.InClusterConfig()
+
 	if err != nil {
 		return "", err
 	}
 
-	cm, err := api.ConfigMaps("keptn").Get("keptn-domain", metav1.GetOptions{})
+	k8s, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		return "", err
 	}
 
-	return string(cm.Data["app_domain"]), nil
+	cm, err := k8s.CoreV1().ConfigMaps("keptn").Get(context.TODO(), "keptn-domain", metav1.GetOptions{})
+	if err != nil {
+		return "", err
+	}
+
+	return cm.Data["app_domain"], nil
 }
 
 func sendTestsFinishedEvent(shkeptncontext string, incomingEvent cloudevents.Event, startedAt time.Time, result string, logger *keptnutils.Logger) error {
@@ -295,7 +305,7 @@ func sendEvent(event cloudevents.Event) error {
 		return errors.New("Failed to create HTTP client:" + err.Error())
 	}
 
-	if _, err := c.Send(context.Background(), event); err != nil {
+	if _, _, err := c.Send(context.Background(), event); err != nil {
 		return errors.New("Failed to send cloudevent:, " + err.Error())
 	}
 	return nil

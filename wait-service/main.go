@@ -17,8 +17,7 @@ import (
 	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 
-	keptnevents "github.com/keptn/go-utils/pkg/events"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	"github.com/keptn/go-utils/pkg/lib"
 
 	"github.com/google/uuid"
 	"github.com/kelseyhightower/envconfig"
@@ -78,15 +77,15 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	var shkeptncontext string
 	event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
 
-	logger := keptnutils.NewLogger(shkeptncontext, event.Context.GetID(), "wait-service")
+	logger := keptn.NewLogger(shkeptncontext, event.Context.GetID(), "wait-service")
 
-	data := &keptnevents.DeploymentFinishedEventData{}
+	data := &keptn.DeploymentFinishedEventData{}
 	if err := event.DataAs(data); err != nil {
 		logger.Error(fmt.Sprintf("Got Data Error: %s", err.Error()))
 		return err
 	}
 
-	if event.Type() != keptnevents.DeploymentFinishedEventType {
+	if event.Type() != keptn.DeploymentFinishedEventType {
 		const errorMsg = "Received unexpected keptn event"
 		logger.Error(errorMsg)
 		return errors.New(errorMsg)
@@ -98,7 +97,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 }
 
 // waitDuration just waits for a the time defined in environment variable WAIT_DURATION
-func waitDuration(event cloudevents.Event, shkeptncontext string, data keptnevents.DeploymentFinishedEventData, logger *keptnutils.Logger) {
+func waitDuration(event cloudevents.Event, shkeptncontext string, data keptn.DeploymentFinishedEventData, logger *keptn.Logger) {
 
 	startedAt := time.Now()
 
@@ -173,12 +172,12 @@ func getServiceEndpoint(service string) (url.URL, error) {
 }
 
 // sendTestsFinishedEvent sends a Cloud Event of type sh.keptn.events.tests-finished to the event broker
-func sendTestsFinishedEvent(shkeptncontext string, incomingEvent cloudevents.Event, startedAt time.Time, logger *keptnutils.Logger) error {
+func sendTestsFinishedEvent(shkeptncontext string, incomingEvent cloudevents.Event, startedAt time.Time, logger *keptn.Logger) error {
 
 	source, _ := url.Parse("wait-service")
 	contentType := "application/json"
 
-	testFinishedData := keptnevents.TestsFinishedEventData{}
+	testFinishedData := keptn.TestsFinishedEventData{}
 	// fill in data from incoming event (e.g., project, service, stage, teststrategy, deploymentstrategy)
 	if err := incomingEvent.DataAs(&testFinishedData); err != nil {
 		logger.Error(fmt.Sprintf("Got Data Error: %s", err.Error()))
@@ -193,7 +192,7 @@ func sendTestsFinishedEvent(shkeptncontext string, incomingEvent cloudevents.Eve
 		Context: cloudevents.EventContextV02{
 			ID:          uuid.New().String(),
 			Time:        &types.Timestamp{Time: time.Now()},
-			Type:        keptnevents.TestsFinishedEventType,
+			Type:        keptn.TestsFinishedEventType,
 			Source:      types.URLRef{URL: *source},
 			ContentType: &contentType,
 			Extensions:  map[string]interface{}{"shkeptncontext": shkeptncontext},
@@ -224,7 +223,7 @@ func sendTestsFinishedEvent(shkeptncontext string, incomingEvent cloudevents.Eve
 	}
 
 	logger.Debug("Send sh.keptn.events.tests-finished event to event broker")
-	if _, err := client.Send(context.Background(), event); err != nil {
+	if _, _, err := client.Send(context.Background(), event); err != nil {
 		return errors.New("Failed to send cloudevent:, " + err.Error())
 	}
 	return nil

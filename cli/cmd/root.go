@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/keptn/keptn/cli/utils/version"
+	"github.com/keptn/keptn/cli/pkg/version"
 
 	"github.com/keptn/keptn/cli/pkg/logging"
 	homedir "github.com/mitchellh/go-homedir"
@@ -17,6 +17,7 @@ var verboseLogging bool
 var quietLogging bool
 var mocking bool
 
+// SuppressWSCommunication suppresses the WebSocket communication if it is true
 var SuppressWSCommunication bool
 
 var insecureSkipTLSVerify bool

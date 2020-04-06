@@ -10,11 +10,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/keptn/keptn/cli/utils/credentialmanager"
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/cli/pkg/logging"
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"github.com/spf13/cobra"
 )
 
@@ -37,6 +37,7 @@ Example:
 
 		url, err := url.Parse(*endPoint)
 		if err != nil {
+			logging.PrintLog("Error parsing Keptn API URL", logging.InfoLevel)
 			return err
 		}
 
@@ -44,22 +45,8 @@ Example:
 
 		if !mocking {
 			authenticated := false
-			dnsResolved := false
 
-			// first, try to resolve the domain (and retry it)
-			for retries := 0; retries < 3; time.Sleep(5 * time.Second) {
-				_, err := net.LookupHost(url.Host)
-				if err != nil {
-					logging.PrintLog("Failed to resolve hostname "+url.Host, logging.InfoLevel)
-					logging.PrintLog("Retrying...", logging.InfoLevel)
-					retries++
-				} else {
-					dnsResolved = true
-					break
-				}
-			}
-
-			if !dnsResolved {
+			if !lookupHostname(url.Hostname()) {
 				return fmt.Errorf("Authentication was unsuccessful - could not resolve hostname.")
 			}
 
@@ -82,7 +69,7 @@ Example:
 			}
 
 			logging.PrintLog("Successfully authenticated", logging.InfoLevel)
-			return credentialmanager.SetCreds(*url, *apiToken)
+			return credentialmanager.NewCredentialManager().SetCreds(*url, *apiToken)
 		}
 
 		fmt.Println("skipping auth due to mocking flag set to true")
@@ -97,6 +84,27 @@ func init() {
 	authCmd.MarkFlagRequired("endpoint")
 	apiToken = authCmd.Flags().StringP("api-token", "a", "", "The API token provided by keptn")
 	authCmd.MarkFlagRequired("api-token")
+}
+
+func lookupHostname(hostname string) bool {
+	if strings.HasSuffix(hostname, "xip.io") {
+		logging.PrintLog("Skipping lookup of xip.io domain", logging.InfoLevel)
+		return true
+	} else {
+		// first, try to resolve the domain (and retry it)
+		for retries := 0; retries < 3; time.Sleep(5 * time.Second) {
+			_, err := net.LookupHost(hostname)
+			if err != nil {
+				logging.PrintLog("Failed to resolve hostname "+hostname, logging.InfoLevel)
+				logging.PrintLog("Retrying...", logging.InfoLevel)
+				retries++
+			} else {
+				return true
+			}
+		}
+	}
+
+	return false
 }
 
 // authenticate using secrets obtained via kubectl

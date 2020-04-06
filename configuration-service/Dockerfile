@@ -1,6 +1,6 @@
 # Use the offical Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
-FROM golang:1.12.13-alpine as builder
+FROM golang:1.13.7-alpine as builder
 ARG version=develop
 
 WORKDIR /go/src/github.com/keptn/keptn/configuration-service
@@ -46,7 +46,13 @@ RUN apk --update add --no-cache git
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /go/src/github.com/keptn/keptn/configuration-service/main /configuration-service
 COPY --from=builder /go/src/github.com/keptn/keptn/configuration-service/swagger-ui /swagger-ui
+COPY --from=builder /go/src/github.com/keptn/keptn/configuration-service/swagger.yaml /swagger-ui/swagger-original.yaml
+
 COPY --from=builder /go/src/github.com/keptn/keptn/configuration-service/swagger.yaml /swagger-ui/swagger.yaml
+# Replace contents for api proxy
+RUN sed -i "s|basePath: /v1|basePath: /configuration-service/v1 |g" /swagger-ui/swagger.yaml
+RUN sed -i "s|  - http|  - https |g" /swagger-ui/swagger.yaml
+RUN sed -i '/paths:/i securityDefinitions:\n  key:\n    type: apiKey\n    in: header\n    name: x-token\nsecurity:\n  - key: []\n' /swagger-ui/swagger.yaml
 
 EXPOSE 8080
 

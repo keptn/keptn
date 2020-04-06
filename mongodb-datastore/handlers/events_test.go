@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"testing"
 
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	keptnutils "github.com/keptn/go-utils/pkg/lib"
 	"github.com/magiconair/properties/assert"
 )
 

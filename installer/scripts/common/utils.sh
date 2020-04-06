@@ -143,19 +143,19 @@ function wait_for_crds() {
 }
 
 # Waits for ip of Istio ingress gateway (max wait time 30sec)
-function wait_for_istio_ingressgateway() {
-  PROPERTY=$1;
+function wait_for_ingressgateway() {
+  PROPERTY=$1;SVC=$2;NAMESPACE=$3;
   RETRY=0; RETRY_MAX=6;
   DOMAIN="";
 
   while [[ $RETRY -lt $RETRY_MAX ]]; do
-    DOMAIN=$(kubectl get svc istio-ingressgateway -o json -n istio-system | jq -r .status.loadBalancer.ingress[0].${PROPERTY})
+    DOMAIN=$(kubectl get svc ${SVC} -o json -n ${NAMESPACE} | jq -r .status.loadBalancer.ingress[0].${PROPERTY})
     if [[ $DOMAIN = "null" ]]; then
       DOMAIN=""
     fi
 
     if [[ "$DOMAIN" != "" ]]; then
-      print_debug "${PROPERTY} of Istio ingress gateway is available."
+      print_debug "${PROPERTY} of Istio ingress gateway is available: ${DOMAIN}"
       break
     fi
     RETRY=$[$RETRY+1]
@@ -164,37 +164,61 @@ function wait_for_istio_ingressgateway() {
   done
 }
 
-# Waits for hostname or ip of ingress gateway (max wait time 120sec)
-function wait_for_k8s_ingress() {
-  RETRY=0; RETRY_MAX=24;
-  DOMAIN="";
+function setupKeptnDomain() {
+  PROVIDER=$1;SVC=$2;NAMESPACE=$3;
 
-  while [[ $RETRY -lt $RETRY_MAX ]]; do
-    # Check availability of hostname
-    DOMAIN=$(kubectl get ingress api-ingress -n keptn -o json | jq -r .status.loadBalancer.ingress[0].hostname)
-    if [[ $DOMAIN = "null" ]]; then
-      DOMAIN=""
+  print_info "Determining ingress hostname/ip for Keptn (using ${PROVIDER})"
+  # Domain used for routing to keptn services
+  if [[ "$GATEWAY_TYPE" == "LoadBalancer" ]]; then
+    wait_for_ingressgateway "hostname" $SVC $NAMESPACE
+    export DOMAIN=$(kubectl get svc $SVC -o json -n $NAMESPACE | jq -r .status.loadBalancer.ingress[0].hostname)
+    if [[ $? != 0 ]]; then
+        print_error "Failed to get ingress gateway information." && exit 1
     fi
+    export INGRESS_HOST=$DOMAIN
 
-    if [[ "$DOMAIN" != "" ]]; then
-      print_debug "Domain name of ingress gateway is available."
-      break
+    if [[ "$DOMAIN" == "null" ]]; then
+        print_info "Could not get domain name. Trying to retrieve IP address instead."
+
+        wait_for_ingressgateway "ip" $SVC $NAMESPACE
+
+        export DOMAIN=$(kubectl get svc $SVC -o json -n $NAMESPACE | jq -r .status.loadBalancer.ingress[0].ip)
+        if [[ "$DOMAIN" == "null" ]]; then
+            print_error "Could not get IP."
+            exit 1
+        fi
+        export DOMAIN="$DOMAIN.xip.io"
+        export INGRESS_HOST=$DOMAIN
     fi
+  elif [[ "$GATEWAY_TYPE" == "NodePort" ]]; then
+      NODE_PORT=$(kubectl -n $NAMESPACE get service $SVC -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')
+      NODE_IP=$(kubectl get nodes -o jsonpath='{ $.items[0].status.addresses[?(@.type=="InternalIP")].address }')
+      export DOMAIN="$NODE_IP.xip.io:$NODE_PORT"
+      export INGRESS_HOST="$NODE_IP.xip.io"
+  fi
 
-    # Check availability of IP
-    DOMAIN=$(kubectl get ingress api-ingress -n keptn -o json | jq -r .status.loadBalancer.ingress[0].ip)
-    if [[ $DOMAIN = "null" ]]; then
-      DOMAIN=""
-    fi
+  print_info "Determined ${DOMAIN} and ${INGRESS_HOST}"
 
-    if [[ "$DOMAIN" != "" ]]; then
-      print_debug "IP address of ingress gateway is available."
-      break
-    fi
+  if [[ "$PLATFORM" == "eks" ]]; then
+      print_info "For EKS: No SSL certificate created. Please use keptn configure domain at the end of the installation."
+  else
+      # Set up SSL (self-signed certificate)
+      print_info "Setting up self-signed SSL certificate."
+      openssl req -nodes -newkey rsa:2048 -keyout key.pem -out certificate.pem  -x509 -days 365 -subj "/CN=$INGRESS_HOST"
 
-    RETRY=$[$RETRY+1]
-    print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 5s for domain name or IP address of ingress gateway to be available ..."
-    sleep 5
+      if [[ "$PROIVDER" == "istio" ]]; then
+        kubectl create --namespace $NAMESPACE secret tls istio-ingressgateway-certs --key key.pem --cert certificate.pem
+      elif [[ "$PROVIDER" == "nginx" ]]; then
+        kubectl create secret tls sslcerts --key key.pem --cert certificate.pem -n keptn
+      fi
+      #verify_kubectl $? "Creating secret for istio-ingressgateway-certs failed."
 
-  done
+      rm key.pem
+      rm certificate.pem
+  fi
+
+  # Add config map in keptn namespace that contains the domain - this will be used by other services as well
+  cat ../manifests/keptn/keptn-domain-configmap.yaml | \
+    sed 's~DOMAIN_PLACEHOLDER~'"$DOMAIN"'~' | kubectl apply -f -
+  verify_kubectl $? "Creating configmap keptn-domain in keptn namespace failed."
 }

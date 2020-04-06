@@ -10,9 +10,9 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go"
 
-	configutils "github.com/keptn/go-utils/pkg/configuration-service/utils"
-	keptnevents "github.com/keptn/go-utils/pkg/events"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	configutils "github.com/keptn/go-utils/pkg/api/utils"
+	keptnevents "github.com/keptn/go-utils/pkg/lib"
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 
 	"github.com/keptn/keptn/helm-service/controller/helm"
 	"github.com/keptn/keptn/helm-service/controller/mesh"
@@ -21,13 +21,13 @@ import (
 // Onboarder is a container of variables required for onboarding a new service
 type Onboarder struct {
 	mesh             mesh.Mesh
-	logger           keptnutils.LoggerInterface
+	logger           keptnevents.LoggerInterface
 	keptnDomain      string
 	configServiceURL string
 }
 
 // NewOnboarder creates a new Onboarder
-func NewOnboarder(mesh mesh.Mesh, logger keptnutils.LoggerInterface,
+func NewOnboarder(mesh mesh.Mesh, logger keptnevents.LoggerInterface,
 	keptnDomain string, configServiceURL string) *Onboarder {
 	return &Onboarder{mesh: mesh, logger: logger, keptnDomain: keptnDomain, configServiceURL: configServiceURL}
 }
@@ -37,6 +37,11 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event, loggingDone chan bool) error
 
 	defer func() { loggingDone <- true }()
 
+	keptnHandler, err := keptnevents.NewKeptn(&ce, keptnevents.KeptnOpts{})
+	if err != nil {
+		o.logger.Error("Could not initialize Keptn Handler: " + err.Error())
+		return err
+	}
 	event := &keptnevents.ServiceCreateEventData{}
 	if err := ce.DataAs(event); err != nil {
 		o.logger.Error(fmt.Sprintf("Got Data Error: %s", err.Error()))
@@ -50,14 +55,14 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event, loggingDone chan bool) error
 
 	if _, ok := event.DeploymentStrategies["*"]; ok {
 		// Uses the provided deployment strategy for ALL stages
-		deplStrategies, err := fixDeploymentStrategies(event.Project, event.DeploymentStrategies["*"])
+		deplStrategies, err := fixDeploymentStrategies(keptnHandler, event.DeploymentStrategies["*"])
 		if err != nil {
 			o.logger.Error(fmt.Sprintf("Error when getting deployment strategies: %s" + err.Error()))
 			return err
 		}
 		event.DeploymentStrategies = deplStrategies
 	} else if os.Getenv("PRE_WORKFLOW_ENGINE") == "true" && len(event.DeploymentStrategies) == 0 {
-		deplStrategies, err := getDeploymentStrategies(event.Project)
+		deplStrategies, err := getDeploymentStrategies(keptnHandler)
 		if err != nil {
 			o.logger.Error(fmt.Sprintf("Error when getting deployment strategies: %s" + err.Error()))
 			return err
@@ -96,7 +101,7 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event, loggingDone chan bool) error
 		}
 		if !isUmbrellaChartAvailable {
 			o.logger.Info("Create Helm umbrella charts")
-			// Initalize the umbrella chart
+			// Initialize the umbrella chart
 			if err := umbrellaChartHandler.InitUmbrellaChart(event, stages); err != nil {
 				return fmt.Errorf("Error when initializing the umbrella chart for project %s: %s", event.Project, err.Error())
 			}
@@ -125,7 +130,7 @@ func (o *Onboarder) checkAndSetServiceName(event *keptnevents.ServiceCreateEvent
 
 	if event.HelmChart == "" {
 		// Case when only a service is created but not onboarded (i.e. no Helm chart is available)
-		if len(event.Service) == 0 || !keptnutils.ValididateUnixDirectoryName(event.Service) {
+		if len(event.Service) == 0 || !keptnevents.ValididateUnixDirectoryName(event.Service) {
 			return errors.New("Service name contains special character(s). " +
 				"The service name has to be a valid Unix directory name. For details see " +
 				"https://www.cyberciti.biz/faq/linuxunix-rules-for-naming-file-and-directory-names/")
@@ -153,7 +158,7 @@ func (o *Onboarder) checkAndSetServiceName(event *keptnevents.ServiceCreateEvent
 		return fmt.Errorf("Helm chart has to contain exactly one Kubernetes service but has %d", len(services))
 	}
 	k8sServiceName := services[0].Name
-	if !keptnutils.ValidateKeptnEntityName(k8sServiceName) {
+	if !keptnevents.ValidateKeptnEntityName(k8sServiceName) {
 		return errors.New(errorMsg)
 	}
 	if event.Service == "" {
@@ -172,12 +177,9 @@ func (o *Onboarder) onboardService(stageName string, event *keptnevents.ServiceC
 	serviceHandler := configutils.NewServiceHandler(o.configServiceURL)
 
 	o.logger.Debug("Creating new keptn service " + event.Service + " in stage " + stageName)
-	respErr, err := serviceHandler.CreateService(event.Project, stageName, event.Service)
-	if respErr != nil {
-		return errors.New(*respErr.Message)
-	}
+	_, err := serviceHandler.CreateServiceInStage(event.Project, stageName, event.Service)
 	if err != nil {
-		return err
+		return errors.New(*err.Message)
 	}
 
 	if event.HelmChart != "" {
