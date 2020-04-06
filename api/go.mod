@@ -16,7 +16,10 @@ require (
 	github.com/gorilla/websocket v1.4.1
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/keptn/go-utils v0.6.1-compat
+	github.com/keptn/keptn/configuration-service v0.0.0-20200406090046-e6e7da3c4531
+	github.com/keptn/kubernetes-utils v0.0.0-20200401103501-ae44a5ee0656
 	github.com/kinbiko/jsonassert v1.0.1
 	github.com/magiconair/properties v1.8.1
-	golang.org/x/net v0.0.0-20191021144547-ec77196f6094
+	golang.org/x/net v0.0.0-20191126235420-ef20fe5d7933
+	k8s.io/apimachinery v0.17.0
 )

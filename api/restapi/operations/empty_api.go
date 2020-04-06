@@ -21,6 +21,7 @@ import (
 
 	"github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations/auth"
+	"github.com/keptn/keptn/api/restapi/operations/configure"
 	"github.com/keptn/keptn/api/restapi/operations/event"
 	"github.com/keptn/keptn/api/restapi/operations/project"
 	"github.com/keptn/keptn/api/restapi/operations/service"
@@ -49,6 +50,9 @@ func NewEmptyAPI(spec *loads.Document) *EmptyAPI {
 		JSONProducer:        runtime.JSONProducer(),
 		ProjectDeleteProjectProjectNameHandler: project.DeleteProjectProjectNameHandlerFunc(func(params project.DeleteProjectProjectNameParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation project.DeleteProjectProjectName has not yet been implemented")
+		}),
+		ConfigurePostConfigureBridgeExposeHandler: configure.PostConfigureBridgeExposeHandlerFunc(func(params configure.PostConfigureBridgeExposeParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation ConfigurePostConfigureBridgeExpose has not yet been implemented")
 		}),
 		EventGetEventHandler: event.GetEventHandlerFunc(func(params event.GetEventParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation event.GetEvent has not yet been implemented")
@@ -114,6 +118,8 @@ type EmptyAPI struct {
 	ProjectDeleteProjectProjectNameHandler project.DeleteProjectProjectNameHandler
 	// EventGetEventHandler sets the operation handler for the get event operation
 	EventGetEventHandler event.GetEventHandler
+	// ConfigurePostConfigureBridgeExposeHandler sets the operation handler for the post configure bridge expose operation
+	ConfigurePostConfigureBridgeExposeHandler configure.PostConfigureBridgeExposeHandler
 	// EventPostEventHandler sets the operation handler for the post event operation
 	EventPostEventHandler event.PostEventHandler
 	// ProjectPostProjectHandler sets the operation handler for the post project operation
@@ -206,6 +212,10 @@ func (o *EmptyAPI) Validate() error {
 
 	if o.EventGetEventHandler == nil {
 		unregistered = append(unregistered, "Event.GetEventHandler")
+	}
+
+	if o.ConfigurePostConfigureBridgeExposeHandler == nil {
+		unregistered = append(unregistered, "configure.PostConfigureBridgeExposeHandler")
 	}
 
 	if o.EventPostEventHandler == nil {
@@ -356,6 +366,11 @@ func (o *EmptyAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/event"] = event.NewGetEvent(o.context, o.EventGetEventHandler)
+
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/configure/bridge/expose"] = configure.NewPostConfigureBridgeExpose(o.context, o.ConfigurePostConfigureBridgeExposeHandler)
 
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)

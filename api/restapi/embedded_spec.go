@@ -49,6 +49,41 @@ func init() {
         }
       }
     },
+    "/configure/bridge/expose": {
+      "post": {
+        "tags": [
+          "configure"
+        ],
+        "summary": "Exposes the bridge",
+        "parameters": [
+          {
+            "description": "Flag for exposing the bridge",
+            "name": "expose",
+            "in": "body",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bridge was exposed successfully"
+          },
+          "400": {
+            "description": "Bridge could not be exposed",
+            "schema": {
+              "$ref": "response_model.yaml#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "response_model.yaml#/definitions/error"
+            }
+          }
+        }
+      }
+    },
     "/event": {
       "get": {
         "tags": [
@@ -300,6 +335,41 @@ func init() {
         "responses": {
           "200": {
             "description": "Authenticated"
+          }
+        }
+      }
+    },
+    "/configure/bridge/expose": {
+      "post": {
+        "tags": [
+          "configure"
+        ],
+        "summary": "Exposes the bridge",
+        "parameters": [
+          {
+            "description": "Flag for exposing the bridge",
+            "name": "expose",
+            "in": "body",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bridge was exposed successfully"
+          },
+          "400": {
+            "description": "Bridge could not be exposed",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
           }
         }
       }
