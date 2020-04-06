@@ -96,16 +96,26 @@ func SaveEvent(event *models.KeptnContextExtendedCE) error {
 		logger.Error(err.Error())
 		return err
 	}
+	logger.Debug(fmt.Sprintf("insertedID: %s", res.InsertedID))
 
 	// store mapping between context ID and project in separate table
+	/*
+		_, err = getProjectForContext(event.Shkeptncontext)
+		if err != nil {
+		}
 
+	*/
 	contextToProjectCollection := client.Database(mongoDBName).Collection(contextToProjectCollection)
 
-	contextToProjectCollection.FindOneAndUpdate(ctx,
-		bson.M{"shkeptncontext": event.Shkeptncontext},
-		bson.M{"shkeptncontext": event.Shkeptncontext, "project": collectionName},
+	_, err = contextToProjectCollection.InsertOne(ctx,
+		bson.M{"_id": event.Shkeptncontext, "shkeptncontext": event.Shkeptncontext, "project": collectionName},
 	)
-	logger.Debug(fmt.Sprintf("insertedID: %s", res.InsertedID))
+	if err != nil {
+		logger.Error("could not store mapping " + event.Shkeptncontext + "->" + collectionName)
+	}
+
+	logger.Debug(fmt.Sprintf("inserted mapping %s->%s", event.Shkeptncontext, collectionName))
+
 	return nil
 }
 
@@ -293,7 +303,7 @@ func getProjectForContext(keptnContext string) (string, error) {
 	contextToProjectCollection := client.Database(mongoDBName).Collection(contextToProjectCollection)
 	result := contextToProjectCollection.FindOne(ctx, bson.M{"shkeptncontext": keptnContext})
 	var resultMap bson.M
-	err := result.Decode(resultMap)
+	err := result.Decode(&resultMap)
 	if err != nil {
 		return "", err
 	}
