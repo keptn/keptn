@@ -192,7 +192,7 @@ function setupKeptnDomain() {
     fi
   elif [[ "$GATEWAY_TYPE" == "NodePort" ]]; then
       NODE_PORT=$(kubectl -n $NAMESPACE get service $SVC -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')
-      NODE_IP=$(kubectl get nodes -l node-role.kubernetes.io/worker=true -o jsonpath='{ $.items[0].status.addresses[?(@.type=="InternalIP")].address }')
+      NODE_IP=$(kubectl get nodes -o jsonpath='{ $.items[0].status.addresses[?(@.type=="InternalIP")].address }')
       export DOMAIN="$NODE_IP.xip.io:$NODE_PORT"
       export INGRESS_HOST="$NODE_IP.xip.io"
   fi
@@ -206,7 +206,7 @@ function setupKeptnDomain() {
       print_info "Setting up self-signed SSL certificate."
       openssl req -nodes -newkey rsa:2048 -keyout key.pem -out certificate.pem  -x509 -days 365 -subj "/CN=$INGRESS_HOST"
 
-      if [[ "$PROIVDER" == "istio" ]]; then
+      if [[ "$PROVIDER" == "istio" ]]; then
         kubectl create --namespace $NAMESPACE secret tls istio-ingressgateway-certs --key key.pem --cert certificate.pem
       elif [[ "$PROVIDER" == "nginx" ]]; then
         kubectl create secret tls sslcerts --key key.pem --cert certificate.pem -n keptn

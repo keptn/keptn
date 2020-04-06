@@ -91,12 +91,12 @@ gke_full: &gke_full
     - test/utils/gke_create_cluster.sh
   script:
     # test installation on gcloud
-    - test/test_install_gke.sh || travis_terminate 1
+    - test/test_install_gke.sh
     # test onboarding and new artifcat for sockshop
     - export PROJECT=sockshop
-    - test/test_onboard_service.sh || travis_terminate 1
-    - test/test_new_artifact.sh || travis_terminate 1
-    - test/test_delete_project.sh || travis_terminate 1
+    - test/test_onboard_service.sh
+    - test/test_new_artifact.sh
+    - test/test_delete_project.sh
   after_success:
     # delete google kubernetes cluster only on success (in case of an error we want to be able to dig into the cluster)
     - echo "Tests were successful, cleaning up the cluster now..."
@@ -106,6 +106,10 @@ gke_full: &gke_full
     - echo "Keptn Installation Log:"
     - cat ~/.keptn/keptn-installer.log
     - cat ~/.keptn/keptn-installer-err.log
+    - kubectl get events --sort-by='.lastTimestamp' --all-namespaces
+    - kubectl get pods --all-namespaces
+    - kubectl get services --all-namespaces
+    - kubectl get ingress --all-namespaces
 
 jobs:
   include:
@@ -248,10 +252,10 @@ jobs:
     script:
       - kubectl get nodes || travis_terminate 1
       # finally install keptn
-      - test/test_install_minishift_quality_gates.sh || travis_terminate 1
-      - keptn status || travis_terminate 1
+      - test/test_install_minishift_quality_gates.sh
+      - keptn status
       - export PROJECT=musicshop
-      - test/test_quality_gates_standalone.sh || travis_terminate 1
+      - test/test_quality_gates_standalone.sh
     after_success:
       # delete google kubernetes cluster only on success (in case of an error we want to be able to dig into the cluster)
       - echo "Tests were successful, cleaning up the cluster now..."
@@ -260,6 +264,10 @@ jobs:
       - echo "Keptn Installation Log:"
       - cat ~/.keptn/keptn-installer.log
       - cat ~/.keptn/keptn-installer-err.log
+      - kubectl get events --sort-by='.lastTimestamp' --all-namespaces
+      - kubectl get pods --all-namespaces
+      - kubectl get services --all-namespaces
+      - kubectl get ingress --all-namespaces
 
   - stage: Test MicroK8s Standalone (--platform=kubernetes --use-case=quality-gates)
     if: branch = master AND (type = cron OR type = push) # run for any change on master and cron
@@ -272,10 +280,10 @@ jobs:
       - export KUBECONFIG=~/kubeconfig
     script:
       - kubectl get nodes || travis_terminate 1
-      - test/test_install_kubernetes_quality_gates.sh || travis_terminate 1
-      - keptn status || travis_terminate 1
+      - test/test_install_kubernetes_quality_gates.sh
+      - keptn status
       - export PROJECT=musicshop
-      - test/test_quality_gates_standalone.sh || travis_terminate 1
+      - test/test_quality_gates_standalone.sh
     after_success:
       # delete google kubernetes cluster only on success (in case of an error we want to be able to dig into the cluster)
       - echo "Tests were successful, cleaning up the cluster now..."
@@ -284,6 +292,10 @@ jobs:
       - echo "Keptn Installation Log:"
       - cat ~/.keptn/keptn-installer.log
       - cat ~/.keptn/keptn-installer-err.log
+      - kubectl get events --sort-by='.lastTimestamp' --all-namespaces
+      - kubectl get pods --all-namespaces
+      - kubectl get services --all-namespaces
+      - kubectl get ingress --all-namespaces
 
   - stage: Test Minikube Standalone (--platform=kubernetes --use-case=quality-gates)
     if: branch = master AND (type = cron OR type = push) # run for any change on master and cron
@@ -296,10 +308,10 @@ jobs:
       - test/utils/minikube_create_cluster.sh
     script:
       - kubectl get nodes || travis_terminate 1
-      - test/test_install_kubernetes_quality_gates.sh || travis_terminate 1
-      - keptn status || travis_terminate 1
+      - test/test_install_kubernetes_quality_gates.sh
+      - keptn status
       - export PROJECT=musicshop
-      - test/test_quality_gates_standalone.sh || travis_terminate 1
+      - test/test_quality_gates_standalone.sh
     after_success:
       # delete google kubernetes cluster only on success (in case of an error we want to be able to dig into the cluster)
       - echo "Tests were successful, cleaning up the cluster now..."
@@ -308,6 +320,10 @@ jobs:
       - echo "Keptn Installation Log:"
       - cat ~/.keptn/keptn-installer.log
       - cat ~/.keptn/keptn-installer-err.log
+      - kubectl get events --sort-by='.lastTimestamp' --all-namespaces
+      - kubectl get pods --all-namespaces
+      - kubectl get services --all-namespaces
+      - kubectl get ingress --all-namespaces
 
   ##################################################################################
   # feature/bug/hotfix/patch branches build jobs

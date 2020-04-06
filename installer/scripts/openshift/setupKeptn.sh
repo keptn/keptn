@@ -54,7 +54,8 @@ verify_kubectl $? "Deploying Keptn core components failed."
 ## Start validation of Keptn core           ##
 ##############################################
 wait_for_all_pods_in_namespace "keptn"
-wait_for_deployment_in_namespace "api" "keptn"
+wait_for_deployment_in_namespace "api-gateway-nginx" "keptn"
+wait_for_deployment_in_namespace "api-service" "keptn"
 wait_for_deployment_in_namespace "bridge" "keptn"
 wait_for_deployment_in_namespace "eventbroker-go" "keptn"
 wait_for_deployment_in_namespace "helm-service" "keptn"
@@ -110,39 +111,6 @@ case $USE_CASE in
     echo "Use case not provided"
     ;;
 esac
-
-if [ "$INGRESS" = "istio" ]; then
-  kubectl apply -f ../manifests/istio/public-gateway.yaml
-  verify_kubectl $? "Deploying public-gateway failed."
-
-  rm -f ../manifests/keptn/gen/keptn-api-virtualservice.yaml
-  cat ../manifests/keptn/keptn-api-virtualservice.yaml | \
-    sed 's~DOMAIN_PLACEHOLDER~'"$DOMAIN"'~' > ../manifests/keptn/gen/keptn-api-virtualservice.yaml
-
-  kubectl apply -f ../manifests/keptn/gen/keptn-api-virtualservice.yaml
-  verify_kubectl $? "Deploying keptn api virtualservice failed."
-  helm init
-elif [ "$INGRESS" = "nginx" ]; then
-    # Install nginx service mesh
-    print_info "Creating route to Keptn API"
-    oc create route edge api --service=api --port=https --insecure-policy='None' -n keptn
-
-    BASE_URL=$(oc get route -n keptn api -oyaml | yq r - spec.host | sed 's~api-keptn.~~')
-    DOMAIN=$BASE_URL
-
-    oc delete route api -n keptn
-
-    oc create route edge api --service=api --port=https --insecure-policy='None' -n keptn --hostname="api.keptn.$BASE_URL"
-    oc create route edge api2 --service=api --port=https --insecure-policy='None' -n keptn --hostname="api.keptn"
-fi
-
-# Add config map in keptn namespace that contains the domain - this will be used by other services as well
-cat ../manifests/keptn/keptn-domain-configmap.yaml | \
-  sed 's~DOMAIN_PLACEHOLDER~'"$DOMAIN"'~' > ../manifests/gen/keptn-domain-configmap.yaml
-
-kubectl apply -f ../manifests/gen/keptn-domain-configmap.yaml
-verify_kubectl $? "Creating configmap keptn-domain in keptn namespace failed."
-
 
 oc adm policy  add-cluster-role-to-user cluster-admin system:serviceaccount:kube-system:default
 oc adm policy add-scc-to-group privileged system:serviceaccounts -n keptn

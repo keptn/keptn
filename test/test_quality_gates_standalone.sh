@@ -50,7 +50,7 @@ else
 fi
 
 # okay so far, now we install a SLI provider
-kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/dynatrace-sli-service/0.3.0/deploy/service.yaml
+kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/dynatrace-sli-service/0.3.1/deploy/service.yaml
 sleep 10
 
 wait_for_deployment_in_namespace "dynatrace-sli-service" "keptn"
