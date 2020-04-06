@@ -206,7 +206,7 @@ function setupKeptnDomain() {
       print_info "Setting up self-signed SSL certificate."
       openssl req -nodes -newkey rsa:2048 -keyout key.pem -out certificate.pem  -x509 -days 365 -subj "/CN=$INGRESS_HOST"
 
-      if [[ "$PROIVDER" == "istio" ]]; then
+      if [[ "$PROVIDER" == "istio" ]]; then
         kubectl create --namespace $NAMESPACE secret tls istio-ingressgateway-certs --key key.pem --cert certificate.pem
       elif [[ "$PROVIDER" == "nginx" ]]; then
         kubectl create secret tls sslcerts --key key.pem --cert certificate.pem -n keptn
