@@ -79,6 +79,11 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 	logger := keptn.NewLogger(shkeptncontext, event.Context.GetID(), "wait-service")
 
+	keptnHandler, err := keptn.NewKeptn(&event, keptn.KeptnOpts{})
+	if err != nil {
+		logger.Error("Could not initialize Keptn handler: " + err.Error())
+	}
+
 	data := &keptn.DeploymentFinishedEventData{}
 	if err := event.DataAs(data); err != nil {
 		logger.Error(fmt.Sprintf("Got Data Error: %s", err.Error()))
@@ -91,13 +96,13 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		return errors.New(errorMsg)
 	}
 
-	go waitDuration(event, shkeptncontext, *data, logger)
+	go waitDuration(event, keptnHandler, *data, logger)
 
 	return nil
 }
 
 // waitDuration just waits for a the time defined in environment variable WAIT_DURATION
-func waitDuration(event cloudevents.Event, shkeptncontext string, data keptn.DeploymentFinishedEventData, logger *keptn.Logger) {
+func waitDuration(event cloudevents.Event, keptnHandler *keptn.Keptn, data keptn.DeploymentFinishedEventData, logger *keptn.Logger) {
 
 	startedAt := time.Now()
 
@@ -112,7 +117,7 @@ func waitDuration(event cloudevents.Event, shkeptncontext string, data keptn.Dep
 		time.Sleep(time.Duration(duration) * time.Second)
 		logger.Debug(fmt.Sprintf("Waiting %d seconds is over.", duration))
 
-		if err := sendTestsFinishedEvent(shkeptncontext, event, startedAt, logger); err != nil {
+		if err := sendTestsFinishedEvent(keptnHandler, event, startedAt, logger); err != nil {
 			logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". ")
 		}
 	case "":
@@ -172,7 +177,7 @@ func getServiceEndpoint(service string) (url.URL, error) {
 }
 
 // sendTestsFinishedEvent sends a Cloud Event of type sh.keptn.events.tests-finished to the event broker
-func sendTestsFinishedEvent(shkeptncontext string, incomingEvent cloudevents.Event, startedAt time.Time, logger *keptn.Logger) error {
+func sendTestsFinishedEvent(keptnHandler *keptn.Keptn, incomingEvent cloudevents.Event, startedAt time.Time, logger *keptn.Logger) error {
 
 	source, _ := url.Parse("wait-service")
 	contentType := "application/json"
@@ -195,36 +200,10 @@ func sendTestsFinishedEvent(shkeptncontext string, incomingEvent cloudevents.Eve
 			Type:        keptn.TestsFinishedEventType,
 			Source:      types.URLRef{URL: *source},
 			ContentType: &contentType,
-			Extensions:  map[string]interface{}{"shkeptncontext": shkeptncontext},
+			Extensions:  map[string]interface{}{"shkeptncontext": keptnHandler.KeptnContext},
 		}.AsV02(),
 		Data: testFinishedData,
 	}
 
-	endPoint, err := getServiceEndpoint(eventbroker)
-	if err != nil {
-		return errors.New("Failed to retrieve endpoint of eventbroker. %s" + err.Error())
-	}
-
-	if endPoint.Host == "" {
-		return errors.New("Host of eventbroker not set")
-	}
-
-	transport, err := cloudeventshttp.New(
-		cloudeventshttp.WithTarget(endPoint.String()),
-		cloudeventshttp.WithEncoding(cloudeventshttp.StructuredV02),
-	)
-	if err != nil {
-		return errors.New("Failed to create transport: " + err.Error())
-	}
-
-	client, err := client.New(transport)
-	if err != nil {
-		return errors.New("Failed to create HTTP client: " + err.Error())
-	}
-
-	logger.Debug("Send sh.keptn.events.tests-finished event to event broker")
-	if _, _, err := client.Send(context.Background(), event); err != nil {
-		return errors.New("Failed to send cloudevent:, " + err.Error())
-	}
-	return nil
+	return keptnHandler.SendCloudEvent(event)
 }

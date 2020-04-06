@@ -11,8 +11,9 @@ import (
 )
 
 type ConfigureMonitoringHandler struct {
-	Logger *keptnutils.Logger
-	Event  cloudevents.Event
+	Logger       *keptnutils.Logger
+	Event        cloudevents.Event
+	KeptnHandler *keptnutils.Keptn
 }
 
 func (eh *ConfigureMonitoringHandler) HandleEvent() error {

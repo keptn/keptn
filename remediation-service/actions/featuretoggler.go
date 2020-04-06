@@ -28,7 +28,7 @@ func (f FeatureToggler) GetAction() string {
 }
 
 // ExecuteAction executes the remediation action
-func (f FeatureToggler) ExecuteAction(problem *keptn.ProblemEventData, shkeptncontext string,
+func (f FeatureToggler) ExecuteAction(problem *keptn.ProblemEventData, keptnHandler *keptn.Keptn,
 	action *keptn.RemediationAction) error {
 
 	if !strings.Contains(action.Value, ":") {
@@ -60,7 +60,7 @@ func (f FeatureToggler) ExecuteAction(problem *keptn.ProblemEventData, shkeptnco
 }
 
 // ResolveAction ...
-func (f FeatureToggler) ResolveAction(problem *keptn.ProblemEventData, shkeptncontext string,
+func (f FeatureToggler) ResolveAction(problem *keptn.ProblemEventData, keptnHandler *keptn.Keptn,
 	action *keptn.RemediationAction) error {
 	return errors.New("no resolving action for action " + f.GetAction() + " implemented")
 }

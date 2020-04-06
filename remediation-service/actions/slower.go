@@ -28,17 +28,17 @@ func (s Slower) GetAction() string {
 	return "slowdown"
 }
 
-func (s Slower) ExecuteAction(problem *keptn.ProblemEventData, shkeptncontext string,
+func (s Slower) ExecuteAction(problem *keptn.ProblemEventData, keptnHandler *keptn.Keptn,
 	action *keptn.RemediationAction) error {
-	return s.executor(problem, shkeptncontext, action, s.addDelay)
+	return s.executor(problem, keptnHandler, action, s.addDelay)
 }
 
-func (s Slower) ResolveAction(problem *keptn.ProblemEventData, shkeptncontext string,
+func (s Slower) ResolveAction(problem *keptn.ProblemEventData, keptnHandler *keptn.Keptn,
 	action *keptn.RemediationAction) error {
-	return s.executor(problem, shkeptncontext, action, s.removeDelay)
+	return s.executor(problem, keptnHandler, action, s.removeDelay)
 }
 
-func (s Slower) executor(problem *keptn.ProblemEventData, shkeptncontext string,
+func (s Slower) executor(problem *keptn.ProblemEventData, keptnHandler *keptn.Keptn,
 	action *keptn.RemediationAction, editVs func(vsContent, ip string, slowDown string) (string, error)) error {
 
 	slowDown := strings.TrimSpace(action.Value)
@@ -95,7 +95,7 @@ func (s Slower) executor(problem *keptn.ProblemEventData, shkeptncontext string,
 				FileChangesGeneratedChart: changedFiles,
 			}
 
-			err = utils.CreateAndSendConfigurationChangedEvent(problem, shkeptncontext, data)
+			err = utils.CreateAndSendConfigurationChangedEvent(problem, keptnHandler, data)
 			if err != nil {
 				return fmt.Errorf("failed to send configuration change event: %v", err)
 			}

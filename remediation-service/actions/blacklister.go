@@ -33,7 +33,7 @@ func (b BlackLister) GetAction() string {
 	return "blacklist"
 }
 
-func (b BlackLister) ExecuteAction(problem *keptn.ProblemEventData, shkeptncontext string,
+func (b BlackLister) ExecuteAction(problem *keptn.ProblemEventData, keptnHandler *keptn.Keptn,
 	action *keptn.RemediationAction) error {
 
 	ip, err := getIP(problem)
@@ -76,14 +76,14 @@ func (b BlackLister) ExecuteAction(problem *keptn.ProblemEventData, shkeptnconte
 		FileChangesUmbrellaChart: changedFiles,
 	}
 
-	err = utils.CreateAndSendConfigurationChangedEvent(problem, shkeptncontext, data)
+	err = utils.CreateAndSendConfigurationChangedEvent(problem, keptnHandler, data)
 	if err != nil {
 		return fmt.Errorf("failed to send configuration change event: %v", err)
 	}
 	return nil
 }
 
-func (b BlackLister) ResolveAction(problem *keptn.ProblemEventData, shkeptncontext string,
+func (b BlackLister) ResolveAction(problem *keptn.ProblemEventData, keptnHandler *keptn.Keptn,
 	action *keptn.RemediationAction) error {
 	return errors.New("no resolving action for action " + b.GetAction() + "implemented")
 }

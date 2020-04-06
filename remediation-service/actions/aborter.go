@@ -26,17 +26,17 @@ func (a Aborter) GetAction() string {
 	return "abort"
 }
 
-func (a Aborter) ExecuteAction(problem *keptn.ProblemEventData, shkeptncontext string,
+func (a Aborter) ExecuteAction(problem *keptn.ProblemEventData, keptnHandler *keptn.Keptn,
 	action *keptn.RemediationAction) error {
-	return a.executor(problem, shkeptncontext, action, a.addAbort)
+	return a.executor(problem, keptnHandler, action, a.addAbort)
 }
 
-func (a Aborter) ResolveAction(problem *keptn.ProblemEventData, shkeptncontext string,
+func (a Aborter) ResolveAction(problem *keptn.ProblemEventData, keptnHandler *keptn.Keptn,
 	action *keptn.RemediationAction) error {
-	return a.executor(problem, shkeptncontext, action, a.removeAbort)
+	return a.executor(problem, keptnHandler, action, a.removeAbort)
 }
 
-func (a Aborter) executor(problem *keptn.ProblemEventData, shkeptncontext string,
+func (a Aborter) executor(problem *keptn.ProblemEventData, keptnHandler *keptn.Keptn,
 	action *keptn.RemediationAction, editVS func(vsContent string, ip string) (string, error)) error {
 	ip, err := getIP(problem)
 	if err != nil {
@@ -86,7 +86,7 @@ func (a Aborter) executor(problem *keptn.ProblemEventData, shkeptncontext string
 				FileChangesGeneratedChart: changedFiles,
 			}
 
-			err = utils.CreateAndSendConfigurationChangedEvent(problem, shkeptncontext, data)
+			err = utils.CreateAndSendConfigurationChangedEvent(problem, keptnHandler, data)
 			if err != nil {
 				return fmt.Errorf("failed to send configuration change event: %v", err)
 			}

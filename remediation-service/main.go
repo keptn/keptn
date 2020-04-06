@@ -160,7 +160,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 			for _, a := range actionExecutors {
 				if a.GetAction() == remediation.Actions[0].Action {
 					if strings.ToLower(problemEvent.State) == "open" {
-						if err := a.ExecuteAction(problemEvent, shkeptncontext, remediation.Actions[0]); err != nil {
+						if err := a.ExecuteAction(problemEvent, keptnHandler, remediation.Actions[0]); err != nil {
 							logger.Error(err.Error())
 							return err
 						}
@@ -169,7 +169,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 						return nil
 					} else if strings.ToLower(problemEvent.State) == "resolved" ||
 						strings.ToLower(problemEvent.State) == "closed" {
-						if err := a.ResolveAction(problemEvent, shkeptncontext, remediation.Actions[0]); err != nil {
+						if err := a.ResolveAction(problemEvent, keptnHandler, remediation.Actions[0]); err != nil {
 							logger.Error(err.Error())
 							return err
 						}
