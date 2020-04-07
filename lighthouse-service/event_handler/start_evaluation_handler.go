@@ -16,8 +16,9 @@ import (
 )
 
 type StartEvaluationHandler struct {
-	Logger *keptnutils.Logger
-	Event  cloudevents.Event
+	Logger       *keptnutils.Logger
+	Event        cloudevents.Event
+	KeptnHandler *keptnutils.Keptn
 }
 
 func (eh *StartEvaluationHandler) HandleEvent() error {
@@ -161,7 +162,7 @@ func (eh *StartEvaluationHandler) sendEvaluationDoneEvent(shkeptncontext string,
 	}
 
 	eh.Logger.Debug("Send event: " + keptnevents.EvaluationDoneEventType)
-	return sendEvent(event)
+	return eh.KeptnHandler.SendCloudEvent(event)
 }
 
 func getSLIProvider(project string) (string, error) {
@@ -212,7 +213,7 @@ func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string,
 	}
 
 	eh.Logger.Debug("Send event: " + keptnevents.InternalGetSLIEventType)
-	return sendEvent(event)
+	return eh.KeptnHandler.SendCloudEvent(event)
 }
 
 func (eh *StartEvaluationHandler) getTestExecutionResult() string {

@@ -102,7 +102,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	logger := keptn.NewLogger(shkeptncontext, event.Context.GetID(), "shipyard-service")
 
 	// open websocket connection to api component
-	endPoint, err := getServiceEndpoint(api)
+	endPoint, err := keptn.GetServiceEndpoint(api)
 	if err != nil {
 		return err
 	}
@@ -126,15 +126,19 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	}
 	defer ws.Close()
 
+	keptnHandler, err := keptn.NewKeptn(&event, keptn.KeptnOpts{})
+	if err != nil {
+		logger.Error("Could not initialize Keptn handler: " + err.Error())
+	}
 	if event.Type() == keptn.InternalProjectCreateEventType {
 		version, err := createProjectAndProcessShipyard(event, *logger, ws)
-		if err := respondWithDoneEvent(event, version, err, "Shipyard successfully processed", *logger, ws); err != nil {
+		if err := respondWithDoneEvent(event, version, err, "Shipyard successfully processed", *logger, ws, keptnHandler); err != nil {
 			return err
 		}
 		return nil
 	} else if event.Type() == keptn.InternalProjectDeleteEventType {
 		err := getRemoteURLAndDeleteProject(event, *logger, ws)
-		if err := respondWithDoneEvent(event, nil, err, "Project successfully deleted", *logger, ws); err != nil {
+		if err := respondWithDoneEvent(event, nil, err, "Project successfully deleted", *logger, ws, keptnHandler); err != nil {
 			return err
 		}
 		return nil
@@ -225,7 +229,7 @@ func getRemoteURLAndDeleteProject(event cloudevents.Event, logger keptn.Logger, 
 		}
 	}
 
-	configServiceURL, err := getServiceEndpoint(configservice)
+	configServiceURL, err := keptn.GetServiceEndpoint(configservice)
 	if err != nil {
 		logger.Error(fmt.Sprintf("Could not get service endpoint for %s: %s", configservice, err.Error()))
 		return err
@@ -252,7 +256,7 @@ func getRemoteURLAndDeleteProject(event cloudevents.Event, logger keptn.Logger, 
 
 // storeResourceForProject stores the resource for a project using the keptn.ResourceHandler
 func storeResourceForProject(projectName, shipyard string, logger keptn.Logger) (*configmodels.Version, error) {
-	configServiceURL, err := getServiceEndpoint(configservice)
+	configServiceURL, err := keptn.GetServiceEndpoint(configservice)
 	if err != nil {
 		logger.Error(fmt.Sprintf("Could not get service endpoint for %s: %s", configservice, err.Error()))
 		return nil, err
@@ -270,7 +274,7 @@ func storeResourceForProject(projectName, shipyard string, logger keptn.Logger) 
 }
 
 // respondWithDoneEvent sends a keptn done event to the keptn eventbroker
-func respondWithDoneEvent(event cloudevents.Event, version *configmodels.Version, err error, message string, logger keptn.Logger, ws *websocket.Conn) error {
+func respondWithDoneEvent(event cloudevents.Event, version *configmodels.Version, err error, message string, logger keptn.Logger, ws *websocket.Conn, keptnHandler *keptn.Keptn) error {
 	var result = "success"
 	var webSocketMessage = message
 	var eventMessage = message
@@ -287,7 +291,7 @@ func respondWithDoneEvent(event cloudevents.Event, version *configmodels.Version
 	if err := keptn.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), webSocketMessage, true, "INFO"); err != nil {
 		logger.Error(fmt.Sprintf("Could not write log to websocket. %s", err.Error()))
 	}
-	if err := sendDoneEvent(event, result, eventMessage, nil); err != nil {
+	if err := sendDoneEvent(event, result, eventMessage, nil, keptnHandler); err != nil {
 		logger.Error(fmt.Sprintf("No sh.keptn.event.done event sent. %s", err.Error()))
 	}
 
@@ -296,7 +300,7 @@ func respondWithDoneEvent(event cloudevents.Event, version *configmodels.Version
 
 // createProject creates a project by using the configuration-service
 func (client *Client) createProject(project configmodels.Project, logger keptn.Logger) error {
-	configServiceURL, err := getServiceEndpoint(configservice)
+	configServiceURL, err := keptn.GetServiceEndpoint(configservice)
 	if err != nil {
 		logger.Error(fmt.Sprintf("Could not get service endpoint for %s: %s", configservice, err.Error()))
 		return err
@@ -350,7 +354,7 @@ func (client *Client) getDeleteInfoMessage(keptnHandler *keptn.Keptn) (string, e
 
 // getProject returns a project by using the configuration-service
 func (client *Client) getProject(project configmodels.Project, logger keptn.Logger) (*configmodels.Project, error) {
-	configServiceURL, err := getServiceEndpoint(configservice)
+	configServiceURL, err := keptn.GetServiceEndpoint(configservice)
 	if err != nil {
 		logger.Error(fmt.Sprintf("Could not get service endpoint for %s: %s", configservice, err.Error()))
 		return nil, err
@@ -368,7 +372,7 @@ func (client *Client) getProject(project configmodels.Project, logger keptn.Logg
 // createStage creates a stage by using the configuration-service
 func (client *Client) createStage(project configmodels.Project, stage string, logger keptn.Logger) error {
 
-	configServiceURL, err := getServiceEndpoint(configservice)
+	configServiceURL, err := keptn.GetServiceEndpoint(configservice)
 	if err != nil {
 		logger.Error(fmt.Sprintf("Could not get service endpoint for %s: %s", configservice, err.Error()))
 		return err
@@ -385,20 +389,6 @@ func (client *Client) createStage(project configmodels.Project, stage string, lo
 	}
 
 	return fmt.Errorf("Error in creating new stage: %s", err.Error())
-}
-
-// getServiceEndpoint retrieves an endpoint stored in an environment variable and sets http as default scheme
-func getServiceEndpoint(service string) (url.URL, error) {
-	url, err := url.Parse(os.Getenv(service))
-	if err != nil {
-		return *url, fmt.Errorf("Failed to retrieve value from ENVIRONMENT_VARIABLE: %s", service)
-	}
-
-	if url.Scheme == "" {
-		url.Scheme = "http"
-	}
-
-	return *url, nil
 }
 
 // createEventCopy creates a deep copy of a CloudEvent
@@ -438,7 +428,7 @@ func createEventCopy(eventSource cloudevents.Event, eventType string) cloudevent
 }
 
 // sendDoneEvent prepares a keptn done event and sends it to the eventbroker
-func sendDoneEvent(receivedEvent cloudevents.Event, result string, message string, version *configmodels.Version) error {
+func sendDoneEvent(receivedEvent cloudevents.Event, result string, message string, version *configmodels.Version, keptnHandler *keptn.Keptn) error {
 
 	doneEvent := createEventCopy(receivedEvent, "sh.keptn.events.done")
 
@@ -453,31 +443,5 @@ func sendDoneEvent(receivedEvent cloudevents.Event, result string, message strin
 
 	doneEvent.Data = eventData
 
-	endPoint, err := getServiceEndpoint(eventbroker)
-	if err != nil {
-		return errors.New("Failed to retrieve endpoint of eventbroker. %s" + err.Error())
-	}
-
-	if endPoint.Host == "" {
-		return errors.New("Host of eventbroker not set")
-	}
-
-	transport, err := cloudeventshttp.New(
-		cloudeventshttp.WithTarget(endPoint.String()),
-		cloudeventshttp.WithEncoding(cloudeventshttp.StructuredV02),
-	)
-	if err != nil {
-		return errors.New("Failed to create transport: " + err.Error())
-	}
-
-	client, err := client.New(transport)
-	if err != nil {
-		return errors.New("Failed to create HTTP client: " + err.Error())
-	}
-
-	if _, _, err := client.Send(context.Background(), doneEvent); err != nil {
-		return errors.New("Failed to send cloudevent sh.keptn.events.done: " + err.Error())
-	}
-
-	return nil
+	return keptnHandler.SendCloudEvent(doneEvent)
 }

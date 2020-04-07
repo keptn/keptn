@@ -38,7 +38,7 @@ func (s Scaler) GetAction() string {
 	return "scaling"
 }
 
-func (s Scaler) ExecuteAction(problem *keptn.ProblemEventData, shkeptncontext string,
+func (s Scaler) ExecuteAction(problem *keptn.ProblemEventData, keptnHandler *keptn.Keptn,
 	action *keptn.RemediationAction) error {
 
 	replicaIncrement, err := strconv.Atoi(action.Value)
@@ -71,14 +71,14 @@ func (s Scaler) ExecuteAction(problem *keptn.ProblemEventData, shkeptncontext st
 		FileChangesGeneratedChart: changedFiles,
 	}
 
-	err = utils.CreateAndSendConfigurationChangedEvent(problem, shkeptncontext, data)
+	err = utils.CreateAndSendConfigurationChangedEvent(problem, keptnHandler, data)
 	if err != nil {
 		return fmt.Errorf("failed to send configuration change event: %v", err)
 	}
 	return nil
 }
 
-func (s Scaler) ResolveAction(problem *keptn.ProblemEventData, shkeptncontext string,
+func (s Scaler) ResolveAction(problem *keptn.ProblemEventData, keptnHandler *keptn.Keptn,
 	action *keptn.RemediationAction) error {
 
 	source, _ := url.Parse("remediation-service")
@@ -98,12 +98,12 @@ func (s Scaler) ResolveAction(problem *keptn.ProblemEventData, shkeptncontext st
 			Type:        keptn.TestsFinishedEventType,
 			Source:      types.URLRef{URL: *source},
 			ContentType: &contentType,
-			Extensions:  map[string]interface{}{"shkeptncontext": shkeptncontext},
+			Extensions:  map[string]interface{}{"shkeptncontext": keptnHandler.KeptnContext},
 		}.AsV02(),
 		Data: testFinishedData,
 	}
 
-	return utils.SendEvent(event)
+	return keptnHandler.SendCloudEvent(event)
 }
 
 // increases the replica count in the deployments by the provided replicaIncrement

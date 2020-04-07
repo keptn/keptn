@@ -40,9 +40,10 @@ type criteriaObject struct {
 }
 
 type EvaluateSLIHandler struct {
-	Logger     *keptn.Logger
-	Event      cloudevents.Event
-	HTTPClient *http.Client
+	Logger       *keptn.Logger
+	Event        cloudevents.Event
+	HTTPClient   *http.Client
+	KeptnHandler *keptn.Keptn
 }
 
 func (eh *EvaluateSLIHandler) HandleEvent() error {
@@ -586,5 +587,5 @@ func (eh *EvaluateSLIHandler) sendEvaluationDoneEvent(shkeptncontext string, dat
 	}
 
 	eh.Logger.Debug("Send event: " + keptn.EvaluationDoneEventType)
-	return sendEvent(event)
+	return eh.KeptnHandler.SendCloudEvent(event)
 }

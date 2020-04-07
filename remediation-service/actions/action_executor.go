@@ -8,6 +8,6 @@ const envConfigSvcURL = "CONFIGURATION_SERVICE"
 
 type ActionExecutor interface {
 	GetAction() string
-	ExecuteAction(problem *keptn.ProblemEventData, shkeptncontext string, action *keptn.RemediationAction) error
-	ResolveAction(problem *keptn.ProblemEventData, shkeptncontext string, action *keptn.RemediationAction) error
+	ExecuteAction(problem *keptn.ProblemEventData, keptnHandler *keptn.Keptn, action *keptn.RemediationAction) error
+	ResolveAction(problem *keptn.ProblemEventData, keptnHandler *keptn.Keptn, action *keptn.RemediationAction) error
 }

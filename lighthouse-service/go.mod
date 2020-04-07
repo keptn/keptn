@@ -9,7 +9,7 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/json-iterator/go v1.1.9 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.6.1-compat
+	github.com/keptn/go-utils v0.6.1-compat.0.20200406125548-5337a2e806c4
 	github.com/nats-io/nats-server/v2 v2.1.6
 	github.com/stretchr/testify v1.4.0
 	k8s.io/api v0.17.0
