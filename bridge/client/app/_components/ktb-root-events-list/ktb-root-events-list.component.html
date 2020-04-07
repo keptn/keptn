@@ -7,7 +7,7 @@
             <dt-icon class="event-icon" [class.error]="event.isProblem()" [name]="event.getIcon()"></dt-icon>
             <h4 class="m-0 mt-1 mb-1" [class.error]="event.isProblem()" [textContent]="event.getLabel()"></h4>
           </div>
-          <p class="m-0" *ngIf="event.data.valuesCanary"><span class="m-0" [textContent]="event.getShortImageName()"></span></p>
+          <p class="m-0" *ngIf="event.getShortImageName()"><span class="m-0" [textContent]="event.getShortImageName()"></span></p>
           <p class="m-0" *ngIf="event.data.ProblemTitle" [textContent]="event.data.ProblemTitle"></p>
         </div>
         <div fxLayout="column" fxLayoutAlign="start end">
