@@ -99,7 +99,7 @@ export class DataService {
                 let fromTime: Date = this._tracesLastUpdated[root.shkeptncontext];
                 this._tracesLastUpdated[root.shkeptncontext] = new Date();
 
-                return this.apiService.getTraces(root.shkeptncontext, fromTime ? fromTime.toISOString() : null)
+                return this.apiService.getTraces(root.shkeptncontext, root.data.project, fromTime ? fromTime.toISOString() : null)
                   .pipe(
                     map(response => {
                       this._tracesLastUpdated[root.shkeptncontext] = new Date(response.headers.get("date"));
@@ -125,7 +125,7 @@ export class DataService {
     let fromTime: Date = this._tracesLastUpdated[root.shkeptncontext];
     this._tracesLastUpdated[root.shkeptncontext] = new Date();
 
-    this.apiService.getTraces(root.shkeptncontext, fromTime ? fromTime.toISOString() : null)
+    this.apiService.getTraces(root.shkeptncontext, root.getProject(), fromTime ? fromTime.toISOString() : null)
       .pipe(
         map(response => {
           this._tracesLastUpdated[root.shkeptncontext] = new Date(response.headers.get("date"));
