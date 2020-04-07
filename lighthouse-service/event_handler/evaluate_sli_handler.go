@@ -92,7 +92,15 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 	}
 	eh.Logger.Debug("Evaluation result: " + evaluationResult.Result)
 
-	sloFileContent, _ := yaml.Marshal(sloConfig)
+	var sloFileContent []byte
+	// get the slo.yaml as a plain file to avoid confusion due to defaulted values (see https://github.com/keptn/keptn/issues/1495)
+	sloFileContentTmp, err := eh.KeptnHandler.GetKeptnResource("slo.yaml")
+	if err != nil {
+		eh.Logger.Debug("Could not fetch slo.yaml from service repository: " + err.Error() + ". Will append internally used SLO object to evaluation-done event.")
+		sloFileContent, _ = yaml.Marshal(sloConfig)
+	} else {
+		sloFileContent = []byte(sloFileContentTmp)
+	}
 	base64.StdEncoding.EncodeToString(sloFileContent)
 	evaluationResult.EvaluationDetails.SLOFileContent = base64.StdEncoding.EncodeToString(sloFileContent)
 
