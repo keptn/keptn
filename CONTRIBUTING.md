@@ -37,26 +37,24 @@ We are running automated code style checks for pull requests using the following
   * ``gofmt -l -s .`` 
 * [codecov.io](codecov.yml) - tracks code coverage based on unit tests
 
-### Fork and create a branch
+### Fork and work in a branch
 
-For Keptn, we are following the [git branching model described in this blog post](https://nvie.com/posts/a-successful-git-branching-model/), however we try to avoid the extra step of the `develop` branch, and instead work directly on the `master` branch.
+For contributions to Keptn, please fork the Keptn repo and work in a branch. More information about forking is written
+down in our [docs](docs/fork.md).
 
-If you work on a new feature or on a bugfix, then fork the repository and branch away from the `master` branch and use the following schema for naming your branches:
+We are following the [git branching model described in this blog post](https://nvie.com/posts/a-successful-git-branching-model/), however we try to avoid the extra step of the `develop` branch, and instead work directly on the `master` branch.
+
+If you work on a new feature or on a bugfix, [fork the repository](docs/fork.md), branch away from the `master` branch
+and use the following schema for naming your branches:
 
 * `feature/###/name` for new features,
 * `patch/###/name` for patches,
 * `bug/###/name` for bugfixes, and
 * `hotfix/###/name` for hotfixes (e.g., for releases),
 
-where `###` is the github issue id. E.g., if you work on feature based on issue #123, the branch name could be
+where `###` is the github issue id. E.g., if you work on feature described on issue #123, the branch name could be
 
 * `feature/123/foo`.
-
-```bash
-git checkout master
-git pull
-git checkout -b feature/123/foo
-```
 
 For Hotfixes please branch away from the master branch, and create a PR to master and the respective release branches.
 
