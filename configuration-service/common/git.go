@@ -194,7 +194,7 @@ func StoreGitCredentials(project string, user string, token string, remoteURI st
 	secret := &v1.Secret{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Secret",
-			APIVersion: "apps/v1beta1",
+			APIVersion: "apps/v1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "git-credentials-" + project,
