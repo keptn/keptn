@@ -21,5 +21,9 @@ require (
 	github.com/kinbiko/jsonassert v1.0.1
 	github.com/magiconair/properties v1.8.1
 	golang.org/x/net v0.0.0-20191126235420-ef20fe5d7933
-	k8s.io/apimachinery v0.17.0
+	istio.io/api v0.0.0-20200325005357-8217d7225b6d
+	istio.io/client-go v0.0.0-20200325170329-dc00bbff4229
+	k8s.io/api v0.17.4
+	k8s.io/apimachinery v0.17.4
+	k8s.io/client-go v0.17.4
 )
