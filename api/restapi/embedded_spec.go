@@ -67,10 +67,13 @@ func init() {
         ],
         "responses": {
           "200": {
-            "description": "Bridge was exposed successfully"
+            "description": "Bridge was successfully exposed/disposed",
+            "schema": {
+              "type": "string"
+            }
           },
           "400": {
-            "description": "Bridge could not be exposed",
+            "description": "Bridge could not be exposed/disposed",
             "schema": {
               "$ref": "response_model.yaml#/definitions/error"
             }
@@ -357,10 +360,13 @@ func init() {
         ],
         "responses": {
           "200": {
-            "description": "Bridge was exposed successfully"
+            "description": "Bridge was successfully exposed/disposed",
+            "schema": {
+              "type": "string"
+            }
           },
           "400": {
-            "description": "Bridge could not be exposed",
+            "description": "Bridge could not be exposed/disposed",
             "schema": {
               "$ref": "#/definitions/error"
             }

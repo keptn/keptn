@@ -78,6 +78,7 @@ func PostConfigureBridgeHandlerFunc(params configure.PostConfigureBridgeExposePa
 	l.Info("Used ingress for configuring Bridge: " + ingress.String())
 
 	var exposeErr error
+	var bridgeHost string
 	if params.Expose {
 		l.Info("Starting to retrieve Keptn domain")
 		domain, err := k8sutils.GetKeptnDomain(useInClusterConfig)
@@ -86,9 +87,9 @@ func PostConfigureBridgeHandlerFunc(params configure.PostConfigureBridgeExposePa
 			l.Error(errMsg)
 			return configure.NewPostConfigureBridgeExposeDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(errMsg)})
 		}
+		bridgeHost = getHostForBridge(domain)
 		l.Info("Used domain for configure Bridge: " + domain)
 		l.Info("Used host for Bridge: " + getHostForBridge(domain))
-
 		switch ingress {
 		case istio:
 			exposeErr = exposeBridgeIstio(domain, l)
@@ -104,13 +105,14 @@ func PostConfigureBridgeHandlerFunc(params configure.PostConfigureBridgeExposePa
 		case nginx:
 			exposeErr = disposeBridgeIngress(l)
 		}
+		bridgeHost = ""
 	}
 	if exposeErr != nil {
 		l.Error(exposeErr.Error())
 		return configure.NewPostConfigureBridgeExposeDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(exposeErr.Error())})
 	}
 
-	return configure.NewPostConfigureBridgeExposeOK()
+	return configure.NewPostConfigureBridgeExposeOK().WithPayload(bridgeHost)
 }
 
 func getDestinationRule() *v1alpha3.DestinationRule {
