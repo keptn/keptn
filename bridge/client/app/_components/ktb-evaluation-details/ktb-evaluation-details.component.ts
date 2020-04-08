@@ -165,9 +165,7 @@ export class KtbEvaluationDetailsComponent implements OnInit {
   updateChartData(evaluationHistory) {
     let chartSeries = [];
     if(!this._selectedEvaluationData && evaluationHistory) {
-      console.log("select", evaluationHistory, this.evaluationData);
       this._selectedEvaluationData = evaluationHistory.find(h => h.shkeptncontext === this._evaluationData.shkeptncontext);
-      console.log("selected", this._selectedEvaluationData);
     }
 
     evaluationHistory.forEach((evaluation) => {

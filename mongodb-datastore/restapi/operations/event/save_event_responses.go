@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	models "github.com/keptn/keptn/mongodb-datastore/models"
+	"github.com/keptn/keptn/mongodb-datastore/models"
 )
 
 // SaveEventCreatedCode is the HTTP code returned for type SaveEventCreated
