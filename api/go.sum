@@ -255,10 +255,6 @@ github.com/keptn/keptn v0.0.0-20191203073718-08fcca449c2c h1:0+bI5c4xmoMIfThsKHo
 github.com/keptn/keptn v0.0.0-20200403105706-0a4568eeaba5 h1:w1JHMAO3ljSYwzsojSkGx17dUa28rUlj8s7RJgqcJS0=
 github.com/keptn/keptn v0.0.0-20200403121323-f0098529b472 h1:9isXhmJxeheh0XKWM59J01ZzJracEPp1Bbj228BI3yc=
 github.com/keptn/keptn v0.0.0-20200406090046-e6e7da3c4531 h1:9IXmZeqXcUZ1aG0/NYNcl/nkIwSgK4gHyRv6TlJTMwc=
-github.com/keptn/keptn/configuration-service v0.0.0-20200403121323-f0098529b472 h1:fCBhCjHUHZGkTHUNdsGkqYa/yBogHjW2X6CKSDTWzQs=
-github.com/keptn/keptn/configuration-service v0.0.0-20200403121323-f0098529b472/go.mod h1:vgJKM0kd8C1DO8081QJk/Zdrn0pLXHuzeox6Op7vU/w=
-github.com/keptn/keptn/configuration-service v0.0.0-20200406090046-e6e7da3c4531 h1:vKQSD4B1Gs7H8MEhEehMMiwvlQQitzKrbBmpDp3i4Ww=
-github.com/keptn/keptn/configuration-service v0.0.0-20200406090046-e6e7da3c4531/go.mod h1:vgJKM0kd8C1DO8081QJk/Zdrn0pLXHuzeox6Op7vU/w=
 github.com/keptn/kubernetes-utils v0.0.0-20200401103501-ae44a5ee0656 h1:uGdzQ+DT+/KqzMJF+5F+B+/h0nOfwmmSA7ClxsI1y6Y=
 github.com/keptn/kubernetes-utils v0.0.0-20200401103501-ae44a5ee0656/go.mod h1:7MQMS/jqKM4eVZ0S1S7LWdZNcBTJn5QeERircdADWzo=
 github.com/kevinburke/ssh_config v0.0.0-20190725054713-01f96b0aa0cd h1:Coekwdh0v2wtGp9Gmz1Ze3eVRAWJMLokvN3QjdzCHLY=
