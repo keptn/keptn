@@ -40,7 +40,7 @@ func (i Ingress) String() string {
 	return [...]string{"istio", "nginx"}[i]
 }
 
-const useInClusterConfig = false
+const useInClusterConfig = true
 
 func getIngressType() (Ingress, error) {
 
@@ -228,8 +228,8 @@ func getBridgeRule(keptnDomain string) networking.IngressRule {
 				Paths: []networking.HTTPIngressPath{
 					{
 						Backend: networking.IngressBackend{
-							ServiceName: "api-gateway-nginx",
-							ServicePort: intstr.IntOrString{IntVal: 80},
+							ServiceName: "bridge",
+							ServicePort: intstr.IntOrString{IntVal: 8080},
 						},
 					},
 				},
