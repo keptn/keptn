@@ -111,7 +111,14 @@ func SaveEvent(event *models.KeptnContextExtendedCE) error {
 		bson.M{"_id": event.Shkeptncontext, "shkeptncontext": event.Shkeptncontext, "project": collectionName},
 	)
 	if err != nil {
-		logger.Error("could not store mapping " + event.Shkeptncontext + "->" + collectionName)
+		writeErr, ok := err.(mongo.WriteException)
+		if ok {
+			if len(writeErr.WriteErrors) > 0 && writeErr.WriteErrors[0].Code == 11000 { // 11000 = duplicate key error
+				logger.Error("Mapping " + event.Shkeptncontext + "->" + collectionName + " already exists in collection")
+			}
+		} else {
+			logger.Error("could not store mapping " + event.Shkeptncontext + "->" + collectionName + ": " + err.Error())
+		}
 	}
 
 	logger.Debug(fmt.Sprintf("inserted mapping %s->%s", event.Shkeptncontext, collectionName))
