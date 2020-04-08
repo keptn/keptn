@@ -1,15 +1,30 @@
 package cmd
 
 import (
+	"bytes"
+	"crypto/tls"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/spf13/cobra"
+	"io/ioutil"
 	"net/http"
+
+	keptnutils "github.com/keptn/go-utils/pkg/api/utils"
 )
 
 type configureBridgeCmdParams struct {
 	Action *string
+}
+
+type exposeBridgeAPIPayload struct {
+	Expose bool `json:"expose"`
+}
+
+type exposeBridgeAPIErrorResponse struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
 }
 
 var configureBridgeParams *configureBridgeCmdParams
@@ -18,7 +33,7 @@ const actionExpose = "expose"
 const actionLockdown = "lockdown"
 
 var bridgeCmd = &cobra.Command{
-	Use:   "--action=[expose|lockdown]",
+	Use:   "bridge --action=[expose|lockdown]",
 	Short: "Exposes or locks down the bridge",
 	Long: `Exposes or locks down the Keptn's bridge.
 
@@ -27,30 +42,65 @@ Example:
 	keptn configure bridge --action=lockdown`,
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if configureBridgeParams.Action == nil {
-			return errors.New("Missing flag 'action'. Must provide either '--action=expose' or '--action=lockdown'")
-		}
-		if *configureBridgeParams.Action != actionExpose && *configureBridgeParams.Action != actionLockdown {
-			return errors.New("Invalid value " + *configureBridgeParams.Action + " 'action'. Must provide either '--action=expose' or '--action=lockdown'")
-		}
-		return nil
+		return verifyConfigureBridgeParams(configureBridgeParams)
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
+		endpoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
 
-		// TODO: send the request to the endpoint implemented in https://github.com/keptn/keptn/issues/1153
-		client := &http.Client{}
-		req, err := http.NewRequest("POST", endPoint.RequestURI()+"", nil)
-		req.Header.Add("x-token", apiToken)
-
-		resp, err := client.Do(req)
-		fmt.Printf("%v", resp)
-
-		return nil
+		configureBridgeEndpoint := endpoint.Scheme + "://" + endpoint.Host + "/configure/bridge/expose"
+		return configureBridge(configureBridgeEndpoint, apiToken, configureBridgeParams)
 	},
+}
+
+func configureBridge(endpoint string, apiToken string, configureBridgeParams *configureBridgeCmdParams) error {
+	doExpose := *configureBridgeParams.Action == "expose"
+	payload, _ := json.Marshal(&exposeBridgeAPIPayload{Expose: doExpose})
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			DialContext:     keptnutils.ResolveXipIoWithContext,
+		},
+	}
+	req, err := http.NewRequest("POST", endpoint, bytes.NewReader(payload))
+	req.Header.Add("x-token", apiToken)
+
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Could not complete command: " + err.Error())
+		return err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return errors.New("Could not complete command: " + string(body))
+	}
+
+	if doExpose {
+		if err != nil {
+			return errors.New("Could not " + *configureBridgeParams.Action + " bridge: " + err.Error())
+		}
+		fmt.Printf("Bridge exposed successfully. You can reach it here: %s", body)
+	} else {
+		if err != nil {
+			return errors.New("Could not " + *configureBridgeParams.Action + " bridge: " + err.Error())
+		}
+		fmt.Printf("Bridge locked down successfully. Disabled public access.")
+	}
+	return nil
+}
+
+func verifyConfigureBridgeParams(configureBridgeParams *configureBridgeCmdParams) error {
+	if configureBridgeParams.Action == nil {
+		return errors.New("Missing flag 'action'. Must provide either '--action=expose' or '--action=lockdown'")
+	}
+	if *configureBridgeParams.Action != actionExpose && *configureBridgeParams.Action != actionLockdown {
+		return errors.New("Invalid value " + *configureBridgeParams.Action + " 'action'. Must provide either '--action=expose' or '--action=lockdown'")
+	}
+	return nil
 }
 
 func init() {
