@@ -9,7 +9,7 @@ import (
 	"os"
 )
 
-const mongoDBURL = "mongodb://user:password@localhost:27017/keptn"
+const mongoDBURL = "mongodb://user:password@mongodb:27017/keptn"
 
 var client *mongo.Client
 
@@ -73,9 +73,9 @@ func main() {
 		}
 		_, err = projectCollections[project].InsertOne(ctx, doc)
 		if err != nil {
-			writeErr, ok := err.(mongo.WriteConcernError)
+			writeErr, ok := err.(mongo.WriteException)
 			if ok {
-				if writeErr.Code == 11000 { // 11000 = duplicate key error
+				if len(writeErr.WriteErrors) > 0 && writeErr.WriteErrors[0].Code == 11000 { // 11000 = duplicate key error
 					fmt.Printf("Event %v already exists in collection\n", doc)
 				}
 			} else {
@@ -85,9 +85,9 @@ func main() {
 		fmt.Printf("Inserted event %v into collection %s\n", doc, project)
 		_, err = contextToProjectCollection.InsertOne(ctx, bson.M{"_id": keptnContext, "shkeptncontext": keptnContext, "project": project})
 		if err != nil {
-			writeErr, ok := err.(mongo.WriteConcernError)
+			writeErr, ok := err.(mongo.WriteException)
 			if ok {
-				if writeErr.Code == 11000 { // 11000 = duplicate key error
+				if len(writeErr.WriteErrors) > 0 && writeErr.WriteErrors[0].Code == 11000 { // 11000 = duplicate key error
 					fmt.Printf("Mapping %s -> %s  already exists in collection\n", keptnContext, project)
 				}
 			} else {
