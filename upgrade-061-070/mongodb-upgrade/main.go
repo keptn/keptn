@@ -73,12 +73,26 @@ func main() {
 		}
 		_, err = projectCollections[project].InsertOne(ctx, doc)
 		if err != nil {
-			fmt.Printf("Could not store event %v\n", doc)
+			writeErr, ok := err.(mongo.WriteConcernError)
+			if ok {
+				if writeErr.Code == 11000 { // 11000 = duplicate key error
+					fmt.Printf("Event %v already exists in collection\n", doc)
+				}
+			} else {
+				fmt.Printf("Could not store event %v\n", doc)
+			}
 		}
 		fmt.Printf("Inserted event %v into collection %s\n", doc, project)
 		_, err = contextToProjectCollection.InsertOne(ctx, bson.M{"_id": keptnContext, "shkeptncontext": keptnContext, "project": project})
 		if err != nil {
-			fmt.Printf("Could not store mapping %s -> %s\n", keptnContext, project)
+			writeErr, ok := err.(mongo.WriteConcernError)
+			if ok {
+				if writeErr.Code == 11000 { // 11000 = duplicate key error
+					fmt.Printf("Mapping %s -> %s  already exists in collection\n", keptnContext, project)
+				}
+			} else {
+				fmt.Printf("Could not store mapping %s -> %s\n", keptnContext, project)
+			}
 		}
 		fmt.Printf("Inserted mapping %s -> %s\n", keptnContext, project)
 	}
