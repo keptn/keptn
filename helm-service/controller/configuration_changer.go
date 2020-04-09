@@ -63,6 +63,7 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event,
 
 	if os.Getenv("PRE_WORKFLOW_ENGINE") == "true" && e.Stage == "" {
 		stage, err := getFirstStage(keptnHandler)
+		keptnHandler.KeptnBase.Stage = stage
 		if err != nil {
 			c.logger.Error(fmt.Sprintf("Error when reading shipyard: %s", err.Error()))
 			return err
