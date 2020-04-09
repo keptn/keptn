@@ -13,6 +13,7 @@ verify_test_step $? "Send event new-artifact for carts-db failed"
 
 # lets wait a little bit until we are sure that mongodb has been deployed
 wait_for_deployment_in_namespace "carts-db" "$PROJECT-dev"
+verify_test_step $? "Deployment carts-db not available, exiting..."
 
 # okay, now we can start with carts
 test/utils/send_new_artifact_sockshop.sh $PROJECT docker.io/keptnexamples/carts 0.10.1
