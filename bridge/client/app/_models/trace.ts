@@ -98,6 +98,16 @@ export class Trace {
     return result;
   }
 
+  isWarning(): string {
+    let result: string = null;
+    if(this.data) {
+      if(this.data.result == 'warning') {
+        result = this.data.stage;
+      }
+    }
+    return result;
+  }
+
   isFailed(): boolean {
     return this.data.result == 'fail';
   }

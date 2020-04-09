@@ -15,6 +15,18 @@ export class Root extends Trace {
     return result;
   }
 
+  isWarning(): string {
+    let result: string = null;
+    if(this.traces) {
+      this.traces.forEach((trace) => {
+        if(trace.isWarning()) {
+          result = trace.data.stage;
+        }
+      });
+    }
+    return result;
+  }
+
   isSuccessful(): boolean {
     let result: boolean = false;
     return !this.isFaulty() && result;
