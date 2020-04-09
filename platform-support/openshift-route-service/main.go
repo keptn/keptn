@@ -2,12 +2,16 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
+	"strings"
 
-	"github.com/keptn/go-utils/pkg/lib"
+	keptn "github.com/keptn/go-utils/pkg/lib"
 
 	b64 "encoding/base64"
 
@@ -44,6 +48,9 @@ func main() {
 func _main(args []string, env envConfig) int {
 	ctx := context.Background()
 
+	http.HandleFunc("/configure/bridge/expose", exposeBridge)
+	go http.ListenAndServe(":8081", nil)
+
 	t, err := cloudeventshttp.New(
 		cloudeventshttp.WithPort(env.Port),
 		cloudeventshttp.WithPath(env.Path),
@@ -61,6 +68,77 @@ func _main(args []string, env envConfig) int {
 	log.Fatalf("failed to start receiver: %s", c.StartReceiver(ctx, gotEvent))
 
 	return 0
+}
+
+type exposeBridgeBody struct {
+	Expose      bool   `json:expose`
+	KeptnDomain string `json:keptnDomain`
+}
+
+func exposeBridge(w http.ResponseWriter, r *http.Request) {
+
+	logger := keptn.NewLogger("", "", "openshift-route-service")
+	if r.Method == "POST" {
+		logger.Info("Received POST for /configure/bridge/expose")
+
+		body, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			errorMsg := fmt.Sprintf("Faild to read form body: %v", err)
+			logger.Error(errorMsg)
+			http.Error(w, errorMsg, http.StatusInternalServerError)
+			return
+		}
+		exposeBridgeBody := exposeBridgeBody{}
+		err = json.Unmarshal(body, &exposeBridgeBody)
+		if err != nil {
+			errorMsg := fmt.Sprintf("Faild to unmarshal body: %v", err)
+			logger.Error(errorMsg)
+			http.Error(w, errorMsg, http.StatusBadRequest)
+			return
+		}
+
+		var out string
+		if exposeBridgeBody.Expose {
+			out, err = keptn.ExecuteCommand("oc",
+				[]string{
+					"create",
+					"route",
+					"edge",
+					"bridge",
+					"--service=bridge",
+					"--port=" + os.Getenv("BRIDGE_PORT"),
+					"--insecure-policy=None",
+					"--namespace=keptn",
+					"--hostname=bridge.keptn." + exposeBridgeBody.KeptnDomain,
+				})
+			if err != nil && strings.Contains(err.Error(), "AlreadyExists") {
+				logger.Info(fmt.Sprintf("Route for bridge already exists."))
+			} else if err != nil {
+				errorMsg := fmt.Sprintf("Failed to create route for bridge: %s %v", out, err)
+				logger.Error(errorMsg)
+				http.Error(w, errorMsg, http.StatusInternalServerError)
+			} else {
+				logger.Info(fmt.Sprintf("Successfully created route for bridge: %s", out))
+			}
+		} else {
+			out, err = keptn.ExecuteCommand("oc",
+				[]string{
+					"delete",
+					"route",
+					"bridge",
+					"--namespace=keptn",
+				})
+			if err != nil && strings.Contains(err.Error(), "NotFound") {
+				logger.Info(fmt.Sprintf("Route for bridge did not exist."))
+			} else if err != nil {
+				errorMsg := fmt.Sprintf("Failed to delete route for bridge: %s %v", out, err)
+				logger.Error(errorMsg)
+				http.Error(w, errorMsg, http.StatusInternalServerError)
+			} else {
+				logger.Info(fmt.Sprintf("Successfully delete route for bridge: %s", out))
+			}
+		}
+	}
 }
 
 func gotEvent(ctx context.Context, event cloudevents.Event) error {

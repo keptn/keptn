@@ -1,9 +1,13 @@
 package handlers
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -32,12 +36,13 @@ type Ingress int
 const (
 	istio Ingress = iota
 	nginx
+	ocroute
 )
 
 const keptnGateway = "public-gateway.istio-system"
 
 func (i Ingress) String() string {
-	return [...]string{"istio", "nginx"}[i]
+	return [...]string{"istio", "nginx", "openshift"}[i]
 }
 
 const useInClusterConfig = true
@@ -59,7 +64,11 @@ func getIngressType() (Ingress, error) {
 			return istio, nil
 		} else if ns.Name == "ingress-nginx" {
 			return nginx, nil
+		} else if ns.Name == "openshift" {
+			// Note: The istio-system namespace was not found, hence OC routes are used
+			return ocroute, nil
 		}
+
 	}
 	return istio, errors.New("Cannot obtain type of ingress.")
 }
@@ -95,6 +104,8 @@ func PostConfigureBridgeHandlerFunc(params configure.PostConfigureBridgeExposePa
 			exposeErr = exposeBridgeIstio(domain, l)
 		case nginx:
 			exposeErr = exposeBridgeIngress(domain, l)
+		case ocroute:
+			exposeErr = sendOCRouteRequest(domain, true, l)
 		}
 
 	} else {
@@ -104,6 +115,8 @@ func PostConfigureBridgeHandlerFunc(params configure.PostConfigureBridgeExposePa
 			exposeErr = disposeBridgeIstio(l)
 		case nginx:
 			exposeErr = disposeBridgeIngress(l)
+		case ocroute:
+			exposeErr = sendOCRouteRequest("", false, l)
 		}
 		bridgeHost = ""
 	}
@@ -203,6 +216,55 @@ func exposeBridgeIngress(keptnDomain string, l *keptnutils.Logger) error {
 		return err
 	}
 	l.Info("Rule for Bridge successfully added to Keptn-ingress")
+	return nil
+}
+
+func sendOCRouteRequest(keptnDomain string, expose bool, l *keptnutils.Logger) error {
+	l.Info("Expose Bridge using the openshift-route-service")
+
+	url, err := keptnutils.GetServiceEndpoint("OPENSHIFT_ROUTE_SERVICE_URI")
+	if err != nil {
+		return err
+	}
+	url.Path = "/configure/bridge/expose"
+	if err != nil {
+		return err
+	}
+	var jsonStr = []byte(`{"expose": ` + strconv.FormatBool(expose) + `, "keptnDomain": "` + keptnDomain + `"}`)
+	req, err := http.NewRequest("POST", url.String(), bytes.NewBuffer(jsonStr))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	var actionPast string
+	var actionPres string
+	if expose {
+		l.Info("Used url of openshift-route-service: " + url.String())
+		actionPast = "added"
+		actionPres = "add"
+	} else {
+		actionPast = "deleted"
+		actionPast = "delete"
+	}
+
+	if resp.StatusCode == 200 {
+		l.Info("Route for Bridge successfully " + actionPast)
+	} else {
+		body, err := ioutil.ReadAll(resp.Body)
+		if err == nil {
+			l.Error(fmt.Sprintf("Failed to "+actionPres+" route with status %d and error %s", resp.StatusCode, string(body)))
+		} else {
+			l.Error(fmt.Sprintf("Failed to "+actionPres+" route with status %d ", resp.StatusCode))
+		}
+	}
 	return nil
 }
 
