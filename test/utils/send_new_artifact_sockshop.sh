@@ -35,7 +35,9 @@ echo ""
 wait_for_deployment_in_namespace "carts-db" "$PROJECT-dev"
 wait_for_deployment_in_namespace "carts" "$PROJECT-dev"
 verify_pod_in_namespace "carts" "$PROJECT-dev"
+verify_test_step $? "Pod carts not found, exiting..."
 verify_pod_in_namespace "carts-db" "$PROJECT-dev"
+verify_test_step $? "Pod carts-db not found, exiting..."
 
 # get URL for that deployment
 DEV_URL=$(echo http://carts.${PROJECT}-dev.$(kubectl get cm keptn-domain -n keptn -o=jsonpath='{.data.app_domain}'))
@@ -62,8 +64,11 @@ echo ""
 wait_for_deployment_in_namespace "carts-db" "$PROJECT-staging"
 wait_for_deployment_in_namespace "carts" "$PROJECT-staging"
 verify_pod_in_namespace "carts" "$PROJECT-staging"
+verify_test_step $? "Pod carts not found, exiting..."
 verify_pod_in_namespace "carts-primary" "$PROJECT-staging"
+verify_test_step $? "Pod carts-primary not found, exiting..."
 verify_pod_in_namespace "carts-db" "$PROJECT-staging"
+verify_test_step $? "Pod carts-db not found, exiting..."
 
 # get URL for that deployment
 STAGING_URL=$(echo http://carts.${PROJECT}-staging.$(kubectl get cm keptn-domain -n keptn -o=jsonpath='{.data.app_domain}'))
@@ -90,8 +95,11 @@ echo ""
 wait_for_deployment_in_namespace "carts-db" "$PROJECT-production"
 wait_for_deployment_in_namespace "carts" "$PROJECT-production"
 verify_pod_in_namespace "carts" "$PROJECT-production"
+verify_test_step $? "Pod carts not found, exiting..."
 verify_pod_in_namespace "carts-primary" "$PROJECT-production"
+verify_test_step $? "Pod carts-primary not found, exiting..."
 verify_pod_in_namespace "carts-db" "$PROJECT-production"
+verify_test_step $? "Pod carts-db not found, exiting..."
 
 # get URL for that deployment
 PRODUCTION_URL=$(echo http://carts.${PROJECT}-production.$(kubectl get cm keptn-domain -n keptn -o=jsonpath='{.data.app_domain}'))
