@@ -39,7 +39,7 @@ Example:
 			return err
 		}
 
-		authHandler := apiutils.NewAuthenticatedAuthHandler(url.String(), *apiToken, "x-token", nil, "https")
+		authHandler := apiutils.NewAuthenticatedAuthHandler(url.String(), *apiToken, "x-token", nil, *scheme)
 
 		if !mocking {
 			_, err := authHandler.Authenticate()
