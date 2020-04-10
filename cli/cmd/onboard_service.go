@@ -131,7 +131,7 @@ Example:
 
 			// if eventContext is available, open WebSocket communication
 			if eventContext != nil && !SuppressWSCommunication {
-				return websockethelper.PrintWSContentEventContext(eventContext, endPoint)
+				return websockethelper.PrintWSContentEventContext(eventContext, endPoint, *scheme == "https")
 			}
 
 			return nil
