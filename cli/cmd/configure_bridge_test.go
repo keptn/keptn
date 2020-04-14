@@ -1,10 +1,10 @@
 package cmd
 
 import (
-	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 )
 
@@ -63,11 +63,10 @@ func Test_configureBridge(t *testing.T) {
 	ts := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			defer r.Body.Close()
-			param := &exposeBridgeAPIPayload{}
 			body, _ := ioutil.ReadAll(r.Body)
-			json.Unmarshal(body, param)
+			expose, _ := strconv.ParseBool(string(body))
 
-			if param.Expose {
+			if expose {
 				w.Header().Add("Content-Type", "application/json")
 				w.WriteHeader(200)
 				w.Write([]byte(`bridge.keptn.test`))
