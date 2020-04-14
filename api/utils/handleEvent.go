@@ -4,26 +4,21 @@ package utils
 
 import (
 	"context"
-	"os"
-	"strings"
+
+	keptn "github.com/keptn/go-utils/pkg/lib"
 
 	cloudevents "github.com/cloudevents/sdk-go"
 )
 
-func getEventBrokerURL() string {
-	uri := os.Getenv("EVENTBROKER_URI")
-
-	if strings.HasPrefix(uri, "https://") || strings.HasPrefix(uri, "http://") {
-		return uri
-	}
-	return "http://" + uri
-}
-
 // PostToEventBroker makes a post request to the eventbroker
 func PostToEventBroker(event cloudevents.Event) (*cloudevents.Event, error) {
 
+	url, err := keptn.GetServiceEndpoint("EVENTBROKER_URI")
+	if err != nil {
+		return nil, err
+	}
 	t, err := cloudevents.NewHTTPTransport(
-		cloudevents.WithTarget(getEventBrokerURL()),
+		cloudevents.WithTarget(url.String()),
 		cloudevents.WithEncoding(cloudevents.HTTPStructuredV02),
 	)
 
