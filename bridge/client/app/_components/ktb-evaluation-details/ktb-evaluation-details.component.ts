@@ -34,13 +34,15 @@ export class KtbEvaluationDetailsComponent implements OnInit {
     'pass': '#7dc540',
     'warning': '#fd8232',
     'fail': '#dc172a',
+    'failed': '#dc172a',
     'info': '#f8f8f8'
   };
 
   public _evaluationState = {
     'pass': 'recovered',
     'warning': 'warning',
-    'fail': 'error'
+    'fail': 'error',
+    'failed': 'error'
   };
 
   public _evaluationData: Trace;
@@ -121,7 +123,7 @@ export class KtbEvaluationDetailsComponent implements OnInit {
     }],
 
     colorAxis: {
-      dataClasses: Object.keys(this._evaluationColor).map((key) => { return { color: this._evaluationColor[key], name: key } })
+      dataClasses: Object.keys(this._evaluationColor).filter(key => key != 'failed').map((key) => { return { color: this._evaluationColor[key], name: key } })
     },
 
     plotOptions: {
