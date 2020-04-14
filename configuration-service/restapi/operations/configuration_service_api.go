@@ -37,6 +37,7 @@ func NewConfigurationServiceAPI(spec *loads.Document) *ConfigurationServiceAPI {
 		defaultProduces:     "application/json",
 		customConsumers:     make(map[string]runtime.Consumer),
 		customProducers:     make(map[string]runtime.Producer),
+		PreServerShutdown:   func() {},
 		ServerShutdown:      func() {},
 		spec:                spec,
 		ServeError:          errors.ServeError,
@@ -47,119 +48,81 @@ func NewConfigurationServiceAPI(spec *loads.Document) *ConfigurationServiceAPI {
 		JSONProducer:        runtime.JSONProducer(),
 		ProjectDeleteProjectProjectNameHandler: project.DeleteProjectProjectNameHandlerFunc(func(params project.DeleteProjectProjectNameParams) middleware.Responder {
 			return middleware.NotImplemented("operation ProjectDeleteProjectProjectName has not yet been implemented")
-		}),
-		ProjectResourceDeleteProjectProjectNameResourceResourceURIHandler: project_resource.DeleteProjectProjectNameResourceResourceURIHandlerFunc(func(params project_resource.DeleteProjectProjectNameResourceResourceURIParams) middleware.Responder {
+		}), ProjectResourceDeleteProjectProjectNameResourceResourceURIHandler: project_resource.DeleteProjectProjectNameResourceResourceURIHandlerFunc(func(params project_resource.DeleteProjectProjectNameResourceResourceURIParams) middleware.Responder {
 			return middleware.NotImplemented("operation ProjectResourceDeleteProjectProjectNameResourceResourceURI has not yet been implemented")
-		}),
-		ServiceDefaultResourceDeleteProjectProjectNameServiceServiceNameResourceResourceURIHandler: service_default_resource.DeleteProjectProjectNameServiceServiceNameResourceResourceURIHandlerFunc(func(params service_default_resource.DeleteProjectProjectNameServiceServiceNameResourceResourceURIParams) middleware.Responder {
+		}), ServiceDefaultResourceDeleteProjectProjectNameServiceServiceNameResourceResourceURIHandler: service_default_resource.DeleteProjectProjectNameServiceServiceNameResourceResourceURIHandlerFunc(func(params service_default_resource.DeleteProjectProjectNameServiceServiceNameResourceResourceURIParams) middleware.Responder {
 			return middleware.NotImplemented("operation ServiceDefaultResourceDeleteProjectProjectNameServiceServiceNameResourceResourceURI has not yet been implemented")
-		}),
-		StageDeleteProjectProjectNameStageStageNameHandler: stage.DeleteProjectProjectNameStageStageNameHandlerFunc(func(params stage.DeleteProjectProjectNameStageStageNameParams) middleware.Responder {
+		}), StageDeleteProjectProjectNameStageStageNameHandler: stage.DeleteProjectProjectNameStageStageNameHandlerFunc(func(params stage.DeleteProjectProjectNameStageStageNameParams) middleware.Responder {
 			return middleware.NotImplemented("operation StageDeleteProjectProjectNameStageStageName has not yet been implemented")
-		}),
-		StageResourceDeleteProjectProjectNameStageStageNameResourceResourceURIHandler: stage_resource.DeleteProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(func(params stage_resource.DeleteProjectProjectNameStageStageNameResourceResourceURIParams) middleware.Responder {
+		}), StageResourceDeleteProjectProjectNameStageStageNameResourceResourceURIHandler: stage_resource.DeleteProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(func(params stage_resource.DeleteProjectProjectNameStageStageNameResourceResourceURIParams) middleware.Responder {
 			return middleware.NotImplemented("operation StageResourceDeleteProjectProjectNameStageStageNameResourceResourceURI has not yet been implemented")
-		}),
-		ServiceDeleteProjectProjectNameStageStageNameServiceServiceNameHandler: service.DeleteProjectProjectNameStageStageNameServiceServiceNameHandlerFunc(func(params service.DeleteProjectProjectNameStageStageNameServiceServiceNameParams) middleware.Responder {
+		}), ServiceDeleteProjectProjectNameStageStageNameServiceServiceNameHandler: service.DeleteProjectProjectNameStageStageNameServiceServiceNameHandlerFunc(func(params service.DeleteProjectProjectNameStageStageNameServiceServiceNameParams) middleware.Responder {
 			return middleware.NotImplemented("operation ServiceDeleteProjectProjectNameStageStageNameServiceServiceName has not yet been implemented")
-		}),
-		ServiceResourceDeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler: service_resource.DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc(func(params service_resource.DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIParams) middleware.Responder {
+		}), ServiceResourceDeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler: service_resource.DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc(func(params service_resource.DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIParams) middleware.Responder {
 			return middleware.NotImplemented("operation ServiceResourceDeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI has not yet been implemented")
-		}),
-		ProjectGetProjectHandler: project.GetProjectHandlerFunc(func(params project.GetProjectParams) middleware.Responder {
+		}), ProjectGetProjectHandler: project.GetProjectHandlerFunc(func(params project.GetProjectParams) middleware.Responder {
 			return middleware.NotImplemented("operation ProjectGetProject has not yet been implemented")
-		}),
-		ProjectGetProjectProjectNameHandler: project.GetProjectProjectNameHandlerFunc(func(params project.GetProjectProjectNameParams) middleware.Responder {
+		}), ProjectGetProjectProjectNameHandler: project.GetProjectProjectNameHandlerFunc(func(params project.GetProjectProjectNameParams) middleware.Responder {
 			return middleware.NotImplemented("operation ProjectGetProjectProjectName has not yet been implemented")
-		}),
-		ProjectResourceGetProjectProjectNameResourceHandler: project_resource.GetProjectProjectNameResourceHandlerFunc(func(params project_resource.GetProjectProjectNameResourceParams) middleware.Responder {
+		}), ProjectResourceGetProjectProjectNameResourceHandler: project_resource.GetProjectProjectNameResourceHandlerFunc(func(params project_resource.GetProjectProjectNameResourceParams) middleware.Responder {
 			return middleware.NotImplemented("operation ProjectResourceGetProjectProjectNameResource has not yet been implemented")
-		}),
-		ProjectResourceGetProjectProjectNameResourceResourceURIHandler: project_resource.GetProjectProjectNameResourceResourceURIHandlerFunc(func(params project_resource.GetProjectProjectNameResourceResourceURIParams) middleware.Responder {
+		}), ProjectResourceGetProjectProjectNameResourceResourceURIHandler: project_resource.GetProjectProjectNameResourceResourceURIHandlerFunc(func(params project_resource.GetProjectProjectNameResourceResourceURIParams) middleware.Responder {
 			return middleware.NotImplemented("operation ProjectResourceGetProjectProjectNameResourceResourceURI has not yet been implemented")
-		}),
-		ServiceDefaultResourceGetProjectProjectNameServiceServiceNameResourceHandler: service_default_resource.GetProjectProjectNameServiceServiceNameResourceHandlerFunc(func(params service_default_resource.GetProjectProjectNameServiceServiceNameResourceParams) middleware.Responder {
+		}), ServiceDefaultResourceGetProjectProjectNameServiceServiceNameResourceHandler: service_default_resource.GetProjectProjectNameServiceServiceNameResourceHandlerFunc(func(params service_default_resource.GetProjectProjectNameServiceServiceNameResourceParams) middleware.Responder {
 			return middleware.NotImplemented("operation ServiceDefaultResourceGetProjectProjectNameServiceServiceNameResource has not yet been implemented")
-		}),
-		ServiceDefaultResourceGetProjectProjectNameServiceServiceNameResourceResourceURIHandler: service_default_resource.GetProjectProjectNameServiceServiceNameResourceResourceURIHandlerFunc(func(params service_default_resource.GetProjectProjectNameServiceServiceNameResourceResourceURIParams) middleware.Responder {
+		}), ServiceDefaultResourceGetProjectProjectNameServiceServiceNameResourceResourceURIHandler: service_default_resource.GetProjectProjectNameServiceServiceNameResourceResourceURIHandlerFunc(func(params service_default_resource.GetProjectProjectNameServiceServiceNameResourceResourceURIParams) middleware.Responder {
 			return middleware.NotImplemented("operation ServiceDefaultResourceGetProjectProjectNameServiceServiceNameResourceResourceURI has not yet been implemented")
-		}),
-		StageGetProjectProjectNameStageHandler: stage.GetProjectProjectNameStageHandlerFunc(func(params stage.GetProjectProjectNameStageParams) middleware.Responder {
+		}), StageGetProjectProjectNameStageHandler: stage.GetProjectProjectNameStageHandlerFunc(func(params stage.GetProjectProjectNameStageParams) middleware.Responder {
 			return middleware.NotImplemented("operation StageGetProjectProjectNameStage has not yet been implemented")
-		}),
-		StageGetProjectProjectNameStageStageNameHandler: stage.GetProjectProjectNameStageStageNameHandlerFunc(func(params stage.GetProjectProjectNameStageStageNameParams) middleware.Responder {
+		}), StageGetProjectProjectNameStageStageNameHandler: stage.GetProjectProjectNameStageStageNameHandlerFunc(func(params stage.GetProjectProjectNameStageStageNameParams) middleware.Responder {
 			return middleware.NotImplemented("operation StageGetProjectProjectNameStageStageName has not yet been implemented")
-		}),
-		StageResourceGetProjectProjectNameStageStageNameResourceHandler: stage_resource.GetProjectProjectNameStageStageNameResourceHandlerFunc(func(params stage_resource.GetProjectProjectNameStageStageNameResourceParams) middleware.Responder {
+		}), StageResourceGetProjectProjectNameStageStageNameResourceHandler: stage_resource.GetProjectProjectNameStageStageNameResourceHandlerFunc(func(params stage_resource.GetProjectProjectNameStageStageNameResourceParams) middleware.Responder {
 			return middleware.NotImplemented("operation StageResourceGetProjectProjectNameStageStageNameResource has not yet been implemented")
-		}),
-		StageResourceGetProjectProjectNameStageStageNameResourceResourceURIHandler: stage_resource.GetProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(func(params stage_resource.GetProjectProjectNameStageStageNameResourceResourceURIParams) middleware.Responder {
+		}), StageResourceGetProjectProjectNameStageStageNameResourceResourceURIHandler: stage_resource.GetProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(func(params stage_resource.GetProjectProjectNameStageStageNameResourceResourceURIParams) middleware.Responder {
 			return middleware.NotImplemented("operation StageResourceGetProjectProjectNameStageStageNameResourceResourceURI has not yet been implemented")
-		}),
-		ServiceGetProjectProjectNameStageStageNameServiceHandler: service.GetProjectProjectNameStageStageNameServiceHandlerFunc(func(params service.GetProjectProjectNameStageStageNameServiceParams) middleware.Responder {
+		}), ServiceGetProjectProjectNameStageStageNameServiceHandler: service.GetProjectProjectNameStageStageNameServiceHandlerFunc(func(params service.GetProjectProjectNameStageStageNameServiceParams) middleware.Responder {
 			return middleware.NotImplemented("operation ServiceGetProjectProjectNameStageStageNameService has not yet been implemented")
-		}),
-		ServiceGetProjectProjectNameStageStageNameServiceServiceNameHandler: service.GetProjectProjectNameStageStageNameServiceServiceNameHandlerFunc(func(params service.GetProjectProjectNameStageStageNameServiceServiceNameParams) middleware.Responder {
+		}), ServiceGetProjectProjectNameStageStageNameServiceServiceNameHandler: service.GetProjectProjectNameStageStageNameServiceServiceNameHandlerFunc(func(params service.GetProjectProjectNameStageStageNameServiceServiceNameParams) middleware.Responder {
 			return middleware.NotImplemented("operation ServiceGetProjectProjectNameStageStageNameServiceServiceName has not yet been implemented")
-		}),
-		ServiceResourceGetProjectProjectNameStageStageNameServiceServiceNameResourceHandler: service_resource.GetProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(func(params service_resource.GetProjectProjectNameStageStageNameServiceServiceNameResourceParams) middleware.Responder {
+		}), ServiceResourceGetProjectProjectNameStageStageNameServiceServiceNameResourceHandler: service_resource.GetProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(func(params service_resource.GetProjectProjectNameStageStageNameServiceServiceNameResourceParams) middleware.Responder {
 			return middleware.NotImplemented("operation ServiceResourceGetProjectProjectNameStageStageNameServiceServiceNameResource has not yet been implemented")
-		}),
-		ServiceResourceGetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler: service_resource.GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc(func(params service_resource.GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIParams) middleware.Responder {
+		}), ServiceResourceGetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler: service_resource.GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc(func(params service_resource.GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIParams) middleware.Responder {
 			return middleware.NotImplemented("operation ServiceResourceGetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI has not yet been implemented")
-		}),
-		ProjectPostProjectHandler: project.PostProjectHandlerFunc(func(params project.PostProjectParams) middleware.Responder {
+		}), ProjectPostProjectHandler: project.PostProjectHandlerFunc(func(params project.PostProjectParams) middleware.Responder {
 			return middleware.NotImplemented("operation ProjectPostProject has not yet been implemented")
-		}),
-		ProjectResourcePostProjectProjectNameResourceHandler: project_resource.PostProjectProjectNameResourceHandlerFunc(func(params project_resource.PostProjectProjectNameResourceParams) middleware.Responder {
+		}), ProjectResourcePostProjectProjectNameResourceHandler: project_resource.PostProjectProjectNameResourceHandlerFunc(func(params project_resource.PostProjectProjectNameResourceParams) middleware.Responder {
 			return middleware.NotImplemented("operation ProjectResourcePostProjectProjectNameResource has not yet been implemented")
-		}),
-		ServiceDefaultResourcePostProjectProjectNameServiceServiceNameResourceHandler: service_default_resource.PostProjectProjectNameServiceServiceNameResourceHandlerFunc(func(params service_default_resource.PostProjectProjectNameServiceServiceNameResourceParams) middleware.Responder {
+		}), ServiceDefaultResourcePostProjectProjectNameServiceServiceNameResourceHandler: service_default_resource.PostProjectProjectNameServiceServiceNameResourceHandlerFunc(func(params service_default_resource.PostProjectProjectNameServiceServiceNameResourceParams) middleware.Responder {
 			return middleware.NotImplemented("operation ServiceDefaultResourcePostProjectProjectNameServiceServiceNameResource has not yet been implemented")
-		}),
-		StagePostProjectProjectNameStageHandler: stage.PostProjectProjectNameStageHandlerFunc(func(params stage.PostProjectProjectNameStageParams) middleware.Responder {
+		}), StagePostProjectProjectNameStageHandler: stage.PostProjectProjectNameStageHandlerFunc(func(params stage.PostProjectProjectNameStageParams) middleware.Responder {
 			return middleware.NotImplemented("operation StagePostProjectProjectNameStage has not yet been implemented")
-		}),
-		StageResourcePostProjectProjectNameStageStageNameResourceHandler: stage_resource.PostProjectProjectNameStageStageNameResourceHandlerFunc(func(params stage_resource.PostProjectProjectNameStageStageNameResourceParams) middleware.Responder {
+		}), StageResourcePostProjectProjectNameStageStageNameResourceHandler: stage_resource.PostProjectProjectNameStageStageNameResourceHandlerFunc(func(params stage_resource.PostProjectProjectNameStageStageNameResourceParams) middleware.Responder {
 			return middleware.NotImplemented("operation StageResourcePostProjectProjectNameStageStageNameResource has not yet been implemented")
-		}),
-		ServicePostProjectProjectNameStageStageNameServiceHandler: service.PostProjectProjectNameStageStageNameServiceHandlerFunc(func(params service.PostProjectProjectNameStageStageNameServiceParams) middleware.Responder {
+		}), ServicePostProjectProjectNameStageStageNameServiceHandler: service.PostProjectProjectNameStageStageNameServiceHandlerFunc(func(params service.PostProjectProjectNameStageStageNameServiceParams) middleware.Responder {
 			return middleware.NotImplemented("operation ServicePostProjectProjectNameStageStageNameService has not yet been implemented")
-		}),
-		ServiceResourcePostProjectProjectNameStageStageNameServiceServiceNameResourceHandler: service_resource.PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(func(params service_resource.PostProjectProjectNameStageStageNameServiceServiceNameResourceParams) middleware.Responder {
+		}), ServiceResourcePostProjectProjectNameStageStageNameServiceServiceNameResourceHandler: service_resource.PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(func(params service_resource.PostProjectProjectNameStageStageNameServiceServiceNameResourceParams) middleware.Responder {
 			return middleware.NotImplemented("operation ServiceResourcePostProjectProjectNameStageStageNameServiceServiceNameResource has not yet been implemented")
-		}),
-		ProjectPutProjectProjectNameHandler: project.PutProjectProjectNameHandlerFunc(func(params project.PutProjectProjectNameParams) middleware.Responder {
+		}), ProjectPutProjectProjectNameHandler: project.PutProjectProjectNameHandlerFunc(func(params project.PutProjectProjectNameParams) middleware.Responder {
 			return middleware.NotImplemented("operation ProjectPutProjectProjectName has not yet been implemented")
-		}),
-		ProjectResourcePutProjectProjectNameResourceHandler: project_resource.PutProjectProjectNameResourceHandlerFunc(func(params project_resource.PutProjectProjectNameResourceParams) middleware.Responder {
+		}), ProjectResourcePutProjectProjectNameResourceHandler: project_resource.PutProjectProjectNameResourceHandlerFunc(func(params project_resource.PutProjectProjectNameResourceParams) middleware.Responder {
 			return middleware.NotImplemented("operation ProjectResourcePutProjectProjectNameResource has not yet been implemented")
-		}),
-		ProjectResourcePutProjectProjectNameResourceResourceURIHandler: project_resource.PutProjectProjectNameResourceResourceURIHandlerFunc(func(params project_resource.PutProjectProjectNameResourceResourceURIParams) middleware.Responder {
+		}), ProjectResourcePutProjectProjectNameResourceResourceURIHandler: project_resource.PutProjectProjectNameResourceResourceURIHandlerFunc(func(params project_resource.PutProjectProjectNameResourceResourceURIParams) middleware.Responder {
 			return middleware.NotImplemented("operation ProjectResourcePutProjectProjectNameResourceResourceURI has not yet been implemented")
-		}),
-		ServiceDefaultResourcePutProjectProjectNameServiceServiceNameResourceHandler: service_default_resource.PutProjectProjectNameServiceServiceNameResourceHandlerFunc(func(params service_default_resource.PutProjectProjectNameServiceServiceNameResourceParams) middleware.Responder {
+		}), ServiceDefaultResourcePutProjectProjectNameServiceServiceNameResourceHandler: service_default_resource.PutProjectProjectNameServiceServiceNameResourceHandlerFunc(func(params service_default_resource.PutProjectProjectNameServiceServiceNameResourceParams) middleware.Responder {
 			return middleware.NotImplemented("operation ServiceDefaultResourcePutProjectProjectNameServiceServiceNameResource has not yet been implemented")
-		}),
-		ServiceDefaultResourcePutProjectProjectNameServiceServiceNameResourceResourceURIHandler: service_default_resource.PutProjectProjectNameServiceServiceNameResourceResourceURIHandlerFunc(func(params service_default_resource.PutProjectProjectNameServiceServiceNameResourceResourceURIParams) middleware.Responder {
+		}), ServiceDefaultResourcePutProjectProjectNameServiceServiceNameResourceResourceURIHandler: service_default_resource.PutProjectProjectNameServiceServiceNameResourceResourceURIHandlerFunc(func(params service_default_resource.PutProjectProjectNameServiceServiceNameResourceResourceURIParams) middleware.Responder {
 			return middleware.NotImplemented("operation ServiceDefaultResourcePutProjectProjectNameServiceServiceNameResourceResourceURI has not yet been implemented")
-		}),
-		StagePutProjectProjectNameStageStageNameHandler: stage.PutProjectProjectNameStageStageNameHandlerFunc(func(params stage.PutProjectProjectNameStageStageNameParams) middleware.Responder {
+		}), StagePutProjectProjectNameStageStageNameHandler: stage.PutProjectProjectNameStageStageNameHandlerFunc(func(params stage.PutProjectProjectNameStageStageNameParams) middleware.Responder {
 			return middleware.NotImplemented("operation StagePutProjectProjectNameStageStageName has not yet been implemented")
-		}),
-		StageResourcePutProjectProjectNameStageStageNameResourceHandler: stage_resource.PutProjectProjectNameStageStageNameResourceHandlerFunc(func(params stage_resource.PutProjectProjectNameStageStageNameResourceParams) middleware.Responder {
+		}), StageResourcePutProjectProjectNameStageStageNameResourceHandler: stage_resource.PutProjectProjectNameStageStageNameResourceHandlerFunc(func(params stage_resource.PutProjectProjectNameStageStageNameResourceParams) middleware.Responder {
 			return middleware.NotImplemented("operation StageResourcePutProjectProjectNameStageStageNameResource has not yet been implemented")
-		}),
-		StageResourcePutProjectProjectNameStageStageNameResourceResourceURIHandler: stage_resource.PutProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(func(params stage_resource.PutProjectProjectNameStageStageNameResourceResourceURIParams) middleware.Responder {
+		}), StageResourcePutProjectProjectNameStageStageNameResourceResourceURIHandler: stage_resource.PutProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(func(params stage_resource.PutProjectProjectNameStageStageNameResourceResourceURIParams) middleware.Responder {
 			return middleware.NotImplemented("operation StageResourcePutProjectProjectNameStageStageNameResourceResourceURI has not yet been implemented")
-		}),
-		ServicePutProjectProjectNameStageStageNameServiceServiceNameHandler: service.PutProjectProjectNameStageStageNameServiceServiceNameHandlerFunc(func(params service.PutProjectProjectNameStageStageNameServiceServiceNameParams) middleware.Responder {
+		}), ServicePutProjectProjectNameStageStageNameServiceServiceNameHandler: service.PutProjectProjectNameStageStageNameServiceServiceNameHandlerFunc(func(params service.PutProjectProjectNameStageStageNameServiceServiceNameParams) middleware.Responder {
 			return middleware.NotImplemented("operation ServicePutProjectProjectNameStageStageNameServiceServiceName has not yet been implemented")
-		}),
-		ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceHandler: service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(func(params service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceParams) middleware.Responder {
+		}), ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceHandler: service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(func(params service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceParams) middleware.Responder {
 			return middleware.NotImplemented("operation ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResource has not yet been implemented")
-		}),
-		ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler: service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc(func(params service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIParams) middleware.Responder {
+		}), ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler: service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc(func(params service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIParams) middleware.Responder {
 			return middleware.NotImplemented("operation ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI has not yet been implemented")
 		}),
 	}
@@ -186,11 +149,11 @@ type ConfigurationServiceAPI struct {
 	// BearerAuthenticator generates a runtime.Authenticator from the supplied bearer token auth function.
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
 	BearerAuthenticator func(string, security.ScopedTokenAuthentication) runtime.Authenticator
-
-	// JSONConsumer registers a consumer for a "application/json" mime type
+	// JSONConsumer registers a consumer for the following mime types:
+	//   - application/json
 	JSONConsumer runtime.Consumer
-
-	// JSONProducer registers a producer for a "application/json" mime type
+	// JSONProducer registers a producer for the following mime types:
+	//   - application/json
 	JSONProducer runtime.Producer
 
 	// ProjectDeleteProjectProjectNameHandler sets the operation handler for the delete project project name operation
@@ -275,6 +238,10 @@ type ConfigurationServiceAPI struct {
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
 	ServeError func(http.ResponseWriter, *http.Request, error)
+
+	// PreServerShutdown is called before the HTTP(S) server is shutdown
+	// This allows for custom functions to get executed before the HTTP(S) server stops accepting traffic
+	PreServerShutdown func()
 
 	// ServerShutdown is called when the HTTP(S) server is shut down and done
 	// handling all active connections and does not accept connections any more
@@ -516,16 +483,14 @@ func (o *ConfigurationServiceAPI) Authorizer() runtime.Authorizer {
 
 }
 
-// ConsumersFor gets the consumers for the specified media types
+// ConsumersFor gets the consumers for the specified media types.
+// MIME type parameters are ignored here.
 func (o *ConfigurationServiceAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer {
-
-	result := make(map[string]runtime.Consumer)
+	result := make(map[string]runtime.Consumer, len(mediaTypes))
 	for _, mt := range mediaTypes {
 		switch mt {
-
 		case "application/json":
 			result["application/json"] = o.JSONConsumer
-
 		}
 
 		if c, ok := o.customConsumers[mt]; ok {
@@ -533,19 +498,16 @@ func (o *ConfigurationServiceAPI) ConsumersFor(mediaTypes []string) map[string]r
 		}
 	}
 	return result
-
 }
 
-// ProducersFor gets the producers for the specified media types
+// ProducersFor gets the producers for the specified media types.
+// MIME type parameters are ignored here.
 func (o *ConfigurationServiceAPI) ProducersFor(mediaTypes []string) map[string]runtime.Producer {
-
-	result := make(map[string]runtime.Producer)
+	result := make(map[string]runtime.Producer, len(mediaTypes))
 	for _, mt := range mediaTypes {
 		switch mt {
-
 		case "application/json":
 			result["application/json"] = o.JSONProducer
-
 		}
 
 		if p, ok := o.customProducers[mt]; ok {
@@ -553,7 +515,6 @@ func (o *ConfigurationServiceAPI) ProducersFor(mediaTypes []string) map[string]r
 		}
 	}
 	return result
-
 }
 
 // HandlerFor gets a http.Handler for the provided operation method and path

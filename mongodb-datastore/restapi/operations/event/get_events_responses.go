@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	models "github.com/keptn/keptn/mongodb-datastore/models"
+	"github.com/keptn/keptn/mongodb-datastore/models"
 )
 
 // GetEventsOKCode is the HTTP code returned for type GetEventsOK

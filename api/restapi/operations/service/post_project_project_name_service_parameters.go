@@ -14,7 +14,7 @@ import (
 
 	strfmt "github.com/go-openapi/strfmt"
 
-	models "github.com/keptn/keptn/api/models"
+	"github.com/keptn/keptn/api/models"
 )
 
 // NewPostProjectProjectNameServiceParams creates a new PostProjectProjectNameServiceParams object

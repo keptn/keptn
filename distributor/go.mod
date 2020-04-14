@@ -1,12 +1,10 @@
-module keptn/distributor
+module github.com/keptn/keptn/distributor
 
 go 1.12
 
 require (
-	github.com/cloudevents/sdk-go v0.10.0
-	github.com/kelseyhightower/envconfig v1.3.0
-	github.com/keptn/go-utils v0.6.0
+	github.com/cloudevents/sdk-go v1.0.0
+	github.com/kelseyhightower/envconfig v1.4.0
+	github.com/nats-io/nats-server/v2 v2.1.6
+	github.com/nats-io/nats.go v1.9.2
 )
-
-// replace cloudevents/sdk-go latest version with 0.7.0
-replace github.com/cloudevents/sdk-go => github.com/cloudevents/sdk-go v0.0.0-20190509003705-56931988abe3

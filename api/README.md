@@ -21,3 +21,10 @@ To delete a deployed api component, use the file `deploy/service.yaml` from this
 ```console
 kubectl delete -f deploy/service.yaml
 ```
+
+## Updating the API specification
+After a modification to the `swagger.yaml`, the generated code can be updated using the command
+
+```console
+swagger generate server -A api -P models.Principal -f ./swagger.yaml
+```

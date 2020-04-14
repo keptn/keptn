@@ -43,7 +43,7 @@ func init() {
 }
 
 // NewServer creates a new api  server but does not configure it
-func NewServer(api *operations.API) *Server {
+func NewServer(api *operations.EmptyAPI) *Server {
 	s := new(Server)
 
 	s.shutdown = make(chan struct{})
@@ -95,7 +95,7 @@ type Server struct {
 	TLSWriteTimeout   time.Duration  `long:"tls-write-timeout" description:"maximum duration before timing out write of the response"`
 	httpsServerL      net.Listener
 
-	api          *operations.API
+	api          *operations.EmptyAPI
 	handler      http.Handler
 	hasListeners bool
 	shutdown     chan struct{}
@@ -125,7 +125,7 @@ func (s *Server) Fatalf(f string, args ...interface{}) {
 }
 
 // SetAPI configures the server with the specified API. Needs to be called before Serve
-func (s *Server) SetAPI(api *operations.API) {
+func (s *Server) SetAPI(api *operations.EmptyAPI) {
 	if api == nil {
 		s.api = nil
 		s.handler = nil
@@ -173,8 +173,6 @@ func (s *Server) Serve() (err error) {
 	go handleInterrupt(once, s)
 
 	servers := []*http.Server{}
-	wg.Add(1)
-	go s.handleShutdown(wg, &servers)
 
 	if s.hasScheme(schemeUnix) {
 		domainSocket := new(http.Server)
@@ -324,6 +322,9 @@ func (s *Server) Serve() (err error) {
 		}(tls.NewListener(s.httpsServerL, httpsServer.TLSConfig))
 	}
 
+	wg.Add(1)
+	go s.handleShutdown(wg, &servers)
+
 	wg.Wait()
 	return nil
 }
@@ -419,6 +420,9 @@ func (s *Server) handleShutdown(wg *sync.WaitGroup, serversPtr *[]*http.Server) 
 	ctx, cancel := context.WithTimeout(context.TODO(), s.GracefulTimeout)
 	defer cancel()
 
+	// first execute the pre-shutdown hook
+	s.api.PreServerShutdown()
+
 	shutdownChan := make(chan bool)
 	for i := range servers {
 		server := servers[i]
@@ -488,7 +492,7 @@ func (s *Server) TLSListener() (net.Listener, error) {
 
 func handleInterrupt(once *sync.Once, s *Server) {
 	once.Do(func() {
-		for _ = range s.interrupt {
+		for range s.interrupt {
 			if s.interrupted {
 				s.Logf("Server already shutting down")
 				continue

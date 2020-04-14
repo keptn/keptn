@@ -25,7 +25,7 @@ RUN wget https://github.com/mikefarah/yq/releases/download/$YQ_VERSION/yq_linux_
   mv yq_linux_amd64 /bin/yq
 RUN yq --version
 
-ARG HELM_VERSION=3.0.2
+ARG HELM_VERSION=3.1.2
 RUN wget https://get.helm.sh/helm-v$HELM_VERSION-linux-amd64.tar.gz && \
   tar -zxvf helm-v$HELM_VERSION-linux-amd64.tar.gz && \
   mv linux-amd64/helm /bin/helm && \
@@ -46,10 +46,10 @@ RUN wget https://github.com/openshift/origin/releases/download/v3.11.0/openshift
 WORKDIR /usr/keptn
 COPY ./manifests manifests
 COPY ./scripts scripts
-#COPY MANIFEST scripts
+COPY MANIFEST scripts
 
 RUN cd ./scripts && ls -lsa
 WORKDIR /usr/keptn/scripts
 
 # Start the app
-CMD ["sh", "-c", "./installKeptn.sh"]
+CMD ["sh", "-c", "cat MANIFEST && ./installKeptn.sh"]

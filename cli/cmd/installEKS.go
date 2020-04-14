@@ -22,7 +22,7 @@ import (
 	"strconv"
 	"strings"
 
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 )
 
 type eksCredentials struct {

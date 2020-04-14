@@ -43,9 +43,10 @@ function verify_image_of_deployment() {
   CURRENT_IMAGE_NAME=$(kubectl get deployment ${DEPLOYMENT} -n ${NAMESPACE} -o=jsonpath='{$.spec.template.spec.containers[:1].image}')
 
   if [[ "$CURRENT_IMAGE_NAME" == "$IMAGE_NAME" ]]; then
-    echo "Found image ${CURRENT_IMAGE_NAME}"
+    echo "Found image ${CURRENT_IMAGE_NAME} in deployment ${DEPLOYMENT} in namespace ${NAMESPACE}"
   else
-    echo "ERROR: Found image ${CURRENT_IMAGE_NAME} but expected ${IMAGE_NAME}"
+    echo "ERROR: Found image ${CURRENT_IMAGE_NAME} but expected ${IMAGE_NAME}  in deployment ${DEPLOYMENT} in namespace ${NAMESPACE}"
+    exit -1
   fi
 }
 
@@ -60,7 +61,7 @@ function wait_for_deployment_in_namespace() {
       echo "Retry: ${RETRY}/${RETRY_MAX} - Wait 10s for deployment ${DEPLOYMENT} in namespace ${NAMESPACE}"
       sleep 15
     else
-      echo "Found deployment ${DEPLOYMENT} in namespace ${NAMESPACE}"
+      echo "Found deployment ${DEPLOYMENT} in namespace ${NAMESPACE}: ${DEPLOYMENT_LIST}"
       break
     fi
   done
@@ -79,7 +80,7 @@ function verify_deployment_in_namespace() {
     echo "Error: Could not find deployment ${DEPLOYMENT} in namespace ${NAMESPACE}"
     exit -1
   else
-    echo "Found deployment ${DEPLOYMENT} in namespace ${NAMESPACE}"
+    echo "Found deployment ${DEPLOYMENT} in namespace ${NAMESPACE}: ${DEPLOYMENT_LIST}"
   fi
 }
 
@@ -91,7 +92,7 @@ function verify_pod_in_namespace() {
     echo "Error: Could not find pod ${POD} in namespace ${NAMESPACE}"
     exit -1
   else
-    echo "Found pod ${POD} in namespace ${NAMESPACE}"
+    echo "Found pod ${POD} in namespace ${NAMESPACE}: ${POD_LIST}"
   fi
 }
 

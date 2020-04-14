@@ -9,3 +9,8 @@ The scripts and manifests are finally put into a container, which starts the ini
 * GKE
 * PKS
 * Kubernetes
+* Minikube 1.2
+
+## Installed external tools
+* [Helm and Tiller v2.12.3](https://v2.helm.sh/)
+* [Istio v1.2.5](https://istio.io/)

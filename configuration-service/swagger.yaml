@@ -49,6 +49,10 @@ definitions:
       gitToken:
         type: string
         description: Git token
+      stages:
+        type: array
+        items:
+          $ref: '#/definitions/Stage'
 
   Projects:
     type: object
@@ -73,6 +77,10 @@ definitions:
       stageName:
         type: string
         description: Stage name
+      services:
+        type: array
+        items:
+          $ref: '#/definitions/Service'
 
   Stages:
     type: object
@@ -195,6 +203,14 @@ parameters:
     type: string
     description: Resource URI
 
+  disableUpstreamSync:
+    in: query
+    name: disableUpstreamSync
+    required: false
+    default: false
+    type: boolean
+    description: Disable sync of upstream repo before reading content
+
   resource:
     in: body
     name: resource
@@ -234,7 +250,8 @@ paths:
     post:
       tags:
         - Project
-      summary: Create a new project by project name
+      deprecated: true
+      summary: 'INTERNAL Endpoint: Create a new project by project name'
       parameters:
         - $ref: '#/parameters/project'
       responses:
@@ -254,6 +271,7 @@ paths:
       parameters:
         - $ref: '#/parameters/pageSize'
         - $ref: '#/parameters/nextPageKey'
+        - $ref: '#/parameters/disableUpstreamSync'
       summary: Get list of projects
       responses:
         '200':
@@ -288,9 +306,10 @@ paths:
     put:
       tags:
         - Project
-      summary: Update the specified project
+      deprecated: true
+      summary: 'INTERNAL Endpoint: Update the specified project'
       parameters:
-        - $ref: '#/parameters/project'     
+        - $ref: '#/parameters/project'
       responses:
         '204':
           description: Success. Project has been updated. Response does not have a body.
@@ -305,7 +324,8 @@ paths:
     delete:
       tags:
         - Project
-      summary: Delete the specified project
+      deprecated: true
+      summary: 'INTERNAL Endpoint: Delete the specified project'
       responses:
         '204':
           description: Success. Project has been deleted. Response does not have a body.
@@ -346,6 +366,7 @@ paths:
       parameters:
         - $ref: '#/parameters/pageSize'
         - $ref: '#/parameters/nextPageKey'
+        - $ref: '#/parameters/disableUpstreamSync'
       summary: Get list of project resources
       responses:
         '200':
@@ -384,6 +405,7 @@ paths:
     parameters:
       - $ref: '#/parameters/projectName'
       - $ref: '#/parameters/resourceURI'
+      - $ref: '#/parameters/disableUpstreamSync'
     get:
       tags:
         - Project Resource
@@ -442,7 +464,8 @@ paths:
     post:
       tags:
         - Stage
-      summary: Create a new stage by stage name
+      deprecated: true
+      summary: 'INTERNAL Endpoint: Create a new stage by stage name'
       parameters:
         - $ref: '#/parameters/stage'
       responses:
@@ -462,6 +485,7 @@ paths:
       parameters:
         - $ref: '#/parameters/pageSize'
         - $ref: '#/parameters/nextPageKey'
+        - $ref: '#/parameters/disableUpstreamSync'
       summary: Get list of stages
       responses:
         '200':
@@ -485,6 +509,8 @@ paths:
       tags:
         - Stage
       summary: Get the specified stage
+      parameters:
+        - $ref: '#/parameters/disableUpstreamSync'
       responses:
         '200':
           description: Success
@@ -501,7 +527,8 @@ paths:
     put:
       tags:
         - Stage
-      summary: Update the specified stage
+      deprecated: true
+      summary: 'INTERNAL Endpoint: Update the specified stage'
       parameters:
         - $ref: '#/parameters/stage'
       responses:
@@ -518,7 +545,8 @@ paths:
     delete:
       tags:
         - Stage
-      summary: Delete the specified stage
+      deprecated: true
+      summary: 'INTERNAL Endpoint: Delete the specified stage'
       responses:
         '204':
           description: Success. Stage has been deleted. Response does not have a body.
@@ -560,6 +588,7 @@ paths:
       parameters:
         - $ref: '#/parameters/pageSize'
         - $ref: '#/parameters/nextPageKey'
+        - $ref: '#/parameters/disableUpstreamSync'
       summary: Get list of stage resources
       responses:
         '200':
@@ -603,6 +632,8 @@ paths:
       tags:
         - Stage Resource
       summary: Get the specified resource
+      parameters:
+        - $ref: '#/parameters/disableUpstreamSync'
       responses:
         '200':
           description: Success
@@ -658,7 +689,8 @@ paths:
     post:
       tags:
         - Service
-      summary: Create a new service by service name
+      deprecated: true
+      summary: 'INTERNAL Endpoint: Create a new service by service name'
       parameters:
         - $ref: '#/parameters/service'
       responses:
@@ -678,6 +710,7 @@ paths:
       parameters:
         - $ref: '#/parameters/pageSize'
         - $ref: '#/parameters/nextPageKey'
+        - $ref: '#/parameters/disableUpstreamSync'
       summary: Get list of services
       responses:
         '200':
@@ -702,6 +735,8 @@ paths:
       tags:
         - Service
       summary: Get the specified service
+      parameters:
+        - $ref: '#/parameters/disableUpstreamSync'
       responses:
         '200':
           description: Success
@@ -718,7 +753,8 @@ paths:
     put:
       tags:
         - Service
-      summary: Update the specified service
+      deprecated: true
+      summary: 'INTERNAL Endpoint: Update the specified service'
       parameters:
         - $ref: '#/parameters/service'
       responses:
@@ -735,7 +771,8 @@ paths:
     delete:
       tags:
         - Service
-      summary: Delete the specified service
+      deprecated: true
+      summary: 'INTERNAL Endpoint: Delete the specified service'
       responses:
         '204':
           description: Success. Service has been deleted. Response does not have a body.
@@ -778,6 +815,7 @@ paths:
       parameters:
         - $ref: '#/parameters/pageSize'
         - $ref: '#/parameters/nextPageKey'
+        - $ref: '#/parameters/disableUpstreamSync'
       summary: Get list of service resources
       responses:
         '200':
@@ -822,6 +860,8 @@ paths:
       tags:
         - Service Resource
       summary: Get the specified resource
+      parameters:
+        - $ref: '#/parameters/disableUpstreamSync'
       responses:
         '200':
           description: Success
@@ -899,6 +939,7 @@ paths:
       parameters:
         - $ref: '#/parameters/pageSize'
         - $ref: '#/parameters/nextPageKey'
+        - $ref: '#/parameters/disableUpstreamSync'
       summary: Get list of default resources for the service used in all stages
       responses:
         '200':
@@ -942,6 +983,8 @@ paths:
       tags:
         - Service Default Resource
       summary: Get the specified default resource for the service
+      parameters:
+        - $ref: '#/parameters/disableUpstreamSync'
       responses:
         '200':
           description: Success

@@ -1,9 +1,8 @@
 package serviceutils
 
 import (
-	"fmt"
+	keptn "github.com/keptn/go-utils/pkg/lib"
 	"net/url"
-	"os"
 )
 
 const configservice = "CONFIGURATION_SERVICE"
@@ -11,27 +10,16 @@ const eventbroker = "EVENTBROKER"
 const api = "API"
 
 func GetConfigServiceURL() (*url.URL, error) {
-	return getServiceEndpoint(configservice)
+	url, err := keptn.GetServiceEndpoint(configservice)
+	return &url, err
 }
 
 func GetAPIURL() (*url.URL, error) {
-	return getServiceEndpoint(api)
+	url, err := keptn.GetServiceEndpoint(api)
+	return &url, err
 }
 
 func GetEventbrokerURL() (*url.URL, error) {
-	return getServiceEndpoint(eventbroker)
-}
-
-// getServiceEndpoint retrieves an endpoint stored in an environment variable and sets http as default scheme
-func getServiceEndpoint(service string) (*url.URL, error) {
-	url, err := url.Parse(os.Getenv(service))
-	if err != nil {
-		return nil, fmt.Errorf("Failed to retrieve value from ENVIRONMENT_VARIABLE: %s", service)
-	}
-
-	if url.Scheme == "" {
-		url.Scheme = "http"
-	}
-
-	return url, nil
+	url, err := keptn.GetServiceEndpoint(eventbroker)
+	return &url, err
 }

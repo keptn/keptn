@@ -1,10 +1,10 @@
-const createError = require('http-errors');
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 
 const DatastoreService = require('./lib/services/DatastoreService');
+const ConfigurationService = require('./lib/services/ConfigurationService');
 const configs = require('./config');
 
 const apiRouter = require('./api');
@@ -13,23 +13,49 @@ const app = express();
 const config = configs[app.get('env') || 'development'];
 
 const datastoreService = new DatastoreService(config.datastore);
+const configurationService = new ConfigurationService(config.configurationService);
 
+// host static files (angular app)
+app.use(express.static(path.join(__dirname, '../dist')));
+
+// add some middlewares
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, '../dist')));
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(`${__dirname}/../dist/index.html`));
-});
+// check if we need basic authentication
+if (process.env.BASIC_AUTH_USERNAME && process.env.BASIC_AUTH_PASSWORD) {
+  console.error("Installing Basic authentication - please check environment variables!");
+  app.use((req, res, next) => {
+    // parse login and password from headers
+    const b64auth = (req.headers.authorization || '').split(' ')[1] || '';
+    const [login, password] = Buffer.from(b64auth, 'base64').toString().split(':');
 
-app.use('/api', apiRouter({ datastoreService }));
+    // Verify login and password are set and correct
+    if (!(login && password && login === process.env.BASIC_AUTH_USERNAME && password === process.env.BASIC_AUTH_PASSWORD)) {
+      // Access denied
+      console.error("Access denied");
+      res.set('WWW-Authenticate', 'Basic realm="Keptn"');
+      res.status(401).send('Authentication required.'); // custom message
+      return;
+    }
+
+    // Access granted
+    return next();
+  });
+} else {
+  console.error("Not installing authentication middleware");
+}
 
 
-// catch 404 and forward to error handler
+// everything starting with /api is routed to the api implementation
+app.use('/api', apiRouter({ datastoreService, configurationService }));
+
+// fallback: go to index.html
 app.use((req, res, next) => {
-  next(createError(404));
+  console.error("Not found: " + req.url);
+  res.sendFile(path.join(`${__dirname}/../dist/index.html`));
 });
 
 // error handler

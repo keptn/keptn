@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	keptnutils "github.com/keptn/go-utils/pkg/lib"
 
 	"github.com/keptn/keptn/mongodb-datastore/models"
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/logs"

@@ -6,7 +6,7 @@ import (
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
-	"github.com/keptn/go-utils/pkg/utils"
+	utils "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/configuration-service/common"
 	"github.com/keptn/keptn/configuration-service/config"
 	"github.com/keptn/keptn/configuration-service/models"
@@ -15,15 +15,15 @@ import (
 
 // GetProjectProjectNameResourceHandlerFunc get list of project resources
 func GetProjectProjectNameResourceHandlerFunc(params project_resource.GetProjectProjectNameResourceParams) middleware.Responder {
-	common.Lock()
-	defer common.UnLock()
 	logger := utils.NewLogger("", "", "configuration-service")
 	if !common.ProjectExists(params.ProjectName) {
 
 		return project_resource.NewGetProjectProjectNameResourceNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project does not exist")})
 	}
 
-	err := common.CheckoutBranch(params.ProjectName, "master")
+	common.LockProject(params.ProjectName)
+	defer common.UnlockProject(params.ProjectName)
+	err := common.CheckoutBranch(params.ProjectName, "master", *params.DisableUpstreamSync)
 	if err != nil {
 		logger.Error(err.Error())
 
@@ -38,19 +38,19 @@ func GetProjectProjectNameResourceHandlerFunc(params project_resource.GetProject
 
 // PutProjectProjectNameResourceHandlerFunc update list of project resources
 func PutProjectProjectNameResourceHandlerFunc(params project_resource.PutProjectProjectNameResourceParams) middleware.Responder {
-	common.Lock()
-	defer common.UnLock()
 	logger := utils.NewLogger("", "", "configuration-service")
 
+	common.LockProject(params.ProjectName)
+	defer common.UnlockProject(params.ProjectName)
 	if !common.ProjectExists(params.ProjectName) {
 
 		return project_resource.NewPostProjectProjectNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Project does not exist")})
 	}
 	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
 
-	logger.Debug("Updatingresource(s) in: " + projectConfigPath)
+	logger.Debug("Updating resource(s) in: " + projectConfigPath)
 	logger.Debug("Checking out master branch")
-	err := common.CheckoutBranch(params.ProjectName, "master")
+	err := common.CheckoutBranch(params.ProjectName, "master", false)
 	if err != nil {
 		logger.Error(err.Error())
 
@@ -86,8 +86,6 @@ func PutProjectProjectNameResourceHandlerFunc(params project_resource.PutProject
 
 // PostProjectProjectNameResourceHandlerFunc creates a list of new resources
 func PostProjectProjectNameResourceHandlerFunc(params project_resource.PostProjectProjectNameResourceParams) middleware.Responder {
-	common.Lock()
-	defer common.UnLock()
 	logger := utils.NewLogger("", "", "configuration-service")
 	if !common.ProjectExists(params.ProjectName) {
 
@@ -95,9 +93,11 @@ func PostProjectProjectNameResourceHandlerFunc(params project_resource.PostProje
 	}
 	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
 
+	common.LockProject(params.ProjectName)
+	defer common.UnlockProject(params.ProjectName)
 	logger.Debug("Creating new resource(s) in: " + projectConfigPath)
 	logger.Debug("Checking out master branch")
-	err := common.CheckoutBranch(params.ProjectName, "master")
+	err := common.CheckoutBranch(params.ProjectName, "master", false)
 	if err != nil {
 		logger.Error(err.Error())
 
@@ -133,8 +133,6 @@ func PostProjectProjectNameResourceHandlerFunc(params project_resource.PostProje
 
 // GetProjectProjectNameResourceResourceURIHandlerFunc gets the specified resource
 func GetProjectProjectNameResourceResourceURIHandlerFunc(params project_resource.GetProjectProjectNameResourceResourceURIParams) middleware.Responder {
-	common.Lock()
-	defer common.UnLock()
 	logger := utils.NewLogger("", "", "configuration-service")
 	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
 	resourcePath := projectConfigPath + "/" + params.ResourceURI
@@ -143,7 +141,10 @@ func GetProjectProjectNameResourceResourceURIHandlerFunc(params project_resource
 		return project_resource.NewGetProjectProjectNameResourceResourceURINotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project not found")})
 	}
 	logger.Debug("Checking out master branch")
-	err := common.CheckoutBranch(params.ProjectName, "master")
+
+	common.LockProject(params.ProjectName)
+	defer common.UnlockProject(params.ProjectName)
+	err := common.CheckoutBranch(params.ProjectName, "master", *params.DisableUpstreamSync)
 	if err != nil {
 		logger.Error(err.Error())
 
@@ -173,8 +174,6 @@ func GetProjectProjectNameResourceResourceURIHandlerFunc(params project_resource
 
 // PutProjectProjectNameResourceResourceURIHandlerFunc updates a resource
 func PutProjectProjectNameResourceResourceURIHandlerFunc(params project_resource.PutProjectProjectNameResourceResourceURIParams) middleware.Responder {
-	common.Lock()
-	defer common.UnLock()
 	logger := utils.NewLogger("", "", "configuration-service")
 	if !common.ProjectExists(params.ProjectName) {
 
@@ -184,7 +183,10 @@ func PutProjectProjectNameResourceResourceURIHandlerFunc(params project_resource
 
 	logger.Debug("Creating new resource(s) in: " + projectConfigPath)
 	logger.Debug("Checking out branch: master")
-	err := common.CheckoutBranch(params.ProjectName, "master")
+
+	common.LockProject(params.ProjectName)
+	defer common.UnlockProject(params.ProjectName)
+	err := common.CheckoutBranch(params.ProjectName, "master", false)
 	if err != nil {
 		logger.Error(err.Error())
 
@@ -218,8 +220,6 @@ func PutProjectProjectNameResourceResourceURIHandlerFunc(params project_resource
 
 // DeleteProjectProjectNameResourceResourceURIHandlerFunc deletes a project resource
 func DeleteProjectProjectNameResourceResourceURIHandlerFunc(params project_resource.DeleteProjectProjectNameResourceResourceURIParams) middleware.Responder {
-	common.Lock()
-	defer common.UnLock()
 	logger := utils.NewLogger("", "", "configuration-service")
 	if !common.ProjectExists(params.ProjectName) {
 
@@ -227,7 +227,10 @@ func DeleteProjectProjectNameResourceResourceURIHandlerFunc(params project_resou
 	}
 	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
 	resourcePath := projectConfigPath + "/" + params.ResourceURI
-	err := common.CheckoutBranch(params.ProjectName, "master")
+
+	common.LockProject(params.ProjectName)
+	defer common.UnlockProject(params.ProjectName)
+	err := common.CheckoutBranch(params.ProjectName, "master", false)
 	if err != nil {
 		logger.Error(err.Error())
 

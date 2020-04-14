@@ -12,7 +12,7 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 
-	models "github.com/keptn/keptn/api/models"
+	"github.com/keptn/keptn/api/models"
 )
 
 // NewPostEventParams creates a new PostEventParams object
@@ -34,7 +34,7 @@ type PostEventParams struct {
 	/*
 	  In: body
 	*/
-	Body *models.Event
+	Body *models.KeptnContextExtendedCE
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -48,7 +48,7 @@ func (o *PostEventParams) BindRequest(r *http.Request, route *middleware.Matched
 
 	if runtime.HasBody(r) {
 		defer r.Body.Close()
-		var body models.Event
+		var body models.KeptnContextExtendedCE
 		if err := route.Consumer.Consume(r.Body, &body); err != nil {
 			res = append(res, errors.NewParseError("body", "body", "", err))
 		} else {

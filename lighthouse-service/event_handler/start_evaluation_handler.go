@@ -10,24 +10,18 @@ import (
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 	"github.com/google/uuid"
-	keptnevents "github.com/keptn/go-utils/pkg/events"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	keptnevents "github.com/keptn/go-utils/pkg/lib"
+	keptnutils "github.com/keptn/go-utils/pkg/lib"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type StartEvaluationHandler struct {
-	Logger *keptnutils.Logger
-	Event  cloudevents.Event
+	Logger       *keptnutils.Logger
+	Event        cloudevents.Event
+	KeptnHandler *keptnutils.Keptn
 }
 
 func (eh *StartEvaluationHandler) HandleEvent() error {
-
-	// check if test passed
-	passed := eh.hasTestPassed()
-	if !passed {
-		eh.Logger.Debug("Do not perform evaluation due to failed test")
-		return nil
-	}
 
 	var keptnContext string
 	_ = eh.Event.ExtensionAs("shkeptncontext", &keptnContext)
@@ -39,19 +33,18 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 		return err
 	}
 
-	// functional tests dont need to be evaluated
-	if e.TestStrategy == "functional" || e.TestStrategy == "" {
-		eh.Logger.Debug("Functional tests are not evaluated")
+	if e.TestStrategy == "" {
+		eh.Logger.Debug("No test has been executed, no evaluation conducted")
 		evaluationDetails := keptnevents.EvaluationDetails{
 			IndicatorResults: nil,
 			TimeStart:        e.Start,
 			TimeEnd:          e.End,
-			Result:           fmt.Sprintf("no evaluation performed by lighthouse service (TestStrategy=%s)", e.TestStrategy),
+			Result:           fmt.Sprintf("no evaluation performed by lighthouse because no test has been executed"),
 		}
 		// send the evaluation-done-event
 		evaluationResult := keptnevents.EvaluationDoneEventData{
 			EvaluationDetails:  &evaluationDetails,
-			Result:             "pass",
+			Result:             eh.getTestExecutionResult(),
 			Project:            e.Project,
 			Service:            e.Service,
 			Stage:              e.Stage,
@@ -66,18 +59,18 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 	// get SLO file
 	objectives, err := getSLOs(e.Project, e.Stage, e.Service)
 	if err != nil {
-		// No SLO file found -> no need to evaluate
+		// no SLO file found (assumption that this is an empty SLO file) -> no need to evaluate
 		eh.Logger.Debug("No SLO file found, no evaluation conducted")
 		evaluationDetails := keptnevents.EvaluationDetails{
 			IndicatorResults: nil,
 			TimeStart:        e.Start,
 			TimeEnd:          e.End,
-			Result:           fmt.Sprintf("no evaluation performed by lighthouse service (no slo.yaml found)"),
+			Result:           fmt.Sprintf("no evaluation performed by lighthouse because no SLO found for service %s", e.Service),
 		}
-		// send the evaluation-done-event
+
 		evaluationResult := keptnevents.EvaluationDoneEventData{
 			EvaluationDetails:  &evaluationDetails,
-			Result:             "pass",
+			Result:             eh.getTestExecutionResult(),
 			Project:            e.Project,
 			Service:            e.Service,
 			Stage:              e.Stage,
@@ -124,30 +117,32 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 	// get the SLI provider that has been configured for the project (e.g. 'dynatrace' or 'prometheus')
 	sliProvider, err := getSLIProvider(e.Project)
 	if err != nil {
-		// ToDo: We need to provide feedback to the user that this failed becuase no sli provider was set for project
-		eh.Logger.Error("Could not determine SLI provider for project " + e.Project)
+		eh.Logger.Error("no SLI-provider configured for project " + e.Project + ", no evaluation conducted")
+		evaluationDetails := keptnevents.EvaluationDetails{
+			IndicatorResults: nil,
+			TimeStart:        e.Start,
+			TimeEnd:          e.End,
+			Result:           fmt.Sprintf("no evaluation performed by lighthouse because no SLI-provider configured for project %s", e.Project),
+		}
+
+		evaluationResult := keptnevents.EvaluationDoneEventData{
+			EvaluationDetails:  &evaluationDetails,
+			Result:             "failed",
+			Project:            e.Project,
+			Service:            e.Service,
+			Stage:              e.Stage,
+			TestStrategy:       e.TestStrategy,
+			DeploymentStrategy: e.DeploymentStrategy,
+			Labels:             e.Labels,
+		}
+
+		err = eh.sendEvaluationDoneEvent(keptnContext, &evaluationResult)
 		return err
 	}
 	// send a new event to trigger the SLI retrieval
 	eh.Logger.Debug("SLI provider for project " + e.Project + " is: " + sliProvider)
 	err = eh.sendInternalGetSLIEvent(keptnContext, e.Project, e.Stage, e.Service, sliProvider, indicators, e.Start, e.End, e.TestStrategy, e.DeploymentStrategy, filters, e.Labels, deployment)
 	return nil
-}
-
-func (eh *StartEvaluationHandler) hasTestPassed() bool {
-	dataByte, err := eh.Event.DataBytes()
-	if err != nil {
-		eh.Logger.Error("Could not get event as byte array: " + err.Error())
-	}
-
-	e := &keptnevents.TestsFinishedEventData{}
-	err = json.Unmarshal(dataByte, e)
-	if err != nil {
-		eh.Logger.Error("Could not unmarshal event payload: " + err.Error())
-	} else if e != nil && e.Result == "fail" {
-		return false
-	}
-	return true
 }
 
 func (eh *StartEvaluationHandler) sendEvaluationDoneEvent(shkeptncontext string, data *keptnevents.EvaluationDoneEventData) error {
@@ -167,17 +162,16 @@ func (eh *StartEvaluationHandler) sendEvaluationDoneEvent(shkeptncontext string,
 	}
 
 	eh.Logger.Debug("Send event: " + keptnevents.EvaluationDoneEventType)
-	return sendEvent(event)
+	return eh.KeptnHandler.SendCloudEvent(event)
 }
 
 func getSLIProvider(project string) (string, error) {
-	kubeClient, err := keptnutils.GetKubeAPI(true)
-
+	kubeAPI, err := getKubeAPI()
 	if err != nil {
 		return "", err
 	}
 
-	configMap, err := kubeClient.ConfigMaps("keptn").Get("lighthouse-config-"+project, v1.GetOptions{})
+	configMap, err := kubeAPI.CoreV1().ConfigMaps("keptn").Get("lighthouse-config-"+project, v1.GetOptions{})
 
 	if err != nil {
 		return "", errors.New("No SLI provider specified for project " + project)
@@ -219,5 +213,19 @@ func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string,
 	}
 
 	eh.Logger.Debug("Send event: " + keptnevents.InternalGetSLIEventType)
-	return sendEvent(event)
+	return eh.KeptnHandler.SendCloudEvent(event)
+}
+
+func (eh *StartEvaluationHandler) getTestExecutionResult() string {
+	dataByte, err := eh.Event.DataBytes()
+	if err != nil {
+		eh.Logger.Error("Could not get event as byte array: " + err.Error())
+	}
+
+	e := &keptnevents.TestsFinishedEventData{}
+	err = json.Unmarshal(dataByte, e)
+	if err != nil {
+		eh.Logger.Error("Could not unmarshal event payload: " + err.Error())
+	}
+	return e.Result
 }

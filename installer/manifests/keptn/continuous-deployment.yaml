@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: gatekeeper-service
-        image: keptn/gatekeeper-service:0.6.0
+        image: keptn/gatekeeper-service:0.6.1
         ports:
         - containerPort: 8080
         resources:
@@ -65,7 +65,7 @@ spec:
     spec:
       containers:
       - name: distributor
-        image: keptn/distributor:0.6.0
+        image: keptn/distributor:latest
         ports:
         - containerPort: 8080
         resources:
@@ -101,7 +101,7 @@ spec:
     spec:
       containers:
       - name: distributor
-        image: keptn/distributor:0.6.0
+        image: keptn/distributor:latest
         ports:
         - containerPort: 8080
         resources:
@@ -137,7 +137,7 @@ spec:
     spec:
       containers:
       - name: jmeter-service
-        image: keptn/jmeter-service:0.6.0
+        image: keptn/jmeter-service:latest
         ports:
         - containerPort: 8080
         env:
@@ -178,7 +178,7 @@ spec:
     spec:
       containers:
       - name: distributor
-        image: keptn/distributor:0.6.0
+        image: keptn/distributor:latest
         ports:
         - containerPort: 8080
         resources:

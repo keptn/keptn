@@ -1,0 +1,8 @@
+<app-header></app-header>
+<div id="page-content" fxFlex fxFlexFill>
+  <ktb-http-loading-bar id="page-loading-bar" [filterBy]="'api/project'"></ktb-http-loading-bar>
+  <router-outlet></router-outlet>
+</div>
+<div id="version-info">
+  <p class="small m-0" [textContent]="version"></p>
+</div>

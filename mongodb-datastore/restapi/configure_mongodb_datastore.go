@@ -17,7 +17,6 @@ import (
 	"github.com/keptn/keptn/mongodb-datastore/models"
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations"
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/event"
-	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/logs"
 )
 
 //go:generate swagger generate server --target ../../mongodb-datastore --name mongodb-datastore --spec ../swagger.yaml
@@ -53,21 +52,6 @@ func configureAPI(api *operations.MongodbDatastoreAPI) http.Handler {
 			return event.NewGetEventsDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 		}
 		return event.NewGetEventsOK().WithPayload(events)
-	})
-
-	api.LogsSaveLogHandler = logs.SaveLogHandlerFunc(func(params logs.SaveLogParams) middleware.Responder {
-		if err := handlers.SaveLog(params.Body); err != nil {
-			return logs.NewSaveLogDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
-		}
-		return logs.NewSaveLogCreated()
-	})
-
-	api.LogsGetLogsHandler = logs.GetLogsHandlerFunc(func(params logs.GetLogsParams) middleware.Responder {
-		mylogs, err := handlers.GetLogs(params)
-		if err != nil {
-			return logs.NewGetLogsDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
-		}
-		return logs.NewGetLogsOK().WithPayload(mylogs)
 	})
 
 	api.ServerShutdown = func() {}

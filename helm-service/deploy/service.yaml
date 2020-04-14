@@ -31,13 +31,11 @@ spec:
         - name: EVENTBROKER
           value: 'http://event-broker.keptn.svc.cluster.local/keptn'
         - name: API
-          value: 'ws://api.keptn.svc.cluster.local'
+          value: 'ws://api-service.keptn.svc.cluster.local:8080'
         - name: ENVIRONMENT
           value: 'production'
         - name: PRE_WORKFLOW_ENGINE
           value: 'true'
-        - name: CANARY
-          value: 'deployment'
 ---
 apiVersion: v1
 kind: Service

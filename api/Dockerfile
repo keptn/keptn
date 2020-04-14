@@ -1,6 +1,6 @@
 # Use the offical Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
-FROM golang:1.12 as builder
+FROM golang:1.13.7-alpine as builder
 ARG version=develop
 
 WORKDIR /go/src/github.com/keptn/keptn/api
@@ -8,6 +8,9 @@ WORKDIR /go/src/github.com/keptn/keptn/api
 # Force the go compiler to use modules 
 ENV GO111MODULE=on
 ENV BUILDFLAGS=""
+ENV GOPROXY=https://proxy.golang.org
+
+RUN apk add --no-cache gcc libc-dev git
 
 # Copy `go.mod` for definitions and `go.sum` to invalidate the next layer
 # in case of a change in the dependencies
@@ -31,23 +34,18 @@ RUN sed -i "s/version: develop/${REPLACE}/g" /go/src/github.com/keptn/keptn/api/
 # Build the command inside the container.
 # (You may fetch or manage dependencies here, 
 # either manually or with a tool like "godep".)
-RUN CGO_ENABLED=0 GOOS=linux go build $BUILDFLAGS -v cmd-server/main.go
+RUN GOOS=linux go build -ldflags '-linkmode=external' $BUILDFLAGS -v cmd/api-server/main.go
 
 # Use a Docker multi-stage build to create a lean production image.
-FROM alpine:3.7
-RUN apk add --no-cache ca-certificates
-
-ARG debugBuild
-
-# IF we are debugging, we need to install libc6-compat for delve to work on alpine based containers
-RUN if [ ! -z "$debugBuild" ]; then apk add --no-cache libc6-compat; fi
+FROM alpine:3.11
+# we need to install ca-certificates and libc6-compat for go programs to work properly
+RUN apk add --no-cache ca-certificates libc6-compat
 
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /go/src/github.com/keptn/keptn/api/main /api
 COPY --from=builder /go/src/github.com/keptn/keptn/api/swagger-ui /swagger-ui
 COPY --from=builder /go/src/github.com/keptn/keptn/api/swagger.yaml /swagger-ui/swagger.yaml
 COPY --from=builder /go/src/github.com/keptn/keptn/api/project_model.yaml /swagger-ui/project_model.yaml
-COPY --from=builder /go/src/github.com/keptn/keptn/api/resource_model.yaml /swagger-ui/resource_model.yaml
 COPY --from=builder /go/src/github.com/keptn/keptn/api/response_model.yaml /swagger-ui/response_model.yaml
 COPY --from=builder /go/src/github.com/keptn/keptn/api/service_model.yaml /swagger-ui/service_model.yaml
 

@@ -3,11 +3,10 @@ package helm
 import (
 	"testing"
 
-	"github.com/keptn/keptn/helm-service/controller/mesh"
 	"github.com/keptn/keptn/helm-service/pkg/objectutils"
 	"github.com/kinbiko/jsonassert"
 
-	keptnevents "github.com/keptn/go-utils/pkg/events"
+	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	"gotest.tools/assert"
 )
 
@@ -15,7 +14,7 @@ func TestCreateRootChartResource(t *testing.T) {
 
 	event := keptnevents.ServiceCreateEventData{Project: "sockshop", Service: "carts"}
 
-	c := NewUmbrellaChartHandler(mesh.NewIstioMesh())
+	c := NewUmbrellaChartHandler("")
 	resource, err := c.createRootChartResource(&event)
 	if err != nil {
 		t.Error(err)
@@ -40,7 +39,7 @@ func TestCreateRootChartResource(t *testing.T) {
 
 func TestCreateRequirementsResource(t *testing.T) {
 
-	c := NewUmbrellaChartHandler(mesh.NewIstioMesh())
+	c := NewUmbrellaChartHandler("")
 	resource, err := c.createRequirementsResource()
 	if err != nil {
 		t.Error(err)
@@ -62,7 +61,7 @@ func TestCreateRequirementsResource(t *testing.T) {
 
 func TestCreateValuesResource(t *testing.T) {
 
-	c := NewUmbrellaChartHandler(mesh.NewIstioMesh())
+	c := NewUmbrellaChartHandler("")
 	resource, err := c.createValuesResource()
 	if err != nil {
 		t.Error(err)
