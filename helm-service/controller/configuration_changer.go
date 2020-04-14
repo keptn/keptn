@@ -519,6 +519,7 @@ func (c *ConfigurationChanger) ApplyChartWithReplicas(ch *chart.Chart, project, 
 		return nil
 	}
 	c.logger.Debug("Upgrade not done as this is an empty chart")
+	return nil
 }
 
 // ApplyDirectory applies the provided directory

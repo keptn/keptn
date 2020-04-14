@@ -78,7 +78,7 @@ func (*GeneratedChartHandler) getNamespace(project string, stage string) string 
 	return project + "-" + stage
 }
 
-func (c *GeneratedChartHandler) generateServices(svc *corev1.Service, project string, stageName string) ([]*chart.Template, error) {
+func (c *GeneratedChartHandler) generateServices(svc *corev1.Service, project string, stageName string) ([]*chart.File, error) {
 
 	templates := make([]*chart.File, 0, 0)
 
@@ -198,14 +198,14 @@ func (c *GeneratedChartHandler) GenerateMeshChart(helmManifest string, project s
 			return nil, err
 		}
 
-		vsTemplate := chart.Template{Name: "templates/" + svc.Name + c.mesh.GetVirtualServiceSuffix(), Data: vs}
+		vsTemplate := chart.File{Name: "templates/" + svc.Name + c.mesh.GetVirtualServiceSuffix(), Data: vs}
 		ch.Templates = append(ch.Templates, &vsTemplate)
 
 		dr, err := c.mesh.GenerateDestinationRule(svc.Name, host)
 		if err != nil {
 			return nil, err
 		}
-		drTemplate := chart.Template{Name: "templates/" + svc.Name + c.mesh.GetDestinationRuleSuffix(), Data: dr}
+		drTemplate := chart.File{Name: "templates/" + svc.Name + c.mesh.GetDestinationRuleSuffix(), Data: dr}
 		ch.Templates = append(ch.Templates, &drTemplate)
 	}
 
