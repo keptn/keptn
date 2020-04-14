@@ -95,9 +95,6 @@ func configureBridge(endpoint string, apiToken string, configureBridgeParams *co
 }
 
 func verifyConfigureBridgeParams(configureBridgeParams *configureBridgeCmdParams) error {
-	if configureBridgeParams.Action == nil {
-		return errors.New("Missing flag 'action'. Must provide either '--action=expose' or '--action=lockdown'")
-	}
 	if *configureBridgeParams.Action != actionExpose && *configureBridgeParams.Action != actionLockdown {
 		return errors.New("Invalid value " + *configureBridgeParams.Action + " 'action'. Must provide either '--action=expose' or '--action=lockdown'")
 	}
@@ -109,4 +106,5 @@ func init() {
 	configureBridgeParams = &configureBridgeCmdParams{}
 
 	configureBridgeParams.Action = bridgeCmd.Flags().StringP("action", "a", "", "The action to perform [expose,lockdown]")
+	_ = configureCmd.MarkFlagRequired("action")
 }

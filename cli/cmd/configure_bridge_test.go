@@ -38,13 +38,6 @@ func Test_verifyConfigureBridgeParams(t *testing.T) {
 			},
 			wantErr: true,
 		},
-		{
-			name: "action=nil should not succeed",
-			args: args{
-				configureBridgeParams: &configureBridgeCmdParams{Action: nil},
-			},
-			wantErr: true,
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
