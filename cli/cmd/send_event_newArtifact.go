@@ -21,18 +21,19 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/keptn/keptn/cli/pkg/docker"
+
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 	"github.com/google/uuid"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
-	keptnevents "github.com/keptn/go-utils/pkg/events"
+	keptnevents "github.com/keptn/go-utils/pkg/lib"
 
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
-	"github.com/keptn/keptn/cli/utils"
-	"github.com/keptn/keptn/cli/utils/credentialmanager"
-	"github.com/keptn/keptn/cli/utils/websockethelper"
+	"github.com/keptn/keptn/cli/pkg/websockethelper"
 	"github.com/spf13/cobra"
 )
 
@@ -48,7 +49,7 @@ var newArtifact newArtifactStruct
 // newArtifactCmd represents the newArtifact command
 var newArtifactCmd = &cobra.Command{
 	Use: "new-artifact",
-	Short: "Sends a new-artifact event to Keptn in order to deploy a new artifact" +
+	Short: "Sends a new-artifact event to Keptn in order to deploy a new artifact " +
 		"for the specified service in the provided project",
 	Long: `Sends a new-artifact event to Keptn in order to deploy a new artifact
 for the specified service in the provided project.
@@ -62,12 +63,12 @@ Example:
 		newArtifact.Image = &trimmedImage
 
 		if newArtifact.Tag == nil || *newArtifact.Tag == "" {
-			*newArtifact.Image, *newArtifact.Tag = utils.SplitImageName(*newArtifact.Image)
+			*newArtifact.Image, *newArtifact.Tag = docker.SplitImageName(*newArtifact.Image)
 		}
-		return utils.CheckImageAvailability(*newArtifact.Image, *newArtifact.Tag)
+		return docker.CheckImageAvailability(*newArtifact.Image, *newArtifact.Tag)
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		endPoint, apiToken, err := credentialmanager.GetCreds()
+		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
@@ -103,7 +104,7 @@ Example:
 			return fmt.Errorf("Failed to marshal cloud event. %s", err.Error())
 		}
 
-		apiEvent := apimodels.Event{}
+		apiEvent := apimodels.KeptnContextExtendedCE{}
 		err = json.Unmarshal(eventByte, &apiEvent)
 		if err != nil {
 			return fmt.Errorf("Failed to map cloud event to API event model. %s", err.Error())
@@ -120,7 +121,7 @@ Example:
 			}
 
 			// if eventContext is available, open WebSocket communication
-			if eventContext != nil {
+			if eventContext != nil && !SuppressWSCommunication {
 				return websockethelper.PrintWSContentEventContext(eventContext, endPoint)
 			}
 

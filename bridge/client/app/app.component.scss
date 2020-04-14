@@ -1,0 +1,24 @@
+@import '~@dynatrace/barista-components/style/main';
+@import '~@dynatrace/barista-components/style/index';
+
+#page-content {
+  position: relative;
+}
+
+#page-loading-bar {
+  position: absolute;
+  z-index: 1001;
+  width: 100%;
+  top: 0;
+}
+
+#version-info {
+  position: absolute;
+  right: 5px;
+  bottom: 0px;
+
+  p {
+    cursor: default;
+    color: $gray-500;
+  }
+}

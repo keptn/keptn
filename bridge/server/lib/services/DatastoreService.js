@@ -6,8 +6,22 @@ class DatastoreService {
     this.api = endpoint;
   }
 
+  static mapEventsResult(result, sortCompareCallback) {
+    const { data } = result;
+    if (data.events) {
+      const events = data.events.map(event => DatastoreService.mapEvent(event));
+      if(sortCompareCallback)
+        events.sort(sortCompareCallback);
+      return events;
+    }
+    return [];
+  }
 
   static mapEvent(event) {
+    return event;
+
+    // TODO: check if this mappedEvent is necessary
+    // eventTypeHeadline should be translated on client side
     const mappedEvent = {
       timestamp: event.time,
       type: event.type,
@@ -20,7 +34,7 @@ class DatastoreService {
 
     switch (mappedEvent.type) {
       case 'sh.keptn.event.configuration.change': mappedEvent.eventTypeHeadline = 'Configuration change'; break;
-      case 'sh.keptn.event.problem.open': mappedEvent.eventTypeHeadline = 'Problem detected'; break;
+      case 'sh.keptn.event.problem.open': mappedEvent.eventTypeHeadline = 'Problem'; break;
       case 'sh.keptn.events.deployment-finished': mappedEvent.eventTypeHeadline = 'Deployment finished'; break;
       case 'sh.keptn.events.evaluation-done': mappedEvent.eventTypeHeadline = 'Evaluation done'; break;
       case 'sh.keptn.events.tests-finished': mappedEvent.eventTypeHeadline = 'Tests finished'; break;
@@ -38,98 +52,43 @@ class DatastoreService {
     return mappedEvent;
   }
 
-  async getRoots() {
-    const deploymentRoots = await this.getDeploymentRoots();
-    const problemRoots = await this.getProblemRoots();
-    const evaluationRoots = await this.getEvaluationRoots();
-    let combinedRoots = deploymentRoots.concat(problemRoots);
-    combinedRoots = combinedRoots.concat(evaluationRoots);
-    combinedRoots.sort((a, b) => (a.timestamp < b.timestamp ? 1 : -1));
-    return combinedRoots;
+  async getRoots(projectName, serviceName, fromTime) {
+    return this.getEvents({projectName, serviceName, fromTime, root: true, pageSize: 20});
   }
 
-  async getDeploymentRoots() {
-    const url = `${this.api}/event?type=sh.keptn.event.configuration.change&pageSize=100`;
+  async getTraces(contextId, fromTime) {
+    return this.getEvents({contextId, fromTime});
+  }
+
+  async getEvents(options) {
+    let url = `${this.api}/event`;
+
+    if(options.pageSize)
+        url += `?pageSize=${options.pageSize}`;
+    else
+        url += `?pageSize=100`;
+
+    if(options.type)
+      url += `&type=${options.type}`;
+    if(options.root)
+      url += `&root=${options.root}`;
+    if(options.contextId)
+      url += `&keptnContext=${options.contextId}`;
+    if(options.projectName)
+      url += `&project=${options.projectName}`;
+    if(options.serviceName)
+      url += `&service=${options.serviceName}`;
+    if(options.stageName)
+      url += `&stage=${options.stageName}`;
+    if(options.source)
+      url += `&source=${options.source}`;
+    if(options.fromTime)
+      url += `&fromTime=${options.fromTime}`;
+
     const result = await axios.get(url);
-    const { data } = result;
-    if (data.events) {
-      return data.events.map(event => DatastoreService.mapEvent(event)).filter(e => e.data.stage === '');
-    }
-    return [];
+    return DatastoreService.mapEventsResult(result, (a, b) => (a.time > b.time ? 1 : -1));
   }
 
-  async getProblemRoots() {
-    const url = `${this.api}/event?type=sh.keptn.event.problem.open&pageSize=100`;
-    const result = await axios.get(url);
-    const { data } = result;
-    if (data.events) {
-      return data.events.map(event => DatastoreService.mapEvent(event)).filter(e => (e.data.State === 'OPEN' || e.data.state === 'OPEN'));
-    }
-    return [];
-  }
-
-  async getEvaluationRoots() {
-    const url = `${this.api}/event?type=sh.keptn.event.start-evaluation&pageSize=100`;
-    const result = await axios.get(url);
-    const { data } = result;
-    if (data.events) {
-      return data.events.map(event => DatastoreService.mapEvent(event));
-    }
-    return [];
-  }
-
-  async getTraces(contextId) {
-    const url = `${this.api}/event?keptnContext=${contextId}&pageSize=100`;
-    const result = await axios.get(url);
-    const { data } = result;
-    if (data.events) {
-      const traces = data.events.map(event => DatastoreService.mapEvent(event));
-      traces.sort((a, b) => (a.timestamp > b.timestamp ? 1 : -1));
-      return traces;
-    }
-    return [];
-  }
-
-  async findRoots(contextId) {
-    const deploymentRoots = await this.findDeploymentRoots(contextId);
-    const problemRoots = await this.findProblemRoots(contextId);
-    const evaluationRoots = await this.findEvaluationRoots(contextId);
-    let combinedRoots = deploymentRoots.concat(problemRoots);
-    combinedRoots = combinedRoots.concat(evaluationRoots);
-    combinedRoots.sort((a, b) => (a.timestamp < b.timestamp ? 1 : -1));
-    return combinedRoots;
-  }
-
-  async findDeploymentRoots(contextId) {
-    const url = `${this.api}/event?keptnContext=${contextId}&type=sh.keptn.event.configuration.change&pageSize=10`;
-    console.log(url);
-    const result = await axios.get(url);
-    const { data } = result;
-    if (data.events) {
-      return data.events.map(event => DatastoreService.mapEvent(event)).filter(e => e.data.stage === '');
-    }
-    return [];
-  }
-
-  async findProblemRoots(contextId) {
-    const url = `${this.api}/event?keptnContext=${contextId}&type=sh.keptn.event.problem.open&pageSize=100`;
-    const result = await axios.get(url);
-    const { data } = result;
-    if (data.events) {
-      return data.events.map(event => DatastoreService.mapEvent(event)).filter(e => (e.data.State === 'OPEN' || e.data.state === 'OPEN'));
-    }
-    return [];
-  }
-
-  async findEvaluationRoots(contextId) {
-    const url = `${this.api}/event?keptnContext=${contextId}&type=sh.keptn.event.start-evaluation&pageSize&pageSize=100`;
-    const result = await axios.get(url);
-    const { data } = result;
-    if (data.events) {
-      return data.events.map(event => DatastoreService.mapEvent(event));
-    }
-    return [];
-  }
 }
 
 module.exports = DatastoreService;

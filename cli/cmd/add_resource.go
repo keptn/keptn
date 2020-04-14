@@ -3,14 +3,14 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"io/ioutil"
 	"os"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
-	"github.com/keptn/keptn/cli/utils/credentialmanager"
 	"github.com/spf13/cobra"
 )
 
@@ -33,7 +33,7 @@ Example:
 	keptn add-resource --project=sockshop --stage=dev --service=carts --resource=./jmeter.jmx --resourceUri=jmeter/functional.jmx`,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		endPoint, apiToken, err := credentialmanager.GetCreds()
+		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
@@ -54,8 +54,8 @@ Example:
 
 		resourceContentStr := string(resourceContent)
 		resources := []*apimodels.Resource{
-			&apimodels.Resource{
-				ResourceContent: &resourceContentStr,
+			{
+				ResourceContent: resourceContentStr,
 				ResourceURI:     addResourceCmdParams.ResourceURI,
 			},
 		}
@@ -69,7 +69,7 @@ Example:
 		} else if (addResourceCmdParams.Service == nil || *addResourceCmdParams.Service == "") && (addResourceCmdParams.Stage == nil || *addResourceCmdParams.Stage == "") {
 			logging.PrintLog("Adding resource "+*addResourceCmdParams.Resource+" to project "+*addResourceCmdParams.Project, logging.InfoLevel)
 		} else {
-			return errors.New("Flag stage not set for service " + *addResourceCmdParams.Service + " in project " + *addResourceCmdParams.Project)
+			return errors.New("Flag 'stage' is missing")
 		}
 
 		if !mocking {

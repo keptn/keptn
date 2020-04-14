@@ -4,7 +4,7 @@
 
 package ws
 
-import keptnutils "github.com/keptn/go-utils/pkg/utils"
+import keptnutils "github.com/keptn/go-utils/pkg/lib"
 
 // Hub maintains the set of active clients and broadcasts messages to the
 // clients.

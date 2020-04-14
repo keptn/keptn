@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"strings"
 
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 )
 
 type aksCredentials struct {
@@ -154,4 +154,5 @@ func getAzUser() (string, error) {
 func (p aksPlatform) printCreds() {
 	fmt.Println("Cluster Name: " + p.creds.ClusterName)
 	fmt.Println("Azure Resource Group: " + p.creds.AzureResourceGroup)
+	fmt.Println("Azure Subscription: " + p.creds.AzureSubscription)
 }

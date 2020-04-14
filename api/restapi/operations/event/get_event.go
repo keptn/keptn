@@ -10,7 +10,7 @@ import (
 
 	middleware "github.com/go-openapi/runtime/middleware"
 
-	models "github.com/keptn/keptn/api/models"
+	"github.com/keptn/keptn/api/models"
 )
 
 // GetEventHandlerFunc turns a function with the right signature into a get event handler
@@ -33,7 +33,7 @@ func NewGetEvent(ctx *middleware.Context, handler GetEventHandler) *GetEvent {
 
 /*GetEvent swagger:route GET /event Event getEvent
 
-Get the latest event matching the parameters
+Get the latest event matching the required query parameters
 
 */
 type GetEvent struct {

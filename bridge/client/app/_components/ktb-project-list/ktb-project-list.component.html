@@ -1,0 +1,5 @@
+<div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutGap="32px" fxLayoutAlign="start">
+  <div fxFlex="0 1 calc(33.3% - 32px)" fxFlex.lt-md="0 1 calc(50% - 32px)" fxFlex.lt-sm="100%" *ngFor="let project of projects">
+    <ktb-project-tile [project]="project"></ktb-project-tile>
+  </div>
+</div>

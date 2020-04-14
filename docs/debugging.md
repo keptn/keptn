@@ -29,14 +29,12 @@ Most of our services should already have a working setup. But just in case the s
     COPY . .
     
     # Build the command inside the container.
-    RUN CGO_ENABLED=0 GOOS=linux go build -gcflags "all=-N -l" -v -o some-go-binary
+    RUN GOOS=linux go build -gcflags "all=-N -l" -v -o some-go-binary
     
     # Use a Docker multi-stage build to create a lean production image.
     FROM alpine:3.7
-    RUN apk add --no-cache ca-certificates
-    
-    # IF we are debugging, we need to install libc6-compat for delve to work on alpine based containers
-    RUN apk add --no-cache libc6-compat
+    # we need to install ca-certificates and libc6-compat for go programs to work properly
+    RUN apk add --no-cache ca-certificates libc6-compat
     
     # Copy the binary to the production image from the builder stage.
     COPY --from=builder /go/src/github.com/keptn-contrib/some-go-service/some-go-binary /some-go-binary

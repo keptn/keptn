@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/keptn/keptn/cli/pkg/version"
+
 	"github.com/keptn/keptn/cli/pkg/logging"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
@@ -14,6 +16,9 @@ var cfgFile string
 var verboseLogging bool
 var quietLogging bool
 var mocking bool
+
+// SuppressWSCommunication suppresses the WebSocket communication if it is true
+var SuppressWSCommunication bool
 
 var insecureSkipTLSVerify bool
 var kubectlOptions string
@@ -62,6 +67,9 @@ to create projects, and to onboard services.
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
+
+	vChecker := version.NewVersionChecker()
+	vChecker.CheckCLIVersion(Version, true)
 	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
 	}
@@ -71,6 +79,8 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&verboseLogging, "verbose", "v", false, "verbose logging")
 	rootCmd.PersistentFlags().BoolVarP(&quietLogging, "quiet", "q", false, "suppress debug and info output")
 	rootCmd.PersistentFlags().BoolVarP(&mocking, "mock", "", false, "mocking of server communication - ATTENTION: your commands will not be sent to the keptn server")
+	rootCmd.PersistentFlags().BoolVarP(&SuppressWSCommunication, "suppress-websocket", "", false,
+		"disables websocket communication - use the ID of Keptn context (if provided) for checking the result of your command")
 
 	cobra.OnInitialize(initConfig)
 

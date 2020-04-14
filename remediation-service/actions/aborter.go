@@ -9,9 +9,8 @@ import (
 
 	"github.com/keptn/keptn/remediation-service/pkg/utils"
 
-	configutils "github.com/keptn/go-utils/pkg/configuration-service/utils"
-	keptnevents "github.com/keptn/go-utils/pkg/events"
-	keptnmodels "github.com/keptn/go-utils/pkg/models"
+	configutils "github.com/keptn/go-utils/pkg/api/utils"
+	"github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/remediation-service/pkg/apis/networking/istio/v1alpha3"
 )
 
@@ -27,18 +26,18 @@ func (a Aborter) GetAction() string {
 	return "abort"
 }
 
-func (a Aborter) ExecuteAction(problem *keptnevents.ProblemEventData, shkeptncontext string,
-	action *keptnmodels.RemediationAction) error {
-	return a.executor(problem, shkeptncontext, action, a.addAbort)
+func (a Aborter) ExecuteAction(problem *keptn.ProblemEventData, keptnHandler *keptn.Keptn,
+	action *keptn.RemediationAction) error {
+	return a.executor(problem, keptnHandler, action, a.addAbort)
 }
 
-func (a Aborter) ResolveAction(problem *keptnevents.ProblemEventData, shkeptncontext string,
-	action *keptnmodels.RemediationAction) error {
-	return a.executor(problem, shkeptncontext, action, a.removeAbort)
+func (a Aborter) ResolveAction(problem *keptn.ProblemEventData, keptnHandler *keptn.Keptn,
+	action *keptn.RemediationAction) error {
+	return a.executor(problem, keptnHandler, action, a.removeAbort)
 }
 
-func (a Aborter) executor(problem *keptnevents.ProblemEventData, shkeptncontext string,
-	action *keptnmodels.RemediationAction, editVS func(vsContent string, ip string) (string, error)) error {
+func (a Aborter) executor(problem *keptn.ProblemEventData, keptnHandler *keptn.Keptn,
+	action *keptn.RemediationAction, editVS func(vsContent string, ip string) (string, error)) error {
 	ip, err := getIP(problem)
 	if err != nil {
 		return fmt.Errorf("could not parse ip from ProblemDetails: %v", err)
@@ -68,7 +67,7 @@ func (a Aborter) executor(problem *keptnevents.ProblemEventData, shkeptncontext 
 			resource, err := handler.GetServiceResource(problem.Project, problem.Stage, service,
 				getVirtualServiceUri(service))
 			if err != nil {
-				return fmt.Errorf("could not get virutal service resource: %v", err)
+				return fmt.Errorf("could not get VirtualService resource: %v", err)
 			}
 
 			newVS, err := editVS(resource.ResourceContent, ip)
@@ -80,14 +79,14 @@ func (a Aborter) executor(problem *keptnevents.ProblemEventData, shkeptncontext 
 				getVirtualServiceUriInChart(service): newVS,
 			}
 
-			data := keptnevents.ConfigurationChangeEventData{
+			data := keptn.ConfigurationChangeEventData{
 				Project:                   problem.Project,
 				Service:                   problem.Service,
 				Stage:                     problem.Stage,
 				FileChangesGeneratedChart: changedFiles,
 			}
 
-			err = utils.CreateAndSendConfigurationChangedEvent(problem, shkeptncontext, data)
+			err = utils.CreateAndSendConfigurationChangedEvent(problem, keptnHandler, data)
 			if err != nil {
 				return fmt.Errorf("failed to send configuration change event: %v", err)
 			}

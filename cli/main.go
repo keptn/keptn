@@ -10,6 +10,9 @@ import (
 var (
 	// Version information which is passed by ldflags
 	Version = "develop"
+
+	// KubeServerVersionConstraints the Kubernetes Cluster version's constraints is passed by ldflags
+	KubeServerVersionConstraints = ">= 1.13, <= 1.15"
 )
 
 func init() {
@@ -18,5 +21,6 @@ func init() {
 
 func main() {
 	cmd.Version = Version
+	cmd.KubeServerVersionConstraints = KubeServerVersionConstraints
 	cmd.Execute()
 }

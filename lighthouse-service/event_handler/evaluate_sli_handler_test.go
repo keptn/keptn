@@ -1,12 +1,20 @@
 package event_handler
 
 import (
+	"encoding/json"
 	"errors"
+	"github.com/cloudevents/sdk-go/pkg/cloudevents"
+	keptnutils "github.com/keptn/go-utils/pkg/lib"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"reflect"
 	"sort"
+	"strings"
 	"testing"
 
-	keptnevents "github.com/keptn/go-utils/pkg/events"
-	keptnmodelsv2 "github.com/keptn/go-utils/pkg/models/v2"
+	keptnevents "github.com/keptn/go-utils/pkg/lib"
+	keptnmodelsv2 "github.com/keptn/go-utils/pkg/lib"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -92,6 +100,16 @@ func TestParseCriteriaString(t *testing.T) {
 		},
 		{
 			Criteria: "  <=+10   %",
+			ExpectedCriteriaObject: &criteriaObject{
+				Operator:        "<=",
+				Value:           10,
+				CheckPercentage: true,
+				IsComparison:    true,
+				CheckIncrease:   true,
+			},
+		},
+		{
+			Criteria: "  <=10%",
 			ExpectedCriteriaObject: &criteriaObject{
 				Operator:        "<=",
 				Value:           10,
@@ -2350,6 +2368,229 @@ func TestCalculateScore(t *testing.T) {
 
 			assert.EqualValues(t, test.ExpectedError, err)
 			assert.EqualValues(t, test.ExpectedEvaluationResult, test.InEvaluationResult)
+		})
+	}
+}
+
+func TestEvaluateSLIHandler_getPreviousTestExecutionResult(t *testing.T) {
+
+	var returnedResult datastoreResult
+
+	ts := httptest.NewServer(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Add("Content-Type", "application/json")
+			w.WriteHeader(200)
+
+			marshal, _ := json.Marshal(&returnedResult)
+			w.Write(marshal)
+		}),
+	)
+	defer ts.Close()
+
+	_ = os.Setenv("MONGODB_DATASTORE", strings.TrimPrefix(ts.URL, "http://"))
+
+	type fields struct {
+		Logger     *keptnutils.Logger
+		Event      cloudevents.Event
+		HTTPClient *http.Client
+	}
+	type args struct {
+		e            *keptnevents.InternalGetSLIDoneEventData
+		keptnContext string
+	}
+	tests := []struct {
+		name                string
+		fields              fields
+		args                args
+		resultFromDatastore datastoreResult
+		want                *keptnevents.TestsFinishedEventData
+		wantErr             bool
+	}{
+		{
+			name: "return a tests-finished event",
+			fields: fields{
+				Logger:     nil,
+				Event:      cloudevents.Event{},
+				HTTPClient: &http.Client{},
+			},
+			args: args{
+				e: &keptnevents.InternalGetSLIDoneEventData{
+					Project:            "sockshop",
+					Stage:              "dev",
+					Service:            "carts",
+					Start:              "",
+					End:                "",
+					TestStrategy:       "",
+					IndicatorValues:    nil,
+					DeploymentStrategy: "",
+					Deployment:         "",
+					Labels:             nil,
+				},
+				keptnContext: "",
+			},
+			resultFromDatastore: datastoreResult{
+				NextPageKey: "",
+				TotalCount:  1,
+				PageSize:    1,
+				Events: []struct {
+					Data interface{} `json:"data"`
+				}{
+					{
+						Data: &keptnevents.TestsFinishedEventData{
+							Project:            "sockshop",
+							Service:            "carts",
+							Stage:              "dev",
+							TestStrategy:       "",
+							DeploymentStrategy: "",
+							Start:              "",
+							End:                "",
+							Labels:             nil,
+							Result:             "",
+						},
+					},
+				},
+			},
+			want: &keptnevents.TestsFinishedEventData{
+				Project:            "sockshop",
+				Service:            "carts",
+				Stage:              "dev",
+				TestStrategy:       "",
+				DeploymentStrategy: "",
+				Start:              "",
+				End:                "",
+				Labels:             nil,
+				Result:             "",
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			returnedResult = tt.resultFromDatastore
+			eh := &EvaluateSLIHandler{
+				Logger:     tt.fields.Logger,
+				Event:      tt.fields.Event,
+				HTTPClient: tt.fields.HTTPClient,
+			}
+			got, err := eh.getPreviousTestExecutionResult(tt.args.e, tt.args.keptnContext)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("getPreviousTestExecutionResult() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getPreviousTestExecutionResult() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestEvaluateSLIHandler_getPreviousEvaluations(t *testing.T) {
+
+	var returnedResult datastoreResult
+
+	ts := httptest.NewServer(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Add("Content-Type", "application/json")
+			w.WriteHeader(200)
+
+			marshal, _ := json.Marshal(&returnedResult)
+			w.Write(marshal)
+		}),
+	)
+	defer ts.Close()
+
+	_ = os.Setenv("MONGODB_DATASTORE", strings.TrimPrefix(ts.URL, "http://"))
+
+	type fields struct {
+		Logger     *keptnutils.Logger
+		Event      cloudevents.Event
+		HTTPClient *http.Client
+	}
+	type args struct {
+		e                       *keptnevents.InternalGetSLIDoneEventData
+		numberOfPreviousResults int
+	}
+	tests := []struct {
+		name                string
+		fields              fields
+		args                args
+		resultFromDatastore datastoreResult
+		want                []*keptnevents.EvaluationDoneEventData
+		wantErr             bool
+	}{
+		{
+			name: "get eveluation-done events",
+			fields: fields{
+				Logger:     nil,
+				Event:      cloudevents.Event{},
+				HTTPClient: &http.Client{},
+			},
+			args: args{
+				e: &keptnevents.InternalGetSLIDoneEventData{
+					Project:            "sockshop",
+					Stage:              "dev",
+					Service:            "carts",
+					Start:              "",
+					End:                "",
+					TestStrategy:       "",
+					IndicatorValues:    nil,
+					DeploymentStrategy: "",
+					Deployment:         "",
+					Labels:             nil,
+				},
+				numberOfPreviousResults: 1,
+			},
+			resultFromDatastore: datastoreResult{
+				NextPageKey: "",
+				TotalCount:  1,
+				PageSize:    1,
+				Events: []struct {
+					Data interface{} `json:"data"`
+				}{
+					{
+						Data: &keptnevents.EvaluationDoneEventData{
+							Project:            "sockshop",
+							Service:            "carts",
+							Stage:              "dev",
+							TestStrategy:       "",
+							DeploymentStrategy: "",
+							Labels:             nil,
+							Result:             "",
+						},
+					},
+				},
+			},
+			want: []*keptnevents.EvaluationDoneEventData{
+				{
+					Project:            "sockshop",
+					Service:            "carts",
+					Stage:              "dev",
+					TestStrategy:       "",
+					DeploymentStrategy: "",
+					Labels:             nil,
+					Result:             "",
+				},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		returnedResult = tt.resultFromDatastore
+		t.Run(tt.name, func(t *testing.T) {
+			eh := &EvaluateSLIHandler{
+				Logger:     tt.fields.Logger,
+				Event:      tt.fields.Event,
+				HTTPClient: tt.fields.HTTPClient,
+			}
+			got, err := eh.getPreviousEvaluations(tt.args.e, tt.args.numberOfPreviousResults)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("getPreviousEvaluations() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getPreviousEvaluations() got = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }

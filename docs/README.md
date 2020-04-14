@@ -60,18 +60,17 @@ In addition, we have a collection of additional services at [github.com/keptn-co
 
 We aim to follow some rules for branch names within our repositories:
 
-* **master** contains the latest released version
+* **master** contains the latest (potentially unstable) changes from development
 * **release-x.y.z** contains the release x.y.z
-* **develop** contains an unstable version that is currently developed
-* **feature/###/name**, **bug/###/name**, **hotfix/###/name** (where ### references the github issue number) contains 
+* **feature/###/name**, **bug/###/name**, **patch/###/name**, **hotfix/###/name** (where ### references the github issue number) contains 
   code for branches that are under active development.
 
 We are following the git branching model described in [this blog post](https://nvie.com/posts/a-successful-git-branching-model/).
-For instance, if a new feature or bug branch is created, the workflow is to create a new branch of the **develop** 
+For instance, if a new feature or bug branch is created, the workflow is to create a new branch of the **master** 
  branch, and  name it according to the convention listed above. Once ready, a new Pull Request should be created with 
- the **develop** branch as a target. Hotfixes work similar, but should be branched away from the **master** branch. PRs
- for hotfixes should be created to the **master** and **develop** branch, ensuring that the latest release and the
- current development version use the fix.
+ the **master** branch as a target. Hotfixes work similar, but should be branched away from the **master** branch. PRs
+ for hotfixes should be created to the **master** and respective **release-** branches, ensuring that the latest release
+ and the current development version use the fix.
   
 ![Branch Workflow](assets/git_branch_workflow.png "Git Branch Workflow")
 
@@ -81,7 +80,7 @@ For instance, if a new feature or bug branch is created, the workflow is to crea
 We have automated builds for several services and containers using Travis-CI. This automatically creates new builds for
 
 * every [Github Release](https://github.com/keptn/keptn/releases) tagged with the version number (e.g., 0.5.0),
-* every change in the [develop branch](https://github.com/keptn/keptn/tree/develop) (unstable) tagged as **latest** as 
+* every change in the [master branch](https://github.com/keptn/keptn/tree/develop) (unstable) tagged as **latest** as 
   well as the build-datetime,
 * every pull request (unstable).
 

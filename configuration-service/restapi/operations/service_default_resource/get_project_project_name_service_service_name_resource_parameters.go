@@ -24,10 +24,14 @@ func NewGetProjectProjectNameServiceServiceNameResourceParams() GetProjectProjec
 	var (
 		// initialize parameters with default values
 
+		disableUpstreamSyncDefault = bool(false)
+
 		pageSizeDefault = int64(20)
 	)
 
 	return GetProjectProjectNameServiceServiceNameResourceParams{
+		DisableUpstreamSync: &disableUpstreamSyncDefault,
+
 		PageSize: &pageSizeDefault,
 	}
 }
@@ -41,6 +45,11 @@ type GetProjectProjectNameServiceServiceNameResourceParams struct {
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
+	/*Disable sync of upstream repo before reading content
+	  In: query
+	  Default: false
+	*/
+	DisableUpstreamSync *bool
 	/*Pointer to the next set of items
 	  In: query
 	*/
@@ -75,6 +84,11 @@ func (o *GetProjectProjectNameServiceServiceNameResourceParams) BindRequest(r *h
 
 	qs := runtime.Values(r.URL.Query())
 
+	qDisableUpstreamSync, qhkDisableUpstreamSync, _ := qs.GetOK("disableUpstreamSync")
+	if err := o.bindDisableUpstreamSync(qDisableUpstreamSync, qhkDisableUpstreamSync, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
 	qNextPageKey, qhkNextPageKey, _ := qs.GetOK("nextPageKey")
 	if err := o.bindNextPageKey(qNextPageKey, qhkNextPageKey, route.Formats); err != nil {
 		res = append(res, err)
@@ -98,6 +112,29 @@ func (o *GetProjectProjectNameServiceServiceNameResourceParams) BindRequest(r *h
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+// bindDisableUpstreamSync binds and validates parameter DisableUpstreamSync from query.
+func (o *GetProjectProjectNameServiceServiceNameResourceParams) bindDisableUpstreamSync(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+
+	// Required: false
+	// AllowEmptyValue: false
+	if raw == "" { // empty values pass all other validations
+		// Default values have been previously initialized by NewGetProjectProjectNameServiceServiceNameResourceParams()
+		return nil
+	}
+
+	value, err := swag.ConvertBool(raw)
+	if err != nil {
+		return errors.InvalidType("disableUpstreamSync", "query", "bool", raw)
+	}
+	o.DisableUpstreamSync = &value
+
 	return nil
 }
 

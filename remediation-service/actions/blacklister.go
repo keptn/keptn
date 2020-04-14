@@ -12,9 +12,8 @@ import (
 	"github.com/keptn/keptn/remediation-service/pkg/apis/networking/istio"
 	"github.com/keptn/keptn/remediation-service/pkg/utils"
 
-	configutils "github.com/keptn/go-utils/pkg/configuration-service/utils"
-	keptnevents "github.com/keptn/go-utils/pkg/events"
-	keptnmodels "github.com/keptn/go-utils/pkg/models"
+	configutils "github.com/keptn/go-utils/pkg/api/utils"
+	"github.com/keptn/go-utils/pkg/lib"
 	kyaml "k8s.io/apimachinery/pkg/util/yaml"
 )
 
@@ -34,8 +33,8 @@ func (b BlackLister) GetAction() string {
 	return "blacklist"
 }
 
-func (b BlackLister) ExecuteAction(problem *keptnevents.ProblemEventData, shkeptncontext string,
-	action *keptnmodels.RemediationAction) error {
+func (b BlackLister) ExecuteAction(problem *keptn.ProblemEventData, keptnHandler *keptn.Keptn,
+	action *keptn.RemediationAction) error {
 
 	ip, err := getIP(problem)
 	if err != nil {
@@ -70,22 +69,22 @@ func (b BlackLister) ExecuteAction(problem *keptnevents.ProblemEventData, shkept
 	}
 	changedFiles[ipHandler] = newContent
 
-	data := keptnevents.ConfigurationChangeEventData{
+	data := keptn.ConfigurationChangeEventData{
 		Project:                  problem.Project,
 		Service:                  problem.Service,
 		Stage:                    problem.Stage,
 		FileChangesUmbrellaChart: changedFiles,
 	}
 
-	err = utils.CreateAndSendConfigurationChangedEvent(problem, shkeptncontext, data)
+	err = utils.CreateAndSendConfigurationChangedEvent(problem, keptnHandler, data)
 	if err != nil {
 		return fmt.Errorf("failed to send configuration change event: %v", err)
 	}
 	return nil
 }
 
-func (b BlackLister) ResolveAction(problem *keptnevents.ProblemEventData, shkeptncontext string,
-	action *keptnmodels.RemediationAction) error {
+func (b BlackLister) ResolveAction(problem *keptn.ProblemEventData, keptnHandler *keptn.Keptn,
+	action *keptn.RemediationAction) error {
 	return errors.New("no resolving action for action " + b.GetAction() + "implemented")
 }
 

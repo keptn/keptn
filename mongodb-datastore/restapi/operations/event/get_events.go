@@ -14,7 +14,7 @@ import (
 	strfmt "github.com/go-openapi/strfmt"
 	swag "github.com/go-openapi/swag"
 
-	models "github.com/keptn/keptn/mongodb-datastore/models"
+	"github.com/keptn/keptn/mongodb-datastore/models"
 )
 
 // GetEventsHandlerFunc turns a function with the right signature into a get events handler

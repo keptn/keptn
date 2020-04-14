@@ -7,7 +7,7 @@ import (
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
-	"github.com/keptn/go-utils/pkg/utils"
+	utils "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/configuration-service/common"
 	"github.com/keptn/keptn/configuration-service/config"
 	"github.com/keptn/keptn/configuration-service/models"
@@ -22,13 +22,13 @@ type serviceMetadata struct {
 
 // GetProjectProjectNameStageStageNameServiceHandlerFunc get list of services
 func GetProjectProjectNameStageStageNameServiceHandlerFunc(params service.GetProjectProjectNameStageStageNameServiceParams) middleware.Responder {
-	common.Lock()
-	defer common.UnLock()
+	common.LockProject(params.ProjectName)
+	defer common.UnlockProject(params.ProjectName)
 	logger := utils.NewLogger("", "", "configuration-service")
 	if !common.ProjectExists(params.ProjectName) {
 		return service.NewGetProjectProjectNameStageStageNameServiceNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project not found")})
 	}
-	if !common.StageExists(params.ProjectName, params.StageName) {
+	if !common.StageExists(params.ProjectName, params.StageName, *params.DisableUpstreamSync) {
 		return service.NewGetProjectProjectNameStageStageNameServiceNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Stage not found")})
 	}
 	var payload = &models.Services{
@@ -39,7 +39,7 @@ func GetProjectProjectNameStageStageNameServiceHandlerFunc(params service.GetPro
 	}
 
 	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
-	err := common.CheckoutBranch(params.ProjectName, params.StageName)
+	err := common.CheckoutBranch(params.ProjectName, params.StageName, *params.DisableUpstreamSync)
 	if err != nil {
 		logger.Error(err.Error())
 		return service.NewGetProjectProjectNameStageStageNameServiceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not check out branch")})
@@ -73,15 +73,15 @@ func GetProjectProjectNameStageStageNameServiceHandlerFunc(params service.GetPro
 
 // GetProjectProjectNameStageStageNameServiceServiceNameHandlerFunc get the specified service
 func GetProjectProjectNameStageStageNameServiceServiceNameHandlerFunc(params service.GetProjectProjectNameStageStageNameServiceServiceNameParams) middleware.Responder {
-	common.Lock()
-	defer common.UnLock()
+	common.LockProject(params.ProjectName)
+	defer common.UnlockProject(params.ProjectName)
 	if !common.ProjectExists(params.ProjectName) {
 		return service.NewGetProjectProjectNameStageStageNameServiceServiceNameNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project not found")})
 	}
-	if !common.StageExists(params.ProjectName, params.StageName) {
+	if !common.StageExists(params.ProjectName, params.StageName, *params.DisableUpstreamSync) {
 		return service.NewGetProjectProjectNameStageStageNameServiceServiceNameNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Stage not found")})
 	}
-	if !common.ServiceExists(params.ProjectName, params.StageName, params.ServiceName) {
+	if !common.ServiceExists(params.ProjectName, params.StageName, params.ServiceName, *params.DisableUpstreamSync) {
 		return service.NewGetProjectProjectNameStageStageNameServiceServiceNameNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Service not found")})
 	}
 	var serviceResponse = &models.Service{
@@ -92,22 +92,22 @@ func GetProjectProjectNameStageStageNameServiceServiceNameHandlerFunc(params ser
 
 // PostProjectProjectNameStageStageNameServiceHandlerFunc creates a new service
 func PostProjectProjectNameStageStageNameServiceHandlerFunc(params service.PostProjectProjectNameStageStageNameServiceParams) middleware.Responder {
-	common.Lock()
-	defer common.UnLock()
+	common.LockProject(params.ProjectName)
+	defer common.UnlockProject(params.ProjectName)
 	logger := utils.NewLogger("", "", "configuration-service")
 	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
 	servicePath := projectConfigPath + "/" + params.Service.ServiceName
 
-	if !common.StageExists(params.ProjectName, params.StageName) {
+	if !common.StageExists(params.ProjectName, params.StageName, false) {
 		return service.NewPostProjectProjectNameStageStageNameServiceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Stage  " + params.StageName + " does not exist.")})
 	}
 
-	if common.ServiceExists(params.ProjectName, params.StageName, params.Service.ServiceName) {
+	if common.ServiceExists(params.ProjectName, params.StageName, params.Service.ServiceName, false) {
 		return service.NewPostProjectProjectNameStageStageNameServiceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Service already exists")})
 	}
 	logger.Debug("Creating new resource(s) in: " + projectConfigPath + " in stage " + params.StageName)
 	logger.Debug("Checking out branch: " + params.StageName)
-	err := common.CheckoutBranch(params.ProjectName, params.StageName)
+	err := common.CheckoutBranch(params.ProjectName, params.StageName, false)
 	if err != nil {
 		logger.Error(err.Error())
 		return service.NewPostProjectProjectNameStageStageNameServiceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not check out branch")})

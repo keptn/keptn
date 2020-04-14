@@ -7,9 +7,7 @@ import (
 	"log"
 	"os"
 
-	keptnevents "github.com/keptn/go-utils/pkg/events"
-	keptnmodels "github.com/keptn/go-utils/pkg/models"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	"github.com/keptn/go-utils/pkg/lib"
 
 	b64 "encoding/base64"
 
@@ -69,50 +67,56 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	var shkeptncontext string
 	event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
 
-	logger := keptnutils.NewLogger(shkeptncontext, event.Context.GetID(), "openshift-route-service")
+	logger := keptn.NewLogger(shkeptncontext, event.Context.GetID(), "openshift-route-service")
 
 	logger.Debug(fmt.Sprintf("Got Event Context: %+v", event.Context))
 
-	data := &keptnevents.ProjectCreateEventData{}
+	data := &keptn.ProjectCreateEventData{}
 	if err := event.DataAs(data); err != nil {
 		logger.Error(fmt.Sprintf("Got Data Error: %s", err.Error()))
 		return err
 	}
-	if event.Type() != keptnevents.InternalProjectCreateEventType {
+	if event.Type() != keptn.InternalProjectCreateEventType {
 		const errorMsg = "Received unexpected keptn event"
 		logger.Error(errorMsg)
 		return errors.New(errorMsg)
 	}
 
-	go createRoutes(data, logger)
+	go func() {
+		err := createRoutes(data)
+		if err != nil {
+			logger.Error(err.Error())
+		}
+	}()
 	return nil
 }
 
-func createRoutes(data *keptnevents.ProjectCreateEventData, logger *keptnutils.Logger) {
-	shipyard := keptnmodels.Shipyard{}
+func createRoutes(data *keptn.ProjectCreateEventData) error {
+	shipyard := keptn.Shipyard{}
 	decodedStr, err := b64.StdEncoding.DecodeString(data.Shipyard)
 	if err != nil {
-		logger.Error("Could not parse shipyard content: " + err.Error())
-		return
+		return err
 	}
-	err = yaml.Unmarshal([]byte(decodedStr), &shipyard)
+	err = yaml.Unmarshal(decodedStr, &shipyard)
 	if err != nil {
-		logger.Error("Could not parse shipyard content: " + err.Error())
-		return
+		return err
 	}
 	for _, stage := range shipyard.Stages {
-		exposeRoute(data.Project, stage.Name, logger)
+		if err := exposeRoute(data.Project, stage.Name); err != nil {
+			return err
+		}
 		if stage.DeploymentStrategy == "blue_green_service" {
 			// add required security context constraints to the generated namespace to make istio injection work
-			enableMesh(data.Project, stage.Name, logger)
+			if err := enableMesh(data.Project, stage.Name); err != nil {
+				return err
+			}
 		}
 	}
+	return nil
 }
 
-func enableMesh(project string, stage string, logger *keptnutils.Logger) {
-	logger.Info("Enabling mesh for namespace " + project + "-" + stage)
-
-	out, err := keptnutils.ExecuteCommand("oc",
+func enableMesh(project string, stage string) error {
+	_, err := keptn.ExecuteCommand("oc",
 		[]string{
 			"adm",
 			"policy",
@@ -123,49 +127,57 @@ func enableMesh(project string, stage string, logger *keptnutils.Logger) {
 			project + "-" + stage,
 		})
 	if err != nil {
-		logger.Error("Could not add security context constraint 'privileged' for namespace " + project + "-" + stage + ": " + err.Error())
+		return errors.New("Could not add security context constraint 'privileged' for namespace " + project + "-" + stage + ": " + err.Error())
 	}
-	logger.Debug("oc adm output: " + out)
-	out, err = keptnutils.ExecuteCommand("oc",
-		[]string{
-			"adm",
-			"policy",
-			"add-scc-to-group",
-			"anyuid",
-			"system:serviceaccounts",
-			"-n",
-			project + "-" + stage,
-		})
+	out, err := keptn.ExecuteCommand("oc",
+		getEnableMeshCommandArgs(project, stage))
 	if err != nil {
-		logger.Error("Could not add security context constraint 'anyuid' for namespace " + project + "-" + stage + ": " + err.Error())
+		return errors.New("Could not add security context constraint 'anyuid' for namespace " + project + "-" + stage + ": " + err.Error())
 	}
-	logger.Debug("oc adm output: " + out)
+	fmt.Println("enableMesh() output: " + out)
+	return nil
 }
 
-func exposeRoute(project string, stage string, logger *keptnutils.Logger) {
+func getEnableMeshCommandArgs(project string, stage string) []string {
+	return []string{
+		"adm",
+		"policy",
+		"add-scc-to-group",
+		"anyuid",
+		"system:serviceaccounts",
+		"-n",
+		project + "-" + stage,
+	}
+}
+
+func exposeRoute(project string, stage string) error {
 	appDomain := os.Getenv("APP_DOMAIN")
 	if appDomain == "" {
-		logger.Error("No app domain defined. Cannot create route.")
-		return
+		return errors.New("No app domain defined. Cannot create route.")
 	}
 	// oc create route edge istio-wildcard-ingress-secure-keptn --service=istio-ingressgateway --hostname="www.keptn.ingress-gateway.$BASE_URL" --port=http2 --wildcard-policy=Subdomain --insecure-policy='Allow'
-	logger.Info("Trying to create route www." + stage + "." + project + "." + appDomain)
-	out, err := keptnutils.ExecuteCommand("oc",
-		[]string{
-			"create",
-			"route",
-			"edge",
-			project + "-" + stage,
-			"--service=istio-ingressgateway",
-			"--hostname=www." + project + "-" + stage + "." + appDomain,
-			"--port=http2",
-			"--wildcard-policy=Subdomain",
-			"--insecure-policy=Allow",
-			"-n",
-			"istio-system",
-		})
+
+	out, err := keptn.ExecuteCommand("oc",
+		getCreateRouteCommandArgs(project, stage, appDomain))
 	if err != nil {
-		logger.Error("Could not create route for: " + err.Error())
+		return err
 	}
-	logger.Info("oc create route output: " + out)
+	fmt.Println("exposeRoute() output: " + out)
+	return nil
+}
+
+func getCreateRouteCommandArgs(project string, stage string, appDomain string) []string {
+	return []string{
+		"create",
+		"route",
+		"edge",
+		project + "-" + stage,
+		"--service=istio-ingressgateway",
+		"--hostname=www." + project + "-" + stage + "." + appDomain,
+		"--port=http2",
+		"--wildcard-policy=Subdomain",
+		"--insecure-policy=Allow",
+		"-n",
+		"istio-system",
+	}
 }

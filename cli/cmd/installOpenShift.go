@@ -18,7 +18,7 @@ import (
 	"errors"
 	"fmt"
 
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 )
 
 type openShiftCredentials struct {

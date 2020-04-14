@@ -1,0 +1,17 @@
+coverage:
+  status:
+    project:
+      default:
+        # basic
+        target: auto
+        threshold: 2% # allow cov to drop by 2% (just in case)
+    patch:
+      default:
+        threshold: 1% # allow patch
+
+ignore:
+  - "**/*.yaml"       # ignore all yaml files (Kubernetes manifests, etc...)
+  - "**/*.yml"        # same as above
+  - "**/*.md"         # ignore all markdown files, those are not relevant for building/testing
+  - "**/Dockerfile"   # ignore Dockerfiles, those are build with travis
+  - "**/*.sh"         # ignore shell scripts

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	configutils "github.com/keptn/go-utils/pkg/configuration-service/utils"
-	keptnevents "github.com/keptn/go-utils/pkg/events"
+	configutils "github.com/keptn/go-utils/pkg/api/utils"
+	"github.com/keptn/go-utils/pkg/lib"
 	"sigs.k8s.io/yaml"
 )
 
@@ -40,7 +40,7 @@ func containsVirtualServices(project, stage, service string) (bool, error) {
 		if respError.Code == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("could not get virutal service resource: %v", err)
+		return false, fmt.Errorf("could not get VirtualService resource: %v", err)
 	}
 	return true, nil
 }
@@ -63,7 +63,7 @@ type ProblemDetails struct {
 	ClientIP string `json:"ClientIP"`
 }
 
-func getIP(problem *keptnevents.ProblemEventData) (string, error) {
+func getIP(problem *keptn.ProblemEventData) (string, error) {
 
 	details := ProblemDetails{}
 	err := yaml.Unmarshal(problem.ProblemDetails, &details)

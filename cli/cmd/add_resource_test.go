@@ -7,7 +7,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/keptn/keptn/cli/utils/credentialmanager"
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 
 	"github.com/keptn/keptn/cli/pkg/logging"
 )
@@ -40,23 +40,11 @@ func TestAddResourceToProjectStageService(t *testing.T) {
 	resourceFileName := "testResource.txt"
 	defer testResource(t, resourceFileName, "")()
 
-	buf := new(bytes.Buffer)
-	rootCmd.SetOutput(buf)
-
-	args := []string{
-		"add-resource",
-		fmt.Sprintf("--project=%s", "sockshop"),
-		fmt.Sprintf("--stage=%s", "dev"),
-		fmt.Sprintf("--service=%s", "carts"),
-		fmt.Sprintf("--resource=%s", resourceFileName),
-		fmt.Sprintf("--resourceUri=%s", "resource/"+resourceFileName),
-		"--mock",
-	}
-	rootCmd.SetArgs(args)
-	err := rootCmd.Execute()
-
+	cmd := fmt.Sprintf("add-resource --project=%s --stage=%s --service=%s --resource=%s "+
+		"--resourceUri=%s --mock", "sockshop", "dev", "carts", resourceFileName, "resource/"+resourceFileName)
+	_, err := executeActionCommandC(cmd)
 	if err != nil {
-		t.Errorf("An error occured: %v", err)
+		t.Errorf(unexpectedErrMsg, err)
 	}
 }
 
@@ -68,22 +56,11 @@ func TestAddResourceToProjectStage(t *testing.T) {
 	resourceFileName := "testResource.txt"
 	defer testResource(t, resourceFileName, "")()
 
-	buf := new(bytes.Buffer)
-	rootCmd.SetOutput(buf)
-
-	args := []string{
-		"add-resource",
-		fmt.Sprintf("--project=%s", "sockshop"),
-		fmt.Sprintf("--stage=%s", "dev"),
-		fmt.Sprintf("--resource=%s", resourceFileName),
-		fmt.Sprintf("--resourceUri=%s", "resource/"+resourceFileName),
-		"--mock",
-	}
-	rootCmd.SetArgs(args)
-	err := rootCmd.Execute()
-
+	cmd := fmt.Sprintf("add-resource --project=%s --stage=%s --resource=%s "+
+		"--resourceUri=%s --mock", "sockshop", "dev", resourceFileName, "resource/"+resourceFileName)
+	_, err := executeActionCommandC(cmd)
 	if err != nil {
-		t.Errorf("An error occured: %v", err)
+		t.Errorf(unexpectedErrMsg, err)
 	}
 }
 
@@ -95,21 +72,11 @@ func TestAddResourceToProject(t *testing.T) {
 	resourceFileName := "testResource.txt"
 	defer testResource(t, resourceFileName, "")()
 
-	buf := new(bytes.Buffer)
-	rootCmd.SetOutput(buf)
-
-	args := []string{
-		"add-resource",
-		fmt.Sprintf("--project=%s", "sockshop"),
-		fmt.Sprintf("--resource=%s", resourceFileName),
-		fmt.Sprintf("--resourceUri=%s", "resource/"+resourceFileName),
-		"--mock",
-	}
-	rootCmd.SetArgs(args)
-	err := rootCmd.Execute()
-
+	cmd := fmt.Sprintf("add-resource --project=%s --resource=%s "+
+		"--resourceUri=%s --mock", "sockshop", resourceFileName, "resource/"+resourceFileName)
+	_, err := executeActionCommandC(cmd)
 	if err != nil {
-		t.Errorf("An error occured: %v", err)
+		t.Errorf(unexpectedErrMsg, err)
 	}
 }
 
@@ -123,21 +90,10 @@ func TestAddResourceToProjectService(t *testing.T) {
 	resourceFileName := "testResource.txt"
 	defer testResource(t, resourceFileName, "")()
 
-	buf := new(bytes.Buffer)
-	rootCmd.SetOutput(buf)
-
-	args := []string{
-		"add-resource",
-		fmt.Sprintf("--project=%s", "sockshop"),
-		fmt.Sprintf("--service=%s", "carts"),
-		fmt.Sprintf("--resource=%s", resourceFileName),
-		fmt.Sprintf("--resourceUri=%s", "resource/"+resourceFileName),
-		"--mock",
-	}
-	rootCmd.SetArgs(args)
-	err := rootCmd.Execute()
-
-	if err == nil {
-		t.Errorf("No error occured: %v", err)
+	cmd := fmt.Sprintf("add-resource --project=%s --service=%s --resource=%s "+
+		"--resourceUri=%s --mock", "sockshop", "carts", resourceFileName, "resource/"+resourceFileName)
+	_, err := executeActionCommandC(cmd)
+	if err.Error() != "Flag 'stage' is missing" {
+		t.Errorf(unexpectedErrMsg, err)
 	}
 }

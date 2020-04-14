@@ -1,0 +1,41 @@
+@import '../../../variables';
+@import '~@dynatrace/barista-components/core/src/style/variables';
+
+.ktb-expandable-tile {
+  .ktb-expandable-tile-container {
+    position: relative;
+    cursor: pointer;
+    border-radius: 3px;
+    border: 1px solid $gray-200;
+    text-decoration: none;
+
+    .ktb-expandable-tile-header {
+      position: relative;
+      padding: 8px 11px;
+      background-color: $white;
+    }
+
+    .ktb-expandable-tile-content {
+      position: relative;
+    }
+
+    .dt-show-more {
+      position: absolute;
+      right: 10px;
+      bottom: 10px;
+      width: auto;
+
+      .dt-icon {
+        width: 24px !important;
+        height: 24px !important;
+      }
+    }
+  }
+
+  &.ktb-tile-error .ktb-expandable-tile-container {
+    border-color: $error-color;
+  }
+  &.ktb-tile-success .ktb-expandable-tile-container {
+    border-color: $cta-color;
+  }
+}

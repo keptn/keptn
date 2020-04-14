@@ -58,6 +58,12 @@ func init() {
           },
           {
             "type": "string",
+            "description": "From time to fetch keptn cloud events",
+            "name": "fromTime",
+            "in": "query"
+          },
+          {
+            "type": "string",
             "description": "Set to load only root events",
             "name": "root",
             "in": "query"
@@ -155,93 +161,6 @@ func init() {
           }
         }
       }
-    },
-    "/log": {
-      "get": {
-        "tags": [
-          "logs"
-        ],
-        "summary": "gets the logs from the datastore",
-        "operationId": "getLogs",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "EventId of the event the logs belog to",
-            "name": "eventId",
-            "in": "query"
-          },
-          {
-            "$ref": "#/parameters/pagesizeParam"
-          },
-          {
-            "$ref": "#/parameters/pageParam"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "ok",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "logs": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/definitions/LogEntry"
-                  }
-                },
-                "nextPageKey": {
-                  "description": "Pointer to the next page",
-                  "type": "string"
-                },
-                "pageSize": {
-                  "description": "Size of the returned page",
-                  "type": "integer"
-                },
-                "totalCount": {
-                  "description": "Total number of logs",
-                  "type": "integer"
-                }
-              }
-            }
-          },
-          "default": {
-            "description": "error",
-            "schema": {
-              "$ref": "#/definitions/error"
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "logs"
-        ],
-        "summary": "Saves a log to the datastore",
-        "operationId": "saveLog",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/LogEntry"
-              }
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "created"
-          },
-          "default": {
-            "description": "error",
-            "schema": {
-              "$ref": "#/definitions/error"
-            }
-          }
-        }
-      }
     }
   },
   "definitions": {
@@ -259,30 +178,6 @@ func init() {
           }
         }
       ]
-    },
-    "LogEntry": {
-      "type": "object",
-      "properties": {
-        "eventId": {
-          "type": "string"
-        },
-        "keptnContext": {
-          "type": "string"
-        },
-        "keptnService": {
-          "type": "string"
-        },
-        "logLevel": {
-          "type": "string"
-        },
-        "message": {
-          "type": "string"
-        },
-        "timestamp": {
-          "type": "string",
-          "format": "date-time"
-        }
-      }
     },
     "error": {
       "type": "object",
@@ -365,6 +260,12 @@ func init() {
           },
           {
             "type": "string",
+            "description": "From time to fetch keptn cloud events",
+            "name": "fromTime",
+            "in": "query"
+          },
+          {
+            "type": "string",
             "description": "Set to load only root events",
             "name": "root",
             "in": "query"
@@ -471,102 +372,6 @@ func init() {
           }
         }
       }
-    },
-    "/log": {
-      "get": {
-        "tags": [
-          "logs"
-        ],
-        "summary": "gets the logs from the datastore",
-        "operationId": "getLogs",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "EventId of the event the logs belog to",
-            "name": "eventId",
-            "in": "query"
-          },
-          {
-            "maximum": 100,
-            "minimum": 1,
-            "type": "integer",
-            "default": 20,
-            "description": "Page size to be returned",
-            "name": "pageSize",
-            "in": "query"
-          },
-          {
-            "type": "string",
-            "description": "Key of the page to be returned",
-            "name": "nextPageKey",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "ok",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "logs": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/definitions/LogEntry"
-                  }
-                },
-                "nextPageKey": {
-                  "description": "Pointer to the next page",
-                  "type": "string"
-                },
-                "pageSize": {
-                  "description": "Size of the returned page",
-                  "type": "integer"
-                },
-                "totalCount": {
-                  "description": "Total number of logs",
-                  "type": "integer"
-                }
-              }
-            }
-          },
-          "default": {
-            "description": "error",
-            "schema": {
-              "$ref": "#/definitions/error"
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "logs"
-        ],
-        "summary": "Saves a log to the datastore",
-        "operationId": "saveLog",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/LogEntry"
-              }
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "created"
-          },
-          "default": {
-            "description": "error",
-            "schema": {
-              "$ref": "#/definitions/error"
-            }
-          }
-        }
-      }
     }
   },
   "definitions": {
@@ -584,30 +389,6 @@ func init() {
           }
         }
       ]
-    },
-    "LogEntry": {
-      "type": "object",
-      "properties": {
-        "eventId": {
-          "type": "string"
-        },
-        "keptnContext": {
-          "type": "string"
-        },
-        "keptnService": {
-          "type": "string"
-        },
-        "logLevel": {
-          "type": "string"
-        },
-        "message": {
-          "type": "string"
-        },
-        "timestamp": {
-          "type": "string",
-          "format": "date-time"
-        }
-      }
     },
     "contenttype": {
       "type": "string"

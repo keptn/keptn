@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
-	"github.com/keptn/go-utils/pkg/utils"
+	utils "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/configuration-service/common"
 	"github.com/keptn/keptn/configuration-service/config"
 	"github.com/keptn/keptn/configuration-service/models"
@@ -28,17 +28,17 @@ func GetProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 // GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc gets the specified resource
 func GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc(
 	params service_resource.GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIParams) middleware.Responder {
-	common.Lock()
-	defer common.UnLock()
+	common.LockProject(params.ProjectName)
+	defer common.UnlockProject(params.ProjectName)
 	logger := utils.NewLogger("", "", "configuration-service")
 	serviceConfigPath := config.ConfigDir + "/" + params.ProjectName + "/" + params.ServiceName
 	resourcePath := serviceConfigPath + "/" + params.ResourceURI
-	if !common.ServiceExists(params.ProjectName, params.StageName, params.ServiceName) {
+	if !common.ServiceExists(params.ProjectName, params.StageName, params.ServiceName, *params.DisableUpstreamSync) {
 		return service_resource.NewGetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURINotFound().
 			WithPayload(&models.Error{Code: 404, Message: swag.String("Service not found")})
 	}
 	logger.Debug("Checking out " + params.StageName + " branch")
-	err := common.CheckoutBranch(params.ProjectName, params.StageName)
+	err := common.CheckoutBranch(params.ProjectName, params.StageName, *params.DisableUpstreamSync)
 	if err != nil {
 		logger.Error(err.Error())
 		return service_resource.NewGetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault(500).
@@ -98,18 +98,18 @@ func DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI
 // PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc creates a new resource
 func PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 	params service_resource.PostProjectProjectNameStageStageNameServiceServiceNameResourceParams) middleware.Responder {
-	common.Lock()
-	defer common.UnLock()
+	common.LockProject(params.ProjectName)
+	defer common.UnlockProject(params.ProjectName)
 	logger := utils.NewLogger("", "", "configuration-service")
 	if !common.ProjectExists(params.ProjectName) {
 		return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().
 			WithPayload(&models.Error{Code: 400, Message: swag.String("Project " + params.ProjectName + " does not exist")})
 	}
-	if !common.StageExists(params.ProjectName, params.StageName) {
+	if !common.StageExists(params.ProjectName, params.StageName, false) {
 		return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().
 			WithPayload(&models.Error{Code: 400, Message: swag.String("Stage " + params.StageName + " does not exist within project " + params.ProjectName)})
 	}
-	if !common.ServiceExists(params.ProjectName, params.StageName, params.ServiceName) {
+	if !common.ServiceExists(params.ProjectName, params.StageName, params.ServiceName, false) {
 		return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().
 			WithPayload(&models.Error{Code: 400, Message: swag.String("Service " + params.ServiceName + " does not exist within stage " + params.StageName + " of project " + params.ProjectName)})
 	}
@@ -117,7 +117,7 @@ func PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 
 	logger.Debug("Creating new resource(s) in: " + serviceConfigPath + " in stage " + params.StageName)
 	logger.Debug("Checking out branch: " + params.StageName)
-	err := common.CheckoutBranch(params.ProjectName, params.StageName)
+	err := common.CheckoutBranch(params.ProjectName, params.StageName, false)
 	if err != nil {
 		logger.Error(err.Error())
 		return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().
@@ -222,18 +222,18 @@ func untarHelm(res *models.Resource, logger *utils.Logger, filePath string) midd
 // PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc updates a list of resources
 func PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 	params service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceParams) middleware.Responder {
-	common.Lock()
-	defer common.UnLock()
+	common.LockProject(params.ProjectName)
+	defer common.UnlockProject(params.ProjectName)
 	logger := utils.NewLogger("", "", "configuration-service")
 	if !common.ProjectExists(params.ProjectName) {
 		return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().
 			WithPayload(&models.Error{Code: 400, Message: swag.String("Project " + params.ProjectName + " does not exist")})
 	}
-	if !common.StageExists(params.ProjectName, params.StageName) {
+	if !common.StageExists(params.ProjectName, params.StageName, false) {
 		return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().
 			WithPayload(&models.Error{Code: 400, Message: swag.String("Stage " + params.StageName + " does not exist within project " + params.ProjectName)})
 	}
-	if !common.ServiceExists(params.ProjectName, params.StageName, params.ServiceName) {
+	if !common.ServiceExists(params.ProjectName, params.StageName, params.ServiceName, false) {
 		return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().
 			WithPayload(&models.Error{Code: 400, Message: swag.String("Service " + params.ServiceName + " does not exist within stage " + params.StageName + " of project " + params.ProjectName)})
 	}
@@ -241,7 +241,7 @@ func PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 
 	logger.Debug("Updating resource(s) in: " + serviceConfigPath + " in stage " + params.StageName)
 	logger.Debug("Checking out branch: " + params.StageName)
-	err := common.CheckoutBranch(params.ProjectName, params.StageName)
+	err := common.CheckoutBranch(params.ProjectName, params.StageName, false)
 	if err != nil {
 		logger.Error(err.Error())
 		return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().
@@ -282,10 +282,10 @@ func PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 // PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc updates a specified resource
 func PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc(
 	params service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIParams) middleware.Responder {
-	common.Lock()
-	defer common.UnLock()
+	common.LockProject(params.ProjectName)
+	defer common.UnlockProject(params.ProjectName)
 	logger := utils.NewLogger("", "", "configuration-service")
-	if !common.ServiceExists(params.ProjectName, params.StageName, params.ServiceName) {
+	if !common.ServiceExists(params.ProjectName, params.StageName, params.ServiceName, false) {
 		return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIBadRequest().
 			WithPayload(&models.Error{Code: 400, Message: swag.String("Service does not exist")})
 	}
@@ -293,7 +293,7 @@ func PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHan
 
 	logger.Debug("updating resource(s) in: " + serviceConfigPath + " in stage " + params.StageName)
 	logger.Debug("Checking out branch: " + params.StageName)
-	err := common.CheckoutBranch(params.ProjectName, params.StageName)
+	err := common.CheckoutBranch(params.ProjectName, params.StageName, false)
 	if err != nil {
 		logger.Error(err.Error())
 		return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIBadRequest().

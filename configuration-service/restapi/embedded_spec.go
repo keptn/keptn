@@ -46,6 +46,9 @@ func init() {
           },
           {
             "$ref": "#/parameters/nextPageKey"
+          },
+          {
+            "$ref": "#/parameters/disableUpstreamSync"
           }
         ],
         "responses": {
@@ -188,6 +191,9 @@ func init() {
           },
           {
             "$ref": "#/parameters/nextPageKey"
+          },
+          {
+            "$ref": "#/parameters/disableUpstreamSync"
           }
         ],
         "responses": {
@@ -366,6 +372,9 @@ func init() {
         },
         {
           "$ref": "#/parameters/resourceURI"
+        },
+        {
+          "$ref": "#/parameters/disableUpstreamSync"
         }
       ]
     },
@@ -381,6 +390,9 @@ func init() {
           },
           {
             "$ref": "#/parameters/nextPageKey"
+          },
+          {
+            "$ref": "#/parameters/disableUpstreamSync"
           }
         ],
         "responses": {
@@ -481,6 +493,11 @@ func init() {
           "Service Default Resource"
         ],
         "summary": "Get the specified default resource for the service",
+        "parameters": [
+          {
+            "$ref": "#/parameters/disableUpstreamSync"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success",
@@ -575,6 +592,9 @@ func init() {
           },
           {
             "$ref": "#/parameters/nextPageKey"
+          },
+          {
+            "$ref": "#/parameters/disableUpstreamSync"
           }
         ],
         "responses": {
@@ -638,6 +658,11 @@ func init() {
           "Stage"
         ],
         "summary": "Get the specified stage",
+        "parameters": [
+          {
+            "$ref": "#/parameters/disableUpstreamSync"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success",
@@ -731,6 +756,9 @@ func init() {
           },
           {
             "$ref": "#/parameters/nextPageKey"
+          },
+          {
+            "$ref": "#/parameters/disableUpstreamSync"
           }
         ],
         "responses": {
@@ -831,6 +859,11 @@ func init() {
           "Stage Resource"
         ],
         "summary": "Get the specified resource",
+        "parameters": [
+          {
+            "$ref": "#/parameters/disableUpstreamSync"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success",
@@ -930,6 +963,9 @@ func init() {
           },
           {
             "$ref": "#/parameters/nextPageKey"
+          },
+          {
+            "$ref": "#/parameters/disableUpstreamSync"
           }
         ],
         "responses": {
@@ -996,6 +1032,11 @@ func init() {
           "Service"
         ],
         "summary": "Get the specified service",
+        "parameters": [
+          {
+            "$ref": "#/parameters/disableUpstreamSync"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success",
@@ -1092,6 +1133,9 @@ func init() {
           },
           {
             "$ref": "#/parameters/nextPageKey"
+          },
+          {
+            "$ref": "#/parameters/disableUpstreamSync"
           }
         ],
         "responses": {
@@ -1195,6 +1239,11 @@ func init() {
           "Service Resource"
         ],
         "summary": "Get the specified resource",
+        "parameters": [
+          {
+            "$ref": "#/parameters/disableUpstreamSync"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success",
@@ -1322,6 +1371,12 @@ func init() {
         "projectName": {
           "description": "Project name",
           "type": "string"
+        },
+        "stages": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Stage"
+          }
         }
       }
     },
@@ -1422,6 +1477,12 @@ func init() {
     "Stage": {
       "type": "object",
       "properties": {
+        "services": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Service"
+          }
+        },
         "stageName": {
           "description": "Stage name",
           "type": "string"
@@ -1462,6 +1523,13 @@ func init() {
     }
   },
   "parameters": {
+    "disableUpstreamSync": {
+      "type": "boolean",
+      "default": false,
+      "description": "Disable sync of upstream repo before reading content",
+      "name": "disableUpstreamSync",
+      "in": "query"
+    },
     "nextPageKey": {
       "type": "string",
       "description": "Pointer to the next set of items",
@@ -1592,6 +1660,13 @@ func init() {
             "description": "Pointer to the next set of items",
             "name": "nextPageKey",
             "in": "query"
+          },
+          {
+            "type": "boolean",
+            "default": false,
+            "description": "Disable sync of upstream repo before reading content",
+            "name": "disableUpstreamSync",
+            "in": "query"
           }
         ],
         "responses": {
@@ -1756,6 +1831,13 @@ func init() {
             "type": "string",
             "description": "Pointer to the next set of items",
             "name": "nextPageKey",
+            "in": "query"
+          },
+          {
+            "type": "boolean",
+            "default": false,
+            "description": "Disable sync of upstream repo before reading content",
+            "name": "disableUpstreamSync",
             "in": "query"
           }
         ],
@@ -1976,6 +2058,13 @@ func init() {
           "name": "resourceURI",
           "in": "path",
           "required": true
+        },
+        {
+          "type": "boolean",
+          "default": false,
+          "description": "Disable sync of upstream repo before reading content",
+          "name": "disableUpstreamSync",
+          "in": "query"
         }
       ]
     },
@@ -1999,6 +2088,13 @@ func init() {
             "type": "string",
             "description": "Pointer to the next set of items",
             "name": "nextPageKey",
+            "in": "query"
+          },
+          {
+            "type": "boolean",
+            "default": false,
+            "description": "Disable sync of upstream repo before reading content",
+            "name": "disableUpstreamSync",
             "in": "query"
           }
         ],
@@ -2132,6 +2228,15 @@ func init() {
           "Service Default Resource"
         ],
         "summary": "Get the specified default resource for the service",
+        "parameters": [
+          {
+            "type": "boolean",
+            "default": false,
+            "description": "Disable sync of upstream repo before reading content",
+            "name": "disableUpstreamSync",
+            "in": "query"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success",
@@ -2247,6 +2352,13 @@ func init() {
             "description": "Pointer to the next set of items",
             "name": "nextPageKey",
             "in": "query"
+          },
+          {
+            "type": "boolean",
+            "default": false,
+            "description": "Disable sync of upstream repo before reading content",
+            "name": "disableUpstreamSync",
+            "in": "query"
           }
         ],
         "responses": {
@@ -2319,6 +2431,15 @@ func init() {
           "Stage"
         ],
         "summary": "Get the specified stage",
+        "parameters": [
+          {
+            "type": "boolean",
+            "default": false,
+            "description": "Disable sync of upstream repo before reading content",
+            "name": "disableUpstreamSync",
+            "in": "query"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success",
@@ -2433,6 +2554,13 @@ func init() {
             "type": "string",
             "description": "Pointer to the next set of items",
             "name": "nextPageKey",
+            "in": "query"
+          },
+          {
+            "type": "boolean",
+            "default": false,
+            "description": "Disable sync of upstream repo before reading content",
+            "name": "disableUpstreamSync",
             "in": "query"
           }
         ],
@@ -2566,6 +2694,15 @@ func init() {
           "Stage Resource"
         ],
         "summary": "Get the specified resource",
+        "parameters": [
+          {
+            "type": "boolean",
+            "default": false,
+            "description": "Disable sync of upstream repo before reading content",
+            "name": "disableUpstreamSync",
+            "in": "query"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success",
@@ -2691,6 +2828,13 @@ func init() {
             "description": "Pointer to the next set of items",
             "name": "nextPageKey",
             "in": "query"
+          },
+          {
+            "type": "boolean",
+            "default": false,
+            "description": "Disable sync of upstream repo before reading content",
+            "name": "disableUpstreamSync",
+            "in": "query"
           }
         ],
         "responses": {
@@ -2770,6 +2914,15 @@ func init() {
           "Service"
         ],
         "summary": "Get the specified service",
+        "parameters": [
+          {
+            "type": "boolean",
+            "default": false,
+            "description": "Disable sync of upstream repo before reading content",
+            "name": "disableUpstreamSync",
+            "in": "query"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success",
@@ -2891,6 +3044,13 @@ func init() {
             "type": "string",
             "description": "Pointer to the next set of items",
             "name": "nextPageKey",
+            "in": "query"
+          },
+          {
+            "type": "boolean",
+            "default": false,
+            "description": "Disable sync of upstream repo before reading content",
+            "name": "disableUpstreamSync",
             "in": "query"
           }
         ],
@@ -3031,6 +3191,15 @@ func init() {
           "Service Resource"
         ],
         "summary": "Get the specified resource",
+        "parameters": [
+          {
+            "type": "boolean",
+            "default": false,
+            "description": "Disable sync of upstream repo before reading content",
+            "name": "disableUpstreamSync",
+            "in": "query"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success",
@@ -3179,6 +3348,12 @@ func init() {
         "projectName": {
           "description": "Project name",
           "type": "string"
+        },
+        "stages": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Stage"
+          }
         }
       }
     },
@@ -3279,6 +3454,12 @@ func init() {
     "Stage": {
       "type": "object",
       "properties": {
+        "services": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Service"
+          }
+        },
         "stageName": {
           "description": "Stage name",
           "type": "string"
@@ -3319,6 +3500,13 @@ func init() {
     }
   },
   "parameters": {
+    "disableUpstreamSync": {
+      "type": "boolean",
+      "default": false,
+      "description": "Disable sync of upstream repo before reading content",
+      "name": "disableUpstreamSync",
+      "in": "query"
+    },
     "nextPageKey": {
       "type": "string",
       "description": "Pointer to the next set of items",

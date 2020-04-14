@@ -16,20 +16,20 @@ spec:
     spec:
       containers:
       - name: distributor
-        image: keptn/distributor:0.1.0
+        image: keptn/distributor:latest
         ports:
         - containerPort: 8080
         resources:
           requests:
-            memory: "32Mi"
-            cpu: "50m"
+            memory: "256Mi"
+            cpu: "500m"
           limits:
-            memory: "128Mi"
+            memory: "256Mi"
             cpu: "500m"
         env:
         - name: PUBSUB_URL
           value: 'nats://keptn-nats-cluster'
         - name: PUBSUB_TOPIC
-          value: 'sh.keptn.events.new-artifact'
+          value: 'sh.keptn.event.configuration.change,sh.keptn.events.deployment-finished'
         - name: PUBSUB_RECIPIENT
-          value: 'sevice'
+          value: 'helm-service'

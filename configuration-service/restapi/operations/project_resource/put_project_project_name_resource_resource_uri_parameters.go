@@ -11,6 +11,7 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/swag"
 
 	strfmt "github.com/go-openapi/strfmt"
 
@@ -18,10 +19,18 @@ import (
 )
 
 // NewPutProjectProjectNameResourceResourceURIParams creates a new PutProjectProjectNameResourceResourceURIParams object
-// no default values defined in spec.
+// with the default values initialized.
 func NewPutProjectProjectNameResourceResourceURIParams() PutProjectProjectNameResourceResourceURIParams {
 
-	return PutProjectProjectNameResourceResourceURIParams{}
+	var (
+		// initialize parameters with default values
+
+		disableUpstreamSyncDefault = bool(false)
+	)
+
+	return PutProjectProjectNameResourceResourceURIParams{
+		DisableUpstreamSync: &disableUpstreamSyncDefault,
+	}
 }
 
 // PutProjectProjectNameResourceResourceURIParams contains all the bound params for the put project project name resource resource URI operation
@@ -33,6 +42,11 @@ type PutProjectProjectNameResourceResourceURIParams struct {
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
+	/*Disable sync of upstream repo before reading content
+	  In: query
+	  Default: false
+	*/
+	DisableUpstreamSync *bool
 	/*Name of the project
 	  Required: true
 	  In: path
@@ -57,6 +71,13 @@ func (o *PutProjectProjectNameResourceResourceURIParams) BindRequest(r *http.Req
 	var res []error
 
 	o.HTTPRequest = r
+
+	qs := runtime.Values(r.URL.Query())
+
+	qDisableUpstreamSync, qhkDisableUpstreamSync, _ := qs.GetOK("disableUpstreamSync")
+	if err := o.bindDisableUpstreamSync(qDisableUpstreamSync, qhkDisableUpstreamSync, route.Formats); err != nil {
+		res = append(res, err)
+	}
 
 	rProjectName, rhkProjectName, _ := route.Params.GetOK("projectName")
 	if err := o.bindProjectName(rProjectName, rhkProjectName, route.Formats); err != nil {
@@ -87,6 +108,29 @@ func (o *PutProjectProjectNameResourceResourceURIParams) BindRequest(r *http.Req
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+// bindDisableUpstreamSync binds and validates parameter DisableUpstreamSync from query.
+func (o *PutProjectProjectNameResourceResourceURIParams) bindDisableUpstreamSync(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+
+	// Required: false
+	// AllowEmptyValue: false
+	if raw == "" { // empty values pass all other validations
+		// Default values have been previously initialized by NewPutProjectProjectNameResourceResourceURIParams()
+		return nil
+	}
+
+	value, err := swag.ConvertBool(raw)
+	if err != nil {
+		return errors.InvalidType("disableUpstreamSync", "query", "bool", raw)
+	}
+	o.DisableUpstreamSync = &value
+
 	return nil
 }
 

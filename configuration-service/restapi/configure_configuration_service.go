@@ -11,7 +11,7 @@ import (
 
 	errors "github.com/go-openapi/errors"
 	runtime "github.com/go-openapi/runtime"
-	"github.com/keptn/go-utils/pkg/utils"
+	utils "github.com/keptn/go-utils/pkg/lib"
 	handlers "github.com/keptn/keptn/configuration-service/handlers"
 	"github.com/keptn/keptn/configuration-service/restapi/operations"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/project"
