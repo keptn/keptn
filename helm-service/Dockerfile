@@ -38,10 +38,6 @@ FROM alpine:3.7
 # we need to install ca-certificates and libc6-compat for go programs to work properly
 RUN apk add --no-cache ca-certificates libc6-compat
 
-ARG debugBuild
-# IF we are debugging, we need to install libc6-compat for delve to work on alpine based containers
-RUN if [ ! -z "$debugBuild" ]; then apk add --no-cache libc6-compat; fi
-
 ARG HELM_VERSION=3.1.2
 RUN wget https://get.helm.sh/helm-v$HELM_VERSION-linux-amd64.tar.gz && \
   tar -zxvf helm-v$HELM_VERSION-linux-amd64.tar.gz && \

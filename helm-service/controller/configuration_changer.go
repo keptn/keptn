@@ -272,7 +272,6 @@ func loadValues(valuesString string) (map[string]interface{}, error) {
 }
 
 func (c *ConfigurationChanger) getGeneratedChart(e *keptnevents.ConfigurationChangeEventData) (*chart.Chart, error) {
-
 	helmChartName := helm.GetChartName(e.Service, true)
 	// Read chart
 	return keptnutils.GetChart(e.Project, e.Service, e.Stage, helmChartName, c.configServiceURL)
@@ -420,10 +419,7 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 			return err
 		}
 
-		if err := c.generatedChartHandler.UpdateCanaryWeight(genChart, int32(0)); err != nil {
-			return err
-		}
-		genChartData, err = keptnutils.PackageChart(genChart)
+		genChart, err = c.setCanaryWeight(e, 0)
 		if err != nil {
 			return err
 		}
