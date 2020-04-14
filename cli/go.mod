@@ -11,7 +11,7 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/gorilla/websocket v1.4.1
 	github.com/hashicorp/go-version v1.2.0
-	github.com/keptn/go-utils v0.6.1-compat
+	github.com/keptn/go-utils v0.6.1-compat.0.20200414083553-4c54536d5d8f
 	github.com/keptn/kubernetes-utils v0.0.0-20200401103501-ae44a5ee0656
 	github.com/magiconair/properties v1.8.1
 	github.com/mattn/go-shellwords v1.0.10
