@@ -3,12 +3,13 @@ package helmtest
 import (
 	"bytes"
 	"encoding/json"
-	"helm.sh/helm/v3/pkg/chart"
-	"helm.sh/helm/v3/pkg/chartutil"
 	"io"
 	"io/ioutil"
 	"os"
 	"testing"
+
+	"helm.sh/helm/v3/pkg/chart"
+	"helm.sh/helm/v3/pkg/chartutil"
 
 	"github.com/keptn/keptn/helm-service/pkg/objectutils"
 	"github.com/kinbiko/jsonassert"
@@ -100,7 +101,8 @@ replicas: 1
 `
 
 const chartContent = `
-apiVersion: v1
+apiVersion: v2
+type: application
 description: A Helm chart for service carts
 name: carts
 version: 0.1.0
