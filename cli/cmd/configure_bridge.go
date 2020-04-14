@@ -3,13 +3,13 @@ package cmd
 import (
 	"bytes"
 	"crypto/tls"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/spf13/cobra"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 
 	keptnutils "github.com/keptn/go-utils/pkg/api/utils"
 )
@@ -50,22 +50,23 @@ Example:
 			return errors.New(authErrorMsg)
 		}
 
-		configureBridgeEndpoint := endpoint.Scheme + "://" + endpoint.Host + "/configure/bridge/expose"
+		configureBridgeEndpoint := endpoint.Scheme + "://" + endpoint.Host + "/v1/configure/bridge/expose"
 		return configureBridge(configureBridgeEndpoint, apiToken, configureBridgeParams)
 	},
 }
 
 func configureBridge(endpoint string, apiToken string, configureBridgeParams *configureBridgeCmdParams) error {
 	doExpose := *configureBridgeParams.Action == "expose"
-	payload, _ := json.Marshal(&exposeBridgeAPIPayload{Expose: doExpose})
+	payload := strconv.FormatBool(doExpose)
 	client := &http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 			DialContext:     keptnutils.ResolveXipIoWithContext,
 		},
 	}
-	req, err := http.NewRequest("POST", endpoint, bytes.NewReader(payload))
+	req, err := http.NewRequest("POST", endpoint, bytes.NewReader([]byte(payload)))
 	req.Header.Add("x-token", apiToken)
+	req.Header.Add("content-type", "application/json")
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -83,7 +84,7 @@ func configureBridge(endpoint string, apiToken string, configureBridgeParams *co
 		if err != nil {
 			return errors.New("Could not " + *configureBridgeParams.Action + " bridge: " + err.Error())
 		}
-		fmt.Printf("Bridge exposed successfully. You can reach it here: %s", body)
+		fmt.Printf("Bridge exposed successfully. You can reach it here: https://%s", body)
 	} else {
 		if err != nil {
 			return errors.New("Could not " + *configureBridgeParams.Action + " bridge: " + err.Error())
