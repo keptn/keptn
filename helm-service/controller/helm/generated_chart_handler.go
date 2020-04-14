@@ -25,9 +25,10 @@ func NewGeneratedChartHandler(mesh mesh.Mesh, keptnDomain string) *GeneratedChar
 // b/g and canary releases
 func (c *GeneratedChartHandler) GenerateDuplicateManagedChart(helmManifest string, project string, stageName string, service string) (*chart.Chart, error) {
 	meta := &chart.Metadata{
-		Name:     service + "-generated",
-		Keywords: []string{"deployment_strategy=" + keptnevents.Duplicate.String()},
-		Version:  "0.1.0",
+		APIVersion: "v2",
+		Name:       service + "-generated",
+		Keywords:   []string{"deployment_strategy=" + keptnevents.Duplicate.String()},
+		Version:    "0.1.0",
 	}
 	ch := chart.Chart{Metadata: meta}
 
@@ -174,9 +175,10 @@ func (c *GeneratedChartHandler) GenerateMeshChart(helmManifest string, project s
 	service string) (*chart.Chart, error) {
 
 	meta := &chart.Metadata{
-		Name:     service + "-generated",
-		Keywords: []string{"deployment_strategy=" + keptnevents.Direct.String()},
-		Version:  "0.1.0",
+		APIVersion: "v2",
+		Name:       service + "-generated",
+		Keywords:   []string{"deployment_strategy=" + keptnevents.Direct.String()},
+		Version:    "0.1.0",
 	}
 	ch := chart.Chart{Metadata: meta}
 
@@ -233,7 +235,7 @@ func (c *GeneratedChartHandler) UpdateCanaryWeight(ch *chart.Chart, canaryWeight
 }
 
 // GenerateEmptyChart generates an empty chart
-func (c *GeneratedChartHandler) GenerateEmptyChart(project string, stageName string, service string,
+func (c *GeneratedChartHandler) GenerateEmptyChart(service string,
 	strategy keptnevents.DeploymentStrategy) *chart.Chart {
 
 	meta := &chart.Metadata{

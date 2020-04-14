@@ -202,7 +202,7 @@ func (o *Onboarder) onboardService(stageName string, event *keptnevents.ServiceC
 
 		chartGenerator := helm.NewGeneratedChartHandler(o.mesh, o.keptnDomain)
 		o.logger.Debug(fmt.Sprintf("For stage %s with deployment strategy %s, an empty chart is generated", stageName, event.DeploymentStrategies[stageName].String()))
-		generatedChart := chartGenerator.GenerateEmptyChart(event.Project, stageName, event.Service, event.DeploymentStrategies[stageName])
+		generatedChart := chartGenerator.GenerateEmptyChart(event.Service, event.DeploymentStrategies[stageName])
 
 		helmChartName := helm.GetChartName(event.Service, true)
 		o.logger.Debug(fmt.Sprintf("Storing the keptn generated Helm chart %s for stage %s", helmChartName, stageName))

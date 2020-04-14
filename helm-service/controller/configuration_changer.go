@@ -211,7 +211,8 @@ func (c *ConfigurationChanger) applyValuesCanary(e *keptnevents.ConfigurationCha
 	}
 	onboarder := NewOnboarder(c.mesh, c.logger, c.keptnDomain, c.configServiceURL)
 	if onboarder.IsGeneratedChartEmpty(genChart) {
-		userChartManifest, err := c.getManifest(helm.GetReleaseName(e.Project, e.Stage, e.Service, false))
+		userChartManifest, err := c.getManifest(helm.GetReleaseName(e.Project, e.Stage, e.Service, false),
+			e.Project+"-"+e.Stage)
 		if err != nil {
 			return err
 		}
@@ -395,7 +396,8 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 		}
 
 		chartGenerator := helm.NewGeneratedChartHandler(c.mesh, c.keptnDomain)
-		userChartManifest, err := c.getManifest(helm.GetReleaseName(e.Project, e.Stage, e.Service, false))
+		userChartManifest, err := c.getManifest(helm.GetReleaseName(e.Project, e.Stage, e.Service, false),
+			e.Project+"-"+e.Stage)
 		if err != nil {
 			c.logger.Error(err.Error())
 			return err
@@ -449,9 +451,9 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 }
 
 // getManifest
-func (c *ConfigurationChanger) getManifest(releaseName string) (string, error) {
+func (c *ConfigurationChanger) getManifest(releaseName, namespace string) (string, error) {
 
-	msg, err := keptnutils.ExecuteCommand("helm", []string{"get", "manifest", releaseName})
+	msg, err := keptnutils.ExecuteCommand("helm", []string{"get", "manifest", releaseName, "--namespace", namespace})
 	if err != nil {
 		return "", fmt.Errorf("Error when quering the manifest of chart %s: %s",
 			releaseName, err.Error())
@@ -508,7 +510,7 @@ func (c *ConfigurationChanger) ApplyChartWithReplicas(ch *chart.Chart, project, 
 				releaseName, namespace, err.Error())
 		}
 
-		if err := c.WaitForDeploymentsOfHelmRelease(releaseName); err != nil {
+		if err := c.WaitForDeploymentsOfHelmRelease(releaseName, namespace); err != nil {
 			return err
 		}
 		c.logger.Info(fmt.Sprintf("Finished upgrading chart %s in namespace %s", releaseName, namespace))
@@ -529,14 +531,14 @@ func (c *ConfigurationChanger) ApplyDirectory(chartPath, releaseName, namespace 
 	}
 	c.logger.Debug(msg)
 
-	if err := c.WaitForDeploymentsOfHelmRelease(releaseName); err != nil {
+	if err := c.WaitForDeploymentsOfHelmRelease(releaseName, namespace); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (c *ConfigurationChanger) WaitForDeploymentsOfHelmRelease(releaseName string) error {
-	helmManifest, err := c.getManifest(releaseName)
+func (c *ConfigurationChanger) WaitForDeploymentsOfHelmRelease(releaseName, namespace string) error {
+	helmManifest, err := c.getManifest(releaseName, namespace)
 	if err != nil {
 		return err
 	}
