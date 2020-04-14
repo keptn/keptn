@@ -4,6 +4,9 @@
 .dt-tag.error {
   border-color: $error-color;
 }
+.dt-tag.warning {
+  border-color: $orange-400;
+}
 
 .event-icon {
   width: 20px;
@@ -12,6 +15,10 @@
 
 .event-icon.error {
   fill: $error-color;
+}
+
+.event-icon.warning {
+  fill: $orange-400;
 }
 
 .event-icon.success {
