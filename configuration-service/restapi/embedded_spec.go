@@ -55,7 +55,7 @@ func init() {
           "200": {
             "description": "Success",
             "schema": {
-              "$ref": "#/definitions/Projects"
+              "$ref": "#/definitions/ExpandedProjects"
             }
           },
           "default": {
@@ -70,7 +70,8 @@ func init() {
         "tags": [
           "Project"
         ],
-        "summary": "Create a new project by project name",
+        "summary": "INTERNAL Endpoint: Create a new project by project name",
+        "deprecated": true,
         "parameters": [
           {
             "$ref": "#/parameters/project"
@@ -126,7 +127,8 @@ func init() {
         "tags": [
           "Project"
         ],
-        "summary": "Update the specified project",
+        "summary": "INTERNAL Endpoint: Update the specified project",
+        "deprecated": true,
         "parameters": [
           {
             "$ref": "#/parameters/project"
@@ -154,7 +156,8 @@ func init() {
         "tags": [
           "Project"
         ],
-        "summary": "Delete the specified project",
+        "summary": "INTERNAL Endpoint: Delete the specified project",
+        "deprecated": true,
         "responses": {
           "204": {
             "description": "Success. Project has been deleted. Response does not have a body."
@@ -622,7 +625,8 @@ func init() {
         "tags": [
           "Stage"
         ],
-        "summary": "Create a new stage by stage name",
+        "summary": "INTERNAL Endpoint: Create a new stage by stage name",
+        "deprecated": true,
         "parameters": [
           {
             "$ref": "#/parameters/stage"
@@ -688,7 +692,8 @@ func init() {
         "tags": [
           "Stage"
         ],
-        "summary": "Update the specified stage",
+        "summary": "INTERNAL Endpoint: Update the specified stage",
+        "deprecated": true,
         "parameters": [
           {
             "$ref": "#/parameters/stage"
@@ -716,7 +721,8 @@ func init() {
         "tags": [
           "Stage"
         ],
-        "summary": "Delete the specified stage",
+        "summary": "INTERNAL Endpoint: Delete the specified stage",
+        "deprecated": true,
         "responses": {
           "204": {
             "description": "Success. Stage has been deleted. Response does not have a body."
@@ -993,7 +999,8 @@ func init() {
         "tags": [
           "Service"
         ],
-        "summary": "Create a new service by service name",
+        "summary": "INTERNAL Endpoint: Create a new service by service name",
+        "deprecated": true,
         "parameters": [
           {
             "$ref": "#/parameters/service"
@@ -1062,7 +1069,8 @@ func init() {
         "tags": [
           "Service"
         ],
-        "summary": "Update the specified service",
+        "summary": "INTERNAL Endpoint: Update the specified service",
+        "deprecated": true,
         "parameters": [
           {
             "$ref": "#/parameters/service"
@@ -1090,7 +1098,8 @@ func init() {
         "tags": [
           "Service"
         ],
-        "summary": "Delete the specified service",
+        "summary": "INTERNAL Endpoint: Delete the specified service",
+        "deprecated": true,
         "responses": {
           "204": {
             "description": "Success. Service has been deleted. Response does not have a body."
@@ -1349,6 +1358,92 @@ func init() {
         },
         "message": {
           "description": "Error message",
+          "type": "string"
+        }
+      }
+    },
+    "ExpandedProject": {
+      "type": "object",
+      "properties": {
+        "creationDate": {
+          "description": "Creation date of the project",
+          "type": "string"
+        },
+        "gitRemoteURI": {
+          "description": "Git remote URI",
+          "type": "string"
+        },
+        "gitUser": {
+          "description": "Git User",
+          "type": "string"
+        },
+        "projectName": {
+          "description": "Project name",
+          "type": "string"
+        },
+        "shipyard": {
+          "description": "Shipyard file content",
+          "type": "string"
+        },
+        "stages": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ExpandedStage"
+          }
+        }
+      }
+    },
+    "ExpandedProjects": {
+      "type": "object",
+      "properties": {
+        "nextPageKey": {
+          "description": "Pointer to next page, base64 encoded",
+          "type": "string"
+        },
+        "pageSize": {
+          "description": "Size of returned page",
+          "type": "number"
+        },
+        "projects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ExpandedProject"
+          }
+        },
+        "totalCount": {
+          "description": "Total number of projects",
+          "type": "number"
+        }
+      }
+    },
+    "ExpandedService": {
+      "type": "object",
+      "properties": {
+        "creationDate": {
+          "description": "Creation date of the service",
+          "type": "string"
+        },
+        "deployedImage": {
+          "description": "Currently deployed image",
+          "type": "string"
+        },
+        "serviceName": {
+          "description": "Service name",
+          "type": "string"
+        }
+      }
+    },
+    "ExpandedStage": {
+      "type": "object",
+      "properties": {
+        "services": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ExpandedService"
+          }
+        },
+        "stageName": {
+          "description": "Stage name",
           "type": "string"
         }
       }
@@ -1673,7 +1768,7 @@ func init() {
           "200": {
             "description": "Success",
             "schema": {
-              "$ref": "#/definitions/Projects"
+              "$ref": "#/definitions/ExpandedProjects"
             }
           },
           "default": {
@@ -1688,7 +1783,8 @@ func init() {
         "tags": [
           "Project"
         ],
-        "summary": "Create a new project by project name",
+        "summary": "INTERNAL Endpoint: Create a new project by project name",
+        "deprecated": true,
         "parameters": [
           {
             "description": "Project entity",
@@ -1749,7 +1845,8 @@ func init() {
         "tags": [
           "Project"
         ],
-        "summary": "Update the specified project",
+        "summary": "INTERNAL Endpoint: Update the specified project",
+        "deprecated": true,
         "parameters": [
           {
             "description": "Project entity",
@@ -1782,7 +1879,8 @@ func init() {
         "tags": [
           "Project"
         ],
-        "summary": "Delete the specified project",
+        "summary": "INTERNAL Endpoint: Delete the specified project",
+        "deprecated": true,
         "responses": {
           "204": {
             "description": "Success. Project has been deleted. Response does not have a body."
@@ -2386,7 +2484,8 @@ func init() {
         "tags": [
           "Stage"
         ],
-        "summary": "Create a new stage by stage name",
+        "summary": "INTERNAL Endpoint: Create a new stage by stage name",
+        "deprecated": true,
         "parameters": [
           {
             "description": "Stage entity",
@@ -2465,7 +2564,8 @@ func init() {
         "tags": [
           "Stage"
         ],
-        "summary": "Update the specified stage",
+        "summary": "INTERNAL Endpoint: Update the specified stage",
+        "deprecated": true,
         "parameters": [
           {
             "description": "Stage entity",
@@ -2498,7 +2598,8 @@ func init() {
         "tags": [
           "Stage"
         ],
-        "summary": "Delete the specified stage",
+        "summary": "INTERNAL Endpoint: Delete the specified stage",
+        "deprecated": true,
         "responses": {
           "204": {
             "description": "Success. Stage has been deleted. Response does not have a body."
@@ -2862,7 +2963,8 @@ func init() {
         "tags": [
           "Service"
         ],
-        "summary": "Create a new service by service name",
+        "summary": "INTERNAL Endpoint: Create a new service by service name",
+        "deprecated": true,
         "parameters": [
           {
             "description": "Service entity",
@@ -2948,7 +3050,8 @@ func init() {
         "tags": [
           "Service"
         ],
-        "summary": "Update the specified service",
+        "summary": "INTERNAL Endpoint: Update the specified service",
+        "deprecated": true,
         "parameters": [
           {
             "description": "Service entity",
@@ -2981,7 +3084,8 @@ func init() {
         "tags": [
           "Service"
         ],
-        "summary": "Delete the specified service",
+        "summary": "INTERNAL Endpoint: Delete the specified service",
+        "deprecated": true,
         "responses": {
           "204": {
             "description": "Success. Service has been deleted. Response does not have a body."
@@ -3326,6 +3430,92 @@ func init() {
         },
         "message": {
           "description": "Error message",
+          "type": "string"
+        }
+      }
+    },
+    "ExpandedProject": {
+      "type": "object",
+      "properties": {
+        "creationDate": {
+          "description": "Creation date of the project",
+          "type": "string"
+        },
+        "gitRemoteURI": {
+          "description": "Git remote URI",
+          "type": "string"
+        },
+        "gitUser": {
+          "description": "Git User",
+          "type": "string"
+        },
+        "projectName": {
+          "description": "Project name",
+          "type": "string"
+        },
+        "shipyard": {
+          "description": "Shipyard file content",
+          "type": "string"
+        },
+        "stages": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ExpandedStage"
+          }
+        }
+      }
+    },
+    "ExpandedProjects": {
+      "type": "object",
+      "properties": {
+        "nextPageKey": {
+          "description": "Pointer to next page, base64 encoded",
+          "type": "string"
+        },
+        "pageSize": {
+          "description": "Size of returned page",
+          "type": "number"
+        },
+        "projects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ExpandedProject"
+          }
+        },
+        "totalCount": {
+          "description": "Total number of projects",
+          "type": "number"
+        }
+      }
+    },
+    "ExpandedService": {
+      "type": "object",
+      "properties": {
+        "creationDate": {
+          "description": "Creation date of the service",
+          "type": "string"
+        },
+        "deployedImage": {
+          "description": "Currently deployed image",
+          "type": "string"
+        },
+        "serviceName": {
+          "description": "Service name",
+          "type": "string"
+        }
+      }
+    },
+    "ExpandedStage": {
+      "type": "object",
+      "properties": {
+        "services": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ExpandedService"
+          }
+        },
+        "stageName": {
+          "description": "Stage name",
           "type": "string"
         }
       }

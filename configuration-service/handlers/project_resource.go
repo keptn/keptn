@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/base64"
 	"io/ioutil"
+	"strings"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
@@ -61,6 +62,14 @@ func PutProjectProjectNameResourceHandlerFunc(params project_resource.PutProject
 		filePath := projectConfigPath + "/" + *res.ResourceURI
 		logger.Debug("Updating resource: " + filePath)
 		common.WriteBase64EncodedFile(projectConfigPath+"/"+*res.ResourceURI, res.ResourceContent)
+		if strings.ToLower(*res.ResourceURI) == "shipyard.yaml" {
+			mv := common.GetMongoDBMaterializedView()
+			logger.Debug("updating shipyard.yaml content for project " + params.ProjectName + " in mongoDB table")
+			err := mv.UpdateShipyard(params.ProjectName, res.ResourceContent)
+			if err != nil {
+				logger.Error("Could not update shipyard.yaml content for project " + params.ProjectName + ": " + err.Error())
+			}
+		}
 	}
 
 	logger.Debug("Staging Changes")

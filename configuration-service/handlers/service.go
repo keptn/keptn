@@ -127,6 +127,10 @@ func PostProjectProjectNameStageStageNameServiceHandlerFunc(params service.PostP
 	err = common.WriteFile(servicePath+"/metadata.yaml", metadataString)
 
 	common.StageAndCommitAll(params.ProjectName, "Added service: "+params.Service.ServiceName)
+
+	mv := common.GetMongoDBMaterializedView()
+
+	mv.CreateService(params.ProjectName, params.StageName, params.Service.ServiceName)
 	return service.NewPostProjectProjectNameStageStageNameServiceNoContent()
 }
 

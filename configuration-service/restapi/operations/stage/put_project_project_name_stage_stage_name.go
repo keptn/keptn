@@ -31,7 +31,7 @@ func NewPutProjectProjectNameStageStageName(ctx *middleware.Context, handler Put
 
 /*PutProjectProjectNameStageStageName swagger:route PUT /project/{projectName}/stage/{stageName} Stage putProjectProjectNameStageStageName
 
-Update the specified stage
+INTERNAL Endpoint: Update the specified stage
 
 */
 type PutProjectProjectNameStageStageName struct {

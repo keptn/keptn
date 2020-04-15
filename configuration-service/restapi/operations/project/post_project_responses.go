@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	models "github.com/keptn/keptn/configuration-service/models"
+	"github.com/keptn/keptn/configuration-service/models"
 )
 
 // PostProjectNoContentCode is the HTTP code returned for type PostProjectNoContent

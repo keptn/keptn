@@ -15,7 +15,7 @@ import (
 
 	strfmt "github.com/go-openapi/strfmt"
 
-	models "github.com/keptn/keptn/configuration-service/models"
+	"github.com/keptn/keptn/configuration-service/models"
 )
 
 // NewPutProjectProjectNameResourceResourceURIParams creates a new PutProjectProjectNameResourceResourceURIParams object

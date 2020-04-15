@@ -6,6 +6,7 @@ require (
 	github.com/dsnet/compress v0.0.1 // indirect
 	github.com/frankban/quicktest v1.9.0 // indirect
 	github.com/ghodss/yaml v1.0.0
+	github.com/globalsign/mgo v0.0.0-20181015135952-eeefdecb41b8
 	github.com/go-openapi/errors v0.19.2
 	github.com/go-openapi/loads v0.19.2
 	github.com/go-openapi/runtime v0.19.4
@@ -13,7 +14,6 @@ require (
 	github.com/go-openapi/strfmt v0.19.3
 	github.com/go-openapi/swag v0.19.5
 	github.com/go-openapi/validate v0.19.4
-	github.com/golang/snappy v0.0.1 // indirect
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/keptn/go-utils v0.6.1-compat
 	github.com/keptn/kubernetes-utils v0.0.0-20200401103501-ae44a5ee0656
@@ -23,6 +23,7 @@ require (
 	github.com/pierrec/lz4 v2.3.0+incompatible // indirect
 	github.com/stretchr/testify v1.4.0
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
+	go.mongodb.org/mongo-driver v1.3.1
 	golang.org/x/net v0.0.0-20191126235420-ef20fe5d7933
 	gopkg.in/yaml.v2 v2.2.8
 	k8s.io/api v0.17.0
