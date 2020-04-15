@@ -125,10 +125,16 @@ var p platform
 var installCmd = &cobra.Command{
 	Use:   "install",
 	Short: "Installs Keptn on a Kubernetes cluster",
-	Long: `Installs Keptn on a Kubernetes cluster
+	Long: `The Keptn CLI allows installing Keptn on Azure Kubernetes Services (AKS), Amazon Elastic Kubernetes Service (EKS), Google Kubernetes Engine (GKE), Pivotal Container Service (PKS), and on OpenShift.
 
-Example:
-	keptn install`,
+For more information, please consult the following docs:
+
+* https://keptn.sh/docs/develop/installation/setup-keptn/
+
+`,
+	Example: `keptn install --platform=aks # install on Azure Kubernetes Service
+keptn install --platform=gke --use-case=quality-gates # install quality-gates on Google Kubernetes Engine
+keptn install --platform=kubernetes --gateway=NodePort # install on a Kubernetes instance with gateway NodePort`,
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 
@@ -285,8 +291,7 @@ func init() {
 		"The platform to run keptn on [aks,eks,gke,pks,openshift,kubernetes]")
 
 	installParams.ConfigFilePath = installCmd.Flags().StringP("creds", "c", "",
-		"The name of the creds file")
-	installCmd.Flags().MarkHidden("creds")
+		"Specify a JSON file containing cluster information needed for the installation (this allows skipping user prompts to execute a *silent* Keptn installation)")
 
 	installParams.InstallerImage = installCmd.Flags().StringP("keptn-installer-image", "k",
 		"", "The installer image which is used for the installation")
@@ -299,11 +304,9 @@ func init() {
 
 	installParams.GatewayInput = installCmd.Flags().StringP("gateway", "g", LoadBalancer.String(),
 		"The ingress-loadbalancer type ["+LoadBalancer.String()+","+NodePort.String()+"]")
-	installCmd.Flags().MarkHidden("gateway")
 
 	installParams.UseCaseInput = installCmd.Flags().StringP("use-case", "u", "all",
 		"The use case to install Keptn for ["+AllUseCases.String()+","+QualityGates.String()+"]")
-	installCmd.Flags().MarkHidden("use-case")
 
 	installParams.IstioInstallOptionInput = installCmd.Flags().StringP("istio-install-option", "",
 		StopIfInstalled.String(), "Installation options for istio ["+StopIfInstalled.String()+","+

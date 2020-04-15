@@ -6,9 +6,7 @@ import (
 
 // createCmd implements the create command
 var createCmd = &cobra.Command{
-	Use:   "create [project,service]",
-	Short: `"create" can be used with the subcommand "project" or "service"`,
-	Long:  `"create" can be used with the subcommand "project" or "service"`,
+	Use:   "create [project | service]",
 }
 
 func init() {
