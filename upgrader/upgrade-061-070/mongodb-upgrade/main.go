@@ -9,14 +9,20 @@ import (
 	"os"
 )
 
-const mongoDBURL = "mongodb://user:password@mongodb:27017/keptn"
+const defaultMongoDBConnectionString = "mongodb://user:password@mongodb.keptn-datastore.svc.cluster.local:27017/keptn"
 
 var client *mongo.Client
 
 var projectCollections map[string]*mongo.Collection
 
 func main() {
-	client, err := mongo.NewClient(options.Client().ApplyURI(mongoDBURL))
+	var connectionString string
+	if len(os.Args) > 1 {
+		connectionString = os.Args[1]
+	} else {
+		connectionString = defaultMongoDBConnectionString
+	}
+	client, err := mongo.NewClient(options.Client().ApplyURI(connectionString))
 	if err != nil {
 		fmt.Printf("failed to create mongo client: %v\n", err)
 		os.Exit(1)
@@ -64,10 +70,6 @@ func main() {
 			continue
 		}
 
-		if doc["data"] == nil || project == "" || doc["shkeptncontext"].(string) == "" {
-			fmt.Printf("Cannot migrate event because no project has been detected.")
-			continue
-		}
 		if projectCollections[project] == nil {
 			projectCollections[project] = client.Database("keptn").Collection(project)
 		}
