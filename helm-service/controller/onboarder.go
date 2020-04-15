@@ -176,7 +176,7 @@ func (o *Onboarder) onboardService(stageName string, event *keptnevents.ServiceC
 
 	serviceHandler := configutils.NewServiceHandler(o.configServiceURL)
 
-	o.logger.Debug("Creating new keptn service " + event.Service + " in stage " + stageName)
+	o.logger.Info("Creating new keptn service " + event.Service + " in stage " + stageName)
 	_, err := serviceHandler.CreateServiceInStage(event.Project, stageName, event.Service)
 	if err != nil {
 		return errors.New(*err.Message)

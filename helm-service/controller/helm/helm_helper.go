@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"helm.sh/helm/v3/pkg/release"
+
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
 
 	"helm.sh/helm/v3/pkg/action"
@@ -127,20 +129,32 @@ func (h *HelmExecutor) UpgradeChart(ch *chart.Chart, releaseName, namespace stri
 			return err
 		}
 
-		iCli := action.NewUpgrade(cfg)
-		iCli.Namespace = namespace
-		iCli.Wait = true
-		iCli.Install = true
-		iCli.ResetValues = true
-		u, err := iCli.Run(releaseName, ch, vals)
+		histClient := action.NewHistory(cfg)
+		var release *release.Release
+		if _, err := histClient.Run(releaseName); err == driver.ErrReleaseNotFound {
+			iCli := action.NewInstall(cfg)
+			iCli.Namespace = namespace
+			iCli.ReleaseName = releaseName
+			iCli.Wait = true
+			release, err = iCli.Run(ch, vals)
+		} else {
+			iCli := action.NewUpgrade(cfg)
+			iCli.Namespace = namespace
+			iCli.Wait = true
+			iCli.ResetValues = true
+			release, err = iCli.Run(releaseName, ch, vals)
+		}
 		if err != nil {
-			return fmt.Errorf("Error when upgrading chart %s in namespace %s: %s",
+			return fmt.Errorf("Error when installing/upgrading chart %s in namespace %s: %s",
 				releaseName, namespace, err.Error())
 		}
-		h.logger.Debug(u.Manifest)
-
-		if err := h.waitForDeploymentsOfHelmRelease(u.Manifest); err != nil {
-			return err
+		if release != nil {
+			h.logger.Debug(release.Manifest)
+			if err := h.waitForDeploymentsOfHelmRelease(release.Manifest); err != nil {
+				return err
+			}
+		} else {
+			h.logger.Debug("Release is nil")
 		}
 		h.logger.Info(fmt.Sprintf("Finished upgrading chart %s in namespace %s", releaseName, namespace))
 	} else {
