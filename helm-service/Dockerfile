@@ -38,12 +38,6 @@ FROM alpine:3.7
 # we need to install ca-certificates and libc6-compat for go programs to work properly
 RUN apk add --no-cache ca-certificates libc6-compat
 
-ARG HELM_VERSION=3.1.2
-RUN wget https://get.helm.sh/helm-v$HELM_VERSION-linux-amd64.tar.gz && \
-  tar -zxvf helm-v$HELM_VERSION-linux-amd64.tar.gz && \
-  mv linux-amd64/helm /bin/helm && \
-  rm -rf linux-amd64
-
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /go/src/github.com/keptn/keptn/helm-service/helm-service /helm-service
 
