@@ -16,9 +16,10 @@ spec:
     spec:
       containers:
       - name: openshift-route-service
-        image: keptn/openshift-route-service:0.1.1
+        image: keptn/openshift-route-service:latest
         ports:
         - containerPort: 8080
+        - containerPort: 8081
         resources:
           requests:
             memory: "32Mi"
@@ -27,6 +28,8 @@ spec:
             memory: "128Mi"
             cpu: "500m"
         env:
+        - name: BRIDGE_PORT
+          value: '3000'
         - name: APP_DOMAIN
           valueFrom:
             configMapKeyRef:
@@ -42,7 +45,13 @@ metadata:
     run: openshift-route-service
 spec:
   ports:
-  - port: 8080
+  - name: cloudevents
+    port: 8080
     protocol: TCP
+    targetPort: 8080
+  - name: expose-bridge
+    port: 8081
+    protocol: TCP
+    targetPort: 8081
   selector:
     run: openshift-route-service

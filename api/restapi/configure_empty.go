@@ -20,6 +20,7 @@ import (
 	"github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations"
 	"github.com/keptn/keptn/api/restapi/operations/auth"
+	"github.com/keptn/keptn/api/restapi/operations/configure"
 	"github.com/keptn/keptn/api/restapi/operations/event"
 	"github.com/keptn/keptn/api/restapi/operations/project"
 	"github.com/keptn/keptn/api/restapi/operations/service"
@@ -65,6 +66,8 @@ func configureAPI(api *operations.EmptyAPI) http.Handler {
 	api.AuthAuthHandler = auth.AuthHandlerFunc(func(params auth.AuthParams, principal *models.Principal) middleware.Responder {
 		return auth.NewAuthOK()
 	})
+
+	api.ConfigurePostConfigureBridgeExposeHandler = configure.PostConfigureBridgeExposeHandlerFunc(handlers.PostConfigureBridgeHandlerFunc)
 
 	api.EventPostEventHandler = event.PostEventHandlerFunc(handlers.PostEventHandlerFunc)
 	api.EventGetEventHandler = event.GetEventHandlerFunc(handlers.GetEventHandlerFunc)

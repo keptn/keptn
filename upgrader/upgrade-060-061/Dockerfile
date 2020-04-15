@@ -7,7 +7,7 @@ RUN wget -q https://storage.googleapis.com/kubernetes-release/release/v$KUBE_VER
 RUN apk update && apk upgrade && apk add --no-cache mongodb mongodb-tools bash curl
 
 # Copy core and install
-COPY ./scripts .
+COPY scripts .
 RUN chmod +x /*.sh
 
 # Start the app

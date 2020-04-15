@@ -33,6 +33,7 @@ export class Trace {
   type: string;
   label: string;
   icon: string;
+  image: string;
   plainEvent: string;
   data: {
     project: string;
@@ -98,6 +99,16 @@ export class Trace {
     return result;
   }
 
+  isWarning(): string {
+    let result: string = null;
+    if(this.data) {
+      if(this.data.result == 'warning') {
+        result = this.data.stage;
+      }
+    }
+    return result;
+  }
+
   isFailed(): boolean {
     return this.data.result == 'fail';
   }
@@ -137,13 +148,16 @@ export class Trace {
   }
 
   getShortImageName() {
-    let image = '';
-    if(this.data.image)
-      image = this.data.image;
-    else if(this.data.valuesCanary)
-      image = this.data.valuesCanary.image;
-    let parts = image.split("/");
-    return parts[parts.length-1];
+    if(!this.image) {
+      if(this.data.image && this.data.tag)
+        this.image = [this.data.image.split("/").pop(), this.data.tag].join(":");
+      else if(this.data.image)
+        this.image = this.data.image.split("/").pop();
+      else if(this.data.valuesCanary)
+        this.image = this.data.valuesCanary.image.split("/").pop();
+    }
+
+    return this.image;
   }
 
   getProject(): string {
