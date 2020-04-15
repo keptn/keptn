@@ -40,12 +40,17 @@ const domainConfigMapSuffix = "/installer/manifests/keptn/keptn-domain-configmap
 
 // domainCmd represents the domain command
 var domainCmd = &cobra.Command{
-	Use:   "domain MY.DOMAIN.COM",
-	Short: "Configures the domain",
-	Long: `Configures the domain of Keptn.
-	
-Example:
-	keptn configure domain my.domain.com`,
+	Use:   "domain YOUR.DOMAIN.COM",
+	Short: "Configures the domain used for Keptn",
+	Long: `Configures the domain used for Keptn.
+
+This is mandatory if *xip.io* cannot be used (e.g., when running Keptn on EKS, AWS will create an ELB).
+
+**Note:** This command requires a *kubernetes current context* pointing to the cluster where you would like to configure your domain. After installing Keptn this is guaranteed.
+
+Please find more information on https://keptn.sh/docs/develop/reference/troubleshooting/#verify-kubernetes-context-with-keptn-installation
+`,
+	Example: `keptn configure domain YOUR.DOMAIN.COM`,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
 
