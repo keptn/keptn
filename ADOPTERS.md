@@ -15,5 +15,5 @@ If you are not sure how to do this and if your organization should be listed her
 | avodaq AG             | https://youtu.be/bYmFYXLmGb0              |
 | eResearchTechnology   | https://www.dynatrace.com/news/blog/making-ops-life-easier-automating-sla-monitoring-for-deployed-services-on-kubernetes/ |
 | Neotys                | https://www.neotys.com/neotys-keptn-webinar                                     |
-| Citrix   | https://github.com/keptn-contrib/dynatrace-service |
+| Citrix   | https://github.com/keptn-contrib/slackbot-service |
 
