@@ -17,7 +17,6 @@ import (
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 
-	"github.com/ghodss/yaml"
 	"github.com/google/uuid"
 	"github.com/kelseyhightower/envconfig"
 )
@@ -185,21 +184,15 @@ func getImage(project string, currentStage string, service string) (string, erro
 		return "", err
 	}
 
-	values := make(map[string]interface{})
-	if err := yaml.Unmarshal([]byte(chart.Values.Raw), &values); err != nil {
-		return "", err
-	}
-	val, contained := values["image"]
-	if !contained {
-		return "", fmt.Errorf("Cannot find image for service %s in project %s and stage %s",
+	if val, found := chart.Values["image"]; found {
+		if imageName, validType := val.(string); validType {
+			return imageName, nil
+		}
+		return "", fmt.Errorf("Cannot parse image in values.yaml for service %s in project %s and stage %s",
 			service, project, currentStage)
 	}
-	imageName, validType := val.(string)
-	if !validType {
-		return "", fmt.Errorf("Cannot parse image for service %s in project %s and stage %s",
-			service, project, currentStage)
-	}
-	return imageName, nil
+	return "", fmt.Errorf("Cannot find image in values.yaml for service %s in project %s and stage %s",
+		service, project, currentStage)
 }
 
 func sendNewArtifactEvent(keptnHandler *keptnevents.Keptn, nextStage string, image string) error {
