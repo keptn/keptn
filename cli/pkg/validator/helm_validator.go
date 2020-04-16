@@ -4,12 +4,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/ghodss/yaml"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
+	"helm.sh/helm/v3/pkg/chart"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/helm/pkg/proto/hapi/chart"
 )
 
 var reservedFileNameSuffixes = [...]string{"-istio-destinationrule.yaml", "-istio-virtualservice.yaml"}
@@ -56,17 +55,13 @@ func validateTemplateFileNames(ch *chart.Chart) bool {
 }
 
 func validateValues(ch *chart.Chart) bool {
-	values := make(map[string]interface{})
-	if err := yaml.Unmarshal([]byte(ch.Values.Raw), &values); err != nil {
-		return false
-	}
 	// check image property
-	if _, containsImage := values["image"]; !containsImage {
+	if _, containsImage := ch.Values["image"]; !containsImage {
 		logging.PrintLog("Provided Helm chart does not contain \"image\" in values.yaml", logging.QuietLevel)
 		return false
 	}
 	// check replicas property
-	if _, containsReplicas := values["replicaCount"]; !containsReplicas {
+	if _, containsReplicas := ch.Values["replicaCount"]; !containsReplicas {
 		logging.PrintLog("Provided Helm chart does not contain \"replicaCount\" in values.yaml", logging.QuietLevel)
 		return false
 	}
