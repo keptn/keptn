@@ -49,32 +49,6 @@ func GetProjectHandlerFunc(params project.GetProjectParams) middleware.Responder
 	payload.TotalCount = float64(totalCount)
 	payload.NextPageKey = paginationInfo.NewNextPageKey
 	return project.NewGetProjectOK().WithPayload(payload)
-
-	/////////
-	/*
-		files, err := ioutil.ReadDir(config.ConfigDir)
-		if err != nil {
-			return project.NewGetProjectOK().WithPayload(payload)
-		}
-
-		paginationInfo := common.Paginate(len(files), params.PageSize, params.NextPageKey)
-
-		totalCount := len(files)
-		if paginationInfo.NextPageKey < int64(totalCount) {
-			for _, f := range files[paginationInfo.NextPageKey:paginationInfo.EndIndex] {
-				if f.IsDir() && common.FileExists(config.ConfigDir+"/"+f.Name()+"/metadata.yaml") {
-					stages, _ := getStages(stage.GetProjectProjectNameStageParams{ProjectName: f.Name(), DisableUpstreamSync: params.DisableUpstreamSync})
-					var project = &models.Project{ProjectName: f.Name(), Stages: stages}
-					payload.Projects = append(payload.Projects, project)
-				}
-			}
-		}
-
-		payload.TotalCount = float64(totalCount)
-		payload.NextPageKey = paginationInfo.NewNextPageKey
-		return project.NewGetProjectOK().WithPayload(payload)
-
-	*/
 }
 
 // PostProjectHandlerFunc creates a new project
