@@ -191,7 +191,7 @@ func (mv *projectsMaterializedView) DeleteService(project string, stage string, 
 			}
 			if serviceIndex < 0 {
 				fmt.Println("Could not delete service " + service + " from stage " + stage + " in project " + project + ". Service not found in database")
-				continue
+				return nil
 			}
 			copy(stg.Services[serviceIndex:], stg.Services[serviceIndex+1:])
 			stg.Services[len(stg.Services)-1] = nil

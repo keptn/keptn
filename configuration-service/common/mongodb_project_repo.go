@@ -8,11 +8,13 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"os"
 	"time"
 )
 
-var mongoDBConnection = "mongodb://user:password@localhost:27017/keptn" //os.Getenv("MONGO_DB_CONNECTION_STRING")
-var databaseName = "keptn"                                              //os.Getenv("MONGO_DB_NAME")
+var mongoDBConnection = os.Getenv("MONGO_DB_CONNECTION_STRING")
+var databaseName = os.Getenv("MONGO_DB_NAME")
+
 const projectsCollectionName = "keptnProjectsMV"
 
 type MongoDBProjectRepo struct {
@@ -92,7 +94,7 @@ func (mdbrepo *MongoDBProjectRepo) UpdateProject(project *models.ExpandedProject
 
 	prjInterface := transformProjectToInterface(project)
 	projectCollection := mdbrepo.getProjectsCollection()
-	_, err = projectCollection.ReplaceOne(ctx, bson.M{"projectName": project}, prjInterface)
+	_, err = projectCollection.ReplaceOne(ctx, bson.M{"projectName": project.ProjectName}, prjInterface)
 	if err != nil {
 		fmt.Println("Could not update project " + project.ProjectName + ": " + err.Error())
 		return err
