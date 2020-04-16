@@ -220,7 +220,7 @@ func (c *ConfigurationChanger) applyValuesCanary(e *keptnevents.ConfigurationCha
 			return err
 		}
 		if deploymentStrategy == keptnevents.Direct {
-			if err := c.helmExecutor.UpgradeChart(ch, helm.GetReleaseName(e.Project, e.Stage, e.Service, true), e.Project+"-"+e.Stage,
+			if err := c.helmExecutor.UpgradeChart(genChart, helm.GetReleaseName(e.Project, e.Stage, e.Service, true), e.Project+"-"+e.Stage,
 				getKeptnValues(e.Project, e.Stage, e.Service, getDeploymentName(deploymentStrategy, true))); err != nil {
 				return err
 			}
@@ -419,7 +419,7 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 		if err := keptnutils.StoreChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, true), genChartData, c.configServiceURL); err != nil {
 			return err
 		}
-		if err := c.helmExecutor.UpgradeChart(ch, helm.GetReleaseName(e.Project, e.Stage, e.Service, true), e.Project+"-"+e.Stage,
+		if err := c.helmExecutor.UpgradeChart(genChart, helm.GetReleaseName(e.Project, e.Stage, e.Service, true), e.Project+"-"+e.Stage,
 			getKeptnValues(e.Project, e.Stage, e.Service, getDeploymentName(deploymentStrategy, true))); err != nil {
 			return err
 		}
@@ -428,7 +428,7 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 		if err != nil {
 			return err
 		}
-		if err := c.helmExecutor.UpgradeChart(ch, helm.GetReleaseName(e.Project, e.Stage, e.Service, true), e.Project+"-"+e.Stage,
+		if err := c.helmExecutor.UpgradeChart(genChart, helm.GetReleaseName(e.Project, e.Stage, e.Service, true), e.Project+"-"+e.Stage,
 			getKeptnValues(e.Project, e.Stage, e.Service, getDeploymentName(deploymentStrategy, true))); err != nil {
 			return err
 		}

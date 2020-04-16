@@ -131,7 +131,8 @@ func (h *HelmExecutor) UpgradeChart(ch *chart.Chart, releaseName, namespace stri
 
 		histClient := action.NewHistory(cfg)
 		var release *release.Release
-		if _, err := histClient.Run(releaseName); err == driver.ErrReleaseNotFound {
+
+		if _, err = histClient.Run(releaseName); err == driver.ErrReleaseNotFound {
 			iCli := action.NewInstall(cfg)
 			iCli.Namespace = namespace
 			iCli.ReleaseName = releaseName
