@@ -128,9 +128,9 @@ func PostProjectProjectNameStageStageNameServiceHandlerFunc(params service.PostP
 
 	common.StageAndCommitAll(params.ProjectName, "Added service: "+params.Service.ServiceName)
 
-	mv := common.GetMongoDBMaterializedView()
-
+	mv := common.GetProjectsMaterializedView()
 	mv.CreateService(params.ProjectName, params.StageName, params.Service.ServiceName)
+
 	return service.NewPostProjectProjectNameStageStageNameServiceNoContent()
 }
 

@@ -63,7 +63,7 @@ func PutProjectProjectNameResourceHandlerFunc(params project_resource.PutProject
 		logger.Debug("Updating resource: " + filePath)
 		common.WriteBase64EncodedFile(projectConfigPath+"/"+*res.ResourceURI, res.ResourceContent)
 		if strings.ToLower(*res.ResourceURI) == "shipyard.yaml" {
-			mv := common.GetMongoDBMaterializedView()
+			mv := common.GetProjectsMaterializedView()
 			logger.Debug("updating shipyard.yaml content for project " + params.ProjectName + " in mongoDB table")
 			err := mv.UpdateShipyard(params.ProjectName, res.ResourceContent)
 			if err != nil {

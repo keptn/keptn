@@ -71,9 +71,9 @@ func PostProjectProjectNameStageHandlerFunc(params stage.PostProjectProjectNameS
 		return stage.NewPostProjectProjectNameStageBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not create stage.")})
 	}
 
-	mv := common.GetMongoDBMaterializedView()
-
+	mv := common.GetProjectsMaterializedView()
 	mv.CreateStage(params.ProjectName, params.Stage.StageName)
+
 	return stage.NewPostProjectProjectNameStageNoContent()
 }
 

@@ -29,7 +29,7 @@ func GetProjectHandlerFunc(params project.GetProjectParams) middleware.Responder
 		Projects:    []*models.ExpandedProject{},
 	}
 
-	mv := common.GetMongoDBMaterializedView()
+	mv := common.GetProjectsMaterializedView()
 
 	allProjects, err := mv.GetProjects()
 
@@ -37,11 +37,11 @@ func GetProjectHandlerFunc(params project.GetProjectParams) middleware.Responder
 		return project.NewGetProjectDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 	}
 
-	paginationInfo := common.Paginate(len(allProjects.Projects), params.PageSize, params.NextPageKey)
+	paginationInfo := common.Paginate(len(allProjects), params.PageSize, params.NextPageKey)
 
-	totalCount := len(allProjects.Projects)
+	totalCount := len(allProjects)
 	if paginationInfo.NextPageKey < int64(totalCount) {
-		for _, project := range allProjects.Projects[paginationInfo.NextPageKey:paginationInfo.EndIndex] {
+		for _, project := range allProjects[paginationInfo.NextPageKey:paginationInfo.EndIndex] {
 			payload.Projects = append(payload.Projects, project)
 		}
 	}
@@ -160,7 +160,7 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
 	}
 
-	mv := common.GetMongoDBMaterializedView()
+	mv := common.GetProjectsMaterializedView()
 
 	_ = mv.CreateProject(params.Project)
 	return project.NewPostProjectNoContent()
@@ -204,7 +204,7 @@ func DeleteProjectProjectNameHandlerFunc(params project.DeleteProjectProjectName
 		}
 	}
 
-	mv := common.GetMongoDBMaterializedView()
+	mv := common.GetProjectsMaterializedView()
 	mv.DeleteProject(params.ProjectName)
 
 	logger.Debug("Project " + params.ProjectName + " has been deleted")
