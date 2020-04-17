@@ -56,7 +56,7 @@ func (p *NamespaceManager) InjectIstio(project string, stage string) error {
 		return errors.New("error when getting namespace")
 	}
 
-	p.logger.Debug(fmt.Sprintf("Inject Istio to the %s namespace for blue-green deployments", helm.GetUmbrellaNamespace(project, stage)))
+	p.logger.Info(fmt.Sprintf("Inject Istio to the %s namespace for blue-green deployments", helm.GetUmbrellaNamespace(project, stage)))
 
 	if namespace.ObjectMeta.Labels == nil {
 		namespace.ObjectMeta.Labels = make(map[string]string)

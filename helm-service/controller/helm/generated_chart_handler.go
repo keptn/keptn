@@ -6,9 +6,9 @@ import (
 
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/helm-service/controller/mesh"
+	"helm.sh/helm/v3/pkg/chart"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/helm/pkg/proto/hapi/chart"
 	"sigs.k8s.io/yaml"
 )
 
@@ -25,9 +25,10 @@ func NewGeneratedChartHandler(mesh mesh.Mesh, keptnDomain string) *GeneratedChar
 // b/g and canary releases
 func (c *GeneratedChartHandler) GenerateDuplicateManagedChart(helmManifest string, project string, stageName string, service string) (*chart.Chart, error) {
 	meta := &chart.Metadata{
-		Name:     service + "-generated",
-		Keywords: []string{"deployment_strategy=" + keptnevents.Duplicate.String()},
-		Version:  "0.1.0",
+		APIVersion: "v2",
+		Name:       service + "-generated",
+		Keywords:   []string{"deployment_strategy=" + keptnevents.Duplicate.String()},
+		Version:    "0.1.0",
 	}
 	ch := chart.Chart{Metadata: meta}
 
@@ -70,6 +71,7 @@ func resetDeployment(depl *appsv1.Deployment) {
 	depl.Kind = "Deployment"
 	depl.APIVersion = "apps/v1"
 	depl.Namespace = ""
+	depl.ResourceVersion = ""
 	depl.Status = appsv1.DeploymentStatus{}
 }
 
@@ -77,9 +79,9 @@ func (*GeneratedChartHandler) getNamespace(project string, stage string) string 
 	return project + "-" + stage
 }
 
-func (c *GeneratedChartHandler) generateServices(svc *corev1.Service, project string, stageName string) ([]*chart.Template, error) {
+func (c *GeneratedChartHandler) generateServices(svc *corev1.Service, project string, stageName string) ([]*chart.File, error) {
 
-	templates := make([]*chart.Template, 0, 0)
+	templates := make([]*chart.File, 0, 0)
 
 	serviceCanary := svc.DeepCopy()
 	serviceCanary.Name = serviceCanary.Name + "-canary"
@@ -89,7 +91,7 @@ func (c *GeneratedChartHandler) generateServices(svc *corev1.Service, project st
 	if err != nil {
 		return nil, err
 	}
-	templates = append(templates, &chart.Template{Name: "templates/" + serviceCanary.Name + "-service" + ".yaml", Data: data})
+	templates = append(templates, &chart.File{Name: "templates/" + serviceCanary.Name + "-service" + ".yaml", Data: data})
 
 	// Generate destination rule for canary service
 	hostCanary := serviceCanary.Name + "." + c.getNamespace(project, stageName) + ".svc.cluster.local"
@@ -97,7 +99,7 @@ func (c *GeneratedChartHandler) generateServices(svc *corev1.Service, project st
 	if err != nil {
 		return nil, err
 	}
-	templates = append(templates, &chart.Template{Name: "templates/" + serviceCanary.Name + c.mesh.GetDestinationRuleSuffix(), Data: destinationRuleCanary})
+	templates = append(templates, &chart.File{Name: "templates/" + serviceCanary.Name + c.mesh.GetDestinationRuleSuffix(), Data: destinationRuleCanary})
 
 	servicePrimary := svc.DeepCopy()
 	servicePrimary.Name = servicePrimary.Name + "-primary"
@@ -112,7 +114,7 @@ func (c *GeneratedChartHandler) generateServices(svc *corev1.Service, project st
 	if err != nil {
 		return nil, err
 	}
-	templates = append(templates, &chart.Template{Name: "templates/" + servicePrimary.Name + "-service" + ".yaml", Data: data})
+	templates = append(templates, &chart.File{Name: "templates/" + servicePrimary.Name + "-service" + ".yaml", Data: data})
 
 	// Generate destination rule for primary service
 	hostPrimary := servicePrimary.Name + "." + c.getNamespace(project, stageName) + ".svc.cluster.local"
@@ -120,7 +122,7 @@ func (c *GeneratedChartHandler) generateServices(svc *corev1.Service, project st
 	if err != nil {
 		return nil, err
 	}
-	templates = append(templates, &chart.Template{Name: "templates/" + servicePrimary.Name + c.mesh.GetDestinationRuleSuffix(), Data: destinationRulePrimary})
+	templates = append(templates, &chart.File{Name: "templates/" + servicePrimary.Name + c.mesh.GetDestinationRuleSuffix(), Data: destinationRulePrimary})
 
 	// Generate virtual service
 	gws := []string{"public-gateway.istio-system", "mesh"}
@@ -137,12 +139,12 @@ func (c *GeneratedChartHandler) generateServices(svc *corev1.Service, project st
 		return nil, err
 	}
 
-	templates = append(templates, &chart.Template{Name: "templates/" + svc.Name + c.mesh.GetVirtualServiceSuffix(), Data: vs})
+	templates = append(templates, &chart.File{Name: "templates/" + svc.Name + c.mesh.GetVirtualServiceSuffix(), Data: vs})
 
 	return templates, nil
 }
 
-func (c *GeneratedChartHandler) generateDeployment(depl *appsv1.Deployment) (*chart.Template, error) {
+func (c *GeneratedChartHandler) generateDeployment(depl *appsv1.Deployment) (*chart.File, error) {
 	primaryDeployment := depl.DeepCopy()
 
 	primaryDeployment.Name = primaryDeployment.Name + "-primary"
@@ -165,7 +167,7 @@ func (c *GeneratedChartHandler) generateDeployment(depl *appsv1.Deployment) (*ch
 	}
 	// Set the keptn_deployment to primary
 	yamlString := strings.ReplaceAll(string(data), "keptn_deployment=canary", "keptn_deployment=primary")
-	return &chart.Template{Name: "templates/" + primaryDeployment.Name + "-deployment" + ".yaml", Data: []byte(yamlString)}, nil
+	return &chart.File{Name: "templates/" + primaryDeployment.Name + "-deployment" + ".yaml", Data: []byte(yamlString)}, nil
 }
 
 // GenerateMeshChart generates a chart containing the required mesh setup
@@ -173,9 +175,10 @@ func (c *GeneratedChartHandler) GenerateMeshChart(helmManifest string, project s
 	service string) (*chart.Chart, error) {
 
 	meta := &chart.Metadata{
-		Name:     service + "-generated",
-		Keywords: []string{"deployment_strategy=" + keptnevents.Direct.String()},
-		Version:  "0.1.0",
+		APIVersion: "v2",
+		Name:       service + "-generated",
+		Keywords:   []string{"deployment_strategy=" + keptnevents.Direct.String()},
+		Version:    "0.1.0",
 	}
 	ch := chart.Chart{Metadata: meta}
 
@@ -197,14 +200,14 @@ func (c *GeneratedChartHandler) GenerateMeshChart(helmManifest string, project s
 			return nil, err
 		}
 
-		vsTemplate := chart.Template{Name: "templates/" + svc.Name + c.mesh.GetVirtualServiceSuffix(), Data: vs}
+		vsTemplate := chart.File{Name: "templates/" + svc.Name + c.mesh.GetVirtualServiceSuffix(), Data: vs}
 		ch.Templates = append(ch.Templates, &vsTemplate)
 
 		dr, err := c.mesh.GenerateDestinationRule(svc.Name, host)
 		if err != nil {
 			return nil, err
 		}
-		drTemplate := chart.Template{Name: "templates/" + svc.Name + c.mesh.GetDestinationRuleSuffix(), Data: dr}
+		drTemplate := chart.File{Name: "templates/" + svc.Name + c.mesh.GetDestinationRuleSuffix(), Data: dr}
 		ch.Templates = append(ch.Templates, &drTemplate)
 	}
 
@@ -232,13 +235,14 @@ func (c *GeneratedChartHandler) UpdateCanaryWeight(ch *chart.Chart, canaryWeight
 }
 
 // GenerateEmptyChart generates an empty chart
-func (c *GeneratedChartHandler) GenerateEmptyChart(project string, stageName string, service string,
+func (c *GeneratedChartHandler) GenerateEmptyChart(service string,
 	strategy keptnevents.DeploymentStrategy) *chart.Chart {
 
 	meta := &chart.Metadata{
-		Name:     service + "-generated",
-		Keywords: []string{"deployment_strategy=" + strategy.String()},
-		Version:  "0.1.0",
+		APIVersion: "v2",
+		Name:       service + "-generated",
+		Keywords:   []string{"deployment_strategy=" + strategy.String()},
+		Version:    "0.1.0",
 	}
 	return &chart.Chart{Metadata: meta}
 

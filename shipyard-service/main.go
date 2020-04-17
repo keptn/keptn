@@ -342,11 +342,10 @@ func (client *Client) getDeleteInfoMessage(keptnHandler *keptn.Keptn) (string, e
 			return "", fmt.Errorf("error when checking availability of namespace: %v", err)
 		}
 		if exists {
-			msg += fmt.Sprintf("Namespace %s and Helm releases are not deleted. This may cause problems if "+
+			msg += fmt.Sprintf("Namespace %s is not deleted. This may cause problems if "+
 				"a project with the same name is created later. "+
-				"If you would like to delete the namespace and Helm releases, please execute "+
-				"'kubectl delete ns %s' and "+
-				"'helm del $(helm ls --namespace %s --short) --purge'\n", namespace, namespace, namespace)
+				"If you would like to delete the namespace, please exuecute "+
+				"'kubectl delete ns %s'", namespace, namespace)
 		}
 	}
 	return strings.TrimSpace(msg), nil

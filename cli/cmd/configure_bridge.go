@@ -5,11 +5,13 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
-	"github.com/keptn/keptn/cli/pkg/credentialmanager"
-	"github.com/spf13/cobra"
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"strings"
+
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
+	"github.com/spf13/cobra"
 
 	keptnutils "github.com/keptn/go-utils/pkg/api/utils"
 )
@@ -84,7 +86,7 @@ func configureBridge(endpoint string, apiToken string, configureBridgeParams *co
 		if err != nil {
 			return errors.New("Could not " + *configureBridgeParams.Action + " bridge: " + err.Error())
 		}
-		fmt.Printf("Bridge exposed successfully. You can reach it here: https://%s", body)
+		fmt.Printf("Bridge exposed successfully. You can reach it here: https://%s", strings.Trim(string(body), "\""))
 	} else {
 		if err != nil {
 			return errors.New("Could not " + *configureBridgeParams.Action + " bridge: " + err.Error())

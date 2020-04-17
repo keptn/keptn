@@ -3,16 +3,14 @@ module github.com/keptn/keptn/cli
 go 1.13
 
 require (
-	github.com/Azure/go-autorest/autorest v0.10.0 // indirect
 	github.com/cloudevents/sdk-go v0.10.0
-	github.com/danieljoos/wincred v1.0.2 // indirect
 	github.com/docker/docker-credential-helpers v0.6.3
 	github.com/ghodss/yaml v1.0.0
 	github.com/google/uuid v1.1.1
 	github.com/gorilla/websocket v1.4.1
 	github.com/hashicorp/go-version v1.2.0
 	github.com/keptn/go-utils v0.6.1-compat.0.20200414083553-4c54536d5d8f
-	github.com/keptn/kubernetes-utils v0.0.0-20200401103501-ae44a5ee0656
+	github.com/keptn/kubernetes-utils v0.0.0-20200414115508-d18721552e01
 	github.com/magiconair/properties v1.8.1
 	github.com/mattn/go-shellwords v1.0.10
 	github.com/mitchellh/go-homedir v1.1.0
@@ -21,7 +19,12 @@ require (
 	github.com/stretchr/testify v1.4.0
 	gopkg.in/yaml.v2 v2.2.8
 	gotest.tools v2.2.0+incompatible
-	k8s.io/api v0.17.0
-	k8s.io/helm v2.14.3+incompatible
-	k8s.io/utils v0.0.0-20200327001022-6496210b90e8 // indirect
+	helm.sh/helm/v3 v3.1.2
+	k8s.io/api v0.17.2
+)
+
+// Transitive requirement from Helm: See https://github.com/helm/helm/blob/v3.1.2/go.mod
+replace (
+	github.com/Azure/go-autorest => github.com/Azure/go-autorest v13.3.2+incompatible
+	github.com/docker/distribution => github.com/docker/distribution v0.0.0-20191216044856-a8371794149d
 )

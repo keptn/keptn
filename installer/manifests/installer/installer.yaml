@@ -15,6 +15,7 @@ spec:
       containers:
       - name: keptn-installer
         image: keptn/installer:0.5.2
+        imagePullPolicy: Always
         env:       
         - name: PLATFORM
           value: PLATFORM_PLACEHOLDER

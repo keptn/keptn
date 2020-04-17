@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	"k8s.io/helm/pkg/proto/hapi/chart"
+	"helm.sh/helm/v3/pkg/chart"
 
 	cloudevents "github.com/cloudevents/sdk-go"
 
@@ -176,7 +176,7 @@ func (o *Onboarder) onboardService(stageName string, event *keptnevents.ServiceC
 
 	serviceHandler := configutils.NewServiceHandler(o.configServiceURL)
 
-	o.logger.Debug("Creating new keptn service " + event.Service + " in stage " + stageName)
+	o.logger.Info("Creating new keptn service " + event.Service + " in stage " + stageName)
 	_, err := serviceHandler.CreateServiceInStage(event.Project, stageName, event.Service)
 	if err != nil {
 		return errors.New(*err.Message)
@@ -202,7 +202,7 @@ func (o *Onboarder) onboardService(stageName string, event *keptnevents.ServiceC
 
 		chartGenerator := helm.NewGeneratedChartHandler(o.mesh, o.keptnDomain)
 		o.logger.Debug(fmt.Sprintf("For stage %s with deployment strategy %s, an empty chart is generated", stageName, event.DeploymentStrategies[stageName].String()))
-		generatedChart := chartGenerator.GenerateEmptyChart(event.Project, stageName, event.Service, event.DeploymentStrategies[stageName])
+		generatedChart := chartGenerator.GenerateEmptyChart(event.Service, event.DeploymentStrategies[stageName])
 
 		helmChartName := helm.GetChartName(event.Service, true)
 		o.logger.Debug(fmt.Sprintf("Storing the keptn generated Helm chart %s for stage %s", helmChartName, stageName))

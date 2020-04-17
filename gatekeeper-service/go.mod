@@ -8,5 +8,11 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/keptn/go-utils v0.6.1-compat.0.20200406125548-5337a2e806c4
-	github.com/keptn/kubernetes-utils v0.0.0-20200401103501-ae44a5ee0656
+	github.com/keptn/kubernetes-utils v0.0.0-20200417060634-69e3369c72d3
+)
+
+// Transitive requirement from Helm: See https://github.com/helm/helm/blob/v3.1.2/go.mod
+replace (
+	github.com/Azure/go-autorest => github.com/Azure/go-autorest v13.3.2+incompatible
+	github.com/docker/distribution => github.com/docker/distribution v0.0.0-20191216044856-a8371794149d
 )

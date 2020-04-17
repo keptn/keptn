@@ -7,11 +7,13 @@ import (
 	"path/filepath"
 	"strings"
 
+	keptnkubeutils "github.com/keptn/kubernetes-utils/pkg"
+
 	configmodels "github.com/keptn/go-utils/pkg/api/models"
 	configutils "github.com/keptn/go-utils/pkg/api/utils"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
 
-	hapichart "k8s.io/helm/pkg/proto/hapi/chart"
+	"helm.sh/helm/v3/pkg/chart"
 
 	"sigs.k8s.io/yaml"
 )
@@ -88,38 +90,44 @@ func (u *UmbrellaChartHandler) isUmbrellaResource(uri string) bool {
 	return contained || strings.HasPrefix(uri, "/templates/")
 }
 
-// GetUmbrellaChart stores the resources of the umbrella chart in the provided directory
-func (u *UmbrellaChartHandler) GetUmbrellaChart(outputDirectory, project, stage string) error {
+// GetUmbrellaChart fetches the umbrella chart from the configuration service and returns the chart
+func (u *UmbrellaChartHandler) GetUmbrellaChart(project, stage string) (*chart.Chart, error) {
 
 	rHandler := configutils.NewResourceHandler(u.configServiceURL)
 	resources, err := rHandler.GetAllStageResources(project, stage)
 	if err != nil {
-		return err
+		return nil, err
 	}
+
+	umbrellaChart, err := ioutil.TempDir("", "")
+	if err != nil {
+		return nil, fmt.Errorf("error when creating a temporary directory: %s", err.Error())
+	}
+	defer os.RemoveAll(umbrellaChart)
 
 	for _, resource := range resources {
 		if u.isUmbrellaResource(*resource.ResourceURI) {
 			rData, err := rHandler.GetStageResource(project, stage, *resource.ResourceURI)
 			if err != nil {
-				return err
+				return nil, err
 			}
 			if strings.Count(*resource.ResourceURI, "/") > 1 {
 				uri := *resource.ResourceURI
 				dir := uri[:strings.LastIndex(*resource.ResourceURI, "/")]
-				os.MkdirAll(filepath.Join(outputDirectory, dir), 0755)
+				os.MkdirAll(filepath.Join(umbrellaChart, dir), 0755)
 			}
-			if err := ioutil.WriteFile(filepath.Join(outputDirectory, *resource.ResourceURI),
+			if err := ioutil.WriteFile(filepath.Join(umbrellaChart, *resource.ResourceURI),
 				[]byte(rData.ResourceContent), 0644); err != nil {
-				return err
+				return nil, err
 			}
 		}
 	}
-	return nil
+	return keptnkubeutils.LoadChartFromPath(umbrellaChart)
 }
 
 func (u *UmbrellaChartHandler) createRootChartResource(event *keptnevents.ServiceCreateEventData) (*configmodels.Resource, error) {
 
-	metadata := hapichart.Metadata{ApiVersion: "v1",
+	metadata := chart.Metadata{APIVersion: "v2",
 		Description: "A Helm chart for project " + event.Project + "-umbrella",
 		Name:        event.Project + "-umbrella",
 		Version:     version}
