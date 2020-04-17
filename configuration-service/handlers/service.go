@@ -129,7 +129,10 @@ func PostProjectProjectNameStageStageNameServiceHandlerFunc(params service.PostP
 	common.StageAndCommitAll(params.ProjectName, "Added service: "+params.Service.ServiceName)
 
 	mv := common.GetProjectsMaterializedView()
-	mv.CreateService(params.ProjectName, params.StageName, params.Service.ServiceName)
+	err = mv.CreateService(params.ProjectName, params.StageName, params.Service.ServiceName)
+	if err != nil {
+		return service.NewPostProjectProjectNameStageStageNameServiceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+	}
 
 	return service.NewPostProjectProjectNameStageStageNameServiceNoContent()
 }

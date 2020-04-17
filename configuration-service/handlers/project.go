@@ -136,7 +136,11 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 
 	mv := common.GetProjectsMaterializedView()
 
-	_ = mv.CreateProject(params.Project)
+	err = mv.CreateProject(params.Project)
+
+	if err != nil {
+		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+	}
 	return project.NewPostProjectNoContent()
 }
 
@@ -179,7 +183,10 @@ func DeleteProjectProjectNameHandlerFunc(params project.DeleteProjectProjectName
 	}
 
 	mv := common.GetProjectsMaterializedView()
-	mv.DeleteProject(params.ProjectName)
+	err = mv.DeleteProject(params.ProjectName)
+	if err != nil {
+		return project.NewDeleteProjectProjectNameBadRequest().WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+	}
 
 	logger.Debug("Project " + params.ProjectName + " has been deleted")
 	return project.NewDeleteProjectProjectNameNoContent()

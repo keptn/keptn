@@ -72,7 +72,10 @@ func PostProjectProjectNameStageHandlerFunc(params stage.PostProjectProjectNameS
 	}
 
 	mv := common.GetProjectsMaterializedView()
-	mv.CreateStage(params.ProjectName, params.Stage.StageName)
+	err = mv.CreateStage(params.ProjectName, params.Stage.StageName)
+	if err != nil {
+		return stage.NewPostProjectProjectNameStageBadRequest().WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+	}
 
 	return stage.NewPostProjectProjectNameStageNoContent()
 }

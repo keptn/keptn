@@ -68,6 +68,7 @@ func PutProjectProjectNameResourceHandlerFunc(params project_resource.PutProject
 			err := mv.UpdateShipyard(params.ProjectName, res.ResourceContent)
 			if err != nil {
 				logger.Error("Could not update shipyard.yaml content for project " + params.ProjectName + ": " + err.Error())
+				return project_resource.NewPutProjectProjectNameResourceBadRequest().WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 			}
 		}
 	}
