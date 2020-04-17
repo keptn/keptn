@@ -31,7 +31,7 @@ func NewDeleteProjectProjectNameStageStageNameServiceServiceName(ctx *middleware
 
 /*DeleteProjectProjectNameStageStageNameServiceServiceName swagger:route DELETE /project/{projectName}/stage/{stageName}/service/{serviceName} Service deleteProjectProjectNameStageStageNameServiceServiceName
 
-Delete the specified service
+INTERNAL Endpoint: Delete the specified service
 
 */
 type DeleteProjectProjectNameStageStageNameServiceServiceName struct {

@@ -31,7 +31,7 @@ func NewPutProjectProjectNameStageStageNameServiceServiceName(ctx *middleware.Co
 
 /*PutProjectProjectNameStageStageNameServiceServiceName swagger:route PUT /project/{projectName}/stage/{stageName}/service/{serviceName} Service putProjectProjectNameStageStageNameServiceServiceName
 
-Update the specified service
+INTERNAL Endpoint: Update the specified service
 
 */
 type PutProjectProjectNameStageStageNameServiceServiceName struct {

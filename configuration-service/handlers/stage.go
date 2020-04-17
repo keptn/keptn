@@ -70,6 +70,13 @@ func PostProjectProjectNameStageHandlerFunc(params stage.PostProjectProjectNameS
 		logger.Error(err.Error())
 		return stage.NewPostProjectProjectNameStageBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not create stage.")})
 	}
+
+	mv := common.GetProjectsMaterializedView()
+	err = mv.CreateStage(params.ProjectName, params.Stage.StageName)
+	if err != nil {
+		return stage.NewPostProjectProjectNameStageBadRequest().WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+	}
+
 	return stage.NewPostProjectProjectNameStageNoContent()
 }
 

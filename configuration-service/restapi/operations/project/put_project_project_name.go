@@ -31,7 +31,7 @@ func NewPutProjectProjectName(ctx *middleware.Context, handler PutProjectProject
 
 /*PutProjectProjectName swagger:route PUT /project/{projectName} Project putProjectProjectName
 
-Update the specified project
+INTERNAL Endpoint: Update the specified project
 
 */
 type PutProjectProjectName struct {

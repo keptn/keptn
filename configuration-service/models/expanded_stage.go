@@ -13,25 +13,19 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// Services services
-// swagger:model Services
-type Services struct {
-
-	// Pointer to next page, base64 encoded
-	NextPageKey string `json:"nextPageKey,omitempty"`
-
-	// Size of returned page
-	PageSize float64 `json:"pageSize,omitempty"`
+// ExpandedStage expanded stage
+// swagger:model ExpandedStage
+type ExpandedStage struct {
 
 	// services
-	Services []*Service `json:"services"`
+	Services []*ExpandedService `json:"services"`
 
-	// Total number of services
-	TotalCount float64 `json:"totalCount,omitempty"`
+	// Stage name
+	StageName string `json:"stageName,omitempty"`
 }
 
-// Validate validates this services
-func (m *Services) Validate(formats strfmt.Registry) error {
+// Validate validates this expanded stage
+func (m *ExpandedStage) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateServices(formats); err != nil {
@@ -44,7 +38,7 @@ func (m *Services) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Services) validateServices(formats strfmt.Registry) error {
+func (m *ExpandedStage) validateServices(formats strfmt.Registry) error {
 
 	if swag.IsZero(m.Services) { // not required
 		return nil
@@ -70,7 +64,7 @@ func (m *Services) validateServices(formats strfmt.Registry) error {
 }
 
 // MarshalBinary interface implementation
-func (m *Services) MarshalBinary() ([]byte, error) {
+func (m *ExpandedStage) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -78,8 +72,8 @@ func (m *Services) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *Services) UnmarshalBinary(b []byte) error {
-	var res Services
+func (m *ExpandedStage) UnmarshalBinary(b []byte) error {
+	var res ExpandedStage
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

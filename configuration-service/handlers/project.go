@@ -1,9 +1,7 @@
 package handlers
 
 import (
-	"github.com/keptn/keptn/configuration-service/restapi/operations/stage"
 	k8sutils "github.com/keptn/kubernetes-utils/pkg"
-	"io/ioutil"
 	"os"
 	"time"
 
@@ -24,28 +22,27 @@ type projectMetadata struct {
 
 // GetProjectHandlerFunc gets a list of projects
 func GetProjectHandlerFunc(params project.GetProjectParams) middleware.Responder {
-	var payload = &models.Projects{
+	var payload = &models.ExpandedProjects{
 		PageSize:    0,
 		NextPageKey: "0",
 		TotalCount:  0,
-		Projects:    []*models.Project{},
+		Projects:    []*models.ExpandedProject{},
 	}
 
-	files, err := ioutil.ReadDir(config.ConfigDir)
-	if err != nil {
-		return project.NewGetProjectOK().WithPayload(payload)
+	mv := common.GetProjectsMaterializedView()
+
+	allProjects, err := mv.GetProjects()
+
+	if err != nil || allProjects == nil {
+		return project.NewGetProjectDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 	}
 
-	paginationInfo := common.Paginate(len(files), params.PageSize, params.NextPageKey)
+	paginationInfo := common.Paginate(len(allProjects), params.PageSize, params.NextPageKey)
 
-	totalCount := len(files)
+	totalCount := len(allProjects)
 	if paginationInfo.NextPageKey < int64(totalCount) {
-		for _, f := range files[paginationInfo.NextPageKey:paginationInfo.EndIndex] {
-			if f.IsDir() && common.FileExists(config.ConfigDir+"/"+f.Name()+"/metadata.yaml") {
-				stages, _ := getStages(stage.GetProjectProjectNameStageParams{ProjectName: f.Name(), DisableUpstreamSync: params.DisableUpstreamSync})
-				var project = &models.Project{ProjectName: f.Name(), Stages: stages}
-				payload.Projects = append(payload.Projects, project)
-			}
+		for _, project := range allProjects[paginationInfo.NextPageKey:paginationInfo.EndIndex] {
+			payload.Projects = append(payload.Projects, project)
 		}
 	}
 
@@ -136,6 +133,14 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 		}
 		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
 	}
+
+	mv := common.GetProjectsMaterializedView()
+
+	err = mv.CreateProject(params.Project)
+
+	if err != nil {
+		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+	}
 	return project.NewPostProjectNoContent()
 }
 
@@ -175,6 +180,12 @@ func DeleteProjectProjectNameHandlerFunc(params project.DeleteProjectProjectName
 			logger.Error(err.Error())
 			return project.NewDeleteProjectProjectNameBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not delete upstream credentials")})
 		}
+	}
+
+	mv := common.GetProjectsMaterializedView()
+	err = mv.DeleteProject(params.ProjectName)
+	if err != nil {
+		return project.NewDeleteProjectProjectNameBadRequest().WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 	}
 
 	logger.Debug("Project " + params.ProjectName + " has been deleted")

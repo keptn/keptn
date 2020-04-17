@@ -31,7 +31,7 @@ func NewPostProjectProjectNameStageStageNameService(ctx *middleware.Context, han
 
 /*PostProjectProjectNameStageStageNameService swagger:route POST /project/{projectName}/stage/{stageName}/service Service postProjectProjectNameStageStageNameService
 
-Create a new service by service name
+INTERNAL Endpoint: Create a new service by service name
 
 */
 type PostProjectProjectNameStageStageNameService struct {

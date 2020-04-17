@@ -13,9 +13,9 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// Services services
-// swagger:model Services
-type Services struct {
+// ExpandedProjects expanded projects
+// swagger:model ExpandedProjects
+type ExpandedProjects struct {
 
 	// Pointer to next page, base64 encoded
 	NextPageKey string `json:"nextPageKey,omitempty"`
@@ -23,18 +23,18 @@ type Services struct {
 	// Size of returned page
 	PageSize float64 `json:"pageSize,omitempty"`
 
-	// services
-	Services []*Service `json:"services"`
+	// projects
+	Projects []*ExpandedProject `json:"projects"`
 
-	// Total number of services
+	// Total number of projects
 	TotalCount float64 `json:"totalCount,omitempty"`
 }
 
-// Validate validates this services
-func (m *Services) Validate(formats strfmt.Registry) error {
+// Validate validates this expanded projects
+func (m *ExpandedProjects) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateServices(formats); err != nil {
+	if err := m.validateProjects(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -44,21 +44,21 @@ func (m *Services) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Services) validateServices(formats strfmt.Registry) error {
+func (m *ExpandedProjects) validateProjects(formats strfmt.Registry) error {
 
-	if swag.IsZero(m.Services) { // not required
+	if swag.IsZero(m.Projects) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Services); i++ {
-		if swag.IsZero(m.Services[i]) { // not required
+	for i := 0; i < len(m.Projects); i++ {
+		if swag.IsZero(m.Projects[i]) { // not required
 			continue
 		}
 
-		if m.Services[i] != nil {
-			if err := m.Services[i].Validate(formats); err != nil {
+		if m.Projects[i] != nil {
+			if err := m.Projects[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("services" + "." + strconv.Itoa(i))
+					return ve.ValidateName("projects" + "." + strconv.Itoa(i))
 				}
 				return err
 			}
@@ -70,7 +70,7 @@ func (m *Services) validateServices(formats strfmt.Registry) error {
 }
 
 // MarshalBinary interface implementation
-func (m *Services) MarshalBinary() ([]byte, error) {
+func (m *ExpandedProjects) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -78,8 +78,8 @@ func (m *Services) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *Services) UnmarshalBinary(b []byte) error {
-	var res Services
+func (m *ExpandedProjects) UnmarshalBinary(b []byte) error {
+	var res ExpandedProjects
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

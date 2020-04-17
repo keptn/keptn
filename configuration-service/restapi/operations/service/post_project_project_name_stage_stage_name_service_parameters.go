@@ -14,7 +14,7 @@ import (
 
 	strfmt "github.com/go-openapi/strfmt"
 
-	models "github.com/keptn/keptn/configuration-service/models"
+	"github.com/keptn/keptn/configuration-service/models"
 )
 
 // NewPostProjectProjectNameStageStageNameServiceParams creates a new PostProjectProjectNameStageStageNameServiceParams object

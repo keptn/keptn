@@ -10,21 +10,27 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// Service service
-// swagger:model Service
-type Service struct {
+// ExpandedService expanded service
+// swagger:model ExpandedService
+type ExpandedService struct {
+
+	// Creation date of the service
+	CreationDate string `json:"creationDate,omitempty"`
+
+	// Currently deployed image
+	DeployedImage string `json:"deployedImage,omitempty"`
 
 	// Service name
 	ServiceName string `json:"serviceName,omitempty"`
 }
 
-// Validate validates this service
-func (m *Service) Validate(formats strfmt.Registry) error {
+// Validate validates this expanded service
+func (m *ExpandedService) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *Service) MarshalBinary() ([]byte, error) {
+func (m *ExpandedService) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -32,8 +38,8 @@ func (m *Service) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *Service) UnmarshalBinary(b []byte) error {
-	var res Service
+func (m *ExpandedService) UnmarshalBinary(b []byte) error {
+	var res ExpandedService
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
