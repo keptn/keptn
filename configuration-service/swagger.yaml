@@ -7,9 +7,9 @@ info:
 basePath: /v1
 produces:
 - application/json
-- application/cloudevents+json
 consumes:
-- application/json
+  - application/cloudevents+json
+  - application/json
 
 schemes:
   - http

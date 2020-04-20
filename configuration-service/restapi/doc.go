@@ -9,10 +9,10 @@
 //  Version: 0.1.0
 //
 //  Consumes:
+//    - application/cloudevents+json
 //    - application/json
 //
 //  Produces:
-//    - application/cloudevents+json
 //    - application/json
 //
 // swagger:meta

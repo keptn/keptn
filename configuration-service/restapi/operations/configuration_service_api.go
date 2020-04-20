@@ -192,10 +192,10 @@ type ConfigurationServiceAPI struct {
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
 	BearerAuthenticator func(string, security.ScopedTokenAuthentication) runtime.Authenticator
 	// JSONConsumer registers a consumer for the following mime types:
+	//   - application/cloudevents+json
 	//   - application/json
 	JSONConsumer runtime.Consumer
 	// JSONProducer registers a producer for the following mime types:
-	//   - application/cloudevents+json
 	//   - application/json
 	JSONProducer runtime.Producer
 
@@ -537,6 +537,8 @@ func (o *ConfigurationServiceAPI) ConsumersFor(mediaTypes []string) map[string]r
 	result := make(map[string]runtime.Consumer, len(mediaTypes))
 	for _, mt := range mediaTypes {
 		switch mt {
+		case "application/cloudevents+json":
+			result["application/cloudevents+json"] = o.JSONConsumer
 		case "application/json":
 			result["application/json"] = o.JSONConsumer
 		}
@@ -554,8 +556,6 @@ func (o *ConfigurationServiceAPI) ProducersFor(mediaTypes []string) map[string]r
 	result := make(map[string]runtime.Producer, len(mediaTypes))
 	for _, mt := range mediaTypes {
 		switch mt {
-		case "application/cloudevents+json":
-			result["application/cloudevents+json"] = o.JSONProducer
 		case "application/json":
 			result["application/json"] = o.JSONProducer
 		}
