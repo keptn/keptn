@@ -2,6 +2,7 @@ package common
 
 import (
 	"errors"
+	keptn "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/configuration-service/models"
 	"reflect"
 	"testing"
@@ -755,4 +756,183 @@ func Test_projectsMaterializedView_DeleteService(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_updateServiceInStage(t *testing.T) {
+	type args struct {
+		project *models.ExpandedProject
+		stage   string
+		service string
+		fn      serviceUpdateFunc
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "Expect function to be called",
+			args: args{
+				project: &models.ExpandedProject{
+					ProjectName: "test-project",
+					Stages: []*models.ExpandedStage{
+						{
+							Services: []*models.ExpandedService{
+								{
+									ServiceName: "test-service",
+								},
+							},
+							StageName: "dev",
+						},
+					},
+				},
+				stage:   "dev",
+				service: "test-service",
+				fn: func(service *models.ExpandedService) error {
+					return nil
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Expect function to not be called",
+			args: args{
+				project: &models.ExpandedProject{
+					ProjectName: "test-project",
+					Stages: []*models.ExpandedStage{
+						{
+							Services:  []*models.ExpandedService{},
+							StageName: "dev",
+						},
+					},
+				},
+				stage:   "dev",
+				service: "test-service",
+				fn: func(service *models.ExpandedService) error {
+					return nil
+				},
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := updateServiceInStage(tt.args.project, tt.args.stage, tt.args.service, tt.args.fn); (err != nil) != tt.wantErr {
+				t.Errorf("updateServiceInStage() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func Test_projectsMaterializedView_UpdateEventOfService(t *testing.T) {
+	type fields struct {
+		ProjectRepo ProjectRepo
+	}
+	type args struct {
+		keptnBase    *keptn.KeptnBase
+		eventType    string
+		keptnContext string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "configuration-change",
+			fields: fields{
+				ProjectRepo: &mockProjectRepo{
+					CreateProjectMock: nil,
+					GetProjectMock: func(projectName string) (project *models.ExpandedProject, err error) {
+						return &models.ExpandedProject{
+							ProjectName: "test-project",
+							Stages: []*models.ExpandedStage{
+								{
+									Services: []*models.ExpandedService{
+										{
+											ServiceName: "test-service",
+										},
+									},
+									StageName: "dev",
+								},
+							},
+						}, nil
+					},
+					UpdateProjectMock: func(project *models.ExpandedProject) error {
+						if project.Stages[0].Services[0].LastConfigurationChangedEvent.KeptnContext == "test-context" {
+							return nil
+						}
+						return errors.New("project was not updated correctly")
+					},
+					DeleteProjectMock: nil,
+					GetProjectsMock:   nil,
+				},
+			},
+			args: args{
+				keptnBase:    &keptn.KeptnBase{Project: "test-project", Stage: "dev", Service: "test-service"},
+				eventType:    keptn.ConfigurationChangeEventType,
+				keptnContext: "test-context",
+			},
+			wantErr: false,
+		},
+		{
+			name: "deployment-finished",
+			fields: fields{
+				ProjectRepo: &mockProjectRepo{
+					CreateProjectMock: nil,
+					GetProjectMock: func(projectName string) (project *models.ExpandedProject, err error) {
+						return &models.ExpandedProject{
+							ProjectName: "test-project",
+							Stages: []*models.ExpandedStage{
+								{
+									Services: []*models.ExpandedService{
+										{
+											ServiceName: "test-service",
+										},
+									},
+									StageName: "dev",
+								},
+							},
+						}, nil
+					},
+					UpdateProjectMock: func(project *models.ExpandedProject) error {
+						if project.Stages[0].Services[0].LastDeploymentFinishedEvent.KeptnContext == "test-context" &&
+							project.Stages[0].Services[0].DeployedImage == "test-image:0.1" {
+							return nil
+						}
+						return errors.New("project was not updated correctly")
+					},
+					DeleteProjectMock: nil,
+					GetProjectsMock:   nil,
+				},
+			},
+			args: args{
+				keptnBase: &keptn.KeptnBase{
+					Project: "test-project",
+					Stage:   "dev",
+					Service: "test-service",
+					Image:   stringp("test-image"),
+					Tag:     stringp("0.1"),
+				},
+				eventType:    keptn.DeploymentFinishedEventType,
+				keptnContext: "test-context",
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mv := &projectsMaterializedView{
+				ProjectRepo: tt.fields.ProjectRepo,
+			}
+			if err := mv.UpdateEventOfService(tt.args.keptnBase, tt.args.eventType, tt.args.keptnContext); (err != nil) != tt.wantErr {
+				t.Errorf("UpdateEventOfService() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func stringp(s string) *string {
+	return &s
 }
