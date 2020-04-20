@@ -34,6 +34,35 @@ func init() {
   },
   "basePath": "/v1",
   "paths": {
+    "/event": {
+      "post": {
+        "tags": [
+          "event"
+        ],
+        "summary": "Handles an incoming event",
+        "operationId": "handle event",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/KeptnContextExtendedCE"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
     "/project": {
       "get": {
         "tags": [
@@ -1362,6 +1391,19 @@ func init() {
         }
       }
     },
+    "EventContext": {
+      "type": "object",
+      "properties": {
+        "keptnContext": {
+          "description": "Keptn Context ID of the event",
+          "type": "string"
+        },
+        "time": {
+          "description": "Time of the event",
+          "type": "string"
+        }
+      }
+    },
     "ExpandedProject": {
       "type": "object",
       "properties": {
@@ -1427,6 +1469,21 @@ func init() {
           "description": "Currently deployed image",
           "type": "string"
         },
+        "lastConfigurationChangedEvent": {
+          "$ref": "#/definitions/EventContext"
+        },
+        "lastDeploymentFinishedEvent": {
+          "$ref": "#/definitions/EventContext"
+        },
+        "lastEvaluationDoneEvent": {
+          "$ref": "#/definitions/EventContext"
+        },
+        "lastProblemEvent": {
+          "$ref": "#/definitions/EventContext"
+        },
+        "lastTestsFinishedEvent": {
+          "$ref": "#/definitions/EventContext"
+        },
         "serviceName": {
           "description": "Service name",
           "type": "string"
@@ -1444,6 +1501,48 @@ func init() {
         },
         "stageName": {
           "description": "Stage name",
+          "type": "string"
+        }
+      }
+    },
+    "KeptnContextExtendedCE": {
+      "type": "object",
+      "required": [
+        "data",
+        "source",
+        "type"
+      ],
+      "properties": {
+        "contenttype": {
+          "type": "string"
+        },
+        "data": {
+          "type": [
+            "object",
+            "string"
+          ]
+        },
+        "extensions": {
+          "type": "object"
+        },
+        "id": {
+          "type": "string"
+        },
+        "shkeptncontext": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string",
+          "format": "uri-reference"
+        },
+        "specversion": {
+          "type": "string"
+        },
+        "time": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "type": {
           "type": "string"
         }
       }
@@ -1734,6 +1833,35 @@ func init() {
   },
   "basePath": "/v1",
   "paths": {
+    "/event": {
+      "post": {
+        "tags": [
+          "event"
+        ],
+        "summary": "Handles an incoming event",
+        "operationId": "handle event",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/KeptnContextExtendedCE"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
     "/project": {
       "get": {
         "tags": [
@@ -3434,6 +3562,19 @@ func init() {
         }
       }
     },
+    "EventContext": {
+      "type": "object",
+      "properties": {
+        "keptnContext": {
+          "description": "Keptn Context ID of the event",
+          "type": "string"
+        },
+        "time": {
+          "description": "Time of the event",
+          "type": "string"
+        }
+      }
+    },
     "ExpandedProject": {
       "type": "object",
       "properties": {
@@ -3499,6 +3640,21 @@ func init() {
           "description": "Currently deployed image",
           "type": "string"
         },
+        "lastConfigurationChangedEvent": {
+          "$ref": "#/definitions/EventContext"
+        },
+        "lastDeploymentFinishedEvent": {
+          "$ref": "#/definitions/EventContext"
+        },
+        "lastEvaluationDoneEvent": {
+          "$ref": "#/definitions/EventContext"
+        },
+        "lastProblemEvent": {
+          "$ref": "#/definitions/EventContext"
+        },
+        "lastTestsFinishedEvent": {
+          "$ref": "#/definitions/EventContext"
+        },
         "serviceName": {
           "description": "Service name",
           "type": "string"
@@ -3516,6 +3672,48 @@ func init() {
         },
         "stageName": {
           "description": "Stage name",
+          "type": "string"
+        }
+      }
+    },
+    "KeptnContextExtendedCE": {
+      "type": "object",
+      "required": [
+        "data",
+        "source",
+        "type"
+      ],
+      "properties": {
+        "contenttype": {
+          "type": "string"
+        },
+        "data": {
+          "type": [
+            "object",
+            "string"
+          ]
+        },
+        "extensions": {
+          "type": "object"
+        },
+        "id": {
+          "type": "string"
+        },
+        "shkeptncontext": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string",
+          "format": "uri-reference"
+        },
+        "specversion": {
+          "type": "string"
+        },
+        "time": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "type": {
           "type": "string"
         }
       }

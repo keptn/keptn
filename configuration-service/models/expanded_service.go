@@ -6,6 +6,7 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"github.com/go-openapi/errors"
 	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
@@ -20,12 +21,142 @@ type ExpandedService struct {
 	// Currently deployed image
 	DeployedImage string `json:"deployedImage,omitempty"`
 
+	// last configuration changed event
+	LastConfigurationChangedEvent *EventContext `json:"lastConfigurationChangedEvent,omitempty"`
+
+	// last deployment finished event
+	LastDeploymentFinishedEvent *EventContext `json:"lastDeploymentFinishedEvent,omitempty"`
+
+	// last evaluation done event
+	LastEvaluationDoneEvent *EventContext `json:"lastEvaluationDoneEvent,omitempty"`
+
+	// last problem event
+	LastProblemEvent *EventContext `json:"lastProblemEvent,omitempty"`
+
+	// last tests finished event
+	LastTestsFinishedEvent *EventContext `json:"lastTestsFinishedEvent,omitempty"`
+
 	// Service name
 	ServiceName string `json:"serviceName,omitempty"`
 }
 
 // Validate validates this expanded service
 func (m *ExpandedService) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLastConfigurationChangedEvent(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateLastDeploymentFinishedEvent(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateLastEvaluationDoneEvent(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateLastProblemEvent(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateLastTestsFinishedEvent(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ExpandedService) validateLastConfigurationChangedEvent(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.LastConfigurationChangedEvent) { // not required
+		return nil
+	}
+
+	if m.LastConfigurationChangedEvent != nil {
+		if err := m.LastConfigurationChangedEvent.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("lastConfigurationChangedEvent")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ExpandedService) validateLastDeploymentFinishedEvent(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.LastDeploymentFinishedEvent) { // not required
+		return nil
+	}
+
+	if m.LastDeploymentFinishedEvent != nil {
+		if err := m.LastDeploymentFinishedEvent.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("lastDeploymentFinishedEvent")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ExpandedService) validateLastEvaluationDoneEvent(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.LastEvaluationDoneEvent) { // not required
+		return nil
+	}
+
+	if m.LastEvaluationDoneEvent != nil {
+		if err := m.LastEvaluationDoneEvent.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("lastEvaluationDoneEvent")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ExpandedService) validateLastProblemEvent(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.LastProblemEvent) { // not required
+		return nil
+	}
+
+	if m.LastProblemEvent != nil {
+		if err := m.LastProblemEvent.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("lastProblemEvent")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ExpandedService) validateLastTestsFinishedEvent(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.LastTestsFinishedEvent) { // not required
+		return nil
+	}
+
+	if m.LastTestsFinishedEvent != nil {
+		if err := m.LastTestsFinishedEvent.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("lastTestsFinishedEvent")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
