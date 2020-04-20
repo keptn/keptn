@@ -22,7 +22,8 @@ func init() {
     "application/json"
   ],
   "produces": [
-    "application/json"
+    "application/json",
+    "application/cloudevents+json"
   ],
   "schemes": [
     "http"
@@ -1821,6 +1822,7 @@ func init() {
     "application/json"
   ],
   "produces": [
+    "application/cloudevents+json",
     "application/json"
   ],
   "schemes": [
