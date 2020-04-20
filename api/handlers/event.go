@@ -42,7 +42,19 @@ func PostEventHandlerFunc(params event.PostEventParams, principal *models.Princi
 
 	eventContext := models.EventContext{KeptnContext: &keptnContext, Token: &token}
 
-	source, _ := url.Parse("https://github.com/keptn/keptn/api")
+	var source *url.URL
+	if params.Body.Source != nil && len(*params.Body.Source) > 0 {
+		source, err = url.Parse(*params.Body.Source)
+		if err != nil {
+			logger.Info("Unable to parse source from the received CloudEvent")
+		}
+	}
+
+	if source == nil {
+		// Use this URL as fallback source
+		source, _ = url.Parse("https://github.com/keptn/keptn/api")
+	}
+
 	forwardData := addEventContextInCE(params.Body.Data, eventContext)
 	contentType := "application/json"
 
