@@ -30,6 +30,9 @@ type ExpandedService struct {
 	// last evaluation done event
 	LastEvaluationDoneEvent *EventContext `json:"lastEvaluationDoneEvent,omitempty"`
 
+	// last event context
+	LastEventContext *EventContext `json:"lastEventContext,omitempty"`
+
 	// last problem event
 	LastProblemEvent *EventContext `json:"lastProblemEvent,omitempty"`
 
@@ -53,6 +56,10 @@ func (m *ExpandedService) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateLastEvaluationDoneEvent(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateLastEventContext(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -116,6 +123,24 @@ func (m *ExpandedService) validateLastEvaluationDoneEvent(formats strfmt.Registr
 		if err := m.LastEvaluationDoneEvent.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("lastEvaluationDoneEvent")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ExpandedService) validateLastEventContext(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.LastEventContext) { // not required
+		return nil
+	}
+
+	if m.LastEventContext != nil {
+		if err := m.LastEventContext.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("lastEventContext")
 			}
 			return err
 		}

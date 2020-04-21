@@ -211,7 +211,8 @@ func (mv *projectsMaterializedView) DeleteService(project string, stage string, 
 	return nil
 }
 
-func (mv *projectsMaterializedView) UpdateEventOfService(keptnBase *keptn.KeptnBase, eventType string, keptnContext string) error {
+/*
+func (mv *projectsMaterializedView) UpdateLastEventContext(keptnBase *keptn.KeptnBase, keptnContext string) error {
 	existingProject, err := mv.GetProject(keptnBase.Project)
 	if err != nil {
 		fmt.Println("Could not update service " + keptnBase.Service + " in stage " + keptnBase.Stage + " in project " + keptnBase.Project + ". Could not load project: " + err.Error())
@@ -222,7 +223,26 @@ func (mv *projectsMaterializedView) UpdateEventOfService(keptnBase *keptn.KeptnB
 		KeptnContext: keptnContext,
 		Time:         strconv.FormatInt(time.Now().UnixNano(), 10),
 	}
+
+	existingProject.LastEventContext = contextInfo
+	return nil
+}
+*/
+
+func (mv *projectsMaterializedView) UpdateEventOfService(keptnBase *keptn.KeptnBase, eventType string, keptnContext string, eventID string) error {
+	existingProject, err := mv.GetProject(keptnBase.Project)
+	if err != nil {
+		fmt.Println("Could not update service " + keptnBase.Service + " in stage " + keptnBase.Stage + " in project " + keptnBase.Project + ". Could not load project: " + err.Error())
+		return err
+	}
+
+	contextInfo := &models.EventContext{
+		EventID:      eventID,
+		KeptnContext: keptnContext,
+		Time:         strconv.FormatInt(time.Now().UnixNano(), 10),
+	}
 	err = updateServiceInStage(existingProject, keptnBase.Stage, keptnBase.Service, func(service *models.ExpandedService) error {
+		service.LastEventContext = contextInfo
 		switch eventType {
 		case keptn.ConfigurationChangeEventType:
 			service.LastConfigurationChangedEvent = contextInfo

@@ -31,7 +31,7 @@ func HandleEventHandlerFunc(params event.HandleEventParams) middleware.Responder
 		}
 
 		mv := common.GetProjectsMaterializedView()
-		err = mv.UpdateEventOfService(keptnBase, *params.Body.Type, params.Body.Shkeptncontext)
+		err = mv.UpdateEventOfService(keptnBase, *params.Body.Type, params.Body.Shkeptncontext, params.Body.ID)
 		if err != nil {
 			return event.NewHandleEventDefault(400).WithPayload(&models.Error{Message: swag.String("Could not update service: " + err.Error()), Code: 400})
 		}

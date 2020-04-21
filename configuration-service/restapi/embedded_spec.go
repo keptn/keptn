@@ -1395,6 +1395,10 @@ func init() {
     "EventContext": {
       "type": "object",
       "properties": {
+        "eventId": {
+          "description": "ID of the event",
+          "type": "string"
+        },
         "keptnContext": {
           "description": "Keptn Context ID of the event",
           "type": "string"
@@ -1419,6 +1423,9 @@ func init() {
         "gitUser": {
           "description": "Git User",
           "type": "string"
+        },
+        "lastEventContext": {
+          "$ref": "#/definitions/EventContext"
         },
         "projectName": {
           "description": "Project name",
@@ -1479,6 +1486,9 @@ func init() {
         "lastEvaluationDoneEvent": {
           "$ref": "#/definitions/EventContext"
         },
+        "lastEventContext": {
+          "$ref": "#/definitions/EventContext"
+        },
         "lastProblemEvent": {
           "$ref": "#/definitions/EventContext"
         },
@@ -1494,6 +1504,9 @@ func init() {
     "ExpandedStage": {
       "type": "object",
       "properties": {
+        "lastEventContext": {
+          "$ref": "#/definitions/EventContext"
+        },
         "services": {
           "type": "array",
           "items": {
@@ -3567,6 +3580,10 @@ func init() {
     "EventContext": {
       "type": "object",
       "properties": {
+        "eventId": {
+          "description": "ID of the event",
+          "type": "string"
+        },
         "keptnContext": {
           "description": "Keptn Context ID of the event",
           "type": "string"
@@ -3591,6 +3608,9 @@ func init() {
         "gitUser": {
           "description": "Git User",
           "type": "string"
+        },
+        "lastEventContext": {
+          "$ref": "#/definitions/EventContext"
         },
         "projectName": {
           "description": "Project name",
@@ -3651,6 +3671,9 @@ func init() {
         "lastEvaluationDoneEvent": {
           "$ref": "#/definitions/EventContext"
         },
+        "lastEventContext": {
+          "$ref": "#/definitions/EventContext"
+        },
         "lastProblemEvent": {
           "$ref": "#/definitions/EventContext"
         },
@@ -3666,6 +3689,9 @@ func init() {
     "ExpandedStage": {
       "type": "object",
       "properties": {
+        "lastEventContext": {
+          "$ref": "#/definitions/EventContext"
+        },
         "services": {
           "type": "array",
           "items": {

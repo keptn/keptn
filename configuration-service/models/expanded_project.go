@@ -26,6 +26,9 @@ type ExpandedProject struct {
 	// Git User
 	GitUser string `json:"gitUser,omitempty"`
 
+	// last event context
+	LastEventContext *EventContext `json:"lastEventContext,omitempty"`
+
 	// Project name
 	ProjectName string `json:"projectName,omitempty"`
 
@@ -40,6 +43,10 @@ type ExpandedProject struct {
 func (m *ExpandedProject) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateLastEventContext(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateStages(formats); err != nil {
 		res = append(res, err)
 	}
@@ -47,6 +54,24 @@ func (m *ExpandedProject) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ExpandedProject) validateLastEventContext(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.LastEventContext) { // not required
+		return nil
+	}
+
+	if m.LastEventContext != nil {
+		if err := m.LastEventContext.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("lastEventContext")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 

@@ -70,6 +70,8 @@ definitions:
       creationDate:
         type: string
         description: Creation date of the project
+      lastEventContext:
+        $ref: '#/definitions/EventContext'
       stages:
         type: array
         items:
@@ -81,6 +83,8 @@ definitions:
       stageName:
         type: string
         description: Stage name
+      lastEventContext:
+        $ref: '#/definitions/EventContext'
       services:
         type: array
         items:
@@ -98,6 +102,8 @@ definitions:
       creationDate:
         type: string
         description: Creation date of the service
+      lastEventContext:
+        $ref: '#/definitions/EventContext'
       lastConfigurationChangedEvent:
         $ref: '#/definitions/EventContext'
       lastDeploymentFinishedEvent:
@@ -115,6 +121,9 @@ definitions:
       keptnContext:
         type: string
         description: Keptn Context ID of the event
+      eventId:
+        type: string
+        description: ID of the event
       time:
         type: string
         description: Time of the event

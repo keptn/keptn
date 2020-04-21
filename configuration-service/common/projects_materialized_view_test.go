@@ -926,7 +926,7 @@ func Test_projectsMaterializedView_UpdateEventOfService(t *testing.T) {
 			mv := &projectsMaterializedView{
 				ProjectRepo: tt.fields.ProjectRepo,
 			}
-			if err := mv.UpdateEventOfService(tt.args.keptnBase, tt.args.eventType, tt.args.keptnContext); (err != nil) != tt.wantErr {
+			if err := mv.UpdateEventOfService(tt.args.keptnBase, tt.args.eventType, tt.args.keptnContext, ""); (err != nil) != tt.wantErr {
 				t.Errorf("UpdateEventOfService() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
