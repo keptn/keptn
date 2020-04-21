@@ -618,6 +618,11 @@ spec:
       containers:
         - name: configuration-service
           image: keptn/configuration-service:latest
+          env:
+            - name: MONGO_DB_CONNECTION_STRING
+              value: 'mongodb://user:password@mongodb.keptn-datastore.svc.cluster.local:27017/keptn'
+            - name: MONGO_DB_NAME
+              value: 'keptn'
           ports:
             - containerPort: 8080
           resources:
