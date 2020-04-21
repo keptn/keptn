@@ -232,7 +232,7 @@ spec:
     spec:
       containers:
         - name: api-service
-          image: keptn/api:latest
+          image: keptn/api:0.6.2
           ports:
             - containerPort: 8080
           resources:
@@ -289,7 +289,7 @@ spec:
     spec:
       containers:
         - name: bridge
-          image: keptn/bridge2:latest
+          image: keptn/bridge2:0.6.2
           envFrom:
             - secretRef:
                 name: bridge-credentials
@@ -337,7 +337,7 @@ spec:
     spec:
       containers:
         - name: eventbroker-go
-          image: keptn/eventbroker-go:latest
+          image: keptn/eventbroker-go:0.6.2
           ports:
             - containerPort: 8080
           resources:
@@ -386,7 +386,7 @@ spec:
     spec:
       containers:
         - name: helm-service
-          image: keptn/helm-service:latest
+          image: keptn/helm-service:0.6.2
           ports:
             - containerPort: 8080
           resources:
@@ -442,7 +442,7 @@ spec:
     spec:
       containers:
         - name: distributor
-          image: keptn/distributor:latest
+          image: keptn/distributor:0.6.2
           ports:
             - containerPort: 8080
           resources:
@@ -478,7 +478,7 @@ spec:
     spec:
       containers:
         - name: shipyard-service
-          image: keptn/shipyard-service:latest
+          image: keptn/shipyard-service:0.6.2
           ports:
             - containerPort: 8080
           resources:
@@ -528,7 +528,7 @@ spec:
     spec:
       containers:
         - name: distributor
-          image: keptn/distributor:latest
+          image: keptn/distributor:0.6.2
           ports:
             - containerPort: 8080
           resources:
@@ -564,7 +564,7 @@ spec:
     spec:
       containers:
         - name: distributor
-          image: keptn/distributor:latest
+          image: keptn/distributor:0.6.2
           ports:
             - containerPort: 8080
           resources:
@@ -617,7 +617,7 @@ spec:
     spec:
       containers:
         - name: configuration-service
-          image: keptn/configuration-service:latest
+          image: keptn/configuration-service:0.6.2
           ports:
             - containerPort: 8080
           resources:
