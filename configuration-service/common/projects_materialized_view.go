@@ -1,8 +1,11 @@
 package common
 
 import (
+	"errors"
 	"fmt"
+	keptn "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/configuration-service/models"
+	"strconv"
 	"time"
 )
 
@@ -94,7 +97,7 @@ func (mv *projectsMaterializedView) CreateStage(project string, stage string) er
 
 func (mv *projectsMaterializedView) createProject(prj *models.Project) error {
 	expandedProject := &models.ExpandedProject{
-		CreationDate: time.Now().String(),
+		CreationDate: strconv.FormatInt(time.Now().UnixNano(), 10),
 		GitRemoteURI: prj.GitRemoteURI,
 		GitUser:      prj.GitUser,
 		ProjectName:  prj.ProjectName,
@@ -158,7 +161,7 @@ func (mv *projectsMaterializedView) CreateService(project string, stage string, 
 				}
 			}
 			stg.Services = append(stg.Services, &models.ExpandedService{
-				CreationDate:  time.Now().String(),
+				CreationDate:  strconv.FormatInt(time.Now().UnixNano(), 10),
 				DeployedImage: "",
 				ServiceName:   service,
 			})
@@ -196,6 +199,7 @@ func (mv *projectsMaterializedView) DeleteService(project string, stage string, 
 			copy(stg.Services[serviceIndex:], stg.Services[serviceIndex+1:])
 			stg.Services[len(stg.Services)-1] = nil
 			stg.Services = stg.Services[:len(stg.Services)-1]
+			break
 		}
 	}
 	err = mv.updateProject(existingProject)
@@ -205,4 +209,61 @@ func (mv *projectsMaterializedView) DeleteService(project string, stage string, 
 	}
 	fmt.Println("Deleted service " + service + " from stage " + stage + " in project " + project)
 	return nil
+}
+
+func (mv *projectsMaterializedView) UpdateEventOfService(keptnBase *keptn.KeptnBase, eventType string, keptnContext string, eventID string) error {
+	existingProject, err := mv.GetProject(keptnBase.Project)
+	if err != nil {
+		fmt.Println("Could not update service " + keptnBase.Service + " in stage " + keptnBase.Stage + " in project " + keptnBase.Project + ". Could not load project: " + err.Error())
+		return err
+	}
+
+	contextInfo := &models.EventContext{
+		EventID:      eventID,
+		KeptnContext: keptnContext,
+		Time:         strconv.FormatInt(time.Now().UnixNano(), 10),
+	}
+	err = updateServiceInStage(existingProject, keptnBase.Stage, keptnBase.Service, func(service *models.ExpandedService) error {
+		if service.LastEventTypes == nil {
+			service.LastEventTypes = map[string]models.EventContext{}
+		}
+		if eventType == keptn.DeploymentFinishedEventType {
+			if keptnBase.Image != nil && keptnBase.Tag != nil {
+				service.DeployedImage = *keptnBase.Image + ":" + *keptnBase.Tag
+			}
+		}
+		service.LastEventTypes[eventType] = *contextInfo
+		return nil
+	})
+
+	if err != nil {
+		fmt.Println("Could not update image of service " + keptnBase.Service + ": " + err.Error())
+		return err
+	}
+	err = mv.updateProject(existingProject)
+	if err != nil {
+		fmt.Println("Could not update " + keptnBase.Project + ": " + err.Error())
+		return err
+	}
+	return nil
+}
+
+type serviceUpdateFunc func(service *models.ExpandedService) error
+
+func updateServiceInStage(project *models.ExpandedProject, stage string, service string, fn serviceUpdateFunc) error {
+	for _, stg := range project.Stages {
+		if stg.StageName == stage {
+			serviceIndex := -1
+			for idx, svc := range stg.Services {
+				if svc.ServiceName == service {
+					serviceIndex = idx
+				}
+			}
+			if serviceIndex < 0 {
+				return errors.New("service not found")
+			}
+			return fn(stg.Services[serviceIndex])
+		}
+	}
+	return errors.New("stage not found")
 }

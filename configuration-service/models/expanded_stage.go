@@ -17,6 +17,9 @@ import (
 // swagger:model ExpandedStage
 type ExpandedStage struct {
 
+	// last event context
+	LastEventContext *EventContext `json:"lastEventContext,omitempty"`
+
 	// services
 	Services []*ExpandedService `json:"services"`
 
@@ -28,6 +31,10 @@ type ExpandedStage struct {
 func (m *ExpandedStage) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateLastEventContext(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateServices(formats); err != nil {
 		res = append(res, err)
 	}
@@ -35,6 +42,24 @@ func (m *ExpandedStage) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ExpandedStage) validateLastEventContext(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.LastEventContext) { // not required
+		return nil
+	}
+
+	if m.LastEventContext != nil {
+		if err := m.LastEventContext.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("lastEventContext")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 

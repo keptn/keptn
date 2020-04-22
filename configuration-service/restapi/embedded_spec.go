@@ -19,6 +19,7 @@ var (
 func init() {
 	SwaggerJSON = json.RawMessage([]byte(`{
   "consumes": [
+    "application/cloudevents+json",
     "application/json"
   ],
   "produces": [
@@ -34,6 +35,35 @@ func init() {
   },
   "basePath": "/v1",
   "paths": {
+    "/event": {
+      "post": {
+        "tags": [
+          "event"
+        ],
+        "summary": "Handles an incoming event",
+        "operationId": "handle event",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/KeptnContextExtendedCE"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
     "/project": {
       "get": {
         "tags": [
@@ -1362,6 +1392,23 @@ func init() {
         }
       }
     },
+    "EventContext": {
+      "type": "object",
+      "properties": {
+        "eventId": {
+          "description": "ID of the event",
+          "type": "string"
+        },
+        "keptnContext": {
+          "description": "Keptn Context ID of the event",
+          "type": "string"
+        },
+        "time": {
+          "description": "Time of the event",
+          "type": "string"
+        }
+      }
+    },
     "ExpandedProject": {
       "type": "object",
       "properties": {
@@ -1376,6 +1423,9 @@ func init() {
         "gitUser": {
           "description": "Git User",
           "type": "string"
+        },
+        "lastEventContext": {
+          "$ref": "#/definitions/EventContext"
         },
         "projectName": {
           "description": "Project name",
@@ -1427,6 +1477,12 @@ func init() {
           "description": "Currently deployed image",
           "type": "string"
         },
+        "lastEventTypes": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/EventContext"
+          }
+        },
         "serviceName": {
           "description": "Service name",
           "type": "string"
@@ -1436,6 +1492,9 @@ func init() {
     "ExpandedStage": {
       "type": "object",
       "properties": {
+        "lastEventContext": {
+          "$ref": "#/definitions/EventContext"
+        },
         "services": {
           "type": "array",
           "items": {
@@ -1444,6 +1503,48 @@ func init() {
         },
         "stageName": {
           "description": "Stage name",
+          "type": "string"
+        }
+      }
+    },
+    "KeptnContextExtendedCE": {
+      "type": "object",
+      "required": [
+        "data",
+        "source",
+        "type"
+      ],
+      "properties": {
+        "contenttype": {
+          "type": "string"
+        },
+        "data": {
+          "type": [
+            "object",
+            "string"
+          ]
+        },
+        "extensions": {
+          "type": "object"
+        },
+        "id": {
+          "type": "string"
+        },
+        "shkeptncontext": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string",
+          "format": "uri-reference"
+        },
+        "specversion": {
+          "type": "string"
+        },
+        "time": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "type": {
           "type": "string"
         }
       }
@@ -1719,6 +1820,7 @@ func init() {
 }`))
 	FlatSwaggerJSON = json.RawMessage([]byte(`{
   "consumes": [
+    "application/cloudevents+json",
     "application/json"
   ],
   "produces": [
@@ -1734,6 +1836,35 @@ func init() {
   },
   "basePath": "/v1",
   "paths": {
+    "/event": {
+      "post": {
+        "tags": [
+          "event"
+        ],
+        "summary": "Handles an incoming event",
+        "operationId": "handle event",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/KeptnContextExtendedCE"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
     "/project": {
       "get": {
         "tags": [
@@ -3434,6 +3565,23 @@ func init() {
         }
       }
     },
+    "EventContext": {
+      "type": "object",
+      "properties": {
+        "eventId": {
+          "description": "ID of the event",
+          "type": "string"
+        },
+        "keptnContext": {
+          "description": "Keptn Context ID of the event",
+          "type": "string"
+        },
+        "time": {
+          "description": "Time of the event",
+          "type": "string"
+        }
+      }
+    },
     "ExpandedProject": {
       "type": "object",
       "properties": {
@@ -3448,6 +3596,9 @@ func init() {
         "gitUser": {
           "description": "Git User",
           "type": "string"
+        },
+        "lastEventContext": {
+          "$ref": "#/definitions/EventContext"
         },
         "projectName": {
           "description": "Project name",
@@ -3499,6 +3650,12 @@ func init() {
           "description": "Currently deployed image",
           "type": "string"
         },
+        "lastEventTypes": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/EventContext"
+          }
+        },
         "serviceName": {
           "description": "Service name",
           "type": "string"
@@ -3508,6 +3665,9 @@ func init() {
     "ExpandedStage": {
       "type": "object",
       "properties": {
+        "lastEventContext": {
+          "$ref": "#/definitions/EventContext"
+        },
         "services": {
           "type": "array",
           "items": {
@@ -3516,6 +3676,48 @@ func init() {
         },
         "stageName": {
           "description": "Stage name",
+          "type": "string"
+        }
+      }
+    },
+    "KeptnContextExtendedCE": {
+      "type": "object",
+      "required": [
+        "data",
+        "source",
+        "type"
+      ],
+      "properties": {
+        "contenttype": {
+          "type": "string"
+        },
+        "data": {
+          "type": [
+            "object",
+            "string"
+          ]
+        },
+        "extensions": {
+          "type": "object"
+        },
+        "id": {
+          "type": "string"
+        },
+        "shkeptncontext": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string",
+          "format": "uri-reference"
+        },
+        "specversion": {
+          "type": "string"
+        },
+        "time": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "type": {
           "type": "string"
         }
       }

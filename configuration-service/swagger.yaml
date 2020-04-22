@@ -8,7 +8,8 @@ basePath: /v1
 produces:
 - application/json
 consumes:
-- application/json
+  - application/cloudevents+json
+  - application/json
 
 schemes:
   - http
@@ -69,6 +70,8 @@ definitions:
       creationDate:
         type: string
         description: Creation date of the project
+      lastEventContext:
+        $ref: '#/definitions/EventContext'
       stages:
         type: array
         items:
@@ -80,6 +83,8 @@ definitions:
       stageName:
         type: string
         description: Stage name
+      lastEventContext:
+        $ref: '#/definitions/EventContext'
       services:
         type: array
         items:
@@ -97,6 +102,24 @@ definitions:
       creationDate:
         type: string
         description: Creation date of the service
+      lastEventTypes:
+        type: object
+        additionalProperties:
+          $ref: '#/definitions/EventContext'
+
+  EventContext:
+    type: object
+    properties:
+      keptnContext:
+        type: string
+        description: Keptn Context ID of the event
+      eventId:
+        type: string
+        description: ID of the event
+      time:
+        type: string
+        description: Time of the event
+
 
   Project:
     type: object
@@ -216,6 +239,34 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/Resource'
+
+  KeptnContextExtendedCE:
+    type: object
+    properties: # CloudEvents v0.2 properties (https://raw.githubusercontent.com/cloudevents/spec/v0.2/spec.json#/definitions/event)
+      shkeptncontext:
+        type: string
+      specversion:
+        type: string
+      contenttype:
+        type: string
+      data:
+        type: ["object", "string"]
+      id:
+        type: string
+      time:
+        type: string
+        format: date-time
+      type:
+        type: string
+      extensions:
+        type: object
+      source:
+        format: uri-reference
+        type: string
+    required:
+      - data
+      - source
+      - type
 
 parameters:
   project:
@@ -1094,3 +1145,22 @@ paths:
           description: Error
           schema:
             $ref: '#/definitions/Error'
+
+  /event:
+    post:
+      tags:
+        - event
+      operationId: handle event
+      summary: Handles an incoming event
+      parameters:
+        - name: body
+          in: body
+          schema:
+            "$ref": "#/definitions/KeptnContextExtendedCE"
+      responses:
+        200:
+          description: OK
+        default:
+          description: Error
+          schema:
+            "$ref": "#/definitions/Error"

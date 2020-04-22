@@ -19,6 +19,7 @@ import (
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
+	"github.com/keptn/keptn/configuration-service/restapi/operations/event"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/project"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/project_resource"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/service"
@@ -163,6 +164,9 @@ func NewConfigurationServiceAPI(spec *loads.Document) *ConfigurationServiceAPI {
 		ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler: service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc(func(params service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIParams) middleware.Responder {
 			return middleware.NotImplemented("operation service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI has not yet been implemented")
 		}),
+		EventHandleEventHandler: event.HandleEventHandlerFunc(func(params event.HandleEventParams) middleware.Responder {
+			return middleware.NotImplemented("operation event.HandleEvent has not yet been implemented")
+		}),
 	}
 }
 
@@ -188,6 +192,7 @@ type ConfigurationServiceAPI struct {
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
 	BearerAuthenticator func(string, security.ScopedTokenAuthentication) runtime.Authenticator
 	// JSONConsumer registers a consumer for the following mime types:
+	//   - application/cloudevents+json
 	//   - application/json
 	JSONConsumer runtime.Consumer
 	// JSONProducer registers a producer for the following mime types:
@@ -272,6 +277,8 @@ type ConfigurationServiceAPI struct {
 	ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceHandler service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceHandler
 	// ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler sets the operation handler for the put project project name stage stage name service service name resource resource URI operation
 	ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler
+	// EventHandleEventHandler sets the operation handler for the handle event operation
+	EventHandleEventHandler event.HandleEventHandler
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
 	ServeError func(http.ResponseWriter, *http.Request, error)
@@ -494,6 +501,10 @@ func (o *ConfigurationServiceAPI) Validate() error {
 		unregistered = append(unregistered, "ServiceResource.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler")
 	}
 
+	if o.EventHandleEventHandler == nil {
+		unregistered = append(unregistered, "Event.HandleEventHandler")
+	}
+
 	if len(unregistered) > 0 {
 		return fmt.Errorf("missing registration: %s", strings.Join(unregistered, ", "))
 	}
@@ -526,6 +537,8 @@ func (o *ConfigurationServiceAPI) ConsumersFor(mediaTypes []string) map[string]r
 	result := make(map[string]runtime.Consumer, len(mediaTypes))
 	for _, mt := range mediaTypes {
 		switch mt {
+		case "application/cloudevents+json":
+			result["application/cloudevents+json"] = o.JSONConsumer
 		case "application/json":
 			result["application/json"] = o.JSONConsumer
 		}
@@ -780,6 +793,11 @@ func (o *ConfigurationServiceAPI) initHandlerCache() {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/project/{projectName}/stage/{stageName}/service/{serviceName}/resource/{resourceURI}"] = service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI(o.context, o.ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler)
+
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/event"] = event.NewHandleEvent(o.context, o.EventHandleEventHandler)
 
 }
 
