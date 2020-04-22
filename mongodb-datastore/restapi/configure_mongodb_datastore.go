@@ -40,7 +40,7 @@ func configureAPI(api *operations.MongodbDatastoreAPI) http.Handler {
 	api.JSONProducer = runtime.JSONProducer()
 
 	api.EventSaveEventHandler = event.SaveEventHandlerFunc(func(params event.SaveEventParams) middleware.Responder {
-		if err := handlers.SaveEvent(params.Body); err != nil {
+		if err := handlers.ProcessEvent(params.Body); err != nil {
 			return event.NewSaveEventDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 		}
 		return event.NewSaveEventCreated()

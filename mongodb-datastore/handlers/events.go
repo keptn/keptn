@@ -64,8 +64,8 @@ func connectMongoDBClient() error {
 	return nil
 }
 
-// SaveEvent stores event in data store
-func SaveEvent(event *models.KeptnContextExtendedCE) error {
+// ProcessEvent processes the passed event.
+func ProcessEvent(event *models.KeptnContextExtendedCE) error {
 	logger := keptnutils.NewLogger("", "", serviceName)
 	logger.Debug("save event to data store")
 
@@ -75,20 +75,29 @@ func SaveEvent(event *models.KeptnContextExtendedCE) error {
 		return err
 	}
 
+	if event.Type == keptnutils.InternalProjectDeleteEventType {
+		return dropProjectEvents(logger, event)
+	}
+	return insertEvent(logger, event)
+}
+
+func insertEvent(logger *keptnutils.Logger, event *models.KeptnContextExtendedCE) error {
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
 	// insert in project collection
 	collectionName := getProjectOfEvent(event)
-	logger.Debug("Storing event to collection " + collectionName)
-
 	collection := client.Database(mongoDBName).Collection(collectionName)
+
+	logger.Debug("Storing event to collection " + collectionName)
 
 	eventInterface, err := transformEventToInterface(event)
 	if err != nil {
 		err := fmt.Errorf("failed to transform event: %v", err)
 		logger.Error(err.Error())
+		return err
 	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
 
 	res, err := collection.InsertOne(ctx, eventInterface)
 	if err != nil {
@@ -98,31 +107,49 @@ func SaveEvent(event *models.KeptnContextExtendedCE) error {
 	}
 	logger.Debug(fmt.Sprintf("insertedID: %s", res.InsertedID))
 
-	// store mapping between context ID and project in separate table
-	/*
-		_, err = getProjectForContext(event.Shkeptncontext)
-		if err != nil {
-		}
-
-	*/
 	contextToProjectCollection := client.Database(mongoDBName).Collection(contextToProjectCollection)
 
 	_, err = contextToProjectCollection.InsertOne(ctx,
 		bson.M{"_id": event.Shkeptncontext, "shkeptncontext": event.Shkeptncontext, "project": collectionName},
 	)
 	if err != nil {
-		writeErr, ok := err.(mongo.WriteException)
-		if ok {
+		if writeErr, ok := err.(mongo.WriteException); ok {
 			if len(writeErr.WriteErrors) > 0 && writeErr.WriteErrors[0].Code == 11000 { // 11000 = duplicate key error
 				logger.Error("Mapping " + event.Shkeptncontext + "->" + collectionName + " already exists in collection")
 			}
 		} else {
-			logger.Error("could not store mapping " + event.Shkeptncontext + "->" + collectionName + ": " + err.Error())
+			err := fmt.Errorf("Failed to store mapping "+event.Shkeptncontext+"->"+collectionName+": %v", err.Error())
+			logger.Error(err.Error())
+			return err
 		}
 	}
 
 	logger.Debug(fmt.Sprintf("inserted mapping %s->%s", event.Shkeptncontext, collectionName))
+	return nil
+}
 
+func dropProjectEvents(logger *keptnutils.Logger, event *models.KeptnContextExtendedCE) error {
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	collectionName := getProjectOfEvent(event)
+	collection := client.Database(mongoDBName).Collection(collectionName)
+
+	logger.Debug(fmt.Sprintf("Delete all events of project %s", collectionName))
+	err := collection.Drop(ctx)
+	if err != nil {
+		err := fmt.Errorf("failed to drop collection %s: %v", collectionName, err)
+		logger.Error(err.Error())
+		return err
+	}
+	logger.Debug(fmt.Sprintf("Delete context-to-project mappings of project %s", collectionName))
+	contextToProjectCollection := client.Database(mongoDBName).Collection(contextToProjectCollection)
+	if _, err := contextToProjectCollection.DeleteMany(ctx, bson.M{"project": collectionName}); err != nil {
+		err := fmt.Errorf("failed to delete context-to-project mapping for project %s: %v", collectionName, err)
+		logger.Error(err.Error())
+		return err
+	}
 	return nil
 }
 
