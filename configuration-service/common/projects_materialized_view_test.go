@@ -860,7 +860,7 @@ func Test_projectsMaterializedView_UpdateEventOfService(t *testing.T) {
 						}, nil
 					},
 					UpdateProjectMock: func(project *models.ExpandedProject) error {
-						if project.Stages[0].Services[0].LastConfigurationChangedEvent.KeptnContext == "test-context" {
+						if project.Stages[0].Services[0].LastEventTypes[keptn.ConfigurationChangeEventType].KeptnContext == "test-context" {
 							return nil
 						}
 						return errors.New("project was not updated correctly")
@@ -897,7 +897,7 @@ func Test_projectsMaterializedView_UpdateEventOfService(t *testing.T) {
 						}, nil
 					},
 					UpdateProjectMock: func(project *models.ExpandedProject) error {
-						if project.Stages[0].Services[0].LastDeploymentFinishedEvent.KeptnContext == "test-context" &&
+						if project.Stages[0].Services[0].LastEventTypes[keptn.DeploymentFinishedEventType].KeptnContext == "test-context" &&
 							project.Stages[0].Services[0].DeployedImage == "test-image:0.1" {
 							return nil
 						}

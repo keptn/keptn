@@ -1477,23 +1477,11 @@ func init() {
           "description": "Currently deployed image",
           "type": "string"
         },
-        "lastConfigurationChangedEvent": {
-          "$ref": "#/definitions/EventContext"
-        },
-        "lastDeploymentFinishedEvent": {
-          "$ref": "#/definitions/EventContext"
-        },
-        "lastEvaluationDoneEvent": {
-          "$ref": "#/definitions/EventContext"
-        },
-        "lastEventContext": {
-          "$ref": "#/definitions/EventContext"
-        },
-        "lastProblemEvent": {
-          "$ref": "#/definitions/EventContext"
-        },
-        "lastTestsFinishedEvent": {
-          "$ref": "#/definitions/EventContext"
+        "lastEventTypes": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/EventContext"
+          }
         },
         "serviceName": {
           "description": "Service name",
@@ -3662,23 +3650,11 @@ func init() {
           "description": "Currently deployed image",
           "type": "string"
         },
-        "lastConfigurationChangedEvent": {
-          "$ref": "#/definitions/EventContext"
-        },
-        "lastDeploymentFinishedEvent": {
-          "$ref": "#/definitions/EventContext"
-        },
-        "lastEvaluationDoneEvent": {
-          "$ref": "#/definitions/EventContext"
-        },
-        "lastEventContext": {
-          "$ref": "#/definitions/EventContext"
-        },
-        "lastProblemEvent": {
-          "$ref": "#/definitions/EventContext"
-        },
-        "lastTestsFinishedEvent": {
-          "$ref": "#/definitions/EventContext"
+        "lastEventTypes": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/EventContext"
+          }
         },
         "serviceName": {
           "description": "Service name",

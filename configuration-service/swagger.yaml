@@ -102,18 +102,10 @@ definitions:
       creationDate:
         type: string
         description: Creation date of the service
-      lastEventContext:
-        $ref: '#/definitions/EventContext'
-      lastConfigurationChangedEvent:
-        $ref: '#/definitions/EventContext'
-      lastDeploymentFinishedEvent:
-        $ref: '#/definitions/EventContext'
-      lastTestsFinishedEvent:
-        $ref: '#/definitions/EventContext'
-      lastEvaluationDoneEvent:
-        $ref: '#/definitions/EventContext'
-      lastProblemEvent:
-        $ref: '#/definitions/EventContext'
+      lastEventTypes:
+        type: object
+        additionalProperties:
+          $ref: '#/definitions/EventContext'
 
   EventContext:
     type: object

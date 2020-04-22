@@ -211,24 +211,6 @@ func (mv *projectsMaterializedView) DeleteService(project string, stage string, 
 	return nil
 }
 
-/*
-func (mv *projectsMaterializedView) UpdateLastEventContext(keptnBase *keptn.KeptnBase, keptnContext string) error {
-	existingProject, err := mv.GetProject(keptnBase.Project)
-	if err != nil {
-		fmt.Println("Could not update service " + keptnBase.Service + " in stage " + keptnBase.Stage + " in project " + keptnBase.Project + ". Could not load project: " + err.Error())
-		return err
-	}
-
-	contextInfo := &models.EventContext{
-		KeptnContext: keptnContext,
-		Time:         strconv.FormatInt(time.Now().UnixNano(), 10),
-	}
-
-	existingProject.LastEventContext = contextInfo
-	return nil
-}
-*/
-
 func (mv *projectsMaterializedView) UpdateEventOfService(keptnBase *keptn.KeptnBase, eventType string, keptnContext string, eventID string) error {
 	existingProject, err := mv.GetProject(keptnBase.Project)
 	if err != nil {
@@ -242,22 +224,15 @@ func (mv *projectsMaterializedView) UpdateEventOfService(keptnBase *keptn.KeptnB
 		Time:         strconv.FormatInt(time.Now().UnixNano(), 10),
 	}
 	err = updateServiceInStage(existingProject, keptnBase.Stage, keptnBase.Service, func(service *models.ExpandedService) error {
-		service.LastEventContext = contextInfo
-		switch eventType {
-		case keptn.ConfigurationChangeEventType:
-			service.LastConfigurationChangedEvent = contextInfo
-		case keptn.DeploymentFinishedEventType:
-			service.LastDeploymentFinishedEvent = contextInfo
+		if service.LastEventTypes == nil {
+			service.LastEventTypes = map[string]models.EventContext{}
+		}
+		if eventType == keptn.DeploymentFinishedEventType {
 			if keptnBase.Image != nil && keptnBase.Tag != nil {
 				service.DeployedImage = *keptnBase.Image + ":" + *keptnBase.Tag
 			}
-		case keptn.TestsFinishedEventType:
-			service.LastTestsFinishedEvent = contextInfo
-		case keptn.EvaluationDoneEventType:
-			service.LastEvaluationDoneEvent = contextInfo
-		case keptn.ProblemOpenEventType:
-			service.LastProblemEvent = contextInfo
 		}
+		service.LastEventTypes[eventType] = *contextInfo
 		return nil
 	})
 
