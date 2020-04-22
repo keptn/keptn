@@ -22,8 +22,8 @@ KEPTN_API_TOKEN=$(head -c 16 /dev/urandom | base64)
 verify_variable "$KEPTN_API_TOKEN" "KEPTN_API_TOKEN could not be derived." 
 kubectl create secret generic -n keptn keptn-api-token --from-literal=keptn-api-token="$KEPTN_API_TOKEN"
 
-# Install logging
-print_info "Installing Logging"
+# Install Keptn Datastore
+print_info "Installing Keptn Datastore"
 kubectl apply -f ../manifests/logging/namespace.yaml
 verify_kubectl $? "Creating logging namespace failed."
 kubectl apply -f ../manifests/logging/mongodb/pvc.yaml

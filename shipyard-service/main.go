@@ -126,19 +126,15 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	}
 	defer ws.Close()
 
-	keptnHandler, err := keptn.NewKeptn(&event, keptn.KeptnOpts{})
-	if err != nil {
-		logger.Error("Could not initialize Keptn handler: " + err.Error())
-	}
 	if event.Type() == keptn.InternalProjectCreateEventType {
-		version, err := createProjectAndProcessShipyard(event, *logger, ws)
-		if err := respondWithDoneEvent(event, version, err, "Shipyard successfully processed", *logger, ws, keptnHandler); err != nil {
+		_, err := createProjectAndProcessShipyard(event, *logger, ws)
+		if err := closeWebsocketWithMessage(event, err, "Shipyard successfully processed", *logger, ws); err != nil {
 			return err
 		}
 		return nil
 	} else if event.Type() == keptn.InternalProjectDeleteEventType {
 		err := getRemoteURLAndDeleteProject(event, *logger, ws)
-		if err := respondWithDoneEvent(event, nil, err, "Project successfully deleted", *logger, ws, keptnHandler); err != nil {
+		if err := closeWebsocketWithMessage(event, err, "Project successfully deleted", *logger, ws); err != nil {
 			return err
 		}
 		return nil
@@ -273,28 +269,21 @@ func storeResourceForProject(projectName, shipyard string, logger keptn.Logger) 
 	return &configmodels.Version{Version: versionStr}, nil
 }
 
-// respondWithDoneEvent sends a keptn done event to the keptn eventbroker
-func respondWithDoneEvent(event cloudevents.Event, version *configmodels.Version, err error, message string, logger keptn.Logger, ws *websocket.Conn, keptnHandler *keptn.Keptn) error {
-	var result = "success"
+// closeWebsocketWithMessage sends a log message to the websocket
+func closeWebsocketWithMessage(event cloudevents.Event, err error, message string,
+	logger keptn.Logger, ws *websocket.Conn) error {
 	var webSocketMessage = message
-	var eventMessage = message
 
 	if err != nil { // error
-		result = "error"
-		eventMessage = fmt.Sprintf("%s.", err.Error())
-		webSocketMessage = eventMessage
-		logger.Error(eventMessage)
+		webSocketMessage = fmt.Sprintf("%s.", err.Error())
+		logger.Error(webSocketMessage)
 	} else { // success
-		logger.Info(eventMessage)
+		logger.Info(message)
 	}
 
 	if err := keptn.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), webSocketMessage, true, "INFO"); err != nil {
 		logger.Error(fmt.Sprintf("Could not write log to websocket. %s", err.Error()))
 	}
-	if err := sendDoneEvent(event, result, eventMessage, nil, keptnHandler); err != nil {
-		logger.Error(fmt.Sprintf("No sh.keptn.event.done event sent. %s", err.Error()))
-	}
-
 	return err
 }
 
@@ -424,23 +413,4 @@ func createEventCopy(eventSource cloudevents.Event, eventType string) cloudevent
 	}
 
 	return event
-}
-
-// sendDoneEvent prepares a keptn done event and sends it to the eventbroker
-func sendDoneEvent(receivedEvent cloudevents.Event, result string, message string, version *configmodels.Version, keptnHandler *keptn.Keptn) error {
-
-	doneEvent := createEventCopy(receivedEvent, "sh.keptn.events.done")
-
-	eventData := doneEventData{
-		Result:  result,
-		Message: message,
-	}
-
-	if version != nil {
-		eventData.Version = version.Version
-	}
-
-	doneEvent.Data = eventData
-
-	return keptnHandler.SendCloudEvent(doneEvent)
 }
