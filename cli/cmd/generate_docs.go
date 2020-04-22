@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/spf13/cobra/doc"
@@ -51,7 +52,7 @@ keptn generate docs --dir=/some/directory`,
 		// check if output directory exists
 		if _, err := os.Stat(outputDir); os.IsNotExist(err) {
 			// outputDir does not exist
-			return err
+			return errors.New(fmt.Sprintf("Error trying to access directory %s. Please make sure the directory exists.", outputDir))
 		}
 
 		// define a prepender function for compatibility with Hugo templates
@@ -81,5 +82,5 @@ func init() {
 	generateCmd.AddCommand(generateDocsCmd)
 
 	generateDocsParams = &generateDocsCmdParams{}
-	generateDocsParams.Directory = generateDocsCmd.Flags().StringP("dir", "", "", "directory where the docs should be written to")
+	generateDocsParams.Directory = generateDocsCmd.Flags().StringP("dir", "", "./docs", "directory where the docs should be written to")
 }

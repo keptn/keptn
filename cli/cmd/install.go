@@ -125,7 +125,7 @@ var p platform
 var installCmd = &cobra.Command{
 	Use:   "install",
 	Short: "Installs Keptn on a Kubernetes cluster",
-	Long: `The Keptn CLI allows installing Keptn on Azure Kubernetes Services (AKS), Amazon Elastic Kubernetes Service (EKS), Google Kubernetes Engine (GKE), Pivotal Container Service (PKS), and on OpenShift.
+	Long: `The Keptn CLI allows installing Keptn on Azure Kubernetes Services (AKS), Amazon Elastic Kubernetes Service (EKS), Google Kubernetes Engine (GKE), Pivotal Container Service (PKS), any Kubernetes derivate to which your kube config is pointing to, and on OpenShift.
 
 For more information, please consult the following docs:
 
