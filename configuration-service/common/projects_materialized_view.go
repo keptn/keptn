@@ -265,5 +265,5 @@ func updateServiceInStage(project *models.ExpandedProject, stage string, service
 			return fn(stg.Services[serviceIndex])
 		}
 	}
-	return errors.New("service not found")
+	return errors.New("stage not found")
 }
