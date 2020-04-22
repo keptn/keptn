@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: mongodb-datastore
-        image: keptn/mongodb-datastore:0.6.1
+        image: keptn/mongodb-datastore:0.6.2
         ports:
         - containerPort: 8080
         resources:

@@ -43,7 +43,7 @@ To enable it within your Kubernetes cluster, we recommend first creating a secre
         spec:
           containers:
           - name: bridge
-            image: keptn/bridge2:0.6.1
+            image: keptn/bridge2:0.6.2
             imagePullPolicy: Always
             # EDIT STARTS HERE
             envFrom:
