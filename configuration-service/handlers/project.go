@@ -149,15 +149,20 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 
 // GetProjectProjectNameHandlerFunc gets a project by its name
 func GetProjectProjectNameHandlerFunc(params project.GetProjectProjectNameParams) middleware.Responder {
-	if !common.ProjectExists(params.ProjectName) {
+
+	mv := common.GetProjectsMaterializedView()
+
+	prj, err := mv.GetProject(params.ProjectName)
+
+	if err != nil {
+		return project.NewGetProjectProjectNameDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+	}
+
+	if prj == nil {
 		return project.NewGetProjectProjectNameNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project not found")})
 	}
-	var projectResponse = &models.Project{ProjectName: params.ProjectName}
-	projectCreds, _ := common.GetCredentials(params.ProjectName)
-	if projectCreds != nil {
-		projectResponse.GitRemoteURI = projectCreds.RemoteURI
-	}
-	return project.NewGetProjectProjectNameOK().WithPayload(projectResponse)
+
+	return project.NewGetProjectProjectNameOK().WithPayload(prj)
 }
 
 // PutProjectProjectNameHandlerFunc updates a project

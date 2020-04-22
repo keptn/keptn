@@ -184,7 +184,7 @@ definitions:
       stages:
         type: array
         items:
-          $ref: '#/definitions/Stage'
+          $ref: '#/definitions/ExpandedStage'
 
   Service:
     type: object
@@ -208,7 +208,7 @@ definitions:
       services:
         type: array
         items:
-          $ref: '#/definitions/Service'
+          $ref: '#/definitions/ExpandedService'
 
   Resource:
     type: object
@@ -409,7 +409,7 @@ paths:
         '200':
           description: Success
           schema:
-            $ref: '#/definitions/Project'
+            $ref: '#/definitions/ExpandedProject'
         '404':
           description: Failed. Project could not be found.
           schema:
@@ -630,7 +630,7 @@ paths:
         '200':
           description: Success
           schema:
-            $ref: '#/definitions/Stage'
+            $ref: '#/definitions/ExpandedStage'
         '404':
           description: Failed. Project resource could not be found.
           schema:
@@ -856,7 +856,7 @@ paths:
         '200':
           description: Success
           schema:
-            $ref: '#/definitions/Service'
+            $ref: '#/definitions/ExpandedService'
         '404':
           description: Failed. Service could not be found.
           schema:

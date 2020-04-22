@@ -136,7 +136,7 @@ func init() {
           "200": {
             "description": "Success",
             "schema": {
-              "$ref": "#/definitions/Project"
+              "$ref": "#/definitions/ExpandedProject"
             }
           },
           "404": {
@@ -701,7 +701,7 @@ func init() {
           "200": {
             "description": "Success",
             "schema": {
-              "$ref": "#/definitions/Stage"
+              "$ref": "#/definitions/ExpandedStage"
             }
           },
           "404": {
@@ -1078,7 +1078,7 @@ func init() {
           "200": {
             "description": "Success",
             "schema": {
-              "$ref": "#/definitions/Service"
+              "$ref": "#/definitions/ExpandedService"
             }
           },
           "404": {
@@ -1661,7 +1661,7 @@ func init() {
         "services": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/Service"
+            "$ref": "#/definitions/ExpandedService"
           }
         },
         "totalCount": {
@@ -1699,7 +1699,7 @@ func init() {
         "stages": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/Stage"
+            "$ref": "#/definitions/ExpandedStage"
           }
         },
         "totalCount": {
@@ -1955,7 +1955,7 @@ func init() {
           "200": {
             "description": "Success",
             "schema": {
-              "$ref": "#/definitions/Project"
+              "$ref": "#/definitions/ExpandedProject"
             }
           },
           "404": {
@@ -2674,7 +2674,7 @@ func init() {
           "200": {
             "description": "Success",
             "schema": {
-              "$ref": "#/definitions/Stage"
+              "$ref": "#/definitions/ExpandedStage"
             }
           },
           "404": {
@@ -3160,7 +3160,7 @@ func init() {
           "200": {
             "description": "Success",
             "schema": {
-              "$ref": "#/definitions/Service"
+              "$ref": "#/definitions/ExpandedService"
             }
           },
           "404": {
@@ -3834,7 +3834,7 @@ func init() {
         "services": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/Service"
+            "$ref": "#/definitions/ExpandedService"
           }
         },
         "totalCount": {
@@ -3872,7 +3872,7 @@ func init() {
         "stages": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/Stage"
+            "$ref": "#/definitions/ExpandedStage"
           }
         },
         "totalCount": {
