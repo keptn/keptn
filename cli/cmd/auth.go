@@ -84,7 +84,7 @@ func init() {
 
 	endPoint = authCmd.Flags().StringP("endpoint", "e", "", "The endpoint exposed by the Keptn installation (e.g., api.keptn.127.0.0.1.xip.io)")
 	authCmd.MarkFlagRequired("endpoint")
-	apiToken = authCmd.Flags().StringP("api-token", "a", "", "The API token to communicate with the by Keptn installation")
+	apiToken = authCmd.Flags().StringP("api-token", "a", "", "The API token to communicate with the Keptn installation")
 	authCmd.MarkFlagRequired("api-token")
 }
 

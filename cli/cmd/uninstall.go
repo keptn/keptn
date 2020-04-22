@@ -22,9 +22,9 @@ var uninstallCmd = &cobra.Command{
 This command does *not* delete: 
 
 * Istio
-* Tiller 
 * Dynatrace monitoring
 * Prometheus monitoring
+* Any (third-party) service installed in addition to Keptn (e.g., notification-service, slackbot-service, ...)
 
 Besides, deployed services and the configuration on the Git upstream (i.e., GitHub, GitLab, or Bitbucket) are not deleted. To clean-up created projects and services, instructions are provided [here](../../manage/project#delete-a-project).
 
