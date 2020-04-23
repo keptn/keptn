@@ -26,11 +26,13 @@ var authCmd = &cobra.Command{
 	Use:   "auth --endpoint=https://api.keptn.MY.DOMAIN.COM --api-token=SECRET_TOKEN",
 	Short: "Authenticates the Keptn CLI against a Keptn installation",
 	Long: `Authenticates the Keptn CLI against a Keptn installation using an endpoint
-and an API token. The endpoint and API token are exposed during the Keptn installation.
-If the authentication is successful, the endpoint and the API token are stored in a password store. 
+and an API token. The endpoint and API token are automatically configured during the Keptn installation.
+If the authentication is successful, the endpoint and the API token are stored in a password store of the underlying operating system.
+More precisely, the keptn CLI stores the endpoint and API token using *pass* in case of Linux, using *Keychain* in case of macOS, or *Wincred* in case of Windows.
 
-Example:
-	keptn auth --endpoint=https://api.keptn.my.domain.com --api-token=abcd-0123-wxyz-7890`,
+**Note**: If you receive a warning *Using a file-based storage for the key because the password-store seems to be not set up.* this is because a password store could not be found in your environment. In this case, the credentials are stored in *~/.keptn/.keptn* in your home directory.
+	`,
+	Example: `keptn auth --endpoint=https://api.keptn.MY.DOMAIN.COM --api-token=abcd-0123-wxyz-7890`,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		logging.PrintLog("Starting to authenticate", logging.InfoLevel)
@@ -80,9 +82,9 @@ Example:
 func init() {
 	rootCmd.AddCommand(authCmd)
 
-	endPoint = authCmd.Flags().StringP("endpoint", "e", "", "The endpoint exposed by keptn")
+	endPoint = authCmd.Flags().StringP("endpoint", "e", "", "The endpoint exposed by the Keptn installation (e.g., api.keptn.127.0.0.1.xip.io)")
 	authCmd.MarkFlagRequired("endpoint")
-	apiToken = authCmd.Flags().StringP("api-token", "a", "", "The API token provided by keptn")
+	apiToken = authCmd.Flags().StringP("api-token", "a", "", "The API token to communicate with the Keptn installation")
 	authCmd.MarkFlagRequired("api-token")
 }
 

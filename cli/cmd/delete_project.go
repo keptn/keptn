@@ -19,8 +19,13 @@ var delProjectCmd = &cobra.Command{
 	Short: "Deletes a project identified by project name",
 	Long: `Deletes a project identified by project name. 
 
-Example:
-	keptn delete project sockshop`,
+**Known Limitations**:
+
+* If a Git upstream is configured for this project, the referenced upstream repository (e.g., on GitHub) will not be deleted. 
+* Services that have been deployed to the Kubernetes cluster are not deleted (same goes for the namespaces).
+* Helm-releases created for deployments are not deleted - see https://keptn.sh/docs/develop/reference/helm/#clean-up-after-deleting-a-project
+`,
+	Example: `keptn delete project sockshop`,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
 		_, _, err := credentialmanager.NewCredentialManager().GetCreds()

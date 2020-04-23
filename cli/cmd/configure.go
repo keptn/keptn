@@ -6,9 +6,8 @@ import (
 
 // configureCmd represents the configure command
 var configureCmd = &cobra.Command{
-	Use:          "configure [domain | monitoring]",
-	Short:        "configure is the parent command for \"configure domain\" and \"configure monitoring\"",
-	Long:         "configure is the parent command for \"configure domain\" and \"configure monitoring\". \"configure\" without subcommand cannot be used.",
+	Use:          "configure [domain | monitoring | bridge]",
+	Short:        "Configures one of the specified parts of Keptn",
 	SilenceUsage: true,
 }
 
