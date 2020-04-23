@@ -20,7 +20,7 @@ func TestGenerateDocsDirectoryDoesNotExist(t *testing.T) {
 
 	cmd := fmt.Sprintf("generate docs --dir=%s --mock", "does/not/exist")
 	_, err := executeActionCommandC(cmd)
-	assert.Equal(t, err.Error(), "stat does/not/exist: no such file or directory", "Received unexpected error")
+	assert.Equal(t, err.Error(), "Error trying to access directory does/not/exist. Please make sure the directory exists.", "Received unexpected error")
 }
 
 // Tests generating docs in a temp directory
