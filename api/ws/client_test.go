@@ -33,14 +33,14 @@ func TestServiceRegistering(t *testing.T) {
 	go hub.Run()
 
 	http.DefaultServeMux = http.NewServeMux()
-	srv := &http.Server{Addr: ":80"}
+	srv := &http.Server{Addr: ":41039"}
 	http.HandleFunc("/", handler)
 
 	go func() {
 		srv.ListenAndServe()
 	}()
 
-	u := url.URL{Scheme: "ws", Host: "localhost", Path: "/"}
+	u := url.URL{Scheme: "ws", Host: "localhost:41039", Path: "/"}
 	log.Printf("connecting to %s", u.String())
 
 	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
@@ -74,14 +74,14 @@ func TestCLIRegistering(t *testing.T) {
 	go hub.Run()
 
 	http.DefaultServeMux = http.NewServeMux()
-	srv := &http.Server{Addr: ":80"}
+	srv := &http.Server{Addr: ":41039"}
 	http.HandleFunc("/", handler)
 
 	go func() {
 		srv.ListenAndServe()
 	}()
 
-	u := url.URL{Scheme: "ws", Host: "localhost", Path: "/"}
+	u := url.URL{Scheme: "ws", Host: "localhost:41039", Path: "/"}
 	log.Printf("connecting to %s", u.String())
 
 	header := http.Header{}
@@ -119,14 +119,14 @@ func TestSendMessage(t *testing.T) {
 	go hub.Run()
 
 	http.DefaultServeMux = http.NewServeMux()
-	srv := &http.Server{Addr: ":80"}
+	srv := &http.Server{Addr: ":41039"}
 	http.HandleFunc("/", handler)
 
 	go func() {
 		srv.ListenAndServe()
 	}()
 
-	u := url.URL{Scheme: "ws", Host: "localhost", Path: "/"}
+	u := url.URL{Scheme: "ws", Host: "localhost:41039", Path: "/"}
 	log.Printf("connecting to %s", u.String())
 
 	header := http.Header{}
@@ -179,14 +179,14 @@ func TestBuffering(t *testing.T) {
 	go hub.Run()
 
 	http.DefaultServeMux = http.NewServeMux()
-	srv := &http.Server{Addr: ":80"}
+	srv := &http.Server{Addr: ":41039"}
 	http.HandleFunc("/", handler)
 
 	go func() {
 		srv.ListenAndServe()
 	}()
 
-	u := url.URL{Scheme: "ws", Host: "localhost", Path: "/"}
+	u := url.URL{Scheme: "ws", Host: "localhost:41039", Path: "/"}
 	log.Printf("connecting to %s", u.String())
 
 	header := http.Header{}
