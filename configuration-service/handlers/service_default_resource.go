@@ -60,7 +60,7 @@ func PostProjectProjectNameServiceServiceNameResourceHandlerFunc(params service_
 		}
 
 		logger.Debug("Staging Changes")
-		err = common.StageAndCommitAll(params.ProjectName, "Added resources")
+		err = common.StageAndCommitAll(params.ProjectName, "Added resources", true)
 		if err != nil {
 			logger.Error(err.Error())
 			return service_default_resource.NewPostProjectProjectNameServiceServiceNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
