@@ -44,6 +44,7 @@ func TestPrepareInstallerManifest(t *testing.T) {
 	installParams.Gateway = LoadBalancer
 	installParams.UseCase = AllUseCases
 	installParams.IstioInstallOption = StopIfInstalled
+	*installParams.Domain = ""
 
 	res := prepareInstallerManifest()
 	expected := `---
@@ -70,6 +71,8 @@ spec:
           value: gke
         - name: GATEWAY_TYPE
           value: LoadBalancer
+        - name: DOMAIN
+          value: 
         - name: INGRESS
           value: istio
         - name: USE_CASE
@@ -88,6 +91,7 @@ func resetFlagValues() {
 	*installParams.InstallerImage = ""
 	*installParams.PlatformIdentifier = "gke"
 	*installParams.GatewayInput = "LoadBalancer"
+	*installParams.Domain = ""
 	*installParams.UseCaseInput = "all"
 	*installParams.IstioInstallOptionInput = "StopIfInstalled"
 }
@@ -171,6 +175,60 @@ spec:
           value: gke
         - name: GATEWAY_TYPE
           value: NodePort
+        - name: DOMAIN
+          value: 
+        - name: INGRESS
+          value: istio
+        - name: USE_CASE
+          value: all
+        - name: ISTIO_INSTALL_OPTION
+          value: StopIfInstalled
+      restartPolicy: Never
+`
+	if res != expected {
+		t.Error("installation manifest does not match")
+	}
+}
+
+func TestInstallCmdWithDomain(t *testing.T) {
+	credentialmanager.MockAuthCreds = true
+
+	cmd := fmt.Sprintf("install --platform=gke --gateway=NodePort --domain=127.0.0.1.nip.io --mock")
+
+	resetFlagValues()
+
+	_, err := executeActionCommandC(cmd)
+	if err != nil {
+		t.Errorf(unexpectedErrMsg, err)
+	}
+
+	res := prepareInstallerManifest()
+	expected := `---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: installer
+  namespace: default
+spec:
+  backoffLimit: 0
+  template:
+    metadata:
+      labels:
+        app: installer
+    spec:
+      volumes:
+      - name: kubectl
+        emptyDir: {}
+      containers:
+      - name: keptn-installer
+        image: docker.io/keptn/installer:latest
+        env:
+        - name: PLATFORM
+          value: gke
+        - name: GATEWAY_TYPE
+          value: NodePort
+        - name: DOMAIN
+          value: 127.0.0.1.nip.io
         - name: INGRESS
           value: istio
         - name: USE_CASE
@@ -221,6 +279,8 @@ spec:
           value: gke
         - name: GATEWAY_TYPE
           value: LoadBalancer
+        - name: DOMAIN
+          value: 
         - name: INGRESS
           value: nginx
         - name: USE_CASE
@@ -271,6 +331,8 @@ spec:
           value: gke
         - name: GATEWAY_TYPE
           value: LoadBalancer
+        - name: DOMAIN
+          value: 
         - name: INGRESS
           value: istio
         - name: USE_CASE

@@ -19,6 +19,11 @@ You can execute unit tests using
 go test ./...
 ```
 
+If you want to make sure tests don't influence your local environment (or vice versa), you can run them in a Docker container:
+```console
+docker run --rm -it -v "$PWD":/usr/src/myapp -w /usr/src/myapp golang:1.13 go test -race -v ./...
+```
+
 ### Structure
 
 The cli consists of 
