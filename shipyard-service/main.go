@@ -137,7 +137,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		}
 		return nil
 	} else if event.Type() == keptn.InternalProjectDeleteEventType {
-		err := getRemoteURLAndDeleteProject(event, *logger, ws)
+		err := deleteProject(event, *logger, ws)
 		if err := respondWithDoneEvent(event, nil, err, "Project successfully deleted", *logger, ws, keptnHandler); err != nil {
 			return err
 		}
@@ -199,8 +199,8 @@ func createProjectAndProcessShipyard(event cloudevents.Event, logger keptn.Logge
 	return storeResourceForProject(project.ProjectName, string(data), logger)
 }
 
-// getRemoteURLAndDeleteProject processes event and deletes project
-func getRemoteURLAndDeleteProject(event cloudevents.Event, logger keptn.Logger, ws *websocket.Conn) error {
+// deleteProject processes event and deletes project
+func deleteProject(event cloudevents.Event, logger keptn.Logger, ws *websocket.Conn) error {
 	eventData := keptn.ProjectDeleteEventData{}
 	if err := event.DataAs(&eventData); err != nil {
 		return err
@@ -212,17 +212,32 @@ func getRemoteURLAndDeleteProject(event cloudevents.Event, logger keptn.Logger, 
 		ProjectName: eventData.Project,
 	}
 
+	var msg string
 	keptnHandler, err := keptn.NewKeptn(&event, keptn.KeptnOpts{})
 	if err != nil {
 		logger.Error("Could not initialize Keptn handler: " + err.Error())
+		return err
+	}
+	msg, err = client.getDeleteInfoMessage(keptnHandler)
+	if err != nil {
+		msg = fmt.Sprintf("Shipyard of project %s cannot be retrieved anymore. ", project.ProjectName)
+		msg += "After deleting the project, the namespaces containing the services are still available. " +
+			"This may cause problems if a project with the same name is created later."
+	}
+	if err := keptn.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"),
+		msg, false, "INFO"); err != nil {
+		logger.Error(fmt.Sprintf("Could not write log to websocket. %s", err.Error()))
 	}
 
 	// get remote url of project
 	projectResp, err := client.getProject(project, logger)
 	if err != nil {
-		return fmt.Errorf("Project %s is not available", project.ProjectName)
-	}
-	if projectResp != nil && projectResp.GitRemoteURI != "" {
+		if err := keptn.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"),
+			fmt.Sprintf("Project %s cannot be retrieved anymore. Any Git upstream of the project will not be deleted.", project.ProjectName),
+			false, "INFO"); err != nil {
+			logger.Error(fmt.Sprintf("Could not write log to websocket. %s", err.Error()))
+		}
+	} else if projectResp != nil && projectResp.GitRemoteURI != "" {
 		if err := keptn.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"),
 			fmt.Sprintf("The Git upstream of the project will not be deleted: %s", projectResp.GitRemoteURI), false, "INFO"); err != nil {
 			logger.Error(fmt.Sprintf("Could not write log to websocket. %s", err.Error()))
@@ -234,17 +249,6 @@ func getRemoteURLAndDeleteProject(event cloudevents.Event, logger keptn.Logger, 
 		logger.Error(fmt.Sprintf("Could not get service endpoint for %s: %s", configservice, err.Error()))
 		return err
 	}
-
-	msg, err := client.getDeleteInfoMessage(keptnHandler)
-	if err != nil {
-		logger.Error(fmt.Sprintf("Could not print delete info message: %v", err))
-		return err
-	}
-	if err := keptn.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"),
-		msg, false, "INFO"); err != nil {
-		logger.Error(fmt.Sprintf("Could not write log to websocket. %s", err.Error()))
-	}
-
 	// delete project
 	if err := client.deleteProject(project, logger, configServiceURL.String()); err != nil {
 		return fmt.Errorf("Deleting project %s failed. %s", project.ProjectName, err.Error())
