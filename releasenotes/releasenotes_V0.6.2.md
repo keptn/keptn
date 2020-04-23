@@ -11,11 +11,13 @@ Implemented **Keptn spec** version: [0.1.3](https://github.com/keptn/spec/tree/0
 * API
   * Introduce an API-gateway that proxies requests to configuration-service [#1510](https://github.com/keptn/keptn/issues/1510)
   * Query a list of projects [#1559](https://github.com/keptn/keptn/issues/1559)
+  * Provide an endpoint for exposing Keptn's Bridge via Istio or nginx ingress [#1153](https://github.com/keptn/keptn/issues/1153)
 * Bridge
   * Use icons for events [#1352](https://github.com/keptn/keptn/issues/1352)
   * Deep links [#1316](https://github.com/keptn/keptn/issues/1316)
 * CLI
   * Create a support-archive for troubleshooting [#1549](https://github.com/keptn/keptn/issues/1549)
+  * Provide a CLI command for exposing Keptn's Bridge [#1560](https://github.com/keptn/keptn/issues/1560)
 * Configuration-service
   * Improve troubleshooting for git related problems [#1637](https://github.com/keptn/keptn/issues/1637)
 * Installer
