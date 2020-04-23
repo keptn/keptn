@@ -411,6 +411,83 @@ func init() {
         }
       ]
     },
+    "/project/{projectName}/service": {
+      "get": {
+        "tags": [
+          "Services"
+        ],
+        "operationId": "get services",
+        "parameters": [
+          {
+            "$ref": "#/parameters/pageSize"
+          },
+          {
+            "$ref": "#/parameters/nextPageKey"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/ServicesWithStageInfo"
+            }
+          },
+          "404": {
+            "description": "Failed. Containing project could not be found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "$ref": "#/parameters/projectName"
+        }
+      ]
+    },
+    "/project/{projectName}/service/{serviceName}": {
+      "get": {
+        "tags": [
+          "Services"
+        ],
+        "operationId": "get service",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/ExpandedServiceWithStageInfo"
+            }
+          },
+          "404": {
+            "description": "Failed. Service could not be found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "$ref": "#/parameters/projectName"
+        },
+        {
+          "$ref": "#/parameters/serviceName"
+        }
+      ]
+    },
     "/project/{projectName}/service/{serviceName}/resource": {
       "get": {
         "tags": [
@@ -1489,6 +1566,25 @@ func init() {
         }
       }
     },
+    "ExpandedServiceWithStageInfo": {
+      "type": "object",
+      "properties": {
+        "creationDate": {
+          "description": "Creation date of the service",
+          "type": "string"
+        },
+        "serviceName": {
+          "description": "Service name",
+          "type": "string"
+        },
+        "stageInfo": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/InverseServiceStageInfo"
+          }
+        }
+      }
+    },
     "ExpandedStage": {
       "type": "object",
       "properties": {
@@ -1503,6 +1599,24 @@ func init() {
         },
         "stageName": {
           "description": "Stage name",
+          "type": "string"
+        }
+      }
+    },
+    "InverseServiceStageInfo": {
+      "type": "object",
+      "properties": {
+        "deployedImage": {
+          "description": "Currently deployed image",
+          "type": "string"
+        },
+        "lastEventTypes": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/EventContext"
+          }
+        },
+        "stageName": {
           "type": "string"
         }
       }
@@ -1666,6 +1780,29 @@ func init() {
         },
         "totalCount": {
           "description": "Total number of services",
+          "type": "number"
+        }
+      }
+    },
+    "ServicesWithStageInfo": {
+      "type": "object",
+      "properties": {
+        "nextPageKey": {
+          "description": "Pointer to next page, base64 encoded",
+          "type": "string"
+        },
+        "pageSize": {
+          "description": "Size of returned page",
+          "type": "number"
+        },
+        "services": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ExpandedServiceWithStageInfo"
+          }
+        },
+        "totalCount": {
+          "description": "Total number of stages",
           "type": "number"
         }
       }
@@ -2297,6 +2434,104 @@ func init() {
         }
       ]
     },
+    "/project/{projectName}/service": {
+      "get": {
+        "tags": [
+          "Services"
+        ],
+        "operationId": "get services",
+        "parameters": [
+          {
+            "maximum": 50,
+            "minimum": 1,
+            "type": "integer",
+            "default": 20,
+            "description": "The number of items to return",
+            "name": "pageSize",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Pointer to the next set of items",
+            "name": "nextPageKey",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/ServicesWithStageInfo"
+            }
+          },
+          "404": {
+            "description": "Failed. Containing project could not be found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "description": "Name of the project",
+          "name": "projectName",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
+    "/project/{projectName}/service/{serviceName}": {
+      "get": {
+        "tags": [
+          "Services"
+        ],
+        "operationId": "get service",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/ExpandedServiceWithStageInfo"
+            }
+          },
+          "404": {
+            "description": "Failed. Service could not be found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "description": "Name of the project",
+          "name": "projectName",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "description": "Name of the service",
+          "name": "serviceName",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
     "/project/{projectName}/service/{serviceName}/resource": {
       "get": {
         "tags": [
@@ -3662,6 +3897,25 @@ func init() {
         }
       }
     },
+    "ExpandedServiceWithStageInfo": {
+      "type": "object",
+      "properties": {
+        "creationDate": {
+          "description": "Creation date of the service",
+          "type": "string"
+        },
+        "serviceName": {
+          "description": "Service name",
+          "type": "string"
+        },
+        "stageInfo": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/InverseServiceStageInfo"
+          }
+        }
+      }
+    },
     "ExpandedStage": {
       "type": "object",
       "properties": {
@@ -3676,6 +3930,24 @@ func init() {
         },
         "stageName": {
           "description": "Stage name",
+          "type": "string"
+        }
+      }
+    },
+    "InverseServiceStageInfo": {
+      "type": "object",
+      "properties": {
+        "deployedImage": {
+          "description": "Currently deployed image",
+          "type": "string"
+        },
+        "lastEventTypes": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/EventContext"
+          }
+        },
+        "stageName": {
           "type": "string"
         }
       }
@@ -3839,6 +4111,29 @@ func init() {
         },
         "totalCount": {
           "description": "Total number of services",
+          "type": "number"
+        }
+      }
+    },
+    "ServicesWithStageInfo": {
+      "type": "object",
+      "properties": {
+        "nextPageKey": {
+          "description": "Pointer to next page, base64 encoded",
+          "type": "string"
+        },
+        "pageSize": {
+          "description": "Size of returned page",
+          "type": "number"
+        },
+        "services": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ExpandedServiceWithStageInfo"
+          }
+        },
+        "totalCount": {
+          "description": "Total number of stages",
           "type": "number"
         }
       }

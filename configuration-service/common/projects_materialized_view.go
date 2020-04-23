@@ -13,12 +13,14 @@ var instance *projectsMaterializedView
 
 type projectsMaterializedView struct {
 	ProjectRepo ProjectRepo
+	Logger      keptn.LoggerInterface
 }
 
 func GetProjectsMaterializedView() *projectsMaterializedView {
 	if instance == nil {
 		instance = &projectsMaterializedView{
 			ProjectRepo: &MongoDBProjectRepo{},
+			Logger:      keptn.NewLogger("", "", "configuration-service"),
 		}
 	}
 	return instance
@@ -64,7 +66,7 @@ func (mv *projectsMaterializedView) CreateStage(project string, stage string) er
 	prj, err := mv.GetProject(project)
 
 	if err != nil {
-		fmt.Sprintf("Could not add stage %s to project %s : %s\n", stage, project, err.Error())
+		mv.Logger.Error(fmt.Sprintf("Could not add stage %s to project %s : %s\n", stage, project, err.Error()))
 		return err
 	}
 
@@ -77,7 +79,7 @@ func (mv *projectsMaterializedView) CreateStage(project string, stage string) er
 	}
 
 	if stageAlreadyExists {
-		fmt.Println("Stage " + stage + " already exists in project " + project)
+		mv.Logger.Info("Stage " + stage + " already exists in project " + project)
 		return nil
 	}
 
@@ -91,7 +93,7 @@ func (mv *projectsMaterializedView) CreateStage(project string, stage string) er
 		return err
 	}
 
-	fmt.Println("Added stage " + stage + " to project " + project)
+	mv.Logger.Info("Added stage " + stage + " to project " + project)
 	return nil
 }
 
@@ -107,7 +109,7 @@ func (mv *projectsMaterializedView) createProject(prj *models.Project) error {
 
 	err := mv.ProjectRepo.CreateProject(expandedProject)
 	if err != nil {
-		fmt.Println("Could not create project " + prj.ProjectName + ": " + err.Error())
+		mv.Logger.Error("Could not create project " + prj.ProjectName + ": " + err.Error())
 		return err
 	}
 	return nil
@@ -118,7 +120,7 @@ func (mv *projectsMaterializedView) updateProject(prj *models.ExpandedProject) e
 }
 
 func (mv *projectsMaterializedView) DeleteStage(project string, stage string) error {
-	fmt.Println("Deleting stage " + stage + " from project " + project)
+	mv.Logger.Info("Deleting stage " + stage + " from project " + project)
 	prj, err := mv.GetProject(project)
 
 	if err != nil {
@@ -149,7 +151,7 @@ func (mv *projectsMaterializedView) DeleteStage(project string, stage string) er
 func (mv *projectsMaterializedView) CreateService(project string, stage string, service string) error {
 	existingProject, err := mv.GetProject(project)
 	if err != nil {
-		fmt.Println("Could not add service " + service + " to stage " + stage + " in project " + project + ". Could not load project: " + err.Error())
+		mv.Logger.Error("Could not add service " + service + " to stage " + stage + " in project " + project + ". Could not load project: " + err.Error())
 		return err
 	}
 
@@ -165,22 +167,22 @@ func (mv *projectsMaterializedView) CreateService(project string, stage string, 
 				DeployedImage: "",
 				ServiceName:   service,
 			})
-			fmt.Println("Adding " + service + " to stage " + stage + " in project " + project + " in database")
+			mv.Logger.Info("Adding " + service + " to stage " + stage + " in project " + project + " in database")
 			err := mv.updateProject(existingProject)
 			if err != nil {
-				fmt.Println("Could not add service " + service + " to stage " + stage + " in project " + project + ". Could not update project: " + err.Error())
+				mv.Logger.Error("Could not add service " + service + " to stage " + stage + " in project " + project + ". Could not update project: " + err.Error())
 			}
 			break
 		}
 	}
-	fmt.Println("Service " + service + " already exists in stage " + stage + " in project " + project)
+	mv.Logger.Info("Service " + service + " already exists in stage " + stage + " in project " + project)
 	return nil
 }
 
 func (mv *projectsMaterializedView) DeleteService(project string, stage string, service string) error {
 	existingProject, err := mv.GetProject(project)
 	if err != nil {
-		fmt.Println("Could not delete service " + service + " from stage " + stage + " in project " + project + ". Could not load project: " + err.Error())
+		mv.Logger.Error("Could not delete service " + service + " from stage " + stage + " in project " + project + ". Could not load project: " + err.Error())
 		return err
 	}
 
@@ -193,7 +195,7 @@ func (mv *projectsMaterializedView) DeleteService(project string, stage string, 
 				}
 			}
 			if serviceIndex < 0 {
-				fmt.Println("Could not delete service " + service + " from stage " + stage + " in project " + project + ". Service not found in database")
+				mv.Logger.Info("Could not delete service " + service + " from stage " + stage + " in project " + project + ". Service not found in database")
 				return nil
 			}
 			copy(stg.Services[serviceIndex:], stg.Services[serviceIndex+1:])
@@ -204,17 +206,17 @@ func (mv *projectsMaterializedView) DeleteService(project string, stage string, 
 	}
 	err = mv.updateProject(existingProject)
 	if err != nil {
-		fmt.Println("Could not delete service " + service + " from stage " + stage + " in project " + project + ": " + err.Error())
+		mv.Logger.Error("Could not delete service " + service + " from stage " + stage + " in project " + project + ": " + err.Error())
 		return err
 	}
-	fmt.Println("Deleted service " + service + " from stage " + stage + " in project " + project)
+	mv.Logger.Info("Deleted service " + service + " from stage " + stage + " in project " + project)
 	return nil
 }
 
 func (mv *projectsMaterializedView) UpdateEventOfService(keptnBase *keptn.KeptnBase, eventType string, keptnContext string, eventID string) error {
 	existingProject, err := mv.GetProject(keptnBase.Project)
 	if err != nil {
-		fmt.Println("Could not update service " + keptnBase.Service + " in stage " + keptnBase.Stage + " in project " + keptnBase.Project + ". Could not load project: " + err.Error())
+		mv.Logger.Error("Could not update service " + keptnBase.Service + " in stage " + keptnBase.Stage + " in project " + keptnBase.Project + ". Could not load project: " + err.Error())
 		return err
 	}
 
@@ -237,12 +239,12 @@ func (mv *projectsMaterializedView) UpdateEventOfService(keptnBase *keptn.KeptnB
 	})
 
 	if err != nil {
-		fmt.Println("Could not update image of service " + keptnBase.Service + ": " + err.Error())
+		mv.Logger.Error("Could not update image of service " + keptnBase.Service + ": " + err.Error())
 		return err
 	}
 	err = mv.updateProject(existingProject)
 	if err != nil {
-		fmt.Println("Could not update " + keptnBase.Project + ": " + err.Error())
+		mv.Logger.Error("Could not update " + keptnBase.Project + ": " + err.Error())
 		return err
 	}
 	return nil

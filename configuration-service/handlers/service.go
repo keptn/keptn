@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"github.com/keptn/keptn/configuration-service/restapi/operations/services"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/stage"
 	"os"
 	"time"
@@ -137,4 +138,105 @@ func PutProjectProjectNameStageStageNameServiceServiceNameHandlerFunc(params ser
 // DeleteProjectProjectNameStageStageNameServiceServiceNameHandlerFunc deletes a service
 func DeleteProjectProjectNameStageStageNameServiceServiceNameHandlerFunc(params service.DeleteProjectProjectNameStageStageNameServiceServiceNameParams) middleware.Responder {
 	return middleware.NotImplemented("operation service.DeleteProjectProjectNameStageStageNameServiceServiceName has not yet been implemented")
+}
+
+func GetServices(params services.GetServicesParams) middleware.Responder {
+	mv := common.GetProjectsMaterializedView()
+
+	prj, err := mv.GetProject(params.ProjectName)
+	if err != nil {
+		return services.NewGetServicesDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+	}
+
+	if prj == nil {
+		return services.NewGetServicesNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project not found")})
+	}
+
+	allServices := []*models.ExpandedServiceWithStageInfo{}
+
+	for _, stg := range prj.Stages {
+		var serviceToUpdate *models.ExpandedServiceWithStageInfo
+		for _, svc := range stg.Services {
+			appendService := true
+			for _, sv := range allServices {
+				if sv.ServiceName == svc.ServiceName {
+					serviceToUpdate = sv
+					appendService = false
+				}
+			}
+			if appendService {
+				serviceToUpdate = &models.ExpandedServiceWithStageInfo{
+					ServiceName:  svc.ServiceName,
+					CreationDate: svc.CreationDate,
+					StageInfo:    []*models.InverseServiceStageInfo{},
+				}
+				allServices = append(allServices, serviceToUpdate)
+			}
+			stageInfo := &models.InverseServiceStageInfo{
+				DeployedImage:  svc.DeployedImage,
+				LastEventTypes: svc.LastEventTypes,
+				StageName:      stg.StageName,
+			}
+			serviceToUpdate.StageInfo = append(serviceToUpdate.StageInfo, stageInfo)
+		}
+	}
+
+	var payload = &models.ServicesWithStageInfo{
+		PageSize:    0,
+		NextPageKey: "0",
+		TotalCount:  0,
+		Services:    []*models.ExpandedServiceWithStageInfo{},
+	}
+
+	paginationInfo := common.Paginate(len(allServices), params.PageSize, params.NextPageKey)
+
+	totalCount := len(allServices)
+	if paginationInfo.NextPageKey < int64(totalCount) {
+		for _, svc := range allServices[paginationInfo.NextPageKey:paginationInfo.EndIndex] {
+			payload.Services = append(payload.Services, svc)
+		}
+	}
+	payload.TotalCount = float64(totalCount)
+	payload.NextPageKey = paginationInfo.NewNextPageKey
+	return services.NewGetServicesOK().WithPayload(payload)
+}
+
+func GetService(params services.GetServiceParams) middleware.Responder {
+	mv := common.GetProjectsMaterializedView()
+
+	prj, err := mv.GetProject(params.ProjectName)
+	if err != nil {
+		return services.NewGetServiceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+	}
+
+	if prj == nil {
+		return services.NewGetServiceNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project not found")})
+	}
+
+	var serviceResult *models.ExpandedServiceWithStageInfo
+	for _, stg := range prj.Stages {
+		for _, svc := range stg.Services {
+			if svc.ServiceName == params.ServiceName {
+				if serviceResult == nil {
+					serviceResult = &models.ExpandedServiceWithStageInfo{
+						CreationDate: svc.CreationDate,
+						ServiceName:  svc.ServiceName,
+						StageInfo:    []*models.InverseServiceStageInfo{},
+					}
+				}
+			}
+			stageInfo := &models.InverseServiceStageInfo{
+				DeployedImage:  svc.DeployedImage,
+				LastEventTypes: svc.LastEventTypes,
+				StageName:      stg.StageName,
+			}
+			serviceResult.StageInfo = append(serviceResult.StageInfo, stageInfo)
+		}
+	}
+
+	if serviceResult != nil {
+		return services.NewGetServiceOK().WithPayload(serviceResult)
+	}
+
+	return services.NewGetServiceNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Service not found")})
 }
