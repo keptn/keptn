@@ -19,7 +19,7 @@ function wait_for_url() {
   RETRY=0; RETRY_MAX=50;
 
   while [[ $RETRY -lt $RETRY_MAX ]]; do
-    curl $URL
+    curl $URL -k
 
     if [[ $? -eq 0 ]]; then
       echo "Verified access to ${URL}!"

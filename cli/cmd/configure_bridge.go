@@ -39,8 +39,10 @@ var bridgeCmd = &cobra.Command{
 	Short: "Exposes or locks down the bridge",
 	Long: `Exposes or locks down the Keptn's bridge.
 
-Example:
-	keptn configure bridge --action=expose
+When exposing Keptn's Bridge it will be available publicly. 
+Make sure to protect Keptn's Bridge using Basic authentication.
+`,
+	Example: `keptn configure bridge --action=expose
 	keptn configure bridge --action=lockdown`,
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
@@ -87,6 +89,8 @@ func configureBridge(endpoint string, apiToken string, configureBridgeParams *co
 			return errors.New("Could not " + *configureBridgeParams.Action + " bridge: " + err.Error())
 		}
 		fmt.Printf("Bridge exposed successfully. You can reach it here: https://%s\n", strings.Trim(strings.TrimSpace(string(body)), "\""))
+		// Todo: migrate docs for exposing keptn's bridge into keptn.github.io
+		fmt.Printf("Make sure to add basic authentication as described here: https://github.com/keptn/keptn/blob/master/bridge/README.md#setting-up-basic-authentication")
 	} else {
 		if err != nil {
 			return errors.New("Could not " + *configureBridgeParams.Action + " bridge: " + err.Error())

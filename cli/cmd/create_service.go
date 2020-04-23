@@ -24,10 +24,11 @@ var createServiceParams *createServiceCmdParams
 var crServiceCmd = &cobra.Command{
 	Use:   "service SERVICENAME --project=PROJECTNAME",
 	Short: "Creates a new service",
-	Long: `Creates a new service with the provided name and in the specified project. 
+	Long: `Creates a new service with the provided name in the specified project.
 
-Example:
-	keptn create service carts --project=sockshop`,
+Please note: This command is different from keptn onboard service (which requires a helm chart).
+`,
+	Example: `keptn create service carts --project=sockshop`,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
 		_, _, err := credentialmanager.NewCredentialManager().GetCreds()

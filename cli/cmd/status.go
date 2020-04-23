@@ -13,9 +13,8 @@ var statusCmd = &cobra.Command{
 	Use:   "status",
 	Short: "Checks the status of the CLI",
 	Long: `Checks the status of the CLI. This includes a test whether the CLI is authenticated against the Keptn API. 
-
-Example:
-	keptn status`,
+`,
+	Example: `keptn status`,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()

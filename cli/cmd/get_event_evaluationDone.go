@@ -36,10 +36,8 @@ var evaluationDone evaluationDoneStruct
 var evaluationDoneCmd = &cobra.Command{
 	Use:   "evaluation-done",
 	Short: "Returns the latest Keptn sh.keptn.events.evaluation-done event from a specific Keptn context",
-	Long: `Returns the latest Keptn sh.keptn.events.evaluation-done event from a specific Keptn context.
-	
-Example:
-	keptn get event evaluation-done --keptn-context=1234-5678-90ab-cdef`,
+	Long: `Returns the latest Keptn sh.keptn.events.evaluation-done event from a specific Keptn context.`,
+	Example: `keptn get event evaluation-done --keptn-context=1234-5678-90ab-cdef`,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()

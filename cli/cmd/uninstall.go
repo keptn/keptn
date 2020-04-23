@@ -17,6 +17,20 @@ var uninstallVersion *string
 var uninstallCmd = &cobra.Command{
 	Use:          "uninstall",
 	Short:        "Uninstalls Keptn from a Kubernetes cluster",
+	Long: `Uninstalls Keptn from a Kubernetes cluster.
+
+This command does *not* delete: 
+
+* Istio
+* Dynatrace monitoring
+* Prometheus monitoring
+* Any (third-party) service installed in addition to Keptn (e.g., notification-service, slackbot-service, ...)
+
+Besides, deployed services and the configuration on the Git upstream (i.e., GitHub, GitLab, or Bitbucket) are not deleted. To clean-up created projects and services, instructions are provided [here](../../manage/project#delete-a-project).
+
+**Note:** This command requires a *kubernetes current context* pointing to the cluster where Keptn should get uninstalled.
+`,
+	Example: `keptn uninstall`,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 
