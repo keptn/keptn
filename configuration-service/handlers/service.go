@@ -126,7 +126,7 @@ func PostProjectProjectNameStageStageNameServiceHandlerFunc(params service.PostP
 	metadataString, err := yaml.Marshal(newServiceMetadata)
 	err = common.WriteFile(servicePath+"/metadata.yaml", metadataString)
 
-	common.StageAndCommitAll(params.ProjectName, "Added service: "+params.Service.ServiceName)
+	common.StageAndCommitAll(params.ProjectName, "Added service: "+params.Service.ServiceName, true)
 
 	mv := common.GetProjectsMaterializedView()
 	err = mv.CreateService(params.ProjectName, params.StageName, params.Service.ServiceName)

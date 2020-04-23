@@ -74,7 +74,7 @@ func PutProjectProjectNameResourceHandlerFunc(params project_resource.PutProject
 	}
 
 	logger.Debug("Staging Changes")
-	err = common.StageAndCommitAll(params.ProjectName, "Updated resources")
+	err = common.StageAndCommitAll(params.ProjectName, "Updated resources", true)
 	if err != nil {
 		logger.Error(err.Error())
 
@@ -121,7 +121,7 @@ func PostProjectProjectNameResourceHandlerFunc(params project_resource.PostProje
 	}
 
 	logger.Debug("Staging Changes")
-	err = common.StageAndCommitAll(params.ProjectName, "Added resources")
+	err = common.StageAndCommitAll(params.ProjectName, "Added resources", true)
 	if err != nil {
 		logger.Error(err.Error())
 
@@ -207,7 +207,7 @@ func PutProjectProjectNameResourceResourceURIHandlerFunc(params project_resource
 	common.WriteBase64EncodedFile(filePath, params.Resource.ResourceContent)
 
 	logger.Debug("Staging Changes")
-	err = common.StageAndCommitAll(params.ProjectName, "Updated resource: "+params.ResourceURI)
+	err = common.StageAndCommitAll(params.ProjectName, "Updated resource: "+params.ResourceURI, true)
 	if err != nil {
 		logger.Error(err.Error())
 
@@ -254,7 +254,7 @@ func DeleteProjectProjectNameResourceResourceURIHandlerFunc(params project_resou
 	}
 
 	logger.Debug("Staging Changes")
-	err = common.StageAndCommitAll(params.ProjectName, "Deleted resources")
+	err = common.StageAndCommitAll(params.ProjectName, "Deleted resources", true)
 	if err != nil {
 		logger.Error(err.Error())
 
