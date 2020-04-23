@@ -119,6 +119,7 @@ jobs:
   - stage: Unit tests
     os: linux
     script:
+      - set -e # Fail the whole script whenever any command fails
       - |
         cd "${CLI_FOLDER}"
         go test -race -coverprofile=coverage.txt -covermode=atomic -v ./...
