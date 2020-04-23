@@ -6,7 +6,7 @@
         <p class="m-0 fail" [textContent]="result.value.metric"></p>
       </dt-key-value-list-key>
       <dt-key-value-list-value *ngIf="result.value.success">
-        <span [textContent]="result.value.value | number:'1.0-0'"></span>
+        <span [textContent]="formatNumber(result.value.value)"></span>
         <span class="small m-0 ml-1" *ngFor="let _target of result.targets" [textContent]="_target.criteria" [class.error]="_target.violated" [class.error-line]="_target.violated"></span>
       </dt-key-value-list-value>
       <dt-key-value-list-value *ngIf="!result.value.success">
@@ -20,7 +20,7 @@
         <p class="m-0 warning" [textContent]="result.value.metric"></p>
       </dt-key-value-list-key>
       <dt-key-value-list-value *ngIf="result.value.success">
-        <span [textContent]="result.value.value | number:'1.0-0'"></span>
+        <span [textContent]="formatNumber(result.value.value)"></span>
         <span class="small m-0 ml-1" *ngFor="let _target of result.targets" [textContent]="_target.criteria" [class.warning]="_target.violated" [class.error-line]="_target.violated"></span>
       </dt-key-value-list-value>
       <dt-key-value-list-value *ngIf="!result.value.success">
@@ -32,7 +32,7 @@
     <dt-key-value-list-item *ngIf="i < (3 - _indicatorResultsFail.length - _indicatorResultsWarning.length)">
       <dt-key-value-list-key [textContent]="result.value.metric"></dt-key-value-list-key>
       <dt-key-value-list-value>
-        <span [textContent]="result.value.value | number:'1.0-0'"></span>
+        <span [textContent]="formatNumber(result.value.value)"></span>
         <span class="small m-0 ml-1" *ngFor="let _target of result.targets" [textContent]="_target.criteria"></span>
       </dt-key-value-list-value>
     </dt-key-value-list-item>
@@ -44,7 +44,7 @@
       <dt-key-value-list-item *ngIf="i >= (3 - _indicatorResultsFail.length - _indicatorResultsWarning.length)">
         <dt-key-value-list-key [textContent]="result.value.metric"></dt-key-value-list-key>
         <dt-key-value-list-value>
-          <span [textContent]="result.value.value | number:'1.0-0'"></span>
+          <span [textContent]="formatNumber(result.value.value)"></span>
           <span class="small m-0 ml-1" *ngFor="let _target of result.targets" [textContent]="_target.criteria"></span>
         </dt-key-value-list-value>
       </dt-key-value-list-item>
