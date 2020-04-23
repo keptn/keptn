@@ -45,6 +45,7 @@ type installCmdParams struct {
 	PlatformIdentifier      *string
 	GatewayInput            *string
 	Gateway                 gateway
+	Domain                  *string
 	UseCaseInput            *string
 	UseCase                 usecase
 	IstioInstallOptionInput *string
@@ -87,6 +88,8 @@ spec:
           value: PLATFORM_PLACEHOLDER
         - name: GATEWAY_TYPE
           value: GATEWAY_TYPE_PLACEHOLDER
+        - name: DOMAIN
+          value: DOMAIN_PLACEHOLDER
         - name: INGRESS
           value: INGRESS_PLACEHOLDER
         - name: USE_CASE
@@ -301,6 +304,10 @@ func init() {
 		"The ingress-loadbalancer type ["+LoadBalancer.String()+","+NodePort.String()+"]")
 	installCmd.Flags().MarkHidden("gateway")
 
+	installParams.Domain = installCmd.Flags().StringP("domain", "d", "",
+		"Experimental: Overwrite the ingress domain (e.g., 127.0.0.1.xip.io)")
+	installCmd.Flags().MarkHidden("gateway-domain")
+
 	installParams.UseCaseInput = installCmd.Flags().StringP("use-case", "u", "all",
 		"The use case to install Keptn for ["+AllUseCases.String()+","+QualityGates.String()+"]")
 	installCmd.Flags().MarkHidden("use-case")
@@ -323,6 +330,7 @@ func prepareInstallerManifest() (installerManifest string) {
 
 	installerManifest = strings.ReplaceAll(installerManifest, "PLATFORM_PLACEHOLDER", strings.ToLower(*installParams.PlatformIdentifier))
 	installerManifest = strings.ReplaceAll(installerManifest, "GATEWAY_TYPE_PLACEHOLDER", installParams.Gateway.String())
+	installerManifest = strings.ReplaceAll(installerManifest, "DOMAIN_PLACEHOLDER", *installParams.Domain)
 	installerManifest = strings.ReplaceAll(installerManifest, "USE_CASE_PLACEHOLDER", installParams.UseCase.String())
 	installerManifest = strings.ReplaceAll(installerManifest, "ISTIO_INSTALL_OPTION_PLACEHOLDER", installParams.IstioInstallOption.String())
 

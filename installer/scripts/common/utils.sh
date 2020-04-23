@@ -167,34 +167,55 @@ function wait_for_ingressgateway() {
 function setupKeptnDomain() {
   PROVIDER=$1;SVC=$2;NAMESPACE=$3;
 
-  print_info "Determining ingress hostname/ip for Keptn (using ${PROVIDER})"
-  # Domain used for routing to keptn services
-  if [[ "$GATEWAY_TYPE" == "LoadBalancer" ]]; then
-    wait_for_ingressgateway "hostname" $SVC $NAMESPACE
-    export DOMAIN=$(kubectl get svc $SVC -o json -n $NAMESPACE | jq -r .status.loadBalancer.ingress[0].hostname)
-    if [[ $? != 0 ]]; then
-        print_error "Failed to get ingress gateway information." && exit 1
-    fi
-    export INGRESS_HOST=$DOMAIN
+  # check if gateway domain is set
+  if [[ "$DOMAIN" == "" ]] || [[ "$DOMAIN" == "DOMAIN_PLACEHOLDER" ]]; then
+    print_info "Determining ingress hostname/ip for Keptn (using ${PROVIDER})"
+    # Domain used for routing to keptn services
+    if [[ "$GATEWAY_TYPE" == "LoadBalancer" ]]; then
+      wait_for_ingressgateway "hostname" $SVC $NAMESPACE
+      export DOMAIN=$(kubectl get svc $SVC -o json -n $NAMESPACE | jq -r .status.loadBalancer.ingress[0].hostname)
+      if [[ $? != 0 ]]; then
+          print_error "Failed to get ingress gateway information." && exit 1
+      fi
+      export INGRESS_HOST=$DOMAIN
 
-    if [[ "$DOMAIN" == "null" ]]; then
-        print_info "Could not get domain name. Trying to retrieve IP address instead."
+      if [[ "$DOMAIN" == "null" ]]; then
+          print_info "Could not get domain name. Trying to retrieve IP address instead."
 
-        wait_for_ingressgateway "ip" $SVC $NAMESPACE
+          wait_for_ingressgateway "ip" $SVC $NAMESPACE
 
-        export DOMAIN=$(kubectl get svc $SVC -o json -n $NAMESPACE | jq -r .status.loadBalancer.ingress[0].ip)
-        if [[ "$DOMAIN" == "null" ]]; then
-            print_error "Could not get IP."
-            exit 1
+          export DOMAIN=$(kubectl get svc $SVC -o json -n $NAMESPACE | jq -r .status.loadBalancer.ingress[0].ip)
+          if [[ "$DOMAIN" == "null" ]]; then
+              print_error "Could not get IP."
+              exit 1
+          fi
+          export DOMAIN="$DOMAIN.xip.io"
+          export INGRESS_HOST=$DOMAIN
+      fi
+    elif [[ "$GATEWAY_TYPE" == "NodePort" ]]; then
+        # determine NodePort by checking the service
+        NODE_PORT=$(kubectl -n $NAMESPACE get service $SVC -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')
+        # get ip of current kubernetes node
+        NODE_IP=$(kubectl get nodes -o jsonpath='{ $.items[0].status.addresses[?(@.type=="InternalIP")].address }')
+
+        # fall back if NODE_IP is empty
+        if [[ "$NODE_IP" == "" ]]; then
+          NODE_IP=$(curl ifconfig.me)
         fi
-        export DOMAIN="$DOMAIN.xip.io"
-        export INGRESS_HOST=$DOMAIN
+
+        export DOMAIN="$NODE_IP.xip.io:$NODE_PORT"
+        export INGRESS_HOST="$NODE_IP.xip.io"
     fi
-  elif [[ "$GATEWAY_TYPE" == "NodePort" ]]; then
+  else
+    print_info "Using provided domain ${DOMAIN}"
+    if [[ "$GATEWAY_TYPE" == "LoadBalancer" ]]; then
+      export DOMAIN=$DOMAIN
+      export INGRESS_HOST=$DOMAIN
+    elif [[ "$GATEWAY_TYPE" == "NodePort" ]]; then
       NODE_PORT=$(kubectl -n $NAMESPACE get service $SVC -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')
-      NODE_IP=$(kubectl get nodes -o jsonpath='{ $.items[0].status.addresses[?(@.type=="InternalIP")].address }')
-      export DOMAIN="$NODE_IP.xip.io:$NODE_PORT"
-      export INGRESS_HOST="$NODE_IP.xip.io"
+      export DOMAIN="$DOMAIN:$NODE_PORT"
+      export INGRESS_HOST="$DOMAIN"
+    fi
   fi
 
   print_info "Determined ${DOMAIN} and ${INGRESS_HOST}"
