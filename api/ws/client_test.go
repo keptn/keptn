@@ -37,8 +37,15 @@ func TestServiceRegistering(t *testing.T) {
 	http.HandleFunc("/", handler)
 
 	go func() {
-		srv.ListenAndServe()
+		err := srv.ListenAndServe()
+
+		if err != nil {
+			fmt.Println("ListenAndServe", err.Error())
+		}
 	}()
+
+	// Sleep 2 seconds just to be sure that the server is actually running
+	time.Sleep(2 * time.Second) // ToDo: this should be handled via go channels in the future
 
 	u := url.URL{Scheme: "ws", Host: "localhost:41039", Path: "/"}
 	log.Printf("connecting to %s", u.String())
@@ -78,8 +85,15 @@ func TestCLIRegistering(t *testing.T) {
 	http.HandleFunc("/", handler)
 
 	go func() {
-		srv.ListenAndServe()
+		err := srv.ListenAndServe()
+
+		if err != nil {
+			fmt.Println("ListenAndServe", err.Error())
+		}
 	}()
+
+	// Sleep 2 seconds just to be sure that the server is actually running
+	time.Sleep(2 * time.Second) // ToDo: this should be handled via go channels in the future
 
 	u := url.URL{Scheme: "ws", Host: "localhost:41039", Path: "/"}
 	log.Printf("connecting to %s", u.String())
@@ -123,8 +137,15 @@ func TestSendMessage(t *testing.T) {
 	http.HandleFunc("/", handler)
 
 	go func() {
-		srv.ListenAndServe()
+		err := srv.ListenAndServe()
+
+		if err != nil {
+			fmt.Println("ListenAndServe", err.Error())
+		}
 	}()
+
+	// Sleep 2 seconds just to be sure that the server is actually running
+	time.Sleep(2 * time.Second) // ToDo: this should be handled via go channels in the future
 
 	u := url.URL{Scheme: "ws", Host: "localhost:41039", Path: "/"}
 	log.Printf("connecting to %s", u.String())
@@ -183,8 +204,15 @@ func TestBuffering(t *testing.T) {
 	http.HandleFunc("/", handler)
 
 	go func() {
-		srv.ListenAndServe()
+		err := srv.ListenAndServe()
+
+		if err != nil {
+			fmt.Println("ListenAndServe", err.Error())
+		}
 	}()
+
+	// Sleep 2 seconds just to be sure that the server is actually running
+	time.Sleep(2 * time.Second) // ToDo: this should be handled via go channels in the future
 
 	u := url.URL{Scheme: "ws", Host: "localhost:41039", Path: "/"}
 	log.Printf("connecting to %s", u.String())
