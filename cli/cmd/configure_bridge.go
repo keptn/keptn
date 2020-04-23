@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"strings"
 
 	keptnutils "github.com/keptn/go-utils/pkg/api/utils"
 )
