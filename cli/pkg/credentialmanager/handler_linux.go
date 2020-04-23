@@ -53,7 +53,14 @@ func (cm *CredentialManager) SetCreds(endPoint url.URL, apiToken string) error {
 
 // GetCreds reads the credentials and returns an endpoint, the api token, or potentially an error.
 func (cm *CredentialManager) GetCreds() (url.URL, string, error) {
+	// mock credentials if encessary
+	if MockAuthCreds {
+		return url.URL{}, "", nil
+	}
+
+	// try to read credentials from password-store
 	if _, err := os.Stat(passwordStoreDirectory); os.IsNotExist(err) {
+		// password-store not found, read credentials from apiTokenFile
 		data, err := ioutil.ReadFile(cm.apiTokenFile)
 		if err != nil {
 			return url.URL{}, "", err
