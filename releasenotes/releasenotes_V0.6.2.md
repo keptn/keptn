@@ -18,6 +18,8 @@ Implemented **Keptn spec** version: [0.1.3](https://github.com/keptn/spec/tree/0
   * Create a support-archive for troubleshooting [#1549](https://github.com/keptn/keptn/issues/1549)
 * Configuration-service
   * Improve troubleshooting for git related problems [#1637](https://github.com/keptn/keptn/issues/1637)
+* Installer
+  * Allow specifying a domain when installing Keptn (e.g., `keptn install --domain=127.0.0.1.nip.io`) [#1482](https://github.com/keptn/keptn/issues/1482)
  
 ## Fixed Issues
 
