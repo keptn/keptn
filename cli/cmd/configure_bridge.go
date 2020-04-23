@@ -86,12 +86,12 @@ func configureBridge(endpoint string, apiToken string, configureBridgeParams *co
 		if err != nil {
 			return errors.New("Could not " + *configureBridgeParams.Action + " bridge: " + err.Error())
 		}
-		fmt.Printf("Bridge exposed successfully. You can reach it here: https://%s", strings.Trim(string(body), "\""))
+		fmt.Printf("Bridge exposed successfully. You can reach it here: https://%s\n", strings.Trim(strings.TrimSpace(string(body)), "\""))
 	} else {
 		if err != nil {
 			return errors.New("Could not " + *configureBridgeParams.Action + " bridge: " + err.Error())
 		}
-		fmt.Printf("Bridge locked down successfully. Disabled public access.")
+		fmt.Println("Bridge locked down successfully. Disabled public access.")
 	}
 	return nil
 }
