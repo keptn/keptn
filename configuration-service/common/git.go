@@ -21,13 +21,17 @@ type GitCredentials struct {
 	RemoteURI string `json:"remoteURI,omitempty"`
 }
 
-// CloneRepo clones an upstream repository into a local folder "project"
-func CloneRepo(project string, user string, token string, uri string) error {
+// CloneRepo clones an upstream repository into a local folder "project" and returns
+// whether the Git repo is already initialized.
+func CloneRepo(project string, user string, token string, uri string) (bool, error) {
 	uri = getRepoURI(uri, user, token)
 
-	_, err := utils.ExecuteCommandInDirectory("git", []string{"clone", uri, project}, config.ConfigDir)
-
-	return err
+	msg, err := utils.ExecuteCommandInDirectory("git", []string{"clone", uri, project}, config.ConfigDir)
+	const emptyRepoWarning = "warning: You appear to have cloned an empty repository."
+	if strings.Contains(msg, emptyRepoWarning) {
+		return false, err
+	}
+	return true, err
 }
 
 func getRepoURI(uri string, user string, token string) string {
@@ -95,7 +99,7 @@ func CreateBranch(project string, branch string, sourceBranch string) error {
 }
 
 // StageAndCommitAll stages all current changes and commits them to the current branch
-func StageAndCommitAll(project string, message string) error {
+func StageAndCommitAll(project string, message string, withPull bool) error {
 	projectConfigPath := config.ConfigDir + "/" + project
 	_, err := utils.ExecuteCommandInDirectory("git", []string{"add", "."}, projectConfigPath)
 	if err != nil {
@@ -107,9 +111,11 @@ func StageAndCommitAll(project string, message string) error {
 	credentials, err := GetCredentials(project)
 	if err == nil && credentials != nil {
 		repoURI := getRepoURI(credentials.RemoteURI, credentials.User, credentials.Token)
-		_, err = utils.ExecuteCommandInDirectory("git", []string{"pull", "-s", "recursive", "-X", "theirs", repoURI}, projectConfigPath)
-		if err != nil {
-			return err
+		if withPull {
+			_, err = utils.ExecuteCommandInDirectory("git", []string{"pull", "-s", "recursive", "-X", "theirs", repoURI}, projectConfigPath)
+			if err != nil {
+				return err
+			}
 		}
 		_, err = utils.ExecuteCommandInDirectory("git", []string{"push", repoURI}, projectConfigPath)
 		if err != nil {
