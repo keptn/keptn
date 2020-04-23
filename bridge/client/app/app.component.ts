@@ -23,14 +23,13 @@ export class AppComponent implements OnInit {
     this.apiService.getVersion()
       .subscribe((response: any) => {
         this.version = response.version;
-        this.showNote();
       });
   }
 
-  showNote() {
+  showNote(type, message) {
     this.notes.push({
-      type: "warning",
-      message: "Test"
+      type: type,
+      message: message
     });
   }
 }
