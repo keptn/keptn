@@ -162,10 +162,15 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
+			keptnHandler, _ := keptnutils.NewKeptn(&tt.fields.Event, keptnutils.KeptnOpts{
+				EventBrokerURL:          os.Getenv("EVENTBROKER"),
+				ConfigurationServiceURL: os.Getenv("CONFIGURATION_SERVICE"),
+			})
 			returnSlo = tt.sloAvailable
 			eh := &StartEvaluationHandler{
-				Logger: tt.fields.Logger,
-				Event:  tt.fields.Event,
+				Logger:       tt.fields.Logger,
+				Event:        tt.fields.Event,
+				KeptnHandler: keptnHandler,
 			}
 			if err := eh.HandleEvent(); (err != nil) != tt.wantErr {
 				t.Errorf("HandleEvent() error = %v, wantErr %v", err, tt.wantErr)
