@@ -92,39 +92,54 @@ func DeleteProjectProjectNameStageStageNameHandlerFunc(params stage.DeleteProjec
 
 // GetProjectProjectNameStageHandlerFunc gets list of stages for a project
 func GetProjectProjectNameStageHandlerFunc(params stage.GetProjectProjectNameStageParams) middleware.Responder {
-	common.LockProject(params.ProjectName)
-	defer common.UnlockProject(params.ProjectName)
-	result, err := getStages(params)
+	var payload = &models.Stages{
+		NextPageKey: "",
+		PageSize:    0,
+		Stages:      []*models.ExpandedStage{},
+		TotalCount:  0,
+	}
+	mv := common.GetProjectsMaterializedView()
 
+	prj, err := mv.GetProject(params.ProjectName)
 	if err != nil {
-		if err.Code() == 404 {
-			return stage.NewGetProjectProjectNameStageNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String(err.Error())})
-		} else {
-			return stage.NewGetProjectProjectNameStageDefault(int(err.Code())).WithPayload(&models.Error{Code: int64(err.Code()), Message: swag.String(err.Error())})
+		return stage.NewGetProjectProjectNameStageDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+	}
+
+	if prj == nil {
+		return stage.NewGetProjectProjectNameStageNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project not found")})
+	}
+
+	paginationInfo := common.Paginate(len(prj.Stages), params.PageSize, params.NextPageKey)
+
+	totalCount := len(prj.Stages)
+	if paginationInfo.NextPageKey < int64(totalCount) {
+		for _, stg := range prj.Stages[paginationInfo.NextPageKey:paginationInfo.EndIndex] {
+			payload.Stages = append(payload.Stages, stg)
 		}
 	}
 
-	return stage.NewGetProjectProjectNameStageOK().WithPayload(&models.Stages{
-		NextPageKey: "",
-		PageSize:    float64(len(result)),
-		TotalCount:  float64(len(result)),
-		Stages:      result,
-	})
+	payload.TotalCount = float64(totalCount)
+	payload.NextPageKey = paginationInfo.NewNextPageKey
+	return stage.NewGetProjectProjectNameStageOK().WithPayload(payload)
 }
 
 // GetProjectProjectNameStageStageNameHandlerFunc gets the specified stage
 func GetProjectProjectNameStageStageNameHandlerFunc(params stage.GetProjectProjectNameStageStageNameParams) middleware.Responder {
-	common.LockProject(params.ProjectName)
-	defer common.UnlockProject(params.ProjectName)
-	if !common.ProjectExists(params.ProjectName) {
-		return stage.NewGetProjectProjectNameStageStageNameNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project not found")})
-	}
-	if !common.StageExists(params.ProjectName, params.StageName, *params.DisableUpstreamSync) {
-		return stage.NewGetProjectProjectNameStageStageNameNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Stage not found")})
+	mv := common.GetProjectsMaterializedView()
+
+	prj, err := mv.GetProject(params.ProjectName)
+	if err != nil {
+		return stage.NewGetProjectProjectNameStageStageNameDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 	}
 
-	var stageResponse = &models.Stage{
-		StageName: params.StageName,
+	if prj == nil {
+		return stage.NewGetProjectProjectNameStageStageNameNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project not found")})
 	}
-	return stage.NewGetProjectProjectNameStageStageNameOK().WithPayload(stageResponse)
+
+	for _, stg := range prj.Stages {
+		if stg.StageName == params.StageName {
+			return stage.NewGetProjectProjectNameStageStageNameOK().WithPayload(stg)
+		}
+	}
+	return stage.NewGetProjectProjectNameStageStageNameNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Stage not found")})
 }

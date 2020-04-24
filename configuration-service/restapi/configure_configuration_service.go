@@ -5,6 +5,7 @@ package restapi
 import (
 	"crypto/tls"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/event"
+	"github.com/keptn/keptn/configuration-service/restapi/operations/services"
 	"net/http"
 	"os"
 	"os/exec"
@@ -123,6 +124,10 @@ func configureAPI(api *operations.ConfigurationServiceAPI) http.Handler {
 	api.ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler = service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc(handlers.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc)
 
 	api.EventHandleEventHandler = event.HandleEventHandlerFunc(handlers.HandleEventHandlerFunc)
+
+	api.ServicesGetServicesHandler = services.GetServicesHandlerFunc(handlers.GetServices)
+
+	api.ServicesGetServiceHandler = services.GetServiceHandlerFunc(handlers.GetService)
 
 	api.ServerShutdown = func() {}
 

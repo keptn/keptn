@@ -25,6 +25,7 @@ import (
 	"github.com/keptn/keptn/configuration-service/restapi/operations/service"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/service_default_resource"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/service_resource"
+	"github.com/keptn/keptn/configuration-service/restapi/operations/services"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/stage"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/stage_resource"
 )
@@ -164,6 +165,12 @@ func NewConfigurationServiceAPI(spec *loads.Document) *ConfigurationServiceAPI {
 		ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler: service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc(func(params service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIParams) middleware.Responder {
 			return middleware.NotImplemented("operation service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI has not yet been implemented")
 		}),
+		ServicesGetServiceHandler: services.GetServiceHandlerFunc(func(params services.GetServiceParams) middleware.Responder {
+			return middleware.NotImplemented("operation services.GetService has not yet been implemented")
+		}),
+		ServicesGetServicesHandler: services.GetServicesHandlerFunc(func(params services.GetServicesParams) middleware.Responder {
+			return middleware.NotImplemented("operation services.GetServices has not yet been implemented")
+		}),
 		EventHandleEventHandler: event.HandleEventHandlerFunc(func(params event.HandleEventParams) middleware.Responder {
 			return middleware.NotImplemented("operation event.HandleEvent has not yet been implemented")
 		}),
@@ -277,6 +284,10 @@ type ConfigurationServiceAPI struct {
 	ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceHandler service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceHandler
 	// ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler sets the operation handler for the put project project name stage stage name service service name resource resource URI operation
 	ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler
+	// ServicesGetServiceHandler sets the operation handler for the get service operation
+	ServicesGetServiceHandler services.GetServiceHandler
+	// ServicesGetServicesHandler sets the operation handler for the get services operation
+	ServicesGetServicesHandler services.GetServicesHandler
 	// EventHandleEventHandler sets the operation handler for the handle event operation
 	EventHandleEventHandler event.HandleEventHandler
 	// ServeError is called when an error is received, there is a default handler
@@ -499,6 +510,14 @@ func (o *ConfigurationServiceAPI) Validate() error {
 
 	if o.ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler == nil {
 		unregistered = append(unregistered, "ServiceResource.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler")
+	}
+
+	if o.ServicesGetServiceHandler == nil {
+		unregistered = append(unregistered, "Services.GetServiceHandler")
+	}
+
+	if o.ServicesGetServicesHandler == nil {
+		unregistered = append(unregistered, "Services.GetServicesHandler")
 	}
 
 	if o.EventHandleEventHandler == nil {
@@ -793,6 +812,16 @@ func (o *ConfigurationServiceAPI) initHandlerCache() {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/project/{projectName}/stage/{stageName}/service/{serviceName}/resource/{resourceURI}"] = service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI(o.context, o.ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/project/{projectName}/service/{serviceName}"] = services.NewGetService(o.context, o.ServicesGetServiceHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/project/{projectName}/service"] = services.NewGetServices(o.context, o.ServicesGetServicesHandler)
 
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
