@@ -5,7 +5,7 @@ source test/utils.sh
 echo "Installing keptn on cluster"
 echo "{}" > creds.json # empty credentials file
 # Install keptn (using the develop version, which should point the :latest docker images)
-keptn install --keptn-installer-image=keptn/installer:latest --platform=kubernetes --creds=creds.json --gateway=NodePort --verbose
+keptn install --keptn-installer-image="${KEPTN_INSTALLER_IMAGE}" --platform=kubernetes --creds=creds.json --gateway=NodePort --verbose
 
 verify_test_step $? "keptn install failed"
 
