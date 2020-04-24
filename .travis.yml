@@ -80,7 +80,7 @@ before_install:
 - | # set installer image and cli version for release-branches
   if [[ $BRANCH =~ ^release.* ]]; then
     export KEPTN_INSTALLER_IMAGE=keptn/installer:${BRANCH#"release-"}
-    export KEPN_CLI_VERSION=${BRANCH#"release-"}
+    export KEPTN_CLI_VERSION=${BRANCH#"release-"}
   fi
 ### ATTENTION: please make sure installer is always the last in this list
 
