@@ -76,6 +76,12 @@ before_install:
 - INSTALLER_IMAGE="keptn/installer"
 - INSTALLER_FOLDER="installer/"
 - export KEPTN_INSTALLER_IMAGE=keptn/installer:latest
+- export KEPTN_CLI_VERSION=latest
+- | # set installer image and cli version for release-branches
+  if [[ $BRANCH =~ ^release.* ]]; then
+    export KEPTN_INSTALLER_IMAGE=keptn/installer:${BRANCH#"release-"}
+    export KEPN_CLI_VERSION=${BRANCH#"release-"}
+  fi
 ### ATTENTION: please make sure installer is always the last in this list
 
 
@@ -231,105 +237,6 @@ jobs:
           source ../travis-scripts/build_cli.sh "${VERSION}" "${KUBE_CONSTRAINTS}"
           cd ..
         fi
-
-  - stage: Test GKE Full (--platform=gke)
-    if: branch = master AND type = cron # run for cron
-    env: KEPTN_INSTALLATION_TYPE=FULL
-    <<: *gke_full # use template
-
-  - stage: Test GKE Full with Istio (--platform=gke --istio-install-option=Reuse)
-    if: branch = master AND type = cron # run for cron
-    env: KEPTN_INSTALLATION_TYPE=REUSE-ISTIO
-    <<: *gke_full # use template
-
-  - stage: Test Minishift Standalone (--platform=openshift --use-case=quality-gates)
-    if: branch = master AND (type = cron OR type = push) # run for any change on master and cron
-    os: linux
-    before_script:
-      # download and install kubectl
-      - curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.17.0/bin/linux/amd64/kubectl && chmod +x ./kubectl && sudo mv ./kubectl /usr/local/bin/kubectl
-      - test/utils/download_and_install_keptn_cli.sh
-      - test/utils/download_and_install_oc_cli.sh
-      - test/utils/minishift_create_cluster.sh
-    script:
-      - kubectl get nodes || travis_terminate 1
-      # finally install keptn
-      - test/test_install_minishift_quality_gates.sh
-      - keptn status
-      - export PROJECT=musicshop
-      - test/test_quality_gates_standalone.sh
-    after_success:
-      # delete google kubernetes cluster only on success (in case of an error we want to be able to dig into the cluster)
-      - echo "Tests were successful, cleaning up the cluster now..."
-    after_failure:
-      # print some debug info
-      - echo "Keptn Installation Log:"
-      - cat ~/.keptn/keptn-installer.log
-      - cat ~/.keptn/keptn-installer-err.log
-      - kubectl get events --sort-by='.lastTimestamp' --all-namespaces
-      - kubectl get pods --all-namespaces
-      - kubectl get services --all-namespaces
-      - kubectl get ingress --all-namespaces
-
-  - stage: Test MicroK8s Standalone (--platform=kubernetes --use-case=quality-gates)
-    if: branch = master AND (type = cron OR type = push) # run for any change on master and cron
-    os: linux
-    before_script:
-      # download and install kubectl
-      - curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.17.0/bin/linux/amd64/kubectl && chmod +x ./kubectl && sudo mv ./kubectl /usr/local/bin/kubectl
-      - test/utils/download_and_install_keptn_cli.sh
-      - test/utils/microk8s_create_cluster.sh
-      - export KUBECONFIG=~/kubeconfig
-    script:
-      - kubectl get nodes || travis_terminate 1
-      - test/test_install_kubernetes_quality_gates.sh
-      - keptn status
-      - export PROJECT=musicshop
-      - test/test_quality_gates_standalone.sh
-    after_success:
-      # delete google kubernetes cluster only on success (in case of an error we want to be able to dig into the cluster)
-      - echo "Tests were successful, cleaning up the cluster now..."
-    after_failure:
-      # print some debug info
-      - echo "Keptn Installation Log:"
-      - cat ~/.keptn/keptn-installer.log
-      - cat ~/.keptn/keptn-installer-err.log
-      - kubectl get events --sort-by='.lastTimestamp' --all-namespaces
-      - kubectl get pods --all-namespaces
-      - kubectl get services --all-namespaces
-      - kubectl get ingress --all-namespaces
-
-  - stage: Test Minikube Standalone (--platform=kubernetes --use-case=quality-gates)
-    if: (branch = master or branch =~ ^release.*$) AND (type = cron OR type = push) # run for any change on master and cron
-    os: linux
-    before_script:
-      # download and install kubectl
-      - curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.17.0/bin/linux/amd64/kubectl && chmod +x ./kubectl && sudo mv ./kubectl /usr/local/bin/kubectl
-      - test/utils/download_and_install_keptn_cli.sh
-      - export USE_CASE=quality-gates
-      - test/utils/minikube_create_cluster.sh
-    script:
-      - |
-        if [[ $BRANCH =~ ^release.* ]]; then
-          export KEPTN_INSTALLER_IMAGE=keptn/installer:${BRANCH#"release-"}
-        fi
-      - kubectl get nodes || travis_terminate 1
-      - test/test_install_kubernetes_quality_gates.sh
-      - keptn status
-      - export PROJECT=musicshop
-      - test/test_quality_gates_standalone.sh
-    after_success:
-      # delete google kubernetes cluster only on success (in case of an error we want to be able to dig into the cluster)
-      - echo "Tests were successful, cleaning up the cluster now..."
-    after_failure:
-      # print some debug info
-      - echo "Keptn Installation Log:"
-      - cat ~/.keptn/keptn-installer.log
-      - cat ~/.keptn/keptn-installer-err.log
-      - kubectl get events --sort-by='.lastTimestamp' --all-namespaces
-      - kubectl get pods --all-namespaces
-      - kubectl get services --all-namespaces
-      - kubectl get ingress --all-namespaces
 
   ##################################################################################
   # feature/bug/hotfix/patch branches build jobs
@@ -489,3 +396,98 @@ jobs:
     after_script:
       - echo "The following images have been built and pushed to dockerhub:"
       - docker images | grep keptn
+
+  - stage: Test GKE Full (--platform=gke)
+    if: branch = master AND type = cron # run for cron
+    env: KEPTN_INSTALLATION_TYPE=FULL
+    <<: *gke_full # use template
+
+  - stage: Test GKE Full with Istio (--platform=gke --istio-install-option=Reuse)
+    if: branch = master AND type = cron # run for cron
+    env: KEPTN_INSTALLATION_TYPE=REUSE-ISTIO
+    <<: *gke_full # use template
+
+  - stage: Test Minishift Standalone (--platform=openshift --use-case=quality-gates)
+    if: (branch = master or branch =~ ^release.*$) AND (type = cron OR type = push) # run for any change on master/release-* on push as well as cron
+    os: linux
+    before_script:
+      # download and install kubectl
+      - curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.17.0/bin/linux/amd64/kubectl && chmod +x ./kubectl && sudo mv ./kubectl /usr/local/bin/kubectl
+      - test/utils/download_and_install_keptn_cli.sh
+      - test/utils/download_and_install_oc_cli.sh
+      - test/utils/minishift_create_cluster.sh
+    script:
+      - kubectl get nodes || travis_terminate 1
+      # finally install keptn
+      - test/test_install_minishift_quality_gates.sh
+      - keptn status
+      - export PROJECT=musicshop
+      - test/test_quality_gates_standalone.sh
+    after_success:
+      # delete google kubernetes cluster only on success (in case of an error we want to be able to dig into the cluster)
+      - echo "Tests were successful, cleaning up the cluster now..."
+    after_failure:
+      # print some debug info
+      - echo "Keptn Installation Log:"
+      - cat ~/.keptn/keptn-installer.log
+      - cat ~/.keptn/keptn-installer-err.log
+      - kubectl get events --sort-by='.lastTimestamp' --all-namespaces
+      - kubectl get pods --all-namespaces
+      - kubectl get services --all-namespaces
+      - kubectl get ingress --all-namespaces
+
+  - stage: Test MicroK8s Standalone (--platform=kubernetes --use-case=quality-gates)
+    if: (branch = master or branch =~ ^release.*$) AND (type = cron OR type = push) # run for any change on master/release-* on push as well as cron
+    os: linux
+    before_script:
+      # download and install kubectl
+      - curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.17.0/bin/linux/amd64/kubectl && chmod +x ./kubectl && sudo mv ./kubectl /usr/local/bin/kubectl
+      - test/utils/download_and_install_keptn_cli.sh
+      - test/utils/microk8s_create_cluster.sh
+      - export KUBECONFIG=~/kubeconfig
+    script:
+      - kubectl get nodes || travis_terminate 1
+      - test/test_install_kubernetes_quality_gates.sh
+      - keptn status
+      - export PROJECT=musicshop
+      - test/test_quality_gates_standalone.sh
+    after_success:
+      # delete google kubernetes cluster only on success (in case of an error we want to be able to dig into the cluster)
+      - echo "Tests were successful, cleaning up the cluster now..."
+    after_failure:
+      # print some debug info
+      - echo "Keptn Installation Log:"
+      - cat ~/.keptn/keptn-installer.log
+      - cat ~/.keptn/keptn-installer-err.log
+      - kubectl get events --sort-by='.lastTimestamp' --all-namespaces
+      - kubectl get pods --all-namespaces
+      - kubectl get services --all-namespaces
+      - kubectl get ingress --all-namespaces
+
+  - stage: Test Minikube Standalone (--platform=kubernetes --use-case=quality-gates)
+    if: (branch = master or branch =~ ^release.*$) AND (type = cron OR type = push) # run for any change on master/release-* on push as well as cron
+    os: linux
+    before_script:
+      # download and install kubectl
+      - curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.17.0/bin/linux/amd64/kubectl && chmod +x ./kubectl && sudo mv ./kubectl /usr/local/bin/kubectl
+      - test/utils/download_and_install_keptn_cli.sh
+      - export USE_CASE=quality-gates
+      - test/utils/minikube_create_cluster.sh
+    script:
+      - kubectl get nodes || travis_terminate 1
+      - test/test_install_kubernetes_quality_gates.sh
+      - keptn status
+      - export PROJECT=musicshop
+      - test/test_quality_gates_standalone.sh
+    after_success:
+      # delete google kubernetes cluster only on success (in case of an error we want to be able to dig into the cluster)
+      - echo "Tests were successful, cleaning up the cluster now..."
+    after_failure:
+      # print some debug info
+      - echo "Keptn Installation Log:"
+      - cat ~/.keptn/keptn-installer.log
+      - cat ~/.keptn/keptn-installer-err.log
+      - kubectl get events --sort-by='.lastTimestamp' --all-namespaces
+      - kubectl get pods --all-namespaces
+      - kubectl get services --all-namespaces
+      - kubectl get ingress --all-namespaces
