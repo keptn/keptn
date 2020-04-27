@@ -34,13 +34,15 @@ var configureBridgeParams *configureBridgeCmdParams
 const actionExpose = "expose"
 const actionLockdown = "lockdown"
 
+const basicAuthDocuURL = "https://keptn.sh/docs/0.6.0/reference/keptnsbridge/#enable-authentication"
+
 var bridgeCmd = &cobra.Command{
 	Use:   "bridge --action=[expose|lockdown]",
 	Short: "Exposes or locks down the bridge",
-	Long: `Exposes or locks down the Keptn's bridge.
+	Long: `Exposes or locks down the Keptn Bridge.
 
-When exposing Keptn's Bridge it will be available publicly. 
-Make sure to protect Keptn's Bridge using Basic authentication.
+When exposing Keptn Bridge it will be available publicly. 
+Make sure to protect Keptn Bridge using basic authentication.
 `,
 	Example: `keptn configure bridge --action=expose
 	keptn configure bridge --action=lockdown`,
@@ -88,14 +90,14 @@ func configureBridge(endpoint string, apiToken string, configureBridgeParams *co
 		if err != nil {
 			return errors.New("Could not " + *configureBridgeParams.Action + " bridge: " + err.Error())
 		}
-		fmt.Printf("Bridge exposed successfully. You can reach it here: https://%s\n", strings.Trim(strings.TrimSpace(string(body)), "\""))
-		// Todo: migrate docs for exposing keptn's bridge into keptn.github.io
-		fmt.Printf("Make sure to add basic authentication as described here: https://github.com/keptn/keptn/blob/master/bridge/README.md#setting-up-basic-authentication")
+		fmt.Printf("Bridge successfully exposed and can be reached here: https://%s\n", strings.Trim(strings.TrimSpace(string(body)), "\""))
+		// Todo: migrate docs for exposing keptn bridge into keptn.github.io
+		fmt.Printf("Warning: Make sure to enable basic authentication as described here: %s\n", basicAuthDocuURL)
 	} else {
 		if err != nil {
 			return errors.New("Could not " + *configureBridgeParams.Action + " bridge: " + err.Error())
 		}
-		fmt.Println("Bridge locked down successfully. Disabled public access.")
+		fmt.Println("Bridge successfully locked down so that public access is disabled.")
 	}
 	return nil
 }
