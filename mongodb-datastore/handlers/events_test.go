@@ -100,7 +100,7 @@ func Test_getProjectOfEvent(t *testing.T) {
 					Shkeptncontext: "",
 				},
 			},
-			want: "events",
+			want: eventsCollectionName,
 		},
 	}
 	for _, tt := range tests {
