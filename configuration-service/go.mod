@@ -3,12 +3,9 @@ module github.com/keptn/keptn/configuration-service
 go 1.13
 
 require (
-	github.com/Masterminds/semver v1.5.0 // indirect
-	github.com/Masterminds/sprig v2.22.0+incompatible // indirect
 	github.com/dsnet/compress v0.0.1 // indirect
 	github.com/frankban/quicktest v1.9.0 // indirect
 	github.com/ghodss/yaml v1.0.0
-	github.com/globalsign/mgo v0.0.0-20181015135952-eeefdecb41b8
 	github.com/go-openapi/errors v0.19.2
 	github.com/go-openapi/loads v0.19.4
 	github.com/go-openapi/runtime v0.19.4
@@ -39,7 +36,9 @@ require (
 	k8s.io/api v0.17.2
 	k8s.io/apimachinery v0.17.2
 	k8s.io/client-go v0.17.2
-	k8s.io/helm v2.14.3+incompatible // indirect
 	k8s.io/utils v0.0.0-20200327001022-6496210b90e8 // indirect
 	sigs.k8s.io/yaml v1.2.0 // indirect
 )
+
+// Transitive requirement from Helm: See https://github.com/helm/helm/blob/v3.1.2/go.mod
+replace github.com/Azure/go-autorest => github.com/Azure/go-autorest v13.3.2+incompatible
