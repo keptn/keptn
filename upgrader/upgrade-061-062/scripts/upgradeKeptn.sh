@@ -44,6 +44,8 @@ kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VE
 kubectl -n keptn delete deployment api
 kubectl -n keptn delete service api
 
+DOMAIN=$(kubectl get configmap -n keptn keptn-domain -ojsonpath="{.data.app_domain}")
+
 # check if full installation is available
 kubectl -n keptn get svc gatekeeper-service
 
@@ -51,10 +53,14 @@ kubectl -n keptn get svc gatekeeper-service
       print_debug "Full installation detected. Upgrading CD and CO services"
       kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/keptn/continuous-deployment.yaml
       kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/keptn/continuous-operations.yaml
-      kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/keptn/keptn-api-virtualservice.yaml
+      curl https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/keptn/keptn-api-virtualservice.yaml | \
+        sed 's~DOMAIN_PLACEHOLDER~'"$DOMAIN"'~' | kubectl apply -f -
   else
       print_debug "Quality gates installation detected. Upgrading Nginx ingress"
       kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/keptn/keptn-ingress.yaml
+
+      curl https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/keptn/keptn-ingress.yaml | \
+        sed 's~domain.placeholder~'"$DOMAIN"'~' | sed 's~ingress.placeholder~nginx~' | kubectl apply -f -
       kubectl -n keptn delete ingress api-ingress
 
       kubectl get namespace openshift
