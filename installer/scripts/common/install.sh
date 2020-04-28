@@ -7,6 +7,7 @@ if [[ "$USE_CASE" == "all" ]]; then
   source ./common/setupIstio.sh
   setupKeptnDomain "istio" "istio-ingressgateway" "istio-system"
 
+  # Note: We need to use DOMAIN_PLACEHOLDER (does not contain a port) here
   cat ../manifests/keptn/keptn-api-virtualservice.yaml | \
     sed 's~DOMAIN_PLACEHOLDER~'"$DOMAIN"'~' | kubectl apply -f -
   verify_kubectl $? "Deploying keptn api virtualservice failed."
@@ -17,8 +18,9 @@ else
 
   # Add config map in keptn namespace that contains the domain - this will be used by other services as well
   # Update ingress with updated hosts
+  # Note: we need to use INGRESS_HOST (does not contain a port) here
   cat ../manifests/keptn/keptn-ingress.yaml | \
-    sed 's~domain.placeholder~'"$DOMAIN"'~' | sed 's~ingress.placeholder~nginx~' | kubectl apply -f -
+    sed 's~domain.placeholder~'"$INGRESS_HOST"'~' | sed 's~ingress.placeholder~nginx~' | kubectl apply -f -
   verify_kubectl $? "Deploying ingress failed."
 fi
 
