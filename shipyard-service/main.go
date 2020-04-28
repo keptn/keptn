@@ -337,8 +337,8 @@ func (client *Client) getDeleteInfoMessage(keptnHandler *keptn.Keptn) (string, e
 		if exists {
 			msg += fmt.Sprintf("Namespace %s is not deleted. This may cause problems if "+
 				"a project with the same name is created later. "+
-				"If you would like to delete the namespace, please exuecute "+
-				"'kubectl delete ns %s'", namespace, namespace)
+				"If you would like to delete the namespace, please execute "+
+				"'kubectl delete ns %s'\n", namespace, namespace)
 		}
 	}
 	return strings.TrimSpace(msg), nil

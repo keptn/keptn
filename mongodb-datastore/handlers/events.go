@@ -107,6 +107,12 @@ func insertEvent(logger *keptnutils.Logger, event *models.KeptnContextExtendedCE
 	}
 	logger.Debug(fmt.Sprintf("insertedID: %s", res.InsertedID))
 
+	if collectionName == eventsCollectionName {
+		logger.Debug("Will not store mapping between context and project because no project has been set in the event %s->%s")
+		return nil
+	}
+
+	logger.Debug(fmt.Sprintf("Storing mapping %s->%s", event.Shkeptncontext, collectionName))
 	contextToProjectCollection := client.Database(mongoDBName).Collection(contextToProjectCollection)
 
 	_, err = contextToProjectCollection.InsertOne(ctx,
