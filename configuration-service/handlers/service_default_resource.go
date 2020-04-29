@@ -59,7 +59,7 @@ func PostProjectProjectNameServiceServiceNameResourceHandlerFunc(params service_
 			common.WriteBase64EncodedFile(filePath, res.ResourceContent)
 		}
 
-		logger.Debug("Staging Changes")
+		logger.Debug("Staging changes")
 		err = common.StageAndCommitAll(params.ProjectName, "Added resources", true)
 		if err != nil {
 			logger.Error(err.Error())

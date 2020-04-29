@@ -65,6 +65,7 @@ func PostProjectProjectNameStageHandlerFunc(params stage.PostProjectProjectNameS
 	}
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
+
 	err := common.CreateBranch(params.ProjectName, params.Stage.StageName, "master")
 	if err != nil {
 		logger.Error(err.Error())
@@ -104,7 +105,6 @@ func GetProjectProjectNameStageHandlerFunc(params stage.GetProjectProjectNameSta
 	if err != nil {
 		return stage.NewGetProjectProjectNameStageDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 	}
-
 	if prj == nil {
 		return stage.NewGetProjectProjectNameStageNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project not found")})
 	}

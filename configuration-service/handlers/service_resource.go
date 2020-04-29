@@ -33,10 +33,12 @@ func GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHan
 	logger := utils.NewLogger("", "", "configuration-service")
 	serviceConfigPath := config.ConfigDir + "/" + params.ProjectName + "/" + params.ServiceName
 	resourcePath := serviceConfigPath + "/" + params.ResourceURI
+
 	if !common.ServiceExists(params.ProjectName, params.StageName, params.ServiceName, *params.DisableUpstreamSync) {
 		return service_resource.NewGetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURINotFound().
 			WithPayload(&models.Error{Code: 404, Message: swag.String("Service not found")})
 	}
+
 	logger.Debug("Checking out " + params.StageName + " branch")
 	err := common.CheckoutBranch(params.ProjectName, params.StageName, *params.DisableUpstreamSync)
 	if err != nil {
@@ -101,6 +103,7 @@ func PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 	logger := utils.NewLogger("", "", "configuration-service")
+
 	if !common.ProjectExists(params.ProjectName) {
 		return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().
 			WithPayload(&models.Error{Code: 400, Message: swag.String("Project " + params.ProjectName + " does not exist")})
@@ -137,7 +140,7 @@ func PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 		}
 	}
 
-	logger.Debug("Staging Changes")
+	logger.Debug("Staging changes")
 	err = common.StageAndCommitAll(params.ProjectName, "Added resources", true)
 	if err != nil {
 		logger.Error(err.Error())
@@ -258,7 +261,7 @@ func PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 		}
 	}
 
-	logger.Debug("Staging Changes")
+	logger.Debug("Staging changes")
 	err = common.StageAndCommitAll(params.ProjectName, "Updated resources", true)
 	if err != nil {
 		logger.Error(err.Error())
@@ -302,7 +305,7 @@ func PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHan
 	filePath := serviceConfigPath + "/" + params.ResourceURI
 	common.WriteBase64EncodedFile(filePath, params.Resource.ResourceContent)
 
-	logger.Debug("Staging Changes")
+	logger.Debug("Staging changes")
 	err = common.StageAndCommitAll(params.ProjectName, "Updated resource: "+params.ResourceURI, true)
 	if err != nil {
 		logger.Error(err.Error())

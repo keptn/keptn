@@ -114,12 +114,10 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 		// Cleanup credentials before we exit
 		if credentialsCreated {
 			err = common.DeleteCredentials(params.Project.ProjectName)
-
 			if err != nil {
 				logger.Error(err.Error())
 			}
 		}
-
 		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not store project metadata")})
 	}
 
@@ -129,7 +127,6 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 		// Cleanup credentials before we exit
 		if credentialsCreated {
 			err = common.DeleteCredentials(params.Project.ProjectName)
-
 			if err != nil {
 				logger.Error(err.Error())
 			}
@@ -140,7 +137,6 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 	mv := common.GetProjectsMaterializedView()
 
 	err = mv.CreateProject(params.Project)
-
 	if err != nil {
 		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 	}
@@ -153,11 +149,9 @@ func GetProjectProjectNameHandlerFunc(params project.GetProjectProjectNameParams
 	mv := common.GetProjectsMaterializedView()
 
 	prj, err := mv.GetProject(params.ProjectName)
-
 	if err != nil {
 		return project.NewGetProjectProjectNameDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 	}
-
 	if prj == nil {
 		return project.NewGetProjectProjectNameNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project not found")})
 	}
@@ -181,6 +175,7 @@ func DeleteProjectProjectNameHandlerFunc(params project.DeleteProjectProjectName
 		logger.Error(err.Error())
 		return project.NewDeleteProjectProjectNameBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not delete project")})
 	}
+
 	creds, _ := common.GetCredentials(params.ProjectName)
 	if creds != nil {
 		err = common.DeleteCredentials(params.ProjectName)

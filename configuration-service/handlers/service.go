@@ -29,7 +29,6 @@ func GetProjectProjectNameStageStageNameServiceHandlerFunc(params service.GetPro
 	if err != nil {
 		return stage.NewGetProjectProjectNameStageDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 	}
-
 	if prj == nil {
 		return stage.NewGetProjectProjectNameStageNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project not found")})
 	}
@@ -94,10 +93,10 @@ func PostProjectProjectNameStageStageNameServiceHandlerFunc(params service.PostP
 	if !common.StageExists(params.ProjectName, params.StageName, false) {
 		return service.NewPostProjectProjectNameStageStageNameServiceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Stage  " + params.StageName + " does not exist.")})
 	}
-
 	if common.ServiceExists(params.ProjectName, params.StageName, params.Service.ServiceName, false) {
 		return service.NewPostProjectProjectNameStageStageNameServiceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Service already exists")})
 	}
+
 	logger.Debug("Creating new resource(s) in: " + projectConfigPath + " in stage " + params.StageName)
 	logger.Debug("Checking out branch: " + params.StageName)
 	err := common.CheckoutBranch(params.ProjectName, params.StageName, false)
@@ -147,7 +146,6 @@ func GetServices(params services.GetServicesParams) middleware.Responder {
 	if err != nil {
 		return services.NewGetServicesDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 	}
-
 	if prj == nil {
 		return services.NewGetServicesNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project not found")})
 	}
@@ -208,7 +206,6 @@ func GetService(params services.GetServiceParams) middleware.Responder {
 	if err != nil {
 		return services.NewGetServiceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 	}
-
 	if prj == nil {
 		return services.NewGetServiceNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project not found")})
 	}
