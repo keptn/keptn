@@ -41,7 +41,7 @@ ENV env=production
 RUN apk add --no-cache ca-certificates libc6-compat
 
 # Install git
-RUN apk --update add --no-cache git
+RUN apk --update add --no-cache git=2.24.3-r0
 
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /go/src/github.com/keptn/keptn/configuration-service/main /configuration-service

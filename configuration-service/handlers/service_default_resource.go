@@ -61,8 +61,8 @@ func PostProjectProjectNameServiceServiceNameResourceHandlerFunc(params service_
 			common.WriteBase64EncodedFile(filePath, res.ResourceContent)
 		}
 
-		logger.Debug("Staging changes")
-		err = common.StageAndCommitAll(params.ProjectName, "Added resources")
+		logger.Debug("Staging Changes")
+		err = common.StageAndCommitAll(params.ProjectName, "Added resources", true)
 		if err != nil {
 			logger.Error(fmt.Sprintf("Could not commit to %s branch of project %s", branch, params.ProjectName))
 			logger.Error(err.Error())

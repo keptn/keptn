@@ -125,7 +125,7 @@ func PostProjectProjectNameStageStageNameServiceHandlerFunc(params service.PostP
 		logger.Error(err.Error())
 		return service.NewPostProjectProjectNameStageStageNameServiceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not check out branch")})
 	}
-	
+
 	err = os.MkdirAll(servicePath, os.ModePerm)
 	if err != nil {
 		logger.Error(err.Error())
@@ -140,11 +140,7 @@ func PostProjectProjectNameStageStageNameServiceHandlerFunc(params service.PostP
 	metadataString, err := yaml.Marshal(newServiceMetadata)
 	err = common.WriteFile(servicePath+"/metadata.yaml", metadataString)
 
-	err = common.StageAndCommitAll(params.ProjectName, "Added service: "+params.Service.ServiceName)
-	if err != nil {
-		logger.Error(fmt.Sprintf("Could not commit to %s branch of project %s", params.StageName, params.ProjectName))
-		logger.Error(err.Error())
-	}
+	common.StageAndCommitAll(params.ProjectName, "Added service: "+params.Service.ServiceName, true)
 	return service.NewPostProjectProjectNameStageStageNameServiceNoContent()
 }
 

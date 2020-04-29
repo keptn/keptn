@@ -146,8 +146,8 @@ func PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 		}
 	}
 
-	logger.Debug("Staging changes")
-	err = common.StageAndCommitAll(params.ProjectName, "Added resources")
+	logger.Debug("Staging Changes")
+	err = common.StageAndCommitAll(params.ProjectName, "Added resources", true)
 	if err != nil {
 		logger.Error(fmt.Sprintf("Could not commit to %s branch of project %s", params.StageName, params.ProjectName))
 		logger.Error(err.Error())
@@ -275,8 +275,8 @@ func PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 		}
 	}
 
-	logger.Debug("Staging changes")
-	err = common.StageAndCommitAll(params.ProjectName, "Updated resources")
+	logger.Debug("Staging Changes")
+	err = common.StageAndCommitAll(params.ProjectName, "Updated resources", true)
 	if err != nil {
 		logger.Error(fmt.Sprintf("Could not commit to %s branch of project %s", params.StageName, params.ProjectName))
 		logger.Error(err.Error())
@@ -323,8 +323,8 @@ func PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHan
 	filePath := serviceConfigPath + "/" + params.ResourceURI
 	common.WriteBase64EncodedFile(filePath, params.Resource.ResourceContent)
 
-	logger.Debug("Staging changes")
-	err = common.StageAndCommitAll(params.ProjectName, "Updated resource: "+params.ResourceURI)
+	logger.Debug("Staging Changes")
+	err = common.StageAndCommitAll(params.ProjectName, "Updated resource: "+params.ResourceURI, true)
 	if err != nil {
 		logger.Error(fmt.Sprintf("Could not commit to %s branch of project %s", params.StageName, params.ProjectName))
 		logger.Error(err.Error())

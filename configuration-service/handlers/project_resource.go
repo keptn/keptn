@@ -64,8 +64,8 @@ func PutProjectProjectNameResourceHandlerFunc(params project_resource.PutProject
 		common.WriteBase64EncodedFile(projectConfigPath+"/"+*res.ResourceURI, res.ResourceContent)
 	}
 
-	logger.Debug("Staging changes")
-	err = common.StageAndCommitAll(params.ProjectName, "Updated resources")
+	logger.Debug("Staging Changes")
+	err = common.StageAndCommitAll(params.ProjectName, "Updated resources", true)
 	if err != nil {
 		logger.Error(fmt.Sprintf("Could not commit to master branch of project %s", params.ProjectName))
 		logger.Error(err.Error())
@@ -111,8 +111,8 @@ func PostProjectProjectNameResourceHandlerFunc(params project_resource.PostProje
 		common.WriteBase64EncodedFile(projectConfigPath+"/"+*res.ResourceURI, res.ResourceContent)
 	}
 
-	logger.Debug("Staging changes")
-	err = common.StageAndCommitAll(params.ProjectName, "Added resources")
+	logger.Debug("Staging Changes")
+	err = common.StageAndCommitAll(params.ProjectName, "Added resources", true)
 	if err != nil {
 		logger.Error(fmt.Sprintf("Could not commit to master branch of project %s", params.ProjectName))
 		logger.Error(err.Error())
@@ -195,8 +195,8 @@ func PutProjectProjectNameResourceResourceURIHandlerFunc(params project_resource
 	filePath := projectConfigPath + "/" + params.ResourceURI
 	common.WriteBase64EncodedFile(filePath, params.Resource.ResourceContent)
 
-	logger.Debug("Staging changes")
-	err = common.StageAndCommitAll(params.ProjectName, "Updated resource: "+params.ResourceURI)
+	logger.Debug("Staging Changes")
+	err = common.StageAndCommitAll(params.ProjectName, "Updated resource: "+params.ResourceURI, true)
 	if err != nil {
 		logger.Error(fmt.Sprintf("Could not commit to master branch of project %s", params.ProjectName))
 		logger.Error(err.Error())
@@ -242,8 +242,8 @@ func DeleteProjectProjectNameResourceResourceURIHandlerFunc(params project_resou
 		return project_resource.NewDeleteProjectProjectNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not delete file")})
 	}
 
-	logger.Debug("Staging changes")
-	err = common.StageAndCommitAll(params.ProjectName, "Deleted resources")
+	logger.Debug("Staging Changes")
+	err = common.StageAndCommitAll(params.ProjectName, "Deleted resources", true)
 	if err != nil {
 		logger.Error(fmt.Sprintf("Could not commit to master branch of project %s", params.ProjectName))
 		logger.Error(err.Error())

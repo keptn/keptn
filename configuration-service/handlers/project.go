@@ -3,14 +3,15 @@ package handlers
 import (
 	"fmt"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/stage"
-	k8sutils "github.com/keptn/kubernetes-utils/pkg"
 	"io/ioutil"
 	"os"
 	"time"
 
+	keptn "github.com/keptn/go-utils/pkg/lib"
+	k8sutils "github.com/keptn/kubernetes-utils/pkg"
+
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
-	"github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/configuration-service/common"
 	"github.com/keptn/keptn/configuration-service/config"
 	"github.com/keptn/keptn/configuration-service/models"
@@ -72,9 +73,11 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 	////////////////////////////////////////////////////
 	// clone existing repo
 	////////////////////////////////////////////////////
+	var initializedGit bool
 	if params.Project.GitUser != "" && params.Project.GitToken != "" && params.Project.GitRemoteURI != "" {
 		// try to clone the repo
-		err := common.CloneRepo(params.Project.ProjectName, params.Project.GitUser, params.Project.GitToken, params.Project.GitRemoteURI)
+		var err error
+		initializedGit, err = common.CloneRepo(params.Project.ProjectName, params.Project.GitUser, params.Project.GitToken, params.Project.GitRemoteURI)
 		if err != nil {
 			logger.Error(fmt.Sprintf("Could not clone git repository during creating project %s",params.Project))
 			logger.Error(err.Error())
@@ -130,7 +133,7 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not store project metadata")})
 	}
 
-	err = common.StageAndCommitAll(params.Project.ProjectName, "Added metadata.yaml")
+	err = common.StageAndCommitAll(params.Project.ProjectName, "Added metadata.yaml", initializedGit)
 	if err != nil {
 		logger.Error(fmt.Sprintf("Could not commit metadata.yaml during creating project %s", params.Project))
 		logger.Error(err.Error())
