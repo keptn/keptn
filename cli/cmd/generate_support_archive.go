@@ -32,17 +32,17 @@ var generateSupportArchiveParams *generateCmdParams
 
 type errorableStringResult struct {
 	Result string
-	Err    error
+	Err    error `json:",omitempty"`
 }
 
 type errorableBoolResult struct {
 	Result bool
-	Err    error
+	Err    error `json:",omitempty"`
 }
 
 type errorableProjectResult struct {
 	Result []*models.Project
-	Err    error
+	Err    error `json:",omitempty"`
 }
 
 var namespaces = [...]string{"keptn", "keptn-datastore"} //"istio-system"
@@ -53,9 +53,9 @@ type metaData struct {
 	KeptnAPIUrl                     *errorableStringResult  `json:",omitempty"`
 	KeptnAPIReachable               *errorableBoolResult    `json:",omitempty"`
 	Projects                        *errorableProjectResult `json:",omitempty"`
-	KubectlVersion                  *errorableStringResult
-	KubeContextPointsToKeptnCluster *errorableBoolResult   `json:",omitempty"`
-	KeptnDomain                     *errorableStringResult `json:",omitempty"`
+	KubectlVersion                  *errorableStringResult  `json:",omitempty"`
+	KubeContextPointsToKeptnCluster *errorableBoolResult    `json:",omitempty"`
+	KeptnDomain                     *errorableStringResult  `json:",omitempty"`
 }
 
 // generateSupportArchiveCmd implements the generate support-archive command
