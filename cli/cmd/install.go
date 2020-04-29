@@ -52,6 +52,9 @@ type installCmdParams struct {
 	IstioInstallOption      istioInstallOption
 }
 
+const keptnInstallerLogFileName = "keptn-installer.log"
+const keptnInstallerErrorLogFileName = "keptn-installer-Err.log"
+
 // KubeServerVersionConstraints the Kubernetes Cluster version's constraints is passed by ldflags
 var KubeServerVersionConstraints string
 
@@ -583,12 +586,12 @@ func getInstallerLogs(podName string) error {
 	cErr := make(chan error)
 
 	go func() {
-		res, err := copyAndCapture(stdoutIn, "keptn-installer.log")
+		res, err := copyAndCapture(stdoutIn, keptnInstallerLogFileName)
 		cRes <- res
 		cErr <- err
 	}()
 
-	installSuccessfulStdErr, errStdErr := copyAndCapture(stderrIn, "keptn-installer-err.log")
+	installSuccessfulStdErr, errStdErr := copyAndCapture(stderrIn, keptnInstallerErrorLogFileName)
 	installSuccessfulStdOut := <-cRes
 	errStdOut := <-cErr
 
