@@ -4,21 +4,17 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"github.com/spf13/cobra"
-	"github.com/spf13/cobra/doc"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/spf13/cobra"
+	"github.com/spf13/cobra/doc"
 )
 
-
-type generateDocsCmdParams struct {
-	Directory  *string
-}
-
-var generateDocsParams *generateDocsCmdParams
+var generateDocsParams *generateCmdParams
 
 const gendocFrontmatterTemplate = `---
 date: "%s"
@@ -27,7 +23,7 @@ slug: %s
 ---
 `
 
-// crprojectCmd represents the project command
+// generateDocsCmd implements the generate docs command
 var generateDocsCmd = &cobra.Command{
 	Use:   "docs",
 	Short: "Generates Markdown documentation for the keptn CLI.",
@@ -68,7 +64,6 @@ keptn generate docs --dir=/some/directory`,
 			return "../" + strings.ToLower(base) + "/"
 		}
 
-
 		// generate docs
 		fmt.Println("Generating docs now...")
 		doc.GenMarkdownTreeCustom(cmd.Root(), outputDir, prepender, linkHandler)
@@ -81,6 +76,6 @@ keptn generate docs --dir=/some/directory`,
 func init() {
 	generateCmd.AddCommand(generateDocsCmd)
 
-	generateDocsParams = &generateDocsCmdParams{}
+	generateDocsParams = &generateCmdParams{}
 	generateDocsParams.Directory = generateDocsCmd.Flags().StringP("dir", "", "./docs", "directory where the docs should be written to")
 }
