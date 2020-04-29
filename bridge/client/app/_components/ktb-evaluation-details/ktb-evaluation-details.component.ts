@@ -283,11 +283,11 @@ export class KtbEvaluationDetailsComponent implements OnInit {
   }
 
   _chartSeriesClicked(event) {
-    this._selectedEvaluationData = event.point.evaluationData.data;
+    this._selectedEvaluationData = event.point.evaluationData;
   }
 
   _heatmapTileClicked(event) {
-    this._selectedEvaluationData = this._heatmapSeries[0].data[event.point.x]['evaluation'].data;
+    this._selectedEvaluationData = this._heatmapSeries[0].data[event.point.x]['evaluation'];
   }
 
   getCalendarFormat() {
