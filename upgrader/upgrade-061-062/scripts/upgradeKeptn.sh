@@ -65,16 +65,9 @@ kubectl -n keptn get svc gatekeeper-service
       curl -k https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/keptn/keptn-api-virtualservice.yaml | \
         sed 's~DOMAIN_PLACEHOLDER~'"$DOMAIN"'~' | kubectl apply -f -
   else
-      print_debug "Quality gates installation detected. Upgrading Nginx ingress"
-      kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/keptn/keptn-ingress.yaml
-
-      curl -k https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/keptn/keptn-ingress.yaml | \
-        sed 's~domain.placeholder~'"$DOMAIN"'~' | sed 's~ingress.placeholder~nginx~' | kubectl apply -f -
-      kubectl -n keptn delete ingress api-ingress
-
       kubectl get namespace openshift
       if [[ $? == '0' ]]; then
-        print_debug "OpenShift platform detected. Updating routes"
+        print_debug "Quality gates installation on OpenShift platform detected. Updating routes"
         oc delete route api -n keptn
         oc delete route api2 -n keptn
 
@@ -89,6 +82,21 @@ kubectl -n keptn get svc gatekeeper-service
 
         oc create route edge api --service=api-gateway-nginx --port=http --insecure-policy='None' -n keptn --hostname="api.keptn.$BASE_URL"
         oc create route edge api2 --service=api-gateway-nginx --port=http --insecure-policy='None' -n keptn --hostname="api.keptn"
+      else
+        print_debug "Quality gates installation detected. Upgrading Nginx ingress"
+        kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/keptn/keptn-ingress.yaml
+
+        # remove the port number if there is any
+        OIFS=$IFS
+        IFS=':'
+
+        #Read the split words into an array based on ':' delimiter
+        read -a strarr <<< "$DOMAIN"
+        echo "Setting domain of ingress to ${strarr[0]}"
+        IFS=$OIFS
+        curl -k https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/keptn/keptn-ingress.yaml | \
+          sed 's~domain.placeholder~'"${strarr[0]}"'~' | sed 's~ingress.placeholder~nginx~' | kubectl apply -f -
+        kubectl -n keptn delete ingress api-ingress
       fi
   fi
 
