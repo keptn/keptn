@@ -111,3 +111,17 @@ func Test_configureBridge(t *testing.T) {
 		})
 	}
 }
+
+// Test whether the documentation fo the basic authentication is publicly available
+func Test_basicAuthDocuURL(t *testing.T) {
+	resp, err := http.Get(basicAuthDocuURL)
+	if err != nil {
+		t.Errorf("GET of %s ran into an error", basicAuthDocuURL)
+		return
+	}
+
+	if resp.StatusCode != 200 {
+		t.Errorf("Documentation of basic authentication not available under the URL: %s", basicAuthDocuURL)
+		return
+	}
+}

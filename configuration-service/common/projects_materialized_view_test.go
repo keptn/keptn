@@ -49,7 +49,10 @@ func TestGetProjectsMaterializedView(t *testing.T) {
 	}{
 		{
 			name: "get MV instance",
-			want: &projectsMaterializedView{ProjectRepo: &MongoDBProjectRepo{}},
+			want: &projectsMaterializedView{
+				ProjectRepo: &MongoDBProjectRepo{},
+				Logger:      keptn.NewLogger("", "", "configuration-service"),
+			},
 		},
 	}
 	for _, tt := range tests {
@@ -147,6 +150,7 @@ func Test_projectsMaterializedView_CreateProject(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mv := &projectsMaterializedView{
 				ProjectRepo: tt.fields.ProjectRepo,
+				Logger:      keptn.NewLogger("", "", "configuration-service"),
 			}
 			if err := mv.CreateProject(tt.args.prj); (err != nil) != tt.wantErr {
 				t.Errorf("CreateProject() error = %v, wantErr %v", err, tt.wantErr)
@@ -358,6 +362,7 @@ func Test_projectsMaterializedView_CreateStage(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mv := &projectsMaterializedView{
 				ProjectRepo: tt.fields.ProjectRepo,
+				Logger:      keptn.NewLogger("", "", "configuration-service"),
 			}
 			if err := mv.CreateStage(tt.args.project, tt.args.stage); (err != nil) != tt.wantErr {
 				t.Errorf("CreateStage() error = %v, wantErr %v", err, tt.wantErr)
@@ -460,6 +465,7 @@ func Test_projectsMaterializedView_DeleteStage(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mv := &projectsMaterializedView{
 				ProjectRepo: tt.fields.ProjectRepo,
+				Logger:      keptn.NewLogger("", "", "configuration-service"),
 			}
 			if err := mv.DeleteStage(tt.args.project, tt.args.stage); (err != nil) != tt.wantErr {
 				t.Errorf("DeleteStage() error = %v, wantErr %v", err, tt.wantErr)
@@ -635,6 +641,7 @@ func Test_projectsMaterializedView_CreateService(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mv := &projectsMaterializedView{
 				ProjectRepo: tt.fields.ProjectRepo,
+				Logger:      keptn.NewLogger("", "", "configuration-service"),
 			}
 			if err := mv.CreateService(tt.args.project, tt.args.stage, tt.args.service); (err != nil) != tt.wantErr {
 				t.Errorf("CreateService() error = %v, wantErr %v", err, tt.wantErr)
@@ -750,6 +757,7 @@ func Test_projectsMaterializedView_DeleteService(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mv := &projectsMaterializedView{
 				ProjectRepo: tt.fields.ProjectRepo,
+				Logger:      keptn.NewLogger("", "", "configuration-service"),
 			}
 			if err := mv.DeleteService(tt.args.project, tt.args.stage, tt.args.service); (err != nil) != tt.wantErr {
 				t.Errorf("DeleteService() error = %v, wantErr %v", err, tt.wantErr)
@@ -925,6 +933,7 @@ func Test_projectsMaterializedView_UpdateEventOfService(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mv := &projectsMaterializedView{
 				ProjectRepo: tt.fields.ProjectRepo,
+				Logger:      keptn.NewLogger("", "", "configuration-service"),
 			}
 			if err := mv.UpdateEventOfService(tt.args.keptnBase, tt.args.eventType, tt.args.keptnContext, ""); (err != nil) != tt.wantErr {
 				t.Errorf("UpdateEventOfService() error = %v, wantErr %v", err, tt.wantErr)
