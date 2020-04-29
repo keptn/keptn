@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"github.com/ghodss/yaml"
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime/middleware"
@@ -22,6 +23,7 @@ func getStages(params stage.GetProjectProjectNameStageParams) ([]*models.Stage, 
 
 	err := common.CheckoutBranch(params.ProjectName, "master", *params.DisableUpstreamSync)
 	if err != nil {
+		logger.Error(fmt.Sprintf("Could not check out master branch of project %s", params.ProjectName))
 		logger.Error(err.Error())
 		return nil, errors.New(500, "Could not retrieve stages.")
 	}
@@ -63,10 +65,13 @@ func PostProjectProjectNameStageHandlerFunc(params stage.PostProjectProjectNameS
 	if !common.ProjectExists(params.ProjectName) {
 		return stage.NewPostProjectProjectNameStageBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Project does not exist.")})
 	}
+
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
+	
 	err := common.CreateBranch(params.ProjectName, params.Stage.StageName, "master")
 	if err != nil {
+		logger.Error(fmt.Sprintf("Could not create %s branch for project %s", params.Stage.StageName, params.ProjectName))
 		logger.Error(err.Error())
 		return stage.NewPostProjectProjectNameStageBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not create stage.")})
 	}
