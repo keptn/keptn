@@ -13,12 +13,14 @@ manifests=(
   "https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/keptn/continuous-operations.yaml"
   "https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/keptn/keptn-api-virtualservice.yaml"
   "https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/keptn/keptn-ingress.yaml"
+  "https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/keptn/uniform-services-openshift.yaml"
+  "https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/keptn/uniform-distributors-openshift.yaml"
   )
 
 for manifest in "${manifests[@]}"
 do
    :
-   if curl --head --silent --fail $manifest 2> /dev/null;
+   if curl --head --silent -k --fail $manifest 2> /dev/null;
      then
       continue
      else
@@ -44,6 +46,13 @@ kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VE
 kubectl -n keptn delete deployment api
 kubectl -n keptn delete service api
 
+kubectl get namespace openshift
+  if [[ $? == '0' ]]; then
+    print_debug "OpenShift platform detected. Updating OpenShift core services"
+    kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/keptn/uniform-services-openshift.yaml
+    kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/keptn/uniform-distributors-openshift.yaml
+  fi
+
 DOMAIN=$(kubectl get configmap -n keptn keptn-domain -ojsonpath="{.data.app_domain}")
 
 # check if full installation is available
@@ -53,26 +62,26 @@ kubectl -n keptn get svc gatekeeper-service
       print_debug "Full installation detected. Upgrading CD and CO services"
       kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/keptn/continuous-deployment.yaml
       kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/keptn/continuous-operations.yaml
-      curl https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/keptn/keptn-api-virtualservice.yaml | \
+      curl -k https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/keptn/keptn-api-virtualservice.yaml | \
         sed 's~DOMAIN_PLACEHOLDER~'"$DOMAIN"'~' | kubectl apply -f -
   else
       print_debug "Quality gates installation detected. Upgrading Nginx ingress"
       kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/keptn/keptn-ingress.yaml
 
-      curl https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/keptn/keptn-ingress.yaml | \
+      curl -k https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/keptn/keptn-ingress.yaml | \
         sed 's~domain.placeholder~'"$DOMAIN"'~' | sed 's~ingress.placeholder~nginx~' | kubectl apply -f -
       kubectl -n keptn delete ingress api-ingress
 
       kubectl get namespace openshift
-
       if [[ $? == '0' ]]; then
         print_debug "OpenShift platform detected. Updating routes"
         oc delete route api -n keptn
+        oc delete route api2 -n keptn
 
         print_info "Creating route to api-gateway-nginx"
         oc create route edge api --service=api-gateway-nginx --port=http --insecure-policy='None' -n keptn
 
-        BASE_URL=$(oc get route -n keptn api -oyaml | yq r - spec.host | sed 's~api-keptn.~~')
+        BASE_URL=$(oc get route -n keptn api -ojsonpath="{.spec.host}" | sed 's~api-keptn.~~')
         DOMAIN=$BASE_URL
 
         print_info "Used domain for api OC route ${DOMAIN}"
