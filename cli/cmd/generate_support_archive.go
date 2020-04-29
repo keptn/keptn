@@ -89,46 +89,48 @@ keptn generate support-archive --dir=/some/directory`,
 		s.OperatingSystem = runtime.GOOS
 		s.KeptnCLIVersion = Version
 
-		s.KeptnAPIUrl = getKeptnAPIUrl()
-		if s.KeptnAPIUrl.Err == nil {
-			s.KeptnAPIReachable = getKeptnAPIReachable()
-			if s.KeptnAPIReachable.Err == nil && s.KeptnAPIReachable.Result {
-				s.Projects = getProjects()
-			}
-		}
-		writeKeptnInstallerLog(keptnInstallerLogFileName, tmpDir)
-		writeKeptnInstallerLog(keptnInstallerErrorLogFileName, tmpDir)
-
-		s.KubectlVersion = getKubectlVersion()
-		if s.KubectlVersion.Err == nil {
-			s.KubeContextPointsToKeptnCluster = getKubeContextPointsToKeptnCluster()
-
-			if s.KubeContextPointsToKeptnCluster.Err == nil && s.KubeContextPointsToKeptnCluster.Result {
-				ctx, _ := getKubeContext()
-				fmt.Println("Retrieving logs from cluster " + strings.TrimSpace(ctx))
-				s.KeptnDomain = getKeptnDomain()
-				writeNamespaces(tmpDir)
-
-				for _, ns := range namespaces {
-					k8sNSFilePath := filepath.Join(tmpDir, ns)
-					err := os.MkdirAll(k8sNSFilePath, os.ModePerm)
-					if err != nil {
-						fmt.Printf("Error making directory %s: %v\n", k8sNSFilePath, err)
-						continue
-					}
-					writeConfigMaps(ns, k8sNSFilePath)
-					writeSecrets(ns, k8sNSFilePath)
-					writeDeployments(ns, k8sNSFilePath)
-					writePods(ns, k8sNSFilePath)
-					writeServices(ns, k8sNSFilePath)
-					writeVirtualServices(ns, k8sNSFilePath)
-					writeIngresses(ns, k8sNSFilePath)
-					writePodLogs(ns, k8sNSFilePath)
-					writePodDescriptions(ns, k8sNSFilePath)
-					writeDeploymentDescriptions(ns, k8sNSFilePath)
+		if !mocking {
+			s.KeptnAPIUrl = getKeptnAPIUrl()
+			if s.KeptnAPIUrl.Err == nil {
+				s.KeptnAPIReachable = getKeptnAPIReachable()
+				if s.KeptnAPIReachable.Err == nil && s.KeptnAPIReachable.Result {
+					s.Projects = getProjects()
 				}
-			} else {
-				fmt.Println("Your kube context does not point to a Keptn cluster!")
+			}
+			writeKeptnInstallerLog(keptnInstallerLogFileName, tmpDir)
+			writeKeptnInstallerLog(keptnInstallerErrorLogFileName, tmpDir)
+
+			s.KubectlVersion = getKubectlVersion()
+			if s.KubectlVersion.Err == nil {
+				s.KubeContextPointsToKeptnCluster = getKubeContextPointsToKeptnCluster()
+
+				if s.KubeContextPointsToKeptnCluster.Err == nil && s.KubeContextPointsToKeptnCluster.Result {
+					ctx, _ := getKubeContext()
+					fmt.Println("Retrieving logs from cluster " + strings.TrimSpace(ctx))
+					s.KeptnDomain = getKeptnDomain()
+					writeNamespaces(tmpDir)
+
+					for _, ns := range namespaces {
+						k8sNSFilePath := filepath.Join(tmpDir, ns)
+						err := os.MkdirAll(k8sNSFilePath, os.ModePerm)
+						if err != nil {
+							fmt.Printf("Error making directory %s: %v\n", k8sNSFilePath, err)
+							continue
+						}
+						writeConfigMaps(ns, k8sNSFilePath)
+						writeSecrets(ns, k8sNSFilePath)
+						writeDeployments(ns, k8sNSFilePath)
+						writePods(ns, k8sNSFilePath)
+						writeServices(ns, k8sNSFilePath)
+						writeVirtualServices(ns, k8sNSFilePath)
+						writeIngresses(ns, k8sNSFilePath)
+						writePodLogs(ns, k8sNSFilePath)
+						writePodDescriptions(ns, k8sNSFilePath)
+						writeDeploymentDescriptions(ns, k8sNSFilePath)
+					}
+				} else {
+					fmt.Println("Your kube context does not point to a Keptn cluster!")
+				}
 			}
 		}
 
@@ -142,7 +144,7 @@ keptn generate support-archive --dir=/some/directory`,
 			return fmt.Errorf("Error writing file: %v", err)
 		}
 
-		supportArchive := filepath.Join(outputDir, "keptn-support-archive"+strconv.FormatInt(time.Now().Unix(), 10)+".zip")
+		supportArchive := filepath.Join(outputDir, "keptn-support-archive-"+strconv.FormatInt(time.Now().Unix(), 10)+".zip")
 		if err := recursiveZip(tmpDir, supportArchive); err != nil {
 			return fmt.Errorf("Error writing zip: %v", err)
 		}
