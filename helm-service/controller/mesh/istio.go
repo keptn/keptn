@@ -59,17 +59,38 @@ func (*IstioMesh) UpdateWeights(virtualService []byte, canaryWeight int32) ([]by
 		return nil, errors.New("Invalid canary weight")
 	}
 
-	for _, httpRoute := range vs.Spec.Http {
-		for _, dst := range httpRoute.Route {
+	if len(vs.Spec.Http) > 0 {
+		fmt.Println("Updating weight for HTTP Traffic")
+		for _, httpRoute := range vs.Spec.Http {
+			for _, dst := range httpRoute.Route {
 
-			if !strings.HasPrefix(dst.Destination.Host, vs.ObjectMeta.Name) {
-				return nil, fmt.Errorf("Cannot update VirutalService because host has unexpected name %s", dst.Destination.Host)
+				if !strings.HasPrefix(dst.Destination.Host, vs.ObjectMeta.Name) {
+					return nil, fmt.Errorf("Cannot update VirutalService because host has unexpected name %s", dst.Destination.Host)
+				}
+				if strings.HasPrefix(dst.Destination.Host, vs.ObjectMeta.Name+"-canary") {
+					dst.Weight = canaryWeight
+				}
+				if strings.HasPrefix(dst.Destination.Host, vs.ObjectMeta.Name+"-primary") {
+					dst.Weight = primaryWeight
+				}
 			}
-			if strings.HasPrefix(dst.Destination.Host, vs.ObjectMeta.Name+"-canary") {
-				dst.Weight = canaryWeight
-			}
-			if strings.HasPrefix(dst.Destination.Host, vs.ObjectMeta.Name+"-primary") {
-				dst.Weight = primaryWeight
+		}
+	}
+
+	// check if Tcp traffic is routed with this VirtualService
+	if len(vs.Spec.Tcp) > 0 {
+		fmt.Println("Updating weight for TCP Traffic")
+		for _, tcpRoute := range vs.Spec.Tcp {
+			for _, dst := range tcpRoute.Route {
+				if !strings.HasPrefix(dst.Destination.Host, vs.ObjectMeta.Name) {
+					return nil, fmt.Errorf("Cannot update VirtualService because host has unexpected name %s", dst.Destination.Host)
+				}
+				if strings.HasPrefix(dst.Destination.Host, vs.ObjectMeta.Name+"-canary") {
+					dst.Weight = canaryWeight
+				}
+				if strings.HasPrefix(dst.Destination.Host, vs.ObjectMeta.Name+"-primary") {
+					dst.Weight = primaryWeight
+				}
 			}
 		}
 	}
