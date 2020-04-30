@@ -3,9 +3,10 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"io/ioutil"
 	"os"
+
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
@@ -45,6 +46,7 @@ From a technical perspective, the file provided via the *--resource* flag is sto
 keptn add-resource --project=musicshop --stage=hardening --service=catalogue --resource=slo-quality-gates.yaml --resourceUri=slo.yaml
 keptn add-resource --project=sockshop --stage=dev --service=carts --resource=./jmeter.jmx --resourceUri=jmeter/functional.jmx
 keptn add-resource --project=rockshop --stage=production --service=shop --resource=./basiccheck.jmx --resourceUri=jmeter/basiccheck.jmx`,
+	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
 		if err != nil {
