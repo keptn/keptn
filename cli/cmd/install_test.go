@@ -43,7 +43,7 @@ func TestPrepareInstallerManifest(t *testing.T) {
 	*installParams.PlatformIdentifier = "gke"
 	installParams.Gateway = LoadBalancer
 	installParams.UseCase = AllUseCases
-	installParams.IstioInstallOption = StopIfInstalled
+	installParams.IngressInstallOption = StopIfInstalled
 	*installParams.Domain = ""
 
 	res := prepareInstallerManifest()
@@ -77,7 +77,7 @@ spec:
           value: istio
         - name: USE_CASE
           value: all
-        - name: ISTIO_INSTALL_OPTION
+        - name: INGRESS_INSTALL_OPTION
           value: StopIfInstalled
       restartPolicy: Never
 `
@@ -93,7 +93,7 @@ func resetFlagValues() {
 	*installParams.GatewayInput = "LoadBalancer"
 	*installParams.Domain = ""
 	*installParams.UseCaseInput = "all"
-	*installParams.IstioInstallOptionInput = "StopIfInstalled"
+	*installParams.IngressInstallOptionInput = "StopIfInstalled"
 }
 
 func TestInstallCmd(t *testing.T) {
@@ -181,7 +181,7 @@ spec:
           value: istio
         - name: USE_CASE
           value: all
-        - name: ISTIO_INSTALL_OPTION
+        - name: INGRESS_INSTALL_OPTION
           value: StopIfInstalled
       restartPolicy: Never
 `
@@ -233,7 +233,7 @@ spec:
           value: istio
         - name: USE_CASE
           value: all
-        - name: ISTIO_INSTALL_OPTION
+        - name: INGRESS_INSTALL_OPTION
           value: StopIfInstalled
       restartPolicy: Never
 `
@@ -285,7 +285,7 @@ spec:
           value: nginx
         - name: USE_CASE
           value: quality-gates
-        - name: ISTIO_INSTALL_OPTION
+        - name: INGRESS_INSTALL_OPTION
           value: StopIfInstalled
       restartPolicy: Never
 `
@@ -297,7 +297,7 @@ spec:
 func TestInstallCmdWithIstioInstallOption(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
 
-	cmd := fmt.Sprintf("install --istio-install-option=Reuse --mock")
+	cmd := fmt.Sprintf("install --ingress-install-option=Reuse --mock")
 
 	resetFlagValues()
 
@@ -337,7 +337,7 @@ spec:
           value: istio
         - name: USE_CASE
           value: all
-        - name: ISTIO_INSTALL_OPTION
+        - name: INGRESS_INSTALL_OPTION
           value: Reuse
       restartPolicy: Never
 `
