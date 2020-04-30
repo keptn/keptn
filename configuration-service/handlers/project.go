@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"os"
 	"time"
 
@@ -65,6 +66,7 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 
 	common.LockProject(params.Project.ProjectName)
 	defer common.UnlockProject(params.Project.ProjectName)
+
 	////////////////////////////////////////////////////
 	// clone existing repo
 	////////////////////////////////////////////////////
@@ -74,6 +76,7 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 		var err error
 		initializedGit, err = common.CloneRepo(params.Project.ProjectName, params.Project.GitUser, params.Project.GitToken, params.Project.GitRemoteURI)
 		if err != nil {
+			logger.Error(fmt.Sprintf("Could not clone git repository during creating project %s", params.Project.ProjectName))
 			logger.Error(err.Error())
 			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not clone git repository")})
 		}
@@ -81,6 +84,7 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 		// store credentials (e.g., as a kubernetes secret)
 		err = common.StoreGitCredentials(params.Project.ProjectName, params.Project.GitUser, params.Project.GitToken, params.Project.GitRemoteURI)
 		if err != nil {
+			logger.Error(fmt.Sprintf("Could not store git credentials during creating project %s", params.Project.ProjectName))
 			logger.Error(err.Error())
 			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not store git credentials")})
 		}
@@ -90,12 +94,14 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 		///////////////////////////////////////////////////
 		err := os.MkdirAll(projectConfigPath, os.ModePerm)
 		if err != nil {
+			logger.Error(fmt.Sprintf("Could make directory during creating project %s", params.Project.ProjectName))
 			logger.Error(err.Error())
 			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not create project")})
 		}
 
 		_, err = k8sutils.ExecuteCommandInDirectory("git", []string{"init"}, projectConfigPath)
 		if err != nil {
+			logger.Error(fmt.Sprintf("Could not initialize git repository during creating project %s", params.Project.ProjectName))
 			logger.Error(err.Error())
 			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not initialize git repo")})
 		}
@@ -107,15 +113,16 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 	}
 
 	metadataString, err := yaml.Marshal(newProjectMetadata)
-	err = common.WriteFile(projectConfigPath+"/metadata.yaml", metadataString)
 
+	err = common.WriteFile(projectConfigPath+"/metadata.yaml", metadataString)
 	if err != nil {
+		logger.Error(fmt.Sprintf("Could not write metadata.yaml during creating project %s", params.Project.ProjectName))
 		logger.Error(err.Error())
 		// Cleanup credentials before we exit
 		if credentialsCreated {
 			err = common.DeleteCredentials(params.Project.ProjectName)
-
 			if err != nil {
+				logger.Error(fmt.Sprintf("Could not delete credentials during creating project %s", params.Project.ProjectName))
 				logger.Error(err.Error())
 			}
 		}
@@ -125,12 +132,13 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 
 	err = common.StageAndCommitAll(params.Project.ProjectName, "Added metadata.yaml", initializedGit)
 	if err != nil {
+		logger.Error(fmt.Sprintf("Could not commit metadata.yaml during creating project %s", params.Project.ProjectName))
 		logger.Error(err.Error())
 		// Cleanup credentials before we exit
 		if credentialsCreated {
 			err = common.DeleteCredentials(params.Project.ProjectName)
-
 			if err != nil {
+				logger.Error(fmt.Sprintf("Could not delete credentials during creating project %s", params.Project.ProjectName))
 				logger.Error(err.Error())
 			}
 		}
@@ -173,18 +181,24 @@ func PutProjectProjectNameHandlerFunc(params project.PutProjectProjectNameParams
 // DeleteProjectProjectNameHandlerFunc deletes a project
 func DeleteProjectProjectNameHandlerFunc(params project.DeleteProjectProjectNameParams) middleware.Responder {
 	logger := keptn.NewLogger("", "", "configuration-service")
-	logger.Debug("Deleting project " + params.ProjectName)
+
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
+
+	logger.Debug("Deleting project " + params.ProjectName)
+
 	err := os.RemoveAll(config.ConfigDir + "/" + params.ProjectName)
 	if err != nil {
+		logger.Error(fmt.Sprintf("Could not delete directory during deleting project %s", params.ProjectName))
 		logger.Error(err.Error())
 		return project.NewDeleteProjectProjectNameBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not delete project")})
 	}
+
 	creds, _ := common.GetCredentials(params.ProjectName)
 	if creds != nil {
 		err = common.DeleteCredentials(params.ProjectName)
 		if err != nil {
+			logger.Error(fmt.Sprintf("Could not delete credentials during deleting project %s", params.ProjectName))
 			logger.Error(err.Error())
 			return project.NewDeleteProjectProjectNameBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not delete upstream credentials")})
 		}

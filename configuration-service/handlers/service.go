@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/services"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/stage"
 	"os"
@@ -85,9 +86,11 @@ func GetProjectProjectNameStageStageNameServiceServiceNameHandlerFunc(params ser
 
 // PostProjectProjectNameStageStageNameServiceHandlerFunc creates a new service
 func PostProjectProjectNameStageStageNameServiceHandlerFunc(params service.PostProjectProjectNameStageStageNameServiceParams) middleware.Responder {
+	logger := utils.NewLogger("", "", "configuration-service")
+
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
-	logger := utils.NewLogger("", "", "configuration-service")
+
 	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
 	servicePath := projectConfigPath + "/" + params.Service.ServiceName
 
@@ -98,13 +101,16 @@ func PostProjectProjectNameStageStageNameServiceHandlerFunc(params service.PostP
 	if common.ServiceExists(params.ProjectName, params.StageName, params.Service.ServiceName, false) {
 		return service.NewPostProjectProjectNameStageStageNameServiceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Service already exists")})
 	}
+
 	logger.Debug("Creating new resource(s) in: " + projectConfigPath + " in stage " + params.StageName)
 	logger.Debug("Checking out branch: " + params.StageName)
 	err := common.CheckoutBranch(params.ProjectName, params.StageName, false)
 	if err != nil {
+		logger.Error(fmt.Sprintf("Could not check out %s branch of project %s", params.StageName, params.ProjectName))
 		logger.Error(err.Error())
 		return service.NewPostProjectProjectNameStageStageNameServiceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not check out branch")})
 	}
+
 	err = os.MkdirAll(servicePath, os.ModePerm)
 	if err != nil {
 		logger.Error(err.Error())
