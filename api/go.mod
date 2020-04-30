@@ -1,6 +1,6 @@
 module github.com/keptn/keptn/api
 
-go 1.12
+go 1.13
 
 require (
 	github.com/cloudevents/sdk-go v0.10.0
@@ -15,11 +15,14 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/gorilla/websocket v1.4.1
 	github.com/jessevdk/go-flags v1.4.0
-	github.com/keptn/go-utils v0.6.1-a
+	github.com/keptn/go-utils v0.6.1-compat.0.20200406125548-5337a2e806c4
+	github.com/keptn/kubernetes-utils v0.0.0-20200401103501-ae44a5ee0656
 	github.com/kinbiko/jsonassert v1.0.1
 	github.com/magiconair/properties v1.8.1
-	golang.org/x/net v0.0.0-20191021144547-ec77196f6094
+	golang.org/x/net v0.0.0-20191126235420-ef20fe5d7933
+	istio.io/api v0.0.0-20200325005357-8217d7225b6d
+	istio.io/client-go v0.0.0-20200325170329-dc00bbff4229
+	k8s.io/api v0.17.4
+	k8s.io/apimachinery v0.17.4
+	k8s.io/client-go v0.17.4
 )
-
-// replace cloudevents/sdk-go latest version with 0.7.0
-replace github.com/cloudevents/sdk-go => github.com/cloudevents/sdk-go v0.0.0-20190509003705-56931988abe3

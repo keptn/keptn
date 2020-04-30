@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"net/url"
@@ -15,11 +14,9 @@ import (
 	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 
-	configutils "github.com/keptn/go-utils/pkg/configuration-service/utils"
-	keptnevents "github.com/keptn/go-utils/pkg/events"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	keptnevents "github.com/keptn/go-utils/pkg/lib"
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 
-	"github.com/ghodss/yaml"
 	"github.com/google/uuid"
 	"github.com/kelseyhightower/envconfig"
 )
@@ -67,10 +64,14 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	var shkeptncontext string
 	event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
 
-	logger := keptnutils.NewLogger(shkeptncontext, event.Context.GetID(), "gatekeeper-service")
+	logger := keptnevents.NewLogger(shkeptncontext, event.Context.GetID(), "gatekeeper-service")
 
+	keptnHandler, err := keptnevents.NewKeptn(&event, keptnevents.KeptnOpts{})
+	if err != nil {
+		logger.Error("Could not initialize Keptn handler: " + err.Error())
+	}
 	if event.Type() == keptnevents.EvaluationDoneEventType {
-		go doGateKeeping(event, shkeptncontext, logger)
+		go doGateKeeping(event, keptnHandler, logger)
 	} else {
 		logger.Error("Received unexpected keptn event")
 	}
@@ -78,7 +79,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	return nil
 }
 
-func doGateKeeping(event cloudevents.Event, shkeptncontext string, logger *keptnutils.Logger) error {
+func doGateKeeping(event cloudevents.Event, keptnHandler *keptnevents.Keptn, logger *keptnevents.Logger) error {
 
 	data := &keptnevents.EvaluationDoneEventData{}
 	if err := event.DataAs(data); err != nil {
@@ -98,15 +99,14 @@ func doGateKeeping(event cloudevents.Event, shkeptncontext string, logger *keptn
 		}
 
 		// Promote artifact
-		if err := sendCanaryAction(shkeptncontext, data.Project, data.Service,
-			data.Stage, keptnevents.Promote); err != nil {
+		if err := sendCanaryAction(keptnHandler, keptnevents.Promote); err != nil {
 			logger.Error(fmt.Sprintf("Error sending promotion event "+
 				"for service %s of project %s and stage %s: %s", data.Service, data.Project,
 				data.Stage, err.Error()))
 			return err
 		}
 
-		nextStage, err := getNextStage(data.Project, data.Stage)
+		nextStage, err := getNextStage(keptnHandler)
 		if err != nil {
 			logger.Error(fmt.Sprintf("Error obtaining the next stage: %s", err.Error()))
 			return err
@@ -123,7 +123,7 @@ func doGateKeeping(event cloudevents.Event, shkeptncontext string, logger *keptn
 				return err
 			}
 
-			if err := sendNewArtifactEvent(shkeptncontext, data.Project, data.Service,
+			if err := sendNewArtifactEvent(keptnHandler,
 				nextStage, image); err != nil {
 				logger.Error(fmt.Sprintf("Error sending new artifact event "+
 					"for service %s of project %s and stage %s: %s", data.Service, data.Project,
@@ -146,8 +146,7 @@ func doGateKeeping(event cloudevents.Event, shkeptncontext string, logger *keptn
 
 		if strings.ToLower(data.DeploymentStrategy) == "blue_green_service" {
 			// Discard artifact
-			if err := sendCanaryAction(shkeptncontext, data.Project, data.Service,
-				data.Stage, keptnevents.Discard); err != nil {
+			if err := sendCanaryAction(keptnHandler, keptnevents.Discard); err != nil {
 				logger.Error(fmt.Sprintf("Error sending promotion event "+
 					"for service %s of project %s and stage %s: %s", data.Service, data.Project,
 					data.Stage, err.Error()))
@@ -158,11 +157,8 @@ func doGateKeeping(event cloudevents.Event, shkeptncontext string, logger *keptn
 	return nil
 }
 
-func getNextStage(project string, currentStage string) (string, error) {
-	resourceHandler := configutils.NewResourceHandler(os.Getenv(configservice))
-	handler := keptnutils.NewKeptnHandler(resourceHandler)
-
-	shipyard, err := handler.GetShipyard(project)
+func getNextStage(keptnHandler *keptnevents.Keptn) (string, error) {
+	shipyard, err := keptnHandler.GetShipyard()
 	if err != nil {
 		return "", err
 	}
@@ -173,7 +169,7 @@ func getNextStage(project string, currentStage string) (string, error) {
 			// Here, we return the next stage
 			return stage.Name, nil
 		}
-		if stage.Name == currentStage {
+		if stage.Name == keptnHandler.KeptnBase.Stage {
 			currentFound = true
 		}
 	}
@@ -188,25 +184,18 @@ func getImage(project string, currentStage string, service string) (string, erro
 		return "", err
 	}
 
-	values := make(map[string]interface{})
-	if err := yaml.Unmarshal([]byte(chart.Values.Raw), &values); err != nil {
-		return "", err
-	}
-	val, contained := values["image"]
-	if !contained {
-		return "", fmt.Errorf("Cannot find image for service %s in project %s and stage %s",
+	if val, found := chart.Values["image"]; found {
+		if imageName, validType := val.(string); validType {
+			return imageName, nil
+		}
+		return "", fmt.Errorf("Cannot parse image in values.yaml for service %s in project %s and stage %s",
 			service, project, currentStage)
 	}
-	imageName, validType := val.(string)
-	if !validType {
-		return "", fmt.Errorf("Cannot parse image for service %s in project %s and stage %s",
-			service, project, currentStage)
-	}
-	return imageName, nil
+	return "", fmt.Errorf("Cannot find image in values.yaml for service %s in project %s and stage %s",
+		service, project, currentStage)
 }
 
-func sendNewArtifactEvent(shkeptncontext string, project string,
-	service string, nextStage string, image string) error {
+func sendNewArtifactEvent(keptnHandler *keptnevents.Keptn, nextStage string, image string) error {
 
 	source, _ := url.Parse("gatekeeper-service")
 	contentType := "application/json"
@@ -215,8 +204,8 @@ func sendNewArtifactEvent(shkeptncontext string, project string,
 	valuesCanary["image"] = image
 	canary := keptnevents.Canary{Action: keptnevents.Set, Value: 100}
 	configChangedEvent := keptnevents.ConfigurationChangeEventData{
-		Project:      project,
-		Service:      service,
+		Project:      keptnHandler.KeptnBase.Project,
+		Service:      keptnHandler.KeptnBase.Service,
 		Stage:        nextStage,
 		ValuesCanary: valuesCanary,
 		Canary:       &canary,
@@ -229,25 +218,24 @@ func sendNewArtifactEvent(shkeptncontext string, project string,
 			Type:        keptnevents.ConfigurationChangeEventType,
 			Source:      types.URLRef{URL: *source},
 			ContentType: &contentType,
-			Extensions:  map[string]interface{}{"shkeptncontext": shkeptncontext},
+			Extensions:  map[string]interface{}{"shkeptncontext": keptnHandler.KeptnContext},
 		}.AsV02(),
 		Data: configChangedEvent,
 	}
 
-	return sendEvent(event)
+	return keptnHandler.SendCloudEvent(event)
 }
 
-func sendCanaryAction(shkeptncontext string, project string,
-	service string, stage string, action keptnevents.CanaryAction) error {
+func sendCanaryAction(keptnHandler *keptnevents.Keptn, action keptnevents.CanaryAction) error {
 
 	source, _ := url.Parse("gatekeeper-service")
 	contentType := "application/json"
 
 	canary := keptnevents.Canary{Action: action}
 	configChangedEvent := keptnevents.ConfigurationChangeEventData{
-		Project: project,
-		Service: service,
-		Stage:   stage,
+		Project: keptnHandler.KeptnBase.Project,
+		Service: keptnHandler.KeptnBase.Service,
+		Stage:   keptnHandler.KeptnBase.Stage,
 		Canary:  &canary,
 	}
 
@@ -258,41 +246,12 @@ func sendCanaryAction(shkeptncontext string, project string,
 			Type:        keptnevents.ConfigurationChangeEventType,
 			Source:      types.URLRef{URL: *source},
 			ContentType: &contentType,
-			Extensions:  map[string]interface{}{"shkeptncontext": shkeptncontext},
+			Extensions:  map[string]interface{}{"shkeptncontext": keptnHandler.KeptnContext},
 		}.AsV02(),
 		Data: configChangedEvent,
 	}
 
-	return sendEvent(event)
-}
-
-func sendEvent(event cloudevents.Event) error {
-	endPoint, err := getServiceEndpoint(eventbroker)
-	if err != nil {
-		return errors.New("Failed to retrieve endpoint of eventbroker. %s" + err.Error())
-	}
-
-	if endPoint.Host == "" {
-		return errors.New("Host of eventbroker not set")
-	}
-
-	transport, err := cloudeventshttp.New(
-		cloudeventshttp.WithTarget(endPoint.String()),
-		cloudeventshttp.WithEncoding(cloudeventshttp.StructuredV02),
-	)
-	if err != nil {
-		return errors.New("Failed to create transport:" + err.Error())
-	}
-
-	c, err := client.New(transport)
-	if err != nil {
-		return errors.New("Failed to create HTTP client:" + err.Error())
-	}
-
-	if _, err := c.Send(context.Background(), event); err != nil {
-		return errors.New("Failed to send cloudevent:, " + err.Error())
-	}
-	return nil
+	return keptnHandler.SendCloudEvent(event)
 }
 
 // getServiceEndpoint gets an endpoint stored in an environment variable and sets http as default scheme

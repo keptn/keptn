@@ -4,6 +4,8 @@ package restapi
 
 import (
 	"crypto/tls"
+	"github.com/keptn/keptn/configuration-service/restapi/operations/event"
+	"github.com/keptn/keptn/configuration-service/restapi/operations/services"
 	"net/http"
 	"os"
 	"os/exec"
@@ -11,7 +13,7 @@ import (
 
 	errors "github.com/go-openapi/errors"
 	runtime "github.com/go-openapi/runtime"
-	"github.com/keptn/go-utils/pkg/utils"
+	utils "github.com/keptn/go-utils/pkg/lib"
 	handlers "github.com/keptn/keptn/configuration-service/handlers"
 	"github.com/keptn/keptn/configuration-service/restapi/operations"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/project"
@@ -120,6 +122,12 @@ func configureAPI(api *operations.ConfigurationServiceAPI) http.Handler {
 	api.ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceHandler = service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(handlers.PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc)
 
 	api.ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler = service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc(handlers.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc)
+
+	api.EventHandleEventHandler = event.HandleEventHandlerFunc(handlers.HandleEventHandlerFunc)
+
+	api.ServicesGetServicesHandler = services.GetServicesHandlerFunc(handlers.GetServices)
+
+	api.ServicesGetServiceHandler = services.GetServiceHandlerFunc(handlers.GetService)
 
 	api.ServerShutdown = func() {}
 

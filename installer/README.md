@@ -12,5 +12,5 @@ The scripts and manifests are finally put into a container, which starts the ini
 * Minikube 1.2
 
 ## Installed external tools
-* [Helm and Tiller v2.12.3](https://v2.helm.sh/)
+* [Helm v3.1.2](https://v2.helm.sh/)
 * [Istio v1.2.5](https://istio.io/)

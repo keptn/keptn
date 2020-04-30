@@ -8,9 +8,8 @@ package models
 import (
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
@@ -25,7 +24,7 @@ type Stages struct {
 	PageSize float64 `json:"pageSize,omitempty"`
 
 	// stages
-	Stages []*Stage `json:"stages"`
+	Stages []*ExpandedStage `json:"stages"`
 
 	// Total number of stages
 	TotalCount float64 `json:"totalCount,omitempty"`

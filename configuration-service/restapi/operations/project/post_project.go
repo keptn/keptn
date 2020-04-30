@@ -31,7 +31,7 @@ func NewPostProject(ctx *middleware.Context, handler PostProjectHandler) *PostPr
 
 /*PostProject swagger:route POST /project Project postProject
 
-Create a new project by project name
+INTERNAL Endpoint: Create a new project by project name
 
 */
 type PostProject struct {

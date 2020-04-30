@@ -4,12 +4,12 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/keptn/keptn/cli/utils/websockethelper"
+	"github.com/keptn/keptn/cli/pkg/websockethelper"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
-	"github.com/keptn/keptn/cli/utils/credentialmanager"
 	"github.com/spf13/cobra"
 )
 
@@ -19,11 +19,16 @@ var delProjectCmd = &cobra.Command{
 	Short: "Deletes a project identified by project name",
 	Long: `Deletes a project identified by project name. 
 
-Example:
-	keptn delete project sockshop`,
+**Known Limitations**:
+
+* If a Git upstream is configured for this project, the referenced upstream repository (e.g., on GitHub) will not be deleted. 
+* Services that have been deployed to the Kubernetes cluster are not deleted (same goes for the namespaces).
+* Helm-releases created for deployments are not deleted - see https://keptn.sh/docs/develop/reference/helm/#clean-up-after-deleting-a-project
+`,
+	Example: `keptn delete project sockshop`,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
-		_, _, err := credentialmanager.GetCreds()
+		_, _, err := credentialmanager.NewCredentialManager().GetCreds()
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
@@ -39,14 +44,14 @@ Example:
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		endPoint, apiToken, err := credentialmanager.GetCreds()
+		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
 		logging.PrintLog("Starting to delete project", logging.InfoLevel)
 
 		project := apimodels.Project{
-			Name: &args[0],
+			ProjectName: args[0],
 		}
 
 		projectHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)

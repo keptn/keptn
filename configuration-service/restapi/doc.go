@@ -9,6 +9,7 @@
 //  Version: 0.1.0
 //
 //  Consumes:
+//    - application/cloudevents+json
 //    - application/json
 //
 //  Produces:

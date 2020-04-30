@@ -21,6 +21,7 @@ import {DtChartSeriesVisibilityChangeEvent} from "@dynatrace/barista-components/
 
 import {DataService} from "../../_services/data.service";
 import DateUtil from "../../_utils/date.utils";
+import {Trace} from "../../_models/trace";
 
 @Component({
   selector: 'ktb-evaluation-details',
@@ -33,21 +34,19 @@ export class KtbEvaluationDetailsComponent implements OnInit {
     'pass': '#7dc540',
     'warning': '#fd8232',
     'fail': '#dc172a',
+    'failed': '#dc172a',
     'info': '#f8f8f8'
   };
 
   public _evaluationState = {
     'pass': 'recovered',
     'warning': 'warning',
-    'fail': 'error'
+    'fail': 'error',
+    'failed': 'error'
   };
 
-  public _evaluationData: any;
-  public _evaluationSource: string;
-
-  public _selectedEvaluationData: any;
-
-  public _view: string = "singleevaluation";
+  public _evaluationData: Trace;
+  public _selectedEvaluationData: Trace;
   public _comparisonView: string = "heatmap";
 
   public _chartOptions: Highcharts.Options = {
@@ -124,7 +123,7 @@ export class KtbEvaluationDetailsComponent implements OnInit {
     }],
 
     colorAxis: {
-      dataClasses: Object.keys(this._evaluationColor).map((key) => { return { color: this._evaluationColor[key], name: key } })
+      dataClasses: Object.keys(this._evaluationColor).filter(key => key != 'failed').map((key) => { return { color: this._evaluationColor[key], name: key } })
     },
 
     plotOptions: {
@@ -153,23 +152,13 @@ export class KtbEvaluationDetailsComponent implements OnInit {
     }
   }
 
-  @Input()
-  get evaluationSource(): any {
-    return this._evaluationSource;
-  }
-  set evaluationSource(evaluationSource: any) {
-    if (this._evaluationSource !== evaluationSource) {
-      this._evaluationSource = evaluationSource;
-      this._changeDetectorRef.markForCheck();
-    }
-  }
-
   constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService) { }
 
   ngOnInit() {
-    this.dataService.evaluationResults.subscribe((evaluationData) => {
-      if(this.evaluationData === evaluationData) {
-        this.updateChartData(evaluationData.evaluationHistory);
+    this.dataService.loadEvaluationResults(this._evaluationData);
+    this.dataService.evaluationResults.subscribe((event) => {
+      if(this.evaluationData === event) {
+        this.updateChartData(event.data.evaluationHistory);
         this._changeDetectorRef.markForCheck();
       }
     });
@@ -177,9 +166,8 @@ export class KtbEvaluationDetailsComponent implements OnInit {
 
   updateChartData(evaluationHistory) {
     let chartSeries = [];
-
-    if(!this._selectedEvaluationData) {
-      this._selectedEvaluationData = evaluationHistory[evaluationHistory.length-1].data;
+    if(!this._selectedEvaluationData && evaluationHistory) {
+      this._selectedEvaluationData = evaluationHistory.find(h => h.shkeptncontext === this._evaluationData.shkeptncontext);
     }
 
     evaluationHistory.forEach((evaluation) => {
@@ -288,24 +276,16 @@ export class KtbEvaluationDetailsComponent implements OnInit {
     this._heatmapOptions.chart.height = this._heatmapOptions.yAxis[0].categories.length*28 + 100;
   }
 
-  switchEvaluationView() {
-    this._view = this._view == "singleevaluation" ? "evaluationcomparison" : "singleevaluation";
-    if(this._view == "evaluationcomparison") {
-      this.dataService.loadEvaluationResults(this._evaluationData, this._evaluationSource);
-      this._changeDetectorRef.markForCheck();
-    }
-  }
-
   seriesVisibilityChanged(_: DtChartSeriesVisibilityChangeEvent): void {
     // NOOP
   }
 
   _chartSeriesClicked(event) {
-    this._selectedEvaluationData = event.point.evaluationData.data;
+    this._selectedEvaluationData = event.point.evaluationData;
   }
 
   _heatmapTileClicked(event) {
-    this._selectedEvaluationData = this._heatmapSeries[0].data[event.point.x]['evaluation'].data;
+    this._selectedEvaluationData = this._heatmapSeries[0].data[event.point.x]['evaluation'];
   }
 
   getCalendarFormat() {

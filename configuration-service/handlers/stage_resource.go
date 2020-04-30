@@ -6,7 +6,7 @@ import (
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
-	"github.com/keptn/go-utils/pkg/utils"
+	utils "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/configuration-service/common"
 	"github.com/keptn/keptn/configuration-service/config"
 	"github.com/keptn/keptn/configuration-service/models"
@@ -94,7 +94,7 @@ func PostProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resour
 	}
 
 	logger.Debug("Staging Changes")
-	err = common.StageAndCommitAll(params.ProjectName, "Added resources")
+	err = common.StageAndCommitAll(params.ProjectName, "Added resources", true)
 	if err != nil {
 		logger.Error(err.Error())
 		return stage_resource.NewPostProjectProjectNameStageStageNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
@@ -135,7 +135,7 @@ func PutProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resourc
 	}
 
 	logger.Debug("Staging Changes")
-	err = common.StageAndCommitAll(params.ProjectName, "Updated resources")
+	err = common.StageAndCommitAll(params.ProjectName, "Updated resources", true)
 	if err != nil {
 		logger.Error(err.Error())
 		return stage_resource.NewPutProjectProjectNameStageStageNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
@@ -174,7 +174,7 @@ func PutProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(params st
 	common.WriteBase64EncodedFile(filePath, params.Resource.ResourceContent)
 
 	logger.Debug("Staging Changes")
-	err = common.StageAndCommitAll(params.ProjectName, "Updated resource: "+params.ResourceURI)
+	err = common.StageAndCommitAll(params.ProjectName, "Updated resource: "+params.ResourceURI, true)
 	if err != nil {
 		logger.Error(err.Error())
 		return stage_resource.NewPutProjectProjectNameStageStageNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})

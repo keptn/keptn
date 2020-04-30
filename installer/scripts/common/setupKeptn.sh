@@ -13,15 +13,6 @@ wait_for_deployment_in_namespace "nats-operator" "keptn"
 kubectl apply -f ../manifests/nats/nats-cluster.yaml
 verify_kubectl $? "Creating NATS Cluster failed."
 
-# Add config map in keptn namespace that contains the domain - this will be used by other services as well
-rm -f ../manifests/gen/keptn-domain-configmap.yaml
-
-cat ../manifests/keptn/keptn-domain-configmap.yaml | \
-  sed 's~DOMAIN_PLACEHOLDER~'"$DOMAIN"'~' >> ../manifests/gen/keptn-domain-configmap.yaml
-
-kubectl apply -f ../manifests/gen/keptn-domain-configmap.yaml
-verify_kubectl $? "Creating configmap keptn-domain in keptn namespace failed."
-
 # Creating cluster role binding
 kubectl apply -f ../manifests/keptn/rbac.yaml
 verify_kubectl $? "Creating cluster role for keptn failed."
@@ -31,8 +22,8 @@ KEPTN_API_TOKEN=$(head -c 16 /dev/urandom | base64)
 verify_variable "$KEPTN_API_TOKEN" "KEPTN_API_TOKEN could not be derived." 
 kubectl create secret generic -n keptn keptn-api-token --from-literal=keptn-api-token="$KEPTN_API_TOKEN"
 
-# Install logging
-print_info "Installing Logging"
+# Install Keptn Datastore
+print_info "Installing Keptn Datastore"
 kubectl apply -f ../manifests/logging/namespace.yaml
 verify_kubectl $? "Creating logging namespace failed."
 kubectl apply -f ../manifests/logging/mongodb/pvc.yaml
@@ -57,7 +48,8 @@ verify_kubectl $? "Deploying Keptn core components failed."
 ## Start validation of Keptn core           ##
 ##############################################
 wait_for_all_pods_in_namespace "keptn"
-wait_for_deployment_in_namespace "api" "keptn"
+wait_for_deployment_in_namespace "api-gateway-nginx" "keptn"
+wait_for_deployment_in_namespace "api-service" "keptn"
 wait_for_deployment_in_namespace "bridge" "keptn"
 wait_for_deployment_in_namespace "eventbroker-go" "keptn"
 wait_for_deployment_in_namespace "helm-service" "keptn"
@@ -113,15 +105,3 @@ case $USE_CASE in
     echo "Use case not provided"
     ;;
 esac
-
-if [ "$INGRESS" = "istio" ]; then
-  kubectl apply -f ../manifests/istio/public-gateway.yaml
-  verify_kubectl $? "Deploying public-gateway failed."
-
-  rm -f ../manifests/keptn/gen/keptn-api-virtualservice.yaml
-  cat ../manifests/keptn/keptn-api-virtualservice.yaml | \
-    sed 's~DOMAIN_PLACEHOLDER~'"$INGRESS_HOST"'~' > ../manifests/keptn/gen/keptn-api-virtualservice.yaml
-
-  kubectl apply -f ../manifests/keptn/gen/keptn-api-virtualservice.yaml
-  verify_kubectl $? "Deploying keptn api virtualservice failed."
-fi

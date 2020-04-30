@@ -8,7 +8,8 @@ basePath: /v1
 produces:
 - application/json
 consumes:
-- application/json
+  - application/cloudevents+json
+  - application/json
 
 schemes:
   - http
@@ -33,6 +34,136 @@ definitions:
       version:
         type: string
         description: Version identifier
+
+  ExpandedProjects:
+    type: object
+    properties:
+      nextPageKey:
+        type: string
+        description: Pointer to next page, base64 encoded
+      totalCount:
+        type: number
+        description: Total number of projects
+      pageSize:
+        type: number
+        description: Size of returned page
+      projects:
+        type: array
+        items:
+          $ref: '#/definitions/ExpandedProject'
+
+  ExpandedProject:
+    type: object
+    properties:
+      projectName:
+        type: string
+        description: Project name
+      gitUser:
+        type: string
+        description: Git User
+      gitRemoteURI:
+        type: string
+        description: Git remote URI
+      shipyard:
+        type: string
+        description: Shipyard file content
+      creationDate:
+        type: string
+        description: Creation date of the project
+      lastEventContext:
+        $ref: '#/definitions/EventContext'
+      stages:
+        type: array
+        items:
+          $ref: '#/definitions/ExpandedStage'
+
+  ExpandedStage:
+    type: object
+    properties:
+      stageName:
+        type: string
+        description: Stage name
+      lastEventContext:
+        $ref: '#/definitions/EventContext'
+      services:
+        type: array
+        items:
+          $ref: '#/definitions/ExpandedService'
+
+  ExpandedService:
+    type: object
+    properties:
+      serviceName:
+        type: string
+        description: Service name
+      deployedImage:
+        type: string
+        description: Currently deployed image
+      creationDate:
+        type: string
+        description: Creation date of the service
+      lastEventTypes:
+        type: object
+        additionalProperties:
+          $ref: '#/definitions/EventContext'
+
+  ServicesWithStageInfo:
+    type: object
+    properties:
+      nextPageKey:
+        type: string
+        description: Pointer to next page, base64 encoded
+      totalCount:
+        type: number
+        description: Total number of stages
+      pageSize:
+        type: number
+        description: Size of returned page
+      services:
+        type: array
+        items:
+          $ref: '#/definitions/ExpandedServiceWithStageInfo'
+
+  ExpandedServiceWithStageInfo:
+    type: object
+    properties:
+      serviceName:
+        type: string
+        description: Service name
+      creationDate:
+        type: string
+        description: Creation date of the service
+      stageInfo:
+        type: array
+        items:
+          $ref: '#/definitions/InverseServiceStageInfo'
+
+  InverseServiceStageInfo:
+    type: object
+    properties:
+      stageName:
+        type: string
+      deployedImage:
+        type: string
+        description: Currently deployed image
+      lastEventTypes:
+        type: object
+        additionalProperties:
+          $ref: '#/definitions/EventContext'
+
+  EventContext:
+    type: object
+    properties:
+      keptnContext:
+        type: string
+        description: Keptn Context ID of the event
+      eventId:
+        type: string
+        description: ID of the event
+      time:
+        type: string
+        description: Time of the event
+
 
   Project:
     type: object
@@ -97,7 +228,7 @@ definitions:
       stages:
         type: array
         items:
-          $ref: '#/definitions/Stage'
+          $ref: '#/definitions/ExpandedStage'
 
   Service:
     type: object
@@ -121,7 +252,7 @@ definitions:
       services:
         type: array
         items:
-          $ref: '#/definitions/Service'
+          $ref: '#/definitions/ExpandedService'
 
   Resource:
     type: object
@@ -152,6 +283,34 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/Resource'
+
+  KeptnContextExtendedCE:
+    type: object
+    properties: # CloudEvents v0.2 properties (https://raw.githubusercontent.com/cloudevents/spec/v0.2/spec.json#/definitions/event)
+      shkeptncontext:
+        type: string
+      specversion:
+        type: string
+      contenttype:
+        type: string
+      data:
+        type: ["object", "string"]
+      id:
+        type: string
+      time:
+        type: string
+        format: date-time
+      type:
+        type: string
+      extensions:
+        type: object
+      source:
+        format: uri-reference
+        type: string
+    required:
+      - data
+      - source
+      - type
 
 parameters:
   project:
@@ -250,7 +409,8 @@ paths:
     post:
       tags:
         - Project
-      summary: Create a new project by project name
+      deprecated: true
+      summary: 'INTERNAL Endpoint: Create a new project by project name'
       parameters:
         - $ref: '#/parameters/project'
       responses:
@@ -276,7 +436,7 @@ paths:
         '200':
           description: Success
           schema:
-            $ref: '#/definitions/Projects'
+            $ref: '#/definitions/ExpandedProjects'
         'default':
           description: Error
           schema:
@@ -293,7 +453,7 @@ paths:
         '200':
           description: Success
           schema:
-            $ref: '#/definitions/Project'
+            $ref: '#/definitions/ExpandedProject'
         '404':
           description: Failed. Project could not be found.
           schema:
@@ -305,9 +465,10 @@ paths:
     put:
       tags:
         - Project
-      summary: Update the specified project
+      deprecated: true
+      summary: 'INTERNAL Endpoint: Update the specified project'
       parameters:
-        - $ref: '#/parameters/project'     
+        - $ref: '#/parameters/project'
       responses:
         '204':
           description: Success. Project has been updated. Response does not have a body.
@@ -322,7 +483,8 @@ paths:
     delete:
       tags:
         - Project
-      summary: Delete the specified project
+      deprecated: true
+      summary: 'INTERNAL Endpoint: Delete the specified project'
       responses:
         '204':
           description: Success. Project has been deleted. Response does not have a body.
@@ -333,7 +495,53 @@ paths:
         'default':
           description: Error
           schema:
-            $ref: '#/definitions/Error' 
+            $ref: '#/definitions/Error'
+
+  '/project/{projectName}/service':
+    parameters:
+      - $ref: '#/parameters/projectName'
+    get:
+      tags:
+        - Services
+      operationId: get services
+      parameters:
+        - $ref: '#/parameters/pageSize'
+        - $ref: '#/parameters/nextPageKey'
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/ServicesWithStageInfo'
+        '404':
+          description: Failed. Containing project could not be found.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
+
+  '/project/{projectName}/service/{serviceName}':
+    parameters:
+      - $ref: '#/parameters/projectName'
+      - $ref: '#/parameters/serviceName'
+    get:
+      tags:
+        - Services
+      operationId: get service
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/ExpandedServiceWithStageInfo'
+        '404':
+          description: Failed. Service could not be found.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
 
   '/project/{projectName}/resource':
     parameters:
@@ -461,7 +669,8 @@ paths:
     post:
       tags:
         - Stage
-      summary: Create a new stage by stage name
+      deprecated: true
+      summary: 'INTERNAL Endpoint: Create a new stage by stage name'
       parameters:
         - $ref: '#/parameters/stage'
       responses:
@@ -511,7 +720,7 @@ paths:
         '200':
           description: Success
           schema:
-            $ref: '#/definitions/Stage'
+            $ref: '#/definitions/ExpandedStage'
         '404':
           description: Failed. Project resource could not be found.
           schema:
@@ -523,7 +732,8 @@ paths:
     put:
       tags:
         - Stage
-      summary: Update the specified stage
+      deprecated: true
+      summary: 'INTERNAL Endpoint: Update the specified stage'
       parameters:
         - $ref: '#/parameters/stage'
       responses:
@@ -540,7 +750,8 @@ paths:
     delete:
       tags:
         - Stage
-      summary: Delete the specified stage
+      deprecated: true
+      summary: 'INTERNAL Endpoint: Delete the specified stage'
       responses:
         '204':
           description: Success. Stage has been deleted. Response does not have a body.
@@ -683,7 +894,8 @@ paths:
     post:
       tags:
         - Service
-      summary: Create a new service by service name
+      deprecated: true
+      summary: 'INTERNAL Endpoint: Create a new service by service name'
       parameters:
         - $ref: '#/parameters/service'
       responses:
@@ -734,7 +946,7 @@ paths:
         '200':
           description: Success
           schema:
-            $ref: '#/definitions/Service'
+            $ref: '#/definitions/ExpandedService'
         '404':
           description: Failed. Service could not be found.
           schema:
@@ -746,7 +958,8 @@ paths:
     put:
       tags:
         - Service
-      summary: Update the specified service
+      deprecated: true
+      summary: 'INTERNAL Endpoint: Update the specified service'
       parameters:
         - $ref: '#/parameters/service'
       responses:
@@ -763,7 +976,8 @@ paths:
     delete:
       tags:
         - Service
-      summary: Delete the specified service
+      deprecated: true
+      summary: 'INTERNAL Endpoint: Delete the specified service'
       responses:
         '204':
           description: Success. Service has been deleted. Response does not have a body.
@@ -1021,3 +1235,22 @@ paths:
           description: Error
           schema:
             $ref: '#/definitions/Error'
+
+  /event:
+    post:
+      tags:
+        - event
+      operationId: handle event
+      summary: Handles an incoming event
+      parameters:
+        - name: body
+          in: body
+          schema:
+            "$ref": "#/definitions/KeptnContextExtendedCE"
+      responses:
+        200:
+          description: OK
+        default:
+          description: Error
+          schema:
+            "$ref": "#/definitions/Error"

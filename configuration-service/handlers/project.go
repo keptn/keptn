@@ -1,14 +1,14 @@
 package handlers
 
 import (
-	"github.com/keptn/keptn/configuration-service/restapi/operations/stage"
-	"io/ioutil"
 	"os"
 	"time"
 
+	keptn "github.com/keptn/go-utils/pkg/lib"
+	k8sutils "github.com/keptn/kubernetes-utils/pkg"
+
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
-	"github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/configuration-service/common"
 	"github.com/keptn/keptn/configuration-service/config"
 	"github.com/keptn/keptn/configuration-service/models"
@@ -23,28 +23,27 @@ type projectMetadata struct {
 
 // GetProjectHandlerFunc gets a list of projects
 func GetProjectHandlerFunc(params project.GetProjectParams) middleware.Responder {
-	var payload = &models.Projects{
+	var payload = &models.ExpandedProjects{
 		PageSize:    0,
 		NextPageKey: "0",
 		TotalCount:  0,
-		Projects:    []*models.Project{},
+		Projects:    []*models.ExpandedProject{},
 	}
 
-	files, err := ioutil.ReadDir(config.ConfigDir)
-	if err != nil {
-		return project.NewGetProjectOK().WithPayload(payload)
+	mv := common.GetProjectsMaterializedView()
+
+	allProjects, err := mv.GetProjects()
+
+	if err != nil || allProjects == nil {
+		return project.NewGetProjectDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 	}
 
-	paginationInfo := common.Paginate(len(files), params.PageSize, params.NextPageKey)
+	paginationInfo := common.Paginate(len(allProjects), params.PageSize, params.NextPageKey)
 
-	totalCount := len(files)
+	totalCount := len(allProjects)
 	if paginationInfo.NextPageKey < int64(totalCount) {
-		for _, f := range files[paginationInfo.NextPageKey:paginationInfo.EndIndex] {
-			if f.IsDir() && common.FileExists(config.ConfigDir+"/"+f.Name()+"/metadata.yaml") {
-				stages, _ := getStages(stage.GetProjectProjectNameStageParams{ProjectName: f.Name(), DisableUpstreamSync: params.DisableUpstreamSync})
-				var project = &models.Project{ProjectName: f.Name(), Stages: stages}
-				payload.Projects = append(payload.Projects, project)
-			}
+		for _, project := range allProjects[paginationInfo.NextPageKey:paginationInfo.EndIndex] {
+			payload.Projects = append(payload.Projects, project)
 		}
 	}
 
@@ -56,7 +55,7 @@ func GetProjectHandlerFunc(params project.GetProjectParams) middleware.Responder
 // PostProjectHandlerFunc creates a new project
 func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Responder {
 	credentialsCreated := false
-	logger := utils.NewLogger("", "", "configuration-service")
+	logger := keptn.NewLogger("", "", "configuration-service")
 	projectConfigPath := config.ConfigDir + "/" + params.Project.ProjectName
 
 	// check if the project already exists
@@ -69,9 +68,11 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 	////////////////////////////////////////////////////
 	// clone existing repo
 	////////////////////////////////////////////////////
+	var initializedGit bool
 	if params.Project.GitUser != "" && params.Project.GitToken != "" && params.Project.GitRemoteURI != "" {
 		// try to clone the repo
-		err := common.CloneRepo(params.Project.ProjectName, params.Project.GitUser, params.Project.GitToken, params.Project.GitRemoteURI)
+		var err error
+		initializedGit, err = common.CloneRepo(params.Project.ProjectName, params.Project.GitUser, params.Project.GitToken, params.Project.GitRemoteURI)
 		if err != nil {
 			logger.Error(err.Error())
 			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not clone git repository")})
@@ -93,7 +94,7 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not create project")})
 		}
 
-		_, err = utils.ExecuteCommandInDirectory("git", []string{"init"}, projectConfigPath)
+		_, err = k8sutils.ExecuteCommandInDirectory("git", []string{"init"}, projectConfigPath)
 		if err != nil {
 			logger.Error(err.Error())
 			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not initialize git repo")})
@@ -122,7 +123,7 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not store project metadata")})
 	}
 
-	err = common.StageAndCommitAll(params.Project.ProjectName, "Added metadata.yaml")
+	err = common.StageAndCommitAll(params.Project.ProjectName, "Added metadata.yaml", initializedGit)
 	if err != nil {
 		logger.Error(err.Error())
 		// Cleanup credentials before we exit
@@ -135,20 +136,33 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 		}
 		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
 	}
+
+	mv := common.GetProjectsMaterializedView()
+
+	err = mv.CreateProject(params.Project)
+
+	if err != nil {
+		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+	}
 	return project.NewPostProjectNoContent()
 }
 
 // GetProjectProjectNameHandlerFunc gets a project by its name
 func GetProjectProjectNameHandlerFunc(params project.GetProjectProjectNameParams) middleware.Responder {
-	if !common.ProjectExists(params.ProjectName) {
+
+	mv := common.GetProjectsMaterializedView()
+
+	prj, err := mv.GetProject(params.ProjectName)
+
+	if err != nil {
+		return project.NewGetProjectProjectNameDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+	}
+
+	if prj == nil {
 		return project.NewGetProjectProjectNameNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project not found")})
 	}
-	var projectResponse = &models.Project{ProjectName: params.ProjectName}
-	projectCreds, _ := common.GetCredentials(params.ProjectName)
-	if projectCreds != nil {
-		projectResponse.GitRemoteURI = projectCreds.RemoteURI
-	}
-	return project.NewGetProjectProjectNameOK().WithPayload(projectResponse)
+
+	return project.NewGetProjectProjectNameOK().WithPayload(prj)
 }
 
 // PutProjectProjectNameHandlerFunc updates a project
@@ -158,7 +172,7 @@ func PutProjectProjectNameHandlerFunc(params project.PutProjectProjectNameParams
 
 // DeleteProjectProjectNameHandlerFunc deletes a project
 func DeleteProjectProjectNameHandlerFunc(params project.DeleteProjectProjectNameParams) middleware.Responder {
-	logger := utils.NewLogger("", "", "configuration-service")
+	logger := keptn.NewLogger("", "", "configuration-service")
 	logger.Debug("Deleting project " + params.ProjectName)
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
@@ -174,6 +188,12 @@ func DeleteProjectProjectNameHandlerFunc(params project.DeleteProjectProjectName
 			logger.Error(err.Error())
 			return project.NewDeleteProjectProjectNameBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not delete upstream credentials")})
 		}
+	}
+
+	mv := common.GetProjectsMaterializedView()
+	err = mv.DeleteProject(params.ProjectName)
+	if err != nil {
+		return project.NewDeleteProjectProjectNameBadRequest().WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 	}
 
 	logger.Debug("Project " + params.ProjectName + " has been deleted")

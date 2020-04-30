@@ -19,12 +19,13 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/keptn/keptn/cli/pkg/file"
+
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
-	"github.com/keptn/keptn/cli/utils"
-	"github.com/keptn/keptn/cli/utils/credentialmanager"
 	"github.com/spf13/cobra"
 )
 
@@ -36,13 +37,16 @@ var eventFilePath *string
 var sendEventCmd = &cobra.Command{
 	Use:   "event --file=FILEPATH --stream-websocket",
 	Short: "Sends a Keptn event",
-	Long: `Allows to send an arbitrary Keptn event that is defined in the passed file.
+	Long: `Allows to send an arbitrary Keptn event that is defined in the provided JSON file.
+An event has to follow the Cloud Events specification (https://cloudevents.io/) in version 0.2 and has to be written in JSON.
+In addition, the payload of the Cloud Event needs to follow the Keptn spec (https://github.com/keptn/spec/blob/0.1.3/cloudevents.md).
 
-Example:
-	keptn send event --file=./new_artifact_event.json --stream-websocket`,
+For convenience, this command offers the *--stream-websocket* flag to open a web socket communication to Keptn. Consequently, messages from the receiving Keptn service, which processes the event, are sent to the CLI via WebSocket.
+	`,
+	Example: `keptn send event --file=./new_artifact_event.json --stream-websocket`,
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		eventString, err := utils.ReadFile(*eventFilePath)
+		eventString, err := file.ReadFile(*eventFilePath)
 		if err != nil {
 			return err
 		}
@@ -50,16 +54,16 @@ Example:
 		return json.Unmarshal([]byte(eventString), &body)
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		endPoint, apiToken, err := credentialmanager.GetCreds()
+		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
-		eventString, err := utils.ReadFile(*eventFilePath)
+		eventString, err := file.ReadFile(*eventFilePath)
 		if err != nil {
 			return err
 		}
 
-		apiEvent := apimodels.Event{}
+		apiEvent := apimodels.KeptnContextExtendedCE{}
 		err = json.Unmarshal([]byte(eventString), &apiEvent)
 		if err != nil {
 			return fmt.Errorf("Failed to map event to API event model. %s", err.Error())
@@ -86,4 +90,5 @@ Example:
 func init() {
 	sendCmd.AddCommand(sendEventCmd)
 	eventFilePath = sendEventCmd.Flags().StringP("file", "f", "", "The file containing the event as Cloud Event in JSON.")
+	sendEventCmd.MarkFlagRequired("file")
 }

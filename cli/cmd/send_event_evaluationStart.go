@@ -28,9 +28,9 @@ import (
 	"github.com/google/uuid"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
-	keptnevents "github.com/keptn/go-utils/pkg/events"
+	keptnevents "github.com/keptn/go-utils/pkg/lib"
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
-	"github.com/keptn/keptn/cli/utils/credentialmanager"
 	"github.com/spf13/cobra"
 )
 
@@ -52,19 +52,17 @@ var evaluationStartCmd = &cobra.Command{
 	Short: "Sends an start-evaluation event to Keptn in order to evaluate a test " +
 		"for the specified service in the provided project and stage",
 	Long: `Sends a start-evaluation event to Keptn in order to evaluate a test
-for the specified service in the provided project and stage. The time frame flag defines
-the time frame that is considered in this evaluation. If a specific start point need to be set,
-a start flag is provided that takes a time in the format: 2006-01-02T15:04:05
-	
-Example:
-	keptn send event start-evaluation --project=sockshop --stage=hardening --service=carts --timeframe=5m --start=2019-10-31T11:59:59
+for the specified service in the provided project and stage. 
+
+This command takes the project (*--project*), stage (*--stage*), and the service (*--service*), which should be
+evaluated. Besides, it is necessary to specify a time frame (*--timeframe*) of the evaluation. If, for example, the 
+flag is set to *--timeframe=5m*, the evaluation is conducted for the last 5 minutes. To specify a particular starting
+point, the flag *--start* flag can be used. In this case, the specified time frame is added to the starting point.`,
+	Example: `keptn send event start-evaluation --project=sockshop --stage=hardening --service=carts --timeframe=5m --start=2019-10-31T11:59:59
     keptn send event start-evaluation --project=sockshop --stage=hardening --service=carts --start=2019-10-31T11:59:59 --end=2019-10-31T12:04:59 --labels=test-id=1234,test-name=performance-test`,
 	SilenceUsage: true,
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		return nil
-	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		endPoint, apiToken, err := credentialmanager.GetCreds()
+		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
@@ -116,7 +114,7 @@ Example:
 			return fmt.Errorf("Failed to marshal cloud event. %s", err.Error())
 		}
 
-		apiEvent := apimodels.Event{}
+		apiEvent := apimodels.KeptnContextExtendedCE{}
 		err = json.Unmarshal(eventByte, &apiEvent)
 		if err != nil {
 			return fmt.Errorf("Failed to map cloud event to API event model. %s", err.Error())

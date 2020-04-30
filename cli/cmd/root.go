@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/keptn/keptn/cli/utils/version"
+	"github.com/keptn/keptn/cli/pkg/version"
 
 	"github.com/keptn/keptn/cli/pkg/logging"
 	homedir "github.com/mitchellh/go-homedir"
@@ -17,6 +17,7 @@ var verboseLogging bool
 var quietLogging bool
 var mocking bool
 
+// SuppressWSCommunication suppresses the WebSocket communication if it is true
 var SuppressWSCommunication bool
 
 var insecureSkipTLSVerify bool
@@ -26,43 +27,16 @@ var scheme *string
 
 const authErrorMsg = "This command requires to be authenticated. See \"keptn auth\" for details"
 
-const logo = `                                                                                                                                     
-                ##########*                                                                                                                                    
-           ,#############    ##                                                                                                                                
-       (###############    ####    *                                                                                                                           
-    ##################    ###*    ###.                                                                                                                         
-   #######      ####    ####    ####                                                                                                                           
-   #####          ,   (###    ####    ##                 .&&&&                                                                                                 
-  (####   #####      ####    ####    ###                 .&&&&                                                                                                 
-  #####    ####    ####    ####    ####                  .&&&&                                                              &&&&&                              
- .######         .###    *###    ####                    .&&&&                                                              &&&&&                              
- ##########     ####    ####    ####    #(               .&&&&                                                              &&&&&                              
- #########    ####    ####    ####    ####               .&&&&       &&&&&/       &&&&&&&&&&/        &&&&&&&&&&&&&%         &&&&&&&&&&&&,     &&&&&&&&&&&&&&   
-#########    ####    ####   .###/   /#####               .&&&&     &&&&&&       &&&&&&&&&&&&&&%      &&&&&&&&&&&&&&&&       &&&&&&&&&&&&,     &&&&&&&&&&&&&&&& 
-#######    ####    ####    ####    ########              .&&&&   &&&&&&        &&&&&.     /&&&&&     &&&&&       &&&&&(     &&&&&             &&&&&      &&&&&&
- ####(   .###    (###    ####    #########               .&&&& &&&&&&         &&&&&        *&&&&     &&&&&        &&&&&     &&&&&             &&&&&       &&&&&
-  ##    ####    ####    ####    ########                 .&&&&&&&&&           &&&&&&&&&&&&&&&&&&     &&&&&         &&&&&    &&&&&             &&&&&       &&&&&
-      ####    ####    ####    #########                  .&&&&&&&&&&          &&&&&&&&&&&&&&&&&&     &&&&&         &&&&&    &&&&&             &&&&&       &&&&&
-     ####    ###/   (###,   (########                    .&&&&  &&&&         &&&&&                   &&&&&         &&&&&    &&&&&             &&&&&       &&&&&
-           ####    ####    ########*                     .&&&&   .&&&&&       #&&&&&                 &&&&&        &&&&&     /&&&&             &&&&&       &&&&&
-         ####    ####    #########                       .&&&&     &&&&&&      &&&&&&&%    ,&&&      &&&&&&&( .&&&&&&&       &&&&&&/  %&&     &&&&&       &&&&&
-          ##    ####    ########                         .&&&&       &&&&      &&&&&&&&&&&&&&        &&&&&&&&&&&&&&&&         &&&&&&&&&&&     &&&&&       &&&&&
-                                                                                    .&&&&&&&*        &&&&&  *&&&&                 (&&%                         
-                                                                                                     &&&&&                                                     
-                                                                                                     &&&&&                                                     
-                                                                                                     &&&&&`
-
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "keptn",
 	Short: "This is a CLI for using keptn",
 	Long: `This is a CLI for using keptn. The CLI allows to authenticate against keptn, to configure your Github organization,
 to create projects, and to onboard services.
-	
-	` + logo,
+	`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
-	//	Run: func(cmd *cobra.Command, args []string) { },
+	// Run: func(cmd *cobra.Command, args []string) {},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.

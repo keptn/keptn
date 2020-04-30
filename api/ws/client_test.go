@@ -33,14 +33,21 @@ func TestServiceRegistering(t *testing.T) {
 	go hub.Run()
 
 	http.DefaultServeMux = http.NewServeMux()
-	srv := &http.Server{Addr: ":80"}
+	srv := &http.Server{Addr: ":41039"}
 	http.HandleFunc("/", handler)
 
 	go func() {
-		srv.ListenAndServe()
+		err := srv.ListenAndServe()
+
+		if err != nil {
+			fmt.Println("ListenAndServe", err.Error())
+		}
 	}()
 
-	u := url.URL{Scheme: "ws", Host: "localhost", Path: "/"}
+	// Sleep 2 seconds just to be sure that the server is actually running
+	time.Sleep(2 * time.Second) // ToDo: this should be handled via go channels in the future
+
+	u := url.URL{Scheme: "ws", Host: "localhost:41039", Path: "/"}
 	log.Printf("connecting to %s", u.String())
 
 	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
@@ -74,14 +81,21 @@ func TestCLIRegistering(t *testing.T) {
 	go hub.Run()
 
 	http.DefaultServeMux = http.NewServeMux()
-	srv := &http.Server{Addr: ":80"}
+	srv := &http.Server{Addr: ":41039"}
 	http.HandleFunc("/", handler)
 
 	go func() {
-		srv.ListenAndServe()
+		err := srv.ListenAndServe()
+
+		if err != nil {
+			fmt.Println("ListenAndServe", err.Error())
+		}
 	}()
 
-	u := url.URL{Scheme: "ws", Host: "localhost", Path: "/"}
+	// Sleep 2 seconds just to be sure that the server is actually running
+	time.Sleep(2 * time.Second) // ToDo: this should be handled via go channels in the future
+
+	u := url.URL{Scheme: "ws", Host: "localhost:41039", Path: "/"}
 	log.Printf("connecting to %s", u.String())
 
 	header := http.Header{}
@@ -119,14 +133,21 @@ func TestSendMessage(t *testing.T) {
 	go hub.Run()
 
 	http.DefaultServeMux = http.NewServeMux()
-	srv := &http.Server{Addr: ":80"}
+	srv := &http.Server{Addr: ":41039"}
 	http.HandleFunc("/", handler)
 
 	go func() {
-		srv.ListenAndServe()
+		err := srv.ListenAndServe()
+
+		if err != nil {
+			fmt.Println("ListenAndServe", err.Error())
+		}
 	}()
 
-	u := url.URL{Scheme: "ws", Host: "localhost", Path: "/"}
+	// Sleep 2 seconds just to be sure that the server is actually running
+	time.Sleep(2 * time.Second) // ToDo: this should be handled via go channels in the future
+
+	u := url.URL{Scheme: "ws", Host: "localhost:41039", Path: "/"}
 	log.Printf("connecting to %s", u.String())
 
 	header := http.Header{}
@@ -179,14 +200,21 @@ func TestBuffering(t *testing.T) {
 	go hub.Run()
 
 	http.DefaultServeMux = http.NewServeMux()
-	srv := &http.Server{Addr: ":80"}
+	srv := &http.Server{Addr: ":41039"}
 	http.HandleFunc("/", handler)
 
 	go func() {
-		srv.ListenAndServe()
+		err := srv.ListenAndServe()
+
+		if err != nil {
+			fmt.Println("ListenAndServe", err.Error())
+		}
 	}()
 
-	u := url.URL{Scheme: "ws", Host: "localhost", Path: "/"}
+	// Sleep 2 seconds just to be sure that the server is actually running
+	time.Sleep(2 * time.Second) // ToDo: this should be handled via go channels in the future
+
+	u := url.URL{Scheme: "ws", Host: "localhost:41039", Path: "/"}
 	log.Printf("connecting to %s", u.String())
 
 	header := http.Header{}

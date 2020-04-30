@@ -8,9 +8,8 @@ package models
 import (
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
@@ -25,7 +24,7 @@ type Services struct {
 	PageSize float64 `json:"pageSize,omitempty"`
 
 	// services
-	Services []*Service `json:"services"`
+	Services []*ExpandedService `json:"services"`
 
 	// Total number of services
 	TotalCount float64 `json:"totalCount,omitempty"`

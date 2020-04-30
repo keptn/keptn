@@ -19,9 +19,7 @@ import (
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 	"github.com/ghodss/yaml"
 	"github.com/google/uuid"
-	keptnevents "github.com/keptn/go-utils/pkg/events"
-	keptnmodelsv2 "github.com/keptn/go-utils/pkg/models/v2"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	keptn "github.com/keptn/go-utils/pkg/lib"
 )
 
 type datastoreResult struct {
@@ -42,13 +40,14 @@ type criteriaObject struct {
 }
 
 type EvaluateSLIHandler struct {
-	Logger     *keptnutils.Logger
-	Event      cloudevents.Event
-	HTTPClient *http.Client
+	Logger       *keptn.Logger
+	Event        cloudevents.Event
+	HTTPClient   *http.Client
+	KeptnHandler *keptn.Keptn
 }
 
 func (eh *EvaluateSLIHandler) HandleEvent() error {
-	e := &keptnevents.InternalGetSLIDoneEventData{}
+	e := &keptn.InternalGetSLIDoneEventData{}
 
 	err := eh.Event.DataAs(&e)
 
@@ -76,7 +75,7 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 		return err
 	}
 
-	var filteredPreviousEvaluationEvents []*keptnevents.EvaluationDoneEventData
+	var filteredPreviousEvaluationEvents []*keptn.EvaluationDoneEventData
 
 	// verify that we have enough evaluations
 	for _, val := range previousEvaluationEvents {
@@ -93,7 +92,15 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 	}
 	eh.Logger.Debug("Evaluation result: " + evaluationResult.Result)
 
-	sloFileContent, _ := yaml.Marshal(sloConfig)
+	var sloFileContent []byte
+	// get the slo.yaml as a plain file to avoid confusion due to defaulted values (see https://github.com/keptn/keptn/issues/1495)
+	sloFileContentTmp, err := eh.KeptnHandler.GetKeptnResource("slo.yaml")
+	if err != nil {
+		eh.Logger.Debug("Could not fetch slo.yaml from service repository: " + err.Error() + ". Will append internally used SLO object to evaluation-done event.")
+		sloFileContent, _ = yaml.Marshal(sloConfig)
+	} else {
+		sloFileContent = []byte(sloFileContentTmp)
+	}
 	base64.StdEncoding.EncodeToString(sloFileContent)
 	evaluationResult.EvaluationDetails.SLOFileContent = base64.StdEncoding.EncodeToString(sloFileContent)
 
@@ -115,20 +122,20 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 	return err
 }
 
-func evaluateObjectives(e *keptnevents.InternalGetSLIDoneEventData, sloConfig *keptnmodelsv2.ServiceLevelObjectives, previousEvaluationEvents []*keptnevents.EvaluationDoneEventData) (*keptnevents.EvaluationDoneEventData, float64, bool) {
-	evaluationResult := &keptnevents.EvaluationDoneEventData{
+func evaluateObjectives(e *keptn.InternalGetSLIDoneEventData, sloConfig *keptn.ServiceLevelObjectives, previousEvaluationEvents []*keptn.EvaluationDoneEventData) (*keptn.EvaluationDoneEventData, float64, bool) {
+	evaluationResult := &keptn.EvaluationDoneEventData{
 		Result:  "",
 		Project: e.Project,
 		Service: e.Service,
 		Stage:   e.Stage,
-		EvaluationDetails: &keptnevents.EvaluationDetails{
+		EvaluationDetails: &keptn.EvaluationDetails{
 			TimeStart: e.Start,
 			TimeEnd:   e.End,
 		},
 		TestStrategy:       e.TestStrategy,
 		DeploymentStrategy: e.DeploymentStrategy,
 	}
-	var sliEvaluationResults []*keptnevents.SLIEvaluationResult
+	var sliEvaluationResults []*keptn.SLIEvaluationResult
 	maximumAchievableScore := 0.0
 	keySLIFailed := false
 	for _, objective := range sloConfig.Objectives {
@@ -136,12 +143,12 @@ func evaluateObjectives(e *keptnevents.InternalGetSLIDoneEventData, sloConfig *k
 		if len(objective.Pass) > 0 {
 			maximumAchievableScore += float64(objective.Weight)
 		}
-		sliEvaluationResult := &keptnevents.SLIEvaluationResult{}
+		sliEvaluationResult := &keptn.SLIEvaluationResult{}
 		result := getSLIResult(e.IndicatorValues, objective.SLI)
 
 		if result == nil {
 			// no result available => fail the objective
-			sliEvaluationResult.Value = &keptnevents.SLIResult{
+			sliEvaluationResult.Value = &keptn.SLIResult{
 				Metric:  objective.SLI,
 				Success: false,
 				Message: "no value received from SLI provider",
@@ -153,7 +160,7 @@ func evaluateObjectives(e *keptnevents.InternalGetSLIDoneEventData, sloConfig *k
 		sliEvaluationResult.Value = result
 
 		// gather the previous results for the current SLI
-		var previousSLIResults []*keptnevents.SLIEvaluationResult
+		var previousSLIResults []*keptn.SLIEvaluationResult
 
 		if previousEvaluationEvents != nil && len(previousEvaluationEvents) > 0 {
 			for _, event := range previousEvaluationEvents {
@@ -165,8 +172,8 @@ func evaluateObjectives(e *keptnevents.InternalGetSLIDoneEventData, sloConfig *k
 			}
 		}
 
-		var passTargets []*keptnevents.SLITarget
-		var warningTargets []*keptnevents.SLITarget
+		var passTargets []*keptn.SLITarget
+		var warningTargets []*keptn.SLITarget
 		isPassed := true
 		isWarning := true
 		if objective.Pass != nil {
@@ -207,7 +214,7 @@ func evaluateObjectives(e *keptnevents.InternalGetSLIDoneEventData, sloConfig *k
 	return evaluationResult, maximumAchievableScore, keySLIFailed
 }
 
-func calculateScore(maximumAchievableScore float64, evaluationResult *keptnevents.EvaluationDoneEventData, sloConfig *keptnmodelsv2.ServiceLevelObjectives, keySLIFailed bool) error {
+func calculateScore(maximumAchievableScore float64, evaluationResult *keptn.EvaluationDoneEventData, sloConfig *keptn.ServiceLevelObjectives, keySLIFailed bool) error {
 	if maximumAchievableScore == 0 {
 		evaluationResult.EvaluationDetails.Result = "pass"
 		evaluationResult.Result = evaluationResult.EvaluationDetails.Result
@@ -247,7 +254,7 @@ func calculateScore(maximumAchievableScore float64, evaluationResult *keptnevent
 	return nil
 }
 
-func getSLIResult(results []*keptnevents.SLIResult, sli string) *keptnevents.SLIResult {
+func getSLIResult(results []*keptn.SLIResult, sli string) *keptn.SLIResult {
 	for _, sliResult := range results {
 		if sliResult.Metric == sli {
 			return sliResult
@@ -256,10 +263,10 @@ func getSLIResult(results []*keptnevents.SLIResult, sli string) *keptnevents.SLI
 	return nil
 }
 
-func evaluateOrCombinedCriteria(result *keptnevents.SLIResult, sloCriteria []*keptnmodelsv2.SLOCriteria, previousResults []*keptnevents.SLIEvaluationResult, comparison *keptnmodelsv2.SLOComparison) (bool, []*keptnevents.SLITarget, error) {
+func evaluateOrCombinedCriteria(result *keptn.SLIResult, sloCriteria []*keptn.SLOCriteria, previousResults []*keptn.SLIEvaluationResult, comparison *keptn.SLOComparison) (bool, []*keptn.SLITarget, error) {
 	var satisfied bool
 	satisfied = false
-	var sliTargets []*keptnevents.SLITarget
+	var sliTargets []*keptn.SLITarget
 	for _, crit := range sloCriteria {
 		criteriaSatisfied, evaluatedTargets, _ := evaluateCriteriaSet(result, crit, previousResults, comparison)
 		if criteriaSatisfied {
@@ -274,11 +281,11 @@ func evaluateOrCombinedCriteria(result *keptnevents.SLIResult, sloCriteria []*ke
 }
 
 // evaluateCriteria evaluates a set of criteria strings. Per definition, all criteria clauses within a SLOCriteria object have to be fulfilled to satisfy the SLOCriteria
-func evaluateCriteriaSet(result *keptnevents.SLIResult, sloCriteria *keptnmodelsv2.SLOCriteria, previousResults []*keptnevents.SLIEvaluationResult, comparison *keptnmodelsv2.SLOComparison) (bool, []*keptnevents.SLITarget, error) {
+func evaluateCriteriaSet(result *keptn.SLIResult, sloCriteria *keptn.SLOCriteria, previousResults []*keptn.SLIEvaluationResult, comparison *keptn.SLOComparison) (bool, []*keptn.SLITarget, error) {
 	satisfied := true
-	var sliTargets []*keptnevents.SLITarget
+	var sliTargets []*keptn.SLITarget
 	for _, criteria := range sloCriteria.Criteria {
-		target := &keptnevents.SLITarget{
+		target := &keptn.SLITarget{
 			Criteria: criteria,
 		}
 		criteriaSatisfied, _ := evaluateSingleCriteria(result, criteria, previousResults, comparison, target)
@@ -293,7 +300,7 @@ func evaluateCriteriaSet(result *keptnevents.SLIResult, sloCriteria *keptnmodels
 	return satisfied, sliTargets, nil
 }
 
-func evaluateSingleCriteria(sliResult *keptnevents.SLIResult, criteria string, previousResults []*keptnevents.SLIEvaluationResult, comparison *keptnmodelsv2.SLOComparison, violation *keptnevents.SLITarget) (bool, error) {
+func evaluateSingleCriteria(sliResult *keptn.SLIResult, criteria string, previousResults []*keptn.SLIEvaluationResult, comparison *keptn.SLOComparison, violation *keptn.SLITarget) (bool, error) {
 	if !sliResult.Success {
 		return false, errors.New("cannot evaluate invalid SLI result")
 	}
@@ -312,7 +319,7 @@ func evaluateSingleCriteria(sliResult *keptnevents.SLIResult, criteria string, p
 	return evaluateComparison(sliResult, co, previousResults, comparison, violation)
 }
 
-func evaluateComparison(sliResult *keptnevents.SLIResult, co *criteriaObject, previousResults []*keptnevents.SLIEvaluationResult, comparison *keptnmodelsv2.SLOComparison, violation *keptnevents.SLITarget) (bool, error) {
+func evaluateComparison(sliResult *keptn.SLIResult, co *criteriaObject, previousResults []*keptn.SLIEvaluationResult, comparison *keptn.SLOComparison, violation *keptn.SLITarget) (bool, error) {
 	// aggregate previous results
 	var aggregatedValue float64
 	var targetValue float64
@@ -414,7 +421,7 @@ func calculatePercentile(values sort.Float64Slice, perc float64) float64 {
 	return scores[0]
 }
 
-func evaluateFixedThreshold(sliResult *keptnevents.SLIResult, co *criteriaObject, violation *keptnevents.SLITarget) (bool, error) {
+func evaluateFixedThreshold(sliResult *keptn.SLIResult, co *criteriaObject, violation *keptn.SLITarget) (bool, error) {
 	violation.TargetValue = co.Value
 	return evaluateValue(sliResult.Value, co.Value, co.Operator)
 }
@@ -453,11 +460,6 @@ func parseCriteriaString(criteria string) (*criteriaObject, error) {
 
 	c := &criteriaObject{}
 
-	if strings.HasSuffix(criteria, "%") {
-		c.CheckPercentage = true
-		criteria = strings.TrimSuffix(criteria, "%")
-	}
-
 	operators := []string{"<=", "<", "=", ">=", ">"}
 
 	for _, operator := range operators {
@@ -468,6 +470,13 @@ func parseCriteriaString(criteria string) (*criteriaObject, error) {
 		}
 	}
 
+	if strings.HasSuffix(criteria, "%") {
+		c.CheckPercentage = true
+		c.IsComparison = true // Issue #1498: criteria containing '%' is always a comparison
+		c.CheckIncrease = true
+		criteria = strings.TrimSuffix(criteria, "%")
+	}
+
 	if strings.HasPrefix(criteria, "-") {
 		c.IsComparison = true
 		c.CheckIncrease = false
@@ -476,9 +485,6 @@ func parseCriteriaString(criteria string) (*criteriaObject, error) {
 		c.IsComparison = true
 		c.CheckIncrease = true
 		criteria = strings.TrimPrefix(criteria, "+")
-	} else {
-		c.IsComparison = false
-		c.CheckIncrease = false
 	}
 
 	floatValue, err := strconv.ParseFloat(criteria, 64)
@@ -491,10 +497,10 @@ func parseCriteriaString(criteria string) (*criteriaObject, error) {
 }
 
 // gets previous evaluation-done events from mongodb-datastore
-func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptnevents.InternalGetSLIDoneEventData, numberOfPreviousResults int) ([]*keptnevents.EvaluationDoneEventData, error) {
+func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptn.InternalGetSLIDoneEventData, numberOfPreviousResults int) ([]*keptn.EvaluationDoneEventData, error) {
 	// previous results are fetched from mongodb datastore with source=lighthouse-service
 	queryString := fmt.Sprintf(getDatastoreURL()+"/event?type=%s&source=%s&project=%s&stage=%s&service=%s&pageSize=%d",
-		keptnevents.EvaluationDoneEventType, "lighthouse-service",
+		keptn.EvaluationDoneEventType, "lighthouse-service",
 		e.Project, e.Stage, e.Service, numberOfPreviousResults)
 
 	req, err := http.NewRequest("GET", queryString, nil)
@@ -513,7 +519,7 @@ func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptnevents.InternalGetS
 	if err != nil {
 		return nil, err
 	}
-	var evaluationDoneEvents []*keptnevents.EvaluationDoneEventData
+	var evaluationDoneEvents []*keptn.EvaluationDoneEventData
 
 	// iterate over previous events
 	for _, event := range previousEvents.Events {
@@ -521,7 +527,7 @@ func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptnevents.InternalGetS
 		if err != nil {
 			continue
 		}
-		var evaluationDoneEvent keptnevents.EvaluationDoneEventData
+		var evaluationDoneEvent keptn.EvaluationDoneEventData
 		err = json.Unmarshal(bytes, &evaluationDoneEvent)
 
 		if err != nil {
@@ -532,9 +538,9 @@ func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptnevents.InternalGetS
 	return evaluationDoneEvents, nil
 }
 
-func (eh *EvaluateSLIHandler) getPreviousTestExecutionResult(e *keptnevents.InternalGetSLIDoneEventData, keptnContext string) (*keptnevents.TestsFinishedEventData, error) {
+func (eh *EvaluateSLIHandler) getPreviousTestExecutionResult(e *keptn.InternalGetSLIDoneEventData, keptnContext string) (*keptn.TestsFinishedEventData, error) {
 	queryString := fmt.Sprintf(getDatastoreURL()+"/event?type=%s&project=%s&stage=%s&service=%s&keptnContext=%s&pageSize=%d",
-		keptnevents.TestsFinishedEventType,
+		keptn.TestsFinishedEventType,
 		e.Project, e.Stage, e.Service, keptnContext, 1)
 
 	req, err := http.NewRequest("GET", queryString, nil)
@@ -562,7 +568,7 @@ func (eh *EvaluateSLIHandler) getPreviousTestExecutionResult(e *keptnevents.Inte
 		return nil, err
 	}
 
-	testsFinishedEvent := &keptnevents.TestsFinishedEventData{}
+	testsFinishedEvent := &keptn.TestsFinishedEventData{}
 	err = json.Unmarshal(bytes, &testsFinishedEvent)
 	if err != nil {
 		return nil, err
@@ -571,7 +577,7 @@ func (eh *EvaluateSLIHandler) getPreviousTestExecutionResult(e *keptnevents.Inte
 
 }
 
-func (eh *EvaluateSLIHandler) sendEvaluationDoneEvent(shkeptncontext string, data *keptnevents.EvaluationDoneEventData) error {
+func (eh *EvaluateSLIHandler) sendEvaluationDoneEvent(shkeptncontext string, data *keptn.EvaluationDoneEventData) error {
 
 	source, _ := url.Parse("lighthouse-service")
 	contentType := "application/json"
@@ -580,7 +586,7 @@ func (eh *EvaluateSLIHandler) sendEvaluationDoneEvent(shkeptncontext string, dat
 		Context: cloudevents.EventContextV02{
 			ID:          uuid.New().String(),
 			Time:        &types.Timestamp{Time: time.Now()},
-			Type:        keptnevents.EvaluationDoneEventType,
+			Type:        keptn.EvaluationDoneEventType,
 			Source:      types.URLRef{URL: *source},
 			ContentType: &contentType,
 			Extensions:  map[string]interface{}{"shkeptncontext": shkeptncontext},
@@ -588,6 +594,6 @@ func (eh *EvaluateSLIHandler) sendEvaluationDoneEvent(shkeptncontext string, dat
 		Data: data,
 	}
 
-	eh.Logger.Debug("Send event: " + keptnevents.EvaluationDoneEventType)
-	return sendEvent(event)
+	eh.Logger.Debug("Send event: " + keptn.EvaluationDoneEventType)
+	return eh.KeptnHandler.SendCloudEvent(event)
 }

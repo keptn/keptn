@@ -16,6 +16,7 @@ import {ApiService} from "./api.service";
 export class DataService {
 
   private _projects = new BehaviorSubject<Project[]>(null);
+  private _roots = new BehaviorSubject<Root[]>(null);
   private _rootsLastUpdated: Object = {};
   private _tracesLastUpdated: Object = {};
 
@@ -27,6 +28,10 @@ export class DataService {
 
   get projects(): Observable<Project[]> {
     return this._projects.asObservable();
+  }
+
+  get roots(): Observable<Root[]> {
+    return this._roots.asObservable();
   }
 
   get evaluationResults(): Observable<any> {
@@ -83,6 +88,10 @@ export class DataService {
     this.apiService.getRoots(project.projectName, service.serviceName, fromTime ? fromTime.toISOString() : null)
       .pipe(
         debounce(() => timer(10000)),
+        map(response => {
+          this._rootsLastUpdated[project.projectName+":"+service.serviceName] = new Date(response.headers.get("date"));
+          return response.body;
+        }),
         mergeMap((roots) =>
           from(roots).pipe(
             mergeMap(
@@ -90,8 +99,12 @@ export class DataService {
                 let fromTime: Date = this._tracesLastUpdated[root.shkeptncontext];
                 this._tracesLastUpdated[root.shkeptncontext] = new Date();
 
-                return this.apiService.getTraces(root.shkeptncontext, fromTime ? fromTime.toISOString() : null)
+                return this.apiService.getTraces(root.shkeptncontext, root.data.project, fromTime ? fromTime.toISOString() : null)
                   .pipe(
+                    map(response => {
+                      this._tracesLastUpdated[root.shkeptncontext] = new Date(response.headers.get("date"));
+                      return response.body;
+                    }),
                     map(traces => traces.map(trace => Trace.fromJSON(trace))),
                     map(traces => ({ ...root, traces}))
                   )
@@ -104,6 +117,7 @@ export class DataService {
       )
       .subscribe((roots: Root[]) => {
         service.roots = [...roots||[], ...service.roots||[]].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
+        this._roots.next(service.roots);
       });
   }
 
@@ -111,23 +125,29 @@ export class DataService {
     let fromTime: Date = this._tracesLastUpdated[root.shkeptncontext];
     this._tracesLastUpdated[root.shkeptncontext] = new Date();
 
-    this.apiService.getTraces(root.shkeptncontext, fromTime ? fromTime.toISOString() : null)
-      .pipe(map(traces => traces.map(trace => Trace.fromJSON(trace))))
+    this.apiService.getTraces(root.shkeptncontext, root.getProject(), fromTime ? fromTime.toISOString() : null)
+      .pipe(
+        map(response => {
+          this._tracesLastUpdated[root.shkeptncontext] = new Date(response.headers.get("date"));
+          return response.body;
+        }),
+        map(traces => traces.map(trace => Trace.fromJSON(trace)))
+      )
       .subscribe((traces: Trace[]) => {
         root.traces = [...traces||[], ...root.traces||[]].sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
       });
   }
 
-  public loadEvaluationResults(evaluationData, evaluationSource) {
+  public loadEvaluationResults(event: Trace) {
     let fromTime: Date;
-    if(evaluationData.evaluationHistory)
-      fromTime = new Date(evaluationData.evaluationHistory[evaluationData.evaluationHistory.length-1].time);
+    if(event.data.evaluationHistory)
+      fromTime = new Date(event.data.evaluationHistory[event.data.evaluationHistory.length-1].time);
 
-    this.apiService.getEvaluationResults(evaluationData.project, evaluationData.service, evaluationData.stage, evaluationSource, fromTime ? fromTime.toISOString() : null)
+    this.apiService.getEvaluationResults(event.data.project, event.data.service, event.data.stage, event.source, fromTime ? fromTime.toISOString() : null)
       .pipe(map(traces => traces.map(trace => Trace.fromJSON(trace))))
       .subscribe((traces: Trace[]) => {
-        evaluationData.evaluationHistory = [...traces||[], ...evaluationData.evaluationHistory||[]].sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
-        this._evaluationResults.next(evaluationData);
+        event.data.evaluationHistory = [...traces||[], ...event.data.evaluationHistory||[]].sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
+        this._evaluationResults.next(event);
       });
   }
 }

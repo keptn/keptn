@@ -6,15 +6,15 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/keptn/keptn/cli/utils/websockethelper"
+	"github.com/keptn/keptn/cli/pkg/websockethelper"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
-	"github.com/keptn/go-utils/pkg/events"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	keptn "github.com/keptn/go-utils/pkg/lib"
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
-	"github.com/keptn/keptn/cli/utils/credentialmanager"
-	"github.com/keptn/keptn/cli/utils/validator"
+	"github.com/keptn/keptn/cli/pkg/validator"
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"github.com/spf13/cobra"
 )
 
@@ -29,19 +29,19 @@ var onboardServiceParams *onboardServiceCmdParams
 // serviceCmd represents the service command
 var serviceCmd = &cobra.Command{
 	Use:   "service SERVICENAME --project=PROJECTNAME --chart=FILEPATH",
-	Short: "Onboards a new service to a project",
-	Long: `Onboards a new service to the provided project. Therefore, this command 
+	Short: "Onboards a new service and its Helm chart to a project",
+	Long: `Onboards a new service and its Helm chart to the provided project. Therefore, this command 
 takes a folder to a Helm chart or an already packed Helm chart as .tgz.
-	
-Example:
-	keptn onboard service carts --project=sockshop --chart=./carts-chart.tgz`,
+`,
+	Example: `keptn onboard service SERVICENAME --project=PROJECTNAME --chart=FILEPATH
+keptn onboard service SERVICENAME --project=PROJECTNAME --chart=HELM_CHART.tgz`,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
 			cmd.SilenceUsage = false
 			return errors.New("required argument SERVICENAME not set")
 		}
-		if !keptnutils.ValidateKeptnEntityName(args[0]) {
+		if !keptn.ValidateKeptnEntityName(args[0]) {
 			errorMsg := "Service name contains upper case letter(s) or special character(s).\n"
 			return errors.New(errorMsg)
 		}
@@ -49,7 +49,7 @@ Example:
 	},
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 
-		_, _, err := credentialmanager.GetCreds()
+		_, _, err := credentialmanager.NewCredentialManager().GetCreds()
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
@@ -83,7 +83,7 @@ Example:
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		endPoint, apiToken, err := credentialmanager.GetCreds()
+		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
@@ -100,7 +100,7 @@ Example:
 		}
 
 		helmChart := base64.StdEncoding.EncodeToString(chartData)
-		service := apimodels.Service{
+		service := apimodels.CreateService{
 			ServiceName: &args[0],
 			HelmChart:   helmChart,
 		}
@@ -109,9 +109,9 @@ Example:
 			deplStrategies := make(map[string]string)
 
 			if *onboardServiceParams.DeploymentStrategy == "direct" {
-				deplStrategies["*"] = events.Direct.String()
+				deplStrategies["*"] = keptn.Direct.String()
 			} else if *onboardServiceParams.DeploymentStrategy == "blue_green_service" {
-				deplStrategies["*"] = events.Duplicate.String()
+				deplStrategies["*"] = keptn.Duplicate.String()
 			} else {
 				return fmt.Errorf("The provided deployment strategy %s is not supported. Select: [direct|blue_green_service]", *onboardServiceParams.DeploymentStrategy)
 			}

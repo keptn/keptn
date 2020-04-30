@@ -6,8 +6,8 @@ import (
 	"os"
 	"strings"
 
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/cli/pkg/logging"
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"github.com/spf13/cobra"
 )
 
@@ -17,6 +17,20 @@ var uninstallVersion *string
 var uninstallCmd = &cobra.Command{
 	Use:          "uninstall",
 	Short:        "Uninstalls Keptn from a Kubernetes cluster",
+	Long: `Uninstalls Keptn from a Kubernetes cluster.
+
+This command does *not* delete: 
+
+* Istio
+* Dynatrace monitoring
+* Prometheus monitoring
+* Any (third-party) service installed in addition to Keptn (e.g., notification-service, slackbot-service, ...)
+
+Besides, deployed services and the configuration on the Git upstream (i.e., GitHub, GitLab, or Bitbucket) are not deleted. To clean-up created projects and services, instructions are provided [here](../../manage/project#delete-a-project).
+
+**Note:** This command requires a *kubernetes current context* pointing to the cluster where Keptn should get uninstalled.
+`,
+	Example: `keptn uninstall`,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 
@@ -65,6 +79,9 @@ var uninstallCmd = &cobra.Command{
 			logging.InfoLevel)
 
 		namespaces, err := listAllNamespaces()
+		if err != nil {
+			return fmt.Errorf("Error when listing all namespaces: %v", err)
+		}
 
 		for _, namespace := range namespaces {
 			logging.PrintLog(" - "+namespace, logging.InfoLevel)
@@ -77,7 +94,7 @@ var uninstallCmd = &cobra.Command{
 				logging.PrintLog("                          kubectl delete all -l app=helm -n kube-system", logging.InfoLevel)
 			} else if namespace == "istio-system" {
 				// istio is special, we will refer to the official uninstall docs
-				logging.PrintLog("      Please consult the Istio Docs at https://istio.io/docs/setup/install/helm/#uninstall on how to remove Istio.", logging.InfoLevel)
+				logging.PrintLog("      Please consult the istio Docs at https://istio.io/docs/setup/install/helm/#uninstall on how to remove istio.", logging.InfoLevel)
 				logging.PrintLog("      Recommended action: kubectl delete namespace istio-system", logging.InfoLevel)
 			} else {
 				// just delete the namespace

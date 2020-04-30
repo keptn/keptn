@@ -102,62 +102,6 @@ paths:
           description: error
           schema:
             "$ref": "#/definitions/error"
-  /log:
-    post:
-      tags:
-        - logs
-      operationId: saveLog
-      summary: Saves a log to the datastore
-      parameters:
-        - name: body
-          in: body
-          schema:
-            type: array
-            items:
-              "$ref": "#/definitions/LogEntry"
-      responses:
-        201:
-          description: created
-        default:
-          description: error
-          schema:
-            "$ref": "#/definitions/error"
-    get:
-      tags:
-        - logs
-      operationId: getLogs
-      summary: gets the logs from the datastore
-      parameters:
-        - name: eventId
-          in: query
-          type: string
-          required: false
-          description: EventId of the event the logs belog to
-        - "$ref": "#/parameters/pagesizeParam"
-        - "$ref": "#/parameters/pageParam"
-      responses:
-        200:
-          description: ok
-          schema:
-            type: object
-            properties:
-              nextPageKey:
-                type: string
-                description: Pointer to the next page
-              totalCount:
-                type: integer
-                description: Total number of logs
-              pageSize:
-                type: integer
-                description: Size of the returned page
-              logs:
-                type: array
-                items:
-                  "$ref": "#/definitions/LogEntry"
-        default:
-          description: error
-          schema:
-            "$ref": "#/definitions/error"
 parameters:
   pagesizeParam:
     name: pageSize
@@ -182,22 +126,6 @@ definitions:
         properties:
           shkeptncontext:
             type: string
-  LogEntry:
-    type: object
-    properties:
-      timestamp:
-        type: string
-        format: date-time
-      keptnContext:
-        type: string
-      eventId:
-        type: string
-      keptnService:
-        type: string
-      message:
-        type: string
-      logLevel:
-        type: string
   error:
     type: object
     required:

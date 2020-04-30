@@ -3,10 +3,11 @@ package handlers
 import (
 	"encoding/base64"
 	"io/ioutil"
+	"strings"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
-	"github.com/keptn/go-utils/pkg/utils"
+	utils "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/configuration-service/common"
 	"github.com/keptn/keptn/configuration-service/config"
 	"github.com/keptn/keptn/configuration-service/models"
@@ -61,10 +62,19 @@ func PutProjectProjectNameResourceHandlerFunc(params project_resource.PutProject
 		filePath := projectConfigPath + "/" + *res.ResourceURI
 		logger.Debug("Updating resource: " + filePath)
 		common.WriteBase64EncodedFile(projectConfigPath+"/"+*res.ResourceURI, res.ResourceContent)
+		if strings.ToLower(*res.ResourceURI) == "shipyard.yaml" {
+			mv := common.GetProjectsMaterializedView()
+			logger.Debug("updating shipyard.yaml content for project " + params.ProjectName + " in mongoDB table")
+			err := mv.UpdateShipyard(params.ProjectName, res.ResourceContent)
+			if err != nil {
+				logger.Error("Could not update shipyard.yaml content for project " + params.ProjectName + ": " + err.Error())
+				return project_resource.NewPutProjectProjectNameResourceBadRequest().WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+			}
+		}
 	}
 
 	logger.Debug("Staging Changes")
-	err = common.StageAndCommitAll(params.ProjectName, "Updated resources")
+	err = common.StageAndCommitAll(params.ProjectName, "Updated resources", true)
 	if err != nil {
 		logger.Error(err.Error())
 
@@ -111,7 +121,7 @@ func PostProjectProjectNameResourceHandlerFunc(params project_resource.PostProje
 	}
 
 	logger.Debug("Staging Changes")
-	err = common.StageAndCommitAll(params.ProjectName, "Added resources")
+	err = common.StageAndCommitAll(params.ProjectName, "Added resources", true)
 	if err != nil {
 		logger.Error(err.Error())
 
@@ -197,7 +207,7 @@ func PutProjectProjectNameResourceResourceURIHandlerFunc(params project_resource
 	common.WriteBase64EncodedFile(filePath, params.Resource.ResourceContent)
 
 	logger.Debug("Staging Changes")
-	err = common.StageAndCommitAll(params.ProjectName, "Updated resource: "+params.ResourceURI)
+	err = common.StageAndCommitAll(params.ProjectName, "Updated resource: "+params.ResourceURI, true)
 	if err != nil {
 		logger.Error(err.Error())
 
@@ -244,7 +254,7 @@ func DeleteProjectProjectNameResourceResourceURIHandlerFunc(params project_resou
 	}
 
 	logger.Debug("Staging Changes")
-	err = common.StageAndCommitAll(params.ProjectName, "Deleted resources")
+	err = common.StageAndCommitAll(params.ProjectName, "Deleted resources", true)
 	if err != nil {
 		logger.Error(err.Error())
 

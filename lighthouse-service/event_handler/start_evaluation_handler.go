@@ -10,14 +10,15 @@ import (
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 	"github.com/google/uuid"
-	keptnevents "github.com/keptn/go-utils/pkg/events"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	keptnevents "github.com/keptn/go-utils/pkg/lib"
+	keptnutils "github.com/keptn/go-utils/pkg/lib"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type StartEvaluationHandler struct {
-	Logger *keptnutils.Logger
-	Event  cloudevents.Event
+	Logger       *keptnutils.Logger
+	Event        cloudevents.Event
+	KeptnHandler *keptnutils.Keptn
 }
 
 func (eh *StartEvaluationHandler) HandleEvent() error {
@@ -161,17 +162,16 @@ func (eh *StartEvaluationHandler) sendEvaluationDoneEvent(shkeptncontext string,
 	}
 
 	eh.Logger.Debug("Send event: " + keptnevents.EvaluationDoneEventType)
-	return sendEvent(event)
+	return eh.KeptnHandler.SendCloudEvent(event)
 }
 
 func getSLIProvider(project string) (string, error) {
-	kubeClient, err := keptnutils.GetKubeAPI(true)
-
+	kubeAPI, err := getKubeAPI()
 	if err != nil {
 		return "", err
 	}
 
-	configMap, err := kubeClient.ConfigMaps("keptn").Get("lighthouse-config-"+project, v1.GetOptions{})
+	configMap, err := kubeAPI.CoreV1().ConfigMaps("keptn").Get("lighthouse-config-"+project, v1.GetOptions{})
 
 	if err != nil {
 		return "", errors.New("No SLI provider specified for project " + project)
@@ -213,7 +213,7 @@ func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string,
 	}
 
 	eh.Logger.Debug("Send event: " + keptnevents.InternalGetSLIEventType)
-	return sendEvent(event)
+	return eh.KeptnHandler.SendCloudEvent(event)
 }
 
 func (eh *StartEvaluationHandler) getTestExecutionResult() string {

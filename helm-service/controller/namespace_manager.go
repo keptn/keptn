@@ -7,15 +7,16 @@ import (
 	"github.com/keptn/keptn/helm-service/controller/helm"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/keptn/go-utils/pkg/configuration-service/models"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	"github.com/keptn/go-utils/pkg/api/models"
+	keptn "github.com/keptn/go-utils/pkg/lib"
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 )
 
 type NamespaceManager struct {
-	logger keptnutils.LoggerInterface
+	logger keptn.LoggerInterface
 }
 
-func NewNamespaceManager(logger keptnutils.LoggerInterface) *NamespaceManager {
+func NewNamespaceManager(logger keptn.LoggerInterface) *NamespaceManager {
 	return &NamespaceManager{logger: logger}
 }
 
@@ -27,7 +28,7 @@ func (p *NamespaceManager) InitNamespaces(project string, stages []*models.Stage
 		namespace := helm.GetUmbrellaNamespace(project, shipyardStage.StageName)
 		exists, err := keptnutils.ExistsNamespace(true, namespace)
 		if err != nil {
-			return fmt.Errorf("error when checking availablity of namespace: %v", err)
+			return fmt.Errorf("error when checking availability of namespace: %v", err)
 		}
 		if exists {
 			p.logger.Debug(fmt.Sprintf("Reuse existing namespace %s", namespace))
@@ -55,7 +56,7 @@ func (p *NamespaceManager) InjectIstio(project string, stage string) error {
 		return errors.New("error when getting namespace")
 	}
 
-	p.logger.Debug(fmt.Sprintf("Inject Istio to the %s namespace for blue-green deployments", helm.GetUmbrellaNamespace(project, stage)))
+	p.logger.Info(fmt.Sprintf("Inject Istio to the %s namespace for blue-green deployments", helm.GetUmbrellaNamespace(project, stage)))
 
 	if namespace.ObjectMeta.Labels == nil {
 		namespace.ObjectMeta.Labels = make(map[string]string)

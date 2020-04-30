@@ -2,28 +2,32 @@
 
 source test/utils.sh
 
-echo "Download the CLI"
-# Download latest KEPTN cli for linux
-wget https://storage.googleapis.com/keptn-cli/latest/keptn-linux.zip
-unzip keptn-linux.zip
-
-sudo mv keptn /usr/local/bin/keptn
+KEPTN_INSTALLER_IMAGE=${KEPTN_INSTALLER_IMAGE:-keptn/installer:latest}
+KEPTN_INSTALLATION_TYPE=${KEPTN_INSTALLATION_TYPE:-FULL}
+PROJECT_NAME=${PROJECT_NAME:-sockshop}
 
 # Prepare creds.json file
 cd ./installer/scripts
 
 export CLN=$CLUSTER_NAME_NIGHTLY
 export CLZ=$CLOUDSDK_COMPUTE_ZONE	
-export PROJ=$PROJECT_NAME	
+export PROJ=$PROJECT_NAME
 
 source ./gke/defineCredentialsHelper.sh
 replaceCreds
 
 echo "Installing keptn on cluster"
 
-# Install keptn (using the develop version, which should point the :latest docker images)
-keptn install --keptn-installer-image=keptn/installer:latest --creds=creds.json --verbose
+ISTIO_CONFIG=""
 
+# use a different installation method if re-using istio
+if [[ "$KEPTN_INSTALLATION_TYPE" == "REUSE-ISTIO" ]]; then
+  ISTIO_CONFIG="--istio-install-option=Reuse"
+  echo "... using existing istio"
+fi
+
+# Install keptn (using the develop version, which should point the :latest docker images)
+keptn install ${ISTIO_CONFIG} --keptn-installer-image="${KEPTN_INSTALLER_IMAGE}" --creds=creds.json --verbose
 verify_test_step $? "keptn install failed"
 
 # verify that the keptn CLI has successfully authenticated
@@ -34,7 +38,8 @@ verify_test_step $? "Could not find keptn credentials in ~/.keptn folder"
 echo "Verifying that services and namespaces have been created"
 
 # verify the deployments within the keptn namespace
-verify_deployment_in_namespace "api" "keptn"
+verify_deployment_in_namespace "api-gateway-nginx" "keptn"
+verify_deployment_in_namespace "api-service" "keptn"
 verify_deployment_in_namespace "bridge" "keptn"
 verify_deployment_in_namespace "configuration-service" "keptn"
 verify_deployment_in_namespace "gatekeeper-service" "keptn"

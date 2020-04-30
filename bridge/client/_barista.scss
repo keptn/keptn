@@ -1,0 +1,6 @@
+@import '~@dynatrace/barista-components/style/main';
+@import '~@dynatrace/barista-components/style/index';
+
+.dt-button.dt-button-nested .dt-loading-spinner-svg {
+  stroke: $gray-400 !important;
+}

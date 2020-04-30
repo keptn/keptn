@@ -24,6 +24,31 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
+// check if we need basic authentication
+if (process.env.BASIC_AUTH_USERNAME && process.env.BASIC_AUTH_PASSWORD) {
+  console.error("Installing Basic authentication - please check environment variables!");
+  app.use((req, res, next) => {
+    // parse login and password from headers
+    const b64auth = (req.headers.authorization || '').split(' ')[1] || '';
+    const [login, password] = Buffer.from(b64auth, 'base64').toString().split(':');
+
+    // Verify login and password are set and correct
+    if (!(login && password && login === process.env.BASIC_AUTH_USERNAME && password === process.env.BASIC_AUTH_PASSWORD)) {
+      // Access denied
+      console.error("Access denied");
+      res.set('WWW-Authenticate', 'Basic realm="Keptn"');
+      res.status(401).send('Authentication required.'); // custom message
+      return;
+    }
+
+    // Access granted
+    return next();
+  });
+} else {
+  console.error("Not installing authentication middleware");
+}
+
+
 // everything starting with /api is routed to the api implementation
 app.use('/api', apiRouter({ datastoreService, configurationService }));
 

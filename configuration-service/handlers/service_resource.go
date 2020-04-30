@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
-	"github.com/keptn/go-utils/pkg/utils"
+	utils "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/configuration-service/common"
 	"github.com/keptn/keptn/configuration-service/config"
 	"github.com/keptn/keptn/configuration-service/models"
@@ -50,7 +50,7 @@ func GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHan
 		logger.Debug("Archive the Helm chart: " + params.ResourceURI)
 
 		chartDir := strings.Replace(resourcePath, ".tgz", "", -1)
-		if archiver.Archive([]string{chartDir}, resourcePath) != nil {
+		if err := archiver.Archive([]string{chartDir}, resourcePath); err != nil {
 			logger.Error(err.Error())
 			return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().
 				WithPayload(&models.Error{Code: 400, Message: swag.String("Could archive the Helm chart directory")})
@@ -73,7 +73,7 @@ func GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHan
 	if strings.Contains(resourcePath, "helm") && strings.HasSuffix(params.ResourceURI, ".tgz") {
 		logger.Debug("Remove the Helm chart: " + params.ResourceURI)
 
-		if os.Remove(resourcePath) != nil {
+		if err := os.Remove(resourcePath); err != nil {
 			logger.Error(err.Error())
 			return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().
 				WithPayload(&models.Error{Code: 400, Message: swag.String("Could not delete Helm chart package")})
@@ -138,7 +138,7 @@ func PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 	}
 
 	logger.Debug("Staging Changes")
-	err = common.StageAndCommitAll(params.ProjectName, "Added resources")
+	err = common.StageAndCommitAll(params.ProjectName, "Added resources", true)
 	if err != nil {
 		logger.Error(err.Error())
 		return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().
@@ -169,7 +169,7 @@ func untarHelm(res *models.Resource, logger *utils.Logger, filePath string) midd
 
 	tarGz := archiver.NewTarGz()
 	tarGz.OverwriteExisting = true
-	if tarGz.Unarchive(filePath, tmpDir) != nil {
+	if err := tarGz.Unarchive(filePath, tmpDir); err != nil {
 		logger.Error(err.Error())
 		return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().
 			WithPayload(&models.Error{Code: 400, Message: swag.String("Could not unarchive Helm chart")})
@@ -182,7 +182,6 @@ func untarHelm(res *models.Resource, logger *utils.Logger, filePath string) midd
 	}
 
 	if len(files) != 1 {
-		logger.Error(err.Error())
 		return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().
 			WithPayload(&models.Error{Code: 400, Message: swag.String("Unexpected amount of unpacked files")})
 	}
@@ -211,7 +210,7 @@ func untarHelm(res *models.Resource, logger *utils.Logger, filePath string) midd
 
 	// remove Helm chart .tgz file
 	logger.Debug("Remove the Helm chart: " + *res.ResourceURI)
-	if os.Remove(filePath) != nil {
+	if err := os.Remove(filePath); err != nil {
 		logger.Error(err.Error())
 		return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().
 			WithPayload(&models.Error{Code: 400, Message: swag.String("Could not delete Helm chart package")})
@@ -260,7 +259,7 @@ func PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 	}
 
 	logger.Debug("Staging Changes")
-	err = common.StageAndCommitAll(params.ProjectName, "Updated resources")
+	err = common.StageAndCommitAll(params.ProjectName, "Updated resources", true)
 	if err != nil {
 		logger.Error(err.Error())
 		return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().
@@ -304,7 +303,7 @@ func PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHan
 	common.WriteBase64EncodedFile(filePath, params.Resource.ResourceContent)
 
 	logger.Debug("Staging Changes")
-	err = common.StageAndCommitAll(params.ProjectName, "Updated resource: "+params.ResourceURI)
+	err = common.StageAndCommitAll(params.ProjectName, "Updated resource: "+params.ResourceURI, true)
 	if err != nil {
 		logger.Error(err.Error())
 		return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIBadRequest().

@@ -20,9 +20,9 @@ import (
 	"fmt"
 
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
-	keptnevents "github.com/keptn/go-utils/pkg/events"
+	keptnevents "github.com/keptn/go-utils/pkg/lib"
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
-	"github.com/keptn/keptn/cli/utils/credentialmanager"
 	"github.com/spf13/cobra"
 )
 
@@ -36,16 +36,11 @@ var evaluationDone evaluationDoneStruct
 var evaluationDoneCmd = &cobra.Command{
 	Use:   "evaluation-done",
 	Short: "Returns the latest Keptn sh.keptn.events.evaluation-done event from a specific Keptn context",
-	Long: `Returns the latest Keptn sh.keptn.events.evaluation-done event from a specific Keptn context.
-	
-Example:
-	keptn get event evaluation-done --keptn-context=1234-5678-90ab-cdef`,
+	Long: `Returns the latest Keptn sh.keptn.events.evaluation-done event from a specific Keptn context.`,
+	Example: `keptn get event evaluation-done --keptn-context=1234-5678-90ab-cdef`,
 	SilenceUsage: true,
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		return nil
-	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		endPoint, apiToken, err := credentialmanager.GetCreds()
+		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}

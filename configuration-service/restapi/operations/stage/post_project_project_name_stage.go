@@ -31,7 +31,7 @@ func NewPostProjectProjectNameStage(ctx *middleware.Context, handler PostProject
 
 /*PostProjectProjectNameStage swagger:route POST /project/{projectName}/stage Stage postProjectProjectNameStage
 
-Create a new stage by stage name
+INTERNAL Endpoint: Create a new stage by stage name
 
 */
 type PostProjectProjectNameStage struct {

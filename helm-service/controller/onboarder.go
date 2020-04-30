@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"os"
 
-	"k8s.io/helm/pkg/proto/hapi/chart"
+	"helm.sh/helm/v3/pkg/chart"
 
 	cloudevents "github.com/cloudevents/sdk-go"
 
-	configutils "github.com/keptn/go-utils/pkg/configuration-service/utils"
-	keptnevents "github.com/keptn/go-utils/pkg/events"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	configutils "github.com/keptn/go-utils/pkg/api/utils"
+	keptnevents "github.com/keptn/go-utils/pkg/lib"
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 
 	"github.com/keptn/keptn/helm-service/controller/helm"
 	"github.com/keptn/keptn/helm-service/controller/mesh"
@@ -21,16 +21,15 @@ import (
 // Onboarder is a container of variables required for onboarding a new service
 type Onboarder struct {
 	mesh             mesh.Mesh
-	logger           keptnutils.LoggerInterface
-	canaryLevelGen   helm.CanaryLevelGenerator
+	logger           keptnevents.LoggerInterface
 	keptnDomain      string
 	configServiceURL string
 }
 
 // NewOnboarder creates a new Onboarder
-func NewOnboarder(mesh mesh.Mesh, canaryLevelGen helm.CanaryLevelGenerator,
-	logger keptnutils.LoggerInterface, keptnDomain string, configServiceURL string) *Onboarder {
-	return &Onboarder{mesh: mesh, canaryLevelGen: canaryLevelGen, logger: logger, keptnDomain: keptnDomain, configServiceURL: configServiceURL}
+func NewOnboarder(mesh mesh.Mesh, logger keptnevents.LoggerInterface,
+	keptnDomain string, configServiceURL string) *Onboarder {
+	return &Onboarder{mesh: mesh, logger: logger, keptnDomain: keptnDomain, configServiceURL: configServiceURL}
 }
 
 // DoOnboard onboards a new service
@@ -38,6 +37,11 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event, loggingDone chan bool) error
 
 	defer func() { loggingDone <- true }()
 
+	keptnHandler, err := keptnevents.NewKeptn(&ce, keptnevents.KeptnOpts{})
+	if err != nil {
+		o.logger.Error("Could not initialize Keptn Handler: " + err.Error())
+		return err
+	}
 	event := &keptnevents.ServiceCreateEventData{}
 	if err := ce.DataAs(event); err != nil {
 		o.logger.Error(fmt.Sprintf("Got Data Error: %s", err.Error()))
@@ -51,14 +55,14 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event, loggingDone chan bool) error
 
 	if _, ok := event.DeploymentStrategies["*"]; ok {
 		// Uses the provided deployment strategy for ALL stages
-		deplStrategies, err := fixDeploymentStrategies(event.Project, event.DeploymentStrategies["*"])
+		deplStrategies, err := fixDeploymentStrategies(keptnHandler, event.DeploymentStrategies["*"])
 		if err != nil {
 			o.logger.Error(fmt.Sprintf("Error when getting deployment strategies: %s" + err.Error()))
 			return err
 		}
 		event.DeploymentStrategies = deplStrategies
 	} else if os.Getenv("PRE_WORKFLOW_ENGINE") == "true" && len(event.DeploymentStrategies) == 0 {
-		deplStrategies, err := getDeploymentStrategies(event.Project)
+		deplStrategies, err := getDeploymentStrategies(keptnHandler)
 		if err != nil {
 			o.logger.Error(fmt.Sprintf("Error when getting deployment strategies: %s" + err.Error()))
 			return err
@@ -97,7 +101,7 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event, loggingDone chan bool) error
 		}
 		if !isUmbrellaChartAvailable {
 			o.logger.Info("Create Helm umbrella charts")
-			// Initalize the umbrella chart
+			// Initialize the umbrella chart
 			if err := umbrellaChartHandler.InitUmbrellaChart(event, stages); err != nil {
 				return fmt.Errorf("Error when initializing the umbrella chart for project %s: %s", event.Project, err.Error())
 			}
@@ -126,8 +130,8 @@ func (o *Onboarder) checkAndSetServiceName(event *keptnevents.ServiceCreateEvent
 
 	if event.HelmChart == "" {
 		// Case when only a service is created but not onboarded (i.e. no Helm chart is available)
-		if !keptnutils.ValididateUnixDirectoryName(event.Service) {
-			return errors.New("Service name contains special character(s)." +
+		if len(event.Service) == 0 || !keptnevents.ValididateUnixDirectoryName(event.Service) {
+			return errors.New("Service name contains special character(s). " +
 				"The service name has to be a valid Unix directory name. For details see " +
 				"https://www.cyberciti.biz/faq/linuxunix-rules-for-naming-file-and-directory-names/")
 		}
@@ -154,7 +158,7 @@ func (o *Onboarder) checkAndSetServiceName(event *keptnevents.ServiceCreateEvent
 		return fmt.Errorf("Helm chart has to contain exactly one Kubernetes service but has %d", len(services))
 	}
 	k8sServiceName := services[0].Name
-	if !keptnutils.ValidateKeptnEntityName(k8sServiceName) {
+	if !keptnevents.ValidateKeptnEntityName(k8sServiceName) {
 		return errors.New(errorMsg)
 	}
 	if event.Service == "" {
@@ -172,13 +176,10 @@ func (o *Onboarder) onboardService(stageName string, event *keptnevents.ServiceC
 
 	serviceHandler := configutils.NewServiceHandler(o.configServiceURL)
 
-	o.logger.Debug("Creating new keptn service " + event.Service + " in stage " + stageName)
-	respErr, err := serviceHandler.CreateService(event.Project, stageName, event.Service)
-	if respErr != nil {
-		return errors.New(*respErr.Message)
-	}
+	o.logger.Info("Creating new keptn service " + event.Service + " in stage " + stageName)
+	_, err := serviceHandler.CreateServiceInStage(event.Project, stageName, event.Service)
 	if err != nil {
-		return err
+		return errors.New(*err.Message)
 	}
 
 	if event.HelmChart != "" {
@@ -199,9 +200,9 @@ func (o *Onboarder) onboardService(stageName string, event *keptnevents.ServiceC
 			return err
 		}
 
-		chartGenerator := helm.NewGeneratedChartHandler(o.mesh, o.canaryLevelGen, o.keptnDomain)
+		chartGenerator := helm.NewGeneratedChartHandler(o.mesh, o.keptnDomain)
 		o.logger.Debug(fmt.Sprintf("For stage %s with deployment strategy %s, an empty chart is generated", stageName, event.DeploymentStrategies[stageName].String()))
-		generatedChart := chartGenerator.GenerateEmptyChart(event.Project, stageName, event.Service, event.DeploymentStrategies[stageName])
+		generatedChart := chartGenerator.GenerateEmptyChart(event.Service, event.DeploymentStrategies[stageName])
 
 		helmChartName := helm.GetChartName(event.Service, true)
 		o.logger.Debug(fmt.Sprintf("Storing the keptn generated Helm chart %s for stage %s", helmChartName, stageName))
@@ -232,7 +233,7 @@ func (c *Onboarder) IsGeneratedChartEmpty(chart *chart.Chart) bool {
 func (o *Onboarder) OnboardGeneratedService(helmManifest string, project string, stageName string,
 	service string, strategy keptnevents.DeploymentStrategy) (*chart.Chart, error) {
 
-	chartGenerator := helm.NewGeneratedChartHandler(o.mesh, o.canaryLevelGen, o.keptnDomain)
+	chartGenerator := helm.NewGeneratedChartHandler(o.mesh, o.keptnDomain)
 
 	helmChartName := helm.GetChartName(service, true)
 	o.logger.Debug(fmt.Sprintf("Generating the keptn-managed Helm chart %s for stage %s", helmChartName, stageName))

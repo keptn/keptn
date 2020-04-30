@@ -10,8 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	keptnevents "github.com/keptn/go-utils/pkg/events"
-	keptnmodels "github.com/keptn/go-utils/pkg/models"
+	"github.com/keptn/go-utils/pkg/lib"
 )
 
 // FeatureToggler ...
@@ -29,8 +28,8 @@ func (f FeatureToggler) GetAction() string {
 }
 
 // ExecuteAction executes the remediation action
-func (f FeatureToggler) ExecuteAction(problem *keptnevents.ProblemEventData, shkeptncontext string,
-	action *keptnmodels.RemediationAction) error {
+func (f FeatureToggler) ExecuteAction(problem *keptn.ProblemEventData, keptnHandler *keptn.Keptn,
+	action *keptn.RemediationAction) error {
 
 	if !strings.Contains(action.Value, ":") {
 		return errors.New("feature toggle remediation action not well formed")
@@ -61,8 +60,8 @@ func (f FeatureToggler) ExecuteAction(problem *keptnevents.ProblemEventData, shk
 }
 
 // ResolveAction ...
-func (f FeatureToggler) ResolveAction(problem *keptnevents.ProblemEventData, shkeptncontext string,
-	action *keptnmodels.RemediationAction) error {
+func (f FeatureToggler) ResolveAction(problem *keptn.ProblemEventData, keptnHandler *keptn.Keptn,
+	action *keptn.RemediationAction) error {
 	return errors.New("no resolving action for action " + f.GetAction() + " implemented")
 }
 

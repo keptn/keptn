@@ -19,6 +19,7 @@ var (
 func init() {
 	SwaggerJSON = json.RawMessage([]byte(`{
   "consumes": [
+    "application/cloudevents+json",
     "application/json"
   ],
   "produces": [
@@ -34,6 +35,35 @@ func init() {
   },
   "basePath": "/v1",
   "paths": {
+    "/event": {
+      "post": {
+        "tags": [
+          "event"
+        ],
+        "summary": "Handles an incoming event",
+        "operationId": "handle event",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/KeptnContextExtendedCE"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
     "/project": {
       "get": {
         "tags": [
@@ -55,7 +85,7 @@ func init() {
           "200": {
             "description": "Success",
             "schema": {
-              "$ref": "#/definitions/Projects"
+              "$ref": "#/definitions/ExpandedProjects"
             }
           },
           "default": {
@@ -70,7 +100,8 @@ func init() {
         "tags": [
           "Project"
         ],
-        "summary": "Create a new project by project name",
+        "summary": "INTERNAL Endpoint: Create a new project by project name",
+        "deprecated": true,
         "parameters": [
           {
             "$ref": "#/parameters/project"
@@ -105,7 +136,7 @@ func init() {
           "200": {
             "description": "Success",
             "schema": {
-              "$ref": "#/definitions/Project"
+              "$ref": "#/definitions/ExpandedProject"
             }
           },
           "404": {
@@ -126,7 +157,8 @@ func init() {
         "tags": [
           "Project"
         ],
-        "summary": "Update the specified project",
+        "summary": "INTERNAL Endpoint: Update the specified project",
+        "deprecated": true,
         "parameters": [
           {
             "$ref": "#/parameters/project"
@@ -154,7 +186,8 @@ func init() {
         "tags": [
           "Project"
         ],
-        "summary": "Delete the specified project",
+        "summary": "INTERNAL Endpoint: Delete the specified project",
+        "deprecated": true,
         "responses": {
           "204": {
             "description": "Success. Project has been deleted. Response does not have a body."
@@ -375,6 +408,83 @@ func init() {
         },
         {
           "$ref": "#/parameters/disableUpstreamSync"
+        }
+      ]
+    },
+    "/project/{projectName}/service": {
+      "get": {
+        "tags": [
+          "Services"
+        ],
+        "operationId": "get services",
+        "parameters": [
+          {
+            "$ref": "#/parameters/pageSize"
+          },
+          {
+            "$ref": "#/parameters/nextPageKey"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/ServicesWithStageInfo"
+            }
+          },
+          "404": {
+            "description": "Failed. Containing project could not be found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "$ref": "#/parameters/projectName"
+        }
+      ]
+    },
+    "/project/{projectName}/service/{serviceName}": {
+      "get": {
+        "tags": [
+          "Services"
+        ],
+        "operationId": "get service",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/ExpandedServiceWithStageInfo"
+            }
+          },
+          "404": {
+            "description": "Failed. Service could not be found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "$ref": "#/parameters/projectName"
+        },
+        {
+          "$ref": "#/parameters/serviceName"
         }
       ]
     },
@@ -622,7 +732,8 @@ func init() {
         "tags": [
           "Stage"
         ],
-        "summary": "Create a new stage by stage name",
+        "summary": "INTERNAL Endpoint: Create a new stage by stage name",
+        "deprecated": true,
         "parameters": [
           {
             "$ref": "#/parameters/stage"
@@ -667,7 +778,7 @@ func init() {
           "200": {
             "description": "Success",
             "schema": {
-              "$ref": "#/definitions/Stage"
+              "$ref": "#/definitions/ExpandedStage"
             }
           },
           "404": {
@@ -688,7 +799,8 @@ func init() {
         "tags": [
           "Stage"
         ],
-        "summary": "Update the specified stage",
+        "summary": "INTERNAL Endpoint: Update the specified stage",
+        "deprecated": true,
         "parameters": [
           {
             "$ref": "#/parameters/stage"
@@ -716,7 +828,8 @@ func init() {
         "tags": [
           "Stage"
         ],
-        "summary": "Delete the specified stage",
+        "summary": "INTERNAL Endpoint: Delete the specified stage",
+        "deprecated": true,
         "responses": {
           "204": {
             "description": "Success. Stage has been deleted. Response does not have a body."
@@ -993,7 +1106,8 @@ func init() {
         "tags": [
           "Service"
         ],
-        "summary": "Create a new service by service name",
+        "summary": "INTERNAL Endpoint: Create a new service by service name",
+        "deprecated": true,
         "parameters": [
           {
             "$ref": "#/parameters/service"
@@ -1041,7 +1155,7 @@ func init() {
           "200": {
             "description": "Success",
             "schema": {
-              "$ref": "#/definitions/Service"
+              "$ref": "#/definitions/ExpandedService"
             }
           },
           "404": {
@@ -1062,7 +1176,8 @@ func init() {
         "tags": [
           "Service"
         ],
-        "summary": "Update the specified service",
+        "summary": "INTERNAL Endpoint: Update the specified service",
+        "deprecated": true,
         "parameters": [
           {
             "$ref": "#/parameters/service"
@@ -1090,7 +1205,8 @@ func init() {
         "tags": [
           "Service"
         ],
-        "summary": "Delete the specified service",
+        "summary": "INTERNAL Endpoint: Delete the specified service",
+        "deprecated": true,
         "responses": {
           "204": {
             "description": "Success. Service has been deleted. Response does not have a body."
@@ -1353,6 +1469,200 @@ func init() {
         }
       }
     },
+    "EventContext": {
+      "type": "object",
+      "properties": {
+        "eventId": {
+          "description": "ID of the event",
+          "type": "string"
+        },
+        "keptnContext": {
+          "description": "Keptn Context ID of the event",
+          "type": "string"
+        },
+        "time": {
+          "description": "Time of the event",
+          "type": "string"
+        }
+      }
+    },
+    "ExpandedProject": {
+      "type": "object",
+      "properties": {
+        "creationDate": {
+          "description": "Creation date of the project",
+          "type": "string"
+        },
+        "gitRemoteURI": {
+          "description": "Git remote URI",
+          "type": "string"
+        },
+        "gitUser": {
+          "description": "Git User",
+          "type": "string"
+        },
+        "lastEventContext": {
+          "$ref": "#/definitions/EventContext"
+        },
+        "projectName": {
+          "description": "Project name",
+          "type": "string"
+        },
+        "shipyard": {
+          "description": "Shipyard file content",
+          "type": "string"
+        },
+        "stages": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ExpandedStage"
+          }
+        }
+      }
+    },
+    "ExpandedProjects": {
+      "type": "object",
+      "properties": {
+        "nextPageKey": {
+          "description": "Pointer to next page, base64 encoded",
+          "type": "string"
+        },
+        "pageSize": {
+          "description": "Size of returned page",
+          "type": "number"
+        },
+        "projects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ExpandedProject"
+          }
+        },
+        "totalCount": {
+          "description": "Total number of projects",
+          "type": "number"
+        }
+      }
+    },
+    "ExpandedService": {
+      "type": "object",
+      "properties": {
+        "creationDate": {
+          "description": "Creation date of the service",
+          "type": "string"
+        },
+        "deployedImage": {
+          "description": "Currently deployed image",
+          "type": "string"
+        },
+        "lastEventTypes": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/EventContext"
+          }
+        },
+        "serviceName": {
+          "description": "Service name",
+          "type": "string"
+        }
+      }
+    },
+    "ExpandedServiceWithStageInfo": {
+      "type": "object",
+      "properties": {
+        "creationDate": {
+          "description": "Creation date of the service",
+          "type": "string"
+        },
+        "serviceName": {
+          "description": "Service name",
+          "type": "string"
+        },
+        "stageInfo": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/InverseServiceStageInfo"
+          }
+        }
+      }
+    },
+    "ExpandedStage": {
+      "type": "object",
+      "properties": {
+        "lastEventContext": {
+          "$ref": "#/definitions/EventContext"
+        },
+        "services": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ExpandedService"
+          }
+        },
+        "stageName": {
+          "description": "Stage name",
+          "type": "string"
+        }
+      }
+    },
+    "InverseServiceStageInfo": {
+      "type": "object",
+      "properties": {
+        "deployedImage": {
+          "description": "Currently deployed image",
+          "type": "string"
+        },
+        "lastEventTypes": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/EventContext"
+          }
+        },
+        "stageName": {
+          "type": "string"
+        }
+      }
+    },
+    "KeptnContextExtendedCE": {
+      "type": "object",
+      "required": [
+        "data",
+        "source",
+        "type"
+      ],
+      "properties": {
+        "contenttype": {
+          "type": "string"
+        },
+        "data": {
+          "type": [
+            "object",
+            "string"
+          ]
+        },
+        "extensions": {
+          "type": "object"
+        },
+        "id": {
+          "type": "string"
+        },
+        "shkeptncontext": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string",
+          "format": "uri-reference"
+        },
+        "specversion": {
+          "type": "string"
+        },
+        "time": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "type": {
+          "type": "string"
+        }
+      }
+    },
     "Project": {
       "type": "object",
       "properties": {
@@ -1465,11 +1775,34 @@ func init() {
         "services": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/Service"
+            "$ref": "#/definitions/ExpandedService"
           }
         },
         "totalCount": {
           "description": "Total number of services",
+          "type": "number"
+        }
+      }
+    },
+    "ServicesWithStageInfo": {
+      "type": "object",
+      "properties": {
+        "nextPageKey": {
+          "description": "Pointer to next page, base64 encoded",
+          "type": "string"
+        },
+        "pageSize": {
+          "description": "Size of returned page",
+          "type": "number"
+        },
+        "services": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ExpandedServiceWithStageInfo"
+          }
+        },
+        "totalCount": {
+          "description": "Total number of stages",
           "type": "number"
         }
       }
@@ -1503,7 +1836,7 @@ func init() {
         "stages": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/Stage"
+            "$ref": "#/definitions/ExpandedStage"
           }
         },
         "totalCount": {
@@ -1624,6 +1957,7 @@ func init() {
 }`))
 	FlatSwaggerJSON = json.RawMessage([]byte(`{
   "consumes": [
+    "application/cloudevents+json",
     "application/json"
   ],
   "produces": [
@@ -1639,6 +1973,35 @@ func init() {
   },
   "basePath": "/v1",
   "paths": {
+    "/event": {
+      "post": {
+        "tags": [
+          "event"
+        ],
+        "summary": "Handles an incoming event",
+        "operationId": "handle event",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/KeptnContextExtendedCE"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
     "/project": {
       "get": {
         "tags": [
@@ -1673,7 +2036,7 @@ func init() {
           "200": {
             "description": "Success",
             "schema": {
-              "$ref": "#/definitions/Projects"
+              "$ref": "#/definitions/ExpandedProjects"
             }
           },
           "default": {
@@ -1688,7 +2051,8 @@ func init() {
         "tags": [
           "Project"
         ],
-        "summary": "Create a new project by project name",
+        "summary": "INTERNAL Endpoint: Create a new project by project name",
+        "deprecated": true,
         "parameters": [
           {
             "description": "Project entity",
@@ -1728,7 +2092,7 @@ func init() {
           "200": {
             "description": "Success",
             "schema": {
-              "$ref": "#/definitions/Project"
+              "$ref": "#/definitions/ExpandedProject"
             }
           },
           "404": {
@@ -1749,7 +2113,8 @@ func init() {
         "tags": [
           "Project"
         ],
-        "summary": "Update the specified project",
+        "summary": "INTERNAL Endpoint: Update the specified project",
+        "deprecated": true,
         "parameters": [
           {
             "description": "Project entity",
@@ -1782,7 +2147,8 @@ func init() {
         "tags": [
           "Project"
         ],
-        "summary": "Delete the specified project",
+        "summary": "INTERNAL Endpoint: Delete the specified project",
+        "deprecated": true,
         "responses": {
           "204": {
             "description": "Success. Project has been deleted. Response does not have a body."
@@ -2068,6 +2434,104 @@ func init() {
         }
       ]
     },
+    "/project/{projectName}/service": {
+      "get": {
+        "tags": [
+          "Services"
+        ],
+        "operationId": "get services",
+        "parameters": [
+          {
+            "maximum": 50,
+            "minimum": 1,
+            "type": "integer",
+            "default": 20,
+            "description": "The number of items to return",
+            "name": "pageSize",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Pointer to the next set of items",
+            "name": "nextPageKey",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/ServicesWithStageInfo"
+            }
+          },
+          "404": {
+            "description": "Failed. Containing project could not be found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "description": "Name of the project",
+          "name": "projectName",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
+    "/project/{projectName}/service/{serviceName}": {
+      "get": {
+        "tags": [
+          "Services"
+        ],
+        "operationId": "get service",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/ExpandedServiceWithStageInfo"
+            }
+          },
+          "404": {
+            "description": "Failed. Service could not be found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "description": "Name of the project",
+          "name": "projectName",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "description": "Name of the service",
+          "name": "serviceName",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
     "/project/{projectName}/service/{serviceName}/resource": {
       "get": {
         "tags": [
@@ -2386,7 +2850,8 @@ func init() {
         "tags": [
           "Stage"
         ],
-        "summary": "Create a new stage by stage name",
+        "summary": "INTERNAL Endpoint: Create a new stage by stage name",
+        "deprecated": true,
         "parameters": [
           {
             "description": "Stage entity",
@@ -2444,7 +2909,7 @@ func init() {
           "200": {
             "description": "Success",
             "schema": {
-              "$ref": "#/definitions/Stage"
+              "$ref": "#/definitions/ExpandedStage"
             }
           },
           "404": {
@@ -2465,7 +2930,8 @@ func init() {
         "tags": [
           "Stage"
         ],
-        "summary": "Update the specified stage",
+        "summary": "INTERNAL Endpoint: Update the specified stage",
+        "deprecated": true,
         "parameters": [
           {
             "description": "Stage entity",
@@ -2498,7 +2964,8 @@ func init() {
         "tags": [
           "Stage"
         ],
-        "summary": "Delete the specified stage",
+        "summary": "INTERNAL Endpoint: Delete the specified stage",
+        "deprecated": true,
         "responses": {
           "204": {
             "description": "Success. Stage has been deleted. Response does not have a body."
@@ -2862,7 +3329,8 @@ func init() {
         "tags": [
           "Service"
         ],
-        "summary": "Create a new service by service name",
+        "summary": "INTERNAL Endpoint: Create a new service by service name",
+        "deprecated": true,
         "parameters": [
           {
             "description": "Service entity",
@@ -2927,7 +3395,7 @@ func init() {
           "200": {
             "description": "Success",
             "schema": {
-              "$ref": "#/definitions/Service"
+              "$ref": "#/definitions/ExpandedService"
             }
           },
           "404": {
@@ -2948,7 +3416,8 @@ func init() {
         "tags": [
           "Service"
         ],
-        "summary": "Update the specified service",
+        "summary": "INTERNAL Endpoint: Update the specified service",
+        "deprecated": true,
         "parameters": [
           {
             "description": "Service entity",
@@ -2981,7 +3450,8 @@ func init() {
         "tags": [
           "Service"
         ],
-        "summary": "Delete the specified service",
+        "summary": "INTERNAL Endpoint: Delete the specified service",
+        "deprecated": true,
         "responses": {
           "204": {
             "description": "Success. Service has been deleted. Response does not have a body."
@@ -3330,6 +3800,200 @@ func init() {
         }
       }
     },
+    "EventContext": {
+      "type": "object",
+      "properties": {
+        "eventId": {
+          "description": "ID of the event",
+          "type": "string"
+        },
+        "keptnContext": {
+          "description": "Keptn Context ID of the event",
+          "type": "string"
+        },
+        "time": {
+          "description": "Time of the event",
+          "type": "string"
+        }
+      }
+    },
+    "ExpandedProject": {
+      "type": "object",
+      "properties": {
+        "creationDate": {
+          "description": "Creation date of the project",
+          "type": "string"
+        },
+        "gitRemoteURI": {
+          "description": "Git remote URI",
+          "type": "string"
+        },
+        "gitUser": {
+          "description": "Git User",
+          "type": "string"
+        },
+        "lastEventContext": {
+          "$ref": "#/definitions/EventContext"
+        },
+        "projectName": {
+          "description": "Project name",
+          "type": "string"
+        },
+        "shipyard": {
+          "description": "Shipyard file content",
+          "type": "string"
+        },
+        "stages": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ExpandedStage"
+          }
+        }
+      }
+    },
+    "ExpandedProjects": {
+      "type": "object",
+      "properties": {
+        "nextPageKey": {
+          "description": "Pointer to next page, base64 encoded",
+          "type": "string"
+        },
+        "pageSize": {
+          "description": "Size of returned page",
+          "type": "number"
+        },
+        "projects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ExpandedProject"
+          }
+        },
+        "totalCount": {
+          "description": "Total number of projects",
+          "type": "number"
+        }
+      }
+    },
+    "ExpandedService": {
+      "type": "object",
+      "properties": {
+        "creationDate": {
+          "description": "Creation date of the service",
+          "type": "string"
+        },
+        "deployedImage": {
+          "description": "Currently deployed image",
+          "type": "string"
+        },
+        "lastEventTypes": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/EventContext"
+          }
+        },
+        "serviceName": {
+          "description": "Service name",
+          "type": "string"
+        }
+      }
+    },
+    "ExpandedServiceWithStageInfo": {
+      "type": "object",
+      "properties": {
+        "creationDate": {
+          "description": "Creation date of the service",
+          "type": "string"
+        },
+        "serviceName": {
+          "description": "Service name",
+          "type": "string"
+        },
+        "stageInfo": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/InverseServiceStageInfo"
+          }
+        }
+      }
+    },
+    "ExpandedStage": {
+      "type": "object",
+      "properties": {
+        "lastEventContext": {
+          "$ref": "#/definitions/EventContext"
+        },
+        "services": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ExpandedService"
+          }
+        },
+        "stageName": {
+          "description": "Stage name",
+          "type": "string"
+        }
+      }
+    },
+    "InverseServiceStageInfo": {
+      "type": "object",
+      "properties": {
+        "deployedImage": {
+          "description": "Currently deployed image",
+          "type": "string"
+        },
+        "lastEventTypes": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/EventContext"
+          }
+        },
+        "stageName": {
+          "type": "string"
+        }
+      }
+    },
+    "KeptnContextExtendedCE": {
+      "type": "object",
+      "required": [
+        "data",
+        "source",
+        "type"
+      ],
+      "properties": {
+        "contenttype": {
+          "type": "string"
+        },
+        "data": {
+          "type": [
+            "object",
+            "string"
+          ]
+        },
+        "extensions": {
+          "type": "object"
+        },
+        "id": {
+          "type": "string"
+        },
+        "shkeptncontext": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string",
+          "format": "uri-reference"
+        },
+        "specversion": {
+          "type": "string"
+        },
+        "time": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "type": {
+          "type": "string"
+        }
+      }
+    },
     "Project": {
       "type": "object",
       "properties": {
@@ -3442,11 +4106,34 @@ func init() {
         "services": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/Service"
+            "$ref": "#/definitions/ExpandedService"
           }
         },
         "totalCount": {
           "description": "Total number of services",
+          "type": "number"
+        }
+      }
+    },
+    "ServicesWithStageInfo": {
+      "type": "object",
+      "properties": {
+        "nextPageKey": {
+          "description": "Pointer to next page, base64 encoded",
+          "type": "string"
+        },
+        "pageSize": {
+          "description": "Size of returned page",
+          "type": "number"
+        },
+        "services": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ExpandedServiceWithStageInfo"
+          }
+        },
+        "totalCount": {
+          "description": "Total number of stages",
           "type": "number"
         }
       }
@@ -3480,7 +4167,7 @@ func init() {
         "stages": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/Stage"
+            "$ref": "#/definitions/ExpandedStage"
           }
         },
         "totalCount": {

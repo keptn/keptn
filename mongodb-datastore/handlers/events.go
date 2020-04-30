@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 	"sync"
@@ -10,7 +11,7 @@ import (
 
 	"github.com/jeremywohl/flatten"
 
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	keptnutils "github.com/keptn/go-utils/pkg/lib"
 
 	"github.com/keptn/keptn/mongodb-datastore/models"
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/event"
@@ -21,8 +22,14 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+const contextToProjectCollection = "contextToProject"
+
 var client *mongo.Client
 var mutex sync.Mutex
+
+type ProjectEventData struct {
+	Project *string `json:"project,omitempty"`
+}
 
 func ensureDBConnection(logger *keptnutils.Logger) error {
 	mutex.Lock()
@@ -57,8 +64,8 @@ func connectMongoDBClient() error {
 	return nil
 }
 
-// SaveEvent stores event in data store
-func SaveEvent(event *models.KeptnContextExtendedCE) error {
+// ProcessEvent processes the passed event.
+func ProcessEvent(event *models.KeptnContextExtendedCE) error {
 	logger := keptnutils.NewLogger("", "", serviceName)
 	logger.Debug("save event to data store")
 
@@ -68,25 +75,29 @@ func SaveEvent(event *models.KeptnContextExtendedCE) error {
 		return err
 	}
 
-	collection := client.Database(mongoDBName).Collection(eventsCollectionName)
-
-	data, err := json.Marshal(event)
-	if err != nil {
-		err := fmt.Errorf("failed to marshal event: %v", err)
-		logger.Error(err.Error())
-		return err
+	if event.Type == keptnutils.InternalProjectDeleteEventType {
+		return dropProjectEvents(logger, event)
 	}
+	return insertEvent(logger, event)
+}
 
-	var eventInterface interface{}
-	err = json.Unmarshal(data, &eventInterface)
-	if err != nil {
-		err := fmt.Errorf("failed to unmarshal event: %v", err)
-		logger.Error(err.Error())
-		return err
-	}
+func insertEvent(logger *keptnutils.Logger, event *models.KeptnContextExtendedCE) error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
+
+	// insert in project collection
+	collectionName := getProjectOfEvent(event)
+	collection := client.Database(mongoDBName).Collection(collectionName)
+
+	logger.Debug("Storing event to collection " + collectionName)
+
+	eventInterface, err := transformEventToInterface(event)
+	if err != nil {
+		err := fmt.Errorf("failed to transform event: %v", err)
+		logger.Error(err.Error())
+		return err
+	}
 
 	res, err := collection.InsertOne(ctx, eventInterface)
 	if err != nil {
@@ -94,9 +105,88 @@ func SaveEvent(event *models.KeptnContextExtendedCE) error {
 		logger.Error(err.Error())
 		return err
 	}
-
 	logger.Debug(fmt.Sprintf("insertedID: %s", res.InsertedID))
+
+	if collectionName == eventsCollectionName {
+		logger.Debug("Will not store mapping between context and project because no project has been set in the event %s->%s")
+		return nil
+	}
+
+	logger.Debug(fmt.Sprintf("Storing mapping %s->%s", event.Shkeptncontext, collectionName))
+	contextToProjectCollection := client.Database(mongoDBName).Collection(contextToProjectCollection)
+
+	_, err = contextToProjectCollection.InsertOne(ctx,
+		bson.M{"_id": event.Shkeptncontext, "shkeptncontext": event.Shkeptncontext, "project": collectionName},
+	)
+	if err != nil {
+		if writeErr, ok := err.(mongo.WriteException); ok {
+			if len(writeErr.WriteErrors) > 0 && writeErr.WriteErrors[0].Code == 11000 { // 11000 = duplicate key error
+				logger.Error("Mapping " + event.Shkeptncontext + "->" + collectionName + " already exists in collection")
+			}
+		} else {
+			err := fmt.Errorf("Failed to store mapping "+event.Shkeptncontext+"->"+collectionName+": %v", err.Error())
+			logger.Error(err.Error())
+			return err
+		}
+	}
+
+	logger.Debug(fmt.Sprintf("inserted mapping %s->%s", event.Shkeptncontext, collectionName))
 	return nil
+}
+
+func dropProjectEvents(logger *keptnutils.Logger, event *models.KeptnContextExtendedCE) error {
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	collectionName := getProjectOfEvent(event)
+	collection := client.Database(mongoDBName).Collection(collectionName)
+
+	logger.Debug(fmt.Sprintf("Delete all events of project %s", collectionName))
+	err := collection.Drop(ctx)
+	if err != nil {
+		err := fmt.Errorf("failed to drop collection %s: %v", collectionName, err)
+		logger.Error(err.Error())
+		return err
+	}
+	logger.Debug(fmt.Sprintf("Delete context-to-project mappings of project %s", collectionName))
+	contextToProjectCollection := client.Database(mongoDBName).Collection(contextToProjectCollection)
+	if _, err := contextToProjectCollection.DeleteMany(ctx, bson.M{"project": collectionName}); err != nil {
+		err := fmt.Errorf("failed to delete context-to-project mapping for project %s: %v", collectionName, err)
+		logger.Error(err.Error())
+		return err
+	}
+	return nil
+}
+
+func transformEventToInterface(event *models.KeptnContextExtendedCE) (interface{}, error) {
+	data, err := json.Marshal(event)
+	if err != nil {
+		err := fmt.Errorf("failed to marshal event: %v", err)
+		return nil, err
+	}
+
+	var eventInterface interface{}
+	err = json.Unmarshal(data, &eventInterface)
+	if err != nil {
+		err := fmt.Errorf("failed to unmarshal event: %v", err)
+		return nil, err
+	}
+	return eventInterface, nil
+}
+
+func getProjectOfEvent(event *models.KeptnContextExtendedCE) string {
+	collectionName := eventsCollectionName
+	// check if the data object contains the project name.
+	// if yes, store the event in the collection for the project, otherwise in /events
+	eventData, ok := event.Data.(map[string]interface{})
+	if ok && eventData["project"] != nil {
+		collectionNameStr, ok := eventData["project"].(string)
+		if ok && collectionNameStr != "" {
+			collectionName = collectionNameStr
+		}
+	}
+	return collectionName
 }
 
 // GetEvents returns all events from the data store sorted by time
@@ -110,33 +200,23 @@ func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 		return nil, err
 	}
 
-	collection := client.Database(mongoDBName).Collection(eventsCollectionName)
+	collectionName := eventsCollectionName
 
-	searchOptions := bson.M{}
-	if params.KeptnContext != nil {
-		searchOptions["shkeptncontext"] = primitive.Regex{Pattern: *params.KeptnContext, Options: ""}
-	}
-	if params.Type != nil {
-		searchOptions["type"] = params.Type
-	}
-	if params.Source != nil {
-		searchOptions["source"] = params.Source
-	}
-	if params.Project != nil {
-		searchOptions["data.project"] = params.Project
-	}
-	if params.Stage != nil {
-		searchOptions["data.stage"] = params.Stage
-	}
-	if params.Service != nil {
-		searchOptions["data.service"] = params.Service
-	}
-	if params.FromTime != nil {
-		logger.Debug("filter FromTime")
-		searchOptions["time"] = bson.M{
-			"$gt": params.FromTime,
+	searchOptions := getSearchOptions(params)
+
+	if searchOptions["data.project"] != nil && searchOptions["data.project"] != "" {
+		// if a project has been specified, query the collection for that project
+		collectionName = searchOptions["data.project"].(string)
+	} else if params.KeptnContext != nil && *params.KeptnContext != "" {
+		var err error
+		collectionName, err = getProjectForContext(*params.KeptnContext)
+		if err != nil {
+			logger.Error(fmt.Sprintf("error loading project for shkeptncontext: %v", err))
+			return nil, err
 		}
 	}
+
+	collection := client.Database(mongoDBName).Collection(collectionName)
 
 	var result event.GetEventsOKBody
 
@@ -176,7 +256,6 @@ func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 			if err != nil {
 				logger.Error(fmt.Sprintf("failed to unmarshal %v", err))
 				continue
-				// return nil, err
 			}
 
 			if params.FromTime != nil {
@@ -242,7 +321,6 @@ func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 			if err != nil {
 				logger.Error(fmt.Sprintf("failed to unmarshal %v", err))
 				continue
-				// return nil, err
 			}
 
 			result.Events = append(result.Events, &keptnEvent)
@@ -257,6 +335,51 @@ func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 	}
 
 	return &result, nil
+}
+
+func getProjectForContext(keptnContext string) (string, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	contextToProjectCollection := client.Database(mongoDBName).Collection(contextToProjectCollection)
+	result := contextToProjectCollection.FindOne(ctx, bson.M{"shkeptncontext": keptnContext})
+	var resultMap bson.M
+	err := result.Decode(&resultMap)
+	if err != nil {
+		return "", err
+	}
+	if project, ok := resultMap["project"].(string); !ok {
+		return "", errors.New("Could not find entry for keptnContext: " + keptnContext)
+	} else {
+		return project, nil
+	}
+}
+
+func getSearchOptions(params event.GetEventsParams) bson.M {
+	searchOptions := bson.M{}
+	if params.KeptnContext != nil {
+		searchOptions["shkeptncontext"] = primitive.Regex{Pattern: *params.KeptnContext, Options: ""}
+	}
+	if params.Type != nil {
+		searchOptions["type"] = *params.Type
+	}
+	if params.Source != nil {
+		searchOptions["source"] = *params.Source
+	}
+	if params.Project != nil {
+		searchOptions["data.project"] = *params.Project
+	}
+	if params.Stage != nil {
+		searchOptions["data.stage"] = *params.Stage
+	}
+	if params.Service != nil {
+		searchOptions["data.service"] = *params.Service
+	}
+	if params.FromTime != nil {
+		searchOptions["time"] = bson.M{
+			"$gt": *params.FromTime,
+		}
+	}
+	return searchOptions
 }
 
 func flattenRecursively(i interface{}, logger *keptnutils.Logger) (interface{}, error) {

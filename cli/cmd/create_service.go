@@ -3,14 +3,14 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	keptn "github.com/keptn/go-utils/pkg/lib"
 
-	"github.com/keptn/keptn/cli/utils/websockethelper"
+	"github.com/keptn/keptn/cli/pkg/websockethelper"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
-	"github.com/keptn/keptn/cli/utils/credentialmanager"
 	"github.com/spf13/cobra"
 )
 
@@ -24,13 +24,14 @@ var createServiceParams *createServiceCmdParams
 var crServiceCmd = &cobra.Command{
 	Use:   "service SERVICENAME --project=PROJECTNAME",
 	Short: "Creates a new service",
-	Long: `Creates a new service with the provided name and in the specified project. 
+	Long: `Creates a new service with the provided name in the specified project.
 
-Example:
-	keptn create service carts --project=sockshop`,
+Please note: This command is different from keptn onboard service (which requires a helm chart).
+`,
+	Example: `keptn create service carts --project=sockshop`,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
-		_, _, err := credentialmanager.GetCreds()
+		_, _, err := credentialmanager.NewCredentialManager().GetCreds()
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
@@ -40,7 +41,7 @@ Example:
 			return errors.New("required argument SERVICENAME not set")
 		}
 
-		if !keptnutils.ValididateUnixDirectoryName(args[0]) {
+		if !keptn.ValididateUnixDirectoryName(args[0]) {
 			return errors.New("Service name contains special character(s)." +
 				"The service name has to be a valid Unix directory name. For details see " +
 				"https://www.cyberciti.biz/faq/linuxunix-rules-for-naming-file-and-directory-names/")
@@ -48,13 +49,13 @@ Example:
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		endPoint, apiToken, err := credentialmanager.GetCreds()
+		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
 		logging.PrintLog("Starting to create service", logging.InfoLevel)
 
-		service := apimodels.Service{
+		service := apimodels.CreateService{
 			ServiceName: &args[0],
 		}
 

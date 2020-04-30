@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	models "github.com/keptn/keptn/configuration-service/models"
+	"github.com/keptn/keptn/configuration-service/models"
 )
 
 // GetProjectProjectNameStageStageNameOKCode is the HTTP code returned for type GetProjectProjectNameStageStageNameOK
@@ -25,7 +25,7 @@ type GetProjectProjectNameStageStageNameOK struct {
 	/*
 	  In: Body
 	*/
-	Payload *models.Stage `json:"body,omitempty"`
+	Payload *models.ExpandedStage `json:"body,omitempty"`
 }
 
 // NewGetProjectProjectNameStageStageNameOK creates GetProjectProjectNameStageStageNameOK with default headers values
@@ -35,13 +35,13 @@ func NewGetProjectProjectNameStageStageNameOK() *GetProjectProjectNameStageStage
 }
 
 // WithPayload adds the payload to the get project project name stage stage name o k response
-func (o *GetProjectProjectNameStageStageNameOK) WithPayload(payload *models.Stage) *GetProjectProjectNameStageStageNameOK {
+func (o *GetProjectProjectNameStageStageNameOK) WithPayload(payload *models.ExpandedStage) *GetProjectProjectNameStageStageNameOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the get project project name stage stage name o k response
-func (o *GetProjectProjectNameStageStageNameOK) SetPayload(payload *models.Stage) {
+func (o *GetProjectProjectNameStageStageNameOK) SetPayload(payload *models.ExpandedStage) {
 	o.Payload = payload
 }
 
