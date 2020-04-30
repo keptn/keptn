@@ -22,19 +22,19 @@ import (
 
 // PrintWSContentEventContext opens a websocket using the passed
 // connection data and prints status data
-func PrintWSContentEventContext(eventContext *apimodels.EventContext, apiEndPoint url.URL, useTSL bool) error {
+func PrintWSContentEventContext(eventContext *apimodels.EventContext, apiEndPoint url.URL, useWss bool) error {
 	connectionData := &keptnutils.ConnectionData{EventContext: *eventContext}
-	return printWSContent(*connectionData, apiEndPoint, useTSL)
+	return printWSContent(*connectionData, apiEndPoint, useWss)
 }
 
-func printWSContent(connData keptnutils.ConnectionData, apiEndPoint url.URL, useTSL bool) error {
+func printWSContent(connData keptnutils.ConnectionData, apiEndPoint url.URL, useWss bool) error {
 
 	err := validateConnectionData(connData)
 	if err != nil {
 		return err
 	}
 
-	ws, _, err := openWS(connData, apiEndPoint, useTSL)
+	ws, _, err := openWS(connData, apiEndPoint, useWss)
 	if err != nil {
 		fmt.Println("Opening websocket failed")
 		return err
@@ -53,10 +53,10 @@ func validateConnectionData(connData keptnutils.ConnectionData) error {
 }
 
 // openWS opens a websocket
-func openWS(connData keptnutils.ConnectionData, apiEndPoint url.URL, useTSL bool) (*websocket.Conn, *http.Response, error) {
+func openWS(connData keptnutils.ConnectionData, apiEndPoint url.URL, useWss bool) (*websocket.Conn, *http.Response, error) {
 
 	wsEndPoint := apiEndPoint
-	if useTSL {
+	if useWss {
 		wsEndPoint.Scheme = "wss"
 	} else {
 		wsEndPoint.Scheme = "ws"
