@@ -84,6 +84,7 @@ func init() {
 		"disables websocket communication - use the ID of Keptn context (if provided) for checking the result of your command")
 
 	scheme = rootCmd.PersistentFlags().StringP("scheme", "", "https", "The used scheme for the Keptn API")
+	rootCmd.PersistentFlags().MarkHidden("scheme")
 	cobra.OnInitialize(initConfig)
 
 }
