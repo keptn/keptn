@@ -56,11 +56,12 @@ import {DtIndicatorModule} from "@dynatrace/barista-components/core";
 import {DtProgressCircleModule} from "@dynatrace/barista-components/progress-circle";
 import {DtConsumptionModule} from "@dynatrace/barista-components/consumption";
 import {DtKeyValueListModule} from "@dynatrace/barista-components/key-value-list";
+import {DtButtonGroupModule} from "@dynatrace/barista-components/button-group";
+import {DtChartModule} from "@dynatrace/barista-components/chart";
+import {DtOverlayModule} from "@dynatrace/barista-components/overlay";
 
 import {registerLocaleData} from "@angular/common";
 import localeEn from '@angular/common/locales/en';
-import {DtButtonGroupModule} from "@dynatrace/barista-components/button-group";
-import {DtChartModule} from "@dynatrace/barista-components/chart";
 
 registerLocaleData(localeEn, 'en');
 
@@ -119,6 +120,7 @@ registerLocaleData(localeEn, 'en');
     DtConsumptionModule,
     DtKeyValueListModule,
     DtChartModule,
+    DtOverlayModule,
     DtIconModule.forRoot({
       svgIconLocation: `/assets/icons/{{name}}.svg`,
     }),
