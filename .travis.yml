@@ -402,7 +402,7 @@ jobs:
     env: KEPTN_INSTALLATION_TYPE=FULL
     <<: *gke_full # use template
 
-  - stage: Test GKE Full with Istio (--platform=gke --istio-install-option=Reuse)
+  - stage: Test GKE Full with Istio (--platform=gke --ingress-install-option=Reuse)
     if: branch = master AND type = cron # run for cron
     env: KEPTN_INSTALLATION_TYPE=REUSE-ISTIO
     <<: *gke_full # use template

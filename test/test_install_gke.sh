@@ -18,16 +18,16 @@ replaceCreds
 
 echo "Installing keptn on cluster"
 
-ISTIO_CONFIG=""
+INGRESS_CONFIG=""
 
 # use a different installation method if re-using istio
 if [[ "$KEPTN_INSTALLATION_TYPE" == "REUSE-ISTIO" ]]; then
-  ISTIO_CONFIG="--istio-install-option=Reuse"
+  INGRESS_CONFIG="--ingress-install-option=Reuse"
   echo "... using existing istio"
 fi
 
 # Install keptn (using the develop version, which should point the :latest docker images)
-keptn install ${ISTIO_CONFIG} --keptn-installer-image="${KEPTN_INSTALLER_IMAGE}" --creds=creds.json --verbose
+keptn install ${INGRESS_CONFIG} --keptn-installer-image="${KEPTN_INSTALLER_IMAGE}" --creds=creds.json --verbose
 verify_test_step $? "keptn install failed"
 
 # verify that the keptn CLI has successfully authenticated
