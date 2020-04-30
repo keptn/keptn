@@ -370,7 +370,7 @@ func getProjects() *errorableProjectResult {
 	if err != nil {
 		return newErrorableProjectResult(nil, err)
 	}
-	projectHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, "https")
+	projectHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
 	return newErrorableProjectResult(projectHandler.GetAllProjects())
 }
 

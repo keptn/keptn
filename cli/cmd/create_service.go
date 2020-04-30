@@ -59,7 +59,7 @@ Please note: This command is different from keptn onboard service (which require
 			ServiceName: &args[0],
 		}
 
-		serviceHandler := apiutils.NewAuthenticatedServiceHandler(endPoint.String(), apiToken, "x-token", nil, "https")
+		serviceHandler := apiutils.NewAuthenticatedServiceHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
@@ -71,7 +71,7 @@ Please note: This command is different from keptn onboard service (which require
 
 			// if eventContext is available, open WebSocket communication
 			if eventContext != nil && !SuppressWSCommunication {
-				return websockethelper.PrintWSContentEventContext(eventContext, endPoint)
+				return websockethelper.PrintWSContentEventContext(eventContext, endPoint, *scheme == "https")
 			}
 
 			return nil
