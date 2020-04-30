@@ -21,6 +21,11 @@ export class KtbSliBreakdownComponent implements OnInit {
     'fail': 'error'
   };
 
+  public overlayConfig: DtOverlayConfig = {
+    pinnable: true,
+    originY: 'center',
+  };
+
   public _indicatorResults: any;
   public _indicatorResultsFail: any;
   public _indicatorResultsWarning: any;
