@@ -39,17 +39,17 @@ import (
 )
 
 type installCmdParams struct {
-	ConfigFilePath          *string
-	InstallerImage          *string
-	KeptnVersion            *string
-	PlatformIdentifier      *string
-	GatewayInput            *string
-	Gateway                 gateway
-	Domain                  *string
-	UseCaseInput            *string
-	UseCase                 usecase
-	IstioInstallOptionInput *string
-	IstioInstallOption      istioInstallOption
+	ConfigFilePath            *string
+	InstallerImage            *string
+	KeptnVersion              *string
+	PlatformIdentifier        *string
+	GatewayInput              *string
+	Gateway                   gateway
+	Domain                    *string
+	UseCaseInput              *string
+	UseCase                   usecase
+	IngressInstallOptionInput *string
+	IngressInstallOption      ingressInstallOption
 }
 
 const keptnInstallerLogFileName = "keptn-installer.log"
@@ -97,8 +97,8 @@ spec:
           value: INGRESS_PLACEHOLDER
         - name: USE_CASE
           value: USE_CASE_PLACEHOLDER
-        - name: ISTIO_INSTALL_OPTION
-          value: ISTIO_INSTALL_OPTION_PLACEHOLDER
+        - name: INGRESS_INSTALL_OPTION
+          value: INGRESS_INSTALL_OPTION_PLACEHOLDER
       restartPolicy: Never
 `
 
@@ -149,11 +149,11 @@ keptn install --platform=kubernetes --gateway=NodePort # install on a Kubernetes
 				"an image for the installer using the flag 'keptn-installer-image'")
 		}
 
-		// Parse IstioInstallOption
-		if val, ok := istioInstallOptionToID[*installParams.IstioInstallOptionInput]; ok {
-			installParams.IstioInstallOption = val
+		// Parse IngressInstallOption
+		if val, ok := ingressInstallOptionToID[*installParams.IngressInstallOptionInput]; ok {
+			installParams.IngressInstallOption = val
 		} else {
-			return errors.New("value of 'istio-install-option' flag is unknown. Supported values are " +
+			return errors.New("value of 'ingress-install-option' flag is unknown. Supported values are " +
 				"[" + StopIfInstalled.String() + "," + Reuse.String() + "," + Overwrite.String() + "]")
 		}
 
@@ -318,10 +318,10 @@ func init() {
 	installParams.UseCaseInput = installCmd.Flags().StringP("use-case", "u", "all",
 		"The use case to install Keptn for ["+AllUseCases.String()+","+QualityGates.String()+"]")
 
-	installParams.IstioInstallOptionInput = installCmd.Flags().StringP("istio-install-option", "",
-		StopIfInstalled.String(), "Installation options for istio ["+StopIfInstalled.String()+","+
+	installParams.IngressInstallOptionInput = installCmd.Flags().StringP("ingress-install-option", "",
+		StopIfInstalled.String(), "Installation options for Ingress ["+StopIfInstalled.String()+","+
 			Reuse.String()+","+Overwrite.String()+"]")
-	installCmd.Flags().MarkHidden("istio-install-option")
+	installCmd.Flags().MarkHidden("ingress-install-option")
 
 	installCmd.PersistentFlags().BoolVarP(&insecureSkipTLSVerify, "insecure-skip-tls-verify", "s",
 		false, "Skip tls verification for kubectl commands")
@@ -338,7 +338,7 @@ func prepareInstallerManifest() (installerManifest string) {
 	installerManifest = strings.ReplaceAll(installerManifest, "GATEWAY_TYPE_PLACEHOLDER", installParams.Gateway.String())
 	installerManifest = strings.ReplaceAll(installerManifest, "DOMAIN_PLACEHOLDER", *installParams.Domain)
 	installerManifest = strings.ReplaceAll(installerManifest, "USE_CASE_PLACEHOLDER", installParams.UseCase.String())
-	installerManifest = strings.ReplaceAll(installerManifest, "ISTIO_INSTALL_OPTION_PLACEHOLDER", installParams.IstioInstallOption.String())
+	installerManifest = strings.ReplaceAll(installerManifest, "INGRESS_INSTALL_OPTION_PLACEHOLDER", installParams.IngressInstallOption.String())
 
 	installerManifest = strings.ReplaceAll(installerManifest, "INGRESS_PLACEHOLDER", getIngress().String())
 	return

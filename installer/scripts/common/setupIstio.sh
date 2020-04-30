@@ -5,7 +5,7 @@ source ./common/utils.sh
 kubectl get ns istio-system
 ISTIO_AVAILABLE=$?
 
-if [[ "$ISTIO_AVAILABLE" == 0 ]] && [[ "$ISTIO_INSTALL_OPTION" == "Reuse" ]]; then
+if [[ "$ISTIO_AVAILABLE" == 0 ]] && [[ "$INGRESS_INSTALL_OPTION" == "Reuse" ]]; then
     # An istio-version is already installed
     print_info "Istio installation is reused but its compatibility is not checked"
     wait_for_deployment_in_namespace "istio-ingressgateway" "istio-system"
@@ -14,11 +14,11 @@ if [[ "$ISTIO_AVAILABLE" == 0 ]] && [[ "$ISTIO_INSTALL_OPTION" == "Reuse" ]]; th
     wait_for_deployment_in_namespace "istio-sidecar-injector" "istio-system"
     wait_for_all_pods_in_namespace "istio-system"
 
-elif [[ "$ISTIO_AVAILABLE" == 0 ]] && ([[ "$ISTIO_INSTALL_OPTION" == "StopIfInstalled" ]] || [[ "$ISTIO_INSTALL_OPTION" == "" ]] || [[ "$ISTIO_INSTALL_OPTION" == "ISTIO_INSTALL_OPTION_PLACEHOLDER" ]]); then
+elif [[ "$ISTIO_AVAILABLE" == 0 ]] && ([[ "$INGRESS_INSTALL_OPTION" == "StopIfInstalled" ]] || [[ "$INGRESS_INSTALL_OPTION" == "" ]] || [[ "$INGRESS_INSTALL_OPTION" == "INGRESS_INSTALL_PLACEHOLDER" ]]); then
     print_error "Istio is already installed but is not used due to unknown compatibility"
     exit 1
 else
-    if [[ "$ISTIO_AVAILABLE" == 0 ]] && [[ "$ISTIO_INSTALL_OPTION" == "Overwrite" ]]; then
+    if [[ "$ISTIO_AVAILABLE" == 0 ]] && [[ "$INGRESS_INSTALL_OPTION" == "Overwrite" ]]; then
         print_info "Istio installation is overwritten"
     fi
 
