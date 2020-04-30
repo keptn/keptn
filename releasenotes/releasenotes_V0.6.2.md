@@ -59,4 +59,7 @@ Implemented **Keptn spec** version: [0.1.3](https://github.com/keptn/spec/tree/0
 * Updated contribution guide
 
 ## Good to know / known limitations
+
+- Cluster-internal non-http traffic does not use VirtualServices for Blue/Green deployments [#1715](https://github.com/keptn/keptn/issues/1715)
+
 - For old limitations, please see [Release 0.6.1](https://github.com/keptn/keptn/releases/tag/0.6.1). 
