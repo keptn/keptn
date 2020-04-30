@@ -54,7 +54,7 @@ var delProjectCmd = &cobra.Command{
 			ProjectName: args[0],
 		}
 
-		projectHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, "https")
+		projectHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
@@ -66,7 +66,7 @@ var delProjectCmd = &cobra.Command{
 
 			// if eventContext is available, open WebSocket communication
 			if eventContext != nil && !SuppressWSCommunication {
-				return websockethelper.PrintWSContentEventContext(eventContext, endPoint)
+				return websockethelper.PrintWSContentEventContext(eventContext, endPoint, *scheme == "https")
 			}
 
 			return nil

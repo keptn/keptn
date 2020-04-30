@@ -23,6 +23,8 @@ var SuppressWSCommunication bool
 var insecureSkipTLSVerify bool
 var kubectlOptions string
 
+var scheme *string
+
 const authErrorMsg = "This command requires to be authenticated. See \"keptn auth\" for details"
 
 // rootCmd represents the base command when called without any subcommands
@@ -55,6 +57,8 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&SuppressWSCommunication, "suppress-websocket", "", false,
 		"disables websocket communication - use the ID of Keptn context (if provided) for checking the result of your command")
 
+	scheme = rootCmd.PersistentFlags().StringP("scheme", "", "https", "The used scheme for the Keptn API")
+	rootCmd.PersistentFlags().MarkHidden("scheme")
 	cobra.OnInitialize(initConfig)
 
 }

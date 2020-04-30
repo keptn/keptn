@@ -120,7 +120,7 @@ point, the flag *--start* flag can be used. In this case, the specified time fra
 			return fmt.Errorf("Failed to map cloud event to API event model. %s", err.Error())
 		}
 
-		eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, "https")
+		eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {

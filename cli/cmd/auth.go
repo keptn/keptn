@@ -43,7 +43,7 @@ More precisely, the keptn CLI stores the endpoint and API token using *pass* in 
 			return err
 		}
 
-		authHandler := apiutils.NewAuthenticatedAuthHandler(url.String(), *apiToken, "x-token", nil, "https")
+		authHandler := apiutils.NewAuthenticatedAuthHandler(url.String(), *apiToken, "x-token", nil, *scheme)
 
 		if !mocking {
 			authenticated := false
