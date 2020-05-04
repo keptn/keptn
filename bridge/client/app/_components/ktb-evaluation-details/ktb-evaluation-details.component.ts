@@ -187,7 +187,8 @@ export class KtbEvaluationDetailsComponent implements OnInit {
           name: 'Score',
           type: 'column',
           data: [],
-          cursor: 'pointer'
+          cursor: 'pointer',
+          turboThreshold: 0
         };
         chartSeries.push(indicatorScoreSeriesColumn);
       }
@@ -198,6 +199,7 @@ export class KtbEvaluationDetailsComponent implements OnInit {
           data: [],
           cursor: 'pointer',
           visible: false,
+          turboThreshold: 0
         };
         chartSeries.push(indicatorScoreSeriesLine);
       }
@@ -220,6 +222,7 @@ export class KtbEvaluationDetailsComponent implements OnInit {
               yAxis: 1,
               data: [],
               visible: false,
+              turboThreshold: 0
             };
             chartSeries.push(indicatorChartSeries);
           }
@@ -234,6 +237,7 @@ export class KtbEvaluationDetailsComponent implements OnInit {
       {
         name: 'Score',
         rowsize: 0.85,
+        turboThreshold: 0,
         data: chartSeries.find(series => series.name == 'Score').data.map((s) => {
           let time = moment(s.x).format();
           let index = this._heatmapOptions.yAxis[0].categories.indexOf("Score");
@@ -249,6 +253,7 @@ export class KtbEvaluationDetailsComponent implements OnInit {
       },
       {
         name: 'SLOs',
+        turboThreshold: 0,
         data: chartSeries.reverse().reduce((r, d) => [...r, ...d.data.filter(s => s.indicatorResult).map((s) => {
           let time = moment(s.x).format();
           let index = this._heatmapOptions.yAxis[0].categories.indexOf(s.indicatorResult.value.metric);
