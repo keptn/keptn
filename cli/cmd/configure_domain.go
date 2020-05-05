@@ -50,7 +50,7 @@ This is mandatory if *xip.io* cannot be used (e.g., when running Keptn on EKS, A
 
 Please find more information on https://keptn.sh/docs/develop/reference/troubleshooting/#verify-kubernetes-context-with-keptn-installation
 `,
-	Example: `keptn configure domain YOUR.DOMAIN.COM`,
+	Example:      `keptn configure domain YOUR.DOMAIN.COM`,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
 
@@ -150,6 +150,15 @@ Please find more information on https://keptn.sh/docs/develop/reference/troubles
 			}
 
 			if err := updateKeptnDomainConfigMap(path, args[0]); err != nil {
+				return err
+			}
+
+			// Important: The restart of the api-gateway-nginx pod is necessary for EKS
+			if err := keptnutils.RestartPodsWithSelector(false, "keptn", "run=api-gateway-nginx"); err != nil {
+				return err
+			}
+
+			if err := keptnutils.WaitForPodsWithSelector(false, "keptn", "run=api-gateway-nginx", 5, 5*time.Second); err != nil {
 				return err
 			}
 
