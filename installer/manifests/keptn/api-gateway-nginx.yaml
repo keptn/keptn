@@ -1,0 +1,216 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-nginx-config
+  namespace: keptn
+data:
+  nginx.conf: |
+    user nginx;
+    worker_processes  3;
+    error_log /dev/stdout info;
+    events {
+      worker_connections  10240;
+    }
+
+    http {
+      log_format  main
+              'remote_addr:$remote_addr\t'
+              'time_local:$time_local\t'
+              'method:$request_method\t'
+              'uri:$request_uri\t'
+              'host:$host\t'
+              'status:$status\t'
+              'bytes_sent:$body_bytes_sent\t'
+              'referer:$http_referer\t'
+              'useragent:$http_user_agent\t'
+              'forwardedfor:$http_x_forwarded_for\t'
+              'request_time:$request_time';
+      access_log /dev/stdout;
+
+      # https://www.nginx.com/blog/websocket-nginx/
+      map $http_upgrade $connection_upgrade {
+        default upgrade;
+        '' close;
+      }
+
+      server {
+          listen       80;
+          server_name  _;
+
+          location /configuration-service/swagger-ui/swagger.yaml {
+            # auth via backend (if the subrequest returns a 2xx response code, the access is allowed. If it returns 401 or 403,
+            # the access is denied) before we store the file
+            # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
+
+            rewrite /configuration-service/(.*) /$1  break;
+            proxy_pass         http://configuration-service:8080;
+            proxy_redirect     off;
+            proxy_set_header   Host $host;
+            proxy_http_version 1.1;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+          }
+
+          location  /configuration-service {
+            # auth via backend (if the subrequest returns a 2xx response code, the access is allowed. If it returns 401 or 403,
+            # the access is denied) before we store the file
+            # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
+            auth_request               /v1/auth;
+
+            rewrite /configuration-service/(.*) /$1  break;
+            proxy_pass         http://configuration-service:8080;
+            proxy_redirect     off;
+            proxy_set_header   Host $host;
+            proxy_http_version 1.1;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+          }
+
+          # This is a legacy endpoint which allows to upload project resources using the url of the api.
+          # Note that this endpoint is deprecated and will be removed with v1. Hence, please directly use
+          # the api of the configuration-service
+          location ~* /v1/project/[a-z0-9-]+/resource {
+            # auth via backend (if the subrequest returns a 2xx response code, the access is allowed. If it returns 401 or 403,
+            # the access is denied) before we store the file
+            # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
+            auth_request               /v1/auth;
+
+            rewrite /configuration-service/(.*) /$1  break;
+            proxy_pass         http://configuration-service:8080;
+            proxy_redirect     off;
+            proxy_set_header   Host $host;
+            proxy_http_version 1.1;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+          }
+
+          # This is a legacy endpoint which allows to upload stage resources using the url of the api.
+          # Note that this endpoint is deprecated and will be removed with v1. Hence, please directly use
+          # the api of the configuration-service
+          location ~* /v1/project/[a-z0-9-]+/stage/[a-z0-9-]+/resource {
+            # auth via backend (if the subrequest returns a 2xx response code, the access is allowed. If it returns 401 or 403,
+            # the access is denied) before we store the file
+            # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
+            auth_request               /v1/auth;
+
+            rewrite /configuration-service/(.*) /$1  break;
+            proxy_pass         http://configuration-service:8080;
+            proxy_redirect     off;
+            proxy_set_header   Host $host;
+            proxy_http_version 1.1;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+          }
+
+          # This is a legacy endpoint which allows to upload service resources using the url of the api.
+          # Note that this endpoint is deprecated and will be removed with v1. Hence, please directly use
+          # the api of the configuration-service
+          location ~* /v1/project/[a-z0-9-]+/stage/[a-z0-9-]+/service/[a-z0-9-]+/resource {
+            # auth via backend (if the subrequest returns a 2xx response code, the access is allowed. If it returns 401 or 403,
+            # the access is denied) before we store the file
+            # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
+            auth_request               /v1/auth;
+
+            rewrite /configuration-service/(.*) /$1  break;
+            proxy_pass         http://configuration-service:8080;
+            proxy_redirect     off;
+            proxy_set_header   Host $host;
+            proxy_http_version 1.1;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+          }
+
+          # special configuration for /v1/auth to always use POST requests
+          location /v1/auth {
+            rewrite /v1/auth/(.*) /$1  break;
+
+            proxy_method POST;
+            proxy_pass_request_body off;
+
+            proxy_pass http://api-service:8080;
+            proxy_http_version 1.1;
+            proxy_pass_request_headers on; # only pass reuquest headers to this service
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+          }
+
+          location /v2 {
+            # ToDo
+            rewrite /v2/(.*) /$1  break;
+          }
+
+          # default location: use existing api
+          location / {
+            proxy_pass http://api-service:8080;
+            proxy_http_version 1.1;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            # https://www.nginx.com/blog/websocket-nginx/
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "Upgrade";
+            proxy_set_header Host $host;
+          }
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway-nginx
+  namespace: keptn
+spec:
+  selector:
+    matchLabels:
+      run: api-gateway-nginx
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: api-gateway-nginx
+    spec:
+      containers:
+        - name: api-gateway-nginx
+          image: nginx:1.17.9
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - mountPath: /etc/nginx # mount api-nginx-config volume to /etc/nginx
+              readOnly: true
+              name: api-nginx-config
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+      volumes:
+        - name: api-nginx-config
+          configMap:
+            name: api-nginx-config # place ConfigMap `api-nginx-config` on /etc/nginx
+            items:
+              - key: nginx.conf
+                path: nginx.conf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-gateway-nginx
+  namespace: keptn
+  labels:
+    run: api-gateway-nginx
+spec:
+  ports:
+    - port: 80
+      name: http
+      targetPort: 80
+      protocol: TCP
+  selector:
+    run: api-gateway-nginx
