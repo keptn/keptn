@@ -104,15 +104,15 @@ kubectl -n keptn get svc gatekeeper-service
 kubectl -n keptn get svc dynatrace-service
 
   if [[ $? == '0' ]]; then
-      print_debug "Dynatrace-service detected. Upgrading to 0.6.3"
-      kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/dynatrace-service/release-0.6.3/deploy/manifests/dynatrace-service/dynatrace-service.yaml
+      print_debug "Dynatrace-service detected. Upgrading to 0.7.0"
+      kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/dynatrace-service/release-0.7.0/deploy/manifests/dynatrace-service/dynatrace-service.yaml
   fi
 
 kubectl -n keptn get svc dynatrace-sli-service
 
   if [[ $? == '0' ]]; then
-      print_debug "Dynatrace-sli-service detected. Upgrading to 0.3.2"
-      kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/dynatrace-sli-service/release-0.3.2/deploy/service.yaml
+      print_debug "Dynatrace-sli-service detected. Upgrading to 0.4.0"
+      kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/dynatrace-sli-service/release-0.4.0/deploy/service.yaml
   fi
 
 kubectl -n keptn get svc prometheus-service
