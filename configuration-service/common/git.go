@@ -67,7 +67,7 @@ func CheckoutBranch(project string, branch string, disableUpstreamSync bool) err
 		repoURI := getRepoURI(credentials.RemoteURI, credentials.User, credentials.Token)
 		_, err = utils.ExecuteCommandInDirectory("git", []string{"pull", "-s", "recursive", "-X", "theirs", repoURI}, projectConfigPath)
 		if err != nil {
-			return err
+			return obfuscateErrorMessage(err, credentials)
 		}
 	}
 	return nil
@@ -91,7 +91,7 @@ func CreateBranch(project string, branch string, sourceBranch string) error {
 		repoURI := getRepoURI(credentials.RemoteURI, credentials.User, credentials.Token)
 		_, err = utils.ExecuteCommandInDirectory("git", []string{"push", "--set-upstream", repoURI, branch}, projectConfigPath)
 		if err != nil {
-			return errors.New("Could not push to upstream")
+			return obfuscateErrorMessage(err, credentials)
 		}
 	}
 
@@ -114,15 +114,23 @@ func StageAndCommitAll(project string, message string, withPull bool) error {
 		if withPull {
 			_, err = utils.ExecuteCommandInDirectory("git", []string{"pull", "-s", "recursive", "-X", "theirs", repoURI}, projectConfigPath)
 			if err != nil {
-				return err
+				return obfuscateErrorMessage(err, credentials)
 			}
 		}
 		_, err = utils.ExecuteCommandInDirectory("git", []string{"push", repoURI}, projectConfigPath)
 		if err != nil {
-			return err
+			return obfuscateErrorMessage(err, credentials)
 		}
 	}
 	return nil
+}
+
+func obfuscateErrorMessage(err error, credentials *GitCredentials) error {
+	if credentials.Token != "" {
+		errorMessage := strings.ReplaceAll(err.Error(), credentials.Token, "********")
+		return errors.New(errorMessage)
+	}
+	return err
 }
 
 // GetCurrentVersion gets the latest version (i.e. commit hash) of the currently checked out branch
