@@ -114,13 +114,15 @@ export class Trace {
   }
 
   isProblem(): boolean {
-    return this.type.indexOf('problem') != -1;
+    return this.type.indexOf('problem') != -1 && this.data.State === 'OPEN';
   }
 
   isSuccessful(): boolean {
     let result: boolean = false;
     if(this.data) {
       if(this.data.result == 'pass') {
+        result = true;
+      } else if(this.data.State === 'CLOSED' || this.data.State === 'RESOLVED') {
         result = true;
       }
     }
@@ -130,8 +132,10 @@ export class Trace {
   getLabel(): string {
     // TODO: use translation file
     if(!this.label) {
-      if(this.type === "sh.keptn.events.problem" && this.data.State === "RESOLVED") {
+      if(this.type === 'sh.keptn.events.problem' && this.data.State === 'RESOLVED') {
         this.label = labels["sh.keptn.events.problem.resolved"];
+      } else if(this.type === 'sh.keptn.events.problem' && this.data.State === 'CLOSED') {
+        this.label = labels["sh.keptn.event.problem.close"];
       } else {
         this.label = labels[this.type] || this.type;
       }
