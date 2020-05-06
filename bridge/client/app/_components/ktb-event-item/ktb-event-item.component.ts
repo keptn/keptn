@@ -1,3 +1,5 @@
+import * as moment from 'moment';
+
 import {ChangeDetectorRef, Component, Directive, Input, OnInit} from '@angular/core';
 import {Trace} from "../../_models/trace";
 import DateUtil from "../../_utils/date.utils";
@@ -35,6 +37,10 @@ export class KtbEventItemComponent implements OnInit {
 
   getCalendarFormat() {
     return DateUtil.getCalendarFormats().sameElse;
+  }
+
+  getDuration(start, end) {
+    return DateUtil.getDurationFormatted(start, end);
   }
 
 }

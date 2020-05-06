@@ -28,7 +28,7 @@
           </div>
         </div>
         <div *ngIf="_event.data.start && _event.data.end">
-          <p class="m-0 mt-1 nobreak"><span [textContent]="_event.data.start | amDateFormat:'L LT'"></span> - <span [textContent]="_event.data.end | amDateFormat:'L LT'"></span> (<span [textContent]="_event.data.end | amDifference: _event.data.start :'minutes'"></span> Minutes)</p>
+          <p class="m-0 mt-1 nobreak"><span [textContent]="_event.data.start | amDateFormat:'L LT'"></span> - <span [textContent]="_event.data.end | amDateFormat:'L LT'"></span> (<span [textContent]="getDuration(_event.data.start, _event.data.end)"></span>)</p>
         </div>
         <div *ngIf="_event.data.labels">
           <div fxLayout="row" fxLayoutAlign="start center">
