@@ -114,6 +114,7 @@ func GetProjectProjectNameStageHandlerFunc(params stage.GetProjectProjectNameSta
 func GetProjectProjectNameStageStageNameHandlerFunc(params stage.GetProjectProjectNameStageStageNameParams) middleware.Responder {
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
+
 	if !common.ProjectExists(params.ProjectName) {
 		return stage.NewGetProjectProjectNameStageStageNameNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project not found")})
 	}
