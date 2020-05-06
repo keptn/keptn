@@ -31,7 +31,7 @@ func GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHan
 	params service_resource.GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIParams) middleware.Responder {
 	logger := utils.NewLogger("", "", "configuration-service")
 
-  common.LockProject(params.ProjectName)
+    common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
 	serviceConfigPath := config.ConfigDir + "/" + params.ProjectName + "/" + params.ServiceName
@@ -300,13 +300,14 @@ func PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 func PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc(
 	params service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIParams) middleware.Responder {
 	logger := utils.NewLogger("", "", "configuration-service")
+
+	common.LockProject(params.ProjectName)
+	defer common.UnlockProject(params.ProjectName)
+
 	if !common.ServiceExists(params.ProjectName, params.StageName, params.ServiceName, false) {
 		return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIBadRequest().
 			WithPayload(&models.Error{Code: 400, Message: swag.String("Service does not exist")})
 	}
-	
-	common.LockProject(params.ProjectName)
-	defer common.UnlockProject(params.ProjectName)
 
 	serviceConfigPath := config.ConfigDir + "/" + params.ProjectName + "/" + params.ServiceName
 

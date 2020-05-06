@@ -17,12 +17,13 @@ import (
 // GetProjectProjectNameStageStageNameResourceHandlerFunc get list of stage resources
 func GetProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resource.GetProjectProjectNameStageStageNameResourceParams) middleware.Responder {
 	logger := utils.NewLogger("", "", "configuration-service")
-	if !common.StageExists(params.ProjectName, params.StageName, false) {
-		return stage_resource.NewGetProjectProjectNameStageStageNameResourceNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Stage does not exist")})
-	}
 
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
+
+	if !common.StageExists(params.ProjectName, params.StageName, false) {
+		return stage_resource.NewGetProjectProjectNameStageStageNameResourceNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Stage does not exist")})
+	}
 
 	logger.Debug("Checking out " + params.StageName + " branch")
 	err := common.CheckoutBranch(params.ProjectName, params.StageName, *params.DisableUpstreamSync)
@@ -40,12 +41,13 @@ func GetProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resourc
 // GetProjectProjectNameStageStageNameResourceResourceURIHandlerFunc get the specified resource
 func GetProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(params stage_resource.GetProjectProjectNameStageStageNameResourceResourceURIParams) middleware.Responder {
 	logger := utils.NewLogger("", "", "configuration-service")
-	if !common.StageExists(params.ProjectName, params.StageName, *params.DisableUpstreamSync) {
-		return stage_resource.NewGetProjectProjectNameStageStageNameResourceResourceURINotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project not found")})
-	}
 
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
+
+	if !common.StageExists(params.ProjectName, params.StageName, *params.DisableUpstreamSync) {
+		return stage_resource.NewGetProjectProjectNameStageStageNameResourceResourceURINotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project not found")})
+	}
 
 	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
 	resourcePath := projectConfigPath + "/" + params.ResourceURI
@@ -79,12 +81,13 @@ func GetProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(params st
 // PostProjectProjectNameStageStageNameResourceHandlerFunc creates list of new resources in a stage
 func PostProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resource.PostProjectProjectNameStageStageNameResourceParams) middleware.Responder {
 	logger := utils.NewLogger("", "", "configuration-service")
-	if !common.StageExists(params.ProjectName, params.StageName, false) {
-		return stage_resource.NewPostProjectProjectNameStageStageNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Stage does not exist")})
-	}
 
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
+
+	if !common.StageExists(params.ProjectName, params.StageName, false) {
+		return stage_resource.NewPostProjectProjectNameStageStageNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Stage does not exist")})
+	}
 
 	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
 
@@ -125,14 +128,15 @@ func PostProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resour
 // PutProjectProjectNameStageStageNameResourceHandlerFunc updates list of stage resources
 func PutProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resource.PutProjectProjectNameStageStageNameResourceParams) middleware.Responder {
 	logger := utils.NewLogger("", "", "configuration-service")
-	if !common.StageExists(params.ProjectName, params.StageName, false) {
-		return stage_resource.NewPutProjectProjectNameStageStageNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Stage does not exist")})
-	}
 
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
-	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
+	if !common.StageExists(params.ProjectName, params.StageName, false) {
+		return stage_resource.NewPutProjectProjectNameStageStageNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Stage does not exist")})
+	}
+
+    projectConfigPath := config.ConfigDir + "/" + params.ProjectName
 
 	logger.Debug("Creating new resource(s) in: " + projectConfigPath + " in stage " + params.StageName)
 	logger.Debug("Checking out branch: " + params.StageName)
@@ -172,12 +176,13 @@ func PutProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resourc
 // PutProjectProjectNameStageStageNameResourceResourceURIHandlerFunc updates the specified stage resource
 func PutProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(params stage_resource.PutProjectProjectNameStageStageNameResourceResourceURIParams) middleware.Responder {
 	logger := utils.NewLogger("", "", "configuration-service")
-	if !common.StageExists(params.ProjectName, params.StageName, false) {
-		return stage_resource.NewPutProjectProjectNameStageStageNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Stage does not exist")})
-	}
 
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
+
+	if !common.StageExists(params.ProjectName, params.StageName, false) {
+		return stage_resource.NewPutProjectProjectNameStageStageNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Stage does not exist")})
+	}
 
 	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
 
