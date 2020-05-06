@@ -8,6 +8,7 @@ manifests=(
   "https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/logging/mongodb-datastore/k8s/mongodb-datastore.yaml"
   "https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/logging/mongodb-datastore/mongodb-datastore-distributor.yaml"
   "https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/keptn/core.yaml"
+  "https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/keptn/api-gateway-nginx.yaml"
   "https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/keptn/quality-gates.yaml"
   "https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/keptn/continuous-deployment.yaml"
   "https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/keptn/continuous-operations.yaml"
@@ -40,11 +41,16 @@ API_IMAGE=$(kubectl get deployment -n keptn api -o=jsonpath='{$.spec.template.sp
 
 
 print_debug "Updating Keptn core."
+kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/logging/mongodb-datastore/k8s/mongodb-datastore.yaml
+kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/logging/mongodb-datastore/mongodb-datastore-distributor.yaml
+
 kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/keptn/core.yaml
 kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/keptn/quality-gates.yaml
 
 kubectl -n keptn delete deployment api
 kubectl -n keptn delete service api
+
+kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/keptn/api-gateway-nginx.yaml
 
 kubectl get namespace openshift
   if [[ $? == '0' ]]; then
