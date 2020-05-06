@@ -7,10 +7,10 @@ export default class DateUtil {
 
     let result = moment.utc(diff).format("s")+' seconds';
 
-    if(duration.asMinutes() > 0)
+    if(Math.abs(duration.asMinutes()) > 1)
       result = moment.utc(diff).format("mm")+' minutes '+result;
 
-    if(duration.asHours() > 0)
+    if(Math.abs(duration.asHours()) > 1)
       result = Math.floor(duration.asHours())+' hours '+result;
 
     return result;
