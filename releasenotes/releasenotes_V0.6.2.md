@@ -2,17 +2,18 @@
 
 This release provides improvements in working with the Keptn Bridge and API as well as troubleshooting support by creating a support-archive through the Keptn CLI. 
 
-:sparkles: *Keptn Bridge:* To provide a convenient and secure way of working with the Keptn Bridge, the Keptn CLI command: `keptn configure bridge --action=expose` has been introduced. This command allows exposure of the Bridge via Istio or Nginx ingress, depending on what's available. Additionally, basic authentication with a default username and password is provided to secure access.
-
-:rocket: *Keptn API:* Internally used endpoints for retrieving Keptn status information are now accessible through the public API, e.g.:
+:rocket: *Improved automation support with API extensions and deep linking into Keptn Bridge:* 
+- *Keptn API:* Internally used endpoints for retrieving Keptn status information are now accessible through the public API, e.g.:
   * GET `/v1/project` - Returns all projects managed by Keptn.
   * GET `/v1/project/{projectName}` - Returns meta-information about a project.
   * GET `/v1/project/{projectName}/stage` - Returns stages from a project.
   * GET `/v1/project/{projectName}/stage/{stageName}/service` - Returns services from a stage.
 
-:star2: *Troubleshooting support:* The CLI now offers the command: `keptn generate support-archive` that fetches all log files from a Keptn deployment and puts them into an archive. This archive can then be used for troubleshooting without connection to the Kubernetes cluster.
+- *Keptn Bridge:* To provide a convenient and secure way of working with the Keptn Bridge, the Keptn CLI command: `keptn configure bridge --action=expose` has been introduced. This command allows exposure of the Bridge via Istio or Nginx ingress, secured by a basic authentication with a default username and password. For improved automation support, deep links into the Keptn Bridge are provided that point to certain UI components.
 
-:squid: *Argo CD support:* With this release, Keptn can be used in combination with Argo CD / Argo Rollout as explained by a [tutorial](https://tutorials.keptn.sh/tutorials/keptn-argo-cd-deployment/#0). While Argo CD is used for deploying an *Argo Rollout*, Keptn is leveraged for testing, evaluating, and promoting this rollout.
+:squid: *Argo CD for deployment:* With this release, Keptn can be used in combination with Argo CD / Argo Rollout as explained by a [tutorial](https://tutorials.keptn.sh/tutorials/keptn-argo-cd-deployment/#0). While Argo CD is used for deploying an *Argo Rollout*, Keptn is leveraged for testing, evaluating, and promoting this rollout.
+
+:star2: *Easier bug reporting with support-archives:* The CLI now offers the command: `keptn generate support-archive` that fetches all log files from a Keptn deployment and puts them into an archive. This archive can then be used for troubleshooting without connection to the Kubernetes cluster.
 
 Last but not least, this release addresses limitations and issues in regard to create a Keptn project with a not-initialized Git repo. 
 
