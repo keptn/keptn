@@ -106,3 +106,4 @@ Implemented **Keptn spec** version: [0.1.3](https://github.com/keptn/spec/tree/0
 - Cluster-internal non-http traffic does not use VirtualServices for Blue/Green deployments [#1715](https://github.com/keptn/keptn/issues/1715)
 - For old limitations, please see [Release 0.6.1](https://github.com/keptn/keptn/releases/tag/0.6.1). 
 - After executing `keptn configure domain`, an already exposed Keptn Bridge is no longer accessible [#1752](https://github.com/keptn/keptn/issues/1752)
+- The installation option --gateway=NodePort currently uses the internal node IP and, hence, a NodePort installation only works if the node can be directly accessed [#1708](https://github.com/keptn/keptn/issues/1708)
