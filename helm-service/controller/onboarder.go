@@ -57,14 +57,14 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event, loggingDone chan bool) error
 		// Uses the provided deployment strategy for ALL stages
 		deplStrategies, err := fixDeploymentStrategies(keptnHandler, event.DeploymentStrategies["*"])
 		if err != nil {
-			o.logger.Error(fmt.Sprintf("Error when getting deployment strategies: %s" + err.Error()))
+			o.logger.Error(fmt.Sprintf("Error when getting deployment strategies: %s", err.Error()))
 			return err
 		}
 		event.DeploymentStrategies = deplStrategies
 	} else if os.Getenv("PRE_WORKFLOW_ENGINE") == "true" && len(event.DeploymentStrategies) == 0 {
 		deplStrategies, err := getDeploymentStrategies(keptnHandler)
 		if err != nil {
-			o.logger.Error(fmt.Sprintf("Error when getting deployment strategies: %s" + err.Error()))
+			o.logger.Error(fmt.Sprintf("Error when getting deployment strategies: %s", err.Error()))
 			return err
 		}
 		event.DeploymentStrategies = deplStrategies
