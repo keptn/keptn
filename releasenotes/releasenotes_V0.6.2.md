@@ -9,7 +9,7 @@ This release provides improvements in working with the Keptn Bridge and API as w
   * GET `/v1/project/{projectName}/stage` - Returns stages from a project.
   * GET `/v1/project/{projectName}/stage/{stageName}/service` - Returns services from a stage.
 
-- *Keptn Bridge:* To provide a convenient and secure way of working with the Keptn Bridge, the Keptn CLI command: `keptn configure bridge --action=expose` has been introduced. This command allows exposure of the Bridge via Istio or Nginx ingress, secured by a basic authentication with a default username and password. For improved automation support, deep links into the Keptn Bridge are provided that point to certain UI components.
+- *Keptn Bridge:* To provide a convenient and secure way of working with the Keptn Bridge, the Keptn CLI command: `keptn configure bridge --action=expose` has been introduced. This command allows exposure of the Bridge via Istio or Nginx ingress. In addition, basic authentication with username and password can be activated. For improved automation support, deep links into the Keptn Bridge are provided that point to certain UI components.
 
 :squid: *Argo CD for deployment:* With this release, Keptn can be used in combination with Argo CD / Argo Rollout as explained by a [tutorial](https://tutorials.keptn.sh/tutorials/keptn-argo-cd-deployment/#0). While Argo CD is used for deploying an *Argo Rollout*, Keptn is leveraged for testing, evaluating, and promoting this rollout.
 
