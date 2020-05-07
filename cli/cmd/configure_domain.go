@@ -50,7 +50,7 @@ This is mandatory if *xip.io* cannot be used (e.g., when running Keptn on EKS, A
 
 Please find more information on https://keptn.sh/docs/develop/reference/troubleshooting/#verify-kubernetes-context-with-keptn-installation
 `,
-	Example: `keptn configure domain YOUR.DOMAIN.COM`,
+	Example:      `keptn configure domain YOUR.DOMAIN.COM`,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
 
@@ -153,6 +153,15 @@ Please find more information on https://keptn.sh/docs/develop/reference/troubles
 				return err
 			}
 
+			// Important: The restart of the api-gateway-nginx pod is necessary for EKS
+			if err := keptnutils.RestartPodsWithSelector(false, "keptn", "run=api-gateway-nginx"); err != nil {
+				return err
+			}
+
+			if err := keptnutils.WaitForPodsWithSelector(false, "keptn", "run=api-gateway-nginx", 5, 5*time.Second); err != nil {
+				return err
+			}
+
 			if strings.ToLower(*configureDomainParams.PlatformID) == openshift {
 				logging.PrintLog("Successfully configured domain", logging.InfoLevel)
 				fmt.Println("Please manually execute the following commands for deleting an old route and creating a new route:")
@@ -167,7 +176,19 @@ Please find more information on https://keptn.sh/docs/develop/reference/troubles
 				fmt.Println("Afterwards, you can login with 'keptn auth --endpoint=https://api.keptn." + args[0] + " --token=" + token + "'")
 
 			} else {
-				if err := authUsingKube(); err != nil {
+				var err error
+				for retries := 0; retries < 2; retries++ {
+					if err = authUsingKube(); err == nil {
+						break
+					}
+					if err := keptnutils.RestartPodsWithSelector(false, "keptn", "run=api-gateway-nginx"); err != nil {
+						return err
+					}
+					if err := keptnutils.WaitForPodsWithSelector(false, "keptn", "run=api-gateway-nginx", 5, 5*time.Second); err != nil {
+						return err
+					}
+				}
+				if err != nil {
 					logging.PrintLog("Cannot authenticate to api", logging.QuietLevel)
 					return err
 				}
