@@ -297,6 +297,10 @@ export class KtbEvaluationDetailsComponent implements OnInit {
     return DateUtil.getCalendarFormats().sameElse;
   }
 
+  getDuration(start, end) {
+    return DateUtil.getDurationFormatted(start, end);
+  }
+
   private binarySearch(ar, el, compare_fn) {
     if(compare_fn(el, ar[0]) < 0)
       return 0;
