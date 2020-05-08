@@ -102,10 +102,15 @@ definitions:
       creationDate:
         type: string
         description: Creation date of the service
+      openApprovals:
+        type: array
+        items:
+          $ref: '#/definitions/EventContext'
       lastEventTypes:
         type: object
         additionalProperties:
           $ref: '#/definitions/EventContext'
+
 
   ServicesWithStageInfo:
     type: object

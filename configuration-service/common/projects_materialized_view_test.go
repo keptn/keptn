@@ -837,7 +837,7 @@ func Test_projectsMaterializedView_UpdateEventOfService(t *testing.T) {
 		ProjectRepo ProjectRepo
 	}
 	type args struct {
-		keptnBase    *keptn.KeptnBase
+		keptnBase    interface{}
 		eventType    string
 		keptnContext string
 	}
@@ -928,6 +928,106 @@ func Test_projectsMaterializedView_UpdateEventOfService(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "approval.triggered",
+			fields: fields{
+				ProjectRepo: &mockProjectRepo{
+					CreateProjectMock: nil,
+					GetProjectMock: func(projectName string) (project *models.ExpandedProject, err error) {
+						return &models.ExpandedProject{
+							ProjectName: "test-project",
+							Stages: []*models.ExpandedStage{
+								{
+									Services: []*models.ExpandedService{
+										{
+											ServiceName: "test-service",
+										},
+									},
+									StageName: "dev",
+								},
+							},
+						}, nil
+					},
+					UpdateProjectMock: func(project *models.ExpandedProject) error {
+						if len(project.Stages[0].Services[0].OpenApprovals) == 0 {
+							return errors.New("project was not updated correctly - no approval finished event has been added")
+						}
+
+						if project.Stages[0].Services[0].OpenApprovals[0].EventID != "test-event-id" {
+							return errors.New("project was not updated correctly: no event id in approval event")
+						}
+
+						return nil
+					},
+					DeleteProjectMock: nil,
+					GetProjectsMock:   nil,
+				},
+			},
+			args: args{
+				keptnBase: &keptn.ApprovalTriggeredEventData{
+					Project: "test-project",
+					Stage:   "dev",
+					Service: "test-service",
+				},
+				eventType:    keptn.ApprovalTriggeredEventType,
+				keptnContext: "test-context",
+			},
+			wantErr: false,
+		},
+		{
+			name: "approval.finished",
+			fields: fields{
+				ProjectRepo: &mockProjectRepo{
+					CreateProjectMock: nil,
+					GetProjectMock: func(projectName string) (project *models.ExpandedProject, err error) {
+						return &models.ExpandedProject{
+							ProjectName: "test-project",
+							Stages: []*models.ExpandedStage{
+								{
+									Services: []*models.ExpandedService{
+										{
+											ServiceName: "test-service",
+											OpenApprovals: []*models.EventContext{
+												{
+													EventID:      "test-event-id",
+													KeptnContext: "test-context",
+													Time:         "",
+												},
+											},
+										},
+									},
+									StageName: "dev",
+								},
+							},
+						}, nil
+					},
+					UpdateProjectMock: func(project *models.ExpandedProject) error {
+						if len(project.Stages[0].Services[0].OpenApprovals) != 0 {
+							return errors.New("project was not updated correctly - open approval was not removed")
+						}
+
+						return nil
+					},
+					DeleteProjectMock: nil,
+					GetProjectsMock:   nil,
+				},
+			},
+			args: args{
+				keptnBase: &keptn.ApprovalTriggeredEventData{
+					Project: "test-project",
+					Stage:   "dev",
+					Service: "test-service",
+					Approval: &keptn.ApprovalData{
+						TriggeredID: stringp("test-event-id"),
+						Result:      stringp("Pass"),
+						Status:      stringp("Success"),
+					},
+				},
+				eventType:    keptn.ApprovalFinishedEventType,
+				keptnContext: "test-context",
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -935,7 +1035,7 @@ func Test_projectsMaterializedView_UpdateEventOfService(t *testing.T) {
 				ProjectRepo: tt.fields.ProjectRepo,
 				Logger:      keptn.NewLogger("", "", "configuration-service"),
 			}
-			if err := mv.UpdateEventOfService(tt.args.keptnBase, tt.args.eventType, tt.args.keptnContext, ""); (err != nil) != tt.wantErr {
+			if err := mv.UpdateEventOfService(tt.args.keptnBase, tt.args.eventType, tt.args.keptnContext, "test-event-id"); (err != nil) != tt.wantErr {
 				t.Errorf("UpdateEventOfService() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

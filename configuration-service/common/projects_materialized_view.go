@@ -5,6 +5,7 @@ import (
 	"fmt"
 	keptn "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/configuration-service/models"
+	"github.com/mitchellh/mapstructure"
 	"strconv"
 	"time"
 )
@@ -213,7 +214,15 @@ func (mv *projectsMaterializedView) DeleteService(project string, stage string, 
 	return nil
 }
 
-func (mv *projectsMaterializedView) UpdateEventOfService(keptnBase *keptn.KeptnBase, eventType string, keptnContext string, eventID string) error {
+func (mv *projectsMaterializedView) UpdateEventOfService(event interface{}, eventType string, keptnContext string, eventID string) error {
+
+	keptnBase := &keptn.KeptnBase{}
+	err := mapstructure.Decode(event, keptnBase)
+	if err != nil {
+		mv.Logger.Error("Could not parse event data: " + err.Error())
+		return err
+	}
+
 	existingProject, err := mv.GetProject(keptnBase.Project)
 	if err != nil {
 		mv.Logger.Error("Could not update service " + keptnBase.Service + " in stage " + keptnBase.Stage + " in project " + keptnBase.Project + ". Could not load project: " + err.Error())
@@ -234,6 +243,25 @@ func (mv *projectsMaterializedView) UpdateEventOfService(keptnBase *keptn.KeptnB
 				service.DeployedImage = *keptnBase.Image + ":" + *keptnBase.Tag
 			}
 		}
+		if eventType == keptn.ApprovalTriggeredEventType {
+			if service.OpenApprovals == nil {
+				service.OpenApprovals = []*models.EventContext{}
+			}
+			service.OpenApprovals = append(service.OpenApprovals, contextInfo)
+		}
+		if eventType == keptn.ApprovalFinishedEventType {
+			approvalFinishedData := &keptn.ApprovalFinishedEventData{}
+			config := &mapstructure.DecoderConfig{TagName: "json", Result: &approvalFinishedData}
+			decoder, err := mapstructure.NewDecoder(config)
+			err = decoder.Decode(event)
+			// err := mapstructure.Decode(event, approvalFinishedData)
+			if err != nil {
+				mv.Logger.Error("Could not parse approval.finished event data: " + err.Error())
+				return err
+			}
+			mv.Logger.Info("Trying to close open approval...")
+			mv.closeOpenApproval(approvalFinishedData, service)
+		}
 		service.LastEventTypes[eventType] = *contextInfo
 		return nil
 	})
@@ -248,6 +276,23 @@ func (mv *projectsMaterializedView) UpdateEventOfService(keptnBase *keptn.KeptnB
 		return err
 	}
 	return nil
+}
+
+func (mv *projectsMaterializedView) closeOpenApproval(approvalFinishedData *keptn.ApprovalFinishedEventData, service *models.ExpandedService) {
+	if approvalFinishedData.Approval == nil || approvalFinishedData.Approval.TriggeredID == nil {
+		mv.Logger.Debug("No approval.triggeredID has been set. Ignoring event.")
+		return
+	}
+
+	updatedApprovals := []*models.EventContext{}
+	for _, approval := range service.OpenApprovals {
+		if approval.EventID == *approvalFinishedData.Approval.TriggeredID {
+			continue
+		}
+		updatedApprovals = append(updatedApprovals, approval)
+	}
+
+	service.OpenApprovals = updatedApprovals
 }
 
 type serviceUpdateFunc func(service *models.ExpandedService) error

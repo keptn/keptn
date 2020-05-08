@@ -1560,6 +1560,12 @@ func init() {
             "$ref": "#/definitions/EventContext"
           }
         },
+        "openApprovals": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/EventContext"
+          }
+        },
         "serviceName": {
           "description": "Service name",
           "type": "string"
@@ -3888,6 +3894,12 @@ func init() {
         "lastEventTypes": {
           "type": "object",
           "additionalProperties": {
+            "$ref": "#/definitions/EventContext"
+          }
+        },
+        "openApprovals": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/EventContext"
           }
         },
