@@ -151,7 +151,7 @@ keptn generate support-archive --dir=/some/directory`,
 
 		fmt.Println("The support archive is available here " + supportArchive)
 		fmt.Println("This support archive potentially contains sensitive data. Therefore, please first review it before distributing.")
-		fmt.Println("If you need help, please use the #help channel in the Keptn Slack workspace https://join.slack.com/t/keptn/shared_invite/enQtNTUxMTQ1MzgzMzUxLWMzNmM1NDc4MmE0MmQ0MDgwYzMzMDc4NjM5ODk0ZmFjNTE2YzlkMGE4NGU5MWUxODY1NTBjNjNmNmI1NWQ1NGY")
+		fmt.Println("If you need help, please use the #help channel in the Keptn Slack workspace https://slack.keptn.sh")
 		return nil
 	},
 }
