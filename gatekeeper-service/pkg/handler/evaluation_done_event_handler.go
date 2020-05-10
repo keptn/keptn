@@ -83,9 +83,6 @@ func (e *EvaluationDoneEventHandler) handleEvaluationDoneEvent(inputEvent keptne
 	}
 
 	if inputEvent.Result == PassResult || inputEvent.Result == WarningResult {
-		e.logger.Info(fmt.Sprintf("Service %s in project %s and stage %s has passed the evaluation",
-			inputEvent.Service, inputEvent.Project, inputEvent.Stage))
-
 		// Check whether shipyard contains ApprovalStrategy
 		if e.isApprovalStrategyDefined(inputEvent.Stage, shipyard) {
 			outgoingEvents = append(outgoingEvents, *e.getApprovalTriggeredEvent(inputEvent, shkeptncontext, image))
@@ -135,7 +132,7 @@ func (e *EvaluationDoneEventHandler) getConfigurationChangeEventForCanaryAction(
 		Labels:  inputEvent.Labels,
 	}
 
-	return getCloudEvent(configChangedEvent, shkeptncontext)
+	return getCloudEvent(configChangedEvent, keptnevents.ConfigurationChangeEventType, shkeptncontext)
 }
 
 func (e *EvaluationDoneEventHandler) getApprovalTriggeredEvent(inputEvent keptnevents.EvaluationDoneEventData, shkeptncontext, image string) *cloudevents.Event {
@@ -158,5 +155,5 @@ func (e *EvaluationDoneEventHandler) getApprovalTriggeredEvent(inputEvent keptne
 		Labels:             inputEvent.Labels,
 		Result:             inputEvent.Result,
 	}
-	return getCloudEvent(approvalTriggeredEvent, shkeptncontext)
+	return getCloudEvent(approvalTriggeredEvent, keptnevents.ApprovalTriggeredEventType, shkeptncontext)
 }

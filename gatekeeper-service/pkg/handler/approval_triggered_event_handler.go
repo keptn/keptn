@@ -88,5 +88,5 @@ func (a *ApprovalTriggeredEventHandler) getApprovalFinishedEvent(inputEvent kept
 			Status:      SucceededResult,
 		},
 	}
-	return getCloudEvent(approvalFinishedEvent, shkeptncontext)
+	return getCloudEvent(approvalFinishedEvent, keptnevents.ApprovalFinishedEventType, shkeptncontext)
 }

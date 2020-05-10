@@ -21,7 +21,8 @@ var approvalTriggeredTests = []struct {
 		shipyard:   getShipyardWithApproval(keptnevents.Automatic, keptnevents.Automatic),
 		inputEvent: getApprovalTriggeredTestData("pass"),
 		outputEvent: []cloudevents.Event{
-			*getCloudEvent(getApprovalFinishedTestData("pass", "succeeded"), shkeptncontext),
+			*getCloudEvent(getApprovalFinishedTestData("pass", "succeeded"),
+				keptnevents.ApprovalFinishedEventType, shkeptncontext),
 		},
 	},
 	{
@@ -30,7 +31,8 @@ var approvalTriggeredTests = []struct {
 		shipyard:   getShipyardWithApproval(keptnevents.Automatic, keptnevents.Manual),
 		inputEvent: getApprovalTriggeredTestData("pass"),
 		outputEvent: []cloudevents.Event{
-			*getCloudEvent(getApprovalFinishedTestData("pass", "succeeded"), shkeptncontext),
+			*getCloudEvent(getApprovalFinishedTestData("pass", "succeeded"),
+				keptnevents.ApprovalFinishedEventType, shkeptncontext),
 		},
 	},
 	{
@@ -54,7 +56,8 @@ var approvalTriggeredTests = []struct {
 		shipyard:   getShipyardWithApproval(keptnevents.Automatic, keptnevents.Automatic),
 		inputEvent: getApprovalTriggeredTestData("warning"),
 		outputEvent: []cloudevents.Event{
-			*getCloudEvent(getApprovalFinishedTestData("pass", "succeeded"), shkeptncontext),
+			*getCloudEvent(getApprovalFinishedTestData("pass", "succeeded"),
+				keptnevents.ApprovalFinishedEventType, shkeptncontext),
 		},
 	},
 	{
@@ -70,7 +73,8 @@ var approvalTriggeredTests = []struct {
 		shipyard:   getShipyardWithApproval(keptnevents.Manual, keptnevents.Automatic),
 		inputEvent: getApprovalTriggeredTestData("warning"),
 		outputEvent: []cloudevents.Event{
-			*getCloudEvent(getApprovalFinishedTestData("pass", "succeeded"), shkeptncontext),
+			*getCloudEvent(getApprovalFinishedTestData("pass", "succeeded"),
+				keptnevents.ApprovalFinishedEventType, shkeptncontext),
 		},
 	},
 	{
@@ -87,7 +91,8 @@ var approvalTriggeredTests = []struct {
 		shipyard:   getShipyardWithApproval(keptnevents.Automatic, keptnevents.Automatic),
 		inputEvent: getApprovalTriggeredTestData("fail"),
 		outputEvent: []cloudevents.Event{
-			*getCloudEvent(getApprovalFinishedTestData("fail", "succeeded"), shkeptncontext),
+			*getCloudEvent(getApprovalFinishedTestData("fail", "succeeded"),
+				keptnevents.ApprovalFinishedEventType, shkeptncontext),
 		},
 	},
 	{
@@ -96,7 +101,8 @@ var approvalTriggeredTests = []struct {
 		shipyard:   getShipyardWithApproval(keptnevents.Automatic, keptnevents.Manual),
 		inputEvent: getApprovalTriggeredTestData("fail"),
 		outputEvent: []cloudevents.Event{
-			*getCloudEvent(getApprovalFinishedTestData("fail", "succeeded"), shkeptncontext),
+			*getCloudEvent(getApprovalFinishedTestData("fail", "succeeded"),
+				keptnevents.ApprovalFinishedEventType, shkeptncontext),
 		},
 	},
 	{
@@ -105,7 +111,8 @@ var approvalTriggeredTests = []struct {
 		shipyard:   getShipyardWithApproval(keptnevents.Manual, keptnevents.Automatic),
 		inputEvent: getApprovalTriggeredTestData("fail"),
 		outputEvent: []cloudevents.Event{
-			*getCloudEvent(getApprovalFinishedTestData("fail", "succeeded"), shkeptncontext),
+			*getCloudEvent(getApprovalFinishedTestData("fail", "succeeded"),
+				keptnevents.ApprovalFinishedEventType, shkeptncontext),
 		},
 	},
 	{
@@ -114,7 +121,8 @@ var approvalTriggeredTests = []struct {
 		shipyard:   getShipyardWithApproval(keptnevents.Manual, keptnevents.Manual),
 		inputEvent: getApprovalTriggeredTestData("fail"),
 		outputEvent: []cloudevents.Event{
-			*getCloudEvent(getApprovalFinishedTestData("fail", "succeeded"), shkeptncontext),
+			*getCloudEvent(getApprovalFinishedTestData("fail", "succeeded"),
+				keptnevents.ApprovalFinishedEventType, shkeptncontext),
 		},
 	},
 }

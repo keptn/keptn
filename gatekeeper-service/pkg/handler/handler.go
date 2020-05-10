@@ -34,7 +34,7 @@ func sendEvents(keptnHandler *keptnevents.Keptn, events []cloudevents.Event, l *
 	}
 }
 
-func getCloudEvent(data interface{}, shkeptncontext string) *cloudevents.Event {
+func getCloudEvent(data interface{}, ceType string, shkeptncontext string) *cloudevents.Event {
 
 	source, _ := url.Parse("gatekeeper-service")
 	contentType := "application/json"
@@ -43,7 +43,7 @@ func getCloudEvent(data interface{}, shkeptncontext string) *cloudevents.Event {
 		Context: cloudevents.EventContextV02{
 			ID:          uuid.New().String(),
 			Time:        &types.Timestamp{Time: time.Now()},
-			Type:        keptnevents.ConfigurationChangeEventType,
+			Type:        ceType,
 			Source:      types.URLRef{URL: *source},
 			ContentType: &contentType,
 			Extensions:  map[string]interface{}{"shkeptncontext": shkeptncontext},
@@ -92,5 +92,5 @@ func getConfigurationChangeEventForNextStage(project, service, nextStage, image,
 		Labels:       labels,
 	}
 
-	return getCloudEvent(configChangedEvent, shkeptncontext)
+	return getCloudEvent(configChangedEvent, keptnevents.ConfigurationChangeEventType, shkeptncontext)
 }
