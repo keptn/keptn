@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"github.com/keptn/keptn/configuration-service/restapi/operations/service_approval"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/services"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/stage"
 	"os"
@@ -245,4 +246,26 @@ func GetService(params services.GetServiceParams) middleware.Responder {
 	}
 
 	return services.NewGetServiceNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Service not found")})
+}
+
+func GetServiceApprovals(params service_approval.GetServiceApprovalsParams) middleware.Responder {
+	mv := common.GetProjectsMaterializedView()
+
+	prj, err := mv.GetProject(params.ProjectName)
+	if err != nil {
+		return service_approval.NewGetServiceApprovalsDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+	}
+
+	if prj == nil {
+		return service_approval.NewGetServiceApprovalsNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project not found")})
+	}
+
+	for _, stg := range prj.Stages {
+		for _, svc := range stg.Services {
+			if svc.ServiceName == params.ServiceName {
+				return service_approval.NewGetServiceApprovalsOK().WithPayload(svc.OpenApprovals)
+			}
+		}
+	}
+	return service_approval.NewGetServiceApprovalsNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Service not found")})
 }

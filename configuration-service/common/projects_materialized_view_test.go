@@ -1013,14 +1013,14 @@ func Test_projectsMaterializedView_UpdateEventOfService(t *testing.T) {
 				},
 			},
 			args: args{
-				keptnBase: &keptn.ApprovalTriggeredEventData{
+				keptnBase: &keptn.ApprovalFinishedEventData{
 					Project: "test-project",
 					Stage:   "dev",
 					Service: "test-service",
-					Approval: &keptn.ApprovalData{
-						TriggeredID: stringp("test-event-id"),
-						Result:      stringp("Pass"),
-						Status:      stringp("Success"),
+					Approval: keptn.ApprovalData{
+						TriggeredID: "test-event-id",
+						Result:      "Pass",
+						Status:      "Success",
 					},
 				},
 				eventType:    keptn.ApprovalFinishedEventType,

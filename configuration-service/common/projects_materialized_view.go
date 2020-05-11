@@ -279,14 +279,14 @@ func (mv *projectsMaterializedView) UpdateEventOfService(event interface{}, even
 }
 
 func (mv *projectsMaterializedView) closeOpenApproval(approvalFinishedData *keptn.ApprovalFinishedEventData, service *models.ExpandedService) {
-	if approvalFinishedData.Approval == nil || approvalFinishedData.Approval.TriggeredID == nil {
+	if approvalFinishedData.Approval.TriggeredID == "" {
 		mv.Logger.Debug("No approval.triggeredID has been set. Ignoring event.")
 		return
 	}
 
 	updatedApprovals := []*models.EventContext{}
 	for _, approval := range service.OpenApprovals {
-		if approval.EventID == *approvalFinishedData.Approval.TriggeredID {
+		if approval.EventID == approvalFinishedData.Approval.TriggeredID {
 			continue
 		}
 		updatedApprovals = append(updatedApprovals, approval)

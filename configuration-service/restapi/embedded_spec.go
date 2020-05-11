@@ -1237,6 +1237,49 @@ func init() {
         }
       ]
     },
+    "/project/{projectName}/stage/{stageName}/service/{serviceName}/approval": {
+      "get": {
+        "tags": [
+          "Service approval"
+        ],
+        "summary": "Get all open service approvals",
+        "operationId": "getServiceApprovals",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/EventContext"
+              }
+            }
+          },
+          "404": {
+            "description": "Failed. Service could not be found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "$ref": "#/parameters/projectName"
+        },
+        {
+          "$ref": "#/parameters/stageName"
+        },
+        {
+          "$ref": "#/parameters/serviceName"
+        }
+      ]
+    },
     "/project/{projectName}/stage/{stageName}/service/{serviceName}/resource": {
       "get": {
         "tags": [
@@ -3464,6 +3507,61 @@ func init() {
           },
           "400": {
             "description": "Failed. Service could not be deleted.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "description": "Name of the project",
+          "name": "projectName",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "description": "Name of the stage",
+          "name": "stageName",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "description": "Name of the service",
+          "name": "serviceName",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
+    "/project/{projectName}/stage/{stageName}/service/{serviceName}/approval": {
+      "get": {
+        "tags": [
+          "Service approval"
+        ],
+        "summary": "Get all open service approvals",
+        "operationId": "getServiceApprovals",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/EventContext"
+              }
+            }
+          },
+          "404": {
+            "description": "Failed. Service could not be found.",
             "schema": {
               "$ref": "#/definitions/Error"
             }

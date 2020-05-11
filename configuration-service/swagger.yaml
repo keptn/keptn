@@ -1241,6 +1241,32 @@ paths:
           schema:
             $ref: '#/definitions/Error'
 
+  '/project/{projectName}/stage/{stageName}/service/{serviceName}/approval':
+    parameters:
+      - $ref: '#/parameters/projectName'
+      - $ref: '#/parameters/stageName'
+      - $ref: '#/parameters/serviceName'
+    get:
+      tags:
+        - Service approval
+      operationId: getServiceApprovals
+      summary: Get all open service approvals
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/EventContext'
+        '404':
+          description: Failed. Service could not be found.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
+
   /event:
     post:
       tags:
