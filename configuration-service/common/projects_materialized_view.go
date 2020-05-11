@@ -244,10 +244,24 @@ func (mv *projectsMaterializedView) UpdateEventOfService(event interface{}, even
 			}
 		}
 		if eventType == keptn.ApprovalTriggeredEventType {
-			if service.OpenApprovals == nil {
-				service.OpenApprovals = []*models.EventContext{}
+			approvalFinishedData := &keptn.ApprovalTriggeredEventData{}
+			config := &mapstructure.DecoderConfig{TagName: "json", Result: &approvalFinishedData}
+			decoder, err := mapstructure.NewDecoder(config)
+			if err != nil {
+				mv.Logger.Error("Could not parse approval.triggered event data: " + err.Error())
+				return err
 			}
-			service.OpenApprovals = append(service.OpenApprovals, contextInfo)
+			err = decoder.Decode(event)
+			if service.OpenApprovals == nil {
+				service.OpenApprovals = []*models.Approval{}
+			}
+			service.OpenApprovals = append(service.OpenApprovals, &models.Approval{
+				EventID:      eventID,
+				Image:        approvalFinishedData.Image,
+				KeptnContext: contextInfo.KeptnContext,
+				Tag:          approvalFinishedData.Tag,
+				Time:         contextInfo.Time,
+			})
 		}
 		if eventType == keptn.ApprovalFinishedEventType {
 			approvalFinishedData := &keptn.ApprovalFinishedEventData{}
@@ -284,10 +298,15 @@ func (mv *projectsMaterializedView) closeOpenApproval(approvalFinishedData *kept
 		return
 	}
 
-	updatedApprovals := []*models.EventContext{}
+	updatedApprovals := []*models.Approval{}
 	for _, approval := range service.OpenApprovals {
 		if approval.EventID == approvalFinishedData.Approval.TriggeredID {
-			continue
+			if approval.Image != approvalFinishedData.Image || approval.Tag != approvalFinishedData.Tag {
+				mv.Logger.Info("Received image/tag combination " + approvalFinishedData.Image + ":" + approvalFinishedData.Tag +
+					" does not match open approval for " + approval.Image + ":" + approval.Tag)
+			} else {
+				continue
+			}
 		}
 		updatedApprovals = append(updatedApprovals, approval)
 	}

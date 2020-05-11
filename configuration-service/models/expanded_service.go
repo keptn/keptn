@@ -28,7 +28,7 @@ type ExpandedService struct {
 	LastEventTypes map[string]EventContext `json:"lastEventTypes,omitempty"`
 
 	// open approvals
-	OpenApprovals []*EventContext `json:"openApprovals"`
+	OpenApprovals []*Approval `json:"openApprovals"`
 
 	// Service name
 	ServiceName string `json:"serviceName,omitempty"`

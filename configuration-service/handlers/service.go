@@ -260,11 +260,11 @@ func GetServiceApprovals(params service_approval.GetServiceApprovalsParams) midd
 		return service_approval.NewGetServiceApprovalsNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project not found")})
 	}
 
-	payload := &models.EventContexts{
-		PageSize:      0,
-		NextPageKey:   "0",
-		TotalCount:    0,
-		EventContexts: []*models.EventContext{},
+	payload := &models.Approvals{
+		PageSize:    0,
+		NextPageKey: "0",
+		TotalCount:  0,
+		Approvals:   []*models.Approval{},
 	}
 
 	for _, stg := range prj.Stages {
@@ -273,7 +273,7 @@ func GetServiceApprovals(params service_approval.GetServiceApprovalsParams) midd
 				paginationInfo := common.Paginate(len(svc.OpenApprovals), params.PageSize, params.NextPageKey)
 				totalCount := len(svc.OpenApprovals)
 				if paginationInfo.NextPageKey < int64(totalCount) {
-					payload.EventContexts = svc.OpenApprovals[paginationInfo.NextPageKey:paginationInfo.EndIndex]
+					payload.Approvals = svc.OpenApprovals[paginationInfo.NextPageKey:paginationInfo.EndIndex]
 				}
 				payload.TotalCount = float64(totalCount)
 				payload.NextPageKey = paginationInfo.NewNextPageKey
