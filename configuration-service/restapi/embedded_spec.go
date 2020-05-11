@@ -1248,10 +1248,7 @@ func init() {
           "200": {
             "description": "Success",
             "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/EventContext"
-              }
+              "$ref": "#/definitions/EventContexts"
             }
           },
           "404": {
@@ -1269,6 +1266,12 @@ func init() {
         }
       },
       "parameters": [
+        {
+          "$ref": "#/parameters/pageSize"
+        },
+        {
+          "$ref": "#/parameters/nextPageKey"
+        },
         {
           "$ref": "#/parameters/projectName"
         },
@@ -1526,6 +1529,29 @@ func init() {
         "time": {
           "description": "Time of the event",
           "type": "string"
+        }
+      }
+    },
+    "EventContexts": {
+      "type": "object",
+      "properties": {
+        "eventContexts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/EventContext"
+          }
+        },
+        "nextPageKey": {
+          "description": "Pointer to next page, base64 encoded",
+          "type": "string"
+        },
+        "pageSize": {
+          "description": "Size of returned page",
+          "type": "number"
+        },
+        "totalCount": {
+          "description": "Total number of stages",
+          "type": "number"
         }
       }
     },
@@ -3554,10 +3580,7 @@ func init() {
           "200": {
             "description": "Success",
             "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/EventContext"
-              }
+              "$ref": "#/definitions/EventContexts"
             }
           },
           "404": {
@@ -3575,6 +3598,21 @@ func init() {
         }
       },
       "parameters": [
+        {
+          "maximum": 50,
+          "minimum": 1,
+          "type": "integer",
+          "default": 20,
+          "description": "The number of items to return",
+          "name": "pageSize",
+          "in": "query"
+        },
+        {
+          "type": "string",
+          "description": "Pointer to the next set of items",
+          "name": "nextPageKey",
+          "in": "query"
+        },
         {
           "type": "string",
           "description": "Name of the project",
@@ -3918,6 +3956,29 @@ func init() {
         "time": {
           "description": "Time of the event",
           "type": "string"
+        }
+      }
+    },
+    "EventContexts": {
+      "type": "object",
+      "properties": {
+        "eventContexts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/EventContext"
+          }
+        },
+        "nextPageKey": {
+          "description": "Pointer to next page, base64 encoded",
+          "type": "string"
+        },
+        "pageSize": {
+          "description": "Size of returned page",
+          "type": "number"
+        },
+        "totalCount": {
+          "description": "Total number of stages",
+          "type": "number"
         }
       }
     },
