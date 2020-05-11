@@ -25,7 +25,7 @@ type GetServiceApprovalsOK struct {
 	/*
 	  In: Body
 	*/
-	Payload *models.EventContexts `json:"body,omitempty"`
+	Payload *models.Approvals `json:"body,omitempty"`
 }
 
 // NewGetServiceApprovalsOK creates GetServiceApprovalsOK with default headers values
@@ -35,13 +35,13 @@ func NewGetServiceApprovalsOK() *GetServiceApprovalsOK {
 }
 
 // WithPayload adds the payload to the get service approvals o k response
-func (o *GetServiceApprovalsOK) WithPayload(payload *models.EventContexts) *GetServiceApprovalsOK {
+func (o *GetServiceApprovalsOK) WithPayload(payload *models.Approvals) *GetServiceApprovalsOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the get service approvals o k response
-func (o *GetServiceApprovalsOK) SetPayload(payload *models.EventContexts) {
+func (o *GetServiceApprovalsOK) SetPayload(payload *models.Approvals) {
 	o.Payload = payload
 }
 

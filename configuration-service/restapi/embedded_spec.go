@@ -1248,7 +1248,7 @@ func init() {
           "200": {
             "description": "Success",
             "schema": {
-              "$ref": "#/definitions/EventContexts"
+              "$ref": "#/definitions/Approvals"
             }
           },
           "404": {
@@ -1498,6 +1498,52 @@ func init() {
     }
   },
   "definitions": {
+    "Approval": {
+      "type": "object",
+      "properties": {
+        "eventId": {
+          "description": "ID of the event",
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "keptnContext": {
+          "description": "Keptn Context ID of the event",
+          "type": "string"
+        },
+        "tag": {
+          "type": "string"
+        },
+        "time": {
+          "description": "Time of the event",
+          "type": "string"
+        }
+      }
+    },
+    "Approvals": {
+      "type": "object",
+      "properties": {
+        "approvals": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Approval"
+          }
+        },
+        "nextPageKey": {
+          "description": "Pointer to next page, base64 encoded",
+          "type": "string"
+        },
+        "pageSize": {
+          "description": "Size of returned page",
+          "type": "number"
+        },
+        "totalCount": {
+          "description": "Total number of stages",
+          "type": "number"
+        }
+      }
+    },
     "Error": {
       "type": "object",
       "required": [
@@ -1632,7 +1678,7 @@ func init() {
         "openApprovals": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/EventContext"
+            "$ref": "#/definitions/Approval"
           }
         },
         "serviceName": {
@@ -3580,7 +3626,7 @@ func init() {
           "200": {
             "description": "Success",
             "schema": {
-              "$ref": "#/definitions/EventContexts"
+              "$ref": "#/definitions/Approvals"
             }
           },
           "404": {
@@ -3925,6 +3971,52 @@ func init() {
     }
   },
   "definitions": {
+    "Approval": {
+      "type": "object",
+      "properties": {
+        "eventId": {
+          "description": "ID of the event",
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "keptnContext": {
+          "description": "Keptn Context ID of the event",
+          "type": "string"
+        },
+        "tag": {
+          "type": "string"
+        },
+        "time": {
+          "description": "Time of the event",
+          "type": "string"
+        }
+      }
+    },
+    "Approvals": {
+      "type": "object",
+      "properties": {
+        "approvals": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Approval"
+          }
+        },
+        "nextPageKey": {
+          "description": "Pointer to next page, base64 encoded",
+          "type": "string"
+        },
+        "pageSize": {
+          "description": "Size of returned page",
+          "type": "number"
+        },
+        "totalCount": {
+          "description": "Total number of stages",
+          "type": "number"
+        }
+      }
+    },
     "Error": {
       "type": "object",
       "required": [
@@ -4059,7 +4151,7 @@ func init() {
         "openApprovals": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/EventContext"
+            "$ref": "#/definitions/Approval"
           }
         },
         "serviceName": {
