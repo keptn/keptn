@@ -316,6 +316,9 @@ func CloseServiceApproval(params service_approval.CloseServiceApprovalParams) mi
 	err := mv.CloseOpenApproval(params.ProjectName, params.StageName, params.ServiceName, params.ApprovalID)
 
 	if err != nil {
+		if err == common.OpenApprovalNotFoundErr {
+			return service_approval.NewCloseServiceApprovalDefault(404).WithPayload(&models.Error{Code: 404, Message: swag.String("Could not close approval: " + err.Error())})
+		}
 		return service_approval.NewCloseServiceApprovalDefault(400).WithPayload(&models.Error{Code: 400, Message: swag.String("Could not close approval: " + err.Error())})
 	}
 

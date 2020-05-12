@@ -10,6 +10,8 @@ import (
 	"time"
 )
 
+var OpenApprovalNotFoundErr = errors.New("open approval not found")
+
 var instance *projectsMaterializedView
 
 type projectsMaterializedView struct {
@@ -306,17 +308,26 @@ func (mv *projectsMaterializedView) CloseOpenApproval(project, stage, service, a
 	}
 
 	err = updateServiceInStage(existingProject, stage, service, func(service *models.ExpandedService) error {
+		foundApproval := false
 		updatedApprovals := []*models.Approval{}
 		for _, approval := range service.OpenApprovals {
 			if approval.EventID == approvalEventID {
+				foundApproval = true
 				continue
 			}
 			updatedApprovals = append(updatedApprovals, approval)
 		}
 
+		if !foundApproval {
+			return OpenApprovalNotFoundErr
+		}
 		service.OpenApprovals = updatedApprovals
 		return nil
 	})
+
+	if err != nil {
+		return err
+	}
 
 	return mv.updateProject(existingProject)
 }
