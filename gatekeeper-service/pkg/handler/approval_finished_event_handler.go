@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
@@ -106,13 +107,21 @@ func getOpenApproval(inputEvent keptnevents.ApprovalFinishedEventData) (*approva
 	if err != nil {
 		return nil, err
 	}
+
+	if resp.StatusCode == http.StatusNotFound {
+		//
+		<-time.After(5 * time.Second)
+		resp, err = client.Do(req)
+		if err != nil {
+			return nil, err
+		}
+	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
-
 	if resp.StatusCode != http.StatusOK {
 		return nil, errors.New(string(body))
 	}
@@ -148,8 +157,16 @@ func closeOpenApproval(inputEvent keptnevents.ApprovalFinishedEventData) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
 
+	if resp.StatusCode == http.StatusNotFound {
+		<-time.After(5 * time.Second)
+		resp, err = client.Do(req)
+		if err != nil {
+			return err
+		}
+	}
+
+	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
