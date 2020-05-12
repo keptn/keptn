@@ -1333,6 +1333,24 @@ paths:
       - $ref: '#/parameters/stageName'
       - $ref: '#/parameters/serviceName'
       - $ref: '#/parameters/approvalID'
+    get:
+      tags:
+        - Service approval
+      operationId: getServiceApproval
+      summary: Get open service approvals by ID
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/Approval'
+        '404':
+          description: Failed. Approval could not be found.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
     delete:
       tags:
         - service approval
