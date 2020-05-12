@@ -1284,6 +1284,33 @@ func init() {
       ]
     },
     "/project/{projectName}/stage/{stageName}/service/{serviceName}/approval/{approvalID}": {
+      "get": {
+        "tags": [
+          "Service approval"
+        ],
+        "summary": "Get open service approvals by ID",
+        "operationId": "getServiceApproval",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/Approval"
+            }
+          },
+          "404": {
+            "description": "Failed. Approval could not be found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
       "delete": {
         "tags": [
           "service approval"
@@ -3730,6 +3757,33 @@ func init() {
       ]
     },
     "/project/{projectName}/stage/{stageName}/service/{serviceName}/approval/{approvalID}": {
+      "get": {
+        "tags": [
+          "Service approval"
+        ],
+        "summary": "Get open service approvals by ID",
+        "operationId": "getServiceApproval",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/Approval"
+            }
+          },
+          "404": {
+            "description": "Failed. Approval could not be found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
       "delete": {
         "tags": [
           "service approval"

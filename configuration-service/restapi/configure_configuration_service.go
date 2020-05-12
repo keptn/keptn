@@ -132,6 +132,8 @@ func configureAPI(api *operations.ConfigurationServiceAPI) http.Handler {
 
 	api.ServiceApprovalGetServiceApprovalsHandler = service_approval.GetServiceApprovalsHandlerFunc(handlers.GetServiceApprovals)
 
+	api.ServiceApprovalGetServiceApprovalHandler = service_approval.GetServiceApprovalHandlerFunc(handlers.GetServiceApproval)
+
 	api.ServiceApprovalCloseServiceApprovalHandler = service_approval.CloseServiceApprovalHandlerFunc(handlers.CloseServiceApproval)
 
 	api.ServerShutdown = func() {}

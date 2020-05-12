@@ -284,6 +284,32 @@ func GetServiceApprovals(params service_approval.GetServiceApprovalsParams) midd
 	return service_approval.NewGetServiceApprovalsNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Service not found")})
 }
 
+func GetServiceApproval(params service_approval.GetServiceApprovalParams) middleware.Responder {
+	mv := common.GetProjectsMaterializedView()
+
+	prj, err := mv.GetProject(params.ProjectName)
+	if err != nil {
+		return service_approval.NewGetServiceApprovalsDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+	}
+
+	if prj == nil {
+		return service_approval.NewGetServiceApprovalsNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project not found")})
+	}
+	for _, stg := range prj.Stages {
+		for _, svc := range stg.Services {
+			if svc.ServiceName == params.ServiceName {
+				for _, approval := range svc.OpenApprovals {
+					if approval.EventID == params.ApprovalID {
+						return service_approval.NewGetServiceApprovalOK().WithPayload(approval)
+					}
+				}
+			}
+		}
+	}
+	return service_approval.NewGetServiceApprovalNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Service not found")})
+
+}
+
 func CloseServiceApproval(params service_approval.CloseServiceApprovalParams) middleware.Responder {
 	mv := common.GetProjectsMaterializedView()
 

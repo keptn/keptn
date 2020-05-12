@@ -175,6 +175,9 @@ func NewConfigurationServiceAPI(spec *loads.Document) *ConfigurationServiceAPI {
 		ServicesGetServicesHandler: services.GetServicesHandlerFunc(func(params services.GetServicesParams) middleware.Responder {
 			return middleware.NotImplemented("operation services.GetServices has not yet been implemented")
 		}),
+		ServiceApprovalGetServiceApprovalHandler: service_approval.GetServiceApprovalHandlerFunc(func(params service_approval.GetServiceApprovalParams) middleware.Responder {
+			return middleware.NotImplemented("operation service_approval.GetServiceApproval has not yet been implemented")
+		}),
 		ServiceApprovalGetServiceApprovalsHandler: service_approval.GetServiceApprovalsHandlerFunc(func(params service_approval.GetServiceApprovalsParams) middleware.Responder {
 			return middleware.NotImplemented("operation service_approval.GetServiceApprovals has not yet been implemented")
 		}),
@@ -297,6 +300,8 @@ type ConfigurationServiceAPI struct {
 	ServicesGetServiceHandler services.GetServiceHandler
 	// ServicesGetServicesHandler sets the operation handler for the get services operation
 	ServicesGetServicesHandler services.GetServicesHandler
+	// ServiceApprovalGetServiceApprovalHandler sets the operation handler for the get service approval operation
+	ServiceApprovalGetServiceApprovalHandler service_approval.GetServiceApprovalHandler
 	// ServiceApprovalGetServiceApprovalsHandler sets the operation handler for the get service approvals operation
 	ServiceApprovalGetServiceApprovalsHandler service_approval.GetServiceApprovalsHandler
 	// EventHandleEventHandler sets the operation handler for the handle event operation
@@ -533,6 +538,10 @@ func (o *ConfigurationServiceAPI) Validate() error {
 
 	if o.ServicesGetServicesHandler == nil {
 		unregistered = append(unregistered, "Services.GetServicesHandler")
+	}
+
+	if o.ServiceApprovalGetServiceApprovalHandler == nil {
+		unregistered = append(unregistered, "ServiceApproval.GetServiceApprovalHandler")
 	}
 
 	if o.ServiceApprovalGetServiceApprovalsHandler == nil {
@@ -846,6 +855,11 @@ func (o *ConfigurationServiceAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/project/{projectName}/service"] = services.NewGetServices(o.context, o.ServicesGetServicesHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/project/{projectName}/stage/{stageName}/service/{serviceName}/approval/{approvalID}"] = service_approval.NewGetServiceApproval(o.context, o.ServiceApprovalGetServiceApprovalHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
