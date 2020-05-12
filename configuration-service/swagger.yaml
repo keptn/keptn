@@ -410,7 +410,14 @@ parameters:
     required: true
     type: string
     description: Name of the service
-    
+
+  approvalID:
+    in: path
+    name: approvalID
+    required: true
+    type: string
+    description: Approval Event ID
+
   resourceURI:
     in: path
     name: resourceURI
@@ -1317,6 +1324,27 @@ paths:
           description: Error
           schema:
             $ref: '#/definitions/Error'
+
+  '/project/{projectName}/stage/{stageName}/service/{serviceName}/approval/{approvalID}':
+    parameters:
+      - $ref: '#/parameters/pageSize'
+      - $ref: '#/parameters/nextPageKey'
+      - $ref: '#/parameters/projectName'
+      - $ref: '#/parameters/stageName'
+      - $ref: '#/parameters/serviceName'
+      - $ref: '#/parameters/approvalID'
+    delete:
+      tags:
+        - service approval
+      operationId: closeServiceApproval
+      summary: Close open service approval
+      responses:
+        200:
+          description: OK
+        default:
+          description: Error
+          schema:
+            "$ref": "#/definitions/Error"
 
   /event:
     post:

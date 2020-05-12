@@ -1283,6 +1283,46 @@ func init() {
         }
       ]
     },
+    "/project/{projectName}/stage/{stageName}/service/{serviceName}/approval/{approvalID}": {
+      "delete": {
+        "tags": [
+          "service approval"
+        ],
+        "summary": "Close open service approval",
+        "operationId": "closeServiceApproval",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "$ref": "#/parameters/pageSize"
+        },
+        {
+          "$ref": "#/parameters/nextPageKey"
+        },
+        {
+          "$ref": "#/parameters/projectName"
+        },
+        {
+          "$ref": "#/parameters/stageName"
+        },
+        {
+          "$ref": "#/parameters/serviceName"
+        },
+        {
+          "$ref": "#/parameters/approvalID"
+        }
+      ]
+    },
     "/project/{projectName}/stage/{stageName}/service/{serviceName}/resource": {
       "get": {
         "tags": [
@@ -1977,6 +2017,13 @@ func init() {
     }
   },
   "parameters": {
+    "approvalID": {
+      "type": "string",
+      "description": "Approval Event ID",
+      "name": "approvalID",
+      "in": "path",
+      "required": true
+    },
     "disableUpstreamSync": {
       "type": "boolean",
       "default": false,
@@ -3682,6 +3729,71 @@ func init() {
         }
       ]
     },
+    "/project/{projectName}/stage/{stageName}/service/{serviceName}/approval/{approvalID}": {
+      "delete": {
+        "tags": [
+          "service approval"
+        ],
+        "summary": "Close open service approval",
+        "operationId": "closeServiceApproval",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "maximum": 50,
+          "minimum": 1,
+          "type": "integer",
+          "default": 20,
+          "description": "The number of items to return",
+          "name": "pageSize",
+          "in": "query"
+        },
+        {
+          "type": "string",
+          "description": "Pointer to the next set of items",
+          "name": "nextPageKey",
+          "in": "query"
+        },
+        {
+          "type": "string",
+          "description": "Name of the project",
+          "name": "projectName",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "description": "Name of the stage",
+          "name": "stageName",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "description": "Name of the service",
+          "name": "serviceName",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "description": "Approval Event ID",
+          "name": "approvalID",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
     "/project/{projectName}/stage/{stageName}/service/{serviceName}/resource": {
       "get": {
         "tags": [
@@ -4450,6 +4562,13 @@ func init() {
     }
   },
   "parameters": {
+    "approvalID": {
+      "type": "string",
+      "description": "Approval Event ID",
+      "name": "approvalID",
+      "in": "path",
+      "required": true
+    },
     "disableUpstreamSync": {
       "type": "boolean",
       "default": false,

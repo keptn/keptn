@@ -166,6 +166,9 @@ func NewConfigurationServiceAPI(spec *loads.Document) *ConfigurationServiceAPI {
 		ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler: service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc(func(params service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIParams) middleware.Responder {
 			return middleware.NotImplemented("operation service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI has not yet been implemented")
 		}),
+		ServiceApprovalCloseServiceApprovalHandler: service_approval.CloseServiceApprovalHandlerFunc(func(params service_approval.CloseServiceApprovalParams) middleware.Responder {
+			return middleware.NotImplemented("operation service_approval.CloseServiceApproval has not yet been implemented")
+		}),
 		ServicesGetServiceHandler: services.GetServiceHandlerFunc(func(params services.GetServiceParams) middleware.Responder {
 			return middleware.NotImplemented("operation services.GetService has not yet been implemented")
 		}),
@@ -288,6 +291,8 @@ type ConfigurationServiceAPI struct {
 	ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceHandler service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceHandler
 	// ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler sets the operation handler for the put project project name stage stage name service service name resource resource URI operation
 	ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler
+	// ServiceApprovalCloseServiceApprovalHandler sets the operation handler for the close service approval operation
+	ServiceApprovalCloseServiceApprovalHandler service_approval.CloseServiceApprovalHandler
 	// ServicesGetServiceHandler sets the operation handler for the get service operation
 	ServicesGetServiceHandler services.GetServiceHandler
 	// ServicesGetServicesHandler sets the operation handler for the get services operation
@@ -516,6 +521,10 @@ func (o *ConfigurationServiceAPI) Validate() error {
 
 	if o.ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler == nil {
 		unregistered = append(unregistered, "ServiceResource.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler")
+	}
+
+	if o.ServiceApprovalCloseServiceApprovalHandler == nil {
+		unregistered = append(unregistered, "ServiceApproval.CloseServiceApprovalHandler")
 	}
 
 	if o.ServicesGetServiceHandler == nil {
@@ -822,6 +831,11 @@ func (o *ConfigurationServiceAPI) initHandlerCache() {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/project/{projectName}/stage/{stageName}/service/{serviceName}/resource/{resourceURI}"] = service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI(o.context, o.ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler)
+
+	if o.handlers["DELETE"] == nil {
+		o.handlers["DELETE"] = make(map[string]http.Handler)
+	}
+	o.handlers["DELETE"]["/project/{projectName}/stage/{stageName}/service/{serviceName}/approval/{approvalID}"] = service_approval.NewCloseServiceApproval(o.context, o.ServiceApprovalCloseServiceApprovalHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)

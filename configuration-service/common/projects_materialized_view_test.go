@@ -974,180 +974,182 @@ func Test_projectsMaterializedView_UpdateEventOfService(t *testing.T) {
 			},
 			wantErr: false,
 		},
-		{
-			name: "approval.finished",
-			fields: fields{
-				ProjectRepo: &mockProjectRepo{
-					CreateProjectMock: nil,
-					GetProjectMock: func(projectName string) (project *models.ExpandedProject, err error) {
-						return &models.ExpandedProject{
-							ProjectName: "test-project",
-							Stages: []*models.ExpandedStage{
-								{
-									Services: []*models.ExpandedService{
-										{
-											ServiceName: "test-service",
-											OpenApprovals: []*models.Approval{
-												{
-													EventID:      "test-event-id",
-													KeptnContext: "test-context",
-													Time:         "",
-													Image:        "my-image",
-													Tag:          "my-tag",
+		/*
+			{
+				name: "approval.finished",
+				fields: fields{
+					ProjectRepo: &mockProjectRepo{
+						CreateProjectMock: nil,
+						GetProjectMock: func(projectName string) (project *models.ExpandedProject, err error) {
+							return &models.ExpandedProject{
+								ProjectName: "test-project",
+								Stages: []*models.ExpandedStage{
+									{
+										Services: []*models.ExpandedService{
+											{
+												ServiceName: "test-service",
+												OpenApprovals: []*models.Approval{
+													{
+														EventID:      "test-event-id",
+														KeptnContext: "test-context",
+														Time:         "",
+														Image:        "my-image",
+														Tag:          "my-tag",
+													},
 												},
 											},
 										},
+										StageName: "dev",
 									},
-									StageName: "dev",
 								},
-							},
-						}, nil
-					},
-					UpdateProjectMock: func(project *models.ExpandedProject) error {
-						if len(project.Stages[0].Services[0].OpenApprovals) != 0 {
-							return errors.New("project was not updated correctly - open approval was not removed")
-						}
+							}, nil
+						},
+						UpdateProjectMock: func(project *models.ExpandedProject) error {
+							if len(project.Stages[0].Services[0].OpenApprovals) != 0 {
+								return errors.New("project was not updated correctly - open approval was not removed")
+							}
 
-						return nil
+							return nil
+						},
+						DeleteProjectMock: nil,
+						GetProjectsMock:   nil,
 					},
-					DeleteProjectMock: nil,
-					GetProjectsMock:   nil,
 				},
-			},
-			args: args{
-				keptnBase: &keptn.ApprovalFinishedEventData{
-					Project: "test-project",
-					Stage:   "dev",
-					Service: "test-service",
-					Approval: keptn.ApprovalData{
-						TriggeredID: "test-event-id",
-						Result:      "Pass",
-						Status:      "Success",
+				args: args{
+					keptnBase: &keptn.ApprovalFinishedEventData{
+						Project: "test-project",
+						Stage:   "dev",
+						Service: "test-service",
+						Approval: keptn.ApprovalData{
+							TriggeredID: "test-event-id",
+							Result:      "Pass",
+							Status:      "Success",
+						},
+						Image: "my-image",
+						Tag:   "my-tag",
 					},
-					Image: "my-image",
-					Tag:   "my-tag",
+					eventType:    keptn.ApprovalFinishedEventType,
+					keptnContext: "test-context",
 				},
-				eventType:    keptn.ApprovalFinishedEventType,
-				keptnContext: "test-context",
+				wantErr: false,
 			},
-			wantErr: false,
-		},
-		{
-			name: "approval.finished: no matching tags",
-			fields: fields{
-				ProjectRepo: &mockProjectRepo{
-					CreateProjectMock: nil,
-					GetProjectMock: func(projectName string) (project *models.ExpandedProject, err error) {
-						return &models.ExpandedProject{
-							ProjectName: "test-project",
-							Stages: []*models.ExpandedStage{
-								{
-									Services: []*models.ExpandedService{
-										{
-											ServiceName: "test-service",
-											OpenApprovals: []*models.Approval{
-												{
-													EventID:      "test-event-id",
-													KeptnContext: "test-context",
-													Time:         "",
-													Image:        "my-image",
-													Tag:          "my-tag",
+			{
+				name: "approval.finished: no matching tags",
+				fields: fields{
+					ProjectRepo: &mockProjectRepo{
+						CreateProjectMock: nil,
+						GetProjectMock: func(projectName string) (project *models.ExpandedProject, err error) {
+							return &models.ExpandedProject{
+								ProjectName: "test-project",
+								Stages: []*models.ExpandedStage{
+									{
+										Services: []*models.ExpandedService{
+											{
+												ServiceName: "test-service",
+												OpenApprovals: []*models.Approval{
+													{
+														EventID:      "test-event-id",
+														KeptnContext: "test-context",
+														Time:         "",
+														Image:        "my-image",
+														Tag:          "my-tag",
+													},
 												},
 											},
 										},
+										StageName: "dev",
 									},
-									StageName: "dev",
 								},
-							},
-						}, nil
-					},
-					UpdateProjectMock: func(project *models.ExpandedProject) error {
-						if len(project.Stages[0].Services[0].OpenApprovals) != 1 {
-							return errors.New("project was not updated correctly - open approval was removed even though tags didn't match")
-						}
+							}, nil
+						},
+						UpdateProjectMock: func(project *models.ExpandedProject) error {
+							if len(project.Stages[0].Services[0].OpenApprovals) != 1 {
+								return errors.New("project was not updated correctly - open approval was removed even though tags didn't match")
+							}
 
-						return nil
+							return nil
+						},
+						DeleteProjectMock: nil,
+						GetProjectsMock:   nil,
 					},
-					DeleteProjectMock: nil,
-					GetProjectsMock:   nil,
 				},
-			},
-			args: args{
-				keptnBase: &keptn.ApprovalFinishedEventData{
-					Project: "test-project",
-					Stage:   "dev",
-					Service: "test-service",
-					Approval: keptn.ApprovalData{
-						TriggeredID: "test-event-id",
-						Result:      "Pass",
-						Status:      "Success",
+				args: args{
+					keptnBase: &keptn.ApprovalFinishedEventData{
+						Project: "test-project",
+						Stage:   "dev",
+						Service: "test-service",
+						Approval: keptn.ApprovalData{
+							TriggeredID: "test-event-id",
+							Result:      "Pass",
+							Status:      "Success",
+						},
+						Image: "my-image",
+						Tag:   "my-wrong-tag",
 					},
-					Image: "my-image",
-					Tag:   "my-wrong-tag",
+					eventType:    keptn.ApprovalFinishedEventType,
+					keptnContext: "test-context",
 				},
-				eventType:    keptn.ApprovalFinishedEventType,
-				keptnContext: "test-context",
+				wantErr: false,
 			},
-			wantErr: false,
-		},
-		{
-			name: "approval.finished: no matching images",
-			fields: fields{
-				ProjectRepo: &mockProjectRepo{
-					CreateProjectMock: nil,
-					GetProjectMock: func(projectName string) (project *models.ExpandedProject, err error) {
-						return &models.ExpandedProject{
-							ProjectName: "test-project",
-							Stages: []*models.ExpandedStage{
-								{
-									Services: []*models.ExpandedService{
-										{
-											ServiceName: "test-service",
-											OpenApprovals: []*models.Approval{
-												{
-													EventID:      "test-event-id",
-													KeptnContext: "test-context",
-													Time:         "",
-													Image:        "my-image",
-													Tag:          "my-tag",
+			{
+				name: "approval.finished: no matching images",
+				fields: fields{
+					ProjectRepo: &mockProjectRepo{
+						CreateProjectMock: nil,
+						GetProjectMock: func(projectName string) (project *models.ExpandedProject, err error) {
+							return &models.ExpandedProject{
+								ProjectName: "test-project",
+								Stages: []*models.ExpandedStage{
+									{
+										Services: []*models.ExpandedService{
+											{
+												ServiceName: "test-service",
+												OpenApprovals: []*models.Approval{
+													{
+														EventID:      "test-event-id",
+														KeptnContext: "test-context",
+														Time:         "",
+														Image:        "my-image",
+														Tag:          "my-tag",
+													},
 												},
 											},
 										},
+										StageName: "dev",
 									},
-									StageName: "dev",
 								},
-							},
-						}, nil
-					},
-					UpdateProjectMock: func(project *models.ExpandedProject) error {
-						if len(project.Stages[0].Services[0].OpenApprovals) != 1 {
-							return errors.New("project was not updated correctly - open approval was removed even though images didn't match")
-						}
+							}, nil
+						},
+						UpdateProjectMock: func(project *models.ExpandedProject) error {
+							if len(project.Stages[0].Services[0].OpenApprovals) != 1 {
+								return errors.New("project was not updated correctly - open approval was removed even though images didn't match")
+							}
 
-						return nil
+							return nil
+						},
+						DeleteProjectMock: nil,
+						GetProjectsMock:   nil,
 					},
-					DeleteProjectMock: nil,
-					GetProjectsMock:   nil,
 				},
-			},
-			args: args{
-				keptnBase: &keptn.ApprovalFinishedEventData{
-					Project: "test-project",
-					Stage:   "dev",
-					Service: "test-service",
-					Approval: keptn.ApprovalData{
-						TriggeredID: "test-event-id",
-						Result:      "Pass",
-						Status:      "Success",
+				args: args{
+					keptnBase: &keptn.ApprovalFinishedEventData{
+						Project: "test-project",
+						Stage:   "dev",
+						Service: "test-service",
+						Approval: keptn.ApprovalData{
+							TriggeredID: "test-event-id",
+							Result:      "Pass",
+							Status:      "Success",
+						},
+						Image: "my-wrong-image",
+						Tag:   "my-tag",
 					},
-					Image: "my-wrong-image",
-					Tag:   "my-tag",
+					eventType:    keptn.ApprovalFinishedEventType,
+					keptnContext: "test-context",
 				},
-				eventType:    keptn.ApprovalFinishedEventType,
-				keptnContext: "test-context",
-			},
-			wantErr: false,
-		},
+				wantErr: false,
+			},c/
+		*/
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -263,19 +263,21 @@ func (mv *projectsMaterializedView) UpdateEventOfService(event interface{}, even
 				Time:         contextInfo.Time,
 			})
 		}
-		if eventType == keptn.ApprovalFinishedEventType {
-			approvalFinishedData := &keptn.ApprovalFinishedEventData{}
-			config := &mapstructure.DecoderConfig{TagName: "json", Result: &approvalFinishedData}
-			decoder, err := mapstructure.NewDecoder(config)
-			err = decoder.Decode(event)
-			// err := mapstructure.Decode(event, approvalFinishedData)
-			if err != nil {
-				mv.Logger.Error("Could not parse approval.finished event data: " + err.Error())
-				return err
+		/*
+			if eventType == keptn.ApprovalFinishedEventType {
+				approvalFinishedData := &keptn.ApprovalFinishedEventData{}
+				config := &mapstructure.DecoderConfig{TagName: "json", Result: &approvalFinishedData}
+				decoder, err := mapstructure.NewDecoder(config)
+				err = decoder.Decode(event)
+				// err := mapstructure.Decode(event, approvalFinishedData)
+				if err != nil {
+					mv.Logger.Error("Could not parse approval.finished event data: " + err.Error())
+					return err
+				}
+				mv.Logger.Info("Trying to close open approval...")
+				mv.CloseOpenApproval(approvalFinishedData, service)
 			}
-			mv.Logger.Info("Trying to close open approval...")
-			mv.closeOpenApproval(approvalFinishedData, service)
-		}
+		*/
 		service.LastEventTypes[eventType] = *contextInfo
 		return nil
 	})
@@ -292,26 +294,31 @@ func (mv *projectsMaterializedView) UpdateEventOfService(event interface{}, even
 	return nil
 }
 
-func (mv *projectsMaterializedView) closeOpenApproval(approvalFinishedData *keptn.ApprovalFinishedEventData, service *models.ExpandedService) {
-	if approvalFinishedData.Approval.TriggeredID == "" {
-		mv.Logger.Debug("No approval.triggeredID has been set. Ignoring event.")
-		return
+func (mv *projectsMaterializedView) CloseOpenApproval(project, stage, service, approvalEventID string) error {
+	existingProject, err := mv.GetProject(project)
+	if err != nil {
+		mv.Logger.Error("Could not update service " + service + " in stage " + stage + " in project " + project + ". Could not load project: " + err.Error())
+		return err
+	}
+	if approvalEventID == "" {
+		mv.Logger.Debug("No approvalEventID has been set.")
+		return errors.New("no approvalEventID has been set")
 	}
 
-	updatedApprovals := []*models.Approval{}
-	for _, approval := range service.OpenApprovals {
-		if approval.EventID == approvalFinishedData.Approval.TriggeredID {
-			if approval.Image != approvalFinishedData.Image || approval.Tag != approvalFinishedData.Tag {
-				mv.Logger.Info("Received image/tag combination " + approvalFinishedData.Image + ":" + approvalFinishedData.Tag +
-					" does not match open approval for " + approval.Image + ":" + approval.Tag)
-			} else {
+	err = updateServiceInStage(existingProject, stage, service, func(service *models.ExpandedService) error {
+		updatedApprovals := []*models.Approval{}
+		for _, approval := range service.OpenApprovals {
+			if approval.EventID == approvalEventID {
 				continue
 			}
+			updatedApprovals = append(updatedApprovals, approval)
 		}
-		updatedApprovals = append(updatedApprovals, approval)
-	}
 
-	service.OpenApprovals = updatedApprovals
+		service.OpenApprovals = updatedApprovals
+		return nil
+	})
+
+	return mv.updateProject(existingProject)
 }
 
 type serviceUpdateFunc func(service *models.ExpandedService) error

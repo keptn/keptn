@@ -132,6 +132,8 @@ func configureAPI(api *operations.ConfigurationServiceAPI) http.Handler {
 
 	api.ServiceApprovalGetServiceApprovalsHandler = service_approval.GetServiceApprovalsHandlerFunc(handlers.GetServiceApprovals)
 
+	api.ServiceApprovalCloseServiceApprovalHandler = service_approval.CloseServiceApprovalHandlerFunc(handlers.CloseServiceApproval)
+
 	api.ServerShutdown = func() {}
 
 	return setupGlobalMiddleware(api.Serve(setupMiddlewares))
