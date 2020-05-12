@@ -14,7 +14,8 @@
     "e2e": "ng e2e",
     "connect:bridge": "kubectl port-forward -n keptn svc/bridge 9000:8080",
     "connect:datastore": "kubectl port-forward -n keptn-datastore svc/mongodb-datastore 8085:8080",
-    "connect:configurationservice": "kubectl port-forward -n keptn svc/configuration-service 8086:8080"
+    "connect:configurationservice": "kubectl port-forward -n keptn svc/configuration-service 8086:8080",
+    "preinstall": "npx npm-force-resolutions"
   },
   "license": "Apache-2.0",
   "author": "Ermin Muratovic <ermin.muratovic@dynatrace.com>",
@@ -67,7 +68,7 @@
   "devDependencies": {
     "@angular-devkit/build-angular": "^0.803.26",
     "@angular/cli": "^8.3.26",
-    "@angular/compiler-cli": "^9.1.4",
+    "@angular/compiler-cli": "~8.2.14",
     "@angular/language-service": "~8.2.14",
     "@types/jasmine": "~3.3.8",
     "@types/jasminewd2": "~2.0.3",
@@ -76,16 +77,20 @@
     "express": "^4.17.1",
     "jasmine-core": "~3.4.0",
     "jasmine-spec-reporter": "~4.2.1",
-    "karma": "^5.0.4",
+    "karma": "^5.0.5",
     "karma-chrome-launcher": "~2.2.0",
     "karma-coverage-istanbul-reporter": "~2.0.1",
     "karma-jasmine": "~2.0.1",
     "karma-jasmine-html-reporter": "^1.5.3",
+    "minimist": "^1.2.5",
     "nodemon": "^2.0.3",
     "npm-run-all": "^4.1.5",
     "protractor": "^6.0.0",
     "ts-node": "~7.0.0",
     "tslint": "~5.15.0",
     "typescript": "~3.5.3"
+  },
+  "resolutions": {
+    "minimist": "^1.2.5"
   }
 }
