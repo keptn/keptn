@@ -62,6 +62,7 @@ import {DtOverlayModule} from "@dynatrace/barista-components/overlay";
 
 import {registerLocaleData} from "@angular/common";
 import localeEn from '@angular/common/locales/en';
+import {MatDialogModule} from "@angular/material/dialog";
 
 registerLocaleData(localeEn, 'en');
 
@@ -121,6 +122,7 @@ registerLocaleData(localeEn, 'en');
     DtKeyValueListModule,
     DtChartModule,
     DtOverlayModule,
+    MatDialogModule,
     DtIconModule.forRoot({
       svgIconLocation: `/assets/icons/{{name}}.svg`,
     }),

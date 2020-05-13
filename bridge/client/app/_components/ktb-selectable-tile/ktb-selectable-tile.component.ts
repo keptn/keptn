@@ -12,6 +12,8 @@ import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, Vi
     '[class.ktb-tile-disabled]': 'disabled',
     '[attr.aria-error]': 'error',
     '[class.ktb-tile-error]': 'error',
+    '[attr.aria-success]': 'success',
+    '[class.ktb-tile-success]': 'success',
   },
   encapsulation: ViewEncapsulation.None,
   preserveWhitespaces: false,
@@ -22,6 +24,7 @@ export class KtbSelectableTileComponent implements OnInit {
   private _selected = false;
   private _disabled = false;
   private _error = false;
+  private _success = false;
 
   /** Whether the tile is selected. */
   @Input()
@@ -54,6 +57,17 @@ export class KtbSelectableTileComponent implements OnInit {
   set error(value: boolean) {
     if (this._error !== value) {
       this._error = value;
+      this._changeDetectorRef.markForCheck();
+    }
+  }
+
+  @Input()
+  get success(): boolean {
+    return this._success;
+  }
+  set success(value: boolean) {
+    if (this._success !== value) {
+      this._success = value;
       this._changeDetectorRef.markForCheck();
     }
   }
