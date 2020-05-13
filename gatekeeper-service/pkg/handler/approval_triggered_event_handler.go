@@ -1,7 +1,12 @@
 package handler
 
 import (
+	"bytes"
+	"encoding/json"
+	"errors"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
@@ -26,6 +31,9 @@ func (a *ApprovalTriggeredEventHandler) Handle(event cloudevents.Event, keptnHan
 		a.logger.Error(fmt.Sprintf("failed to parse ApprovalTriggeredEventData: %v", err))
 		return
 	}
+
+	// create approval in configuration-service
+	_ = createApproval(event.ID(), a.logger.KeptnContext, data.Image, data.Tag, event.Time().String(), data.Project, data.Stage, data.Service)
 
 	outgoingEvents := a.handleApprovalTriggeredEvent(*data, event.Context.GetID(), keptnHandler.KeptnContext, *shipyard)
 	sendEvents(keptnHandler, outgoingEvents, a.logger)
@@ -89,4 +97,48 @@ func (a *ApprovalTriggeredEventHandler) getApprovalFinishedEvent(inputEvent kept
 		},
 	}
 	return getCloudEvent(approvalFinishedEvent, keptnevents.ApprovalFinishedEventType, shkeptncontext)
+}
+
+func createApproval(eventId, keptnContext, image, tag, time, project, stage, service string) error {
+	configurationServiceEndpoint, err := keptnevents.GetServiceEndpoint(configService)
+	if err != nil {
+		return errors.New("could not retrieve configuration-service URL")
+	}
+
+	newApproval := &approval{
+		EventID:      eventId,
+		Image:        image,
+		KeptnContext: keptnContext,
+		Tag:          tag,
+		Time:         time,
+	}
+
+	queryURL := fmt.Sprintf("%s://%s/v1/project/%s/stage/%s/service/%s/approval", configurationServiceEndpoint.Scheme, configurationServiceEndpoint.Host, project, stage, service)
+	client := &http.Client{}
+	payload, err := json.Marshal(newApproval)
+	if err != nil {
+		return err
+	}
+	req, err := http.NewRequest("POST", queryURL, bytes.NewReader(payload))
+	if err != nil {
+		return err
+	}
+	req.Header.Add("content-type", "application/json")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
+		return errors.New(string(body))
+	}
+
+	return nil
 }
