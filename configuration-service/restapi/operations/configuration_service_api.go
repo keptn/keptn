@@ -169,6 +169,9 @@ func NewConfigurationServiceAPI(spec *loads.Document) *ConfigurationServiceAPI {
 		ServiceApprovalCloseServiceApprovalHandler: service_approval.CloseServiceApprovalHandlerFunc(func(params service_approval.CloseServiceApprovalParams) middleware.Responder {
 			return middleware.NotImplemented("operation service_approval.CloseServiceApproval has not yet been implemented")
 		}),
+		ServiceApprovalCreateServiceApprovalHandler: service_approval.CreateServiceApprovalHandlerFunc(func(params service_approval.CreateServiceApprovalParams) middleware.Responder {
+			return middleware.NotImplemented("operation service_approval.CreateServiceApproval has not yet been implemented")
+		}),
 		ServicesGetServiceHandler: services.GetServiceHandlerFunc(func(params services.GetServiceParams) middleware.Responder {
 			return middleware.NotImplemented("operation services.GetService has not yet been implemented")
 		}),
@@ -296,6 +299,8 @@ type ConfigurationServiceAPI struct {
 	ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler
 	// ServiceApprovalCloseServiceApprovalHandler sets the operation handler for the close service approval operation
 	ServiceApprovalCloseServiceApprovalHandler service_approval.CloseServiceApprovalHandler
+	// ServiceApprovalCreateServiceApprovalHandler sets the operation handler for the create service approval operation
+	ServiceApprovalCreateServiceApprovalHandler service_approval.CreateServiceApprovalHandler
 	// ServicesGetServiceHandler sets the operation handler for the get service operation
 	ServicesGetServiceHandler services.GetServiceHandler
 	// ServicesGetServicesHandler sets the operation handler for the get services operation
@@ -530,6 +535,10 @@ func (o *ConfigurationServiceAPI) Validate() error {
 
 	if o.ServiceApprovalCloseServiceApprovalHandler == nil {
 		unregistered = append(unregistered, "ServiceApproval.CloseServiceApprovalHandler")
+	}
+
+	if o.ServiceApprovalCreateServiceApprovalHandler == nil {
+		unregistered = append(unregistered, "ServiceApproval.CreateServiceApprovalHandler")
 	}
 
 	if o.ServicesGetServiceHandler == nil {
@@ -845,6 +854,11 @@ func (o *ConfigurationServiceAPI) initHandlerCache() {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/project/{projectName}/stage/{stageName}/service/{serviceName}/approval/{approvalID}"] = service_approval.NewCloseServiceApproval(o.context, o.ServiceApprovalCloseServiceApprovalHandler)
+
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/project/{projectName}/stage/{stageName}/service/{serviceName}/approval"] = service_approval.NewCreateServiceApproval(o.context, o.ServiceApprovalCreateServiceApprovalHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)

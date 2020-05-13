@@ -1301,16 +1301,36 @@ paths:
 
   '/project/{projectName}/stage/{stageName}/service/{serviceName}/approval':
     parameters:
-      - $ref: '#/parameters/pageSize'
-      - $ref: '#/parameters/nextPageKey'
       - $ref: '#/parameters/projectName'
       - $ref: '#/parameters/stageName'
       - $ref: '#/parameters/serviceName'
+    post:
+      tags:
+        - Service approval
+      operationId: createServiceApproval
+      summary: Create service approval
+      parameters:
+        - name: approval
+          in: body
+          schema:
+            "$ref": "#/definitions/Approval"
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/Approval'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
     get:
       tags:
         - Service approval
       operationId: getServiceApprovals
       summary: Get all open service approvals
+      parameters:
+        - $ref: '#/parameters/pageSize'
+        - $ref: '#/parameters/nextPageKey'
       responses:
         '200':
           description: Success

@@ -130,6 +130,8 @@ func configureAPI(api *operations.ConfigurationServiceAPI) http.Handler {
 
 	api.ServicesGetServiceHandler = services.GetServiceHandlerFunc(handlers.GetService)
 
+	api.ServiceApprovalCreateServiceApprovalHandler = service_approval.CreateServiceApprovalHandlerFunc(handlers.CreateServiceApproval)
+
 	api.ServiceApprovalGetServiceApprovalsHandler = service_approval.GetServiceApprovalsHandlerFunc(handlers.GetServiceApprovals)
 
 	api.ServiceApprovalGetServiceApprovalHandler = service_approval.GetServiceApprovalHandlerFunc(handlers.GetServiceApproval)

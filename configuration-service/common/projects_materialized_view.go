@@ -10,6 +10,9 @@ import (
 	"time"
 )
 
+var ProjectNotFoundErr = errors.New("project not found")
+var StageNotFoundErr = errors.New("stage not found")
+var ServiceNotFoundErr = errors.New("service not found")
 var OpenApprovalNotFoundErr = errors.New("open approval not found")
 
 var instance *projectsMaterializedView
@@ -245,41 +248,6 @@ func (mv *projectsMaterializedView) UpdateEventOfService(event interface{}, even
 				service.DeployedImage = *keptnBase.Image + ":" + *keptnBase.Tag
 			}
 		}
-		if eventType == keptn.ApprovalTriggeredEventType {
-			approvalFinishedData := &keptn.ApprovalTriggeredEventData{}
-			config := &mapstructure.DecoderConfig{TagName: "json", Result: &approvalFinishedData}
-			decoder, err := mapstructure.NewDecoder(config)
-			if err != nil {
-				mv.Logger.Error("Could not parse approval.triggered event data: " + err.Error())
-				return err
-			}
-			err = decoder.Decode(event)
-			if service.OpenApprovals == nil {
-				service.OpenApprovals = []*models.Approval{}
-			}
-			service.OpenApprovals = append(service.OpenApprovals, &models.Approval{
-				EventID:      eventID,
-				Image:        approvalFinishedData.Image,
-				KeptnContext: contextInfo.KeptnContext,
-				Tag:          approvalFinishedData.Tag,
-				Time:         contextInfo.Time,
-			})
-		}
-		/*
-			if eventType == keptn.ApprovalFinishedEventType {
-				approvalFinishedData := &keptn.ApprovalFinishedEventData{}
-				config := &mapstructure.DecoderConfig{TagName: "json", Result: &approvalFinishedData}
-				decoder, err := mapstructure.NewDecoder(config)
-				err = decoder.Decode(event)
-				// err := mapstructure.Decode(event, approvalFinishedData)
-				if err != nil {
-					mv.Logger.Error("Could not parse approval.finished event data: " + err.Error())
-					return err
-				}
-				mv.Logger.Info("Trying to close open approval...")
-				mv.CloseOpenApproval(approvalFinishedData, service)
-			}
-		*/
 		service.LastEventTypes[eventType] = *contextInfo
 		return nil
 	})
@@ -296,11 +264,27 @@ func (mv *projectsMaterializedView) UpdateEventOfService(event interface{}, even
 	return nil
 }
 
+func (mv *projectsMaterializedView) CreateOpenApproval(project, stage, service string, approval *models.Approval) error {
+	existingProject, err := mv.GetProject(project)
+	if err != nil {
+		mv.Logger.Error("Could create approval for service " + service + " in stage " + stage + " in project " + project + ". Could not load project: " + err.Error())
+		return ProjectNotFoundErr
+	}
+	err = updateServiceInStage(existingProject, stage, service, func(service *models.ExpandedService) error {
+		if service.OpenApprovals == nil {
+			service.OpenApprovals = []*models.Approval{}
+		}
+		service.OpenApprovals = append(service.OpenApprovals, approval)
+		return nil
+	})
+	return mv.updateProject(existingProject)
+}
+
 func (mv *projectsMaterializedView) CloseOpenApproval(project, stage, service, approvalEventID string) error {
 	existingProject, err := mv.GetProject(project)
 	if err != nil {
-		mv.Logger.Error("Could not update service " + service + " in stage " + stage + " in project " + project + ". Could not load project: " + err.Error())
-		return err
+		mv.Logger.Error("Could not close approval for service " + service + " in stage " + stage + " in project " + project + ". Could not load project: " + err.Error())
+		return ProjectNotFoundErr
 	}
 	if approvalEventID == "" {
 		mv.Logger.Debug("No approvalEventID has been set.")

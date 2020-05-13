@@ -1244,6 +1244,14 @@ func init() {
         ],
         "summary": "Get all open service approvals",
         "operationId": "getServiceApprovals",
+        "parameters": [
+          {
+            "$ref": "#/parameters/pageSize"
+          },
+          {
+            "$ref": "#/parameters/nextPageKey"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success",
@@ -1265,13 +1273,37 @@ func init() {
           }
         }
       },
+      "post": {
+        "tags": [
+          "Service approval"
+        ],
+        "summary": "Create service approval",
+        "operationId": "createServiceApproval",
+        "parameters": [
+          {
+            "name": "approval",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/Approval"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/Approval"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
       "parameters": [
-        {
-          "$ref": "#/parameters/pageSize"
-        },
-        {
-          "$ref": "#/parameters/nextPageKey"
-        },
         {
           "$ref": "#/parameters/projectName"
         },
@@ -3696,6 +3728,23 @@ func init() {
         ],
         "summary": "Get all open service approvals",
         "operationId": "getServiceApprovals",
+        "parameters": [
+          {
+            "maximum": 50,
+            "minimum": 1,
+            "type": "integer",
+            "default": 20,
+            "description": "The number of items to return",
+            "name": "pageSize",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Pointer to the next set of items",
+            "name": "nextPageKey",
+            "in": "query"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success",
@@ -3717,22 +3766,37 @@ func init() {
           }
         }
       },
+      "post": {
+        "tags": [
+          "Service approval"
+        ],
+        "summary": "Create service approval",
+        "operationId": "createServiceApproval",
+        "parameters": [
+          {
+            "name": "approval",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/Approval"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/Approval"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
       "parameters": [
-        {
-          "maximum": 50,
-          "minimum": 1,
-          "type": "integer",
-          "default": 20,
-          "description": "The number of items to return",
-          "name": "pageSize",
-          "in": "query"
-        },
-        {
-          "type": "string",
-          "description": "Pointer to the next set of items",
-          "name": "nextPageKey",
-          "in": "query"
-        },
         {
           "type": "string",
           "description": "Name of the project",
