@@ -41,16 +41,18 @@ func GetServiceApprovals(params service_approval.GetServiceApprovalsParams) midd
 	}
 
 	for _, stg := range prj.Stages {
-		for _, svc := range stg.Services {
-			if svc.ServiceName == params.ServiceName {
-				paginationInfo := common.Paginate(len(svc.OpenApprovals), params.PageSize, params.NextPageKey)
-				totalCount := len(svc.OpenApprovals)
-				if paginationInfo.NextPageKey < int64(totalCount) {
-					payload.Approvals = svc.OpenApprovals[paginationInfo.NextPageKey:paginationInfo.EndIndex]
+		if stg.StageName == params.StageName {
+			for _, svc := range stg.Services {
+				if svc.ServiceName == params.ServiceName {
+					paginationInfo := common.Paginate(len(svc.OpenApprovals), params.PageSize, params.NextPageKey)
+					totalCount := len(svc.OpenApprovals)
+					if paginationInfo.NextPageKey < int64(totalCount) {
+						payload.Approvals = svc.OpenApprovals[paginationInfo.NextPageKey:paginationInfo.EndIndex]
+					}
+					payload.TotalCount = float64(totalCount)
+					payload.NextPageKey = paginationInfo.NewNextPageKey
+					return service_approval.NewGetServiceApprovalsOK().WithPayload(payload)
 				}
-				payload.TotalCount = float64(totalCount)
-				payload.NextPageKey = paginationInfo.NewNextPageKey
-				return service_approval.NewGetServiceApprovalsOK().WithPayload(payload)
 			}
 		}
 	}
@@ -70,11 +72,13 @@ func GetServiceApproval(params service_approval.GetServiceApprovalParams) middle
 		return service_approval.NewGetServiceApprovalsNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project not found")})
 	}
 	for _, stg := range prj.Stages {
-		for _, svc := range stg.Services {
-			if svc.ServiceName == params.ServiceName {
-				for _, approval := range svc.OpenApprovals {
-					if approval.EventID == params.ApprovalID {
-						return service_approval.NewGetServiceApprovalOK().WithPayload(approval)
+		if stg.StageName == params.StageName {
+			for _, svc := range stg.Services {
+				if svc.ServiceName == params.ServiceName {
+					for _, approval := range svc.OpenApprovals {
+						if approval.EventID == params.ApprovalID {
+							return service_approval.NewGetServiceApprovalOK().WithPayload(approval)
+						}
 					}
 				}
 			}
