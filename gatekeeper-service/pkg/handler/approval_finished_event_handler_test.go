@@ -100,13 +100,12 @@ func TestApprovalFinishedEventHandler_getOpenApproval(t *testing.T) {
 					"time": "0"
 				}`))
 				return
-			} else {
-				w.WriteHeader(returnCode)
-				w.Write([]byte(`{
+			}
+			w.WriteHeader(returnCode)
+			w.Write([]byte(`{
 					"code": 404,
 					"message": "Service not found"
 				}`))
-			}
 		}),
 	)
 	defer ts.Close()
