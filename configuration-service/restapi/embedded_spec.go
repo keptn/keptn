@@ -1237,6 +1237,151 @@ func init() {
         }
       ]
     },
+    "/project/{projectName}/stage/{stageName}/service/{serviceName}/approval": {
+      "get": {
+        "tags": [
+          "Service approval"
+        ],
+        "summary": "Get all open service approvals",
+        "operationId": "getServiceApprovals",
+        "parameters": [
+          {
+            "$ref": "#/parameters/pageSize"
+          },
+          {
+            "$ref": "#/parameters/nextPageKey"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/Approvals"
+            }
+          },
+          "404": {
+            "description": "Failed. Service could not be found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Service approval"
+        ],
+        "summary": "Create service approval",
+        "operationId": "createServiceApproval",
+        "parameters": [
+          {
+            "name": "approval",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/Approval"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/Approval"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "$ref": "#/parameters/projectName"
+        },
+        {
+          "$ref": "#/parameters/stageName"
+        },
+        {
+          "$ref": "#/parameters/serviceName"
+        }
+      ]
+    },
+    "/project/{projectName}/stage/{stageName}/service/{serviceName}/approval/{approvalID}": {
+      "get": {
+        "tags": [
+          "Service approval"
+        ],
+        "summary": "Get open service approvals by ID",
+        "operationId": "getServiceApproval",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/Approval"
+            }
+          },
+          "404": {
+            "description": "Failed. Approval could not be found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "service approval"
+        ],
+        "summary": "Close open service approval",
+        "operationId": "closeServiceApproval",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "$ref": "#/parameters/pageSize"
+        },
+        {
+          "$ref": "#/parameters/nextPageKey"
+        },
+        {
+          "$ref": "#/parameters/projectName"
+        },
+        {
+          "$ref": "#/parameters/stageName"
+        },
+        {
+          "$ref": "#/parameters/serviceName"
+        },
+        {
+          "$ref": "#/parameters/approvalID"
+        }
+      ]
+    },
     "/project/{projectName}/stage/{stageName}/service/{serviceName}/resource": {
       "get": {
         "tags": [
@@ -1452,6 +1597,52 @@ func init() {
     }
   },
   "definitions": {
+    "Approval": {
+      "type": "object",
+      "properties": {
+        "eventId": {
+          "description": "ID of the event",
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "keptnContext": {
+          "description": "Keptn Context ID of the event",
+          "type": "string"
+        },
+        "tag": {
+          "type": "string"
+        },
+        "time": {
+          "description": "Time of the event",
+          "type": "string"
+        }
+      }
+    },
+    "Approvals": {
+      "type": "object",
+      "properties": {
+        "approvals": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Approval"
+          }
+        },
+        "nextPageKey": {
+          "description": "Pointer to next page, base64 encoded",
+          "type": "string"
+        },
+        "pageSize": {
+          "description": "Size of returned page",
+          "type": "number"
+        },
+        "totalCount": {
+          "description": "Total number of stages",
+          "type": "number"
+        }
+      }
+    },
     "Error": {
       "type": "object",
       "required": [
@@ -1483,6 +1674,29 @@ func init() {
         "time": {
           "description": "Time of the event",
           "type": "string"
+        }
+      }
+    },
+    "EventContexts": {
+      "type": "object",
+      "properties": {
+        "eventContexts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/EventContext"
+          }
+        },
+        "nextPageKey": {
+          "description": "Pointer to next page, base64 encoded",
+          "type": "string"
+        },
+        "pageSize": {
+          "description": "Size of returned page",
+          "type": "number"
+        },
+        "totalCount": {
+          "description": "Total number of stages",
+          "type": "number"
         }
       }
     },
@@ -1558,6 +1772,12 @@ func init() {
           "type": "object",
           "additionalProperties": {
             "$ref": "#/definitions/EventContext"
+          }
+        },
+        "openApprovals": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Approval"
           }
         },
         "serviceName": {
@@ -1856,6 +2076,13 @@ func init() {
     }
   },
   "parameters": {
+    "approvalID": {
+      "type": "string",
+      "description": "Approval Event ID",
+      "name": "approvalID",
+      "in": "path",
+      "required": true
+    },
     "disableUpstreamSync": {
       "type": "boolean",
       "default": false,
@@ -3494,6 +3721,197 @@ func init() {
         }
       ]
     },
+    "/project/{projectName}/stage/{stageName}/service/{serviceName}/approval": {
+      "get": {
+        "tags": [
+          "Service approval"
+        ],
+        "summary": "Get all open service approvals",
+        "operationId": "getServiceApprovals",
+        "parameters": [
+          {
+            "maximum": 50,
+            "minimum": 1,
+            "type": "integer",
+            "default": 20,
+            "description": "The number of items to return",
+            "name": "pageSize",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Pointer to the next set of items",
+            "name": "nextPageKey",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/Approvals"
+            }
+          },
+          "404": {
+            "description": "Failed. Service could not be found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Service approval"
+        ],
+        "summary": "Create service approval",
+        "operationId": "createServiceApproval",
+        "parameters": [
+          {
+            "name": "approval",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/Approval"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/Approval"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "description": "Name of the project",
+          "name": "projectName",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "description": "Name of the stage",
+          "name": "stageName",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "description": "Name of the service",
+          "name": "serviceName",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
+    "/project/{projectName}/stage/{stageName}/service/{serviceName}/approval/{approvalID}": {
+      "get": {
+        "tags": [
+          "Service approval"
+        ],
+        "summary": "Get open service approvals by ID",
+        "operationId": "getServiceApproval",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/Approval"
+            }
+          },
+          "404": {
+            "description": "Failed. Approval could not be found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "service approval"
+        ],
+        "summary": "Close open service approval",
+        "operationId": "closeServiceApproval",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "maximum": 50,
+          "minimum": 1,
+          "type": "integer",
+          "default": 20,
+          "description": "The number of items to return",
+          "name": "pageSize",
+          "in": "query"
+        },
+        {
+          "type": "string",
+          "description": "Pointer to the next set of items",
+          "name": "nextPageKey",
+          "in": "query"
+        },
+        {
+          "type": "string",
+          "description": "Name of the project",
+          "name": "projectName",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "description": "Name of the stage",
+          "name": "stageName",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "description": "Name of the service",
+          "name": "serviceName",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "description": "Approval Event ID",
+          "name": "approvalID",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
     "/project/{projectName}/stage/{stageName}/service/{serviceName}/resource": {
       "get": {
         "tags": [
@@ -3783,6 +4201,52 @@ func init() {
     }
   },
   "definitions": {
+    "Approval": {
+      "type": "object",
+      "properties": {
+        "eventId": {
+          "description": "ID of the event",
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "keptnContext": {
+          "description": "Keptn Context ID of the event",
+          "type": "string"
+        },
+        "tag": {
+          "type": "string"
+        },
+        "time": {
+          "description": "Time of the event",
+          "type": "string"
+        }
+      }
+    },
+    "Approvals": {
+      "type": "object",
+      "properties": {
+        "approvals": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Approval"
+          }
+        },
+        "nextPageKey": {
+          "description": "Pointer to next page, base64 encoded",
+          "type": "string"
+        },
+        "pageSize": {
+          "description": "Size of returned page",
+          "type": "number"
+        },
+        "totalCount": {
+          "description": "Total number of stages",
+          "type": "number"
+        }
+      }
+    },
     "Error": {
       "type": "object",
       "required": [
@@ -3814,6 +4278,29 @@ func init() {
         "time": {
           "description": "Time of the event",
           "type": "string"
+        }
+      }
+    },
+    "EventContexts": {
+      "type": "object",
+      "properties": {
+        "eventContexts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/EventContext"
+          }
+        },
+        "nextPageKey": {
+          "description": "Pointer to next page, base64 encoded",
+          "type": "string"
+        },
+        "pageSize": {
+          "description": "Size of returned page",
+          "type": "number"
+        },
+        "totalCount": {
+          "description": "Total number of stages",
+          "type": "number"
         }
       }
     },
@@ -3889,6 +4376,12 @@ func init() {
           "type": "object",
           "additionalProperties": {
             "$ref": "#/definitions/EventContext"
+          }
+        },
+        "openApprovals": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Approval"
           }
         },
         "serviceName": {
@@ -4187,6 +4680,13 @@ func init() {
     }
   },
   "parameters": {
+    "approvalID": {
+      "type": "string",
+      "description": "Approval Event ID",
+      "name": "approvalID",
+      "in": "path",
+      "required": true
+    },
     "disableUpstreamSync": {
       "type": "boolean",
       "default": false,

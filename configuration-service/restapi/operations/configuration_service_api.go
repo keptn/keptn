@@ -23,6 +23,7 @@ import (
 	"github.com/keptn/keptn/configuration-service/restapi/operations/project"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/project_resource"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/service"
+	"github.com/keptn/keptn/configuration-service/restapi/operations/service_approval"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/service_default_resource"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/service_resource"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/services"
@@ -165,11 +166,23 @@ func NewConfigurationServiceAPI(spec *loads.Document) *ConfigurationServiceAPI {
 		ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler: service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc(func(params service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIParams) middleware.Responder {
 			return middleware.NotImplemented("operation service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI has not yet been implemented")
 		}),
+		ServiceApprovalCloseServiceApprovalHandler: service_approval.CloseServiceApprovalHandlerFunc(func(params service_approval.CloseServiceApprovalParams) middleware.Responder {
+			return middleware.NotImplemented("operation service_approval.CloseServiceApproval has not yet been implemented")
+		}),
+		ServiceApprovalCreateServiceApprovalHandler: service_approval.CreateServiceApprovalHandlerFunc(func(params service_approval.CreateServiceApprovalParams) middleware.Responder {
+			return middleware.NotImplemented("operation service_approval.CreateServiceApproval has not yet been implemented")
+		}),
 		ServicesGetServiceHandler: services.GetServiceHandlerFunc(func(params services.GetServiceParams) middleware.Responder {
 			return middleware.NotImplemented("operation services.GetService has not yet been implemented")
 		}),
 		ServicesGetServicesHandler: services.GetServicesHandlerFunc(func(params services.GetServicesParams) middleware.Responder {
 			return middleware.NotImplemented("operation services.GetServices has not yet been implemented")
+		}),
+		ServiceApprovalGetServiceApprovalHandler: service_approval.GetServiceApprovalHandlerFunc(func(params service_approval.GetServiceApprovalParams) middleware.Responder {
+			return middleware.NotImplemented("operation service_approval.GetServiceApproval has not yet been implemented")
+		}),
+		ServiceApprovalGetServiceApprovalsHandler: service_approval.GetServiceApprovalsHandlerFunc(func(params service_approval.GetServiceApprovalsParams) middleware.Responder {
+			return middleware.NotImplemented("operation service_approval.GetServiceApprovals has not yet been implemented")
 		}),
 		EventHandleEventHandler: event.HandleEventHandlerFunc(func(params event.HandleEventParams) middleware.Responder {
 			return middleware.NotImplemented("operation event.HandleEvent has not yet been implemented")
@@ -284,10 +297,18 @@ type ConfigurationServiceAPI struct {
 	ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceHandler service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceHandler
 	// ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler sets the operation handler for the put project project name stage stage name service service name resource resource URI operation
 	ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler
+	// ServiceApprovalCloseServiceApprovalHandler sets the operation handler for the close service approval operation
+	ServiceApprovalCloseServiceApprovalHandler service_approval.CloseServiceApprovalHandler
+	// ServiceApprovalCreateServiceApprovalHandler sets the operation handler for the create service approval operation
+	ServiceApprovalCreateServiceApprovalHandler service_approval.CreateServiceApprovalHandler
 	// ServicesGetServiceHandler sets the operation handler for the get service operation
 	ServicesGetServiceHandler services.GetServiceHandler
 	// ServicesGetServicesHandler sets the operation handler for the get services operation
 	ServicesGetServicesHandler services.GetServicesHandler
+	// ServiceApprovalGetServiceApprovalHandler sets the operation handler for the get service approval operation
+	ServiceApprovalGetServiceApprovalHandler service_approval.GetServiceApprovalHandler
+	// ServiceApprovalGetServiceApprovalsHandler sets the operation handler for the get service approvals operation
+	ServiceApprovalGetServiceApprovalsHandler service_approval.GetServiceApprovalsHandler
 	// EventHandleEventHandler sets the operation handler for the handle event operation
 	EventHandleEventHandler event.HandleEventHandler
 	// ServeError is called when an error is received, there is a default handler
@@ -512,12 +533,28 @@ func (o *ConfigurationServiceAPI) Validate() error {
 		unregistered = append(unregistered, "ServiceResource.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler")
 	}
 
+	if o.ServiceApprovalCloseServiceApprovalHandler == nil {
+		unregistered = append(unregistered, "ServiceApproval.CloseServiceApprovalHandler")
+	}
+
+	if o.ServiceApprovalCreateServiceApprovalHandler == nil {
+		unregistered = append(unregistered, "ServiceApproval.CreateServiceApprovalHandler")
+	}
+
 	if o.ServicesGetServiceHandler == nil {
 		unregistered = append(unregistered, "Services.GetServiceHandler")
 	}
 
 	if o.ServicesGetServicesHandler == nil {
 		unregistered = append(unregistered, "Services.GetServicesHandler")
+	}
+
+	if o.ServiceApprovalGetServiceApprovalHandler == nil {
+		unregistered = append(unregistered, "ServiceApproval.GetServiceApprovalHandler")
+	}
+
+	if o.ServiceApprovalGetServiceApprovalsHandler == nil {
+		unregistered = append(unregistered, "ServiceApproval.GetServiceApprovalsHandler")
 	}
 
 	if o.EventHandleEventHandler == nil {
@@ -813,6 +850,16 @@ func (o *ConfigurationServiceAPI) initHandlerCache() {
 	}
 	o.handlers["PUT"]["/project/{projectName}/stage/{stageName}/service/{serviceName}/resource/{resourceURI}"] = service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI(o.context, o.ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler)
 
+	if o.handlers["DELETE"] == nil {
+		o.handlers["DELETE"] = make(map[string]http.Handler)
+	}
+	o.handlers["DELETE"]["/project/{projectName}/stage/{stageName}/service/{serviceName}/approval/{approvalID}"] = service_approval.NewCloseServiceApproval(o.context, o.ServiceApprovalCloseServiceApprovalHandler)
+
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/project/{projectName}/stage/{stageName}/service/{serviceName}/approval"] = service_approval.NewCreateServiceApproval(o.context, o.ServiceApprovalCreateServiceApprovalHandler)
+
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
@@ -822,6 +869,16 @@ func (o *ConfigurationServiceAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/project/{projectName}/service"] = services.NewGetServices(o.context, o.ServicesGetServicesHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/project/{projectName}/stage/{stageName}/service/{serviceName}/approval/{approvalID}"] = service_approval.NewGetServiceApproval(o.context, o.ServiceApprovalGetServiceApprovalHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/project/{projectName}/stage/{stageName}/service/{serviceName}/approval"] = service_approval.NewGetServiceApprovals(o.context, o.ServiceApprovalGetServiceApprovalsHandler)
 
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
