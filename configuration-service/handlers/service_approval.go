@@ -8,6 +8,7 @@ import (
 	"github.com/keptn/keptn/configuration-service/restapi/operations/service_approval"
 )
 
+// CreateServiceApproval creates a service approval
 func CreateServiceApproval(params service_approval.CreateServiceApprovalParams) middleware.Responder {
 	mv := common.GetProjectsMaterializedView()
 
@@ -19,6 +20,7 @@ func CreateServiceApproval(params service_approval.CreateServiceApprovalParams) 
 	return service_approval.NewCreateServiceApprovalOK()
 }
 
+// GetServiceApprovals returns all service approvals
 func GetServiceApprovals(params service_approval.GetServiceApprovalsParams) middleware.Responder {
 	mv := common.GetProjectsMaterializedView()
 
@@ -55,6 +57,7 @@ func GetServiceApprovals(params service_approval.GetServiceApprovalsParams) midd
 	return service_approval.NewGetServiceApprovalsNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Service not found")})
 }
 
+// GetServiceApproval returns a service approval by its id
 func GetServiceApproval(params service_approval.GetServiceApprovalParams) middleware.Responder {
 	mv := common.GetProjectsMaterializedView()
 
@@ -81,13 +84,14 @@ func GetServiceApproval(params service_approval.GetServiceApprovalParams) middle
 
 }
 
+// CloseServiceApproval closes a service approval
 func CloseServiceApproval(params service_approval.CloseServiceApprovalParams) middleware.Responder {
 	mv := common.GetProjectsMaterializedView()
 
 	err := mv.CloseOpenApproval(params.ProjectName, params.StageName, params.ServiceName, params.ApprovalID)
 
 	if err != nil {
-		if err == common.OpenApprovalNotFoundErr {
+		if err == common.ErrOpenApprovalNotFound {
 			return service_approval.NewCloseServiceApprovalDefault(404).WithPayload(&models.Error{Code: 404, Message: swag.String("Could not close approval: " + err.Error())})
 		}
 		return service_approval.NewCloseServiceApprovalDefault(400).WithPayload(&models.Error{Code: 400, Message: swag.String("Could not close approval: " + err.Error())})
