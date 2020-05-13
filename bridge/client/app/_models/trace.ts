@@ -169,6 +169,6 @@ export class Trace {
   }
 
   static fromJSON(data: any) {
-    return Object.assign(new this, data);
+    return Object.assign(new this, data, { plainEvent: JSON.parse(JSON.stringify(data)) });
   }
 }

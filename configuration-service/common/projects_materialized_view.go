@@ -5,9 +5,22 @@ import (
 	"fmt"
 	keptn "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/configuration-service/models"
+	"github.com/mitchellh/mapstructure"
 	"strconv"
 	"time"
 )
+
+// ErrProjectNotFound indicates that a project has not been found
+var ErrProjectNotFound = errors.New("project not found")
+
+// ErrStageNotFound indicates that a stage has not been found
+var ErrStageNotFound = errors.New("stage not found")
+
+// ErrServiceNotFound indicates that a service has not been found
+var ErrServiceNotFound = errors.New("service not found")
+
+// ErrOpenApprovalNotFound indicates that an open approval has not been found
+var ErrOpenApprovalNotFound = errors.New("open approval not found")
 
 var instance *projectsMaterializedView
 
@@ -16,6 +29,7 @@ type projectsMaterializedView struct {
 	Logger      keptn.LoggerInterface
 }
 
+// GetProjectsMaterializedView returns the materialized view
 func GetProjectsMaterializedView() *projectsMaterializedView {
 	if instance == nil {
 		instance = &projectsMaterializedView{
@@ -26,6 +40,7 @@ func GetProjectsMaterializedView() *projectsMaterializedView {
 	return instance
 }
 
+// CreateProject creates a project
 func (mv *projectsMaterializedView) CreateProject(prj *models.Project) error {
 	existingProject, err := mv.GetProject(prj.ProjectName)
 	if existingProject != nil {
@@ -38,6 +53,7 @@ func (mv *projectsMaterializedView) CreateProject(prj *models.Project) error {
 	return nil
 }
 
+// UpdatedShipyard updates the shipyard of a project
 func (mv *projectsMaterializedView) UpdateShipyard(projectName string, shipyardContent string) error {
 	existingProject, err := mv.GetProject(projectName)
 	if err != nil {
@@ -49,18 +65,22 @@ func (mv *projectsMaterializedView) UpdateShipyard(projectName string, shipyardC
 	return mv.updateProject(existingProject)
 }
 
+// GetProjects returns all projects
 func (mv *projectsMaterializedView) GetProjects() ([]*models.ExpandedProject, error) {
 	return mv.ProjectRepo.GetProjects()
 }
 
+// GetProject returns a project by its name
 func (mv *projectsMaterializedView) GetProject(projectName string) (*models.ExpandedProject, error) {
 	return mv.ProjectRepo.GetProject(projectName)
 }
 
+// DeleteProject deletes a project
 func (mv *projectsMaterializedView) DeleteProject(projectName string) error {
 	return mv.ProjectRepo.DeleteProject(projectName)
 }
 
+// CreateStage creates a stage
 func (mv *projectsMaterializedView) CreateStage(project string, stage string) error {
 	fmt.Println("Adding stage " + stage + " to project " + project)
 	prj, err := mv.GetProject(project)
@@ -119,6 +139,7 @@ func (mv *projectsMaterializedView) updateProject(prj *models.ExpandedProject) e
 	return mv.ProjectRepo.UpdateProject(prj)
 }
 
+// DeleteStage deletes a stage
 func (mv *projectsMaterializedView) DeleteStage(project string, stage string) error {
 	mv.Logger.Info("Deleting stage " + stage + " from project " + project)
 	prj, err := mv.GetProject(project)
@@ -148,6 +169,7 @@ func (mv *projectsMaterializedView) DeleteStage(project string, stage string) er
 	return nil
 }
 
+// CreateService creates a service
 func (mv *projectsMaterializedView) CreateService(project string, stage string, service string) error {
 	existingProject, err := mv.GetProject(project)
 	if err != nil {
@@ -179,6 +201,7 @@ func (mv *projectsMaterializedView) CreateService(project string, stage string, 
 	return nil
 }
 
+// DeleteService deletes a service
 func (mv *projectsMaterializedView) DeleteService(project string, stage string, service string) error {
 	existingProject, err := mv.GetProject(project)
 	if err != nil {
@@ -213,7 +236,16 @@ func (mv *projectsMaterializedView) DeleteService(project string, stage string, 
 	return nil
 }
 
-func (mv *projectsMaterializedView) UpdateEventOfService(keptnBase *keptn.KeptnBase, eventType string, keptnContext string, eventID string) error {
+// UpdateEventOfService updates a service event
+func (mv *projectsMaterializedView) UpdateEventOfService(event interface{}, eventType string, keptnContext string, eventID string) error {
+
+	keptnBase := &keptn.KeptnBase{}
+	err := mapstructure.Decode(event, keptnBase)
+	if err != nil {
+		mv.Logger.Error("Could not parse event data: " + err.Error())
+		return err
+	}
+
 	existingProject, err := mv.GetProject(keptnBase.Project)
 	if err != nil {
 		mv.Logger.Error("Could not update service " + keptnBase.Service + " in stage " + keptnBase.Stage + " in project " + keptnBase.Project + ". Could not load project: " + err.Error())
@@ -248,6 +280,60 @@ func (mv *projectsMaterializedView) UpdateEventOfService(keptnBase *keptn.KeptnB
 		return err
 	}
 	return nil
+}
+
+// CreateOpenApproval creates an open approval
+func (mv *projectsMaterializedView) CreateOpenApproval(project, stage, service string, approval *models.Approval) error {
+	existingProject, err := mv.GetProject(project)
+	if err != nil {
+		mv.Logger.Error("Could create approval for service " + service + " in stage " + stage + " in project " + project + ". Could not load project: " + err.Error())
+		return ErrProjectNotFound
+	}
+	err = updateServiceInStage(existingProject, stage, service, func(service *models.ExpandedService) error {
+		if service.OpenApprovals == nil {
+			service.OpenApprovals = []*models.Approval{}
+		}
+		service.OpenApprovals = append(service.OpenApprovals, approval)
+		return nil
+	})
+	return mv.updateProject(existingProject)
+}
+
+// CloseOpenApproval closes an open approval
+func (mv *projectsMaterializedView) CloseOpenApproval(project, stage, service, approvalEventID string) error {
+	existingProject, err := mv.GetProject(project)
+	if err != nil {
+		mv.Logger.Error("Could not close approval for service " + service + " in stage " + stage + " in project " + project + ". Could not load project: " + err.Error())
+		return ErrProjectNotFound
+	}
+	if approvalEventID == "" {
+		mv.Logger.Debug("No approvalEventID has been set.")
+		return errors.New("no approvalEventID has been set")
+	}
+
+	err = updateServiceInStage(existingProject, stage, service, func(service *models.ExpandedService) error {
+		foundApproval := false
+		updatedApprovals := []*models.Approval{}
+		for _, approval := range service.OpenApprovals {
+			if approval.EventID == approvalEventID {
+				foundApproval = true
+				continue
+			}
+			updatedApprovals = append(updatedApprovals, approval)
+		}
+
+		if !foundApproval {
+			return ErrOpenApprovalNotFound
+		}
+		service.OpenApprovals = updatedApprovals
+		return nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return mv.updateProject(existingProject)
 }
 
 type serviceUpdateFunc func(service *models.ExpandedService) error

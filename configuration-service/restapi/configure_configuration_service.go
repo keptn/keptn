@@ -5,6 +5,7 @@ package restapi
 import (
 	"crypto/tls"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/event"
+	"github.com/keptn/keptn/configuration-service/restapi/operations/service_approval"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/services"
 	"net/http"
 	"os"
@@ -128,6 +129,14 @@ func configureAPI(api *operations.ConfigurationServiceAPI) http.Handler {
 	api.ServicesGetServicesHandler = services.GetServicesHandlerFunc(handlers.GetServices)
 
 	api.ServicesGetServiceHandler = services.GetServiceHandlerFunc(handlers.GetService)
+
+	api.ServiceApprovalCreateServiceApprovalHandler = service_approval.CreateServiceApprovalHandlerFunc(handlers.CreateServiceApproval)
+
+	api.ServiceApprovalGetServiceApprovalsHandler = service_approval.GetServiceApprovalsHandlerFunc(handlers.GetServiceApprovals)
+
+	api.ServiceApprovalGetServiceApprovalHandler = service_approval.GetServiceApprovalHandlerFunc(handlers.GetServiceApproval)
+
+	api.ServiceApprovalCloseServiceApprovalHandler = service_approval.CloseServiceApprovalHandlerFunc(handlers.CloseServiceApproval)
 
 	api.ServerShutdown = func() {}
 

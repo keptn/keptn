@@ -6,6 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"strconv"
+
 	"github.com/go-openapi/errors"
 	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
@@ -25,6 +27,9 @@ type ExpandedService struct {
 	// last event types
 	LastEventTypes map[string]EventContext `json:"lastEventTypes,omitempty"`
 
+	// open approvals
+	OpenApprovals []*Approval `json:"openApprovals"`
+
 	// Service name
 	ServiceName string `json:"serviceName,omitempty"`
 }
@@ -34,6 +39,10 @@ func (m *ExpandedService) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLastEventTypes(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateOpenApprovals(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -56,6 +65,31 @@ func (m *ExpandedService) validateLastEventTypes(formats strfmt.Registry) error 
 		}
 		if val, ok := m.LastEventTypes[k]; ok {
 			if err := val.Validate(formats); err != nil {
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *ExpandedService) validateOpenApprovals(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.OpenApprovals) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.OpenApprovals); i++ {
+		if swag.IsZero(m.OpenApprovals[i]) { // not required
+			continue
+		}
+
+		if m.OpenApprovals[i] != nil {
+			if err := m.OpenApprovals[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("openApprovals" + "." + strconv.Itoa(i))
+				}
 				return err
 			}
 		}

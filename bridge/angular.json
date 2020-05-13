@@ -38,6 +38,7 @@
               }
             ],
             "styles": [
+              "./node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
               "client/styles.scss"
             ],
             "scripts": []
@@ -103,6 +104,7 @@
               "client/assets"
             ],
             "styles": [
+              "./node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
               "client/styles.scss"
             ],
             "scripts": []
@@ -134,6 +136,7 @@
           }
         }
       }
-    }},
+    }
+  },
   "defaultProject": "keptn-bridge-prototype"
 }
