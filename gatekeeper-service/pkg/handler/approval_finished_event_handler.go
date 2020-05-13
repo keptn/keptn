@@ -80,6 +80,7 @@ func (a *ApprovalFinishedEventHandler) handleApprovalFinishedEvent(inputEvent ke
 				shkeptncontext, inputEvent.Labels, shipyard, a.logger); event != nil {
 				outgoingEvents = append(outgoingEvents, *event)
 			}
+			_ = closeOpenApproval(inputEvent)
 		} else {
 			a.logger.Info(fmt.Sprintf("Rejection for image %s for service %s of project %s and current stage %s received",
 				inputEvent.Image, inputEvent.Service, inputEvent.Project, inputEvent.Stage))
