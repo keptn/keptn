@@ -10,9 +10,16 @@ import (
 	"time"
 )
 
+// ErrProjectNotFound indicates that a project has not been found
 var ErrProjectNotFound = errors.New("project not found")
+
+// ErrStageNotFound indicates that a stage has not been found
 var ErrStageNotFound = errors.New("stage not found")
+
+// ErrServiceNotFound indicates that a service has not been found
 var ErrServiceNotFound = errors.New("service not found")
+
+// ErrOpenApprovalNotFound indicates that an open approval has not been found
 var ErrOpenApprovalNotFound = errors.New("open approval not found")
 
 var instance *projectsMaterializedView
