@@ -463,7 +463,7 @@ jobs:
 #    <<: *gke_full # use template
 
   - stage: Test Minishift Standalone (--platform=openshift --use-case=quality-gates)
-    if: (branch = master or branch =~ ^release.*$) AND (type = cron OR type = push) # run for any change on master/release-* on push as well as cron
+    # if: (branch = master or branch =~ ^release.*$) AND (type = cron OR type = push) # run for any change on master/release-* on push as well as cron
     os: linux
     before_script:
       # download and install kubectl
@@ -483,9 +483,10 @@ jobs:
       - echo "Tests were successful, cleaning up the cluster now..."
     after_failure:
       # print some debug info
-      - echo "Keptn Installation Log:"
       - cat ~/.keptn/keptn-installer.log
       - cat ~/.keptn/keptn-installer-err.log
+      - oc get route --all-namespaces -owide
+      - oc get endpoints --all-namespaces -owide
       - kubectl get events --sort-by='.lastTimestamp' --all-namespaces
       - kubectl get pods --all-namespaces
       - kubectl get services --all-namespaces
