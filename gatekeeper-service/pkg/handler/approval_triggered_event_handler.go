@@ -113,7 +113,7 @@ func createApproval(eventID, keptnContext, image, tag, time, project, stage, ser
 		Time:         time,
 	}
 
-	queryURL := fmt.Sprintf("%s://%s/v1/project/%s/stage/%s/service/%s/approval", configurationServiceEndpoint.Scheme, configurationServiceEndpoint.Host, project, stage, service)
+	queryURL := getApprovalsEndpoint(configurationServiceEndpoint, project, stage, service, "")
 	client := &http.Client{}
 	payload, err := json.Marshal(newApproval)
 	if err != nil {

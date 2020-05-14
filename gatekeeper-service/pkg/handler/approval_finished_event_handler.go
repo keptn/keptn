@@ -96,7 +96,7 @@ func getOpenApproval(inputEvent keptnevents.ApprovalFinishedEventData) (*approva
 		return nil, errors.New("could not retrieve configuration-service URL")
 	}
 
-	queryURL := getApprovalsEndpoint(configurationServiceEndpoint, inputEvent)
+	queryURL := getApprovalsEndpoint(configurationServiceEndpoint, inputEvent.Project, inputEvent.Stage, inputEvent.Service, inputEvent.Approval.TriggeredID)
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", queryURL, nil)
 	if err != nil {
@@ -136,8 +136,11 @@ func getOpenApproval(inputEvent keptnevents.ApprovalFinishedEventData) (*approva
 	return approval, nil
 }
 
-func getApprovalsEndpoint(configurationServiceEndpoint url.URL, inputEvent keptnevents.ApprovalFinishedEventData) string {
-	return fmt.Sprintf("%s://%s/v1/project/%s/stage/%s/service/%s/approval/%s", configurationServiceEndpoint.Scheme, configurationServiceEndpoint.Host, inputEvent.Project, inputEvent.Stage, inputEvent.Service, inputEvent.Approval.TriggeredID)
+func getApprovalsEndpoint(configurationServiceEndpoint url.URL, project, stage, service, approvalTriggeredID string) string {
+	if approvalTriggeredID == "" {
+		return fmt.Sprintf("%s://%s/v1/project/%s/stage/%s/service/%s/approval", configurationServiceEndpoint.Scheme, configurationServiceEndpoint.Host, project, stage, service)
+	}
+	return fmt.Sprintf("%s://%s/v1/project/%s/stage/%s/service/%s/approval/%s", configurationServiceEndpoint.Scheme, configurationServiceEndpoint.Host, project, stage, service, approvalTriggeredID)
 }
 
 func closeOpenApproval(inputEvent keptnevents.ApprovalFinishedEventData) error {
@@ -146,7 +149,7 @@ func closeOpenApproval(inputEvent keptnevents.ApprovalFinishedEventData) error {
 		return errors.New("could not retrieve configuration-service URL")
 	}
 
-	queryURL := getApprovalsEndpoint(configurationServiceEndpoint, inputEvent)
+	queryURL := getApprovalsEndpoint(configurationServiceEndpoint, inputEvent.Project, inputEvent.Stage, inputEvent.Service, inputEvent.Approval.TriggeredID)
 	client := &http.Client{}
 	req, err := http.NewRequest("DELETE", queryURL, nil)
 	if err != nil {
