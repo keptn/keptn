@@ -2,6 +2,10 @@ package handler
 
 import (
 	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"reflect"
 	"testing"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
@@ -25,6 +29,52 @@ var approvalFinishedTests = []struct {
 		},
 	},
 	{
+		name:     "result-pass-status-succeeded-approval-finished-tags-dont-match",
+		image:    "docker.io/keptnexamples/carts:0.11.x",
+		shipyard: getShipyardWithApproval(keptnevents.Automatic, keptnevents.Automatic),
+		inputEvent: keptnevents.ApprovalFinishedEventData{
+			Project:            "sockshop",
+			Service:            "carts",
+			Stage:              "hardening",
+			TestStrategy:       getPtr("performance"),
+			DeploymentStrategy: getPtr("blue_green_service"),
+			Tag:                "0.11.x",
+			Image:              "docker.io/keptnexamples/carts",
+			Labels: map[string]string{
+				"l1": "lValue",
+			},
+			Approval: keptnevents.ApprovalData{
+				TriggeredID: eventID,
+				Result:      "pass",
+				Status:      "succeeded",
+			},
+		},
+		outputEvent: []cloudevents.Event{},
+	},
+	{
+		name:     "result-pass-status-succeeded-approval-finished-images-dont-match",
+		image:    "docker.io/keptnexamples/cartsx:0.11.1",
+		shipyard: getShipyardWithApproval(keptnevents.Automatic, keptnevents.Automatic),
+		inputEvent: keptnevents.ApprovalFinishedEventData{
+			Project:            "sockshop",
+			Service:            "carts",
+			Stage:              "hardening",
+			TestStrategy:       getPtr("performance"),
+			DeploymentStrategy: getPtr("blue_green_service"),
+			Tag:                "0.11.1",
+			Image:              "docker.io/keptnexamples/cartsx",
+			Labels: map[string]string{
+				"l1": "lValue",
+			},
+			Approval: keptnevents.ApprovalData{
+				TriggeredID: eventID,
+				Result:      "pass",
+				Status:      "succeeded",
+			},
+		},
+		outputEvent: []cloudevents.Event{},
+	},
+	{
 		name:        "result-failed-status-succeeded-approval-finished",
 		image:       "docker.io/keptnexamples/carts:0.11.1",
 		shipyard:    getShipyardWithApproval(keptnevents.Automatic, keptnevents.Automatic),
@@ -41,6 +91,24 @@ var approvalFinishedTests = []struct {
 }
 
 func TestHandleApprovalFinishedEvent(t *testing.T) {
+
+	ts := httptest.NewServer(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Add("Content-Type", "application/json")
+			w.WriteHeader(200)
+			w.Write([]byte(`{
+					"eventId": "` + eventID + `",
+					"image": "docker.io/keptnexamples/carts",
+					"keptnContext": "` + shkeptncontext + `",
+					"tag": "0.11.1",
+					"time": "0"
+				}`))
+		}),
+	)
+	defer ts.Close()
+
+	os.Setenv("CONFIGURATION_SERVICE", ts.URL)
+
 	for _, tt := range approvalFinishedTests {
 		t.Run(tt.name, func(t *testing.T) {
 			e := NewApprovalFinishedEventHandler(keptnevents.NewLogger(shkeptncontext, eventID, "gatekeeper-service"))
@@ -57,6 +125,151 @@ func TestHandleApprovalFinishedEvent(t *testing.T) {
 						t.Errorf("output events do not match for %s", tt.name)
 					}
 				}
+			}
+		})
+	}
+}
+
+func TestApprovalFinishedEventHandler_getOpenApproval(t *testing.T) {
+
+	var returnCode int
+	ts := httptest.NewServer(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Add("Content-Type", "application/json")
+			if returnCode == 200 {
+				w.WriteHeader(200)
+				w.Write([]byte(`{
+					"eventId": "approval-triggered-id",
+					"image": "docker.io/keptnexamples/carts",
+					"keptnContext": "approval-workflow",
+					"tag": "0.10.1",
+					"time": "0"
+				}`))
+				return
+			}
+			w.WriteHeader(returnCode)
+			w.Write([]byte(`{
+					"code": 404,
+					"message": "Service not found"
+				}`))
+		}),
+	)
+	defer ts.Close()
+
+	os.Setenv("CONFIGURATION_SERVICE", ts.URL)
+
+	type args struct {
+		inputEvent keptnevents.ApprovalFinishedEventData
+	}
+	tests := []struct {
+		name                 string
+		args                 args
+		want                 *approval
+		returnedResponseCode int
+		wantErr              bool
+	}{
+		{
+			name: "return approval",
+			args: args{
+				inputEvent: keptnevents.ApprovalFinishedEventData{
+					Project:            "sockshop",
+					Service:            "carts",
+					Stage:              "dev",
+					TestStrategy:       nil,
+					DeploymentStrategy: nil,
+					Tag:                "0.10.1",
+					Image:              "docker.io/keptnexamples/carts",
+					Labels:             nil,
+					Approval: keptnevents.ApprovalData{
+						TriggeredID: "approval-triggered-id",
+						Result:      "pass",
+						Status:      "",
+					},
+				},
+			},
+			want: &approval{
+				EventID:      "approval-triggered-id",
+				Image:        "docker.io/keptnexamples/carts",
+				KeptnContext: "approval-workflow",
+				Tag:          "0.10.1",
+				Time:         "0",
+			},
+			returnedResponseCode: 200,
+			wantErr:              false,
+		},
+		{
+			name: "approval not found",
+			args: args{
+				inputEvent: keptnevents.ApprovalFinishedEventData{
+					Project:            "sockshop",
+					Service:            "carts",
+					Stage:              "dev",
+					TestStrategy:       nil,
+					DeploymentStrategy: nil,
+					Tag:                "0.10.1",
+					Image:              "docker.io/keptnexamples/carts",
+					Labels:             nil,
+					Approval: keptnevents.ApprovalData{
+						TriggeredID: "approval-triggered-id",
+						Result:      "pass",
+						Status:      "",
+					},
+				},
+			},
+			want:                 nil,
+			returnedResponseCode: 404,
+			wantErr:              true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			returnCode = tt.returnedResponseCode
+			got, err := getOpenApproval(tt.args.inputEvent)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("getOpenApproval() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getOpenApproval() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_closeOpenApproval(t *testing.T) {
+
+	var returnCode int
+	ts := httptest.NewServer(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Add("Content-Type", "application/json")
+			w.WriteHeader(returnCode)
+		}),
+	)
+	defer ts.Close()
+
+	os.Setenv("CONFIGURATION_SERVICE", ts.URL)
+
+	type args struct {
+		inputEvent keptnevents.ApprovalFinishedEventData
+	}
+	tests := []struct {
+		name                 string
+		args                 args
+		returnedResponseCode int
+		wantErr              bool
+	}{
+		{
+			name:                 "deletion successful",
+			args:                 args{},
+			returnedResponseCode: 200,
+			wantErr:              false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			returnCode = tt.returnedResponseCode
+			if err := closeOpenApproval(tt.args.inputEvent); (err != nil) != tt.wantErr {
+				t.Errorf("closeOpenApproval() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

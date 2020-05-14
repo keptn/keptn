@@ -1,11 +1,27 @@
 package handler
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+	"time"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
 )
+
+const datastore = "MONGODB_DATASTORE"
+
+type approval struct {
+	EventID      string `json:"eventId"`
+	Image        string `json:"image"`
+	KeptnContext string `json:"keptnContext"`
+	Tag          string `json:"tag"`
+	Time         string `json:"time"`
+}
 
 type ApprovalFinishedEventHandler struct {
 	logger *keptnevents.Logger
@@ -43,6 +59,19 @@ func (a *ApprovalFinishedEventHandler) handleApprovalFinishedEvent(inputEvent ke
 				inputEvent.Image, inputEvent.Service, inputEvent.Project, inputEvent.Stage))
 
 			// TODO: Check image using inputEvent.Approval.TriggeredID
+			openApproval, err := getOpenApproval(inputEvent)
+			if err != nil {
+				a.logger.Error("Could not retrieve open Approval with EventID " + inputEvent.Approval.TriggeredID + ": " + err.Error())
+				return outgoingEvents
+			}
+			if openApproval.Image != inputEvent.Image {
+				a.logger.Error(fmt.Sprintf("Image of approval-finished event %s does not match with image of open approval: %s != %s\n", openApproval.EventID, openApproval.Image, inputEvent.Image))
+				return outgoingEvents
+			}
+			if openApproval.Tag != inputEvent.Tag {
+				a.logger.Error(fmt.Sprintf("Tag of approval-finished event %s does not match with image of open approval: %s != %s\n", openApproval.EventID, openApproval.Image, inputEvent.Image))
+				return outgoingEvents
+			}
 			image := inputEvent.Image
 			if inputEvent.Tag != "" {
 				image += ":" + inputEvent.Tag
@@ -51,6 +80,7 @@ func (a *ApprovalFinishedEventHandler) handleApprovalFinishedEvent(inputEvent ke
 				shkeptncontext, inputEvent.Labels, shipyard, a.logger); event != nil {
 				outgoingEvents = append(outgoingEvents, *event)
 			}
+			_ = closeOpenApproval(inputEvent)
 		} else {
 			a.logger.Info(fmt.Sprintf("Rejection for image %s for service %s of project %s and current stage %s received",
 				inputEvent.Image, inputEvent.Service, inputEvent.Project, inputEvent.Stage))
@@ -58,4 +88,97 @@ func (a *ApprovalFinishedEventHandler) handleApprovalFinishedEvent(inputEvent ke
 	}
 
 	return outgoingEvents
+}
+
+func getOpenApproval(inputEvent keptnevents.ApprovalFinishedEventData) (*approval, error) {
+	configurationServiceEndpoint, err := keptnevents.GetServiceEndpoint(configService)
+	if err != nil {
+		return nil, errors.New("could not retrieve configuration-service URL")
+	}
+
+	queryURL := getApprovalsEndpoint(configurationServiceEndpoint, inputEvent.Project, inputEvent.Stage, inputEvent.Service, inputEvent.Approval.TriggeredID)
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", queryURL, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Add("content-type", "application/json")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode == http.StatusNotFound {
+		//
+		<-time.After(5 * time.Second)
+		resp, err = client.Do(req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New(string(body))
+	}
+
+	approval := &approval{}
+	err = json.Unmarshal(body, approval)
+	if err != nil {
+		return nil, err
+	}
+
+	return approval, nil
+}
+
+func getApprovalsEndpoint(configurationServiceEndpoint url.URL, project, stage, service, approvalTriggeredID string) string {
+	if approvalTriggeredID == "" {
+		return fmt.Sprintf("%s://%s/v1/project/%s/stage/%s/service/%s/approval", configurationServiceEndpoint.Scheme, configurationServiceEndpoint.Host, project, stage, service)
+	}
+	return fmt.Sprintf("%s://%s/v1/project/%s/stage/%s/service/%s/approval/%s", configurationServiceEndpoint.Scheme, configurationServiceEndpoint.Host, project, stage, service, approvalTriggeredID)
+}
+
+func closeOpenApproval(inputEvent keptnevents.ApprovalFinishedEventData) error {
+	configurationServiceEndpoint, err := keptnevents.GetServiceEndpoint(configService)
+	if err != nil {
+		return errors.New("could not retrieve configuration-service URL")
+	}
+
+	queryURL := getApprovalsEndpoint(configurationServiceEndpoint, inputEvent.Project, inputEvent.Stage, inputEvent.Service, inputEvent.Approval.TriggeredID)
+	client := &http.Client{}
+	req, err := http.NewRequest("DELETE", queryURL, nil)
+	if err != nil {
+		return err
+	}
+	req.Header.Add("content-type", "application/json")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode == http.StatusNotFound {
+		<-time.After(5 * time.Second)
+		resp, err = client.Do(req)
+		if err != nil {
+			return err
+		}
+	}
+
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return errors.New(string(body))
+	}
+
+	return nil
 }
