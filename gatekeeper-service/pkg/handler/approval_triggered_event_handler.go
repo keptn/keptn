@@ -99,14 +99,14 @@ func (a *ApprovalTriggeredEventHandler) getApprovalFinishedEvent(inputEvent kept
 	return getCloudEvent(approvalFinishedEvent, keptnevents.ApprovalFinishedEventType, shkeptncontext)
 }
 
-func createApproval(eventId, keptnContext, image, tag, time, project, stage, service string) error {
+func createApproval(eventID, keptnContext, image, tag, time, project, stage, service string) error {
 	configurationServiceEndpoint, err := keptnevents.GetServiceEndpoint(configService)
 	if err != nil {
 		return errors.New("could not retrieve configuration-service URL")
 	}
 
 	newApproval := &approval{
-		EventID:      eventId,
+		EventID:      eventID,
 		Image:        image,
 		KeptnContext: keptnContext,
 		Tag:          tag,
