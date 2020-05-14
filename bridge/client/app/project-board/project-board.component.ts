@@ -41,6 +41,8 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   public contextId: string;
   public eventId: string;
 
+  public view: string = 'services';
+
   constructor(private _changeDetectorRef: ChangeDetectorRef, private router: Router, private location: Location, private route: ActivatedRoute, private dataService: DataService, private apiService: ApiService) { }
 
   ngOnInit() {
@@ -196,6 +198,10 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
 
   trackStage(index: number, stage: Stage) {
     return stage.stageName;
+  }
+
+  selectView(view) {
+    this.view = view;
   }
 
   ngOnDestroy(): void {

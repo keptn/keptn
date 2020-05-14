@@ -1,4 +1,17 @@
+@import "../../variables";
+
 .project-board {
   width: 100%;
   height: 100%;
+}
+
+::ng-deep .dt-menu {
+}
+::ng-deep .dt-menu-item {
+  padding: 6px 40px 6px 20px !important;
+  height: auto !important;
+  cursor: pointer;
+}
+::ng-deep .dt-menu-item.active {
+  background: #454646;
 }
