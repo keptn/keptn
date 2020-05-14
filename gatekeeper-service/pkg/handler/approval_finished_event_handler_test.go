@@ -29,6 +29,52 @@ var approvalFinishedTests = []struct {
 		},
 	},
 	{
+		name:     "result-pass-status-succeeded-approval-finished-tags-dont-match",
+		image:    "docker.io/keptnexamples/carts:0.11.x",
+		shipyard: getShipyardWithApproval(keptnevents.Automatic, keptnevents.Automatic),
+		inputEvent: keptnevents.ApprovalFinishedEventData{
+			Project:            "sockshop",
+			Service:            "carts",
+			Stage:              "hardening",
+			TestStrategy:       getPtr("performance"),
+			DeploymentStrategy: getPtr("blue_green_service"),
+			Tag:                "0.11.x",
+			Image:              "docker.io/keptnexamples/carts",
+			Labels: map[string]string{
+				"l1": "lValue",
+			},
+			Approval: keptnevents.ApprovalData{
+				TriggeredID: eventID,
+				Result:      "pass",
+				Status:      "succeeded",
+			},
+		},
+		outputEvent: []cloudevents.Event{},
+	},
+	{
+		name:     "result-pass-status-succeeded-approval-finished-images-dont-match",
+		image:    "docker.io/keptnexamples/cartsx:0.11.1",
+		shipyard: getShipyardWithApproval(keptnevents.Automatic, keptnevents.Automatic),
+		inputEvent: keptnevents.ApprovalFinishedEventData{
+			Project:            "sockshop",
+			Service:            "carts",
+			Stage:              "hardening",
+			TestStrategy:       getPtr("performance"),
+			DeploymentStrategy: getPtr("blue_green_service"),
+			Tag:                "0.11.1",
+			Image:              "docker.io/keptnexamples/cartsx",
+			Labels: map[string]string{
+				"l1": "lValue",
+			},
+			Approval: keptnevents.ApprovalData{
+				TriggeredID: eventID,
+				Result:      "pass",
+				Status:      "succeeded",
+			},
+		},
+		outputEvent: []cloudevents.Event{},
+	},
+	{
 		name:        "result-failed-status-succeeded-approval-finished",
 		image:       "docker.io/keptnexamples/carts:0.11.1",
 		shipyard:    getShipyardWithApproval(keptnevents.Automatic, keptnevents.Automatic),
