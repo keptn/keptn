@@ -6,6 +6,39 @@ function print_error() {
   echo "[keptn|ERROR] $(timestamp) $1"
 }
 
+function send_start_evaluation_event() {
+  PROJECT=$1
+  STAGE=$2
+  SERVICE=$3
+
+  response=$(keptn send event start-evaluation --project=$PROJECT --stage=$STAGE --service=$SERVICE --timeframe=5m)
+  keptn_context_id=$(echo $response | awk -F'Keptn context:' '{ print $2 }' | xargs)
+
+  echo "$keptn_context_id"
+}
+
+function get_evaluation_done_event() {
+  keptn_context_id=$1
+  keptn get event evaluation-done --keptn-context="${keptn_context_id}" | tail -n +2
+}
+
+function verify_using_jq() {
+  payload=$1
+  attribute=$2
+  expected=$3
+
+  actual=$(echo "${payload}" | jq -r "${attribute}")
+
+  if [[ "${actual}" != "${expected}" ]]; then
+    print_error "ERROR: Checking $attribute, expected '${expected}', got '${actual}' ❌"
+    exit 1
+  else
+    echo "Checking $attribute: ${actual} ✓"
+  fi
+
+  return 0
+}
+
 function verify_test_step() {
   if [[ $1 != '0' ]]; then
     print_error "$2"

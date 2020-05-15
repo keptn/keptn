@@ -1,0 +1,30 @@
+---
+spec_version: "0.1.1"
+comparison:
+  aggregate_function: "avg"
+  compare_with: "single_result"
+  include_result_with_score: "pass"
+  number_of_comparison_results: 1
+filter:
+objectives:
+  - sli: "response_time_p95"
+    key_sli: false
+    pass:             # pass if (relative change <= 10% AND absolute value is < 600ms)
+      - criteria:
+          - "<=+10%"  # relative values require a prefixed sign (plus or minus)
+          - "<75"    # absolute values only require a logical operator
+    warning:          # if the response time is below 800ms, the result should be a warning
+      - criteria:
+          - "<=200"
+    weight: 1
+  - sli: "throughput"
+    pass:
+      - criteria:
+          - "<=+10%"
+          - ">=-10%"
+  - sli: "error_rate"
+  - sli: "number_calls_other_services"
+  - sli: "number_of_time_calls_other_services"
+total_score:
+  pass: "90%"
+  warning: "75%"
