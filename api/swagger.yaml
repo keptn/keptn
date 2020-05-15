@@ -52,7 +52,8 @@ paths:
     get:
       tags:
         - Event
-      summary: Get the latest event matching the required query parameters
+      deprecated: true
+      summary: 'Deprecated endpoint - please use /mongodb-datastore/v1/event'
       parameters:
         - name: keptnContext
           in: query
