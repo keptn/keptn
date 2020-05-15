@@ -37,7 +37,7 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event, loggingDone chan bool) error
 
 	defer func() { loggingDone <- true }()
 
-	keptnHandler, err := keptnevents.NewKeptn(&ce, keptnevents.KeptnOpts{})
+	keptnHandler, err := keptnevents.NewKeptn(&ce, keptnevents.KeptnOpts{ConfigurationServiceURL: o.configServiceURL})
 	if err != nil {
 		o.logger.Error("Could not initialize Keptn Handler: " + err.Error())
 		return err
