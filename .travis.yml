@@ -569,3 +569,61 @@ jobs:
   - <<: *minikubeStandaloneTest
     env:
       - MINIKUBE_VERSION=v1.10.1 # from 2020-05-12; uses K8s 1.18.2
+
+  - &minikubeFullTest
+    stage: Test Minikube Full (--platform=kubernetes)
+    # for detailed Minikube versions see https://github.com/kubernetes/minikube/blob/master/CHANGELOG.md
+    env:
+      - MINIKUBE_VERSION=v1.3.1 # from 2019-08-13; uses K8s 1.15
+    os: linux
+    before_script:
+      # install conntrack (required for newer minikube versions)
+      - sudo apt-get install -y conntrack
+      # download and install kubectl
+      - curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.17.0/bin/linux/amd64/kubectl && chmod +x ./kubectl && sudo mv ./kubectl /usr/local/bin/kubectl
+      - test/utils/download_and_install_keptn_cli.sh
+      - test/utils/minikube_create_cluster.sh
+    script:
+      - kubectl get nodes || travis_terminate 1
+      # finally install keptn quality gates
+      - test/test_install_kubernetes_full.sh
+      - keptn status
+      - test/utils/expose_keptn_bridge.sh
+      # test onboarding and new artifcat for sockshop
+      - export PROJECT=sockshop
+      - test/test_onboard_service.sh
+      - test/test_new_artifact.sh
+      - test/test_delete_project.sh
+    after_success:
+      # delete google kubernetes cluster only on success (in case of an error we want to be able to dig into the cluster)
+      - echo "Tests were successful, cleaning up the cluster now..."
+    after_failure:
+      # print some debug info
+      - echo "Keptn Installation Log:"
+      - cat ~/.keptn/keptn-installer.log
+      - kubectl -n keptn describe deployment configuration-service
+      - kubectl -n keptn logs svc/configuration-service
+      - kubectl get events --sort-by='.lastTimestamp' --all-namespaces
+      - kubectl get pods --all-namespaces
+      - kubectl get services --all-namespaces
+      - kubectl get ingress --all-namespaces
+
+  - <<: *minikubeFullTest
+    env:
+      - MINIKUBE_VERSION=v1.4.0 # from 2019-09-17; uses K8s 1.16
+
+  - <<: *minikubeFullTest
+    env:
+      - MINIKUBE_VERSION=v1.6.2 # from 2019-12-19; uses K8s 1.17
+
+  - <<: *minikubeFullTest
+    env:
+      - MINIKUBE_VERSION=v1.7.3 # from 2020-02-20; uses K8s 1.17.3
+
+  - <<: *minikubeFullTest
+    env:
+      - MINIKUBE_VERSION=v1.9.2 # from 2020-04-02; uses K8s 1.18
+
+  - <<: *minikubeFullTest
+    env:
+      - MINIKUBE_VERSION=v1.10.1 # from 2020-05-12; uses K8s 1.18.2

@@ -50,7 +50,7 @@ func (b BlackLister) ExecuteAction(problem *keptn.ProblemEventData, keptnHandler
 
 	if containsMixer {
 		// Add IP in blacklistip-handler
-		handler := configutils.NewResourceHandler(os.Getenv(envConfigSvcURL))
+		handler := configutils.NewResourceHanHab(os.Getenv(envConfigSvcURL))
 		resource, err := handler.GetStageResource(problem.Project, problem.Stage, ipHandler)
 		if err != nil {
 			return fmt.Errorf("failed to get mixer resource: %v", err)
