@@ -68,11 +68,10 @@ func getApprovalTriggeredEvents(approvalTriggered approvalTriggeredStruct) error
 	serviceHandler := apiutils.NewAuthenticatedServiceHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
 	eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
 
-	logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
+	logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.InfoLevel)
 
-	if approvalTriggered.Service == nil {
+	if approvalTriggered.Service == nil || *approvalTriggered.Service == "" {
 		services, err := serviceHandler.GetAllServices(*approvalTriggered.Project, *approvalTriggered.Stage)
-
 		if err != nil {
 			return err
 		}
@@ -84,16 +83,18 @@ func getApprovalTriggeredEvents(approvalTriggered approvalTriggeredStruct) error
 				})
 
 				if err != nil {
-					logging.PrintLog("Get approval.triggered event was unsuccessful", logging.QuietLevel)
+					logging.PrintLog("Get approval.triggered event was unsuccessful", logging.InfoLevel)
 					return fmt.Errorf("%s", *err.Message)
 				}
 
-				if events == nil {
-					logging.PrintLog("No event returned", logging.QuietLevel)
-					return nil
+				if events != nil {
+					allEvents = append(allEvents, events...)
 				}
-				allEvents = append(allEvents, events...)
 			}
+		}
+
+		if len(allEvents) == 0 {
+			logging.PrintLog("No approval.triggered events have been found", logging.InfoLevel)
 		}
 
 		for _, event := range allEvents {
