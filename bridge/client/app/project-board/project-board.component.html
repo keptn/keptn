@@ -31,89 +31,104 @@
   </div>
 </div>
 <div class="project-board" fxLayout="row" *ngIf="project$ | async as project">
-  <div class="container" fxFlex fxLayout="column" fxLayoutGap="15px">
-    <div fxFlex fxLayout="column" fxLayoutGap="15px">
-      <div>
-        <dt-info-group>
-          <dt-info-group-title>
-            <p><span [textContent]="project.stages.length"></span> Stages</p>
-          </dt-info-group-title>
-          <div class="mr-minus-15" fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutGap="15px" fxLayoutAlign="start">
-            <dt-tile *ngFor="let stage of project.stages; trackBy:trackStage"
-                     fxFlex="0 1 calc(33.3% - 15px)" fxFlex.lt-md="0 1 calc(50% - 15px)" fxFlex.lt-sm="100%">
-              <dt-tile-title [textContent]="stage.stageName"></dt-tile-title>
-              <ng-container *ngIf="stage.services">
-                <dt-tag-list aria-label="services">
-                  <dt-tag *ngFor="let service of getDeployedServices(project, stage)">
-                    <span *ngIf="getLatestDeployment(project, service, stage) as deployment" (click)="selectDeployment(deployment, project)" [textContent]="deployment.getShortImageName()"></span>
-                  </dt-tag>
-                </dt-tag-list>
-              </ng-container>
-            </dt-tile>
-          </div>
-        </dt-info-group>
-      </div>
-      <div>
-        <dt-info-group>
-          <dt-info-group-title>
-            <p class="mb-0"><span [textContent]="project.getServices().length"></span> Services</p>
-          </dt-info-group-title>
-        </dt-info-group>
-      </div>
-      <ktb-expandable-tile *ngFor="let service of project.getServices()" [expanded]="service.serviceName == serviceName">
-        <ktb-expandable-tile-header>
+  <dt-menu aria-label="Default Menu Example" class="dt-default-menu-example">
+    <dt-menu-group label="">
+      <a (click)="selectView('environment')" [class.active]="view == 'environment'" dtMenuItem>Environment</a>
+      <a (click)="selectView('services')" [class.active]="view == 'services'" dtMenuItem>Services</a>
+    </dt-menu-group>
+  </dt-menu>
+
+  <ng-container *ngIf="view == 'environment'">
+    <div class="container" fxFlex fxLayout="column" fxLayoutGap="15px">
+      <div fxFlex fxLayout="column" fxLayoutGap="15px">
+        <div>
           <dt-info-group>
             <dt-info-group-title>
-              <h2 class="m-0" [textContent]="service.serviceName"></h2>
+              <p><span [textContent]="project.stages.length"></span> Stages</p>
             </dt-info-group-title>
-            <p class="m-0 mb-1 mt-1" *ngIf="getLatestDeployment(project, service) as deployment">
-              <span class="bold">Last relevant artifact: </span><span [textContent]="deployment.getShortImageName()"></span>
-            </p>
-            <button dt-button disabled variant="nested" *ngIf="!service.roots">
-              <dt-loading-spinner></dt-loading-spinner>
-              Loading ...
-            </button>
+            <div class="mr-minus-15" fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutGap="15px" fxLayoutAlign="start">
+              <dt-tile *ngFor="let stage of project.stages; trackBy:trackStage"
+                       fxFlex="0 1 calc(33.3% - 15px)" fxFlex.lt-md="0 1 calc(50% - 15px)" fxFlex.lt-sm="100%">
+                <dt-tile-title [textContent]="stage.stageName"></dt-tile-title>
+                <ng-container *ngIf="stage.services">
+                  <dt-tag-list aria-label="services">
+                    <dt-tag *ngFor="let service of getDeployedServices(project, stage)">
+                      <span *ngIf="getLatestDeployment(project, service, stage) as deployment" (click)="selectDeployment(deployment, project)" [textContent]="deployment.getShortImageName()"></span>
+                    </dt-tag>
+                  </dt-tag-list>
+                </ng-container>
+              </dt-tile>
+            </div>
           </dt-info-group>
-        </ktb-expandable-tile-header>
-        <div class="mb-1" fxLayout="row" fxLayoutAlign="end center">
+        </div>
+      </div>
+    </div>
+  </ng-container>
+  <ng-container *ngIf="view == 'services'">
+    <div class="container" fxFlex="34" fxLayout="column" fxLayoutGap="15px">
+      <div fxFlex fxLayout="column" fxLayoutGap="15px">
+        <div>
+          <dt-info-group>
+            <dt-info-group-title>
+              <p class="mb-0"><span [textContent]="project.getServices().length"></span> Services</p>
+            </dt-info-group-title>
+          </dt-info-group>
+        </div>
+        <ktb-expandable-tile *ngFor="let service of project.getServices()" [expanded]="service.serviceName == serviceName">
+          <ktb-expandable-tile-header>
+            <dt-info-group>
+              <dt-info-group-title>
+                <h2 class="m-0" [textContent]="service.serviceName"></h2>
+              </dt-info-group-title>
+              <p class="m-0 mb-1 mt-1" *ngIf="getLatestDeployment(project, service) as deployment">
+                <span class="bold">Last relevant artifact: </span><span [textContent]="deployment.getShortImageName()"></span>
+              </p>
+              <button dt-button disabled variant="nested" *ngIf="!service.roots">
+                <dt-loading-spinner></dt-loading-spinner>
+                Loading ...
+              </button>
+            </dt-info-group>
+          </ktb-expandable-tile-header>
+          <div class="mb-1" fxLayout="row" fxLayoutAlign="end center">
+            <dt-tag-list aria-label="fetch-info">
+              <dt-tag>Last time fetched: <span [textContent]="getRootsLastUpdated(project, service) | amCalendar:getCalendarFormats()"></span></dt-tag>
+            </dt-tag-list>
+          </div>
+          <ktb-root-events-list [events]="service.roots" [selectedEvent]="currentRoot"  (selectedEventChange)="selectRoot($event)"></ktb-root-events-list>
+          <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px" *ngIf="!service.roots">
+            <dt-loading-spinner></dt-loading-spinner>
+            <p>Loading ...</p>
+          </div>
+        </ktb-expandable-tile>
+        <div class="mb-3">
+        </div>
+      </div>
+    </div>
+    <div class="container dark" fxFlex="66" fxLayout="column" fxLayoutGap="15px">
+      <div *ngIf="currentRoot" fxFlex fxLayout="column" fxLayoutGap="15px">
+        <div>
+          <dt-info-group>
+            <dt-info-group-title>
+              <div fxFlex fxLayout="row" fxLayoutAlign="flex-start center" fxLayoutGap="15px">
+                <div fxLayout="row" fxLayoutAlign="start center">
+                  <button dt-icon-button disabled variant="nested" *ngIf="currentRoot.isFaulty()"><dt-icon name="criticalevent"></dt-icon></button>
+                  <p *ngIf="currentRoot.getShortImageName()" [textContent]="currentRoot.getShortImageName()"></p>
+                  <p *ngIf="!currentRoot.getShortImageName()" [textContent]="currentRoot.getService()"></p>
+                </div>
+              </div>
+            </dt-info-group-title>
+            <p class="m-0" *ngIf="currentRoot.data.valuesCanary"><span class="bold">New artifact: </span><span [textContent]="currentRoot.data.valuesCanary.image"></span></p>
+            <p class="m-0"><span class="bold">Keptn ID: </span><span [textContent]="currentRoot.shkeptncontext"></span></p>
+          </dt-info-group>
+        </div>
+        <ktb-events-list [events]="currentRoot.traces" [focusedEventId]="eventId"></ktb-events-list>
+        <div class="mb-3" fxLayout="row" fxLayoutAlign="end center">
           <dt-tag-list aria-label="fetch-info">
-            <dt-tag>Last time fetched: <span [textContent]="getRootsLastUpdated(project, service) | amCalendar:getCalendarFormats()"></span></dt-tag>
+            <dt-tag>Last time fetched: <span [textContent]="getTracesLastUpdated(currentRoot) | amCalendar:getCalendarFormats()"></span></dt-tag>
+            <dt-tag *ngIf="showReloadButton(currentRoot)"><button dt-button (click)="loadTraces(currentRoot)"><dt-icon name="refresh"></dt-icon> Reload</button></dt-tag>
           </dt-tag-list>
         </div>
-        <ktb-root-events-list [events]="service.roots" [selectedEvent]="currentRoot"  (selectedEventChange)="selectRoot($event)"></ktb-root-events-list>
-        <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px" *ngIf="!service.roots">
-          <dt-loading-spinner></dt-loading-spinner>
-          <p>Loading ...</p>
-        </div>
-      </ktb-expandable-tile>
-      <div class="mb-3">
       </div>
     </div>
-  </div>
-  <div class="container dark" fxFlex fxLayout="column" fxLayoutGap="15px">
-    <div *ngIf="currentRoot" fxFlex fxLayout="column" fxLayoutGap="15px">
-      <div>
-        <dt-info-group>
-          <dt-info-group-title>
-            <div fxFlex fxLayout="row" fxLayoutAlign="flex-start center" fxLayoutGap="15px">
-              <div fxLayout="row" fxLayoutAlign="start center">
-                <button dt-icon-button disabled variant="nested" *ngIf="currentRoot.isFaulty()"><dt-icon name="criticalevent"></dt-icon></button>
-                <p *ngIf="currentRoot.getShortImageName()" [textContent]="currentRoot.getShortImageName()"></p>
-                <p *ngIf="!currentRoot.getShortImageName()" [textContent]="currentRoot.getService()"></p>
-              </div>
-            </div>
-          </dt-info-group-title>
-          <p class="m-0" *ngIf="currentRoot.data.valuesCanary"><span class="bold">New artifact: </span><span [textContent]="currentRoot.data.valuesCanary.image"></span></p>
-          <p class="m-0"><span class="bold">Keptn ID: </span><span [textContent]="currentRoot.shkeptncontext"></span></p>
-        </dt-info-group>
-      </div>
-      <ktb-events-list [events]="currentRoot.traces" [focusedEventId]="eventId"></ktb-events-list>
-      <div class="mb-3" fxLayout="row" fxLayoutAlign="end center">
-        <dt-tag-list aria-label="fetch-info">
-          <dt-tag>Last time fetched: <span [textContent]="getTracesLastUpdated(currentRoot) | amCalendar:getCalendarFormats()"></span></dt-tag>
-          <dt-tag *ngIf="showReloadButton(currentRoot)"><button dt-button (click)="loadTraces(currentRoot)"><dt-icon name="refresh"></dt-icon> Reload</button></dt-tag>
-        </dt-tag-list>
-      </div>
-    </div>
-  </div>
+  </ng-container>
 </div>
