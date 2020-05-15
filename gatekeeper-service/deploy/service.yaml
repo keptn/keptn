@@ -20,8 +20,8 @@ spec:
         - containerPort: 8080
         resources:
           requests:
-            memory: "256Mi"
-            cpu: "500m"
+            memory: "32Mi"
+            cpu: "50m"
           limits:
             memory: "256Mi"
             cpu: "500m"
@@ -46,58 +46,3 @@ spec:
     protocol: TCP
   selector:
     run: gatekeeper-service
-
----
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  annotations:
-    deployment.kubernetes.io/revision: "1"
-    kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"apps/v1","kind":"Deployment","metadata":{"annotations":{},"name":"gatekeeper-service-evaluation-done-distributor","namespace":"keptn"},"spec":{"replicas":1,"selector":{"matchLabels":{"run":"distributor"}},"template":{"metadata":{"labels":{"run":"distributor"}},"spec":{"containers":[{"env":[{"name":"PUBSUB_URL","value":"nats://keptn-nats-cluster"},{"name":"PUBSUB_TOPIC","value":"sh.keptn.events.evaluation-done"},{"name":"PUBSUB_RECIPIENT","value":"gatekeeper-service"}],"image":"keptn/distributor:latest","name":"distributor","ports":[{"containerPort":8080}],"resources":{"limits":{"cpu":"500m","memory":"128Mi"},"requests":{"cpu":"50m","memory":"32Mi"}}}]}}}}
-  creationTimestamp: "2020-05-08T07:50:00Z"
-  generation: 1
-  name: gatekeeper-service-evaluation-done-distributor
-  namespace: keptn
-  resourceVersion: "594181"
-  selfLink: /apis/extensions/v1beta1/namespaces/keptn/deployments/gatekeeper-service-evaluation-done-distributor
-  uid: 84dff9d8-9100-11ea-9b9a-42010a80002c
-spec:
-  progressDeadlineSeconds: 600
-  replicas: 1
-  revisionHistoryLimit: 10
-  selector:
-    matchLabels:
-      run: distributor
-  strategy:
-    rollingUpdate:
-      maxSurge: 25%
-      maxUnavailable: 25%
-    type: RollingUpdate
-  template:
-    metadata:
-      creationTimestamp: null
-      labels:
-        run: distributor
-    spec:
-      containers:
-        - env:
-            - name: PUBSUB_URL
-              value: nats://keptn-nats-cluster
-            - name: PUBSUB_TOPIC
-              value: sh.keptn.>
-            - name: PUBSUB_RECIPIENT
-              value: gatekeeper-service
-          image: keptn/distributor:latest
-          imagePullPolicy: Always
-          name: distributor
-          ports:
-            - containerPort: 8080
-              protocol: TCP
-          resources:
-            limits:
-              cpu: 500m
-              memory: 128Mi
-            requests:
-              cpu: 50m
-              memory: 32Mi
