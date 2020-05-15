@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: gatekeeper-service
-        image: keptn/gatekeeper-service:0.6.1
+        image: keptn/gatekeeper-service:latest
         ports:
         - containerPort: 8080
         resources:
