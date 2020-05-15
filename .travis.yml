@@ -117,7 +117,6 @@ gke_full: &gke_full
     # print some debug info
     - echo "Keptn Installation Log:"
     - cat ~/.keptn/keptn-installer.log
-    - cat ~/.keptn/keptn-installer-err.log
     - kubectl get events --sort-by='.lastTimestamp' --all-namespaces
     - kubectl get pods --all-namespaces
     - kubectl get services --all-namespaces
@@ -473,7 +472,7 @@ jobs:
       - test/utils/minishift_create_cluster.sh
     script:
       - kubectl get nodes || travis_terminate 1
-      # finally install keptn
+      # finally install keptn quality gates
       - test/test_install_minishift_quality_gates.sh
       - keptn status
       - export PROJECT=musicshop
@@ -485,7 +484,6 @@ jobs:
       # print some debug info
       - echo "Keptn Installation Log:"
       - cat ~/.keptn/keptn-installer.log
-      - cat ~/.keptn/keptn-installer-err.log
       - kubectl get events --sort-by='.lastTimestamp' --all-namespaces
       - kubectl get pods --all-namespaces
       - kubectl get services --all-namespaces
@@ -513,7 +511,6 @@ jobs:
       # print some debug info
       - echo "Keptn Installation Log:"
       - cat ~/.keptn/keptn-installer.log
-      - cat ~/.keptn/keptn-installer-err.log
       - kubectl get events --sort-by='.lastTimestamp' --all-namespaces
       - kubectl get pods --all-namespaces
       - kubectl get services --all-namespaces
@@ -536,6 +533,7 @@ jobs:
       - test/utils/minikube_create_cluster.sh
     script:
       - kubectl get nodes || travis_terminate 1
+      # finally install keptn quality gates
       - test/test_install_kubernetes_quality_gates.sh
       - keptn status
       - export PROJECT=musicshop
@@ -547,7 +545,6 @@ jobs:
       # print some debug info
       - echo "Keptn Installation Log:"
       - cat ~/.keptn/keptn-installer.log
-      - cat ~/.keptn/keptn-installer-err.log
       - kubectl get events --sort-by='.lastTimestamp' --all-namespaces
       - kubectl get pods --all-namespaces
       - kubectl get services --all-namespaces
