@@ -72,6 +72,11 @@ paths:
           type: string
           required: false
           description: Name of the service
+        - name: eventID
+          in: query
+          type: string
+          required: false
+          description: EventID
         - name: source
           in: query
           type: string

@@ -18,9 +18,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/url"
+	"os"
 
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
-	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/spf13/cobra"
@@ -42,36 +44,64 @@ var approvalTriggeredCmd = &cobra.Command{
 	Example:      `keptn get event approval.triggered --project=sockshop --stage=staging --service=carts`,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
-		if err != nil {
-			return errors.New(authErrorMsg)
-		}
-
-		logging.PrintLog("Starting to get approval.triggered event", logging.InfoLevel)
-
-		eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
-		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
-
-		if !mocking {
-			evaluationDoneEvt, err := eventHandler.GetEvent(*evaluationDone.KeptnContext, keptnevents.EvaluationDoneEventType)
-			if err != nil {
-				logging.PrintLog("Get approval.triggered event was unsuccessful", logging.QuietLevel)
-				return fmt.Errorf("%s", *err.Message)
-			}
-
-			if evaluationDoneEvt == nil {
-				logging.PrintLog("No event returned", logging.QuietLevel)
-				return nil
-			}
-
-			event, _ := json.Marshal(evaluationDoneEvt)
-			fmt.Println(string(event))
-
-		} else {
-			fmt.Println("Skipping execution due to mocking flag set to true")
-		}
-		return nil
+		return getApprovalTriggeredEvents(approvalTriggered)
 	},
+}
+
+func getApprovalTriggeredEvents(approvalTriggered approvalTriggeredStruct) error {
+	var endPoint url.URL
+	var apiToken string
+	var err error
+	if !mocking {
+		endPoint, apiToken, err = credentialmanager.NewCredentialManager().GetCreds()
+	} else {
+		endPointPtr, _ := url.Parse(os.Getenv("MOCK_SERVER"))
+		endPoint = *endPointPtr
+		apiToken = ""
+	}
+	if err != nil {
+		return errors.New(authErrorMsg)
+	}
+
+	logging.PrintLog("Starting to get approval.triggered event", logging.InfoLevel)
+
+	serviceHandler := apiutils.NewAuthenticatedServiceHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
+	eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
+
+	logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
+
+	if approvalTriggered.Service == nil {
+		services, err := serviceHandler.GetAllServices(*approvalTriggered.Project, *approvalTriggered.Stage)
+
+		if err != nil {
+			return err
+		}
+		allEvents := []*apimodels.KeptnContextExtendedCE{}
+		for _, svc := range services {
+			for _, approval := range svc.OpenApprovals {
+				events, err := eventHandler.GetEvents(&apiutils.EventFilter{
+					EventID: approval.EventID,
+				})
+
+				if err != nil {
+					logging.PrintLog("Get approval.triggered event was unsuccessful", logging.QuietLevel)
+					return fmt.Errorf("%s", *err.Message)
+				}
+
+				if events == nil {
+					logging.PrintLog("No event returned", logging.QuietLevel)
+					return nil
+				}
+				allEvents = append(allEvents, events...)
+			}
+		}
+
+		for _, event := range allEvents {
+			prettyJSON, _ := json.MarshalIndent(event, "", "	")
+			fmt.Println(string(prettyJSON))
+		}
+	}
+	return nil
 }
 
 func init() {
@@ -83,6 +113,6 @@ func init() {
 	approvalTriggered.Stage = approvalTriggeredCmd.Flags().StringP("stage", "s", "",
 		"The name of a stage within a project from which to retrieve an approval.triggered event")
 	approvalTriggeredCmd.MarkFlagRequired("stage")
-	approvalTriggered.Service = approvalTriggeredCmd.Flags().StringP("service", "s", "",
+	approvalTriggered.Service = approvalTriggeredCmd.Flags().StringP("service", "", "",
 		"The name of a service within a project from which to retrieve an approval.triggered event")
 }
