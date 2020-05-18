@@ -52,7 +52,7 @@ const eventsForID1Response = `{
 		  "contenttype": "application/json",
 		  "data": {
 			"deploymentURILocal": "http://carts.sockshop-dev",
-			"deploymentURIPublic": "http://carts.sockshop-dev.35.223.96.134.xip.io",
+			"deploymentURIPublic": "http://carts.sockshop-dev",
 			"deploymentstrategy": "direct",
 			"image": "docker.io/keptnexamples/carts",
 			"labels": null,
@@ -81,7 +81,7 @@ const eventsForID2Response = `{
 		  "contenttype": "application/json",
 		  "data": {
 			"deploymentURILocal": "http://carts.sockshop-dev",
-			"deploymentURIPublic": "http://carts.sockshop-dev.35.223.96.134.xip.io",
+			"deploymentURIPublic": "http://carts.sockshop-dev",
 			"deploymentstrategy": "direct",
 			"image": "docker.io/keptnexamples/carts",
 			"labels": null,
