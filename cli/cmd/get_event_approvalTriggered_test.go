@@ -106,7 +106,7 @@ const eventsForID2Response = `{
 
 func Test_getApprovalTriggeredEvents(t *testing.T) {
 
-	mocking = false
+	mocking = true
 	ts := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Content-Type", "application/json")
@@ -151,6 +151,17 @@ func Test_getApprovalTriggeredEvents(t *testing.T) {
 					Project: stringp("sockshop"),
 					Stage:   stringp("staging"),
 					Service: nil,
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "get approval triggered events with service",
+			args: args{
+				approvalTriggered: approvalTriggeredStruct{
+					Project: stringp("sockshop"),
+					Stage:   stringp("staging"),
+					Service: stringp("carts"),
 				},
 			},
 			wantErr: false,

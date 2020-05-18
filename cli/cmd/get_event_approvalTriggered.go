@@ -68,13 +68,12 @@ func getApprovalTriggeredEvents(approvalTriggered approvalTriggeredStruct) error
 	serviceHandler := apiutils.NewAuthenticatedServiceHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
 	eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
 
-	logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.QuietLevel)
+	logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 	if approvalTriggered.Service == nil || *approvalTriggered.Service == "" {
 		return getAllApprovalEventsInStage(approvalTriggered, serviceHandler, eventHandler)
 	}
-
-	return nil
+	return getAllApprovalEventsInService(approvalTriggered, serviceHandler, eventHandler)
 }
 
 func getAllApprovalEventsInService(approvalTriggered approvalTriggeredStruct, serviceHandler *apiutils.ServiceHandler, eventHandler *apiutils.EventHandler) error {
