@@ -68,7 +68,7 @@ func getApprovalTriggeredEvents(approvalTriggered approvalTriggeredStruct) error
 	serviceHandler := apiutils.NewAuthenticatedServiceHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
 	eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
 
-	logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.InfoLevel)
+	logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.QuietLevel)
 
 	if approvalTriggered.Service == nil || *approvalTriggered.Service == "" {
 		return getAllApprovalEventsInStage(approvalTriggered, serviceHandler, eventHandler)
@@ -83,7 +83,7 @@ func getAllApprovalEventsInService(approvalTriggered approvalTriggeredStruct, se
 		return err
 	}
 	allEvents := []*apimodels.KeptnContextExtendedCE{}
-	allEvents, err = retrieveApprovalEventsFromService(svc, eventHandler, allEvents)
+	allEvents, err = retrieveApprovalEventsFromService(svc, *approvalTriggered.Project, *approvalTriggered.Stage, eventHandler, allEvents)
 	if err != nil {
 		return err
 	}
@@ -99,7 +99,7 @@ func getAllApprovalEventsInStage(approvalTriggered approvalTriggeredStruct, serv
 	}
 	allEvents := []*apimodels.KeptnContextExtendedCE{}
 	for _, svc := range services {
-		allEvents, err = retrieveApprovalEventsFromService(svc, eventHandler, allEvents)
+		allEvents, err = retrieveApprovalEventsFromService(svc, *approvalTriggered.Project, *approvalTriggered.Stage, eventHandler, allEvents)
 		if err != nil {
 			return err
 		}
@@ -120,9 +120,12 @@ func printApprovalEvents(allEvents []*apimodels.KeptnContextExtendedCE) {
 	}
 }
 
-func retrieveApprovalEventsFromService(svc *apimodels.Service, eventHandler *apiutils.EventHandler, allEvents []*apimodels.KeptnContextExtendedCE) ([]*apimodels.KeptnContextExtendedCE, error) {
+func retrieveApprovalEventsFromService(svc *apimodels.Service, project, stage string, eventHandler *apiutils.EventHandler, allEvents []*apimodels.KeptnContextExtendedCE) ([]*apimodels.KeptnContextExtendedCE, error) {
 	for _, approval := range svc.OpenApprovals {
 		events, err := eventHandler.GetEvents(&apiutils.EventFilter{
+			Project: project,
+			Stage:   stage,
+			Service: svc.ServiceName,
 			EventID: approval.EventID,
 		})
 
