@@ -58,7 +58,7 @@ func sendApprovalFinishedEvent(sendApprovalFinishedOptions sendApprovalFinishedS
 		return errors.New(authErrorMsg)
 	}
 
-	logging.PrintLog("Starting to get approval.triggered event", logging.InfoLevel)
+	logging.PrintLog("Starting to send approval.finished event", logging.InfoLevel)
 
 	eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
 

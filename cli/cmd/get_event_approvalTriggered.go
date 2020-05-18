@@ -63,7 +63,7 @@ func getApprovalTriggeredEvents(approvalTriggered approvalTriggeredStruct) error
 		return errors.New(authErrorMsg)
 	}
 
-	logging.PrintLog("Starting to get approval.triggered event", logging.InfoLevel)
+	logging.PrintLog("Starting to get approval.triggered events", logging.InfoLevel)
 
 	serviceHandler := apiutils.NewAuthenticatedServiceHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
 	eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
