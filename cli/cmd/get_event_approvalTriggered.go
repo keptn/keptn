@@ -71,38 +71,71 @@ func getApprovalTriggeredEvents(approvalTriggered approvalTriggeredStruct) error
 	logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.InfoLevel)
 
 	if approvalTriggered.Service == nil || *approvalTriggered.Service == "" {
-		services, err := serviceHandler.GetAllServices(*approvalTriggered.Project, *approvalTriggered.Stage)
+		return getAllApprovalEventsInStage(approvalTriggered, serviceHandler, eventHandler)
+	}
+
+	return nil
+}
+
+func getAllApprovalEventsInService(approvalTriggered approvalTriggeredStruct, serviceHandler *apiutils.ServiceHandler, eventHandler *apiutils.EventHandler) error {
+	svc, err := serviceHandler.GetService(*approvalTriggered.Project, *approvalTriggered.Stage, *approvalTriggered.Service)
+	if err != nil {
+		return err
+	}
+	allEvents := []*apimodels.KeptnContextExtendedCE{}
+	allEvents, err = retrieveApprovalEventsFromService(svc, eventHandler, allEvents)
+	if err != nil {
+		return err
+	}
+
+	printApprovalEvents(allEvents)
+	return nil
+}
+
+func getAllApprovalEventsInStage(approvalTriggered approvalTriggeredStruct, serviceHandler *apiutils.ServiceHandler, eventHandler *apiutils.EventHandler) error {
+	services, err := serviceHandler.GetAllServices(*approvalTriggered.Project, *approvalTriggered.Stage)
+	if err != nil {
+		return err
+	}
+	allEvents := []*apimodels.KeptnContextExtendedCE{}
+	for _, svc := range services {
+		allEvents, err = retrieveApprovalEventsFromService(svc, eventHandler, allEvents)
 		if err != nil {
 			return err
 		}
-		allEvents := []*apimodels.KeptnContextExtendedCE{}
-		for _, svc := range services {
-			for _, approval := range svc.OpenApprovals {
-				events, err := eventHandler.GetEvents(&apiutils.EventFilter{
-					EventID: approval.EventID,
-				})
+	}
 
-				if err != nil {
-					logging.PrintLog("Get approval.triggered event was unsuccessful", logging.InfoLevel)
-					return fmt.Errorf("%s", *err.Message)
-				}
+	printApprovalEvents(allEvents)
+	return nil
+}
 
-				if events != nil {
-					allEvents = append(allEvents, events...)
-				}
-			}
+func printApprovalEvents(allEvents []*apimodels.KeptnContextExtendedCE) {
+	if len(allEvents) == 0 {
+		logging.PrintLog("No approval.triggered events have been found", logging.InfoLevel)
+	}
+
+	for _, event := range allEvents {
+		prettyJSON, _ := json.MarshalIndent(event, "", "	")
+		fmt.Println(string(prettyJSON))
+	}
+}
+
+func retrieveApprovalEventsFromService(svc *apimodels.Service, eventHandler *apiutils.EventHandler, allEvents []*apimodels.KeptnContextExtendedCE) ([]*apimodels.KeptnContextExtendedCE, error) {
+	for _, approval := range svc.OpenApprovals {
+		events, err := eventHandler.GetEvents(&apiutils.EventFilter{
+			EventID: approval.EventID,
+		})
+
+		if err != nil {
+			logging.PrintLog("Get approval.triggered event was unsuccessful", logging.InfoLevel)
+			return nil, fmt.Errorf("%s", *err.Message)
 		}
 
-		if len(allEvents) == 0 {
-			logging.PrintLog("No approval.triggered events have been found", logging.InfoLevel)
-		}
-
-		for _, event := range allEvents {
-			prettyJSON, _ := json.MarshalIndent(event, "", "	")
-			fmt.Println(string(prettyJSON))
+		if events != nil {
+			allEvents = append(allEvents, events...)
 		}
 	}
-	return nil
+	return allEvents, nil
 }
 
 func init() {

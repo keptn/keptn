@@ -10,7 +10,7 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/gorilla/websocket v1.4.1
 	github.com/hashicorp/go-version v1.2.0
-	github.com/keptn/go-utils v0.6.1-compat.0.20200429125908-17c6026062a1
+	github.com/keptn/go-utils v0.6.3-0.20200518060925-b23b872eee78
 	github.com/keptn/kubernetes-utils v0.0.0-20200414115508-d18721552e01
 	github.com/magiconair/properties v1.8.1
 	github.com/mattn/go-shellwords v1.0.10
@@ -28,5 +28,4 @@ require (
 replace (
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v13.3.2+incompatible
 	github.com/docker/distribution => github.com/docker/distribution v0.0.0-20191216044856-a8371794149d
-	github.com/keptn/go-utils => ../../go-utils
 )
