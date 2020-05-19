@@ -374,6 +374,9 @@ func getSearchOptions(params event.GetEventsParams) bson.M {
 	if params.Service != nil {
 		searchOptions["data.service"] = *params.Service
 	}
+	if params.EventID != nil {
+		searchOptions["id"] = *params.EventID
+	}
 	if params.FromTime != nil {
 		searchOptions["time"] = bson.M{
 			"$gt": *params.FromTime,
