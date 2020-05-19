@@ -408,20 +408,19 @@ jobs:
       - KEPTN_INSTALLATION_TYPE=FULL
     <<: *gke_full # use template
 
-  - stage: Test GKE Full (--platform=gke)
-    if: branch = master AND type = cron # run for cron
-    env:
-      - GKE_VERSION=1.15
-      - KEPTN_INSTALLATION_TYPE=FULL
-    <<: *gke_full # use template
-
-  # Test GKE with 1.16 (not available yet)
 #  - stage: Test GKE Full (--platform=gke)
 #    if: branch = master AND type = cron # run for cron
 #    env:
-#      - GKE_VERSION=1.16
+#      - GKE_VERSION=1.15
 #      - KEPTN_INSTALLATION_TYPE=FULL
 #    <<: *gke_full # use template
+
+  - stage: Test GKE Full (--platform=gke)
+    if: branch = master AND type = cron # run for cron
+    env:
+      - GKE_VERSION=1.16
+      - KEPTN_INSTALLATION_TYPE=FULL
+    <<: *gke_full # use template
 
   # Test GKE with 1.17 (not available yet)
 #  - stage: Test GKE Full (--platform=gke)
@@ -438,20 +437,19 @@ jobs:
       - GKE_VERSION=1.14
     <<: *gke_full # use template
 
-  - stage: Test GKE Full with Istio (--platform=gke --ingress-install-option=Reuse)
-    if: branch = master AND type = cron # run for cron
-    env:
-      - KEPTN_INSTALLATION_TYPE=REUSE-ISTIO
-      - GKE_VERSION=1.15
-    <<: *gke_full # use template
-
-  # Test GKE with 1.16 (not available yet)
 #  - stage: Test GKE Full with Istio (--platform=gke --ingress-install-option=Reuse)
 #    if: branch = master AND type = cron # run for cron
 #    env:
 #      - KEPTN_INSTALLATION_TYPE=REUSE-ISTIO
-#      - GKE_VERSION=1.16
+#      - GKE_VERSION=1.15
 #    <<: *gke_full # use template
+
+  - stage: Test GKE Full with Istio (--platform=gke --ingress-install-option=Reuse)
+    if: branch = master AND type = cron # run for cron
+    env:
+      - KEPTN_INSTALLATION_TYPE=REUSE-ISTIO
+      - GKE_VERSION=1.16
+    <<: *gke_full # use template
 
   # Test GKE with 1.17 (not available yet)
 #  - stage: Test GKE Full with Istio (--platform=gke --ingress-install-option=Reuse)
