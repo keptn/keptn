@@ -7,22 +7,33 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"os"
+
+	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
+	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 )
 
 const defaultMongoDBConnectionString = "mongodb://user:password@mongodb.keptn-datastore.svc.cluster.local:27017/keptn"
+const defaultConfigurationServiceURL = "configuration-service.keptn.svc.cluster.local:8080"
 
 var client *mongo.Client
 
 var projectCollections map[string]*mongo.Collection
 
 func main() {
-	var connectionString string
+	var mongoDBConnectionString string
+	var configurationServiceURL string
 	if len(os.Args) > 1 {
-		connectionString = os.Args[1]
+		mongoDBConnectionString = os.Args[1]
 	} else {
-		connectionString = defaultMongoDBConnectionString
+		mongoDBConnectionString = defaultMongoDBConnectionString
 	}
-	client, err := mongo.NewClient(options.Client().ApplyURI(connectionString))
+
+	if len(os.Args) > 2 {
+		configurationServiceURL = os.Args[2]
+	} else {
+		configurationServiceURL = defaultConfigurationServiceURL
+	}
+	client, err := mongo.NewClient(options.Client().ApplyURI(mongoDBConnectionString))
 	if err != nil {
 		fmt.Printf("failed to create mongo client: %v\n", err)
 		os.Exit(1)
@@ -35,11 +46,47 @@ func main() {
 		os.Exit(1)
 	}
 
+	projectsMV := []*keptnapimodels.Project{}
+
+	projectHandler := keptnapi.NewProjectHandler(configurationServiceURL)
+	stageHandler := keptnapi.NewStageHandler(configurationServiceURL)
+	serviceHandler := keptnapi.NewServiceHandler(configurationServiceURL)
+
+	allProjects, err := projectHandler.GetAllProjects()
+	if err != nil {
+		fmt.Println("failed to retrieve projects from configuration service: " + err.Error())
+		os.Exit(1)
+	}
+
+	for _, prj := range allProjects {
+		stages, err := stageHandler.GetAllStages(prj.ProjectName)
+		if err != nil {
+			fmt.Println("failed to retrieve stages of project " + prj.ProjectName + " from configuration service: " + err.Error())
+			os.Exit(1)
+		}
+
+		for _, stg := range stages {
+			services, err := serviceHandler.GetAllServices(prj.ProjectName, stg.StageName)
+			if err != nil {
+				fmt.Println("failed to retrieve services of project " + prj.ProjectName + " from configuration service: " + err.Error())
+				os.Exit(1)
+			}
+
+			stg.Services = services
+		}
+
+		prj.Stages = stages
+		projectsMV = append(projectsMV, prj)
+	}
+
 	eventsCollection := client.Database("keptn").Collection("events")
 	contextToProjectCollection := client.Database("keptn").Collection("contextToProject")
 	projectCollections = map[string]*mongo.Collection{}
+
 	// get all events from events collection
-	cursor, err := eventsCollection.Find(ctx, bson.D{})
+	sortOptions := options.Find().SetSort(bson.D{{"time", 1}})
+
+	cursor, err := eventsCollection.Find(ctx, bson.D{}, sortOptions)
 	if err != nil {
 		fmt.Printf("failed to retrieve events from mongodb: %v\n", err)
 		os.Exit(1)
