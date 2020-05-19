@@ -33,11 +33,16 @@ func main() {
 }
 
 func getKeptnDomain() (string, error) {
-	useInClusterConfig := false
-	if os.Getenv("ENVIRONMENT") == "production" {
-		useInClusterConfig = true
-	}
-	return keptnutils.GetKeptnDomain(useInClusterConfig)
+	if os.Getenv("KEPTN_DOMAIN") != "" {
+		return os.Getenv("KEPTN_DOMAIN"), nil
+ 	}
+
+ 	useInClusterConfig := false
+ 	if os.Getenv("ENVIRONMENT") == "production" {
+ 		useInClusterConfig = true
+ 	}
+ 	return keptnutils.GetKeptnDomain(useInClusterConfig)
+
 }
 
 func gotEvent(ctx context.Context, event cloudevents.Event) error {
