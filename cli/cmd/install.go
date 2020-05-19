@@ -197,7 +197,7 @@ keptn install --platform=kubernetes --gateway=NodePort # install on a Kubernetes
 			*installParams.InstallerImage = image + ":" + tag
 		}
 
-		err = docker.CheckImageAvailability(image, tag)
+		err = docker.CheckImageAvailability(image, tag, nil)
 		if err != nil {
 			return fmt.Errorf("Installer image not found under: %v", err)
 		}

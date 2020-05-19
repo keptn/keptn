@@ -63,7 +63,7 @@ Furthermore, please note that the value provided in the *image* flag has to cont
 **Note:** This command does not send the actual Docker image to Keptn, just the image name and tag. Instead, Keptn uses Kubernetes functionalities for pulling this image.
 For pulling an image from a private registry, we would like to refer to the Kubernetes documentation (https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/).
 `,
-	Example: `keptn send event new-artifact --project=sockshop --service=carts --image=docker.io/keptnexamples/carts --tag=0.7.0`,
+	Example:      `keptn send event new-artifact --project=sockshop --service=carts --image=docker.io/keptnexamples/carts --tag=0.7.0`,
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		trimmedImage := strings.TrimSuffix(*newArtifact.Image, "/")
@@ -72,7 +72,7 @@ For pulling an image from a private registry, we would like to refer to the Kube
 		if newArtifact.Tag == nil || *newArtifact.Tag == "" {
 			*newArtifact.Image, *newArtifact.Tag = docker.SplitImageName(*newArtifact.Image)
 		}
-		return docker.CheckImageAvailability(*newArtifact.Image, *newArtifact.Tag)
+		return docker.CheckImageAvailability(*newArtifact.Image, *newArtifact.Tag, nil)
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
