@@ -1,7 +1,7 @@
 #!/bin/bash
 source ./utils.sh
 
-# Upgreade from Helm v2 to Helm v3
+# Upgrade from Helm v2 to Helm v3
 helm init --client-only
 verify_install_step $? "Helm init failed."
 RELEASES=$(helm list -aq)
@@ -22,3 +22,6 @@ done
 
 yes y | helm3 2to3 cleanup --tiller-cleanup
 verify_install_step $? "Helm2-to3 cleanup failed"
+
+./upgrade-mongodb $MONGODB_URL $CONFIGURATION_SERVICE_URL
+

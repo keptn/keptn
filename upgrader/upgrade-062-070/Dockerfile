@@ -1,4 +1,32 @@
-FROM alpine:3.9
+FROM golang:1.13.7-alpine as builder
+ARG version=develop
+
+WORKDIR /go/src/github.com/keptn/keptn/mongodb-upgrade
+
+# Force the go compiler to use modules
+ENV GO111MODULE=on
+ENV BUILDFLAGS=""
+ENV GOPROXY=https://proxy.golang.org
+
+RUN apk add --no-cache gcc libc-dev git
+
+# Copy local code to the container image.
+COPY . .
+
+RUN cd mongodb-upgrade
+# Copy `go.mod` for definitions and `go.sum` to invalidate the next layer
+# in case of a change in the dependencies
+
+# Download dependencies
+RUN cd mongodb-upgrade && go mod download
+
+
+# Build the command inside the container.
+# (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
+RUN cd mongodb-upgrade && GOOS=linux go build -ldflags '-linkmode=external' $BUILDFLAGS -v -o mongodb-upgrade
+
+
+FROM alpine:3.11
 
 ARG KUBE_VERSION=1.14.1
 RUN wget -q https://storage.googleapis.com/kubernetes-release/release/v$KUBE_VERSION/bin/linux/amd64/kubectl -O /bin/kubectl && \
@@ -21,6 +49,8 @@ RUN apk update && apk upgrade && apk add --no-cache git bash curl
 # Copy core and install
 COPY scripts .
 RUN chmod +x /*.sh
+
+COPY --from=builder /go/src/github.com/keptn/keptn/upgrader/upgrade-062-070/mongodb-upgrade/mongodb-upgrade scripts/mongodb-upgrade
 
 # Start the app
 CMD ["bash", "upgradeKeptn.sh"]
