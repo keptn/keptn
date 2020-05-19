@@ -41,6 +41,10 @@ type GetEventsParams struct {
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
+	/*EventID
+	  In: query
+	*/
+	EventID *string
 	/*From time to fetch keptn cloud events
 	  In: query
 	*/
@@ -97,6 +101,11 @@ func (o *GetEventsParams) BindRequest(r *http.Request, route *middleware.Matched
 
 	qs := runtime.Values(r.URL.Query())
 
+	qEventID, qhkEventID, _ := qs.GetOK("eventID")
+	if err := o.bindEventID(qEventID, qhkEventID, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
 	qFromTime, qhkFromTime, _ := qs.GetOK("fromTime")
 	if err := o.bindFromTime(qFromTime, qhkFromTime, route.Formats); err != nil {
 		res = append(res, err)
@@ -150,6 +159,24 @@ func (o *GetEventsParams) BindRequest(r *http.Request, route *middleware.Matched
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+// bindEventID binds and validates parameter EventID from query.
+func (o *GetEventsParams) bindEventID(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+
+	// Required: false
+	// AllowEmptyValue: false
+	if raw == "" { // empty values pass all other validations
+		return nil
+	}
+
+	o.EventID = &raw
+
 	return nil
 }
 

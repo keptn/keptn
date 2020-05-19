@@ -20,8 +20,9 @@ import (
 
 // getEventCmd represents the get command
 var getEventCmd = &cobra.Command{
-	Use:   "event [eventType]",
-	Short: `Get event in combination with "eventType" allows to retrieve a Keptn event`,
+	Use:     "event [eventType]",
+	Aliases: []string{"events"},
+	Short:   `Get event in combination with "eventType" allows to retrieve a Keptn event`,
 	Long: `Get event in combination with "eventType" allows to retrieve a Keptn event. Get event without subcommand cannot be used.
 
 Example:
