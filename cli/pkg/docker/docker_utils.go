@@ -28,10 +28,13 @@ func SplitImageName(imageWithTag string) (string, string) {
 }
 
 // CheckImageAvailability checks the availability of a image which is hosted on Docker or on Quay
-func CheckImageAvailability(image, tag string) error {
+func CheckImageAvailability(image, tag string, client *http.Client) error {
 
+	if client == nil {
+		client = http.DefaultClient
+	}
 	if strings.HasPrefix(image, "docker.io/") {
-		resp, err := http.Get("https://index.docker.io/v1/repositories/" +
+		resp, err := client.Get("https://index.docker.io/v1/repositories/" +
 			strings.TrimPrefix(image, "docker.io/") + "/tags/" + tag)
 		if err != nil {
 			return err
@@ -45,7 +48,7 @@ func CheckImageAvailability(image, tag string) error {
 		}
 		return errors.New("Provided image not found: " + string(body))
 	} else if strings.HasPrefix(image, "quay.io/") {
-		resp, err := http.Get("https://quay.io/api/v1/repository/" +
+		resp, err := client.Get("https://quay.io/api/v1/repository/" +
 			strings.TrimPrefix(image, "quay.io/") + "/tag/" + tag + "/images")
 		if err != nil {
 			return err
