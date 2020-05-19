@@ -75,7 +75,7 @@ func validateServices(services []*corev1.Service) (bool, error) {
 		}
 	}
 	if len(services) != 1 {
-		logging.PrintLog("Helm chart must contain exact one service", logging.QuietLevel)
+		logging.PrintLog("Helm chart must contain exactly one service", logging.QuietLevel)
 		return false, nil
 	}
 	return true, nil
@@ -88,7 +88,7 @@ func validateDeployments(deployments []*appsv1.Deployment) (bool, error) {
 		}
 	}
 	if len(deployments) != 1 {
-		logging.PrintLog("Helm chart must contain exact one deployment", logging.QuietLevel)
+		logging.PrintLog("Helm chart must contain exactly one deployment", logging.QuietLevel)
 		return false, nil
 	}
 	return true, nil
