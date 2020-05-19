@@ -34,10 +34,10 @@ var evaluationDone evaluationDoneStruct
 
 // evaluationDoneCmd represents the evaluation-done command
 var evaluationDoneCmd = &cobra.Command{
-	Use:   "evaluation-done",
-	Short: "Returns the latest Keptn sh.keptn.events.evaluation-done event from a specific Keptn context",
-	Long: `Returns the latest Keptn sh.keptn.events.evaluation-done event from a specific Keptn context.`,
-	Example: `keptn get event evaluation-done --keptn-context=1234-5678-90ab-cdef`,
+	Use:          "evaluation-done",
+	Short:        "Returns the latest Keptn sh.keptn.events.evaluation-done event from a specific Keptn context",
+	Long:         `Returns the latest Keptn sh.keptn.events.evaluation-done event from a specific Keptn context.`,
+	Example:      `keptn get event evaluation-done --keptn-context=1234-5678-90ab-cdef`,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
@@ -51,19 +51,24 @@ var evaluationDoneCmd = &cobra.Command{
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
-			evaluationDoneEvt, err := eventHandler.GetEvent(*evaluationDone.KeptnContext, keptnevents.EvaluationDoneEventType)
+			evaluationDoneEvts, err := eventHandler.GetEvents(&apiutils.EventFilter{
+				KeptnContext: *evaluationDone.KeptnContext,
+				EventType:    keptnevents.EvaluationDoneEventType,
+			})
 			if err != nil {
 				logging.PrintLog("Get evaluation-done event was unsuccessful", logging.QuietLevel)
 				return fmt.Errorf("%s", *err.Message)
 			}
 
-			if evaluationDoneEvt == nil {
+			if len(evaluationDoneEvts) == 0 {
 				logging.PrintLog("No event returned", logging.QuietLevel)
 				return nil
 			}
 
-			event, _ := json.Marshal(evaluationDoneEvt)
-			fmt.Println(string(event))
+			for _, event := range evaluationDoneEvts {
+				event, _ := json.MarshalIndent(event, "", "    ")
+				fmt.Println(string(event))
+			}
 
 		} else {
 			fmt.Println("Skipping send evaluation-start due to mocking flag set to true")
