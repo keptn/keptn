@@ -27,7 +27,7 @@ verify_install_step $? "Helm2-to3 cleanup failed"
 
 
 
-KEPTN_VERSION="master"
+KEPTN_VERSION="release-0.7.0"
 print_debug "Upgrading from Keptn 0.6.2 to $KEPTN_VERSION"
 
 manifests=(
