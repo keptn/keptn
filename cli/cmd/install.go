@@ -217,9 +217,11 @@ keptn install --platform=kubernetes --gateway=NodePort # install on a Kubernetes
 Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 			}
 
-			if installParams.UseCase == AllUseCases && *installParams.PlatformIdentifier != "openshift" {
+			// check that the Kubernetse Server version is compatible (except for when using OpenShift)
+			if *installParams.PlatformIdentifier != "openshift" {
 				if err := kube.CheckKubeServerVersion(KubeServerVersionConstraints); err != nil {
 					logging.PrintLog(err.Error(), logging.VerboseLevel)
+					logging.PrintLog("See https://keptn.sh/docs/0.6.0/installation/k8s-support/ for details.", logging.VerboseLevel)
 					return errors.New(`Keptn requires Kubernetes Server Version: ` + KubeServerVersionConstraints)
 				}
 			}
