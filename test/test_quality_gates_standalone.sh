@@ -190,7 +190,7 @@ while [[ $RETRY -lt $RETRY_MAX ]]; do
   response=$(get_evaluation_done_event ${keptn_context_id})
 
   # check if this contains an error
-  echo $response | grep "Get evaluation-done event was unsuccessful"
+  echo $response | grep "No event returned"
 
   if [[ $? -ne 0 ]]; then
     echo "Received an evaluation-done event, continuing..."
@@ -209,12 +209,12 @@ if [[ $RETRY == $RETRY_MAX ]]; then
 fi
 
 # ToDo: there is no response here right now, but in fact dynatrace-sli-service should send a note...
-echo $response | grep "Get evaluation-done event was unsuccessful"
+echo $response | grep "No event returned"
 
 if [[ $? -ne 0 ]]; then
   # print logs of dynatrace-sli-service
   kubectl -n keptn logs svc/dynatrace-sli-service
-  echo "Expected an 'Get evaluation-done event was unsuccessful' in the response, but got"
+  echo "Expected an 'No event returned' in the response, but got"
   echo $response
   exit 1
 fi
@@ -240,7 +240,7 @@ while [[ $RETRY -lt $RETRY_MAX ]]; do
   response=$(get_evaluation_done_event ${keptn_context_id})
 
   # check if this contains an error
-  echo $response | grep "Get evaluation-done event was unsuccessful"
+  echo $response | grep "No event returned"
 
   if [[ $? -ne 0 ]]; then
     echo "Received an evaluation-done event, continuing..."
@@ -318,7 +318,7 @@ while [[ $RETRY -lt $RETRY_MAX ]]; do
   response=$(get_evaluation_done_event ${keptn_context_id})
 
   # check if this contains an error
-  echo $response | grep "Get evaluation-done event was unsuccessful"
+  echo $response | grep "No event returned"
 
   if [[ $? -ne 0 ]]; then
     echo "Received an evaluation-done event, continuing..."
@@ -398,7 +398,7 @@ while [[ $RETRY -lt $RETRY_MAX ]]; do
   response=$(get_evaluation_done_event ${keptn_context_id})
 
   # check if this contains an error
-  echo $response | grep "Get evaluation-done event was unsuccessful"
+  echo $response | grep "No event returned"
 
   if [[ $? -ne 0 ]]; then
     echo "Received an evaluation-done event, continuing..."
@@ -482,7 +482,7 @@ while [[ $RETRY -lt $RETRY_MAX ]]; do
   response=$(get_evaluation_done_event ${keptn_context_id})
 
   # check if this contains an error
-  echo $response | grep "Get evaluation-done event was unsuccessful"
+  echo $response | grep "No event returned"
 
   if [[ $? -ne 0 ]]; then
     echo "Received an evaluation-done event, continuing..."
