@@ -17,6 +17,8 @@ spec:
           image: keptn/upgrader:0.7.0
           imagePullPolicy: Always
           env:
+            - name: KEPTN_VERSION
+              value: "master"
             - name: MONGODB_URL
               value: 'mongodb://user:password@mongodb.keptn-datastore.svc.cluster.local:27017/keptn'
             - name: CONFIGURATION_SERVICE_URL
