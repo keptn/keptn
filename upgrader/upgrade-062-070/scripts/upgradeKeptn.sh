@@ -41,6 +41,7 @@ manifests=(
   "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/keptn-ingress.yaml"
   "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/uniform-services-openshift.yaml"
   "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/uniform-distributors-openshift.yaml"
+  "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/api-gateway-nginx.yaml"
   )
 
 for manifest in "${manifests[@]}"
@@ -66,6 +67,8 @@ API_IMAGE=$(kubectl get deployment -n keptn api-service -o=jsonpath='{$.spec.tem
 
 
 print_debug "Updating Keptn core."
+kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/api-gateway-nginx.yaml
+kubectl -n keptn delete pod -lrun=api-gateway-nginx
 kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/core.yaml
 kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/quality-gates.yaml
 
