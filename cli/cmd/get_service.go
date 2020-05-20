@@ -85,7 +85,7 @@ carts          2020-04-06T14:35:40.210Z
 			projects, err := projectsHandler.GetAllProjects()
 			if err != nil {
 				fmt.Println(err)
-				return errors.New(authErrorMsg)
+				return errors.New(err.Error())
 			}
 
 			w := new(tabwriter.Writer)

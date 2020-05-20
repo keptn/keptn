@@ -45,13 +45,14 @@ catalogue      2020-04-12T16:00:40.210Z
 			return errors.New(authErrorMsg)
 		}
 
-		projectsHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
 		servicesHandler := apiutils.NewAuthenticatedServiceHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
+		projectsHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
+
 		if !mocking {
 			projects, err := projectsHandler.GetAllProjects()
 			if err != nil {
 				fmt.Println(err)
-				return errors.New(authErrorMsg)
+				return errors.New(err.Error())
 			}
 			w := new(tabwriter.Writer)
 			w.Init(os.Stdout, 10, 8, 0, '\t', 0)
@@ -59,7 +60,7 @@ catalogue      2020-04-12T16:00:40.210Z
 			fmt.Fprintln(w, "NAME\tPROJECT\tCREATION DATE")
 
 			for _, project := range projects {
-				//stagesHandler := apiutils.NewStageHandler(endPoint.String())
+
 				for _, stage := range project.Stages {
 					services, err := servicesHandler.GetAllServices(project.ProjectName, stage.StageName)
 					if err != nil {
@@ -85,9 +86,4 @@ catalogue      2020-04-12T16:00:40.210Z
 
 func init() {
 	getCmd.AddCommand(getServicesCmd)
-
-	/*projectName.project = getStagesCmd.Flags().StringP("project", "", "",
-		"The name of a keptn project from which to retrieve the stages")
-
-	getStagesCmd.MarkFlagRequired("project")*/
 }
