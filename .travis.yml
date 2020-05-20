@@ -487,9 +487,12 @@ jobs:
       - kubectl get services --all-namespaces
       - kubectl get ingress --all-namespaces
 
-  - stage: Test MicroK8s Standalone (--platform=kubernetes --use-case=quality-gates)
+  - &microk8sStandaloneTest
+    stage: Test MicroK8s Standalone (--platform=kubernetes --use-case=quality-gates)
     if: (branch = master or branch =~ ^release.*$) AND (type = cron OR type = push) # run for any change on master/release-* on push as well as cron
     os: linux
+    env:
+      - MICROK8S_VERSION=1.16/stable # see https://snapcraft.io/microk8s channels
     before_script:
       # download and install kubectl
       - curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.17.0/bin/linux/amd64/kubectl && chmod +x ./kubectl && sudo mv ./kubectl /usr/local/bin/kubectl
@@ -513,6 +516,14 @@ jobs:
       - kubectl get pods --all-namespaces
       - kubectl get services --all-namespaces
       - kubectl get ingress --all-namespaces
+
+  - <<: *microk8sStandaloneTest
+    env:
+      - MICROK8S_VERSION=1.17/stable # see https://snapcraft.io/microk8s channels
+
+  - <<: *microk8sStandaloneTest
+    env:
+      - MICROK8S_VERSION=1.18/stable # see https://snapcraft.io/microk8s channels
 
   - &minikubeStandaloneTest
     stage: Test Minikube Standalone (--platform=kubernetes --use-case=quality-gates)
