@@ -33,7 +33,10 @@ func (a *ApprovalTriggeredEventHandler) Handle(event cloudevents.Event, keptnHan
 	}
 
 	// create approval in configuration-service
-	_ = createApproval(event.ID(), a.logger.KeptnContext, data.Image, data.Tag, event.Time().String(), data.Project, data.Stage, data.Service)
+	if err := createApproval(event.ID(), a.logger.KeptnContext, data.Image, data.Tag, event.Time().String(), data.Project, data.Stage, data.Service); err != nil {
+		a.logger.Error(fmt.Sprintf("failed to create approval in materialized view: %v", err))
+		return
+	}
 
 	outgoingEvents := a.handleApprovalTriggeredEvent(*data, event.Context.GetID(), keptnHandler.KeptnContext, *shipyard)
 	sendEvents(keptnHandler, outgoingEvents, a.logger)

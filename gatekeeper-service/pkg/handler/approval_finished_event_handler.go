@@ -58,7 +58,6 @@ func (a *ApprovalFinishedEventHandler) handleApprovalFinishedEvent(inputEvent ke
 			a.logger.Info(fmt.Sprintf("Approval for image %s for service %s of project %s and current stage %s received",
 				inputEvent.Image, inputEvent.Service, inputEvent.Project, inputEvent.Stage))
 
-			// TODO: Check image using inputEvent.Approval.TriggeredID
 			openApproval, err := getOpenApproval(inputEvent)
 			if err != nil {
 				a.logger.Error("Could not retrieve open Approval with EventID " + inputEvent.Approval.TriggeredID + ": " + err.Error())
@@ -80,7 +79,10 @@ func (a *ApprovalFinishedEventHandler) handleApprovalFinishedEvent(inputEvent ke
 				shkeptncontext, inputEvent.Labels, shipyard, a.logger); event != nil {
 				outgoingEvents = append(outgoingEvents, *event)
 			}
-			_ = closeOpenApproval(inputEvent)
+			if err := closeOpenApproval(inputEvent); err != nil {
+				a.logger.Error(fmt.Sprintf("failed to close open approvals in materialized view: %v", err))
+				return outgoingEvents
+			}
 		} else {
 			a.logger.Info(fmt.Sprintf("Rejection for image %s for service %s of project %s and current stage %s received",
 				inputEvent.Image, inputEvent.Service, inputEvent.Project, inputEvent.Stage))
