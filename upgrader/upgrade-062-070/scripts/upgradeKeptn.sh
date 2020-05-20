@@ -1,6 +1,8 @@
 #!/bin/bash
 source ./utils.sh
 
+./upgradecollections $MONGODB_URL $CONFIGURATION_SERVICE_URL
+
 # Upgrade from Helm v2 to Helm v3
 helm init --client-only
 verify_install_step $? "Helm init failed."
@@ -23,11 +25,10 @@ done
 yes y | helm3 2to3 cleanup --tiller-cleanup
 verify_install_step $? "Helm2-to3 cleanup failed"
 
-./mongodb-upgrade $MONGODB_URL $CONFIGURATION_SERVICE_URL
 
 
 KEPTN_VERSION="master"
-print_debug "Upgrading from Keptn 0.6.1 to $KEPTN_VERSION"
+print_debug "Upgrading from Keptn 0.6.2 to $KEPTN_VERSION"
 
 manifests=(
   "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/logging/mongodb-datastore/k8s/mongodb-datastore.yaml"

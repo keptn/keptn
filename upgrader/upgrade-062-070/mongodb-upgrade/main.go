@@ -248,6 +248,9 @@ func updateLastEventOfService(projectsMV []*keptnapimodels.Project, event bson.M
 				if stg.StageName == stage {
 					for _, svc := range stg.Services {
 						if svc.ServiceName == service {
+							if svc.LastEventTypes == nil {
+								svc.LastEventTypes = map[string]keptnapimodels.EventContextInfo{}
+							}
 							svc.LastEventTypes[eventType] = keptnapimodels.EventContextInfo{
 								EventID:      eventID,
 								KeptnContext: keptnContext,

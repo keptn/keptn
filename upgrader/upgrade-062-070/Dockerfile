@@ -1,7 +1,7 @@
 FROM golang:1.13.7-alpine as builder
 ARG version=develop
 
-WORKDIR /go/src/github.com/keptn/keptn/mongodb-upgrade
+WORKDIR /go/src/github.com/keptn/keptn/
 
 # Force the go compiler to use modules
 ENV GO111MODULE=on
@@ -23,7 +23,7 @@ RUN cd mongodb-upgrade && go mod download
 
 # Build the command inside the container.
 # (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
-RUN cd mongodb-upgrade && GOOS=linux go build -ldflags '-linkmode=external' $BUILDFLAGS -v -o mongodb-upgrade
+RUN cd mongodb-upgrade && GOOS=linux go build -ldflags '-linkmode=external' $BUILDFLAGS -v -o upgradecollections
 
 FROM alpine:3.11
 
@@ -49,7 +49,7 @@ RUN apk update && apk upgrade && apk add --no-cache git bash curl
 COPY scripts .
 RUN chmod +x /*.sh
 
-COPY --from=builder /go/src/github.com/keptn/keptn/mongodb-upgrade/mongodb-upgrade mongodb-upgrade
+COPY --from=builder /go/src/github.com/keptn/keptn/mongodb-upgrade/upgradecollections upgradecollections
 
 RUN ls -la
 # Start the app
