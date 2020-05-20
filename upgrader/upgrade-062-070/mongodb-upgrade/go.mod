@@ -1,4 +1,4 @@
-module github.com/keptn/keptn/upgrade-061-070/mongodb-upgrade
+module github.com/keptn/keptn/upgrader/upgrade-062-070/mongodb-upgrade
 
 go 1.13
 
