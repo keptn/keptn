@@ -25,7 +25,6 @@ RUN cd mongodb-upgrade && go mod download
 # (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
 RUN cd mongodb-upgrade && GOOS=linux go build -ldflags '-linkmode=external' $BUILDFLAGS -v -o mongodb-upgrade
 
-
 FROM alpine:3.11
 
 ARG KUBE_VERSION=1.14.1
@@ -50,7 +49,8 @@ RUN apk update && apk upgrade && apk add --no-cache git bash curl
 COPY scripts .
 RUN chmod +x /*.sh
 
-COPY --from=builder /go/src/github.com/keptn/keptn/upgrader/upgrade-062-070/mongodb-upgrade/mongodb-upgrade scripts/mongodb-upgrade
+COPY --from=builder /go/src/github.com/keptn/keptn/mongodb-upgrade/mongodb-upgrade mongodb-upgrade
 
+RUN ls -la
 # Start the app
 CMD ["bash", "upgradeKeptn.sh"]

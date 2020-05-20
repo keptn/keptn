@@ -14,6 +14,12 @@ spec:
           emptyDir: {}
       containers:
         - name: upgrader
-          image: keptn/upgrader:latest
+          image: keptn/upgrader:0.7.0
           imagePullPolicy: Always
+          env:
+            - name: MONGODB_URL
+              value: 'mongodb://user:password@mongodb.keptn-datastore.svc.cluster.local:27017/keptn'
+            - name: CONFIGURATION_SERVICE_URL
+              value: 'configuration-service.keptn.svc.cluster.local:8080'
+
       restartPolicy: Never
