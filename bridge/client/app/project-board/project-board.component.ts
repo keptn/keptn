@@ -36,6 +36,8 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   private _tracesTimer: Subscription = Subscription.EMPTY;
   private _tracesTimerInterval = 10;
 
+  private _selectedStage: Stage = null;
+
   public projectName: string;
   public serviceName: string;
   public contextId: string;
@@ -202,6 +204,10 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
 
   selectView(view) {
     this.view = view;
+  }
+
+  selectStage(stage) {
+    this._selectedStage = stage;
   }
 
   ngOnDestroy(): void {
