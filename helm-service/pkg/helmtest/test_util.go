@@ -91,8 +91,8 @@ metadata:
   name: mysecret
 type: Opaque
 data:
-  username: YWRtaW4=
-  password: MWYyZDFlMmU2N2Rm
+  username: <USERNAME>
+  password: <PASSWORD>
 `
 
 const valuesContent = `
