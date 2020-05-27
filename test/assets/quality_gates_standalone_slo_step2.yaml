@@ -11,11 +11,12 @@ objectives:
     key_sli: false
     pass:             # pass if (relative change <= 10% AND absolute value is < 600ms)
       - criteria:
-          - "<=+10%"  # relative values require a prefixed sign (plus or minus)
+          - "<=+20%"  # relative values require a prefixed sign (plus or minus)
           - "<75"    # absolute values only require a logical operator
     warning:          # if the response time is below 800ms, the result should be a warning
       - criteria:
           - "<=200"
+          - "<=+50%"
     weight: 1
   - sli: "throughput"
     pass:
