@@ -36,14 +36,13 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   private _tracesTimer: Subscription = Subscription.EMPTY;
   private _tracesTimerInterval = 10;
 
-  private _selectedStage: Stage = null;
-
   public projectName: string;
   public serviceName: string;
   public contextId: string;
   public eventId: string;
 
   public view: string = 'services';
+  public selectedStage: Stage = null;
 
   constructor(private _changeDetectorRef: ChangeDetectorRef, private router: Router, private location: Location, private route: ActivatedRoute, private dataService: DataService, private apiService: ApiService) { }
 
@@ -207,7 +206,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   }
 
   selectStage(stage) {
-    this._selectedStage = stage;
+    this.selectedStage = stage;
   }
 
   ngOnDestroy(): void {
