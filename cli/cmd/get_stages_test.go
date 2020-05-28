@@ -14,11 +14,11 @@ func init() {
 }
 
 // TestEvaluationDoneGetEvent tests the evaluation-done command
-func TestGetStages(t *testing.T) {
+func TestGetStage(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
 
-	cmd := fmt.Sprintf("get stages --project=sockshop --mock")
+	cmd := fmt.Sprintf("get stage hardening --project=sockshop --mock")
 	_, err := executeActionCommandC(cmd)
 	if err != nil {
 		t.Errorf(unexpectedErrMsg, err)

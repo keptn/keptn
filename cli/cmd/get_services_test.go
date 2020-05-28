@@ -14,13 +14,24 @@ func init() {
 }
 
 // TestEvaluationDoneGetEvent tests the evaluation-done command
-func TestGetServices(t *testing.T) {
+func TestGetService(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
 
-	cmd := fmt.Sprintf("get services --mock")
+	cmd := fmt.Sprintf("get service carts --project=sockshop --mock")
 	_, err := executeActionCommandC(cmd)
 	if err != nil {
 		t.Errorf(unexpectedErrMsg, err)
+	}
+}
+
+func TestGetServiceOutput(t *testing.T) {
+
+	credentialmanager.MockAuthCreds = true
+
+	cmd := fmt.Sprintf("get service carts  --project=sockshop --output=error --mock")
+	_, err := executeActionCommandC(cmd)
+	if err == nil {
+		t.Error("An error occurred: expect an error due to wrong output format")
 	}
 }

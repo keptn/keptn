@@ -18,6 +18,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 	"text/tabwriter"
 
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
@@ -25,52 +26,70 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type getStagesStruct struct {
+type getStageStruct struct {
 	project *string
 }
 
-var projectName getStagesStruct
+var stageParameter getStageStruct
 
 // evaluationDoneCmd represents the evaluation-done command
-var getStagesCmd = &cobra.Command{
-	Use:   "stages",
-	Short: "Get all stages of a given project",
-	Long:  `Get all stages of a given project`,
-	Example: `keptn get stages --project sockshop
+var getStageCmd = &cobra.Command{
+	Use:     "stage",
+	Aliases: []string{"stages"},
+	Short:   "Get details of a stage",
+	Long:    `Get all stages or details of a stage from a given keptn project`,
+	Example: `keptn get stages --project=sockshop
+	NAME           CREATION DATE                 
+	staging        2020-04-06T14:37:45.210Z
+	production     2020-04-06T14:37:45.210Z
+
+keptn get stage staging --project sockshop
 NAME           CREATION DATE                 
-dev            2020-04-06T14:35:40.210Z
 staging        2020-04-06T14:37:45.210Z
-production     2020-04-06T14:37:45.210Z
 	`,
 	SilenceUsage: true,
+	Args: func(cmd *cobra.Command, args []string) error {
+		_, _, err := credentialmanager.NewCredentialManager().GetCreds()
+		if err != nil {
+			return errors.New(authErrorMsg)
+		}
+
+		return nil
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
+
+		var stageName string
+		stageName = strings.Join(args, " ")
+
 		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
 
 		stagesHandler := apiutils.NewAuthenticatedStageHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
-
 		if !mocking {
-			stages, err := stagesHandler.GetAllStages(*projectName.project)
+			stages, err := stagesHandler.GetAllStages(*stageParameter.project)
 			if err != nil {
 				fmt.Println(err)
-				return errors.New("Could not retrieve stages for project " + *projectName.project)
+				return errors.New("Could not retrieve stages for project " + *stageParameter.project)
 			}
+
 			w := new(tabwriter.Writer)
 			w.Init(os.Stdout, 10, 8, 0, '\t', 0)
 			fmt.Fprintln(w, "NAME\tCREATION DATE")
-			for _, stage := range stages {
-				/*creationDateInt64, err := strconv.ParseInt(stage.CreationDate, 10, 64)
-				if err != nil {
-					panic(err)
+
+			if stageName != "" {
+
+				for _, stage := range stages {
+					if stage.StageName == stageName {
+						fmt.Fprintln(w, stage.StageName+"\tn/a")
+					}
 				}
-				tm := time.Unix(0, creationDateInt64)*/
-
-				fmt.Fprintln(w, stage.StageName+"\t n/a") // + "\t" + tm.Format("2006-01-02T15:04:05Z07:00"))
-
+			} else {
+				for _, stage := range stages {
+					fmt.Fprintln(w, stage.StageName+"\tn/a")
+				}
 			}
-
 			w.Flush()
 		}
 		return nil
@@ -78,10 +97,10 @@ production     2020-04-06T14:37:45.210Z
 }
 
 func init() {
-	getCmd.AddCommand(getStagesCmd)
+	getCmd.AddCommand(getStageCmd)
 
-	projectName.project = getStagesCmd.Flags().StringP("project", "", "",
+	stageParameter.project = getStageCmd.Flags().StringP("project", "", "",
 		"keptn project name")
 
-	getStagesCmd.MarkFlagRequired("project")
+	getStageCmd.MarkFlagRequired("project")
 }

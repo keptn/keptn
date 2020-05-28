@@ -13,14 +13,25 @@ func init() {
 	logging.InitLoggers(os.Stdout, os.Stdout, os.Stderr)
 }
 
-// TestEvaluationDoneGetEvent tests the evaluation-done command
-func TestGetProjects(t *testing.T) {
+// TestGetProject
+func TestGetProject(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
 
-	cmd := fmt.Sprintf("get projects --mock")
+	cmd := fmt.Sprintf("get project sockshop --mock")
 	_, err := executeActionCommandC(cmd)
 	if err != nil {
 		t.Errorf(unexpectedErrMsg, err)
+	}
+}
+
+func TestGetProjectOutput(t *testing.T) {
+
+	credentialmanager.MockAuthCreds = true
+
+	cmd := fmt.Sprintf("get project sockshop --output=error --mock")
+	_, err := executeActionCommandC(cmd)
+	if err == nil {
+		t.Error("An error occurred: expect an error due to wrong output format")
 	}
 }

@@ -15,75 +15,200 @@
 package cmd
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"text/tabwriter"
 	"time"
 
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v2"
 )
 
+type getServiceStruct struct {
+	project      *string
+	outputFormat *string
+}
+
+var getService getServiceStruct
+
 // evaluationDoneCmd represents the evaluation-done command
-var getServicesCmd = &cobra.Command{
-	Use:   "services",
-	Short: "Get all keptn services",
-	Long:  `Get a list with all keptn services`,
-	Example: `keptn get services
+var getServiceCmd = &cobra.Command{
+	Use:     "service",
+	Aliases: []string{"services"},
+	Short:   "Get service details",
+	Long:    `Get all services or details for a given service within a keptn project`,
+	Example: `keptn get service carts --project=sockshop
 NAME           CREATION DATE                 
 carts          2020-04-06T14:35:40.210Z
-carts-db       2020-04-06T14:52:52.210Z
-catalogue      2020-04-12T16:00:40.210Z
 	`,
 	SilenceUsage: true,
+	Args: func(cmd *cobra.Command, args []string) error {
+		_, _, err := credentialmanager.NewCredentialManager().GetCreds()
+		if err != nil {
+			return errors.New(authErrorMsg)
+		}
+
+		if *getService.outputFormat != "" {
+			if *getService.outputFormat != "yaml" && *getService.outputFormat != "json" {
+				return errors.New("Invalid output format, only yaml or json allowed")
+			}
+		}
+
+		return nil
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
+
+		var serviceName string
+		if len(args) > 1 {
+			serviceName = strings.Join(args, " ")
+		} else {
+			serviceName = ""
+		}
+
+		var projectName string
+		projectName = *getService.project
+
 		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
 
-		servicesHandler := apiutils.NewAuthenticatedServiceHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
 		projectsHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
+		servicesHandler := apiutils.NewAuthenticatedServiceHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
 
 		if !mocking {
-			projects, err := projectsHandler.GetAllProjects()
-			if err != nil {
-				fmt.Println(err)
-				return errors.New(err.Error())
-			}
-			w := new(tabwriter.Writer)
-			w.Init(os.Stdout, 10, 8, 0, '\t', 0)
+			if serviceName != "" {
+				projects, err := projectsHandler.GetAllProjects()
+				if err != nil {
+					fmt.Println(err)
+					return errors.New(err.Error())
+				}
 
-			fmt.Fprintln(w, "NAME\tPROJECT\tCREATION DATE")
+				w := new(tabwriter.Writer)
+				w.Init(os.Stdout, 10, 8, 0, '\t', 0)
 
-			for _, project := range projects {
+				if *getService.outputFormat == "" {
+					fmt.Fprintln(w, "NAME\tCREATION DATE")
+				}
 
-				for _, stage := range project.Stages {
-					services, err := servicesHandler.GetAllServices(project.ProjectName, stage.StageName)
-					if err != nil {
-						return errors.New(err.Error())
-					}
-					for _, service := range services {
+				for _, project := range projects {
+					// make the project filter optional => print all services with matching names
+					if projectName == "" || project.ProjectName == projectName {
+						//stagesHandler := apiutils.NewStageHandler(endPoint.String())
+						for _, stage := range project.Stages {
+							services, err := servicesHandler.GetAllServices(project.ProjectName, stage.StageName)
+							if err != nil {
+								return errors.New(err.Error())
+							}
+							for _, service := range services {
 
-						creationDateInt64, err := strconv.ParseInt(service.CreationDate, 10, 64)
-						if err != nil {
-							panic(err)
+								if service.ServiceName == serviceName {
+
+									if strings.ToLower(*getService.outputFormat) == "yaml" {
+										yamlBytes, err := yaml.Marshal(service)
+										if err != nil {
+											return errors.New(err.Error())
+										}
+										yamlString := string(yamlBytes)
+										fmt.Println(yamlString)
+									} else if strings.ToLower(*getService.outputFormat) == "json" {
+										jsonBytes, err := json.MarshalIndent(service, "", "   ")
+										if err != nil {
+											return errors.New(err.Error())
+										}
+
+										jsonString := string(jsonBytes)
+										fmt.Println(jsonString)
+									} else {
+
+										creationDateInt64, err := strconv.ParseInt(service.CreationDate, 10, 64)
+										if err != nil {
+											panic(err)
+										}
+										tm := time.Unix(0, creationDateInt64)
+
+										fmt.Fprintln(w, service.ServiceName+"\t"+tm.Format("2006-01-02T15:04:05Z07:00"))
+									}
+								}
+							}
 						}
-						tm := time.Unix(0, creationDateInt64)
+					}
 
-						fmt.Fprintln(w, service.ServiceName+"\t"+project.ProjectName+"\t"+tm.Format("2006-01-02T15:04:05Z07:00"))
+				}
+				w.Flush()
+			} else {
+				projects, err := projectsHandler.GetAllProjects()
+				if err != nil {
+					fmt.Println(err)
+					return errors.New(err.Error())
+				}
+				w := new(tabwriter.Writer)
+				w.Init(os.Stdout, 10, 8, 0, '\t', 0)
+
+				if *getService.outputFormat == "" {
+					fmt.Fprintln(w, "NAME\tPROJECT\tCREATION DATE")
+				}
+
+				for _, project := range projects {
+					// also apply the project filter for the list of services, if available
+					if projectName == "" || project.ProjectName == projectName {
+						for _, stage := range project.Stages {
+							services, err := servicesHandler.GetAllServices(project.ProjectName, stage.StageName)
+							if err != nil {
+								return errors.New(err.Error())
+							}
+							for _, service := range services {
+
+								creationDateInt64, err := strconv.ParseInt(service.CreationDate, 10, 64)
+								if err != nil {
+									panic(err)
+								}
+								tm := time.Unix(0, creationDateInt64)
+
+								// also enable yaml/json output for list of services
+								if strings.ToLower(*getService.outputFormat) == "yaml" {
+									yamlBytes, err := yaml.Marshal(service)
+									if err != nil {
+										return errors.New(err.Error())
+									}
+									yamlString := string(yamlBytes)
+									fmt.Println(yamlString)
+								} else if strings.ToLower(*getService.outputFormat) == "json" {
+									jsonBytes, err := json.MarshalIndent(service, "", "   ")
+									if err != nil {
+										return errors.New(err.Error())
+									}
+
+									jsonString := string(jsonBytes)
+									fmt.Println(jsonString)
+								} else {
+									fmt.Fprintln(w, service.ServiceName+"\t"+project.ProjectName+"\t"+tm.Format("2006-01-02T15:04:05Z07:00"))
+								}
+							}
+						}
 					}
 				}
+				w.Flush()
 			}
-			w.Flush()
+
 		}
 		return nil
 	},
 }
 
 func init() {
-	getCmd.AddCommand(getServicesCmd)
+	getCmd.AddCommand(getServiceCmd)
+
+	getService.project = getServiceCmd.Flags().StringP("project", "", "",
+		"keptn project name")
+	getService.outputFormat = getServiceCmd.Flags().StringP("output", "o", "",
+		"Output format. One of json|yaml")
+
+	// getServiceCmd.MarkFlagRequired("project")
 }
