@@ -65,7 +65,7 @@ carts          2020-04-06T14:35:40.210Z
 	RunE: func(cmd *cobra.Command, args []string) error {
 
 		var serviceName string
-		if len(args) > 1 {
+		if len(args) > 0 {
 			serviceName = strings.Join(args, " ")
 		} else {
 			serviceName = ""
@@ -83,95 +83,48 @@ carts          2020-04-06T14:35:40.210Z
 		servicesHandler := apiutils.NewAuthenticatedServiceHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
 
 		if !mocking {
-			if serviceName != "" {
-				projects, err := projectsHandler.GetAllProjects()
-				if err != nil {
-					fmt.Println(err)
-					return errors.New(err.Error())
-				}
 
-				w := new(tabwriter.Writer)
-				w.Init(os.Stdout, 10, 8, 0, '\t', 0)
+			projects, err := projectsHandler.GetAllProjects()
+			if err != nil {
+				fmt.Println(err)
+				return errors.New(err.Error())
+			}
 
-				if *getService.outputFormat == "" {
-					fmt.Fprintln(w, "NAME\tCREATION DATE")
-				}
+			w := new(tabwriter.Writer)
+			w.Init(os.Stdout, 10, 8, 0, '\t', 0)
 
-				for _, project := range projects {
-					// make the project filter optional => print all services with matching names
-					if projectName == "" || project.ProjectName == projectName {
-						//stagesHandler := apiutils.NewStageHandler(endPoint.String())
-						for _, stage := range project.Stages {
-							services, err := servicesHandler.GetAllServices(project.ProjectName, stage.StageName)
-							if err != nil {
-								return errors.New(err.Error())
-							}
-							for _, service := range services {
+			if *getService.outputFormat == "" {
+				fmt.Fprintln(w, "NAME\tPROJECT\tCREATION DATE")
+			}
 
-								if service.ServiceName == serviceName {
-
-									if strings.ToLower(*getService.outputFormat) == "yaml" {
-										yamlBytes, err := yaml.Marshal(service)
-										if err != nil {
-											return errors.New(err.Error())
-										}
-										yamlString := string(yamlBytes)
-										fmt.Println(yamlString)
-									} else if strings.ToLower(*getService.outputFormat) == "json" {
-										jsonBytes, err := json.MarshalIndent(service, "", "   ")
-										if err != nil {
-											return errors.New(err.Error())
-										}
-
-										jsonString := string(jsonBytes)
-										fmt.Println(jsonString)
-									} else {
-
-										creationDateInt64, err := strconv.ParseInt(service.CreationDate, 10, 64)
-										if err != nil {
-											panic(err)
-										}
-										tm := time.Unix(0, creationDateInt64)
-
-										fmt.Fprintln(w, service.ServiceName+"\t"+tm.Format("2006-01-02T15:04:05Z07:00"))
-									}
-								}
-							}
+			for _, project := range projects {
+				// make the project filter optional => print all services with matching names
+				if projectName == "" || project.ProjectName == projectName {
+					//stagesHandler := apiutils.NewStageHandler(endPoint.String())
+					for _, stage := range project.Stages {
+						services, err := servicesHandler.GetAllServices(project.ProjectName, stage.StageName)
+						if err != nil {
+							return errors.New(err.Error())
 						}
-					}
+						for _, service := range services {
 
-				}
-				w.Flush()
-			} else {
-				projects, err := projectsHandler.GetAllProjects()
-				if err != nil {
-					fmt.Println(err)
-					return errors.New(err.Error())
-				}
-				w := new(tabwriter.Writer)
-				w.Init(os.Stdout, 10, 8, 0, '\t', 0)
+							var returnService bool
 
-				if *getService.outputFormat == "" {
-					fmt.Fprintln(w, "NAME\tPROJECT\tCREATION DATE")
-				}
-
-				for _, project := range projects {
-					// also apply the project filter for the list of services, if available
-					if projectName == "" || project.ProjectName == projectName {
-						for _, stage := range project.Stages {
-							services, err := servicesHandler.GetAllServices(project.ProjectName, stage.StageName)
-							if err != nil {
-								return errors.New(err.Error())
+							// return service if a serviceName is set and its matching
+							if serviceName != "" && service.ServiceName == serviceName {
+								returnService = true
+							} else if serviceName == "" && project.ProjectName == projectName {
+								// return all services of a project if no service name is defined
+								returnService = true
+							} else if serviceName == "" && projectName == "" {
+								// print all services if no project or service is defined
+								returnService = true
+							} else {
+								returnService = false
 							}
-							for _, service := range services {
 
-								creationDateInt64, err := strconv.ParseInt(service.CreationDate, 10, 64)
-								if err != nil {
-									panic(err)
-								}
-								tm := time.Unix(0, creationDateInt64)
+							if returnService {
 
-								// also enable yaml/json output for list of services
 								if strings.ToLower(*getService.outputFormat) == "yaml" {
 									yamlBytes, err := yaml.Marshal(service)
 									if err != nil {
@@ -188,14 +141,22 @@ carts          2020-04-06T14:35:40.210Z
 									jsonString := string(jsonBytes)
 									fmt.Println(jsonString)
 								} else {
+
+									creationDateInt64, err := strconv.ParseInt(service.CreationDate, 10, 64)
+									if err != nil {
+										panic(err)
+									}
+									tm := time.Unix(0, creationDateInt64)
+
 									fmt.Fprintln(w, service.ServiceName+"\t"+project.ProjectName+"\t"+tm.Format("2006-01-02T15:04:05Z07:00"))
 								}
 							}
 						}
 					}
 				}
-				w.Flush()
+
 			}
+			w.Flush()
 
 		}
 		return nil
