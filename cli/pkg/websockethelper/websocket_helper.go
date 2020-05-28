@@ -64,7 +64,6 @@ func openWS(connData keptnutils.ConnectionData, apiEndPoint url.URL, useWss bool
 	header := http.Header{}
 	header.Add("Token", *connData.EventContext.Token)
 	header.Add("Keptn-Ws-Channel-Id", *connData.EventContext.KeptnContext)
-	header.Add("Host", "api.keptn")
 
 	dialer := websocket.DefaultDialer
 	dialer.NetDial = apiutils.ResolveXipIo
