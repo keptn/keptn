@@ -45,7 +45,16 @@ var getServiceCmd = &cobra.Command{
 	Long:    `Get all services or details for a given service within a keptn project`,
 	Example: `keptn get service carts --project=sockshop
 NAME           CREATION DATE                 
-carts          2020-04-06T14:35:40.210Z
+carts          sockshop        2020-05-28T10:25:58+02:00
+
+List all services in keptn
+# keptn get services
+
+# List all services in the sockshop project
+keptn get services --project=sockshop
+
+# Get details of the carts service in the sockshop project as json output
+keptn get services carts --project=sockshop -o=json
 	`,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {

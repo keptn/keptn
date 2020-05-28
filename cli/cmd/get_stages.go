@@ -39,9 +39,9 @@ var getStageCmd = &cobra.Command{
 	Short:   "Get details of a stage",
 	Long:    `Get all stages or details of a stage from a given keptn project`,
 	Example: `keptn get stages --project=sockshop
-	NAME           CREATION DATE                 
-	staging        2020-04-06T14:37:45.210Z
-	production     2020-04-06T14:37:45.210Z
+NAME           CREATION DATE                 
+staging        2020-04-06T14:37:45.210Z
+production     2020-04-06T14:37:45.210Z
 
 keptn get stage staging --project sockshop
 NAME           CREATION DATE                 
