@@ -59,6 +59,7 @@ module.exports = (params) => {
   router.all('*', async (req, res, next) => {
     try {
       let method = req.method;
+      let url = `${apiUrl}${req.url}`;
       let data = req.params;
       const result = await axios({ method, url, data });
       return res.json(result);
