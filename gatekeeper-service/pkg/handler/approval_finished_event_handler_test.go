@@ -44,9 +44,8 @@ var approvalFinishedTests = []struct {
 				"l1": "lValue",
 			},
 			Approval: keptnevents.ApprovalData{
-				TriggeredID: eventID,
-				Result:      "pass",
-				Status:      "succeeded",
+				Result: "pass",
+				Status: "succeeded",
 			},
 		},
 		outputEvent: []cloudevents.Event{},
@@ -67,9 +66,8 @@ var approvalFinishedTests = []struct {
 				"l1": "lValue",
 			},
 			Approval: keptnevents.ApprovalData{
-				TriggeredID: eventID,
-				Result:      "pass",
-				Status:      "succeeded",
+				Result: "pass",
+				Status: "succeeded",
 			},
 		},
 		outputEvent: []cloudevents.Event{},
@@ -112,7 +110,7 @@ func TestHandleApprovalFinishedEvent(t *testing.T) {
 	for _, tt := range approvalFinishedTests {
 		t.Run(tt.name, func(t *testing.T) {
 			e := NewApprovalFinishedEventHandler(keptnevents.NewLogger(shkeptncontext, eventID, "gatekeeper-service"))
-			res := e.handleApprovalFinishedEvent(tt.inputEvent, shkeptncontext, tt.shipyard)
+			res := e.handleApprovalFinishedEvent(tt.inputEvent, shkeptncontext, eventID, tt.shipyard)
 			if len(res) != len(tt.outputEvent) {
 				t.Errorf("got %d output event, want %v output events for %s",
 					len(res), len(tt.outputEvent), tt.name)
@@ -139,7 +137,7 @@ func TestApprovalFinishedEventHandler_getOpenApproval(t *testing.T) {
 			if returnCode == 200 {
 				w.WriteHeader(200)
 				w.Write([]byte(`{
-					"eventId": "approval-triggered-id",
+					"eventId": "approval-trigger-id",
 					"image": "docker.io/keptnexamples/carts",
 					"keptnContext": "approval-workflow",
 					"tag": "0.10.1",
@@ -181,14 +179,13 @@ func TestApprovalFinishedEventHandler_getOpenApproval(t *testing.T) {
 					Image:              "docker.io/keptnexamples/carts",
 					Labels:             nil,
 					Approval: keptnevents.ApprovalData{
-						TriggeredID: "approval-triggered-id",
-						Result:      "pass",
-						Status:      "",
+						Result: "pass",
+						Status: "",
 					},
 				},
 			},
 			want: &approval{
-				EventID:      "approval-triggered-id",
+				EventID:      "approval-trigger-id",
 				Image:        "docker.io/keptnexamples/carts",
 				KeptnContext: "approval-workflow",
 				Tag:          "0.10.1",
@@ -210,9 +207,8 @@ func TestApprovalFinishedEventHandler_getOpenApproval(t *testing.T) {
 					Image:              "docker.io/keptnexamples/carts",
 					Labels:             nil,
 					Approval: keptnevents.ApprovalData{
-						TriggeredID: "approval-triggered-id",
-						Result:      "pass",
-						Status:      "",
+						Result: "pass",
+						Status: "",
 					},
 				},
 			},
@@ -224,7 +220,7 @@ func TestApprovalFinishedEventHandler_getOpenApproval(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			returnCode = tt.returnedResponseCode
-			got, err := getOpenApproval(tt.args.inputEvent)
+			got, err := getOpenApproval(tt.args.inputEvent, "approval-trigger-id")
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getOpenApproval() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -268,7 +264,7 @@ func Test_closeOpenApproval(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			returnCode = tt.returnedResponseCode
-			if err := closeOpenApproval(tt.args.inputEvent); (err != nil) != tt.wantErr {
+			if err := closeOpenApproval(tt.args.inputEvent, "approval-trigger-id"); (err != nil) != tt.wantErr {
 				t.Errorf("closeOpenApproval() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

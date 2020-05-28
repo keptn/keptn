@@ -42,7 +42,7 @@ func (a *ApprovalTriggeredEventHandler) Handle(event cloudevents.Event, keptnHan
 	sendEvents(keptnHandler, outgoingEvents, a.logger)
 }
 
-func (a *ApprovalTriggeredEventHandler) handleApprovalTriggeredEvent(inputEvent keptnevents.ApprovalTriggeredEventData, triggeredId, shkeptncontext string,
+func (a *ApprovalTriggeredEventHandler) handleApprovalTriggeredEvent(inputEvent keptnevents.ApprovalTriggeredEventData, triggerId, shkeptncontext string,
 	shipyard keptnevents.Shipyard) []cloudevents.Event {
 
 	outgoingEvents := make([]cloudevents.Event, 0)
@@ -51,12 +51,12 @@ func (a *ApprovalTriggeredEventHandler) handleApprovalTriggeredEvent(inputEvent 
 		// Pass
 		a.logger.Info(fmt.Sprintf("Automatically approve image %s for service %s of project %s and current stage %s",
 			inputEvent.Image, inputEvent.Service, inputEvent.Project, inputEvent.Stage))
-		outgoingEvents = append(outgoingEvents, *a.getApprovalFinishedEvent(inputEvent, PassResult, triggeredId, shkeptncontext))
+		outgoingEvents = append(outgoingEvents, *a.getApprovalFinishedEvent(inputEvent, PassResult, triggerId, shkeptncontext))
 	} else if inputEvent.Result == FailResult {
 		// Handle case if an ApprovalTriggered event was sent even the evaluation result is failed
 		a.logger.Info(fmt.Sprintf("Disapprove image %s for service %s of project %s and current stage %s because"+
 			"the evaluation result is fail", inputEvent.Image, inputEvent.Service, inputEvent.Project, inputEvent.Stage))
-		outgoingEvents = append(outgoingEvents, *a.getApprovalFinishedEvent(inputEvent, FailResult, triggeredId, shkeptncontext))
+		outgoingEvents = append(outgoingEvents, *a.getApprovalFinishedEvent(inputEvent, FailResult, triggerId, shkeptncontext))
 	}
 
 	return outgoingEvents
@@ -82,7 +82,7 @@ func (a *ApprovalTriggeredEventHandler) getApprovalStrategyForWarning(stageName 
 	return keptnevents.Automatic
 }
 
-func (a *ApprovalTriggeredEventHandler) getApprovalFinishedEvent(inputEvent keptnevents.ApprovalTriggeredEventData, result, triggeredId, shkeptncontext string) *cloudevents.Event {
+func (a *ApprovalTriggeredEventHandler) getApprovalFinishedEvent(inputEvent keptnevents.ApprovalTriggeredEventData, result, triggerid, shkeptncontext string) *cloudevents.Event {
 
 	approvalFinishedEvent := keptnevents.ApprovalFinishedEventData{
 		Project:            inputEvent.Project,
@@ -94,12 +94,11 @@ func (a *ApprovalTriggeredEventHandler) getApprovalFinishedEvent(inputEvent kept
 		Image:              inputEvent.Image,
 		Labels:             inputEvent.Labels,
 		Approval: keptnevents.ApprovalData{
-			TriggeredID: triggeredId,
-			Result:      result,
-			Status:      SucceededResult,
+			Result: result,
+			Status: SucceededResult,
 		},
 	}
-	return getCloudEvent(approvalFinishedEvent, keptnevents.ApprovalFinishedEventType, shkeptncontext)
+	return getCloudEvent(approvalFinishedEvent, keptnevents.ApprovalFinishedEventType, shkeptncontext, triggerid)
 }
 
 func createApproval(eventID, keptnContext, image, tag, time, project, stage, service string) error {

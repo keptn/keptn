@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/url"
+	"os"
+
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 	"github.com/google/uuid"
@@ -14,8 +17,6 @@ import (
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/cobra"
-	"net/url"
-	"os"
 )
 
 type sendApprovalFinishedStruct struct {
@@ -99,9 +100,8 @@ func sendApprovalFinishedEvent(sendApprovalFinishedOptions sendApprovalFinishedS
 		Image:              approvalTriggeredEvent.Image,
 		Labels:             approvalTriggeredEvent.Labels,
 		Approval: keptnevents.ApprovalData{
-			TriggeredID: events[0].ID,
-			Result:      "pass",
-			Status:      "succeeded",
+			Result: "pass",
+			Status: "succeeded",
 		},
 	}
 
@@ -115,7 +115,7 @@ func sendApprovalFinishedEvent(sendApprovalFinishedOptions sendApprovalFinishedS
 			Type:        keptnevents.ApprovalFinishedEventType,
 			Source:      types.URLRef{URL: *source},
 			ContentType: &contentType,
-			Extensions:  map[string]interface{}{"shkeptncontext": keptnContext},
+			Extensions:  map[string]interface{}{"shkeptncontext": keptnContext, "triggerid": events[0].ID},
 		}.AsV02(),
 		Data: approvalFinishedEvent,
 	}

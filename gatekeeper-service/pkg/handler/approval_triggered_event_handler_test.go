@@ -22,7 +22,7 @@ var approvalTriggeredTests = []struct {
 		inputEvent: getApprovalTriggeredTestData("pass"),
 		outputEvent: []cloudevents.Event{
 			*getCloudEvent(getApprovalFinishedTestData("pass", "succeeded"),
-				keptnevents.ApprovalFinishedEventType, shkeptncontext),
+				keptnevents.ApprovalFinishedEventType, shkeptncontext, eventID),
 		},
 	},
 	{
@@ -32,7 +32,7 @@ var approvalTriggeredTests = []struct {
 		inputEvent: getApprovalTriggeredTestData("pass"),
 		outputEvent: []cloudevents.Event{
 			*getCloudEvent(getApprovalFinishedTestData("pass", "succeeded"),
-				keptnevents.ApprovalFinishedEventType, shkeptncontext),
+				keptnevents.ApprovalFinishedEventType, shkeptncontext, eventID),
 		},
 	},
 	{
@@ -57,7 +57,7 @@ var approvalTriggeredTests = []struct {
 		inputEvent: getApprovalTriggeredTestData("warning"),
 		outputEvent: []cloudevents.Event{
 			*getCloudEvent(getApprovalFinishedTestData("pass", "succeeded"),
-				keptnevents.ApprovalFinishedEventType, shkeptncontext),
+				keptnevents.ApprovalFinishedEventType, shkeptncontext, eventID),
 		},
 	},
 	{
@@ -74,7 +74,7 @@ var approvalTriggeredTests = []struct {
 		inputEvent: getApprovalTriggeredTestData("warning"),
 		outputEvent: []cloudevents.Event{
 			*getCloudEvent(getApprovalFinishedTestData("pass", "succeeded"),
-				keptnevents.ApprovalFinishedEventType, shkeptncontext),
+				keptnevents.ApprovalFinishedEventType, shkeptncontext, eventID),
 		},
 	},
 	{
@@ -92,7 +92,7 @@ var approvalTriggeredTests = []struct {
 		inputEvent: getApprovalTriggeredTestData("fail"),
 		outputEvent: []cloudevents.Event{
 			*getCloudEvent(getApprovalFinishedTestData("fail", "succeeded"),
-				keptnevents.ApprovalFinishedEventType, shkeptncontext),
+				keptnevents.ApprovalFinishedEventType, shkeptncontext, eventID),
 		},
 	},
 	{
@@ -102,7 +102,7 @@ var approvalTriggeredTests = []struct {
 		inputEvent: getApprovalTriggeredTestData("fail"),
 		outputEvent: []cloudevents.Event{
 			*getCloudEvent(getApprovalFinishedTestData("fail", "succeeded"),
-				keptnevents.ApprovalFinishedEventType, shkeptncontext),
+				keptnevents.ApprovalFinishedEventType, shkeptncontext, eventID),
 		},
 	},
 	{
@@ -112,7 +112,7 @@ var approvalTriggeredTests = []struct {
 		inputEvent: getApprovalTriggeredTestData("fail"),
 		outputEvent: []cloudevents.Event{
 			*getCloudEvent(getApprovalFinishedTestData("fail", "succeeded"),
-				keptnevents.ApprovalFinishedEventType, shkeptncontext),
+				keptnevents.ApprovalFinishedEventType, shkeptncontext, eventID),
 		},
 	},
 	{
@@ -122,7 +122,7 @@ var approvalTriggeredTests = []struct {
 		inputEvent: getApprovalTriggeredTestData("fail"),
 		outputEvent: []cloudevents.Event{
 			*getCloudEvent(getApprovalFinishedTestData("fail", "succeeded"),
-				keptnevents.ApprovalFinishedEventType, shkeptncontext),
+				keptnevents.ApprovalFinishedEventType, shkeptncontext, eventID),
 		},
 	},
 }

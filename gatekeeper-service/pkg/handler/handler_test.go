@@ -127,9 +127,8 @@ func getApprovalFinishedTestData(result, status string) keptnevents.ApprovalFini
 			"l1": "lValue",
 		},
 		Approval: keptnevents.ApprovalData{
-			TriggeredID: eventID,
-			Result:      result,
-			Status:      status,
+			Result: result,
+			Status: status,
 		},
 	}
 }
