@@ -110,45 +110,26 @@ keptn get project sockshop -output=json
 				return errors.New(authErrorMsg)
 			}
 
-			if projectName != "" {
-				for _, project := range projects {
+			var returnProject bool
 
-					if project.ProjectName == projectName {
+			for _, project := range projects {
 
-						if strings.ToLower(*getProject.outputFormat) == "yaml" {
-							yamlBytes, err := yaml.Marshal(project)
-							if err != nil {
-								return errors.New(err.Error())
-							}
-							yamlString := string(yamlBytes)
-							fmt.Println(yamlString)
-
-						} else if strings.ToLower(*getProject.outputFormat) == "json" {
-							jsonBytes, err := json.MarshalIndent(project, "", "   ")
-							if err != nil {
-								return errors.New(err.Error())
-							}
-
-							jsonString := string(jsonBytes)
-							fmt.Println(jsonString)
-						} else {
-							creationDateInt64, err := strconv.ParseInt(project.CreationDate, 10, 64)
-							if err != nil {
-								panic(err)
-							}
-							tm := time.Unix(0, creationDateInt64)
-							fmt.Fprintln(w, project.ProjectName+"\t"+tm.Format("2006-01-02T15:04:05Z07:00"))
-						}
-					}
+				if projectName != "" && project.ProjectName == projectName {
+					returnProject = true
+				} else if projectName == "" {
+					returnProject = true
+				} else {
+					returnProject = false
 				}
-			} else {
-				for _, project := range projects {
+
+				if returnProject {
 					if strings.ToLower(*getProject.outputFormat) == "yaml" {
 						yamlBytes, err := yaml.Marshal(project)
 						if err != nil {
 							return errors.New(err.Error())
 						}
 						yamlString := string(yamlBytes)
+
 						fmt.Println(yamlString)
 
 					} else if strings.ToLower(*getProject.outputFormat) == "json" {
@@ -158,16 +139,21 @@ keptn get project sockshop -output=json
 						}
 
 						jsonString := string(jsonBytes)
+
 						fmt.Println(jsonString)
+
 					} else {
 						creationDateInt64, err := strconv.ParseInt(project.CreationDate, 10, 64)
 						if err != nil {
 							panic(err)
 						}
 						tm := time.Unix(0, creationDateInt64)
+
 						fmt.Fprintln(w, project.ProjectName+"\t"+tm.Format("2006-01-02T15:04:05Z07:00"))
+
 					}
 				}
+
 			}
 			w.Flush()
 		}
