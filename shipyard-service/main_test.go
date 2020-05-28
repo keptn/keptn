@@ -91,20 +91,19 @@ func TestCreateProjectBadRequest(t *testing.T) {
 }
 
 func TestCreateStageStatusNoContent(t *testing.T) {
-	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, r.Method, "POST", "Expect POST request")
-		assert.Equal(t, r.URL.EscapedPath(), "/v1/project/sockshop/stage", "Expect /v1/project/sockshop/stage endpoint")
-		w.WriteHeader(http.StatusNoContent) // 204 - StatusNoContent
-	})
-
-	httpClient, teardown := testingHTTPClient(handler)
-	defer teardown()
+	ts := httptest.NewServer(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal(t, r.Method, "POST", "Expect POST request")
+			assert.Equal(t, r.URL.EscapedPath(), "/v1/project/sockshop/stage", "Expect /v1/project/sockshop/stage endpoint")
+			w.WriteHeader(http.StatusNoContent) // 204 - StatusNoContent
+		}),
+	)
+	defer ts.Close()
 
 	client := newClient()
-	client.httpClient = httpClient
 
 	logger := keptnutils.NewLogger("4711-a83b-4bc1-9dc0-1f050c7e789b", "4711-a83b-4bc1-9dc0-1f050c7e781b", "shipyard-service")
-	os.Setenv("CONFIGURATION_SERVICE", "http://configuration-service.keptn.svc.cluster.local")
+	os.Setenv("CONFIGURATION_SERVICE", ts.URL)
 
 	project := configmodels.Project{}
 	project.ProjectName = "sockshop"
