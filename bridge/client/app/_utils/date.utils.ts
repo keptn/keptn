@@ -11,11 +11,11 @@ export default class DateUtil {
     let seconds = Math.floor(duration.asSeconds()%60);
 
     let result = seconds+' seconds';
-    if(minutes > 1)
+    if(minutes > 0)
       result = minutes+' minutes '+result;
-    if(hours > 1)
+    if(hours > 0)
       result = hours+' hours '+result;
-    if(days > 1)
+    if(days > 0)
       result = days+' days '+result;
 
     return result;
