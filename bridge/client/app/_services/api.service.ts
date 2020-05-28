@@ -9,13 +9,16 @@ import {Project} from "../_models/project";
 import {Resource} from "../_models/resource";
 import {Stage} from "../_models/stage";
 import {Service} from "../_models/service";
+import {ProjectResult} from "../_models/project-result";
+import {ServiceResult} from "../_models/service-result";
+import {EventResult} from "../_models/event-result";
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
 
-  private baseUrl: string;
+  private _baseUrl: string;
   private defaultHeaders: HttpHeaders = new HttpHeaders({'Content-Type': 'application/json'});
 
   private VERSION_CHECK_COOKIE = 'keptn_versioncheck';
@@ -29,7 +32,7 @@ export class ApiService {
   }
 
   public getBridgeVersion(): Observable<any> {
-    let url = `${this.baseUrl}/api/`;
+    let url = `${this._baseUrl}/api/`;
     return this.http
       .get<any>(url, { headers: this.defaultHeaders })
       .pipe(
@@ -39,7 +42,7 @@ export class ApiService {
   }
 
   public getKeptnVersion(): Observable<any> {
-    let url = `${this.baseUrl}/api/swagger-ui/swagger.yaml`;
+    let url = `${this._baseUrl}/api/swagger-ui/swagger.yaml`;
     return this.http
       .get<any>(url, { headers: this.defaultHeaders.append('Access-Control-Allow-Origin', '*') })
       .pipe(
@@ -69,11 +72,11 @@ export class ApiService {
     }
   }
 
-  public getProjects(): Observable<Project[]> {
+  public getProjects(): Observable<ProjectResult> {
     let url = `${this._baseUrl}/configuration-service/v1/project?DisableUpstreamSync=true`;
     return this.http
       .get<Project[]>(url, { headers: this.defaultHeaders })
-      .pipe(catchError(this.handleError<Project[]>('getProjects')));
+      .pipe(catchError(this.handleError<ProjectResult>('getProjects')));
   }
 
   public getProjectResources(projectName): Observable<Resource[]> {
@@ -90,40 +93,40 @@ export class ApiService {
       .pipe(catchError(this.handleError<Stage[]>('getStages')));
   }
 
-  public getServices(projectName, stageName): Observable<Service[]> {
+  public getServices(projectName, stageName): Observable<ServiceResult> {
     let url = `${this._baseUrl}/configuration-service/v1/project/${projectName}/stage/${stageName}/service`;
     return this.http
       .get<Service[]>(url, { headers: this.defaultHeaders })
-      .pipe(catchError(this.handleError<Service[]>('getServices')));
+      .pipe(catchError(this.handleError<ServiceResult>('getServices')));
   }
 
-  public getRoots(projectName: string, serviceName: string, fromTime?: String): Observable<HttpResponse<Root[]>> {
-    let url = `${this._baseUrl}/mongodb-datastore/event?pageSize=20&project=${projectName}&service=${serviceName}`;
+  public getRoots(projectName: string, serviceName: string, fromTime?: String): Observable<HttpResponse<EventResult>> {
+    let url = `${this._baseUrl}/mongodb-datastore/event?root=true&pageSize=20&project=${projectName}&service=${serviceName}`;
     if(fromTime)
       url += `&fromTime=${fromTime}`;
     return this.http
       .get<Root[]>(url, { headers: this.defaultHeaders, observe: 'response' })
-      .pipe(catchError(this.handleError<HttpResponse<Root[]>>('getRoots')));
+      .pipe(catchError(this.handleError<HttpResponse<EventResult>>('getRoots')));
   }
 
-  public getTraces(contextId: string, projectName?: string, fromTime?: String): Observable<HttpResponse<Trace[]>> {
-    let url = `${this._baseUrl}/mongodb-datastore/v1/event?pageSize=100&keptnContext=${contextId}`;
+  public getTraces(contextId: string, projectName?: string, fromTime?: String): Observable<HttpResponse<EventResult>> {
+    let url = `${this._baseUrl}/mongodb-datastore/event?pageSize=100&keptnContext=${contextId}`;
     if(projectName)
       url += `&project=${projectName}`;
     if(fromTime)
       url += `&fromTime=${fromTime}`;
     return this.http
       .get<Trace[]>(url, { headers: this.defaultHeaders, observe: 'response' })
-      .pipe(catchError(this.handleError<HttpResponse<Trace[]>>('getTraces')));
+      .pipe(catchError(this.handleError<HttpResponse<EventResult>>('getTraces')));
   }
 
   public getEvaluationResults(projectName: string, serviceName: string, stageName: string, source: string, fromTime?: String) {
-    let url = `${this._baseUrl}/mongodb-datastore/v1/event?type=sh.keptn.events.evaluation-done&project=${projectName}&service=${serviceName}&stage=${stageName}&source=${source}&pageSize=50`;
+    let url = `${this._baseUrl}/mongodb-datastore/event?type=sh.keptn.events.evaluation-done&project=${projectName}&service=${serviceName}&stage=${stageName}&source=${source}&pageSize=50`;
     if(fromTime)
       url += `&fromTime=${fromTime}`;
     return this.http
       .get<Trace[]>(url, { headers: this.defaultHeaders })
-      .pipe(catchError(this.handleError<Trace[]>('getEvaluationResults')));
+      .pipe(catchError(this.handleError<EventResult>('getEvaluationResults')));
   }
 
   private handleError<T>(operation = 'operation', result?: T) {
