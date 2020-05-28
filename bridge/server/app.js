@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
+const {execSync} = require('child_process');
 const logger = require('morgan');
 
 const configs = require('./config');
@@ -9,6 +10,7 @@ const apiRouter = require('./api');
 const app = express();
 const config = configs[app.get('env') || 'development'];
 const apiUrl = config.apiUrl;
+const apiToken = execSync('kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode');
 
 // host static files (angular app)
 app.use(express.static(path.join(__dirname, '../dist')));
@@ -45,7 +47,7 @@ if (process.env.BASIC_AUTH_USERNAME && process.env.BASIC_AUTH_PASSWORD) {
 
 
 // everything starting with /api is routed to the api implementation
-app.use('/api', apiRouter({ apiUrl }));
+app.use('/api', apiRouter({ apiUrl, apiToken }));
 
 // fallback: go to index.html
 app.use((req, res, next) => {

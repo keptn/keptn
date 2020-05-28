@@ -5,7 +5,7 @@ const https = require('https');
 const router = express.Router();
 
 module.exports = (params) => {
-  const { apiUrl } = params;
+  const { apiUrl, apiToken } = params;
 
   // accepts self-signed ssl certificate
   const agent = new https.Agent({
@@ -61,7 +61,11 @@ module.exports = (params) => {
       let method = req.method;
       let url = `${apiUrl}${req.url}`;
       let data = req.params;
-      const result = await axios({ method, url, data });
+      let headers = {
+        'x-token': apiToken,
+        'content-type': 'application/json'
+      };
+      const result = await axios({ method, url, data, headers });
       return res.json(result);
     } catch (err) {
       return next(err);
