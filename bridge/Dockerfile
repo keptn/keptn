@@ -20,7 +20,7 @@ FROM node:10-alpine
 
 EXPOSE 3000
 
-ENV API_URL "http://api-service.keptn.svc.cluster.local:8080"
+ENV API_URL "http://api-gateway-nginx.keptn.svc.cluster.local:8080"
 ENV NODE_ENV "production"
 ARG version=develop
 ENV VERSION="${version}"
