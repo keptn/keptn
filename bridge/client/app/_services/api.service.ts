@@ -1,9 +1,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpHeaders, HttpResponse} from "@angular/common/http";
 import {Observable, throwError, of} from "rxjs";
-import {catchError, map} from "rxjs/operators";
-
-import {environment} from "../../environments/environment";
+import {catchError} from "rxjs/operators";
 
 import {Root} from "../_models/root";
 import {Trace} from "../_models/trace";
@@ -17,12 +15,17 @@ import {Service} from "../_models/service";
 })
 export class ApiService {
 
-  private baseUrl: string = environment.apiUrl;
+  private baseUrl: string;
   private defaultHeaders: HttpHeaders = new HttpHeaders({'Content-Type': 'application/json'});
 
   private VERSION_CHECK_COOKIE = 'keptn_versioncheck';
 
+  set baseUrl(value: string) {
+    this._baseUrl = value;
+  }
+
   constructor(private http: HttpClient) {
+    this._baseUrl = `/api`;
   }
 
   public getBridgeVersion(): Observable<any> {
@@ -67,44 +70,46 @@ export class ApiService {
   }
 
   public getProjects(): Observable<Project[]> {
-    let url = `${this.baseUrl}/api/project?DisableUpstreamSync=true`;
+    let url = `${this._baseUrl}/configuration-service/v1/project?DisableUpstreamSync=true`;
     return this.http
       .get<Project[]>(url, { headers: this.defaultHeaders })
       .pipe(catchError(this.handleError<Project[]>('getProjects')));
   }
 
   public getProjectResources(projectName): Observable<Resource[]> {
-    let url = `${this.baseUrl}/api/project/${projectName}/resource`;
+    let url = `${this._baseUrl}/configuration-service/v1/project/${projectName}/resource`;
     return this.http
       .get<Resource[]>(url, { headers: this.defaultHeaders })
       .pipe(catchError(this.handleError<Resource[]>('getProjectResources')));
   }
 
   public getStages(projectName): Observable<Stage[]> {
-    let url = `${this.baseUrl}/api/project/${projectName}/stage`;
+    let url = `${this._baseUrl}/configuration-service/v1/project/${projectName}/stage`;
     return this.http
       .get<Stage[]>(url, { headers: this.defaultHeaders })
       .pipe(catchError(this.handleError<Stage[]>('getStages')));
   }
 
   public getServices(projectName, stageName): Observable<Service[]> {
-    let url = `${this.baseUrl}/api/project/${projectName}/stage/${stageName}/service`;
+    let url = `${this._baseUrl}/configuration-service/v1/project/${projectName}/stage/${stageName}/service`;
     return this.http
       .get<Service[]>(url, { headers: this.defaultHeaders })
       .pipe(catchError(this.handleError<Service[]>('getServices')));
   }
 
   public getRoots(projectName: string, serviceName: string, fromTime?: String): Observable<HttpResponse<Root[]>> {
-    let url = `${this.baseUrl}/api/roots/${projectName}/${serviceName}`;
+    let url = `${this._baseUrl}/mongodb-datastore/event?pageSize=20&project=${projectName}&service=${serviceName}`;
     if(fromTime)
-      url += `?fromTime=${fromTime}`;
+      url += `&fromTime=${fromTime}`;
     return this.http
       .get<Root[]>(url, { headers: this.defaultHeaders, observe: 'response' })
       .pipe(catchError(this.handleError<HttpResponse<Root[]>>('getRoots')));
   }
 
   public getTraces(contextId: string, projectName?: string, fromTime?: String): Observable<HttpResponse<Trace[]>> {
-    let url = `${this.baseUrl}/api/traces/${contextId}?projectName=${projectName}`;
+    let url = `${this._baseUrl}/mongodb-datastore/v1/event?pageSize=100&keptnContext=${contextId}`;
+    if(projectName)
+      url += `&project=${projectName}`;
     if(fromTime)
       url += `&fromTime=${fromTime}`;
     return this.http
@@ -113,7 +118,7 @@ export class ApiService {
   }
 
   public getEvaluationResults(projectName: string, serviceName: string, stageName: string, source: string, fromTime?: String) {
-    let url = `${this.baseUrl}/api/events?type=sh.keptn.events.evaluation-done&projectName=${projectName}&serviceName=${serviceName}&stageName=${stageName}&source=${source}&pageSize=50`;
+    let url = `${this._baseUrl}/mongodb-datastore/v1/event?type=sh.keptn.events.evaluation-done&project=${projectName}&service=${serviceName}&stage=${stageName}&source=${source}&pageSize=50`;
     if(fromTime)
       url += `&fromTime=${fromTime}`;
     return this.http

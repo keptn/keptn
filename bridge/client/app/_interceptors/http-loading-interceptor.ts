@@ -13,20 +13,18 @@ import {environment} from "../../environments/environment";
 })
 export class HttpLoadingInterceptor implements HttpInterceptor {
 
-  private baseUrl: string = environment.apiUrl;
-
   constructor(private httpStateService: HttpStateService) { }
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
 
     this.httpStateService.state.next({
-      url: request.url.replace(this.baseUrl, ''),
+      url: request.url,
       state: HttpProgressState.start
     });
 
     return next.handle(request).pipe(finalize(() => {
       this.httpStateService.state.next({
-        url: request.url.replace(this.baseUrl, ''),
+        url: request.url,
         state: HttpProgressState.end
       });
     }));
