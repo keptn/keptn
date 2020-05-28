@@ -45,6 +45,7 @@ func (a *ApprovalFinishedEventHandler) Handle(event cloudevents.Event, keptnHand
 	triggerid, err := event.Context.GetExtension("triggerid")
 	if err != nil {
 		a.logger.Error(fmt.Sprintf("triggerid is missing: %v", err))
+		return
 	}
 
 	outgoingEvents := a.handleApprovalFinishedEvent(*data, keptnHandler.KeptnContext, triggerid.(string), *shipyard)
