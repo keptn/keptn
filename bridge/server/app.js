@@ -10,7 +10,7 @@ const apiRouter = require('./api');
 const app = express();
 const config = configs[app.get('env') || 'development'];
 const apiUrl = config.apiUrl;
-const apiToken = execSync('kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode');
+const apiToken = Buffer.from(execSync('kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token}').toString(), 'base64').toString();
 
 // host static files (angular app)
 app.use(express.static(path.join(__dirname, '../dist')));

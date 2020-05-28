@@ -66,7 +66,7 @@ module.exports = (params) => {
         'content-type': 'application/json'
       };
       const result = await axios({ method, url, data, headers });
-      return res.json(result);
+      return res.json(result.data);
     } catch (err) {
       return next(err);
     }
