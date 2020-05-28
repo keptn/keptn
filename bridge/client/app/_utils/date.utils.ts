@@ -2,16 +2,21 @@ import * as moment from "moment";
 
 export default class DateUtil {
   static getDurationFormatted(start, end) {
-    let diff = moment(start).diff(moment(end));
+    let diff = moment(end).diff(moment(start));
     let duration = moment.duration(diff);
 
-    let result = moment.utc(diff).format("s")+' seconds';
+    let days = Math.floor(duration.asDays());
+    let hours = Math.floor(duration.asHours()%24);
+    let minutes = Math.floor(duration.asMinutes()%60);
+    let seconds = Math.floor(duration.asSeconds()%60);
 
-    if(Math.abs(duration.asMinutes()) > 1)
-      result = moment.utc(diff).format("mm")+' minutes '+result;
-
-    if(Math.abs(duration.asHours()) > 1)
-      result = Math.floor(duration.asHours())+' hours '+result;
+    let result = seconds+' seconds';
+    if(minutes > 1)
+      result = minutes+' minutes '+result;
+    if(hours > 1)
+      result = hours+' hours '+result;
+    if(days > 1)
+      result = days+' days '+result;
 
     return result;
   }
