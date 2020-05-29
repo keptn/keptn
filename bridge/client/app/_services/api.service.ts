@@ -3,12 +3,8 @@ import {HttpClient, HttpHeaders, HttpResponse} from "@angular/common/http";
 import {Observable, throwError, of} from "rxjs";
 import {catchError} from "rxjs/operators";
 
-import {Root} from "../_models/root";
-import {Trace} from "../_models/trace";
-import {Project} from "../_models/project";
 import {Resource} from "../_models/resource";
 import {Stage} from "../_models/stage";
-import {Service} from "../_models/service";
 import {ProjectResult} from "../_models/project-result";
 import {ServiceResult} from "../_models/service-result";
 import {EventResult} from "../_models/event-result";
@@ -73,9 +69,9 @@ export class ApiService {
   }
 
   public getProjects(): Observable<ProjectResult> {
-    let url = `${this._baseUrl}/configuration-service/v1/project?DisableUpstreamSync=true`;
+    let url = `${this._baseUrl}/configuration-service/v1/project?disableUpstreamSync=true`;
     return this.http
-      .get<Project[]>(url, { headers: this.defaultHeaders })
+      .get<ProjectResult>(url, { headers: this.defaultHeaders })
       .pipe(catchError(this.handleError<ProjectResult>('getProjects')));
   }
 
@@ -96,36 +92,36 @@ export class ApiService {
   public getServices(projectName, stageName): Observable<ServiceResult> {
     let url = `${this._baseUrl}/configuration-service/v1/project/${projectName}/stage/${stageName}/service`;
     return this.http
-      .get<Service[]>(url, { headers: this.defaultHeaders })
+      .get<ServiceResult>(url, { headers: this.defaultHeaders })
       .pipe(catchError(this.handleError<ServiceResult>('getServices')));
   }
 
-  public getRoots(projectName: string, serviceName: string, fromTime?: String): Observable<HttpResponse<EventResult>> {
+  public getRoots(projectName: string, serviceName: string, fromTime?: string): Observable<HttpResponse<EventResult>> {
     let url = `${this._baseUrl}/mongodb-datastore/event?root=true&pageSize=20&project=${projectName}&service=${serviceName}`;
     if(fromTime)
       url += `&fromTime=${fromTime}`;
     return this.http
-      .get<Root[]>(url, { headers: this.defaultHeaders, observe: 'response' })
+      .get<EventResult>(url, { headers: this.defaultHeaders, observe: 'response' })
       .pipe(catchError(this.handleError<HttpResponse<EventResult>>('getRoots')));
   }
 
-  public getTraces(contextId: string, projectName?: string, fromTime?: String): Observable<HttpResponse<EventResult>> {
+  public getTraces(contextId: string, projectName?: string, fromTime?: string): Observable<HttpResponse<EventResult>> {
     let url = `${this._baseUrl}/mongodb-datastore/event?pageSize=100&keptnContext=${contextId}`;
     if(projectName)
       url += `&project=${projectName}`;
     if(fromTime)
       url += `&fromTime=${fromTime}`;
     return this.http
-      .get<Trace[]>(url, { headers: this.defaultHeaders, observe: 'response' })
+      .get<EventResult>(url, { headers: this.defaultHeaders, observe: 'response' })
       .pipe(catchError(this.handleError<HttpResponse<EventResult>>('getTraces')));
   }
 
-  public getEvaluationResults(projectName: string, serviceName: string, stageName: string, source: string, fromTime?: String) {
+  public getEvaluationResults(projectName: string, serviceName: string, stageName: string, source: string, fromTime?: string) {
     let url = `${this._baseUrl}/mongodb-datastore/event?type=sh.keptn.events.evaluation-done&project=${projectName}&service=${serviceName}&stage=${stageName}&source=${source}&pageSize=50`;
     if(fromTime)
       url += `&fromTime=${fromTime}`;
     return this.http
-      .get<Trace[]>(url, { headers: this.defaultHeaders })
+      .get<EventResult>(url, { headers: this.defaultHeaders })
       .pipe(catchError(this.handleError<EventResult>('getEvaluationResults')));
   }
 
