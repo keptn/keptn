@@ -63,7 +63,8 @@ module.exports = (params) => {
         headers: {
           'x-token': apiToken,
           'content-type': 'application/json'
-        }
+        },
+        httpsAgent: agent
       });
       return res.json(result.data);
     } catch (err) {

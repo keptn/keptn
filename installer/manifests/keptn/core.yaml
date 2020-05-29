@@ -75,6 +75,14 @@ spec:
       containers:
         - name: bridge
           image: keptn/bridge2:latest
+          env:
+            - name: API_URL
+              value: "http://api-gateway-nginx.keptn.svc.cluster.local"
+            - name: API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: keptn-api-token
+                  key: keptn-api-token
           envFrom:
             - secretRef:
                 name: bridge-credentials

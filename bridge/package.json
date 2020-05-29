@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "node server/server.js",
-    "start:dev": "npm-run-all -p start:server:dev start:client:dev connect:bridge connect:api",
+    "start:dev": "npm-run-all -p start:server:dev start:client:dev",
     "start:server:dev": "nodemon server/server.js --watch server/",
     "start:client:dev": "ng build --watch",
     "ng": "ng",
@@ -13,10 +13,6 @@
     "test:ci": "ng test --watch=false --code-coverage --browsers=ChromeHeadless",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "connect:bridge": "kubectl port-forward -n keptn svc/bridge 9000:8080",
-    "connect:datastore": "kubectl port-forward -n keptn-datastore svc/mongodb-datastore 8085:8080",
-    "connect:configurationservice": "kubectl port-forward -n keptn svc/configuration-service 8086:8080",
-    "connect:api": "kubectl port-forward -n keptn svc/api-gateway-nginx 8088:80",
     "preinstall": "npx npm-force-resolutions"
   },
   "license": "Apache-2.0",

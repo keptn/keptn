@@ -2,12 +2,19 @@ const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
+const {execSync} = require('child_process');
 
 const apiRouter = require('./api');
 
 const app = express();
-const apiUrl = process.env.API_URL;
-const apiToken = process.env.API_TOKEN;
+let apiUrl = process.env.API_URL;
+let apiToken = process.env.API_TOKEN;
+
+if(!apiToken) {
+  console.log("API_TOKEN was not provided. Fetching from kubectl.");
+  apiUrl = 'https://api.keptn.'+execSync('kubectl get cm -n keptn keptn-domain -ojsonpath={.data.app_domain}').toString();
+  apiToken = Buffer.from(execSync('kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token}').toString(), 'base64').toString();
+}
 
 // host static files (angular app)
 app.use(express.static(path.join(__dirname, '../dist')));
