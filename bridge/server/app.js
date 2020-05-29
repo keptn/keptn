@@ -1,16 +1,13 @@
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
-const {execSync} = require('child_process');
 const logger = require('morgan');
 
-const configs = require('./config');
 const apiRouter = require('./api');
 
 const app = express();
-const config = configs[app.get('env') || 'development'];
-const apiUrl = config.apiUrl;
-const apiToken = Buffer.from(execSync('kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token}').toString(), 'base64').toString();
+const apiUrl = process.env.API_URL;
+const apiToken = process.env.API_TOKEN;
 
 // host static files (angular app)
 app.use(express.static(path.join(__dirname, '../dist')));
