@@ -46,6 +46,9 @@ The open approval.triggered events and their ID can be retrieved using the "kept
 		if *sendApprovalFinishedOptions.ID == "" && *sendApprovalFinishedOptions.Service == "" {
 			logging.PrintLog("Either ID or service must be provided", logging.InfoLevel)
 			return errors.New("either ID or service must be provided")
+		} else if *sendApprovalFinishedOptions.ID != "" && *sendApprovalFinishedOptions.Service != "" {
+			logging.PrintLog("Either ID or service must be provided", logging.InfoLevel)
+			return errors.New("either ID or service must be provided")
 		}
 		return nil
 	},
