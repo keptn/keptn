@@ -20,7 +20,7 @@ type ConfigurationChanger struct {
 	mesh                  mesh.Mesh
 	generatedChartHandler *helm.GeneratedChartHandler
 	logger                keptnevents.LoggerInterface
-	helmExecutor          *helm.HelmExecutor
+	helmExecutor          helm.HelmExecutor
 	keptnDomain           string
 	configServiceURL      string
 }
@@ -29,7 +29,7 @@ type ConfigurationChanger struct {
 func NewConfigurationChanger(mesh mesh.Mesh, logger keptnevents.LoggerInterface,
 	keptnDomain string, configServiceURL string) *ConfigurationChanger {
 	generatedChartHandler := helm.NewGeneratedChartHandler(mesh, keptnDomain)
-	helmExecutor := helm.NewHelmExecutor(logger)
+	helmExecutor := helm.NewHelmV3Executor(logger)
 	return &ConfigurationChanger{mesh: mesh, generatedChartHandler: generatedChartHandler,
 		logger: logger, helmExecutor: helmExecutor, keptnDomain: keptnDomain, configServiceURL: configServiceURL}
 }
