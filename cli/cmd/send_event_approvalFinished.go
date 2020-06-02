@@ -43,7 +43,7 @@ The open approval.triggered events and their ID can be retrieved using the "kept
 `,
 	Example: `keptn send event approval.finished --project=sockshop --stage=hardening --id=1234-5678-9123`,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if sendApprovalFinishedOptions.ID == nil && sendApprovalFinishedOptions.Service == nil {
+		if *sendApprovalFinishedOptions.ID == "" && *sendApprovalFinishedOptions.Service == "" {
 			logging.PrintLog("Either ID or service must be provided", logging.InfoLevel)
 			return errors.New("either ID or service must be provided")
 		}
@@ -79,10 +79,11 @@ func sendApprovalFinishedEvent(sendApprovalFinishedOptions sendApprovalFinishedS
 	var keptnContext string
 	var approvalFinishedEvent *keptnevents.ApprovalFinishedEventData
 
-	if sendApprovalFinishedOptions.ID != nil {
+	if *sendApprovalFinishedOptions.ID != "" {
 		keptnContext, approvalFinishedEvent, err = getApprovalFinishedForID(eventHandler, sendApprovalFinishedOptions)
-	} else if sendApprovalFinishedOptions.Service != nil {
-		keptnContext, approvalFinishedEvent, err = getApprovalFinishedForService(eventHandler, sendApprovalFinishedOptions)
+	} else if *sendApprovalFinishedOptions.Service != "" {
+		serviceHandler := apiutils.NewAuthenticatedServiceHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
+		keptnContext, approvalFinishedEvent, err = getApprovalFinishedForService(eventHandler, serviceHandler, sendApprovalFinishedOptions)
 	}
 	if err != nil {
 		return err
@@ -131,45 +132,60 @@ func sendApprovalFinishedEvent(sendApprovalFinishedOptions sendApprovalFinishedS
 	return nil
 }
 
-func getApprovalFinishedForService(eventHandler *apiutils.EventHandler, approvalFinishedOptions sendApprovalFinishedStruct) (string, *keptnevents.ApprovalFinishedEventData, error) {
-	events, errorObj := eventHandler.GetEvents(&apiutils.EventFilter{
-		Project:   *approvalFinishedOptions.Project,
-		Stage:     *approvalFinishedOptions.Stage,
-		Service:   *approvalFinishedOptions.Service,
-		EventType: keptnevents.ActionTriggeredEventType,
-	})
-
-	if errorObj != nil {
-		logging.PrintLog("Cannot retrieve approval.triggered events for service "+*sendApprovalFinishedOptions.Service+": "+*errorObj.Message, logging.InfoLevel)
-		return "", nil, errors.New(*errorObj.Message)
+func getApprovalFinishedForService(eventHandler *apiutils.EventHandler, serviceHandler *apiutils.ServiceHandler, approvalFinishedOptions sendApprovalFinishedStruct) (string, *keptnevents.ApprovalFinishedEventData, error) {
+	svc, err := serviceHandler.GetService(*approvalFinishedOptions.Project, *approvalFinishedOptions.Stage, *approvalFinishedOptions.Service)
+	if err != nil {
+		logging.PrintLog("Open approval.triggered event for service "+*approvalFinishedOptions.Service+" could not be retrieved: "+err.Error(), logging.InfoLevel)
+		return "", nil, err
+	}
+	if svc == nil {
+		logging.PrintLog("Service "+*approvalFinishedOptions.Service+" could not be found", logging.InfoLevel)
+		return "", nil, nil
 	}
 
-	if len(events) == 0 {
-		logging.PrintLog("No open approval.triggered event for service "+*sendApprovalFinishedOptions.Service+" has been found", logging.InfoLevel)
+	if len(svc.OpenApprovals) == 0 {
+		logging.PrintLog("No open approval.triggered event for service "+*approvalFinishedOptions.Service+" has been found", logging.InfoLevel)
 		return "", nil, nil
 	}
 
 	// print all available options
-	printApprovalOptions(events, eventHandler, approvalFinishedOptions)
+	printApprovalOptions(svc.OpenApprovals, eventHandler, approvalFinishedOptions)
 
 	// select option
-	nrOfOptions := len(events)
+	nrOfOptions := len(svc.OpenApprovals)
 	selectedOption, err := selectApprovalOption(nrOfOptions)
 	if err != nil {
 		return "", nil, err
 	}
 
 	index := selectedOption - 1
-	eventToBeApproved := events[index]
+	eventToBeApproved := svc.OpenApprovals[index]
 
 	// approve or decline?
 	approve := approveOrDecline()
 
+	events, errorObj := eventHandler.GetEvents(&apiutils.EventFilter{
+		Project:   *approvalFinishedOptions.Project,
+		Stage:     *approvalFinishedOptions.Stage,
+		EventType: keptnevents.ApprovalTriggeredEventType,
+		EventID:   eventToBeApproved.EventID,
+	})
+
+	if errorObj != nil {
+		logging.PrintLog("Cannot retrieve approval.triggered event with ID "+*approvalFinishedOptions.ID+": "+*errorObj.Message, logging.InfoLevel)
+		return "", nil, errors.New(*errorObj.Message)
+	}
+
+	if len(events) == 0 {
+		logging.PrintLog("No open approval.triggered event with the ID "+*approvalFinishedOptions.ID+" has been found", logging.InfoLevel)
+		return "", nil, nil
+	}
+
 	approvalTriggeredEvent := &keptnevents.ApprovalTriggeredEventData{}
 
-	err = mapstructure.Decode(eventToBeApproved.Data, approvalTriggeredEvent)
+	err = mapstructure.Decode(events[0].Data, approvalTriggeredEvent)
 	if err != nil {
-		logging.PrintLog("Could not parse approval.triggered event: "+err.Error(), logging.InfoLevel)
+		logging.PrintLog("Cannot decode approval.triggered event: "+err.Error(), logging.InfoLevel)
 		return "", nil, err
 	}
 
@@ -190,13 +206,13 @@ func getApprovalFinishedForService(eventHandler *apiutils.EventHandler, approval
 		Image:              approvalTriggeredEvent.Image,
 		Labels:             approvalTriggeredEvent.Labels,
 		Approval: keptnevents.ApprovalData{
-			TriggeredID: eventToBeApproved.ID,
+			TriggeredID: eventToBeApproved.EventID,
 			Result:      approvalResult,
 			Status:      "succeeded",
 		},
 	}
 
-	return eventToBeApproved.Shkeptncontext, approvalFinishedEvent, nil
+	return eventToBeApproved.KeptnContext, approvalFinishedEvent, nil
 }
 
 func approveOrDecline() bool {
@@ -238,7 +254,8 @@ func selectApprovalOption(nrOfOptions int) (int, error) {
 			logging.PrintLog(fmt.Sprintf("Invalid option. Please enter a value between 1 and %d", nrOfOptions), logging.InfoLevel)
 		}
 		in = strings.TrimSpace(in)
-		selectedOption, err := strconv.Atoi(in)
+		selectedOption, err = strconv.Atoi(in)
+
 		if err != nil || selectedOption < 1 || selectedOption > nrOfOptions {
 			logging.PrintLog(fmt.Sprintf("Invalid option. Please enter a value between 1 and %d", nrOfOptions), logging.InfoLevel)
 		} else {
@@ -248,7 +265,7 @@ func selectApprovalOption(nrOfOptions int) (int, error) {
 	return selectedOption, nil
 }
 
-func printApprovalOptions(events []*apimodels.KeptnContextExtendedCE, eventHandler *apiutils.EventHandler, approvalFinishedOptions sendApprovalFinishedStruct) {
+func printApprovalOptions(approvals []*apimodels.Approval, eventHandler *apiutils.EventHandler, approvalFinishedOptions sendApprovalFinishedStruct) {
 	// initialize tabwriter
 	w := new(tabwriter.Writer)
 
@@ -259,21 +276,26 @@ func printApprovalOptions(events []*apimodels.KeptnContextExtendedCE, eventHandl
 
 	fmt.Fprintf(w, "\n %s\t%s\t%s\t", "OPTION", "VERSION", "EVALUATION")
 
-	for index, event := range events {
-		score := getScoreForApprovalTriggeredEvent(eventHandler, approvalFinishedOptions, event)
+	for index, approval := range approvals {
+		score := getScoreForApprovalTriggeredEvent(eventHandler, approvalFinishedOptions, approval)
 
-		appendOptionToWriter(w, index, event, score)
+		appendOptionToWriter(w, index, approval, score)
 	}
+	fmt.Fprintf(w, "\n")
 }
 
-func getScoreForApprovalTriggeredEvent(eventHandler *apiutils.EventHandler, approvalFinishedOptions sendApprovalFinishedStruct, event *apimodels.KeptnContextExtendedCE) string {
+func appendOptionToWriter(w *tabwriter.Writer, index int, approval *apimodels.Approval, score string) {
+	fmt.Fprintf(w, "\n (%d)\t%s\t%s\t", index+1, approval.Tag, score)
+}
+
+func getScoreForApprovalTriggeredEvent(eventHandler *apiutils.EventHandler, approvalFinishedOptions sendApprovalFinishedStruct, approval *apimodels.Approval) string {
 	score := "n/a"
 	evaluationDoneEvents, errorObj := eventHandler.GetEvents(&apiutils.EventFilter{
 		Project:      *approvalFinishedOptions.Project,
 		Stage:        *approvalFinishedOptions.Stage,
 		Service:      *approvalFinishedOptions.Service,
 		EventType:    keptnevents.EvaluationDoneEventType,
-		KeptnContext: event.Shkeptncontext,
+		KeptnContext: approval.KeptnContext,
 	})
 	if errorObj != nil {
 		return score
@@ -292,17 +314,6 @@ func getScoreForApprovalTriggeredEvent(eventHandler *apiutils.EventHandler, appr
 		score = fmt.Sprintf("%f", evaluationDoneData.EvaluationDetails.Score)
 	}
 	return score
-}
-
-func appendOptionToWriter(w *tabwriter.Writer, index int, event *apimodels.KeptnContextExtendedCE, score string) {
-	approvalTriggeredEvent := &keptnevents.ApprovalTriggeredEventData{}
-	err := mapstructure.Decode(event.Data, approvalTriggeredEvent)
-	if err != nil {
-		logging.PrintLog("Cannot decode approval.triggered event: "+err.Error(), logging.InfoLevel)
-		return
-	}
-
-	fmt.Fprintf(w, "\n (%d)\t%s\t%s\t", index, approvalTriggeredEvent.Tag, score)
 }
 
 func getApprovalFinishedForID(eventHandler *apiutils.EventHandler, sendApprovalFinishedOptions sendApprovalFinishedStruct) (string, *keptnevents.ApprovalFinishedEventData, error) {

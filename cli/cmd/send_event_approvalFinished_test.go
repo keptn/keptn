@@ -38,7 +38,7 @@ const approvalTriggeredMockResponse = `{
 
 func Test_sendApprovalFinishedEvent(t *testing.T) {
 
-	mocking = true
+	mocking = false
 	ts := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Content-Type", "application/json")
@@ -61,12 +61,25 @@ func Test_sendApprovalFinishedEvent(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "send approval finished event",
+			name: "send approval finished event for ID",
 			args: args{
 				sendApprovalFinishedOptions: sendApprovalFinishedStruct{
 					Project: stringp("sockshop"),
 					Stage:   stringp("dev"),
+					Service: stringp(""),
 					ID:      stringp("test-event-id-1"),
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "send approval finished event for service",
+			args: args{
+				sendApprovalFinishedOptions: sendApprovalFinishedStruct{
+					Project: stringp("sockshop"),
+					Stage:   stringp("staging"),
+					Service: stringp("carts"),
+					ID:      stringp(""),
 				},
 			},
 			wantErr: false,
