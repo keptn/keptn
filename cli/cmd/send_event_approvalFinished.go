@@ -250,7 +250,6 @@ func selectApprovalOption(nrOfOptions int) (int, error) {
 	keepAsking := true
 	for keepAsking {
 		logging.PrintLog("Select the option to approve or decline: ", logging.InfoLevel)
-
 		reader := bufio.NewReader(os.Stdin)
 		in, err := reader.ReadString('\n')
 		if err != nil {

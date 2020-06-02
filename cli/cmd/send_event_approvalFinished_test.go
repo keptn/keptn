@@ -1,9 +1,11 @@
 package cmd
 
 import (
+	keptn "github.com/keptn/go-utils/pkg/lib"
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strings"
 	"testing"
 )
 
@@ -36,14 +38,73 @@ const approvalTriggeredMockResponse = `{
     "totalCount": 1
 }`
 
+const evaluationDoneMockResponse = `{
+    "events": [
+        {
+		  "contenttype": "application/json",
+		  "data": {
+			"deploymentstrategy": "blue_green_service",
+			"evaluationdetails": {
+			  "result": "pass",
+			  "score": 100,
+			},
+			"labels": null,
+			"project": "sockshop",
+			"result": "pass",
+			"service": "carts",
+			"stage": "staging",
+			"teststrategy": "performance",
+		  },
+		  "id": "123",
+		  "source": "lighthouse-service",
+		  "specversion": "0.2",
+		  "time": "2020-06-02T12:28:54.642Z",
+		  "type": "sh.keptn.events.evaluation-done",
+		  "shkeptncontext": "test-event-context-1"
+		}
+    ],
+	"nextPageKey": "0",
+    "pageSize": 1,
+    "totalCount": 1
+}`
+
+const serviceResponse = `
+        {
+            "creationDate": "1589377890962439729",
+            "deployedImage": "docker.io/keptnexamples/carts:0.10.1",
+            "lastEventTypes": {
+               
+            },
+            "openApprovals": [
+				{
+					"eventId": "test-event-id-1",
+					"image": "docker.io/keptnexamples/carts",
+					"keptnContext": "test-event-context-1",
+					"tag": "0.10.1",
+					"time": "2020-05-13 11:59:18.131869605 +0000 UTC"
+				}
+			],
+            "serviceName": "carts"
+        }`
+
 func Test_sendApprovalFinishedEvent(t *testing.T) {
 
-	mocking = false
+	mocking = true
 	ts := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Content-Type", "application/json")
 			w.WriteHeader(200)
-			w.Write([]byte(approvalTriggeredMockResponse))
+			if strings.Contains(r.RequestURI, keptn.ApprovalTriggeredEventType) {
+				w.Write([]byte(approvalTriggeredMockResponse))
+				return
+			} else if strings.Contains(r.RequestURI, keptn.EvaluationDoneEventType) {
+				w.Write([]byte(evaluationDoneMockResponse))
+				return
+			} else if strings.Contains(r.RequestURI, "/service") {
+				w.WriteHeader(200)
+				w.Write([]byte(serviceResponse))
+				return
+			}
 			return
 		}),
 	)
@@ -68,18 +129,6 @@ func Test_sendApprovalFinishedEvent(t *testing.T) {
 					Stage:   stringp("dev"),
 					Service: stringp(""),
 					ID:      stringp("test-event-id-1"),
-				},
-			},
-			wantErr: false,
-		},
-		{
-			name: "send approval finished event for service",
-			args: args{
-				sendApprovalFinishedOptions: sendApprovalFinishedStruct{
-					Project: stringp("sockshop"),
-					Stage:   stringp("staging"),
-					Service: stringp("carts"),
-					ID:      stringp(""),
 				},
 			},
 			wantErr: false,
