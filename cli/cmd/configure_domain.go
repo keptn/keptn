@@ -217,6 +217,18 @@ func getIngressType() (Ingress, error) {
 }
 
 func updateKeptnDomainConfigMap(path, domain string) error {
+	// retrieve the current domain from the keptn-domain ConfigMap and check if it includes a port
+	o := options{"get", "cm", "-n", "keptn", "keptn-domain", "-ojsonpath={.data.app_domain}"}
+	o.appendIfNotEmpty(kubectlOptions)
+	currentDomainConfig, err := keptnutils.ExecuteCommand("kubectl", o)
+	if err != nil {
+		return err
+	}
+
+	domainSplit := strings.Split(currentDomainConfig, ":")
+	if len(domainSplit) > 1 {
+		domain = domain + ":" + domainSplit[1]
+	}
 
 	keptnDomainConfigMap := path + "keptn-domain-configmap.yaml"
 
@@ -229,9 +241,9 @@ func updateKeptnDomainConfigMap(path, domain string) error {
 		return err
 	}
 
-	o := options{"delete", "-f", keptnDomainConfigMap}
+	o = options{"delete", "-f", keptnDomainConfigMap}
 	o.appendIfNotEmpty(kubectlOptions)
-	_, err := keptnutils.ExecuteCommand("kubectl", o)
+	_, err = keptnutils.ExecuteCommand("kubectl", o)
 	if err != nil {
 		return err
 	}
