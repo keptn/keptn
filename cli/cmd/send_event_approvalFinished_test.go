@@ -2,6 +2,8 @@ package cmd
 
 import (
 	keptn "github.com/keptn/go-utils/pkg/lib"
+	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -138,6 +140,105 @@ func Test_sendApprovalFinishedEvent(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if err := sendApprovalFinishedEvent(tt.args.sendApprovalFinishedOptions); (err != nil) != tt.wantErr {
 				t.Errorf("sendApprovalFinishedEvent() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func Test_selectApprovalOption(t *testing.T) {
+	type args struct {
+		nrOfOptions int
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    int
+		wantErr bool
+	}{
+		{
+			name: "Select 1",
+			args: args{
+				nrOfOptions: 2,
+			},
+			want:    1,
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			content := []byte("1\n")
+			tmpfile, err := ioutil.TempFile("", "test_select_option_tmp")
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			defer os.Remove(tmpfile.Name()) // clean up
+
+			if _, err := tmpfile.Write(content); err != nil {
+				log.Fatal(err)
+			}
+
+			if _, err := tmpfile.Seek(0, 0); err != nil {
+				log.Fatal(err)
+			}
+
+			oldStdin := os.Stdin
+			defer func() { os.Stdin = oldStdin }() // Restore original Stdin
+
+			os.Stdin = tmpfile
+			got, err := selectApprovalOption(tt.args.nrOfOptions)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("selectApprovalOption() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("selectApprovalOption() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_approveOrDecline(t *testing.T) {
+	tests := []struct {
+		name      string
+		want      bool
+		userInput string
+	}{
+		{
+			name:      "select approval",
+			want:      true,
+			userInput: "a",
+		},
+		{
+			name:      "select decline",
+			want:      false,
+			userInput: "d",
+		},
+	}
+	for _, tt := range tests {
+		content := []byte(tt.userInput + "\n")
+		tmpfile, err := ioutil.TempFile("", "test_select_option_tmp")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		defer os.Remove(tmpfile.Name()) // clean up
+
+		if _, err := tmpfile.Write(content); err != nil {
+			log.Fatal(err)
+		}
+
+		if _, err := tmpfile.Seek(0, 0); err != nil {
+			log.Fatal(err)
+		}
+
+		oldStdin := os.Stdin
+		defer func() { os.Stdin = oldStdin }() // Restore original Stdin
+
+		os.Stdin = tmpfile
+		t.Run(tt.name, func(t *testing.T) {
+			if got := approveOrDecline(); got != tt.want {
+				t.Errorf("approveOrDecline() = %v, want %v", got, tt.want)
 			}
 		})
 	}
