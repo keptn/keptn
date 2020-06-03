@@ -32,6 +32,17 @@ func (e *EvaluationDoneEventHandler) Handle(event cloudevents.Event, keptnHandle
 		return
 	}
 
+	nextStage := getNextStage(*shipyard, data.Stage)
+
+	for _, stage := range shipyard.Stages {
+		if stage.Name == nextStage {
+			if stage.DeploymentStrategy == "" {
+				e.logger.Info("No deployment strategy defined for next stage. exiting.")
+				return
+			}
+		}
+	}
+
 	image, err := e.getImage(data.Project, data.Stage, data.Service)
 	if err != nil {
 		e.logger.Error(err.Error())
