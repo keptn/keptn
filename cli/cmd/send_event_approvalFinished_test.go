@@ -166,23 +166,9 @@ func Test_selectApprovalOption(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			content := []byte("1\n")
-			tmpfile, err := ioutil.TempFile("", "test_select_option_tmp")
-			if err != nil {
-				log.Fatal(err)
-			}
+			tmpfile, oldStdin := createMockStdIn("1")
 
-			defer os.Remove(tmpfile.Name()) // clean up
-
-			if _, err := tmpfile.Write(content); err != nil {
-				log.Fatal(err)
-			}
-
-			if _, err := tmpfile.Seek(0, 0); err != nil {
-				log.Fatal(err)
-			}
-
-			oldStdin := os.Stdin
+			defer os.Remove(tmpfile.Name())        // clean up
 			defer func() { os.Stdin = oldStdin }() // Restore original Stdin
 
 			os.Stdin = tmpfile
@@ -216,23 +202,9 @@ func Test_approveOrDecline(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		content := []byte(tt.userInput + "\n")
-		tmpfile, err := ioutil.TempFile("", "test_select_option_tmp")
-		if err != nil {
-			log.Fatal(err)
-		}
+		tmpfile, oldStdin := createMockStdIn(tt.userInput)
 
-		defer os.Remove(tmpfile.Name()) // clean up
-
-		if _, err := tmpfile.Write(content); err != nil {
-			log.Fatal(err)
-		}
-
-		if _, err := tmpfile.Seek(0, 0); err != nil {
-			log.Fatal(err)
-		}
-
-		oldStdin := os.Stdin
+		defer os.Remove(tmpfile.Name())        // clean up
 		defer func() { os.Stdin = oldStdin }() // Restore original Stdin
 
 		os.Stdin = tmpfile
@@ -242,4 +214,23 @@ func Test_approveOrDecline(t *testing.T) {
 			}
 		})
 	}
+}
+
+func createMockStdIn(userInput string) (*os.File, *os.File) {
+	content := []byte(userInput + "\n")
+	tmpfile, err := ioutil.TempFile("", "test_select_option_tmp")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if _, err := tmpfile.Write(content); err != nil {
+		log.Fatal(err)
+	}
+
+	if _, err := tmpfile.Seek(0, 0); err != nil {
+		log.Fatal(err)
+	}
+
+	oldStdin := os.Stdin
+	return tmpfile, oldStdin
 }
