@@ -28,14 +28,17 @@ import (
 	"github.com/keptn/keptn/helm-service/controller/helm"
 )
 
+// ActionTriggeredHandler handles sh.keptn.events.action.triggered events for scaling
 type ActionTriggeredHandler struct {
 	logger           keptn.LoggerInterface
 	helmExecutor     helm.HelmExecutor
 	configServiceURL string
 }
 
+// ActionScaling is the identifier for the scaling action
 const ActionScaling = "scaling"
 
+// NewActionTriggeredHandler creates a new ActionTriggeredHandler
 func NewActionTriggeredHandler(logger keptn.LoggerInterface,
 	configServiceURL string) *ActionTriggeredHandler {
 	helmExecutor := helm.NewHelmV3Executor(logger)
@@ -43,7 +46,7 @@ func NewActionTriggeredHandler(logger keptn.LoggerInterface,
 		configServiceURL: configServiceURL}
 }
 
-// ChangeAndApplyConfiguration changes the configuration and applies it in the cluster
+// HandleEvent takes the sh.keptn.events.action.triggered event and performs the scaling action
 func (a *ActionTriggeredHandler) HandleEvent(ce cloudevents.Event, loggingDone chan bool) error {
 
 	defer func() { loggingDone <- true }()

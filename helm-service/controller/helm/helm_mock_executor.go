@@ -56,6 +56,7 @@ spec:
         imagePullPolicy: IfNotPresent        
 `
 
+// GeneratedCanaryDestinationRule is a DestinationRule manifest for tests
 const GeneratedCanaryDestinationRule = `---
 apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
@@ -66,6 +67,7 @@ spec:
   host: carts-canary.sockshop-NAMESPACE_PLACEHOLDER.svc.cluster.local
 `
 
+// GeneratedPrimaryDestinationRule is a DestinationRule manifest for tests
 const GeneratedPrimaryDestinationRule = `---
 apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
@@ -76,6 +78,7 @@ spec:
   host: carts-primary.sockshop-NAMESPACE_PLACEHOLDER.svc.cluster.local
 `
 
+// GeneratedCanaryService is a Service manifest for tests
 const GeneratedCanaryService = `---
 apiVersion: v1
 kind: Service
@@ -95,6 +98,7 @@ status:
   loadBalancer: {}
 `
 
+// GeneratedPrimaryService is a Service manifest for tests
 const GeneratedPrimaryService = `---
 apiVersion: v1
 kind: Service
@@ -114,6 +118,7 @@ status:
   loadBalancer: {}
 `
 
+// GeneratedVirtualService is a VirtualService manifest for tests
 const GeneratedVirtualService = `---
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
@@ -136,6 +141,7 @@ spec:
       weight: 100
 `
 
+// GeneratedPrimaryDeployment is a Deployment manifest for tests
 const GeneratedPrimaryDeployment = `---
 apiVersion: apps/v1
 kind: Deployment
@@ -165,7 +171,7 @@ spec:
 status: {}    
 `
 
-// GetManifest returns the manifest for the provided release
+// GetManifest returns test/sample manifests
 func (h *HelmMockExecutor) GetManifest(releaseName, namespace string) (string, error) {
 
 	if strings.HasSuffix(releaseName, "-generated") {
@@ -176,7 +182,7 @@ func (h *HelmMockExecutor) GetManifest(releaseName, namespace string) (string, e
 	return userDeployment + userService, nil
 }
 
-// UpgradeChart upgrades the provided chart and waits for all deployments
+// UpgradeChart does not execute any action
 func (h *HelmMockExecutor) UpgradeChart(ch *chart.Chart, releaseName, namespace string, vals map[string]interface{}) error {
 	return nil
 }
