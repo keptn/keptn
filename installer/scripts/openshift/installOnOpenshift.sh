@@ -31,7 +31,6 @@ elif [ "$INGRESS" = "nginx" ]; then
     oc delete route api -n keptn
 
     oc create route edge api --service=api-gateway-nginx --port=http --insecure-policy='None' -n keptn --hostname="api.keptn.$BASE_URL"
-    oc create route edge api2 --service=api-gateway-nginx --port=http --insecure-policy='None' -n keptn --hostname="api.keptn"
 fi
 
 # Add config map in keptn namespace that contains the domain - this will be used by other services as well

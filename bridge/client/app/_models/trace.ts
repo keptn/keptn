@@ -27,7 +27,7 @@ let icons = {
   "sh.keptn.event.problem.close": "applicationhealth"
 };
 
-export class Trace {
+class Trace {
   id: string;
   shkeptncontext: string;
   source: string;
@@ -174,3 +174,5 @@ export class Trace {
     return Object.assign(new this, data, { plainEvent: JSON.parse(JSON.stringify(data)) });
   }
 }
+
+export {Trace, labels}

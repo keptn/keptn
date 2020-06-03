@@ -1,4 +1,4 @@
-<p class="m-0 mt-1"><span [textContent]="evaluationData.data.evaluationdetails.timeStart | amDateFormat:'L LT'"></span> - <span [textContent]="evaluationData.data.evaluationdetails.timeEnd | amDateFormat:'L LT'"></span> (<span [textContent]="getDuration(evaluationData.data.evaluationdetails.timeStart, evaluationData.data.evaluationdetails.timeEnd)"></span>)</p>
+<p class="m-0 mt-1"><span [textContent]="evaluationData.data.evaluationdetails.timeStart | amDateFormat:'YYYY-MM-DD HH:mm'"></span> - <span [textContent]="evaluationData.data.evaluationdetails.timeEnd | amDateFormat:'YYYY-MM-DD HH:mm'"></span> (<span [textContent]="getDuration(evaluationData.data.evaluationdetails.timeStart, evaluationData.data.evaluationdetails.timeEnd)"></span>)</p>
 <div class="mb-1" *ngIf="evaluationData.data.evaluationdetails.sloFileContent">
   <p class="m-0 mb-1">
     <a class="dt-link" (click)="$event.stopPropagation();sloFile.toggle();">
@@ -24,7 +24,7 @@
     </div>
   </div>
 </div>
-<div (click)="$event.stopPropagation();">
+<div (click)="$event.stopPropagation();" class="m-1 mr-2">
   <dt-chart *ngIf="_comparisonView == 'heatmap'"
     [options]="_heatmapOptions"
     [series]="_heatmapSeries"

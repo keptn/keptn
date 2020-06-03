@@ -59,6 +59,7 @@ import {DtKeyValueListModule} from "@dynatrace/barista-components/key-value-list
 import {DtButtonGroupModule} from "@dynatrace/barista-components/button-group";
 import {DtChartModule} from "@dynatrace/barista-components/chart";
 import {DtOverlayModule} from "@dynatrace/barista-components/overlay";
+import {DtCheckboxModule} from "@dynatrace/barista-components/checkbox";
 
 import {registerLocaleData} from "@angular/common";
 import localeEn from '@angular/common/locales/en';
@@ -122,6 +123,7 @@ registerLocaleData(localeEn, 'en');
     DtKeyValueListModule,
     DtChartModule,
     DtOverlayModule,
+    DtCheckboxModule,
     MatDialogModule,
     DtIconModule.forRoot({
       svgIconLocation: `/assets/icons/{{name}}.svg`,
