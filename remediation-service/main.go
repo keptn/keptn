@@ -2,23 +2,28 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
+	"net/url"
 	"os"
 	"strings"
+	"time"
 
-	"github.com/keptn/keptn/remediation-service/actions"
+	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
+
+	"github.com/google/uuid"
 	"gopkg.in/yaml.v2"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
 	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
 	"github.com/kelseyhightower/envconfig"
+	keptn "github.com/keptn/go-utils/pkg/lib"
 
 	configmodels "github.com/keptn/go-utils/pkg/api/models"
 	configutils "github.com/keptn/go-utils/pkg/api/utils"
-	"github.com/keptn/go-utils/pkg/lib"
 
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 )
@@ -150,39 +155,79 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		return err
 	}
 
-	actionExecutors := []actions.ActionExecutor{actions.NewScaler(), actions.NewSlower(), actions.NewAborter(), actions.NewFeatureToggler()}
-
 	for _, remediation := range remediationData.Remediations {
 		logger.Debug("Trying to map remediation '" + remediation.Name + "' to problem '" + problemEvent.ProblemTitle + "'")
 		if strings.HasPrefix(problemEvent.ProblemTitle, remediation.Name) {
 			logger.Debug("Remediation for problem found")
 			// currently only one remediation action is supported
-			for _, a := range actionExecutors {
-				if a.GetAction() == remediation.Actions[0].Action {
-					if strings.ToLower(problemEvent.State) == "open" {
-						if err := a.ExecuteAction(problemEvent, keptnHandler, remediation.Actions[0]); err != nil {
-							logger.Error(err.Error())
-							return err
-						}
-						logger.Info(fmt.Sprintf("Remediation action %s successfully applied",
-							remediation.Actions[0].Action))
-						return nil
-					} else if strings.ToLower(problemEvent.State) == "resolved" ||
-						strings.ToLower(problemEvent.State) == "closed" {
-						if err := a.ResolveAction(problemEvent, keptnHandler, remediation.Actions[0]); err != nil {
-							logger.Error(err.Error())
-							return err
-						}
-						logger.Info(fmt.Sprintf("Remediation action %s resolved",
-							remediation.Actions[0].Action))
-						return nil
-					}
-				}
+			actionTriggeredEventData, err := getActionTriggeredEventData(problemEvent, remediation.Actions[0], logger)
+			if err != nil {
+				logger.Error(err.Error())
+				return err
 			}
+			if err := sendActionTriggeredEvent(event, actionTriggeredEventData, logger); err != nil {
+				logger.Error(err.Error())
+				return err
+			}
+			return nil
 		}
 	}
 
-	logger.Info("No remediation action found")
+	return nil
+}
+
+func getActionTriggeredEventData(problemEvent *keptn.ProblemEventData, action *keptn.RemediationAction,
+	logger *keptn.Logger) (keptn.ActionTriggeredEventData, error) {
+	problemDetails := keptn.ProblemDetails{}
+	if err := json.Unmarshal(problemEvent.ProblemDetails, &problemDetails); err != nil {
+		logger.Error("Could not unmarshal ProblemDetails: " + err.Error())
+		return keptn.ActionTriggeredEventData{}, err
+	}
+
+	return keptn.ActionTriggeredEventData{
+		Project: problemEvent.Project,
+		Service: problemEvent.Service,
+		Stage:   problemEvent.Stage,
+		Action: keptn.ActionInfo{
+			Name:        action.Action, // TODO: Name is missing
+			Action:      action.Action,
+			Description: "", // TODO: Description is missing
+			Value:       action.Value,
+		},
+		Problem: problemDetails,
+		Labels:  nil,
+	}, nil
+}
+
+func sendActionTriggeredEvent(ce cloudevents.Event, actionTriggeredEventData keptn.ActionTriggeredEventData, logger *keptn.Logger) error {
+	keptnHandler, err := keptn.NewKeptn(&ce, keptn.KeptnOpts{
+		EventBrokerURL: os.Getenv("EVENTBROKER"),
+	})
+	if err != nil {
+		logger.Error("Could not initialize Keptn handler: " + err.Error())
+		return err
+	}
+
+	source, _ := url.Parse("remediation-service")
+	contentType := "application/json"
+
+	event := cloudevents.Event{
+		Context: cloudevents.EventContextV02{
+			ID:          uuid.New().String(),
+			Time:        &types.Timestamp{Time: time.Now()},
+			Type:        keptn.ActionTriggeredEventType,
+			Source:      types.URLRef{URL: *source},
+			ContentType: &contentType,
+			Extensions:  map[string]interface{}{"shkeptncontext": keptnHandler.KeptnContext},
+		}.AsV02(),
+		Data: actionTriggeredEventData,
+	}
+
+	err = keptnHandler.SendCloudEvent(event)
+	if err != nil {
+		logger.Error("Could not send action.finished event: " + err.Error())
+		return err
+	}
 	return nil
 }
 
