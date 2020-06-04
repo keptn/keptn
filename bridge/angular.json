@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "keptn-bridge-prototype": {
+    "bridge": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -78,18 +78,18 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "keptn-bridge-prototype:build"
+            "browserTarget": "bridge:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "keptn-bridge-prototype:build:production"
+              "browserTarget": "bridge:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "keptn-bridge-prototype:build"
+            "browserTarget": "bridge:build"
           }
         },
         "test": {
@@ -127,16 +127,16 @@
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
             "protractorConfig": "e2e/protractor.conf.js",
-            "devServerTarget": "keptn-bridge-prototype:serve"
+            "devServerTarget": "bridge:serve"
           },
           "configurations": {
             "production": {
-              "devServerTarget": "keptn-bridge-prototype:serve:production"
+              "devServerTarget": "bridge:serve:production"
             }
           }
         }
       }
     }
   },
-  "defaultProject": "keptn-bridge-prototype"
+  "defaultProject": "bridge"
 }
