@@ -1,3 +1,4 @@
+@import '~@dynatrace/barista-components/style/main';
 @import "../../variables";
 
 .project-board {
@@ -7,6 +8,26 @@
 
 .stage-overview {
 
+}
+
+.stage-state {
+  border-top: 1px solid $gray-300;
+  border-bottom: 1px solid $gray-300;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
+}
+.icon2 {
+  width: 25px;
+  height: 25px;
+}
+.out-of-sync-service {
+  color: $blue-400;
+  fill: $blue-400;
 }
 
 ::ng-deep .dt-menu,

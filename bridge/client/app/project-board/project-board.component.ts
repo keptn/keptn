@@ -171,24 +171,6 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
     return DateUtil.getCalendarFormats(true);
   }
 
-  getLatestDeployment(project: Project, service: Service, stage?: Stage): Trace {
-    let currentService = project.getServices()
-      .find(s => s.serviceName == service.serviceName);
-
-    if(currentService.roots)
-      return currentService.roots
-        .reduce((traces: Trace[], root: Root) => {
-          return [...traces, ...root.traces];
-        }, [])
-        .find(trace => trace.type == 'sh.keptn.events.deployment-finished' && (!stage || (trace.data.stage == stage.stageName && currentService.roots.find(r => r.shkeptncontext == trace.shkeptncontext).isFaulty() != stage.stageName)));
-    else
-      return null;
-  }
-
-  getDeployedServices(project: Project, stage: Stage) {
-    return stage.services.filter(service => !!this.getLatestDeployment(project, service, stage));
-  }
-
   getRootsLastUpdated(project: Project, service: Service): Date {
     return this.dataService.getRootsLastUpdated(project, service);
   }

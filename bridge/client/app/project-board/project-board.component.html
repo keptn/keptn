@@ -50,11 +50,24 @@
                                    fxFlex="0 1 calc(33.3% - 15px)" fxFlex.lt-md="0 1 calc(50% - 15px)" fxFlex.lt-sm="100%"
                                    (click)="selectStage(stage)" [selected]="selectedStage == stage">
                 <h2 class="m-0 mt-1 mb-1" [textContent]="stage.stageName"></h2>
-                <hr/>
+                <div class="stage-state" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
+                  <!--div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
+                    <dt-icon class="icon2" name="criticalevent"></dt-icon>
+                    <span>0</span>
+                  </div-->
+                  <!--div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
+                    <dt-icon class="icon2" name="traffic-light"></dt-icon>
+                    <span>0</span>
+                  </div-->
+                  <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
+                    <dt-icon class="icon2" name="deploy" [ngClass]="{'out-of-sync-service': project.getServicesOutOfSync(stage).length > 0}"></dt-icon>
+                    <span [textContent]="project.getServicesOutOfSync(stage).length"></span>
+                  </div>
+                </div>
                 <ng-container *ngIf="stage.services">
                   <dt-tag-list aria-label="services">
-                    <dt-tag *ngFor="let service of getDeployedServices(project, stage)">
-                      <span *ngIf="getLatestDeployment(project, service, stage) as deployment" (click)="selectDeployment(deployment, project)" [textContent]="deployment.getShortImageName()"></span>
+                    <dt-tag *ngFor="let service of project.getDeployedServices(stage)">
+                      <span *ngIf="project.getLatestDeployment(service, stage) as deployment" [ngClass]="{'out-of-sync-service': project.getDeploymentsFromPrevStage(deployment).length > 0}" (click)="selectDeployment(deployment, project)" [textContent]="deployment.getShortImageName()"></span>
                     </dt-tag>
                   </dt-tag-list>
                 </ng-container>
@@ -66,13 +79,14 @@
     </div>
     <div class="container dark" fxFlex="34" fxLayout="column" fxLayoutGap="15px" *ngIf="selectedStage">
       <h2 [textContent]="selectedStage.stageName"></h2>
-      <ng-container *ngFor="let service of getDeployedServices(project, selectedStage)">
-        <ktb-expandable-tile *ngIf="getLatestDeployment(project, service, selectedStage) as deployment">
+      <ng-container *ngFor="let service of project.getDeployedServices(selectedStage)">
+        <ktb-expandable-tile *ngIf="project.getLatestDeployment(service, selectedStage) as deployment">
           <ktb-expandable-tile-header>
             <dt-info-group>
               <dt-info-group-title>
                 <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
                   <h2 class="m-0" [textContent]="deployment.getService()"></h2>
+                  <dt-icon class="icon2 out-of-sync-service" *ngIf="project.getDeploymentsFromPrevStage(deployment).length > 0" name="deploy"></dt-icon>
                   <a *ngIf="deployment.data.deploymentURIPublic" [href]="deployment.data.deploymentURIPublic" target="_blank"><button dt-icon-button variant="nested"><dt-icon name="externallink"></dt-icon></button></a>
                 </div>
               </dt-info-group-title>
@@ -80,6 +94,15 @@
               <p class="m-0 mb-1"><span class="bold">Deployed at: </span><span [textContent]="deployment.time | amCalendar:getCalendarFormats()"></span></p>
             </dt-info-group>
           </ktb-expandable-tile-header>
+          <div *ngIf="project.getDeploymentsFromPrevStage(deployment) as outOfSyncDeployments; else noOutOfSyncDeployments">
+            <div *ngIf="outOfSyncDeployments.length > 0; else noOutOfSyncDeployments">
+              <p class="m-0">Deployable artifacts for <span [textContent]="service.serviceName"></span> service</p>
+              <div *ngFor="let outOfSyncDeployment of outOfSyncDeployments">
+                <h4 class="m-0 mt-1"><span [textContent]="outOfSyncDeployment.getShortImageName()"></span> (<span [textContent]="project.getDeploymentEvaluation(outOfSyncDeployment).data.result"></span>)</h4>
+              </div>
+            </div>
+          </div>
+          <ng-template #noOutOfSyncDeployments>No pending deployments for this stage available.</ng-template>
         </ktb-expandable-tile>
       </ng-container>
     </div>
@@ -114,7 +137,7 @@
                   </div>
                 </div>
               </dt-info-group-title>
-              <p class="m-0 mb-1 mt-1" *ngIf="getLatestDeployment(project, service) as deployment">
+              <p class="m-0 mb-1 mt-1" *ngIf="project.getLatestDeployment(service) as deployment">
                 <span class="bold">Last relevant artifact: </span><span [textContent]="deployment.getShortImageName()"></span>
               </p>
               <button dt-button disabled variant="nested" *ngIf="!service.roots">
