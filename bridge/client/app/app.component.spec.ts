@@ -1,5 +1,4 @@
-import { TestBed, async } from '@angular/core/testing';
-import { RouterTestingModule } from '@angular/router/testing';
+import {TestBed, async, ComponentFixture, tick, fakeAsync} from '@angular/core/testing';
 import { AppComponent } from './app.component';
 import {AppHeaderComponent} from "./app-header/app-header.component";
 import {KtbHttpLoadingBarComponent} from "./_components/ktb-http-loading-bar/ktb-http-loading-bar.component";
@@ -25,10 +24,11 @@ import {AtobPipe} from "./_pipes/atob.pipe";
 import {KtbEventItemComponent, KtbEventItemDetail} from "./_components/ktb-event-item/ktb-event-item.component";
 import {KtbEvaluationDetailsComponent} from "./_components/ktb-evaluation-details/ktb-evaluation-details.component";
 import {KtbSliBreakdownComponent} from "./_components/ktb-sli-breakdown/ktb-sli-breakdown.component";
-import {BrowserModule} from "@angular/platform-browser";
+import {BrowserModule, By} from "@angular/platform-browser";
 import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
-import {AppRouting} from "./app.routing";
+import {Location} from '@angular/common';
+import {AppRouting, routes} from "./app.routing";
 import {FlexLayoutModule} from "@angular/flex-layout";
 import {MomentModule} from "ngx-moment";
 import {DtThemingModule} from "@dynatrace/barista-components/theming";
@@ -55,8 +55,17 @@ import {DtConsumptionModule} from "@dynatrace/barista-components/consumption";
 import {DtKeyValueListModule} from "@dynatrace/barista-components/key-value-list";
 import {DtChartModule} from "@dynatrace/barista-components/chart";
 import {DtIconModule} from "@dynatrace/barista-components/icon";
+import {DataService} from "./_services/data.service";
+import {MockDataService} from "./_services/mock-data.service";
+import {Router} from "@angular/router";
+import {RouterTestingModule} from "@angular/router/testing";
 
 describe('AppComponent', () => {
+  let router: Router;
+  let location: Location;
+  let comp: AppComponent;
+  let fixture: ComponentFixture<AppComponent>;
+
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [
@@ -116,27 +125,35 @@ describe('AppComponent', () => {
         DtIconModule.forRoot({
           svgIconLocation: `/assets/icons/{{name}}.svg`,
         }),
-        BrowserAnimationsModule
+        RouterTestingModule.withRoutes(routes)
       ],
-    }).compileComponents();
+      providers: [
+        {provide: DataService, useClass: MockDataService}
+      ]
+    }).compileComponents().then(() => {
+      router = TestBed.get(Router);
+      location = TestBed.get(Location);
+      fixture = TestBed.createComponent(AppComponent);
+      comp = fixture.componentInstance;
+
+      router.initialNavigation();
+    });
   }));
 
   it('should create the app', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.debugElement.componentInstance;
-    expect(app).toBeTruthy();
+    expect(comp).toBeTruthy();
   });
 
-  it(`should have as title 'keptn-bridge-prototype'`, () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.debugElement.componentInstance;
-    expect(app.title).toEqual(undefined); // app.title is undefined
-  });
-
-  it('should render title', () => {
-    const fixture = TestBed.createComponent(AppComponent);
+  it('should render title', async(() => {
     fixture.detectChanges();
     const compiled = fixture.debugElement.nativeElement;
     expect(compiled.querySelector('.brand p').textContent).toContain('keptn');
-  });
+  }));
+
+  it('should render project "sockshop"', async(() => {
+    fixture.detectChanges();
+    const projectTileTitle = fixture.debugElement.query(By.css('#sockshop .dt-tile-title'));
+    expect(projectTileTitle.nativeElement.textContent).toContain('sockshop');
+  }));
+
 });

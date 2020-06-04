@@ -27,9 +27,9 @@ export class KtbSliBreakdownComponent implements OnInit {
   };
 
   public _indicatorResults: any;
-  public _indicatorResultsFail: any;
-  public _indicatorResultsWarning: any;
-  public _indicatorResultsPass: any;
+  public _indicatorResultsFail: any = [];
+  public _indicatorResultsWarning: any = [];
+  public _indicatorResultsPass: any = [];
 
   @Input()
   get indicatorResults(): any {

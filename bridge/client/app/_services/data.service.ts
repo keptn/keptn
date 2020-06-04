@@ -75,6 +75,7 @@ export class DataService {
         ),
         map(projects => projects.map(project => Project.fromJSON(project)))
       ).subscribe((projects: Project[]) => {
+      console.log("loadProjects.projects", JSON.stringify(projects));
         this._projects.next([...this._projects.getValue() ? this._projects.getValue() : [], ...projects]);
       }, (err) => {
         this._projects.error(err);
@@ -116,6 +117,7 @@ export class DataService {
         map(roots => roots.map(root => Root.fromJSON(root)))
       )
       .subscribe((roots: Root[]) => {
+        console.log("loadRoots.roots", JSON.stringify(roots));
         service.roots = [...roots||[], ...service.roots||[]].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
         this._roots.next(service.roots);
       });
@@ -134,6 +136,7 @@ export class DataService {
         map(traces => traces.map(trace => Trace.fromJSON(trace)))
       )
       .subscribe((traces: Trace[]) => {
+        console.log("loadTraces.traces", JSON.stringify(traces));
         root.traces = [...traces||[], ...root.traces||[]].sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
       });
   }
@@ -146,6 +149,7 @@ export class DataService {
     this.apiService.getEvaluationResults(event.data.project, event.data.service, event.data.stage, event.source, fromTime ? fromTime.toISOString() : null)
       .pipe(map(traces => traces.map(trace => Trace.fromJSON(trace))))
       .subscribe((traces: Trace[]) => {
+        console.log("loadEvaluationResults.traces", JSON.stringify(traces));
         event.data.evaluationHistory = [...traces||[], ...event.data.evaluationHistory||[]].sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
         this._evaluationResults.next(event);
       });

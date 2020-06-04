@@ -120,7 +120,7 @@ describe('DataService', () => {
     ],
   }));
 
-  it('should be created', () => {
+  it('should create an instance', () => {
     const service: DataService = TestBed.get(DataService);
     expect(service).toBeTruthy();
   });
