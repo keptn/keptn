@@ -16,4 +16,5 @@ If you are not sure how to do this and if your organization should be listed her
 | eResearchTechnology   | https://www.dynatrace.com/news/blog/making-ops-life-easier-automating-sla-monitoring-for-deployed-services-on-kubernetes/ |
 | Neotys                | https://www.neotys.com/neotys-keptn-webinar                                     |
 | Citrix   | https://github.com/keptn-contrib/slackbot-service |
+| amasol AG   | https://www.amasol.de/blog/2020/05/19/autonomous-cloud-journey-at-amasol-with-keptn |
 

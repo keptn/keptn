@@ -18,9 +18,3 @@ spec:
           - backend:
               serviceName: api-gateway-nginx
               servicePort: 80
-    - host: api.keptn
-      http:
-        paths:
-          - backend:
-              serviceName: api-gateway-nginx
-              servicePort: 80

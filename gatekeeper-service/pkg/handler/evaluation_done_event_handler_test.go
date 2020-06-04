@@ -54,6 +54,13 @@ var evaluationDoneTests = []struct {
 			getConfigurationChangeTestEventForCanaryAction(keptnevents.Discard),
 		},
 	},
+	{
+		name:        "pass-no-deployment-strategy",
+		image:       "docker.io/keptnexamples/carts:0.11.1",
+		shipyard:    getShipyardWithoutDeploymentStrategy(keptnevents.Automatic, keptnevents.Automatic),
+		inputEvent:  getEvaluationDoneTestData(true),
+		outputEvent: nil,
+	},
 }
 
 func TestHandleEvaluationDoneEvent(t *testing.T) {

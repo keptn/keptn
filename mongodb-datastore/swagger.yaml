@@ -5,7 +5,7 @@ info:
   version: 0.1.0
 schemes:
   - http
-basePath: "/"
+basePath: /
 consumes:
   - application/cloudevents+json
   - application/json
@@ -72,6 +72,11 @@ paths:
           type: string
           required: false
           description: Name of the service
+        - name: eventID
+          in: query
+          type: string
+          required: false
+          description: EventID
         - name: source
           in: query
           type: string

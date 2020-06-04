@@ -96,6 +96,45 @@ func getShipyardWithApproval(approvalStrategyForPass keptnevents.ApprovalStrateg
 	}
 }
 
+func getShipyardWithoutDeploymentStrategy(approvalStrategyForPass keptnevents.ApprovalStrategy,
+	approvalStrategyForWarning keptnevents.ApprovalStrategy) keptnevents.Shipyard {
+
+	return keptnevents.Shipyard{
+		Stages: []struct {
+			Name                string                              `json:"name" yaml:"name"`
+			DeploymentStrategy  string                              `json:"deployment_strategy" yaml:"deployment_strategy"`
+			TestStrategy        string                              `json:"test_strategy,omitempty" yaml:"test_strategy"`
+			RemediationStrategy string                              `json:"remediation_strategy,omitempty" yaml:"remediation_strategy"`
+			ApprovalStrategy    *keptnevents.ApprovalStrategyStruct `json:"approval_strategy,omitempty" yaml:"approval_strategy"`
+		}{
+			{
+				Name:                "dev",
+				DeploymentStrategy:  "direct",
+				TestStrategy:        "functional",
+				RemediationStrategy: "",
+				ApprovalStrategy:    nil,
+			},
+			{
+				Name:                "hardening",
+				DeploymentStrategy:  "blue_green_service",
+				TestStrategy:        "performance",
+				RemediationStrategy: "",
+				ApprovalStrategy: &keptnevents.ApprovalStrategyStruct{
+					Pass:    approvalStrategyForPass,
+					Warning: approvalStrategyForWarning,
+				},
+			},
+			{
+				Name:                "production",
+				DeploymentStrategy:  "",
+				TestStrategy:        "",
+				RemediationStrategy: "",
+				ApprovalStrategy:    nil,
+			},
+		},
+	}
+}
+
 func getApprovalTriggeredTestData(evaluationResult string) keptnevents.ApprovalTriggeredEventData {
 
 	return keptnevents.ApprovalTriggeredEventData{

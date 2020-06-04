@@ -5,7 +5,7 @@
       <dt-key-value-list-key>
         <p class="m-0 fail" [textContent]="result.value.metric"></p>
       </dt-key-value-list-key>
-      <dt-key-value-list-value *ngIf="result.value.success">
+      <dt-key-value-list-value *ngIf="result.value.success && !result.value.message">
         <span [dtOverlay]="overlay" style="cursor: pointer;" [dtOverlayConfig]="overlayConfig">
             <span [textContent]="formatNumber(result.value.value)"></span>
             <span class="small m-0 ml-1" *ngFor="let _target of result.targets" [textContent]="_target.criteria" [class.error]="_target.violated" [class.error-line]="_target.violated"></span>
@@ -14,7 +14,7 @@
           <span class="small" [textContent]="result.value.value"></span>
         </ng-template>
       </dt-key-value-list-value>
-      <dt-key-value-list-value *ngIf="!result.value.success">
+      <dt-key-value-list-value *ngIf="!(result.value.success && !result.value.message)">
         <span [dtOverlay]="overlay" style="cursor: pointer;" [dtOverlayConfig]="overlayConfig">
           <dt-icon class="event-icon error" [name]="'criticalevent'"></dt-icon>
         </span>
@@ -29,7 +29,7 @@
       <dt-key-value-list-key>
         <p class="m-0 warning" [textContent]="result.value.metric"></p>
       </dt-key-value-list-key>
-      <dt-key-value-list-value *ngIf="result.value.success">
+      <dt-key-value-list-value *ngIf="result.value.success && !result.value.message">
         <span [dtOverlay]="overlay" style="cursor: pointer;" [dtOverlayConfig]="overlayConfig">
             <span [textContent]="formatNumber(result.value.value)"></span>
             <span class="small m-0 ml-1" *ngFor="let _target of result.targets" [textContent]="_target.criteria" [class.error]="_target.violated" [class.error-line]="_target.violated"></span>
@@ -38,9 +38,9 @@
           <span class="small" [textContent]="result.value.value"></span>
         </ng-template>
       </dt-key-value-list-value>
-      <dt-key-value-list-value *ngIf="!result.value.success">
+      <dt-key-value-list-value *ngIf="!(result.value.success && !result.value.message)">
         <span [dtOverlay]="overlay" style="cursor: pointer;" [dtOverlayConfig]="overlayConfig">
-          <dt-icon class="event-icon error" [name]="'criticalevent'"></dt-icon>
+          <dt-icon class="event-icon warning" [name]="'criticalevent'"></dt-icon>
         </span>
         <ng-template #overlay>
           <span class="small" [textContent]="result.value.message"></span>
@@ -51,13 +51,21 @@
   <ng-container *ngFor="let result of _indicatorResultsPass; index as i">
     <dt-key-value-list-item *ngIf="i < (3 - _indicatorResultsFail.length - _indicatorResultsWarning.length)">
       <dt-key-value-list-key [textContent]="result.value.metric"></dt-key-value-list-key>
-      <dt-key-value-list-value>
+      <dt-key-value-list-value *ngIf="result.value.success && !result.value.message">
         <span [dtOverlay]="overlay" style="cursor: pointer;" [dtOverlayConfig]="overlayConfig">
             <span [textContent]="formatNumber(result.value.value)"></span>
             <span class="small m-0 ml-1" *ngFor="let _target of result.targets" [textContent]="_target.criteria" [class.error]="_target.violated" [class.error-line]="_target.violated"></span>
         </span>
         <ng-template #overlay>
           <span class="small" [textContent]="result.value.value"></span>
+        </ng-template>
+      </dt-key-value-list-value>
+      <dt-key-value-list-value *ngIf="!(result.value.success && !result.value.message)">
+        <span [dtOverlay]="overlay" style="cursor: pointer;" [dtOverlayConfig]="overlayConfig">
+          <dt-icon class="event-icon" [name]="'criticalevent'"></dt-icon>
+        </span>
+        <ng-template #overlay>
+          <span class="small" [textContent]="result.value.message"></span>
         </ng-template>
       </dt-key-value-list-value>
     </dt-key-value-list-item>
@@ -68,13 +76,21 @@
     <ng-container *ngFor="let result of _indicatorResultsPass; index as i">
       <dt-key-value-list-item *ngIf="i >= (3 - _indicatorResultsFail.length - _indicatorResultsWarning.length)">
         <dt-key-value-list-key [textContent]="result.value.metric"></dt-key-value-list-key>
-        <dt-key-value-list-value>
-        <span [dtOverlay]="overlay" style="cursor: pointer;" [dtOverlayConfig]="overlayConfig">
-            <span [textContent]="formatNumber(result.value.value)"></span>
-            <span class="small m-0 ml-1" *ngFor="let _target of result.targets" [textContent]="_target.criteria" [class.error]="_target.violated" [class.error-line]="_target.violated"></span>
-        </span>
+        <dt-key-value-list-value *ngIf="result.value.success && !result.value.message">
+          <span [dtOverlay]="overlay" style="cursor: pointer;" [dtOverlayConfig]="overlayConfig">
+              <span [textContent]="formatNumber(result.value.value)"></span>
+              <span class="small m-0 ml-1" *ngFor="let _target of result.targets" [textContent]="_target.criteria" [class.error]="_target.violated" [class.error-line]="_target.violated"></span>
+          </span>
           <ng-template #overlay>
             <span class="small" [textContent]="result.value.value"></span>
+          </ng-template>
+        </dt-key-value-list-value>
+        <dt-key-value-list-value *ngIf="!(result.value.success && !result.value.message)">
+        <span [dtOverlay]="overlay" style="cursor: pointer;" [dtOverlayConfig]="overlayConfig">
+          <dt-icon class="event-icon" [name]="'criticalevent'"></dt-icon>
+        </span>
+          <ng-template #overlay>
+            <span class="small" [textContent]="result.value.message"></span>
           </ng-template>
         </dt-key-value-list-value>
       </dt-key-value-list-item>
@@ -82,7 +98,7 @@
   </dt-key-value-list>
 </dt-expandable-panel>
 <p class="m-0 mt-1 mb-1">
-  <a class="dt-link" (click)="$event.stopPropagation();indicatorResultsPanel.toggle();">
+  <a class="dt-link" (click)="$event.stopPropagation();indicatorResultsPanel.toggle();" *ngIf="indicatorResults.length > 3">
     <span *ngIf="!indicatorResultsPanel.expanded">Show all <span [textContent]="indicatorResults.length"></span> evaluation results</span>
     <span *ngIf="indicatorResultsPanel.expanded">Collapse evaluation results</span>
   </a>

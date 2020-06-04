@@ -123,7 +123,7 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: helm-service-configuration-change-distributor
+  name: helm-service-distributor
   namespace: keptn
 spec:
   selector:
@@ -151,7 +151,7 @@ spec:
         - name: PUBSUB_URL
           value: 'nats://keptn-nats-cluster'
         - name: PUBSUB_TOPIC
-          value: 'sh.keptn.event.configuration.change'
+          value: 'sh.keptn.event.configuration.change,sh.keptn.event.action.triggered'
         - name: PUBSUB_RECIPIENT
           value: 'helm-service'
 ---

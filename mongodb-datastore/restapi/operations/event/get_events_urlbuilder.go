@@ -15,6 +15,7 @@ import (
 
 // GetEventsURL generates an URL for the get events operation
 type GetEventsURL struct {
+	EventID      *string
 	FromTime     *string
 	KeptnContext *string
 	NextPageKey  *string
@@ -59,6 +60,14 @@ func (o *GetEventsURL) Build() (*url.URL, error) {
 	_result.Path = golangswaggerpaths.Join(_basePath, _path)
 
 	qs := make(url.Values)
+
+	var eventIDQ string
+	if o.EventID != nil {
+		eventIDQ = *o.EventID
+	}
+	if eventIDQ != "" {
+		qs.Set("eventID", eventIDQ)
+	}
 
 	var fromTimeQ string
 	if o.FromTime != nil {

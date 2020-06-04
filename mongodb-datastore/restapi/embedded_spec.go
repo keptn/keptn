@@ -88,6 +88,12 @@ func init() {
           },
           {
             "type": "string",
+            "description": "EventID",
+            "name": "eventID",
+            "in": "query"
+          },
+          {
+            "type": "string",
             "description": "Name of the event source",
             "name": "source",
             "in": "query"
@@ -286,6 +292,12 @@ func init() {
             "type": "string",
             "description": "Name of the service",
             "name": "service",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "EventID",
+            "name": "eventID",
             "in": "query"
           },
           {

@@ -109,6 +109,7 @@ gke_full: &gke_full
     - test/test_onboard_service.sh
     - test/test_new_artifact.sh
     - test/test_delete_project.sh
+    - test/test_keptn_uninstall.sh
   after_success:
     # delete google kubernetes cluster only on success (in case of an error we want to be able to dig into the cluster)
     - echo "Tests were successful, cleaning up the cluster now..."
@@ -408,20 +409,19 @@ jobs:
       - KEPTN_INSTALLATION_TYPE=FULL
     <<: *gke_full # use template
 
-  - stage: Test GKE Full (--platform=gke)
-    if: branch = master AND type = cron # run for cron
-    env:
-      - GKE_VERSION=1.15
-      - KEPTN_INSTALLATION_TYPE=FULL
-    <<: *gke_full # use template
-
-  # Test GKE with 1.16 (not available yet)
 #  - stage: Test GKE Full (--platform=gke)
 #    if: branch = master AND type = cron # run for cron
 #    env:
-#      - GKE_VERSION=1.16
+#      - GKE_VERSION=1.15
 #      - KEPTN_INSTALLATION_TYPE=FULL
 #    <<: *gke_full # use template
+
+  - stage: Test GKE Full (--platform=gke)
+    if: branch = master AND type = cron # run for cron
+    env:
+      - GKE_VERSION=1.16
+      - KEPTN_INSTALLATION_TYPE=FULL
+    <<: *gke_full # use template
 
   # Test GKE with 1.17 (not available yet)
 #  - stage: Test GKE Full (--platform=gke)
@@ -438,20 +438,19 @@ jobs:
       - GKE_VERSION=1.14
     <<: *gke_full # use template
 
-  - stage: Test GKE Full with Istio (--platform=gke --ingress-install-option=Reuse)
-    if: branch = master AND type = cron # run for cron
-    env:
-      - KEPTN_INSTALLATION_TYPE=REUSE-ISTIO
-      - GKE_VERSION=1.15
-    <<: *gke_full # use template
-
-  # Test GKE with 1.16 (not available yet)
 #  - stage: Test GKE Full with Istio (--platform=gke --ingress-install-option=Reuse)
 #    if: branch = master AND type = cron # run for cron
 #    env:
 #      - KEPTN_INSTALLATION_TYPE=REUSE-ISTIO
-#      - GKE_VERSION=1.16
+#      - GKE_VERSION=1.15
 #    <<: *gke_full # use template
+
+  - stage: Test GKE Full with Istio (--platform=gke --ingress-install-option=Reuse)
+    if: branch = master AND type = cron # run for cron
+    env:
+      - KEPTN_INSTALLATION_TYPE=REUSE-ISTIO
+      - GKE_VERSION=1.16
+    <<: *gke_full # use template
 
   # Test GKE with 1.17 (not available yet)
 #  - stage: Test GKE Full with Istio (--platform=gke --ingress-install-option=Reuse)
@@ -489,9 +488,12 @@ jobs:
       - kubectl get services --all-namespaces
       - kubectl get ingress --all-namespaces
 
-  - stage: Test MicroK8s Standalone (--platform=kubernetes --use-case=quality-gates)
+  - &microk8sStandaloneTest
+    stage: Test MicroK8s Standalone (--platform=kubernetes --use-case=quality-gates)
     if: (branch = master or branch =~ ^release.*$) AND (type = cron OR type = push) # run for any change on master/release-* on push as well as cron
     os: linux
+    env:
+      - MICROK8S_VERSION=1.16/stable # see https://snapcraft.io/microk8s channels
     before_script:
       # download and install kubectl
       - curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.17.0/bin/linux/amd64/kubectl && chmod +x ./kubectl && sudo mv ./kubectl /usr/local/bin/kubectl
@@ -515,6 +517,14 @@ jobs:
       - kubectl get pods --all-namespaces
       - kubectl get services --all-namespaces
       - kubectl get ingress --all-namespaces
+
+  - <<: *microk8sStandaloneTest
+    env:
+      - MICROK8S_VERSION=1.17/stable # see https://snapcraft.io/microk8s channels
+
+  - <<: *microk8sStandaloneTest
+    env:
+      - MICROK8S_VERSION=1.18/stable # see https://snapcraft.io/microk8s channels
 
   - &minikubeStandaloneTest
     stage: Test Minikube Standalone (--platform=kubernetes --use-case=quality-gates)

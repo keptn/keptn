@@ -9,7 +9,7 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/googleapis/gnostic v0.0.0-20170729233727-0c5108395e2d // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.6.1-compat.0.20200406125548-5337a2e806c4
+	github.com/keptn/go-utils v0.6.3-0.20200528130847-06ffb9763e83
 	github.com/keptn/kubernetes-utils v0.0.0-20200401103501-ae44a5ee0656
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect

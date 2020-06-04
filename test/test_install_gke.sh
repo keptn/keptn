@@ -30,6 +30,15 @@ fi
 keptn install ${INGRESS_CONFIG} --keptn-installer-image="${KEPTN_INSTALLER_IMAGE}" --creds=creds.json --verbose
 verify_test_step $? "keptn install failed"
 
+# change domain
+CURRENT_DOMAIN=$(kubectl get cm -n keptn keptn-domain -ojsonpath={.data.app_domain})
+# replace xip.io with nip.io
+NEW_DOMAIN=${CURRENT_DOMAIN//xip/nip}
+
+echo "Changing Keptn domain to ${NEW_DOMAIN}"
+echo "y" | keptn configure domain "${NEW_DOMAIN}" --keptn-version=master
+verify_test_step $? "Could not change Keptn Domain to ${NEW_DOMAIN}"
+
 # verify that the keptn CLI has successfully authenticated
 echo "Checking that keptn is authenticated..."
 ls -la ~/.keptn/.keptn

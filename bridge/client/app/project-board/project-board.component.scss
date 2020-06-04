@@ -5,6 +5,10 @@
   height: 100%;
 }
 
+.stage-overview {
+
+}
+
 ::ng-deep .dt-menu,
 ::ng-deep .dt-menu-group-header {
   background-color: lighten($primary-color, 5%) !important;
@@ -17,4 +21,8 @@
 ::ng-deep .dt-menu-item.active,
 ::ng-deep .dt-menu-item:hover {
   background: $primary-color !important;
+}
+
+::ng-deep .ktb-expandable-tile .dt-show-more-icon {
+  margin-right: 5px;
 }

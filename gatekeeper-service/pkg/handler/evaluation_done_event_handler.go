@@ -64,6 +64,16 @@ func (EvaluationDoneEventHandler) getImage(project string, currentStage string, 
 func (e *EvaluationDoneEventHandler) handleEvaluationDoneEvent(inputEvent keptnevents.EvaluationDoneEventData, shkeptncontext string, image string,
 	shipyard keptnevents.Shipyard) []cloudevents.Event {
 
+	nextStage := getNextStage(shipyard, inputEvent.Stage)
+
+	for _, stage := range shipyard.Stages {
+		if stage.Name == nextStage {
+			if stage.DeploymentStrategy == "" {
+				e.logger.Info("No deployment strategy defined for next stage. exiting.")
+				return nil
+			}
+		}
+	}
 	// Evaluation has passed if we have result = pass or result = warning
 
 	if inputEvent.TestStrategy == TestStrategyRealUser {

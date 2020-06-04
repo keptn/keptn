@@ -37,9 +37,8 @@
       <a (click)="selectView('services')" [class.active]="view == 'services'" dtMenuItem>Services</a>
     </dt-menu-group>
   </dt-menu>
-
   <ng-container *ngIf="view == 'environment'">
-    <div class="container" fxFlex fxLayout="column" fxLayoutGap="15px">
+    <div class="container" fxFlex="66" fxLayout="row" fxLayoutGap="15px">
       <div fxFlex fxLayout="column" fxLayoutGap="15px">
         <div>
           <dt-info-group>
@@ -47,9 +46,11 @@
               <p><span [textContent]="project.stages.length"></span> Stages</p>
             </dt-info-group-title>
             <div class="mr-minus-15" fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutGap="15px" fxLayoutAlign="start">
-              <dt-tile *ngFor="let stage of project.stages; trackBy:trackStage"
-                       fxFlex="0 1 calc(33.3% - 15px)" fxFlex.lt-md="0 1 calc(50% - 15px)" fxFlex.lt-sm="100%">
-                <dt-tile-title [textContent]="stage.stageName"></dt-tile-title>
+              <ktb-selectable-tile *ngFor="let stage of project.stages; trackBy:trackStage"
+                                   fxFlex="0 1 calc(33.3% - 15px)" fxFlex.lt-md="0 1 calc(50% - 15px)" fxFlex.lt-sm="100%"
+                                   (click)="selectStage(stage)" [selected]="selectedStage == stage">
+                <h2 class="m-0 mt-1 mb-1" [textContent]="stage.stageName"></h2>
+                <hr/>
                 <ng-container *ngIf="stage.services">
                   <dt-tag-list aria-label="services">
                     <dt-tag *ngFor="let service of getDeployedServices(project, stage)">
@@ -57,11 +58,30 @@
                     </dt-tag>
                   </dt-tag-list>
                 </ng-container>
-              </dt-tile>
+              </ktb-selectable-tile>
             </div>
           </dt-info-group>
         </div>
       </div>
+    </div>
+    <div class="container dark" fxFlex="34" fxLayout="column" fxLayoutGap="15px" *ngIf="selectedStage">
+      <h2 [textContent]="selectedStage.stageName"></h2>
+      <ng-container *ngFor="let service of getDeployedServices(project, selectedStage)">
+        <ktb-expandable-tile *ngIf="getLatestDeployment(project, service, selectedStage) as deployment">
+          <ktb-expandable-tile-header>
+            <dt-info-group>
+              <dt-info-group-title>
+                <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
+                  <h2 class="m-0" [textContent]="deployment.getService()"></h2>
+                  <a *ngIf="deployment.data.deploymentURIPublic" [href]="deployment.data.deploymentURIPublic" target="_blank"><button dt-icon-button variant="nested"><dt-icon name="externallink"></dt-icon></button></a>
+                </div>
+              </dt-info-group-title>
+              <p class="m-0 mt-1"><span [textContent]="deployment.data.image"></span>:<span [textContent]="deployment.data.tag"></span></p>
+              <p class="m-0 mb-1"><span class="bold">Deployed at: </span><span [textContent]="deployment.time | amCalendar:getCalendarFormats()"></span></p>
+            </dt-info-group>
+          </ktb-expandable-tile-header>
+        </ktb-expandable-tile>
+      </ng-container>
     </div>
   </ng-container>
   <ng-container *ngIf="view == 'services'">
@@ -78,7 +98,21 @@
           <ktb-expandable-tile-header>
             <dt-info-group>
               <dt-info-group-title>
-                <h2 class="m-0" [textContent]="service.serviceName"></h2>
+                <div fxLayout="row">
+                  <div fxFlex>
+                    <h2 class="m-0" [textContent]="service.serviceName"></h2>
+                  </div>
+                  <div fxLayout="column" fxLayoutAlign="start end" *ngIf="eventTypes">
+                    <button dt-icon-button (click)="$event.stopPropagation()" [dtContextDialogTrigger]="filterEventsDialog" variant="nested" aria-label="Open context dialog">
+                      <dt-icon name="filter"></dt-icon>
+                    </button>
+                    <dt-context-dialog #filterEventsDialog aria-label="Open context dialog" ariaLabelClose="Close context dialog">
+                      <p *ngFor="let eventType of eventTypes">
+                        <dt-checkbox (change)="filterEvents($event, eventType)" [checked]="isFilteredEvent(eventType)">{{getEventLabel(eventType)}}</dt-checkbox>
+                      </p>
+                    </dt-context-dialog>
+                  </div>
+                </div>
               </dt-info-group-title>
               <p class="m-0 mb-1 mt-1" *ngIf="getLatestDeployment(project, service) as deployment">
                 <span class="bold">Last relevant artifact: </span><span [textContent]="deployment.getShortImageName()"></span>
@@ -94,7 +128,7 @@
               <dt-tag>Last time fetched: <span [textContent]="getRootsLastUpdated(project, service) | amCalendar:getCalendarFormats()"></span></dt-tag>
             </dt-tag-list>
           </div>
-          <ktb-root-events-list [events]="service.roots" [selectedEvent]="currentRoot"  (selectedEventChange)="selectRoot($event)"></ktb-root-events-list>
+          <ktb-root-events-list [events]="getFilteredRoots(service.roots)" [selectedEvent]="currentRoot"  (selectedEventChange)="selectRoot($event)"></ktb-root-events-list>
           <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px" *ngIf="!service.roots">
             <dt-loading-spinner></dt-loading-spinner>
             <p>Loading ...</p>

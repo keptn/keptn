@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"k8s.io/client-go/kubernetes"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -49,21 +50,37 @@ const useInClusterConfig = true
 
 func getIngressType() (Ingress, error) {
 
-	clientset, err := k8sutils.GetKubeAPI(useInClusterConfig)
+	var config *rest.Config
+	var err error
+	config, err = rest.InClusterConfig()
+
 	if err != nil {
 		return istio, err
 	}
 
-	nsList, err := clientset.Namespaces().List(metav1.ListOptions{})
+	k8sClient, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		return istio, err
+	}
+
+	nsList, err := k8sClient.CoreV1().Namespaces().List(metav1.ListOptions{})
 	if err != nil {
 		return istio, err
 	}
 
 	for _, ns := range nsList.Items {
-		if ns.Name == "istio-system" {
+		if ns.Name == "ingress-nginx" {
+			ingresses, err := k8sClient.ExtensionsV1beta1().Ingresses("ingress-nginx").List(metav1.ListOptions{})
+			if err != nil {
+				return istio, err
+			}
+			for _, ingress := range ingresses.Items {
+				if ingress.Name == "keptn-ingress" {
+					return nginx, nil
+				}
+			}
+		} else if ns.Name == "istio-system" {
 			return istio, nil
-		} else if ns.Name == "ingress-nginx" {
-			return nginx, nil
 		} else if ns.Name == "openshift" {
 			// Note: The istio-system namespace was not found, hence OC routes are used
 			return ocroute, nil

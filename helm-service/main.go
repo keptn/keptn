@@ -33,11 +33,16 @@ func main() {
 }
 
 func getKeptnDomain() (string, error) {
+	if os.Getenv("KEPTN_DOMAIN") != "" {
+		return os.Getenv("KEPTN_DOMAIN"), nil
+	}
+
 	useInClusterConfig := false
 	if os.Getenv("ENVIRONMENT") == "production" {
 		useInClusterConfig = true
 	}
 	return keptnutils.GetKeptnDomain(useInClusterConfig)
+
 }
 
 func gotEvent(ctx context.Context, event cloudevents.Event) error {
@@ -94,6 +99,9 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	} else if event.Type() == keptnevents.InternalServiceCreateEventType {
 		onboarder := controller.NewOnboarder(mesh, logger, keptnDomain, url.String())
 		go onboarder.DoOnboard(event, loggingDone)
+	} else if event.Type() == keptnevents.ActionTriggeredEventType {
+		actionHandler := controller.NewActionTriggeredHandler(logger, url.String())
+		go actionHandler.HandleEvent(event, loggingDone)
 	} else {
 		logger.Error("Received unexpected keptn event")
 		loggingDone <- true
