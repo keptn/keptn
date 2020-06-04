@@ -1,4 +1,4 @@
-import {TestBed, async, ComponentFixture, tick, fakeAsync} from '@angular/core/testing';
+import {TestBed, async, ComponentFixture, fakeAsync, tick} from '@angular/core/testing';
 import { AppComponent } from './app.component';
 import {AppHeaderComponent} from "./app-header/app-header.component";
 import {KtbHttpLoadingBarComponent} from "./_components/ktb-http-loading-bar/ktb-http-loading-bar.component";
@@ -156,4 +156,9 @@ describe('AppComponent', () => {
     expect(projectTileTitle.nativeElement.textContent).toContain('sockshop');
   }));
 
+  xit('should render project board for "sockshop"', fakeAsync(() => {
+    router.navigate(['project', 'sockshop']);
+    tick();
+    expect(location.path()).toBe('/project/sockshop');
+  }));
 });

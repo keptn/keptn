@@ -1,9 +1,8 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { KtbProjectTileComponent } from './ktb-project-tile.component';
-import {DtTile, DtTileModule, DtTileSubtitle, DtTileTitle} from "@dynatrace/barista-components/tile";
-import {DtTag, DtTagList, DtTagModule} from "@dynatrace/barista-components/tag";
-import {RouterModule} from "@angular/router";
+import {DtTileModule} from "@dynatrace/barista-components/tile";
+import {DtTagModule} from "@dynatrace/barista-components/tag";
 import {AppComponent} from "../../app.component";
 import {DashboardComponent} from "../../dashboard/dashboard.component";
 import {AppHeaderComponent} from "../../app-header/app-header.component";

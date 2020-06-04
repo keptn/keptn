@@ -5,8 +5,8 @@ import {
   KtbExpandableTileComponent,
   KtbExpandableTileHeader
 } from "../ktb-expandable-tile/ktb-expandable-tile.component";
-import {DtTag, DtTagList, DtTagModule} from "@dynatrace/barista-components/tag";
-import {DtIcon, DtIconModule} from "@dynatrace/barista-components/icon";
+import {DtTagModule} from "@dynatrace/barista-components/tag";
+import {DtIconModule} from "@dynatrace/barista-components/icon";
 import {AppComponent} from "../../app.component";
 import {DashboardComponent} from "../../dashboard/dashboard.component";
 import {AppHeaderComponent} from "../../app-header/app-header.component";

@@ -1,7 +1,7 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { KtbHttpLoadingSpinnerComponent } from './ktb-http-loading-spinner.component';
-import {DtLoadingDistractorModule, DtLoadingSpinner} from "@dynatrace/barista-components/loading-distractor";
+import {DtLoadingDistractorModule} from "@dynatrace/barista-components/loading-distractor";
 import {AppComponent} from "../../app.component";
 import {DashboardComponent} from "../../dashboard/dashboard.component";
 import {AppHeaderComponent} from "../../app-header/app-header.component";

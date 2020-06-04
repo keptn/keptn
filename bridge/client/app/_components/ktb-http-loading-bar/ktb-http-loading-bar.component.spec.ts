@@ -1,7 +1,7 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { KtbHttpLoadingBarComponent } from './ktb-http-loading-bar.component';
-import {DtProgressBar, DtProgressBarModule} from "@dynatrace/barista-components/progress-bar";
+import {DtProgressBarModule} from "@dynatrace/barista-components/progress-bar";
 import {AppComponent} from "../../app.component";
 import {DashboardComponent} from "../../dashboard/dashboard.component";
 import {AppHeaderComponent} from "../../app-header/app-header.component";

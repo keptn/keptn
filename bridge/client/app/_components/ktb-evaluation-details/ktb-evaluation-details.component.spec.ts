@@ -55,8 +55,6 @@ import {DtConsumptionModule} from "@dynatrace/barista-components/consumption";
 import {DtKeyValueListModule} from "@dynatrace/barista-components/key-value-list";
 import {DtChartModule} from "@dynatrace/barista-components/chart";
 import {DtIconModule} from "@dynatrace/barista-components/icon";
-import {DataService} from "../../_services/data.service";
-import {MockDataService} from "../../_services/mock-data.service";
 
 describe('KtbEvaluationDetailsComponent', () => {
   let component: KtbEvaluationDetailsComponent;

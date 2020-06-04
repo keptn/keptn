@@ -1,6 +1,5 @@
 import { Project } from './project';
 import {async} from "@angular/core/testing";
-import {Trace} from "./trace";
 
 describe('Project', () => {
   it('should create an instance', () => {

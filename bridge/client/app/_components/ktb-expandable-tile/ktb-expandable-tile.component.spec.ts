@@ -1,7 +1,7 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import {KtbExpandableTileComponent, KtbExpandableTileHeader} from './ktb-expandable-tile.component';
-import {DtExpandablePanel, DtExpandablePanelModule} from "@dynatrace/barista-components/expandable-panel";
+import {DtExpandablePanelModule} from "@dynatrace/barista-components/expandable-panel";
 import {AppComponent} from "../../app.component";
 import {DashboardComponent} from "../../dashboard/dashboard.component";
 import {AppHeaderComponent} from "../../app-header/app-header.component";

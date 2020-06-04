@@ -1,16 +1,10 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ProjectBoardComponent } from './project-board.component';
-import {DtTag, DtTagList, DtTagModule} from '@dynatrace/barista-components/tag';
-import {DtLoadingDistractorModule, DtLoadingSpinner} from "@dynatrace/barista-components/loading-distractor";
-import {DtInfoGroup, DtInfoGroupModule, DtInfoGroupTitle} from "@dynatrace/barista-components/info-group";
-import {
-  DtEmptyState,
-  DtEmptyStateItem,
-  DtEmptyStateItemImage,
-  DtEmptyStateItemTitle, DtEmptyStateModule
-} from "@dynatrace/barista-components/empty-state";
-import {RouterModule} from "@angular/router";
+import {ProjectBoardComponent} from './project-board.component';
+import {DtTagModule} from '@dynatrace/barista-components/tag';
+import {DtLoadingDistractorModule} from "@dynatrace/barista-components/loading-distractor";
+import {DtInfoGroupModule} from "@dynatrace/barista-components/info-group";
+import {DtEmptyStateModule} from "@dynatrace/barista-components/empty-state";
 import {AppComponent} from "../app.component";
 import {DashboardComponent} from "../dashboard/dashboard.component";
 import {AppHeaderComponent} from "../app-header/app-header.component";
