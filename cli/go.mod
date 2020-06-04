@@ -6,7 +6,6 @@ require (
 	github.com/cloudevents/sdk-go v0.10.0
 	github.com/danieljoos/wincred v1.1.0 // indirect
 	github.com/docker/docker-credential-helpers v0.6.3
-	github.com/ghodss/yaml v1.0.0
 	github.com/google/uuid v1.1.1
 	github.com/gorilla/websocket v1.4.1
 	github.com/hashicorp/go-version v1.2.0
