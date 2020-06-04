@@ -25,7 +25,7 @@ var approvalFinishedTests = []struct {
 		shipyard:   getShipyardWithApproval(keptnevents.Automatic, keptnevents.Automatic),
 		inputEvent: getApprovalFinishedTestData("pass", "succeeded"),
 		outputEvent: []cloudevents.Event{
-			getConfigurationChangeTestEventForNextStage("docker.io/keptnexamples/carts:0.11.1", "production"),
+			getConfigurationChangeTestEvent("docker.io/keptnexamples/carts:0.11.1", "production"),
 		},
 	},
 	{

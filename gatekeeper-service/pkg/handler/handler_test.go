@@ -80,17 +80,17 @@ func getShipyardWithApproval(approvalStrategyForPass keptnevents.ApprovalStrateg
 				DeploymentStrategy:  "blue_green_service",
 				TestStrategy:        "performance",
 				RemediationStrategy: "",
+				ApprovalStrategy:    nil,
+			},
+			{
+				Name: "production",
 				ApprovalStrategy: &keptnevents.ApprovalStrategyStruct{
 					Pass:    approvalStrategyForPass,
 					Warning: approvalStrategyForWarning,
 				},
-			},
-			{
-				Name:                "production",
 				DeploymentStrategy:  "blue_green_service",
 				TestStrategy:        "",
 				RemediationStrategy: "",
-				ApprovalStrategy:    nil,
 			},
 		},
 	}
@@ -140,7 +140,7 @@ func getApprovalTriggeredTestData(evaluationResult string) keptnevents.ApprovalT
 	return keptnevents.ApprovalTriggeredEventData{
 		Project:            "sockshop",
 		Service:            "carts",
-		Stage:              "hardening",
+		Stage:              "production",
 		TestStrategy:       getPtr("performance"),
 		DeploymentStrategy: getPtr("blue_green_service"),
 		Tag:                "0.11.1",
@@ -157,7 +157,7 @@ func getApprovalFinishedTestData(result, status string) keptnevents.ApprovalFini
 	return keptnevents.ApprovalFinishedEventData{
 		Project:            "sockshop",
 		Service:            "carts",
-		Stage:              "hardening",
+		Stage:              "production",
 		TestStrategy:       getPtr("performance"),
 		DeploymentStrategy: getPtr("blue_green_service"),
 		Tag:                "0.11.1",
