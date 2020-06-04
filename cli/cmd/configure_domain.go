@@ -134,22 +134,27 @@ Please find more information on https://keptn.sh/docs/develop/reference/troubles
 				return err
 			}
 
+			domain := args[0]
+			domain = strings.TrimPrefix(domain, "http://")
+			domain = strings.TrimPrefix(domain, "https://")
+			split := strings.Split(domain, ":")
+			domain = split[0]
 			// Generate new certificate
-			if err := updateCertificate(path, args[0], ingress); err != nil {
+			if err := updateCertificate(path, domain, ingress); err != nil {
 				return err
 			}
 
 			if ingress == istio {
-				if err := updateKeptnAPIVirtualService(path, args[0]); err != nil {
+				if err := updateKeptnAPIVirtualService(path, domain); err != nil {
 					return err
 				}
 			} else if ingress == nginx {
-				if err := updateKeptnIngress(path, args[0]); err != nil {
+				if err := updateKeptnIngress(path, domain); err != nil {
 					return err
 				}
 			}
 
-			if err := updateKeptnDomainConfigMap(path, args[0]); err != nil {
+			if err := updateKeptnDomainConfigMap(path, domain); err != nil {
 				return err
 			}
 
@@ -173,7 +178,7 @@ Please find more information on https://keptn.sh/docs/develop/reference/troubles
 				if err != nil {
 					return err
 				}
-				fmt.Println("Afterwards, you can login with 'keptn auth --endpoint=https://api.keptn." + args[0] + " --token=" + token + "'")
+				fmt.Println("Afterwards, you can login with 'keptn auth --endpoint=https://api.keptn." + domain + " --token=" + token + "'")
 
 			} else {
 				var err error
