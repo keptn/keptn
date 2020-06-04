@@ -194,6 +194,12 @@ Please find more information on https://keptn.sh/docs/develop/reference/troubles
 				}
 				logging.PrintLog("Successfully configured domain", logging.InfoLevel)
 			}
+			fmt.Println()
+			logging.PrintLog("NOTE: If you have exposed the Keptn's bridge via 'keptn configure bridge --action=expose', please execute the following commands to re-enable access:", logging.InfoLevel)
+			logging.PrintLog("keptn configure bridge --action=lockdown", logging.InfoLevel)
+			logging.PrintLog("keptn configure bridge --action=expose", logging.InfoLevel)
+			fmt.Println()
+			logging.PrintLog("NOTE: VirtualServices for services that have been onboarded previously have not been updated.", logging.InfoLevel)
 		}
 
 		return nil
