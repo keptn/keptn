@@ -144,7 +144,7 @@ jobs:
       - npm install
       - npm run test:ci
     after_success:
-      - bash <(curl -s https://codecov.io/bash)
+      - bash <(curl -s https://codecov.io/bash) -F moduleA
 
   - stage: Unit tests # golang
     os: linux
