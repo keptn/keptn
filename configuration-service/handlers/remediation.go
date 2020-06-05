@@ -9,6 +9,7 @@ import (
 	"github.com/keptn/keptn/configuration-service/restapi/operations/service_approval"
 )
 
+// CreateRemediation creates a remediation
 func CreateRemediation(params remediation.CreateRemediationParams) middleware.Responder {
 	mv := common.GetProjectsMaterializedView()
 
@@ -20,6 +21,7 @@ func CreateRemediation(params remediation.CreateRemediationParams) middleware.Re
 	return service_approval.NewCreateRemediationOK()
 }
 
+// GetRemediations retriees all remediations of the service
 func GetRemediations(params remediation.GetRemediationsParams) middleware.Responder {
 	mv := common.GetProjectsMaterializedView()
 
@@ -58,6 +60,7 @@ func GetRemediations(params remediation.GetRemediationsParams) middleware.Respon
 	return remediation.NewGetRemediationsNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Service not found")})
 }
 
+// GetRemediationsForContext retrieves all remediations of the service for a given keptnCOntext
 func GetRemediationsForContext(params remediation.GetRemediationsForContextParams) middleware.Responder {
 	mv := common.GetProjectsMaterializedView()
 
@@ -102,6 +105,7 @@ func GetRemediationsForContext(params remediation.GetRemediationsForContextParam
 	return remediation.NewGetRemediationsNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Service not found")})
 }
 
+// CloseRemediations closes all remediations with a given keptnContext of a service
 func CloseRemediations(params remediation.CloseRemediationsParams) middleware.Responder {
 	mv := common.GetProjectsMaterializedView()
 
