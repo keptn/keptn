@@ -102,7 +102,7 @@ case $USE_CASE in
     wait_for_deployment_in_namespace "wait-service" "keptn"
     wait_for_deployment_in_namespace "lighthouse-service-distributor" "keptn"
     wait_for_deployment_in_namespace "gatekeeper-service-evaluation-done-distributor" "keptn"
-    wait_for_deployment_in_namespace "helm-service-configuration-change-distributor" "keptn"
+    wait_for_deployment_in_namespace "helm-service-distributor" "keptn"
     wait_for_deployment_in_namespace "jmeter-service-deployment-distributor" "keptn"
     wait_for_deployment_in_namespace "remediation-service-problem-distributor" "keptn"
     wait_for_deployment_in_namespace "wait-service-deployment-distributor" "keptn"
