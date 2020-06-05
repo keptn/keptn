@@ -138,6 +138,10 @@ Please find more information on https://keptn.sh/docs/develop/reference/troubles
 			domain = strings.TrimPrefix(domain, "http://")
 			domain = strings.TrimPrefix(domain, "https://")
 			split := strings.Split(domain, ":")
+
+			if len(split) > 1 {
+				logging.PrintLog("Setting a new NodePort via this command is currently not supported. This command will reuse the existing NodePort.", logging.InfoLevel)
+			}
 			domain = split[0]
 			// Generate new certificate
 			if err := updateCertificate(path, domain, ingress); err != nil {
@@ -232,6 +236,7 @@ func updateKeptnDomainConfigMap(path, domain string) error {
 
 	domainSplit := strings.Split(currentDomainConfig, ":")
 	if len(domainSplit) > 1 {
+		logging.PrintLog("Reusing NodePort "+domainSplit[1], logging.InfoLevel)
 		domain = domain + ":" + domainSplit[1]
 	}
 
