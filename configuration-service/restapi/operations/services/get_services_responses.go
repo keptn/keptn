@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/keptn/keptn/configuration-service/models"
+	models "github.com/keptn/keptn/configuration-service/models"
 )
 
 // GetServicesOKCode is the HTTP code returned for type GetServicesOK

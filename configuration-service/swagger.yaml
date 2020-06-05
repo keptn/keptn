@@ -106,6 +106,10 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/Approval'
+      openRemediations:
+        type: array
+        items:
+          $ref: '#/definitions/Remediation'
       lastEventTypes:
         type: object
         additionalProperties:
@@ -146,6 +150,38 @@ definitions:
         items:
           $ref: '#/definitions/Approval'
 
+  Remediation:
+    type: object
+    properties:
+      keptnContext:
+        type: string
+        description: Keptn Context ID of the event
+      eventId:
+        type: string
+        description: ID of the event
+      time:
+        type: string
+        description: Time of the event
+      type:
+        type: string
+        description: Type of the event
+
+  Remediations:
+    type: object
+    properties:
+      nextPageKey:
+        type: string
+        description: Pointer to next page, base64 encoded
+      totalCount:
+        type: number
+        description: Total number of stages
+      pageSize:
+        type: number
+        description: Size of returned page
+      remediations:
+        type: array
+        items:
+          $ref: '#/definitions/Remediation'
 
   ServicesWithStageInfo:
     type: object
@@ -417,6 +453,13 @@ parameters:
     required: true
     type: string
     description: Approval Event ID
+
+  keptnContext:
+    in: path
+    name: keptnContext
+    required: true
+    type: string
+    description: Keptn Context
 
   resourceURI:
     in: path
@@ -1376,6 +1419,91 @@ paths:
         - service approval
       operationId: closeServiceApproval
       summary: Close open service approval
+      responses:
+        200:
+          description: OK
+        default:
+          description: Error
+          schema:
+            "$ref": "#/definitions/Error"
+
+  '/project/{projectName}/stage/{stageName}/service/{serviceName}/remediation':
+    parameters:
+      - $ref: '#/parameters/projectName'
+      - $ref: '#/parameters/stageName'
+      - $ref: '#/parameters/serviceName'
+    post:
+      tags:
+        - remediation
+      operationId: createRemediation
+      summary: Create remediation
+      parameters:
+        - name: remediation
+          in: body
+          schema:
+            "$ref": "#/definitions/Remediation"
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/Remediation'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
+    get:
+      tags:
+        - remediation
+      operationId: getRemediations
+      summary: Get all open remediations
+      parameters:
+        - $ref: '#/parameters/pageSize'
+        - $ref: '#/parameters/nextPageKey'
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/Remediations'
+        '404':
+          description: Failed. Service could not be found.
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
+
+  '/project/{projectName}/stage/{stageName}/service/{serviceName}/remediation/{keptnContext}':
+    parameters:
+      - $ref: '#/parameters/pageSize'
+      - $ref: '#/parameters/nextPageKey'
+      - $ref: '#/parameters/projectName'
+      - $ref: '#/parameters/stageName'
+      - $ref: '#/parameters/serviceName'
+      - $ref: '#/parameters/keptnContext'
+    get:
+      tags:
+        - remediation
+      operationId: getRemediationsForContext
+      summary: Get open remediations by KeptnContext
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/Remediations'
+        '404':
+          description: Failed. Remediations could not be found
+          schema:
+            $ref: '#/definitions/Error'
+        'default':
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      tags:
+        - remediation
+      operationId: closeRemediations
+      summary: Close open remediations for KeptnContext
       responses:
         200:
           description: OK
