@@ -51,14 +51,14 @@
                                    (click)="selectStage(stage)" [selected]="selectedStage == stage">
                 <h2 class="m-0 mt-1 mb-1" [textContent]="stage.stageName"></h2>
                 <div class="stage-state" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
-                  <!--div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
+                  <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
                     <dt-icon class="icon2" name="criticalevent"></dt-icon>
                     <span>0</span>
-                  </div-->
-                  <!--div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
+                  </div>
+                  <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
                     <dt-icon class="icon2" name="traffic-light"></dt-icon>
                     <span>0</span>
-                  </div-->
+                  </div>
                   <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
                     <dt-icon class="icon2" name="deploy" [ngClass]="{'out-of-sync-service': project.getServicesOutOfSync(stage).length > 0}"></dt-icon>
                     <span [textContent]="project.getServicesOutOfSync(stage).length"></span>
