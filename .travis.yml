@@ -128,7 +128,25 @@ jobs:
   ##################################################################################
   # Jobs that are always executed
   ##################################################################################
-  - stage: Unit tests
+  - stage: Unit tests # Bridge
+    os: linux
+    addons:
+      chrome: stable
+    language:
+      node_js
+    node_js:
+      - 10
+    install:
+      - npm install -g codecov # install codecov globally
+      - npm install -g libnpx@10.2.0 # install npx globally
+    script:
+      - cd bridge
+      - npm install
+      - npm run test:ci
+    after_success:
+      - bash <(curl -s https://codecov.io/bash)
+
+  - stage: Unit tests # golang
     os: linux
     script:
       - set -e # Fail the whole script whenever any command fails
