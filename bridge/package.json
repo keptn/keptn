@@ -9,7 +9,7 @@
     "start:client:dev": "ng build --watch",
     "ng": "ng",
     "build": "ng build --prod",
-    "test": "ng test",
+    "test": "ng test --code-coverage",
     "lint": "ng lint",
     "e2e": "ng e2e",
     "connect:bridge": "kubectl port-forward -n keptn svc/bridge 9000:8080",

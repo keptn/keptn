@@ -155,7 +155,8 @@ export class KtbEvaluationDetailsComponent implements OnInit {
   constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService) { }
 
   ngOnInit() {
-    this.dataService.loadEvaluationResults(this._evaluationData);
+    if(this._evaluationData)
+      this.dataService.loadEvaluationResults(this._evaluationData);
     this.dataService.evaluationResults.subscribe((event) => {
       if(this.evaluationData === event) {
         this.updateChartData(event.data.evaluationHistory);
