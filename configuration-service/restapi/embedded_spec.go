@@ -2087,6 +2087,10 @@ func init() {
     "Remediation": {
       "type": "object",
       "properties": {
+        "action": {
+          "description": "Executed action",
+          "type": "string"
+        },
         "eventId": {
           "description": "ID of the event",
           "type": "string"
@@ -4939,6 +4943,10 @@ func init() {
     "Remediation": {
       "type": "object",
       "properties": {
+        "action": {
+          "description": "Executed action",
+          "type": "string"
+        },
         "eventId": {
           "description": "ID of the event",
           "type": "string"

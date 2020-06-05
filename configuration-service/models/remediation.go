@@ -15,6 +15,9 @@ import (
 // swagger:model Remediation
 type Remediation struct {
 
+	// Executed action
+	Action string `json:"action,omitempty"`
+
 	// ID of the event
 	EventID string `json:"eventId,omitempty"`
 

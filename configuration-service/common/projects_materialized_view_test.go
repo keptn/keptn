@@ -1170,8 +1170,12 @@ func Test_projectsMaterializedView_CreateRemediation(t *testing.T) {
 							return errors.New("project was not updated correctly: keptnContext was not set correctly")
 						}
 
-						if project.Stages[0].Services[0].OpenRemediations[0].Type != "remediation.triggered" {
+						if project.Stages[0].Services[0].OpenRemediations[0].Type != "remediation.status.changed" {
 							return errors.New("project was not updated correctly: type was not set correctly")
+						}
+
+						if project.Stages[0].Services[0].OpenRemediations[0].Action != "scale" {
+							return errors.New("project was not updated correctly: action was not set correctly")
 						}
 
 						return nil
@@ -1188,7 +1192,8 @@ func Test_projectsMaterializedView_CreateRemediation(t *testing.T) {
 					EventID:      "test-event-id",
 					KeptnContext: "test-context",
 					Time:         "1",
-					Type:         "remediation.triggered",
+					Type:         "remediation.status.changed",
+					Action:       "scale",
 				},
 			},
 			wantErr: false,
