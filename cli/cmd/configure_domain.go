@@ -134,22 +134,31 @@ Please find more information on https://keptn.sh/docs/develop/reference/troubles
 				return err
 			}
 
+			domain := args[0]
+			domain = strings.TrimPrefix(domain, "http://")
+			domain = strings.TrimPrefix(domain, "https://")
+			split := strings.Split(domain, ":")
+
+			if len(split) > 1 {
+				logging.PrintLog("Setting a new NodePort via this command is currently not supported. This command will reuse the existing NodePort.", logging.InfoLevel)
+			}
+			domain = split[0]
 			// Generate new certificate
-			if err := updateCertificate(path, args[0], ingress); err != nil {
+			if err := updateCertificate(path, domain, ingress); err != nil {
 				return err
 			}
 
 			if ingress == istio {
-				if err := updateKeptnAPIVirtualService(path, args[0]); err != nil {
+				if err := updateKeptnAPIVirtualService(path, domain); err != nil {
 					return err
 				}
 			} else if ingress == nginx {
-				if err := updateKeptnIngress(path, args[0]); err != nil {
+				if err := updateKeptnIngress(path, domain); err != nil {
 					return err
 				}
 			}
 
-			if err := updateKeptnDomainConfigMap(path, args[0]); err != nil {
+			if err := updateKeptnDomainConfigMap(path, domain); err != nil {
 				return err
 			}
 
@@ -173,7 +182,7 @@ Please find more information on https://keptn.sh/docs/develop/reference/troubles
 				if err != nil {
 					return err
 				}
-				fmt.Println("Afterwards, you can login with 'keptn auth --endpoint=https://api.keptn." + args[0] + " --token=" + token + "'")
+				fmt.Println("Afterwards, you can login with 'keptn auth --endpoint=https://api.keptn." + domain + " --token=" + token + "'")
 
 			} else {
 				var err error
@@ -223,6 +232,19 @@ func getIngressType() (Ingress, error) {
 }
 
 func updateKeptnDomainConfigMap(path, domain string) error {
+	// retrieve the current domain from the keptn-domain ConfigMap and check if it includes a port
+	o := options{"get", "cm", "-n", "keptn", "keptn-domain", "-ojsonpath={.data.app_domain}"}
+	o.appendIfNotEmpty(kubectlOptions)
+	currentDomainConfig, err := keptnutils.ExecuteCommand("kubectl", o)
+	if err != nil {
+		return err
+	}
+
+	domainSplit := strings.Split(currentDomainConfig, ":")
+	if len(domainSplit) > 1 {
+		logging.PrintLog("Reusing NodePort "+domainSplit[1], logging.InfoLevel)
+		domain = domain + ":" + domainSplit[1]
+	}
 
 	keptnDomainConfigMap := path + "keptn-domain-configmap.yaml"
 
@@ -235,9 +257,9 @@ func updateKeptnDomainConfigMap(path, domain string) error {
 		return err
 	}
 
-	o := options{"delete", "-f", keptnDomainConfigMap}
+	o = options{"delete", "-f", keptnDomainConfigMap}
 	o.appendIfNotEmpty(kubectlOptions)
-	_, err := keptnutils.ExecuteCommand("kubectl", o)
+	_, err = keptnutils.ExecuteCommand("kubectl", o)
 	if err != nil {
 		return err
 	}
