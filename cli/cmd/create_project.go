@@ -117,11 +117,11 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-t
 			project.GitRemoteURL = *createProjectParams.RemoteURL
 		}
 
-		projectHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
+		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
-			eventContext, err := projectHandler.CreateProject(project)
+			eventContext, err := apiHandler.CreateProject(project)
 			if err != nil {
 				fmt.Println("Create project was unsuccessful")
 				return fmt.Errorf("Create project was unsuccessful. %s", *err.Message)
