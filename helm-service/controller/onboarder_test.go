@@ -34,10 +34,10 @@ stages:
     - {deployment_strategy: blue_green_service, name: staging, test_strategy: performance}
     - {deployment_strategy: blue_green_service, name: production}`
 
-func createTestProjet(t *testing.T) {
+func createTestProject(t *testing.T) {
 
 	prjHandler := configutils.NewProjectHandler(configBaseURL)
-	prj := configmodels.CreateProject{Name: stringp(projectName)}
+	prj := configmodels.Project{ProjectName: projectName}
 	respErr, err := prjHandler.CreateProject(prj)
 	check(err, t)
 	assert.Nil(t, respErr, "Creating a project failed")
@@ -72,7 +72,7 @@ func TestDoOnboard(t *testing.T) {
 	}
 	os.Setenv("CONFIGURATION_SERVICE", configBaseURL)
 
-	createTestProjet(t)
+	createTestProject(t)
 
 	data := helmtest.CreateHelmChartData(t)
 	encodedChart := base64.StdEncoding.EncodeToString(data)
