@@ -119,11 +119,11 @@ keptn onboard service SERVICENAME --project=PROJECTNAME --chart=HELM_CHART.tgz`,
 			service.DeploymentStrategies = deplStrategies
 		}
 
-		serviceHandler := apiutils.NewAuthenticatedServiceHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
+		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
-			eventContext, err := serviceHandler.CreateService(*onboardServiceParams.Project, service)
+			eventContext, err := apiHandler.CreateService(*onboardServiceParams.Project, service)
 			if err != nil {
 				logging.PrintLog("Onboard service was unsuccessful", logging.QuietLevel)
 				return fmt.Errorf("Onboard service was unsuccessful. %s", *err.Message)
