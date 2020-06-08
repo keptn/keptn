@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"k8s.io/client-go/kubernetes"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -13,6 +12,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/intstr"
 
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
@@ -225,7 +225,7 @@ func exposeBridgeIngress(keptnDomain string, l *keptnutils.Logger) error {
 	if err != nil {
 		return err
 	}
-	l.Info("keptn-ingress retreived")
+	l.Info("keptn-ingress retrieved")
 	addBridgeToIngress(keptnDomain, ing)
 
 	_, err = clientset.NetworkingV1beta1().Ingresses("keptn").Update(ing)
@@ -356,7 +356,7 @@ func disposeBridgeIngress(l *keptnutils.Logger) error {
 	if err != nil {
 		return err
 	}
-	l.Info("keptn-ingress retreived")
+	l.Info("keptn-ingress retrieved")
 	removeBridgeFromIngress(ing)
 
 	_, err = clientset.NetworkingV1beta1().Ingresses("keptn").Update(ing)

@@ -3,15 +3,16 @@ package controller
 import (
 	"encoding/base64"
 	"encoding/json"
-	"github.com/keptn/go-utils/pkg/api/models"
-	keptnevents "github.com/keptn/go-utils/pkg/lib"
-	"github.com/keptn/keptn/helm-service/controller/helm"
-	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/keptn/go-utils/pkg/api/models"
+	keptnevents "github.com/keptn/go-utils/pkg/lib"
+	"github.com/keptn/keptn/helm-service/controller/helm"
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 
 	"helm.sh/helm/v3/pkg/chart"
 )
@@ -210,8 +211,7 @@ func TestHandleScaling(t *testing.T) {
 					Result: "pass",
 					Status: keptnevents.ActionStatusSucceeded,
 				},
-				Problem: keptnevents.ProblemDetails{},
-				Labels:  nil,
+				Labels: nil,
 			},
 		},
 		{
@@ -237,8 +237,7 @@ func TestHandleScaling(t *testing.T) {
 					Result: "strconv.Atoi: parsing \"byOne\": invalid syntax",
 					Status: keptnevents.ActionStatusErrored,
 				},
-				Problem: keptnevents.ProblemDetails{},
-				Labels:  nil,
+				Labels: nil,
 			},
 		},
 	}
