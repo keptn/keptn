@@ -21,8 +21,8 @@ objectives:
   - sli: "throughput"
     pass:
       - criteria:
-          - "<=+10%"
-          - ">=-10%"
+          - "<=+20%"
+          - ">=-20%"
   - sli: "error_rate"
   - sli: "number_calls_other_services"
   - sli: "number_of_time_calls_other_services"
