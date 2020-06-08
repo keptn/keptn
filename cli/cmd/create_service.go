@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+
 	keptn "github.com/keptn/go-utils/pkg/lib"
 
 	"github.com/keptn/keptn/cli/pkg/websockethelper"
@@ -28,7 +29,7 @@ var crServiceCmd = &cobra.Command{
 
 Please note: This command is different from keptn onboard service (which requires a helm chart).
 `,
-	Example: `keptn create service carts --project=sockshop`,
+	Example:      `keptn create service carts --project=sockshop`,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
 		_, _, err := credentialmanager.NewCredentialManager().GetCreds()
@@ -59,11 +60,11 @@ Please note: This command is different from keptn onboard service (which require
 			ServiceName: &args[0],
 		}
 
-		serviceHandler := apiutils.NewAuthenticatedServiceHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
+		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
-			eventContext, err := serviceHandler.CreateService(*createServiceParams.Project, service)
+			eventContext, err := apiHandler.CreateService(*createServiceParams.Project, service)
 			if err != nil {
 				fmt.Println("Create service was unsuccessful")
 				return fmt.Errorf("Create service was unsuccessful. %s", *err.Message)
