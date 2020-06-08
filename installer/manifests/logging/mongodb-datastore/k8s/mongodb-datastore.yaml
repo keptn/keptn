@@ -33,7 +33,7 @@ spec:
           value: 'mongodb://user:password@mongodb:27017/keptn'
         - name: MONGO_DB_NAME
           value: 'keptn'
-      serviceAccountName: keptn-default-sa
+      serviceAccountName: keptn-ds-default
 ---
 apiVersion: v1
 kind: Service

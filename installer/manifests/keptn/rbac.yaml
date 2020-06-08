@@ -2,5 +2,12 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: keptn-default-sa
+  name: keptn-default
   namespace: keptn
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: keptn-ds-default
+  namespace: keptn-datastore

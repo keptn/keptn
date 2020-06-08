@@ -15,7 +15,7 @@ spec:
       labels:
         name: mongodb
     spec:
-      serviceAccountName: keptn-default-sa
+      serviceAccountName: keptn-ds-default
       securityContext:
         fsGroup: 184
       containers:

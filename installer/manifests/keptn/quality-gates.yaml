@@ -36,7 +36,7 @@ spec:
               value: 'mongodb-datastore.keptn-datastore.svc.cluster.local:8080'
             - name: ENVIRONMENT
               value: 'production'
-      serviceAccountName: keptn-default-sa
+      serviceAccountName: keptn-default
 ---
 apiVersion: v1
 kind: Service
@@ -86,4 +86,4 @@ spec:
               value: 'sh.keptn.>'
             - name: PUBSUB_RECIPIENT
               value: 'lighthouse-service'
-      serviceAccountName: keptn-default-sa
+      serviceAccountName: keptn-default
