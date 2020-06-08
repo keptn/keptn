@@ -41,7 +41,7 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
 metadata:
-  name: rbac-service-account
+  name: keptn-helm-service-cluster-admin
 subjects:
   - kind: ServiceAccount
     name: keptn-helm-service

@@ -100,16 +100,23 @@ spec:
         - name: INGRESS_INSTALL_OPTION
           value: INGRESS_INSTALL_OPTION_PLACEHOLDER
       restartPolicy: Never
+      serviceAccountName: keptn-installer
 `
 
 const rbac = `---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: keptn-installer
+  namespace: default
+---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
 metadata:
-  name: rbac-service-account
+  name: rbac-service-account-installer
 subjects:
   - kind: ServiceAccount
-    name: default
+    name: keptn-installer
     namespace: default
 roleRef:
   kind: ClusterRole
