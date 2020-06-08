@@ -229,6 +229,7 @@ spec:
             items:
               - key: nginx.conf
                 path: nginx.conf
+      serviceAccountName: keptn-default-sa
 ---
 apiVersion: v1
 kind: Service
