@@ -1,14 +1,6 @@
-# NOTE: The service account `default:default` already exists in k8s cluster.
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
-kind: ClusterRoleBinding
+apiVersion: v1
+kind: ServiceAccount
 metadata:
-  name: rbac-service-account
-subjects:
-  - kind: ServiceAccount
-    name: default
-    namespace: default
-roleRef:
-  kind: ClusterRole
-  name: cluster-admin
-  apiGroup: rbac.authorization.k8s.io
+  name: keptn-ds-default
+  namespace: keptn-datastore
