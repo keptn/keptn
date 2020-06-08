@@ -12,7 +12,7 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 
-	"github.com/keptn/keptn/configuration-service/models"
+	models "github.com/keptn/keptn/configuration-service/models"
 )
 
 // NewPostProjectParams creates a new PostProjectParams object

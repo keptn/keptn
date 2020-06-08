@@ -75,8 +75,8 @@ func (a *ApprovalFinishedEventHandler) handleApprovalFinishedEvent(inputEvent ke
 			if inputEvent.Tag != "" {
 				image += ":" + inputEvent.Tag
 			}
-			if event := getPromotionEvent(inputEvent.Project, inputEvent.Stage, inputEvent.Service, image,
-				shkeptncontext, inputEvent.Labels, shipyard, a.logger); event != nil {
+			if event := getConfigurationChangeEventForCanary(
+				inputEvent.Project, inputEvent.Service, inputEvent.Stage, image, shkeptncontext, inputEvent.Labels); event != nil {
 				outgoingEvents = append(outgoingEvents, *event)
 			}
 			if err := closeOpenApproval(inputEvent); err != nil {

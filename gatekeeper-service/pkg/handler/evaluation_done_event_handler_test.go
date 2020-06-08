@@ -22,7 +22,7 @@ var evaluationDoneTests = []struct {
 		inputEvent: getEvaluationDoneTestData(true),
 		outputEvent: []cloudevents.Event{
 			getConfigurationChangeTestEventForCanaryAction(keptnevents.Promote),
-			getConfigurationChangeTestEventForNextStage("docker.io/keptnexamples/carts:0.11.1", "production"),
+			getConfigurationChangeTestEvent("docker.io/keptnexamples/carts:0.11.1", "production"),
 		},
 	},
 	{
@@ -136,12 +136,12 @@ func getConfigurationChangeTestEventForCanaryAction(action keptnevents.CanaryAct
 	return *getCloudEvent(configurationChangeEvent, keptnevents.ConfigurationChangeEventType, shkeptncontext)
 }
 
-func getConfigurationChangeTestEventForNextStage(image, nextStage string) cloudevents.Event {
+func getConfigurationChangeTestEvent(image, stage string) cloudevents.Event {
 
 	configurationChangeEvent := keptnevents.ConfigurationChangeEventData{
 		Project: "sockshop",
 		Service: "carts",
-		Stage:   nextStage,
+		Stage:   stage,
 		ValuesCanary: map[string]interface{}{
 			"image": image,
 		},

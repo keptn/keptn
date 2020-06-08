@@ -8,8 +8,9 @@ package models
 import (
 	"strconv"
 
-	"github.com/go-openapi/errors"
 	strfmt "github.com/go-openapi/strfmt"
+
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -30,6 +31,9 @@ type ExpandedService struct {
 	// open approvals
 	OpenApprovals []*Approval `json:"openApprovals"`
 
+	// open remediations
+	OpenRemediations []*Remediation `json:"openRemediations"`
+
 	// Service name
 	ServiceName string `json:"serviceName,omitempty"`
 }
@@ -43,6 +47,10 @@ func (m *ExpandedService) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateOpenApprovals(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateOpenRemediations(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -89,6 +97,31 @@ func (m *ExpandedService) validateOpenApprovals(formats strfmt.Registry) error {
 			if err := m.OpenApprovals[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("openApprovals" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *ExpandedService) validateOpenRemediations(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.OpenRemediations) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.OpenRemediations); i++ {
+		if swag.IsZero(m.OpenRemediations[i]) { // not required
+			continue
+		}
+
+		if m.OpenRemediations[i] != nil {
+			if err := m.OpenRemediations[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("openRemediations" + "." + strconv.Itoa(i))
 				}
 				return err
 			}
