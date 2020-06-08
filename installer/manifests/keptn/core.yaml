@@ -286,7 +286,7 @@ spec:
               value: 'http://event-broker.keptn.svc.cluster.local/keptn'
             - name: API
               value: 'ws://api-service.keptn.svc.cluster.local:8080'
-      serviceAccountName: keptn-default
+      serviceAccountName: keptn-shipyard-service
 ---
 apiVersion: v1
 kind: Service

@@ -1,4 +1,18 @@
 ---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: rbac-service-account
+subjects:
+  - kind: ServiceAccount
+    name: keptn-helm-service
+    namespace: keptn
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
+
+---
 # gatekeeper-service
 apiVersion: apps/v1
 kind: Deployment
@@ -32,6 +46,7 @@ spec:
           value: 'http://configuration-service.keptn.svc.cluster.local:8080'
         - name: EVENTBROKER
           value: 'http://event-broker.keptn.svc.cluster.local/keptn'
+      serviceAccountName: keptn-default
 ---
 apiVersion: v1
 kind: Service
@@ -82,6 +97,7 @@ spec:
             value: 'sh.keptn.events.evaluation-done'
           - name: PUBSUB_RECIPIENT
             value: 'gatekeeper-service'
+      serviceAccountName: keptn-default
 ---
 ## gatekeeper-service: sh.keptn.events.approval.>
 apiVersion: apps/v1
@@ -118,6 +134,7 @@ spec:
               value: 'sh.keptn.events.approval.>'
             - name: PUBSUB_RECIPIENT
               value: 'gatekeeper-service'
+      serviceAccountName: keptn-default
 ---
 ## helm-service: sh.keptn.event.configuration.change
 apiVersion: apps/v1
@@ -154,6 +171,7 @@ spec:
           value: 'sh.keptn.event.configuration.change,sh.keptn.event.action.triggered'
         - name: PUBSUB_RECIPIENT
           value: 'helm-service'
+      serviceAccountName: keptn-default
 ---
 # jmeter-service
 apiVersion: apps/v1
@@ -181,6 +199,7 @@ spec:
           value: 'http://configuration-service.keptn.svc.cluster.local:8080'
         - name: EVENTBROKER
           value: 'http://event-broker.keptn.svc.cluster.local/keptn'
+      serviceAccountName: keptn-default
 ---
 apiVersion: v1
 kind: Service

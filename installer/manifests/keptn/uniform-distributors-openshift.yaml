@@ -34,3 +34,4 @@ spec:
           value: 'sh.keptn.internal.event.project.create'
         - name: PUBSUB_RECIPIENT
           value: 'openshift-route-service'
+      serviceAccountName: keptn-default
