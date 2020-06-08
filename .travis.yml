@@ -104,7 +104,7 @@ gke_full: &gke_full
     # test installation on gcloud
     - test/test_install_gke.sh
     - test/utils/expose_keptn_bridge.sh
-    # test onboarding and new artifcat for sockshop
+    # test onboarding and new-artifact for sockshop
     - export PROJECT=sockshop
     - test/test_onboard_service.sh
     - test/test_new_artifact.sh
@@ -188,6 +188,7 @@ jobs:
         cd "${MONGODB_DS_FOLDER}"
         go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
         cd ..
+      - set +e # revert set -e from above
     after_success:
       - bash <(curl -s https://codecov.io/bash)
 
@@ -270,6 +271,7 @@ jobs:
     services:
       - docker
     script:
+    - set -e # Fail the whole script whenever any command fails
     - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
     - ./writeManifest.sh
     - TYPE="$(echo $TRAVIS_BRANCH | cut -d'/' -f1)"
@@ -335,6 +337,7 @@ jobs:
         source ./travis-scripts/build_feature.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
       fi
       ### ATTENTION: please make sure installer is always the last in this list to be built
+    - set +e # revert set -e from above
     after_script:
       - echo "The following images have been built and pushed to dockerhub:"
       - docker images | grep keptn
@@ -365,6 +368,7 @@ jobs:
     services:
       - docker
     script:
+    - set -e # Fail the whole script whenever any command fails
     - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
     # overwrite version for release branches based on the branch name
     - export VERSION=${BRANCH#"release-"}
@@ -377,6 +381,7 @@ jobs:
     - source ./travis-scripts/build_release.sh "${GATEKEEPER_SVC_IMAGE}" "${GATEKEEPER_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
     - source ./travis-scripts/build_release.sh "${DISTRIBUTOR_IMAGE}" "${DISTRIBUTOR_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
     - source ./travis-scripts/build_release.sh "${EVENTBROKER_IMAGE}" "${EVENTBROKER_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+    - set +e # revert set -e from above
     after_script:
       - echo "The following images have been built and pushed to dockerhub:"
       - docker images | grep keptn
@@ -387,6 +392,7 @@ jobs:
     services:
       - docker
     script:
+      - set -e # Fail the whole script whenever any command fails
       - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
       # overwrite version for release branches based on the branch name
       - export VERSION=${BRANCH#"release-"}
@@ -398,6 +404,7 @@ jobs:
       - source ./travis-scripts/build_release.sh "${LIGHTHOUSE_SVC_IMAGE}" "${LIGHTHOUSE_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
       - source ./travis-scripts/build_release.sh "${MONGODB_DS_IMAGE}" "${MONGODB_DS_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
       - source ./travis-scripts/build_release.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+      - set +e # revert set -e from above
     after_script:
       - echo "The following images have been built and pushed to dockerhub:"
       - docker images | grep keptn
@@ -470,18 +477,17 @@ jobs:
       - test/utils/download_and_install_oc_cli.sh
       - test/utils/minishift_create_cluster.sh
     script:
-      - kubectl get nodes || travis_terminate 1
+      - kubectl get nodes || travis_terminate 1 # sanity check that the K8s cluster is available
       # finally install keptn quality gates
       - test/test_install_minishift_quality_gates.sh
       - keptn status
       - export PROJECT=musicshop
       - test/test_quality_gates_standalone.sh
     after_success:
-      # delete google kubernetes cluster only on success (in case of an error we want to be able to dig into the cluster)
+      # delete kubernetes cluster only on success (in case of an error we want to be able to dig into the cluster)
       - echo "Tests were successful, cleaning up the cluster now..."
     after_failure:
       # print some debug info
-      - echo "Keptn Installation Log:"
       - cat ~/.keptn/keptn-installer.log
       - kubectl get events --sort-by='.lastTimestamp' --all-namespaces
       - kubectl get pods --all-namespaces
@@ -501,17 +507,16 @@ jobs:
       - test/utils/microk8s_create_cluster.sh
       - export KUBECONFIG=~/kubeconfig
     script:
-      - kubectl get nodes || travis_terminate 1
+      - kubectl get nodes || travis_terminate 1 # sanity check that the K8s cluster is available
       - test/test_install_kubernetes_quality_gates.sh
       - keptn status
       - export PROJECT=musicshop
       - test/test_quality_gates_standalone.sh
     after_success:
-      # delete google kubernetes cluster only on success (in case of an error we want to be able to dig into the cluster)
+      # delete kubernetes cluster only on success (in case of an error we want to be able to dig into the cluster)
       - echo "Tests were successful, cleaning up the cluster now..."
     after_failure:
       # print some debug info
-      - echo "Keptn Installation Log:"
       - cat ~/.keptn/keptn-installer.log
       - kubectl get events --sort-by='.lastTimestamp' --all-namespaces
       - kubectl get pods --all-namespaces
@@ -542,7 +547,7 @@ jobs:
       - export USE_CASE=quality-gates
       - test/utils/minikube_create_cluster.sh
     script:
-      - kubectl get nodes || travis_terminate 1
+      - kubectl get nodes || travis_terminate 1 # sanity check that the K8s cluster is available
       # finally install keptn quality gates
       - test/test_install_kubernetes_quality_gates.sh
       - keptn status
@@ -553,7 +558,6 @@ jobs:
       - echo "Tests were successful, cleaning up the cluster now..."
     after_failure:
       # print some debug info
-      - echo "Keptn Installation Log:"
       - cat ~/.keptn/keptn-installer.log
       - kubectl get events --sort-by='.lastTimestamp' --all-namespaces
       - kubectl get pods --all-namespaces
