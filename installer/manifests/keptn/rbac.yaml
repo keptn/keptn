@@ -4,22 +4,3 @@ kind: ServiceAccount
 metadata:
   name: keptn-default-sa
   namespace: keptn
-
-
-
-
-
-
----
-apiVersion: rbac.authorization.k8s.io/v1beta1
-kind: ClusterRoleBinding
-metadata:
-  name: keptn-rbac
-subjects:
-  - kind: ServiceAccount
-    name: default
-    namespace: keptn
-roleRef:
-  kind: ClusterRole
-  name: cluster-admin
-  apiGroup: rbac.authorization.k8s.io
