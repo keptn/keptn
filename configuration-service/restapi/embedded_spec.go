@@ -1382,6 +1382,151 @@ func init() {
         }
       ]
     },
+    "/project/{projectName}/stage/{stageName}/service/{serviceName}/remediation": {
+      "get": {
+        "tags": [
+          "remediation"
+        ],
+        "summary": "Get all open remediations",
+        "operationId": "getRemediations",
+        "parameters": [
+          {
+            "$ref": "#/parameters/pageSize"
+          },
+          {
+            "$ref": "#/parameters/nextPageKey"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/Remediations"
+            }
+          },
+          "404": {
+            "description": "Failed. Service could not be found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "remediation"
+        ],
+        "summary": "Create remediation",
+        "operationId": "createRemediation",
+        "parameters": [
+          {
+            "name": "remediation",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/Remediation"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/Remediation"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "$ref": "#/parameters/projectName"
+        },
+        {
+          "$ref": "#/parameters/stageName"
+        },
+        {
+          "$ref": "#/parameters/serviceName"
+        }
+      ]
+    },
+    "/project/{projectName}/stage/{stageName}/service/{serviceName}/remediation/{keptnContext}": {
+      "get": {
+        "tags": [
+          "remediation"
+        ],
+        "summary": "Get open remediations by KeptnContext",
+        "operationId": "getRemediationsForContext",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/Remediations"
+            }
+          },
+          "404": {
+            "description": "Failed. Remediations could not be found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "remediation"
+        ],
+        "summary": "Close open remediations for KeptnContext",
+        "operationId": "closeRemediations",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "$ref": "#/parameters/pageSize"
+        },
+        {
+          "$ref": "#/parameters/nextPageKey"
+        },
+        {
+          "$ref": "#/parameters/projectName"
+        },
+        {
+          "$ref": "#/parameters/stageName"
+        },
+        {
+          "$ref": "#/parameters/serviceName"
+        },
+        {
+          "$ref": "#/parameters/keptnContext"
+        }
+      ]
+    },
     "/project/{projectName}/stage/{stageName}/service/{serviceName}/resource": {
       "get": {
         "tags": [
@@ -1780,6 +1925,12 @@ func init() {
             "$ref": "#/definitions/Approval"
           }
         },
+        "openRemediations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Remediation"
+          }
+        },
         "serviceName": {
           "description": "Service name",
           "type": "string"
@@ -1929,6 +2080,54 @@ func init() {
         },
         "totalCount": {
           "description": "Total number of projects",
+          "type": "number"
+        }
+      }
+    },
+    "Remediation": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "description": "Executed action",
+          "type": "string"
+        },
+        "eventId": {
+          "description": "ID of the event",
+          "type": "string"
+        },
+        "keptnContext": {
+          "description": "Keptn Context ID of the event",
+          "type": "string"
+        },
+        "time": {
+          "description": "Time of the event",
+          "type": "string"
+        },
+        "type": {
+          "description": "Type of the event",
+          "type": "string"
+        }
+      }
+    },
+    "Remediations": {
+      "type": "object",
+      "properties": {
+        "nextPageKey": {
+          "description": "Pointer to next page, base64 encoded",
+          "type": "string"
+        },
+        "pageSize": {
+          "description": "Size of returned page",
+          "type": "number"
+        },
+        "remediations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Remediation"
+          }
+        },
+        "totalCount": {
+          "description": "Total number of stages",
           "type": "number"
         }
       }
@@ -2089,6 +2288,13 @@ func init() {
       "description": "Disable sync of upstream repo before reading content",
       "name": "disableUpstreamSync",
       "in": "query"
+    },
+    "keptnContext": {
+      "type": "string",
+      "description": "Keptn Context",
+      "name": "keptnContext",
+      "in": "path",
+      "required": true
     },
     "nextPageKey": {
       "type": "string",
@@ -3912,6 +4118,197 @@ func init() {
         }
       ]
     },
+    "/project/{projectName}/stage/{stageName}/service/{serviceName}/remediation": {
+      "get": {
+        "tags": [
+          "remediation"
+        ],
+        "summary": "Get all open remediations",
+        "operationId": "getRemediations",
+        "parameters": [
+          {
+            "maximum": 50,
+            "minimum": 1,
+            "type": "integer",
+            "default": 20,
+            "description": "The number of items to return",
+            "name": "pageSize",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Pointer to the next set of items",
+            "name": "nextPageKey",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/Remediations"
+            }
+          },
+          "404": {
+            "description": "Failed. Service could not be found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "remediation"
+        ],
+        "summary": "Create remediation",
+        "operationId": "createRemediation",
+        "parameters": [
+          {
+            "name": "remediation",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/Remediation"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/Remediation"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "description": "Name of the project",
+          "name": "projectName",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "description": "Name of the stage",
+          "name": "stageName",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "description": "Name of the service",
+          "name": "serviceName",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
+    "/project/{projectName}/stage/{stageName}/service/{serviceName}/remediation/{keptnContext}": {
+      "get": {
+        "tags": [
+          "remediation"
+        ],
+        "summary": "Get open remediations by KeptnContext",
+        "operationId": "getRemediationsForContext",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/Remediations"
+            }
+          },
+          "404": {
+            "description": "Failed. Remediations could not be found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "remediation"
+        ],
+        "summary": "Close open remediations for KeptnContext",
+        "operationId": "closeRemediations",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "maximum": 50,
+          "minimum": 1,
+          "type": "integer",
+          "default": 20,
+          "description": "The number of items to return",
+          "name": "pageSize",
+          "in": "query"
+        },
+        {
+          "type": "string",
+          "description": "Pointer to the next set of items",
+          "name": "nextPageKey",
+          "in": "query"
+        },
+        {
+          "type": "string",
+          "description": "Name of the project",
+          "name": "projectName",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "description": "Name of the stage",
+          "name": "stageName",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "description": "Name of the service",
+          "name": "serviceName",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "description": "Keptn Context",
+          "name": "keptnContext",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
     "/project/{projectName}/stage/{stageName}/service/{serviceName}/resource": {
       "get": {
         "tags": [
@@ -4384,6 +4781,12 @@ func init() {
             "$ref": "#/definitions/Approval"
           }
         },
+        "openRemediations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Remediation"
+          }
+        },
         "serviceName": {
           "description": "Service name",
           "type": "string"
@@ -4533,6 +4936,54 @@ func init() {
         },
         "totalCount": {
           "description": "Total number of projects",
+          "type": "number"
+        }
+      }
+    },
+    "Remediation": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "description": "Executed action",
+          "type": "string"
+        },
+        "eventId": {
+          "description": "ID of the event",
+          "type": "string"
+        },
+        "keptnContext": {
+          "description": "Keptn Context ID of the event",
+          "type": "string"
+        },
+        "time": {
+          "description": "Time of the event",
+          "type": "string"
+        },
+        "type": {
+          "description": "Type of the event",
+          "type": "string"
+        }
+      }
+    },
+    "Remediations": {
+      "type": "object",
+      "properties": {
+        "nextPageKey": {
+          "description": "Pointer to next page, base64 encoded",
+          "type": "string"
+        },
+        "pageSize": {
+          "description": "Size of returned page",
+          "type": "number"
+        },
+        "remediations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Remediation"
+          }
+        },
+        "totalCount": {
+          "description": "Total number of stages",
           "type": "number"
         }
       }
@@ -4693,6 +5144,13 @@ func init() {
       "description": "Disable sync of upstream repo before reading content",
       "name": "disableUpstreamSync",
       "in": "query"
+    },
+    "keptnContext": {
+      "type": "string",
+      "description": "Keptn Context",
+      "name": "keptnContext",
+      "in": "path",
+      "required": true
     },
     "nextPageKey": {
       "type": "string",
