@@ -59,30 +59,28 @@ rules:
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
+kind: ClusterRole
 metadata:
-  name: keptn-get-update-keptn-ingress
-  namespace: keptn
+  name: keptn-get-openshift-namespace
 rules:
   - apiGroups:
       - ""
     resources:
-      - ingress
+      - namespaces
     verbs:
       - get
-      - update
     resourceNames:
-      - "keptn-ingress"
+      - "openshift"
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: keptn-get-create-delete-bridge-vs-dstrule
+  name: keptn-configure-bridge
   namespace: keptn
 rules:
   - apiGroups:
-      - ""
+      - "istio.io"
     resources:
       - virtualservice
       - destinationrule
@@ -92,22 +90,24 @@ rules:
       - delete
     resourceNames:
       - "bridge"
-
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: keptn-get-api-vs
-  namespace: keptn
-rules:
   - apiGroups:
-      - ""
+      - "istio.io"
     resources:
       - virtualservice
     verbs:
       - get
     resourceNames:
       - "api"
+  - apiGroups:
+      - "extensions"
+      - "networking.k8s.io"
+    resources:
+      - ingress
+    verbs:
+      - get
+      - update
+    resourceNames:
+      - "keptn-ingress"
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -127,12 +127,12 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: keptn-api-service
+  name: keptn-api-service-configure-bridge
   namespace: keptn
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: keptn-get-update-keptn-ingress
+  name: keptn-configure-bridge
 subjects:
   - kind: ServiceAccount
     name: keptn-api-service
@@ -142,42 +142,27 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: keptn-api-service
-  namespace: keptn
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: keptn-get-create-delete-bridge-vs-dstrule
-subjects:
-  - kind: ServiceAccount
-    name: keptn-api-service
-    namespace: keptn
-
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: keptn-api-service
-  namespace: keptn
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: keptn-get-api-vs
-subjects:
-  - kind: ServiceAccount
-    name: keptn-api-service
-    namespace: keptn
-
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: keptn-api-service
+  name: keptn-api-service-read-keptndomain
   namespace: keptn
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: keptn-read-keptndomain
+subjects:
+  - kind: ServiceAccount
+    name: keptn-api-service
+    namespace: keptn
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: keptn-api-service-get-openshift-namespace
+  namespace: keptn
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: keptn-get-openshift-namespace
 subjects:
   - kind: ServiceAccount
     name: keptn-api-service
