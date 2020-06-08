@@ -17,7 +17,6 @@ import (
 	configutils "github.com/keptn/go-utils/pkg/api/utils"
 
 	keptn "github.com/keptn/go-utils/pkg/lib"
-	kubeutils "github.com/keptn/kubernetes-utils/pkg"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
@@ -330,16 +329,10 @@ func (client *Client) getDeleteInfoMessage(keptnHandler *keptn.Keptn) (string, e
 	msg := ""
 	for _, stage := range shipyard.Stages {
 		namespace := keptnHandler.KeptnBase.Project + "-" + stage.Name
-		exists, err := kubeutils.ExistsNamespace(true, namespace)
-		if err != nil {
-			return "", fmt.Errorf("error when checking availability of namespace: %v", err)
-		}
-		if exists {
-			msg += fmt.Sprintf("Namespace %s is not deleted. This may cause problems if "+
-				"a project with the same name is created later. "+
-				"If you would like to delete the namespace, please execute "+
-				"'kubectl delete ns %s'\n", namespace, namespace)
-		}
+		msg += fmt.Sprintf("Namespace %s is not managed by Keptn anymore and not deleted. This may cause problems if "+
+			"a project with the same name is created later. "+
+			"If you would like to delete the namespace, please execute "+
+			"'kubectl delete ns %s'\n", namespace, namespace)
 	}
 	return strings.TrimSpace(msg), nil
 }
