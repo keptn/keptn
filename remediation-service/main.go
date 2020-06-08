@@ -1,11 +1,14 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"net/url"
 	"os"
 	"strings"
@@ -28,13 +31,30 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 )
 
-const tillernamespace = "kube-system"
 const remediationFileName = "remediation.yaml"
 const configurationserviceconnection = "CONFIGURATION_SERVICE" //"localhost:6060" // "configuration-service:8080"
+const remediationSpecVersion = "0.2.0"
 
 type envConfig struct {
 	Port int    `envconfig:"RCV_PORT" default:"8080"`
 	Path string `envconfig:"RCV_PATH" default:"/"`
+}
+
+type remediation struct {
+	// Executed action
+	Action string `json:"action,omitempty"`
+
+	// ID of the event
+	EventID string `json:"eventId,omitempty"`
+
+	// Keptn Context ID of the event
+	KeptnContext string `json:"keptnContext,omitempty"`
+
+	// Time of the event
+	Time string `json:"time,omitempty"`
+
+	// Type of the event
+	Type string `json:"type,omitempty"`
 }
 
 func main() {
@@ -117,7 +137,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		logger.Error("Could not initialize Keptn handler: " + err.Error())
 	}
 
-	// valide if remediation should be performed
+	// check if remediation should be performed
 	resourceHandler := configutils.NewResourceHandler(os.Getenv(configurationserviceconnection))
 	autoRemediate, err := isRemediationEnabled(keptnHandler)
 	if err != nil {
@@ -142,42 +162,214 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	}
 
 	if err != nil {
-		logger.Error("Failed to get remediation.yaml file")
-
+		msg := "remediation file not configured"
+		logger.Error(msg)
+		_ = sendRemediationFinishedEvent(keptnHandler, keptn.RemediationStatusErrored, keptn.RemediationResultFailed, msg, logger)
 		return err
 	}
 	logger.Debug("remediation.yaml for service found")
 
 	// get remediation action from remediation.yaml
-	var remediationData keptn.Remediations
+	var remediationData keptn.RemediationV02
 	err = yaml.Unmarshal([]byte(resource.ResourceContent), &remediationData)
 	if err != nil {
-		logger.Error("Could not unmarshal remediation.yaml")
+		msg := "could not parse remediation.yaml"
+		logger.Error(msg + ": " + err.Error())
+		_ = sendRemediationFinishedEvent(keptnHandler, keptn.RemediationStatusErrored, keptn.RemediationResultFailed, msg, logger)
 		return err
 	}
 
-	for _, remediation := range remediationData.Remediations {
-		logger.Debug("Trying to map remediation '" + remediation.Name + "' to problem '" + problemEvent.ProblemTitle + "'")
-		if strings.HasPrefix(problemEvent.ProblemTitle, remediation.Name) {
-			logger.Debug("Remediation for problem found")
-			// currently only one remediation action is supported
-			actionTriggeredEventData, err := getActionTriggeredEventData(problemEvent, remediation.Actions[0], logger)
-			if err != nil {
-				logger.Error(err.Error())
-				return err
-			}
-			if err := sendActionTriggeredEvent(event, actionTriggeredEventData, logger); err != nil {
-				logger.Error(err.Error())
-				return err
-			}
-			return nil
+	if remediationData.Version != remediationSpecVersion {
+		msg := "remediation.yaml file does not conform to remediation spec v0.2.0"
+		logger.Error(msg)
+		_ = sendRemediationFinishedEvent(keptnHandler, keptn.RemediationStatusErrored, keptn.RemediationResultFailed, msg, logger)
+		return err
+	}
+
+	err = sendRemediationTriggeredEvent(keptnHandler, problemEvent, logger)
+	if err != nil {
+		msg := "could not send remediation.triggered event"
+		logger.Error(msg + ": " + err.Error())
+		_ = sendRemediationFinishedEvent(keptnHandler, keptn.RemediationStatusErrored, keptn.RemediationResultFailed, msg, logger)
+		return err
+	}
+
+	problemType := problemEvent.ProblemTitle
+
+	action := getActionForProblemType(remediationData, problemType, logger, 0)
+	if action == nil {
+		action = getActionForProblemType(remediationData, "*", logger, 0)
+	}
+
+	if action != nil {
+		actionTriggeredEventData, err := getActionTriggeredEventData(problemEvent, action, logger)
+		if err != nil {
+			logger.Error(err.Error())
+			return err
 		}
+
+		if err := sendActionTriggeredEvent(event, actionTriggeredEventData, logger); err != nil {
+			logger.Error(err.Error())
+			return err
+		}
+	} else {
+		msg := "No remediation configured for problem type " + problemType
+		logger.Info(msg)
+		_ = sendRemediationFinishedEvent(keptnHandler, keptn.RemediationStatusSucceeded, keptn.RemediationResultPass, "triggered all actions", logger)
+	}
+
+	return nil
+
+}
+
+func getActionForProblemType(remediationData keptn.RemediationV02, problemType string, logger *keptn.Logger, index int) *keptn.RemediationV02ActionsOnOpen {
+	for _, remediation := range remediationData.Spec.Remediations {
+		if strings.HasPrefix(problemType, remediation.ProblemType) {
+			logger.Info("Found remediation for problem type " + remediation.ProblemType)
+			if len(remediation.ActionsOnOpen) > index {
+				return &remediation.ActionsOnOpen[index]
+			}
+		}
+	}
+	return nil
+}
+
+func sendRemediationTriggeredEvent(keptnHandler *keptn.Keptn, problemDetails *keptn.ProblemEventData, logger keptn.LoggerInterface) error {
+	source, _ := url.Parse("remediation-service")
+	contentType := "application/json"
+
+	remediationFinishedEventData := &keptn.RemediationTriggeredEventData{
+		Project: keptnHandler.KeptnBase.Project,
+		Service: keptnHandler.KeptnBase.Service,
+		Stage:   keptnHandler.KeptnBase.Stage,
+		Problem: keptn.ProblemDetails{
+			State:          problemDetails.State,
+			ProblemID:      problemDetails.ProblemID,
+			ProblemTitle:   problemDetails.ProblemTitle,
+			ProblemDetails: problemDetails.ProblemDetails,
+			PID:            problemDetails.PID,
+			ProblemURL:     problemDetails.ProblemURL,
+			ImpactedEntity: problemDetails.ImpactedEntity,
+			Tags:           problemDetails.Tags,
+		},
+		Labels: keptnHandler.KeptnBase.Labels,
+	}
+
+	event := cloudevents.Event{
+		Context: cloudevents.EventContextV02{
+			ID:          uuid.New().String(),
+			Time:        &types.Timestamp{Time: time.Now()},
+			Type:        keptn.RemediationTriggeredEventType,
+			Source:      types.URLRef{URL: *source},
+			ContentType: &contentType,
+			Extensions:  map[string]interface{}{"shkeptncontext": keptnHandler.KeptnContext},
+		}.AsV02(),
+		Data: remediationFinishedEventData,
+	}
+
+	err := createRemediation(event.ID(), keptnHandler.KeptnContext, event.Time().String(), *keptnHandler.KeptnBase, keptn.RemediationTriggeredEventType, "")
+	if err != nil {
+		logger.Error("Could not create remediation: " + err.Error())
+		return err
+	}
+	err = keptnHandler.SendCloudEvent(event)
+	if err != nil {
+		logger.Error("Could not send action.finished event: " + err.Error())
+		return err
 	}
 
 	return nil
 }
 
-func getActionTriggeredEventData(problemEvent *keptn.ProblemEventData, action *keptn.RemediationAction,
+func getRemediationsEndpoint(configurationServiceEndpoint url.URL, project, stage, service, keptnContext string) string {
+	if keptnContext == "" {
+		return fmt.Sprintf("%s://%s/v1/project/%s/stage/%s/service/%s/remediation", configurationServiceEndpoint.Scheme, configurationServiceEndpoint.Host, project, stage, service)
+	}
+	return fmt.Sprintf("%s://%s/v1/project/%s/stage/%s/service/%s/remediation/%s", configurationServiceEndpoint.Scheme, configurationServiceEndpoint.Host, project, stage, service, keptnContext)
+}
+
+func createRemediation(eventID, keptnContext, time string, keptnBase keptn.KeptnBase, remediationEventType, action string) error {
+	configurationServiceEndpoint, err := keptn.GetServiceEndpoint(configurationserviceconnection)
+	if err != nil {
+		return errors.New("could not retrieve configuration-service URL")
+	}
+
+	newRemediation := &remediation{
+		Action:       action,
+		EventID:      eventID,
+		KeptnContext: keptnContext,
+		Time:         time,
+		Type:         remediationEventType,
+	}
+
+	queryURL := getRemediationsEndpoint(configurationServiceEndpoint, keptnBase.Project, keptnBase.Stage, keptnBase.Service, keptnContext)
+	client := &http.Client{}
+	payload, err := json.Marshal(newRemediation)
+	if err != nil {
+		return err
+	}
+	req, err := http.NewRequest("POST", queryURL, bytes.NewReader(payload))
+	if err != nil {
+		return err
+	}
+	req.Header.Add("content-type", "application/json")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
+		return errors.New(string(body))
+	}
+
+	return nil
+}
+
+func sendRemediationFinishedEvent(keptnHandler *keptn.Keptn, status keptn.RemediationStatusType, result keptn.RemediationResultType, message string, logger keptn.LoggerInterface) error {
+	source, _ := url.Parse("remediation-service")
+	contentType := "application/json"
+
+	remediationFinishedEventData := &keptn.RemediationFinishedEventData{
+		Project: keptnHandler.KeptnBase.Project,
+		Service: keptnHandler.KeptnBase.Service,
+		Stage:   keptnHandler.KeptnBase.Stage,
+		Problem: keptn.ProblemDetails{},
+		Labels:  keptnHandler.KeptnBase.Labels,
+		Remediation: keptn.RemediationFinished{
+			Status:  status,
+			Result:  result,
+			Message: message,
+		},
+	}
+
+	event := cloudevents.Event{
+		Context: cloudevents.EventContextV02{
+			ID:          uuid.New().String(),
+			Time:        &types.Timestamp{Time: time.Now()},
+			Type:        keptn.RemediationFinishedEventType,
+			Source:      types.URLRef{URL: *source},
+			ContentType: &contentType,
+			Extensions:  map[string]interface{}{"shkeptncontext": keptnHandler.KeptnContext},
+		}.AsV02(),
+		Data: remediationFinishedEventData,
+	}
+
+	err := keptnHandler.SendCloudEvent(event)
+	if err != nil {
+		logger.Error("Could not send action.finished event: " + err.Error())
+		return err
+	}
+	return nil
+}
+
+func getActionTriggeredEventData(problemEvent *keptn.ProblemEventData, action *keptn.RemediationV02ActionsOnOpen,
 	logger *keptn.Logger) (keptn.ActionTriggeredEventData, error) {
 	problemDetails := keptn.ProblemDetails{}
 	if err := json.Unmarshal(problemEvent.ProblemDetails, &problemDetails); err != nil {
@@ -190,9 +382,9 @@ func getActionTriggeredEventData(problemEvent *keptn.ProblemEventData, action *k
 		Service: problemEvent.Service,
 		Stage:   problemEvent.Stage,
 		Action: keptn.ActionInfo{
-			Name:        action.Action, // TODO: Name is missing
+			Name:        action.Name,
 			Action:      action.Action,
-			Description: "", // TODO: Description is missing
+			Description: action.Description,
 			Value:       action.Value,
 		},
 		Problem: problemDetails,
@@ -222,6 +414,12 @@ func sendActionTriggeredEvent(ce cloudevents.Event, actionTriggeredEventData kep
 			Extensions:  map[string]interface{}{"shkeptncontext": keptnHandler.KeptnContext},
 		}.AsV02(),
 		Data: actionTriggeredEventData,
+	}
+
+	err = createRemediation(event.ID(), keptnHandler.KeptnContext, event.Time().String(), *keptnHandler.KeptnBase, keptn.RemediationStatusChangedEventType, actionTriggeredEventData.Action.Action)
+	if err != nil {
+		logger.Error("Could not create remediation: " + err.Error())
+		return err
 	}
 
 	err = keptnHandler.SendCloudEvent(event)
