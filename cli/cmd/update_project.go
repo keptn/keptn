@@ -32,7 +32,7 @@ Updating a shipyard file is not possible.
 By executing the *update project* command, keptn will add the provided upstream repository to the existing internal Git repository that is used to maintain all project-related resources. 
 To upstream this internal Git repository to a remote repository, the Git user (*--git-user*), an access token (*--git-token*), and the remote URL (*--git-remote-url*) are required.
 
-For more information about updateing projects or upstream repositories visit https://keptn.sh/docs/develop/manage/project/ .
+For more information about updating projects or upstream repositories visit https://keptn.sh/docs/develop/manage/project/ .
 `,
 	Example:      `keptn update project PROJECTNAME --git-user=GIT_USER --git-token=GIT_TOKEN --git-remote-url=GIT_REMOTE_URL`,
 	SilenceUsage: true,
@@ -55,18 +55,6 @@ For more information about updateing projects or upstream repositories visit htt
 			return errors.New(errorMsg)
 		}
 		return nil
-	},
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-
-		if *updateProjectParams.GitUser == "" && *updateProjectParams.GitToken == "" && *updateProjectParams.RemoteURL == "" {
-			return nil
-		}
-
-		if *updateProjectParams.GitUser != "" && *updateProjectParams.GitToken != "" && *updateProjectParams.RemoteURL != "" {
-			return nil
-		}
-		return errors.New(`Please specify a 'git-user', 'git-token', and 'git-remote-url' as flags for configuring a Git upstream repository`)
-
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
