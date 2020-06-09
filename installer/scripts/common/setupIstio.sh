@@ -7,11 +7,9 @@ ISTIO_AVAILABLE=$?
 
 if [[ "$ISTIO_AVAILABLE" == 0 ]] && [[ "$INGRESS_INSTALL_OPTION" == "Reuse" ]]; then
     # An istio-version is already installed
-    print_info "Istio installation is reused but its compatibility is not checked"
+    print_info "Istio installation is reused but its full compatibility is not checked"
+    print_info "Checking if istio-ingressgateway is available in namespace istio-system"
     wait_for_deployment_in_namespace "istio-ingressgateway" "istio-system"
-    wait_for_deployment_in_namespace "istio-pilot" "istio-system"
-    wait_for_deployment_in_namespace "istio-citadel" "istio-system"
-    wait_for_deployment_in_namespace "istio-sidecar-injector" "istio-system"
     wait_for_all_pods_in_namespace "istio-system"
 
 elif [[ "$ISTIO_AVAILABLE" == 0 ]] && ([[ "$INGRESS_INSTALL_OPTION" == "StopIfInstalled" ]] || [[ "$INGRESS_INSTALL_OPTION" == "" ]] || [[ "$INGRESS_INSTALL_OPTION" == "INGRESS_INSTALL_PLACEHOLDER" ]]); then
