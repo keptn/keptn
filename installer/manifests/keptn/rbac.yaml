@@ -99,7 +99,7 @@ rules:
       - "extensions"
       - "networking.k8s.io"
     resources:
-      - ingress
+      - ingresses
     verbs:
       - get
       - update
