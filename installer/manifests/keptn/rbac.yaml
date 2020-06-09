@@ -4,6 +4,8 @@ kind: ServiceAccount
 metadata:
   name: keptn-default
   namespace: keptn
+  labels:
+    "app": "keptn"
 
 ---
 apiVersion: v1
@@ -11,6 +13,8 @@ kind: ServiceAccount
 metadata:
   name: keptn-helm-service
   namespace: keptn
+  labels:
+    "app": "keptn"
 
 ---
 apiVersion: v1
@@ -18,6 +22,8 @@ kind: ServiceAccount
 metadata:
   name: keptn-lighthouse-service
   namespace: keptn
+  labels:
+    "app": "keptn"
 
 ---
 apiVersion: v1
@@ -25,6 +31,8 @@ kind: ServiceAccount
 metadata:
   name: keptn-api-service
   namespace: keptn
+  labels:
+    "app": "keptn"
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -32,6 +40,8 @@ kind: Role
 metadata:
   name: keptn-read-keptndomain
   namespace: keptn
+  labels:
+    "app": "keptn"
 rules:
   - apiGroups:
       - ""
@@ -48,6 +58,8 @@ kind: Role
 metadata:
   name: keptn-create-update-configmaps
   namespace: keptn
+  labels:
+    "app": "keptn"
 rules:
   - apiGroups:
       - ""
@@ -62,6 +74,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: keptn-get-openshift-namespace
+  labels:
+    "app": "keptn"
 rules:
   - apiGroups:
       - ""
@@ -78,6 +92,8 @@ kind: Role
 metadata:
   name: keptn-configure-bridge
   namespace: keptn
+  labels:
+    "app": "keptn"
 rules:
   - apiGroups:
       - "istio.io"
@@ -114,6 +130,8 @@ kind: RoleBinding
 metadata:
   name: keptn-lighthouse-service
   namespace: keptn
+  labels:
+    "app": "keptn"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -129,6 +147,8 @@ kind: RoleBinding
 metadata:
   name: keptn-api-service-configure-bridge
   namespace: keptn
+  labels:
+    "app": "keptn"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -144,6 +164,8 @@ kind: RoleBinding
 metadata:
   name: keptn-api-service-read-keptndomain
   namespace: keptn
+  labels:
+    "app": "keptn"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -159,6 +181,8 @@ kind: RoleBinding
 metadata:
   name: keptn-api-service-get-openshift-namespace
   namespace: keptn
+  labels:
+    "app": "keptn"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
