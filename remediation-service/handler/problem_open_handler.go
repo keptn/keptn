@@ -4,19 +4,15 @@ import (
 	"errors"
 	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go"
-	"github.com/ghodss/yaml"
-	configmodels "github.com/keptn/go-utils/pkg/api/models"
-	configutils "github.com/keptn/go-utils/pkg/api/utils"
 	keptn "github.com/keptn/go-utils/pkg/lib"
-	"os"
 	"strings"
 )
 
 type ProblemOpenEventHandler struct {
-	KeptnHandler   *keptn.Keptn
-	Logger         keptn.LoggerInterface
-	Event          cloudevents.Event
-	RemediationLog *RemediationLog
+	KeptnHandler *keptn.Keptn
+	Logger       keptn.LoggerInterface
+	Event        cloudevents.Event
+	Remediation  *Remediation
 }
 
 func (eh *ProblemOpenEventHandler) HandleEvent() error {
@@ -39,7 +35,6 @@ func (eh *ProblemOpenEventHandler) HandleEvent() error {
 	eh.Logger.Debug("Received problem event with state " + problemEvent.State)
 
 	// check if remediation should be performed
-	resourceHandler := configutils.NewResourceHandler(os.Getenv(configurationserviceconnection))
 	autoRemediate, err := eh.isRemediationEnabled()
 	if err != nil {
 		eh.Logger.Error(fmt.Sprintf("Failed to check if remediation is enabled: %s", err.Error()))
@@ -54,81 +49,51 @@ func (eh *ProblemOpenEventHandler) HandleEvent() error {
 	}
 
 	// get remediation.yaml
-	var resource *configmodels.Resource
-	if problemEvent.Service != "" {
-		resource, err = resourceHandler.GetServiceResource(problemEvent.Project, problemEvent.Stage,
-			problemEvent.Service, remediationFileName)
-	} else {
-		resource, err = resourceHandler.GetStageResource(problemEvent.Project, problemEvent.Stage, remediationFileName)
-	}
-
+	resource, err := eh.Remediation.getRemediationFile()
 	if err != nil {
-		msg := "remediation file not configured"
-		eh.Logger.Error(msg)
-		_ = eh.RemediationLog.sendRemediationFinishedEvent(keptn.RemediationStatusErrored, keptn.RemediationResultFailed, msg)
 		return err
 	}
-	eh.Logger.Debug("remediation.yaml for service found")
 
 	// get remediation action from remediation.yaml
-	var remediationData keptn.RemediationV02
-	err = yaml.Unmarshal([]byte(resource.ResourceContent), &remediationData)
+	remediationData, err := eh.Remediation.getRemediation(resource)
 	if err != nil {
-		msg := "could not parse remediation.yaml"
-		eh.Logger.Error(msg + ": " + err.Error())
-		_ = eh.RemediationLog.sendRemediationFinishedEvent(keptn.RemediationStatusErrored, keptn.RemediationResultFailed, msg)
 		return err
 	}
 
-	if remediationData.Version != remediationSpecVersion {
-		msg := "remediation.yaml file does not conform to remediation spec v0.2.0"
-		eh.Logger.Error(msg)
-		_ = eh.RemediationLog.sendRemediationFinishedEvent(keptn.RemediationStatusErrored, keptn.RemediationResultFailed, msg)
-		return err
-	}
-
-	err = eh.RemediationLog.sendRemediationTriggeredEvent(problemEvent)
+	err = eh.Remediation.sendRemediationTriggeredEvent(problemEvent)
 	if err != nil {
 		msg := "could not send remediation.triggered event"
 		eh.Logger.Error(msg + ": " + err.Error())
-		_ = eh.RemediationLog.sendRemediationFinishedEvent(keptn.RemediationStatusErrored, keptn.RemediationResultFailed, msg)
+		_ = eh.Remediation.sendRemediationFinishedEvent(keptn.RemediationStatusErrored, keptn.RemediationResultFailed, msg)
 		return err
 	}
 
 	problemType := problemEvent.ProblemTitle
 
-	action := eh.RemediationLog.getActionForProblemType(remediationData, problemType, 0)
+	actionIndex := 0
+	action := eh.Remediation.getActionForProblemType(*remediationData, problemType, actionIndex)
 	if action == nil {
-		action = eh.RemediationLog.getActionForProblemType(remediationData, "*", 0)
+		action = eh.Remediation.getActionForProblemType(*remediationData, "*", actionIndex)
 	}
 
 	if action != nil {
-		err := eh.RemediationLog.sendRemediationStatusChangedEvent(action, 0)
+		err = eh.Remediation.triggerAction(action, actionIndex, keptn.ProblemDetails{
+			State:          problemEvent.State,
+			ProblemID:      problemEvent.ProblemID,
+			ProblemTitle:   problemEvent.ProblemTitle,
+			ProblemDetails: problemEvent.ProblemDetails,
+			PID:            problemEvent.PID,
+			ProblemURL:     problemEvent.ProblemURL,
+			ImpactedEntity: problemEvent.ImpactedEntity,
+			Tags:           problemEvent.Tags,
+		})
 		if err != nil {
-			msg := "could not send remediation.status.changed event"
-			eh.Logger.Error(msg + ": " + err.Error())
-			_ = eh.RemediationLog.sendRemediationFinishedEvent(keptn.RemediationStatusErrored, keptn.RemediationResultFailed, msg)
-			return err
-		}
-
-		actionTriggeredEventData, err := eh.RemediationLog.getActionTriggeredEventData(problemEvent, action)
-		if err != nil {
-			msg := "could not create action.triggered event"
-			eh.Logger.Error(msg + ": " + err.Error())
-			_ = eh.RemediationLog.sendRemediationFinishedEvent(keptn.RemediationStatusErrored, keptn.RemediationResultFailed, msg)
-			return err
-		}
-
-		if err := eh.RemediationLog.sendActionTriggeredEvent(eh.Event, actionTriggeredEventData); err != nil {
-			msg := "could not send action.triggered event"
-			eh.Logger.Error(msg + ": " + err.Error())
-			_ = eh.RemediationLog.sendRemediationFinishedEvent(keptn.RemediationStatusErrored, keptn.RemediationResultFailed, msg)
 			return err
 		}
 	} else {
 		msg := "No remediation configured for problem type " + problemType
 		eh.Logger.Info(msg)
-		_ = eh.RemediationLog.sendRemediationFinishedEvent(keptn.RemediationStatusSucceeded, keptn.RemediationResultPass, "triggered all actions")
+		_ = eh.Remediation.sendRemediationFinishedEvent(keptn.RemediationStatusSucceeded, keptn.RemediationResultPass, "triggered all actions")
 		err = deleteRemediation(eh.KeptnHandler.KeptnContext, *eh.KeptnHandler.KeptnBase)
 		if err != nil {
 			eh.Logger.Error("Could not close remediation: " + err.Error())
