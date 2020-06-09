@@ -38,7 +38,7 @@ spec:
                 secretKeyRef:
                   name: keptn-api-token
                   key: keptn-api-token
-      serviceAccountName: keptn-default
+      serviceAccountName: keptn-api-service
 ---
 apiVersion: v1
 kind: Service
