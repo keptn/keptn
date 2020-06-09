@@ -2,7 +2,7 @@
 
 # download and install minikube
 MINIKUBE_VERSION=${MINIKUBE_VERSION:-"v1.2.0"}
-echo "Downlaoding and installing Minikube in Version ${MINIKUBE_VERSION}"
+echo "Downloading and installing Minikube in Version ${MINIKUBE_VERSION}"
 curl -Lo minikube "https://storage.googleapis.com/minikube/releases/${MINIKUBE_VERSION}/minikube-linux-amd64" && chmod +x minikube && sudo mv minikube /usr/local/bin/
 
 
