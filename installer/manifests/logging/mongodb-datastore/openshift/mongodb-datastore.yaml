@@ -15,6 +15,7 @@ spec:
       labels:
         run: mongodb-datastore
     spec:
+      serviceAccountName: keptn-ds-default
       containers:
       - name: mongodb-datastore
         image: keptn/mongodb-datastore:latest

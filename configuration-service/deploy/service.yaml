@@ -17,6 +17,7 @@ spec:
       labels:
         run: configuration-service
     spec:
+      serviceAccountName: keptn-default
       containers:
       - name: configuration-service
         image: keptn/configuration-service:latest
@@ -41,7 +42,6 @@ spec:
       - name: configuration-volume
         persistentVolumeClaim:
           claimName: configuration-volume
-
 ---
 apiVersion: v1
 kind: Service

@@ -14,6 +14,7 @@ spec:
       labels:
         run: openshift-route-service
     spec:
+      serviceAccountName: keptn-default
       containers:
       - name: openshift-route-service
         image: keptn/openshift-route-service:latest

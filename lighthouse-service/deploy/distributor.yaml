@@ -13,6 +13,7 @@ spec:
       labels:
         run: distributor
     spec:
+      serviceAccountName: keptn-default
       containers:
         - name: distributor
           image: keptn/distributor:latest
