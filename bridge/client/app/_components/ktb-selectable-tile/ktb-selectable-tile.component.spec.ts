@@ -1,22 +1,21 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { KtbSelectableTileComponent } from './ktb-selectable-tile.component';
+import {ComponentFixture, TestBed, fakeAsync} from '@angular/core/testing';
 import {By} from "@angular/platform-browser";
 import {Component} from "@angular/core";
+
 import {AppModule} from "../../app.module";
+import {KtbSelectableTileComponent} from './ktb-selectable-tile.component';
 
 describe('KtbSelectableTileComponent', () => {
   let component: SimpleKtbSelectableTileComponent;
   let fixture: ComponentFixture<SimpleKtbSelectableTileComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(fakeAsync(() => {
     TestBed.configureTestingModule({
       declarations: [
-        SimpleKtbSelectableTileComponent
+        SimpleKtbSelectableTileComponent,
+        KtbSelectableTileComponent,
       ],
-      imports: [
-        AppModule,
-      ],
+      imports: [],
     })
     .compileComponents();
   }));
