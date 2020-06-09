@@ -4,3 +4,5 @@ kind: ServiceAccount
 metadata:
   name: keptn-ds-default
   namespace: keptn-datastore
+  labels:
+    "app": "keptn"
