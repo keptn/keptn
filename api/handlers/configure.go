@@ -129,7 +129,7 @@ func PostConfigureBridgeHandlerFunc(params configure.PostConfigureBridgeExposePa
 		case virtualservice:
 			exposeErr = removeBridgeVirtualService(l)
 		case ingress:
-			exposeErr = removeBridgeFromIngress(l)
+			exposeErr = removeBridgeFromKeptnIngress(l)
 		case ocroute:
 			exposeErr = sendOCRouteRequest("", false, l)
 		}
@@ -343,7 +343,7 @@ func removeBridgeVirtualService(l *keptnutils.Logger) error {
 	return nil
 }
 
-func removeBridgeFromIngress(l *keptnutils.Logger) error {
+func removeBridgeFromKeptnIngress(l *keptnutils.Logger) error {
 	l.Info("Dispose Bridge of keptn-ingress")
 
 	clientset, err := k8sutils.GetClientset(useInClusterConfig)
@@ -355,14 +355,7 @@ func removeBridgeFromIngress(l *keptnutils.Logger) error {
 		return err
 	}
 	l.Info("keptn-ingress retreived")
-
-	rules := ing.Spec.Rules[:0]
-	for _, x := range ing.Spec.Rules {
-		if !strings.HasPrefix(x.Host, "bridge.keptn") {
-			rules = append(rules, x)
-		}
-	}
-	ing.Spec.Rules = rules
+	removeBridgeFromIngress(ing)
 
 	_, err = clientset.NetworkingV1beta1().Ingresses("keptn").Update(ing)
 	if err != nil {
@@ -370,6 +363,17 @@ func removeBridgeFromIngress(l *keptnutils.Logger) error {
 	}
 	l.Info("Rule of Bridge successfully deleted from Keptn-ingress")
 	return nil
+}
+
+func removeBridgeFromIngress(ingress *networking.Ingress) {
+
+	rules := ingress.Spec.Rules[:0]
+	for _, x := range ingress.Spec.Rules {
+		if !strings.HasPrefix(x.Host, "bridge.keptn") {
+			rules = append(rules, x)
+		}
+	}
+	ingress.Spec.Rules = rules
 }
 
 func getHostForBridge(keptnDomain string) string {
