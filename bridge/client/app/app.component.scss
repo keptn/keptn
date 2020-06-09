@@ -25,25 +25,3 @@
   }
 }
 
-.page-note {
-  z-index: 101;
-  width: 100%;
-  text-align: center;
-  line-height: 2.5;
-  overflow: hidden;
-
-  animation: slideDown 4s ease 0s 1 forwards;
-}
-
-.info-note {
-  background-color: $linkcolor;
-}
-.error-note {
-  background-color: $error-color;
-}
-.success-note {
-  background-color: $cta-color-active;
-}
-.warning-note {
-  background-color: $warning-color;
-}

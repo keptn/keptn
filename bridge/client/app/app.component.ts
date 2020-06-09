@@ -1,6 +1,8 @@
 import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {Component, OnInit} from '@angular/core';
 import {ApiService} from "./_services/api.service";
+import {NotificationsService} from "./_services/notifications.service";
+import {NotificationType} from "./_models/notification";
 
 declare var dT_;
 
@@ -12,11 +14,9 @@ declare var dT_;
 export class AppComponent implements OnInit {
 
   public version: string;
-  public notes;
 
-  constructor(private http: HttpClient, private apiService: ApiService) {
+  constructor(private http: HttpClient, private apiService: ApiService, private notificationsService: NotificationsService) {
     if(typeof dT_!='undefined' && dT_.initAngularNg){dT_.initAngularNg(http, HttpHeaders);}
-    this.notes = [];
   }
 
   ngOnInit(): void {
@@ -26,10 +26,4 @@ export class AppComponent implements OnInit {
       });
   }
 
-  showNote(type, message) {
-    this.notes.push({
-      type: type,
-      message: message
-    });
-  }
 }
