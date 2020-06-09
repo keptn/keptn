@@ -71,23 +71,6 @@ rules:
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: keptn-get-openshift-namespace
-  labels:
-    "app": "keptn"
-rules:
-  - apiGroups:
-      - ""
-    resources:
-      - namespaces
-    verbs:
-      - get
-    resourceNames:
-      - "openshift"
-
----
-apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: keptn-configure-bridge
@@ -96,7 +79,7 @@ metadata:
     "app": "keptn"
 rules:
   - apiGroups:
-      - "istio.io"
+      - "networking.istio.io"
     resources:
       - virtualservice
       - destinationrule
@@ -107,7 +90,7 @@ rules:
     resourceNames:
       - "bridge"
   - apiGroups:
-      - "istio.io"
+      - "networking.istio.io"
     resources:
       - virtualservice
     verbs:
@@ -124,6 +107,14 @@ rules:
       - update
     resourceNames:
       - "keptn-ingress"
+- apiGroups:
+      - ""
+    resources:
+      - namespaces
+    verbs:
+      - get
+    resourceNames:
+      - "openshift"
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -170,23 +161,6 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: keptn-read-keptndomain
-subjects:
-  - kind: ServiceAccount
-    name: keptn-api-service
-    namespace: keptn
-
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: keptn-api-service-get-openshift-namespace
-  namespace: keptn
-  labels:
-    "app": "keptn"
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: keptn-get-openshift-namespace
 subjects:
   - kind: ServiceAccount
     name: keptn-api-service
