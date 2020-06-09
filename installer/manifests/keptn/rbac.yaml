@@ -107,7 +107,7 @@ rules:
       - update
     resourceNames:
       - "keptn-ingress"
-- apiGroups:
+  - apiGroups:
       - ""
     resources:
       - namespaces
