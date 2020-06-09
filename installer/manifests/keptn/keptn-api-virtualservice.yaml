@@ -14,7 +14,6 @@ spec:
     - route:
         - destination:
             host: api-gateway-nginx.keptn.svc.cluster.local
-      websocketUpgrade: true
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule

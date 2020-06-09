@@ -81,18 +81,16 @@ rules:
   - apiGroups:
       - "networking.istio.io"
     resources:
-      - virtualservice
-      - destinationrule
+      - virtualservices
+      - destinationrules
     verbs:
       - get
       - create
       - delete
-    resourceNames:
-      - "bridge"
   - apiGroups:
       - "networking.istio.io"
     resources:
-      - virtualservice
+      - virtualservices
     verbs:
       - get
     resourceNames:
