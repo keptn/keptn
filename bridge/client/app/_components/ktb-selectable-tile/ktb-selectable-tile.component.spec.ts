@@ -2,7 +2,6 @@ import {ComponentFixture, TestBed, fakeAsync} from '@angular/core/testing';
 import {By} from "@angular/platform-browser";
 import {Component} from "@angular/core";
 
-import {AppModule} from "../../app.module";
 import {KtbSelectableTileComponent} from './ktb-selectable-tile.component';
 
 describe('KtbSelectableTileComponent', () => {
