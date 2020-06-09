@@ -80,6 +80,7 @@ spec:
         - name: INGRESS_INSTALL_OPTION
           value: StopIfInstalled
       restartPolicy: Never
+      serviceAccountName: keptn-installer
 `
 	if res != expected {
 		t.Error("installation manifest does not match")
@@ -184,6 +185,7 @@ spec:
         - name: INGRESS_INSTALL_OPTION
           value: StopIfInstalled
       restartPolicy: Never
+      serviceAccountName: keptn-installer
 `
 	if res != expected {
 		t.Error("installation manifest does not match")
@@ -236,6 +238,7 @@ spec:
         - name: INGRESS_INSTALL_OPTION
           value: StopIfInstalled
       restartPolicy: Never
+      serviceAccountName: keptn-installer
 `
 	if res != expected {
 		t.Error("installation manifest does not match")
@@ -288,6 +291,7 @@ spec:
         - name: INGRESS_INSTALL_OPTION
           value: StopIfInstalled
       restartPolicy: Never
+      serviceAccountName: keptn-installer
 `
 	if res != expected {
 		t.Error("installation manifest does not match")
@@ -340,6 +344,7 @@ spec:
         - name: INGRESS_INSTALL_OPTION
           value: Reuse
       restartPolicy: Never
+      serviceAccountName: keptn-installer
 `
 	if res != expected {
 		t.Error("installation manifest does not match")
