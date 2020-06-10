@@ -254,26 +254,28 @@ func NewMockEventbroker(expectedEvents []*keptnapi.KeptnContextExtendedCE) *Mock
 	return svc
 }
 
-func (cs *MockEventbroker) HandleRequest(w http.ResponseWriter, r *http.Request) {
+func (ev *MockEventbroker) HandleRequest(w http.ResponseWriter, r *http.Request) {
+	if len(ev.ExpectedEvents) == 0 {
+		ev.ReceivedAllRequests = true
+	}
 	receivedEvent := &keptnapi.KeptnContextExtendedCE{}
-
 	defer r.Body.Close()
 	bytes, _ := ioutil.ReadAll(r.Body)
 	_ = json.Unmarshal(bytes, receivedEvent)
 
-	cs.ReceivedEvents = append(cs.ReceivedEvents, receivedEvent)
+	ev.ReceivedEvents = append(ev.ReceivedEvents, receivedEvent)
 
-	if len(cs.ExpectedEvents) != len(cs.ReceivedEvents) {
-		cs.ReceivedAllRequests = false
+	if len(ev.ExpectedEvents) != len(ev.ReceivedEvents) {
+		ev.ReceivedAllRequests = false
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(200)
 		w.Write([]byte(`{}`))
 		return
 	}
 	receivedAllExpectedEvents := true
-	for _, expectedEvent := range cs.ExpectedEvents {
+	for _, expectedEvent := range ev.ExpectedEvents {
 		foundExpected := false
-		for _, receivedEvent := range cs.ReceivedEvents {
+		for _, receivedEvent := range ev.ReceivedEvents {
 			if *receivedEvent.Type == *expectedEvent.Type &&
 				receivedEvent.Shkeptncontext == expectedEvent.Shkeptncontext {
 				foundExpected = true
@@ -286,7 +288,7 @@ func (cs *MockEventbroker) HandleRequest(w http.ResponseWriter, r *http.Request)
 		}
 	}
 
-	cs.ReceivedAllRequests = receivedAllExpectedEvents
+	ev.ReceivedAllRequests = receivedAllExpectedEvents
 
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(200)

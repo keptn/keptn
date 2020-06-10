@@ -107,6 +107,13 @@ const evaluationDoneEventPayload = `{
 	"teststrategy": "real-user"
   }`
 
+const evaluationDoneEventWithIrrelevantTestStrategyPayload = `{
+    "project": "sockshop",
+    "stage": "production", 
+    "service": "service",
+	"teststrategy": "performance"
+  }`
+
 type MockDatastore struct {
 	Server              *httptest.Server
 	ReturnedEventsForID map[string]string
@@ -205,6 +212,48 @@ func TestEvaluationDoneEventHandler_HandleEvent(t *testing.T) {
 				"test-id-2": previousRemediationStatusChangedEvent,
 			},
 		},
+		{
+			name: "all actions executed - send finished event",
+			fields: fields{
+				Event: createTestCloudEvent(keptn.EvaluationDoneEventType, evaluationDoneEventPayload),
+			},
+			wantErr:                            false,
+			returnedRemediationYamlResource:    remediationYamlResourceWithValidRemediation,
+			expectedRemediationOnConfigService: []*remediationStatus{},
+			expectedEventOnEventbroker: []*keptnapi.KeptnContextExtendedCE{
+				{
+					Contenttype:    "application/json",
+					Data:           nil,
+					Extensions:     nil,
+					ID:             "",
+					Shkeptncontext: testKeptnContext,
+					Source:         nil,
+					Specversion:    "",
+					Time:           strfmt.DateTime{},
+					Type:           stringp(keptn.RemediationFinishedEventType),
+				},
+			},
+			returnedRemediations: previousRemediations,
+			returnedEvents: map[string]string{
+				"test-id-1": previousRemediationTriggeredEvent,
+				"test-id-2": previousRemediationStatusChangedEvent,
+			},
+		},
+		{
+			name: "do not handle events with teststrategy != real-user",
+			fields: fields{
+				Event: createTestCloudEvent(keptn.EvaluationDoneEventType, evaluationDoneEventWithIrrelevantTestStrategyPayload),
+			},
+			wantErr:                            false,
+			returnedRemediationYamlResource:    remediationYamlResourceWithValidRemediation,
+			expectedRemediationOnConfigService: []*remediationStatus{},
+			expectedEventOnEventbroker:         []*keptnapi.KeptnContextExtendedCE{},
+			returnedRemediations:               previousRemediations,
+			returnedEvents: map[string]string{
+				"test-id-1": previousRemediationTriggeredEvent,
+				"test-id-2": previousRemediationStatusChangedEvent,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -239,11 +288,26 @@ func TestEvaluationDoneEventHandler_HandleEvent(t *testing.T) {
 				t.Errorf("HandleEvent() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
-			if mockCS.ReceivedAllRequests && mockEV.ReceivedAllRequests {
-				t.Log("Received all required events")
+			if len(mockCS.ExpectedRemediations) == 0 && len(mockCS.ReceivedRemediations) == 0 {
+				t.Log("Received all required events on configuration service")
 			} else {
-				t.Errorf("Did not receive all required events")
+				if mockCS.ReceivedAllRequests {
+					t.Log("Received all required events on configuration service")
+				} else {
+					t.Errorf("Did not receive all required events on configuration service")
+				}
 			}
+
+			if len(mockEV.ExpectedEvents) == 0 && len(mockEV.ReceivedEvents) == 0 {
+				t.Log("Received all required events on eventbroker")
+			} else {
+				if mockEV.ReceivedAllRequests {
+					t.Log("Received all required events on eventbroker")
+				} else {
+					t.Errorf("Did not receive all required events on eventbroker")
+				}
+			}
+
 		})
 	}
 }

@@ -14,7 +14,10 @@ type ActionFinishedEventHandler struct {
 	Logger       keptn.LoggerInterface
 	Event        cloudevents.Event
 	Remediation  *Remediation
+	WaitFunction waitFunction
 }
+
+type waitFunction func()
 
 func (eh *ActionFinishedEventHandler) HandleEvent() error {
 	actionFinishedEvent := &keptn.ActionFinishedEventData{}
@@ -26,7 +29,13 @@ func (eh *ActionFinishedEventHandler) HandleEvent() error {
 	}
 	eh.Logger.Info(fmt.Sprintf("Received action.finished event for remediationStatus action. result = %v", actionFinishedEvent.Action.Result))
 	eh.Logger.Info(fmt.Sprintf("Waiting for %d minutes for action to take effect", waitTimeInMinutes))
-	<-time.After(waitTimeInMinutes * time.Minute)
+
+	if eh.WaitFunction == nil {
+		eh.WaitFunction = func() {
+			<-time.After(waitTimeInMinutes * time.Minute)
+		}
+	}
+	eh.WaitFunction()
 	eh.Logger.Info("Wait time is over. Sending start-evaluation event.")
 
 	err = eh.Remediation.sendStartEvaluationEvent()
