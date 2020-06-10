@@ -1,4 +1,5 @@
-@import "../../variables";
+@import '../../variables';
+@import '~@dynatrace/barista-components/core/src/style/variables';
 
 header {
   color: #fff;
@@ -25,6 +26,20 @@ header {
   p {
     font-size: 1.25rem;
     font-weight: 600;
+  }
+}
+
+::ng-deep .dt-context-dialog-panel {
+  background-color: lighten($primary-color, 5%) !important;
+
+  p.small {
+    color: $gray-100;
+  }
+  a {
+    color: lighten($primary-color, 60%);
+  }
+  a:hover {
+    color: lighten($primary-color, 55%);
   }
 }
 

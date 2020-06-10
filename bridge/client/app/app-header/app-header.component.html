@@ -17,6 +17,24 @@
       <!-- TODO: create search input to filter events in bridge -->
     </div>
     <div fxLayout="row">
+      <button dt-icon-button variant="nested" [dtContextDialogTrigger]="dialog" aria-label="Open user menu">
+        <dt-icon name="user-uem"></dt-icon>
+      </button>
+      <dt-context-dialog #dialog aria-label="User menu" ariaLabelClose="Close user menu">
+        <div fxLayout="column" fxLayoutAlign="flex-end end">
+          <p class="small m-0">Keptn version <span></span></p>
+          <p class="small m-0">Bridge version <span></span></p>
+        </div>
+        <div class="mt-3" fxLayout="row">
+          <div fxFlex>
+            <p class="m-0">Enable version check</p>
+          </div>
+          <div>
+            <dt-switch></dt-switch>
+          </div>
+        </div>
+        <p class="m-0 mt-3">By enabling this feature, Keptn will collect statistical data. Details can be found at <a href="https://keptn.sh/docs/0.6.0/reference/version-check">https://keptn.sh/docs/0.6.0/reference/version-check</a></p>
+      </dt-context-dialog>
     </div>
   </div>
 </header>
