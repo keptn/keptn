@@ -45,6 +45,9 @@ spec:
       description: Toggle feature flag EnablePromotion from ON to OFF
       value:
         EnablePromotion: off
+	- name: my second action
+	  action: escalate
+	  description: escalate the problem
   - problemType: '*'
     actionsOnOpen:
     - name:
@@ -53,6 +56,11 @@ spec:
 
 const remediationYamlResourceWithValidRemediation = `{
       "resourceContent": "dmVyc2lvbjogMC4yLjAKa2luZDogUmVtZWRpYXRpb24KbWV0YWRhdGE6CiAgbmFtZTogcmVtZWRpYXRpb24tY29uZmlndXJhdGlvbgpzcGVjOgogIHJlbWVkaWF0aW9uczogCiAgLSBwcm9ibGVtVHlwZTogIlJlc3BvbnNlIHRpbWUgZGVncmFkYXRpb24iCiAgICBhY3Rpb25zT25PcGVuOgogICAgLSBuYW1lOiBUb29nbGUgZmVhdHVyZSBmbGFnCiAgICAgIGFjdGlvbjogdG9nZ2xlZmVhdHVyZQogICAgICBkZXNjcmlwdGlvbjogVG9nZ2xlIGZlYXR1cmUgZmxhZyBFbmFibGVQcm9tb3Rpb24gZnJvbSBPTiB0byBPRkYKICAgICAgdmFsdWU6CiAgICAgICAgRW5hYmxlUHJvbW90aW9uOiBvZmYKICAtIHByb2JsZW1UeXBlOiAnKicKICAgIGFjdGlvbnNPbk9wZW46CiAgICAtIG5hbWU6CiAgICAgIGFjdGlvbjogZXNjYWxhdGUKICAgICAgZGVzY3JpcHRpb246IEVzY2FsYXRlIHRoZSBwcm9ibGVt",
+      "resourceURI": "remediation.yaml"
+    }`
+
+const remediationYamlResourceWithValidRemediationAndMultipleActions = `{
+      "resourceContent": "dmVyc2lvbjogMC4yLjAKa2luZDogUmVtZWRpYXRpb24KbWV0YWRhdGE6CiAgbmFtZTogcmVtZWRpYXRpb24tY29uZmlndXJhdGlvbgpzcGVjOgogIHJlbWVkaWF0aW9uczogCiAgLSBwcm9ibGVtVHlwZTogIlJlc3BvbnNlIHRpbWUgZGVncmFkYXRpb24iCiAgICBhY3Rpb25zT25PcGVuOgogICAgLSBuYW1lOiBUb29nbGUgZmVhdHVyZSBmbGFnCiAgICAgIGFjdGlvbjogdG9nZ2xlZmVhdHVyZQogICAgICBkZXNjcmlwdGlvbjogVG9nZ2xlIGZlYXR1cmUgZmxhZyBFbmFibGVQcm9tb3Rpb24gZnJvbSBPTiB0byBPRkYKICAgICAgdmFsdWU6CiAgICAgICAgRW5hYmxlUHJvbW90aW9uOiBvZmYKICAgIC0gbmFtZTogbXkgc2Vjb25kIGFjdGlvbgogICAgICBhY3Rpb246IGVzY2FsYXRlCiAgICAgIGRlc2NyaXB0aW9uOiBlc2NhbGF0ZSB0aGUgcHJvYmxlbQogIC0gcHJvYmxlbVR5cGU6ICcqJwogICAgYWN0aW9uc09uT3BlbjoKICAgIC0gbmFtZToKICAgICAgYWN0aW9uOiBlc2NhbGF0ZQogICAgICBkZXNjcmlwdGlvbjogRXNjYWxhdGUgdGhlIHByb2JsZW0=",
       "resourceURI": "remediation.yaml"
     }`
 
@@ -129,13 +137,15 @@ type MockConfigurationService struct {
 	RemediationYamlResource string
 	Server                  *httptest.Server
 	ReceivedAllRequests     bool
+	ReturnedRemediations    string
 }
 
-func NewMockConfigurationService(expectedRemediations []*remediationStatus, remediationYamlResource string) *MockConfigurationService {
+func NewMockConfigurationService(expectedRemediations []*remediationStatus, remediationYamlResource string, returnedRemediations string) *MockConfigurationService {
 	svc := &MockConfigurationService{
 		ExpectedRemediations:    expectedRemediations,
 		ReceivedRemediations:    []*remediationStatus{},
 		RemediationYamlResource: remediationYamlResource,
+		ReturnedRemediations:    returnedRemediations,
 		Server:                  nil,
 	}
 
@@ -170,6 +180,13 @@ func (cs *MockConfigurationService) HandleRequest(w http.ResponseWriter, r *http
 			w.Header().Add("Content-Type", "application/json")
 			w.WriteHeader(200)
 			w.Write([]byte(`{}`))
+			return
+		}
+		if r.Method == http.MethodGet {
+			cs.ReceivedRemediations = []*remediationStatus{}
+			w.Header().Add("Content-Type", "application/json")
+			w.WriteHeader(200)
+			w.Write([]byte(cs.ReturnedRemediations))
 			return
 		}
 		rem := &remediationStatus{}
@@ -216,6 +233,7 @@ type MockEventbroker struct {
 	ReceivedEvents      []*keptnapi.KeptnContextExtendedCE
 	Server              *httptest.Server
 	ReceivedAllRequests bool
+	ReturnedEventsForID map[string]string
 }
 
 func NewMockEventbroker(expectedEvents []*keptnapi.KeptnContextExtendedCE) *MockEventbroker {
@@ -413,7 +431,7 @@ func TestProblemOpenEventHandler_HandleEvent(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockCS := NewMockConfigurationService(tt.expectedRemediationOnConfigService, tt.returnedRemediationYamlResource)
+			mockCS := NewMockConfigurationService(tt.expectedRemediationOnConfigService, tt.returnedRemediationYamlResource, "")
 			defer mockCS.Server.Close()
 
 			mockEV := NewMockEventbroker(tt.expectedEventOnEventbroker)

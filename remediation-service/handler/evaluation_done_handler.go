@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"errors"
 	cloudevents "github.com/cloudevents/sdk-go"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
@@ -139,7 +140,7 @@ func (eh *EvaluationDoneEventHandler) getLastRemediationStatusChangedEvent(remed
 func (eh *EvaluationDoneEventHandler) getRemediationTriggeredEvent(remediations []*remediationStatus) (*keptn.RemediationTriggeredEventData, error) {
 	var remediationTriggered *remediationStatus
 	for _, remediation := range remediations {
-		if remediation.Type == keptn.RemediationStatusChangedEventType {
+		if remediation.Type == keptn.RemediationTriggeredEventType {
 			remediationTriggered = remediation
 			break
 		}
@@ -166,7 +167,9 @@ func (eh *EvaluationDoneEventHandler) getRemediationTriggeredEvent(remediations 
 	}
 	remediationTriggeredEvent := &keptn.RemediationTriggeredEventData{}
 
-	err := mapstructure.Decode(events[0].Data, remediationTriggeredEvent)
+	marshal, _ := json.Marshal(events[0].Data)
+	err := json.Unmarshal(marshal, remediationTriggeredEvent)
+
 	if err != nil {
 		msg := "could not decode remediation.triggered event"
 		eh.Logger.Info(msg + ": " + err.Error())
