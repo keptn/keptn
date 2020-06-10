@@ -194,7 +194,7 @@ func createRemediation(eventID, keptnContext, time string, keptnBase keptn.Keptn
 		Type:         remediationEventType,
 	}
 
-	queryURL := getRemediationsEndpoint(configurationServiceEndpoint, keptnBase.Project, keptnBase.Stage, keptnBase.Service, keptnContext)
+	queryURL := getRemediationsEndpoint(configurationServiceEndpoint, keptnBase.Project, keptnBase.Stage, keptnBase.Service, "")
 	client := &http.Client{}
 	payload, err := json.Marshal(newRemediation)
 	if err != nil {
@@ -509,7 +509,7 @@ func (r *Remediation) getRemediation(resource *configmodels.Resource) (*keptn.Re
 		msg := "remediation.yaml file does not conform to remediation spec v0.2.0"
 		r.Logger.Error(msg)
 		_ = r.sendRemediationFinishedEvent(keptn.RemediationStatusErrored, keptn.RemediationResultFailed, msg)
-		return nil, err
+		return nil, errors.New(msg)
 	}
 	return remediationData, nil
 }

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	cloudevents "github.com/cloudevents/sdk-go"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
+	"github.com/go-openapi/strfmt"
 	keptnapi "github.com/keptn/go-utils/pkg/api/models"
 	keptn "github.com/keptn/go-utils/pkg/lib"
 	"github.com/stretchr/testify/assert"
@@ -13,8 +14,23 @@ import (
 	"os"
 	"strings"
 	"testing"
-	"time"
 )
+
+const shipyardContent = `stages:
+  - name: "dev"
+    deployment_strategy: "direct"
+    test_strategy: "functional"
+  - name: "staging"
+    deployment_strategy: "blue_green_service"
+    test_strategy: "performance"
+  - name: "production"
+    deployment_strategy: "blue_green_service"
+    remediation_strategy: "automated"`
+
+const shipyardResource = `{
+      "resourceContent": "c3RhZ2VzOgogIC0gbmFtZTogImRldiIKICAgIGRlcGxveW1lbnRfc3RyYXRlZ3k6ICJkaXJlY3QiCiAgICB0ZXN0X3N0cmF0ZWd5OiAiZnVuY3Rpb25hbCIKICAtIG5hbWU6ICJzdGFnaW5nIgogICAgZGVwbG95bWVudF9zdHJhdGVneTogImJsdWVfZ3JlZW5fc2VydmljZSIKICAgIHRlc3Rfc3RyYXRlZ3k6ICJwZXJmb3JtYW5jZSIKICAtIG5hbWU6ICJwcm9kdWN0aW9uIgogICAgZGVwbG95bWVudF9zdHJhdGVneTogImJsdWVfZ3JlZW5fc2VydmljZSIKICAgIHJlbWVkaWF0aW9uX3N0cmF0ZWd5OiAiYXV0b21hdGVkIg==",
+      "resourceURI": "shipyard.yaml"
+    }`
 
 const remediationYamlContent = `version: 0.2.0
 kind: Remediation
@@ -29,19 +45,19 @@ spec:
       description: Toggle feature flag EnablePromotion from ON to OFF
       value:
         EnablePromotion: off
-  - problemType: *
+  - problemType: '*'
     actionsOnOpen:
     - name:
       action: escalate
       description: Escalate the problem`
 
 const remediationYamlResourceWithValidRemediation = `{
-      "resourceContent": "dmVyc2lvbjogMC4yLjAKa2luZDogUmVtZWRpYXRpb24KbWV0YWRhdGE6CiAgbmFtZTogcmVtZWRpYXRpb24tY29uZmlndXJhdGlvbgpzcGVjOgogIHJlbWVkaWF0aW9uczogCiAgLSBwcm9ibGVtVHlwZTogIlJlc3BvbnNlIHRpbWUgZGVncmFkYXRpb24iCiAgICBhY3Rpb25zT25PcGVuOgogICAgLSBuYW1lOiBUb29nbGUgZmVhdHVyZSBmbGFnCiAgICAgIGFjdGlvbjogdG9nZ2xlZmVhdHVyZQogICAgICBkZXNjcmlwdGlvbjogVG9nZ2xlIGZlYXR1cmUgZmxhZyBFbmFibGVQcm9tb3Rpb24gZnJvbSBPTiB0byBPRkYKICAgICAgdmFsdWU6CiAgICAgICAgRW5hYmxlUHJvbW90aW9uOiBvZmYKICAtIHByb2JsZW1UeXBlOiAqCiAgICBhY3Rpb25zT25PcGVuOgogICAgLSBuYW1lOgogICAgICBhY3Rpb246IGVzY2FsYXRlCiAgICAgIGRlc2NyaXB0aW9uOiBFc2NhbGF0ZSB0aGUgcHJvYmxlbQ==",
+      "resourceContent": "dmVyc2lvbjogMC4yLjAKa2luZDogUmVtZWRpYXRpb24KbWV0YWRhdGE6CiAgbmFtZTogcmVtZWRpYXRpb24tY29uZmlndXJhdGlvbgpzcGVjOgogIHJlbWVkaWF0aW9uczogCiAgLSBwcm9ibGVtVHlwZTogIlJlc3BvbnNlIHRpbWUgZGVncmFkYXRpb24iCiAgICBhY3Rpb25zT25PcGVuOgogICAgLSBuYW1lOiBUb29nbGUgZmVhdHVyZSBmbGFnCiAgICAgIGFjdGlvbjogdG9nZ2xlZmVhdHVyZQogICAgICBkZXNjcmlwdGlvbjogVG9nZ2xlIGZlYXR1cmUgZmxhZyBFbmFibGVQcm9tb3Rpb24gZnJvbSBPTiB0byBPRkYKICAgICAgdmFsdWU6CiAgICAgICAgRW5hYmxlUHJvbW90aW9uOiBvZmYKICAtIHByb2JsZW1UeXBlOiAnKicKICAgIGFjdGlvbnNPbk9wZW46CiAgICAtIG5hbWU6CiAgICAgIGFjdGlvbjogZXNjYWxhdGUKICAgICAgZGVzY3JpcHRpb246IEVzY2FsYXRlIHRoZSBwcm9ibGVt",
       "resourceURI": "remediation.yaml"
     }`
 
 const remediationYamlResourceWithInvalidSpecVersion = `{
-      "resourceContent": "a2luZDogUmVtZWRpYXRpb24KbWV0YWRhdGE6CiAgbmFtZTogcmVtZWRpYXRpb24tY29uZmlndXJhdGlvbgpzcGVjOgogIHJlbWVkaWF0aW9uczogCiAgLSBwcm9ibGVtVHlwZTogIlJlc3BvbnNlIHRpbWUgZGVncmFkYXRpb24iCiAgICBhY3Rpb25zT25PcGVuOgogICAgLSBuYW1lOiBUb29nbGUgZmVhdHVyZSBmbGFnCiAgICAgIGFjdGlvbjogdG9nZ2xlZmVhdHVyZQogICAgICBkZXNjcmlwdGlvbjogVG9nZ2xlIGZlYXR1cmUgZmxhZyBFbmFibGVQcm9tb3Rpb24gZnJvbSBPTiB0byBPRkYKICAgICAgdmFsdWU6CiAgICAgICAgRW5hYmxlUHJvbW90aW9uOiBvZmYKICAtIHByb2JsZW1UeXBlOiAqCiAgICBhY3Rpb25zT25PcGVuOgogICAgLSBuYW1lOgogICAgICBhY3Rpb246IGVzY2FsYXRlCiAgICAgIGRlc2NyaXB0aW9uOiBFc2NhbGF0ZSB0aGUgcHJvYmxlbQ==",
+      "resourceContent": "a2luZDogUmVtZWRpYXRpb24KbWV0YWRhdGE6CiAgbmFtZTogcmVtZWRpYXRpb24tY29uZmlndXJhdGlvbgpzcGVjOgogIHJlbWVkaWF0aW9uczogCiAgLSBwcm9ibGVtVHlwZTogIlJlc3BvbnNlIHRpbWUgZGVncmFkYXRpb24iCiAgICBhY3Rpb25zT25PcGVuOgogICAgLSBuYW1lOiBUb29nbGUgZmVhdHVyZSBmbGFnCiAgICAgIGFjdGlvbjogdG9nZ2xlZmVhdHVyZQogICAgICBkZXNjcmlwdGlvbjogVG9nZ2xlIGZlYXR1cmUgZmxhZyBFbmFibGVQcm9tb3Rpb24gZnJvbSBPTiB0byBPRkYKICAgICAgdmFsdWU6CiAgICAgICAgRW5hYmxlUHJvbW90aW9uOiBvZmYKICAtIHByb2JsZW1UeXBlOiAnKicKICAgIGFjdGlvbnNPbk9wZW46CiAgICAtIG5hbWU6CiAgICAgIGFjdGlvbjogZXNjYWxhdGUKICAgICAgZGVzY3JpcHRpb246IEVzY2FsYXRlIHRoZSBwcm9ibGVt",
       "resourceURI": "remediation.yaml"
     }`
 
@@ -51,14 +67,6 @@ const remediationYamlResourceWithNoRemediations = `{
     }`
 
 const responseTimeProblemEventPayload = `{
-  "type": "sh.keptn.event.problem.open",
-  "specversion": "0.2",
-  "source": "https://github.com/keptn/keptn/dynatrace-service",
-  "id": "f2b878d3-03c0-4e8f-bc3f-454bc1b3d79d",
-  "time": "2019-06-07T07:02:15.64489Z",
-  "contenttype": "application/json",
-  "shkeptncontext": "08735340-6f9e-4b32-97ff-3b6c292bc509",
-  "data": {
     "State": "OPEN",
     "PID": "93a5-3fas-a09d-8ckf",
     "ProblemID": "ab81-941c-f198",
@@ -78,18 +86,9 @@ const responseTimeProblemEventPayload = `{
     "project": "sockshop",
     "stage": "production", 
     "service": "service"
-  }
-}`
+  }`
 
 const unknownProblemEventPayload = `{
-  "type": "sh.keptn.event.problem.open",
-  "specversion": "0.2",
-  "source": "https://github.com/keptn/keptn/prometheus-service",
-  "id": "f2b878d3-03c0-4e8f-bc3f-454bc1b3d79d",
-  "time": "2019-06-07T07:02:15.64489Z",
-  "contenttype": "application/json",
-  "shkeptncontext": "08735340-6f9e-4b32-97ff-3b6c292bc509",
-  "data": {
     "State": "OPEN",
     "PID": "",
     "ProblemID": "762",
@@ -101,17 +100,18 @@ const unknownProblemEventPayload = `{
     "project": "sockshop",
     "stage": "production", 
     "service": "service"
-  }
-}`
+  }`
 
-func createTestProblemOpenCloudEvent(data string) cloudevents.Event {
+const testKeptnContext = "test-context"
+
+func createTestCloudEvent(ceType, data string) cloudevents.Event {
 	contentType := "application/json"
-	return cloudevents.Event{
+	event := cloudevents.Event{
 		Context: &cloudevents.EventContextV02{
 			SpecVersion: "0.2",
-			Type:        keptn.ProblemOpenEventType,
+			Type:        ceType,
 			Source:      types.URLRef{},
-			ID:          "",
+			ID:          "1234",
 			Time:        nil,
 			SchemaURL:   nil,
 			ContentType: &contentType,
@@ -119,6 +119,8 @@ func createTestProblemOpenCloudEvent(data string) cloudevents.Event {
 		},
 		Data: []byte(data),
 	}
+	event.SetExtension("shkeptncontext", testKeptnContext)
+	return event
 }
 
 func TestProblemOpenEventHandler_HandleEvent(t *testing.T) {
@@ -126,18 +128,33 @@ func TestProblemOpenEventHandler_HandleEvent(t *testing.T) {
 	var returnedRemediationYamlResource string
 
 	var expectedRemediations []*remediationStatus
-	receivedRemediations := []*remediationStatus{}
+	var receivedRemediations []*remediationStatus
 
-	configurationServiceReceivedExpectedRequests := make(chan bool)
+	configurationServiceReceivedExpectedRequests := false //make(chan bool)
 	// mock configuration-service
 	testConfigurationService := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if strings.Contains(r.RequestURI, "remediation.yaml") {
+			if len(expectedRemediations) == 0 {
+				configurationServiceReceivedExpectedRequests = true
+			}
+			if strings.Contains(r.RequestURI, "shipyard.yaml") {
+				w.Header().Add("Content-Type", "application/json")
+				w.WriteHeader(200)
+				w.Write([]byte(shipyardResource))
+				return
+			} else if strings.Contains(r.RequestURI, "remediation.yaml") {
 				w.Header().Add("Content-Type", "application/json")
 				w.WriteHeader(200)
 				w.Write([]byte(returnedRemediationYamlResource))
 				return
 			} else if strings.Contains(r.RequestURI, "/remediation") {
+				if r.Method == http.MethodDelete {
+					receivedRemediations = []*remediationStatus{}
+					w.Header().Add("Content-Type", "application/json")
+					w.WriteHeader(200)
+					w.Write([]byte(`{}`))
+					return
+				}
 				rem := &remediationStatus{}
 
 				defer r.Body.Close()
@@ -146,12 +163,18 @@ func TestProblemOpenEventHandler_HandleEvent(t *testing.T) {
 
 				receivedRemediations = append(receivedRemediations, rem)
 
+				if len(expectedRemediations) != len(receivedRemediations) {
+					configurationServiceReceivedExpectedRequests = false
+					w.Header().Add("Content-Type", "application/json")
+					w.WriteHeader(200)
+					w.Write([]byte(`{}`))
+					return
+				}
 				receivedAllExpectedRemediations := true
 				for _, expectedRemediation := range expectedRemediations {
 					foundExpected := false
 					for _, receivedRemediation := range receivedRemediations {
 						if receivedRemediation.Type == expectedRemediation.Type &&
-							receivedRemediation.EventID == expectedRemediation.EventID &&
 							receivedRemediation.KeptnContext == expectedRemediation.KeptnContext &&
 							receivedRemediation.Action == expectedRemediation.Action {
 							foundExpected = true
@@ -164,9 +187,7 @@ func TestProblemOpenEventHandler_HandleEvent(t *testing.T) {
 					}
 				}
 
-				if receivedAllExpectedRemediations {
-					configurationServiceReceivedExpectedRequests <- true
-				}
+				configurationServiceReceivedExpectedRequests = receivedAllExpectedRemediations
 			}
 			w.Header().Add("Content-Type", "application/json")
 			w.WriteHeader(200)
@@ -177,9 +198,11 @@ func TestProblemOpenEventHandler_HandleEvent(t *testing.T) {
 
 	os.Setenv(configurationserviceconnection, testConfigurationService.URL)
 
-	eventBrokerReceivedExpectedRequests := make(chan bool)
+	//eventBrokerReceivedExpectedRequests := make(chan bool)
+	eventBrokerReceivedExpectedRequests := false //make(chan bool)
+
 	var expectedEvents []*keptnapi.KeptnContextExtendedCE
-	receivedEvents := []*keptnapi.KeptnContextExtendedCE{}
+	var receivedEvents []*keptnapi.KeptnContextExtendedCE
 	// mock eventbroker
 	testEventBroker := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -191,11 +214,18 @@ func TestProblemOpenEventHandler_HandleEvent(t *testing.T) {
 
 			receivedEvents = append(receivedEvents, receivedEvent)
 
+			if len(expectedEvents) != len(receivedEvents) {
+				eventBrokerReceivedExpectedRequests = false
+				w.Header().Add("Content-Type", "application/json")
+				w.WriteHeader(200)
+				w.Write([]byte(`{}`))
+				return
+			}
 			receivedAllExpectedEvents := true
 			for _, expectedEvent := range expectedEvents {
 				foundExpected := false
 				for _, receivedEvent := range receivedEvents {
-					if receivedEvent.Type == expectedEvent.Type &&
+					if *receivedEvent.Type == *expectedEvent.Type &&
 						receivedEvent.Shkeptncontext == expectedEvent.Shkeptncontext {
 						foundExpected = true
 						break
@@ -207,9 +237,8 @@ func TestProblemOpenEventHandler_HandleEvent(t *testing.T) {
 				}
 			}
 
-			if receivedAllExpectedEvents {
-				eventBrokerReceivedExpectedRequests <- true
-			}
+			eventBrokerReceivedExpectedRequests = receivedAllExpectedEvents
+
 			w.Header().Add("Content-Type", "application/json")
 			w.WriteHeader(200)
 			w.Write([]byte(`{}`))
@@ -228,10 +257,139 @@ func TestProblemOpenEventHandler_HandleEvent(t *testing.T) {
 		expectedRemediationOnConfigService []*remediationStatus
 		expectedEventOnEventbroker         []*keptnapi.KeptnContextExtendedCE
 	}{
-		// TODO: Add test cases.
+		{
+			name: "valid remediation.yaml found, specific remediation action executed",
+			fields: fields{
+				Event: createTestCloudEvent(keptn.ProblemOpenEventType, responseTimeProblemEventPayload),
+			},
+			wantErr:                         false,
+			returnedRemediationYamlResource: remediationYamlResourceWithValidRemediation,
+			expectedRemediationOnConfigService: []*remediationStatus{
+				{
+					Action:       "",
+					EventID:      "",
+					KeptnContext: testKeptnContext,
+					Time:         "",
+					Type:         keptn.RemediationTriggeredEventType,
+				},
+				{
+					Action:       "togglefeature",
+					EventID:      "",
+					KeptnContext: testKeptnContext,
+					Time:         "",
+					Type:         keptn.RemediationStatusChangedEventType,
+				},
+			},
+			expectedEventOnEventbroker: []*keptnapi.KeptnContextExtendedCE{
+				{
+					Contenttype:    "application/json",
+					Data:           nil,
+					Extensions:     nil,
+					ID:             "",
+					Shkeptncontext: testKeptnContext,
+					Source:         nil,
+					Specversion:    "",
+					Time:           strfmt.DateTime{},
+					Type:           stringp(keptn.RemediationTriggeredEventType),
+				},
+				{
+					Contenttype:    "application/json",
+					Data:           nil,
+					Extensions:     nil,
+					ID:             "",
+					Shkeptncontext: testKeptnContext,
+					Source:         nil,
+					Specversion:    "",
+					Time:           strfmt.DateTime{},
+					Type:           stringp(keptn.RemediationStatusChangedEventType),
+				},
+				{
+					Contenttype:    "application/json",
+					Data:           nil,
+					Extensions:     nil,
+					ID:             "",
+					Shkeptncontext: testKeptnContext,
+					Source:         nil,
+					Specversion:    "",
+					Time:           strfmt.DateTime{},
+					Type:           stringp(keptn.ActionTriggeredEventType),
+				},
+			},
+		},
+		{
+			name: "invalid remediation.yaml found",
+			fields: fields{
+				Event: createTestCloudEvent(keptn.ProblemOpenEventType, responseTimeProblemEventPayload),
+			},
+			wantErr:                            true,
+			returnedRemediationYamlResource:    remediationYamlResourceWithInvalidSpecVersion,
+			expectedRemediationOnConfigService: []*remediationStatus{},
+			expectedEventOnEventbroker: []*keptnapi.KeptnContextExtendedCE{
+				{
+					Contenttype:    "application/json",
+					Data:           nil,
+					Extensions:     nil,
+					ID:             "",
+					Shkeptncontext: testKeptnContext,
+					Source:         nil,
+					Specversion:    "",
+					Time:           strfmt.DateTime{},
+					Type:           stringp(keptn.RemediationFinishedEventType),
+				},
+			},
+		},
+		{
+			name: "valid remediation.yaml found, no remediation included",
+			fields: fields{
+				Event: createTestCloudEvent(keptn.ProblemOpenEventType, responseTimeProblemEventPayload),
+			},
+			wantErr:                         false,
+			returnedRemediationYamlResource: remediationYamlResourceWithNoRemediations,
+			expectedRemediationOnConfigService: []*remediationStatus{
+				{
+					Action:       "",
+					EventID:      "",
+					KeptnContext: testKeptnContext,
+					Time:         "",
+					Type:         keptn.RemediationTriggeredEventType,
+				},
+			},
+			expectedEventOnEventbroker: []*keptnapi.KeptnContextExtendedCE{
+				{
+					Contenttype:    "application/json",
+					Data:           nil,
+					Extensions:     nil,
+					ID:             "",
+					Shkeptncontext: testKeptnContext,
+					Source:         nil,
+					Specversion:    "",
+					Time:           strfmt.DateTime{},
+					Type:           stringp(keptn.RemediationTriggeredEventType),
+				},
+				{
+					Contenttype:    "application/json",
+					Data:           nil,
+					Extensions:     nil,
+					ID:             "",
+					Shkeptncontext: testKeptnContext,
+					Source:         nil,
+					Specversion:    "",
+					Time:           strfmt.DateTime{},
+					Type:           stringp(keptn.RemediationFinishedEventType),
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+
+			receivedRemediations = []*remediationStatus{}
+			expectedRemediations = tt.expectedRemediationOnConfigService
+			configurationServiceReceivedExpectedRequests = false
+
+			receivedEvents = []*keptnapi.KeptnContextExtendedCE{}
+			expectedEvents = tt.expectedEventOnEventbroker
+			eventBrokerReceivedExpectedRequests = false
 
 			returnedRemediationYamlResource = tt.returnedRemediationYamlResource
 
@@ -256,25 +414,17 @@ func TestProblemOpenEventHandler_HandleEvent(t *testing.T) {
 				t.Errorf("HandleEvent() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
-			configServiceSuccess := false
-			eventBrokerSuccess := false
-			for {
-				select {
-				case configServiceSuccess = <-configurationServiceReceivedExpectedRequests:
-					if configServiceSuccess && eventBrokerSuccess {
-						break
-					}
-				case eventBrokerSuccess = <-eventBrokerReceivedExpectedRequests:
-					if configServiceSuccess && eventBrokerSuccess {
-						break
-					}
-				case <-time.After(5 * time.Second):
-					t.Error("timed out")
-					break
-				}
+			if configurationServiceReceivedExpectedRequests && eventBrokerReceivedExpectedRequests {
+				t.Log("Received all required events")
+			} else {
+				t.Errorf("Did not receive all required events")
 			}
 		})
 	}
+}
+
+func stringp(s string) *string {
+	return &s
 }
 
 func TestValidTagsDeriving(t *testing.T) {
