@@ -123,129 +123,159 @@ func createTestCloudEvent(ceType, data string) cloudevents.Event {
 	return event
 }
 
-func TestProblemOpenEventHandler_HandleEvent(t *testing.T) {
+type MockConfigurationService struct {
+	ExpectedRemediations    []*remediationStatus
+	ReceivedRemediations    []*remediationStatus
+	RemediationYamlResource string
+	Server                  *httptest.Server
+	ReceivedAllRequests     bool
+}
 
-	var returnedRemediationYamlResource string
+func NewMockConfigurationService(expectedRemediations []*remediationStatus, remediationYamlResource string) *MockConfigurationService {
+	svc := &MockConfigurationService{
+		ExpectedRemediations:    expectedRemediations,
+		ReceivedRemediations:    []*remediationStatus{},
+		RemediationYamlResource: remediationYamlResource,
+		Server:                  nil,
+	}
 
-	var expectedRemediations []*remediationStatus
-	var receivedRemediations []*remediationStatus
-
-	configurationServiceReceivedExpectedRequests := false //make(chan bool)
-	// mock configuration-service
-	testConfigurationService := httptest.NewServer(
+	svc.Server = httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if len(expectedRemediations) == 0 {
-				configurationServiceReceivedExpectedRequests = true
-			}
-			if strings.Contains(r.RequestURI, "shipyard.yaml") {
-				w.Header().Add("Content-Type", "application/json")
-				w.WriteHeader(200)
-				w.Write([]byte(shipyardResource))
-				return
-			} else if strings.Contains(r.RequestURI, "remediation.yaml") {
-				w.Header().Add("Content-Type", "application/json")
-				w.WriteHeader(200)
-				w.Write([]byte(returnedRemediationYamlResource))
-				return
-			} else if strings.Contains(r.RequestURI, "/remediation") {
-				if r.Method == http.MethodDelete {
-					receivedRemediations = []*remediationStatus{}
-					w.Header().Add("Content-Type", "application/json")
-					w.WriteHeader(200)
-					w.Write([]byte(`{}`))
-					return
-				}
-				rem := &remediationStatus{}
-
-				defer r.Body.Close()
-				bytes, _ := ioutil.ReadAll(r.Body)
-				_ = json.Unmarshal(bytes, rem)
-
-				receivedRemediations = append(receivedRemediations, rem)
-
-				if len(expectedRemediations) != len(receivedRemediations) {
-					configurationServiceReceivedExpectedRequests = false
-					w.Header().Add("Content-Type", "application/json")
-					w.WriteHeader(200)
-					w.Write([]byte(`{}`))
-					return
-				}
-				receivedAllExpectedRemediations := true
-				for _, expectedRemediation := range expectedRemediations {
-					foundExpected := false
-					for _, receivedRemediation := range receivedRemediations {
-						if receivedRemediation.Type == expectedRemediation.Type &&
-							receivedRemediation.KeptnContext == expectedRemediation.KeptnContext &&
-							receivedRemediation.Action == expectedRemediation.Action {
-							foundExpected = true
-							break
-						}
-					}
-					if !foundExpected {
-						receivedAllExpectedRemediations = false
-						break
-					}
-				}
-
-				configurationServiceReceivedExpectedRequests = receivedAllExpectedRemediations
-			}
-			w.Header().Add("Content-Type", "application/json")
-			w.WriteHeader(200)
-			w.Write([]byte(``))
+			svc.HandleRequest(w, r)
 		}),
 	)
-	defer testConfigurationService.Close()
 
-	os.Setenv(configurationserviceconnection, testConfigurationService.URL)
+	os.Setenv(configurationserviceconnection, svc.Server.URL)
 
-	//eventBrokerReceivedExpectedRequests := make(chan bool)
-	eventBrokerReceivedExpectedRequests := false //make(chan bool)
+	return svc
+}
 
-	var expectedEvents []*keptnapi.KeptnContextExtendedCE
-	var receivedEvents []*keptnapi.KeptnContextExtendedCE
-	// mock eventbroker
-	testEventBroker := httptest.NewServer(
-		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			receivedEvent := &keptnapi.KeptnContextExtendedCE{}
-
-			defer r.Body.Close()
-			bytes, _ := ioutil.ReadAll(r.Body)
-			_ = json.Unmarshal(bytes, receivedEvent)
-
-			receivedEvents = append(receivedEvents, receivedEvent)
-
-			if len(expectedEvents) != len(receivedEvents) {
-				eventBrokerReceivedExpectedRequests = false
-				w.Header().Add("Content-Type", "application/json")
-				w.WriteHeader(200)
-				w.Write([]byte(`{}`))
-				return
-			}
-			receivedAllExpectedEvents := true
-			for _, expectedEvent := range expectedEvents {
-				foundExpected := false
-				for _, receivedEvent := range receivedEvents {
-					if *receivedEvent.Type == *expectedEvent.Type &&
-						receivedEvent.Shkeptncontext == expectedEvent.Shkeptncontext {
-						foundExpected = true
-						break
-					}
-				}
-				if !foundExpected {
-					receivedAllExpectedEvents = false
-					break
-				}
-			}
-
-			eventBrokerReceivedExpectedRequests = receivedAllExpectedEvents
-
+func (cs *MockConfigurationService) HandleRequest(w http.ResponseWriter, r *http.Request) {
+	if len(cs.ExpectedRemediations) == 0 {
+		cs.ReceivedAllRequests = true
+	}
+	if strings.Contains(r.RequestURI, "shipyard.yaml") {
+		w.Header().Add("Content-Type", "application/json")
+		w.WriteHeader(200)
+		w.Write([]byte(shipyardResource))
+		return
+	} else if strings.Contains(r.RequestURI, "remediation.yaml") {
+		w.Header().Add("Content-Type", "application/json")
+		w.WriteHeader(200)
+		w.Write([]byte(cs.RemediationYamlResource))
+		return
+	} else if strings.Contains(r.RequestURI, "/remediation") {
+		if r.Method == http.MethodDelete {
+			cs.ReceivedRemediations = []*remediationStatus{}
 			w.Header().Add("Content-Type", "application/json")
 			w.WriteHeader(200)
 			w.Write([]byte(`{}`))
+			return
+		}
+		rem := &remediationStatus{}
+
+		defer r.Body.Close()
+		bytes, _ := ioutil.ReadAll(r.Body)
+		_ = json.Unmarshal(bytes, rem)
+
+		cs.ReceivedRemediations = append(cs.ReceivedRemediations, rem)
+
+		if len(cs.ExpectedRemediations) != len(cs.ReceivedRemediations) {
+			cs.ReceivedAllRequests = false
+			w.Header().Add("Content-Type", "application/json")
+			w.WriteHeader(200)
+			w.Write([]byte(`{}`))
+			return
+		}
+		receivedAllExpectedRemediations := true
+		for _, expectedRemediation := range cs.ExpectedRemediations {
+			foundExpected := false
+			for _, receivedRemediation := range cs.ReceivedRemediations {
+				if receivedRemediation.Type == expectedRemediation.Type &&
+					receivedRemediation.KeptnContext == expectedRemediation.KeptnContext &&
+					receivedRemediation.Action == expectedRemediation.Action {
+					foundExpected = true
+					break
+				}
+			}
+			if !foundExpected {
+				receivedAllExpectedRemediations = false
+				break
+			}
+		}
+
+		cs.ReceivedAllRequests = receivedAllExpectedRemediations
+	}
+	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(200)
+	w.Write([]byte(``))
+}
+
+type MockEventbroker struct {
+	ExpectedEvents      []*keptnapi.KeptnContextExtendedCE
+	ReceivedEvents      []*keptnapi.KeptnContextExtendedCE
+	Server              *httptest.Server
+	ReceivedAllRequests bool
+}
+
+func NewMockEventbroker(expectedEvents []*keptnapi.KeptnContextExtendedCE) *MockEventbroker {
+	svc := &MockEventbroker{
+		ExpectedEvents: expectedEvents,
+		ReceivedEvents: []*keptnapi.KeptnContextExtendedCE{},
+		Server:         nil,
+	}
+
+	svc.Server = httptest.NewServer(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			svc.HandleRequest(w, r)
 		}),
 	)
-	defer testEventBroker.Close()
 
+	os.Setenv("EVENTBROKER", svc.Server.URL)
+
+	return svc
+}
+
+func (cs *MockEventbroker) HandleRequest(w http.ResponseWriter, r *http.Request) {
+	receivedEvent := &keptnapi.KeptnContextExtendedCE{}
+
+	defer r.Body.Close()
+	bytes, _ := ioutil.ReadAll(r.Body)
+	_ = json.Unmarshal(bytes, receivedEvent)
+
+	cs.ReceivedEvents = append(cs.ReceivedEvents, receivedEvent)
+
+	if len(cs.ExpectedEvents) != len(cs.ReceivedEvents) {
+		cs.ReceivedAllRequests = false
+		w.Header().Add("Content-Type", "application/json")
+		w.WriteHeader(200)
+		w.Write([]byte(`{}`))
+		return
+	}
+	receivedAllExpectedEvents := true
+	for _, expectedEvent := range cs.ExpectedEvents {
+		foundExpected := false
+		for _, receivedEvent := range cs.ReceivedEvents {
+			if *receivedEvent.Type == *expectedEvent.Type &&
+				receivedEvent.Shkeptncontext == expectedEvent.Shkeptncontext {
+				foundExpected = true
+				break
+			}
+		}
+		if !foundExpected {
+			receivedAllExpectedEvents = false
+			break
+		}
+	}
+
+	cs.ReceivedAllRequests = receivedAllExpectedEvents
+
+	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(200)
+	w.Write([]byte(`{}`))
+}
+
+func TestProblemOpenEventHandler_HandleEvent(t *testing.T) {
 	type fields struct {
 		Event cloudevents.Event
 	}
@@ -383,19 +413,15 @@ func TestProblemOpenEventHandler_HandleEvent(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			receivedRemediations = []*remediationStatus{}
-			expectedRemediations = tt.expectedRemediationOnConfigService
-			configurationServiceReceivedExpectedRequests = false
+			mockCS := NewMockConfigurationService(tt.expectedRemediationOnConfigService, tt.returnedRemediationYamlResource)
+			defer mockCS.Server.Close()
 
-			receivedEvents = []*keptnapi.KeptnContextExtendedCE{}
-			expectedEvents = tt.expectedEventOnEventbroker
-			eventBrokerReceivedExpectedRequests = false
-
-			returnedRemediationYamlResource = tt.returnedRemediationYamlResource
+			mockEV := NewMockEventbroker(tt.expectedEventOnEventbroker)
+			defer mockEV.Server.Close()
 
 			testKeptnHandler, _ := keptn.NewKeptn(&tt.fields.Event, keptn.KeptnOpts{
-				EventBrokerURL:          testEventBroker.URL,
-				ConfigurationServiceURL: testConfigurationService.URL,
+				EventBrokerURL:          mockEV.Server.URL,
+				ConfigurationServiceURL: mockCS.Server.URL,
 			})
 
 			logger := keptn.NewLogger("", "", "")
@@ -414,7 +440,7 @@ func TestProblemOpenEventHandler_HandleEvent(t *testing.T) {
 				t.Errorf("HandleEvent() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
-			if configurationServiceReceivedExpectedRequests && eventBrokerReceivedExpectedRequests {
+			if mockCS.ReceivedAllRequests && mockEV.ReceivedAllRequests {
 				t.Log("Received all required events")
 			} else {
 				t.Errorf("Did not receive all required events")
