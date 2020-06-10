@@ -67,63 +67,6 @@ const pks = "pks"
 const openshift = "openshift"
 const kubernetes = "kubernetes"
 
-const installerJob = `---
-apiVersion: batch/v1
-kind: Job
-metadata:
-  name: installer
-  namespace: default
-spec:
-  backoffLimit: 0
-  template:
-    metadata:
-      labels:
-        app: installer
-    spec:
-      volumes:
-      - name: kubectl
-        emptyDir: {}
-      containers:
-      - name: keptn-installer
-        image: INSTALLER_IMAGE_PLACEHOLDER
-        env:
-        - name: PLATFORM
-          value: PLATFORM_PLACEHOLDER
-        - name: GATEWAY_TYPE
-          value: GATEWAY_TYPE_PLACEHOLDER
-        - name: DOMAIN
-          value: DOMAIN_PLACEHOLDER
-        - name: INGRESS
-          value: INGRESS_PLACEHOLDER
-        - name: USE_CASE
-          value: USE_CASE_PLACEHOLDER
-        - name: INGRESS_INSTALL_OPTION
-          value: INGRESS_INSTALL_OPTION_PLACEHOLDER
-      restartPolicy: Never
-      serviceAccountName: keptn-installer
-`
-
-const rbac = `---
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: keptn-installer
-  namespace: default
----
-apiVersion: rbac.authorization.k8s.io/v1beta1
-kind: ClusterRoleBinding
-metadata:
-  name: rbac-service-account-installer
-subjects:
-  - kind: ServiceAccount
-    name: keptn-installer
-    namespace: default
-roleRef:
-  kind: ClusterRole
-  name: cluster-admin
-  apiGroup: rbac.authorization.k8s.io
-`
-
 type platform interface {
 	checkRequirements() error
 	getCreds() interface{}
@@ -361,10 +304,84 @@ func getIngress() (ingress Ingress) {
 	return
 }
 
+func createKeptnNamespace(keptnNamespace, keptnDatastoreNamespace string) error {
+
+	for _, ns := range [...]string{keptnNamespace, keptnDatastoreNamespace} {
+		res, err := keptnutils.ExistsNamespace(false, ns)
+		if err != nil {
+			return fmt.Errorf("Failed to check if namespace %s already exists: %v", ns, err)
+		}
+		if res {
+			return fmt.Errorf("Existing Keptn installation found in namespace %s.", ns)
+		}
+	}
+	for _, ns := range [...]string{keptnNamespace, keptnDatastoreNamespace} {
+		err := keptnutils.CreateNamespace(false, ns)
+		if err != nil {
+			return fmt.Errorf("Failed to create Keptn namespace %s: %v", ns, err)
+		}
+	}
+	return nil
+}
+
+func prepareIngressControllerInstall(ingressControllerNamespace string) (string, error) {
+
+	ingressControllerAvailable, err := keptnutils.ExistsNamespace(false, ingressControllerNamespace)
+	if err != nil {
+		return "", fmt.Errorf("Failed to check if namespace %s already exists: %v", ingressControllerNamespace, err)
+	}
+
+	if ingressControllerAvailable && installParams.IngressInstallOption == Reuse {
+		fmt.Printf("Ingress controller in namespace %s is reused but its compatibility is not checked\n", ingressControllerNamespace)
+		return getGetRoleForNamespace(ingressControllerNamespace), nil
+	} else if ingressControllerAvailable && installParams.IngressInstallOption == StopIfInstalled {
+		return "", fmt.Errorf("Namespace %s is already available but its Ingress controller is not used due to unknown compatibility",
+			ingressControllerNamespace)
+	} else {
+		if !ingressControllerAvailable {
+			err := keptnutils.CreateNamespace(false, ingressControllerNamespace)
+			if err != nil {
+				return "", fmt.Errorf("Failed to create namespace %s: %v", ingressControllerNamespace, err)
+			}
+		}
+		return installerClusterAdminClusterRoleBinding, nil
+	}
+}
+
 // Preconditions: 1. Already authenticated against the cluster.
 func doInstallation() error {
 
-	err := applyRbac()
+	if err := createKeptnNamespace("keptn", "keptn-datastore"); err != nil {
+		return err
+	}
+
+	rbacSet := make(map[string]bool)
+	rbacSet[installerServiceAccount] = true
+
+	// Prepare Ingress
+	var ingressRBAC string
+	var err error
+	if ingressRBAC, err = prepareIngressControllerInstall(getIngress().getDefaultNamespace()); err != nil {
+		return err
+	}
+	rbacSet[ingressRBAC] = true
+
+	if getIngress() == istio {
+		// Full installation: cluster-admin rights are needed for helm-service
+		rbacSet[installerClusterAdminClusterRoleBinding] = true
+	} else {
+		// QG only installation
+		rbacSet[getAdminRoleForNamespace("keptn")] = true
+		rbacSet[getAdminRoleForNamespace("keptn-datastore")] = true
+	}
+
+	// Add RBACs for NATS
+	rbacSet[natsClusterRole] = true
+	rbacSet[natsOperatorRoles] = true
+	rbacSet[natsOperatorServer] = true
+
+	err = applyRbac(rbacSet)
+	defer deleteRbac(rbacSet)
 	if err != nil {
 		return err
 	}
@@ -392,7 +409,7 @@ func doInstallation() error {
 		return err
 	}
 
-	o = options{"delete", "job", "installer", "-n", "default"}
+	o = options{"delete", "job", "installer", "-n", "keptn"}
 	o.appendIfNotEmpty(kubectlOptions)
 	_, err = keptnutils.ExecuteCommand("kubectl", o)
 	if err != nil {
@@ -428,29 +445,28 @@ func doInstallation() error {
 		if err := authUsingKube(); err != nil {
 			return err
 		}
-
-		fmt.Println("Removing Installer RBAC entries.")
-		err := deleteRbac()
-		if err != nil {
-			return err
-		}
-
 	}
+
 	return nil
 }
 
-func applyRbac() error {
+func applyRbac(rbac map[string]bool) error {
+
 	_, aks := p.(*aksPlatform)
 	_, eks := p.(*eksPlatform)
 	_, gke := p.(*gkePlatform)
 	_, pks := p.(*pksPlatform)
 	_, k8s := p.(*kubernetesPlatform)
 	if gke || aks || k8s || eks || pks {
+		var merged string
+		for k := range rbac {
+			merged += k
+		}
 		o := options{"apply", "-f", "-"}
 		o.appendIfNotEmpty(kubectlOptions)
 
 		cmd := exec.Command("kubectl", o...)
-		cmd.Stdin = strings.NewReader(rbac)
+		cmd.Stdin = strings.NewReader(merged)
 		out, err := cmd.CombinedOutput()
 		if err != nil {
 			return fmt.Errorf("Error while applying RBAC: %s \n%s\nAborting installation", err.Error(), string(out))
@@ -459,18 +475,23 @@ func applyRbac() error {
 	return nil
 }
 
-func deleteRbac() error {
+func deleteRbac(rbac map[string]bool) error {
+
 	_, aks := p.(*aksPlatform)
 	_, eks := p.(*eksPlatform)
 	_, gke := p.(*gkePlatform)
 	_, pks := p.(*pksPlatform)
 	_, k8s := p.(*kubernetesPlatform)
 	if gke || aks || k8s || eks || pks {
+		var merged string
+		for k := range rbac {
+			merged += k
+		}
 		o := options{"delete", "-f", "-"}
 		o.appendIfNotEmpty(kubectlOptions)
 
 		cmd := exec.Command("kubectl", o...)
-		cmd.Stdin = strings.NewReader(rbac)
+		cmd.Stdin = strings.NewReader(merged)
 		out, err := cmd.CombinedOutput()
 		if err != nil {
 			return fmt.Errorf("Error while deleting RBAC: %s \n%s\nAborting installation", err.Error(), string(out))
@@ -560,7 +581,7 @@ func waitForInstallerPod() (string, error) {
 			"-l",
 			"app=installer",
 			"-n",
-			"default",
+			"keptn",
 			"-ojson"}
 		options.appendIfNotEmpty(kubectlOptions)
 		out, err := keptnutils.ExecuteCommand("kubectl", options)
@@ -583,8 +604,8 @@ func waitForInstallerPod() (string, error) {
 						"Please verify that your Kubernetes cluster has a working Internet connection.")
 				} else if podStatus == "Failed" {
 					return "", errors.New("Installer pod ran into failure. " +
-						"Please check if a failed installer job exits: \"kubectl get jobs installer -n default\"." +
-						"Please also check the log output: \"kubectl logs jobs/installer -n default\".")
+						"Please check if a failed installer job exits: \"kubectl get jobs installer -n keptn\"." +
+						"Please also check the log output: \"kubectl logs jobs/installer -n keptn\".")
 				}
 			}
 		}
@@ -602,7 +623,7 @@ func getInstallerLogs(podName string) error {
 		"-c",
 		"keptn-installer",
 		"-n",
-		"default",
+		"keptn",
 		"-f"}
 	options.appendIfNotEmpty(kubectlOptions)
 
