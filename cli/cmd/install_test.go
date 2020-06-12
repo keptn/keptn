@@ -52,7 +52,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: installer
-  namespace: default
+  namespace: keptn
 spec:
   backoffLimit: 0
   template:
@@ -157,7 +157,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: installer
-  namespace: default
+  namespace: keptn
 spec:
   backoffLimit: 0
   template:
@@ -210,7 +210,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: installer
-  namespace: default
+  namespace: keptn
 spec:
   backoffLimit: 0
   template:
@@ -263,7 +263,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: installer
-  namespace: default
+  namespace: keptn
 spec:
   backoffLimit: 0
   template:
@@ -316,7 +316,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: installer
-  namespace: default
+  namespace: keptn
 spec:
   backoffLimit: 0
   template:
