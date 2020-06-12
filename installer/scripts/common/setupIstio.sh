@@ -3,7 +3,8 @@ source ./common/utils.sh
 
 if [[ "$INGRESS_INSTALL_OPTION" == "Reuse" ]]; then
     # An istio-version is already installed
-    print_info "Istio installation is reused but its compatibility is not checked"
+    print_info "Istio installation is reused but its full compatibility is not checked"
+    print_info "Checking if istio-ingressgateway is available in namespace istio-system"
     wait_for_deployment_in_namespace "istio-ingressgateway" "istio-system"
     wait_for_all_pods_in_namespace "istio-system"
 else

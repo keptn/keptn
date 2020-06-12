@@ -7,7 +7,6 @@ metadata:
 spec:
   hosts:
     - "api.keptn.DOMAIN_PLACEHOLDER"
-    - "api.keptn"
   gateways:
     - public-gateway.istio-system
   http:

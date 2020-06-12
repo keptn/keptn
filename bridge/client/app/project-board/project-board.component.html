@@ -108,7 +108,7 @@
                     </button>
                     <dt-context-dialog #filterEventsDialog aria-label="Open context dialog" ariaLabelClose="Close context dialog">
                       <p *ngFor="let eventType of eventTypes">
-                        <dt-checkbox (change)="filterEvents($event, eventType)" [checked]="isFilteredEvent(eventType)">{{getEventLabel(eventType)}}</dt-checkbox>
+                        <dt-checkbox (change)="filterEvents($event, eventType)" [checked]="true || isFilteredEvent(eventType)">{{getEventLabel(eventType)}}</dt-checkbox>
                       </p>
                     </dt-context-dialog>
                   </div>

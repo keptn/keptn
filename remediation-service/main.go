@@ -143,6 +143,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 	if err != nil {
 		logger.Error("Failed to get remediation.yaml file")
+
 		return err
 	}
 	logger.Debug("remediation.yaml for service found")
