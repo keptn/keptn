@@ -223,7 +223,7 @@ func exposeBridgeViaIngress(keptnDomain string, l *keptnutils.Logger) error {
 	if err != nil {
 		return err
 	}
-	l.Info("keptn-ingress retreived")
+	l.Info("keptn-ingress retrieved")
 	addBridgeToIngress(keptnDomain, ing)
 
 	_, err = clientset.NetworkingV1beta1().Ingresses("keptn").Update(ing)
@@ -354,7 +354,7 @@ func removeBridgeFromKeptnIngress(l *keptnutils.Logger) error {
 	if err != nil {
 		return err
 	}
-	l.Info("keptn-ingress retreived")
+	l.Info("keptn-ingress retrieved")
 	removeBridgeFromIngress(ing)
 
 	_, err = clientset.NetworkingV1beta1().Ingresses("keptn").Update(ing)

@@ -22,6 +22,9 @@ var ErrServiceNotFound = errors.New("service not found")
 // ErrOpenApprovalNotFound indicates that an open approval has not been found
 var ErrOpenApprovalNotFound = errors.New("open approval not found")
 
+// ErrOpenRemediationNotFound indeicates that no open remediation has been found
+var ErrOpenRemediationNotFound = errors.New("open remediation not found")
+
 var instance *projectsMaterializedView
 
 type projectsMaterializedView struct {
@@ -326,6 +329,60 @@ func (mv *projectsMaterializedView) CloseOpenApproval(project, stage, service, a
 			return ErrOpenApprovalNotFound
 		}
 		service.OpenApprovals = updatedApprovals
+		return nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return mv.updateProject(existingProject)
+}
+
+// CreateRemediation creates a remediation action
+func (mv *projectsMaterializedView) CreateRemediation(project, stage, service string, remediation *models.Remediation) error {
+	existingProject, err := mv.GetProject(project)
+	if err != nil {
+		mv.Logger.Error("Could create remediation for service " + service + " in stage " + stage + " in project " + project + ". Could not load project: " + err.Error())
+		return ErrProjectNotFound
+	}
+	err = updateServiceInStage(existingProject, stage, service, func(service *models.ExpandedService) error {
+		if service.OpenRemediations == nil {
+			service.OpenRemediations = []*models.Remediation{}
+		}
+		service.OpenRemediations = append(service.OpenRemediations, remediation)
+		return nil
+	})
+	return mv.updateProject(existingProject)
+}
+
+// CloseOpenRemediations closes a open remediation actions for a given keptnContext
+func (mv *projectsMaterializedView) CloseOpenRemediations(project, stage, service, keptnContext string) error {
+	existingProject, err := mv.GetProject(project)
+	if err != nil {
+		mv.Logger.Error("Could not close remediation for service " + service + " in stage " + stage + " in project " + project + ". Could not load project: " + err.Error())
+		return ErrProjectNotFound
+	}
+	if keptnContext == "" {
+		mv.Logger.Debug("No keptnContext has been set.")
+		return errors.New("no keptnContext has been set")
+	}
+
+	err = updateServiceInStage(existingProject, stage, service, func(service *models.ExpandedService) error {
+		foundRemediation := false
+		updatedRemediations := []*models.Remediation{}
+		for _, approval := range service.OpenRemediations {
+			if approval.KeptnContext == keptnContext {
+				foundRemediation = true
+				continue
+			}
+			updatedRemediations = append(updatedRemediations, approval)
+		}
+
+		if !foundRemediation {
+			return ErrOpenRemediationNotFound
+		}
+		service.OpenRemediations = updatedRemediations
 		return nil
 	})
 

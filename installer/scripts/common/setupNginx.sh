@@ -2,6 +2,7 @@
 
 if [[ "$INGRESS_INSTALL_OPTION" == "Reuse" ]]; then
     print_info "NGINX ingress controller is reused but its compatibility is not checked"
+    print_info "Checking if nginx-ingress-controller is available in namespace ingress-nginx"
     wait_for_deployment_in_namespace "nginx-ingress-controller" "ingress-nginx"
     wait_for_all_pods_in_namespace "ingress-nginx"
 

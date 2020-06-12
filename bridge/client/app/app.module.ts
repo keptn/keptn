@@ -27,6 +27,7 @@ import {KtbEvaluationDetailsComponent} from './_components/ktb-evaluation-detail
 import {KtbHttpLoadingSpinnerComponent} from './_components/ktb-http-loading-spinner/ktb-http-loading-spinner.component';
 import {KtbExpandableTileComponent, KtbExpandableTileHeader} from './_components/ktb-expandable-tile/ktb-expandable-tile.component';
 import {KtbHorizontalSeparatorComponent, KtbHorizontalSeparatorTitle} from "./_components/ktb-horizontal-separator/ktb-horizontal-separator.component";
+import {KtbNotificationBarComponent} from './_components/ktb-notification-bar/ktb-notification-bar.component';
 
 import {KtbShowHttpLoadingDirective} from './_directives/ktb-show-http-loading/ktb-show-http-loading.directive';
 import {KtbHideHttpLoadingDirective} from "./_directives/ktb-hide-http-loading/ktb-hide-http-loading.directive";
@@ -91,6 +92,7 @@ registerLocaleData(localeEn, 'en');
     KtbEventItemDetail,
     KtbEvaluationDetailsComponent,
     KtbSliBreakdownComponent,
+    KtbNotificationBarComponent,
   ],
   imports: [
     BrowserModule,

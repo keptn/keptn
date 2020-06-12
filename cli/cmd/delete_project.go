@@ -25,7 +25,7 @@ var delProjectCmd = &cobra.Command{
 * Services that have been deployed to the Kubernetes cluster are not deleted (same goes for the namespaces).
 * Helm-releases created for deployments are not deleted - see https://keptn.sh/docs/develop/reference/helm/#clean-up-after-deleting-a-project
 `,
-	Example: `keptn delete project sockshop`,
+	Example:      `keptn delete project sockshop`,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
 		_, _, err := credentialmanager.NewCredentialManager().GetCreds()
@@ -54,11 +54,11 @@ var delProjectCmd = &cobra.Command{
 			ProjectName: args[0],
 		}
 
-		projectHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
+		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
-			eventContext, err := projectHandler.DeleteProject(project)
+			eventContext, err := apiHandler.DeleteProject(project)
 			if err != nil {
 				fmt.Println("Delete project was unsuccessful")
 				return fmt.Errorf("Delete project was unsuccessful. %s", *err.Message)

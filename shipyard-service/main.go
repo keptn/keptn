@@ -298,8 +298,8 @@ func (client *Client) createProject(project configmodels.Project, logger keptn.L
 		return err
 	}
 
-	prjHandler := configutils.NewAuthenticatedProjectHandler(configServiceURL.String(), "", "", client.httpClient, "http")
-	_, errObj := prjHandler.CreateConfigurationServiceProject(project)
+	prjHandler := configutils.NewProjectHandler(configServiceURL.String())
+	_, errObj := prjHandler.CreateProject(project)
 
 	if errObj == nil {
 		logger.Info("Project successfully created")
@@ -311,7 +311,7 @@ func (client *Client) createProject(project configmodels.Project, logger keptn.L
 // deleteProject deletes a project by using the configuration-service
 func (client *Client) deleteProject(project configmodels.Project, logger keptn.Logger, configServiceURL string) error {
 
-	prjHandler := configutils.NewAuthenticatedProjectHandler(configServiceURL, "", "", client.httpClient, "http")
+	prjHandler := configutils.NewProjectHandler(configServiceURL)
 	_, err := prjHandler.DeleteProject(project)
 	if err != nil {
 		return fmt.Errorf("Error in deleting project: %s", *err.Message)
@@ -345,7 +345,7 @@ func (client *Client) getProject(project configmodels.Project, logger keptn.Logg
 		return nil, err
 	}
 
-	prjHandler := configutils.NewAuthenticatedProjectHandler(configServiceURL.String(), "", "", client.httpClient, "http")
+	prjHandler := configutils.NewProjectHandler(configServiceURL.String())
 	respProject, respError := prjHandler.GetProject(project)
 	if respError != nil {
 		return nil, fmt.Errorf("Error in getting project: %s", project.ProjectName)
@@ -363,7 +363,7 @@ func (client *Client) createStage(project configmodels.Project, stage string, lo
 		return err
 	}
 
-	stageHandler := configutils.NewAuthenticatedStageHandler(configServiceURL.String(), "", "", client.httpClient, "http")
+	stageHandler := configutils.NewStageHandler(configServiceURL.String())
 	_, errorObj := stageHandler.CreateStage(project.ProjectName, stage)
 
 	if errorObj == nil {

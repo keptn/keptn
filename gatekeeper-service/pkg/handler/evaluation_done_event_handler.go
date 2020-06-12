@@ -64,7 +64,7 @@ func (EvaluationDoneEventHandler) getImage(project string, currentStage string, 
 func (e *EvaluationDoneEventHandler) handleEvaluationDoneEvent(inputEvent keptnevents.EvaluationDoneEventData, shkeptncontext string, image string,
 	shipyard keptnevents.Shipyard) []cloudevents.Event {
 
-	nextStage := getNextStage(shipyard, inputEvent.Stage)
+	nextStage := e.getNextStage(shipyard, inputEvent.Stage)
 
 	for _, stage := range shipyard.Stages {
 		if stage.Name == nextStage {
@@ -93,18 +93,38 @@ func (e *EvaluationDoneEventHandler) handleEvaluationDoneEvent(inputEvent keptne
 	}
 
 	if inputEvent.Result == PassResult || inputEvent.Result == WarningResult {
-		// Check whether shipyard contains ApprovalStrategy
-		if e.isApprovalStrategyDefined(inputEvent.Stage, shipyard) {
-			outgoingEvents = append(outgoingEvents, *e.getApprovalTriggeredEvent(inputEvent, shkeptncontext, image))
-		} else if event := getPromotionEvent(inputEvent.Project, inputEvent.Stage, inputEvent.Service, image,
-			shkeptncontext, inputEvent.Labels, shipyard, e.logger); event != nil {
-			outgoingEvents = append(outgoingEvents, *event)
+
+		if nextStage != "" {
+			// Check whether shipyard contains ApprovalStrategy
+			if e.isApprovalStrategyDefined(nextStage, shipyard) {
+				outgoingEvents = append(outgoingEvents, *e.getApprovalTriggeredEvent(inputEvent, nextStage, shkeptncontext, image))
+			} else if event := getConfigurationChangeEventForCanary(inputEvent.Project, inputEvent.Service, nextStage, image,
+				shkeptncontext, inputEvent.Labels); event != nil {
+				outgoingEvents = append(outgoingEvents, *event)
+			}
+		} else {
+			e.logger.Info(fmt.Sprintf("No further stage available to promote the service %s of project %s",
+				inputEvent.Service, inputEvent.Project))
 		}
 	} else {
 		e.logger.Info(fmt.Sprintf("Service %s in project %s and stage %s has NOT passed the evaluation",
 			inputEvent.Service, inputEvent.Project, inputEvent.Stage))
 	}
 	return outgoingEvents
+}
+
+func (e *EvaluationDoneEventHandler) getNextStage(shipyard keptnevents.Shipyard, currentStage string) string {
+	currentFound := false
+	for _, stage := range shipyard.Stages {
+		if currentFound {
+			// Here, we return the next stage
+			return stage.Name
+		}
+		if stage.Name == currentStage {
+			currentFound = true
+		}
+	}
+	return ""
 }
 
 func (e *EvaluationDoneEventHandler) isApprovalStrategyDefined(stageName string, shipyard keptnevents.Shipyard) bool {
@@ -145,7 +165,8 @@ func (e *EvaluationDoneEventHandler) getConfigurationChangeEventForCanaryAction(
 	return getCloudEvent(configChangedEvent, keptnevents.ConfigurationChangeEventType, shkeptncontext)
 }
 
-func (e *EvaluationDoneEventHandler) getApprovalTriggeredEvent(inputEvent keptnevents.EvaluationDoneEventData, shkeptncontext, image string) *cloudevents.Event {
+func (e *EvaluationDoneEventHandler) getApprovalTriggeredEvent(inputEvent keptnevents.EvaluationDoneEventData,
+	nextStage string, shkeptncontext, image string) *cloudevents.Event {
 
 	splitImage := strings.Split(image, ":")
 	imageName := splitImage[0]
@@ -157,7 +178,7 @@ func (e *EvaluationDoneEventHandler) getApprovalTriggeredEvent(inputEvent keptne
 	approvalTriggeredEvent := keptnevents.ApprovalTriggeredEventData{
 		Project:            inputEvent.Project,
 		Service:            inputEvent.Service,
-		Stage:              inputEvent.Stage,
+		Stage:              nextStage,
 		TestStrategy:       &inputEvent.TestStrategy,
 		DeploymentStrategy: &inputEvent.DeploymentStrategy,
 		Image:              imageName,

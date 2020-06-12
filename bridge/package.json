@@ -10,6 +10,7 @@
     "ng": "ng",
     "build": "ng build --prod",
     "test": "ng test --code-coverage",
+    "test:ci": "ng test --watch=false --code-coverage --browsers=ChromeHeadless",
     "lint": "ng lint",
     "e2e": "ng e2e",
     "connect:bridge": "kubectl port-forward -n keptn svc/bridge 9000:8080",

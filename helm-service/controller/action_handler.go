@@ -60,6 +60,12 @@ func (a *ActionTriggeredHandler) HandleEvent(ce cloudevents.Event, loggingDone c
 	}
 
 	if actionTriggeredEvent.Action.Action == ActionScaling {
+		// Send action.started event
+		if sendErr := a.sendEvent(ce, keptn.ActionStartedEventType, a.getActionStartedEvent(actionTriggeredEvent)); sendErr != nil {
+			a.logger.Error(sendErr.Error())
+			return errors.New(sendErr.Error())
+		}
+
 		resp := a.handleScaling(actionTriggeredEvent)
 		if resp.Action.Status == keptn.ActionStatusErrored {
 			a.logger.Error(fmt.Sprintf("action %s failed with result %s", actionTriggeredEvent.Action.Action, resp.Action.Result))
@@ -67,9 +73,8 @@ func (a *ActionTriggeredHandler) HandleEvent(ce cloudevents.Event, loggingDone c
 			a.logger.Info(fmt.Sprintf("Finished action with status %s and result %s", resp.Action.Status, resp.Action.Result))
 		}
 
-		// Send action.triggered event
-		sendErr := a.sendFinishedEvent(ce, resp)
-		if sendErr != nil {
+		// Send action.finished event
+		if sendErr := a.sendEvent(ce, keptn.ActionFinishedEventType, resp); sendErr != nil {
 			a.logger.Error(sendErr.Error())
 			return errors.New(sendErr.Error())
 		}
@@ -92,7 +97,16 @@ func (a *ActionTriggeredHandler) getActionFinishedEvent(result keptn.ActionResul
 			Result: result,
 			Status: status,
 		},
-		Problem: actionTriggeredEvent.Problem,
+		Labels: actionTriggeredEvent.Labels,
+	}
+}
+
+func (a *ActionTriggeredHandler) getActionStartedEvent(actionTriggeredEvent keptn.ActionTriggeredEventData) keptn.ActionStartedEventData {
+
+	return keptn.ActionStartedEventData{
+		Project: actionTriggeredEvent.Project,
+		Service: actionTriggeredEvent.Service,
+		Stage:   actionTriggeredEvent.Stage,
 		Labels:  actionTriggeredEvent.Labels,
 	}
 }
@@ -224,7 +238,7 @@ func appendAsYaml(content []byte, element interface{}) ([]byte, error) {
 	return append(content, yamlData...), nil
 }
 
-func (a ActionTriggeredHandler) sendFinishedEvent(ce cloudevents.Event, actionFinishedEvent keptn.ActionFinishedEventData) error {
+func (a ActionTriggeredHandler) sendEvent(ce cloudevents.Event, eventType string, data interface{}) error {
 	keptnHandler, err := keptn.NewKeptn(&ce, keptn.KeptnOpts{
 		EventBrokerURL: os.Getenv("EVENTBROKER"),
 	})
@@ -240,12 +254,12 @@ func (a ActionTriggeredHandler) sendFinishedEvent(ce cloudevents.Event, actionFi
 		Context: cloudevents.EventContextV02{
 			ID:          uuid.New().String(),
 			Time:        &types.Timestamp{Time: time.Now()},
-			Type:        keptn.ActionFinishedEventType,
+			Type:        eventType,
 			Source:      types.URLRef{URL: *source},
 			ContentType: &contentType,
 			Extensions:  map[string]interface{}{"shkeptncontext": keptnHandler.KeptnContext, "triggerid": ce.ID()},
 		}.AsV02(),
-		Data: actionFinishedEvent,
+		Data: data,
 	}
 
 	err = keptnHandler.SendCloudEvent(event)
