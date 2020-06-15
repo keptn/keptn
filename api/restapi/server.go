@@ -43,7 +43,7 @@ func init() {
 }
 
 // NewServer creates a new api  server but does not configure it
-func NewServer(api *operations.API) *Server {
+func NewServer(api *operations.EmptyAPI) *Server {
 	s := new(Server)
 
 	s.shutdown = make(chan struct{})
