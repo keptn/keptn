@@ -5,6 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/url"
+	"os"
+	"strconv"
+	"strings"
+	"text/tabwriter"
+
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 	"github.com/google/uuid"
@@ -15,11 +21,6 @@ import (
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/cobra"
-	"net/url"
-	"os"
-	"strconv"
-	"strings"
-	"text/tabwriter"
 )
 
 type sendApprovalFinishedStruct struct {
@@ -75,6 +76,7 @@ func sendApprovalFinishedEvent(sendApprovalFinishedOptions sendApprovalFinishedS
 
 	logging.PrintLog("Starting to send approval.finished event", logging.InfoLevel)
 
+	apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
 	eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
 
 	logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
@@ -121,7 +123,7 @@ func sendApprovalFinishedEvent(sendApprovalFinishedOptions sendApprovalFinishedS
 		return fmt.Errorf("Failed to map cloud event to API event model. %s", err.Error())
 	}
 
-	responseEvent, errorObj := eventHandler.SendEvent(apiEvent)
+	responseEvent, errorObj := apiHandler.SendEvent(apiEvent)
 	if errorObj != nil {
 		logging.PrintLog("Send approval.triggered was unsuccessful", logging.QuietLevel)
 		return fmt.Errorf("Send approval.triggered was unsuccessful. %s", *errorObj.Message)
