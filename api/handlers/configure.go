@@ -381,8 +381,5 @@ func removeBridgeFromIngress(ingress *networking.Ingress) {
 func getHostForBridge(keptnDomain string) string {
 	// check if the domain contains a port. If yes, only the first part without the port will be used
 	split := strings.Split(keptnDomain, ":")
-	if len(split) > 1 {
-		keptnDomain = split[0]
-	}
-	return "bridge.keptn." + keptnDomain
+	return "bridge.keptn." + split[0]
 }
