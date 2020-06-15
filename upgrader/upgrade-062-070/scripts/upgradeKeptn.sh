@@ -33,7 +33,9 @@ print_debug "Upgrading from Keptn 0.6.2 to $KEPTN_VERSION"
 manifests=(
   "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/rbac.yaml"
   "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/logging/rbac.yaml"
-  "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/logging/mongodb-datastore/k8s/mongodb-datastore.yaml"
+  "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/logging/mongodb/secret.yaml"
+  "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/logging/mongodb/deployment.yaml"
+  "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/logging/mongodb-datastore/mongodb-datastore.yaml"
   "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/logging/mongodb-datastore/mongodb-datastore-distributor.yaml"
   "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/core.yaml"
   "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/quality-gates.yaml"
@@ -67,6 +69,10 @@ API_IMAGE=$(kubectl get deployment -n keptn api-service -o=jsonpath='{$.spec.tem
     exit 1
   fi
 
+print_debug "Updating MongoDB and mongodb-datastore."
+kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/logging/mongodb/secret.yaml
+kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/logging/mongodb/deployment.yaml
+kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/logging/mongodb-datastore/k8s/mongodb-datastore.yaml
 
 print_debug "Updating Keptn core."
 kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/rbac.yaml

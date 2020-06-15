@@ -30,10 +30,20 @@ spec:
             memory: "256Mi"
             cpu: "1000m"
         env:
-        - name: MONGO_DB_CONNECTION_STRING
-          value: 'mongodb://user:password@mongodb:27017/keptn'
-        - name: MONGO_DB_NAME
+        - name: MONGODB_HOST
+          value: 'mongodb:27017'
+        - name: MONGODB_DATABASE
           value: 'keptn'
+        - name: MONGODB_USER
+          valueFrom:
+            secretKeyRef:
+                name: mongodb-credentials
+                key: user
+        - name: MONGODB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+                name: mongodb-credentials
+                key: password
 ---
 apiVersion: v1
 kind: Service

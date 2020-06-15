@@ -28,11 +28,13 @@ kubectl apply -f ../manifests/logging/rbac.yaml
 verify_kubectl $? "Creating rbac failed."
 kubectl apply -f ../manifests/logging/mongodb/pvc.yaml
 verify_kubectl $? "Creating mongodb PVC failed."
+kubectl apply -f ../manifests/logging/mongodb/secret.yaml
+verify_kubectl $? "Creating mongodb secret failed."
 kubectl apply -f ../manifests/logging/mongodb/deployment.yaml
 verify_kubectl $? "Creating mongodb deployment failed."
 kubectl apply -f ../manifests/logging/mongodb/svc.yaml
 verify_kubectl $? "Creating mongodb service failed."
-kubectl apply -f ../manifests/logging/mongodb-datastore/k8s/mongodb-datastore.yaml
+kubectl apply -f ../manifests/logging/mongodb-datastore/mongodb-datastore.yaml
 verify_kubectl $? "Creating mongodb-datastore service failed."
 wait_for_deployment_in_namespace "mongodb-datastore" "keptn-datastore"
 
