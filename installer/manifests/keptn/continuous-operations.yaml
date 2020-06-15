@@ -120,13 +120,6 @@ spec:
             value: 'http://mongodb-datastore.keptn-datastore.svc.cluster.local:8080'
           - name: ENVIRONMENT
             value: 'production'
-        envFrom:
-          - secretRef:
-              name: unleash
-              optional: true
-          - secretRef:
-              name: dynatrace
-              optional: true
 ---
 apiVersion: v1
 kind: Service
@@ -147,7 +140,7 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: remediation-service-problem-distributor
+  name: remediation-service-distributor
   namespace: keptn
 spec:
   selector:

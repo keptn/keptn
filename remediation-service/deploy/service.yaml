@@ -36,13 +36,6 @@ spec:
             value: 'http://mongodb-datastore.keptn-datastore.svc.cluster.local:8080'
           - name: ENVIRONMENT
             value: 'production'
-        envFrom:
-        - secretRef:
-            name: unleash
-            optional: true
-        - secretRef:
-            name: dynatrace
-            optional: true
 ---
 apiVersion: v1
 kind: Service
