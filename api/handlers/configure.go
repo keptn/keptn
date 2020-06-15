@@ -224,7 +224,7 @@ func createBridgeCredentials(user string, password string, l *keptnutils.Logger)
 
 	l.Info("Checking for existing secret")
 	bridgeCredentials, err := k8s.CoreV1().Secrets("keptn").Get("bridge-credentials", metav1.GetOptions{})
-	if bridgeCredentials != nil {
+	if err == nil && bridgeCredentials != nil {
 		// update existing secret
 		l.Info("Existing secret found. Updating with new values for user and password")
 		newSecret := getBridgeCredentials(user, password)
