@@ -135,3 +135,36 @@ func TestDisposeBridgeFromIngressWithNoHost(t *testing.T) {
 		t.Error("Unexpected name of host")
 	}
 }
+
+func Test_getHostForBridge(t *testing.T) {
+	type args struct {
+		keptnDomain string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "get bridge hostname",
+			args: args{
+				keptnDomain: "my-domain.com",
+			},
+			want: "bridge.keptn.my-domain.com",
+		},
+		{
+			name: "get bridge hostname from domain containing a port",
+			args: args{
+				keptnDomain: "my-domain.com:1234",
+			},
+			want: "bridge.keptn.my-domain.com",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := getHostForBridge(tt.args.keptnDomain); got != tt.want {
+				t.Errorf("getHostForBridge() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
