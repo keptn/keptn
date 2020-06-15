@@ -30,7 +30,7 @@ type Handler interface {
 	HandleEvent() error
 }
 
-// NewHandles returns a new Handler for the incoming Keptn event
+// NewHandler returns a new Handler for the incoming Keptn event
 func NewHandler(event cloudevents.Event) (Handler, error) {
 	var shkeptncontext string
 	event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)

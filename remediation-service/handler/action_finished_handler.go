@@ -9,7 +9,7 @@ import (
 
 const waitTimeInMinutes = 10
 
-// ActionFinishedEventHandlerhandles handles action.finished events
+// ActionFinishedEventHandler handles action.finished events
 type ActionFinishedEventHandler struct {
 	KeptnHandler *keptn.Keptn
 	Logger       keptn.LoggerInterface
