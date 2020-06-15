@@ -97,7 +97,11 @@ func Test_configureBridge(t *testing.T) {
 			args: args{
 				endpoint: ts.URL,
 				apiToken: "",
-				params:   &configureBridgeCmdParams{Action: stringp("expose")},
+				params: &configureBridgeCmdParams{
+					Action:   stringp("expose"),
+					User:     stringp("user"),
+					Password: stringp("password"),
+				},
 			},
 			wantErr: false,
 		},
