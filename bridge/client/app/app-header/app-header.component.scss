@@ -34,12 +34,21 @@ header {
 
   p.small {
     color: $gray-100;
+    span {
+      color: $gray-300;
+    }
   }
   a {
     color: lighten($primary-color, 60%);
   }
   a:hover {
     color: lighten($primary-color, 55%);
+  }
+
+  .dt-icon {
+    width: 20px;
+    height: 20px;
+    fill: $error-color;
   }
 }
 

@@ -25,6 +25,8 @@ ENV CONFIGURATION_SERVICE "http://configuration-service.keptn.svc.cluster.local:
 ENV NODE_ENV "production"
 ARG version=develop
 ENV VERSION="${version}"
+ENV API_URL "http://api-gateway-nginx.keptn.svc.cluster.local"
+ENV API_TOKEN ""
 
 RUN addgroup mygroup && adduser -D -G mygroup myuser && mkdir -p /usr/src/app && chown -R myuser /usr/src/app
 

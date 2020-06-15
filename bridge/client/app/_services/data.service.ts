@@ -1,5 +1,6 @@
 import {Injectable} from '@angular/core';
-import {BehaviorSubject, from, Observable, Subject, timer} from "rxjs";
+import {HttpClient} from "@angular/common/http";
+import {BehaviorSubject, forkJoin, from, Observable, Subject, timer, of} from "rxjs";
 import {debounce, map, mergeMap, toArray} from "rxjs/operators";
 
 import {Root} from "../_models/root";
@@ -17,12 +18,14 @@ export class DataService {
 
   private _projects = new BehaviorSubject<Project[]>(null);
   private _roots = new BehaviorSubject<Root[]>(null);
+  private _versionInfo = new BehaviorSubject<Object>({});
   private _rootsLastUpdated: Object = {};
   private _tracesLastUpdated: Object = {};
 
   private _evaluationResults = new Subject();
 
-  constructor(private apiService: ApiService) {
+  constructor(private http: HttpClient, private apiService: ApiService) {
+    this.loadVersionInfo();
     this.loadProjects();
   }
 
@@ -32,6 +35,10 @@ export class DataService {
 
   get roots(): Observable<Root[]> {
     return this._roots.asObservable();
+  }
+
+  get versionInfo(): Observable<any> {
+    return this._versionInfo.asObservable();
   }
 
   get evaluationResults(): Observable<any> {
@@ -44,6 +51,25 @@ export class DataService {
 
   public getTracesLastUpdated(root: Root): Date {
     return this._tracesLastUpdated[root.shkeptncontext];
+  }
+
+  public loadVersionInfo() {
+    forkJoin({
+      availableVersions: this.apiService.getAvailableVersions(),
+      bridgeVersion: this.apiService.getBridgeVersion(),
+      keptnVersion: this.apiService.getKeptnVersion(),
+      versionCheckEnabled: of(this.apiService.isVersionCheckEnabled())
+    })
+    .subscribe((result) => {
+      this._versionInfo.next(result);
+    }, (err) => {
+      this._versionInfo.error(err);
+    });
+  }
+
+  public setVersionCheck(enabled: boolean) {
+    this.apiService.setVersionCheck(enabled);
+    this.loadVersionInfo();
   }
 
   public loadProjects() {
@@ -75,7 +101,6 @@ export class DataService {
         ),
         map(projects => projects.map(project => Project.fromJSON(project)))
       ).subscribe((projects: Project[]) => {
-      console.log("loadProjects.projects", JSON.stringify(projects));
         this._projects.next([...this._projects.getValue() ? this._projects.getValue() : [], ...projects]);
       }, (err) => {
         this._projects.error(err);
@@ -117,7 +142,6 @@ export class DataService {
         map(roots => roots.map(root => Root.fromJSON(root)))
       )
       .subscribe((roots: Root[]) => {
-        console.log("loadRoots.roots", JSON.stringify(roots));
         service.roots = [...roots||[], ...service.roots||[]].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
         this._roots.next(service.roots);
       });
@@ -136,7 +160,6 @@ export class DataService {
         map(traces => traces.map(trace => Trace.fromJSON(trace)))
       )
       .subscribe((traces: Trace[]) => {
-        console.log("loadTraces.traces", JSON.stringify(traces));
         root.traces = [...traces||[], ...root.traces||[]].sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
       });
   }
@@ -149,7 +172,6 @@ export class DataService {
     this.apiService.getEvaluationResults(event.data.project, event.data.service, event.data.stage, event.source, fromTime ? fromTime.toISOString() : null)
       .pipe(map(traces => traces.map(trace => Trace.fromJSON(trace))))
       .subscribe((traces: Trace[]) => {
-        console.log("loadEvaluationResults.traces", JSON.stringify(traces));
         event.data.evaluationHistory = [...traces||[], ...event.data.evaluationHistory||[]].sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
         this._evaluationResults.next(event);
       });

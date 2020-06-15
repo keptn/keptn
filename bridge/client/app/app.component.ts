@@ -13,17 +13,11 @@ declare var dT_;
 })
 export class AppComponent implements OnInit {
 
-  public version: string;
-
-  constructor(private http: HttpClient, private apiService: ApiService, private notificationsService: NotificationsService) {
+  constructor(private http: HttpClient) {
     if(typeof dT_!='undefined' && dT_.initAngularNg){dT_.initAngularNg(http, HttpHeaders);}
   }
 
   ngOnInit(): void {
-    this.apiService.getVersion()
-      .subscribe((response: any) => {
-        this.version = response.version;
-      });
   }
 
 }

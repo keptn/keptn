@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpHeaders, HttpResponse} from "@angular/common/http";
-import {BehaviorSubject, Observable, of, throwError} from "rxjs";
-import {catchError, map, retry} from "rxjs/operators";
+import {Observable, throwError, of} from "rxjs";
+import {catchError, map} from "rxjs/operators";
 
 import {environment} from "../../environments/environment";
 
@@ -18,43 +18,79 @@ import {Service} from "../_models/service";
 export class ApiService {
 
   private baseUrl: string = environment.apiUrl;
-  private headers: HttpHeaders = new HttpHeaders({'Content-Type': 'application/json'});
+  private defaultHeaders: HttpHeaders = new HttpHeaders({'Content-Type': 'application/json'});
+
+  private VERSION_CHECK_COOKIE = 'keptn_versioncheck';
 
   constructor(private http: HttpClient) {
   }
 
-  public getVersion(): Observable<Object> {
+  public getBridgeVersion(): Observable<any> {
     let url = `${this.baseUrl}/api/`;
     return this.http
-      .get<Object>(url, { headers: this.headers })
-      .pipe(catchError(this.handleError<Object>('getVersion')));
+      .get<any>(url, { headers: this.defaultHeaders })
+      .pipe(
+        catchError(this.handleError<any>('getBridgeVersion')),
+        map(res => res.version),
+      );
+  }
+
+  public getKeptnVersion(): Observable<any> {
+    let url = `${this.baseUrl}/api/swagger-ui/swagger.yaml`;
+    return this.http
+      .get<any>(url, { headers: this.defaultHeaders.append('Access-Control-Allow-Origin', '*') })
+      .pipe(
+        catchError(this.handleError<any>('getKeptnVersion')),
+        map(res => res.toString()),
+        map(res => res.substring(res.lastIndexOf("version: ")+9)),
+        map(res => res.substring(0, res.indexOf("\n"))),
+      );
+  }
+
+  public isVersionCheckEnabled(): boolean {
+    return JSON.parse(localStorage.getItem(this.VERSION_CHECK_COOKIE));
+  }
+
+  public setVersionCheck(enabled: boolean): void {
+    localStorage.setItem(this.VERSION_CHECK_COOKIE, String(enabled));
+  }
+
+  public getAvailableVersions(): Observable<any> {
+    if(this.isVersionCheckEnabled()) {
+      let url = `${this.baseUrl}/api/version.json`;
+      return this.http
+        .get<any>(url, { headers: this.defaultHeaders })
+        .pipe(catchError(this.handleError<any>('getAvailableVersions')));
+    } else {
+      return of(null);
+    }
   }
 
   public getProjects(): Observable<Project[]> {
     let url = `${this.baseUrl}/api/project?DisableUpstreamSync=true`;
     return this.http
-      .get<Project[]>(url, { headers: this.headers })
+      .get<Project[]>(url, { headers: this.defaultHeaders })
       .pipe(catchError(this.handleError<Project[]>('getProjects')));
   }
 
   public getProjectResources(projectName): Observable<Resource[]> {
     let url = `${this.baseUrl}/api/project/${projectName}/resource`;
     return this.http
-      .get<Resource[]>(url, { headers: this.headers })
+      .get<Resource[]>(url, { headers: this.defaultHeaders })
       .pipe(catchError(this.handleError<Resource[]>('getProjectResources')));
   }
 
   public getStages(projectName): Observable<Stage[]> {
     let url = `${this.baseUrl}/api/project/${projectName}/stage`;
     return this.http
-      .get<Stage[]>(url, { headers: this.headers })
+      .get<Stage[]>(url, { headers: this.defaultHeaders })
       .pipe(catchError(this.handleError<Stage[]>('getStages')));
   }
 
   public getServices(projectName, stageName): Observable<Service[]> {
     let url = `${this.baseUrl}/api/project/${projectName}/stage/${stageName}/service`;
     return this.http
-      .get<Service[]>(url, { headers: this.headers })
+      .get<Service[]>(url, { headers: this.defaultHeaders })
       .pipe(catchError(this.handleError<Service[]>('getServices')));
   }
 
@@ -63,7 +99,7 @@ export class ApiService {
     if(fromTime)
       url += `?fromTime=${fromTime}`;
     return this.http
-      .get<Root[]>(url, { headers: this.headers, observe: 'response' })
+      .get<Root[]>(url, { headers: this.defaultHeaders, observe: 'response' })
       .pipe(catchError(this.handleError<HttpResponse<Root[]>>('getRoots')));
   }
 
@@ -72,7 +108,7 @@ export class ApiService {
     if(fromTime)
       url += `&fromTime=${fromTime}`;
     return this.http
-      .get<Trace[]>(url, { headers: this.headers, observe: 'response' })
+      .get<Trace[]>(url, { headers: this.defaultHeaders, observe: 'response' })
       .pipe(catchError(this.handleError<HttpResponse<Trace[]>>('getTraces')));
   }
 
@@ -81,7 +117,7 @@ export class ApiService {
     if(fromTime)
       url += `&fromTime=${fromTime}`;
     return this.http
-      .get<Trace[]>(url, { headers: this.headers })
+      .get<Trace[]>(url, { headers: this.defaultHeaders })
       .pipe(catchError(this.handleError<Trace[]>('getEvaluationResults')));
   }
 

@@ -21,20 +21,48 @@
         <dt-icon name="user-uem"></dt-icon>
       </button>
       <dt-context-dialog #dialog aria-label="User menu" ariaLabelClose="Close user menu">
-        <div fxLayout="column" fxLayoutAlign="flex-end end">
-          <p class="small m-0">Keptn version <span></span></p>
-          <p class="small m-0">Bridge version <span></span></p>
+        <div class="mb-3" fxLayout="row" fxLayoutAlign="flex-start center" *ngIf="!versionInfo.versionCheckEnabled">
+          <div>
+            <dt-icon class="error" [name]="'criticalevent'"></dt-icon>
+          </div>
+          <div fxFlex>
+            <p class="small m-0">Automatic version and security check disabled</p>
+          </div>
+        </div>
+        <div class="mt-3" fxLayout="column" fxLayoutAlign="flex-end end">
+          <p class="small m-0">Keptn version: <span [textContent]="versionInfo.keptnVersion"></span><span *ngIf="versionInfo.keptnVersionInvalid">*</span></p>
+          <p class="small m-0">Bridge version: <span [textContent]="versionInfo.bridgeVersion"></span><span *ngIf="versionInfo.bridgeVersionInvalid">*</span></p>
+        </div>
+        <div class="mt-3" fxLayout="row" fxLayoutAlign="flex-start" *ngIf="versionInfo.keptnVersionInvalid || versionInfo.bridgeVersionInvalid">
+          <div>
+            <dt-icon class="error mr-1" [name]="'criticalevent'"></dt-icon>
+          </div>
+          <div fxFlex>
+            <p class="small m-0">*Invalid version for automatic version check. Please install one of the stable or prerelease versions.</p>
+          </div>
         </div>
         <div class="mt-3" fxLayout="row">
           <div fxFlex>
-            <p class="m-0">Enable version check</p>
+            <p class="m-0">Version check</p>
           </div>
           <div>
-            <dt-switch></dt-switch>
+            <dt-switch (change)="versionCheckClicked($event)" [checked]="versionInfo.versionCheckEnabled"></dt-switch>
           </div>
         </div>
-        <p class="m-0 mt-3">By enabling this feature, Keptn will collect statistical data. Details can be found at <a href="https://keptn.sh/docs/0.6.0/reference/version-check">https://keptn.sh/docs/0.6.0/reference/version-check</a></p>
+        <p class="m-0 mt-3 small">By enabling this feature, Keptn will collect statistical data and notify about new version and security patches for Keptn and Keptn's Bridge. Details can be found at <a href="https://keptn.sh/docs/0.7.0/operate/version-check" target="_blank">https://keptn.sh/docs/0.7.0/operate/version-check</a></p>
       </dt-context-dialog>
     </div>
   </div>
 </header>
+<dt-confirmation-dialog [state]="versionCheckDialogState" aria-label="Version check feature info">
+  <dt-confirmation-dialog-state name="info">
+    As of now you can enable automatic version check to be notified about new version and security patches for Keptn and Keptn's Bridge. This setting can be changed in the user menu on the top right.
+    <dt-confirmation-dialog-actions>
+      <button dt-button variant="secondary" (click)="acceptVersionCheck(false)">Decline</button>
+      <button dt-button (click)="acceptVersionCheck(true)">Accept</button>
+    </dt-confirmation-dialog-actions>
+  </dt-confirmation-dialog-state>
+  <dt-confirmation-dialog-state name="success">
+    Automatic version check enabled successfully!
+  </dt-confirmation-dialog-state>
+</dt-confirmation-dialog>

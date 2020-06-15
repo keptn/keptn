@@ -66,6 +66,7 @@ import {DtSwitchModule} from "@dynatrace/barista-components/switch";
 import {registerLocaleData} from "@angular/common";
 import localeEn from '@angular/common/locales/en';
 import {MatDialogModule} from "@angular/material/dialog";
+import {DtConfirmationDialogModule} from "@dynatrace/barista-components/confirmation-dialog";
 
 registerLocaleData(localeEn, 'en');
 
@@ -128,6 +129,7 @@ registerLocaleData(localeEn, 'en');
     DtOverlayModule,
     DtCheckboxModule,
     DtSwitchModule,
+    DtConfirmationDialogModule,
     MatDialogModule,
     DtIconModule.forRoot({
       svgIconLocation: `/assets/icons/{{name}}.svg`,
