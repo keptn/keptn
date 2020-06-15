@@ -95,7 +95,7 @@ type Server struct {
 	TLSWriteTimeout   time.Duration  `long:"tls-write-timeout" description:"maximum duration before timing out write of the response"`
 	httpsServerL      net.Listener
 
-	api          *operations.API
+	api          *operations.EmptyAPI
 	handler      http.Handler
 	hasListeners bool
 	shutdown     chan struct{}
@@ -125,7 +125,7 @@ func (s *Server) Fatalf(f string, args ...interface{}) {
 }
 
 // SetAPI configures the server with the specified API. Needs to be called before Serve
-func (s *Server) SetAPI(api *operations.API) {
+func (s *Server) SetAPI(api *operations.EmptyAPI) {
 	if api == nil {
 		s.api = nil
 		s.handler = nil
