@@ -162,23 +162,23 @@ func PostConfigureBridgeHandlerFunc(params configure.PostConfigureBridgeExposePa
 			exposeErr = sendOCRouteRequest("", false, l)
 		}
 		bridgeHost = ""
+
+		err = deleteBridgeCredentials(l)
+		if err != nil {
+			l.Error(err.Error())
+			return configure.NewPostConfigureBridgeExposeDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+		}
+
+		err = restartBridgePod(l)
+		if err != nil {
+			errMsg := fmt.Sprintf("failed to restart bridge pod: %v", err)
+			l.Error(errMsg)
+			return configure.NewPostConfigureBridgeExposeDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(errMsg)})
+		}
 	}
 	if exposeErr != nil {
 		l.Error(exposeErr.Error())
 		return configure.NewPostConfigureBridgeExposeDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(exposeErr.Error())})
-	}
-
-	err = deleteBridgeCredentials(l)
-	if err != nil {
-		l.Error(err.Error())
-		return configure.NewPostConfigureBridgeExposeDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
-	}
-
-	err = restartBridgePod(l)
-	if err != nil {
-		errMsg := fmt.Sprintf("failed to restart bridge pod: %v", err)
-		l.Error(errMsg)
-		return configure.NewPostConfigureBridgeExposeDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(errMsg)})
 	}
 
 	return configure.NewPostConfigureBridgeExposeOK().WithPayload(bridgeHost)
