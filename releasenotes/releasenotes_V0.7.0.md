@@ -28,4 +28,7 @@ Implemented **Keptn spec** version: [master](https://github.com/keptn/spec/tree/
 
 ## Good to know / Known Limitations
 
-* **Upgrade from 0.6.2 to 0.7:** *Keptn 0.7 uses Helm 3.0 while previous Keptn releases rely on Helm 2.0*. By using the provided upgrader, **all** Helm releases are upgraded from Helm 2.0 to 3.0. This also includes Helm releases that are not managed by Keptn. If you have Helm releases on your cluster that are on version 2.0 and you do not want to upgrade, don't use the upgrader. Please take into account that the end-of-life period of Helm 2.0 begins on [August 13th, 2020](https://helm.sh/blog/covid-19-extending-helm-v2-bug-fixes/).  
+* **Upgrade from 0.6.2 to 0.7:** *Keptn 0.7 uses Helm 3 while previous Keptn releases rely on Helm 2*. To upgrade  your Helm releases from Helm 2 to 3, two options are provided: 
+  1. *Job without Helm 3 Upgrade:* This option is needed when the cluster contains Helm releases not managed by Keptn. If this job is executed, it is necessary to manually converted the releases from Helm 2 to 3 as explained on [keptn.sh/docs](http://localhost:1313/docs/0.7.0/operate/upgrade/#job-without-helm-3-0-upgrade).
+  1. *Job with Helm 3 Upgrade:* Full automation of Helm upgrade for installations were just Keptn is installed. If this job is executed, **all** Helm releases on the cluster are converted from Helm 2 to 3.
+  
