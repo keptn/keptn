@@ -168,7 +168,33 @@ func PostConfigureBridgeHandlerFunc(params configure.PostConfigureBridgeExposePa
 		return configure.NewPostConfigureBridgeExposeDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(exposeErr.Error())})
 	}
 
+	err = deleteBridgeCredentials(l)
+	if err != nil {
+		l.Error(err.Error())
+		return configure.NewPostConfigureBridgeExposeDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+	}
+
+	err = restartBridgePod(l)
+	if err != nil {
+		errMsg := fmt.Sprintf("failed to restart bridge pod: %v", err)
+		l.Error(errMsg)
+		return configure.NewPostConfigureBridgeExposeDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(errMsg)})
+	}
+
 	return configure.NewPostConfigureBridgeExposeOK().WithPayload(bridgeHost)
+}
+
+func deleteBridgeCredentials(l *keptnutils.Logger) error {
+	l.Info("Deleting credentials for bridge")
+
+	restConfig, _ := getRestConfig()
+
+	k8s, err := kubernetes.NewForConfig(restConfig)
+	if err != nil {
+		return err
+	}
+
+	return k8s.CoreV1().Secrets("keptn").Delete("bridge-credentials", &metav1.DeleteOptions{})
 }
 
 func restartBridgePod(l *keptnutils.Logger) error {
@@ -181,7 +207,7 @@ func restartBridgePod(l *keptnutils.Logger) error {
 		return err
 	}
 
-	return k8s.CoreV1().Pods("keptn").DeleteCollection(nil, metav1.ListOptions{
+	return k8s.CoreV1().Pods("keptn").DeleteCollection(&metav1.DeleteOptions{}, metav1.ListOptions{
 		LabelSelector: "run=bridge",
 	})
 }
