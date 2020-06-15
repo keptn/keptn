@@ -150,11 +150,7 @@ paths:
         - configure
       summary: Exposes the bridge
       parameters:
-        - in: body
-          name: expose
-          description: Flag for exposing the bridge
-          schema:
-            type: boolean
+        - $ref: "#/parameters/configureBridge"
       responses:
         200:
           description: Bridge was successfully exposed/disposed
@@ -197,3 +193,10 @@ parameters:
     description: Service entity
     schema:
       $ref: "service_model.yaml#/definitions/service"
+
+  configureBridge:
+    in: body
+    name: configureBridge
+    description: Parameters for configuring the bridge access
+    schema:
+      $ref: "configure_model.yaml#/definitions/configureBridge"

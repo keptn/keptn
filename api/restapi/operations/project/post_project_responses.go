@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/keptn/keptn/api/models"
+	models "github.com/keptn/keptn/api/models"
 )
 
 // PostProjectOKCode is the HTTP code returned for type PostProjectOK

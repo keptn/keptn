@@ -3,11 +3,11 @@ package cmd
 import (
 	"bytes"
 	"crypto/tls"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
@@ -17,11 +17,15 @@ import (
 )
 
 type configureBridgeCmdParams struct {
-	Action *string
+	Action   *string
+	User     *string
+	Password *string
 }
 
 type exposeBridgeAPIPayload struct {
 	Expose bool `json:"expose"`
+	User string `json:"user"`
+	Password string `json:"password"`
 }
 
 type exposeBridgeAPIErrorResponse struct {
@@ -63,7 +67,19 @@ Make sure to protect Keptn Bridge using basic authentication.
 
 func configureBridge(endpoint string, apiToken string, configureBridgeParams *configureBridgeCmdParams) error {
 	doExpose := *configureBridgeParams.Action == "expose"
-	payload := strconv.FormatBool(doExpose)
+
+	exposeBridgeParams := exposeBridgeAPIPayload{
+		Expose:   doExpose,
+	}
+	if doExpose {
+		exposeBridgeParams.User = *configureBridgeParams.User
+		exposeBridgeParams.Password = *configureBridgeParams.Password
+	}
+	payload, err := json.Marshal(exposeBridgeParams)
+	if err != nil {
+		fmt.Println("Could not complete command: " + err.Error())
+		return err
+	}
 	client := &http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
@@ -106,6 +122,14 @@ func verifyConfigureBridgeParams(configureBridgeParams *configureBridgeCmdParams
 	if *configureBridgeParams.Action != actionExpose && *configureBridgeParams.Action != actionLockdown {
 		return errors.New("Invalid value " + *configureBridgeParams.Action + " 'action'. Must provide either '--action=expose' or '--action=lockdown'")
 	}
+	if *configureBridgeParams.Action == actionExpose {
+		if configureBridgeParams.User == nil || *configureBridgeParams.User == "" {
+			return errors.New("please specify a user name for exposing the bridge using the '--user=<username>' flag")
+		}
+		if configureBridgeParams.Password == nil || *configureBridgeParams.Password == "" {
+			return errors.New("please specify a password for exposing the bridge using the '--password=<password>' flag")
+		}
+	}
 	return nil
 }
 
@@ -115,4 +139,8 @@ func init() {
 
 	configureBridgeParams.Action = bridgeCmd.Flags().StringP("action", "a", "", "The action to perform [expose,lockdown]")
 	_ = configureCmd.MarkFlagRequired("action")
+
+	configureBridgeParams.User = bridgeCmd.Flags().StringP("user", "u", "", "The user name to login to the bridge")
+	configureBridgeParams.Password = bridgeCmd.Flags().StringP("password", "p", "", "The password to login to the bridge")
+
 }
