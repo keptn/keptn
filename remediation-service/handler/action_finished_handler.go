@@ -9,6 +9,7 @@ import (
 
 const waitTimeInMinutes = 10
 
+// ActionFinishedEventHandlerhandles handles action.finished events
 type ActionFinishedEventHandler struct {
 	KeptnHandler *keptn.Keptn
 	Logger       keptn.LoggerInterface
@@ -19,6 +20,7 @@ type ActionFinishedEventHandler struct {
 
 type waitFunction func()
 
+// HandleEvent handles the incoming event
 func (eh *ActionFinishedEventHandler) HandleEvent() error {
 	actionFinishedEvent := &keptn.ActionFinishedEventData{}
 

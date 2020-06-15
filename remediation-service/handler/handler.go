@@ -25,10 +25,12 @@ const configurationserviceconnection = "CONFIGURATION_SERVICE" //"localhost:6060
 const datastoreConnection = "MONGODB_DATASTORE"
 const remediationSpecVersion = "0.2.0"
 
+// Handler handles incoming Keptn events
 type Handler interface {
 	HandleEvent() error
 }
 
+// NewHandles returns a new Handler for the incoming Keptn event
 func NewHandler(event cloudevents.Event) (Handler, error) {
 	var shkeptncontext string
 	event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
@@ -109,6 +111,7 @@ type remediationStatusList struct {
 	TotalCount float64 `json:"totalCount,omitempty"`
 }
 
+// Remediation provides functions to access all resources related to the remediation workflow
 type Remediation struct {
 	Keptn  *keptn.Keptn
 	Logger keptn.LoggerInterface

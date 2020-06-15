@@ -8,6 +8,7 @@ import (
 	"strings"
 )
 
+// ProblemOpenEventHandler handles incoming problem.open events
 type ProblemOpenEventHandler struct {
 	KeptnHandler *keptn.Keptn
 	Logger       keptn.LoggerInterface
@@ -15,6 +16,7 @@ type ProblemOpenEventHandler struct {
 	Remediation  *Remediation
 }
 
+// HandleEvent handles the event
 func (eh *ProblemOpenEventHandler) HandleEvent() error {
 	var problemEvent *keptn.ProblemEventData
 	if eh.Event.Type() == keptn.ProblemOpenEventType {

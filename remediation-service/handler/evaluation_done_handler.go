@@ -10,6 +10,7 @@ import (
 	"os"
 )
 
+// EvaluationDoneEventHandler handles incoming evaluation-done events
 type EvaluationDoneEventHandler struct {
 	KeptnHandler *keptn.Keptn
 	Logger       keptn.LoggerInterface
@@ -17,6 +18,7 @@ type EvaluationDoneEventHandler struct {
 	Remediation  *Remediation
 }
 
+// HandleEvent handles the event
 func (eh *EvaluationDoneEventHandler) HandleEvent() error {
 	evaluationDoneEventData := &keptn.EvaluationDoneEventData{}
 
@@ -98,7 +100,7 @@ func (eh *EvaluationDoneEventHandler) HandleEvent() error {
 
 func (eh *EvaluationDoneEventHandler) getLastRemediationStatusChangedEvent(remediations []*remediationStatus) (*keptn.RemediationStatusChangedEventData, error) {
 	var lastRemediationStatusChanged *remediationStatus
-	for index, _ := range remediations {
+	for index := range remediations {
 		remediation := remediations[len(remediations)-1-index]
 		if remediation.Type == keptn.RemediationStatusChangedEventType {
 			lastRemediationStatusChanged = remediation
