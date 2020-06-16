@@ -30,6 +30,11 @@ type createProjectCmdParams struct {
 var createProjectParams *createProjectCmdParams
 
 const gitErrMsg = `Please specify a 'git-user', 'git-token', and 'git-remote-url' as flags for configuring a Git upstream repository`
+const gitMissingUpstream = `WARNING: Creating a project without Git upstream repository is not recommended. 
+You can configure a Git upstream repository using: 
+
+keptn update project PROJECTNAME --git-user=GIT_USER --git-token=GIT_TOKEN --git-remote-url=GIT_REMOTE_URL
+`
 
 // crProjectCmd represents the project command
 var crProjectCmd = &cobra.Command{
@@ -142,6 +147,7 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-t
 
 func checkGitCredentials() error {
 	if *createProjectParams.GitUser == "" && *createProjectParams.GitToken == "" && *createProjectParams.RemoteURL == "" {
+		fmt.Println(gitMissingUpstream)
 		return nil
 	}
 
