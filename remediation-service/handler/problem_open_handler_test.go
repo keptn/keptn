@@ -7,7 +7,6 @@ import (
 	"github.com/go-openapi/strfmt"
 	keptnapi "github.com/keptn/go-utils/pkg/api/models"
 	keptn "github.com/keptn/go-utils/pkg/lib"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -471,36 +470,4 @@ func TestProblemOpenEventHandler_HandleEvent(t *testing.T) {
 
 func stringp(s string) *string {
 	return &s
-}
-
-func TestValidTagsDeriving(t *testing.T) {
-
-	problemEvent := keptn.ProblemEventData{
-		Tags:    "keptn_service:carts, keptn_stage:dev, keptn_project:sockshop",
-		Project: "",
-		Stage:   "",
-		Service: "",
-	}
-
-	deriveFromTags(&problemEvent)
-
-	assert.Equal(t, "sockshop", problemEvent.Project)
-	assert.Equal(t, "dev", problemEvent.Stage)
-	assert.Equal(t, "carts", problemEvent.Service)
-}
-
-func TestEmptyTagsDeriving(t *testing.T) {
-
-	problemEvent := keptn.ProblemEventData{
-		Tags:    "",
-		Project: "",
-		Stage:   "",
-		Service: "",
-	}
-
-	deriveFromTags(&problemEvent)
-
-	assert.Equal(t, "", problemEvent.Project)
-	assert.Equal(t, "", problemEvent.Stage)
-	assert.Equal(t, "", problemEvent.Service)
 }

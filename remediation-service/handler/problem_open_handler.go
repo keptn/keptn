@@ -4,7 +4,6 @@ import (
 	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go"
 	keptn "github.com/keptn/go-utils/pkg/lib"
-	"strings"
 )
 
 // ProblemOpenEventHandler handles incoming problem.open events
@@ -110,25 +109,4 @@ func (eh *ProblemOpenEventHandler) isRemediationEnabled() (bool, error) {
 	}
 
 	return false, nil
-}
-
-func isProjectAndStageAvailable(problem *keptn.ProblemEventData) bool {
-	return problem.Project != "" && problem.Stage != ""
-}
-
-// deriveFromTags allows to derive project, stage, and service information from tags
-// Input example: "Tags:":"keptn_service:carts, keptn_stage:dev, keptn_stage:sockshop"
-func deriveFromTags(problem *keptn.ProblemEventData) {
-
-	tags := strings.Split(problem.Tags, ", ")
-
-	for _, tag := range tags {
-		if strings.HasPrefix(tag, "keptn_service:") {
-			problem.Service = tag[len("keptn_service:"):]
-		} else if strings.HasPrefix(tag, "keptn_stage:") {
-			problem.Stage = tag[len("keptn_stage:"):]
-		} else if strings.HasPrefix(tag, "keptn_project:") {
-			problem.Project = tag[len("keptn_project:"):]
-		}
-	}
 }
