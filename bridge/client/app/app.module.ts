@@ -53,7 +53,7 @@ import {DtExpandableTextModule} from "@dynatrace/barista-components/expandable-t
 import {DtExpandablePanelModule} from "@dynatrace/barista-components/expandable-panel";
 import {DtShowMoreModule} from "@dynatrace/barista-components/show-more";
 import {DtIconModule} from "@dynatrace/barista-components/icon";
-import {DtIndicatorModule} from "@dynatrace/barista-components/core";
+import {DtIndicatorModule} from "@dynatrace/barista-components/indicator";
 import {DtProgressCircleModule} from "@dynatrace/barista-components/progress-circle";
 import {DtConsumptionModule} from "@dynatrace/barista-components/consumption";
 import {DtKeyValueListModule} from "@dynatrace/barista-components/key-value-list";
