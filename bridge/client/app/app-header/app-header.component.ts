@@ -19,6 +19,8 @@ import {NotificationType} from "../_models/notification";
 export class AppHeaderComponent implements OnInit, OnDestroy {
 
   private routeSub: Subscription = Subscription.EMPTY;
+  private versionInfoSub: Subscription = Subscription.EMPTY;
+
   public projects: Observable<Project[]>;
   public project: Observable<Project>;
 
@@ -43,7 +45,7 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
       }
     });
 
-    this.dataService.versionInfo.subscribe(versionInfo => {
+    this.versionInfoSub = this.dataService.versionInfo.subscribe(versionInfo => {
       this.versionInfo = versionInfo;
       if(versionInfo.versionCheckEnabled === null) {
         this.showVersionCheckInfoDialog();
@@ -115,6 +117,7 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.routeSub.unsubscribe();
+    this.versionInfoSub.unsubscribe();
   }
 
 }
