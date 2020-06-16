@@ -187,9 +187,7 @@ func PostConfigureBridgeHandlerFunc(params configure.PostConfigureBridgeExposePa
 func deleteBridgeCredentials(l *keptnutils.Logger) error {
 	l.Info("Deleting credentials for bridge")
 
-	restConfig, _ := getRestConfig()
-
-	k8s, err := kubernetes.NewForConfig(restConfig)
+	k8s, err := getK8sClient()
 	if err != nil {
 		return err
 	}
@@ -197,12 +195,20 @@ func deleteBridgeCredentials(l *keptnutils.Logger) error {
 	return k8s.CoreV1().Secrets("keptn").Delete("bridge-credentials", &metav1.DeleteOptions{})
 }
 
-func restartBridgePod(l *keptnutils.Logger) error {
-	l.Info("Restarting bridge for credentials to take effect")
-
+func getK8sClient() (*kubernetes.Clientset, error) {
 	restConfig, _ := getRestConfig()
 
 	k8s, err := kubernetes.NewForConfig(restConfig)
+	if err != nil {
+		return nil, err
+	}
+	return k8s, nil
+}
+
+func restartBridgePod(l *keptnutils.Logger) error {
+	l.Info("Restarting bridge for credentials to take effect")
+
+	k8s, err := getK8sClient()
 	if err != nil {
 		return err
 	}
@@ -215,9 +221,7 @@ func restartBridgePod(l *keptnutils.Logger) error {
 func createBridgeCredentials(user string, password string, l *keptnutils.Logger) error {
 	l.Info("Creating or updating credentials for bridge")
 
-	restConfig, _ := getRestConfig()
-
-	k8s, err := kubernetes.NewForConfig(restConfig)
+	k8s, err := getK8sClient()
 	if err != nil {
 		return err
 	}
