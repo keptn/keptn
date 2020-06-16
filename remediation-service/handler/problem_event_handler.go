@@ -5,7 +5,7 @@ import (
 	keptn "github.com/keptn/go-utils/pkg/lib"
 )
 
-// ProblemOpenEventHandler handles incoming problem.open events
+// ProblemEventHandler handles incoming problem events
 type ProblemEventHandler struct {
 	KeptnHandler *keptn.Keptn
 	Logger       keptn.LoggerInterface
