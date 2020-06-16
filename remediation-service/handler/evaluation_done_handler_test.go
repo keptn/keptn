@@ -100,10 +100,27 @@ const previousRemediationTriggeredEvent = `{
     "totalCount": 1
 }`
 
-const evaluationDoneEventPayload = `{
+const evaluationDoneEventPayloadWithResultFailed = `{
     "project": "sockshop",
     "stage": "production", 
     "service": "service",
+    "result": "failed",
+	"teststrategy": "real-user"
+  }`
+
+const evaluationDoneEventPayloadWithResultPass = `{
+    "project": "sockshop",
+    "stage": "production", 
+    "service": "service",
+    "result": "pass",
+	"teststrategy": "real-user"
+  }`
+
+const evaluationDoneEventPayloadWithResultWarning = `{
+    "project": "sockshop",
+    "stage": "production", 
+    "service": "service",
+    "result": "warning",
 	"teststrategy": "real-user"
   }`
 
@@ -169,7 +186,7 @@ func TestEvaluationDoneEventHandler_HandleEvent(t *testing.T) {
 		{
 			name: "get and send next action",
 			fields: fields{
-				Event: createTestCloudEvent(keptn.EvaluationDoneEventType, evaluationDoneEventPayload),
+				Event: createTestCloudEvent(keptn.EvaluationDoneEventType, evaluationDoneEventPayloadWithResultFailed),
 			},
 			wantErr:                         false,
 			returnedRemediationYamlResource: remediationYamlResourceWithValidRemediationAndMultipleActions,
@@ -215,7 +232,7 @@ func TestEvaluationDoneEventHandler_HandleEvent(t *testing.T) {
 		{
 			name: "all actions executed - send finished event",
 			fields: fields{
-				Event: createTestCloudEvent(keptn.EvaluationDoneEventType, evaluationDoneEventPayload),
+				Event: createTestCloudEvent(keptn.EvaluationDoneEventType, evaluationDoneEventPayloadWithResultFailed),
 			},
 			wantErr:                            false,
 			returnedRemediationYamlResource:    remediationYamlResourceWithValidRemediation,
@@ -249,6 +266,60 @@ func TestEvaluationDoneEventHandler_HandleEvent(t *testing.T) {
 			expectedRemediationOnConfigService: []*remediationStatus{},
 			expectedEventOnEventbroker:         []*keptnapi.KeptnContextExtendedCE{},
 			returnedRemediations:               previousRemediations,
+			returnedEvents: map[string]string{
+				"test-id-1": previousRemediationTriggeredEvent,
+				"test-id-2": previousRemediationStatusChangedEvent,
+			},
+		},
+		{
+			name: "complete remediation if evaluation is successful (result=pass)",
+			fields: fields{
+				Event: createTestCloudEvent(keptn.EvaluationDoneEventType, evaluationDoneEventPayloadWithResultPass),
+			},
+			wantErr:                            false,
+			returnedRemediationYamlResource:    remediationYamlResourceWithValidRemediation,
+			expectedRemediationOnConfigService: []*remediationStatus{},
+			expectedEventOnEventbroker: []*keptnapi.KeptnContextExtendedCE{
+				{
+					Contenttype:    "application/json",
+					Data:           nil,
+					Extensions:     nil,
+					ID:             "",
+					Shkeptncontext: testKeptnContext,
+					Source:         nil,
+					Specversion:    "",
+					Time:           strfmt.DateTime{},
+					Type:           stringp(keptn.RemediationFinishedEventType),
+				},
+			},
+			returnedRemediations: previousRemediations,
+			returnedEvents: map[string]string{
+				"test-id-1": previousRemediationTriggeredEvent,
+				"test-id-2": previousRemediationStatusChangedEvent,
+			},
+		},
+		{
+			name: "complete remediation if evaluation is successful (result=warning)",
+			fields: fields{
+				Event: createTestCloudEvent(keptn.EvaluationDoneEventType, evaluationDoneEventPayloadWithResultWarning),
+			},
+			wantErr:                            false,
+			returnedRemediationYamlResource:    remediationYamlResourceWithValidRemediation,
+			expectedRemediationOnConfigService: []*remediationStatus{},
+			expectedEventOnEventbroker: []*keptnapi.KeptnContextExtendedCE{
+				{
+					Contenttype:    "application/json",
+					Data:           nil,
+					Extensions:     nil,
+					ID:             "",
+					Shkeptncontext: testKeptnContext,
+					Source:         nil,
+					Specversion:    "",
+					Time:           strfmt.DateTime{},
+					Type:           stringp(keptn.RemediationFinishedEventType),
+				},
+			},
+			returnedRemediations: previousRemediations,
 			returnedEvents: map[string]string{
 				"test-id-1": previousRemediationTriggeredEvent,
 				"test-id-2": previousRemediationStatusChangedEvent,

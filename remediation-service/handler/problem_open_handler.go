@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"errors"
 	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go"
 	keptn "github.com/keptn/go-utils/pkg/lib"
@@ -25,13 +24,6 @@ func (eh *ProblemOpenEventHandler) HandleEvent() error {
 		if err := eh.Event.DataAs(problemEvent); err != nil {
 			return err
 		}
-	}
-
-	if !isProjectAndStageAvailable(problemEvent) {
-		deriveFromTags(problemEvent)
-	}
-	if !isProjectAndStageAvailable(problemEvent) {
-		return errors.New("Cannot derive project and stage from tags nor impacted entity")
 	}
 
 	eh.Logger.Debug("Received problem event with state " + problemEvent.State)

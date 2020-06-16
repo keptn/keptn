@@ -33,6 +33,18 @@ func (eh *EvaluationDoneEventHandler) HandleEvent() error {
 		return nil
 	}
 
+	if evaluationDoneEventData.Result == "pass" || evaluationDoneEventData.Result == "warning" {
+		msg := "Remediation successful. Remediation actions resulted in evaluation result: " + evaluationDoneEventData.Result
+		eh.Logger.Info(msg)
+		eh.Remediation.sendRemediationFinishedEvent(keptn.RemediationStatusSucceeded, keptn.RemediationResultPass, msg)
+		err := deleteRemediation(eh.KeptnHandler.KeptnContext, *eh.KeptnHandler.KeptnBase)
+		if err != nil {
+			eh.Logger.Error("Could not close remediation: " + err.Error())
+			return err
+		}
+		return nil
+	}
+
 	// get remediation.yaml
 	resource, err := eh.Remediation.getRemediationFile()
 	if err != nil {
@@ -88,7 +100,7 @@ func (eh *EvaluationDoneEventHandler) HandleEvent() error {
 	} else {
 		msg := "No further remediation action configured for problem type " + remediationTriggeredEvent.Problem.ProblemTitle
 		eh.Logger.Info(msg)
-		_ = eh.Remediation.sendRemediationFinishedEvent(keptn.RemediationStatusSucceeded, keptn.RemediationResultPass, "triggered all actions")
+		_ = eh.Remediation.sendRemediationFinishedEvent(keptn.RemediationStatusSucceeded, keptn.RemediationResultFailed, msg)
 		err = deleteRemediation(eh.KeptnHandler.KeptnContext, *eh.KeptnHandler.KeptnBase)
 		if err != nil {
 			eh.Logger.Error("Could not close remediation: " + err.Error())
