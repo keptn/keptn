@@ -1,10 +1,10 @@
-# Keptn's Bridge
+# Keptn Bridge
 
-Keptn's bridge allows to browse the Keptn events.
+Keptn bridge allows to browse the Keptn events.
 
 ## Installation
 
-The Keptn's bridge is installed as a part of [Keptn](https://keptn.sh).
+The Keptn bridge is installed as a part of [Keptn](https://keptn.sh).
 
 ### Deploy in your Kubernetes cluster
 
@@ -16,12 +16,12 @@ kubectl apply -f deploy/bridge.yaml
 
 ### Setting up Basic Authentication
 
-Keptn's Bridge comes with a very simple basic authentication feature, which can be controlled by setting the following two environment variables:
+Keptn Bridge comes with a very simple basic authentication feature, which can be controlled by setting the following two environment variables:
 
 * `BASIC_AUTH_USERNAME` - username
 * `BASIC_AUTH_PASSWORD` - password
 
-To enable it within your Kubernetes cluster, we recommend first creating a secret which holds the two variables, and then apply this secret within the Kubernetes deployment for Keptn's Bridge.
+To enable it within your Kubernetes cluster, we recommend first creating a secret which holds the two variables, and then apply this secret within the Kubernetes deployment for Keptn Bridge.
 
 1. Create the secret using
 

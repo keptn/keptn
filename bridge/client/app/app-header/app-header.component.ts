@@ -24,6 +24,7 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
 
   public versionInfo: any;
   public versionCheckDialogState: string | null;
+  public versionCheckReference = "https://keptn.sh/docs/develop/reference/bridge/version_check";
 
   constructor(private router: Router, private dataService: DataService, private apiService: ApiService, private notificationsService: NotificationsService) { }
 
@@ -55,7 +56,7 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
         }
         if(semver.valid(versionInfo.bridgeVersion)) {
           if(versionInfo.availableVersions.bridge)
-            this.doVersionCheck(versionInfo.bridgeVersion, versionInfo.availableVersions.bridge.stable, versionInfo.availableVersions.bridge.prerelease, "Keptn's Bridge");
+            this.doVersionCheck(versionInfo.bridgeVersion, versionInfo.availableVersions.bridge.stable, versionInfo.availableVersions.bridge.prerelease, "Keptn Bridge");
         } else {
           versionInfo.bridgeVersionInvalid = true;
         }
