@@ -106,7 +106,7 @@ module.exports = (params) => {
     try {
       const result = await axios({
         method: req.method,
-        url: `https://raw.githubusercontent.com/keptn/get.keptn.sh/master/src/version.json`,
+        url: `https://get.keptn.sh/version.json`,
         data: req.params,
         headers: {
           'content-type': 'application/json'
