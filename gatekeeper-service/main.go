@@ -70,9 +70,9 @@ func switchEvent(event cloudevents.Event) {
 		return
 	}
 
-	handlers := []handler.Handler{handler.NewEvaluationDoneEventHandler(l),
-		handler.NewApprovalTriggeredEventHandler(l),
-		handler.NewApprovalFinishedEventHandler(l)}
+	handlers := []handler.Handler{handler.NewEvaluationDoneEventHandler(keptnHandler),
+		handler.NewApprovalTriggeredEventHandler(keptnHandler),
+		handler.NewApprovalFinishedEventHandler(keptnHandler)}
 
 	unhandled := true
 	for _, handler := range handlers {

@@ -13,11 +13,11 @@ import (
 )
 
 type ApprovalTriggeredEventHandler struct {
-	logger *keptnevents.Logger
+	keptn *keptnevents.Keptn
 }
 
-func NewApprovalTriggeredEventHandler(l *keptnevents.Logger) *ApprovalTriggeredEventHandler {
-	return &ApprovalTriggeredEventHandler{logger: l}
+func NewApprovalTriggeredEventHandler(keptn *keptnevents.Keptn) *ApprovalTriggeredEventHandler {
+	return &ApprovalTriggeredEventHandler{keptn: keptn}
 }
 
 func (a *ApprovalTriggeredEventHandler) IsTypeHandled(event cloudevents.Event) bool {
@@ -28,18 +28,18 @@ func (a *ApprovalTriggeredEventHandler) Handle(event cloudevents.Event, keptnHan
 
 	data := &keptnevents.ApprovalTriggeredEventData{}
 	if err := event.DataAs(data); err != nil {
-		a.logger.Error(fmt.Sprintf("failed to parse ApprovalTriggeredEventData: %v", err))
+		a.keptn.Logger.Error(fmt.Sprintf("failed to parse ApprovalTriggeredEventData: %v", err))
 		return
 	}
 
 	// create approval in configuration-service
-	if err := createApproval(event.ID(), a.logger.KeptnContext, data.Image, data.Tag, event.Time().String(), data.Project, data.Stage, data.Service); err != nil {
-		a.logger.Error(fmt.Sprintf("failed to create approval in materialized view: %v", err))
+	if err := createApproval(event.ID(), a.keptn.KeptnContext, data.Image, data.Tag, event.Time().String(), data.Project, data.Stage, data.Service); err != nil {
+		a.keptn.Logger.Error(fmt.Sprintf("failed to create approval in materialized view: %v", err))
 		return
 	}
 
 	outgoingEvents := a.handleApprovalTriggeredEvent(*data, event.Context.GetID(), keptnHandler.KeptnContext, *shipyard)
-	sendEvents(keptnHandler, outgoingEvents, a.logger)
+	sendEvents(keptnHandler, outgoingEvents, a.keptn.Logger)
 }
 
 func (a *ApprovalTriggeredEventHandler) handleApprovalTriggeredEvent(inputEvent keptnevents.ApprovalTriggeredEventData, triggeredId, shkeptncontext string,
@@ -49,12 +49,12 @@ func (a *ApprovalTriggeredEventHandler) handleApprovalTriggeredEvent(inputEvent 
 	if inputEvent.Result == PassResult && a.getApprovalStrategyForPass(inputEvent.Stage, shipyard) == keptnevents.Automatic ||
 		inputEvent.Result == WarningResult && a.getApprovalStrategyForWarning(inputEvent.Stage, shipyard) == keptnevents.Automatic {
 		// Pass
-		a.logger.Info(fmt.Sprintf("Automatically approve image %s for service %s of project %s and current stage %s",
+		a.keptn.Logger.Info(fmt.Sprintf("Automatically approve image %s for service %s of project %s and current stage %s",
 			inputEvent.Image, inputEvent.Service, inputEvent.Project, inputEvent.Stage))
 		outgoingEvents = append(outgoingEvents, *a.getApprovalFinishedEvent(inputEvent, PassResult, triggeredId, shkeptncontext))
 	} else if inputEvent.Result == FailResult {
 		// Handle case if an ApprovalTriggered event was sent even the evaluation result is failed
-		a.logger.Info(fmt.Sprintf("Disapprove image %s for service %s of project %s and current stage %s because"+
+		a.keptn.Logger.Info(fmt.Sprintf("Disapprove image %s for service %s of project %s and current stage %s because"+
 			"the evaluation result is fail", inputEvent.Image, inputEvent.Service, inputEvent.Project, inputEvent.Stage))
 		outgoingEvents = append(outgoingEvents, *a.getApprovalFinishedEvent(inputEvent, FailResult, triggeredId, shkeptncontext))
 	}

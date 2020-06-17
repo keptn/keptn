@@ -24,11 +24,11 @@ type approval struct {
 }
 
 type ApprovalFinishedEventHandler struct {
-	logger *keptnevents.Logger
+	keptn *keptnevents.Keptn
 }
 
-func NewApprovalFinishedEventHandler(l *keptnevents.Logger) *ApprovalFinishedEventHandler {
-	return &ApprovalFinishedEventHandler{logger: l}
+func NewApprovalFinishedEventHandler(keptn *keptnevents.Keptn) *ApprovalFinishedEventHandler {
+	return &ApprovalFinishedEventHandler{keptn: keptn}
 }
 
 func (a *ApprovalFinishedEventHandler) IsTypeHandled(event cloudevents.Event) bool {
@@ -38,11 +38,11 @@ func (a *ApprovalFinishedEventHandler) IsTypeHandled(event cloudevents.Event) bo
 func (a *ApprovalFinishedEventHandler) Handle(event cloudevents.Event, keptnHandler *keptnevents.Keptn, shipyard *keptnevents.Shipyard) {
 	data := &keptnevents.ApprovalFinishedEventData{}
 	if err := event.DataAs(data); err != nil {
-		a.logger.Error(fmt.Sprintf("failed to parse ApprovalTriggeredEventData: %v", err))
+		a.keptn.Logger.Error(fmt.Sprintf("failed to parse ApprovalTriggeredEventData: %v", err))
 	}
 
 	outgoingEvents := a.handleApprovalFinishedEvent(*data, keptnHandler.KeptnContext, *shipyard)
-	sendEvents(keptnHandler, outgoingEvents, a.logger)
+	sendEvents(keptnHandler, outgoingEvents, a.keptn.Logger)
 }
 
 func (a *ApprovalFinishedEventHandler) handleApprovalFinishedEvent(inputEvent keptnevents.ApprovalFinishedEventData, shkeptncontext string,
@@ -50,25 +50,25 @@ func (a *ApprovalFinishedEventHandler) handleApprovalFinishedEvent(inputEvent ke
 
 	outgoingEvents := make([]cloudevents.Event, 0)
 	if inputEvent.Approval.Status != SucceededResult {
-		a.logger.Info(fmt.Sprintf("Approval finished with failed status for "+
+		a.keptn.Logger.Info(fmt.Sprintf("Approval finished with failed status for "+
 			"image %s for service %s of project %s and current stage %s received",
 			inputEvent.Image, inputEvent.Service, inputEvent.Project, inputEvent.Stage))
 	} else {
 		if inputEvent.Approval.Result == PassResult {
-			a.logger.Info(fmt.Sprintf("Approval for image %s for service %s of project %s and current stage %s received",
+			a.keptn.Logger.Info(fmt.Sprintf("Approval for image %s for service %s of project %s and current stage %s received",
 				inputEvent.Image, inputEvent.Service, inputEvent.Project, inputEvent.Stage))
 
 			openApproval, err := getOpenApproval(inputEvent)
 			if err != nil {
-				a.logger.Error("Could not retrieve open Approval with EventID " + inputEvent.Approval.TriggeredID + ": " + err.Error())
+				a.keptn.Logger.Error("Could not retrieve open Approval with EventID " + inputEvent.Approval.TriggeredID + ": " + err.Error())
 				return outgoingEvents
 			}
 			if openApproval.Image != inputEvent.Image {
-				a.logger.Error(fmt.Sprintf("Image of approval-finished event %s does not match with image of open approval: %s != %s\n", openApproval.EventID, openApproval.Image, inputEvent.Image))
+				a.keptn.Logger.Error(fmt.Sprintf("Image of approval-finished event %s does not match with image of open approval: %s != %s\n", openApproval.EventID, openApproval.Image, inputEvent.Image))
 				return outgoingEvents
 			}
 			if openApproval.Tag != inputEvent.Tag {
-				a.logger.Error(fmt.Sprintf("Tag of approval-finished event %s does not match with image of open approval: %s != %s\n", openApproval.EventID, openApproval.Image, inputEvent.Image))
+				a.keptn.Logger.Error(fmt.Sprintf("Tag of approval-finished event %s does not match with image of open approval: %s != %s\n", openApproval.EventID, openApproval.Image, inputEvent.Image))
 				return outgoingEvents
 			}
 			image := inputEvent.Image
@@ -80,11 +80,11 @@ func (a *ApprovalFinishedEventHandler) handleApprovalFinishedEvent(inputEvent ke
 				outgoingEvents = append(outgoingEvents, *event)
 			}
 			if err := closeOpenApproval(inputEvent); err != nil {
-				a.logger.Error(fmt.Sprintf("failed to close open approvals in materialized view: %v", err))
+				a.keptn.Logger.Error(fmt.Sprintf("failed to close open approvals in materialized view: %v", err))
 				return outgoingEvents
 			}
 		} else {
-			a.logger.Info(fmt.Sprintf("Rejection for image %s for service %s of project %s and current stage %s received",
+			a.keptn.Logger.Info(fmt.Sprintf("Rejection for image %s for service %s of project %s and current stage %s received",
 				inputEvent.Image, inputEvent.Service, inputEvent.Project, inputEvent.Stage))
 		}
 	}
