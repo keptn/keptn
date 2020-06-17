@@ -175,7 +175,43 @@ func GetProjectProjectNameHandlerFunc(params project.GetProjectProjectNameParams
 
 // PutProjectProjectNameHandlerFunc updates a project
 func PutProjectProjectNameHandlerFunc(params project.PutProjectProjectNameParams) middleware.Responder {
-	return middleware.NotImplemented("operation project.PutProjectProjectName has not yet been implemented")
+	credentialsCreated := false
+	logger := keptn.NewLogger("", "", "configuration-service")
+	// check if the project already exists
+	if common.ProjectExists(params.Project.ProjectName) {
+		common.LockProject(params.Project.ProjectName)
+		defer common.UnlockProject(params.Project.ProjectName)
+
+		if params.Project.GitUser != "" && params.Project.GitToken != "" && params.Project.GitRemoteURI != "" {
+			// store credentials (e.g., as a kubernetes secret)
+			err := common.StoreGitCredentials(params.Project.ProjectName, params.Project.GitUser, params.Project.GitToken, params.Project.GitRemoteURI)
+			if err != nil {
+				logger.Error(fmt.Sprintf("Could not store git credentials during creating project %s", params.Project.ProjectName))
+				logger.Error(err.Error())
+				return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not store git credentials")})
+			}
+			credentialsCreated = true
+			err = common.AddOrigin(params.Project.ProjectName)
+			if err != nil {
+				logger.Error(fmt.Sprintf("Could not add upstream repository while updating project %s", params.Project.ProjectName))
+				logger.Error(err.Error())
+				// Cleanup credentials before we exit
+				if credentialsCreated {
+					err = common.DeleteCredentials(params.Project.ProjectName)
+					if err != nil {
+						logger.Error(fmt.Sprintf("Could not delete credentials while updating project %s", params.Project.ProjectName))
+						logger.Error(err.Error())
+					}
+				}
+				return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
+			}
+
+		}
+
+	} else {
+		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Project not exists")})
+	}
+	return project.NewPutProjectProjectNameNoContent()
 }
 
 // DeleteProjectProjectNameHandlerFunc deletes a project

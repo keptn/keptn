@@ -98,6 +98,8 @@ kubectl -n keptn get svc gatekeeper-service
       print_debug "Full installation detected. Upgrading CD and CO services"
       kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/continuous-deployment.yaml
       kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/continuous-operations.yaml
+      # remove the remediation-service-problem-distributor deployment since the remediation service now has a new distributor for multiple types of evetns
+      kubectl delete deployment -n keptn remediation-service-problem-distributor
   fi
 
 # check for keptn-contrib services

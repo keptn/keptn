@@ -119,15 +119,10 @@ spec:
             value: 'http://event-broker.keptn.svc.cluster.local/keptn'
           - name: CONFIGURATION_SERVICE
             value: 'http://configuration-service.keptn.svc.cluster.local:8080'
+          - name: MONGODB_DATASTORE
+            value: 'http://mongodb-datastore.keptn-datastore.svc.cluster.local:8080'
           - name: ENVIRONMENT
             value: 'production'
-        envFrom:
-          - secretRef:
-              name: unleash
-              optional: true
-          - secretRef:
-              name: dynatrace
-              optional: true
       serviceAccountName: keptn-default
 ---
 apiVersion: v1
@@ -149,7 +144,7 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: remediation-service-problem-distributor
+  name: remediation-service-distributor
   namespace: keptn
 spec:
   selector:
@@ -177,7 +172,7 @@ spec:
         - name: PUBSUB_URL
           value: 'nats://keptn-nats-cluster'
         - name: PUBSUB_TOPIC
-          value: 'sh.keptn.event.problem.open'
+          value: 'sh.keptn.>'
         - name: PUBSUB_RECIPIENT
           value: 'remediation-service'
       serviceAccountName: keptn-default
