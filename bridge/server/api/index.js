@@ -107,7 +107,6 @@ module.exports = (params) => {
       const result = await axios({
         method: req.method,
         url: `https://get.keptn.sh/version.json`,
-        data: req.params,
         headers: {
           'Content-Type': 'application/json',
           'User-Agent': `keptn/bridge:${process.env.VERSION}`
