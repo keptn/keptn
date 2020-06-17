@@ -1,4 +1,45 @@
 ---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: keptn-openshift-route-service
+  namespace: keptn
+  labels:
+    "app": "keptn"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: keptn-create-route
+  namespace: keptn
+  labels:
+    "app": "keptn"
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - routes
+    verbs:
+      - create
+    resourceNames:
+      - "*"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: keptn-create-route
+  namespace: keptn
+  labels:
+    "app": "keptn"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: keptn-create-route
+subjects:
+  - kind: ServiceAccount
+    name: keptn-openshift-route-service
+    namespace: keptn
+---
 ## openshift-route-service: create.project
 apiVersion: apps/v1
 kind: Deployment
@@ -16,22 +57,22 @@ spec:
         run: distributor
     spec:
       containers:
-      - name: distributor
-        image: keptn/distributor:latest
-        ports:
-        - containerPort: 8080
-        resources:
-          requests:
-            memory: "32Mi"
-            cpu: "50m"
-          limits:
-            memory: "128Mi"
-            cpu: "500m"
-        env:
-        - name: PUBSUB_URL
-          value: 'nats://keptn-nats-cluster'
-        - name: PUBSUB_TOPIC
-          value: 'sh.keptn.internal.event.project.create'
-        - name: PUBSUB_RECIPIENT
-          value: 'openshift-route-service'
-      serviceAccountName: keptn-default
+        - name: distributor
+          image: keptn/distributor:latest
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          env:
+            - name: PUBSUB_URL
+              value: 'nats://keptn-nats-cluster'
+            - name: PUBSUB_TOPIC
+              value: 'sh.keptn.internal.event.project.create'
+            - name: PUBSUB_RECIPIENT
+              value: 'openshift-route-service'
+      serviceAccountName: keptn-openshift-route-service
