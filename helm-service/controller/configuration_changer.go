@@ -194,7 +194,7 @@ func (c *ConfigurationChanger) applyValuesCanary(e *keptnevents.ConfigurationCha
 	if err := c.upgradeChart(ch, *e, deploymentStrategy); err != nil {
 		return err
 	}
-	onboarder := NewOnboarder(c.mesh, c.keptnHandler.Logger, c.keptnDomain, c.configServiceURL)
+	onboarder := NewOnboarder(c.mesh, c.keptnHandler, c.keptnDomain, c.configServiceURL)
 	if onboarder.IsGeneratedChartEmpty(genChart) {
 		userChartManifest, err := c.helmExecutor.GetManifest(helm.GetReleaseName(e.Project, e.Stage, e.Service, false),
 			e.Project+"-"+e.Stage)

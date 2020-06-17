@@ -3,6 +3,7 @@ package controller
 import (
 	"encoding/base64"
 	"encoding/json"
+	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -124,7 +125,6 @@ status: {}
 	}
 
 	a := &ActionTriggeredHandler{
-		logger:           keptnevents.NewLogger("", "", "helm-service-test"),
 		helmExecutor:     helm.NewHelmMockExecutor(),
 		configServiceURL: "",
 	}
@@ -176,12 +176,6 @@ func mockChartResourceEndpoints() *httptest.Server {
 func TestHandleScaling(t *testing.T) {
 	ts := mockChartResourceEndpoints()
 	defer ts.Close()
-
-	a := &ActionTriggeredHandler{
-		logger:           keptnevents.NewLogger("", "", "helm-service-test"),
-		helmExecutor:     helm.NewHelmMockExecutor(),
-		configServiceURL: ts.URL,
-	}
 
 	tests := []struct {
 		name                 string
@@ -244,6 +238,21 @@ func TestHandleScaling(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+
+			ce := cloudevents.New("0.2")
+			dataBytes, err := json.Marshal(tt.actionTriggeredEvent)
+			if err != nil {
+				t.Error(err)
+			}
+			ce.Data = dataBytes
+
+			keptnHandler, _ := keptnevents.NewKeptn(&ce, keptnevents.KeptnOpts{})
+
+			a := &ActionTriggeredHandler{
+				helmExecutor:     helm.NewHelmMockExecutor(),
+				keptnHandler:     keptnHandler,
+				configServiceURL: ts.URL,
+			}
 
 			resp := a.handleScaling(tt.actionTriggeredEvent)
 			if !reflect.DeepEqual(resp, tt.wanted) {
