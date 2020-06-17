@@ -27,6 +27,7 @@ type ApprovalFinishedEventHandler struct {
 	keptn *keptnevents.Keptn
 }
 
+// NewApprovalFinishedEventHandler returns a new approval.finished event handler
 func NewApprovalFinishedEventHandler(keptn *keptnevents.Keptn) *ApprovalFinishedEventHandler {
 	return &ApprovalFinishedEventHandler{keptn: keptn}
 }

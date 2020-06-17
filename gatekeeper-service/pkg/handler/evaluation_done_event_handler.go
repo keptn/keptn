@@ -17,6 +17,7 @@ type EvaluationDoneEventHandler struct {
 	keptn *keptnevents.Keptn
 }
 
+// NewEvaluationDoneEventHandler returns a new evaluation-done handler
 func NewEvaluationDoneEventHandler(keptn *keptnevents.Keptn) *EvaluationDoneEventHandler {
 	return &EvaluationDoneEventHandler{keptn: keptn}
 }

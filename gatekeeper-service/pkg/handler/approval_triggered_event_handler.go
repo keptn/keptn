@@ -16,6 +16,7 @@ type ApprovalTriggeredEventHandler struct {
 	keptn *keptnevents.Keptn
 }
 
+// NewApprovalTriggeredEventHandler returns a new approal.triggered event handler
 func NewApprovalTriggeredEventHandler(keptn *keptnevents.Keptn) *ApprovalTriggeredEventHandler {
 	return &ApprovalTriggeredEventHandler{keptn: keptn}
 }
