@@ -20,7 +20,7 @@ export class KtbEventItemComponent implements OnInit {
 
   public _event: Trace;
 
-  @ViewChild("eventPayloadDialog", {static: false})
+  @ViewChild("eventPayloadDialog")
   public eventPayloadDialog: TemplateRef<any>;
   public eventPayloadDialogRef: MatDialogRef<any, any>;
 

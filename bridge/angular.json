@@ -22,7 +22,7 @@
             "main": "client/main.ts",
             "polyfills": "client/polyfills.ts",
             "tsConfig": "tsconfig.app.json",
-            "aot": false,
+            "aot": true,
             "assets": [
               "client/favicon.ico",
               "client/assets",
@@ -56,7 +56,6 @@
               "sourceMap": false,
               "extractCss": true,
               "namedChunks": false,
-              "aot": true,
               "extractLicenses": true,
               "vendorChunk": false,
               "buildOptimizer": true,
@@ -69,7 +68,7 @@
                 {
                   "type": "anyComponentStyle",
                   "maximumWarning": "6kb",
-                  "maximumError": "10kb"
+                  "maximumError": "16kb"
                 }
               ]
             }
@@ -138,5 +137,8 @@
       }
     }
   },
-  "defaultProject": "bridge"
+  "defaultProject": "bridge",
+  "cli": {
+    "analytics": false
+  }
 }
