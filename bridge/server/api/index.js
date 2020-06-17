@@ -92,7 +92,7 @@ module.exports = (params) => {
         url: `${apiUrl}${req.url}`,
         data: req.params,
         headers: {
-          'content-type': 'application/json'
+          'Content-Type': 'application/json'
         },
         httpsAgent: agent
       });
@@ -109,7 +109,8 @@ module.exports = (params) => {
         url: `https://get.keptn.sh/version.json`,
         data: req.params,
         headers: {
-          'content-type': 'application/json'
+          'Content-Type': 'application/json',
+          'User-Agent': `keptn/bridge:${process.env.VERSION}`
         },
         httpsAgent: agent
       });
