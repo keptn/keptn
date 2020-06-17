@@ -13,26 +13,26 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// Error error
-// swagger:model error
-type Error struct {
+// ConfigureBridge configure bridge
+// swagger:model configureBridge
+type ConfigureBridge struct {
 
-	// code
-	Code int64 `json:"code,omitempty"`
-
-	// fields
-	Fields string `json:"fields,omitempty"`
-
-	// message
+	// expose
 	// Required: true
-	Message *string `json:"message"`
+	Expose *bool `json:"expose"`
+
+	// password
+	Password string `json:"password,omitempty"`
+
+	// user
+	User string `json:"user,omitempty"`
 }
 
-// Validate validates this error
-func (m *Error) Validate(formats strfmt.Registry) error {
+// Validate validates this configure bridge
+func (m *ConfigureBridge) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateMessage(formats); err != nil {
+	if err := m.validateExpose(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -42,9 +42,9 @@ func (m *Error) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Error) validateMessage(formats strfmt.Registry) error {
+func (m *ConfigureBridge) validateExpose(formats strfmt.Registry) error {
 
-	if err := validate.Required("message", "body", m.Message); err != nil {
+	if err := validate.Required("expose", "body", m.Expose); err != nil {
 		return err
 	}
 
@@ -52,7 +52,7 @@ func (m *Error) validateMessage(formats strfmt.Registry) error {
 }
 
 // MarshalBinary interface implementation
-func (m *Error) MarshalBinary() ([]byte, error) {
+func (m *ConfigureBridge) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -60,8 +60,8 @@ func (m *Error) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *Error) UnmarshalBinary(b []byte) error {
-	var res Error
+func (m *ConfigureBridge) UnmarshalBinary(b []byte) error {
+	var res ConfigureBridge
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

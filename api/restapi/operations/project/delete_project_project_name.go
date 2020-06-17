@@ -10,7 +10,7 @@ import (
 
 	middleware "github.com/go-openapi/runtime/middleware"
 
-	"github.com/keptn/keptn/api/models"
+	models "github.com/keptn/keptn/api/models"
 )
 
 // DeleteProjectProjectNameHandlerFunc turns a function with the right signature into a delete project project name handler

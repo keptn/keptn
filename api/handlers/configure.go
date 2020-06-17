@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	corev1 "k8s.io/api/core/v1"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -103,7 +104,32 @@ func PostConfigureBridgeHandlerFunc(params configure.PostConfigureBridgeExposePa
 
 	var exposeErr error
 	var bridgeHost string
-	if params.Expose {
+	if *params.ConfigureBridge.Expose {
+		if params.ConfigureBridge.User == "" {
+			errMsg := fmt.Sprintf("no user provided")
+			l.Error(errMsg)
+			return configure.NewPostConfigureBridgeExposeDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(errMsg)})
+		}
+		if params.ConfigureBridge.Password == "" {
+			errMsg := fmt.Sprintf("no password provided")
+			l.Error(errMsg)
+			return configure.NewPostConfigureBridgeExposeDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(errMsg)})
+		}
+
+		err := createBridgeCredentials(params.ConfigureBridge.User, params.ConfigureBridge.Password, l)
+		if err != nil {
+			errMsg := fmt.Sprintf("failed to create bridge credentials: %v", err)
+			l.Error(errMsg)
+			return configure.NewPostConfigureBridgeExposeDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(errMsg)})
+		}
+
+		err = restartBridgePod(l)
+		if err != nil {
+			errMsg := fmt.Sprintf("failed to restart bridge pod: %v", err)
+			l.Error(errMsg)
+			return configure.NewPostConfigureBridgeExposeDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(errMsg)})
+		}
+
 		l.Info("Starting to retrieve Keptn domain")
 		domain, err := k8sutils.GetKeptnDomain(useInClusterConfig)
 		if err != nil {
@@ -134,6 +160,19 @@ func PostConfigureBridgeHandlerFunc(params configure.PostConfigureBridgeExposePa
 			exposeErr = sendOCRouteRequest("", false, l)
 		}
 		bridgeHost = ""
+
+		err = deleteBridgeCredentials(l)
+		if err != nil {
+			l.Error(err.Error())
+			return configure.NewPostConfigureBridgeExposeDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+		}
+
+		err = restartBridgePod(l)
+		if err != nil {
+			errMsg := fmt.Sprintf("failed to restart bridge pod: %v", err)
+			l.Error(errMsg)
+			return configure.NewPostConfigureBridgeExposeDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(errMsg)})
+		}
 	}
 	if exposeErr != nil {
 		l.Error(exposeErr.Error())
@@ -141,6 +180,90 @@ func PostConfigureBridgeHandlerFunc(params configure.PostConfigureBridgeExposePa
 	}
 
 	return configure.NewPostConfigureBridgeExposeOK().WithPayload(bridgeHost)
+}
+
+func deleteBridgeCredentials(l *keptnutils.Logger) error {
+	l.Info("Deleting credentials for bridge")
+
+	k8s, err := getK8sClient()
+	if err != nil {
+		return err
+	}
+
+	return k8s.CoreV1().Secrets("keptn").Delete("bridge-credentials", &metav1.DeleteOptions{})
+}
+
+func getK8sClient() (*kubernetes.Clientset, error) {
+	restConfig, _ := getRestConfig()
+
+	k8s, err := kubernetes.NewForConfig(restConfig)
+	if err != nil {
+		return nil, err
+	}
+	return k8s, nil
+}
+
+func restartBridgePod(l *keptnutils.Logger) error {
+	l.Info("Restarting bridge for credentials to take effect")
+
+	k8s, err := getK8sClient()
+	if err != nil {
+		return err
+	}
+
+	return k8s.CoreV1().Pods("keptn").DeleteCollection(&metav1.DeleteOptions{}, metav1.ListOptions{
+		LabelSelector: "run=bridge",
+	})
+}
+
+func createBridgeCredentials(user string, password string, l *keptnutils.Logger) error {
+	l.Info("Creating or updating credentials for bridge")
+
+	k8s, err := getK8sClient()
+	if err != nil {
+		return err
+	}
+
+	l.Info("Checking for existing secret")
+	bridgeCredentials, err := k8s.CoreV1().Secrets("keptn").Get("bridge-credentials", metav1.GetOptions{})
+	if err == nil && bridgeCredentials != nil {
+		// update existing secret
+		l.Info("Existing secret found. Updating with new values for user and password")
+		newSecret := getBridgeCredentials(user, password)
+		bridgeCredentials.Data = newSecret.Data
+		_, err = k8s.CoreV1().Secrets("keptn").Update(newSecret)
+		if err != nil {
+			l.Error("could not update secret: " + err.Error())
+			return err
+		}
+	} else {
+		l.Info("Creating a new secret")
+		newSecret := getBridgeCredentials(user, password)
+		_, err = k8s.CoreV1().Secrets("keptn").Create(newSecret)
+		if err != nil {
+			l.Error("could not create new secret: " + err.Error())
+			return err
+		}
+	}
+	return nil
+}
+
+func getBridgeCredentials(user string, password string) *corev1.Secret {
+	return &corev1.Secret{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Secret",
+			APIVersion: "apps/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "bridge-credentials",
+			Namespace: "keptn",
+		},
+		Data: map[string][]byte{
+			"BASIC_AUTH_USERNAME": []byte(user),
+			"BASIC_AUTH_PASSWORD": []byte(password),
+		},
+		Type: "Opaque",
+	}
 }
 
 func getDestinationRule() *v1alpha3.DestinationRule {

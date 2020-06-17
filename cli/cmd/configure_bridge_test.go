@@ -20,9 +20,19 @@ func Test_verifyConfigureBridgeParams(t *testing.T) {
 		{
 			name: "action=expose should succeed",
 			args: args{
-				configureBridgeParams: &configureBridgeCmdParams{Action: stringp("expose")},
+				configureBridgeParams: &configureBridgeCmdParams{
+					Action:   stringp("expose"),
+					User:     stringp("user"),
+					Password: stringp("password"),
+				},
 			},
 			wantErr: false,
+		}, {
+			name: "action=expose should not succeed if no credentials are provided",
+			args: args{
+				configureBridgeParams: &configureBridgeCmdParams{Action: stringp("expose")},
+			},
+			wantErr: true,
 		},
 		{
 			name: "action=lockdown should succeed",
@@ -87,7 +97,11 @@ func Test_configureBridge(t *testing.T) {
 			args: args{
 				endpoint: ts.URL,
 				apiToken: "",
-				params:   &configureBridgeCmdParams{Action: stringp("expose")},
+				params: &configureBridgeCmdParams{
+					Action:   stringp("expose"),
+					User:     stringp("user"),
+					Password: stringp("password"),
+				},
 			},
 			wantErr: false,
 		},

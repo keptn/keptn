@@ -11,6 +11,8 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+
+	models "github.com/keptn/keptn/api/models"
 )
 
 // NewPostConfigureBridgeExposeParams creates a new PostConfigureBridgeExposeParams object
@@ -29,10 +31,10 @@ type PostConfigureBridgeExposeParams struct {
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
-	/*Flag for exposing the bridge
+	/*Parameters for configuring the bridge access
 	  In: body
 	*/
-	Expose bool
+	ConfigureBridge *models.ConfigureBridge
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -46,12 +48,18 @@ func (o *PostConfigureBridgeExposeParams) BindRequest(r *http.Request, route *mi
 
 	if runtime.HasBody(r) {
 		defer r.Body.Close()
-		var body bool
+		var body models.ConfigureBridge
 		if err := route.Consumer.Consume(r.Body, &body); err != nil {
-			res = append(res, errors.NewParseError("expose", "body", "", err))
+			res = append(res, errors.NewParseError("configureBridge", "body", "", err))
 		} else {
-			// no validation required on inline body
-			o.Expose = body
+			// validate body object
+			if err := body.Validate(route.Formats); err != nil {
+				res = append(res, err)
+			}
+
+			if len(res) == 0 {
+				o.ConfigureBridge = &body
+			}
 		}
 	}
 	if len(res) > 0 {

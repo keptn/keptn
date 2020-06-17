@@ -79,6 +79,28 @@ metadata:
     "app": "keptn"
 rules:
   - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - get
+      - delete
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - create
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - get
+      - update
+    resourceNames:
+      - "bridge-credentials"
+  - apiGroups:
       - "networking.istio.io"
     resources:
       - virtualservices
