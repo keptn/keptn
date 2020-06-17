@@ -38,6 +38,7 @@ spec:
                 secretKeyRef:
                   name: keptn-api-token
                   key: keptn-api-token
+      serviceAccountName: keptn-api-service
 ---
 apiVersion: v1
 kind: Service
@@ -87,6 +88,8 @@ spec:
             limits:
               memory: "128Mi"
               cpu: "500m"
+      serviceAccountName: keptn-default
+
 ---
 apiVersion: v1
 kind: Service
@@ -136,6 +139,7 @@ spec:
               value: 'nats://keptn-nats-cluster'
             - name: PUBSUB_IMPL
               value: 'nats'
+      serviceAccountName: keptn-default
 ---
 apiVersion: v1
 kind: Service
@@ -151,6 +155,7 @@ spec:
       protocol: TCP
   selector:
     run: eventbroker-go
+
 ---
 # helm-service
 apiVersion: apps/v1
@@ -193,6 +198,7 @@ spec:
               value: 'true'
             - name: CANARY
               value: 'deployment'
+      serviceAccountName: keptn-helm-service
 ---
 apiVersion: v1
 kind: Service
@@ -243,6 +249,7 @@ spec:
               value: 'sh.keptn.internal.event.service.create'
             - name: PUBSUB_RECIPIENT
               value: 'helm-service'
+      serviceAccountName: keptn-default
 ---
 # shipyard-service
 apiVersion: apps/v1
@@ -279,6 +286,7 @@ spec:
               value: 'http://event-broker.keptn.svc.cluster.local/keptn'
             - name: API
               value: 'ws://api-service.keptn.svc.cluster.local:8080'
+      serviceAccountName: keptn-default
 ---
 apiVersion: v1
 kind: Service
@@ -329,6 +337,8 @@ spec:
               value: 'sh.keptn.internal.event.project.create'
             - name: PUBSUB_RECIPIENT
               value: 'shipyard-service'
+      serviceAccountName: keptn-default
+
 ---
 ## shipyard-service: sh.keptn.internal.event.project.delete
 apiVersion: apps/v1
@@ -365,6 +375,8 @@ spec:
               value: 'sh.keptn.internal.event.project.delete'
             - name: PUBSUB_RECIPIENT
               value: 'shipyard-service'
+      serviceAccountName: keptn-default
+
 ---
 # configuration-service
 apiVersion: v1
@@ -423,6 +435,7 @@ spec:
         - name: configuration-volume
           persistentVolumeClaim:
             claimName: configuration-volume
+      serviceAccountName: keptn-default
 ---
 apiVersion: v1
 kind: Service
@@ -475,3 +488,4 @@ spec:
               value: 'configuration-service'
             - name: PUBSUB_RECIPIENT_PATH
               value: '/v1/event'
+      serviceAccountName: keptn-default

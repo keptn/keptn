@@ -24,8 +24,8 @@ kubectl create secret generic -n keptn keptn-api-token --from-literal=keptn-api-
 
 # Install Keptn Datastore
 print_info "Installing Keptn Datastore"
-kubectl apply -f ../manifests/logging/namespace.yaml
-verify_kubectl $? "Creating logging namespace failed."
+kubectl apply -f ../manifests/logging/rbac.yaml
+verify_kubectl $? "Creating rbac failed."
 kubectl apply -f ../manifests/logging/mongodb/pvc.yaml
 verify_kubectl $? "Creating mongodb PVC failed."
 kubectl apply -f ../manifests/logging/mongodb/secret.yaml

@@ -11,9 +11,10 @@ import (
 	"strconv"
 	"strings"
 
+	"k8s.io/client-go/kubernetes"
+
 	"k8s.io/apimachinery/pkg/util/intstr"
 
-	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
@@ -32,63 +33,60 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// Ingress is an enum type for the ingress
-type Ingress int
+// ExposingResource is an enum type for identifying
+type ExposingResource int
 
 const (
-	istio Ingress = iota
-	nginx
+	ingress ExposingResource = iota
+	virtualservice
 	ocroute
 )
 
 const keptnGateway = "public-gateway.istio-system"
 
-func (i Ingress) String() string {
-	return [...]string{"istio", "nginx", "openshift"}[i]
+func (i ExposingResource) String() string {
+	return [...]string{"ingress", "virtualservice", "ocroute"}[i]
 }
 
 const useInClusterConfig = true
 
-func getIngressType() (Ingress, error) {
+func getExposingResource() (ExposingResource, error) {
 
 	var config *rest.Config
 	var err error
 	config, err = rest.InClusterConfig()
 
 	if err != nil {
-		return istio, err
+		return ingress, err
 	}
 
 	k8sClient, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		return istio, err
+		return ingress, err
 	}
 
-	nsList, err := k8sClient.CoreV1().Namespaces().List(metav1.ListOptions{})
+	// Check for availability of keptn-ingress
+	if _, err := k8sClient.ExtensionsV1beta1().Ingresses("keptn").Get("keptn-ingress", metav1.GetOptions{}); err == nil {
+		return ingress, nil
+	}
+
+	restConfig, _ := getRestConfig()
+	ic, err := versionedclient.NewForConfig(restConfig)
 	if err != nil {
-		return istio, err
+		return ingress, err
 	}
 
-	for _, ns := range nsList.Items {
-		if ns.Name == "ingress-nginx" {
-			ingresses, err := k8sClient.ExtensionsV1beta1().Ingresses("ingress-nginx").List(metav1.ListOptions{})
-			if err != nil {
-				return istio, err
-			}
-			for _, ingress := range ingresses.Items {
-				if ingress.Name == "keptn-ingress" {
-					return nginx, nil
-				}
-			}
-		} else if ns.Name == "istio-system" {
-			return istio, nil
-		} else if ns.Name == "openshift" {
-			// Note: The istio-system namespace was not found, hence OC routes are used
-			return ocroute, nil
-		}
-
+	// Check if api VirtualService is available
+	if _, err := ic.NetworkingV1alpha3().VirtualServices("keptn").Get("api", metav1.GetOptions{}); err == nil {
+		return virtualservice, nil
 	}
-	return istio, errors.New("Cannot obtain type of ingress.")
+
+	// Check if the openshift namespace is available
+	if _, err := k8sClient.CoreV1().Namespaces().Get("openshift", metav1.GetOptions{}); err == nil {
+		return ocroute, nil
+	}
+
+	return ingress, errors.New("Cannot obtain type of ingress.")
 }
 
 func PostConfigureBridgeHandlerFunc(params configure.PostConfigureBridgeExposeParams, principal *models.Principal) middleware.Responder {
@@ -96,13 +94,13 @@ func PostConfigureBridgeHandlerFunc(params configure.PostConfigureBridgeExposePa
 	l := keptnutils.NewLogger("", "", "api")
 	l.Info("API received a configure Bridge request")
 
-	ingress, err := getIngressType()
+	exposingResource, err := getExposingResource()
 	if err != nil {
-		errMsg := fmt.Sprintf("failed to retrieve ingress type: %v", err)
+		errMsg := fmt.Sprintf("failed to retrieve exposingResource type: %v", err)
 		l.Error(errMsg)
 		return configure.NewPostConfigureBridgeExposeDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(errMsg)})
 	}
-	l.Info("Used ingress for configuring Bridge: " + ingress.String())
+	l.Info("Used exposingResource for configuring Bridge: " + exposingResource.String())
 
 	var exposeErr error
 	var bridgeHost string
@@ -142,22 +140,22 @@ func PostConfigureBridgeHandlerFunc(params configure.PostConfigureBridgeExposePa
 		bridgeHost = getHostForBridge(domain)
 		l.Info("Used domain for configure Bridge: " + domain)
 		l.Info("Used host for Bridge: " + getHostForBridge(domain))
-		switch ingress {
-		case istio:
-			exposeErr = exposeBridgeIstio(domain, l)
-		case nginx:
-			exposeErr = exposeBridgeIngress(domain, l)
+		switch exposingResource {
+		case virtualservice:
+			exposeErr = exposeBridgeViaVirtualService(domain, l)
+		case ingress:
+			exposeErr = exposeBridgeViaIngress(domain, l)
 		case ocroute:
 			exposeErr = sendOCRouteRequest(domain, true, l)
 		}
 
 	} else {
 		l.Info("Starting to dispose bridge")
-		switch ingress {
-		case istio:
-			exposeErr = disposeBridgeIstio(l)
-		case nginx:
-			exposeErr = disposeBridgeIngress(l)
+		switch exposingResource {
+		case virtualservice:
+			exposeErr = removeBridgeVirtualService(l)
+		case ingress:
+			exposeErr = removeBridgeFromKeptnIngress(l)
 		case ocroute:
 			exposeErr = sendOCRouteRequest("", false, l)
 		}
@@ -308,7 +306,7 @@ func getRestConfig() (config *rest.Config, err error) {
 	return
 }
 
-func exposeBridgeIstio(keptnDomain string, l *keptnutils.Logger) error {
+func exposeBridgeViaVirtualService(keptnDomain string, l *keptnutils.Logger) error {
 	l.Info("Expose Bridge using a VirtualService and DestinationRule")
 
 	restConfig, _ := getRestConfig()
@@ -337,7 +335,7 @@ func exposeBridgeIstio(keptnDomain string, l *keptnutils.Logger) error {
 	return nil
 }
 
-func exposeBridgeIngress(keptnDomain string, l *keptnutils.Logger) error {
+func exposeBridgeViaIngress(keptnDomain string, l *keptnutils.Logger) error {
 	l.Info("Expose Bridge using the keptn-ingress")
 
 	clientset, err := k8sutils.GetClientset(useInClusterConfig)
@@ -440,7 +438,7 @@ func getBridgeRule(keptnDomain string) networking.IngressRule {
 	}
 }
 
-func disposeBridgeIstio(l *keptnutils.Logger) error {
+func removeBridgeVirtualService(l *keptnutils.Logger) error {
 	l.Info("Dispose Bridge by deleting the VirtualService and DestinationRule")
 
 	restConfig, _ := getRestConfig()
@@ -468,7 +466,7 @@ func disposeBridgeIstio(l *keptnutils.Logger) error {
 	return nil
 }
 
-func disposeBridgeIngress(l *keptnutils.Logger) error {
+func removeBridgeFromKeptnIngress(l *keptnutils.Logger) error {
 	l.Info("Dispose Bridge of keptn-ingress")
 
 	clientset, err := k8sutils.GetClientset(useInClusterConfig)

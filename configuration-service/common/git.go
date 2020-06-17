@@ -98,6 +98,28 @@ func CreateBranch(project string, branch string, sourceBranch string) error {
 	return nil
 }
 
+// AddOrigin adds a remote Git repository
+func AddOrigin(project string) error {
+	projectConfigPath := config.ConfigDir + "/" + project
+
+	// if an upstream has been defined, add the origin and push
+	credentials, err := GetCredentials(project)
+	if err == nil && credentials != nil {
+		repoURI := getRepoURI(credentials.RemoteURI, credentials.User, credentials.Token)
+		_, err = utils.ExecuteCommandInDirectory("git", []string{"remote", "add", "origin", repoURI}, projectConfigPath)
+		if err != nil {
+			return obfuscateErrorMessage(err, credentials)
+		}
+
+		_, err = utils.ExecuteCommandInDirectory("git", []string{"push", "origin", "--mirror"}, projectConfigPath)
+		if err != nil {
+			return obfuscateErrorMessage(err, credentials)
+		}
+	}
+
+	return nil
+}
+
 // StageAndCommitAll stages all current changes and commits them to the current branch
 func StageAndCommitAll(project string, message string, withPull bool) error {
 	projectConfigPath := config.ConfigDir + "/" + project
