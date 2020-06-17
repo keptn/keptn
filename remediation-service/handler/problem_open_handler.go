@@ -9,7 +9,6 @@ import (
 // ProblemOpenEventHandler handles incoming problem.open events
 type ProblemOpenEventHandler struct {
 	KeptnHandler *keptn.Keptn
-	Logger       keptn.LoggerInterface
 	Event        cloudevents.Event
 	Remediation  *Remediation
 }
@@ -18,26 +17,26 @@ type ProblemOpenEventHandler struct {
 func (eh *ProblemOpenEventHandler) HandleEvent() error {
 	var problemEvent *keptn.ProblemEventData
 	if eh.Event.Type() == keptn.ProblemOpenEventType {
-		eh.Logger.Debug("Received problem notification")
+		eh.KeptnHandler.Logger.Debug("Received problem notification")
 		problemEvent = &keptn.ProblemEventData{}
 		if err := eh.Event.DataAs(problemEvent); err != nil {
 			return err
 		}
 	}
 
-	eh.Logger.Debug("Received problem event with state " + problemEvent.State)
+	eh.KeptnHandler.Logger.Debug("Received problem event with state " + problemEvent.State)
 
 	// check if remediation should be performed
 	autoRemediate, err := eh.isRemediationEnabled()
 	if err != nil {
-		eh.Logger.Error(fmt.Sprintf("Failed to check if remediation is enabled: %s", err.Error()))
+		eh.KeptnHandler.Logger.Error(fmt.Sprintf("Failed to check if remediation is enabled: %s", err.Error()))
 		return err
 	}
 
 	if autoRemediate {
-		eh.Logger.Info(fmt.Sprintf("Remediation enabled for project %s in stage %s", problemEvent.Project, problemEvent.Stage))
+		eh.KeptnHandler.Logger.Info(fmt.Sprintf("Remediation enabled for project %s in stage %s", problemEvent.Project, problemEvent.Stage))
 	} else {
-		eh.Logger.Info(fmt.Sprintf("Remediation disabled for project %s in stage %s", problemEvent.Project, problemEvent.Stage))
+		eh.KeptnHandler.Logger.Info(fmt.Sprintf("Remediation disabled for project %s in stage %s", problemEvent.Project, problemEvent.Stage))
 		return nil
 	}
 
@@ -56,7 +55,7 @@ func (eh *ProblemOpenEventHandler) HandleEvent() error {
 	err = eh.Remediation.sendRemediationTriggeredEvent(problemEvent)
 	if err != nil {
 		msg := "could not send remediation.triggered event"
-		eh.Logger.Error(msg + ": " + err.Error())
+		eh.KeptnHandler.Logger.Error(msg + ": " + err.Error())
 		_ = eh.Remediation.sendRemediationFinishedEvent(keptn.RemediationStatusErrored, keptn.RemediationResultFailed, msg)
 		return err
 	}
@@ -85,11 +84,11 @@ func (eh *ProblemOpenEventHandler) HandleEvent() error {
 		}
 	} else {
 		msg := "No remediation configured for problem type " + problemType
-		eh.Logger.Info(msg)
+		eh.KeptnHandler.Logger.Info(msg)
 		_ = eh.Remediation.sendRemediationFinishedEvent(keptn.RemediationStatusSucceeded, keptn.RemediationResultPass, "triggered all actions")
 		err = deleteRemediation(eh.KeptnHandler.KeptnContext, *eh.KeptnHandler.KeptnBase)
 		if err != nil {
-			eh.Logger.Error("Could not close remediation: " + err.Error())
+			eh.KeptnHandler.Logger.Error("Could not close remediation: " + err.Error())
 			return err
 		}
 	}
