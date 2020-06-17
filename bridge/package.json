@@ -16,7 +16,9 @@
     "connect:bridge": "kubectl port-forward -n keptn svc/bridge 9000:8080",
     "connect:datastore": "kubectl port-forward -n keptn-datastore svc/mongodb-datastore 8085:8080",
     "connect:configurationservice": "kubectl port-forward -n keptn svc/configuration-service 8086:8080",
-    "preinstall": "npx npm-force-resolutions"
+    "preinstall": "npx npm-force-resolutions",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
   },
   "license": "Apache-2.0",
   "author": "Ermin Muratovic <ermin.muratovic@dynatrace.com>",
@@ -59,7 +61,7 @@
     "d3-scale": "^3.0.0",
     "d3-shape": "^1.3.5",
     "hammerjs": "^2.0.8",
-    "highcharts": "^7.2.1",
+    "highcharts": "^8.1.1",
     "lodash-es": "^4.17.15",
     "moment": "^2.25.3",
     "morgan": "^1.10.0",
@@ -68,7 +70,8 @@
     "rxjs": "^6.5.5",
     "semver": "^7.3.2",
     "tslib": "^1.10.0",
-    "zone.js": "~0.10.2"
+    "zone.js": "~0.10.2",
+    "snyk": "^1.342.2"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "~0.901.8",
@@ -97,5 +100,6 @@
   },
   "resolutions": {
     "minimist": "^1.2.5"
-  }
+  },
+  "snyk": true
 }
