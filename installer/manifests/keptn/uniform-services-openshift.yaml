@@ -32,6 +32,7 @@ spec:
             configMapKeyRef:
               name: keptn-domain
               key: app_domain
+      serviceAccountName: keptn-default
 ---
 apiVersion: v1
 kind: Service

@@ -13,6 +13,7 @@ spec:
       labels:
         run: gatekeeper-service
     spec:
+      serviceAccountName: keptn-default
       containers:
       - name: gatekeeper-service
         image: keptn/gatekeeper-service:latest

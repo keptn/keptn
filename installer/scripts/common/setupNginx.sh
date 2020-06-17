@@ -1,23 +1,12 @@
 #!/bin/bash
 
-# determine whether istio is already installed
-kubectl get ns ingress-nginx
-NGINX_AVAILABLE=$?
-
-if [[ "$NGINX_AVAILABLE" == 0 ]] && [[ "$INGRESS_INSTALL_OPTION" == "Reuse" ]]; then
-    print_info "NGINX ingress controller is reused but its full compatibility is not checked"
+if [[ "$INGRESS_INSTALL_OPTION" == "Reuse" ]]; then
+    print_info "NGINX ingress controller is reused but its compatibility is not checked"
     print_info "Checking if nginx-ingress-controller is available in namespace ingress-nginx"
     wait_for_deployment_in_namespace "nginx-ingress-controller" "ingress-nginx"
     wait_for_all_pods_in_namespace "ingress-nginx"
 
-elif [[ "$NGINX_AVAILABLE" == 0 ]] && ([[ "$INGRESS_INSTALL_OPTION" == "StopIfInstalled" ]] || [[ "$INGRESS_INSTALL_OPTION" == "" ]] || [[ "$INGRESS_INSTALL_OPTION" == "INGRESS_INSTALL_OPTION_PLACEHOLDER" ]]); then
-    print_error "NGINX ingress controller is already installed but is not used due to unknown compatibility"
-    exit 1
 else
-    if [[ "$NGINX_AVAILABLE" == 0 ]] && [[ "$INGRESS_INSTALL_OPTION" == "Overwrite" ]]; then
-        print_info "NGINX ingress controller is overwritten"
-    fi
-
     if [[ "$PLATFORM" == "kubernetes" ]]; then
       # Install nginx service mesh
       print_info "Installing nginx on Kubernetes (this might take a while)"

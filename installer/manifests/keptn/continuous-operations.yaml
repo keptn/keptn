@@ -32,6 +32,8 @@ spec:
           value: 'http://event-broker.keptn.svc.cluster.local/keptn'
         - name: WAIT_DURATION
           value: '10m'
+      serviceAccountName: keptn-default
+
 ---
 apiVersion: v1
 kind: Service
@@ -82,6 +84,7 @@ spec:
           value: 'sh.keptn.events.deployment-finished'
         - name: PUBSUB_RECIPIENT
           value: 'wait-service'
+      serviceAccountName: keptn-default
 ---
 # remediation-service
 apiVersion: apps/v1
@@ -120,6 +123,7 @@ spec:
             value: 'http://mongodb-datastore.keptn-datastore.svc.cluster.local:8080'
           - name: ENVIRONMENT
             value: 'production'
+      serviceAccountName: keptn-default
 ---
 apiVersion: v1
 kind: Service
@@ -171,3 +175,4 @@ spec:
           value: 'sh.keptn.>'
         - name: PUBSUB_RECIPIENT
           value: 'remediation-service'
+      serviceAccountName: keptn-default

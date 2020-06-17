@@ -155,11 +155,11 @@ function wait_for_ingressgateway() {
     fi
 
     if [[ "$DOMAIN" != "" ]]; then
-      print_debug "${PROPERTY} of Istio ingress gateway is available: ${DOMAIN}"
+      print_debug "${PROPERTY} of ingress gateway is available: ${DOMAIN}"
       break
     fi
     RETRY=$[$RETRY+1]
-    print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 5s for ${PROPERTY} of Istio ingress gateway to be available ..."
+    print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 5s for ${PROPERTY} of ingress gateway to be available ..."
     sleep 5
   done
 }

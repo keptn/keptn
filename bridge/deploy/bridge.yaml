@@ -14,6 +14,7 @@ spec:
       labels:
         run: bridge
     spec:
+      serviceAccountName: keptn-default
       containers:
       - name: bridge
         image: keptn/bridge2:latest

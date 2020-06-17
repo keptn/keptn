@@ -37,3 +37,4 @@ spec:
           value: 'mongodb-datastore'
         - name: PUBSUB_RECIPIENT_PATH
           value: '/event'
+      serviceAccountName: keptn-ds-default

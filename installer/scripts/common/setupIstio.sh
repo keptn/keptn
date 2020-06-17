@@ -1,28 +1,15 @@
 #!/bin/bash
 source ./common/utils.sh
 
-# determine whether istio is already installed
-kubectl get ns istio-system
-ISTIO_AVAILABLE=$?
-
-if [[ "$ISTIO_AVAILABLE" == 0 ]] && [[ "$INGRESS_INSTALL_OPTION" == "Reuse" ]]; then
+if [[ "$INGRESS_INSTALL_OPTION" == "Reuse" ]]; then
     # An istio-version is already installed
     print_info "Istio installation is reused but its full compatibility is not checked"
     print_info "Checking if istio-ingressgateway is available in namespace istio-system"
     wait_for_deployment_in_namespace "istio-ingressgateway" "istio-system"
     wait_for_all_pods_in_namespace "istio-system"
-
-elif [[ "$ISTIO_AVAILABLE" == 0 ]] && ([[ "$INGRESS_INSTALL_OPTION" == "StopIfInstalled" ]] || [[ "$INGRESS_INSTALL_OPTION" == "" ]] || [[ "$INGRESS_INSTALL_OPTION" == "INGRESS_INSTALL_PLACEHOLDER" ]]); then
-    print_error "Istio is already installed but is not used due to unknown compatibility"
-    exit 1
 else
-    if [[ "$ISTIO_AVAILABLE" == 0 ]] && [[ "$INGRESS_INSTALL_OPTION" == "Overwrite" ]]; then
-        print_info "Istio installation is overwritten"
-    fi
-
     # Istio installation
     print_info "Install Istio"
-    kubectl create namespace istio-system
 
     helm template istio-init ../manifests/istio/helm/istio-init --namespace istio-system | kubectl apply -f -
     verify_kubectl $? "Creating Istio resources failed"
