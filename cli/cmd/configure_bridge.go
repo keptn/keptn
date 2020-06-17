@@ -23,8 +23,8 @@ type configureBridgeCmdParams struct {
 }
 
 type exposeBridgeAPIPayload struct {
-	Expose bool `json:"expose"`
-	User string `json:"user"`
+	Expose   bool   `json:"expose"`
+	User     string `json:"user"`
 	Password string `json:"password"`
 }
 
@@ -45,8 +45,7 @@ var bridgeCmd = &cobra.Command{
 	Short: "Exposes or locks down the bridge",
 	Long: `Exposes or locks down the Keptn Bridge.
 
-When exposing Keptn Bridge it will be available publicly. 
-Make sure to protect Keptn Bridge using basic authentication.
+When exposing Keptn Bridge it will be available publicly.
 `,
 	Example: `keptn configure bridge --action=expose
 	keptn configure bridge --action=lockdown`,
@@ -69,7 +68,7 @@ func configureBridge(endpoint string, apiToken string, configureBridgeParams *co
 	doExpose := *configureBridgeParams.Action == "expose"
 
 	exposeBridgeParams := exposeBridgeAPIPayload{
-		Expose:   doExpose,
+		Expose: doExpose,
 	}
 	if doExpose {
 		exposeBridgeParams.User = *configureBridgeParams.User
@@ -108,7 +107,6 @@ func configureBridge(endpoint string, apiToken string, configureBridgeParams *co
 		}
 		fmt.Printf("Bridge successfully exposed and can be reached here: https://%s\n", strings.Trim(strings.TrimSpace(string(body)), "\""))
 		// Todo: migrate docs for exposing keptn bridge into keptn.github.io
-		fmt.Printf("Warning: Make sure to enable basic authentication as described here: %s\n", basicAuthDocuURL)
 	} else {
 		if err != nil {
 			return errors.New("Could not " + *configureBridgeParams.Action + " bridge: " + err.Error())
