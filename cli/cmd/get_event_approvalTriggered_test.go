@@ -66,7 +66,7 @@ const eventsForID1Response = `{
 		  "source": "helm-service",
 		  "specversion": "0.2",
 		  "time": "2020-04-14T08:11:27.484Z",
-		  "type": "sh.keptn.events.approval.triggered",
+		  "type": "sh.keptn.event.approval.triggered",
 		  "shkeptncontext": "test-event-context-1"
 		}
     ],
@@ -95,7 +95,7 @@ const eventsForID2Response = `{
 		  "source": "helm-service",
 		  "specversion": "0.2",
 		  "time": "2020-04-14T08:11:27.484Z",
-		  "type": "sh.keptn.events.approval.triggered",
+		  "type": "sh.keptn.event.approval.triggered",
 		  "shkeptncontext": "test-event-context-2"
 		}
     ],
