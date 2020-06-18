@@ -31,6 +31,12 @@ func getDatastoreURL() string {
 func PostEventHandlerFunc(params event.PostEventParams, principal *models.Principal) middleware.Responder {
 
 	keptnContext := createOrApplyKeptnContext(params.Body.Shkeptncontext)
+	extensions := make(map[string]interface{})
+	extensions["shkeptncontext"] = keptnContext
+	fmt.Println("triggeredid=" + params.Body.Triggeredid)
+	if params.Body.Triggeredid != "" {
+		extensions["triggeredid"] = params.Body.Triggeredid
+	}
 
 	logger := keptnutils.NewLogger(keptnContext, "", "api")
 	logger.Info("API received a keptn event")
@@ -65,7 +71,7 @@ func PostEventHandlerFunc(params event.PostEventParams, principal *models.Princi
 			Type:        *params.Body.Type,
 			Source:      types.URLRef{URL: *source},
 			ContentType: &contentType,
-			Extensions:  map[string]interface{}{"shkeptncontext": keptnContext},
+			Extensions:  extensions,
 		}.AsV02(),
 		Data: forwardData,
 	}
