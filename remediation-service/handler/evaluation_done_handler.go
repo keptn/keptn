@@ -119,6 +119,7 @@ func (eh *EvaluationDoneEventHandler) getLastRemediationStatusChangedEvent(remed
 
 	events, errorObj := eventHandler.GetEvents(&keptnapi.EventFilter{
 		EventID: lastRemediationStatusChanged.EventID,
+		Project: eh.KeptnHandler.KeptnBase.Project,
 	})
 
 	if errorObj != nil {
@@ -165,6 +166,7 @@ func (eh *EvaluationDoneEventHandler) getRemediationTriggeredEvent(remediations 
 
 	events, errorObj := eventHandler.GetEvents(&keptnapi.EventFilter{
 		EventID: remediationTriggered.EventID,
+		Project: eh.KeptnHandler.KeptnBase.Project,
 	})
 
 	if errorObj != nil || len(events) == 0 {
