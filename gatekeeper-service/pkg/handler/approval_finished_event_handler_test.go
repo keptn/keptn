@@ -118,7 +118,7 @@ func TestHandleApprovalFinishedEvent(t *testing.T) {
 			ce.Data = dataBytes
 			keptnHandler, _ := keptnevents.NewKeptn(&ce, keptnevents.KeptnOpts{})
 			e := NewApprovalFinishedEventHandler(keptnHandler)
-			res := e.handleApprovalFinishedEvent(tt.inputEvent, shkeptncontext, tt.shipyard)
+			res := e.handleApprovalFinishedEvent(tt.inputEvent, shkeptncontext, eventID, tt.shipyard)
 			if len(res) != len(tt.outputEvent) {
 				t.Errorf("got %d output event, want %v output events for %s",
 					len(res), len(tt.outputEvent), tt.name)

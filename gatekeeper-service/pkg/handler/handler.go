@@ -33,14 +33,14 @@ func sendEvents(keptnHandler *keptnevents.Keptn, events []cloudevents.Event, l k
 	}
 }
 
-func getCloudEvent(data interface{}, ceType string, shkeptncontext string, triggerid string) *cloudevents.Event {
+func getCloudEvent(data interface{}, ceType string, shkeptncontext string, triggeredID string) *cloudevents.Event {
 
 	source, _ := url.Parse("gatekeeper-service")
 	contentType := "application/json"
 
 	extensions := map[string]interface{}{"shkeptncontext": shkeptncontext}
-	if triggerid != "" {
-		extensions["triggerid"] = triggerid
+	if triggeredID != "" {
+		extensions["triggeredid"] = triggeredID
 	}
 
 	return &cloudevents.Event{

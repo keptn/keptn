@@ -43,18 +43,18 @@ func (a *ApprovalFinishedEventHandler) Handle(event cloudevents.Event, keptnHand
 		return
 	}
 
-	triggerid, err := event.Context.GetExtension("triggerid")
+	triggeredID, err := event.Context.GetExtension("triggeredid")
 	if err != nil {
-		a.keptn.Logger.Error(fmt.Sprintf("triggerid is missing: %v", err))
+		a.keptn.Logger.Error(fmt.Sprintf("triggeredid is missing: %v", err))
 		return
 	}
 
-	outgoingEvents := a.handleApprovalFinishedEvent(*data, keptnHandler.KeptnContext, triggerid.(string), *shipyard)
+	outgoingEvents := a.handleApprovalFinishedEvent(*data, keptnHandler.KeptnContext, triggeredID.(string), *shipyard)
 	sendEvents(keptnHandler, outgoingEvents, a.keptn.Logger)
 }
 
 func (a *ApprovalFinishedEventHandler) handleApprovalFinishedEvent(inputEvent keptnevents.ApprovalFinishedEventData, shkeptncontext string,
-	triggerid string, shipyard keptnevents.Shipyard) []cloudevents.Event {
+	triggeredID string, shipyard keptnevents.Shipyard) []cloudevents.Event {
 
 	outgoingEvents := make([]cloudevents.Event, 0)
 	if inputEvent.Approval.Status != SucceededResult {
@@ -66,9 +66,9 @@ func (a *ApprovalFinishedEventHandler) handleApprovalFinishedEvent(inputEvent ke
 			a.keptn.Logger.Info(fmt.Sprintf("Approval for image %s for service %s of project %s and current stage %s received",
 				inputEvent.Image, inputEvent.Service, inputEvent.Project, inputEvent.Stage))
 
-			openApproval, err := getOpenApproval(inputEvent, triggerid)
+			openApproval, err := getOpenApproval(inputEvent, triggeredID)
 			if err != nil {
-				a.keptn.Logger.Error("Could not retrieve open Approval with EventID " + triggerid + ": " + err.Error())
+				a.keptn.Logger.Error("Could not retrieve open Approval with EventID " + triggeredID + ": " + err.Error())
 				return outgoingEvents
 			}
 			if openApproval.Image != inputEvent.Image {
@@ -87,7 +87,7 @@ func (a *ApprovalFinishedEventHandler) handleApprovalFinishedEvent(inputEvent ke
 				inputEvent.Project, inputEvent.Service, inputEvent.Stage, image, shkeptncontext, inputEvent.Labels); event != nil {
 				outgoingEvents = append(outgoingEvents, *event)
 			}
-			if err := closeOpenApproval(inputEvent, triggerid); err != nil {
+			if err := closeOpenApproval(inputEvent, triggeredID); err != nil {
 				a.keptn.Logger.Error(fmt.Sprintf("failed to close open approvals in materialized view: %v", err))
 				return outgoingEvents
 			}
@@ -100,13 +100,13 @@ func (a *ApprovalFinishedEventHandler) handleApprovalFinishedEvent(inputEvent ke
 	return outgoingEvents
 }
 
-func getOpenApproval(inputEvent keptnevents.ApprovalFinishedEventData, triggerid string) (*approval, error) {
+func getOpenApproval(inputEvent keptnevents.ApprovalFinishedEventData, triggeredID string) (*approval, error) {
 	configurationServiceEndpoint, err := keptnevents.GetServiceEndpoint(configService)
 	if err != nil {
 		return nil, errors.New("could not retrieve configuration-service URL")
 	}
 
-	queryURL := getApprovalsEndpoint(configurationServiceEndpoint, inputEvent.Project, inputEvent.Stage, inputEvent.Service, triggerid)
+	queryURL := getApprovalsEndpoint(configurationServiceEndpoint, inputEvent.Project, inputEvent.Stage, inputEvent.Service, triggeredID)
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", queryURL, nil)
 	if err != nil {
@@ -146,20 +146,20 @@ func getOpenApproval(inputEvent keptnevents.ApprovalFinishedEventData, triggerid
 	return approval, nil
 }
 
-func getApprovalsEndpoint(configurationServiceEndpoint url.URL, project, stage, service, approvalTriggerID string) string {
-	if approvalTriggerID == "" {
+func getApprovalsEndpoint(configurationServiceEndpoint url.URL, project, stage, service, approvalTriggeredID string) string {
+	if approvalTriggeredID == "" {
 		return fmt.Sprintf("%s://%s/v1/project/%s/stage/%s/service/%s/approval", configurationServiceEndpoint.Scheme, configurationServiceEndpoint.Host, project, stage, service)
 	}
-	return fmt.Sprintf("%s://%s/v1/project/%s/stage/%s/service/%s/approval/%s", configurationServiceEndpoint.Scheme, configurationServiceEndpoint.Host, project, stage, service, approvalTriggerID)
+	return fmt.Sprintf("%s://%s/v1/project/%s/stage/%s/service/%s/approval/%s", configurationServiceEndpoint.Scheme, configurationServiceEndpoint.Host, project, stage, service, approvalTriggeredID)
 }
 
-func closeOpenApproval(inputEvent keptnevents.ApprovalFinishedEventData, triggerid string) error {
+func closeOpenApproval(inputEvent keptnevents.ApprovalFinishedEventData, triggeredID string) error {
 	configurationServiceEndpoint, err := keptnevents.GetServiceEndpoint(configService)
 	if err != nil {
 		return errors.New("could not retrieve configuration-service URL")
 	}
 
-	queryURL := getApprovalsEndpoint(configurationServiceEndpoint, inputEvent.Project, inputEvent.Stage, inputEvent.Service, triggerid)
+	queryURL := getApprovalsEndpoint(configurationServiceEndpoint, inputEvent.Project, inputEvent.Stage, inputEvent.Service, triggeredID)
 	client := &http.Client{}
 	req, err := http.NewRequest("DELETE", queryURL, nil)
 	if err != nil {
