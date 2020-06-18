@@ -59,10 +59,10 @@ module.exports = (params) => {
       const result = await axios({
         method: req.method,
         url: `${apiUrl}${req.url}`,
-        data: req.params,
+        ...req.method!='GET' && { data: req.params },
         headers: {
           'x-token': apiToken,
-          'content-type': 'application/json'
+          'Content-Type': 'application/json'
         },
         httpsAgent: agent
       });
