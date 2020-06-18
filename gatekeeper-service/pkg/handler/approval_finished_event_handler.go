@@ -43,13 +43,12 @@ func (a *ApprovalFinishedEventHandler) Handle(event cloudevents.Event, keptnHand
 		return
 	}
 
-	triggeredID, err := event.Context.GetExtension("triggeredid")
-	if err != nil {
+	var triggeredID string
+	if err := event.Context.ExtensionAs("triggeredid", &triggeredID); err != nil {
 		a.keptn.Logger.Error(fmt.Sprintf("triggeredid is missing: %v", err))
 		return
 	}
-
-	outgoingEvents := a.handleApprovalFinishedEvent(*data, keptnHandler.KeptnContext, triggeredID.(string), *shipyard)
+	outgoingEvents := a.handleApprovalFinishedEvent(*data, keptnHandler.KeptnContext, triggeredID, *shipyard)
 	sendEvents(keptnHandler, outgoingEvents, a.keptn.Logger)
 }
 
