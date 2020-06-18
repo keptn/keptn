@@ -4,6 +4,7 @@ import (
 	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go"
 	keptn "github.com/keptn/go-utils/pkg/lib"
+	"os"
 	"time"
 )
 
@@ -29,11 +30,16 @@ func (eh *ActionFinishedEventHandler) HandleEvent() error {
 		return err
 	}
 	eh.KeptnHandler.Logger.Info(fmt.Sprintf("Received action.finished event for remediationStatus action. result = %v", actionFinishedEvent.Action.Result))
-	eh.KeptnHandler.Logger.Info(fmt.Sprintf("Waiting for %d minutes for action to take effect", waitTimeInMinutes))
 
 	if eh.WaitFunction == nil {
 		eh.WaitFunction = func() {
-			<-time.After(waitTimeInMinutes * time.Minute)
+
+			waitTime, err := time.ParseDuration(os.Getenv("WAIT_TIME_MINUTES"))
+			if err != nil {
+				waitTime = waitTimeInMinutes * time.Minute
+			}
+			eh.KeptnHandler.Logger.Info(fmt.Sprintf("Waiting for %s for action to take effect", waitTime.String()))
+			<-time.After(waitTime)
 		}
 	}
 	eh.WaitFunction()
