@@ -31,6 +31,11 @@ type ProjectEventData struct {
 	Project *string `json:"project,omitempty"`
 }
 
+type EventWithMongoDBID struct {
+	models.KeptnContextExtendedCE
+	MongoDBID string `json:"_id"`
+}
+
 func ensureDBConnection(logger *keptnutils.Logger) error {
 	mutex.Lock()
 	defer mutex.Unlock()
@@ -107,15 +112,63 @@ func insertEvent(logger *keptnutils.Logger, event *models.KeptnContextExtendedCE
 	}
 	logger.Debug(fmt.Sprintf("insertedID: %s", res.InsertedID))
 
+	err = storeContextToProjectMapping(logger, event, ctx, collectionName)
+	if err != nil {
+		return err
+	}
+
+	err = storeRootEvent(logger, collectionName, ctx, event)
+	if err != nil {
+		return err
+	}
+
+	logger.Debug(fmt.Sprintf("inserted mapping %s->%s", event.Shkeptncontext, collectionName))
+	return nil
+}
+
+func storeRootEvent(logger *keptnutils.Logger, collectionName string, ctx context.Context, event *models.KeptnContextExtendedCE) error {
 	if collectionName == eventsCollectionName {
-		logger.Debug("Will not store mapping between context and project because no project has been set in the event %s->%s")
+		logger.Debug("Will not store root event because no project has been set in the event")
+		return nil
+	}
+
+	eventWithMongoDBID := &EventWithMongoDBID{
+		KeptnContextExtendedCE: *event,
+		MongoDBID:              event.Shkeptncontext,
+	}
+	rootEventsForProjectCollection := client.Database(mongoDBName).Collection(collectionName + "-rootEvents")
+	eventInterface, err := transformEventToInterface(eventWithMongoDBID)
+	if err != nil {
+		logger.Error("Could not transform root event to interface: " + err.Error())
+		return err
+	}
+	_, err = rootEventsForProjectCollection.InsertOne(ctx, eventInterface)
+	if err != nil {
+		if writeErr, ok := err.(mongo.WriteException); ok {
+			if len(writeErr.WriteErrors) > 0 && writeErr.WriteErrors[0].Code == 11000 { // 11000 = duplicate key error
+				logger.Error("Root event for KeptnContext " + event.Shkeptncontext + " already exists in collection")
+			}
+		} else {
+			err := fmt.Errorf("Failed to store root event for KeptnContext "+event.Shkeptncontext+": %v", err.Error())
+			logger.Error(err.Error())
+			return err
+		}
+	}
+	logger.Debug("Stored root event for KeptnContext: " + event.Shkeptncontext)
+
+	return nil
+}
+
+func storeContextToProjectMapping(logger *keptnutils.Logger, event *models.KeptnContextExtendedCE, ctx context.Context, collectionName string) error {
+	if collectionName == eventsCollectionName {
+		logger.Debug("Will not store mapping between context and project because no project has been set in the event")
 		return nil
 	}
 
 	logger.Debug(fmt.Sprintf("Storing mapping %s->%s", event.Shkeptncontext, collectionName))
 	contextToProjectCollection := client.Database(mongoDBName).Collection(contextToProjectCollection)
 
-	_, err = contextToProjectCollection.InsertOne(ctx,
+	_, err := contextToProjectCollection.InsertOne(ctx,
 		bson.M{"_id": event.Shkeptncontext, "shkeptncontext": event.Shkeptncontext, "project": collectionName},
 	)
 	if err != nil {
@@ -129,8 +182,6 @@ func insertEvent(logger *keptnutils.Logger, event *models.KeptnContextExtendedCE
 			return err
 		}
 	}
-
-	logger.Debug(fmt.Sprintf("inserted mapping %s->%s", event.Shkeptncontext, collectionName))
 	return nil
 }
 
@@ -159,7 +210,7 @@ func dropProjectEvents(logger *keptnutils.Logger, event *models.KeptnContextExte
 	return nil
 }
 
-func transformEventToInterface(event *models.KeptnContextExtendedCE) (interface{}, error) {
+func transformEventToInterface(event interface{}) (interface{}, error) {
 	data, err := json.Marshal(event)
 	if err != nil {
 		err := fmt.Errorf("failed to marshal event: %v", err)
