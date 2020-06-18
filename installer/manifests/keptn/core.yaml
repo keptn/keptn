@@ -435,7 +435,7 @@ spec:
         - name: configuration-volume
           persistentVolumeClaim:
             claimName: configuration-volume
-      serviceAccountName: keptn-default
+      serviceAccountName: keptn-configuration-service
 ---
 apiVersion: v1
 kind: Service
