@@ -33,7 +33,6 @@ func PostEventHandlerFunc(params event.PostEventParams, principal *models.Princi
 	keptnContext := createOrApplyKeptnContext(params.Body.Shkeptncontext)
 	extensions := make(map[string]interface{})
 	extensions["shkeptncontext"] = keptnContext
-	fmt.Println("triggeredid=" + params.Body.Triggeredid)
 	if params.Body.Triggeredid != "" {
 		extensions["triggeredid"] = params.Body.Triggeredid
 	}

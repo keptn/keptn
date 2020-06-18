@@ -15,7 +15,7 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/gorilla/websocket v1.4.1
 	github.com/jessevdk/go-flags v1.4.0
-	github.com/keptn/go-utils v0.6.3-0.20200528100519-ac2805768145
+	github.com/keptn/go-utils v0.6.3-0.20200618144455-073e08a10aaa
 	github.com/keptn/kubernetes-utils v0.0.0-20200401103501-ae44a5ee0656
 	github.com/kinbiko/jsonassert v1.0.1
 	github.com/magiconair/properties v1.8.1
