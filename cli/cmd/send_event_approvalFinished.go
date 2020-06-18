@@ -82,14 +82,14 @@ func sendApprovalFinishedEvent(sendApprovalFinishedOptions sendApprovalFinishedS
 	logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 	var keptnContext string
-	var triggeredId string
+	var triggeredID string
 	var approvalFinishedEvent *keptnevents.ApprovalFinishedEventData
 
 	if *sendApprovalFinishedOptions.ID != "" {
-		keptnContext, triggeredId, approvalFinishedEvent, err = getApprovalFinishedForID(eventHandler, sendApprovalFinishedOptions)
+		keptnContext, triggeredID, approvalFinishedEvent, err = getApprovalFinishedForID(eventHandler, sendApprovalFinishedOptions)
 	} else if *sendApprovalFinishedOptions.Service != "" {
 		serviceHandler := apiutils.NewAuthenticatedServiceHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
-		keptnContext, triggeredId, approvalFinishedEvent, err = getApprovalFinishedForService(eventHandler,
+		keptnContext, triggeredID, approvalFinishedEvent, err = getApprovalFinishedForService(eventHandler,
 			serviceHandler, sendApprovalFinishedOptions)
 	}
 	if err != nil {
@@ -109,7 +109,7 @@ func sendApprovalFinishedEvent(sendApprovalFinishedOptions sendApprovalFinishedS
 			Type:        keptnevents.ApprovalFinishedEventType,
 			Source:      types.URLRef{URL: *source},
 			ContentType: &contentType,
-			Extensions:  map[string]interface{}{"shkeptncontext": keptnContext, "triggeredid": triggeredId},
+			Extensions:  map[string]interface{}{"shkeptncontext": keptnContext, "triggeredid": triggeredID},
 		}.AsV02(),
 		Data: approvalFinishedEvent,
 	}

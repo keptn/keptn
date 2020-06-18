@@ -145,7 +145,7 @@ func TestApprovalFinishedEventHandler_getOpenApproval(t *testing.T) {
 			if returnCode == 200 {
 				w.WriteHeader(200)
 				w.Write([]byte(`{
-					"eventId": "approval-trigger-id",
+					"eventId": "approval-triggered-id",
 					"image": "docker.io/keptnexamples/carts",
 					"keptnContext": "approval-workflow",
 					"tag": "0.10.1",
@@ -193,7 +193,7 @@ func TestApprovalFinishedEventHandler_getOpenApproval(t *testing.T) {
 				},
 			},
 			want: &approval{
-				EventID:      "approval-trigger-id",
+				EventID:      "approval-triggered-id",
 				Image:        "docker.io/keptnexamples/carts",
 				KeptnContext: "approval-workflow",
 				Tag:          "0.10.1",
@@ -228,7 +228,7 @@ func TestApprovalFinishedEventHandler_getOpenApproval(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			returnCode = tt.returnedResponseCode
-			got, err := getOpenApproval(tt.args.inputEvent, "approval-trigger-id")
+			got, err := getOpenApproval(tt.args.inputEvent, "approval-triggered-id")
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getOpenApproval() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -272,7 +272,7 @@ func Test_closeOpenApproval(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			returnCode = tt.returnedResponseCode
-			if err := closeOpenApproval(tt.args.inputEvent, "approval-trigger-id"); (err != nil) != tt.wantErr {
+			if err := closeOpenApproval(tt.args.inputEvent, "approval-triggered-id"); (err != nil) != tt.wantErr {
 				t.Errorf("closeOpenApproval() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
