@@ -23,6 +23,7 @@ import (
 )
 
 const contextToProjectCollection = "contextToProject"
+const rootEventCollectionSuffix = "-rootEvents"
 
 var client *mongo.Client
 var mutex sync.Mutex
@@ -136,7 +137,7 @@ func storeRootEvent(logger *keptnutils.Logger, collectionName string, ctx contex
 		KeptnContextExtendedCE: *event,
 		MongoDBID:              event.Shkeptncontext,
 	}
-	rootEventsForProjectCollection := client.Database(mongoDBName).Collection(collectionName + "-rootEvents")
+	rootEventsForProjectCollection := client.Database(mongoDBName).Collection(collectionName + rootEventCollectionSuffix)
 	eventInterface, err := transformEventToInterface(eventWithMongoDBID)
 	if err != nil {
 		logger.Error("Could not transform root event to interface: " + err.Error())
@@ -267,122 +268,75 @@ func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 		}
 	}
 
+	var newNextPageKey int64
+	var nextPageKey int64 = 0
+	if params.NextPageKey != nil {
+		tmpNextPageKey, _ := strconv.Atoi(*params.NextPageKey)
+		nextPageKey = int64(tmpNextPageKey)
+		newNextPageKey = nextPageKey + *params.PageSize
+	} else {
+		newNextPageKey = *params.PageSize
+	}
+
+	pageSize := *params.PageSize
+
+	var sortOptions *options.FindOptions
+	if params.Root != nil {
+		collectionName = collectionName + rootEventCollectionSuffix
+		sortOptions = options.Find().SetSort(bson.D{{"time", 1}}).SetSkip(nextPageKey).SetLimit(pageSize)
+	} else {
+		sortOptions = options.Find().SetSort(bson.D{{"time", -1}}).SetSkip(nextPageKey).SetLimit(pageSize)
+	}
+
 	collection := client.Database(mongoDBName).Collection(collectionName)
 
 	var result event.GetEventsOKBody
 
-	if params.Root != nil {
-		var values []interface{}
-		var err error
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 
-		values, err = collection.Distinct(ctx, "shkeptncontext", searchOptions)
+	totalCount, err := collection.CountDocuments(ctx, searchOptions)
+	if err != nil {
+		logger.Error(fmt.Sprintf("error counting elements in events collection: %v", err))
+	}
 
+	cur, err := collection.Find(ctx, searchOptions, sortOptions)
+	if err != nil {
+		logger.Error(fmt.Sprintf("error finding elements in events collection: %v", err))
+		return nil, err
+	}
+	// close the cursor after the function has completed to avoid memory leaks
+	defer cur.Close(ctx)
+	for cur.Next(ctx) {
+		var outputEvent interface{}
+		err := cur.Decode(&outputEvent)
 		if err != nil {
-			logger.Error(fmt.Sprintf("error loading distinct shkeptncontext: %v", err))
-		}
-
-		for _, value := range values {
-			var outputEvent interface{}
-
-			sortOptions := options.FindOne().SetSort(bson.D{{"time", 1}})
-			err = collection.FindOne(ctx, bson.D{{"shkeptncontext", value}}, sortOptions).Decode(&outputEvent)
-
-			if err != nil {
-				logger.Error(fmt.Sprintf("failed to decode event %v", err))
-				return nil, err
-			}
-
-			outputEvent, err = flattenRecursively(outputEvent, logger)
-			if err != nil {
-				logger.Error(fmt.Sprintf("failed to flatten %v", err))
-				return nil, err
-			}
-
-			data, _ := json.Marshal(outputEvent)
-
-			var keptnEvent models.KeptnContextExtendedCE
-			err = keptnEvent.UnmarshalJSON(data)
-			if err != nil {
-				logger.Error(fmt.Sprintf("failed to unmarshal %v", err))
-				continue
-			}
-
-			if params.FromTime != nil {
-				fromTime, err := time.Parse(time.RFC3339, *params.FromTime)
-				if err != nil {
-					fmt.Println("Error while parsing date :", err)
-					return nil, err
-				}
-
-				if time.Time(keptnEvent.Time).After(fromTime) {
-					result.Events = append(result.Events, &keptnEvent)
-				}
-			} else {
-				result.Events = append(result.Events, &keptnEvent)
-			}
-		}
-	} else {
-		var newNextPageKey int64
-		var nextPageKey int64 = 0
-		if params.NextPageKey != nil {
-			tmpNextPageKey, _ := strconv.Atoi(*params.NextPageKey)
-			nextPageKey = int64(tmpNextPageKey)
-			newNextPageKey = nextPageKey + *params.PageSize
-		} else {
-			newNextPageKey = *params.PageSize
-		}
-
-		pageSize := *params.PageSize
-		sortOptions := options.Find().SetSort(bson.D{{"time", -1}}).SetSkip(nextPageKey).SetLimit(pageSize)
-
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-
-		totalCount, err := collection.CountDocuments(ctx, searchOptions)
-		if err != nil {
-			logger.Error(fmt.Sprintf("error counting elements in events collection: %v", err))
-		}
-
-		cur, err := collection.Find(ctx, searchOptions, sortOptions)
-		if err != nil {
-			logger.Error(fmt.Sprintf("error finding elements in events collection: %v", err))
+			logger.Error(fmt.Sprintf("failed to decode event %v", err))
 			return nil, err
 		}
-		// close the cursor after the function has completed to avoid memory leaks
-		defer cur.Close(ctx)
-		for cur.Next(ctx) {
-			var outputEvent interface{}
-			err := cur.Decode(&outputEvent)
-			if err != nil {
-				logger.Error(fmt.Sprintf("failed to decode event %v", err))
-				return nil, err
-			}
-			outputEvent, err = flattenRecursively(outputEvent, logger)
-			if err != nil {
-				logger.Error(fmt.Sprintf("failed to flatten %v", err))
-				return nil, err
-			}
-
-			data, _ := json.Marshal(outputEvent)
-
-			var keptnEvent models.KeptnContextExtendedCE
-			err = keptnEvent.UnmarshalJSON(data)
-			if err != nil {
-				logger.Error(fmt.Sprintf("failed to unmarshal %v", err))
-				continue
-			}
-
-			result.Events = append(result.Events, &keptnEvent)
+		outputEvent, err = flattenRecursively(outputEvent, logger)
+		if err != nil {
+			logger.Error(fmt.Sprintf("failed to flatten %v", err))
+			return nil, err
 		}
 
-		result.PageSize = pageSize
-		result.TotalCount = totalCount
+		data, _ := json.Marshal(outputEvent)
 
-		if newNextPageKey < totalCount {
-			result.NextPageKey = strconv.FormatInt(newNextPageKey, 10)
+		var keptnEvent models.KeptnContextExtendedCE
+		err = keptnEvent.UnmarshalJSON(data)
+		if err != nil {
+			logger.Error(fmt.Sprintf("failed to unmarshal %v", err))
+			continue
 		}
+
+		result.Events = append(result.Events, &keptnEvent)
+	}
+
+	result.PageSize = pageSize
+	result.TotalCount = totalCount
+
+	if newNextPageKey < totalCount {
+		result.NextPageKey = strconv.FormatInt(newNextPageKey, 10)
 	}
 
 	return &result, nil
