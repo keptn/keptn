@@ -1,4 +1,65 @@
 ---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: keptn-get-namespaces
+  labels:
+    "app": "keptn"
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - namespaces
+    verbs:
+      - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: keptn-get-namespaces
+  labels:
+    "app": "keptn"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: keptn-get-namespaces
+subjects:
+  - kind: ServiceAccount
+    name: keptn-helm-service
+    namespace: keptn
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: keptn-helm-service
+  namespace: keptn
+  labels:
+    "app": "keptn"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: keptn-read-keptndomain
+subjects:
+  - kind: ServiceAccount
+    name: keptn-helm-service
+    namespace: keptn
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: keptn-helm-service-cluster-admin
+  labels:
+    "app": "keptn"
+subjects:
+  - kind: ServiceAccount
+    name: keptn-helm-service
+    namespace: keptn
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
+
+---
 # gatekeeper-service
 apiVersion: apps/v1
 kind: Deployment
@@ -15,6 +76,7 @@ spec:
       labels:
         run: gatekeeper-service
     spec:
+      serviceAccountName: keptn-default
       containers:
       - name: gatekeeper-service
         image: keptn/gatekeeper-service:latest
@@ -63,6 +125,7 @@ spec:
       labels:
         run: distributor
     spec:
+      serviceAccountName: keptn-default
       containers:
       - name: distributor
         image: keptn/distributor:latest
@@ -118,12 +181,13 @@ spec:
               value: 'sh.keptn.events.approval.>'
             - name: PUBSUB_RECIPIENT
               value: 'gatekeeper-service'
+      serviceAccountName: keptn-default
 ---
 ## helm-service: sh.keptn.event.configuration.change
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: helm-service-configuration-change-distributor
+  name: helm-service-distributor
   namespace: keptn
 spec:
   selector:
@@ -135,6 +199,7 @@ spec:
       labels:
         run: distributor
     spec:
+      serviceAccountName: keptn-default
       containers:
       - name: distributor
         image: keptn/distributor:latest
@@ -151,7 +216,7 @@ spec:
         - name: PUBSUB_URL
           value: 'nats://keptn-nats-cluster'
         - name: PUBSUB_TOPIC
-          value: 'sh.keptn.event.configuration.change'
+          value: 'sh.keptn.event.configuration.change,sh.keptn.event.action.triggered'
         - name: PUBSUB_RECIPIENT
           value: 'helm-service'
 ---
@@ -171,6 +236,7 @@ spec:
       labels:
         run: jmeter-service
     spec:
+      serviceAccountName: keptn-default
       containers:
       - name: jmeter-service
         image: keptn/jmeter-service:latest
@@ -212,6 +278,7 @@ spec:
       labels:
         run: distributor
     spec:
+      serviceAccountName: keptn-default
       containers:
       - name: distributor
         image: keptn/distributor:latest

@@ -1,7 +1,7 @@
-import { HttpProgressState } from './http-progress-state';
+import {HttpState} from './http-progress-state';
 
-describe('HttpProgressState', () => {
+describe('HttpState', () => {
   it('should create an instance', () => {
-    expect(new HttpProgressState()).toBeTruthy();
+    expect(new HttpState()).toBeTruthy();
   });
 });

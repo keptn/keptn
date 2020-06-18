@@ -1,5 +1,6 @@
 import {Injectable} from '@angular/core';
-import {BehaviorSubject, from, Observable, Subject, timer} from "rxjs";
+import {HttpClient} from "@angular/common/http";
+import {BehaviorSubject, forkJoin, from, Observable, Subject, timer, of} from "rxjs";
 import {debounce, map, mergeMap, toArray} from "rxjs/operators";
 
 import {Root} from "../_models/root";
@@ -17,12 +18,14 @@ export class DataService {
 
   private _projects = new BehaviorSubject<Project[]>(null);
   private _roots = new BehaviorSubject<Root[]>(null);
+  private _versionInfo = new BehaviorSubject<Object>({});
   private _rootsLastUpdated: Object = {};
   private _tracesLastUpdated: Object = {};
 
   private _evaluationResults = new Subject();
 
-  constructor(private apiService: ApiService) {
+  constructor(private http: HttpClient, private apiService: ApiService) {
+    this.loadVersionInfo();
     this.loadProjects();
   }
 
@@ -32,6 +35,10 @@ export class DataService {
 
   get roots(): Observable<Root[]> {
     return this._roots.asObservable();
+  }
+
+  get versionInfo(): Observable<any> {
+    return this._versionInfo.asObservable();
   }
 
   get evaluationResults(): Observable<any> {
@@ -44,6 +51,25 @@ export class DataService {
 
   public getTracesLastUpdated(root: Root): Date {
     return this._tracesLastUpdated[root.shkeptncontext];
+  }
+
+  public loadVersionInfo() {
+    forkJoin({
+      availableVersions: this.apiService.getAvailableVersions(),
+      bridgeVersion: this.apiService.getBridgeVersion(),
+      keptnVersion: this.apiService.getKeptnVersion(),
+      versionCheckEnabled: of(this.apiService.isVersionCheckEnabled())
+    })
+    .subscribe((result) => {
+      this._versionInfo.next(result);
+    }, (err) => {
+      this._versionInfo.error(err);
+    });
+  }
+
+  public setVersionCheck(enabled: boolean) {
+    this.apiService.setVersionCheck(enabled);
+    this.loadVersionInfo();
   }
 
   public loadProjects() {

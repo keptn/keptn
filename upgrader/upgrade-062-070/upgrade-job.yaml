@@ -23,5 +23,6 @@ spec:
               value: 'mongodb://user:password@mongodb.keptn-datastore.svc.cluster.local:27017/keptn'
             - name: CONFIGURATION_SERVICE_URL
               value: 'configuration-service.keptn.svc.cluster.local:8080'
-
+            - name: HELM_RELEASE_UPGRADE
+              value: 'false'
       restartPolicy: Never

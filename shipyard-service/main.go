@@ -17,7 +17,6 @@ import (
 	configutils "github.com/keptn/go-utils/pkg/api/utils"
 
 	keptn "github.com/keptn/go-utils/pkg/lib"
-	kubeutils "github.com/keptn/kubernetes-utils/pkg"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
@@ -299,8 +298,8 @@ func (client *Client) createProject(project configmodels.Project, logger keptn.L
 		return err
 	}
 
-	prjHandler := configutils.NewAuthenticatedProjectHandler(configServiceURL.String(), "", "", client.httpClient, "http")
-	_, errObj := prjHandler.CreateConfigurationServiceProject(project)
+	prjHandler := configutils.NewProjectHandler(configServiceURL.String())
+	_, errObj := prjHandler.CreateProject(project)
 
 	if errObj == nil {
 		logger.Info("Project successfully created")
@@ -312,7 +311,7 @@ func (client *Client) createProject(project configmodels.Project, logger keptn.L
 // deleteProject deletes a project by using the configuration-service
 func (client *Client) deleteProject(project configmodels.Project, logger keptn.Logger, configServiceURL string) error {
 
-	prjHandler := configutils.NewAuthenticatedProjectHandler(configServiceURL, "", "", client.httpClient, "http")
+	prjHandler := configutils.NewProjectHandler(configServiceURL)
 	_, err := prjHandler.DeleteProject(project)
 	if err != nil {
 		return fmt.Errorf("Error in deleting project: %s", *err.Message)
@@ -330,16 +329,10 @@ func (client *Client) getDeleteInfoMessage(keptnHandler *keptn.Keptn) (string, e
 	msg := ""
 	for _, stage := range shipyard.Stages {
 		namespace := keptnHandler.KeptnBase.Project + "-" + stage.Name
-		exists, err := kubeutils.ExistsNamespace(true, namespace)
-		if err != nil {
-			return "", fmt.Errorf("error when checking availability of namespace: %v", err)
-		}
-		if exists {
-			msg += fmt.Sprintf("Namespace %s is not deleted. This may cause problems if "+
-				"a project with the same name is created later. "+
-				"If you would like to delete the namespace, please execute "+
-				"'kubectl delete ns %s'\n", namespace, namespace)
-		}
+		msg += fmt.Sprintf("Namespace %s is not managed by Keptn anymore and not deleted. This may cause problems if "+
+			"a project with the same name is created later. "+
+			"If you would like to delete the namespace, please execute "+
+			"'kubectl delete ns %s'\n", namespace, namespace)
 	}
 	return strings.TrimSpace(msg), nil
 }
@@ -352,7 +345,7 @@ func (client *Client) getProject(project configmodels.Project, logger keptn.Logg
 		return nil, err
 	}
 
-	prjHandler := configutils.NewAuthenticatedProjectHandler(configServiceURL.String(), "", "", client.httpClient, "http")
+	prjHandler := configutils.NewProjectHandler(configServiceURL.String())
 	respProject, respError := prjHandler.GetProject(project)
 	if respError != nil {
 		return nil, fmt.Errorf("Error in getting project: %s", project.ProjectName)
@@ -370,7 +363,7 @@ func (client *Client) createStage(project configmodels.Project, stage string, lo
 		return err
 	}
 
-	stageHandler := configutils.NewAuthenticatedStageHandler(configServiceURL.String(), "", "", client.httpClient, "http")
+	stageHandler := configutils.NewStageHandler(configServiceURL.String())
 	_, errorObj := stageHandler.CreateStage(project.ProjectName, stage)
 
 	if errorObj == nil {

@@ -3,35 +3,42 @@ source ./utils.sh
 
 ./upgradecollections $MONGODB_URL $CONFIGURATION_SERVICE_URL
 
-# Upgrade from Helm v2 to Helm v3
-helm init --client-only
-verify_install_step $? "Helm init failed."
-RELEASES=$(helm list -aq)
-verify_install_step $? "Helm list failed."
-echo $RELEASES
+if [ $HELM_RELEASE_UPGRADE == "true" ]; 
+then
+  # Upgrade from Helm v2 to Helm v3
+  helm init --client-only
+  verify_install_step $? "Helm init failed."
+  RELEASES=$(helm list -aq)
+  verify_install_step $? "Helm list failed."
+  echo $RELEASES
 
-helm3 plugin install https://github.com/helm/helm-2to3
-verify_install_step $? "Helm-2to3 plugin installation failed."
-yes y | helm3 2to3 move config
-verify_install_step $? "Helm-2to3 move of config failed."
+  helm3 plugin install https://github.com/helm/helm-2to3
+  verify_install_step $? "Helm-2to3 plugin installation failed."
+  yes y | helm3 2to3 move config
+  verify_install_step $? "Helm-2to3 move of config failed."
 
-for release in $RELEASES; do
-  helm3 2to3 convert $release --dry-run
-  verify_install_step $? "Helm2-to3 release convertion dry-run failed"
-  helm3 2to3 convert $release
-  verify_install_step $? "Helm2-to3 release convertion failed"
-done
+  for release in $RELEASES; do
+    helm3 2to3 convert $release --dry-run
+    verify_install_step $? "Helm2-to3 release convertion dry-run failed"
+    helm3 2to3 convert $release
+    verify_install_step $? "Helm2-to3 release convertion failed"
+  done
 
-yes y | helm3 2to3 cleanup --tiller-cleanup
-verify_install_step $? "Helm2-to3 cleanup failed"
-
+  yes y | helm3 2to3 cleanup --tiller-cleanup
+  verify_install_step $? "Helm2-to3 cleanup failed"
+  
+fi
 
 
 KEPTN_VERSION=${KEPTN_VERSION:-"release-0.7.0"}
 print_debug "Upgrading from Keptn 0.6.2 to $KEPTN_VERSION"
 
 manifests=(
-  "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/logging/mongodb-datastore/k8s/mongodb-datastore.yaml"
+  "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/rbac.yaml"
+  "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/logging/rbac.yaml"
+  "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/logging/mongodb/secret.yaml"
+  "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/logging/mongodb/deployment.yaml"
+  "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/logging/mongodb-datastore/mongodb-datastore.yaml"
   "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/logging/mongodb-datastore/mongodb-datastore-distributor.yaml"
   "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/core.yaml"
   "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/quality-gates.yaml"
@@ -65,8 +72,14 @@ API_IMAGE=$(kubectl get deployment -n keptn api-service -o=jsonpath='{$.spec.tem
     exit 1
   fi
 
+print_debug "Updating MongoDB and mongodb-datastore."
+kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/logging/mongodb/secret.yaml
+kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/logging/mongodb/deployment.yaml
+kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/logging/mongodb-datastore/k8s/mongodb-datastore.yaml
 
 print_debug "Updating Keptn core."
+kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/rbac.yaml
+kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/logging/rbac.yaml
 kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/api-gateway-nginx.yaml
 kubectl -n keptn delete pod -lrun=api-gateway-nginx
 kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/core.yaml
@@ -88,6 +101,8 @@ kubectl -n keptn get svc gatekeeper-service
       print_debug "Full installation detected. Upgrading CD and CO services"
       kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/continuous-deployment.yaml
       kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/continuous-operations.yaml
+      # remove the remediation-service-problem-distributor deployment since the remediation service now has a new distributor for multiple types of evetns
+      kubectl delete deployment -n keptn remediation-service-problem-distributor
   fi
 
 # check for keptn-contrib services
@@ -121,4 +136,5 @@ kubectl -n keptn get svc prometheus-sli-service
 
 kubectl -n keptn get svc servicenow-service
 
-
+kubectl delete ClusterRoleBinding keptn-rbac
+kubectl delete ClusterRoleBinding rbac-service-account

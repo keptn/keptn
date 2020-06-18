@@ -57,12 +57,7 @@ func init() {
         "summary": "Exposes the bridge",
         "parameters": [
           {
-            "description": "Flag for exposing the bridge",
-            "name": "expose",
-            "in": "body",
-            "schema": {
-              "type": "boolean"
-            }
+            "$ref": "#/parameters/configureBridge"
           }
         ],
         "responses": {
@@ -92,7 +87,8 @@ func init() {
         "tags": [
           "Event"
         ],
-        "summary": "Get the latest event matching the required query parameters",
+        "summary": "Deprecated endpoint - please use /mongodb-datastore/v1/event",
+        "deprecated": true,
         "parameters": [
           {
             "type": "string",
@@ -266,6 +262,14 @@ func init() {
     }
   },
   "parameters": {
+    "configureBridge": {
+      "description": "Parameters for configuring the bridge access",
+      "name": "configureBridge",
+      "in": "body",
+      "schema": {
+        "$ref": "configure_model.yaml#/definitions/configureBridge"
+      }
+    },
     "project": {
       "description": "Project entity",
       "name": "project",
@@ -350,11 +354,11 @@ func init() {
         "summary": "Exposes the bridge",
         "parameters": [
           {
-            "description": "Flag for exposing the bridge",
-            "name": "expose",
+            "description": "Parameters for configuring the bridge access",
+            "name": "configureBridge",
             "in": "body",
             "schema": {
-              "type": "boolean"
+              "$ref": "#/definitions/configureBridge"
             }
           }
         ],
@@ -385,7 +389,8 @@ func init() {
         "tags": [
           "Event"
         ],
-        "summary": "Get the latest event matching the required query parameters",
+        "summary": "Deprecated endpoint - please use /mongodb-datastore/v1/event",
+        "deprecated": true,
         "parameters": [
           {
             "type": "string",
@@ -577,6 +582,23 @@ func init() {
     }
   },
   "definitions": {
+    "configureBridge": {
+      "type": "object",
+      "required": [
+        "expose"
+      ],
+      "properties": {
+        "expose": {
+          "type": "boolean"
+        },
+        "password": {
+          "type": "string"
+        },
+        "user": {
+          "type": "string"
+        }
+      }
+    },
     "error": {
       "type": "object",
       "required": [
@@ -698,6 +720,14 @@ func init() {
     }
   },
   "parameters": {
+    "configureBridge": {
+      "description": "Parameters for configuring the bridge access",
+      "name": "configureBridge",
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/configureBridge"
+      }
+    },
     "project": {
       "description": "Project entity",
       "name": "project",

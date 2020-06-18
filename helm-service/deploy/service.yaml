@@ -13,6 +13,7 @@ spec:
       labels:
         run: helm-service
     spec:
+      serviceAccountName: keptn-helm-service
       containers:
       - name: helm-service
         image: keptn/helm-service:latest

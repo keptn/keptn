@@ -88,7 +88,7 @@ export class KtbEvaluationDetailsComponent implements OnInit {
       },
     },
   };
-  public _chartSeries: Highcharts.IndividualSeriesOptions[] = [
+  public _chartSeries: Highcharts.SeriesOptions[] = [
   ];
 
   public _heatmapOptions: Highcharts.Options = {
@@ -139,7 +139,7 @@ export class KtbEvaluationDetailsComponent implements OnInit {
       },
     },
   };
-  public _heatmapSeries: Highcharts.HeatMapSeriesOptions[] = [];
+  public _heatmapSeries: Highcharts.SeriesHeatmapOptions[] = [];
 
   @Input()
   get evaluationData(): any {
@@ -155,7 +155,8 @@ export class KtbEvaluationDetailsComponent implements OnInit {
   constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService) { }
 
   ngOnInit() {
-    this.dataService.loadEvaluationResults(this._evaluationData);
+    if(this._evaluationData)
+      this.dataService.loadEvaluationResults(this._evaluationData);
     this.dataService.evaluationResults.subscribe((event) => {
       if(this.evaluationData === event) {
         this.updateChartData(event.data.evaluationHistory);
@@ -234,6 +235,7 @@ export class KtbEvaluationDetailsComponent implements OnInit {
     this._heatmapSeries = [
       {
         name: 'Score',
+        type: 'heatmap',
         rowsize: 0.85,
         turboThreshold: 0,
         data: chartSeries.find(series => series.name == 'Score').data.map((s) => {
@@ -251,6 +253,7 @@ export class KtbEvaluationDetailsComponent implements OnInit {
       },
       {
         name: 'SLOs',
+        type: 'heatmap',
         turboThreshold: 0,
         data: chartSeries.reverse().reduce((r, d) => [...r, ...d.data.filter(s => s.indicatorResult).map((s) => {
           let time = moment(s.x).format();

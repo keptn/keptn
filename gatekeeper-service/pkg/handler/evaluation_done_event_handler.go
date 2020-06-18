@@ -14,11 +14,12 @@ import (
 const configService = "CONFIGURATION_SERVICE"
 
 type EvaluationDoneEventHandler struct {
-	logger *keptnevents.Logger
+	keptn *keptnevents.Keptn
 }
 
-func NewEvaluationDoneEventHandler(l *keptnevents.Logger) *EvaluationDoneEventHandler {
-	return &EvaluationDoneEventHandler{logger: l}
+// NewEvaluationDoneEventHandler returns a new evaluation-done handler
+func NewEvaluationDoneEventHandler(keptn *keptnevents.Keptn) *EvaluationDoneEventHandler {
+	return &EvaluationDoneEventHandler{keptn: keptn}
 }
 
 func (EvaluationDoneEventHandler) IsTypeHandled(event cloudevents.Event) bool {
@@ -28,18 +29,18 @@ func (EvaluationDoneEventHandler) IsTypeHandled(event cloudevents.Event) bool {
 func (e *EvaluationDoneEventHandler) Handle(event cloudevents.Event, keptnHandler *keptnevents.Keptn, shipyard *keptnevents.Shipyard) {
 	data := &keptnevents.EvaluationDoneEventData{}
 	if err := event.DataAs(data); err != nil {
-		e.logger.Error(fmt.Sprintf("failed to parse EvaluationDoneEvent: %v", err))
+		e.keptn.Logger.Error(fmt.Sprintf("failed to parse EvaluationDoneEvent: %v", err))
 		return
 	}
 
 	image, err := e.getImage(data.Project, data.Stage, data.Service)
 	if err != nil {
-		e.logger.Error(err.Error())
+		e.keptn.Logger.Error(err.Error())
 		return
 	}
 
 	outgoingEvents := e.handleEvaluationDoneEvent(*data, keptnHandler.KeptnContext, image, *shipyard)
-	sendEvents(keptnHandler, outgoingEvents, e.logger)
+	sendEvents(keptnHandler, outgoingEvents, e.keptn.Logger)
 }
 
 func (EvaluationDoneEventHandler) getImage(project string, currentStage string, service string) (string, error) {
@@ -64,14 +65,24 @@ func (EvaluationDoneEventHandler) getImage(project string, currentStage string, 
 func (e *EvaluationDoneEventHandler) handleEvaluationDoneEvent(inputEvent keptnevents.EvaluationDoneEventData, shkeptncontext string, image string,
 	shipyard keptnevents.Shipyard) []cloudevents.Event {
 
+	nextStage := e.getNextStage(shipyard, inputEvent.Stage)
+
+	for _, stage := range shipyard.Stages {
+		if stage.Name == nextStage {
+			if stage.DeploymentStrategy == "" {
+				e.keptn.Logger.Info("No deployment strategy defined for next stage. exiting.")
+				return nil
+			}
+		}
+	}
 	// Evaluation has passed if we have result = pass or result = warning
 
 	if inputEvent.TestStrategy == TestStrategyRealUser {
 		if inputEvent.Result == PassResult || inputEvent.Result == WarningResult {
-			e.logger.Info(fmt.Sprintf("Remediation Action for service %s in project %s and stage %s was successful",
+			e.keptn.Logger.Info(fmt.Sprintf("Remediation Action for service %s in project %s and stage %s was successful",
 				inputEvent.Service, inputEvent.Project, inputEvent.Stage))
 		} else {
-			e.logger.Info(fmt.Sprintf("Remediation Action for service %s in project %s and stage %s was NOT successful",
+			e.keptn.Logger.Info(fmt.Sprintf("Remediation Action for service %s in project %s and stage %s was NOT successful",
 				inputEvent.Service, inputEvent.Project, inputEvent.Stage))
 		}
 		return nil
@@ -83,18 +94,38 @@ func (e *EvaluationDoneEventHandler) handleEvaluationDoneEvent(inputEvent keptne
 	}
 
 	if inputEvent.Result == PassResult || inputEvent.Result == WarningResult {
-		// Check whether shipyard contains ApprovalStrategy
-		if e.isApprovalStrategyDefined(inputEvent.Stage, shipyard) {
-			outgoingEvents = append(outgoingEvents, *e.getApprovalTriggeredEvent(inputEvent, shkeptncontext, image))
-		} else if event := getPromotionEvent(inputEvent.Project, inputEvent.Stage, inputEvent.Service, image,
-			shkeptncontext, inputEvent.Labels, shipyard, e.logger); event != nil {
-			outgoingEvents = append(outgoingEvents, *event)
+
+		if nextStage != "" {
+			// Check whether shipyard contains ApprovalStrategy
+			if e.isApprovalStrategyDefined(nextStage, shipyard) {
+				outgoingEvents = append(outgoingEvents, *e.getApprovalTriggeredEvent(inputEvent, nextStage, shkeptncontext, image))
+			} else if event := getConfigurationChangeEventForCanary(inputEvent.Project, inputEvent.Service, nextStage, image,
+				shkeptncontext, inputEvent.Labels); event != nil {
+				outgoingEvents = append(outgoingEvents, *event)
+			}
+		} else {
+			e.keptn.Logger.Info(fmt.Sprintf("No further stage available to promote the service %s of project %s",
+				inputEvent.Service, inputEvent.Project))
 		}
 	} else {
-		e.logger.Info(fmt.Sprintf("Service %s in project %s and stage %s has NOT passed the evaluation",
+		e.keptn.Logger.Info(fmt.Sprintf("Service %s in project %s and stage %s has NOT passed the evaluation",
 			inputEvent.Service, inputEvent.Project, inputEvent.Stage))
 	}
 	return outgoingEvents
+}
+
+func (e *EvaluationDoneEventHandler) getNextStage(shipyard keptnevents.Shipyard, currentStage string) string {
+	currentFound := false
+	for _, stage := range shipyard.Stages {
+		if currentFound {
+			// Here, we return the next stage
+			return stage.Name
+		}
+		if stage.Name == currentStage {
+			currentFound = true
+		}
+	}
+	return ""
 }
 
 func (e *EvaluationDoneEventHandler) isApprovalStrategyDefined(stageName string, shipyard keptnevents.Shipyard) bool {
@@ -109,7 +140,7 @@ func (e *EvaluationDoneEventHandler) isApprovalStrategyDefined(stageName string,
 func (e *EvaluationDoneEventHandler) getCanaryAction(inputEvent keptnevents.EvaluationDoneEventData, shkeptncontext string) *cloudevents.Event {
 
 	if inputEvent.Result == PassResult || inputEvent.Result == WarningResult {
-		e.logger.Info(fmt.Sprintf("Service %s in project %s and stage %s has passed the evaluation",
+		e.keptn.Logger.Info(fmt.Sprintf("Service %s in project %s and stage %s has passed the evaluation",
 			inputEvent.Service, inputEvent.Project, inputEvent.Stage))
 		return e.getConfigurationChangeEventForCanaryAction(inputEvent, shkeptncontext, keptnevents.Promote)
 	} else {
@@ -135,7 +166,8 @@ func (e *EvaluationDoneEventHandler) getConfigurationChangeEventForCanaryAction(
 	return getCloudEvent(configChangedEvent, keptnevents.ConfigurationChangeEventType, shkeptncontext, "")
 }
 
-func (e *EvaluationDoneEventHandler) getApprovalTriggeredEvent(inputEvent keptnevents.EvaluationDoneEventData, shkeptncontext, image string) *cloudevents.Event {
+func (e *EvaluationDoneEventHandler) getApprovalTriggeredEvent(inputEvent keptnevents.EvaluationDoneEventData,
+	nextStage string, shkeptncontext, image string) *cloudevents.Event {
 
 	splitImage := strings.Split(image, ":")
 	imageName := splitImage[0]
@@ -147,7 +179,7 @@ func (e *EvaluationDoneEventHandler) getApprovalTriggeredEvent(inputEvent keptne
 	approvalTriggeredEvent := keptnevents.ApprovalTriggeredEventData{
 		Project:            inputEvent.Project,
 		Service:            inputEvent.Service,
-		Stage:              inputEvent.Stage,
+		Stage:              nextStage,
 		TestStrategy:       &inputEvent.TestStrategy,
 		DeploymentStrategy: &inputEvent.DeploymentStrategy,
 		Image:              imageName,

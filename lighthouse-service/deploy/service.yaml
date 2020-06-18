@@ -13,6 +13,7 @@ spec:
       labels:
         run: lighthouse-service
     spec:
+      serviceAccountName: keptn-lighthouse-service
       containers:
         - name: lighthouse-service
           image: keptn/lighthouse-service:latest

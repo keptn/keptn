@@ -14,6 +14,7 @@ spec:
       labels:
         run: remediation-service
     spec:
+      serviceAccountName: keptn-default
       containers:
       - name: remediation-service
         image: keptn/remediation-service:latest
@@ -32,15 +33,10 @@ spec:
             value: 'http://event-broker.keptn.svc.cluster.local/keptn'
           - name: CONFIGURATION_SERVICE
             value: 'http://configuration-service.keptn.svc.cluster.local:8080'
+          - name: MONGODB_DATASTORE
+            value: 'http://mongodb-datastore.keptn-datastore.svc.cluster.local:8080'
           - name: ENVIRONMENT
             value: 'production'
-        envFrom:
-        - secretRef:
-            name: unleash
-            optional: true
-        - secretRef:
-            name: dynatrace
-            optional: true
 ---
 apiVersion: v1
 kind: Service

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 
@@ -22,7 +23,7 @@ var evaluationDoneTests = []struct {
 		inputEvent: getEvaluationDoneTestData(true),
 		outputEvent: []cloudevents.Event{
 			getConfigurationChangeTestEventForCanaryAction(keptnevents.Promote),
-			getConfigurationChangeTestEventForNextStage("docker.io/keptnexamples/carts:0.11.1", "production"),
+			getConfigurationChangeTestEvent("docker.io/keptnexamples/carts:0.11.1", "production"),
 		},
 	},
 	{
@@ -54,12 +55,26 @@ var evaluationDoneTests = []struct {
 			getConfigurationChangeTestEventForCanaryAction(keptnevents.Discard),
 		},
 	},
+	{
+		name:        "pass-no-deployment-strategy",
+		image:       "docker.io/keptnexamples/carts:0.11.1",
+		shipyard:    getShipyardWithoutDeploymentStrategy(keptnevents.Automatic, keptnevents.Automatic),
+		inputEvent:  getEvaluationDoneTestData(true),
+		outputEvent: nil,
+	},
 }
 
 func TestHandleEvaluationDoneEvent(t *testing.T) {
 	for _, tt := range evaluationDoneTests {
 		t.Run(tt.name, func(t *testing.T) {
-			e := NewEvaluationDoneEventHandler(keptnevents.NewLogger(shkeptncontext, eventID, "gatekeeper-service"))
+			ce := cloudevents.New("0.2")
+			dataBytes, err := json.Marshal(tt.inputEvent)
+			if err != nil {
+				t.Error(err)
+			}
+			ce.Data = dataBytes
+			keptnHandler, _ := keptnevents.NewKeptn(&ce, keptnevents.KeptnOpts{})
+			e := NewEvaluationDoneEventHandler(keptnHandler)
 			res := e.handleEvaluationDoneEvent(tt.inputEvent, shkeptncontext, tt.image, tt.shipyard)
 			if len(res) != len(tt.outputEvent) {
 				t.Errorf("got %d output event, want %v output events for %s",
@@ -129,12 +144,12 @@ func getConfigurationChangeTestEventForCanaryAction(action keptnevents.CanaryAct
 	return *getCloudEvent(configurationChangeEvent, keptnevents.ConfigurationChangeEventType, shkeptncontext, "")
 }
 
-func getConfigurationChangeTestEventForNextStage(image, nextStage string) cloudevents.Event {
+func getConfigurationChangeTestEvent(image, stage string) cloudevents.Event {
 
 	configurationChangeEvent := keptnevents.ConfigurationChangeEventData{
 		Project: "sockshop",
 		Service: "carts",
-		Stage:   nextStage,
+		Stage:   stage,
 		ValuesCanary: map[string]interface{}{
 			"image": image,
 		},

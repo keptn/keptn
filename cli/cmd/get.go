@@ -4,9 +4,9 @@ import "github.com/spf13/cobra"
 
 // getCmd represents the send command
 var getCmd = &cobra.Command{
-	Use:   "get [event]",
-	Short: `get in combination with the subcommand "event" allows to retrieve a Keptn event`,
-	Long:  `get in combination with the subcommand "event" allows to retrieve a Keptn event. Get without subcommand cannot be used.`,
+	Use:   "get [event | project | projects | stage | stages | service | services]",
+	Short: `Display an event or one or many keptn entities such as project, stage, or service.`,
+	Long:  `Display an event or one or many Keptn entities such as project, stage, or service.`,
 }
 
 func init() {

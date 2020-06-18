@@ -6,11 +6,10 @@ require (
 	github.com/cloudevents/sdk-go v0.10.0
 	github.com/danieljoos/wincred v1.1.0 // indirect
 	github.com/docker/docker-credential-helpers v0.6.3
-	github.com/ghodss/yaml v1.0.0
 	github.com/google/uuid v1.1.1
 	github.com/gorilla/websocket v1.4.1
 	github.com/hashicorp/go-version v1.2.0
-	github.com/keptn/go-utils v0.6.3-0.20200528093527-ba1f66713c4c
+	github.com/keptn/go-utils v0.6.3-0.20200615074910-2565441cb79d
 	github.com/keptn/kubernetes-utils v0.0.0-20200414115508-d18721552e01
 	github.com/magiconair/properties v1.8.1
 	github.com/mattn/go-shellwords v1.0.10

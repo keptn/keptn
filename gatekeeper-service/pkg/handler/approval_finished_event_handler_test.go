@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -25,7 +26,7 @@ var approvalFinishedTests = []struct {
 		shipyard:   getShipyardWithApproval(keptnevents.Automatic, keptnevents.Automatic),
 		inputEvent: getApprovalFinishedTestData("pass", "succeeded"),
 		outputEvent: []cloudevents.Event{
-			getConfigurationChangeTestEventForNextStage("docker.io/keptnexamples/carts:0.11.1", "production"),
+			getConfigurationChangeTestEvent("docker.io/keptnexamples/carts:0.11.1", "production"),
 		},
 	},
 	{
@@ -109,8 +110,15 @@ func TestHandleApprovalFinishedEvent(t *testing.T) {
 
 	for _, tt := range approvalFinishedTests {
 		t.Run(tt.name, func(t *testing.T) {
-			e := NewApprovalFinishedEventHandler(keptnevents.NewLogger(shkeptncontext, eventID, "gatekeeper-service"))
-			res := e.handleApprovalFinishedEvent(tt.inputEvent, shkeptncontext, eventID, tt.shipyard)
+			ce := cloudevents.New("0.2")
+			dataBytes, err := json.Marshal(tt.inputEvent)
+			if err != nil {
+				t.Error(err)
+			}
+			ce.Data = dataBytes
+			keptnHandler, _ := keptnevents.NewKeptn(&ce, keptnevents.KeptnOpts{})
+			e := NewApprovalFinishedEventHandler(keptnHandler)
+			res := e.handleApprovalFinishedEvent(tt.inputEvent, shkeptncontext, tt.shipyard)
 			if len(res) != len(tt.outputEvent) {
 				t.Errorf("got %d output event, want %v output events for %s",
 					len(res), len(tt.outputEvent), tt.name)

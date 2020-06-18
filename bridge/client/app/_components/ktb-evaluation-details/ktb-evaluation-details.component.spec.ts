@@ -1,6 +1,8 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { KtbEvaluationDetailsComponent } from './ktb-evaluation-details.component';
+import {AppModule} from "../../app.module";
+import {HttpClientTestingModule} from "@angular/common/http/testing";
 
 describe('KtbEvaluationDetailsComponent', () => {
   let component: KtbEvaluationDetailsComponent;
@@ -8,7 +10,11 @@ describe('KtbEvaluationDetailsComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ KtbEvaluationDetailsComponent ]
+      declarations: [],
+      imports: [
+        AppModule,
+        HttpClientTestingModule,
+      ]
     })
     .compileComponents();
   }));
@@ -19,7 +25,7 @@ describe('KtbEvaluationDetailsComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it('should create an instance', () => {
     expect(component).toBeTruthy();
   });
 });

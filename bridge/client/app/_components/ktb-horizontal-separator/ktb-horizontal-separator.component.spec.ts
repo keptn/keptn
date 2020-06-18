@@ -1,6 +1,8 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { KtbHorizontalSeparatorComponent } from './ktb-horizontal-separator.component';
+import {KtbHorizontalSeparatorComponent, KtbHorizontalSeparatorTitle} from './ktb-horizontal-separator.component';
+import {HttpClientTestingModule} from "@angular/common/http/testing";
+import {AppModule} from "../../app.module";
 
 describe('KtbHorizontalSeparatorComponent', () => {
   let component: KtbHorizontalSeparatorComponent;
@@ -8,7 +10,12 @@ describe('KtbHorizontalSeparatorComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ KtbHorizontalSeparatorComponent ]
+      declarations: [
+      ],
+      imports: [
+        AppModule,
+        HttpClientTestingModule,
+      ],
     })
     .compileComponents();
   }));
@@ -19,7 +26,7 @@ describe('KtbHorizontalSeparatorComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it('should create an instance', () => {
     expect(component).toBeTruthy();
   });
 });

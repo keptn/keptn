@@ -117,11 +117,11 @@ For pulling an image from a private registry, we would like to refer to the Kube
 			return fmt.Errorf("Failed to map cloud event to API event model. %s", err.Error())
 		}
 
-		eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
+		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
-			eventContext, err := eventHandler.SendEvent(apiEvent)
+			eventContext, err := apiHandler.SendEvent(apiEvent)
 			if err != nil {
 				logging.PrintLog("Send new-artifact was unsuccessful", logging.QuietLevel)
 				return fmt.Errorf("Send new-artifact was unsuccessful. %s", *err.Message)

@@ -98,7 +98,21 @@
           <ktb-expandable-tile-header>
             <dt-info-group>
               <dt-info-group-title>
-                <h2 class="m-0" [textContent]="service.serviceName"></h2>
+                <div fxLayout="row">
+                  <div fxFlex>
+                    <h2 class="m-0" [textContent]="service.serviceName"></h2>
+                  </div>
+                  <div fxLayout="column" fxLayoutAlign="start end" *ngIf="eventTypes">
+                    <button dt-icon-button (click)="$event.stopPropagation()" [dtContextDialogTrigger]="filterEventsDialog" variant="nested" aria-label="Open context dialog">
+                      <dt-icon name="filter"></dt-icon>
+                    </button>
+                    <dt-context-dialog #filterEventsDialog aria-label="Open context dialog" ariaLabelClose="Close context dialog">
+                      <p *ngFor="let eventType of eventTypes">
+                        <dt-checkbox (change)="filterEvents($event, eventType)" [checked]="true || isFilteredEvent(eventType)">{{getEventLabel(eventType)}}</dt-checkbox>
+                      </p>
+                    </dt-context-dialog>
+                  </div>
+                </div>
               </dt-info-group-title>
               <p class="m-0 mb-1 mt-1" *ngIf="getLatestDeployment(project, service) as deployment">
                 <span class="bold">Last relevant artifact: </span><span [textContent]="deployment.getShortImageName()"></span>
@@ -114,7 +128,7 @@
               <dt-tag>Last time fetched: <span [textContent]="getRootsLastUpdated(project, service) | amCalendar:getCalendarFormats()"></span></dt-tag>
             </dt-tag-list>
           </div>
-          <ktb-root-events-list [events]="service.roots" [selectedEvent]="currentRoot"  (selectedEventChange)="selectRoot($event)"></ktb-root-events-list>
+          <ktb-root-events-list [events]="getFilteredRoots(service.roots)" [selectedEvent]="currentRoot"  (selectedEventChange)="selectRoot($event)"></ktb-root-events-list>
           <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px" *ngIf="!service.roots">
             <dt-loading-spinner></dt-loading-spinner>
             <p>Loading ...</p>

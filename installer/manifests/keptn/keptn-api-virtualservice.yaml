@@ -7,14 +7,12 @@ metadata:
 spec:
   hosts:
     - "api.keptn.DOMAIN_PLACEHOLDER"
-    - "api.keptn"
   gateways:
     - public-gateway.istio-system
   http:
     - route:
         - destination:
             host: api-gateway-nginx.keptn.svc.cluster.local
-      websocketUpgrade: true
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule

@@ -22,3 +22,7 @@
 ::ng-deep .dt-menu-item:hover {
   background: $primary-color !important;
 }
+
+::ng-deep .ktb-expandable-tile .dt-show-more-icon {
+  margin-right: 5px;
+}

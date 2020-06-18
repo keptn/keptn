@@ -41,7 +41,6 @@ span.small {
   font-family: BerninaSansWeb,OpenSans,sans-serif;
   font-weight: 400;
   font-size: 12px;
-  line-height: 28px;
   color: $gray-700;
 }
 
@@ -228,4 +227,9 @@ span.italic {
   100% {
     box-shadow: 0 0 0 0 rgba(180, 180, 180, 0);
   }
+}
+
+@keyframes slideDown {
+  0%, 10% { transform: translateY(-100%); }
+  10%, 100% { transform: translateY(0px); }
 }

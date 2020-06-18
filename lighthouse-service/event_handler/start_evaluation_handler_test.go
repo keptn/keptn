@@ -168,7 +168,6 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 			})
 			returnSlo = tt.sloAvailable
 			eh := &StartEvaluationHandler{
-				Logger:       tt.fields.Logger,
 				Event:        tt.fields.Event,
 				KeptnHandler: keptnHandler,
 			}

@@ -43,7 +43,7 @@ In addition, the payload of the Cloud Event needs to follow the Keptn spec (http
 
 For convenience, this command offers the *--stream-websocket* flag to open a web socket communication to Keptn. Consequently, messages from the receiving Keptn service, which processes the event, are sent to the CLI via WebSocket.
 	`,
-	Example: `keptn send event --file=./new_artifact_event.json --stream-websocket`,
+	Example:      `keptn send event --file=./new_artifact_event.json --stream-websocket`,
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		eventString, err := file.ReadFile(*eventFilePath)
@@ -69,11 +69,11 @@ For convenience, this command offers the *--stream-websocket* flag to open a web
 			return fmt.Errorf("Failed to map event to API event model. %s", err.Error())
 		}
 
-		eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
+		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
-			_, err := eventHandler.SendEvent(apiEvent)
+			_, err := apiHandler.SendEvent(apiEvent)
 			if err != nil {
 				logging.PrintLog("Send event was unsuccessful", logging.QuietLevel)
 				return fmt.Errorf("Send event was unsuccessful. %s", *err.Message)

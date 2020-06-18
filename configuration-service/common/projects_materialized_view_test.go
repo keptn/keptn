@@ -1118,3 +1118,181 @@ func Test_projectsMaterializedView_CreateOpenApproval(t *testing.T) {
 		})
 	}
 }
+
+func Test_projectsMaterializedView_CreateRemediation(t *testing.T) {
+	type fields struct {
+		ProjectRepo ProjectRepo
+		Logger      keptn.LoggerInterface
+	}
+	type args struct {
+		project     string
+		stage       string
+		service     string
+		remediation *models.Remediation
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "",
+			fields: fields{
+				Logger: keptn.NewLogger("", "", "configuration-service"),
+				ProjectRepo: &mockProjectRepo{
+					CreateProjectMock: nil,
+					GetProjectMock: func(projectName string) (project *models.ExpandedProject, err error) {
+						return &models.ExpandedProject{
+							ProjectName: "test-project",
+							Stages: []*models.ExpandedStage{
+								{
+									Services: []*models.ExpandedService{
+										{
+											ServiceName: "test-service",
+										},
+									},
+									StageName: "dev",
+								},
+							},
+						}, nil
+					},
+					UpdateProjectMock: func(project *models.ExpandedProject) error {
+						if len(project.Stages[0].Services[0].OpenRemediations) == 0 {
+							return errors.New("project was not updated correctly - no approval has been added")
+						}
+
+						if project.Stages[0].Services[0].OpenRemediations[0].EventID != "test-event-id" {
+							return errors.New("project was not updated correctly: no event id in approval event")
+						}
+
+						if project.Stages[0].Services[0].OpenRemediations[0].KeptnContext != "test-context" {
+							return errors.New("project was not updated correctly: keptnContext was not set correctly")
+						}
+
+						if project.Stages[0].Services[0].OpenRemediations[0].Type != "remediation.status.changed" {
+							return errors.New("project was not updated correctly: type was not set correctly")
+						}
+
+						if project.Stages[0].Services[0].OpenRemediations[0].Action != "scale" {
+							return errors.New("project was not updated correctly: action was not set correctly")
+						}
+
+						return nil
+					},
+					DeleteProjectMock: nil,
+					GetProjectsMock:   nil,
+				},
+			},
+			args: args{
+				project: "test-project",
+				stage:   "dev",
+				service: "test-service",
+				remediation: &models.Remediation{
+					EventID:      "test-event-id",
+					KeptnContext: "test-context",
+					Time:         "1",
+					Type:         "remediation.status.changed",
+					Action:       "scale",
+				},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mv := &projectsMaterializedView{
+				ProjectRepo: tt.fields.ProjectRepo,
+				Logger:      tt.fields.Logger,
+			}
+			if err := mv.CreateRemediation(tt.args.project, tt.args.stage, tt.args.service, tt.args.remediation); (err != nil) != tt.wantErr {
+				t.Errorf("CreateRemediation() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func Test_projectsMaterializedView_CloseOpenRemediations(t *testing.T) {
+	type fields struct {
+		ProjectRepo ProjectRepo
+		Logger      keptn.LoggerInterface
+	}
+	type args struct {
+		project      string
+		stage        string
+		service      string
+		keptnContext string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "close open approval",
+			fields: fields{
+				Logger: keptn.NewLogger("", "", "configuration-service"),
+				ProjectRepo: &mockProjectRepo{
+					CreateProjectMock: nil,
+					GetProjectMock: func(projectName string) (project *models.ExpandedProject, err error) {
+						return &models.ExpandedProject{
+							ProjectName: "test-project",
+							Stages: []*models.ExpandedStage{
+								{
+									Services: []*models.ExpandedService{
+										{
+											ServiceName: "test-service",
+											OpenRemediations: []*models.Remediation{
+												{
+													EventID:      "test-event-id",
+													KeptnContext: "test-context",
+													Time:         "1",
+													Type:         "remediation.triggered",
+												},
+												{
+													EventID:      "test-event-id",
+													KeptnContext: "test-context",
+													Time:         "1",
+													Type:         "remediation.progressed",
+												},
+											},
+										},
+									},
+									StageName: "dev",
+								},
+							},
+						}, nil
+					},
+					UpdateProjectMock: func(project *models.ExpandedProject) error {
+						if len(project.Stages[0].Services[0].OpenRemediations) != 0 {
+							return errors.New("project was not updated correctly - open approval was not removed")
+						}
+
+						return nil
+					},
+					DeleteProjectMock: nil,
+					GetProjectsMock:   nil,
+				},
+			},
+			args: args{
+				project:      "test-project",
+				stage:        "dev",
+				service:      "test-service",
+				keptnContext: "test-context",
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mv := &projectsMaterializedView{
+				ProjectRepo: tt.fields.ProjectRepo,
+				Logger:      tt.fields.Logger,
+			}
+			if err := mv.CloseOpenRemediations(tt.args.project, tt.args.stage, tt.args.service, tt.args.keptnContext); (err != nil) != tt.wantErr {
+				t.Errorf("CloseOpenRemediations() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}

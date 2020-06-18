@@ -52,7 +52,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: installer
-  namespace: default
+  namespace: keptn
 spec:
   backoffLimit: 0
   template:
@@ -80,6 +80,7 @@ spec:
         - name: INGRESS_INSTALL_OPTION
           value: StopIfInstalled
       restartPolicy: Never
+      serviceAccountName: keptn-installer
 `
 	if res != expected {
 		t.Error("installation manifest does not match")
@@ -156,7 +157,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: installer
-  namespace: default
+  namespace: keptn
 spec:
   backoffLimit: 0
   template:
@@ -184,6 +185,7 @@ spec:
         - name: INGRESS_INSTALL_OPTION
           value: StopIfInstalled
       restartPolicy: Never
+      serviceAccountName: keptn-installer
 `
 	if res != expected {
 		t.Error("installation manifest does not match")
@@ -208,7 +210,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: installer
-  namespace: default
+  namespace: keptn
 spec:
   backoffLimit: 0
   template:
@@ -236,6 +238,7 @@ spec:
         - name: INGRESS_INSTALL_OPTION
           value: StopIfInstalled
       restartPolicy: Never
+      serviceAccountName: keptn-installer
 `
 	if res != expected {
 		t.Error("installation manifest does not match")
@@ -260,7 +263,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: installer
-  namespace: default
+  namespace: keptn
 spec:
   backoffLimit: 0
   template:
@@ -288,6 +291,7 @@ spec:
         - name: INGRESS_INSTALL_OPTION
           value: StopIfInstalled
       restartPolicy: Never
+      serviceAccountName: keptn-installer
 `
 	if res != expected {
 		t.Error("installation manifest does not match")
@@ -312,7 +316,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: installer
-  namespace: default
+  namespace: keptn
 spec:
   backoffLimit: 0
   template:
@@ -340,6 +344,7 @@ spec:
         - name: INGRESS_INSTALL_OPTION
           value: Reuse
       restartPolicy: Never
+      serviceAccountName: keptn-installer
 `
 	if res != expected {
 		t.Error("installation manifest does not match")

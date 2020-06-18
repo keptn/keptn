@@ -80,6 +80,45 @@ func getShipyardWithApproval(approvalStrategyForPass keptnevents.ApprovalStrateg
 				DeploymentStrategy:  "blue_green_service",
 				TestStrategy:        "performance",
 				RemediationStrategy: "",
+				ApprovalStrategy:    nil,
+			},
+			{
+				Name: "production",
+				ApprovalStrategy: &keptnevents.ApprovalStrategyStruct{
+					Pass:    approvalStrategyForPass,
+					Warning: approvalStrategyForWarning,
+				},
+				DeploymentStrategy:  "blue_green_service",
+				TestStrategy:        "",
+				RemediationStrategy: "",
+			},
+		},
+	}
+}
+
+func getShipyardWithoutDeploymentStrategy(approvalStrategyForPass keptnevents.ApprovalStrategy,
+	approvalStrategyForWarning keptnevents.ApprovalStrategy) keptnevents.Shipyard {
+
+	return keptnevents.Shipyard{
+		Stages: []struct {
+			Name                string                              `json:"name" yaml:"name"`
+			DeploymentStrategy  string                              `json:"deployment_strategy" yaml:"deployment_strategy"`
+			TestStrategy        string                              `json:"test_strategy,omitempty" yaml:"test_strategy"`
+			RemediationStrategy string                              `json:"remediation_strategy,omitempty" yaml:"remediation_strategy"`
+			ApprovalStrategy    *keptnevents.ApprovalStrategyStruct `json:"approval_strategy,omitempty" yaml:"approval_strategy"`
+		}{
+			{
+				Name:                "dev",
+				DeploymentStrategy:  "direct",
+				TestStrategy:        "functional",
+				RemediationStrategy: "",
+				ApprovalStrategy:    nil,
+			},
+			{
+				Name:                "hardening",
+				DeploymentStrategy:  "blue_green_service",
+				TestStrategy:        "performance",
+				RemediationStrategy: "",
 				ApprovalStrategy: &keptnevents.ApprovalStrategyStruct{
 					Pass:    approvalStrategyForPass,
 					Warning: approvalStrategyForWarning,
@@ -87,7 +126,7 @@ func getShipyardWithApproval(approvalStrategyForPass keptnevents.ApprovalStrateg
 			},
 			{
 				Name:                "production",
-				DeploymentStrategy:  "blue_green_service",
+				DeploymentStrategy:  "",
 				TestStrategy:        "",
 				RemediationStrategy: "",
 				ApprovalStrategy:    nil,
@@ -101,7 +140,7 @@ func getApprovalTriggeredTestData(evaluationResult string) keptnevents.ApprovalT
 	return keptnevents.ApprovalTriggeredEventData{
 		Project:            "sockshop",
 		Service:            "carts",
-		Stage:              "hardening",
+		Stage:              "production",
 		TestStrategy:       getPtr("performance"),
 		DeploymentStrategy: getPtr("blue_green_service"),
 		Tag:                "0.11.1",
@@ -118,7 +157,7 @@ func getApprovalFinishedTestData(result, status string) keptnevents.ApprovalFini
 	return keptnevents.ApprovalFinishedEventData{
 		Project:            "sockshop",
 		Service:            "carts",
-		Stage:              "hardening",
+		Stage:              "production",
 		TestStrategy:       getPtr("performance"),
 		DeploymentStrategy: getPtr("blue_green_service"),
 		Tag:                "0.11.1",

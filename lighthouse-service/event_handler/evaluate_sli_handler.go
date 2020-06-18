@@ -40,7 +40,6 @@ type criteriaObject struct {
 }
 
 type EvaluateSLIHandler struct {
-	Logger       *keptn.Logger
 	Event        cloudevents.Event
 	HTTPClient   *http.Client
 	KeptnHandler *keptn.Keptn
@@ -52,11 +51,11 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 	err := eh.Event.DataAs(&e)
 
 	if err != nil {
-		eh.Logger.Error("Could not parse event payload: " + err.Error())
+		eh.KeptnHandler.Logger.Error("Could not parse event payload: " + err.Error())
 		return err
 	}
 
-	eh.Logger.Debug("Start to evaluate SLIs")
+	eh.KeptnHandler.Logger.Debug("Start to evaluate SLIs")
 	// compare the results based on the evaluation strategy
 	sloConfig, err := getSLOs(e.Project, e.Stage, e.Service)
 	if err != nil {
@@ -90,13 +89,13 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 	if err != nil {
 		return err
 	}
-	eh.Logger.Debug("Evaluation result: " + evaluationResult.Result)
+	eh.KeptnHandler.Logger.Debug("Evaluation result: " + evaluationResult.Result)
 
 	var sloFileContent []byte
 	// get the slo.yaml as a plain file to avoid confusion due to defaulted values (see https://github.com/keptn/keptn/issues/1495)
 	sloFileContentTmp, err := eh.KeptnHandler.GetKeptnResource("slo.yaml")
 	if err != nil {
-		eh.Logger.Debug("Could not fetch slo.yaml from service repository: " + err.Error() + ". Will append internally used SLO object to evaluation-done event.")
+		eh.KeptnHandler.Logger.Debug("Could not fetch slo.yaml from service repository: " + err.Error() + ". Will append internally used SLO object to evaluation-done event.")
 		sloFileContent, _ = yaml.Marshal(sloConfig)
 	} else {
 		sloFileContent = []byte(sloFileContentTmp)
@@ -112,7 +111,7 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 	testsFinishedEvent, _ := eh.getPreviousTestExecutionResult(e, shkeptncontext)
 	if testsFinishedEvent != nil {
 		if testsFinishedEvent.Result == "fail" {
-			eh.Logger.Debug("Setting evaluation result to 'fail' because of failed preceding test execution")
+			eh.KeptnHandler.Logger.Debug("Setting evaluation result to 'fail' because of failed preceding test execution")
 			evaluationResult.Result = "fail"
 			evaluationResult.EvaluationDetails.Result = "fail"
 		}
@@ -594,6 +593,6 @@ func (eh *EvaluateSLIHandler) sendEvaluationDoneEvent(shkeptncontext string, dat
 		Data: data,
 	}
 
-	eh.Logger.Debug("Send event: " + keptn.EvaluationDoneEventType)
+	eh.KeptnHandler.Logger.Debug("Send event: " + keptn.EvaluationDoneEventType)
 	return eh.KeptnHandler.SendCloudEvent(event)
 }

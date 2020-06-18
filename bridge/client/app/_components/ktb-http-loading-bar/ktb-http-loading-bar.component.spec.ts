@@ -1,6 +1,8 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { KtbHttpLoadingBarComponent } from './ktb-http-loading-bar.component';
+import {HttpClientTestingModule} from "@angular/common/http/testing";
+import {AppModule} from "../../app.module";
 
 describe('HttpLoadingBarComponent', () => {
   let component: KtbHttpLoadingBarComponent;
@@ -8,7 +10,12 @@ describe('HttpLoadingBarComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ KtbHttpLoadingBarComponent ]
+      declarations: [
+      ],
+      imports: [
+        AppModule,
+        HttpClientTestingModule,
+      ],
     })
     .compileComponents();
   }));
@@ -19,7 +26,7 @@ describe('HttpLoadingBarComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it('should create an instance', () => {
     expect(component).toBeTruthy();
   });
 });

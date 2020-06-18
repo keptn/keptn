@@ -3,11 +3,11 @@ package cmd
 import (
 	"bytes"
 	"crypto/tls"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
@@ -17,11 +17,15 @@ import (
 )
 
 type configureBridgeCmdParams struct {
-	Action *string
+	Action   *string
+	User     *string
+	Password *string
 }
 
 type exposeBridgeAPIPayload struct {
-	Expose bool `json:"expose"`
+	Expose   bool   `json:"expose"`
+	User     string `json:"user"`
+	Password string `json:"password"`
 }
 
 type exposeBridgeAPIErrorResponse struct {
@@ -41,8 +45,7 @@ var bridgeCmd = &cobra.Command{
 	Short: "Exposes or locks down the bridge",
 	Long: `Exposes or locks down the Keptn Bridge.
 
-When exposing Keptn Bridge it will be available publicly. 
-Make sure to protect Keptn Bridge using basic authentication.
+When exposing Keptn Bridge it will be available publicly.
 `,
 	Example: `keptn configure bridge --action=expose
 	keptn configure bridge --action=lockdown`,
@@ -63,7 +66,19 @@ Make sure to protect Keptn Bridge using basic authentication.
 
 func configureBridge(endpoint string, apiToken string, configureBridgeParams *configureBridgeCmdParams) error {
 	doExpose := *configureBridgeParams.Action == "expose"
-	payload := strconv.FormatBool(doExpose)
+
+	exposeBridgeParams := exposeBridgeAPIPayload{
+		Expose: doExpose,
+	}
+	if doExpose {
+		exposeBridgeParams.User = *configureBridgeParams.User
+		exposeBridgeParams.Password = *configureBridgeParams.Password
+	}
+	payload, err := json.Marshal(exposeBridgeParams)
+	if err != nil {
+		fmt.Println("Could not complete command: " + err.Error())
+		return err
+	}
 	client := &http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
@@ -92,7 +107,6 @@ func configureBridge(endpoint string, apiToken string, configureBridgeParams *co
 		}
 		fmt.Printf("Bridge successfully exposed and can be reached here: https://%s\n", strings.Trim(strings.TrimSpace(string(body)), "\""))
 		// Todo: migrate docs for exposing keptn bridge into keptn.github.io
-		fmt.Printf("Warning: Make sure to enable basic authentication as described here: %s\n", basicAuthDocuURL)
 	} else {
 		if err != nil {
 			return errors.New("Could not " + *configureBridgeParams.Action + " bridge: " + err.Error())
@@ -106,6 +120,14 @@ func verifyConfigureBridgeParams(configureBridgeParams *configureBridgeCmdParams
 	if *configureBridgeParams.Action != actionExpose && *configureBridgeParams.Action != actionLockdown {
 		return errors.New("Invalid value " + *configureBridgeParams.Action + " 'action'. Must provide either '--action=expose' or '--action=lockdown'")
 	}
+	if *configureBridgeParams.Action == actionExpose {
+		if configureBridgeParams.User == nil || *configureBridgeParams.User == "" {
+			return errors.New("please specify a user name for exposing the bridge using the '--user=<username>' flag")
+		}
+		if configureBridgeParams.Password == nil || *configureBridgeParams.Password == "" {
+			return errors.New("please specify a password for exposing the bridge using the '--password=<password>' flag")
+		}
+	}
 	return nil
 }
 
@@ -115,4 +137,8 @@ func init() {
 
 	configureBridgeParams.Action = bridgeCmd.Flags().StringP("action", "a", "", "The action to perform [expose,lockdown]")
 	_ = configureCmd.MarkFlagRequired("action")
+
+	configureBridgeParams.User = bridgeCmd.Flags().StringP("user", "u", "", "The user name to login to the bridge")
+	configureBridgeParams.Password = bridgeCmd.Flags().StringP("password", "p", "", "The password to login to the bridge")
+
 }

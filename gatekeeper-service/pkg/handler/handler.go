@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"net/url"
 	"time"
 
@@ -25,7 +24,7 @@ type Handler interface {
 		shipyard *keptnevents.Shipyard)
 }
 
-func sendEvents(keptnHandler *keptnevents.Keptn, events []cloudevents.Event, l *keptnevents.Logger) {
+func sendEvents(keptnHandler *keptnevents.Keptn, events []cloudevents.Event, l keptnevents.LoggerInterface) {
 	for _, outgoingEvent := range events {
 		err := keptnHandler.SendCloudEvent(outgoingEvent)
 		if err != nil {
@@ -57,34 +56,7 @@ func getCloudEvent(data interface{}, ceType string, shkeptncontext string, trigg
 	}
 }
 
-func getPromotionEvent(project, currentStage, service, image, shkeptncontext string, labels map[string]string,
-	shipyard keptnevents.Shipyard, logger *keptnevents.Logger) *cloudevents.Event {
-
-	if nextStage := getNextStage(shipyard, currentStage); nextStage != "" {
-		logger.Info(fmt.Sprintf("Promote service %s of project %s to stage %s",
-			service, project, nextStage))
-		return getConfigurationChangeEventForNextStage(project, service, nextStage, image, shkeptncontext, labels)
-	}
-	logger.Info(fmt.Sprintf("No further stage available to promote the service %s of project %s",
-		service, project))
-	return nil
-}
-
-func getNextStage(shipyard keptnevents.Shipyard, currentStage string) string {
-	currentFound := false
-	for _, stage := range shipyard.Stages {
-		if currentFound {
-			// Here, we return the next stage
-			return stage.Name
-		}
-		if stage.Name == currentStage {
-			currentFound = true
-		}
-	}
-	return ""
-}
-
-func getConfigurationChangeEventForNextStage(project, service, nextStage, image, shkeptncontext string, labels map[string]string) *cloudevents.Event {
+func getConfigurationChangeEventForCanary(project, service, nextStage, image, shkeptncontext string, labels map[string]string) *cloudevents.Event {
 
 	valuesCanary := make(map[string]interface{})
 	valuesCanary["image"] = image

@@ -11,7 +11,6 @@ import (
 )
 
 type ConfigureMonitoringHandler struct {
-	Logger       *keptnutils.Logger
 	Event        cloudevents.Event
 	KeptnHandler *keptnutils.Keptn
 }
@@ -24,7 +23,7 @@ func (eh *ConfigureMonitoringHandler) HandleEvent() error {
 	e := &keptnevents.ConfigureMonitoringEventData{}
 	err := eh.Event.DataAs(e)
 	if err != nil {
-		eh.Logger.Error("Could not parse event payload: " + err.Error())
+		eh.KeptnHandler.Logger.Error("Could not parse event payload: " + err.Error())
 		return err
 	}
 
@@ -36,7 +35,7 @@ func (eh *ConfigureMonitoringHandler) HandleEvent() error {
 	}
 
 	if err != nil {
-		eh.Logger.Error("Could not create Kube API")
+		eh.KeptnHandler.Logger.Error("Could not create Kube API")
 		return err
 	}
 	_, err = kubeAPI.CoreV1().ConfigMaps("keptn").Create(configMap)

@@ -27,6 +27,7 @@ import {KtbEvaluationDetailsComponent} from './_components/ktb-evaluation-detail
 import {KtbHttpLoadingSpinnerComponent} from './_components/ktb-http-loading-spinner/ktb-http-loading-spinner.component';
 import {KtbExpandableTileComponent, KtbExpandableTileHeader} from './_components/ktb-expandable-tile/ktb-expandable-tile.component';
 import {KtbHorizontalSeparatorComponent, KtbHorizontalSeparatorTitle} from "./_components/ktb-horizontal-separator/ktb-horizontal-separator.component";
+import {KtbNotificationBarComponent} from './_components/ktb-notification-bar/ktb-notification-bar.component';
 
 import {KtbShowHttpLoadingDirective} from './_directives/ktb-show-http-loading/ktb-show-http-loading.directive';
 import {KtbHideHttpLoadingDirective} from "./_directives/ktb-hide-http-loading/ktb-hide-http-loading.directive";
@@ -52,17 +53,20 @@ import {DtExpandableTextModule} from "@dynatrace/barista-components/expandable-t
 import {DtExpandablePanelModule} from "@dynatrace/barista-components/expandable-panel";
 import {DtShowMoreModule} from "@dynatrace/barista-components/show-more";
 import {DtIconModule} from "@dynatrace/barista-components/icon";
-import {DtIndicatorModule} from "@dynatrace/barista-components/core";
+import {DtIndicatorModule} from "@dynatrace/barista-components/indicator";
 import {DtProgressCircleModule} from "@dynatrace/barista-components/progress-circle";
 import {DtConsumptionModule} from "@dynatrace/barista-components/consumption";
 import {DtKeyValueListModule} from "@dynatrace/barista-components/key-value-list";
 import {DtButtonGroupModule} from "@dynatrace/barista-components/button-group";
 import {DtChartModule} from "@dynatrace/barista-components/chart";
 import {DtOverlayModule} from "@dynatrace/barista-components/overlay";
+import {DtCheckboxModule} from "@dynatrace/barista-components/checkbox";
+import {DtSwitchModule} from "@dynatrace/barista-components/switch";
 
 import {registerLocaleData} from "@angular/common";
 import localeEn from '@angular/common/locales/en';
 import {MatDialogModule} from "@angular/material/dialog";
+import {DtConfirmationDialogModule} from "@dynatrace/barista-components/confirmation-dialog";
 
 registerLocaleData(localeEn, 'en');
 
@@ -90,6 +94,7 @@ registerLocaleData(localeEn, 'en');
     KtbEventItemDetail,
     KtbEvaluationDetailsComponent,
     KtbSliBreakdownComponent,
+    KtbNotificationBarComponent,
   ],
   imports: [
     BrowserModule,
@@ -122,6 +127,9 @@ registerLocaleData(localeEn, 'en');
     DtKeyValueListModule,
     DtChartModule,
     DtOverlayModule,
+    DtCheckboxModule,
+    DtSwitchModule,
+    DtConfirmationDialogModule,
     MatDialogModule,
     DtIconModule.forRoot({
       svgIconLocation: `/assets/icons/{{name}}.svg`,

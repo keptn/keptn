@@ -72,6 +72,7 @@ response=$(curl -X GET "${KEPTN_ENDPOINT}/configuration-service/v1/project/${PRO
 
 if [[ "$response" != "${PROJECT}" ]]; then
   echo "Failed to check that the project exists via the API."
+  echo "${response}"
   exit 2
 else
   echo "Verified that Project exists via api"

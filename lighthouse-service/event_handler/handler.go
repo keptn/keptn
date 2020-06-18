@@ -14,19 +14,22 @@ type EvaluationEventHandler interface {
 
 func NewEventHandler(event cloudevents.Event, logger *keptn.Logger) (EvaluationEventHandler, error) {
 	logger.Debug("Received event: " + event.Type())
-	keptnHandler, err := keptn.NewKeptn(&event, keptn.KeptnOpts{})
+	serviceName := "lighthouse-service"
+	keptnHandler, err := keptn.NewKeptn(&event, keptn.KeptnOpts{
+		LoggingOptions: &keptn.LoggingOpts{ServiceName: &serviceName},
+	})
 	if err != nil {
 		return nil, err
 	}
 	switch event.Type() {
 	case keptn.TestsFinishedEventType:
-		return &StartEvaluationHandler{Logger: logger, Event: event, KeptnHandler: keptnHandler}, nil
+		return &StartEvaluationHandler{Event: event, KeptnHandler: keptnHandler}, nil
 	case keptn.StartEvaluationEventType:
-		return &StartEvaluationHandler{Logger: logger, Event: event, KeptnHandler: keptnHandler}, nil // new event type in Keptn versions >= 0.6
+		return &StartEvaluationHandler{Event: event, KeptnHandler: keptnHandler}, nil // new event type in Keptn versions >= 0.6
 	case keptn.InternalGetSLIDoneEventType:
-		return &EvaluateSLIHandler{Logger: logger, Event: event, HTTPClient: &http.Client{}, KeptnHandler: keptnHandler}, nil
+		return &EvaluateSLIHandler{Event: event, HTTPClient: &http.Client{}, KeptnHandler: keptnHandler}, nil
 	case keptn.ConfigureMonitoringEventType:
-		return &ConfigureMonitoringHandler{Logger: logger, Event: event, KeptnHandler: keptnHandler}, nil
+		return &ConfigureMonitoringHandler{Event: event, KeptnHandler: keptnHandler}, nil
 	default:
 		return nil, errors.New("received unknown event type")
 	}
