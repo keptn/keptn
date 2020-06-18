@@ -37,6 +37,8 @@ spec:
             value: 'http://mongodb-datastore.keptn-datastore.svc.cluster.local:8080'
           - name: ENVIRONMENT
             value: 'production'
+          - name: WAIT_TIME_MINUTES
+            value: '10m'
 ---
 apiVersion: v1
 kind: Service

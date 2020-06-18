@@ -343,9 +343,10 @@ func (mv *projectsMaterializedView) CloseOpenApproval(project, stage, service, a
 func (mv *projectsMaterializedView) CreateRemediation(project, stage, service string, remediation *models.Remediation) error {
 	existingProject, err := mv.GetProject(project)
 	if err != nil {
-		mv.Logger.Error("Could create remediation for service " + service + " in stage " + stage + " in project " + project + ". Could not load project: " + err.Error())
+		mv.Logger.Error("Could not create remediation for service " + service + " in stage " + stage + " in project " + project + ". Could not load project: " + err.Error())
 		return ErrProjectNotFound
 	}
+
 	err = updateServiceInStage(existingProject, stage, service, func(service *models.ExpandedService) error {
 		if service.OpenRemediations == nil {
 			service.OpenRemediations = []*models.Remediation{}

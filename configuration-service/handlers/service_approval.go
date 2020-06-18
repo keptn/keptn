@@ -10,8 +10,9 @@ import (
 
 // CreateServiceApproval creates a service approval
 func CreateServiceApproval(params service_approval.CreateServiceApprovalParams) middleware.Responder {
+	common.LockProject(params.ProjectName)
+	defer common.UnlockProject(params.ProjectName)
 	mv := common.GetProjectsMaterializedView()
-
 	err := mv.CreateOpenApproval(params.ProjectName, params.StageName, params.ServiceName, params.Approval)
 
 	if err != nil {
@@ -90,6 +91,8 @@ func GetServiceApproval(params service_approval.GetServiceApprovalParams) middle
 
 // CloseServiceApproval closes a service approval
 func CloseServiceApproval(params service_approval.CloseServiceApprovalParams) middleware.Responder {
+	common.LockProject(params.ProjectName)
+	defer common.UnlockProject(params.ProjectName)
 	mv := common.GetProjectsMaterializedView()
 
 	err := mv.CloseOpenApproval(params.ProjectName, params.StageName, params.ServiceName, params.ApprovalID)

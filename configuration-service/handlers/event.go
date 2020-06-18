@@ -30,6 +30,8 @@ func HandleEventHandlerFunc(params event.HandleEventParams) middleware.Responder
 			return event.NewHandleEventDefault(400).WithPayload(&models.Error{Message: swag.String("Service must not be empty"), Code: 400})
 		}
 
+		common.LockProject(keptnBase.Project)
+		defer common.UnlockProject(keptnBase.Project)
 		mv := common.GetProjectsMaterializedView()
 		err = mv.UpdateEventOfService(params.Body.Data, *params.Body.Type, params.Body.Shkeptncontext, params.Body.ID)
 		if err != nil {
