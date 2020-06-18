@@ -3,4 +3,16 @@
 
 # These owners will be the default owners for everything in the repo.
 
-* @AloisReitbauer @christian-kreuzberger-dtx @johannes-b @danielkhan
+* @christian-kreuzberger-dtx @johannes-b
+
+# Codeowners file
+CODEOWNERS @AloisReitbauer @grabnerandi @jetzlstorfer @christian-kreuzberger-dtx @johannes-b @danielkhan
+
+# Adopters file
+ADOPTERS.md @AloisReitbauer @grabnerandi @jetzlstorfer
+
+# dot files are usually config files
+.* @christian-kreuzberger-dtx
+
+# Keptn Bridge
+bridge/* @ermin-muratovic @SaraDavilaMendez @mpfosi @sandroschmid
