@@ -20,6 +20,15 @@ metadata:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
+  name: keptn-configuration-service
+  namespace: keptn
+  labels:
+    "app": "keptn"
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
   name: keptn-lighthouse-service
   namespace: keptn
   labels:
@@ -33,6 +42,24 @@ metadata:
   namespace: keptn
   labels:
     "app": "keptn"
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: keptn-manage-secrets
+  namespace: keptn
+  labels:
+    "app": "keptn"
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - create
+      - get
+      - delete
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -85,6 +112,7 @@ rules:
     verbs:
       - get
       - delete
+      - deletecollection
   - apiGroups:
       - ""
     resources:
@@ -184,4 +212,21 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: keptn-api-service
+    namespace: keptn
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: keptn-configuration-service-manage-secrets
+  namespace: keptn
+  labels:
+    "app": "keptn"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: keptn-manage-secrets
+subjects:
+  - kind: ServiceAccount
+    name: keptn-configuration-service
     namespace: keptn
