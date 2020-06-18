@@ -17,7 +17,7 @@ spec:
       labels:
         run: configuration-service
     spec:
-      serviceAccountName: keptn-default
+      serviceAccountName: keptn-configuration-service
       containers:
       - name: configuration-service
         image: keptn/configuration-service:latest
