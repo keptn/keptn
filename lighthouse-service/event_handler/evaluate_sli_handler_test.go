@@ -2468,10 +2468,12 @@ func TestEvaluateSLIHandler_getPreviousTestExecutionResult(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			returnedResult = tt.resultFromDatastore
+
+			//keptnHandler, _ := keptnevents.NewKeptn(&tt.fields.Event, keptnevents.KeptnOpts{})
 			eh := &EvaluateSLIHandler{
-				Logger:     tt.fields.Logger,
-				Event:      tt.fields.Event,
-				HTTPClient: tt.fields.HTTPClient,
+				KeptnHandler: nil,
+				Event:        tt.fields.Event,
+				HTTPClient:   tt.fields.HTTPClient,
 			}
 			got, err := eh.getPreviousTestExecutionResult(tt.args.e, tt.args.keptnContext)
 			if (err != nil) != tt.wantErr {
@@ -2578,10 +2580,13 @@ func TestEvaluateSLIHandler_getPreviousEvaluations(t *testing.T) {
 	for _, tt := range tests {
 		returnedResult = tt.resultFromDatastore
 		t.Run(tt.name, func(t *testing.T) {
+
+			//keptnHandler, _ := keptnevents.NewKeptn(&tt.fields.Event, keptnevents.KeptnOpts{})
+
 			eh := &EvaluateSLIHandler{
-				Logger:     tt.fields.Logger,
-				Event:      tt.fields.Event,
-				HTTPClient: tt.fields.HTTPClient,
+				KeptnHandler: nil,
+				Event:        tt.fields.Event,
+				HTTPClient:   tt.fields.HTTPClient,
 			}
 			got, err := eh.getPreviousEvaluations(tt.args.e, tt.args.numberOfPreviousResults)
 			if (err != nil) != tt.wantErr {

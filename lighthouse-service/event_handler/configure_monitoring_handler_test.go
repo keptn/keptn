@@ -73,8 +73,8 @@ func TestConfigureMonitoringHandler_getSLISourceConfigMap(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			eh := &ConfigureMonitoringHandler{
-				Logger: tt.fields.Logger,
-				Event:  tt.fields.Event,
+				KeptnHandler: nil,
+				Event:        tt.fields.Event,
 			}
 			if got := eh.getSLISourceConfigMap(tt.args.e); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("getSLISourceConfigMap() = %v, want %v", got, tt.want)

@@ -24,7 +24,7 @@ type Handler interface {
 		shipyard *keptnevents.Shipyard)
 }
 
-func sendEvents(keptnHandler *keptnevents.Keptn, events []cloudevents.Event, l *keptnevents.Logger) {
+func sendEvents(keptnHandler *keptnevents.Keptn, events []cloudevents.Event, l keptnevents.LoggerInterface) {
 	for _, outgoingEvent := range events {
 		err := keptnHandler.SendCloudEvent(outgoingEvent)
 		if err != nil {

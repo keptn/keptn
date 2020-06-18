@@ -67,15 +67,12 @@ func TestActionFinishedEventHandler_HandleEvent(t *testing.T) {
 				EventBrokerURL: mockEV.Server.URL,
 			})
 
-			logger := keptn.NewLogger("", "", "")
 			remediation := &Remediation{
-				Keptn:  testKeptnHandler,
-				Logger: logger,
+				Keptn: testKeptnHandler,
 			}
 
 			eh := &ActionFinishedEventHandler{
 				KeptnHandler: testKeptnHandler,
-				Logger:       logger,
 				Event:        tt.fields.Event,
 				Remediation:  remediation,
 				WaitFunction: func() {},

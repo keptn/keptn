@@ -30,7 +30,10 @@ func TestNewEventHandler(t *testing.T) {
 		DataEncoded: false,
 	}
 
-	keptnHandler, _ := keptn.NewKeptn(&incomingEvent, keptn.KeptnOpts{})
+	serviceName := "lighthouse-service"
+	keptnHandler, _ := keptn.NewKeptn(&incomingEvent, keptn.KeptnOpts{
+		LoggingOptions: &keptn.LoggingOpts{ServiceName: &serviceName},
+	})
 
 	type args struct {
 		event  cloudevents.Event
@@ -51,7 +54,6 @@ func TestNewEventHandler(t *testing.T) {
 			},
 			eventType: keptn.TestsFinishedEventType,
 			want: &StartEvaluationHandler{
-				Logger:       nil,
 				Event:        incomingEvent,
 				KeptnHandler: keptnHandler,
 			},
@@ -65,7 +67,6 @@ func TestNewEventHandler(t *testing.T) {
 			},
 			eventType: keptn.StartEvaluationEventType,
 			want: &StartEvaluationHandler{
-				Logger:       nil,
 				Event:        incomingEvent,
 				KeptnHandler: keptnHandler,
 			},
@@ -79,7 +80,6 @@ func TestNewEventHandler(t *testing.T) {
 			},
 			eventType: keptn.InternalGetSLIDoneEventType,
 			want: &EvaluateSLIHandler{
-				Logger:       nil,
 				Event:        incomingEvent,
 				KeptnHandler: keptnHandler,
 				HTTPClient:   &http.Client{},
@@ -94,7 +94,6 @@ func TestNewEventHandler(t *testing.T) {
 			},
 			eventType: keptn.ConfigureMonitoringEventType,
 			want: &ConfigureMonitoringHandler{
-				Logger:       nil,
 				Event:        incomingEvent,
 				KeptnHandler: keptnHandler,
 			},

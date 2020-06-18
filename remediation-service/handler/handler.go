@@ -35,44 +35,42 @@ func NewHandler(event cloudevents.Event) (Handler, error) {
 	var shkeptncontext string
 	event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
 
-	logger := keptn.NewLogger(shkeptncontext, event.Context.GetID(), "remediationStatus-service")
-	logger.Debug("Received event for shkeptncontext:" + shkeptncontext)
-
-	keptnHandler, err := keptn.NewKeptn(&event, keptn.KeptnOpts{})
+	serviceName := "remediation-service"
+	keptnHandler, err := keptn.NewKeptn(&event, keptn.KeptnOpts{
+		LoggingOptions: &keptn.LoggingOpts{
+			ServiceName: &serviceName,
+		},
+	})
 	if err != nil {
-		logger.Error("Could not initialize Keptn handler: " + err.Error())
+		fmt.Println("Could not initialize Keptn handler: " + err.Error())
 		return nil, err
 	}
+
+	keptnHandler.Logger.Debug("Received event for shkeptncontext:" + shkeptncontext)
 
 	switch event.Type() {
 	case keptn.ProblemOpenEventType:
 		return &ProblemOpenEventHandler{
 			KeptnHandler: keptnHandler,
-			Logger:       logger,
 			Event:        event,
 			Remediation: &Remediation{
-				Keptn:  keptnHandler,
-				Logger: logger,
+				Keptn: keptnHandler,
 			},
 		}, nil
 	case keptn.EvaluationDoneEventType:
 		return &EvaluationDoneEventHandler{
 			KeptnHandler: keptnHandler,
-			Logger:       logger,
 			Event:        event,
 			Remediation: &Remediation{
-				Keptn:  keptnHandler,
-				Logger: logger,
+				Keptn: keptnHandler,
 			},
 		}, nil
 	case keptn.ActionFinishedEventType:
 		return &ActionFinishedEventHandler{
 			KeptnHandler: keptnHandler,
-			Logger:       logger,
 			Event:        event,
 			Remediation: &Remediation{
-				Keptn:  keptnHandler,
-				Logger: logger,
+				Keptn: keptnHandler,
 			},
 		}, nil
 	default:
@@ -113,14 +111,13 @@ type remediationStatusList struct {
 
 // Remediation provides functions to access all resources related to the remediation workflow
 type Remediation struct {
-	Keptn  *keptn.Keptn
-	Logger keptn.LoggerInterface
+	Keptn *keptn.Keptn
 }
 
 func (r *Remediation) getActionForProblemType(remediationData keptn.RemediationV02, problemType string, index int) *keptn.RemediationV02ActionsOnOpen {
 	for _, remediation := range remediationData.Spec.Remediations {
 		if strings.HasPrefix(problemType, remediation.ProblemType) {
-			r.Logger.Info("Found remediation for problem type " + remediation.ProblemType)
+			r.Keptn.Logger.Info("Found remediation for problem type " + remediation.ProblemType)
 			if len(remediation.ActionsOnOpen) > index {
 				return &remediation.ActionsOnOpen[index]
 			}
@@ -164,12 +161,12 @@ func (r *Remediation) sendRemediationTriggeredEvent(problemDetails *keptn.Proble
 
 	err := createRemediation(event.ID(), r.Keptn.KeptnContext, event.Time().String(), *r.Keptn.KeptnBase, keptn.RemediationTriggeredEventType, "")
 	if err != nil {
-		r.Logger.Error("Could not create remediation: " + err.Error())
+		r.Keptn.Logger.Error("Could not create remediation: " + err.Error())
 		return err
 	}
 	err = r.Keptn.SendCloudEvent(event)
 	if err != nil {
-		r.Logger.Error("Could not send action.finished event: " + err.Error())
+		r.Keptn.Logger.Error("Could not send action.finished event: " + err.Error())
 		return err
 	}
 
@@ -349,7 +346,7 @@ func (r *Remediation) sendStartEvaluationEvent() error {
 
 	err := r.Keptn.SendCloudEvent(event)
 	if err != nil {
-		r.Logger.Error("Could not send astart-evaluation event: " + err.Error())
+		r.Keptn.Logger.Error("Could not send astart-evaluation event: " + err.Error())
 		return err
 	}
 	return nil
@@ -386,7 +383,7 @@ func (r *Remediation) sendRemediationFinishedEvent(status keptn.RemediationStatu
 
 	err := r.Keptn.SendCloudEvent(event)
 	if err != nil {
-		r.Logger.Error("Could not send action.finished event: " + err.Error())
+		r.Keptn.Logger.Error("Could not send action.finished event: " + err.Error())
 		return err
 	}
 	return nil
@@ -427,7 +424,7 @@ func (r *Remediation) sendActionTriggeredEvent(actionTriggeredEventData keptn.Ac
 
 	err := r.Keptn.SendCloudEvent(event)
 	if err != nil {
-		r.Logger.Error("Could not send action.finished event: " + err.Error())
+		r.Keptn.Logger.Error("Could not send action.finished event: " + err.Error())
 		return err
 	}
 	return nil
@@ -466,12 +463,12 @@ func (r *Remediation) sendRemediationStatusChangedEvent(action *keptn.Remediatio
 
 	err := createRemediation(event.ID(), r.Keptn.KeptnContext, event.Time().String(), *r.Keptn.KeptnBase, keptn.RemediationStatusChangedEventType, action.Action)
 	if err != nil {
-		r.Logger.Error("Could not create remediation: " + err.Error())
+		r.Keptn.Logger.Error("Could not create remediation: " + err.Error())
 		return err
 	}
 	err = r.Keptn.SendCloudEvent(event)
 	if err != nil {
-		r.Logger.Error("Could not send remediation.status.changed event: " + err.Error())
+		r.Keptn.Logger.Error("Could not send remediation.status.changed event: " + err.Error())
 		return err
 	}
 	return nil
@@ -490,11 +487,11 @@ func (r *Remediation) getRemediationFile() (*configmodels.Resource, error) {
 
 	if err != nil {
 		msg := "remediation file not configured"
-		r.Logger.Error(msg)
+		r.Keptn.Logger.Error(msg)
 		_ = r.sendRemediationFinishedEvent(keptn.RemediationStatusErrored, keptn.RemediationResultFailed, msg)
 		return nil, err
 	}
-	r.Logger.Debug("remediation.yaml for service found")
+	r.Keptn.Logger.Debug("remediation.yaml for service found")
 	return resource, nil
 }
 
@@ -503,14 +500,14 @@ func (r *Remediation) getRemediation(resource *configmodels.Resource) (*keptn.Re
 	err := yaml.Unmarshal([]byte(resource.ResourceContent), remediationData)
 	if err != nil {
 		msg := "could not parse remediation.yaml"
-		r.Logger.Error(msg + ": " + err.Error())
+		r.Keptn.Logger.Error(msg + ": " + err.Error())
 		_ = r.sendRemediationFinishedEvent(keptn.RemediationStatusErrored, keptn.RemediationResultFailed, msg)
 		return nil, err
 	}
 
 	if remediationData.Version != remediationSpecVersion {
 		msg := "remediation.yaml file does not conform to remediation spec v0.2.0"
-		r.Logger.Error(msg)
+		r.Keptn.Logger.Error(msg)
 		_ = r.sendRemediationFinishedEvent(keptn.RemediationStatusErrored, keptn.RemediationResultFailed, msg)
 		return nil, errors.New(msg)
 	}
@@ -521,7 +518,7 @@ func (r *Remediation) triggerAction(action *keptn.RemediationV02ActionsOnOpen, a
 	err := r.sendRemediationStatusChangedEvent(action, actionIndex)
 	if err != nil {
 		msg := "could not send remediation.status.changed event"
-		r.Logger.Error(msg + ": " + err.Error())
+		r.Keptn.Logger.Error(msg + ": " + err.Error())
 		_ = r.sendRemediationFinishedEvent(keptn.RemediationStatusErrored, keptn.RemediationResultFailed, msg)
 		return err
 	}
@@ -529,14 +526,14 @@ func (r *Remediation) triggerAction(action *keptn.RemediationV02ActionsOnOpen, a
 	actionTriggeredEventData, err := r.getActionTriggeredEventData(problemDetails, action)
 	if err != nil {
 		msg := "could not create action.triggered event"
-		r.Logger.Error(msg + ": " + err.Error())
+		r.Keptn.Logger.Error(msg + ": " + err.Error())
 		_ = r.sendRemediationFinishedEvent(keptn.RemediationStatusErrored, keptn.RemediationResultFailed, msg)
 		return err
 	}
 
 	if err := r.sendActionTriggeredEvent(actionTriggeredEventData); err != nil {
 		msg := "could not send action.triggered event"
-		r.Logger.Error(msg + ": " + err.Error())
+		r.Keptn.Logger.Error(msg + ": " + err.Error())
 		_ = r.sendRemediationFinishedEvent(keptn.RemediationStatusErrored, keptn.RemediationResultFailed, msg)
 		return err
 	}

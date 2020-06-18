@@ -443,15 +443,12 @@ func TestProblemOpenEventHandler_HandleEvent(t *testing.T) {
 				ConfigurationServiceURL: mockCS.Server.URL,
 			})
 
-			logger := keptn.NewLogger("", "", "")
 			remediation := &Remediation{
-				Keptn:  testKeptnHandler,
-				Logger: logger,
+				Keptn: testKeptnHandler,
 			}
 
 			eh := &ProblemOpenEventHandler{
 				KeptnHandler: testKeptnHandler,
-				Logger:       logger,
 				Event:        tt.fields.Event,
 				Remediation:  remediation,
 			}

@@ -9,7 +9,6 @@ import (
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
 	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
-	"github.com/gorilla/websocket"
 	"github.com/kelseyhightower/envconfig"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/helm-service/controller"
@@ -23,6 +22,8 @@ type envConfig struct {
 	Port int    `envconfig:"RCV_PORT" default:"8080"`
 	Path string `envconfig:"RCV_PATH" default:"/"`
 }
+
+const serviceName = "helm-service"
 
 func main() {
 	var env envConfig
@@ -46,61 +47,49 @@ func getKeptnDomain() (string, error) {
 }
 
 func gotEvent(ctx context.Context, event cloudevents.Event) error {
+	serviceName := serviceName
 	var shkeptncontext string
 	event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
 
-	stdLogger := keptnevents.NewLogger(shkeptncontext, event.Context.GetID(), "helm-service")
+	keptnHandler, err := keptnevents.NewKeptn(&event, keptnevents.KeptnOpts{
+		LoggingOptions: &keptnevents.LoggingOpts{
+			EnableWebsocket: true,
+			ServiceName:     &serviceName,
+		},
+	})
+	if err != nil {
+		fmt.Println("Could not initialize keptn handler: " + err.Error())
+		return err
+	}
 
 	var logger keptnevents.LoggerInterface
 	loggingDone := make(chan bool)
-
-	// open WebSocket, if connection data is available
-	connData := keptnevents.ConnectionData{}
-	if err := event.DataAs(&connData); err != nil ||
-		connData.EventContext.KeptnContext == nil || connData.EventContext.Token == nil ||
-		*connData.EventContext.KeptnContext == "" || *connData.EventContext.Token == "" {
-		logger = stdLogger
-		logger.Debug("No WebSocket connection data available")
-	} else {
-		apiServiceURL, err := serviceutils.GetAPIURL()
-		if err != nil {
-			logger.Error(err.Error())
-			return nil
-		}
-		ws, _, err := keptnevents.OpenWS(connData, *apiServiceURL)
-		if err != nil {
-			stdLogger.Error(fmt.Sprintf("Opening WebSocket connection failed. %s", err.Error()))
-			return nil
-		}
-		combinedLogger := keptnevents.NewCombinedLogger(stdLogger, ws, shkeptncontext)
-		logger = combinedLogger
-		go closeLogger(loggingDone, combinedLogger, ws)
-	}
+	go closeLogger(loggingDone, keptnHandler.Logger)
 
 	mesh := mesh.NewIstioMesh()
 
 	keptnDomain, err := getKeptnDomain()
 	if err != nil {
-		logger.Error("Error when reading the keptn domain")
+		keptnHandler.Logger.Error("Error when reading the keptn domain")
 		return nil
 	}
 
 	url, err := serviceutils.GetConfigServiceURL()
 	if err != nil {
-		logger.Error(fmt.Sprintf("Error when getting config service url: %s", err.Error()))
+		keptnHandler.Logger.Error(fmt.Sprintf("Error when getting config service url: %s", err.Error()))
 		return err
 	}
 
-	logger.Debug("Got event of type " + event.Type())
+	keptnHandler.Logger.Debug("Got event of type " + event.Type())
 
 	if event.Type() == keptnevents.ConfigurationChangeEventType {
-		configChanger := controller.NewConfigurationChanger(mesh, logger, keptnDomain, url.String())
+		configChanger := controller.NewConfigurationChanger(mesh, keptnHandler, keptnDomain, url.String())
 		go configChanger.ChangeAndApplyConfiguration(event, loggingDone)
 	} else if event.Type() == keptnevents.InternalServiceCreateEventType {
-		onboarder := controller.NewOnboarder(mesh, logger, keptnDomain, url.String())
+		onboarder := controller.NewOnboarder(mesh, keptnHandler, keptnDomain, url.String())
 		go onboarder.DoOnboard(event, loggingDone)
 	} else if event.Type() == keptnevents.ActionTriggeredEventType {
-		actionHandler := controller.NewActionTriggeredHandler(logger, url.String())
+		actionHandler := controller.NewActionTriggeredHandler(keptnHandler, url.String())
 		go actionHandler.HandleEvent(event, loggingDone)
 	} else {
 		logger.Error("Received unexpected keptn event")
@@ -110,10 +99,11 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	return nil
 }
 
-func closeLogger(loggingDone chan bool, combinedLogger *keptnevents.CombinedLogger, ws *websocket.Conn) {
+func closeLogger(loggingDone chan bool, logger keptnevents.LoggerInterface) {
 	<-loggingDone
-	combinedLogger.Terminate()
-	ws.Close()
+	if combinedLogger, ok := logger.(*keptnevents.CombinedLogger); ok {
+		combinedLogger.Terminate()
+	}
 }
 
 func _main(args []string, env envConfig) int {

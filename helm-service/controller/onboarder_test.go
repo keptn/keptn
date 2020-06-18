@@ -10,14 +10,12 @@ import (
 	"testing"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
-	"github.com/google/uuid"
 	"github.com/keptn/keptn/helm-service/controller/mesh"
 	"github.com/keptn/keptn/helm-service/pkg/helmtest"
 
 	configmodels "github.com/keptn/go-utils/pkg/api/models"
 	configutils "github.com/keptn/go-utils/pkg/api/utils"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
-	keptnutils "github.com/keptn/go-utils/pkg/lib"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -84,9 +82,10 @@ func TestDoOnboard(t *testing.T) {
 	}
 	ce.Data = dataBytes
 
-	id := uuid.New().String()
+	keptnHandler, _ := keptnevents.NewKeptn(&ce, keptnevents.KeptnOpts{})
+
 	onboarder := NewOnboarder(mesh.NewIstioMesh(),
-		keptnutils.NewLogger(id, "service.create", "helm-service"), "test.keptn.sh", "")
+		keptnHandler, "test.keptn.sh", "")
 	loggingDone := make(chan bool)
 	err = onboarder.DoOnboard(ce, loggingDone)
 	if err != nil {

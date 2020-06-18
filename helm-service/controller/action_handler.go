@@ -30,7 +30,7 @@ import (
 
 // ActionTriggeredHandler handles sh.keptn.events.action.triggered events for scaling
 type ActionTriggeredHandler struct {
-	logger           keptn.LoggerInterface
+	keptnHandler     *keptn.Keptn
 	helmExecutor     helm.HelmExecutor
 	configServiceURL string
 }
@@ -39,10 +39,10 @@ type ActionTriggeredHandler struct {
 const ActionScaling = "scaling"
 
 // NewActionTriggeredHandler creates a new ActionTriggeredHandler
-func NewActionTriggeredHandler(logger keptn.LoggerInterface,
+func NewActionTriggeredHandler(keptnHandler *keptn.Keptn,
 	configServiceURL string) *ActionTriggeredHandler {
-	helmExecutor := helm.NewHelmV3Executor(logger)
-	return &ActionTriggeredHandler{logger: logger, helmExecutor: helmExecutor,
+	helmExecutor := helm.NewHelmV3Executor(keptnHandler.Logger)
+	return &ActionTriggeredHandler{keptnHandler: keptnHandler, helmExecutor: helmExecutor,
 		configServiceURL: configServiceURL}
 }
 
@@ -55,31 +55,31 @@ func (a *ActionTriggeredHandler) HandleEvent(ce cloudevents.Event, loggingDone c
 	err := ce.DataAs(&actionTriggeredEvent)
 	if err != nil {
 		errMsg := "action.triggered event not well-formed: " + err.Error()
-		a.logger.Error(errMsg)
+		a.keptnHandler.Logger.Error(errMsg)
 		return errors.New(errMsg)
 	}
 
 	if actionTriggeredEvent.Action.Action == ActionScaling {
 		// Send action.started event
 		if sendErr := a.sendEvent(ce, keptn.ActionStartedEventType, a.getActionStartedEvent(actionTriggeredEvent)); sendErr != nil {
-			a.logger.Error(sendErr.Error())
+			a.keptnHandler.Logger.Error(sendErr.Error())
 			return errors.New(sendErr.Error())
 		}
 
 		resp := a.handleScaling(actionTriggeredEvent)
 		if resp.Action.Status == keptn.ActionStatusErrored {
-			a.logger.Error(fmt.Sprintf("action %s failed with result %s", actionTriggeredEvent.Action.Action, resp.Action.Result))
+			a.keptnHandler.Logger.Error(fmt.Sprintf("action %s failed with result %s", actionTriggeredEvent.Action.Action, resp.Action.Result))
 		} else {
-			a.logger.Info(fmt.Sprintf("Finished action with status %s and result %s", resp.Action.Status, resp.Action.Result))
+			a.keptnHandler.Logger.Info(fmt.Sprintf("Finished action with status %s and result %s", resp.Action.Status, resp.Action.Result))
 		}
 
 		// Send action.finished event
 		if sendErr := a.sendEvent(ce, keptn.ActionFinishedEventType, resp); sendErr != nil {
-			a.logger.Error(sendErr.Error())
+			a.keptnHandler.Logger.Error(sendErr.Error())
 			return errors.New(sendErr.Error())
 		}
 	} else {
-		a.logger.Info("Received unhandled action: " + actionTriggeredEvent.Action.Action + ". Exiting")
+		a.keptnHandler.Logger.Info("Received unhandled action: " + actionTriggeredEvent.Action.Action + ". Exiting")
 		return nil
 	}
 
@@ -126,7 +126,7 @@ func (a *ActionTriggeredHandler) handleScaling(actionTriggeredEvent keptn.Action
 
 	// Get generated chart
 	helmChartName := helm.GetChartName(actionTriggeredEvent.Service, true)
-	a.logger.Info(fmt.Sprintf("Retrieve chart %s of stage %s", helmChartName, actionTriggeredEvent.Stage))
+	a.keptnHandler.Logger.Info(fmt.Sprintf("Retrieve chart %s of stage %s", helmChartName, actionTriggeredEvent.Stage))
 
 	ch, err := keptnutils.GetChart(actionTriggeredEvent.Project, actionTriggeredEvent.Service, actionTriggeredEvent.Stage, helmChartName, a.configServiceURL)
 	if err != nil {
@@ -138,21 +138,21 @@ func (a *ActionTriggeredHandler) handleScaling(actionTriggeredEvent keptn.Action
 	}
 
 	// Edit chart
-	a.logger.Info(fmt.Sprintf("Edit chart %s of stage %s", helmChartName, actionTriggeredEvent.Stage))
+	a.keptnHandler.Logger.Info(fmt.Sprintf("Edit chart %s of stage %s", helmChartName, actionTriggeredEvent.Stage))
 	if err := a.increaseReplicaCount(ch, replicaIncrement); err != nil {
 		return a.getActionFinishedEvent(keptn.ActionResultType("failed when editing deployment: "+err.Error()),
 			keptn.ActionStatusErrored, actionTriggeredEvent)
 	}
 
 	// Upgrade chart
-	a.logger.Info(fmt.Sprintf("Start upgrading chart %s of stage %s", helmChartName, actionTriggeredEvent.Stage))
+	a.keptnHandler.Logger.Info(fmt.Sprintf("Start upgrading chart %s of stage %s", helmChartName, actionTriggeredEvent.Stage))
 	if err := a.upgradeChart(ch, actionTriggeredEvent, deploymentStrategy); err != nil {
 		return a.getActionFinishedEvent(keptn.ActionResultType(err.Error()), keptn.ActionStatusErrored, actionTriggeredEvent)
 	}
-	a.logger.Info(fmt.Sprintf("Finished upgrading chart %s of stage %s", helmChartName, actionTriggeredEvent.Stage))
+	a.keptnHandler.Logger.Info(fmt.Sprintf("Finished upgrading chart %s of stage %s", helmChartName, actionTriggeredEvent.Stage))
 
 	// Store chart
-	a.logger.Info(fmt.Sprintf("Store chart %s of stage %s", helmChartName, actionTriggeredEvent.Stage))
+	a.keptnHandler.Logger.Info(fmt.Sprintf("Store chart %s of stage %s", helmChartName, actionTriggeredEvent.Stage))
 	chartData, err := keptnutils.PackageChart(ch)
 	if err != nil {
 		return a.getActionFinishedEvent(keptn.ActionResultType(err.Error()), keptn.ActionStatusErrored, actionTriggeredEvent)
@@ -243,7 +243,7 @@ func (a ActionTriggeredHandler) sendEvent(ce cloudevents.Event, eventType string
 		EventBrokerURL: os.Getenv("EVENTBROKER"),
 	})
 	if err != nil {
-		a.logger.Error("Could not initialize Keptn handler: " + err.Error())
+		a.keptnHandler.Logger.Error("Could not initialize Keptn handler: " + err.Error())
 		return err
 	}
 
@@ -264,7 +264,7 @@ func (a ActionTriggeredHandler) sendEvent(ce cloudevents.Event, eventType string
 
 	err = keptnHandler.SendCloudEvent(event)
 	if err != nil {
-		a.logger.Error("Could not send action.finished event: " + err.Error())
+		a.keptnHandler.Logger.Error("Could not send action.finished event: " + err.Error())
 		return err
 	}
 	return nil

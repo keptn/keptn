@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 
@@ -66,7 +67,14 @@ var evaluationDoneTests = []struct {
 func TestHandleEvaluationDoneEvent(t *testing.T) {
 	for _, tt := range evaluationDoneTests {
 		t.Run(tt.name, func(t *testing.T) {
-			e := NewEvaluationDoneEventHandler(keptnevents.NewLogger(shkeptncontext, eventID, "gatekeeper-service"))
+			ce := cloudevents.New("0.2")
+			dataBytes, err := json.Marshal(tt.inputEvent)
+			if err != nil {
+				t.Error(err)
+			}
+			ce.Data = dataBytes
+			keptnHandler, _ := keptnevents.NewKeptn(&ce, keptnevents.KeptnOpts{})
+			e := NewEvaluationDoneEventHandler(keptnHandler)
 			res := e.handleEvaluationDoneEvent(tt.inputEvent, shkeptncontext, tt.image, tt.shipyard)
 			if len(res) != len(tt.outputEvent) {
 				t.Errorf("got %d output event, want %v output events for %s",

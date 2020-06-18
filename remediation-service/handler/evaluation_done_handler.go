@@ -13,7 +13,6 @@ import (
 // EvaluationDoneEventHandler handles incoming evaluation-done events
 type EvaluationDoneEventHandler struct {
 	KeptnHandler *keptn.Keptn
-	Logger       keptn.LoggerInterface
 	Event        cloudevents.Event
 	Remediation  *Remediation
 }
@@ -24,22 +23,22 @@ func (eh *EvaluationDoneEventHandler) HandleEvent() error {
 
 	err := eh.Event.DataAs(evaluationDoneEventData)
 	if err != nil {
-		eh.Logger.Error("Could not parse evaluation-done event: " + err.Error())
+		eh.KeptnHandler.Logger.Error("Could not parse evaluation-done event: " + err.Error())
 		return err
 	}
 
 	if evaluationDoneEventData.TestStrategy != "real-user" {
-		eh.Logger.Info("Ignoring evaluation-done event with testStrategy " + evaluationDoneEventData.TestStrategy)
+		eh.KeptnHandler.Logger.Info("Ignoring evaluation-done event with testStrategy " + evaluationDoneEventData.TestStrategy)
 		return nil
 	}
 
 	if evaluationDoneEventData.Result == "pass" || evaluationDoneEventData.Result == "warning" {
 		msg := "Remediation successful. Remediation actions resulted in evaluation result: " + evaluationDoneEventData.Result
-		eh.Logger.Info(msg)
+		eh.KeptnHandler.Logger.Info(msg)
 		eh.Remediation.sendRemediationFinishedEvent(keptn.RemediationStatusSucceeded, keptn.RemediationResultPass, msg)
 		err := deleteRemediation(eh.KeptnHandler.KeptnContext, *eh.KeptnHandler.KeptnBase)
 		if err != nil {
-			eh.Logger.Error("Could not close remediation: " + err.Error())
+			eh.KeptnHandler.Logger.Error("Could not close remediation: " + err.Error())
 			return err
 		}
 		return nil
@@ -60,14 +59,14 @@ func (eh *EvaluationDoneEventHandler) HandleEvent() error {
 	remediations, err := getRemediationsByContext(eh.KeptnHandler.KeptnContext, *eh.KeptnHandler.KeptnBase)
 	if err != nil {
 		msg := "could not retrieve open remediations"
-		eh.Logger.Error(msg + ": " + err.Error())
+		eh.KeptnHandler.Logger.Error(msg + ": " + err.Error())
 		eh.Remediation.sendRemediationFinishedEvent(keptn.RemediationStatusErrored, keptn.RemediationResultFailed, msg)
 		return err
 	}
 
 	if len(remediations) == 0 {
 		msg := "no open remediations have been found"
-		eh.Logger.Info(msg + ": " + err.Error())
+		eh.KeptnHandler.Logger.Info(msg + ": " + err.Error())
 		eh.Remediation.sendRemediationFinishedEvent(keptn.RemediationStatusSucceeded, keptn.RemediationResultPass, msg)
 		return nil
 	}
@@ -99,11 +98,11 @@ func (eh *EvaluationDoneEventHandler) HandleEvent() error {
 		}
 	} else {
 		msg := "No further remediation action configured for problem type " + remediationTriggeredEvent.Problem.ProblemTitle
-		eh.Logger.Info(msg)
+		eh.KeptnHandler.Logger.Info(msg)
 		_ = eh.Remediation.sendRemediationFinishedEvent(keptn.RemediationStatusSucceeded, keptn.RemediationResultFailed, msg)
 		err = deleteRemediation(eh.KeptnHandler.KeptnContext, *eh.KeptnHandler.KeptnBase)
 		if err != nil {
-			eh.Logger.Error("Could not close remediation: " + err.Error())
+			eh.KeptnHandler.Logger.Error("Could not close remediation: " + err.Error())
 			return err
 		}
 	}
@@ -122,7 +121,7 @@ func (eh *EvaluationDoneEventHandler) getLastRemediationStatusChangedEvent(remed
 
 	if lastRemediationStatusChanged == nil {
 		msg := "no previously executed remediation actions have been found"
-		eh.Logger.Info(msg)
+		eh.KeptnHandler.Logger.Info(msg)
 		eh.Remediation.sendRemediationFinishedEvent(keptn.RemediationStatusErrored, keptn.RemediationResultFailed, msg)
 		return nil, errors.New(msg)
 	}
@@ -135,7 +134,7 @@ func (eh *EvaluationDoneEventHandler) getLastRemediationStatusChangedEvent(remed
 
 	if errorObj != nil || len(events) == 0 {
 		msg := "could not retrieve remediation action with ID " + lastRemediationStatusChanged.EventID
-		eh.Logger.Error(msg + ": " + *errorObj.Message)
+		eh.KeptnHandler.Logger.Error(msg + ": " + *errorObj.Message)
 		eh.Remediation.sendRemediationFinishedEvent(keptn.RemediationStatusErrored, keptn.RemediationResultFailed, msg)
 		return nil, errors.New(*errorObj.Message)
 	}
@@ -144,7 +143,7 @@ func (eh *EvaluationDoneEventHandler) getLastRemediationStatusChangedEvent(remed
 	err := mapstructure.Decode(events[0].Data, remediationStatusChangedEvent)
 	if err != nil {
 		msg := "could not decode remediation.status.changed event"
-		eh.Logger.Info(msg + ": " + err.Error())
+		eh.KeptnHandler.Logger.Info(msg + ": " + err.Error())
 		eh.Remediation.sendRemediationFinishedEvent(keptn.RemediationStatusErrored, keptn.RemediationResultFailed, msg)
 		return nil, err
 	}
@@ -162,7 +161,7 @@ func (eh *EvaluationDoneEventHandler) getRemediationTriggeredEvent(remediations 
 
 	if remediationTriggered == nil {
 		msg := "no previously executed remediation actions have been found"
-		eh.Logger.Info(msg)
+		eh.KeptnHandler.Logger.Info(msg)
 		eh.Remediation.sendRemediationFinishedEvent(keptn.RemediationStatusErrored, keptn.RemediationResultFailed, msg)
 		return nil, errors.New(msg)
 	}
@@ -175,7 +174,7 @@ func (eh *EvaluationDoneEventHandler) getRemediationTriggeredEvent(remediations 
 
 	if errorObj != nil || len(events) == 0 {
 		msg := "could not retrieve remediation action with ID " + remediationTriggered.EventID
-		eh.Logger.Error(msg + ": " + *errorObj.Message)
+		eh.KeptnHandler.Logger.Error(msg + ": " + *errorObj.Message)
 		eh.Remediation.sendRemediationFinishedEvent(keptn.RemediationStatusErrored, keptn.RemediationResultFailed, msg)
 		return nil, errors.New(*errorObj.Message)
 	}
@@ -186,7 +185,7 @@ func (eh *EvaluationDoneEventHandler) getRemediationTriggeredEvent(remediations 
 
 	if err != nil {
 		msg := "could not decode remediation.triggered event"
-		eh.Logger.Info(msg + ": " + err.Error())
+		eh.KeptnHandler.Logger.Info(msg + ": " + err.Error())
 		eh.Remediation.sendRemediationFinishedEvent(keptn.RemediationStatusErrored, keptn.RemediationResultFailed, msg)
 		return nil, err
 	}

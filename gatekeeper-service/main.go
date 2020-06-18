@@ -57,7 +57,10 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 }
 
 func switchEvent(event cloudevents.Event) {
-	keptnHandler, err := keptnevents.NewKeptn(&event, keptnevents.KeptnOpts{})
+	serviceName := "gatekeeper-service"
+	keptnHandler, err := keptnevents.NewKeptn(&event, keptnevents.KeptnOpts{
+		LoggingOptions: &keptnevents.LoggingOpts{ServiceName: &serviceName},
+	})
 	if err != nil {
 		l := keptnevents.NewLogger("", event.Context.GetID(), "gatekeeper-service")
 		l.Error("failed to initialize Keptn handler: " + err.Error())
@@ -70,9 +73,9 @@ func switchEvent(event cloudevents.Event) {
 		return
 	}
 
-	handlers := []handler.Handler{handler.NewEvaluationDoneEventHandler(l),
-		handler.NewApprovalTriggeredEventHandler(l),
-		handler.NewApprovalFinishedEventHandler(l)}
+	handlers := []handler.Handler{handler.NewEvaluationDoneEventHandler(keptnHandler),
+		handler.NewApprovalTriggeredEventHandler(keptnHandler),
+		handler.NewApprovalFinishedEventHandler(keptnHandler)}
 
 	unhandled := true
 	for _, handler := range handlers {

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 
@@ -130,7 +131,14 @@ var approvalTriggeredTests = []struct {
 func TestHandleApprovalTriggeredEvent(t *testing.T) {
 	for _, tt := range approvalTriggeredTests {
 		t.Run(tt.name, func(t *testing.T) {
-			e := NewApprovalTriggeredEventHandler(keptnevents.NewLogger(shkeptncontext, eventID, "gatekeeper-service"))
+			ce := cloudevents.New("0.2")
+			dataBytes, err := json.Marshal(tt.inputEvent)
+			if err != nil {
+				t.Error(err)
+			}
+			ce.Data = dataBytes
+			keptnHandler, _ := keptnevents.NewKeptn(&ce, keptnevents.KeptnOpts{})
+			e := NewApprovalTriggeredEventHandler(keptnHandler)
 			res := e.handleApprovalTriggeredEvent(tt.inputEvent, eventID, shkeptncontext, tt.shipyard)
 			if len(res) != len(tt.outputEvent) {
 				t.Errorf("got %d output event, want %v output events for %s",
