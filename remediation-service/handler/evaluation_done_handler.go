@@ -121,11 +121,17 @@ func (eh *EvaluationDoneEventHandler) getLastRemediationStatusChangedEvent(remed
 		EventID: lastRemediationStatusChanged.EventID,
 	})
 
-	if errorObj != nil || len(events) == 0 {
+	if errorObj != nil {
 		msg := "could not retrieve remediation action with ID " + lastRemediationStatusChanged.EventID
 		eh.KeptnHandler.Logger.Error(msg + ": " + *errorObj.Message)
 		eh.Remediation.sendRemediationFinishedEvent(keptn.RemediationStatusErrored, keptn.RemediationResultFailed, msg)
 		return nil, errors.New(*errorObj.Message)
+	}
+	if len(events) == 0 {
+		msg := "could not retrieve remediation action with ID" + lastRemediationStatusChanged.EventID + ": no event found."
+		eh.KeptnHandler.Logger.Error(msg)
+		eh.Remediation.sendRemediationFinishedEvent(keptn.RemediationStatusErrored, keptn.RemediationResultFailed, msg)
+		return nil, errors.New(msg)
 	}
 	remediationStatusChangedEvent := &keptn.RemediationStatusChangedEventData{}
 
