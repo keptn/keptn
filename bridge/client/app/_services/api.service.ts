@@ -28,7 +28,7 @@ export class ApiService {
   }
 
   public getBridgeVersion(): Observable<any> {
-    let url = `${this._baseUrl}/api/`;
+    let url = `${this._baseUrl}/`;
     return this.http
       .get<any>(url, { headers: this.defaultHeaders })
       .pipe(
@@ -38,7 +38,7 @@ export class ApiService {
   }
 
   public getKeptnVersion(): Observable<any> {
-    let url = `${this._baseUrl}/api/swagger-ui/swagger.yaml`;
+    let url = `${this._baseUrl}/swagger-ui/swagger.yaml`;
     return this.http
       .get<any>(url, { headers: this.defaultHeaders.append('Access-Control-Allow-Origin', '*') })
       .pipe(
