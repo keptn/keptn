@@ -59,7 +59,7 @@ export class ApiService {
 
   public getAvailableVersions(): Observable<any> {
     if(this.isVersionCheckEnabled()) {
-      let url = `${this._baseUrl}/api/version.json`;
+      let url = `${this._baseUrl}/version.json`;
       return this.http
         .get<any>(url, { headers: this.defaultHeaders })
         .pipe(catchError(this.handleError<any>('getAvailableVersions')));
