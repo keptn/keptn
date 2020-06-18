@@ -11,8 +11,9 @@ import (
 
 // CreateRemediation creates a remediation
 func CreateRemediation(params remediation.CreateRemediationParams) middleware.Responder {
+	common.LockProject(params.ProjectName)
+	defer common.UnlockProject(params.ProjectName)
 	mv := common.GetProjectsMaterializedView()
-
 	err := mv.CreateRemediation(params.ProjectName, params.StageName, params.ServiceName, params.Remediation)
 
 	if err != nil {
@@ -21,7 +22,7 @@ func CreateRemediation(params remediation.CreateRemediationParams) middleware.Re
 	return service_approval.NewCreateRemediationOK()
 }
 
-// GetRemediations retriees all remediations of the service
+// GetRemediations retrieves all remediations of the service
 func GetRemediations(params remediation.GetRemediationsParams) middleware.Responder {
 	mv := common.GetProjectsMaterializedView()
 
@@ -107,8 +108,9 @@ func GetRemediationsForContext(params remediation.GetRemediationsForContextParam
 
 // CloseRemediations closes all remediations with a given keptnContext of a service
 func CloseRemediations(params remediation.CloseRemediationsParams) middleware.Responder {
+	common.LockProject(params.ProjectName)
+	defer common.UnlockProject(params.ProjectName)
 	mv := common.GetProjectsMaterializedView()
-
 	err := mv.CloseOpenRemediations(params.ProjectName, params.StageName, params.ServiceName, params.KeptnContext)
 
 	if err != nil {

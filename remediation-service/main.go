@@ -59,10 +59,13 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		return err
 	}
 	if handler != nil {
-		err := handler.HandleEvent()
-		if err != nil {
-			return err
-		}
+		go func() error {
+			err := handler.HandleEvent()
+			if err != nil {
+				return err
+			}
+			return nil
+		}()
 	}
 
 	return nil

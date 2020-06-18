@@ -381,7 +381,13 @@ func (r *Remediation) sendRemediationFinishedEvent(status keptn.RemediationStatu
 		Data: remediationFinishedEventData,
 	}
 
-	err := r.Keptn.SendCloudEvent(event)
+	err := deleteRemediation(r.Keptn.KeptnContext, *r.Keptn.KeptnBase)
+	if err != nil {
+		r.Keptn.Logger.Error("Could not close remediation: " + err.Error())
+		return err
+	}
+
+	err = r.Keptn.SendCloudEvent(event)
 	if err != nil {
 		r.Keptn.Logger.Error("Could not send action.finished event: " + err.Error())
 		return err

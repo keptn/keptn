@@ -30,13 +30,7 @@ func (eh *ProblemEventHandler) HandleEvent() error {
 	if problemEvent.State == "CLOSED" {
 		msg := "Problem " + problemEvent.PID + " of type " + problemEvent.ProblemTitle + " has been closed."
 		eh.Logger.Info(msg)
-		_ = eh.Remediation.sendRemediationFinishedEvent(keptn.RemediationStatusSucceeded, keptn.RemediationResultFailed, msg)
-		err := deleteRemediation(eh.KeptnHandler.KeptnContext, *eh.KeptnHandler.KeptnBase)
-		if err != nil {
-			eh.Logger.Error("Could not close remediation: " + err.Error())
-			return err
-		}
-		return nil
+		return eh.Remediation.sendRemediationFinishedEvent(keptn.RemediationStatusSucceeded, keptn.RemediationResultFailed, msg)
 	}
 	return nil
 }
