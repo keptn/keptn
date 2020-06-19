@@ -137,26 +137,27 @@ func storeRootEvent(logger *keptnutils.Logger, collectionName string, ctx contex
 		KeptnContextExtendedCE: *event,
 		MongoDBID:              event.Shkeptncontext,
 	}
+
 	rootEventsForProjectCollection := client.Database(mongoDBName).Collection(collectionName + rootEventCollectionSuffix)
-	eventInterface, err := transformEventToInterface(eventWithMongoDBID)
-	if err != nil {
-		logger.Error("Could not transform root event to interface: " + err.Error())
-		return err
-	}
-	_, err = rootEventsForProjectCollection.InsertOne(ctx, eventInterface)
-	if err != nil {
-		if writeErr, ok := err.(mongo.WriteException); ok {
-			if len(writeErr.WriteErrors) > 0 && writeErr.WriteErrors[0].Code == 11000 { // 11000 = duplicate key error
-				logger.Error("Root event for KeptnContext " + event.Shkeptncontext + " already exists in collection")
-			}
-		} else {
+
+	result := rootEventsForProjectCollection.FindOne(ctx, bson.M{"shkeptncontext": event.Shkeptncontext})
+
+	if result.Err() != nil && result.Err() == mongo.ErrNoDocuments {
+		eventInterface, err := transformEventToInterface(eventWithMongoDBID)
+		if err != nil {
+			logger.Error("Could not transform root event to interface: " + err.Error())
+			return err
+		}
+
+		_, err = rootEventsForProjectCollection.InsertOne(ctx, eventInterface)
+		if err != nil {
 			err := fmt.Errorf("Failed to store root event for KeptnContext "+event.Shkeptncontext+": %v", err.Error())
 			logger.Error(err.Error())
 			return err
 		}
+		logger.Debug("Stored root event for KeptnContext: " + event.Shkeptncontext)
 	}
-	logger.Debug("Stored root event for KeptnContext: " + event.Shkeptncontext)
-
+	logger.Error("Root event for KeptnContext " + event.Shkeptncontext + " already exists in collection")
 	return nil
 }
 
