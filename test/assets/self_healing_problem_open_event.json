@@ -1,0 +1,16 @@
+{
+  "type": "sh.keptn.event.problem.open",
+  "specversion": "0.2",
+  "source": "https://github.com/keptn/keptn/dynatrace-service",
+  "id": "f2b878d3-03c0-4e8f-bc3f-454bc1b3d79d",
+  "time": "2019-06-07T07:02:15.64489Z",
+  "contenttype": "application/json",
+  "data": {
+    "State": "OPEN",
+    "ProblemID": "ab81-941c-1245",
+    "ProblemTitle": "Response time degradation",
+    "project": "self-healing-project",
+    "stage": "production",
+    "service": "carts"
+  }
+}

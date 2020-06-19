@@ -22,6 +22,20 @@ function get_evaluation_done_event() {
   keptn get event evaluation-done --keptn-context="${keptn_context_id}" | tail -n +2
 }
 
+function send_event_json() {
+  EVENT_JSON_FILE_URI=$1
+
+  response=$(keptn send event --file=$EVENT_JSON_FILE_URI)
+  keptn_context_id=$(echo $response | awk -F'Keptn context:' '{ print $2 }' | xargs)
+
+  echo "$keptn_context_id"
+}
+
+function get_remediation_finished_event() {
+  keptn_context_id=$1
+  keptn get event evaluation-done --keptn-context="${keptn_context_id}" | tail -n +2
+}
+
 function verify_using_jq() {
   payload=$1
   attribute=$2
