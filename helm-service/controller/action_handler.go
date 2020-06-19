@@ -257,7 +257,7 @@ func (a ActionTriggeredHandler) sendEvent(ce cloudevents.Event, eventType string
 			Type:        eventType,
 			Source:      types.URLRef{URL: *source},
 			ContentType: &contentType,
-			Extensions:  map[string]interface{}{"shkeptncontext": keptnHandler.KeptnContext, "triggerid": ce.ID()},
+			Extensions:  map[string]interface{}{"shkeptncontext": keptnHandler.KeptnContext, "triggeredid": ce.ID()},
 		}.AsV02(),
 		Data: data,
 	}
