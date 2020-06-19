@@ -2,14 +2,15 @@ package main
 
 import (
 	"context"
+	"log"
+	"os"
+
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
 	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
 	"github.com/kelseyhightower/envconfig"
 	keptnutils "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/lighthouse-service/event_handler"
-	"log"
-	"os"
 )
 
 type envConfig struct {
@@ -60,6 +61,8 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		logger.Error("Received unknown event type: " + event.Type())
 		return err
 	}
-
-	return handler.HandleEvent()
+	if handler != nil {
+		return handler.HandleEvent()
+	}
+	return nil
 }
