@@ -86,14 +86,7 @@ Besides, deployed services and the configuration on the Git upstream (i.e., GitH
 		for _, namespace := range namespaces {
 			logging.PrintLog(" - "+namespace, logging.InfoLevel)
 			if namespace == "default" || strings.HasPrefix(namespace, "kube") || strings.HasPrefix(namespace, "openshift") {
-				if namespace == "kube-system" {
-					// we need to remove helm / tiller stuff
-					logging.PrintLog("      Recommended action: Remove Tiller/Helm using", logging.InfoLevel)
-					logging.PrintLog("                          kubectl delete all -l app=helm -n kube-system", logging.InfoLevel)
-				} else {
-					// skip
-					logging.PrintLog("      Recommended action: None (default namespace)", logging.InfoLevel)
-				}
+				logging.PrintLog("      Recommended action: None (default namespace)", logging.InfoLevel)
 			} else if namespace == "istio-system" {
 				// istio is special, we will refer to the official uninstall docs
 				logging.PrintLog("      Please consult the istio Docs at https://istio.io/docs/setup/install/helm/#uninstall on how to remove istio.", logging.InfoLevel)
