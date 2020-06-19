@@ -43,7 +43,7 @@ var evaluationDoneTests = []struct {
 		outputEvent: []cloudevents.Event{
 			getConfigurationChangeTestEventForCanaryAction(keptnevents.Promote),
 			*getCloudEvent(getApprovalTriggeredTestData("pass"),
-				keptnevents.ApprovalTriggeredEventType, shkeptncontext),
+				keptnevents.ApprovalTriggeredEventType, shkeptncontext, ""),
 		},
 	},
 	{
@@ -141,7 +141,7 @@ func getConfigurationChangeTestEventForCanaryAction(action keptnevents.CanaryAct
 		},
 	}
 
-	return *getCloudEvent(configurationChangeEvent, keptnevents.ConfigurationChangeEventType, shkeptncontext)
+	return *getCloudEvent(configurationChangeEvent, keptnevents.ConfigurationChangeEventType, shkeptncontext, "")
 }
 
 func getConfigurationChangeTestEvent(image, stage string) cloudevents.Event {
@@ -162,5 +162,5 @@ func getConfigurationChangeTestEvent(image, stage string) cloudevents.Event {
 		},
 	}
 
-	return *getCloudEvent(configurationChangeEvent, keptnevents.ConfigurationChangeEventType, shkeptncontext)
+	return *getCloudEvent(configurationChangeEvent, keptnevents.ConfigurationChangeEventType, shkeptncontext, "")
 }

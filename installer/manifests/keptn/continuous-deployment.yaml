@@ -146,7 +146,7 @@ spec:
           - name: PUBSUB_RECIPIENT
             value: 'gatekeeper-service'
 ---
-## gatekeeper-service: sh.keptn.events.approval.>
+## gatekeeper-service: sh.keptn.event.approval.>
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -178,7 +178,7 @@ spec:
             - name: PUBSUB_URL
               value: 'nats://keptn-nats-cluster'
             - name: PUBSUB_TOPIC
-              value: 'sh.keptn.events.approval.>'
+              value: 'sh.keptn.event.approval.>'
             - name: PUBSUB_RECIPIENT
               value: 'gatekeeper-service'
       serviceAccountName: keptn-default

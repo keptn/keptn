@@ -669,6 +669,9 @@ func init() {
           "type": "string",
           "format": "date-time"
         },
+        "triggeredid": {
+          "type": "string"
+        },
         "type": {
           "type": "string"
         }

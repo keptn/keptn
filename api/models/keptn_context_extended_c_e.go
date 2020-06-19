@@ -44,6 +44,9 @@ type KeptnContextExtendedCE struct {
 	// Format: date-time
 	Time strfmt.DateTime `json:"time,omitempty"`
 
+	// triggeredid
+	Triggeredid string `json:"triggeredid,omitempty"`
+
 	// type
 	// Required: true
 	Type *string `json:"type"`

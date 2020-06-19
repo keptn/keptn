@@ -18,7 +18,7 @@ require (
 	github.com/imdario/mergo v0.3.9 // indirect
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/json-iterator/go v1.1.9 // indirect
-	github.com/keptn/go-utils v0.6.3-0.20200528100519-ac2805768145
+	github.com/keptn/go-utils v0.6.3-0.20200618144455-073e08a10aaa
 	github.com/keptn/kubernetes-utils v0.0.0-20200427084646-ad3b436aff25
 	github.com/mholt/archiver v3.1.1+incompatible
 	github.com/mitchellh/mapstructure v1.2.2
