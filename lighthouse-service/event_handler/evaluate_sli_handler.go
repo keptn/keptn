@@ -113,7 +113,7 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 		if testsFinishedEvent.Result == "fail" {
 			eh.KeptnHandler.Logger.Debug("Setting evaluation result to 'fail' because of failed preceding test execution")
 			evaluationResult.Result = "fail"
-			evaluationResult.EvaluationDetails.Result = "fail"
+			evaluationResult.EvaluationDetails.Result = "Setting evaluation result to 'fail' because of failed preceding test execution"
 		}
 	}
 
