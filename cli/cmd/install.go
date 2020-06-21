@@ -452,51 +452,35 @@ func doInstallation() error {
 }
 
 func applyRbac(rbac map[string]bool) error {
+	var merged string
+	for k := range rbac {
+		merged += k
+	}
+	o := options{"apply", "-f", "-"}
+	o.appendIfNotEmpty(kubectlOptions)
 
-	_, aks := p.(*aksPlatform)
-	_, eks := p.(*eksPlatform)
-	_, gke := p.(*gkePlatform)
-	_, pks := p.(*pksPlatform)
-	_, k8s := p.(*kubernetesPlatform)
-	if gke || aks || k8s || eks || pks {
-		var merged string
-		for k := range rbac {
-			merged += k
-		}
-		o := options{"apply", "-f", "-"}
-		o.appendIfNotEmpty(kubectlOptions)
-
-		cmd := exec.Command("kubectl", o...)
-		cmd.Stdin = strings.NewReader(merged)
-		out, err := cmd.CombinedOutput()
-		if err != nil {
-			return fmt.Errorf("Error while applying RBAC: %s \n%s\nAborting installation", err.Error(), string(out))
-		}
+	cmd := exec.Command("kubectl", o...)
+	cmd.Stdin = strings.NewReader(merged)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("Error while applying RBAC: %s \n%s\nAborting installation", err.Error(), string(out))
 	}
 	return nil
 }
 
 func deleteRbac(rbac map[string]bool) error {
+	var merged string
+	for k := range rbac {
+		merged += k
+	}
+	o := options{"delete", "-f", "-"}
+	o.appendIfNotEmpty(kubectlOptions)
 
-	_, aks := p.(*aksPlatform)
-	_, eks := p.(*eksPlatform)
-	_, gke := p.(*gkePlatform)
-	_, pks := p.(*pksPlatform)
-	_, k8s := p.(*kubernetesPlatform)
-	if gke || aks || k8s || eks || pks {
-		var merged string
-		for k := range rbac {
-			merged += k
-		}
-		o := options{"delete", "-f", "-"}
-		o.appendIfNotEmpty(kubectlOptions)
-
-		cmd := exec.Command("kubectl", o...)
-		cmd.Stdin = strings.NewReader(merged)
-		out, err := cmd.CombinedOutput()
-		if err != nil {
-			return fmt.Errorf("Error while deleting RBAC: %s \n%s\nAborting installation", err.Error(), string(out))
-		}
+	cmd := exec.Command("kubectl", o...)
+	cmd.Stdin = strings.NewReader(merged)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("Error while deleting RBAC: %s \n%s\nAborting installation", err.Error(), string(out))
 	}
 	return nil
 }
