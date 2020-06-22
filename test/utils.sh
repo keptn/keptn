@@ -32,8 +32,11 @@ function send_event_json() {
 }
 
 function get_remediation_finished_event() {
-  keptn_context_id=$1
-  keptn get event evaluation-done --keptn-context="${keptn_context_id}" | tail -n +2
+  PROJECT=$1
+  keptn_context_id=$2
+  KEPTN_ENDPOINT=$3
+  KEPTN_API_TOKEN=$4
+  curl -X GET "${KEPTN_ENDPOINT}/mongodb-datastore/event?project=${PROJECT}&type=sh.keptn.event.remediation.finished&keptnContext=${keptn_context_id}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.events[0]'
 }
 
 function verify_using_jq() {
@@ -87,7 +90,8 @@ function wait_for_url() {
 function verify_image_of_deployment() {
   DEPLOYMENT=$1; NAMESPACE=$2; IMAGE_NAME=$3;
 
-  CURRENT_IMAGE_NAME=$(kubectl get deployment ${DEPLOYMENT} -n ${NAMESPACE} -o=jsonpath='{$.spec.template.spec.containers[:1].image}')
+  CURRENT_IMAGE_NAME=$(kubectl get deployment ${DEPLOYMENT} -n ${NAMESPACE} -o=jsonpath='
+  }{$.spec.template.spec.containers[:1].image}')
 
   if [[ "$CURRENT_IMAGE_NAME" == "$IMAGE_NAME" ]]; then
     echo "Found image ${CURRENT_IMAGE_NAME} in deployment ${DEPLOYMENT} in namespace ${NAMESPACE}"
