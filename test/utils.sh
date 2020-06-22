@@ -22,6 +22,21 @@ function get_evaluation_done_event() {
   keptn get event evaluation-done --keptn-context="${keptn_context_id}" | tail -n +2
 }
 
+function send_evaluation_done_event() {
+  PROJECT=$1
+  STAGE=$2
+  SERVICE=$3
+  RESULT=$4
+
+  cat ./test/assets/evaluation_done_event_template.json | jq -r --arg project $PROJECT --arg stage $STAGE --arg service $SERVICE --arg result $RESULT '.data.project=$project | .data.stage=$stage | .data.service=$service | .data.result=$result' > tmp_evaluation_done_event.json
+
+  response=$(keptn send event --file=tmp_evaluation_done_event.json)
+  rm tmp_evaluation_done_event.json
+
+  keptn_context_id=$(echo $response | awk -F'Keptn context:' '{ print $2 }' | xargs)
+  echo "$keptn_context_id"
+}
+
 function send_event_json() {
   EVENT_JSON_FILE_URI=$1
 
