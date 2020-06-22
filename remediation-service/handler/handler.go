@@ -384,7 +384,6 @@ func (r *Remediation) sendRemediationFinishedEvent(status keptn.RemediationStatu
 	err := deleteRemediation(r.Keptn.KeptnContext, *r.Keptn.KeptnBase)
 	if err != nil {
 		r.Keptn.Logger.Error("Could not close remediation: " + err.Error())
-		return err
 	}
 
 	err = r.Keptn.SendCloudEvent(event)
@@ -492,7 +491,12 @@ func (r *Remediation) getRemediationFile() (*configmodels.Resource, error) {
 	}
 
 	if err != nil {
-		msg := "remediation file not configured"
+		var msg string
+		if strings.Contains(strings.ToLower(err.Error()), "service not found") {
+			msg = "Could not execute remediation action because service is not available"
+		} else {
+			msg = "Could not execute remediation action because no remediation file available"
+		}
 		r.Keptn.Logger.Error(msg)
 		_ = r.sendRemediationFinishedEvent(keptn.RemediationStatusErrored, keptn.RemediationResultFailed, msg)
 		return nil, err

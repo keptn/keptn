@@ -85,8 +85,7 @@ func (eh *ProblemOpenEventHandler) HandleEvent() error {
 	} else {
 		msg := "No remediation configured for problem type " + problemType
 		eh.KeptnHandler.Logger.Info(msg)
-		_ = eh.Remediation.sendRemediationFinishedEvent(keptn.RemediationStatusSucceeded, keptn.RemediationResultPass, "triggered all actions")
-		return deleteRemediation(eh.KeptnHandler.KeptnContext, *eh.KeptnHandler.KeptnBase)
+		return eh.Remediation.sendRemediationFinishedEvent(keptn.RemediationStatusSucceeded, keptn.RemediationResultPass, "triggered all actions")
 	}
 
 	return nil
