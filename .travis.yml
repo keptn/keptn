@@ -119,7 +119,7 @@ gke_full: &gke_full
     - test/test_onboard_service.sh
     - test/test_new_artifact.sh
     - test/test_delete_project.sh
-    - - test/test_self_healing.sh
+    - test/test_self_healing.sh
     - test/test_keptn_uninstall.sh
   after_success:
     # delete google kubernetes cluster only on success (in case of an error we want to be able to dig into the cluster)
