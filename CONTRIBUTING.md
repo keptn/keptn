@@ -21,7 +21,7 @@ In case you want to work on an unassigned [GitHub issue](https://github.com/kept
 
 ### Propose/design new features
 
-Proposing new functionality for Keptn is done via a so called [Enhancement Proposal](https://github.com/keptn/enhancement-proposals).
+Proposing new functionality for Keptn is done via a so called [Keptn Enhancement Proposal (KEP)](https://github.com/keptn/enhancement-proposals).
 This is required when it is intended to introduce new behaviour, change desired behaviour, or otherwise modify requirements of Keptn.
 
 If all you want to propose is a simple addition to a Keptn-service or the CLI, or even a bugfix, you can just open 
@@ -70,7 +70,7 @@ Before pushing your code to the repository, please run unit tests locally. When 
 
 ### Deploy your local changes to an existing cluster
 
-If you are changing behaviour or a large part of the code, please verify Keptn still works as it's supposed to, by following the tutorials described on the [Keptn website](https://keptn.sh/docs/).
+If you are changing behaviour or a large part of the code, please verify Keptn still works as it's supposed to, by following the tutorials described on the [Keptn website](https://tutorials.keptn.sh).
 
 To deploy your local changes to an existing Kubernetes cluster with Keptn running on it, we recommend using [skaffold](https://skaffold.dev).
 We provide a `skaffold.yaml` file in every repository/directory, which you can use to automatically deploy the service using
