@@ -11,6 +11,6 @@
     "ProblemTitle": "Response time degradation",
     "project": "self-healing-project",
     "stage": "production",
-    "service": "carts"
+    "service": "frontend"
   }
 }

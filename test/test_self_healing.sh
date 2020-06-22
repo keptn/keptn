@@ -7,16 +7,16 @@ KEPTN_ENDPOINT=https://api.keptn.$(kubectl get cm keptn-domain -n keptn -ojsonpa
 KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)
 
 # test configuration
-UNLEASH_SERVICE_VERSION=${UNLEASH_SERVICE_VERSION:-0.1.0}
+UNLEASH_SERVICE_VERSION="master" #${UNLEASH_SERVICE_VERSION:-0.1.0}
 PROJECT="self-healing-project"
-SERVICE="carts"
+SERVICE="frontend"
 
 ########################################################################################################################
 # Pre-requesits
 ########################################################################################################################
 
 # ensure unleash-service is not installed yet
-kubectl -n keptn get deployment dynatrace-sli-service
+kubectl -n keptn get deployment unleash-service
 
 if [[ $? -eq 0 ]]; then
   echo "Found unleash-service. Please uninstall it using"
@@ -24,7 +24,7 @@ if [[ $? -eq 0 ]]; then
   exit 1
 fi
 
-# verify that the project does not exiset yet via the Keptn API
+# verify that the project does not exist yet via the Keptn API
 response=$(curl -X GET "${KEPTN_ENDPOINT}/configuration-service/v1/project/${PROJECT}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.projectName')
 
 if [[ "$response" == "${PROJECT}" ]]; then
@@ -60,7 +60,7 @@ fi
 ####################################################################################################################################
 
 echo "Sending problem.open event"
-keptn_context_id=$(send_event_json /test/assets/self_healing_problem_open_event.json)
+keptn_context_id=$(send_event_json ./test/assets/self_healing_problem_open_event.json)
 
 sleep 10
 
@@ -88,7 +88,6 @@ verify_using_jq "$response" ".data.remediation.message" "Could not execute remed
 ###########################################
 # create service frontend                #
 ###########################################
-SERVICE=frontend
 keptn create service $SERVICE --project=$PROJECT
 verify_test_step $? "keptn create service ${SERVICE} failed."
 sleep 10
@@ -105,7 +104,7 @@ else
 fi
 
 echo "Sending problem.open event"
-keptn_context_id=$(send_event_json /test/assets/self_healing_problem_open_event.json)
+keptn_context_id=$(send_event_json ./test/assets/self_healing_problem_open_event.json)
 
 sleep 10
 
@@ -134,7 +133,7 @@ echo "Uploading remediation.yaml to $PROJECT/production/$SERVICE"
 keptn add-resource --project=$PROJECT --service=$SERVICE --stage=production --resource=./test/assets/self_healing_remediation.yaml --resourceUri=remediation.yaml
 
 echo "Sending problem.open event"
-keptn_context_id=$(send_event_json /test/assets/self_healing_problem_open_event.json)
+keptn_context_id=$(send_event_json ./test/assets/self_healing_problem_open_event.json)
 
 sleep 10
 
@@ -150,6 +149,15 @@ fi
 
 sleep 120
 
+response=$(curl -X GET "${KEPTN_ENDPOINT}/mongodb-datastore/event?project=${PROJECT}&type=sh.keptn.event.remediation.finished&keptnContext=${keptn_context_id}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.events | length')
+
+if [[ "$response" != "0" ]]; then
+  echo "Received unexpected remediation.finished event"
+  echo "${response}"
+  exit 2
+else
+  echo "Verified that no remediation.finished event has been sent"
+fi
 # TODO: we need a timeout mechanism for actions in the remediation service
 #response=$(curl -X GET "${KEPTN_ENDPOINT}/mongodb-datastore/event?project=${PROJECT}&type=sh.keptn.event.remediation.finished&keptnContext=${keptn_context_id}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.events[0]')
 #
@@ -179,7 +187,7 @@ sleep 10
 wait_for_deployment_in_namespace "unleash-service" "keptn"
 
 echo "Sending problem.open event"
-keptn_context_id=$(send_event_json /test/assets/self_healing_problem_open_event.json)
+keptn_context_id=$(send_event_json ./test/assets/self_healing_problem_open_event.json)
 
 sleep 10
 
@@ -194,6 +202,16 @@ else
 fi
 
 sleep 120
+
+response=$(curl -X GET "${KEPTN_ENDPOINT}/mongodb-datastore/event?project=${PROJECT}&type=sh.keptn.event.remediation.finished&keptnContext=${keptn_context_id}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.events | length')
+
+if [[ "$response" != "0" ]]; then
+  echo "Received unexpected remediation.finished event"
+  echo "${response}"
+  exit 2
+else
+  echo "Verified that no remediation.finished event has been sent"
+fi
 
 # TODO: we need a timeout mechanism for actions in the remediation service
 #response=$(curl -X GET "${KEPTN_ENDPOINT}/mongodb-datastore/event?project=${PROJECT}&type=sh.keptn.event.remediation.finished&keptnContext=${keptn_context_id}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.events[0]')
