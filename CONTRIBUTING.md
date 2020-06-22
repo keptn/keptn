@@ -108,4 +108,4 @@ git push --set-upstream origin feature/123/foo
 ```
 
 Finally, go to GitHub and make a Pull Request. Please describe what this PR is about and add a link to relevant GitHub issues.
-Your PR will usually be reviewed by the Keptn team within a couple of days, but feel free to let us know about your PR via Slack.
+Your PR will usually be reviewed by the Keptn team within a couple of days, but feel free to let us know about your PR [via Slack](https://slack.keptn.sh).
