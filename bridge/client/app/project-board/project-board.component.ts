@@ -57,6 +57,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
         this.apiService.getTraces(this.contextId)
           .pipe(
             map(response => response.body),
+            map(result => result.events||[]),
             map(traces => traces.map(trace => Trace.fromJSON(trace)))
           )
           .subscribe((traces: Trace[]) => {

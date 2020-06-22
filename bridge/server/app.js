@@ -4,18 +4,17 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const {execSync} = require('child_process');
 
-const DatastoreService = require('./lib/services/DatastoreService');
-const ConfigurationService = require('./lib/services/ConfigurationService');
-const configs = require('./config');
-
 const apiRouter = require('./api');
 
 const app = express();
 let apiUrl = process.env.API_URL;
-const config = configs[app.get('env') || 'development'];
+let apiToken = process.env.API_TOKEN;
 
-const datastoreService = new DatastoreService(config.datastore);
-const configurationService = new ConfigurationService(config.configurationService);
+if(!apiToken) {
+  console.log("API_TOKEN was not provided. Fetching from kubectl.");
+  apiUrl = 'https://api.keptn.'+execSync('kubectl get cm -n keptn keptn-domain -ojsonpath={.data.app_domain}').toString();
+  apiToken = Buffer.from(execSync('kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token}').toString(), 'base64').toString();
+}
 
 // host static files (angular app)
 app.use(express.static(path.join(__dirname, '../dist')));
@@ -52,7 +51,7 @@ if (process.env.BASIC_AUTH_USERNAME && process.env.BASIC_AUTH_PASSWORD) {
 
 
 // everything starting with /api is routed to the api implementation
-app.use('/api', apiRouter({ datastoreService, configurationService, apiUrl }));
+app.use('/api', apiRouter({ apiUrl, apiToken }));
 
 // fallback: go to index.html
 app.use((req, res, next) => {
