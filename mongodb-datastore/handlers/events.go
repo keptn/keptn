@@ -32,7 +32,7 @@ type ProjectEventData struct {
 	Project *string `json:"project,omitempty"`
 }
 
-type EventWithMongoDBID struct {
+type eventWithMongoDBID struct {
 	models.KeptnContextExtendedCE
 	MongoDBID string `json:"_id"`
 }
@@ -133,7 +133,7 @@ func storeRootEvent(logger *keptnutils.Logger, collectionName string, ctx contex
 		return nil
 	}
 
-	eventWithMongoDBID := &EventWithMongoDBID{
+	eventWithMongoDBID := &eventWithMongoDBID{
 		KeptnContextExtendedCE: *event,
 		MongoDBID:              event.Shkeptncontext,
 	}
