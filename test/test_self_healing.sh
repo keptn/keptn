@@ -65,7 +65,7 @@ keptn_context_id=$(send_event_json ./test/assets/self_healing_problem_open_event
 sleep 10
 
 #response=$(curl -X GET "${KEPTN_ENDPOINT}/mongodb-datastore/event?project=${PROJECT}&type=sh.keptn.event.remediation.finished&keptnContext=${keptn_context_id}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.events[0]')
-response=$(get_remediation_finished_event $PROJECT $keptn_context_id $KEPTN_ENDPOINT $KEPTN_API_TOKEN)
+response=$(get_keptn_event $PROJECT $keptn_context_id sh.keptn.event.remediation.finished $KEPTN_ENDPOINT $KEPTN_API_TOKEN)
 
 # print the response
 echo $response | jq .
@@ -110,7 +110,7 @@ keptn_context_id=$(send_event_json ./test/assets/self_healing_problem_open_event
 sleep 10
 
 #response=$(curl -X GET "${KEPTN_ENDPOINT}/mongodb-datastore/event?project=${PROJECT}&type=sh.keptn.event.remediation.finished&keptnContext=${keptn_context_id}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.events[0]')
-response=$(get_remediation_finished_event $PROJECT $keptn_context_id $KEPTN_ENDPOINT $KEPTN_API_TOKEN)
+response=$(get_keptn_event $PROJECT $keptn_context_id sh.keptn.event.remediation.finished $KEPTN_ENDPOINT $KEPTN_API_TOKEN)
 # print the response
 echo $response | jq .
 

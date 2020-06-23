@@ -22,6 +22,21 @@ function get_evaluation_done_event() {
   keptn get event evaluation-done --keptn-context="${keptn_context_id}" | tail -n +2
 }
 
+function send_evaluation_done_event() {
+  PROJECT=$1
+  STAGE=$2
+  SERVICE=$3
+  RESULT=$4
+
+  cat ./test/assets/evaluation_done_event_template.json | jq -r --arg project $PROJECT --arg stage $STAGE --arg service $SERVICE --arg result $RESULT '.data.project=$project | .data.stage=$stage | .data.service=$service | .data.result=$result' > tmp_evaluation_done_event.json
+
+  response=$(keptn send event --file=tmp_evaluation_done_event.json)
+  rm tmp_evaluation_done_event.json
+
+  keptn_context_id=$(echo $response | awk -F'Keptn context:' '{ print $2 }' | xargs)
+  echo "$keptn_context_id"
+}
+
 function send_event_json() {
   EVENT_JSON_FILE_URI=$1
 
@@ -31,12 +46,43 @@ function send_event_json() {
   echo "$keptn_context_id"
 }
 
-function get_remediation_finished_event() {
+function get_keptn_event() {
   PROJECT=$1
   keptn_context_id=$2
-  KEPTN_ENDPOINT=$3
-  KEPTN_API_TOKEN=$4
-  curl -X GET "${KEPTN_ENDPOINT}/mongodb-datastore/event?project=${PROJECT}&type=sh.keptn.event.remediation.finished&keptnContext=${keptn_context_id}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.events[0]'
+  type=$3
+  KEPTN_ENDPOINT=$4
+  KEPTN_API_TOKEN=$5
+  curl -X GET "${KEPTN_ENDPOINT}/mongodb-datastore/event?project=${PROJECT}&type=${type}&keptnContext=${keptn_context_id}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.events[0]'
+}
+
+function check_no_open_approvals() {
+  PROJECT=$1
+  STAGE=$2
+
+  result=$(keptn get event approval.triggered --project=$PROJECT --stage=$STAGE | awk '{if(NR>1)print}')
+  if [[ "$result" != "No approval.triggered events have been found" ]]; then
+    echo "Received unexpected number of approval.triggered events"
+    echo "${result}"
+    exit 2
+  else
+    echo "Verified number of approval.triggered events"
+  fi
+}
+
+function check_number_open_approvals() {
+  PROJECT=$1
+  STAGE=$2
+  EXPECTED=$3
+
+  result=$(keptn get event approval.triggered --project=$PROJECT --stage=$STAGE | awk '{if(NR>1)print}' | jq -r '.' | jq -r --slurp 'length')
+  if [[ "$result" != "$EXPECTED" ]]; then
+    echo "Received unexpected number of approval.triggered events"
+    echo "${result}"
+
+    exit 2
+  else
+    echo "Verified number of approval.triggered events"
+  fi
 }
 
 function verify_using_jq() {
