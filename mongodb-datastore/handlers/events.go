@@ -194,6 +194,7 @@ func dropProjectEvents(logger *keptnutils.Logger, event *models.KeptnContextExte
 
 	collectionName := getProjectOfEvent(event)
 	collection := client.Database(mongoDBName).Collection(collectionName)
+	rootEventsCollection := client.Database(mongoDBName).Collection(collectionName + rootEventCollectionSuffix)
 
 	logger.Debug(fmt.Sprintf("Delete all events of project %s", collectionName))
 	err := collection.Drop(ctx)
@@ -202,6 +203,15 @@ func dropProjectEvents(logger *keptnutils.Logger, event *models.KeptnContextExte
 		logger.Error(err.Error())
 		return err
 	}
+
+	logger.Debug(fmt.Sprintf("Delete all root events of project %s", collectionName))
+	err = rootEventsCollection.Drop(ctx)
+	if err != nil {
+		err := fmt.Errorf("failed to drop collection %s: %v", collectionName+rootEventCollectionSuffix, err)
+		logger.Error(err.Error())
+		return err
+	}
+
 	logger.Debug(fmt.Sprintf("Delete context-to-project mappings of project %s", collectionName))
 	contextToProjectCollection := client.Database(mongoDBName).Collection(contextToProjectCollection)
 	if _, err := contextToProjectCollection.DeleteMany(ctx, bson.M{"project": collectionName}); err != nil {
