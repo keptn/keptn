@@ -27,7 +27,7 @@ The document explains in detail how to get started, and describes the process fo
 
 ### Keptn Enhancement Proposals
 
-Proposing new functionality to Keptn is done via so called [Keptn Enhancement Proposals (KEP)] (https://github.com/keptn/enhancement-proposals). This is required when it is intended to introduce new behaviour, change desired behaviour, or otherwise modify requirements of Keptn.
+Proposing new functionality to Keptn is done via so called [Keptn Enhancement Proposals (KEP)](https://github.com/keptn/enhancement-proposals). This is required when it is intended to introduce new behaviour, change desired behaviour, or otherwise modify requirements of Keptn.
 
 If all you want to propose is a simple addition to a Keptn-service or the CLI, or even a bugfix, you can just [open a new issue on GitHub](https://github.com/keptn/keptn/issues/new/choose).
 
@@ -47,13 +47,9 @@ The process for handling any security vulnerabilities or concerns found in the K
 
 ## Releases
 
-**TODO** 
+A new Keptn version is released once substantial new features, bug fixes, and/or security hardenings have been merged into the master branch, resulting in a non-fixed release schedule. Nevertheless we aim for one major/minor version at least once every 3 months. Patch versions might be released more frequently. Only maintainers can do the releases. The release checklist is maintained on [this wiki page](https://github.com/keptn/keptn/wiki/Release-Checklist).
 
-Currently Keptn does not have fixed release schedule, instead a new Keptn version is released once substantial new features, bug fixes, and security hardenings have been merged into the master branch. 
-
-Each repository has its own release process. We are in the process of making the release instructions publicly available. Only maintainers can do the releases.
-
-Releases are cut from release branches which are created just before the release. A release candidate (RC) is published for major and minor version increments. 
+Keptn-contrib projects mights have their own independent release process.
 
 
 ### Resources
