@@ -10,19 +10,9 @@ spec:
         name: scaling
         description: Scale up
         value: 1
-      - action: run-snow-wf
-        name: run-snow-wf
-        description: Call SNOW workflow
-        value:
-          hook: https://myremediationlink
     - problemType: response_time_p90
       actionsOnOpen:
         - action: scaling
           name: scaling
           description: Scale up
-          value: 1
-        - action: run-snow-wf
-          name: run-snow-wf
-          description: Call SNOW workflow
-          value:
-            hook: https://myremediationlink
+          value: "1"
