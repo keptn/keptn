@@ -40,6 +40,39 @@ subjects:
     name: keptn-openshift-route-service
     namespace: keptn
 ---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: keptn-create-route
+  namespace: istio-system
+  labels:
+    "app": "keptn"
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - routes
+    verbs:
+      - create
+    resourceNames:
+      - "*"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: keptn-create-route
+  namespace: istio-system
+  labels:
+    "app": "keptn"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: keptn-create-route
+subjects:
+  - kind: ServiceAccount
+    name: keptn-openshift-route-service
+    namespace: keptn
+---
 ## openshift-route-service: create.project
 apiVersion: apps/v1
 kind: Deployment
