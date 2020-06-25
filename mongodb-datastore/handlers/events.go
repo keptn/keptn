@@ -30,7 +30,7 @@ var mutex sync.Mutex
 
 var projectLocks = map[string]*sync.Mutex{}
 
-// LockProject
+// LockProject locks the collections for a project
 func LockProject(project string) {
 	if projectLocks[project] == nil {
 		mutex.Lock()
@@ -40,6 +40,7 @@ func LockProject(project string) {
 	projectLocks[project].Lock()
 }
 
+// UnLockProject unlocks the collections for a project
 func UnlockProject(project string) {
 	if projectLocks[project] == nil {
 		mutex.Lock()
