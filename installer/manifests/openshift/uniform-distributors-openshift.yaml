@@ -10,7 +10,7 @@ rules:
   - apiGroups:
       - ""
     resources:
-      - routes
+      - routes.route.openshift.io
     verbs:
       - create
     resourceNames:
