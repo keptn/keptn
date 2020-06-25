@@ -28,13 +28,29 @@ const rootEventCollectionSuffix = "-rootEvents"
 var client *mongo.Client
 var mutex sync.Mutex
 
-type ProjectEventData struct {
-	Project *string `json:"project,omitempty"`
+var projectLocks = map[string]*sync.Mutex{}
+
+// LockProject
+func LockProject(project string) {
+	if projectLocks[project] == nil {
+		mutex.Lock()
+		defer mutex.Unlock()
+		projectLocks[project] = &sync.Mutex{}
+	}
+	projectLocks[project].Lock()
 }
 
-type eventWithMongoDBID struct {
-	models.KeptnContextExtendedCE
-	MongoDBID string `json:"_id"`
+func UnlockProject(project string) {
+	if projectLocks[project] == nil {
+		mutex.Lock()
+		defer mutex.Unlock()
+		projectLocks[project] = &sync.Mutex{}
+	}
+	projectLocks[project].Unlock()
+}
+
+type ProjectEventData struct {
+	Project *string `json:"project,omitempty"`
 }
 
 func ensureDBConnection(logger *keptnutils.Logger) error {
@@ -94,6 +110,10 @@ func insertEvent(logger *keptnutils.Logger, event *models.KeptnContextExtendedCE
 
 	// insert in project collection
 	collectionName := getProjectOfEvent(event)
+
+	LockProject(collectionName)
+	defer UnlockProject(collectionName)
+
 	collection := client.Database(mongoDBName).Collection(collectionName)
 
 	logger.Debug("Storing event to collection " + collectionName)
@@ -133,31 +153,58 @@ func storeRootEvent(logger *keptnutils.Logger, collectionName string, ctx contex
 		return nil
 	}
 
-	eventWithMongoDBID := &eventWithMongoDBID{
-		KeptnContextExtendedCE: *event,
-		MongoDBID:              event.Shkeptncontext,
-	}
-
 	rootEventsForProjectCollection := client.Database(mongoDBName).Collection(collectionName + rootEventCollectionSuffix)
 
 	result := rootEventsForProjectCollection.FindOne(ctx, bson.M{"shkeptncontext": event.Shkeptncontext})
 
 	if result.Err() != nil && result.Err() == mongo.ErrNoDocuments {
-		eventInterface, err := transformEventToInterface(eventWithMongoDBID)
+		err := storeEventInCollection(event, rootEventsForProjectCollection, ctx)
 		if err != nil {
-			logger.Error("Could not transform root event to interface: " + err.Error())
-			return err
-		}
-
-		_, err = rootEventsForProjectCollection.InsertOne(ctx, eventInterface)
-		if err != nil {
-			err := fmt.Errorf("Failed to store root event for KeptnContext "+event.Shkeptncontext+": %v", err.Error())
-			logger.Error(err.Error())
+			err = fmt.Errorf("Failed to store root event for KeptnContext "+event.Shkeptncontext+": %v", err.Error())
 			return err
 		}
 		logger.Debug("Stored root event for KeptnContext: " + event.Shkeptncontext)
+	} else if result.Err() != nil {
+		// found an already stored root event => check if incoming event precedes the already existing event
+		// if yes, then the new event will be the new root event for this context
+		existingEvent := &models.KeptnContextExtendedCE{}
+
+		err := result.Decode(existingEvent)
+		if err != nil {
+			logger.Error("Could not decode existing root event: " + err.Error())
+			return err
+		}
+
+		if time.Time(existingEvent.Time).After(time.Time(event.Time)) {
+			logger.Debug("Replacing root event for KeptnContext: " + event.Shkeptncontext)
+			_, err := rootEventsForProjectCollection.DeleteOne(ctx, bson.M{"_id": existingEvent.ID})
+			if err != nil {
+				logger.Error("Could not delete previous root event: " + err.Error())
+				return err
+			}
+			err = storeEventInCollection(event, rootEventsForProjectCollection, ctx)
+			if err != nil {
+				err = fmt.Errorf("Failed to store root event for KeptnContext "+event.Shkeptncontext+": %v", err.Error())
+				return err
+			}
+			logger.Debug("Stored new root event for KeptnContext: " + event.Shkeptncontext)
+		}
 	}
 	logger.Error("Root event for KeptnContext " + event.Shkeptncontext + " already exists in collection")
+	return nil
+}
+
+func storeEventInCollection(event *models.KeptnContextExtendedCE, collection *mongo.Collection, ctx context.Context) error {
+	eventInterface, err := transformEventToInterface(event)
+	if err != nil {
+		return err
+	}
+
+	_, err = collection.InsertOne(ctx, eventInterface)
+	if err != nil {
+		err := fmt.Errorf("Failed to store root event for KeptnContext "+event.Shkeptncontext+": %v", err.Error())
+		return err
+	}
 	return nil
 }
 

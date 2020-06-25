@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"time"
 
 	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
 )
@@ -230,6 +231,38 @@ func storeRootEvent(collectionName string, ctx context.Context, event bson.M) er
 			return err
 		}
 		fmt.Println("Stored root event for KeptnContext: " + keptnContext)
+	} else if result.Err() != nil {
+		// found an already stored root event => check if incoming event precedes the already existing event
+		// if yes, then the new event will be the new root event for this context
+		existingEvent := &keptnapimodels.KeptnContextExtendedCE{}
+
+		err := result.Decode(existingEvent)
+		if err != nil {
+			fmt.Println("Could not decode existing root event: " + err.Error())
+			return err
+		}
+
+		if time.Time(existingEvent.Time).After(event["time"].(time.Time)) {
+			fmt.Println("Replacing root event for KeptnContext: " + keptnContext)
+			_, err := rootEventsForProjectCollection.DeleteOne(ctx, bson.M{"_id": existingEvent.ID})
+			if err != nil {
+				fmt.Println("Could not delete previous root event: " + err.Error())
+				return err
+			}
+			eventInterface, err := transformEventToInterface(event)
+			if err != nil {
+				fmt.Println("Could not transform root event to interface: " + err.Error())
+				return err
+			}
+
+			_, err = rootEventsForProjectCollection.InsertOne(ctx, eventInterface)
+			if err != nil {
+				err := fmt.Errorf("Failed to store root event for KeptnContext "+keptnContext+": %v", err.Error())
+				fmt.Println(err.Error())
+				return err
+			}
+			fmt.Println("Stored root event for KeptnContext: " + keptnContext)
+		}
 	}
 	fmt.Println("Root event for KeptnContext " + keptnContext + " already exists in collection")
 	return nil
