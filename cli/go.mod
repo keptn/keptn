@@ -10,7 +10,7 @@ require (
 	github.com/gorilla/websocket v1.4.1
 	github.com/hashicorp/go-version v1.2.0
 	github.com/keptn/go-utils v0.6.3-0.20200618144455-073e08a10aaa
-	github.com/keptn/kubernetes-utils v0.0.0-20200414115508-d18721552e01
+	github.com/keptn/kubernetes-utils v0.1.1-0.20200625070721-78fa6ab70b07
 	github.com/magiconair/properties v1.8.1
 	github.com/mattn/go-shellwords v1.0.10
 	github.com/mitchellh/go-homedir v1.1.0
