@@ -1,30 +1,52 @@
-let labels = {
-  "sh.keptn.internal.event.service.create": "Service create",
-  "sh.keptn.event.configuration.change": "Configuration change",
-  "sh.keptn.event.monitoring.configure": "Configure monitoring",
-  "sh.keptn.events.deployment-finished": "Deployment finished",
-  "sh.keptn.events.tests-finished": "Tests finished",
-  "sh.keptn.event.start-evaluation": "Start evaluation",
-  "sh.keptn.events.evaluation-done": "Evaluation done",
-  "sh.keptn.internal.event.get-sli": "Start SLI retrieval",
-  "sh.keptn.internal.event.get-sli.done": "SLI retrieval done",
-  "sh.keptn.events.done": "Done",
-  "sh.keptn.event.problem.open": "Problem open",
-  "sh.keptn.events.problem": "Problem detected",
-  "sh.keptn.events.problem.resolved": "Problem resolved",
-  "sh.keptn.event.problem.close": "Problem closed"
+const EVENT_TYPES = {
+  SERVICE_CREATE: 'sh.keptn.internal.event.service.create',
+  CONFIGURATION_CHANGE: 'sh.keptn.event.configuration.change',
+  CONFIGURE_MONITORING: 'sh.keptn.event.monitoring.configure',
+  DEPLOYMENT_FINISHED: 'sh.keptn.events.deployment-finished',
+  TESTS_FINISHED: 'sh.keptn.events.tests-finished',
+  START_EVALUATION: 'sh.keptn.event.start-evaluation',
+  EVALUATION_DONE: 'sh.keptn.events.evaluation-done',
+  START_SLI_RETRIEVAL: 'sh.keptn.internal.event.get-sli',
+  SLI_RETRIEVAL_DONE: 'sh.keptn.internal.event.get-sli.done',
+  DONE: 'sh.keptn.events.done',
+  PROBLEM_OPEN: 'sh.keptn.event.problem.open',
+  PROBLEM_DETECTED: 'sh.keptn.events.problem',
+  PROBLEM_RESOLVED: 'sh.keptn.events.problem.resolved',
+  PROBLEM_CLOSED: 'sh.keptn.event.problem.close',
+  APPROVAL_TRIGGERED: 'sh.keptn.event.approval.triggered',
+  APPROVAL_FINISHED: 'sh.keptn.event.approval.finished'
 };
-let icons = {
-  "sh.keptn.event.configuration.change": "duplicate",
-  "sh.keptn.events.deployment-finished": "deploy",
-  "sh.keptn.events.tests-finished": "perfromance-health",
-  "sh.keptn.event.start-evaluation": "traffic-light",
-  "sh.keptn.events.evaluation-done": "traffic-light",
-  "sh.keptn.internal.event.get-sli": "collector",
-  "sh.keptn.internal.event.get-sli.done": "collector",
-  "sh.keptn.event.problem.open": "criticalevent",
-  "sh.keptn.events.problem": "criticalevent",
-  "sh.keptn.event.problem.close": "applicationhealth"
+let EVENT_LABELS = {
+  [EVENT_TYPES.SERVICE_CREATE]: "Service create",
+  [EVENT_TYPES.CONFIGURATION_CHANGE]: "Configuration change",
+  [EVENT_TYPES.CONFIGURE_MONITORING]: "Configure monitoring",
+  [EVENT_TYPES.DEPLOYMENT_FINISHED]: "Deployment finished",
+  [EVENT_TYPES.TESTS_FINISHED]: "Tests finished",
+  [EVENT_TYPES.START_EVALUATION]: "Start evaluation",
+  [EVENT_TYPES.EVALUATION_DONE]: "Evaluation done",
+  [EVENT_TYPES.START_SLI_RETRIEVAL]: "Start SLI retrieval",
+  [EVENT_TYPES.SLI_RETRIEVAL_DONE]: "SLI retrieval done",
+  [EVENT_TYPES.DONE]: "Done",
+  [EVENT_TYPES.PROBLEM_OPEN]: "Problem open",
+  [EVENT_TYPES.PROBLEM_DETECTED]: "Problem detected",
+  [EVENT_TYPES.PROBLEM_RESOLVED]: "Problem resolved",
+  [EVENT_TYPES.PROBLEM_CLOSED]: "Problem closed",
+  [EVENT_TYPES.APPROVAL_TRIGGERED]: "Approval triggered",
+  [EVENT_TYPES.APPROVAL_FINISHED]: "Approval finished"
+};
+let EVENT_ICONS = {
+  [EVENT_TYPES.CONFIGURATION_CHANGE]: "duplicate",
+  [EVENT_TYPES.DEPLOYMENT_FINISHED]: "deploy",
+  [EVENT_TYPES.TESTS_FINISHED]: "perfromance-health",
+  [EVENT_TYPES.START_EVALUATION]: "traffic-light",
+  [EVENT_TYPES.EVALUATION_DONE]: "traffic-light",
+  [EVENT_TYPES.START_SLI_RETRIEVAL]: "collector",
+  [EVENT_TYPES.SLI_RETRIEVAL_DONE]: "collector",
+  [EVENT_TYPES.PROBLEM_OPEN]: "criticalevent",
+  [EVENT_TYPES.PROBLEM_DETECTED]: "criticalevent",
+  [EVENT_TYPES.PROBLEM_CLOSED]: "applicationhealth",
+  [EVENT_TYPES.APPROVAL_TRIGGERED]: "unknown",
+  [EVENT_TYPES.APPROVAL_FINISHED]: "checkmark"
 };
 
 class Trace {
@@ -87,6 +109,12 @@ class Trace {
         value: string;
       }
     };
+
+    approval: {
+      result: string;
+      status: string;
+    };
+
     Tags: string;
     State: string;
   };
@@ -112,7 +140,7 @@ class Trace {
   }
 
   isFailed(): boolean {
-    return this.data.result == 'fail';
+    return this.data.result == 'fail' || this.type === EVENT_TYPES.APPROVAL_FINISHED && this.data.approval.result == 'failed';
   }
 
   isProblem(): boolean {
@@ -122,7 +150,7 @@ class Trace {
   isSuccessful(): boolean {
     let result: boolean = false;
     if(this.data) {
-      if(this.data.result == 'pass') {
+      if(this.data.result == 'pass' || this.type === EVENT_TYPES.APPROVAL_FINISHED && this.data.approval.result == 'pass') {
         result = true;
       }
     }
@@ -132,10 +160,10 @@ class Trace {
   getLabel(): string {
     // TODO: use translation file
     if(!this.label) {
-      if(this.type === "sh.keptn.events.problem" && this.data.State === "RESOLVED") {
-        this.label = labels["sh.keptn.events.problem.resolved"];
+      if(this.type === EVENT_TYPES.PROBLEM_DETECTED && this.data.State === "RESOLVED") {
+        this.label = EVENT_LABELS[EVENT_TYPES.PROBLEM_RESOLVED];
       } else {
-        this.label = labels[this.type] || this.type;
+        this.label = EVENT_LABELS[this.type] || this.type;
       }
     }
 
@@ -144,7 +172,7 @@ class Trace {
 
   getIcon() {
     if(!this.icon) {
-      this.icon = icons[this.type] || "information";
+      this.icon = EVENT_ICONS[this.type] || "information";
     }
     return this.icon;
   }
@@ -175,4 +203,4 @@ class Trace {
   }
 }
 
-export {Trace, labels}
+export {Trace, EVENT_LABELS, EVENT_TYPES}
