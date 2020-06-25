@@ -65,19 +65,23 @@ print_info "Installing Keptn"
 verify_install_step $? "Installing Keptn failed."
 print_info "Installing Keptn done"
 
+# Install route service
+oc apply -f ../manifests/openshift/route-service-openshift.yaml
+verify_kubectl $? "Deploying keptn's uniform-services failed."
+wait_for_deployment_in_namespace "openshift-route-service" "keptn"
+
 # Install keptn services
 if [[ "$USE_CASE" == "all" ]]; then
   print_info "Wear uniform"
   ./common/wearUniform.sh
   verify_install_step $? "Installing Keptn's uniform failed."
   print_info "Keptn wears uniform"
-fi
 
-# Install additional keptn services for openshift
-print_info "Wear Openshift uniform"
-./openshift/wearUniform.sh
-verify_install_step $? "Installing Keptn's Openshift uniform failed."
-print_info "Keptn wears Openshift uniform"
+  print_info "Wear Openshift uniform"
+  ./openshift/wearUniform.sh
+  verify_install_step $? "Installing Keptn's Openshift uniform failed."
+  print_info "Keptn wears Openshift uniform"
+fi
 
 # Install done
 print_info "Installation of Keptn complete."
