@@ -346,6 +346,9 @@ func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 		} else {
 		}
 	*/
+	if params.Root != nil {
+		collectionName = collectionName + rootEventCollectionSuffix
+	}
 	sortOptions = options.Find().SetSort(bson.D{{"time", -1}}).SetSkip(nextPageKey).SetLimit(pageSize)
 
 	collection := client.Database(mongoDBName).Collection(collectionName)
