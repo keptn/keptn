@@ -27,9 +27,25 @@
   color: $gray-300;
   fill: $gray-300;
 }
+.no-deployment {
+  color: $gray-500;
+}
 .out-of-sync-service {
   color: $blue-400;
   fill: $blue-400;
+}
+
+
+::ng-deep .dt-button-nested .dt-button-icon .dt-icon.error svg,
+::ng-deep .dt-button-nested:hover:not([disabled]) .dt-button-icon .dt-icon.error svg {
+  color: $error-color;
+  fill: $error-color;
+}
+
+::ng-deep .dt-button-nested .dt-button-icon .dt-icon.success svg,
+::ng-deep .dt-button-nested:hover:not([disabled]) .dt-button-icon .dt-icon.success svg {
+  color: $cta-color-active;
+  fill: $cta-color-active;
 }
 
 ::ng-deep .dt-menu,

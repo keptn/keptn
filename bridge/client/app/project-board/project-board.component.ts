@@ -13,7 +13,7 @@ import {DataService} from "../_services/data.service";
 import {ApiService} from "../_services/api.service";
 import DateUtil from "../_utils/date.utils";
 import {Service} from "../_models/service";
-import {labels, Trace} from "../_models/trace";
+import {EVENT_LABELS, Trace} from "../_models/trace";
 import {Stage} from "../_models/stage";
 import {DtCheckboxChange} from "@dynatrace/barista-components/checkbox";
 
@@ -25,6 +25,8 @@ import {DtCheckboxChange} from "@dynatrace/barista-components/checkbox";
 export class ProjectBoardComponent implements OnInit, OnDestroy {
 
   public project$: Observable<Project>;
+  public openApprovals$: Observable<Trace[]>;
+
   public currentRoot: Root;
   public error: string = null;
 
@@ -47,6 +49,8 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
 
   public eventTypes: string[] = [];
   public filterEventTypes: string[] = [];
+
+  public openApprovals: Event[] = [];
 
   constructor(private _changeDetectorRef: ChangeDetectorRef, private router: Router, private location: Location, private route: ActivatedRoute, private dataService: DataService, private apiService: ApiService) { }
 
@@ -91,6 +95,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
             return project.projectName === params['projectName'];
           }) : null)
         );
+        this.openApprovals$ = this.dataService.openApprovals;
 
         this._projectSub = this.project$.subscribe(project => {
           if(project === undefined)
@@ -209,7 +214,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   }
 
   getEventLabel(key): string {
-    return labels[key] || key;
+    return EVENT_LABELS[key] || key;
   }
 
   getFilteredRoots(roots: Root[]) {
@@ -219,6 +224,22 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
 
   selectStage(stage) {
     this.selectedStage = stage;
+  }
+
+  countOpenApprovals(openApprovals: Trace[], stage: Stage, service?: Service) {
+    return openApprovals.filter(approval => approval == openApprovals.find(a => a.data.stage == stage.stageName && a.data.service == approval.data.service && (!service || a.data.service == service.serviceName))).length;
+  }
+
+  getOpenApprovals(openApprovals: Trace[], stage: Stage, service: Service) {
+    return openApprovals.filter(approval => approval.data.stage == stage.stageName && approval.data.service == service.serviceName);
+  }
+
+  approveDeployment(approval) {
+    this.dataService.sendApprovalEvent(approval, true);
+  }
+
+  declineDeployment(approval) {
+    this.dataService.sendApprovalEvent(approval, false);
   }
 
   ngOnDestroy(): void {
