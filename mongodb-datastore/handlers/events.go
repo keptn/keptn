@@ -292,12 +292,14 @@ func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 	pageSize := *params.PageSize
 
 	var sortOptions *options.FindOptions
-	if params.Root != nil {
-		collectionName = collectionName + rootEventCollectionSuffix
-		sortOptions = options.Find().SetSort(bson.D{{"time", 1}}).SetSkip(nextPageKey).SetLimit(pageSize)
-	} else {
-		sortOptions = options.Find().SetSort(bson.D{{"time", -1}}).SetSkip(nextPageKey).SetLimit(pageSize)
-	}
+	/*
+		if params.Root != nil {
+			collectionName = collectionName + rootEventCollectionSuffix
+			sortOptions = options.Find().SetSort(bson.D{{"time", 1}}).SetSkip(nextPageKey).SetLimit(pageSize)
+		} else {
+		}
+	*/
+	sortOptions = options.Find().SetSort(bson.D{{"time", -1}}).SetSkip(nextPageKey).SetLimit(pageSize)
 
 	collection := client.Database(mongoDBName).Collection(collectionName)
 
