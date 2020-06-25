@@ -66,7 +66,7 @@
                     </ng-container>
                   </div>
                 </div>
-                <ng-container *ngIf="stage.services">
+                <ng-container *ngIf="stage.services && stage.services.length > 0; else noService">
                   <dt-tag-list aria-label="services">
                     <dt-tag *ngFor="let service of stage.services">
                       <ng-container *ngIf="openApprovals$ | async as openApprovals">
@@ -93,6 +93,10 @@
           <p *ngIf="countOpenApprovals(openApprovals, selectedStage) != 1"><span [textContent]="countOpenApprovals(openApprovals, selectedStage)"></span> Services are out-of-sync</p>
         </ng-container>
       </div>
+      <div fxLayout="row" fxLayoutAlign="start center" *ngIf="selectedStage.services.length == 0">
+        <dt-icon class="icon" name="information"></dt-icon>
+        <p class="m-0">No service onboarded yet. Check out <a href="https://keptn.sh/docs/0.6.0/manage/service/" target="_blank">how to onboard a service</a>.</p>
+      </div>
       <ng-container *ngFor="let service of selectedStage.services">
         <ktb-expandable-tile>
           <ktb-expandable-tile-header>
@@ -112,7 +116,6 @@
                 <p class="m-0 mt-1"><span [textContent]="deployment.data.image"></span>:<span [textContent]="deployment.data.tag"></span></p>
                 <p class="m-0 mb-1"><span class="bold">Deployed at: </span><span [textContent]="deployment.time | amCalendar:getCalendarFormats()"></span></p>
               </ng-container>
-              <ng-template #noDeployment>Not deployed yet.</ng-template>
             </dt-info-group>
           </ktb-expandable-tile-header>
           <ng-container *ngIf="openApprovals$ | async as openApprovals">
@@ -144,6 +147,10 @@
             </dt-info-group-title>
           </dt-info-group>
         </div>
+        <div fxLayout="row" fxLayoutAlign="start center" *ngIf="project.getServices().length == 0">
+          <dt-icon class="icon" name="information"></dt-icon>
+          <p>No service onboarded yet. Check out <a href="https://keptn.sh/docs/0.6.0/manage/service/" target="_blank">how to onboard a service</a>.</p>
+        </div>
         <ktb-expandable-tile *ngFor="let service of project.getServices()" [expanded]="service.serviceName == serviceName">
           <ktb-expandable-tile-header>
             <dt-info-group>
@@ -164,7 +171,7 @@
                   </div>
                 </div>
               </dt-info-group-title>
-              <p class="m-0 mb-1 mt-1" *ngIf="project.getLatestDeployment(service) as deployment">
+              <p class="m-0 mb-1 mt-1" *ngIf="project.getLatestDeployment(service) as deployment; else noDeployment">
                 <span class="bold">Last relevant artifact: </span><span [textContent]="deployment.getShortImageName()"></span>
               </p>
               <button dt-button disabled variant="nested" *ngIf="!service.roots">
@@ -216,3 +223,13 @@
     </div>
   </ng-container>
 </div>
+<ng-template #noDeployment>
+  <p class="m-0">Not deployed yet. Use <a href="https://keptn.sh/docs/0.6.0/reference/cli/commands/keptn_send_event_new-artifact/" target="_blank">keptn send new-artifact</a> to trigger a deployment.</p>
+</ng-template>
+<ng-template #noService>
+  <div fxLayout="row" fxLayoutAlign="start center">
+    <dt-icon class="icon" name="information"></dt-icon>
+    <p class="m-0">No service onboarded yet.</p>
+  </div>
+  <p class="m-0">Check out <a href="https://keptn.sh/docs/0.6.0/manage/service/" target="_blank">how to onboard a service</a>.</p>
+</ng-template>

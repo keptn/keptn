@@ -16,7 +16,7 @@ const EVENT_TYPES = {
   APPROVAL_TRIGGERED: 'sh.keptn.event.approval.triggered',
   APPROVAL_FINISHED: 'sh.keptn.event.approval.finished'
 };
-let EVENT_LABELS = {
+const EVENT_LABELS = {
   [EVENT_TYPES.SERVICE_CREATE]: "Service create",
   [EVENT_TYPES.CONFIGURATION_CHANGE]: "Configuration change",
   [EVENT_TYPES.CONFIGURE_MONITORING]: "Configure monitoring",
@@ -34,7 +34,7 @@ let EVENT_LABELS = {
   [EVENT_TYPES.APPROVAL_TRIGGERED]: "Approval triggered",
   [EVENT_TYPES.APPROVAL_FINISHED]: "Approval finished"
 };
-let EVENT_ICONS = {
+const EVENT_ICONS = {
   [EVENT_TYPES.CONFIGURATION_CHANGE]: "duplicate",
   [EVENT_TYPES.DEPLOYMENT_FINISHED]: "deploy",
   [EVENT_TYPES.TESTS_FINISHED]: "perfromance-health",
@@ -48,6 +48,8 @@ let EVENT_ICONS = {
   [EVENT_TYPES.APPROVAL_TRIGGERED]: "unknown",
   [EVENT_TYPES.APPROVAL_FINISHED]: "checkmark"
 };
+
+const DEFAULT_ICON = "information";
 
 class Trace {
   id: string;
@@ -172,7 +174,7 @@ class Trace {
 
   getIcon() {
     if(!this.icon) {
-      this.icon = EVENT_ICONS[this.type] || "information";
+      this.icon = EVENT_ICONS[this.type] || DEFAULT_ICON;
     }
     return this.icon;
   }
