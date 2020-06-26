@@ -42,3 +42,6 @@ fi
 
 # Install done
 print_info "Installation of Keptn complete."
+
+# wait a few seconds to make sure the last log output is captured by the CLI before the pod is deleted
+sleep 10
