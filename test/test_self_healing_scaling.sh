@@ -17,56 +17,77 @@ PROJECT="sockshop"
 SERVICE="carts"
 STAGE="production"
 
-PROMETHEUS_SERVICE_VERSION=${UNLEASH_SERVICE_VERSION:-0.3.4}
+PROMETHEUS_SERVICE_VERSION=${PROMETHEUS_SERVICE_VERSION:-0.3.4}
 
-kubectl delete namespace sockshop-dev
-kubectl delete namespace sockshop-staging
-kubectl delete namespace sockshop-production
-keptn delete project sockshop
+kubectl delete namespace $PROJECT-dev
+kubectl delete namespace $PROJECT-staging
+kubectl delete namespace $PROJECT-production
+keptn delete project $PROJECT
 
-keptn create project sockshop --shipyard=./test/assets/shipyard_self_healing_scale.yaml
+keptn create project $PROJECT --shipyard=./test/assets/shipyard_self_healing_scale.yaml
 
 # Prerequisites
 rm -rf examples
 git clone --branch master https://github.com/keptn/examples --single-branch
 
-cd examples/onboarding-carts
+cd examples/onboarding-$SERVICE
 
-keptn onboard service carts --project=sockshop --chart=./carts
-keptn onboard service carts-db --project=sockshop --chart=./carts-db --deployment-strategy=direct
-keptn send event new-artifact --project=sockshop --service=carts-db --image=mongo
+###########################################
+# onboard carts                           #
+###########################################
+keptn onboard service $SERVICE --project=$PROJECT --chart=./$SERVICE
 
-keptn add-resource --project=sockshop --service=carts --stage=dev --resource=jmeter/basiccheck.jmx --resourceUri=jmeter/basiccheck.jmx
-keptn add-resource --project=sockshop --service=carts --stage=dev --resource=jmeter/load.jmx --resourceUri=jmeter/load.jmx
+###########################################
+# onboard carts-db                        #
+###########################################
+keptn onboard service $SERVICE-db --project=$PROJECT --chart=./$SERVICE-db --deployment-strategy=direct
+keptn send event new-artifact --project=$PROJECT --service=$SERVICE-db --image=mongo
 
-keptn add-resource --project=sockshop --service=carts --stage=staging --resource=jmeter/basiccheck.jmx --resourceUri=jmeter/basiccheck.jmx
-keptn add-resource --project=sockshop --service=carts --stage=staging --resource=jmeter/basiccheck.jmx --resourceUri=jmeter/load.jmx
+# add health and functional check in dev
+keptn add-resource --project=$PROJECT --service=$SERVICE --stage=dev --resource=jmeter/basiccheck.jmx --resourceUri=jmeter/basiccheck.jmx
+keptn add-resource --project=$PROJECT --service=$SERVICE --stage=dev --resource=jmeter/load.jmx --resourceUri=jmeter/load.jmx
 
-keptn add-resource --project=sockshop --service=carts --stage=production --resource=jmeter/basiccheck.jmx --resourceUri=jmeter/basiccheck.jmx
+# add health and functional check in staging
+keptn add-resource --project=$PROJECT --service=$SERVICE --stage=staging --resource=jmeter/basiccheck.jmx --resourceUri=jmeter/basiccheck.jmx
+keptn add-resource --project=$PROJECT --service=$SERVICE --stage=staging --resource=jmeter/load.jmx --resourceUri=jmeter/load.jmx
+
+# add health check in production
+keptn add-resource --project=$PROJECT --service=$SERVICE --stage=production --resource=jmeter/basiccheck.jmx --resourceUri=jmeter/basiccheck.jmx
 
 cd ../..
 
 # add remediation.yaml
-keptn add-resource --project=sockshop --stage=production --service=carts --resource=./test/assets/self_healing_scaling_remediation.yaml --resourceUri=remediation.yaml
+keptn add-resource --project=$PROJECT --stage=production --service=$SERVICE --resource=./test/assets/self_healing_scaling_remediation.yaml --resourceUri=remediation.yaml
 # add slo file
-keptn add-resource --project=sockshop --service=carts --stage=production --resource=./test/assets/self_healing_slo.yaml --resourceUri=slo.yaml
+keptn add-resource --project=$PROJECT --service=$SERVICE --stage=production --resource=./test/assets/self_healing_slo.yaml --resourceUri=slo.yaml
 
-keptn send event new-artifact --project=sockshop --service=carts --image=docker.io/keptnexamples/carts --tag=0.11.1
+# deploy the service
+keptn send event new-artifact --project=$PROJECT --service=$SERVICE --image=docker.io/keptnexamples/$SERVICE --tag=0.11.1
 
-sleep 200
+echo "It might take a while for the service to be available on production - waiting a bit"
+sleep 50
+echo "Still waiting..."
+sleep 50
 
-wait_for_deployment_in_namespace carts-primary sockshop-production
+wait_for_deployment_in_namespace $SERVICE-primary $PROJECT-$STAGE
 
+###########################################
+# set up prometheus monitoring            #
+###########################################
 kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/prometheus-service/release-$PROMETHEUS_SERVICE_VERSION/deploy/service.yaml
 
 wait_for_deployment_in_namespace prometheus-service keptn
 echo "Prometheus service deployed successfully"
 
-keptn configure monitoring prometheus --project=sockshop --service=carts
+keptn configure monitoring prometheus --project=$PROJECT --service=$SERVICE
 
 wait_for_deployment_in_namespace prometheus-deployment monitoring
 echo "Prometheus deployed successfully"
 
+
+###########################################
+# generate load on the service            #
+###########################################
 cd examples/load-generation/cartsloadgen
 
 kubectl apply -f deploy/cartsloadgen-faulty.yaml
@@ -80,7 +101,7 @@ event=$(wait_for_problem_open_event ${PROJECT} ${SERVICE} ${STAGE})
 echo $event
 verify_using_jq "$event" ".source" "prometheus"
 verify_using_jq "$event" ".data.project" $PROJECT
-verify_using_jq "$event" ".data.stage" "production"
+verify_using_jq "$event" ".data.stage" "$STAGE"
 verify_using_jq "$event" ".data.service" "$SERVICE"
 
 keptn_context_id=$(echo $event | jq -r '.shkeptncontext')
@@ -158,7 +179,7 @@ verify_using_jq "$response" ".data.project" "$PROJECT"
 verify_using_jq "$response" ".data.stage" "$STAGE"
 verify_using_jq "$response" ".data.service" "$SERVICE"
 
-replicacount=$(kubectl get deployment -n sockshop-production carts-primary -ojsonpath='{.spec.replicas}')
+replicacount=$(kubectl get deployment -n $PROJECT-$STAGE $SERVICE-primary -ojsonpath='{.spec.replicas}')
 if [[ "$replicacount" != "2" ]]; then
   echo "number of replicas has not been increased"
   exit 2
