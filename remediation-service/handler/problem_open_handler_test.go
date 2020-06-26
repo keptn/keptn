@@ -2,17 +2,18 @@ package handler
 
 import (
 	"encoding/json"
-	cloudevents "github.com/cloudevents/sdk-go"
-	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
-	"github.com/go-openapi/strfmt"
-	keptnapi "github.com/keptn/go-utils/pkg/api/models"
-	keptn "github.com/keptn/go-utils/pkg/lib"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"strings"
 	"testing"
+
+	cloudevents "github.com/cloudevents/sdk-go"
+	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
+	"github.com/go-openapi/strfmt"
+	keptnapi "github.com/keptn/go-utils/pkg/api/models"
+	keptn "github.com/keptn/go-utils/pkg/lib"
 )
 
 const shipyardContent = `stages:
@@ -31,7 +32,7 @@ const shipyardResource = `{
       "resourceURI": "shipyard.yaml"
     }`
 
-const remediationYamlContent = `version: 0.2.0
+const remediationYamlContent = `apiVersion: spec.keptn.sh/0.1.3
 kind: Remediation
 metadata:
   name: remediation-configuration
@@ -54,12 +55,12 @@ spec:
       description: Escalate the problem`
 
 const remediationYamlResourceWithValidRemediation = `{
-      "resourceContent": "dmVyc2lvbjogMC4yLjAKa2luZDogUmVtZWRpYXRpb24KbWV0YWRhdGE6CiAgbmFtZTogcmVtZWRpYXRpb24tY29uZmlndXJhdGlvbgpzcGVjOgogIHJlbWVkaWF0aW9uczogCiAgLSBwcm9ibGVtVHlwZTogIlJlc3BvbnNlIHRpbWUgZGVncmFkYXRpb24iCiAgICBhY3Rpb25zT25PcGVuOgogICAgLSBuYW1lOiBUb29nbGUgZmVhdHVyZSBmbGFnCiAgICAgIGFjdGlvbjogdG9nZ2xlZmVhdHVyZQogICAgICBkZXNjcmlwdGlvbjogVG9nZ2xlIGZlYXR1cmUgZmxhZyBFbmFibGVQcm9tb3Rpb24gZnJvbSBPTiB0byBPRkYKICAgICAgdmFsdWU6CiAgICAgICAgRW5hYmxlUHJvbW90aW9uOiBvZmYKICAtIHByb2JsZW1UeXBlOiAnKicKICAgIGFjdGlvbnNPbk9wZW46CiAgICAtIG5hbWU6CiAgICAgIGFjdGlvbjogZXNjYWxhdGUKICAgICAgZGVzY3JpcHRpb246IEVzY2FsYXRlIHRoZSBwcm9ibGVt",
+      "resourceContent": "YXBpVmVyc2lvbjogc3BlYy5rZXB0bi5zaC8wLjEuMwpraW5kOiBSZW1lZGlhdGlvbgptZXRhZGF0YToKICBuYW1lOiByZW1lZGlhdGlvbi1jb25maWd1cmF0aW9uCnNwZWM6CiAgcmVtZWRpYXRpb25zOiAKICAtIHByb2JsZW1UeXBlOiAiUmVzcG9uc2UgdGltZSBkZWdyYWRhdGlvbiIKICAgIGFjdGlvbnNPbk9wZW46CiAgICAtIG5hbWU6IFRvb2dsZSBmZWF0dXJlIGZsYWcKICAgICAgYWN0aW9uOiB0b2dnbGVmZWF0dXJlCiAgICAgIGRlc2NyaXB0aW9uOiBUb2dnbGUgZmVhdHVyZSBmbGFnIEVuYWJsZVByb21vdGlvbiBmcm9tIE9OIHRvIE9GRgogICAgICB2YWx1ZToKICAgICAgICBFbmFibGVQcm9tb3Rpb246IG9mZgogIC0gcHJvYmxlbVR5cGU6ICcqJwogICAgYWN0aW9uc09uT3BlbjoKICAgIC0gbmFtZToKICAgICAgYWN0aW9uOiBlc2NhbGF0ZQogICAgICBkZXNjcmlwdGlvbjogRXNjYWxhdGUgdGhlIHByb2JsZW0=",
       "resourceURI": "remediation.yaml"
     }`
 
 const remediationYamlResourceWithValidRemediationAndMultipleActions = `{
-      "resourceContent": "dmVyc2lvbjogMC4yLjAKa2luZDogUmVtZWRpYXRpb24KbWV0YWRhdGE6CiAgbmFtZTogcmVtZWRpYXRpb24tY29uZmlndXJhdGlvbgpzcGVjOgogIHJlbWVkaWF0aW9uczogCiAgLSBwcm9ibGVtVHlwZTogIlJlc3BvbnNlIHRpbWUgZGVncmFkYXRpb24iCiAgICBhY3Rpb25zT25PcGVuOgogICAgLSBuYW1lOiBUb29nbGUgZmVhdHVyZSBmbGFnCiAgICAgIGFjdGlvbjogdG9nZ2xlZmVhdHVyZQogICAgICBkZXNjcmlwdGlvbjogVG9nZ2xlIGZlYXR1cmUgZmxhZyBFbmFibGVQcm9tb3Rpb24gZnJvbSBPTiB0byBPRkYKICAgICAgdmFsdWU6CiAgICAgICAgRW5hYmxlUHJvbW90aW9uOiBvZmYKICAgIC0gbmFtZTogbXkgc2Vjb25kIGFjdGlvbgogICAgICBhY3Rpb246IGVzY2FsYXRlCiAgICAgIGRlc2NyaXB0aW9uOiBlc2NhbGF0ZSB0aGUgcHJvYmxlbQogIC0gcHJvYmxlbVR5cGU6ICcqJwogICAgYWN0aW9uc09uT3BlbjoKICAgIC0gbmFtZToKICAgICAgYWN0aW9uOiBlc2NhbGF0ZQogICAgICBkZXNjcmlwdGlvbjogRXNjYWxhdGUgdGhlIHByb2JsZW0=",
+      "resourceContent": "YXBpVmVyc2lvbjogc3BlYy5rZXB0bi5zaC8wLjEuMwpraW5kOiBSZW1lZGlhdGlvbgptZXRhZGF0YToKICBuYW1lOiByZW1lZGlhdGlvbi1jb25maWd1cmF0aW9uCnNwZWM6CiAgcmVtZWRpYXRpb25zOiAKICAtIHByb2JsZW1UeXBlOiAiUmVzcG9uc2UgdGltZSBkZWdyYWRhdGlvbiIKICAgIGFjdGlvbnNPbk9wZW46CiAgICAtIG5hbWU6IFRvb2dsZSBmZWF0dXJlIGZsYWcKICAgICAgYWN0aW9uOiB0b2dnbGVmZWF0dXJlCiAgICAgIGRlc2NyaXB0aW9uOiBUb2dnbGUgZmVhdHVyZSBmbGFnIEVuYWJsZVByb21vdGlvbiBmcm9tIE9OIHRvIE9GRgogICAgICB2YWx1ZToKICAgICAgICBFbmFibGVQcm9tb3Rpb246IG9mZgogICAgLSBuYW1lOiBteSBzZWNvbmQgYWN0aW9uCiAgICAgIGFjdGlvbjogZXNjYWxhdGUKICAgICAgZGVzY3JpcHRpb246IGVzY2FsYXRlIHRoZSBwcm9ibGVtCiAgLSBwcm9ibGVtVHlwZTogJyonCiAgICBhY3Rpb25zT25PcGVuOgogICAgLSBuYW1lOgogICAgICBhY3Rpb246IGVzY2FsYXRlCiAgICAgIGRlc2NyaXB0aW9uOiBFc2NhbGF0ZSB0aGUgcHJvYmxlbQ==",
       "resourceURI": "remediation.yaml"
     }`
 
@@ -69,7 +70,7 @@ const remediationYamlResourceWithInvalidSpecVersion = `{
     }`
 
 const remediationYamlResourceWithNoRemediations = `{
-      "resourceContent": "dmVyc2lvbjogMC4yLjAKa2luZDogUmVtZWRpYXRpb24KbWV0YWRhdGE6CiAgbmFtZTogcmVtZWRpYXRpb24tY29uZmlndXJhdGlvbgpzcGVjOgogIHJlbWVkaWF0aW9uczo=",
+      "resourceContent": "YXBpVmVyc2lvbjogc3BlYy5rZXB0bi5zaC8wLjEuMwpraW5kOiBSZW1lZGlhdGlvbgptZXRhZGF0YToKICBuYW1lOiByZW1lZGlhdGlvbi1jb25maWd1cmF0aW9uCnNwZWM6CiAgcmVtZWRpYXRpb25zOg==",
       "resourceURI": "remediation.yaml"
     }`
 

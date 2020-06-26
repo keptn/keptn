@@ -5,6 +5,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+	"os"
+	"strings"
+	"time"
+
+	"github.com/keptn/go-utils/pkg/lib/v0_1_3"
+
 	cloudevents "github.com/cloudevents/sdk-go"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 	"github.com/ghodss/yaml"
@@ -12,18 +21,12 @@ import (
 	configmodels "github.com/keptn/go-utils/pkg/api/models"
 	configutils "github.com/keptn/go-utils/pkg/api/utils"
 	keptn "github.com/keptn/go-utils/pkg/lib"
-	"io/ioutil"
-	"net/http"
-	"net/url"
-	"os"
-	"strings"
-	"time"
 )
 
 const remediationFileName = "remediation.yaml"
 const configurationserviceconnection = "CONFIGURATION_SERVICE" //"localhost:6060" // "configuration-service:8080"
 const datastoreConnection = "MONGODB_DATASTORE"
-const remediationSpecVersion = "0.2.0"
+const remediationSpecVersion = "spec.keptn.sh/0.1.3"
 
 // Handler handles incoming Keptn events
 type Handler interface {
@@ -114,7 +117,7 @@ type Remediation struct {
 	Keptn *keptn.Keptn
 }
 
-func (r *Remediation) getActionForProblemType(remediationData keptn.RemediationV02, problemType string, index int) *keptn.RemediationV02ActionsOnOpen {
+func (r *Remediation) getActionForProblemType(remediationData v0_1_3.Remediation, problemType string, index int) *v0_1_3.RemediationActionsOnOpen {
 	for _, remediation := range remediationData.Spec.Remediations {
 		if strings.HasPrefix(problemType, remediation.ProblemType) {
 			r.Keptn.Logger.Info("Found remediation for problem type " + remediation.ProblemType)
@@ -394,7 +397,7 @@ func (r *Remediation) sendRemediationFinishedEvent(status keptn.RemediationStatu
 	return nil
 }
 
-func (r *Remediation) getActionTriggeredEventData(problemDetails keptn.ProblemDetails, action *keptn.RemediationV02ActionsOnOpen) (keptn.ActionTriggeredEventData, error) {
+func (r *Remediation) getActionTriggeredEventData(problemDetails keptn.ProblemDetails, action *v0_1_3.RemediationActionsOnOpen) (keptn.ActionTriggeredEventData, error) {
 	return keptn.ActionTriggeredEventData{
 		Project: r.Keptn.KeptnBase.Project,
 		Service: r.Keptn.KeptnBase.Service,
@@ -435,7 +438,7 @@ func (r *Remediation) sendActionTriggeredEvent(actionTriggeredEventData keptn.Ac
 	return nil
 }
 
-func (r *Remediation) sendRemediationStatusChangedEvent(action *keptn.RemediationV02ActionsOnOpen, actionIndex int) error {
+func (r *Remediation) sendRemediationStatusChangedEvent(action *v0_1_3.RemediationActionsOnOpen, actionIndex int) error {
 
 	remediationStatusChangedEventData := &keptn.RemediationStatusChangedEventData{
 		Project: r.Keptn.KeptnBase.Project,
@@ -505,8 +508,8 @@ func (r *Remediation) getRemediationFile() (*configmodels.Resource, error) {
 	return resource, nil
 }
 
-func (r *Remediation) getRemediation(resource *configmodels.Resource) (*keptn.RemediationV02, error) {
-	remediationData := &keptn.RemediationV02{}
+func (r *Remediation) getRemediation(resource *configmodels.Resource) (*v0_1_3.Remediation, error) {
+	remediationData := &v0_1_3.Remediation{}
 	err := yaml.Unmarshal([]byte(resource.ResourceContent), remediationData)
 	if err != nil {
 		msg := "could not parse remediation.yaml"
@@ -515,8 +518,8 @@ func (r *Remediation) getRemediation(resource *configmodels.Resource) (*keptn.Re
 		return nil, err
 	}
 
-	if remediationData.Version != remediationSpecVersion {
-		msg := "remediation.yaml file does not conform to remediation spec v0.2.0"
+	if remediationData.ApiVersion != remediationSpecVersion {
+		msg := "remediation.yaml file does not conform to remediation spec " + remediationSpecVersion
 		r.Keptn.Logger.Error(msg)
 		_ = r.sendRemediationFinishedEvent(keptn.RemediationStatusErrored, keptn.RemediationResultFailed, msg)
 		return nil, errors.New(msg)
@@ -524,7 +527,7 @@ func (r *Remediation) getRemediation(resource *configmodels.Resource) (*keptn.Re
 	return remediationData, nil
 }
 
-func (r *Remediation) triggerAction(action *keptn.RemediationV02ActionsOnOpen, actionIndex int, problemDetails keptn.ProblemDetails) error {
+func (r *Remediation) triggerAction(action *v0_1_3.RemediationActionsOnOpen, actionIndex int, problemDetails keptn.ProblemDetails) error {
 	err := r.sendRemediationStatusChangedEvent(action, actionIndex)
 	if err != nil {
 		msg := "could not send remediation.status.changed event"
