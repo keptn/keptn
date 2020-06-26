@@ -17,8 +17,10 @@ metadata:
 rules:
   - apiGroups:
       - ""
+      - route.openshift.io
     resources:
-      - routes.route.openshift.io
+      - routes
+      - routes/custom-host
     verbs:
       - create
 ---
