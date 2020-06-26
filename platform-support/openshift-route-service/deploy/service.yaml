@@ -10,31 +10,99 @@ metadata:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: keptn-create-route
+  name: keptn-create-delete-route
   namespace: keptn
   labels:
     "app": "keptn"
 rules:
   - apiGroups:
       - ""
+      - route.openshift.io
     resources:
       - routes
+      - routes/custom-host
     verbs:
       - create
-    resourceNames:
-      - "*"
+      - delete
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: keptn-create-route
+  name: keptn-create-delete-route
   namespace: keptn
   labels:
     "app": "keptn"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
+  name: keptn-create-delete-route
+subjects:
+  - kind: ServiceAccount
+    name: keptn-openshift-route-service
+    namespace: keptn
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
   name: keptn-create-route
+  namespace: istio-system
+  labels:
+    "app": "keptn"
+rules:
+  - apiGroups:
+      - ""
+      - route.openshift.io
+    resources:
+      - routes
+      - routes/custom-host
+    verbs:
+      - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: keptn-create-route
+  namespace: istio-system
+  labels:
+    "app": "keptn"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: keptn-create-route
+subjects:
+  - kind: ServiceAccount
+    name: keptn-openshift-route-service
+    namespace: keptn
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: keptn-secuirtycontextconstraints
+  labels:
+    "app": "keptn"
+rules:
+  - apiGroups:
+      - ""
+      - security.openshift.io
+    resources:
+      - securitycontextconstraints
+    verbs:
+      - get
+      - update
+    resourceNames:
+      - privileged
+      - anyuid
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: keptn-secuirtycontextconstraints
+  labels:
+    "app": "keptn"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: keptn-secuirtycontextconstraints
 subjects:
   - kind: ServiceAccount
     name: keptn-openshift-route-service

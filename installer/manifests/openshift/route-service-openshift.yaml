@@ -1,4 +1,46 @@
 ---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: keptn-openshift-route-service
+  namespace: keptn
+  labels:
+    "app": "keptn"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: keptn-create-delete-route
+  namespace: keptn
+  labels:
+    "app": "keptn"
+rules:
+  - apiGroups:
+      - ""
+      - route.openshift.io
+    resources:
+      - routes
+      - routes/custom-host
+    verbs:
+      - create
+      - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: keptn-create-delete-route
+  namespace: keptn
+  labels:
+    "app": "keptn"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: keptn-create-delete-route
+subjects:
+  - kind: ServiceAccount
+    name: keptn-openshift-route-service
+    namespace: keptn
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -32,7 +74,7 @@ spec:
             configMapKeyRef:
               name: keptn-domain
               key: app_domain
-      serviceAccountName: keptn-default
+      serviceAccountName: keptn-openshift-route-service
 ---
 apiVersion: v1
 kind: Service

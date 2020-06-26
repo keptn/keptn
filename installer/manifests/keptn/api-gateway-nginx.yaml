@@ -5,8 +5,8 @@ metadata:
   namespace: keptn
 data:
   nginx.conf: |
-    user nginx;
     worker_processes  3;
+    pid /tmp/nginx.pid;
     error_log /dev/stdout info;
     events {
       worker_connections  10240;
@@ -34,7 +34,7 @@ data:
       }
 
       server {
-          listen       80;
+          listen       8080;
           server_name  _;
 
           location /mongodb-datastore/swagger-ui/swagger.yaml {
@@ -208,11 +208,12 @@ spec:
     spec:
       containers:
         - name: api-gateway-nginx
-          image: nginx:1.17.9
+          image: nginxinc/nginx-unprivileged:1.17.9
           ports:
-            - containerPort: 80
+            - containerPort: 8080
           volumeMounts:
-            - mountPath: /etc/nginx # mount api-nginx-config volume to /etc/nginx
+            - mountPath: /etc/nginx/nginx.conf # mount api-nginx-config volume to /etc/nginx
+              subPath: nginx.conf
               readOnly: true
               name: api-nginx-config
           resources:
@@ -242,7 +243,7 @@ spec:
   ports:
     - port: 80
       name: http
-      targetPort: 80
+      targetPort: 8080
       protocol: TCP
   selector:
     run: api-gateway-nginx
