@@ -14,12 +14,15 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"time"
 
 	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
 )
 
 const defaultMongoDBConnectionString = "mongodb://user:password@mongodb.keptn-datastore.svc.cluster.local:27017/keptn"
 const defaultConfigurationServiceURL = "configuration-service.keptn.svc.cluster.local:8080"
+
+const rootEventCollectionSuffix = "-rootEvents"
 
 const materializedViewCollection = "keptnProjectsMV"
 
@@ -154,6 +157,11 @@ func main() {
 			}
 		}
 		fmt.Printf("Inserted mapping %s -> %s\n", keptnContext, project)
+
+		err = storeRootEvent(project, ctx, doc)
+		if err != nil {
+			fmt.Println("Could not store root event: " + err.Error())
+		}
 	}
 
 	fmt.Println(fmt.Printf("Projects Materialized View:\n%v", projectsMV))
@@ -182,6 +190,82 @@ func main() {
 			}
 		}
 	}
+}
+
+func transformEventToInterface(event interface{}) (interface{}, error) {
+	data, err := json.Marshal(event)
+	if err != nil {
+		err := fmt.Errorf("failed to marshal event: %v", err)
+		return nil, err
+	}
+
+	var eventInterface interface{}
+	err = json.Unmarshal(data, &eventInterface)
+	if err != nil {
+		err := fmt.Errorf("failed to unmarshal event: %v", err)
+		return nil, err
+	}
+	return eventInterface, nil
+}
+
+func storeRootEvent(collectionName string, ctx context.Context, event bson.M) error {
+
+	keptnContext := event["shkeptncontext"].(string)
+	event["_id"] = keptnContext
+
+	rootEventsForProjectCollection := client.Database("keptn").Collection(collectionName + rootEventCollectionSuffix)
+
+	result := rootEventsForProjectCollection.FindOne(ctx, bson.M{"shkeptncontext": keptnContext})
+
+	if result.Err() != nil && result.Err() == mongo.ErrNoDocuments {
+		eventInterface, err := transformEventToInterface(event)
+		if err != nil {
+			fmt.Println("Could not transform root event to interface: " + err.Error())
+			return err
+		}
+
+		_, err = rootEventsForProjectCollection.InsertOne(ctx, eventInterface)
+		if err != nil {
+			err := fmt.Errorf("Failed to store root event for KeptnContext "+keptnContext+": %v", err.Error())
+			fmt.Println(err.Error())
+			return err
+		}
+		fmt.Println("Stored root event for KeptnContext: " + keptnContext)
+	} else if result.Err() != nil {
+		// found an already stored root event => check if incoming event precedes the already existing event
+		// if yes, then the new event will be the new root event for this context
+		existingEvent := &keptnapimodels.KeptnContextExtendedCE{}
+
+		err := result.Decode(existingEvent)
+		if err != nil {
+			fmt.Println("Could not decode existing root event: " + err.Error())
+			return err
+		}
+
+		if time.Time(existingEvent.Time).After(event["time"].(time.Time)) {
+			fmt.Println("Replacing root event for KeptnContext: " + keptnContext)
+			_, err := rootEventsForProjectCollection.DeleteOne(ctx, bson.M{"_id": existingEvent.ID})
+			if err != nil {
+				fmt.Println("Could not delete previous root event: " + err.Error())
+				return err
+			}
+			eventInterface, err := transformEventToInterface(event)
+			if err != nil {
+				fmt.Println("Could not transform root event to interface: " + err.Error())
+				return err
+			}
+
+			_, err = rootEventsForProjectCollection.InsertOne(ctx, eventInterface)
+			if err != nil {
+				err := fmt.Errorf("Failed to store root event for KeptnContext "+keptnContext+": %v", err.Error())
+				fmt.Println(err.Error())
+				return err
+			}
+			fmt.Println("Stored root event for KeptnContext: " + keptnContext)
+		}
+	}
+	fmt.Println("Root event for KeptnContext " + keptnContext + " already exists in collection")
+	return nil
 }
 
 func transformProjectToInterface(prj *keptnapimodels.Project) (interface{}, error) {
