@@ -13,8 +13,9 @@ import {DataService} from "../_services/data.service";
 import {ApiService} from "../_services/api.service";
 import DateUtil from "../_utils/date.utils";
 import {Service} from "../_models/service";
-import {Trace} from "../_models/trace";
+import {labels, Trace} from "../_models/trace";
 import {Stage} from "../_models/stage";
+import {DtCheckboxChange} from "@dynatrace/barista-components/checkbox";
 
 @Component({
   selector: 'app-project-board',
@@ -41,6 +42,12 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   public contextId: string;
   public eventId: string;
 
+  public view: string = 'services';
+  public selectedStage: Stage = null;
+
+  public eventTypes: string[] = [];
+  public filterEventTypes: string[] = [];
+
   constructor(private _changeDetectorRef: ChangeDetectorRef, private router: Router, private location: Location, private route: ActivatedRoute, private dataService: DataService, private apiService: ApiService) { }
 
   ngOnInit() {
@@ -50,21 +57,23 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
         this.apiService.getTraces(this.contextId)
           .pipe(
             map(response => response.body),
+            map(result => result.events||[]),
             map(traces => traces.map(trace => Trace.fromJSON(trace)))
           )
           .subscribe((traces: Trace[]) => {
             if(traces.length > 0) {
               if(params["eventselector"]) {
-                let trace = traces.find((t: Trace) => t.data.stage == params["eventselector"]);
+                let trace = traces.find((t: Trace) => t.data.stage == params["eventselector"] && !!t.getProject() && !!t.getService());
                 if(!trace)
-                  trace = traces.reverse().find((t: Trace) => t.type == params["eventselector"]);
+                  trace = traces.reverse().find((t: Trace) => t.type == params["eventselector"] && !!t.getProject() && !!t.getService());
 
                 if(trace)
-                  this.router.navigate(['/project', trace.data.project, trace.data.service, trace.shkeptncontext, trace.id]);
+                  this.router.navigate(['/project', trace.getProject(), trace.getService(), trace.shkeptncontext, trace.id]);
                 else
                   this.error = "trace";
               } else {
-                this.router.navigate(['/project', traces[0].data.project, traces[0].data.service, traces[0].shkeptncontext]);
+                let trace = traces.find((t: Trace) => !!t.getProject() && !!t.getService());
+                this.router.navigate(['/project', trace.getProject(), trace.getService(), trace.shkeptncontext]);
               }
             } else {
               this.error = "trace";
@@ -93,8 +102,11 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
 
         this._rootsSubs.unsubscribe();
         this._rootsSubs = this.dataService.roots.subscribe(roots => {
-          if(roots && !this.currentRoot)
-            this.currentRoot = roots.find(r => r.shkeptncontext == params["contextId"]);
+          if(roots) {
+            if(!this.currentRoot)
+              this.currentRoot = roots.find(r => r.shkeptncontext == params["contextId"]);
+            this.eventTypes = this.eventTypes.concat(roots.map(r => r.type)).filter((r, i, a) => a.indexOf(r) === i);
+          }
           if(this.currentRoot && !this.eventId)
             this.eventId = this.currentRoot.traces[this.currentRoot.traces.length-1].id;
         });
@@ -116,17 +128,17 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   }
 
   selectRoot(event: any): void {
-    this.projectName = event.root.data.project;
-    this.serviceName = event.root.data.service;
+    this.projectName = event.root.getProject();
+    this.serviceName = event.root.getService();
     this.contextId = event.root.data.shkeptncontext;
     this.eventId = null;
     if(event.stage) {
       let focusEvent = event.root.traces.find(trace => trace.data.stage == event.stage);
-      let routeUrl = this.router.createUrlTree(['/project', focusEvent.data.project, focusEvent.data.service, focusEvent.shkeptncontext, focusEvent.id]);
+      let routeUrl = this.router.createUrlTree(['/project', focusEvent.getProject(), focusEvent.getService(), focusEvent.shkeptncontext, focusEvent.id]);
       this.eventId = focusEvent.id;
       this.location.go(routeUrl.toString());
     } else {
-      let routeUrl = this.router.createUrlTree(['/project', event.root.data.project, event.root.data.service, event.root.shkeptncontext]);
+      let routeUrl = this.router.createUrlTree(['/project', event.root.getProject(), event.root.getService(), event.root.shkeptncontext]);
       this.eventId = event.root.traces[event.root.traces.length-1].id;
       this.location.go(routeUrl.toString());
     }
@@ -195,6 +207,36 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
 
   trackStage(index: number, stage: Stage) {
     return stage.stageName;
+  }
+
+  selectView(view) {
+    this.view = view;
+  }
+
+  filterEvents(event: DtCheckboxChange<string>, eventType: string): void {
+    let index = this.filterEventTypes.indexOf(eventType);
+    if(index == -1) {
+      this.filterEventTypes.push(eventType);
+    } else {
+      this.filterEventTypes.splice(index, 1);
+    }
+  }
+
+  isFilteredEvent(eventType: string) {
+    return this.filterEventTypes.indexOf(eventType) == -1;
+  }
+
+  getEventLabel(key): string {
+    return labels[key] || key;
+  }
+
+  getFilteredRoots(roots: Root[]) {
+    if(roots)
+      return roots.filter(r => this.filterEventTypes.indexOf(r.type) == -1);
+  }
+
+  selectStage(stage) {
+    this.selectedStage = stage;
   }
 
   ngOnDestroy(): void {

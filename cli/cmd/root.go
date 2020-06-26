@@ -23,33 +23,9 @@ var SuppressWSCommunication bool
 var insecureSkipTLSVerify bool
 var kubectlOptions string
 
-const authErrorMsg = "This command requires to be authenticated. See \"keptn auth\" for details"
+var scheme *string
 
-const logo = `                                                                                                                                     
-                ##########*                                                                                                                                    
-           ,#############    ##                                                                                                                                
-       (###############    ####    *                                                                                                                           
-    ##################    ###*    ###.                                                                                                                         
-   #######      ####    ####    ####                                                                                                                           
-   #####          ,   (###    ####    ##                 .&&&&                                                                                                 
-  (####   #####      ####    ####    ###                 .&&&&                                                                                                 
-  #####    ####    ####    ####    ####                  .&&&&                                                              &&&&&                              
- .######         .###    *###    ####                    .&&&&                                                              &&&&&                              
- ##########     ####    ####    ####    #(               .&&&&                                                              &&&&&                              
- #########    ####    ####    ####    ####               .&&&&       &&&&&/       &&&&&&&&&&/        &&&&&&&&&&&&&%         &&&&&&&&&&&&,     &&&&&&&&&&&&&&   
-#########    ####    ####   .###/   /#####               .&&&&     &&&&&&       &&&&&&&&&&&&&&%      &&&&&&&&&&&&&&&&       &&&&&&&&&&&&,     &&&&&&&&&&&&&&&& 
-#######    ####    ####    ####    ########              .&&&&   &&&&&&        &&&&&.     /&&&&&     &&&&&       &&&&&(     &&&&&             &&&&&      &&&&&&
- ####(   .###    (###    ####    #########               .&&&& &&&&&&         &&&&&        *&&&&     &&&&&        &&&&&     &&&&&             &&&&&       &&&&&
-  ##    ####    ####    ####    ########                 .&&&&&&&&&           &&&&&&&&&&&&&&&&&&     &&&&&         &&&&&    &&&&&             &&&&&       &&&&&
-      ####    ####    ####    #########                  .&&&&&&&&&&          &&&&&&&&&&&&&&&&&&     &&&&&         &&&&&    &&&&&             &&&&&       &&&&&
-     ####    ###/   (###,   (########                    .&&&&  &&&&         &&&&&                   &&&&&         &&&&&    &&&&&             &&&&&       &&&&&
-           ####    ####    ########*                     .&&&&   .&&&&&       #&&&&&                 &&&&&        &&&&&     /&&&&             &&&&&       &&&&&
-         ####    ####    #########                       .&&&&     &&&&&&      &&&&&&&%    ,&&&      &&&&&&&( .&&&&&&&       &&&&&&/  %&&     &&&&&       &&&&&
-          ##    ####    ########                         .&&&&       &&&&      &&&&&&&&&&&&&&        &&&&&&&&&&&&&&&&         &&&&&&&&&&&     &&&&&       &&&&&
-                                                                                    .&&&&&&&*        &&&&&  *&&&&                 (&&%                         
-                                                                                                     &&&&&                                                     
-                                                                                                     &&&&&                                                     
-                                                                                                     &&&&&`
+const authErrorMsg = "This command requires to be authenticated. See \"keptn auth\" for details"
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -57,11 +33,10 @@ var rootCmd = &cobra.Command{
 	Short: "This is a CLI for using keptn",
 	Long: `This is a CLI for using keptn. The CLI allows to authenticate against keptn, to configure your Github organization,
 to create projects, and to onboard services.
-	
-	` + logo,
+	`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
-	//	Run: func(cmd *cobra.Command, args []string) { },
+	// Run: func(cmd *cobra.Command, args []string) {},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -82,6 +57,8 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&SuppressWSCommunication, "suppress-websocket", "", false,
 		"disables websocket communication - use the ID of Keptn context (if provided) for checking the result of your command")
 
+	scheme = rootCmd.PersistentFlags().StringP("scheme", "", "https", "The used scheme for the Keptn API")
+	rootCmd.PersistentFlags().MarkHidden("scheme")
 	cobra.OnInitialize(initConfig)
 
 }

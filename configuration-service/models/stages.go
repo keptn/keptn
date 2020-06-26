@@ -25,7 +25,7 @@ type Stages struct {
 	PageSize float64 `json:"pageSize,omitempty"`
 
 	// stages
-	Stages []*Stage `json:"stages"`
+	Stages []*ExpandedStage `json:"stages"`
 
 	// Total number of stages
 	TotalCount float64 `json:"totalCount,omitempty"`

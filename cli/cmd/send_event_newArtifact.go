@@ -29,7 +29,7 @@ import (
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
-	keptnevents "github.com/keptn/go-utils/pkg/events"
+	keptnevents "github.com/keptn/go-utils/pkg/lib"
 
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
@@ -54,9 +54,16 @@ var newArtifactCmd = &cobra.Command{
 	Long: `Sends a new-artifact event to Keptn in order to deploy a new artifact
 for the specified service in the provided project.
 Therefore, this command takes the project, service, image, and tag of the new artifact.
-	
-Example:
-	keptn send event new-artifact --project=sockshop --service=carts --image=docker.io/keptnexamples/carts --tag=0.7.0`,
+
+The artifact is the name of a Docker image, which can be located at Docker Hub, Quay, or any other registry storing docker images. 
+The new artifact is pushed in the first stage specified in the projects *shipyard.yaml* file. Afterwards, Keptn takes care of deploying this new artifact to the other stages.
+
+Furthermore, please note that the value provided in the *image* flag has to contain the full path to your Docker registry. The only exception is *docker.io* because this is the default in Kubernetes and, hence, can be omitted.
+
+**Note:** This command does not send the actual Docker image to Keptn, just the image name and tag. Instead, Keptn uses Kubernetes functionalities for pulling this image.
+For pulling an image from a private registry, we would like to refer to the Kubernetes documentation (https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/).
+`,
+	Example:      `keptn send event new-artifact --project=sockshop --service=carts --image=docker.io/keptnexamples/carts --tag=0.7.0`,
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		trimmedImage := strings.TrimSuffix(*newArtifact.Image, "/")
@@ -65,7 +72,7 @@ Example:
 		if newArtifact.Tag == nil || *newArtifact.Tag == "" {
 			*newArtifact.Image, *newArtifact.Tag = docker.SplitImageName(*newArtifact.Image)
 		}
-		return docker.CheckImageAvailability(*newArtifact.Image, *newArtifact.Tag)
+		return docker.CheckImageAvailability(*newArtifact.Image, *newArtifact.Tag, nil)
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
@@ -104,17 +111,17 @@ Example:
 			return fmt.Errorf("Failed to marshal cloud event. %s", err.Error())
 		}
 
-		apiEvent := apimodels.Event{}
+		apiEvent := apimodels.KeptnContextExtendedCE{}
 		err = json.Unmarshal(eventByte, &apiEvent)
 		if err != nil {
 			return fmt.Errorf("Failed to map cloud event to API event model. %s", err.Error())
 		}
 
-		eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, "https")
+		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
-			eventContext, err := eventHandler.SendEvent(apiEvent)
+			eventContext, err := apiHandler.SendEvent(apiEvent)
 			if err != nil {
 				logging.PrintLog("Send new-artifact was unsuccessful", logging.QuietLevel)
 				return fmt.Errorf("Send new-artifact was unsuccessful. %s", *err.Message)
@@ -122,7 +129,7 @@ Example:
 
 			// if eventContext is available, open WebSocket communication
 			if eventContext != nil && !SuppressWSCommunication {
-				return websockethelper.PrintWSContentEventContext(eventContext, endPoint)
+				return websockethelper.PrintWSContentEventContext(eventContext, endPoint, *scheme == "https")
 			}
 
 			return nil

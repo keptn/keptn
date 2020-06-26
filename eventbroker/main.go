@@ -19,7 +19,7 @@ import (
 	"log"
 	"os"
 
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	keptnutils "github.com/keptn/go-utils/pkg/lib"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
@@ -37,6 +37,8 @@ type envConfig struct {
 
 var httpClient client.Client
 
+var pubSubConnections map[string]transport.Transport
+
 func main() {
 	var env envConfig
 	if err := envconfig.Process("", &env); err != nil {
@@ -52,6 +54,8 @@ func _main(args []string, env envConfig) int {
 		cloudeventshttp.WithPort(env.Port),
 		cloudeventshttp.WithPath(env.Path),
 	)
+
+	pubSubConnections = map[string]transport.Transport{}
 
 	if err != nil {
 		log.Fatalf("failed to create transport, %v", err)
@@ -77,16 +81,19 @@ func createPubSubConnection(topic string, logger *keptnutils.Logger) (transport.
 		return nil, errors.New("no PubSub Topic defined")
 	}
 
-	natsConnection, err := cloudeventsnats.New(
-		pubSubURL,
-		topic,
-	)
-
-	if err != nil {
-		logger.Error("Failed to create NATS connection, " + err.Error())
-		return nil, err
+	if pubSubConnections[topic] == nil {
+		natsConnection, err := cloudeventsnats.New(
+			pubSubURL,
+			topic,
+		)
+		if err != nil {
+			logger.Error("Failed to create NATS connection, " + err.Error())
+			return nil, err
+		}
+		pubSubConnections[topic] = natsConnection
 	}
-	return natsConnection, nil
+
+	return pubSubConnections[topic], nil
 }
 
 func gotEvent(ctx context.Context, event cloudevents.Event) error {
@@ -101,7 +108,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	if err != nil {
 		logger.Error("Unable to create cloudevent client: " + err.Error())
 	}
-	_, err = eventClient.Send(ctx, event)
+	_, _, err = eventClient.Send(ctx, event)
 	if err != nil {
 		logger.Error("Failed to send cloudevent: " + err.Error())
 	}

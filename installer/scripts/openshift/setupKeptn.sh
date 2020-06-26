@@ -27,16 +27,18 @@ kubectl create secret generic -n keptn keptn-api-token --from-literal=keptn-api-
 # Deploy keptn core components
 
 # Install logging
-print_info "Installing Logging"
-kubectl apply -f ../manifests/logging/namespace.yaml
-verify_kubectl $? "Creating logging namespace failed."
+print_info "Installing Keptn Datastore"
+kubectl apply -f ../manifests/logging/rbac.yaml
+verify_kubectl $? "Creating rbac failed."
 kubectl apply -f ../manifests/logging/mongodb/pvc.yaml
 verify_kubectl $? "Creating mongodb PVC failed."
+kubectl apply -f ../manifests/logging/mongodb/secret.yaml
+verify_kubectl $? "Creating mongodb secret failed."
 kubectl apply -f ../manifests/logging/mongodb/deployment.yaml
 verify_kubectl $? "Creating mongodb deployment failed."
 kubectl apply -f ../manifests/logging/mongodb/svc.yaml
 verify_kubectl $? "Creating mongodb service failed."
-kubectl apply -f ../manifests/logging/mongodb-datastore/openshift/mongodb-datastore.yaml
+kubectl apply -f ../manifests/logging/mongodb-datastore/mongodb-datastore.yaml
 verify_kubectl $? "Creating mongodb-datastore service failed."
 wait_for_deployment_in_namespace "mongodb-datastore" "keptn-datastore"
 kubectl apply -f ../manifests/logging/mongodb-datastore/mongodb-datastore-distributor.yaml
@@ -54,7 +56,7 @@ verify_kubectl $? "Deploying Keptn core components failed."
 ## Start validation of Keptn core           ##
 ##############################################
 wait_for_all_pods_in_namespace "keptn"
-wait_for_deployment_in_namespace "api" "keptn"
+wait_for_deployment_in_namespace "api-service" "keptn"
 wait_for_deployment_in_namespace "bridge" "keptn"
 wait_for_deployment_in_namespace "eventbroker-go" "keptn"
 wait_for_deployment_in_namespace "helm-service" "keptn"
@@ -63,6 +65,13 @@ wait_for_deployment_in_namespace "configuration-service" "keptn"
 wait_for_deployment_in_namespace "helm-service-service-create-distributor" "keptn"
 wait_for_deployment_in_namespace "shipyard-service-create-project-distributor" "keptn"
 wait_for_deployment_in_namespace "shipyard-service-delete-project-distributor" "keptn"
+
+# Install API Gateway NGINX
+print_debug "Deploying API Gateway NGINX"
+kubectl apply -f ../manifests/keptn/api-gateway-nginx.yaml
+verify_kubectl $? "Deploying API Gateway NGINX failed."
+wait_for_all_pods_in_namespace "keptn"
+wait_for_deployment_in_namespace "api-gateway-nginx" "keptn"
 
 case $USE_CASE in
   quality-gates)
@@ -101,48 +110,15 @@ case $USE_CASE in
     wait_for_deployment_in_namespace "wait-service" "keptn"
     wait_for_deployment_in_namespace "lighthouse-service-distributor" "keptn"
     wait_for_deployment_in_namespace "gatekeeper-service-evaluation-done-distributor" "keptn"
-    wait_for_deployment_in_namespace "helm-service-configuration-change-distributor" "keptn"
+    wait_for_deployment_in_namespace "helm-service-distributor" "keptn"
     wait_for_deployment_in_namespace "jmeter-service-deployment-distributor" "keptn"
-    wait_for_deployment_in_namespace "remediation-service-problem-distributor" "keptn"
+    wait_for_deployment_in_namespace "remediation-service-distributor" "keptn"
     wait_for_deployment_in_namespace "wait-service-deployment-distributor" "keptn"
     ;;
   *)
     echo "Use case not provided"
     ;;
 esac
-
-if [ "$INGRESS" = "istio" ]; then
-  kubectl apply -f ../manifests/istio/public-gateway.yaml
-  verify_kubectl $? "Deploying public-gateway failed."
-
-  rm -f ../manifests/keptn/gen/keptn-api-virtualservice.yaml
-  cat ../manifests/keptn/keptn-api-virtualservice.yaml | \
-    sed 's~DOMAIN_PLACEHOLDER~'"$DOMAIN"'~' > ../manifests/keptn/gen/keptn-api-virtualservice.yaml
-
-  kubectl apply -f ../manifests/keptn/gen/keptn-api-virtualservice.yaml
-  verify_kubectl $? "Deploying keptn api virtualservice failed."
-  helm init
-elif [ "$INGRESS" = "nginx" ]; then
-    # Install nginx service mesh
-    print_info "Creating route to Keptn API"
-    oc create route edge api --service=api --port=https --insecure-policy='None' -n keptn
-
-    BASE_URL=$(oc get route -n keptn api -oyaml | yq r - spec.host | sed 's~api-keptn.~~')
-    DOMAIN=$BASE_URL
-
-    oc delete route api -n keptn
-
-    oc create route edge api --service=api --port=https --insecure-policy='None' -n keptn --hostname="api.keptn.$BASE_URL"
-    oc create route edge api2 --service=api --port=https --insecure-policy='None' -n keptn --hostname="api.keptn"
-fi
-
-# Add config map in keptn namespace that contains the domain - this will be used by other services as well
-cat ../manifests/keptn/keptn-domain-configmap.yaml | \
-  sed 's~DOMAIN_PLACEHOLDER~'"$DOMAIN"'~' > ../manifests/gen/keptn-domain-configmap.yaml
-
-kubectl apply -f ../manifests/gen/keptn-domain-configmap.yaml
-verify_kubectl $? "Creating configmap keptn-domain in keptn namespace failed."
-
 
 oc adm policy  add-cluster-role-to-user cluster-admin system:serviceaccount:kube-system:default
 oc adm policy add-scc-to-group privileged system:serviceaccounts -n keptn

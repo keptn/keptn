@@ -1,6 +1,8 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { KtbProjectTileComponent } from './ktb-project-tile.component';
+import {AppModule} from "../../app.module";
+import {HttpClientTestingModule} from "@angular/common/http/testing";
 
 describe('KtbProjectTileComponent', () => {
   let component: KtbProjectTileComponent;
@@ -8,7 +10,11 @@ describe('KtbProjectTileComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ KtbProjectTileComponent ]
+      declarations: [],
+      imports: [
+        AppModule,
+        HttpClientTestingModule,
+      ],
     })
     .compileComponents();
   }));
@@ -19,7 +25,7 @@ describe('KtbProjectTileComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it('should create an instance', () => {
     expect(component).toBeTruthy();
   });
 });

@@ -4,6 +4,10 @@ package restapi
 
 import (
 	"crypto/tls"
+	"github.com/keptn/keptn/configuration-service/restapi/operations/event"
+	"github.com/keptn/keptn/configuration-service/restapi/operations/remediation"
+	"github.com/keptn/keptn/configuration-service/restapi/operations/service_approval"
+	"github.com/keptn/keptn/configuration-service/restapi/operations/services"
 	"net/http"
 	"os"
 	"os/exec"
@@ -11,7 +15,7 @@ import (
 
 	errors "github.com/go-openapi/errors"
 	runtime "github.com/go-openapi/runtime"
-	"github.com/keptn/go-utils/pkg/utils"
+	utils "github.com/keptn/go-utils/pkg/lib"
 	handlers "github.com/keptn/keptn/configuration-service/handlers"
 	"github.com/keptn/keptn/configuration-service/restapi/operations"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/project"
@@ -120,6 +124,28 @@ func configureAPI(api *operations.ConfigurationServiceAPI) http.Handler {
 	api.ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceHandler = service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(handlers.PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc)
 
 	api.ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler = service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc(handlers.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc)
+
+	api.EventHandleEventHandler = event.HandleEventHandlerFunc(handlers.HandleEventHandlerFunc)
+
+	api.ServicesGetServicesHandler = services.GetServicesHandlerFunc(handlers.GetServices)
+
+	api.ServicesGetServiceHandler = services.GetServiceHandlerFunc(handlers.GetService)
+
+	api.ServiceApprovalCreateServiceApprovalHandler = service_approval.CreateServiceApprovalHandlerFunc(handlers.CreateServiceApproval)
+
+	api.ServiceApprovalGetServiceApprovalsHandler = service_approval.GetServiceApprovalsHandlerFunc(handlers.GetServiceApprovals)
+
+	api.ServiceApprovalGetServiceApprovalHandler = service_approval.GetServiceApprovalHandlerFunc(handlers.GetServiceApproval)
+
+	api.ServiceApprovalCloseServiceApprovalHandler = service_approval.CloseServiceApprovalHandlerFunc(handlers.CloseServiceApproval)
+
+	api.RemediationCreateRemediationHandler = remediation.CreateRemediationHandlerFunc(handlers.CreateRemediation)
+
+	api.RemediationGetRemediationsHandler = remediation.GetRemediationsHandlerFunc(handlers.GetRemediations)
+
+	api.RemediationGetRemediationsForContextHandler = remediation.GetRemediationsForContextHandlerFunc(handlers.GetRemediationsForContext)
+
+	api.RemediationCloseRemediationsHandler = remediation.CloseRemediationsHandlerFunc(handlers.CloseRemediations)
 
 	api.ServerShutdown = func() {}
 

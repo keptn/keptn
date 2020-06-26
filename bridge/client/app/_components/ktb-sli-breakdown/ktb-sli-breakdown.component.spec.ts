@@ -1,6 +1,9 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { KtbSliBreakdownComponent } from './ktb-sli-breakdown.component';
+import {KtbEvaluationDetailsComponent} from "../ktb-evaluation-details/ktb-evaluation-details.component";
+import {HttpClientTestingModule} from "@angular/common/http/testing";
+import {AppModule} from "../../app.module";
 
 describe('KtbEvaluationDetailsComponent', () => {
   let component: KtbSliBreakdownComponent;
@@ -8,7 +11,12 @@ describe('KtbEvaluationDetailsComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ KtbSliBreakdownComponent ]
+      declarations: [
+      ],
+      imports: [
+        AppModule,
+        HttpClientTestingModule,
+      ],
     })
     .compileComponents();
   }));
@@ -19,7 +27,7 @@ describe('KtbEvaluationDetailsComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it('should create an instance', () => {
     expect(component).toBeTruthy();
   });
 });

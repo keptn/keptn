@@ -16,25 +16,25 @@ import (
 	"github.com/gorilla/websocket"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	keptnutils "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/cli/pkg/logging"
 )
 
 // PrintWSContentEventContext opens a websocket using the passed
 // connection data and prints status data
-func PrintWSContentEventContext(eventContext *apimodels.EventContext, apiEndPoint url.URL) error {
+func PrintWSContentEventContext(eventContext *apimodels.EventContext, apiEndPoint url.URL, useWss bool) error {
 	connectionData := &keptnutils.ConnectionData{EventContext: *eventContext}
-	return printWSContent(*connectionData, apiEndPoint)
+	return printWSContent(*connectionData, apiEndPoint, useWss)
 }
 
-func printWSContent(connData keptnutils.ConnectionData, apiEndPoint url.URL) error {
+func printWSContent(connData keptnutils.ConnectionData, apiEndPoint url.URL, useWss bool) error {
 
 	err := validateConnectionData(connData)
 	if err != nil {
 		return err
 	}
 
-	ws, _, err := openWS(connData, apiEndPoint)
+	ws, _, err := openWS(connData, apiEndPoint, useWss)
 	if err != nil {
 		fmt.Println("Opening websocket failed")
 		return err
@@ -53,15 +53,17 @@ func validateConnectionData(connData keptnutils.ConnectionData) error {
 }
 
 // openWS opens a websocket
-func openWS(connData keptnutils.ConnectionData, apiEndPoint url.URL) (*websocket.Conn, *http.Response, error) {
+func openWS(connData keptnutils.ConnectionData, apiEndPoint url.URL, useWss bool) (*websocket.Conn, *http.Response, error) {
 
 	wsEndPoint := apiEndPoint
-	wsEndPoint.Scheme = "wss"
-
+	if useWss {
+		wsEndPoint.Scheme = "wss"
+	} else {
+		wsEndPoint.Scheme = "ws"
+	}
 	header := http.Header{}
 	header.Add("Token", *connData.EventContext.Token)
 	header.Add("Keptn-Ws-Channel-Id", *connData.EventContext.KeptnContext)
-	header.Add("Host", "api.keptn")
 
 	dialer := websocket.DefaultDialer
 	dialer.NetDial = apiutils.ResolveXipIo

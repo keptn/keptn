@@ -1,0 +1,13 @@
+---
+definitions:
+  configureBridge:
+    type: object
+    required:
+      - expose
+    properties:
+      expose:
+        type: boolean
+      user:
+        type: string
+      password:
+        type: string

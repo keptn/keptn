@@ -49,12 +49,22 @@
         plugins: [
           SwaggerUIBundle.plugins.DownloadUrl
         ],
-        layout: "StandaloneLayout"
+        layout: "StandaloneLayout",
+        urls: [{
+          url: "/swagger-ui/swagger.yaml",
+          name: "api-service"
+        }, {
+          url: "/configuration-service/swagger-ui/swagger.yaml",
+          name: "configuration-service"
+        }, {
+          url: "/mongodb-datastore/swagger-ui/swagger.yaml",
+          name: "mongodb-datastore"
+        }],
       })
       // End Swagger UI call region
 
       window.ui = ui
     }
-  </script>
+    </script>
   </body>
 </html>

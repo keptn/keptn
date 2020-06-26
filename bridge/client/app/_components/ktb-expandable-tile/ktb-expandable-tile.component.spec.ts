@@ -1,6 +1,8 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { KtbExpandableTileComponent } from './ktb-expandable-tile.component';
+import {KtbExpandableTileComponent, KtbExpandableTileHeader} from './ktb-expandable-tile.component';
+import {AppModule} from '../../app.module';
+import {HttpClientTestingModule} from "@angular/common/http/testing";
 
 describe('KtbExpandableTileComponent', () => {
   let component: KtbExpandableTileComponent;
@@ -8,7 +10,12 @@ describe('KtbExpandableTileComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ KtbExpandableTileComponent ]
+      declarations: [
+      ],
+      imports: [
+        AppModule,
+        HttpClientTestingModule,
+      ],
     })
     .compileComponents();
   }));
@@ -19,7 +26,7 @@ describe('KtbExpandableTileComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it('should create an instance', () => {
     expect(component).toBeTruthy();
   });
 });

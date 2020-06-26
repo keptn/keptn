@@ -6,20 +6,18 @@ metadata:
   namespace: keptn
 spec:
   hosts:
-  - "api.keptn.DOMAIN_PLACEHOLDER"
-  - "api.keptn"
+    - "api.keptn.DOMAIN_PLACEHOLDER"
   gateways:
     - public-gateway.istio-system
   http:
     - route:
-      - destination:
-          host: api.keptn.svc.cluster.local
-      websocketUpgrade: true
+        - destination:
+            host: api-gateway-nginx.keptn.svc.cluster.local
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
 metadata:
-  name: api
+  name: api-gateway-nginx
   namespace: keptn
 spec:
-  host: api.keptn.svc.cluster.local
+  host: api-gateway-nginx.keptn.svc.cluster.local

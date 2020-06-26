@@ -1,6 +1,8 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { KtbEventsListComponent } from './ktb-events-list.component';
+import { AppModule } from '../../app.module';
+import {HttpClientTestingModule} from "@angular/common/http/testing";
 
 describe('KtbEventsListComponent', () => {
   let component: KtbEventsListComponent;
@@ -8,7 +10,12 @@ describe('KtbEventsListComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ KtbEventsListComponent ]
+      declarations: [
+      ],
+      imports: [
+        AppModule,
+        HttpClientTestingModule,
+      ],
     })
     .compileComponents();
   }));
@@ -19,7 +26,7 @@ describe('KtbEventsListComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it('should create an instance', () => {
     expect(component).toBeTruthy();
   });
 });

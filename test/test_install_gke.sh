@@ -18,17 +18,26 @@ replaceCreds
 
 echo "Installing keptn on cluster"
 
-ISTIO_CONFIG=""
+INGRESS_CONFIG=""
 
 # use a different installation method if re-using istio
 if [[ "$KEPTN_INSTALLATION_TYPE" == "REUSE-ISTIO" ]]; then
-  ISTIO_CONFIG="--istio-install-option=Reuse"
+  INGRESS_CONFIG="--ingress-install-option=Reuse"
   echo "... using existing istio"
 fi
 
 # Install keptn (using the develop version, which should point the :latest docker images)
-keptn install ${ISTIO_CONFIG} --keptn-installer-image="${KEPTN_INSTALLER_IMAGE}" --creds=creds.json --verbose
+keptn install ${INGRESS_CONFIG} --keptn-installer-image="${KEPTN_INSTALLER_IMAGE}" --creds=creds.json --verbose
 verify_test_step $? "keptn install failed"
+
+# change domain
+CURRENT_DOMAIN=$(kubectl get cm -n keptn keptn-domain -ojsonpath={.data.app_domain})
+# replace xip.io with nip.io
+NEW_DOMAIN=${CURRENT_DOMAIN//xip/nip}
+
+echo "Changing Keptn domain to ${NEW_DOMAIN}"
+echo "y" | keptn configure domain "${NEW_DOMAIN}" --keptn-version=master
+verify_test_step $? "Could not change Keptn Domain to ${NEW_DOMAIN}"
 
 # verify that the keptn CLI has successfully authenticated
 echo "Checking that keptn is authenticated..."
@@ -38,7 +47,8 @@ verify_test_step $? "Could not find keptn credentials in ~/.keptn folder"
 echo "Verifying that services and namespaces have been created"
 
 # verify the deployments within the keptn namespace
-verify_deployment_in_namespace "api" "keptn"
+verify_deployment_in_namespace "api-gateway-nginx" "keptn"
+verify_deployment_in_namespace "api-service" "keptn"
 verify_deployment_in_namespace "bridge" "keptn"
 verify_deployment_in_namespace "configuration-service" "keptn"
 verify_deployment_in_namespace "gatekeeper-service" "keptn"

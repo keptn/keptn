@@ -31,7 +31,7 @@ func NewDeleteProjectProjectName(ctx *middleware.Context, handler DeleteProjectP
 
 /*DeleteProjectProjectName swagger:route DELETE /project/{projectName} Project deleteProjectProjectName
 
-Delete the specified project
+INTERNAL Endpoint: Delete the specified project
 
 */
 type DeleteProjectProjectName struct {

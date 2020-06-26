@@ -4,11 +4,10 @@ import (
 	"io"
 	"strings"
 
-	kyaml "k8s.io/apimachinery/pkg/util/yaml"
-
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	kyaml "k8s.io/apimachinery/pkg/util/yaml"
 )
 
 // GetServices returns all services contained in the Helm manifest

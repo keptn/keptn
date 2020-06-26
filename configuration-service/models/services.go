@@ -25,7 +25,7 @@ type Services struct {
 	PageSize float64 `json:"pageSize,omitempty"`
 
 	// services
-	Services []*Service `json:"services"`
+	Services []*ExpandedService `json:"services"`
 
 	// Total number of services
 	TotalCount float64 `json:"totalCount,omitempty"`

@@ -1,6 +1,8 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { KtbHttpLoadingSpinnerComponent } from './ktb-http-loading-spinner.component';
+import {HttpClientTestingModule} from "@angular/common/http/testing";
+import {AppModule} from "../../app.module";
 
 describe('HttpLoadingSpinnerComponent', () => {
   let component: KtbHttpLoadingSpinnerComponent;
@@ -8,7 +10,11 @@ describe('HttpLoadingSpinnerComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ KtbHttpLoadingSpinnerComponent ]
+      declarations: [],
+      imports: [
+        AppModule,
+        HttpClientTestingModule,
+      ],
     })
     .compileComponents();
   }));
@@ -19,7 +25,7 @@ describe('HttpLoadingSpinnerComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it('should create an instance', () => {
     expect(component).toBeTruthy();
   });
 });

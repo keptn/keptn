@@ -49,12 +49,46 @@ func init() {
         }
       }
     },
+    "/configure/bridge/expose": {
+      "post": {
+        "tags": [
+          "configure"
+        ],
+        "summary": "Exposes the bridge",
+        "parameters": [
+          {
+            "$ref": "#/parameters/configureBridge"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bridge was successfully exposed/disposed",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "400": {
+            "description": "Bridge could not be exposed/disposed",
+            "schema": {
+              "$ref": "response_model.yaml#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "response_model.yaml#/definitions/error"
+            }
+          }
+        }
+      }
+    },
     "/event": {
       "get": {
         "tags": [
           "Event"
         ],
-        "summary": "Get the latest event matching the required query parameters",
+        "summary": "Deprecated endpoint - please use /mongodb-datastore/v1/event",
+        "deprecated": true,
         "parameters": [
           {
             "type": "string",
@@ -188,41 +222,6 @@ func init() {
         }
       ]
     },
-    "/project/{projectName}/resource": {
-      "post": {
-        "tags": [
-          "Project Resource"
-        ],
-        "summary": "Upload a list of new resources for the project",
-        "parameters": [
-          {
-            "$ref": "#/parameters/resources"
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "Success. Project resources have been uploaded"
-          },
-          "400": {
-            "description": "Failed. Project resources could not be uploaded",
-            "schema": {
-              "$ref": "response_model.yaml#/definitions/error"
-            }
-          },
-          "default": {
-            "description": "Error",
-            "schema": {
-              "$ref": "response_model.yaml#/definitions/error"
-            }
-          }
-        }
-      },
-      "parameters": [
-        {
-          "$ref": "#/parameters/projectName"
-        }
-      ]
-    },
     "/project/{projectName}/service": {
       "post": {
         "tags": [
@@ -260,116 +259,17 @@ func init() {
           "$ref": "#/parameters/projectName"
         }
       ]
-    },
-    "/project/{projectName}/stage/{stageName}/resource": {
-      "post": {
-        "tags": [
-          "Stage Resource"
-        ],
-        "summary": "Upload a list of new resources for the stage",
-        "parameters": [
-          {
-            "$ref": "#/parameters/resources"
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "Success. Stage resources have been uploaded"
-          },
-          "400": {
-            "description": "Failed. Stage resources could not be uploaded",
-            "schema": {
-              "$ref": "response_model.yaml#/definitions/error"
-            }
-          },
-          "default": {
-            "description": "Error",
-            "schema": {
-              "$ref": "response_model.yaml#/definitions/error"
-            }
-          }
-        }
-      },
-      "parameters": [
-        {
-          "$ref": "#/parameters/projectName"
-        },
-        {
-          "$ref": "#/parameters/stageName"
-        }
-      ]
-    },
-    "/project/{projectName}/stage/{stageName}/service/{serviceName}/resource": {
-      "put": {
-        "tags": [
-          "Service Resource"
-        ],
-        "summary": "Update list of service resources",
-        "parameters": [
-          {
-            "$ref": "#/parameters/resources"
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "Success. Service resources have been updated"
-          },
-          "400": {
-            "description": "Failed. Service resources could not be updated.",
-            "schema": {
-              "$ref": "response_model.yaml#/definitions/error"
-            }
-          },
-          "default": {
-            "description": "Error",
-            "schema": {
-              "$ref": "response_model.yaml#/definitions/error"
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "Service Resource"
-        ],
-        "summary": "Upload a list of new resources for the service",
-        "parameters": [
-          {
-            "$ref": "#/parameters/resources"
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "Success. Service resources have been uploaded"
-          },
-          "400": {
-            "description": "Failed. Service resources could not be uploaded",
-            "schema": {
-              "$ref": "response_model.yaml#/definitions/error"
-            }
-          },
-          "default": {
-            "description": "Error",
-            "schema": {
-              "$ref": "response_model.yaml#/definitions/error"
-            }
-          }
-        }
-      },
-      "parameters": [
-        {
-          "$ref": "#/parameters/projectName"
-        },
-        {
-          "$ref": "#/parameters/stageName"
-        },
-        {
-          "$ref": "#/parameters/serviceName"
-        }
-      ]
     }
   },
   "parameters": {
+    "configureBridge": {
+      "description": "Parameters for configuring the bridge access",
+      "name": "configureBridge",
+      "in": "body",
+      "schema": {
+        "$ref": "configure_model.yaml#/definitions/configureBridge"
+      }
+    },
     "project": {
       "description": "Project entity",
       "name": "project",
@@ -385,36 +285,6 @@ func init() {
       "in": "path",
       "required": true
     },
-    "resource": {
-      "description": "Resource",
-      "name": "resource",
-      "in": "body",
-      "schema": {
-        "$ref": "resource_model.yaml#/definitions/resource"
-      }
-    },
-    "resourceURI": {
-      "type": "string",
-      "description": "Resource URI",
-      "name": "resourceURI",
-      "in": "path",
-      "required": true
-    },
-    "resources": {
-      "description": "List of resources",
-      "name": "resources",
-      "in": "body",
-      "schema": {
-        "properties": {
-          "resources": {
-            "type": "array",
-            "items": {
-              "$ref": "resource_model.yaml#/definitions/resource"
-            }
-          }
-        }
-      }
-    },
     "service": {
       "description": "Service entity",
       "name": "service",
@@ -422,13 +292,6 @@ func init() {
       "schema": {
         "$ref": "service_model.yaml#/definitions/service"
       }
-    },
-    "serviceName": {
-      "type": "string",
-      "description": "Name of the service",
-      "name": "serviceName",
-      "in": "path",
-      "required": true
     },
     "stageName": {
       "type": "string",
@@ -453,8 +316,8 @@ func init() {
 }`))
 	FlatSwaggerJSON = json.RawMessage([]byte(`{
   "consumes": [
-    "application/cloudevents+json",
-    "application/json"
+    "application/json",
+    "application/cloudevents+json"
   ],
   "produces": [
     "application/json"
@@ -483,12 +346,51 @@ func init() {
         }
       }
     },
+    "/configure/bridge/expose": {
+      "post": {
+        "tags": [
+          "configure"
+        ],
+        "summary": "Exposes the bridge",
+        "parameters": [
+          {
+            "description": "Parameters for configuring the bridge access",
+            "name": "configureBridge",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/configureBridge"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bridge was successfully exposed/disposed",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "400": {
+            "description": "Bridge could not be exposed/disposed",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
     "/event": {
       "get": {
         "tags": [
           "Event"
         ],
-        "summary": "Get the latest event matching the required query parameters",
+        "summary": "Deprecated endpoint - please use /mongodb-datastore/v1/event",
+        "deprecated": true,
         "parameters": [
           {
             "type": "string",
@@ -631,57 +533,6 @@ func init() {
         }
       ]
     },
-    "/project/{projectName}/resource": {
-      "post": {
-        "tags": [
-          "Project Resource"
-        ],
-        "summary": "Upload a list of new resources for the project",
-        "parameters": [
-          {
-            "description": "List of resources",
-            "name": "resources",
-            "in": "body",
-            "schema": {
-              "properties": {
-                "resources": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/definitions/resource"
-                  }
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "Success. Project resources have been uploaded"
-          },
-          "400": {
-            "description": "Failed. Project resources could not be uploaded",
-            "schema": {
-              "$ref": "#/definitions/error"
-            }
-          },
-          "default": {
-            "description": "Error",
-            "schema": {
-              "$ref": "#/definitions/error"
-            }
-          }
-        }
-      },
-      "parameters": [
-        {
-          "type": "string",
-          "description": "Name of the project",
-          "name": "projectName",
-          "in": "path",
-          "required": true
-        }
-      ]
-    },
     "/project/{projectName}/service": {
       "post": {
         "tags": [
@@ -728,172 +579,26 @@ func init() {
           "required": true
         }
       ]
-    },
-    "/project/{projectName}/stage/{stageName}/resource": {
-      "post": {
-        "tags": [
-          "Stage Resource"
-        ],
-        "summary": "Upload a list of new resources for the stage",
-        "parameters": [
-          {
-            "description": "List of resources",
-            "name": "resources",
-            "in": "body",
-            "schema": {
-              "properties": {
-                "resources": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/definitions/resource"
-                  }
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "Success. Stage resources have been uploaded"
-          },
-          "400": {
-            "description": "Failed. Stage resources could not be uploaded",
-            "schema": {
-              "$ref": "#/definitions/error"
-            }
-          },
-          "default": {
-            "description": "Error",
-            "schema": {
-              "$ref": "#/definitions/error"
-            }
-          }
-        }
-      },
-      "parameters": [
-        {
-          "type": "string",
-          "description": "Name of the project",
-          "name": "projectName",
-          "in": "path",
-          "required": true
-        },
-        {
-          "type": "string",
-          "description": "Name of the stage",
-          "name": "stageName",
-          "in": "path",
-          "required": true
-        }
-      ]
-    },
-    "/project/{projectName}/stage/{stageName}/service/{serviceName}/resource": {
-      "put": {
-        "tags": [
-          "Service Resource"
-        ],
-        "summary": "Update list of service resources",
-        "parameters": [
-          {
-            "description": "List of resources",
-            "name": "resources",
-            "in": "body",
-            "schema": {
-              "properties": {
-                "resources": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/definitions/resource"
-                  }
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "Success. Service resources have been updated"
-          },
-          "400": {
-            "description": "Failed. Service resources could not be updated.",
-            "schema": {
-              "$ref": "#/definitions/error"
-            }
-          },
-          "default": {
-            "description": "Error",
-            "schema": {
-              "$ref": "#/definitions/error"
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "Service Resource"
-        ],
-        "summary": "Upload a list of new resources for the service",
-        "parameters": [
-          {
-            "description": "List of resources",
-            "name": "resources",
-            "in": "body",
-            "schema": {
-              "properties": {
-                "resources": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/definitions/resource"
-                  }
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "Success. Service resources have been uploaded"
-          },
-          "400": {
-            "description": "Failed. Service resources could not be uploaded",
-            "schema": {
-              "$ref": "#/definitions/error"
-            }
-          },
-          "default": {
-            "description": "Error",
-            "schema": {
-              "$ref": "#/definitions/error"
-            }
-          }
-        }
-      },
-      "parameters": [
-        {
-          "type": "string",
-          "description": "Name of the project",
-          "name": "projectName",
-          "in": "path",
-          "required": true
-        },
-        {
-          "type": "string",
-          "description": "Name of the stage",
-          "name": "stageName",
-          "in": "path",
-          "required": true
-        },
-        {
-          "type": "string",
-          "description": "Name of the service",
-          "name": "serviceName",
-          "in": "path",
-          "required": true
-        }
-      ]
     }
   },
   "definitions": {
+    "configureBridge": {
+      "type": "object",
+      "required": [
+        "expose"
+      ],
+      "properties": {
+        "expose": {
+          "type": "boolean"
+        },
+        "password": {
+          "type": "string"
+        },
+        "user": {
+          "type": "string"
+        }
+      }
+    },
     "error": {
       "type": "object",
       "required": [
@@ -964,6 +669,9 @@ func init() {
           "type": "string",
           "format": "date-time"
         },
+        "triggeredid": {
+          "type": "string"
+        },
         "type": {
           "type": "string"
         }
@@ -993,23 +701,6 @@ func init() {
         }
       }
     },
-    "resource": {
-      "type": "object",
-      "required": [
-        "resourceURI",
-        "resourceContent"
-      ],
-      "properties": {
-        "resourceContent": {
-          "description": "Resource content",
-          "type": "string"
-        },
-        "resourceURI": {
-          "description": "Resource URI",
-          "type": "string"
-        }
-      }
-    },
     "service": {
       "type": "object",
       "required": [
@@ -1032,6 +723,14 @@ func init() {
     }
   },
   "parameters": {
+    "configureBridge": {
+      "description": "Parameters for configuring the bridge access",
+      "name": "configureBridge",
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/configureBridge"
+      }
+    },
     "project": {
       "description": "Project entity",
       "name": "project",
@@ -1047,36 +746,6 @@ func init() {
       "in": "path",
       "required": true
     },
-    "resource": {
-      "description": "Resource",
-      "name": "resource",
-      "in": "body",
-      "schema": {
-        "$ref": "#/definitions/resource"
-      }
-    },
-    "resourceURI": {
-      "type": "string",
-      "description": "Resource URI",
-      "name": "resourceURI",
-      "in": "path",
-      "required": true
-    },
-    "resources": {
-      "description": "List of resources",
-      "name": "resources",
-      "in": "body",
-      "schema": {
-        "properties": {
-          "resources": {
-            "type": "array",
-            "items": {
-              "$ref": "#/definitions/resource"
-            }
-          }
-        }
-      }
-    },
     "service": {
       "description": "Service entity",
       "name": "service",
@@ -1084,13 +753,6 @@ func init() {
       "schema": {
         "$ref": "#/definitions/service"
       }
-    },
-    "serviceName": {
-      "type": "string",
-      "description": "Name of the service",
-      "name": "serviceName",
-      "in": "path",
-      "required": true
     },
     "stageName": {
       "type": "string",

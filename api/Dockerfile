@@ -1,6 +1,6 @@
 # Use the offical Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
-FROM golang:1.12.13-alpine as builder
+FROM golang:1.13.7-alpine as builder
 ARG version=develop
 
 WORKDIR /go/src/github.com/keptn/keptn/api
@@ -46,7 +46,6 @@ COPY --from=builder /go/src/github.com/keptn/keptn/api/main /api
 COPY --from=builder /go/src/github.com/keptn/keptn/api/swagger-ui /swagger-ui
 COPY --from=builder /go/src/github.com/keptn/keptn/api/swagger.yaml /swagger-ui/swagger.yaml
 COPY --from=builder /go/src/github.com/keptn/keptn/api/project_model.yaml /swagger-ui/project_model.yaml
-COPY --from=builder /go/src/github.com/keptn/keptn/api/resource_model.yaml /swagger-ui/resource_model.yaml
 COPY --from=builder /go/src/github.com/keptn/keptn/api/response_model.yaml /swagger-ui/response_model.yaml
 COPY --from=builder /go/src/github.com/keptn/keptn/api/service_model.yaml /swagger-ui/service_model.yaml
 

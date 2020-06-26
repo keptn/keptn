@@ -1,9 +1,10 @@
 package handlers
 
 import (
+	"fmt"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
-	"github.com/keptn/go-utils/pkg/utils"
+	utils "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/configuration-service/common"
 	"github.com/keptn/keptn/configuration-service/config"
 	"github.com/keptn/keptn/configuration-service/models"
@@ -22,13 +23,13 @@ func GetProjectProjectNameServiceServiceNameResourceResourceURIHandlerFunc(param
 
 // PostProjectProjectNameServiceServiceNameResourceHandlerFunc creates a list of new default resources
 func PostProjectProjectNameServiceServiceNameResourceHandlerFunc(params service_default_resource.PostProjectProjectNameServiceServiceNameResourceParams) middleware.Responder {
-	common.LockProject(params.ProjectName)
-	defer common.UnlockProject(params.ProjectName)
 	logger := utils.NewLogger("", "", "configuration-service")
-
 	if !common.ProjectExists(params.ProjectName) {
 		return service_default_resource.NewPostProjectProjectNameServiceServiceNameResourceDefault(404).WithPayload(&models.Error{Code: 400, Message: swag.String("Project does not exist")})
 	}
+
+	common.LockProject(params.ProjectName)
+	defer common.UnlockProject(params.ProjectName)
 
 	branches, err := common.GetBranches(params.ProjectName)
 	if err != nil {
@@ -49,6 +50,7 @@ func PostProjectProjectNameServiceServiceNameResourceHandlerFunc(params service_
 		logger.Debug("Checking out branch: " + branch)
 		err := common.CheckoutBranch(params.ProjectName, branch, false)
 		if err != nil {
+			logger.Error(fmt.Sprintf("Could not check out %s branch of project %s", branch, params.ProjectName))
 			logger.Error(err.Error())
 			return service_default_resource.NewPostProjectProjectNameServiceServiceNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not check out branch")})
 		}
@@ -60,8 +62,9 @@ func PostProjectProjectNameServiceServiceNameResourceHandlerFunc(params service_
 		}
 
 		logger.Debug("Staging Changes")
-		err = common.StageAndCommitAll(params.ProjectName, "Added resources")
+		err = common.StageAndCommitAll(params.ProjectName, "Added resources", true)
 		if err != nil {
+			logger.Error(fmt.Sprintf("Could not commit to %s branch of project %s", branch, params.ProjectName))
 			logger.Error(err.Error())
 			return service_default_resource.NewPostProjectProjectNameServiceServiceNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
 		}

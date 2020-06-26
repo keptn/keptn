@@ -18,9 +18,9 @@ import (
 
 	"github.com/keptn/keptn/cli/pkg/file"
 
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/pkg/version"
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"github.com/spf13/cobra"
 )
 
@@ -35,17 +35,22 @@ var configureDomainParams *configureDomainCmdParams
 const installerPrefixURL = "https://raw.githubusercontent.com/keptn/keptn/"
 
 const apiVirtualServiceSuffix = "/installer/manifests/keptn/keptn-api-virtualservice.yaml"
-const apiIngressSuffix = "/installer/manifests/keptn/api-ingress.yaml"
+const keptnIngressSuffix = "/installer/manifests/keptn/keptn-ingress.yaml"
 const domainConfigMapSuffix = "/installer/manifests/keptn/keptn-domain-configmap.yaml"
 
 // domainCmd represents the domain command
 var domainCmd = &cobra.Command{
-	Use:   "domain MY.DOMAIN.COM",
-	Short: "Configures the domain",
-	Long: `Configures the domain of Keptn.
-	
-Example:
-	keptn configure domain my.domain.com`,
+	Use:   "domain YOUR.DOMAIN.COM",
+	Short: "Configures the domain used for Keptn",
+	Long: `Configures the domain used for Keptn.
+
+This is mandatory if *xip.io* cannot be used (e.g., when running Keptn on EKS, AWS will create an ELB).
+
+**Note:** This command requires a *kubernetes current context* pointing to the cluster where you would like to configure your domain. After installing Keptn this is guaranteed.
+
+Please find more information on https://keptn.sh/docs/develop/reference/troubleshooting/#verify-kubernetes-context-with-keptn-installation
+`,
+	Example:      `keptn configure domain YOUR.DOMAIN.COM`,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
 
@@ -83,7 +88,7 @@ Example:
 		if err != nil || !resourcesAvailable {
 			return errors.New("Resources not found under:\n" +
 				getAPIVirtualServiceURL() + "\n" +
-				getAPIIngressURL() + "\n" +
+				getKeptnIngressURL() + "\n" +
 				getDomainConfigMapURL())
 		}
 		logging.PrintLog(fmt.Sprintf("Used version for manifests: %s",
@@ -129,30 +134,40 @@ Example:
 				return err
 			}
 
+			domain := args[0]
+			domain = strings.TrimPrefix(domain, "http://")
+			domain = strings.TrimPrefix(domain, "https://")
+			split := strings.Split(domain, ":")
+
+			if len(split) > 1 {
+				logging.PrintLog("Setting a new NodePort via this command is currently not supported. This command will reuse the existing NodePort.", logging.InfoLevel)
+			}
+			domain = split[0]
 			// Generate new certificate
-			if err := updateCertificate(path, args[0], ingress); err != nil {
+			if err := updateCertificate(path, domain, ingress); err != nil {
 				return err
 			}
 
 			if ingress == istio {
-				if err := updateKeptnAPIVirtualService(path, args[0]); err != nil {
+				if err := updateKeptnAPIVirtualService(path, domain); err != nil {
 					return err
 				}
 			} else if ingress == nginx {
-				if err := updateKeptnAPIIngress(path, args[0]); err != nil {
+				if err := updateKeptnIngress(path, domain); err != nil {
 					return err
 				}
 			}
 
-			if err := updateKeptnDomainConfigMap(path, args[0]); err != nil {
+			if err := updateKeptnDomainConfigMap(path, domain); err != nil {
 				return err
 			}
 
-			if err := keptnutils.RestartPodsWithSelector(false, "keptn", "run=api"); err != nil {
+			// Important: The restart of the api-gateway-nginx pod is necessary for EKS
+			if err := keptnutils.RestartPodsWithSelector(false, "keptn", "run=api-gateway-nginx"); err != nil {
 				return err
 			}
 
-			if err := keptnutils.WaitForPodsWithSelector(false, "keptn", "run=api", 5, 5*time.Second); err != nil {
+			if err := keptnutils.WaitForPodsWithSelector(false, "keptn", "run=api-gateway-nginx", 5, 5*time.Second); err != nil {
 				return err
 			}
 
@@ -167,19 +182,18 @@ Example:
 				if err != nil {
 					return err
 				}
-				fmt.Println("Afterwards, you can login with 'keptn auth --endpoint=https://api.keptn." + args[0] + " --token=" + token + "'")
+				fmt.Println("Afterwards, you can login with 'keptn auth --endpoint=https://api.keptn." + domain + " --token=" + token + "'")
 
 			} else {
 				var err error
-				for retries := 0; retries < 3; retries++ {
+				for retries := 0; retries < 2; retries++ {
 					if err = authUsingKube(); err == nil {
 						break
 					}
-					logging.PrintLog("Retry authentication...", logging.InfoLevel)
-					if err := keptnutils.RestartPodsWithSelector(false, "keptn", "run=api"); err != nil {
+					if err := keptnutils.RestartPodsWithSelector(false, "keptn", "run=api-gateway-nginx"); err != nil {
 						return err
 					}
-					if err := keptnutils.WaitForPodsWithSelector(false, "keptn", "run=api", 5, 5*time.Second); err != nil {
+					if err := keptnutils.WaitForPodsWithSelector(false, "keptn", "run=api-gateway-nginx", 5, 5*time.Second); err != nil {
 						return err
 					}
 				}
@@ -189,6 +203,12 @@ Example:
 				}
 				logging.PrintLog("Successfully configured domain", logging.InfoLevel)
 			}
+			fmt.Println()
+			logging.PrintLog("NOTE: If you have exposed the Keptn's bridge via 'keptn configure bridge --action=expose', please execute the following commands to re-enable access:", logging.InfoLevel)
+			logging.PrintLog("keptn configure bridge --action=lockdown", logging.InfoLevel)
+			logging.PrintLog("keptn configure bridge --action=expose", logging.InfoLevel)
+			fmt.Println()
+			logging.PrintLog("NOTE: VirtualServices for services that have been onboarded previously have not been updated.", logging.InfoLevel)
 		}
 
 		return nil
@@ -212,6 +232,19 @@ func getIngressType() (Ingress, error) {
 }
 
 func updateKeptnDomainConfigMap(path, domain string) error {
+	// retrieve the current domain from the keptn-domain ConfigMap and check if it includes a port
+	o := options{"get", "cm", "-n", "keptn", "keptn-domain", "-ojsonpath={.data.app_domain}"}
+	o.appendIfNotEmpty(kubectlOptions)
+	currentDomainConfig, err := keptnutils.ExecuteCommand("kubectl", o)
+	if err != nil {
+		return err
+	}
+
+	domainSplit := strings.Split(currentDomainConfig, ":")
+	if len(domainSplit) > 1 {
+		logging.PrintLog("Reusing NodePort "+domainSplit[1], logging.InfoLevel)
+		domain = domain + ":" + domainSplit[1]
+	}
 
 	keptnDomainConfigMap := path + "keptn-domain-configmap.yaml"
 
@@ -224,9 +257,9 @@ func updateKeptnDomainConfigMap(path, domain string) error {
 		return err
 	}
 
-	o := options{"delete", "-f", keptnDomainConfigMap}
+	o = options{"delete", "-f", keptnDomainConfigMap}
 	o.appendIfNotEmpty(kubectlOptions)
-	_, err := keptnutils.ExecuteCommand("kubectl", o)
+	_, err = keptnutils.ExecuteCommand("kubectl", o)
 	if err != nil {
 		return err
 	}
@@ -266,20 +299,22 @@ func updateKeptnAPIVirtualService(path, domain string) error {
 	return err
 }
 
-func updateKeptnAPIIngress(path, domain string) error {
+func updateKeptnIngress(path, domain string) error {
 
-	keptnAPIIngress := path + "api-ingress.yaml"
-	if err := file.DownloadFile(keptnAPIIngress, getAPIIngressURL()); err != nil {
+	keptnIngress := path + "keptn-ingress.yaml"
+	if err := file.DownloadFile(keptnIngress, getKeptnIngressURL()); err != nil {
 		return err
 	}
 
-	if err := file.Replace(keptnAPIIngress,
-		file.PlaceholderReplacement{PlaceholderValue: "domain.placeholder", DesiredValue: domain}); err != nil {
+	// Replace the domain- and ingress-placeholders in the ingress resource with the the actual values
+	if err := file.Replace(keptnIngress,
+		file.PlaceholderReplacement{PlaceholderValue: "domain.placeholder", DesiredValue: domain},
+		file.PlaceholderReplacement{PlaceholderValue: "ingress.placeholder", DesiredValue: "nginx"}); err != nil {
 		return err
 	}
 
 	// Delete old api ingress
-	o := options{"delete", "-f", keptnAPIIngress}
+	o := options{"delete", "-f", keptnIngress}
 	o.appendIfNotEmpty(kubectlOptions)
 	_, err := keptnutils.ExecuteCommand("kubectl", o)
 	if err != nil {
@@ -287,7 +322,7 @@ func updateKeptnAPIIngress(path, domain string) error {
 	}
 
 	// Apply new api virtual service
-	o = options{"apply", "-f", keptnAPIIngress}
+	o = options{"apply", "-f", keptnIngress}
 	o.appendIfNotEmpty(kubectlOptions)
 	_, err = keptnutils.ExecuteCommand("kubectl", o)
 	return err
@@ -385,8 +420,8 @@ func getAPIVirtualServiceURL() string {
 	return installerPrefixURL + *configureDomainParams.ConfigVersion + apiVirtualServiceSuffix
 }
 
-func getAPIIngressURL() string {
-	return installerPrefixURL + *configureDomainParams.ConfigVersion + apiIngressSuffix
+func getKeptnIngressURL() string {
+	return installerPrefixURL + *configureDomainParams.ConfigVersion + keptnIngressSuffix
 }
 
 func getDomainConfigMapURL() string {
@@ -402,7 +437,7 @@ func checkConfigureDomainResourceAvailability() (bool, error) {
 	if resp.StatusCode != http.StatusOK {
 		return false, nil
 	}
-	resp, err = http.Get(getAPIIngressURL())
+	resp, err = http.Get(getKeptnIngressURL())
 	if err != nil {
 		return false, err
 	}

@@ -1,5 +1,5 @@
-@import '~@dynatrace/barista-components/style/main';
-@import '~@dynatrace/barista-components/style/index';
+@import '../variables';
+@import '~@dynatrace/barista-components/core/src/style/variables';
 
 #page-content {
   position: relative;
@@ -22,3 +22,4 @@
     color: $gray-500;
   }
 }
+

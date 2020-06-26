@@ -1,0 +1,20 @@
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: ingress.placeholder
+  name: keptn-ingress
+  namespace: keptn
+spec:
+  tls:
+    - hosts:
+        - '*.keptn.domain.placeholder'
+      secretName: sslcerts
+  rules:
+    - host: 'api.keptn.domain.placeholder'
+      http:
+        paths:
+          - backend:
+              serviceName: api-gateway-nginx
+              servicePort: 80

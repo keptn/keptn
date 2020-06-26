@@ -1,7 +1,7 @@
 sudo: true
 language: go
 go:
-  - 1.12.x
+  - 1.13.x
 cache:
   directories:
     - "$HOME/google-cloud-sdk/"
@@ -9,6 +9,16 @@ env:
   global:
     - GO111MODULE=on
     - GOPROXY=https://proxy.golang.org
+
+# configure notifications for failed builds
+notifications:
+  slack:
+    rooms:
+      # token generated using travis encrypt "..." --add notifications.slack -r keptn/keptn --org
+      - secure: NjL/yh3BkTig19hV7nH0q+XxNOxCGTuhdn69WV8tsR0TXp8gqQxD8pnyPX7/nNdkc9PPAUCLGdFlU+vsa3SFt1cdZCgi44lvqHPHBZCa1Sh2+CxqCPRe9NQzU8JJBwDO9OEezbL7Pbfoi7m56MVU6JfkX5RPwN7RLcyCUane/STu3NDBeJLvn0qhjXMFlfKibdwdWom+TZxMiWaZ3oX1omtE88fiHaEGDjTobO3GNR6er9Rd0peAf7LXyHPrJDC0Ss8bz6OVNPQQFtFVwHG/0zVGwZPDbDUw2U+C8DsBVofhPRKhK2g2o0VAESKgrREdDPyVtAsbOnxGnudyPv94whhNjv3aVLeNilNiujXBgeC5R8aWNc2FthDUdB1clKDRFpwiXi0F1J+3bYN498p7QI+Yrr9XSJA62ZCeUjm3Sg2zFs7VtILgCTSbPKzAL4XjSnzefAS8MnG137TnYbwyi9Z/5+XgmLwSguLRMnMlktOH4JxUvD4ImVO7OI/QYYLtUjqqSyjywEa4v+MsyuuqaiT2m4GFpIRKxB4C3c/kONn2kUAd9LM1eIcHonPNmvH36k41nTf+XLOOICy2i1+m1aB18q5yj8qeaQZenpf2WheflM9zDgZc3cku6ZnyZCMdlhLnKfMiCgf8sYvL8qnq1XY2yikeZt4SuMCKLl5wdlI=
+    if: (branch = master or branch =~ ^release.*$) AND (type = cron OR type = push)
+    on_success: never
+    on_failure: always
 
 before_install:
 # determine OS type (either osx for linux) - will be used for downloading dependencies
@@ -24,7 +34,7 @@ before_install:
 - VERSION="unknownversion"
 - DATE="$(date +'%Y%m%d.%H%M')"
 - GIT_SHA="$(git rev-parse --short HEAD)"
-- KUBE_CONSTRAINTS=">= 1.13, <= 1.15"
+- KUBE_CONSTRAINTS=">= 1.14, <= 1.18" # don't forget to udpate the defaults in cli/main.go
 
 # store all changed files from this commit in files.txt (careful - travis commit range might fail)
 - git diff --name-only $TRAVIS_COMMIT_RANGE > files.txt || echo ""
@@ -75,6 +85,15 @@ before_install:
 - MONGODB_DS_FOLDER="mongodb-datastore/"
 - INSTALLER_IMAGE="keptn/installer"
 - INSTALLER_FOLDER="installer/"
+- export KEPTN_INSTALLER_IMAGE=keptn/installer:latest
+- export KEPTN_CLI_VERSION=latest
+- | # set installer image and cli version for release-branches
+  if [[ $BRANCH =~ ^release.* ]]; then
+    export KEPTN_INSTALLER_IMAGE=keptn/installer:${BRANCH#"release-"}
+    export KEPTN_CLI_VERSION=${BRANCH#"release-"}
+  fi
+# generate a lower-case slug of the branch name
+- BRANCH_SLUG=$(echo ${BRANCH} | sed -r s/[^a-zA-Z0-9]+/-/g | sed -r s/^-+\|-+$//g | tr A-Z a-z)
 ### ATTENTION: please make sure installer is always the last in this list
 
 
@@ -82,6 +101,8 @@ before_install:
 gke_full: &gke_full
   os: linux
   before_script:
+    # set CLUSTER_NAME_NIGHTLY according to current branch and GKE_VERSION
+    - export CLUSTER_NAME_NIGHTLY=${CLUSTER_NAME_NIGHTLY}-${BRANCH_SLUG:0:15}-gke${GKE_VERSION//./}
     - source ./travis-scripts/install_gcloud.sh
     # auth gcloud
     - echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
@@ -91,12 +112,16 @@ gke_full: &gke_full
     - test/utils/gke_create_cluster.sh
   script:
     # test installation on gcloud
-    - test/test_install_gke.sh || travis_terminate 1
-    # test onboarding and new artifcat for sockshop
+    - test/test_install_gke.sh
+    - test/utils/expose_keptn_bridge.sh
+    # test onboarding and new-artifact for sockshop
     - export PROJECT=sockshop
-    - test/test_onboard_service.sh || travis_terminate 1
-    - test/test_new_artifact.sh || travis_terminate 1
-    - test/test_delete_project.sh || travis_terminate 1
+    - test/test_onboard_service.sh
+    - test/test_new_artifact.sh
+    - test/test_delete_project.sh
+    - test/test_self_healing.sh
+    - test/test_delivery_assistant.sh
+    - test/test_keptn_uninstall.sh
   after_success:
     # delete google kubernetes cluster only on success (in case of an error we want to be able to dig into the cluster)
     - echo "Tests were successful, cleaning up the cluster now..."
@@ -105,13 +130,103 @@ gke_full: &gke_full
     # print some debug info
     - echo "Keptn Installation Log:"
     - cat ~/.keptn/keptn-installer.log
-    - cat ~/.keptn/keptn-installer-err.log
+    - kubectl get events --sort-by='.lastTimestamp' --all-namespaces
+    - kubectl get pods --all-namespaces
+    - kubectl get services --all-namespaces
+    - kubectl get ingress --all-namespaces
 
 jobs:
   include:
-  # nightly image builds - build all images
-  - stage: nightly
-    if: branch = master and type = cron
+  ##################################################################################
+  # Jobs that are always executed
+  ##################################################################################
+  - stage: Unit tests # Bridge
+    os: linux
+    addons:
+      chrome: stable
+    language:
+      node_js
+    node_js:
+      - 10
+    install:
+      - npm install -g codecov # install codecov globally
+      - npm install -g libnpx@10.2.0 # install npx globally
+    script:
+      - cd bridge
+      - npm install
+      - npm run test:ci
+    after_success:
+      - bash <(curl -s https://codecov.io/bash) -F moduleA
+
+  - stage: Unit tests # golang
+    os: linux
+    script:
+      - set -e # Fail the whole script whenever any command fails
+      - |
+        cd "${CLI_FOLDER}"
+        go test -race -coverprofile=coverage.txt -covermode=atomic -v ./...
+        cd ..
+      - |
+        cd "${API_FOLDER}"
+        go test -coverprofile=coverage.txt -covermode=atomic -v ./handlers/... ./ws/... ./utils/...
+        cd ..
+      - |
+        cd "${OS_ROUTE_SVC_FOLDER}"
+        go test -race -coverprofile=coverage.txt -covermode=atomic -v ./...
+        cd ../..
+      - |
+        cd "${JMETER_SVC_FOLDER}"
+        go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        cd ..
+      - |
+        cd "${HELM_SVC_FOLDER}"
+        go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        cd ..
+      - |
+        cd "${GATEKEEPER_SVC_FOLDER}"
+        go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        cd ..
+      - |
+        cd "${DISTRIBUTOR_FOLDER}"
+        go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        cd ..
+      - |
+        cd "${EVENTBROKER_FOLDER}"
+        go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        cd ..
+      - |
+        cd ${SHIPYARD_SVC_FOLDER}
+        go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        cd ..
+      - |
+        cd "${CONFIGURATION_SVC_FOLDER}"
+        go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        cd ..
+      - |
+        cd "${REMEDIATION_SVC_FOLDER}"
+        go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        cd ..
+      - |
+        cd "${WAIT_SVC_FOLDER}"
+        go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        cd ..
+      - |
+        cd "${LIGHTHOUSE_SVC_FOLDER}"
+        go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        cd ..
+      - |
+        cd "${MONGODB_DS_FOLDER}"
+        go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        cd ..
+      - set +e # revert set -e from above
+    after_success:
+      - bash <(curl -s https://codecov.io/bash)
+
+  ##################################################################################
+  # Jobs for the master branch
+  ##################################################################################
+  - stage: Build Docker Images
+    if: branch = master AND (type = cron or type = push)
     os: linux
     services:
       - docker
@@ -121,208 +236,48 @@ jobs:
     - ./writeManifest.sh
     - cat MANIFEST
     - source ./travis-scripts/build_develop.sh "${API_IMAGE}" "${API_FOLDER}" "${GIT_SHA}" "${DATE}"
-    - cd ..
     - source ./travis-scripts/build_develop.sh "${OS_ROUTE_SVC_IMAGE}" "${OS_ROUTE_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
-    - cd ../..
     - source ./travis-scripts/build_develop.sh "${BRIDGE_IMAGE}" "${BRIDGE_FOLDER}" "${GIT_SHA}" "${DATE}"
-    - cd ..
     - source ./travis-scripts/build_develop.sh "${JMETER_SVC_IMAGE}" "${JMETER_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
-    - cd ..
     - source ./travis-scripts/build_develop.sh "${HELM_SVC_IMAGE}" "${HELM_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
-    - cd ..
     - source ./travis-scripts/build_develop.sh "${GATEKEEPER_SVC_IMAGE}" "${GATEKEEPER_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
-    - cd ..
     - source ./travis-scripts/build_develop.sh "${DISTRIBUTOR_IMAGE}" "${DISTRIBUTOR_FOLDER}" "${GIT_SHA}" "${DATE}"
-    - cd ..
     - source ./travis-scripts/build_develop.sh "${EVENTBROKER_IMAGE}" "${EVENTBROKER_FOLDER}" "${GIT_SHA}" "${DATE}"
-    - cd ..
     - source ./travis-scripts/build_develop.sh "${SHIPYARD_SVC_IMAGE}" "${SHIPYARD_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
-    - cd ..
     - source ./travis-scripts/build_develop.sh "${CONFIGURATION_SVC_IMAGE}" "${CONFIGURATION_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
-    - cd ..
     - source ./travis-scripts/build_develop.sh "${REMEDIATION_SVC_IMAGE}" "${REMEDIATION_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
-    - cd ..
     - source ./travis-scripts/build_develop.sh "${WAIT_SVC_IMAGE}" "${WAIT_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
-    - cd ..
     - source ./travis-scripts/build_develop.sh "${LIGHTHOUSE_SVC_IMAGE}" "${LIGHTHOUSE_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
-    - cd ..
     - source ./travis-scripts/build_develop.sh "${MONGODB_DS_IMAGE}" "${MONGODB_DS_FOLDER}" "${GIT_SHA}" "${DATE}"
-    - cd ..
     - source ./travis-scripts/build_develop.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${GIT_SHA}" "${DATE}"
-    - cd ..
       ### ATTENTION: please make sure installer is always the last in this list to be built
     after_script:
       - echo "The following images have been built and pushed to dockerhub:"
       - docker images | grep keptn
 
-
-  - stage: Cron GKE Full (--platform=gke)
-    if: branch = master AND type = cron
-    env: KEPTN_INSTALLATION_TYPE=FULL
-    <<: *gke_full # use template
-
-  - stage: Cron GKE Full with Istio (--platform=gke --istio-install-option=Reuse)
-    if: branch = master AND type = cron
-    env: KEPTN_INSTALLATION_TYPE=REUSE-ISTIO
-    <<: *gke_full # use template
-
-  - stage: Cron Minishift Standalone (--platform=openshift --use-case=quality-gates)
-    if: branch = master AND type = cron
-    os: linux
+  - stage: Build CLI (OSX, Windows, Linux)
+    if: branch = master AND (type = cron OR type = push)
+    os: osx
     before_script:
-      # download and install kubectl
-      - curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.17.0/bin/linux/amd64/kubectl && chmod +x ./kubectl && sudo mv ./kubectl /usr/local/bin/kubectl
-      - test/utils/download_and_install_keptn_cli.sh
-      - test/utils/download_and_install_oc_cli.sh
-      - test/utils/minishift_create_cluster.sh
+      - source ./travis-scripts/install_gcloud.sh
+      - echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
+      - gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
     script:
-      - kubectl get nodes || travis_terminate 1
-      # finally install keptn
-      - test/test_install_minishift_quality_gates.sh || travis_terminate 1
-      - keptn status || travis_terminate 1
-      - export PROJECT=musicshop
-      - test/test_quality_gates_standalone.sh || travis_terminate 1
-    after_success:
-      # delete google kubernetes cluster only on success (in case of an error we want to be able to dig into the cluster)
-      - echo "Tests were successful, cleaning up the cluster now..."
-    after_failure:
-      # print some debug info
-      - echo "Keptn Installation Log:"
-      - cat ~/.keptn/keptn-installer.log
-      - cat ~/.keptn/keptn-installer-err.log
-
-  - stage: Cron MicroK8s Standalone (--platform=kubernetes --use-case=quality-gates)
-    if: branch = master AND type = cron
-    os: linux
-    before_script:
-      # download and install kubectl
-      - curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.17.0/bin/linux/amd64/kubectl && chmod +x ./kubectl && sudo mv ./kubectl /usr/local/bin/kubectl
-      - test/utils/download_and_install_keptn_cli.sh
-      - test/utils/microk8s_create_cluster.sh
-      - export KUBECONFIG=~/kubeconfig
-    script:
-      - kubectl get nodes || travis_terminate 1
-      - test/test_install_kubernetes_quality_gates.sh || travis_terminate 1
-      - keptn status || travis_terminate 1
-      - export PROJECT=musicshop
-      - test/test_quality_gates_standalone.sh || travis_terminate 1
-    after_success:
-      # delete google kubernetes cluster only on success (in case of an error we want to be able to dig into the cluster)
-      - echo "Tests were successful, cleaning up the cluster now..."
-    after_failure:
-      # print some debug info
-      - echo "Keptn Installation Log:"
-      - cat ~/.keptn/keptn-installer.log
-      - cat ~/.keptn/keptn-installer-err.log
-
-  - stage: Cron Minikube Standalone (--platform=kubernetes --use-case=quality-gates)
-    if: branch = master AND type = cron
-    os: linux
-    before_script:
-      # download and install kubectl
-      - curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.17.0/bin/linux/amd64/kubectl && chmod +x ./kubectl && sudo mv ./kubectl /usr/local/bin/kubectl
-      - test/utils/download_and_install_keptn_cli.sh
-      - export USE_CASE=quality-gates
-      - test/utils/minikube_create_cluster.sh
-    script:
-      - kubectl get nodes || travis_terminate 1
-      - test/test_install_kubernetes_quality_gates.sh || travis_terminate 1
-      - keptn status || travis_terminate 1
-      - export PROJECT=musicshop
-      - test/test_quality_gates_standalone.sh || travis_terminate 1
-    after_success:
-      # delete google kubernetes cluster only on success (in case of an error we want to be able to dig into the cluster)
-      - echo "Tests were successful, cleaning up the cluster now..."
-    after_failure:
-      # print some debug info
-      - echo "Keptn Installation Log:"
-      - cat ~/.keptn/keptn-installer.log
-      - cat ~/.keptn/keptn-installer-err.log
-
-  # always check code style for all directories
-  - stage: codestyle
-    # Check Codestyle using go fmt
-    services: []
-    language: go
-    go:
-      - 1.12.x
-    # skip install
-    install: true
-    script:
-      - echo "Checking code style..."
-      - unformatted=$(gofmt -l .)
       - |
-        if [ ! -z "$unformatted" ]; then
-          echo "Code Style Check failed for the following files: ${unformatted}".
-          echo "Please run: gofmt -w ."
-          echo "After that amend your commit (e.g.: git add ${unformatted} && git commit --amend --no-edit) and force push the changes (git push -f)."
-          travis_terminate 1
+        if [[ $CHANGED_FILES == *"${CLI_FOLDER}"*  ]]; then
+          echo "Build keptn cli"
+          cd ./cli
+          go test ./...
+          TAG="latest"
+          VERSION="master+${DATE}"
+          source ../travis-scripts/build_cli.sh "${VERSION}" "${KUBE_CONSTRAINTS}"
+          cd ..
         fi
 
-    # always execute unit tests for all directories
-  - stage: Unit tests
-    os: linux
-    script:
-      - |
-          cd "${CLI_FOLDER}"
-          go test -race -coverprofile=coverage.txt -covermode=atomic -v ./...
-          cd ..
-      - |
-          cd "${API_FOLDER}"
-          go test -coverprofile=coverage.txt -covermode=atomic -v ./handlers/... ./ws/... ./utils/...
-          cd ..
-      - |
-          cd "${OS_ROUTE_SVC_FOLDER}"
-          go test -race -coverprofile=coverage.txt -covermode=atomic -v ./...
-          cd ../..
-      - |
-          cd "${JMETER_SVC_FOLDER}"
-          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          cd ..
-      - |
-          cd "${HELM_SVC_FOLDER}"
-          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          cd ..
-      - |
-          cd "${GATEKEEPER_SVC_FOLDER}"
-          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          cd ..
-      - |
-          cd "${DISTRIBUTOR_FOLDER}"
-          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          cd ..
-      - |
-          cd "${EVENTBROKER_FOLDER}"
-          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          cd ..
-      - |
-          cd ${SHIPYARD_SVC_FOLDER}
-          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          cd ..
-      - |
-          cd "${CONFIGURATION_SVC_FOLDER}"
-          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          cd ..
-      - |
-          cd "${REMEDIATION_SVC_FOLDER}"
-          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          cd ..
-      - |
-          cd "${WAIT_SVC_FOLDER}"
-          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          cd ..
-      - |
-          cd "${LIGHTHOUSE_SVC_FOLDER}"
-          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          cd ..
-      - |
-          cd "${MONGODB_DS_FOLDER}"
-          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          cd ..
-    after_success:
-      - bash <(curl -s https://codecov.io/bash)
-
-  - stage: feature/bug/hotfix/patch
+  ##################################################################################
+  # feature/bug/hotfix/patch branches build jobs
+  ##################################################################################
+  - stage: Partial Build for feature/bug/hotfix/patch branches (CLI + Docker Images)
     if: branch =~ ^feature.*$ OR branch =~ ^bug.*$ OR branch =~ ^hotfix.*$ OR branch =~ ^patch.*$
     os: osx
     before_script:
@@ -346,6 +301,7 @@ jobs:
     services:
       - docker
     script:
+    - set -e # Fail the whole script whenever any command fails
     - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
     - ./writeManifest.sh
     - TYPE="$(echo $TRAVIS_BRANCH | cut -d'/' -f1)"
@@ -353,190 +309,73 @@ jobs:
     - |
       if [[ $CHANGED_FILES == *"${API_FOLDER}"*  ]]; then
         source ./travis-scripts/build_feature.sh "${API_IMAGE}" "${API_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
-        cd ..
       fi
     - |
       if [[ $CHANGED_FILES == *"${OS_ROUTE_SVC_FOLDER}"*  ]]; then
         source ./travis-scripts/build_feature.sh "${OS_ROUTE_SVC_IMAGE}" "${OS_ROUTE_SVC_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
-        cd ../..
       fi
     - |
       if [[ $CHANGED_FILES == *"${BRIDGE_FOLDER}"*  ]]; then
         source ./travis-scripts/build_feature.sh "${BRIDGE_IMAGE}" "${BRIDGE_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
-        cd ..
       fi
     - |
       if [[ $CHANGED_FILES == *"${JMETER_SVC_FOLDER}"*  ]]; then
         source ./travis-scripts/build_feature.sh "${JMETER_SVC_IMAGE}" "${JMETER_SVC_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
-        cd ..
       fi
     - |
       if [[ $CHANGED_FILES == *"${HELM_SVC_FOLDER}"*  ]]; then
         source ./travis-scripts/build_feature.sh "${HELM_SVC_IMAGE}" "${HELM_SVC_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
-        cd ..
       fi
     - |
       if [[ $CHANGED_FILES == *"${GATEKEEPER_SVC_FOLDER}"*  ]]; then
         source ./travis-scripts/build_feature.sh "${GATEKEEPER_SVC_IMAGE}" "${GATEKEEPER_SVC_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
-        cd ..
       fi
     - |
       if [[ $CHANGED_FILES == *"${DISTRIBUTOR_FOLDER}"*  ]]; then
         source ./travis-scripts/build_feature.sh "${DISTRIBUTOR_IMAGE}" "${DISTRIBUTOR_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
-        cd ..
       fi
     - |
       if [[ $CHANGED_FILES == *"${EVENTBROKER_FOLDER}"*  ]]; then
         source ./travis-scripts/build_feature.sh "${EVENTBROKER_IMAGE}" "${EVENTBROKER_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
-        cd ..
       fi
     - |
       if [[ $CHANGED_FILES == *"${SHIPYARD_SVC_FOLDER}"*  ]]; then
         source ./travis-scripts/build_feature.sh "${SHIPYARD_SVC_IMAGE}" "${SHIPYARD_SVC_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
-        cd ..
       fi
     - |
       if [[ $CHANGED_FILES == *"${CONFIGURATION_SVC_FOLDER}"*  ]]; then
         source ./travis-scripts/build_feature.sh "${CONFIGURATION_SVC_IMAGE}" "${CONFIGURATION_SVC_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
-        cd ..
       fi
     - |
       if [[ $CHANGED_FILES == *"${REMEDIATION_SVC_FOLDER}"*  ]]; then
         source ./travis-scripts/build_feature.sh "${REMEDIATION_SVC_IMAGE}" "${REMEDIATION_SVC_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
-        cd ..
       fi
     - |
       if [[ $CHANGED_FILES == *"${WAIT_SVC_FOLDER}"*  ]]; then
         source ./travis-scripts/build_feature.sh "${WAIT_SVC_IMAGE}" "${WAIT_SVC_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
-        cd ..
       fi
     - |
       if [[ $CHANGED_FILES == *"${LIGHTHOUSE_SVC_FOLDER}"*  ]]; then
         source ./travis-scripts/build_feature.sh "${LIGHTHOUSE_SVC_IMAGE}" "${LIGHTHOUSE_SVC_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
-        cd ..
       fi
     - |
       if [[ $CHANGED_FILES == *"${MONGODB_DS_FOLDER}"*  ]]; then
         source ./travis-scripts/build_feature.sh "${MONGODB_DS_IMAGE}" "${MONGODB_DS_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
-        cd ..
       fi
     - |
       if [[ $CHANGED_FILES == *"${INSTALLER_FOLDER}"*  ]]; then
         source ./travis-scripts/build_feature.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
-        cd ..
       fi
       ### ATTENTION: please make sure installer is always the last in this list to be built
+    - set +e # revert set -e from above
     after_script:
       - echo "The following images have been built and pushed to dockerhub:"
       - docker images | grep keptn
 
-  - stage: master
-    if: branch = master AND type = push
-    os: osx
-    before_script:
-      - source ./travis-scripts/install_gcloud.sh
-      - echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
-      - gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
-    script:
-    - |
-      if [[ $CHANGED_FILES == *"${CLI_FOLDER}"*  ]]; then
-        echo "Build keptn cli"
-        cd ./cli
-        go test ./...
-        TAG="latest"
-        VERSION="master+${DATE}"
-        source ../travis-scripts/build_cli.sh "${VERSION}" "${KUBE_CONSTRAINTS}"
-        cd ..
-      fi
-
-  - if: branch = master AND type = push
-    os: linux
-    services:
-      - docker
-    script:
-    - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
-    - ./writeManifest.sh
-    - |
-      if [[ $CHANGED_FILES == *"${API_FOLDER}"*  ]]; then
-        source ./travis-scripts/build_develop.sh "${API_IMAGE}" "${API_FOLDER}" "${GIT_SHA}" "${DATE}"
-        cd ..
-      fi
-    - |
-      if [[ $CHANGED_FILES == *"${OS_ROUTE_SVC_FOLDER}"*  ]]; then
-        source ./travis-scripts/build_develop.sh "${OS_ROUTE_SVC_IMAGE}" "${OS_ROUTE_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
-        cd ../..
-      fi
-    - |
-      if [[ $CHANGED_FILES == *"${BRIDGE_FOLDER}"*  ]]; then
-        source ./travis-scripts/build_develop.sh "${BRIDGE_IMAGE}" "${BRIDGE_FOLDER}" "${GIT_SHA}" "${DATE}"
-        cd ..
-      fi
-    - |
-      if [[ $CHANGED_FILES == *"${JMETER_SVC_FOLDER}"*  ]]; then
-        source ./travis-scripts/build_develop.sh "${JMETER_SVC_IMAGE}" "${JMETER_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
-        cd ..
-      fi
-    - |
-      if [[ $CHANGED_FILES == *"${HELM_SVC_FOLDER}"*  ]]; then
-        source ./travis-scripts/build_develop.sh "${HELM_SVC_IMAGE}" "${HELM_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
-        cd ..
-      fi
-    - |
-      if [[ $CHANGED_FILES == *"${GATEKEEPER_SVC_FOLDER}"*  ]]; then
-        source ./travis-scripts/build_develop.sh "${GATEKEEPER_SVC_IMAGE}" "${GATEKEEPER_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
-        cd ..
-      fi
-    - |
-      if [[ $CHANGED_FILES == *"${DISTRIBUTOR_FOLDER}"*  ]]; then
-        source ./travis-scripts/build_develop.sh "${DISTRIBUTOR_IMAGE}" "${DISTRIBUTOR_FOLDER}" "${GIT_SHA}" "${DATE}"
-        cd ..
-      fi
-    - |
-      if [[ $CHANGED_FILES == *"${EVENTBROKER_FOLDER}"*  ]]; then
-        source ./travis-scripts/build_develop.sh "${EVENTBROKER_IMAGE}" "${EVENTBROKER_FOLDER}" "${GIT_SHA}" "${DATE}"
-        cd ..
-      fi
-    - |
-      if [[ $CHANGED_FILES == *"${SHIPYARD_SVC_FOLDER}"*  ]]; then
-        source ./travis-scripts/build_develop.sh "${SHIPYARD_SVC_IMAGE}" "${SHIPYARD_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
-        cd ..
-      fi
-    - |
-      if [[ $CHANGED_FILES == *"${CONFIGURATION_SVC_FOLDER}"*  ]]; then
-        source ./travis-scripts/build_develop.sh "${CONFIGURATION_SVC_IMAGE}" "${CONFIGURATION_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
-        cd ..
-      fi
-    - |
-      if [[ $CHANGED_FILES == *"${REMEDIATION_SVC_FOLDER}"*  ]]; then
-        source ./travis-scripts/build_develop.sh "${REMEDIATION_SVC_IMAGE}" "${REMEDIATION_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
-        cd ..
-      fi
-    - |
-      if [[ $CHANGED_FILES == *"${WAIT_SVC_FOLDER}"*  ]]; then
-        source ./travis-scripts/build_develop.sh "${WAIT_SVC_IMAGE}" "${WAIT_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
-        cd ..
-      fi
-    - |
-      if [[ $CHANGED_FILES == *"${LIGHTHOUSE_SVC_FOLDER}"*  ]]; then
-        source ./travis-scripts/build_develop.sh "${LIGHTHOUSE_SVC_IMAGE}" "${LIGHTHOUSE_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
-        cd ..
-      fi
-    - |
-      if [[ $CHANGED_FILES == *"${MONGODB_DS_FOLDER}"*  ]]; then
-        source ./travis-scripts/build_develop.sh "${MONGODB_DS_IMAGE}" "${MONGODB_DS_FOLDER}" "${GIT_SHA}" "${DATE}"
-        cd ..
-      fi
-    - |
-      if [[ $CHANGED_FILES == *"${INSTALLER_FOLDER}"*  ]]; then
-        source ./travis-scripts/build_develop.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${GIT_SHA}" "${DATE}"
-        cd ..
-      fi
-      ### ATTENTION: please make sure installer is always the last in this list to be built
-    after_script:
-      - echo "The following images have been built and pushed to dockerhub:"
-      - docker images | grep keptn
-
-  - stage: release (cli)
+  ##################################################################################
+  # Release specific jobs
+  ##################################################################################
+  - stage: Release Build CLI
     if: branch =~ ^release.*$ AND NOT type = pull_request
     os: osx
     before_script:
@@ -553,88 +392,262 @@ jobs:
       - source ../travis-scripts/build_cli.sh "${VERSION}" "${KUBE_CONSTRAINTS}"
       - cd ..
 
-  - stage: release (api, os-route-service, bridge, jmeter-service)
+  - stage: Release Build Docker Images (Part 1/2)
     if: branch =~ ^release.*$ AND NOT type = pull_request
     os: linux
     services:
       - docker
     script:
+    - set -e # Fail the whole script whenever any command fails
     - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
     # overwrite version for release branches based on the branch name
     - export VERSION=${BRANCH#"release-"}
     - ./writeManifest.sh
     - source ./travis-scripts/build_release.sh "${API_IMAGE}" "${API_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
-    - cd ..
     - source ./travis-scripts/build_release.sh "${OS_ROUTE_SVC_IMAGE}" "${OS_ROUTE_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
-    - cd ../..
     - source ./travis-scripts/build_release.sh "${BRIDGE_IMAGE}" "${BRIDGE_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
-    - cd ..
     - source ./travis-scripts/build_release.sh "${JMETER_SVC_IMAGE}" "${JMETER_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
-    - cd ..
+    - source ./travis-scripts/build_release.sh "${HELM_SVC_IMAGE}" "${HELM_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+    - source ./travis-scripts/build_release.sh "${GATEKEEPER_SVC_IMAGE}" "${GATEKEEPER_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+    - source ./travis-scripts/build_release.sh "${DISTRIBUTOR_IMAGE}" "${DISTRIBUTOR_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+    - source ./travis-scripts/build_release.sh "${EVENTBROKER_IMAGE}" "${EVENTBROKER_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+    - set +e # revert set -e from above
     after_script:
       - echo "The following images have been built and pushed to dockerhub:"
       - docker images | grep keptn
 
-  - stage: release (helm-service, gatekeeper-service, distributor, eventbroker)
+  - stage: Release Build Docker Images (Part 2/2)
     if: branch =~ ^release.*$ AND NOT type = pull_request
     os: linux
     services:
       - docker
     script:
-      - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
-      # overwrite version for release branches based on the branch name
-      - export VERSION=${BRANCH#"release-"}
-      - ./writeManifest.sh
-      - source ./travis-scripts/build_release.sh "${HELM_SVC_IMAGE}" "${HELM_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
-      - cd ..
-      - source ./travis-scripts/build_release.sh "${GATEKEEPER_SVC_IMAGE}" "${GATEKEEPER_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
-      - cd ..
-      - source ./travis-scripts/build_release.sh "${DISTRIBUTOR_IMAGE}" "${DISTRIBUTOR_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
-      - cd ..
-      - source ./travis-scripts/build_release.sh "${EVENTBROKER_IMAGE}" "${EVENTBROKER_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
-      - cd ..
-    after_script:
-      - echo "The following images have been built and pushed to dockerhub:"
-      - docker images | grep keptn
-
-  - stage: release (shipyard-service, configuration-service, remediation-service, wait-service)
-    if: branch =~ ^release.*$ AND NOT type = pull_request
-    os: linux
-    services:
-      - docker
-    script:
+      - set -e # Fail the whole script whenever any command fails
       - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
       # overwrite version for release branches based on the branch name
       - export VERSION=${BRANCH#"release-"}
       - ./writeManifest.sh
       - source ./travis-scripts/build_release.sh "${SHIPYARD_SVC_IMAGE}" "${SHIPYARD_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
-      - cd ..
       - source ./travis-scripts/build_release.sh "${CONFIGURATION_SVC_IMAGE}" "${CONFIGURATION_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
-      - cd ..
       - source ./travis-scripts/build_release.sh "${REMEDIATION_SVC_IMAGE}" "${REMEDIATION_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
-      - cd ..
       - source ./travis-scripts/build_release.sh "${WAIT_SVC_IMAGE}" "${WAIT_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
-      - cd ..
+      - source ./travis-scripts/build_release.sh "${LIGHTHOUSE_SVC_IMAGE}" "${LIGHTHOUSE_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+      - source ./travis-scripts/build_release.sh "${MONGODB_DS_IMAGE}" "${MONGODB_DS_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+      - source ./travis-scripts/build_release.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+      - set +e # revert set -e from above
     after_script:
       - echo "The following images have been built and pushed to dockerhub:"
       - docker images | grep keptn
 
-  - stage: release (lighthouse-service, mongodb-datastore, installer)
-    if: branch =~ ^release.*$ AND NOT type = pull_request
+  - stage: Test GKE Full (--platform=gke)
+    if: branch = master AND type = cron # run for cron
+    env:
+      - GKE_VERSION=1.14
+      - KEPTN_INSTALLATION_TYPE=FULL
+    <<: *gke_full # use template
+
+#  - stage: Test GKE Full (--platform=gke)
+#    if: branch = master AND type = cron # run for cron
+#    env:
+#      - GKE_VERSION=1.15
+#      - KEPTN_INSTALLATION_TYPE=FULL
+#    <<: *gke_full # use template
+
+  - stage: Test GKE Full (--platform=gke)
+    if: branch = master AND type = cron # run for cron
+    env:
+      - GKE_VERSION=1.16
+      - KEPTN_INSTALLATION_TYPE=FULL
+    <<: *gke_full # use template
+
+  # Test GKE with 1.17 (not available yet)
+#  - stage: Test GKE Full (--platform=gke)
+#    if: branch = master AND type = cron # run for cron
+#    env:
+#      - GKE_VERSION=1.17
+#      - KEPTN_INSTALLATION_TYPE=FULL
+#    <<: *gke_full # use template
+
+  - stage: Test GKE Full with Istio (--platform=gke --ingress-install-option=Reuse)
+    if: branch = master AND type = cron # run for cron
+    env:
+      - KEPTN_INSTALLATION_TYPE=REUSE-ISTIO
+      - GKE_VERSION=1.14
+    <<: *gke_full # use template
+
+#  - stage: Test GKE Full with Istio (--platform=gke --ingress-install-option=Reuse)
+#    if: branch = master AND type = cron # run for cron
+#    env:
+#      - KEPTN_INSTALLATION_TYPE=REUSE-ISTIO
+#      - GKE_VERSION=1.15
+#    <<: *gke_full # use template
+
+  - stage: Test GKE Full with Istio (--platform=gke --ingress-install-option=Reuse)
+    if: branch = master AND type = cron # run for cron
+    env:
+      - KEPTN_INSTALLATION_TYPE=REUSE-ISTIO
+      - GKE_VERSION=1.16
+    <<: *gke_full # use template
+
+  # Test GKE with 1.17 (not available yet)
+#  - stage: Test GKE Full with Istio (--platform=gke --ingress-install-option=Reuse)
+#    if: branch = master AND type = cron # run for cron
+#    env:
+#      - KEPTN_INSTALLATION_TYPE=REUSE-ISTIO
+#      - GKE_VERSION=1.17
+#    <<: *gke_full # use template
+
+  - stage: Test Minishift Standalone (--platform=openshift --use-case=quality-gates)
+    if: (branch = master or branch =~ ^release.*$) AND (type = cron OR type = push) # run for any change on master/release-* on push as well as cron
     os: linux
-    services:
-      - docker
+    before_script:
+      # download and install kubectl
+      - curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.17.0/bin/linux/amd64/kubectl && chmod +x ./kubectl && sudo mv ./kubectl /usr/local/bin/kubectl
+      - test/utils/download_and_install_keptn_cli.sh
+      - test/utils/download_and_install_oc_cli.sh
+      - test/utils/minishift_create_cluster.sh
     script:
-      - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
-      # overwrite version for release branches based on the branch name
-      - export VERSION=${BRANCH#"release-"}
-      - ./writeManifest.sh
-      - source ./travis-scripts/build_release.sh "${LIGHTHOUSE_SVC_IMAGE}" "${LIGHTHOUSE_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
-      - cd ..
-      - source ./travis-scripts/build_release.sh "${MONGODB_DS_IMAGE}" "${MONGODB_DS_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
-      - cd ..
-      - source ./travis-scripts/build_release.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
-      - cd ..
-    after_script:
-      - echo "The following images have been built and pushed to dockerhub:"
-      - docker images | grep keptn
+      - kubectl get nodes || travis_terminate 1 # sanity check that the K8s cluster is available
+      # finally install keptn quality gates
+      - test/test_install_minishift_quality_gates.sh
+      - keptn status
+      - export PROJECT=musicshop
+      - test/test_quality_gates_standalone.sh
+    after_success:
+      # delete kubernetes cluster only on success (in case of an error we want to be able to dig into the cluster)
+      - echo "Tests were successful, cleaning up the cluster now..."
+    after_failure:
+      # print some debug info
+      - cat ~/.keptn/keptn-installer.log
+      - kubectl get events --sort-by='.lastTimestamp' --all-namespaces
+      - kubectl get pods --all-namespaces
+      - kubectl get services --all-namespaces
+      - kubectl get ingress --all-namespaces
+
+  - &K3sStandaloneTest
+    stage: Test K3s Standalone (--platform=kubernetes --use-case=quality-gates)
+    if: (branch = master or branch =~ ^release.*$) AND (type = cron OR type = push) # run for any change on master/release-* on push as well as cron
+    os: linux
+    env:
+      - K3S_VERSION=v1.16.10+k3s1 # see https://github.com/rancher/k3s/releases
+    before_script:
+      # download and install kubectl
+      - curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.17.0/bin/linux/amd64/kubectl && chmod +x ./kubectl && sudo mv ./kubectl /usr/local/bin/kubectl
+      - test/utils/download_and_install_keptn_cli.sh
+      - test/utils/k3s_create_cluster.sh
+      - export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+    script:
+      - kubectl get nodes || travis_terminate 1
+      - test/test_install_kubernetes_quality_gates.sh
+      - keptn status
+      - export PROJECT=musicshop
+      - test/test_quality_gates_standalone.sh
+    after_success:
+      # delete google kubernetes cluster only on success (in case of an error we want to be able to dig into the cluster)
+      - echo "Tests were successful, cleaning up the cluster now..."
+    after_failure:
+      # print some debug info
+      - echo "Keptn Installation Log:"
+      - cat ~/.keptn/keptn-installer.log
+      - kubectl get events --sort-by='.lastTimestamp' --all-namespaces
+      - kubectl get pods --all-namespaces
+      - kubectl get services --all-namespaces
+      - kubectl get ingress --all-namespaces
+
+  - <<: *K3sStandaloneTest
+    env:
+      - K3S_VERSION=v1.17.6+k3s1 # see https://github.com/rancher/k3s/releases
+
+  - <<: *K3sStandaloneTest
+    env:
+      - K3S_VERSION=v1.18.3+k3s1 # see https://github.com/rancher/k3s/releases
+
+  - &microk8sStandaloneTest
+    stage: Test MicroK8s Standalone (--platform=kubernetes --use-case=quality-gates)
+    if: (branch = master or branch =~ ^release.*$) AND (type = cron OR type = push) # run for any change on master/release-* on push as well as cron
+    os: linux
+    env:
+      - MICROK8S_VERSION=1.16/stable # see https://snapcraft.io/microk8s channels
+    before_script:
+      # download and install kubectl
+      - curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.17.0/bin/linux/amd64/kubectl && chmod +x ./kubectl && sudo mv ./kubectl /usr/local/bin/kubectl
+      - test/utils/download_and_install_keptn_cli.sh
+      - test/utils/microk8s_create_cluster.sh
+      - export KUBECONFIG=~/kubeconfig
+    script:
+      - kubectl get nodes || travis_terminate 1 # sanity check that the K8s cluster is available
+      - test/test_install_kubernetes_quality_gates.sh
+      - keptn status
+      - export PROJECT=musicshop
+      - test/test_quality_gates_standalone.sh
+    after_success:
+      # delete kubernetes cluster only on success (in case of an error we want to be able to dig into the cluster)
+      - echo "Tests were successful, cleaning up the cluster now..."
+    after_failure:
+      # print some debug info
+      - cat ~/.keptn/keptn-installer.log
+      - kubectl get events --sort-by='.lastTimestamp' --all-namespaces
+      - kubectl get pods --all-namespaces
+      - kubectl get services --all-namespaces
+      - kubectl get ingress --all-namespaces
+
+  - <<: *microk8sStandaloneTest
+    env:
+      - MICROK8S_VERSION=1.17/stable # see https://snapcraft.io/microk8s channels
+
+  - <<: *microk8sStandaloneTest
+    env:
+      - MICROK8S_VERSION=1.18/stable # see https://snapcraft.io/microk8s channels
+
+  - &minikubeStandaloneTest
+    stage: Test Minikube Standalone (--platform=kubernetes --use-case=quality-gates)
+    # for detailed Minikube versions see https://github.com/kubernetes/minikube/blob/master/CHANGELOG.md
+    env:
+      - MINIKUBE_VERSION=v1.3.1 # from 2019-08-13; uses K8s 1.15
+    if: (branch = master or branch =~ ^release.*$) AND (type = cron OR type = push) # run for any change on master/release-* on push as well as cron
+    os: linux
+    before_script:
+      # install conntrack (required for newer minikube versions)
+      - sudo apt-get install -y conntrack
+      # download and install kubectl
+      - curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.17.0/bin/linux/amd64/kubectl && chmod +x ./kubectl && sudo mv ./kubectl /usr/local/bin/kubectl
+      - test/utils/download_and_install_keptn_cli.sh
+      - export USE_CASE=quality-gates
+      - test/utils/minikube_create_cluster.sh
+    script:
+      - kubectl get nodes || travis_terminate 1 # sanity check that the K8s cluster is available
+      # finally install keptn quality gates
+      - test/test_install_kubernetes_quality_gates.sh
+      - keptn status
+      - export PROJECT=musicshop
+      - test/test_quality_gates_standalone.sh
+    after_success:
+      # delete google kubernetes cluster only on success (in case of an error we want to be able to dig into the cluster)
+      - echo "Tests were successful, cleaning up the cluster now..."
+    after_failure:
+      # print some debug info
+      - cat ~/.keptn/keptn-installer.log
+      - kubectl get events --sort-by='.lastTimestamp' --all-namespaces
+      - kubectl get pods --all-namespaces
+      - kubectl get services --all-namespaces
+      - kubectl get ingress --all-namespaces
+
+  - <<: *minikubeStandaloneTest
+    env:
+      - MINIKUBE_VERSION=v1.4.0 # from 2019-09-17; uses K8s 1.16
+
+  - <<: *minikubeStandaloneTest
+    env:
+      - MINIKUBE_VERSION=v1.6.2 # from 2019-12-19; uses K8s 1.17
+
+  - <<: *minikubeStandaloneTest
+    env:
+      - MINIKUBE_VERSION=v1.7.3 # from 2020-02-20; uses K8s 1.17.3
+
+  - <<: *minikubeStandaloneTest
+    env:
+      - MINIKUBE_VERSION=v1.9.2 # from 2020-04-02; uses K8s 1.18
+
+  - <<: *minikubeStandaloneTest
+    env:
+      - MINIKUBE_VERSION=v1.10.1 # from 2020-05-12; uses K8s 1.18.2

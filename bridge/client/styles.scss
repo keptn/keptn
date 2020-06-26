@@ -6,10 +6,6 @@
 
 @import 'barista';
 
-html {
-  box-sizing: border-box;
-}
-
 pre, code {
   font-family: monospace;
 }
@@ -45,7 +41,6 @@ span.small {
   font-family: BerninaSansWeb,OpenSans,sans-serif;
   font-weight: 400;
   font-size: 12px;
-  line-height: 28px;
   color: $gray-700;
 }
 
@@ -173,6 +168,32 @@ span.italic {
   padding-bottom: .3em;
 }
 
+.pr-2 {
+  padding-right: .6em;
+}
+.pl-2 {
+  padding-left: .6em;
+}
+.pt-2 {
+  padding-top: .6em;
+}
+.pb-2 {
+  padding-bottom: .6em;
+}
+
+.pr-3 {
+  padding-right: 1.2em;
+}
+.pl-3 {
+  padding-left: 1.2em;
+}
+.pt-3 {
+  padding-top: 1.2em;
+}
+.pb-3 {
+  padding-bottom: 1.2em;
+}
+
 .pr-4 {
   padding-right: 2.5em;
 }
@@ -206,4 +227,9 @@ span.italic {
   100% {
     box-shadow: 0 0 0 0 rgba(180, 180, 180, 0);
   }
+}
+
+@keyframes slideDown {
+  0%, 10% { transform: translateY(-100%); }
+  10%, 100% { transform: translateY(0px); }
 }

@@ -1,25 +1,73 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import {ComponentFixture, TestBed, fakeAsync} from '@angular/core/testing';
+import {By} from "@angular/platform-browser";
+import {Component} from "@angular/core";
 
-import { KtbSelectableTileComponent } from './ktb-selectable-tile.component';
+import {KtbSelectableTileComponent} from './ktb-selectable-tile.component';
 
 describe('KtbSelectableTileComponent', () => {
-  let component: KtbSelectableTileComponent;
-  let fixture: ComponentFixture<KtbSelectableTileComponent>;
+  let component: SimpleKtbSelectableTileComponent;
+  let fixture: ComponentFixture<SimpleKtbSelectableTileComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(fakeAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ KtbSelectableTileComponent ]
+      declarations: [
+        SimpleKtbSelectableTileComponent,
+        KtbSelectableTileComponent,
+      ],
+      imports: [],
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(KtbSelectableTileComponent);
+    fixture = TestBed.createComponent(SimpleKtbSelectableTileComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it('should create an instance', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should add and remove the selected state', () => {
+    let selectableTileDebugElement = fixture.debugElement.query(By.directive(KtbSelectableTileComponent));
+    let selectableTileInstance = selectableTileDebugElement.componentInstance;
+    let selectableTileNativeElement = selectableTileDebugElement.nativeElement;
+    let testComponentInstace = fixture.debugElement.componentInstance;
+
+    expect(selectableTileInstance.selected).toBe(false);
+
+    testComponentInstace.isSelected = true;
+    fixture.detectChanges();
+
+    expect(selectableTileInstance.selected).toBe(true);
+    expect(selectableTileNativeElement.classList).toContain('ktb-tile-selected');
+
+    testComponentInstace.isSelected = false;
+    fixture.detectChanges();
+
+    expect(selectableTileInstance.selected).toBe(false);
+    expect(selectableTileNativeElement.classList).not.toContain('ktb-tile-selected');
+  });
 });
+
+/** Simple component for testing the KtbSelectableTileComponent */
+@Component({
+  template: `
+    <div>
+      <ktb-selectable-tile
+        [error]="isError"
+        [success]="isSuccess"
+        [selected]="isSelected"
+        (click)="onTileClicked($event)">
+      </ktb-selectable-tile>
+    </div>
+  `,
+})
+class SimpleKtbSelectableTileComponent {
+  isError = false;
+  isSuccess = false;
+  isSelected = false;
+
+  onTileClicked: (event?: Event) => void = () => { this.isSelected = !this.isSelected; };
+}

@@ -11,7 +11,7 @@ import (
 	"github.com/google/uuid"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
-	"github.com/keptn/go-utils/pkg/events"
+	keptn "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/pkg/websockethelper"
@@ -36,8 +36,16 @@ var allowedMonitoringTypes = []string{
 
 var monitoringCmd = &cobra.Command{
 	// Use:          "monitoring <monitoring_provider> --project=<project> --service=<service> --service-indicators=<service_indicators_file_path> --service-objectives=<service_objectives_file_path> --remediation=<remediation_file_path>",
-	Use:          "monitoring <monitoring_provider> --project=<project> --service=<service>",
-	Short:        "Configures monitoring",
+	Use:   "monitoring <monitoring_provider> --project=<project> --service=<service>",
+	Short: "Configures monitoring provider",
+	Long: `Configure a monitoring solution for a Keptn cluster. This command sets up Dynatrace or Prometheus monitoring if it is not installed. Before executing the command, the dynatrace-service or prometheus-service has to be deployed.
+
+**Note:** If you are executing *keptn configure monitoring dynatrace*, the service flag is optional since Keptn automatically detects the services of a project.
+
+See https://keptn.sh/docs/develop/reference/monitoring/ for more information.
+`,
+	Example: `keptn configure monitoring dynatrace --project=PROJECTNAME
+keptn configure monitoring prometheus --project=PROJECTNAME --service=SERVICENAME`,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
@@ -76,7 +84,7 @@ var monitoringCmd = &cobra.Command{
 			return errors.New(authErrorMsg)
 		}
 
-		configureMonitoringEventData := &events.ConfigureMonitoringEventData{
+		configureMonitoringEventData := &keptn.ConfigureMonitoringEventData{
 			Type:    args[0],
 			Project: *params.Project,
 			Service: *params.Service,
@@ -87,14 +95,14 @@ var monitoringCmd = &cobra.Command{
 		sdkEvent := cloudevents.Event{
 			Context: cloudevents.EventContextV02{
 				ID:          uuid.New().String(),
-				Type:        events.ConfigureMonitoringEventType,
+				Type:        keptn.ConfigureMonitoringEventType,
 				Source:      types.URLRef{URL: *source},
 				ContentType: &contentType,
 			}.AsV02(),
 			Data: configureMonitoringEventData,
 		}
 
-		eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, "https")
+		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		eventByte, err := sdkEvent.MarshalJSON()
@@ -102,14 +110,14 @@ var monitoringCmd = &cobra.Command{
 			return fmt.Errorf("Failed to marshal cloud event. %s", err.Error())
 		}
 
-		apiEvent := apimodels.Event{}
+		apiEvent := apimodels.KeptnContextExtendedCE{}
 		err = json.Unmarshal(eventByte, &apiEvent)
 		if err != nil {
 			return fmt.Errorf("Failed to map cloud event to API event model. %s", err.Error())
 		}
 
 		if !mocking {
-			eventContext, err := eventHandler.SendEvent(apiEvent)
+			eventContext, err := apiHandler.SendEvent(apiEvent)
 			if err != nil {
 				logging.PrintLog("Sending configure-monitoring event was unsuccessful", logging.QuietLevel)
 				return fmt.Errorf("Sending configure-monitoring event was unsuccessful. %s", *err.Message)
@@ -117,7 +125,7 @@ var monitoringCmd = &cobra.Command{
 
 			// if eventContext is available, open WebSocket communication
 			if eventContext != nil && !SuppressWSCommunication {
-				return websockethelper.PrintWSContentEventContext(eventContext, endPoint)
+				return websockethelper.PrintWSContentEventContext(eventContext, endPoint, *scheme == "https")
 			}
 
 			return nil

@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
-	keptnevents "github.com/keptn/go-utils/pkg/events"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
-	"github.com/nats-io/gnatsd/server"
-	natsserver "github.com/nats-io/nats-server/test"
+	keptnevents "github.com/keptn/go-utils/pkg/lib"
+	keptnutils "github.com/keptn/go-utils/pkg/lib"
+	"github.com/nats-io/nats-server/v2/server"
+	natsserver "github.com/nats-io/nats-server/v2/test"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -162,10 +162,14 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
+			keptnHandler, _ := keptnutils.NewKeptn(&tt.fields.Event, keptnutils.KeptnOpts{
+				EventBrokerURL:          os.Getenv("EVENTBROKER"),
+				ConfigurationServiceURL: os.Getenv("CONFIGURATION_SERVICE"),
+			})
 			returnSlo = tt.sloAvailable
 			eh := &StartEvaluationHandler{
-				Logger: tt.fields.Logger,
-				Event:  tt.fields.Event,
+				Event:        tt.fields.Event,
+				KeptnHandler: keptnHandler,
 			}
 			if err := eh.HandleEvent(); (err != nil) != tt.wantErr {
 				t.Errorf("HandleEvent() error = %v, wantErr %v", err, tt.wantErr)

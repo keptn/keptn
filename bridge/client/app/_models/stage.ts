@@ -1,5 +1,4 @@
 import {Service} from "./service";
-import {Trace} from "./trace";
 
 export class Stage {
   stageName: string;

@@ -31,7 +31,7 @@ func NewDeleteProjectProjectNameStageStageName(ctx *middleware.Context, handler 
 
 /*DeleteProjectProjectNameStageStageName swagger:route DELETE /project/{projectName}/stage/{stageName} Stage deleteProjectProjectNameStageStageName
 
-Delete the specified stage
+INTERNAL Endpoint: Delete the specified stage
 
 */
 type DeleteProjectProjectNameStageStageName struct {

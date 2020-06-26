@@ -25,7 +25,7 @@ type GetProjectProjectNameStageStageNameServiceServiceNameOK struct {
 	/*
 	  In: Body
 	*/
-	Payload *models.Service `json:"body,omitempty"`
+	Payload *models.ExpandedService `json:"body,omitempty"`
 }
 
 // NewGetProjectProjectNameStageStageNameServiceServiceNameOK creates GetProjectProjectNameStageStageNameServiceServiceNameOK with default headers values
@@ -35,13 +35,13 @@ func NewGetProjectProjectNameStageStageNameServiceServiceNameOK() *GetProjectPro
 }
 
 // WithPayload adds the payload to the get project project name stage stage name service service name o k response
-func (o *GetProjectProjectNameStageStageNameServiceServiceNameOK) WithPayload(payload *models.Service) *GetProjectProjectNameStageStageNameServiceServiceNameOK {
+func (o *GetProjectProjectNameStageStageNameServiceServiceNameOK) WithPayload(payload *models.ExpandedService) *GetProjectProjectNameStageStageNameServiceServiceNameOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the get project project name stage stage name service service name o k response
-func (o *GetProjectProjectNameStageStageNameServiceServiceNameOK) SetPayload(payload *models.Service) {
+func (o *GetProjectProjectNameStageStageNameServiceServiceNameOK) SetPayload(payload *models.ExpandedService) {
 	o.Payload = payload
 }
 

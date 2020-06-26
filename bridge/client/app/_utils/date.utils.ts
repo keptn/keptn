@@ -1,4 +1,26 @@
+import * as moment from "moment";
+
 export default class DateUtil {
+  static getDurationFormatted(start, end) {
+    let diff = moment(end).diff(moment(start));
+    let duration = moment.duration(diff);
+
+    let days = Math.floor(duration.asDays());
+    let hours = Math.floor(duration.asHours()%24);
+    let minutes = Math.floor(duration.asMinutes()%60);
+    let seconds = Math.floor(duration.asSeconds()%60);
+
+    let result = seconds+' seconds';
+    if(minutes > 0)
+      result = minutes+' minutes '+result;
+    if(hours > 0)
+      result = hours+' hours '+result;
+    if(days > 0)
+      result = days+' days '+result;
+
+    return result;
+  }
+
   static getCalendarFormats(showSeconds?: boolean) {
     if(showSeconds) {
       return {

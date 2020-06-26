@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
-	keptnevents "github.com/keptn/go-utils/pkg/events"
+	"github.com/keptn/go-utils/pkg/lib"
 	"os"
 	"reflect"
 	"testing"
@@ -131,7 +131,7 @@ func Test_gotEvent(t *testing.T) {
 
 func Test_createRoutes(t *testing.T) {
 	type args struct {
-		data *keptnevents.ProjectCreateEventData
+		data *keptn.ProjectCreateEventData
 	}
 	tests := []struct {
 		name string
@@ -140,7 +140,7 @@ func Test_createRoutes(t *testing.T) {
 		{
 			name: "invalid shipyard should throw error",
 			args: args{
-				data: &keptnevents.ProjectCreateEventData{
+				data: &keptn.ProjectCreateEventData{
 					Project:  "sockshop",
 					Shipyard: "this is not base 64 encoded",
 				},
@@ -155,7 +155,7 @@ func Test_createRoutes(t *testing.T) {
 
 func Test_createRoutes1(t *testing.T) {
 	type args struct {
-		data *keptnevents.ProjectCreateEventData
+		data *keptn.ProjectCreateEventData
 	}
 	tests := []struct {
 		name    string
@@ -165,7 +165,7 @@ func Test_createRoutes1(t *testing.T) {
 		{
 			name: "invalid shipyard should throw error",
 			args: args{
-				data: &keptnevents.ProjectCreateEventData{
+				data: &keptn.ProjectCreateEventData{
 					Project:  "sockshop",
 					Shipyard: "this is not base 64 encoded",
 				},
@@ -175,7 +175,7 @@ func Test_createRoutes1(t *testing.T) {
 		{
 			name: "invalid shipyard should throw error",
 			args: args{
-				data: &keptnevents.ProjectCreateEventData{
+				data: &keptn.ProjectCreateEventData{
 					Project:  "sockshop",
 					Shipyard: "aW52YWxpZAo=",
 				},

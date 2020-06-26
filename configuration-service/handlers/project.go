@@ -1,14 +1,15 @@
 package handlers
 
 import (
-	"github.com/keptn/keptn/configuration-service/restapi/operations/stage"
-	"io/ioutil"
+	"fmt"
 	"os"
 	"time"
 
+	keptn "github.com/keptn/go-utils/pkg/lib"
+	k8sutils "github.com/keptn/kubernetes-utils/pkg"
+
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
-	"github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/configuration-service/common"
 	"github.com/keptn/keptn/configuration-service/config"
 	"github.com/keptn/keptn/configuration-service/models"
@@ -23,28 +24,27 @@ type projectMetadata struct {
 
 // GetProjectHandlerFunc gets a list of projects
 func GetProjectHandlerFunc(params project.GetProjectParams) middleware.Responder {
-	var payload = &models.Projects{
+	var payload = &models.ExpandedProjects{
 		PageSize:    0,
 		NextPageKey: "0",
 		TotalCount:  0,
-		Projects:    []*models.Project{},
+		Projects:    []*models.ExpandedProject{},
 	}
 
-	files, err := ioutil.ReadDir(config.ConfigDir)
-	if err != nil {
-		return project.NewGetProjectOK().WithPayload(payload)
+	mv := common.GetProjectsMaterializedView()
+
+	allProjects, err := mv.GetProjects()
+
+	if err != nil || allProjects == nil {
+		return project.NewGetProjectDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 	}
 
-	paginationInfo := common.Paginate(len(files), params.PageSize, params.NextPageKey)
+	paginationInfo := common.Paginate(len(allProjects), params.PageSize, params.NextPageKey)
 
-	totalCount := len(files)
+	totalCount := len(allProjects)
 	if paginationInfo.NextPageKey < int64(totalCount) {
-		for _, f := range files[paginationInfo.NextPageKey:paginationInfo.EndIndex] {
-			if f.IsDir() && common.FileExists(config.ConfigDir+"/"+f.Name()+"/metadata.yaml") {
-				stages, _ := getStages(stage.GetProjectProjectNameStageParams{ProjectName: f.Name(), DisableUpstreamSync: params.DisableUpstreamSync})
-				var project = &models.Project{ProjectName: f.Name(), Stages: stages}
-				payload.Projects = append(payload.Projects, project)
-			}
+		for _, project := range allProjects[paginationInfo.NextPageKey:paginationInfo.EndIndex] {
+			payload.Projects = append(payload.Projects, project)
 		}
 	}
 
@@ -56,7 +56,7 @@ func GetProjectHandlerFunc(params project.GetProjectParams) middleware.Responder
 // PostProjectHandlerFunc creates a new project
 func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Responder {
 	credentialsCreated := false
-	logger := utils.NewLogger("", "", "configuration-service")
+	logger := keptn.NewLogger("", "", "configuration-service")
 	projectConfigPath := config.ConfigDir + "/" + params.Project.ProjectName
 
 	// check if the project already exists
@@ -66,13 +66,17 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 
 	common.LockProject(params.Project.ProjectName)
 	defer common.UnlockProject(params.Project.ProjectName)
+
 	////////////////////////////////////////////////////
 	// clone existing repo
 	////////////////////////////////////////////////////
+	var initializedGit bool
 	if params.Project.GitUser != "" && params.Project.GitToken != "" && params.Project.GitRemoteURI != "" {
 		// try to clone the repo
-		err := common.CloneRepo(params.Project.ProjectName, params.Project.GitUser, params.Project.GitToken, params.Project.GitRemoteURI)
+		var err error
+		initializedGit, err = common.CloneRepo(params.Project.ProjectName, params.Project.GitUser, params.Project.GitToken, params.Project.GitRemoteURI)
 		if err != nil {
+			logger.Error(fmt.Sprintf("Could not clone git repository during creating project %s", params.Project.ProjectName))
 			logger.Error(err.Error())
 			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not clone git repository")})
 		}
@@ -80,6 +84,7 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 		// store credentials (e.g., as a kubernetes secret)
 		err = common.StoreGitCredentials(params.Project.ProjectName, params.Project.GitUser, params.Project.GitToken, params.Project.GitRemoteURI)
 		if err != nil {
+			logger.Error(fmt.Sprintf("Could not store git credentials during creating project %s", params.Project.ProjectName))
 			logger.Error(err.Error())
 			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not store git credentials")})
 		}
@@ -89,12 +94,14 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 		///////////////////////////////////////////////////
 		err := os.MkdirAll(projectConfigPath, os.ModePerm)
 		if err != nil {
+			logger.Error(fmt.Sprintf("Could make directory during creating project %s", params.Project.ProjectName))
 			logger.Error(err.Error())
 			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not create project")})
 		}
 
-		_, err = utils.ExecuteCommandInDirectory("git", []string{"init"}, projectConfigPath)
+		_, err = k8sutils.ExecuteCommandInDirectory("git", []string{"init"}, projectConfigPath)
 		if err != nil {
+			logger.Error(fmt.Sprintf("Could not initialize git repository during creating project %s", params.Project.ProjectName))
 			logger.Error(err.Error())
 			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not initialize git repo")})
 		}
@@ -106,15 +113,16 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 	}
 
 	metadataString, err := yaml.Marshal(newProjectMetadata)
-	err = common.WriteFile(projectConfigPath+"/metadata.yaml", metadataString)
 
+	err = common.WriteFile(projectConfigPath+"/metadata.yaml", metadataString)
 	if err != nil {
+		logger.Error(fmt.Sprintf("Could not write metadata.yaml during creating project %s", params.Project.ProjectName))
 		logger.Error(err.Error())
 		// Cleanup credentials before we exit
 		if credentialsCreated {
 			err = common.DeleteCredentials(params.Project.ProjectName)
-
 			if err != nil {
+				logger.Error(fmt.Sprintf("Could not delete credentials during creating project %s", params.Project.ProjectName))
 				logger.Error(err.Error())
 			}
 		}
@@ -122,58 +130,120 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not store project metadata")})
 	}
 
-	err = common.StageAndCommitAll(params.Project.ProjectName, "Added metadata.yaml")
+	err = common.StageAndCommitAll(params.Project.ProjectName, "Added metadata.yaml", initializedGit)
 	if err != nil {
+		logger.Error(fmt.Sprintf("Could not commit metadata.yaml during creating project %s", params.Project.ProjectName))
 		logger.Error(err.Error())
 		// Cleanup credentials before we exit
 		if credentialsCreated {
 			err = common.DeleteCredentials(params.Project.ProjectName)
-
 			if err != nil {
+				logger.Error(fmt.Sprintf("Could not delete credentials during creating project %s", params.Project.ProjectName))
 				logger.Error(err.Error())
 			}
 		}
 		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
+	}
+
+	mv := common.GetProjectsMaterializedView()
+
+	err = mv.CreateProject(params.Project)
+
+	if err != nil {
+		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 	}
 	return project.NewPostProjectNoContent()
 }
 
 // GetProjectProjectNameHandlerFunc gets a project by its name
 func GetProjectProjectNameHandlerFunc(params project.GetProjectProjectNameParams) middleware.Responder {
-	if !common.ProjectExists(params.ProjectName) {
+
+	mv := common.GetProjectsMaterializedView()
+
+	prj, err := mv.GetProject(params.ProjectName)
+
+	if err != nil {
+		return project.NewGetProjectProjectNameDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+	}
+
+	if prj == nil {
 		return project.NewGetProjectProjectNameNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project not found")})
 	}
-	var projectResponse = &models.Project{ProjectName: params.ProjectName}
-	projectCreds, _ := common.GetCredentials(params.ProjectName)
-	if projectCreds != nil {
-		projectResponse.GitRemoteURI = projectCreds.RemoteURI
-	}
-	return project.NewGetProjectProjectNameOK().WithPayload(projectResponse)
+
+	return project.NewGetProjectProjectNameOK().WithPayload(prj)
 }
 
 // PutProjectProjectNameHandlerFunc updates a project
 func PutProjectProjectNameHandlerFunc(params project.PutProjectProjectNameParams) middleware.Responder {
-	return middleware.NotImplemented("operation project.PutProjectProjectName has not yet been implemented")
+	credentialsCreated := false
+	logger := keptn.NewLogger("", "", "configuration-service")
+	// check if the project already exists
+	if common.ProjectExists(params.Project.ProjectName) {
+		common.LockProject(params.Project.ProjectName)
+		defer common.UnlockProject(params.Project.ProjectName)
+
+		if params.Project.GitUser != "" && params.Project.GitToken != "" && params.Project.GitRemoteURI != "" {
+			// store credentials (e.g., as a kubernetes secret)
+			err := common.StoreGitCredentials(params.Project.ProjectName, params.Project.GitUser, params.Project.GitToken, params.Project.GitRemoteURI)
+			if err != nil {
+				logger.Error(fmt.Sprintf("Could not store git credentials during creating project %s", params.Project.ProjectName))
+				logger.Error(err.Error())
+				return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not store git credentials")})
+			}
+			credentialsCreated = true
+			err = common.AddOrigin(params.Project.ProjectName)
+			if err != nil {
+				logger.Error(fmt.Sprintf("Could not add upstream repository while updating project %s", params.Project.ProjectName))
+				logger.Error(err.Error())
+				// Cleanup credentials before we exit
+				if credentialsCreated {
+					err = common.DeleteCredentials(params.Project.ProjectName)
+					if err != nil {
+						logger.Error(fmt.Sprintf("Could not delete credentials while updating project %s", params.Project.ProjectName))
+						logger.Error(err.Error())
+					}
+				}
+				return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
+			}
+
+		}
+
+	} else {
+		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Project not exists")})
+	}
+	return project.NewPutProjectProjectNameNoContent()
 }
 
 // DeleteProjectProjectNameHandlerFunc deletes a project
 func DeleteProjectProjectNameHandlerFunc(params project.DeleteProjectProjectNameParams) middleware.Responder {
-	logger := utils.NewLogger("", "", "configuration-service")
-	logger.Debug("Deleting project " + params.ProjectName)
+	logger := keptn.NewLogger("", "", "configuration-service")
+
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
+
+	logger.Debug("Deleting project " + params.ProjectName)
+
 	err := os.RemoveAll(config.ConfigDir + "/" + params.ProjectName)
 	if err != nil {
+		logger.Error(fmt.Sprintf("Could not delete directory during deleting project %s", params.ProjectName))
 		logger.Error(err.Error())
 		return project.NewDeleteProjectProjectNameBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not delete project")})
 	}
+
 	creds, _ := common.GetCredentials(params.ProjectName)
 	if creds != nil {
 		err = common.DeleteCredentials(params.ProjectName)
 		if err != nil {
+			logger.Error(fmt.Sprintf("Could not delete credentials during deleting project %s", params.ProjectName))
 			logger.Error(err.Error())
 			return project.NewDeleteProjectProjectNameBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not delete upstream credentials")})
 		}
+	}
+
+	mv := common.GetProjectsMaterializedView()
+	err = mv.DeleteProject(params.ProjectName)
+	if err != nil {
+		return project.NewDeleteProjectProjectNameBadRequest().WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 	}
 
 	logger.Debug("Project " + params.ProjectName + " has been deleted")

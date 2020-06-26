@@ -1,7 +1,11 @@
 package docker
 
 import (
+	"bytes"
 	"errors"
+	"io/ioutil"
+	"net/http"
+	"strings"
 	"testing"
 )
 
@@ -32,6 +36,21 @@ func TestSplitImageName(t *testing.T) {
 	}
 }
 
+// RoundTripFunc .
+type RoundTripFunc func(req *http.Request) *http.Response
+
+// RoundTrip .
+func (f RoundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {
+	return f(req), nil
+}
+
+//NewTestClient returns *http.Client with Transport replaced to avoid making real calls
+func NewTestClient(fn RoundTripFunc) *http.Client {
+	return &http.Client{
+		Transport: RoundTripFunc(fn),
+	}
+}
+
 var imageAvailabilityTests = []struct {
 	image string
 	tag   string
@@ -39,14 +58,52 @@ var imageAvailabilityTests = []struct {
 }{
 	{"docker.io/keptn/installer", "0.6.1", nil},
 	{"docker.io/keptn/installer", "-1", errors.New("Provided image not found: Tag not found")},
-	{"quay.io/keptn/installer", "-1", errors.New("Provided image not found: 401 Unauthorized")},
+	{"quay.io/keptn/installer", "1", errors.New("Provided image not found: 401 Unauthorized")},
 	{"keptn/installer", "0.6.1", nil},
 }
 
 func TestCheckImageAvailablity(t *testing.T) {
+	client := NewTestClient(func(req *http.Request) *http.Response {
+		// Test request parameters
+		if strings.Contains(req.URL.String(), "docker.io") {
+			if strings.Contains(req.URL.String(), "/tags/0.6.1") {
+				return &http.Response{
+					StatusCode: 200,
+					// Send response to be tested
+					Body: ioutil.NopCloser(bytes.NewBufferString(``)),
+					// Must be set to non-nil value or it panics
+					Header: make(http.Header),
+				}
+			}
+			return &http.Response{
+				StatusCode: 404,
+				// Send response to be tested
+				Body: ioutil.NopCloser(bytes.NewBufferString(`Tag not found`)),
+				// Must be set to non-nil value or it panics
+				Header: make(http.Header),
+			}
+
+		} else if strings.Contains(req.URL.String(), "quay.io") {
+			return &http.Response{
+				StatusCode: 401,
+				Status:     "401 Unauthorized",
+				// Send response to be tested
+				Body: ioutil.NopCloser(bytes.NewBufferString(``)),
+				// Must be set to non-nil value or it panics
+				Header: make(http.Header),
+			}
+		}
+		return &http.Response{
+			StatusCode: 200,
+			// Send response to be tested
+			Body: ioutil.NopCloser(bytes.NewBufferString(`OK`)),
+			// Must be set to non-nil value or it panics
+			Header: make(http.Header),
+		}
+	})
 	for _, tt := range imageAvailabilityTests {
 		t.Run(tt.image, func(t *testing.T) {
-			err := CheckImageAvailability(tt.image, tt.tag)
+			err := CheckImageAvailability(tt.image, tt.tag, client)
 			if err != tt.err {
 				if !(err != nil && tt.err != nil && err.Error() == tt.err.Error()) {
 					t.Errorf("got %q, want %q", err, tt.err)

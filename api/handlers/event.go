@@ -15,8 +15,7 @@ import (
 	"github.com/go-openapi/swag"
 	"github.com/google/uuid"
 
-	datastore "github.com/keptn/go-utils/pkg/mongodb-datastore/utils"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	keptnutils "github.com/keptn/go-utils/pkg/lib"
 
 	"github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations/event"
@@ -32,6 +31,11 @@ func getDatastoreURL() string {
 func PostEventHandlerFunc(params event.PostEventParams, principal *models.Principal) middleware.Responder {
 
 	keptnContext := createOrApplyKeptnContext(params.Body.Shkeptncontext)
+	extensions := make(map[string]interface{})
+	extensions["shkeptncontext"] = keptnContext
+	if params.Body.Triggeredid != "" {
+		extensions["triggeredid"] = params.Body.Triggeredid
+	}
 
 	logger := keptnutils.NewLogger(keptnContext, "", "api")
 	logger.Info("API received a keptn event")
@@ -43,7 +47,19 @@ func PostEventHandlerFunc(params event.PostEventParams, principal *models.Princi
 
 	eventContext := models.EventContext{KeptnContext: &keptnContext, Token: &token}
 
-	source, _ := url.Parse("https://github.com/keptn/keptn/api")
+	var source *url.URL
+	if params.Body.Source != nil && len(*params.Body.Source) > 0 {
+		source, err = url.Parse(*params.Body.Source)
+		if err != nil {
+			logger.Info("Unable to parse source from the received CloudEvent")
+		}
+	}
+
+	if source == nil {
+		// Use this URL as fallback source
+		source, _ = url.Parse("https://github.com/keptn/keptn/api")
+	}
+
 	forwardData := addEventContextInCE(params.Body.Data, eventContext)
 	contentType := "application/json"
 
@@ -54,7 +70,7 @@ func PostEventHandlerFunc(params event.PostEventParams, principal *models.Princi
 			Type:        *params.Body.Type,
 			Source:      types.URLRef{URL: *source},
 			ContentType: &contentType,
-			Extensions:  map[string]interface{}{"shkeptncontext": keptnContext},
+			Extensions:  extensions,
 		}.AsV02(),
 		Data: forwardData,
 	}
@@ -93,8 +109,9 @@ func createOrApplyKeptnContext(eventKeptnContext string) string {
 func GetEventHandlerFunc(params event.GetEventParams, principal *models.Principal) middleware.Responder {
 
 	logger := keptnutils.NewLogger(params.KeptnContext, "", "api")
+	logger.Info("API received a GET keptn event")
 
-	eventHandler := datastore.NewEventHandler(getDatastoreURL())
+	eventHandler := keptnutils.NewEventHandler(getDatastoreURL())
 	cloudEvent, errObj := eventHandler.GetEvent(params.KeptnContext, params.Type)
 	if errObj != nil {
 		return sendInternalErrorForGet(fmt.Errorf("%s", *errObj.Message), logger)

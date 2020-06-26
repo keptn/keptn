@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: distributor
-        image: keptn/distributor:0.6.1
+        image: keptn/distributor:latest
         ports:
         - containerPort: 8080
         resources:
@@ -37,3 +37,4 @@ spec:
           value: 'mongodb-datastore'
         - name: PUBSUB_RECIPIENT_PATH
           value: '/event'
+      serviceAccountName: keptn-ds-default

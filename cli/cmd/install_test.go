@@ -43,7 +43,8 @@ func TestPrepareInstallerManifest(t *testing.T) {
 	*installParams.PlatformIdentifier = "gke"
 	installParams.Gateway = LoadBalancer
 	installParams.UseCase = AllUseCases
-	installParams.IstioInstallOption = StopIfInstalled
+	installParams.IngressInstallOption = StopIfInstalled
+	*installParams.Domain = ""
 
 	res := prepareInstallerManifest()
 	expected := `---
@@ -51,7 +52,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: installer
-  namespace: default
+  namespace: keptn
 spec:
   backoffLimit: 0
   template:
@@ -70,13 +71,16 @@ spec:
           value: gke
         - name: GATEWAY_TYPE
           value: LoadBalancer
+        - name: DOMAIN
+          value: 
         - name: INGRESS
           value: istio
         - name: USE_CASE
           value: all
-        - name: ISTIO_INSTALL_OPTION
+        - name: INGRESS_INSTALL_OPTION
           value: StopIfInstalled
       restartPolicy: Never
+      serviceAccountName: keptn-installer
 `
 	if res != expected {
 		t.Error("installation manifest does not match")
@@ -88,8 +92,9 @@ func resetFlagValues() {
 	*installParams.InstallerImage = ""
 	*installParams.PlatformIdentifier = "gke"
 	*installParams.GatewayInput = "LoadBalancer"
+	*installParams.Domain = ""
 	*installParams.UseCaseInput = "all"
-	*installParams.IstioInstallOptionInput = "StopIfInstalled"
+	*installParams.IngressInstallOptionInput = "StopIfInstalled"
 }
 
 func TestInstallCmd(t *testing.T) {
@@ -152,7 +157,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: installer
-  namespace: default
+  namespace: keptn
 spec:
   backoffLimit: 0
   template:
@@ -171,13 +176,69 @@ spec:
           value: gke
         - name: GATEWAY_TYPE
           value: NodePort
+        - name: DOMAIN
+          value: 
         - name: INGRESS
           value: istio
         - name: USE_CASE
           value: all
-        - name: ISTIO_INSTALL_OPTION
+        - name: INGRESS_INSTALL_OPTION
           value: StopIfInstalled
       restartPolicy: Never
+      serviceAccountName: keptn-installer
+`
+	if res != expected {
+		t.Error("installation manifest does not match")
+	}
+}
+
+func TestInstallCmdWithDomain(t *testing.T) {
+	credentialmanager.MockAuthCreds = true
+
+	cmd := fmt.Sprintf("install --platform=gke --gateway=NodePort --domain=127.0.0.1.nip.io --mock")
+
+	resetFlagValues()
+
+	_, err := executeActionCommandC(cmd)
+	if err != nil {
+		t.Errorf(unexpectedErrMsg, err)
+	}
+
+	res := prepareInstallerManifest()
+	expected := `---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: installer
+  namespace: keptn
+spec:
+  backoffLimit: 0
+  template:
+    metadata:
+      labels:
+        app: installer
+    spec:
+      volumes:
+      - name: kubectl
+        emptyDir: {}
+      containers:
+      - name: keptn-installer
+        image: docker.io/keptn/installer:latest
+        env:
+        - name: PLATFORM
+          value: gke
+        - name: GATEWAY_TYPE
+          value: NodePort
+        - name: DOMAIN
+          value: 127.0.0.1.nip.io
+        - name: INGRESS
+          value: istio
+        - name: USE_CASE
+          value: all
+        - name: INGRESS_INSTALL_OPTION
+          value: StopIfInstalled
+      restartPolicy: Never
+      serviceAccountName: keptn-installer
 `
 	if res != expected {
 		t.Error("installation manifest does not match")
@@ -202,7 +263,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: installer
-  namespace: default
+  namespace: keptn
 spec:
   backoffLimit: 0
   template:
@@ -221,13 +282,16 @@ spec:
           value: gke
         - name: GATEWAY_TYPE
           value: LoadBalancer
+        - name: DOMAIN
+          value: 
         - name: INGRESS
           value: nginx
         - name: USE_CASE
           value: quality-gates
-        - name: ISTIO_INSTALL_OPTION
+        - name: INGRESS_INSTALL_OPTION
           value: StopIfInstalled
       restartPolicy: Never
+      serviceAccountName: keptn-installer
 `
 	if res != expected {
 		t.Error("installation manifest does not match")
@@ -237,7 +301,7 @@ spec:
 func TestInstallCmdWithIstioInstallOption(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
 
-	cmd := fmt.Sprintf("install --istio-install-option=Reuse --mock")
+	cmd := fmt.Sprintf("install --ingress-install-option=Reuse --mock")
 
 	resetFlagValues()
 
@@ -252,7 +316,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: installer
-  namespace: default
+  namespace: keptn
 spec:
   backoffLimit: 0
   template:
@@ -271,13 +335,16 @@ spec:
           value: gke
         - name: GATEWAY_TYPE
           value: LoadBalancer
+        - name: DOMAIN
+          value: 
         - name: INGRESS
           value: istio
         - name: USE_CASE
           value: all
-        - name: ISTIO_INSTALL_OPTION
+        - name: INGRESS_INSTALL_OPTION
           value: Reuse
       restartPolicy: Never
+      serviceAccountName: keptn-installer
 `
 	if res != expected {
 		t.Error("installation manifest does not match")

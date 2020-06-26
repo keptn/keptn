@@ -419,9 +419,6 @@ func (s *Server) handleShutdown(wg *sync.WaitGroup, serversPtr *[]*http.Server) 
 	ctx, cancel := context.WithTimeout(context.TODO(), s.GracefulTimeout)
 	defer cancel()
 
-	// first execute the pre-shutdown hook
-	s.api.PreServerShutdown()
-
 	shutdownChan := make(chan bool)
 	for i := range servers {
 		server := servers[i]
@@ -491,7 +488,7 @@ func (s *Server) TLSListener() (net.Listener, error) {
 
 func handleInterrupt(once *sync.Once, s *Server) {
 	once.Do(func() {
-		for range s.interrupt {
+		for _ = range s.interrupt {
 			if s.interrupted {
 				s.Logf("Server already shutting down")
 				continue

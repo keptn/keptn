@@ -1,28 +1,31 @@
 module github.com/keptn/keptn/cli
 
-go 1.12
+go 1.13
 
 require (
 	github.com/cloudevents/sdk-go v0.10.0
-	github.com/danieljoos/wincred v1.0.2 // indirect
+	github.com/danieljoos/wincred v1.1.0 // indirect
 	github.com/docker/docker-credential-helpers v0.6.3
-	github.com/ghodss/yaml v1.0.0
-	github.com/google/go-github v17.0.0+incompatible
-	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/google/uuid v1.1.1
 	github.com/gorilla/websocket v1.4.1
 	github.com/hashicorp/go-version v1.2.0
-	github.com/keptn/go-utils v0.6.1-a
+	github.com/keptn/go-utils v0.6.3-0.20200618144455-073e08a10aaa
+	github.com/keptn/kubernetes-utils v0.1.1-0.20200625070721-78fa6ab70b07
 	github.com/magiconair/properties v1.8.1
 	github.com/mattn/go-shellwords v1.0.10
 	github.com/mitchellh/go-homedir v1.1.0
+	github.com/mitchellh/mapstructure v1.1.2
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/viper v1.4.0
-	github.com/stretchr/testify v1.4.0
-	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
-	gopkg.in/yaml.v2 v2.2.5
+	github.com/stretchr/testify v1.5.1
+	gopkg.in/yaml.v2 v2.2.8
 	gotest.tools v2.2.0+incompatible
-	k8s.io/api v0.0.0-20190313235455-40a48860b5ab
-	k8s.io/apimachinery v0.0.0-20190313205120-d7deff9243b1
-	k8s.io/helm v2.14.3+incompatible
+	helm.sh/helm/v3 v3.1.2
+	k8s.io/api v0.17.2
+)
+
+// Transitive requirement from Helm: See https://github.com/helm/helm/blob/v3.1.2/go.mod
+replace (
+	github.com/Azure/go-autorest => github.com/Azure/go-autorest v13.3.2+incompatible
+	github.com/docker/distribution => github.com/docker/distribution v0.0.0-20191216044856-a8371794149d
 )

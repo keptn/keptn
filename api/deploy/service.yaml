@@ -2,20 +2,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: api
+  name: api-service
   namespace: keptn
 spec:
   selector:
     matchLabels:
-      run: api
+      run: api-service
   replicas: 1
   template:
     metadata:
       labels:
-        run: api
+        run: api-service
     spec:
       containers:
-        - name: api
+        - name: api-service
           image: keptn/api:latest
           ports:
             - containerPort: 8080
@@ -28,33 +28,30 @@ spec:
               cpu: "500m"
           env:
             - name: EVENTBROKER_URI
-              value: event-broker.keptn.svc.cluster.local
+              value: http://event-broker.keptn.svc.cluster.local
             - name: DATASTORE_URI
-              value: mongodb-datastore.keptn-datastore.svc.cluster.local:8080
-            - name: CONFIGURATION_URI
-              value: configuration-service.keptn.svc.cluster.local:8080
+              value: http://mongodb-datastore.keptn-datastore.svc.cluster.local:8080
+            - name: OPENSHIFT_ROUTE_SERVICE_URI
+              value: http://openshift-route-service.keptn.svc.cluster.local:8081
             - name: SECRET_TOKEN
               valueFrom:
                 secretKeyRef:
                   name: keptn-api-token
                   key: keptn-api-token
+      serviceAccountName: keptn-api-service
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: api
+  name: api-service
   namespace: keptn
   labels:
-    run: api
+    run: api-service
 spec:
   ports:
-    - port: 80
+    - port: 8080
       name: http
       targetPort: 8080
       protocol: TCP
-    - port: 443
-      name: https
-      targetPort: 8080
-      protocol: TCP
   selector:
-    run: api
+    run: api-service

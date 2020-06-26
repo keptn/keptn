@@ -1,10 +1,10 @@
-# Keptn's Bridge
+# Keptn Bridge
 
-Keptn's bridge allows to browse the Keptn events.
+Keptn bridge allows to browse the Keptn events.
 
 ## Installation
 
-The Keptn's bridge is installed as a part of [Keptn](https://keptn.sh).
+The Keptn bridge is installed as a part of [Keptn](https://keptn.sh).
 
 ### Deploy in your Kubernetes cluster
 
@@ -16,12 +16,12 @@ kubectl apply -f deploy/bridge.yaml
 
 ### Setting up Basic Authentication
 
-Keptn's Bridge comes with a very simple basic authentication feature, which can be controlled by setting the following two environment variables:
+Keptn Bridge comes with a very simple basic authentication feature, which can be controlled by setting the following two environment variables:
 
 * `BASIC_AUTH_USERNAME` - username
 * `BASIC_AUTH_PASSWORD` - password
 
-To enable it within your Kubernetes cluster, we recommend first creating a secret which holds the two variables, and then apply this secret within the Kubernetes deployment for Keptn's Bridge.
+To enable it within your Kubernetes cluster, we recommend first creating a secret which holds the two variables, and then apply this secret within the Kubernetes deployment for Keptn Bridge.
 
 1. Create the secret using
 
@@ -75,17 +75,17 @@ kubectl delete -f deploy/bridge.yaml
 
 ## Local development
 
-1. Run `kubectl proxy` to create a proxy connection to your Keptn cluster.
-2. Edit `server/config/index.js` to define the keptn datastore API endpoint.
-3. Run `npm install`.
-4. Run `npm start` to start the express server that provides the API endpoints.
-5. Run `npm run vue-dev` to start the development server.
-6. Access the web through the url shown on the console.
+1. Run `npm install`.
+1. Set `API_URL` and `API_TOKEN` environment variables, e.g.:
+   ```console
+   API_URL=https://api.keptn.127.0.0.1.nip.io
+   API_TOKEN=1234-exam-ple
+   ```
+   **Note**: On Windows, use `set API_...=...`. On Linux, use `export API_...=...`
+1. Run `npm start:dev` to start the express server and the Angular app.
+1. Access the web through the url shown on the console (e.g., http://localhost:3000/ ).
 
 ## Production deployment
 
-1. Run `npm install`
-2. Run `npm run build`
-3. Run `npm start`
-
+See [Dockerfile](Dockerfile) for the latest instructions.
 By default, the process will listen on port 3000.

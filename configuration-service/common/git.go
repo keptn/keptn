@@ -7,8 +7,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/configuration-service/config"
+	utils "github.com/keptn/kubernetes-utils/pkg"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -21,13 +21,17 @@ type GitCredentials struct {
 	RemoteURI string `json:"remoteURI,omitempty"`
 }
 
-// CloneRepo clones an upstream repository into a local folder "project"
-func CloneRepo(project string, user string, token string, uri string) error {
+// CloneRepo clones an upstream repository into a local folder "project" and returns
+// whether the Git repo is already initialized.
+func CloneRepo(project string, user string, token string, uri string) (bool, error) {
 	uri = getRepoURI(uri, user, token)
 
-	_, err := utils.ExecuteCommandInDirectory("git", []string{"clone", uri, project}, config.ConfigDir)
-
-	return err
+	msg, err := utils.ExecuteCommandInDirectory("git", []string{"clone", uri, project}, config.ConfigDir)
+	const emptyRepoWarning = "warning: You appear to have cloned an empty repository."
+	if strings.Contains(msg, emptyRepoWarning) {
+		return false, err
+	}
+	return true, err
 }
 
 func getRepoURI(uri string, user string, token string) string {
@@ -63,7 +67,7 @@ func CheckoutBranch(project string, branch string, disableUpstreamSync bool) err
 		repoURI := getRepoURI(credentials.RemoteURI, credentials.User, credentials.Token)
 		_, err = utils.ExecuteCommandInDirectory("git", []string{"pull", "-s", "recursive", "-X", "theirs", repoURI}, projectConfigPath)
 		if err != nil {
-			return err
+			return obfuscateErrorMessage(err, credentials)
 		}
 	}
 	return nil
@@ -87,7 +91,29 @@ func CreateBranch(project string, branch string, sourceBranch string) error {
 		repoURI := getRepoURI(credentials.RemoteURI, credentials.User, credentials.Token)
 		_, err = utils.ExecuteCommandInDirectory("git", []string{"push", "--set-upstream", repoURI, branch}, projectConfigPath)
 		if err != nil {
-			return errors.New("Could not push to upstream")
+			return obfuscateErrorMessage(err, credentials)
+		}
+	}
+
+	return nil
+}
+
+// AddOrigin adds a remote Git repository
+func AddOrigin(project string) error {
+	projectConfigPath := config.ConfigDir + "/" + project
+
+	// if an upstream has been defined, add the origin and push
+	credentials, err := GetCredentials(project)
+	if err == nil && credentials != nil {
+		repoURI := getRepoURI(credentials.RemoteURI, credentials.User, credentials.Token)
+		_, err = utils.ExecuteCommandInDirectory("git", []string{"remote", "add", "origin", repoURI}, projectConfigPath)
+		if err != nil {
+			return obfuscateErrorMessage(err, credentials)
+		}
+
+		_, err = utils.ExecuteCommandInDirectory("git", []string{"push", "origin", "--mirror"}, projectConfigPath)
+		if err != nil {
+			return obfuscateErrorMessage(err, credentials)
 		}
 	}
 
@@ -95,7 +121,7 @@ func CreateBranch(project string, branch string, sourceBranch string) error {
 }
 
 // StageAndCommitAll stages all current changes and commits them to the current branch
-func StageAndCommitAll(project string, message string) error {
+func StageAndCommitAll(project string, message string, withPull bool) error {
 	projectConfigPath := config.ConfigDir + "/" + project
 	_, err := utils.ExecuteCommandInDirectory("git", []string{"add", "."}, projectConfigPath)
 	if err != nil {
@@ -107,16 +133,26 @@ func StageAndCommitAll(project string, message string) error {
 	credentials, err := GetCredentials(project)
 	if err == nil && credentials != nil {
 		repoURI := getRepoURI(credentials.RemoteURI, credentials.User, credentials.Token)
-		_, err = utils.ExecuteCommandInDirectory("git", []string{"pull", "-s", "recursive", "-X", "theirs", repoURI}, projectConfigPath)
-		if err != nil {
-			return err
+		if withPull {
+			_, err = utils.ExecuteCommandInDirectory("git", []string{"pull", "-s", "recursive", "-X", "theirs", repoURI}, projectConfigPath)
+			if err != nil {
+				return obfuscateErrorMessage(err, credentials)
+			}
 		}
 		_, err = utils.ExecuteCommandInDirectory("git", []string{"push", repoURI}, projectConfigPath)
 		if err != nil {
-			return err
+			return obfuscateErrorMessage(err, credentials)
 		}
 	}
 	return nil
+}
+
+func obfuscateErrorMessage(err error, credentials *GitCredentials) error {
+	if credentials.Token != "" {
+		errorMessage := strings.ReplaceAll(err.Error(), credentials.Token, "********")
+		return errors.New(errorMessage)
+	}
+	return err
 }
 
 // GetCurrentVersion gets the latest version (i.e. commit hash) of the currently checked out branch
@@ -194,7 +230,7 @@ func StoreGitCredentials(project string, user string, token string, remoteURI st
 	secret := &v1.Secret{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Secret",
-			APIVersion: "apps/v1beta1",
+			APIVersion: "apps/v1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "git-credentials-" + project,

@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	"github.com/gorilla/websocket"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	keptnutils "github.com/keptn/go-utils/pkg/lib"
 )
 
 var upgrader = websocket.Upgrader{}

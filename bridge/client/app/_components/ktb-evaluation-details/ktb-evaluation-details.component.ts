@@ -21,6 +21,7 @@ import {DtChartSeriesVisibilityChangeEvent} from "@dynatrace/barista-components/
 
 import {DataService} from "../../_services/data.service";
 import DateUtil from "../../_utils/date.utils";
+import {Trace} from "../../_models/trace";
 
 @Component({
   selector: 'ktb-evaluation-details',
@@ -33,21 +34,19 @@ export class KtbEvaluationDetailsComponent implements OnInit {
     'pass': '#7dc540',
     'warning': '#fd8232',
     'fail': '#dc172a',
+    'failed': '#dc172a',
     'info': '#f8f8f8'
   };
 
   public _evaluationState = {
     'pass': 'recovered',
     'warning': 'warning',
-    'fail': 'error'
+    'fail': 'error',
+    'failed': 'error'
   };
 
-  public _evaluationData: any;
-  public _evaluationSource: string;
-
-  public _selectedEvaluationData: any;
-
-  public _view: string = "singleevaluation";
+  public _evaluationData: Trace;
+  public _selectedEvaluationData: Trace;
   public _comparisonView: string = "heatmap";
 
   public _chartOptions: Highcharts.Options = {
@@ -89,7 +88,7 @@ export class KtbEvaluationDetailsComponent implements OnInit {
       },
     },
   };
-  public _chartSeries: Highcharts.IndividualSeriesOptions[] = [
+  public _chartSeries: Highcharts.SeriesOptions[] = [
   ];
 
   public _heatmapOptions: Highcharts.Options = {
@@ -124,7 +123,7 @@ export class KtbEvaluationDetailsComponent implements OnInit {
     }],
 
     colorAxis: {
-      dataClasses: Object.keys(this._evaluationColor).map((key) => { return { color: this._evaluationColor[key], name: key } })
+      dataClasses: Object.keys(this._evaluationColor).filter(key => key != 'failed').map((key) => { return { color: this._evaluationColor[key], name: key } })
     },
 
     plotOptions: {
@@ -140,7 +139,7 @@ export class KtbEvaluationDetailsComponent implements OnInit {
       },
     },
   };
-  public _heatmapSeries: Highcharts.HeatMapSeriesOptions[] = [];
+  public _heatmapSeries: Highcharts.SeriesHeatmapOptions[] = [];
 
   @Input()
   get evaluationData(): any {
@@ -153,23 +152,14 @@ export class KtbEvaluationDetailsComponent implements OnInit {
     }
   }
 
-  @Input()
-  get evaluationSource(): any {
-    return this._evaluationSource;
-  }
-  set evaluationSource(evaluationSource: any) {
-    if (this._evaluationSource !== evaluationSource) {
-      this._evaluationSource = evaluationSource;
-      this._changeDetectorRef.markForCheck();
-    }
-  }
-
   constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService) { }
 
   ngOnInit() {
-    this.dataService.evaluationResults.subscribe((evaluationData) => {
-      if(this.evaluationData === evaluationData) {
-        this.updateChartData(evaluationData.evaluationHistory);
+    if(this._evaluationData)
+      this.dataService.loadEvaluationResults(this._evaluationData);
+    this.dataService.evaluationResults.subscribe((event) => {
+      if(this.evaluationData === event) {
+        this.updateChartData(event.data.evaluationHistory);
         this._changeDetectorRef.markForCheck();
       }
     });
@@ -177,9 +167,8 @@ export class KtbEvaluationDetailsComponent implements OnInit {
 
   updateChartData(evaluationHistory) {
     let chartSeries = [];
-
-    if(!this._selectedEvaluationData) {
-      this._selectedEvaluationData = evaluationHistory[evaluationHistory.length-1].data;
+    if(!this._selectedEvaluationData && evaluationHistory) {
+      this._selectedEvaluationData = evaluationHistory.find(h => h.shkeptncontext === this._evaluationData.shkeptncontext);
     }
 
     evaluationHistory.forEach((evaluation) => {
@@ -197,7 +186,8 @@ export class KtbEvaluationDetailsComponent implements OnInit {
           name: 'Score',
           type: 'column',
           data: [],
-          cursor: 'pointer'
+          cursor: 'pointer',
+          turboThreshold: 0
         };
         chartSeries.push(indicatorScoreSeriesColumn);
       }
@@ -208,6 +198,7 @@ export class KtbEvaluationDetailsComponent implements OnInit {
           data: [],
           cursor: 'pointer',
           visible: false,
+          turboThreshold: 0
         };
         chartSeries.push(indicatorScoreSeriesLine);
       }
@@ -230,6 +221,7 @@ export class KtbEvaluationDetailsComponent implements OnInit {
               yAxis: 1,
               data: [],
               visible: false,
+              turboThreshold: 0
             };
             chartSeries.push(indicatorChartSeries);
           }
@@ -243,7 +235,9 @@ export class KtbEvaluationDetailsComponent implements OnInit {
     this._heatmapSeries = [
       {
         name: 'Score',
+        type: 'heatmap',
         rowsize: 0.85,
+        turboThreshold: 0,
         data: chartSeries.find(series => series.name == 'Score').data.map((s) => {
           let time = moment(s.x).format();
           let index = this._heatmapOptions.yAxis[0].categories.indexOf("Score");
@@ -259,6 +253,8 @@ export class KtbEvaluationDetailsComponent implements OnInit {
       },
       {
         name: 'SLOs',
+        type: 'heatmap',
+        turboThreshold: 0,
         data: chartSeries.reverse().reduce((r, d) => [...r, ...d.data.filter(s => s.indicatorResult).map((s) => {
           let time = moment(s.x).format();
           let index = this._heatmapOptions.yAxis[0].categories.indexOf(s.indicatorResult.value.metric);
@@ -288,28 +284,24 @@ export class KtbEvaluationDetailsComponent implements OnInit {
     this._heatmapOptions.chart.height = this._heatmapOptions.yAxis[0].categories.length*28 + 100;
   }
 
-  switchEvaluationView() {
-    this._view = this._view == "singleevaluation" ? "evaluationcomparison" : "singleevaluation";
-    if(this._view == "evaluationcomparison") {
-      this.dataService.loadEvaluationResults(this._evaluationData, this._evaluationSource);
-      this._changeDetectorRef.markForCheck();
-    }
-  }
-
   seriesVisibilityChanged(_: DtChartSeriesVisibilityChangeEvent): void {
     // NOOP
   }
 
   _chartSeriesClicked(event) {
-    this._selectedEvaluationData = event.point.evaluationData.data;
+    this._selectedEvaluationData = event.point.evaluationData;
   }
 
   _heatmapTileClicked(event) {
-    this._selectedEvaluationData = this._heatmapSeries[0].data[event.point.x]['evaluation'].data;
+    this._selectedEvaluationData = this._heatmapSeries[0].data[event.point.x]['evaluation'];
   }
 
   getCalendarFormat() {
     return DateUtil.getCalendarFormats().sameElse;
+  }
+
+  getDuration(start, end) {
+    return DateUtil.getDurationFormatted(start, end);
   }
 
   private binarySearch(ar, el, compare_fn) {

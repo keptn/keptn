@@ -1,19 +1,68 @@
-<header class="container" dtTheme=":dark" fxLayout="row" fxLayoutGap="5%" fxLayoutAlign="space-between center">
-  <div fxFlex fxLayout="row" fxLayoutGap="10px" fxLayoutAlign="flex-start center">
-    <a routerLink="/" class="brand" fxLayout="row" fxLayoutGap="10px" fxLayoutAlign="space-between center">
-      <img src="/assets/logo.png" />
-      <p>keptn</p>
-    </a>
-    <p>/</p>
-    <p>
-      <dt-select id="projectSelect" placeholder="Choose project" aria-label="Choose project" [value]="(project | async)?.projectName">
-        <dt-option *ngFor="let project of projects | async" [routerLink]="['/project', project.projectName]" [value]="project.projectName" [textContent]="project.projectName"></dt-option>
-      </dt-select>
-    </p>
-  </div>
-  <div fxFlex="50">
-    <!-- TODO: create search input to filter events in bridge -->
-  </div>
-  <div fxLayout="row">
+<header dtTheme=":dark">
+  <ng-content></ng-content>
+  <div class="container" fxLayout="row" fxLayoutGap="5%" fxLayoutAlign="space-between center">
+    <div fxFlex fxLayout="row" fxLayoutGap="10px" fxLayoutAlign="flex-start center">
+      <a routerLink="/" class="brand" fxLayout="row" fxLayoutGap="10px" fxLayoutAlign="space-between center">
+        <img src="/assets/logo.png" />
+        <p class="mt-1 mb-1">keptn</p>
+      </a>
+      <p class="mt-1 mb-1">/</p>
+      <p class="mt-1 mb-1">
+        <dt-select id="projectSelect" placeholder="Choose project" aria-label="Choose project" [value]="(project | async)?.projectName">
+          <dt-option *ngFor="let project of projects | async" [routerLink]="['/project', project.projectName]" [value]="project.projectName" [textContent]="project.projectName"></dt-option>
+        </dt-select>
+      </p>
+    </div>
+    <div fxFlex="50">
+      <!-- TODO: create search input to filter events in bridge -->
+    </div>
+    <div fxLayout="row">
+      <button dt-icon-button variant="nested" [dtContextDialogTrigger]="dialog" aria-label="Open user menu">
+        <dt-icon name="user-uem"></dt-icon>
+      </button>
+      <dt-context-dialog #dialog aria-label="User menu" ariaLabelClose="Close user menu">
+        <div class="mb-3" fxLayout="row" fxLayoutAlign="flex-start center" *ngIf="!versionInfo.versionCheckEnabled">
+          <div>
+            <dt-icon class="error" [name]="'criticalevent'"></dt-icon>
+          </div>
+          <div fxFlex>
+            <p class="small m-0">Automatic version and security check disabled</p>
+          </div>
+        </div>
+        <div class="mt-3" fxLayout="column" fxLayoutAlign="flex-end end">
+          <p class="small m-0">Keptn version: <span [textContent]="versionInfo.keptnVersion"></span><span *ngIf="versionInfo.keptnVersionInvalid">*</span></p>
+          <p class="small m-0">Bridge version: <span [textContent]="versionInfo.bridgeVersion"></span><span *ngIf="versionInfo.bridgeVersionInvalid">*</span></p>
+        </div>
+        <div class="mt-3" fxLayout="row" fxLayoutAlign="flex-start" *ngIf="versionInfo.keptnVersionInvalid || versionInfo.bridgeVersionInvalid">
+          <div>
+            <dt-icon class="error mr-1" [name]="'criticalevent'"></dt-icon>
+          </div>
+          <div fxFlex>
+            <p class="small m-0">*Invalid version for automatic version check. Please install one of the stable or prerelease versions.</p>
+          </div>
+        </div>
+        <div class="mt-3" fxLayout="row">
+          <div fxFlex>
+            <p class="m-0">Version check</p>
+          </div>
+          <div>
+            <dt-switch (change)="versionCheckClicked($event)" [checked]="versionInfo.versionCheckEnabled"></dt-switch>
+          </div>
+        </div>
+        <p class="m-0 mt-3 small">By enabling this feature, Keptn will collect statistical data and notify about new version and security patches for Keptn and Keptn Bridge. Details can be found at <a [href]="versionCheckReference" target="_blank" [textContent]="versionCheckReference"></a></p>
+      </dt-context-dialog>
+    </div>
   </div>
 </header>
+<dt-confirmation-dialog [state]="versionCheckDialogState" aria-label="Version check feature info">
+  <dt-confirmation-dialog-state name="info">
+    As of now you can enable automatic version check to be notified about new version and security patches for Keptn and Keptn Bridge. This setting can be changed in the user menu on the top right.
+    <dt-confirmation-dialog-actions>
+      <button dt-button variant="secondary" (click)="acceptVersionCheck(false)">Decline</button>
+      <button dt-button (click)="acceptVersionCheck(true)">Accept</button>
+    </dt-confirmation-dialog-actions>
+  </dt-confirmation-dialog-state>
+  <dt-confirmation-dialog-state name="success">
+    Automatic version check enabled successfully!
+  </dt-confirmation-dialog-state>
+</dt-confirmation-dialog>

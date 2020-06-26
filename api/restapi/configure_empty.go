@@ -4,12 +4,13 @@ package restapi
 
 import (
 	"crypto/tls"
-	"github.com/keptn/keptn/api/handlers"
-	"github.com/keptn/keptn/api/ws"
 	"log"
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/keptn/keptn/api/handlers"
+	"github.com/keptn/keptn/api/ws"
 
 	"github.com/go-openapi/errors"
 	openapierrors "github.com/go-openapi/errors"
@@ -19,12 +20,10 @@ import (
 	"github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations"
 	"github.com/keptn/keptn/api/restapi/operations/auth"
+	"github.com/keptn/keptn/api/restapi/operations/configure"
 	"github.com/keptn/keptn/api/restapi/operations/event"
 	"github.com/keptn/keptn/api/restapi/operations/project"
-	"github.com/keptn/keptn/api/restapi/operations/project_resource"
 	"github.com/keptn/keptn/api/restapi/operations/service"
-	"github.com/keptn/keptn/api/restapi/operations/service_resource"
-	"github.com/keptn/keptn/api/restapi/operations/stage_resource"
 )
 
 //go:generate swagger generate server --target ../../api --name  --spec ../swagger.yaml --principal models.Principal
@@ -68,6 +67,8 @@ func configureAPI(api *operations.EmptyAPI) http.Handler {
 		return auth.NewAuthOK()
 	})
 
+	api.ConfigurePostConfigureBridgeExposeHandler = configure.PostConfigureBridgeExposeHandlerFunc(handlers.PostConfigureBridgeHandlerFunc)
+
 	api.EventPostEventHandler = event.PostEventHandlerFunc(handlers.PostEventHandlerFunc)
 	api.EventGetEventHandler = event.GetEventHandlerFunc(handlers.GetEventHandlerFunc)
 
@@ -77,23 +78,6 @@ func configureAPI(api *operations.EmptyAPI) http.Handler {
 
 	// Service endpoints
 	api.ServicePostProjectProjectNameServiceHandler = service.PostProjectProjectNameServiceHandlerFunc(handlers.PostServiceHandlerFunc)
-
-	// Resource endpoints
-	api.ProjectResourcePostProjectProjectNameResourceHandler =
-		project_resource.PostProjectProjectNameResourceHandlerFunc(
-			handlers.PostProjectProjectNameResourceHandlerFunc)
-
-	api.StageResourcePostProjectProjectNameStageStageNameResourceHandler =
-		stage_resource.PostProjectProjectNameStageStageNameResourceHandlerFunc(
-			handlers.PostProjectProjectNameStageStageNameResourceHandlerFunc)
-
-	api.ServiceResourcePostProjectProjectNameStageStageNameServiceServiceNameResourceHandler =
-		service_resource.PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
-			handlers.PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc)
-
-	api.ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceHandler =
-		service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
-			handlers.PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc)
 
 	api.PreServerShutdown = func() {}
 

@@ -1,6 +1,6 @@
 module github.com/keptn/keptn/helm-service
 
-go 1.12
+go 1.13
 
 require (
 	github.com/cloudevents/sdk-go v0.10.0
@@ -9,16 +9,22 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/gorilla/websocket v1.4.1
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.6.1-a
+	github.com/keptn/go-utils v0.6.3-0.20200617060337-e48e5452bfe9
+	github.com/keptn/kubernetes-utils v0.0.0-20200417060634-69e3369c72d3
 	github.com/kinbiko/jsonassert v1.0.1
 	github.com/stretchr/testify v1.4.0
-	golang.org/x/net v0.0.0-20191028085509-fe3aa8a45271 // indirect
 	gotest.tools v2.2.0+incompatible
-	k8s.io/api v0.0.0-20190313235455-40a48860b5ab
-	k8s.io/apimachinery v0.0.0-20190313205120-d7deff9243b1
-	k8s.io/helm v2.14.3+incompatible
-	sigs.k8s.io/yaml v1.1.0
+	helm.sh/helm/v3 v3.1.2
+	k8s.io/api v0.17.2
+	k8s.io/apimachinery v0.17.2
+	k8s.io/cli-runtime v0.17.2
+	k8s.io/client-go v0.17.2
+	k8s.io/kubectl v0.17.2
+	sigs.k8s.io/yaml v1.2.0
 )
 
-// replace cloudevents/sdk-go with version 0.7.0
-replace github.com/cloudevents/sdk-go => github.com/cloudevents/sdk-go v0.0.0-20190509003705-56931988abe3
+// Transitive requirement from Helm: See https://github.com/helm/helm/blob/v3.1.2/go.mod
+replace (
+	github.com/Azure/go-autorest => github.com/Azure/go-autorest v13.3.2+incompatible
+	github.com/docker/distribution => github.com/docker/distribution v0.0.0-20191216044856-a8371794149d
+)

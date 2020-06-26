@@ -25,7 +25,7 @@ type GetProjectOK struct {
 	/*
 	  In: Body
 	*/
-	Payload *models.Projects `json:"body,omitempty"`
+	Payload *models.ExpandedProjects `json:"body,omitempty"`
 }
 
 // NewGetProjectOK creates GetProjectOK with default headers values
@@ -35,13 +35,13 @@ func NewGetProjectOK() *GetProjectOK {
 }
 
 // WithPayload adds the payload to the get project o k response
-func (o *GetProjectOK) WithPayload(payload *models.Projects) *GetProjectOK {
+func (o *GetProjectOK) WithPayload(payload *models.ExpandedProjects) *GetProjectOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the get project o k response
-func (o *GetProjectOK) SetPayload(payload *models.Projects) {
+func (o *GetProjectOK) SetPayload(payload *models.ExpandedProjects) {
 	o.Payload = payload
 }
 

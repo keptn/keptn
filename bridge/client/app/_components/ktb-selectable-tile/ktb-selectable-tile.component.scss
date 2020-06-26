@@ -23,4 +23,7 @@
   &.ktb-tile-error .ktb-selectable-tile-container {
     border-color: $error-color;
   }
+  &.ktb-tile-success .ktb-selectable-tile-container {
+    border-color: $cta-color;
+  }
 }

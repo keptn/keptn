@@ -20,11 +20,11 @@ FROM node:10-alpine
 
 EXPOSE 3000
 
-ENV DATASTORE "http://mongodb-datastore.keptn-datastore.svc.cluster.local:8080/"
-ENV CONFIGURATION_SERVICE "http://configuration-service.keptn.svc.cluster.local:8080/v1/"
 ENV NODE_ENV "production"
 ARG version=develop
 ENV VERSION="${version}"
+ENV API_URL "http://api-gateway-nginx.keptn.svc.cluster.local"
+ENV API_TOKEN ""
 
 RUN addgroup mygroup && adduser -D -G mygroup myuser && mkdir -p /usr/src/app && chown -R myuser /usr/src/app
 

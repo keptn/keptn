@@ -11,7 +11,7 @@ import (
 	"io/ioutil"
 
 	"github.com/docker/docker-credential-helpers/pass"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 )
 
 // For using pass.Pass{} the following commands need to executed:
@@ -53,7 +53,14 @@ func (cm *CredentialManager) SetCreds(endPoint url.URL, apiToken string) error {
 
 // GetCreds reads the credentials and returns an endpoint, the api token, or potentially an error.
 func (cm *CredentialManager) GetCreds() (url.URL, string, error) {
+	// mock credentials if encessary
+	if MockAuthCreds {
+		return url.URL{}, "", nil
+	}
+
+	// try to read credentials from password-store
 	if _, err := os.Stat(passwordStoreDirectory); os.IsNotExist(err) {
+		// password-store not found, read credentials from apiTokenFile
 		data, err := ioutil.ReadFile(cm.apiTokenFile)
 		if err != nil {
 			return url.URL{}, "", err

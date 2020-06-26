@@ -11,3 +11,7 @@ const (
 func (i Ingress) String() string {
 	return [...]string{"istio", "nginx"}[i]
 }
+
+func (i Ingress) getDefaultNamespace() string {
+	return [...]string{"istio-system", "ingress-nginx"}[i]
+}

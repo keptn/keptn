@@ -32,7 +32,7 @@ func TestConfigureDomainCmdWithVersion(t *testing.T) {
 	r := newRedirector()
 	r.redirectStdOut()
 
-	Version = "0.6.1"
+	Version = "master"
 	*configureDomainParams.ConfigVersion = ""
 	_, err := executeActionCommandC(cmd)
 	if err != nil {
@@ -41,7 +41,7 @@ func TestConfigureDomainCmdWithVersion(t *testing.T) {
 
 	out := r.revertStdOut()
 
-	if !strings.Contains(out, "Used version for manifests: 0.6.1") {
+	if !strings.Contains(out, "Used version for manifests: master") {
 		t.Errorf("unexpected used version: %s", out)
 	}
 }

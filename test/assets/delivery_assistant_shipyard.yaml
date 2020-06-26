@@ -1,0 +1,28 @@
+stages:
+  - name: "combi1"
+    approval_strategy:     # approve based on evaluation result from dev
+      pass: "automatic"
+      warning: "automatic"
+    deployment_strategy: "blue_green_service"
+    test_strategy: "performance"
+  - name: "combi2"
+    approval_strategy:     # approve based on evaluation result from combi1
+      pass: "manual"
+      warning: "automatic"
+    deployment_strategy: "blue_green_service"
+    test_strategy: "performance"
+  - name: "combi3"
+    approval_strategy:     # approve based on evaluation result from combi2
+      pass: "automatic"
+      warning: "manual"
+    deployment_strategy: "blue_green_service"
+    test_strategy: "performance"
+  - name: "combi4"
+    approval_strategy:     # approve based on evaluation result from combi3
+      pass: "manual"
+      warning: "manual"
+    deployment_strategy: "blue_green_service"
+    test_strategy: "performance"
+  - name: "production"
+    deployment_strategy: "blue_green_service"
+    remediation_strategy: "automated"

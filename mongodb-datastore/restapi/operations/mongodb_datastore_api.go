@@ -10,17 +10,16 @@ import (
 	"net/http"
 	"strings"
 
-	errors "github.com/go-openapi/errors"
-	loads "github.com/go-openapi/loads"
-	runtime "github.com/go-openapi/runtime"
-	middleware "github.com/go-openapi/runtime/middleware"
-	security "github.com/go-openapi/runtime/security"
-	spec "github.com/go-openapi/spec"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/loads"
+	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/security"
+	"github.com/go-openapi/spec"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/event"
-	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/logs"
 )
 
 // NewMongodbDatastoreAPI creates a new MongodbDatastore instance
@@ -42,13 +41,10 @@ func NewMongodbDatastoreAPI(spec *loads.Document) *MongodbDatastoreAPI {
 		JSONConsumer:        runtime.JSONConsumer(),
 		JSONProducer:        runtime.JSONProducer(),
 		EventGetEventsHandler: event.GetEventsHandlerFunc(func(params event.GetEventsParams) middleware.Responder {
-			return middleware.NotImplemented("operation EventGetEvents has not yet been implemented")
-		}), LogsGetLogsHandler: logs.GetLogsHandlerFunc(func(params logs.GetLogsParams) middleware.Responder {
-			return middleware.NotImplemented("operation LogsGetLogs has not yet been implemented")
-		}), EventSaveEventHandler: event.SaveEventHandlerFunc(func(params event.SaveEventParams) middleware.Responder {
-			return middleware.NotImplemented("operation EventSaveEvent has not yet been implemented")
-		}), LogsSaveLogHandler: logs.SaveLogHandlerFunc(func(params logs.SaveLogParams) middleware.Responder {
-			return middleware.NotImplemented("operation LogsSaveLog has not yet been implemented")
+			return middleware.NotImplemented("operation event.GetEvents has not yet been implemented")
+		}),
+		EventSaveEventHandler: event.SaveEventHandlerFunc(func(params event.SaveEventParams) middleware.Responder {
+			return middleware.NotImplemented("operation event.SaveEvent has not yet been implemented")
 		}),
 	}
 }
@@ -85,13 +81,8 @@ type MongodbDatastoreAPI struct {
 
 	// EventGetEventsHandler sets the operation handler for the get events operation
 	EventGetEventsHandler event.GetEventsHandler
-	// LogsGetLogsHandler sets the operation handler for the get logs operation
-	LogsGetLogsHandler logs.GetLogsHandler
 	// EventSaveEventHandler sets the operation handler for the save event operation
 	EventSaveEventHandler event.SaveEventHandler
-	// LogsSaveLogHandler sets the operation handler for the save log operation
-	LogsSaveLogHandler logs.SaveLogHandler
-
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
 	ServeError func(http.ResponseWriter, *http.Request, error)
@@ -159,19 +150,11 @@ func (o *MongodbDatastoreAPI) Validate() error {
 	}
 
 	if o.EventGetEventsHandler == nil {
-		unregistered = append(unregistered, "event.GetEventsHandler")
-	}
-
-	if o.LogsGetLogsHandler == nil {
-		unregistered = append(unregistered, "logs.GetLogsHandler")
+		unregistered = append(unregistered, "Event.GetEventsHandler")
 	}
 
 	if o.EventSaveEventHandler == nil {
-		unregistered = append(unregistered, "event.SaveEventHandler")
-	}
-
-	if o.LogsSaveLogHandler == nil {
-		unregistered = append(unregistered, "logs.SaveLogHandler")
+		unregistered = append(unregistered, "Event.SaveEventHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -275,20 +258,10 @@ func (o *MongodbDatastoreAPI) initHandlerCache() {
 	}
 	o.handlers["GET"]["/event"] = event.NewGetEvents(o.context, o.EventGetEventsHandler)
 
-	if o.handlers["GET"] == nil {
-		o.handlers["GET"] = make(map[string]http.Handler)
-	}
-	o.handlers["GET"]["/log"] = logs.NewGetLogs(o.context, o.LogsGetLogsHandler)
-
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/event"] = event.NewSaveEvent(o.context, o.EventSaveEventHandler)
-
-	if o.handlers["POST"] == nil {
-		o.handlers["POST"] = make(map[string]http.Handler)
-	}
-	o.handlers["POST"]["/log"] = logs.NewSaveLog(o.context, o.LogsSaveLogHandler)
 
 }
 

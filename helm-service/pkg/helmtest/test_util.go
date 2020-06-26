@@ -1,19 +1,20 @@
 package helmtest
 
 import (
-	"bufio"
 	"bytes"
+	"encoding/json"
 	"io"
 	"io/ioutil"
 	"os"
 	"testing"
 
-	"k8s.io/helm/pkg/chartutil"
-	"k8s.io/helm/pkg/proto/hapi/chart"
+	"helm.sh/helm/v3/pkg/chart"
+	"helm.sh/helm/v3/pkg/chartutil"
 
 	"github.com/keptn/keptn/helm-service/pkg/objectutils"
 	"github.com/kinbiko/jsonassert"
 	"github.com/stretchr/testify/assert"
+	"helm.sh/helm/v3/pkg/chart/loader"
 	kyaml "k8s.io/apimachinery/pkg/util/yaml"
 )
 
@@ -90,8 +91,8 @@ metadata:
   name: mysecret
 type: Opaque
 data:
-  username: YWRtaW4=
-  password: MWYyZDFlMmU2N2Rm
+  username: <USERNAME>
+  password: <PASSWORD>
 `
 
 const valuesContent = `
@@ -100,7 +101,8 @@ replicas: 1
 `
 
 const chartContent = `
-apiVersion: v1
+apiVersion: v2
+type: application
 description: A Helm chart for service carts
 name: carts
 version: 0.1.0
@@ -128,7 +130,7 @@ func CreateHelmChartData(t *testing.T) []byte {
 	err = ioutil.WriteFile("carts/templates/secret.yaml", []byte(secretContent), 0644)
 	check(err, t)
 
-	ch, err := chartutil.LoadDir("carts")
+	ch, err := loader.Load("carts")
 	if err != nil {
 		check(err, t)
 	}
@@ -153,12 +155,7 @@ type GeneratedResource struct {
 func Equals(actual *chart.Chart, valuesExpected GeneratedResource, templatesExpected []GeneratedResource, t *testing.T) {
 
 	// Compare values
-	yReader := kyaml.NewYAMLReader(bufio.NewReader(bytes.NewReader([]byte(actual.Values.Raw))))
-	yamlData, err := yReader.Read()
-	if err != nil {
-		t.Error(err)
-	}
-	jsonData, err := objectutils.ToJSON(yamlData)
+	jsonData, err := json.Marshal(actual.Values)
 	if err != nil {
 		t.Error(err)
 	}
@@ -190,7 +187,7 @@ func Equals(actual *chart.Chart, valuesExpected GeneratedResource, templatesExpe
 	}
 }
 
-func GetTemplateByName(chart *chart.Chart, templateName string) *chart.Template {
+func GetTemplateByName(chart *chart.Chart, templateName string) *chart.File {
 
 	for _, template := range chart.Templates {
 		if template.Name == templateName {

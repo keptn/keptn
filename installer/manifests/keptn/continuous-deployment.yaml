@@ -1,4 +1,49 @@
 ---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: keptn-get-namespaces
+  labels:
+    "app": "keptn"
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - namespaces
+    verbs:
+      - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: keptn-get-namespaces
+  labels:
+    "app": "keptn"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: keptn-get-namespaces
+subjects:
+  - kind: ServiceAccount
+    name: keptn-helm-service
+    namespace: keptn
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: keptn-helm-service-cluster-admin
+  labels:
+    "app": "keptn"
+subjects:
+  - kind: ServiceAccount
+    name: keptn-helm-service
+    namespace: keptn
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
+
+---
 # gatekeeper-service
 apiVersion: apps/v1
 kind: Deployment
@@ -15,9 +60,10 @@ spec:
       labels:
         run: gatekeeper-service
     spec:
+      serviceAccountName: keptn-default
       containers:
       - name: gatekeeper-service
-        image: keptn/gatekeeper-service:0.6.1
+        image: keptn/gatekeeper-service:latest
         ports:
         - containerPort: 8080
         resources:
@@ -63,6 +109,7 @@ spec:
       labels:
         run: distributor
     spec:
+      serviceAccountName: keptn-default
       containers:
       - name: distributor
         image: keptn/distributor:latest
@@ -76,18 +123,18 @@ spec:
             memory: "128Mi"
             cpu: "500m"
         env:
-        - name: PUBSUB_URL
-          value: 'nats://keptn-nats-cluster'
-        - name: PUBSUB_TOPIC
-          value: 'sh.keptn.events.evaluation-done'
-        - name: PUBSUB_RECIPIENT
-          value: 'gatekeeper-service'
+          - name: PUBSUB_URL
+            value: 'nats://keptn-nats-cluster'
+          - name: PUBSUB_TOPIC
+            value: 'sh.keptn.events.evaluation-done'
+          - name: PUBSUB_RECIPIENT
+            value: 'gatekeeper-service'
 ---
-## helm-service: sh.keptn.event.configuration.change
+## gatekeeper-service: sh.keptn.event.approval.>
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: helm-service-configuration-change-distributor
+  name: gatekeeper-service-approval-distributor
   namespace: keptn
 spec:
   selector:
@@ -100,6 +147,44 @@ spec:
         run: distributor
     spec:
       containers:
+        - name: distributor
+          image: keptn/distributor:latest
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          env:
+            - name: PUBSUB_URL
+              value: 'nats://keptn-nats-cluster'
+            - name: PUBSUB_TOPIC
+              value: 'sh.keptn.event.approval.>'
+            - name: PUBSUB_RECIPIENT
+              value: 'gatekeeper-service'
+      serviceAccountName: keptn-default
+---
+## helm-service: sh.keptn.event.configuration.change
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: helm-service-distributor
+  namespace: keptn
+spec:
+  selector:
+    matchLabels:
+      run: distributor
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: distributor
+    spec:
+      serviceAccountName: keptn-default
+      containers:
       - name: distributor
         image: keptn/distributor:latest
         ports:
@@ -115,7 +200,7 @@ spec:
         - name: PUBSUB_URL
           value: 'nats://keptn-nats-cluster'
         - name: PUBSUB_TOPIC
-          value: 'sh.keptn.event.configuration.change'
+          value: 'sh.keptn.event.configuration.change,sh.keptn.event.action.triggered'
         - name: PUBSUB_RECIPIENT
           value: 'helm-service'
 ---
@@ -135,6 +220,7 @@ spec:
       labels:
         run: jmeter-service
     spec:
+      serviceAccountName: keptn-default
       containers:
       - name: jmeter-service
         image: keptn/jmeter-service:latest
@@ -176,6 +262,7 @@ spec:
       labels:
         run: distributor
     spec:
+      serviceAccountName: keptn-default
       containers:
       - name: distributor
         image: keptn/distributor:latest

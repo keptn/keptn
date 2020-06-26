@@ -6,9 +6,10 @@ import (
 	"io/ioutil"
 	"os"
 
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
+
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/spf13/cobra"
@@ -26,11 +27,25 @@ var addResourceCmdParams *addResourceCommandParameters
 
 var addResourceCmd = &cobra.Command{
 	Use:   "add-resource --project=PROJECT --stage=STAGE --service=SERVICE --resource=FILEPATH --resourceUri=FILEPATH",
-	Short: "Adds a resource to a service within your project in the specified stage",
-	Long: `Adds a resource to a service within your project in the specified stage.
-        
-Example: 
-	keptn add-resource --project=sockshop --stage=dev --service=carts --resource=./jmeter.jmx --resourceUri=jmeter/functional.jmx`,
+	Short: "Adds a local resource to a service within your project in the specified stage",
+	Long: `Adds a local resource to a service within your project in the specified stage. The resource is then stored within the Git Repo.
+
+This command allows adding, for example, *test files* to a service, which will then be used by a test service (e.g., jmeter-service) during the continuous delivery.
+
+To specify a unique resource identifier (URI) for this resource, the optional flag *--resourceUri* can be set to a file path. 
+By default, the URI is set to the file path specified at the *--resource* flag. 
+From a technical perspective, the file provided via the *--resource* flag is stored with the path and name specified within *--resourceUri* flag.
+
+**The target location of the resource:**
+
+- *--project* - is mandatory. The resource will be added to the root folder in the master branch. 
+- *--stage* - is optional (when the *--service* flag is not used). The resource will be added to the root folder in the stage branch.
+- *--service* - is optional. The resource will be added to the service folder in the stage branch.
+`,
+	Example: `keptn add-resource --project=musicshop --stage=hardening --service=catalogue --resource=slo.yaml
+keptn add-resource --project=musicshop --stage=hardening --service=catalogue --resource=slo-quality-gates.yaml --resourceUri=slo.yaml
+keptn add-resource --project=sockshop --stage=dev --service=carts --resource=./jmeter.jmx --resourceUri=jmeter/functional.jmx
+keptn add-resource --project=rockshop --stage=production --service=shop --resource=./basiccheck.jmx --resourceUri=jmeter/basiccheck.jmx`,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
@@ -55,12 +70,12 @@ Example:
 		resourceContentStr := string(resourceContent)
 		resources := []*apimodels.Resource{
 			{
-				ResourceContent: &resourceContentStr,
+				ResourceContent: resourceContentStr,
 				ResourceURI:     addResourceCmdParams.ResourceURI,
 			},
 		}
 
-		resourceHandler := apiutils.NewAuthenticatedResourceHandler(endPoint.Host, apiToken, "x-token", nil, "https")
+		resourceHandler := apiutils.NewAuthenticatedResourceHandler(endPoint.Host+"/configuration-service", apiToken, "x-token", nil, *scheme)
 
 		if (addResourceCmdParams.Service != nil && *addResourceCmdParams.Service != "") && (addResourceCmdParams.Stage != nil && *addResourceCmdParams.Stage != "") {
 			logging.PrintLog("Adding resource "+*addResourceCmdParams.Resource+" to service "+*addResourceCmdParams.Service+" in stage "+*addResourceCmdParams.Stage+" in project "+*addResourceCmdParams.Project, logging.InfoLevel)

@@ -1,55 +1,58 @@
-<ktb-expandable-tile [error]="_event.isFaulty()" [success]="_event.isSuccessful()">
-  <ktb-expandable-tile-header>
-    <div fxLayout="row" class="pr-4">
-      <div fxFlex>
-        <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
-          <dt-icon class="event-icon" [class.error]="_event.isFaulty()" [class.success]="_event.isSuccessful()" [name]="_event.getIcon()"></dt-icon>
-          <h4 class="m-0 mt-1 mb-1" [class.error]="_event.isFaulty()" [textContent]="_event.getLabel()"></h4>
-          <a *ngIf="_event.data.deploymentURIPublic" [href]="_event.data.deploymentURIPublic" target="_blank"><button dt-icon-button variant="nested"><dt-icon name="externallink"></dt-icon></button></a>
-        </div>
-        <p class="m-0 nobreak"><span class="bold">Source: </span><span [textContent]="_event.source"></span></p>
-        <div *ngIf="_event.data.canary">
-          <p class="m-0 nobreak"><span class="bold">Action: </span><span [textContent]="_event.data.canary.action"></span> <span [textContent]="_event.data.canary.value"></span></p>
-        </div>
-        <div *ngIf="_event.data.teststrategy">
-          <p class="m-0 nobreak"><span class="bold">Test strategy: </span><span [textContent]="_event.data.teststrategy"></span></p>
-        </div>
-        <div *ngIf="_event.data.ImpactedEntity">
-          <p class="m-0 nobreak"><span class="bold">Problem: </span><span [textContent]="_event.data.ImpactedEntity"></span></p>
-        </div>
-        <div *ngIf="_event.data.ProblemDetails">
-          <div fxLayout="row" fxLayoutAlign="start start" *ngIf="_event.data.ProblemDetails.tagsOfAffectedEntities">
-            <p class="bold nobreak m-0 mt-1 mb-1">Labels: </p>
-            <dt-tag-list aria-label="affected-entities" (click)="$event.stopPropagation();">
-              <dt-tag *ngFor="let tag of _event.data.ProblemDetails.tagsOfAffectedEntities">
-                <span [textContent]="tag.key"></span>:&nbsp;<span [textContent]="tag.value"></span>
-              </dt-tag>
-            </dt-tag-list>
-          </div>
-        </div>
-        <div *ngIf="_event.data.start && _event.data.end">
-          <p class="m-0 mt-1 nobreak"><span [textContent]="_event.data.start | amDateFormat:'L LT'"></span> - <span [textContent]="_event.data.end | amDateFormat:'L LT'"></span> (<span [textContent]="_event.data.end | amDifference: _event.data.start :'minutes'"></span> Minutes)</p>
-        </div>
-        <div *ngIf="_event.data.labels">
-          <div fxLayout="row" fxLayoutAlign="start center">
-            <p class="bold">Labels: </p>
-            <dt-tag-list aria-label="evaluation-labels">
-              <dt-tag *ngFor="let label of _event.data.labels | keyvalue">
-                <span [textContent]="label.key"></span>:&nbsp;<span [textContent]="label.value"></span>
-              </dt-tag>
-            </dt-tag-list>
-          </div>
-        </div>
-        <ng-content
-          select="ktb-event-item-detail,
-          [ktb-event-item-detail],
-          [ktbEventItemDetail]"></ng-content>
+<ktb-selectable-tile [error]="_event.isFaulty()" [success]="_event.isSuccessful()" *ngIf="_event">
+  <div fxLayout="row">
+    <div fxFlex>
+      <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
+        <dt-icon class="event-icon" [class.error]="_event.isFaulty()" [class.success]="_event.isSuccessful()" [name]="_event.getIcon()"></dt-icon>
+        <h4 class="m-0 mt-1 mb-1" [class.error]="_event.isFaulty()" [textContent]="_event.getLabel()"></h4>
+        <a *ngIf="_event.data.deploymentURIPublic" [href]="_event.data.deploymentURIPublic" target="_blank"><button dt-icon-button variant="nested"><dt-icon name="externallink"></dt-icon></button></a>
       </div>
-      <div fxLayout="column" fxLayoutAlign="start end">
-        <p class="m-0 mt-1 mb-1" [textContent]="_event.time | amDateFormat:getCalendarFormat()"></p>
+      <p class="m-0 nobreak"><span class="bold">Source: </span><span [textContent]="_event.source"></span></p>
+      <div *ngIf="_event.data.canary">
+        <p class="m-0 nobreak"><span class="bold">Action: </span><span [textContent]="_event.data.canary.action"></span> <span [textContent]="_event.data.canary.value"></span></p>
+      </div>
+      <div *ngIf="_event.data.teststrategy">
+        <p class="m-0 nobreak"><span class="bold">Test strategy: </span><span [textContent]="_event.data.teststrategy"></span></p>
+      </div>
+      <div *ngIf="_event.data.ImpactedEntity">
+        <p class="m-0 nobreak"><span class="bold">Problem: </span><span [textContent]="_event.data.ImpactedEntity"></span></p>
       </div>
     </div>
-  </ktb-expandable-tile-header>
-  <p class="m-0 bold">Event payload</p>
-  <pre>{{ event | json }}</pre>
-</ktb-expandable-tile>
+    <div fxLayout="column" fxLayoutAlign="start end">
+      <p class="m-0 mt-1 mb-1" [textContent]="_event.time | amDateFormat:getCalendarFormat()"></p>
+      <button dt-icon-button variant="nested" (click)="showEventPayloadDialog()"><dt-icon name="coding"></dt-icon></button>
+    </div>
+  </div>
+  <div *ngIf="_event.data.ProblemDetails">
+    <div fxLayout="row" fxLayoutAlign="start start" *ngIf="_event.data.ProblemDetails.tagsOfAffectedEntities">
+      <p class="bold nobreak m-0 mt-1 mb-1">Labels: </p>
+      <dt-tag-list aria-label="affected-entities" (click)="$event.stopPropagation();">
+        <dt-tag *ngFor="let tag of _event.data.ProblemDetails.tagsOfAffectedEntities">
+          <span [textContent]="tag.key"></span>:&nbsp;<span [textContent]="tag.value"></span>
+        </dt-tag>
+      </dt-tag-list>
+    </div>
+  </div>
+  <div *ngIf="_event.data.labels">
+    <div fxLayout="row" fxLayoutAlign="start center">
+      <p class="bold">Labels: </p>
+      <dt-tag-list aria-label="evaluation-labels">
+        <dt-tag *ngFor="let label of _event.data.labels | keyvalue">
+          <span [textContent]="label.key"></span>:&nbsp;<span [textContent]="label.value"></span>
+        </dt-tag>
+      </dt-tag-list>
+    </div>
+  </div>
+  <ng-content
+    select="ktb-event-item-detail,
+        [ktb-event-item-detail],
+        [ktbEventItemDetail]"></ng-content>
+</ktb-selectable-tile>
+<ng-template #eventPayloadDialog let-data>
+  <h1 mat-dialog-title>Event payload</h1>
+  <div mat-dialog-content>
+    <pre>{{ data | json }}</pre>
+  </div>
+  <div mat-dialog-actions>
+    <button dt-button (click)="closeEventPayloadDialog()">Close</button>
+  </div>
+</ng-template>

@@ -4,6 +4,7 @@ let labels = {
   "sh.keptn.event.monitoring.configure": "Configure monitoring",
   "sh.keptn.events.deployment-finished": "Deployment finished",
   "sh.keptn.events.tests-finished": "Tests finished",
+  "sh.keptn.event.start-evaluation": "Start evaluation",
   "sh.keptn.events.evaluation-done": "Evaluation done",
   "sh.keptn.internal.event.get-sli": "Start SLI retrieval",
   "sh.keptn.internal.event.get-sli.done": "SLI retrieval done",
@@ -17,6 +18,7 @@ let icons = {
   "sh.keptn.event.configuration.change": "duplicate",
   "sh.keptn.events.deployment-finished": "deploy",
   "sh.keptn.events.tests-finished": "perfromance-health",
+  "sh.keptn.event.start-evaluation": "traffic-light",
   "sh.keptn.events.evaluation-done": "traffic-light",
   "sh.keptn.internal.event.get-sli": "collector",
   "sh.keptn.internal.event.get-sli.done": "collector",
@@ -25,7 +27,7 @@ let icons = {
   "sh.keptn.event.problem.close": "applicationhealth"
 };
 
-export class Trace {
+class Trace {
   id: string;
   shkeptncontext: string;
   source: string;
@@ -33,6 +35,7 @@ export class Trace {
   type: string;
   label: string;
   icon: string;
+  image: string;
   plainEvent: string;
   data: {
     project: string;
@@ -74,6 +77,8 @@ export class Trace {
       timeStart: Date;
     };
 
+    evaluationHistory: Trace[];
+
     ProblemTitle: string;
     ImpactedEntity: string;
     ProblemDetails: {
@@ -90,6 +95,16 @@ export class Trace {
     let result: string = null;
     if(this.data) {
       if(this.isFailed() || this.isProblem()) {
+        result = this.data.stage;
+      }
+    }
+    return result;
+  }
+
+  isWarning(): string {
+    let result: string = null;
+    if(this.data) {
+      if(this.data.result == 'warning') {
         result = this.data.stage;
       }
     }
@@ -135,16 +150,29 @@ export class Trace {
   }
 
   getShortImageName() {
-    let image = '';
-    if(this.data.image)
-      image = this.data.image;
-    else if(this.data.valuesCanary)
-      image = this.data.valuesCanary.image;
-    let parts = image.split("/");
-    return parts[parts.length-1];
+    if(!this.image) {
+      if(this.data.image && this.data.tag)
+        this.image = [this.data.image.split("/").pop(), this.data.tag].join(":");
+      else if(this.data.image)
+        this.image = this.data.image.split("/").pop();
+      else if(this.data.valuesCanary)
+        this.image = this.data.valuesCanary.image.split("/").pop();
+    }
+
+    return this.image;
+  }
+
+  getProject(): string {
+    return this.data.project;
+  }
+
+  getService(): string {
+    return this.data.service;
   }
 
   static fromJSON(data: any) {
-    return Object.assign(new this, data);
+    return Object.assign(new this, data, { plainEvent: JSON.parse(JSON.stringify(data)) });
   }
 }
+
+export {Trace, labels}

@@ -1,0 +1,104 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: keptn-create-route
+  namespace: istio-system
+  labels:
+    "app": "keptn"
+rules:
+  - apiGroups:
+      - ""
+      - route.openshift.io
+    resources:
+      - routes
+      - routes/custom-host
+    verbs:
+      - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: keptn-create-route
+  namespace: istio-system
+  labels:
+    "app": "keptn"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: keptn-create-route
+subjects:
+  - kind: ServiceAccount
+    name: keptn-openshift-route-service
+    namespace: keptn
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: keptn-securitycontextconstraints
+  labels:
+    "app": "keptn"
+rules:
+  - apiGroups:
+      - ""
+      - security.openshift.io
+    resources:
+      - securitycontextconstraints
+    verbs:
+      - get
+      - update
+    resourceNames:
+      - privileged
+      - anyuid
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: keptn-securitycontextconstraints
+  labels:
+    "app": "keptn"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: keptn-securitycontextconstraints
+subjects:
+  - kind: ServiceAccount
+    name: keptn-openshift-route-service
+    namespace: keptn
+---
+## openshift-route-service: create.project
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openshift-route-service-create-project-distributor
+  namespace: keptn
+spec:
+  selector:
+    matchLabels:
+      run: distributor
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: distributor
+    spec:
+      containers:
+        - name: distributor
+          image: keptn/distributor:latest
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          env:
+            - name: PUBSUB_URL
+              value: 'nats://keptn-nats-cluster'
+            - name: PUBSUB_TOPIC
+              value: 'sh.keptn.internal.event.project.create'
+            - name: PUBSUB_RECIPIENT
+              value: 'openshift-route-service'
+      serviceAccountName: keptn-openshift-route-service

@@ -13,6 +13,7 @@ spec:
       labels:
         run: jmeter-service
     spec:
+      serviceAccountName: keptn-default
       containers:
       - name: jmeter-service
         image: keptn/jmeter-service:latest

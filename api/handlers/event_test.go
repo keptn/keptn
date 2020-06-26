@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"github.com/go-openapi/strfmt"
 	"github.com/google/uuid"
-	keptnevents "github.com/keptn/go-utils/pkg/events"
-	datastoremodels "github.com/keptn/go-utils/pkg/mongodb-datastore/models"
+	datastoremodels "github.com/keptn/go-utils/pkg/api/models"
+	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/api/restapi/operations/event"
 	"io"
 	"net/http"
@@ -219,16 +219,14 @@ func TestGetEventHandlerFunc(t *testing.T) {
 			e := &datastoremodels.Events{
 				Events: []*datastoremodels.KeptnContextExtendedCE{
 					{
-						Event: datastoremodels.Event{
-							Contenttype: "",
-							Data:        nil,
-							Extensions:  nil,
-							ID:          "",
-							Source:      "",
-							Specversion: "",
-							Time:        datastoremodels.Time{},
-							Type:        "",
-						},
+						Contenttype:    "",
+						Data:           nil,
+						Extensions:     nil,
+						ID:             "",
+						Source:         stringp(""),
+						Specversion:    "",
+						Time:           strfmt.DateTime{},
+						Type:           stringp(""),
 						Shkeptncontext: "",
 					},
 				},

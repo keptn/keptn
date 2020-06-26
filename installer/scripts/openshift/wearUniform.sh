@@ -2,11 +2,8 @@
 source ./common/utils.sh
 
 # Deploy uniform
-kubectl apply -f ../manifests/keptn/uniform-services-openshift.yaml --wait
-verify_kubectl $? "Deploying keptn's uniform-services failed."
-wait_for_deployment_in_namespace "openshift-route-service" "keptn"
 
-kubectl apply -f ../manifests/keptn/uniform-distributors-openshift.yaml
+kubectl apply -f ../manifests/openshift/uniform-distributors-openshift.yaml
 verify_kubectl $? "Deploying keptn's uniform-destributors-openshift failed."
 wait_for_deployment_in_namespace "openshift-route-service-create-project-distributor" "keptn"
 

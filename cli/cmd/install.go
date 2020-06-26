@@ -32,24 +32,28 @@ import (
 
 	"github.com/keptn/keptn/cli/pkg/version"
 
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"github.com/spf13/cobra"
 )
 
 type installCmdParams struct {
-	ConfigFilePath          *string
-	InstallerImage          *string
-	KeptnVersion            *string
-	PlatformIdentifier      *string
-	GatewayInput            *string
-	Gateway                 gateway
-	UseCaseInput            *string
-	UseCase                 usecase
-	IstioInstallOptionInput *string
-	IstioInstallOption      istioInstallOption
+	ConfigFilePath            *string
+	InstallerImage            *string
+	KeptnVersion              *string
+	PlatformIdentifier        *string
+	GatewayInput              *string
+	Gateway                   gateway
+	Domain                    *string
+	UseCaseInput              *string
+	UseCase                   usecase
+	IngressInstallOptionInput *string
+	IngressInstallOption      ingressInstallOption
 }
+
+const keptnInstallerLogFileName = "keptn-installer.log"
+const keptnInstallerErrorLogFileName = "keptn-installer-Err.log"
 
 // KubeServerVersionConstraints the Kubernetes Cluster version's constraints is passed by ldflags
 var KubeServerVersionConstraints string
@@ -62,54 +66,6 @@ const eks = "eks"
 const pks = "pks"
 const openshift = "openshift"
 const kubernetes = "kubernetes"
-
-const installerJob = `---
-apiVersion: batch/v1
-kind: Job
-metadata:
-  name: installer
-  namespace: default
-spec:
-  backoffLimit: 0
-  template:
-    metadata:
-      labels:
-        app: installer
-    spec:
-      volumes:
-      - name: kubectl
-        emptyDir: {}
-      containers:
-      - name: keptn-installer
-        image: INSTALLER_IMAGE_PLACEHOLDER
-        env:
-        - name: PLATFORM
-          value: PLATFORM_PLACEHOLDER
-        - name: GATEWAY_TYPE
-          value: GATEWAY_TYPE_PLACEHOLDER
-        - name: INGRESS
-          value: INGRESS_PLACEHOLDER
-        - name: USE_CASE
-          value: USE_CASE_PLACEHOLDER
-        - name: ISTIO_INSTALL_OPTION
-          value: ISTIO_INSTALL_OPTION_PLACEHOLDER
-      restartPolicy: Never
-`
-
-const rbac = `---
-apiVersion: rbac.authorization.k8s.io/v1beta1
-kind: ClusterRoleBinding
-metadata:
-  name: rbac-service-account
-subjects:
-  - kind: ServiceAccount
-    name: default
-    namespace: default
-roleRef:
-  kind: ClusterRole
-  name: cluster-admin
-  apiGroup: rbac.authorization.k8s.io
-`
 
 type platform interface {
 	checkRequirements() error
@@ -125,10 +81,16 @@ var p platform
 var installCmd = &cobra.Command{
 	Use:   "install",
 	Short: "Installs Keptn on a Kubernetes cluster",
-	Long: `Installs Keptn on a Kubernetes cluster
+	Long: `The Keptn CLI allows installing Keptn on Azure Kubernetes Services (AKS), Amazon Elastic Kubernetes Service (EKS), Google Kubernetes Engine (GKE), Pivotal Container Service (PKS), any Kubernetes derivate to which your kube config is pointing to, and on OpenShift.
 
-Example:
-	keptn install`,
+For more information, please consult the following docs:
+
+* https://keptn.sh/docs/develop/installation/setup-keptn/
+
+`,
+	Example: `keptn install --platform=aks # install on Azure Kubernetes Service
+keptn install --platform=gke --use-case=quality-gates # install quality-gates on Google Kubernetes Engine
+keptn install --platform=kubernetes --gateway=NodePort # install on a Kubernetes instance with gateway NodePort`,
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 
@@ -137,11 +99,11 @@ Example:
 				"an image for the installer using the flag 'keptn-installer-image'")
 		}
 
-		// Parse IstioInstallOption
-		if val, ok := istioInstallOptionToID[*installParams.IstioInstallOptionInput]; ok {
-			installParams.IstioInstallOption = val
+		// Parse IngressInstallOption
+		if val, ok := ingressInstallOptionToID[*installParams.IngressInstallOptionInput]; ok {
+			installParams.IngressInstallOption = val
 		} else {
-			return errors.New("value of 'istio-install-option' flag is unknown. Supported values are " +
+			return errors.New("value of 'ingress-install-option' flag is unknown. Supported values are " +
 				"[" + StopIfInstalled.String() + "," + Reuse.String() + "," + Overwrite.String() + "]")
 		}
 
@@ -185,7 +147,7 @@ Example:
 			*installParams.InstallerImage = image + ":" + tag
 		}
 
-		err = docker.CheckImageAvailability(image, tag)
+		err = docker.CheckImageAvailability(image, tag, nil)
 		if err != nil {
 			return fmt.Errorf("Installer image not found under: %v", err)
 		}
@@ -203,13 +165,6 @@ Example:
 			if err != nil || !isKubAvailable {
 				return errors.New(`Keptn requires 'kubectl' but it is not available.
 Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
-			}
-
-			if installParams.UseCase == AllUseCases && *installParams.PlatformIdentifier != "openshift" {
-				if err := kube.CheckKubeServerVersion(KubeServerVersionConstraints); err != nil {
-					logging.PrintLog(err.Error(), logging.VerboseLevel)
-					return errors.New(`Keptn requires Kubernetes Server Version: ` + KubeServerVersionConstraints)
-				}
 			}
 		}
 
@@ -241,6 +196,16 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 					return err
 				}
 			}
+
+			// check if Kubernetes server version is compatible (except OpenShift)
+			if *installParams.PlatformIdentifier != "openshift" {
+				if err := kube.CheckKubeServerVersion(KubeServerVersionConstraints); err != nil {
+					logging.PrintLog(err.Error(), logging.VerboseLevel)
+					logging.PrintLog("See https://keptn.sh/docs/0.6.0/installation/k8s-support/ for details.", logging.VerboseLevel)
+					return errors.New(`Keptn requires Kubernetes server version: ` + KubeServerVersionConstraints)
+				}
+			}
+
 			return doInstallation()
 		}
 		fmt.Println("Skipping installation due to mocking flag")
@@ -285,8 +250,7 @@ func init() {
 		"The platform to run keptn on [aks,eks,gke,pks,openshift,kubernetes]")
 
 	installParams.ConfigFilePath = installCmd.Flags().StringP("creds", "c", "",
-		"The name of the creds file")
-	installCmd.Flags().MarkHidden("creds")
+		"Specify a JSON file containing cluster information needed for the installation (this allows skipping user prompts to execute a *silent* Keptn installation)")
 
 	installParams.InstallerImage = installCmd.Flags().StringP("keptn-installer-image", "k",
 		"", "The installer image which is used for the installation")
@@ -299,16 +263,18 @@ func init() {
 
 	installParams.GatewayInput = installCmd.Flags().StringP("gateway", "g", LoadBalancer.String(),
 		"The ingress-loadbalancer type ["+LoadBalancer.String()+","+NodePort.String()+"]")
-	installCmd.Flags().MarkHidden("gateway")
+
+	installParams.Domain = installCmd.Flags().StringP("domain", "d", "",
+		"Experimental: Overwrite the ingress domain (e.g., 127.0.0.1.xip.io)")
+	installCmd.Flags().MarkHidden("gateway-domain")
 
 	installParams.UseCaseInput = installCmd.Flags().StringP("use-case", "u", "all",
 		"The use case to install Keptn for ["+AllUseCases.String()+","+QualityGates.String()+"]")
-	installCmd.Flags().MarkHidden("use-case")
 
-	installParams.IstioInstallOptionInput = installCmd.Flags().StringP("istio-install-option", "",
-		StopIfInstalled.String(), "Installation options for istio ["+StopIfInstalled.String()+","+
+	installParams.IngressInstallOptionInput = installCmd.Flags().StringP("ingress-install-option", "",
+		StopIfInstalled.String(), "Installation options for Ingress ["+StopIfInstalled.String()+","+
 			Reuse.String()+","+Overwrite.String()+"]")
-	installCmd.Flags().MarkHidden("istio-install-option")
+	installCmd.Flags().MarkHidden("ingress-install-option")
 
 	installCmd.PersistentFlags().BoolVarP(&insecureSkipTLSVerify, "insecure-skip-tls-verify", "s",
 		false, "Skip tls verification for kubectl commands")
@@ -323,8 +289,9 @@ func prepareInstallerManifest() (installerManifest string) {
 
 	installerManifest = strings.ReplaceAll(installerManifest, "PLATFORM_PLACEHOLDER", strings.ToLower(*installParams.PlatformIdentifier))
 	installerManifest = strings.ReplaceAll(installerManifest, "GATEWAY_TYPE_PLACEHOLDER", installParams.Gateway.String())
+	installerManifest = strings.ReplaceAll(installerManifest, "DOMAIN_PLACEHOLDER", *installParams.Domain)
 	installerManifest = strings.ReplaceAll(installerManifest, "USE_CASE_PLACEHOLDER", installParams.UseCase.String())
-	installerManifest = strings.ReplaceAll(installerManifest, "ISTIO_INSTALL_OPTION_PLACEHOLDER", installParams.IstioInstallOption.String())
+	installerManifest = strings.ReplaceAll(installerManifest, "INGRESS_INSTALL_OPTION_PLACEHOLDER", installParams.IngressInstallOption.String())
 
 	installerManifest = strings.ReplaceAll(installerManifest, "INGRESS_PLACEHOLDER", getIngress().String())
 	return
@@ -338,10 +305,84 @@ func getIngress() (ingress Ingress) {
 	return
 }
 
+func createKeptnNamespace(keptnNamespace, keptnDatastoreNamespace string) error {
+
+	for _, ns := range [...]string{keptnNamespace, keptnDatastoreNamespace} {
+		res, err := keptnutils.ExistsNamespace(false, ns)
+		if err != nil {
+			return fmt.Errorf("Failed to check if namespace %s already exists: %v", ns, err)
+		}
+		if res {
+			return fmt.Errorf("Existing Keptn installation found in namespace %s.", ns)
+		}
+	}
+	for _, ns := range [...]string{keptnNamespace, keptnDatastoreNamespace} {
+		err := keptnutils.CreateNamespace(false, ns)
+		if err != nil {
+			return fmt.Errorf("Failed to create Keptn namespace %s: %v", ns, err)
+		}
+	}
+	return nil
+}
+
+func prepareIngressControllerInstall(ingressControllerNamespace string) (string, error) {
+
+	ingressControllerAvailable, err := keptnutils.ExistsNamespace(false, ingressControllerNamespace)
+	if err != nil {
+		return "", fmt.Errorf("Failed to check if namespace %s already exists: %v", ingressControllerNamespace, err)
+	}
+
+	if ingressControllerAvailable && installParams.IngressInstallOption == Reuse {
+		fmt.Printf("Ingress controller in namespace %s is reused but its compatibility is not checked\n", ingressControllerNamespace)
+		return getGetRoleForNamespace(ingressControllerNamespace), nil
+	} else if ingressControllerAvailable && installParams.IngressInstallOption == StopIfInstalled {
+		return "", fmt.Errorf("Namespace %s is already available but its Ingress controller is not used due to unknown compatibility",
+			ingressControllerNamespace)
+	} else {
+		if !ingressControllerAvailable {
+			err := keptnutils.CreateNamespace(false, ingressControllerNamespace)
+			if err != nil {
+				return "", fmt.Errorf("Failed to create namespace %s: %v", ingressControllerNamespace, err)
+			}
+		}
+		return installerClusterAdminClusterRoleBinding, nil
+	}
+}
+
 // Preconditions: 1. Already authenticated against the cluster.
 func doInstallation() error {
 
-	err := applyRbac()
+	if err := createKeptnNamespace("keptn", "keptn-datastore"); err != nil {
+		return err
+	}
+
+	rbacSet := make(map[string]bool)
+	rbacSet[installerServiceAccount] = true
+
+	// Prepare Ingress
+	var ingressRBAC string
+	var err error
+	if ingressRBAC, err = prepareIngressControllerInstall(getIngress().getDefaultNamespace()); err != nil {
+		return err
+	}
+	rbacSet[ingressRBAC] = true
+
+	if getIngress() == istio {
+		// Full installation: cluster-admin rights are needed for helm-service
+		rbacSet[installerClusterAdminClusterRoleBinding] = true
+	} else {
+		// QG only installation
+		rbacSet[getAdminRoleForNamespace("keptn")] = true
+		rbacSet[getAdminRoleForNamespace("keptn-datastore")] = true
+	}
+
+	// Add RBACs for NATS
+	rbacSet[natsClusterRole] = true
+	rbacSet[natsOperatorRoles] = true
+	rbacSet[natsOperatorServer] = true
+
+	err = applyRbac(rbacSet)
+	defer deleteRbac(rbacSet)
 	if err != nil {
 		return err
 	}
@@ -369,7 +410,7 @@ func doInstallation() error {
 		return err
 	}
 
-	o = options{"delete", "job", "installer", "-n", "default"}
+	o = options{"delete", "job", "installer", "-n", "keptn"}
 	o.appendIfNotEmpty(kubectlOptions)
 	_, err = keptnutils.ExecuteCommand("kubectl", o)
 	if err != nil {
@@ -387,7 +428,7 @@ func doInstallation() error {
 				return err
 			}
 		} else if getIngress() == nginx {
-			o = options{"get", "ingress", "api-ingress", "-n", "keptn",
+			o = options{"get", "svc", "ingress-nginx", "-n", "ingress-nginx",
 				"-ojsonpath={.status.loadBalancer.ingress[0].hostname}"}
 			o.appendIfNotEmpty(kubectlOptions)
 			hostname, err = keptnutils.ExecuteCommand("kubectl", o)
@@ -406,25 +447,40 @@ func doInstallation() error {
 			return err
 		}
 	}
+
 	return nil
 }
 
-func applyRbac() error {
-	_, aks := p.(*aksPlatform)
-	_, eks := p.(*eksPlatform)
-	_, gke := p.(*gkePlatform)
-	_, pks := p.(*pksPlatform)
-	_, k8s := p.(*kubernetesPlatform)
-	if gke || aks || k8s || eks || pks {
-		o := options{"apply", "-f", "-"}
-		o.appendIfNotEmpty(kubectlOptions)
+func applyRbac(rbac map[string]bool) error {
+	var merged string
+	for k := range rbac {
+		merged += k
+	}
+	o := options{"apply", "-f", "-"}
+	o.appendIfNotEmpty(kubectlOptions)
 
-		cmd := exec.Command("kubectl", o...)
-		cmd.Stdin = strings.NewReader(rbac)
-		out, err := cmd.CombinedOutput()
-		if err != nil {
-			return fmt.Errorf("Error while applying RBAC: %s \n%s\nAborting installation", err.Error(), string(out))
-		}
+	cmd := exec.Command("kubectl", o...)
+	cmd.Stdin = strings.NewReader(merged)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("Error while applying RBAC: %s \n%s\nAborting installation", err.Error(), string(out))
+	}
+	return nil
+}
+
+func deleteRbac(rbac map[string]bool) error {
+	var merged string
+	for k := range rbac {
+		merged += k
+	}
+	o := options{"delete", "-f", "-"}
+	o.appendIfNotEmpty(kubectlOptions)
+
+	cmd := exec.Command("kubectl", o...)
+	cmd.Stdin = strings.NewReader(merged)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("Error while deleting RBAC: %s \n%s\nAborting installation", err.Error(), string(out))
 	}
 	return nil
 }
@@ -510,7 +566,7 @@ func waitForInstallerPod() (string, error) {
 			"-l",
 			"app=installer",
 			"-n",
-			"default",
+			"keptn",
 			"-ojson"}
 		options.appendIfNotEmpty(kubectlOptions)
 		out, err := keptnutils.ExecuteCommand("kubectl", options)
@@ -533,8 +589,8 @@ func waitForInstallerPod() (string, error) {
 						"Please verify that your Kubernetes cluster has a working Internet connection.")
 				} else if podStatus == "Failed" {
 					return "", errors.New("Installer pod ran into failure. " +
-						"Please check if a failed installer job exits: \"kubectl get jobs installer -n default\"." +
-						"Please also check the log output: \"kubectl logs jobs/installer -n default\".")
+						"Please check if a failed installer job exits: \"kubectl get jobs installer -n keptn\"." +
+						"Please also check the log output: \"kubectl logs jobs/installer -n keptn\".")
 				}
 			}
 		}
@@ -552,7 +608,7 @@ func getInstallerLogs(podName string) error {
 		"-c",
 		"keptn-installer",
 		"-n",
-		"default",
+		"keptn",
 		"-f"}
 	options.appendIfNotEmpty(kubectlOptions)
 
@@ -572,12 +628,12 @@ func getInstallerLogs(podName string) error {
 	cErr := make(chan error)
 
 	go func() {
-		res, err := copyAndCapture(stdoutIn, "keptn-installer.log")
+		res, err := copyAndCapture(stdoutIn, keptnInstallerLogFileName)
 		cRes <- res
 		cErr <- err
 	}()
 
-	installSuccessfulStdErr, errStdErr := copyAndCapture(stderrIn, "keptn-installer-err.log")
+	installSuccessfulStdErr, errStdErr := copyAndCapture(stderrIn, keptnInstallerErrorLogFileName)
 	installSuccessfulStdOut := <-cRes
 	errStdOut := <-cErr
 

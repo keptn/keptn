@@ -5,6 +5,12 @@ coverage:
         # basic
         target: auto
         threshold: 2% # allow cov to drop by 2% (just in case)
+      bridge:
+        target: auto
+        threshold: 2% # allow cov to drop by 2% (just in case)
+    patch:
+      default:
+        threshold: 1% # allow patch
 
 ignore:
   - "**/*.yaml"       # ignore all yaml files (Kubernetes manifests, etc...)
