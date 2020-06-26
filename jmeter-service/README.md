@@ -1,8 +1,8 @@
-# JMeter Extended Service
+# JMeter Service
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/keptn-contrib/jmeter-extended-service)
 [![Go Report Card](https://goreportcard.com/badge/github.com/keptn-contrib/jmeter-extended-service)](https://goreportcard.com/report/github.com/keptn-contrib/jmeter-extended-service)
 
-The *jmeter-extended-service* is an **alternative to the JMeter Keptn core** component *jmeter-service* which comes with a full Keptn Installation.
+The *jmeter-service* has been updated with the implementation from the Keptn-Sandbox Project *jmeter-extended-service* 
 *jmeter-extended-service* provides extended capabilities around custom workload definitions and executions.
 The goal is to use this Sandbox project to provide finalize and proof these new capabilities to be valuable to the Keptn community and at a later point merge it into the JMeter Keptn Core project!
 
@@ -13,31 +13,14 @@ In case the tests succeeed, this service sends a `sh.keptn.events.test-finished`
 
 ## Compatibility Matrix
 
-| Keptn Version    | [JMeter Extended Service for Keptn](https://hub.docker.com/r/keptncontrib/jmeter-extended-service/tags) |
+| Keptn Version    | JMeter Service for Keptn |
 |:----------------:|:----------------------------------------:|
-|       0.6.1      | keptncontrib/jmeter-extended-service:0.1.0,keptncontrib/jmeter-extended-service:0.2.0 |
-|       0.6.2      | not released yet                           |
+|       0.6.1      | keptn/jmeter-service:0.6.1 |
+|       0.6.2      | keptn/jmeter-service:0.6.2 |
 
 ## Installation
 
-The *jmeter-extended-service* can be installed on a Keptn Quality Gate only installation or can be used to replace the *jmeter-service* that comes with a full Keptn installation.
-
-### For Full Keptn Installs: Replace the core jmeter-service with jmeter-extended-service
-
-To replace the existing jmeter-service with *jmeter-extened-service* simply replace the image in the jmeter-service deployment like this
-```console
-kubectl -n keptn set image deployment/jmeter-service jmeter-service=keptncontrib/jmeter-extended-service:0.1.0 --record
-```
-
-If you want to revert back to the core jmeter-service do this
-* Keptn Version 0.6.1
-  ```console
-  kubectl -n keptn set image deployment/jmeter-service jmeter-service=keptn/jmeter-service:0.6.1 --record
-  ```
-* Keptn Version 0.6.2
-  ```console
-  kubectl -n keptn set image deployment/jmeter-service jmeter-service=keptn/jmeter-service:0.6.2 --record
-  ```
+The *jmeter-service* can be installed on a Keptn Quality Gate only installation
 
 ### For Quality Gate Only Installs: Deploy jmeter-extended-service
 
@@ -78,7 +61,7 @@ Here is an overview:
 | ------------- | ----------- | ------------ |
 | PROTOCOL      | Protocol    | https |
 | SERVER_URL    | Value passed in deploymentURILocal or deploymentURIPublic | carts.staging.svc.local |
-| CHECK_PATH    | This is meant for the basiccheck.jmx and defines the URL that shoudl be used for the health check | / |
+| CHECK_PATH    | This is meant for the basiccheck.jmx and defines the URL that shoudl be used for the health check | /health |
 | SERVER_PORT   | Port to be tested against | 8080 |
 | DT_LTN        | A unique test execution name. To be used for integrations with tool such as Dynatrace | performance_123 |
 | VUCount       | Virtual User Count | 10 |

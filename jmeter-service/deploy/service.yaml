@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: jmeter-service
-        image: keptncontrib/jmeter-extended-service:0.1.0
+        image: keptn/jmeter-service:latest
         ports:
         - containerPort: 8080
         env:
