@@ -10,7 +10,7 @@ metadata:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: keptn-create-route
+  name: keptn-create-delete-route
   namespace: keptn
   labels:
     "app": "keptn"
@@ -23,18 +23,19 @@ rules:
       - routes/custom-host
     verbs:
       - create
+      - delete
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: keptn-create-route
+  name: keptn-create-delete-route
   namespace: keptn
   labels:
     "app": "keptn"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: keptn-create-route
+  name: keptn-create-delete-route
 subjects:
   - kind: ServiceAccount
     name: keptn-openshift-route-service
