@@ -6,7 +6,7 @@ ARG version=develop
 
 WORKDIR /go/src/github.com/keptn/keptn/jmeter-service
 
-# Force the go compiler to use modules 
+# Force the go compiler to use modules
 ENV GO111MODULE=on
 ENV BUILDFLAGS=""
 ENV GOPROXY=https://proxy.golang.org
