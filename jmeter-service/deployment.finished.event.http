@@ -1,0 +1,23 @@
+##
+POST http://localhost:8080/
+Content-Type: application/cloudevents+json
+
+{
+  "contenttype": "application/json",
+  "data": {
+    "deploymentURIPublic": "http://simplenode.simpleproject-staging.keptn06-agrabner.demo.keptn.sh",
+    "project": "simpleproject",
+    "service": "simplenode",
+    "stage": "staging",
+    "testStrategy" : "performance",
+    "labels": {
+        "gitcommit" : "commit-ABCDEF123123",
+        "jenkinsjob" : "job1234",
+        "user" : "andi"
+    }
+  },
+  "source": "jenkins-service",
+  "specversion": "0.2",
+  "type": "sh.keptn.events.deployment-finished"
+}
+###

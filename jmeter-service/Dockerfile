@@ -2,16 +2,18 @@
 # This is based on Debian and sets the GOPATH to /go.
 # https://hub.docker.com/_/golang
 FROM golang:1.13.7-alpine as builder
+
+RUN apk add --no-cache gcc libc-dev git
+
+WORKDIR /go/src/github.com/keptn-contrib/jmeter-extended-service
+
 ARG version=develop
+ENV VERSION="${version}"
 
-WORKDIR /go/src/github.com/keptn/keptn/jmeter-service
-
-# Force the go compiler to use modules 
+# Force the go compiler to use modules
 ENV GO111MODULE=on
 ENV BUILDFLAGS=""
 ENV GOPROXY=https://proxy.golang.org
-
-RUN apk add --no-cache gcc libc-dev git
 
 # Copy `go.mod` for definitions and `go.sum` to invalidate the next layer
 # in case of a change in the dependencies
@@ -30,7 +32,7 @@ COPY . .
 
 # Build the command inside the container.
 # (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
-RUN GOOS=linux go build -ldflags '-linkmode=external' $BUILDFLAGS -v -o jmeter-service
+RUN GOOS=linux go build -ldflags '-linkmode=external' $BUILDFLAGS -v -o jmeter-extended-service
 
 # Use a Docker multi-stage build to create a lean production image.
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
@@ -62,7 +64,7 @@ RUN    apk update \
 ENV PATH $PATH:$JMETER_BIN
 
 # Copy the binary to the production image from the builder stage.
-COPY --from=builder /go/src/github.com/keptn/keptn/jmeter-service/jmeter-service /jmeter-service
+COPY --from=builder /go/src/github.com/keptn-contrib/jmeter-extended-service/jmeter-extended-service /jmeter-extended-service
 
 EXPOSE 8080
 
@@ -70,9 +72,9 @@ EXPOSE 8080
 ENV GOTRACEBACK=all
 
 # KEEP THE FOLLOWING LINES COMMENTED OUT!!! (they will be included within the travis-ci build)
-#travis-uncomment ADD MANIFEST /
-#travis-uncomment COPY entrypoint.sh /
+#travis-uncomment ADD docker/MANIFEST /
+#travis-uncomment COPY docker/entrypoint.sh /
 #travis-uncomment ENTRYPOINT ["/entrypoint.sh"]
 
 # Run the web service on container startup.
-CMD ["/jmeter-service"]
+CMD ["/jmeter-extended-service"]

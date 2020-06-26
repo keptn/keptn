@@ -1,0 +1,12 @@
+runner:
+  golint:
+    cmd: golint ./...
+    errorformat:
+      - "%f:%l:%c: %m"
+    level: warning
+  gofmt:
+    cmd: gofmt -l -s .|xargs -I{} echo {}:1 file {} is not gofmted
+    errorformat:
+      - "%f:%l %m"
+  govet:
+    cmd: go vet -all .

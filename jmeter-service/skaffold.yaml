@@ -2,7 +2,7 @@ apiVersion: skaffold/v1beta13
 kind: Config
 build:
   artifacts:
-    - image: keptn/jmeter-service
+    - image: keptncontrib/jmeter-extended-service
       docker:    # 	beta describes an artifact built from a Dockerfile.
         dockerfile: Dockerfile
         buildArgs:

@@ -1,0 +1,19 @@
+##############################################################
+#
+# Lists the owners of this Keptn Sandbox project
+#
+##############################################################
+#
+# If you want to contribute to Keptn Sandbox start here 
+#  https://github.com/keptn-sandbox/contributing 
+#
+# Get in touch with us via the Keptn Community
+#  https://github.com/keptn/community
+# 
+# Learn about CODEOWNERS file format: 
+#  https://help.github.com/en/articles/about-code-owners
+#
+
+* @grabnerandi
+docker/* @christian-kreuzberger-dtx
+.travis.yml @christian-kreuzberger-dtx
