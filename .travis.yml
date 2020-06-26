@@ -120,6 +120,7 @@ gke_full: &gke_full
     - test/test_new_artifact.sh
     - test/test_delete_project.sh
     - test/test_self_healing.sh
+    - test/test_self_healing_scaling.sh
     - test/test_delivery_assistant.sh
     - test/test_keptn_uninstall.sh
   after_success:
