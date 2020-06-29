@@ -73,12 +73,18 @@ case $USE_CASE in
     kubectl apply -f ../manifests/keptn/quality-gates.yaml 
     verify_kubectl $? "Deploying Keptn quality gates components failed."
 
+    print_debug "Deploying Keptn continuous operations"
+    kubectl apply -f ../manifests/keptn/continuous-operations.yaml
+    verify_kubectl $? "Deploying Keptn continuous operations components failed."
+
     ################################################
     ## Start validation of Keptn all capabilities ##
     ################################################
     wait_for_all_pods_in_namespace "keptn"
     wait_for_deployment_in_namespace "lighthouse-service" "keptn"
     wait_for_deployment_in_namespace "lighthouse-service-distributor" "keptn"
+    wait_for_deployment_in_namespace "remediation-service-distributor" "keptn"
+    wait_for_deployment_in_namespace "wait-service-deployment-distributor" "keptn"
     ;;
   continuous-delivery)
     print_debug "Deploying Keptn continuous deployment"
