@@ -428,7 +428,7 @@ func doInstallation() error {
 			o = options{"get", "svc", "istio-ingressgateway", "-n", "istio-system",
 				"-ojsonpath={.status.loadBalancer.ingress[0].hostname}"}
 			o.appendIfNotEmpty(kubectlOptions)
-			logging.PrintLog("Executing: kubectl"+strings.Join(o, " "), logging.VerboseLevel)
+			logging.PrintLog("Executing: kubectl "+strings.Join(o, " "), logging.VerboseLevel)
 			hostname, err = keptnutils.ExecuteCommand("kubectl", o)
 			if err != nil {
 				logging.PrintLog("Error retrieving istio-ingress: "+hostname+"\n"+err.Error(), logging.QuietLevel)
@@ -439,7 +439,7 @@ func doInstallation() error {
 			o = options{"get", "svc", "ingress-nginx", "-n", "ingress-nginx",
 				"-ojsonpath={.status.loadBalancer.ingress[0].hostname}"}
 			o.appendIfNotEmpty(kubectlOptions)
-			logging.PrintLog("Executing: kubectl"+strings.Join(o, " "), logging.VerboseLevel)
+			logging.PrintLog("Executing: kubectl "+strings.Join(o, " "), logging.VerboseLevel)
 			hostname, err = keptnutils.ExecuteCommand("kubectl", o)
 			if err != nil {
 				logging.PrintLog("Error retrieving nginx-ingress: "+hostname+"\n"+err.Error(), logging.QuietLevel)
@@ -630,7 +630,7 @@ func getInstallerLogs(podName string) error {
 		"-f"}
 	options.appendIfNotEmpty(kubectlOptions)
 
-	logging.PrintLog("Executing: kubectl"+strings.Join(options, " "), logging.VerboseLevel)
+	logging.PrintLog("Executing: kubectl "+strings.Join(options, " "), logging.VerboseLevel)
 	execCmd := exec.Command(
 		"kubectl", options...,
 	)
