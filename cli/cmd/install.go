@@ -273,7 +273,7 @@ func init() {
 		"Experimental: Overwrite the ingress domain (e.g., 127.0.0.1.xip.io)")
 	installCmd.Flags().MarkHidden("gateway-domain")
 
-	installParams.UseCaseInput = installCmd.Flags().StringP("use-case", "u", "all",
+	installParams.UseCaseInput = installCmd.Flags().StringP("use-case", "u", "",
 		"The use case to install Keptn for ["+AllUseCases.String()+","+QualityGates.String()+"]")
 
 	installParams.IngressInstallOptionInput = installCmd.Flags().StringP("ingress-install-option", "",

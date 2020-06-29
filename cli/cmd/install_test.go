@@ -76,7 +76,7 @@ spec:
         - name: INGRESS
           value: istio
         - name: USE_CASE
-          value: ""
+          value: continuous-delivery
         - name: INGRESS_INSTALL_OPTION
           value: StopIfInstalled
       restartPolicy: Never
@@ -93,7 +93,7 @@ func resetFlagValues() {
 	*installParams.PlatformIdentifier = "gke"
 	*installParams.GatewayInput = "LoadBalancer"
 	*installParams.Domain = ""
-	*installParams.UseCaseInput = "all"
+	*installParams.UseCaseInput = ""
 	*installParams.IngressInstallOptionInput = "StopIfInstalled"
 }
 
@@ -179,9 +179,9 @@ spec:
         - name: DOMAIN
           value: 
         - name: INGRESS
-          value: istio
+          value: nginx
         - name: USE_CASE
-          value: ""
+          value: 
         - name: INGRESS_INSTALL_OPTION
           value: StopIfInstalled
       restartPolicy: Never
@@ -232,9 +232,9 @@ spec:
         - name: DOMAIN
           value: 127.0.0.1.nip.io
         - name: INGRESS
-          value: istio
+          value: nginx
         - name: USE_CASE
-          value: ""
+          value: 
         - name: INGRESS_INSTALL_OPTION
           value: StopIfInstalled
       restartPolicy: Never
@@ -287,7 +287,7 @@ spec:
         - name: INGRESS
           value: nginx
         - name: USE_CASE
-          value: ""
+          value: 
         - name: INGRESS_INSTALL_OPTION
           value: StopIfInstalled
       restartPolicy: Never
@@ -338,7 +338,7 @@ spec:
         - name: DOMAIN
           value: 
         - name: INGRESS
-          value: nginx
+          value: istio
         - name: USE_CASE
           value: continuous-delivery
         - name: INGRESS_INSTALL_OPTION
@@ -391,9 +391,9 @@ spec:
         - name: DOMAIN
           value: 
         - name: INGRESS
-          value: istio
+          value: nginx
         - name: USE_CASE
-          value: ""
+          value: 
         - name: INGRESS_INSTALL_OPTION
           value: Reuse
       restartPolicy: Never

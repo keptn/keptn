@@ -11,10 +11,11 @@ const (
 )
 
 func (i usecase) String() string {
-	return [...]string{"continuous-delivery", "quality-gates"}[i]
+	return [...]string{"continuous-delivery", ""}[i]
 }
 
 var usecaseToID = map[string]usecase{
 	"continuous-delivery": AllUseCases,
+	"":                    QualityGates,
 	"quality-gates":       QualityGates,
 }
