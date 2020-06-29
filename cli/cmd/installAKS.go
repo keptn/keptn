@@ -17,6 +17,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"github.com/keptn/keptn/cli/pkg/logging"
 	"strings"
 
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
@@ -102,7 +103,8 @@ func (p aksPlatform) readAzureSubscription() {
 }
 
 func (p aksPlatform) authenticateAtCluster() (bool, error) {
-	_, err := keptnutils.ExecuteCommand("az", []string{
+	logging.PrintLog("Authenticating at AKS cluster: aks get-credentials --resource-group "+p.creds.AzureResourceGroup+" --name "+p.creds.ClusterName+" --subscription "+p.creds.AzureSubscription+" --overwrite-existing", logging.VerboseLevel)
+	out, err := keptnutils.ExecuteCommand("az", []string{
 		"aks",
 		"get-credentials",
 		"--resource-group",
@@ -113,6 +115,8 @@ func (p aksPlatform) authenticateAtCluster() (bool, error) {
 		p.creds.AzureSubscription,
 		"--overwrite-existing",
 	})
+
+	logging.PrintLog("Result: "+out, logging.VerboseLevel)
 
 	if err != nil {
 		fmt.Println("Could not connect to cluster. " +

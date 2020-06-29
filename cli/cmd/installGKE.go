@@ -17,6 +17,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"github.com/keptn/keptn/cli/pkg/logging"
 	"strings"
 
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
@@ -102,7 +103,8 @@ func (p gkePlatform) readGkeProject() {
 }
 
 func (p gkePlatform) authenticateAtCluster() (bool, error) {
-	_, err := keptnutils.ExecuteCommand("gcloud", []string{
+	logging.PrintLog("Authenticating at GKE cluster: gcloud container clusters get-credentials "+p.creds.ClusterName+" -- zone "+p.creds.ClusterZone+" --project "+p.creds.GkeProject, logging.VerboseLevel)
+	out, err := keptnutils.ExecuteCommand("gcloud", []string{
 		"container",
 		"clusters",
 		"get-credentials",
@@ -112,6 +114,8 @@ func (p gkePlatform) authenticateAtCluster() (bool, error) {
 		"--project",
 		p.creds.GkeProject,
 	})
+
+	logging.PrintLog("Result: "+out, logging.VerboseLevel)
 
 	if err != nil {
 		fmt.Println("Could not connect to cluster. " +
