@@ -77,6 +77,7 @@ wait_for_deployment_in_namespace $SERVICE-primary $PROJECT-$STAGE
 kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/prometheus-service/release-$PROMETHEUS_SERVICE_VERSION/deploy/service.yaml
 
 wait_for_deployment_in_namespace prometheus-service keptn
+wait_for_deployment_in_namespace prometheus-service-monitoring-configure-distributor keptn
 echo "Prometheus service deployed successfully"
 
 keptn configure monitoring prometheus --project=$PROJECT --service=$SERVICE
