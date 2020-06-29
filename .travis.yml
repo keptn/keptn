@@ -440,7 +440,7 @@ jobs:
       - echo "The following images have been built and pushed to dockerhub:"
       - docker images | grep keptn
 
-  - stage: Test GKE Full (--platform=gke)
+  - stage: Test GKE Full (--platform=gke --use-case=continuous-delivery)
     if: branch = master AND type = cron # run for cron
     env:
       - GKE_VERSION=1.14
@@ -454,7 +454,7 @@ jobs:
 #      - KEPTN_INSTALLATION_TYPE=FULL
 #    <<: *gke_full # use template
 
-  - stage: Test GKE Full (--platform=gke)
+  - stage: Test GKE Full (--platform=gke --use-case=continuous-delivery)
     if: branch = master AND type = cron # run for cron
     env:
       - GKE_VERSION=1.16
@@ -469,7 +469,7 @@ jobs:
 #      - KEPTN_INSTALLATION_TYPE=FULL
 #    <<: *gke_full # use template
 
-  - stage: Test GKE Full with Istio (--platform=gke --ingress-install-option=Reuse)
+  - stage: Test GKE Full with Istio (--platform=gke --ingress-install-option=Reuse --use-case=continuous-delivery)
     if: branch = master AND type = cron # run for cron
     env:
       - KEPTN_INSTALLATION_TYPE=REUSE-ISTIO
@@ -483,7 +483,7 @@ jobs:
 #      - GKE_VERSION=1.15
 #    <<: *gke_full # use template
 
-  - stage: Test GKE Full with Istio (--platform=gke --ingress-install-option=Reuse)
+  - stage: Test GKE Full with Istio (--platform=gke --ingress-install-option=Reuse --use-case=continuous-delivery)
     if: branch = master AND type = cron # run for cron
     env:
       - KEPTN_INSTALLATION_TYPE=REUSE-ISTIO
@@ -498,7 +498,7 @@ jobs:
 #      - GKE_VERSION=1.17
 #    <<: *gke_full # use template
 
-  - stage: Test Minishift Standalone (--platform=openshift --use-case=quality-gates)
+  - stage: Test Minishift Standalone (--platform=openshift)
     if: (branch = master or branch =~ ^release.*$) AND (type = cron OR type = push) # run for any change on master/release-* on push as well as cron
     os: linux
     before_script:
@@ -526,7 +526,7 @@ jobs:
       - kubectl get ingress --all-namespaces
 
   - &K3sStandaloneTest
-    stage: Test K3s Standalone (--platform=kubernetes --use-case=quality-gates)
+    stage: Test K3s Standalone (--platform=kubernetes)
     if: (branch = master or branch =~ ^release.*$) AND (type = cron OR type = push) # run for any change on master/release-* on push as well as cron
     os: linux
     env:
@@ -564,7 +564,7 @@ jobs:
       - K3S_VERSION=v1.18.3+k3s1 # see https://github.com/rancher/k3s/releases
 
   - &microk8sStandaloneTest
-    stage: Test MicroK8s Standalone (--platform=kubernetes --use-case=quality-gates)
+    stage: Test MicroK8s Standalone (--platform=kubernetes)
     if: (branch = master or branch =~ ^release.*$) AND (type = cron OR type = push) # run for any change on master/release-* on push as well as cron
     os: linux
     env:
@@ -601,7 +601,7 @@ jobs:
       - MICROK8S_VERSION=1.18/stable # see https://snapcraft.io/microk8s channels
 
   - &minikubeStandaloneTest
-    stage: Test Minikube Standalone (--platform=kubernetes --use-case=quality-gates)
+    stage: Test Minikube Standalone (--platform=kubernetes)
     # for detailed Minikube versions see https://github.com/kubernetes/minikube/blob/master/CHANGELOG.md
     env:
       - MINIKUBE_VERSION=v1.3.1 # from 2019-08-13; uses K8s 1.15
@@ -613,7 +613,7 @@ jobs:
       # download and install kubectl
       - curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.17.0/bin/linux/amd64/kubectl && chmod +x ./kubectl && sudo mv ./kubectl /usr/local/bin/kubectl
       - test/utils/download_and_install_keptn_cli.sh
-      - export USE_CASE=quality-gates
+      - export USE_CASE=""
       - test/utils/minikube_create_cluster.sh
     script:
       - kubectl get nodes || travis_terminate 1 # sanity check that the K8s cluster is available

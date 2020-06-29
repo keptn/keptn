@@ -76,7 +76,7 @@ spec:
         - name: INGRESS
           value: istio
         - name: USE_CASE
-          value: all
+          value: ""
         - name: INGRESS_INSTALL_OPTION
           value: StopIfInstalled
       restartPolicy: Never
@@ -181,7 +181,7 @@ spec:
         - name: INGRESS
           value: istio
         - name: USE_CASE
-          value: all
+          value: ""
         - name: INGRESS_INSTALL_OPTION
           value: StopIfInstalled
       restartPolicy: Never
@@ -234,7 +234,7 @@ spec:
         - name: INGRESS
           value: istio
         - name: USE_CASE
-          value: all
+          value: ""
         - name: INGRESS_INSTALL_OPTION
           value: StopIfInstalled
       restartPolicy: Never
@@ -245,7 +245,7 @@ spec:
 	}
 }
 
-func TestInstallCmdWithUseCase(t *testing.T) {
+func TestInstallCmdWithQualityGatesUseCase(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
 
 	cmd := fmt.Sprintf("install --use-case=quality-gates --mock")
@@ -287,7 +287,60 @@ spec:
         - name: INGRESS
           value: nginx
         - name: USE_CASE
-          value: quality-gates
+          value: ""
+        - name: INGRESS_INSTALL_OPTION
+          value: StopIfInstalled
+      restartPolicy: Never
+      serviceAccountName: keptn-installer
+`
+	if res != expected {
+		t.Error("installation manifest does not match")
+	}
+}
+
+func TestInstallCmdWithContinuousDeliveryUseCase(t *testing.T) {
+	credentialmanager.MockAuthCreds = true
+
+	cmd := fmt.Sprintf("install --use-case=continuous-delivery --mock")
+
+	resetFlagValues()
+
+	_, err := executeActionCommandC(cmd)
+	if err != nil {
+		t.Errorf(unexpectedErrMsg, err)
+	}
+
+	res := prepareInstallerManifest()
+	expected := `---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: installer
+  namespace: keptn
+spec:
+  backoffLimit: 0
+  template:
+    metadata:
+      labels:
+        app: installer
+    spec:
+      volumes:
+      - name: kubectl
+        emptyDir: {}
+      containers:
+      - name: keptn-installer
+        image: docker.io/keptn/installer:latest
+        env:
+        - name: PLATFORM
+          value: gke
+        - name: GATEWAY_TYPE
+          value: LoadBalancer
+        - name: DOMAIN
+          value: 
+        - name: INGRESS
+          value: nginx
+        - name: USE_CASE
+          value: continuous-delivery
         - name: INGRESS_INSTALL_OPTION
           value: StopIfInstalled
       restartPolicy: Never
@@ -340,7 +393,7 @@ spec:
         - name: INGRESS
           value: istio
         - name: USE_CASE
-          value: all
+          value: ""
         - name: INGRESS_INSTALL_OPTION
           value: Reuse
       restartPolicy: Never
