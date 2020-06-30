@@ -2,30 +2,28 @@
 
 First off, thank you for considering contributing to Keptn. It's people like you that make Keptn great.
 
-If you've noticed a bug, want to contribute features, or simply ask a question that for whatever reason you don't want to ask in the [Keptn Slack workspace](keptn.slack.com), please [search the issue tracker](https://github.com/keptn/keptn/issues?q=something) to see if someone else in the community has already created a ticket. If not, go ahead and [make one](https://github.com/keptn/keptn/issues/new).
+If you've noticed a bug, want to contribute features, or simply ask a question that for whatever reason you don't want to ask in the [Keptn Slack workspace](https://keptn.slack.com), please [search the issue tracker](https://github.com/keptn/keptn/issues?q=something) to see if someone else in the community has already created a ticket. If not, go ahead and [make one](https://github.com/keptn/keptn/issues/new).
 
-If you want to work on an issue and contribute code, this is the right document to get started.
+We also have a list of [good first issues](https://github.com/keptn/keptn/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22) - just let us know in the issue that you want to work on it!
+
+Anyway, this is the right document to get you started in contributing, so please read on.
 
 ### Read the docs
 
-We are in the process of making sure that each repository and each service within the Keptn organization is documented properly. 
-We are aware that some parts are currently missing, in the meantime please get in touch with us through the [Keptn Slack workspace](keptn.slack.com) if you have any questions.
+The Keptn repository is a monorepo with multiple sub-folders which contain microservices, the installer, and the cli. 
+As a starting point, please read the README files in the respective sub-folder. Also, take a look at the docs within the [docs/](docs/) folder in this repository.
 
-As a starting point, please read the docs within the [docs/](docs/) folder in this repository.
-
-
-### Tell us if you start working on an issue
-
-In case you want to work on an unassigned [GitHub issue](https://github.com/keptn/keptn/issues), please let us know via
- a quick comment in the issue itself. We will then try to assign it to you.
+We are aware that not every microservice has a comprehensive documentation, so if you have any questions feel free to ask us on the [Keptn Slack workspace](https://keptn.slack.com).
 
 ### Propose/design new features
 
-Proposing new functionality for Keptn is done via a so called [Enhancement Proposal](https://github.com/keptn/enhancement-proposals).
+Proposing new functionality for Keptn is a transparent process done via a so called [Keptn Enhancement Proposal](https://github.com/keptn/enhancement-proposals).
 This is required when it is intended to introduce new behaviour, change desired behaviour, or otherwise modify requirements of Keptn.
 
 If all you want to propose is a simple addition to a Keptn-service or the CLI, or even a bugfix, you can just open 
 [a new issue on GitHub](https://github.com/keptn/keptn/issues/new/choose).
+
+If you are unsure, just open an issue, and we will direct you to an enhancement proposal if necessary.
 
 ### Follow Coding style
 

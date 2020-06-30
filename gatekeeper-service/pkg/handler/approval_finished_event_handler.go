@@ -86,13 +86,13 @@ func (a *ApprovalFinishedEventHandler) handleApprovalFinishedEvent(inputEvent ke
 				inputEvent.Project, inputEvent.Service, inputEvent.Stage, image, shkeptncontext, inputEvent.Labels); event != nil {
 				outgoingEvents = append(outgoingEvents, *event)
 			}
-			if err := closeOpenApproval(inputEvent, triggeredID); err != nil {
-				a.keptn.Logger.Error(fmt.Sprintf("failed to close open approvals in materialized view: %v", err))
-				return outgoingEvents
-			}
 		} else {
 			a.keptn.Logger.Info(fmt.Sprintf("Rejection for image %s for service %s of project %s and current stage %s received",
 				inputEvent.Image, inputEvent.Service, inputEvent.Project, inputEvent.Stage))
+		}
+		if err := closeOpenApproval(inputEvent, triggeredID); err != nil {
+			a.keptn.Logger.Error(fmt.Sprintf("failed to close open approvals in materialized view: %v", err))
+			return outgoingEvents
 		}
 	}
 
