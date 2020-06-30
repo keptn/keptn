@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/keptn/keptn/cli/pkg/logging"
 	"regexp"
 	"strconv"
 	"strings"
@@ -98,7 +99,8 @@ func (p eksPlatform) readAwsRegion() {
 }
 
 func (p eksPlatform) authenticateAtCluster() (bool, error) {
-	_, err := keptnutils.ExecuteCommand("aws", []string{
+	logging.PrintLog("Authenticating at EKS cluster: aws eks --region "+p.creds.AwsRegion+" update-kubeconfig --name "+p.creds.ClusterName, logging.VerboseLevel)
+	out, err := keptnutils.ExecuteCommand("aws", []string{
 		"eks",
 		"--region",
 		p.creds.AwsRegion,
@@ -106,6 +108,8 @@ func (p eksPlatform) authenticateAtCluster() (bool, error) {
 		"--name",
 		p.creds.ClusterName,
 	})
+
+	logging.PrintLog("Result: "+out, logging.VerboseLevel)
 
 	if err != nil {
 		fmt.Println("Could not connect to cluster. " +

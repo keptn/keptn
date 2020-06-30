@@ -206,7 +206,7 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 			if *installParams.PlatformIdentifier != "openshift" {
 				if err := kube.CheckKubeServerVersion(KubeServerVersionConstraints); err != nil {
 					logging.PrintLog(err.Error(), logging.VerboseLevel)
-					logging.PrintLog("See https://keptn.sh/docs/0.6.0/installation/k8s-support/ for details.", logging.VerboseLevel)
+					logging.PrintLog("See https://keptn.sh/docs/0.7.0/installation/k8s-support/ for details.", logging.VerboseLevel)
 					return errors.New(`Keptn requires Kubernetes server version: ` + KubeServerVersionConstraints)
 				}
 			}
@@ -396,12 +396,14 @@ func doInstallation() error {
 
 	o := options{"apply", "-f", "-"}
 	o.appendIfNotEmpty(kubectlOptions)
+	logging.PrintLog("Executing: kubectl "+strings.Join(o, " "), logging.VerboseLevel)
 	cmd := exec.Command("kubectl", o...)
 	cmd.Stdin = strings.NewReader(prepareInstallerManifest())
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("Error while applying installer job: %s \n%s\nAborting installation", err.Error(), string(out))
 	}
+	logging.PrintLog("Result: "+string(out), logging.VerboseLevel)
 
 	logging.PrintLog("Waiting for installer pod to be started ...", logging.InfoLevel)
 	installerPodName, err := waitForInstallerPod()
@@ -417,10 +419,13 @@ func doInstallation() error {
 
 	o = options{"delete", "job", "installer", "-n", "keptn"}
 	o.appendIfNotEmpty(kubectlOptions)
-	_, err = keptnutils.ExecuteCommand("kubectl", o)
+	logging.PrintLog("Executing: kubectl "+strings.Join(o, " "), logging.VerboseLevel)
+	result, err := keptnutils.ExecuteCommand("kubectl", o)
 	if err != nil {
+		logging.PrintLog("Error deleting installer job : kubectl "+err.Error(), logging.QuietLevel)
 		return err
 	}
+	logging.PrintLog("Result: "+result, logging.VerboseLevel)
 
 	if _, eks := p.(*eksPlatform); eks {
 		var hostname string
@@ -428,18 +433,24 @@ func doInstallation() error {
 			o = options{"get", "svc", "istio-ingressgateway", "-n", "istio-system",
 				"-ojsonpath={.status.loadBalancer.ingress[0].hostname}"}
 			o.appendIfNotEmpty(kubectlOptions)
+			logging.PrintLog("Executing: kubectl "+strings.Join(o, " "), logging.VerboseLevel)
 			hostname, err = keptnutils.ExecuteCommand("kubectl", o)
 			if err != nil {
+				logging.PrintLog("Error retrieving istio-ingress: "+hostname+"\n"+err.Error(), logging.QuietLevel)
 				return err
 			}
+			logging.PrintLog("Result:"+hostname, logging.VerboseLevel)
 		} else if getIngress() == nginx {
 			o = options{"get", "svc", "ingress-nginx", "-n", "ingress-nginx",
 				"-ojsonpath={.status.loadBalancer.ingress[0].hostname}"}
 			o.appendIfNotEmpty(kubectlOptions)
+			logging.PrintLog("Executing: kubectl "+strings.Join(o, " "), logging.VerboseLevel)
 			hostname, err = keptnutils.ExecuteCommand("kubectl", o)
 			if err != nil {
+				logging.PrintLog("Error retrieving nginx-ingress: "+hostname+"\n"+err.Error(), logging.QuietLevel)
 				return err
 			}
+			logging.PrintLog("Result:"+hostname, logging.VerboseLevel)
 		}
 
 		fmt.Println()
@@ -457,23 +468,26 @@ func doInstallation() error {
 }
 
 func applyRbac(rbac map[string]bool) error {
+	logging.PrintLog("Applying RBAC rules for installer", logging.VerboseLevel)
 	var merged string
 	for k := range rbac {
 		merged += k
 	}
 	o := options{"apply", "-f", "-"}
 	o.appendIfNotEmpty(kubectlOptions)
-
+	logging.PrintLog("Executing: kubectl "+strings.Join(o, " "), logging.VerboseLevel)
 	cmd := exec.Command("kubectl", o...)
 	cmd.Stdin = strings.NewReader(merged)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("Error while applying RBAC: %s \n%s\nAborting installation", err.Error(), string(out))
 	}
+	logging.PrintLog("Result: "+string(out), logging.VerboseLevel)
 	return nil
 }
 
 func deleteRbac(rbac map[string]bool) error {
+	logging.PrintLog("Deleting RBAC rules for installer", logging.VerboseLevel)
 	var merged string
 	for k := range rbac {
 		merged += k
@@ -481,12 +495,14 @@ func deleteRbac(rbac map[string]bool) error {
 	o := options{"delete", "-f", "-"}
 	o.appendIfNotEmpty(kubectlOptions)
 
+	logging.PrintLog("Executing: kubectl "+strings.Join(o, " "), logging.VerboseLevel)
 	cmd := exec.Command("kubectl", o...)
 	cmd.Stdin = strings.NewReader(merged)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("Error while deleting RBAC: %s \n%s\nAborting installation", err.Error(), string(out))
 	}
+	logging.PrintLog("Result: "+string(out), logging.VerboseLevel)
 	return nil
 }
 
@@ -574,11 +590,13 @@ func waitForInstallerPod() (string, error) {
 			"keptn",
 			"-ojson"}
 		options.appendIfNotEmpty(kubectlOptions)
+		logging.PrintLog("Executing: kubectl "+strings.Join(options, " "), logging.VerboseLevel)
 		out, err := keptnutils.ExecuteCommand("kubectl", options)
 
 		if err != nil {
 			return "", fmt.Errorf("Error while retrieving installer pod: %s\n. Aborting installation", err)
 		}
+		logging.PrintLog("Result: "+out, logging.VerboseLevel)
 
 		var podInfo map[string]interface{}
 		err = json.Unmarshal([]byte(out), &podInfo)
@@ -617,6 +635,7 @@ func getInstallerLogs(podName string) error {
 		"-f"}
 	options.appendIfNotEmpty(kubectlOptions)
 
+	logging.PrintLog("Executing: kubectl "+strings.Join(options, " "), logging.VerboseLevel)
 	execCmd := exec.Command(
 		"kubectl", options...,
 	)
