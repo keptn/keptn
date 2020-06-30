@@ -3,7 +3,7 @@
 Several tests are specified in [.travis.yml](../.travis.yml). They usually follow this layout:
 
 ```yaml
-    stage: Some Integration Test (--platform=kubernetes --use-case=quality-gates)
+    stage: Some Integration Test (--platform=kubernetes)
     os: linux
     before_script:
       # download and install kubectl
@@ -47,8 +47,8 @@ There are some caveats when creating a Kubernetes cluster on Travis-CI:
 
 Above limitations lead to the following setup with Keptn's `.travis.yml`:
 
-* We test the full installation on `GKE` once per day on the master branch via a Travis-CI cron job.
-* We test the `--use-case=quality-gates` installation on Minikube, MicroK8s and Minishift for every push on the master branch (e.g., after merging a pull-request).
+* We test the full installation (`--use-case=continuous-delivery`) on `GKE` once per day on the master branch via a Travis-CI cron job.
+* We test the default installation on Minikube, MicroK8s and Minishift for every push on the master branch (e.g., after merging a pull-request).
   * This type of installation is limited to `--gateway=NodePort`
 
 ## Prepare your local environment to run integration tests

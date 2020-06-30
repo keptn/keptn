@@ -68,10 +68,14 @@ wait_for_all_pods_in_namespace "keptn"
 wait_for_deployment_in_namespace "api-gateway-nginx" "keptn"
 
 case $USE_CASE in
-  quality-gates)
+  "")
     print_debug "Deploying Keptn quality gates"
     kubectl apply -f ../manifests/keptn/quality-gates.yaml 
     verify_kubectl $? "Deploying Keptn quality gates components failed."
+
+    print_debug "Deploying Keptn continuous operations"
+    kubectl apply -f ../manifests/keptn/continuous-operations.yaml
+    verify_kubectl $? "Deploying Keptn continuous operations components failed."
 
     ################################################
     ## Start validation of Keptn all capabilities ##
@@ -79,8 +83,10 @@ case $USE_CASE in
     wait_for_all_pods_in_namespace "keptn"
     wait_for_deployment_in_namespace "lighthouse-service" "keptn"
     wait_for_deployment_in_namespace "lighthouse-service-distributor" "keptn"
+    wait_for_deployment_in_namespace "remediation-service-distributor" "keptn"
+    wait_for_deployment_in_namespace "wait-service-deployment-distributor" "keptn"
     ;;
-  all)    
+  continuous-delivery)
     print_debug "Deploying Keptn continuous deployment"
     kubectl apply -f ../manifests/keptn/continuous-deployment.yaml 
     verify_kubectl $? "Deploying Keptn continuous deployment components failed."
