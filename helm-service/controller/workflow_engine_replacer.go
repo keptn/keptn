@@ -57,6 +57,7 @@ func getLocalDeploymentURI(project string, service string, stage string, deploym
 }
 
 func getPublicDeploymentURI(project string, service string, stage string) (string, error) {
+
 	keptnDomain, err := keptnutils.GetKeptnDomain(true)
 	if err != nil {
 		return "", err
@@ -65,7 +66,7 @@ func getPublicDeploymentURI(project string, service string, stage string) (strin
 	return "http://" + service + "." + project + "-" + stage + "." + keptnDomain, nil
 }
 
-func sendDeploymentFinishedEvent(keptnHandler *keptnevents.Keptn, testStrategy string, deploymentStrategy keptnevents.DeploymentStrategy, image string, tag string) error {
+func sendDeploymentFinishedEvent(keptnHandler *keptnevents.Keptn, testStrategy string, deploymentStrategy keptnevents.DeploymentStrategy, image string, tag string, ingressHostnameSuffix string, protocol string, port string) error {
 
 	source, _ := url.Parse("helm-service")
 	contentType := "application/json"
@@ -88,11 +89,8 @@ func sendDeploymentFinishedEvent(keptnHandler *keptnevents.Keptn, testStrategy s
 		DeploymentURILocal: getLocalDeploymentURI(keptnHandler.KeptnBase.Project, keptnHandler.KeptnBase.Service, keptnHandler.KeptnBase.Stage, deploymentStrategy, testStrategy),
 	}
 
-	publicDeploymentURI, err := getPublicDeploymentURI(keptnHandler.KeptnBase.Project, keptnHandler.KeptnBase.Service, keptnHandler.KeptnBase.Stage)
-
-	if err == nil {
-		depFinishedEvent.DeploymentURIPublic = publicDeploymentURI
-	}
+	publicDeploymentURI := protocol + "://" + keptnHandler.KeptnBase.Service + "." + keptnHandler.KeptnBase.Project + "-" + keptnHandler.KeptnBase.Stage + "." + ingressHostnameSuffix + ":" + port
+	depFinishedEvent.DeploymentURIPublic = publicDeploymentURI
 
 	event := cloudevents.Event{
 		Context: cloudevents.EventContextV02{

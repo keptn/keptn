@@ -41,8 +41,7 @@ func TestVirtualService(t *testing.T) {
 		{Host: "carts-canary.sockshop-dev.svc.cluster.local", Weight: 50}}
 
 	istioMesh := NewIstioMesh()
-	data, err := istioMesh.GenerateVirtualService("carts", []string{"public-gateway.istio-system"},
-		[]string{"carts.sockshop-dev.35.226.86.78.xip.io"}, routeDestinations)
+	data, err := istioMesh.GenerateVirtualService("carts", []string{"public-gateway.istio-system"}, []string{"carts.sockshop-dev.35.226.86.78.xip.io"}, routeDestinations)
 	if err != nil {
 		t.Error(err)
 	}

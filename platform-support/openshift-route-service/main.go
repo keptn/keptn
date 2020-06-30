@@ -259,3 +259,24 @@ func getCreateRouteCommandArgs(project string, stage string, appDomain string) [
 		"istio-system",
 	}
 }
+
+func getIngressHostnameSuffix() string {
+	if os.Getenv("INGRESS_HOSTNAME_SUFFIX") != "" {
+		return os.Getenv("INGRESS_HOSTNAME_SUFFIX")
+	}
+	return "svc.cluster.local"
+}
+
+func getIngressProtocol() string {
+	if os.Getenv("INGRESS_PROTOCOL") != "" {
+		return strings.ToLower(os.Getenv("INGRESS_PROTOCOL"))
+	}
+	return "http"
+}
+
+func getIngressPort() string {
+	if os.Getenv("INGRESS_PORT") != "" {
+		return os.Getenv("INGRESS_PORT")
+	}
+	return "80"
+}
