@@ -16,22 +16,22 @@ CODEOWNERS @AloisReitbauer @grabnerandi @jetzlstorfer @christian-kreuzberger-dtx
 ADOPTERS.md @AloisReitbauer @grabnerandi @jetzlstorfer
 
 # api
-api/ @agrimmer
+api/ @agrimmer @bacherfl
 
 # Keptn Bridge (includes reviewers without write-access)
 bridge/ @ermin-muratovic @SaraDavilaMendez @mpfosi @sandroschmid @GustavAT
 
 # cli
-cli/ @agrimmer
+cli/ @agrimmer @bacherfl
 
 # gatekeeper-service
-gatekeeper-service/ @agrimmer
+gatekeeper-service/ @agrimmer @bacherfl
 
 # helm-service
-helm-service/ @agrimmer
+helm-service/ @agrimmer @bacherfl
 
 # Installer
-installer/ @bacherfl @agrimmer @christian-kreuzberger-dtx
+installer/ @bacherfl @agrimmer @christian-kreuzberger-dtx @bacherfl
 
 # Upgrader
 upgrader/ @bacherfl
@@ -40,10 +40,10 @@ upgrader/ @bacherfl
 jmeter-service/ @grabnerandi
 
 # mongodb-datastore
-mongodb-datastore/ @agrimmer
+mongodb-datastore/ @agrimmer @bacherfl
 
 # shipyard-service
-shipyard-service/ @agrimmer
+shipyard-service/ @agrimmer @bacherfl
 
 # Release Notes
 releasenotes/ @johannes-b
@@ -53,7 +53,7 @@ releasenotes/ @johannes-b
 docs/ @christian-kreuzberger-dtx @johannes-b @jetzlstorfer
 
 # Dockerfiles
-*/Dockerfile @christian-kreuzberger-dtx
+*/Dockerfile @christian-kreuzberger-dtx @bacherfl
 
 # dot files are usually config files
 .* @christian-kreuzberger-dtx
