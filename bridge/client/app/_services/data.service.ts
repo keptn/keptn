@@ -155,11 +155,7 @@ export class DataService {
         service.roots = [...roots||[], ...service.roots||[]].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
         this._roots.next(service.roots);
         roots.forEach(root => {
-          if(root.traces.length > 0) {
-            this._openApprovals.next(this._openApprovals.getValue().filter(approval => root.traces.indexOf(approval) < 0));
-            if(root.traces[root.traces.length-1].type == EventTypes.APPROVAL_TRIGGERED)
-              this._openApprovals.next([...this._openApprovals.getValue(), root.traces[root.traces.length-1]].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()));
-          }
+          this.updateApprovals(root);
         })
       });
   }
@@ -179,12 +175,7 @@ export class DataService {
       )
       .subscribe((traces: Trace[]) => {
         root.traces = [...traces||[], ...root.traces||[]].sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
-
-        if(root.traces.length > 0) {
-          this._openApprovals.next(this._openApprovals.getValue().filter(approval => root.traces.indexOf(approval) < 0));
-          if(root.traces[root.traces.length-1].type == EventTypes.APPROVAL_TRIGGERED)
-            this._openApprovals.next([...this._openApprovals.getValue(), root.traces[root.traces.length-1]].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()));
-        }
+        this.updateApprovals(root);
       });
   }
 
@@ -210,5 +201,13 @@ export class DataService {
         let root = this._projects.getValue().find(p => p.projectName == approval.data.project).services.find(s => s.serviceName == approval.data.service).roots.find(r => r.shkeptncontext == approval.shkeptncontext);
         this.loadTraces(root);
       });
+  }
+
+  private updateApprovals(root) {
+    if(root.traces.length > 0) {
+      this._openApprovals.next(this._openApprovals.getValue().filter(approval => root.traces.indexOf(approval) < 0));
+      if(root.traces[root.traces.length-1].type == EventTypes.APPROVAL_TRIGGERED)
+        this._openApprovals.next([...this._openApprovals.getValue(), root.traces[root.traces.length-1]].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()));
+    }
   }
 }
