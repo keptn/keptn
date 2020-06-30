@@ -8,7 +8,7 @@ import {Stage} from "../_models/stage";
 import {ProjectResult} from "../_models/project-result";
 import {ServiceResult} from "../_models/service-result";
 import {EventResult} from "../_models/event-result";
-import {EVENT_TYPES, Trace} from "../_models/trace";
+import {EventTypes, Trace} from "../_models/trace";
 
 @Injectable({
   providedIn: 'root'
@@ -131,7 +131,7 @@ export class ApiService {
     return this.http
       .post<any>(url, {
         "shkeptncontext": approval.shkeptncontext,
-        "type": EVENT_TYPES.APPROVAL_FINISHED,
+        "type": EventTypes.APPROVAL_FINISHED,
         "triggeredid": approval.id,
         "source": "https://github.com/keptn/keptn/bridge#approval.finished",
         "data": Object.assign(approval.data, {

@@ -17,36 +17,36 @@ enum EventTypes {
   APPROVAL_FINISHED = 'sh.keptn.event.approval.finished'
 };
 const EVENT_LABELS = {
-  [EVENT_TYPES.SERVICE_CREATE]: "Service create",
-  [EVENT_TYPES.CONFIGURATION_CHANGE]: "Configuration change",
-  [EVENT_TYPES.CONFIGURE_MONITORING]: "Configure monitoring",
-  [EVENT_TYPES.DEPLOYMENT_FINISHED]: "Deployment finished",
-  [EVENT_TYPES.TESTS_FINISHED]: "Tests finished",
-  [EVENT_TYPES.START_EVALUATION]: "Start evaluation",
-  [EVENT_TYPES.EVALUATION_DONE]: "Evaluation done",
-  [EVENT_TYPES.START_SLI_RETRIEVAL]: "Start SLI retrieval",
-  [EVENT_TYPES.SLI_RETRIEVAL_DONE]: "SLI retrieval done",
-  [EVENT_TYPES.DONE]: "Done",
-  [EVENT_TYPES.PROBLEM_OPEN]: "Problem open",
-  [EVENT_TYPES.PROBLEM_DETECTED]: "Problem detected",
-  [EVENT_TYPES.PROBLEM_RESOLVED]: "Problem resolved",
-  [EVENT_TYPES.PROBLEM_CLOSED]: "Problem closed",
-  [EVENT_TYPES.APPROVAL_TRIGGERED]: "Approval triggered",
-  [EVENT_TYPES.APPROVAL_FINISHED]: "Approval finished"
+  [EventTypes.SERVICE_CREATE]: "Service create",
+  [EventTypes.CONFIGURATION_CHANGE]: "Configuration change",
+  [EventTypes.CONFIGURE_MONITORING]: "Configure monitoring",
+  [EventTypes.DEPLOYMENT_FINISHED]: "Deployment finished",
+  [EventTypes.TESTS_FINISHED]: "Tests finished",
+  [EventTypes.START_EVALUATION]: "Start evaluation",
+  [EventTypes.EVALUATION_DONE]: "Evaluation done",
+  [EventTypes.START_SLI_RETRIEVAL]: "Start SLI retrieval",
+  [EventTypes.SLI_RETRIEVAL_DONE]: "SLI retrieval done",
+  [EventTypes.DONE]: "Done",
+  [EventTypes.PROBLEM_OPEN]: "Problem open",
+  [EventTypes.PROBLEM_DETECTED]: "Problem detected",
+  [EventTypes.PROBLEM_RESOLVED]: "Problem resolved",
+  [EventTypes.PROBLEM_CLOSED]: "Problem closed",
+  [EventTypes.APPROVAL_TRIGGERED]: "Approval triggered",
+  [EventTypes.APPROVAL_FINISHED]: "Approval finished"
 };
 const EVENT_ICONS = {
-  [EVENT_TYPES.CONFIGURATION_CHANGE]: "duplicate",
-  [EVENT_TYPES.DEPLOYMENT_FINISHED]: "deploy",
-  [EVENT_TYPES.TESTS_FINISHED]: "perfromance-health",
-  [EVENT_TYPES.START_EVALUATION]: "traffic-light",
-  [EVENT_TYPES.EVALUATION_DONE]: "traffic-light",
-  [EVENT_TYPES.START_SLI_RETRIEVAL]: "collector",
-  [EVENT_TYPES.SLI_RETRIEVAL_DONE]: "collector",
-  [EVENT_TYPES.PROBLEM_OPEN]: "criticalevent",
-  [EVENT_TYPES.PROBLEM_DETECTED]: "criticalevent",
-  [EVENT_TYPES.PROBLEM_CLOSED]: "applicationhealth",
-  [EVENT_TYPES.APPROVAL_TRIGGERED]: "unknown",
-  [EVENT_TYPES.APPROVAL_FINISHED]: "checkmark"
+  [EventTypes.CONFIGURATION_CHANGE]: "duplicate",
+  [EventTypes.DEPLOYMENT_FINISHED]: "deploy",
+  [EventTypes.TESTS_FINISHED]: "perfromance-health",
+  [EventTypes.START_EVALUATION]: "traffic-light",
+  [EventTypes.EVALUATION_DONE]: "traffic-light",
+  [EventTypes.START_SLI_RETRIEVAL]: "collector",
+  [EventTypes.SLI_RETRIEVAL_DONE]: "collector",
+  [EventTypes.PROBLEM_OPEN]: "criticalevent",
+  [EventTypes.PROBLEM_DETECTED]: "criticalevent",
+  [EventTypes.PROBLEM_CLOSED]: "applicationhealth",
+  [EventTypes.APPROVAL_TRIGGERED]: "unknown",
+  [EventTypes.APPROVAL_FINISHED]: "checkmark"
 };
 
 const DEFAULT_ICON = "information";
@@ -142,7 +142,7 @@ class Trace {
   }
 
   isFailed(): boolean {
-    return this.data.result == 'fail' || this.type === EVENT_TYPES.APPROVAL_FINISHED && this.data.approval.result == 'failed';
+    return this.data.result == 'fail' || this.type === EventTypes.APPROVAL_FINISHED && this.data.approval.result == 'failed';
   }
 
   isProblem(): boolean {
@@ -152,7 +152,7 @@ class Trace {
   isSuccessful(): boolean {
     let result: boolean = false;
     if(this.data) {
-      if(this.data.result == 'pass' || this.type === EVENT_TYPES.APPROVAL_FINISHED && this.data.approval.result == 'pass') {
+      if(this.data.result == 'pass' || this.type === EventTypes.APPROVAL_FINISHED && this.data.approval.result == 'pass') {
         result = true;
       }
     }
@@ -162,8 +162,8 @@ class Trace {
   getLabel(): string {
     // TODO: use translation file
     if(!this.label) {
-      if(this.type === EVENT_TYPES.PROBLEM_DETECTED && this.data.State === "RESOLVED") {
-        this.label = EVENT_LABELS[EVENT_TYPES.PROBLEM_RESOLVED];
+      if(this.type === EventTypes.PROBLEM_DETECTED && this.data.State === "RESOLVED") {
+        this.label = EVENT_LABELS[EventTypes.PROBLEM_RESOLVED];
       } else {
         this.label = EVENT_LABELS[this.type] || this.type;
       }
@@ -205,4 +205,4 @@ class Trace {
   }
 }
 
-export {Trace, EVENT_LABELS, EVENT_TYPES}
+export {Trace, EVENT_LABELS, EventTypes}

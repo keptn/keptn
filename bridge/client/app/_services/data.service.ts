@@ -4,7 +4,7 @@ import {BehaviorSubject, forkJoin, from, Observable, Subject, timer, of} from "r
 import {debounce, map, mergeMap, toArray} from "rxjs/operators";
 
 import {Root} from "../_models/root";
-import {EVENT_TYPES, Trace} from "../_models/trace";
+import {EventTypes, Trace} from "../_models/trace";
 import {Stage} from "../_models/stage";
 import {Project} from "../_models/project";
 import {Service} from "../_models/service";
@@ -157,7 +157,7 @@ export class DataService {
         roots.forEach(root => {
           if(root.traces.length > 0) {
             this._openApprovals.next(this._openApprovals.getValue().filter(approval => root.traces.indexOf(approval) < 0));
-            if(root.traces[root.traces.length-1].type == EVENT_TYPES.APPROVAL_TRIGGERED)
+            if(root.traces[root.traces.length-1].type == EventTypes.APPROVAL_TRIGGERED)
               this._openApprovals.next([...this._openApprovals.getValue(), root.traces[root.traces.length-1]].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()));
           }
         })
@@ -182,7 +182,7 @@ export class DataService {
 
         if(root.traces.length > 0) {
           this._openApprovals.next(this._openApprovals.getValue().filter(approval => root.traces.indexOf(approval) < 0));
-          if(root.traces[root.traces.length-1].type == EVENT_TYPES.APPROVAL_TRIGGERED)
+          if(root.traces[root.traces.length-1].type == EventTypes.APPROVAL_TRIGGERED)
             this._openApprovals.next([...this._openApprovals.getValue(), root.traces[root.traces.length-1]].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()));
         }
       });
