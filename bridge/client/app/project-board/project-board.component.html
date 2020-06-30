@@ -61,7 +61,7 @@
                   </div>
                   <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
                     <ng-container *ngIf="openApprovals$ | async as openApprovals">
-                      <dt-icon class="icon2" name="deploy" [ngClass]="{'out-of-sync-service': countOpenApprovals(openApprovals, stage) > 0}"></dt-icon>
+                      <dt-icon class="icon2" name="deploy" [class.out-of-sync-service]="countOpenApprovals(openApprovals, stage) > 0"></dt-icon>
                       <span [textContent]="countOpenApprovals(openApprovals, stage)"></span>
                     </ng-container>
                   </div>
