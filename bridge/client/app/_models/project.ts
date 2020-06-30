@@ -1,7 +1,6 @@
 import {Stage} from "./stage";
 import {Service} from "./service";
 import {Trace} from "./trace";
-import {Root} from "./root";
 
 export class Project {
   projectName: string;
@@ -26,13 +25,14 @@ export class Project {
     return this.stages;
   }
 
-  getLatestDeployment(service: Service, stage?: Stage): Trace {
+  getLatestDeployment(service: Service, stage: Stage): Trace {
     let currentService = this.getServices().find(s => s.serviceName == service.serviceName);
 
     if(currentService.roots)
       return currentService.roots
+        .filter(root => root.isFaulty() != stage.stageName)
         .reduce((traces: Trace[], root) => [...traces, ...root.traces], [])
-        .find(trace => trace.type == 'sh.keptn.events.deployment-finished' && (!stage || (trace.data.stage == stage.stageName && currentService.roots.find(r => r.shkeptncontext == trace.shkeptncontext).isFaulty() != stage.stageName)));
+        .find(trace => trace.type == 'sh.keptn.events.deployment-finished' && trace.data.stage == stage.stageName);
     else
       return null;
   }
