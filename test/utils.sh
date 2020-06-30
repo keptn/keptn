@@ -213,7 +213,7 @@ function wait_for_problem_open_event() {
   while [[ $RETRY -lt $RETRY_MAX ]]; do
     event=$(curl -X GET "${KEPTN_ENDPOINT}/mongodb-datastore/event?project=${PROJECT}&service=${SERVICE}&stage=${STAGE}&type=sh.keptn.event.problem.open" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.events[0]')
 
-    if [[ "${event}" == "null" ]]; then
+    if [[ "${event}" == "null" ]] || [[ "${event}" == "" ]]; then
       RETRY=$[$RETRY+1]
       sleep 60
     else
