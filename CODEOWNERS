@@ -4,7 +4,7 @@
 # These owners will be the default owners for everything in the repo.
 #################################################################################
 # Learn about CODEOWNERS file format:
-#  https://help.github.com/en/articles/about-code-owners
+# https://help.github.com/en/articles/about-code-owners
 #################################################################################
 # FYI: Owners will be auto-assigned for code reviews as well
 #################################################################################
@@ -16,23 +16,23 @@ CODEOWNERS @AloisReitbauer @grabnerandi @jetzlstorfer @christian-kreuzberger-dtx
 ADOPTERS.md @AloisReitbauer @grabnerandi @jetzlstorfer
 
 # Keptn Bridge (includes reviewers without write-access)
-bridge/* @ermin-muratovic @SaraDavilaMendez @mpfosi @sandroschmid @GustavAT
+bridge/ @ermin-muratovic @SaraDavilaMendez @mpfosi @sandroschmid @GustavAT
 
 # Installer
-installer/* @bacherfl @agrimmer @christian-kreuzberger-dtx
+installer/ @bacherfl @agrimmer @christian-kreuzberger-dtx
 
 # Upgrader
-upgrader/* @bacherfl
+upgrader/ @bacherfl
 
 # JMeter service
-jmeter-service/* @grabnerandi
+jmeter-service/ @grabnerandi
 
 # Release Notes
-releasenotes/* @johannes-b
+releasenotes/ @johannes-b
 
 # Docs, etc...
 *.md @christian-kreuzberger-dtx @johannes-b @jetzlstorfer
-docs/* @christian-kreuzberger-dtx @johannes-b @jetzlstorfer
+docs/ @christian-kreuzberger-dtx @johannes-b @jetzlstorfer
 
 # Dockerfiles
 */Dockerfile @christian-kreuzberger-dtx
