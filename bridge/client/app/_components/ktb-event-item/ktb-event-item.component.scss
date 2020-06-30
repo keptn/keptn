@@ -4,12 +4,16 @@
 .event-icon {
   width: 20px;
   height: 20px;
+
+  &.error {
+    fill: $error-color;
+  }
+
+  &.success {
+    fill: $cta-color-active;
+  }
 }
 
-.event-icon.error {
-  fill: $error-color;
-}
-
-.event-icon.success {
-  fill: $cta-color-active;
+.dt-button + .dt-button {
+  margin-left: $gap-normal;
 }
