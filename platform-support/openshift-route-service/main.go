@@ -230,13 +230,10 @@ func getEnableMeshCommandArgs(project string, stage string) []string {
 
 func exposeRoute(project string, stage string) error {
 	ingressHostnameSuffix := getIngressHostnameSuffix()
-	ingressProtocol := getIngressProtocol()
-	ingressPort := getIngressPort()
-
 	// oc create route edge istio-wildcard-ingress-secure-keptn --service=istio-ingressgateway --hostname="www.keptn.ingress-gateway.$BASE_URL" --port=http2 --wildcard-policy=Subdomain --insecure-policy='Allow'
 
 	out, err := keptn.ExecuteCommand("oc",
-		getCreateRouteCommandArgs(project, stage, ingressHostnameSuffix, ingressProtocol, ingressPort))
+		getCreateRouteCommandArgs(project, stage, ingressHostnameSuffix))
 	if err != nil {
 		return err
 	}
@@ -244,14 +241,7 @@ func exposeRoute(project string, stage string) error {
 	return nil
 }
 
-func getCreateRouteCommandArgs(project, stage, ingressHostnameSuffix, ingressProtocol, ingressPort string) []string {
-	var insecurePolicy string
-
-	if ingressProtocol == "https" {
-		insecurePolicy = "None"
-	} else {
-		insecurePolicy = "Allow"
-	}
+func getCreateRouteCommandArgs(project, stage, ingressHostnameSuffix string) []string {
 	return []string{
 		"create",
 		"route",
@@ -261,7 +251,7 @@ func getCreateRouteCommandArgs(project, stage, ingressHostnameSuffix, ingressPro
 		"--hostname=www." + project + "-" + stage + "." + ingressHostnameSuffix,
 		"--port=http2",
 		"--wildcard-policy=Subdomain",
-		"--insecure-policy=" + insecurePolicy,
+		"--insecure-policy=Allow",
 		"-n",
 		"istio-system",
 	}
@@ -272,18 +262,4 @@ func getIngressHostnameSuffix() string {
 		return os.Getenv("INGRESS_HOSTNAME_SUFFIX")
 	}
 	return "svc.cluster.local"
-}
-
-func getIngressProtocol() string {
-	if os.Getenv("INGRESS_PROTOCOL") != "" {
-		return strings.ToLower(os.Getenv("INGRESS_PROTOCOL"))
-	}
-	return "http"
-}
-
-func getIngressPort() string {
-	if os.Getenv("INGRESS_PORT") != "" {
-		return os.Getenv("INGRESS_PORT")
-	}
-	return "80"
 }

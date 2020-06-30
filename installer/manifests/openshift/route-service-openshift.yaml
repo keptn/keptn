@@ -74,16 +74,6 @@ spec:
             configMapKeyRef:
               name: ingress-config
               key: ingress_hostname_suffix
-        - name: INGRESS_PROTOCOL
-          valueFrom:
-            configMapKeyRef:
-              name: ingress-config
-              key: ingress_protocol
-        - name: INGRESS_PORT
-          valueFrom:
-            configMapKeyRef:
-              name: ingress-config
-              key: ingress_port
       serviceAccountName: keptn-openshift-route-service
 ---
 apiVersion: v1

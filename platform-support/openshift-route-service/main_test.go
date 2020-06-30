@@ -5,7 +5,6 @@ import (
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 	"github.com/keptn/go-utils/pkg/lib"
-	"os"
 	"reflect"
 	"testing"
 )
@@ -48,9 +47,9 @@ func Test_getEnableMeshCommandArgs(t *testing.T) {
 
 func Test_getCreateRouteCommandArgs(t *testing.T) {
 	type args struct {
-		project   string
-		stage     string
-		appDomain string
+		project               string
+		stage                 string
+		ingressHostnameSuffix string
 	}
 	tests := []struct {
 		name string
@@ -60,9 +59,9 @@ func Test_getCreateRouteCommandArgs(t *testing.T) {
 		{
 			name: "Create route command",
 			args: args{
-				project:   "sockshop",
-				stage:     "dev",
-				appDomain: "keptn.com",
+				project:               "sockshop",
+				stage:                 "dev",
+				ingressHostnameSuffix: "keptn.com",
 			},
 			want: []string{
 				"create",
@@ -81,7 +80,7 @@ func Test_getCreateRouteCommandArgs(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := getCreateRouteCommandArgs(tt.args.project, tt.args.stage, tt.args.appDomain); !reflect.DeepEqual(got, tt.want) {
+			if got := getCreateRouteCommandArgs(tt.args.project, tt.args.stage, tt.args.ingressHostnameSuffix); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("getCreateRouteCommandArgs() = %v, want %v", got, tt.want)
 			}
 		})
@@ -187,39 +186,6 @@ func Test_createRoutes1(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if err := createRoutes(tt.args.data); (err != nil) != tt.wantErr {
 				t.Errorf("createRoutes() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
-func Test_exposeRoute(t *testing.T) {
-	type args struct {
-		project string
-		stage   string
-	}
-	tests := []struct {
-		name         string
-		args         args
-		wantErr      bool
-		appDomainSet bool
-	}{
-		{
-			name: "don't create anything if APP_DOMAIN env var is not set",
-			args: args{
-				project: "sockshop",
-				stage:   "dev",
-			},
-			wantErr:      true,
-			appDomainSet: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if !tt.appDomainSet {
-				_ = os.Setenv("APP_DOMAIN", "")
-			}
-			if err := exposeRoute(tt.args.project, tt.args.stage); (err != nil) != tt.wantErr {
-				t.Errorf("exposeRoute() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
