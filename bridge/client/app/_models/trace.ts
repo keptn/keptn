@@ -16,7 +16,7 @@ const EVENT_TYPES = {
   APPROVAL_TRIGGERED: 'sh.keptn.event.approval.triggered',
   APPROVAL_FINISHED: 'sh.keptn.event.approval.finished'
 };
-let EVENT_LABELS = {
+const EVENT_LABELS = {
   [EVENT_TYPES.SERVICE_CREATE]: "Service create",
   [EVENT_TYPES.CONFIGURATION_CHANGE]: "Configuration change",
   [EVENT_TYPES.CONFIGURE_MONITORING]: "Configure monitoring",
