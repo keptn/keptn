@@ -31,9 +31,7 @@ export class Project {
 
     if(currentService.roots)
       return currentService.roots
-        .reduce((traces: Trace[], root: Root) => {
-          return [...traces, ...root.traces];
-        }, [])
+        .reduce((traces: Trace[], root) => [...traces, ...root.traces], [])
         .find(trace => trace.type == 'sh.keptn.events.deployment-finished' && (!stage || (trace.data.stage == stage.stageName && currentService.roots.find(r => r.shkeptncontext == trace.shkeptncontext).isFaulty() != stage.stageName)));
     else
       return null;
