@@ -15,8 +15,20 @@ CODEOWNERS @AloisReitbauer @grabnerandi @jetzlstorfer @christian-kreuzberger-dtx
 # Adopters file
 ADOPTERS.md @AloisReitbauer @grabnerandi @jetzlstorfer
 
+# api
+api/ @agrimmer
+
 # Keptn Bridge (includes reviewers without write-access)
 bridge/ @ermin-muratovic @SaraDavilaMendez @mpfosi @sandroschmid @GustavAT
+
+# cli
+cli/ @agrimmer
+
+# gatekeeper-service
+gatekeeper-service/ @agrimmer
+
+# helm-service
+helm-service/ @agrimmer
 
 # Installer
 installer/ @bacherfl @agrimmer @christian-kreuzberger-dtx
@@ -26,6 +38,12 @@ upgrader/ @bacherfl
 
 # JMeter service
 jmeter-service/ @grabnerandi
+
+# mongodb-datastore
+mongodb-datastore/ @agrimmer
+
+# shipyard-service
+shipyard-service/ @agrimmer
 
 # Release Notes
 releasenotes/ @johannes-b
