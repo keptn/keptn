@@ -31,7 +31,7 @@ gatekeeper-service/ @agrimmer @bacherfl
 helm-service/ @agrimmer @bacherfl
 
 # Installer
-installer/ @bacherfl @agrimmer @christian-kreuzberger-dtx @bacherfl
+installer/ @bacherfl @agrimmer @christian-kreuzberger-dtx
 
 # Upgrader
 upgrader/ @bacherfl
