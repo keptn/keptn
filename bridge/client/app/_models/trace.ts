@@ -16,6 +16,22 @@ enum EventTypes {
   APPROVAL_TRIGGERED = 'sh.keptn.event.approval.triggered',
   APPROVAL_FINISHED = 'sh.keptn.event.approval.finished'
 };
+
+enum ResultTypes {
+  PASSED = 'pass',
+  WARNING = 'warning',
+  FAILED = 'fail'
+};
+
+enum ProblemStates {
+  RESOLVED = 'RESOLVED'
+};
+
+enum ApprovalStates {
+  APPROVED = 'pass',
+  DECLINED = 'failed'
+};
+
 const EVENT_LABELS = {
   [EventTypes.SERVICE_CREATE]: "Service create",
   [EventTypes.CONFIGURATION_CHANGE]: "Configuration change",
@@ -134,7 +150,7 @@ class Trace {
   isWarning(): string {
     let result: string = null;
     if(this.data) {
-      if(this.data.result == 'warning') {
+      if(this.data.result == ResultTypes.WARNING) {
         result = this.data.stage;
       }
     }
@@ -142,7 +158,7 @@ class Trace {
   }
 
   isFailed(): boolean {
-    return this.data.result == 'fail' || this.type === EventTypes.APPROVAL_FINISHED && this.data.approval.result == 'failed';
+    return this.data.result == ResultTypes.FAILED || this.type === EventTypes.APPROVAL_FINISHED && this.data.approval.result == ApprovalStates.DECLINED;
   }
 
   isProblem(): boolean {
@@ -152,7 +168,7 @@ class Trace {
   isSuccessful(): boolean {
     let result: boolean = false;
     if(this.data) {
-      if(this.data.result == 'pass' || this.type === EventTypes.APPROVAL_FINISHED && this.data.approval.result == 'pass') {
+      if(this.data.result == ResultTypes.PASSED || this.type === EventTypes.APPROVAL_FINISHED && this.data.approval.result == ApprovalStates.APPROVED) {
         result = true;
       }
     }
@@ -162,7 +178,7 @@ class Trace {
   getLabel(): string {
     // TODO: use translation file
     if(!this.label) {
-      if(this.type === EventTypes.PROBLEM_DETECTED && this.data.State === "RESOLVED") {
+      if(this.type === EventTypes.PROBLEM_DETECTED && this.data.State === ProblemStates.RESOLVED) {
         this.label = EVENT_LABELS[EventTypes.PROBLEM_RESOLVED];
       } else {
         this.label = EVENT_LABELS[this.type] || this.type;
@@ -205,4 +221,4 @@ class Trace {
   }
 }
 
-export {Trace, EVENT_LABELS, EventTypes}
+export {Trace, EVENT_LABELS, EventTypes, ApprovalStates}

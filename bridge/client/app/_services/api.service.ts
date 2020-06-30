@@ -8,7 +8,7 @@ import {Stage} from "../_models/stage";
 import {ProjectResult} from "../_models/project-result";
 import {ServiceResult} from "../_models/service-result";
 import {EventResult} from "../_models/event-result";
-import {EventTypes, Trace} from "../_models/trace";
+import {ApprovalStates, EventTypes, Trace} from "../_models/trace";
 
 @Injectable({
   providedIn: 'root'
@@ -136,7 +136,7 @@ export class ApiService {
         "source": "https://github.com/keptn/keptn/bridge#approval.finished",
         "data": Object.assign(approval.data, {
           "approval": {
-            "result": approve ? "pass" : "failed",
+            "result": approve ? ApprovalStates.APPROVED : ApprovalStates.DECLINED,
             "status": "succeeded"
           }
         })
