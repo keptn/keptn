@@ -5,6 +5,6 @@ metadata:
   name: ingress-config
   namespace: keptn
 data:
-  ingress_host_suffix: ""
+  ingress_hostname_suffix: ""
   ingress_protocol: ""
   ingress_port: ""

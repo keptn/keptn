@@ -69,11 +69,21 @@ spec:
             memory: "128Mi"
             cpu: "500m"
         env:
-        - name: APP_DOMAIN
+        - name: INGRESS_HOSTNAME_SUFFIX
           valueFrom:
             configMapKeyRef:
-              name: keptn-domain
-              key: app_domain
+              name: ingress-config
+              key: ingress_hostname_suffix
+        - name: INGRESS_PROTOCOL
+          valueFrom:
+            configMapKeyRef:
+              name: ingress-config
+              key: ingress_protocol
+        - name: INGRESS_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: ingress-config
+              key: ingress_port
       serviceAccountName: keptn-openshift-route-service
 ---
 apiVersion: v1

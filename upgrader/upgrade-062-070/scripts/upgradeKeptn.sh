@@ -46,6 +46,7 @@ manifests=(
   "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/continuous-operations.yaml"
   "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/keptn-api-virtualservice.yaml"
   "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/keptn-ingress.yaml"
+  "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/ingress-config.yaml"
   "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/uniform-services-openshift.yaml"
   "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/uniform-distributors-openshift.yaml"
   "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/api-gateway-nginx.yaml"
@@ -79,13 +80,14 @@ kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/in
 
 print_debug "Updating Keptn core."
 kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/rbac.yaml
+kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/ingress-config.yaml
 kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/logging/rbac.yaml
 kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/api-gateway-nginx.yaml
 kubectl -n keptn delete pod -lrun=api-gateway-nginx
 kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/core.yaml
 kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/quality-gates.yaml
 kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/continuous-operations.yaml
-# remove the remediation-service-problem-distributor deployment since the remediation service now has a new distributor for multiple types of evetns
+# remove the remediation-service-problem-distributor deployment since the remediation service now has a new distributor for multiple types of events
 kubectl delete deployment -n keptn remediation-service-problem-distributor
 
 kubectl get namespace openshift

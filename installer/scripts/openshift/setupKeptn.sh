@@ -19,6 +19,10 @@ verify_kubectl $? "Creating NATS Cluster failed."
 kubectl apply -f ../manifests/keptn/rbac.yaml
 verify_kubectl $? "Creating cluster role for keptn failed."
 
+# Create default ingress-config
+kubectl apply -f ../manifests/keptn/ingress-config.yaml
+verify_kubectl $? "Creating default ingress config for Keptn failed."
+
 # Create keptn secret
 KEPTN_API_TOKEN=$(head -c 16 /dev/urandom | base64)
 verify_variable "$KEPTN_API_TOKEN" "KEPTN_API_TOKEN could not be derived." 
