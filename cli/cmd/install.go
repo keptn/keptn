@@ -89,7 +89,7 @@ For more information, please consult the following docs:
 
 `,
 	Example: `keptn install --platform=aks # install on Azure Kubernetes Service
-keptn install --platform=gke --use-case=quality-gates # install quality-gates on Google Kubernetes Engine
+keptn install --platform=gke --use-case=continuous-delivery # install continuous-delivery on Google Kubernetes Engine
 keptn install --platform=kubernetes --gateway=NodePort # install on a Kubernetes instance with gateway NodePort`,
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
@@ -128,6 +128,11 @@ keptn install --platform=kubernetes --gateway=NodePort # install on a Kubernetes
 		} else {
 			return errors.New("value of 'use-case' flag is unknown. Supported values are " +
 				"[" + AllUseCases.String() + "," + QualityGates.String() + "]")
+		}
+
+		// Mark the quality-gates use case as deprecated - this is now the default option
+		if *installParams.UseCaseInput == "quality-gates" {
+			logging.PrintLog("NOTE: The --use-case=quality-gates option is now deprecated and is now a synonym for the default installation of Keptn.", logging.InfoLevel)
 		}
 
 		var image, tag string
@@ -268,7 +273,7 @@ func init() {
 		"Experimental: Overwrite the ingress domain (e.g., 127.0.0.1.xip.io)")
 	installCmd.Flags().MarkHidden("gateway-domain")
 
-	installParams.UseCaseInput = installCmd.Flags().StringP("use-case", "u", "all",
+	installParams.UseCaseInput = installCmd.Flags().StringP("use-case", "u", "",
 		"The use case to install Keptn for ["+AllUseCases.String()+","+QualityGates.String()+"]")
 
 	installParams.IngressInstallOptionInput = installCmd.Flags().StringP("ingress-install-option", "",

@@ -27,7 +27,7 @@ if [[ "$KEPTN_INSTALLATION_TYPE" == "REUSE-ISTIO" ]]; then
 fi
 
 # Install keptn (using the develop version, which should point the :latest docker images)
-keptn install ${INGRESS_CONFIG} --keptn-installer-image="${KEPTN_INSTALLER_IMAGE}" --creds=creds.json --verbose
+keptn install ${INGRESS_CONFIG} --keptn-installer-image="${KEPTN_INSTALLER_IMAGE}" --creds=creds.json --verbose --use-case=continuous-delivery
 verify_test_step $? "keptn install failed"
 
 # change domain

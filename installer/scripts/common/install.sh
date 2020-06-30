@@ -2,7 +2,7 @@
 
 source ./common/utils.sh
 
-if [[ "$USE_CASE" == "all" ]]; then
+if [[ "$USE_CASE" == "continuous-delivery" ]]; then
   # Install istio
   source ./common/setupIstio.sh
   setupKeptnDomain "istio" "istio-ingressgateway" "istio-system"
@@ -31,13 +31,13 @@ verify_install_step $? "Installing Keptn failed."
 print_info "Installing Keptn done"
 
 # Install Keptn services
-if [[ "$USE_CASE" == "all" ]]; then
+if [[ "$USE_CASE" == "continuous-delivery" ]]; then
   print_info "Wear uniform"
   ./common/wearUniform.sh
   verify_install_step $? "Installing Keptn's uniform failed."
   print_info "Keptn wears uniform"
 else
-  print_debug "Wear uniform is skipped since use case ${USE_CASE} does not need it." 
+  print_debug "Wear uniform is skipped since continuous-delivery use case has not been activated."
 fi
 
 # Install done
