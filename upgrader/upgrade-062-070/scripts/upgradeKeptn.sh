@@ -91,8 +91,7 @@ kubectl delete deployment -n keptn remediation-service-problem-distributor
 kubectl get namespace openshift
   if [[ $? == '0' ]]; then
     print_debug "OpenShift platform detected. Updating OpenShift core services"
-    kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/uniform-services-openshift.yaml
-    kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/uniform-distributors-openshift.yaml
+    kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/openshift/route-service-openshift.yaml
   fi
 
 DOMAIN=$(kubectl get configmap -n keptn keptn-domain -ojsonpath="{.data.app_domain}")
@@ -103,6 +102,10 @@ kubectl -n keptn get svc gatekeeper-service
   if [[ $? == '0' ]]; then
       print_debug "Full installation detected. Upgrading CD and CO services"
       kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/continuous-deployment.yaml
+      if [[ $? == '0' ]]; then
+        print_debug "OpenShift platform detected. Updating create Openshift-specific distributors"
+        kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/openshift/uniform-distributors-openshift.yaml
+      fi
   fi
 
 # check for keptn-contrib services
