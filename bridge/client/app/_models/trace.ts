@@ -34,7 +34,7 @@ const EVENT_LABELS = {
   [EVENT_TYPES.APPROVAL_TRIGGERED]: "Approval triggered",
   [EVENT_TYPES.APPROVAL_FINISHED]: "Approval finished"
 };
-let EVENT_ICONS = {
+const EVENT_ICONS = {
   [EVENT_TYPES.CONFIGURATION_CHANGE]: "duplicate",
   [EVENT_TYPES.DEPLOYMENT_FINISHED]: "deploy",
   [EVENT_TYPES.TESTS_FINISHED]: "perfromance-health",
