@@ -56,8 +56,6 @@ module.exports = (params) => {
 
   router.all('*', async (req, res, next) => {
     try {
-      console.log("req.url", req.method, `${apiUrl}${req.url}`);
-
       const result = await axios({
         method: req.method,
         url: `${apiUrl}${req.url}`,
