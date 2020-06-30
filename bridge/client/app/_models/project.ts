@@ -43,9 +43,7 @@ export class Project {
     let currentService = this.getServices().find(s => s.serviceName == trace.data.service);
     if(currentService.roots) {
       return currentService.roots
-        .reduce((traces: Trace[], root: Root) => {
-          return [...traces, ...root.traces];
-        }, [])
+        .reduce((traces: Trace[], root) => [...traces, ...root.traces], [])
         .find(t => t.type == 'sh.keptn.events.evaluation-done' && t.shkeptncontext == trace.shkeptncontext);
     }
     return null;
