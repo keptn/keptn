@@ -1,3 +1,3 @@
 type JsonTypes = number | string | object;
 
-export type JsonSerializable = JsonTypes | Array<JsonTypes>;
+export type JsonSerializable = undefined | JsonTypes | Array<JsonTypes>;
