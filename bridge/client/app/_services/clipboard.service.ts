@@ -12,8 +12,8 @@ export class ClipboardService {
 
   copy(serializable: JsonSerializable, label = 'value'): void {
     const value = this.stringify(serializable);
-    if ('clipboard' in navigator) {
-      void (navigator as any).clipboard.writeText(value);
+    if (navigator && 'clipboard' in navigator && typeof navigator.clipboard.writeText === 'function') {
+      void navigator.clipboard.writeText(value);
     } else {
       const textarea = document.createElement('textarea');
       textarea.value = value;
@@ -28,7 +28,7 @@ export class ClipboardService {
   }
 
   stringify(value: JsonSerializable): string {
-    if (typeof value === 'undefined' || value === null) {
+    if (value === undefined || value === null) {
       return '';
     } else if (typeof value === 'string') {
       return value;
