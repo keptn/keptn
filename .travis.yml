@@ -262,7 +262,6 @@ jobs:
       - echo "Build keptn cli"
       - cd ./cli
       - go test ./...
-      - TAG="${VERSION}"
       - source ../travis-scripts/build_cli.sh "${VERSION}" "${KUBE_CONSTRAINTS}"
       - cd ..
 
