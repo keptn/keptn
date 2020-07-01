@@ -203,6 +203,8 @@ github.com/keptn/go-utils v0.6.1-a/go.mod h1:R9a1HXkD+KCrhMFbLcEhtBtHGfYwXhO6dwZ
 github.com/keptn/go-utils v0.6.1-compat/go.mod h1:aDNFm3olvCZd7AE6/Xyir4g5Mw6E89mjhKt0zoJHC6g=
 github.com/keptn/go-utils v0.6.3-0.20200528100519-ac2805768145 h1:4AuLaA5W35WhqnB88QpOscpg2xCnxjSwUuiSFFsQSzY=
 github.com/keptn/go-utils v0.6.3-0.20200528100519-ac2805768145/go.mod h1:aDNFm3olvCZd7AE6/Xyir4g5Mw6E89mjhKt0zoJHC6g=
+github.com/keptn/go-utils v0.6.3-0.20200701140917-da1f9cdf8804 h1:rqpWdzhLyjWkMppmkX8xwP5E15Ub86hF4UFm8ZRFxIM=
+github.com/keptn/go-utils v0.6.3-0.20200701140917-da1f9cdf8804/go.mod h1:hf2FU6JFuOzLP5rEAlA1/XnNS28pDZbVfxDESeQsq1g=
 github.com/kevinburke/ssh_config v0.0.0-20190725054713-01f96b0aa0cd h1:Coekwdh0v2wtGp9Gmz1Ze3eVRAWJMLokvN3QjdzCHLY=
 github.com/kevinburke/ssh_config v0.0.0-20190725054713-01f96b0aa0cd/go.mod h1:CT57kijsi8u/K/BOFA39wgDQJ9CxiF4nAY/ojJ6r6mM=
 github.com/kisielk/errcheck v1.2.0/go.mod h1:/BMXB+zMLi60iA8Vv6Ksmxu/1UDYcXs4uQLJ+jE2L00=
