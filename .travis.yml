@@ -257,16 +257,14 @@ jobs:
       - echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
       - gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
     script:
-      - |
-        if [[ $CHANGED_FILES == *"${CLI_FOLDER}"*  ]]; then
-          echo "Build keptn cli"
-          cd ./cli
-          go test ./...
-          TAG="latest"
-          VERSION="master+${DATE}"
-          source ../travis-scripts/build_cli.sh "${VERSION}" "${KUBE_CONSTRAINTS}"
-          cd ..
-        fi
+      - export VERSION="master+${DATE}"
+      - export TAG="latest"
+      - echo "Build keptn cli"
+      - cd ./cli
+      - go test ./...
+      - TAG="${VERSION}"
+      - source ../travis-scripts/build_cli.sh "${VERSION}" "${KUBE_CONSTRAINTS}"
+      - cd ..
 
   ##################################################################################
   # feature/bug/hotfix/patch branches build jobs
