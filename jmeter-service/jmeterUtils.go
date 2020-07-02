@@ -29,8 +29,10 @@ func (ti *TestInfo) ToString() string {
 }
 
 func getConfigurationServiceURL() string {
-	if os.Getenv("env") == "production" {
+	if os.Getenv("env") == "production" && os.Getenv("CONFIGURATION_SERVICE_URL") == "" {
 		return "configuration-service:8080"
+	} else if os.Getenv("env") == "production" && os.Getenv("CONFIGURATION_SERVICE_URL") != "" {
+		return os.Getenv("CONFIGURATION_SERVICE_URL")
 	}
 	return "localhost:8080"
 }
@@ -46,19 +48,28 @@ func executeJMeter(testInfo *TestInfo, workload *Workload, resultsDir string, ur
 	// trying to load script from service, then stage and last from project
 	// if test script cannot be found we skip execution
 	testScriptResource, err := resourceHandler.GetServiceResource(testInfo.Project, testInfo.Stage, testInfo.Service, workload.Script)
-	if err != nil || testScriptResource == nil || testScriptResource.ResourceContent == "" {
+	if err != nil && err == configutils.ResourceNotFoundError {
 		// if not found on serivce level - lets try it on stage level
 		testScriptResource, err = resourceHandler.GetStageResource(testInfo.Project, testInfo.Stage, workload.Script)
 
-		if err != nil || testScriptResource == nil || testScriptResource.ResourceContent == "" {
+		if err != nil && err == configutils.ResourceNotFoundError {
 			// if not found on stage level we try project level
 			testScriptResource, err = resourceHandler.GetProjectResource(testInfo.Project, workload.Script)
 
-			if err != nil || testScriptResource == nil || testScriptResource.ResourceContent == "" {
+			if err != nil && err == configutils.ResourceNotFoundError {
 				logger.Debug("Skipping test execution because " + workload.Script + " not found on service, stage or project level.")
 				return true, nil
+			} else if err != nil {
+				logger.Error("Could not fetch testing script: " + err.Error())
+				return false, err
 			}
+		} else if err != nil {
+			logger.Error("Could not fetch testing script: " + err.Error())
+			return false, err
 		}
+	} else if err != nil {
+		logger.Error("Could not fetch testing script: " + err.Error())
+		return false, err
 	}
 
 	os.RemoveAll(workload.Script)
