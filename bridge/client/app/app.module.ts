@@ -1,72 +1,74 @@
-import {NgModule} from '@angular/core';
-import {HttpClientModule} from '@angular/common/http';
-import {HTTP_INTERCEPTORS} from '@angular/common/http';
-import {BrowserModule} from '@angular/platform-browser';
-import {FlexLayoutModule} from "@angular/flex-layout";
-import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
-import {MomentModule} from "ngx-moment";
-
-import {AppRouting} from './app.routing';
-import {AppComponent} from './app.component';
-
-import {DashboardComponent} from './dashboard/dashboard.component';
-import {AppHeaderComponent} from './app-header/app-header.component';
-import {ProjectBoardComponent} from './project-board/project-board.component';
-
-import {AtobPipe} from "./_pipes/atob.pipe";
-
-import {KtbEventsListComponent} from "./_components/ktb-events-list/ktb-events-list.component";
-import {KtbProjectListComponent} from './_components/ktb-project-list/ktb-project-list.component';
-import {KtbProjectTileComponent} from './_components/ktb-project-tile/ktb-project-tile.component';
-import {KtbSliBreakdownComponent} from "./_components/ktb-sli-breakdown/ktb-sli-breakdown.component";
-import {KtbSelectableTileComponent} from "./_components/ktb-selectable-tile/ktb-selectable-tile.component";
-import {KtbHttpLoadingBarComponent} from "./_components/ktb-http-loading-bar/ktb-http-loading-bar.component";
-import {KtbRootEventsListComponent} from "./_components/ktb-root-events-list/ktb-root-events-list.component";
-import {KtbEventItemComponent, KtbEventItemDetail} from './_components/ktb-event-item/ktb-event-item.component';
-import {KtbEvaluationDetailsComponent} from './_components/ktb-evaluation-details/ktb-evaluation-details.component';
-import {KtbHttpLoadingSpinnerComponent} from './_components/ktb-http-loading-spinner/ktb-http-loading-spinner.component';
-import {KtbExpandableTileComponent, KtbExpandableTileHeader} from './_components/ktb-expandable-tile/ktb-expandable-tile.component';
-import {KtbHorizontalSeparatorComponent, KtbHorizontalSeparatorTitle} from "./_components/ktb-horizontal-separator/ktb-horizontal-separator.component";
-import {KtbNotificationBarComponent} from './_components/ktb-notification-bar/ktb-notification-bar.component';
-
-import {KtbShowHttpLoadingDirective} from './_directives/ktb-show-http-loading/ktb-show-http-loading.directive';
-import {KtbHideHttpLoadingDirective} from "./_directives/ktb-hide-http-loading/ktb-hide-http-loading.directive";
-
-import {HttpErrorInterceptor} from "./_interceptors/http-error-interceptor";
-import {HttpLoadingInterceptor} from "./_interceptors/http-loading-interceptor";
-
-import {DtThemingModule} from "@dynatrace/barista-components/theming";
-import {DtButtonModule} from "@dynatrace/barista-components/button";
-import {DtContextDialogModule} from "@dynatrace/barista-components/context-dialog";
-import {DtEmptyStateModule} from "@dynatrace/barista-components/empty-state";
-import {DtSelectModule} from "@dynatrace/barista-components/select";
-import {DtMenuModule} from "@dynatrace/barista-components/menu";
-import {DtDrawerModule} from "@dynatrace/barista-components/drawer";
-import {DtInputModule} from "@dynatrace/barista-components/input";
-import {DtCardModule} from "@dynatrace/barista-components/card";
-import {DtTileModule} from "@dynatrace/barista-components/tile";
-import {DtInfoGroupModule} from "@dynatrace/barista-components/info-group";
-import {DtProgressBarModule} from "@dynatrace/barista-components/progress-bar";
-import {DtLoadingDistractorModule} from "@dynatrace/barista-components/loading-distractor";
-import {DtTagModule} from "@dynatrace/barista-components/tag";
-import {DtExpandableTextModule} from "@dynatrace/barista-components/expandable-text";
-import {DtExpandablePanelModule} from "@dynatrace/barista-components/expandable-panel";
-import {DtShowMoreModule} from "@dynatrace/barista-components/show-more";
-import {DtIconModule} from "@dynatrace/barista-components/icon";
-import {DtIndicatorModule} from "@dynatrace/barista-components/indicator";
-import {DtProgressCircleModule} from "@dynatrace/barista-components/progress-circle";
-import {DtConsumptionModule} from "@dynatrace/barista-components/consumption";
-import {DtKeyValueListModule} from "@dynatrace/barista-components/key-value-list";
-import {DtButtonGroupModule} from "@dynatrace/barista-components/button-group";
-import {DtChartModule} from "@dynatrace/barista-components/chart";
-import {DtOverlayModule} from "@dynatrace/barista-components/overlay";
-import {DtCheckboxModule} from "@dynatrace/barista-components/checkbox";
-import {DtSwitchModule} from "@dynatrace/barista-components/switch";
-
-import {registerLocaleData} from "@angular/common";
+import { registerLocaleData } from '@angular/common';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import localeEn from '@angular/common/locales/en';
-import {MatDialogModule} from "@angular/material/dialog";
-import {DtConfirmationDialogModule} from "@dynatrace/barista-components/confirmation-dialog";
+import { NgModule } from '@angular/core';
+import { FlexLayoutModule } from '@angular/flex-layout';
+import { MatDialogModule } from '@angular/material/dialog';
+import { BrowserModule } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { DtButtonModule } from '@dynatrace/barista-components/button';
+import { DtButtonGroupModule } from '@dynatrace/barista-components/button-group';
+import { DtCardModule } from '@dynatrace/barista-components/card';
+import { DtChartModule } from '@dynatrace/barista-components/chart';
+import { DtCheckboxModule } from '@dynatrace/barista-components/checkbox';
+import { DtConfirmationDialogModule } from '@dynatrace/barista-components/confirmation-dialog';
+import { DtConsumptionModule } from '@dynatrace/barista-components/consumption';
+import { DtContextDialogModule } from '@dynatrace/barista-components/context-dialog';
+import { DtDrawerModule } from '@dynatrace/barista-components/drawer';
+import { DtEmptyStateModule } from '@dynatrace/barista-components/empty-state';
+import { DtExpandablePanelModule } from '@dynatrace/barista-components/expandable-panel';
+import { DtExpandableTextModule } from '@dynatrace/barista-components/expandable-text';
+import { DtIconModule } from '@dynatrace/barista-components/icon';
+import { DtIndicatorModule } from '@dynatrace/barista-components/indicator';
+import { DtInfoGroupModule } from '@dynatrace/barista-components/info-group';
+import { DtInputModule } from '@dynatrace/barista-components/input';
+import { DtKeyValueListModule } from '@dynatrace/barista-components/key-value-list';
+import { DtLoadingDistractorModule } from '@dynatrace/barista-components/loading-distractor';
+import { DtMenuModule } from '@dynatrace/barista-components/menu';
+import { DtOverlayModule } from '@dynatrace/barista-components/overlay';
+import { DtProgressBarModule } from '@dynatrace/barista-components/progress-bar';
+import { DtProgressCircleModule } from '@dynatrace/barista-components/progress-circle';
+import { DtSelectModule } from '@dynatrace/barista-components/select';
+import { DtShowMoreModule } from '@dynatrace/barista-components/show-more';
+import { DtSwitchModule } from '@dynatrace/barista-components/switch';
+import { DtTagModule } from '@dynatrace/barista-components/tag';
+
+import { DtThemingModule } from '@dynatrace/barista-components/theming';
+import { DtTileModule } from '@dynatrace/barista-components/tile';
+import { DtToastModule } from '@dynatrace/barista-components/toast';
+import { MomentModule } from 'ngx-moment';
+import { KtbEvaluationDetailsComponent } from './_components/ktb-evaluation-details/ktb-evaluation-details.component';
+import { KtbEventItemComponent, KtbEventItemDetail } from './_components/ktb-event-item/ktb-event-item.component';
+
+import { KtbEventsListComponent } from './_components/ktb-events-list/ktb-events-list.component';
+import { KtbExpandableTileComponent, KtbExpandableTileHeader } from './_components/ktb-expandable-tile/ktb-expandable-tile.component';
+import {
+  KtbHorizontalSeparatorComponent,
+  KtbHorizontalSeparatorTitle,
+} from './_components/ktb-horizontal-separator/ktb-horizontal-separator.component';
+import { KtbHttpLoadingBarComponent } from './_components/ktb-http-loading-bar/ktb-http-loading-bar.component';
+import { KtbHttpLoadingSpinnerComponent } from './_components/ktb-http-loading-spinner/ktb-http-loading-spinner.component';
+import { KtbNotificationBarComponent } from './_components/ktb-notification-bar/ktb-notification-bar.component';
+import { KtbProjectListComponent } from './_components/ktb-project-list/ktb-project-list.component';
+import { KtbProjectTileComponent } from './_components/ktb-project-tile/ktb-project-tile.component';
+import { KtbRootEventsListComponent } from './_components/ktb-root-events-list/ktb-root-events-list.component';
+import { KtbSelectableTileComponent } from './_components/ktb-selectable-tile/ktb-selectable-tile.component';
+import { KtbSliBreakdownComponent } from './_components/ktb-sli-breakdown/ktb-sli-breakdown.component';
+import { KtbHideHttpLoadingDirective } from './_directives/ktb-hide-http-loading/ktb-hide-http-loading.directive';
+
+import { KtbShowHttpLoadingDirective } from './_directives/ktb-show-http-loading/ktb-show-http-loading.directive';
+
+import { HttpErrorInterceptor } from './_interceptors/http-error-interceptor';
+import { HttpLoadingInterceptor } from './_interceptors/http-loading-interceptor';
+
+import { AtobPipe } from './_pipes/atob.pipe';
+import { AppHeaderComponent } from './app-header/app-header.component';
+import { AppComponent } from './app.component';
+
+import { AppRouting } from './app.routing';
+
+import { DashboardComponent } from './dashboard/dashboard.component';
+import { ProjectBoardComponent } from './project-board/project-board.component';
 
 registerLocaleData(localeEn, 'en');
 
@@ -130,11 +132,12 @@ registerLocaleData(localeEn, 'en');
     DtCheckboxModule,
     DtSwitchModule,
     DtConfirmationDialogModule,
+    DtToastModule,
     MatDialogModule,
     DtIconModule.forRoot({
       svgIconLocation: `/assets/icons/{{name}}.svg`,
     }),
-    BrowserAnimationsModule
+    BrowserAnimationsModule,
   ],
   providers: [
     {
@@ -145,10 +148,10 @@ registerLocaleData(localeEn, 'en');
     {
       provide: HTTP_INTERCEPTORS,
       useClass: HttpLoadingInterceptor,
-      multi: true
-    }
+      multi: true,
+    },
   ],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
 })
 export class AppModule {
 }
