@@ -197,6 +197,7 @@ export class DataService {
 
   public sendApprovalEvent(approval: Trace, approve: boolean) {
     this.apiService.sendApprovalEvent(approval, approve)
+      .pipe(take(1))
       .subscribe(() => {
         let root = this._projects.getValue().find(p => p.projectName == approval.data.project).services.find(s => s.serviceName == approval.data.service).roots.find(r => r.shkeptncontext == approval.shkeptncontext);
         this.loadTraces(root);
