@@ -92,9 +92,12 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 	deployment := ""
 	if e.DeploymentStrategy != "" {
 		if e.DeploymentStrategy == "blue_green_service" {
-			if e.TestStrategy == "real-user" { // e.g., remediation use case -> wait-service
+			// blue-green deployed services should be evaluated based on data of either the primary or canary deployment
+			if e.TestStrategy == "real-user" {
+				// remediation use case will be tested by real users, therefore the evaluation needs to take place on the on the primary deployment
 				deployment = "primary"
 			} else {
+				// while load-tests are running on the canary deployment
 				deployment = "canary"
 			}
 		} else {
