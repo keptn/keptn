@@ -69,6 +69,7 @@ import { AppRouting } from './app.routing';
 
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { ProjectBoardComponent } from './project-board/project-board.component';
+import { EvaluationBoardComponent } from "./evaluation-board/evaluation-board.component";
 
 registerLocaleData(localeEn, 'en');
 
@@ -78,6 +79,7 @@ registerLocaleData(localeEn, 'en');
     DashboardComponent,
     AppHeaderComponent,
     ProjectBoardComponent,
+    EvaluationBoardComponent,
     KtbHttpLoadingSpinnerComponent,
     KtbHttpLoadingBarComponent,
     KtbShowHttpLoadingDirective,
