@@ -179,6 +179,8 @@ github.com/keptn/go-utils v0.6.3-0.20200626150941-b642b0b7fb33 h1:umo/7YHLHaTrBv
 github.com/keptn/go-utils v0.6.3-0.20200626150941-b642b0b7fb33/go.mod h1:hf2FU6JFuOzLP5rEAlA1/XnNS28pDZbVfxDESeQsq1g=
 github.com/keptn/go-utils v0.6.3-0.20200629141955-247b98ef868c h1:CKfLclehTn16hU/wlHQuKHdSb+1a2+lx/YUuRPvlwbs=
 github.com/keptn/go-utils v0.6.3-0.20200629141955-247b98ef868c/go.mod h1:hf2FU6JFuOzLP5rEAlA1/XnNS28pDZbVfxDESeQsq1g=
+github.com/keptn/go-utils v0.6.3-0.20200702113202-21e1073f62b6 h1:0oNq+DGwmgbeGSqiwyOtNa4bkaqd2MMrnb8DAQlSoU0=
+github.com/keptn/go-utils v0.6.3-0.20200702113202-21e1073f62b6/go.mod h1:hf2FU6JFuOzLP5rEAlA1/XnNS28pDZbVfxDESeQsq1g=
 github.com/kisielk/errcheck v1.2.0/go.mod h1:/BMXB+zMLi60iA8Vv6Ksmxu/1UDYcXs4uQLJ+jE2L00=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/konsorten/go-windows-terminal-sequences v1.0.1/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=

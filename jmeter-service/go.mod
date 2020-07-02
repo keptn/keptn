@@ -7,5 +7,5 @@ require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/google/uuid v1.1.1
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.6.3-0.20200701140917-da1f9cdf8804
+	github.com/keptn/go-utils v0.6.3-0.20200702113202-21e1073f62b6
 )
