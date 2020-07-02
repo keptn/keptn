@@ -83,6 +83,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	url, err := serviceutils.GetConfigServiceURL()
 	if err != nil {
 		keptnHandler.Logger.Error(fmt.Sprintf("Error when getting config service url: %s", err.Error()))
+		loggingDone <- true
 		return err
 	}
 
