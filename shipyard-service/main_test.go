@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"io"
 	"net"
 	"net/http"
@@ -33,7 +34,7 @@ func testingHTTPClient(handler http.Handler) (*http.Client, func()) {
 func TestGetEndpoint(t *testing.T) {
 	endPoint, err := keptn.GetServiceEndpoint(configservice)
 
-	assert.Equal(t, err, nil, "Received unexpected error")
+	assert.Equal(t, err, errors.New("Provided environment variable CONFIGURATION_SERVICE has no valid value"), "Received unexpected error")
 	assert.Equal(t, endPoint.Path, "", "Endpoint has to be empty")
 
 	os.Setenv("CONFIGURATION_SERVICE", "http://configuration-service.keptn.svc.cluster.local")
