@@ -52,16 +52,16 @@
                 <h2 class="m-0 mt-1 mb-1" [textContent]="stage.stageName"></h2>
                 <div class="stage-state" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
                   <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
-                    <dt-icon class="icon2" name="criticalevent"></dt-icon>
+                    <dt-icon class="stage-state-icon" name="criticalevent"></dt-icon>
                     <span>0</span>
                   </div>
                   <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
-                    <dt-icon class="icon2" name="traffic-light"></dt-icon>
+                    <dt-icon class="stage-state-icon" name="traffic-light"></dt-icon>
                     <span>0</span>
                   </div>
                   <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
                     <ng-container *ngIf="openApprovals$ | async as openApprovals">
-                      <dt-icon class="icon2" name="deploy" [class.out-of-sync-service]="countOpenApprovals(openApprovals, stage) > 0"></dt-icon>
+                      <dt-icon class="stage-state-icon" name="deploy" [class.out-of-sync-service]="countOpenApprovals(openApprovals, stage) > 0"></dt-icon>
                       <span [textContent]="countOpenApprovals(openApprovals, stage)"></span>
                     </ng-container>
                   </div>
@@ -88,7 +88,7 @@
       <h2 [textContent]="selectedStage.stageName"></h2>
       <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
         <ng-container *ngIf="openApprovals$ | async as openApprovals">
-          <dt-icon class="icon2" name="deploy" [ngClass]="{'out-of-sync-service': countOpenApprovals(openApprovals, selectedStage) > 0}"></dt-icon>
+          <dt-icon class="stage-state-icon" name="deploy" [ngClass]="{'out-of-sync-service': countOpenApprovals(openApprovals, selectedStage) > 0}"></dt-icon>
           <p *ngIf="countOpenApprovals(openApprovals, selectedStage) == 1"><span [textContent]="countOpenApprovals(openApprovals, selectedStage)"></span> Service is out-of-sync</p>
           <p *ngIf="countOpenApprovals(openApprovals, selectedStage) != 1"><span [textContent]="countOpenApprovals(openApprovals, selectedStage)"></span> Services are out-of-sync</p>
         </ng-container>
@@ -105,7 +105,7 @@
                 <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
                   <h2 class="m-0" [textContent]="service.serviceName"></h2>
                   <ng-container *ngIf="openApprovals$ | async as openApprovals">
-                    <dt-icon class="icon2 out-of-sync-service" *ngIf="countOpenApprovals(openApprovals, selectedStage, service) > 0" name="deploy"></dt-icon>
+                    <dt-icon class="stage-state-icon out-of-sync-service" *ngIf="countOpenApprovals(openApprovals, selectedStage, service) > 0" name="deploy"></dt-icon>
                   </ng-container>
                   <ng-container *ngIf="project.getLatestDeployment(service, selectedStage) as deployment">
                     <a *ngIf="deployment.data.deploymentURIPublic" [href]="deployment.data.deploymentURIPublic" target="_blank"><button dt-icon-button variant="nested"><dt-icon name="externallink"></dt-icon></button></a>
