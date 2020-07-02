@@ -84,8 +84,7 @@ func TestDoOnboard(t *testing.T) {
 
 	keptnHandler, _ := keptnevents.NewKeptn(&ce, keptnevents.KeptnOpts{})
 
-	onboarder := NewOnboarder(mesh.NewIstioMesh(),
-		keptnHandler, "test.keptn.sh", "")
+	onboarder := NewOnboarder(mesh.NewIstioMesh(), keptnHandler, "test.keptn.sh", "", "http", "80")
 	loggingDone := make(chan bool)
 	err = onboarder.DoOnboard(ce, loggingDone)
 	if err != nil {
@@ -99,7 +98,7 @@ func TestCheckAndSetServiceName(t *testing.T) {
 		"The service name has to be a valid Unix directory name. For details see " +
 		"https://www.cyberciti.biz/faq/linuxunix-rules-for-naming-file-and-directory-names/"
 
-	o := NewOnboarder(nil, nil, "test.keptn.sh", "")
+	o := NewOnboarder(nil, nil, "test.keptn.sh", "", "http", "80")
 	data := helmtest.CreateHelmChartData(t)
 
 	testCases := []struct {

@@ -140,11 +140,11 @@ spec:
         env:
         - name: BRIDGE_PORT
           value: '3000'
-        - name: APP_DOMAIN
+        - name: INGRESS_HOSTNAME_SUFFIX
           valueFrom:
             configMapKeyRef:
-              name: keptn-domain
-              key: app_domain
+              name: ingress-config
+              key: ingress_hostname_suffix
 ---
 apiVersion: v1
 kind: Service
