@@ -21,10 +21,6 @@ export class Project {
     return this.services;
   }
 
-  getStages(): Stage[] {
-    return this.stages;
-  }
-
   getLatestDeployment(service: Service, stage: Stage): Trace {
     let currentService = this.getServices().find(s => s.serviceName == service.serviceName);
 
