@@ -88,7 +88,6 @@ case $USE_CASE in
     wait_for_deployment_in_namespace "lighthouse-service" "keptn"
     wait_for_deployment_in_namespace "lighthouse-service-distributor" "keptn"
     wait_for_deployment_in_namespace "remediation-service-distributor" "keptn"
-    wait_for_deployment_in_namespace "wait-service-deployment-distributor" "keptn"
     ;;
   continuous-delivery)
     print_debug "Deploying Keptn continuous deployment"
