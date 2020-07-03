@@ -139,6 +139,59 @@ func TestInstallCmdWithKeptnVersion(t *testing.T) {
 	}
 }
 
+func TestInstallCmdWithPlatformFlag(t *testing.T) {
+	credentialmanager.MockAuthCreds = true
+
+	cmd := fmt.Sprintf("install --platform=openshift --mock")
+
+	resetFlagValues()
+
+	_, err := executeActionCommandC(cmd)
+	if err != nil {
+		t.Errorf(unexpectedErrMsg, err)
+	}
+
+	res := prepareInstallerManifest()
+	expected := `---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: installer
+  namespace: keptn
+spec:
+  backoffLimit: 0
+  template:
+    metadata:
+      labels:
+        app: installer
+    spec:
+      volumes:
+      - name: kubectl
+        emptyDir: {}
+      containers:
+      - name: keptn-installer
+        image: docker.io/keptn/installer:latest
+        env:
+        - name: PLATFORM
+          value: openshift
+        - name: GATEWAY_TYPE
+          value: LoadBalancer
+        - name: DOMAIN
+          value: 
+        - name: INGRESS
+          value: nginx
+        - name: USE_CASE
+          value: 
+        - name: INGRESS_INSTALL_OPTION
+          value: StopIfInstalled
+      restartPolicy: Never
+      serviceAccountName: keptn-installer
+`
+	if res != expected {
+		t.Error("installation manifest does not match")
+	}
+}
+
 func TestInstallCmdWithGateway(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
 
