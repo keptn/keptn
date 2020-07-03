@@ -33,6 +33,10 @@ fi
 KEPTN_VERSION=${KEPTN_VERSION:-"release-0.7.0"}
 print_debug "Upgrading from Keptn 0.6.2 to $KEPTN_VERSION"
 
+KEPTN_API_URL=https://api.keptn.$(kubectl get cm keptn-domain -n keptn -ojsonpath={.data.app_domain})
+KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)
+KEPTN_DOMAIN=$(kubectl get cm keptn-domain -n keptn -ojsonpath={.data.app_domain})
+
 manifests=(
   "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/rbac.yaml"
   "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/logging/rbac.yaml"
@@ -80,13 +84,19 @@ kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/in
 
 print_debug "Updating Keptn core."
 kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/rbac.yaml
+
+# apply new ingress-config ConfigMap
 kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/ingress-config.yaml
+# set values for the ingress-config to reflect the previous installation
+kubectl create configmap -n keptn ingress-config --from-literal=ingress_hostname_suffix=${KEPTN_DOMAIN} --from-literal=ingress_port="" --from-literal=ingress_protocol="" -oyaml --dry-run | kubectl replace -f -
+
 kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/logging/rbac.yaml
 kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/api-gateway-nginx.yaml
 kubectl -n keptn delete pod -lrun=api-gateway-nginx
 kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/core.yaml
 kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/quality-gates.yaml
 kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/continuous-operations.yaml
+
 # remove the remediation-service-problem-distributor deployment since the remediation service now has a new distributor for multiple types of events
 kubectl delete deployment -n keptn remediation-service-problem-distributor
 
@@ -111,8 +121,9 @@ kubectl -n keptn get svc gatekeeper-service
 kubectl -n keptn get svc dynatrace-service
 
   if [[ $? == '0' ]]; then
-      print_debug "Dynatrace-service detected. Upgrading to 0.6.3"
-      kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/dynatrace-service/release-0.6.3/deploy/manifests/dynatrace-service/dynatrace-service.yaml
+      print_debug "Dynatrace-service detected. Upgrading to 0.7.0"
+      kubectl -n keptn create secret generic keptn-credentials --from-literal="KEPTN_API_URL=${KEPTN_API_URL}" --from-literal="KEPTN_API_TOKEN=${KEPTN_API_TOKEN}"
+      kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/dynatrace-service/release-0.7.0/deploy/manifests/dynatrace-service/dynatrace-service.yaml
   fi
 
 kubectl -n keptn get svc dynatrace-sli-service
