@@ -14,10 +14,6 @@ var iskeptnVersions = []struct {
 	expectedPlatformType reflect.Type
 	expectedErr          error
 }{
-	{"GKE", reflect.TypeOf(newGKEPlatform()), nil},
-	{"AKS", reflect.TypeOf(newAKSPlatform()), nil},
-	{"EKS", reflect.TypeOf(newEKSPlatform()), nil},
-	{"PKS", reflect.TypeOf(newPKSPlatform()), nil},
 	{"OpenShift", reflect.TypeOf(newOpenShiftPlatform()), nil},
 	{"kubernetes", reflect.TypeOf(newKubernetesPlatform()), nil},
 }
