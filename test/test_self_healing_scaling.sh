@@ -17,7 +17,7 @@ PROJECT="sockshop"
 SERVICE="carts"
 STAGE="production"
 
-PROMETHEUS_SERVICE_VERSION=${PROMETHEUS_SERVICE_VERSION:-0.3.4}
+PROMETHEUS_SERVICE_VERSION=${PROMETHEUS_SERVICE_VERSION:-master}
 
 kubectl delete namespace $PROJECT-dev
 kubectl delete namespace $PROJECT-staging
@@ -27,6 +27,13 @@ keptn delete project $PROJECT
 keptn create project $PROJECT --shipyard=./test/assets/shipyard_self_healing_scale.yaml
 
 # Prerequisites
+
+kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/prometheus-service/$PROMETHEUS_SERVICE_VERSION/deploy/service.yaml
+
+wait_for_deployment_in_namespace prometheus-service keptn
+wait_for_deployment_in_namespace prometheus-service-monitoring-configure-distributor keptn
+echo "Prometheus service deployed successfully"
+
 rm -rf examples
 git clone --branch master https://github.com/keptn/examples --single-branch
 
@@ -74,11 +81,6 @@ wait_for_deployment_in_namespace $SERVICE-primary $PROJECT-$STAGE
 ###########################################
 # set up prometheus monitoring            #
 ###########################################
-kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/prometheus-service/release-$PROMETHEUS_SERVICE_VERSION/deploy/service.yaml
-
-wait_for_deployment_in_namespace prometheus-service keptn
-wait_for_deployment_in_namespace prometheus-service-monitoring-configure-distributor keptn
-echo "Prometheus service deployed successfully"
 
 keptn configure monitoring prometheus --project=$PROJECT --service=$SERVICE
 
