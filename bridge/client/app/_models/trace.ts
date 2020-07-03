@@ -171,7 +171,7 @@ class Trace {
   }
 
   getChartLabel(): string {
-    let label;
+    return this.data.labels?.get("buildId") ?? this.time;
     if(this.data.labels)
       label = this.data.labels.get("buildId");
     if(!label)
