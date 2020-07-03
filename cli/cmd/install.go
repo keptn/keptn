@@ -251,7 +251,7 @@ func init() {
 	rootCmd.AddCommand(installCmd)
 	installParams = installCmdParams{}
 
-	installParams.PlatformIdentifier = installCmd.Flags().StringP("platform", "p", "gke",
+	installParams.PlatformIdentifier = installCmd.Flags().StringP("platform", "p", "kubernetes",
 		"The platform to run keptn on [aks,eks,gke,pks,openshift,kubernetes]")
 
 	installParams.ConfigFilePath = installCmd.Flags().StringP("creds", "c", "",

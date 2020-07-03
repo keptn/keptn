@@ -40,7 +40,7 @@ func TestSetPlatform(t *testing.T) {
 func TestPrepareInstallerManifest(t *testing.T) {
 
 	*installParams.InstallerImage = "keptn/installer:0.6.1"
-	*installParams.PlatformIdentifier = "gke"
+	*installParams.PlatformIdentifier = "kubernetes"
 	installParams.Gateway = LoadBalancer
 	installParams.UseCase = AllUseCases
 	installParams.IngressInstallOption = StopIfInstalled
@@ -68,7 +68,7 @@ spec:
         image: keptn/installer:0.6.1
         env:
         - name: PLATFORM
-          value: gke
+          value: kubernetes
         - name: GATEWAY_TYPE
           value: LoadBalancer
         - name: DOMAIN
@@ -90,7 +90,7 @@ spec:
 func resetFlagValues() {
 	*installParams.ConfigFilePath = ""
 	*installParams.InstallerImage = ""
-	*installParams.PlatformIdentifier = "gke"
+	*installParams.PlatformIdentifier = "kubernetes"
 	*installParams.GatewayInput = "LoadBalancer"
 	*installParams.Domain = ""
 	*installParams.UseCaseInput = ""
@@ -100,7 +100,7 @@ func resetFlagValues() {
 func TestInstallCmd(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
 
-	cmd := fmt.Sprintf("install --platform=gke --mock")
+	cmd := fmt.Sprintf("install --mock")
 
 	resetFlagValues()
 
@@ -121,7 +121,7 @@ func TestInstallCmd(t *testing.T) {
 func TestInstallCmdWithKeptnVersion(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
 
-	cmd := fmt.Sprintf("install --platform=gke --keptn-installer-image=docker.io/keptn/installer:0.6.0 --mock")
+	cmd := fmt.Sprintf("install --keptn-installer-image=docker.io/keptn/installer:0.6.0 --mock")
 
 	resetFlagValues()
 
@@ -142,7 +142,7 @@ func TestInstallCmdWithKeptnVersion(t *testing.T) {
 func TestInstallCmdWithGateway(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
 
-	cmd := fmt.Sprintf("install --platform=gke --gateway=NodePort --mock")
+	cmd := fmt.Sprintf("install --gateway=NodePort --mock")
 
 	resetFlagValues()
 
@@ -173,7 +173,7 @@ spec:
         image: docker.io/keptn/installer:latest
         env:
         - name: PLATFORM
-          value: gke
+          value: kubernetes
         - name: GATEWAY_TYPE
           value: NodePort
         - name: DOMAIN
@@ -195,7 +195,7 @@ spec:
 func TestInstallCmdWithDomain(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
 
-	cmd := fmt.Sprintf("install --platform=gke --gateway=NodePort --domain=127.0.0.1.nip.io --mock")
+	cmd := fmt.Sprintf("install --gateway=NodePort --domain=127.0.0.1.nip.io --mock")
 
 	resetFlagValues()
 
@@ -226,7 +226,7 @@ spec:
         image: docker.io/keptn/installer:latest
         env:
         - name: PLATFORM
-          value: gke
+          value: kubernetes
         - name: GATEWAY_TYPE
           value: NodePort
         - name: DOMAIN
@@ -279,7 +279,7 @@ spec:
         image: docker.io/keptn/installer:latest
         env:
         - name: PLATFORM
-          value: gke
+          value: kubernetes
         - name: GATEWAY_TYPE
           value: LoadBalancer
         - name: DOMAIN
@@ -332,7 +332,7 @@ spec:
         image: docker.io/keptn/installer:latest
         env:
         - name: PLATFORM
-          value: gke
+          value: kubernetes
         - name: GATEWAY_TYPE
           value: LoadBalancer
         - name: DOMAIN
@@ -385,7 +385,7 @@ spec:
         image: docker.io/keptn/installer:latest
         env:
         - name: PLATFORM
-          value: gke
+          value: kubernetes
         - name: GATEWAY_TYPE
           value: LoadBalancer
         - name: DOMAIN
