@@ -88,7 +88,7 @@ kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/in
 # apply new ingress-config ConfigMap
 kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/ingress-config.yaml
 # set values for the ingress-config to reflect the previous installation
-kubectl create configmap -n keptn ingress-config --from-literal=ingress_hostname_suffix=${KEPTN_DOMAIN} --from-literal=ingress_port="" --from-literal=ingress_protocol="" -oyaml --dry-run | kubectl replace -f -
+kubectl create configmap -n keptn ingress-config --from-literal=ingress_hostname_suffix=${KEPTN_DOMAIN} --from-literal=ingress_port="" --from-literal=ingress_protocol="" --from-literal=ingress_gateway="public-gateway.istio-system" -oyaml --dry-run | kubectl replace -f -
 
 kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/logging/rbac.yaml
 kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/api-gateway-nginx.yaml
