@@ -1,5 +1,5 @@
 apiVersion: v2
-name: continuous-delivery
+name: openshift
 description: A Helm chart for Kubernetes
 
 # A chart can be either an 'application' or a 'library' chart.
@@ -21,8 +21,3 @@ version: 0.1.0
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 appVersion: 0.7.0
-
-dependencies:
-  - name: openshift
-    version: 0.1.0
-    condition: openshift.enabled
