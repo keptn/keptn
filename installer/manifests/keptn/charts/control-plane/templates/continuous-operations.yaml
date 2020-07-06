@@ -28,11 +28,11 @@ spec:
             cpu: "500m"
         env:
           - name: EVENTBROKER
-            value: 'http://event-broker.keptn.svc.cluster.local/keptn'
+            value: 'http://event-broker/keptn'
           - name: CONFIGURATION_SERVICE
-            value: 'http://configuration-service.keptn.svc.cluster.local:8080'
+            value: 'http://configuration-service:8080'
           - name: MONGODB_DATASTORE
-            value: 'http://mongodb-datastore.keptn.svc.cluster.local:8080'
+            value: 'http://mongodb-datastore:8080'
           - name: ENVIRONMENT
             value: 'production'
           - name: WAIT_TIME_MINUTES

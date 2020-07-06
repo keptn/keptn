@@ -29,7 +29,7 @@ spec:
         - name: PUBSUB_IMPL
           value: nats
         - name: PUBSUB_URL
-          value: 'nats://keptn-nats-cluster.keptn.svc.cluster.local'
+          value: 'nats://keptn-nats-cluster'
         - name: PUBSUB_TOPIC
           value: 'sh.keptn.>'
         - name: PUBSUB_RECIPIENT
