@@ -39,17 +39,14 @@ import (
 )
 
 type installCmdParams struct {
-	ConfigFilePath            *string
-	InstallerImage            *string
-	KeptnVersion              *string
-	PlatformIdentifier        *string
-	GatewayInput              *string
-	Gateway                   gateway
-	Domain                    *string
-	UseCaseInput              *string
-	UseCase                   usecase
-	IngressInstallOptionInput *string
-	IngressInstallOption      ingressInstallOption
+	ConfigFilePath      *string
+	InstallerImage      *string
+	KeptnVersion        *string
+	PlatformIdentifier  *string
+	UseCaseInput        *string
+	UseCase             usecase
+	ApiServiceTypeInput *string
+	ApiServiceType      apiServiceType
 }
 
 const keptnInstallerLogFileName = "keptn-installer.log"
@@ -99,12 +96,12 @@ keptn install --platform=kubernetes --gateway=NodePort # install on a Kubernetes
 				"an image for the installer using the flag 'keptn-installer-image'")
 		}
 
-		// Parse IngressInstallOption
-		if val, ok := ingressInstallOptionToID[*installParams.IngressInstallOptionInput]; ok {
-			installParams.IngressInstallOption = val
+		// Parse api service type
+		if val, ok := apiServiceTypeToID[*installParams.ApiServiceTypeInput]; ok {
+			installParams.ApiServiceType = val
 		} else {
-			return errors.New("value of 'ingress-install-option' flag is unknown. Supported values are " +
-				"[" + StopIfInstalled.String() + "," + Reuse.String() + "," + Overwrite.String() + "]")
+			return errors.New("value of 'keptn-api-service-type' flag is unknown. Supported values are " +
+				"[" + ClusterIP.String() + "," + LoadBalancer.String() + "," + NodePort.String() + "]")
 		}
 
 		if insecureSkipTLSVerify {
@@ -116,22 +113,15 @@ keptn install --platform=kubernetes --gateway=NodePort # install on a Kubernetes
 			return err
 		}
 
-		if val, ok := gatewayToID[*installParams.GatewayInput]; ok {
-			installParams.Gateway = val
-		} else {
-			return errors.New("value of 'gateway' flag is unknown. Supported values are " +
-				"[" + NodePort.String() + "," + LoadBalancer.String() + "]")
-		}
-
 		if val, ok := usecaseToID[*installParams.UseCaseInput]; ok {
 			installParams.UseCase = val
 		} else {
 			return errors.New("value of 'use-case' flag is unknown. Supported values are " +
-				"[" + AllUseCases.String() + "," + QualityGates.String() + "]")
+				"[" + ContinuousDelivery.String() + "," + QualityGates.String() + "]")
 		}
 
 		// Mark the quality-gates use case as deprecated - this is now the default option
-		if *installParams.UseCaseInput == "quality-gates" {
+		if installParams.UseCase == QualityGates {
 			logging.PrintLog("NOTE: The --use-case=quality-gates option is now deprecated and is now a synonym for the default installation of Keptn.", logging.InfoLevel)
 		}
 
@@ -266,20 +256,12 @@ func init() {
 			"using the flag 'keptn-installer-image'")
 	installCmd.Flags().MarkHidden("keptn-version")
 
-	installParams.GatewayInput = installCmd.Flags().StringP("gateway", "g", LoadBalancer.String(),
-		"The ingress-loadbalancer type ["+LoadBalancer.String()+","+NodePort.String()+"]")
-
-	installParams.Domain = installCmd.Flags().StringP("domain", "d", "",
-		"Experimental: Overwrite the ingress domain (e.g., 127.0.0.1.xip.io)")
-	installCmd.Flags().MarkHidden("gateway-domain")
-
 	installParams.UseCaseInput = installCmd.Flags().StringP("use-case", "u", "",
-		"The use case to install Keptn for ["+AllUseCases.String()+","+QualityGates.String()+"]")
+		"The use case to install Keptn for ["+ContinuousDelivery.String()+","+QualityGates.String()+"]")
 
-	installParams.IngressInstallOptionInput = installCmd.Flags().StringP("ingress-install-option", "",
-		StopIfInstalled.String(), "Installation options for Ingress ["+StopIfInstalled.String()+","+
-			Reuse.String()+","+Overwrite.String()+"]")
-	installCmd.Flags().MarkHidden("ingress-install-option")
+	installParams.ApiServiceTypeInput = installCmd.Flags().StringP("keptn-api-service-type", "",
+		ClusterIP.String(), "Installation options for the api-service type ["+ClusterIP.String()+","+
+			LoadBalancer.String()+","+NodePort.String()+"]")
 
 	installCmd.PersistentFlags().BoolVarP(&insecureSkipTLSVerify, "insecure-skip-tls-verify", "s",
 		false, "Skip tls verification for kubectl commands")
@@ -293,20 +275,8 @@ func prepareInstallerManifest() (installerManifest string) {
 		*installParams.InstallerImage)
 
 	installerManifest = strings.ReplaceAll(installerManifest, "PLATFORM_PLACEHOLDER", strings.ToLower(*installParams.PlatformIdentifier))
-	installerManifest = strings.ReplaceAll(installerManifest, "GATEWAY_TYPE_PLACEHOLDER", installParams.Gateway.String())
-	installerManifest = strings.ReplaceAll(installerManifest, "DOMAIN_PLACEHOLDER", *installParams.Domain)
+	installerManifest = strings.ReplaceAll(installerManifest, "API_SERVICE_TYPE_PLACEHOLDER", installParams.ApiServiceType.String())
 	installerManifest = strings.ReplaceAll(installerManifest, "USE_CASE_PLACEHOLDER", installParams.UseCase.String())
-	installerManifest = strings.ReplaceAll(installerManifest, "INGRESS_INSTALL_OPTION_PLACEHOLDER", installParams.IngressInstallOption.String())
-
-	installerManifest = strings.ReplaceAll(installerManifest, "INGRESS_PLACEHOLDER", getIngress().String())
-	return
-}
-
-func getIngress() (ingress Ingress) {
-	ingress = istio
-	if installParams.UseCase == QualityGates {
-		ingress = nginx
-	}
 	return
 }
 
@@ -330,30 +300,6 @@ func createKeptnNamespace(keptnNamespace, keptnDatastoreNamespace string) error 
 	return nil
 }
 
-func prepareIngressControllerInstall(ingressControllerNamespace string) (string, error) {
-
-	ingressControllerAvailable, err := keptnutils.ExistsNamespace(false, ingressControllerNamespace)
-	if err != nil {
-		return "", fmt.Errorf("Failed to check if namespace %s already exists: %v", ingressControllerNamespace, err)
-	}
-
-	if ingressControllerAvailable && installParams.IngressInstallOption == Reuse {
-		fmt.Printf("Ingress controller in namespace %s is reused but its compatibility is not checked\n", ingressControllerNamespace)
-		return getGetRoleForNamespace(ingressControllerNamespace), nil
-	} else if ingressControllerAvailable && installParams.IngressInstallOption == StopIfInstalled {
-		return "", fmt.Errorf("Namespace %s is already available but its Ingress controller is not used due to unknown compatibility",
-			ingressControllerNamespace)
-	} else {
-		if !ingressControllerAvailable {
-			err := keptnutils.CreateNamespace(false, ingressControllerNamespace)
-			if err != nil {
-				return "", fmt.Errorf("Failed to create namespace %s: %v", ingressControllerNamespace, err)
-			}
-		}
-		return installerClusterAdminClusterRoleBinding, nil
-	}
-}
-
 // Preconditions: 1. Already authenticated against the cluster.
 func doInstallation() error {
 
@@ -364,29 +310,15 @@ func doInstallation() error {
 	rbacSet := make(map[string]bool)
 	rbacSet[installerServiceAccount] = true
 
-	// Prepare Ingress
-	var ingressRBAC string
-	var err error
-	if ingressRBAC, err = prepareIngressControllerInstall(getIngress().getDefaultNamespace()); err != nil {
-		return err
-	}
-	rbacSet[ingressRBAC] = true
-
-	if getIngress() == istio {
-		// Full installation: cluster-admin rights are needed for helm-service
-		rbacSet[installerClusterAdminClusterRoleBinding] = true
-	} else {
-		// QG only installation
-		rbacSet[getAdminRoleForNamespace("keptn")] = true
-		rbacSet[getAdminRoleForNamespace("keptn-datastore")] = true
-	}
+	rbacSet[getAdminRoleForNamespace("keptn")] = true
+	rbacSet[getAdminRoleForNamespace("keptn-datastore")] = true
 
 	// Add RBACs for NATS
 	rbacSet[natsClusterRole] = true
 	rbacSet[natsOperatorRoles] = true
 	rbacSet[natsOperatorServer] = true
 
-	err = applyRbac(rbacSet)
+	err := applyRbac(rbacSet)
 	defer deleteRbac(rbacSet)
 	if err != nil {
 		return err

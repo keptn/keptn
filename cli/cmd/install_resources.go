@@ -22,16 +22,10 @@ spec:
         env:
         - name: PLATFORM
           value: PLATFORM_PLACEHOLDER
-        - name: GATEWAY_TYPE
-          value: GATEWAY_TYPE_PLACEHOLDER
-        - name: DOMAIN
-          value: DOMAIN_PLACEHOLDER
-        - name: INGRESS
-          value: INGRESS_PLACEHOLDER
         - name: USE_CASE
           value: USE_CASE_PLACEHOLDER
-        - name: INGRESS_INSTALL_OPTION
-          value: INGRESS_INSTALL_OPTION_PLACEHOLDER
+        - name: API_SERVICE_TYPE
+          value: API_SERVICE_TYPE_PLACEHOLDER
       restartPolicy: Never
       serviceAccountName: keptn-installer
 `
