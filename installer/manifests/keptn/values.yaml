@@ -1,0 +1,9 @@
+control-plane:
+  enabled: true
+  apiNginxGateway:
+    type: LoadBalancer
+    port: 80
+
+continuous-delivery:
+  enabled: false
+

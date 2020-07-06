@@ -1,0 +1,39 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongodb-datastore-distributor
+spec:
+  selector:
+    matchLabels:
+      run: distributor
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: distributor
+    spec:
+      containers:
+      - name: distributor
+        image: keptn/distributor:latest
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        env:
+        - name: PUBSUB_IMPL
+          value: nats
+        - name: PUBSUB_URL
+          value: 'nats://keptn-nats-cluster.keptn.svc.cluster.local'
+        - name: PUBSUB_TOPIC
+          value: 'sh.keptn.>'
+        - name: PUBSUB_RECIPIENT
+          value: 'mongodb-datastore'
+        - name: PUBSUB_RECIPIENT_PATH
+          value: '/event'
+      serviceAccountName: keptn-ds-default

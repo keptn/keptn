@@ -1,49 +1,13 @@
 #!/bin/bash
 source ./common/utils.sh
 
-# Set up NATS
-kubectl apply -f ../manifests/nats/nats-operator-prereqs.yaml
-verify_kubectl $? "Creating NATS Operator failed."
-
-kubectl apply -f ../manifests/nats/nats-operator-deploy.yaml
-verify_kubectl $? "Creating NATS Operator failed."
-
-wait_for_deployment_in_namespace "nats-operator" "keptn"
-
-kubectl apply -f ../manifests/nats/nats-cluster.yaml
-verify_kubectl $? "Creating NATS Cluster failed."
-
-# Creating cluster role binding
-kubectl apply -f ../manifests/keptn/rbac.yaml
-verify_kubectl $? "Creating cluster role for Keptn failed."
-
-# Create default ingress-config
-kubectl apply -f ../manifests/keptn/ingress-config.yaml
-verify_kubectl $? "Creating default ingress config for Keptn failed."
 
 # Create keptn secret
 KEPTN_API_TOKEN=$(head -c 16 /dev/urandom | base64)
 verify_variable "$KEPTN_API_TOKEN" "KEPTN_API_TOKEN could not be derived." 
 kubectl create secret generic -n keptn keptn-api-token --from-literal=keptn-api-token="$KEPTN_API_TOKEN"
 
-# Install Keptn Datastore
-print_info "Installing Keptn Datastore"
-kubectl apply -f ../manifests/logging/rbac.yaml
-verify_kubectl $? "Creating rbac failed."
-kubectl apply -f ../manifests/logging/mongodb/pvc.yaml
-verify_kubectl $? "Creating mongodb PVC failed."
-kubectl apply -f ../manifests/logging/mongodb/secret.yaml
-verify_kubectl $? "Creating mongodb secret failed."
-kubectl apply -f ../manifests/logging/mongodb/deployment.yaml
-verify_kubectl $? "Creating mongodb deployment failed."
-kubectl apply -f ../manifests/logging/mongodb/svc.yaml
-verify_kubectl $? "Creating mongodb service failed."
-kubectl apply -f ../manifests/logging/mongodb-datastore/mongodb-datastore.yaml
-verify_kubectl $? "Creating mongodb-datastore service failed."
-wait_for_deployment_in_namespace "mongodb-datastore" "keptn-datastore"
-
-kubectl apply -f ../manifests/logging/mongodb-datastore/mongodb-datastore-distributor.yaml
-verify_kubectl $? "Creating mongodb-datastore service failed."
+#
 
 # Install Keptn core and use case dependent components 
 print_debug "Deploying Keptn core"

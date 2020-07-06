@@ -3,7 +3,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: keptn-openshift-route-service
-  namespace: keptn
+
   labels:
     "app": "keptn"
 ---
@@ -11,7 +11,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: keptn-create-delete-route
-  namespace: keptn
+
   labels:
     "app": "keptn"
 rules:
@@ -29,7 +29,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: keptn-create-delete-route
-  namespace: keptn
+
   labels:
     "app": "keptn"
 roleRef:
@@ -39,13 +39,12 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: keptn-openshift-route-service
-    namespace: keptn
+
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: openshift-route-service
-  namespace: keptn
 spec:
   selector:
     matchLabels:
@@ -80,7 +79,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: openshift-route-service
-  namespace: keptn
+
   labels:
     run: openshift-route-service
 spec:

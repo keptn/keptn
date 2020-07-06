@@ -3,6 +3,7 @@ kind: SecurityContextConstraints
 metadata:
   name: hostpath
 allowPrivilegedContainer: true
+allowHostDirVolumePlugin: true
 runAsUser:
   type: RunAsAny
 seLinuxContext:
