@@ -8,3 +8,4 @@ data:
   ingress_hostname_suffix: ""
   ingress_protocol: ""
   ingress_port: ""
+  ingress_gateway: ""
