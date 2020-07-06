@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: remediation-service
-        image: keptn/remediation-service:latest
+        image: {{ .Values.image.registry}}/keptn/remediation-service:latest
         ports:
         - containerPort: 8080
         resources:
@@ -70,7 +70,7 @@ spec:
     spec:
       containers:
       - name: distributor
-        image: keptn/distributor:latest
+        image: {{ .Values.image.registry}}/keptn/distributor:latest
         ports:
         - containerPort: 8080
         resources:

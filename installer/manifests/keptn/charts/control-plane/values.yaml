@@ -7,3 +7,6 @@ nats:
 apiNginxGateway:
   type: ClusterIP
   port: 80
+
+image:
+  registry: docker.io

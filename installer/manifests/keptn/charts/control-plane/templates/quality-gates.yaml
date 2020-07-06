@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: lighthouse-service
-          image: keptn/lighthouse-service:latest
+          image: {{ .Values.image.registry}}/keptn/lighthouse-service:latest
           ports:
             - containerPort: 8080
           resources:
@@ -66,7 +66,7 @@ spec:
     spec:
       containers:
         - name: distributor
-          image: keptn/distributor:latest
+          image: {{ .Values.image.registry}}/keptn/distributor:latest
           ports:
             - containerPort: 8080
           resources:

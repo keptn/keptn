@@ -62,7 +62,7 @@ spec:
       serviceAccountName: keptn-default
       containers:
       - name: gatekeeper-service
-        image: keptn/gatekeeper-service:latest
+        image: {{ .Values.image.registry}}/keptn/gatekeeper-service:latest
         ports:
         - containerPort: 8080
         resources:
@@ -109,7 +109,7 @@ spec:
       serviceAccountName: keptn-default
       containers:
       - name: distributor
-        image: keptn/distributor:latest
+        image: {{ .Values.image.registry}}/keptn/distributor:latest
         ports:
         - containerPort: 8080
         resources:
@@ -144,7 +144,7 @@ spec:
     spec:
       containers:
         - name: distributor
-          image: keptn/distributor:latest
+          image: {{ .Values.image.registry}}/keptn/distributor:latest
           ports:
             - containerPort: 8080
           resources:
@@ -181,7 +181,7 @@ spec:
       serviceAccountName: keptn-default
       containers:
       - name: distributor
-        image: keptn/distributor:latest
+        image: {{ .Values.image.registry}}/keptn/distributor:latest
         ports:
         - containerPort: 8080
         resources:
@@ -217,7 +217,7 @@ spec:
       serviceAccountName: keptn-default
       containers:
       - name: jmeter-service
-        image: keptn/jmeter-service:latest
+        image: {{ .Values.image.registry}}/keptn/jmeter-service:latest
         ports:
         - containerPort: 8080
         env:
@@ -257,7 +257,7 @@ spec:
       serviceAccountName: keptn-default
       containers:
       - name: distributor
-        image: keptn/distributor:latest
+        image: {{ .Values.image.registry}}/keptn/distributor:latest
         ports:
         - containerPort: 8080
         resources:

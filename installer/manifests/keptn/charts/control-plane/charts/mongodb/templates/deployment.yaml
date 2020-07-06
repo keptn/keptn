@@ -18,7 +18,7 @@ spec:
       securityContext:
         fsGroup: 184
       containers:
-        - image: centos/mongodb-36-centos7:1
+        - image: {{ .Values.image.registry}}/centos/mongodb-36-centos7:1
           name: mongodb
           env:
             - name: MONGODB_DATABASE
@@ -26,8 +26,8 @@ spec:
             - name: MONGODB_USER
               valueFrom:
                 secretKeyRef:
-                    name: mongodb-credentials
-                    key: user
+                  name: mongodb-credentials
+                  key: user
             - name: MONGODB_PASSWORD
               valueFrom:
                 secretKeyRef:

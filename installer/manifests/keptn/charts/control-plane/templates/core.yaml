@@ -24,7 +24,7 @@ spec:
     spec:
       containers:
         - name: api-service
-          image: keptn/api:latest
+          image: {{ .Values.image.registry}}/keptn/api:latest
           ports:
             - containerPort: 8080
           resources:
@@ -80,7 +80,7 @@ spec:
     spec:
       containers:
         - name: bridge
-          image: keptn/bridge2:latest
+          image: {{ .Values.image.registry}}/keptn/bridge2:latest
           env:
             - name: API_URL
               value: "http://api-gateway-nginx"
@@ -136,7 +136,7 @@ spec:
     spec:
       containers:
         - name: eventbroker-go
-          image: keptn/eventbroker-go:latest
+          image: {{ .Values.image.registry}}/keptn/eventbroker-go:latest
           ports:
             - containerPort: 8080
           resources:
@@ -185,7 +185,7 @@ spec:
     spec:
       containers:
         - name: helm-service
-          image: keptn/helm-service:latest
+          image: {{ .Values.image.registry}}/keptn/helm-service:latest
           ports:
             - containerPort: 8080
           resources:
@@ -255,7 +255,7 @@ spec:
     spec:
       containers:
         - name: distributor
-          image: keptn/distributor:latest
+          image: {{ .Values.image.registry}}/keptn/distributor:latest
           ports:
             - containerPort: 8080
           resources:
@@ -291,7 +291,7 @@ spec:
     spec:
       containers:
         - name: shipyard-service
-          image: keptn/shipyard-service:latest
+          image: {{ .Values.image.registry}}/keptn/shipyard-service:latest
           ports:
             - containerPort: 8080
           resources:
@@ -340,7 +340,7 @@ spec:
     spec:
       containers:
         - name: distributor
-          image: keptn/distributor:latest
+          image: {{ .Values.image.registry}}/keptn/distributor:latest
           ports:
             - containerPort: 8080
           resources:
@@ -377,7 +377,7 @@ spec:
     spec:
       containers:
         - name: distributor
-          image: keptn/distributor:latest
+          image: {{ .Values.image.registry}}/keptn/distributor:latest
           ports:
             - containerPort: 8080
           resources:
@@ -430,7 +430,7 @@ spec:
     spec:
       containers:
         - name: configuration-service
-          image: keptn/configuration-service:latest
+          image: {{ .Values.image.registry}}/keptn/configuration-service:latest
           env:
             - name: MONGO_DB_CONNECTION_STRING
               value: 'mongodb://user:password@mongodb:27017/keptn'
@@ -484,7 +484,7 @@ spec:
     spec:
       containers:
         - name: distributor
-          image: keptn/distributor:latest
+          image: {{ .Values.image.registry}}/keptn/distributor:latest
           ports:
             - containerPort: 8080
           resources:

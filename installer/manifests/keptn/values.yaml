@@ -7,3 +7,5 @@ control-plane:
 continuous-delivery:
   enabled: false
 
+image:
+  registry: docker.io

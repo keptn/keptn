@@ -206,7 +206,7 @@ spec:
     spec:
       containers:
         - name: api-gateway-nginx
-          image: nginxinc/nginx-unprivileged:1.17.9
+          image: {{ .Values.image.registry}}/nginxinc/nginx-unprivileged:1.17.9
           ports:
             - containerPort: 8080
           volumeMounts:
