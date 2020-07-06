@@ -99,6 +99,12 @@ wait_for_deployment_in_namespace cartsloadgen loadgen
 
 echo "loadgen deployed successfully waiting for problem notification"
 
+sleep 120
+echo "Still waiting..."
+sleep 120
+echo "Still waiting..."
+sleep 120
+
 event=$(wait_for_problem_open_event ${PROJECT} ${SERVICE} ${STAGE})
 
 echo $event
