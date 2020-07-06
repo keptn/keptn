@@ -57,10 +57,6 @@ var KubeServerVersionConstraints string
 
 var installParams installCmdParams
 
-const gke = "gke"
-const aks = "aks"
-const eks = "eks"
-const pks = "pks"
 const openshift = "openshift"
 const kubernetes = "kubernetes"
 
@@ -78,15 +74,15 @@ var p platform
 var installCmd = &cobra.Command{
 	Use:   "install",
 	Short: "Installs Keptn on a Kubernetes cluster",
-	Long: `The Keptn CLI allows installing Keptn on Azure Kubernetes Services (AKS), Amazon Elastic Kubernetes Service (EKS), Google Kubernetes Engine (GKE), Pivotal Container Service (PKS), any Kubernetes derivate to which your kube config is pointing to, and on OpenShift.
+	Long: `The Keptn CLI allows installing Keptn on any Kubernetes derivate to which your kube config is pointing to, and on OpenShift.
 
 For more information, please consult the following docs:
 
 * https://keptn.sh/docs/develop/installation/setup-keptn/
 
 `,
-	Example: `keptn install --platform=aks # install on Azure Kubernetes Service
-keptn install --platform=gke --use-case=continuous-delivery # install continuous-delivery on Google Kubernetes Engine
+	Example: `keptn install # install on Kubernetes
+keptn install --platform=openshift --use-case=continuous-delivery # install continuous-delivery on Openshift
 keptn install --platform=kubernetes --gateway=NodePort # install on a Kubernetes instance with gateway NodePort`,
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
@@ -213,18 +209,6 @@ func setPlatform() error {
 	*installParams.PlatformIdentifier = strings.ToLower(*installParams.PlatformIdentifier)
 
 	switch *installParams.PlatformIdentifier {
-	case gke:
-		p = newGKEPlatform()
-		return nil
-	case aks:
-		p = newAKSPlatform()
-		return nil
-	case eks:
-		p = newEKSPlatform()
-		return nil
-	case pks:
-		p = newPKSPlatform()
-		return nil
 	case openshift:
 		p = newOpenShiftPlatform()
 		return nil
@@ -233,7 +217,7 @@ func setPlatform() error {
 		return nil
 	default:
 		return errors.New("Unsupported platform '" + *installParams.PlatformIdentifier +
-			"'. The following platforms are supported: aks, eks, gke, pks, openshift, and kubernetes")
+			"'. The following platforms are supported: openshift and kubernetes")
 	}
 }
 
@@ -241,8 +225,8 @@ func init() {
 	rootCmd.AddCommand(installCmd)
 	installParams = installCmdParams{}
 
-	installParams.PlatformIdentifier = installCmd.Flags().StringP("platform", "p", "gke",
-		"The platform to run keptn on [aks,eks,gke,pks,openshift,kubernetes]")
+	installParams.PlatformIdentifier = installCmd.Flags().StringP("platform", "p", "kubernetes",
+		"The platform to run keptn on [kubernetes,openshift]")
 
 	installParams.ConfigFilePath = installCmd.Flags().StringP("creds", "c", "",
 		"Specify a JSON file containing cluster information needed for the installation (this allows skipping user prompts to execute a *silent* Keptn installation)")
@@ -359,41 +343,10 @@ func doInstallation() error {
 	}
 	logging.PrintLog("Result: "+result, logging.VerboseLevel)
 
-	if _, eks := p.(*eksPlatform); eks {
-		var hostname string
-		if getIngress() == istio {
-			o = options{"get", "svc", "istio-ingressgateway", "-n", "istio-system",
-				"-ojsonpath={.status.loadBalancer.ingress[0].hostname}"}
-			o.appendIfNotEmpty(kubectlOptions)
-			logging.PrintLog("Executing: kubectl "+strings.Join(o, " "), logging.VerboseLevel)
-			hostname, err = keptnutils.ExecuteCommand("kubectl", o)
-			if err != nil {
-				logging.PrintLog("Error retrieving istio-ingress: "+hostname+"\n"+err.Error(), logging.QuietLevel)
-				return err
-			}
-			logging.PrintLog("Result:"+hostname, logging.VerboseLevel)
-		} else if getIngress() == nginx {
-			o = options{"get", "svc", "ingress-nginx", "-n", "ingress-nginx",
-				"-ojsonpath={.status.loadBalancer.ingress[0].hostname}"}
-			o.appendIfNotEmpty(kubectlOptions)
-			logging.PrintLog("Executing: kubectl "+strings.Join(o, " "), logging.VerboseLevel)
-			hostname, err = keptnutils.ExecuteCommand("kubectl", o)
-			if err != nil {
-				logging.PrintLog("Error retrieving nginx-ingress: "+hostname+"\n"+err.Error(), logging.QuietLevel)
-				return err
-			}
-			logging.PrintLog("Result:"+hostname, logging.VerboseLevel)
-		}
-
-		fmt.Println()
-		fmt.Println("Please create a Route53 Hosted Zone with a wildcard record set for " + hostname)
-		fmt.Println("Afterwards, call 'keptn configure domain YOUR_ROUTE53_DOMAIN'")
-	} else {
-		fmt.Println("Trying to get auth-token and API endpoint from Kubernetes.")
-		// installation finished, get auth token and endpoint
-		if err := authUsingKube(); err != nil {
-			return err
-		}
+	fmt.Println("Trying to get auth-token and API endpoint from Kubernetes.")
+	// installation finished, get auth token and endpoint
+	if err := authUsingKube(); err != nil {
+		return err
 	}
 
 	return nil

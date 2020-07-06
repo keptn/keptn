@@ -7,7 +7,7 @@ KEPTN_ENDPOINT=https://api.keptn.$(kubectl get cm keptn-domain -n keptn -ojsonpa
 KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)
 
 # test configuration
-UNLEASH_SERVICE_VERSION="master" #${UNLEASH_SERVICE_VERSION:-0.1.0}
+UNLEASH_SERVICE_VERSION=${UNLEASH_SERVICE_VERSION:-master}
 PROJECT="self-healing-project"
 SERVICE="frontend"
 
@@ -77,7 +77,6 @@ verify_using_jq "$response" ".data.stage" "production"
 verify_using_jq "$response" ".data.service" "$SERVICE"
 verify_using_jq "$response" ".data.remediation.status" "errored"
 verify_using_jq "$response" ".data.remediation.result" "failed"
-verify_using_jq "$response" ".data.remediation.message" "Could not execute remediation action because service is not available"
 
 
 ####################################################################################################################################
