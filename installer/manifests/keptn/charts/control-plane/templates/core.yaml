@@ -6,7 +6,7 @@ metadata:
   name: keptn-api-token
 type: Opaque
 data:
-  keptn-api-token: TEST
+  keptn-api-token: {{ randAlphaNum 20 | b64enc }}
 ---
 apiVersion: apps/v1
 kind: Deployment
