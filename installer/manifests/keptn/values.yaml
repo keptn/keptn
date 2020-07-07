@@ -1,7 +1,7 @@
 control-plane:
   enabled: true
   apiNginxGateway:
-    type: LoadBalancer
+    type: ClusterIP
     port: 80
 
 continuous-delivery:
