@@ -187,7 +187,7 @@ Please find more information on https://keptn.sh/docs/develop/reference/troubles
 			} else {
 				var err error
 				for retries := 0; retries < 2; retries++ {
-					if err = authUsingKube(); err == nil {
+					if err = authUsingKube(0); err == nil {
 						break
 					}
 					if err := keptnutils.RestartPodsWithSelector(false, "keptn", "run=api-gateway-nginx"); err != nil {

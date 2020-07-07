@@ -3,7 +3,10 @@ package cmd
 import (
 	"bufio"
 	"fmt"
+	"helm.sh/helm/v3/pkg/action"
+	"k8s.io/client-go/tools/clientcmd"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/keptn/keptn/cli/pkg/logging"
@@ -55,22 +58,11 @@ Besides, deployed services and the configuration on the Git upstream (i.e., GitH
 		logging.PrintLog("Starting to uninstall Keptn", logging.InfoLevel)
 
 		if !mocking {
-			// Delete installer pod, ignore if not found
-			if err := deleteKeptnInstallerPod("default"); err != nil {
+			if err := uninstallKeptnChart("keptn", "keptn"); err != nil {
 				return err
 			}
 			// Clean up keptn namespace
-			if err := deleteResources("keptn"); err != nil {
-				return err
-			}
 			if err := deleteNamespace("keptn"); err != nil {
-				return err
-			}
-			// Clean up keptn-datastore namespace
-			if err := deleteResources("keptn-datastore"); err != nil {
-				return err
-			}
-			if err := deleteNamespace("keptn-datastore"); err != nil {
 				return err
 			}
 		}
@@ -87,10 +79,6 @@ Besides, deployed services and the configuration on the Git upstream (i.e., GitH
 			logging.PrintLog(" - "+namespace, logging.InfoLevel)
 			if namespace == "default" || strings.HasPrefix(namespace, "kube") || strings.HasPrefix(namespace, "openshift") {
 				logging.PrintLog("      Recommended action: None (default namespace)", logging.InfoLevel)
-			} else if namespace == "istio-system" {
-				// istio is special, we will refer to the official uninstall docs
-				logging.PrintLog("      Please consult the istio Docs at https://istio.io/docs/setup/install/helm/#uninstall on how to remove istio.", logging.InfoLevel)
-				logging.PrintLog("      Recommended action: kubectl delete namespace istio-system", logging.InfoLevel)
 			} else {
 				// just delete the namespace
 				logging.PrintLog(fmt.Sprintf("      Please review this namespace in detail using 'kubectl get pods -n %s' before deleting it", namespace), logging.InfoLevel)
@@ -100,6 +88,36 @@ Besides, deployed services and the configuration on the Git upstream (i.e., GitH
 
 		return nil
 	},
+}
+
+func uninstallKeptnChart(releaseName, namespace string) error {
+	logging.PrintLog(fmt.Sprintf("Start deleting chart %s in namespace %s", releaseName, namespace), logging.InfoLevel)
+	var kubeconfig string
+	if os.Getenv("KUBECONFIG") != "" {
+		kubeconfig = keptnutils.ExpandTilde(os.Getenv("KUBECONFIG"))
+	} else {
+		kubeconfig = filepath.Join(
+			keptnutils.UserHomeDir(), ".kube", "config",
+		)
+	}
+	config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
+	if err != nil {
+		return err
+	}
+
+	cfg, err := newActionConfig(config, namespace)
+	if err != nil {
+		return err
+	}
+
+	iCli := action.NewUninstall(cfg)
+	_, err = iCli.Run(releaseName)
+
+	if err != nil {
+		return fmt.Errorf("Error when deleting chart %s in namespace %s: %s",
+			releaseName, namespace, err.Error())
+	}
+	return nil
 }
 
 // returns a list of all namespaces

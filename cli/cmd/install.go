@@ -19,6 +19,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/keptn/keptn/cli/pkg/file"
+	"github.com/keptn/keptn/cli/pkg/kube"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
 	kubeclient "helm.sh/helm/v3/pkg/kube"
@@ -34,14 +36,9 @@ import (
 	cmdutil "k8s.io/kubectl/pkg/cmd/util"
 	"net/http"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strings"
-	"time"
-
-	"github.com/keptn/keptn/cli/pkg/file"
-	"github.com/keptn/keptn/cli/pkg/kube"
 
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
@@ -237,23 +234,21 @@ func prepareInstallerManifest() (installerManifest string) {
 	return
 }
 
-func createKeptnNamespace(keptnNamespace, keptnDatastoreNamespace string) error {
+func createKeptnNamespace(keptnNamespace string) error {
 
-	for _, ns := range [...]string{keptnNamespace, keptnDatastoreNamespace} {
-		res, err := keptnutils.ExistsNamespace(false, ns)
-		if err != nil {
-			return fmt.Errorf("Failed to check if namespace %s already exists: %v", ns, err)
-		}
-		if res {
-			return fmt.Errorf("Existing Keptn installation found in namespace %s.", ns)
-		}
+	res, err := keptnutils.ExistsNamespace(false, keptnNamespace)
+	if err != nil {
+		return fmt.Errorf("Failed to check if namespace %s already exists: %v", keptnNamespace, err)
 	}
-	for _, ns := range [...]string{keptnNamespace, keptnDatastoreNamespace} {
-		err := keptnutils.CreateNamespace(false, ns)
-		if err != nil {
-			return fmt.Errorf("Failed to create Keptn namespace %s: %v", ns, err)
-		}
+	if res {
+		return fmt.Errorf("Existing Keptn installation found in namespace %s.", keptnNamespace)
 	}
+
+	err = keptnutils.CreateNamespace(false, keptnNamespace)
+	if err != nil {
+		return fmt.Errorf("Failed to create Keptn namespace %s: %v", keptnNamespace, err)
+	}
+
 	return nil
 }
 
@@ -383,6 +378,9 @@ func waitForDeploymentsOfHelmRelease(helmManifest string) error {
 
 // Preconditions: 1. Already authenticated against the cluster.
 func doInstallation() error {
+	if err := createKeptnNamespace("keptn"); err != nil {
+		return err
+	}
 	url := "https://storage.googleapis.com/keptn-installer/latest/keptn-0.1.0.tgz"
 	resp, err := http.Get(url)
 	if err != nil {
@@ -402,116 +400,29 @@ func doInstallation() error {
 
 	values := map[string]interface{}{
 		"continuous-delivery": map[string]interface{}{
-			"enabled": "true",
+			"enabled": installParams.UseCase == ContinuousDelivery,
+		},
+		"control-plane": map[string]interface{}{
+			"enabled": true,
+			"apiNginxGateway": map[string]interface{}{
+				"type": installParams.ApiServiceType.String(),
+			},
 		},
 	}
 
-	return upgradeChart(ch, "keptn", "keptn", values)
-	///////
-	/*
-		if err := createKeptnNamespace("keptn", "keptn-datastore"); err != nil {
-			return err
-		}
-
-		rbacSet := make(map[string]bool)
-		rbacSet[installerServiceAccount] = true
-
-		rbacSet[getAdminRoleForNamespace("keptn")] = true
-		rbacSet[getAdminRoleForNamespace("keptn-datastore")] = true
-
-		// Add RBACs for NATS
-		rbacSet[natsClusterRole] = true
-		rbacSet[natsOperatorRoles] = true
-		rbacSet[natsOperatorServer] = true
-
-		err := applyRbac(rbacSet)
-		defer deleteRbac(rbacSet)
-		if err != nil {
-			return err
-		}
-
-		logging.PrintLog("Deploying Keptn installer job ...", logging.InfoLevel)
-
-		o := options{"apply", "-f", "-"}
-		o.appendIfNotEmpty(kubectlOptions)
-		logging.PrintLog("Executing: kubectl "+strings.Join(o, " "), logging.VerboseLevel)
-		cmd := exec.Command("kubectl", o...)
-		cmd.Stdin = strings.NewReader(prepareInstallerManifest())
-		out, err := cmd.CombinedOutput()
-		if err != nil {
-			return fmt.Errorf("Error while applying installer job: %s \n%s\nAborting installation", err.Error(), string(out))
-		}
-		logging.PrintLog("Result: "+string(out), logging.VerboseLevel)
-
-		logging.PrintLog("Waiting for installer pod to be started ...", logging.InfoLevel)
-		installerPodName, err := waitForInstallerPod()
-		if err != nil {
-			return err
-		}
-
-		logging.PrintLog("Installer pod started successfully.", logging.InfoLevel)
-
-		if err := getInstallerLogs(installerPodName); err != nil {
-			return err
-		}
-
-		o = options{"delete", "job", "installer", "-n", "keptn"}
-		o.appendIfNotEmpty(kubectlOptions)
-		logging.PrintLog("Executing: kubectl "+strings.Join(o, " "), logging.VerboseLevel)
-		result, err := keptnutils.ExecuteCommand("kubectl", o)
-		if err != nil {
-			logging.PrintLog("Error deleting installer job : kubectl "+err.Error(), logging.QuietLevel)
-			return err
-		}
-		logging.PrintLog("Result: "+result, logging.VerboseLevel)
-
-		fmt.Println("Trying to get auth-token and API endpoint from Kubernetes.")
-		// installation finished, get auth token and endpoint
-		if err := authUsingKube(); err != nil {
-			return err
-		}
-
-		return nil
-
-	*/
-}
-
-func applyRbac(rbac map[string]bool) error {
-	logging.PrintLog("Applying RBAC rules for installer", logging.VerboseLevel)
-	var merged string
-	for k := range rbac {
-		merged += k
-	}
-	o := options{"apply", "-f", "-"}
-	o.appendIfNotEmpty(kubectlOptions)
-	logging.PrintLog("Executing: kubectl "+strings.Join(o, " "), logging.VerboseLevel)
-	cmd := exec.Command("kubectl", o...)
-	cmd.Stdin = strings.NewReader(merged)
-	out, err := cmd.CombinedOutput()
+	err = upgradeChart(ch, "keptn", "keptn", values)
 	if err != nil {
-		return fmt.Errorf("Error while applying RBAC: %s \n%s\nAborting installation", err.Error(), string(out))
+		logging.PrintLog("Could not complete Keptn installation: "+err.Error(), logging.InfoLevel)
+		return err
 	}
-	logging.PrintLog("Result: "+string(out), logging.VerboseLevel)
-	return nil
-}
 
-func deleteRbac(rbac map[string]bool) error {
-	logging.PrintLog("Deleting RBAC rules for installer", logging.VerboseLevel)
-	var merged string
-	for k := range rbac {
-		merged += k
+	logging.PrintLog("Keptn has been successfully set up on your cluster. Trying to reach API...", logging.InfoLevel)
+	if err := authUsingKube(installParams.ApiServiceType); err != nil {
+		if err != nil {
+			logging.PrintLog("Could not authenticate at Keptn API. For further instructions, please refer to the instructions at https://keptn.sh/docs/0.7.0/operate", logging.InfoLevel)
+		}
+		return err
 	}
-	o := options{"delete", "-f", "-"}
-	o.appendIfNotEmpty(kubectlOptions)
-
-	logging.PrintLog("Executing: kubectl "+strings.Join(o, " "), logging.VerboseLevel)
-	cmd := exec.Command("kubectl", o...)
-	cmd.Stdin = strings.NewReader(merged)
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("Error while deleting RBAC: %s \n%s\nAborting installation", err.Error(), string(out))
-	}
-	logging.PrintLog("Result: "+string(out), logging.VerboseLevel)
 	return nil
 }
 
@@ -587,168 +498,4 @@ func readUserInput(value *string, regex string, promptMessage string, regexViola
 			keepAsking = false
 		}
 	}
-}
-
-func waitForInstallerPod() (string, error) {
-	for true {
-		options := options{"get",
-			"pods",
-			"-l",
-			"app=installer",
-			"-n",
-			"keptn",
-			"-ojson"}
-		options.appendIfNotEmpty(kubectlOptions)
-		logging.PrintLog("Executing: kubectl "+strings.Join(options, " "), logging.VerboseLevel)
-		out, err := keptnutils.ExecuteCommand("kubectl", options)
-
-		if err != nil {
-			return "", fmt.Errorf("Error while retrieving installer pod: %s\n. Aborting installation", err)
-		}
-		logging.PrintLog("Result: "+out, logging.VerboseLevel)
-
-		var podInfo map[string]interface{}
-		err = json.Unmarshal([]byte(out), &podInfo)
-		if err == nil && podInfo != nil {
-			podStatusArray := podInfo["items"].([]interface{})
-
-			if len(podStatusArray) > 0 {
-				podStatus := podStatusArray[0].(map[string]interface{})["status"].(map[string]interface{})["phase"].(string)
-				if podStatus == "Running" {
-					return podStatusArray[0].(map[string]interface{})["metadata"].(map[string]interface{})["name"].(string), nil
-				} else if podStatus == "ImagePullBackOff" {
-					return "", errors.New("Installer pod could not be deployed (Status: ImagePullBackOff). " +
-						"Please verify that your Kubernetes cluster has a working Internet connection.")
-				} else if podStatus == "Failed" {
-					return "", errors.New("Installer pod ran into failure. " +
-						"Please check if a failed installer job exits: \"kubectl get jobs installer -n keptn\"." +
-						"Please also check the log output: \"kubectl logs jobs/installer -n keptn\".")
-				}
-			}
-		}
-		time.Sleep(1 * time.Second)
-	}
-	return "", nil
-}
-
-func getInstallerLogs(podName string) error {
-
-	fmt.Printf("Getting logs of pod %s\n", podName)
-
-	options := options{"logs",
-		podName,
-		"-c",
-		"keptn-installer",
-		"-n",
-		"keptn",
-		"-f"}
-	options.appendIfNotEmpty(kubectlOptions)
-
-	logging.PrintLog("Executing: kubectl "+strings.Join(options, " "), logging.VerboseLevel)
-	execCmd := exec.Command(
-		"kubectl", options...,
-	)
-
-	stdoutIn, _ := execCmd.StdoutPipe()
-	stderrIn, _ := execCmd.StderrPipe()
-	err := execCmd.Start()
-	if err != nil {
-		return fmt.Errorf("Could not get installer pod logs: '%s'", err)
-	}
-
-	// cmd.Wait() should be called only after we finish reading from stdoutIn and stderrIn.
-	cRes := make(chan bool)
-	cErr := make(chan error)
-
-	go func() {
-		res, err := copyAndCapture(stdoutIn, keptnInstallerLogFileName)
-		cRes <- res
-		cErr <- err
-	}()
-
-	installSuccessfulStdErr, errStdErr := copyAndCapture(stderrIn, keptnInstallerErrorLogFileName)
-	installSuccessfulStdOut := <-cRes
-	errStdOut := <-cErr
-
-	if errStdErr != nil {
-		return errStdErr
-	}
-	if errStdOut != nil {
-		return errStdOut
-	}
-
-	err = execCmd.Wait()
-	if err != nil {
-		return fmt.Errorf("Could not get installer pod logs: '%s'", err)
-	}
-
-	if !installSuccessfulStdErr || !installSuccessfulStdOut {
-		return errors.New("Keptn installation was unsuccessful")
-	}
-	return nil
-}
-
-func copyAndCapture(r io.Reader, fileName string) (bool, error) {
-
-	var file *os.File
-
-	errorOccured := false
-	installSuccessful := true
-	firstRead := true
-
-	const successMsg = "Installation of Keptn complete."
-
-	scanner := bufio.NewScanner(r)
-	for scanner.Scan() {
-
-		if firstRead {
-			// If something is read from the provided stream (stdin or stderr),
-			// the data of the stream has to contain the 'successMsg'
-			// for considering the keptn installation successful.
-			installSuccessful = false
-			firstRead = false
-		}
-
-		if file == nil {
-			// Only create file on-demand
-			var err error
-			file, err = createFileInKeptnDirectory(fileName)
-			if err != nil {
-				return false, fmt.Errorf("Could not write logs into file: '%s", err)
-			}
-			defer file.Close()
-		}
-		file.WriteString(scanner.Text() + "\n")
-		file.Sync()
-
-		var reg = regexp.MustCompile(`\[keptn\|[a-zA-Z]+\]`)
-		txt := scanner.Text()
-		matches := reg.FindStringSubmatch(txt)
-		if len(matches) == 1 {
-			msgLogLevel := matches[0]
-			msgLogLevel = strings.TrimPrefix(msgLogLevel, "[keptn|")
-			msgLogLevel = strings.TrimSuffix(msgLogLevel, "]")
-			msgLogLevel = strings.TrimSpace(msgLogLevel)
-			var fullSufixReg = regexp.MustCompile(`\[keptn\|[a-zA-Z]+\]\s+\[.*\]`)
-			outputStr := strings.TrimSpace(fullSufixReg.ReplaceAllString(txt, ""))
-
-			logging.PrintLogStringLevel(outputStr, msgLogLevel)
-			if logging.GetLogLevel(msgLogLevel) == logging.QuietLevel {
-				errorOccured = true
-			}
-			if outputStr == successMsg {
-				installSuccessful = true
-			}
-		}
-	}
-	return !errorOccured && installSuccessful, nil
-}
-
-func createFileInKeptnDirectory(fileName string) (*os.File, error) {
-	path, err := keptnutils.GetKeptnDirectory()
-	if err != nil {
-		return nil, err
-	}
-
-	return os.Create(path + fileName)
 }
