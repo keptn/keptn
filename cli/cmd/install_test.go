@@ -33,56 +33,6 @@ func TestSetPlatform(t *testing.T) {
 	}
 }
 
-func TestPrepareInstallerManifest(t *testing.T) {
-
-	*installParams.InstallerImage = "keptn/installer:0.6.1"
-	*installParams.PlatformIdentifier = "kubernetes"
-	installParams.Gateway = LoadBalancer
-	installParams.UseCase = AllUseCases
-	installParams.IngressInstallOption = StopIfInstalled
-	*installParams.Domain = ""
-
-	res := prepareInstallerManifest()
-	expected := `---
-apiVersion: batch/v1
-kind: Job
-metadata:
-  name: installer
-  namespace: keptn
-spec:
-  backoffLimit: 0
-  template:
-    metadata:
-      labels:
-        app: installer
-    spec:
-      volumes:
-      - name: kubectl
-        emptyDir: {}
-      containers:
-      - name: keptn-installer
-        image: keptn/installer:0.6.1
-        env:
-        - name: PLATFORM
-          value: kubernetes
-        - name: GATEWAY_TYPE
-          value: LoadBalancer
-        - name: DOMAIN
-          value: 
-        - name: INGRESS
-          value: istio
-        - name: USE_CASE
-          value: continuous-delivery
-        - name: INGRESS_INSTALL_OPTION
-          value: StopIfInstalled
-      restartPolicy: Never
-      serviceAccountName: keptn-installer
-`
-	if res != expected {
-		t.Error("installation manifest does not match")
-	}
-}
-
 func resetFlagValues() {
 	*installParams.ConfigFilePath = ""
 	*installParams.InstallerImage = ""
