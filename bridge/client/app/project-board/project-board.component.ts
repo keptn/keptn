@@ -51,8 +51,6 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   public eventTypes: string[] = [];
   public filterEventTypes: string[] = [];
 
-  public openApprovals: Event[] = [];
-
   constructor(private _changeDetectorRef: ChangeDetectorRef, private router: Router, private location: Location, private route: ActivatedRoute, private dataService: DataService, private apiService: ApiService) { }
 
   ngOnInit() {
