@@ -1,6 +1,7 @@
 import {Stage} from "./stage";
 import {Service} from "./service";
 import {Trace} from "./trace";
+import {EventTypes} from "./event-types";
 
 export class Project {
   projectName: string;
@@ -28,7 +29,7 @@ export class Project {
       return currentService.roots
         .filter(root => root.isFaulty() != stage.stageName)
         .reduce((traces: Trace[], root) => [...traces, ...root.traces], [])
-        .find(trace => trace.type == 'sh.keptn.events.deployment-finished' && trace.data.stage == stage.stageName);
+        .find(trace => trace.type == EventTypes.DEPLOYMENT_FINISHED && trace.data.stage == stage.stageName);
     else
       return null;
   }
@@ -38,7 +39,7 @@ export class Project {
     if(currentService.roots) {
       return currentService.roots
         .reduce((traces: Trace[], root) => [...traces, ...root.traces], [])
-        .find(t => t.type == 'sh.keptn.events.evaluation-done' && t.shkeptncontext == trace.shkeptncontext);
+        .find(t => t.type == EventTypes.EVALUATION_DONE && t.shkeptncontext == trace.shkeptncontext);
     }
     return null;
   }
