@@ -221,19 +221,6 @@ func init() {
 		false, "Skip tls verification for kubectl commands")
 }
 
-func prepareInstallerManifest() (installerManifest string) {
-
-	installerManifest = installerJob
-
-	installerManifest = strings.ReplaceAll(installerManifest, "INSTALLER_IMAGE_PLACEHOLDER",
-		*installParams.InstallerImage)
-
-	installerManifest = strings.ReplaceAll(installerManifest, "PLATFORM_PLACEHOLDER", strings.ToLower(*installParams.PlatformIdentifier))
-	installerManifest = strings.ReplaceAll(installerManifest, "API_SERVICE_TYPE_PLACEHOLDER", installParams.ApiServiceType.String())
-	installerManifest = strings.ReplaceAll(installerManifest, "USE_CASE_PLACEHOLDER", installParams.UseCase.String())
-	return
-}
-
 func createKeptnNamespace(keptnNamespace string) error {
 
 	res, err := keptnutils.ExistsNamespace(false, keptnNamespace)
@@ -416,13 +403,16 @@ func doInstallation() error {
 		return err
 	}
 
-	logging.PrintLog("Keptn has been successfully set up on your cluster. Trying to reach API...", logging.InfoLevel)
-	if err := authUsingKube(installParams.ApiServiceType); err != nil {
-		if err != nil {
-			logging.PrintLog("Could not authenticate at Keptn API. For further instructions, please refer to the instructions at https://keptn.sh/docs/0.7.0/operate", logging.InfoLevel)
+	logging.PrintLog("Keptn has been successfully set up on your cluster.", logging.InfoLevel)
+	logging.PrintLog("To connect the Keptn CLI with the Keptn API on your cluster, please refer to the instructions at https://keptn.sh/docs/0.7.0/operate", logging.InfoLevel)
+	/*
+		if err := authUsingKube(installParams.ApiServiceType); err != nil {
+			if err != nil {
+				logging.PrintLog("Could not authenticate at Keptn API. For further instructions, please refer to the instructions at https://keptn.sh/docs/0.7.0/operate", logging.InfoLevel)
+			}
+			return err
 		}
-		return err
-	}
+	*/
 	return nil
 }
 
