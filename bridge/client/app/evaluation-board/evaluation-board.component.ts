@@ -42,7 +42,6 @@ export class EvaluationBoardComponent implements OnInit, OnDestroy {
             .pipe(takeUntil(this.unsubscribe$))
             .subscribe((traces: Trace[]) => {
               if(traces.length > 0) {
-                console.log("traces", traces);
                 this.root = Root.fromJSON(traces[0]);
                 this.root.traces = traces;
                 this.evaluations = traces.filter(t => t.type == 'sh.keptn.events.evaluation-done' && (!params["eventselector"] || t.id == params["eventselector"] || t.data.stage == params["eventselector"])) ;
