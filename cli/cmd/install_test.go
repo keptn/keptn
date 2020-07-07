@@ -37,10 +37,7 @@ func resetFlagValues() {
 	*installParams.ConfigFilePath = ""
 	*installParams.InstallerImage = ""
 	*installParams.PlatformIdentifier = "kubernetes"
-	*installParams.GatewayInput = "LoadBalancer"
-	*installParams.Domain = ""
 	*installParams.UseCaseInput = ""
-	*installParams.IngressInstallOptionInput = "StopIfInstalled"
 }
 
 func TestInstallCmd(t *testing.T) {
