@@ -11,11 +11,11 @@ metadata:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: nats-operator-binding
+  name: nats-{{ .Release.Namespace }}-operator-binding
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: nats-operator
+  name: nats-{{ .Release.Namespace }}-operator
 subjects:
 - kind: ServiceAccount
   name: nats-operator
@@ -38,7 +38,7 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: nats-operator
+  name: nats-{{ .Release.Namespace }}-operator
 rules:
 # Allow creating CRDs
 - apiGroups:
@@ -105,7 +105,7 @@ metadata:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: nats-server
+  name: nats-{{ .Release.Namespace }}-server
 rules:
 - apiGroups: [""]
   resources:
@@ -115,11 +115,11 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: nats-server-binding
+  name: nats-{{ .Release.Namespace }}-server-binding
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: nats-server
+  name: nats-{{ .Release.Namespace }}-server
 subjects:
 - kind: ServiceAccount
   name: nats-server
