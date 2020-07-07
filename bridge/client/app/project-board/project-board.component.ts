@@ -13,9 +13,10 @@ import {DataService} from "../_services/data.service";
 import {ApiService} from "../_services/api.service";
 import DateUtil from "../_utils/date.utils";
 import {Service} from "../_models/service";
-import {EVENT_LABELS, Trace} from "../_models/trace";
+import {Trace} from "../_models/trace";
 import {Stage} from "../_models/stage";
 import {DtCheckboxChange} from "@dynatrace/barista-components/checkbox";
+import {EVENT_LABELS} from "../_models/event-labels";
 
 @Component({
   selector: 'app-project-board',

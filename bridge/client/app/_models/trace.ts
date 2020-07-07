@@ -1,68 +1,11 @@
-enum EventTypes {
-  SERVICE_CREATE = 'sh.keptn.internal.event.service.create',
-  CONFIGURATION_CHANGE = 'sh.keptn.event.configuration.change',
-  CONFIGURE_MONITORING = 'sh.keptn.event.monitoring.configure',
-  DEPLOYMENT_FINISHED = 'sh.keptn.events.deployment-finished',
-  TESTS_FINISHED = 'sh.keptn.events.tests-finished',
-  START_EVALUATION = 'sh.keptn.event.start-evaluation',
-  EVALUATION_DONE = 'sh.keptn.events.evaluation-done',
-  START_SLI_RETRIEVAL = 'sh.keptn.internal.event.get-sli',
-  SLI_RETRIEVAL_DONE = 'sh.keptn.internal.event.get-sli.done',
-  DONE = 'sh.keptn.events.done',
-  PROBLEM_OPEN = 'sh.keptn.event.problem.open',
-  PROBLEM_DETECTED = 'sh.keptn.events.problem',
-  PROBLEM_RESOLVED = 'sh.keptn.events.problem.resolved',
-  PROBLEM_CLOSED = 'sh.keptn.event.problem.close',
-  APPROVAL_TRIGGERED = 'sh.keptn.event.approval.triggered',
-  APPROVAL_FINISHED = 'sh.keptn.event.approval.finished'
-};
-
-enum ResultTypes {
-  PASSED = 'pass',
-  WARNING = 'warning',
-  FAILED = 'fail'
-};
+import {EventTypes} from "./event-types";
+import {ResultTypes} from "./result-types";
+import {ApprovalStates} from "./approval-states";
+import {EVENT_LABELS} from "./event-labels";
+import {EVENT_ICONS} from "./event-icons";
 
 enum ProblemStates {
   RESOLVED = 'RESOLVED'
-};
-
-enum ApprovalStates {
-  APPROVED = 'pass',
-  DECLINED = 'failed'
-};
-
-const EVENT_LABELS = {
-  [EventTypes.SERVICE_CREATE]: "Service create",
-  [EventTypes.CONFIGURATION_CHANGE]: "Configuration change",
-  [EventTypes.CONFIGURE_MONITORING]: "Configure monitoring",
-  [EventTypes.DEPLOYMENT_FINISHED]: "Deployment finished",
-  [EventTypes.TESTS_FINISHED]: "Tests finished",
-  [EventTypes.START_EVALUATION]: "Start evaluation",
-  [EventTypes.EVALUATION_DONE]: "Evaluation done",
-  [EventTypes.START_SLI_RETRIEVAL]: "Start SLI retrieval",
-  [EventTypes.SLI_RETRIEVAL_DONE]: "SLI retrieval done",
-  [EventTypes.DONE]: "Done",
-  [EventTypes.PROBLEM_OPEN]: "Problem open",
-  [EventTypes.PROBLEM_DETECTED]: "Problem detected",
-  [EventTypes.PROBLEM_RESOLVED]: "Problem resolved",
-  [EventTypes.PROBLEM_CLOSED]: "Problem closed",
-  [EventTypes.APPROVAL_TRIGGERED]: "Approval triggered",
-  [EventTypes.APPROVAL_FINISHED]: "Approval finished"
-};
-const EVENT_ICONS = {
-  [EventTypes.CONFIGURATION_CHANGE]: "duplicate",
-  [EventTypes.DEPLOYMENT_FINISHED]: "deploy",
-  [EventTypes.TESTS_FINISHED]: "perfromance-health",
-  [EventTypes.START_EVALUATION]: "traffic-light",
-  [EventTypes.EVALUATION_DONE]: "traffic-light",
-  [EventTypes.START_SLI_RETRIEVAL]: "collector",
-  [EventTypes.SLI_RETRIEVAL_DONE]: "collector",
-  [EventTypes.PROBLEM_OPEN]: "criticalevent",
-  [EventTypes.PROBLEM_DETECTED]: "criticalevent",
-  [EventTypes.PROBLEM_CLOSED]: "applicationhealth",
-  [EventTypes.APPROVAL_TRIGGERED]: "unknown",
-  [EventTypes.APPROVAL_FINISHED]: "checkmark"
 };
 
 const DEFAULT_ICON = "information";
@@ -221,4 +164,4 @@ class Trace {
   }
 }
 
-export {Trace, EVENT_LABELS, EventTypes, ApprovalStates}
+export {Trace}
