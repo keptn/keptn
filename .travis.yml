@@ -503,14 +503,14 @@ jobs:
     <<: *gke_full # use template
 
   - stage: Test GKE Full - Pt. 1 (--platform=gke --use-case=continuous-delivery)
-    if: branch = patch/integration-test # TODO: remove that condition and restrict to cron on master
+    if: branch = patch/integration-tests # TODO: remove that condition and restrict to cron on master
     env:
       - GKE_VERSION=1.14
       - KEPTN_INSTALLATION_TYPE=FULL
     <<: *gke_full_part1 # use template
 
   - stage: Test GKE Full - Pt. 2 (--platform=gke --use-case=continuous-delivery)
-    if: branch = patch/integration-test # TODO: remove that condition and restrict to cron on master
+    if: branch = patch/integration-tests # TODO: remove that condition and restrict to cron on master
     env:
       - GKE_VERSION=1.14
       - KEPTN_INSTALLATION_TYPE=FULL
