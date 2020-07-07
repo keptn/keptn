@@ -15,13 +15,14 @@ require (
 	github.com/mattn/go-shellwords v1.0.10
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mitchellh/mapstructure v1.1.2
-	github.com/spf13/cobra v0.0.5
+	github.com/spf13/cobra v1.0.0
 	github.com/spf13/viper v1.4.0
 	github.com/stretchr/testify v1.5.1
 	gopkg.in/yaml.v2 v2.2.8
 	gotest.tools v2.2.0+incompatible
-	helm.sh/helm/v3 v3.1.2
-	k8s.io/api v0.17.2
+	helm.sh/helm/v3 v3.2.4
+	k8s.io/api v0.18.0
+	k8s.io/client-go v0.18.0
 )
 
 // Transitive requirement from Helm: See https://github.com/helm/helm/blob/v3.1.2/go.mod

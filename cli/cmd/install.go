@@ -19,23 +19,35 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"helm.sh/helm/v3/pkg/action"
+	"helm.sh/helm/v3/pkg/chart"
+	kubeclient "helm.sh/helm/v3/pkg/kube"
+	"helm.sh/helm/v3/pkg/release"
+	"helm.sh/helm/v3/pkg/storage"
+	"helm.sh/helm/v3/pkg/storage/driver"
 	"io"
+	"io/ioutil"
+	appsv1 "k8s.io/api/apps/v1"
+	kyaml "k8s.io/apimachinery/pkg/util/yaml"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
+	"k8s.io/client-go/rest"
+	cmdutil "k8s.io/kubectl/pkg/cmd/util"
+	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
 
-	"github.com/keptn/keptn/cli/pkg/docker"
 	"github.com/keptn/keptn/cli/pkg/file"
 	"github.com/keptn/keptn/cli/pkg/kube"
-
-	"github.com/keptn/keptn/cli/pkg/version"
 
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"github.com/spf13/cobra"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
 type installCmdParams struct {
@@ -87,11 +99,6 @@ keptn install --platform=kubernetes --gateway=NodePort # install on a Kubernetes
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 
-		if installParams.KeptnVersion != nil && *installParams.KeptnVersion != "" {
-			return errors.New("The flag --keptn-version is not supported anymore but you can specify " +
-				"an image for the installer using the flag 'keptn-installer-image'")
-		}
-
 		// Parse api service type
 		if val, ok := apiServiceTypeToID[*installParams.ApiServiceTypeInput]; ok {
 			installParams.ApiServiceType = val
@@ -120,31 +127,6 @@ keptn install --platform=kubernetes --gateway=NodePort # install on a Kubernetes
 		if installParams.UseCase == QualityGates {
 			logging.PrintLog("NOTE: The --use-case=quality-gates option is now deprecated and is now a synonym for the default installation of Keptn.", logging.InfoLevel)
 		}
-
-		var image, tag string
-		// Determine installer version
-		if installParams.InstallerImage != nil && *installParams.InstallerImage != "" {
-			image, tag = docker.SplitImageName(*installParams.InstallerImage)
-		} else if version.IsOfficialKeptnVersion(Version) {
-			image = "docker.io/keptn/installer"
-			tag, err = version.GetOfficialKeptnVersion(Version)
-			if err != nil {
-				return fmt.Errorf("Error when parsing installer tag: %v", err)
-			}
-			*installParams.InstallerImage = image + ":" + tag
-		} else {
-			image = "docker.io/keptn/installer"
-			tag = "latest"
-			*installParams.InstallerImage = image + ":" + tag
-		}
-
-		err = docker.CheckImageAvailability(image, tag, nil)
-		if err != nil {
-			return fmt.Errorf("Installer image not found under: %v", err)
-		}
-
-		logging.PrintLog(fmt.Sprintf("Used Installer version: %s",
-			*installParams.InstallerImage), logging.InfoLevel)
 
 		if !mocking {
 			if p.checkRequirements() != nil {
@@ -231,15 +213,6 @@ func init() {
 	installParams.ConfigFilePath = installCmd.Flags().StringP("creds", "c", "",
 		"Specify a JSON file containing cluster information needed for the installation (this allows skipping user prompts to execute a *silent* Keptn installation)")
 
-	installParams.InstallerImage = installCmd.Flags().StringP("keptn-installer-image", "k",
-		"", "The installer image which is used for the installation")
-	installCmd.Flags().MarkHidden("keptn-installer-image")
-
-	installParams.KeptnVersion = installCmd.Flags().StringP("keptn-version", "",
-		"", "This flag is not supported anymore but you can specify an image for the installer"+
-			"using the flag 'keptn-installer-image'")
-	installCmd.Flags().MarkHidden("keptn-version")
-
 	installParams.UseCaseInput = installCmd.Flags().StringP("use-case", "u", "",
 		"The use case to install Keptn for ["+ContinuousDelivery.String()+","+QualityGates.String()+"]")
 
@@ -284,72 +257,223 @@ func createKeptnNamespace(keptnNamespace, keptnDatastoreNamespace string) error 
 	return nil
 }
 
+func newActionConfig(config *rest.Config, namespace string) (*action.Configuration, error) {
+
+	logFunc := func(format string, v ...interface{}) {
+		fmt.Sprintf(format, v)
+	}
+
+	restClientGetter := newConfigFlags(config, namespace)
+	kubeClient := &kubeclient.Client{
+		Factory: cmdutil.NewFactory(restClientGetter),
+		Log:     logFunc,
+	}
+	client, err := kubeClient.Factory.KubernetesClientSet()
+	if err != nil {
+		return nil, err
+	}
+
+	s := driver.NewSecrets(client.CoreV1().Secrets(namespace))
+	s.Log = logFunc
+
+	return &action.Configuration{
+		RESTClientGetter: restClientGetter,
+		Releases:         storage.Init(s),
+		KubeClient:       kubeClient,
+		Log:              logFunc,
+	}, nil
+}
+
+func newConfigFlags(config *rest.Config, namespace string) *genericclioptions.ConfigFlags {
+	return &genericclioptions.ConfigFlags{
+		Namespace:   &namespace,
+		APIServer:   &config.Host,
+		CAFile:      &config.CAFile,
+		BearerToken: &config.BearerToken,
+	}
+}
+
+func upgradeChart(ch *chart.Chart, releaseName, namespace string, vals map[string]interface{}) error {
+
+	if len(ch.Templates) > 0 {
+		logging.PrintLog(fmt.Sprintf("Start upgrading chart %s in namespace %s", releaseName, namespace), logging.InfoLevel)
+		var kubeconfig string
+		if os.Getenv("KUBECONFIG") != "" {
+			kubeconfig = keptnutils.ExpandTilde(os.Getenv("KUBECONFIG"))
+		} else {
+			kubeconfig = filepath.Join(
+				keptnutils.UserHomeDir(), ".kube", "config",
+			)
+		}
+		config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
+		if err != nil {
+			return err
+		}
+
+		cfg, err := newActionConfig(config, namespace)
+		if err != nil {
+			return err
+		}
+
+		histClient := action.NewHistory(cfg)
+		var release *release.Release
+
+		if _, err = histClient.Run(releaseName); err == driver.ErrReleaseNotFound {
+			iCli := action.NewInstall(cfg)
+			iCli.Namespace = namespace
+			iCli.ReleaseName = releaseName
+			iCli.Wait = true
+			release, err = iCli.Run(ch, vals)
+		} else {
+			iCli := action.NewUpgrade(cfg)
+			iCli.Namespace = namespace
+			iCli.Wait = true
+			iCli.ResetValues = true
+			release, err = iCli.Run(releaseName, ch, vals)
+		}
+		if err != nil {
+			return fmt.Errorf("Error when installing/upgrading chart %s in namespace %s: %s",
+				releaseName, namespace, err.Error())
+		}
+		if release != nil {
+			logging.PrintLog(release.Manifest, logging.VerboseLevel)
+			if err := waitForDeploymentsOfHelmRelease(release.Manifest); err != nil {
+				return err
+			}
+		} else {
+			logging.PrintLog("Release is nil", logging.InfoLevel)
+		}
+		logging.PrintLog(fmt.Sprintf("Finished upgrading chart %s in namespace %s", releaseName, namespace), logging.InfoLevel)
+	} else {
+		logging.PrintLog("Upgrade not done as this is an empty chart", logging.InfoLevel)
+	}
+	return nil
+}
+
+func getDeployments(helmManifest string) []*appsv1.Deployment {
+
+	deployments := []*appsv1.Deployment{}
+	dec := kyaml.NewYAMLToJSONDecoder(strings.NewReader(helmManifest))
+	for {
+		var dpl appsv1.Deployment
+		err := dec.Decode(&dpl)
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			continue
+		}
+
+		if keptnutils.IsDeployment(&dpl) {
+			deployments = append(deployments, &dpl)
+		}
+	}
+	return deployments
+}
+
+func waitForDeploymentsOfHelmRelease(helmManifest string) error {
+	depls := getDeployments(helmManifest)
+	for _, depl := range depls {
+		if err := keptnutils.WaitForDeploymentToBeRolledOut(false, depl.Name, depl.Namespace); err != nil {
+			return fmt.Errorf("Error when waiting for deployment %s in namespace %s: %s", depl.Name, depl.Namespace, err.Error())
+		}
+	}
+	return nil
+}
+
 // Preconditions: 1. Already authenticated against the cluster.
 func doInstallation() error {
-
-	if err := createKeptnNamespace("keptn", "keptn-datastore"); err != nil {
+	url := "https://storage.googleapis.com/keptn-installer/latest/keptn-0.1.0.tgz"
+	resp, err := http.Get(url)
+	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
 
-	rbacSet := make(map[string]bool)
-	rbacSet[installerServiceAccount] = true
-
-	rbacSet[getAdminRoleForNamespace("keptn")] = true
-	rbacSet[getAdminRoleForNamespace("keptn-datastore")] = true
-
-	// Add RBACs for NATS
-	rbacSet[natsClusterRole] = true
-	rbacSet[natsOperatorRoles] = true
-	rbacSet[natsOperatorServer] = true
-
-	err := applyRbac(rbacSet)
-	defer deleteRbac(rbacSet)
+	bytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
 
-	logging.PrintLog("Deploying Keptn installer job ...", logging.InfoLevel)
-
-	o := options{"apply", "-f", "-"}
-	o.appendIfNotEmpty(kubectlOptions)
-	logging.PrintLog("Executing: kubectl "+strings.Join(o, " "), logging.VerboseLevel)
-	cmd := exec.Command("kubectl", o...)
-	cmd.Stdin = strings.NewReader(prepareInstallerManifest())
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("Error while applying installer job: %s \n%s\nAborting installation", err.Error(), string(out))
-	}
-	logging.PrintLog("Result: "+string(out), logging.VerboseLevel)
-
-	logging.PrintLog("Waiting for installer pod to be started ...", logging.InfoLevel)
-	installerPodName, err := waitForInstallerPod()
+	ch, err := keptnutils.LoadChart(bytes)
 	if err != nil {
 		return err
 	}
 
-	logging.PrintLog("Installer pod started successfully.", logging.InfoLevel)
-
-	if err := getInstallerLogs(installerPodName); err != nil {
-		return err
+	values := map[string]interface{}{
+		"continuous-delivery": map[string]interface{}{
+			"enabled": "true",
+		},
 	}
 
-	o = options{"delete", "job", "installer", "-n", "keptn"}
-	o.appendIfNotEmpty(kubectlOptions)
-	logging.PrintLog("Executing: kubectl "+strings.Join(o, " "), logging.VerboseLevel)
-	result, err := keptnutils.ExecuteCommand("kubectl", o)
-	if err != nil {
-		logging.PrintLog("Error deleting installer job : kubectl "+err.Error(), logging.QuietLevel)
-		return err
-	}
-	logging.PrintLog("Result: "+result, logging.VerboseLevel)
+	return upgradeChart(ch, "keptn", "keptn", values)
+	///////
+	/*
+		if err := createKeptnNamespace("keptn", "keptn-datastore"); err != nil {
+			return err
+		}
 
-	fmt.Println("Trying to get auth-token and API endpoint from Kubernetes.")
-	// installation finished, get auth token and endpoint
-	if err := authUsingKube(); err != nil {
-		return err
-	}
+		rbacSet := make(map[string]bool)
+		rbacSet[installerServiceAccount] = true
 
-	return nil
+		rbacSet[getAdminRoleForNamespace("keptn")] = true
+		rbacSet[getAdminRoleForNamespace("keptn-datastore")] = true
+
+		// Add RBACs for NATS
+		rbacSet[natsClusterRole] = true
+		rbacSet[natsOperatorRoles] = true
+		rbacSet[natsOperatorServer] = true
+
+		err := applyRbac(rbacSet)
+		defer deleteRbac(rbacSet)
+		if err != nil {
+			return err
+		}
+
+		logging.PrintLog("Deploying Keptn installer job ...", logging.InfoLevel)
+
+		o := options{"apply", "-f", "-"}
+		o.appendIfNotEmpty(kubectlOptions)
+		logging.PrintLog("Executing: kubectl "+strings.Join(o, " "), logging.VerboseLevel)
+		cmd := exec.Command("kubectl", o...)
+		cmd.Stdin = strings.NewReader(prepareInstallerManifest())
+		out, err := cmd.CombinedOutput()
+		if err != nil {
+			return fmt.Errorf("Error while applying installer job: %s \n%s\nAborting installation", err.Error(), string(out))
+		}
+		logging.PrintLog("Result: "+string(out), logging.VerboseLevel)
+
+		logging.PrintLog("Waiting for installer pod to be started ...", logging.InfoLevel)
+		installerPodName, err := waitForInstallerPod()
+		if err != nil {
+			return err
+		}
+
+		logging.PrintLog("Installer pod started successfully.", logging.InfoLevel)
+
+		if err := getInstallerLogs(installerPodName); err != nil {
+			return err
+		}
+
+		o = options{"delete", "job", "installer", "-n", "keptn"}
+		o.appendIfNotEmpty(kubectlOptions)
+		logging.PrintLog("Executing: kubectl "+strings.Join(o, " "), logging.VerboseLevel)
+		result, err := keptnutils.ExecuteCommand("kubectl", o)
+		if err != nil {
+			logging.PrintLog("Error deleting installer job : kubectl "+err.Error(), logging.QuietLevel)
+			return err
+		}
+		logging.PrintLog("Result: "+result, logging.VerboseLevel)
+
+		fmt.Println("Trying to get auth-token and API endpoint from Kubernetes.")
+		// installation finished, get auth token and endpoint
+		if err := authUsingKube(); err != nil {
+			return err
+		}
+
+		return nil
+
+	*/
 }
 
 func applyRbac(rbac map[string]bool) error {
