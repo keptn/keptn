@@ -19,8 +19,6 @@ STAGE="production"
 
 PROMETHEUS_SERVICE_VERSION=${PROMETHEUS_SERVICE_VERSION:-master}
 
-kubectl delete namespace $PROJECT-dev
-kubectl delete namespace $PROJECT-staging
 kubectl delete namespace $PROJECT-production
 keptn delete project $PROJECT
 
@@ -49,14 +47,6 @@ keptn onboard service $SERVICE --project=$PROJECT --chart=./$SERVICE
 ###########################################
 keptn onboard service $SERVICE-db --project=$PROJECT --chart=./$SERVICE-db --deployment-strategy=direct
 keptn send event new-artifact --project=$PROJECT --service=$SERVICE-db --image=mongo
-
-# add health and functional check in dev
-keptn add-resource --project=$PROJECT --service=$SERVICE --stage=dev --resource=jmeter/basiccheck.jmx --resourceUri=jmeter/basiccheck.jmx
-keptn add-resource --project=$PROJECT --service=$SERVICE --stage=dev --resource=jmeter/load.jmx --resourceUri=jmeter/load.jmx
-
-# add health and functional check in staging
-keptn add-resource --project=$PROJECT --service=$SERVICE --stage=staging --resource=jmeter/basiccheck.jmx --resourceUri=jmeter/basiccheck.jmx
-keptn add-resource --project=$PROJECT --service=$SERVICE --stage=staging --resource=jmeter/load.jmx --resourceUri=jmeter/load.jmx
 
 # add health check in production
 keptn add-resource --project=$PROJECT --service=$SERVICE --stage=production --resource=jmeter/basiccheck.jmx --resourceUri=jmeter/basiccheck.jmx

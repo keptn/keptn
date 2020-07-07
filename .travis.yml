@@ -134,6 +134,76 @@ gke_full: &gke_full
     - kubectl get services --all-namespaces
     - kubectl get ingress --all-namespaces
 
+# template for gke tests
+gke_full_part1: &gke_full_part1
+  os: linux
+  before_script:
+    # set CLUSTER_NAME_NIGHTLY according to current branch and GKE_VERSION
+    - export CLUSTER_NAME_NIGHTLY=${CLUSTER_NAME_NIGHTLY}-${BRANCH_SLUG:0:15}-gke${GKE_VERSION//./}
+    - source ./travis-scripts/install_gcloud.sh
+    # auth gcloud
+    - echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
+    - gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
+    - test/utils/download_and_install_keptn_cli.sh
+    # create gke cluster on gcloud
+    - test/utils/gke_create_cluster.sh
+  script:
+    # test installation on gcloud
+    - test/test_install_gke.sh
+    - test/utils/expose_keptn_bridge.sh
+    # test onboarding and new-artifact for sockshop
+    - export PROJECT=sockshop
+    - test/test_onboard_service.sh
+    - test/test_new_artifact.sh
+    - test/test_delete_project.sh
+    - test/test_keptn_uninstall.sh
+  after_success:
+    # delete google kubernetes cluster only on success (in case of an error we want to be able to dig into the cluster)
+    - echo "Tests were successful, cleaning up the cluster now..."
+    - test/utils/gke_delete_cluster.sh
+  after_failure:
+    # print some debug info
+    - echo "Keptn Installation Log:"
+    - cat ~/.keptn/keptn-installer.log
+    - kubectl get events --sort-by='.lastTimestamp' --all-namespaces
+    - kubectl get pods --all-namespaces
+    - kubectl get services --all-namespaces
+    - kubectl get ingress --all-namespaces
+
+# template for gke tests
+gke_full_part2: &gke_full_part2
+  os: linux
+  before_script:
+    # set CLUSTER_NAME_NIGHTLY according to current branch and GKE_VERSION
+    - export CLUSTER_NAME_NIGHTLY=${CLUSTER_NAME_NIGHTLY}-${BRANCH_SLUG:0:15}-gke${GKE_VERSION//./}
+    - source ./travis-scripts/install_gcloud.sh
+    # auth gcloud
+    - echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
+    - gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
+    - test/utils/download_and_install_keptn_cli.sh
+    # create gke cluster on gcloud
+    - test/utils/gke_create_cluster.sh
+  script:
+    # test installation on gcloud
+    - test/test_install_gke.sh
+    - export PROJECT=sockshop
+    - test/test_self_healing.sh
+    - test/test_self_healing_scaling.sh
+    - test/test_delivery_assistant.sh
+    - test/test_keptn_uninstall.sh
+  after_success:
+    # delete google kubernetes cluster only on success (in case of an error we want to be able to dig into the cluster)
+    - echo "Tests were successful, cleaning up the cluster now..."
+    - test/utils/gke_delete_cluster.sh
+  after_failure:
+    # print some debug info
+    - echo "Keptn Installation Log:"
+    - cat ~/.keptn/keptn-installer.log
+    - kubectl get events --sort-by='.lastTimestamp' --all-namespaces
+    - kubectl get pods --all-namespaces
+    - kubectl get services --all-namespaces
+    - kubectl get ingress --all-namespaces
+
 jobs:
   include:
   ##################################################################################
@@ -431,6 +501,20 @@ jobs:
       - GKE_VERSION=1.14
       - KEPTN_INSTALLATION_TYPE=FULL
     <<: *gke_full # use template
+
+  - stage: Test GKE Full - Pt. 1 (--platform=gke --use-case=continuous-delivery)
+    if: branch = patch/integration-test # TODO: remove that condition and restrict to cron on master
+    env:
+      - GKE_VERSION=1.14
+      - KEPTN_INSTALLATION_TYPE=FULL
+    <<: *gke_full_part1 # use template
+
+  - stage: Test GKE Full - Pt. 2 (--platform=gke --use-case=continuous-delivery)
+    if: branch = patch/integration-test # TODO: remove that condition and restrict to cron on master
+    env:
+      - GKE_VERSION=1.14
+      - KEPTN_INSTALLATION_TYPE=FULL
+    <<: *gke_full_part2 # use template
 
 #  - stage: Test GKE Full (--platform=gke)
 #    if: branch = master AND type = cron # run for cron
