@@ -70,7 +70,10 @@
                   <dt-tag-list aria-label="services">
                     <dt-tag *ngFor="let service of stage.services">
                       <ng-container *ngIf="openApprovals$ | async as openApprovals">
-                        <span *ngIf="project.getLatestDeployment(service, stage) as deployment; else noDeploymentOfServiceTag" [ngClass]="{'out-of-sync-service': countOpenApprovals(openApprovals, stage, service) > 0}" (click)="selectDeployment(deployment, project)" [textContent]="deployment.getShortImageName()"></span>
+                        <span *ngIf="project.getLatestDeployment(service, stage) as deployment; else noDeploymentOfServiceTag"
+                              [ngClass]="{'out-of-sync-service': countOpenApprovals(openApprovals, stage, service) > 0}"
+                              (click)="selectDeployment(deployment, project)"
+                              [textContent]="deployment.getShortImageName()"></span>
                         <ng-template #noDeploymentOfServiceTag>
                           <span class="no-deployment" [ngClass]="{'out-of-sync-service': countOpenApprovals(openApprovals, stage, service) > 0}"  [textContent]="service.serviceName"></span>
                         </ng-template>
