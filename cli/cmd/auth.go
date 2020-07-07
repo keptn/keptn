@@ -146,7 +146,7 @@ To manually set up your keptn CLI, please follow the instructions at https://kep
 			logging.PrintLog("API endpoint not yet available... trying again in 5s", logging.InfoLevel)
 		} else {
 			logging.PrintLog("Received Keptn Domain: "+out, logging.InfoLevel)
-			keptnEndpoint = "http://" + strings.TrimSpace(out)
+			keptnEndpoint = "https://" + strings.TrimSpace(out)
 			break
 		}
 		retries++
@@ -231,7 +231,6 @@ func authenticate(endPoint string, apiToken string) error {
 
 	args := []string{
 		"auth",
-		"--scheme=http",
 		fmt.Sprintf("--endpoint=%s", endPoint),
 		fmt.Sprintf("--api-token=%s", apiToken),
 	}
