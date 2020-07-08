@@ -13,20 +13,14 @@ import (
 )
 
 type GeneratedChartHandler struct {
-	mesh                  mesh.Mesh
-	ingressHostnameSuffix string
-	ingressProtocol       string
-	ingressPort           string
-	logger                keptnevents.LoggerInterface
+	mesh   mesh.Mesh
+	logger keptnevents.LoggerInterface
 }
 
-func NewGeneratedChartHandler(mesh mesh.Mesh, ingressHostnameSuffix string, ingressProtocol string, ingressPort string, logger keptnevents.LoggerInterface) *GeneratedChartHandler {
+func NewGeneratedChartHandler(mesh mesh.Mesh, logger keptnevents.LoggerInterface) *GeneratedChartHandler {
 	return &GeneratedChartHandler{
-		mesh:                  mesh,
-		ingressHostnameSuffix: ingressHostnameSuffix,
-		ingressProtocol:       ingressProtocol,
-		ingressPort:           ingressPort,
-		logger:                logger,
+		mesh:   mesh,
+		logger: logger,
 	}
 }
 
@@ -139,16 +133,16 @@ func (c *GeneratedChartHandler) generateServices(svc *corev1.Service, project st
 	templates = append(templates, &chart.File{Name: "templates/" + servicePrimary.Name + c.mesh.GetDestinationRuleSuffix(), Data: destinationRulePrimary})
 
 	// Generate virtual service
-	gws := []string{"public-gateway.istio-system", "mesh"}
+	gws := []string{mesh.GetIngressGateway(), "mesh"}
 	hosts := []string{
-		svc.Name + "." + c.getNamespace(project, stageName) + "." + c.ingressHostnameSuffix, // service_name.dev.123.45.67.89.xip.io
+		svc.Name + "." + c.getNamespace(project, stageName) + "." + mesh.GetIngressHostnameSuffix(), // service_name.dev.123.45.67.89.xip.io
 		svc.Name, // service-name
 	}
 	destCanary := mesh.HTTPRouteDestination{Host: hostCanary, Weight: 0}
 	destPrimary := mesh.HTTPRouteDestination{Host: hostPrimary, Weight: 100}
 	httpRouteDestinations := []mesh.HTTPRouteDestination{destCanary, destPrimary}
 
-	c.logger.Info("Generating VirtualService for service " + svc.Name + ". URL = " + c.ingressProtocol + "://" + svc.Name + "." + c.ingressHostnameSuffix + ":" + c.ingressPort)
+	c.logger.Info("Generating VirtualService for service " + svc.Name + ". URL = " + mesh.GetIngressProtocol() + "://" + svc.Name + "." + mesh.GetIngressHostnameSuffix() + ":" + mesh.GetIngressPort())
 	vs, err := c.mesh.GenerateVirtualService(svc.Name, gws, hosts, httpRouteDestinations)
 	if err != nil {
 		c.logger.Error("Error while generating VirtualService for service " + svc.Name + ": " + err.Error())
@@ -204,7 +198,7 @@ func (c *GeneratedChartHandler) GenerateMeshChart(helmManifest string, project s
 		// Generate virtual service for external access
 		gws := []string{"public-gateway.istio-system", "mesh"}
 		hosts := []string{
-			svc.Name + "." + c.getNamespace(project, stageName) + "." + c.ingressHostnameSuffix,
+			svc.Name + "." + c.getNamespace(project, stageName) + "." + mesh.GetIngressHostnameSuffix(),
 			svc.Name,
 		}
 		host := svc.Name + "." + c.getNamespace(project, stageName) + ".svc.cluster.local"

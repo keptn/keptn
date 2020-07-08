@@ -13,9 +13,10 @@ import {DataService} from "../_services/data.service";
 import {ApiService} from "../_services/api.service";
 import DateUtil from "../_utils/date.utils";
 import {Service} from "../_models/service";
-import {labels, Trace} from "../_models/trace";
+import {Trace} from "../_models/trace";
 import {Stage} from "../_models/stage";
 import {DtCheckboxChange} from "@dynatrace/barista-components/checkbox";
+import {EVENT_LABELS} from "../_models/event-labels";
 
 @Component({
   selector: 'app-project-board',
@@ -25,6 +26,8 @@ import {DtCheckboxChange} from "@dynatrace/barista-components/checkbox";
 export class ProjectBoardComponent implements OnInit, OnDestroy {
 
   public project$: Observable<Project>;
+  public openApprovals$: Observable<Trace[]>;
+
   public currentRoot: Root;
   public error: string = null;
 
@@ -91,6 +94,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
             return project.projectName === params['projectName'];
           }) : null)
         );
+        this.openApprovals$ = this.dataService.openApprovals;
 
         this._projectSub = this.project$.subscribe(project => {
           if(project === undefined)
@@ -171,24 +175,6 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
     return DateUtil.getCalendarFormats(true);
   }
 
-  getLatestDeployment(project: Project, service: Service, stage?: Stage): Trace {
-    let currentService = project.getServices()
-      .find(s => s.serviceName == service.serviceName);
-
-    if(currentService.roots)
-      return currentService.roots
-        .reduce((traces: Trace[], root: Root) => {
-          return [...traces, ...root.traces];
-        }, [])
-        .find(trace => trace.type == 'sh.keptn.events.deployment-finished' && (!stage || (trace.data.stage == stage.stageName && currentService.roots.find(r => r.shkeptncontext == trace.shkeptncontext).isFaulty() != stage.stageName)));
-    else
-      return null;
-  }
-
-  getDeployedServices(project: Project, stage: Stage) {
-    return stage.services.filter(service => !!this.getLatestDeployment(project, service, stage));
-  }
-
   getRootsLastUpdated(project: Project, service: Service): Date {
     return this.dataService.getRootsLastUpdated(project, service);
   }
@@ -227,7 +213,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   }
 
   getEventLabel(key): string {
-    return labels[key] || key;
+    return EVENT_LABELS[key] || key;
   }
 
   getFilteredRoots(roots: Root[]) {
@@ -237,6 +223,22 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
 
   selectStage(stage) {
     this.selectedStage = stage;
+  }
+
+  countOpenApprovals(openApprovals: Trace[], stage: Stage, service?: Service) {
+    return openApprovals.filter(approval => approval == openApprovals.find(a => a.data.stage == stage.stageName && a.data.service == approval.data.service && (!service || a.data.service == service.serviceName))).length;
+  }
+
+  getOpenApprovals(openApprovals: Trace[], stage: Stage, service: Service) {
+    return openApprovals.filter(approval => approval.data.stage == stage.stageName && approval.data.service == service.serviceName);
+  }
+
+  approveDeployment(approval) {
+    this.dataService.sendApprovalEvent(approval, true);
+  }
+
+  declineDeployment(approval) {
+    this.dataService.sendApprovalEvent(approval, false);
   }
 
   ngOnDestroy(): void {

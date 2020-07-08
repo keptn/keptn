@@ -43,8 +43,16 @@ to create projects, and to onboard services.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 
+	// Set LogLevel to QuietLevel
+	currentLogLevel := logging.LogLevel
+	logging.LogLevel = logging.QuietLevel
+
 	vChecker := version.NewVersionChecker()
 	vChecker.CheckCLIVersion(Version, true)
+
+	// Set LogLevel back to previous state
+	logging.LogLevel = currentLogLevel
+
 	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
 	}

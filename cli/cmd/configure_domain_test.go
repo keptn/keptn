@@ -66,3 +66,16 @@ func TestConfigureDomainCmdWithoutVersion(t *testing.T) {
 		t.Errorf("unexpected used version: %s", out)
 	}
 }
+
+func TestConfigureDomainExample(t *testing.T) {
+	cmd := fmt.Sprintf("configure domain --help --mock")
+
+	out, err := executeActionCommandC(cmd)
+	if err != nil {
+		t.Errorf(unexpectedErrMsg, err)
+	}
+
+	if !strings.Contains(out, "https://keptn.sh/docs/develop/troubleshooting/#verify-kubernetes-context-with-keptn-installation") {
+		t.Errorf("unexpected link to documentation: %s", out)
+	}
+}
