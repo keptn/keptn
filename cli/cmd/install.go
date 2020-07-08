@@ -63,7 +63,9 @@ type installCmdParams struct {
 const keptnInstallerLogFileName = "keptn-installer.log"
 const keptnInstallerErrorLogFileName = "keptn-installer-Err.log"
 
-const keptnRepoURL = "https://storage.googleapis.com/keptn-installer/0.7.0/keptn.tgz"
+const keptnReleaseVersion = "0.7.0"
+
+const keptnRepoURL = "https://storage.googleapis.com/keptn-installer/" + keptnReleaseVersion + "/keptn.tgz"
 
 // KubeServerVersionConstraints the Kubernetes Cluster version's constraints is passed by ldflags
 var KubeServerVersionConstraints string
@@ -175,7 +177,7 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 			if *installParams.PlatformIdentifier != "openshift" {
 				if err := kube.CheckKubeServerVersion(KubeServerVersionConstraints); err != nil {
 					logging.PrintLog(err.Error(), logging.VerboseLevel)
-					logging.PrintLog("See https://keptn.sh/docs/0.7.0/installation/k8s-support/ for details.", logging.VerboseLevel)
+					logging.PrintLog("See https://keptn.sh/docs/"+keptnReleaseVersion+"/installation/k8s-support/ for details.", logging.VerboseLevel)
 					return errors.New(`Keptn requires Kubernetes server version: ` + KubeServerVersionConstraints)
 				}
 			}
@@ -447,7 +449,7 @@ func doInstallation() error {
 	}
 
 	logging.PrintLog("Keptn has been successfully set up on your cluster.", logging.InfoLevel)
-	logging.PrintLog("To connect the Keptn CLI with the Keptn API on your cluster, please refer to the instructions at https://keptn.sh/docs/0.7.0/operate", logging.InfoLevel)
+	logging.PrintLog("To connect the Keptn CLI with the Keptn API on your cluster, please refer to the instructions at https://keptn.sh/docs/"+keptnReleaseVersion+"/operate", logging.InfoLevel)
 	/*
 		if err := authUsingKube(installParams.ApiServiceType); err != nil {
 			if err != nil {
