@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
@@ -14,11 +15,12 @@ import (
 )
 
 var approvalFinishedTests = []struct {
-	name        string
-	image       string
-	shipyard    keptnevents.Shipyard
-	inputEvent  keptnevents.ApprovalFinishedEventData
-	outputEvent []cloudevents.Event
+	name                string
+	image               string
+	shipyard            keptnevents.Shipyard
+	inputEvent          keptnevents.ApprovalFinishedEventData
+	outputEvent         []cloudevents.Event
+	expectCloseApproval bool
 }{
 	{
 		name:       "result-pass-status-succeeded-approval-finished",
@@ -28,6 +30,7 @@ var approvalFinishedTests = []struct {
 		outputEvent: []cloudevents.Event{
 			getConfigurationChangeTestEvent("docker.io/keptnexamples/carts:0.11.1", "production"),
 		},
+		expectCloseApproval: true,
 	},
 	{
 		name:     "result-pass-status-succeeded-approval-finished-tags-dont-match",
@@ -49,7 +52,8 @@ var approvalFinishedTests = []struct {
 				Status: "succeeded",
 			},
 		},
-		outputEvent: []cloudevents.Event{},
+		outputEvent:         []cloudevents.Event{},
+		expectCloseApproval: false,
 	},
 	{
 		name:     "result-pass-status-succeeded-approval-finished-images-dont-match",
@@ -71,14 +75,16 @@ var approvalFinishedTests = []struct {
 				Status: "succeeded",
 			},
 		},
-		outputEvent: []cloudevents.Event{},
+		outputEvent:         []cloudevents.Event{},
+		expectCloseApproval: false,
 	},
 	{
-		name:        "result-failed-status-succeeded-approval-finished",
-		image:       "docker.io/keptnexamples/carts:0.11.1",
-		shipyard:    getShipyardWithApproval(keptnevents.Automatic, keptnevents.Automatic),
-		inputEvent:  getApprovalFinishedTestData("failed", "succeeded"),
-		outputEvent: []cloudevents.Event{},
+		name:                "result-failed-status-succeeded-approval-finished",
+		image:               "docker.io/keptnexamples/carts:0.11.1",
+		shipyard:            getShipyardWithApproval(keptnevents.Automatic, keptnevents.Automatic),
+		inputEvent:          getApprovalFinishedTestData("failed", "succeeded"),
+		outputEvent:         []cloudevents.Event{},
+		expectCloseApproval: true,
 	},
 	{
 		name:        "result-pass-status-failed-approval-finished",
@@ -91,8 +97,14 @@ var approvalFinishedTests = []struct {
 
 func TestHandleApprovalFinishedEvent(t *testing.T) {
 
+	receivedCloseApproval := false
 	ts := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.Method == http.MethodDelete {
+				if strings.Contains(r.RequestURI, "approval/"+eventID) {
+					receivedCloseApproval = true
+				}
+			}
 			w.Header().Add("Content-Type", "application/json")
 			w.WriteHeader(200)
 			w.Write([]byte(`{
@@ -110,6 +122,7 @@ func TestHandleApprovalFinishedEvent(t *testing.T) {
 
 	for _, tt := range approvalFinishedTests {
 		t.Run(tt.name, func(t *testing.T) {
+			receivedCloseApproval = false
 			ce := cloudevents.New("0.2")
 			dataBytes, err := json.Marshal(tt.inputEvent)
 			if err != nil {
@@ -131,6 +144,10 @@ func TestHandleApprovalFinishedEvent(t *testing.T) {
 						t.Errorf("output events do not match for %s", tt.name)
 					}
 				}
+			}
+
+			if tt.expectCloseApproval && !receivedCloseApproval {
+				t.Errorf("approval has not been closed %s", tt.name)
 			}
 		})
 	}

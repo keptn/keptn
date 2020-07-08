@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"io"
 	"net"
 	"net/http"
@@ -33,7 +34,7 @@ func testingHTTPClient(handler http.Handler) (*http.Client, func()) {
 func TestGetEndpoint(t *testing.T) {
 	endPoint, err := keptn.GetServiceEndpoint(configservice)
 
-	assert.Equal(t, err, nil, "Received unexpected error")
+	assert.Equal(t, err, errors.New("Provided environment variable CONFIGURATION_SERVICE has no valid value"), "Received unexpected error")
 	assert.Equal(t, endPoint.Path, "", "Endpoint has to be empty")
 
 	os.Setenv("CONFIGURATION_SERVICE", "http://configuration-service.keptn.svc.cluster.local")
@@ -55,14 +56,12 @@ func TestCreateProjectStatusNoContent(t *testing.T) {
 	)
 	defer ts.Close()
 
-	client := newClient()
-
 	logger := keptnutils.NewLogger("4711-a83b-4bc1-9dc0-1f050c7e789b", "4711-a83b-4bc1-9dc0-1f050c7e781b", "shipyard-service")
 	os.Setenv("CONFIGURATION_SERVICE", ts.URL)
 
 	project := configmodels.Project{}
 	project.ProjectName = "sockshop"
-	err := client.createProject(project, *logger)
+	err := createProject(project, *logger)
 
 	assert.Equal(t, err, nil, "Received unexpected error")
 }
@@ -78,14 +77,12 @@ func TestCreateProjectBadRequest(t *testing.T) {
 	)
 	defer ts.Close()
 
-	client := newClient()
-
 	logger := keptnutils.NewLogger("4711-a83b-4bc1-9dc0-1f050c7e789b", "4711-a83b-4bc1-9dc0-1f050c7e781b", "shipyard-service")
 	os.Setenv("CONFIGURATION_SERVICE", ts.URL)
 
 	project := configmodels.Project{}
 	project.ProjectName = "sockshop"
-	err := client.createProject(project, *logger)
+	err := createProject(project, *logger)
 
 	assert.Equal(t, err.Error(), "creating project failed due to error in configuration-service", "Expect an error")
 }
@@ -100,8 +97,6 @@ func TestCreateStageStatusNoContent(t *testing.T) {
 	)
 	defer ts.Close()
 
-	client := newClient()
-
 	logger := keptnutils.NewLogger("4711-a83b-4bc1-9dc0-1f050c7e789b", "4711-a83b-4bc1-9dc0-1f050c7e781b", "shipyard-service")
 	os.Setenv("CONFIGURATION_SERVICE", ts.URL)
 
@@ -109,7 +104,7 @@ func TestCreateStageStatusNoContent(t *testing.T) {
 	project.ProjectName = "sockshop"
 	stage := configmodels.Stage{}
 	stage.StageName = "production"
-	err := client.createStage(project, stage.StageName, *logger)
+	err := createStage(project, stage.StageName, *logger)
 
 	assert.Equal(t, err, nil, "Received unexpected error")
 }

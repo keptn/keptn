@@ -60,10 +60,6 @@ var KubeServerVersionConstraints string
 
 var installParams installCmdParams
 
-const gke = "gke"
-const aks = "aks"
-const eks = "eks"
-const pks = "pks"
 const openshift = "openshift"
 const kubernetes = "kubernetes"
 
@@ -81,15 +77,15 @@ var p platform
 var installCmd = &cobra.Command{
 	Use:   "install",
 	Short: "Installs Keptn on a Kubernetes cluster",
-	Long: `The Keptn CLI allows installing Keptn on Azure Kubernetes Services (AKS), Amazon Elastic Kubernetes Service (EKS), Google Kubernetes Engine (GKE), Pivotal Container Service (PKS), any Kubernetes derivate to which your kube config is pointing to, and on OpenShift.
+	Long: `The Keptn CLI allows installing Keptn on any Kubernetes derivate to which your kube config is pointing to, and on OpenShift.
 
 For more information, please consult the following docs:
 
 * https://keptn.sh/docs/develop/installation/setup-keptn/
 
 `,
-	Example: `keptn install --platform=aks # install on Azure Kubernetes Service
-keptn install --platform=gke --use-case=quality-gates # install quality-gates on Google Kubernetes Engine
+	Example: `keptn install # install on Kubernetes
+keptn install --platform=openshift --use-case=continuous-delivery # install continuous-delivery on Openshift
 keptn install --platform=kubernetes --gateway=NodePort # install on a Kubernetes instance with gateway NodePort`,
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
@@ -128,6 +124,11 @@ keptn install --platform=kubernetes --gateway=NodePort # install on a Kubernetes
 		} else {
 			return errors.New("value of 'use-case' flag is unknown. Supported values are " +
 				"[" + AllUseCases.String() + "," + QualityGates.String() + "]")
+		}
+
+		// Mark the quality-gates use case as deprecated - this is now the default option
+		if *installParams.UseCaseInput == "quality-gates" {
+			logging.PrintLog("NOTE: The --use-case=quality-gates option is now deprecated and is now a synonym for the default installation of Keptn.", logging.InfoLevel)
 		}
 
 		var image, tag string
@@ -201,7 +202,7 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 			if *installParams.PlatformIdentifier != "openshift" {
 				if err := kube.CheckKubeServerVersion(KubeServerVersionConstraints); err != nil {
 					logging.PrintLog(err.Error(), logging.VerboseLevel)
-					logging.PrintLog("See https://keptn.sh/docs/0.6.0/installation/k8s-support/ for details.", logging.VerboseLevel)
+					logging.PrintLog("See https://keptn.sh/docs/0.7.0/installation/k8s-support/ for details.", logging.VerboseLevel)
 					return errors.New(`Keptn requires Kubernetes server version: ` + KubeServerVersionConstraints)
 				}
 			}
@@ -218,18 +219,6 @@ func setPlatform() error {
 	*installParams.PlatformIdentifier = strings.ToLower(*installParams.PlatformIdentifier)
 
 	switch *installParams.PlatformIdentifier {
-	case gke:
-		p = newGKEPlatform()
-		return nil
-	case aks:
-		p = newAKSPlatform()
-		return nil
-	case eks:
-		p = newEKSPlatform()
-		return nil
-	case pks:
-		p = newPKSPlatform()
-		return nil
 	case openshift:
 		p = newOpenShiftPlatform()
 		return nil
@@ -238,7 +227,7 @@ func setPlatform() error {
 		return nil
 	default:
 		return errors.New("Unsupported platform '" + *installParams.PlatformIdentifier +
-			"'. The following platforms are supported: aks, eks, gke, pks, openshift, and kubernetes")
+			"'. The following platforms are supported: openshift and kubernetes")
 	}
 }
 
@@ -246,8 +235,8 @@ func init() {
 	rootCmd.AddCommand(installCmd)
 	installParams = installCmdParams{}
 
-	installParams.PlatformIdentifier = installCmd.Flags().StringP("platform", "p", "gke",
-		"The platform to run keptn on [aks,eks,gke,pks,openshift,kubernetes]")
+	installParams.PlatformIdentifier = installCmd.Flags().StringP("platform", "p", "kubernetes",
+		"The platform to run keptn on [kubernetes,openshift]")
 
 	installParams.ConfigFilePath = installCmd.Flags().StringP("creds", "c", "",
 		"Specify a JSON file containing cluster information needed for the installation (this allows skipping user prompts to execute a *silent* Keptn installation)")
@@ -268,7 +257,7 @@ func init() {
 		"Experimental: Overwrite the ingress domain (e.g., 127.0.0.1.xip.io)")
 	installCmd.Flags().MarkHidden("gateway-domain")
 
-	installParams.UseCaseInput = installCmd.Flags().StringP("use-case", "u", "all",
+	installParams.UseCaseInput = installCmd.Flags().StringP("use-case", "u", "",
 		"The use case to install Keptn for ["+AllUseCases.String()+","+QualityGates.String()+"]")
 
 	installParams.IngressInstallOptionInput = installCmd.Flags().StringP("ingress-install-option", "",
@@ -391,12 +380,14 @@ func doInstallation() error {
 
 	o := options{"apply", "-f", "-"}
 	o.appendIfNotEmpty(kubectlOptions)
+	logging.PrintLog("Executing: kubectl "+strings.Join(o, " "), logging.VerboseLevel)
 	cmd := exec.Command("kubectl", o...)
 	cmd.Stdin = strings.NewReader(prepareInstallerManifest())
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("Error while applying installer job: %s \n%s\nAborting installation", err.Error(), string(out))
 	}
+	logging.PrintLog("Result: "+string(out), logging.VerboseLevel)
 
 	logging.PrintLog("Waiting for installer pod to be started ...", logging.InfoLevel)
 	installerPodName, err := waitForInstallerPod()
@@ -412,63 +403,44 @@ func doInstallation() error {
 
 	o = options{"delete", "job", "installer", "-n", "keptn"}
 	o.appendIfNotEmpty(kubectlOptions)
-	_, err = keptnutils.ExecuteCommand("kubectl", o)
+	logging.PrintLog("Executing: kubectl "+strings.Join(o, " "), logging.VerboseLevel)
+	result, err := keptnutils.ExecuteCommand("kubectl", o)
 	if err != nil {
+		logging.PrintLog("Error deleting installer job : kubectl "+err.Error(), logging.QuietLevel)
 		return err
 	}
+	logging.PrintLog("Result: "+result, logging.VerboseLevel)
 
-	if _, eks := p.(*eksPlatform); eks {
-		var hostname string
-		if getIngress() == istio {
-			o = options{"get", "svc", "istio-ingressgateway", "-n", "istio-system",
-				"-ojsonpath={.status.loadBalancer.ingress[0].hostname}"}
-			o.appendIfNotEmpty(kubectlOptions)
-			hostname, err = keptnutils.ExecuteCommand("kubectl", o)
-			if err != nil {
-				return err
-			}
-		} else if getIngress() == nginx {
-			o = options{"get", "svc", "ingress-nginx", "-n", "ingress-nginx",
-				"-ojsonpath={.status.loadBalancer.ingress[0].hostname}"}
-			o.appendIfNotEmpty(kubectlOptions)
-			hostname, err = keptnutils.ExecuteCommand("kubectl", o)
-			if err != nil {
-				return err
-			}
-		}
-
-		fmt.Println()
-		fmt.Println("Please create a Route53 Hosted Zone with a wildcard record set for " + hostname)
-		fmt.Println("Afterwards, call 'keptn configure domain YOUR_ROUTE53_DOMAIN'")
-	} else {
-		fmt.Println("Trying to get auth-token and API endpoint from Kubernetes.")
-		// installation finished, get auth token and endpoint
-		if err := authUsingKube(); err != nil {
-			return err
-		}
+	fmt.Println("Trying to get auth-token and API endpoint from Kubernetes.")
+	// installation finished, get auth token and endpoint
+	if err := authUsingKube(); err != nil {
+		return err
 	}
 
 	return nil
 }
 
 func applyRbac(rbac map[string]bool) error {
+	logging.PrintLog("Applying RBAC rules for installer", logging.VerboseLevel)
 	var merged string
 	for k := range rbac {
 		merged += k
 	}
 	o := options{"apply", "-f", "-"}
 	o.appendIfNotEmpty(kubectlOptions)
-
+	logging.PrintLog("Executing: kubectl "+strings.Join(o, " "), logging.VerboseLevel)
 	cmd := exec.Command("kubectl", o...)
 	cmd.Stdin = strings.NewReader(merged)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("Error while applying RBAC: %s \n%s\nAborting installation", err.Error(), string(out))
 	}
+	logging.PrintLog("Result: "+string(out), logging.VerboseLevel)
 	return nil
 }
 
 func deleteRbac(rbac map[string]bool) error {
+	logging.PrintLog("Deleting RBAC rules for installer", logging.VerboseLevel)
 	var merged string
 	for k := range rbac {
 		merged += k
@@ -476,12 +448,14 @@ func deleteRbac(rbac map[string]bool) error {
 	o := options{"delete", "-f", "-"}
 	o.appendIfNotEmpty(kubectlOptions)
 
+	logging.PrintLog("Executing: kubectl "+strings.Join(o, " "), logging.VerboseLevel)
 	cmd := exec.Command("kubectl", o...)
 	cmd.Stdin = strings.NewReader(merged)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("Error while deleting RBAC: %s \n%s\nAborting installation", err.Error(), string(out))
 	}
+	logging.PrintLog("Result: "+string(out), logging.VerboseLevel)
 	return nil
 }
 
@@ -569,11 +543,13 @@ func waitForInstallerPod() (string, error) {
 			"keptn",
 			"-ojson"}
 		options.appendIfNotEmpty(kubectlOptions)
+		logging.PrintLog("Executing: kubectl "+strings.Join(options, " "), logging.VerboseLevel)
 		out, err := keptnutils.ExecuteCommand("kubectl", options)
 
 		if err != nil {
 			return "", fmt.Errorf("Error while retrieving installer pod: %s\n. Aborting installation", err)
 		}
+		logging.PrintLog("Result: "+out, logging.VerboseLevel)
 
 		var podInfo map[string]interface{}
 		err = json.Unmarshal([]byte(out), &podInfo)
@@ -612,6 +588,7 @@ func getInstallerLogs(podName string) error {
 		"-f"}
 	options.appendIfNotEmpty(kubectlOptions)
 
+	logging.PrintLog("Executing: kubectl "+strings.Join(options, " "), logging.VerboseLevel)
 	execCmd := exec.Command(
 		"kubectl", options...,
 	)

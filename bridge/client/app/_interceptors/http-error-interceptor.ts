@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import {HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest} from "@angular/common/http";
 import {Observable, throwError} from "rxjs";
-import {catchError, delay, retryWhen, take, tap} from "rxjs/operators";
+import {catchError, retryWhen} from "rxjs/operators";
 import {genericRetryStrategy} from "./http-generic-retry-strategy";
 
 @Injectable({

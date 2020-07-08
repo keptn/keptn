@@ -14,10 +14,6 @@ var iskeptnVersions = []struct {
 	expectedPlatformType reflect.Type
 	expectedErr          error
 }{
-	{"GKE", reflect.TypeOf(newGKEPlatform()), nil},
-	{"AKS", reflect.TypeOf(newAKSPlatform()), nil},
-	{"EKS", reflect.TypeOf(newEKSPlatform()), nil},
-	{"PKS", reflect.TypeOf(newPKSPlatform()), nil},
 	{"OpenShift", reflect.TypeOf(newOpenShiftPlatform()), nil},
 	{"kubernetes", reflect.TypeOf(newKubernetesPlatform()), nil},
 }
@@ -40,7 +36,7 @@ func TestSetPlatform(t *testing.T) {
 func TestPrepareInstallerManifest(t *testing.T) {
 
 	*installParams.InstallerImage = "keptn/installer:0.6.1"
-	*installParams.PlatformIdentifier = "gke"
+	*installParams.PlatformIdentifier = "kubernetes"
 	installParams.Gateway = LoadBalancer
 	installParams.UseCase = AllUseCases
 	installParams.IngressInstallOption = StopIfInstalled
@@ -68,7 +64,7 @@ spec:
         image: keptn/installer:0.6.1
         env:
         - name: PLATFORM
-          value: gke
+          value: kubernetes
         - name: GATEWAY_TYPE
           value: LoadBalancer
         - name: DOMAIN
@@ -76,7 +72,7 @@ spec:
         - name: INGRESS
           value: istio
         - name: USE_CASE
-          value: all
+          value: continuous-delivery
         - name: INGRESS_INSTALL_OPTION
           value: StopIfInstalled
       restartPolicy: Never
@@ -90,17 +86,17 @@ spec:
 func resetFlagValues() {
 	*installParams.ConfigFilePath = ""
 	*installParams.InstallerImage = ""
-	*installParams.PlatformIdentifier = "gke"
+	*installParams.PlatformIdentifier = "kubernetes"
 	*installParams.GatewayInput = "LoadBalancer"
 	*installParams.Domain = ""
-	*installParams.UseCaseInput = "all"
+	*installParams.UseCaseInput = ""
 	*installParams.IngressInstallOptionInput = "StopIfInstalled"
 }
 
 func TestInstallCmd(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
 
-	cmd := fmt.Sprintf("install --platform=gke --mock")
+	cmd := fmt.Sprintf("install --mock")
 
 	resetFlagValues()
 
@@ -121,7 +117,7 @@ func TestInstallCmd(t *testing.T) {
 func TestInstallCmdWithKeptnVersion(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
 
-	cmd := fmt.Sprintf("install --platform=gke --keptn-installer-image=docker.io/keptn/installer:0.6.0 --mock")
+	cmd := fmt.Sprintf("install --keptn-installer-image=docker.io/keptn/installer:0.6.0 --mock")
 
 	resetFlagValues()
 
@@ -139,10 +135,10 @@ func TestInstallCmdWithKeptnVersion(t *testing.T) {
 	}
 }
 
-func TestInstallCmdWithGateway(t *testing.T) {
+func TestInstallCmdWithPlatformFlag(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
 
-	cmd := fmt.Sprintf("install --platform=gke --gateway=NodePort --mock")
+	cmd := fmt.Sprintf("install --platform=openshift --mock")
 
 	resetFlagValues()
 
@@ -173,15 +169,68 @@ spec:
         image: docker.io/keptn/installer:latest
         env:
         - name: PLATFORM
-          value: gke
+          value: openshift
+        - name: GATEWAY_TYPE
+          value: LoadBalancer
+        - name: DOMAIN
+          value: 
+        - name: INGRESS
+          value: nginx
+        - name: USE_CASE
+          value: 
+        - name: INGRESS_INSTALL_OPTION
+          value: StopIfInstalled
+      restartPolicy: Never
+      serviceAccountName: keptn-installer
+`
+	if res != expected {
+		t.Error("installation manifest does not match")
+	}
+}
+
+func TestInstallCmdWithGateway(t *testing.T) {
+	credentialmanager.MockAuthCreds = true
+
+	cmd := fmt.Sprintf("install --gateway=NodePort --mock")
+
+	resetFlagValues()
+
+	_, err := executeActionCommandC(cmd)
+	if err != nil {
+		t.Errorf(unexpectedErrMsg, err)
+	}
+
+	res := prepareInstallerManifest()
+	expected := `---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: installer
+  namespace: keptn
+spec:
+  backoffLimit: 0
+  template:
+    metadata:
+      labels:
+        app: installer
+    spec:
+      volumes:
+      - name: kubectl
+        emptyDir: {}
+      containers:
+      - name: keptn-installer
+        image: docker.io/keptn/installer:latest
+        env:
+        - name: PLATFORM
+          value: kubernetes
         - name: GATEWAY_TYPE
           value: NodePort
         - name: DOMAIN
           value: 
         - name: INGRESS
-          value: istio
+          value: nginx
         - name: USE_CASE
-          value: all
+          value: 
         - name: INGRESS_INSTALL_OPTION
           value: StopIfInstalled
       restartPolicy: Never
@@ -195,7 +244,7 @@ spec:
 func TestInstallCmdWithDomain(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
 
-	cmd := fmt.Sprintf("install --platform=gke --gateway=NodePort --domain=127.0.0.1.nip.io --mock")
+	cmd := fmt.Sprintf("install --gateway=NodePort --domain=127.0.0.1.nip.io --mock")
 
 	resetFlagValues()
 
@@ -226,15 +275,15 @@ spec:
         image: docker.io/keptn/installer:latest
         env:
         - name: PLATFORM
-          value: gke
+          value: kubernetes
         - name: GATEWAY_TYPE
           value: NodePort
         - name: DOMAIN
           value: 127.0.0.1.nip.io
         - name: INGRESS
-          value: istio
+          value: nginx
         - name: USE_CASE
-          value: all
+          value: 
         - name: INGRESS_INSTALL_OPTION
           value: StopIfInstalled
       restartPolicy: Never
@@ -245,7 +294,7 @@ spec:
 	}
 }
 
-func TestInstallCmdWithUseCase(t *testing.T) {
+func TestInstallCmdWithQualityGatesUseCase(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
 
 	cmd := fmt.Sprintf("install --use-case=quality-gates --mock")
@@ -279,7 +328,7 @@ spec:
         image: docker.io/keptn/installer:latest
         env:
         - name: PLATFORM
-          value: gke
+          value: kubernetes
         - name: GATEWAY_TYPE
           value: LoadBalancer
         - name: DOMAIN
@@ -287,7 +336,60 @@ spec:
         - name: INGRESS
           value: nginx
         - name: USE_CASE
-          value: quality-gates
+          value: 
+        - name: INGRESS_INSTALL_OPTION
+          value: StopIfInstalled
+      restartPolicy: Never
+      serviceAccountName: keptn-installer
+`
+	if res != expected {
+		t.Error("installation manifest does not match")
+	}
+}
+
+func TestInstallCmdWithContinuousDeliveryUseCase(t *testing.T) {
+	credentialmanager.MockAuthCreds = true
+
+	cmd := fmt.Sprintf("install --use-case=continuous-delivery --mock")
+
+	resetFlagValues()
+
+	_, err := executeActionCommandC(cmd)
+	if err != nil {
+		t.Errorf(unexpectedErrMsg, err)
+	}
+
+	res := prepareInstallerManifest()
+	expected := `---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: installer
+  namespace: keptn
+spec:
+  backoffLimit: 0
+  template:
+    metadata:
+      labels:
+        app: installer
+    spec:
+      volumes:
+      - name: kubectl
+        emptyDir: {}
+      containers:
+      - name: keptn-installer
+        image: docker.io/keptn/installer:latest
+        env:
+        - name: PLATFORM
+          value: kubernetes
+        - name: GATEWAY_TYPE
+          value: LoadBalancer
+        - name: DOMAIN
+          value: 
+        - name: INGRESS
+          value: istio
+        - name: USE_CASE
+          value: continuous-delivery
         - name: INGRESS_INSTALL_OPTION
           value: StopIfInstalled
       restartPolicy: Never
@@ -332,15 +434,15 @@ spec:
         image: docker.io/keptn/installer:latest
         env:
         - name: PLATFORM
-          value: gke
+          value: kubernetes
         - name: GATEWAY_TYPE
           value: LoadBalancer
         - name: DOMAIN
           value: 
         - name: INGRESS
-          value: istio
+          value: nginx
         - name: USE_CASE
-          value: all
+          value: 
         - name: INGRESS_INSTALL_OPTION
           value: Reuse
       restartPolicy: Never

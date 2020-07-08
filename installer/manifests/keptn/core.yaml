@@ -206,6 +206,21 @@ spec:
               value: 'true'
             - name: CANARY
               value: 'deployment'
+            - name: INGRESS_HOSTNAME_SUFFIX
+              valueFrom:
+                configMapKeyRef:
+                  name: ingress-config
+                  key: ingress_hostname_suffix
+            - name: INGRESS_PROTOCOL
+              valueFrom:
+                configMapKeyRef:
+                  name: ingress-config
+                  key: ingress_protocol
+            - name: INGRESS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: ingress-config
+                  key: ingress_port
       serviceAccountName: keptn-helm-service
 ---
 apiVersion: v1

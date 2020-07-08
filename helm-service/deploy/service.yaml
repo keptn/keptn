@@ -37,6 +37,21 @@ spec:
           value: 'production'
         - name: PRE_WORKFLOW_ENGINE
           value: 'true'
+        - name: INGRESS_HOSTNAME_SUFFIX
+          valueFrom:
+            configMapKeyRef:
+              name: ingress-config
+              key: ingress_hostname_suffix
+        - name: INGRESS_PROTOCOL
+          valueFrom:
+            configMapKeyRef:
+              name: ingress-config
+              key: ingress_protocol
+        - name: INGRESS_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: ingress-config
+              key: ingress_port
 ---
 apiVersion: v1
 kind: Service

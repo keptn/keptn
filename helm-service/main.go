@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
@@ -14,7 +15,6 @@ import (
 	"github.com/keptn/keptn/helm-service/controller"
 	"github.com/keptn/keptn/helm-service/controller/mesh"
 	"github.com/keptn/keptn/helm-service/pkg/serviceutils"
-	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 )
 
 type envConfig struct {
@@ -33,17 +33,25 @@ func main() {
 	os.Exit(_main(os.Args[1:], env))
 }
 
-func getKeptnDomain() (string, error) {
-	if os.Getenv("KEPTN_DOMAIN") != "" {
-		return os.Getenv("KEPTN_DOMAIN"), nil
+func getIngressHostnameSuffix() string {
+	if os.Getenv("INGRESS_HOSTNAME_SUFFIX") != "" {
+		return os.Getenv("INGRESS_HOSTNAME_SUFFIX")
 	}
+	return "svc.cluster.local"
+}
 
-	useInClusterConfig := false
-	if os.Getenv("ENVIRONMENT") == "production" {
-		useInClusterConfig = true
+func getIngressProtocol() string {
+	if os.Getenv("INGRESS_PROTOCOL") != "" {
+		return strings.ToLower(os.Getenv("INGRESS_PROTOCOL"))
 	}
-	return keptnutils.GetKeptnDomain(useInClusterConfig)
+	return "http"
+}
 
+func getIngressPort() string {
+	if os.Getenv("INGRESS_PORT") != "" {
+		return os.Getenv("INGRESS_PORT")
+	}
+	return "80"
 }
 
 func gotEvent(ctx context.Context, event cloudevents.Event) error {
@@ -68,25 +76,24 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 	mesh := mesh.NewIstioMesh()
 
-	keptnDomain, err := getKeptnDomain()
-	if err != nil {
-		keptnHandler.Logger.Error("Error when reading the keptn domain")
-		return nil
-	}
+	ingressHostnameSuffix := getIngressHostnameSuffix()
+	ingressProtocol := getIngressProtocol()
+	ingressPort := getIngressPort()
 
 	url, err := serviceutils.GetConfigServiceURL()
 	if err != nil {
 		keptnHandler.Logger.Error(fmt.Sprintf("Error when getting config service url: %s", err.Error()))
+		loggingDone <- true
 		return err
 	}
 
 	keptnHandler.Logger.Debug("Got event of type " + event.Type())
 
 	if event.Type() == keptnevents.ConfigurationChangeEventType {
-		configChanger := controller.NewConfigurationChanger(mesh, keptnHandler, keptnDomain, url.String())
+		configChanger := controller.NewConfigurationChanger(mesh, keptnHandler, ingressHostnameSuffix, url.String(), ingressProtocol, ingressPort)
 		go configChanger.ChangeAndApplyConfiguration(event, loggingDone)
 	} else if event.Type() == keptnevents.InternalServiceCreateEventType {
-		onboarder := controller.NewOnboarder(mesh, keptnHandler, keptnDomain, url.String())
+		onboarder := controller.NewOnboarder(mesh, keptnHandler, ingressHostnameSuffix, url.String(), ingressProtocol, ingressPort)
 		go onboarder.DoOnboard(event, loggingDone)
 	} else if event.Type() == keptnevents.ActionTriggeredEventType {
 		actionHandler := controller.NewActionTriggeredHandler(keptnHandler, url.String())

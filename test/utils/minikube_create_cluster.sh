@@ -7,13 +7,13 @@ curl -Lo minikube "https://storage.googleapis.com/minikube/releases/${MINIKUBE_V
 
 
 # create cluster (with size depending on params)
-if [[ "$USE_CASE" == "quality-gates" ]]; then
+if [[ "$USE_CASE" == "continuous-delivery" ]]; then
+  echo "Creating Minikube Cluster with 6 vCPUs and ~6 GB memory"
+  sudo minikube start --vm-driver=none --cpus 6 --memory 6144
+else
   # create a cluster with vm-driver=none
   echo "Creating Minikube Cluster with 2 vCPUS and 2 GB memory"
   sudo minikube start --vm-driver=none --cpus 2 --memory 2048
-else
-  echo "Creating Minikube Cluster with 6 vCPUs and ~6 GB memory"
-  sudo minikube start --vm-driver=none --cpus 6 --memory 6144
 fi
 
 # make sure kubeconfig has the right permissions

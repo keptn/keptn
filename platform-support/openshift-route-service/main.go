@@ -229,14 +229,11 @@ func getEnableMeshCommandArgs(project string, stage string) []string {
 }
 
 func exposeRoute(project string, stage string) error {
-	appDomain := os.Getenv("APP_DOMAIN")
-	if appDomain == "" {
-		return errors.New("No app domain defined. Cannot create route.")
-	}
+	ingressHostnameSuffix := getIngressHostnameSuffix()
 	// oc create route edge istio-wildcard-ingress-secure-keptn --service=istio-ingressgateway --hostname="www.keptn.ingress-gateway.$BASE_URL" --port=http2 --wildcard-policy=Subdomain --insecure-policy='Allow'
 
 	out, err := keptn.ExecuteCommand("oc",
-		getCreateRouteCommandArgs(project, stage, appDomain))
+		getCreateRouteCommandArgs(project, stage, ingressHostnameSuffix))
 	if err != nil {
 		return err
 	}
@@ -244,18 +241,25 @@ func exposeRoute(project string, stage string) error {
 	return nil
 }
 
-func getCreateRouteCommandArgs(project string, stage string, appDomain string) []string {
+func getCreateRouteCommandArgs(project, stage, ingressHostnameSuffix string) []string {
 	return []string{
 		"create",
 		"route",
 		"edge",
 		project + "-" + stage,
 		"--service=istio-ingressgateway",
-		"--hostname=www." + project + "-" + stage + "." + appDomain,
+		"--hostname=www." + project + "-" + stage + "." + ingressHostnameSuffix,
 		"--port=http2",
 		"--wildcard-policy=Subdomain",
 		"--insecure-policy=Allow",
 		"-n",
 		"istio-system",
 	}
+}
+
+func getIngressHostnameSuffix() string {
+	if os.Getenv("INGRESS_HOSTNAME_SUFFIX") != "" {
+		return os.Getenv("INGRESS_HOSTNAME_SUFFIX")
+	}
+	return "svc.cluster.local"
 }

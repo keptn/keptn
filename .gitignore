@@ -21,6 +21,9 @@ repositories
 cli/vendor/*
 api/vendor/*
 
+# Avoid having the examples folder added (e.g., when running integration tests on travis-ci or locally)
+examples/
+
 # Built artifacts
 *.exe
 cli/onboarding-carts/*

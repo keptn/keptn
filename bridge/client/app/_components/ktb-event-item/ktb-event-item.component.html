@@ -53,6 +53,7 @@
     <pre>{{ data | json }}</pre>
   </div>
   <div mat-dialog-actions>
+    <button dt-button variant="secondary" (click)="copyEventPayload(data)">Copy</button>
     <button dt-button (click)="closeEventPayloadDialog()">Close</button>
   </div>
 </ng-template>

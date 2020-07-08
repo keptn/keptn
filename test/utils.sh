@@ -205,3 +205,25 @@ function verify_namespace_exists() {
     echo "Found namespace ${NAMESPACE}"
   fi
 }
+
+function wait_for_problem_open_event() {
+  PROJECT=$1; SERVICE=$2; STAGE=$3;
+  RETRY=0; RETRY_MAX=15;
+
+  while [[ $RETRY -lt $RETRY_MAX ]]; do
+    event=$(curl -X GET "${KEPTN_ENDPOINT}/mongodb-datastore/event?project=${PROJECT}&service=${SERVICE}&stage=${STAGE}&type=sh.keptn.event.problem.open" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.events[0]')
+
+    if [[ "${event}" == "null" ]] || [[ "${event}" == "" ]]; then
+      RETRY=$[$RETRY+1]
+      sleep 60
+    else
+      echo $event
+      break
+    fi
+  done
+
+  if [[ $RETRY == $RETRY_MAX ]]; then
+    echo "Error: Could not find problem.open event for service ${SERVICE} in project ${PROJECT}"
+    exit -1
+  fi
+}

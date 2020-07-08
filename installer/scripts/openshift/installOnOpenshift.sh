@@ -71,7 +71,7 @@ verify_kubectl $? "Deploying keptn's uniform-services failed."
 wait_for_deployment_in_namespace "openshift-route-service" "keptn"
 
 # Install keptn services
-if [[ "$USE_CASE" == "all" ]]; then
+if [[ "$USE_CASE" == "continuous-delivery" ]]; then
   print_info "Wear uniform"
   ./common/wearUniform.sh
   verify_install_step $? "Installing Keptn's uniform failed."
