@@ -1,31 +1,14 @@
-let labels = {
-  "sh.keptn.internal.event.service.create": "Service create",
-  "sh.keptn.event.configuration.change": "Configuration change",
-  "sh.keptn.event.monitoring.configure": "Configure monitoring",
-  "sh.keptn.events.deployment-finished": "Deployment finished",
-  "sh.keptn.events.tests-finished": "Tests finished",
-  "sh.keptn.event.start-evaluation": "Start evaluation",
-  "sh.keptn.events.evaluation-done": "Evaluation done",
-  "sh.keptn.internal.event.get-sli": "Start SLI retrieval",
-  "sh.keptn.internal.event.get-sli.done": "SLI retrieval done",
-  "sh.keptn.events.done": "Done",
-  "sh.keptn.event.problem.open": "Problem open",
-  "sh.keptn.events.problem": "Problem detected",
-  "sh.keptn.events.problem.resolved": "Problem resolved",
-  "sh.keptn.event.problem.close": "Problem closed"
+import {EventTypes} from "./event-types";
+import {ResultTypes} from "./result-types";
+import {ApprovalStates} from "./approval-states";
+import {EVENT_LABELS} from "./event-labels";
+import {EVENT_ICONS} from "./event-icons";
+
+enum ProblemStates {
+  RESOLVED = 'RESOLVED'
 };
-let icons = {
-  "sh.keptn.event.configuration.change": "duplicate",
-  "sh.keptn.events.deployment-finished": "deploy",
-  "sh.keptn.events.tests-finished": "perfromance-health",
-  "sh.keptn.event.start-evaluation": "traffic-light",
-  "sh.keptn.events.evaluation-done": "traffic-light",
-  "sh.keptn.internal.event.get-sli": "collector",
-  "sh.keptn.internal.event.get-sli.done": "collector",
-  "sh.keptn.event.problem.open": "criticalevent",
-  "sh.keptn.events.problem": "criticalevent",
-  "sh.keptn.event.problem.close": "applicationhealth"
-};
+
+const DEFAULT_ICON = "information";
 
 class Trace {
   id: string;
@@ -87,6 +70,12 @@ class Trace {
         value: string;
       }
     };
+
+    approval: {
+      result: string;
+      status: string;
+    };
+
     Tags: string;
     State: string;
   };
@@ -104,7 +93,7 @@ class Trace {
   isWarning(): string {
     let result: string = null;
     if(this.data) {
-      if(this.data.result == 'warning') {
+      if(this.data.result == ResultTypes.WARNING) {
         result = this.data.stage;
       }
     }
@@ -112,7 +101,7 @@ class Trace {
   }
 
   isFailed(): boolean {
-    return this.data.result == 'fail';
+    return this.data.result == ResultTypes.FAILED || this.type === EventTypes.APPROVAL_FINISHED && this.data.approval.result == ApprovalStates.DECLINED;
   }
 
   isProblem(): boolean {
@@ -122,7 +111,7 @@ class Trace {
   isSuccessful(): boolean {
     let result: boolean = false;
     if(this.data) {
-      if(this.data.result == 'pass') {
+      if(this.data.result == ResultTypes.PASSED || this.type === EventTypes.APPROVAL_FINISHED && this.data.approval.result == ApprovalStates.APPROVED) {
         result = true;
       }
     }
@@ -132,10 +121,10 @@ class Trace {
   getLabel(): string {
     // TODO: use translation file
     if(!this.label) {
-      if(this.type === "sh.keptn.events.problem" && this.data.State === "RESOLVED") {
-        this.label = labels["sh.keptn.events.problem.resolved"];
+      if(this.type === EventTypes.PROBLEM_DETECTED && this.data.State === ProblemStates.RESOLVED) {
+        this.label = EVENT_LABELS[EventTypes.PROBLEM_RESOLVED];
       } else {
-        this.label = labels[this.type] || this.type;
+        this.label = EVENT_LABELS[this.type] || this.type;
       }
     }
 
@@ -144,7 +133,7 @@ class Trace {
 
   getIcon() {
     if(!this.icon) {
-      this.icon = icons[this.type] || "information";
+      this.icon = EVENT_ICONS[this.type] || DEFAULT_ICON;
     }
     return this.icon;
   }
@@ -179,4 +168,4 @@ class Trace {
   }
 }
 
-export {Trace, labels}
+export {Trace}
