@@ -1,15 +1,16 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from "@angular/common/http";
 import {BehaviorSubject, forkJoin, from, Observable, Subject, timer, of} from "rxjs";
-import {debounce, map, mergeMap, toArray} from "rxjs/operators";
+import {debounce, map, mergeMap, take, toArray} from "rxjs/operators";
 
 import {Root} from "../_models/root";
-import {EventTypes, Trace} from "../_models/trace";
+import {Trace} from "../_models/trace";
 import {Stage} from "../_models/stage";
 import {Project} from "../_models/project";
 import {Service} from "../_models/service";
 
 import {ApiService} from "./api.service";
+import {EventTypes} from "../_models/event-types";
 
 @Injectable({
   providedIn: 'root'

@@ -8,7 +8,9 @@ import {Stage} from "../_models/stage";
 import {ProjectResult} from "../_models/project-result";
 import {ServiceResult} from "../_models/service-result";
 import {EventResult} from "../_models/event-result";
-import {ApprovalStates, EventTypes, Trace} from "../_models/trace";
+import {Trace} from "../_models/trace";
+import {ApprovalStates} from "../_models/approval-states";
+import {EventTypes} from "../_models/event-types";
 
 @Injectable({
   providedIn: 'root'
