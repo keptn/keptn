@@ -31,8 +31,8 @@ func GetIngressPort() string {
 
 // GetIngressGateway returns the ingress gateway
 func GetIngressGateway() string {
-	if os.Getenv("INGRESS_GATEWAY") != "" {
-		return os.Getenv("INGRESS_GATEWAY")
+	if os.Getenv("ISTIO_GATEWAY") != "" {
+		return os.Getenv("ISTIO_GATEWAY")
 	}
 	return "public-gateway.istio-system"
 }

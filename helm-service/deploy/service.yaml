@@ -52,11 +52,11 @@ spec:
             configMapKeyRef:
               name: ingress-config
               key: ingress_port
-        - name: INGRESS_GATEWAY
+        - name: ISTIO_GATEWAY
           valueFrom:
             configMapKeyRef:
               name: ingress-config
-              key: ingress_gateway
+              key: istio_gateway
 ---
 apiVersion: v1
 kind: Service
