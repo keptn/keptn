@@ -81,13 +81,12 @@ before_install:
 - LIGHTHOUSE_SVC_FOLDER="lighthouse-service/"
 - MONGODB_DS_IMAGE="keptn/mongodb-datastore"
 - MONGODB_DS_FOLDER="mongodb-datastore/"
-- INSTALLER_IMAGE="keptn/installer"
 - INSTALLER_FOLDER="installer/"
-- export KEPTN_INSTALLER_IMAGE=keptn/installer:latest
+- export KEPTN_INSTALLER_VERSION=latest
 - export KEPTN_CLI_VERSION=latest
 - | # set installer image and cli version for release-branches
   if [[ $BRANCH =~ ^release.* ]]; then
-    export KEPTN_INSTALLER_IMAGE=keptn/installer:${BRANCH#"release-"}
+    export KEPTN_INSTALLER_VERSION=${BRANCH#"release-"}
     export KEPTN_CLI_VERSION=${BRANCH#"release-"}
   fi
 # generate a lower-case slug of the branch name
@@ -312,8 +311,6 @@ jobs:
     - source ./travis-scripts/build_develop.sh "${REMEDIATION_SVC_IMAGE}" "${REMEDIATION_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
     - source ./travis-scripts/build_develop.sh "${LIGHTHOUSE_SVC_IMAGE}" "${LIGHTHOUSE_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
     - source ./travis-scripts/build_develop.sh "${MONGODB_DS_IMAGE}" "${MONGODB_DS_FOLDER}" "${GIT_SHA}" "${DATE}"
-    - source ./travis-scripts/build_develop.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${GIT_SHA}" "${DATE}"
-      ### ATTENTION: please make sure installer is always the last in this list to be built
     after_script:
       - echo "The following images have been built and pushed to dockerhub:"
       - docker images | grep keptn
@@ -334,9 +331,22 @@ jobs:
       - source ../travis-scripts/build_cli.sh "${VERSION}" "${KUBE_CONSTRAINTS}"
       - cd ..
 
-  ##################################################################################
-  # feature/bug/hotfix/patch branches build jobs
-  ##################################################################################
+  - stage: Build Installer
+    if: branch = master AND (type = cron OR type = push)
+    os: linux
+    before_script:
+      - source ./travis-scripts/install_gcloud.sh
+      - echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
+      - gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
+    script:
+      - export VERSION="latest"
+      - echo "Build installer"
+      - cd ./installer/manifests
+      - source ../../travis-scripts/build_latest_installer.sh "${VERSION}"
+      - cd ../..
+    ##################################################################################
+    # feature/bug/hotfix/patch branches build jobs
+    ##################################################################################
   - stage: Partial Build for feature/bug/hotfix/patch branches (CLI + Docker Images)
     if: branch =~ ^feature.*$ OR branch =~ ^bug.*$ OR branch =~ ^hotfix.*$ OR branch =~ ^patch.*$
     os: osx
@@ -358,14 +368,31 @@ jobs:
       fi
   - if: branch =~ ^feature.*$ OR branch =~ ^bug.*$ OR branch =~ ^hotfix.*$ OR branch =~ ^patch.*$
     os: linux
+    before_script:
+      - source ./travis-scripts/install_gcloud.sh
+      - echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
+      - gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
+    script:
+      - TYPE="$(echo $TRAVIS_BRANCH | cut -d'/' -f1)"
+      - NUMBER="$(echo $TRAVIS_BRANCH | cut -d'/' -f2)"
+      - |
+        if [[ $CHANGED_FILES == *"${INSTALLER_FOLDER}"*  ]]; then
+          echo "Build installer"
+          cd ./installer/manifests
+          TAG="${TYPE}-${NUMBER}+${DATE}"
+          source ../../travis-scripts/build_latest_installer.sh "${TAG}"
+          cd ..
+        fi
+  - if: branch =~ ^feature.*$ OR branch =~ ^bug.*$ OR branch =~ ^hotfix.*$ OR branch =~ ^patch.*$
+    os: linux
     services:
       - docker
     script:
-    - set -e # Fail the whole script whenever any command fails
-    - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
-    - ./writeManifest.sh
-    - TYPE="$(echo $TRAVIS_BRANCH | cut -d'/' -f1)"
-    - NUMBER="$(echo $TRAVIS_BRANCH | cut -d'/' -f2)"
+      - set -e # Fail the whole script whenever any command fails
+      - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
+      - ./writeManifest.sh
+      - TYPE="$(echo $TRAVIS_BRANCH | cut -d'/' -f1)"
+      - NUMBER="$(echo $TRAVIS_BRANCH | cut -d'/' -f2)"
     - |
       if [[ $CHANGED_FILES == *"${API_FOLDER}"*  ]]; then
         source ./travis-scripts/build_feature.sh "${API_IMAGE}" "${API_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
@@ -418,11 +445,6 @@ jobs:
       if [[ $CHANGED_FILES == *"${MONGODB_DS_FOLDER}"*  ]]; then
         source ./travis-scripts/build_feature.sh "${MONGODB_DS_IMAGE}" "${MONGODB_DS_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
       fi
-    - |
-      if [[ $CHANGED_FILES == *"${INSTALLER_FOLDER}"*  ]]; then
-        source ./travis-scripts/build_feature.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
-      fi
-      ### ATTENTION: please make sure installer is always the last in this list to be built
     - set +e # revert set -e from above
     after_script:
       - echo "The following images have been built and pushed to dockerhub:"
@@ -448,15 +470,30 @@ jobs:
       - source ../travis-scripts/build_cli.sh "${VERSION}" "${KUBE_CONSTRAINTS}"
       - cd ..
 
+  - stage: Release Build Installer
+    if: branch =~ ^release.*$ AND NOT type = pull_request
+    os: linux
+    before_script:
+      - source ./travis-scripts/install_gcloud.sh
+      - echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
+      - gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
+    script:
+      # overwrite version for release branches based on the branch name
+      - export VERSION=${BRANCH#"release-"}
+      - echo "Build installer"
+      - cd ./installer/manifests
+      - source ../../travis-scripts/build_release_installer.sh "${VERSION}"
+      - cd ../..
+
   - stage: Release Build Docker Images (Part 1/2)
     if: branch =~ ^release.*$ AND NOT type = pull_request
     os: linux
     services:
       - docker
     script:
-    - set -e # Fail the whole script whenever any command fails
-    - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
-    # overwrite version for release branches based on the branch name
+      - set -e # Fail the whole script whenever any command fails
+      - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
+      # overwrite version for release branches based on the branch name
     - export VERSION=${BRANCH#"release-"}
     - ./writeManifest.sh
     - source ./travis-scripts/build_release.sh "${API_IMAGE}" "${API_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
@@ -488,7 +525,6 @@ jobs:
       - source ./travis-scripts/build_release.sh "${REMEDIATION_SVC_IMAGE}" "${REMEDIATION_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
       - source ./travis-scripts/build_release.sh "${LIGHTHOUSE_SVC_IMAGE}" "${LIGHTHOUSE_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
       - source ./travis-scripts/build_release.sh "${MONGODB_DS_IMAGE}" "${MONGODB_DS_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
-      - source ./travis-scripts/build_release.sh "${INSTALLER_IMAGE}" "${INSTALLER_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
       - set +e # revert set -e from above
     after_script:
       - echo "The following images have been built and pushed to dockerhub:"

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION=${1:-develop}
+VERSION=${1:-latest}
 
 # Note: Currently, the Helm chart always has version 0.1.0 and
 # $VERSION cannot be used as it is an invalid Semantic Version
@@ -21,8 +21,5 @@ if [ $? -ne 0 ]; then
 fi
 
 # upload to gcloud
-if [ -n "$TAG" ]; then
-  # TODO Check if TAG check is correct
-  gsutil cp keptn-charts/index.yaml gs://keptn-installer/${VERSION}/index.yaml
-  gsutil cp keptn-charts/keptn-0.1.0.tgz gs://keptn-installer/${VERSION}/keptn-0.1.0.tgz
-fi
+gsutil cp keptn-charts/index.yaml gs://keptn-installer/${VERSION}/index.yaml
+gsutil cp keptn-charts/keptn-0.1.0.tgz gs://keptn-installer/${VERSION}/keptn-0.1.0.tgz
