@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"net/http"
 	"net/url"
 	"os"
 	"strings"
@@ -28,32 +27,12 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-const timeout = 60
 const configservice = "CONFIGURATION_SERVICE"
-const eventbroker = "EVENTBROKER"
 const api = "API"
 
 type envConfig struct {
 	Port int    `envconfig:"RCV_PORT" default:"8080"`
 	Path string `envconfig:"RCV_PATH" default:"/"`
-}
-
-type doneEventData struct {
-	Result  string `json:"result"`
-	Message string `json:"message"`
-	Version string `json:"version"`
-}
-
-type Client struct {
-	httpClient *http.Client
-}
-
-// ResourceListBody parameter
-// swagger:model ResourceListBody
-type ResourceListBody struct {
-
-	// resources
-	Resources []*configmodels.Resource `json:"resources"`
 }
 
 func main() {
@@ -83,15 +62,6 @@ func _main(args []string, env envConfig) int {
 	log.Fatalf("failed to start receiver: %s", c.StartReceiver(ctx, gotEvent))
 
 	return 0
-}
-
-func newClient() *Client {
-	client := Client{
-		httpClient: &http.Client{
-			Timeout: 5 * time.Second,
-		},
-	}
-	return &client
 }
 
 func gotEvent(ctx context.Context, event cloudevents.Event) error {
@@ -165,7 +135,6 @@ func createProjectAndProcessShipyard(event cloudevents.Event, logger keptn.Logge
 		logger.Error(fmt.Sprintf("Could not unmarshal shipyard. %s", err.Error()))
 		return nil, err
 	}
-	client := newClient()
 	// create project
 	project := configmodels.Project{
 		ProjectName:  eventData.Project,
@@ -174,7 +143,7 @@ func createProjectAndProcessShipyard(event cloudevents.Event, logger keptn.Logge
 		GitRemoteURI: eventData.GitRemoteURL,
 	}
 
-	if err := client.createProject(project, logger); err != nil {
+	if err := createProject(project, logger); err != nil {
 		return nil, fmt.Errorf("Creating project %s failed. %s", project.ProjectName, err.Error())
 	}
 	if err := keptn.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), fmt.Sprintf("Project %s created", project.ProjectName), false, "INFO"); err != nil {
@@ -183,7 +152,7 @@ func createProjectAndProcessShipyard(event cloudevents.Event, logger keptn.Logge
 
 	// process shipyard file and create stages
 	for _, shipyardStage := range shipyard.Stages {
-		if err := client.createStage(project, shipyardStage.Name, logger); err != nil {
+		if err := createStage(project, shipyardStage.Name, logger); err != nil {
 			return nil, fmt.Errorf("Creating stage %s failed. %s", shipyardStage.Name, err.Error())
 		}
 		if err := keptn.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"), fmt.Sprintf("Stage %s created", shipyardStage.Name), false, "INFO"); err != nil {
@@ -201,8 +170,6 @@ func deleteProject(event cloudevents.Event, logger keptn.Logger, ws *websocket.C
 		return err
 	}
 
-	client := newClient()
-
 	project := configmodels.Project{
 		ProjectName: eventData.Project,
 	}
@@ -213,7 +180,7 @@ func deleteProject(event cloudevents.Event, logger keptn.Logger, ws *websocket.C
 		logger.Error("Could not initialize Keptn handler: " + err.Error())
 		return err
 	}
-	msg, err = client.getDeleteInfoMessage(keptnHandler)
+	msg, err = getDeleteInfoMessage(keptnHandler)
 	if err != nil {
 		msg = fmt.Sprintf("Shipyard of project %s cannot be retrieved anymore. ", project.ProjectName)
 		msg += "After deleting the project, the namespaces containing the services are still available. " +
@@ -225,7 +192,7 @@ func deleteProject(event cloudevents.Event, logger keptn.Logger, ws *websocket.C
 	}
 
 	// get remote url of project
-	projectResp, err := client.getProject(project, logger)
+	projectResp, err := getProject(project, logger)
 	if err != nil {
 		if err := keptn.WriteWSLog(ws, createEventCopy(event, "sh.keptn.events.log"),
 			fmt.Sprintf("Project %s cannot be retrieved anymore. Any Git upstream of the project will not be deleted.", project.ProjectName),
@@ -245,8 +212,10 @@ func deleteProject(event cloudevents.Event, logger keptn.Logger, ws *websocket.C
 		return err
 	}
 	// delete project
-	if err := client.deleteProject(project, logger, configServiceURL.String()); err != nil {
-		return fmt.Errorf("Deleting project %s failed. %s", project.ProjectName, err.Error())
+	prjHandler := configutils.NewProjectHandler(configServiceURL.String())
+	_, mErr := prjHandler.DeleteProject(project)
+	if err != nil {
+		return fmt.Errorf("Deleting project %s failed. %s", project.ProjectName, *mErr.Message)
 	}
 	logger.Info(fmt.Sprintf("Project %s deleted", project.ProjectName))
 
@@ -291,7 +260,7 @@ func closeWebsocketWithMessage(event cloudevents.Event, err error, message strin
 }
 
 // createProject creates a project by using the configuration-service
-func (client *Client) createProject(project configmodels.Project, logger keptn.Logger) error {
+func createProject(project configmodels.Project, logger keptn.Logger) error {
 	configServiceURL, err := keptn.GetServiceEndpoint(configservice)
 	if err != nil {
 		logger.Error(fmt.Sprintf("Could not get service endpoint for %s: %s", configservice, err.Error()))
@@ -308,19 +277,7 @@ func (client *Client) createProject(project configmodels.Project, logger keptn.L
 	return errors.New(*errObj.Message)
 }
 
-// deleteProject deletes a project by using the configuration-service
-func (client *Client) deleteProject(project configmodels.Project, logger keptn.Logger, configServiceURL string) error {
-
-	prjHandler := configutils.NewProjectHandler(configServiceURL)
-	_, err := prjHandler.DeleteProject(project)
-	if err != nil {
-		return fmt.Errorf("Error in deleting project: %s", *err.Message)
-	}
-	return nil
-
-}
-
-func (client *Client) getDeleteInfoMessage(keptnHandler *keptn.Keptn) (string, error) {
+func getDeleteInfoMessage(keptnHandler *keptn.Keptn) (string, error) {
 
 	shipyard, err := keptnHandler.GetShipyard()
 	if err != nil {
@@ -338,7 +295,7 @@ func (client *Client) getDeleteInfoMessage(keptnHandler *keptn.Keptn) (string, e
 }
 
 // getProject returns a project by using the configuration-service
-func (client *Client) getProject(project configmodels.Project, logger keptn.Logger) (*configmodels.Project, error) {
+func getProject(project configmodels.Project, logger keptn.Logger) (*configmodels.Project, error) {
 	configServiceURL, err := keptn.GetServiceEndpoint(configservice)
 	if err != nil {
 		logger.Error(fmt.Sprintf("Could not get service endpoint for %s: %s", configservice, err.Error()))
@@ -355,7 +312,7 @@ func (client *Client) getProject(project configmodels.Project, logger keptn.Logg
 }
 
 // createStage creates a stage by using the configuration-service
-func (client *Client) createStage(project configmodels.Project, stage string, logger keptn.Logger) error {
+func createStage(project configmodels.Project, stage string, logger keptn.Logger) error {
 
 	configServiceURL, err := keptn.GetServiceEndpoint(configservice)
 	if err != nil {
