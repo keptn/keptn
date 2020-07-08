@@ -30,6 +30,18 @@ paths:
         200:
           description: Authenticated
 
+  /metadata:
+    get:
+      tags:
+        - Metadata
+      operationId: metadata
+      summary: Get keptn installation metadata
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: "response_model.yaml#/definitions/metadata"              
+
   /event:
     post:
       tags:

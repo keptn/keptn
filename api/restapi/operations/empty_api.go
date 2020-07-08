@@ -23,6 +23,7 @@ import (
 	"github.com/keptn/keptn/api/restapi/operations/auth"
 	"github.com/keptn/keptn/api/restapi/operations/configure"
 	"github.com/keptn/keptn/api/restapi/operations/event"
+	"github.com/keptn/keptn/api/restapi/operations/metadata"
 	"github.com/keptn/keptn/api/restapi/operations/project"
 	"github.com/keptn/keptn/api/restapi/operations/service"
 )
@@ -65,6 +66,9 @@ func NewEmptyAPI(spec *loads.Document) *EmptyAPI {
 		}),
 		AuthAuthHandler: auth.AuthHandlerFunc(func(params auth.AuthParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation auth.Auth has not yet been implemented")
+		}),
+		MetadataMetadataHandler: metadata.MetadataHandlerFunc(func(params metadata.MetadataParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation metadata.Metadata has not yet been implemented")
 		}), // Applies when the "x-token" header is set
 		KeyAuth: func(token string) (*models.Principal, error) {
 			return nil, errors.NotImplemented("api key auth (key) x-token from header param [x-token] has not yet been implemented")
@@ -125,6 +129,8 @@ type EmptyAPI struct {
 	ServicePostProjectProjectNameServiceHandler service.PostProjectProjectNameServiceHandler
 	// AuthAuthHandler sets the operation handler for the auth operation
 	AuthAuthHandler auth.AuthHandler
+	// MetadataMetadataHandler sets the operation handler for the metadata operation
+	MetadataMetadataHandler metadata.MetadataHandler
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
 	ServeError func(http.ResponseWriter, *http.Request, error)
@@ -221,6 +227,10 @@ func (o *EmptyAPI) Validate() error {
 
 	if o.AuthAuthHandler == nil {
 		unregistered = append(unregistered, "Auth.AuthHandler")
+	}
+
+	if o.MetadataMetadataHandler == nil {
+		unregistered = append(unregistered, "Metadata.MetadataHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -364,6 +374,11 @@ func (o *EmptyAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/auth"] = auth.NewAuth(o.context, o.AuthAuthHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/metadata"] = metadata.NewMetadata(o.context, o.MetadataMetadataHandler)
 
 }
 
