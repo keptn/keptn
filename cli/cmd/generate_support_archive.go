@@ -214,7 +214,7 @@ func isConfiguredIngressGatewayAvailable() *errorableBoolResult {
 	if len(gwSplit) > 1 {
 		gatewayNamespace = gwSplit[1]
 	} else {
-		gatewayNamespace = "istio-system"
+		gatewayNamespace = "keptn"
 	}
 
 	res, err = exechelper.ExecuteCommand("kubectl", "get gateway -n "+gatewayNamespace+" "+gatewayName)
@@ -225,7 +225,7 @@ func isConfiguredIngressGatewayAvailable() *errorableBoolResult {
 }
 
 func writeIstioIngressGateways(dir string) {
-	writeErrorableStringResult(newErrorableStringResult(exechelper.ExecuteCommand("kubectl", "get gateway --all-namespaces -owide")),
+	writeErrorableStringResult(newErrorableStringResult(exechelper.ExecuteCommand("kubectl", "get gateway --all-namespaces -oyaml")),
 		filepath.Join(dir, "ingress-gateways.txt"))
 }
 
