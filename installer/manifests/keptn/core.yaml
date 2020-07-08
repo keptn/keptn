@@ -77,7 +77,7 @@ spec:
           image: keptn/bridge2:latest
           env:
             - name: API_URL
-              value: "http://api-gateway-nginx.keptn.svc.cluster.local"
+              value: "http://api-gateway-nginx.keptn.svc.cluster.local/api"
             - name: API_TOKEN
               valueFrom:
                 secretKeyRef:
