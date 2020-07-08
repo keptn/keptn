@@ -30,6 +30,7 @@ import (
 	"io"
 	"io/ioutil"
 	appsv1 "k8s.io/api/apps/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kyaml "k8s.io/apimachinery/pkg/util/yaml"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/rest"
@@ -56,10 +57,13 @@ type installCmdParams struct {
 	UseCase             usecase
 	ApiServiceTypeInput *string
 	ApiServiceType      apiServiceType
+	ChartRepoURL        *string
 }
 
 const keptnInstallerLogFileName = "keptn-installer.log"
 const keptnInstallerErrorLogFileName = "keptn-installer-Err.log"
+
+const keptnRepoURL = "https://storage.googleapis.com/keptn-installer/0.7.0/keptn.tgz"
 
 // KubeServerVersionConstraints the Kubernetes Cluster version's constraints is passed by ldflags
 var KubeServerVersionConstraints string
@@ -176,11 +180,38 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 				}
 			}
 
+			// check if istio-system namespace and istio-ingressgateway is available (full installation only)
+			if installParams.UseCase == ContinuousDelivery {
+				if err := checkIstioInstallation(); err != nil {
+					logging.PrintLog("Istio is required for the continuous-delivery use case, but could not be found in your cluster.", logging.InfoLevel)
+					logging.PrintLog("Please install Istio as described in the Istio docs: https://istio.io/latest/docs/setup/getting-started/", logging.InfoLevel)
+					return errors.New("could not find Istio installation: " + err.Error())
+				}
+			}
+
 			return doInstallation()
 		}
 		fmt.Println("Skipping installation due to mocking flag")
 		return nil
 	},
+}
+
+func checkIstioInstallation() error {
+	clientset, err := keptnutils.GetClientset(false)
+	if err != nil {
+		return err
+	}
+	_, err = clientset.CoreV1().Namespaces().Get("istio-system", metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+
+	_, err = clientset.CoreV1().Services("istio-system").Get("istio-ingressgateway", metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func setPlatform() error {
@@ -216,6 +247,10 @@ func init() {
 	installParams.ApiServiceTypeInput = installCmd.Flags().StringP("keptn-api-service-type", "",
 		ClusterIP.String(), "Installation options for the api-service type ["+ClusterIP.String()+","+
 			LoadBalancer.String()+","+NodePort.String()+"]")
+
+	installParams.ChartRepoURL = installCmd.Flags().StringP("chart-repo", "",
+		keptnRepoURL, "URL of the Keptn Helm Chart repository")
+	installCmd.Flags().MarkHidden("chart-repo")
 
 	installCmd.PersistentFlags().BoolVarP(&insecureSkipTLSVerify, "insecure-skip-tls-verify", "s",
 		false, "Skip tls verification for kubectl commands")
@@ -365,10 +400,15 @@ func waitForDeploymentsOfHelmRelease(helmManifest string) error {
 
 // Preconditions: 1. Already authenticated against the cluster.
 func doInstallation() error {
+
 	if err := createKeptnNamespace("keptn"); err != nil {
 		return err
 	}
-	url := "https://storage.googleapis.com/keptn-installer/latest/keptn-0.1.0.tgz"
+
+	url := keptnRepoURL
+	if *installParams.ChartRepoURL != "" {
+		url = *installParams.ChartRepoURL
+	}
 	resp, err := http.Get(url)
 	if err != nil {
 		return err
@@ -388,6 +428,9 @@ func doInstallation() error {
 	values := map[string]interface{}{
 		"continuous-delivery": map[string]interface{}{
 			"enabled": installParams.UseCase == ContinuousDelivery,
+			"openshift": map[string]interface{}{
+				"enabled": *installParams.PlatformIdentifier == "openshift",
+			},
 		},
 		"control-plane": map[string]interface{}{
 			"enabled": true,
