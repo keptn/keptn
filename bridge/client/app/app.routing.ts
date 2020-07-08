@@ -2,6 +2,7 @@ import {NgModule} from '@angular/core';
 import {Routes, RouterModule} from '@angular/router';
 import {DashboardComponent} from "./dashboard/dashboard.component";
 import {ProjectBoardComponent} from "./project-board/project-board.component";
+import {EvaluationBoardComponent} from "./evaluation-board/evaluation-board.component";
 
 
 const routes: Routes = [
@@ -13,6 +14,8 @@ const routes: Routes = [
   {path: 'project/:projectName/:serviceName/:contextId/:eventId', component: ProjectBoardComponent},
   {path: 'trace/:shkeptncontext', component: ProjectBoardComponent},
   {path: 'trace/:shkeptncontext/:eventselector', component: ProjectBoardComponent},
+  {path: 'evaluation/:shkeptncontext', component: EvaluationBoardComponent},
+  {path: 'evaluation/:shkeptncontext/:eventselector', component: EvaluationBoardComponent},
   {path: '**', redirectTo: ''}
 ];
 
