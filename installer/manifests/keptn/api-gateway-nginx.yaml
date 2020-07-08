@@ -62,12 +62,6 @@ data:
       proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    location /api/v2 {
-      # ToDo
-      rewrite /api/v2/(.*) /$1  break;
-    }
-
-
     location /bridge {
       rewrite /bridge(/.*) $1 break;
       proxy_pass http://bridge:8080;
