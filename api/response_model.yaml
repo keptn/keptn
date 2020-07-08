@@ -58,7 +58,11 @@ definitions:
     properties:
       namespace:
         type: string
-      keptnversion:
+      keptnlabel:      
+        type: string
+      keptnversion:      
         type: string
       bridgeversion:
-        type: string      
+        type: string
+      keptnservices:
+        type: ["object", "string"]        
