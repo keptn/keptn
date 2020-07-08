@@ -50,18 +50,34 @@ type errorableMetadataResult struct {
 	Err    error `json:",omitempty"`
 }
 
+type errorableIPInfoResult struct {
+	Result []*ipInfo
+	Err    error `json:",omitempty"`
+}
+
+type ipInfo struct {
+	Name       string `json:",omitempty"`
+	InternalIP string `json:",omitempty"`
+	ExternalIP string `json:",omitempty"`
+}
+
 var namespaces = [...]string{"keptn", "keptn-datastore"} //"istio-system"
 
 type metaData struct {
 	OperatingSystem                 string
 	KeptnCLIVersion                 string
-	KeptnAPIUrl                     *errorableStringResult   `json:",omitempty"`
-	KeptnAPIReachable               *errorableBoolResult     `json:",omitempty"`
-	Projects                        *errorableProjectResult  `json:",omitempty"`
-	KubectlVersion                  *errorableStringResult   `json:",omitempty"`
-	KubeContextPointsToKeptnCluster *errorableBoolResult     `json:",omitempty"`
-	KeptnDomain                     *errorableStringResult   `json:",omitempty"`
 	KeptnAPIMetadata                *errorableMetadataResult `json:",omitempty"`
+	KeptnAPIUrl                     *errorableStringResult  `json:",omitempty"`
+	KeptnAPIReachable               *errorableBoolResult    `json:",omitempty"`
+	Projects                        *errorableProjectResult `json:",omitempty"`
+	KubectlVersion                  *errorableStringResult  `json:",omitempty"`
+	KubeContextPointsToKeptnCluster *errorableBoolResult    `json:",omitempty"`
+	IngressHostnameSuffix           *errorableStringResult  `json:",omitempty"`
+	IstioSystemInstalled            *errorableBoolResult    `json:",omitempty"`
+	ConfiguredGatewayAvailable      *errorableBoolResult    `json:",omitempty"`
+	IngressPort                     *errorableStringResult  `json:",omitempty"`
+	IngressProtocol                 *errorableStringResult  `json:",omitempty"`
+	IngressGateway                  *errorableStringResult  `json:",omitempty"`
 }
 
 // generateSupportArchiveCmd implements the generate support-archive command
@@ -114,8 +130,31 @@ keptn generate support-archive --dir=/some/directory`,
 				if s.KubeContextPointsToKeptnCluster.Err == nil && s.KubeContextPointsToKeptnCluster.Result {
 					ctx, _ := getKubeContext()
 					fmt.Println("Retrieving logs from cluster " + strings.TrimSpace(ctx))
-					s.KeptnDomain = getKeptnDomain()
+					s.IngressHostnameSuffix = getIngressHostnameSuffix()
+					s.IngressPort = getIngressPort()
+					s.IngressProtocol = getIngressProtocol()
+					s.IngressGateway = getIngressGateway()
 					writeNamespaces(tmpDir)
+
+					s.IstioSystemInstalled = isIstioSystemInstalled()
+					if s.IstioSystemInstalled.Result {
+						k8sNSFilePath := filepath.Join(tmpDir, "istio-system")
+						err := os.MkdirAll(k8sNSFilePath, os.ModePerm)
+						if err == nil {
+							writeServices("istio-system", k8sNSFilePath)
+							// list of all available ingress gateways
+							writeIstioIngressGateways(tmpDir)
+						} else {
+							fmt.Printf("Error making directory %s: %v\n", k8sNSFilePath, err)
+						}
+					}
+					s.ConfiguredGatewayAvailable = isConfiguredIngressGatewayAvailable()
+
+					// get nodes + their internal and external IPs
+					writeClusterNodes(tmpDir)
+
+					// check if there are any services with type==LoadBalancer in the cluster
+					writeLoadBalancerServices(tmpDir)
 
 					for _, ns := range namespaces {
 						k8sNSFilePath := filepath.Join(tmpDir, ns)
@@ -161,6 +200,75 @@ keptn generate support-archive --dir=/some/directory`,
 		fmt.Println("If you need help, please use the #help channel in the Keptn Slack workspace https://slack.keptn.sh")
 		return nil
 	},
+}
+
+func isConfiguredIngressGatewayAvailable() *errorableBoolResult {
+	res, err := exechelper.ExecuteCommand("kubectl", "get cm -n keptn ingress-config -ojsonpath='{.data.ingress_gateway}'")
+	if err != nil {
+		return newErrorableBoolResult(false, err)
+	}
+	var gatewayFullName string
+	if res == "" {
+		gatewayFullName = "public-gateway.istio-system"
+	} else {
+		gatewayFullName = res
+	}
+
+	var gatewayName, gatewayNamespace string
+	gwSplit := strings.Split(gatewayFullName, ".")
+
+	gatewayName = gwSplit[0]
+	if len(gwSplit) > 1 {
+		gatewayNamespace = gwSplit[1]
+	} else {
+		gatewayNamespace = "keptn"
+	}
+
+	res, err = exechelper.ExecuteCommand("kubectl", "get gateway -n "+gatewayNamespace+" "+gatewayName)
+	if err != nil {
+		return newErrorableBoolResult(false, err)
+	}
+	return newErrorableBoolResult(true, nil)
+}
+
+func writeIstioIngressGateways(dir string) {
+	writeErrorableStringResult(newErrorableStringResult(exechelper.ExecuteCommand("kubectl", "get gateway --all-namespaces -oyaml")),
+		filepath.Join(dir, "ingress-gateways.txt"))
+}
+
+func writeClusterNodes(dir string) {
+	writeErrorableStringResult(newErrorableStringResult(exechelper.ExecuteCommand("kubectl", "get nodes -owide")),
+		filepath.Join(dir, "nodes.txt"))
+}
+
+func writeLoadBalancerServices(dir string) {
+	res, err := exechelper.ExecuteCommand("kubectl", "get svc --all-namespaces -owide")
+	if err != nil {
+		writeErrorableStringResult(newErrorableStringResult("", err), "loadbalancer-services.txt")
+	}
+	output := ""
+	split := strings.Split(res, "\n")
+	output = output + split[0] + "\n"
+
+	if len(split) > 1 {
+		for _, line := range split[1:] {
+			if strings.Contains(line, "LoadBalancer") {
+				output = output + line + "\n"
+			}
+		}
+	}
+	writeErrorableStringResult(newErrorableStringResult(output, nil),
+		filepath.Join(dir, "loadbalancer-services.txt"))
+}
+
+func isIstioSystemInstalled() *errorableBoolResult {
+	fmt.Println("Checking availability of istio-system namespace")
+	_, err := exechelper.ExecuteCommand("kubectl",
+		`get namespace istio-system`)
+	if err != nil {
+		return newErrorableBoolResult(false, err)
+	}
+	return newErrorableBoolResult(true, nil)
 }
 
 func recursiveZip(pathToZip, destPath string) error {
@@ -277,9 +385,42 @@ func getKubectlVersion() *errorableStringResult {
 	return newErrorableStringResult(exechelper.ExecuteCommand("kubectl", "version"))
 }
 
-func getKeptnDomain() *errorableStringResult {
+func getIngressHostnameSuffix() *errorableStringResult {
 	fmt.Println("Retrieving Keptn domain")
-	return newErrorableStringResult(getEndpointUsingKube())
+	return newErrorableStringResult(exechelper.ExecuteCommand("kubectl", "get cm ingress-config -n keptn -ojsonpath='{.data.ingress_hostname_suffix}'"))
+}
+
+func getIngressPort() *errorableStringResult {
+	res, err := exechelper.ExecuteCommand("kubectl", "get cm ingress-config -n keptn -ojsonpath='{.data.ingress_port}'")
+	if err != nil {
+		return newErrorableStringResult("", err)
+	}
+	if res == "" {
+		return newErrorableStringResult("80", nil)
+	}
+	return newErrorableStringResult(res, nil)
+}
+
+func getIngressProtocol() *errorableStringResult {
+	res, err := exechelper.ExecuteCommand("kubectl", "get cm ingress-config -n keptn -ojsonpath='{.data.ingress_protocol}'")
+	if err != nil {
+		return newErrorableStringResult("", err)
+	}
+	if res == "" {
+		return newErrorableStringResult("http", nil)
+	}
+	return newErrorableStringResult(res, nil)
+}
+
+func getIngressGateway() *errorableStringResult {
+	res, err := exechelper.ExecuteCommand("kubectl", "get cm ingress-config -n keptn -ojsonpath='{.data.ingress_gateway}'")
+	if err != nil {
+		return newErrorableStringResult("", err)
+	}
+	if res == "" {
+		return newErrorableStringResult("public-gateway.istio-system", nil)
+	}
+	return newErrorableStringResult(res, nil)
 }
 
 func writeNamespaces(dir string) {
