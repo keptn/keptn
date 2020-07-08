@@ -221,6 +221,11 @@ spec:
                 configMapKeyRef:
                   name: ingress-config
                   key: ingress_port
+            - name: ISTIO_GATEWAY
+              valueFrom:
+                configMapKeyRef:
+                  name: ingress-config
+                  key: istio_gateway
       serviceAccountName: keptn-helm-service
 ---
 apiVersion: v1
