@@ -313,6 +313,9 @@ func newConfigFlags(config *rest.Config, namespace string) *genericclioptions.Co
 }
 
 func upgradeChart(ch *chart.Chart, releaseName, namespace string, vals map[string]interface{}) error {
+	if err := createKeptnNamespace("keptn"); err != nil {
+		return err
+	}
 
 	if len(ch.Templates) > 0 {
 		logging.PrintLog(fmt.Sprintf("Start upgrading chart %s in namespace %s", releaseName, namespace), logging.InfoLevel)
@@ -403,28 +406,24 @@ func waitForDeploymentsOfHelmRelease(helmManifest string) error {
 // Preconditions: 1. Already authenticated against the cluster.
 func doInstallation() error {
 
-	if err := createKeptnNamespace("keptn"); err != nil {
-		return err
-	}
-
 	url := keptnRepoURL
 	if *installParams.ChartRepoURL != "" {
 		url = *installParams.ChartRepoURL
 	}
 	resp, err := http.Get(url)
 	if err != nil {
-		return err
+		return errors.New("error retrieving Keptn Helm Chart at " + url + ": " + err.Error())
 	}
 	defer resp.Body.Close()
 
 	bytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return err
+		return errors.New("error retrieving Keptn Helm Chart at " + url + ": " + err.Error())
 	}
 
 	ch, err := keptnutils.LoadChart(bytes)
 	if err != nil {
-		return err
+		return errors.New("error retrieving Keptn Helm Chart at " + url + ": " + err.Error())
 	}
 
 	values := map[string]interface{}{
