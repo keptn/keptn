@@ -156,11 +156,11 @@ paths:
           schema:
             $ref: "response_model.yaml#/definitions/error"
 
-  /configure/bridge/expose:
+  /configure/bridge:
     post:
       tags:
         - configure
-      summary: Exposes the bridge
+      summary: Configures bridge credentials
       parameters:
         - $ref: "#/parameters/configureBridge"
       responses:
