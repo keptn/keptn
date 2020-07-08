@@ -45,17 +45,23 @@ type errorableProjectResult struct {
 	Err    error `json:",omitempty"`
 }
 
+type errorableMetadataResult struct {
+	Result *models.Metadata
+	Err    error `json:",omitempty"`
+}
+
 var namespaces = [...]string{"keptn", "keptn-datastore"} //"istio-system"
 
 type metaData struct {
 	OperatingSystem                 string
 	KeptnCLIVersion                 string
-	KeptnAPIUrl                     *errorableStringResult  `json:",omitempty"`
-	KeptnAPIReachable               *errorableBoolResult    `json:",omitempty"`
-	Projects                        *errorableProjectResult `json:",omitempty"`
-	KubectlVersion                  *errorableStringResult  `json:",omitempty"`
-	KubeContextPointsToKeptnCluster *errorableBoolResult    `json:",omitempty"`
-	KeptnDomain                     *errorableStringResult  `json:",omitempty"`
+	KeptnAPIUrl                     *errorableStringResult   `json:",omitempty"`
+	KeptnAPIReachable               *errorableBoolResult     `json:",omitempty"`
+	Projects                        *errorableProjectResult  `json:",omitempty"`
+	KubectlVersion                  *errorableStringResult   `json:",omitempty"`
+	KubeContextPointsToKeptnCluster *errorableBoolResult     `json:",omitempty"`
+	KeptnDomain                     *errorableStringResult   `json:",omitempty"`
+	KeptnAPIMetadata                *errorableMetadataResult `json:",omitempty"`
 }
 
 // generateSupportArchiveCmd implements the generate support-archive command
@@ -95,6 +101,7 @@ keptn generate support-archive --dir=/some/directory`,
 				s.KeptnAPIReachable = getKeptnAPIReachable()
 				if s.KeptnAPIReachable.Err == nil && s.KeptnAPIReachable.Result {
 					s.Projects = getProjects()
+					s.KeptnAPIMetadata = getKeptnMetadata()
 				}
 			}
 			writeKeptnInstallerLog(keptnInstallerLogFileName, tmpDir)
@@ -216,6 +223,13 @@ func newErrorableBoolResult(result bool, err error) *errorableBoolResult {
 
 func newErrorableProjectResult(result []*models.Project, err error) *errorableProjectResult {
 	return &errorableProjectResult{
+		Result: result,
+		Err:    err,
+	}
+}
+
+func newErrorableMetadataResult(result *models.Metadata, err error) *errorableMetadataResult {
+	return &errorableMetadataResult{
 		Result: result,
 		Err:    err,
 	}
@@ -384,6 +398,20 @@ func writeKeptnInstallerLog(logFileName string, dir string) {
 	installerLog := filepath.Join(path, logFileName)
 	res, err := ioutil.ReadFile(installerLog)
 	writeErrorableStringResult(newErrorableStringResult(string(res), err), filepath.Join(dir, logFileName))
+}
+
+func getKeptnMetadata() *errorableMetadataResult {
+	fmt.Println("Retrieving Keptn Metadata from API Service")
+	endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
+	if err != nil {
+		return newErrorableMetadataResult(nil, err)
+	}
+	metadataHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
+	metadataData, errMetadata := metadataHandler.GetMetadata()
+	if errMetadata != nil {
+		err = errors.New("Error occured with response code " + string(errMetadata.Code) + " with message " + *errMetadata.Message)
+	}
+	return newErrorableMetadataResult(metadataData, err)
 }
 
 func init() {
