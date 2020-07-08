@@ -22,6 +22,7 @@ import (
 	"github.com/keptn/keptn/api/restapi/operations/auth"
 	"github.com/keptn/keptn/api/restapi/operations/configure"
 	"github.com/keptn/keptn/api/restapi/operations/event"
+	"github.com/keptn/keptn/api/restapi/operations/metadata"
 	"github.com/keptn/keptn/api/restapi/operations/project"
 	"github.com/keptn/keptn/api/restapi/operations/service"
 )
@@ -71,6 +72,9 @@ func configureAPI(api *operations.EmptyAPI) http.Handler {
 
 	api.EventPostEventHandler = event.PostEventHandlerFunc(handlers.PostEventHandlerFunc)
 	api.EventGetEventHandler = event.GetEventHandlerFunc(handlers.GetEventHandlerFunc)
+
+	// Metadata endpoint
+	api.MetadataMetadataHandler = metadata.MetadataHandlerFunc(handlers.GetMetadataHandlerFunc)
 
 	// Project endpoints
 	api.ProjectDeleteProjectProjectNameHandler = project.DeleteProjectProjectNameHandlerFunc(handlers.DeleteProjectProjectNameHandlerFunc)

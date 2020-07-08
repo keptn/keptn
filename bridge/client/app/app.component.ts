@@ -1,8 +1,5 @@
 import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {Component, OnInit} from '@angular/core';
-import {ApiService} from "./_services/api.service";
-import {NotificationsService} from "./_services/notifications.service";
-import {NotificationType} from "./_models/notification";
 
 declare var dT_;
 

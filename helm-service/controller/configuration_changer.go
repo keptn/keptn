@@ -21,24 +21,18 @@ type ConfigurationChanger struct {
 	generatedChartHandler *helm.GeneratedChartHandler
 	keptnHandler          *keptnevents.Keptn
 	helmExecutor          helm.HelmExecutor
-	ingressHostnameSuffix string
-	ingressProtocol       string
-	ingressPort           string
 	configServiceURL      string
 }
 
 // NewConfigurationChanger creates a new ConfigurationChanger
-func NewConfigurationChanger(mesh mesh.Mesh, keptnHandler *keptnevents.Keptn, ingressHostnameSuffix string, configServiceURL string, ingressProtocol string, ingressPort string) *ConfigurationChanger {
-	generatedChartHandler := helm.NewGeneratedChartHandler(mesh, ingressHostnameSuffix, ingressProtocol, ingressPort, keptnHandler.Logger)
+func NewConfigurationChanger(mesh mesh.Mesh, keptnHandler *keptnevents.Keptn, configServiceURL string) *ConfigurationChanger {
+	generatedChartHandler := helm.NewGeneratedChartHandler(mesh, keptnHandler.Logger)
 	helmExecutor := helm.NewHelmV3Executor(keptnHandler.Logger)
 	return &ConfigurationChanger{
 		mesh:                  mesh,
 		generatedChartHandler: generatedChartHandler,
 		keptnHandler:          keptnHandler,
 		helmExecutor:          helmExecutor,
-		ingressHostnameSuffix: ingressHostnameSuffix,
-		ingressProtocol:       ingressProtocol,
-		ingressPort:           ingressPort,
 		configServiceURL:      configServiceURL,
 	}
 }
@@ -166,7 +160,7 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event,
 		}
 		var shkeptncontext string
 		ce.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
-		if err := sendDeploymentFinishedEvent(keptnHandler, testStrategy, deploymentStrategy, image, tag, c.ingressHostnameSuffix, c.ingressProtocol, c.ingressPort); err != nil {
+		if err := sendDeploymentFinishedEvent(keptnHandler, testStrategy, deploymentStrategy, image, tag, mesh.GetIngressHostnameSuffix(), mesh.GetIngressProtocol(), mesh.GetIngressPort()); err != nil {
 			c.keptnHandler.Logger.Error(fmt.Sprintf("Cannot send deployment finished event: %s", err.Error()))
 			return err
 		}
@@ -203,7 +197,7 @@ func (c *ConfigurationChanger) applyValuesCanary(e *keptnevents.ConfigurationCha
 	if err := c.upgradeChart(ch, *e, deploymentStrategy); err != nil {
 		return err
 	}
-	onboarder := NewOnboarder(c.mesh, c.keptnHandler, c.ingressHostnameSuffix, c.configServiceURL, c.ingressProtocol, c.ingressPort)
+	onboarder := NewOnboarder(c.mesh, c.keptnHandler, c.configServiceURL)
 	if onboarder.IsGeneratedChartEmpty(genChart) {
 		userChartManifest, err := c.helmExecutor.GetManifest(helm.GetReleaseName(e.Project, e.Stage, e.Service, false),
 			e.Project+"-"+e.Stage)
@@ -408,7 +402,7 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 			return err
 		}
 
-		chartGenerator := helm.NewGeneratedChartHandler(c.mesh, c.ingressHostnameSuffix, c.ingressProtocol, c.ingressPort, c.keptnHandler.Logger)
+		chartGenerator := helm.NewGeneratedChartHandler(c.mesh, c.keptnHandler.Logger)
 		userChartManifest, err := c.helmExecutor.GetManifest(helm.GetReleaseName(e.Project, e.Stage, e.Service, false),
 			e.Project+"-"+e.Stage)
 		if err != nil {

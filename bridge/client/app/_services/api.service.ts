@@ -8,6 +8,9 @@ import {Stage} from "../_models/stage";
 import {ProjectResult} from "../_models/project-result";
 import {ServiceResult} from "../_models/service-result";
 import {EventResult} from "../_models/event-result";
+import {Trace} from "../_models/trace";
+import {ApprovalStates} from "../_models/approval-states";
+import {EventTypes} from "../_models/event-types";
 
 @Injectable({
   providedIn: 'root'
@@ -123,6 +126,24 @@ export class ApiService {
     return this.http
       .get<EventResult>(url, { headers: this.defaultHeaders })
       .pipe(catchError(this.handleError<EventResult>('getEvaluationResults')));
+  }
+
+  public sendApprovalEvent(approval: Trace, approve: boolean) {
+    let url = `${this._baseUrl}/v1/event`;
+    return this.http
+      .post<any>(url, {
+        "shkeptncontext": approval.shkeptncontext,
+        "type": EventTypes.APPROVAL_FINISHED,
+        "triggeredid": approval.id,
+        "source": "https://github.com/keptn/keptn/bridge#approval.finished",
+        "data": Object.assign(approval.data, {
+          "approval": {
+            "result": approve ? ApprovalStates.APPROVED : ApprovalStates.DECLINED,
+            "status": "succeeded"
+          }
+        })
+      }, { headers: this.defaultHeaders })
+      .pipe(catchError(this.handleError<any>('sendApprovalEvent')));
   }
 
   private handleError<T>(operation = 'operation', result?: T) {

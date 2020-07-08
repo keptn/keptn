@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from "@angular/common/http";
 import {BehaviorSubject, forkJoin, from, Observable, Subject, timer, of} from "rxjs";
-import {debounce, map, mergeMap, toArray} from "rxjs/operators";
+import {debounce, map, mergeMap, take, toArray} from "rxjs/operators";
 
 import {Root} from "../_models/root";
 import {Trace} from "../_models/trace";
@@ -10,6 +10,7 @@ import {Project} from "../_models/project";
 import {Service} from "../_models/service";
 
 import {ApiService} from "./api.service";
+import {EventTypes} from "../_models/event-types";
 
 @Injectable({
   providedIn: 'root'
@@ -18,6 +19,7 @@ export class DataService {
 
   private _projects = new BehaviorSubject<Project[]>(null);
   private _roots = new BehaviorSubject<Root[]>(null);
+  private _openApprovals = new BehaviorSubject<Trace[]>([]);
   private _versionInfo = new BehaviorSubject<Object>({});
   private _rootsLastUpdated: Object = {};
   private _tracesLastUpdated: Object = {};
@@ -35,6 +37,10 @@ export class DataService {
 
   get roots(): Observable<Root[]> {
     return this._roots.asObservable();
+  }
+
+  get openApprovals(): Observable<Trace[]> {
+    return this._openApprovals.asObservable();
   }
 
   get versionInfo(): Observable<any> {
@@ -149,6 +155,9 @@ export class DataService {
       .subscribe((roots: Root[]) => {
         service.roots = [...roots||[], ...service.roots||[]].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
         this._roots.next(service.roots);
+        roots.forEach(root => {
+          this.updateApprovals(root);
+        })
       });
   }
 
@@ -167,6 +176,7 @@ export class DataService {
       )
       .subscribe((traces: Trace[]) => {
         root.traces = [...traces||[], ...root.traces||[]].sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
+        this.updateApprovals(root);
       });
   }
 
@@ -184,5 +194,22 @@ export class DataService {
         event.data.evaluationHistory = [...traces||[], ...event.data.evaluationHistory||[]].sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
         this._evaluationResults.next(event);
       });
+  }
+
+  public sendApprovalEvent(approval: Trace, approve: boolean) {
+    this.apiService.sendApprovalEvent(approval, approve)
+      .pipe(take(1))
+      .subscribe(() => {
+        let root = this._projects.getValue().find(p => p.projectName == approval.data.project).services.find(s => s.serviceName == approval.data.service).roots.find(r => r.shkeptncontext == approval.shkeptncontext);
+        this.loadTraces(root);
+      });
+  }
+
+  private updateApprovals(root) {
+    if(root.traces.length > 0) {
+      this._openApprovals.next(this._openApprovals.getValue().filter(approval => root.traces.indexOf(approval) < 0));
+      if(root.traces[root.traces.length-1].type == EventTypes.APPROVAL_TRIGGERED)
+        this._openApprovals.next([...this._openApprovals.getValue(), root.traces[root.traces.length-1]].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()));
+    }
   }
 }
