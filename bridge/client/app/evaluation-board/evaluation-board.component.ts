@@ -9,7 +9,9 @@ import {Root} from "../_models/root";
 import {DataService} from "../_services/data.service";
 import {ApiService} from "../_services/api.service";
 import DateUtil from "../_utils/date.utils";
-import {labels, Trace} from "../_models/trace";
+import {Trace} from "../_models/trace";
+import {EventTypes} from "../_models/event-types";
+import {EVENT_LABELS} from "../_models/event-labels";
 
 @Component({
   selector: 'app-project-board',
@@ -44,7 +46,7 @@ export class EvaluationBoardComponent implements OnInit, OnDestroy {
               if(traces.length > 0) {
                 this.root = Root.fromJSON(traces[0]);
                 this.root.traces = traces;
-                this.evaluations = traces.filter(t => t.type == 'sh.keptn.events.evaluation-done' && (!params["eventselector"] || t.id == params["eventselector"] || t.data.stage == params["eventselector"])) ;
+                this.evaluations = traces.filter(t => t.type == EventTypes.EVALUATION_DONE && (!params["eventselector"] || t.id == params["eventselector"] || t.data.stage == params["eventselector"])) ;
               } else {
                 this.error = "contextError";
               }
@@ -60,7 +62,7 @@ export class EvaluationBoardComponent implements OnInit, OnDestroy {
   }
 
   getEventLabel(key): string {
-    return labels[key] || key;
+    return EVENT_LABELS[key] || key;
   }
 
   ngOnDestroy(): void {
