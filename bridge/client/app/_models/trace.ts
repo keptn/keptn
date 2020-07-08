@@ -170,6 +170,10 @@ class Trace {
     return this.data.service;
   }
 
+  getChartLabel(): string {
+    return this.data.labels?.get("buildId") ?? this.time;
+  }
+
   static fromJSON(data: any) {
     return Object.assign(new this, data, { plainEvent: JSON.parse(JSON.stringify(data)) });
   }
