@@ -3,18 +3,17 @@ package cmd
 import (
 	"bufio"
 	"fmt"
-	"helm.sh/helm/v3/pkg/action"
-	"k8s.io/client-go/tools/clientcmd"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"helm.sh/helm/v3/pkg/action"
+	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/keptn/keptn/cli/pkg/logging"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"github.com/spf13/cobra"
 )
-
-var uninstallVersion *string
 
 // uninstallCmd represents the uninstall command
 var uninstallCmd = &cobra.Command{
@@ -139,28 +138,6 @@ func listAllNamespaces() ([]string, error) {
 	return arr, nil
 }
 
-func deleteKeptnInstallerPod(namespace string) error {
-	o := options{"delete", "job", "installer", "-n", namespace, "--ignore-not-found"}
-	o.appendIfNotEmpty(kubectlOptions)
-	out, err := keptnutils.ExecuteCommand("kubectl", o)
-	out = strings.TrimSpace(out)
-	if out != "" {
-		logging.PrintLog(out, logging.VerboseLevel)
-	}
-	return err
-}
-
-func deleteResources(namespace string) error {
-	o := options{"delete", "services,deployments,pods,secrets,configmaps", "--all", "-n", namespace, "--ignore-not-found"}
-	o.appendIfNotEmpty(kubectlOptions)
-	out, err := keptnutils.ExecuteCommand("kubectl", o)
-	out = strings.TrimSpace(out)
-	if out != "" {
-		logging.PrintLog(out, logging.VerboseLevel)
-	}
-	return err
-}
-
 func deleteNamespace(namespace string) error {
 	o := options{"delete", "namespace", namespace, "--ignore-not-found"}
 	o.appendIfNotEmpty(kubectlOptions)
@@ -174,8 +151,5 @@ func deleteNamespace(namespace string) error {
 
 func init() {
 	rootCmd.AddCommand(uninstallCmd)
-	uninstallVersion = uninstallCmd.Flags().StringP("keptn-version", "k", "master",
-		"The branch or tag of the version which is used for updating the domain")
-	uninstallCmd.Flags().MarkHidden("keptn-version")
 	uninstallCmd.PersistentFlags().BoolVarP(&insecureSkipTLSVerify, "insecure-skip-tls-verify", "s", false, "Skip tls verification for kubectl commands")
 }

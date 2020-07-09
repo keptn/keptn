@@ -19,6 +19,16 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"io/ioutil"
+	"net/http"
+	"os"
+	"path/filepath"
+	"regexp"
+	"strings"
+
+	"github.com/keptn/keptn/cli/pkg/version"
+
 	"github.com/keptn/keptn/cli/pkg/file"
 	"github.com/keptn/keptn/cli/pkg/kube"
 	"helm.sh/helm/v3/pkg/action"
@@ -27,19 +37,12 @@ import (
 	"helm.sh/helm/v3/pkg/release"
 	"helm.sh/helm/v3/pkg/storage"
 	"helm.sh/helm/v3/pkg/storage/driver"
-	"io"
-	"io/ioutil"
 	appsv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kyaml "k8s.io/apimachinery/pkg/util/yaml"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/rest"
 	cmdutil "k8s.io/kubectl/pkg/cmd/util"
-	"net/http"
-	"os"
-	"path/filepath"
-	"regexp"
-	"strings"
 
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
@@ -50,7 +53,6 @@ import (
 
 type installCmdParams struct {
 	ConfigFilePath      *string
-	InstallerImage      *string
 	KeptnVersion        *string
 	PlatformIdentifier  *string
 	UseCaseInput        *string
@@ -63,9 +65,9 @@ type installCmdParams struct {
 const keptnInstallerLogFileName = "keptn-installer.log"
 const keptnInstallerErrorLogFileName = "keptn-installer-Err.log"
 
-const keptnReleaseVersion = "0.7.0"
+const keptnInstallerHelmRepoURL = "https://storage.googleapis.com/keptn-installer/"
 
-const keptnRepoURL = "https://storage.googleapis.com/keptn-installer/keptn-" + keptnReleaseVersion + ".tgz"
+const keptnReleaseDocsURL = "0.7.x"
 
 // KubeServerVersionConstraints the Kubernetes Cluster version's constraints is passed by ldflags
 var KubeServerVersionConstraints string
@@ -85,6 +87,8 @@ type platform interface {
 
 var p platform
 
+var installChart *chart.Chart
+
 // installCmd represents the version command
 var installCmd = &cobra.Command{
 	Use:   "install",
@@ -98,7 +102,7 @@ For more information, please consult the following docs:
 `,
 	Example: `keptn install # install on Kubernetes
 keptn install --platform=openshift --use-case=continuous-delivery # install continuous-delivery on Openshift
-keptn install --platform=kubernetes --gateway=NodePort # install on a Kubernetes instance with gateway NodePort`,
+keptn install --platform=kubernetes --keptn-api-service-type=NodePort # install on a Kubernetes instance with gateway NodePort`,
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 
@@ -127,9 +131,26 @@ keptn install --platform=kubernetes --gateway=NodePort # install on a Kubernetes
 		}
 
 		// Mark the quality-gates use case as deprecated - this is now the default option
-		if installParams.UseCase == QualityGates {
+		if *installParams.UseCaseInput == QualityGates.String() {
 			logging.PrintLog("NOTE: The --use-case=quality-gates option is now deprecated and is now a synonym for the default installation of Keptn.", logging.InfoLevel)
 		}
+
+		var chartRepoURL string
+		// Determine installer version
+		if installParams.ChartRepoURL != nil && *installParams.ChartRepoURL != "" {
+			chartRepoURL = *installParams.ChartRepoURL
+		} else if version.IsOfficialKeptnVersion(Version) {
+			version, _ := version.GetOfficialKeptnVersion(Version)
+			chartRepoURL = keptnInstallerHelmRepoURL + "keptn-" + version + ".tgz"
+		} else {
+			chartRepoURL = keptnInstallerHelmRepoURL + "latest/keptn-0.1.0.tgz"
+		}
+
+		if err := downloadChart(chartRepoURL); err != nil {
+			return err
+		}
+
+		logging.PrintLog(fmt.Sprintf("Used Installer chart: %s", chartRepoURL), logging.InfoLevel)
 
 		if !mocking {
 			if p.checkRequirements() != nil {
@@ -177,7 +198,7 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 			if *installParams.PlatformIdentifier != "openshift" {
 				if err := kube.CheckKubeServerVersion(KubeServerVersionConstraints); err != nil {
 					logging.PrintLog(err.Error(), logging.VerboseLevel)
-					logging.PrintLog("See https://keptn.sh/docs/"+keptnReleaseVersion+"/installation/k8s-support/ for details.", logging.VerboseLevel)
+					logging.PrintLog("See https://keptn.sh/docs/"+keptnReleaseDocsURL+"/installation/k8s-support/ for details.", logging.VerboseLevel)
 					return errors.New(`Keptn requires Kubernetes server version: ` + KubeServerVersionConstraints)
 				}
 			}
@@ -185,9 +206,10 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 			// check if istio-system namespace and istio-ingressgateway is available (full installation only)
 			if installParams.UseCase == ContinuousDelivery {
 				if err := checkIstioInstallation(); err != nil {
-					logging.PrintLog("Istio is required for the continuous-delivery use case, but could not be found in your cluster.", logging.InfoLevel)
-					logging.PrintLog("Please install Istio as described in the Istio docs: https://istio.io/latest/docs/setup/getting-started/", logging.InfoLevel)
-					return errors.New("could not find Istio installation: " + err.Error())
+					logging.PrintLog("Istio is required for the continuous-delivery use case, "+
+						"but could not be found in your cluster in namespace istio-system.", logging.InfoLevel)
+					logging.PrintLog("Please install Istio as described "+
+						"in the Istio docs: https://istio.io/latest/docs/setup/getting-started/", logging.InfoLevel)
 				}
 			}
 
@@ -196,6 +218,26 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 		fmt.Println("Skipping installation due to mocking flag")
 		return nil
 	},
+}
+
+func downloadChart(chartRepoURL string) error {
+
+	resp, err := http.Get(chartRepoURL)
+	if err != nil {
+		return errors.New("error retrieving Keptn Helm Chart at " + chartRepoURL + ": " + err.Error())
+	}
+	defer resp.Body.Close()
+
+	bytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return errors.New("error retrieving Keptn Helm Chart at " + chartRepoURL + ": " + err.Error())
+	}
+
+	installChart, err = keptnutils.LoadChart(bytes)
+	if err != nil {
+		return errors.New("error retrieving Keptn Helm Chart at " + chartRepoURL + ": " + err.Error())
+	}
+	return nil
 }
 
 func checkIstioInstallation() error {
@@ -238,7 +280,7 @@ func init() {
 	installParams = installCmdParams{}
 
 	installParams.PlatformIdentifier = installCmd.Flags().StringP("platform", "p", "kubernetes",
-		"The platform to run keptn on [kubernetes,openshift]")
+		"The platform to run keptn on ["+kubernetes+","+openshift+"]")
 
 	installParams.ConfigFilePath = installCmd.Flags().StringP("creds", "c", "",
 		"Specify a JSON file containing cluster information needed for the installation (this allows skipping user prompts to execute a *silent* Keptn installation)")
@@ -251,7 +293,7 @@ func init() {
 			LoadBalancer.String()+","+NodePort.String()+"]")
 
 	installParams.ChartRepoURL = installCmd.Flags().StringP("chart-repo", "",
-		keptnRepoURL, "URL of the Keptn Helm Chart repository")
+		"", "URL of the Keptn Helm Chart repository")
 	installCmd.Flags().MarkHidden("chart-repo")
 
 	installCmd.PersistentFlags().BoolVarP(&insecureSkipTLSVerify, "insecure-skip-tls-verify", "s",
@@ -406,26 +448,6 @@ func waitForDeploymentsOfHelmRelease(helmManifest string) error {
 // Preconditions: 1. Already authenticated against the cluster.
 func doInstallation() error {
 
-	url := keptnRepoURL
-	if *installParams.ChartRepoURL != "" {
-		url = *installParams.ChartRepoURL
-	}
-	resp, err := http.Get(url)
-	if err != nil {
-		return errors.New("error retrieving Keptn Helm Chart at " + url + ": " + err.Error())
-	}
-	defer resp.Body.Close()
-
-	bytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return errors.New("error retrieving Keptn Helm Chart at " + url + ": " + err.Error())
-	}
-
-	ch, err := keptnutils.LoadChart(bytes)
-	if err != nil {
-		return errors.New("error retrieving Keptn Helm Chart at " + url + ": " + err.Error())
-	}
-
 	values := map[string]interface{}{
 		"continuous-delivery": map[string]interface{}{
 			"enabled": installParams.UseCase == ContinuousDelivery,
@@ -441,22 +463,14 @@ func doInstallation() error {
 		},
 	}
 
-	err = upgradeChart(ch, "keptn", "keptn", values)
-	if err != nil {
+	if err := upgradeChart(installChart, "keptn", "keptn", values); err != nil {
 		logging.PrintLog("Could not complete Keptn installation: "+err.Error(), logging.InfoLevel)
 		return err
 	}
 
 	logging.PrintLog("Keptn has been successfully set up on your cluster.", logging.InfoLevel)
-	logging.PrintLog("To connect the Keptn CLI with the Keptn API on your cluster, please refer to the instructions at https://keptn.sh/docs/"+keptnReleaseVersion+"/operate", logging.InfoLevel)
-	/*
-		if err := authUsingKube(installParams.ApiServiceType); err != nil {
-			if err != nil {
-				logging.PrintLog("Could not authenticate at Keptn API. For further instructions, please refer to the instructions at https://keptn.sh/docs/0.7.0/operate", logging.InfoLevel)
-			}
-			return err
-		}
-	*/
+	logging.PrintLog("To connect the Keptn CLI with the Keptn API on your cluster, "+
+		"please refer to the instructions at https://keptn.sh/docs/"+keptnReleaseDocsURL+"/operate", logging.InfoLevel)
 	return nil
 }
 
@@ -484,7 +498,7 @@ func readCreds() error {
 		p.readCreds()
 
 		fmt.Println()
-		fmt.Println("Please confirm that the provided information is correct: ")
+		fmt.Println("Please confirm that the provided cluster information is correct: ")
 
 		p.printCreds()
 
