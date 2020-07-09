@@ -9,7 +9,7 @@ import {Location} from "@angular/common";
   templateUrl: './ktb-events-list.component.html',
   styleUrls: ['./ktb-events-list.component.scss'],
   host: {
-    class: 'ktb-root-events-list'
+    class: 'ktb-events-list'
   },
   encapsulation: ViewEncapsulation.None,
   preserveWhitespaces: false,

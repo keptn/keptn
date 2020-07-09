@@ -56,10 +56,6 @@
   }
 }
 
-::ng-deep .dt-menu,
-::ng-deep .dt-menu-group-header {
-  background-color: lighten($primary-color, 5%) !important;
-}
 ::ng-deep .dt-menu-item {
   padding: 6px 40px 6px 20px !important;
   height: auto !important;
@@ -67,7 +63,7 @@
 }
 ::ng-deep .dt-menu-item.active,
 ::ng-deep .dt-menu-item:hover {
-  background: $primary-color !important;
+  background: $gray-700 !important;
 }
 
 ::ng-deep .ktb-expandable-tile .dt-show-more-icon {

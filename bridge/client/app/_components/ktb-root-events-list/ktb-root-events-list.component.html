@@ -1,6 +1,6 @@
 <div fxLayout="column" fxLayoutGap="5px">
   <div *ngFor="let event of _events;trackBy: identifyEvent">
-    <ktb-selectable-tile (click)="selectEvent(event)" [selected]="_selectedEvent == event" *ngIf="event">
+    <ktb-selectable-tile (click)="selectEvent(event)" [error]="event.isFaulty()" [selected]="_selectedEvent == event" *ngIf="event">
       <div fxLayout="row">
         <div fxFlex>
           <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
