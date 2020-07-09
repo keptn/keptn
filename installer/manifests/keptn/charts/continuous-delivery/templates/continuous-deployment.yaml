@@ -63,6 +63,7 @@ spec:
       containers:
       - name: gatekeeper-service
         image: {{ .Values.image.registry}}/keptn/gatekeeper-service:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
         resources:
@@ -110,6 +111,7 @@ spec:
       containers:
       - name: distributor
         image: {{ .Values.image.registry}}/keptn/distributor:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
         resources:
@@ -145,6 +147,7 @@ spec:
       containers:
         - name: distributor
           image: {{ .Values.image.registry}}/keptn/distributor:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           resources:
@@ -182,6 +185,7 @@ spec:
       containers:
       - name: distributor
         image: {{ .Values.image.registry}}/keptn/distributor:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
         resources:
@@ -218,6 +222,7 @@ spec:
       containers:
       - name: jmeter-service
         image: {{ .Values.image.registry}}/keptn/jmeter-service:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
         env:
@@ -258,6 +263,7 @@ spec:
       containers:
       - name: distributor
         image: {{ .Values.image.registry}}/keptn/distributor:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
         resources:

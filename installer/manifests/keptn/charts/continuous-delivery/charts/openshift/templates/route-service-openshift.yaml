@@ -58,6 +58,7 @@ spec:
       containers:
       - name: openshift-route-service
         image: {{ .Values.image.registry}}/keptn/openshift-route-service:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
         resources:

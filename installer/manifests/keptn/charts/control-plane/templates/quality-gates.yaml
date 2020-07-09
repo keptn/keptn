@@ -17,6 +17,7 @@ spec:
       containers:
         - name: lighthouse-service
           image: {{ .Values.image.registry}}/keptn/lighthouse-service:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           resources:
@@ -67,6 +68,7 @@ spec:
       containers:
         - name: distributor
           image: {{ .Values.image.registry}}/keptn/distributor:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           resources:

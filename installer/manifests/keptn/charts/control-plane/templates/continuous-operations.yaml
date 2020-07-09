@@ -17,6 +17,7 @@ spec:
       containers:
       - name: remediation-service
         image: {{ .Values.image.registry}}/keptn/remediation-service:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
         resources:
@@ -71,6 +72,7 @@ spec:
       containers:
       - name: distributor
         image: {{ .Values.image.registry}}/keptn/distributor:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
         resources:

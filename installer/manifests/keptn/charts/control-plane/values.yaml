@@ -10,3 +10,7 @@ image:
 
 nats:
   nameOverride: keptn-nats-cluster
+  nats.cluster.replicas: 1
+
+  natsbox:
+    enabled: false

@@ -19,6 +19,7 @@ spec:
       containers:
       - name: mongodb-datastore
         image: {{ .Values.image.registry}}/keptn/mongodb-datastore:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
         resources:
