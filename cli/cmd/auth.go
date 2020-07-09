@@ -138,7 +138,6 @@ To manually set up your keptn CLI, please follow the instructions at https://kep
 		case ClusterIP:
 			logging.PrintLog("Cannot reach API service of type 'ClusterIP'", logging.InfoLevel)
 			return errors.New("cannot reach API service of type 'ClusterIP'")
-			break
 		default:
 			break
 		}
