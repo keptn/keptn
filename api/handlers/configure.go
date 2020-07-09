@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	b64 "encoding/base64"
 	"fmt"
 	"github.com/keptn/keptn/api/restapi/operations/configuration"
 	corev1 "k8s.io/api/core/v1"
@@ -80,20 +79,23 @@ func GetConfigureBridgeHandlerFunc(params configuration.GetConfigBridgeParams, p
 		return configuration.NewGetConfigBridgeDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not read bridge credentials: no username found")})
 	}
 
-	userDecoded, err := b64.StdEncoding.DecodeString(string(bridgeCredentials.Data["BASIC_AUTH_USERNAME"]))
-	if err != nil {
-		l.Error("Could not decode username: " + err.Error())
-		return configuration.NewGetConfigBridgeDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not red bridge credentials: could not decode username")})
-	}
-	passwordDecoded, err := b64.StdEncoding.DecodeString(string(bridgeCredentials.Data["BASIC_AUTH_PASSWORD"]))
-	if err != nil {
-		l.Error("Could not decode password: " + err.Error())
-		return configuration.NewGetConfigBridgeDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not red bridge credentials: could not decode password")})
-	}
+	/*
+		userDecoded, err := b64.StdEncoding.DecodeString(string(bridgeCredentials.Data["BASIC_AUTH_USERNAME"]))
+		if err != nil {
+			l.Error("Could not decode username: " + err.Error())
+			return configuration.NewGetConfigBridgeDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not red bridge credentials: could not decode username")})
+		}
+		passwordDecoded, err := b64.StdEncoding.DecodeString(string(bridgeCredentials.Data["BASIC_AUTH_PASSWORD"]))
+		if err != nil {
+			l.Error("Could not decode password: " + err.Error())
+			return configuration.NewGetConfigBridgeDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not red bridge credentials: could not decode password")})
+		}
+
+	*/
 
 	creds := &models.ConfigureBridge{
-		Password: swag.String(string(passwordDecoded)),
-		User:     swag.String(string(userDecoded)),
+		Password: swag.String(string(bridgeCredentials.Data["BASIC_AUTH_PASSWORD"])),
+		User:     swag.String(string(bridgeCredentials.Data["BASIC_AUTH_USERNAME"])),
 	}
 
 	return configuration.NewGetConfigBridgeOK().WithPayload(creds)
