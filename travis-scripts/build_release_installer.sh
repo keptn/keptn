@@ -6,11 +6,12 @@ if [ -n "$VERSION" ]; then
   exit 1
 fi
 
-cd keptn/charts/control-plane
-helm dependency build
-cd ../../..
+BASE_PATH=installer/manifests
 
-helm package keptn --app-version $VERSION --version $VERSION
+helm repo add nats https://nats-io.github.io/k8s/helm/charts/
+helm dependency build ${BASE_PATH}/keptn/charts/control-plane
+
+helm package ${BASE_PATH}/keptn --app-version $VERSION --version $VERSION
 if [ $? -ne 0 ]; then
   echo 'Error packing installer, exiting...'
   exit 1

@@ -10,7 +10,3 @@ The scripts and manifests are finally put into a container, which starts the ini
 * PKS
 * Kubernetes
 * Minikube 1.2
-
-## Installed external tools
-* [Helm v3.1.2](https://v2.helm.sh/)
-* [Istio v1.2.5](https://istio.io/)
