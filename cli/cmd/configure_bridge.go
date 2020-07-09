@@ -17,6 +17,7 @@ import (
 type configureBridgeCmdParams struct {
 	User     *string
 	Password *string
+	Read     *bool
 }
 
 type configureBridgeAPIPayload struct {
@@ -54,12 +55,58 @@ var bridgeCmd = &cobra.Command{
 }
 
 func configureBridge(endpoint string, apiToken string, configureBridgeParams *configureBridgeCmdParams) error {
-	exposeBridgeParams := configureBridgeAPIPayload{
+	if configureBridgeParams.Read != nil && *configureBridgeParams.Read {
+		creds, err := retrieveBridgeCredentials(endpoint, apiToken)
+		if err != nil {
+			fmt.Println("Could not retrieve bridge credentials: " + err.Error())
+			return err
+		}
+		fmt.Println(creds.User + " / " + creds.Password)
+		return nil
+	} else {
+		return configureBridgeCredentials(endpoint, apiToken, configureBridgeParams)
+	}
+}
+
+func retrieveBridgeCredentials(endpoint string, apiToken string) (*configureBridgeAPIPayload, error) {
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			DialContext:     keptnutils.ResolveXipIoWithContext,
+		},
+	}
+	req, err := http.NewRequest("GET", endpoint, nil)
+	req.Header.Add("x-token", apiToken)
+	req.Header.Add("content-type", "application/json")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Could not complete command: " + err.Error())
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return nil, errors.New("Could not complete command: " + string(body))
+	}
+
+	res := &configureBridgeAPIPayload{}
+	json.Unmarshal(body, res)
+
+	if err != nil {
+		return nil, errors.New("Could not decode bridge credentials: " + err.Error())
+	}
+	return res, nil
+}
+
+func configureBridgeCredentials(endpoint string, apiToken string, configureBridgeParams *configureBridgeCmdParams) error {
+	bridgeCredentials := configureBridgeAPIPayload{
 		User:     *configureBridgeParams.User,
 		Password: *configureBridgeParams.Password,
 	}
 
-	payload, err := json.Marshal(exposeBridgeParams)
+	payload, err := json.Marshal(bridgeCredentials)
 	if err != nil {
 		fmt.Println("Could not complete command: " + err.Error())
 		return err
@@ -94,6 +141,9 @@ func configureBridge(endpoint string, apiToken string, configureBridgeParams *co
 }
 
 func verifyConfigureBridgeParams(configureBridgeParams *configureBridgeCmdParams) error {
+	if configureBridgeParams.Read != nil && *configureBridgeParams.Read {
+		return nil
+	}
 	if configureBridgeParams.User == nil || *configureBridgeParams.User == "" {
 		return errors.New("please specify a user name for exposing the bridge using the '--user=<username>' flag")
 	}
@@ -108,7 +158,7 @@ func init() {
 	configureBridgeParams = &configureBridgeCmdParams{}
 
 	configureBridgeParams.User = bridgeCmd.Flags().StringP("user", "u", "", "The user name to login to the bridge")
-	_ = configureCmd.MarkFlagRequired("user")
 	configureBridgeParams.Password = bridgeCmd.Flags().StringP("password", "p", "", "The password to login to the bridge")
-	_ = configureCmd.MarkFlagRequired("password")
+
+	configureBridgeParams.Read = bridgeCmd.Flags().BoolP("output", "o", false, "Print the current credentials")
 }
