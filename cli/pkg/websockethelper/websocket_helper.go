@@ -70,7 +70,7 @@ func openWS(connData keptnutils.ConnectionData, apiEndPoint url.URL, useWss bool
 	dialer.TLSClientConfig = &tls.Config{
 		InsecureSkipVerify: true,
 	}
-	conn, resp, err := dialer.Dial(wsEndPoint.String(), header)
+	conn, resp, err := dialer.Dial(wsEndPoint.String()+"/websocket", header)
 	if err != nil {
 		return nil, nil, err
 	}

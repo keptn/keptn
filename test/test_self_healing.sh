@@ -147,7 +147,7 @@ else
   echo "Verified that no remediation.finished event has been sent"
 fi
 
-sleep 120
+sleep 60
 
 response=$(curl -X GET "${KEPTN_ENDPOINT}/mongodb-datastore/event?project=${PROJECT}&type=sh.keptn.event.remediation.finished&keptnContext=${keptn_context_id}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.events | length')
 
@@ -201,7 +201,7 @@ else
   echo "Verified that no remediation.finished event has been sent"
 fi
 
-sleep 120
+sleep 60
 
 response=$(curl -X GET "${KEPTN_ENDPOINT}/mongodb-datastore/event?project=${PROJECT}&type=sh.keptn.event.remediation.finished&keptnContext=${keptn_context_id}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.events | length')
 
