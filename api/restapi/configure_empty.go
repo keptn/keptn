@@ -4,6 +4,7 @@ package restapi
 
 import (
 	"crypto/tls"
+	"github.com/keptn/keptn/api/restapi/operations/configuration"
 	"log"
 	"net/http"
 	"os"
@@ -20,7 +21,6 @@ import (
 	"github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations"
 	"github.com/keptn/keptn/api/restapi/operations/auth"
-	"github.com/keptn/keptn/api/restapi/operations/configure"
 	"github.com/keptn/keptn/api/restapi/operations/event"
 	"github.com/keptn/keptn/api/restapi/operations/metadata"
 	"github.com/keptn/keptn/api/restapi/operations/project"
@@ -35,7 +35,7 @@ func configureFlags(api *operations.EmptyAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
 }
 
-func configureAPI(api *operations.EmptyAPI) http.Handler {
+func configureAPI(api *operations.API) http.Handler {
 	// configure the api here
 	api.ServeError = errors.ServeError
 
@@ -68,7 +68,8 @@ func configureAPI(api *operations.EmptyAPI) http.Handler {
 		return auth.NewAuthOK()
 	})
 
-	api.ConfigurePostConfigureBridgeExposeHandler = configure.PostConfigureBridgeExposeHandlerFunc(handlers.PostConfigureBridgeHandlerFunc)
+	api.ConfigurationPostConfigBridgeHandler = configuration.PostConfigBridgeHandlerFunc(handlers.PostConfigureBridgeHandlerFunc)
+	api.ConfigurationGetConfigBridgeHandler = configuration.GetConfigBridgeHandlerFunc(handlers.GetConfigureBridgeHandlerFunc)
 
 	api.EventPostEventHandler = event.PostEventHandlerFunc(handlers.PostEventHandlerFunc)
 	api.EventGetEventHandler = event.GetEventHandlerFunc(handlers.GetEventHandlerFunc)
@@ -82,8 +83,6 @@ func configureAPI(api *operations.EmptyAPI) http.Handler {
 
 	// Service endpoints
 	api.ServicePostProjectProjectNameServiceHandler = service.PostProjectProjectNameServiceHandlerFunc(handlers.PostServiceHandlerFunc)
-
-	api.PreServerShutdown = func() {}
 
 	api.ServerShutdown = func() {}
 

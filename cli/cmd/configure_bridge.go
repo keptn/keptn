@@ -48,7 +48,7 @@ var bridgeCmd = &cobra.Command{
 			return errors.New(authErrorMsg)
 		}
 
-		configureBridgeEndpoint := endpoint.Scheme + "://" + endpoint.Host + "/v1/configure/bridge"
+		configureBridgeEndpoint := endpoint.Scheme + "://" + endpoint.Host + "/v1/config/bridge"
 		return configureBridge(configureBridgeEndpoint, apiToken, configureBridgeParams)
 	},
 }

@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	b64 "encoding/base64"
 	"fmt"
+	"github.com/keptn/keptn/api/restapi/operations/configuration"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 	"path/filepath"
@@ -13,44 +15,88 @@ import (
 	"github.com/go-openapi/swag"
 	keptnutils "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/api/models"
-	"github.com/keptn/keptn/api/restapi/operations/configure"
 	k8sutils "github.com/keptn/kubernetes-utils/pkg"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const useInClusterConfig = true
 
-func PostConfigureBridgeHandlerFunc(params configure.PostConfigureBridgeExposeParams, principal *models.Principal) middleware.Responder {
+func PostConfigureBridgeHandlerFunc(params configuration.PostConfigBridgeParams, principal *models.Principal) middleware.Responder {
 
 	l := keptnutils.NewLogger("", "", "api")
-	l.Info("API received a configure Bridge request")
+	l.Info("API received a configure Bridge POST request")
 
 	if params.ConfigureBridge.User == nil || *params.ConfigureBridge.User == "" {
 		errMsg := fmt.Sprintf("no user provided")
 		l.Error(errMsg)
-		return configure.NewPostConfigureBridgeExposeDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(errMsg)})
+		return configuration.NewPostConfigBridgeDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(errMsg)})
 	}
 	if params.ConfigureBridge.Password == nil || *params.ConfigureBridge.Password == "" {
 		errMsg := fmt.Sprintf("no password provided")
 		l.Error(errMsg)
-		return configure.NewPostConfigureBridgeExposeDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(errMsg)})
+		return configuration.NewPostConfigBridgeDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(errMsg)})
 	}
 
 	err := createBridgeCredentials(*params.ConfigureBridge.User, *params.ConfigureBridge.Password, l)
 	if err != nil {
 		errMsg := fmt.Sprintf("failed to create bridge credentials: %v", err)
 		l.Error(errMsg)
-		return configure.NewPostConfigureBridgeExposeDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(errMsg)})
+		return configuration.NewPostConfigBridgeDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(errMsg)})
 	}
 
 	err = restartBridgePod(l)
 	if err != nil {
 		errMsg := fmt.Sprintf("failed to restart bridge pod: %v", err)
 		l.Error(errMsg)
-		return configure.NewPostConfigureBridgeExposeDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(errMsg)})
+		return configuration.NewPostConfigBridgeDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(errMsg)})
 	}
 
-	return configure.NewPostConfigureBridgeExposeOK()
+	return configuration.NewPostConfigBridgeOK()
+}
+
+func GetConfigureBridgeHandlerFunc(params configuration.GetConfigBridgeParams, principal *models.Principal) middleware.Responder {
+	l := keptnutils.NewLogger("", "", "api")
+	l.Info("API received a configuration Bridge GET request")
+
+	k8s, err := getK8sClient()
+	if err != nil {
+		l.Error("Could not create k8s client: " + err.Error())
+		return configuration.NewGetConfigBridgeDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not read bridge credentials")})
+	}
+
+	l.Info("Checking for existing secret")
+	bridgeCredentials, err := k8s.CoreV1().Secrets("keptn").Get("bridge-credentials", metav1.GetOptions{})
+
+	if err != nil {
+		l.Error(err.Error())
+		return configuration.NewGetConfigBridgeDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not read bridge credentials")})
+	}
+
+	if bridgeCredentials.Data["BASIC_AUTH_PASSWORD"] == nil || len(bridgeCredentials.Data["BASIC_AUTH_PASSWORD"]) == 0 {
+		return configuration.NewGetConfigBridgeDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not read bridge credentials: no password found")})
+	}
+
+	if bridgeCredentials.Data["BASIC_AUTH_USERNAME"] == nil || len(bridgeCredentials.Data["BASIC_AUTH_USERNAME"]) == 0 {
+		return configuration.NewGetConfigBridgeDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not read bridge credentials: no username found")})
+	}
+
+	userDecoded, err := b64.StdEncoding.DecodeString(string(bridgeCredentials.Data["BASIC_AUTH_USERNAME"]))
+	if err != nil {
+		l.Error("Could not decode username: " + err.Error())
+		return configuration.NewGetConfigBridgeDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not red bridge credentials: could not decode username")})
+	}
+	passwordDecoded, err := b64.StdEncoding.DecodeString(string(bridgeCredentials.Data["BASIC_AUTH_PASSWORD"]))
+	if err != nil {
+		l.Error("Could not decode password: " + err.Error())
+		return configuration.NewGetConfigBridgeDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not red bridge credentials: could not decode password")})
+	}
+
+	creds := &models.ConfigureBridge{
+		Password: swag.String(string(passwordDecoded)),
+		User:     swag.String(string(userDecoded)),
+	}
+
+	return configuration.NewGetConfigBridgeOK().WithPayload(creds)
 }
 
 func getK8sClient() (*kubernetes.Clientset, error) {
