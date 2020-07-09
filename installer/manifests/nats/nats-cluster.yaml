@@ -1,8 +1,0 @@
-apiVersion: nats.io/v1alpha2
-kind: NatsCluster
-metadata:
-  name: keptn-nats-cluster
-  namespace: keptn
-spec:
-  size: 1
-  version: "2.0.0"

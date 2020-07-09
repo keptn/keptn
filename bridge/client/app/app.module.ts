@@ -137,7 +137,7 @@ registerLocaleData(localeEn, 'en');
     DtToastModule,
     MatDialogModule,
     DtIconModule.forRoot({
-      svgIconLocation: `/assets/icons/{{name}}.svg`,
+      svgIconLocation: `assets/icons/{{name}}.svg`,
     }),
     BrowserAnimationsModule,
   ],

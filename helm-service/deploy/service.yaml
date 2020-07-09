@@ -28,11 +28,11 @@ spec:
             cpu: "1000m"
         env:
         - name: CONFIGURATION_SERVICE
-          value: 'http://configuration-service.keptn.svc.cluster.local:8080'
+          value: 'http://configuration-service:8080'
         - name: EVENTBROKER
-          value: 'http://event-broker.keptn.svc.cluster.local/keptn'
+          value: 'http://event-broker/keptn'
         - name: API
-          value: 'ws://api-service.keptn.svc.cluster.local:8080'
+          value: 'ws://api-service:8080/websocket'
         - name: ENVIRONMENT
           value: 'production'
         - name: PRE_WORKFLOW_ENGINE

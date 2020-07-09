@@ -113,17 +113,11 @@ func setupMiddlewares(handler http.Handler) http.Handler {
 // So this is a good place to plug in a panic handling middleware, logging and metrics
 func setupGlobalMiddleware(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Shortcut helpers for swagger-ui
-		if r.URL.Path == "/swagger-ui" {
-			http.Redirect(w, r, "/swagger-ui/", http.StatusFound)
-			return
-		}
-		// Serving ./swagger-ui/
 		if strings.Index(r.URL.Path, "/swagger-ui/") == 0 {
 			http.StripPrefix("/swagger-ui/", http.FileServer(http.Dir("swagger-ui"))).ServeHTTP(w, r)
 			return
 		}
-		if r.URL.Path == "/" {
+		if r.URL.Path == "/websocket" {
 			// Verify token
 			err := ws.VerifyToken(r.Header)
 			if err != nil {

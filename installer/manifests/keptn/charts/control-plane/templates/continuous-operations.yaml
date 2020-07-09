@@ -1,0 +1,92 @@
+---
+# remediation-service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: remediation-service
+spec:
+  selector:
+    matchLabels:
+      run: remediation-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: remediation-service
+    spec:
+      containers:
+      - name: remediation-service
+        image: {{ .Values.image.registry}}/keptn/remediation-service:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "1024Mi"
+            cpu: "500m"
+        env:
+          - name: EVENTBROKER
+            value: 'http://event-broker/keptn'
+          - name: CONFIGURATION_SERVICE
+            value: 'http://configuration-service:8080'
+          - name: MONGODB_DATASTORE
+            value: 'http://mongodb-datastore:8080'
+          - name: ENVIRONMENT
+            value: 'production'
+          - name: WAIT_TIME_MINUTES
+            value: '10m'
+      serviceAccountName: keptn-default
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: remediation-service
+  labels:
+    run: remediation-service
+spec:
+  ports:
+  - port: 8080
+    targetPort: 8080
+    protocol: TCP
+  selector:
+    run: remediation-service
+---
+## remediation-service: sh.keptn.event.problem.open
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: remediation-service-distributor
+spec:
+  selector:
+    matchLabels:
+      run: distributor
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: distributor
+    spec:
+      containers:
+      - name: distributor
+        image: {{ .Values.image.registry}}/keptn/distributor:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        env:
+        - name: PUBSUB_URL
+          value: 'nats://keptn-nats-cluster'
+        - name: PUBSUB_TOPIC
+          value: 'sh.keptn.>'
+        - name: PUBSUB_RECIPIENT
+          value: 'remediation-service'
+      serviceAccountName: keptn-default
