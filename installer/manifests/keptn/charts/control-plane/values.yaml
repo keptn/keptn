@@ -1,12 +1,12 @@
 mongodb:
   enabled: true
 
-nats:
-  enabled: true
-
 apiNginxGateway:
   type: ClusterIP
   port: 80
 
 image:
   registry: docker.io
+
+nats:
+  nameOverride: keptn-nats-cluster
