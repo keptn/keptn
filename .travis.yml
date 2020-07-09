@@ -344,9 +344,9 @@ jobs:
       - cd ./installer/manifests
       - source ../../travis-scripts/build_latest_installer.sh "${VERSION}"
       - cd ../..
-    ##################################################################################
-    # feature/bug/hotfix/patch branches build jobs
-    ##################################################################################
+  ##################################################################################
+  # feature/bug/hotfix/patch branches build jobs
+  ##################################################################################
   - stage: Partial Build for feature/bug/hotfix/patch branches (CLI + Docker Images)
     if: branch =~ ^feature.*$ OR branch =~ ^bug.*$ OR branch =~ ^hotfix.*$ OR branch =~ ^patch.*$
     os: osx
@@ -388,11 +388,11 @@ jobs:
     services:
       - docker
     script:
-      - set -e # Fail the whole script whenever any command fails
-      - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
-      - ./writeManifest.sh
-      - TYPE="$(echo $TRAVIS_BRANCH | cut -d'/' -f1)"
-      - NUMBER="$(echo $TRAVIS_BRANCH | cut -d'/' -f2)"
+    - set -e # Fail the whole script whenever any command fails
+    - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
+    - ./writeManifest.sh
+    - TYPE="$(echo $TRAVIS_BRANCH | cut -d'/' -f1)"
+    - NUMBER="$(echo $TRAVIS_BRANCH | cut -d'/' -f2)"
     - |
       if [[ $CHANGED_FILES == *"${API_FOLDER}"*  ]]; then
         source ./travis-scripts/build_feature.sh "${API_IMAGE}" "${API_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
@@ -491,9 +491,9 @@ jobs:
     services:
       - docker
     script:
-      - set -e # Fail the whole script whenever any command fails
-      - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
-      # overwrite version for release branches based on the branch name
+    - set -e # Fail the whole script whenever any command fails
+    - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
+    # overwrite version for release branches based on the branch name
     - export VERSION=${BRANCH#"release-"}
     - ./writeManifest.sh
     - source ./travis-scripts/build_release.sh "${API_IMAGE}" "${API_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
