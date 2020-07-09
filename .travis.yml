@@ -338,6 +338,7 @@ jobs:
       - source ./travis-scripts/install_gcloud.sh
       - echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
       - gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
+      - source ./travis-scripts/install_helm.sh
     script:
       - export VERSION="latest"
       - echo "Build installer"
@@ -372,6 +373,7 @@ jobs:
       - source ./travis-scripts/install_gcloud.sh
       - echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
       - gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
+      - source ./travis-scripts/install_helm.sh
     script:
       - TYPE="$(echo $TRAVIS_BRANCH | cut -d'/' -f1)"
       - NUMBER="$(echo $TRAVIS_BRANCH | cut -d'/' -f2)"
@@ -477,6 +479,7 @@ jobs:
       - source ./travis-scripts/install_gcloud.sh
       - echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
       - gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
+      - source ./travis-scripts/install_helm.sh
     script:
       # overwrite version for release branches based on the branch name
       - export VERSION=${BRANCH#"release-"}
