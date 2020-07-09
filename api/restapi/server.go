@@ -38,7 +38,7 @@ var defaultSchemes []string
 
 func init() {
 	defaultSchemes = []string{
-		schemeHTTPS,
+		schemeHTTP,
 	}
 }
 
