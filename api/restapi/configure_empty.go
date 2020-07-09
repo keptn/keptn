@@ -118,7 +118,7 @@ func setupGlobalMiddleware(handler http.Handler) http.Handler {
 			http.StripPrefix("/swagger-ui/", http.FileServer(http.Dir("swagger-ui"))).ServeHTTP(w, r)
 			return
 		}
-		if r.URL.Path == "/" {
+		if r.URL.Path == "/websocket" {
 			// Verify token
 			err := ws.VerifyToken(r.Header)
 			if err != nil {

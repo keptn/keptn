@@ -205,7 +205,7 @@ spec:
             - name: EVENTBROKER
               value: 'http://event-broker/keptn'
             - name: API
-              value: 'ws://api-service:8080'
+              value: 'ws://api-service:8080/websocket'
             - name: ENVIRONMENT
               value: 'production'
             - name: PRE_WORKFLOW_ENGINE
@@ -318,7 +318,7 @@ spec:
             - name: EVENTBROKER
               value: 'http://event-broker/keptn'
             - name: API
-              value: 'ws://api-service:8080'
+              value: 'ws://api-service:8080/websocket'
       serviceAccountName: keptn-default
 ---
 apiVersion: v1
