@@ -9,7 +9,7 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/gorilla/websocket v1.4.1
 	github.com/hashicorp/go-version v1.2.0
-	github.com/keptn/go-utils v0.6.3-0.20200708100340-390c6462cd27
+	github.com/keptn/go-utils v0.6.3-0.20200709130352-6dacb8130dc0
 	github.com/keptn/kubernetes-utils v0.1.1-0.20200625070721-78fa6ab70b07
 	github.com/magiconair/properties v1.8.1
 	github.com/mattn/go-shellwords v1.0.10
