@@ -20,23 +20,17 @@ import (
 
 // Onboarder is a container of variables required for onboarding a new service
 type Onboarder struct {
-	mesh                  mesh.Mesh
-	keptnHandler          *keptnevents.Keptn
-	ingressHostnameSuffix string
-	ingressProtocol       string
-	ingressPort           string
-	configServiceURL      string
+	mesh             mesh.Mesh
+	keptnHandler     *keptnevents.Keptn
+	configServiceURL string
 }
 
 // NewOnboarder creates a new Onboarder
-func NewOnboarder(mesh mesh.Mesh, keptnHandler *keptnevents.Keptn, ingressHostnameSuffix string, configServiceURL string, ingressProtocol string, ingressPort string) *Onboarder {
+func NewOnboarder(mesh mesh.Mesh, keptnHandler *keptnevents.Keptn, configServiceURL string) *Onboarder {
 	return &Onboarder{
-		mesh:                  mesh,
-		keptnHandler:          keptnHandler,
-		ingressHostnameSuffix: ingressHostnameSuffix,
-		configServiceURL:      configServiceURL,
-		ingressProtocol:       ingressProtocol,
-		ingressPort:           ingressPort,
+		mesh:             mesh,
+		keptnHandler:     keptnHandler,
+		configServiceURL: configServiceURL,
 	}
 }
 
@@ -208,7 +202,7 @@ func (o *Onboarder) onboardService(stageName string, event *keptnevents.ServiceC
 			return err
 		}
 
-		chartGenerator := helm.NewGeneratedChartHandler(o.mesh, o.ingressHostnameSuffix, o.ingressProtocol, o.ingressPort, o.keptnHandler.Logger)
+		chartGenerator := helm.NewGeneratedChartHandler(o.mesh, o.keptnHandler.Logger)
 		o.keptnHandler.Logger.Debug(fmt.Sprintf("For stage %s with deployment strategy %s, an empty chart is generated", stageName, event.DeploymentStrategies[stageName].String()))
 		generatedChart := chartGenerator.GenerateEmptyChart(event.Service, event.DeploymentStrategies[stageName])
 
@@ -241,7 +235,7 @@ func (c *Onboarder) IsGeneratedChartEmpty(chart *chart.Chart) bool {
 func (o *Onboarder) OnboardGeneratedService(helmManifest string, project string, stageName string,
 	service string, strategy keptnevents.DeploymentStrategy) (*chart.Chart, error) {
 
-	chartGenerator := helm.NewGeneratedChartHandler(o.mesh, o.ingressHostnameSuffix, o.ingressProtocol, o.ingressPort, o.keptnHandler.Logger)
+	chartGenerator := helm.NewGeneratedChartHandler(o.mesh, o.keptnHandler.Logger)
 
 	helmChartName := helm.GetChartName(service, true)
 	o.keptnHandler.Logger.Debug(fmt.Sprintf("Generating the keptn-managed Helm chart %s for stage %s", helmChartName, stageName))

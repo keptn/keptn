@@ -1,0 +1,11 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ingress-config
+
+data:
+  ingress_hostname_suffix: ""
+  ingress_protocol: ""
+  ingress_port: ""
+  istio_gateway: ""

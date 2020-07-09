@@ -52,3 +52,17 @@ definitions:
         - data
         - source
         - type
+
+  metadata:
+    type: object
+    properties:
+      namespace:
+        type: string
+      keptnlabel:      
+        type: string
+      keptnversion:      
+        type: string
+      bridgeversion:
+        type: string
+      keptnservices:
+        type: ["object", "string"]        

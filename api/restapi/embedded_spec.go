@@ -156,6 +156,23 @@ func init() {
         }
       }
     },
+    "/metadata": {
+      "get": {
+        "tags": [
+          "Metadata"
+        ],
+        "summary": "Get keptn installation metadata",
+        "operationId": "metadata",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "response_model.yaml#/definitions/metadata"
+            }
+          }
+        }
+      }
+    },
     "/project": {
       "post": {
         "tags": [
@@ -458,6 +475,23 @@ func init() {
         }
       }
     },
+    "/metadata": {
+      "get": {
+        "tags": [
+          "Metadata"
+        ],
+        "summary": "Get keptn installation metadata",
+        "operationId": "metadata",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/metadata"
+            }
+          }
+        }
+      }
+    },
     "/project": {
       "post": {
         "tags": [
@@ -673,6 +707,20 @@ func init() {
           "type": "string"
         },
         "type": {
+          "type": "string"
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "bridgeversion": {
+          "type": "string"
+        },
+        "keptnversion": {
+          "type": "string"
+        },
+        "namespace": {
           "type": "string"
         }
       }

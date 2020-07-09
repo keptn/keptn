@@ -5,7 +5,7 @@ info:
   version: develop
 schemes:
   - https
-basePath: /v1
+basePath: /api/v1
 consumes:
   - application/json
   - application/cloudevents+json
@@ -29,6 +29,18 @@ paths:
       responses:
         200:
           description: Authenticated
+
+  /metadata:
+    get:
+      tags:
+        - Metadata
+      operationId: metadata
+      summary: Get keptn installation metadata
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: "response_model.yaml#/definitions/metadata"              
 
   /event:
     post:
