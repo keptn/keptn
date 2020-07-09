@@ -8,6 +8,16 @@ type: Opaque
 data:
   keptn-api-token: {{ randAlphaNum 20 | b64enc }}
 ---
+apiVersion: v1
+kind: Secret
+metadata:
+  labels:
+  name: bridge-credentials
+type: Opaque
+data:
+  BASIC_AUTH_USERNAME: a2VwdG4=
+  BASIC_AUTH_PASSWORD: {{ randAlphaNum 20 | b64enc }}
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -94,7 +104,6 @@ spec:
           envFrom:
             - secretRef:
                 name: bridge-credentials
-                optional: true
           ports:
             - containerPort: 3000
           resources:
