@@ -75,7 +75,7 @@ keptn add-resource --project=rockshop --stage=production --service=shop --resour
 			},
 		}
 
-		resourceHandler := apiutils.NewAuthenticatedResourceHandler(endPoint.Host+"/configuration-service", apiToken, "x-token", nil, *scheme)
+		resourceHandler := apiutils.NewAuthenticatedResourceHandler(endPoint.Host+"/api/configuration-service", apiToken, "x-token", nil, *scheme)
 
 		if (addResourceCmdParams.Service != nil && *addResourceCmdParams.Service != "") && (addResourceCmdParams.Stage != nil && *addResourceCmdParams.Stage != "") {
 			logging.PrintLog("Adding resource "+*addResourceCmdParams.Resource+" to service "+*addResourceCmdParams.Service+" in stage "+*addResourceCmdParams.Stage+" in project "+*addResourceCmdParams.Project, logging.InfoLevel)
