@@ -6,6 +6,10 @@ if [ -n "$VERSION" ]; then
   exit 1
 fi
 
+cd keptn/
+helm dependency build
+cd ..
+
 helm package keptn --app-version $VERSION --version $VERSION
 if [ $? -ne 0 ]; then
   echo 'Error packing installer, exiting...'
