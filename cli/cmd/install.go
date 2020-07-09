@@ -65,7 +65,7 @@ const keptnInstallerErrorLogFileName = "keptn-installer-Err.log"
 
 const keptnReleaseVersion = "0.7.0"
 
-const keptnRepoURL = "https://storage.googleapis.com/keptn-installer/" + keptnReleaseVersion + "/keptn-0.1.0.tgz"
+const keptnRepoURL = "https://storage.googleapis.com/keptn-installer/keptn-" + keptnReleaseVersion + ".tgz"
 
 // KubeServerVersionConstraints the Kubernetes Cluster version's constraints is passed by ldflags
 var KubeServerVersionConstraints string
