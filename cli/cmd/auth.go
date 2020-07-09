@@ -163,7 +163,19 @@ func getNodePortEndpoint() (string, error) {
 		"nodes",
 		"-ojsonpath={ $.items[0].status.addresses[?(@.type==\"ExternalIP\")].address }"}
 	ops.appendIfNotEmpty(kubectlOptions)
-	return keptnutils.ExecuteCommand("kubectl", ops)
+	out, err := keptnutils.ExecuteCommand("kubectl", ops)
+	if err != nil {
+		return "", err
+	}
+
+	if out != "" {
+		return out, nil
+	}
+	ops2 := options{"get",
+		"nodes",
+		"-ojsonpath={ $.items[0].status.addresses[?(@.type==\"InternalIP\")].address }"}
+	ops2.appendIfNotEmpty(kubectlOptions)
+	return keptnutils.ExecuteCommand("kubectl", ops2)
 }
 
 func getLoadBalancerEndpoint() (string, error) {
