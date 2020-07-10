@@ -18,6 +18,7 @@ spec:
       - name: remediation-service
         image: {{ .Values.image.registry}}/keptn/remediation-service:latest
         imagePullPolicy: Always
+        {{- include "control-plane.livenessProbe" . | nindent 8 }}
         ports:
         - containerPort: 8080
         resources:
@@ -73,6 +74,7 @@ spec:
       - name: distributor
         image: {{ .Values.image.registry}}/keptn/distributor:latest
         imagePullPolicy: Always
+        {{- include "control-plane.livenessProbe" . | nindent 8 }}
         ports:
         - containerPort: 8080
         resources:

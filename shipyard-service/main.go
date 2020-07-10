@@ -16,6 +16,7 @@ import (
 	configutils "github.com/keptn/go-utils/pkg/api/utils"
 
 	keptn "github.com/keptn/go-utils/pkg/lib"
+	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"

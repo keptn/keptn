@@ -16,6 +16,12 @@ spec:
       containers:
       - name: jmeter-service
         image: keptn/jmeter-service:latest
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 10999
+          initialDelaySeconds: 5
+          periodSeconds: 5
         ports:
         - containerPort: 8080
         env:
@@ -56,6 +62,12 @@ spec:
       containers:
       - name: distributor
         image: keptn/distributor:0.6.1
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 10999
+          initialDelaySeconds: 5
+          periodSeconds: 5
         ports:
         - containerPort: 8080
         resources:

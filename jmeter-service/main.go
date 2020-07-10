@@ -11,11 +11,11 @@ import (
 	"strings"
 	"time"
 
-	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
 	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
+	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 
 	"github.com/google/uuid"
 	"github.com/kelseyhightower/envconfig"

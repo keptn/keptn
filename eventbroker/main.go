@@ -19,8 +19,8 @@ import (
 	"log"
 	"os"
 
-	keptnutils "github.com/keptn/go-utils/pkg/lib"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
+	keptnutils "github.com/keptn/go-utils/pkg/lib"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"

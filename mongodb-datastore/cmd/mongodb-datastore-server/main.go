@@ -6,8 +6,6 @@ import (
 	"log"
 	"os"
 
-	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
-
 	loads "github.com/go-openapi/loads"
 	flags "github.com/jessevdk/go-flags"
 	"github.com/keptn/keptn/mongodb-datastore/restapi"
@@ -23,8 +21,6 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-
-	go keptnapi.RunHealthEndpoint("10999")
 
 	api := operations.NewMongodbDatastoreAPI(swaggerSpec)
 	server := restapi.NewServer(api)

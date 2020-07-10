@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"keptn/gatekeeper-service/pkg/handler"
 	"log"
 	"os"
