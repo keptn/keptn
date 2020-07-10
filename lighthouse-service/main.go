@@ -10,6 +10,7 @@ import (
 	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
 	"github.com/kelseyhightower/envconfig"
 	keptnutils "github.com/keptn/go-utils/pkg/lib"
+	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/lighthouse-service/event_handler"
 )
 
@@ -24,6 +25,8 @@ func main() {
 	if err := envconfig.Process("", &env); err != nil {
 		log.Fatalf("Failed to process env var: %s", err)
 	}
+
+	go keptnapi.RunHealthEndpoint("10999")
 	os.Exit(_main(os.Args[1:], env))
 }
 

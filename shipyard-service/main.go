@@ -40,6 +40,7 @@ func main() {
 	if err := envconfig.Process("", &env); err != nil {
 		log.Fatalf("failed to process env var: %s", err)
 	}
+	go keptnapi.RunHealthEndpoint("10999")
 	os.Exit(_main(os.Args[1:], env))
 }
 

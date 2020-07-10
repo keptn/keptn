@@ -20,6 +20,7 @@ import (
 	"os"
 
 	keptnutils "github.com/keptn/go-utils/pkg/lib"
+	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
@@ -44,6 +45,7 @@ func main() {
 	if err := envconfig.Process("", &env); err != nil {
 		log.Fatalf("Failed to process env var: %s", err)
 	}
+	go keptnapi.RunHealthEndpoint("10999")
 	os.Exit(_main(os.Args[1:], env))
 }
 
