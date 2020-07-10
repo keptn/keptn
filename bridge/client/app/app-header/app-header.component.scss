@@ -1,15 +1,13 @@
 @import '../../variables';
 @import '~@dynatrace/barista-components/core/src/style/variables';
 
-header {
+dt-top-bar-navigation {
   color: #fff;
   background-color: $primary-color;
-  position: sticky;
-  z-index: 100;
-  top: 0;
+  height: auto;
 
-  .container {
-    padding: .2rem 1rem;
+  .dt-top-bar-action {
+    background-color: $primary-color;
   }
 
   .brand {

@@ -32,6 +32,7 @@ import { DtSelectModule } from '@dynatrace/barista-components/select';
 import { DtShowMoreModule } from '@dynatrace/barista-components/show-more';
 import { DtSwitchModule } from '@dynatrace/barista-components/switch';
 import { DtTagModule } from '@dynatrace/barista-components/tag';
+import { DtTopBarNavigationModule } from "@dynatrace/barista-components/top-bar-navigation";
 
 import { DtThemingModule } from '@dynatrace/barista-components/theming';
 import { DtTileModule } from '@dynatrace/barista-components/tile';
@@ -135,6 +136,7 @@ registerLocaleData(localeEn, 'en');
     DtSwitchModule,
     DtConfirmationDialogModule,
     DtToastModule,
+    DtTopBarNavigationModule,
     MatDialogModule,
     DtIconModule.forRoot({
       svgIconLocation: `assets/icons/{{name}}.svg`,
