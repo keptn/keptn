@@ -2,7 +2,6 @@
 apiVersion: v1
 kind: Secret
 metadata:
-  labels:
   name: keptn-api-token
 type: Opaque
 data:
@@ -11,11 +10,10 @@ data:
 apiVersion: v1
 kind: Secret
 metadata:
-  labels:
   name: bridge-credentials
 type: Opaque
 data:
-  BASIC_AUTH_USERNAME: a2VwdG4=
+  BASIC_AUTH_USERNAME: 'a2VwdG4='
   BASIC_AUTH_PASSWORD: {{ randAlphaNum 20 | b64enc }}
 ---
 apiVersion: apps/v1
@@ -35,6 +33,7 @@ spec:
       containers:
         - name: api-service
           image: {{ .Values.image.registry}}/keptn/api:latest
+          {{- include "control-plane.livenessProbe" . | nindent 10 }}
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
@@ -148,6 +147,7 @@ spec:
       containers:
         - name: eventbroker-go
           image: {{ .Values.image.registry}}/keptn/eventbroker-go:latest
+          {{- include "control-plane.livenessProbe" . | nindent 10 }}
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
@@ -198,6 +198,7 @@ spec:
       containers:
         - name: helm-service
           image: {{ .Values.image.registry}}/keptn/helm-service:latest
+          {{- include "control-plane.livenessProbe" . | nindent 10 }}
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
@@ -274,6 +275,7 @@ spec:
       containers:
         - name: distributor
           image: {{ .Values.image.registry}}/keptn/distributor:latest
+          {{- include "control-plane.livenessProbe" . | nindent 10 }}
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
@@ -311,6 +313,7 @@ spec:
       containers:
         - name: shipyard-service
           image: {{ .Values.image.registry}}/keptn/shipyard-service:latest
+          {{- include "control-plane.livenessProbe" . | nindent 10 }}
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
@@ -361,6 +364,7 @@ spec:
       containers:
         - name: distributor
           image: {{ .Values.image.registry}}/keptn/distributor:latest
+          {{- include "control-plane.livenessProbe" . | nindent 10 }}
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
@@ -399,6 +403,7 @@ spec:
       containers:
         - name: distributor
           image: {{ .Values.image.registry}}/keptn/distributor:latest
+          {{- include "control-plane.livenessProbe" . | nindent 10 }}
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
@@ -453,6 +458,7 @@ spec:
       containers:
         - name: configuration-service
           image: {{ .Values.image.registry}}/keptn/configuration-service:latest
+          {{- include "control-plane.livenessProbe" . | nindent 10 }}
           imagePullPolicy: Always
           env:
             - name: MONGO_DB_CONNECTION_STRING
@@ -508,6 +514,7 @@ spec:
       containers:
         - name: distributor
           image: {{ .Values.image.registry}}/keptn/distributor:latest
+          {{- include "control-plane.livenessProbe" . | nindent 10 }}
           imagePullPolicy: Always
           ports:
             - containerPort: 8080

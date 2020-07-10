@@ -16,6 +16,7 @@ spec:
       containers:
       - name: distributor
         image: {{ .Values.image.registry}}/keptn/distributor:latest
+        {{- include "control-plane.livenessProbe" . | nindent 8 }}
         imagePullPolicy: Always
         ports:
         - containerPort: 8080

@@ -63,6 +63,7 @@ spec:
       containers:
       - name: gatekeeper-service
         image: {{ .Values.image.registry}}/keptn/gatekeeper-service:latest
+        {{- include "continuous-delivery.livenessProbe" . | nindent 10 }}
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
@@ -111,6 +112,7 @@ spec:
       containers:
       - name: distributor
         image: {{ .Values.image.registry}}/keptn/distributor:latest
+        {{- include "continuous-delivery.livenessProbe" . | nindent 10 }}
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
@@ -147,6 +149,7 @@ spec:
       containers:
         - name: distributor
           image: {{ .Values.image.registry}}/keptn/distributor:latest
+          {{- include "continuous-delivery.livenessProbe" . | nindent 10 }}
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
@@ -185,6 +188,7 @@ spec:
       containers:
       - name: distributor
         image: {{ .Values.image.registry}}/keptn/distributor:latest
+        {{- include "continuous-delivery.livenessProbe" . | nindent 10 }}
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
@@ -222,6 +226,7 @@ spec:
       containers:
       - name: jmeter-service
         image: {{ .Values.image.registry}}/keptn/jmeter-service:latest
+        {{- include "continuous-delivery.livenessProbe" . | nindent 10 }}
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
@@ -263,6 +268,7 @@ spec:
       containers:
       - name: distributor
         image: {{ .Values.image.registry}}/keptn/distributor:latest
+        {{- include "continuous-delivery.livenessProbe" . | nindent 10 }}
         imagePullPolicy: Always
         ports:
         - containerPort: 8080

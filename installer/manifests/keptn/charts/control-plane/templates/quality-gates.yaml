@@ -17,6 +17,7 @@ spec:
       containers:
         - name: lighthouse-service
           image: {{ .Values.image.registry}}/keptn/lighthouse-service:latest
+          {{- include "control-plane.livenessProbe" . | nindent 10 }}
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
@@ -68,6 +69,7 @@ spec:
       containers:
         - name: distributor
           image: {{ .Values.image.registry}}/keptn/distributor:latest
+          {{- include "control-plane.livenessProbe" . | nindent 10 }}
           imagePullPolicy: Always
           ports:
             - containerPort: 8080

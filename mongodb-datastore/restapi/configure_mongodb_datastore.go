@@ -4,6 +4,7 @@ package restapi
 
 import (
 	"crypto/tls"
+	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"net/http"
 	"os"
 	"strings"
@@ -92,6 +93,7 @@ func setupGlobalMiddleware(handler http.Handler) http.Handler {
 			return
 		}
 
+		go keptnapi.RunHealthEndpoint("10999")
 		handler.ServeHTTP(w, r)
 	})
 }

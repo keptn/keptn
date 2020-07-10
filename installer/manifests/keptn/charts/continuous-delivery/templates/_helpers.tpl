@@ -61,3 +61,12 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{- define "continuous-delivery.livenessProbe" -}}
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 10999
+  initialDelaySeconds: 5
+  periodSeconds: 5
+{{- end }}

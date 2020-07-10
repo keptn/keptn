@@ -26,6 +26,12 @@ spec:
             limits:
               memory: "256Mi"
               cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 10999
+            initialDelaySeconds: 5
+            periodSeconds: 5
           env:
             - name: EVENTBROKER_URI
               value: http://event-broker.keptn.svc.cluster.local
