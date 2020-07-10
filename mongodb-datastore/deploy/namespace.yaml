@@ -1,6 +1,0 @@
----
-# Namespace for mongodb-datastore service
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: keptn-datastore

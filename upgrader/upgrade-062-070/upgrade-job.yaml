@@ -2,7 +2,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: upgrader
-  namespace: default
+  namespace: keptn
 spec:
   template:
     metadata:
@@ -20,9 +20,9 @@ spec:
             - name: KEPTN_VERSION
               value: "master"
             - name: MONGODB_URL
-              value: 'mongodb://user:password@mongodb.keptn-datastore.svc.cluster.local:27017/keptn'
+              value: 'mongodb://user:password@mongodb:27017/keptn'
             - name: CONFIGURATION_SERVICE_URL
-              value: 'configuration-service.keptn.svc.cluster.local:8080'
+              value: 'configuration-service:8080'
             - name: HELM_RELEASE_UPGRADE
               value: 'false'
       restartPolicy: Never

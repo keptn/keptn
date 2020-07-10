@@ -34,11 +34,11 @@ spec:
             periodSeconds: 5
           env:
             - name: EVENTBROKER_URI
-              value: http://event-broker.keptn.svc.cluster.local
+              value: http://event-broker
             - name: DATASTORE_URI
-              value: http://mongodb-datastore.keptn-datastore.svc.cluster.local:8080
+              value: http://mongodb-datastore:8080
             - name: OPENSHIFT_ROUTE_SERVICE_URI
-              value: http://openshift-route-service.keptn.svc.cluster.local:8081
+              value: http://openshift-route-service:8081
             - name: SECRET_TOKEN
               valueFrom:
                 secretKeyRef:

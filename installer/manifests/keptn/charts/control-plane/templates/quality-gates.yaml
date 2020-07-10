@@ -37,36 +37,6 @@ spec:
               value: 'mongodb-datastore:8080'
             - name: ENVIRONMENT
               value: 'production'
-      serviceAccountName: keptn-lighthouse-service
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: lighthouse-service
-  labels:
-    run: lighthouse-service
-spec:
-  ports:
-    - port: 8080
-      protocol: TCP
-  selector:
-    run: lighthouse-service
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: lighthouse-service-distributor
-spec:
-  selector:
-    matchLabels:
-      run: distributor
-  replicas: 1
-  template:
-    metadata:
-      labels:
-        run: distributor
-    spec:
-      containers:
         - name: distributor
           image: {{ .Values.image.registry}}/keptn/distributor:latest
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
@@ -87,4 +57,17 @@ spec:
               value: 'sh.keptn.>'
             - name: PUBSUB_RECIPIENT
               value: 'lighthouse-service'
-      serviceAccountName: keptn-default
+      serviceAccountName: keptn-lighthouse-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lighthouse-service
+  labels:
+    run: lighthouse-service
+spec:
+  ports:
+    - port: 8080
+      protocol: TCP
+  selector:
+    run: lighthouse-service

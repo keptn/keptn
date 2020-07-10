@@ -79,6 +79,26 @@ spec:
           value: 'http://configuration-service:8080'
         - name: EVENTBROKER
           value: 'http://event-broker/keptn'
+      - name: distributor
+        image: {{ .Values.image.registry}}/keptn/distributor:latest
+        {{- include "continuous-delivery.livenessProbe" . | nindent 10 }}
+        imagePullPolicy: Always
+        ports:
+          - containerPort: 8080
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        env:
+          - name: PUBSUB_URL
+            value: 'nats://keptn-nats-cluster'
+          - name: PUBSUB_TOPIC
+            value: 'sh.keptn.events.evaluation-done,sh.keptn.event.approval.>'
+          - name: PUBSUB_RECIPIENT
+            value: 'gatekeeper-service'
 ---
 apiVersion: v1
 kind: Service
@@ -93,87 +113,11 @@ spec:
   selector:
     run: gatekeeper-service
 ---
-## gatekeeper-service: sh.keptn.events.evaluation-done
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: gatekeeper-service-evaluation-done-distributor
-spec:
-  selector:
-    matchLabels:
-      run: distributor
-  replicas: 1
-  template:
-    metadata:
-      labels:
-        run: distributor
-    spec:
-      serviceAccountName: keptn-default
-      containers:
-      - name: distributor
-        image: {{ .Values.image.registry}}/keptn/distributor:latest
-        {{- include "continuous-delivery.livenessProbe" . | nindent 10 }}
-        imagePullPolicy: Always
-        ports:
-        - containerPort: 8080
-        resources:
-          requests:
-            memory: "32Mi"
-            cpu: "50m"
-          limits:
-            memory: "128Mi"
-            cpu: "500m"
-        env:
-          - name: PUBSUB_URL
-            value: 'nats://keptn-nats-cluster'
-          - name: PUBSUB_TOPIC
-            value: 'sh.keptn.events.evaluation-done'
-          - name: PUBSUB_RECIPIENT
-            value: 'gatekeeper-service'
----
-## gatekeeper-service: sh.keptn.event.approval.>
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: gatekeeper-service-approval-distributor
-spec:
-  selector:
-    matchLabels:
-      run: distributor
-  replicas: 1
-  template:
-    metadata:
-      labels:
-        run: distributor
-    spec:
-      containers:
-        - name: distributor
-          image: {{ .Values.image.registry}}/keptn/distributor:latest
-          {{- include "continuous-delivery.livenessProbe" . | nindent 10 }}
-          imagePullPolicy: Always
-          ports:
-            - containerPort: 8080
-          resources:
-            requests:
-              memory: "32Mi"
-              cpu: "50m"
-            limits:
-              memory: "128Mi"
-              cpu: "500m"
-          env:
-            - name: PUBSUB_URL
-              value: 'nats://keptn-nats-cluster'
-            - name: PUBSUB_TOPIC
-              value: 'sh.keptn.event.approval.>'
-            - name: PUBSUB_RECIPIENT
-              value: 'gatekeeper-service'
-      serviceAccountName: keptn-default
----
 ## helm-service: sh.keptn.event.configuration.change
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: helm-service-distributor
+  name: helm-service-continuous-deployment-distributor
 spec:
   selector:
     matchLabels:
@@ -235,6 +179,26 @@ spec:
           value: 'http://configuration-service:8080'
         - name: EVENTBROKER
           value: 'http://event-broker/keptn'
+      - name: distributor
+        image: {{ .Values.image.registry}}/keptn/distributor:latest
+        {{- include "continuous-delivery.livenessProbe" . | nindent 10 }}
+        imagePullPolicy: Always
+        ports:
+          - containerPort: 8080
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        env:
+          - name: PUBSUB_URL
+            value: 'nats://keptn-nats-cluster'
+          - name: PUBSUB_TOPIC
+            value: 'sh.keptn.events.deployment-finished'
+          - name: PUBSUB_RECIPIENT
+            value: 'jmeter-service'
 ---
 apiVersion: v1
 kind: Service
@@ -248,41 +212,3 @@ spec:
     protocol: TCP
   selector:
     run: jmeter-service
----
-## jmeter-service: sh.keptn.events.deployment-finished
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: jmeter-service-deployment-distributor
-spec:
-  selector:
-    matchLabels:
-      run: distributor
-  replicas: 1
-  template:
-    metadata:
-      labels:
-        run: distributor
-    spec:
-      serviceAccountName: keptn-default
-      containers:
-      - name: distributor
-        image: {{ .Values.image.registry}}/keptn/distributor:latest
-        {{- include "continuous-delivery.livenessProbe" . | nindent 10 }}
-        imagePullPolicy: Always
-        ports:
-        - containerPort: 8080
-        resources:
-          requests:
-            memory: "32Mi"
-            cpu: "50m"
-          limits:
-            memory: "128Mi"
-            cpu: "500m"
-        env:
-        - name: PUBSUB_URL
-          value: 'nats://keptn-nats-cluster'
-        - name: PUBSUB_TOPIC
-          value: 'sh.keptn.events.deployment-finished'
-        - name: PUBSUB_RECIPIENT
-          value: 'jmeter-service'

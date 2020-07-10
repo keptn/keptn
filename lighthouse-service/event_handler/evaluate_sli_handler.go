@@ -62,7 +62,7 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 		return err
 	}
 
-	// get results of previous evaluations from data store (mongodb-datastore.keptn-datastore.svc.cluster.local)
+	// get results of previous evaluations from data store (mongodb-datastore)
 	numberOfPreviousResults := 3
 	if sloConfig.Comparison.CompareWith == "single_result" {
 		numberOfPreviousResults = 1

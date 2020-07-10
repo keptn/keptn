@@ -40,6 +40,31 @@ spec:
           value: 'http://event-broker/keptn'
         - name: API
           value: 'ws://api-service:8080/websocket'
+      - name: distributor
+        image: keptn/distributor:latest
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 10999
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        imagePullPolicy: Always
+        ports:
+          - containerPort: 8080
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        env:
+          - name: PUBSUB_URL
+            value: 'nats://keptn-nats-cluster'
+          - name: PUBSUB_TOPIC
+            value: 'sh.keptn.internal.event.project.create,sh.keptn.internal.event.project.delete'
+          - name: PUBSUB_RECIPIENT
+            value: 'shipyard-service'
 ---
 apiVersion: v1
 kind: Service

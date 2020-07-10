@@ -1,7 +1,0 @@
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: keptn-ds-default
-  labels:
-    "app": "keptn"

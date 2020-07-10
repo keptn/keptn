@@ -6,21 +6,22 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	keptn "github.com/keptn/go-utils/pkg/lib"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
 	"time"
 
+	keptn "github.com/keptn/go-utils/pkg/lib"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+
 	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
 )
 
-const defaultMongoDBConnectionString = "mongodb://user:password@mongodb.keptn-datastore.svc.cluster.local:27017/keptn"
-const defaultConfigurationServiceURL = "configuration-service.keptn.svc.cluster.local:8080"
+const defaultMongoDBConnectionString = "mongodb://user:password@mongodb:27017/keptn"
+const defaultConfigurationServiceURL = "configuration-service:8080"
 
 const rootEventCollectionSuffix = "-rootEvents"
 
