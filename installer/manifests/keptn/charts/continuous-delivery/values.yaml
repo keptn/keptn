@@ -4,7 +4,7 @@ openshift:
 image:
   registry: docker.io
 
-ingress-config:
+ingressConfig:
   ingress_hostname_suffix: "svc.cluster.local"
   ingress_protocol: "http"
   ingress_port: "80"
