@@ -1,0 +1,5 @@
+{
+    "clusterName": "CLUSTER_NAME_PLACEHOLDER",
+    "clusterZone": "CLUSTER_ZONE_PLACEHOLDER",
+    "gkeProject": "GKE_PROJECT_PLACEHOLDER"
+}

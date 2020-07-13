@@ -15,6 +15,8 @@ keptn install --platform=openshift --chart-repo="${KEPTN_INSTALLER_REPO}" --cred
 
 verify_test_step $? "keptn install failed"
 
+oc expose svc/api-gateway-nginx -n keptn
+
 # verify that the keptn CLI has successfully authenticated
 echo "Checking that keptn is authenticated..."
 ls -la ~/.keptn/.keptn

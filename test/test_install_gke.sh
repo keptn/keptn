@@ -6,13 +6,13 @@ KEPTN_INSTALLER_REPO=${KEPTN_INSTALLER_REPO:-https://storage.googleapis.com/kept
 PROJECT_NAME=${PROJECT_NAME:-sockshop}
 
 # Prepare creds.json file
-cd ./installer/scripts
+cd ./test/assets
 
 export CLN=$CLUSTER_NAME_NIGHTLY
 export CLZ=$CLOUDSDK_COMPUTE_ZONE	
 export PROJ=$PROJECT_NAME
 
-source ./gke/defineCredentialsHelper.sh
+source ../utils/gke/defineCredentialsHelper.sh
 replaceCreds
 
 echo "Installing keptn on cluster"
@@ -25,6 +25,8 @@ verify_test_step $? "keptn install failed"
 KEPTN_API_IP=$(kubectl -n keptn get service api-gateway-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)
 keptn auth --endpoint=http://$KEPTN_API_IP --api-token=$KEPTN_API_TOKEN --scheme=http
+
+verify_test_step $? "Could not authenticate at Keptn API"
 
 # install public-gateway.istio-system
 kubectl apply -f - <<EOF
