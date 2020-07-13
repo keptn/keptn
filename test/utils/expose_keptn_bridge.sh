@@ -1,6 +1,7 @@
 #!/bin/bash
 
 echo "Exposing Keptn Bridge..."
+kubectl -n keptn delete secret bridge-credentials
 # expose Keptn's Bridge (for easier troubleshooting/debugging afterwards)
 kubectl -n keptn create secret generic bridge-credentials --from-literal="BASIC_AUTH_USERNAME=${NIGHTLY_BRIDGE_USERNAME}" --from-literal="BASIC_AUTH_PASSWORD=${NIGHTLY_BRIDGE_PASSWORD}"
 # restart bridge pod to make use of the secret
