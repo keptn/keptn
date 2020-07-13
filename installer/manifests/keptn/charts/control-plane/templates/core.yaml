@@ -103,6 +103,7 @@ spec:
           envFrom:
             - secretRef:
                 name: bridge-credentials
+                optional: true
           ports:
             - containerPort: 3000
           resources:
@@ -242,37 +243,6 @@ spec:
                 configMapKeyRef:
                   name: ingress-config
                   key: istio_gateway
-      serviceAccountName: keptn-helm-service
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: helm-service
-  labels:
-    run: helm-service
-spec:
-  ports:
-    - port: 8080
-      protocol: TCP
-  selector:
-    run: helm-service
----
-## helm-service: sh.keptn.event.service.create
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: helm-service-service-create-distributor
-spec:
-  selector:
-    matchLabels:
-      run: distributor
-  replicas: 1
-  template:
-    metadata:
-      labels:
-        run: distributor
-    spec:
-      containers:
         - name: distributor
           image: {{ .Values.image.registry}}/keptn/distributor:latest
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
@@ -293,7 +263,20 @@ spec:
               value: 'sh.keptn.internal.event.service.create'
             - name: PUBSUB_RECIPIENT
               value: 'helm-service'
-      serviceAccountName: keptn-default
+      serviceAccountName: keptn-helm-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: helm-service
+  labels:
+    run: helm-service
+spec:
+  ports:
+    - port: 8080
+      protocol: TCP
+  selector:
+    run: helm-service
 ---
 # shipyard-service
 apiVersion: apps/v1
@@ -331,6 +314,26 @@ spec:
               value: 'http://event-broker/keptn'
             - name: API
               value: 'ws://api-service:8080/websocket'
+        - name: distributor
+          image: {{ .Values.image.registry}}/keptn/distributor:latest
+          {{- include "control-plane.livenessProbe" . | nindent 10 }}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          env:
+            - name: PUBSUB_URL
+              value: 'nats://keptn-nats-cluster'
+            - name: PUBSUB_TOPIC
+              value: 'sh.keptn.internal.event.project.create,sh.keptn.internal.event.project.delete'
+            - name: PUBSUB_RECIPIENT
+              value: 'shipyard-service'
       serviceAccountName: keptn-default
 ---
 apiVersion: v1
@@ -345,84 +348,6 @@ spec:
       protocol: TCP
   selector:
     run: shipyard-service
----
-## shipyard-service: sh.keptn.internal.event.project.create
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: shipyard-service-create-project-distributor
-spec:
-  selector:
-    matchLabels:
-      run: distributor
-  replicas: 1
-  template:
-    metadata:
-      labels:
-        run: distributor
-    spec:
-      containers:
-        - name: distributor
-          image: {{ .Values.image.registry}}/keptn/distributor:latest
-          {{- include "control-plane.livenessProbe" . | nindent 10 }}
-          imagePullPolicy: Always
-          ports:
-            - containerPort: 8080
-          resources:
-            requests:
-              memory: "32Mi"
-              cpu: "50m"
-            limits:
-              memory: "128Mi"
-              cpu: "500m"
-          env:
-            - name: PUBSUB_URL
-              value: 'nats://keptn-nats-cluster'
-            - name: PUBSUB_TOPIC
-              value: 'sh.keptn.internal.event.project.create'
-            - name: PUBSUB_RECIPIENT
-              value: 'shipyard-service'
-      serviceAccountName: keptn-default
-
----
-## shipyard-service: sh.keptn.internal.event.project.delete
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: shipyard-service-delete-project-distributor
-spec:
-  selector:
-    matchLabels:
-      run: distributor
-  replicas: 1
-  template:
-    metadata:
-      labels:
-        run: distributor
-    spec:
-      containers:
-        - name: distributor
-          image: {{ .Values.image.registry}}/keptn/distributor:latest
-          {{- include "control-plane.livenessProbe" . | nindent 10 }}
-          imagePullPolicy: Always
-          ports:
-            - containerPort: 8080
-          resources:
-            requests:
-              memory: "32Mi"
-              cpu: "50m"
-            limits:
-              memory: "128Mi"
-              cpu: "500m"
-          env:
-            - name: PUBSUB_URL
-              value: 'nats://keptn-nats-cluster'
-            - name: PUBSUB_TOPIC
-              value: 'sh.keptn.internal.event.project.delete'
-            - name: PUBSUB_RECIPIENT
-              value: 'shipyard-service'
-      serviceAccountName: keptn-default
-
 ---
 # configuration-service
 apiVersion: v1
@@ -477,41 +402,6 @@ spec:
           volumeMounts:
             - mountPath: /data/config
               name: configuration-volume
-      volumes:
-        - name: configuration-volume
-          persistentVolumeClaim:
-            claimName: configuration-volume
-      serviceAccountName: keptn-configuration-service
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: configuration-service
-  labels:
-    run: configuration-service
-spec:
-  ports:
-    - port: 8080
-      targetPort: 8080
-      protocol: TCP
-  selector:
-    run: configuration-service
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: configuration-service-distributor
-spec:
-  selector:
-    matchLabels:
-      run: distributor
-  replicas: 1
-  template:
-    metadata:
-      labels:
-        run: distributor
-    spec:
-      containers:
         - name: distributor
           image: {{ .Values.image.registry}}/keptn/distributor:latest
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
@@ -534,4 +424,23 @@ spec:
               value: 'configuration-service'
             - name: PUBSUB_RECIPIENT_PATH
               value: '/v1/event'
-      serviceAccountName: keptn-default
+      volumes:
+        - name: configuration-volume
+          persistentVolumeClaim:
+            claimName: configuration-volume
+      serviceAccountName: keptn-configuration-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: configuration-service
+  labels:
+    run: configuration-service
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    run: configuration-service
+

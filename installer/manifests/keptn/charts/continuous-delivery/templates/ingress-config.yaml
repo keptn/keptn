@@ -1,0 +1,10 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ingress-config
+data:
+  ingress_hostname_suffix: "{{ .Values.ingressConfig.ingress_hostname_suffix }}"
+  ingress_protocol: "{{ .Values.ingressConfig.ingress_protocol }}"
+  ingress_port: "{{ .Values.ingressConfig.ingress_port }}"
+  istio_gateway: "{{ .Values.ingressConfig.istio_gateway }}"

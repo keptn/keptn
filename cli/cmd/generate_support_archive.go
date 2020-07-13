@@ -61,23 +61,23 @@ type ipInfo struct {
 	ExternalIP string `json:",omitempty"`
 }
 
-var namespaces = [...]string{"keptn", "keptn-datastore"} //"istio-system"
+var namespaces = [...]string{"keptn"} //"istio-system"
 
 type metaData struct {
 	OperatingSystem                 string
 	KeptnCLIVersion                 string
 	KeptnAPIMetadata                *errorableMetadataResult `json:",omitempty"`
-	KeptnAPIUrl                     *errorableStringResult  `json:",omitempty"`
-	KeptnAPIReachable               *errorableBoolResult    `json:",omitempty"`
-	Projects                        *errorableProjectResult `json:",omitempty"`
-	KubectlVersion                  *errorableStringResult  `json:",omitempty"`
-	KubeContextPointsToKeptnCluster *errorableBoolResult    `json:",omitempty"`
-	IngressHostnameSuffix           *errorableStringResult  `json:",omitempty"`
-	IstioSystemInstalled            *errorableBoolResult    `json:",omitempty"`
-	ConfiguredGatewayAvailable      *errorableBoolResult    `json:",omitempty"`
-	IngressPort                     *errorableStringResult  `json:",omitempty"`
-	IngressProtocol                 *errorableStringResult  `json:",omitempty"`
-	IngressGateway                  *errorableStringResult  `json:",omitempty"`
+	KeptnAPIUrl                     *errorableStringResult   `json:",omitempty"`
+	KeptnAPIReachable               *errorableBoolResult     `json:",omitempty"`
+	Projects                        *errorableProjectResult  `json:",omitempty"`
+	KubectlVersion                  *errorableStringResult   `json:",omitempty"`
+	KubeContextPointsToKeptnCluster *errorableBoolResult     `json:",omitempty"`
+	IngressHostnameSuffix           *errorableStringResult   `json:",omitempty"`
+	IstioSystemInstalled            *errorableBoolResult     `json:",omitempty"`
+	ConfiguredGatewayAvailable      *errorableBoolResult     `json:",omitempty"`
+	IngressPort                     *errorableStringResult   `json:",omitempty"`
+	IngressProtocol                 *errorableStringResult   `json:",omitempty"`
+	IngressGateway                  *errorableStringResult   `json:",omitempty"`
 }
 
 // generateSupportArchiveCmd implements the generate support-archive command

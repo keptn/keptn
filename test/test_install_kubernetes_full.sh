@@ -25,9 +25,9 @@ verify_deployment_in_namespace "gatekeeper-service" "keptn"
 verify_deployment_in_namespace "jmeter-service" "keptn"
 verify_deployment_in_namespace "lighthouse-service" "keptn"
 
-# verify the pods within the keptn-datastore namespace
-verify_deployment_in_namespace "mongodb" "keptn-datastore"
-verify_deployment_in_namespace "mongodb-datastore" "keptn-datastore"
+# verify the datastore deployments
+verify_deployment_in_namespace "mongodb" "keptn"
+verify_deployment_in_namespace "mongodb-datastore" "keptn"
 
 # verify the pods within istio-system
 verify_deployment_in_namespace "istio-ingressgateway" "istio-system"
