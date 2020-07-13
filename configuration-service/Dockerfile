@@ -51,7 +51,6 @@ COPY --from=builder /go/src/github.com/keptn/keptn/configuration-service/swagger
 COPY --from=builder /go/src/github.com/keptn/keptn/configuration-service/swagger.yaml /swagger-ui/swagger.yaml
 # Replace contents for api proxy
 RUN sed -i "s|basePath: /v1|basePath: /api/configuration-service/v1 |g" /swagger-ui/swagger.yaml
-RUN sed -i "s|  - http|  - https |g" /swagger-ui/swagger.yaml
 RUN sed -i '/paths:/i securityDefinitions:\n  key:\n    type: apiKey\n    in: header\n    name: x-token\nsecurity:\n  - key: []\n' /swagger-ui/swagger.yaml
 
 EXPOSE 8080

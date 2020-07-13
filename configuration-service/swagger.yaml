@@ -12,6 +12,7 @@ consumes:
   - application/json
 
 schemes:
+  - https
   - http
 
 definitions:
