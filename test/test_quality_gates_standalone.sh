@@ -8,7 +8,7 @@ KEPTN_EXAMPLES_BRANCH=${KEPTN_EXAMPLES_BRANCH:-master}
 PROJECT=${PROJECT:-easytravel}
 
 # get keptn api details
-KEPTN_ENDPOINT=https://api.keptn.$(kubectl get cm keptn-domain -n keptn -ojsonpath={.data.app_domain})/api
+KEPTN_ENDPOINT=http://$(kubectl -n keptn get service api-gateway-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')/api
 KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)
 
 ########################################################################################################################
