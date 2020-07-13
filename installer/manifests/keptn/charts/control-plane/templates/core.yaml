@@ -228,21 +228,25 @@ spec:
                 configMapKeyRef:
                   name: ingress-config
                   key: ingress_hostname_suffix
+                  optional: true
             - name: INGRESS_PROTOCOL
               valueFrom:
                 configMapKeyRef:
                   name: ingress-config
                   key: ingress_protocol
+                  optional: true
             - name: INGRESS_PORT
               valueFrom:
                 configMapKeyRef:
                   name: ingress-config
                   key: ingress_port
+                  optional: true
             - name: ISTIO_GATEWAY
               valueFrom:
                 configMapKeyRef:
                   name: ingress-config
                   key: istio_gateway
+                  optional: true
         - name: distributor
           image: {{ .Values.image.registry}}/keptn/distributor:latest
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
