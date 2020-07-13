@@ -20,6 +20,8 @@ import (
 
 const useInClusterConfig = true
 
+const bridgeCredentialsSecret = "bridge-credentials"
+
 // PostConfigureBridgeHandlerFunc handler function for POST requests
 func PostConfigureBridgeHandlerFunc(params configuration.PostConfigBridgeParams, principal *models.Principal) middleware.Responder {
 
@@ -66,7 +68,7 @@ func GetConfigureBridgeHandlerFunc(params configuration.GetConfigBridgeParams, p
 	}
 
 	l.Info("Checking for existing secret")
-	bridgeCredentials, err := k8s.CoreV1().Secrets("keptn").Get("bridge-credentials", metav1.GetOptions{})
+	bridgeCredentials, err := k8s.CoreV1().Secrets("keptn").Get(bridgeCredentialsSecret, metav1.GetOptions{})
 
 	if err != nil {
 		l.Error(err.Error())
@@ -135,7 +137,7 @@ func createBridgeCredentials(user string, password string, l *keptnutils.Logger)
 	}
 
 	l.Info("Checking for existing secret")
-	bridgeCredentials, err := k8s.CoreV1().Secrets("keptn").Get("bridge-credentials", metav1.GetOptions{})
+	bridgeCredentials, err := k8s.CoreV1().Secrets("keptn").Get(bridgeCredentialsSecret, metav1.GetOptions{})
 	if err == nil && bridgeCredentials != nil {
 		// update existing secret
 		l.Info("Existing secret found. Updating with new values for user and password")
@@ -165,7 +167,7 @@ func getBridgeCredentials(user string, password string) *corev1.Secret {
 			APIVersion: "apps/v1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "bridge-credentials",
+			Name:      bridgeCredentialsSecret,
 			Namespace: "keptn",
 		},
 		Data: map[string][]byte{
