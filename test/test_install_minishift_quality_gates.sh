@@ -17,7 +17,11 @@ keptn install --platform=openshift --chart-repo="${KEPTN_INSTALLER_REPO}" --cred
 
 verify_test_step $? "keptn install failed"
 
-oc expose svc/api-gateway-nginx -n keptn
+oc expose svc/api-gateway-nginx -n keptn --hostname=api.keptn.127.0.0.1.nip.io
+
+KEPTN_API_URL=api.keptn.127.0.0.1.nip.io
+KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)
+keptn auth --endpoint=http://$KEPTN_API_URL --api-token=$KEPTN_API_TOKEN --scheme=http
 
 # verify that the keptn CLI has successfully authenticated
 echo "Checking that keptn is authenticated..."
