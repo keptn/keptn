@@ -1,6 +1,7 @@
 #!/bin/bash
 
 KEPTN_INSTALLER_REPO=${KEPTN_INSTALLER_REPO:-https://storage.googleapis.com/keptn-installer/latest/keptn-0.1.0.tgz}
+KEPTN_INSTALLER_REPO=https://storage.googleapis.com/keptn-installer/patch-ingress-config-optional+20200713.1533/keptn-0.1.0.tgz
 
 source test/utils.sh
 
