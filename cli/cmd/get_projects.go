@@ -91,7 +91,7 @@ keptn get project sockshop -output=json
 		var projectName string
 		projectName = strings.Join(args, " ")
 
-		projectsHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
+		projectsHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 
 		if !mocking {
 

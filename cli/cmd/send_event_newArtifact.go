@@ -117,7 +117,7 @@ For pulling an image from a private registry, we would like to refer to the Kube
 			return fmt.Errorf("Failed to map cloud event to API event model. %s", err.Error())
 		}
 
-		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
+		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
@@ -129,7 +129,7 @@ For pulling an image from a private registry, we would like to refer to the Kube
 
 			// if eventContext is available, open WebSocket communication
 			if eventContext != nil && !SuppressWSCommunication {
-				return websockethelper.PrintWSContentEventContext(eventContext, endPoint, *scheme == "https")
+				return websockethelper.PrintWSContentEventContext(eventContext, endPoint)
 			}
 
 			return nil
