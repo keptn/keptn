@@ -5,6 +5,7 @@ info:
   version: develop
 schemes:
   - https
+  - http
 basePath: /api/v1
 consumes:
   - application/json
