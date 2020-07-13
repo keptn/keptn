@@ -2,8 +2,7 @@
 
 source test/utils.sh
 
-KEPTN_INSTALLER_IMAGE=${KEPTN_INSTALLER_IMAGE:-keptn/installer:latest}
-KEPTN_INSTALLATION_TYPE=${KEPTN_INSTALLATION_TYPE:-FULL}
+KEPTN_INSTALLER_REPO=${KEPTN_INSTALLER_REPO:-https://storage.googleapis.com/keptn-installer/latest/keptn-0.1.0-tgz}
 PROJECT_NAME=${PROJECT_NAME:-sockshop}
 
 # Prepare creds.json file
@@ -18,26 +17,37 @@ replaceCreds
 
 echo "Installing keptn on cluster"
 
-INGRESS_CONFIG=""
-
-# use a different installation method if re-using istio
-if [[ "$KEPTN_INSTALLATION_TYPE" == "REUSE-ISTIO" ]]; then
-  INGRESS_CONFIG="--ingress-install-option=Reuse"
-  echo "... using existing istio"
-fi
-
 # Install keptn (using the develop version, which should point the :latest docker images)
-keptn install ${INGRESS_CONFIG} --keptn-installer-image="${KEPTN_INSTALLER_IMAGE}" --creds=creds.json --verbose --use-case=continuous-delivery
+keptn install --chart-repo="${KEPTN_INSTALLER_REPO}" --creds=creds.json --verbose --use-case=continuous-delivery --keptn-api-service-type=LoadBalancer
 verify_test_step $? "keptn install failed"
 
-# change domain
-CURRENT_DOMAIN=$(kubectl get cm -n keptn keptn-domain -ojsonpath={.data.app_domain})
-# replace xip.io with nip.io
-NEW_DOMAIN=${CURRENT_DOMAIN//xip/nip}
+# authenticate at Keptn API
+KEPTN_API_IP=$(kubectl -n keptn get service api-gateway-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)
+keptn auth --endpoint=http://$KEPTN_API_IP --api-token=$KEPTN_API_TOKEN --scheme=http
 
-echo "Changing Keptn domain to ${NEW_DOMAIN}"
-echo "y" | keptn configure domain "${NEW_DOMAIN}" --keptn-version=master
-verify_test_step $? "Could not change Keptn Domain to ${NEW_DOMAIN}"
+# install public-gateway.istio-system
+kubectl apply -f - <<EOF
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: public-gateway
+  namespace: istio-system
+spec:
+  selector:
+    istio: ingressgateway # use Istio default gateway implementation
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*"
+EOF
+
+# Set ingress-hostname params
+INGRESS_IP=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+kubectl create configmap -n keptn ingress-config --from-literal=ingress_hostname_suffix=${INGRESS_IP}.xip.io --from-literal=ingress_port=80 --from-literal=ingress_protocol=http --from-literal=ingress_gateway=public-gateway.istio-system -oyaml --dry-run | kubectl replace -f -
 
 # verify that the keptn CLI has successfully authenticated
 echo "Checking that keptn is authenticated..."

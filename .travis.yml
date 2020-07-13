@@ -527,34 +527,6 @@ jobs:
       - echo "The following images have been built and pushed to dockerhub:"
       - docker images | grep keptn
 
-  - stage: Test GKE Full - Pt. 1 (--platform=gke --use-case=continuous-delivery)
-    if: branch = master AND type = cron # run for cron
-    env:
-      - GKE_VERSION=1.14
-      - KEPTN_INSTALLATION_TYPE=FULL
-    <<: *gke_full_part1 # use template
-
-  - stage: Test GKE Full - Pt. 1 (--platform=gke --use-case=continuous-delivery)
-    if: branch = master AND type = cron # run for cron
-    env:
-      - GKE_VERSION=1.16
-      - KEPTN_INSTALLATION_TYPE=FULL
-    <<: *gke_full_part1 # use template
-
-  - stage: Test GKE Full - Pt. 2 (--platform=gke --use-case=continuous-delivery)
-    if: branch = master AND type = cron # run for cron
-    env:
-      - GKE_VERSION=1.14
-      - KEPTN_INSTALLATION_TYPE=FULL
-    <<: *gke_full_part2 # use template
-
-  - stage: Test GKE Full - Pt. 2 (--platform=gke --use-case=continuous-delivery)
-    if: branch = master AND type = cron # run for cron
-    env:
-      - GKE_VERSION=1.16
-      - KEPTN_INSTALLATION_TYPE=FULL
-    <<: *gke_full_part2 # use template
-
 #  - stage: Test GKE Full (--platform=gke)
 #    if: branch = master AND type = cron # run for cron
 #    env:
@@ -571,31 +543,27 @@ jobs:
 #      - KEPTN_INSTALLATION_TYPE=FULL
 #    <<: *gke_full # use template
 
-  - stage: Test GKE Full with Istio - Pt. 1 (--platform=gke --ingress-install-option=Reuse --use-case=continuous-delivery)
+  - stage: Test GKE Full with Istio - Pt. 1 (--platform=gke --use-case=continuous-delivery)
     if: branch = master AND type = cron # run for cron
     env:
-      - KEPTN_INSTALLATION_TYPE=REUSE-ISTIO
       - GKE_VERSION=1.14
     <<: *gke_full_part1 # use template
 
-  - stage: Test GKE Full with Istio - Pt. 1 (--platform=gke --ingress-install-option=Reuse --use-case=continuous-delivery)
+  - stage: Test GKE Full with Istio - Pt. 1 (--platform=gke --use-case=continuous-delivery)
     if: branch = master AND type = cron # run for cron
     env:
-      - KEPTN_INSTALLATION_TYPE=REUSE-ISTIO
       - GKE_VERSION=1.16
     <<: *gke_full_part1 # use template
 
-  - stage: Test GKE Full with Istio - Pt. 2 (--platform=gke --ingress-install-option=Reuse --use-case=continuous-delivery)
+  - stage: Test GKE Full with Istio - Pt. 2 (--platform=gke --use-case=continuous-delivery)
     if: branch = master AND type = cron # run for cron
     env:
-      - KEPTN_INSTALLATION_TYPE=REUSE-ISTIO
       - GKE_VERSION=1.14
     <<: *gke_full_part2 # use template
 
-  - stage: Test GKE Full with Istio - Pt. 2 (--platform=gke --ingress-install-option=Reuse --use-case=continuous-delivery)
+  - stage: Test GKE Full with Istio - Pt. 2 (--platform=gke --use-case=continuous-delivery)
     if: branch = master AND type = cron # run for cron
     env:
-      - KEPTN_INSTALLATION_TYPE=REUSE-ISTIO
       - GKE_VERSION=1.16
     <<: *gke_full_part2 # use template
 

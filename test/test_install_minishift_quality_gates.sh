@@ -11,7 +11,7 @@ echo "{
 echo "Installing keptn on minishift cluster"
 
 # Install keptn (using the develop version, which should point the :latest docker images)
-keptn install --platform=openshift --keptn-installer-image="${KEPTN_INSTALLER_IMAGE}" --creds=creds.json --verbose
+keptn install --platform=openshift --chart-repo="${KEPTN_INSTALLER_REPO}" --creds=creds.json --verbose
 
 verify_test_step $? "keptn install failed"
 
