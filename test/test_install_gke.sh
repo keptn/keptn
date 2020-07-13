@@ -2,7 +2,7 @@
 
 source test/utils.sh
 
-KEPTN_INSTALLER_REPO=${KEPTN_INSTALLER_REPO:-https://storage.googleapis.com/keptn-installer/latest/keptn-0.1.0-tgz}
+KEPTN_INSTALLER_REPO=${KEPTN_INSTALLER_REPO:-https://storage.googleapis.com/keptn-installer/latest/keptn-0.1.0.tgz}
 PROJECT_NAME=${PROJECT_NAME:-sockshop}
 
 # Prepare creds.json file
