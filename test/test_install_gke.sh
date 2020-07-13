@@ -22,9 +22,9 @@ keptn install --chart-repo="${KEPTN_INSTALLER_REPO}" --creds=creds.json --verbos
 verify_test_step $? "keptn install failed"
 
 # authenticate at Keptn API
-KEPTN_API_IP=$(kubectl -n keptn get service api-gateway-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+KEPTN_API_URL=$(kubectl -n keptn get service api-gateway-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)
-keptn auth --endpoint=http://$KEPTN_API_IP --api-token=$KEPTN_API_TOKEN --scheme=http
+keptn auth --endpoint=http://$KEPTN_API_URL/api --api-token=$KEPTN_API_TOKEN --scheme=http
 
 verify_test_step $? "Could not authenticate at Keptn API"
 
