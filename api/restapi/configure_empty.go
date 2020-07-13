@@ -4,8 +4,8 @@ package restapi
 
 import (
 	"crypto/tls"
-	"github.com/keptn/keptn/api/restapi/operations/configuration"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
+	"github.com/keptn/keptn/api/restapi/operations/configuration"
 	"log"
 	"net/http"
 	"os"

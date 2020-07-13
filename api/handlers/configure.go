@@ -20,6 +20,7 @@ import (
 
 const useInClusterConfig = true
 
+// PostConfigureBridgeHandlerFunc handler function for POST requests
 func PostConfigureBridgeHandlerFunc(params configuration.PostConfigBridgeParams, principal *models.Principal) middleware.Responder {
 
 	l := keptnutils.NewLogger("", "", "api")
@@ -53,6 +54,7 @@ func PostConfigureBridgeHandlerFunc(params configuration.PostConfigBridgeParams,
 	return configuration.NewPostConfigBridgeOK()
 }
 
+// GetConfigureBridgeHandlerFunc handler function for GET requests
 func GetConfigureBridgeHandlerFunc(params configuration.GetConfigBridgeParams, principal *models.Principal) middleware.Responder {
 	l := keptnutils.NewLogger("", "", "api")
 	l.Info("API received a configuration Bridge GET request")

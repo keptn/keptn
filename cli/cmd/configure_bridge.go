@@ -64,9 +64,8 @@ func configureBridge(endpoint string, apiToken string, configureBridgeParams *co
 		fmt.Println("user: " + creds.User)
 		fmt.Println("password: " + creds.Password)
 		return nil
-	} else {
-		return configureBridgeCredentials(endpoint, apiToken, configureBridgeParams)
 	}
+	return configureBridgeCredentials(endpoint, apiToken, configureBridgeParams)
 }
 
 func retrieveBridgeCredentials(endpoint string, apiToken string) (*configureBridgeAPIPayload, error) {
