@@ -131,7 +131,6 @@ func Test_getApprovalTriggeredEvents(t *testing.T) {
 			w.Write([]byte(`{}`))
 		}),
 	)
-	scheme = stringp("http")
 	defer ts.Close()
 
 	os.Setenv("MOCK_SERVER", ts.URL)

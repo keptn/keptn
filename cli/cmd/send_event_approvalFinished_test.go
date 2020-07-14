@@ -111,7 +111,6 @@ func Test_sendApprovalFinishedEvent(t *testing.T) {
 			return
 		}),
 	)
-	scheme = stringp("http")
 	defer ts.Close()
 
 	os.Setenv("MOCK_SERVER", ts.URL)

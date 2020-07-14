@@ -3,10 +3,9 @@ definitions:
   configureBridge:
     type: object
     required:
-      - expose
+      - user
+      - password
     properties:
-      expose:
-        type: boolean
       user:
         type: string
       password:

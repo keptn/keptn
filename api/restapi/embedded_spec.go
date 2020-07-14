@@ -49,12 +49,38 @@ func init() {
         }
       }
     },
-    "/configure/bridge/expose": {
+    "/config/bridge": {
+      "get": {
+        "tags": [
+          "configuration"
+        ],
+        "summary": "get bridge credentials",
+        "responses": {
+          "200": {
+            "description": "Bridge credentials have been retrieved",
+            "schema": {
+              "$ref": "#/parameters/configureBridge"
+            }
+          },
+          "400": {
+            "description": "Bridge credentials could not be retrieved",
+            "schema": {
+              "$ref": "response_model.yaml#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "response_model.yaml#/definitions/error"
+            }
+          }
+        }
+      },
       "post": {
         "tags": [
-          "configure"
+          "configuration"
         ],
-        "summary": "Exposes the bridge",
+        "summary": "Configures bridge credentials",
         "parameters": [
           {
             "$ref": "#/parameters/configureBridge"
@@ -62,13 +88,13 @@ func init() {
         ],
         "responses": {
           "200": {
-            "description": "Bridge was successfully exposed/disposed",
+            "description": "Bridge credentials were set successfully",
             "schema": {
               "type": "string"
             }
           },
           "400": {
-            "description": "Bridge could not be exposed/disposed",
+            "description": "Bridge credentials could not be set",
             "schema": {
               "$ref": "response_model.yaml#/definitions/error"
             }
@@ -363,12 +389,43 @@ func init() {
         }
       }
     },
-    "/configure/bridge/expose": {
+    "/config/bridge": {
+      "get": {
+        "tags": [
+          "configuration"
+        ],
+        "summary": "get bridge credentials",
+        "responses": {
+          "200": {
+            "description": "Bridge credentials have been retrieved",
+            "schema": {
+              "description": "Parameters for configuring the bridge access",
+              "in": "body",
+              "name": "configureBridge",
+              "schema": {
+                "$ref": "#/definitions/configureBridge"
+              }
+            }
+          },
+          "400": {
+            "description": "Bridge credentials could not be retrieved",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
       "post": {
         "tags": [
-          "configure"
+          "configuration"
         ],
-        "summary": "Exposes the bridge",
+        "summary": "Configures bridge credentials",
         "parameters": [
           {
             "description": "Parameters for configuring the bridge access",
@@ -381,13 +438,13 @@ func init() {
         ],
         "responses": {
           "200": {
-            "description": "Bridge was successfully exposed/disposed",
+            "description": "Bridge credentials were set successfully",
             "schema": {
               "type": "string"
             }
           },
           "400": {
-            "description": "Bridge could not be exposed/disposed",
+            "description": "Bridge credentials could not be set",
             "schema": {
               "$ref": "#/definitions/error"
             }
@@ -619,12 +676,10 @@ func init() {
     "configureBridge": {
       "type": "object",
       "required": [
-        "expose"
+        "user",
+        "password"
       ],
       "properties": {
-        "expose": {
-          "type": "boolean"
-        },
         "password": {
           "type": "string"
         },
@@ -716,6 +771,15 @@ func init() {
       "properties": {
         "bridgeversion": {
           "type": "string"
+        },
+        "keptnlabel": {
+          "type": "string"
+        },
+        "keptnservices": {
+          "type": [
+            "object",
+            "string"
+          ]
         },
         "keptnversion": {
           "type": "string"

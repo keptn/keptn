@@ -66,7 +66,7 @@ staging        2020-04-06T14:37:45.210Z
 			return errors.New(authErrorMsg)
 		}
 
-		stagesHandler := apiutils.NewAuthenticatedStageHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
+		stagesHandler := apiutils.NewAuthenticatedStageHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 		if !mocking {
 			stages, err := stagesHandler.GetAllStages(*stageParameter.project)
 			if err != nil {

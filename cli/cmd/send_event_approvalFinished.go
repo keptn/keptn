@@ -76,8 +76,8 @@ func sendApprovalFinishedEvent(sendApprovalFinishedOptions sendApprovalFinishedS
 
 	logging.PrintLog("Starting to send approval.finished event", logging.InfoLevel)
 
-	apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
-	eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
+	apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+	eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 
 	logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
@@ -88,7 +88,7 @@ func sendApprovalFinishedEvent(sendApprovalFinishedOptions sendApprovalFinishedS
 	if *sendApprovalFinishedOptions.ID != "" {
 		keptnContext, triggeredID, approvalFinishedEvent, err = getApprovalFinishedForID(eventHandler, sendApprovalFinishedOptions)
 	} else if *sendApprovalFinishedOptions.Service != "" {
-		serviceHandler := apiutils.NewAuthenticatedServiceHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
+		serviceHandler := apiutils.NewAuthenticatedServiceHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 		keptnContext, triggeredID, approvalFinishedEvent, err = getApprovalFinishedForService(eventHandler,
 			serviceHandler, sendApprovalFinishedOptions)
 	}
