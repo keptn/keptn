@@ -98,7 +98,7 @@ spec:
             - name: PUBSUB_TOPIC
               value: 'sh.keptn.events.evaluation-done,sh.keptn.event.approval.>'
             - name: PUBSUB_RECIPIENT
-              value: 'gatekeeper-service'
+              value: '127.0.0.1'
 ---
 apiVersion: v1
 kind: Service
@@ -198,7 +198,7 @@ spec:
             - name: PUBSUB_TOPIC
               value: 'sh.keptn.events.deployment-finished'
             - name: PUBSUB_RECIPIENT
-              value: 'jmeter-service'
+              value: '127.0.0.1'
 ---
 apiVersion: v1
 kind: Service

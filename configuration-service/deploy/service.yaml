@@ -67,7 +67,7 @@ spec:
           - name: PUBSUB_TOPIC
             value: 'sh.keptn.>'
           - name: PUBSUB_RECIPIENT
-            value: 'configuration-service'
+            value: '127.0.0.1'
           - name: PUBSUB_RECIPIENT_PATH
             value: '/v1/event'
       volumes:
