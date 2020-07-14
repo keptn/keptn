@@ -600,6 +600,7 @@ jobs:
       - test/test_install_minishift_quality_gates.sh
       - keptn status
       - export PROJECT=musicshop
+      - export PLATFORM=openshift
       - test/test_quality_gates_standalone.sh
     after_success:
       # delete kubernetes cluster only on success (in case of an error we want to be able to dig into the cluster)
