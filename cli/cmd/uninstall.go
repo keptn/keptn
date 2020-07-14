@@ -66,7 +66,7 @@ Besides, deployed services and the configuration on the Git upstream (i.e., GitH
 			}
 		}
 		logging.PrintLog("Successfully uninstalled Keptn", logging.InfoLevel)
-		logging.PrintLog("Note: Please review the following namespaces and perform manual deletion if necessary:",
+		logging.PrintLog("\nPlease review the following namespaces and perform manual deletion if necessary:",
 			logging.InfoLevel)
 
 		namespaces, err := listAllNamespaces()
@@ -80,7 +80,7 @@ Besides, deployed services and the configuration on the Git upstream (i.e., GitH
 				logging.PrintLog("      Recommended action: None (default namespace)", logging.InfoLevel)
 			} else {
 				// just delete the namespace
-				logging.PrintLog(fmt.Sprintf("      Please review this namespace in detail using 'kubectl get pods -n %s' before deleting it", namespace), logging.InfoLevel)
+				logging.PrintLog(fmt.Sprintf("      Please review this namespace using 'kubectl get pods -n %s' before deleting it", namespace), logging.InfoLevel)
 				logging.PrintLog(fmt.Sprintf("      Recommended action: kubectl delete namespace %s", namespace), logging.InfoLevel)
 			}
 		}
