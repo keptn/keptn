@@ -17,6 +17,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+
 	"github.com/keptn/keptn/cli/pkg/logging"
 
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
@@ -62,6 +63,8 @@ func (p openShiftPlatform) checkCreds() error {
 }
 
 func (p openShiftPlatform) readCreds() {
+
+	fmt.Print("Please enter the following information or press enter to keep the old value:\n")
 
 	connectionSuccessful := false
 	for !connectionSuccessful {

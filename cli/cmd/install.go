@@ -150,7 +150,7 @@ keptn install --platform=kubernetes --keptn-api-service-type=NodePort # install 
 			return err
 		}
 
-		logging.PrintLog(fmt.Sprintf("Used Installer chart: %s", chartRepoURL), logging.InfoLevel)
+		logging.PrintLog(fmt.Sprintf("Helm Chart used for Keptn installation: %s", chartRepoURL), logging.InfoLevel)
 
 		if !mocking {
 			if p.checkRequirements() != nil {
@@ -360,7 +360,7 @@ func upgradeChart(ch *chart.Chart, releaseName, namespace string, vals map[strin
 	}
 
 	if len(ch.Templates) > 0 {
-		logging.PrintLog(fmt.Sprintf("Start upgrading chart %s in namespace %s", releaseName, namespace), logging.InfoLevel)
+		logging.PrintLog(fmt.Sprintf("Start upgrading Helm Chart: %s in namespace: %s", releaseName, namespace), logging.InfoLevel)
 		var kubeconfig string
 		if os.Getenv("KUBECONFIG") != "" {
 			kubeconfig = keptnutils.ExpandTilde(os.Getenv("KUBECONFIG"))
@@ -491,8 +491,6 @@ func readCreds() error {
 	}
 	// Ignore unmarshaling error
 	json.Unmarshal([]byte(credsStr), p.getCreds())
-
-	fmt.Print("Please enter the following information or press enter to keep the old value:\n")
 
 	for {
 		p.readCreds()

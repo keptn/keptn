@@ -17,8 +17,9 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"github.com/keptn/keptn/cli/pkg/logging"
 	"strings"
+
+	"github.com/keptn/keptn/cli/pkg/logging"
 
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 )
@@ -63,7 +64,7 @@ func (p kubernetesPlatform) checkCreds() error {
 }
 
 func getKubeContext() (string, error) {
-	logging.PrintLog("Checking current kubernetes context: kubectl config current-context", logging.VerboseLevel)
+	logging.PrintLog("Checking current Kubernetes context: kubectl config current-context", logging.VerboseLevel)
 	out, err := keptnutils.ExecuteCommand("kubectl", []string{
 		"config",
 		"current-context",
