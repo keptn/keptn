@@ -266,7 +266,7 @@ spec:
             - name: PUBSUB_TOPIC
               value: 'sh.keptn.internal.event.service.create'
             - name: PUBSUB_RECIPIENT
-              value: 'helm-service'
+              value: '127.0.0.1'
       serviceAccountName: keptn-helm-service
 ---
 apiVersion: v1
@@ -337,7 +337,7 @@ spec:
             - name: PUBSUB_TOPIC
               value: 'sh.keptn.internal.event.project.create,sh.keptn.internal.event.project.delete'
             - name: PUBSUB_RECIPIENT
-              value: 'shipyard-service'
+              value: '127.0.0.1'
       serviceAccountName: keptn-default
 ---
 apiVersion: v1
@@ -425,7 +425,7 @@ spec:
             - name: PUBSUB_TOPIC
               value: 'sh.keptn.>'
             - name: PUBSUB_RECIPIENT
-              value: 'configuration-service'
+              value: '127.0.0.1'
             - name: PUBSUB_RECIPIENT_PATH
               value: '/v1/event'
       volumes:

@@ -87,7 +87,7 @@ spec:
           - name: PUBSUB_TOPIC
             value: 'sh.keptn.internal.event.service.create'
           - name: PUBSUB_RECIPIENT
-            value: 'helm-service'
+            value: '127.0.0.1'
 ---
 apiVersion: v1
 kind: Service

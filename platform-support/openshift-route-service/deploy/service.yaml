@@ -163,7 +163,7 @@ spec:
           - name: PUBSUB_TOPIC
             value: 'sh.keptn.internal.event.project.create'
           - name: PUBSUB_RECIPIENT
-            value: 'openshift-route-service'
+            value: '127.0.0.1'
 ---
 apiVersion: v1
 kind: Service
