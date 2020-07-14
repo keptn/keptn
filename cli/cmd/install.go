@@ -360,7 +360,7 @@ func upgradeChart(ch *chart.Chart, releaseName, namespace string, vals map[strin
 	}
 
 	if len(ch.Templates) > 0 {
-		logging.PrintLog(fmt.Sprintf("Start upgrading Helm Chart: %s in namespace: %s", releaseName, namespace), logging.InfoLevel)
+		logging.PrintLog(fmt.Sprintf("Start upgrading Helm Chart %s in namespace: %s", releaseName, namespace), logging.InfoLevel)
 		var kubeconfig string
 		if os.Getenv("KUBECONFIG") != "" {
 			kubeconfig = keptnutils.ExpandTilde(os.Getenv("KUBECONFIG"))
@@ -396,7 +396,7 @@ func upgradeChart(ch *chart.Chart, releaseName, namespace string, vals map[strin
 			release, err = iCli.Run(releaseName, ch, vals)
 		}
 		if err != nil {
-			return fmt.Errorf("Error when installing/upgrading chart %s in namespace %s: %s",
+			return fmt.Errorf("Error when installing/upgrading Helm Chart %s in namespace %s: %s",
 				releaseName, namespace, err.Error())
 		}
 		if release != nil {
@@ -407,9 +407,9 @@ func upgradeChart(ch *chart.Chart, releaseName, namespace string, vals map[strin
 		} else {
 			logging.PrintLog("Release is nil", logging.InfoLevel)
 		}
-		logging.PrintLog(fmt.Sprintf("Finished upgrading chart %s in namespace %s", releaseName, namespace), logging.InfoLevel)
+		logging.PrintLog(fmt.Sprintf("Finished upgrading Helm Chart %s in namespace %s", releaseName, namespace), logging.InfoLevel)
 	} else {
-		logging.PrintLog("Upgrade not done as this is an empty chart", logging.InfoLevel)
+		logging.PrintLog("Upgrade not done since this is an empty Helm Chart", logging.InfoLevel)
 	}
 	return nil
 }
