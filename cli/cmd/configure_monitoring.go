@@ -102,7 +102,7 @@ keptn configure monitoring prometheus --project=PROJECTNAME --service=SERVICENAM
 			Data: configureMonitoringEventData,
 		}
 
-		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
+		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		eventByte, err := sdkEvent.MarshalJSON()
@@ -125,7 +125,7 @@ keptn configure monitoring prometheus --project=PROJECTNAME --service=SERVICENAM
 
 			// if eventContext is available, open WebSocket communication
 			if eventContext != nil && !SuppressWSCommunication {
-				return websockethelper.PrintWSContentEventContext(eventContext, endPoint, *scheme == "https")
+				return websockethelper.PrintWSContentEventContext(eventContext, endPoint)
 			}
 
 			return nil

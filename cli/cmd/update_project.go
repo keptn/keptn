@@ -73,7 +73,7 @@ For more information about updating projects or upstream repositories visit http
 			project.GitRemoteURI = *updateProjectParams.RemoteURL
 		}
 
-		projectHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
+		projectHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
@@ -85,7 +85,7 @@ For more information about updating projects or upstream repositories visit http
 
 			// if eventContext is available, open WebSocket communication
 			if eventContext != nil && !SuppressWSCommunication {
-				return websockethelper.PrintWSContentEventContext(eventContext, endPoint, *scheme == "https")
+				return websockethelper.PrintWSContentEventContext(eventContext, endPoint)
 			}
 			logging.PrintLog("Project updated successful", logging.InfoLevel)
 			return nil

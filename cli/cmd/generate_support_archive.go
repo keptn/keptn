@@ -525,7 +525,7 @@ func getProjects() *errorableProjectResult {
 	if err != nil {
 		return newErrorableProjectResult(nil, err)
 	}
-	projectHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
+	projectHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 	return newErrorableProjectResult(projectHandler.GetAllProjects())
 }
 
@@ -547,7 +547,7 @@ func getKeptnMetadata() *errorableMetadataResult {
 	if err != nil {
 		return newErrorableMetadataResult(nil, err)
 	}
-	metadataHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
+	metadataHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 	metadataData, errMetadata := metadataHandler.GetMetadata()
 	if errMetadata != nil {
 		err = errors.New("Error occured with response code " + string(errMetadata.Code) + " with message " + *errMetadata.Message)

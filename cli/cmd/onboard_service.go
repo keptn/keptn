@@ -119,7 +119,7 @@ keptn onboard service SERVICENAME --project=PROJECTNAME --chart=HELM_CHART.tgz`,
 			service.DeploymentStrategies = deplStrategies
 		}
 
-		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
+		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
@@ -131,7 +131,7 @@ keptn onboard service SERVICENAME --project=PROJECTNAME --chart=HELM_CHART.tgz`,
 
 			// if eventContext is available, open WebSocket communication
 			if eventContext != nil && !SuppressWSCommunication {
-				return websockethelper.PrintWSContentEventContext(eventContext, endPoint, *scheme == "https")
+				return websockethelper.PrintWSContentEventContext(eventContext, endPoint)
 			}
 
 			return nil
