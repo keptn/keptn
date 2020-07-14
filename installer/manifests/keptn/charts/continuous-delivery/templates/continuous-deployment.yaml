@@ -26,27 +26,27 @@ kind: Deployment
 metadata:
   name: gatekeeper-service
   labels:
-    app.kubernetes.io/name: {{ include "continuous-delivery.name" . }}-gatekeeper-service
+    app.kubernetes.io/name: gatekeeper-service
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn
-    app.kubernetes.io/component: gatekeeper-service
+    app.kubernetes.io/component: {{ include "continuous-delivery.name" . }}
     app.kubernetes.io/version: {{ .Values.gatekeeperService.image.tag }}
     helm.sh/chart: {{ include "continuous-delivery.chart" . }}
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ include "continuous-delivery.name" . }}-gatekeeper-service
+      app.kubernetes.io/name: gatekeeper-service
       app.kubernetes.io/instance: {{ .Release.Name }}      
   replicas: 1
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ include "continuous-delivery.name" . }}-gatekeeper-service
+        app.kubernetes.io/name: gatekeeper-service
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/part-of: keptn
-        app.kubernetes.io/component: gatekeeper-service
+        app.kubernetes.io/component: {{ include "continuous-delivery.name" . }}
         app.kubernetes.io/version: {{ .Values.gatekeeperService.image.tag }}
         helm.sh/chart: {{ include "continuous-delivery.chart" . }}          
     spec:
@@ -96,18 +96,18 @@ kind: Service
 metadata:
   name: gatekeeper-service
   labels:
-    app.kubernetes.io/name: {{ include "continuous-delivery.name" . }}-gatekeeper-service
+    app.kubernetes.io/name: gatekeeper-service
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn
-    app.kubernetes.io/component: gatekeeper-service    
+    app.kubernetes.io/component: {{ include "continuous-delivery.name" . }}
     helm.sh/chart: {{ include "continuous-delivery.chart" . }}          
 spec:
   ports:
   - port: 8080
     protocol: TCP
   selector:
-    app.kubernetes.io/name: {{ include "continuous-delivery.name" . }}-gatekeeper-service
+    app.kubernetes.io/name: gatekeeper-service
     app.kubernetes.io/instance: {{ .Release.Name }}
 ---
 ## helm-service: sh.keptn.event.configuration.change
@@ -116,27 +116,27 @@ kind: Deployment
 metadata:
   name: helm-service-continuous-deployment-distributor
   labels:
-    app.kubernetes.io/name: {{ include "continuous-delivery.name" . }}-helm-svc-distributor
+    app.kubernetes.io/name: helm-service-continuous-deployment-distributor
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn
-    app.kubernetes.io/component: helm-service-continuous-deployment-distributor
+    app.kubernetes.io/component: {{ include "continuous-delivery.name" . }}
     app.kubernetes.io/version: {{ .Values.distributor.image.tag }}
     helm.sh/chart: {{ include "continuous-delivery.chart" . }}  
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ include "continuous-delivery.name" . }}-helm-svc-distributor
+      app.kubernetes.io/name: helm-service-continuous-deployment-distributor
       app.kubernetes.io/instance: {{ .Release.Name }}    
   replicas: 1
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ include "continuous-delivery.name" . }}-helm-svc-distributor
+        app.kubernetes.io/name: helm-service-continuous-deployment-distributor
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/part-of: keptn
-        app.kubernetes.io/component: helm-service-continuous-deployment-distributor
+        app.kubernetes.io/component: {{ include "continuous-delivery.name" . }}
         app.kubernetes.io/version: {{ .Values.distributor.image.tag }}
         helm.sh/chart: {{ include "continuous-delivery.chart" . }}        
     spec:
@@ -169,27 +169,27 @@ kind: Deployment
 metadata:
   name: jmeter-service
   labels:
-    app.kubernetes.io/name: {{ include "continuous-delivery.name" . }}-jmeter-service
+    app.kubernetes.io/name: jmeter-service
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn
-    app.kubernetes.io/component: jmeter-service
+    app.kubernetes.io/component: {{ include "continuous-delivery.name" . }}
     app.kubernetes.io/version: {{ .Values.jmeterService.image.tag }}
     helm.sh/chart: {{ include "continuous-delivery.chart" . }}    
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ include "continuous-delivery.name" . }}-jmeter-service
+      app.kubernetes.io/name: jmeter-service
       app.kubernetes.io/instance: {{ .Release.Name }}
   replicas: 1
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ include "continuous-delivery.name" . }}-jmeter-service
+        app.kubernetes.io/name: jmeter-service
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/part-of: keptn
-        app.kubernetes.io/component: jmeter-service
+        app.kubernetes.io/component: {{ include "continuous-delivery.name" . }}
         app.kubernetes.io/version: {{ .Values.jmeterService.image.tag }}
         helm.sh/chart: {{ include "continuous-delivery.chart" . }}        
     spec:
@@ -232,16 +232,16 @@ kind: Service
 metadata:
   name: jmeter-service
   labels:
-    app.kubernetes.io/name: {{ include "continuous-delivery.name" . }}-jmeter-service
+    app.kubernetes.io/name: jmeter-service
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn
-    app.kubernetes.io/component: jmeter-service    
+    app.kubernetes.io/component: {{ include "continuous-delivery.name" . }}
     helm.sh/chart: {{ include "continuous-delivery.chart" . }}      
 spec:
   ports:
   - port: 8080
     protocol: TCP
   selector:
-    app.kubernetes.io/name: {{ include "continuous-delivery.name" . }}-jmeter-service
+    app.kubernetes.io/name: jmeter-service
     app.kubernetes.io/instance: {{ .Release.Name }}    
