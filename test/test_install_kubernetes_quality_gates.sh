@@ -29,7 +29,7 @@ API_PORT=$(kubectl get svc api-gateway-nginx -n keptn -o jsonpath='{.spec.ports[
 EXTERNAL_NODE_IP=$(kubectl get nodes -o jsonpath='{ $.items[0].status.addresses[?(@.type=="ExternalIP")].address }')
 KEPTN_ENDPOINT=http://${INTERNAL_NODE_IP}:${API_PORT}
 KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)
-keptn auth --endpoint=http://$KEPTN_ENDPOINT/api --api-token=$KEPTN_API_TOKEN --scheme=http
+keptn auth --endpoint=http://$KEPTN_ENDPOINT/api --api-token=$KEPTN_API_TOKEN
 
 verify_test_step $? "Could not authenticate at Keptn API"
 
