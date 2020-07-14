@@ -546,25 +546,25 @@ jobs:
 #    <<: *gke_full # use template
 
   - stage: Test GKE Full with Istio - Pt. 1 (--platform=gke --use-case=continuous-delivery)
-    if: branch = feature/1965/integration-tests AND (type = cron OR type = push) # run for cron
+    if: branch = master AND type = cron # run for cron
     env:
       - GKE_VERSION=1.14
     <<: *gke_full_part1 # use template
 
   - stage: Test GKE Full with Istio - Pt. 1 (--platform=gke --use-case=continuous-delivery)
-    if: branch = feature/1965/integration-tests AND type = cron # run for cron
+    if: branch = master AND type = cron # run for cron
     env:
       - GKE_VERSION=1.16
     <<: *gke_full_part1 # use template
 
   - stage: Test GKE Full with Istio - Pt. 2 (--platform=gke --use-case=continuous-delivery)
-    if: branch = feature/1965/integration-tests AND (type = cron OR type = push) # run for cron
+    if: branch = master AND type = cron # run for cron
     env:
       - GKE_VERSION=1.14
     <<: *gke_full_part2 # use template
 
   - stage: Test GKE Full with Istio - Pt. 2 (--platform=gke --use-case=continuous-delivery)
-    if: branch = feature/1965/integration-tests AND type = cron # run for cron
+    if: branch = master AND type = cron # run for cron
     env:
       - GKE_VERSION=1.16
     <<: *gke_full_part2 # use template
