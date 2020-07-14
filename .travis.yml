@@ -208,6 +208,7 @@ jobs:
   # Jobs that are always executed
   ##################################################################################
   - stage: Unit tests # Bridge
+    if: branch = master #feature/1965/integration-tests
     os: linux
     addons:
       chrome: stable
@@ -226,6 +227,7 @@ jobs:
       - bash <(curl -s https://codecov.io/bash) -F moduleA
 
   - stage: Unit tests # golang
+    if: branch = master #feature/1965/integration-tests
     os: linux
     script:
       - set -e # Fail the whole script whenever any command fails
