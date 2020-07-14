@@ -1,7 +1,6 @@
 #!/bin/bash
 
 KEPTN_INSTALLER_REPO=${KEPTN_INSTALLER_REPO:-https://storage.googleapis.com/keptn-installer/latest/keptn-0.1.0.tgz}
-KEPTN_INSTALLER_REPO=https://storage.googleapis.com/keptn-installer/patch-ingress-config-optional+20200713.1533/keptn-0.1.0.tgz
 
 source test/utils.sh
 
@@ -11,11 +10,6 @@ echo "{}" > creds.json # empty credentials file
 keptn install --chart-repo="${KEPTN_INSTALLER_REPO}" --platform=kubernetes --creds=creds.json --keptn-api-service-type=NodePort --verbose
 
 verify_test_step $? "keptn install failed"
-
-# verify that the keptn CLI has successfully authenticated
-echo "Checking that keptn is authenticated..."
-ls -la ~/.keptn/.keptn
-verify_test_step $? "Could not find keptn credentials in ~/.keptn folder"
 
 echo "Verifying that services and namespaces have been created"
 
@@ -38,6 +32,11 @@ KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.
 keptn auth --endpoint=http://$KEPTN_ENDPOINT/api --api-token=$KEPTN_API_TOKEN --scheme=http
 
 verify_test_step $? "Could not authenticate at Keptn API"
+
+# verify that the keptn CLI has successfully authenticated
+echo "Checking that keptn is authenticated..."
+ls -la ~/.keptn/.keptn
+verify_test_step $? "Could not find keptn credentials in ~/.keptn folder"
 
 cd ../..
 
