@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+
 	cloudevents "github.com/cloudevents/sdk-go"
 	keptn "github.com/keptn/go-utils/pkg/lib"
 )
@@ -65,7 +66,7 @@ func (eh *ProblemOpenEventHandler) HandleEvent() error {
 	actionIndex := 0
 	action := eh.Remediation.getActionForProblemType(*remediationData, problemType, actionIndex)
 	if action == nil {
-		action = eh.Remediation.getActionForProblemType(*remediationData, "*", actionIndex)
+		action = eh.Remediation.getActionForProblemType(*remediationData, "default", actionIndex)
 	}
 
 	if action != nil {
