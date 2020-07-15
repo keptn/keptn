@@ -80,6 +80,8 @@ do
     fi
 done
 
+# delete resource that have been generated procedurally by the installer to avoid conflicts with helm install
+kubectl deletee configmap -n keptn api-nginx-config
 kubectl delete secret -n keptn keptn-api-token
 
 BRIDGE_USERNAME=""
@@ -108,13 +110,13 @@ else
   helm3 install keptn keptn/keptn -n keptn --set continuous-delivery.enabled=false
 fi
 
-kubectl create secret generic -n keptn keptn-api-token --from-literal=keptn-api-token="$KEPTN_API_TOKEN" --oyaml --dry-run | kubectl replace -f -
+kubectl create secret generic -n keptn keptn-api-token --from-literal=keptn-api-token="$KEPTN_API_TOKEN" -oyaml --dry-run | kubectl replace -f -
 
 if [[ $BRIDGE_USERNAME == "" ]]; then
   echo "No previous bridge credentials found. No need to update"
 else
   echo "Setting bridge credentials to previous values"
-  kubectl -n keptn create secret generic bridge-credentials --from-literal="BASIC_AUTH_USERNAME=$BRIDGE_USERNAME" --from-literal="BASIC_AUTH_PASSWORD=$BRIDGE_PASSWORD" --oyaml --dry-run | kubectl replace -f -
+  kubectl -n keptn create secret generic bridge-credentials --from-literal="BASIC_AUTH_USERNAME=$BRIDGE_USERNAME" --from-literal="BASIC_AUTH_PASSWORD=$BRIDGE_PASSWORD" -oyaml --dry-run | kubectl replace -f -
 fi
 
 kubectl -n keptn set env deployment/configuration-service MONGO_DB_CONNECTION_STRING='mongodb://user:password@mongodb.keptn-datastore:27017/keptn'
