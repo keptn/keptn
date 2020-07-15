@@ -126,7 +126,7 @@ sleep 30
 MONGO_TARGET_USER=$(kubectl get secret mongodb-credentials -n keptn -ojsonpath={.data.user} | base64 -d)
 MONGO_TARGET_PASSWORD=$(kubectl get secret mongodb-credentials -n keptn -ojsonpath={.data.password} | base64 -d)
 
-./upgradecollections $MONGODB_SOURCE_URL "mongodb://${MONGO_TARGET_USER}:${MONGO_TARGET_PASSWORD}@${MONGODB_TARGET_URL}" $CONFIGURATION_SERVICE_URL
+./upgradecollections $MONGODB_SOURCE_URL "mongodb://user:password@${MONGODB_TARGET_URL}" $CONFIGURATION_SERVICE_URL
 
 kubectl -n keptn set env deployment/configuration-service MONGO_DB_CONNECTION_STRING='mongodb://user:password@mongodb:27017/keptn'
 kubectl delete pod -n keptn -lrun=configuration-service
