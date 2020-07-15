@@ -1,3 +1,15 @@
+{{- $apiToken := (randAlphaNum 20) | b64enc | quote }}
+{{- $apisecret := (lookup "v1" "Secret" .Release.Namespace "keptn-api-token") }}
+{{- if $apisecret }}
+{{- $apiToken = index $apisecret.data "keptn-api-token" }}
+{{- end -}}
+
+{{- $bridgePassword := (randAlphaNum 16) | b64enc | quote }}
+{{- $bridgesecret := (lookup "v1" "Secret" .Release.Namespace "bridge-credentials") }}
+{{- if $bridgesecret }}
+{{- $bridgePassword = index $bridgesecret.data "BASIC_AUTH_PASSWORD" }}
+{{- end -}}
+
 ---
 apiVersion: v1
 kind: Secret
@@ -5,7 +17,7 @@ metadata:
   name: keptn-api-token
 type: Opaque
 data:
-  keptn-api-token: {{ randAlphaNum 20 | b64enc }}
+  keptn-api-token: {{ $apiToken }}
 ---
 apiVersion: v1
 kind: Secret
@@ -14,7 +26,7 @@ metadata:
 type: Opaque
 data:
   BASIC_AUTH_USERNAME: 'a2VwdG4='
-  BASIC_AUTH_PASSWORD: {{ randAlphaNum 20 | b64enc }}
+  BASIC_AUTH_PASSWORD: {{ $bridgePassword }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -390,8 +402,18 @@ spec:
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
           imagePullPolicy: Always
           env:
-            - name: MONGO_DB_CONNECTION_STRING
-              value: 'mongodb://user:password@mongodb:27017/keptn'
+            - name: MONGODB_HOST
+              value: 'mongodb:27017'
+            - name: MONGODB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-credentials
+                  key: user
+            - name: MONGODB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-credentials
+                  key: password
             - name: MONGO_DB_NAME
               value: 'keptn'
           ports:

@@ -22,8 +22,18 @@ spec:
       - name: configuration-service
         image: keptn/configuration-service:latest
         env:
-          - name: MONGO_DB_CONNECTION_STRING
-            value: 'mongodb://user:password@mongodb:27017/keptn'
+          - name: MONGODB_HOST
+            value: 'mongodb:27017'
+          - name: MONGODB_USER
+            valueFrom:
+              secretKeyRef:
+                name: mongodb-credentials
+                key: user
+          - name: MONGODB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mongodb-credentials
+                key: password
           - name: MONGO_DB_NAME
             value: 'keptn'
         ports:
