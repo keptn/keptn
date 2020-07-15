@@ -4,7 +4,6 @@ info:
   title: mongodb-datastore
   version: 0.1.0
 schemes:
-  - https
   - http
 basePath: /
 consumes:
