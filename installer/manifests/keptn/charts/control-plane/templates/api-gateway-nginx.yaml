@@ -172,7 +172,7 @@ spec:
     spec:
       containers:
         - name: api-gateway-nginx
-          image: nginxinc/nginx-unprivileged:1.17.9
+          image: {{ .Values.image.registry}}/nginxinc/nginx-unprivileged:1.17.9
           ports:
             - containerPort: 8080
           livenessProbe:
@@ -219,9 +219,9 @@ metadata:
   labels:
     run: api-gateway-nginx
 spec:
-  type: LoadBalancer
+  type: {{ .Values.apiNginxGateway.type }}
   ports:
-    - port: 80
+    - port: {{ .Values.apiNginxGateway.port }}
       name: http
       targetPort: 8080
       protocol: TCP
