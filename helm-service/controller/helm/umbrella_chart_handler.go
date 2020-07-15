@@ -128,7 +128,7 @@ func (u *UmbrellaChartHandler) GetUmbrellaChart(project, stage string) (*chart.C
 func (u *UmbrellaChartHandler) createRootChartResource(event *keptnevents.ServiceCreateEventData) (*configmodels.Resource, error) {
 
 	metadata := chart.Metadata{APIVersion: "v2",
-		Description: "A Helm chart for project " + event.Project + "-umbrella",
+		Description: "A Helm Chart for project " + event.Project + "-umbrella",
 		Name:        event.Project + "-umbrella",
 		Version:     version}
 
@@ -230,7 +230,7 @@ func (u *UmbrellaChartHandler) AddChartInUmbrellaValues(project string, helmChar
 	return nil
 }
 
-// IsUmbrellaChartAvailableInAllStages checks whether all stages contain a umbrella Helm chart
+// IsUmbrellaChartAvailableInAllStages checks whether all stages contain a umbrella Helm Chart
 func (u *UmbrellaChartHandler) IsUmbrellaChartAvailableInAllStages(project string, stages []*configmodels.Stage) (bool, error) {
 
 	// an umbrella chart is defined by the 3 resources: Chart.yaml, requirements.yaml and values.yaml
