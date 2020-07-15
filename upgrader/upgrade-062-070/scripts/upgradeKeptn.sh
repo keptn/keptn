@@ -58,6 +58,7 @@ kubectl -n keptn get svc gatekeeper-service
 
 old_manifests=(
   "https://raw.githubusercontent.com/keptn/keptn/release-$PREVIOUS_KEPTN_VERSION/installer/manifests/keptn/core.yaml"
+  "https://raw.githubusercontent.com/keptn/keptn/release-$PREVIOUS_KEPTN_VERSION/installer/manifests/keptn/api-gateway-nginx.yaml"
   "https://raw.githubusercontent.com/keptn/keptn/release-$PREVIOUS_KEPTN_VERSION/installer/manifests/keptn/quality-gates.yaml"
   "https://raw.githubusercontent.com/keptn/keptn/release-$PREVIOUS_KEPTN_VERSION/installer/manifests/keptn/continuous-deployment.yaml"
   "https://raw.githubusercontent.com/keptn/keptn/release-$PREVIOUS_KEPTN_VERSION/installer/manifests/keptn/continuous-operations.yaml"
@@ -84,8 +85,8 @@ do
 done
 
 # delete resource that have been generated procedurally by the installer to avoid conflicts with helm install
-kubectl delete configmap -n keptn api-nginx-config
 kubectl delete secret -n keptn keptn-api-token
+kubectl delete configmap -n keptn keptn-domain
 
 BRIDGE_USERNAME=""
 kubectl get secret -n keptn bridge-credentials
