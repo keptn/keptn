@@ -49,6 +49,8 @@ COPY --from=builder /go/src/github.com/keptn/keptn/api/project_model.yaml /swagg
 COPY --from=builder /go/src/github.com/keptn/keptn/api/response_model.yaml /swagger-ui/response_model.yaml
 COPY --from=builder /go/src/github.com/keptn/keptn/api/service_model.yaml /swagger-ui/service_model.yaml
 
+RUN sed -i "s|basePath: /v1|basePath: /api/v1 |g" /swagger-ui/swagger.yaml
+
 EXPOSE 8080
 
 # required for external tools to detect this as a go binary

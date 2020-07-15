@@ -6,7 +6,7 @@ info:
 schemes:
   - https
   - http
-basePath: /api/v1
+basePath: /v1
 consumes:
   - application/json
   - application/cloudevents+json
