@@ -208,7 +208,7 @@ jobs:
   # Jobs that are always executed
   ##################################################################################
   - stage: Unit tests # Bridge
-    if: branch = master #feature/1965/integration-tests
+    if: branch = master
     os: linux
     addons:
       chrome: stable
@@ -227,7 +227,7 @@ jobs:
       - bash <(curl -s https://codecov.io/bash) -F moduleA
 
   - stage: Unit tests # golang
-    if: branch = master #feature/1965/integration-tests
+    if: branch = master
     os: linux
     script:
       - set -e # Fail the whole script whenever any command fails
@@ -583,7 +583,7 @@ jobs:
 
   - &K3sStandaloneTest
     stage: Test K3s Standalone (--platform=kubernetes)
-    if: (branch = feature/1965/integration-tests or branch =~ ^release.*$) AND (type = cron OR type = push) # run for any change on master/release-* on push as well as cron
+    if: (branch = master or branch =~ ^release.*$) AND (type = cron OR type = push) # run for any change on master/release-* on push as well as cron
     os: linux
     env:
       - K3S_VERSION=v1.16.10+k3s1 # see https://github.com/rancher/k3s/releases
@@ -621,7 +621,7 @@ jobs:
 
   - &microk8sStandaloneTest
     stage: Test MicroK8s Standalone (--platform=kubernetes)
-    if: (branch = feature/1965/integration-tests or branch =~ ^release.*$) AND (type = cron OR type = push) # run for any change on master/release-* on push as well as cron
+    if: (branch = master or branch =~ ^release.*$) AND (type = cron OR type = push) # run for any change on master/release-* on push as well as cron
     os: linux
     env:
       - MICROK8S_VERSION=1.16/stable # see https://snapcraft.io/microk8s channels
@@ -661,7 +661,7 @@ jobs:
     # for detailed Minikube versions see https://github.com/kubernetes/minikube/blob/master/CHANGELOG.md
     env:
       - MINIKUBE_VERSION=v1.3.1 # from 2019-08-13; uses K8s 1.15
-    if: (branch = feature/1965/integration-tests or branch =~ ^release.*$) AND (type = cron OR type = push) # run for any change on master/release-* on push as well as cron
+    if: (branch = master or branch =~ ^release.*$) AND (type = cron OR type = push) # run for any change on master/release-* on push as well as cron
     os: linux
     before_script:
       # install conntrack (required for newer minikube versions)
