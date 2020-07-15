@@ -21,8 +21,8 @@ objectives:
   - sli: "throughput"
     pass:
       - criteria:
-          - "<=+20%"
-          - ">=-20%"
+          - "<=+100%"
+          - ">=-80%"
   - sli: "error_rate"
 total_score:
   pass: "90%"
