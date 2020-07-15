@@ -129,7 +129,6 @@ spec:
         image: keptn/openshift-route-service:latest
         ports:
         - containerPort: 8080
-        - containerPort: 8081
         resources:
           requests:
             memory: "32Mi"
@@ -178,9 +177,5 @@ spec:
     port: 8080
     protocol: TCP
     targetPort: 8080
-  - name: expose-bridge
-    port: 8081
-    protocol: TCP
-    targetPort: 8081
   selector:
     run: openshift-route-service
