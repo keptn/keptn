@@ -4,6 +4,7 @@ package restapi
 
 import (
 	"crypto/tls"
+	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/event"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/remediation"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/service_approval"
@@ -190,12 +191,8 @@ func setupMiddlewares(handler http.Handler) http.Handler {
 // The middleware configuration happens before anything, this middleware also applies to serving the swagger.json document.
 // So this is a good place to plug in a panic handling middleware, logging and metrics
 func setupGlobalMiddleware(handler http.Handler) http.Handler {
+	go keptnapi.RunHealthEndpoint("10999")
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Shortcut helpers for swagger-ui
-		if r.URL.Path == "/swagger-ui" {
-			http.Redirect(w, r, "/swagger-ui/", http.StatusFound)
-			return
-		}
 		// Serving ./swagger-ui/
 		if strings.Index(r.URL.Path, "/swagger-ui/") == 0 {
 			http.StripPrefix("/swagger-ui/", http.FileServer(http.Dir("swagger-ui"))).ServeHTTP(w, r)

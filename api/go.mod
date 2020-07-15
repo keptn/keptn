@@ -15,11 +15,13 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/gorilla/websocket v1.4.1
 	github.com/jessevdk/go-flags v1.4.0
-	github.com/keptn/go-utils v0.6.3-0.20200702115825-f6d5f793dcc7
+	github.com/keptn/go-utils v0.6.3-0.20200710052556-a4b53e72aa48
 	github.com/keptn/kubernetes-utils v0.0.0-20200401103501-ae44a5ee0656
 	github.com/kinbiko/jsonassert v1.0.1
+	github.com/kr/pretty v0.2.0 // indirect
 	github.com/magiconair/properties v1.8.1
 	golang.org/x/net v0.0.0-20191126235420-ef20fe5d7933
+	gopkg.in/yaml.v2 v2.2.8
 	istio.io/api v0.0.0-20200325005357-8217d7225b6d
 	istio.io/client-go v0.0.0-20200325170329-dc00bbff4229
 	k8s.io/api v0.17.4

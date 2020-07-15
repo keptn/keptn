@@ -23,6 +23,8 @@ import (
 	"sync"
 	"time"
 
+	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
+
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
 	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
@@ -55,6 +57,7 @@ func main() {
 		fmt.Println("Failed to process env var: " + err.Error())
 		os.Exit(1)
 	}
+	go keptnapi.RunHealthEndpoint("10999")
 	os.Exit(_main(os.Args[1:], env))
 }
 

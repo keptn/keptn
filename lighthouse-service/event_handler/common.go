@@ -6,7 +6,7 @@ import (
 
 	"github.com/ghodss/yaml"
 	utils "github.com/keptn/go-utils/pkg/api/utils"
-	"github.com/keptn/go-utils/pkg/lib"
+	keptn "github.com/keptn/go-utils/pkg/lib"
 )
 
 const eventbroker = "EVENTBROKER"
@@ -16,7 +16,7 @@ func getDatastoreURL() string {
 	if os.Getenv(datastore) != "" {
 		return "http://" + os.Getenv(datastore)
 	}
-	return "http://mongodb-datastore.keptn-datastore.svc.cluster.local:8080"
+	return "http://mongodb-datastore:8080"
 }
 
 func getSLOs(project string, stage string, service string) (*keptn.ServiceLevelObjectives, error) {

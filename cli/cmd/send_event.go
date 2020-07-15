@@ -69,7 +69,7 @@ For convenience, this command offers the *--stream-websocket* flag to open a web
 			return fmt.Errorf("Failed to map event to API event model. %s", err.Error())
 		}
 
-		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
+		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {

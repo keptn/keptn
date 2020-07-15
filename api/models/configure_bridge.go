@@ -17,22 +17,24 @@ import (
 // swagger:model configureBridge
 type ConfigureBridge struct {
 
-	// expose
-	// Required: true
-	Expose *bool `json:"expose"`
-
 	// password
-	Password string `json:"password,omitempty"`
+	// Required: true
+	Password *string `json:"password"`
 
 	// user
-	User string `json:"user,omitempty"`
+	// Required: true
+	User *string `json:"user"`
 }
 
 // Validate validates this configure bridge
 func (m *ConfigureBridge) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateExpose(formats); err != nil {
+	if err := m.validatePassword(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateUser(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -42,9 +44,18 @@ func (m *ConfigureBridge) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ConfigureBridge) validateExpose(formats strfmt.Registry) error {
+func (m *ConfigureBridge) validatePassword(formats strfmt.Registry) error {
 
-	if err := validate.Required("expose", "body", m.Expose); err != nil {
+	if err := validate.Required("password", "body", m.Password); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ConfigureBridge) validateUser(formats strfmt.Registry) error {
+
+	if err := validate.Required("user", "body", m.User); err != nil {
 		return err
 	}
 

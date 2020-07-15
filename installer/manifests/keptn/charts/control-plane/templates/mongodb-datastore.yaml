@@ -1,0 +1,84 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongodb-datastore
+  annotations:
+    fluentbit.io/exclude: "true"
+spec:
+  selector:
+    matchLabels:
+      run: mongodb-datastore
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: mongodb-datastore
+    spec:
+      serviceAccountName: keptn-default
+      containers:
+      - name: mongodb-datastore
+        image: {{ .Values.image.registry}}/keptn/mongodb-datastore:latest
+        {{- include "control-plane.livenessProbe" . | nindent 8 }}
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        env:
+        - name: MONGODB_HOST
+          value: 'mongodb:27017'
+        - name: MONGODB_DATABASE
+          value: 'keptn'
+        - name: MONGODB_USER
+          valueFrom:
+            secretKeyRef:
+                name: mongodb-credentials
+                key: user
+        - name: MONGODB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+                name: mongodb-credentials
+                key: password
+      - name: distributor
+        image: {{ .Values.image.registry}}/keptn/distributor:latest
+        {{- include "control-plane.livenessProbe" . | nindent 8 }}
+        imagePullPolicy: Always
+        ports:
+          - containerPort: 8080
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        env:
+          - name: PUBSUB_IMPL
+            value: nats
+          - name: PUBSUB_URL
+            value: 'nats://keptn-nats-cluster'
+          - name: PUBSUB_TOPIC
+            value: 'sh.keptn.>'
+          - name: PUBSUB_RECIPIENT
+            value: '127.0.0.1'
+          - name: PUBSUB_RECIPIENT_PATH
+            value: '/event'
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb-datastore
+  labels:
+    run: mongodb-datastore
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+  selector:
+    run: mongodb-datastore

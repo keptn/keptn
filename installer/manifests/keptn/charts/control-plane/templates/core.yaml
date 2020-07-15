@@ -1,0 +1,450 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: keptn-api-token
+type: Opaque
+data:
+  keptn-api-token: {{ randAlphaNum 20 | b64enc }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: bridge-credentials
+type: Opaque
+data:
+  BASIC_AUTH_USERNAME: 'a2VwdG4='
+  BASIC_AUTH_PASSWORD: {{ randAlphaNum 20 | b64enc }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-service
+spec:
+  selector:
+    matchLabels:
+      run: api-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: api-service
+    spec:
+      containers:
+        - name: api-service
+          image: {{ .Values.image.registry}}/keptn/api:latest
+          {{- include "control-plane.livenessProbe" . | nindent 10 }}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+          env:
+            - name: EVENTBROKER_URI
+              value: event-broker
+            - name: DATASTORE_URI
+              value: mongodb-datastore:8080
+            - name: CONFIGURATION_URI
+              value: configuration-service:8080
+            - name: SECRET_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: keptn-api-token
+                  key: keptn-api-token
+      serviceAccountName: keptn-api-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-service
+  labels:
+    run: api-service
+spec:
+  ports:
+    - port: 8080
+      name: http
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    run: api-service
+---
+# bridge
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bridge
+spec:
+  selector:
+    matchLabels:
+      run: bridge
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: bridge
+    spec:
+      containers:
+        - name: bridge
+          image: {{ .Values.image.registry}}/keptn/bridge2:latest
+          imagePullPolicy: Always
+          env:
+            - name: API_URL
+              value: "http://api-gateway-nginx"
+            - name: API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: keptn-api-token
+                  key: keptn-api-token
+          envFrom:
+            - secretRef:
+                name: bridge-credentials
+                optional: true
+          ports:
+            - containerPort: 3000
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+      serviceAccountName: keptn-default
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bridge
+  labels:
+    run: bridge
+spec:
+  ports:
+    - port: 8080
+      targetPort: 3000
+      protocol: TCP
+  selector:
+    run: bridge
+---
+# eventbroker-go
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eventbroker-go
+spec:
+  selector:
+    matchLabels:
+      run: eventbroker-go
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: eventbroker-go
+    spec:
+      containers:
+        - name: eventbroker-go
+          image: {{ .Values.image.registry}}/keptn/eventbroker-go:latest
+          {{- include "control-plane.livenessProbe" . | nindent 10 }}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          env:
+            - name: PUBSUB_URL
+              value: 'nats://keptn-nats-cluster'
+            - name: PUBSUB_IMPL
+              value: 'nats'
+      serviceAccountName: keptn-default
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: event-broker
+  labels:
+    run: eventbroker-go
+spec:
+  ports:
+    - port: 80
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    run: eventbroker-go
+
+---
+# helm-service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: helm-service
+spec:
+  selector:
+    matchLabels:
+      run: helm-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: helm-service
+    spec:
+      containers:
+        - name: helm-service
+          image: {{ .Values.image.registry}}/keptn/helm-service:latest
+          {{- include "control-plane.livenessProbe" . | nindent 10 }}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "50m"
+            limits:
+              memory: "512Mi"
+              cpu: "1000m"
+          env:
+            - name: CONFIGURATION_SERVICE
+              value: 'http://configuration-service:8080'
+            - name: EVENTBROKER
+              value: 'http://event-broker/keptn'
+            - name: API
+              value: 'ws://api-service:8080/websocket'
+            - name: ENVIRONMENT
+              value: 'production'
+            - name: PRE_WORKFLOW_ENGINE
+              value: 'true'
+            - name: CANARY
+              value: 'deployment'
+            - name: INGRESS_HOSTNAME_SUFFIX
+              valueFrom:
+                configMapKeyRef:
+                  name: ingress-config
+                  key: ingress_hostname_suffix
+                  optional: true
+            - name: INGRESS_PROTOCOL
+              valueFrom:
+                configMapKeyRef:
+                  name: ingress-config
+                  key: ingress_protocol
+                  optional: true
+            - name: INGRESS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: ingress-config
+                  key: ingress_port
+                  optional: true
+            - name: ISTIO_GATEWAY
+              valueFrom:
+                configMapKeyRef:
+                  name: ingress-config
+                  key: istio_gateway
+                  optional: true
+        - name: distributor
+          image: {{ .Values.image.registry}}/keptn/distributor:latest
+          {{- include "control-plane.livenessProbe" . | nindent 10 }}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          env:
+            - name: PUBSUB_URL
+              value: 'nats://keptn-nats-cluster'
+            - name: PUBSUB_TOPIC
+              value: 'sh.keptn.internal.event.service.create'
+            - name: PUBSUB_RECIPIENT
+              value: '127.0.0.1'
+      serviceAccountName: keptn-helm-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: helm-service
+  labels:
+    run: helm-service
+spec:
+  ports:
+    - port: 8080
+      protocol: TCP
+  selector:
+    run: helm-service
+---
+# shipyard-service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shipyard-service
+spec:
+  selector:
+    matchLabels:
+      run: shipyard-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: shipyard-service
+    spec:
+      containers:
+        - name: shipyard-service
+          image: {{ .Values.image.registry}}/keptn/shipyard-service:latest
+          {{- include "control-plane.livenessProbe" . | nindent 10 }}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          env:
+            - name: CONFIGURATION_SERVICE
+              value: 'http://configuration-service:8080'
+            - name: EVENTBROKER
+              value: 'http://event-broker/keptn'
+            - name: API
+              value: 'ws://api-service:8080/websocket'
+        - name: distributor
+          image: {{ .Values.image.registry}}/keptn/distributor:latest
+          {{- include "control-plane.livenessProbe" . | nindent 10 }}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          env:
+            - name: PUBSUB_URL
+              value: 'nats://keptn-nats-cluster'
+            - name: PUBSUB_TOPIC
+              value: 'sh.keptn.internal.event.project.create,sh.keptn.internal.event.project.delete'
+            - name: PUBSUB_RECIPIENT
+              value: '127.0.0.1'
+      serviceAccountName: keptn-default
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: shipyard-service
+  labels:
+    run: shipyard-service
+spec:
+  ports:
+    - port: 8080
+      protocol: TCP
+  selector:
+    run: shipyard-service
+---
+# configuration-service
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  name: configuration-volume
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+status: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: configuration-service
+spec:
+  selector:
+    matchLabels:
+      run: configuration-service
+  replicas: 1
+  # recreate the deployment if anything changes (we can not do a rolling upgrade of this deployment as we use a volume)
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        run: configuration-service
+    spec:
+      containers:
+        - name: configuration-service
+          image: {{ .Values.image.registry}}/keptn/configuration-service:latest
+          {{- include "control-plane.livenessProbe" . | nindent 10 }}
+          imagePullPolicy: Always
+          env:
+            - name: MONGO_DB_CONNECTION_STRING
+              value: 'mongodb://user:password@mongodb:27017/keptn'
+            - name: MONGO_DB_NAME
+              value: 'keptn'
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          volumeMounts:
+            - mountPath: /data/config
+              name: configuration-volume
+        - name: distributor
+          image: {{ .Values.image.registry}}/keptn/distributor:latest
+          {{- include "control-plane.livenessProbe" . | nindent 10 }}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          env:
+            - name: PUBSUB_URL
+              value: 'nats://keptn-nats-cluster'
+            - name: PUBSUB_TOPIC
+              value: 'sh.keptn.>'
+            - name: PUBSUB_RECIPIENT
+              value: '127.0.0.1'
+            - name: PUBSUB_RECIPIENT_PATH
+              value: '/v1/event'
+      volumes:
+        - name: configuration-volume
+          persistentVolumeClaim:
+            claimName: configuration-volume
+      serviceAccountName: keptn-configuration-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: configuration-service
+  labels:
+    run: configuration-service
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    run: configuration-service
+

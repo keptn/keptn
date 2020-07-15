@@ -18,6 +18,12 @@ spec:
       containers:
       - name: shipyard-service
         image: keptn/shipyard-service:latest
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 10999
+          initialDelaySeconds: 5
+          periodSeconds: 5
         ports:
         - containerPort: 8080
         resources:
@@ -29,11 +35,36 @@ spec:
             cpu: "500m"
         env:
         - name: CONFIGURATION_SERVICE
-          value: 'http://configuration-service.keptn.svc.cluster.local:8080'
+          value: 'http://configuration-service:8080'
         - name: EVENTBROKER
-          value: 'http://event-broker.keptn.svc.cluster.local/keptn'
+          value: 'http://event-broker/keptn'
         - name: API
-          value: 'ws://api-service.keptn.svc.cluster.local:8080'
+          value: 'ws://api-service:8080/websocket'
+      - name: distributor
+        image: keptn/distributor:latest
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 10999
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        imagePullPolicy: Always
+        ports:
+          - containerPort: 8080
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        env:
+          - name: PUBSUB_URL
+            value: 'nats://keptn-nats-cluster'
+          - name: PUBSUB_TOPIC
+            value: 'sh.keptn.internal.event.project.create,sh.keptn.internal.event.project.delete'
+          - name: PUBSUB_RECIPIENT
+            value: '127.0.0.1'
 ---
 apiVersion: v1
 kind: Service

@@ -1,0 +1,73 @@
+---
+# lighthouse-service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lighthouse-service
+spec:
+  selector:
+    matchLabels:
+      run: lighthouse-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: lighthouse-service
+    spec:
+      containers:
+        - name: lighthouse-service
+          image: {{ .Values.image.registry}}/keptn/lighthouse-service:latest
+          {{- include "control-plane.livenessProbe" . | nindent 10 }}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "50m"
+            limits:
+              memory: "1024Mi"
+              cpu: "500m"
+          env:
+            - name: EVENTBROKER
+              value: 'http://event-broker/keptn'
+            - name: CONFIGURATION_SERVICE
+              value: 'http://configuration-service:8080'
+            - name: MONGODB_DATASTORE
+              value: 'mongodb-datastore:8080'
+            - name: ENVIRONMENT
+              value: 'production'
+        - name: distributor
+          image: {{ .Values.image.registry}}/keptn/distributor:latest
+          {{- include "control-plane.livenessProbe" . | nindent 10 }}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          env:
+            - name: PUBSUB_URL
+              value: 'nats://keptn-nats-cluster'
+            - name: PUBSUB_TOPIC
+              value: 'sh.keptn.>'
+            - name: PUBSUB_RECIPIENT
+              value: '127.0.0.1'
+      serviceAccountName: keptn-lighthouse-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lighthouse-service
+  labels:
+    run: lighthouse-service
+spec:
+  ports:
+    - port: 8080
+      protocol: TCP
+  selector:
+    run: lighthouse-service

@@ -32,6 +32,7 @@ import { DtSelectModule } from '@dynatrace/barista-components/select';
 import { DtShowMoreModule } from '@dynatrace/barista-components/show-more';
 import { DtSwitchModule } from '@dynatrace/barista-components/switch';
 import { DtTagModule } from '@dynatrace/barista-components/tag';
+import { DtTopBarNavigationModule } from "@dynatrace/barista-components/top-bar-navigation";
 
 import { DtThemingModule } from '@dynatrace/barista-components/theming';
 import { DtTileModule } from '@dynatrace/barista-components/tile';
@@ -69,6 +70,7 @@ import { AppRouting } from './app.routing';
 
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { ProjectBoardComponent } from './project-board/project-board.component';
+import { EvaluationBoardComponent } from "./evaluation-board/evaluation-board.component";
 
 registerLocaleData(localeEn, 'en');
 
@@ -78,6 +80,7 @@ registerLocaleData(localeEn, 'en');
     DashboardComponent,
     AppHeaderComponent,
     ProjectBoardComponent,
+    EvaluationBoardComponent,
     KtbHttpLoadingSpinnerComponent,
     KtbHttpLoadingBarComponent,
     KtbShowHttpLoadingDirective,
@@ -133,9 +136,10 @@ registerLocaleData(localeEn, 'en');
     DtSwitchModule,
     DtConfirmationDialogModule,
     DtToastModule,
+    DtTopBarNavigationModule,
     MatDialogModule,
     DtIconModule.forRoot({
-      svgIconLocation: `/assets/icons/{{name}}.svg`,
+      svgIconLocation: `assets/icons/{{name}}.svg`,
     }),
     BrowserAnimationsModule,
   ],

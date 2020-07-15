@@ -17,16 +17,21 @@ PROJECT="sockshop"
 SERVICE="carts"
 STAGE="production"
 
-PROMETHEUS_SERVICE_VERSION=${PROMETHEUS_SERVICE_VERSION:-0.3.4}
+PROMETHEUS_SERVICE_VERSION=${PROMETHEUS_SERVICE_VERSION:-master}
 
-kubectl delete namespace $PROJECT-dev
-kubectl delete namespace $PROJECT-staging
 kubectl delete namespace $PROJECT-production
 keptn delete project $PROJECT
 
 keptn create project $PROJECT --shipyard=./test/assets/shipyard_self_healing_scale.yaml
 
 # Prerequisites
+
+kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/prometheus-service/$PROMETHEUS_SERVICE_VERSION/deploy/service.yaml
+
+wait_for_deployment_in_namespace prometheus-service keptn
+wait_for_deployment_in_namespace prometheus-service-monitoring-configure-distributor keptn
+echo "Prometheus service deployed successfully"
+
 rm -rf examples
 git clone --branch master https://github.com/keptn/examples --single-branch
 
@@ -42,14 +47,6 @@ keptn onboard service $SERVICE --project=$PROJECT --chart=./$SERVICE
 ###########################################
 keptn onboard service $SERVICE-db --project=$PROJECT --chart=./$SERVICE-db --deployment-strategy=direct
 keptn send event new-artifact --project=$PROJECT --service=$SERVICE-db --image=mongo
-
-# add health and functional check in dev
-keptn add-resource --project=$PROJECT --service=$SERVICE --stage=dev --resource=jmeter/basiccheck.jmx --resourceUri=jmeter/basiccheck.jmx
-keptn add-resource --project=$PROJECT --service=$SERVICE --stage=dev --resource=jmeter/load.jmx --resourceUri=jmeter/load.jmx
-
-# add health and functional check in staging
-keptn add-resource --project=$PROJECT --service=$SERVICE --stage=staging --resource=jmeter/basiccheck.jmx --resourceUri=jmeter/basiccheck.jmx
-keptn add-resource --project=$PROJECT --service=$SERVICE --stage=staging --resource=jmeter/load.jmx --resourceUri=jmeter/load.jmx
 
 # add health check in production
 keptn add-resource --project=$PROJECT --service=$SERVICE --stage=production --resource=jmeter/basiccheck.jmx --resourceUri=jmeter/basiccheck.jmx
@@ -74,11 +71,6 @@ wait_for_deployment_in_namespace $SERVICE-primary $PROJECT-$STAGE
 ###########################################
 # set up prometheus monitoring            #
 ###########################################
-kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/prometheus-service/release-$PROMETHEUS_SERVICE_VERSION/deploy/service.yaml
-
-wait_for_deployment_in_namespace prometheus-service keptn
-wait_for_deployment_in_namespace prometheus-service-monitoring-configure-distributor keptn
-echo "Prometheus service deployed successfully"
 
 keptn configure monitoring prometheus --project=$PROJECT --service=$SERVICE
 
@@ -96,6 +88,12 @@ kubectl apply -f deploy/cartsloadgen-faulty.yaml
 wait_for_deployment_in_namespace cartsloadgen loadgen
 
 echo "loadgen deployed successfully waiting for problem notification"
+
+sleep 120
+echo "Still waiting..."
+sleep 120
+echo "Still waiting..."
+sleep 120
 
 event=$(wait_for_problem_open_event ${PROJECT} ${SERVICE} ${STAGE})
 

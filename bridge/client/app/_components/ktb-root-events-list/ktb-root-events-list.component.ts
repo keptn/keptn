@@ -9,7 +9,6 @@ import {
 } from '@angular/core';
 import {Root} from "../../_models/root";
 import DateUtil from "../../_utils/date.utils";
-import {Stage} from "../../_models/stage";
 
 @Component({
   selector: 'ktb-root-events-list',

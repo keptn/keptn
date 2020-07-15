@@ -2,7 +2,8 @@
 @import '~@dynatrace/barista-components/core/src/style/variables';
 
 .dt-tag.error {
-  border-color: $error-color;
+  background-color: $error-color;
+  color: $white;
 }
 
 ktb-event-item.focused {

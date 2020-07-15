@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: mongodb
-  namespace: keptn-datastore
+  namespace: keptn
 spec:
   ports:
   - name: "27017"

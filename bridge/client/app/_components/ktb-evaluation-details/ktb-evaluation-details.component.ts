@@ -51,7 +51,10 @@ export class KtbEvaluationDetailsComponent implements OnInit {
 
   public _chartOptions: Highcharts.Options = {
     xAxis: {
-      type: 'datetime',
+      type: 'category',
+      labels: {
+        rotation: 90
+      }
     },
     yAxis: [
       {
@@ -173,10 +176,10 @@ export class KtbEvaluationDetailsComponent implements OnInit {
 
     evaluationHistory.forEach((evaluation) => {
       let scoreData = {
-        x: moment(evaluation.time).unix()*1000,
         y: evaluation.data.evaluationdetails ? evaluation.data.evaluationdetails.score : 0,
         evaluationData: evaluation,
-        color: this._evaluationColor[evaluation.data.evaluationdetails.result]
+        color: this._evaluationColor[evaluation.data.evaluationdetails.result],
+        name: evaluation.getChartLabel()
       };
 
       let indicatorScoreSeriesColumn = chartSeries.find(series => series.name == 'Score' && series.type == 'column');

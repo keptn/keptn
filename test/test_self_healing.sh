@@ -7,7 +7,7 @@ KEPTN_ENDPOINT=https://api.keptn.$(kubectl get cm keptn-domain -n keptn -ojsonpa
 KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)
 
 # test configuration
-UNLEASH_SERVICE_VERSION="master" #${UNLEASH_SERVICE_VERSION:-0.1.0}
+UNLEASH_SERVICE_VERSION=${UNLEASH_SERVICE_VERSION:-master}
 PROJECT="self-healing-project"
 SERVICE="frontend"
 
@@ -77,7 +77,6 @@ verify_using_jq "$response" ".data.stage" "production"
 verify_using_jq "$response" ".data.service" "$SERVICE"
 verify_using_jq "$response" ".data.remediation.status" "errored"
 verify_using_jq "$response" ".data.remediation.result" "failed"
-verify_using_jq "$response" ".data.remediation.message" "Could not execute remediation action because service is not available"
 
 
 ####################################################################################################################################
@@ -148,7 +147,7 @@ else
   echo "Verified that no remediation.finished event has been sent"
 fi
 
-sleep 120
+sleep 60
 
 response=$(curl -X GET "${KEPTN_ENDPOINT}/mongodb-datastore/event?project=${PROJECT}&type=sh.keptn.event.remediation.finished&keptnContext=${keptn_context_id}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.events | length')
 
@@ -202,7 +201,7 @@ else
   echo "Verified that no remediation.finished event has been sent"
 fi
 
-sleep 120
+sleep 60
 
 response=$(curl -X GET "${KEPTN_ENDPOINT}/mongodb-datastore/event?project=${PROJECT}&type=sh.keptn.event.remediation.finished&keptnContext=${keptn_context_id}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.events | length')
 

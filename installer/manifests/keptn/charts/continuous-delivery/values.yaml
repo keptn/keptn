@@ -1,0 +1,11 @@
+openshift:
+  enabled: false
+
+image:
+  registry: docker.io
+
+ingressConfig:
+  ingress_hostname_suffix: "svc.cluster.local"
+  ingress_protocol: "http"
+  ingress_port: "80"
+  istio_gateway: "public-gateway.istio-system"
