@@ -45,9 +45,9 @@ verify_deployment_in_namespace "mongodb-datastore" "keptn"
 # authenticate at Keptn API
 API_PORT=$(kubectl get svc api-gateway-nginx -n keptn -o jsonpath='{.spec.ports[?(@.name=="http")].nodePort}')
 INTERNAL_NODE_IP=$(kubectl get nodes -o jsonpath='{ $.items[0].status.addresses[?(@.type=="InternalIP")].address }')
-KEPTN_ENDPOINT=http://${INTERNAL_NODE_IP}:${API_PORT}
+KEPTN_ENDPOINT=http://${INTERNAL_NODE_IP}:${API_PORT}/api
 KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)
-keptn auth --endpoint=http://$KEPTN_ENDPOINT/api --api-token=$KEPTN_API_TOKEN
+keptn auth --endpoint=$KEPTN_ENDPOINT --api-token=$KEPTN_API_TOKEN
 
 verify_test_step $? "Could not authenticate at Keptn API"
 
