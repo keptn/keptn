@@ -65,6 +65,9 @@ old_manifests=(
   "https://raw.githubusercontent.com/keptn/keptn/release-$PREVIOUS_KEPTN_VERSION/installer/manifests/keptn/keptn-ingress.yaml"
   "https://raw.githubusercontent.com/keptn/keptn/release-$PREVIOUS_KEPTN_VERSION/installer/manifests/keptn/uniform-services-openshift.yaml"
   "https://raw.githubusercontent.com/keptn/keptn/release-$PREVIOUS_KEPTN_VERSION/installer/manifests/keptn/uniform-distributors-openshift.yaml"
+  "https://raw.githubusercontent.com/keptn/keptn/release-$PREVIOUS_KEPTN_VERSION/installer/manifests/nats/nats-cluster.yaml"
+  "https://raw.githubusercontent.com/keptn/keptn/release-$PREVIOUS_KEPTN_VERSION/installer/manifests/nats/nats-operator-deploy.yaml"
+  "https://raw.githubusercontent.com/keptn/keptn/release-$PREVIOUS_KEPTN_VERSION/installer/manifests/nats/nats-operator-prereqs.yaml"
   )
 
 for manifest in "${old_manifests[@]}"
@@ -81,7 +84,7 @@ do
 done
 
 # delete resource that have been generated procedurally by the installer to avoid conflicts with helm install
-kubectl deletee configmap -n keptn api-nginx-config
+kubectl delete configmap -n keptn api-nginx-config
 kubectl delete secret -n keptn keptn-api-token
 
 BRIDGE_USERNAME=""
@@ -95,7 +98,6 @@ kubectl get secret -n keptn bridge-credentials
 
 
 # install helm chart
-
 helm3 repo add keptn $HELM_CHART_URL
 
 if [[ $USECASE == "continuous-delivery" ]]; then
