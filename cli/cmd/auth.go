@@ -43,6 +43,10 @@ More precisely, the keptn CLI stores the endpoint and API token using *pass* in 
 			return err
 		}
 
+		if url.Path == "" || url.Path == "/" {
+			url.Path = "/api"
+		}
+
 		authHandler := apiutils.NewAuthenticatedAuthHandler(url.String(), *apiToken, "x-token", nil, url.Scheme)
 
 		if !mocking {
