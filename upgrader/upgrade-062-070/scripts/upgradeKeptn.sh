@@ -36,7 +36,7 @@ MONGODB_TARGET_URL=${MONGODB_TARGET_URL:-"mongodb://user:password@mongodb.keptn:
 print_debug "Upgrading from Keptn 0.6.2 to $KEPTN_VERSION"
 
 KEPTN_API_URL=https://api.keptn.$(kubectl get cm keptn-domain -n keptn -ojsonpath={.data.app_domain})
-KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)
+KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 -d)
 KEPTN_DOMAIN=$(kubectl get cm keptn-domain -n keptn -ojsonpath={.data.app_domain})
 
 print_debug "Check if Keptn 0.6.2 is currently installed"
@@ -80,6 +80,18 @@ do
     fi
 done
 
+kubectl delete secret -n keptn keptn-api-token
+
+BRIDGE_USERNAME=""
+kubectl get secret -n keptn bridge-credentials
+  if [[ $? == '0' ]]; then
+    print_debug "Bridge credentials detected. Fetching credentials"
+    BRIDGE_USERNAME=$(kubectl get secret bridge-credentials -n keptn -ojsonpath={.data.BASIC_AUTH_USERNAME} | base64 -d)
+    BRIDGE_PASSWORD=$(kubectl get secret bridge-credentials -n keptn -ojsonpath={.data.BASIC_AUTH_PASSWORD} | base64 -d)
+    kubectl -n keptn delete secret bridge-credentials
+  fi
+
+
 # install helm chart
 
 helm3 repo add keptn $HELM_CHART_URL
@@ -96,12 +108,21 @@ else
   helm3 install keptn keptn/keptn -n keptn --set continuous-delivery.enabled=false
 fi
 
+kubectl create secret generic -n keptn keptn-api-token --from-literal=keptn-api-token="$KEPTN_API_TOKEN" --oyaml --dry-run | kubectl replace -f -
+
+if [[ $BRIDGE_USERNAME == "" ]]; then
+  echo "No previous bridge credentials found. No need to update"
+else
+  echo "Setting bridge credentials to previous values"
+  kubectl -n keptn create secret generic bridge-credentials --from-literal="BASIC_AUTH_USERNAME=$BRIDGE_USERNAME" --from-literal="BASIC_AUTH_PASSWORD=$BRIDGE_PASSWORD" --oyaml --dry-run | kubectl replace -f -
+fi
+
 kubectl -n keptn set env deployment/configuration-service MONGO_DB_CONNECTION_STRING='mongodb://user:password@mongodb.keptn-datastore:27017/keptn'
 kubectl delete pod -n keptn -lrun=configuration-service
 sleep 30
 
-MONGO_TARGET_USER=$(kubectl get secret mongodb-credentials -n keptn -ojsonpath={.data.user} | base64 --decode)
-MONGO_TARGET_PASSWORD=$(kubectl get secret mongodb-credentials -n keptn -ojsonpath={.data.password} | base64 --decode)
+MONGO_TARGET_USER=$(kubectl get secret mongodb-credentials -n keptn -ojsonpath={.data.user} | base64 -d)
+MONGO_TARGET_PASSWORD=$(kubectl get secret mongodb-credentials -n keptn -ojsonpath={.data.password} | base64 -d)
 
 ./upgradecollections $MONGODB_SOURCE_URL "mongodb://${MONGO_TARGET_USER}:${MONGO_TARGET_PASSWORD}@${MONGODB_TARGET_URL}" $CONFIGURATION_SERVICE_URL
 
