@@ -6,8 +6,6 @@ control-plane:
 
 continuous-delivery:
   enabled: false
-  openshift:
-    enabled: false
 
 image:
   registry: docker.io
