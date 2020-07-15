@@ -94,7 +94,7 @@ spec:
           imagePullPolicy: Always
           env:
             - name: API_URL
-              value: "http://api-gateway-nginx"
+              value: "http://api-gateway-nginx/api"
             - name: API_TOKEN
               valueFrom:
                 secretKeyRef:
