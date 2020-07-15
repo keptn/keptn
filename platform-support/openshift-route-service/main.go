@@ -25,14 +25,6 @@ type envConfig struct {
 	Path string `envconfig:"RCV_PATH" default:"/"`
 }
 
-type stage struct {
-	Name string `json:"name"`
-}
-type projectData struct {
-	Project string  `json:"project"`
-	Stages  []stage `json:"stages"`
-}
-
 func main() {
 	var env envConfig
 	if err := envconfig.Process("", &env); err != nil {
@@ -102,9 +94,6 @@ func createRoutes(data *keptn.ProjectCreateEventData) error {
 		return err
 	}
 	for _, stage := range shipyard.Stages {
-		if err := exposeRoute(data.Project, stage.Name); err != nil {
-			return err
-		}
 		if stage.DeploymentStrategy == "blue_green_service" {
 			// add required security context constraints to the generated namespace to make istio injection work
 			if err := enableMesh(data.Project, stage.Name); err != nil {
@@ -148,40 +137,4 @@ func getEnableMeshCommandArgs(project string, stage string) []string {
 		"-n",
 		project + "-" + stage,
 	}
-}
-
-func exposeRoute(project string, stage string) error {
-	ingressHostnameSuffix := getIngressHostnameSuffix()
-	// oc create route edge istio-wildcard-ingress-secure-keptn --service=istio-ingressgateway --hostname="www.keptn.ingress-gateway.$BASE_URL" --port=http2 --wildcard-policy=Subdomain --insecure-policy='Allow'
-
-	out, err := keptn.ExecuteCommand("oc",
-		getCreateRouteCommandArgs(project, stage, ingressHostnameSuffix))
-	if err != nil {
-		return err
-	}
-	fmt.Println("exposeRoute() output: " + out)
-	return nil
-}
-
-func getCreateRouteCommandArgs(project, stage, ingressHostnameSuffix string) []string {
-	return []string{
-		"create",
-		"route",
-		"edge",
-		project + "-" + stage,
-		"--service=istio-ingressgateway",
-		"--hostname=www." + project + "-" + stage + "." + ingressHostnameSuffix,
-		"--port=http2",
-		"--wildcard-policy=Subdomain",
-		"--insecure-policy=Allow",
-		"-n",
-		"istio-system",
-	}
-}
-
-func getIngressHostnameSuffix() string {
-	if os.Getenv("INGRESS_HOSTNAME_SUFFIX") != "" {
-		return os.Getenv("INGRESS_HOSTNAME_SUFFIX")
-	}
-	return "svc.cluster.local"
 }

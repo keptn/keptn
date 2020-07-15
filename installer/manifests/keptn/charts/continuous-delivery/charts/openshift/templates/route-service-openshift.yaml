@@ -7,70 +7,6 @@ metadata:
     "app": "keptn"
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: keptn-create-delete-route
-  labels:
-    "app": "keptn"
-rules:
-  - apiGroups:
-      - ""
-      - route.openshift.io
-    resources:
-      - routes
-      - routes/custom-host
-    verbs:
-      - create
-      - delete
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: keptn-create-delete-route
-  labels:
-    "app": "keptn"
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: keptn-create-delete-route
-subjects:
-  - kind: ServiceAccount
-    name: keptn-openshift-route-service
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: keptn-create-route
-  namespace: istio-system
-  labels:
-    "app": "keptn"
-rules:
-  - apiGroups:
-      - ""
-      - route.openshift.io
-    resources:
-      - routes
-      - routes/custom-host
-    verbs:
-      - create
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: keptn-create-route
-  namespace: istio-system
-  labels:
-    "app": "keptn"
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: keptn-create-route
-subjects:
-  - kind: ServiceAccount
-    name: keptn-openshift-route-service
-    namespace: {{ .Release.Namespace }}
----
-apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: keptn-{{ .Release.Namespace }}-securitycontextconstraints
@@ -131,12 +67,6 @@ spec:
           limits:
             memory: "128Mi"
             cpu: "500m"
-        env:
-        - name: INGRESS_HOSTNAME_SUFFIX
-          valueFrom:
-            configMapKeyRef:
-              name: ingress-config
-              key: ingress_hostname_suffix
       - name: distributor
         image: {{ .Values.image.registry}}/keptn/distributor:latest
         imagePullPolicy: Always
