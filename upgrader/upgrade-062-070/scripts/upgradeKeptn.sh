@@ -27,7 +27,7 @@ then
   
 fi
 
-PREVIOUS_KEPTN_VERSION="release-0.6.2"
+PREVIOUS_KEPTN_VERSION="0.6.2"
 KEPTN_VERSION=${KEPTN_VERSION:-"release-0.7.0"}
 HELM_CHART_URL=${HELM_CHART_URL:-"https://storage.googleapis.com/keptn-installer/0.7.0"}
 MONGODB_SOURCE_URL=${MONGODB_SOURCE_URL:-"mongodb://user:password@mongodb.keptn-datastore:27017/keptn"}
@@ -57,8 +57,6 @@ kubectl -n keptn get svc gatekeeper-service
   fi
 
 old_manifests=(
-  "https://raw.githubusercontent.com/keptn/keptn/release-$PREVIOUS_KEPTN_VERSION/installer/manifests/logging/mongodb-datastore/k8s/mongodb-datastore.yaml"
-  "https://raw.githubusercontent.com/keptn/keptn/release-$PREVIOUS_KEPTN_VERSION/installer/manifests/logging/mongodb-datastore/mongodb-datastore-distributor.yaml"
   "https://raw.githubusercontent.com/keptn/keptn/release-$PREVIOUS_KEPTN_VERSION/installer/manifests/keptn/core.yaml"
   "https://raw.githubusercontent.com/keptn/keptn/release-$PREVIOUS_KEPTN_VERSION/installer/manifests/keptn/quality-gates.yaml"
   "https://raw.githubusercontent.com/keptn/keptn/release-$PREVIOUS_KEPTN_VERSION/installer/manifests/keptn/continuous-deployment.yaml"
@@ -74,7 +72,7 @@ do
    :
    if curl --head --silent -k --fail $manifest 2> /dev/null;
      then
-      kubectl delete -f manifest
+      kubectl delete -f $manifest
       continue
      else
       print_error "Required manifest $manifest not available. Aborting upgrade."
@@ -91,8 +89,9 @@ if [[ $USECASE == "continuous-delivery" ]]; then
   if [[ $? == '0' ]]; then
     print_debug "OpenShift platform detected. Updating OpenShift core services"
     helm3 install keptn keptn/keptn -n keptn --set continuous-delivery.enabled=true --set continuous-delivery.openshift.enabled=true
+  else
+    helm3 install keptn keptn/keptn -n keptn --set continuous-delivery.enabled=true
   fi
-  helm3 install keptn keptn/keptn -n keptn --set continuous-delivery.enabled=true
 else
   helm3 install keptn keptn/keptn -n keptn --set continuous-delivery.enabled=false
 fi
@@ -109,8 +108,8 @@ MONGO_TARGET_PASSWORD=$(kubectl get secret mongodb-credentials -n keptn -ojsonpa
 kubectl -n keptn set env deployment/configuration-service MONGO_DB_CONNECTION_STRING='mongodb://user:password@mongodb:27017/keptn'
 kubectl delete pod -n keptn -lrun=configuration-service
 
-print_debug "Deleting outdated keptn-datastore namespace"
-kubectl delete namespace keptn-datastore
+#print_debug "Deleting outdated keptn-datastore namespace"
+#kubectl delete namespace keptn-datastore
 
 if [[ $USECASE == "continuous-delivery" ]]; then
   # set values for the ingress-config to reflect the previous installation
