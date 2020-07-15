@@ -43,7 +43,7 @@ RUN wget https://get.helm.sh/helm-v$HELM3_VERSION-linux-amd64.tar.gz && \
   mv linux-amd64/helm /bin/helm3 && \
   rm -rf linux-amd64
 
-RUN apk update && apk upgrade && apk add --no-cache git bash curl
+RUN apk update && apk upgrade && apk add --no-cache git bash curl tar
 
 # Copy core and install
 COPY scripts .

@@ -56,6 +56,11 @@ kubectl -n keptn get svc gatekeeper-service
       USE_CASE="continuous-delivery"
   fi
 
+# copy content from previous configuration-service PVC
+mkdir config-svc-backup
+CONFIG_SERVICE_POD=$(kubectl get pods -n keptn -lrun=configuration-service -ojsonpath='{.items[0].metadata.name}')
+kubectl cp keptn/$CONFIG_SERVICE_POD:/data ./config-svc-backup/ -c configuration-service
+
 old_manifests=(
   "https://raw.githubusercontent.com/keptn/keptn/release-$PREVIOUS_KEPTN_VERSION/installer/manifests/keptn/core.yaml"
   "https://raw.githubusercontent.com/keptn/keptn/release-$PREVIOUS_KEPTN_VERSION/installer/manifests/keptn/api-gateway-nginx.yaml"
@@ -123,8 +128,10 @@ else
 fi
 
 kubectl -n keptn set env deployment/configuration-service MONGO_DB_CONNECTION_STRING='mongodb://user:password@mongodb.keptn-datastore:27017/keptn'
-kubectl delete pod -n keptn -lrun=configuration-service
-sleep 30
+kubectl -n keptn set image deployment/configuration-service configuration-service='keptn/configuration-service:0.6.2'
+sleep 100
+kubectl cp ./config-svc-backup/* keptn/$CONFIG_SERVICE_POD:/data -c configuration-service
+
 
 MONGO_TARGET_USER=$(kubectl get secret mongodb-credentials -n keptn -ojsonpath={.data.user} | base64 -d)
 MONGO_TARGET_PASSWORD=$(kubectl get secret mongodb-credentials -n keptn -ojsonpath={.data.password} | base64 -d)
@@ -132,6 +139,7 @@ MONGO_TARGET_PASSWORD=$(kubectl get secret mongodb-credentials -n keptn -ojsonpa
 ./upgradecollections $MONGODB_SOURCE_URL "mongodb://user:password@${MONGODB_TARGET_URL}" $CONFIGURATION_SERVICE_URL
 
 kubectl -n keptn set env deployment/configuration-service MONGO_DB_CONNECTION_STRING='mongodb://user:password@mongodb:27017/keptn'
+kubectl -n keptn set image deployment/configuration-service configuration-service='keptn/configuration-service:latest'
 kubectl delete pod -n keptn -lrun=configuration-service
 
 #print_debug "Deleting outdated keptn-datastore namespace"

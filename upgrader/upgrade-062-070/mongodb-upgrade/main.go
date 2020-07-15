@@ -22,7 +22,7 @@ import (
 
 const defaultMongoDBTargetConnectionString = "mongodb://user:password@mongodb:27017/keptn"
 const defaultMongoDBSourceConnectionString = "mongodb://user:password@mongodb.keptn-datastore:27017/keptn"
-const defaultConfigurationServiceURL = "configuration-service:8080"
+const defaultConfigurationServiceURL = "configuration-service.keptn:8080"
 
 const rootEventCollectionSuffix = "-rootEvents"
 
