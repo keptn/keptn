@@ -470,7 +470,7 @@ func doInstallation() error {
 
 	logging.PrintLog("Keptn has been successfully set up on your cluster.", logging.InfoLevel)
 	logging.PrintLog("To connect the Keptn CLI with the Keptn API on your cluster, "+
-		"please refer to the instructions at https://keptn.sh/docs/"+keptnReleaseDocsURL+"/operate", logging.InfoLevel)
+		"please refer to the instructions at: https://keptn.sh/docs/"+keptnReleaseDocsURL+"/operate/install", logging.InfoLevel)
 	return nil
 }
 
