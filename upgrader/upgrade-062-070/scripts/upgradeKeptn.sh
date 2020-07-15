@@ -1,8 +1,6 @@
 #!/bin/bash
 source ./utils.sh
 
-./upgradecollections $MONGODB_URL $CONFIGURATION_SERVICE_URL
-
 if [ $HELM_RELEASE_UPGRADE == "true" ]; 
 then
   # Upgrade from Helm v2 to Helm v3
@@ -29,38 +27,54 @@ then
   
 fi
 
-
+PREVIOUS_KEPTN_VERSION="release-0.6.2"
 KEPTN_VERSION=${KEPTN_VERSION:-"release-0.7.0"}
+HELM_CHART_URL=${HELM_CHART_URL:-"https://storage.googleapis.com/keptn-installer/0.7.0"}
+MONGODB_SOURCE_URL=${MONGODB_SOURCE_URL:-"mongodb://user:password@mongodb.keptn-datastore:27017/keptn"}
+MONGODB_TARGET_URL=${MONGODB_TARGET_URL:-"mongodb://user:password@mongodb.keptn:27017/keptn"}
+
 print_debug "Upgrading from Keptn 0.6.2 to $KEPTN_VERSION"
 
 KEPTN_API_URL=https://api.keptn.$(kubectl get cm keptn-domain -n keptn -ojsonpath={.data.app_domain})
 KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)
 KEPTN_DOMAIN=$(kubectl get cm keptn-domain -n keptn -ojsonpath={.data.app_domain})
 
-manifests=(
-  "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/rbac.yaml"
-  "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/logging/rbac.yaml"
-  "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/logging/mongodb/secret.yaml"
-  "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/logging/mongodb/deployment.yaml"
-  "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/logging/mongodb-datastore/mongodb-datastore.yaml"
-  "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/logging/mongodb-datastore/mongodb-datastore-distributor.yaml"
-  "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/core.yaml"
-  "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/quality-gates.yaml"
-  "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/continuous-deployment.yaml"
-  "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/continuous-operations.yaml"
-  "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/keptn-api-virtualservice.yaml"
-  "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/keptn-ingress.yaml"
-  "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/ingress-config.yaml"
-  "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/uniform-services-openshift.yaml"
-  "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/uniform-distributors-openshift.yaml"
-  "https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/api-gateway-nginx.yaml"
+print_debug "Check if Keptn 0.6.2 is currently installed"
+API_IMAGE=$(kubectl get deployment -n keptn api-service -o=jsonpath='{$.spec.template.spec.containers[:1].image}')
+
+  if [[ $API_IMAGE != 'keptn/api:0.6.2' ]]; then
+    print_error "Installed Keptn version does not match 0.6.2. aborting."
+    exit 1
+  fi
+
+USE_CASE=""
+# check if full installation is available
+kubectl -n keptn get svc gatekeeper-service
+
+  if [[ $? == '0' ]]; then
+      print_debug "Full installation detected. Upgrading CD and CO services"
+      USE_CASE="continuous-delivery"
+  fi
+
+old_manifests=(
+  "https://raw.githubusercontent.com/keptn/keptn/release-$PREVIOUS_KEPTN_VERSION/installer/manifests/logging/mongodb-datastore/k8s/mongodb-datastore.yaml"
+  "https://raw.githubusercontent.com/keptn/keptn/release-$PREVIOUS_KEPTN_VERSION/installer/manifests/logging/mongodb-datastore/mongodb-datastore-distributor.yaml"
+  "https://raw.githubusercontent.com/keptn/keptn/release-$PREVIOUS_KEPTN_VERSION/installer/manifests/keptn/core.yaml"
+  "https://raw.githubusercontent.com/keptn/keptn/release-$PREVIOUS_KEPTN_VERSION/installer/manifests/keptn/quality-gates.yaml"
+  "https://raw.githubusercontent.com/keptn/keptn/release-$PREVIOUS_KEPTN_VERSION/installer/manifests/keptn/continuous-deployment.yaml"
+  "https://raw.githubusercontent.com/keptn/keptn/release-$PREVIOUS_KEPTN_VERSION/installer/manifests/keptn/continuous-operations.yaml"
+  "https://raw.githubusercontent.com/keptn/keptn/release-$PREVIOUS_KEPTN_VERSION/installer/manifests/keptn/keptn-api-virtualservice.yaml"
+  "https://raw.githubusercontent.com/keptn/keptn/release-$PREVIOUS_KEPTN_VERSION/installer/manifests/keptn/keptn-ingress.yaml"
+  "https://raw.githubusercontent.com/keptn/keptn/release-$PREVIOUS_KEPTN_VERSION/installer/manifests/keptn/uniform-services-openshift.yaml"
+  "https://raw.githubusercontent.com/keptn/keptn/release-$PREVIOUS_KEPTN_VERSION/installer/manifests/keptn/uniform-distributors-openshift.yaml"
   )
 
-for manifest in "${manifests[@]}"
+for manifest in "${old_manifests[@]}"
 do
    :
    if curl --head --silent -k --fail $manifest 2> /dev/null;
      then
+      kubectl delete -f manifest
       continue
      else
       print_error "Required manifest $manifest not available. Aborting upgrade."
@@ -68,54 +82,40 @@ do
     fi
 done
 
+# install helm chart
 
-print_debug "Check if Keptn 0.6.2 is currently installed"
-API_IMAGE=$(kubectl get deployment -n keptn api-service -o=jsonpath='{$.spec.template.spec.containers[:1].image}')
+helm3 repo add keptn $HELM_CHART_URL
 
-  if [[ $API_IMAGE != 'keptn/api:0.6.2' ]]; then
-    print_error "Installed Keptn version does not match 0.6.1. aborting."
-    exit 1
-  fi
-
-print_debug "Updating MongoDB and mongodb-datastore."
-kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/logging/mongodb/secret.yaml
-kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/logging/mongodb/deployment.yaml
-kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/logging/mongodb-datastore/k8s/mongodb-datastore.yaml
-
-print_debug "Updating Keptn core."
-kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/rbac.yaml
-
-# apply new ingress-config ConfigMap
-kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/ingress-config.yaml
-# set values for the ingress-config to reflect the previous installation
-kubectl create configmap -n keptn ingress-config --from-literal=ingress_hostname_suffix=${KEPTN_DOMAIN} --from-literal=ingress_port="" --from-literal=ingress_protocol="" --from-literal=istio_gateway="public-gateway.istio-system" -oyaml --dry-run | kubectl replace -f -
-
-kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/logging/rbac.yaml
-kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/api-gateway-nginx.yaml
-kubectl -n keptn delete pod -lrun=api-gateway-nginx
-kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/core.yaml
-kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/quality-gates.yaml
-kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/continuous-operations.yaml
-
-# remove the remediation-service-problem-distributor deployment since the remediation service now has a new distributor for multiple types of events
-kubectl delete deployment -n keptn remediation-service-problem-distributor
-
-kubectl get namespace openshift
+if [[ $USECASE == "continuous-delivery" ]]; then
+  kubectl get namespace openshift
   if [[ $? == '0' ]]; then
     print_debug "OpenShift platform detected. Updating OpenShift core services"
-    kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/uniform-services-openshift.yaml
-    kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/uniform-distributors-openshift.yaml
+    helm3 install keptn keptn/keptn -n keptn --set continuous-delivery.enabled=true --set continuous-delivery.openshift.enabled=true
   fi
+  helm3 install keptn keptn/keptn -n keptn --set continuous-delivery.enabled=true
+else
+  helm3 install keptn keptn/keptn -n keptn --set continuous-delivery.enabled=false
+fi
 
-DOMAIN=$(kubectl get configmap -n keptn keptn-domain -ojsonpath="{.data.app_domain}")
+kubectl -n keptn set env deployment/configuration-service MONGO_DB_CONNECTION_STRING='mongodb://user:password@mongodb.keptn-datastore:27017/keptn'
+kubectl delete pod -n keptn -lrun=configuration-service
+sleep 30
 
-# check if full installation is available
-kubectl -n keptn get svc gatekeeper-service
+MONGO_TARGET_USER=$(kubectl get secret mongodb-credentials -n keptn -ojsonpath={.data.user} | base64 --decode)
+MONGO_TARGET_PASSWORD=$(kubectl get secret mongodb-credentials -n keptn -ojsonpath={.data.password} | base64 --decode)
 
-  if [[ $? == '0' ]]; then
-      print_debug "Full installation detected. Upgrading CD and CO services"
-      kubectl apply -f https://raw.githubusercontent.com/keptn/keptn/$KEPTN_VERSION/installer/manifests/keptn/continuous-deployment.yaml
-  fi
+./upgradecollections $MONGODB_SOURCE_URL "mongodb://${MONGO_TARGET_USER}:${MONGO_TARGET_PASSWORD}@${MONGODB_TARGET_URL}" $CONFIGURATION_SERVICE_URL
+
+kubectl -n keptn set env deployment/configuration-service MONGO_DB_CONNECTION_STRING='mongodb://user:password@mongodb:27017/keptn'
+kubectl delete pod -n keptn -lrun=configuration-service
+
+print_debug "Deleting outdated keptn-datastore namespace"
+kubectl delete namespace keptn-datastore
+
+if [[ $USECASE == "continuous-delivery" ]]; then
+  # set values for the ingress-config to reflect the previous installation
+  kubectl create configmap -n keptn ingress-config --from-literal=ingress_hostname_suffix=${KEPTN_DOMAIN} --from-literal=ingress_port="" --from-literal=ingress_protocol="" --from-literal=istio_gateway="public-gateway.istio-system" -oyaml --dry-run | kubectl replace -f -
+fi
 
 # check for keptn-contrib services
 kubectl -n keptn get svc dynatrace-service
@@ -146,8 +146,6 @@ kubectl -n keptn get svc prometheus-sli-service
       print_debug "Prometheus-sli-service detected. Upgrading to 0.2.2"
       kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/prometheus-sli-service/release-0.2.2/deploy/service.yaml
   fi
-
-kubectl -n keptn get svc servicenow-service
 
 kubectl delete ClusterRoleBinding keptn-rbac
 kubectl delete ClusterRoleBinding rbac-service-account

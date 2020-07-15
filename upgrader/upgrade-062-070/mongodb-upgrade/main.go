@@ -20,44 +20,50 @@ import (
 	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
 )
 
-const defaultMongoDBConnectionString = "mongodb://user:password@mongodb:27017/keptn"
+const defaultMongoDBTargetConnectionString = "mongodb://user:password@mongodb:27017/keptn"
+const defaultMongoDBSourceConnectionString = "mongodb://user:password@mongodb.keptn-datastore:27017/keptn"
 const defaultConfigurationServiceURL = "configuration-service:8080"
 
 const rootEventCollectionSuffix = "-rootEvents"
 
 const materializedViewCollection = "keptnProjectsMV"
 
-var client *mongo.Client
-
 var projectCollections map[string]*mongo.Collection
 
-var mongoDBConnectionString string
+var mongoDBSourceConnectionString string
+var mongoDBTargetConnectionString string
 var configurationServiceURL string
 var skipWrite = true
 
 func main() {
 
 	if len(os.Args) > 1 {
-		mongoDBConnectionString = os.Args[1]
+		mongoDBSourceConnectionString = os.Args[1]
 	} else {
-		mongoDBConnectionString = defaultMongoDBConnectionString
+		mongoDBSourceConnectionString = defaultMongoDBSourceConnectionString
 	}
 
 	if len(os.Args) > 2 {
-		configurationServiceURL = os.Args[2]
+		mongoDBTargetConnectionString = os.Args[2]
+	} else {
+		mongoDBTargetConnectionString = defaultMongoDBTargetConnectionString
+	}
+
+	if len(os.Args) > 3 {
+		configurationServiceURL = os.Args[3]
 	} else {
 		configurationServiceURL = defaultConfigurationServiceURL
 	}
-	client, err := mongo.NewClient(options.Client().ApplyURI(mongoDBConnectionString))
+
+	sourceClient, sourceCtx, err := createMongoDBClient(mongoDBSourceConnectionString)
 	if err != nil {
-		fmt.Printf("failed to create mongo client: %v\n", err)
+		fmt.Printf("failed to create mongo sourceClient: %v\n", err)
 		os.Exit(1)
 	}
-	ctx := context.TODO()
 
-	err = client.Connect(ctx)
+	targetClient, targetCtx, err := createMongoDBClient(mongoDBTargetConnectionString)
 	if err != nil {
-		fmt.Printf("failed to connect client to MongoDB: %v\n", err)
+		fmt.Printf("failed to create mongo sourceClient: %v\n", err)
 		os.Exit(1)
 	}
 
@@ -90,20 +96,20 @@ func main() {
 		projectsMV = append(projectsMV, prj)
 	}
 
-	eventsCollection := client.Database("keptn").Collection("events")
-	contextToProjectCollection := client.Database("keptn").Collection("contextToProject")
+	eventsSourceCollection := sourceClient.Database("keptn").Collection("events")
+	contextToProjectTargetCollection := targetClient.Database("keptn").Collection("contextToProject")
 	projectCollections = map[string]*mongo.Collection{}
 
 	// get all events from events collection
 	sortOptions := options.Find().SetSort(bson.D{{"time", 1}})
 
-	cursor, err := eventsCollection.Find(ctx, bson.D{}, sortOptions)
+	cursor, err := eventsSourceCollection.Find(sourceCtx, bson.D{}, sortOptions)
 	if err != nil {
 		fmt.Printf("failed to retrieve events from mongodb: %v\n", err)
 		os.Exit(1)
 	}
-	defer cursor.Close(ctx)
-	for cursor.Next(ctx) {
+	defer cursor.Close(sourceCtx)
+	for cursor.Next(sourceCtx) {
 		var doc bson.M
 		err := cursor.Decode(&doc)
 		if err != nil {
@@ -132,9 +138,9 @@ func main() {
 
 		fmt.Printf("Inserting event %v into collection %s\n", doc, project)
 		if projectCollections[project] == nil {
-			projectCollections[project] = client.Database("keptn").Collection(project)
+			projectCollections[project] = targetClient.Database("keptn").Collection(project)
 		}
-		_, err = projectCollections[project].InsertOne(ctx, doc)
+		_, err = projectCollections[project].InsertOne(targetCtx, doc)
 		if err != nil {
 			writeErr, ok := err.(mongo.WriteException)
 			if ok {
@@ -146,7 +152,7 @@ func main() {
 			}
 		}
 		fmt.Printf("Inserted event %v into collection %s\n", doc, project)
-		_, err = contextToProjectCollection.InsertOne(ctx, bson.M{"_id": keptnContext, "shkeptncontext": keptnContext, "project": project})
+		_, err = contextToProjectTargetCollection.InsertOne(targetCtx, bson.M{"_id": keptnContext, "shkeptncontext": keptnContext, "project": project})
 		if err != nil {
 			writeErr, ok := err.(mongo.WriteException)
 			if ok {
@@ -159,7 +165,7 @@ func main() {
 		}
 		fmt.Printf("Inserted mapping %s -> %s\n", keptnContext, project)
 
-		err = storeRootEvent(project, ctx, doc)
+		err = storeRootEvent(targetClient, project, targetCtx, doc)
 		if err != nil {
 			fmt.Println("Could not store root event: " + err.Error())
 		}
@@ -167,10 +173,10 @@ func main() {
 
 	fmt.Println(fmt.Printf("Projects Materialized View:\n%v", projectsMV))
 
-	mvCollection := client.Database("keptn").Collection(materializedViewCollection)
+	mvCollection := sourceClient.Database("keptn").Collection(materializedViewCollection)
 	for _, projectMV := range projectsMV {
 
-		existingProject := mvCollection.FindOne(ctx, bson.M{"projectName": projectMV.ProjectName})
+		existingProject := mvCollection.FindOne(sourceCtx, bson.M{"projectName": projectMV.ProjectName})
 
 		if existingProject.Err() == nil {
 			// project already exists - must not recreate it
@@ -179,7 +185,7 @@ func main() {
 		}
 
 		projectInterface, _ := transformProjectToInterface(projectMV)
-		_, err = mvCollection.InsertOne(ctx, projectInterface)
+		_, err = mvCollection.InsertOne(sourceCtx, projectInterface)
 		if err != nil {
 			writeErr, ok := err.(mongo.WriteException)
 			if ok {
@@ -191,6 +197,20 @@ func main() {
 			}
 		}
 	}
+}
+
+func createMongoDBClient(url string) (*mongo.Client, context.Context, error) {
+	sourceClient, err := mongo.NewClient(options.Client().ApplyURI(url))
+	if err != nil {
+		return nil, nil, err
+	}
+	ctx := context.TODO()
+
+	err = sourceClient.Connect(ctx)
+	if err != nil {
+		return nil, nil, err
+	}
+	return sourceClient, ctx, err
 }
 
 func transformEventToInterface(event interface{}) (interface{}, error) {
@@ -209,7 +229,7 @@ func transformEventToInterface(event interface{}) (interface{}, error) {
 	return eventInterface, nil
 }
 
-func storeRootEvent(collectionName string, ctx context.Context, event bson.M) error {
+func storeRootEvent(client *mongo.Client, collectionName string, ctx context.Context, event bson.M) error {
 
 	keptnContext := event["shkeptncontext"].(string)
 	event["_id"] = keptnContext
