@@ -196,7 +196,7 @@ func (c *GeneratedChartHandler) GenerateMeshChart(helmManifest string, project s
 
 	for _, svc := range svcs {
 		// Generate virtual service for external access
-		gws := []string{"public-gateway.istio-system", "mesh"}
+		gws := []string{mesh.GetIngressGateway(), "mesh"}
 		hosts := []string{
 			svc.Name + "." + c.getNamespace(project, stageName) + "." + mesh.GetIngressHostnameSuffix(),
 			svc.Name,
