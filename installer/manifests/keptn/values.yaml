@@ -1,11 +1,8 @@
 control-plane:
   enabled: true
-  apiNginxGateway:
+  apiGatewayNginx:
     type: ClusterIP
     port: 80
 
 continuous-delivery:
   enabled: false
-
-image:
-  registry: docker.io

@@ -1,16 +1,57 @@
 mongodb:
   enabled: true
 
-apiNginxGateway:
-  type: ClusterIP
-  port: 80
-
-image:
-  registry: docker.io
 
 nats:
   nameOverride: keptn-nats-cluster
-  nats.cluster.replicas: 1
+  cluster.replicas: 1
 
   natsbox:
     enabled: false
+
+apiGatewayNginx:
+  type: ClusterIP
+  port: 80
+  image:
+    repository: docker.io/nginxinc/nginx-unprivileged
+    tag: 1.19.1-alpine
+
+remediationService:
+  image:
+    repository: docker.io/keptn/remediation-service
+
+apiService:
+  image:
+    repository: docker.io/keptn/api
+
+bridge:
+  image:
+    repository: docker.io/keptn/bridge2
+
+eventbroker:
+  image:
+    repository: docker.io/keptn/eventbroker-go
+
+helmService:
+  image:
+    repository: docker.io/keptn/helm-service
+
+distributor:
+  image:
+    repository: docker.io/keptn/distributor
+
+shipyardService:
+  image:
+    repository: docker.io/keptn/shipyard-service
+
+configurationService:
+  image:
+    repository: docker.io/keptn/configuration-service
+
+mongodbDatastore:
+  image:
+    repository: docker.io/keptn/mongodb-datastore
+
+lighthouseService:
+  image:
+    repository: docker.io/keptn/lighthouse-service

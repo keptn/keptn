@@ -18,7 +18,7 @@ spec:
       securityContext:
         fsGroup: 184
       containers:
-        - image: {{ .Values.image.registry}}/centos/mongodb-36-centos7:1
+        - image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
           name: mongodb
           env:
             - name: MONGODB_DATABASE
