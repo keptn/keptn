@@ -118,6 +118,8 @@ else
   helm3 install keptn keptn/keptn -n keptn --set continuous-delivery.enabled=false
 fi
 
+wait_for_all_pods_in_namespace "keptn"
+
 kubectl create secret generic -n keptn keptn-api-token --from-literal=keptn-api-token="$KEPTN_API_TOKEN" -oyaml --dry-run | kubectl replace -f -
 
 if [[ $BRIDGE_USERNAME == "" ]]; then
@@ -129,7 +131,8 @@ fi
 
 kubectl -n keptn set env deployment/configuration-service MONGO_DB_CONNECTION_STRING='mongodb://user:password@mongodb.keptn-datastore:27017/keptn'
 kubectl -n keptn set image deployment/configuration-service configuration-service='keptn/configuration-service:0.6.2'
-sleep 100
+sleep 10
+wait_for_all_pods_in_namespace "keptn"
 CONFIG_SERVICE_POD=$(kubectl get pods -n keptn -lrun=configuration-service -ojsonpath='{.items[0].metadata.name}')
 kubectl cp ./config-svc-backup/* keptn/$CONFIG_SERVICE_POD:/data -c configuration-service
 
