@@ -33,7 +33,7 @@ spec:
       serviceAccountName: keptn-default
       containers:
         - name: gatekeeper-service
-          image: {{ .Values.image.registry}}/keptn/gatekeeper-service:latest
+          image: {{ .Values.gatekeeperService.image.repository }}:{{ .Values.gatekeeperService.image.tag | default .Chart.AppVersion }}
           {{- include "continuous-delivery.livenessProbe" . | nindent 10 }}
           imagePullPolicy: Always
           ports:
@@ -51,7 +51,7 @@ spec:
           - name: EVENTBROKER
             value: 'http://event-broker/keptn'
         - name: distributor
-          image: {{ .Values.image.registry}}/keptn/distributor:latest
+          image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "continuous-delivery.livenessProbe" . | nindent 10 }}
           imagePullPolicy: Always
           ports:
@@ -102,7 +102,7 @@ spec:
       serviceAccountName: keptn-default
       containers:
         - name: distributor
-          image: {{ .Values.image.registry}}/keptn/distributor:latest
+          image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "continuous-delivery.livenessProbe" . | nindent 10 }}
           imagePullPolicy: Always
           ports:
@@ -140,7 +140,7 @@ spec:
       serviceAccountName: keptn-default
       containers:
         - name: jmeter-service
-          image: {{ .Values.image.registry}}/keptn/jmeter-service:latest
+          image: {{ .Values.jmeterService.image.repository }}:{{ .Values.jmeterService.image.tag | default .Chart.AppVersion }}
           {{- include "continuous-delivery.livenessProbe" . | nindent 10 }}
           imagePullPolicy: Always
           ports:
@@ -151,7 +151,7 @@ spec:
           - name: EVENTBROKER
             value: 'http://event-broker/keptn'
         - name: distributor
-          image: {{ .Values.image.registry}}/keptn/distributor:latest
+          image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "continuous-delivery.livenessProbe" . | nindent 10 }}
           imagePullPolicy: Always
           ports:

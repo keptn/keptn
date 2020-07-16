@@ -1,2 +1,2 @@
 image:
-  registry: docker.io
+  repository: docker.io/keptn/openshift-route-service

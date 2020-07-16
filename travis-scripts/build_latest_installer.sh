@@ -8,7 +8,7 @@ BASE_PATH=installer/manifests
 helm repo add nats https://nats-io.github.io/k8s/helm/charts/
 helm dependency build ${BASE_PATH}/keptn/charts/control-plane
 
-helm package ${BASE_PATH}/keptn --app-version $VERSION
+helm package ${BASE_PATH}/keptn --app-version latest
 if [ $? -ne 0 ]; then
   echo 'Error packing installer, exiting...'
   exit 1

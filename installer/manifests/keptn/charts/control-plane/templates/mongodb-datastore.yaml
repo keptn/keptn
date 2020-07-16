@@ -18,7 +18,7 @@ spec:
       serviceAccountName: keptn-default
       containers:
       - name: mongodb-datastore
-        image: {{ .Values.image.registry}}/keptn/mongodb-datastore:latest
+        image: {{ .Values.mongodbDatastore.image.repository }}:{{ .Values.mongodbDatastore.image.tag | default .Chart.AppVersion }}
         {{- include "control-plane.livenessProbe" . | nindent 8 }}
         imagePullPolicy: Always
         ports:
@@ -46,7 +46,7 @@ spec:
                 name: mongodb-credentials
                 key: password
       - name: distributor
-        image: {{ .Values.image.registry}}/keptn/distributor:latest
+        image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
         {{- include "control-plane.livenessProbe" . | nindent 8 }}
         imagePullPolicy: Always
         ports:

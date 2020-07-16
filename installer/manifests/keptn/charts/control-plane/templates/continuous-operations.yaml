@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: remediation-service
-        image: {{ .Values.image.registry}}/keptn/remediation-service:latest
+        image: {{ .Values.remediationService.image.repository }}:{{ .Values.remediationService.image.tag | default .Chart.AppVersion }}
         imagePullPolicy: Always
         {{- include "control-plane.livenessProbe" . | nindent 8 }}
         ports:
@@ -40,7 +40,7 @@ spec:
           - name: WAIT_TIME_MINUTES
             value: '10m'
       - name: distributor
-        image: {{ .Values.image.registry}}/keptn/distributor:latest
+        image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
         imagePullPolicy: Always
         {{- include "control-plane.livenessProbe" . | nindent 8 }}
         ports:

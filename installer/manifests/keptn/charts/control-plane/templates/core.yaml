@@ -44,7 +44,7 @@ spec:
     spec:
       containers:
         - name: api-service
-          image: {{ .Values.image.registry}}/keptn/api:latest
+          image: {{ .Values.apiService.image.repository }}:{{ .Values.apiService.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
           imagePullPolicy: Always
           ports:
@@ -102,7 +102,7 @@ spec:
     spec:
       containers:
         - name: bridge
-          image: {{ .Values.image.registry}}/keptn/bridge2:latest
+          image: {{ .Values.bridge.image.repository }}:{{ .Values.bridge.image.tag | default .Chart.AppVersion }}
           imagePullPolicy: Always
           env:
             - name: API_URL
@@ -159,7 +159,7 @@ spec:
     spec:
       containers:
         - name: eventbroker-go
-          image: {{ .Values.image.registry}}/keptn/eventbroker-go:latest
+          image: {{ .Values.eventbroker.image.repository }}:{{ .Values.eventbroker.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
           imagePullPolicy: Always
           ports:
@@ -210,7 +210,7 @@ spec:
     spec:
       containers:
         - name: helm-service
-          image: {{ .Values.image.registry}}/keptn/helm-service:latest
+          image: {{ .Values.helmService.image.repository }}:{{ .Values.helmService.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
           imagePullPolicy: Always
           ports:
@@ -260,7 +260,7 @@ spec:
                   key: istio_gateway
                   optional: true
         - name: distributor
-          image: {{ .Values.image.registry}}/keptn/distributor:latest
+          image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
           imagePullPolicy: Always
           ports:
@@ -311,7 +311,7 @@ spec:
     spec:
       containers:
         - name: shipyard-service
-          image: {{ .Values.image.registry}}/keptn/shipyard-service:latest
+          image: {{ .Values.shipyardService.image.repository }}:{{ .Values.shipyardService.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
           imagePullPolicy: Always
           ports:
@@ -331,7 +331,7 @@ spec:
             - name: API
               value: 'ws://api-service:8080/websocket'
         - name: distributor
-          image: {{ .Values.image.registry}}/keptn/distributor:latest
+          image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
           imagePullPolicy: Always
           ports:
@@ -398,7 +398,7 @@ spec:
     spec:
       containers:
         - name: configuration-service
-          image: {{ .Values.image.registry}}/keptn/configuration-service:latest
+          image: {{ .Values.configurationService.image.repository }}:{{ .Values.configurationService.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
           imagePullPolicy: Always
           env:
@@ -429,7 +429,7 @@ spec:
             - mountPath: /data/config
               name: configuration-volume
         - name: distributor
-          image: {{ .Values.image.registry}}/keptn/distributor:latest
+          image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
           imagePullPolicy: Always
           ports:
