@@ -106,7 +106,7 @@ func main() {
 			os.Exit(1)
 		}
 		fmt.Println("Projects MV before migration:")
-		fmt.Println(projectsMVJSONString)
+		fmt.Println(string(projectsMVJSONString))
 
 		_ = ioutil.WriteFile(projectsMVFile, projectsMVJSONString, 0644)
 		return
@@ -217,10 +217,10 @@ func main() {
 
 	fmt.Println(fmt.Printf("Projects Materialized View:\n%v", projectsMV))
 
-	mvCollection := sourceClient.Database("keptn").Collection(materializedViewCollection)
+	mvCollection := targetClient.Database("keptn").Collection(materializedViewCollection)
 	for _, projectMV := range projectsMV {
 
-		existingProject := mvCollection.FindOne(sourceCtx, bson.M{"projectName": projectMV.ProjectName})
+		existingProject := mvCollection.FindOne(targetCtx, bson.M{"projectName": projectMV.ProjectName})
 
 		if existingProject.Err() == nil {
 			// project already exists - must not recreate it
@@ -229,7 +229,7 @@ func main() {
 		}
 
 		projectInterface, _ := transformProjectToInterface(projectMV)
-		_, err = mvCollection.InsertOne(sourceCtx, projectInterface)
+		_, err = mvCollection.InsertOne(targetCtx, projectInterface)
 		if err != nil {
 			writeErr, ok := err.(mongo.WriteException)
 			if ok {
