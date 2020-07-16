@@ -28,7 +28,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var generateSupportArchiveParams *generateCmdParams
+type generateSupportArchiveCmdParams struct {
+	generateCmdParams
+	KeptnNamespace *string
+}
+
+var generateSupportArchiveParams *generateSupportArchiveCmdParams
 
 type errorableStringResult struct {
 	Result string
@@ -49,19 +54,6 @@ type errorableMetadataResult struct {
 	Result *models.Metadata
 	Err    error `json:",omitempty"`
 }
-
-type errorableIPInfoResult struct {
-	Result []*ipInfo
-	Err    error `json:",omitempty"`
-}
-
-type ipInfo struct {
-	Name       string `json:",omitempty"`
-	InternalIP string `json:",omitempty"`
-	ExternalIP string `json:",omitempty"`
-}
-
-var namespaces = [...]string{"keptn"} //"istio-system"
 
 type metaData struct {
 	OperatingSystem                 string
@@ -111,6 +103,8 @@ keptn generate support-archive --dir=/some/directory`,
 		s.OperatingSystem = runtime.GOOS
 		s.KeptnCLIVersion = Version
 
+		keptnNS := *generateSupportArchiveParams.KeptnNamespace
+
 		if !mocking {
 			s.KeptnAPIUrl = getKeptnAPIUrl()
 			if s.KeptnAPIUrl.Err == nil {
@@ -125,15 +119,15 @@ keptn generate support-archive --dir=/some/directory`,
 
 			s.KubectlVersion = getKubectlVersion()
 			if s.KubectlVersion.Err == nil {
-				s.KubeContextPointsToKeptnCluster = getKubeContextPointsToKeptnCluster()
+				s.KubeContextPointsToKeptnCluster = getKubeContextPointsToKeptnCluster(keptnNS)
 
 				if s.KubeContextPointsToKeptnCluster.Err == nil && s.KubeContextPointsToKeptnCluster.Result {
 					ctx, _ := getKubeContext()
 					fmt.Println("Retrieving logs from cluster " + strings.TrimSpace(ctx))
-					s.IngressHostnameSuffix = getIngressHostnameSuffix()
-					s.IngressPort = getIngressPort()
-					s.IngressProtocol = getIngressProtocol()
-					s.IngressGateway = getIngressGateway()
+					s.IngressHostnameSuffix = getIngressHostnameSuffix(keptnNS)
+					s.IngressPort = getIngressPort(keptnNS)
+					s.IngressProtocol = getIngressProtocol(keptnNS)
+					s.IngressGateway = getIngressGateway(keptnNS)
 					writeNamespaces(tmpDir)
 
 					s.IstioSystemInstalled = isIstioSystemInstalled()
@@ -156,7 +150,7 @@ keptn generate support-archive --dir=/some/directory`,
 					// check if there are any services with type==LoadBalancer in the cluster
 					writeLoadBalancerServices(tmpDir)
 
-					for _, ns := range namespaces {
+					for _, ns := range []string{keptnNS} {
 						k8sNSFilePath := filepath.Join(tmpDir, ns)
 						err := os.MkdirAll(k8sNSFilePath, os.ModePerm)
 						if err != nil {
@@ -177,6 +171,8 @@ keptn generate support-archive --dir=/some/directory`,
 				} else {
 					fmt.Println("Your kube context does not point to a Keptn cluster!")
 				}
+			} else {
+				fmt.Printf("Availability check of kubectl failed with %v\n", s.KubectlVersion.Err)
 			}
 		}
 
@@ -356,8 +352,12 @@ func getKeptnAPIReachable() *errorableBoolResult {
 		return newErrorableBoolResult(false, err)
 	}
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-	endPoint.Path = "swagger-ui"
-	resp, err := http.Get(endPoint.String())
+	url := endPoint.String()
+	// Get URL for swagger-ui
+	if strings.HasSuffix(url, "/") {
+		url = url[:len(url)-1]
+	}
+	resp, err := http.Get(url)
 	if err != nil {
 		return newErrorableBoolResult(false, err)
 	}
@@ -367,17 +367,9 @@ func getKeptnAPIReachable() *errorableBoolResult {
 	return newErrorableBoolResult(false, errors.New(resp.Status))
 }
 
-func getKubeContextPointsToKeptnCluster() *errorableBoolResult {
+func getKubeContextPointsToKeptnCluster(keptnNamespace string) *errorableBoolResult {
 	fmt.Println("Checking whether kube context points to Keptn cluster")
-	keptnDomain, err := getEndpointUsingKube()
-	if err != nil {
-		return newErrorableBoolResult(false, err)
-	}
-	endPoint, _, err := credentialmanager.NewCredentialManager().GetCreds()
-	if err != nil {
-		return newErrorableBoolResult(false, err)
-	}
-	return newErrorableBoolResult(strings.Contains(endPoint.String(), keptnDomain), nil)
+	return newErrorableBoolResult(keptnutils.ExistsNamespace(false, keptnNamespace))
 }
 
 func getKubectlVersion() *errorableStringResult {
@@ -385,13 +377,15 @@ func getKubectlVersion() *errorableStringResult {
 	return newErrorableStringResult(exechelper.ExecuteCommand("kubectl", "version"))
 }
 
-func getIngressHostnameSuffix() *errorableStringResult {
+func getIngressHostnameSuffix(keptnNamespace string) *errorableStringResult {
 	fmt.Println("Retrieving Keptn domain")
-	return newErrorableStringResult(exechelper.ExecuteCommand("kubectl", "get cm ingress-config -n keptn -ojsonpath='{.data.ingress_hostname_suffix}'"))
+	return newErrorableStringResult(exechelper.ExecuteCommand("kubectl", "get cm ingress-config -n "+
+		keptnNamespace+" -ojsonpath='{.data.ingress_hostname_suffix}'"))
 }
 
-func getIngressPort() *errorableStringResult {
-	res, err := exechelper.ExecuteCommand("kubectl", "get cm ingress-config -n keptn -ojsonpath='{.data.ingress_port}'")
+func getIngressPort(keptnNamespace string) *errorableStringResult {
+	res, err := exechelper.ExecuteCommand("kubectl", "get cm ingress-config -n "+
+		keptnNamespace+" -ojsonpath='{.data.ingress_port}'")
 	if err != nil {
 		return newErrorableStringResult("", err)
 	}
@@ -401,8 +395,9 @@ func getIngressPort() *errorableStringResult {
 	return newErrorableStringResult(res, nil)
 }
 
-func getIngressProtocol() *errorableStringResult {
-	res, err := exechelper.ExecuteCommand("kubectl", "get cm ingress-config -n keptn -ojsonpath='{.data.ingress_protocol}'")
+func getIngressProtocol(keptnNamespace string) *errorableStringResult {
+	res, err := exechelper.ExecuteCommand("kubectl", "get cm ingress-config -n "+
+		keptnNamespace+" -ojsonpath='{.data.ingress_protocol}'")
 	if err != nil {
 		return newErrorableStringResult("", err)
 	}
@@ -412,8 +407,9 @@ func getIngressProtocol() *errorableStringResult {
 	return newErrorableStringResult(res, nil)
 }
 
-func getIngressGateway() *errorableStringResult {
-	res, err := exechelper.ExecuteCommand("kubectl", "get cm ingress-config -n keptn -ojsonpath='{.data.ingress_gateway}'")
+func getIngressGateway(keptnNamespace string) *errorableStringResult {
+	res, err := exechelper.ExecuteCommand("kubectl", "get cm ingress-config -n "+
+		keptnNamespace+" -ojsonpath='{.data.ingress_gateway}'")
 	if err != nil {
 		return newErrorableStringResult("", err)
 	}
@@ -550,7 +546,7 @@ func getKeptnMetadata() *errorableMetadataResult {
 	metadataHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 	metadataData, errMetadata := metadataHandler.GetMetadata()
 	if errMetadata != nil {
-		err = errors.New("Error occured with response code " + string(errMetadata.Code) + " with message " + *errMetadata.Message)
+		err = errors.New("Error occurred with response code " + string(errMetadata.Code) + " with message " + *errMetadata.Message)
 	}
 	return newErrorableMetadataResult(metadataData, err)
 }
@@ -558,7 +554,9 @@ func getKeptnMetadata() *errorableMetadataResult {
 func init() {
 	generateCmd.AddCommand(generateSupportArchiveCmd)
 
-	generateSupportArchiveParams = &generateCmdParams{}
+	generateSupportArchiveParams = &generateSupportArchiveCmdParams{}
 	generateSupportArchiveParams.Directory = generateSupportArchiveCmd.Flags().StringP("dir", "",
 		"./support-archive", "directory where the docs should be written to")
+	generateSupportArchiveParams.KeptnNamespace = generateSupportArchiveCmd.Flags().StringP("keptn-namespace", "",
+		"keptn", "namespace where Keptn is installed")
 }
