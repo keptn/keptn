@@ -95,7 +95,7 @@ var installCmd = &cobra.Command{
 	Short: "Installs Keptn on a Kubernetes cluster",
 	Long: `The Keptn CLI allows installing Keptn on any Kubernetes derivate to which your kube config is pointing to, and on OpenShift.
 
-For more information, please follow the installation guide [Install Keptn](https://keptn.sh/docs/0.7.x/operate/install/operate/install/#install-keptn)
+For more information, please follow the installation guide [Install Keptn](https://keptn.sh/docs/` + keptnReleaseDocsURL + `/operate/install/operate/install/#install-keptn)
 
 `,
 	Example: `keptn install # install on Kubernetes
