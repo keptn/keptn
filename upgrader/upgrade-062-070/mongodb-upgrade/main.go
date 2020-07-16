@@ -28,11 +28,18 @@ const rootEventCollectionSuffix = "-rootEvents"
 
 const materializedViewCollection = "keptnProjectsMV"
 
+const projectsMVFile = "projects-mv.json"
+
+type ProjectsMV struct {
+	Projects []*keptnapimodels.Project `json:"projects"`
+}
+
 var projectCollections map[string]*mongo.Collection
 
 var mongoDBSourceConnectionString string
 var mongoDBTargetConnectionString string
 var configurationServiceURL string
+var action string
 var skipWrite = true
 
 func main() {
@@ -55,6 +62,72 @@ func main() {
 		configurationServiceURL = defaultConfigurationServiceURL
 	}
 
+	const storeProjectsMVAction = "store-projects-mv"
+	if len(os.Args) > 4 {
+		action = os.Args[4]
+	} else {
+		action = ""
+	}
+
+	if action == storeProjectsMVAction {
+		projectsMVJSONObject := &ProjectsMV{}
+		projectsMV := []*keptnapimodels.Project{}
+
+		allProjects, err := getAllProjects()
+		if err != nil {
+			fmt.Println("failed to retrieve projects from configuration service: " + err.Error())
+			os.Exit(1)
+		}
+
+		for _, prj := range allProjects {
+			stages, err := getAllStages(prj.ProjectName)
+			if err != nil {
+				fmt.Println("failed to retrieve stages of project " + prj.ProjectName + " from configuration service: " + err.Error())
+				os.Exit(1)
+			}
+
+			for _, stg := range stages {
+				services, err := getAllServices(prj.ProjectName, stg.StageName)
+				if err != nil {
+					fmt.Println("failed to retrieve services of project " + prj.ProjectName + " from configuration service: " + err.Error())
+					os.Exit(1)
+				}
+
+				stg.Services = services
+			}
+
+			prj.Stages = stages
+			projectsMV = append(projectsMV, prj)
+		}
+		projectsMVJSONObject.Projects = projectsMV
+		projectsMVJSONString, err := json.MarshalIndent(projectsMVJSONObject, "", " ")
+		if err != nil {
+			fmt.Println("Could not store projects MV: " + err.Error())
+			os.Exit(1)
+		}
+		fmt.Println("Projects MV before migration:")
+		fmt.Println(projectsMVJSONString)
+
+		_ = ioutil.WriteFile(projectsMVFile, projectsMVJSONString, 0644)
+		return
+	}
+
+	jsonFile, err := os.Open(projectsMVFile)
+	// if we os.Open returns an error then handle it
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer jsonFile.Close()
+	byteValue, _ := ioutil.ReadAll(jsonFile)
+
+	projectsMVJSONObject := &ProjectsMV{}
+	err = json.Unmarshal(byteValue, projectsMVJSONObject)
+	if err != nil {
+		fmt.Println("Could not read projects MV: " + err.Error())
+	}
+
+	projectsMV := projectsMVJSONObject.Projects
+
 	sourceClient, sourceCtx, err := createMongoDBClient(mongoDBSourceConnectionString)
 	if err != nil {
 		fmt.Printf("failed to create mongo sourceClient: %v\n", err)
@@ -65,35 +138,6 @@ func main() {
 	if err != nil {
 		fmt.Printf("failed to create mongo sourceClient: %v\n", err)
 		os.Exit(1)
-	}
-
-	projectsMV := []*keptnapimodels.Project{}
-
-	allProjects, err := getAllProjects()
-	if err != nil {
-		fmt.Println("failed to retrieve projects from configuration service: " + err.Error())
-		os.Exit(1)
-	}
-
-	for _, prj := range allProjects {
-		stages, err := getAllStages(prj.ProjectName)
-		if err != nil {
-			fmt.Println("failed to retrieve stages of project " + prj.ProjectName + " from configuration service: " + err.Error())
-			os.Exit(1)
-		}
-
-		for _, stg := range stages {
-			services, err := getAllServices(prj.ProjectName, stg.StageName)
-			if err != nil {
-				fmt.Println("failed to retrieve services of project " + prj.ProjectName + " from configuration service: " + err.Error())
-				os.Exit(1)
-			}
-
-			stg.Services = services
-		}
-
-		prj.Stages = stages
-		projectsMV = append(projectsMV, prj)
 	}
 
 	eventsSourceCollection := sourceClient.Database("keptn").Collection("events")

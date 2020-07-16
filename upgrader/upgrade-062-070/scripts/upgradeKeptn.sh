@@ -56,6 +56,8 @@ kubectl -n keptn get svc gatekeeper-service
       USE_CASE="continuous-delivery"
   fi
 
+./upgradecollections $MONGODB_SOURCE_URL "mongodb://user:password@${MONGODB_TARGET_URL}" $CONFIGURATION_SERVICE_URL "store-projects-mv"
+
 # copy content from previous configuration-service PVC
 mkdir config-svc-backup
 CONFIG_SERVICE_POD=$(kubectl get pods -n keptn -lrun=configuration-service -ojsonpath='{.items[0].metadata.name}')
@@ -79,7 +81,7 @@ old_manifests=(
 for manifest in "${old_manifests[@]}"
 do
    :
-   if curl --head --silent -k --fail $manifest 2> /dev/null;
+   if curl --head --silent -k --fail $manifest > /dev/null;
      then
       kubectl delete -f $manifest
       continue
@@ -129,10 +131,10 @@ else
   kubectl -n keptn create secret generic bridge-credentials --from-literal="BASIC_AUTH_USERNAME=$BRIDGE_USERNAME" --from-literal="BASIC_AUTH_PASSWORD=$BRIDGE_PASSWORD" -oyaml --dry-run | kubectl replace -f -
 fi
 
-kubectl -n keptn set env deployment/configuration-service MONGO_DB_CONNECTION_STRING='mongodb://user:password@mongodb.keptn-datastore:27017/keptn'
-kubectl -n keptn set image deployment/configuration-service configuration-service='keptn/configuration-service:0.6.2'
-sleep 10
-wait_for_all_pods_in_namespace "keptn"
+#kubectl -n keptn set env deployment/configuration-service MONGO_DB_CONNECTION_STRING='mongodb://user:password@mongodb.keptn-datastore:27017/keptn'
+#kubectl -n keptn set image deployment/configuration-service configuration-service='keptn/configuration-service:0.6.2'
+#sleep 10
+#wait_for_all_pods_in_namespace "keptn"
 CONFIG_SERVICE_POD=$(kubectl get pods -n keptn -lrun=configuration-service -ojsonpath='{.items[0].metadata.name}')
 kubectl cp ./config-svc-backup/* keptn/$CONFIG_SERVICE_POD:/data -c configuration-service
 
@@ -140,11 +142,11 @@ kubectl cp ./config-svc-backup/* keptn/$CONFIG_SERVICE_POD:/data -c configuratio
 MONGO_TARGET_USER=$(kubectl get secret mongodb-credentials -n keptn -ojsonpath={.data.user} | base64 -d)
 MONGO_TARGET_PASSWORD=$(kubectl get secret mongodb-credentials -n keptn -ojsonpath={.data.password} | base64 -d)
 
-./upgradecollections $MONGODB_SOURCE_URL "mongodb://user:password@${MONGODB_TARGET_URL}" $CONFIGURATION_SERVICE_URL
+./upgradecollections $MONGODB_SOURCE_URL "mongodb://user:${MONGO_TARGET_PASSWORD}@${MONGODB_TARGET_URL}" $CONFIGURATION_SERVICE_URL
 
-kubectl -n keptn set env deployment/configuration-service MONGO_DB_CONNECTION_STRING='mongodb://user:password@mongodb:27017/keptn'
-kubectl -n keptn set image deployment/configuration-service configuration-service='keptn/configuration-service:latest'
-kubectl delete pod -n keptn -lrun=configuration-service
+#kubectl -n keptn set env deployment/configuration-service MONGO_DB_CONNECTION_STRING='mongodb://user:password@mongodb:27017/keptn'
+#kubectl -n keptn set image deployment/configuration-service configuration-service='keptn/configuration-service:latest'
+#kubectl delete pod -n keptn -lrun=configuration-service
 
 #print_debug "Deleting outdated keptn-datastore namespace"
 #kubectl delete namespace keptn-datastore
