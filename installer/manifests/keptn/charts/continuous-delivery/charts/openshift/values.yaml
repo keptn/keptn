@@ -1,2 +1,9 @@
-image:
-  registry: docker.io
+distributor:
+  image:
+    repository: docker.io/keptn/distributor
+    tag: latest
+
+openshiftRouteService:
+  image:
+    repository: docker.io/keptn/openshift-route-service
+    tag: latest  

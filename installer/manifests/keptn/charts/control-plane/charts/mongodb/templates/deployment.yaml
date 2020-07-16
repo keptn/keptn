@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "mongodb.name" . }}
-    app.kubernetes.io/version: 1
+    app.kubernetes.io/version: {{ .Values.image.tag }}
     helm.sh/chart: {{ include "mongodb.chart" . }}   
 spec:
   replicas: 1
@@ -26,14 +26,14 @@ spec:
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
         app.kubernetes.io/component: {{ include "mongodb.name" . }}
-        app.kubernetes.io/version: 1
+        app.kubernetes.io/version: {{ .Values.image.tag }}
         helm.sh/chart: {{ include "mongodb.chart" . }}  
     spec:
       serviceAccountName: keptn-default
       securityContext:
         fsGroup: 184
       containers:
-        - image: {{ .Values.image.registry}}/centos/mongodb-36-centos7:1
+        - image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
           name: mongodb
           env:
             - name: MONGODB_DATABASE

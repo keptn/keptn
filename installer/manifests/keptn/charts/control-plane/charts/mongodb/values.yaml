@@ -1,2 +1,3 @@
 image:
-  registry: docker.io
+  repository: docker.io/centos/mongodb-36-centos7
+  tag: 1

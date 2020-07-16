@@ -149,8 +149,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "openshift.name" . }}
-    # TODO change this later
-    app.kubernetes.io/version: latest
+    app.kubernetes.io/version: {{ .Values.openshiftRouteService.image.tag }}
     helm.sh/chart: {{ include "openshift.chart" . }}     
 spec:
   selector:
@@ -166,13 +165,12 @@ spec:
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
         app.kubernetes.io/component: {{ include "openshift.name" . }}
-        # TODO change this later
-        app.kubernetes.io/version: latest
+        app.kubernetes.io/version: {{ .Values.openshiftRouteService.image.tag }}
         helm.sh/chart: {{ include "openshift.chart" . }}        
     spec:
       containers:
       - name: openshift-route-service
-        image: {{ .Values.image.registry}}/keptn/openshift-route-service:latest
+        image: {{ .Values.openshiftRouteService.image.repository }}:{{ .Values.openshiftRouteService.image.tag }}
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
@@ -184,7 +182,7 @@ spec:
             memory: "128Mi"
             cpu: "500m"
       - name: distributor
-        image: {{ .Values.image.registry}}/keptn/distributor:latest
+        image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag }}
         imagePullPolicy: Always
         ports:
           - containerPort: 8080
