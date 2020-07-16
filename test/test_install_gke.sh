@@ -12,8 +12,7 @@ export CLN=$CLUSTER_NAME_NIGHTLY
 export CLZ=$CLOUDSDK_COMPUTE_ZONE	
 export PROJ=$PROJECT_NAME
 
-source ../utils/gke/defineCredentialsHelper.sh
-replaceCreds
+echo "{}" > creds.json # empty credentials file
 
 echo "Installing keptn on cluster"
 

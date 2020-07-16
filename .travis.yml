@@ -110,7 +110,7 @@ gke_full: &gke_full
   script:
     # test installation on gcloud
     - test/test_install_gke.sh
-    - test/utils/expose_keptn_bridge.sh
+    - test/utils/check_bridge_availability.sh
     # test onboarding and new-artifact for sockshop
     - export PROJECT=sockshop
     - test/test_onboard_service.sh
@@ -149,7 +149,7 @@ gke_full_part1: &gke_full_part1
   script:
     # test installation on gcloud
     - test/test_install_gke.sh
-    - test/utils/expose_keptn_bridge.sh
+    - test/utils/check_bridge_availability.sh
     # test onboarding and new-artifact for sockshop
     - export PROJECT=sockshop
     - test/test_onboard_service.sh
