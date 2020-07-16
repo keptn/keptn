@@ -7,7 +7,7 @@ metadata:
     app.kubernetes.io/name: keptn-openshift-route-service
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/part-of: keptn
+    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "openshift.name" . }}
     helm.sh/chart: {{ include "openshift.chart" . }}      
 ---
@@ -19,7 +19,7 @@ metadata:
     app.kubernetes.io/name: keptn-create-delete-route
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/part-of: keptn
+    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "openshift.name" . }}
     helm.sh/chart: {{ include "openshift.chart" . }}
 rules:
@@ -41,7 +41,7 @@ metadata:
     app.kubernetes.io/name: keptn-create-delete-route
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/part-of: keptn
+    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "openshift.name" . }}
     helm.sh/chart: {{ include "openshift.chart" . }}
 roleRef:
@@ -61,7 +61,7 @@ metadata:
     app.kubernetes.io/name: keptn-create-route
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/part-of: keptn
+    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "openshift.name" . }}
     helm.sh/chart: {{ include "openshift.chart" . }}
 rules:
@@ -83,7 +83,7 @@ metadata:
     app.kubernetes.io/name: keptn-create-route
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/part-of: keptn
+    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "openshift.name" . }}
     helm.sh/chart: {{ include "openshift.chart" . }}      
 roleRef:
@@ -103,7 +103,7 @@ metadata:
     app.kubernetes.io/name: keptn-{{ .Release.Namespace }}-securitycontextconstraints
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/part-of: keptn
+    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "openshift.name" . }}
     helm.sh/chart: {{ include "openshift.chart" . }}   
 rules:
@@ -127,7 +127,7 @@ metadata:
     app.kubernetes.io/name: keptn-{{ .Release.Namespace }}-securitycontextconstraints
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/part-of: keptn
+    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "openshift.name" . }}
     helm.sh/chart: {{ include "openshift.chart" . }}   
 roleRef:
@@ -147,7 +147,7 @@ metadata:
     app.kubernetes.io/name: openshift-route-service
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/part-of: keptn
+    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "openshift.name" . }}
     # TODO change this later
     app.kubernetes.io/version: latest
@@ -164,7 +164,7 @@ spec:
         app.kubernetes.io/name: openshift-route-service
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/managed-by: {{ .Release.Service }}
-        app.kubernetes.io/part-of: keptn
+        app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
         app.kubernetes.io/component: {{ include "openshift.name" . }}
         # TODO change this later
         app.kubernetes.io/version: latest
@@ -212,7 +212,7 @@ metadata:
     app.kubernetes.io/name: openshift-route-service
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/part-of: keptn
+    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "openshift.name" . }}
     helm.sh/chart: {{ include "openshift.chart" . }}       
 spec:

@@ -7,7 +7,7 @@ metadata:
     app.kubernetes.io/name: {{ include "continuous-delivery.name" . }}-cm 
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/part-of: keptn
+    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "continuous-delivery.name" . }}
     helm.sh/chart: {{ include "continuous-delivery.chart" . }}
 data:

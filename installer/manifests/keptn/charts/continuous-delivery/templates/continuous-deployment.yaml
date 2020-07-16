@@ -7,7 +7,7 @@ metadata:
     app.kubernetes.io/name: keptn-{{ .Release.Namespace }}-helm-service-cluster-admin
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/part-of: keptn
+    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "continuous-delivery.name" . }}
     helm.sh/chart: {{ include "continuous-delivery.chart" . }}  
 subjects:
@@ -29,7 +29,7 @@ metadata:
     app.kubernetes.io/name: gatekeeper-service
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/part-of: keptn
+    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "continuous-delivery.name" . }}
     app.kubernetes.io/version: {{ .Values.gatekeeperService.image.tag }}
     helm.sh/chart: {{ include "continuous-delivery.chart" . }}
@@ -45,7 +45,7 @@ spec:
         app.kubernetes.io/name: gatekeeper-service
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/managed-by: {{ .Release.Service }}
-        app.kubernetes.io/part-of: keptn
+        app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
         app.kubernetes.io/component: {{ include "continuous-delivery.name" . }}
         app.kubernetes.io/version: {{ .Values.gatekeeperService.image.tag }}
         helm.sh/chart: {{ include "continuous-delivery.chart" . }}          
@@ -99,7 +99,7 @@ metadata:
     app.kubernetes.io/name: gatekeeper-service
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/part-of: keptn
+    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "continuous-delivery.name" . }}
     helm.sh/chart: {{ include "continuous-delivery.chart" . }}          
 spec:
@@ -119,7 +119,7 @@ metadata:
     app.kubernetes.io/name: helm-service-continuous-deployment-distributor
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/part-of: keptn
+    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "continuous-delivery.name" . }}
     app.kubernetes.io/version: {{ .Values.distributor.image.tag }}
     helm.sh/chart: {{ include "continuous-delivery.chart" . }}  
@@ -135,7 +135,7 @@ spec:
         app.kubernetes.io/name: helm-service-continuous-deployment-distributor
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/managed-by: {{ .Release.Service }}
-        app.kubernetes.io/part-of: keptn
+        app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
         app.kubernetes.io/component: {{ include "continuous-delivery.name" . }}
         app.kubernetes.io/version: {{ .Values.distributor.image.tag }}
         helm.sh/chart: {{ include "continuous-delivery.chart" . }}        
@@ -172,7 +172,7 @@ metadata:
     app.kubernetes.io/name: jmeter-service
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/part-of: keptn
+    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "continuous-delivery.name" . }}
     app.kubernetes.io/version: {{ .Values.jmeterService.image.tag }}
     helm.sh/chart: {{ include "continuous-delivery.chart" . }}    
@@ -188,7 +188,7 @@ spec:
         app.kubernetes.io/name: jmeter-service
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/managed-by: {{ .Release.Service }}
-        app.kubernetes.io/part-of: keptn
+        app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
         app.kubernetes.io/component: {{ include "continuous-delivery.name" . }}
         app.kubernetes.io/version: {{ .Values.jmeterService.image.tag }}
         helm.sh/chart: {{ include "continuous-delivery.chart" . }}        
@@ -235,7 +235,7 @@ metadata:
     app.kubernetes.io/name: jmeter-service
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/part-of: keptn
+    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "continuous-delivery.name" . }}
     helm.sh/chart: {{ include "continuous-delivery.chart" . }}      
 spec:
