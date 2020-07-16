@@ -80,7 +80,7 @@ func retrieveBridgeCredentials(endpoint string, apiToken string) (*configureBrid
 
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Println("Could not sent request: " + err.Error())
+		fmt.Println("Could not send request: " + err.Error())
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -123,7 +123,7 @@ func configureBridgeCredentials(endpoint string, apiToken string, configureBridg
 
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Println("Could not sent request: " + err.Error())
+		fmt.Println("Could not send request: " + err.Error())
 		return err
 	}
 	defer resp.Body.Close()
