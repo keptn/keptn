@@ -5,8 +5,60 @@ apiNginxGateway:
   type: ClusterIP
   port: 80
 
-image:
-  registry: docker.io
+distributor:
+  image:
+    repository: keptn/distributor
+    tag: latest  
+
+apiGatewayNginx:
+  image:
+    repository: nginxinc/nginx-unprivileged
+    tag: 1.17.9
+
+lighthouse:
+  image:
+    repository: keptn/lighthouse-service
+    tag: latest
+
+mongodbDatastore:
+  image:
+    repository: keptn/mongodb-datastore
+    tag: latest
+
+remediation:
+  image:
+    repository: keptn/remediation-service
+    tag: latest
+
+api:
+  image:
+    repository: keptn/api
+    tag: latest
+
+bridge:
+  image:
+    repository: keptn/bridge2
+    tag: latest
+
+eventbroker:
+  image:
+    repository: keptn/eventbroker-go
+    tag: latest
+
+helm:
+  image:
+    repository: keptn/helm-service
+    tag: latest
+
+shipyard:
+  image:
+    repository: keptn/shipyard-service:latest
+    tag: latest
+
+configurationSrv:
+  image:
+    repository: keptn/configuration-service:latest
+    tag: latest
 
 nats:
   nameOverride: keptn-nats-cluster

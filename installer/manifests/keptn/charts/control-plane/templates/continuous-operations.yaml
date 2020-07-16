@@ -10,7 +10,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    app.kubernetes.io/version: latest
+    app.kubernetes.io/version: {{ .Values.remediation.image.tag }}
     helm.sh/chart: {{ include "control-plane.chart" . }}           
 spec:
   selector:
@@ -26,12 +26,12 @@ spec:
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
         app.kubernetes.io/component: {{ include "control-plane.name" . }}
-        app.kubernetes.io/version: latest
+        app.kubernetes.io/version: {{ .Values.remediation.image.tag }}
         helm.sh/chart: {{ include "control-plane.chart" . }}                   
     spec:
       containers:
       - name: remediation-service
-        image: {{ .Values.image.registry}}/keptn/remediation-service:latest
+        image: {{ .Values.remediation.image.repository }}:{{ .Values.remediation.image.tag }}
         imagePullPolicy: Always
         {{- include "control-plane.livenessProbe" . | nindent 8 }}
         ports:
@@ -55,7 +55,7 @@ spec:
           - name: WAIT_TIME_MINUTES
             value: '10m'
       - name: distributor
-        image: {{ .Values.image.registry}}/keptn/distributor:latest
+        image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag }}
         imagePullPolicy: Always
         {{- include "control-plane.livenessProbe" . | nindent 8 }}
         ports:

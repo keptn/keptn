@@ -173,7 +173,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    app.kubernetes.io/version: 1.17.9
+    app.kubernetes.io/version: {{ .Values.apiGatewayNginx.image.tag }}
     helm.sh/chart: {{ include "control-plane.chart" . }}   
 spec:
   selector:
@@ -189,12 +189,12 @@ spec:
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
         app.kubernetes.io/component: {{ include "control-plane.name" . }}
-        app.kubernetes.io/version: 1.17.9
+        app.kubernetes.io/version: {{ .Values.apiGatewayNginx.image.tag }}
         helm.sh/chart: {{ include "control-plane.chart" . }}   
     spec:
       containers:
         - name: api-gateway-nginx
-          image: {{ .Values.image.registry}}/nginxinc/nginx-unprivileged:1.17.9
+          image: {{ .Values.apiGatewayNginx.image.repository }}:{{ .Values.apiGatewayNginx.image.tag }}
           ports:
             - containerPort: 8080
           livenessProbe:

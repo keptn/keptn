@@ -52,7 +52,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    app.kubernetes.io/version: latest
+    app.kubernetes.io/version: {{ .Values.api.image.tag }}
     helm.sh/chart: {{ include "control-plane.chart" . }}    
 spec:
   selector:
@@ -68,12 +68,12 @@ spec:
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
         app.kubernetes.io/component: {{ include "control-plane.name" . }}
-        app.kubernetes.io/version: latest
+        app.kubernetes.io/version: {{ .Values.api.image.tag }}
         helm.sh/chart: {{ include "control-plane.chart" . }}    
     spec:
       containers:
-        - name: api-service
-          image: {{ .Values.image.registry}}/keptn/api:latest
+        - name: api-service        
+          image: {{ .Values.api.image.repository }}:{{ .Values.api.image.tag }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
           imagePullPolicy: Always
           ports:
@@ -131,7 +131,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    app.kubernetes.io/version: latest
+    app.kubernetes.io/version: {{ .Values.bridge.image.tag }}
     helm.sh/chart: {{ include "control-plane.chart" . }}      
 spec:
   selector:
@@ -147,12 +147,12 @@ spec:
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
         app.kubernetes.io/component: {{ include "control-plane.name" . }}
-        app.kubernetes.io/version: latest
+        app.kubernetes.io/version: {{ .Values.bridge.image.tag }}
         helm.sh/chart: {{ include "control-plane.chart" . }}      
     spec:
       containers:
         - name: bridge
-          image: {{ .Values.image.registry}}/keptn/bridge2:latest
+          image: {{ .Values.bridge.image.repository }}:{{ .Values.bridge.image.tag }}
           imagePullPolicy: Always
           env:
             - name: API_URL
@@ -209,7 +209,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    app.kubernetes.io/version: latest
+    app.kubernetes.io/version: {{ .Values.eventbroker.image.tag }}
     helm.sh/chart: {{ include "control-plane.chart" . }}      
 spec:
   selector:
@@ -225,12 +225,12 @@ spec:
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
         app.kubernetes.io/component: {{ include "control-plane.name" . }}
-        app.kubernetes.io/version: latest
+        app.kubernetes.io/version: {{ .Values.eventbroker.image.tag }}
         helm.sh/chart: {{ include "control-plane.chart" . }}      
     spec:
       containers:
         - name: eventbroker-go
-          image: {{ .Values.image.registry}}/keptn/eventbroker-go:latest
+          image: {{ .Values.eventbroker.image.repository }}:{{ .Values.eventbroker.image.tag }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
           imagePullPolicy: Always
           ports:
@@ -281,7 +281,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    app.kubernetes.io/version: latest
+    app.kubernetes.io/version: {{ .Values.helm.image.tag }}
     helm.sh/chart: {{ include "control-plane.chart" . }}    
 spec:
   selector:
@@ -297,12 +297,12 @@ spec:
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
         app.kubernetes.io/component: {{ include "control-plane.name" . }}
-        app.kubernetes.io/version: latest
+        app.kubernetes.io/version: {{ .Values.helm.image.tag }}
         helm.sh/chart: {{ include "control-plane.chart" . }}    
     spec:
       containers:
         - name: helm-service
-          image: {{ .Values.image.registry}}/keptn/helm-service:latest
+          image: {{ .Values.helm.image.repository }}:{{ .Values.helm.image.tag }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
           imagePullPolicy: Always
           ports:
@@ -352,7 +352,7 @@ spec:
                   key: istio_gateway
                   optional: true
         - name: distributor
-          image: {{ .Values.image.registry}}/keptn/distributor:latest
+          image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
           imagePullPolicy: Always
           ports:
@@ -403,7 +403,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    app.kubernetes.io/version: latest
+    app.kubernetes.io/version: {{ .Values.shipyard.image.tag }}
     helm.sh/chart: {{ include "control-plane.chart" . }}      
 spec:
   selector:
@@ -419,12 +419,12 @@ spec:
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
         app.kubernetes.io/component: {{ include "control-plane.name" . }}
-        app.kubernetes.io/version: latest
+        app.kubernetes.io/version: {{ .Values.shipyard.image.tag }}
         helm.sh/chart: {{ include "control-plane.chart" . }}   
     spec:
       containers:
         - name: shipyard-service
-          image: {{ .Values.image.registry}}/keptn/shipyard-service:latest
+          image: {{ .Values.shipyard.image.repository }}:{{ .Values.shipyard.image.tag }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
           imagePullPolicy: Always
           ports:
@@ -444,7 +444,7 @@ spec:
             - name: API
               value: 'ws://api-service:8080/websocket'
         - name: distributor
-          image: {{ .Values.image.registry}}/keptn/distributor:latest
+          image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
           imagePullPolicy: Always
           ports:
@@ -515,7 +515,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    app.kubernetes.io/version: latest
+    app.kubernetes.io/version: {{ .Values.configurationSrv.image.tag }}
     helm.sh/chart: {{ include "control-plane.chart" . }}     
 spec:
   selector:
@@ -534,12 +534,12 @@ spec:
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
         app.kubernetes.io/component: {{ include "control-plane.name" . }}
-        app.kubernetes.io/version: latest
+        app.kubernetes.io/version: {{ .Values.configurationSrv.image.tag }}
         helm.sh/chart: {{ include "control-plane.chart" . }}   
     spec:
       containers:
         - name: configuration-service
-          image: {{ .Values.image.registry}}/keptn/configuration-service:latest
+          image: {{ .Values.configurationSrv.image.repository }}:{{ .Values.configurationSrv.image.tag }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
           imagePullPolicy: Always
           env:
@@ -570,7 +570,7 @@ spec:
             - mountPath: /data/config
               name: configuration-volume
         - name: distributor
-          image: {{ .Values.image.registry}}/keptn/distributor:latest
+          image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
           imagePullPolicy: Always
           ports:
