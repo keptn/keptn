@@ -4,15 +4,30 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: remediation-service
+  labels:
+    app.kubernetes.io/name: remediation-service
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: keptn
+    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    app.kubernetes.io/version: latest
+    helm.sh/chart: {{ include "control-plane.chart" . }}           
 spec:
   selector:
     matchLabels:
-      run: remediation-service
+      app.kubernetes.io/name: remediation-service
+      app.kubernetes.io/instance: {{ .Release.Name }}
   replicas: 1
   template:
     metadata:
       labels:
-        run: remediation-service
+        app.kubernetes.io/name: remediation-service
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+        app.kubernetes.io/part-of: keptn
+        app.kubernetes.io/component: {{ include "control-plane.name" . }}
+        app.kubernetes.io/version: latest
+        helm.sh/chart: {{ include "control-plane.chart" . }}                   
     spec:
       containers:
       - name: remediation-service
@@ -66,11 +81,18 @@ kind: Service
 metadata:
   name: remediation-service
   labels:
-    run: remediation-service
+    app.kubernetes.io/name: remediation-service
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: keptn
+    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    helm.sh/chart: {{ include "control-plane.chart" . }}               
 spec:
   ports:
   - port: 8080
     targetPort: 8080
     protocol: TCP
   selector:
-    run: remediation-service
+    app.kubernetes.io/name: remediation-service
+    app.kubernetes.io/instance: {{ .Release.Name }}
+

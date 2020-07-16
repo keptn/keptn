@@ -4,7 +4,7 @@ kind: ServiceAccount
 metadata:
   name: keptn-openshift-route-service
   labels:
-    app.kubernetes.io/name: keptn-openshift-route-service-sa
+    app.kubernetes.io/name: keptn-openshift-route-service
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn
@@ -16,7 +16,7 @@ kind: Role
 metadata:
   name: keptn-create-delete-route
   labels:
-    app.kubernetes.io/name: keptn-create-delete-route-role
+    app.kubernetes.io/name: keptn-create-delete-route
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn
@@ -38,7 +38,7 @@ kind: RoleBinding
 metadata:
   name: keptn-create-delete-route
   labels:
-    app.kubernetes.io/name: keptn-create-delete-route-rb
+    app.kubernetes.io/name: keptn-create-delete-route
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn
@@ -58,7 +58,7 @@ metadata:
   name: keptn-create-route
   namespace: istio-system
   labels:
-    app.kubernetes.io/name: keptn-create-route-role
+    app.kubernetes.io/name: keptn-create-route
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn
@@ -80,7 +80,7 @@ metadata:
   name: keptn-create-route
   namespace: istio-system
   labels:
-    app.kubernetes.io/name: keptn-create-route-rb
+    app.kubernetes.io/name: keptn-create-route
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn
@@ -100,7 +100,7 @@ kind: ClusterRole
 metadata:
   name: keptn-{{ .Release.Namespace }}-securitycontextconstraints
   labels:
-    app.kubernetes.io/name: keptn-{{ .Release.Namespace }}-securitycontextconstraints-cr
+    app.kubernetes.io/name: keptn-{{ .Release.Namespace }}-securitycontextconstraints
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn
@@ -124,7 +124,7 @@ kind: ClusterRoleBinding
 metadata:
   name: keptn-{{ .Release.Namespace }}-securitycontextconstraints
   labels:
-    app.kubernetes.io/name: keptn-{{ .Release.Namespace }}-securitycontextconstraints-crb
+    app.kubernetes.io/name: keptn-{{ .Release.Namespace }}-securitycontextconstraints
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn

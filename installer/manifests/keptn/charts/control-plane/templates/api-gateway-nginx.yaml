@@ -2,6 +2,13 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: api-nginx-config
+  labels:
+    app.kubernetes.io/name: api-nginx-config-cm
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: keptn
+    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    helm.sh/chart: {{ include "control-plane.chart" . }}         
 data:
   nginx.conf: |
     worker_processes  3;
@@ -160,15 +167,30 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: api-gateway-nginx
+  labels:
+    app.kubernetes.io/name: api-gateway-nginx
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: keptn
+    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    app.kubernetes.io/version: 1.17.9
+    helm.sh/chart: {{ include "control-plane.chart" . }}   
 spec:
   selector:
     matchLabels:
-      run: api-gateway-nginx
+      app.kubernetes.io/name: api-gateway-nginx
+      app.kubernetes.io/instance: {{ .Release.Name }}
   replicas: 1
   template:
     metadata:
       labels:
-        run: api-gateway-nginx
+        app.kubernetes.io/name: api-gateway-nginx
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+        app.kubernetes.io/part-of: keptn
+        app.kubernetes.io/component: {{ include "control-plane.name" . }}
+        app.kubernetes.io/version: 1.17.9
+        helm.sh/chart: {{ include "control-plane.chart" . }}   
     spec:
       containers:
         - name: api-gateway-nginx
@@ -217,7 +239,12 @@ kind: Service
 metadata:
   name: api-gateway-nginx
   labels:
-    run: api-gateway-nginx
+    app.kubernetes.io/name: api-gateway-nginx
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: keptn
+    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    helm.sh/chart: {{ include "control-plane.chart" . }}       
 spec:
   type: {{ .Values.apiNginxGateway.type }}
   ports:
@@ -226,4 +253,5 @@ spec:
       targetPort: 8080
       protocol: TCP
   selector:
-    run: api-gateway-nginx
+    app.kubernetes.io/name: api-gateway-nginx
+    app.kubernetes.io/instance: {{ .Release.Name }}

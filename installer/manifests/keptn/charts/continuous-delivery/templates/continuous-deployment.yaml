@@ -4,7 +4,7 @@ kind: ClusterRoleBinding
 metadata:
   name: keptn-{{ .Release.Namespace }}-helm-service-cluster-admin
   labels:
-    app.kubernetes.io/name: keptn-{{ .Release.Namespace }}-helm-service-cluster-admin-crb
+    app.kubernetes.io/name: keptn-{{ .Release.Namespace }}-helm-service-cluster-admin
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn

@@ -15,6 +15,13 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: keptn-api-token
+  labels:
+    app.kubernetes.io/name: keptn-api-token
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: keptn
+    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    helm.sh/chart: {{ include "control-plane.chart" . }}
 type: Opaque
 data:
   keptn-api-token: {{ $apiToken }}
@@ -23,6 +30,13 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: bridge-credentials
+  labels:
+    app.kubernetes.io/name: bridge-credentials
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: keptn
+    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    helm.sh/chart: {{ include "control-plane.chart" . }}  
 type: Opaque
 data:
   BASIC_AUTH_USERNAME: 'a2VwdG4='
@@ -32,15 +46,30 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: api-service
+  labels:
+    app.kubernetes.io/name: api-service
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: keptn
+    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    app.kubernetes.io/version: latest
+    helm.sh/chart: {{ include "control-plane.chart" . }}    
 spec:
   selector:
     matchLabels:
-      run: api-service
+      app.kubernetes.io/name: api-service
+      app.kubernetes.io/instance: {{ .Release.Name }}
   replicas: 1
   template:
     metadata:
       labels:
-        run: api-service
+        app.kubernetes.io/name: api-service
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+        app.kubernetes.io/part-of: keptn
+        app.kubernetes.io/component: {{ include "control-plane.name" . }}
+        app.kubernetes.io/version: latest
+        helm.sh/chart: {{ include "control-plane.chart" . }}    
     spec:
       containers:
         - name: api-service
@@ -75,7 +104,12 @@ kind: Service
 metadata:
   name: api-service
   labels:
-    run: api-service
+    app.kubernetes.io/name: api-service
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: keptn
+    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    helm.sh/chart: {{ include "control-plane.chart" . }}  
 spec:
   ports:
     - port: 8080
@@ -83,22 +117,38 @@ spec:
       targetPort: 8080
       protocol: TCP
   selector:
-    run: api-service
+    app.kubernetes.io/name: api-service
+    app.kubernetes.io/instance: {{ .Release.Name }}
 ---
 # bridge
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: bridge
+  labels:
+    app.kubernetes.io/name: bridge
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: keptn
+    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    app.kubernetes.io/version: latest
+    helm.sh/chart: {{ include "control-plane.chart" . }}      
 spec:
   selector:
     matchLabels:
-      run: bridge
+      app.kubernetes.io/name: bridge
+      app.kubernetes.io/instance: {{ .Release.Name }}
   replicas: 1
   template:
     metadata:
       labels:
-        run: bridge
+        app.kubernetes.io/name: bridge
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+        app.kubernetes.io/part-of: keptn
+        app.kubernetes.io/component: {{ include "control-plane.name" . }}
+        app.kubernetes.io/version: latest
+        helm.sh/chart: {{ include "control-plane.chart" . }}      
     spec:
       containers:
         - name: bridge
@@ -133,29 +183,50 @@ kind: Service
 metadata:
   name: bridge
   labels:
-    run: bridge
+    app.kubernetes.io/name: bridge
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: keptn
+    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    helm.sh/chart: {{ include "control-plane.chart" . }}      
 spec:
   ports:
     - port: 8080
       targetPort: 3000
       protocol: TCP
   selector:
-    run: bridge
+    app.kubernetes.io/name: bridge
+    app.kubernetes.io/instance: {{ .Release.Name }}
 ---
 # eventbroker-go
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: eventbroker-go
+  labels:
+    app.kubernetes.io/name: eventbroker-go
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: keptn
+    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    app.kubernetes.io/version: latest
+    helm.sh/chart: {{ include "control-plane.chart" . }}      
 spec:
   selector:
     matchLabels:
-      run: eventbroker-go
+      app.kubernetes.io/name: eventbroker-go
+      app.kubernetes.io/instance: {{ .Release.Name }}
   replicas: 1
   template:
     metadata:
       labels:
-        run: eventbroker-go
+        app.kubernetes.io/name: eventbroker-go
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+        app.kubernetes.io/part-of: keptn
+        app.kubernetes.io/component: {{ include "control-plane.name" . }}
+        app.kubernetes.io/version: latest
+        helm.sh/chart: {{ include "control-plane.chart" . }}      
     spec:
       containers:
         - name: eventbroker-go
@@ -183,14 +254,20 @@ kind: Service
 metadata:
   name: event-broker
   labels:
-    run: eventbroker-go
+    app.kubernetes.io/name: eventbroker-go
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: keptn
+    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    helm.sh/chart: {{ include "control-plane.chart" . }}      
 spec:
   ports:
     - port: 80
       targetPort: 8080
       protocol: TCP
   selector:
-    run: eventbroker-go
+    app.kubernetes.io/name: eventbroker-go
+    app.kubernetes.io/instance: {{ .Release.Name }}
 
 ---
 # helm-service
@@ -198,15 +275,30 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: helm-service
+  labels:
+    app.kubernetes.io/name: helm-service
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: keptn
+    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    app.kubernetes.io/version: latest
+    helm.sh/chart: {{ include "control-plane.chart" . }}    
 spec:
   selector:
     matchLabels:
-      run: helm-service
+      app.kubernetes.io/name: helm-service
+      app.kubernetes.io/instance: {{ .Release.Name }}      
   replicas: 1
   template:
     metadata:
       labels:
-        run: helm-service
+        app.kubernetes.io/name: helm-service
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+        app.kubernetes.io/part-of: keptn
+        app.kubernetes.io/component: {{ include "control-plane.name" . }}
+        app.kubernetes.io/version: latest
+        helm.sh/chart: {{ include "control-plane.chart" . }}    
     spec:
       containers:
         - name: helm-service
@@ -286,28 +378,49 @@ kind: Service
 metadata:
   name: helm-service
   labels:
-    run: helm-service
+    app.kubernetes.io/name: helm-service
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: keptn
+    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    helm.sh/chart: {{ include "control-plane.chart" . }}    
 spec:
   ports:
     - port: 8080
       protocol: TCP
   selector:
-    run: helm-service
+    app.kubernetes.io/name: helm-service
+    app.kubernetes.io/instance: {{ .Release.Name }}
 ---
 # shipyard-service
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: shipyard-service
+  labels:
+    app.kubernetes.io/name: shipyard-service
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: keptn
+    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    app.kubernetes.io/version: latest
+    helm.sh/chart: {{ include "control-plane.chart" . }}      
 spec:
   selector:
     matchLabels:
-      run: shipyard-service
+      app.kubernetes.io/name: shipyard-service
+      app.kubernetes.io/instance: {{ .Release.Name }}      
   replicas: 1
   template:
     metadata:
       labels:
-        run: shipyard-service
+        app.kubernetes.io/name: shipyard-service
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+        app.kubernetes.io/part-of: keptn
+        app.kubernetes.io/component: {{ include "control-plane.name" . }}
+        app.kubernetes.io/version: latest
+        helm.sh/chart: {{ include "control-plane.chart" . }}   
     spec:
       containers:
         - name: shipyard-service
@@ -357,13 +470,19 @@ kind: Service
 metadata:
   name: shipyard-service
   labels:
-    run: shipyard-service
+    app.kubernetes.io/name: shipyard-service
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: keptn
+    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    helm.sh/chart: {{ include "control-plane.chart" . }}   
 spec:
   ports:
     - port: 8080
       protocol: TCP
   selector:
-    run: shipyard-service
+    app.kubernetes.io/name: shipyard-service
+    app.kubernetes.io/instance: {{ .Release.Name }}
 ---
 # configuration-service
 apiVersion: v1
@@ -371,6 +490,13 @@ kind: PersistentVolumeClaim
 metadata:
   creationTimestamp: null
   name: configuration-volume
+  labels:
+    app.kubernetes.io/name: configuration-volume
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: keptn
+    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    helm.sh/chart: {{ include "control-plane.chart" . }}     
 spec:
   accessModes:
     - ReadWriteOnce
@@ -383,10 +509,19 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: configuration-service
+  labels:
+    app.kubernetes.io/name: configuration-service
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: keptn
+    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    app.kubernetes.io/version: latest
+    helm.sh/chart: {{ include "control-plane.chart" . }}     
 spec:
   selector:
     matchLabels:
-      run: configuration-service
+      app.kubernetes.io/name: configuration-service
+      app.kubernetes.io/instance: {{ .Release.Name }}
   replicas: 1
   # recreate the deployment if anything changes (we can not do a rolling upgrade of this deployment as we use a volume)
   strategy:
@@ -394,7 +529,13 @@ spec:
   template:
     metadata:
       labels:
-        run: configuration-service
+        app.kubernetes.io/name: configuration-service
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+        app.kubernetes.io/part-of: keptn
+        app.kubernetes.io/component: {{ include "control-plane.name" . }}
+        app.kubernetes.io/version: latest
+        helm.sh/chart: {{ include "control-plane.chart" . }}   
     spec:
       containers:
         - name: configuration-service
@@ -461,12 +602,18 @@ kind: Service
 metadata:
   name: configuration-service
   labels:
-    run: configuration-service
+    app.kubernetes.io/name: configuration-service
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: keptn
+    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    helm.sh/chart: {{ include "control-plane.chart" . }}   
 spec:
   ports:
     - port: 8080
       targetPort: 8080
       protocol: TCP
   selector:
-    run: configuration-service
+    app.kubernetes.io/name: configuration-service
+    app.kubernetes.io/instance: {{ .Release.Name }}
 
