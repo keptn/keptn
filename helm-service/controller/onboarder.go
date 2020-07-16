@@ -98,7 +98,7 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event, loggingDone chan bool) error
 		}
 		if !adminRights {
 			err := errors.New("Cannot onboard service because helm-service has insufficient RBAC rights.\n" +
-				"Reason: The continuous-delivery execution plane is not installed.")
+				"Reason: The execution plane for continuous-delivery is not installed.")
 			o.keptnHandler.Logger.Error(err.Error())
 			return err
 		}
