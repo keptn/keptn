@@ -31,7 +31,7 @@ func TestCreateRootChartResource(t *testing.T) {
 	ja.Assertf(string(jsonData), `
     {
 		"apiVersion": "v2",
-		"description": "A Helm chart for project sockshop-umbrella",
+		"description": "A Helm Chart for project sockshop-umbrella",
 		"name": "sockshop-umbrella",
 		"version": "0.1.0"
 	  }`)

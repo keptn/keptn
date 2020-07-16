@@ -15,8 +15,8 @@ import (
 	configmodels "github.com/keptn/go-utils/pkg/api/models"
 	configutils "github.com/keptn/go-utils/pkg/api/utils"
 
-	keptn "github.com/keptn/go-utils/pkg/lib"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
+	keptn "github.com/keptn/go-utils/pkg/lib"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
@@ -285,12 +285,12 @@ func getDeleteInfoMessage(keptnHandler *keptn.Keptn) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("error when getting shipyard: %v", err)
 	}
-	msg := ""
+	msg := "\n"
 	for _, stage := range shipyard.Stages {
 		namespace := keptnHandler.KeptnBase.Project + "-" + stage.Name
-		msg += fmt.Sprintf("Namespace %s is not managed by Keptn anymore and not deleted. This may cause problems if "+
+		msg += fmt.Sprintf(" - Namespace %s is not managed by Keptn anymore and not deleted. This may cause problems if "+
 			"a project with the same name is created later. "+
-			"If you would like to delete the namespace, please execute "+
+			"If you would like to delete this namespace, please execute "+
 			"'kubectl delete ns %s'\n", namespace, namespace)
 	}
 	return strings.TrimSpace(msg), nil

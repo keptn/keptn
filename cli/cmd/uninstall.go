@@ -28,9 +28,9 @@ This command does *not* delete:
 * Prometheus monitoring
 * Any (third-party) service installed in addition to Keptn (e.g., notification-service, slackbot-service, ...)
 
-Besides, deployed services and the configuration on the Git upstream (i.e., GitHub, GitLab, or Bitbucket) are not deleted. To clean-up created projects and services, instructions are provided [here](../../manage/project#delete-a-project).
+Besides, deployed services and the configuration on the Git upstream (i.e., GitHub, GitLab, or Bitbucket) are not deleted. To clean-up created projects and services, please see [Delete a project](https://keptn.sh/docs/` + keptnReleaseDocsURL + `/manage/project/#delete-a-project).
 
-**Note:** This command requires a *kubernetes current context* pointing to the cluster where Keptn should get uninstalled.
+**Note:** This command requires a *Kubernetes current context* pointing to the cluster where Keptn should get uninstalled.
 `,
 	Example:      `keptn uninstall`,
 	SilenceUsage: true,
@@ -41,7 +41,7 @@ Besides, deployed services and the configuration on the Git upstream (i.e., GitH
 		}
 
 		ctx, _ := getKubeContext()
-		fmt.Println("Your kubernetes current context is configured to cluster: " + strings.TrimSpace(ctx))
+		fmt.Println("Your Kubernetes current context is configured to cluster: " + strings.TrimSpace(ctx))
 		fmt.Println("Would you like to uninstall Keptn from this cluster? (y/n)")
 
 		reader := bufio.NewReader(os.Stdin)
@@ -66,7 +66,7 @@ Besides, deployed services and the configuration on the Git upstream (i.e., GitH
 			}
 		}
 		logging.PrintLog("Successfully uninstalled Keptn", logging.InfoLevel)
-		logging.PrintLog("Note: Please review the following namespaces and perform manual deletion if necessary:",
+		logging.PrintLog("\nPlease review the following namespaces and perform manual deletion if necessary:",
 			logging.InfoLevel)
 
 		namespaces, err := listAllNamespaces()
@@ -80,7 +80,7 @@ Besides, deployed services and the configuration on the Git upstream (i.e., GitH
 				logging.PrintLog("      Recommended action: None (default namespace)", logging.InfoLevel)
 			} else {
 				// just delete the namespace
-				logging.PrintLog(fmt.Sprintf("      Please review this namespace in detail using 'kubectl get pods -n %s' before deleting it", namespace), logging.InfoLevel)
+				logging.PrintLog(fmt.Sprintf("      Please review this namespace using 'kubectl get pods -n %s' before deleting it", namespace), logging.InfoLevel)
 				logging.PrintLog(fmt.Sprintf("      Recommended action: kubectl delete namespace %s", namespace), logging.InfoLevel)
 			}
 		}
@@ -90,7 +90,7 @@ Besides, deployed services and the configuration on the Git upstream (i.e., GitH
 }
 
 func uninstallKeptnChart(releaseName, namespace string) error {
-	logging.PrintLog(fmt.Sprintf("Start deleting chart %s in namespace %s", releaseName, namespace), logging.InfoLevel)
+	logging.PrintLog(fmt.Sprintf("Start deleting Helm Chart %s in namespace %s", releaseName, namespace), logging.InfoLevel)
 	var kubeconfig string
 	if os.Getenv("KUBECONFIG") != "" {
 		kubeconfig = keptnutils.ExpandTilde(os.Getenv("KUBECONFIG"))
@@ -113,7 +113,7 @@ func uninstallKeptnChart(releaseName, namespace string) error {
 	_, err = iCli.Run(releaseName)
 
 	if err != nil {
-		return fmt.Errorf("Error when deleting chart %s in namespace %s: %s",
+		return fmt.Errorf("Error when deleting Helm Chart %s in namespace %s: %s",
 			releaseName, namespace, err.Error())
 	}
 	return nil

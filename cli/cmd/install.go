@@ -95,9 +95,7 @@ var installCmd = &cobra.Command{
 	Short: "Installs Keptn on a Kubernetes cluster",
 	Long: `The Keptn CLI allows installing Keptn on any Kubernetes derivate to which your kube config is pointing to, and on OpenShift.
 
-For more information, please consult the following docs:
-
-* https://keptn.sh/docs/develop/installation/setup-keptn/
+For more information, please follow the installation guide [Install Keptn](https://keptn.sh/docs/` + keptnReleaseDocsURL + `/operate/install/operate/install/#install-keptn)
 
 `,
 	Example: `keptn install # install on Kubernetes
@@ -150,7 +148,7 @@ keptn install --platform=kubernetes --keptn-api-service-type=NodePort # install 
 			return err
 		}
 
-		logging.PrintLog(fmt.Sprintf("Used Installer chart: %s", chartRepoURL), logging.InfoLevel)
+		logging.PrintLog(fmt.Sprintf("Helm Chart used for Keptn installation: %s", chartRepoURL), logging.InfoLevel)
 
 		if !mocking {
 			if p.checkRequirements() != nil {
@@ -360,7 +358,7 @@ func upgradeChart(ch *chart.Chart, releaseName, namespace string, vals map[strin
 	}
 
 	if len(ch.Templates) > 0 {
-		logging.PrintLog(fmt.Sprintf("Start upgrading chart %s in namespace %s", releaseName, namespace), logging.InfoLevel)
+		logging.PrintLog(fmt.Sprintf("Start upgrading Helm Chart %s in namespace: %s", releaseName, namespace), logging.InfoLevel)
 		var kubeconfig string
 		if os.Getenv("KUBECONFIG") != "" {
 			kubeconfig = keptnutils.ExpandTilde(os.Getenv("KUBECONFIG"))
@@ -396,7 +394,7 @@ func upgradeChart(ch *chart.Chart, releaseName, namespace string, vals map[strin
 			release, err = iCli.Run(releaseName, ch, vals)
 		}
 		if err != nil {
-			return fmt.Errorf("Error when installing/upgrading chart %s in namespace %s: %s",
+			return fmt.Errorf("Error when installing/upgrading Helm Chart %s in namespace %s: %s",
 				releaseName, namespace, err.Error())
 		}
 		if release != nil {
@@ -407,9 +405,9 @@ func upgradeChart(ch *chart.Chart, releaseName, namespace string, vals map[strin
 		} else {
 			logging.PrintLog("Release is nil", logging.InfoLevel)
 		}
-		logging.PrintLog(fmt.Sprintf("Finished upgrading chart %s in namespace %s", releaseName, namespace), logging.InfoLevel)
+		logging.PrintLog(fmt.Sprintf("Finished upgrading Helm Chart %s in namespace %s", releaseName, namespace), logging.InfoLevel)
 	} else {
-		logging.PrintLog("Upgrade not done as this is an empty chart", logging.InfoLevel)
+		logging.PrintLog("Upgrade not done since this is an empty Helm Chart", logging.InfoLevel)
 	}
 	return nil
 }
@@ -470,7 +468,7 @@ func doInstallation() error {
 
 	logging.PrintLog("Keptn has been successfully set up on your cluster.", logging.InfoLevel)
 	logging.PrintLog("To connect the Keptn CLI with the Keptn API on your cluster, "+
-		"please refer to the instructions at https://keptn.sh/docs/"+keptnReleaseDocsURL+"/operate", logging.InfoLevel)
+		"please refer to the instructions at: https://keptn.sh/docs/"+keptnReleaseDocsURL+"/operate/install", logging.InfoLevel)
 	return nil
 }
 
@@ -491,8 +489,6 @@ func readCreds() error {
 	}
 	// Ignore unmarshaling error
 	json.Unmarshal([]byte(credsStr), p.getCreds())
-
-	fmt.Print("Please enter the following information or press enter to keep the old value:\n")
 
 	for {
 		p.readCreds()

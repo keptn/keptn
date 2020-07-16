@@ -40,9 +40,7 @@ var monitoringCmd = &cobra.Command{
 	Short: "Configures monitoring provider",
 	Long: `Configure a monitoring solution for a Keptn cluster. This command sets up Dynatrace or Prometheus monitoring if it is not installed. Before executing the command, the dynatrace-service or prometheus-service has to be deployed.
 
-**Note:** If you are executing *keptn configure monitoring dynatrace*, the service flag is optional since Keptn automatically detects the services of a project.
-
-See https://keptn.sh/docs/develop/reference/monitoring/ for more information.
+**Note:** If you are executing *keptn configure monitoring dynatrace*, the service flag is optional since Keptn automatically detects the services of a project. See https://keptn.sh/docs/` + keptnReleaseDocsURL + `/monitoring/dynatrace/install/ for more information.
 `,
 	Example: `keptn configure monitoring dynatrace --project=PROJECTNAME
 keptn configure monitoring prometheus --project=PROJECTNAME --service=SERVICENAME`,
