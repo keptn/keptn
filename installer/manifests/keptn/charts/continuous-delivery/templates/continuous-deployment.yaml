@@ -31,7 +31,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "continuous-delivery.name" . }}
-    app.kubernetes.io/version: {{ .Values.gatekeeperService.image.tag }}
+    app.kubernetes.io/version: {{ .Values.gatekeeper.image.tag }}
     helm.sh/chart: {{ include "continuous-delivery.chart" . }}
 spec:
   selector:
@@ -47,13 +47,13 @@ spec:
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
         app.kubernetes.io/component: {{ include "continuous-delivery.name" . }}
-        app.kubernetes.io/version: {{ .Values.gatekeeperService.image.tag }}
+        app.kubernetes.io/version: {{ .Values.gatekeeper.image.tag }}
         helm.sh/chart: {{ include "continuous-delivery.chart" . }}          
     spec:
       serviceAccountName: keptn-default
       containers:
         - name: gatekeeper-service
-          image: {{ .Values.gatekeeperService.image.repository }}:{{ .Values.gatekeeperService.image.tag }}
+          image: {{ .Values.gatekeeper.image.repository }}:{{ .Values.gatekeeper.image.tag }}
           {{- include "continuous-delivery.livenessProbe" . | nindent 10 }}
           imagePullPolicy: Always
           ports:
@@ -174,7 +174,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "continuous-delivery.name" . }}
-    app.kubernetes.io/version: {{ .Values.jmeterService.image.tag }}
+    app.kubernetes.io/version: {{ .Values.jmeter.image.tag }}
     helm.sh/chart: {{ include "continuous-delivery.chart" . }}    
 spec:
   selector:
@@ -190,13 +190,13 @@ spec:
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
         app.kubernetes.io/component: {{ include "continuous-delivery.name" . }}
-        app.kubernetes.io/version: {{ .Values.jmeterService.image.tag }}
+        app.kubernetes.io/version: {{ .Values.jmeter.image.tag }}
         helm.sh/chart: {{ include "continuous-delivery.chart" . }}        
     spec:
       serviceAccountName: keptn-default
       containers:
         - name: jmeter-service
-          image: {{ .Values.jmeterService.image.repository }}:{{ .Values.jmeterService.image.tag }}
+          image: {{ .Values.jmeter.image.repository }}:{{ .Values.jmeter.image.tag }}
           {{- include "continuous-delivery.livenessProbe" . | nindent 10 }}
           imagePullPolicy: Always
           ports:
