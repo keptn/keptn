@@ -298,24 +298,6 @@ func init() {
 		false, "Skip tls verification for kubectl commands")
 }
 
-func createKeptnNamespace(keptnNamespace string) error {
-
-	res, err := keptnutils.ExistsNamespace(false, keptnNamespace)
-	if err != nil {
-		return fmt.Errorf("Failed to check if namespace %s already exists: %v", keptnNamespace, err)
-	}
-	if res {
-		return fmt.Errorf("Existing Keptn installation found in namespace %s.", keptnNamespace)
-	}
-
-	err = keptnutils.CreateNamespace(false, keptnNamespace)
-	if err != nil {
-		return fmt.Errorf("Failed to create Keptn namespace %s: %v", keptnNamespace, err)
-	}
-
-	return nil
-}
-
 func newActionConfig(config *rest.Config, namespace string) (*action.Configuration, error) {
 
 	logFunc := func(format string, v ...interface{}) {
@@ -353,9 +335,6 @@ func newConfigFlags(config *rest.Config, namespace string) *genericclioptions.Co
 }
 
 func upgradeChart(ch *chart.Chart, releaseName, namespace string, vals map[string]interface{}) error {
-	if err := createKeptnNamespace("keptn"); err != nil {
-		return err
-	}
 
 	if len(ch.Templates) > 0 {
 		logging.PrintLog(fmt.Sprintf("Start upgrading Helm Chart %s in namespace: %s", releaseName, namespace), logging.InfoLevel)
@@ -446,6 +425,32 @@ func waitForDeploymentsOfHelmRelease(helmManifest string) error {
 // Preconditions: 1. Already authenticated against the cluster.
 func doInstallation() error {
 
+	const keptnNamespace = "keptn"
+	res, err := keptnutils.ExistsNamespace(false, keptnNamespace)
+	if err != nil {
+		return fmt.Errorf("Failed to check if namespace %s already exists: %v", keptnNamespace, err)
+	}
+
+	if res {
+		fmt.Printf("Existing Keptn installation found in namespace %s\n", keptnNamespace)
+		fmt.Println()
+		fmt.Println("Do you want to overwrite this installation? (y/n)")
+
+		reader := bufio.NewReader(os.Stdin)
+		in, err := reader.ReadString('\n')
+		if err != nil {
+			return err
+		}
+		in = strings.TrimSpace(in)
+		if !(in == "y" || in == "yes") {
+			return fmt.Errorf("Stopping installation.")
+		}
+	} else {
+		if err := keptnutils.CreateNamespace(false, keptnNamespace); err != nil {
+			return fmt.Errorf("Failed to create Keptn namespace %s: %v", keptnNamespace, err)
+		}
+	}
+
 	values := map[string]interface{}{
 		"continuous-delivery": map[string]interface{}{
 			"enabled": installParams.UseCase == ContinuousDelivery,
@@ -461,7 +466,7 @@ func doInstallation() error {
 		},
 	}
 
-	if err := upgradeChart(installChart, "keptn", "keptn", values); err != nil {
+	if err := upgradeChart(installChart, "keptn", keptnNamespace, values); err != nil {
 		logging.PrintLog("Could not complete Keptn installation: "+err.Error(), logging.InfoLevel)
 		return err
 	}
