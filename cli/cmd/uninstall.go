@@ -28,7 +28,7 @@ This command does *not* delete:
 * Prometheus monitoring
 * Any (third-party) service installed in addition to Keptn (e.g., notification-service, slackbot-service, ...)
 
-Besides, deployed services and the configuration on the Git upstream (i.e., GitHub, GitLab, or Bitbucket) are not deleted. To clean-up created projects and services, instructions are provided [here](../../manage/project#delete-a-project).
+Besides, deployed services and the configuration on the Git upstream (i.e., GitHub, GitLab, or Bitbucket) are not deleted. To clean-up created projects and services, please see [Delete a project](https://keptn.sh/docs/0.7.x/manage/project/#delete-a-project).
 
 **Note:** This command requires a *Kubernetes current context* pointing to the cluster where Keptn should get uninstalled.
 `,
