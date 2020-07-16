@@ -10,7 +10,6 @@ import (
 	"github.com/google/uuid"
 
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
-	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 )
 
 func getFirstStage(keptnHandler *keptnevents.Keptn) (string, error) {
@@ -54,16 +53,6 @@ func getLocalDeploymentURI(project string, service string, stage string, deploym
 		}
 	}
 	return serviceURL
-}
-
-func getPublicDeploymentURI(project string, service string, stage string) (string, error) {
-
-	keptnDomain, err := keptnutils.GetKeptnDomain(true)
-	if err != nil {
-		return "", err
-	}
-
-	return "http://" + service + "." + project + "-" + stage + "." + keptnDomain, nil
 }
 
 func sendDeploymentFinishedEvent(keptnHandler *keptnevents.Keptn, testStrategy string, deploymentStrategy keptnevents.DeploymentStrategy, image string, tag string, ingressHostnameSuffix string, protocol string, port string) error {
