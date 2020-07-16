@@ -108,7 +108,7 @@ kubectl get secret -n keptn bridge-credentials
 # install helm chart
 helm3 repo add keptn $HELM_CHART_URL
 
-if [[ $USECASE == "continuous-delivery" ]]; then
+if [[ $USE_CASE == "continuous-delivery" ]]; then
   kubectl get namespace openshift
   if [[ $? == '0' ]]; then
     print_debug "OpenShift platform detected. Updating OpenShift core services"
