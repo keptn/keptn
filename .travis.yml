@@ -693,15 +693,7 @@ jobs:
 
   - <<: *minikubeStandaloneTest
     env:
-      - MINIKUBE_VERSION=v1.6.2 # from 2019-12-19; uses K8s 1.17
-
-  - <<: *minikubeStandaloneTest
-    env:
       - MINIKUBE_VERSION=v1.7.3 # from 2020-02-20; uses K8s 1.17.3
-
-  - <<: *minikubeStandaloneTest
-    env:
-      - MINIKUBE_VERSION=v1.9.2 # from 2020-04-02; uses K8s 1.18
 
   - <<: *minikubeStandaloneTest
     env:
