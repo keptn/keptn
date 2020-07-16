@@ -59,23 +59,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: keptn-read-keptndomain
-  labels:
-    "app": "keptn"
-rules:
-  - apiGroups:
-      - ""
-    resources:
-      - configmaps
-    verbs:
-      - get
-    resourceNames:
-      - "keptn-domain"
-
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
   name: keptn-read-metadata
   namespace: keptn
   labels:
@@ -168,23 +151,6 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: keptn-api-service
-
-
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: keptn-api-service-read-keptndomain
-  labels:
-    "app": "keptn"
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: keptn-read-keptndomain
-subjects:
-  - kind: ServiceAccount
-    name: keptn-api-service
-
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1

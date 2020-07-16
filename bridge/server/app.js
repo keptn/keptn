@@ -12,7 +12,6 @@ let apiToken = process.env.API_TOKEN;
 
 if(!apiToken) {
   console.log("API_TOKEN was not provided. Fetching from kubectl.");
-  apiUrl = 'https://api.keptn.'+execSync('kubectl get cm -n keptn keptn-domain -ojsonpath={.data.app_domain}').toString();
   apiToken = Buffer.from(execSync('kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token}').toString(), 'base64').toString();
 }
 
