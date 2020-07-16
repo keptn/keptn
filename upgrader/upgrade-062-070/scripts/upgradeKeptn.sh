@@ -190,5 +190,9 @@ kubectl -n keptn get svc prometheus-sli-service
       kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/prometheus-sli-service/release-0.2.2/deploy/service.yaml
   fi
 
+# delete all pods in keptn namespace to make sure all secret references are updated
+kubectl delete pods -n keptn --all
+wait_for_all_pods_in_namespace "keptn"
+
 kubectl delete ClusterRoleBinding keptn-rbac
 kubectl delete ClusterRoleBinding rbac-service-account
