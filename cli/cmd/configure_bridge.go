@@ -6,10 +6,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/keptn/keptn/cli/pkg/credentialmanager"
-	"github.com/spf13/cobra"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
+	"github.com/spf13/cobra"
 
 	keptnutils "github.com/keptn/go-utils/pkg/api/utils"
 )
@@ -32,8 +33,6 @@ type exposeBridgeAPIErrorResponse struct {
 
 var configureBridgeParams *configureBridgeCmdParams
 
-const basicAuthDocuURL = "https://keptn.sh/docs/0.7.0/reference/keptnsbridge/#enable-authentication"
-
 var bridgeCmd = &cobra.Command{
 	Use:          "bridge --user=<user> --password=<password>",
 	Short:        "Configures the credentials for the Keptn Bridge",
@@ -49,7 +48,7 @@ var bridgeCmd = &cobra.Command{
 			return errors.New(authErrorMsg)
 		}
 
-		configureBridgeEndpoint := endpoint.Scheme + "://" + endpoint.Host + "/v1/config/bridge"
+		configureBridgeEndpoint := endpoint.Scheme + "://" + endpoint.Host + "/api/v1/config/bridge"
 		return configureBridge(configureBridgeEndpoint, apiToken, configureBridgeParams)
 	},
 }
@@ -81,14 +80,14 @@ func retrieveBridgeCredentials(endpoint string, apiToken string) (*configureBrid
 
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Println("Could not complete command: " + err.Error())
+		fmt.Println("Could not sent request: " + err.Error())
 		return nil, err
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return nil, errors.New("Could not complete command: " + string(body))
+		return nil, errors.New("Received not successful response: " + string(body))
 	}
 
 	res := &configureBridgeAPIPayload{}
@@ -108,7 +107,7 @@ func configureBridgeCredentials(endpoint string, apiToken string, configureBridg
 
 	payload, err := json.Marshal(bridgeCredentials)
 	if err != nil {
-		fmt.Println("Could not complete command: " + err.Error())
+		fmt.Println("Could not marshal response payload: " + err.Error())
 		return err
 	}
 	client := &http.Client{
@@ -117,20 +116,21 @@ func configureBridgeCredentials(endpoint string, apiToken string, configureBridg
 			DialContext:     keptnutils.ResolveXipIoWithContext,
 		},
 	}
+
 	req, err := http.NewRequest("POST", endpoint, bytes.NewReader([]byte(payload)))
 	req.Header.Add("x-token", apiToken)
 	req.Header.Add("content-type", "application/json")
 
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Println("Could not complete command: " + err.Error())
+		fmt.Println("Could not sent request: " + err.Error())
 		return err
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return errors.New("Could not complete command: " + string(body))
+		return errors.New("Received not successful response: " + string(body))
 	}
 
 	if err != nil {
