@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"helm.sh/helm/v3/pkg/chart"
+	authorizationv1 "k8s.io/api/authorization/v1"
 
 	cloudevents "github.com/cloudevents/sdk-go"
 
@@ -90,6 +91,18 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event, loggingDone chan bool) error
 
 	if event.HelmChart != "" {
 
+		adminRights, err := o.hasAdminRights()
+		if err != nil {
+			o.keptnHandler.Logger.Error(fmt.Sprintf("failed to check wheter helm-service has admin right: %v", err))
+			return err
+		}
+		if !adminRights {
+			err := errors.New("Cannot onboard service because helm-service has insufficient RBAC rights.\n" +
+				"Reason: The execution plane for continuous-delivery is not installed.")
+			o.keptnHandler.Logger.Error(err.Error())
+			return err
+		}
+
 		if err := namespaceMng.InitNamespaces(event.Project, stages); err != nil {
 			o.keptnHandler.Logger.Error(err.Error())
 			return err
@@ -126,6 +139,23 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event, loggingDone chan bool) error
 
 	o.keptnHandler.Logger.Info(fmt.Sprintf("Finished creating service %s in project %s", event.Service, event.Project))
 	return nil
+}
+
+func (o *Onboarder) hasAdminRights() (bool, error) {
+	clientset, err := keptnutils.GetClientset(true)
+	if err != nil {
+		return false, err
+	}
+	sar := &authorizationv1.SelfSubjectAccessReview{
+		Spec: authorizationv1.SelfSubjectAccessReviewSpec{
+			ResourceAttributes: &authorizationv1.ResourceAttributes{},
+		},
+	}
+	resp, err := clientset.AuthorizationV1().SelfSubjectAccessReviews().Create(sar)
+	if err != nil {
+		return false, err
+	}
+	return resp.Status.Allowed, nil
 }
 
 func (o *Onboarder) checkAndSetServiceName(event *keptnevents.ServiceCreateEventData) error {
