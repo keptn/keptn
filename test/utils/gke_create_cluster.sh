@@ -15,13 +15,8 @@ else
     echo "No nightly cluster need to be deleted"
 fi
 
-ISTIO_CONFIG=""
-ADDONS="HorizontalPodAutoscaling,HttpLoadBalancing"
-
-if [[ "$KEPTN_INSTALLATION_TYPE" == "REUSE-ISTIO" ]]; then
-  ISTIO_CONFIG="--istio-config=auth=MTLS_PERMISSIVE"
-  ADDONS="Istio,$ADDONS"
-fi
+ISTIO_CONFIG="--istio-config=auth=MTLS_PERMISSIVE"
+ADDONS="Istio,HorizontalPodAutoscaling,HttpLoadBalancing"
 
 echo "Creating nightly cluster ${CLUSTER_NAME_NIGHTLY}"
 

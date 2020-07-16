@@ -110,7 +110,7 @@ gke_full: &gke_full
   script:
     # test installation on gcloud
     - test/test_install_gke.sh
-    - test/utils/expose_keptn_bridge.sh
+    - test/utils/check_bridge_availability.sh
     # test onboarding and new-artifact for sockshop
     - export PROJECT=sockshop
     - test/test_onboard_service.sh
@@ -149,7 +149,7 @@ gke_full_part1: &gke_full_part1
   script:
     # test installation on gcloud
     - test/test_install_gke.sh
-    - test/utils/expose_keptn_bridge.sh
+    - test/utils/check_bridge_availability.sh
     # test onboarding and new-artifact for sockshop
     - export PROJECT=sockshop
     - test/test_onboard_service.sh
@@ -527,93 +527,29 @@ jobs:
       - echo "The following images have been built and pushed to dockerhub:"
       - docker images | grep keptn
 
-  - stage: Test GKE Full - Pt. 1 (--platform=gke --use-case=continuous-delivery)
+  - stage: Test GKE Full with Istio - Pt. 1 (--platform=gke --use-case=continuous-delivery)
     if: branch = master AND type = cron # run for cron
     env:
       - GKE_VERSION=1.14
-      - KEPTN_INSTALLATION_TYPE=FULL
     <<: *gke_full_part1 # use template
 
-  - stage: Test GKE Full - Pt. 1 (--platform=gke --use-case=continuous-delivery)
+  - stage: Test GKE Full with Istio - Pt. 1 (--platform=gke --use-case=continuous-delivery)
     if: branch = master AND type = cron # run for cron
     env:
       - GKE_VERSION=1.16
-      - KEPTN_INSTALLATION_TYPE=FULL
     <<: *gke_full_part1 # use template
 
-  - stage: Test GKE Full - Pt. 2 (--platform=gke --use-case=continuous-delivery)
+  - stage: Test GKE Full with Istio - Pt. 2 (--platform=gke --use-case=continuous-delivery)
     if: branch = master AND type = cron # run for cron
     env:
       - GKE_VERSION=1.14
-      - KEPTN_INSTALLATION_TYPE=FULL
     <<: *gke_full_part2 # use template
 
-  - stage: Test GKE Full - Pt. 2 (--platform=gke --use-case=continuous-delivery)
+  - stage: Test GKE Full with Istio - Pt. 2 (--platform=gke --use-case=continuous-delivery)
     if: branch = master AND type = cron # run for cron
     env:
       - GKE_VERSION=1.16
-      - KEPTN_INSTALLATION_TYPE=FULL
     <<: *gke_full_part2 # use template
-
-#  - stage: Test GKE Full (--platform=gke)
-#    if: branch = master AND type = cron # run for cron
-#    env:
-#      - GKE_VERSION=1.15
-#      - KEPTN_INSTALLATION_TYPE=FULL
-#    <<: *gke_full # use template
-
-
-  # Test GKE with 1.17 (not available yet)
-#  - stage: Test GKE Full (--platform=gke)
-#    if: branch = master AND type = cron # run for cron
-#    env:
-#      - GKE_VERSION=1.17
-#      - KEPTN_INSTALLATION_TYPE=FULL
-#    <<: *gke_full # use template
-
-  - stage: Test GKE Full with Istio - Pt. 1 (--platform=gke --ingress-install-option=Reuse --use-case=continuous-delivery)
-    if: branch = master AND type = cron # run for cron
-    env:
-      - KEPTN_INSTALLATION_TYPE=REUSE-ISTIO
-      - GKE_VERSION=1.14
-    <<: *gke_full_part1 # use template
-
-  - stage: Test GKE Full with Istio - Pt. 1 (--platform=gke --ingress-install-option=Reuse --use-case=continuous-delivery)
-    if: branch = master AND type = cron # run for cron
-    env:
-      - KEPTN_INSTALLATION_TYPE=REUSE-ISTIO
-      - GKE_VERSION=1.16
-    <<: *gke_full_part1 # use template
-
-  - stage: Test GKE Full with Istio - Pt. 2 (--platform=gke --ingress-install-option=Reuse --use-case=continuous-delivery)
-    if: branch = master AND type = cron # run for cron
-    env:
-      - KEPTN_INSTALLATION_TYPE=REUSE-ISTIO
-      - GKE_VERSION=1.14
-    <<: *gke_full_part2 # use template
-
-  - stage: Test GKE Full with Istio - Pt. 2 (--platform=gke --ingress-install-option=Reuse --use-case=continuous-delivery)
-    if: branch = master AND type = cron # run for cron
-    env:
-      - KEPTN_INSTALLATION_TYPE=REUSE-ISTIO
-      - GKE_VERSION=1.16
-    <<: *gke_full_part2 # use template
-
-#  - stage: Test GKE Full with Istio (--platform=gke --ingress-install-option=Reuse)
-#    if: branch = master AND type = cron # run for cron
-#    env:
-#      - KEPTN_INSTALLATION_TYPE=REUSE-ISTIO
-#      - GKE_VERSION=1.15
-#    <<: *gke_full # use template
-
-
-  # Test GKE with 1.17 (not available yet)
-#  - stage: Test GKE Full with Istio (--platform=gke --ingress-install-option=Reuse)
-#    if: branch = master AND type = cron # run for cron
-#    env:
-#      - KEPTN_INSTALLATION_TYPE=REUSE-ISTIO
-#      - GKE_VERSION=1.17
-#    <<: *gke_full # use template
 
   - stage: Test Minishift Standalone (--platform=openshift)
     if: (branch = master or branch =~ ^release.*$) AND (type = cron OR type = push) # run for any change on master/release-* on push as well as cron
@@ -630,6 +566,7 @@ jobs:
       - test/test_install_minishift_quality_gates.sh
       - keptn status
       - export PROJECT=musicshop
+      - export PLATFORM=openshift
       - test/test_quality_gates_standalone.sh
     after_success:
       # delete kubernetes cluster only on success (in case of an error we want to be able to dig into the cluster)
