@@ -165,6 +165,8 @@ github.com/keptn/go-utils v0.6.3-0.20200709123116-2ec34b39b07d h1:9XJD4q1UNYKaux
 github.com/keptn/go-utils v0.6.3-0.20200709123116-2ec34b39b07d/go.mod h1:76xtIqZUGDUgc8ct2jiSPnq57Ss0pFQJeXgWR6FHybg=
 github.com/keptn/go-utils v0.6.3-0.20200714120809-ab94889d31e3 h1:f47ITlk40aLoX3Wb9Irpra2ccwlpF5/eCZVc5z6Khas=
 github.com/keptn/go-utils v0.6.3-0.20200714120809-ab94889d31e3/go.mod h1:hf2FU6JFuOzLP5rEAlA1/XnNS28pDZbVfxDESeQsq1g=
+github.com/keptn/go-utils v0.6.3-0.20200717075015-7ed3d5519a6f h1:CcPgvUN0Ofk4VdhKnvIRa7FLN0mHS6koq8Mdjh8Q1gk=
+github.com/keptn/go-utils v0.6.3-0.20200717075015-7ed3d5519a6f/go.mod h1:hf2FU6JFuOzLP5rEAlA1/XnNS28pDZbVfxDESeQsq1g=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/konsorten/go-windows-terminal-sequences v1.0.1/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
 github.com/kr/logfmt v0.0.0-20140226030751-b84e30acd515/go.mod h1:+0opPa2QZZtGFBFZlji/RkVcI2GknAs/DXo4wKdlNEc=
