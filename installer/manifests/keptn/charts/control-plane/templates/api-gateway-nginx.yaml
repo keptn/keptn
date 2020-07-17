@@ -246,9 +246,9 @@ metadata:
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
     helm.sh/chart: {{ include "control-plane.chart" . }}       
 spec:
-  type: {{ .Values.apiNginxGateway.type }}
+  type: {{ .Values.apiGatewayNginx.type }}
   ports:
-    - port: {{ .Values.apiNginxGateway.port }}
+    - port: {{ .Values.apiGatewayNginx.port }}
       name: http
       targetPort: 8080
       protocol: TCP

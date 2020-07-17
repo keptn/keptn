@@ -72,8 +72,8 @@ spec:
         helm.sh/chart: {{ include "control-plane.chart" . }}    
     spec:
       containers:
-        - name: api-service        
-          image: {{ .Values.api.image.repository }}:{{ .Values.api.image.tag }}
+        - name: api-service
+          image: {{ .Values.apiService.image.repository }}:{{ .Values.apiService.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
           imagePullPolicy: Always
           ports:
@@ -152,7 +152,7 @@ spec:
     spec:
       containers:
         - name: bridge
-          image: {{ .Values.bridge.image.repository }}:{{ .Values.bridge.image.tag }}
+          image: {{ .Values.bridge.image.repository }}:{{ .Values.bridge.image.tag | default .Chart.AppVersion }}
           imagePullPolicy: Always
           env:
             - name: API_URL
@@ -230,7 +230,7 @@ spec:
     spec:
       containers:
         - name: eventbroker-go
-          image: {{ .Values.eventbroker.image.repository }}:{{ .Values.eventbroker.image.tag }}
+          image: {{ .Values.eventbroker.image.repository }}:{{ .Values.eventbroker.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
           imagePullPolicy: Always
           ports:
@@ -302,7 +302,7 @@ spec:
     spec:
       containers:
         - name: helm-service
-          image: {{ .Values.helm.image.repository }}:{{ .Values.helm.image.tag }}
+          image: {{ .Values.helmService.image.repository }}:{{ .Values.helmService.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
           imagePullPolicy: Always
           ports:
@@ -352,7 +352,7 @@ spec:
                   key: istio_gateway
                   optional: true
         - name: distributor
-          image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag }}
+          image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
           imagePullPolicy: Always
           ports:
@@ -424,7 +424,7 @@ spec:
     spec:
       containers:
         - name: shipyard-service
-          image: {{ .Values.shipyard.image.repository }}:{{ .Values.shipyard.image.tag }}
+          image: {{ .Values.shipyardService.image.repository }}:{{ .Values.shipyardService.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
           imagePullPolicy: Always
           ports:
@@ -444,7 +444,7 @@ spec:
             - name: API
               value: 'ws://api-service:8080/websocket'
         - name: distributor
-          image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag }}
+          image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
           imagePullPolicy: Always
           ports:
@@ -539,7 +539,7 @@ spec:
     spec:
       containers:
         - name: configuration-service
-          image: {{ .Values.configurationSrv.image.repository }}:{{ .Values.configurationSrv.image.tag }}
+          image: {{ .Values.configurationService.image.repository }}:{{ .Values.configurationService.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
           imagePullPolicy: Always
           env:
@@ -570,7 +570,7 @@ spec:
             - mountPath: /data/config
               name: configuration-volume
         - name: distributor
-          image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag }}
+          image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
           imagePullPolicy: Always
           ports:

@@ -460,7 +460,7 @@ func doInstallation() error {
 		},
 		"control-plane": map[string]interface{}{
 			"enabled": true,
-			"apiNginxGateway": map[string]interface{}{
+			"apiGatewayNginx": map[string]interface{}{
 				"type": installParams.ApiServiceType.String(),
 			},
 		},

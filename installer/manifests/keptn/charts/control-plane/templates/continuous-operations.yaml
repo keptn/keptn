@@ -31,7 +31,7 @@ spec:
     spec:
       containers:
       - name: remediation-service
-        image: {{ .Values.remediation.image.repository }}:{{ .Values.remediation.image.tag }}
+        image: {{ .Values.remediationService.image.repository }}:{{ .Values.remediationService.image.tag | default .Chart.AppVersion }}
         imagePullPolicy: Always
         {{- include "control-plane.livenessProbe" . | nindent 8 }}
         ports:
@@ -55,7 +55,7 @@ spec:
           - name: WAIT_TIME_MINUTES
             value: '10m'
       - name: distributor
-        image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag }}
+        image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
         imagePullPolicy: Always
         {{- include "control-plane.livenessProbe" . | nindent 8 }}
         ports:

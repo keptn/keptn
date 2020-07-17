@@ -7,17 +7,14 @@ ingressConfig:
   ingress_port: "80"
   istio_gateway: "public-gateway.istio-system"
 
-gatekeeper:
+atekeeperService:
   image:
     repository: docker.io/keptn/gatekeeper-service
-    tag: latest
 
 distributor:
   image:
     repository: docker.io/keptn/distributor
-    tag: latest
 
-jmeter:
+jmeterService:
   image:
     repository: docker.io/keptn/jmeter-service
-    tag: latest
