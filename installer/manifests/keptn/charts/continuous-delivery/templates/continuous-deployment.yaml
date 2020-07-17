@@ -31,7 +31,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "continuous-delivery.name" . }}
-    app.kubernetes.io/version: {{ .Values.gatekeeperService.image.tag }}
+    app.kubernetes.io/version: {{ .Values.gatekeeperService.image.tag | default .Chart.AppVersion }}
     helm.sh/chart: {{ include "continuous-delivery.chart" . }}
 spec:
   selector:
@@ -47,7 +47,7 @@ spec:
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
         app.kubernetes.io/component: {{ include "continuous-delivery.name" . }}
-        app.kubernetes.io/version: {{ .Values.gatekeeperService.image.tag }}
+        app.kubernetes.io/version: {{ .Values.gatekeeperService.image.tag | default .Chart.AppVersion }}
         helm.sh/chart: {{ include "continuous-delivery.chart" . }}          
     spec:
       serviceAccountName: keptn-default
@@ -121,7 +121,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "continuous-delivery.name" . }}
-    app.kubernetes.io/version: {{ .Values.distributor.image.tag }}
+    app.kubernetes.io/version: {{ .Values.distributor.image.tag | default .Chart.AppVersion }}
     helm.sh/chart: {{ include "continuous-delivery.chart" . }}  
 spec:
   selector:
@@ -137,7 +137,7 @@ spec:
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
         app.kubernetes.io/component: {{ include "continuous-delivery.name" . }}
-        app.kubernetes.io/version: {{ .Values.distributor.image.tag }}
+        app.kubernetes.io/version: {{ .Values.distributor.image.tag | default .Chart.AppVersion }}
         helm.sh/chart: {{ include "continuous-delivery.chart" . }}        
     spec:
       serviceAccountName: keptn-default
@@ -174,7 +174,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "continuous-delivery.name" . }}
-    app.kubernetes.io/version: {{ .Values.jmeterService.image.tag }}
+    app.kubernetes.io/version: {{ .Values.jmeterService.image.tag | default .Chart.AppVersion }}
     helm.sh/chart: {{ include "continuous-delivery.chart" . }}    
 spec:
   selector:
@@ -190,7 +190,7 @@ spec:
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
         app.kubernetes.io/component: {{ include "continuous-delivery.name" . }}
-        app.kubernetes.io/version: {{ .Values.jmeterService.image.tag }}
+        app.kubernetes.io/version: {{ .Values.jmeterService.image.tag | default .Chart.AppVersion }}
         helm.sh/chart: {{ include "continuous-delivery.chart" . }}        
     spec:
       serviceAccountName: keptn-default
