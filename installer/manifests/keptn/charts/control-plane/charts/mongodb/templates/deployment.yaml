@@ -8,8 +8,8 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "mongodb.name" . }}
-    app.kubernetes.io/version: {{ .Values.image.tag }}
-    helm.sh/chart: {{ include "mongodb.chart" . }}   
+    app.kubernetes.io/version: "{{ .Values.image.tag }}"
+    helm.sh/chart: {{ include "mongodb.chart" . }}
 spec:
   replicas: 1
   selector:
@@ -26,8 +26,8 @@ spec:
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
         app.kubernetes.io/component: {{ include "mongodb.name" . }}
-        app.kubernetes.io/version: {{ .Values.image.tag }}
-        helm.sh/chart: {{ include "mongodb.chart" . }}  
+        app.kubernetes.io/version: "{{ .Values.image.tag }}"
+        helm.sh/chart: {{ include "mongodb.chart" . }}
     spec:
       serviceAccountName: keptn-default
       securityContext:
