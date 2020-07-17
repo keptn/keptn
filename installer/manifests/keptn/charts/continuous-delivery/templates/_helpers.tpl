@@ -67,6 +67,6 @@ livenessProbe:
   httpGet:
     path: /health
     port: 10999
-  initialDelaySeconds: 5
+  initialDelaySeconds: 45
   periodSeconds: 5
 {{- end }}

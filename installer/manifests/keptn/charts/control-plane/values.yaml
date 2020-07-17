@@ -1,7 +1,6 @@
 mongodb:
   enabled: true
 
-
 nats:
   nameOverride: keptn-nats-cluster
   cluster.replicas: 1

@@ -1,2 +1,7 @@
-image:
-  repository: docker.io/keptn/openshift-route-service
+distributor:
+  image:
+    repository: docker.io/keptn/distributor
+
+openshiftRouteService:
+  image:
+    repository: docker.io/keptn/openshift-route-service
