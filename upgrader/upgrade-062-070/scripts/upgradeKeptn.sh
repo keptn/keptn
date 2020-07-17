@@ -28,10 +28,10 @@ then
 fi
 
 PREVIOUS_KEPTN_VERSION="0.6.2"
-KEPTN_VERSION=${KEPTN_VERSION:-"release-0.7.0"}
+KEPTN_VERSION=${KEPTN_VERSION:-"0.7.0"}
 HELM_CHART_URL=${HELM_CHART_URL:-"https://storage.googleapis.com/keptn-installer/0.7.0"}
 MONGODB_SOURCE_URL=${MONGODB_SOURCE_URL:-"mongodb://user:password@mongodb.keptn-datastore:27017/keptn"}
-MONGODB_TARGET_URL=${MONGODB_TARGET_URL:-"mongodb://user:password@mongodb.keptn:27017/keptn"}
+MONGODB_TARGET_URL=${MONGODB_TARGET_URL:-"mongodb.keptn:27017/keptn"}
 
 print_debug "Upgrading from Keptn 0.6.2 to $KEPTN_VERSION"
 
