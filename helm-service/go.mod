@@ -9,7 +9,7 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/gorilla/websocket v1.4.1
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.6.3-0.20200714120809-ab94889d31e3
+	github.com/keptn/go-utils v0.7.0
 	github.com/keptn/kubernetes-utils v0.1.1-0.20200716093053-dae79b5a7e2d
 	github.com/kinbiko/jsonassert v1.0.1
 	github.com/stretchr/testify v1.4.0
