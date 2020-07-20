@@ -10,7 +10,7 @@
 
 :sparkles: *Closed-loop Remediation with custom Integration  - [KEP 09](https://github.com/keptn/enhancement-proposals/pull/9) | [SPEC 31](https://github.com/keptn/spec/pull/31):* Keptn 0.7 lifts the automation of remediation workflows and the integration of custom remediation (aka. action) providers to the next level. A level where multiple remediation actions per problem type can be configured and the effect of each remediation action is validated based on the SLO/SLI validation Keptn offers. Consequently, fast feedback on executed remediation actions is given, providing better visibility into entire remediation scenarios. Please find a detailed blog post about this use case [here](https://medium.com/keptn/closed-loop-remediation-with-custom-integrations-43bde377b796).
 
-:tada: *Improved automation support with API extensions - [KEP 10](https://github.com/keptn/enhancement-proposals/pull/10):* Keptn 0.7 brings internally-used API endpoints to the Keptn public API. Thus, read operations as implemented in GET endpoints are publicly available and can be leveraged to get status information for projects, stages, and services
+:tada: *Improved automation support with API extensions - [KEP 10](https://github.com/keptn/enhancement-proposals/pull/10):* Keptn 0.7 brings internally-used API endpoints to the Keptn public API. Thus, read operations as implemented in GET endpoints are publicly available and can be leveraged to get status information for projects, stages, and services.
 
 :lock: *Hardening of Keptn:* The hardened of Keptn 0.7 in terms of its permissions on a K8s cluster has been improved by defining the role-based access control (RBAC) of each service.  
 
@@ -29,7 +29,7 @@ Implemented **Keptn spec** version: [0.1.4](https://github.com/keptn/spec/tree/0
 
 - Kubernetes 1.14 - 1.18 support [#1777](https://github.com/keptn/keptn/issues/1777)
 - Keptn on K3s support [#1896](https://github.com/keptn/keptn/issues/1896)
-- *Hardening:* Use K8s service account with a restricted set of permissions instead of default [#1862](https://github.com/keptn/keptn/issues/1862)
+- *Hardening:* Use K8s service account with a restricted set of permissions instead of cluster-admin [#1862](https://github.com/keptn/keptn/issues/1862)
 - *Hardening:* Added Kubernetes recommended labels to the Keptn installation [#1996](https://github.com/keptn/keptn/issues/1996)
 - *Installer*: Removed Istio and NGNIX from installer [#1960](https://github.com/keptn/keptn/issues/1960)
 - *OpenShift:* `keptn uninstall` command mistakenly recommended to delete several OpenShift namespaces [#1781](https://github.com/keptn/keptn/issues/1781)
