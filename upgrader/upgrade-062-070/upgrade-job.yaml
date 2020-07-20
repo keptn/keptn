@@ -28,5 +28,5 @@ spec:
             - name: HELM_RELEASE_UPGRADE
               value: 'false'
             - name: HELM_CHART_URL
-              value: 'https://storage.googleapis.com/keptn-installer/keptn-0.7.0.tgz'
+              value: 'https://storage.googleapis.com/keptn-installer'
       restartPolicy: Never
