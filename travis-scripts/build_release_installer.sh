@@ -3,7 +3,7 @@
 VERSION=$1
 if [ -z "$VERSION" ]; then
   echo 'No Version set, exiting...'
-  #exit 1
+  exit 1
 fi
 
 BASE_PATH=installer/manifests
