@@ -86,7 +86,7 @@ spec:
     spec:
       containers:
       - name: openshift-route-service
-        image: {{ .Values.openShiftRouteService.image.repository }}:{{ .Values.openshiftRouteService.image.tag | default .Chart.AppVersion }}
+        image: {{ .Values.openshiftRouteService.image.repository }}:{{ .Values.openshiftRouteService.image.tag | default .Chart.AppVersion }}
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
