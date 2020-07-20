@@ -56,7 +56,7 @@ Implemented **Keptn spec** version: [0.1.4](https://github.com/keptn/spec/tree/0
 - Removed `--scheme=http` when using Keptn CLI with HTTP instead of HTTPs [#1948](https://github.com/keptn/keptn/issues/1948)
 - `keptn onboard service` is aborted when continuous.delivery is not installed [#2047](https://github.com/keptn/keptn/issues/2047)
 - `keptn install` removed anything related to Istio and NGINX [#1961](https://github.com/keptn/keptn/issues/1961)
-- `keptn install` removed `--platform` flag [#1967](https://github.com/keptn/keptn/issues/1967)
+- `keptn install` only differentiates between Kubernetes and Openshift in the `--platform` flag [#1967](https://github.com/keptn/keptn/issues/1967)
 - Keptn generate support-archive should have a separate check for ingress options [#1941](https://github.com/keptn/keptn/issues/1941)
 - Show warning when creating a project without Git upstream [#1840](https://github.com/keptn/keptn/issues/1840)
 - Allow specifying an upstream Git for existing projects [#1517](https://github.com/keptn/keptn/issues/1517)
