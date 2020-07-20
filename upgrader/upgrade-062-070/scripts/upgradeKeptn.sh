@@ -154,7 +154,10 @@ kubectl -n keptn get svc dynatrace-service
 
   if [[ $? == '0' ]]; then
       print_debug "Dynatrace-service detected. Upgrading to 0.8.0"
-      kubectl -n keptn create secret generic keptn-credentials --from-literal="KEPTN_API_URL=${KEPTN_API_URL}" --from-literal="KEPTN_API_TOKEN=${KEPTN_API_TOKEN}"
+      DT_TENANT=$(kubectl get secret dynatrace -n keptn -ojsonpath={.data.DT_TENANT} | base64 -d)
+      DT_API_TOKEN=$(kubectl get secret dynatrace -n keptn -ojsonpath={.data.DT_API_TOKEN} | base64 -d)
+
+      kubectl -n keptn create secret generic dynatrace --from-literal="KEPTN_API_URL=${KEPTN_API_URL}" --from-literal="KEPTN_API_TOKEN=${KEPTN_API_TOKEN}" --from-literal="DT_API_TOKEN=${DT_API_TOKEN}" --from-literal="DT_TENANT=${DT_TENANT}" -oyaml --dry-run | kubectl replace -f -
       kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/dynatrace-service/release-0.7.0/deploy/manifests/dynatrace-service/dynatrace-service.yaml
   fi
 
