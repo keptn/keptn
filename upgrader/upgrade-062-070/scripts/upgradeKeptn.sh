@@ -28,10 +28,10 @@ then
 fi
 
 PREVIOUS_KEPTN_VERSION="0.6.2"
-KEPTN_VERSION=${KEPTN_VERSION:-"release-0.7.0"}
+KEPTN_VERSION=${KEPTN_VERSION:-"0.7.0"}
 HELM_CHART_URL=${HELM_CHART_URL:-"https://storage.googleapis.com/keptn-installer/0.7.0"}
 MONGODB_SOURCE_URL=${MONGODB_SOURCE_URL:-"mongodb://user:password@mongodb.keptn-datastore:27017/keptn"}
-MONGODB_TARGET_URL=${MONGODB_TARGET_URL:-"mongodb://user:password@mongodb.keptn:27017/keptn"}
+MONGODB_TARGET_URL=${MONGODB_TARGET_URL:-"mongodb.keptn:27017/keptn"}
 
 print_debug "Upgrading from Keptn 0.6.2 to $KEPTN_VERSION"
 
@@ -153,22 +153,25 @@ fi
 kubectl -n keptn get svc dynatrace-service
 
   if [[ $? == '0' ]]; then
-      print_debug "Dynatrace-service detected. Upgrading to 0.7.0"
-      kubectl -n keptn create secret generic keptn-credentials --from-literal="KEPTN_API_URL=${KEPTN_API_URL}" --from-literal="KEPTN_API_TOKEN=${KEPTN_API_TOKEN}"
+      print_debug "Dynatrace-service detected. Upgrading to 0.8.0"
+      DT_TENANT=$(kubectl get secret dynatrace -n keptn -ojsonpath={.data.DT_TENANT} | base64 -d)
+      DT_API_TOKEN=$(kubectl get secret dynatrace -n keptn -ojsonpath={.data.DT_API_TOKEN} | base64 -d)
+
+      kubectl -n keptn create secret generic dynatrace --from-literal="KEPTN_API_URL=${KEPTN_API_URL}" --from-literal="KEPTN_API_TOKEN=${KEPTN_API_TOKEN}" --from-literal="DT_API_TOKEN=${DT_API_TOKEN}" --from-literal="DT_TENANT=${DT_TENANT}" -oyaml --dry-run | kubectl replace -f -
       kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/dynatrace-service/release-0.7.0/deploy/manifests/dynatrace-service/dynatrace-service.yaml
   fi
 
 kubectl -n keptn get svc dynatrace-sli-service
 
   if [[ $? == '0' ]]; then
-      print_debug "Dynatrace-sli-service detected. Upgrading to 0.3.2"
+      print_debug "Dynatrace-sli-service detected. Upgrading to 0.5.0"
       kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/dynatrace-sli-service/release-0.3.2/deploy/service.yaml
   fi
 
 kubectl -n keptn get svc prometheus-service
 
   if [[ $? == '0' ]]; then
-      print_debug "Prometheus-service detected. Upgrading to 0.3.3"
+      print_debug "Prometheus-service detected. Upgrading to 0.3.5"
       kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/prometheus-service/release-0.3.3/deploy/service.yaml
   fi
 

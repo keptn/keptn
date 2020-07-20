@@ -209,17 +209,6 @@ func getLoadBalancerEndpoint() (string, error) {
 	return keptnutils.ExecuteCommand("kubectl", ops2)
 }
 
-func getEndpointUsingKube() (string, error) {
-	ops := options{"get",
-		"cm",
-		"keptn-domain",
-		"-n",
-		"keptn",
-		"-ojsonpath={.data.app_domain}"}
-	ops.appendIfNotEmpty(kubectlOptions)
-	return keptnutils.ExecuteCommand("kubectl", ops)
-}
-
 func getAPITokenUsingKube() (string, error) {
 	ops := options{"get",
 		"secret",

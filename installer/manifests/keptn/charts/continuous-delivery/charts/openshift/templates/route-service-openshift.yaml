@@ -4,14 +4,24 @@ kind: ServiceAccount
 metadata:
   name: keptn-openshift-route-service
   labels:
-    "app": "keptn"
+    app.kubernetes.io/name: keptn-openshift-route-service
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
+    app.kubernetes.io/component: {{ include "openshift.name" . }}
+    helm.sh/chart: {{ include "openshift.chart" . }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: keptn-{{ .Release.Namespace }}-securitycontextconstraints
   labels:
-    "app": "keptn"
+    app.kubernetes.io/name: keptn-{{ .Release.Namespace }}-securitycontextconstraints
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
+    app.kubernetes.io/component: {{ include "openshift.name" . }}
+    helm.sh/chart: {{ include "openshift.chart" . }}   
 rules:
   - apiGroups:
       - ""
@@ -30,7 +40,12 @@ kind: ClusterRoleBinding
 metadata:
   name: keptn-{{ .Release.Namespace }}-securitycontextconstraints
   labels:
-    "app": "keptn"
+    app.kubernetes.io/name: keptn-{{ .Release.Namespace }}-securitycontextconstraints
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
+    app.kubernetes.io/component: {{ include "openshift.name" . }}
+    helm.sh/chart: {{ include "openshift.chart" . }}   
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -44,19 +59,34 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: openshift-route-service
+  labels:
+    app.kubernetes.io/name: openshift-route-service
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
+    app.kubernetes.io/component: {{ include "openshift.name" . }}
+    app.kubernetes.io/version: {{ .Values.openshiftRouteService.image.tag | default .Chart.AppVersion }}
+    helm.sh/chart: {{ include "openshift.chart" . }}     
 spec:
   selector:
     matchLabels:
-      run: openshift-route-service
+      app.kubernetes.io/name: openshift-route-service
+      app.kubernetes.io/instance: {{ .Release.Name }}
   replicas: 1
   template:
     metadata:
       labels:
-        run: openshift-route-service
+        app.kubernetes.io/name: openshift-route-service
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+        app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
+        app.kubernetes.io/component: {{ include "openshift.name" . }}
+        app.kubernetes.io/version: {{ .Values.openshiftRouteService.image.tag | default .Chart.AppVersion }}
+        helm.sh/chart: {{ include "openshift.chart" . }}        
     spec:
       containers:
       - name: openshift-route-service
-        image: {{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}
+        image: {{ .Values.openShiftRouteService.image.repository }}:{{ .Values.openshiftRouteService.image.tag | default .Chart.AppVersion }}
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
@@ -68,7 +98,7 @@ spec:
             memory: "128Mi"
             cpu: "500m"
       - name: distributor
-        image: {{ .Values.image.registry}}/keptn/distributor:latest
+        image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
         imagePullPolicy: Always
         ports:
           - containerPort: 8080
@@ -93,10 +123,16 @@ kind: Service
 metadata:
   name: openshift-route-service
   labels:
-    run: openshift-route-service
+    app.kubernetes.io/name: openshift-route-service
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
+    app.kubernetes.io/component: {{ include "openshift.name" . }}
+    helm.sh/chart: {{ include "openshift.chart" . }}       
 spec:
   ports:
   - port: 8080
     protocol: TCP
   selector:
-    run: openshift-route-service
+    app.kubernetes.io/name: openshift-route-service
+    app.kubernetes.io/instance: {{ .Release.Name }}
