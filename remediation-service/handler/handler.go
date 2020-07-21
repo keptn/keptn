@@ -334,6 +334,7 @@ func (r *Remediation) sendStartEvaluationEvent() error {
 		Stage:        r.Keptn.KeptnBase.Stage,
 		Labels:       r.Keptn.KeptnBase.Labels,
 		Start:        time.Now().Add(-waitTime).Format(time.RFC3339),
+		End:          time.Now().Format(time.RFC3339),
 		TestStrategy: "real-user",
 	}
 
