@@ -144,7 +144,7 @@ MONGO_TARGET_PASSWORD=$(kubectl get secret mongodb-credentials -n keptn -ojsonpa
 
 ./upgradecollections $MONGODB_SOURCE_URL "mongodb://user:${MONGO_TARGET_PASSWORD}@${MONGODB_TARGET_URL}" $CONFIGURATION_SERVICE_URL
 
-if [[ $USECASE == "continuous-delivery" ]]; then
+if [[ $USE_CASE == "continuous-delivery" ]]; then
   # set values for the ingress-config to reflect the previous installation
   kubectl create configmap -n keptn ingress-config --from-literal=ingress_hostname_suffix=${KEPTN_DOMAIN} --from-literal=ingress_port="" --from-literal=ingress_protocol="" --from-literal=istio_gateway="public-gateway.istio-system" -oyaml --dry-run | kubectl replace -f -
 fi
