@@ -4,7 +4,7 @@
 Package restapi keptn api
 
     Schemes:
-      https
+      http
     Host: localhost
     BasePath: /v1
     Version: develop

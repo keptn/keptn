@@ -25,7 +25,7 @@ type GetConfigBridgeOK struct {
 	/*
 	  In: Body
 	*/
-	Payload interface{} `json:"body,omitempty"`
+	Payload *models.ConfigureBridge `json:"body,omitempty"`
 }
 
 // NewGetConfigBridgeOK creates GetConfigBridgeOK with default headers values
@@ -35,13 +35,13 @@ func NewGetConfigBridgeOK() *GetConfigBridgeOK {
 }
 
 // WithPayload adds the payload to the get config bridge o k response
-func (o *GetConfigBridgeOK) WithPayload(payload interface{}) *GetConfigBridgeOK {
+func (o *GetConfigBridgeOK) WithPayload(payload *models.ConfigureBridge) *GetConfigBridgeOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the get config bridge o k response
-func (o *GetConfigBridgeOK) SetPayload(payload interface{}) {
+func (o *GetConfigBridgeOK) SetPayload(payload *models.ConfigureBridge) {
 	o.Payload = payload
 }
 
@@ -49,9 +49,11 @@ func (o *GetConfigBridgeOK) SetPayload(payload interface{}) {
 func (o *GetConfigBridgeOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(200)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
 }
 
