@@ -4,6 +4,7 @@ metadata:
   name: upgrader
   namespace: keptn
 spec:
+  backoffLimit: 1
   template:
     metadata:
       labels:
