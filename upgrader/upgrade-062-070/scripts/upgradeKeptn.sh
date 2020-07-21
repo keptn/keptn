@@ -183,8 +183,8 @@ kubectl -n keptn get svc prometheus-sli-service
   fi
 
 # delete all pods in keptn namespace to make sure all secret references are updated
-kubectl delete pods -n keptn --all
+kubectl delete pods -n keptn -l 'app notin (upgrader)'
 wait_for_all_pods_in_namespace "keptn"
 
-kubectl delete ClusterRoleBinding keptn-rbac
-kubectl delete ClusterRoleBinding rbac-service-account
+kubectl delete ClusterRoleBinding keptn-rbac --ignore-not-found
+kubectl delete ClusterRoleBinding rbac-service-account --ignore-not-found
