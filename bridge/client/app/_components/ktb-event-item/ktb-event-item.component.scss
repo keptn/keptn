@@ -1,19 +1,6 @@
 @import '../../../variables';
 @import '~@dynatrace/barista-components/core/src/style/variables';
 
-.event-icon {
-  width: 20px;
-  height: 20px;
-
-  &.error {
-    fill: $error-color;
-  }
-
-  &.success {
-    fill: $cta-color-active;
-  }
-}
-
 .dt-button + .dt-button {
   margin-left: $gap-normal;
 }
