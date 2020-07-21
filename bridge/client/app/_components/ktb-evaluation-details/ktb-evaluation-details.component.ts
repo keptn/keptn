@@ -242,7 +242,7 @@ export class KtbEvaluationDetailsComponent implements OnInit {
         rowsize: 0.85,
         turboThreshold: 0,
         data: chartSeries.find(series => series.name == 'Score').data.map((s) => {
-          let time = moment(s.x).format();
+          let time = moment(s.x||s.evaluationData.time).format();
           let index = this._heatmapOptions.yAxis[0].categories.indexOf("Score");
           let x = this._heatmapOptions.xAxis[0].categories.indexOf(time);
           return {
@@ -259,7 +259,7 @@ export class KtbEvaluationDetailsComponent implements OnInit {
         type: 'heatmap',
         turboThreshold: 0,
         data: chartSeries.reverse().reduce((r, d) => [...r, ...d.data.filter(s => s.indicatorResult).map((s) => {
-          let time = moment(s.x).format();
+          let time = moment(s.x||s.evaluationData.time).format();
           let index = this._heatmapOptions.yAxis[0].categories.indexOf(s.indicatorResult.value.metric);
           let x = this._heatmapOptions.xAxis[0].categories.indexOf(time);
           return {
@@ -276,7 +276,7 @@ export class KtbEvaluationDetailsComponent implements OnInit {
   updateHeatmapOptions(chartSeries) {
     chartSeries.forEach((d) =>
       d.data.forEach((s) => {
-        let time = moment(s.x).format();
+        let time = moment(s.x||s.evaluationData.time).format();
         if(s.indicatorResult && this._heatmapOptions.yAxis[0].categories.indexOf(s.indicatorResult.value.metric) == -1)
           this._heatmapOptions.yAxis[0].categories.unshift(s.indicatorResult.value.metric);
         if(this._heatmapOptions.xAxis[0].categories.indexOf(time) == -1)
