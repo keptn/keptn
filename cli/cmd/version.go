@@ -30,11 +30,14 @@ var (
 	Version string
 )
 
+const versionCheckInfo = "Daily version check is %s. Keptn will%s collect statistical data and will%s notify about new versions and security patches for Keptn. Details can be found at https://keptn.sh/docs/0.7.x/reference/version_check\n"
+const enableVersionCheckMsg = "To %s the daily version check, please execute: \nkeptn set config AutomaticVersionCheck %s\n"
+
 // versionCmd represents the version command
 var versionCmd = &cobra.Command{
-	Use:   "version",
-	Short: "Shows the CLI version of Keptn.",
-	Long: `Shows the CLI version of Keptn, as well as an indication whether a new version is available.`,
+	Use:     "version",
+	Short:   "Shows the CLI version of Keptn.",
+	Long:    `Shows the CLI version of Keptn, as well as an indication whether a new version is available.`,
 	Example: `keptn version`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("CLI version: " + Version)
@@ -49,6 +52,13 @@ var versionCmd = &cobra.Command{
 		if cliConfig.LastVersionCheck == nil || checkTime.Sub(*cliConfig.LastVersionCheck) >= time.Second {
 			vChecker := version.NewVersionChecker()
 			vChecker.CheckCLIVersion(Version, false)
+		}
+		if cliConfig.AutomaticVersionCheck {
+			fmt.Printf(versionCheckInfo, "enabled", "", "")
+			fmt.Printf(enableVersionCheckMsg, "disable", "false")
+		} else {
+			fmt.Printf(versionCheckInfo, "disabled", " not", " not")
+			fmt.Printf(enableVersionCheckMsg, "enable", "true")
 		}
 	},
 }

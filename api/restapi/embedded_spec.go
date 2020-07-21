@@ -26,7 +26,7 @@ func init() {
     "application/json"
   ],
   "schemes": [
-    "https"
+    "http"
   ],
   "swagger": "2.0",
   "info": {
@@ -59,7 +59,7 @@ func init() {
           "200": {
             "description": "Bridge credentials have been retrieved",
             "schema": {
-              "$ref": "#/parameters/configureBridge"
+              "$ref": "configure_model.yaml#/definitions/configureBridge"
             }
           },
           "400": {
@@ -366,7 +366,7 @@ func init() {
     "application/json"
   ],
   "schemes": [
-    "https"
+    "http"
   ],
   "swagger": "2.0",
   "info": {
@@ -399,12 +399,7 @@ func init() {
           "200": {
             "description": "Bridge credentials have been retrieved",
             "schema": {
-              "description": "Parameters for configuring the bridge access",
-              "in": "body",
-              "name": "configureBridge",
-              "schema": {
-                "$ref": "#/definitions/configureBridge"
-              }
+              "$ref": "#/definitions/configureBridge"
             }
           },
           "400": {

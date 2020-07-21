@@ -97,6 +97,10 @@ spec:
                 secretKeyRef:
                   name: keptn-api-token
                   key: keptn-api-token
+            - name: API_POD_NAMESPACE
+                valueFrom:
+                  fieldRef:
+                    fieldPath: metadata.namespace
       serviceAccountName: keptn-api-service
 ---
 apiVersion: v1
