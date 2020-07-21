@@ -11,23 +11,6 @@
     border-color: $orange-400;
   }
 
-  .event-icon {
-    width: 20px;
-    height: 20px;
-  }
-
-  .event-icon.error {
-    fill: $error-color;
-  }
-
-  .event-icon.warning {
-    fill: $orange-400;
-  }
-
-  .event-icon.success {
-    fill: $cta-color-active;
-  }
-
   .ktb-selectable-tile.ktb-tile-error .ktb-selectable-tile-container {
     border: 1px solid $gray-200;
     border-left: 3px solid $error-color;
