@@ -146,6 +146,7 @@ gke_full_part1: &gke_full_part1
     - test/utils/download_and_install_keptn_cli.sh
     # create gke cluster on gcloud
     - test/utils/gke_create_cluster.sh
+    - test/utils/gke_authenticate_at_cluster.sh
   script:
     # test installation on gcloud
     - test/test_install_gke.sh
@@ -160,7 +161,6 @@ gke_full_part1: &gke_full_part1
   after_success:
     # delete google kubernetes cluster only on success (in case of an error we want to be able to dig into the cluster)
     - echo "Tests were successful, cleaning up the cluster now..."
-    - test/utils/gke_delete_cluster.sh
   after_failure:
     # print some debug info
     - echo "Keptn Installation Log:"
@@ -181,8 +181,8 @@ gke_full_part2: &gke_full_part2
     - echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
     - gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
     - test/utils/download_and_install_keptn_cli.sh
-    # create gke cluster on gcloud
-    - test/utils/gke_create_cluster.sh
+    # authenticate at gke cluster
+    - test/utils/gke_authenticate_at_cluster.sh
   script:
     # test installation on gcloud
     - test/test_install_gke.sh
@@ -528,7 +528,7 @@ jobs:
       - docker images | grep keptn
 
   - stage: Test GKE Full with Istio - Pt. 1 (--platform=gke --use-case=continuous-delivery)
-    if: branch = master AND type = cron # run for cron
+    if: branch = feature/2102/gke-tests #branch = master AND type = cron # run for cron
     env:
       - GKE_VERSION=1.14
     <<: *gke_full_part1 # use template
@@ -540,7 +540,7 @@ jobs:
     <<: *gke_full_part1 # use template
 
   - stage: Test GKE Full with Istio - Pt. 2 (--platform=gke --use-case=continuous-delivery)
-    if: branch = master AND type = cron # run for cron
+    if: branch = feature/2102/gke-tests #branch = master AND type = cron # run for cron
     env:
       - GKE_VERSION=1.14
     <<: *gke_full_part2 # use template
