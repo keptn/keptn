@@ -14,5 +14,11 @@ export enum EventTypes {
   PROBLEM_RESOLVED = 'sh.keptn.events.problem.resolved',
   PROBLEM_CLOSED = 'sh.keptn.event.problem.close',
   APPROVAL_TRIGGERED = 'sh.keptn.event.approval.triggered',
-  APPROVAL_FINISHED = 'sh.keptn.event.approval.finished'
+  APPROVAL_FINISHED = 'sh.keptn.event.approval.finished',
+  REMEDIATION_TRIGGERED = 'sh.keptn.event.remediation.triggered',
+  REMEDIATION_STATUS_CHANGED = 'sh.keptn.event.remediation.status.changed',
+  REMEDIATION_FINISHED = 'sh.keptn.event.remediation.finished',
+  ACTION_TRIGGERED = 'sh.keptn.event.action.triggered',
+  ACTION_STARTED = 'sh.keptn.event.action.started',
+  ACTION_FINISHED = 'sh.keptn.event.action.finished',
 };

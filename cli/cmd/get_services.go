@@ -19,10 +19,8 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 	"text/tabwriter"
-	"time"
 
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
@@ -72,17 +70,6 @@ keptn get services carts --project=sockshop -o=json
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-
-		var serviceName string
-		if len(args) > 0 {
-			serviceName = strings.Join(args, " ")
-		} else {
-			serviceName = ""
-		}
-
-		var projectName string
-		projectName = *getService.project
-
 		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
 		if err != nil {
 			return errors.New(authErrorMsg)
@@ -92,23 +79,21 @@ keptn get services carts --project=sockshop -o=json
 		servicesHandler := apiutils.NewAuthenticatedServiceHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 
 		if !mocking {
-
 			projects, err := projectsHandler.GetAllProjects()
 			if err != nil {
-				fmt.Println(err)
-				return errors.New(err.Error())
+				return err
 			}
 
 			w := new(tabwriter.Writer)
 			w.Init(os.Stdout, 10, 8, 0, '\t', 0)
 
 			if *getService.outputFormat == "" {
-				fmt.Fprintln(w, "NAME\tPROJECT\tCREATION DATE")
+				fmt.Fprintln(w, "NAME\tPROJECT\tSTAGE\tCREATION DATE")
 			}
 
 			for _, project := range projects {
 				// make the project filter optional => print all services with matching names
-				if projectName == "" || project.ProjectName == projectName {
+				if *getService.project == "" || project.ProjectName == *getService.project {
 					//stagesHandler := apiutils.NewStageHandler(endPoint.String())
 					for _, stage := range project.Stages {
 						services, err := servicesHandler.GetAllServices(project.ProjectName, stage.StageName)
@@ -116,24 +101,7 @@ keptn get services carts --project=sockshop -o=json
 							return errors.New(err.Error())
 						}
 						for _, service := range services {
-
-							var returnService bool
-
-							// return service if a serviceName is set and its matching
-							if serviceName != "" && service.ServiceName == serviceName {
-								returnService = true
-							} else if serviceName == "" && project.ProjectName == projectName {
-								// return all services of a project if no service name is defined
-								returnService = true
-							} else if serviceName == "" && projectName == "" {
-								// print all services if no project or service is defined
-								returnService = true
-							} else {
-								returnService = false
-							}
-
-							if returnService {
-
+							if len(args) == 1 && service.ServiceName == args[0] || len(args) == 0 {
 								if strings.ToLower(*getService.outputFormat) == "yaml" {
 									yamlBytes, err := yaml.Marshal(service)
 									if err != nil {
@@ -150,14 +118,7 @@ keptn get services carts --project=sockshop -o=json
 									jsonString := string(jsonBytes)
 									fmt.Println(jsonString)
 								} else {
-
-									creationDateInt64, err := strconv.ParseInt(service.CreationDate, 10, 64)
-									if err != nil {
-										panic(err)
-									}
-									tm := time.Unix(0, creationDateInt64)
-
-									fmt.Fprintln(w, service.ServiceName+"\t"+project.ProjectName+"\t"+tm.Format("2006-01-02T15:04:05Z07:00"))
+									fmt.Fprintln(w, service.ServiceName+"\t"+project.ProjectName+"\t"+stage.StageName+"\t"+parseCreationDate(service.CreationDate))
 								}
 							}
 						}
@@ -179,6 +140,4 @@ func init() {
 		"keptn project name")
 	getService.outputFormat = getServiceCmd.Flags().StringP("output", "o", "",
 		"Output format. One of json|yaml")
-
-	// getServiceCmd.MarkFlagRequired("project")
 }

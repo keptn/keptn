@@ -1,7 +1,7 @@
 #!/bin/bash
 
 VERSION=$1
-if [ -n "$VERSION" ]; then
+if [ -z "$VERSION" ]; then
   echo 'No Version set, exiting...'
   exit 1
 fi

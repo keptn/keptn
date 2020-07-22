@@ -16,5 +16,11 @@ export const EVENT_LABELS = {
   [EventTypes.PROBLEM_RESOLVED]: "Problem resolved",
   [EventTypes.PROBLEM_CLOSED]: "Problem closed",
   [EventTypes.APPROVAL_TRIGGERED]: "Approval triggered",
-  [EventTypes.APPROVAL_FINISHED]: "Approval finished"
+  [EventTypes.APPROVAL_FINISHED]: "Approval finished",
+  [EventTypes.REMEDIATION_TRIGGERED]: 'Remediation triggered',
+  [EventTypes.REMEDIATION_STATUS_CHANGED]: 'Remediation status changed',
+  [EventTypes.REMEDIATION_FINISHED]: 'Remediation finished',
+  [EventTypes.ACTION_TRIGGERED]: 'Action triggered',
+  [EventTypes.ACTION_STARTED]: 'Action started',
+  [EventTypes.ACTION_FINISHED]: 'Action finished',
 };

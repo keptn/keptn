@@ -37,7 +37,7 @@ var bridgeCmd = &cobra.Command{
 	Use:          "bridge --user=<user> --password=<password>",
 	Short:        "Configures the credentials for the Keptn Bridge",
 	Long:         `Configures the credentials for the Keptn Bridge.`,
-	Example:      `keptn configure bridge --user=<user> --password=<passsord>`,
+	Example:      `keptn configure bridge --user=<user> --password=<password>`,
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		return verifyConfigureBridgeParams(configureBridgeParams)
