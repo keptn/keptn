@@ -113,7 +113,7 @@ class Trace {
   }
 
   private isProblem(): boolean {
-    return this.type === EventTypes.PROBLEM_DETECTED;
+    return this.type === EventTypes.PROBLEM_DETECTED || this.type === EventTypes.PROBLEM_OPEN;
   }
 
   private isProblemResolvedOrClosed(): boolean {
