@@ -117,7 +117,7 @@ class Trace {
   }
 
   private isProblemResolvedOrClosed(): boolean {
-    return this.data.State === ProblemStates.RESOLVED || this.data.State === ProblemStates.CLOSED
+    return this.data.State === ProblemStates.RESOLVED || this.data.State === ProblemStates.CLOSED;
   }
 
   private isApprovalFinished(): boolean {
