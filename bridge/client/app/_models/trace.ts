@@ -3,10 +3,8 @@ import {ResultTypes} from "./result-types";
 import {ApprovalStates} from "./approval-states";
 import {EVENT_LABELS} from "./event-labels";
 import {EVENT_ICONS} from "./event-icons";
+import {ProblemStates} from "./problem-states";
 
-enum ProblemStates {
-  RESOLVED = 'RESOLVED'
-};
 
 const DEFAULT_ICON = "information";
 
@@ -83,7 +81,7 @@ class Trace {
   isFaulty(): string {
     let result: string = null;
     if(this.data) {
-      if(this.isFailed() || this.isProblem()) {
+      if(this.isFailed() || (this.isProblem() && !this.isProblemResolvedOrClosed())) {
         result = this.data.stage;
       }
     }
@@ -100,28 +98,44 @@ class Trace {
     return result;
   }
 
-  isFailed(): boolean {
-    return this.data.result == ResultTypes.FAILED || this.type === EventTypes.APPROVAL_FINISHED && this.data.approval.result == ApprovalStates.DECLINED;
-  }
-
-  isProblem(): boolean {
-    return this.type.indexOf('problem') != -1;
-  }
-
   isSuccessful(): boolean {
     let result: boolean = false;
     if(this.data) {
-      if(this.data.result == ResultTypes.PASSED || this.type === EventTypes.APPROVAL_FINISHED && this.data.approval.result == ApprovalStates.APPROVED) {
+      if(this.data.result == ResultTypes.PASSED || this.isApprovalFinished() && this.isApproved() || this.isProblem() && this.isProblemResolvedOrClosed()) {
         result = true;
       }
     }
     return !this.isFaulty() && result;
   }
 
+  private isFailed(): boolean {
+    return this.data.result == ResultTypes.FAILED || this.isApprovalFinished() && this.isDeclined();
+  }
+
+  private isProblem(): boolean {
+    return this.type === EventTypes.PROBLEM_DETECTED;
+  }
+
+  private isProblemResolvedOrClosed(): boolean {
+    return this.data.State === ProblemStates.RESOLVED || this.data.State === ProblemStates.CLOSED
+  }
+
+  private isApprovalFinished(): boolean {
+    return this.type === EventTypes.APPROVAL_FINISHED;
+  }
+
+  private isApproved(): boolean {
+    return this.data.approval.result == ApprovalStates.APPROVED;
+  }
+
+  private isDeclined(): boolean {
+    return this.data.approval.result == ApprovalStates.DECLINED;
+  }
+
   getLabel(): string {
     // TODO: use translation file
     if(!this.label) {
-      if(this.type === EventTypes.PROBLEM_DETECTED && this.data.State === ProblemStates.RESOLVED) {
+      if(this.isProblem() && this.isProblemResolvedOrClosed()) {
         this.label = EVENT_LABELS[EventTypes.PROBLEM_RESOLVED];
       } else {
         this.label = EVENT_LABELS[this.type] || this.type;
