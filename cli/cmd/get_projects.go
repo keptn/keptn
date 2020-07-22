@@ -24,7 +24,8 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/keptn/cli/pkg/logging"
+
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	keptn "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
@@ -88,9 +89,6 @@ keptn get project sockshop -output=json
 			return errors.New(authErrorMsg)
 		}
 
-		var projectName string
-		projectName = strings.Join(args, " ")
-
 		projectsHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 
 		if !mocking {
@@ -101,64 +99,49 @@ keptn get project sockshop -output=json
 				fmt.Fprintln(w, "NAME\tCREATION DATE")
 			}
 
-			var prj models.Project
-			prj.ProjectName = projectName
-
 			projects, err := projectsHandler.GetAllProjects()
 			if err != nil {
-				fmt.Println(err)
-				return errors.New(authErrorMsg)
+				return err
 			}
 
-			var returnProject bool
-
 			for _, project := range projects {
-
-				if projectName != "" && project.ProjectName == projectName {
-					returnProject = true
-				} else if projectName == "" {
-					returnProject = true
-				} else {
-					returnProject = false
-				}
-
-				if returnProject {
+				if len(args) == 1 && project.ProjectName == args[0] || len(args) == 0 {
 					if strings.ToLower(*getProject.outputFormat) == "yaml" {
 						yamlBytes, err := yaml.Marshal(project)
 						if err != nil {
 							return errors.New(err.Error())
 						}
-						yamlString := string(yamlBytes)
-
-						fmt.Println(yamlString)
-
+						fmt.Println(string(yamlBytes))
 					} else if strings.ToLower(*getProject.outputFormat) == "json" {
 						jsonBytes, err := json.MarshalIndent(project, "", "   ")
 						if err != nil {
 							return errors.New(err.Error())
 						}
-
-						jsonString := string(jsonBytes)
-
-						fmt.Println(jsonString)
-
+						fmt.Println(string(jsonBytes))
 					} else {
-						creationDateInt64, err := strconv.ParseInt(project.CreationDate, 10, 64)
-						if err != nil {
-							panic(err)
-						}
-						tm := time.Unix(0, creationDateInt64)
-
-						fmt.Fprintln(w, project.ProjectName+"\t"+tm.Format("2006-01-02T15:04:05Z07:00"))
-
+						fmt.Fprintln(w, project.ProjectName+"\t"+parseCreationDate(project.CreationDate))
 					}
 				}
-
 			}
 			w.Flush()
 		}
 		return nil
 	},
+}
+
+func parseCreationDate(creationDate string) string {
+
+	const na = "n/a"
+	if creationDate == "" {
+		return na
+	}
+	creationDateInt64, err := strconv.ParseInt(creationDate, 10, 64)
+	if err != nil {
+		logging.PrintLog("Failed to parse Creation Date", logging.InfoLevel)
+		return na
+	}
+	tm := time.Unix(0, creationDateInt64)
+	return tm.Format("2006-01-02T15:04:05Z07:00")
 }
 
 func init() {

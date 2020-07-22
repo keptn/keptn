@@ -67,7 +67,7 @@ keptn generate docs --dir=/some/directory`,
 		// generate docs
 		fmt.Println("Generating docs now...")
 		doc.GenMarkdownTreeCustom(cmd.Root(), outputDir, prepender, linkHandler)
-		fmt.Printf("Docs have been written to %s!\n", outputDir)
+		fmt.Printf("Docs have been written to: %s\n", outputDir)
 
 		return nil
 	},

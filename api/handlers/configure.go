@@ -2,10 +2,11 @@ package handlers
 
 import (
 	"fmt"
+	"path/filepath"
+
 	"github.com/keptn/keptn/api/restapi/operations/configuration"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
-	"path/filepath"
 
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -124,7 +125,7 @@ func restartBridgePod(l *keptnutils.Logger) error {
 	}
 
 	return k8s.CoreV1().Pods("keptn").DeleteCollection(&metav1.DeleteOptions{}, metav1.ListOptions{
-		LabelSelector: "run=bridge",
+		LabelSelector: "app.kubernetes.io/name=bridge",
 	})
 }
 

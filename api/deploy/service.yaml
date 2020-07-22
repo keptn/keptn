@@ -37,8 +37,6 @@ spec:
               value: http://event-broker
             - name: DATASTORE_URI
               value: http://mongodb-datastore:8080
-            - name: OPENSHIFT_ROUTE_SERVICE_URI
-              value: http://openshift-route-service:8081
             - name: SECRET_TOKEN
               valueFrom:
                 secretKeyRef:
