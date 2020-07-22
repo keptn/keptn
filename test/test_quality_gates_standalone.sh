@@ -216,16 +216,16 @@ if [[ $RETRY == $RETRY_MAX ]]; then
   # exit 1 - Todo - see below
 fi
 
-# ToDo: there is no response here right now, but in fact dynatrace-sli-service should send a note...
-echo $response | grep "No event returned"
+# okay, evaluation-done event retrieved, parse it
+echo $response | jq .
 
-if [[ $? -ne 0 ]]; then
-  # print logs of dynatrace-sli-service
-  kubectl -n keptn logs svc/dynatrace-sli-service
-  echo "Expected an 'No event returned' in the response, but got"
-  echo $response
-  exit 1
-fi
+# validate the response
+verify_using_jq "$response" ".source" "lighthouse-service"
+verify_using_jq "$response" ".type" "sh.keptn.events.evaluation-done"
+verify_using_jq "$response" ".data.project" "${PROJECT}"
+verify_using_jq "$response" ".data.stage" "hardening"
+verify_using_jq "$response" ".data.service" "${SERVICE}"
+verify_using_jq "$response" ".data.result" "fail"
 
 ########################################################################################################################
 # Testcase 4: Run tests with Dynatrace credentials (tenant and api token) set
