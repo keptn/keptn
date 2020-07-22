@@ -100,7 +100,7 @@ For more information, please follow the installation guide [Install Keptn](https
 `,
 	Example: `keptn install # install on Kubernetes
 keptn install --platform=openshift --use-case=continuous-delivery # install continuous-delivery on Openshift
-keptn install --platform=kubernetes --keptn-api-service-type=NodePort # install on a Kubernetes instance with gateway NodePort`,
+keptn install --platform=kubernetes --endpoint-service-type=NodePort # install on a Kubernetes instance with gateway NodePort`,
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 
@@ -108,7 +108,7 @@ keptn install --platform=kubernetes --keptn-api-service-type=NodePort # install 
 		if val, ok := apiServiceTypeToID[*installParams.ApiServiceTypeInput]; ok {
 			installParams.ApiServiceType = val
 		} else {
-			return errors.New("value of 'keptn-api-service-type' flag is unknown. Supported values are " +
+			return errors.New("value of 'endpoint-service-type' flag is unknown. Supported values are " +
 				"[" + ClusterIP.String() + "," + LoadBalancer.String() + "," + NodePort.String() + "]")
 		}
 
@@ -286,8 +286,8 @@ func init() {
 	installParams.UseCaseInput = installCmd.Flags().StringP("use-case", "u", "",
 		"The use case to install Keptn for ["+ContinuousDelivery.String()+","+QualityGates.String()+"]")
 
-	installParams.ApiServiceTypeInput = installCmd.Flags().StringP("keptn-api-service-type", "",
-		ClusterIP.String(), "Installation options for the api-service type ["+ClusterIP.String()+","+
+	installParams.ApiServiceTypeInput = installCmd.Flags().StringP("endpoint-service-type", "",
+		ClusterIP.String(), "Installation options for the endpoint-service type ["+ClusterIP.String()+","+
 			LoadBalancer.String()+","+NodePort.String()+"]")
 
 	installParams.ChartRepoURL = installCmd.Flags().StringP("chart-repo", "",
