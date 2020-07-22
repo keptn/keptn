@@ -29,7 +29,7 @@ RUN if [ ! -z "$debugBuild" ]; then export BUILDFLAGS='-gcflags "all=-N -l"'; fi
 COPY . .
 
 ENV REPLACE="version: ${version}"
-RUN sed -i "s/version: develop/${REPLACE}/g" /go/src/github.com/keptn/keptn/api/swagger.yaml
+RUN sed -i "s/version: develop/${REPLACE}/g" /go/src/github.com/keptn/keptn/mongodb-datastore/swagger.yaml
 
 # Build the command inside the container.
 # (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
