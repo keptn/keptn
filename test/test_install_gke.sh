@@ -17,7 +17,7 @@ echo "{}" > creds.json # empty credentials file
 echo "Installing keptn on cluster"
 
 # Install keptn (using the develop version, which should point the :latest docker images)
-keptn install --chart-repo="${KEPTN_INSTALLER_REPO}" --creds=creds.json --verbose --use-case=continuous-delivery --keptn-api-service-type=LoadBalancer
+keptn install --chart-repo="${KEPTN_INSTALLER_REPO}" --creds=creds.json --verbose --use-case=continuous-delivery --endpoint-service-type=LoadBalancer
 verify_test_step $? "keptn install failed"
 
 # authenticate at Keptn API
