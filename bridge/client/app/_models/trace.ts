@@ -178,7 +178,8 @@ class Trace {
   }
 
   static fromJSON(data: any) {
-    return Object.assign(new this, data, { labels: new Map(data.labels), plainEvent: JSON.parse(JSON.stringify(data)) });
+    data.data.labels = new Map(Object.entries(data.data.labels??{}));
+    return Object.assign(new this, data, { plainEvent: JSON.parse(JSON.stringify(data)) });
   }
 }
 
