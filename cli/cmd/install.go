@@ -197,7 +197,7 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 				if err := kube.CheckKubeServerVersion(KubeServerVersionConstraints); err != nil {
 					logging.PrintLog(err.Error(), logging.VerboseLevel)
 					logging.PrintLog("See https://keptn.sh/docs/"+keptnReleaseDocsURL+"/installation/k8s-support/ for details.", logging.VerboseLevel)
-					return errors.New(`Keptn requires Kubernetes server version: ` + KubeServerVersionConstraints)
+					return fmt.Errorf("Failed to check kubernetes server version: %w", err)
 				}
 			}
 
