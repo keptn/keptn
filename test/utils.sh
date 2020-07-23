@@ -27,7 +27,7 @@ function auth_at_keptn() {
   done
 
   if [[ $RETRY == $RETRY_MAX ]]; then
-    print_error "Authentication at http://$ENDPOINT unsuccessful"
+    print_error "Authentication at $ENDPOINT unsuccessful"
     exit 1
   fi
 }
