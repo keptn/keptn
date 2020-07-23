@@ -12,9 +12,9 @@ function auth_at_keptn() {
   RETRY=0
   RETRY_MAX=5
 
-  echo "Authenticating at http://$ENDPOINT"
+  echo "Authenticating at $ENDPOINT"
   while [[ $RETRY -lt $RETRY_MAX ]]; do
-    keptn auth --endpoint=http://$ENDPOINT --api-token=$API_TOKEN
+    keptn auth --endpoint=$ENDPOINT --api-token=$API_TOKEN
 
     if [[ $? -eq 0 ]]; then
       echo "Successfully authenticated at Keptn API!"
