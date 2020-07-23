@@ -23,7 +23,8 @@ sleep 30
 
 KEPTN_API_URL=api.keptn.127.0.0.1.nip.io
 KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)
-keptn auth --endpoint=http://$KEPTN_API_URL/api --api-token=$KEPTN_API_TOKEN
+auth_at_keptn $KEPTN_API_URL $KEPTN_API_TOKEN
+#keptn auth --endpoint=http://$KEPTN_API_URL/api --api-token=$KEPTN_API_TOKEN
 
 # verify that the keptn CLI has successfully authenticated
 echo "Checking that keptn is authenticated..."
