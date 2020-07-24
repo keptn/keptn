@@ -11,6 +11,7 @@ import {Service} from "../_models/service";
 
 import {ApiService} from "./api.service";
 import {EventTypes} from "../_models/event-types";
+import DateUtil from "../_utils/date.utils";
 
 @Injectable({
   providedIn: 'root'
@@ -153,7 +154,7 @@ export class DataService {
         map(roots => roots.map(root => Root.fromJSON(root)))
       )
       .subscribe((roots: Root[]) => {
-        service.roots = [...roots||[], ...service.roots||[]].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
+        service.roots = [...roots||[], ...service.roots||[]].sort((a, b) => DateUtil.compareTime(a, b));
         this._roots.next(service.roots);
         roots.forEach(root => {
           this.updateApprovals(root);
@@ -209,7 +210,7 @@ export class DataService {
     if(root.traces.length > 0) {
       this._openApprovals.next(this._openApprovals.getValue().filter(approval => root.traces.indexOf(approval) < 0));
       if(root.traces[root.traces.length-1].type == EventTypes.APPROVAL_TRIGGERED)
-        this._openApprovals.next([...this._openApprovals.getValue(), root.traces[root.traces.length-1]].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()));
+        this._openApprovals.next([...this._openApprovals.getValue(), root.traces[root.traces.length-1]].sort((a, b) => DateUtil.compareTime(a, b)));
     }
   }
 }

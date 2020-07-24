@@ -1,4 +1,5 @@
 import * as moment from "moment";
+import {Trace} from "../_models/trace";
 
 export default class DateUtil {
   static getDurationFormatted(start, end) {
@@ -40,5 +41,9 @@ export default class DateUtil {
       nextWeek : 'dddd [at] HH:mm',
       sameElse : 'YYYY-MM-DD HH:mm'
     };
+  }
+
+  static compareTime(a: Trace, b: Trace) {
+    return new Date(b.time).getTime() - new Date(a.time).getTime();
   }
 }
