@@ -25,10 +25,6 @@ describe('KtbSelectableTileComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create an instance', () => {
-    expect(component).toBeTruthy();
-  });
-
   it('should add and remove the selected state', () => {
     let selectableTileDebugElement = fixture.debugElement.query(By.directive(KtbSelectableTileComponent));
     let selectableTileInstance = selectableTileDebugElement.componentInstance;
