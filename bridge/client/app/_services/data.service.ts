@@ -154,7 +154,7 @@ export class DataService {
         map(roots => roots.map(root => Root.fromJSON(root)))
       )
       .subscribe((roots: Root[]) => {
-        service.roots = [...roots||[], ...service.roots||[]].sort((a, b) => DateUtil.compareTime(a, b));
+        service.roots = [...roots||[], ...service.roots||[]].sort((a, b) => DateUtil.compareTraceTimes(a, b));
         this._roots.next(service.roots);
         roots.forEach(root => {
           this.updateApprovals(root);
@@ -210,7 +210,7 @@ export class DataService {
     if(root.traces.length > 0) {
       this._openApprovals.next(this._openApprovals.getValue().filter(approval => root.traces.indexOf(approval) < 0));
       if(root.traces[root.traces.length-1].type == EventTypes.APPROVAL_TRIGGERED)
-        this._openApprovals.next([...this._openApprovals.getValue(), root.traces[root.traces.length-1]].sort((a, b) => DateUtil.compareTime(a, b)));
+        this._openApprovals.next([...this._openApprovals.getValue(), root.traces[root.traces.length-1]].sort((a, b) => DateUtil.compareTraceTimes(a, b)));
     }
   }
 }

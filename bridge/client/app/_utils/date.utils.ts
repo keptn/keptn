@@ -43,7 +43,7 @@ export default class DateUtil {
     };
   }
 
-  static compareTime(a: Trace, b: Trace) {
+  static compareTraceTimes(a: Trace, b: Trace) {
     return new Date(b.time).getTime() - new Date(a.time).getTime();
   }
 }
