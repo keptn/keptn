@@ -34,10 +34,7 @@ export class ApiService {
     let url = `${this._baseUrl}/`;
     return this.http
       .get<any>(url, { headers: this.defaultHeaders })
-      .pipe(
-        catchError(this.handleError<any>('getBridgeVersion')),
-        map(res => res.version),
-      );
+      .pipe(map(res => res.version));
   }
 
   public getKeptnVersion(): Observable<any> {
@@ -45,7 +42,6 @@ export class ApiService {
     return this.http
       .get<any>(url, { headers: this.defaultHeaders.append('Access-Control-Allow-Origin', '*') })
       .pipe(
-        catchError(this.handleError<any>('getKeptnVersion')),
         map(res => res.toString()),
         map(res => res.substring(res.lastIndexOf("version: ")+9)),
         map(res => res.substring(0, res.indexOf("\n"))),
@@ -64,8 +60,7 @@ export class ApiService {
     if(this.isVersionCheckEnabled()) {
       let url = `${this._baseUrl}/version.json`;
       return this.http
-        .get<any>(url, { headers: this.defaultHeaders })
-        .pipe(catchError(this.handleError<any>('getAvailableVersions')));
+        .get<any>(url, { headers: this.defaultHeaders });
     } else {
       return of(null);
     }
@@ -74,29 +69,25 @@ export class ApiService {
   public getProjects(): Observable<ProjectResult> {
     let url = `${this._baseUrl}/configuration-service/v1/project?disableUpstreamSync=true`;
     return this.http
-      .get<ProjectResult>(url, { headers: this.defaultHeaders })
-      .pipe(catchError(this.handleError<ProjectResult>('getProjects')));
+      .get<ProjectResult>(url, { headers: this.defaultHeaders });
   }
 
   public getProjectResources(projectName): Observable<Resource[]> {
     let url = `${this._baseUrl}/configuration-service/v1/project/${projectName}/resource`;
     return this.http
-      .get<Resource[]>(url, { headers: this.defaultHeaders })
-      .pipe(catchError(this.handleError<Resource[]>('getProjectResources')));
+      .get<Resource[]>(url, { headers: this.defaultHeaders });
   }
 
   public getStages(projectName): Observable<Stage[]> {
     let url = `${this._baseUrl}/configuration-service/v1/project/${projectName}/stage`;
     return this.http
-      .get<Stage[]>(url, { headers: this.defaultHeaders })
-      .pipe(catchError(this.handleError<Stage[]>('getStages')));
+      .get<Stage[]>(url, { headers: this.defaultHeaders });
   }
 
   public getServices(projectName, stageName): Observable<ServiceResult> {
     let url = `${this._baseUrl}/configuration-service/v1/project/${projectName}/stage/${stageName}/service`;
     return this.http
-      .get<ServiceResult>(url, { headers: this.defaultHeaders })
-      .pipe(catchError(this.handleError<ServiceResult>('getServices')));
+      .get<ServiceResult>(url, { headers: this.defaultHeaders });
   }
 
   public getRoots(projectName: string, serviceName: string, fromTime?: string): Observable<HttpResponse<EventResult>> {
@@ -104,8 +95,7 @@ export class ApiService {
     if(fromTime)
       url += `&fromTime=${fromTime}`;
     return this.http
-      .get<EventResult>(url, { headers: this.defaultHeaders, observe: 'response' })
-      .pipe(catchError(this.handleError<HttpResponse<EventResult>>('getRoots')));
+      .get<EventResult>(url, { headers: this.defaultHeaders, observe: 'response' });
   }
 
   public getTraces(contextId: string, projectName?: string, fromTime?: string): Observable<HttpResponse<EventResult>> {
@@ -115,8 +105,7 @@ export class ApiService {
     if(fromTime)
       url += `&fromTime=${fromTime}`;
     return this.http
-      .get<EventResult>(url, { headers: this.defaultHeaders, observe: 'response' })
-      .pipe(catchError(this.handleError<HttpResponse<EventResult>>('getTraces')));
+      .get<EventResult>(url, { headers: this.defaultHeaders, observe: 'response' });
   }
 
   public getEvaluationResults(projectName: string, serviceName: string, stageName: string, source: string, fromTime?: string) {
@@ -124,8 +113,7 @@ export class ApiService {
     if(fromTime)
       url += `&fromTime=${fromTime}`;
     return this.http
-      .get<EventResult>(url, { headers: this.defaultHeaders })
-      .pipe(catchError(this.handleError<EventResult>('getEvaluationResults')));
+      .get<EventResult>(url, { headers: this.defaultHeaders });
   }
 
   public sendApprovalEvent(approval: Trace, approve: boolean) {
@@ -149,20 +137,7 @@ export class ApiService {
           },
           "labels": labels
         })
-      }, { headers: this.defaultHeaders })
-      .pipe(catchError(this.handleError<any>('sendApprovalEvent')));
-  }
-
-  private handleError<T>(operation = 'operation', result?: T) {
-    return (error: any): Observable<T> => {
-      // TODO: handel error and show to the user?!
-      this.log(`${operation} failed: ${error.message}`);
-      return throwError(error);
-    };
-  }
-
-  private log(message: string) {
-    console.log(message);
+      }, { headers: this.defaultHeaders });
   }
 
 }
