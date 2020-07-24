@@ -472,8 +472,12 @@ func doInstallation() error {
 	}
 
 	logging.PrintLog("Keptn has been successfully set up on your cluster.", logging.InfoLevel)
-	logging.PrintLog("To connect the Keptn CLI with the Keptn API on your cluster, "+
-		"please refer to the instructions at: https://keptn.sh/docs/"+keptnReleaseDocsURL+"/operate/install", logging.InfoLevel)
+	logging.PrintLog("---------------------------------------------------", logging.InfoLevel)
+	logging.PrintLog("* To quickly access Keptn, you can use a port-forward and then authenticate your Keptn CLI (in a Linux shell):\n"+
+		" - kubectl -n keptn port-forward service/api-gateway-nginx 8080:80\n"+
+		" - keptn auth --endpoint=http://localhost:8080/api --api-token=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)\n", logging.InfoLevel)
+	logging.PrintLog("* To expose Keptn on a public endpoint, please continue with the installation guidelines provided at:\n"+
+		" - https://keptn.sh/docs/"+keptnReleaseDocsURL+"/operate/install#install-keptn\n", logging.InfoLevel)
 	return nil
 }
 
