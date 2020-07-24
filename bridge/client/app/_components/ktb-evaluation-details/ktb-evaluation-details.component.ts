@@ -22,6 +22,7 @@ import {DtChartSeriesVisibilityChangeEvent} from "@dynatrace/barista-components/
 import {DataService} from "../../_services/data.service";
 import DateUtil from "../../_utils/date.utils";
 import {Trace} from "../../_models/trace";
+import SearchUtil from "../../_utils/search.utils";
 
 @Component({
   selector: 'ktb-evaluation-details',
@@ -281,7 +282,7 @@ export class KtbEvaluationDetailsComponent implements OnInit {
         if(s.indicatorResult && this._heatmapOptions.yAxis[0].categories.indexOf(s.indicatorResult.value.metric) == -1)
           this._heatmapOptions.yAxis[0].categories.unshift(s.indicatorResult.value.metric);
         if(this._heatmapOptions.xAxis[0].categories.indexOf(time) == -1)
-          this._heatmapOptions.xAxis[0].categories.splice(this.binarySearch(this._heatmapOptions.xAxis[0].categories, time, (a, b) => moment(a).unix() - moment(b).unix()), 0, time);
+          this._heatmapOptions.xAxis[0].categories.splice(SearchUtil.binarySearch(this._heatmapOptions.xAxis[0].categories, time, (a, b) => moment(a).unix() - moment(b).unix()), 0, time);
       })
     )
 
@@ -306,27 +307,6 @@ export class KtbEvaluationDetailsComponent implements OnInit {
 
   getDuration(start, end) {
     return DateUtil.getDurationFormatted(start, end);
-  }
-
-  private binarySearch(ar, el, compare_fn) {
-    if(compare_fn(el, ar[0]) < 0)
-      return 0;
-    if(compare_fn(el, ar[ar.length-1]) > 0)
-      return ar.length;
-    let m = 0;
-    let n = ar.length - 1;
-    while (m <= n) {
-      let k = (n + m) >> 1;
-      let cmp = compare_fn(el, ar[k]);
-      if (cmp > 0) {
-        m = k + 1;
-      } else if(cmp < 0) {
-        n = k - 1;
-      } else {
-        return k;
-      }
-    }
-    return -m - 1;
   }
 
 }
