@@ -1,6 +1,6 @@
 import {ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
-import {filter, map, startWith, switchMap} from "rxjs/operators";
-import {Observable, Subscription, timer} from "rxjs";
+import {filter, map, startWith, switchMap, takeUntil} from "rxjs/operators";
+import {Observable, Subject, Subscription, timer} from "rxjs";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Location} from "@angular/common";
 
@@ -25,19 +25,16 @@ import {EVENT_LABELS} from "../_models/event-labels";
 })
 export class ProjectBoardComponent implements OnInit, OnDestroy {
 
+  private readonly unsubscribe$ = new Subject<void>();
+  private _tracesTimer: Subscription = Subscription.EMPTY;
+
   public project$: Observable<Project>;
   public openApprovals$: Observable<Trace[]>;
 
   public currentRoot: Root;
   public error: string = null;
 
-  private _projectSub: Subscription = Subscription.EMPTY;
-  private _routeSubs: Subscription = Subscription.EMPTY;
-  private _rootsSubs: Subscription = Subscription.EMPTY;
-  private _rootEventsTimer: Subscription = Subscription.EMPTY;
   private _rootEventsTimerInterval = 30;
-
-  private _tracesTimer: Subscription = Subscription.EMPTY;
   private _tracesTimerInterval = 10;
 
   public projectName: string;
@@ -54,81 +51,87 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   constructor(private _changeDetectorRef: ChangeDetectorRef, private router: Router, private location: Location, private route: ActivatedRoute, private dataService: DataService, private apiService: ApiService) { }
 
   ngOnInit() {
-    this._routeSubs = this.route.params.subscribe(params => {
-      if(params["shkeptncontext"]) {
-        this.contextId = params["shkeptncontext"];
-        this.apiService.getTraces(this.contextId)
-          .pipe(
-            map(response => response.body),
-            map(result => result.events||[]),
-            map(traces => traces.map(trace => Trace.fromJSON(trace)))
-          )
-          .subscribe((traces: Trace[]) => {
-            if(traces.length > 0) {
-              if(params["eventselector"]) {
-                let trace = traces.find((t: Trace) => t.data.stage == params["eventselector"] && !!t.getProject() && !!t.getService());
-                if(!trace)
-                  trace = traces.reverse().find((t: Trace) => t.type == params["eventselector"] && !!t.getProject() && !!t.getService());
+    this.route.params
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(params => {
+        if(params["shkeptncontext"]) {
+          this.contextId = params["shkeptncontext"];
+          this.apiService.getTraces(this.contextId)
+            .pipe(
+              map(response => response.body),
+              map(result => result.events||[]),
+              map(traces => traces.map(trace => Trace.fromJSON(trace)))
+            )
+            .pipe(takeUntil(this.unsubscribe$))
+            .subscribe((traces: Trace[]) => {
+              if(traces.length > 0) {
+                if(params["eventselector"]) {
+                  let trace = traces.find((t: Trace) => t.data.stage == params["eventselector"] && !!t.getProject() && !!t.getService());
+                  if(!trace)
+                    trace = traces.reverse().find((t: Trace) => t.type == params["eventselector"] && !!t.getProject() && !!t.getService());
 
-                if(trace)
-                  this.router.navigate(['/project', trace.getProject(), trace.getService(), trace.shkeptncontext, trace.id]);
-                else
-                  this.error = "trace";
+                  if(trace)
+                    this.router.navigate(['/project', trace.getProject(), trace.getService(), trace.shkeptncontext, trace.id]);
+                  else
+                    this.error = "trace";
+                } else {
+                  let trace = traces.find((t: Trace) => !!t.getProject() && !!t.getService());
+                  this.router.navigate(['/project', trace.getProject(), trace.getService(), trace.shkeptncontext]);
+                }
               } else {
-                let trace = traces.find((t: Trace) => !!t.getProject() && !!t.getService());
-                this.router.navigate(['/project', trace.getProject(), trace.getService(), trace.shkeptncontext]);
+                this.error = "trace";
               }
-            } else {
-              this.error = "trace";
-            }
-          });
-      } else {
-        this.projectName = params["projectName"];
-        this.serviceName = params["serviceName"];
-        this.contextId = params["contextId"];
-        this.eventId = params["eventId"];
-        this.currentRoot = null;
-
-        this.project$ = this.dataService.projects.pipe(
-          map(projects => projects ? projects.find(project => {
-            return project.projectName === params['projectName'];
-          }) : null)
-        );
-        this.openApprovals$ = this.dataService.openApprovals;
-
-        this._projectSub = this.project$.subscribe(project => {
-          if(project === undefined)
-            this.error = 'project';
-          this._changeDetectorRef.markForCheck();
-        }, error => {
-          this.error = 'projects';
-        });
-
-        this._rootsSubs.unsubscribe();
-        this._rootsSubs = this.dataService.roots.subscribe(roots => {
-          if(roots) {
-            if(!this.currentRoot)
-              this.currentRoot = roots.find(r => r.shkeptncontext == params["contextId"]);
-            this.eventTypes = this.eventTypes.concat(roots.map(r => r.type)).filter((r, i, a) => a.indexOf(r) === i);
-          }
-          if(this.currentRoot && !this.eventId)
-            this.eventId = this.currentRoot.traces[this.currentRoot.traces.length-1].id;
-        });
-
-        this._rootEventsTimer.unsubscribe();
-        this._rootEventsTimer = timer(0, this._rootEventsTimerInterval*1000)
-          .pipe(
-            startWith(0),
-            switchMap(() => this.project$),
-            filter(project => !!project && !!project.getServices())
-          )
-          .subscribe(project => {
-            project.getServices().forEach(service => {
-              this.dataService.loadRoots(project, service);
             });
-          });
-      }
-    });
+        } else {
+          this.projectName = params["projectName"];
+          this.serviceName = params["serviceName"];
+          this.contextId = params["contextId"];
+          this.eventId = params["eventId"];
+          this.currentRoot = null;
+
+          this.project$ = this.dataService.projects.pipe(
+            map(projects => projects ? projects.find(project => {
+              return project.projectName === params['projectName'];
+            }) : null)
+          );
+          this.openApprovals$ = this.dataService.openApprovals;
+
+          this.project$
+            .pipe(takeUntil(this.unsubscribe$))
+            .subscribe(project => {
+              if(project === undefined)
+                this.error = 'project';
+              this._changeDetectorRef.markForCheck();
+            }, error => {
+              this.error = 'projects';
+            });
+
+          this.dataService.roots
+            .pipe(takeUntil(this.unsubscribe$))
+            .subscribe(roots => {
+              if(roots) {
+                if(!this.currentRoot)
+                  this.currentRoot = roots.find(r => r.shkeptncontext == params["contextId"]);
+                this.eventTypes = this.eventTypes.concat(roots.map(r => r.type)).filter((r, i, a) => a.indexOf(r) === i);
+              }
+              if(this.currentRoot && !this.eventId)
+                this.eventId = this.currentRoot.traces[this.currentRoot.traces.length-1].id;
+            });
+
+          timer(0, this._rootEventsTimerInterval*1000)
+            .pipe(
+              startWith(0),
+              switchMap(() => this.project$),
+              filter(project => !!project && !!project.getServices())
+            )
+            .pipe(takeUntil(this.unsubscribe$))
+            .subscribe(project => {
+              project.getServices().forEach(service => {
+                this.dataService.loadRoots(project, service);
+              });
+            });
+        }
+      });
   }
 
   selectRoot(event: any): void {
@@ -242,10 +245,8 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this._projectSub.unsubscribe();
-    this._routeSubs.unsubscribe();
+    this.unsubscribe$.next();
     this._tracesTimer.unsubscribe();
-    this._rootEventsTimer.unsubscribe();
   }
 
 }

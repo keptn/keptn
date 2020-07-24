@@ -16,20 +16,24 @@ Heatmap(Highcharts);
 Treemap(Highcharts);
 
 import * as moment from 'moment';
-import {ChangeDetectorRef, Component, Input, OnInit} from '@angular/core';
+import {ChangeDetectorRef, Component, Input, OnDestroy, OnInit} from '@angular/core';
 import {DtChartSeriesVisibilityChangeEvent} from "@dynatrace/barista-components/chart";
 
 import {DataService} from "../../_services/data.service";
 import DateUtil from "../../_utils/date.utils";
 import {Trace} from "../../_models/trace";
 import SearchUtil from "../../_utils/search.utils";
+import {Subject} from "rxjs";
+import {takeUntil} from "rxjs/operators";
 
 @Component({
   selector: 'ktb-evaluation-details',
   templateUrl: './ktb-evaluation-details.component.html',
   styleUrls: ['./ktb-evaluation-details.component.scss']
 })
-export class KtbEvaluationDetailsComponent implements OnInit {
+export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
+
+  private readonly unsubscribe$ = new Subject<void>();
 
   public _evaluationColor = {
     'pass': '#7dc540',
@@ -161,12 +165,14 @@ export class KtbEvaluationDetailsComponent implements OnInit {
   ngOnInit() {
     if(this._evaluationData)
       this.dataService.loadEvaluationResults(this._evaluationData);
-    this.dataService.evaluationResults.subscribe((event) => {
-      if(this.evaluationData === event) {
-        this.updateChartData(event.data.evaluationHistory);
-        this._changeDetectorRef.markForCheck();
-      }
-    });
+    this.dataService.evaluationResults
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((event) => {
+        if(this.evaluationData === event) {
+          this.updateChartData(event.data.evaluationHistory);
+          this._changeDetectorRef.markForCheck();
+        }
+      });
   }
 
   updateChartData(evaluationHistory) {
@@ -307,6 +313,10 @@ export class KtbEvaluationDetailsComponent implements OnInit {
 
   getDuration(start, end) {
     return DateUtil.getDurationFormatted(start, end);
+  }
+
+  ngOnDestroy(): void {
+    this.unsubscribe$.next();
   }
 
 }

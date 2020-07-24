@@ -1,13 +1,17 @@
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, Input, OnDestroy, OnInit} from '@angular/core';
 import {HttpStateService} from "../../_services/http-state.service";
 import {HttpProgressState, HttpState} from "../../_models/http-progress-state";
+import {Subject} from "rxjs";
+import {takeUntil} from "rxjs/operators";
 
 @Component({
   selector: 'ktb-http-loading-bar',
   templateUrl: './ktb-http-loading-bar.component.html',
   styleUrls: ['./ktb-http-loading-bar.component.scss']
 })
-export class KtbHttpLoadingBarComponent implements OnInit {
+export class KtbHttpLoadingBarComponent implements OnInit, OnDestroy {
+
+  private readonly unsubscribe$ = new Subject<void>();
 
   private hideLoadingTimer;
   private animateLoadingBarInterval;
@@ -22,16 +26,18 @@ export class KtbHttpLoadingBarComponent implements OnInit {
   constructor(private httpStateService: HttpStateService) { }
 
   ngOnInit() {
-    this.httpStateService.state.subscribe((progress: HttpState) => {
-      if (progress && progress.url) {
-        if(!this.filterBy || progress.url.indexOf(this.filterBy) !== -1) {
-          if(progress.state === HttpProgressState.start)
-            this.showLoadingBar();
-          else
-            this.hideLoadingBar();
+    this.httpStateService.state
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((progress: HttpState) => {
+        if (progress && progress.url) {
+          if(!this.filterBy || progress.url.indexOf(this.filterBy) !== -1) {
+            if(progress.state === HttpProgressState.start)
+              this.showLoadingBar();
+            else
+              this.hideLoadingBar();
+          }
         }
-      }
-    });
+      });
   }
 
   showLoadingBar() {
@@ -67,6 +73,10 @@ export class KtbHttpLoadingBarComponent implements OnInit {
       else
         this.align = 'start';
     }
+  }
+
+  ngOnDestroy(): void {
+    this.unsubscribe$.next();
   }
 
 }
