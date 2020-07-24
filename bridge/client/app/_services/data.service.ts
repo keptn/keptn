@@ -112,7 +112,7 @@ export class DataService {
       ).subscribe((projects: Project[]) => {
         this._projects.next([...this._projects.getValue() ? this._projects.getValue() : [], ...projects]);
       }, (err) => {
-        this._projects.error(err);
+        this._projects.next([]);
       });
   }
 

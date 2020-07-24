@@ -19,17 +19,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
   public error: boolean = false;
 
   constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService) {
+    this.projects$ = this.dataService.projects;
   }
 
   ngOnInit() {
-    this.projects$ = this.dataService.projects;
-    this.projects$
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(projects => {
-        this.error = false;
-      }, error => {
-        this.error = true;
-      });
   }
 
   loadProjects() {

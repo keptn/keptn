@@ -1,10 +1,10 @@
-<div class="container" *ngIf="!error && !(projects$ | async)">
+<div class="container" *ngIf="!(projects$ | async)">
   <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
     <dt-loading-spinner></dt-loading-spinner>
     <p>Loading ...</p>
   </div>
 </div>
-<div class="container" *ngIf="error || (projects$ | async)?.length == 0">
+<div class="container" *ngIf="(projects$ | async)?.length == 0">
   <dt-empty-state>
     <dt-empty-state-item>
       <dt-empty-state-item-img>
