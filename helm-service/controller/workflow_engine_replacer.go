@@ -55,7 +55,7 @@ func getLocalDeploymentURI(project string, service string, stage string, deploym
 	return serviceURL
 }
 
-func sendDeploymentFinishedEvent(keptnHandler *keptnevents.Keptn, testStrategy string, deploymentStrategy keptnevents.DeploymentStrategy, image string, tag string, ingressHostnameSuffix string, protocol string, port string) error {
+func sendDeploymentFinishedEvent(keptnHandler *keptnevents.Keptn, testStrategy string, deploymentStrategy keptnevents.DeploymentStrategy, image string, tag string, labels map[string]string, ingressHostnameSuffix string, protocol string, port string) error {
 
 	source, _ := url.Parse("helm-service")
 	contentType := "application/json"
@@ -75,6 +75,7 @@ func sendDeploymentFinishedEvent(keptnHandler *keptnevents.Keptn, testStrategy s
 		DeploymentStrategy: deploymentStrategyOldIdentifier,
 		Image:              image,
 		Tag:                tag,
+		Labels:             labels,
 		DeploymentURILocal: getLocalDeploymentURI(keptnHandler.KeptnBase.Project, keptnHandler.KeptnBase.Service, keptnHandler.KeptnBase.Stage, deploymentStrategy, testStrategy),
 	}
 
