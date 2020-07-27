@@ -97,3 +97,24 @@ func TestAddResourceToProjectService(t *testing.T) {
 		t.Errorf(unexpectedErrMsg, err)
 	}
 }
+
+// TestAddResourceWhenArgsArePresent
+func TestAddResourceWhenArgsArePresent(t *testing.T) {
+
+	credentialmanager.MockAuthCreds = true
+
+	resourceFileName := "testResource.txt"
+	defer testResource(t, resourceFileName, "")()
+
+	cmd := fmt.Sprintf("add-resource --project=%s --stage=%s --service=%s --resource=%s "+
+		"-- resourceUri=%s --mock", "sockshop", "dev", "carts", resourceFileName, "resource/"+resourceFileName)
+	_, err := executeActionCommandC(cmd)	
+	if err == nil {
+		t.Errorf("Expected an error")	
+	}
+	got := err.Error()
+	expected := "accepts 0 arg(s), received 2"
+	if got != expected {
+		t.Errorf("Expected %q, got %q", expected, got)	
+	}
+}
