@@ -117,6 +117,21 @@ func AddOrigin(project string) error {
 		}
 	}
 
+	branches, err := GetBranches(project)
+	if err != nil {
+		return obfuscateErrorMessage(err, credentials)
+	}
+	for _, branch := range branches {
+		err := CheckoutBranch(project, branch, true)
+		if err != nil {
+			return obfuscateErrorMessage(err, credentials)
+		}
+		_, err = utils.ExecuteCommandInDirectory("git", []string{"push", "-u", "origin", "HEAD"}, projectConfigPath)
+		if err != nil {
+			return obfuscateErrorMessage(err, credentials)
+		}
+	}
+
 	return nil
 }
 
