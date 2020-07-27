@@ -27,7 +27,7 @@ export class ApiService {
   }
 
   constructor(private http: HttpClient) {
-    this._baseUrl = `/bridge/api`;
+    this._baseUrl = `/keptn/bridge/api`;
   }
 
   public getBridgeVersion(): Observable<any> {

@@ -50,12 +50,12 @@ data:
       }
     }
   keptn-endpoints.conf: |
-    rewrite ^/$ /bridge permanent;
-    rewrite ^/api$ /api/swagger-ui/ permanent;
+    rewrite ^/keptn$ /keptn/bridge permanent;
+    rewrite ^/keptn/api$ /keptn/api/swagger-ui/ permanent;
 
     # special configuration for /v1/auth to always use POST requests
-    location /api/v1/auth {
-      rewrite /api/v1/auth /v1/auth break;
+    location /keptn/api/v1/auth {
+      rewrite /keptn/api/v1/auth /v1/auth break;
 
       proxy_method POST;
       proxy_pass_request_body off;
@@ -67,8 +67,8 @@ data:
       proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    location /bridge {
-      rewrite /bridge(/.*) $1 break;
+    location /keptn/bridge {
+      rewrite /keptn/bridge(/.*) $1 break;
       proxy_pass http://bridge:8080;
       proxy_http_version 1.1;
       proxy_set_header X-Real-IP $remote_addr;
@@ -85,11 +85,11 @@ data:
         return 200 "OK\n";
     }
 
-    location /api/mongodb-datastore/swagger-ui/swagger.yaml {
+    location /keptn/api/mongodb-datastore/swagger-ui/swagger.yaml {
      # auth via backend (if the subrequest returns a 2xx response code, the access is allowed. If it returns 401 or 403,
      # the access is denied) before we store the file
      # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
-      rewrite /api/mongodb-datastore/(.*) /$1  break;
+      rewrite /keptn/api/mongodb-datastore/(.*) /$1  break;
       proxy_pass         http://mongodb-datastore:8080;
       proxy_redirect     off;
       proxy_set_header   Host $host;
@@ -99,13 +99,13 @@ data:
       proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    location  /api/mongodb-datastore {
+    location  /keptn/api/mongodb-datastore {
       # auth via backend (if the subrequest returns a 2xx response code, the access is allowed. If it returns 401 or 403,
       # the access is denied) before we store the file
       # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
-      auth_request               /api/v1/auth;
+      auth_request               /keptn/api/v1/auth;
 
-      rewrite /api/mongodb-datastore/(.*) /$1  break;
+      rewrite /keptn/api/mongodb-datastore/(.*) /$1  break;
       proxy_pass         http://mongodb-datastore:8080;
       proxy_redirect     off;
       proxy_set_header   Host $host;
@@ -115,12 +115,12 @@ data:
       proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    location /api/configuration-service/swagger-ui/swagger.yaml {
+    location /keptn/api/configuration-service/swagger-ui/swagger.yaml {
       # auth via backend (if the subrequest returns a 2xx response code, the access is allowed. If it returns 401 or 403,
       # the access is denied) before we store the file
       # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.
 
-      rewrite /api/configuration-service/(.*) /$1  break;
+      rewrite /keptn/api/configuration-service/(.*) /$1  break;
       proxy_pass         http://configuration-service:8080;
       proxy_redirect     off;
       proxy_set_header   Host $host;
@@ -130,13 +130,13 @@ data:
       proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    location  /api/configuration-service {
+    location  /keptn/api/configuration-service {
       # auth via backend (if the subrequest returns a 2xx response code, the access is allowed. If it returns 401 or 403,
       # the access is denied) before we store the file
       # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
-      auth_request               /api/v1/auth;
+      auth_request               /keptn/api/v1/auth;
 
-      rewrite /api/configuration-service/(.*) /$1  break;
+      rewrite /keptn/api/configuration-service/(.*) /$1  break;
       proxy_pass         http://configuration-service:8080;
       proxy_redirect     off;
       proxy_set_header   Host $host;
@@ -146,9 +146,9 @@ data:
       proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    location /api {
-      rewrite /api/(.*) /$1 break;
-      rewrite /api / break;
+    location /keptn/api {
+      rewrite /keptn/api/(.*) /$1 break;
+      rewrite /keptn/api / break;
       proxy_pass http://api-service:8080;
       proxy_http_version 1.1;
       proxy_set_header X-Real-IP $remote_addr;
