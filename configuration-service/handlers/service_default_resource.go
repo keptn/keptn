@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
 	utils "github.com/keptn/go-utils/pkg/lib"
@@ -38,7 +39,7 @@ func PostProjectProjectNameServiceServiceNameResourceHandlerFunc(params service_
 	}
 
 	for _, branch := range branches {
-		if branch == "master" || branch == "" {
+		if branch == "master" {
 			continue
 		}
 		if !common.ServiceExists(params.ProjectName, branch, params.ServiceName, false) {

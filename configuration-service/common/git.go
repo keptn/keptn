@@ -3,6 +3,7 @@ package common
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/url"
 	"os"
 	"strings"
@@ -108,30 +109,49 @@ func AddOrigin(project string) error {
 		repoURI := getRepoURI(credentials.RemoteURI, credentials.User, credentials.Token)
 		_, err = utils.ExecuteCommandInDirectory("git", []string{"remote", "add", "origin", repoURI}, projectConfigPath)
 		if err != nil {
-			return obfuscateErrorMessage(err, credentials)
-		}
-
-		_, err = utils.ExecuteCommandInDirectory("git", []string{"push", "origin", "--mirror"}, projectConfigPath)
-		if err != nil {
+			removeRemoteOrigin(project)
 			return obfuscateErrorMessage(err, credentials)
 		}
 	}
+	if err := pushOrigins(project, credentials, true); err != nil {
+		removeRemoteOrigin(project)
+		return fmt.Errorf("failed to push to origin: %v", err)
+	}
+	if err := pushOrigins(project, credentials, false); err != nil {
+		removeRemoteOrigin(project)
+		return fmt.Errorf("failed to push to origin: %v", err)
+	}
+	return nil
+}
 
+func removeRemoteOrigin(project string) error {
+	projectConfigPath := config.ConfigDir + "/" + project
+	_, err := utils.ExecuteCommandInDirectory("git", []string{"remote", "remove", "origin"}, projectConfigPath)
+	return err
+}
+
+func pushOrigins(project string, credentials *GitCredentials, dryRun bool) error {
+
+	projectConfigPath := config.ConfigDir + "/" + project
 	branches, err := GetBranches(project)
 	if err != nil {
 		return obfuscateErrorMessage(err, credentials)
 	}
+
 	for _, branch := range branches {
 		err := CheckoutBranch(project, branch, true)
 		if err != nil {
 			return obfuscateErrorMessage(err, credentials)
 		}
-		_, err = utils.ExecuteCommandInDirectory("git", []string{"push", "-u", "origin", "HEAD"}, projectConfigPath)
+		args := []string{"push", "-u", "origin", "HEAD"}
+		if dryRun {
+			args = append(args, "--dry-run")
+		}
+		_, err = utils.ExecuteCommandInDirectory("git", args, projectConfigPath)
 		if err != nil {
 			return obfuscateErrorMessage(err, credentials)
 		}
 	}
-
 	return nil
 }
 
@@ -322,7 +342,7 @@ func GetBranches(project string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	branches := strings.Split(out, "\n")
+	branches := strings.Split(strings.TrimSpace(out), "\n")
 
 	return branches, nil
 }
