@@ -327,11 +327,14 @@ func (r *Remediation) sendStartEvaluationEvent() error {
 	source, _ := url.Parse("remediation-service")
 	contentType := "application/json"
 
+	waitTime := getWaitTime()
 	startEvaluationEventData := &keptn.StartEvaluationEventData{
 		Project:      r.Keptn.KeptnBase.Project,
 		Service:      r.Keptn.KeptnBase.Service,
 		Stage:        r.Keptn.KeptnBase.Stage,
 		Labels:       r.Keptn.KeptnBase.Labels,
+		Start:        time.Now().Add(-waitTime).Format(time.RFC3339),
+		End:          time.Now().Format(time.RFC3339),
 		TestStrategy: "real-user",
 	}
 

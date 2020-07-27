@@ -17,15 +17,15 @@ echo "{}" > creds.json # empty credentials file
 echo "Installing keptn on cluster"
 
 # Install keptn (using the develop version, which should point the :latest docker images)
-keptn install --chart-repo="${KEPTN_INSTALLER_REPO}" --creds=creds.json --verbose --use-case=continuous-delivery --keptn-api-service-type=LoadBalancer
+keptn install --chart-repo="${KEPTN_INSTALLER_REPO}" --creds=creds.json --verbose --use-case=continuous-delivery --endpoint-service-type=LoadBalancer
 verify_test_step $? "keptn install failed"
 
 # authenticate at Keptn API
-KEPTN_API_URL=$(kubectl -n keptn get service api-gateway-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+KEPTN_API_URL=http://$(kubectl -n keptn get service api-gateway-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)
-keptn auth --endpoint=http://$KEPTN_API_URL/api --api-token=$KEPTN_API_TOKEN
 
-verify_test_step $? "Could not authenticate at Keptn API"
+auth_at_keptn $KEPTN_API_URL $KEPTN_API_TOKEN
+
 
 # install public-gateway.istio-system
 kubectl apply -f - <<EOF
@@ -50,7 +50,7 @@ EOF
 INGRESS_IP=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 kubectl create configmap -n keptn ingress-config --from-literal=ingress_hostname_suffix=${INGRESS_IP}.xip.io --from-literal=ingress_port=80 --from-literal=ingress_protocol=http --from-literal=ingress_gateway=public-gateway.istio-system -oyaml --dry-run | kubectl replace -f -
 
-kubectl delete pod -n keptn -lrun=helm-service
+kubectl delete pod -n keptn -lapp.kubernetes.io/name=helm-service
 
 sleep 15
 

@@ -20,7 +20,7 @@ verify_deployment_in_namespace "istio-sidecar-injector" "istio-system"
 echo "Installing keptn on cluster"
 echo "{}" > creds.json # empty credentials file
 # Install keptn (using the develop version, which should point the :latest docker images)
-keptn install --chart-repo="${KEPTN_INSTALLER_REPO}" --platform=kubernetes --creds=creds.json --keptn-api-service-type=NodePort --verbose --use-case=continuous-delivery
+keptn install --chart-repo="${KEPTN_INSTALLER_REPO}" --platform=kubernetes --creds=creds.json --endpoint-service-type=NodePort --verbose --use-case=continuous-delivery
 
 verify_test_step $? "keptn install failed"
 
@@ -47,7 +47,8 @@ API_PORT=$(kubectl get svc api-gateway-nginx -n keptn -o jsonpath='{.spec.ports[
 INTERNAL_NODE_IP=$(kubectl get nodes -o jsonpath='{ $.items[0].status.addresses[?(@.type=="InternalIP")].address }')
 KEPTN_ENDPOINT=http://${INTERNAL_NODE_IP}:${API_PORT}/api
 KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)
-keptn auth --endpoint=$KEPTN_ENDPOINT --api-token=$KEPTN_API_TOKEN
+auth_at_keptn $KEPTN_ENDPOINT $KEPTN_API_TOKEN
+#keptn auth --endpoint=$KEPTN_ENDPOINT --api-token=$KEPTN_API_TOKEN
 
 verify_test_step $? "Could not authenticate at Keptn API"
 

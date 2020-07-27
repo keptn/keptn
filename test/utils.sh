@@ -6,6 +6,32 @@ function print_error() {
   echo "[keptn|ERROR] $(timestamp) $1"
 }
 
+function auth_at_keptn() {
+  ENDPOINT=$1
+  API_TOKEN=$2
+  RETRY=0
+  RETRY_MAX=5
+
+  echo "Authenticating at $ENDPOINT"
+  while [[ $RETRY -lt $RETRY_MAX ]]; do
+    keptn auth --endpoint=$ENDPOINT --api-token=$API_TOKEN
+
+    if [[ $? -eq 0 ]]; then
+      echo "Successfully authenticated at Keptn API!"
+      break
+    else
+      RETRY=$[$RETRY+1]
+      echo "Retry: ${RETRY}/${RETRY_MAX} - Wait 10s ..."
+      sleep 10
+    fi
+  done
+
+  if [[ $RETRY == $RETRY_MAX ]]; then
+    print_error "Authentication at $ENDPOINT unsuccessful"
+    exit 1
+  fi
+}
+
 function send_start_evaluation_event() {
   PROJECT=$1
   STAGE=$2

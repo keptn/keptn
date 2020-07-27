@@ -213,6 +213,23 @@ span.italic {
   font-weight: bold;
 }
 
+.dt-icon.event-icon {
+  width: 20px;
+  height: 20px;
+
+  &.error {
+    fill: $error-color;
+  }
+
+  &.warning {
+    fill: $orange-400;
+  }
+
+  &.success {
+    fill: $cta-color-active;
+  }
+}
+
 [fxFLex] {
   min-height: 0;
 }

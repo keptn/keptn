@@ -3,7 +3,7 @@ mongodb:
 
 nats:
   nameOverride: keptn-nats-cluster
-  cluster.replicas: 1
+  nats.cluster.replicas: 3
 
   natsbox:
     enabled: false

@@ -131,7 +131,7 @@ else
   kubectl -n keptn create secret generic bridge-credentials --from-literal="BASIC_AUTH_USERNAME=$BRIDGE_USERNAME" --from-literal="BASIC_AUTH_PASSWORD=$BRIDGE_PASSWORD" -oyaml --dry-run | kubectl replace -f -
 fi
 
-CONFIG_SERVICE_POD=$(kubectl get pods -n keptn -lrun=configuration-service -ojsonpath='{.items[0].metadata.name}')
+CONFIG_SERVICE_POD=$(kubectl get pods -n keptn -lapp.kubernetes.io/name=configuration-service -ojsonpath='{.items[0].metadata.name}')
 kubectl cp ./config-svc-backup/* keptn/$CONFIG_SERVICE_POD:/data -c configuration-service
 
 kubectl cp ./reset-git-repos.sh keptn/$CONFIG_SERVICE_POD:/ -c configuration-service
@@ -144,7 +144,7 @@ MONGO_TARGET_PASSWORD=$(kubectl get secret mongodb-credentials -n keptn -ojsonpa
 
 ./upgradecollections $MONGODB_SOURCE_URL "mongodb://user:${MONGO_TARGET_PASSWORD}@${MONGODB_TARGET_URL}" $CONFIGURATION_SERVICE_URL
 
-if [[ $USECASE == "continuous-delivery" ]]; then
+if [[ $USE_CASE == "continuous-delivery" ]]; then
   # set values for the ingress-config to reflect the previous installation
   kubectl create configmap -n keptn ingress-config --from-literal=ingress_hostname_suffix=${KEPTN_DOMAIN} --from-literal=ingress_port="" --from-literal=ingress_protocol="" --from-literal=istio_gateway="public-gateway.istio-system" -oyaml --dry-run | kubectl replace -f -
 fi
@@ -183,8 +183,8 @@ kubectl -n keptn get svc prometheus-sli-service
   fi
 
 # delete all pods in keptn namespace to make sure all secret references are updated
-kubectl delete pods -n keptn --all
+kubectl delete pods -n keptn -l 'app notin (upgrader)'
 wait_for_all_pods_in_namespace "keptn"
 
-kubectl delete ClusterRoleBinding keptn-rbac
-kubectl delete ClusterRoleBinding rbac-service-account
+kubectl delete ClusterRoleBinding keptn-rbac --ignore-not-found
+kubectl delete ClusterRoleBinding rbac-service-account --ignore-not-found

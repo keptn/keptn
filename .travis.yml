@@ -146,6 +146,7 @@ gke_full_part1: &gke_full_part1
     - test/utils/download_and_install_keptn_cli.sh
     # create gke cluster on gcloud
     - test/utils/gke_create_cluster.sh
+    - test/utils/gke_authenticate_at_cluster.sh
   script:
     # test installation on gcloud
     - test/test_install_gke.sh
@@ -156,11 +157,9 @@ gke_full_part1: &gke_full_part1
     - test/test_new_artifact.sh
     - test/test_delete_project.sh
     - test/test_self_healing.sh
-    - test/test_keptn_uninstall.sh
   after_success:
     # delete google kubernetes cluster only on success (in case of an error we want to be able to dig into the cluster)
     - echo "Tests were successful, cleaning up the cluster now..."
-    - test/utils/gke_delete_cluster.sh
   after_failure:
     # print some debug info
     - echo "Keptn Installation Log:"
@@ -181,14 +180,14 @@ gke_full_part2: &gke_full_part2
     - echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
     - gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
     - test/utils/download_and_install_keptn_cli.sh
-    # create gke cluster on gcloud
-    - test/utils/gke_create_cluster.sh
+    # authenticate at gke cluster
+    - test/utils/gke_authenticate_at_cluster.sh
+    - test/utils/gke_authenticate_at_keptn.sh
   script:
-    # test installation on gcloud
-    - test/test_install_gke.sh
     - export PROJECT=sockshop
     - test/test_self_healing_scaling.sh
     - test/test_delivery_assistant.sh
+    - test/test_keptn_uninstall.sh
   after_success:
     # delete google kubernetes cluster only on success (in case of an error we want to be able to dig into the cluster)
     - echo "Tests were successful, cleaning up the cluster now..."

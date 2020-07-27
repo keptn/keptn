@@ -185,7 +185,7 @@ paths:
         200:
           description: Bridge credentials have been retrieved
           schema:
-            $ref: "#/parameters/configureBridge"
+            $ref: "configure_model.yaml#/definitions/configureBridge"
         400:
           description: Bridge credentials could not be retrieved
           schema:
