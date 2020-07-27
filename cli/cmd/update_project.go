@@ -79,7 +79,6 @@ For more information about updating projects or upstream repositories, please go
 		if !mocking {
 			eventContext, err := projectHandler.UpdateConfigurationServiceProject(project)
 			if err != nil {
-				fmt.Println("Update project was unsuccessful")
 				return fmt.Errorf("Update project was unsuccessful. %s", *err.Message)
 			}
 
