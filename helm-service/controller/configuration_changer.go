@@ -148,6 +148,7 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event,
 
 		image := ""
 		tag := ""
+		labels := e.Labels
 
 		for k, v := range e.ValuesCanary {
 			if k == "image" {
@@ -160,7 +161,7 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event,
 		}
 		var shkeptncontext string
 		ce.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
-		if err := sendDeploymentFinishedEvent(keptnHandler, testStrategy, deploymentStrategy, image, tag, mesh.GetIngressHostnameSuffix(), mesh.GetIngressProtocol(), mesh.GetIngressPort()); err != nil {
+		if err := sendDeploymentFinishedEvent(keptnHandler, testStrategy, deploymentStrategy, image, tag, labels, mesh.GetIngressHostnameSuffix(), mesh.GetIngressProtocol(), mesh.GetIngressPort()); err != nil {
 			c.keptnHandler.Logger.Error(fmt.Sprintf("Cannot send deployment finished event: %s", err.Error()))
 			return err
 		}
