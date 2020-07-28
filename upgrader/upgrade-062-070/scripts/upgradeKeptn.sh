@@ -35,7 +35,7 @@ MONGODB_TARGET_URL=${MONGODB_TARGET_URL:-"mongodb.keptn:27017/keptn"}
 
 print_debug "Upgrading from Keptn 0.6.2 to $KEPTN_VERSION"
 
-KEPTN_API_URL=https://api.keptn.$(kubectl get cm keptn-domain -n keptn -ojsonpath={.data.app_domain})
+KEPTN_API_URL=https://$(kubectl get cm keptn-domain -n keptn -ojsonpath={.data.app_domain})/api
 KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 -d)
 KEPTN_DOMAIN=$(kubectl get cm keptn-domain -n keptn -ojsonpath={.data.app_domain})
 
@@ -158,28 +158,28 @@ kubectl -n keptn get svc dynatrace-service
       DT_API_TOKEN=$(kubectl get secret dynatrace -n keptn -ojsonpath={.data.DT_API_TOKEN} | base64 -d)
 
       kubectl -n keptn create secret generic dynatrace --from-literal="KEPTN_API_URL=${KEPTN_API_URL}" --from-literal="KEPTN_API_TOKEN=${KEPTN_API_TOKEN}" --from-literal="DT_API_TOKEN=${DT_API_TOKEN}" --from-literal="DT_TENANT=${DT_TENANT}" -oyaml --dry-run | kubectl replace -f -
-      kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/dynatrace-service/release-0.7.0/deploy/manifests/dynatrace-service/dynatrace-service.yaml
+      kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/dynatrace-service/0.8.0/deploy/service.yaml
   fi
 
 kubectl -n keptn get svc dynatrace-sli-service
 
   if [[ $? == '0' ]]; then
       print_debug "Dynatrace-sli-service detected. Upgrading to 0.5.0"
-      kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/dynatrace-sli-service/release-0.3.2/deploy/service.yaml
+      kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/dynatrace-sli-service/0.5.0/deploy/service.yaml
   fi
 
 kubectl -n keptn get svc prometheus-service
 
   if [[ $? == '0' ]]; then
       print_debug "Prometheus-service detected. Upgrading to 0.3.5"
-      kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/prometheus-service/release-0.3.3/deploy/service.yaml
+      kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/prometheus-service/0.3.5/deploy/service.yaml
   fi
 
 kubectl -n keptn get svc prometheus-sli-service
 
   if [[ $? == '0' ]]; then
       print_debug "Prometheus-sli-service detected. Upgrading to 0.2.2"
-      kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/prometheus-sli-service/release-0.2.2/deploy/service.yaml
+      kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/prometheus-sli-service/0.2.2/deploy/service.yaml
   fi
 
 # delete all pods in keptn namespace to make sure all secret references are updated
