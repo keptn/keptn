@@ -118,7 +118,7 @@ func GetEventHandlerFunc(params event.GetEventParams, principal *models.Principa
 	}
 
 	if cloudEvent == nil {
-		return sendInternalErrorForGet(fmt.Errorf("No "+params.Type+" event found for Keptn context: "+params.KeptnContext), logger)
+		return sendNotFoundErrorForGet(fmt.Errorf("No "+params.Type+" event found for Keptn context: "+params.KeptnContext), logger)
 	}
 
 	eventByte, err := json.Marshal(cloudEvent)
@@ -143,6 +143,11 @@ func sendInternalErrorForPost(err error, logger *keptnutils.Logger) *event.PostE
 func sendInternalErrorForGet(err error, logger *keptnutils.Logger) *event.GetEventDefault {
 	logger.Error(err.Error())
 	return event.NewGetEventDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+}
+
+func sendNotFoundErrorForGet(err error, logger *keptnutils.Logger) *event.GetEventDefault {
+	logger.Error(err.Error())
+	return event.NewGetEventDefault(404).WithPayload(&models.Error{Code: 404, Message: swag.String(err.Error())})
 }
 
 func addEventContextInCE(ceData interface{}, eventContext models.EventContext) interface{} {
