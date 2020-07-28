@@ -147,7 +147,7 @@ export class ApiService {
             "result": approve ? ApprovalStates.APPROVED : ApprovalStates.DECLINED,
             "status": "succeeded"
           },
-          labels
+          "labels": labels
         })
       }, { headers: this.defaultHeaders })
       .pipe(catchError(this.handleError<any>('sendApprovalEvent')));
