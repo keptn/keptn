@@ -288,7 +288,7 @@ func getDeleteInfoMessage(keptnHandler *keptn.Keptn) (string, error) {
 	msg := "\n"
 	for _, stage := range shipyard.Stages {
 		namespace := keptnHandler.KeptnBase.Project + "-" + stage.Name
-		msg += fmt.Sprintf(" - Namespace %s is not managed by Keptn anymore and not deleted. This may cause problems if "+
+		msg += fmt.Sprintf(" - A potentially created namespace %s is not managed by Keptn anymore and not deleted. This may cause problems if "+
 			"a project with the same name is created later. "+
 			"If you would like to delete this namespace, please execute "+
 			"'kubectl delete ns %s'\n", namespace, namespace)
