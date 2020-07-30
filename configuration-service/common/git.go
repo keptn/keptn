@@ -112,16 +112,13 @@ func AddOrigin(project string) error {
 			removeRemoteOrigin(project)
 			return obfuscateErrorMessage(err, credentials)
 		}
+
+		if err := setUpstreamsAndPush(project, credentials, repoURI); err != nil {
+			removeRemoteOrigin(project)
+			return fmt.Errorf("failed to set upstream: %v\nKeptn requires an uninitialized repo", err)
+		}
 	}
-	if err := pushOrigins(project, credentials, true); err != nil {
-		removeRemoteOrigin(project)
-		return fmt.Errorf("failed to push to origin: %v", err)
-	}
-	if err := pushOrigins(project, credentials, false); err != nil {
-		removeRemoteOrigin(project)
-		return fmt.Errorf("failed to push to origin: %v", err)
-	}
-	return nil
+	return err
 }
 
 func removeRemoteOrigin(project string) error {
@@ -130,8 +127,7 @@ func removeRemoteOrigin(project string) error {
 	return err
 }
 
-func pushOrigins(project string, credentials *GitCredentials, dryRun bool) error {
-
+func setUpstreamsAndPush(project string, credentials *GitCredentials, repoURI string) error {
 	projectConfigPath := config.ConfigDir + "/" + project
 	branches, err := GetBranches(project)
 	if err != nil {
@@ -143,11 +139,7 @@ func pushOrigins(project string, credentials *GitCredentials, dryRun bool) error
 		if err != nil {
 			return obfuscateErrorMessage(err, credentials)
 		}
-		args := []string{"push", "-u", "origin", "HEAD"}
-		if dryRun {
-			args = append(args, "--dry-run")
-		}
-		_, err = utils.ExecuteCommandInDirectory("git", args, projectConfigPath)
+		_, err = utils.ExecuteCommandInDirectory("git", []string{"push", "--set-upstream", repoURI, branch}, projectConfigPath)
 		if err != nil {
 			return obfuscateErrorMessage(err, credentials)
 		}
