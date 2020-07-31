@@ -27,7 +27,7 @@ var crServiceCmd = &cobra.Command{
 	Short: "Creates a new service",
 	Long: `Creates a new service with the provided name in the specified project.
 
-Please note: This command is different from keptn onboard service (which requires a helm chart).
+**Note:** This command is different from keptn onboard service which requires a Helm chart.
 `,
 	Example:      `keptn create service carts --project=sockshop`,
 	SilenceUsage: true,

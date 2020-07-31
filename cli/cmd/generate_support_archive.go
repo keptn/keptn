@@ -75,8 +75,8 @@ type metaData struct {
 // generateSupportArchiveCmd implements the generate support-archive command
 var generateSupportArchiveCmd = &cobra.Command{
 	Use:   "support-archive",
-	Short: "Generates a support archive.",
-	Long:  `Generates a support archive containing information of the Keptn installation.`,
+	Short: "Generates a support archive containing all logs",
+	Long:  `Generates a support archive containing information of the Keptn installation and logs from the services`,
 	Example: `keptn generate support-archive
 keptn generate support-archive --dir=/some/directory`,
 	SilenceUsage: true,

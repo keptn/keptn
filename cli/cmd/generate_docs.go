@@ -26,14 +26,15 @@ slug: %s
 // generateDocsCmd implements the generate docs command
 var generateDocsCmd = &cobra.Command{
 	Use:   "docs",
-	Short: "Generates Markdown documentation for the keptn CLI.",
-	Long: `Generates Markdown documentation for the keptn CLI.
+	Short: "Generates the markdown documentation for the Keptn CLI",
+	Long: `Generates markdown documentation for the Keptn CLI.
 
-This command can be used to create an up-to-date documentation of Keptn's command-line interface for https://keptn.sh.
+This command can be used to create an up-to-date documentation of the Keptn CLI and as published on: https://keptn.sh/docs
 
-It creates one Markdown file per command, suitable for rendering in Hugo.
+It creates one markdown file per command, suitable for rendering in Hugo.
 `,
 	Example: `keptn generate docs
+
 keptn generate docs --dir=/some/directory`,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {

@@ -96,11 +96,13 @@ var installCmd = &cobra.Command{
 	Long: `The Keptn CLI allows installing Keptn on any Kubernetes derivate to which your kube config is pointing to, and on OpenShift.
 
 For more information, please follow the installation guide [Install Keptn](https://keptn.sh/docs/` + keptnReleaseDocsURL + `/operate/install/operate/install/#install-keptn)
-
 `,
-	Example: `keptn install # install on Kubernetes
-keptn install --platform=openshift --use-case=continuous-delivery # install continuous-delivery on Openshift
-keptn install --platform=kubernetes --endpoint-service-type=NodePort # install on a Kubernetes instance with gateway NodePort`,
+	Example: `keptn install                                                        # install on Kubernetes
+
+keptn install --platform=openshift --use-case=continuous-delivery    # install continuous delivery on Openshift
+
+keptn install --platform=kubernetes --endpoint-service-type=NodePort # install on Kubernetes with gateway NodePort
+`,
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 
@@ -125,12 +127,12 @@ keptn install --platform=kubernetes --endpoint-service-type=NodePort # install o
 			installParams.UseCase = val
 		} else {
 			return errors.New("value of 'use-case' flag is unknown. Supported values are " +
-				"[" + ContinuousDelivery.String() + "," + QualityGates.String() + "]")
+				"[" + ContinuousDelivery.String() + "]")
 		}
 
 		// Mark the quality-gates use case as deprecated - this is now the default option
 		if *installParams.UseCaseInput == QualityGates.String() {
-			logging.PrintLog("NOTE: The --use-case=quality-gates option is now deprecated and is now a synonym for the default installation of Keptn.", logging.InfoLevel)
+			logging.PrintLog("Note: The --use-case=quality-gates option is now deprecated and is now a synonym for the default installation of Keptn.", logging.InfoLevel)
 		}
 
 		var chartRepoURL string
@@ -278,13 +280,13 @@ func init() {
 	installParams = installCmdParams{}
 
 	installParams.PlatformIdentifier = installCmd.Flags().StringP("platform", "p", "kubernetes",
-		"The platform to run keptn on ["+kubernetes+","+openshift+"]")
+		"The platform to run Keptn on ["+kubernetes+","+openshift+"]")
 
 	installParams.ConfigFilePath = installCmd.Flags().StringP("creds", "c", "",
 		"Specify a JSON file containing cluster information needed for the installation (this allows skipping user prompts to execute a *silent* Keptn installation)")
 
 	installParams.UseCaseInput = installCmd.Flags().StringP("use-case", "u", "",
-		"The use case to install Keptn for ["+ContinuousDelivery.String()+","+QualityGates.String()+"]")
+		"The use case to install Keptn for: "+ContinuousDelivery.String())
 
 	installParams.ApiServiceTypeInput = installCmd.Flags().StringP("endpoint-service-type", "",
 		ClusterIP.String(), "Installation options for the endpoint-service type ["+ClusterIP.String()+","+
@@ -473,11 +475,11 @@ func doInstallation() error {
 
 	logging.PrintLog("Keptn has been successfully set up on your cluster.", logging.InfoLevel)
 	logging.PrintLog("---------------------------------------------------", logging.InfoLevel)
-	fmt.Println("* To quickly access Keptn, you can use a port-forward and then authenticate your Keptn CLI (in a Linux shell):\n"+
-		" - kubectl -n keptn port-forward service/api-gateway-nginx 8080:80\n"+
+	fmt.Println("* To quickly access Keptn, you can use a port-forward and then authenticate your Keptn CLI (in a Linux shell):\n" +
+		" - kubectl -n keptn port-forward service/api-gateway-nginx 8080:80\n" +
 		" - keptn auth --endpoint=http://localhost:8080/api --api-token=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)\n")
-	fmt.Println("* To expose Keptn on a public endpoint, please continue with the installation guidelines provided at:\n"+
-		" - https://keptn.sh/docs/"+keptnReleaseDocsURL+"/operate/install#install-keptn\n")
+	fmt.Println("* To expose Keptn on a public endpoint, please continue with the installation guidelines provided at:\n" +
+		" - https://keptn.sh/docs/" + keptnReleaseDocsURL + "/operate/install#install-keptn\n")
 	return nil
 }
 

@@ -17,12 +17,12 @@ var configMng *config.CLIConfigManager
 // setConfig implements the config command
 var setConfigCmd = &cobra.Command{
 	Use:   "config",
-	Short: "Allows to set the CLI configuration",
-	Long: `Allows to set the CLI configuration, which is stored in $HOME/.keptn/config.
-Therefore, this command takes a key and a new value as arguments. 
-	
-Example:
-	keptn set config AutomaticVersionCheck false`,
+	Short: "Sets flags of the CLI configuration",
+	Long: `Sets flags of the CLI configuration, which is stored in $HOME/.keptn/config.
+
+*	This command takes a key and a new value as arguments. 
+`,
+	Example:      `keptn set config AutomaticVersionCheck false`,
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 2 {

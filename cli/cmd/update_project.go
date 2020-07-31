@@ -27,10 +27,11 @@ var upProjectCmd = &cobra.Command{
 	Use:   "project PROJECTNAME --git-user=GIT_USER --git-token=GIT_TOKEN --git-remote-url=GIT_REMOTE_URL",
 	Short: "Updates an existing Keptn project",
 	Long: `Updates an existing Keptn project with the provided name. 
+
 Updating a shipyard file is not possible.
 
-By executing the *update project* command, Keptn will add the provided upstream repository to the existing internal Git repository that is used to maintain all project-related resources. 
-To upstream this internal Git repository to a remote repository, the Git user (*--git-user*), an access token (*--git-token*), and the remote URL (*--git-remote-url*) are required.
+By executing the update project command, Keptn will add the provided upstream repository to the existing internal Git repository that is used to maintain all project-related resources. 
+To upstream this internal Git repository to a remote repository, the Git user (--git-user), an access token (--git-token), and the remote URL (--git-remote-url) are required.
 
 For more information about updating projects or upstream repositories, please go to [Manage Keptn](https://keptn.sh/docs/` + keptnReleaseDocsURL + `/manage/)
 `,

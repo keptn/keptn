@@ -19,8 +19,7 @@ var delProjectCmd = &cobra.Command{
 	Short: "Deletes a project identified by project name",
 	Long: `Deletes a project identified by project name. 
 
-**Known Limitations**:
-
+**Notes:**
 * If a Git upstream is configured for this project, the referenced upstream repository (e.g., on GitHub) will not be deleted. 
 * Services that have been deployed to the Kubernetes cluster are not deleted.
 * Namespaces that have been created on the Kuberentes cluster are not deleted.

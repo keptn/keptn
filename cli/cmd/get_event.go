@@ -22,11 +22,8 @@ import (
 var getEventCmd = &cobra.Command{
 	Use:     "event [eventType]",
 	Aliases: []string{"events"},
-	Short:   `Get event in combination with "eventType" allows to retrieve a Keptn event`,
-	Long: `Get event in combination with "eventType" allows to retrieve a Keptn event. Get event without subcommand cannot be used.
-
-Example:
-	keptn get event [eventType]`,
+	Short:   `Returns the latest Keptn event specified by event type`,
+	Long:    `Returns the latest Keptn event specified by event type. The event type is defined here: https://github.com/keptn/spec/blob/0.1.4/cloudevents.md`,
 }
 
 func init() {

@@ -30,11 +30,13 @@ var onboardServiceParams *onboardServiceCmdParams
 var serviceCmd = &cobra.Command{
 	Use:   "service SERVICENAME --project=PROJECTNAME --chart=FILEPATH",
 	Short: "Onboards a new service and its Helm chart to a project",
-	Long: `Onboards a new service and its Helm chart to the provided project. Therefore, this command 
-takes a folder to a Helm chart or an already packed Helm chart as .tgz.
+	Long: `Onboards a new service and its Helm chart to the provided project. 
+Therefore, this command takes a folder to a Helm chart or an already packed Helm chart as .tgz.
 `,
 	Example: `keptn onboard service SERVICENAME --project=PROJECTNAME --chart=FILEPATH
-keptn onboard service SERVICENAME --project=PROJECTNAME --chart=HELM_CHART.tgz`,
+
+keptn onboard service SERVICENAME --project=PROJECTNAME --chart=HELM_CHART.tgz
+`,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {

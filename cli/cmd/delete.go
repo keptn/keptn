@@ -7,8 +7,8 @@ import (
 // deleteCmd represents the delete command
 var deleteCmd = &cobra.Command{
 	Use:   "delete [project]",
-	Short: "delete is the parent command of \"delete project\"",
-	Long:  `delete is the parent command of \"delete project\". \"delete\" without subcommand cannot be used.`,
+	Short: "Deletes a project",
+	Long:  `Deletes a project`,
 }
 
 func init() {

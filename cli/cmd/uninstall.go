@@ -23,14 +23,13 @@ var uninstallCmd = &cobra.Command{
 
 This command does *not* delete: 
 
-* Istio
 * Dynatrace monitoring
 * Prometheus monitoring
 * Any (third-party) service installed in addition to Keptn (e.g., notification-service, slackbot-service, ...)
 
 Besides, deployed services and the configuration on the Git upstream (i.e., GitHub, GitLab, or Bitbucket) are not deleted. To clean-up created projects and services, please see [Delete a project](https://keptn.sh/docs/` + keptnReleaseDocsURL + `/manage/project/#delete-a-project).
 
-**Note:** This command requires a *Kubernetes current context* pointing to the cluster where Keptn should get uninstalled.
+**Note:** This command requires a *Kubernetes current context* pointing to the cluster where Keptn should get uninstalled from.
 `,
 	Example:      `keptn uninstall`,
 	SilenceUsage: true,
