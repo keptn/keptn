@@ -2,7 +2,7 @@
 
 [Keptn 0.7](https://medium.com/keptn/advanced-production-support-with-keptn-0-7-d24f9cac8805) improves the core use cases of continuous delivery and automated operations by providing enhanced stage control in the delivery workflow and by allowing the integration of custom remediation (aka. action) providers. Internally, Keptn has been hardened by restricting its permissions to the set of required ones, and it does not install Istio nor NGINX during the setup process. 
 
-**The five key announcements of Keptn 0.7:**
+**The six key announcements of Keptn 0.7:**
 
 :rocket: *Delivery Assistant - [SPEC 26](https://github.com/keptn/spec/pull/26)*: To better support the continuous delivery workflow of production-like use cases, Keptn 0.7 introduces the concept of manual deployment approvals for certain stages and it improves stage visibility in the Keptn Bridge.
 
@@ -66,6 +66,7 @@ Implemented **Keptn spec** version: [0.1.4](https://github.com/keptn/spec/tree/0
 - Implemented get projects, services, stages, and metadata [#1624](https://github.com/keptn/keptn/issues/1624)
 - Enforce username and password when configuring Keptn Bridge [#1893](https://github.com/keptn/keptn/issues/1893)
 - Improved the output of Keptn CLI for troubleshooting [#1928](https://github.com/keptn/keptn/issues/1928)
+- Aligned version check in CLI according to implementation in Bridge [#1930](https://github.com/keptn/keptn/issues/1930)
 
 </p>
 </details>
@@ -119,17 +120,21 @@ Implemented **Keptn spec** version: [0.1.4](https://github.com/keptn/spec/tree/0
 - Notify user of new available Keptn Bridge in UI [#1547](https://github.com/keptn/keptn/issues/1547)
 - Filter events in the list of root events [#1342](https://github.com/keptn/keptn/issues/1342)
 - Unit tests for Bridge [#1486](https://github.com/keptn/keptn/issues/1486)
+- Fixed issue of evaluations without SLO that resulted in a broken HeatMap [#2081](https://github.com/keptn/keptn/issues/2081)
 
 </p>
 </details>
 
 ## Fixed Issues
+
 - Project with two stages broke after lighthouse run at second stage [#1695](https://github.com/keptn/keptn/issues/1695)
 - After `keptn configure domain` an already exposed bridge was no longer accessible [#1752](https://github.com/keptn/keptn/issues/1752)
 - Eventbroker-go crashed with out-of-memory [#1901](https://github.com/keptn/keptn/issues/1901)
 - MongoDB performed incomplete read of message header [#1907](https://github.com/keptn/keptn/issues/1907)
 - MongoDB failed to start with certain PVs [#1519](https://github.com/keptn/keptn/issues/1519)
 - Keptn CLI used wrong Kubernetes Context/Profile [#1942](https://github.com/keptn/keptn/issues/1942)
+- Git-upstream fails when doing a `keptn update project` and changing files in the repo [#2125](https://github.com/keptn/keptn/issues/2125)
+- Delivery assistant is not passing labels from previous events [#2137](https://github.com/keptn/keptn/issues/2137)
 - *OpenShift*: Start of api-gateway-nginx failed with permission denied error [#1951](https://github.com/keptn/keptn/issues/1951)
 
 ## Development Process / Testing
@@ -139,6 +144,11 @@ Implemented **Keptn spec** version: [0.1.4](https://github.com/keptn/spec/tree/0
 - Platform/integration test for manual approval use-case [#1750](https://github.com/keptn/keptn/issues/1750)
 - Platform/integration test for self-healing use-case [#1846](https://github.com/keptn/keptn/issues/1846)
 - Improve integration test for quality gates use-case [#1591](https://github.com/keptn/keptn/issues/1591)
+
+## Addressed Vulnerability Bulletins
+
+- Keptn is shipping an outdated and unsupported version of Istio, [Keptn-Vulnerability-2020-001](https://keptn.sh/docs/news/vulnerability_bulletins/keptn-sec-2020-001/)
+- RBAC cluster-admin role given to Keptn services by default, [Keptn-Vulnerability-2020-002](https://keptn.sh/docs/news/vulnerability_bulletins/keptn-sec-2020-002/)
 
 ## Good to know / Known Limitations
 
