@@ -4,10 +4,17 @@ kind: Deployment
 metadata:
   name: configuration-service
   namespace: keptn
+  labels:
+    app.kubernetes.io/name: configuration-service
+    app.kubernetes.io/instance: keptn
+    app.kubernetes.io/part-of: keptn-keptn
+    app.kubernetes.io/component: control-plane
+    app.kubernetes.io/version: develop
 spec:
   selector:
     matchLabels:
-      run: configuration-service
+      app.kubernetes.io/name: configuration-service
+      app.kubernetes.io/instance: keptn
   replicas: 1
   # recreate the deployment if anything changes (we can not do a rolling upgrade of this deployment as we use a volume)
   strategy:
@@ -15,7 +22,11 @@ spec:
   template:
     metadata:
       labels:
-        run: configuration-service
+        app.kubernetes.io/name: configuration-service
+        app.kubernetes.io/instance: keptn
+        app.kubernetes.io/part-of: keptn-keptn
+        app.kubernetes.io/component: control-plane
+        app.kubernetes.io/version: develop
     spec:
       serviceAccountName: keptn-configuration-service
       containers:
@@ -91,11 +102,15 @@ metadata:
   name: configuration-service
   namespace: keptn
   labels:
-    run: configuration-service
+    app.kubernetes.io/name: configuration-service
+    app.kubernetes.io/instance: keptn
+    app.kubernetes.io/part-of: keptn-keptn
+    app.kubernetes.io/component: control-plane
 spec:
   ports:
   - port: 8080
     targetPort: 8080
     protocol: TCP
   selector:
-    run: configuration-service
+    app.kubernetes.io/name: configuration-service
+    app.kubernetes.io/instance: keptn

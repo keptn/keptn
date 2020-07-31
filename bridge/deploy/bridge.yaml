@@ -4,15 +4,26 @@ kind: Deployment
 metadata:
   name: bridge
   namespace: keptn
+  labels:
+    app.kubernetes.io/name: bridge
+    app.kubernetes.io/instance: keptn
+    app.kubernetes.io/part-of: keptn-keptn
+    app.kubernetes.io/component: control-plane
+    app.kubernetes.io/version: develop
 spec:
   selector:
     matchLabels:
-      run: bridge
+      app.kubernetes.io/name: bridge
+      app.kubernetes.io/instance: keptn
   replicas: 1
   template:
     metadata:
       labels:
-        run: bridge
+        app.kubernetes.io/name: bridge
+        app.kubernetes.io/instance: keptn
+        app.kubernetes.io/part-of: keptn-keptn
+        app.kubernetes.io/component: control-plane
+        app.kubernetes.io/version: develop
     spec:
       serviceAccountName: keptn-default
       containers:
@@ -47,11 +58,15 @@ metadata:
   name: bridge
   namespace: keptn
   labels:
-    run: bridge
+    app.kubernetes.io/name: bridge
+    app.kubernetes.io/instance: keptn
+    app.kubernetes.io/part-of: keptn-keptn
+    app.kubernetes.io/component: control-plane
 spec:
   ports:
   - port: 8080
     targetPort: 3000
     protocol: TCP
   selector:
-    run: bridge
+    app.kubernetes.io/name: bridge
+    app.kubernetes.io/instance: keptn

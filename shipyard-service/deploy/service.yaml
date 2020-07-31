@@ -4,15 +4,26 @@ kind: Deployment
 metadata:
   name: shipyard-service
   namespace: keptn
+  labels:
+    app.kubernetes.io/name: shipyard-service
+    app.kubernetes.io/instance: keptn
+    app.kubernetes.io/part-of: keptn-keptn
+    app.kubernetes.io/component: control-plane
+    app.kubernetes.io/version: develop
 spec:
   selector:
     matchLabels:
-      run: shipyard-service
+      app.kubernetes.io/name: shipyard-service
+      app.kubernetes.io/instance: keptn
   replicas: 1
   template:
     metadata:
       labels:
-        run: shipyard-service
+        app.kubernetes.io/name: shipyard-service
+        app.kubernetes.io/instance: keptn
+        app.kubernetes.io/part-of: keptn-keptn
+        app.kubernetes.io/component: control-plane
+        app.kubernetes.io/version: develop
     spec:
       serviceAccountName: keptn-default
       containers:
@@ -72,10 +83,14 @@ metadata:
   name: shipyard-service
   namespace: keptn
   labels:
-    run: shipyard-service
+    app.kubernetes.io/name: shipyard-service
+    app.kubernetes.io/instance: keptn
+    app.kubernetes.io/part-of: keptn-keptn
+    app.kubernetes.io/component: control-plane
 spec:
   ports:
   - port: 8080
     protocol: TCP
   selector:
-    run: shipyard-service
+    app.kubernetes.io/name: shipyard-service
+    app.kubernetes.io/instance: keptn

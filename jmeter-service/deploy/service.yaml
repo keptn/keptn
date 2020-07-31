@@ -3,15 +3,26 @@ kind: Deployment
 metadata:
   name: jmeter-service
   namespace: keptn
+  labels:
+    app.kubernetes.io/name: jmeter-service
+    app.kubernetes.io/instance: keptn
+    app.kubernetes.io/part-of: keptn-keptn
+    app.kubernetes.io/component: control-plane
+    app.kubernetes.io/version: develop
 spec:
   selector:
     matchLabels:
-      run: jmeter-service
+      app.kubernetes.io/name: jmeter-service
+      app.kubernetes.io/instance: keptn
   replicas: 1
   template:
     metadata:
       labels:
-        run: jmeter-service
+        app.kubernetes.io/name: jmeter-service
+        app.kubernetes.io/instance: keptn
+        app.kubernetes.io/part-of: keptn-keptn
+        app.kubernetes.io/component: control-plane
+        app.kubernetes.io/version: develop
     spec:
       containers:
       - name: jmeter-service
@@ -58,10 +69,14 @@ metadata:
   name: jmeter-service
   namespace: keptn
   labels:
-    run: jmeter-service
+    app.kubernetes.io/name: jmeter-service
+    app.kubernetes.io/instance: keptn
+    app.kubernetes.io/part-of: keptn-keptn
+    app.kubernetes.io/component: control-plane
 spec:
   ports:
   - port: 8080
     protocol: TCP
   selector:
-    run: jmeter-service
+    app.kubernetes.io/name: jmeter-service
+    app.kubernetes.io/instance: keptn

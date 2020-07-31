@@ -5,6 +5,11 @@ metadata:
   creationTimestamp: null
   name: configuration-volume
   namespace: keptn
+  labels:
+    app.kubernetes.io/name: configuration-volume
+    app.kubernetes.io/instance: keptn
+    app.kubernetes.io/part-of: keptn-keptn
+    app.kubernetes.io/component: control-plane
 spec:
   accessModes:
   - ReadWriteOnce

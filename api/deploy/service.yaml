@@ -4,15 +4,26 @@ kind: Deployment
 metadata:
   name: api-service
   namespace: keptn
+  labels:
+    app.kubernetes.io/name: api-service
+    app.kubernetes.io/instance: keptn
+    app.kubernetes.io/part-of: keptn-keptn
+    app.kubernetes.io/component: control-plane
+    app.kubernetes.io/version: develop
 spec:
   selector:
     matchLabels:
-      run: api-service
+      app.kubernetes.io/name: api-service
+      app.kubernetes.io/instance: keptn
   replicas: 1
   template:
     metadata:
       labels:
-        run: api-service
+        app.kubernetes.io/name: api-service
+        app.kubernetes.io/instance: keptn
+        app.kubernetes.io/part-of: keptn-keptn
+        app.kubernetes.io/component: control-plane
+        app.kubernetes.io/version: develop
     spec:
       containers:
         - name: api-service
@@ -54,7 +65,10 @@ metadata:
   name: api-service
   namespace: keptn
   labels:
-    run: api-service
+    app.kubernetes.io/name: api-service
+    app.kubernetes.io/instance: keptn
+    app.kubernetes.io/part-of: keptn-keptn
+    app.kubernetes.io/component: control-plane
 spec:
   ports:
     - port: 8080
@@ -62,4 +76,5 @@ spec:
       targetPort: 8080
       protocol: TCP
   selector:
-    run: api-service
+    app.kubernetes.io/name: api-service
+    app.kubernetes.io/instance: keptn
