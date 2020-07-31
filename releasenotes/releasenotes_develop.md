@@ -3,7 +3,7 @@
 
 ## Keptn Specification
 
-Implemented **Keptn spec** version: [0.1.4](https://github.com/keptn/spec/tree/0.1.4)
+Implemented **Keptn spec** version: [0.2.0](https://github.com/keptn/spec/tree/0.2.0)
 
 ## New Features
 
@@ -25,6 +25,7 @@ Implemented **Keptn spec** version: [0.1.4](https://github.com/keptn/spec/tree/0
 <details><summary>CLI</summary>
 <p>
 
+- `keptn add-resource` checks number of arguments before executing the command [#1735](https://github.com/keptn/keptn/issues/1735)
 
 </p>
 </details>
@@ -57,6 +58,8 @@ Implemented **Keptn spec** version: [0.1.4](https://github.com/keptn/spec/tree/0
 </details>
 
 ## Fixed Issues
+
+- CLI: kubectl version check incorrectly reports if no connection to cluster could be made [#1944](https://github.com/keptn/keptn/issues/1944)
 
 ## Development Process / Testing
 

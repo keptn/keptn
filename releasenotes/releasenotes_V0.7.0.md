@@ -126,6 +126,7 @@ Implemented **Keptn spec** version: [0.1.4](https://github.com/keptn/spec/tree/0
 </details>
 
 ## Fixed Issues
+
 - Project with two stages broke after lighthouse run at second stage [#1695](https://github.com/keptn/keptn/issues/1695)
 - After `keptn configure domain` an already exposed bridge was no longer accessible [#1752](https://github.com/keptn/keptn/issues/1752)
 - Eventbroker-go crashed with out-of-memory [#1901](https://github.com/keptn/keptn/issues/1901)
