@@ -95,7 +95,7 @@ var installCmd = &cobra.Command{
 	Short: "Installs Keptn on a Kubernetes cluster",
 	Long: `The Keptn CLI allows installing Keptn on any Kubernetes derivate to which your kube config is pointing to, and on OpenShift.
 
-For more information, please follow the installation guide [Install Keptn](https://keptn.sh/docs/` + keptnReleaseDocsURL + `/operate/install/operate/install/#install-keptn)
+For more information, please follow the installation guide [Install Keptn](https://keptn.sh/docs/` + keptnReleaseDocsURL + `/operate/install/#install-keptn)
 `,
 	Example: `keptn install                                                        # install on Kubernetes
 
@@ -198,7 +198,7 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 			if *installParams.PlatformIdentifier != "openshift" {
 				if err := kube.CheckKubeServerVersion(KubeServerVersionConstraints); err != nil {
 					logging.PrintLog(err.Error(), logging.VerboseLevel)
-					logging.PrintLog("See https://keptn.sh/docs/"+keptnReleaseDocsURL+"/installation/k8s-support/ for details.", logging.VerboseLevel)
+					logging.PrintLog("See https://keptn.sh/docs/"+keptnReleaseDocsURL+"/operate/k8s_support/ for details.", logging.VerboseLevel)
 					return fmt.Errorf("Failed to check kubernetes server version: %w", err)
 				}
 			}
@@ -283,10 +283,10 @@ func init() {
 		"The platform to run Keptn on ["+kubernetes+","+openshift+"]")
 
 	installParams.ConfigFilePath = installCmd.Flags().StringP("creds", "c", "",
-		"Specify a JSON file containing cluster information needed for the installation (this allows skipping user prompts to execute a *silent* Keptn installation)")
+		"Specify a JSON file containing cluster information needed for the installation. This allows skipping user prompts to execute a *silent* Keptn installation.")
 
 	installParams.UseCaseInput = installCmd.Flags().StringP("use-case", "u", "",
-		"The use case to install Keptn for: "+ContinuousDelivery.String())
+		"The use case to install Keptn for ["+ContinuousDelivery.String()+"]")
 
 	installParams.ApiServiceTypeInput = installCmd.Flags().StringP("endpoint-service-type", "",
 		ClusterIP.String(), "Installation options for the endpoint-service type ["+ClusterIP.String()+","+
