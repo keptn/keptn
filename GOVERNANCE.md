@@ -33,7 +33,7 @@ If all you want to propose is a simple addition to a Keptn-service or the CLI, o
 
 ## Membership
 
-The Keptn community membership is defined in its [separate document](https://github.com/keptn/community/blob/keptn-community-membership/COMMUNITY_MEMBERSHIP.md) **TODO: update link once merged**. 
+The Keptn community membership is defined in its [separate document](https://github.com/keptn/community/COMMUNITY_MEMBERSHIP.md). 
 
 The Keptn project maintains three levels of membership with increasing responsibilities. The three levels as well as the requirements are described in the more detail in the linked document.
 
@@ -47,13 +47,11 @@ The process for handling any security vulnerabilities or concerns found in the K
 
 ## Releases
 
-**TODO** 
-
 Currently Keptn does not have fixed release schedule, instead a new Keptn version is released once substantial new features, bug fixes, and security hardenings have been merged into the master branch. 
 
-Each repository has its own release process. We are in the process of making the release instructions publicly available. Only maintainers can do the releases.
+Each repository has its own release process. Release instructions for the main repository [can be found here](https://github.com/keptn/keptn/wiki/Release-Checklist). Only maintainers can do the releases.
 
-Releases are cut from release branches which are created just before the release. A release candidate (RC) is published for major and minor version increments. 
+Releases are cut from release branches which are created just before the release. A release candidate (RC) might be published for major and minor version increments. 
 
 
 ### Resources
