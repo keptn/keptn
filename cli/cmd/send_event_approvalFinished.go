@@ -38,8 +38,8 @@ var approvalFinishedCmd = &cobra.Command{
 		"with the specified ID in the provided project and stage",
 	Long: `Sends an approval.finished event to Keptn in order to confirm an open approval with the specified ID in the provided project and stage. 
 
-* This command takes the project (*--project*), stage (*--stage*). 
-* It is necessary to specify the ID (*--id*) of the corresponding approval.triggered event.
+* This command takes the project (*--project*) and stage (*--stage*). 
+* It is optional to specify the ID (*--id*) of the corresponding approval.triggered event. If the ID is not provided, the command asks the user which open approval should be accepted or declined.
 * The open approval.triggered events and their ID can be retrieved using the "keptn get event approval.triggered --project=<project> --stage=<stage>" command.
 `,
 	Example: `keptn send event approval.finished --project=sockshop --stage=hardening --id=1234-5678-9123`,
