@@ -46,15 +46,26 @@ kind: Deployment
 metadata:
   name: openshift-route-service
   namespace: keptn
+  labels:
+    app.kubernetes.io/name: openshift-route-service
+    app.kubernetes.io/instance: keptn
+    app.kubernetes.io/part-of: keptn-keptn
+    app.kubernetes.io/component: control-plane
+    app.kubernetes.io/version: develop
 spec:
   selector:
     matchLabels:
-      run: openshift-route-service
+      app.kubernetes.io/name: openshift-route-service
+      app.kubernetes.io/instance: keptn
   replicas: 1
   template:
     metadata:
       labels:
-        run: openshift-route-service
+        app.kubernetes.io/name: openshift-route-service
+        app.kubernetes.io/instance: keptn
+        app.kubernetes.io/part-of: keptn-keptn
+        app.kubernetes.io/component: control-plane
+        app.kubernetes.io/version: develop
     spec:
       serviceAccountName: keptn-openshift-route-service
       containers:
@@ -95,7 +106,10 @@ metadata:
   name: openshift-route-service
   namespace: keptn
   labels:
-    run: openshift-route-service
+    app.kubernetes.io/name: openshift-route-service
+    app.kubernetes.io/instance: keptn
+    app.kubernetes.io/part-of: keptn-keptn
+    app.kubernetes.io/component: control-plane
 spec:
   ports:
   - name: cloudevents
@@ -103,4 +117,5 @@ spec:
     protocol: TCP
     targetPort: 8080
   selector:
-    run: openshift-route-service
+    app.kubernetes.io/name: openshift-route-service
+    app.kubernetes.io/instance: keptn

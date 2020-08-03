@@ -3,15 +3,26 @@ kind: Deployment
 metadata:
   name: lighthouse-service
   namespace: keptn
+  labels:
+    app.kubernetes.io/name: lighthouse-service
+    app.kubernetes.io/instance: keptn
+    app.kubernetes.io/part-of: keptn-keptn
+    app.kubernetes.io/component: control-plane
+    app.kubernetes.io/version: develop
 spec:
   selector:
     matchLabels:
-      run: lighthouse-service
+      app.kubernetes.io/name: lighthouse-service
+      app.kubernetes.io/instance: keptn
   replicas: 1
   template:
     metadata:
       labels:
-        run: lighthouse-service
+        app.kubernetes.io/name: lighthouse-service
+        app.kubernetes.io/instance: keptn
+        app.kubernetes.io/part-of: keptn-keptn
+        app.kubernetes.io/component: control-plane
+        app.kubernetes.io/version: develop
     spec:
       serviceAccountName: keptn-lighthouse-service
       containers:
@@ -72,10 +83,14 @@ metadata:
   name: lighthouse-service
   namespace: keptn
   labels:
-    run: lighthouse-service
+    app.kubernetes.io/name: lighthouse-service
+    app.kubernetes.io/instance: keptn
+    app.kubernetes.io/part-of: keptn-keptn
+    app.kubernetes.io/component: control-plane
 spec:
   ports:
     - port: 8080
       protocol: TCP
   selector:
-    run: lighthouse-service
+    app.kubernetes.io/name: lighthouse-service
+    app.kubernetes.io/instance: keptn

@@ -6,15 +6,26 @@ metadata:
   namespace: keptn
   annotations:
     fluentbit.io/exclude: "true"
+  labels:
+    app.kubernetes.io/name: mongodb-datastore
+    app.kubernetes.io/instance: keptn
+    app.kubernetes.io/part-of: keptn-keptn
+    app.kubernetes.io/component: control-plane
+    app.kubernetes.io/version: develop
 spec:
   selector:
     matchLabels:
-      run: mongodb-datastore
+      app.kubernetes.io/name: mongodb-datastore
+      app.kubernetes.io/instance: keptn
   replicas: 1
   template:
     metadata:
       labels:
-        run: mongodb-datastore
+        app.kubernetes.io/name: mongodb-datastore
+        app.kubernetes.io/instance: keptn
+        app.kubernetes.io/part-of: keptn-keptn
+        app.kubernetes.io/component: control-plane
+        app.kubernetes.io/version: develop
     spec:
       serviceAccountName: keptn-default
       containers:
@@ -86,10 +97,14 @@ metadata:
   name: mongodb-datastore
   namespace: keptn
   labels:
-    run: mongodb-datastore
+    app.kubernetes.io/name: mongodb-datastore
+    app.kubernetes.io/instance: keptn
+    app.kubernetes.io/part-of: keptn-keptn
+    app.kubernetes.io/component: control-plane
 spec:
   ports:
   - port: 8080
     protocol: TCP
   selector:
-    run: mongodb-datastore
+    app.kubernetes.io/name: mongodb-datastore
+    app.kubernetes.io/instance: keptn
