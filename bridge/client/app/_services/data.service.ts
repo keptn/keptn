@@ -154,7 +154,7 @@ export class DataService {
         map(roots => roots.map(root => Root.fromJSON(root)))
       )
       .subscribe((roots: Root[]) => {
-        service.roots = [...roots||[], ...service.roots||[]].sort((a, b) => DateUtil.compareTraceTimes(a, b));
+        service.roots = [...roots||[], ...service.roots||[]].sort(DateUtil.compareTraceTimes);
         this._roots.next(service.roots);
         roots.forEach(root => {
           this.updateApprovals(root);
