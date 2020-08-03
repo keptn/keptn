@@ -13,9 +13,7 @@ import {takeUntil} from "rxjs/operators";
 })
 export class DashboardComponent implements OnInit, OnDestroy {
 
-
   public projects$: Observable<Project[]>;
-  public error: boolean = false;
 
   constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService) {
     this.projects$ = this.dataService.projects;
