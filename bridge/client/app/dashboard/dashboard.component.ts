@@ -11,7 +11,7 @@ import {takeUntil} from "rxjs/operators";
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
-export class DashboardComponent implements OnInit, OnDestroy {
+export class DashboardComponent {
 
   public projects$: Observable<Project[]>;
 
@@ -19,14 +19,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.projects$ = this.dataService.projects;
   }
 
-  ngOnInit() {
-  }
-
   loadProjects() {
     this.dataService.loadProjects();
-  }
-
-  ngOnDestroy(): void {
   }
 
 }
