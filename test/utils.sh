@@ -162,14 +162,13 @@ function wait_for_url() {
 function verify_image_of_deployment() {
   DEPLOYMENT=$1; NAMESPACE=$2; IMAGE_NAME=$3;
 
-  CURRENT_IMAGE_NAME=$(kubectl get deployment ${DEPLOYMENT} -n ${NAMESPACE} -o=jsonpath='
-  }{$.spec.template.spec.containers[:1].image}')
+  CURRENT_IMAGE_NAME=$(kubectl get deployment ${DEPLOYMENT} -n ${NAMESPACE} -o=jsonpath='{$.spec.template.spec.containers[:1].image}')
 
   if [[ "$CURRENT_IMAGE_NAME" == "$IMAGE_NAME" ]]; then
     echo "Found image ${CURRENT_IMAGE_NAME} in deployment ${DEPLOYMENT} in namespace ${NAMESPACE}"
   else
     echo "ERROR: Found image ${CURRENT_IMAGE_NAME} but expected ${IMAGE_NAME}  in deployment ${DEPLOYMENT} in namespace ${NAMESPACE}"
-    exit -1
+    exit 1
   fi
 }
 
@@ -191,7 +190,7 @@ function wait_for_deployment_in_namespace() {
 
   if [[ $RETRY == $RETRY_MAX ]]; then
     echo "Error: Could not find deployment ${DEPLOYMENT} in namespace ${NAMESPACE}"
-    exit -1
+    exit 1
   fi
 }
 
@@ -201,7 +200,7 @@ function verify_deployment_in_namespace() {
   DEPLOYMENT_LIST=$(eval "kubectl get deployments -n ${NAMESPACE} | awk '/$DEPLOYMENT /'" | awk '{print $1}') # list of multiple deployments when starting with the same name
   if [[ -z "$DEPLOYMENT_LIST" ]]; then
     echo "Error: Could not find deployment ${DEPLOYMENT} in namespace ${NAMESPACE}"
-    exit -1
+    exit 1
   else
     echo "Found deployment ${DEPLOYMENT} in namespace ${NAMESPACE}: ${DEPLOYMENT_LIST}"
   fi
@@ -213,7 +212,7 @@ function verify_pod_in_namespace() {
   POD_LIST=$(eval "kubectl get pod -n ${NAMESPACE} | awk '/$POD/'" | awk '{print $1}') # list of multiple deployments when starting with the same name
   if [[ -z "$POD_LIST" ]]; then
     echo "Error: Could not find pod ${POD} in namespace ${NAMESPACE}"
-    exit -1
+    exit 1
   else
     echo "Found pod ${POD} in namespace ${NAMESPACE}: ${POD_LIST}"
   fi
@@ -226,7 +225,7 @@ function verify_namespace_exists() {
 
   if [[ -z "$NAMESPACE_LIST" ]]; then
     echo "Error: Could not find namespace ${NAMESPACE}"
-    exit -2
+    exit 2
   else
     echo "Found namespace ${NAMESPACE}"
   fi
@@ -250,6 +249,6 @@ function wait_for_problem_open_event() {
 
   if [[ $RETRY == $RETRY_MAX ]]; then
     echo "Error: Could not find problem.open event for service ${SERVICE} in project ${PROJECT}"
-    exit -1
+    exit 1
   fi
 }
