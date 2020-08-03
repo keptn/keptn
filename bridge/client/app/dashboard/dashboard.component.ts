@@ -13,7 +13,6 @@ import {takeUntil} from "rxjs/operators";
 })
 export class DashboardComponent implements OnInit, OnDestroy {
 
-  private readonly unsubscribe$ = new Subject<void>();
 
   public projects$: Observable<Project[]>;
   public error: boolean = false;
