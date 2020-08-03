@@ -53,23 +53,16 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
         if(versionInfo.versionCheckEnabled === null) {
           this.showVersionCheckInfoDialog();
         } else if(versionInfo.versionCheckEnabled) {
-          if(semver.valid(versionInfo.keptnVersion)) {
-            if(versionInfo.availableVersions.cli)
-              this.doVersionCheck(versionInfo.keptnVersion, versionInfo.availableVersions.cli.stable, versionInfo.availableVersions.cli.prerelease, "Keptn");
-          } else {
-            versionInfo.keptnVersionInvalid = true;
-          }
-          if(semver.valid(versionInfo.bridgeVersion)) {
-            if(versionInfo.availableVersions.bridge)
-              this.doVersionCheck(versionInfo.bridgeVersion, versionInfo.availableVersions.bridge.stable, versionInfo.availableVersions.bridge.prerelease, "Keptn Bridge");
-          } else {
-            versionInfo.bridgeVersionInvalid = true;
-          }
+          versionInfo.keptnVersionInvalid = !this.doVersionCheck(versionInfo.keptnVersion, versionInfo.availableVersions.cli.stable, versionInfo.availableVersions.cli.prerelease, "Keptn");
+          versionInfo.bridgeVersionInvalid = !this.doVersionCheck(versionInfo.bridgeVersion, versionInfo.availableVersions.bridge.stable, versionInfo.availableVersions.bridge.prerelease, "Keptn Bridge");;
         }
       });
   }
 
-  doVersionCheck(currentVersion, stableVersions, prereleaseVersions, type) {
+  doVersionCheck(currentVersion, stableVersions, prereleaseVersions, type): boolean {
+    if(!semver.valid(currentVersion))
+      return false;
+
     stableVersions.forEach(stableVersion => {
       if(semver.lt(currentVersion, stableVersion)) {
         let genMessage;
@@ -98,6 +91,8 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
         this.notificationsService.addNotification(NotificationType.Info, genMessage(prereleaseVersion, type, major, minor));
       }
     });
+
+    return true;
   }
 
   showVersionCheckInfoDialog() {
