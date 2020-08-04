@@ -119,11 +119,6 @@ export class ApiService {
   public sendApprovalEvent(approval: Trace, approve: boolean) {
     let url = `${this._baseUrl}/v1/event`;
 
-    const labels = {};
-    approval.data.labels.forEach((val: string, key: string) => {
-      labels[key] = val;
-    });
-
     return this.http
       .post<any>(url, {
         "shkeptncontext": approval.shkeptncontext,
@@ -134,8 +129,7 @@ export class ApiService {
           "approval": {
             "result": approve ? ApprovalStates.APPROVED : ApprovalStates.DECLINED,
             "status": "succeeded"
-          },
-          "labels": labels
+          }
         })
       }, { headers: this.defaultHeaders });
   }

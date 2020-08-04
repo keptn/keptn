@@ -30,7 +30,7 @@ class Trace {
     deploymentURIPublic: string;
 
     deploymentstrategy: string;
-    labels: Map<any, any>;
+    labels: Map<string, string>;
     result: string;
     teststrategy: string;
 
@@ -174,12 +174,12 @@ class Trace {
   }
 
   getChartLabel(): string {
-    return this.data.labels?.get("buildId") ?? this.time;
+    return this.data.labels?["buildId"] ?? this.time;
   }
 
   static fromJSON(data: any) {
-    data.data.labels = new Map(Object.entries(data.data.labels??{}));
-    return Object.assign(new this, data, { plainEvent: JSON.parse(JSON.stringify(data)) });
+    const plainEvent = JSON.parse(JSON.stringify(data));
+    return Object.assign(new this, data, { plainEvent });
   }
 }
 
