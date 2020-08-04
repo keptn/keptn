@@ -16,7 +16,7 @@ SERVICE="frontend"
 ########################################################################################################################
 
 # ensure unleash-service is not installed yet
-kubectl -n keptn get deployment unleash-service
+kubectl -n keptn get deployment unleash-service --ignore-not-found
 
 if [[ $? -eq 0 ]]; then
   echo "Found unleash-service. Please uninstall it using"
