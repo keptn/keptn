@@ -443,7 +443,7 @@ func doInstallation() error {
 		if err != nil {
 			return err
 		}
-		in = strings.TrimSpace(in)
+		in = strings.ToLower(strings.TrimSpace(in))
 		if !(in == "y" || in == "yes") {
 			return fmt.Errorf("Stopping installation.")
 		}
