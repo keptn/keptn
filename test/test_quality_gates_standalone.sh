@@ -19,11 +19,11 @@ else
 fi
 
 ########################################################################################################################
-# Pre-requesits
+# Pre-requisites
 ########################################################################################################################
 
 # ensure dynatrace-sli-service is not installed yet
-kubectl -n keptn get deployment dynatrace-sli-service
+kubectl -n keptn get deployment dynatrace-sli-service 2> /dev/null
 
 if [[ $? -eq 0 ]]; then
   echo "Found dynatrace-sli-service. Please uninstall it using"
@@ -32,7 +32,7 @@ if [[ $? -eq 0 ]]; then
 fi
 
 
-# verify that the project does not exiset yet via the Keptn API
+# verify that the project does not exist yet via the Keptn API
 response=$(curl -X GET "${KEPTN_ENDPOINT}/configuration-service/v1/project/${PROJECT}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.projectName')
 
 if [[ "$response" == "${PROJECT}" ]]; then
@@ -41,8 +41,8 @@ if [[ "$response" == "${PROJECT}" ]]; then
   exit 2
 fi
 
-# verify that the lighthouse configmap for the project does not exiset yet
-kubectl -n keptn get cm lighthouse-config-${PROJECT}
+# verify that the lighthouse configmap for the project does not exist yet
+kubectl -n keptn get cm lighthouse-config-${PROJECT} 2> /dev/null
 
 if [[ $? -eq 0 ]]; then
   echo "Found configmap lighthouse-config-${PROJECT}. Please remove it using"
@@ -51,14 +51,13 @@ if [[ $? -eq 0 ]]; then
 fi
 
 # verify that the Dynatrace credential secret does not exist yet
-kubectl -n keptn get secret dynatrace-credentials-${PROJECT}
+kubectl -n keptn get secret dynatrace-credentials-${PROJECT} 2> /dev/null
 
 if [[ $? -eq 0 ]]; then
   echo "Found secret dynatrace-credentials-${PROJECT}. Please remove it using"
   echo "kubectl -n keptn delete secret dynatrace-credentials-${PROJECT}"
   exit 1
 fi
-
 
 echo "Testing quality gates standalone for project $PROJECT ..."
 
@@ -179,7 +178,7 @@ keptn configure monitoring dynatrace --project=$PROJECT --suppress-websocket
 sleep 5
 # this should set the configmap 'lighthouse-config-$PROJECT' - verify that it exists
 
-kubectl -n keptn get configmap "lighthouse-config-${PROJECT}" -oyaml
+kubectl -n keptn get configmap "lighthouse-config-${PROJECT}" -oyaml 2> /dev/null
 verify_test_step $? "ERROR: Could not find configmap lighthouse-config-$PROJECT (this is expected to be created by keptn configure monitoring dynatrace --project=$PROJECT)"
 
 echo "Sending start-evaluation event for service $SERVICE in stage hardening"

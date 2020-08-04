@@ -7,7 +7,7 @@ echo "y" | keptn uninstall
 verify_test_step $? "keptn uninstall failed"
 
 # verify namespace keptn has been removed
-kubectl -n keptn get namespace keptn
+kubectl -n keptn get namespace keptn 2> /dev/null
 
 if [[ $? -eq 0 ]]; then
   echo "Found namespace keptn - uninstall failed"
