@@ -17,7 +17,7 @@
   </dt-empty-state>
 </div>
 <ng-container *ngIf="projects$ | async as projects">
-  <div class="container" *ngIf="!error && projects.length > 0">
+  <div class="container" *ngIf="projects.length > 0">
     <dt-info-group>
       <dt-info-group-title>
         <p><span [textContent]="projects.length"></span>&nbsp;<span i18n>Projects</span></p>
