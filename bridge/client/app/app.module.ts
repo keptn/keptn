@@ -48,7 +48,6 @@ import {
   KtbHorizontalSeparatorTitle,
 } from './_components/ktb-horizontal-separator/ktb-horizontal-separator.component';
 import { KtbHttpLoadingBarComponent } from './_components/ktb-http-loading-bar/ktb-http-loading-bar.component';
-import { KtbHttpLoadingSpinnerComponent } from './_components/ktb-http-loading-spinner/ktb-http-loading-spinner.component';
 import { KtbNotificationBarComponent } from './_components/ktb-notification-bar/ktb-notification-bar.component';
 import { KtbProjectListComponent } from './_components/ktb-project-list/ktb-project-list.component';
 import { KtbProjectTileComponent } from './_components/ktb-project-tile/ktb-project-tile.component';
@@ -81,7 +80,6 @@ registerLocaleData(localeEn, 'en');
     AppHeaderComponent,
     ProjectBoardComponent,
     EvaluationBoardComponent,
-    KtbHttpLoadingSpinnerComponent,
     KtbHttpLoadingBarComponent,
     KtbShowHttpLoadingDirective,
     KtbHideHttpLoadingDirective,
