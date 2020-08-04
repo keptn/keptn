@@ -36,7 +36,7 @@ var getStageCmd = &cobra.Command{
 	Use:     "stage",
 	Aliases: []string{"stages"},
 	Short:   "Get details of a stage",
-	Long:    `Get all stages or details of a stage from a given keptn project`,
+	Long:    `Get all stages or details of a stage from a given Keptn project`,
 	Example: `keptn get stages --project=sockshop
 NAME           CREATION DATE                 
 staging        2020-04-06T14:37:45.210Z
@@ -45,7 +45,7 @@ production     2020-04-06T14:37:45.210Z
 keptn get stage staging --project sockshop
 NAME           CREATION DATE                 
 staging        2020-04-06T14:37:45.210Z
-	`,
+`,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
 		_, _, err := credentialmanager.NewCredentialManager().GetCreds()

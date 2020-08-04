@@ -28,7 +28,7 @@ var addResourceCmdParams *addResourceCommandParameters
 var addResourceCmd = &cobra.Command{
 	Use:   "add-resource --project=PROJECT --stage=STAGE --service=SERVICE --resource=FILEPATH --resourceUri=FILEPATH",
 	Short: "Adds a local resource to a service within your project in the specified stage",
-	Long: `Adds a local resource to a service within your project in the specified stage. The resource is then stored within the Git Repo.
+	Long: `Adds a local resource to a service within your project in the specified stage. The resource is then stored within the Git repository.
 
 This command allows adding, for example, *test files* to a service, which will then be used by a test service (e.g., jmeter-service) during the continuous delivery.
 
@@ -47,7 +47,7 @@ keptn add-resource --project=musicshop --stage=hardening --service=catalogue --r
 keptn add-resource --project=sockshop --stage=dev --service=carts --resource=./jmeter.jmx --resourceUri=jmeter/functional.jmx
 keptn add-resource --project=rockshop --stage=production --service=shop --resource=./basiccheck.jmx --resourceUri=jmeter/basiccheck.jmx`,
 	SilenceUsage: true,
-	Args: cobra.ExactArgs(0),
+	Args:         cobra.ExactArgs(0),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
 		if err != nil {

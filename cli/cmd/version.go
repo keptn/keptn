@@ -36,8 +36,8 @@ const enableVersionCheckMsg = "To %s the daily version check, please execute: \n
 // versionCmd represents the version command
 var versionCmd = &cobra.Command{
 	Use:     "version",
-	Short:   "Shows the CLI version of Keptn.",
-	Long:    `Shows the CLI version of Keptn, as well as an indication whether a new version is available.`,
+	Short:   "Shows the CLI version of Keptn",
+	Long:    `Shows the CLI version of Keptn and a note when a new version is available.`,
 	Example: `keptn version`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("CLI version: " + Version)

@@ -40,20 +40,17 @@ var getServiceCmd = &cobra.Command{
 	Use:     "service",
 	Aliases: []string{"services"},
 	Short:   "Get service details",
-	Long:    `Get all services or details for a given service within a keptn project`,
+	Long:    `Get all services or details for a given service within a Keptn project`,
 	Example: `keptn get service carts --project=sockshop
 NAME           CREATION DATE                 
 carts          sockshop        2020-05-28T10:25:58+02:00
 
-List all services in keptn
-# keptn get services
+keptn get services                                   # List all services in keptn
 
-# List all services in the sockshop project
-keptn get services --project=sockshop
+keptn get services --project=sockshop                # List all services in the sockshop project
 
-# Get details of the carts service in the sockshop project as json output
-keptn get services carts --project=sockshop -o=json
-	`,
+keptn get services carts --project=sockshop -o=json  # Get details of the carts service in the sockshop project as json output
+`,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
 		_, _, err := credentialmanager.NewCredentialManager().GetCreds()

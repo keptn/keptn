@@ -42,8 +42,8 @@ var getProject getProjectStruct
 var getProjectCmd = &cobra.Command{
 	Use:     "project",
 	Aliases: []string{"projects"},
-	Short:   "Get details of a keptn project",
-	Long:    `Get all projects or details of a given keptn project`,
+	Short:   "Get details of a Keptn project",
+	Long:    `Get all projects or details of a given Keptn project`,
 	Example: `keptn get projects
 NAME            CREATION DATE
 sockshop        2020-05-28T10:25:50+02:00
@@ -53,12 +53,10 @@ keptn get project sockshop
 NAME           CREATION DATE                 
 sockshop       2020-04-06T14:35:40.210Z
 
-# Returns project details in YAML format
-keptn get project sockshop -output=yaml
+keptn get project sockshop -output=yaml  # Returns project details in YAML format
 
-# Returns project details in JSON format
-keptn get project sockshop -output=json
-	`,
+keptn get project sockshop -output=json  # Returns project details in JSON format
+`,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
 		_, _, err := credentialmanager.NewCredentialManager().GetCreds()

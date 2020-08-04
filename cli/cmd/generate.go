@@ -10,7 +10,8 @@ type generateCmdParams struct {
 
 // deleteCmd represents the delete command
 var generateCmd = &cobra.Command{
-	Use: "generate [docs | support-archive]",
+	Use:   `generate [docs | support-archive]`,
+	Short: `Generates the markdown CLI documentation or a support archive`,
 }
 
 func init() {
