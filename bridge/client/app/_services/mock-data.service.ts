@@ -4,6 +4,7 @@ import {Project} from "../_models/project";
 import {Root} from "../_models/root";
 import {Service} from "../_models/service";
 import {Trace} from "../_models/trace";
+import DateUtil from "../_utils/date.utils";
 
 @Injectable({
   providedIn: 'root'
@@ -88,7 +89,7 @@ export class MockDataService {
   }
 
   public loadRoots(project: Project, service: Service) {
-    service.roots = [...this.mockRoots[project.projectName+"."+service.serviceName]||[], ...service.roots||[]].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
+    service.roots = [...this.mockRoots[project.projectName+"."+service.serviceName]||[], ...service.roots||[]].sort(DateUtil.compareTraceTimes);
     this._roots.next(service.roots);
     this.mockRoots[project.projectName+"."+service.serviceName] = [];
   }

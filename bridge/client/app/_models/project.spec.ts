@@ -2,9 +2,6 @@ import { Project } from './project';
 import {async} from "@angular/core/testing";
 
 describe('Project', () => {
-  it('should create an instance', () => {
-    expect(new Project()).toBeTruthy();
-  });
 
   it('should create instances from json', async(() => {
     let projects: Project[] = [{"projectName":"sockshop","stages":[{"services":[{"serviceName":"carts"},{"serviceName":"carts-db"}],"stageName":"dev"},{"services":[{"serviceName":"carts"},{"serviceName":"carts-db"}],"stageName":"staging"},{"services":[{"serviceName":"carts"},{"serviceName":"carts-db"}],"stageName":"production"}]}].map(project => Project.fromJSON(project));
