@@ -8,7 +8,7 @@
     "start:server:dev": "nodemon server/server.js --watch server/",
     "start:client:dev": "ng build --watch",
     "ng": "ng",
-    "build": "ng build --prod --base-href=/keptn/bridge/",
+    "build": "ng build --prod --base-href=./",
     "test": "ng test --code-coverage",
     "test:ci": "ng test --watch=false --code-coverage --browsers=ChromeHeadless",
     "lint": "ng lint",

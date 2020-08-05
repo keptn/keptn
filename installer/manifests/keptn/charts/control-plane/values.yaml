@@ -1,6 +1,8 @@
 mongodb:
   enabled: true
 
+prefixPath: ""
+
 nats:
   nameOverride: keptn-nats-cluster
   nats.cluster.replicas: 3
