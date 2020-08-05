@@ -88,40 +88,38 @@
       </div>
     </div>
     <div class="container dark" fxFlex="34" fxLayout="column" fxLayoutGap="15px" *ngIf="selectedStage">
-      <h2 [textContent]="selectedStage.stageName"></h2>
-      <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
-        <ng-container *ngIf="openApprovals$ | async as openApprovals">
+      <ng-container *ngIf="openApprovals$ | async as openApprovals">
+        <h2 [textContent]="selectedStage.stageName"></h2>
+        <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
           <dt-icon class="stage-state-icon" name="deploy" [ngClass]="{'out-of-sync-service': countOpenApprovals(openApprovals, selectedStage) > 0}"></dt-icon>
           <p *ngIf="countOpenApprovals(openApprovals, selectedStage) == 1"><span [textContent]="countOpenApprovals(openApprovals, selectedStage)"></span> Service is out-of-sync</p>
           <p *ngIf="countOpenApprovals(openApprovals, selectedStage) != 1"><span [textContent]="countOpenApprovals(openApprovals, selectedStage)"></span> Services are out-of-sync</p>
-        </ng-container>
-      </div>
-      <div fxLayout="row" fxLayoutAlign="start center" *ngIf="selectedStage.services.length == 0">
-        <dt-icon class="icon" name="information"></dt-icon>
-        <p class="m-0">No service onboarded yet. Follow the intructions to <a href="https://keptn.sh/docs/0.7.x/manage/service/#onboard-a-service" target="_blank" rel="noopener noreferrer">onboard a service</a>.</p>
-      </div>
-      <ng-container *ngFor="let service of selectedStage.services">
-        <ktb-expandable-tile>
-          <ktb-expandable-tile-header>
-            <dt-info-group>
-              <dt-info-group-title>
-                <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
-                  <h2 class="m-0" [textContent]="service.serviceName"></h2>
-                  <ng-container *ngIf="openApprovals$ | async as openApprovals">
-                    <dt-icon class="stage-state-icon out-of-sync-service" *ngIf="countOpenApprovals(openApprovals, selectedStage, service) > 0" name="deploy"></dt-icon>
-                  </ng-container>
-                  <ng-container *ngIf="project.getLatestDeployment(service, selectedStage) as deployment">
-                    <a *ngIf="deployment.data.deploymentURIPublic" [href]="deployment.data.deploymentURIPublic" target="_blank"><button dt-icon-button variant="nested"><dt-icon name="externallink"></dt-icon></button></a>
-                  </ng-container>
-                </div>
-              </dt-info-group-title>
-              <ng-container *ngIf="project.getLatestDeployment(service, selectedStage) as deployment; else noDeployment">
-                <p class="m-0 mt-1"><span [textContent]="deployment.data.image"></span>:<span [textContent]="deployment.data.tag"></span></p>
-                <p class="m-0 mb-1"><span class="bold">Deployed at: </span><span [textContent]="deployment.time | amCalendar:getCalendarFormats()"></span></p>
-              </ng-container>
-            </dt-info-group>
-          </ktb-expandable-tile-header>
-          <ng-container *ngIf="openApprovals$ | async as openApprovals">
+        </div>
+        <div fxLayout="row" fxLayoutAlign="start center" *ngIf="selectedStage.services.length == 0">
+          <dt-icon class="icon" name="information"></dt-icon>
+          <p class="m-0">No service onboarded yet. Follow the intructions to <a href="https://keptn.sh/docs/0.7.x/manage/service/#onboard-a-service" target="_blank" rel="noopener noreferrer">onboard a service</a>.</p>
+        </div>
+        <ng-container *ngFor="let service of selectedStage.services">
+          <ktb-expandable-tile [expanded]="countOpenApprovals(openApprovals, selectedStage, service) > 0">
+            <ktb-expandable-tile-header>
+              <dt-info-group>
+                <dt-info-group-title>
+                  <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
+                    <h2 class="m-0" [textContent]="service.serviceName"></h2>
+                    <ng-container *ngIf="openApprovals$ | async as openApprovals">
+                      <dt-icon class="stage-state-icon out-of-sync-service" *ngIf="countOpenApprovals(openApprovals, selectedStage, service) > 0" name="deploy"></dt-icon>
+                    </ng-container>
+                    <ng-container *ngIf="project.getLatestDeployment(service, selectedStage) as deployment">
+                      <a *ngIf="deployment.data.deploymentURIPublic" [href]="deployment.data.deploymentURIPublic" target="_blank"><button dt-icon-button variant="nested"><dt-icon name="externallink"></dt-icon></button></a>
+                    </ng-container>
+                  </div>
+                </dt-info-group-title>
+                <ng-container *ngIf="project.getLatestDeployment(service, selectedStage) as deployment; else noDeployment">
+                  <p class="m-0 mt-1"><span [textContent]="deployment.data.image"></span>:<span [textContent]="deployment.data.tag"></span></p>
+                  <p class="m-0 mb-1"><span class="bold">Deployed at: </span><span [textContent]="deployment.time | amCalendar:getCalendarFormats()"></span></p>
+                </ng-container>
+              </dt-info-group>
+            </ktb-expandable-tile-header>
             <div *ngIf="countOpenApprovals(openApprovals, selectedStage, service) > 0; else noOutOfSyncDeployments">
               <p class="m-0">Deployable artifacts for <span [textContent]="service.serviceName"></span> service</p>
               <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px" *ngFor="let approval of getOpenApprovals(openApprovals, selectedStage, service)">
@@ -134,9 +132,9 @@
                 </button>
               </div>
             </div>
-          </ng-container>
-          <ng-template #noOutOfSyncDeployments>No pending deployments for this stage available.</ng-template>
-        </ktb-expandable-tile>
+            <ng-template #noOutOfSyncDeployments>No pending deployments for this stage available.</ng-template>
+          </ktb-expandable-tile>
+        </ng-container>
       </ng-container>
     </div>
   </ng-container>
