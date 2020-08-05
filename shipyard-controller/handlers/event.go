@@ -5,16 +5,18 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
 	keptn "github.com/keptn/go-utils/pkg/lib"
-
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/restapi/operations"
+	"strings"
 )
 
 type eventData struct {
 	Project string `json:"project"`
 }
+
+const triggeredSuffix = ".triggered"
 
 // GetTriggeredEvents implements the request handler for GET /event/triggered/{eventType}
 func GetTriggeredEvents(params operations.GetTriggeredEventsParams) middleware.Responder {
@@ -123,6 +125,7 @@ func (em *eventManager) getTriggeredEventsOfProject(project string, filter db.Ev
 }
 
 func (em *eventManager) insertEvent(event models.Event) error {
+
 	marshal, err := json.Marshal(event.Data)
 	if err != nil {
 		return err
@@ -132,5 +135,10 @@ func (em *eventManager) insertEvent(event models.Event) error {
 	if err != nil {
 		return err
 	}
-	return em.triggeredEventRepo.InsertEvent(data.Project, event)
+
+	if strings.HasSuffix(*event.Type, triggeredSuffix) {
+		return em.triggeredEventRepo.InsertEvent(data.Project, event)
+	}
+
+	return nil
 }
