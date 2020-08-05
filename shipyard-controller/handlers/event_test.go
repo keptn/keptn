@@ -9,7 +9,7 @@ import (
 
 type getEventsMock func(project string, filter db.EventFilter) ([]models.Event, error)
 type insertEventMock func(project string, event models.Event) error
-type deleteEventMock func(project string, eventId string) error
+type deleteEventMock func(project string, eventID string) error
 
 type triggeredEventMock struct {
 	getEvents   getEventsMock
@@ -25,8 +25,8 @@ func (t triggeredEventMock) InsertEvent(project string, event models.Event) erro
 	return t.insertEvent(project, event)
 }
 
-func (t triggeredEventMock) DeleteEvent(project string, eventId string) error {
-	return t.deleteEvent(project, eventId)
+func (t triggeredEventMock) DeleteEvent(project string, eventID string) error {
+	return t.deleteEvent(project, eventID)
 }
 
 type getProjectsMock func() ([]string, error)

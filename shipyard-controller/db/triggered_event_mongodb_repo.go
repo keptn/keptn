@@ -90,7 +90,7 @@ func (mdbrepo *MongoDBTriggeredEventsRepo) InsertEvent(project string, event mod
 }
 
 // DeleteEvent deletes an event from the collection
-func (mdbrepo *MongoDBTriggeredEventsRepo) DeleteEvent(project string, eventId string) error {
+func (mdbrepo *MongoDBTriggeredEventsRepo) DeleteEvent(project string, eventID string) error {
 	err := mdbrepo.DbConnection.EnsureDBConnection()
 	if err != nil {
 		return err
@@ -99,12 +99,12 @@ func (mdbrepo *MongoDBTriggeredEventsRepo) DeleteEvent(project string, eventId s
 	defer cancel()
 
 	collection := mdbrepo.getTriggeredEventsCollection(project)
-	_, err = collection.DeleteMany(ctx, bson.M{"id": eventId})
+	_, err = collection.DeleteMany(ctx, bson.M{"id": eventID})
 	if err != nil {
-		mdbrepo.Logger.Error(fmt.Sprintf("Could not delete event %s : %s\n", eventId, err.Error()))
+		mdbrepo.Logger.Error(fmt.Sprintf("Could not delete event %s : %s\n", eventID, err.Error()))
 		return err
 	}
-	mdbrepo.Logger.Info("Deleted event " + eventId)
+	mdbrepo.Logger.Info("Deleted event " + eventID)
 	return nil
 }
 
