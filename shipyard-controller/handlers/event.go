@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
+	keptn "github.com/keptn/go-utils/pkg/lib"
 
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
@@ -79,6 +80,7 @@ var eventManagerInstance *eventManager
 type eventManager struct {
 	projectRepo        db.ProjectRepo
 	triggeredEventRepo db.TriggeredEventRepo
+	logger             *keptn.Logger
 }
 
 func getEventManagerInstance() *eventManager {
@@ -86,6 +88,7 @@ func getEventManagerInstance() *eventManager {
 		eventManagerInstance = &eventManager{
 			projectRepo:        &db.ProjectMongoDBRepo{},
 			triggeredEventRepo: &db.MongoDBTriggeredEventsRepo{},
+			logger:             keptn.NewLogger("", "", "shipyard-controller"),
 		}
 	}
 	return eventManagerInstance

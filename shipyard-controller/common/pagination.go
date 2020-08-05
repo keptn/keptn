@@ -2,12 +2,7 @@ package common
 
 import (
 	"math"
-	"os"
-	"path/filepath"
 	"strconv"
-	"strings"
-
-	"github.com/keptn/keptn/configuration-service/models"
 )
 
 // PaginationResult contains pagination info
@@ -47,50 +42,5 @@ func Paginate(totalCount int, pageSize *int64, nextPageKeyString *string) *Pagin
 
 	result.NewNextPageKey = strconv.FormatInt(nextPageKey, 10)
 	result.EndIndex = upperLimit
-	return result
-}
-
-// GetPaginatedResources returns a paginates resources set
-func GetPaginatedResources(dir string, pageSize *int64, nextPageKey *string) *models.Resources {
-	var result = &models.Resources{
-		PageSize:    0,
-		NextPageKey: "0",
-		TotalCount:  0,
-		Resources:   []*models.Resource{},
-	}
-	var files = []string{}
-	err := filepath.Walk(dir,
-		func(path string, info os.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
-			if strings.Contains(path, ".git") {
-				return nil
-			}
-			// don't expose the internal directory structure of the container
-			cutPrefix := strings.TrimPrefix(strings.TrimPrefix(dir, "./"), "/")
-			path = strings.Replace(path, cutPrefix, "", 1)
-			if !info.IsDir() {
-				files = append(files, strings.TrimPrefix(path, "/"))
-			}
-			return nil
-		})
-	if err != nil {
-		return result
-	}
-
-	paginationInfo := Paginate(len(files), pageSize, nextPageKey)
-
-	totalCount := len(files)
-	if paginationInfo.NextPageKey < int64(totalCount) {
-		for _, resourceURI := range files[paginationInfo.NextPageKey:paginationInfo.EndIndex] {
-			var tmp = resourceURI
-			var resource = &models.Resource{ResourceURI: &tmp}
-			result.Resources = append(result.Resources, resource)
-		}
-	}
-
-	result.TotalCount = float64(totalCount)
-	result.NextPageKey = paginationInfo.NewNextPageKey
 	return result
 }

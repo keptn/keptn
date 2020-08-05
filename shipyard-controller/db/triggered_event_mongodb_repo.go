@@ -76,7 +76,7 @@ func (mdbrepo *MongoDBTriggeredEventsRepo) InsertEvent(project string, event mod
 
 	marshal, _ := json.Marshal(event)
 	var eventInterface interface{}
-	json.Unmarshal(marshal, &eventInterface)
+	_ = json.Unmarshal(marshal, &eventInterface)
 
 	_, err = collection.InsertOne(ctx, eventInterface)
 	if err != nil {

@@ -2,11 +2,11 @@ apiVersion: skaffold/v1beta13
 kind: Config
 build:
   artifacts:
-    - image: keptn/configuration-service
+    - image: keptn/shipyard-controller
       docker:    # 	beta describes an artifact built from a Dockerfile.
         dockerfile: Dockerfile
         buildArgs:
-          debugBuild: true
+          debugBuild: 'true'
 deploy:
   kubectl:
     manifests:
