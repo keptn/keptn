@@ -189,7 +189,9 @@ func Test_eventManager_InsertEvent(t *testing.T) {
 					},
 				},
 			},
-			args:    args{},
+			args: args{
+				event: getTestEvent(),
+			},
 			wantErr: false,
 		},
 	}
