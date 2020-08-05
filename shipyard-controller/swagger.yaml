@@ -70,7 +70,7 @@ definitions:
       pageSize:
         type: number
         description: Size of returned page
-      eventContexts:
+      events:
         type: array
         items:
           $ref: '#/definitions/Event'
@@ -87,23 +87,30 @@ parameters:
   projectName:
     in: query
     name: projectName
-    required: true
+    required: false
     type: string
     description: Project name
 
   stageName:
     in: query
     name: stageName
-    required: true
+    required: false
     type: string
     description: Stage name
 
   serviceName:
     in: query
     name: serviceName
-    required: true
+    required: false
     type: string
     description: Service name
+
+  eventID:
+    in: query
+    name: eventID
+    required: false
+    type: string
+    description: Stage name
 
   pageSize:
     in: query
@@ -150,6 +157,7 @@ paths:
         - $ref: '#/parameters/projectName'
         - $ref: '#/parameters/stageName'
         - $ref: '#/parameters/serviceName'
+        - $ref: '#/parameters/eventID'
       summary: Get list of triggered events
       responses:
         '200':
