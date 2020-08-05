@@ -2,7 +2,7 @@ package db
 
 import (
 	"context"
-	"fmt"
+	keptn "github.com/keptn/go-utils/pkg/lib"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"time"
@@ -10,6 +10,7 @@ import (
 
 type ProjectMongoDBRepo struct {
 	DbConnection MongoDBConnection
+	Logger       keptn.LoggerInterface
 }
 
 const projectsCollectionName = "keptnProjectsMV"
@@ -30,7 +31,7 @@ func (mdbrepo *ProjectMongoDBRepo) GetProjects() ([]string, error) {
 	projectCollection := mdbrepo.getProjectsCollection()
 	cursor, err := projectCollection.Find(ctx, bson.M{})
 	if err != nil {
-		fmt.Println("Error retrieving projects from mongoDB: " + err.Error())
+		mdbrepo.Logger.Error("Error retrieving projects from mongoDB: " + err.Error())
 		return nil, err
 	}
 	defer cursor.Close(ctx)
@@ -38,7 +39,7 @@ func (mdbrepo *ProjectMongoDBRepo) GetProjects() ([]string, error) {
 		project := &project{}
 		err := cursor.Decode(project)
 		if err != nil {
-			fmt.Println("Could not cast to *models.Project")
+			mdbrepo.Logger.Error("Could not cast to *models.Project")
 		}
 		result = append(result, project.ProjectName)
 	}

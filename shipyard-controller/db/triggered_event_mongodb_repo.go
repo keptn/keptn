@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/jeremywohl/flatten"
+	keptn "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -15,7 +16,7 @@ const collectionNameSuffix = "-triggeredEvents"
 
 type MongoDBTriggeredEventsRepo struct {
 	DbConnection MongoDBConnection
-	Project      string
+	Logger       keptn.LoggerInterface
 }
 
 func (mdbrepo *MongoDBTriggeredEventsRepo) GetEvents(project string, filter EventFilter) ([]models.Event, error) {
@@ -80,7 +81,7 @@ func (mdbrepo *MongoDBTriggeredEventsRepo) InsertEvent(project string, event mod
 
 	_, err = collection.InsertOne(ctx, eventInterface)
 	if err != nil {
-		fmt.Println("Could not insert event " + event.ID + ": " + err.Error())
+		mdbrepo.Logger.Error("Could not insert event " + event.ID + ": " + err.Error())
 	}
 	return nil
 }
@@ -96,10 +97,10 @@ func (mdbrepo *MongoDBTriggeredEventsRepo) DeleteEvent(project string, eventId s
 	collection := mdbrepo.getTriggeredEventsCollection(project)
 	_, err = collection.DeleteMany(ctx, bson.M{"id": eventId})
 	if err != nil {
-		fmt.Println(fmt.Sprintf("Could not delete event %s : %s\n", eventId, err.Error()))
+		mdbrepo.Logger.Error(fmt.Sprintf("Could not delete event %s : %s\n", eventId, err.Error()))
 		return err
 	}
-	fmt.Println("Deleted event " + eventId)
+	mdbrepo.Logger.Info("Deleted event " + eventId)
 	return nil
 }
 

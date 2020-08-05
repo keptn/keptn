@@ -85,10 +85,15 @@ type eventManager struct {
 
 func getEventManagerInstance() *eventManager {
 	if eventManagerInstance == nil {
+		logger := keptn.NewLogger("", "", "shipyard-controller")
 		eventManagerInstance = &eventManager{
-			projectRepo:        &db.ProjectMongoDBRepo{},
-			triggeredEventRepo: &db.MongoDBTriggeredEventsRepo{},
-			logger:             keptn.NewLogger("", "", "shipyard-controller"),
+			projectRepo: &db.ProjectMongoDBRepo{
+				Logger: logger,
+			},
+			triggeredEventRepo: &db.MongoDBTriggeredEventsRepo{
+				Logger: logger,
+			},
+			logger: logger,
 		}
 	}
 	return eventManagerInstance
