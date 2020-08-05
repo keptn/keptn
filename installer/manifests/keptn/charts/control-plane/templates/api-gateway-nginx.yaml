@@ -1,3 +1,5 @@
+{{- $prefixPathTrimmed := trimPrefix "/" .Values.prefixPath  }}
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -50,12 +52,12 @@ data:
       }
     }
   keptn-endpoints.conf: |
-    rewrite ^/$ /bridge permanent;
-    rewrite ^/api$ /api/swagger-ui/ permanent;
+    rewrite ^/{{ $prefixPathTrimmed }}$ {{ .Values.prefixPath }}/bridge/ permanent;
+    rewrite ^{{ .Values.prefixPath }}/api$ {{ .Values.prefixPath }}/api/swagger-ui/ permanent;
 
     # special configuration for /v1/auth to always use POST requests
-    location /api/v1/auth {
-      rewrite /api/v1/auth /v1/auth break;
+    location {{ .Values.prefixPath }}/api/v1/auth {
+      rewrite {{ .Values.prefixPath }}/api/v1/auth /v1/auth break;
 
       proxy_method POST;
       proxy_pass_request_body off;
@@ -67,8 +69,8 @@ data:
       proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    location /bridge {
-      rewrite /bridge(/.*) $1 break;
+    location {{ .Values.prefixPath }}/bridge {
+      rewrite {{ .Values.prefixPath }}/bridge(/.*) $1 break;
       proxy_pass http://bridge:8080;
       proxy_http_version 1.1;
       proxy_set_header X-Real-IP $remote_addr;
@@ -85,11 +87,11 @@ data:
         return 200 "OK\n";
     }
 
-    location /api/mongodb-datastore/swagger-ui/swagger.yaml {
+    location {{ .Values.prefixPath }}/api/mongodb-datastore/swagger-ui/swagger.yaml {
      # auth via backend (if the subrequest returns a 2xx response code, the access is allowed. If it returns 401 or 403,
      # the access is denied) before we store the file
      # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
-      rewrite /api/mongodb-datastore/(.*) /$1  break;
+      rewrite {{ .Values.prefixPath }}/api/mongodb-datastore/(.*) /$1  break;
       proxy_pass         http://mongodb-datastore:8080;
       proxy_redirect     off;
       proxy_set_header   Host $host;
@@ -99,13 +101,13 @@ data:
       proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    location  /api/mongodb-datastore {
+    location  {{ .Values.prefixPath }}/api/mongodb-datastore {
       # auth via backend (if the subrequest returns a 2xx response code, the access is allowed. If it returns 401 or 403,
       # the access is denied) before we store the file
       # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
-      auth_request               /api/v1/auth;
+      auth_request               {{ .Values.prefixPath }}/api/v1/auth;
 
-      rewrite /api/mongodb-datastore/(.*) /$1  break;
+      rewrite {{ .Values.prefixPath }}/api/mongodb-datastore/(.*) /$1  break;
       proxy_pass         http://mongodb-datastore:8080;
       proxy_redirect     off;
       proxy_set_header   Host $host;
@@ -115,12 +117,12 @@ data:
       proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    location /api/configuration-service/swagger-ui/swagger.yaml {
+    location {{ .Values.prefixPath }}/api/configuration-service/swagger-ui/swagger.yaml {
       # auth via backend (if the subrequest returns a 2xx response code, the access is allowed. If it returns 401 or 403,
       # the access is denied) before we store the file
       # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.
 
-      rewrite /api/configuration-service/(.*) /$1  break;
+      rewrite {{ .Values.prefixPath }}/api/configuration-service/(.*) /$1  break;
       proxy_pass         http://configuration-service:8080;
       proxy_redirect     off;
       proxy_set_header   Host $host;
@@ -130,13 +132,13 @@ data:
       proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    location  /api/configuration-service {
+    location  {{ .Values.prefixPath }}/api/configuration-service {
       # auth via backend (if the subrequest returns a 2xx response code, the access is allowed. If it returns 401 or 403,
       # the access is denied) before we store the file
       # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
-      auth_request               /api/v1/auth;
+      auth_request               {{ .Values.prefixPath }}/api/v1/auth;
 
-      rewrite /api/configuration-service/(.*) /$1  break;
+      rewrite {{ .Values.prefixPath }}/api/configuration-service/(.*) /$1  break;
       proxy_pass         http://configuration-service:8080;
       proxy_redirect     off;
       proxy_set_header   Host $host;
@@ -146,9 +148,9 @@ data:
       proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    location /api {
-      rewrite /api/(.*) /$1 break;
-      rewrite /api / break;
+    location {{ .Values.prefixPath }}/api {
+      rewrite {{ .Values.prefixPath }}/api/(.*) /$1 break;
+      rewrite {{ .Values.prefixPath }}/api / break;
       proxy_pass http://api-service:8080;
       proxy_http_version 1.1;
       proxy_set_header X-Real-IP $remote_addr;
@@ -251,6 +253,7 @@ spec:
     - port: {{ .Values.apiGatewayNginx.port }}
       name: http
       targetPort: 8080
+      nodePort: {{ .Values.apiGatewayNginx.nodePort }}
       protocol: TCP
   selector:
     app.kubernetes.io/name: api-gateway-nginx
