@@ -43,7 +43,6 @@ definitions:
         type: string
       time:
         type: string
-        format: date-time
       triggeredid:
         type: string
       type:
@@ -84,23 +83,23 @@ parameters:
     type: string
     description: Event type
 
-  projectName:
+  project:
     in: query
-    name: projectName
+    name: project
     required: false
     type: string
     description: Project name
 
-  stageName:
+  stage:
     in: query
-    name: stageName
+    name: stage
     required: false
     type: string
     description: Stage name
 
-  serviceName:
+  service:
     in: query
-    name: serviceName
+    name: service
     required: false
     type: string
     description: Service name
@@ -154,9 +153,9 @@ paths:
       parameters:
         - $ref: '#/parameters/pageSize'
         - $ref: '#/parameters/nextPageKey'
-        - $ref: '#/parameters/projectName'
-        - $ref: '#/parameters/stageName'
-        - $ref: '#/parameters/serviceName'
+        - $ref: '#/parameters/project'
+        - $ref: '#/parameters/stage'
+        - $ref: '#/parameters/service'
         - $ref: '#/parameters/eventID'
       summary: Get list of triggered events
       responses:

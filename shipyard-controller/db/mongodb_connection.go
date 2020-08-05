@@ -5,8 +5,18 @@ import (
 	"fmt"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"os"
+	"sync"
 	"time"
 )
+
+var mongoDBHost = os.Getenv("MONGODB_HOST")
+var databaseName = os.Getenv("MONGO_DB_NAME")
+var mongoDBUser = os.Getenv("MONGODB_USER")
+var mongoDBPassword = os.Getenv("MONGODB_PASSWORD")
+var mutex = &sync.Mutex{}
+
+var mongoDBConnection = fmt.Sprintf("mongodb://%s:%s@%s/%s", mongoDBUser, mongoDBPassword, mongoDBHost, databaseName)
 
 type MongoDBConnection struct {
 	Client *mongo.Client

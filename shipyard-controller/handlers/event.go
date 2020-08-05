@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
 
@@ -9,6 +10,10 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/restapi/operations"
 )
+
+type eventData struct {
+	Project string `json:"project"`
+}
 
 func GetTriggeredEvents(params operations.GetTriggeredEventsParams) middleware.Responder {
 	var payload = &models.Events{
@@ -24,13 +29,13 @@ func GetTriggeredEvents(params operations.GetTriggeredEventsParams) middleware.R
 
 	eventFilter := db.EventFilter{
 		Type:    params.EventType,
-		Stage:   params.StageName,
-		Service: params.ServiceName,
+		Stage:   params.Stage,
+		Service: params.Service,
 		ID:      params.EventID,
 	}
 
-	if params.ProjectName != nil && *params.ProjectName != "" {
-		events, err = em.GetTriggeredEventsOfProject(*params.ProjectName, eventFilter)
+	if params.Project != nil && *params.Project != "" {
+		events, err = em.GetTriggeredEventsOfProject(*params.Project, eventFilter)
 	} else {
 		events, err = em.GetAllTriggeredEvents(eventFilter)
 	}
@@ -57,7 +62,16 @@ func GetTriggeredEvents(params operations.GetTriggeredEventsParams) middleware.R
 }
 
 func HandleEvent(params operations.HandleEventParams) middleware.Responder {
-	return nil
+	em := getEventManagerInstance()
+	err := em.InsertEvent(*params.Body)
+
+	if err != nil {
+		return operations.NewHandleEventDefault(500).WithPayload(&models.Error{
+			Code:    500,
+			Message: swag.String(err.Error()),
+		})
+	}
+	return operations.NewHandleEventOK()
 }
 
 var eventManagerInstance *eventManager
@@ -96,4 +110,17 @@ func (em *eventManager) GetAllTriggeredEvents(filter db.EventFilter) ([]models.E
 
 func (em *eventManager) GetTriggeredEventsOfProject(project string, filter db.EventFilter) ([]models.Event, error) {
 	return em.triggeredEventRepo.GetEvents(project, filter)
+}
+
+func (em *eventManager) InsertEvent(event models.Event) error {
+	marshal, err := json.Marshal(event.Data)
+	if err != nil {
+		return err
+	}
+	data := &eventData{}
+	err = json.Unmarshal(marshal, data)
+	if err != nil {
+		return err
+	}
+	return em.triggeredEventRepo.InsertEvent(data.Project, event)
 }

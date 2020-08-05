@@ -4,25 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/event"
+	"github.com/jeremywohl/flatten"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"os"
-	"sync"
 	"time"
 )
 
 const collectionNameSuffix = "-triggeredEvents"
-
-var mongoDBHost = os.Getenv("MONGODB_HOST")
-var databaseName = os.Getenv("MONGO_DB_NAME")
-var mongoDBUser = os.Getenv("MONGODB_USER")
-var mongoDBPassword = os.Getenv("MONGODB_PASSWORD")
-var mutex = &sync.Mutex{}
-
-var mongoDBConnection = fmt.Sprintf("mongodb://%s:%s@%s/%s", mongoDBUser, mongoDBPassword, mongoDBHost, databaseName)
 
 type MongoDBTriggeredEventsRepo struct {
 	DbConnection MongoDBConnection
@@ -52,11 +41,22 @@ func (mdbrepo *MongoDBTriggeredEventsRepo) GetEvents(project string, filter Even
 
 	defer cur.Close(ctx)
 	for cur.Next(ctx) {
-		event := &models.Event{}
-		err := cur.Decode(event)
+		var outputEvent interface{}
+		err := cur.Decode(&outputEvent)
 		if err != nil {
-			fmt.Println(fmt.Sprintf("Could not cast %v to *models.Event\n", cur.Current))
 			return nil, err
+		}
+		outputEvent, err = flattenRecursively(outputEvent)
+		if err != nil {
+			return nil, err
+		}
+
+		data, _ := json.Marshal(outputEvent)
+
+		event := &models.Event{}
+		err = json.Unmarshal(data, event)
+		if err != nil {
+			continue
 		}
 		events = append(events, *event)
 	}
@@ -122,4 +122,39 @@ func getSearchOptions(filter EventFilter) bson.M {
 		searchOptions["id"] = *filter.ID
 	}
 	return searchOptions
+}
+
+func flattenRecursively(i interface{}) (interface{}, error) {
+
+	if _, ok := i.(bson.D); ok {
+		d := i.(bson.D)
+		myMap := d.Map()
+		flat, err := flatten.Flatten(myMap, "", flatten.RailsStyle)
+		if err != nil {
+			return nil, err
+		}
+		for k, v := range flat {
+			res, err := flattenRecursively(v)
+			if err != nil {
+				return nil, err
+			}
+			if k == "eventContext" {
+				flat[k] = nil
+			} else {
+				flat[k] = res
+			}
+		}
+		return flat, nil
+	} else if _, ok := i.(bson.A); ok {
+		a := i.(bson.A)
+		for i := 0; i < len(a); i++ {
+			res, err := flattenRecursively(a[i])
+			if err != nil {
+				return nil, err
+			}
+			a[i] = res
+		}
+		return a, nil
+	}
+	return i, nil
 }
