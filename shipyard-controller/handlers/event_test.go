@@ -57,7 +57,7 @@ func getTestEvent() models.Event {
 func Test_eventManager_GetAllTriggeredEvents(t *testing.T) {
 	type fields struct {
 		projectRepo        db.ProjectRepo
-		triggeredEventRepo db.TriggeredEventRepo
+		triggeredEventRepo db.EventRepo
 	}
 	type args struct {
 		filter db.EventFilter
@@ -116,7 +116,7 @@ func stringp(s string) *string {
 func Test_eventManager_GetTriggeredEventsOfProject(t *testing.T) {
 	type fields struct {
 		projectRepo        db.ProjectRepo
-		triggeredEventRepo db.TriggeredEventRepo
+		triggeredEventRepo db.EventRepo
 	}
 	type args struct {
 		project string
@@ -169,7 +169,7 @@ func Test_eventManager_GetTriggeredEventsOfProject(t *testing.T) {
 func Test_eventManager_InsertEvent(t *testing.T) {
 	type fields struct {
 		projectRepo        db.ProjectRepo
-		triggeredEventRepo db.TriggeredEventRepo
+		triggeredEventRepo db.EventRepo
 	}
 	type args struct {
 		event models.Event

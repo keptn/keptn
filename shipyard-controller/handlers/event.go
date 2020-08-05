@@ -83,7 +83,7 @@ var eventManagerInstance *eventManager
 
 type eventManager struct {
 	projectRepo        db.ProjectRepo
-	triggeredEventRepo db.TriggeredEventRepo
+	triggeredEventRepo db.EventRepo
 	logger             *keptn.Logger
 }
 
@@ -94,7 +94,7 @@ func getEventManagerInstance() *eventManager {
 			projectRepo: &db.ProjectMongoDBRepo{
 				Logger: logger,
 			},
-			triggeredEventRepo: &db.MongoDBTriggeredEventsRepo{
+			triggeredEventRepo: &db.MongoDBEventsRepo{
 				Logger: logger,
 			},
 			logger: logger,

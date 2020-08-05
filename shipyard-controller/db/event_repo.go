@@ -10,8 +10,8 @@ type EventFilter struct {
 	ID      *string
 }
 
-// TriggeredEventRepo is an interface for retrieving and storing events
-type TriggeredEventRepo interface {
+// EventRepo is an interface for retrieving and storing events
+type EventRepo interface {
 	// GetEvents gets all events of a project, based on the provided filter
 	GetEvents(project string, filter EventFilter) ([]models.Event, error)
 	// InsertEvent inserts an event into the collection of the specified project

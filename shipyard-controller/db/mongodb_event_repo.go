@@ -12,16 +12,16 @@ import (
 	"time"
 )
 
-const collectionNameSuffix = "-triggeredEvents"
+const triggeredEventsCollectionNameSuffix = "-triggeredEvents"
 
-// MongoDBTriggeredEventsRepo retrieves and stores events in a mongodb collection
-type MongoDBTriggeredEventsRepo struct {
+// MongoDBEventsRepo retrieves and stores events in a mongodb collection
+type MongoDBEventsRepo struct {
 	DbConnection MongoDBConnection
 	Logger       keptn.LoggerInterface
 }
 
 // GetEvents gets all events of a project, based on the provided filter
-func (mdbrepo *MongoDBTriggeredEventsRepo) GetEvents(project string, filter EventFilter) ([]models.Event, error) {
+func (mdbrepo *MongoDBEventsRepo) GetEvents(project string, filter EventFilter) ([]models.Event, error) {
 	err := mdbrepo.DbConnection.EnsureDBConnection()
 	if err != nil {
 		return nil, err
@@ -29,7 +29,7 @@ func (mdbrepo *MongoDBTriggeredEventsRepo) GetEvents(project string, filter Even
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	collection := mdbrepo.getTriggeredEventsCollection(project)
+	collection := mdbrepo.getEventsCollection(project)
 
 	searchOptions := getSearchOptions(filter)
 
@@ -68,7 +68,7 @@ func (mdbrepo *MongoDBTriggeredEventsRepo) GetEvents(project string, filter Even
 }
 
 // InsertEvent inserts an event into the collection of the specified project
-func (mdbrepo *MongoDBTriggeredEventsRepo) InsertEvent(project string, event models.Event) error {
+func (mdbrepo *MongoDBEventsRepo) InsertEvent(project string, event models.Event) error {
 	err := mdbrepo.DbConnection.EnsureDBConnection()
 	if err != nil {
 		return err
@@ -76,7 +76,7 @@ func (mdbrepo *MongoDBTriggeredEventsRepo) InsertEvent(project string, event mod
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	collection := mdbrepo.getTriggeredEventsCollection(project)
+	collection := mdbrepo.getEventsCollection(project)
 
 	marshal, _ := json.Marshal(event)
 	var eventInterface interface{}
@@ -90,7 +90,7 @@ func (mdbrepo *MongoDBTriggeredEventsRepo) InsertEvent(project string, event mod
 }
 
 // DeleteEvent deletes an event from the collection
-func (mdbrepo *MongoDBTriggeredEventsRepo) DeleteEvent(project string, eventID string) error {
+func (mdbrepo *MongoDBEventsRepo) DeleteEvent(project string, eventID string) error {
 	err := mdbrepo.DbConnection.EnsureDBConnection()
 	if err != nil {
 		return err
@@ -98,7 +98,7 @@ func (mdbrepo *MongoDBTriggeredEventsRepo) DeleteEvent(project string, eventID s
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	collection := mdbrepo.getTriggeredEventsCollection(project)
+	collection := mdbrepo.getEventsCollection(project)
 	_, err = collection.DeleteMany(ctx, bson.M{"id": eventID})
 	if err != nil {
 		mdbrepo.Logger.Error(fmt.Sprintf("Could not delete event %s : %s\n", eventID, err.Error()))
@@ -108,8 +108,8 @@ func (mdbrepo *MongoDBTriggeredEventsRepo) DeleteEvent(project string, eventID s
 	return nil
 }
 
-func (mdbrepo *MongoDBTriggeredEventsRepo) getTriggeredEventsCollection(project string) *mongo.Collection {
-	projectCollection := mdbrepo.DbConnection.Client.Database(databaseName).Collection(project + collectionNameSuffix)
+func (mdbrepo *MongoDBEventsRepo) getEventsCollection(project string) *mongo.Collection {
+	projectCollection := mdbrepo.DbConnection.Client.Database(databaseName).Collection(project + triggeredEventsCollectionNameSuffix)
 	return projectCollection
 }
 
