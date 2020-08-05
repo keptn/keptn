@@ -21,7 +21,7 @@ spec:
         imagePullPolicy: Always
         env:
          - name: API_URL
-           value: "http://api-gateway-nginx.keptn.svc.cluster.local/keptn/api"
+           value: "http://api-gateway-nginx.keptn.svc.cluster.local/api"
          - name: API_TOKEN
            valueFrom:
              secretKeyRef:
