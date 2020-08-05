@@ -48,7 +48,7 @@ Besides, deployed services and the configuration on the Git upstream (i.e., GitH
 		if err != nil {
 			return err
 		}
-		in = strings.TrimSpace(in)
+		in = strings.ToLower(strings.TrimSpace(in))
 		if in != "y" && in != "yes" {
 			return nil
 		}
