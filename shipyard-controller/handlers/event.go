@@ -16,6 +16,7 @@ type eventData struct {
 	Project string `json:"project"`
 }
 
+// GetTriggeredEvents implements the request handler for GET /event/triggered/{eventType}
 func GetTriggeredEvents(params operations.GetTriggeredEventsParams) middleware.Responder {
 	var payload = &models.Events{
 		PageSize:    0,
@@ -36,9 +37,9 @@ func GetTriggeredEvents(params operations.GetTriggeredEventsParams) middleware.R
 	}
 
 	if params.Project != nil && *params.Project != "" {
-		events, err = em.GetTriggeredEventsOfProject(*params.Project, eventFilter)
+		events, err = em.getTriggeredEventsOfProject(*params.Project, eventFilter)
 	} else {
-		events, err = em.GetAllTriggeredEvents(eventFilter)
+		events, err = em.getAllTriggeredEvents(eventFilter)
 	}
 
 	if err != nil {
@@ -62,9 +63,10 @@ func GetTriggeredEvents(params operations.GetTriggeredEventsParams) middleware.R
 	return operations.NewGetTriggeredEventsOK().WithPayload(payload)
 }
 
+// HandleEvent implements the request handler for handling events
 func HandleEvent(params operations.HandleEventParams) middleware.Responder {
 	em := getEventManagerInstance()
-	err := em.InsertEvent(*params.Body)
+	err := em.insertEvent(*params.Body)
 
 	if err != nil {
 		return operations.NewHandleEventDefault(500).WithPayload(&models.Error{
@@ -99,7 +101,7 @@ func getEventManagerInstance() *eventManager {
 	return eventManagerInstance
 }
 
-func (em *eventManager) GetAllTriggeredEvents(filter db.EventFilter) ([]models.Event, error) {
+func (em *eventManager) getAllTriggeredEvents(filter db.EventFilter) ([]models.Event, error) {
 	projects, err := em.projectRepo.GetProjects()
 
 	if err != nil {
@@ -116,11 +118,11 @@ func (em *eventManager) GetAllTriggeredEvents(filter db.EventFilter) ([]models.E
 	return allEvents, nil
 }
 
-func (em *eventManager) GetTriggeredEventsOfProject(project string, filter db.EventFilter) ([]models.Event, error) {
+func (em *eventManager) getTriggeredEventsOfProject(project string, filter db.EventFilter) ([]models.Event, error) {
 	return em.triggeredEventRepo.GetEvents(project, filter)
 }
 
-func (em *eventManager) InsertEvent(event models.Event) error {
+func (em *eventManager) insertEvent(event models.Event) error {
 	marshal, err := json.Marshal(event.Data)
 	if err != nil {
 		return err

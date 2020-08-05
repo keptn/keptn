@@ -8,6 +8,7 @@ import (
 	"time"
 )
 
+// ProjectMongoDBRepo retrieves projects from a mongodb collection
 type ProjectMongoDBRepo struct {
 	DbConnection MongoDBConnection
 	Logger       keptn.LoggerInterface
@@ -19,6 +20,7 @@ type project struct {
 	ProjectName string `json:"projectName"`
 }
 
+// GetProjects returns all available projects
 func (mdbrepo *ProjectMongoDBRepo) GetProjects() ([]string, error) {
 	result := []string{}
 	err := mdbrepo.DbConnection.EnsureDBConnection()

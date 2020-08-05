@@ -7,35 +7,35 @@ import (
 	"testing"
 )
 
-type GetEventsMock func(project string, filter db.EventFilter) ([]models.Event, error)
-type InsertEventMock func(project string, event models.Event) error
-type DeleteEventMock func(project string, eventId string) error
+type getEventsMock func(project string, filter db.EventFilter) ([]models.Event, error)
+type insertEventMock func(project string, event models.Event) error
+type deleteEventMock func(project string, eventId string) error
 
-type TriggeredEventMock struct {
-	getEvents   GetEventsMock
-	insertEvent InsertEventMock
-	deleteEvent DeleteEventMock
+type triggeredEventMock struct {
+	getEvents   getEventsMock
+	insertEvent insertEventMock
+	deleteEvent deleteEventMock
 }
 
-func (t TriggeredEventMock) GetEvents(project string, filter db.EventFilter) ([]models.Event, error) {
+func (t triggeredEventMock) GetEvents(project string, filter db.EventFilter) ([]models.Event, error) {
 	return t.getEvents(project, filter)
 }
 
-func (t TriggeredEventMock) InsertEvent(project string, event models.Event) error {
+func (t triggeredEventMock) InsertEvent(project string, event models.Event) error {
 	return t.insertEvent(project, event)
 }
 
-func (t TriggeredEventMock) DeleteEvent(project string, eventId string) error {
+func (t triggeredEventMock) DeleteEvent(project string, eventId string) error {
 	return t.deleteEvent(project, eventId)
 }
 
-type GetProjectsMock func() ([]string, error)
+type getProjectsMock func() ([]string, error)
 
-type ProjectRepoMock struct {
-	getProjects GetProjectsMock
+type projectRepoMock struct {
+	getProjects getProjectsMock
 }
 
-func (p ProjectRepoMock) GetProjects() ([]string, error) {
+func (p projectRepoMock) GetProjects() ([]string, error) {
 	return p.getProjects()
 }
 
@@ -72,10 +72,10 @@ func Test_eventManager_GetAllTriggeredEvents(t *testing.T) {
 		{
 			name: "Get triggered events for all projects",
 			fields: fields{
-				projectRepo: &ProjectRepoMock{getProjects: func() ([]string, error) {
+				projectRepo: &projectRepoMock{getProjects: func() ([]string, error) {
 					return []string{"sockshop", "rockshop"}, nil
 				}},
-				triggeredEventRepo: &TriggeredEventMock{
+				triggeredEventRepo: &triggeredEventMock{
 					getEvents: func(project string, filter db.EventFilter) ([]models.Event, error) {
 						return []models.Event{getTestEvent()}, nil
 					},
@@ -97,13 +97,13 @@ func Test_eventManager_GetAllTriggeredEvents(t *testing.T) {
 				projectRepo:        tt.fields.projectRepo,
 				triggeredEventRepo: tt.fields.triggeredEventRepo,
 			}
-			got, err := em.GetAllTriggeredEvents(tt.args.filter)
+			got, err := em.getAllTriggeredEvents(tt.args.filter)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("GetAllTriggeredEvents() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("getAllTriggeredEvents() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetAllTriggeredEvents() got = %v, want %v", got, tt.want)
+				t.Errorf("getAllTriggeredEvents() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -133,7 +133,7 @@ func Test_eventManager_GetTriggeredEventsOfProject(t *testing.T) {
 			name: "Get triggered events for project",
 			fields: fields{
 				projectRepo: nil,
-				triggeredEventRepo: &TriggeredEventMock{
+				triggeredEventRepo: &triggeredEventMock{
 					getEvents: func(project string, filter db.EventFilter) ([]models.Event, error) {
 						return []models.Event{getTestEvent()}, nil
 					},
@@ -154,13 +154,13 @@ func Test_eventManager_GetTriggeredEventsOfProject(t *testing.T) {
 				projectRepo:        tt.fields.projectRepo,
 				triggeredEventRepo: tt.fields.triggeredEventRepo,
 			}
-			got, err := em.GetTriggeredEventsOfProject(tt.args.project, tt.args.filter)
+			got, err := em.getTriggeredEventsOfProject(tt.args.project, tt.args.filter)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("GetTriggeredEventsOfProject() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("getTriggeredEventsOfProject() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetTriggeredEventsOfProject() got = %v, want %v", got, tt.want)
+				t.Errorf("getTriggeredEventsOfProject() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -183,7 +183,7 @@ func Test_eventManager_InsertEvent(t *testing.T) {
 		{
 			name: "insert event",
 			fields: fields{
-				triggeredEventRepo: &TriggeredEventMock{
+				triggeredEventRepo: &triggeredEventMock{
 					insertEvent: func(project string, event models.Event) error {
 						return nil
 					},
@@ -199,8 +199,8 @@ func Test_eventManager_InsertEvent(t *testing.T) {
 				projectRepo:        tt.fields.projectRepo,
 				triggeredEventRepo: tt.fields.triggeredEventRepo,
 			}
-			if err := em.InsertEvent(tt.args.event); (err != nil) != tt.wantErr {
-				t.Errorf("InsertEvent() error = %v, wantErr %v", err, tt.wantErr)
+			if err := em.insertEvent(tt.args.event); (err != nil) != tt.wantErr {
+				t.Errorf("insertEvent() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

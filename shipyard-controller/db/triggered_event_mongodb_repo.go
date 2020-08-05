@@ -14,11 +14,13 @@ import (
 
 const collectionNameSuffix = "-triggeredEvents"
 
+// MongoDBTriggeredEventsRepo retrieves and stores events in a mongodb collection
 type MongoDBTriggeredEventsRepo struct {
 	DbConnection MongoDBConnection
 	Logger       keptn.LoggerInterface
 }
 
+// GetEvents gets all events of a project, based on the provided filter
 func (mdbrepo *MongoDBTriggeredEventsRepo) GetEvents(project string, filter EventFilter) ([]models.Event, error) {
 	err := mdbrepo.DbConnection.EnsureDBConnection()
 	if err != nil {
@@ -65,6 +67,7 @@ func (mdbrepo *MongoDBTriggeredEventsRepo) GetEvents(project string, filter Even
 	return events, nil
 }
 
+// InsertEvent inserts an event into the collection of the specified project
 func (mdbrepo *MongoDBTriggeredEventsRepo) InsertEvent(project string, event models.Event) error {
 	err := mdbrepo.DbConnection.EnsureDBConnection()
 	if err != nil {
@@ -86,6 +89,7 @@ func (mdbrepo *MongoDBTriggeredEventsRepo) InsertEvent(project string, event mod
 	return nil
 }
 
+// DeleteEvent deletes an event from the collection
 func (mdbrepo *MongoDBTriggeredEventsRepo) DeleteEvent(project string, eventId string) error {
 	err := mdbrepo.DbConnection.EnsureDBConnection()
 	if err != nil {

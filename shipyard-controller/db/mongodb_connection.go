@@ -18,10 +18,12 @@ var mutex = &sync.Mutex{}
 
 var mongoDBConnection = fmt.Sprintf("mongodb://%s:%s@%s/%s", mongoDBUser, mongoDBPassword, mongoDBHost, databaseName)
 
+// MongoDBConnection takes care of establishing a connection to the mongodb
 type MongoDBConnection struct {
 	Client *mongo.Client
 }
 
+// EnsureDBConnection makes sure a connection to the mongodb is established
 func (m *MongoDBConnection) EnsureDBConnection() error {
 	mutex.Lock()
 	defer mutex.Unlock()
