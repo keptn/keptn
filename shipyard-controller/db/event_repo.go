@@ -2,12 +2,16 @@ package db
 
 import "github.com/keptn/keptn/shipyard-controller/models"
 
+// EventStatus indicates the status type of an event, i.e. 'triggered', 'started', or 'finished'
 type EventStatus string
 
 const (
+	// TriggeredEvent describes a 'triggered' event
 	TriggeredEvent EventStatus = "triggered"
-	StartedEvent   EventStatus = "started"
-	FinishedEvent  EventStatus = "finished"
+	// StartedEvent describes a 'started' event
+	StartedEvent EventStatus = "started"
+	// FinishedEvent describes a 'finished' event
+	FinishedEvent EventStatus = "finished"
 )
 
 // EventFilter allows to pass filters
