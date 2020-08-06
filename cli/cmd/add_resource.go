@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 
@@ -76,7 +77,9 @@ keptn add-resource --project=rockshop --stage=production --service=shop --resour
 			},
 		}
 
-		resourceHandler := apiutils.NewAuthenticatedResourceHandler(endPoint.Host+"/api/configuration-service", apiToken, "x-token", nil, endPoint.Scheme)
+		endPoint.Path = path.Join(endPoint.Path, "configuration-service")
+
+		resourceHandler := apiutils.NewAuthenticatedResourceHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 
 		if (addResourceCmdParams.Service != nil && *addResourceCmdParams.Service != "") && (addResourceCmdParams.Stage != nil && *addResourceCmdParams.Stage != "") {
 			logging.PrintLog("Adding resource "+*addResourceCmdParams.Resource+" to service "+*addResourceCmdParams.Service+" in stage "+*addResourceCmdParams.Stage+" in project "+*addResourceCmdParams.Project, logging.InfoLevel)
