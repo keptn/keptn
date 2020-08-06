@@ -8,7 +8,7 @@ If any organization would like get added or removed please make a pull request b
 * Please don't include your organization's logo or other trademarked material
 * Add a reference (link to a public blog post, video, slides, etc) mentioning that Keptn is used
 
-If you are not sure how to do this and if your organization should be listed here, [reach out to us on Slack](https://join.slack.com/t/keptn/shared_invite/enQtNTUxMTQ1MzgzMzUxLWMzNmM1NDc4MmE0MmQ0MDgwYzMzMDc4NjM5ODk0ZmFjNTE2YzlkMGE4NGU5MWUxODY1NTBjNjNmNmI1NWQ1NGY) and we are happy to discuss with you.
+If you are not sure how to do this and if your organization should be listed here, [reach out to us on Slack](https://slack.keptn.sh) and we are happy to discuss with you.
 
 | Organization          | Reference                                                                        |
 |-----------------------|----------------------------------------------------------------------------------|
