@@ -73,6 +73,8 @@ before_install:
 - EVENTBROKER_FOLDER="eventbroker/"
 - SHIPYARD_SVC_IMAGE="keptn/shipyard-service"
 - SHIPYARD_SVC_FOLDER="shipyard-service/"
+- SHIPYARD_CONTROLLER_IMAGE="keptn/shipyard-controller"
+- SHIPYARD_CONTROLLER_FOLDER="shipyard-controller/"
 - CONFIGURATION_SVC_IMAGE="keptn/configuration-service"
 - CONFIGURATION_SVC_FOLDER="configuration-service/"
 - REMEDIATION_SVC_IMAGE="keptn/remediation-service"
@@ -265,6 +267,10 @@ jobs:
         go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
         cd ..
       - |
+        cd ${SHIPYARD_CONTROLLER_FOLDER}
+        go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        cd ..
+      - |
         cd "${CONFIGURATION_SVC_FOLDER}"
         go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
         cd ..
@@ -306,6 +312,7 @@ jobs:
     - source ./travis-scripts/build_develop.sh "${DISTRIBUTOR_IMAGE}" "${DISTRIBUTOR_FOLDER}" "${GIT_SHA}" "${DATE}"
     - source ./travis-scripts/build_develop.sh "${EVENTBROKER_IMAGE}" "${EVENTBROKER_FOLDER}" "${GIT_SHA}" "${DATE}"
     - source ./travis-scripts/build_develop.sh "${SHIPYARD_SVC_IMAGE}" "${SHIPYARD_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
+    - source ./travis-scripts/build_develop.sh "${SHIPYARD_CONTROLLER_IMAGE}" "${SHIPYARD_CONTROLLER_FOLDER}" "${GIT_SHA}" "${DATE}"
     - source ./travis-scripts/build_develop.sh "${CONFIGURATION_SVC_IMAGE}" "${CONFIGURATION_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
     - source ./travis-scripts/build_develop.sh "${REMEDIATION_SVC_IMAGE}" "${REMEDIATION_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
     - source ./travis-scripts/build_develop.sh "${LIGHTHOUSE_SVC_IMAGE}" "${LIGHTHOUSE_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
@@ -425,6 +432,10 @@ jobs:
     - |
       if [[ $CHANGED_FILES == *"${SHIPYARD_SVC_FOLDER}"*  ]]; then
         source ./travis-scripts/build_feature.sh "${SHIPYARD_SVC_IMAGE}" "${SHIPYARD_SVC_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
+      fi
+    - |
+      if [[ $CHANGED_FILES == *"${SHIPYARD_CONTROLLER_FOLDER}"*  ]]; then
+        source ./travis-scripts/build_feature.sh "${SHIPYARD_CONTROLLER_IMAGE}" "${SHIPYARD_CONTROLLER_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
       fi
     - |
       if [[ $CHANGED_FILES == *"${CONFIGURATION_SVC_FOLDER}"*  ]]; then
