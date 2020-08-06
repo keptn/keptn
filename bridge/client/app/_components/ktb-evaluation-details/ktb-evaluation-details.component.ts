@@ -55,6 +55,13 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   public _comparisonView: string = "heatmap";
 
   public _chartOptions: Highcharts.Options = {
+    chart: {
+      height: 400
+    },
+    legend: {
+      maxHeight: 70
+    },
+
     xAxis: {
       type: 'category',
       labels: {
