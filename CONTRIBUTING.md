@@ -6,19 +6,19 @@ First off, thank you for considering contributing to Keptn! It's people like you
 
 * **Start contributing**: We also have a list of [good first issues](https://github.com/keptn/keptn/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22). If you want to work on it, just post a comment on the issue.
 
-This document lays out how to get you started in contributing in Keptn, so please read on.
+This document lays out how to get you started in contributing to Keptn, so please read on.
 
 ## Documentation
 
 The Keptn repository is a monorepo with multiple sub-folders that contain microservices, the installer, and the Keptn CLI. 
 As a starting point, please read the README files in the respective sub-folder. Also, take a look at the docs within the [docs/](docs/) folder in this repository.
 
-We are aware that not every microservice has a comprehensive documentation, so if you have any questions feel free to ask us in the [Keptn Slack workspace](https://slack.keptn.sh).
+We are aware that not every microservice has comprehensive documentation, so if you have any questions feel free to ask us in the [Keptn Slack workspace](https://slack.keptn.sh).
 
 ## Propose a new Features
 
-Proposing new functionality for Keptn is a transparent process done via a so called [Keptn Enhancement Proposal](https://github.com/keptn/enhancement-proposals).
-This is required when the proposed functionality is intended to introduce new behaviour, change desired behaviour, or otherwise modify requirements of Keptn.
+Proposing new functionality for Keptn is a transparent process done via a so-called [Keptn Enhancement Proposal](https://github.com/keptn/enhancement-proposals).
+This is required when the proposed functionality is intended to introduce new behaviour, change desired behaviour, or otherwise modify the requirements of Keptn.
 
 If all you want to propose is a simple addition to a Keptn-service or the CLI, or even a bugfix, you can just open [a new issue on GitHub](https://github.com/keptn/keptn/issues/new/choose).
 
@@ -38,7 +38,7 @@ We are running automated code style checks for pull requests using the following
 
 For contributions to Keptn, please fork the Keptn repository and work in a branch. More information about forking is written down in the [docs/fork](docs/fork.md).
 
-We are following the [git branching model described in this blog post](https://nvie.com/posts/a-successful-git-branching-model/), however we try to avoid the extra step of the `develop` branch and instead work directly on the `master` branch.
+We are following the [git branching model described in this blog post](https://nvie.com/posts/a-successful-git-branching-model/), however, we try to avoid the extra step of the `develop` branch and instead work directly on the `master` branch.
 
 * If you work on a new feature, patch, or bugfix, [fork the repository](docs/fork.md), branch away from the `master` branch and use the following schema for naming your branches:
 
@@ -62,7 +62,7 @@ Before pushing your code to the repository, please run unit tests locally. When 
 
 ## Deploy your local changes to an existing cluster
 
-If you are changing behaviour or a large part of the code, please verify Keptn still works as it is supposed to do. This can be done, by following the tutorials availabe at [Keptn tutorials](https://tutorials.keptn.sh).
+If you are changing behaviour or a large part of the code, please verify Keptn still works as it is supposed to do. This can be done, by following the tutorials available at [Keptn tutorials](https://tutorials.keptn.sh).
 
 To deploy your local changes to an existing Kubernetes cluster with Keptn running on it, we recommend using [skaffold](https://skaffold.dev). We provide a `skaffold.yaml` file in every repository/directory, which you can be used to automatically deploy the service using:
 
