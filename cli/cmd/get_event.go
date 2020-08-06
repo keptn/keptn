@@ -24,9 +24,11 @@ import (
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/spf13/cobra"
 	"log"
+	"net/url"
+	"os"
 )
 
-type getEventStruct struct {
+type GetEventStruct struct {
 	KeptnContext 	*string
 	Project			*string
 	Stage			*string
@@ -36,7 +38,7 @@ type getEventStruct struct {
 	NumOfPages		*int
 }
 
-var getEvent getEventStruct
+var getEventParams GetEventStruct
 
 // getEventCmd represents the get command
 var getEventCmd = &cobra.Command{
@@ -45,82 +47,91 @@ var getEventCmd = &cobra.Command{
 	Short:   `Returns the latest Keptn event specified by event type`,
 	Long:    `Returns the latest Keptn event specified by event type. The event type is defined here: https://github.com/keptn/spec/blob/0.1.4/cloudevents.md`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) == 0 {
-			return errors.New("please provide an event type as an argument")
-		}
-
-		pageSize := setParameterValue(*getEvent.PageSize, "1")
-
-		eventType := args[0]
-
-		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
-
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
-
-		if !mocking {
-			events, err := eventHandler.GetEvents(&apiutils.EventFilter{
-				KeptnContext: *getEvent.KeptnContext,
-				Service: *getEvent.Service,
-				Stage: *getEvent.Stage,
-				Project: *getEvent.Project,
-				EventType:    eventType,
-				PageSize: pageSize,
-				NumberOfPages: *getEvent.NumOfPages,
-			})
-
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			if len(events) == 0 {
-				logging.PrintLog("No event returned", logging.QuietLevel)
-				return nil
-			}
-
-			for _, event := range events {
-				if *getEvent.Output == "yaml" {
-					event, _ := yaml.Marshal(event)
-					fmt.Println(string(event))
-				} else {
-					event, _ := json.MarshalIndent(event, "", "    ")
-					fmt.Println(string(event))
-				}
-			}
-		} else {
-			fmt.Println("Skipping send evaluation-start due to mocking flag set to true")
-		}
-
-		return nil
+		return getEvent(getEventParams, args)
 	},
+}
+
+func getEvent(eventStruct GetEventStruct, args []string) error {
+	if len(args) == 0 {
+		return errors.New("please provide an event type as an argument")
+	}
+
+	pageSize := setParameterValue(*eventStruct.PageSize, "1")
+
+	eventType := args[0]
+
+	var endPoint url.URL
+	var apiToken string
+	var err error
+	if !mocking {
+		endPoint, apiToken, err = credentialmanager.NewCredentialManager().GetCreds()
+	} else {
+		endPointPtr, _ := url.Parse(os.Getenv("MOCK_SERVER"))
+		endPoint = *endPointPtr
+		apiToken = ""
+	}
+
+	if err != nil {
+		return errors.New(authErrorMsg)
+	}
+
+	eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+
+	events, modErr := eventHandler.GetEvents(&apiutils.EventFilter{
+		KeptnContext: *eventStruct.KeptnContext,
+		Service: *eventStruct.Service,
+		Stage: *eventStruct.Stage,
+		Project: *eventStruct.Project,
+		EventType:    eventType,
+		PageSize: pageSize,
+		NumberOfPages: *eventStruct.NumOfPages,
+	})
+
+	if modErr != nil {
+		log.Fatal(modErr)
+	}
+
+	if len(events) == 0 {
+		logging.PrintLog("No event returned", logging.QuietLevel)
+		return nil
+	}
+
+	for _, event := range events {
+		if *eventStruct.Output == "yaml" {
+			event, _ := yaml.Marshal(event)
+			fmt.Println(string(event))
+		} else {
+			event, _ := json.MarshalIndent(event, "", "    ")
+			fmt.Println(string(event))
+		}
+	}
+
+	return nil
 }
 
 func init() {
 	getCmd.AddCommand(getEventCmd)
 
-	getEvent.KeptnContext = getEventCmd.Flags().StringP("keptn-context", "", "",
+	getEventParams.KeptnContext = getEventCmd.Flags().StringP("keptn-context", "", "",
 		"The ID of a Keptn context from which to retrieve the event")
 
-	getEvent.Project = getEventCmd.Flags().StringP("project", "", "",
+	getEventParams.Project = getEventCmd.Flags().StringP("project", "", "",
 		"The Keptn project name from which to retrieve the event")
 	getEventCmd.MarkFlagRequired("project")
 
-	getEvent.Stage = getEventCmd.Flags().StringP("stage", "", "",
+	getEventParams.Stage = getEventCmd.Flags().StringP("stage", "", "",
 		"The name of a stage within a project from which to retrieve the event")
 
-	getEvent.Service = getEventCmd.Flags().StringP("service", "", "",
+	getEventParams.Service = getEventCmd.Flags().StringP("service", "", "",
 		"The name of a service within a project from which to retrieve the event")
 
-	getEvent.Output = getEventCmd.Flags().StringP("output", "o", "",
+	getEventParams.Output = getEventCmd.Flags().StringP("output", "o", "",
 		" Output format. One of: json|yaml")
 
-	getEvent.PageSize = getEventCmd.Flags().StringP("page-size", "", "",
+	getEventParams.PageSize = getEventCmd.Flags().StringP("page-size", "", "",
 		"Max number of return events per page (Default 1)")
 
-	getEvent.NumOfPages = getEventCmd.Flags().IntP("num-of-pages", "", 1,
+	getEventParams.NumOfPages = getEventCmd.Flags().IntP("num-of-pages", "", 1,
 		"Number of pages that should be returned (Default 1).")
 }
 
