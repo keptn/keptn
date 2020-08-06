@@ -7,9 +7,9 @@ import (
 	"testing"
 )
 
-type getEventsMock func(project string, filter db.EventFilter) ([]models.Event, error)
-type insertEventMock func(project string, event models.Event) error
-type deleteEventMock func(project string, eventID string) error
+type getEventsMock func(project string, filter db.EventFilter, status db.EventStatus) ([]models.Event, error)
+type insertEventMock func(project string, event models.Event, status db.EventStatus) error
+type deleteEventMock func(project string, eventID string, status db.EventStatus) error
 
 type triggeredEventMock struct {
 	getEvents   getEventsMock
@@ -17,16 +17,16 @@ type triggeredEventMock struct {
 	deleteEvent deleteEventMock
 }
 
-func (t triggeredEventMock) GetEvents(project string, filter db.EventFilter) ([]models.Event, error) {
-	return t.getEvents(project, filter)
+func (t triggeredEventMock) GetEvents(project string, filter db.EventFilter, status db.EventStatus) ([]models.Event, error) {
+	return t.getEvents(project, filter, status)
 }
 
-func (t triggeredEventMock) InsertEvent(project string, event models.Event) error {
-	return t.insertEvent(project, event)
+func (t triggeredEventMock) InsertEvent(project string, event models.Event, status db.EventStatus) error {
+	return t.insertEvent(project, event, status)
 }
 
-func (t triggeredEventMock) DeleteEvent(project string, eventID string) error {
-	return t.deleteEvent(project, eventID)
+func (t triggeredEventMock) DeleteEvent(project string, eventID string, status db.EventStatus) error {
+	return t.deleteEvent(project, eventID, status)
 }
 
 type getProjectsMock func() ([]string, error)
@@ -76,7 +76,7 @@ func Test_eventManager_GetAllTriggeredEvents(t *testing.T) {
 					return []string{"sockshop", "rockshop"}, nil
 				}},
 				triggeredEventRepo: &triggeredEventMock{
-					getEvents: func(project string, filter db.EventFilter) ([]models.Event, error) {
+					getEvents: func(project string, filter db.EventFilter, status db.EventStatus) ([]models.Event, error) {
 						return []models.Event{getTestEvent()}, nil
 					},
 					insertEvent: nil,
@@ -94,8 +94,8 @@ func Test_eventManager_GetAllTriggeredEvents(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			em := &eventManager{
-				projectRepo:        tt.fields.projectRepo,
-				triggeredEventRepo: tt.fields.triggeredEventRepo,
+				projectRepo: tt.fields.projectRepo,
+				eventRepo:   tt.fields.triggeredEventRepo,
 			}
 			got, err := em.getAllTriggeredEvents(tt.args.filter)
 			if (err != nil) != tt.wantErr {
@@ -134,7 +134,7 @@ func Test_eventManager_GetTriggeredEventsOfProject(t *testing.T) {
 			fields: fields{
 				projectRepo: nil,
 				triggeredEventRepo: &triggeredEventMock{
-					getEvents: func(project string, filter db.EventFilter) ([]models.Event, error) {
+					getEvents: func(project string, filter db.EventFilter, status db.EventStatus) ([]models.Event, error) {
 						return []models.Event{getTestEvent()}, nil
 					},
 					insertEvent: nil,
@@ -151,8 +151,8 @@ func Test_eventManager_GetTriggeredEventsOfProject(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			em := &eventManager{
-				projectRepo:        tt.fields.projectRepo,
-				triggeredEventRepo: tt.fields.triggeredEventRepo,
+				projectRepo: tt.fields.projectRepo,
+				eventRepo:   tt.fields.triggeredEventRepo,
 			}
 			got, err := em.getTriggeredEventsOfProject(tt.args.project, tt.args.filter)
 			if (err != nil) != tt.wantErr {
@@ -184,7 +184,7 @@ func Test_eventManager_InsertEvent(t *testing.T) {
 			name: "insert event",
 			fields: fields{
 				triggeredEventRepo: &triggeredEventMock{
-					insertEvent: func(project string, event models.Event) error {
+					insertEvent: func(project string, event models.Event, status db.EventStatus) error {
 						return nil
 					},
 				},
@@ -198,11 +198,11 @@ func Test_eventManager_InsertEvent(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			em := &eventManager{
-				projectRepo:        tt.fields.projectRepo,
-				triggeredEventRepo: tt.fields.triggeredEventRepo,
+				projectRepo: tt.fields.projectRepo,
+				eventRepo:   tt.fields.triggeredEventRepo,
 			}
-			if err := em.insertEvent(tt.args.event); (err != nil) != tt.wantErr {
-				t.Errorf("insertEvent() error = %v, wantErr %v", err, tt.wantErr)
+			if err := em.handleTriggeredEvent(tt.args.event); (err != nil) != tt.wantErr {
+				t.Errorf("handleTriggeredEvent() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

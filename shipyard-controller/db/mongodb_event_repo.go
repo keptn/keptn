@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/jeremywohl/flatten"
 	keptn "github.com/keptn/go-utils/pkg/lib"
@@ -13,6 +14,7 @@ import (
 )
 
 const triggeredEventsCollectionNameSuffix = "-triggeredEvents"
+const startedEventsCollectionNameSuffix = "-startedEvents"
 
 // MongoDBEventsRepo retrieves and stores events in a mongodb collection
 type MongoDBEventsRepo struct {
@@ -21,7 +23,7 @@ type MongoDBEventsRepo struct {
 }
 
 // GetEvents gets all events of a project, based on the provided filter
-func (mdbrepo *MongoDBEventsRepo) GetEvents(project string, filter EventFilter) ([]models.Event, error) {
+func (mdbrepo *MongoDBEventsRepo) GetEvents(project string, filter EventFilter, status EventStatus) ([]models.Event, error) {
 	err := mdbrepo.DbConnection.EnsureDBConnection()
 	if err != nil {
 		return nil, err
@@ -29,7 +31,11 @@ func (mdbrepo *MongoDBEventsRepo) GetEvents(project string, filter EventFilter) 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	collection := mdbrepo.getEventsCollection(project)
+	collection := mdbrepo.getEventsCollection(project, status)
+
+	if collection == nil {
+		return nil, errors.New("invalid event type")
+	}
 
 	searchOptions := getSearchOptions(filter)
 
@@ -68,7 +74,7 @@ func (mdbrepo *MongoDBEventsRepo) GetEvents(project string, filter EventFilter) 
 }
 
 // InsertEvent inserts an event into the collection of the specified project
-func (mdbrepo *MongoDBEventsRepo) InsertEvent(project string, event models.Event) error {
+func (mdbrepo *MongoDBEventsRepo) InsertEvent(project string, event models.Event, status EventStatus) error {
 	err := mdbrepo.DbConnection.EnsureDBConnection()
 	if err != nil {
 		return err
@@ -76,7 +82,11 @@ func (mdbrepo *MongoDBEventsRepo) InsertEvent(project string, event models.Event
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	collection := mdbrepo.getEventsCollection(project)
+	collection := mdbrepo.getEventsCollection(project, status)
+
+	if collection == nil {
+		return errors.New("invalid event type")
+	}
 
 	marshal, _ := json.Marshal(event)
 	var eventInterface interface{}
@@ -90,7 +100,7 @@ func (mdbrepo *MongoDBEventsRepo) InsertEvent(project string, event models.Event
 }
 
 // DeleteEvent deletes an event from the collection
-func (mdbrepo *MongoDBEventsRepo) DeleteEvent(project string, eventID string) error {
+func (mdbrepo *MongoDBEventsRepo) DeleteEvent(project, eventID string, status EventStatus) error {
 	err := mdbrepo.DbConnection.EnsureDBConnection()
 	if err != nil {
 		return err
@@ -98,7 +108,12 @@ func (mdbrepo *MongoDBEventsRepo) DeleteEvent(project string, eventID string) er
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	collection := mdbrepo.getEventsCollection(project)
+	collection := mdbrepo.getEventsCollection(project, status)
+
+	if collection == nil {
+		return errors.New("invalid event type")
+	}
+
 	_, err = collection.DeleteMany(ctx, bson.M{"id": eventID})
 	if err != nil {
 		mdbrepo.Logger.Error(fmt.Sprintf("Could not delete event %s : %s\n", eventID, err.Error()))
@@ -108,9 +123,15 @@ func (mdbrepo *MongoDBEventsRepo) DeleteEvent(project string, eventID string) er
 	return nil
 }
 
-func (mdbrepo *MongoDBEventsRepo) getEventsCollection(project string) *mongo.Collection {
-	projectCollection := mdbrepo.DbConnection.Client.Database(databaseName).Collection(project + triggeredEventsCollectionNameSuffix)
-	return projectCollection
+func (mdbrepo *MongoDBEventsRepo) getEventsCollection(project string, status EventStatus) *mongo.Collection {
+	switch status {
+	case TriggeredEvent:
+		return mdbrepo.DbConnection.Client.Database(databaseName).Collection(project + triggeredEventsCollectionNameSuffix)
+	case StartedEvent:
+		return mdbrepo.DbConnection.Client.Database(databaseName).Collection(project + startedEventsCollectionNameSuffix)
+	default:
+		return nil
+	}
 }
 
 func getSearchOptions(filter EventFilter) bson.M {
@@ -125,6 +146,12 @@ func getSearchOptions(filter EventFilter) bson.M {
 	}
 	if filter.ID != nil && *filter.ID != "" {
 		searchOptions["id"] = *filter.ID
+	}
+	if filter.TriggeredID != nil && *filter.TriggeredID != "" {
+		searchOptions["triggeredid"] = *filter.TriggeredID
+	}
+	if filter.Source != nil && *filter.Source != "" {
+		searchOptions["source"] = *filter.Source
 	}
 	return searchOptions
 }
