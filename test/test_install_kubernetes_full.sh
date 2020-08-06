@@ -1,11 +1,26 @@
 #!/bin/bash
 
+KEPTN_INSTALLER_REPO=${KEPTN_INSTALLER_REPO:-https://storage.googleapis.com/keptn-installer/latest/keptn-0.1.0.tgz}
+
 source test/utils.sh
+
+# install istio
+curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.6.5 sh -
+cd istio-1.6.5
+export PATH=$PWD/bin:$PATH
+istioctl install --set profile=demo
+
+# verify the pods within istio-system
+verify_deployment_in_namespace "istio-ingressgateway" "istio-system"
+verify_deployment_in_namespace "istio-pilot" "istio-system"
+verify_deployment_in_namespace "istio-citadel" "istio-system"
+verify_deployment_in_namespace "istio-sidecar-injector" "istio-system"
+
 
 echo "Installing keptn on cluster"
 echo "{}" > creds.json # empty credentials file
 # Install keptn (using the develop version, which should point the :latest docker images)
-keptn install --keptn-installer-image="${KEPTN_INSTALLER_IMAGE}" --platform=kubernetes --creds=creds.json --gateway=NodePort --verbose
+keptn install --chart-repo="${KEPTN_INSTALLER_REPO}" --platform=kubernetes --creds=creds.json --endpoint-service-type=NodePort --verbose --use-case=continuous-delivery
 
 verify_test_step $? "keptn install failed"
 
@@ -24,16 +39,18 @@ verify_deployment_in_namespace "configuration-service" "keptn"
 verify_deployment_in_namespace "gatekeeper-service" "keptn"
 verify_deployment_in_namespace "jmeter-service" "keptn"
 verify_deployment_in_namespace "lighthouse-service" "keptn"
+verify_deployment_in_namespace "mongodb" "keptn"
+verify_deployment_in_namespace "mongodb-datastore" "keptn"
 
-# verify the pods within the keptn-datastore namespace
-verify_deployment_in_namespace "mongodb" "keptn-datastore"
-verify_deployment_in_namespace "mongodb-datastore" "keptn-datastore"
+# authenticate at Keptn API
+API_PORT=$(kubectl get svc api-gateway-nginx -n keptn -o jsonpath='{.spec.ports[?(@.name=="http")].nodePort}')
+INTERNAL_NODE_IP=$(kubectl get nodes -o jsonpath='{ $.items[0].status.addresses[?(@.type=="InternalIP")].address }')
+KEPTN_ENDPOINT=http://${INTERNAL_NODE_IP}:${API_PORT}/api
+KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)
+auth_at_keptn $KEPTN_ENDPOINT $KEPTN_API_TOKEN
+#keptn auth --endpoint=$KEPTN_ENDPOINT --api-token=$KEPTN_API_TOKEN
 
-# verify the pods within istio-system
-verify_deployment_in_namespace "istio-ingressgateway" "istio-system"
-verify_deployment_in_namespace "istio-pilot" "istio-system"
-verify_deployment_in_namespace "istio-citadel" "istio-system"
-verify_deployment_in_namespace "istio-sidecar-injector" "istio-system"
+verify_test_step $? "Could not authenticate at Keptn API"
 
 cd ../..
 

@@ -8,33 +8,34 @@ metadata:
     "app": "keptn"
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
+kind: ClusterRole
 metadata:
-  name: keptn-create-route
-  namespace: keptn
+  name: keptn-secuirtycontextconstraints
   labels:
     "app": "keptn"
 rules:
   - apiGroups:
       - ""
+      - security.openshift.io
     resources:
-      - routes
+      - securitycontextconstraints
     verbs:
-      - create
+      - get
+      - update
     resourceNames:
-      - "*"
+      - privileged
+      - anyuid
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
+kind: ClusterRoleBinding
 metadata:
-  name: keptn-create-route
-  namespace: keptn
+  name: keptn-secuirtycontextconstraints
   labels:
     "app": "keptn"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: keptn-create-route
+  kind: ClusterRole
+  name: keptn-secuirtycontextconstraints
 subjects:
   - kind: ServiceAccount
     name: keptn-openshift-route-service
@@ -45,15 +46,26 @@ kind: Deployment
 metadata:
   name: openshift-route-service
   namespace: keptn
+  labels:
+    app.kubernetes.io/name: openshift-route-service
+    app.kubernetes.io/instance: keptn
+    app.kubernetes.io/part-of: keptn-keptn
+    app.kubernetes.io/component: control-plane
+    app.kubernetes.io/version: develop
 spec:
   selector:
     matchLabels:
-      run: openshift-route-service
+      app.kubernetes.io/name: openshift-route-service
+      app.kubernetes.io/instance: keptn
   replicas: 1
   template:
     metadata:
       labels:
-        run: openshift-route-service
+        app.kubernetes.io/name: openshift-route-service
+        app.kubernetes.io/instance: keptn
+        app.kubernetes.io/part-of: keptn-keptn
+        app.kubernetes.io/component: control-plane
+        app.kubernetes.io/version: develop
     spec:
       serviceAccountName: keptn-openshift-route-service
       containers:
@@ -61,7 +73,18 @@ spec:
         image: keptn/openshift-route-service:latest
         ports:
         - containerPort: 8080
-        - containerPort: 8081
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+      - name: distributor
+        image: keptn/distributor:latest
+        imagePullPolicy: Always
+        ports:
+          - containerPort: 8080
         resources:
           requests:
             memory: "32Mi"
@@ -70,13 +93,12 @@ spec:
             memory: "128Mi"
             cpu: "500m"
         env:
-        - name: BRIDGE_PORT
-          value: '3000'
-        - name: APP_DOMAIN
-          valueFrom:
-            configMapKeyRef:
-              name: keptn-domain
-              key: app_domain
+          - name: PUBSUB_URL
+            value: 'nats://keptn-nats-cluster'
+          - name: PUBSUB_TOPIC
+            value: 'sh.keptn.internal.event.project.create'
+          - name: PUBSUB_RECIPIENT
+            value: '127.0.0.1'
 ---
 apiVersion: v1
 kind: Service
@@ -84,16 +106,16 @@ metadata:
   name: openshift-route-service
   namespace: keptn
   labels:
-    run: openshift-route-service
+    app.kubernetes.io/name: openshift-route-service
+    app.kubernetes.io/instance: keptn
+    app.kubernetes.io/part-of: keptn-keptn
+    app.kubernetes.io/component: control-plane
 spec:
   ports:
   - name: cloudevents
     port: 8080
     protocol: TCP
     targetPort: 8080
-  - name: expose-bridge
-    port: 8081
-    protocol: TCP
-    targetPort: 8081
   selector:
-    run: openshift-route-service
+    app.kubernetes.io/name: openshift-route-service
+    app.kubernetes.io/instance: keptn

@@ -34,10 +34,7 @@ func (eh *ActionFinishedEventHandler) HandleEvent() error {
 	if eh.WaitFunction == nil {
 		eh.WaitFunction = func() {
 
-			waitTime, err := time.ParseDuration(os.Getenv("WAIT_TIME_MINUTES"))
-			if err != nil {
-				waitTime = waitTimeInMinutes * time.Minute
-			}
+			waitTime := getWaitTime()
 			eh.KeptnHandler.Logger.Info(fmt.Sprintf("Waiting for %s for action to take effect", waitTime.String()))
 			<-time.After(waitTime)
 		}
@@ -52,4 +49,12 @@ func (eh *ActionFinishedEventHandler) HandleEvent() error {
 		return err
 	}
 	return nil
+}
+
+func getWaitTime() time.Duration {
+	waitTime, err := time.ParseDuration(os.Getenv("WAIT_TIME_MINUTES"))
+	if err != nil {
+		waitTime = waitTimeInMinutes * time.Minute
+	}
+	return waitTime
 }

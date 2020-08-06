@@ -11,9 +11,4 @@ describe('ApiService', () => {
       HttpClientTestingModule,
     ],
   }));
-
-  it('should create an instance', () => {
-    const service: ApiService = TestBed.get(ApiService);
-    expect(service).toBeTruthy();
-  });
 });

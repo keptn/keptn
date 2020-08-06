@@ -10,7 +10,6 @@ import (
 	"github.com/google/uuid"
 
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
-	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 )
 
 func getFirstStage(keptnHandler *keptnevents.Keptn) (string, error) {
@@ -56,16 +55,7 @@ func getLocalDeploymentURI(project string, service string, stage string, deploym
 	return serviceURL
 }
 
-func getPublicDeploymentURI(project string, service string, stage string) (string, error) {
-	keptnDomain, err := keptnutils.GetKeptnDomain(true)
-	if err != nil {
-		return "", err
-	}
-
-	return "http://" + service + "." + project + "-" + stage + "." + keptnDomain, nil
-}
-
-func sendDeploymentFinishedEvent(keptnHandler *keptnevents.Keptn, testStrategy string, deploymentStrategy keptnevents.DeploymentStrategy, image string, tag string) error {
+func sendDeploymentFinishedEvent(keptnHandler *keptnevents.Keptn, testStrategy string, deploymentStrategy keptnevents.DeploymentStrategy, image string, tag string, labels map[string]string, ingressHostnameSuffix string, protocol string, port string) error {
 
 	source, _ := url.Parse("helm-service")
 	contentType := "application/json"
@@ -85,14 +75,12 @@ func sendDeploymentFinishedEvent(keptnHandler *keptnevents.Keptn, testStrategy s
 		DeploymentStrategy: deploymentStrategyOldIdentifier,
 		Image:              image,
 		Tag:                tag,
+		Labels:             labels,
 		DeploymentURILocal: getLocalDeploymentURI(keptnHandler.KeptnBase.Project, keptnHandler.KeptnBase.Service, keptnHandler.KeptnBase.Stage, deploymentStrategy, testStrategy),
 	}
 
-	publicDeploymentURI, err := getPublicDeploymentURI(keptnHandler.KeptnBase.Project, keptnHandler.KeptnBase.Service, keptnHandler.KeptnBase.Stage)
-
-	if err == nil {
-		depFinishedEvent.DeploymentURIPublic = publicDeploymentURI
-	}
+	publicDeploymentURI := protocol + "://" + keptnHandler.KeptnBase.Service + "." + keptnHandler.KeptnBase.Project + "-" + keptnHandler.KeptnBase.Stage + "." + ingressHostnameSuffix + ":" + port
+	depFinishedEvent.DeploymentURIPublic = publicDeploymentURI
 
 	event := cloudevents.Event{
 		Context: cloudevents.EventContextV02{

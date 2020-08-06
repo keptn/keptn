@@ -1,0 +1,48 @@
+<div class="container" *ngIf="error">
+  <dt-empty-state>
+    <dt-empty-state-item>
+      <dt-empty-state-item-img>
+        <img class="mt-2" src="/assets/keptn_logo.png" />
+      </dt-empty-state-item-img>
+      <ng-container [ngSwitch]="error">
+        <ng-container *ngSwitchCase="'contextError'">
+          <dt-empty-state-item-title class="mt-2" aria-level="2">Traces for <span class="italic" [textContent]="contextId"></span> not found</dt-empty-state-item-title>
+          <p>Sorry, traces with this shkeptncontext could not be loaded. Check out the <a href="https://keptn.sh/docs/quickstart/" target="_blank">Quick Start</a> instructions on how to <a href="https://keptn.sh/docs/0.7.x/manage/project/" target="_blank">create a project</a> or go back to <a [routerLink]="['/dashboard']">your dashboard</a>.</p>
+        </ng-container>
+        <ng-container *ngSwitchDefault>
+          <dt-empty-state-item-title class="mt-2" aria-level="2">Some error occured</dt-empty-state-item-title>
+          <p>Sorry, some error occured. Check out the <a href="https://keptn.sh/docs/quickstart/" target="_blank">Quick Start</a> instructions on how to <a href="https://keptn.sh/docs/0.7.x/manage/project/" target="_blank">create a project</a> or go back to <a [routerLink]="['/dashboard']">your dashboard</a>.</p>
+        </ng-container>
+      </ng-container>
+    </dt-empty-state-item>
+  </dt-empty-state>
+</div>
+<div class="container" *ngIf="!error && !evaluations">
+  <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
+    <dt-loading-spinner></dt-loading-spinner>
+    <p>Loading ...</p>
+  </div>
+</div>
+<div class="evaluation-board pr-4 pl-4" fxLayout="column" *ngIf="evaluations">
+  <dt-info-group>
+    <dt-info-group-title>
+      <div fxFlex fxLayout="row" fxLayoutAlign="flex-start center" fxLayoutGap="15px">
+        <div fxLayout="row" fxLayoutAlign="start center">
+          <button dt-icon-button disabled variant="nested" *ngIf="root.isFaulty()"><dt-icon name="criticalevent"></dt-icon></button>
+          <p *ngIf="root.getShortImageName()" [textContent]="root.getShortImageName()"></p>
+          <p *ngIf="!root.getShortImageName()" [textContent]="root.getService()"></p>
+        </div>
+      </div>
+    </dt-info-group-title>
+    <p class="m-0" *ngIf="root.data.valuesCanary"><span class="bold">Artifact: </span><span [textContent]="root.data.valuesCanary.image"></span></p>
+    <p class="m-0 mb-3"><span class="bold">Keptn ID: </span><span [textContent]="root.shkeptncontext"></span></p>
+  </dt-info-group>
+  <div *ngFor="let evaluation of evaluations;">
+    <p><span class="bold">Stage: </span><span [textContent]="evaluation.data.stage"></span></p>
+    <ktb-event-item [event]="evaluation">
+      <ktb-event-item-detail>
+        <ktb-evaluation-details *ngIf="evaluation.data.evaluationdetails" [evaluationData]="evaluation"></ktb-evaluation-details>
+      </ktb-event-item-detail>
+    </ktb-event-item>
+  </div>
+</div>

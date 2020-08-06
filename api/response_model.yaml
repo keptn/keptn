@@ -28,6 +28,8 @@ definitions:
       properties: # CloudEvents v0.2 properties (https://raw.githubusercontent.com/cloudevents/spec/v0.2/spec.json#/definitions/event)
         shkeptncontext:
           type: string
+        triggeredid:
+          type: string
         specversion:
           type: string
         contenttype:
@@ -50,3 +52,17 @@ definitions:
         - data
         - source
         - type
+
+  metadata:
+    type: object
+    properties:
+      namespace:
+        type: string
+      keptnlabel:      
+        type: string
+      keptnversion:      
+        type: string
+      bridgeversion:
+        type: string
+      keptnservices:
+        type: ["object", "string"]        

@@ -11,9 +11,4 @@ describe('DataService', () => {
       HttpClientTestingModule,
     ],
   }));
-
-  it('should create an instance', () => {
-    const service: DataService = TestBed.get(DataService);
-    expect(service).toBeTruthy();
-  });
 });

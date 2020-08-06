@@ -3,6 +3,7 @@ package common
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/url"
 	"os"
 	"strings"
@@ -108,15 +109,41 @@ func AddOrigin(project string) error {
 		repoURI := getRepoURI(credentials.RemoteURI, credentials.User, credentials.Token)
 		_, err = utils.ExecuteCommandInDirectory("git", []string{"remote", "add", "origin", repoURI}, projectConfigPath)
 		if err != nil {
+			removeRemoteOrigin(project)
 			return obfuscateErrorMessage(err, credentials)
 		}
 
-		_, err = utils.ExecuteCommandInDirectory("git", []string{"push", "origin", "--mirror"}, projectConfigPath)
+		if err := setUpstreamsAndPush(project, credentials, repoURI); err != nil {
+			removeRemoteOrigin(project)
+			return fmt.Errorf("failed to set upstream: %v\nKeptn requires an uninitialized repo", err)
+		}
+	}
+	return err
+}
+
+func removeRemoteOrigin(project string) error {
+	projectConfigPath := config.ConfigDir + "/" + project
+	_, err := utils.ExecuteCommandInDirectory("git", []string{"remote", "remove", "origin"}, projectConfigPath)
+	return err
+}
+
+func setUpstreamsAndPush(project string, credentials *GitCredentials, repoURI string) error {
+	projectConfigPath := config.ConfigDir + "/" + project
+	branches, err := GetBranches(project)
+	if err != nil {
+		return obfuscateErrorMessage(err, credentials)
+	}
+
+	for _, branch := range branches {
+		err := CheckoutBranch(project, branch, true)
+		if err != nil {
+			return obfuscateErrorMessage(err, credentials)
+		}
+		_, err = utils.ExecuteCommandInDirectory("git", []string{"push", "--set-upstream", repoURI, branch}, projectConfigPath)
 		if err != nil {
 			return obfuscateErrorMessage(err, credentials)
 		}
 	}
-
 	return nil
 }
 
@@ -307,7 +334,7 @@ func GetBranches(project string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	branches := strings.Split(out, "\n")
+	branches := strings.Split(strings.TrimSpace(out), "\n")
 
 	return branches, nil
 }

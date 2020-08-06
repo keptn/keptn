@@ -3,20 +3,27 @@
 source test/utils.sh
 
 # test configuration
-DYNATRACE_SLI_SERVICE_VERSION=${DYNATRACE_SLI_SERVICE_VERSION:-0.4.1}
+DYNATRACE_SLI_SERVICE_VERSION=${DYNATRACE_SLI_SERVICE_VERSION:-master}
 KEPTN_EXAMPLES_BRANCH=${KEPTN_EXAMPLES_BRANCH:-master}
 PROJECT=${PROJECT:-easytravel}
 
 # get keptn api details
-KEPTN_ENDPOINT=https://api.keptn.$(kubectl get cm keptn-domain -n keptn -ojsonpath={.data.app_domain})
-KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)
+if [[ "$PLATFORM" == "openshift" ]]; then
+  KEPTN_ENDPOINT=http://api.keptn.127.0.0.1.nip.io/api
+  KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)
+else
+  API_PORT=$(kubectl get svc api-gateway-nginx -n keptn -o jsonpath='{.spec.ports[?(@.name=="http")].nodePort}')
+  INTERNAL_NODE_IP=$(kubectl get nodes -o jsonpath='{ $.items[0].status.addresses[?(@.type=="InternalIP")].address }')
+  KEPTN_ENDPOINT="http://${INTERNAL_NODE_IP}:${API_PORT}"/api
+  KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)
+fi
 
 ########################################################################################################################
-# Pre-requesits
+# Pre-requisites
 ########################################################################################################################
 
 # ensure dynatrace-sli-service is not installed yet
-kubectl -n keptn get deployment dynatrace-sli-service
+kubectl -n keptn get deployment dynatrace-sli-service 2> /dev/null
 
 if [[ $? -eq 0 ]]; then
   echo "Found dynatrace-sli-service. Please uninstall it using"
@@ -25,7 +32,7 @@ if [[ $? -eq 0 ]]; then
 fi
 
 
-# verify that the project does not exiset yet via the Keptn API
+# verify that the project does not exist yet via the Keptn API
 response=$(curl -X GET "${KEPTN_ENDPOINT}/configuration-service/v1/project/${PROJECT}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.projectName')
 
 if [[ "$response" == "${PROJECT}" ]]; then
@@ -34,8 +41,8 @@ if [[ "$response" == "${PROJECT}" ]]; then
   exit 2
 fi
 
-# verify that the lighthouse configmap for the project does not exiset yet
-kubectl -n keptn get cm lighthouse-config-${PROJECT}
+# verify that the lighthouse configmap for the project does not exist yet
+kubectl -n keptn get cm lighthouse-config-${PROJECT} 2> /dev/null
 
 if [[ $? -eq 0 ]]; then
   echo "Found configmap lighthouse-config-${PROJECT}. Please remove it using"
@@ -44,14 +51,13 @@ if [[ $? -eq 0 ]]; then
 fi
 
 # verify that the Dynatrace credential secret does not exist yet
-kubectl -n keptn get secret dynatrace-credentials-${PROJECT}
+kubectl -n keptn get secret dynatrace-credentials-${PROJECT} 2> /dev/null
 
 if [[ $? -eq 0 ]]; then
   echo "Found secret dynatrace-credentials-${PROJECT}. Please remove it using"
   echo "kubectl -n keptn delete secret dynatrace-credentials-${PROJECT}"
   exit 1
 fi
-
 
 echo "Testing quality gates standalone for project $PROJECT ..."
 
@@ -172,7 +178,7 @@ keptn configure monitoring dynatrace --project=$PROJECT --suppress-websocket
 sleep 5
 # this should set the configmap 'lighthouse-config-$PROJECT' - verify that it exists
 
-kubectl -n keptn get configmap "lighthouse-config-${PROJECT}" -oyaml
+kubectl -n keptn get configmap "lighthouse-config-${PROJECT}" -oyaml 2> /dev/null
 verify_test_step $? "ERROR: Could not find configmap lighthouse-config-$PROJECT (this is expected to be created by keptn configure monitoring dynatrace --project=$PROJECT)"
 
 echo "Sending start-evaluation event for service $SERVICE in stage hardening"
@@ -209,16 +215,16 @@ if [[ $RETRY == $RETRY_MAX ]]; then
   # exit 1 - Todo - see below
 fi
 
-# ToDo: there is no response here right now, but in fact dynatrace-sli-service should send a note...
-echo $response | grep "No event returned"
+# okay, evaluation-done event retrieved, parse it
+echo $response | jq .
 
-if [[ $? -ne 0 ]]; then
-  # print logs of dynatrace-sli-service
-  kubectl -n keptn logs svc/dynatrace-sli-service
-  echo "Expected an 'No event returned' in the response, but got"
-  echo $response
-  exit 1
-fi
+# validate the response
+verify_using_jq "$response" ".source" "lighthouse-service"
+verify_using_jq "$response" ".type" "sh.keptn.events.evaluation-done"
+verify_using_jq "$response" ".data.project" "${PROJECT}"
+verify_using_jq "$response" ".data.stage" "hardening"
+verify_using_jq "$response" ".data.service" "${SERVICE}"
+verify_using_jq "$response" ".data.result" "fail"
 
 ########################################################################################################################
 # Testcase 4: Run tests with Dynatrace credentials (tenant and api token) set

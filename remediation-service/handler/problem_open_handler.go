@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+
 	cloudevents "github.com/cloudevents/sdk-go"
 	keptn "github.com/keptn/go-utils/pkg/lib"
 )
@@ -65,7 +66,7 @@ func (eh *ProblemOpenEventHandler) HandleEvent() error {
 	actionIndex := 0
 	action := eh.Remediation.getActionForProblemType(*remediationData, problemType, actionIndex)
 	if action == nil {
-		action = eh.Remediation.getActionForProblemType(*remediationData, "*", actionIndex)
+		action = eh.Remediation.getActionForProblemType(*remediationData, "default", actionIndex)
 	}
 
 	if action != nil {
@@ -85,8 +86,7 @@ func (eh *ProblemOpenEventHandler) HandleEvent() error {
 	} else {
 		msg := "No remediation configured for problem type " + problemType
 		eh.KeptnHandler.Logger.Info(msg)
-		_ = eh.Remediation.sendRemediationFinishedEvent(keptn.RemediationStatusSucceeded, keptn.RemediationResultPass, "triggered all actions")
-		return deleteRemediation(eh.KeptnHandler.KeptnContext, *eh.KeptnHandler.KeptnBase)
+		return eh.Remediation.sendRemediationFinishedEvent(keptn.RemediationStatusSucceeded, keptn.RemediationResultPass, "triggered all actions")
 	}
 
 	return nil

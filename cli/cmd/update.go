@@ -6,7 +6,8 @@ import (
 
 // createCmd implements the create command
 var updateCmd = &cobra.Command{
-	Use: "update [project]",
+	Use:   "update [project]",
+	Short: "Updates an existing Keptn project",
 }
 
 func init() {

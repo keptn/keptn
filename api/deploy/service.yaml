@@ -4,15 +4,26 @@ kind: Deployment
 metadata:
   name: api-service
   namespace: keptn
+  labels:
+    app.kubernetes.io/name: api-service
+    app.kubernetes.io/instance: keptn
+    app.kubernetes.io/part-of: keptn-keptn
+    app.kubernetes.io/component: control-plane
+    app.kubernetes.io/version: develop
 spec:
   selector:
     matchLabels:
-      run: api-service
+      app.kubernetes.io/name: api-service
+      app.kubernetes.io/instance: keptn
   replicas: 1
   template:
     metadata:
       labels:
-        run: api-service
+        app.kubernetes.io/name: api-service
+        app.kubernetes.io/instance: keptn
+        app.kubernetes.io/part-of: keptn-keptn
+        app.kubernetes.io/component: control-plane
+        app.kubernetes.io/version: develop
     spec:
       containers:
         - name: api-service
@@ -26,18 +37,26 @@ spec:
             limits:
               memory: "256Mi"
               cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 10999
+            initialDelaySeconds: 5
+            periodSeconds: 5
           env:
             - name: EVENTBROKER_URI
-              value: http://event-broker.keptn.svc.cluster.local
+              value: http://event-broker
             - name: DATASTORE_URI
-              value: http://mongodb-datastore.keptn-datastore.svc.cluster.local:8080
-            - name: OPENSHIFT_ROUTE_SERVICE_URI
-              value: http://openshift-route-service.keptn.svc.cluster.local:8081
+              value: http://mongodb-datastore:8080
             - name: SECRET_TOKEN
               valueFrom:
                 secretKeyRef:
                   name: keptn-api-token
                   key: keptn-api-token
+            - name: API_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace                  
       serviceAccountName: keptn-api-service
 ---
 apiVersion: v1
@@ -46,7 +65,10 @@ metadata:
   name: api-service
   namespace: keptn
   labels:
-    run: api-service
+    app.kubernetes.io/name: api-service
+    app.kubernetes.io/instance: keptn
+    app.kubernetes.io/part-of: keptn-keptn
+    app.kubernetes.io/component: control-plane
 spec:
   ports:
     - port: 8080
@@ -54,4 +76,5 @@ spec:
       targetPort: 8080
       protocol: TCP
   selector:
-    run: api-service
+    app.kubernetes.io/name: api-service
+    app.kubernetes.io/instance: keptn

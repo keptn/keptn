@@ -2,14 +2,16 @@ package main
 
 import (
 	"context"
+	"log"
+	"os"
+
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
 	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
 	"github.com/kelseyhightower/envconfig"
+	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptnutils "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/lighthouse-service/event_handler"
-	"log"
-	"os"
 )
 
 type envConfig struct {
@@ -23,6 +25,8 @@ func main() {
 	if err := envconfig.Process("", &env); err != nil {
 		log.Fatalf("Failed to process env var: %s", err)
 	}
+
+	go keptnapi.RunHealthEndpoint("10999")
 	os.Exit(_main(os.Args[1:], env))
 }
 
@@ -60,6 +64,8 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		logger.Error("Received unknown event type: " + event.Type())
 		return err
 	}
-
-	return handler.HandleEvent()
+	if handler != nil {
+		return handler.HandleEvent()
+	}
+	return nil
 }

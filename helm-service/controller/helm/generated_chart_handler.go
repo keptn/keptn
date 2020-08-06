@@ -13,12 +13,15 @@ import (
 )
 
 type GeneratedChartHandler struct {
-	mesh        mesh.Mesh
-	keptnDomain string
+	mesh   mesh.Mesh
+	logger keptnevents.LoggerInterface
 }
 
-func NewGeneratedChartHandler(mesh mesh.Mesh, keptnDomain string) *GeneratedChartHandler {
-	return &GeneratedChartHandler{mesh: mesh, keptnDomain: keptnDomain}
+func NewGeneratedChartHandler(mesh mesh.Mesh, logger keptnevents.LoggerInterface) *GeneratedChartHandler {
+	return &GeneratedChartHandler{
+		mesh:   mesh,
+		logger: logger,
+	}
 }
 
 // GenerateDuplicateManagedChart generates a duplicated chart which is managed by keptn and used for
@@ -86,6 +89,7 @@ func (c *GeneratedChartHandler) generateServices(svc *corev1.Service, project st
 	serviceCanary := svc.DeepCopy()
 	serviceCanary.Name = serviceCanary.Name + "-canary"
 
+	c.logger.Info("Generating canary service for " + svc.Name + ": " + serviceCanary.Name)
 	resetService(serviceCanary)
 	data, err := yaml.Marshal(serviceCanary)
 	if err != nil {
@@ -94,9 +98,11 @@ func (c *GeneratedChartHandler) generateServices(svc *corev1.Service, project st
 	templates = append(templates, &chart.File{Name: "templates/" + serviceCanary.Name + "-service" + ".yaml", Data: data})
 
 	// Generate destination rule for canary service
+	c.logger.Info("Generating destination rule for canary service " + serviceCanary.Name)
 	hostCanary := serviceCanary.Name + "." + c.getNamespace(project, stageName) + ".svc.cluster.local"
 	destinationRuleCanary, err := c.mesh.GenerateDestinationRule(serviceCanary.Name, hostCanary)
 	if err != nil {
+		c.logger.Error("Error while generating destination rule for canary service " + serviceCanary.Name + ": " + err.Error())
 		return nil, err
 	}
 	templates = append(templates, &chart.File{Name: "templates/" + serviceCanary.Name + c.mesh.GetDestinationRuleSuffix(), Data: destinationRuleCanary})
@@ -117,25 +123,29 @@ func (c *GeneratedChartHandler) generateServices(svc *corev1.Service, project st
 	templates = append(templates, &chart.File{Name: "templates/" + servicePrimary.Name + "-service" + ".yaml", Data: data})
 
 	// Generate destination rule for primary service
+	c.logger.Info("Generating destination rule for primary service " + svc.Name)
 	hostPrimary := servicePrimary.Name + "." + c.getNamespace(project, stageName) + ".svc.cluster.local"
 	destinationRulePrimary, err := c.mesh.GenerateDestinationRule(servicePrimary.Name, hostPrimary)
 	if err != nil {
+		c.logger.Error("Error while generating destination rule for primary service " + svc.Name + ": " + err.Error())
 		return nil, err
 	}
 	templates = append(templates, &chart.File{Name: "templates/" + servicePrimary.Name + c.mesh.GetDestinationRuleSuffix(), Data: destinationRulePrimary})
 
 	// Generate virtual service
-	gws := []string{"public-gateway.istio-system", "mesh"}
+	gws := []string{mesh.GetIngressGateway(), "mesh"}
 	hosts := []string{
-		svc.Name + "." + c.getNamespace(project, stageName) + "." + c.keptnDomain, // service_name.dev.123.45.67.89.xip.io
+		svc.Name + "." + c.getNamespace(project, stageName) + "." + mesh.GetIngressHostnameSuffix(), // service_name.dev.123.45.67.89.xip.io
 		svc.Name, // service-name
 	}
 	destCanary := mesh.HTTPRouteDestination{Host: hostCanary, Weight: 0}
 	destPrimary := mesh.HTTPRouteDestination{Host: hostPrimary, Weight: 100}
 	httpRouteDestinations := []mesh.HTTPRouteDestination{destCanary, destPrimary}
 
+	c.logger.Info("Generating VirtualService for service " + svc.Name + ". URL = " + mesh.GetIngressProtocol() + "://" + svc.Name + "." + mesh.GetIngressHostnameSuffix() + ":" + mesh.GetIngressPort())
 	vs, err := c.mesh.GenerateVirtualService(svc.Name, gws, hosts, httpRouteDestinations)
 	if err != nil {
+		c.logger.Error("Error while generating VirtualService for service " + svc.Name + ": " + err.Error())
 		return nil, err
 	}
 
@@ -186,9 +196,9 @@ func (c *GeneratedChartHandler) GenerateMeshChart(helmManifest string, project s
 
 	for _, svc := range svcs {
 		// Generate virtual service for external access
-		gws := []string{"public-gateway.istio-system", "mesh"}
+		gws := []string{mesh.GetIngressGateway(), "mesh"}
 		hosts := []string{
-			svc.Name + "." + c.getNamespace(project, stageName) + "." + c.keptnDomain,
+			svc.Name + "." + c.getNamespace(project, stageName) + "." + mesh.GetIngressHostnameSuffix(),
 			svc.Name,
 		}
 		host := svc.Name + "." + c.getNamespace(project, stageName) + ".svc.cluster.local"

@@ -30,11 +30,13 @@ var onboardServiceParams *onboardServiceCmdParams
 var serviceCmd = &cobra.Command{
 	Use:   "service SERVICENAME --project=PROJECTNAME --chart=FILEPATH",
 	Short: "Onboards a new service and its Helm chart to a project",
-	Long: `Onboards a new service and its Helm chart to the provided project. Therefore, this command 
-takes a folder to a Helm chart or an already packed Helm chart as .tgz.
+	Long: `Onboards a new service and its Helm chart to the provided project. 
+Therefore, this command takes a folder to a Helm chart or an already packed Helm chart as .tgz.
 `,
 	Example: `keptn onboard service SERVICENAME --project=PROJECTNAME --chart=FILEPATH
-keptn onboard service SERVICENAME --project=PROJECTNAME --chart=HELM_CHART.tgz`,
+
+keptn onboard service SERVICENAME --project=PROJECTNAME --chart=HELM_CHART.tgz
+`,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
@@ -119,7 +121,7 @@ keptn onboard service SERVICENAME --project=PROJECTNAME --chart=HELM_CHART.tgz`,
 			service.DeploymentStrategies = deplStrategies
 		}
 
-		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
+		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
@@ -131,7 +133,7 @@ keptn onboard service SERVICENAME --project=PROJECTNAME --chart=HELM_CHART.tgz`,
 
 			// if eventContext is available, open WebSocket communication
 			if eventContext != nil && !SuppressWSCommunication {
-				return websockethelper.PrintWSContentEventContext(eventContext, endPoint, *scheme == "https")
+				return websockethelper.PrintWSContentEventContext(eventContext, endPoint)
 			}
 
 			return nil

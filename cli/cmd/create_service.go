@@ -27,7 +27,7 @@ var crServiceCmd = &cobra.Command{
 	Short: "Creates a new service",
 	Long: `Creates a new service with the provided name in the specified project.
 
-Please note: This command is different from keptn onboard service (which requires a helm chart).
+**Note:** This command is different from keptn onboard service which requires a Helm chart.
 `,
 	Example:      `keptn create service carts --project=sockshop`,
 	SilenceUsage: true,
@@ -60,7 +60,7 @@ Please note: This command is different from keptn onboard service (which require
 			ServiceName: &args[0],
 		}
 
-		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
+		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
@@ -72,7 +72,7 @@ Please note: This command is different from keptn onboard service (which require
 
 			// if eventContext is available, open WebSocket communication
 			if eventContext != nil && !SuppressWSCommunication {
-				return websockethelper.PrintWSContentEventContext(eventContext, endPoint, *scheme == "https")
+				return websockethelper.PrintWSContentEventContext(eventContext, endPoint)
 			}
 
 			return nil

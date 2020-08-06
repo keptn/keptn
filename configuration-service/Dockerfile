@@ -27,6 +27,9 @@ RUN if [ ! -z "$debugBuild" ]; then export BUILDFLAGS='-gcflags "all=-N -l"'; fi
 # Copy local code to the container image.
 COPY . .
 
+ENV REPLACE="version: ${version}"
+RUN sed -i "s/version: develop/${REPLACE}/g" /go/src/github.com/keptn/keptn/configuration-service/swagger.yaml
+
 # Build the command inside the container. 
 # (You may fetch or manage dependencies here, 
 # either manually or with a tool like "godep".)
@@ -50,8 +53,8 @@ COPY --from=builder /go/src/github.com/keptn/keptn/configuration-service/swagger
 
 COPY --from=builder /go/src/github.com/keptn/keptn/configuration-service/swagger.yaml /swagger-ui/swagger.yaml
 # Replace contents for api proxy
-RUN sed -i "s|basePath: /v1|basePath: /configuration-service/v1 |g" /swagger-ui/swagger.yaml
-RUN sed -i "s|  - http|  - https |g" /swagger-ui/swagger.yaml
+RUN sed -i "s|basePath: /v1|basePath: /api/configuration-service/v1 |g" /swagger-ui/swagger.yaml
+RUN sed -i '/schemes:/a\ \ - https' /swagger-ui/swagger.yaml
 RUN sed -i '/paths:/i securityDefinitions:\n  key:\n    type: apiKey\n    in: header\n    name: x-token\nsecurity:\n  - key: []\n' /swagger-ui/swagger.yaml
 
 EXPOSE 8080

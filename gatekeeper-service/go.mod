@@ -7,8 +7,8 @@ require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/google/uuid v1.1.1
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.6.3-0.20200617060337-e48e5452bfe9
-	github.com/keptn/kubernetes-utils v0.0.0-20200417060634-69e3369c72d3
+	github.com/keptn/go-utils v0.7.0
+	github.com/keptn/kubernetes-utils v0.2.0
 )
 
 // Transitive requirement from Helm: See https://github.com/helm/helm/blob/v3.1.2/go.mod

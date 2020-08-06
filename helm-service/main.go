@@ -3,18 +3,17 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
-	"os"
-
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
 	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
 	"github.com/kelseyhightower/envconfig"
+	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/helm-service/controller"
 	"github.com/keptn/keptn/helm-service/controller/mesh"
 	"github.com/keptn/keptn/helm-service/pkg/serviceutils"
-	keptnutils "github.com/keptn/kubernetes-utils/pkg"
+	"log"
+	"os"
 )
 
 type envConfig struct {
@@ -30,20 +29,8 @@ func main() {
 	if err := envconfig.Process("", &env); err != nil {
 		log.Fatalf("Failed to process env var: %s", err)
 	}
+	go keptnapi.RunHealthEndpoint("10999")
 	os.Exit(_main(os.Args[1:], env))
-}
-
-func getKeptnDomain() (string, error) {
-	if os.Getenv("KEPTN_DOMAIN") != "" {
-		return os.Getenv("KEPTN_DOMAIN"), nil
-	}
-
-	useInClusterConfig := false
-	if os.Getenv("ENVIRONMENT") == "production" {
-		useInClusterConfig = true
-	}
-	return keptnutils.GetKeptnDomain(useInClusterConfig)
-
 }
 
 func gotEvent(ctx context.Context, event cloudevents.Event) error {
@@ -68,25 +55,20 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 	mesh := mesh.NewIstioMesh()
 
-	keptnDomain, err := getKeptnDomain()
-	if err != nil {
-		keptnHandler.Logger.Error("Error when reading the keptn domain")
-		return nil
-	}
-
 	url, err := serviceutils.GetConfigServiceURL()
 	if err != nil {
 		keptnHandler.Logger.Error(fmt.Sprintf("Error when getting config service url: %s", err.Error()))
+		loggingDone <- true
 		return err
 	}
 
 	keptnHandler.Logger.Debug("Got event of type " + event.Type())
 
 	if event.Type() == keptnevents.ConfigurationChangeEventType {
-		configChanger := controller.NewConfigurationChanger(mesh, keptnHandler, keptnDomain, url.String())
+		configChanger := controller.NewConfigurationChanger(mesh, keptnHandler, url.String())
 		go configChanger.ChangeAndApplyConfiguration(event, loggingDone)
 	} else if event.Type() == keptnevents.InternalServiceCreateEventType {
-		onboarder := controller.NewOnboarder(mesh, keptnHandler, keptnDomain, url.String())
+		onboarder := controller.NewOnboarder(mesh, keptnHandler, url.String())
 		go onboarder.DoOnboard(event, loggingDone)
 	} else if event.Type() == keptnevents.ActionTriggeredEventType {
 		actionHandler := controller.NewActionTriggeredHandler(keptnHandler, url.String())

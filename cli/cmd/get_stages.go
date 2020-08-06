@@ -18,7 +18,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"strings"
 	"text/tabwriter"
 
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
@@ -37,7 +36,7 @@ var getStageCmd = &cobra.Command{
 	Use:     "stage",
 	Aliases: []string{"stages"},
 	Short:   "Get details of a stage",
-	Long:    `Get all stages or details of a stage from a given keptn project`,
+	Long:    `Get all stages or details of a stage from a given Keptn project`,
 	Example: `keptn get stages --project=sockshop
 NAME           CREATION DATE                 
 staging        2020-04-06T14:37:45.210Z
@@ -46,7 +45,7 @@ production     2020-04-06T14:37:45.210Z
 keptn get stage staging --project sockshop
 NAME           CREATION DATE                 
 staging        2020-04-06T14:37:45.210Z
-	`,
+`,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
 		_, _, err := credentialmanager.NewCredentialManager().GetCreds()
@@ -58,35 +57,24 @@ staging        2020-04-06T14:37:45.210Z
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 
-		var stageName string
-		stageName = strings.Join(args, " ")
-
 		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
 
-		stagesHandler := apiutils.NewAuthenticatedStageHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
+		stagesHandler := apiutils.NewAuthenticatedStageHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 		if !mocking {
 			stages, err := stagesHandler.GetAllStages(*stageParameter.project)
 			if err != nil {
-				fmt.Println(err)
-				return errors.New("Could not retrieve stages for project " + *stageParameter.project)
+				return fmt.Errorf("Failed to retrieve stages for project %s: %v", *stageParameter.project, err)
 			}
 
 			w := new(tabwriter.Writer)
 			w.Init(os.Stdout, 10, 8, 0, '\t', 0)
 			fmt.Fprintln(w, "NAME\tCREATION DATE")
 
-			if stageName != "" {
-
-				for _, stage := range stages {
-					if stage.StageName == stageName {
-						fmt.Fprintln(w, stage.StageName+"\tn/a")
-					}
-				}
-			} else {
-				for _, stage := range stages {
+			for _, stage := range stages {
+				if len(args) == 1 && stage.StageName == args[0] || len(args) == 0 {
 					fmt.Fprintln(w, stage.StageName+"\tn/a")
 				}
 			}
@@ -101,6 +89,5 @@ func init() {
 
 	stageParameter.project = getStageCmd.Flags().StringP("project", "", "",
 		"keptn project name")
-
 	getStageCmd.MarkFlagRequired("project")
 }

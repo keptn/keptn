@@ -1,9 +1,13 @@
+#################################################################################
 # Lines starting with '#' are comments.
 # Each line is a file pattern followed by one or more owners.
-
 # These owners will be the default owners for everything in the repo.
-
-* @christian-kreuzberger-dtx @johannes-b
+#################################################################################
+# Learn about CODEOWNERS file format:
+# https://help.github.com/en/articles/about-code-owners
+#################################################################################
+# FYI: Owners will be auto-assigned for code reviews as well
+#################################################################################
 
 # Codeowners file
 CODEOWNERS @AloisReitbauer @grabnerandi @jetzlstorfer @christian-kreuzberger-dtx @johannes-b @danielkhan
@@ -11,8 +15,49 @@ CODEOWNERS @AloisReitbauer @grabnerandi @jetzlstorfer @christian-kreuzberger-dtx
 # Adopters file
 ADOPTERS.md @AloisReitbauer @grabnerandi @jetzlstorfer
 
+# api
+api/ @agrimmer @bacherfl
+
+# Keptn Bridge (includes reviewers without write-access)
+bridge/ @ermin-muratovic @SaraDavilaMendez @mpfosi @sandroschmid @GustavAT @dominikmessner @samuelfahrngruber
+
+# cli
+cli/ @agrimmer @bacherfl
+
+# gatekeeper-service
+gatekeeper-service/ @agrimmer @bacherfl
+
+# helm-service
+helm-service/ @agrimmer @bacherfl
+
+# Installer
+installer/ @bacherfl @agrimmer @christian-kreuzberger-dtx
+
+# Upgrader
+upgrader/ @bacherfl
+
+# JMeter service
+jmeter-service/ @grabnerandi
+
+# mongodb-datastore
+mongodb-datastore/ @agrimmer @bacherfl
+
+# shipyard-service
+shipyard-service/ @agrimmer @bacherfl
+
+# Release Notes
+releasenotes/ @johannes-b
+
+# Docs, etc...
+*.md @christian-kreuzberger-dtx @johannes-b @jetzlstorfer
+docs/ @christian-kreuzberger-dtx @johannes-b @jetzlstorfer
+
+# Dockerfiles
+*/Dockerfile @christian-kreuzberger-dtx @bacherfl
+
 # dot files are usually config files
 .* @christian-kreuzberger-dtx
 
-# Keptn Bridge
-bridge/* @ermin-muratovic @SaraDavilaMendez @mpfosi @sandroschmid
+# all other files
+* @christian-kreuzberger-dtx @johannes-b
+

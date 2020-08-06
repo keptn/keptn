@@ -19,7 +19,10 @@
     </div>
     <div fxLayout="column" fxLayoutAlign="start end">
       <p class="m-0 mt-1 mb-1" [textContent]="_event.time | amDateFormat:getCalendarFormat()"></p>
-      <button dt-icon-button variant="nested" (click)="showEventPayloadDialog()"><dt-icon name="coding"></dt-icon></button>
+      <div fxLayout="row" fxLayoutAlign="start start">
+        <button dt-icon-button variant="nested" [routerLink]="['/evaluation', _event.shkeptncontext, _event.data.stage]" *ngIf="_event.data.evaluationdetails"><dt-icon name="chart-bar"></dt-icon></button>
+        <button dt-icon-button variant="nested" (click)="showEventPayloadDialog()"><dt-icon name="coding"></dt-icon></button>
+      </div>
     </div>
   </div>
   <div *ngIf="_event.data.ProblemDetails">
@@ -53,6 +56,7 @@
     <pre>{{ data | json }}</pre>
   </div>
   <div mat-dialog-actions>
+    <button dt-button variant="secondary" (click)="copyEventPayload(data)">Copy</button>
     <button dt-button (click)="closeEventPayloadDialog()">Close</button>
   </div>
 </ng-template>

@@ -23,16 +23,13 @@ var SuppressWSCommunication bool
 var insecureSkipTLSVerify bool
 var kubectlOptions string
 
-var scheme *string
-
 const authErrorMsg = "This command requires to be authenticated. See \"keptn auth\" for details"
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "keptn",
-	Short: "This is a CLI for using keptn",
-	Long: `This is a CLI for using keptn. The CLI allows to authenticate against keptn, to configure your Github organization,
-to create projects, and to onboard services.
+	Short: "The CLI for using Keptn",
+	Long: `The CLI allows interaction with a Keptn installation to manage Keptn, to trigger workflows, and to get details.
 	`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
@@ -43,24 +40,28 @@ to create projects, and to onboard services.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 
+	// Set LogLevel to QuietLevel
+	currentLogLevel := logging.LogLevel
+	logging.LogLevel = logging.QuietLevel
+
 	vChecker := version.NewVersionChecker()
 	vChecker.CheckCLIVersion(Version, true)
+
+	// Set LogLevel back to previous state
+	logging.LogLevel = currentLogLevel
+
 	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
 	}
 }
 
 func init() {
-	rootCmd.PersistentFlags().BoolVarP(&verboseLogging, "verbose", "v", false, "verbose logging")
-	rootCmd.PersistentFlags().BoolVarP(&quietLogging, "quiet", "q", false, "suppress debug and info output")
-	rootCmd.PersistentFlags().BoolVarP(&mocking, "mock", "", false, "mocking of server communication - ATTENTION: your commands will not be sent to the keptn server")
+	rootCmd.PersistentFlags().BoolVarP(&verboseLogging, "verbose", "v", false, "Enables verbose logging to print debug messages")
+	rootCmd.PersistentFlags().BoolVarP(&quietLogging, "quiet", "q", false, "Suppresses debug and info messages")
+	rootCmd.PersistentFlags().BoolVarP(&mocking, "mock", "", false, "Disables communication to a Keptn endpoint")
 	rootCmd.PersistentFlags().BoolVarP(&SuppressWSCommunication, "suppress-websocket", "", false,
-		"disables websocket communication - use the ID of Keptn context (if provided) for checking the result of your command")
-
-	scheme = rootCmd.PersistentFlags().StringP("scheme", "", "https", "The used scheme for the Keptn API")
-	rootCmd.PersistentFlags().MarkHidden("scheme")
+		"Disables WebSocket communication to suppress info messages from services running inside Keptn")
 	cobra.OnInitialize(initConfig)
-
 }
 
 // initConfig reads in config file and ENV variables if set.

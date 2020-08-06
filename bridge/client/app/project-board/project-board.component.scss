@@ -1,3 +1,4 @@
+@import '~@dynatrace/barista-components/style/main';
 @import "../../variables";
 
 .project-board {
@@ -9,10 +10,52 @@
 
 }
 
-::ng-deep .dt-menu,
-::ng-deep .dt-menu-group-header {
-  background-color: lighten($primary-color, 5%) !important;
+.stage-state {
+  border-top: 1px solid $gray-300;
+  border-bottom: 1px solid $gray-300;
+  padding: 10px;
+  margin-bottom: 10px;
 }
+
+.icon {
+  width: 20px;
+  height: 20px;
+}
+.stage-state-icon {
+  width: 25px;
+  height: 25px;
+  color: $gray-300;
+  fill: $gray-300;
+}
+.no-deployment {
+  color: $gray-500;
+}
+.out-of-sync-service {
+  color: $blue-400;
+  fill: $blue-400;
+}
+
+
+::ng-deep {
+  .dt-button-nested,
+  .dt-button-nested:hover:not([disabled]) {
+    .dt-button-icon .dt-icon.error svg {
+      color: $error-color;
+      fill: $error-color;
+    }
+  }
+}
+
+::ng-deep {
+  .dt-button-nested,
+  .dt-button-nested:hover:not([disabled]) {
+    .dt-button-icon .dt-icon.success svg {
+      color: $cta-color-active;
+      fill: $cta-color-active;
+    }
+  }
+}
+
 ::ng-deep .dt-menu-item {
   padding: 6px 40px 6px 20px !important;
   height: auto !important;
@@ -20,7 +63,7 @@
 }
 ::ng-deep .dt-menu-item.active,
 ::ng-deep .dt-menu-item:hover {
-  background: $primary-color !important;
+  background: $gray-700 !important;
 }
 
 ::ng-deep .ktb-expandable-tile .dt-show-more-icon {

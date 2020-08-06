@@ -21,17 +21,20 @@ type ConfigurationChanger struct {
 	generatedChartHandler *helm.GeneratedChartHandler
 	keptnHandler          *keptnevents.Keptn
 	helmExecutor          helm.HelmExecutor
-	keptnDomain           string
 	configServiceURL      string
 }
 
 // NewConfigurationChanger creates a new ConfigurationChanger
-func NewConfigurationChanger(mesh mesh.Mesh, keptnHandler *keptnevents.Keptn,
-	keptnDomain string, configServiceURL string) *ConfigurationChanger {
-	generatedChartHandler := helm.NewGeneratedChartHandler(mesh, keptnDomain)
+func NewConfigurationChanger(mesh mesh.Mesh, keptnHandler *keptnevents.Keptn, configServiceURL string) *ConfigurationChanger {
+	generatedChartHandler := helm.NewGeneratedChartHandler(mesh, keptnHandler.Logger)
 	helmExecutor := helm.NewHelmV3Executor(keptnHandler.Logger)
-	return &ConfigurationChanger{mesh: mesh, generatedChartHandler: generatedChartHandler,
-		keptnHandler: keptnHandler, helmExecutor: helmExecutor, keptnDomain: keptnDomain, configServiceURL: configServiceURL}
+	return &ConfigurationChanger{
+		mesh:                  mesh,
+		generatedChartHandler: generatedChartHandler,
+		keptnHandler:          keptnHandler,
+		helmExecutor:          helmExecutor,
+		configServiceURL:      configServiceURL,
+	}
 }
 
 // ChangeAndApplyConfiguration changes the configuration and applies it in the cluster
@@ -145,6 +148,7 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event,
 
 		image := ""
 		tag := ""
+		labels := e.Labels
 
 		for k, v := range e.ValuesCanary {
 			if k == "image" {
@@ -157,7 +161,7 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event,
 		}
 		var shkeptncontext string
 		ce.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
-		if err := sendDeploymentFinishedEvent(keptnHandler, testStrategy, deploymentStrategy, image, tag); err != nil {
+		if err := sendDeploymentFinishedEvent(keptnHandler, testStrategy, deploymentStrategy, image, tag, labels, mesh.GetIngressHostnameSuffix(), mesh.GetIngressProtocol(), mesh.GetIngressPort()); err != nil {
 			c.keptnHandler.Logger.Error(fmt.Sprintf("Cannot send deployment finished event: %s", err.Error()))
 			return err
 		}
@@ -194,7 +198,7 @@ func (c *ConfigurationChanger) applyValuesCanary(e *keptnevents.ConfigurationCha
 	if err := c.upgradeChart(ch, *e, deploymentStrategy); err != nil {
 		return err
 	}
-	onboarder := NewOnboarder(c.mesh, c.keptnHandler, c.keptnDomain, c.configServiceURL)
+	onboarder := NewOnboarder(c.mesh, c.keptnHandler, c.configServiceURL)
 	if onboarder.IsGeneratedChartEmpty(genChart) {
 		userChartManifest, err := c.helmExecutor.GetManifest(helm.GetReleaseName(e.Project, e.Stage, e.Service, false),
 			e.Project+"-"+e.Stage)
@@ -399,7 +403,7 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 			return err
 		}
 
-		chartGenerator := helm.NewGeneratedChartHandler(c.mesh, c.keptnDomain)
+		chartGenerator := helm.NewGeneratedChartHandler(c.mesh, c.keptnHandler.Logger)
 		userChartManifest, err := c.helmExecutor.GetManifest(helm.GetReleaseName(e.Project, e.Stage, e.Service, false),
 			e.Project+"-"+e.Stage)
 		if err != nil {

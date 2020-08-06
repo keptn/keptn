@@ -4,16 +4,21 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
+	"time"
+
 	"github.com/keptn/keptn/configuration-service/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"os"
-	"time"
 )
 
-var mongoDBConnection = os.Getenv("MONGO_DB_CONNECTION_STRING")
+var mongoDBHost = os.Getenv("MONGODB_HOST")
 var databaseName = os.Getenv("MONGO_DB_NAME")
+var mongoDBUser = os.Getenv("MONGODB_USER")
+var mongoDBPassword = os.Getenv("MONGODB_PASSWORD")
+
+var mongoDBConnection = fmt.Sprintf("mongodb://%s:%s@%s/%s", mongoDBUser, mongoDBPassword, mongoDBHost, databaseName)
 
 const projectsCollectionName = "keptnProjectsMV"
 

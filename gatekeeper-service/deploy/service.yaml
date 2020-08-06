@@ -3,20 +3,37 @@ kind: Deployment
 metadata:
   name: gatekeeper-service
   namespace: keptn
+  labels:
+    app.kubernetes.io/name: gatekeeper-service
+    app.kubernetes.io/instance: keptn
+    app.kubernetes.io/part-of: keptn-keptn
+    app.kubernetes.io/component: control-plane
+    app.kubernetes.io/version: develop
 spec:
   selector:
     matchLabels:
-      run: gatekeeper-service
+      app.kubernetes.io/name: gatekeeper-service
+      app.kubernetes.io/instance: keptn
   replicas: 1
   template:
     metadata:
       labels:
-        run: gatekeeper-service
+        app.kubernetes.io/name: gatekeeper-service
+        app.kubernetes.io/instance: keptn
+        app.kubernetes.io/part-of: keptn-keptn
+        app.kubernetes.io/component: control-plane
+        app.kubernetes.io/version: develop
     spec:
       serviceAccountName: keptn-default
       containers:
       - name: gatekeeper-service
         image: keptn/gatekeeper-service:latest
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 10999
+          initialDelaySeconds: 5
+          periodSeconds: 5
         ports:
         - containerPort: 8080
         resources:
@@ -28,11 +45,36 @@ spec:
             cpu: "500m"
         env:
         - name: CONFIGURATION_SERVICE
-          value: 'http://configuration-service.keptn.svc.cluster.local:8080'
+          value: 'http://configuration-service:8080'
         - name: EVENTBROKER
-          value: 'http://event-broker.keptn.svc.cluster.local/keptn'
+          value: 'http://event-broker/keptn'
         - name: DATASTORE
-          value: 'http://mongodb-datastore.keptn-datastore.svc.cluster.local:8080'
+          value: 'http://mongodb-datastore:8080'
+      - name: distributor
+        image: keptn/distributor:latest
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 10999
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        imagePullPolicy: Always
+        ports:
+          - containerPort: 8080
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        env:
+          - name: PUBSUB_URL
+            value: 'nats://keptn-nats-cluster'
+          - name: PUBSUB_TOPIC
+            value: 'sh.keptn.events.evaluation-done,sh.keptn.event.approval.>'
+          - name: PUBSUB_RECIPIENT
+            value: '127.0.0.1'
 ---
 apiVersion: v1
 kind: Service
@@ -40,10 +82,14 @@ metadata:
   name: gatekeeper-service
   namespace: keptn
   labels:
-    run: gatekeeper-service
+    app.kubernetes.io/name: gatekeeper-service
+    app.kubernetes.io/instance: keptn
+    app.kubernetes.io/part-of: keptn-keptn
+    app.kubernetes.io/component: control-plane
 spec:
   ports:
   - port: 8080
     protocol: TCP
   selector:
-    run: gatekeeper-service
+    app.kubernetes.io/name: gatekeeper-service
+    app.kubernetes.io/instance: keptn

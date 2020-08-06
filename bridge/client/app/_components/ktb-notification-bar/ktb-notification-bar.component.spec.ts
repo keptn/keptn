@@ -39,10 +39,6 @@ describe('KtbNotificationBarComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create an instance', () => {
-    expect(component).toBeTruthy();
-  });
-
   it('should add and remove notifications', () => {
     let notifications = fixture.debugElement.queryAll(By.css('.page-note'));
     expect(notifications.length).toBe(0);

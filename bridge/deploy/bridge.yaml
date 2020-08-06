@@ -4,21 +4,40 @@ kind: Deployment
 metadata:
   name: bridge
   namespace: keptn
+  labels:
+    app.kubernetes.io/name: bridge
+    app.kubernetes.io/instance: keptn
+    app.kubernetes.io/part-of: keptn-keptn
+    app.kubernetes.io/component: control-plane
+    app.kubernetes.io/version: develop
 spec:
   selector:
     matchLabels:
-      run: bridge
+      app.kubernetes.io/name: bridge
+      app.kubernetes.io/instance: keptn
   replicas: 1
   template:
     metadata:
       labels:
-        run: bridge
+        app.kubernetes.io/name: bridge
+        app.kubernetes.io/instance: keptn
+        app.kubernetes.io/part-of: keptn-keptn
+        app.kubernetes.io/component: control-plane
+        app.kubernetes.io/version: develop
     spec:
       serviceAccountName: keptn-default
       containers:
       - name: bridge
         image: keptn/bridge2:latest
         imagePullPolicy: Always
+        env:
+         - name: API_URL
+           value: "http://api-gateway-nginx.keptn.svc.cluster.local/api"
+         - name: API_TOKEN
+           valueFrom:
+             secretKeyRef:
+               name: keptn-api-token
+               key: keptn-api-token
         envFrom:
           - secretRef:
               name: bridge-credentials
@@ -39,11 +58,15 @@ metadata:
   name: bridge
   namespace: keptn
   labels:
-    run: bridge
+    app.kubernetes.io/name: bridge
+    app.kubernetes.io/instance: keptn
+    app.kubernetes.io/part-of: keptn-keptn
+    app.kubernetes.io/component: control-plane
 spec:
   ports:
   - port: 8080
     targetPort: 3000
     protocol: TCP
   selector:
-    run: bridge
+    app.kubernetes.io/name: bridge
+    app.kubernetes.io/instance: keptn

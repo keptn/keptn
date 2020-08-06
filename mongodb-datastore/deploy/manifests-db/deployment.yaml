@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: mongodb
-  namespace: keptn-datastore
+  namespace: keptn
 spec:
   replicas: 1
   selector:
@@ -15,7 +15,7 @@ spec:
       labels:
         name: mongodb
     spec:
-      serviceAccountName: keptn-ds-default
+      serviceAccountName: keptn-default
       securityContext:
         fsGroup: 184
       containers:

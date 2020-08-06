@@ -28,7 +28,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var generateSupportArchiveParams *generateCmdParams
+type generateSupportArchiveCmdParams struct {
+	generateCmdParams
+	KeptnNamespace *string
+}
+
+var generateSupportArchiveParams *generateSupportArchiveCmdParams
 
 type errorableStringResult struct {
 	Result string
@@ -45,24 +50,33 @@ type errorableProjectResult struct {
 	Err    error `json:",omitempty"`
 }
 
-var namespaces = [...]string{"keptn", "keptn-datastore"} //"istio-system"
+type errorableMetadataResult struct {
+	Result *models.Metadata
+	Err    error `json:",omitempty"`
+}
 
 type metaData struct {
 	OperatingSystem                 string
 	KeptnCLIVersion                 string
-	KeptnAPIUrl                     *errorableStringResult  `json:",omitempty"`
-	KeptnAPIReachable               *errorableBoolResult    `json:",omitempty"`
-	Projects                        *errorableProjectResult `json:",omitempty"`
-	KubectlVersion                  *errorableStringResult  `json:",omitempty"`
-	KubeContextPointsToKeptnCluster *errorableBoolResult    `json:",omitempty"`
-	KeptnDomain                     *errorableStringResult  `json:",omitempty"`
+	KeptnAPIMetadata                *errorableMetadataResult `json:",omitempty"`
+	KeptnAPIUrl                     *errorableStringResult   `json:",omitempty"`
+	KeptnAPIReachable               *errorableBoolResult     `json:",omitempty"`
+	Projects                        *errorableProjectResult  `json:",omitempty"`
+	KubectlVersion                  *errorableStringResult   `json:",omitempty"`
+	KubeContextPointsToKeptnCluster *errorableBoolResult     `json:",omitempty"`
+	IngressHostnameSuffix           *errorableStringResult   `json:",omitempty"`
+	IstioSystemInstalled            *errorableBoolResult     `json:",omitempty"`
+	ConfiguredGatewayAvailable      *errorableBoolResult     `json:",omitempty"`
+	IngressPort                     *errorableStringResult   `json:",omitempty"`
+	IngressProtocol                 *errorableStringResult   `json:",omitempty"`
+	IngressGateway                  *errorableStringResult   `json:",omitempty"`
 }
 
 // generateSupportArchiveCmd implements the generate support-archive command
 var generateSupportArchiveCmd = &cobra.Command{
 	Use:   "support-archive",
-	Short: "Generates a support archive.",
-	Long:  `Generates a support archive containing information of the Keptn installation.`,
+	Short: "Generates a support archive containing all logs",
+	Long:  `Generates a support archive containing information of the Keptn installation and logs from the services`,
 	Example: `keptn generate support-archive
 keptn generate support-archive --dir=/some/directory`,
 	SilenceUsage: true,
@@ -89,12 +103,15 @@ keptn generate support-archive --dir=/some/directory`,
 		s.OperatingSystem = runtime.GOOS
 		s.KeptnCLIVersion = Version
 
+		keptnNS := *generateSupportArchiveParams.KeptnNamespace
+
 		if !mocking {
 			s.KeptnAPIUrl = getKeptnAPIUrl()
 			if s.KeptnAPIUrl.Err == nil {
 				s.KeptnAPIReachable = getKeptnAPIReachable()
 				if s.KeptnAPIReachable.Err == nil && s.KeptnAPIReachable.Result {
 					s.Projects = getProjects()
+					s.KeptnAPIMetadata = getKeptnMetadata()
 				}
 			}
 			writeKeptnInstallerLog(keptnInstallerLogFileName, tmpDir)
@@ -102,15 +119,38 @@ keptn generate support-archive --dir=/some/directory`,
 
 			s.KubectlVersion = getKubectlVersion()
 			if s.KubectlVersion.Err == nil {
-				s.KubeContextPointsToKeptnCluster = getKubeContextPointsToKeptnCluster()
+				s.KubeContextPointsToKeptnCluster = getKubeContextPointsToKeptnCluster(keptnNS)
 
 				if s.KubeContextPointsToKeptnCluster.Err == nil && s.KubeContextPointsToKeptnCluster.Result {
 					ctx, _ := getKubeContext()
 					fmt.Println("Retrieving logs from cluster " + strings.TrimSpace(ctx))
-					s.KeptnDomain = getKeptnDomain()
+					s.IngressHostnameSuffix = getIngressHostnameSuffix(keptnNS)
+					s.IngressPort = getIngressPort(keptnNS)
+					s.IngressProtocol = getIngressProtocol(keptnNS)
+					s.IngressGateway = getIngressGateway(keptnNS)
 					writeNamespaces(tmpDir)
 
-					for _, ns := range namespaces {
+					s.IstioSystemInstalled = isIstioSystemInstalled()
+					if s.IstioSystemInstalled.Result {
+						k8sNSFilePath := filepath.Join(tmpDir, "istio-system")
+						err := os.MkdirAll(k8sNSFilePath, os.ModePerm)
+						if err == nil {
+							writeServices("istio-system", k8sNSFilePath)
+							// list of all available ingress gateways
+							writeIstioIngressGateways(tmpDir)
+						} else {
+							fmt.Printf("Error making directory %s: %v\n", k8sNSFilePath, err)
+						}
+					}
+					s.ConfiguredGatewayAvailable = isConfiguredIngressGatewayAvailable()
+
+					// get nodes + their internal and external IPs
+					writeClusterNodes(tmpDir)
+
+					// check if there are any services with type==LoadBalancer in the cluster
+					writeLoadBalancerServices(tmpDir)
+
+					for _, ns := range []string{keptnNS} {
 						k8sNSFilePath := filepath.Join(tmpDir, ns)
 						err := os.MkdirAll(k8sNSFilePath, os.ModePerm)
 						if err != nil {
@@ -131,6 +171,8 @@ keptn generate support-archive --dir=/some/directory`,
 				} else {
 					fmt.Println("Your kube context does not point to a Keptn cluster!")
 				}
+			} else {
+				fmt.Printf("Availability check of kubectl failed with %v\n", s.KubectlVersion.Err)
 			}
 		}
 
@@ -154,6 +196,75 @@ keptn generate support-archive --dir=/some/directory`,
 		fmt.Println("If you need help, please use the #help channel in the Keptn Slack workspace https://slack.keptn.sh")
 		return nil
 	},
+}
+
+func isConfiguredIngressGatewayAvailable() *errorableBoolResult {
+	res, err := exechelper.ExecuteCommand("kubectl", "get cm -n keptn ingress-config -ojsonpath='{.data.ingress_gateway}'")
+	if err != nil {
+		return newErrorableBoolResult(false, err)
+	}
+	var gatewayFullName string
+	if res == "" {
+		gatewayFullName = "public-gateway.istio-system"
+	} else {
+		gatewayFullName = res
+	}
+
+	var gatewayName, gatewayNamespace string
+	gwSplit := strings.Split(gatewayFullName, ".")
+
+	gatewayName = gwSplit[0]
+	if len(gwSplit) > 1 {
+		gatewayNamespace = gwSplit[1]
+	} else {
+		gatewayNamespace = "keptn"
+	}
+
+	res, err = exechelper.ExecuteCommand("kubectl", "get gateway -n "+gatewayNamespace+" "+gatewayName)
+	if err != nil {
+		return newErrorableBoolResult(false, err)
+	}
+	return newErrorableBoolResult(true, nil)
+}
+
+func writeIstioIngressGateways(dir string) {
+	writeErrorableStringResult(newErrorableStringResult(exechelper.ExecuteCommand("kubectl", "get gateway --all-namespaces -oyaml")),
+		filepath.Join(dir, "ingress-gateways.txt"))
+}
+
+func writeClusterNodes(dir string) {
+	writeErrorableStringResult(newErrorableStringResult(exechelper.ExecuteCommand("kubectl", "get nodes -owide")),
+		filepath.Join(dir, "nodes.txt"))
+}
+
+func writeLoadBalancerServices(dir string) {
+	res, err := exechelper.ExecuteCommand("kubectl", "get svc --all-namespaces -owide")
+	if err != nil {
+		writeErrorableStringResult(newErrorableStringResult("", err), "loadbalancer-services.txt")
+	}
+	output := ""
+	split := strings.Split(res, "\n")
+	output = output + split[0] + "\n"
+
+	if len(split) > 1 {
+		for _, line := range split[1:] {
+			if strings.Contains(line, "LoadBalancer") {
+				output = output + line + "\n"
+			}
+		}
+	}
+	writeErrorableStringResult(newErrorableStringResult(output, nil),
+		filepath.Join(dir, "loadbalancer-services.txt"))
+}
+
+func isIstioSystemInstalled() *errorableBoolResult {
+	fmt.Println("Checking availability of istio-system namespace")
+	_, err := exechelper.ExecuteCommand("kubectl",
+		`get namespace istio-system`)
+	if err != nil {
+		return newErrorableBoolResult(false, err)
+	}
+	return newErrorableBoolResult(true, nil)
 }
 
 func recursiveZip(pathToZip, destPath string) error {
@@ -221,6 +332,13 @@ func newErrorableProjectResult(result []*models.Project, err error) *errorablePr
 	}
 }
 
+func newErrorableMetadataResult(result *models.Metadata, err error) *errorableMetadataResult {
+	return &errorableMetadataResult{
+		Result: result,
+		Err:    err,
+	}
+}
+
 func getKeptnAPIUrl() *errorableStringResult {
 	fmt.Println("Retrieving Keptn API")
 	endPoint, _, err := credentialmanager.NewCredentialManager().GetCreds()
@@ -234,8 +352,12 @@ func getKeptnAPIReachable() *errorableBoolResult {
 		return newErrorableBoolResult(false, err)
 	}
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-	endPoint.Path = "swagger-ui"
-	resp, err := http.Get(endPoint.String())
+	url := endPoint.String()
+	// Get URL for swagger-ui
+	if strings.HasSuffix(url, "/") {
+		url = url[:len(url)-1]
+	}
+	resp, err := http.Get(url)
 	if err != nil {
 		return newErrorableBoolResult(false, err)
 	}
@@ -245,17 +367,9 @@ func getKeptnAPIReachable() *errorableBoolResult {
 	return newErrorableBoolResult(false, errors.New(resp.Status))
 }
 
-func getKubeContextPointsToKeptnCluster() *errorableBoolResult {
+func getKubeContextPointsToKeptnCluster(keptnNamespace string) *errorableBoolResult {
 	fmt.Println("Checking whether kube context points to Keptn cluster")
-	keptnDomain, err := getEndpointUsingKube()
-	if err != nil {
-		return newErrorableBoolResult(false, err)
-	}
-	endPoint, _, err := credentialmanager.NewCredentialManager().GetCreds()
-	if err != nil {
-		return newErrorableBoolResult(false, err)
-	}
-	return newErrorableBoolResult(strings.Contains(endPoint.String(), keptnDomain), nil)
+	return newErrorableBoolResult(keptnutils.ExistsNamespace(false, keptnNamespace))
 }
 
 func getKubectlVersion() *errorableStringResult {
@@ -263,9 +377,46 @@ func getKubectlVersion() *errorableStringResult {
 	return newErrorableStringResult(exechelper.ExecuteCommand("kubectl", "version"))
 }
 
-func getKeptnDomain() *errorableStringResult {
+func getIngressHostnameSuffix(keptnNamespace string) *errorableStringResult {
 	fmt.Println("Retrieving Keptn domain")
-	return newErrorableStringResult(getEndpointUsingKube())
+	return newErrorableStringResult(exechelper.ExecuteCommand("kubectl", "get cm ingress-config -n "+
+		keptnNamespace+" -ojsonpath='{.data.ingress_hostname_suffix}'"))
+}
+
+func getIngressPort(keptnNamespace string) *errorableStringResult {
+	res, err := exechelper.ExecuteCommand("kubectl", "get cm ingress-config -n "+
+		keptnNamespace+" -ojsonpath='{.data.ingress_port}'")
+	if err != nil {
+		return newErrorableStringResult("", err)
+	}
+	if res == "" {
+		return newErrorableStringResult("80", nil)
+	}
+	return newErrorableStringResult(res, nil)
+}
+
+func getIngressProtocol(keptnNamespace string) *errorableStringResult {
+	res, err := exechelper.ExecuteCommand("kubectl", "get cm ingress-config -n "+
+		keptnNamespace+" -ojsonpath='{.data.ingress_protocol}'")
+	if err != nil {
+		return newErrorableStringResult("", err)
+	}
+	if res == "" {
+		return newErrorableStringResult("http", nil)
+	}
+	return newErrorableStringResult(res, nil)
+}
+
+func getIngressGateway(keptnNamespace string) *errorableStringResult {
+	res, err := exechelper.ExecuteCommand("kubectl", "get cm ingress-config -n "+
+		keptnNamespace+" -ojsonpath='{.data.ingress_gateway}'")
+	if err != nil {
+		return newErrorableStringResult("", err)
+	}
+	if res == "" {
+		return newErrorableStringResult("public-gateway.istio-system", nil)
+	}
+	return newErrorableStringResult(res, nil)
 }
 
 func writeNamespaces(dir string) {
@@ -370,7 +521,7 @@ func getProjects() *errorableProjectResult {
 	if err != nil {
 		return newErrorableProjectResult(nil, err)
 	}
-	projectHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
+	projectHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 	return newErrorableProjectResult(projectHandler.GetAllProjects())
 }
 
@@ -386,10 +537,27 @@ func writeKeptnInstallerLog(logFileName string, dir string) {
 	writeErrorableStringResult(newErrorableStringResult(string(res), err), filepath.Join(dir, logFileName))
 }
 
+func getKeptnMetadata() *errorableMetadataResult {
+	fmt.Println("Retrieving Keptn Metadata from API Service")
+	endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
+	if err != nil {
+		return newErrorableMetadataResult(nil, err)
+	}
+	metadataHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+	metadataData, errMetadata := metadataHandler.GetMetadata()
+	if errMetadata != nil {
+		err = errors.New("Error occurred with response code " + string(errMetadata.Code) + " with message " + *errMetadata.Message)
+	}
+	return newErrorableMetadataResult(metadataData, err)
+}
+
 func init() {
 	generateCmd.AddCommand(generateSupportArchiveCmd)
 
-	generateSupportArchiveParams = &generateCmdParams{}
+	generateSupportArchiveParams = &generateSupportArchiveCmdParams{}
 	generateSupportArchiveParams.Directory = generateSupportArchiveCmd.Flags().StringP("dir", "",
 		"./support-archive", "directory where the docs should be written to")
+	generateSupportArchiveParams.KeptnNamespace = generateSupportArchiveCmd.Flags().StringP("keptn-namespace", "",
+		"keptn", "namespace where Keptn is installed")
+	generateSupportArchiveCmd.Flags().MarkHidden("keptn-namespace")
 }

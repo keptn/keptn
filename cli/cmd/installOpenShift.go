@@ -18,6 +18,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/keptn/keptn/cli/pkg/logging"
+
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 )
 
@@ -55,12 +57,14 @@ func (p openShiftPlatform) checkCreds() error {
 		return err
 	}
 	if !authenticated {
-		return errors.New("Cannot authenticate at cluster " + p.creds.OpenshiftURL)
+		return errors.New("Cannot authenticate at cluster " + p.creds.OpenshiftURL + ": " + err.Error())
 	}
 	return nil
 }
 
 func (p openShiftPlatform) readCreds() {
+
+	fmt.Print("Please enter the following information or press enter to keep the old value:\n")
 
 	connectionSuccessful := false
 	for !connectionSuccessful {
@@ -96,13 +100,16 @@ func (p openShiftPlatform) readOpenshiftPassword() {
 }
 
 func (p openShiftPlatform) authenticateAtCluster() (bool, error) {
-	_, err := keptnutils.ExecuteCommand("oc", []string{
+	logging.PrintLog("Authenticating at Openshift cluster: oc login "+p.creds.OpenshiftURL, logging.VerboseLevel)
+	out, err := keptnutils.ExecuteCommand("oc", []string{
 		"login",
 		p.creds.OpenshiftURL,
 		"-u=" + p.creds.OpenshiftUser,
 		"-p=" + p.creds.OpenshiftPassword,
 		"--insecure-skip-tls-verify=true",
 	})
+
+	logging.PrintLog("Result: "+out, logging.VerboseLevel)
 
 	if err != nil {
 		fmt.Println("Could not connect to cluster. Please verify that you have entered the correct information.")

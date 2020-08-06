@@ -1,0 +1,18 @@
+apiVersion: spec.keptn.sh/0.1.4
+kind: Remediation
+metadata:
+  name: service-remediation
+spec:
+  remediations:
+    - problemType: Response time degradation
+      actionsOnOpen:
+      - action: scaling
+        name: scaling
+        description: Scale up
+        value: 1
+    - problemType: response_time_p90
+      actionsOnOpen:
+        - action: scaling
+          name: scaling
+          description: Scale up
+          value: "1"

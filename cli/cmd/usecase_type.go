@@ -4,17 +4,19 @@ package cmd
 type usecase int
 
 const (
-	// All supports all Keptn use cases
-	AllUseCases usecase = iota
 	// QualityGates supports only quality gates use cases
-	QualityGates
+	QualityGates usecase = iota
+
+	// ContinuousDelivery supports all Keptn use cases
+	ContinuousDelivery
 )
 
 func (i usecase) String() string {
-	return [...]string{"all", "quality-gates"}[i]
+	return [...]string{"quality-gates", "continuous-delivery"}[i]
 }
 
 var usecaseToID = map[string]usecase{
-	"all":           AllUseCases,
-	"quality-gates": QualityGates,
+	"continuous-delivery": ContinuousDelivery,
+	"quality-gates":       QualityGates,
+	"":                    QualityGates,
 }

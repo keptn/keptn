@@ -39,8 +39,8 @@ var approvalTriggered approvalTriggeredStruct
 // evaluationDoneCmd represents the approval.triggered command
 var approvalTriggeredCmd = &cobra.Command{
 	Use:          "approval.triggered",
-	Short:        "Returns the latest Keptn sh.keptn.events.approval.triggered event from a specific project/stage/service",
-	Long:         `Returns the latest Keptn sh.keptn.events.approval.triggered event from a specific project/stage/service.`,
+	Short:        "Returns the latest Keptn sh.keptn.event.approval.triggered event from a specific project/stage/service",
+	Long:         `Returns the latest Keptn sh.keptn.event.approval.triggered event from a specific project/stage/service.`,
 	Example:      `keptn get event approval.triggered --project=sockshop --stage=staging --service=carts`,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -65,8 +65,8 @@ func getApprovalTriggeredEvents(approvalTriggered approvalTriggeredStruct) error
 
 	logging.PrintLog("Starting to get approval.triggered events", logging.InfoLevel)
 
-	serviceHandler := apiutils.NewAuthenticatedServiceHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
-	eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
+	serviceHandler := apiutils.NewAuthenticatedServiceHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+	eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 
 	logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 

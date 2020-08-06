@@ -1,26 +1,24 @@
 @import '../../../variables';
 @import '~@dynatrace/barista-components/core/src/style/variables';
 
-.dt-tag.error {
-  border-color: $error-color;
-}
-.dt-tag.warning {
-  border-color: $orange-400;
-}
+.ktb-root-events-list {
 
-.event-icon {
-  width: 20px;
-  height: 20px;
-}
+  .dt-tag.error {
+    background-color: $error-color;
+    color: $white;
+  }
+  .dt-tag.warning {
+    border-color: $orange-400;
+  }
 
-.event-icon.error {
-  fill: $error-color;
-}
+  .ktb-selectable-tile.ktb-tile-error .ktb-selectable-tile-container {
+    border: 1px solid $gray-200;
+    border-left: 3px solid $error-color;
+  }
 
-.event-icon.warning {
-  fill: $orange-400;
-}
-
-.event-icon.success {
-  fill: $cta-color-active;
+  .ktb-selectable-tile:hover.ktb-tile-error .ktb-selectable-tile-container,
+  .ktb-selectable-tile.ktb-tile-selected.ktb-tile-error .ktb-selectable-tile-container {
+    border: 1px solid $gray-300;
+    border-left: 3px solid $error-color;
+  }
 }

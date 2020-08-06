@@ -36,11 +36,11 @@ var approvalFinishedCmd = &cobra.Command{
 	Use: "approval.finished",
 	Short: "Sends an approval.finished event to Keptn in order to confirm an open approval " +
 		"with the specified ID in the provided project and stage",
-	Long: `Sends an approval.finished event to Keptn in order to confirm an open approval
-with the specified ID in the provided project and stage. 
+	Long: `Sends an approval.finished event to Keptn in order to confirm an open approval with the specified ID in the provided project and stage. 
 
-This command takes the project (*--project*), stage (*--stage*). Besides, it is necessary to specify the ID (*--id*) of the corresponding approval.triggered event.
-The open approval.triggered events and their ID can be retrieved using the "keptn get event approval.triggered --project=<project> --stage=<stage>"" command."
+* This command takes the project (*--project*) and stage (*--stage*). 
+* It is optional to specify the ID (*--id*) of the corresponding approval.triggered event. If the ID is not provided, the command asks the user which open approval should be accepted or declined.
+* The open approval.triggered events and their ID can be retrieved using the "keptn get event approval.triggered --project=<project> --stage=<stage>" command.
 `,
 	Example: `keptn send event approval.finished --project=sockshop --stage=hardening --id=1234-5678-9123`,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
@@ -76,19 +76,21 @@ func sendApprovalFinishedEvent(sendApprovalFinishedOptions sendApprovalFinishedS
 
 	logging.PrintLog("Starting to send approval.finished event", logging.InfoLevel)
 
-	apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
-	eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
+	apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+	eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 
 	logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 	var keptnContext string
+	var triggeredID string
 	var approvalFinishedEvent *keptnevents.ApprovalFinishedEventData
 
 	if *sendApprovalFinishedOptions.ID != "" {
-		keptnContext, approvalFinishedEvent, err = getApprovalFinishedForID(eventHandler, sendApprovalFinishedOptions)
+		keptnContext, triggeredID, approvalFinishedEvent, err = getApprovalFinishedForID(eventHandler, sendApprovalFinishedOptions)
 	} else if *sendApprovalFinishedOptions.Service != "" {
-		serviceHandler := apiutils.NewAuthenticatedServiceHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
-		keptnContext, approvalFinishedEvent, err = getApprovalFinishedForService(eventHandler, serviceHandler, sendApprovalFinishedOptions)
+		serviceHandler := apiutils.NewAuthenticatedServiceHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+		keptnContext, triggeredID, approvalFinishedEvent, err = getApprovalFinishedForService(eventHandler,
+			serviceHandler, sendApprovalFinishedOptions)
 	}
 	if err != nil {
 		return err
@@ -107,7 +109,7 @@ func sendApprovalFinishedEvent(sendApprovalFinishedOptions sendApprovalFinishedS
 			Type:        keptnevents.ApprovalFinishedEventType,
 			Source:      types.URLRef{URL: *source},
 			ContentType: &contentType,
-			Extensions:  map[string]interface{}{"shkeptncontext": keptnContext},
+			Extensions:  map[string]interface{}{"shkeptncontext": keptnContext, "triggeredid": triggeredID},
 		}.AsV02(),
 		Data: approvalFinishedEvent,
 	}
@@ -137,20 +139,21 @@ func sendApprovalFinishedEvent(sendApprovalFinishedOptions sendApprovalFinishedS
 	return nil
 }
 
-func getApprovalFinishedForService(eventHandler *apiutils.EventHandler, serviceHandler *apiutils.ServiceHandler, approvalFinishedOptions sendApprovalFinishedStruct) (string, *keptnevents.ApprovalFinishedEventData, error) {
+func getApprovalFinishedForService(eventHandler *apiutils.EventHandler, serviceHandler *apiutils.ServiceHandler,
+	approvalFinishedOptions sendApprovalFinishedStruct) (string, string, *keptnevents.ApprovalFinishedEventData, error) {
 	svc, err := serviceHandler.GetService(*approvalFinishedOptions.Project, *approvalFinishedOptions.Stage, *approvalFinishedOptions.Service)
 	if err != nil {
 		logging.PrintLog("Open approval.triggered event for service "+*approvalFinishedOptions.Service+" could not be retrieved: "+err.Error(), logging.InfoLevel)
-		return "", nil, err
+		return "", "", nil, err
 	}
 	if svc == nil {
 		logging.PrintLog("Service "+*approvalFinishedOptions.Service+" could not be found", logging.InfoLevel)
-		return "", nil, nil
+		return "", "", nil, nil
 	}
 
 	if len(svc.OpenApprovals) == 0 {
 		logging.PrintLog("No open approval.triggered event for service "+*approvalFinishedOptions.Service+" has been found", logging.InfoLevel)
-		return "", nil, nil
+		return "", "", nil, nil
 	}
 
 	// print all available options
@@ -160,7 +163,7 @@ func getApprovalFinishedForService(eventHandler *apiutils.EventHandler, serviceH
 	nrOfOptions := len(svc.OpenApprovals)
 	selectedOption, err := selectApprovalOption(nrOfOptions)
 	if err != nil {
-		return "", nil, err
+		return "", "", nil, err
 	}
 
 	index := selectedOption - 1
@@ -178,12 +181,12 @@ func getApprovalFinishedForService(eventHandler *apiutils.EventHandler, serviceH
 
 	if errorObj != nil {
 		logging.PrintLog("Cannot retrieve approval.triggered event with ID "+*approvalFinishedOptions.ID+": "+*errorObj.Message, logging.InfoLevel)
-		return "", nil, errors.New(*errorObj.Message)
+		return "", "", nil, errors.New(*errorObj.Message)
 	}
 
 	if len(events) == 0 {
 		logging.PrintLog("No open approval.triggered event with the ID "+*approvalFinishedOptions.ID+" has been found", logging.InfoLevel)
-		return "", nil, nil
+		return "", "", nil, nil
 	}
 
 	approvalTriggeredEvent := &keptnevents.ApprovalTriggeredEventData{}
@@ -191,7 +194,7 @@ func getApprovalFinishedForService(eventHandler *apiutils.EventHandler, serviceH
 	err = mapstructure.Decode(events[0].Data, approvalTriggeredEvent)
 	if err != nil {
 		logging.PrintLog("Cannot decode approval.triggered event: "+err.Error(), logging.InfoLevel)
-		return "", nil, err
+		return "", "", nil, err
 	}
 
 	var approvalResult string
@@ -211,13 +214,12 @@ func getApprovalFinishedForService(eventHandler *apiutils.EventHandler, serviceH
 		Image:              approvalTriggeredEvent.Image,
 		Labels:             approvalTriggeredEvent.Labels,
 		Approval: keptnevents.ApprovalData{
-			TriggeredID: eventToBeApproved.EventID,
-			Result:      approvalResult,
-			Status:      "succeeded",
+			Result: approvalResult,
+			Status: "succeeded",
 		},
 	}
 
-	return eventToBeApproved.KeptnContext, approvalFinishedEvent, nil
+	return eventToBeApproved.KeptnContext, eventToBeApproved.EventID, approvalFinishedEvent, nil
 }
 
 func approveOrDecline() bool {
@@ -320,7 +322,8 @@ func getScoreForApprovalTriggeredEvent(eventHandler *apiutils.EventHandler, appr
 	return score
 }
 
-func getApprovalFinishedForID(eventHandler *apiutils.EventHandler, sendApprovalFinishedOptions sendApprovalFinishedStruct) (string, *keptnevents.ApprovalFinishedEventData, error) {
+func getApprovalFinishedForID(eventHandler *apiutils.EventHandler, sendApprovalFinishedOptions sendApprovalFinishedStruct) (string,
+	string, *keptnevents.ApprovalFinishedEventData, error) {
 	events, errorObj := eventHandler.GetEvents(&apiutils.EventFilter{
 		Project:   *sendApprovalFinishedOptions.Project,
 		Stage:     *sendApprovalFinishedOptions.Stage,
@@ -330,12 +333,12 @@ func getApprovalFinishedForID(eventHandler *apiutils.EventHandler, sendApprovalF
 
 	if errorObj != nil {
 		logging.PrintLog("Cannot retrieve approval.triggered event with ID "+*sendApprovalFinishedOptions.ID+": "+*errorObj.Message, logging.InfoLevel)
-		return "", nil, errors.New(*errorObj.Message)
+		return "", "", nil, errors.New(*errorObj.Message)
 	}
 
 	if len(events) == 0 {
 		logging.PrintLog("No open approval.triggered event with the ID "+*sendApprovalFinishedOptions.ID+" has been found", logging.InfoLevel)
-		return "", nil, nil
+		return "", "", nil, nil
 	}
 
 	approvalTriggeredEvent := &keptnevents.ApprovalTriggeredEventData{}
@@ -343,7 +346,7 @@ func getApprovalFinishedForID(eventHandler *apiutils.EventHandler, sendApprovalF
 	err := mapstructure.Decode(events[0].Data, approvalTriggeredEvent)
 	if err != nil {
 		logging.PrintLog("Cannot decode approval.triggered event: "+err.Error(), logging.InfoLevel)
-		return "", nil, err
+		return "", "", nil, err
 	}
 
 	approvalFinishedEvent := &keptnevents.ApprovalFinishedEventData{
@@ -356,12 +359,11 @@ func getApprovalFinishedForID(eventHandler *apiutils.EventHandler, sendApprovalF
 		Image:              approvalTriggeredEvent.Image,
 		Labels:             approvalTriggeredEvent.Labels,
 		Approval: keptnevents.ApprovalData{
-			TriggeredID: events[0].ID,
-			Result:      "pass",
-			Status:      "succeeded",
+			Result: "pass",
+			Status: "succeeded",
 		},
 	}
-	return events[0].Shkeptncontext, approvalFinishedEvent, nil
+	return events[0].Shkeptncontext, events[0].ID, approvalFinishedEvent, nil
 }
 
 func init() {

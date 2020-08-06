@@ -103,7 +103,7 @@ replicas: 1
 const chartContent = `
 apiVersion: v2
 type: application
-description: A Helm chart for service carts
+description: A Helm Chart for service carts
 name: carts
 version: 0.1.0
 `
@@ -114,7 +114,7 @@ func check(e error, t *testing.T) {
 	}
 }
 
-// CreateHelmChartData creates a new Helm chart tgz and returns its data
+// CreateHelmChartData creates a new Helm Chart tgz and returns its data
 func CreateHelmChartData(t *testing.T) []byte {
 
 	err := os.MkdirAll("carts/templates", 0777)

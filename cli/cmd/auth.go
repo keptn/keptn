@@ -25,14 +25,14 @@ var apiToken *string
 var authCmd = &cobra.Command{
 	Use:   "auth --endpoint=https://api.keptn.MY.DOMAIN.COM --api-token=SECRET_TOKEN",
 	Short: "Authenticates the Keptn CLI against a Keptn installation",
-	Long: `Authenticates the Keptn CLI against a Keptn installation using an endpoint
-and an API token. The endpoint and API token are automatically configured during the Keptn installation.
+	Long: `Authenticates the Keptn CLI against a Keptn installation using an endpoint and an API token. 
+The endpoint and API token are automatically configured during the Keptn installation.
 If the authentication is successful, the endpoint and the API token are stored in a password store of the underlying operating system.
-More precisely, the keptn CLI stores the endpoint and API token using *pass* in case of Linux, using *Keychain* in case of macOS, or *Wincred* in case of Windows.
+More precisely, the Keptn CLI stores the endpoint and API token using *pass* in case of Linux, using *Keychain* in case of macOS, or *Wincred* in case of Windows.
 
-**Note**: If you receive a warning *Using a file-based storage for the key because the password-store seems to be not set up.* this is because a password store could not be found in your environment. In this case, the credentials are stored in *~/.keptn/.keptn* in your home directory.
+**Note:** If you receive a warning *Using a file-based storage for the key because the password-store seems to be not set up.* this is because a password store could not be found in your environment. In this case, the credentials are stored in *~/.keptn/.keptn* in your home directory.
 	`,
-	Example: `keptn auth --endpoint=https://api.keptn.MY.DOMAIN.COM --api-token=abcd-0123-wxyz-7890`,
+	Example:      `keptn auth --endpoint=https://api.keptn.MY.DOMAIN.COM --api-token=abcd-0123-wxyz-7890`,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		logging.PrintLog("Starting to authenticate", logging.InfoLevel)
@@ -43,7 +43,11 @@ More precisely, the keptn CLI stores the endpoint and API token using *pass* in 
 			return err
 		}
 
-		authHandler := apiutils.NewAuthenticatedAuthHandler(url.String(), *apiToken, "x-token", nil, *scheme)
+		if url.Path == "" || url.Path == "/" {
+			url.Path = "/api"
+		}
+
+		authHandler := apiutils.NewAuthenticatedAuthHandler(url.String(), *apiToken, "x-token", nil, url.Scheme)
 
 		if !mocking {
 			authenticated := false
@@ -110,13 +114,13 @@ func lookupHostname(hostname string) bool {
 }
 
 // authenticate using secrets obtained via kubectl
-func authUsingKube() error {
+func authUsingKube(apiSvcType apiServiceType) error {
 
 	// get api token
 	apiToken, err := getAPITokenUsingKube()
 
-	const errorMsg = `Could not retrieve keptn API token: %s
-To manually set up your keptn CLI, please follow the instructions at https://keptn.sh/.`
+	const errorMsg = `Could not retrieve Keptn API token: %s
+To manually set up your Keptn CLI, please follow the instructions at https://keptn.sh/.`
 
 	if err != nil {
 		return fmt.Errorf(errorMsg, err)
@@ -126,12 +130,26 @@ To manually set up your keptn CLI, please follow the instructions at https://kep
 	var keptnEndpoint string
 	for retries := 0; retries < 15; time.Sleep(5 * time.Second) {
 
-		out, err := getEndpointUsingKube()
-		if err != nil || strings.TrimSpace(string(out)) == "" {
+		var out string
+		var err error
+		switch apiSvcType {
+		case LoadBalancer:
+			out, err = getLoadBalancerEndpoint()
+			break
+		case NodePort:
+			out, err = getNodePortEndpoint()
+			break
+		case ClusterIP:
+			logging.PrintLog("Cannot reach API service of type 'ClusterIP'", logging.InfoLevel)
+			return errors.New("cannot reach API service of type 'ClusterIP'")
+		default:
+			break
+		}
+		if err != nil || strings.TrimSpace(out) == "" {
 			logging.PrintLog("API endpoint not yet available... trying again in 5s", logging.InfoLevel)
 		} else {
-			logging.PrintLog("Received Keptn Domain: "+string(out), logging.InfoLevel)
-			keptnEndpoint = "https://api.keptn." + strings.TrimSpace(string(out))
+			logging.PrintLog("Received Keptn Domain: "+out, logging.InfoLevel)
+			keptnEndpoint = "https://" + strings.TrimSpace(out)
 			break
 		}
 		retries++
@@ -144,15 +162,51 @@ To manually set up your keptn CLI, please follow the instructions at https://kep
 	return authenticate(keptnEndpoint, apiToken)
 }
 
-func getEndpointUsingKube() (string, error) {
+func getNodePortEndpoint() (string, error) {
 	ops := options{"get",
-		"cm",
-		"keptn-domain",
+		"nodes",
+		"-ojsonpath={ $.items[0].status.addresses[?(@.type==\"ExternalIP\")].address }"}
+	ops.appendIfNotEmpty(kubectlOptions)
+	out, err := keptnutils.ExecuteCommand("kubectl", ops)
+	if err != nil {
+		return "", err
+	}
+
+	if out != "" {
+		return out, nil
+	}
+	ops2 := options{"get",
+		"nodes",
+		"-ojsonpath={ $.items[0].status.addresses[?(@.type==\"InternalIP\")].address }"}
+	ops2.appendIfNotEmpty(kubectlOptions)
+	return keptnutils.ExecuteCommand("kubectl", ops2)
+}
+
+func getLoadBalancerEndpoint() (string, error) {
+	ops := options{"get",
+		"svc",
+		"api-gateway-nginx",
 		"-n",
 		"keptn",
-		"-ojsonpath={.data.app_domain}"}
+		"-ojsonpath={.status.loadBalancer.ingress[0].ip}"}
 	ops.appendIfNotEmpty(kubectlOptions)
-	return keptnutils.ExecuteCommand("kubectl", ops)
+	out, err := keptnutils.ExecuteCommand("kubectl", ops)
+	if err != nil {
+		return "", err
+	}
+
+	if out != "" {
+		return out, nil
+	}
+
+	ops2 := options{"get",
+		"svc",
+		"api-gateway-nginx",
+		"-n",
+		"keptn",
+		"-ojsonpath={.status.loadBalancer.ingress[0].hostname}"}
+	ops2.appendIfNotEmpty(kubectlOptions)
+	return keptnutils.ExecuteCommand("kubectl", ops2)
 }
 
 func getAPITokenUsingKube() (string, error) {

@@ -2,8 +2,9 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: upgrader
-  namespace: default
+  namespace: keptn
 spec:
+  backoffLimit: 1
   template:
     metadata:
       labels:
@@ -18,11 +19,15 @@ spec:
           imagePullPolicy: Always
           env:
             - name: KEPTN_VERSION
-              value: "master"
-            - name: MONGODB_URL
-              value: 'mongodb://user:password@mongodb.keptn-datastore.svc.cluster.local:27017/keptn'
+              value: "0.7.0"
+            - name: MONGODB_SOURCE_URL
+              value: 'mongodb://user:password@mongodb.keptn-datastore:27017/keptn'
+            - name: MONGODB_TARGET_URL
+              value: 'mongodb.keptn:27017/keptn'
             - name: CONFIGURATION_SERVICE_URL
-              value: 'configuration-service.keptn.svc.cluster.local:8080'
+              value: 'configuration-service.keptn:8080'
             - name: HELM_RELEASE_UPGRADE
               value: 'false'
+            - name: HELM_CHART_URL
+              value: 'https://storage.googleapis.com/keptn-installer'
       restartPolicy: Never

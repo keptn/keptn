@@ -1,10 +1,9 @@
 package cmd
 
 import (
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"strconv"
+	"reflect"
 	"testing"
 )
 
@@ -18,33 +17,18 @@ func Test_verifyConfigureBridgeParams(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "action=expose should succeed",
+			name: "should succeed",
 			args: args{
 				configureBridgeParams: &configureBridgeCmdParams{
-					Action:   stringp("expose"),
 					User:     stringp("user"),
 					Password: stringp("password"),
 				},
 			},
 			wantErr: false,
 		}, {
-			name: "action=expose should not succeed if no credentials are provided",
+			name: "should not succeed if no credentials are provided",
 			args: args{
-				configureBridgeParams: &configureBridgeCmdParams{Action: stringp("expose")},
-			},
-			wantErr: true,
-		},
-		{
-			name: "action=lockdown should succeed",
-			args: args{
-				configureBridgeParams: &configureBridgeCmdParams{Action: stringp("lockdown")},
-			},
-			wantErr: false,
-		},
-		{
-			name: "action=invalid should not succeed",
-			args: args{
-				configureBridgeParams: &configureBridgeCmdParams{Action: stringp("invalid")},
+				configureBridgeParams: &configureBridgeCmdParams{},
 			},
 			wantErr: true,
 		},
@@ -63,23 +47,7 @@ func stringp(s string) *string {
 }
 
 func Test_configureBridge(t *testing.T) {
-	ts := httptest.NewServer(
-		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			defer r.Body.Close()
-			body, _ := ioutil.ReadAll(r.Body)
-			expose, _ := strconv.ParseBool(string(body))
-
-			if expose {
-				w.Header().Add("Content-Type", "application/json")
-				w.WriteHeader(200)
-				w.Write([]byte(`bridge.keptn.test`))
-			} else {
-				w.Header().Add("Content-Type", "application/json")
-				w.WriteHeader(200)
-				w.Write([]byte(``))
-			}
-		}),
-	)
+	ts := getTestAPI()
 	defer ts.Close()
 
 	type args struct {
@@ -93,12 +61,11 @@ func Test_configureBridge(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Expose",
+			name: "Set credentials",
 			args: args{
 				endpoint: ts.URL,
 				apiToken: "",
 				params: &configureBridgeCmdParams{
-					Action:   stringp("expose"),
 					User:     stringp("user"),
 					Password: stringp("password"),
 				},
@@ -106,11 +73,13 @@ func Test_configureBridge(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Lockdown",
+			name: "Get credentials",
 			args: args{
 				endpoint: ts.URL,
 				apiToken: "",
-				params:   &configureBridgeCmdParams{Action: stringp("lockdown")},
+				params: &configureBridgeCmdParams{
+					Read: boolp(true),
+				},
 			},
 			wantErr: false,
 		},
@@ -126,16 +95,64 @@ func Test_configureBridge(t *testing.T) {
 	}
 }
 
-// Test whether the documentation fo the basic authentication is publicly available
-func Test_basicAuthDocuURL(t *testing.T) {
-	resp, err := http.Get(basicAuthDocuURL)
-	if err != nil {
-		t.Errorf("GET of %s ran into an error", basicAuthDocuURL)
-		return
-	}
+func getTestAPI() *httptest.Server {
+	ts := httptest.NewServer(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			defer r.Body.Close()
+			if r.Method == http.MethodPost {
+				w.Header().Add("Content-Type", "application/json")
+				w.WriteHeader(200)
+				w.Write([]byte(``))
+				return
+			} else if r.Method == http.MethodGet {
+				w.Header().Add("Content-Type", "application/json")
+				w.WriteHeader(200)
+				w.Write([]byte(`{"user":"user", "password":"password"}`))
+				return
+			}
+		}),
+	)
+	return ts
+}
 
-	if resp.StatusCode != 200 {
-		t.Errorf("Documentation of basic authentication not available under the URL: %s", basicAuthDocuURL)
-		return
+func boolp(b bool) *bool {
+	return &b
+}
+
+func Test_retrieveBridgeCredentials(t *testing.T) {
+	ts := getTestAPI()
+	defer ts.Close()
+
+	type args struct {
+		endpoint string
+		apiToken string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *configureBridgeAPIPayload
+		wantErr bool
+	}{
+		{
+			name: "Get credentials",
+			args: args{
+				endpoint: ts.URL,
+				apiToken: "",
+			},
+			wantErr: false,
+			want:    &configureBridgeAPIPayload{Password: "password", User: "user"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := retrieveBridgeCredentials(tt.args.endpoint, tt.args.apiToken)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("retrieveBridgeCredentials() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("retrieveBridgeCredentials() got = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }

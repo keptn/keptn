@@ -163,7 +163,7 @@ func (e *EvaluationDoneEventHandler) getConfigurationChangeEventForCanaryAction(
 		Labels:  inputEvent.Labels,
 	}
 
-	return getCloudEvent(configChangedEvent, keptnevents.ConfigurationChangeEventType, shkeptncontext)
+	return getCloudEvent(configChangedEvent, keptnevents.ConfigurationChangeEventType, shkeptncontext, "")
 }
 
 func (e *EvaluationDoneEventHandler) getApprovalTriggeredEvent(inputEvent keptnevents.EvaluationDoneEventData,
@@ -187,5 +187,5 @@ func (e *EvaluationDoneEventHandler) getApprovalTriggeredEvent(inputEvent keptne
 		Labels:             inputEvent.Labels,
 		Result:             inputEvent.Result,
 	}
-	return getCloudEvent(approvalTriggeredEvent, keptnevents.ApprovalTriggeredEventType, shkeptncontext)
+	return getCloudEvent(approvalTriggeredEvent, keptnevents.ApprovalTriggeredEventType, shkeptncontext, "")
 }

@@ -1,0 +1,8 @@
+control-plane:
+  enabled: true
+  apiGatewayNginx:
+    type: ClusterIP
+    port: 80
+
+continuous-delivery:
+  enabled: false

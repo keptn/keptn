@@ -2,8 +2,8 @@ import semver from 'semver';
 
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {Router, RoutesRecognized} from "@angular/router";
-import {Observable, Subscription} from "rxjs";
-import {filter, map} from "rxjs/operators";
+import {Observable, Subject, Subscription} from "rxjs";
+import {filter, map, takeUntil} from "rxjs/operators";
 
 import {Project} from "../_models/project";
 import {DataService} from "../_services/data.service";
@@ -18,55 +18,51 @@ import {NotificationType} from "../_models/notification";
 })
 export class AppHeaderComponent implements OnInit, OnDestroy {
 
-  private routeSub: Subscription = Subscription.EMPTY;
-  private versionInfoSub: Subscription = Subscription.EMPTY;
+  private readonly unsubscribe$ = new Subject<void>();
 
   public projects: Observable<Project[]>;
   public project: Observable<Project>;
 
   public versionInfo: any;
   public versionCheckDialogState: string | null;
-  public versionCheckReference = "https://keptn.sh/docs/develop/reference/bridge/version_check";
+  public versionCheckReference = "https://keptn.sh/docs/0.7.x/reference/version_check";
 
   constructor(private router: Router, private dataService: DataService, private apiService: ApiService, private notificationsService: NotificationsService) { }
 
   ngOnInit() {
     this.projects = this.dataService.projects;
 
-    this.routeSub = this.router.events.subscribe(event => {
-      if(event instanceof RoutesRecognized) {
-        let projectName = event.state.root.children[0].params['projectName'];
-        this.project = this.dataService.projects.pipe(
-          filter(projects => !!projects),
-          map(projects => projects.find(p => {
-            return p.projectName === projectName;
-          }))
-        );
-      }
-    });
+    this.router.events
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(event => {
+        if(event instanceof RoutesRecognized) {
+          let projectName = event.state.root.children[0].params['projectName'];
+          this.project = this.dataService.projects.pipe(
+            filter(projects => !!projects),
+            map(projects => projects.find(p => {
+              return p.projectName === projectName;
+            }))
+          );
+        }
+      });
 
-    this.versionInfoSub = this.dataService.versionInfo.subscribe(versionInfo => {
-      this.versionInfo = versionInfo;
-      if(versionInfo.versionCheckEnabled === null) {
-        this.showVersionCheckInfoDialog();
-      } else if(versionInfo.versionCheckEnabled) {
-        if(semver.valid(versionInfo.keptnVersion)) {
-          if(versionInfo.availableVersions.cli)
-            this.doVersionCheck(versionInfo.keptnVersion, versionInfo.availableVersions.cli.stable, versionInfo.availableVersions.cli.prerelease, "Keptn");
-        } else {
-          versionInfo.keptnVersionInvalid = true;
+    this.dataService.versionInfo
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(versionInfo => {
+        this.versionInfo = versionInfo;
+        if(versionInfo.versionCheckEnabled === null) {
+          this.showVersionCheckInfoDialog();
+        } else if(versionInfo.versionCheckEnabled) {
+          versionInfo.keptnVersionInvalid = !this.doVersionCheck(versionInfo.keptnVersion, versionInfo.availableVersions.cli.stable, versionInfo.availableVersions.cli.prerelease, "Keptn");
+          versionInfo.bridgeVersionInvalid = !this.doVersionCheck(versionInfo.bridgeVersion, versionInfo.availableVersions.bridge.stable, versionInfo.availableVersions.bridge.prerelease, "Keptn Bridge");;
         }
-        if(semver.valid(versionInfo.bridgeVersion)) {
-          if(versionInfo.availableVersions.bridge)
-            this.doVersionCheck(versionInfo.bridgeVersion, versionInfo.availableVersions.bridge.stable, versionInfo.availableVersions.bridge.prerelease, "Keptn Bridge");
-        } else {
-          versionInfo.bridgeVersionInvalid = true;
-        }
-      }
-    });
+      });
   }
 
-  doVersionCheck(currentVersion, stableVersions, prereleaseVersions, type) {
+  doVersionCheck(currentVersion, stableVersions, prereleaseVersions, type): boolean {
+    if(!semver.valid(currentVersion))
+      return false;
+
     stableVersions.forEach(stableVersion => {
       if(semver.lt(currentVersion, stableVersion)) {
         let genMessage;
@@ -95,6 +91,8 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
         this.notificationsService.addNotification(NotificationType.Info, genMessage(prereleaseVersion, type, major, minor));
       }
     });
+
+    return true;
   }
 
   showVersionCheckInfoDialog() {
@@ -116,8 +114,7 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.routeSub.unsubscribe();
-    this.versionInfoSub.unsubscribe();
+    this.unsubscribe$.next();
   }
 
 }

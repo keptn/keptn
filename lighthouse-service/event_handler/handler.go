@@ -1,11 +1,10 @@
 package event_handler
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
-	"github.com/keptn/go-utils/pkg/lib"
+	keptn "github.com/keptn/go-utils/pkg/lib"
 )
 
 type EvaluationEventHandler interface {
@@ -31,6 +30,7 @@ func NewEventHandler(event cloudevents.Event, logger *keptn.Logger) (EvaluationE
 	case keptn.ConfigureMonitoringEventType:
 		return &ConfigureMonitoringHandler{Event: event, KeptnHandler: keptnHandler}, nil
 	default:
-		return nil, errors.New("received unknown event type")
+		logger.Info("received unhandled event type")
+		return nil, nil
 	}
 }

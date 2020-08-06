@@ -62,7 +62,7 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 		return err
 	}
 
-	// get results of previous evaluations from data store (mongodb-datastore.keptn-datastore.svc.cluster.local)
+	// get results of previous evaluations from data store (mongodb-datastore)
 	numberOfPreviousResults := 3
 	if sloConfig.Comparison.CompareWith == "single_result" {
 		numberOfPreviousResults = 1
@@ -113,7 +113,7 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 		if testsFinishedEvent.Result == "fail" {
 			eh.KeptnHandler.Logger.Debug("Setting evaluation result to 'fail' because of failed preceding test execution")
 			evaluationResult.Result = "fail"
-			evaluationResult.EvaluationDetails.Result = "fail"
+			evaluationResult.EvaluationDetails.Result = "Setting evaluation result to 'fail' because of failed preceding test execution"
 		}
 	}
 

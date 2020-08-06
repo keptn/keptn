@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 
@@ -28,7 +29,7 @@ var addResourceCmdParams *addResourceCommandParameters
 var addResourceCmd = &cobra.Command{
 	Use:   "add-resource --project=PROJECT --stage=STAGE --service=SERVICE --resource=FILEPATH --resourceUri=FILEPATH",
 	Short: "Adds a local resource to a service within your project in the specified stage",
-	Long: `Adds a local resource to a service within your project in the specified stage. The resource is then stored within the Git Repo.
+	Long: `Adds a local resource to a service within your project in the specified stage. The resource is then stored within the Git repository.
 
 This command allows adding, for example, *test files* to a service, which will then be used by a test service (e.g., jmeter-service) during the continuous delivery.
 
@@ -47,6 +48,7 @@ keptn add-resource --project=musicshop --stage=hardening --service=catalogue --r
 keptn add-resource --project=sockshop --stage=dev --service=carts --resource=./jmeter.jmx --resourceUri=jmeter/functional.jmx
 keptn add-resource --project=rockshop --stage=production --service=shop --resource=./basiccheck.jmx --resourceUri=jmeter/basiccheck.jmx`,
 	SilenceUsage: true,
+	Args:         cobra.ExactArgs(0),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
 		if err != nil {
@@ -75,7 +77,9 @@ keptn add-resource --project=rockshop --stage=production --service=shop --resour
 			},
 		}
 
-		resourceHandler := apiutils.NewAuthenticatedResourceHandler(endPoint.Host+"/configuration-service", apiToken, "x-token", nil, *scheme)
+		endPoint.Path = path.Join(endPoint.Path, "configuration-service")
+
+		resourceHandler := apiutils.NewAuthenticatedResourceHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 
 		if (addResourceCmdParams.Service != nil && *addResourceCmdParams.Service != "") && (addResourceCmdParams.Stage != nil && *addResourceCmdParams.Stage != "") {
 			logging.PrintLog("Adding resource "+*addResourceCmdParams.Resource+" to service "+*addResourceCmdParams.Service+" in stage "+*addResourceCmdParams.Stage+" in project "+*addResourceCmdParams.Project, logging.InfoLevel)

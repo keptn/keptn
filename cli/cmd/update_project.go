@@ -25,14 +25,15 @@ var updateProjectParams *updateProjectCmdParams
 // upProjectCmd represents the project command
 var upProjectCmd = &cobra.Command{
 	Use:   "project PROJECTNAME --git-user=GIT_USER --git-token=GIT_TOKEN --git-remote-url=GIT_REMOTE_URL",
-	Short: "Updates an existing keptn project",
-	Long: `Updates an existing keptn project with the provided name. 
+	Short: "Updates an existing Keptn project",
+	Long: `Updates an existing Keptn project with the provided name. 
+
 Updating a shipyard file is not possible.
 
-By executing the *update project* command, keptn will add the provided upstream repository to the existing internal Git repository that is used to maintain all project-related resources. 
-To upstream this internal Git repository to a remote repository, the Git user (*--git-user*), an access token (*--git-token*), and the remote URL (*--git-remote-url*) are required.
+By executing the update project command, Keptn will add the provided upstream repository to the existing internal Git repository that is used to maintain all project-related resources. 
+To upstream this internal Git repository to a remote repository, the Git user (--git-user), an access token (--git-token), and the remote URL (--git-remote-url) are required.
 
-For more information about updating projects or upstream repositories visit https://keptn.sh/docs/develop/manage/project/ .
+For more information about updating projects or upstream repositories, please go to [Manage Keptn](https://keptn.sh/docs/` + keptnReleaseDocsURL + `/manage/)
 `,
 	Example:      `keptn update project PROJECTNAME --git-user=GIT_USER --git-token=GIT_TOKEN --git-remote-url=GIT_REMOTE_URL`,
 	SilenceUsage: true,
@@ -73,19 +74,18 @@ For more information about updating projects or upstream repositories visit http
 			project.GitRemoteURI = *updateProjectParams.RemoteURL
 		}
 
-		projectHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
+		projectHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
 			eventContext, err := projectHandler.UpdateConfigurationServiceProject(project)
 			if err != nil {
-				fmt.Println("Update project was unsuccessful")
 				return fmt.Errorf("Update project was unsuccessful. %s", *err.Message)
 			}
 
 			// if eventContext is available, open WebSocket communication
 			if eventContext != nil && !SuppressWSCommunication {
-				return websockethelper.PrintWSContentEventContext(eventContext, endPoint, *scheme == "https")
+				return websockethelper.PrintWSContentEventContext(eventContext, endPoint)
 			}
 			logging.PrintLog("Project updated successful", logging.InfoLevel)
 			return nil

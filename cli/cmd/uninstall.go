@@ -4,33 +4,34 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
+
+	"helm.sh/helm/v3/pkg/action"
+	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/keptn/keptn/cli/pkg/logging"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"github.com/spf13/cobra"
 )
 
-var uninstallVersion *string
-
 // uninstallCmd represents the uninstall command
 var uninstallCmd = &cobra.Command{
-	Use:          "uninstall",
-	Short:        "Uninstalls Keptn from a Kubernetes cluster",
+	Use:   "uninstall",
+	Short: "Uninstalls Keptn from a Kubernetes cluster",
 	Long: `Uninstalls Keptn from a Kubernetes cluster.
 
 This command does *not* delete: 
 
-* Istio
 * Dynatrace monitoring
 * Prometheus monitoring
 * Any (third-party) service installed in addition to Keptn (e.g., notification-service, slackbot-service, ...)
 
-Besides, deployed services and the configuration on the Git upstream (i.e., GitHub, GitLab, or Bitbucket) are not deleted. To clean-up created projects and services, instructions are provided [here](../../manage/project#delete-a-project).
+Besides, deployed services and the configuration on the Git upstream (i.e., GitHub, GitLab, or Bitbucket) are not deleted. To clean-up created projects and services, please see [Delete a project](https://keptn.sh/docs/` + keptnReleaseDocsURL + `/manage/project/#delete-a-project).
 
-**Note:** This command requires a *kubernetes current context* pointing to the cluster where Keptn should get uninstalled.
+**Note:** This command requires a *Kubernetes current context* pointing to the cluster where Keptn should get uninstalled from.
 `,
-	Example: `keptn uninstall`,
+	Example:      `keptn uninstall`,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 
@@ -39,7 +40,7 @@ Besides, deployed services and the configuration on the Git upstream (i.e., GitH
 		}
 
 		ctx, _ := getKubeContext()
-		fmt.Println("Your kubernetes current context is configured to cluster: " + strings.TrimSpace(ctx))
+		fmt.Println("Your Kubernetes current context is configured to cluster: " + strings.TrimSpace(ctx))
 		fmt.Println("Would you like to uninstall Keptn from this cluster? (y/n)")
 
 		reader := bufio.NewReader(os.Stdin)
@@ -47,7 +48,7 @@ Besides, deployed services and the configuration on the Git upstream (i.e., GitH
 		if err != nil {
 			return err
 		}
-		in = strings.TrimSpace(in)
+		in = strings.ToLower(strings.TrimSpace(in))
 		if in != "y" && in != "yes" {
 			return nil
 		}
@@ -55,27 +56,16 @@ Besides, deployed services and the configuration on the Git upstream (i.e., GitH
 		logging.PrintLog("Starting to uninstall Keptn", logging.InfoLevel)
 
 		if !mocking {
-			// Delete installer pod, ignore if not found
-			if err := deleteKeptnInstallerPod("default"); err != nil {
+			if err := uninstallKeptnChart("keptn", "keptn"); err != nil {
 				return err
 			}
 			// Clean up keptn namespace
-			if err := deleteResources("keptn"); err != nil {
-				return err
-			}
 			if err := deleteNamespace("keptn"); err != nil {
-				return err
-			}
-			// Clean up keptn-datastore namespace
-			if err := deleteResources("keptn-datastore"); err != nil {
-				return err
-			}
-			if err := deleteNamespace("keptn-datastore"); err != nil {
 				return err
 			}
 		}
 		logging.PrintLog("Successfully uninstalled Keptn", logging.InfoLevel)
-		logging.PrintLog("Note: Please review the following namespaces and perform manual deletion if necessary:",
+		logging.PrintLog("\nPlease review the following namespaces and perform manual deletion if necessary:",
 			logging.InfoLevel)
 
 		namespaces, err := listAllNamespaces()
@@ -85,26 +75,47 @@ Besides, deployed services and the configuration on the Git upstream (i.e., GitH
 
 		for _, namespace := range namespaces {
 			logging.PrintLog(" - "+namespace, logging.InfoLevel)
-			if namespace == "default" || namespace == "kube-public" {
-				// skip
+			if namespace == "default" || strings.HasPrefix(namespace, "kube") || strings.HasPrefix(namespace, "openshift") {
 				logging.PrintLog("      Recommended action: None (default namespace)", logging.InfoLevel)
-			} else if namespace == "kube-system" {
-				// we need to remove helm / tiller stuff
-				logging.PrintLog("      Recommended action: Remove Tiller/Helm using", logging.InfoLevel)
-				logging.PrintLog("                          kubectl delete all -l app=helm -n kube-system", logging.InfoLevel)
-			} else if namespace == "istio-system" {
-				// istio is special, we will refer to the official uninstall docs
-				logging.PrintLog("      Please consult the istio Docs at https://istio.io/docs/setup/install/helm/#uninstall on how to remove istio.", logging.InfoLevel)
-				logging.PrintLog("      Recommended action: kubectl delete namespace istio-system", logging.InfoLevel)
 			} else {
 				// just delete the namespace
-				logging.PrintLog(fmt.Sprintf("      Please review this namespace in detail using 'kubectl get pods -n %s' before deleting it", namespace), logging.InfoLevel)
+				logging.PrintLog(fmt.Sprintf("      Please review this namespace using 'kubectl get pods -n %s' before deleting it", namespace), logging.InfoLevel)
 				logging.PrintLog(fmt.Sprintf("      Recommended action: kubectl delete namespace %s", namespace), logging.InfoLevel)
 			}
 		}
 
 		return nil
 	},
+}
+
+func uninstallKeptnChart(releaseName, namespace string) error {
+	logging.PrintLog(fmt.Sprintf("Start deleting Helm Chart %s in namespace %s", releaseName, namespace), logging.InfoLevel)
+	var kubeconfig string
+	if os.Getenv("KUBECONFIG") != "" {
+		kubeconfig = keptnutils.ExpandTilde(os.Getenv("KUBECONFIG"))
+	} else {
+		kubeconfig = filepath.Join(
+			keptnutils.UserHomeDir(), ".kube", "config",
+		)
+	}
+	config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
+	if err != nil {
+		return err
+	}
+
+	cfg, err := newActionConfig(config, namespace)
+	if err != nil {
+		return err
+	}
+
+	iCli := action.NewUninstall(cfg)
+	_, err = iCli.Run(releaseName)
+
+	if err != nil {
+		return fmt.Errorf("Error when deleting Helm Chart %s in namespace %s: %s",
+			releaseName, namespace, err.Error())
+	}
+	return nil
 }
 
 // returns a list of all namespaces
@@ -126,28 +137,6 @@ func listAllNamespaces() ([]string, error) {
 	return arr, nil
 }
 
-func deleteKeptnInstallerPod(namespace string) error {
-	o := options{"delete", "job", "installer", "-n", namespace, "--ignore-not-found"}
-	o.appendIfNotEmpty(kubectlOptions)
-	out, err := keptnutils.ExecuteCommand("kubectl", o)
-	out = strings.TrimSpace(out)
-	if out != "" {
-		logging.PrintLog(out, logging.VerboseLevel)
-	}
-	return err
-}
-
-func deleteResources(namespace string) error {
-	o := options{"delete", "services,deployments,pods,secrets,configmaps", "--all", "-n", namespace, "--ignore-not-found"}
-	o.appendIfNotEmpty(kubectlOptions)
-	out, err := keptnutils.ExecuteCommand("kubectl", o)
-	out = strings.TrimSpace(out)
-	if out != "" {
-		logging.PrintLog(out, logging.VerboseLevel)
-	}
-	return err
-}
-
 func deleteNamespace(namespace string) error {
 	o := options{"delete", "namespace", namespace, "--ignore-not-found"}
 	o.appendIfNotEmpty(kubectlOptions)
@@ -161,8 +150,5 @@ func deleteNamespace(namespace string) error {
 
 func init() {
 	rootCmd.AddCommand(uninstallCmd)
-	uninstallVersion = uninstallCmd.Flags().StringP("keptn-version", "k", "master",
-		"The branch or tag of the version which is used for updating the domain")
-	uninstallCmd.Flags().MarkHidden("keptn-version")
 	uninstallCmd.PersistentFlags().BoolVarP(&insecureSkipTLSVerify, "insecure-skip-tls-verify", "s", false, "Skip tls verification for kubectl commands")
 }

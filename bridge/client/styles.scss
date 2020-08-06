@@ -1,3 +1,5 @@
+$fonts-dir: '/bridge/assets/fonts';
+
 @import 'variables';
 @import '~normalize.css';
 
@@ -209,6 +211,23 @@ span.italic {
 
 .bold {
   font-weight: bold;
+}
+
+.dt-icon.event-icon {
+  width: 20px;
+  height: 20px;
+
+  &.error {
+    fill: $error-color;
+  }
+
+  &.warning {
+    fill: $orange-400;
+  }
+
+  &.success {
+    fill: $cta-color-active;
+  }
 }
 
 [fxFLex] {

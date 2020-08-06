@@ -1,0 +1,29 @@
+{{- $ingressHostnameSuffix := .Values.ingressConfig.ingress_hostname_suffix  }}
+{{- $ingressProtocol := .Values.ingressConfig.ingress_protocol }}
+{{- $ingressPort := .Values.ingressConfig.ingress_port }}
+{{- $istioGateway := .Values.ingressConfig.istio_gateway }}
+{{- $ingressConfigCM := (lookup "v1" "ConfigMap" .Release.Namespace "ingress-config") }}
+{{- if $ingressConfigCM }}
+{{- $ingressHostnameSuffix = index $ingressConfigCM.data "ingress_hostname_suffix" }}
+{{- $ingressProtocol = index $ingressConfigCM.data "ingress_protocol" }}
+{{- $ingressPort = index $ingressConfigCM.data "ingress_port" }}
+{{- $istioGateway = index $ingressConfigCM.data "istio_gateway" }}
+{{- end -}}
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ingress-config
+  labels:
+    app.kubernetes.io/name: {{ include "continuous-delivery.name" . }}-cm
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
+    app.kubernetes.io/component: {{ include "continuous-delivery.name" . }}
+    helm.sh/chart: {{ include "continuous-delivery.chart" . }}
+data:
+  ingress_hostname_suffix: "{{ $ingressHostnameSuffix }}"
+  ingress_protocol: "{{ $ingressProtocol }}"
+  ingress_port: "{{ $ingressPort }}"
+  istio_gateway: "{{ $istioGateway }}"

@@ -16,19 +16,24 @@ Heatmap(Highcharts);
 Treemap(Highcharts);
 
 import * as moment from 'moment';
-import {ChangeDetectorRef, Component, Input, OnInit} from '@angular/core';
+import {ChangeDetectorRef, Component, Input, OnDestroy, OnInit} from '@angular/core';
 import {DtChartSeriesVisibilityChangeEvent} from "@dynatrace/barista-components/chart";
 
 import {DataService} from "../../_services/data.service";
 import DateUtil from "../../_utils/date.utils";
 import {Trace} from "../../_models/trace";
+import SearchUtil from "../../_utils/search.utils";
+import {Subject} from "rxjs";
+import {takeUntil} from "rxjs/operators";
 
 @Component({
   selector: 'ktb-evaluation-details',
   templateUrl: './ktb-evaluation-details.component.html',
   styleUrls: ['./ktb-evaluation-details.component.scss']
 })
-export class KtbEvaluationDetailsComponent implements OnInit {
+export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
+
+  private readonly unsubscribe$ = new Subject<void>();
 
   public _evaluationColor = {
     'pass': '#7dc540',
@@ -51,7 +56,10 @@ export class KtbEvaluationDetailsComponent implements OnInit {
 
   public _chartOptions: Highcharts.Options = {
     xAxis: {
-      type: 'datetime',
+      type: 'category',
+      labels: {
+        rotation: 90
+      }
     },
     yAxis: [
       {
@@ -157,12 +165,14 @@ export class KtbEvaluationDetailsComponent implements OnInit {
   ngOnInit() {
     if(this._evaluationData)
       this.dataService.loadEvaluationResults(this._evaluationData);
-    this.dataService.evaluationResults.subscribe((event) => {
-      if(this.evaluationData === event) {
-        this.updateChartData(event.data.evaluationHistory);
-        this._changeDetectorRef.markForCheck();
-      }
-    });
+    this.dataService.evaluationResults
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((event) => {
+        if(this.evaluationData === event) {
+          this.updateChartData(event.data.evaluationHistory);
+          this._changeDetectorRef.markForCheck();
+        }
+      });
   }
 
   updateChartData(evaluationHistory) {
@@ -173,10 +183,10 @@ export class KtbEvaluationDetailsComponent implements OnInit {
 
     evaluationHistory.forEach((evaluation) => {
       let scoreData = {
-        x: moment(evaluation.time).unix()*1000,
         y: evaluation.data.evaluationdetails ? evaluation.data.evaluationdetails.score : 0,
         evaluationData: evaluation,
-        color: this._evaluationColor[evaluation.data.evaluationdetails.result]
+        color: this._evaluationColor[evaluation.data.evaluationdetails.result],
+        name: evaluation.getChartLabel(),
       };
 
       let indicatorScoreSeriesColumn = chartSeries.find(series => series.name == 'Score' && series.type == 'column');
@@ -209,9 +219,10 @@ export class KtbEvaluationDetailsComponent implements OnInit {
       if(evaluation.data.evaluationdetails.indicatorResults) {
         evaluation.data.evaluationdetails.indicatorResults.forEach((indicatorResult) => {
           let indicatorData = {
-            x: moment(evaluation.time).unix()*1000,
             y: indicatorResult.value.value,
-            indicatorResult: indicatorResult
+            indicatorResult: indicatorResult,
+            evaluationData: evaluation,
+            name: evaluation.getChartLabel(),
           };
           let indicatorChartSeries = chartSeries.find(series => series.name == indicatorResult.value.metric);
           if(!indicatorChartSeries) {
@@ -239,7 +250,7 @@ export class KtbEvaluationDetailsComponent implements OnInit {
         rowsize: 0.85,
         turboThreshold: 0,
         data: chartSeries.find(series => series.name == 'Score').data.map((s) => {
-          let time = moment(s.x).format();
+          let time = moment(s.evaluationData.time).format();
           let index = this._heatmapOptions.yAxis[0].categories.indexOf("Score");
           let x = this._heatmapOptions.xAxis[0].categories.indexOf(time);
           return {
@@ -256,7 +267,7 @@ export class KtbEvaluationDetailsComponent implements OnInit {
         type: 'heatmap',
         turboThreshold: 0,
         data: chartSeries.reverse().reduce((r, d) => [...r, ...d.data.filter(s => s.indicatorResult).map((s) => {
-          let time = moment(s.x).format();
+          let time = moment(s.evaluationData.time).format();
           let index = this._heatmapOptions.yAxis[0].categories.indexOf(s.indicatorResult.value.metric);
           let x = this._heatmapOptions.xAxis[0].categories.indexOf(time);
           return {
@@ -273,11 +284,11 @@ export class KtbEvaluationDetailsComponent implements OnInit {
   updateHeatmapOptions(chartSeries) {
     chartSeries.forEach((d) =>
       d.data.forEach((s) => {
-        let time = moment(s.x).format();
+        let time = moment(s.evaluationData.time).format();
         if(s.indicatorResult && this._heatmapOptions.yAxis[0].categories.indexOf(s.indicatorResult.value.metric) == -1)
           this._heatmapOptions.yAxis[0].categories.unshift(s.indicatorResult.value.metric);
         if(this._heatmapOptions.xAxis[0].categories.indexOf(time) == -1)
-          this._heatmapOptions.xAxis[0].categories.splice(this.binarySearch(this._heatmapOptions.xAxis[0].categories, time, (a, b) => moment(a).unix() - moment(b).unix()), 0, time);
+          this._heatmapOptions.xAxis[0].categories.splice(SearchUtil.binarySearch(this._heatmapOptions.xAxis[0].categories, time, (a, b) => moment(a).unix() - moment(b).unix()), 0, time);
       })
     )
 
@@ -304,25 +315,8 @@ export class KtbEvaluationDetailsComponent implements OnInit {
     return DateUtil.getDurationFormatted(start, end);
   }
 
-  private binarySearch(ar, el, compare_fn) {
-    if(compare_fn(el, ar[0]) < 0)
-      return 0;
-    if(compare_fn(el, ar[ar.length-1]) > 0)
-      return ar.length;
-    let m = 0;
-    let n = ar.length - 1;
-    while (m <= n) {
-      let k = (n + m) >> 1;
-      let cmp = compare_fn(el, ar[k]);
-      if (cmp > 0) {
-        m = k + 1;
-      } else if(cmp < 0) {
-        n = k - 1;
-      } else {
-        return k;
-      }
-    }
-    return -m - 1;
+  ngOnDestroy(): void {
+    this.unsubscribe$.next();
   }
 
 }

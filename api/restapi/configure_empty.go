@@ -4,6 +4,8 @@ package restapi
 
 import (
 	"crypto/tls"
+	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
+	"github.com/keptn/keptn/api/restapi/operations/configuration"
 	"log"
 	"net/http"
 	"os"
@@ -20,8 +22,8 @@ import (
 	"github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations"
 	"github.com/keptn/keptn/api/restapi/operations/auth"
-	"github.com/keptn/keptn/api/restapi/operations/configure"
 	"github.com/keptn/keptn/api/restapi/operations/event"
+	"github.com/keptn/keptn/api/restapi/operations/metadata"
 	"github.com/keptn/keptn/api/restapi/operations/project"
 	"github.com/keptn/keptn/api/restapi/operations/service"
 )
@@ -30,11 +32,11 @@ import (
 
 var hub *ws.Hub
 
-func configureFlags(api *operations.EmptyAPI) {
+func configureFlags(api *operations.API) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
 }
 
-func configureAPI(api *operations.EmptyAPI) http.Handler {
+func configureAPI(api *operations.API) http.Handler {
 	// configure the api here
 	api.ServeError = errors.ServeError
 
@@ -67,10 +69,14 @@ func configureAPI(api *operations.EmptyAPI) http.Handler {
 		return auth.NewAuthOK()
 	})
 
-	api.ConfigurePostConfigureBridgeExposeHandler = configure.PostConfigureBridgeExposeHandlerFunc(handlers.PostConfigureBridgeHandlerFunc)
+	api.ConfigurationPostConfigBridgeHandler = configuration.PostConfigBridgeHandlerFunc(handlers.PostConfigureBridgeHandlerFunc)
+	api.ConfigurationGetConfigBridgeHandler = configuration.GetConfigBridgeHandlerFunc(handlers.GetConfigureBridgeHandlerFunc)
 
 	api.EventPostEventHandler = event.PostEventHandlerFunc(handlers.PostEventHandlerFunc)
 	api.EventGetEventHandler = event.GetEventHandlerFunc(handlers.GetEventHandlerFunc)
+
+	// Metadata endpoint
+	api.MetadataMetadataHandler = metadata.MetadataHandlerFunc(handlers.GetMetadataHandlerFunc)
 
 	// Project endpoints
 	api.ProjectDeleteProjectProjectNameHandler = project.DeleteProjectProjectNameHandlerFunc(handlers.DeleteProjectProjectNameHandlerFunc)
@@ -78,8 +84,6 @@ func configureAPI(api *operations.EmptyAPI) http.Handler {
 
 	// Service endpoints
 	api.ServicePostProjectProjectNameServiceHandler = service.PostProjectProjectNameServiceHandlerFunc(handlers.PostServiceHandlerFunc)
-
-	api.PreServerShutdown = func() {}
 
 	api.ServerShutdown = func() {}
 
@@ -109,18 +113,13 @@ func setupMiddlewares(handler http.Handler) http.Handler {
 // The middleware configuration happens before anything, this middleware also applies to serving the swagger.json document.
 // So this is a good place to plug in a panic handling middleware, logging and metrics
 func setupGlobalMiddleware(handler http.Handler) http.Handler {
+	go keptnapi.RunHealthEndpoint("10999")
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Shortcut helpers for swagger-ui
-		if r.URL.Path == "/swagger-ui" {
-			http.Redirect(w, r, "/swagger-ui/", http.StatusFound)
-			return
-		}
-		// Serving ./swagger-ui/
 		if strings.Index(r.URL.Path, "/swagger-ui/") == 0 {
 			http.StripPrefix("/swagger-ui/", http.FileServer(http.Dir("swagger-ui"))).ServeHTTP(w, r)
 			return
 		}
-		if r.URL.Path == "/" {
+		if r.URL.Path == "/websocket" {
 			// Verify token
 			err := ws.VerifyToken(r.Header)
 			if err != nil {

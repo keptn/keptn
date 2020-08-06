@@ -6,100 +6,154 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	keptn "github.com/keptn/go-utils/pkg/lib"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
+	"time"
+
+	keptn "github.com/keptn/go-utils/pkg/lib"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 
 	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
 )
 
-const defaultMongoDBConnectionString = "mongodb://user:password@mongodb.keptn-datastore.svc.cluster.local:27017/keptn"
-const defaultConfigurationServiceURL = "configuration-service.keptn.svc.cluster.local:8080"
+const defaultMongoDBTargetConnectionString = "mongodb://user:password@mongodb:27017/keptn"
+const defaultMongoDBSourceConnectionString = "mongodb://user:password@mongodb.keptn-datastore:27017/keptn"
+const defaultConfigurationServiceURL = "configuration-service.keptn:8080"
+
+const rootEventCollectionSuffix = "-rootEvents"
 
 const materializedViewCollection = "keptnProjectsMV"
 
-var client *mongo.Client
+const projectsMVFile = "projects-mv.json"
+
+type ProjectsMV struct {
+	Projects []*keptnapimodels.Project `json:"projects"`
+}
 
 var projectCollections map[string]*mongo.Collection
 
-var mongoDBConnectionString string
+var mongoDBSourceConnectionString string
+var mongoDBTargetConnectionString string
 var configurationServiceURL string
+var action string
 var skipWrite = true
 
 func main() {
 
 	if len(os.Args) > 1 {
-		mongoDBConnectionString = os.Args[1]
+		mongoDBSourceConnectionString = os.Args[1]
 	} else {
-		mongoDBConnectionString = defaultMongoDBConnectionString
+		mongoDBSourceConnectionString = defaultMongoDBSourceConnectionString
 	}
 
 	if len(os.Args) > 2 {
-		configurationServiceURL = os.Args[2]
+		mongoDBTargetConnectionString = os.Args[2]
+	} else {
+		mongoDBTargetConnectionString = defaultMongoDBTargetConnectionString
+	}
+
+	if len(os.Args) > 3 {
+		configurationServiceURL = os.Args[3]
 	} else {
 		configurationServiceURL = defaultConfigurationServiceURL
 	}
-	client, err := mongo.NewClient(options.Client().ApplyURI(mongoDBConnectionString))
-	if err != nil {
-		fmt.Printf("failed to create mongo client: %v\n", err)
-		os.Exit(1)
-	}
-	ctx := context.TODO()
 
-	err = client.Connect(ctx)
-	if err != nil {
-		fmt.Printf("failed to connect client to MongoDB: %v\n", err)
-		os.Exit(1)
+	const storeProjectsMVAction = "store-projects-mv"
+	if len(os.Args) > 4 {
+		action = os.Args[4]
+	} else {
+		action = ""
 	}
 
-	projectsMV := []*keptnapimodels.Project{}
+	if action == storeProjectsMVAction {
+		projectsMVJSONObject := &ProjectsMV{}
+		projectsMV := []*keptnapimodels.Project{}
 
-	allProjects, err := getAllProjects()
-	if err != nil {
-		fmt.Println("failed to retrieve projects from configuration service: " + err.Error())
-		os.Exit(1)
-	}
-
-	for _, prj := range allProjects {
-		stages, err := getAllStages(prj.ProjectName)
+		allProjects, err := getAllProjects()
 		if err != nil {
-			fmt.Println("failed to retrieve stages of project " + prj.ProjectName + " from configuration service: " + err.Error())
+			fmt.Println("failed to retrieve projects from configuration service: " + err.Error())
 			os.Exit(1)
 		}
 
-		for _, stg := range stages {
-			services, err := getAllServices(prj.ProjectName, stg.StageName)
+		for _, prj := range allProjects {
+			stages, err := getAllStages(prj.ProjectName)
 			if err != nil {
-				fmt.Println("failed to retrieve services of project " + prj.ProjectName + " from configuration service: " + err.Error())
+				fmt.Println("failed to retrieve stages of project " + prj.ProjectName + " from configuration service: " + err.Error())
 				os.Exit(1)
 			}
 
-			stg.Services = services
-		}
+			for _, stg := range stages {
+				services, err := getAllServices(prj.ProjectName, stg.StageName)
+				if err != nil {
+					fmt.Println("failed to retrieve services of project " + prj.ProjectName + " from configuration service: " + err.Error())
+					os.Exit(1)
+				}
 
-		prj.Stages = stages
-		projectsMV = append(projectsMV, prj)
+				stg.Services = services
+			}
+
+			prj.Stages = stages
+			projectsMV = append(projectsMV, prj)
+		}
+		projectsMVJSONObject.Projects = projectsMV
+		projectsMVJSONString, err := json.MarshalIndent(projectsMVJSONObject, "", " ")
+		if err != nil {
+			fmt.Println("Could not store projects MV: " + err.Error())
+			os.Exit(1)
+		}
+		fmt.Println("Projects MV before migration:")
+		fmt.Println(string(projectsMVJSONString))
+
+		_ = ioutil.WriteFile(projectsMVFile, projectsMVJSONString, 0644)
+		return
 	}
 
-	eventsCollection := client.Database("keptn").Collection("events")
-	contextToProjectCollection := client.Database("keptn").Collection("contextToProject")
+	jsonFile, err := os.Open(projectsMVFile)
+	// if we os.Open returns an error then handle it
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer jsonFile.Close()
+	byteValue, _ := ioutil.ReadAll(jsonFile)
+
+	projectsMVJSONObject := &ProjectsMV{}
+	err = json.Unmarshal(byteValue, projectsMVJSONObject)
+	if err != nil {
+		fmt.Println("Could not read projects MV: " + err.Error())
+	}
+
+	projectsMV := projectsMVJSONObject.Projects
+
+	sourceClient, sourceCtx, err := createMongoDBClient(mongoDBSourceConnectionString)
+	if err != nil {
+		fmt.Printf("failed to create mongo sourceClient: %v\n", err)
+		os.Exit(1)
+	}
+
+	targetClient, targetCtx, err := createMongoDBClient(mongoDBTargetConnectionString)
+	if err != nil {
+		fmt.Printf("failed to create mongo sourceClient: %v\n", err)
+		os.Exit(1)
+	}
+
+	eventsSourceCollection := sourceClient.Database("keptn").Collection("events")
+	contextToProjectTargetCollection := targetClient.Database("keptn").Collection("contextToProject")
 	projectCollections = map[string]*mongo.Collection{}
 
 	// get all events from events collection
 	sortOptions := options.Find().SetSort(bson.D{{"time", 1}})
 
-	cursor, err := eventsCollection.Find(ctx, bson.D{}, sortOptions)
+	cursor, err := eventsSourceCollection.Find(sourceCtx, bson.D{}, sortOptions)
 	if err != nil {
 		fmt.Printf("failed to retrieve events from mongodb: %v\n", err)
 		os.Exit(1)
 	}
-	defer cursor.Close(ctx)
-	for cursor.Next(ctx) {
+	defer cursor.Close(sourceCtx)
+	for cursor.Next(sourceCtx) {
 		var doc bson.M
 		err := cursor.Decode(&doc)
 		if err != nil {
@@ -128,9 +182,9 @@ func main() {
 
 		fmt.Printf("Inserting event %v into collection %s\n", doc, project)
 		if projectCollections[project] == nil {
-			projectCollections[project] = client.Database("keptn").Collection(project)
+			projectCollections[project] = targetClient.Database("keptn").Collection(project)
 		}
-		_, err = projectCollections[project].InsertOne(ctx, doc)
+		_, err = projectCollections[project].InsertOne(targetCtx, doc)
 		if err != nil {
 			writeErr, ok := err.(mongo.WriteException)
 			if ok {
@@ -142,7 +196,7 @@ func main() {
 			}
 		}
 		fmt.Printf("Inserted event %v into collection %s\n", doc, project)
-		_, err = contextToProjectCollection.InsertOne(ctx, bson.M{"_id": keptnContext, "shkeptncontext": keptnContext, "project": project})
+		_, err = contextToProjectTargetCollection.InsertOne(targetCtx, bson.M{"_id": keptnContext, "shkeptncontext": keptnContext, "project": project})
 		if err != nil {
 			writeErr, ok := err.(mongo.WriteException)
 			if ok {
@@ -154,14 +208,19 @@ func main() {
 			}
 		}
 		fmt.Printf("Inserted mapping %s -> %s\n", keptnContext, project)
+
+		err = storeRootEvent(targetClient, project, targetCtx, doc)
+		if err != nil {
+			fmt.Println("Could not store root event: " + err.Error())
+		}
 	}
 
 	fmt.Println(fmt.Printf("Projects Materialized View:\n%v", projectsMV))
 
-	mvCollection := client.Database("keptn").Collection(materializedViewCollection)
+	mvCollection := targetClient.Database("keptn").Collection(materializedViewCollection)
 	for _, projectMV := range projectsMV {
 
-		existingProject := mvCollection.FindOne(ctx, bson.M{"projectName": projectMV.ProjectName})
+		existingProject := mvCollection.FindOne(targetCtx, bson.M{"projectName": projectMV.ProjectName})
 
 		if existingProject.Err() == nil {
 			// project already exists - must not recreate it
@@ -170,7 +229,7 @@ func main() {
 		}
 
 		projectInterface, _ := transformProjectToInterface(projectMV)
-		_, err = mvCollection.InsertOne(ctx, projectInterface)
+		_, err = mvCollection.InsertOne(targetCtx, projectInterface)
 		if err != nil {
 			writeErr, ok := err.(mongo.WriteException)
 			if ok {
@@ -182,6 +241,96 @@ func main() {
 			}
 		}
 	}
+}
+
+func createMongoDBClient(url string) (*mongo.Client, context.Context, error) {
+	sourceClient, err := mongo.NewClient(options.Client().ApplyURI(url))
+	if err != nil {
+		return nil, nil, err
+	}
+	ctx := context.TODO()
+
+	err = sourceClient.Connect(ctx)
+	if err != nil {
+		return nil, nil, err
+	}
+	return sourceClient, ctx, err
+}
+
+func transformEventToInterface(event interface{}) (interface{}, error) {
+	data, err := json.Marshal(event)
+	if err != nil {
+		err := fmt.Errorf("failed to marshal event: %v", err)
+		return nil, err
+	}
+
+	var eventInterface interface{}
+	err = json.Unmarshal(data, &eventInterface)
+	if err != nil {
+		err := fmt.Errorf("failed to unmarshal event: %v", err)
+		return nil, err
+	}
+	return eventInterface, nil
+}
+
+func storeRootEvent(client *mongo.Client, collectionName string, ctx context.Context, event bson.M) error {
+
+	keptnContext := event["shkeptncontext"].(string)
+	event["_id"] = keptnContext
+
+	rootEventsForProjectCollection := client.Database("keptn").Collection(collectionName + rootEventCollectionSuffix)
+
+	result := rootEventsForProjectCollection.FindOne(ctx, bson.M{"shkeptncontext": keptnContext})
+
+	if result.Err() != nil && result.Err() == mongo.ErrNoDocuments {
+		eventInterface, err := transformEventToInterface(event)
+		if err != nil {
+			fmt.Println("Could not transform root event to interface: " + err.Error())
+			return err
+		}
+
+		_, err = rootEventsForProjectCollection.InsertOne(ctx, eventInterface)
+		if err != nil {
+			err := fmt.Errorf("Failed to store root event for KeptnContext "+keptnContext+": %v", err.Error())
+			fmt.Println(err.Error())
+			return err
+		}
+		fmt.Println("Stored root event for KeptnContext: " + keptnContext)
+	} else if result.Err() != nil {
+		// found an already stored root event => check if incoming event precedes the already existing event
+		// if yes, then the new event will be the new root event for this context
+		existingEvent := &keptnapimodels.KeptnContextExtendedCE{}
+
+		err := result.Decode(existingEvent)
+		if err != nil {
+			fmt.Println("Could not decode existing root event: " + err.Error())
+			return err
+		}
+
+		if time.Time(existingEvent.Time).After(event["time"].(time.Time)) {
+			fmt.Println("Replacing root event for KeptnContext: " + keptnContext)
+			_, err := rootEventsForProjectCollection.DeleteOne(ctx, bson.M{"_id": existingEvent.ID})
+			if err != nil {
+				fmt.Println("Could not delete previous root event: " + err.Error())
+				return err
+			}
+			eventInterface, err := transformEventToInterface(event)
+			if err != nil {
+				fmt.Println("Could not transform root event to interface: " + err.Error())
+				return err
+			}
+
+			_, err = rootEventsForProjectCollection.InsertOne(ctx, eventInterface)
+			if err != nil {
+				err := fmt.Errorf("Failed to store root event for KeptnContext "+keptnContext+": %v", err.Error())
+				fmt.Println(err.Error())
+				return err
+			}
+			fmt.Println("Stored root event for KeptnContext: " + keptnContext)
+		}
+	}
+	fmt.Println("Root event for KeptnContext " + keptnContext + " already exists in collection")
+	return nil
 }
 
 func transformProjectToInterface(prj *keptnapimodels.Project) (interface{}, error) {

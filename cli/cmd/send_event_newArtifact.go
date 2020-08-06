@@ -51,16 +51,15 @@ var newArtifactCmd = &cobra.Command{
 	Use: "new-artifact",
 	Short: "Sends a new-artifact event to Keptn in order to deploy a new artifact " +
 		"for the specified service in the provided project",
-	Long: `Sends a new-artifact event to Keptn in order to deploy a new artifact
-for the specified service in the provided project.
+	Long: `Sends a new-artifact event to Keptn in order to deploy a new artifact for the specified service in the provided project.
 Therefore, this command takes the project, service, image, and tag of the new artifact.
 
-The artifact is the name of a Docker image, which can be located at Docker Hub, Quay, or any other registry storing docker images. 
-The new artifact is pushed in the first stage specified in the projects *shipyard.yaml* file. Afterwards, Keptn takes care of deploying this new artifact to the other stages.
+* The artifact is the name of a image, which can be located at DockerHub, Quay, or any other registry storing docker images. 
+* The new artifact is pushed in the first stage specified in the Shipyard of the project. Afterwards, Keptn takes care of deploying this new artifact to the other stages.
 
-Furthermore, please note that the value provided in the *image* flag has to contain the full path to your Docker registry. The only exception is *docker.io* because this is the default in Kubernetes and, hence, can be omitted.
-
-**Note:** This command does not send the actual Docker image to Keptn, just the image name and tag. Instead, Keptn uses Kubernetes functionalities for pulling this image.
+**Notes:**
+* The value provided in the *image* flag has to contain the full path to your Docker registry. The only exception is *docker.io* because this is the default in Kubernetes and, hence, can be omitted.
+* This command does not send the actual Docker image to Keptn, just the image name and tag. Instead, Keptn uses Kubernetes functionalities for pulling this image.
 For pulling an image from a private registry, we would like to refer to the Kubernetes documentation (https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/).
 `,
 	Example:      `keptn send event new-artifact --project=sockshop --service=carts --image=docker.io/keptnexamples/carts --tag=0.7.0`,
@@ -117,7 +116,7 @@ For pulling an image from a private registry, we would like to refer to the Kube
 			return fmt.Errorf("Failed to map cloud event to API event model. %s", err.Error())
 		}
 
-		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, *scheme)
+		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
@@ -129,7 +128,7 @@ For pulling an image from a private registry, we would like to refer to the Kube
 
 			// if eventContext is available, open WebSocket communication
 			if eventContext != nil && !SuppressWSCommunication {
-				return websockethelper.PrintWSContentEventContext(eventContext, endPoint, *scheme == "https")
+				return websockethelper.PrintWSContentEventContext(eventContext, endPoint)
 			}
 
 			return nil
