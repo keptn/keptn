@@ -11,6 +11,7 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/restapi/operations"
 	"strings"
+	"sync"
 )
 
 type eventData struct {
@@ -85,6 +86,7 @@ type eventManager struct {
 	projectRepo db.ProjectRepo
 	eventRepo   db.EventRepo
 	logger      *keptn.Logger
+	mutex       sync.Mutex
 }
 
 func getEventManagerInstance() *eventManager {
@@ -125,6 +127,8 @@ func (em *eventManager) getTriggeredEventsOfProject(project string, filter db.Ev
 }
 
 func (em *eventManager) handleIncomingEvent(event models.Event) error {
+	em.mutex.Lock()
+	defer em.mutex.Unlock()
 	// check if the status type is either 'triggered', 'started', or 'finished'
 	split := strings.Split(*event.Type, ".")
 
