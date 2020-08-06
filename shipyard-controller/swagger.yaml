@@ -1,7 +1,7 @@
 swagger: '2.0'
 
 info:
-  title: Chipyard Controller API
+  title: Shipyard Controller API
   version: 0.1.0
 
 basePath: /v1
