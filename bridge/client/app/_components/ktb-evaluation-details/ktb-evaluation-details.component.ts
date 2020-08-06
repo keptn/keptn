@@ -76,7 +76,6 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
         },
         min: 0,
         max: 100,
-        tickInterval: 10,
       },
       {
         title: null,
