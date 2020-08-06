@@ -152,6 +152,9 @@ func getEventProject(event models.Event) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	if data.Project == "" {
+		return "", errors.New("event does not contain a project")
+	}
 	return data.Project, nil
 }
 
@@ -196,10 +199,6 @@ func (em *eventManager) handleFinishedEvent(event models.Event) error {
 		// if the previously deleted '.started' event was the last, the '.triggered' event can be removed
 		return em.eventRepo.DeleteEvent(project, event.Triggeredid, db.TriggeredEvent)
 	}
-	return nil
-}
-
-func (em *eventManager) closeTriggeredEvent(project, triggeredID string) error {
 	return nil
 }
 

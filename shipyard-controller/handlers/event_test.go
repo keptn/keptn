@@ -1,6 +1,9 @@
 package handlers
 
 import (
+	"errors"
+	"github.com/go-test/deep"
+	keptn "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"reflect"
@@ -11,21 +14,21 @@ type getEventsMock func(project string, filter db.EventFilter, status db.EventSt
 type insertEventMock func(project string, event models.Event, status db.EventStatus) error
 type deleteEventMock func(project string, eventID string, status db.EventStatus) error
 
-type triggeredEventMock struct {
+type mockEventRepo struct {
 	getEvents   getEventsMock
 	insertEvent insertEventMock
 	deleteEvent deleteEventMock
 }
 
-func (t triggeredEventMock) GetEvents(project string, filter db.EventFilter, status db.EventStatus) ([]models.Event, error) {
+func (t mockEventRepo) GetEvents(project string, filter db.EventFilter, status db.EventStatus) ([]models.Event, error) {
 	return t.getEvents(project, filter, status)
 }
 
-func (t triggeredEventMock) InsertEvent(project string, event models.Event, status db.EventStatus) error {
+func (t mockEventRepo) InsertEvent(project string, event models.Event, status db.EventStatus) error {
 	return t.insertEvent(project, event, status)
 }
 
-func (t triggeredEventMock) DeleteEvent(project string, eventID string, status db.EventStatus) error {
+func (t mockEventRepo) DeleteEvent(project string, eventID string, status db.EventStatus) error {
 	return t.deleteEvent(project, eventID, status)
 }
 
@@ -39,18 +42,78 @@ func (p projectRepoMock) GetProjects() ([]string, error) {
 	return p.getProjects()
 }
 
-func getTestEvent() models.Event {
+func getTestTriggeredEvent() models.Event {
 	return models.Event{
 		Contenttype:    "application/json",
-		Data:           nil,
+		Data:           eventData{Project: "test-project"},
 		Extensions:     nil,
-		ID:             "test-id",
+		ID:             "test-triggered-id",
+		Shkeptncontext: "test-context",
+		Source:         stringp("test-source"),
+		Specversion:    "0.2",
+		Time:           "",
+		Triggeredid:    "",
+		Type:           stringp("sh.keptn.event.approval.triggered"),
+	}
+}
+
+func getTestStartedEvent() models.Event {
+	return models.Event{
+		Contenttype:    "application/json",
+		Data:           eventData{Project: "test-project"},
+		Extensions:     nil,
+		ID:             "test-started-id",
 		Shkeptncontext: "test-context",
 		Source:         stringp("test-source"),
 		Specversion:    "0.2",
 		Time:           "",
 		Triggeredid:    "test-triggered-id",
-		Type:           stringp("sh.keptn.event.approval.triggered"),
+		Type:           stringp("sh.keptn.event.approval.started"),
+	}
+}
+
+func getTestStartedEventWithUnmatchedTriggeredID() models.Event {
+	return models.Event{
+		Contenttype:    "application/json",
+		Data:           eventData{Project: "test-project"},
+		Extensions:     nil,
+		ID:             "test-started-id",
+		Shkeptncontext: "test-context",
+		Source:         stringp("test-source"),
+		Specversion:    "0.2",
+		Time:           "",
+		Triggeredid:    "unmatched-test-triggered-id",
+		Type:           stringp("sh.keptn.event.approval.started"),
+	}
+}
+
+func getTestFinishedEvent() models.Event {
+	return models.Event{
+		Contenttype:    "application/json",
+		Data:           eventData{Project: "test-project"},
+		Extensions:     nil,
+		ID:             "test-finished-id",
+		Shkeptncontext: "test-context",
+		Source:         stringp("test-source"),
+		Specversion:    "0.2",
+		Time:           "",
+		Triggeredid:    "test-triggered-id",
+		Type:           stringp("sh.keptn.event.approval.finished"),
+	}
+}
+
+func getTestFinishedEventWithUnmatchedSource() models.Event {
+	return models.Event{
+		Contenttype:    "application/json",
+		Data:           eventData{Project: "test-project"},
+		Extensions:     nil,
+		ID:             "test-finished-id",
+		Shkeptncontext: "test-context",
+		Source:         stringp("unmatched-test-source"),
+		Specversion:    "0.2",
+		Time:           "",
+		Triggeredid:    "test-triggered-id",
+		Type:           stringp("sh.keptn.event.approval.finished"),
 	}
 }
 
@@ -75,9 +138,9 @@ func Test_eventManager_GetAllTriggeredEvents(t *testing.T) {
 				projectRepo: &projectRepoMock{getProjects: func() ([]string, error) {
 					return []string{"sockshop", "rockshop"}, nil
 				}},
-				triggeredEventRepo: &triggeredEventMock{
+				triggeredEventRepo: &mockEventRepo{
 					getEvents: func(project string, filter db.EventFilter, status db.EventStatus) ([]models.Event, error) {
-						return []models.Event{getTestEvent()}, nil
+						return []models.Event{getTestTriggeredEvent()}, nil
 					},
 					insertEvent: nil,
 					deleteEvent: nil,
@@ -85,8 +148,8 @@ func Test_eventManager_GetAllTriggeredEvents(t *testing.T) {
 			},
 			args: args{},
 			want: []models.Event{
-				getTestEvent(),
-				getTestEvent(),
+				getTestTriggeredEvent(),
+				getTestTriggeredEvent(),
 			},
 			wantErr: false,
 		},
@@ -133,9 +196,9 @@ func Test_eventManager_GetTriggeredEventsOfProject(t *testing.T) {
 			name: "Get triggered events for project",
 			fields: fields{
 				projectRepo: nil,
-				triggeredEventRepo: &triggeredEventMock{
+				triggeredEventRepo: &mockEventRepo{
 					getEvents: func(project string, filter db.EventFilter, status db.EventStatus) ([]models.Event, error) {
-						return []models.Event{getTestEvent()}, nil
+						return []models.Event{getTestTriggeredEvent()}, nil
 					},
 					insertEvent: nil,
 					deleteEvent: nil,
@@ -143,7 +206,7 @@ func Test_eventManager_GetTriggeredEventsOfProject(t *testing.T) {
 			},
 			args: args{},
 			want: []models.Event{
-				getTestEvent(),
+				getTestTriggeredEvent(),
 			},
 			wantErr: false,
 		},
@@ -166,7 +229,7 @@ func Test_eventManager_GetTriggeredEventsOfProject(t *testing.T) {
 	}
 }
 
-func Test_eventManager_InsertEvent(t *testing.T) {
+func Test_eventManager_HandleTriggeredEvent(t *testing.T) {
 	type fields struct {
 		projectRepo        db.ProjectRepo
 		triggeredEventRepo db.EventRepo
@@ -183,14 +246,14 @@ func Test_eventManager_InsertEvent(t *testing.T) {
 		{
 			name: "insert event",
 			fields: fields{
-				triggeredEventRepo: &triggeredEventMock{
+				triggeredEventRepo: &mockEventRepo{
 					insertEvent: func(project string, event models.Event, status db.EventStatus) error {
 						return nil
 					},
 				},
 			},
 			args: args{
-				event: getTestEvent(),
+				event: getTestTriggeredEvent(),
 			},
 			wantErr: false,
 		},
@@ -203,6 +266,270 @@ func Test_eventManager_InsertEvent(t *testing.T) {
 			}
 			if err := em.handleTriggeredEvent(tt.args.event); (err != nil) != tt.wantErr {
 				t.Errorf("handleTriggeredEvent() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func Test_getEventProject(t *testing.T) {
+	type args struct {
+		event models.Event
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		wantErr bool
+	}{
+		{
+			name: "get project name",
+			args: args{
+				event: models.Event{
+					Contenttype:    "",
+					Data:           eventData{Project: "sockshop"},
+					Extensions:     nil,
+					ID:             "",
+					Shkeptncontext: "",
+					Source:         nil,
+					Specversion:    "",
+					Time:           "",
+					Triggeredid:    "",
+					Type:           nil,
+				},
+			},
+			want:    "sockshop",
+			wantErr: false,
+		},
+		{
+			name: "empty data",
+			args: args{
+				event: models.Event{
+					Contenttype:    "",
+					Data:           nil,
+					Extensions:     nil,
+					ID:             "",
+					Shkeptncontext: "",
+					Source:         nil,
+					Specversion:    "",
+					Time:           "",
+					Triggeredid:    "",
+					Type:           nil,
+				},
+			},
+			want:    "",
+			wantErr: true,
+		},
+		{
+			name: "nonsense data",
+			args: args{
+				event: models.Event{
+					Contenttype:    "",
+					Data:           "invalid",
+					Extensions:     nil,
+					ID:             "",
+					Shkeptncontext: "",
+					Source:         nil,
+					Specversion:    "",
+					Time:           "",
+					Triggeredid:    "",
+					Type:           nil,
+				},
+			},
+			want:    "",
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := getEventProject(tt.args.event)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("getEventProject() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("getEventProject() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_eventManager_handleStartedEvent(t *testing.T) {
+	type fields struct {
+		projectRepo db.ProjectRepo
+		eventRepo   db.EventRepo
+		logger      *keptn.Logger
+	}
+	type args struct {
+		event models.Event
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "received started event with matching triggered event",
+			fields: fields{
+				projectRepo: nil,
+				eventRepo: &mockEventRepo{
+					getEvents: func(project string, filter db.EventFilter, status db.EventStatus) ([]models.Event, error) {
+						if status == db.TriggeredEvent {
+							return []models.Event{getTestTriggeredEvent()}, nil
+						}
+						return nil, errors.New("received unexpected request")
+					},
+					insertEvent: func(project string, event models.Event, status db.EventStatus) error {
+						if len(deep.Equal(event, getTestStartedEvent())) != 0 {
+							t.Errorf("received unexpected event in insertEvent func. wanted %v but got %v", getTestStartedEvent(), event)
+							return nil
+						}
+						return nil
+					},
+					deleteEvent: func(project string, eventID string, status db.EventStatus) error {
+						return nil
+					},
+				},
+				logger: nil,
+			},
+			args: args{
+				event: getTestStartedEvent(),
+			},
+			wantErr: false,
+		},
+		{
+			name: "received started event with no matching triggered event",
+			fields: fields{
+				projectRepo: nil,
+				eventRepo: &mockEventRepo{
+					getEvents: func(project string, filter db.EventFilter, status db.EventStatus) ([]models.Event, error) {
+						if status == db.TriggeredEvent {
+							return nil, nil
+						}
+						return nil, errors.New("received unexpected request")
+					},
+					insertEvent: func(project string, event models.Event, status db.EventStatus) error {
+						t.Error("event should not be stored in this case")
+						return nil
+					},
+					deleteEvent: func(project string, eventID string, status db.EventStatus) error {
+						return nil
+					},
+				},
+				logger: nil,
+			},
+			args: args{
+				event: getTestStartedEventWithUnmatchedTriggeredID(),
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			em := &eventManager{
+				projectRepo: tt.fields.projectRepo,
+				eventRepo:   tt.fields.eventRepo,
+				logger:      tt.fields.logger,
+			}
+			if err := em.handleStartedEvent(tt.args.event); (err != nil) != tt.wantErr {
+				t.Errorf("handleStartedEvent() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func Test_eventManager_handleFinishedEvent(t *testing.T) {
+	type fields struct {
+		projectRepo db.ProjectRepo
+		eventRepo   db.EventRepo
+		logger      *keptn.Logger
+	}
+	type args struct {
+		event models.Event
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "received finished event with matching started and triggered event",
+			fields: fields{
+				projectRepo: nil,
+				eventRepo: &mockEventRepo{
+					getEvents: func(project string, filter db.EventFilter, status db.EventStatus) ([]models.Event, error) {
+						if status == db.TriggeredEvent {
+							return []models.Event{getTestTriggeredEvent()}, nil
+						} else if status == db.StartedEvent {
+							return []models.Event{getTestStartedEvent()}, nil
+						}
+						return nil, errors.New("received unexpected request")
+					},
+					insertEvent: func(project string, event models.Event, status db.EventStatus) error {
+						t.Error("insertEvent() should not be called in this case")
+						return nil
+					},
+					deleteEvent: func(project string, eventID string, status db.EventStatus) error {
+						if status == db.TriggeredEvent {
+							if eventID != getTestTriggeredEvent().ID {
+								t.Errorf("received unexpected ID for deletion of triggered event. wanted %s but got %s", getTestTriggeredEvent().ID, eventID)
+							}
+							return nil
+						} else if status == db.StartedEvent {
+							if eventID != getTestStartedEvent().ID {
+								t.Errorf("received unexpected ID for deletion of started event. wanted %s but got %s", getTestTriggeredEvent().ID, eventID)
+							}
+							return nil
+						}
+						return nil
+					},
+				},
+				logger: nil,
+			},
+			args: args{
+				event: getTestFinishedEvent(),
+			},
+			wantErr: false,
+		},
+		{
+			name: "received started event with no matching triggered event",
+			fields: fields{
+				projectRepo: nil,
+				eventRepo: &mockEventRepo{
+					getEvents: func(project string, filter db.EventFilter, status db.EventStatus) ([]models.Event, error) {
+						if status == db.TriggeredEvent {
+							return nil, nil
+						} else if status == db.StartedEvent {
+							return nil, nil
+						}
+						return nil, errors.New("received unexpected request")
+					},
+					insertEvent: func(project string, event models.Event, status db.EventStatus) error {
+						t.Error("event should not be stored in this case")
+						return nil
+					},
+					deleteEvent: func(project string, eventID string, status db.EventStatus) error {
+						return nil
+					},
+				},
+				logger: nil,
+			},
+			args: args{
+				event: getTestFinishedEventWithUnmatchedSource(),
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			em := &eventManager{
+				projectRepo: tt.fields.projectRepo,
+				eventRepo:   tt.fields.eventRepo,
+				logger:      tt.fields.logger,
+			}
+			if err := em.handleFinishedEvent(tt.args.event); (err != nil) != tt.wantErr {
+				t.Errorf("handleFinishedEvent() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
