@@ -84,6 +84,8 @@ var getEventCmd = &cobra.Command{
 					fmt.Println(string(event))
 				}
 			}
+		} else {
+			fmt.Println("Skipping send evaluation-start due to mocking flag set to true")
 		}
 
 		return nil
@@ -98,6 +100,7 @@ func init() {
 
 	getEvent.Project = getEventCmd.Flags().StringP("project", "", "",
 		"The Keptn project name from which to retrieve the event")
+	getEventCmd.MarkFlagRequired("project")
 
 	getEvent.Stage = getEventCmd.Flags().StringP("stage", "", "",
 		"The name of a stage within a project from which to retrieve the event")
