@@ -92,6 +92,11 @@ func (mdbrepo *MongoDBEventsRepo) InsertEvent(project string, event models.Event
 	var eventInterface interface{}
 	_ = json.Unmarshal(marshal, &eventInterface)
 
+	existingEvent := collection.FindOne(ctx, bson.M{"id": event.ID})
+	if existingEvent.Err() == nil || existingEvent.Err() != mongo.ErrNoDocuments {
+		return errors.New("event with ID " + event.ID + " already exists in collection")
+	}
+
 	_, err = collection.InsertOne(ctx, eventInterface)
 	if err != nil {
 		mdbrepo.Logger.Error("Could not insert event " + event.ID + ": " + err.Error())
