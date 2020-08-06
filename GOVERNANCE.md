@@ -41,15 +41,13 @@ The Keptn project also awards [Keptn community rockstars](https://github.com/kep
 
 ## Handling Security Vulnerabilities
 
-**TODO**
-
 The process for handling any security vulnerabilities or concerns found in the Keptn project [is described here](./SECURITY.md). 
 
 ## Releases
 
 A new Keptn version is released once substantial new features, bug fixes, and/or security hardenings have been merged into the master branch, resulting in a non-fixed release schedule. Nevertheless we aim for one major/minor version at least once every 3 months. Patch versions might be released more frequently. Only maintainers can do the releases. The release checklist is maintained on [this wiki page](https://github.com/keptn/keptn/wiki/Release-Checklist).
 
-Keptn-contrib projects mights have their own independent release process.
+[Keptn-contrib](https://github.com/keptn-contrib) and [Keptn-sandbox](https://github.com/keptn-sandbox) projects mights have their own independent release process.
 
 
 ### Resources
