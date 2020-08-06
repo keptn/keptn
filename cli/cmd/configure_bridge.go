@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"path"
 
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/spf13/cobra"
@@ -48,8 +49,9 @@ var bridgeCmd = &cobra.Command{
 			return errors.New(authErrorMsg)
 		}
 
-		configureBridgeEndpoint := endpoint.Scheme + "://" + endpoint.Host + "/api/v1/config/bridge"
-		return configureBridge(configureBridgeEndpoint, apiToken, configureBridgeParams)
+		endpoint.Path = path.Join(endpoint.Path, "/v1/config/bridge")
+
+		return configureBridge(endpoint.String(), apiToken, configureBridgeParams)
 	},
 }
 
