@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/ghodss/yaml"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
@@ -75,8 +76,13 @@ var getEventCmd = &cobra.Command{
 			}
 
 			for _, event := range events {
-				event, _ := json.MarshalIndent(event, "", "    ")
-				fmt.Println(string(event))
+				if *getEvent.Output == "yaml" {
+					event, _ := yaml.Marshal(event)
+					fmt.Println(string(event))
+				} else {
+					event, _ := json.MarshalIndent(event, "", "    ")
+					fmt.Println(string(event))
+				}
 			}
 		}
 
@@ -101,5 +107,4 @@ func init() {
 
 	getEvent.Output = getEventCmd.Flags().StringP("output", "o", "",
 		" Output format. One of: json|yaml")
-	getEventCmd.MarkFlagRequired("output")
 }

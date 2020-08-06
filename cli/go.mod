@@ -8,6 +8,7 @@ require (
 	github.com/danieljoos/wincred v1.1.0 // indirect
 	github.com/docker/docker-credential-helpers v0.6.3
 	github.com/elazarl/goproxy v0.0.0-20180725130230-947c36da3153 // indirect
+	github.com/ghodss/yaml v1.0.0
 	github.com/google/gofuzz v1.1.0 // indirect
 	github.com/google/uuid v1.1.1
 	github.com/googleapis/gnostic v0.1.0 // indirect
