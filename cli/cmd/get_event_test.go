@@ -24,16 +24,6 @@ func TestGetEventCmdEptyInput(t *testing.T) {
 	}
 }
 
-func TestGetEventNoProject(t *testing.T) {
-	credentialmanager.MockAuthCreds = true
-
-	cmd := fmt.Sprintf("get event sh.keptn.events.problem --mock")
-	_, err := executeActionCommandC(cmd)
-	if !errorContains(err, "required flag(s) \"project\" not set") {
-		t.Errorf("missing expected error, but got %v", err)
-	}
-}
-
 // TestGetEvent tests the get event command
 func TestGetEvent(t *testing.T) {
 	credentialmanager.MockAuthCreds = true

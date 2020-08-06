@@ -31,7 +31,9 @@ type getEventStruct struct {
 	Project			*string
 	Stage			*string
 	Service			*string
+	PageSize		*string
 	Output			*string
+	NumOfPages		*int
 }
 
 var getEvent getEventStruct
@@ -46,6 +48,8 @@ var getEventCmd = &cobra.Command{
 		if len(args) == 0 {
 			return errors.New("please provide an event type as an argument")
 		}
+
+		pageSize := setParameterValue(*getEvent.PageSize, "1")
 
 		eventType := args[0]
 
@@ -64,6 +68,8 @@ var getEventCmd = &cobra.Command{
 				Stage: *getEvent.Stage,
 				Project: *getEvent.Project,
 				EventType:    eventType,
+				PageSize: pageSize,
+				NumberOfPages: *getEvent.NumOfPages,
 			})
 
 			if err != nil {
@@ -110,4 +116,17 @@ func init() {
 
 	getEvent.Output = getEventCmd.Flags().StringP("output", "o", "",
 		" Output format. One of: json|yaml")
+
+	getEvent.PageSize = getEventCmd.Flags().StringP("page-size", "", "",
+		"Max number of return events per page (Default 1)")
+
+	getEvent.NumOfPages = getEventCmd.Flags().IntP("num-of-pages", "", 1,
+		"Number of pages that should be returned (Default 1).")
+}
+
+func setParameterValue(value string, defaultValue string) string {
+	if len(value) == 0 {
+		return defaultValue
+	}
+	return value
 }
