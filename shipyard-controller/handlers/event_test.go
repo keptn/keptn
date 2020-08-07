@@ -582,10 +582,9 @@ func Test_eventManager_getEvents(t *testing.T) {
 					getEvents: func(project string, filter db.EventFilter, status db.EventStatus) ([]models.Event, error) {
 						if eventAvailable {
 							return []models.Event{getTestTriggeredEvent()}, nil
-						} else {
-							eventAvailable = true
-							return nil, db.ErrNoEventFound
 						}
+						eventAvailable = true
+						return nil, db.ErrNoEventFound
 					},
 				},
 				logger: keptn.NewLogger("", "", ""),
