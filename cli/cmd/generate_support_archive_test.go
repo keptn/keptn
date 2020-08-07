@@ -1,3 +1,5 @@
+// +build !nokubectl
+
 package cmd
 
 import (
