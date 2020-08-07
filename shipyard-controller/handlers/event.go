@@ -175,7 +175,7 @@ func (em *eventManager) handleFinishedEvent(event models.Event) error {
 		Type:        trimmedEventType + string(db.StartedEvent),
 		TriggeredID: &event.Triggeredid,
 	}
-	startedEvents, err := em.getEvents(project, filter, db.StartedEvent)
+	startedEvents, err := em.getEvents(project, filter, db.StartedEvent, maxRepoReadRetries)
 
 	if err != nil {
 		msg := "error while retrieving matching '.started' event for event " + event.ID + " with triggeredid " + event.Triggeredid + ": " + err.Error()
@@ -203,7 +203,7 @@ func (em *eventManager) handleFinishedEvent(event models.Event) error {
 			Type: trimmedEventType + string(db.TriggeredEvent),
 			ID:   &event.Triggeredid,
 		}
-		triggeredEvents, err := em.getEvents(project, triggeredEventFilter, db.TriggeredEvent)
+		triggeredEvents, err := em.getEvents(project, triggeredEventFilter, db.TriggeredEvent, maxRepoReadRetries)
 		if err != nil {
 			msg := "could not retrieve '.triggered' event with ID " + event.Triggeredid + ": " + err.Error()
 			em.logger.Error(msg)
@@ -220,8 +220,8 @@ func (em *eventManager) handleFinishedEvent(event models.Event) error {
 	return nil
 }
 
-func (em *eventManager) getEvents(project string, filter db.EventFilter, status db.EventStatus) ([]models.Event, error) {
-	for i := 0; i <= maxRepoReadRetries; i++ {
+func (em *eventManager) getEvents(project string, filter db.EventFilter, status db.EventStatus, nrRetries int) ([]models.Event, error) {
+	for i := 0; i <= nrRetries; i++ {
 		startedEvents, err := em.eventRepo.GetEvents(project, filter, status)
 		if err != nil && err == db.ErrNoEventFound {
 			<-time.After(2 * time.Second)
@@ -247,7 +247,7 @@ func (em *eventManager) handleStartedEvent(event models.Event) error {
 		ID:   &event.Triggeredid,
 	}
 
-	events, err := em.getEvents(project, filter, db.TriggeredEvent)
+	events, err := em.getEvents(project, filter, db.TriggeredEvent, maxRepoReadRetries)
 
 	if err != nil {
 		msg := "error while retrieving matching '.triggered' event for event " + event.ID + " with triggeredid " + event.Triggeredid + ": " + err.Error()
