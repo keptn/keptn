@@ -41,7 +41,7 @@ func (mdbrepo *MongoDBEventsRepo) GetEvents(project string, filter EventFilter, 
 
 	cur, err := collection.Find(ctx, searchOptions)
 	if err != nil && err == mongo.ErrNoDocuments {
-		return nil, nil
+		return nil, ErrNoEventFound
 	} else if err != nil {
 		return nil, err
 	}

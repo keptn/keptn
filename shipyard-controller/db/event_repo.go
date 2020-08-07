@@ -1,6 +1,9 @@
 package db
 
-import "github.com/keptn/keptn/shipyard-controller/models"
+import (
+	"errors"
+	"github.com/keptn/keptn/shipyard-controller/models"
+)
 
 // EventStatus indicates the status type of an event, i.e. 'triggered', 'started', or 'finished'
 type EventStatus string
@@ -23,6 +26,9 @@ type EventFilter struct {
 	TriggeredID *string
 	Source      *string
 }
+
+// ErrNoEventFound indicates that no event could be found
+var ErrNoEventFound = errors.New("no matching event found")
 
 // EventRepo is an interface for retrieving and storing events
 type EventRepo interface {

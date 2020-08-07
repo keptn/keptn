@@ -11,12 +11,14 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/restapi/operations"
 	"strings"
-	"sync"
+	"time"
 )
 
 type eventData struct {
 	Project string `json:"project"`
 }
+
+const maxRepoReadRetries = 3
 
 // GetTriggeredEvents implements the request handler for GET /event/triggered/{eventType}
 func GetTriggeredEvents(params operations.GetTriggeredEventsParams) middleware.Responder {
@@ -86,7 +88,6 @@ type eventManager struct {
 	projectRepo db.ProjectRepo
 	eventRepo   db.EventRepo
 	logger      *keptn.Logger
-	mutex       sync.Mutex
 }
 
 func getEventManagerInstance() *eventManager {
@@ -127,8 +128,6 @@ func (em *eventManager) getTriggeredEventsOfProject(project string, filter db.Ev
 }
 
 func (em *eventManager) handleIncomingEvent(event models.Event) error {
-	em.mutex.Lock()
-	defer em.mutex.Unlock()
 	// check if the status type is either 'triggered', 'started', or 'finished'
 	split := strings.Split(*event.Type, ".")
 
@@ -176,7 +175,7 @@ func (em *eventManager) handleFinishedEvent(event models.Event) error {
 		Type:        trimmedEventType + string(db.StartedEvent),
 		TriggeredID: &event.Triggeredid,
 	}
-	startedEvents, err := em.eventRepo.GetEvents(project, filter, db.StartedEvent)
+	startedEvents, err := em.getEvents(project, filter, db.StartedEvent)
 
 	if err != nil {
 		msg := "error while retrieving matching '.started' event for event " + event.ID + " with triggeredid " + event.Triggeredid + ": " + err.Error()
@@ -200,10 +199,36 @@ func (em *eventManager) handleFinishedEvent(event models.Event) error {
 	}
 	// check if this was the last '.started' event
 	if len(startedEvents) == 1 {
+		triggeredEventFilter := db.EventFilter{
+			ID: &event.Triggeredid,
+		}
+		triggeredEvents, err := em.getEvents(project, triggeredEventFilter, db.TriggeredEvent)
+		if err != nil {
+			msg := "could not retrieve '.triggered' event with ID " + event.Triggeredid + ": " + err.Error()
+			em.logger.Error(msg)
+			return errors.New(msg)
+		}
+		if triggeredEvents == nil || len(triggeredEvents) == 0 {
+			msg := "no matching '.triggered' event for event " + event.ID + " with triggeredid " + event.Triggeredid
+			em.logger.Error(msg)
+			return errors.New(msg)
+		}
 		// if the previously deleted '.started' event was the last, the '.triggered' event can be removed
-		return em.eventRepo.DeleteEvent(project, event.Triggeredid, db.TriggeredEvent)
+		return em.eventRepo.DeleteEvent(project, triggeredEvents[0].ID, db.TriggeredEvent)
 	}
 	return nil
+}
+
+func (em *eventManager) getEvents(project string, filter db.EventFilter, status db.EventStatus) ([]models.Event, error) {
+	for i := 0; i <= maxRepoReadRetries; i++ {
+		startedEvents, err := em.eventRepo.GetEvents(project, filter, status)
+		if err != nil && err == db.ErrNoEventFound {
+			<-time.After(5 * time.Second)
+		} else {
+			return startedEvents, err
+		}
+	}
+	return nil, nil
 }
 
 func (em *eventManager) handleStartedEvent(event models.Event) error {
@@ -220,7 +245,8 @@ func (em *eventManager) handleStartedEvent(event models.Event) error {
 		Type: trimmedEventType + string(db.TriggeredEvent),
 		ID:   &event.Triggeredid,
 	}
-	events, err := em.eventRepo.GetEvents(project, filter, db.TriggeredEvent)
+
+	events, err := em.getEvents(project, filter, db.TriggeredEvent)
 
 	if err != nil {
 		msg := "error while retrieving matching '.triggered' event for event " + event.ID + " with triggeredid " + event.Triggeredid + ": " + err.Error()
