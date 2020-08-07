@@ -44,6 +44,8 @@ func (mdbrepo *MongoDBEventsRepo) GetEvents(project string, filter EventFilter, 
 		return nil, ErrNoEventFound
 	} else if err != nil {
 		return nil, err
+	} else if cur.RemainingBatchLength() == 0 {
+		return nil, ErrNoEventFound
 	}
 
 	events := []models.Event{}

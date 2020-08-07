@@ -18,7 +18,7 @@ type eventData struct {
 	Project string `json:"project"`
 }
 
-const maxRepoReadRetries = 3
+const maxRepoReadRetries = 5
 
 // GetTriggeredEvents implements the request handler for GET /event/triggered/{eventType}
 func GetTriggeredEvents(params operations.GetTriggeredEventsParams) middleware.Responder {
@@ -200,7 +200,8 @@ func (em *eventManager) handleFinishedEvent(event models.Event) error {
 	// check if this was the last '.started' event
 	if len(startedEvents) == 1 {
 		triggeredEventFilter := db.EventFilter{
-			ID: &event.Triggeredid,
+			Type: trimmedEventType + string(db.TriggeredEvent),
+			ID:   &event.Triggeredid,
 		}
 		triggeredEvents, err := em.getEvents(project, triggeredEventFilter, db.TriggeredEvent)
 		if err != nil {
@@ -223,7 +224,7 @@ func (em *eventManager) getEvents(project string, filter db.EventFilter, status 
 	for i := 0; i <= maxRepoReadRetries; i++ {
 		startedEvents, err := em.eventRepo.GetEvents(project, filter, status)
 		if err != nil && err == db.ErrNoEventFound {
-			<-time.After(5 * time.Second)
+			<-time.After(2 * time.Second)
 		} else {
 			return startedEvents, err
 		}
