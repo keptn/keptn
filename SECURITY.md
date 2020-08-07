@@ -36,8 +36,11 @@ If you find a security-related bug in Keptn, we kindly ask you for responsible d
 
 The team will react promptly to fix the security issue and its workaround/fix will be [published on our website](https://keptn.sh/docs/news/vulnerability_bulletins/) along with a classification of the security issue.
 
-## Security Committee
+## Security Contacts
 
 Defined below are the security contacts for this repository. In case you identify any security issue, please reach out to all of the security contacts.
 
-- TODO
+- johannes.braeuer
+- andreas.grimmer
+
+Please append the email addresses with [at] dynatrace [.com] and address your email to all security contacts.
