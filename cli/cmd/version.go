@@ -33,6 +33,11 @@ var (
 const versionCheckInfo = "Daily version check is %s. Keptn will%s collect statistical data and will%s notify about new versions and security patches for Keptn. Details can be found at https://keptn.sh/docs/0.7.x/reference/version_check\n"
 const enableVersionCheckMsg = "To %s the daily version check, please execute: \nkeptn set config AutomaticVersionCheck %s\n"
 
+const keptnReleaseDocsURL = "0.7.x"
+
+// KubeServerVersionConstraints the Kubernetes Cluster version's constraints is passed by ldflags
+var KubeServerVersionConstraints string
+
 // versionCmd represents the version command
 var versionCmd = &cobra.Command{
 	Use:     "version",

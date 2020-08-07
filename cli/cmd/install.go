@@ -1,3 +1,5 @@
+// +build !nokubectl
+
 // Copyright © 2019 NAME HERE <EMAIL ADDRESS>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -66,11 +68,6 @@ const keptnInstallerLogFileName = "keptn-installer.log"
 const keptnInstallerErrorLogFileName = "keptn-installer-Err.log"
 
 const keptnInstallerHelmRepoURL = "https://storage.googleapis.com/keptn-installer/"
-
-const keptnReleaseDocsURL = "0.7.x"
-
-// KubeServerVersionConstraints the Kubernetes Cluster version's constraints is passed by ldflags
-var KubeServerVersionConstraints string
 
 var installParams installCmdParams
 

@@ -1,3 +1,5 @@
+// +build !nokubectl
+
 // Inspired by `hugo gen doc`  - see https://github.com/gohugoio/hugo/blob/release-0.69.0/commands/gendoc.go
 package cmd
 
