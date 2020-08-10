@@ -15,7 +15,7 @@ require (
 	github.com/google/go-cmp v0.4.0 // indirect
 	github.com/jeremywohl/flatten v0.0.0-20190921043622-d936035e55cf
 	github.com/jessevdk/go-flags v1.4.0
-	github.com/keptn/go-utils v0.7.0
+	github.com/keptn/go-utils v0.6.3-0.20200810134429-cca76cae68ec
 	github.com/kr/pretty v0.2.0 // indirect
 	github.com/mitchellh/mapstructure v1.2.2 // indirect
 	github.com/stretchr/testify v1.4.0

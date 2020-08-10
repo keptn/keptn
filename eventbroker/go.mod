@@ -6,7 +6,7 @@ require (
 	github.com/cloudevents/sdk-go v0.10.0
 	github.com/google/go-cmp v0.4.0 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.7.0
+	github.com/keptn/go-utils v0.6.3-0.20200810134429-cca76cae68ec
 	github.com/kr/pretty v0.2.0 // indirect
 	github.com/lightstep/tracecontext.go v0.0.0-20181129014701-1757c391b1ac // indirect
 	github.com/nats-io/gnatsd v1.4.1
