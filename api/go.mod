@@ -3,8 +3,6 @@ module github.com/keptn/keptn/api
 go 1.13
 
 require (
-	github.com/Masterminds/semver v1.5.0 // indirect
-	github.com/Masterminds/sprig v2.22.0+incompatible // indirect
 	github.com/cloudevents/sdk-go v0.10.0
 	github.com/gbrlsnchs/jwt/v2 v2.0.0
 	github.com/go-openapi/errors v0.19.2
@@ -20,7 +18,7 @@ require (
 	github.com/gorilla/websocket v1.4.1
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/json-iterator/go v1.1.9 // indirect
-	github.com/keptn/go-utils v0.7.0
+	github.com/keptn/go-utils v0.6.3-0.20200810075337-cc973cb98ed2
 	github.com/keptn/kubernetes-utils v0.2.0
 	github.com/kinbiko/jsonassert v1.0.1
 	github.com/kr/pretty v0.2.0 // indirect
