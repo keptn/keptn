@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
+	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/nats-io/nats-server/v2/server"
 	natsserver "github.com/nats-io/nats-server/v2/test"
 	"github.com/nats-io/nats.go"
@@ -244,4 +245,57 @@ func Test__main(t *testing.T) {
 	}
 
 	close <- true
+}
+
+func Test_cleanSentEventList(t *testing.T) {
+	type args struct {
+		sentEvents []string
+		topic      string
+		events     []*keptnmodels.KeptnContextExtendedCE
+	}
+	tests := []struct {
+		name string
+		args args
+		want []string
+	}{
+		{
+			name: "remove no element from list",
+			args: args{
+				sentEvents: []string{"id-1"},
+				topic:      "",
+				events: []*keptnmodels.KeptnContextExtendedCE{
+					{
+						ID: "id-1",
+					},
+					{
+						ID: "id-2",
+					},
+				},
+			},
+			want: []string{"id-1"},
+		},
+		{
+			name: "remove element from list",
+			args: args{
+				sentEvents: []string{"id-3"},
+				topic:      "",
+				events: []*keptnmodels.KeptnContextExtendedCE{
+					{
+						ID: "id-1",
+					},
+					{
+						ID: "id-2",
+					},
+				},
+			},
+			want: []string{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := cleanSentEventList(tt.args.sentEvents, tt.args.topic, tt.args.events); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("cleanSentEventList() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

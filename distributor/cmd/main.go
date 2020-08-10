@@ -166,7 +166,7 @@ func pollHTTPEventSource(endpoint string, token string, topics []string) {
 
 		// clean up list of sent events to avoid memory leaks -> if an item that has been marked as already sent
 		// is not an open .triggered event anymore, it can be removed from the list
-		cleanSentEventList(topic, events)
+		sentCloudEvents[topic] = cleanSentEventList(sentCloudEvents[topic], topic, events)
 	}
 }
 
@@ -244,9 +244,9 @@ func hasEventBeenSent(event *keptnmodels.KeptnContextExtendedCE) bool {
 	return alreadySent
 }
 
-func cleanSentEventList(topic string, events []*keptnmodels.KeptnContextExtendedCE) {
+func cleanSentEventList(sentEvents []string, topic string, events []*keptnmodels.KeptnContextExtendedCE) []string {
 	updatedList := []string{}
-	for _, sentEvent := range sentCloudEvents[topic] {
+	for _, sentEvent := range sentEvents {
 		found := false
 		for _, ev := range events {
 			if ev.ID == sentEvent {
@@ -254,11 +254,11 @@ func cleanSentEventList(topic string, events []*keptnmodels.KeptnContextExtended
 				break
 			}
 		}
-		if !found {
+		if found {
 			updatedList = append(updatedList, sentEvent)
 		}
 	}
-	sentCloudEvents[topic] = updatedList
+	return updatedList
 }
 
 func stringp(s string) *string {
