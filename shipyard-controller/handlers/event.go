@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
 	keptn "github.com/keptn/go-utils/pkg/lib"
@@ -10,13 +11,14 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/restapi/operations"
 	"strings"
+	"time"
 )
 
 type eventData struct {
 	Project string `json:"project"`
 }
 
-const triggeredSuffix = ".triggered"
+const maxRepoReadRetries = 5
 
 // GetTriggeredEvents implements the request handler for GET /event/triggered/{eventType}
 func GetTriggeredEvents(params operations.GetTriggeredEventsParams) middleware.Responder {
@@ -68,7 +70,8 @@ func GetTriggeredEvents(params operations.GetTriggeredEventsParams) middleware.R
 // HandleEvent implements the request handler for handling events
 func HandleEvent(params operations.HandleEventParams) middleware.Responder {
 	em := getEventManagerInstance()
-	err := em.insertEvent(*params.Body)
+
+	err := em.handleIncomingEvent(*params.Body)
 
 	if err != nil {
 		return operations.NewHandleEventDefault(500).WithPayload(&models.Error{
@@ -82,9 +85,9 @@ func HandleEvent(params operations.HandleEventParams) middleware.Responder {
 var eventManagerInstance *eventManager
 
 type eventManager struct {
-	projectRepo        db.ProjectRepo
-	triggeredEventRepo db.TriggeredEventRepo
-	logger             *keptn.Logger
+	projectRepo db.ProjectRepo
+	eventRepo   db.EventRepo
+	logger      *keptn.Logger
 }
 
 func getEventManagerInstance() *eventManager {
@@ -94,7 +97,7 @@ func getEventManagerInstance() *eventManager {
 			projectRepo: &db.ProjectMongoDBRepo{
 				Logger: logger,
 			},
-			triggeredEventRepo: &db.MongoDBTriggeredEventsRepo{
+			eventRepo: &db.MongoDBEventsRepo{
 				Logger: logger,
 			},
 			logger: logger,
@@ -112,7 +115,7 @@ func (em *eventManager) getAllTriggeredEvents(filter db.EventFilter) ([]models.E
 
 	allEvents := []models.Event{}
 	for _, project := range projects {
-		events, err := em.triggeredEventRepo.GetEvents(project, filter)
+		events, err := em.eventRepo.GetEvents(project, filter, db.TriggeredEvent)
 		if err == nil {
 			allEvents = append(allEvents, events...)
 		}
@@ -121,10 +124,145 @@ func (em *eventManager) getAllTriggeredEvents(filter db.EventFilter) ([]models.E
 }
 
 func (em *eventManager) getTriggeredEventsOfProject(project string, filter db.EventFilter) ([]models.Event, error) {
-	return em.triggeredEventRepo.GetEvents(project, filter)
+	return em.eventRepo.GetEvents(project, filter, db.TriggeredEvent)
 }
 
-func (em *eventManager) insertEvent(event models.Event) error {
+func (em *eventManager) handleIncomingEvent(event models.Event) error {
+	// check if the status type is either 'triggered', 'started', or 'finished'
+	split := strings.Split(*event.Type, ".")
+
+	statusType := split[len(split)-1]
+
+	switch statusType {
+	case string(db.TriggeredEvent):
+		return em.handleTriggeredEvent(event)
+	case string(db.StartedEvent):
+		return em.handleStartedEvent(event)
+	case string(db.FinishedEvent):
+		return em.handleFinishedEvent(event)
+	default:
+		return nil
+	}
+}
+
+func getEventProject(event models.Event) (string, error) {
+	marshal, err := json.Marshal(event.Data)
+	if err != nil {
+		return "", err
+	}
+	data := &eventData{}
+	err = json.Unmarshal(marshal, data)
+	if err != nil {
+		return "", err
+	}
+	if data.Project == "" {
+		return "", errors.New("event does not contain a project")
+	}
+	return data.Project, nil
+}
+
+func (em *eventManager) handleFinishedEvent(event models.Event) error {
+
+	project, err := getEventProject(event)
+	if err != nil {
+		em.logger.Error("Could not determine project of event: " + err.Error())
+		return err
+	}
+
+	trimmedEventType := strings.TrimSuffix(*event.Type, string(db.FinishedEvent))
+	// get corresponding 'started' event for the incoming 'finished' event
+	filter := db.EventFilter{
+		Type:        trimmedEventType + string(db.StartedEvent),
+		TriggeredID: &event.Triggeredid,
+	}
+	startedEvents, err := em.getEvents(project, filter, db.StartedEvent, maxRepoReadRetries)
+
+	if err != nil {
+		msg := "error while retrieving matching '.started' event for event " + event.ID + " with triggeredid " + event.Triggeredid + ": " + err.Error()
+		em.logger.Error(msg)
+		return errors.New(msg)
+	} else if startedEvents == nil || len(startedEvents) == 0 {
+		msg := "no matching '.started' event for event " + event.ID + " with triggeredid " + event.Triggeredid
+		em.logger.Error(msg)
+		return errors.New(msg)
+	}
+
+	for _, startedEvent := range startedEvents {
+		if *event.Source == *startedEvent.Source {
+			err = em.eventRepo.DeleteEvent(project, startedEvent.ID, db.StartedEvent)
+			if err != nil {
+				msg := "could not delete '.started' event with ID " + startedEvent.ID + ": " + err.Error()
+				em.logger.Error(msg)
+				return errors.New(msg)
+			}
+		}
+	}
+	// check if this was the last '.started' event
+	if len(startedEvents) == 1 {
+		triggeredEventFilter := db.EventFilter{
+			Type: trimmedEventType + string(db.TriggeredEvent),
+			ID:   &event.Triggeredid,
+		}
+		triggeredEvents, err := em.getEvents(project, triggeredEventFilter, db.TriggeredEvent, maxRepoReadRetries)
+		if err != nil {
+			msg := "could not retrieve '.triggered' event with ID " + event.Triggeredid + ": " + err.Error()
+			em.logger.Error(msg)
+			return errors.New(msg)
+		}
+		if triggeredEvents == nil || len(triggeredEvents) == 0 {
+			msg := "no matching '.triggered' event for event " + event.ID + " with triggeredid " + event.Triggeredid
+			em.logger.Error(msg)
+			return errors.New(msg)
+		}
+		// if the previously deleted '.started' event was the last, the '.triggered' event can be removed
+		return em.eventRepo.DeleteEvent(project, triggeredEvents[0].ID, db.TriggeredEvent)
+	}
+	return nil
+}
+
+func (em *eventManager) getEvents(project string, filter db.EventFilter, status db.EventStatus, nrRetries int) ([]models.Event, error) {
+	for i := 0; i <= nrRetries; i++ {
+		startedEvents, err := em.eventRepo.GetEvents(project, filter, status)
+		if err != nil && err == db.ErrNoEventFound {
+			<-time.After(2 * time.Second)
+		} else {
+			return startedEvents, err
+		}
+	}
+	return nil, nil
+}
+
+func (em *eventManager) handleStartedEvent(event models.Event) error {
+
+	project, err := getEventProject(event)
+	if err != nil {
+		em.logger.Error("Could not determine project of event: " + err.Error())
+		return err
+	}
+
+	trimmedEventType := strings.TrimSuffix(*event.Type, string(db.StartedEvent))
+	// get corresponding 'triggered' event for the incoming 'started' event
+	filter := db.EventFilter{
+		Type: trimmedEventType + string(db.TriggeredEvent),
+		ID:   &event.Triggeredid,
+	}
+
+	events, err := em.getEvents(project, filter, db.TriggeredEvent, maxRepoReadRetries)
+
+	if err != nil {
+		msg := "error while retrieving matching '.triggered' event for event " + event.ID + " with triggeredid " + event.Triggeredid + ": " + err.Error()
+		em.logger.Error(msg)
+		return errors.New(msg)
+	} else if events == nil || len(events) == 0 {
+		msg := "no matching '.triggered' event for event " + event.ID + " with triggeredid " + event.Triggeredid
+		em.logger.Error(msg)
+		return errors.New(msg)
+	}
+
+	return em.eventRepo.InsertEvent(project, event, db.StartedEvent)
+}
+
+func (em *eventManager) handleTriggeredEvent(event models.Event) error {
 
 	marshal, err := json.Marshal(event.Data)
 	if err != nil {
@@ -136,9 +274,5 @@ func (em *eventManager) insertEvent(event models.Event) error {
 		return err
 	}
 
-	if strings.HasSuffix(*event.Type, triggeredSuffix) {
-		return em.triggeredEventRepo.InsertEvent(data.Project, event)
-	}
-
-	return nil
+	return em.eventRepo.InsertEvent(data.Project, event, db.TriggeredEvent)
 }

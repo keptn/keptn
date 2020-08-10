@@ -268,7 +268,7 @@ jobs:
         cd ..
       - |
         cd ${SHIPYARD_CONTROLLER_FOLDER}
-        go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        go test -v -coverprofile=coverage.txt -covermode=atomic ./...
         cd ..
       - |
         cd "${CONFIGURATION_SVC_FOLDER}"
