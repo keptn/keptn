@@ -62,9 +62,6 @@ spec:
           limits:
             memory: "256Mi"
             cpu: "500m"
-        volumeMounts:
-        - mountPath: /data/config
-          name: configuration-volume
       - name: distributor
         image: keptn/distributor:latest
         ports:
