@@ -75,7 +75,7 @@ const connectionTypeHTTP = "http"
 
 func _main(args []string, env envConfig) int {
 	// initialize the http client
-	connectionType := os.Getenv("CONNECTION_TYPE")
+	connectionType := strings.ToLower(os.Getenv("CONNECTION_TYPE"))
 
 	switch connectionType {
 	case "":
@@ -119,9 +119,10 @@ func createHTTPConnection() {
 
 func getHTTPPollingEndpoint() string {
 	endpoint := os.Getenv("HTTP_EVENT_ENDPOINT")
-	if !strings.HasPrefix(endpoint, "https://") && !strings.HasPrefix(endpoint, "http://") {
-		endpoint = "http://" + endpoint
+	if endpoint == "" {
+		return "http://shipyard-controller:8080/v1/event/triggered"
 	}
+
 	parsedURL, _ := url.Parse(endpoint)
 
 	if parsedURL.Scheme == "" {
