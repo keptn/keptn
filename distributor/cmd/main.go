@@ -135,22 +135,28 @@ func getHTTPPollingEndpoint() string {
 }
 
 func pollHTTPEventSource(endpoint string, token string, topics []string, client client.Client) {
+	fmt.Println("Polling events from " + endpoint)
 	for _, topic := range topics {
 		pollEventsForTopic(endpoint, token, topic, client)
 	}
 }
 
 func pollEventsForTopic(endpoint string, token string, topic string, client client.Client) {
+	fmt.Println("Retrieving events of type " + topic)
 	events, err := getEventsFromEndpoint(endpoint, token, topic)
 	if err != nil {
 		fmt.Println("Could not retrieve events of type " + topic + " from " + endpoint + ": " + endpoint)
 	}
 
+	fmt.Println("Received " + strconv.FormatInt(int64(len(events)), 10) + " new .triggered events")
 	for _, event := range events {
+		fmt.Println("Check if event " + event.ID + " has already been sent...")
 		if sentCloudEvents == nil {
+			fmt.Println("Map containing already sent cloudEvents is nil. Creating a new one")
 			sentCloudEvents = map[string][]string{}
 		}
 		if sentCloudEvents[topic] == nil {
+			fmt.Println("List of sent events for topic " + topic + " is nil. Creating a new one.")
 			sentCloudEvents[topic] = []string{}
 		}
 		alreadySent := hasEventBeenSent(sentCloudEvents[topic], event.ID)
@@ -160,21 +166,27 @@ func pollEventsForTopic(endpoint string, token string, topic string, client clie
 			continue
 		}
 
+		fmt.Println("CloudEvent with ID " + event.ID + " has not been sent yet.")
+
 		marshal, err := json.Marshal(event)
 
 		e, err := decodeCloudEvent(marshal)
 
 		if e != nil {
+			fmt.Println("Sending CloudEvent with ID " + event.ID + " to " + os.Getenv("PUBSUB_RECIPIENT"))
 			err = sendEvent(*e, client)
 			if err != nil {
 				fmt.Println("Could not send CloudEvent: " + err.Error())
 			}
+			fmt.Println("Event has been sent successfully. Adding it to the list of sent events.")
 			sentCloudEvents[topic] = append(sentCloudEvents[*event.Type], event.ID)
+			fmt.Println("Number of sent events for topic " + topic + ": " + strconv.FormatInt(int64(len(sentCloudEvents[topic])), 10))
 		}
 	}
 
 	// clean up list of sent events to avoid memory leaks -> if an item that has been marked as already sent
 	// is not an open .triggered event anymore, it can be removed from the list
+	fmt.Println("Cleaning up list of sent events for topic " + topic)
 	sentCloudEvents[topic] = cleanSentEventList(sentCloudEvents[topic], events)
 }
 
@@ -253,6 +265,7 @@ func hasEventBeenSent(sentEvents []string, eventID string) bool {
 func cleanSentEventList(sentEvents []string, events []*keptnmodels.KeptnContextExtendedCE) []string {
 	updatedList := []string{}
 	for _, sentEvent := range sentEvents {
+		fmt.Println("Determine whether event " + sentEvent + " can be removed from list")
 		found := false
 		for _, ev := range events {
 			if ev.ID == sentEvent {
@@ -261,7 +274,10 @@ func cleanSentEventList(sentEvents []string, events []*keptnmodels.KeptnContextE
 			}
 		}
 		if found {
+			fmt.Println("Event " + sentEvent + " is still open. Keeping it in the list")
 			updatedList = append(updatedList, sentEvent)
+		} else {
+			fmt.Println("Event " + sentEvent + " is not open anymore. Removing it from the list")
 		}
 	}
 	return updatedList
