@@ -322,6 +322,15 @@ func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 		var err error
 		collectionName, err = getProjectForContext(*params.KeptnContext)
 		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				logger.Info("no project found for shkeptkontext")
+				return &event.GetEventsOKBody{
+					Events:      nil,
+					NextPageKey: "0",
+					PageSize:    0,
+					TotalCount:  0,
+				}, nil
+			}
 			logger.Error(fmt.Sprintf("error loading project for shkeptncontext: %v", err))
 			return nil, err
 		}
