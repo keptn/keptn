@@ -57,8 +57,8 @@ func GetTriggeredEvents(params operations.GetTriggeredEventsParams) middleware.R
 
 	totalCount := len(events)
 	if paginationInfo.NextPageKey < int64(totalCount) {
-		for _, event := range events[paginationInfo.NextPageKey:paginationInfo.EndIndex] {
-			payload.Events = append(payload.Events, &event)
+		for index, _ := range events[paginationInfo.NextPageKey:paginationInfo.EndIndex] {
+			payload.Events = append(payload.Events, &events[index])
 		}
 	}
 
