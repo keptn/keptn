@@ -1,9 +1,11 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
+	"github.com/go-openapi/strfmt"
 	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/nats-io/nats-server/v2/server"
 	natsserver "github.com/nats-io/nats-server/v2/test"
@@ -250,7 +252,6 @@ func Test__main(t *testing.T) {
 func Test_cleanSentEventList(t *testing.T) {
 	type args struct {
 		sentEvents []string
-		topic      string
 		events     []*keptnmodels.KeptnContextExtendedCE
 	}
 	tests := []struct {
@@ -262,7 +263,6 @@ func Test_cleanSentEventList(t *testing.T) {
 			name: "remove no element from list",
 			args: args{
 				sentEvents: []string{"id-1"},
-				topic:      "",
 				events: []*keptnmodels.KeptnContextExtendedCE{
 					{
 						ID: "id-1",
@@ -278,7 +278,6 @@ func Test_cleanSentEventList(t *testing.T) {
 			name: "remove element from list",
 			args: args{
 				sentEvents: []string{"id-3"},
-				topic:      "",
 				events: []*keptnmodels.KeptnContextExtendedCE{
 					{
 						ID: "id-1",
@@ -293,9 +292,240 @@ func Test_cleanSentEventList(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := cleanSentEventList(tt.args.sentEvents, tt.args.topic, tt.args.events); !reflect.DeepEqual(got, tt.want) {
+			if got := cleanSentEventList(tt.args.sentEvents, tt.args.events); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("cleanSentEventList() = %v, want %v", got, tt.want)
 			}
+		})
+	}
+}
+
+func Test_hasEventBeenSent(t *testing.T) {
+	type args struct {
+		sentEvents []string
+		eventID    string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "want true",
+			args: args{
+				sentEvents: []string{"sent-1", "sent-2"},
+				eventID:    "sent-1",
+			},
+			want: true,
+		},
+		{
+			name: "want false",
+			args: args{
+				sentEvents: []string{"sent-1", "sent-2"},
+				eventID:    "sent-X",
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := hasEventBeenSent(tt.args.sentEvents, tt.args.eventID); got != tt.want {
+				t.Errorf("hasEventBeenSent() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_getEventsFromEndpoint(t *testing.T) {
+
+	ts := httptest.NewServer(
+		http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) {}))
+
+	type args struct {
+		endpoint string
+		token    string
+		topic    string
+	}
+	tests := []struct {
+		name              string
+		args              args
+		serverHandlerFunc http.HandlerFunc
+		want              []*keptnmodels.KeptnContextExtendedCE
+		wantErr           bool
+	}{
+		{
+			name: "get all events",
+			args: args{
+				endpoint: ts.URL,
+				token:    "",
+				topic:    "my-topic",
+			},
+			serverHandlerFunc: func(w http.ResponseWriter, request *http.Request) {
+				w.Header().Add("Content-Type", "application/json")
+				events := keptnmodels.Events{
+					Events: []*keptnmodels.KeptnContextExtendedCE{
+						{
+							ID: "id-1",
+						},
+						{
+							ID: "id-2",
+						},
+					},
+					NextPageKey: "",
+					PageSize:    2,
+					TotalCount:  2,
+				}
+
+				marshal, _ := json.Marshal(events)
+				w.Write(marshal)
+			},
+			want: []*keptnmodels.KeptnContextExtendedCE{
+				{
+					ID: "id-1",
+				},
+				{
+					ID: "id-2",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "get all events from paginated source",
+			args: args{
+				endpoint: ts.URL,
+				token:    "",
+				topic:    "my-topic",
+			},
+			serverHandlerFunc: func(w http.ResponseWriter, request *http.Request) {
+				w.Header().Add("Content-Type", "application/json")
+
+				var events keptnmodels.Events
+				if request.FormValue("nextPageKey") == "" {
+					events = keptnmodels.Events{
+						Events: []*keptnmodels.KeptnContextExtendedCE{
+							{
+								ID: "id-1",
+							},
+							{
+								ID: "id-2",
+							},
+						},
+						NextPageKey: "2",
+						PageSize:    2,
+						TotalCount:  4,
+					}
+				} else if request.FormValue("nextPageKey") == "2" {
+					events = keptnmodels.Events{
+						Events: []*keptnmodels.KeptnContextExtendedCE{
+							{
+								ID: "id-3",
+							},
+							{
+								ID: "id-4",
+							},
+						},
+						NextPageKey: "",
+						PageSize:    2,
+						TotalCount:  4,
+					}
+				}
+
+				marshal, _ := json.Marshal(events)
+				w.Write(marshal)
+			},
+			want: []*keptnmodels.KeptnContextExtendedCE{
+				{
+					ID: "id-1",
+				},
+				{
+					ID: "id-2",
+				},
+				{
+					ID: "id-3",
+				},
+				{
+					ID: "id-4",
+				},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ts.Config.Handler = tt.serverHandlerFunc
+			got, err := getEventsFromEndpoint(tt.args.endpoint, tt.args.token, tt.args.topic)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("getEventsFromEndpoint() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getEventsFromEndpoint() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_pollEventsForTopic(t *testing.T) {
+
+	var eventSourceReturnedPayload keptnmodels.Events
+	eventSourceServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) {
+		w.Header().Add("Content-Type", "application/json")
+		marshal, _ := json.Marshal(eventSourceReturnedPayload)
+		w.Write(marshal)
+	}))
+
+	recipientServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) {
+		w.Header().Add("Content-Type", "application/json")
+		w.Write([]byte(`{}`))
+	}))
+
+	parsedURL, _ := url.Parse(recipientServer.URL)
+	split := strings.Split(parsedURL.Host, ":")
+	os.Setenv("PUBSUB_RECIPIENT", split[0])
+	os.Setenv("PUBSUB_RECIPIENT_PORT", split[1])
+
+	type args struct {
+		endpoint string
+		token    string
+		topic    string
+	}
+	tests := []struct {
+		name                       string
+		args                       args
+		eventSourceReturnedPayload keptnmodels.Events
+	}{
+		{
+			name: "",
+			args: args{
+				endpoint: eventSourceServer.URL,
+				token:    "",
+				topic:    "my-topic",
+			},
+			eventSourceReturnedPayload: keptnmodels.Events{
+				Events: []*keptnmodels.KeptnContextExtendedCE{
+					{
+						Contenttype:    "application/json",
+						Data:           "",
+						Extensions:     nil,
+						ID:             "1234",
+						Shkeptncontext: "1234",
+						Source:         stringp("my-source"),
+						Specversion:    "0.2",
+						Time:           strfmt.DateTime{},
+						Triggeredid:    "1234",
+						Type:           stringp("my-topic"),
+					},
+				},
+				NextPageKey: "",
+				PageSize:    1,
+				TotalCount:  1,
+			},
+		},
+	}
+	for _, tt := range tests {
+		eventSourceReturnedPayload = tt.eventSourceReturnedPayload
+		t.Run(tt.name, func(t *testing.T) {
+			client := createRecipientConnection()
+			pollEventsForTopic(tt.args.endpoint, tt.args.token, tt.args.topic, client)
 		})
 	}
 }
