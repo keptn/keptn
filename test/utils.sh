@@ -202,6 +202,36 @@ function wait_for_deployment_in_namespace() {
   fi
 }
 
+function wait_for_daemonset_in_namespace() {
+  DAEMONSET=$1; NAMESPACE=$2;
+  RETRY=0; RETRY_MAX=50;
+
+  while [[ $RETRY -lt $RETRY_MAX ]]; do
+    DAEMONSET_LIST=$(eval "kubectl get daemonset -n ${NAMESPACE} | awk '/$DAEMONSET /'" | awk '{print $1}')
+    if [[ -z "$DAEMONSET_LIST" ]]; then
+      RETRY=$[$RETRY+1]
+      echo "Retry: ${RETRY}/${RETRY_MAX} - Wait 15s for daemonset ${DAEMONSET} in namespace ${NAMESPACE}"
+      sleep 15
+    else
+      READY_REPLICAS=$(eval kubectl get daemonset $DAEMONSET -n $NAMESPACE -o=jsonpath='{$.status.desiredNumberScheduled}')
+      WANTED_REPLICAS=$(eval kubectl get daemonset $DAEMONSET -n $NAMESPACE -o=jsonpath='{$.status.numberAvailable}')
+      if [[ "$READY_REPLICAS" = "$WANTED_REPLICAS" ]]; then
+        echo "Found daemonset ${DAEMONSET} in namespace ${NAMESPACE}: ${DAEMONSET_LIST}"
+        break
+      else
+          RETRY=$[$RETRY+1]
+          echo "Retry: ${RETRY}/${RETRY_MAX} - Wait 15s for daemonset ${DAEMONSET} in namespace ${NAMESPACE}"
+          sleep 15
+      fi
+    fi
+  done
+
+  if [[ $RETRY == $RETRY_MAX ]]; then
+    echo "Error: Could not find daemonset ${DAEMONSET} in namespace ${NAMESPACE}"
+    exit 1
+  fi
+}
+
 function verify_deployment_in_namespace() {
   DEPLOYMENT=$1; NAMESPACE=$2;
 
