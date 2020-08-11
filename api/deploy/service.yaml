@@ -44,6 +44,8 @@ spec:
             initialDelaySeconds: 5
             periodSeconds: 5
           env:
+            - name: PREFIX_PATH
+              value: ""
             - name: EVENTBROKER_URI
               value: http://event-broker
             - name: DATASTORE_URI

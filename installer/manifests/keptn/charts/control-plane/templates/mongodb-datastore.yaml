@@ -46,6 +46,8 @@ spec:
             memory: "128Mi"
             cpu: "500m"
         env:
+        - name: PREFIX_PATH
+          value: { .Values.prefixPath }
         - name: MONGODB_HOST
           value: 'mongodb:27017'
         - name: MONGODB_DATABASE

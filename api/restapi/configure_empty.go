@@ -4,12 +4,15 @@ package restapi
 
 import (
 	"crypto/tls"
-	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
-	"github.com/keptn/keptn/api/restapi/operations/configuration"
+	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"strings"
+
+	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
+	"github.com/keptn/keptn/api/restapi/operations/configuration"
 
 	"github.com/keptn/keptn/api/handlers"
 	"github.com/keptn/keptn/api/ws"
@@ -113,6 +116,36 @@ func setupMiddlewares(handler http.Handler) http.Handler {
 // The middleware configuration happens before anything, this middleware also applies to serving the swagger.json document.
 // So this is a good place to plug in a panic handling middleware, logging and metrics
 func setupGlobalMiddleware(handler http.Handler) http.Handler {
+
+	prefixPath := os.Getenv("PREFIX_PATH")
+	if len(prefixPath) > 0 {
+		// Set the prefix-path in the swagger.yaml
+		input, err := ioutil.ReadFile("swagger-ui/swagger.yaml")
+		if err == nil {
+			editedSwagger := strings.Replace(string(input), "basePath: /api/v1",
+				"basePath: "+prefixPath+"/api/v1", -1)
+			err = ioutil.WriteFile("swagger-ui/swagger.yaml", []byte(editedSwagger), 0644)
+			if err != nil {
+				fmt.Println("Failed to write edited swagger.yaml")
+			}
+		} else {
+			fmt.Println("Failed to set basePath in swagger.yaml")
+		}
+
+		// Set the prefix-path in the index.html
+		input, err = ioutil.ReadFile("swagger-ui/index.html")
+		if err == nil {
+			editedSwagger := strings.Replace(string(input), "const prefixPath = \"\"",
+				"const prefixPath = \""+prefixPath+"\"", -1)
+			err = ioutil.WriteFile("swagger-ui/index.html", []byte(editedSwagger), 0644)
+			if err != nil {
+				fmt.Println("Failed to write edited index.html")
+			}
+		} else {
+			fmt.Println("Failed to set basePath in index.html")
+		}
+	}
+
 	go keptnapi.RunHealthEndpoint("10999")
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.Index(r.URL.Path, "/swagger-ui/") == 0 {
