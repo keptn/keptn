@@ -28,7 +28,7 @@ spec:
         app.kubernetes.io/component: control-plane
         app.kubernetes.io/version: develop
     spec:
-      serviceAccountName: keptn-shipyard-controller
+      serviceAccountName: keptn-default
       containers:
       - name: shipyard-controller
         image: keptn/shipyard-controller:latest
@@ -62,9 +62,6 @@ spec:
           limits:
             memory: "256Mi"
             cpu: "500m"
-        volumeMounts:
-        - mountPath: /data/config
-          name: configuration-volume
       - name: distributor
         image: keptn/distributor:latest
         ports:
