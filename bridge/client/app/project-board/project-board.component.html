@@ -173,7 +173,7 @@
                 </div>
               </dt-info-group-title>
               <p class="m-0 mb-1 mt-1" *ngIf="project.getLatestDeployment(service, project.stages[0]) as deployment; else noDeployment">
-                <span class="bold">Last relevant artifact: </span><span [textContent]="deployment.getShortImageName()"></span>
+                <span class="bold">Last processed artifact: </span><span [textContent]="deployment.getShortImageName()"></span>
               </p>
               <button dt-button disabled variant="nested" *ngIf="!service.roots">
                 <dt-loading-spinner></dt-loading-spinner>
