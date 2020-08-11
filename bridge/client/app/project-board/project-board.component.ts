@@ -228,12 +228,12 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
     this.selectedStage = stage;
   }
 
-  countOpenApprovals(openApprovals: Trace[], stage: Stage, service?: Service) {
-    return openApprovals.filter(approval => approval == openApprovals.find(a => a.data.stage == stage.stageName && a.data.service == approval.data.service && (!service || a.data.service == service.serviceName))).length;
+  countOpenApprovals(openApprovals: Trace[], project: Project, stage: Stage, service?: Service) {
+    return this.getOpenApprovals(openApprovals, project, stage, service).length;
   }
 
-  getOpenApprovals(openApprovals: Trace[], stage: Stage, service: Service) {
-    return openApprovals.filter(approval => approval.data.stage == stage.stageName && approval.data.service == service.serviceName);
+  getOpenApprovals(openApprovals: Trace[], project: Project, stage: Stage, service?: Service) {
+    return openApprovals.filter(approval => approval.data.project == project.projectName && approval.data.stage == stage.stageName && (!service || approval.data.service == service.serviceName));
   }
 
   approveDeployment(approval) {

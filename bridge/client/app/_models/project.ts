@@ -27,7 +27,7 @@ export class Project {
 
     if(currentService.roots)
       return currentService.roots
-        .filter(root => root.isFaulty() != stage.stageName)
+        .filter(root => root.isFaulty() != stage.stageName || root.traces.find(trace => trace.type == EventTypes.DEPLOYMENT_FINISHED && trace.data.stage == stage.stageName)?.data.deploymentstrategy == "direct")
         .reduce((traces: Trace[], root) => [...traces, ...root.traces], [])
         .find(trace => trace.type == EventTypes.DEPLOYMENT_FINISHED && trace.data.stage == stage.stageName);
     else
