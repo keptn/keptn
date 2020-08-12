@@ -157,7 +157,7 @@ func Test_eventManager_GetAllTriggeredEvents(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			em := &eventManager{
+			em := &shipyardController{
 				projectRepo: tt.fields.projectRepo,
 				eventRepo:   tt.fields.triggeredEventRepo,
 			}
@@ -210,7 +210,7 @@ func Test_eventManager_GetTriggeredEventsOfProject(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			em := &eventManager{
+			em := &shipyardController{
 				projectRepo: tt.fields.projectRepo,
 				eventRepo:   tt.fields.triggeredEventRepo,
 			}
@@ -257,7 +257,7 @@ func Test_eventManager_HandleTriggeredEvent(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			em := &eventManager{
+			em := &shipyardController{
 				projectRepo: tt.fields.projectRepo,
 				eventRepo:   tt.fields.triggeredEventRepo,
 			}
@@ -423,7 +423,7 @@ func Test_eventManager_handleStartedEvent(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			em := &eventManager{
+			em := &shipyardController{
 				projectRepo: tt.fields.projectRepo,
 				eventRepo:   tt.fields.eventRepo,
 				logger:      tt.fields.logger,
@@ -520,7 +520,7 @@ func Test_eventManager_handleFinishedEvent(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			em := &eventManager{
+			em := &shipyardController{
 				projectRepo: tt.fields.projectRepo,
 				eventRepo:   tt.fields.eventRepo,
 				logger:      tt.fields.logger,
@@ -596,7 +596,7 @@ func Test_eventManager_getEvents(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			em := &eventManager{
+			em := &shipyardController{
 				projectRepo: tt.fields.projectRepo,
 				eventRepo:   tt.fields.eventRepo,
 				logger:      tt.fields.logger,
@@ -766,8 +766,8 @@ func Test_eventManager_Scenario2(t *testing.T) {
 	}
 }
 
-func getTestEventManager(triggeredEventsCollection []models.Event, startedEventsCollection []models.Event) *eventManager {
-	em := &eventManager{
+func getTestEventManager(triggeredEventsCollection []models.Event, startedEventsCollection []models.Event) *shipyardController {
+	em := &shipyardController{
 		projectRepo: nil,
 		eventRepo: &mockEventRepo{
 			getEvents: func(project string, filter db.EventFilter, status db.EventStatus) ([]models.Event, error) {

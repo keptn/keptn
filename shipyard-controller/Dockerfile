@@ -28,7 +28,6 @@ RUN if [ ! -z "$debugBuild" ]; then export BUILDFLAGS='-gcflags "all=-N -l"'; fi
 COPY . .
 
 ENV REPLACE="version: ${version}"
-#RUN sed -i "s/version: develop/${REPLACE}/g" /go/src/github.com/keptn/keptn/shipyard-controller/swagger.yaml
 
 # Build the command inside the container. 
 # (You may fetch or manage dependencies here, 
@@ -49,13 +48,6 @@ RUN apk --update add --no-cache git=2.24.3-r0
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /go/src/github.com/keptn/keptn/shipyard-controller/main /shipyard-controller
 COPY --from=builder /go/src/github.com/keptn/keptn/shipyard-controller/swagger-ui /swagger-ui
-#COPY --from=builder /go/src/github.com/keptn/keptn/shipyard-controller/swagger.yaml /swagger-ui/swagger-original.yaml
-
-#COPY --from=builder /go/src/github.com/keptn/keptn/shipyard-controller/swagger.yaml /swagger-ui/swagger.yaml
-# Replace contents for api proxy
-#RUN sed -i "s|basePath: /v1|basePath: /api/shipyard-controller/v1 |g" /swagger-ui/swagger.yaml
-#RUN sed -i '/schemes:/a\ \ - https' /swagger-ui/swagger.yaml
-#RUN sed -i '/paths:/i securityDefinitions:\n  key:\n    type: apiKey\n    in: header\n    name: x-token\nsecurity:\n  - key: []\n' /swagger-ui/swagger.yaml
 
 EXPOSE 8080
 

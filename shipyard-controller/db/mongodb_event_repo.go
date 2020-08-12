@@ -15,6 +15,7 @@ import (
 
 const triggeredEventsCollectionNameSuffix = "-triggeredEvents"
 const startedEventsCollectionNameSuffix = "-startedEvents"
+const finishedEventsCollectionNameSuffix = "-finishedEvents"
 
 // MongoDBEventsRepo retrieves and stores events in a mongodb collection
 type MongoDBEventsRepo struct {
@@ -136,6 +137,8 @@ func (mdbrepo *MongoDBEventsRepo) getEventsCollection(project string, status Eve
 		return mdbrepo.DbConnection.Client.Database(databaseName).Collection(project + triggeredEventsCollectionNameSuffix)
 	case StartedEvent:
 		return mdbrepo.DbConnection.Client.Database(databaseName).Collection(project + startedEventsCollectionNameSuffix)
+	case FinishedEvent:
+		return mdbrepo.DbConnection.Client.Database(databaseName).Collection(project + finishedEventsCollectionNameSuffix)
 	default:
 		return nil
 	}
