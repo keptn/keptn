@@ -94,19 +94,23 @@ func getEvent(eventStruct GetEventStruct, args []string) error {
 	if len(events) == 0 {
 		logging.PrintLog("No event returned", logging.QuietLevel)
 		return nil
-	}
-
-	for _, event := range events {
-		if *eventStruct.Output == "yaml" {
-			event, _ := yaml.Marshal(event)
-			fmt.Println(string(event))
-		} else {
-			event, _ := json.MarshalIndent(event, "", "    ")
-			fmt.Println(string(event))
-		}
+	} else if len(events) == 1 {
+		printEvents(events[0], *eventStruct.Output)
+	} else {
+		printEvents(events, *eventStruct.Output)
 	}
 
 	return nil
+}
+
+func printEvents(events interface{}, outputType string) {
+	if outputType == "yaml" {
+		eventsYAML, _ := yaml.Marshal(events)
+		fmt.Println(string(eventsYAML))
+	} else {
+		eventsJSON, _ := json.MarshalIndent(events, "", "    ")
+		fmt.Println(string(eventsJSON))
+	}
 }
 
 func init() {

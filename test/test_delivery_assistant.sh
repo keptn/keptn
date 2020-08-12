@@ -99,8 +99,8 @@ check_no_open_approvals $PROJECT combi1
 
 check_number_open_approvals $PROJECT combi2 1
 
-combi2ApprovalId=$(keptn get event approval.triggered --project=delivery-assistant-project --stage=combi2 | awk '{if(NR>1)print}' | jq -r '.' | jq -r --slurp '.[0].id')
-keptn_context_id=$(keptn get event approval.triggered --project=delivery-assistant-project --stage=combi2 | awk '{if(NR>1)print}' | jq -r '.' | jq -r --slurp '.[0].shkeptncontext')
+combi2ApprovalId=$(keptn get event approval.triggered --project=delivery-assistant-project --stage=combi2 | awk '{if(NR>1)print}' | jq -r '.[0].id')
+keptn_context_id=$(keptn get event approval.triggered --project=delivery-assistant-project --stage=combi2 | awk '{if(NR>1)print}' | jq -r '.[0].shkeptncontext')
 keptn send event approval.finished --id=${combi2ApprovalId} --project=delivery-assistant-project --stage=combi2
 sleep 5
 check_no_open_approvals $PROJECT combi2
@@ -122,8 +122,8 @@ verify_using_jq "$response" ".data.valuesCanary.image" "docker.io/keptnexamples/
 
 check_number_open_approvals $PROJECT combi3 1
 
-combi3ApprovalId=$(keptn get event approval.triggered --project=delivery-assistant-project --stage=combi3 | awk '{if(NR>1)print}' | jq -r '.' | jq -r --slurp '.[0].id')
-keptn_context_id=$(keptn get event approval.triggered --project=delivery-assistant-project --stage=combi3 | awk '{if(NR>1)print}' | jq -r '.' | jq -r --slurp '.[0].shkeptncontext')
+combi3ApprovalId=$(keptn get event approval.triggered --project=delivery-assistant-project --stage=combi3 | awk '{if(NR>1)print}' | jq -r '.[0].id')
+keptn_context_id=$(keptn get event approval.triggered --project=delivery-assistant-project --stage=combi3 | awk '{if(NR>1)print}' | jq -r '.[0].shkeptncontext')
 keptn send event approval.finished --id=${combi3ApprovalId} --project=delivery-assistant-project --stage=combi3
 sleep 5
 check_no_open_approvals $PROJECT combi3
@@ -146,10 +146,10 @@ verify_using_jq "$response" ".data.valuesCanary.image" "docker.io/keptnexamples/
 
 check_number_open_approvals $PROJECT combi4 2
 
-combi4ApprovalId1=$(keptn get event approval.triggered --project=delivery-assistant-project --stage=combi4 | awk '{if(NR>1)print}' | jq -r '.' | jq -r --slurp '.[0].id')
-keptn_context_id_1=$(keptn get event approval.triggered --project=delivery-assistant-project --stage=combi4 | awk '{if(NR>1)print}' | jq -r '.' | jq -r --slurp '.[0].shkeptncontext')
-combi4ApprovalId2=$(keptn get event approval.triggered --project=delivery-assistant-project --stage=combi4 | awk '{if(NR>1)print}' | jq -r '.' | jq -r --slurp '.[1].id')
-keptn_context_id_2=$(keptn get event approval.triggered --project=delivery-assistant-project --stage=combi4 | awk '{if(NR>1)print}' | jq -r '.' | jq -r --slurp '.[0].shkeptncontext')
+combi4ApprovalId1=$(keptn get event approval.triggered --project=delivery-assistant-project --stage=combi4 | awk '{if(NR>1)print}' | jq -r '.[0].id')
+keptn_context_id_1=$(keptn get event approval.triggered --project=delivery-assistant-project --stage=combi4 | awk '{if(NR>1)print}' | jq -r '.[0].shkeptncontext')
+combi4ApprovalId2=$(keptn get event approval.triggered --project=delivery-assistant-project --stage=combi4 | awk '{if(NR>1)print}' | jq -r '.[1].id')
+keptn_context_id_2=$(keptn get event approval.triggered --project=delivery-assistant-project --stage=combi4 | awk '{if(NR>1)print}' | jq -r '.[0].shkeptncontext')
 
 keptn send event approval.finished --id=${combi4ApprovalId1} --project=delivery-assistant-project --stage=combi4
 sleep 5

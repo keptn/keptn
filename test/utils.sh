@@ -100,7 +100,7 @@ function check_number_open_approvals() {
   STAGE=$2
   EXPECTED=$3
 
-  result=$(keptn get event approval.triggered --project=$PROJECT --stage=$STAGE | awk '{if(NR>1)print}' | jq -r '.' | jq -r --slurp 'length')
+  result=$(keptn get event approval.triggered --project=$PROJECT --stage=$STAGE | awk '{if(NR>1)print}' | jq -r 'length')
   if [[ "$result" != "$EXPECTED" ]]; then
     echo "Received unexpected number of approval.triggered events"
     echo "${result}"
