@@ -111,11 +111,9 @@ func getAllApprovalEventsInStage(approvalTriggered approvalTriggeredStruct, serv
 func printApprovalEvents(allEvents []*apimodels.KeptnContextExtendedCE) {
 	if len(allEvents) == 0 {
 		logging.PrintLog("No approval.triggered events have been found", logging.InfoLevel)
-	}
-
-	for _, event := range allEvents {
-		prettyJSON, _ := json.MarshalIndent(event, "", "	")
-		fmt.Println(string(prettyJSON))
+	} else {
+		eventsJSON, _ := json.MarshalIndent(allEvents, "", "	")
+		fmt.Println(string(eventsJSON))
 	}
 }
 

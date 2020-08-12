@@ -96,14 +96,12 @@ func getEvent(eventStruct GetEventStruct, args []string) error {
 		return nil
 	}
 
-	for _, event := range events {
-		if *eventStruct.Output == "yaml" {
-			event, _ := yaml.Marshal(event)
-			fmt.Println(string(event))
-		} else {
-			event, _ := json.MarshalIndent(event, "", "    ")
-			fmt.Println(string(event))
-		}
+	if *eventStruct.Output == "yaml" {
+		eventsYAML, _ := yaml.Marshal(events)
+		fmt.Println(string(eventsYAML))
+	} else {
+		eventsJSON, _ := json.MarshalIndent(events, "", "    ")
+		fmt.Println(string(eventsJSON))
 	}
 
 	return nil
