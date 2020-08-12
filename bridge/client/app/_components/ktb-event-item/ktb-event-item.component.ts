@@ -3,6 +3,10 @@ import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Trace } from '../../_models/trace';
 import { ClipboardService } from '../../_services/clipboard.service';
 import DateUtil from '../../_utils/date.utils';
+import {Observable} from "rxjs";
+import {Project} from "../../_models/project";
+import {map} from "rxjs/operators";
+import {DataService} from "../../_services/data.service";
 
 @Directive({
   selector: `ktb-event-item-detail, [ktb-event-item-detail], [ktbEventItemDetail]`,
@@ -18,6 +22,7 @@ export class KtbEventItemDetail {
 })
 export class KtbEventItemComponent {
 
+  public project$: Observable<Project>;
   public _event: Trace;
 
   @ViewChild('eventPayloadDialog')
@@ -37,8 +42,14 @@ export class KtbEventItemComponent {
   }
 
   constructor(private changeDetectorRef: ChangeDetectorRef,
+              private dataService: DataService,
               private dialog: MatDialog,
               private clipboard: ClipboardService) {
+    this.project$ = this.dataService.projects.pipe(
+      map(projects => projects ? projects.find(project => {
+        return project.projectName === this._event.getProject();
+      }) : null)
+    );
   }
 
   getCalendarFormat() {

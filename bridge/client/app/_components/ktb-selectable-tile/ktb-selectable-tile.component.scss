@@ -26,4 +26,7 @@
   &.ktb-tile-success .ktb-selectable-tile-container {
     border-color: $cta-color;
   }
+  &.ktb-tile-highlight .ktb-selectable-tile-container {
+    border-color: $blue-400;
+  }
 }

@@ -2,6 +2,7 @@ import {Stage} from "./stage";
 import {Service} from "./service";
 import {Trace} from "./trace";
 import {EventTypes} from "./event-types";
+import {Root} from "./root";
 
 export class Project {
   projectName: string;
@@ -22,8 +23,16 @@ export class Project {
     return this.services;
   }
 
+  getService(serviceName: string): Service {
+    return this.getServices().find(s => s.serviceName == serviceName);
+  }
+
+  getStage(stageName: string): Stage {
+    return this.stages.find(s => s.stageName == stageName);
+  }
+
   getLatestDeployment(service: Service, stage: Stage): Trace {
-    let currentService = this.getServices().find(s => s.serviceName == service.serviceName);
+    let currentService = this.getService(service.serviceName);
 
     if(currentService.roots)
       return currentService.roots
@@ -32,6 +41,10 @@ export class Project {
         .find(trace => trace.type == EventTypes.DEPLOYMENT_FINISHED && trace.data.stage == stage.stageName);
     else
       return null;
+  }
+
+  getRootEvent(service: Service, event: Trace): Root {
+    return service.roots.find(root => root.shkeptncontext == event.shkeptncontext);
   }
 
   getDeploymentEvaluation(trace: Trace): Trace {

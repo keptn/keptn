@@ -120,6 +120,10 @@ class Trace {
     return this.data.State === ProblemStates.RESOLVED || this.data.State === ProblemStates.CLOSED;
   }
 
+  public isApproval(): string {
+    return this.type === EventTypes.APPROVAL_TRIGGERED ? this.data.stage : null;
+  }
+
   private isApprovalFinished(): boolean {
     return this.type === EventTypes.APPROVAL_FINISHED;
   }
@@ -130,6 +134,10 @@ class Trace {
 
   private isDeclined(): boolean {
     return this.data.approval.result == ApprovalStates.DECLINED;
+  }
+
+  hasLabels(): boolean {
+    return Object.keys(this.data.labels||{}).length > 0;
   }
 
   getLabel(): string {

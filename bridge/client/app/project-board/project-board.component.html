@@ -122,15 +122,7 @@
             </ktb-expandable-tile-header>
             <div *ngIf="countOpenApprovals(openApprovals, project, selectedStage, service) > 0; else noOutOfSyncDeployments">
               <p class="m-0">Deployable artifacts for <span [textContent]="service.serviceName"></span> service</p>
-              <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px" *ngFor="let approval of getOpenApprovals(openApprovals, project, selectedStage, service)">
-                <h4 class="m-0 mt-1"><span [textContent]="approval.getShortImageName()"></span> (<span [textContent]="project.getDeploymentEvaluation(approval).data.result"></span>)</h4>
-                <button dt-icon-button (click)="approveDeployment(approval)" variant="nested" aria-label="Approve">
-                  <dt-icon class="success" name="checkmark"></dt-icon>
-                </button>
-                <button dt-icon-button (click)="declineDeployment(approval)" variant="nested" aria-label="Decline">
-                  <dt-icon class="error" name="abort"></dt-icon>
-                </button>
-              </div>
+              <ktb-approval-item class="mt-1" *ngFor="let approval of getOpenApprovals(openApprovals, project, selectedStage, service)" [event]="approval"></ktb-approval-item>
             </div>
             <ng-template #noOutOfSyncDeployments>No pending deployments for this stage available.</ng-template>
           </ktb-expandable-tile>

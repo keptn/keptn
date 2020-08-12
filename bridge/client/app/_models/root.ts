@@ -1,4 +1,5 @@
 import {Trace} from "./trace";
+import {EventTypes} from "./event-types";
 
 export class Root extends Trace {
   traces: Trace[];
@@ -30,6 +31,10 @@ export class Root extends Trace {
   isSuccessful(): boolean {
     let result: boolean = false;
     return !this.isFaulty() && result;
+  }
+
+  isApproval(): string {
+    return this.getLastTrace().isApproval();
   }
 
   getLastTrace(): Trace {
