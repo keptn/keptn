@@ -63,6 +63,9 @@ var evaluationDoneCmd = &cobra.Command{
 			if len(evaluationDoneEvts) == 0 {
 				logging.PrintLog("No event returned", logging.QuietLevel)
 				return nil
+			} else if len(evaluationDoneEvts) == 1 {
+				eventsJSON, _ := json.MarshalIndent(evaluationDoneEvts[0], "", "	")
+				fmt.Println(string(eventsJSON))
 			} else {
 				eventsJSON, _ := json.MarshalIndent(evaluationDoneEvts, "", "	")
 				fmt.Println(string(eventsJSON))
