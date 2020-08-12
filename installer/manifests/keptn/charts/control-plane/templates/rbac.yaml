@@ -86,7 +86,6 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: keptn-read-metadata
-  namespace: keptn
   labels:
     app.kubernetes.io/name: keptn-read-metadata
     app.kubernetes.io/instance: {{ .Release.Name }}
@@ -207,7 +206,6 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: keptn-api-service-metadata
-  namespace: keptn
   labels:
     app.kubernetes.io/name: keptn-api-service-metadata
     app.kubernetes.io/instance: {{ .Release.Name }}
@@ -222,7 +220,6 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: keptn-api-service
-    namespace: keptn
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
