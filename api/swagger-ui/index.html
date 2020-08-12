@@ -37,9 +37,7 @@
     <script src="./swagger-ui-standalone-preset.js"> </script>
     <script>
     window.onload = function() {
-      var pathname = window.location.pathname;
-      var res = pathname.substring(0, pathname.indexOf("/api/"));
-
+      const prefixPath = ""
       // Begin Swagger UI call region
       const ui = SwaggerUIBundle({
         url: "swagger.yaml",
@@ -54,13 +52,13 @@
         ],
         layout: "StandaloneLayout",
         urls: [{
-          url: res.concat("/api/swagger-ui/swagger.yaml"),
+          url: prefixPath + "/api/swagger-ui/swagger.yaml",
           name: "api-service"
         }, {
-          url: res.concat("/api/configuration-service/swagger-ui/swagger.yaml"),
+          url: prefixPath + "/api/configuration-service/swagger-ui/swagger.yaml",
           name: "configuration-service"
         }, {
-          url: res.concat("/api/mongodb-datastore/swagger-ui/swagger.yaml"),
+          url: prefixPath + "/api/mongodb-datastore/swagger-ui/swagger.yaml",
           name: "mongodb-datastore"
         }],
       })

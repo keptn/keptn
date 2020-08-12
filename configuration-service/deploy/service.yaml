@@ -33,6 +33,8 @@ spec:
       - name: configuration-service
         image: keptn/configuration-service:latest
         env:
+          - name: PREFIX_PATH
+            value: ""
           - name: MONGODB_HOST
             value: 'mongodb:27017'
           - name: MONGODB_USER

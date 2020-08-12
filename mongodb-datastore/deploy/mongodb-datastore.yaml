@@ -47,6 +47,8 @@ spec:
             memory: "256Mi"
             cpu: "1000m"
         env:
+        - name: PREFIX_PATH
+          value: ""
         - name: MONGODB_HOST
           value: 'mongodb:27017'
         - name: MONGODB_DATABASE
