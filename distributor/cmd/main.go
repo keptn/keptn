@@ -129,7 +129,7 @@ func getHTTPPollingEndpoint() string {
 		parsedURL.Scheme = "http"
 	}
 	if parsedURL.Path == "" {
-		parsedURL.Path = "v1/event/triggered/"
+		parsedURL.Path = "v1/event/triggered"
 	}
 
 	return parsedURL.String()
@@ -196,6 +196,7 @@ func getEventsFromEndpoint(endpoint string, token string, topic string) ([]*kept
 	nextPageKey := ""
 
 	for {
+		endpoint = strings.TrimSuffix(endpoint, "/")
 		url, err := url.Parse(endpoint)
 		url.Path = url.Path + "/" + topic
 		if err != nil {
