@@ -559,7 +559,6 @@ func init() {
 	generateSupportArchiveParams = &generateSupportArchiveCmdParams{}
 	generateSupportArchiveParams.Directory = generateSupportArchiveCmd.Flags().StringP("dir", "",
 		"./support-archive", "directory where the docs should be written to")
-	generateSupportArchiveParams.KeptnNamespace = generateSupportArchiveCmd.Flags().StringP("keptn-namespace", "",
+	generateSupportArchiveParams.KeptnNamespace = generateSupportArchiveCmd.Flags().StringP("namespace", "n",
 		"keptn", "namespace where Keptn is installed")
-	generateSupportArchiveCmd.Flags().MarkHidden("keptn-namespace")
 }
