@@ -114,6 +114,9 @@ func GetEventHandlerFunc(params event.GetEventParams, principal *models.Principa
 	eventHandler := keptnutils.NewEventHandler(getDatastoreURL())
 	cloudEvent, errObj := eventHandler.GetEvent(params.KeptnContext, params.Type)
 	if errObj != nil {
+		if errObj.Code == 404 {
+			return sendNotFoundErrorForGet(fmt.Errorf("No "+params.Type+" event found for Keptn context: "+params.KeptnContext), logger)
+		}
 		return sendInternalErrorForGet(fmt.Errorf("%s", *errObj.Message), logger)
 	}
 
