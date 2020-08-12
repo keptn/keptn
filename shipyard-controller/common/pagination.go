@@ -19,6 +19,10 @@ type PaginationResult struct {
 
 // Paginate paginates an array
 func Paginate(totalCount int, pageSize *int64, nextPageKeyString *string) *PaginationResult {
+	if pageSize == nil {
+		pageSize = new(int64)
+		*pageSize = 20
+	}
 	var result = &PaginationResult{}
 	var newNextPageKey int64
 	var nextPageKey int64

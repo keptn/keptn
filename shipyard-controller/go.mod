@@ -3,26 +3,38 @@ module github.com/keptn/keptn/shipyard-controller
 go 1.13
 
 require (
+	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
 	github.com/asaskevich/govalidator v0.0.0-20200108200545-475eaeb16496 // indirect
+	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
+	github.com/gin-gonic/gin v1.6.3
 	github.com/go-openapi/errors v0.19.2
 	github.com/go-openapi/loads v0.19.4
 	github.com/go-openapi/runtime v0.19.4
-	github.com/go-openapi/spec v0.19.3
+	github.com/go-openapi/spec v0.19.9
 	github.com/go-openapi/strfmt v0.19.3
-	github.com/go-openapi/swag v0.19.5
+	github.com/go-openapi/swag v0.19.9
 	github.com/go-openapi/validate v0.19.5
+	github.com/go-playground/validator/v10 v10.3.0 // indirect
 	github.com/go-test/deep v1.0.5
-	github.com/google/go-cmp v0.4.0 // indirect
+	github.com/golang/protobuf v1.4.2 // indirect
 	github.com/jeremywohl/flatten v0.0.0-20190921043622-d936035e55cf
 	github.com/jessevdk/go-flags v1.4.0
+	github.com/json-iterator/go v1.1.10 // indirect
 	github.com/keptn/go-utils v0.7.0
 	github.com/kr/pretty v0.2.0 // indirect
+	github.com/mailru/easyjson v0.7.3 // indirect
 	github.com/mitchellh/mapstructure v1.2.2 // indirect
 	github.com/stretchr/testify v1.4.0
+	github.com/swaggo/files v0.0.0-20190704085106-630677cd5c14
+	github.com/swaggo/gin-swagger v1.2.0
+	github.com/swaggo/swag v1.6.7
+	github.com/urfave/cli/v2 v2.2.0 // indirect
 	github.com/xdg/stringprep v1.0.0 // indirect
 	go.mongodb.org/mongo-driver v1.4.0
-	golang.org/x/crypto v0.0.0-20200220183623-bac4c82f6975 // indirect
-	golang.org/x/net v0.0.0-20200202094626-16171245cfb2
+	golang.org/x/net v0.0.0-20200707034311-ab3426394381
+	golang.org/x/sys v0.0.0-20200810151505-1b9f1253b3ed // indirect
+	golang.org/x/tools v0.0.0-20200811215021-48a8ffc5b207 // indirect
+	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
-	gopkg.in/yaml.v2 v2.2.8 // indirect
+	gopkg.in/yaml.v2 v2.3.0 // indirect
 )

@@ -1,0 +1,163 @@
+basePath: /v1
+definitions:
+  models.Error:
+    properties:
+      code:
+        description: Error code
+        type: integer
+      message:
+        description: |-
+          Error message
+          Required: true
+        type: string
+    type: object
+  models.Event:
+    properties:
+      contenttype:
+        description: contenttype
+        type: string
+      data:
+        description: |-
+          data
+          Required: true
+        type: object
+      extensions:
+        description: extensions
+        type: object
+      id:
+        description: id
+        type: string
+      shkeptncontext:
+        description: shkeptncontext
+        type: string
+      source:
+        description: |-
+          source
+          Required: true
+        type: string
+      specversion:
+        description: specversion
+        type: string
+      time:
+        description: time
+        type: string
+      triggeredid:
+        description: triggeredid
+        type: string
+      type:
+        description: |-
+          type
+          Required: true
+        type: string
+    type: object
+  models.Events:
+    properties:
+      events:
+        description: events
+        items:
+          $ref: '#/definitions/models.Event'
+        type: array
+      nextPageKey:
+        description: Pointer to next page, base64 encoded
+        type: string
+      pageSize:
+        description: Size of returned page
+        type: number
+      totalCount:
+        description: Total number of events
+        type: number
+    type: object
+info:
+  contact:
+    name: Keptn Team
+    url: http://www.keptn.sh
+  description: This is the API documentation of the Shipyard Controller.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: Shipyard Controller API
+  version: "1.0"
+paths:
+  /event:
+    post:
+      consumes:
+      - application/json
+      description: Handle incoming cloud event
+      parameters:
+      - description: Event type
+        in: body
+        name: event
+        required: true
+        schema:
+          $ref: '#/definitions/models.Event'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+        "400":
+          description: Invalid payload
+          schema:
+            $ref: '#/definitions/models.Error'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/models.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Handle event
+      tags:
+      - Events
+  /event/triggered/{eventType}:
+    get:
+      consumes:
+      - application/json
+      description: get triggered events by their type
+      parameters:
+      - description: Event type
+        in: path
+        name: eventType
+        required: true
+        type: string
+      - description: Event ID
+        in: query
+        name: eventID
+        type: string
+      - description: Project
+        in: query
+        name: project
+        type: string
+      - description: Stage
+        in: query
+        name: stage
+        type: string
+      - description: Service
+        in: query
+        name: service
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/models.Events'
+        "400":
+          description: Invalid payload
+          schema:
+            $ref: '#/definitions/models.Error'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/models.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get triggered events
+      tags:
+      - Events
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: x-token
+    type: apiKey
+swagger: "2.0"

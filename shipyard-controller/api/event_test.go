@@ -1,4 +1,4 @@
-package handlers
+package api
 
 import (
 	"errors"
@@ -171,10 +171,6 @@ func Test_eventManager_GetAllTriggeredEvents(t *testing.T) {
 			}
 		})
 	}
-}
-
-func stringp(s string) *string {
-	return &s
 }
 
 func Test_eventManager_GetTriggeredEventsOfProject(t *testing.T) {

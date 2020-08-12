@@ -1,15 +1,15 @@
-package handlers
+package api
 
 import (
 	"encoding/json"
 	"errors"
-	"github.com/go-openapi/runtime/middleware"
-	"github.com/go-openapi/swag"
+	"github.com/gin-gonic/gin"
 	keptn "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
-	"github.com/keptn/keptn/shipyard-controller/restapi/operations"
+	"github.com/keptn/keptn/shipyard-controller/operations"
+	"net/http"
 	"strings"
 	"time"
 )
@@ -20,8 +20,34 @@ type eventData struct {
 
 const maxRepoReadRetries = 5
 
-// GetTriggeredEvents implements the request handler for GET /event/triggered/{eventType}
-func GetTriggeredEvents(params operations.GetTriggeredEventsParams) middleware.Responder {
+// GetTriggeredEvents godoc
+// @Summary Get triggered events
+// @Description get triggered events by their type
+// @Tags Events
+// @Security ApiKeyAuth
+// @Accept  json
+// @Produce  json
+// @Param   eventType     path    string     true        "Event type"
+// @Param   eventID     query    string     false        "Event ID"
+// @Param   project     query    string     false        "Project"
+// @Param   stage     query    string     false        "Stage"
+// @Param   service     query    string     false        "Service"
+// @Success 200 {object} models.Events	"ok"
+// @Failure 400 {object} models.Error "Invalid payload"
+// @Failure 500 {object} models.Error "Internal error"
+// @Router /event/triggered/{eventType} [get]
+func GetTriggeredEvents(c *gin.Context) {
+	eventType := c.Param("eventType")
+	params := &operations.GetTriggeredEventsParams{}
+	if err := c.ShouldBindQuery(params); err != nil {
+		c.JSON(http.StatusBadRequest, models.Error{
+			Code:    400,
+			Message: stringp("Invalid request format"),
+		})
+	}
+
+	params.EventType = eventType
+
 	var payload = &models.Events{
 		PageSize:    0,
 		NextPageKey: "0",
@@ -47,10 +73,8 @@ func GetTriggeredEvents(params operations.GetTriggeredEventsParams) middleware.R
 	}
 
 	if err != nil {
-		return operations.NewHandleEventDefault(500).WithPayload(&models.Error{
-			Code:    500,
-			Message: swag.String(err.Error()),
-		})
+		sendInternalServerErrorResponse(err, c)
+		return
 	}
 
 	paginationInfo := common.Paginate(len(events), params.PageSize, params.NextPageKey)
@@ -64,22 +88,51 @@ func GetTriggeredEvents(params operations.GetTriggeredEventsParams) middleware.R
 
 	payload.TotalCount = float64(totalCount)
 	payload.NextPageKey = paginationInfo.NewNextPageKey
-	return operations.NewGetTriggeredEventsOK().WithPayload(payload)
+	c.JSON(http.StatusOK, payload)
 }
 
+//
+// @Summary Handle event
+// @Description Handle incoming cloud event
+// @Tags Events
+// @Security ApiKeyAuth
+// @Accept  json
+// @Produce  json
+// @Param   event     body    models.Event     true        "Event type"
+// @Success 200 "ok"
+// @Failure 400 {object} models.Error "Invalid payload"
+// @Failure 500 {object} models.Error "Internal error"
+// @Router /event [post]
 // HandleEvent implements the request handler for handling events
-func HandleEvent(params operations.HandleEventParams) middleware.Responder {
-	em := getEventManagerInstance()
-
-	err := em.handleIncomingEvent(*params.Body)
-
-	if err != nil {
-		return operations.NewHandleEventDefault(500).WithPayload(&models.Error{
-			Code:    500,
-			Message: swag.String(err.Error()),
+func HandleEvent(c *gin.Context) {
+	event := &models.Event{}
+	if err := c.ShouldBindJSON(event); err != nil {
+		c.JSON(http.StatusBadRequest, models.Error{
+			Code:    400,
+			Message: stringp("Invalid request format"),
 		})
 	}
-	return operations.NewHandleEventOK()
+	em := getEventManagerInstance()
+
+	err := em.handleIncomingEvent(*event)
+
+	if err != nil {
+		sendInternalServerErrorResponse(err, c)
+		return
+	}
+	c.Status(http.StatusOK)
+}
+
+func sendInternalServerErrorResponse(err error, c *gin.Context) {
+	msg := err.Error()
+	c.JSON(http.StatusInternalServerError, models.Error{
+		Code:    500,
+		Message: &msg,
+	})
+}
+
+func stringp(s string) *string {
+	return &s
 }
 
 var eventManagerInstance *eventManager
