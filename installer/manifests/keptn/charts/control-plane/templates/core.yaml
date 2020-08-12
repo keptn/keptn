@@ -87,7 +87,7 @@ spec:
               cpu: "500m"
           env:
             - name: PREFIX_PATH
-              value: { .Values.prefixPath }
+              value: "{{ .Values.prefixPath }}"
             - name: EVENTBROKER_URI
               value: event-broker
             - name: DATASTORE_URI
@@ -550,7 +550,7 @@ spec:
           imagePullPolicy: Always
           env:
             - name: PREFIX_PATH
-              value: { .Values.prefixPath }
+              value: "{{ .Values.prefixPath }}"
             - name: MONGODB_HOST
               value: 'mongodb:27017'
             - name: MONGODB_USER
