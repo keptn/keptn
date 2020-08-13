@@ -236,14 +236,6 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
     return openApprovals.filter(approval => approval.data.project == project.projectName && approval.data.stage == stage.stageName && (!service || approval.data.service == service.serviceName));
   }
 
-  approveDeployment(approval) {
-    this.dataService.sendApprovalEvent(approval, true);
-  }
-
-  declineDeployment(approval) {
-    this.dataService.sendApprovalEvent(approval, false);
-  }
-
   ngOnDestroy(): void {
     this.unsubscribe$.next();
     this._tracesTimer.unsubscribe();

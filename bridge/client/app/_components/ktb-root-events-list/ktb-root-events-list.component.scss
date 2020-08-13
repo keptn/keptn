@@ -3,12 +3,17 @@
 
 .ktb-root-events-list {
 
-  .dt-tag.error {
-    background-color: $error-color;
-    color: $white;
-  }
-  .dt-tag.warning {
-    border-color: $orange-400;
+  .dt-tag {
+    &.error {
+      background-color: $error-color;
+      color: $white;
+    }
+    &.warning {
+      border-color: $orange-400;
+    }
+    &.highlight {
+      border-color: $blue-400;
+    }
   }
 
   .ktb-selectable-tile.ktb-tile-error .ktb-selectable-tile-container {

@@ -1,8 +1,8 @@
-<ktb-selectable-tile [error]="_event.isFaulty()" [success]="_event.isSuccessful()" *ngIf="_event">
+<ktb-selectable-tile [error]="_event.isFaulty()" [success]="_event.isSuccessful()" [highlight]="_event.isApproval()" *ngIf="_event && (project$ | async) as project">
   <div fxLayout="row">
     <div fxFlex>
       <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
-        <dt-icon class="event-icon" [class.error]="_event.isFaulty()" [class.success]="_event.isSuccessful()" [name]="_event.getIcon()"></dt-icon>
+        <dt-icon class="event-icon" [class.error]="_event.isFaulty()" [class.success]="_event.isSuccessful()" [class.highlight]="_event.isApproval()" [name]="_event.getIcon()"></dt-icon>
         <h4 class="m-0 mt-1 mb-1" [class.error]="_event.isFaulty()" [textContent]="_event.getLabel()"></h4>
         <a *ngIf="_event.data.deploymentURIPublic" [href]="_event.data.deploymentURIPublic" target="_blank"><button dt-icon-button variant="nested"><dt-icon name="externallink"></dt-icon></button></a>
       </div>
@@ -35,7 +35,7 @@
       </dt-tag-list>
     </div>
   </div>
-  <div *ngIf="_event.data.labels">
+  <div *ngIf="_event.hasLabels()">
     <div fxLayout="row" fxLayoutAlign="start center">
       <p class="bold">Labels: </p>
       <dt-tag-list aria-label="evaluation-labels">
@@ -44,6 +44,18 @@
         </dt-tag>
       </dt-tag-list>
     </div>
+  </div>
+  <div *ngIf="_event.isApproval() && project.getRootEvent(project.getService(_event.data.service), _event).isApproval() == _event.data.stage">
+    <table>
+      <tr>
+        <td><p class="m-0">Currently deployed artifact: </p></td>
+        <td><p class="m-0" [textContent]="project.getLatestDeployment(project.getService(_event.data.service), project.getStage(_event.data.stage)).getShortImageName()"></p></td>
+      </tr>
+      <tr>
+        <td><p class="m-0">Deployable artifact: </p></td>
+        <td><ktb-approval-item [event]="_event"></ktb-approval-item></td>
+      </tr>
+    </table>
   </div>
   <ng-content
     select="ktb-event-item-detail,

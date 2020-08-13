@@ -228,6 +228,10 @@ span.italic {
   &.success {
     fill: $cta-color-active;
   }
+
+  &.highlight {
+    fill: $blue-400;
+  }
 }
 
 [fxFLex] {

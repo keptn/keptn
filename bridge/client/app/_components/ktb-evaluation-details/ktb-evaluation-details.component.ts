@@ -34,6 +34,7 @@ import {takeUntil} from "rxjs/operators";
 export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
 
   private readonly unsubscribe$ = new Subject<void>();
+  @Input() public showChart = true;
 
   public _evaluationColor = {
     'pass': '#7dc540',
@@ -171,6 +172,8 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   ngOnInit() {
     if(this._evaluationData)
       this.dataService.loadEvaluationResults(this._evaluationData);
+    if(!this._selectedEvaluationData && this._evaluationData.data.evaluationHistory)
+      this._selectedEvaluationData = this._evaluationData.data.evaluationHistory.find(h => h.shkeptncontext === this._evaluationData.shkeptncontext);
     this.dataService.evaluationResults
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((event) => {
@@ -183,108 +186,113 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
 
   updateChartData(evaluationHistory) {
     let chartSeries = [];
+
     if(!this._selectedEvaluationData && evaluationHistory) {
       this._selectedEvaluationData = evaluationHistory.find(h => h.shkeptncontext === this._evaluationData.shkeptncontext);
     }
 
-    evaluationHistory.forEach((evaluation) => {
-      let scoreData = {
-        y: evaluation.data.evaluationdetails ? evaluation.data.evaluationdetails.score : 0,
-        evaluationData: evaluation,
-        color: this._evaluationColor[evaluation.data.evaluationdetails.result],
-        name: evaluation.getChartLabel(),
-      };
-
-      let indicatorScoreSeriesColumn = chartSeries.find(series => series.name == 'Score' && series.type == 'column');
-      let indicatorScoreSeriesLine = chartSeries.find(series => series.name == 'Score' && series.type == 'line');
-      if(!indicatorScoreSeriesColumn) {
-        indicatorScoreSeriesColumn = {
-          name: 'Score',
-          type: 'column',
-          data: [],
-          cursor: 'pointer',
-          turboThreshold: 0
+    if(this.showChart) {
+      evaluationHistory.forEach((evaluation) => {
+        let scoreData = {
+          y: evaluation.data.evaluationdetails ? evaluation.data.evaluationdetails.score : 0,
+          evaluationData: evaluation,
+          color: this._evaluationColor[evaluation.data.evaluationdetails.result],
+          name: evaluation.getChartLabel(),
         };
-        chartSeries.push(indicatorScoreSeriesColumn);
-      }
-      if(!indicatorScoreSeriesLine) {
-        indicatorScoreSeriesLine = {
-          name: 'Score',
-          type: 'line',
-          data: [],
-          cursor: 'pointer',
-          visible: false,
-          turboThreshold: 0
-        };
-        chartSeries.push(indicatorScoreSeriesLine);
-      }
 
-      indicatorScoreSeriesColumn.data.push(scoreData);
-      indicatorScoreSeriesLine.data.push(scoreData);
-
-      if(evaluation.data.evaluationdetails.indicatorResults) {
-        evaluation.data.evaluationdetails.indicatorResults.forEach((indicatorResult) => {
-          let indicatorData = {
-            y: indicatorResult.value.value,
-            indicatorResult: indicatorResult,
-            evaluationData: evaluation,
-            name: evaluation.getChartLabel(),
+        let indicatorScoreSeriesColumn = chartSeries.find(series => series.name == 'Score' && series.type == 'column');
+        let indicatorScoreSeriesLine = chartSeries.find(series => series.name == 'Score' && series.type == 'line');
+        if(!indicatorScoreSeriesColumn) {
+          indicatorScoreSeriesColumn = {
+            name: 'Score',
+            type: 'column',
+            data: [],
+            cursor: 'pointer',
+            turboThreshold: 0
           };
-          let indicatorChartSeries = chartSeries.find(series => series.name == indicatorResult.value.metric);
-          if(!indicatorChartSeries) {
-            indicatorChartSeries = {
-              name: indicatorResult.value.metric,
-              type: 'line',
-              yAxis: 1,
-              data: [],
-              visible: false,
-              turboThreshold: 0
+          chartSeries.push(indicatorScoreSeriesColumn);
+        }
+        if(!indicatorScoreSeriesLine) {
+          indicatorScoreSeriesLine = {
+            name: 'Score',
+            type: 'line',
+            data: [],
+            cursor: 'pointer',
+            visible: false,
+            turboThreshold: 0
+          };
+          chartSeries.push(indicatorScoreSeriesLine);
+        }
+
+        indicatorScoreSeriesColumn.data.push(scoreData);
+        indicatorScoreSeriesLine.data.push(scoreData);
+
+        if(evaluation.data.evaluationdetails.indicatorResults) {
+          evaluation.data.evaluationdetails.indicatorResults.forEach((indicatorResult) => {
+            let indicatorData = {
+              y: indicatorResult.value.value,
+              indicatorResult: indicatorResult,
+              evaluationData: evaluation,
+              name: evaluation.getChartLabel(),
             };
-            chartSeries.push(indicatorChartSeries);
-          }
-          indicatorChartSeries.data.push(indicatorData);
-        });
-      }
-    });
-    this._chartSeries = [...chartSeries];
+            let indicatorChartSeries = chartSeries.find(series => series.name == indicatorResult.value.metric);
+            if(!indicatorChartSeries) {
+              indicatorChartSeries = {
+                name: indicatorResult.value.metric,
+                type: 'line',
+                yAxis: 1,
+                data: [],
+                visible: false,
+                turboThreshold: 0
+              };
+              chartSeries.push(indicatorChartSeries);
+            }
+            indicatorChartSeries.data.push(indicatorData);
+          });
+        }
+      });
+      this._chartSeries = [...chartSeries];
 
-    this.updateHeatmapOptions(chartSeries);
-    this._heatmapSeries = [
-      {
-        name: 'Score',
-        type: 'heatmap',
-        rowsize: 0.85,
-        turboThreshold: 0,
-        data: chartSeries.find(series => series.name == 'Score').data.map((s) => {
-          let time = moment(s.evaluationData.time).format();
-          let index = this._heatmapOptions.yAxis[0].categories.indexOf("Score");
-          let x = this._heatmapOptions.xAxis[0].categories.indexOf(time);
-          return {
-            x: x,
-            y: index,
-            z: s.y,
-            evaluation: s.evaluationData,
-            color: this._evaluationColor[s.evaluationData.data.result]
-          };
-        })
-      },
-      {
-        name: 'SLOs',
-        type: 'heatmap',
-        turboThreshold: 0,
-        data: chartSeries.reverse().reduce((r, d) => [...r, ...d.data.filter(s => s.indicatorResult).map((s) => {
-          let time = moment(s.evaluationData.time).format();
-          let index = this._heatmapOptions.yAxis[0].categories.indexOf(s.indicatorResult.value.metric);
-          let x = this._heatmapOptions.xAxis[0].categories.indexOf(time);
-          return {
-            x: x,
-            y: index,
-            z: s.indicatorResult.score,
-            color: this._evaluationColor[s.indicatorResult.status]
-          };
-        })], [])
-      },
-    ];
+      this.updateHeatmapOptions(chartSeries);
+      this._heatmapSeries = [
+        {
+          name: 'Score',
+          type: 'heatmap',
+          rowsize: 0.85,
+          turboThreshold: 0,
+          data: chartSeries.find(series => series.name == 'Score').data.map((s) => {
+            let time = moment(s.evaluationData.time).format();
+            let index = this._heatmapOptions.yAxis[0].categories.indexOf("Score");
+            let x = this._heatmapOptions.xAxis[0].categories.indexOf(time);
+            return {
+              x: x,
+              y: index,
+              z: s.y,
+              evaluation: s.evaluationData,
+              color: this._evaluationColor[s.evaluationData.data.result]
+            };
+          })
+        },
+        {
+          name: 'SLOs',
+          type: 'heatmap',
+          turboThreshold: 0,
+          data: chartSeries.reverse().reduce((r, d) => [...r, ...d.data.filter(s => s.indicatorResult).map((s) => {
+            let time = moment(s.evaluationData.time).format();
+            let index = this._heatmapOptions.yAxis[0].categories.indexOf(s.indicatorResult.value.metric);
+            let x = this._heatmapOptions.xAxis[0].categories.indexOf(time);
+            return {
+              x: x,
+              y: index,
+              z: s.indicatorResult.score,
+              color: this._evaluationColor[s.indicatorResult.status]
+            };
+          })], [])
+        },
+      ];
+    }
+
+    this._changeDetectorRef.markForCheck();
   }
 
   updateHeatmapOptions(chartSeries) {
