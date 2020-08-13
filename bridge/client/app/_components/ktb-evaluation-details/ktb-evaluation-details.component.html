@@ -1,5 +1,5 @@
 <div *ngIf="evaluationData">
-  <p class="m-0 mt-1"><span class="bold">Evaluation timeframe: <span [textContent]="evaluationData.data.evaluationdetails.timeStart | amDateFormat:'YYYY-MM-DD HH:mm'"></span> - <span [textContent]="evaluationData.data.evaluationdetails.timeEnd | amDateFormat:'YYYY-MM-DD HH:mm'"></span> (<span [textContent]="getDuration(evaluationData.data.evaluationdetails.timeStart, evaluationData.data.evaluationdetails.timeEnd)"></span>)</p>
+  <p class="m-0 mt-1"><span class="bold">Evaluation timeframe: </span><span [textContent]="evaluationData.data.evaluationdetails.timeStart | amDateFormat:'YYYY-MM-DD HH:mm'"></span> - <span [textContent]="evaluationData.data.evaluationdetails.timeEnd | amDateFormat:'YYYY-MM-DD HH:mm'"></span> (<span [textContent]="getDuration(evaluationData.data.evaluationdetails.timeStart, evaluationData.data.evaluationdetails.timeEnd)"></span>)</p>
   <div class="mb-1" *ngIf="evaluationData.data.evaluationdetails.sloFileContent">
     <p class="m-0 mb-1">
       <a class="dt-link" (click)="$event.stopPropagation();sloFile.toggle();">
@@ -13,7 +13,7 @@
       </div>
     </dt-expandable-panel>
   </div>
-  <div class="mb-1 mt-1" *ngIf="_showChart">
+  <div class="mb-1 mt-1" *ngIf="showChart">
     <div fxLayout="row" class="pr-2">
       <div fxFlex></div>
       <div fxLayout="column" fxLayoutAlign="start end">
@@ -25,12 +25,12 @@
     </div>
   </div>
   <div (click)="$event.stopPropagation();" class="m-0 mr-2">
-    <dt-chart *ngIf="_showChart && _comparisonView == 'heatmap'"
+    <dt-chart *ngIf="showChart && _comparisonView == 'heatmap'"
               [options]="_heatmapOptions"
               [series]="_heatmapSeries"
               (seriesVisibilityChange)="seriesVisibilityChanged($event)">
     </dt-chart>
-    <dt-chart *ngIf="_showChart && _comparisonView == 'chart'"
+    <dt-chart *ngIf="showChart && _comparisonView == 'chart'"
               [options]="_chartOptions"
               [series]="_chartSeries"
               (seriesVisibilityChange)="seriesVisibilityChanged($event)">
@@ -50,7 +50,7 @@
         </ng-template>
       </dt-chart-tooltip>
     </dt-chart>
-    <div *ngIf="_selectedEvaluationData">
+    <div class="mt-1" *ngIf="_selectedEvaluationData">
       <dt-consumption [max]="_selectedEvaluationData.data.evaluationdetails.indicatorResults ? 100 : 0" [value]="_selectedEvaluationData.data.evaluationdetails.score" [color]="_evaluationState[_selectedEvaluationData.data.result]">
         <dt-consumption-icon aria-label="Test">
           <dt-icon name="summary"></dt-icon>

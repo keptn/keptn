@@ -34,7 +34,7 @@ import {takeUntil} from "rxjs/operators";
 export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
 
   private readonly unsubscribe$ = new Subject<void>();
-  public _showChart = true;
+  @Input() public showChart = true;
 
   public _evaluationColor = {
     'pass': '#7dc540',
@@ -167,17 +167,6 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
-  @Input()
-  get showChart(): boolean {
-    return this._showChart;
-  }
-  set showChart(value: boolean) {
-    if (this._showChart !== value) {
-      this._showChart = value;
-      this._changeDetectorRef.markForCheck();
-    }
-  }
-
   constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService) { }
 
   ngOnInit() {
@@ -202,7 +191,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
       this._selectedEvaluationData = evaluationHistory.find(h => h.shkeptncontext === this._evaluationData.shkeptncontext);
     }
 
-    if(this._showChart) {
+    if(this.showChart) {
       evaluationHistory.forEach((evaluation) => {
         let scoreData = {
           y: evaluation.data.evaluationdetails ? evaluation.data.evaluationdetails.score : 0,
