@@ -38,7 +38,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
 
   public _evaluationColor = {
     'pass': '#7dc540',
-    'warning': '#fd8232',
+    'warning': '#e6be00',
     'fail': '#dc172a',
     'failed': '#dc172a',
     'info': '#f8f8f8'
