@@ -1,36 +1,22 @@
 import {Trace} from "./trace";
-import {EventTypes} from "./event-types";
 
 export class Root extends Trace {
   traces: Trace[];
 
   isFaulty(): string {
-    let result: string = null;
-    if(this.traces) {
-      this.traces.forEach((trace) => {
-        if(trace.isFaulty()) {
-          result = trace.data.stage;
-        }
-      });
-    }
-    return result;
+    return this.traces.reduce((result: string, trace: Trace) => trace.isFaulty() ? trace.data.stage : result, null);
+  }
+
+  isProblem(): boolean {
+    return this.traces.reduce((result: boolean, trace: Trace) => trace.isProblem() && !trace.isProblemResolvedOrClosed() ? true : result, false);
   }
 
   isWarning(): string {
-    let result: string = null;
-    if(this.traces) {
-      this.traces.forEach((trace) => {
-        if(trace.isWarning()) {
-          result = trace.data.stage;
-        }
-      });
-    }
-    return result;
+    return this.traces.reduce((result: string, trace: Trace) => trace.isWarning() ? trace.data.stage : result, null);
   }
 
-  isSuccessful(): boolean {
-    let result: boolean = false;
-    return !this.isFaulty() && result;
+  isSuccessful(): string {
+    return this.traces.reduce((result: string, trace: Trace) => trace.isSuccessful() ? trace.data.stage : result, null);
   }
 
   isApproval(): string {
