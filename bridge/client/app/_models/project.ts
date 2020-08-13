@@ -48,13 +48,9 @@ export class Project {
   }
 
   getDeploymentEvaluation(trace: Trace): Trace {
-    let currentService = this.getServices().find(s => s.serviceName == trace.data.service);
-    if(currentService.roots) {
-      return currentService.roots
-        .reduce((traces: Trace[], root) => [...traces, ...root.traces], [])
-        .find(t => t.type == EventTypes.EVALUATION_DONE && t.shkeptncontext == trace.shkeptncontext);
-    }
-    return null;
+    let service = this.getServices().find(s => s.serviceName == trace.data.service);
+    let root = this.getRootEvent(service, trace);
+    return root.traces.reverse().find(t => t.type == EventTypes.EVALUATION_DONE);
   }
 
   static fromJSON(data: any) {
