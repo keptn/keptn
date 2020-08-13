@@ -46,11 +46,16 @@
     </div>
   </div>
   <div *ngIf="_event.isApproval() && project.getRootEvent(project.getService(_event.data.service), _event).isApproval() == _event.data.stage">
-    <p class="m-0"><span>Currently deployed artifact: </span><span [textContent]="project.getLatestDeployment(project.getService(_event.data.service), project.getStage(_event.data.stage)).getShortImageName()"></span></p>
-    <div fxLayout="row" fxLayoutAlign="start center">
-      <p class="m-0">Deployable artifact: </p>
-      <ktb-approval-item [event]="_event"></ktb-approval-item>
-    </div>
+    <table>
+      <tr>
+        <td><p class="m-0">Currently deployed artifact: </p></td>
+        <td><p class="m-0" [textContent]="project.getLatestDeployment(project.getService(_event.data.service), project.getStage(_event.data.stage)).getShortImageName()"></p></td>
+      </tr>
+      <tr>
+        <td><p class="m-0">Deployable artifact: </p></td>
+        <td><ktb-approval-item [event]="_event"></ktb-approval-item></td>
+      </tr>
+    </table>
   </div>
   <ng-content
     select="ktb-event-item-detail,
