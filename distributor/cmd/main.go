@@ -15,14 +15,21 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"net/url"
+
 	"github.com/keptn/keptn/distributor/pkg/lib"
+	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
 
+	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
@@ -51,6 +58,8 @@ var close = make(chan bool)
 
 var mux sync.Mutex
 
+var sentCloudEvents map[string][]string
+
 func main() {
 	var env envConfig
 	if err := envconfig.Process("", &env); err != nil {
@@ -61,41 +70,229 @@ func main() {
 	os.Exit(_main(os.Args[1:], env))
 }
 
+const connectionTypeNATS = "nats"
+const connectionTypeHTTP = "http"
+
 func _main(args []string, env envConfig) int {
-	ctx = context.Background()
 	// initialize the http client
-	uptimeTicker = time.NewTicker(10 * time.Second)
-	createRecipientConnection()
+	connectionType := strings.ToLower(os.Getenv("CONNECTION_TYPE"))
+
+	switch connectionType {
+	case "":
+		createNATSConnection()
+		break
+	case connectionTypeNATS:
+		createNATSConnection()
+		break
+	case connectionTypeHTTP:
+		createHTTPConnection()
+		break
+	default:
+		createNATSConnection()
+	}
 
 	return 0
 }
 
-func createRecipientConnection() {
+const defaultPollingInterval = 10
 
-	recipientURL, err := getPubSubRecipientURL(
-		os.Getenv("PUBSUB_RECIPIENT"),
-		os.Getenv("PUBSUB_RECIPIENT_PORT"),
-		os.Getenv("PUBSUB_RECIPIENT_PATH"),
-	)
+func createHTTPConnection() {
+	sentCloudEvents = map[string][]string{}
+	httpClient = createRecipientConnection()
 
+	eventEndpoint := getHTTPPollingEndpoint()
+	eventEndpointAuthToken := os.Getenv("HTTP_EVENT_ENDPOINT_AUTH_TOKEN")
+	topics := strings.Split(os.Getenv("PUBSUB_TOPIC"), ",")
+
+	pollingInterval, err := strconv.ParseInt(os.Getenv("HTTP_POLLING_INTERVAL"), 10, 64)
 	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
+		pollingInterval = defaultPollingInterval
 	}
 
-	httpTransport, err := cloudeventshttp.New(
-		cloudeventshttp.WithTarget(recipientURL),
-		cloudeventshttp.WithStructuredEncoding(),
-	)
-	if err != nil {
-		fmt.Println("failed to create Http connection: " + err.Error())
-		os.Exit(1)
+	pollingTicker := time.NewTicker(time.Duration(pollingInterval) * time.Second)
+
+	for {
+		<-pollingTicker.C
+		pollHTTPEventSource(eventEndpoint, eventEndpointAuthToken, topics, httpClient)
 	}
-	httpClient, err = client.New(httpTransport)
-	if err != nil {
-		fmt.Println("failed to create client: " + err.Error())
-		os.Exit(1)
+}
+
+func getHTTPPollingEndpoint() string {
+	endpoint := os.Getenv("HTTP_EVENT_ENDPOINT")
+	if endpoint == "" {
+		return "http://shipyard-controller:8080/v1/event/triggered"
 	}
+
+	parsedURL, _ := url.Parse(endpoint)
+
+	if parsedURL.Scheme == "" {
+		parsedURL.Scheme = "http"
+	}
+	if parsedURL.Path == "" {
+		parsedURL.Path = "v1/event/triggered"
+	}
+
+	return parsedURL.String()
+}
+
+func pollHTTPEventSource(endpoint string, token string, topics []string, client client.Client) {
+	fmt.Println("Polling events from " + endpoint)
+	for _, topic := range topics {
+		pollEventsForTopic(endpoint, token, topic, client)
+	}
+}
+
+func pollEventsForTopic(endpoint string, token string, topic string, client client.Client) {
+	fmt.Println("Retrieving events of type " + topic)
+	events, err := getEventsFromEndpoint(endpoint, token, topic)
+	if err != nil {
+		fmt.Println("Could not retrieve events of type " + topic + " from " + endpoint + ": " + endpoint)
+	}
+
+	fmt.Println("Received " + strconv.FormatInt(int64(len(events)), 10) + " new .triggered events")
+	for _, event := range events {
+		fmt.Println("Check if event " + event.ID + " has already been sent...")
+		if sentCloudEvents == nil {
+			fmt.Println("Map containing already sent cloudEvents is nil. Creating a new one")
+			sentCloudEvents = map[string][]string{}
+		}
+		if sentCloudEvents[topic] == nil {
+			fmt.Println("List of sent events for topic " + topic + " is nil. Creating a new one.")
+			sentCloudEvents[topic] = []string{}
+		}
+		alreadySent := hasEventBeenSent(sentCloudEvents[topic], event.ID)
+
+		if alreadySent {
+			fmt.Println("CloudEvent with ID " + event.ID + " has already been sent.")
+			continue
+		}
+
+		fmt.Println("CloudEvent with ID " + event.ID + " has not been sent yet.")
+
+		marshal, err := json.Marshal(event)
+
+		e, err := decodeCloudEvent(marshal)
+
+		if e != nil {
+			fmt.Println("Sending CloudEvent with ID " + event.ID + " to " + os.Getenv("PUBSUB_RECIPIENT"))
+			err = sendEvent(*e, client)
+			if err != nil {
+				fmt.Println("Could not send CloudEvent: " + err.Error())
+			}
+			fmt.Println("Event has been sent successfully. Adding it to the list of sent events.")
+			sentCloudEvents[topic] = append(sentCloudEvents[*event.Type], event.ID)
+			fmt.Println("Number of sent events for topic " + topic + ": " + strconv.FormatInt(int64(len(sentCloudEvents[topic])), 10))
+		}
+	}
+
+	// clean up list of sent events to avoid memory leaks -> if an item that has been marked as already sent
+	// is not an open .triggered event anymore, it can be removed from the list
+	fmt.Println("Cleaning up list of sent events for topic " + topic)
+	sentCloudEvents[topic] = cleanSentEventList(sentCloudEvents[topic], events)
+}
+
+func getEventsFromEndpoint(endpoint string, token string, topic string) ([]*keptnmodels.KeptnContextExtendedCE, error) {
+	events := []*keptnmodels.KeptnContextExtendedCE{}
+	nextPageKey := ""
+
+	for {
+		endpoint = strings.TrimSuffix(endpoint, "/")
+		url, err := url.Parse(endpoint)
+		url.Path = url.Path + "/" + topic
+		if err != nil {
+			return nil, err
+		}
+		q := url.Query()
+		if nextPageKey != "" {
+			q.Set("nextPageKey", nextPageKey)
+			url.RawQuery = q.Encode()
+		}
+		req, err := http.NewRequest("GET", url.String(), nil)
+		req.Header.Set("Content-Type", "application/json")
+		if token != "" {
+			req.Header.Add("x-token", token)
+		}
+
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			return nil, err
+		}
+		defer resp.Body.Close()
+
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+
+		if resp.StatusCode == 200 {
+			received := &keptnmodels.Events{}
+			err = json.Unmarshal(body, received)
+			if err != nil {
+				return nil, err
+			}
+			events = append(events, received.Events...)
+
+			if received.NextPageKey == "" || received.NextPageKey == "0" {
+				break
+			}
+
+			nextPageKey = received.NextPageKey
+		} else {
+			var respErr keptnmodels.Error
+			err = json.Unmarshal(body, &respErr)
+			if err != nil {
+				return nil, err
+			}
+			return nil, errors.New(*respErr.Message)
+		}
+	}
+
+	return events, nil
+}
+
+func hasEventBeenSent(sentEvents []string, eventID string) bool {
+	alreadySent := false
+
+	if sentEvents == nil {
+		sentEvents = []string{}
+	}
+	for _, sentEvent := range sentEvents {
+		if sentEvent == eventID {
+			alreadySent = true
+		}
+	}
+	return alreadySent
+}
+
+func cleanSentEventList(sentEvents []string, events []*keptnmodels.KeptnContextExtendedCE) []string {
+	updatedList := []string{}
+	for _, sentEvent := range sentEvents {
+		fmt.Println("Determine whether event " + sentEvent + " can be removed from list")
+		found := false
+		for _, ev := range events {
+			if ev.ID == sentEvent {
+				found = true
+				break
+			}
+		}
+		if found {
+			fmt.Println("Event " + sentEvent + " is still open. Keeping it in the list")
+			updatedList = append(updatedList, sentEvent)
+		} else {
+			fmt.Println("Event " + sentEvent + " is not open anymore. Removing it from the list")
+		}
+	}
+	return updatedList
+}
+
+func stringp(s string) *string {
+	return &s
+}
+
+func createNATSConnection() {
+	uptimeTicker = time.NewTicker(10 * time.Second)
+
+	httpClient = createRecipientConnection()
 
 	natsURL := os.Getenv("PUBSUB_URL")
 	topics := strings.Split(os.Getenv("PUBSUB_TOPIC"), ",")
@@ -103,7 +300,7 @@ func createRecipientConnection() {
 
 	nch.MessageHandler = handleMessage
 
-	err = nch.SubscribeToTopics()
+	err := nch.SubscribeToTopics()
 
 	if err != nil {
 		fmt.Println(err.Error())
@@ -127,12 +324,41 @@ func createRecipientConnection() {
 	}
 }
 
+func createRecipientConnection() client.Client {
+	recipientURL, err := getPubSubRecipientURL(
+		os.Getenv("PUBSUB_RECIPIENT"),
+		os.Getenv("PUBSUB_RECIPIENT_PORT"),
+		os.Getenv("PUBSUB_RECIPIENT_PATH"),
+	)
+
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+
+	httpTransport, err := cloudeventshttp.New(
+		cloudeventshttp.WithTarget(recipientURL),
+		cloudeventshttp.WithStructuredEncoding(),
+	)
+	if err != nil {
+		fmt.Println("failed to create Http connection: " + err.Error())
+		os.Exit(1)
+	}
+	httpClient, err := client.New(httpTransport)
+	if err != nil {
+		fmt.Println("failed to create client: " + err.Error())
+		os.Exit(1)
+	}
+
+	return httpClient
+}
+
 func handleMessage(m *nats.Msg) {
 	fmt.Printf("Received a message for topic [%s]: %s\n", m.Subject, string(m.Data))
 	e, err := decodeCloudEvent(m.Data)
 
 	if e != nil {
-		err = sendEvent(*e)
+		err = sendEvent(*e, httpClient)
 		if err != nil {
 			fmt.Println("Could not send CloudEvent: " + err.Error())
 		}
@@ -166,8 +392,9 @@ func decodeCloudEvent(data []byte) (*cloudevents.Event, error) {
 	return event, nil
 }
 
-func sendEvent(event cloudevents.Event) error {
-	_, _, err := httpClient.Send(ctx, event)
+func sendEvent(event cloudevents.Event, client client.Client) error {
+	ctx := context.Background()
+	_, _, err := client.Send(ctx, event)
 	if err != nil {
 		fmt.Println("failed to send event: " + err.Error())
 	}
