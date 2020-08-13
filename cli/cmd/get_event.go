@@ -23,7 +23,6 @@ import (
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/spf13/cobra"
-	"log"
 	"net/url"
 	"os"
 )
@@ -88,7 +87,8 @@ func getEvent(eventStruct GetEventStruct, args []string) error {
 	})
 
 	if modErr != nil {
-		log.Fatal(modErr)
+		logging.PrintLog(*modErr.Message, logging.QuietLevel)
+		return errors.New(*modErr.Message)
 	}
 
 	if len(events) == 0 {
