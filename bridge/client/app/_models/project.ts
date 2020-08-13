@@ -50,7 +50,7 @@ export class Project {
   getDeploymentEvaluation(trace: Trace): Trace {
     let service = this.getServices().find(s => s.serviceName == trace.data.service);
     let root = this.getRootEvent(service, trace);
-    return root.traces.reverse().find(t => t.type == EventTypes.EVALUATION_DONE);
+    return root.traces.slice().reverse().find(t => t.type == EventTypes.EVALUATION_DONE);
   }
 
   static fromJSON(data: any) {
