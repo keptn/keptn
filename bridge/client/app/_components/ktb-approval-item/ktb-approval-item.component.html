@@ -1,5 +1,11 @@
 <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px" *ngIf="_event.isApproval() && (project$ | async) as project">
-  <h4 class="m-0"><span [textContent]="_event.getShortImageName()"></span> (<span [textContent]="project.getDeploymentEvaluation(_event).data.result"></span>)</h4>
+  <h4 class="m-0" [textContent]="_event.getShortImageName()"></h4>
+  <dt-tag-list aria-label="evaluation-info" *ngIf="project.getDeploymentEvaluation(_event) as evaluation">
+    <dt-tag class="justify-content-center" [dtOverlay]="overlay" [dtOverlayConfig]="overlayConfig" [class.error]="evaluation.isFaulty()" [class.warning]="evaluation.isWarning()" [class.success]="evaluation.isSuccessful()" [textContent]="evaluation.data.evaluationdetails.score | number:'1.0-0'"></dt-tag>
+  </dt-tag-list>
+  <ng-template #overlay>
+    <ktb-evaluation-details [evaluationData]="project.getDeploymentEvaluation(_event)" [showChart]="false"></ktb-evaluation-details>
+  </ng-template>
   <button dt-icon-button (click)="approveDeployment(_event)" variant="nested" aria-label="Approve">
     <dt-icon class="success" name="checkmark"></dt-icon>
   </button>

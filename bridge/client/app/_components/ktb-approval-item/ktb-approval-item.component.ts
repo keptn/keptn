@@ -4,6 +4,7 @@ import {Observable} from "rxjs";
 import {Project} from "../../_models/project";
 import {map} from "rxjs/operators";
 import {DataService} from "../../_services/data.service";
+import {DtOverlayConfig} from "@dynatrace/barista-components/overlay";
 
 @Component({
   selector: 'ktb-approval-item',
@@ -14,6 +15,10 @@ export class KtbApprovalItemComponent {
 
   public project$: Observable<Project>;
   public _event: Trace;
+
+  public overlayConfig: DtOverlayConfig = {
+    pinnable: true
+  };
 
   @Input()
   get event(): Trace {
