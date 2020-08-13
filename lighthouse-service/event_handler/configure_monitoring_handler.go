@@ -8,12 +8,15 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	"os"
 )
 
 type ConfigureMonitoringHandler struct {
 	Event        cloudevents.Event
 	KeptnHandler *keptnutils.Keptn
 }
+
+var namespace = os.Getenv("POD_NAMESPACE")
 
 func (eh *ConfigureMonitoringHandler) HandleEvent() error {
 
@@ -38,10 +41,10 @@ func (eh *ConfigureMonitoringHandler) HandleEvent() error {
 		eh.KeptnHandler.Logger.Error("Could not create Kube API")
 		return err
 	}
-	_, err = kubeAPI.CoreV1().ConfigMaps("keptn").Create(configMap)
+	_, err = kubeAPI.CoreV1().ConfigMaps(namespace).Create(configMap)
 
 	if err != nil {
-		_, err = kubeAPI.CoreV1().ConfigMaps("keptn").Update(configMap)
+		_, err = kubeAPI.CoreV1().ConfigMaps(namespace).Update(configMap)
 		if err != nil {
 			return err
 		}
@@ -68,7 +71,7 @@ func (eh *ConfigureMonitoringHandler) getSLISourceConfigMap(e *keptnevents.Confi
 	configMap := &v1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "lighthouse-config-" + e.Project,
-			Namespace: "keptn",
+			Namespace: namespace,
 		},
 		Data: map[string]string{
 			"sli-provider": e.Type,

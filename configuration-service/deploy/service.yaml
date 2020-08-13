@@ -49,6 +49,10 @@ spec:
                 key: password
           - name: MONGO_DB_NAME
             value: 'keptn'
+          - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
         ports:
         - containerPort: 8080
         livenessProbe:

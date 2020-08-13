@@ -22,6 +22,8 @@ type GitCredentials struct {
 	RemoteURI string `json:"remoteURI,omitempty"`
 }
 
+var namespace = os.Getenv("POD_NAMESPACE")
+
 // CloneRepo clones an upstream repository into a local folder "project" and returns
 // whether the Git repo is already initialized.
 func CloneRepo(project string, user string, token string, uri string) (bool, error) {
@@ -261,14 +263,14 @@ func StoreGitCredentials(project string, user string, token string, remoteURI st
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "git-credentials-" + project,
-			Namespace: "keptn",
+			Namespace: namespace,
 		},
 		Data: map[string][]byte{
 			"git-credentials": credsEncoded,
 		},
 		Type: "Opaque",
 	}
-	_, err = clientSet.CoreV1().Secrets("keptn").Create(secret)
+	_, err = clientSet.CoreV1().Secrets(namespace).Create(secret)
 	if err != nil {
 		return err
 	}
@@ -282,7 +284,7 @@ func GetCredentials(project string) (*GitCredentials, error) {
 		return nil, err
 	}
 
-	secret, err := clientSet.CoreV1().Secrets("keptn").Get("git-credentials-"+project, metav1.GetOptions{})
+	secret, err := clientSet.CoreV1().Secrets(namespace).Get("git-credentials-"+project, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -320,7 +322,7 @@ func DeleteCredentials(project string) error {
 		return err
 	}
 
-	err = clientSet.CoreV1().Secrets("keptn").Delete("git-credentials-"+project, &metav1.DeleteOptions{})
+	err = clientSet.CoreV1().Secrets(namespace).Delete("git-credentials-"+project, &metav1.DeleteOptions{})
 	if err != nil {
 		return err
 	}

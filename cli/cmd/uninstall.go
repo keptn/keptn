@@ -17,6 +17,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
+type uninstallCmdParams struct {
+	Namespace			*string
+}
+
+var uninstallParams uninstallCmdParams
+
 // uninstallCmd represents the uninstall command
 var uninstallCmd = &cobra.Command{
 	Use:   "uninstall",
@@ -41,6 +47,8 @@ Besides, deployed services and the configuration on the Git upstream (i.e., GitH
 			kubectlOptions = "--insecure-skip-tls-verify=true"
 		}
 
+		keptnNamespace := *uninstallParams.Namespace
+
 		ctx, _ := getKubeContext()
 		fmt.Println("Your Kubernetes current context is configured to cluster: " + strings.TrimSpace(ctx))
 		fmt.Println("Would you like to uninstall Keptn from this cluster? (y/n)")
@@ -58,11 +66,11 @@ Besides, deployed services and the configuration on the Git upstream (i.e., GitH
 		logging.PrintLog("Starting to uninstall Keptn", logging.InfoLevel)
 
 		if !mocking {
-			if err := uninstallKeptnChart("keptn", "keptn"); err != nil {
+			if err := uninstallKeptnChart("keptn", keptnNamespace); err != nil {
 				return err
 			}
 			// Clean up keptn namespace
-			if err := deleteNamespace("keptn"); err != nil {
+			if err := deleteNamespace(keptnNamespace); err != nil {
 				return err
 			}
 		}
@@ -152,5 +160,11 @@ func deleteNamespace(namespace string) error {
 
 func init() {
 	rootCmd.AddCommand(uninstallCmd)
+
+	uninstallParams = uninstallCmdParams{}
+
+	uninstallParams.Namespace = uninstallCmd.Flags().StringP("namespace", "n", "keptn",
+		"Specify the namespace Keptn should be installed in (default keptn).")
+
 	uninstallCmd.PersistentFlags().BoolVarP(&insecureSkipTLSVerify, "insecure-skip-tls-verify", "s", false, "Skip tls verification for kubectl commands")
 }
