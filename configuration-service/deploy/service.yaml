@@ -49,6 +49,10 @@ spec:
                 key: password
           - name: MONGO_DB_NAME
             value: 'keptn'
+          - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
         ports:
         - containerPort: 8080
         livenessProbe:
@@ -93,6 +97,10 @@ spec:
             value: '127.0.0.1'
           - name: PUBSUB_RECIPIENT_PATH
             value: '/v1/event'
+          - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
       volumes:
       - name: configuration-volume
         persistentVolumeClaim:

@@ -24,7 +24,7 @@ const useInClusterConfig = true
 
 const bridgeCredentialsSecret = "bridge-credentials"
 
-var namespace string = os.Getenv("API_POD_NAMESPACE")
+var namespace = os.Getenv("API_POD_NAMESPACE")
 
 // PostConfigureBridgeHandlerFunc handler function for POST requests
 func PostConfigureBridgeHandlerFunc(params configuration.PostConfigBridgeParams, principal *models.Principal) middleware.Responder {
