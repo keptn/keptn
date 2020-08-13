@@ -57,3 +57,7 @@ mongodbDatastore:
 lighthouseService:
   image:
     repository: docker.io/keptn/lighthouse-service
+
+# storage and storageClass are the settings for the PVC used by the configuration-storage
+storage: 100Mi
+storageClass: null

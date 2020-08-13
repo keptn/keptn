@@ -508,8 +508,10 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 100Mi
-status: {}
+      storage:  {{ .Values.storage }}
+  {{- if .Values.storageClass }}
+  storageClassName: {{ .Values.storageClass }}
+  {{- end }}
 ---
 apiVersion: apps/v1
 kind: Deployment
