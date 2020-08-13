@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 
 	"github.com/keptn/keptn/api/restapi/operations/configuration"
@@ -22,6 +23,8 @@ import (
 const useInClusterConfig = true
 
 const bridgeCredentialsSecret = "bridge-credentials"
+
+var namespace string = os.Getenv("API_POD_NAMESPACE")
 
 // PostConfigureBridgeHandlerFunc handler function for POST requests
 func PostConfigureBridgeHandlerFunc(params configuration.PostConfigBridgeParams, principal *models.Principal) middleware.Responder {
@@ -69,7 +72,7 @@ func GetConfigureBridgeHandlerFunc(params configuration.GetConfigBridgeParams, p
 	}
 
 	l.Info("Checking for existing secret")
-	bridgeCredentials, err := k8s.CoreV1().Secrets("keptn").Get(bridgeCredentialsSecret, metav1.GetOptions{})
+	bridgeCredentials, err := k8s.CoreV1().Secrets(namespace).Get(bridgeCredentialsSecret, metav1.GetOptions{})
 
 	if err != nil {
 		l.Error(err.Error())
@@ -124,7 +127,7 @@ func restartBridgePod(l *keptnutils.Logger) error {
 		return err
 	}
 
-	return k8s.CoreV1().Pods("keptn").DeleteCollection(&metav1.DeleteOptions{}, metav1.ListOptions{
+	return k8s.CoreV1().Pods(namespace).DeleteCollection(&metav1.DeleteOptions{}, metav1.ListOptions{
 		LabelSelector: "app.kubernetes.io/name=bridge",
 	})
 }
@@ -138,13 +141,13 @@ func createBridgeCredentials(user string, password string, l *keptnutils.Logger)
 	}
 
 	l.Info("Checking for existing secret")
-	bridgeCredentials, err := k8s.CoreV1().Secrets("keptn").Get(bridgeCredentialsSecret, metav1.GetOptions{})
+	bridgeCredentials, err := k8s.CoreV1().Secrets(namespace).Get(bridgeCredentialsSecret, metav1.GetOptions{})
 	if err == nil && bridgeCredentials != nil {
 		// update existing secret
 		l.Info("Existing secret found. Updating with new values for user and password")
 		newSecret := getBridgeCredentials(user, password)
 		bridgeCredentials.Data = newSecret.Data
-		_, err = k8s.CoreV1().Secrets("keptn").Update(newSecret)
+		_, err = k8s.CoreV1().Secrets(namespace).Update(newSecret)
 		if err != nil {
 			l.Error("could not update secret: " + err.Error())
 			return err
@@ -152,7 +155,7 @@ func createBridgeCredentials(user string, password string, l *keptnutils.Logger)
 	} else {
 		l.Info("Creating a new secret")
 		newSecret := getBridgeCredentials(user, password)
-		_, err = k8s.CoreV1().Secrets("keptn").Create(newSecret)
+		_, err = k8s.CoreV1().Secrets(namespace).Create(newSecret)
 		if err != nil {
 			l.Error("could not create new secret: " + err.Error())
 			return err
@@ -169,7 +172,7 @@ func getBridgeCredentials(user string, password string) *corev1.Secret {
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      bridgeCredentialsSecret,
-			Namespace: "keptn",
+			Namespace: namespace,
 		},
 		Data: map[string][]byte{
 			"BASIC_AUTH_USERNAME": []byte(user),
