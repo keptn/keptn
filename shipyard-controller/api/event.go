@@ -3,19 +3,33 @@ package api
 import (
 	"encoding/json"
 	"errors"
+	"github.com/cloudevents/sdk-go/pkg/cloudevents"
+	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
+	"github.com/ghodss/yaml"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptn "github.com/keptn/go-utils/pkg/lib"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/operations"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 )
 
-type eventData struct {
+type eventScope struct {
 	Project string `json:"project"`
+	Stage   string `json:"stage"`
+	Service string `json:"service"`
+}
+
+type nextTaskSequence struct {
+	Sequence  keptnv2.Sequence
+	StageName string
 }
 
 const maxRepoReadRetries = 5
@@ -54,7 +68,7 @@ func GetTriggeredEvents(c *gin.Context) {
 		TotalCount:  0,
 		Events:      []*models.Event{},
 	}
-	em := getEventManagerInstance()
+	sc := getShipyardControllerInstance()
 
 	var events []models.Event
 	var err error
@@ -67,9 +81,9 @@ func GetTriggeredEvents(c *gin.Context) {
 	}
 
 	if params.Project != nil && *params.Project != "" {
-		events, err = em.getTriggeredEventsOfProject(*params.Project, eventFilter)
+		events, err = sc.getTriggeredEventsOfProject(*params.Project, eventFilter)
 	} else {
-		events, err = em.getAllTriggeredEvents(eventFilter)
+		events, err = sc.getAllTriggeredEvents(eventFilter)
 	}
 
 	if err != nil {
@@ -112,9 +126,9 @@ func HandleEvent(c *gin.Context) {
 			Message: stringp("Invalid request format"),
 		})
 	}
-	em := getEventManagerInstance()
+	sc := getShipyardControllerInstance()
 
-	err := em.handleIncomingEvent(*event)
+	err := sc.handleIncomingEvent(*event)
 
 	if err != nil {
 		sendInternalServerErrorResponse(err, c)
@@ -138,12 +152,13 @@ func stringp(s string) *string {
 var shipyardControllerInstance *shipyardController
 
 type shipyardController struct {
-	projectRepo db.ProjectRepo
-	eventRepo   db.EventRepo
-	logger      *keptn.Logger
+	projectRepo      db.ProjectRepo
+	eventRepo        db.EventRepo
+	taskSequenceRepo db.TaskSequenceRepo
+	logger           *keptn.Logger
 }
 
-func getEventManagerInstance() *shipyardController {
+func getShipyardControllerInstance() *shipyardController {
 	if shipyardControllerInstance == nil {
 		logger := keptn.NewLogger("", "", "shipyard-controller")
 		shipyardControllerInstance = &shipyardController{
@@ -151,6 +166,9 @@ func getEventManagerInstance() *shipyardController {
 				Logger: logger,
 			},
 			eventRepo: &db.MongoDBEventsRepo{
+				Logger: logger,
+			},
+			taskSequenceRepo: &db.TaskSequenceMongoDBRepo{
 				Logger: logger,
 			},
 			logger: logger,
@@ -198,32 +216,43 @@ func (sc *shipyardController) handleIncomingEvent(event models.Event) error {
 	}
 }
 
-func getEventProject(event models.Event) (string, error) {
+func getEventScope(event models.Event) (*eventScope, error) {
 	marshal, err := json.Marshal(event.Data)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	data := &eventData{}
+	data := &eventScope{}
 	err = json.Unmarshal(marshal, data)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	if data.Project == "" {
-		return "", errors.New("event does not contain a project")
+		return nil, errors.New("event does not contain a project")
 	}
-	return data.Project, nil
+	if data.Stage == "" {
+		return nil, errors.New("event does not contain a stage")
+	}
+	if data.Service == "" {
+		return nil, errors.New("event does not contain a service")
+	}
+	return data, nil
 }
 
 func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 
-	project, err := getEventProject(event)
+	if *event.Source == "shipyard-controller" {
+		sc.logger.Info("Received event from myself. Ignoring.")
+		return nil
+	}
+
+	eventScope, err := getEventScope(event)
 	if err != nil {
-		sc.logger.Error("Could not determine project of event: " + err.Error())
+		sc.logger.Error("Could not determine eventScope of event: " + err.Error())
 		return err
 	}
 
 	// persist the .finished event
-	err = sc.eventRepo.InsertEvent(project, event, db.FinishedEvent)
+	err = sc.eventRepo.InsertEvent(eventScope.Project, event, db.FinishedEvent)
 	if err != nil {
 		sc.logger.Error("Could not store .finished event: " + err.Error())
 	}
@@ -234,7 +263,7 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 		Type:        trimmedEventType + string(db.StartedEvent),
 		TriggeredID: &event.Triggeredid,
 	}
-	startedEvents, err := sc.getEvents(project, filter, db.StartedEvent, maxRepoReadRetries)
+	startedEvents, err := sc.getEvents(eventScope.Project, filter, db.StartedEvent, maxRepoReadRetries)
 
 	if err != nil {
 		msg := "error while retrieving matching '.started' event for event " + event.ID + " with triggeredid " + event.Triggeredid + ": " + err.Error()
@@ -248,7 +277,7 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 
 	for _, startedEvent := range startedEvents {
 		if *event.Source == *startedEvent.Source {
-			err = sc.eventRepo.DeleteEvent(project, startedEvent.ID, db.StartedEvent)
+			err = sc.eventRepo.DeleteEvent(eventScope.Project, startedEvent.ID, db.StartedEvent)
 			if err != nil {
 				msg := "could not delete '.started' event with ID " + startedEvent.ID + ": " + err.Error()
 				sc.logger.Error(msg)
@@ -262,7 +291,7 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 			Type: trimmedEventType + string(db.TriggeredEvent),
 			ID:   &event.Triggeredid,
 		}
-		triggeredEvents, err := sc.getEvents(project, triggeredEventFilter, db.TriggeredEvent, maxRepoReadRetries)
+		triggeredEvents, err := sc.getEvents(eventScope.Project, triggeredEventFilter, db.TriggeredEvent, maxRepoReadRetries)
 		if err != nil {
 			msg := "could not retrieve '.triggered' event with ID " + event.Triggeredid + ": " + err.Error()
 			sc.logger.Error(msg)
@@ -274,7 +303,7 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 			return errors.New(msg)
 		}
 		// if the previously deleted '.started' event was the last, the '.triggered' event can be removed
-		return sc.eventRepo.DeleteEvent(project, triggeredEvents[0].ID, db.TriggeredEvent)
+		return sc.eventRepo.DeleteEvent(eventScope.Project, triggeredEvents[0].ID, db.TriggeredEvent)
 	}
 	return nil
 }
@@ -293,9 +322,9 @@ func (sc *shipyardController) getEvents(project string, filter db.EventFilter, s
 
 func (sc *shipyardController) handleStartedEvent(event models.Event) error {
 
-	project, err := getEventProject(event)
+	eventScope, err := getEventScope(event)
 	if err != nil {
-		sc.logger.Error("Could not determine project of event: " + err.Error())
+		sc.logger.Error("Could not determine eventScope of event: " + err.Error())
 		return err
 	}
 
@@ -306,7 +335,7 @@ func (sc *shipyardController) handleStartedEvent(event models.Event) error {
 		ID:   &event.Triggeredid,
 	}
 
-	events, err := sc.getEvents(project, filter, db.TriggeredEvent, maxRepoReadRetries)
+	events, err := sc.getEvents(eventScope.Project, filter, db.TriggeredEvent, maxRepoReadRetries)
 
 	if err != nil {
 		msg := "error while retrieving matching '.triggered' event for event " + event.ID + " with triggeredid " + event.Triggeredid + ": " + err.Error()
@@ -318,20 +347,320 @@ func (sc *shipyardController) handleStartedEvent(event models.Event) error {
 		return errors.New(msg)
 	}
 
-	return sc.eventRepo.InsertEvent(project, event, db.StartedEvent)
+	return sc.eventRepo.InsertEvent(eventScope.Project, event, db.StartedEvent)
 }
 
 func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 
-	marshal, err := json.Marshal(event.Data)
+	if *event.Source == "shipyard-controller" {
+		sc.logger.Info("Received event from myself. Ignoring.")
+		return nil
+	}
+
+	eventScope, err := getEventScope(event)
 	if err != nil {
+		sc.logger.Error("Could not determine eventScope of event: " + err.Error())
 		return err
 	}
-	data := &eventData{}
-	err = json.Unmarshal(marshal, data)
+
+	sc.logger.Info("received event of type " + *event.Type + " from " + *event.Source)
+	split := strings.Split(*event.Type, ".")
+
+	sc.logger.Info("Checking if .triggered event should start a sequence in project " + eventScope.Project)
+	// get stage and taskSequenceName - cannot tell if this is actually a task sequence triggered event though
+	var stageName, taskSequenceName string
+	if len(split) >= 3 {
+		taskSequenceName = split[len(split)-1]
+		stageName = split[len(split)-2]
+	}
+
+	shipyard, err := sc.getShipyard(eventScope)
+	if err != nil {
+		sc.logger.Error("could not retrieve shipyard: " + err.Error())
+	}
+
+	taskSequence, err := sc.getTaskSequenceInStage(stageName, taskSequenceName, shipyard)
+	if err != nil && err == errNoTaskSequence {
+		sc.logger.Info("no task sequence with name " + taskSequenceName + "found in stage " + stageName)
+		return err
+	} else if err != nil && err == errNoStage {
+		sc.logger.Info("no stage with name " + stageName + "found in project " + eventScope.Project)
+		return err
+	}
+
+	eventScope.Stage = stageName
+
+	return sc.proceedTaskSequence(eventScope, taskSequence, event, shipyard)
+}
+
+func (sc *shipyardController) proceedTaskSequence(eventScope *eventScope, taskSequence *keptnv2.Sequence, event models.Event, shipyard *keptnv2.Shipyard) error {
+	task, err := sc.getNextTaskOfSequence(taskSequence, "")
+	if err != nil && err == errNoFurtherTaskForSequence {
+		// task sequence completed -> send .finished event and check if a new task sequence should be triggered by the completion
+		err = sc.completeTaskSequence(event.Shkeptncontext, eventScope, taskSequence.Name)
+		if err != nil {
+			sc.logger.Error("Could not complete task sequence " + eventScope.Stage + "." + taskSequence.Name + " with KeptnContext " + event.Shkeptncontext)
+			return err
+		}
+		return sc.triggerNextTaskSequences(event, eventScope, taskSequence, shipyard)
+	}
+
+	return sc.sendTaskTriggeredEvent(event.Shkeptncontext, eventScope, taskSequence.Name, *task, nil)
+}
+
+func (sc *shipyardController) triggerNextTaskSequences(event models.Event, es *eventScope, completedSequence *keptnv2.Sequence, shipyard *keptnv2.Shipyard) error {
+	nextSequences := sc.getTaskSequencesByTrigger(es, completedSequence.Name, shipyard)
+
+	for _, sequence := range nextSequences {
+		newScope := &eventScope{
+			Project: es.Project,
+			Stage:   sequence.StageName,
+			Service: es.Service,
+		}
+		err := sc.sendTaskSequenceTriggeredEvent(event.Shkeptncontext, newScope, sequence.Sequence.Name)
+		if err != nil {
+			sc.logger.Error("could not send event " + newScope.Stage + "." + sequence.Sequence.Name + ".triggered: " + err.Error())
+			continue
+		}
+		err = sc.proceedTaskSequence(newScope, &sequence.Sequence, event, shipyard)
+		if err != nil {
+			sc.logger.Error("could not proceed task sequence " + newScope.Stage + "." + sequence.Sequence.Name + ".triggered: " + err.Error())
+			continue
+		}
+	}
+
+	return nil
+}
+
+func (sc *shipyardController) completeTaskSequence(keptnContext string, eventScope *eventScope, taskSequenceName string) error {
+	err := sc.taskSequenceRepo.DeleteTaskSequenceMapping(keptnContext, eventScope.Project, eventScope.Stage, taskSequenceName)
 	if err != nil {
 		return err
 	}
 
-	return sc.eventRepo.InsertEvent(data.Project, event, db.TriggeredEvent)
+	return sc.sendTaskSequenceFinishedEvent(keptnContext, eventScope, taskSequenceName)
+}
+
+func (sc *shipyardController) getShipyard(eventScope *eventScope) (*keptnv2.Shipyard, error) {
+	resourceHandler := keptnapi.NewResourceHandler("configuration-service:8080")
+	resource, err := resourceHandler.GetProjectResource(eventScope.Project, "shipyard.yaml")
+	if err != nil {
+		sc.logger.Error("Could not retrieve shipyard.yaml for project " + eventScope.Project + ": " + err.Error())
+		return nil, err
+	}
+
+	shipyard := &keptnv2.Shipyard{}
+	err = yaml.Unmarshal([]byte(resource.ResourceContent), shipyard)
+	if err != nil {
+		sc.logger.Error("Could not decode shipyard file: " + err.Error())
+		return nil, err
+	}
+
+	if shipyard.ApiVersion != "0.2.0" {
+		sc.logger.Error("Invalid shipyard APIVersion " + shipyard.ApiVersion)
+		return nil, err
+	}
+	return shipyard, err
+}
+
+var errNoFurtherTaskForSequence = errors.New("no further task for sequence")
+var errNoTaskSequence = errors.New("no task sequence found")
+var errNoStage = errors.New("no stage found")
+
+func (sc *shipyardController) getTaskSequencesByTrigger(eventScope *eventScope, completedTaskSequence string, shipyard *keptnv2.Shipyard) []nextTaskSequence {
+	result := []nextTaskSequence{}
+	for _, stage := range shipyard.Spec.Stages {
+		if stage.Name == eventScope.Stage {
+			for tsIndex, taskSequence := range stage.Sequences {
+				for _, trigger := range taskSequence.Triggers {
+					if trigger == eventScope.Stage+"."+completedTaskSequence+".triggered" {
+						result = append(result, nextTaskSequence{
+							Sequence:  stage.Sequences[tsIndex],
+							StageName: stage.Name,
+						})
+					}
+				}
+			}
+		}
+	}
+	return result
+}
+
+func (sc *shipyardController) getTaskSequenceInStage(stageName, taskSequenceName string, shipyard *keptnv2.Shipyard) (*keptnv2.Sequence, error) {
+	for _, stage := range shipyard.Spec.Stages {
+		if stage.Name == stageName {
+			for _, taskSequence := range stage.Sequences {
+				if taskSequence.Name == taskSequenceName {
+					sc.logger.Info("Found matching task sequence " + taskSequence.Name + " in stage " + stage.Name)
+					return &taskSequence, nil
+				}
+			}
+			return nil, errNoTaskSequence
+		}
+	}
+	return nil, errNoStage
+}
+
+func (sc *shipyardController) getNextTaskOfSequence(taskSequence *keptnv2.Sequence, previousTask string) (*keptnv2.Task, error) {
+	if len(taskSequence.Tasks) == 0 {
+		sc.logger.Info("Task sequence " + taskSequence.Name + " does not contain any tasks.")
+		return nil, errNoFurtherTaskForSequence
+	}
+	if previousTask == "" {
+		sc.logger.Info("Returning first task of task sequence " + taskSequence.Name)
+		return &taskSequence.Tasks[0], nil
+	}
+	sc.logger.Info("Getting task that should be executed after task " + previousTask)
+	for index := range taskSequence.Tasks {
+		if taskSequence.Tasks[index].Name == previousTask {
+			if len(taskSequence.Tasks) > index+1 {
+				sc.logger.Info("found next task: " + taskSequence.Tasks[index+1].Name)
+				return &taskSequence.Tasks[index+1], nil
+			}
+			break
+		}
+	}
+	sc.logger.Info("No further tasks detected")
+	return nil, errNoFurtherTaskForSequence
+}
+
+func (sc *shipyardController) sendTaskSequenceTriggeredEvent(keptnContext string, eventScope *eventScope, taskSequenceName string) error {
+
+	eventPayload := map[string]interface{}{}
+
+	eventPayload["project"] = eventScope.Project
+	eventPayload["stage"] = eventScope.Stage
+	eventPayload["service"] = eventScope.Service
+
+	source, _ := url.Parse("shipyard-controller")
+	contentType := "application/json"
+	eventType := eventScope.Stage + "." + taskSequenceName
+	event := cloudevents.Event{
+		Context: cloudevents.EventContextV02{
+			ID:          uuid.New().String(),
+			Time:        &types.Timestamp{Time: time.Now()},
+			Type:        keptnv2.GetTriggeredEventType(eventType),
+			Source:      types.URLRef{URL: *source},
+			ContentType: &contentType,
+			Extensions:  map[string]interface{}{"shkeptncontext": keptnContext},
+		}.AsV02(),
+		Data: eventPayload,
+	}
+
+	k, err := keptn.NewKeptn(&event, keptn.KeptnOpts{})
+	if err != nil {
+		sc.logger.Error("Could not initialize Keptn handler: " + err.Error())
+		return nil
+	}
+	err = k.SendCloudEvent(event)
+	if err != nil {
+		sc.logger.Error("Could not send CloudEvent: " + err.Error())
+		return err
+	}
+	return nil
+}
+
+func (sc *shipyardController) sendTaskSequenceFinishedEvent(keptnContext string, eventScope *eventScope, taskSequenceName string) error {
+
+	eventPayload := map[string]interface{}{}
+
+	eventPayload["project"] = eventScope.Project
+	eventPayload["stage"] = eventScope.Stage
+	eventPayload["service"] = eventScope.Service
+
+	source, _ := url.Parse("shipyard-controller")
+	contentType := "application/json"
+	eventType := eventScope.Stage + "." + taskSequenceName
+	event := cloudevents.Event{
+		Context: cloudevents.EventContextV02{
+			ID:          uuid.New().String(),
+			Time:        &types.Timestamp{Time: time.Now()},
+			Type:        keptnv2.GetFinishedEventType(eventType),
+			Source:      types.URLRef{URL: *source},
+			ContentType: &contentType,
+			Extensions:  map[string]interface{}{"shkeptncontext": keptnContext},
+		}.AsV02(),
+		Data: eventPayload,
+	}
+
+	k, err := keptn.NewKeptn(&event, keptn.KeptnOpts{})
+	if err != nil {
+		sc.logger.Error("Could not initialize Keptn handler: " + err.Error())
+		return nil
+	}
+	err = k.SendCloudEvent(event)
+	if err != nil {
+		sc.logger.Error("Could not send CloudEvent: " + err.Error())
+		return err
+	}
+	return nil
+}
+
+func (sc *shipyardController) sendTaskTriggeredEvent(keptnContext string, eventScope *eventScope, taskSequenceName string, task keptnv2.Task, properties map[string]interface{}) error {
+
+	eventPayload := map[string]interface{}{}
+
+	eventPayload["project"] = eventScope.Project
+	eventPayload["stage"] = eventScope.Stage
+	eventPayload["service"] = eventScope.Service
+
+	eventPayload[task.Name] = task.Properties
+
+	if properties != nil {
+		for k, v := range properties {
+			eventPayload[k] = v
+		}
+	}
+
+	source, _ := url.Parse("shipyard-controller")
+	contentType := "application/json"
+	event := cloudevents.Event{
+		Context: cloudevents.EventContextV02{
+			ID:          uuid.New().String(),
+			Time:        &types.Timestamp{Time: time.Now()},
+			Type:        keptnv2.GetTriggeredEventType(task.Name),
+			Source:      types.URLRef{URL: *source},
+			ContentType: &contentType,
+			Extensions:  map[string]interface{}{"shkeptncontext": keptnContext},
+		}.AsV02(),
+		Data: eventPayload,
+	}
+
+	marshal, _ := json.Marshal(event)
+
+	storeEvent := &models.Event{}
+	err := json.Unmarshal(marshal, &storeEvent)
+	if err != nil {
+		sc.logger.Error("could not transform CloudEvent for storage in mongodb: " + err.Error())
+		return err
+	}
+
+	err = sc.eventRepo.InsertEvent(eventScope.Project, *storeEvent, db.TriggeredEvent)
+	if err != nil {
+		sc.logger.Error("Could not store event: " + err.Error())
+		return err
+	}
+
+	err = sc.taskSequenceRepo.CreateTaskSequenceMapping(eventScope.Project, models.TaskSequenceEvent{
+		TaskSequenceName: taskSequenceName,
+		TriggeredEventID: event.ID(),
+		Stage:            eventScope.Stage,
+		KeptnContext:     keptnContext,
+	})
+	if err != nil {
+		sc.logger.Error("Could not store mapping between eventID and task: " + err.Error())
+		return err
+	}
+
+	k, err := keptn.NewKeptn(&event, keptn.KeptnOpts{})
+	if err != nil {
+		sc.logger.Error("Could not initialize Keptn handler: " + err.Error())
+		return nil
+	}
+	err = k.SendCloudEvent(event)
+	if err != nil {
+		sc.logger.Error("Could not send CloudEvent: " + err.Error())
+		return err
+	}
+	return nil
 }

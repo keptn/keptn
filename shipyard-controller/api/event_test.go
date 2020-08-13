@@ -46,7 +46,7 @@ func (p projectRepoMock) GetProjects() ([]string, error) {
 func getTestTriggeredEvent() models.Event {
 	return models.Event{
 		Contenttype:    "application/json",
-		Data:           eventData{Project: "test-project"},
+		Data:           eventScope{Project: "test-project"},
 		Extensions:     nil,
 		ID:             "test-triggered-id",
 		Shkeptncontext: "test-context",
@@ -61,7 +61,7 @@ func getTestTriggeredEvent() models.Event {
 func getTestStartedEvent() models.Event {
 	return models.Event{
 		Contenttype:    "application/json",
-		Data:           eventData{Project: "test-project"},
+		Data:           eventScope{Project: "test-project"},
 		Extensions:     nil,
 		ID:             "test-started-id",
 		Shkeptncontext: "test-context",
@@ -76,7 +76,7 @@ func getTestStartedEvent() models.Event {
 func getTestStartedEventWithUnmatchedTriggeredID() models.Event {
 	return models.Event{
 		Contenttype:    "application/json",
-		Data:           eventData{Project: "test-project"},
+		Data:           eventScope{Project: "test-project"},
 		Extensions:     nil,
 		ID:             "test-started-id",
 		Shkeptncontext: "test-context",
@@ -91,7 +91,7 @@ func getTestStartedEventWithUnmatchedTriggeredID() models.Event {
 func getTestFinishedEvent() models.Event {
 	return models.Event{
 		Contenttype:    "application/json",
-		Data:           eventData{Project: "test-project"},
+		Data:           eventScope{Project: "test-project"},
 		Extensions:     nil,
 		ID:             "test-finished-id",
 		Shkeptncontext: "test-context",
@@ -106,7 +106,7 @@ func getTestFinishedEvent() models.Event {
 func getTestFinishedEventWithUnmatchedSource() models.Event {
 	return models.Event{
 		Contenttype:    "application/json",
-		Data:           eventData{Project: "test-project"},
+		Data:           eventScope{Project: "test-project"},
 		Extensions:     nil,
 		ID:             "test-finished-id",
 		Shkeptncontext: "test-context",
@@ -268,22 +268,22 @@ func Test_eventManager_HandleTriggeredEvent(t *testing.T) {
 	}
 }
 
-func Test_getEventProject(t *testing.T) {
+func Test_getEventScope(t *testing.T) {
 	type args struct {
 		event models.Event
 	}
 	tests := []struct {
 		name    string
 		args    args
-		want    string
+		want    *eventScope
 		wantErr bool
 	}{
 		{
-			name: "get project name",
+			name: "get event scope",
 			args: args{
 				event: models.Event{
 					Contenttype:    "",
-					Data:           eventData{Project: "sockshop"},
+					Data:           eventScope{Project: "sockshop", Stage: "dev", Service: "carts"},
 					Extensions:     nil,
 					ID:             "",
 					Shkeptncontext: "",
@@ -294,8 +294,27 @@ func Test_getEventProject(t *testing.T) {
 					Type:           nil,
 				},
 			},
-			want:    "sockshop",
+			want:    &eventScope{Project: "sockshop", Stage: "dev", Service: "carts"},
 			wantErr: false,
+		},
+		{
+			name: "only project available, stage and service missing",
+			args: args{
+				event: models.Event{
+					Contenttype:    "",
+					Data:           eventScope{Project: "sockshop"},
+					Extensions:     nil,
+					ID:             "",
+					Shkeptncontext: "",
+					Source:         nil,
+					Specversion:    "",
+					Time:           "",
+					Triggeredid:    "",
+					Type:           nil,
+				},
+			},
+			want:    nil,
+			wantErr: true,
 		},
 		{
 			name: "empty data",
@@ -313,7 +332,7 @@ func Test_getEventProject(t *testing.T) {
 					Type:           nil,
 				},
 			},
-			want:    "",
+			want:    nil,
 			wantErr: true,
 		},
 		{
@@ -332,19 +351,19 @@ func Test_getEventProject(t *testing.T) {
 					Type:           nil,
 				},
 			},
-			want:    "",
+			want:    nil,
 			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := getEventProject(tt.args.event)
+			got, err := getEventScope(tt.args.event)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("getEventProject() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("getEventScope() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if got != tt.want {
-				t.Errorf("getEventProject() got = %v, want %v", got, tt.want)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getEventScope() got = %v, want %v", got, tt.want)
 			}
 		})
 	}

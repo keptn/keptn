@@ -1,5 +1,12 @@
 package db
 
+import "github.com/keptn/keptn/shipyard-controller/models"
+
 type TaskSequenceRepo interface {
-	GetTaskSequence(project, triggeredID string) (string, error)
+	// GetTaskSequence godoc
+	GetTaskSequence(project, triggeredID string) (*models.TaskSequenceEvent, error)
+	// CreateTaskSequenceMapping godoc
+	CreateTaskSequenceMapping(project string, taskSequenceEvent models.TaskSequenceEvent) error
+	// DeleteTaskSequenceMapping godoc
+	DeleteTaskSequenceMapping(keptnContext, project, stage, taskSequenceName string) error
 }
