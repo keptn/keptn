@@ -22,7 +22,7 @@ type GitCredentials struct {
 	RemoteURI string `json:"remoteURI,omitempty"`
 }
 
-var namespace = os.Getenv("API_POD_NAMESPACE")
+var namespace = os.Getenv("POD_NAMESPACE")
 
 // CloneRepo clones an upstream repository into a local folder "project" and returns
 // whether the Git repo is already initialized.
