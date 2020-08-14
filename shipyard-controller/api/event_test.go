@@ -1104,20 +1104,17 @@ func getTestShipyardController() *shipyardController {
 					if triggeredEventsCollection == nil || len(triggeredEventsCollection) == 0 {
 						return nil, db.ErrNoEventFound
 					}
-					// TODO: implement filtering
-					return triggeredEventsCollection, nil
+					return filterEvents(triggeredEventsCollection, filter)
 				} else if status == db.StartedEvent {
 					if startedEventsCollection == nil || len(startedEventsCollection) == 0 {
 						return nil, db.ErrNoEventFound
 					}
-					// TODO: implement filtering
-					return startedEventsCollection, nil
+					return filterEvents(startedEventsCollection, filter)
 				} else if status == db.FinishedEvent {
 					if finishedEventsCollection == nil || len(finishedEventsCollection) == 0 {
 						return nil, db.ErrNoEventFound
 					}
-					// TODO: implement filtering
-					return finishedEventsCollection, nil
+					return filterEvents(finishedEventsCollection, filter)
 				}
 				return nil, nil
 			},
@@ -1186,4 +1183,26 @@ func getTestShipyardController() *shipyardController {
 		logger: keptn.NewLogger("", "", ""),
 	}
 	return em
+}
+
+func filterEvents(eventsCollection []models.Event, filter db.EventFilter) ([]models.Event, error) {
+	result := []models.Event{}
+
+	for _, event := range eventsCollection {
+		scope, _ := getEventScope(event)
+		if *event.Type != filter.Type {
+			continue
+		}
+		if filter.Stage != nil && *filter.Stage != scope.Stage {
+			continue
+		}
+		if filter.Service != nil && *filter.Service != scope.Service {
+			continue
+		}
+		if filter.TriggeredID != nil && *filter.TriggeredID != event.Triggeredid {
+			continue
+		}
+		result = append(result, event)
+	}
+	return result, nil
 }
