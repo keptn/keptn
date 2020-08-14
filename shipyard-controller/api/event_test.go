@@ -1,11 +1,14 @@
 package api
 
 import (
+	"encoding/json"
 	"errors"
 	"github.com/go-test/deep"
 	keptn "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
+	"net/http"
+	"net/http/httptest"
 	"reflect"
 	"testing"
 	"time"
@@ -46,7 +49,7 @@ func (p projectRepoMock) GetProjects() ([]string, error) {
 func getTestTriggeredEvent() models.Event {
 	return models.Event{
 		Contenttype:    "application/json",
-		Data:           eventScope{Project: "test-project"},
+		Data:           eventScope{Project: "test-project", Stage: "dev", Service: "carts"},
 		Extensions:     nil,
 		ID:             "test-triggered-id",
 		Shkeptncontext: "test-context",
@@ -61,7 +64,7 @@ func getTestTriggeredEvent() models.Event {
 func getTestStartedEvent() models.Event {
 	return models.Event{
 		Contenttype:    "application/json",
-		Data:           eventScope{Project: "test-project"},
+		Data:           eventScope{Project: "test-project", Stage: "dev", Service: "carts"},
 		Extensions:     nil,
 		ID:             "test-started-id",
 		Shkeptncontext: "test-context",
@@ -76,7 +79,7 @@ func getTestStartedEvent() models.Event {
 func getTestStartedEventWithUnmatchedTriggeredID() models.Event {
 	return models.Event{
 		Contenttype:    "application/json",
-		Data:           eventScope{Project: "test-project"},
+		Data:           eventScope{Project: "test-project", Stage: "dev", Service: "carts"},
 		Extensions:     nil,
 		ID:             "test-started-id",
 		Shkeptncontext: "test-context",
@@ -91,7 +94,7 @@ func getTestStartedEventWithUnmatchedTriggeredID() models.Event {
 func getTestFinishedEvent() models.Event {
 	return models.Event{
 		Contenttype:    "application/json",
-		Data:           eventScope{Project: "test-project"},
+		Data:           eventScope{Project: "test-project", Stage: "dev", Service: "carts"},
 		Extensions:     nil,
 		ID:             "test-finished-id",
 		Shkeptncontext: "test-context",
@@ -106,7 +109,7 @@ func getTestFinishedEvent() models.Event {
 func getTestFinishedEventWithUnmatchedSource() models.Event {
 	return models.Event{
 		Contenttype:    "application/json",
-		Data:           eventScope{Project: "test-project"},
+		Data:           eventScope{Project: "test-project", Stage: "dev", Service: "carts"},
 		Extensions:     nil,
 		ID:             "test-finished-id",
 		Shkeptncontext: "test-context",
@@ -783,6 +786,98 @@ func Test_eventManager_Scenario2(t *testing.T) {
 	if triggeredEvents != nil && len(triggeredEvents) > 0 {
 		t.Errorf("STEP 3 failed: got triggeredEvents = %v, want %v", triggeredEvents, wantEventsInTriggeredCollection)
 	}
+}
+
+const testShipyardFile = `apiVersion: spec.keptn.sh/0.2.0
+kind: Shipyard
+metadata:
+  name: test-shipyard
+spec:
+  stages:
+  - name: dev
+    sequences:
+    - name: artifact-delivery
+      tasks:
+      - name: deployment
+        properties:  
+          strategy: direct
+      - name: test
+        properties:
+          kind: functional
+      - name: evaluation 
+      - name: release 
+
+  - name: hardening
+    sequences:
+    - name: artifact-delivery
+      triggers:
+      - dev.artifact-delivery.finished
+      tasks:
+      - name: deployment
+        properties: 
+          strategy: blue_green_service
+      - name: test
+        properties:  
+          kind: performance
+      - name: evaluation
+      - name: release
+        
+  - name: production
+    sequences:
+    - name: artifact-delivery 
+      triggers:
+      - hardening.artifact-delivery.finished
+      tasks:
+      - name: deployment
+        properties:
+          strategy: blue_green
+      - name: release
+      
+    - name: remediation
+      tasks:
+      - name: remediation
+      - name: evaluation`
+
+func newMockConfigurationService() *httptest.Server {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(testShipyardFile))
+	}))
+	return ts
+}
+
+type mockEventBroker struct {
+	server           *httptest.Server
+	receivedEvents   []*models.Event
+	test             *testing.T
+	handleEventFunc  func(meb *mockEventBroker, event *models.Event)
+	verificationFunc func(meb *mockEventBroker)
+}
+
+func (meb *mockEventBroker) handleEvent(event *models.Event) {
+	meb.handleEventFunc(meb, event)
+}
+
+func newMockEventbroker(test *testing.T, handleEventFunc func(meb *mockEventBroker, event *models.Event), verificationFunc func(meb *mockEventBroker)) *mockEventBroker {
+	meb := &mockEventBroker{
+		server:           nil,
+		receivedEvents:   []*models.Event{},
+		test:             test,
+		handleEventFunc:  handleEventFunc,
+		verificationFunc: verificationFunc,
+	}
+
+	meb.server = httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		var b []byte
+		request.Body.Read(b)
+		defer request.Body.Close()
+		event := &models.Event{}
+
+		_ = json.Unmarshal(b, event)
+		meb.handleEventFunc(meb, event)
+	}))
+
+	return meb
 }
 
 func getTestEventManager(triggeredEventsCollection []models.Event, startedEventsCollection []models.Event) *shipyardController {

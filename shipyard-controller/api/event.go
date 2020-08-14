@@ -312,19 +312,19 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 		}
 
 		// get the taskSequence related to the triggeredID and proceed with the next task
-		sc.logger.Info("Retrieving task eventToSequence related to triggeredID " + event.Triggeredid)
+		sc.logger.Info("Retrieving task sequence related to triggeredID " + event.Triggeredid)
 		eventToSequence, err := sc.taskSequenceRepo.GetTaskSequence(eventScope.Project, event.Triggeredid)
 		if err != nil {
-			msg := "Could not retrieve task eventToSequence associated to eventID " + event.Triggeredid + ": " + err.Error()
+			msg := "Could not retrieve task sequence associated to eventID " + event.Triggeredid + ": " + err.Error()
 			sc.logger.Error(msg)
 			return errors.New(msg)
 		}
 
 		if eventToSequence == nil {
-			sc.logger.Info("No task eventToSequence associated with eventID " + event.Triggeredid + " found.")
+			sc.logger.Info("No task event associated with eventID " + event.Triggeredid + " found.")
 			return nil
 		}
-		sc.logger.Info("Task eventToSequence related to eventID " + event.Triggeredid + ": " + eventToSequence.Stage + "." + eventToSequence.TaskSequenceName)
+		sc.logger.Info("Task sequence related to eventID " + event.Triggeredid + ": " + eventToSequence.Stage + "." + eventToSequence.TaskSequenceName)
 		sc.logger.Info("Trying to fetch shipyard and get next task")
 		shipyard, err := sc.getShipyard(eventScope)
 		if err != nil {
@@ -531,7 +531,12 @@ func (sc *shipyardController) completeTaskSequence(keptnContext string, eventSco
 }
 
 func (sc *shipyardController) getShipyard(eventScope *eventScope) (*keptnv2.Shipyard, error) {
-	resourceHandler := keptnapi.NewResourceHandler("configuration-service:8080")
+	csEndpoint, err := keptn.GetServiceEndpoint("CONFIGURATION_SERVICE")
+	if err != nil {
+		sc.logger.Error("Could not get configuration-service URL: " + err.Error())
+		return nil, err
+	}
+	resourceHandler := keptnapi.NewResourceHandler(csEndpoint.String())
 	resource, err := resourceHandler.GetProjectResource(eventScope.Project, "shipyard.yaml")
 	if err != nil {
 		sc.logger.Error("Could not retrieve shipyard.yaml for project " + eventScope.Project + ": " + err.Error())
@@ -545,7 +550,7 @@ func (sc *shipyardController) getShipyard(eventScope *eventScope) (*keptnv2.Ship
 		return nil, err
 	}
 
-	if shipyard.ApiVersion != "0.2.0" {
+	if shipyard.ApiVersion != "0.2.0" && shipyard.ApiVersion != "spec.keptn.sh/0.2.0" {
 		sc.logger.Error("Invalid shipyard APIVersion " + shipyard.ApiVersion)
 		return nil, err
 	}
@@ -636,7 +641,14 @@ func (sc *shipyardController) sendTaskSequenceTriggeredEvent(keptnContext string
 		Data: eventPayload,
 	}
 
-	k, err := keptn.NewKeptn(&event, keptn.KeptnOpts{})
+	ebEndpoint, err := keptn.GetServiceEndpoint("eventbroker")
+	if err != nil {
+		sc.logger.Error("Could not get eventbroker endpoint: " + err.Error())
+		return nil
+	}
+	k, err := keptn.NewKeptn(&event, keptn.KeptnOpts{
+		EventBrokerURL: ebEndpoint.String(),
+	})
 	if err != nil {
 		sc.logger.Error("Could not initialize Keptn handler: " + err.Error())
 		return nil
