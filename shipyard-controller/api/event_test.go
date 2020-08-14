@@ -9,6 +9,7 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"reflect"
 	"testing"
 	"time"
@@ -34,6 +35,27 @@ func (t mockEventRepo) InsertEvent(project string, event models.Event, status db
 
 func (t mockEventRepo) DeleteEvent(project string, eventID string, status db.EventStatus) error {
 	return t.deleteEvent(project, eventID, status)
+}
+
+type mockTaskSequenceRepo struct {
+	getTaskSequence           func(project, triggeredID string) (*models.TaskSequenceEvent, error)
+	createTaskSequenceMapping func(project string, taskSequenceEvent models.TaskSequenceEvent) error
+	deleteTaskSequenceMapping func(keptnContext, project, stage, taskSequenceName string) error
+}
+
+// GetTaskSequence godoc
+func (mts mockTaskSequenceRepo) GetTaskSequence(project, triggeredID string) (*models.TaskSequenceEvent, error) {
+	return mts.getTaskSequence(project, triggeredID)
+}
+
+// CreateTaskSequenceMapping godoc
+func (mts mockTaskSequenceRepo) CreateTaskSequenceMapping(project string, taskSequenceEvent models.TaskSequenceEvent) error {
+	return mts.createTaskSequenceMapping(project, taskSequenceEvent)
+}
+
+// DeleteTaskSequenceMapping godoc
+func (mts mockTaskSequenceRepo) DeleteTaskSequenceMapping(keptnContext, project, stage, taskSequenceName string) error {
+	return mts.deleteTaskSequenceMapping(keptnContext, project, stage, taskSequenceName)
 }
 
 type getProjectsMock func() ([]string, error)
@@ -638,10 +660,24 @@ func Test_eventManager_getEvents(t *testing.T) {
 // integration test Scenario 1: all events received in expected order
 func Test_eventManager_Scenario1(t *testing.T) {
 
-	triggeredEventsCollection := []models.Event{}
-	startedEventsCollection := []models.Event{}
+	mockCS := newMockConfigurationService()
+	mockCS.Start()
+	defer mockCS.Close()
 
-	em := getTestEventManager(triggeredEventsCollection, startedEventsCollection)
+	os.Setenv("CONFIGURATION_SERVICE", mockCS.URL)
+
+	mockEV := newMockEventbroker(t,
+		func(meb *mockEventBroker, event *models.Event) {
+
+		},
+		func(meb *mockEventBroker) {
+
+		})
+	mockEV.server.Start()
+	defer mockEV.server.Close()
+	os.Setenv("EVENTBROKER", mockEV.server.URL)
+
+	em := getTestShipyardController()
 
 	// STEP 1: send a triggered event -> should be persisted in collection
 	triggeredEvent := getTestTriggeredEvent()
@@ -716,10 +752,24 @@ func Test_eventManager_Scenario2(t *testing.T) {
 	var triggeredEvent models.Event
 	var triggeredEvents []models.Event
 
-	triggeredEventsCollection := []models.Event{}
-	startedEventsCollection := []models.Event{}
+	mockCS := newMockConfigurationService()
+	mockCS.Start()
+	defer mockCS.Close()
 
-	em := getTestEventManager(triggeredEventsCollection, startedEventsCollection)
+	os.Setenv("CONFIGURATION_SERVICE", mockCS.URL)
+
+	mockEV := newMockEventbroker(t,
+		func(meb *mockEventBroker, event *models.Event) {
+
+		},
+		func(meb *mockEventBroker) {
+
+		})
+	mockEV.server.Start()
+	defer mockEV.server.Close()
+	os.Setenv("EVENTBROKER", mockEV.server.URL)
+
+	em := getTestShipyardController()
 
 	go func() {
 		<-time.After(2 * time.Second)
@@ -786,6 +836,164 @@ func Test_eventManager_Scenario2(t *testing.T) {
 	if triggeredEvents != nil && len(triggeredEvents) > 0 {
 		t.Errorf("STEP 3 failed: got triggeredEvents = %v, want %v", triggeredEvents, wantEventsInTriggeredCollection)
 	}
+}
+
+func Test_shipyardController_Scenario1(t *testing.T) {
+
+	_ = getTestShipyardController()
+
+	mockCS := newMockConfigurationService()
+	mockCS.Start()
+	defer mockCS.Close()
+
+	os.Setenv("CONFIGURATION_SERVICE", mockCS.URL)
+
+	mockEV := newMockEventbroker(t,
+		func(meb *mockEventBroker, event *models.Event) {
+			meb.receivedEvents = append(meb.receivedEvents, event)
+		},
+		func(meb *mockEventBroker) {
+
+		})
+	mockEV.server.Start()
+	defer mockEV.server.Close()
+	os.Setenv("EVENTBROKER", mockEV.server.URL)
+
+	// STEP 1
+	// send dev.artifact-delivery.triggered event
+
+	// check event broker -> should contain deployment.triggered event with properties: [deployment]
+
+	// check triggeredEvent Collection -> should contain deployment.triggered event
+
+	// STEP 2
+	// send deployment.started event
+
+	// check startedEvent collection -> should contain deployment.started event
+
+	// STEP 3
+	// send deployment.finished event
+
+	// check triggeredEvent collection -> should not contain deployment.triggered event anymore
+
+	// check startedEvent collection -> should not contain deployment.started event anymore
+
+	// check event broker -> should contain test.triggered event with properties: [deployment, test]
+
+	// STEP 4
+	// send test.started event
+
+	// check startedEvent collection -> should contain test.started
+
+	// STEP 5
+	// send test.finished event
+
+	// check triggeredEvent collection -> should not contain test.triggered event anymore
+
+	// check startedEvent collection -> should not contain test.started event anymore
+
+	// check event broker -> should contain evaluation.triggered event with properties: [deployment, test, evaluation]
+
+	// STEP 6
+	// send evaluation.started event
+
+	// check startedEvent collection -> should contain evaluation.started
+
+	// STEP 7
+	// send evaluation.finished event
+
+	// check triggeredEvent collection -> should not contain evaluation.triggered event anymore
+
+	// check startedEvent collection -> should not contain evaluation.started event anymore
+
+	// check event broker -> should contain release.triggered event with properties: [deployment, test, evaluation, release]
+
+	// STEP 8
+	// send release.started event
+
+	// check startedEvent collection -> should contain release.started
+
+	// STEP 9
+	// send release.finished event
+
+	// check triggeredEvent collection -> should not contain release.triggered event anymore
+
+	// check startedEvent collection -> should not contain release.started event anymore
+
+	// check event broker -> should contain dev.artifact-delivery.finished event
+
+	// check event broker -> should contain hardening.artifact-delivery.triggered event
+
+	// check event broker -> should contain deployment.triggered event with properties: [deployment]
+
+	// STEP 9.1
+	// send deployment.started event 1 with ID 1
+
+	// check startedEvent collection -> should contain deployment.started with ID 1
+
+	// STEP 9.2
+	// send deployment.started event 2 with ID 2
+
+	// check startedEvent collection -> should contain deployment.started with ID 2
+
+	// STEP 10.1
+	// send deployment.finished event 1 with ID 1
+
+	// check triggeredEvents collection -> should still contain deployment.triggered event
+
+	// check startedEvents collection -> should contain deployment.started 2, but not deployment.started 1
+
+	// check finishedEvents collection -> should contain deployment.finished 1
+
+	// check event broker: should not contain test.triggered
+
+	// STEP 10.2
+	// send deployment.finished event 1 with ID 1
+
+	// check triggeredEvents collection -> should not contain deployment.triggered event
+
+	// check startedEvents collection -> should not deployment.started
+
+	// check finishedEvents collection -> should not deployment.finished
+
+	// check event broker: should contain test.triggered with properties: [deployment{1,2}, test]
+
+	/*
+		case keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName):
+			triggered := keptnv2.DeploymentTriggeredEventData{}
+			b, _ := json.Marshal(event.Data)
+			_ = json.Unmarshal(b, triggered)
+
+			started := keptnv2.DeploymentStartedEventData{
+				EventData: triggered.EventData,
+			}
+			newType := keptnv2.GetStartedEventType(keptnv2.DeploymentTaskName)
+			event.Type = &newType
+			event.Data = started
+			sc.handleIncomingEvent(*event)
+
+			newType = keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName)
+			event.Type = &newType
+			event.Data = keptnv2.DeploymentFinishedEventData{
+				EventData: triggered.EventData,
+				Deployment: keptnv2.DeploymentData{
+					DeploymentURIsLocal:  []string{"test-uri-local"},
+					DeploymentURIsPublic: []string{"test-uri-public"},
+					DeploymentNames:      []string{"name-1"},
+					GitCommit:            "123",
+				},
+			}
+			sc.handleIncomingEvent(*event)
+			break
+		case keptnv2.GetTriggeredEventType(keptnv2.TestTaskName):
+			break
+		case keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName):
+			break
+		default:
+			break
+		}
+
+	*/
 }
 
 const testShipyardFile = `apiVersion: spec.keptn.sh/0.2.0
@@ -874,13 +1082,20 @@ func newMockEventbroker(test *testing.T, handleEventFunc func(meb *mockEventBrok
 		event := &models.Event{}
 
 		_ = json.Unmarshal(b, event)
-		meb.handleEventFunc(meb, event)
+		go func() {
+			meb.handleEventFunc(meb, event)
+		}()
 	}))
 
 	return meb
 }
 
-func getTestEventManager(triggeredEventsCollection []models.Event, startedEventsCollection []models.Event) *shipyardController {
+func getTestShipyardController() *shipyardController {
+	triggeredEventsCollection := []models.Event{}
+	startedEventsCollection := []models.Event{}
+	finishedEventsCollection := []models.Event{}
+	taskSequenceCollection := []models.TaskSequenceEvent{}
+
 	em := &shipyardController{
 		projectRepo: nil,
 		eventRepo: &mockEventRepo{
@@ -889,12 +1104,20 @@ func getTestEventManager(triggeredEventsCollection []models.Event, startedEvents
 					if triggeredEventsCollection == nil || len(triggeredEventsCollection) == 0 {
 						return nil, db.ErrNoEventFound
 					}
+					// TODO: implement filtering
 					return triggeredEventsCollection, nil
 				} else if status == db.StartedEvent {
 					if startedEventsCollection == nil || len(startedEventsCollection) == 0 {
 						return nil, db.ErrNoEventFound
 					}
+					// TODO: implement filtering
 					return startedEventsCollection, nil
+				} else if status == db.FinishedEvent {
+					if finishedEventsCollection == nil || len(finishedEventsCollection) == 0 {
+						return nil, db.ErrNoEventFound
+					}
+					// TODO: implement filtering
+					return finishedEventsCollection, nil
 				}
 				return nil, nil
 			},
@@ -903,6 +1126,8 @@ func getTestEventManager(triggeredEventsCollection []models.Event, startedEvents
 					triggeredEventsCollection = append(triggeredEventsCollection, event)
 				} else if status == db.StartedEvent {
 					startedEventsCollection = append(startedEventsCollection, event)
+				} else if status == db.FinishedEvent {
+					finishedEventsCollection = append(finishedEventsCollection, event)
 				}
 				return nil
 			},
@@ -921,11 +1146,44 @@ func getTestEventManager(triggeredEventsCollection []models.Event, startedEvents
 							return nil
 						}
 					}
+				} else if status == db.FinishedEvent {
+					for index, event := range finishedEventsCollection {
+						if event.ID == eventID {
+							finishedEventsCollection = append(finishedEventsCollection[:index], finishedEventsCollection[index+1:]...)
+							return nil
+						}
+					}
 				}
 				return nil
 			},
 		},
-		logger: nil,
+		taskSequenceRepo: &mockTaskSequenceRepo{
+			getTaskSequence: func(project, triggeredID string) (*models.TaskSequenceEvent, error) {
+				for _, ts := range taskSequenceCollection {
+					if ts.TriggeredEventID == triggeredID {
+						return &ts, nil
+					}
+				}
+				return nil, nil
+			},
+			createTaskSequenceMapping: func(project string, taskSequenceEvent models.TaskSequenceEvent) error {
+				taskSequenceCollection = append(taskSequenceCollection, taskSequenceEvent)
+				return nil
+			},
+			deleteTaskSequenceMapping: func(keptnContext, project, stage, taskSequenceName string) error {
+				newTaskSequenceCollection := []models.TaskSequenceEvent{}
+
+				for index, ts := range taskSequenceCollection {
+					if ts.KeptnContext == keptnContext && ts.Stage == stage && ts.TaskSequenceName == taskSequenceName {
+						continue
+					}
+					newTaskSequenceCollection = append(newTaskSequenceCollection, taskSequenceCollection[index])
+				}
+				taskSequenceCollection = newTaskSequenceCollection
+				return nil
+			},
+		},
+		logger: keptn.NewLogger("", "", ""),
 	}
 	return em
 }
