@@ -33,7 +33,7 @@ echo "Checking dev deployment"
 echo ""
 
 wait_for_deployment_in_namespace "carts-db" "$PROJECT-dev"
-wait_for_deployment_in_namespace "carts" "$PROJECT-dev"
+wait_for_deployment_with_image_in_namespace "carts" "$PROJECT-dev" ${ARTIFACT_IMAGE}:$ARTIFACT_IMAGE_TAG
 verify_pod_in_namespace "carts" "$PROJECT-dev"
 verify_test_step $? "Pod carts not found, exiting..."
 verify_pod_in_namespace "carts-db" "$PROJECT-dev"
@@ -62,7 +62,7 @@ echo "Checking staging deployment"
 echo ""
 
 wait_for_deployment_in_namespace "carts-db" "$PROJECT-staging"
-wait_for_deployment_in_namespace "carts" "$PROJECT-staging"
+wait_for_deployment_with_image_in_namespace "carts" "$PROJECT-staging" ${ARTIFACT_IMAGE}:$ARTIFACT_IMAGE_TAG
 verify_pod_in_namespace "carts" "$PROJECT-staging"
 verify_test_step $? "Pod carts not found, exiting..."
 verify_pod_in_namespace "carts-primary" "$PROJECT-staging"
@@ -93,7 +93,7 @@ echo "Checking production deployment"
 echo ""
 
 wait_for_deployment_in_namespace "carts-db" "$PROJECT-production"
-wait_for_deployment_in_namespace "carts" "$PROJECT-production"
+wait_for_deployment_with_image_in_namespace "carts" "$PROJECT-production" ${ARTIFACT_IMAGE}:$ARTIFACT_IMAGE_TAG
 verify_pod_in_namespace "carts" "$PROJECT-production"
 verify_test_step $? "Pod carts not found, exiting..."
 verify_pod_in_namespace "carts-primary" "$PROJECT-production"
