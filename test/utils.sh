@@ -180,7 +180,7 @@ function wait_for_deployment_in_namespace() {
     DEPLOYMENT_LIST=$(eval "kubectl get deployments -n ${NAMESPACE} | awk '/$DEPLOYMENT /'" | awk '{print $1}') # list of multiple deployments when starting with the same name
     if [[ -z "$DEPLOYMENT_LIST" ]]; then
       RETRY=$[$RETRY+1]
-      echo "Retry: ${RETRY}/${RETRY_MAX} - Wait 10s for deployment ${DEPLOYMENT} in namespace ${NAMESPACE}"
+      echo "Retry: ${RETRY}/${RETRY_MAX} - Wait 15s for deployment ${DEPLOYMENT} in namespace ${NAMESPACE}"
       sleep 15
     else
       READY_REPLICAS=$(eval kubectl get deployments $DEPLOYMENT -n $NAMESPACE -o=jsonpath='{$.status.availableReplicas}')
@@ -193,6 +193,36 @@ function wait_for_deployment_in_namespace() {
           echo "Retry: ${RETRY}/${RETRY_MAX} - Wait 15s for deployment ${DEPLOYMENT} in namespace ${NAMESPACE}"
           sleep 15
       fi
+    fi
+  done
+
+  if [[ $RETRY == $RETRY_MAX ]]; then
+    echo "Error: Could not find deployment ${DEPLOYMENT} in namespace ${NAMESPACE}"
+    exit 1
+  fi
+}
+
+function wait_for_deployment_with_image_in_namespace() {
+  DEPLOYMENT=$1; NAMESPACE=$2;  IMAGE=$3
+  RETRY=0; RETRY_MAX=50;
+
+  while [[ $RETRY -lt $RETRY_MAX ]]; do
+    DEPLOYMENT_IMAGE=$(eval kubectl get deployment $DEPLOYMENT -n $NAMESPACE -o=jsonpath='{$.spec.template.spec.containers[:1].image}' --ignore-not-found)
+    if [[ "$IMAGE" != "$DEPLOYMENT_IMAGE" ]]; then
+        RETRY=$[$RETRY+1]
+        echo "Retry: ${RETRY}/${RETRY_MAX} - Wait 15s for deployment ${DEPLOYMENT} in namespace ${NAMESPACE}"
+        sleep 15
+    else
+        READY_REPLICAS=$(eval kubectl get deployments $DEPLOYMENT -n $NAMESPACE -o=jsonpath='{$.status.availableReplicas}')
+        WANTED_REPLICAS=$(eval kubectl get deployments $DEPLOYMENT  -n $NAMESPACE -o=jsonpath='{$.spec.replicas}')
+        if [[ "$READY_REPLICAS" = "$WANTED_REPLICAS" ]]; then
+          echo "Found deployment ${DEPLOYMENT} in namespace ${NAMESPACE}"
+          break
+        else
+          RETRY=$[$RETRY+1]
+          echo "Retry: ${RETRY}/${RETRY_MAX} - Wait 15s for deployment ${DEPLOYMENT} in namespace ${NAMESPACE}"
+          sleep 15
+        fi
     fi
   done
 
@@ -289,4 +319,35 @@ function wait_for_problem_open_event() {
     echo "Error: Could not find problem.open event for service ${SERVICE} in project ${PROJECT}"
     exit 1
   fi
+}
+
+function wait_for_event_with_field_output() {
+  EVENT=$1; FIELD=$2; OUTPUT=$3; PROJECT=$4;
+
+  RETRY=0; RETRY_MAX=50;
+
+  while [[ $RETRY -lt $RETRY_MAX ]]; do
+    EVENT_ENTRY=$(keptn get event ${EVENT} --project ${PROJECT})
+    EVENT_DATA=$(echo "${EVENT_ENTRY}" | jq -r "${FIELD}" 2> /dev/null || true)
+
+    if [[ "$OUTPUT" != "$EVENT_DATA" ]]; then
+        RETRY=$[$RETRY+1]
+        echo "Retry: ${RETRY}/${RETRY_MAX} - Wait 15s for event ${EVENT} in project ${PROJECT}"
+        sleep 15
+    else
+        echo "Found event ${EVENT} in project ${PROJECT}"
+        break
+    fi
+  done
+
+  if [[ $RETRY == $RETRY_MAX ]]; then
+    echo "Error: Could not find event ${EVENT} in project ${PROJECT}"
+    exit 1
+  fi
+}
+
+function replace_value_in_yaml_file() {
+  OLDVAL=$1; NEWVAL=$2; FILE=$3
+
+  sed -i'.bak' -e "s#$OLDVAL#$NEWVAL#g" $FILE
 }
