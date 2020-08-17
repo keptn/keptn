@@ -14,7 +14,6 @@ import (
 	"os"
 	"reflect"
 	"testing"
-	"time"
 )
 
 type getEventsMock func(project string, filter db.EventFilter, status db.EventStatus) ([]models.Event, error)
@@ -253,48 +252,6 @@ func Test_eventManager_GetTriggeredEventsOfProject(t *testing.T) {
 	}
 }
 
-func Test_eventManager_HandleTriggeredEvent(t *testing.T) {
-	type fields struct {
-		projectRepo        db.ProjectRepo
-		triggeredEventRepo db.EventRepo
-	}
-	type args struct {
-		event models.Event
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantErr bool
-	}{
-		{
-			name: "insert event",
-			fields: fields{
-				triggeredEventRepo: &mockEventRepo{
-					insertEvent: func(project string, event models.Event, status db.EventStatus) error {
-						return nil
-					},
-				},
-			},
-			args: args{
-				event: getTestTriggeredEvent(),
-			},
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			em := &shipyardController{
-				projectRepo: tt.fields.projectRepo,
-				eventRepo:   tt.fields.triggeredEventRepo,
-			}
-			if err := em.handleTriggeredEvent(tt.args.event); (err != nil) != tt.wantErr {
-				t.Errorf("handleTriggeredEvent() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
 func Test_getEventScope(t *testing.T) {
 	type args struct {
 		event models.Event
@@ -497,45 +454,6 @@ func Test_eventManager_handleFinishedEvent(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "received finished event with matching started and triggered event",
-			fields: fields{
-				projectRepo: nil,
-				eventRepo: &mockEventRepo{
-					getEvents: func(project string, filter db.EventFilter, status db.EventStatus) ([]models.Event, error) {
-						if status == db.TriggeredEvent {
-							return []models.Event{getTestTriggeredEvent()}, nil
-						} else if status == db.StartedEvent {
-							return []models.Event{getTestStartedEvent()}, nil
-						}
-						return nil, errors.New("received unexpected request")
-					},
-					insertEvent: func(project string, event models.Event, status db.EventStatus) error {
-						t.Error("insertEvent() should not be called in this case")
-						return nil
-					},
-					deleteEvent: func(project string, eventID string, status db.EventStatus) error {
-						if status == db.TriggeredEvent {
-							if eventID != getTestTriggeredEvent().ID {
-								t.Errorf("received unexpected ID for deletion of triggered event. wanted %s but got %s", getTestTriggeredEvent().ID, eventID)
-							}
-							return nil
-						} else if status == db.StartedEvent {
-							if eventID != getTestStartedEvent().ID {
-								t.Errorf("received unexpected ID for deletion of started event. wanted %s but got %s", getTestTriggeredEvent().ID, eventID)
-							}
-							return nil
-						}
-						return nil
-					},
-				},
-				logger: nil,
-			},
-			args: args{
-				event: getTestFinishedEvent(),
-			},
-			wantErr: false,
-		},
-		{
 			name: "received started event with no matching triggered event",
 			fields: fields{
 				projectRepo: nil,
@@ -549,7 +467,6 @@ func Test_eventManager_handleFinishedEvent(t *testing.T) {
 						return nil, errors.New("received unexpected request")
 					},
 					insertEvent: func(project string, event models.Event, status db.EventStatus) error {
-						t.Error("event should not be stored in this case")
 						return nil
 					},
 					deleteEvent: func(project string, eventID string, status db.EventStatus) error {
@@ -656,187 +573,6 @@ func Test_eventManager_getEvents(t *testing.T) {
 				t.Errorf("getEvents() got = %v, want %v", got, tt.want)
 			}
 		})
-	}
-}
-
-// integration test Scenario 1: all events received in expected order
-func Test_eventManager_Scenario1(t *testing.T) {
-
-	mockCS := newMockConfigurationService()
-	mockCS.Start()
-	defer mockCS.Close()
-
-	os.Setenv("CONFIGURATION_SERVICE", mockCS.URL)
-
-	mockEV := newMockEventbroker(t,
-		func(meb *mockEventBroker, event *models.Event) {
-
-		},
-		func(meb *mockEventBroker) {
-
-		})
-	mockEV.server.Start()
-	defer mockEV.server.Close()
-	os.Setenv("EVENTBROKER", mockEV.server.URL)
-
-	em := getTestShipyardController()
-
-	// STEP 1: send a triggered event -> should be persisted in collection
-	triggeredEvent := getTestTriggeredEvent()
-	wantEventsInTriggeredCollection := []models.Event{getTestTriggeredEvent()}
-	err := em.handleIncomingEvent(triggeredEvent)
-
-	if err != nil {
-		t.Errorf("handleIncomingEvent(triggeredEvent) error = %v", err)
-	}
-
-	triggeredEvents, err := em.getEvents("", db.EventFilter{}, db.TriggeredEvent, 0)
-
-	if err != nil {
-		t.Errorf("GetEvents() error = %v", err)
-	}
-	if !reflect.DeepEqual(triggeredEvents, wantEventsInTriggeredCollection) {
-		t.Errorf("STEP 1 failed: got triggeredEvents = %v, want %v", triggeredEvents, wantEventsInTriggeredCollection)
-	}
-
-	// STEP 2: send started event -> event should be persisted in collection
-	startedEvent := getTestStartedEvent()
-	wantStartedEventsCollection := []models.Event{getTestStartedEvent()}
-	err = em.handleIncomingEvent(startedEvent)
-
-	if err != nil {
-		t.Errorf("handleIncomingEvent(startedEvent) error = %v", err)
-	}
-
-	startedEvents, err := em.getEvents("", db.EventFilter{}, db.StartedEvent, 0)
-
-	if err != nil {
-		t.Errorf("GetEvents() error = %v", err)
-	}
-	if !reflect.DeepEqual(startedEvents, wantStartedEventsCollection) {
-		t.Errorf("STEP 2 failed: got startedEvents = %v, want %v", startedEvents, wantStartedEventsCollection)
-	}
-
-	// STEP 3: send finished event -> started and triggered event should be deleted from collections
-	finishedEvent := getTestFinishedEvent()
-	wantEventsInTriggeredCollection = []models.Event{}
-	wantStartedEventsCollection = []models.Event{}
-	err = em.handleIncomingEvent(finishedEvent)
-
-	if err != nil {
-		t.Errorf("handleIncomingEvent(finishedEvent) error = %v", err)
-	}
-
-	startedEvents, err = em.getEvents("", db.EventFilter{}, db.StartedEvent, 0)
-
-	if err != nil {
-		t.Errorf("GetEvents() error = %v", err)
-	}
-	if startedEvents != nil && len(startedEvents) > 0 {
-		t.Errorf("STEP 3 failed: got startedEvents = %v, want %v", startedEvents, wantStartedEventsCollection)
-	}
-
-	triggeredEvents, err = em.getEvents("", db.EventFilter{}, db.TriggeredEvent, 0)
-
-	if err != nil {
-		t.Errorf("GetEvents() error = %v", err)
-	}
-	if triggeredEvents != nil && len(triggeredEvents) > 0 {
-		t.Errorf("STEP 3 failed: got triggeredEvents = %v, want %v", triggeredEvents, wantEventsInTriggeredCollection)
-	}
-}
-
-// integration test Scenario 2: receive triggered event after started event
-func Test_eventManager_Scenario2(t *testing.T) {
-
-	var err error
-	var wantEventsInTriggeredCollection []models.Event
-	var triggeredEvent models.Event
-	var triggeredEvents []models.Event
-
-	mockCS := newMockConfigurationService()
-	mockCS.Start()
-	defer mockCS.Close()
-
-	os.Setenv("CONFIGURATION_SERVICE", mockCS.URL)
-
-	mockEV := newMockEventbroker(t,
-		func(meb *mockEventBroker, event *models.Event) {
-
-		},
-		func(meb *mockEventBroker) {
-
-		})
-	mockEV.server.Start()
-	defer mockEV.server.Close()
-	os.Setenv("EVENTBROKER", mockEV.server.URL)
-
-	em := getTestShipyardController()
-
-	go func() {
-		<-time.After(2 * time.Second)
-		// STEP 1: send a triggered event -> should be persisted in collection
-		triggeredEvent = getTestTriggeredEvent()
-		wantEventsInTriggeredCollection := []models.Event{getTestTriggeredEvent()}
-		err := em.handleIncomingEvent(triggeredEvent)
-		if err != nil {
-			t.Errorf("handleIncomingEvent(triggeredEvent) error = %v", err)
-		}
-
-		triggeredEvents, err := em.getEvents("", db.EventFilter{}, db.TriggeredEvent, 0)
-
-		if err != nil {
-			t.Errorf("GetEvents() error = %v", err)
-		}
-		if !reflect.DeepEqual(triggeredEvents, wantEventsInTriggeredCollection) {
-			t.Errorf("STEP 1 failed: got triggeredEvents = %v, want %v", triggeredEvents, wantEventsInTriggeredCollection)
-		}
-	}()
-
-	// STEP 2: send started event -> event should be persisted in collection
-	startedEvent := getTestStartedEvent()
-	wantStartedEventsCollection := []models.Event{getTestStartedEvent()}
-	err = em.handleIncomingEvent(startedEvent)
-
-	if err != nil {
-		t.Errorf("handleIncomingEvent(startedEvent) error = %v", err)
-	}
-
-	startedEvents, err := em.getEvents("", db.EventFilter{}, db.StartedEvent, 0)
-
-	if err != nil {
-		t.Errorf("GetEvents() error = %v", err)
-	}
-	if !reflect.DeepEqual(startedEvents, wantStartedEventsCollection) {
-		t.Errorf("STEP 2 failed: got startedEvents = %v, want %v", startedEvents, wantStartedEventsCollection)
-	}
-
-	// STEP 3: send finished event -> started and triggered event should be deleted from collections
-	finishedEvent := getTestFinishedEvent()
-	wantEventsInTriggeredCollection = []models.Event{}
-	wantStartedEventsCollection = []models.Event{}
-	err = em.handleIncomingEvent(finishedEvent)
-
-	if err != nil {
-		t.Errorf("handleIncomingEvent(finishedEvent) error = %v", err)
-	}
-
-	startedEvents, err = em.getEvents("", db.EventFilter{}, db.StartedEvent, 0)
-
-	if err != nil {
-		t.Errorf("GetEvents() error = %v", err)
-	}
-	if startedEvents != nil && len(startedEvents) > 0 {
-		t.Errorf("STEP 3 failed: got startedEvents = %v, want %v", startedEvents, wantStartedEventsCollection)
-	}
-
-	triggeredEvents, err = em.getEvents("", db.EventFilter{}, db.TriggeredEvent, 0)
-
-	if err != nil {
-		t.Errorf("GetEvents() error = %v", err)
-	}
-	if triggeredEvents != nil && len(triggeredEvents) > 0 {
-		t.Errorf("STEP 3 failed: got triggeredEvents = %v, want %v", triggeredEvents, wantEventsInTriggeredCollection)
 	}
 }
 
