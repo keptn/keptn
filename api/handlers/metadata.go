@@ -27,7 +27,7 @@ func GetMetadataHandlerFunc(params metadata.MetadataParams, pricipal *models.Pri
 	logger.Info("API received a GET metadata event")
 
 	var namespace string
-	namespace = os.Getenv("API_POD_NAMESPACE")
+	namespace = os.Getenv("POD_NAMESPACE")
 
 	var checkDeployment bool
 	checkDeployment = true
