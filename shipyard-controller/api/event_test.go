@@ -591,14 +591,14 @@ func getArtifactDeliveryTriggeredEvent() models.Event {
 	}
 }
 
-func getStartedEvent(stage string, triggeredID string, eventType string) models.Event {
+func getStartedEvent(stage string, triggeredID string, eventType string, source string) models.Event {
 	return models.Event{
 		Contenttype:    "application/json",
 		Data:           eventScope{Project: "test-project", Stage: stage, Service: "carts"},
 		Extensions:     nil,
 		ID:             eventType + "-started-id",
 		Shkeptncontext: "test-context",
-		Source:         stringp("test-source"),
+		Source:         stringp(source),
 		Specversion:    "0.2",
 		Time:           "",
 		Triggeredid:    triggeredID,
@@ -606,7 +606,7 @@ func getStartedEvent(stage string, triggeredID string, eventType string) models.
 	}
 }
 
-func getDeploymentFinishedEvent(stage string, triggeredID string) models.Event {
+func getDeploymentFinishedEvent(stage string, triggeredID string, source string) models.Event {
 	return models.Event{
 		Contenttype: "application/json",
 		Data: keptnv2.DeploymentFinishedEventData{
@@ -627,7 +627,7 @@ func getDeploymentFinishedEvent(stage string, triggeredID string) models.Event {
 		Extensions:     nil,
 		ID:             "deployment-finished-id",
 		Shkeptncontext: "test-context",
-		Source:         stringp("test-source"),
+		Source:         stringp(source),
 		Specversion:    "0.2",
 		Time:           "",
 		Triggeredid:    triggeredID,
@@ -735,10 +735,10 @@ func shouldNotContainEvent(t *testing.T, events []models.Event, eventType string
 		if *event.Type == eventType {
 			scope, _ := getEventScope(event)
 			if stage == "" {
-				t.Errorf("event list does not contain event of type " + eventType)
+				t.Errorf("event list does contain event of type " + eventType)
 				return true
 			} else if stage != "" && scope.Stage == stage {
-				t.Errorf("event list does not contain event of type " + eventType)
+				t.Errorf("event list does contain event of type " + eventType)
 				return true
 			}
 		}
@@ -799,21 +799,21 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 
 	// STEP 2
 	// send deployment.started event
-	done = sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID)
+	done = sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "dev", "test-source")
 	if done {
 		return
 	}
 
 	// STEP 3
 	// send deployment.finished event
-	triggeredID, done = sendAndVerifyFinishedEvent(t, sc, getDeploymentFinishedEvent("dev", triggeredID), keptnv2.DeploymentTaskName, keptnv2.TestTaskName, mockEV, "")
+	triggeredID, done = sendAndVerifyFinishedEvent(t, sc, getDeploymentFinishedEvent("dev", triggeredID, "test-source"), keptnv2.DeploymentTaskName, keptnv2.TestTaskName, mockEV, "")
 	if done {
 		return
 	}
 
 	// STEP 4
 	// send test.started event
-	done = sendAndVerifyStartedEvent(t, sc, keptnv2.TestTaskName, triggeredID)
+	done = sendAndVerifyStartedEvent(t, sc, keptnv2.TestTaskName, triggeredID, "dev", "test-source")
 	if done {
 		return
 	}
@@ -826,7 +826,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 	}
 	// STEP 6
 	// send evaluation.started event
-	done = sendAndVerifyStartedEvent(t, sc, keptnv2.EvaluationTaskName, triggeredID)
+	done = sendAndVerifyStartedEvent(t, sc, keptnv2.EvaluationTaskName, triggeredID, "dev", "test-source")
 	if done {
 		return
 	}
@@ -840,7 +840,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 
 	// STEP 8
 	// send release.started event
-	done = sendAndVerifyStartedEvent(t, sc, keptnv2.ReleaseTaskName, triggeredID)
+	done = sendAndVerifyStartedEvent(t, sc, keptnv2.ReleaseTaskName, triggeredID, "dev", "test-source")
 	if done {
 		return
 	}
@@ -866,35 +866,31 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 
 	// STEP 9.1
 	// send deployment.started event 1 with ID 1
-
-	// check startedEvent collection -> should contain deployment.started with ID 1
+	done = sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "hardening", "test-source-1")
+	if done {
+		return
+	}
 
 	// STEP 9.2
 	// send deployment.started event 2 with ID 2
-
-	// check startedEvent collection -> should contain deployment.started with ID 2
+	done = sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "hardening", "test-source-2")
+	if done {
+		return
+	}
 
 	// STEP 10.1
 	// send deployment.finished event 1 with ID 1
-
-	// check triggeredEvents collection -> should still contain deployment.triggered event
-
-	// check startedEvents collection -> should contain deployment.started 2, but not deployment.started 1
-
-	// check finishedEvents collection -> should contain deployment.finished 1
-
-	// check event broker: should not contain test.triggered
+	done = sendAndVerifyPartialFinishedEvent(t, sc, getDeploymentFinishedEvent("hardening", triggeredID, "test-source-1"), keptnv2.DeploymentTaskName, keptnv2.ReleaseTaskName, mockEV, "")
+	if done {
+		return
+	}
 
 	// STEP 10.2
 	// send deployment.finished event 1 with ID 1
-
-	// check triggeredEvents collection -> should not contain deployment.triggered event
-
-	// check startedEvents collection -> should not deployment.started
-
-	// check finishedEvents collection -> should not deployment.finished
-
-	// check event broker: should contain test.triggered with properties: [deployment{1,2}, test]
+	triggeredID, done = sendAndVerifyFinishedEvent(t, sc, getDeploymentFinishedEvent("hardening", triggeredID, "test-source-2"), keptnv2.DeploymentTaskName, keptnv2.TestTaskName, mockEV, "")
+	if done {
+		return
+	}
 }
 
 func sendAndVerifyFinishedEvent(t *testing.T, sc *shipyardController, finishedEvent models.Event, eventType, nextEventType string, mockEV *mockEventBroker, nextStage string) (string, bool) {
@@ -936,10 +932,10 @@ func sendAndVerifyFinishedEvent(t *testing.T, sc *shipyardController, finishedEv
 
 	// check startedEvent collection -> should not contain <eventType>.started event anymore
 	startedEvents, _ := sc.eventRepo.GetEvents("test-project", db.EventFilter{
-		Type:        keptnv2.GetStartedEventType(keptnv2.EvaluationTaskName),
+		Type:        keptnv2.GetStartedEventType(eventType),
 		Stage:       &scope.Stage,
 		Service:     stringp("carts"),
-		TriggeredID: stringp(triggeredID),
+		TriggeredID: stringp(finishedEvent.Triggeredid),
 	}, db.StartedEvent)
 	done = shouldNotContainEvent(t, startedEvents, keptnv2.GetStartedEventType(eventType), scope.Stage)
 	if done {
@@ -954,20 +950,80 @@ func sendAndVerifyFinishedEvent(t *testing.T, sc *shipyardController, finishedEv
 	return triggeredID, false
 }
 
-func sendAndVerifyStartedEvent(t *testing.T, sc *shipyardController, taskName string, triggeredID string) bool {
-	err := sc.handleIncomingEvent(getStartedEvent("dev", triggeredID, taskName))
+func sendAndVerifyPartialFinishedEvent(t *testing.T, sc *shipyardController, finishedEvent models.Event, eventType, nextEventType string, mockEV *mockEventBroker, nextStage string) bool {
+	err := sc.handleIncomingEvent(finishedEvent)
 	if err != nil {
-		t.Errorf("STEP 2 failed: handleIncomingEvent(deployment.started) returned %v", err)
+		t.Errorf("STEP failed: handleIncomingEvent(%s) returned %v", *finishedEvent.Type, err)
+		return true
+	}
+
+	scope, _ := getEventScope(finishedEvent)
+	if nextStage == "" {
+		nextStage = scope.Stage
+	}
+	// check triggeredEvent collection -> should still contain <eventType>.triggered event
+	triggeredEvents, _ := sc.eventRepo.GetEvents("test-project", db.EventFilter{
+		Type:    keptnv2.GetTriggeredEventType(eventType),
+		Stage:   &scope.Stage,
+		Service: stringp("carts"),
+		Source:  stringp("shipyard-controller"),
+	}, db.TriggeredEvent)
+	done := shouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(eventType), nil, scope.Stage)
+	if done {
+		return true
+	}
+
+	// check triggeredEvent collection -> should not contain <nextEventType>.triggered event
+	triggeredEvents, _ = sc.eventRepo.GetEvents("test-project", db.EventFilter{
+		Type:    keptnv2.GetTriggeredEventType(nextEventType),
+		Stage:   &nextStage,
+		Service: stringp("carts"),
+		Source:  stringp("shipyard-controller"),
+	}, db.TriggeredEvent)
+
+	done = shouldNotContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(nextEventType), nextStage)
+	if done {
+		return true
+	}
+
+	// check startedEvent collection -> should still contain one <eventType>.started event
+	startedEvents, _ := sc.eventRepo.GetEvents("test-project", db.EventFilter{
+		Type:        keptnv2.GetStartedEventType(eventType),
+		Stage:       &scope.Stage,
+		Service:     stringp("carts"),
+		TriggeredID: stringp(finishedEvent.Triggeredid),
+	}, db.StartedEvent)
+	if len(startedEvents) != 1 {
+		t.Errorf("List of started events does not hold proper number of events. Expected 1 but got %d", len(startedEvents))
+		return true
+	}
+	done = shouldContainEvent(t, startedEvents, keptnv2.GetStartedEventType(eventType), nil, scope.Stage)
+	if done {
+		return true
+	}
+
+	// check event broker -> should not contain <nextEventType>.triggered event with properties
+	done = shouldNotContainEvent(t, mockEV.receivedEvents, keptnv2.GetTriggeredEventType(nextEventType), nextStage)
+	if done {
+		return true
+	}
+	return false
+}
+
+func sendAndVerifyStartedEvent(t *testing.T, sc *shipyardController, taskName string, triggeredID string, stage string, fromSource string) bool {
+	err := sc.handleIncomingEvent(getStartedEvent(stage, triggeredID, taskName, fromSource))
+	if err != nil {
+		t.Errorf("STEP failed: handleIncomingEvent(%s.started) returned %v", taskName, err)
 		return true
 	}
 	// check startedEvent collection -> should contain <taskName>.started event
 	startedEvents, _ := sc.eventRepo.GetEvents("test-project", db.EventFilter{
 		Type:        keptnv2.GetStartedEventType(taskName),
-		Stage:       stringp("dev"),
+		Stage:       stringp(stage),
 		Service:     stringp("carts"),
 		TriggeredID: stringp(triggeredID),
 	}, db.StartedEvent)
-	return shouldContainEvent(t, startedEvents, keptnv2.GetStartedEventType(taskName), nil, "")
+	return shouldContainEvent(t, startedEvents, keptnv2.GetStartedEventType(taskName), nil, stage)
 }
 
 const testShipyardResource = `{
