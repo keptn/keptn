@@ -363,7 +363,14 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 			finishedEventsData = append(finishedEventsData, tmp)
 		}
 
-		return sc.proceedTaskSequence(eventScope, sequence, event, shipyard, finishedEventsData)
+		split := strings.Split(trimmedEventType, ".")
+
+		if len(split) < 2 {
+			msg := "Could not determine task name "
+			sc.logger.Error(msg)
+			return errors.New(msg)
+		}
+		return sc.proceedTaskSequence(eventScope, sequence, event, shipyard, finishedEventsData, split[len(split)-2])
 	}
 	return nil
 }
@@ -459,8 +466,8 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 	// get stage and taskSequenceName - cannot tell if this is actually a task sequence triggered event though
 	var stageName, taskSequenceName string
 	if len(split) >= 3 {
-		taskSequenceName = split[len(split)-1]
-		stageName = split[len(split)-2]
+		taskSequenceName = split[len(split)-2]
+		stageName = split[len(split)-3]
 	}
 
 	shipyard, err := sc.getShipyard(eventScope)
@@ -479,11 +486,11 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 
 	eventScope.Stage = stageName
 
-	return sc.proceedTaskSequence(eventScope, taskSequence, event, shipyard, nil)
+	return sc.proceedTaskSequence(eventScope, taskSequence, event, shipyard, nil, "")
 }
 
-func (sc *shipyardController) proceedTaskSequence(eventScope *eventScope, taskSequence *keptnv2.Sequence, event models.Event, shipyard *keptnv2.Shipyard, previousFinishedEvents []interface{}) error {
-	task, err := sc.getNextTaskOfSequence(taskSequence, "")
+func (sc *shipyardController) proceedTaskSequence(eventScope *eventScope, taskSequence *keptnv2.Sequence, event models.Event, shipyard *keptnv2.Shipyard, previousFinishedEvents []interface{}, previousTask string) error {
+	task, err := sc.getNextTaskOfSequence(taskSequence, previousTask)
 	if err != nil && err == errNoFurtherTaskForSequence {
 		// task sequence completed -> send .finished event and check if a new task sequence should be triggered by the completion
 		err = sc.completeTaskSequence(event.Shkeptncontext, eventScope, taskSequence.Name)
@@ -511,7 +518,7 @@ func (sc *shipyardController) triggerNextTaskSequences(event models.Event, es *e
 			sc.logger.Error("could not send event " + newScope.Stage + "." + sequence.Sequence.Name + ".triggered: " + err.Error())
 			continue
 		}
-		err = sc.proceedTaskSequence(newScope, &sequence.Sequence, event, shipyard, nil)
+		err = sc.proceedTaskSequence(newScope, &sequence.Sequence, event, shipyard, nil, "")
 		if err != nil {
 			sc.logger.Error("could not proceed task sequence " + newScope.Stage + "." + sequence.Sequence.Name + ".triggered: " + err.Error())
 			continue
@@ -641,24 +648,7 @@ func (sc *shipyardController) sendTaskSequenceTriggeredEvent(keptnContext string
 		Data: eventPayload,
 	}
 
-	ebEndpoint, err := keptn.GetServiceEndpoint("eventbroker")
-	if err != nil {
-		sc.logger.Error("Could not get eventbroker endpoint: " + err.Error())
-		return nil
-	}
-	k, err := keptn.NewKeptn(&event, keptn.KeptnOpts{
-		EventBrokerURL: ebEndpoint.String(),
-	})
-	if err != nil {
-		sc.logger.Error("Could not initialize Keptn handler: " + err.Error())
-		return nil
-	}
-	err = k.SendCloudEvent(event)
-	if err != nil {
-		sc.logger.Error("Could not send CloudEvent: " + err.Error())
-		return err
-	}
-	return nil
+	return sc.sendEvent(event)
 }
 
 func (sc *shipyardController) sendTaskSequenceFinishedEvent(keptnContext string, eventScope *eventScope, taskSequenceName string) error {
@@ -684,17 +674,7 @@ func (sc *shipyardController) sendTaskSequenceFinishedEvent(keptnContext string,
 		Data: eventPayload,
 	}
 
-	k, err := keptn.NewKeptn(&event, keptn.KeptnOpts{})
-	if err != nil {
-		sc.logger.Error("Could not initialize Keptn handler: " + err.Error())
-		return nil
-	}
-	err = k.SendCloudEvent(event)
-	if err != nil {
-		sc.logger.Error("Could not send CloudEvent: " + err.Error())
-		return err
-	}
-	return nil
+	return sc.sendEvent(event)
 }
 
 func (sc *shipyardController) sendTaskTriggeredEvent(keptnContext string, eventScope *eventScope, taskSequenceName string, task keptnv2.Task, previousFinishedEvents []interface{}) error {
@@ -758,7 +738,18 @@ func (sc *shipyardController) sendTaskTriggeredEvent(keptnContext string, eventS
 		return err
 	}
 
-	k, err := keptn.NewKeptn(&event, keptn.KeptnOpts{})
+	return sc.sendEvent(event)
+}
+
+func (sc *shipyardController) sendEvent(event cloudevents.Event) error {
+	ebEndpoint, err := keptn.GetServiceEndpoint("EVENTBROKER")
+	if err != nil {
+		sc.logger.Error("Could not get eventbroker endpoint: " + err.Error())
+		return nil
+	}
+	k, err := keptn.NewKeptn(&event, keptn.KeptnOpts{
+		EventBrokerURL: ebEndpoint.String(),
+	})
 	if err != nil {
 		sc.logger.Error("Could not initialize Keptn handler: " + err.Error())
 		return nil

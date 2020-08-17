@@ -5,8 +5,10 @@ import (
 	"errors"
 	"github.com/go-test/deep"
 	keptn "github.com/keptn/go-utils/pkg/lib"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -838,47 +840,204 @@ func Test_eventManager_Scenario2(t *testing.T) {
 	}
 }
 
+func getArtifactDeliveryTriggeredEvent() models.Event {
+	return models.Event{
+		Contenttype:    "application/json",
+		Data:           eventScope{Project: "test-project", Stage: "dev", Service: "carts"},
+		Extensions:     nil,
+		ID:             "artifact-delivery-triggered-id",
+		Shkeptncontext: "test-context",
+		Source:         stringp("test-source"),
+		Specversion:    "0.2",
+		Time:           "",
+		Triggeredid:    "",
+		Type:           stringp("sh.keptn.event.dev.artifact-delivery.triggered"),
+	}
+}
+
+func getDeploymentStartedEvent(stage string, triggeredID string) models.Event {
+	return models.Event{
+		Contenttype:    "application/json",
+		Data:           eventScope{Project: "test-project", Stage: stage, Service: "carts"},
+		Extensions:     nil,
+		ID:             "artifact-delivery-triggered-id",
+		Shkeptncontext: "test-context",
+		Source:         stringp("test-source"),
+		Specversion:    "0.2",
+		Time:           "",
+		Triggeredid:    triggeredID,
+		Type:           stringp("sh.keptn.event.deployment.started"),
+	}
+}
+
+func getDeploymentFinishedEvent(stage string, triggeredID string) models.Event {
+	return models.Event{
+		Contenttype: "application/json",
+		Data: keptnv2.DeploymentFinishedEventData{
+			EventData: keptnv2.EventData{
+				Project: "test-project",
+				Stage:   stage,
+				Service: "carts",
+				Status:  keptnv2.StatusSucceeded,
+				Result:  keptnv2.ResultPass,
+			},
+			Deployment: keptnv2.DeploymentData{
+				DeploymentURIsLocal:  []string{"uri-1", "uri-2"},
+				DeploymentURIsPublic: []string{"public-uri-1", "public-uri-2"},
+				DeploymentNames:      []string{"deployment-1"},
+				GitCommit:            "commit-1",
+			},
+		},
+		Extensions:     nil,
+		ID:             "artifact-delivery-triggered-id",
+		Shkeptncontext: "test-context",
+		Source:         stringp("test-source"),
+		Specversion:    "0.2",
+		Time:           "",
+		Triggeredid:    triggeredID,
+		Type:           stringp("sh.keptn.event.deployment.finished"),
+	}
+}
+
+func shouldContainEvent(t *testing.T, events []models.Event, eventType string, properties map[string]interface{}) bool {
+	for _, event := range events {
+		if *event.Type == eventType {
+			return false
+		}
+	}
+
+	t.Errorf("event list does not contain event of type " + eventType)
+	return true
+}
+
+func shouldNotContainEvent(t *testing.T, events []models.Event, eventType string) bool {
+	for _, event := range events {
+		if *event.Type == eventType {
+			t.Errorf("event list does not contain event of type " + eventType)
+			return true
+		}
+	}
+	return false
+}
+
 func Test_shipyardController_Scenario1(t *testing.T) {
 
-	_ = getTestShipyardController()
+	sc := getTestShipyardController()
 
 	mockCS := newMockConfigurationService()
-	mockCS.Start()
 	defer mockCS.Close()
+
+	done := false
 
 	os.Setenv("CONFIGURATION_SERVICE", mockCS.URL)
 
 	mockEV := newMockEventbroker(t,
 		func(meb *mockEventBroker, event *models.Event) {
-			meb.receivedEvents = append(meb.receivedEvents, event)
+			meb.receivedEvents = append(meb.receivedEvents, *event)
 		},
 		func(meb *mockEventBroker) {
 
 		})
-	mockEV.server.Start()
 	defer mockEV.server.Close()
 	os.Setenv("EVENTBROKER", mockEV.server.URL)
 
 	// STEP 1
 	// send dev.artifact-delivery.triggered event
+	err := sc.handleIncomingEvent(getArtifactDeliveryTriggeredEvent())
+	if err != nil {
+		t.Errorf("STEP 1 failed: handleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
+		return
+	}
 
 	// check event broker -> should contain deployment.triggered event with properties: [deployment]
-
+	if len(mockEV.receivedEvents) != 1 {
+		t.Errorf("STEP 1 failed: expected %d events in eventbroker, but got %d", 1, len(mockEV.receivedEvents))
+		return
+	}
+	done = shouldContainEvent(t, mockEV.receivedEvents, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), nil)
+	if done {
+		return
+	}
 	// check triggeredEvent Collection -> should contain deployment.triggered event
+	triggeredEvents, _ := sc.eventRepo.GetEvents("test-project", db.EventFilter{
+		Type:    keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName),
+		Stage:   stringp("dev"),
+		Service: stringp("carts"),
+		Source:  stringp("shipyard-controller"),
+	}, db.TriggeredEvent)
+	done = shouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), nil)
+	if done {
+		return
+	}
+	triggeredID := triggeredEvents[0].ID
 
 	// STEP 2
 	// send deployment.started event
-
+	err = sc.handleIncomingEvent(getDeploymentStartedEvent("dev", triggeredID))
+	if err != nil {
+		t.Errorf("STEP 2 failed: handleIncomingEvent(deployment.started) returned %v", err)
+		return
+	}
 	// check startedEvent collection -> should contain deployment.started event
+	startedEvents, _ := sc.eventRepo.GetEvents("test-project", db.EventFilter{
+		Type:        keptnv2.GetStartedEventType(keptnv2.DeploymentTaskName),
+		Stage:       stringp("dev"),
+		Service:     stringp("carts"),
+		TriggeredID: stringp(triggeredID),
+	}, db.StartedEvent)
+	done = shouldContainEvent(t, startedEvents, keptnv2.GetStartedEventType(keptnv2.DeploymentTaskName), nil)
+	if done {
+		return
+	}
 
 	// STEP 3
 	// send deployment.finished event
-
+	err = sc.handleIncomingEvent(getDeploymentFinishedEvent("dev", triggeredID))
+	if err != nil {
+		t.Errorf("STEP 3 failed: handleIncomingEvent(deployment.finished) returned %v", err)
+		return
+	}
 	// check triggeredEvent collection -> should not contain deployment.triggered event anymore
+	triggeredEvents, _ = sc.eventRepo.GetEvents("test-project", db.EventFilter{
+		Type:    keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName),
+		Stage:   stringp("dev"),
+		Service: stringp("carts"),
+		Source:  stringp("shipyard-controller"),
+	}, db.TriggeredEvent)
+	done = shouldNotContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName))
+	if done {
+		return
+	}
+
+	// check triggeredEvent collection -> should contain test.triggered event
+	triggeredEvents, _ = sc.eventRepo.GetEvents("test-project", db.EventFilter{
+		Type:    keptnv2.GetTriggeredEventType(keptnv2.TestTaskName),
+		Stage:   stringp("dev"),
+		Service: stringp("carts"),
+		Source:  stringp("shipyard-controller"),
+	}, db.TriggeredEvent)
+	done = shouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(keptnv2.TestTaskName), nil)
+	if done {
+		return
+	}
 
 	// check startedEvent collection -> should not contain deployment.started event anymore
+	startedEvents, _ = sc.eventRepo.GetEvents("test-project", db.EventFilter{
+		Type:        keptnv2.GetStartedEventType(keptnv2.DeploymentTaskName),
+		Stage:       stringp("dev"),
+		Service:     stringp("carts"),
+		TriggeredID: stringp(triggeredID),
+	}, db.StartedEvent)
+	done = shouldNotContainEvent(t, startedEvents, keptnv2.GetStartedEventType(keptnv2.DeploymentTaskName))
+	if done {
+		return
+	}
 
 	// check event broker -> should contain test.triggered event with properties: [deployment, test]
+	done = shouldContainEvent(t, mockEV.receivedEvents, keptnv2.GetTriggeredEventType(keptnv2.TestTaskName), nil)
+	if done {
+		return
+	}
 
 	// STEP 4
 	// send test.started event
@@ -957,44 +1116,12 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 	// check finishedEvents collection -> should not deployment.finished
 
 	// check event broker: should contain test.triggered with properties: [deployment{1,2}, test]
-
-	/*
-		case keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName):
-			triggered := keptnv2.DeploymentTriggeredEventData{}
-			b, _ := json.Marshal(event.Data)
-			_ = json.Unmarshal(b, triggered)
-
-			started := keptnv2.DeploymentStartedEventData{
-				EventData: triggered.EventData,
-			}
-			newType := keptnv2.GetStartedEventType(keptnv2.DeploymentTaskName)
-			event.Type = &newType
-			event.Data = started
-			sc.handleIncomingEvent(*event)
-
-			newType = keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName)
-			event.Type = &newType
-			event.Data = keptnv2.DeploymentFinishedEventData{
-				EventData: triggered.EventData,
-				Deployment: keptnv2.DeploymentData{
-					DeploymentURIsLocal:  []string{"test-uri-local"},
-					DeploymentURIsPublic: []string{"test-uri-public"},
-					DeploymentNames:      []string{"name-1"},
-					GitCommit:            "123",
-				},
-			}
-			sc.handleIncomingEvent(*event)
-			break
-		case keptnv2.GetTriggeredEventType(keptnv2.TestTaskName):
-			break
-		case keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName):
-			break
-		default:
-			break
-		}
-
-	*/
 }
+
+const testShipyardResource = `{
+      "resourceContent": "YXBpVmVyc2lvbjogc3BlYy5rZXB0bi5zaC8wLjIuMApraW5kOiBTaGlweWFyZAptZXRhZGF0YToKICBuYW1lOiB0ZXN0LXNoaXB5YXJkCnNwZWM6CiAgc3RhZ2VzOgogIC0gbmFtZTogZGV2CiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5CiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IGRlcGxveW1lbnQKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBzdHJhdGVneTogZGlyZWN0CiAgICAgIC0gbmFtZTogdGVzdAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBraW5kOiBmdW5jdGlvbmFsCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbiAKICAgICAgLSBuYW1lOiByZWxlYXNlIAoKICAtIG5hbWU6IGhhcmRlbmluZwogICAgc2VxdWVuY2VzOgogICAgLSBuYW1lOiBhcnRpZmFjdC1kZWxpdmVyeQogICAgICB0cmlnZ2VyczoKICAgICAgLSBkZXYuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6IAogICAgICAgICAgc3RyYXRlZ3k6IGJsdWVfZ3JlZW5fc2VydmljZQogICAgICAtIG5hbWU6IHRlc3QKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBraW5kOiBwZXJmb3JtYW5jZQogICAgICAtIG5hbWU6IGV2YWx1YXRpb24KICAgICAgLSBuYW1lOiByZWxlYXNlCiAgICAgICAgCiAgLSBuYW1lOiBwcm9kdWN0aW9uCiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5IAogICAgICB0cmlnZ2VyczoKICAgICAgLSBoYXJkZW5pbmcuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBzdHJhdGVneTogYmx1ZV9ncmVlbgogICAgICAtIG5hbWU6IHJlbGVhc2UKICAgICAgCiAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbg==",
+      "resourceURI": "shipyard.yaml"
+    }`
 
 const testShipyardFile = `apiVersion: spec.keptn.sh/0.2.0
 kind: Shipyard
@@ -1049,14 +1176,14 @@ spec:
 func newMockConfigurationService() *httptest.Server {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(testShipyardFile))
+		w.Write([]byte(testShipyardResource))
 	}))
 	return ts
 }
 
 type mockEventBroker struct {
 	server           *httptest.Server
-	receivedEvents   []*models.Event
+	receivedEvents   []models.Event
 	test             *testing.T
 	handleEventFunc  func(meb *mockEventBroker, event *models.Event)
 	verificationFunc func(meb *mockEventBroker)
@@ -1069,22 +1196,20 @@ func (meb *mockEventBroker) handleEvent(event *models.Event) {
 func newMockEventbroker(test *testing.T, handleEventFunc func(meb *mockEventBroker, event *models.Event), verificationFunc func(meb *mockEventBroker)) *mockEventBroker {
 	meb := &mockEventBroker{
 		server:           nil,
-		receivedEvents:   []*models.Event{},
+		receivedEvents:   []models.Event{},
 		test:             test,
 		handleEventFunc:  handleEventFunc,
 		verificationFunc: verificationFunc,
 	}
 
 	meb.server = httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		var b []byte
-		request.Body.Read(b)
+		b, _ := ioutil.ReadAll(request.Body)
 		defer request.Body.Close()
 		event := &models.Event{}
 
 		_ = json.Unmarshal(b, event)
-		go func() {
-			meb.handleEventFunc(meb, event)
-		}()
+		meb.handleEventFunc(meb, event)
+
 	}))
 
 	return meb
