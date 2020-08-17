@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"time"
 
 	"helm.sh/helm/v3/pkg/chart"
-	authorizationv1 "k8s.io/api/authorization/v1"
 
 	cloudevents "github.com/cloudevents/sdk-go"
 
@@ -51,11 +51,19 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event, loggingDone chan bool) error
 		return err
 	}
 
+	// Check whether Helm chart is provided
+	if len(event.HelmChart) == 0 {
+		o.keptnHandler.Logger.Error("Event does not contain a Helm chart")
+		return nil
+	}
+
+	// Check service name
 	if err := o.checkAndSetServiceName(event); err != nil {
 		o.keptnHandler.Logger.Error(fmt.Sprintf("Invalid service name: %s", err.Error()))
 		return err
 	}
 
+	// Get deployment strategy
 	if _, ok := event.DeploymentStrategies["*"]; ok {
 		// Uses the provided deployment strategy for ALL stages
 		deplStrategies, err := fixDeploymentStrategies(keptnHandler, event.DeploymentStrategies["*"])
@@ -73,62 +81,47 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event, loggingDone chan bool) error
 		event.DeploymentStrategies = deplStrategies
 	}
 
-	o.keptnHandler.Logger.Debug(fmt.Sprintf("Start creating service %s in project %s", event.Service, event.Project))
-
+	// Check stages
 	stageHandler := configutils.NewStageHandler(o.configServiceURL)
 	stages, err := stageHandler.GetAllStages(event.Project)
 	if err != nil {
 		o.keptnHandler.Logger.Error("Error when getting all stages: " + err.Error())
 		return err
 	}
-
 	if len(stages) == 0 {
 		o.keptnHandler.Logger.Error("Cannot onboard service because no stage is available")
 		return errors.New("Cannot onboard service because no stage is available")
 	}
 
+	// Initialize Namespace
 	namespaceMng := NewNamespaceManager(o.keptnHandler.Logger)
+	if err := namespaceMng.InitNamespaces(event.Project, stages); err != nil {
+		o.keptnHandler.Logger.Error(err.Error())
+		return err
+	}
 
-	if event.HelmChart != "" {
-
-		adminRights, err := o.hasAdminRights()
-		if err != nil {
-			o.keptnHandler.Logger.Error(fmt.Sprintf("failed to check wheter helm-service has admin right: %v", err))
-			return err
-		}
-		if !adminRights {
-			err := errors.New("Cannot onboard service because helm-service has insufficient RBAC rights.\n" +
-				"Reason: The execution plane for continuous-delivery is not installed.")
-			o.keptnHandler.Logger.Error(err.Error())
-			return err
-		}
-
-		if err := namespaceMng.InitNamespaces(event.Project, stages); err != nil {
-			o.keptnHandler.Logger.Error(err.Error())
-			return err
-		}
-
-		umbrellaChartHandler := helm.NewUmbrellaChartHandler(o.configServiceURL)
-		isUmbrellaChartAvailable, err := umbrellaChartHandler.IsUmbrellaChartAvailableInAllStages(event.Project, stages)
-		if err != nil {
-			o.keptnHandler.Logger.Error("Error when getting Helm Chart for stages. " + err.Error())
-			return err
-		}
-		if !isUmbrellaChartAvailable {
-			o.keptnHandler.Logger.Info(fmt.Sprintf("Create umbrella Helm Chart for project %s", event.Project))
-			// Initialize the umbrella chart
-			if err := umbrellaChartHandler.InitUmbrellaChart(event, stages); err != nil {
-				return fmt.Errorf("Error when initializing the umbrella chart for project %s: %s", event.Project, err.Error())
-			}
+	// Initialize Umbrella chart
+	umbrellaChartHandler := helm.NewUmbrellaChartHandler(o.configServiceURL)
+	isUmbrellaChartAvailable, err := umbrellaChartHandler.IsUmbrellaChartAvailableInAllStages(event.Project, stages)
+	if err != nil {
+		o.keptnHandler.Logger.Error("Error when getting Helm Chart for stages. " + err.Error())
+		return err
+	}
+	if !isUmbrellaChartAvailable {
+		o.keptnHandler.Logger.Info(fmt.Sprintf("Create umbrella Helm Chart for project %s", event.Project))
+		// Initialize the umbrella chart
+		if err := umbrellaChartHandler.InitUmbrellaChart(event, stages); err != nil {
+			return fmt.Errorf("Error when initializing the umbrella chart for project %s: %s", event.Project, err.Error())
 		}
 	}
 
+	// Onboard service in all namespaces
 	for _, stage := range stages {
 		if err := o.onboardService(stage.StageName, event); err != nil {
 			o.keptnHandler.Logger.Error(err.Error())
 			return err
 		}
-		if event.DeploymentStrategies[stage.StageName] == keptnevents.Duplicate && event.HelmChart != "" {
+		if event.DeploymentStrategies[stage.StageName] == keptnevents.Duplicate {
 			// inject Istio to the namespace for blue-green deployments
 			if err := namespaceMng.InjectIstio(event.Project, stage.StageName); err != nil {
 				o.keptnHandler.Logger.Error(err.Error())
@@ -141,34 +134,7 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event, loggingDone chan bool) error
 	return nil
 }
 
-func (o *Onboarder) hasAdminRights() (bool, error) {
-	clientset, err := keptnutils.GetClientset(true)
-	if err != nil {
-		return false, err
-	}
-	sar := &authorizationv1.SelfSubjectAccessReview{
-		Spec: authorizationv1.SelfSubjectAccessReviewSpec{
-			ResourceAttributes: &authorizationv1.ResourceAttributes{},
-		},
-	}
-	resp, err := clientset.AuthorizationV1().SelfSubjectAccessReviews().Create(sar)
-	if err != nil {
-		return false, err
-	}
-	return resp.Status.Allowed, nil
-}
-
 func (o *Onboarder) checkAndSetServiceName(event *keptnevents.ServiceCreateEventData) error {
-
-	if event.HelmChart == "" {
-		// Case when only a service is created but not onboarded (i.e. no Helm Chart is available)
-		if len(event.Service) == 0 || !keptnevents.ValididateUnixDirectoryName(event.Service) {
-			return errors.New("Service name contains special character(s). " +
-				"The service name has to be a valid Unix directory name. For details see " +
-				"https://www.cyberciti.biz/faq/linuxunix-rules-for-naming-file-and-directory-names/")
-		}
-		return nil
-	}
 
 	errorMsg := "Service name contains upper case letter(s) or special character(s).\n " +
 		"Keptn relies on the following conventions: " +
@@ -207,53 +173,55 @@ func (o *Onboarder) checkAndSetServiceName(event *keptnevents.ServiceCreateEvent
 func (o *Onboarder) onboardService(stageName string, event *keptnevents.ServiceCreateEventData) error {
 
 	serviceHandler := configutils.NewServiceHandler(o.configServiceURL)
-
-	o.keptnHandler.Logger.Info("Creating new Keptn service " + event.Service + " in stage " + stageName)
-	_, err := serviceHandler.CreateServiceInStage(event.Project, stageName, event.Service)
+	const retries = 2
+	var err error
+	for i := 0; i < retries; i++ {
+		_, err = serviceHandler.GetService(event.Project, stageName, event.Service)
+		if err == nil {
+			break
+		}
+		time.Sleep(3 * time.Second)
+	}
 	if err != nil {
-		return errors.New(*err.Message)
+		return err
 	}
 
-	if event.HelmChart != "" {
-		helmChartData, err := base64.StdEncoding.DecodeString(event.HelmChart)
-		if err != nil {
-			o.keptnHandler.Logger.Error("Error when decoding the Helm Chart")
-			return err
-		}
-
-		o.keptnHandler.Logger.Debug("Storing the Helm Chart provided by the user in stage " + stageName)
-		if err := keptnutils.StoreChart(event.Project, event.Service, stageName, helm.GetChartName(event.Service, false),
-			helmChartData, o.configServiceURL); err != nil {
-			o.keptnHandler.Logger.Error("Error when storing the Helm Chart: " + err.Error())
-			return err
-		}
-
-		if err := o.updateUmbrellaChart(event.Project, stageName, helm.GetChartName(event.Service, false)); err != nil {
-			return err
-		}
-
-		chartGenerator := helm.NewGeneratedChartHandler(o.mesh, o.keptnHandler.Logger)
-		o.keptnHandler.Logger.Debug(fmt.Sprintf("For stage %s with deployment strategy %s, an empty chart is generated", stageName, event.DeploymentStrategies[stageName].String()))
-		generatedChart := chartGenerator.GenerateEmptyChart(event.Service, event.DeploymentStrategies[stageName])
-
-		helmChartName := helm.GetChartName(event.Service, true)
-		o.keptnHandler.Logger.Debug(fmt.Sprintf("Storing the Keptn-generated Helm Chart %s for stage %s", helmChartName, stageName))
-
-		generatedChartData, err := keptnutils.PackageChart(generatedChart)
-		if err != nil {
-			o.keptnHandler.Logger.Error("Error when packing the managed chart: " + err.Error())
-			return err
-		}
-
-		if err := keptnutils.StoreChart(event.Project, event.Service, stageName, helmChartName,
-			generatedChartData, o.configServiceURL); err != nil {
-			o.keptnHandler.Logger.Error("Error when storing the Helm Chart: " + err.Error())
-			return err
-		}
-		return o.updateUmbrellaChart(event.Project, stageName, helmChartName)
+	helmChartData, err := base64.StdEncoding.DecodeString(event.HelmChart)
+	if err != nil {
+		o.keptnHandler.Logger.Error("Error when decoding the Helm Chart")
+		return err
 	}
 
-	return nil
+	o.keptnHandler.Logger.Debug("Storing the Helm Chart provided by the user in stage " + stageName)
+	if err := keptnutils.StoreChart(event.Project, event.Service, stageName, helm.GetChartName(event.Service, false),
+		helmChartData, o.configServiceURL); err != nil {
+		o.keptnHandler.Logger.Error("Error when storing the Helm Chart: " + err.Error())
+		return err
+	}
+
+	if err := o.updateUmbrellaChart(event.Project, stageName, helm.GetChartName(event.Service, false)); err != nil {
+		return err
+	}
+
+	chartGenerator := helm.NewGeneratedChartHandler(o.mesh, o.keptnHandler.Logger)
+	o.keptnHandler.Logger.Debug(fmt.Sprintf("For stage %s with deployment strategy %s, an empty chart is generated", stageName, event.DeploymentStrategies[stageName].String()))
+	generatedChart := chartGenerator.GenerateEmptyChart(event.Service, event.DeploymentStrategies[stageName])
+
+	helmChartName := helm.GetChartName(event.Service, true)
+	o.keptnHandler.Logger.Debug(fmt.Sprintf("Storing the Keptn-generated Helm Chart %s for stage %s", helmChartName, stageName))
+
+	generatedChartData, err := keptnutils.PackageChart(generatedChart)
+	if err != nil {
+		o.keptnHandler.Logger.Error("Error when packing the managed chart: " + err.Error())
+		return err
+	}
+
+	if err := keptnutils.StoreChart(event.Project, event.Service, stageName, helmChartName,
+		generatedChartData, o.configServiceURL); err != nil {
+		o.keptnHandler.Logger.Error("Error when storing the Helm Chart: " + err.Error())
+		return err
+	}
+	return o.updateUmbrellaChart(event.Project, stageName, helmChartName)
 }
 
 // IsGeneratedChartEmpty checks whether the generated chart is empty

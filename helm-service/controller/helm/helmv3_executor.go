@@ -168,3 +168,32 @@ func (h *HelmV3Executor) waitForDeploymentsOfHelmRelease(helmManifest string) er
 	}
 	return nil
 }
+
+// UninstallRelease uninstalls the specified release in the namespace
+func (h *HelmV3Executor) UninstallRelease(releaseName, namespace string) error {
+
+	h.logger.Info(fmt.Sprintf("Start deleting chart %s in namespace %s", releaseName, namespace))
+	config, err := h.getKubeRestConfig()
+	if err != nil {
+		return err
+	}
+	cfg, err := h.newActionConfig(config, namespace)
+	if err != nil {
+		return err
+	}
+
+	histClient := action.NewHistory(cfg)
+	if _, err = histClient.Run(releaseName); err == driver.ErrReleaseNotFound {
+		h.logger.Info(fmt.Sprintf("No Helm release with name %s was found in namespace %s", releaseName, namespace))
+		return nil
+	}
+
+	iCli := action.NewUninstall(cfg)
+	resp, err := iCli.Run(releaseName)
+	if err != nil {
+		return fmt.Errorf("Error when uninstalling release %s in namespace %s: %s",
+			releaseName, namespace, err.Error())
+	}
+	h.logger.Info(fmt.Sprint("Helm uninstall successfully: %s", resp.Info))
+	return nil
+}
