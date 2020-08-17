@@ -864,16 +864,6 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 	shouldNotContainEvent(t, finishedEvents, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), "dev")
 	shouldNotContainEvent(t, finishedEvents, keptnv2.GetFinishedEventType(keptnv2.ReleaseTaskName), "dev")
 
-	// check triggeredEvent collection -> should not contain release.triggered event anymore
-
-	// check startedEvent collection -> should not contain release.started event anymore
-
-	// check event broker -> should contain dev.artifact-delivery.finished event
-
-	// check event broker -> should contain hardening.artifact-delivery.triggered event
-
-	// check event broker -> should contain deployment.triggered event with properties: [deployment]
-
 	// STEP 9.1
 	// send deployment.started event 1 with ID 1
 
