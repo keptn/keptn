@@ -536,6 +536,26 @@ func (sc *shipyardController) completeTaskSequence(keptnContext string, eventSco
 		return err
 	}
 
+	sc.logger.Info("Deleting all task.finished events of task sequence " + taskSequenceName + " with context " + keptnContext)
+	// delete all finished events of this sequence
+	finishedEvents, err := sc.eventRepo.GetEvents(eventScope.Project, db.EventFilter{
+		Stage:        &eventScope.Stage,
+		KeptnContext: &keptnContext,
+	}, db.FinishedEvent)
+
+	if err != nil {
+		sc.logger.Error("could not retrieve task.finished events: " + err.Error())
+		return err
+	}
+
+	for _, event := range finishedEvents {
+		err = sc.eventRepo.DeleteEvent(eventScope.Project, event.ID, db.FinishedEvent)
+		if err != nil {
+			sc.logger.Error("could not delete " + *event.Type + " event with ID " + event.ID + ": " + err.Error())
+			return err
+		}
+	}
+
 	return sc.sendTaskSequenceFinishedEvent(keptnContext, eventScope, taskSequenceName)
 }
 

@@ -852,6 +852,18 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 		return
 	}
 
+	// check if dev.artifact-delivery.finished has been sent
+	done = shouldContainEvent(t, mockEV.receivedEvents, keptnv2.GetFinishedEventType("dev.artifact-delivery"), nil, "dev")
+
+	finishedEvents, _ := sc.eventRepo.GetEvents("test-project", db.EventFilter{
+		Stage: stringp("dev"),
+	}, db.FinishedEvent)
+
+	shouldNotContainEvent(t, finishedEvents, keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName), "dev")
+	shouldNotContainEvent(t, finishedEvents, keptnv2.GetFinishedEventType(keptnv2.TestTaskName), "dev")
+	shouldNotContainEvent(t, finishedEvents, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), "dev")
+	shouldNotContainEvent(t, finishedEvents, keptnv2.GetFinishedEventType(keptnv2.ReleaseTaskName), "dev")
+
 	// check triggeredEvent collection -> should not contain release.triggered event anymore
 
 	// check startedEvent collection -> should not contain release.started event anymore
