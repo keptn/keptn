@@ -468,6 +468,14 @@ func doInstallation() error {
 		},
 	}
 
+	if keptnNamespace != "keptn" {
+		controlPlaneMap := values["control-plane"]
+		switch controlPlaneMap := controlPlaneMap.(type) {
+		case map[string]interface{}:
+			controlPlaneMap["prefixPath"] = "/"+keptnNamespace
+		}
+	}
+
 	if err := upgradeChart(installChart, "keptn", keptnNamespace, values); err != nil {
 		logging.PrintLog("Could not complete Keptn installation: "+err.Error(), logging.InfoLevel)
 		return err
