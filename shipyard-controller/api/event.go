@@ -258,6 +258,8 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 		sc.logger.Error("Could not store .finished event: " + err.Error())
 	}
 
+	// TODO: consider status/result of finished event
+
 	trimmedEventType := strings.TrimSuffix(*event.Type, string(db.FinishedEvent))
 	// get corresponding 'started' event for the incoming 'finished' event
 	filter := db.EventFilter{
@@ -341,10 +343,11 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 
 		sc.logger.Info("retrieving all .finished events for task " + trimmedEventType + " triggered by " + event.Triggeredid + " to aggregate data")
 		allFinishedEventsForTask, err := sc.eventRepo.GetEvents(eventScope.Project, db.EventFilter{
-			Type:        trimmedEventType + string(db.FinishedEvent),
-			Stage:       &eventScope.Stage,
-			Service:     &eventScope.Service,
-			TriggeredID: &event.Triggeredid,
+			Type:    "",
+			Stage:   &eventScope.Stage,
+			Service: &eventScope.Service,
+			// TriggeredID: &event.Triggeredid,
+			KeptnContext: &event.Shkeptncontext,
 		}, db.FinishedEvent)
 		if err != nil {
 			msg := "Could not retrieve " + *event.Type + " events: " + err.Error()
@@ -500,7 +503,6 @@ func (sc *shipyardController) proceedTaskSequence(eventScope *eventScope, taskSe
 		}
 		return sc.triggerNextTaskSequences(event, eventScope, taskSequence, shipyard)
 	}
-
 	return sc.sendTaskTriggeredEvent(event.Shkeptncontext, eventScope, taskSequence.Name, *task, previousFinishedEvents)
 }
 
@@ -571,15 +573,13 @@ var errNoStage = errors.New("no stage found")
 func (sc *shipyardController) getTaskSequencesByTrigger(eventScope *eventScope, completedTaskSequence string, shipyard *keptnv2.Shipyard) []nextTaskSequence {
 	result := []nextTaskSequence{}
 	for _, stage := range shipyard.Spec.Stages {
-		if stage.Name == eventScope.Stage {
-			for tsIndex, taskSequence := range stage.Sequences {
-				for _, trigger := range taskSequence.Triggers {
-					if trigger == eventScope.Stage+"."+completedTaskSequence+".triggered" {
-						result = append(result, nextTaskSequence{
-							Sequence:  stage.Sequences[tsIndex],
-							StageName: stage.Name,
-						})
-					}
+		for tsIndex, taskSequence := range stage.Sequences {
+			for _, trigger := range taskSequence.Triggers {
+				if trigger == eventScope.Stage+"."+completedTaskSequence+".finished" {
+					result = append(result, nextTaskSequence{
+						Sequence:  stage.Sequences[tsIndex],
+						StageName: stage.Name,
+					})
 				}
 			}
 		}
@@ -693,8 +693,9 @@ func (sc *shipyardController) sendTaskTriggeredEvent(keptnContext string, eventS
 		for index := range previousFinishedEvents {
 			if mergedPayload == nil {
 				mergedPayload = merge(eventPayload, previousFinishedEvents[index])
+			} else {
+				mergedPayload = merge(mergedPayload, previousFinishedEvents[index])
 			}
-			mergedPayload = merge(mergedPayload, previousFinishedEvents[index])
 		}
 	}
 
