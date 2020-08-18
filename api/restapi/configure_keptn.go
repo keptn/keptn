@@ -12,26 +12,27 @@ import (
 	"strings"
 
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
-	"github.com/keptn/keptn/api/restapi/operations/configuration"
 
 	"github.com/keptn/keptn/api/handlers"
 	"github.com/keptn/keptn/api/ws"
 
 	"github.com/go-openapi/errors"
-	openapierrors "github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+
+	openapierrors "github.com/go-openapi/errors"
 
 	"github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations"
 	"github.com/keptn/keptn/api/restapi/operations/auth"
+	"github.com/keptn/keptn/api/restapi/operations/configuration"
 	"github.com/keptn/keptn/api/restapi/operations/event"
 	"github.com/keptn/keptn/api/restapi/operations/metadata"
 	"github.com/keptn/keptn/api/restapi/operations/project"
 	"github.com/keptn/keptn/api/restapi/operations/service"
 )
 
-//go:generate swagger generate server --target ../../api --name  --spec ../swagger.yaml --principal models.Principal
+//go:generate swagger generate server --target ../../api --name Keptn --spec ../swagger.yaml --principal models.Principal
 
 var hub *ws.Hub
 
@@ -39,8 +40,8 @@ func configureFlags(api *operations.API) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
 }
 
-func configureAPI(api *operations.API) http.Handler {
-	// configure the api here
+func configureAPI(api *operations.KeptnAPI) http.Handler {
+	/// configure the api here
 	api.ServeError = errors.ServeError
 
 	// Set your custom logger if needed. Default one is log.Printf
