@@ -7,7 +7,7 @@ require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/google/uuid v1.1.1
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.7.0
+	github.com/keptn/go-utils v0.6.3-0.20200818082305-f51180cb3d15
 	github.com/keptn/kubernetes-utils v0.2.0
 )
 
