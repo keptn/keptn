@@ -22,7 +22,7 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	api := operations.NewAPI(swaggerSpec)
+	api := operations.NewKeptnAPI(swaggerSpec)
 	server := restapi.NewServer(api)
 	defer server.Shutdown()
 
