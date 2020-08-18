@@ -941,7 +941,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 	}
 }
 
-// Scenario 2: Complete task sequence execution + triggering of next task sequence. Events are received out of order
+// Scenario 2: Partial task sequence execution + triggering of next task sequence. Events are received out of order
 func Test_shipyardController_Scenario2(t *testing.T) {
 
 	t.Logf("Executing Shipyard Controller Scenario 1 with shipyard file %s", testShipyardFile)
