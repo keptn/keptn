@@ -508,9 +508,9 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage:  {{ .Values.storage }}
-  {{- if .Values.storageClass }}
-  storageClassName: {{ .Values.storageClass }}
+      storage:  {{ .Values.configurationService.storage }}
+  {{- if .Values.configurationService.storageClass }}
+  storageClassName: {{ .Values.configurationService.storageClass }}
   {{- end }}
 ---
 apiVersion: apps/v1
