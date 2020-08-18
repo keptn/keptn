@@ -14,6 +14,7 @@ import (
 	"os"
 	"reflect"
 	"testing"
+	"time"
 )
 
 type getEventsMock func(project string, filter db.EventFilter, status db.EventStatus) ([]models.Event, error)
@@ -736,7 +737,7 @@ func shouldNotContainEvent(t *testing.T, events []models.Event, eventType string
 	return false
 }
 
-// Scenario 1: Complete task sequence execution + triggering of next task sequence
+// Scenario 1: Complete task sequence execution + triggering of next task sequence. Events are received in order
 func Test_shipyardController_Scenario1(t *testing.T) {
 
 	t.Logf("Executing Shipyard Controller Scenario 1 with shipyard file %s", testShipyardFile)
@@ -935,6 +936,102 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 	// STEP 10.2
 	// send deployment.finished event 1 with ID 1
 	triggeredID, done = sendAndVerifyFinishedEvent(t, sc, getDeploymentFinishedEvent("hardening", triggeredID, "test-source-2"), keptnv2.DeploymentTaskName, keptnv2.TestTaskName, mockEV, "", nil)
+	if done {
+		return
+	}
+}
+
+// Scenario 2: Complete task sequence execution + triggering of next task sequence. Events are received out of order
+func Test_shipyardController_Scenario2(t *testing.T) {
+
+	t.Logf("Executing Shipyard Controller Scenario 1 with shipyard file %s", testShipyardFile)
+	sc := getTestShipyardController()
+
+	mockCS := newMockConfigurationService()
+	defer mockCS.Close()
+
+	done := false
+
+	_ = os.Setenv("CONFIGURATION_SERVICE", mockCS.URL)
+
+	mockEV := newMockEventbroker(t,
+		func(meb *mockEventBroker, event *models.Event) {
+			meb.receivedEvents = append(meb.receivedEvents, *event)
+		},
+		func(meb *mockEventBroker) {
+
+		})
+	defer mockEV.server.Close()
+	_ = os.Setenv("EVENTBROKER", mockEV.server.URL)
+
+	// STEP 1
+	// send dev.artifact-delivery.triggered event
+	err := sc.handleIncomingEvent(getArtifactDeliveryTriggeredEvent())
+	if err != nil {
+		t.Errorf("STEP 1 failed: handleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
+		return
+	}
+
+	// check event broker -> should contain deployment.triggered event with properties: [deployment]
+	if len(mockEV.receivedEvents) != 1 {
+		t.Errorf("STEP 1 failed: expected %d events in eventbroker, but got %d", 1, len(mockEV.receivedEvents))
+		return
+	}
+	done = shouldContainEvent(t, mockEV.receivedEvents, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), "", nil)
+	if done {
+		return
+	}
+	// check triggeredEvent Collection -> should contain deployment.triggered event
+	triggeredEvents, _ := sc.eventRepo.GetEvents("test-project", db.EventFilter{
+		Type:    keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName),
+		Stage:   stringp("dev"),
+		Service: stringp("carts"),
+		Source:  stringp("shipyard-controller"),
+	}, db.TriggeredEvent)
+	done = shouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), "", nil)
+	if done {
+		return
+	}
+	triggeredID := triggeredEvents[0].ID
+
+	// STEP 2
+	// send deployment.started event
+	go func() {
+		time.After(2 * time.Second)
+		_ = sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "dev", "test-source")
+	}()
+
+	// STEP 3
+	// send deployment.finished event
+	triggeredID, done = sendAndVerifyFinishedEvent(
+		t,
+		sc,
+		getDeploymentFinishedEvent("dev", triggeredID, "test-source"),
+		keptnv2.DeploymentTaskName,
+		keptnv2.TestTaskName,
+		mockEV,
+		"",
+		func(t *testing.T, e models.Event) bool {
+			marshal, _ := json.Marshal(e.Data)
+			testData := &keptnv2.TestTriggeredEventData{}
+
+			err := json.Unmarshal(marshal, testData)
+
+			if err != nil {
+				t.Errorf("Expected test.triggered data but could not convert: %v: %s", e.Data, err.Error())
+				return true
+			}
+
+			if len(testData.Deployment.DeploymentURIsLocal) != 2 {
+				t.Errorf("DeploymentURIsLocal property was not transmitted correctly")
+				return true
+			}
+			if len(testData.Deployment.DeploymentURIsPublic) != 2 {
+				t.Errorf("DeploymentURIsLocal property was not transmitted correctly")
+				return true
+			}
+			return false
+		})
 	if done {
 		return
 	}
