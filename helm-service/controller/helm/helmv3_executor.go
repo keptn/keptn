@@ -194,6 +194,6 @@ func (h *HelmV3Executor) UninstallRelease(releaseName, namespace string) error {
 		return fmt.Errorf("Error when uninstalling release %s in namespace %s: %s",
 			releaseName, namespace, err.Error())
 	}
-	h.logger.Info(fmt.Sprint("Helm uninstall successfully: %s", resp.Info))
+	h.logger.Info(fmt.Sprintf("Helm uninstall successfully: %s", resp.Info))
 	return nil
 }
