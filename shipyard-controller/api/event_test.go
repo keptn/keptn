@@ -114,21 +114,6 @@ func getTestStartedEventWithUnmatchedTriggeredID() models.Event {
 	}
 }
 
-func getTestFinishedEvent() models.Event {
-	return models.Event{
-		Contenttype:    "application/json",
-		Data:           eventScope{Project: "test-project", Stage: "dev", Service: "carts"},
-		Extensions:     nil,
-		ID:             "test-finished-id",
-		Shkeptncontext: "test-context",
-		Source:         stringp("test-source"),
-		Specversion:    "0.2",
-		Time:           "",
-		Triggeredid:    "test-triggered-id",
-		Type:           stringp("sh.keptn.event.approval.finished"),
-	}
-}
-
 func getTestFinishedEventWithUnmatchedSource() models.Event {
 	return models.Event{
 		Contenttype:    "application/json",
@@ -714,7 +699,7 @@ func getReleaseTaskFinishedEvent(stage string, triggeredID string) models.Event 
 	}
 }
 
-func shouldContainEvent(t *testing.T, events []models.Event, eventType string, properties map[string]interface{}, stage string, eval func(t *testing.T, event models.Event) bool) bool {
+func shouldContainEvent(t *testing.T, events []models.Event, eventType string, stage string, eval func(t *testing.T, event models.Event) bool) bool {
 	for _, event := range events {
 		scope, _ := getEventScope(event)
 		if *event.Type == eventType {
@@ -754,6 +739,7 @@ func shouldNotContainEvent(t *testing.T, events []models.Event, eventType string
 // Scenario 1: Complete task sequence execution + triggering of next task sequence
 func Test_shipyardController_Scenario1(t *testing.T) {
 
+	t.Logf("Executing Shipyard Controller Scenario 1 with shipyard file %s", testShipyardFile)
 	sc := getTestShipyardController()
 
 	mockCS := newMockConfigurationService()
@@ -761,7 +747,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 
 	done := false
 
-	os.Setenv("CONFIGURATION_SERVICE", mockCS.URL)
+	_ = os.Setenv("CONFIGURATION_SERVICE", mockCS.URL)
 
 	mockEV := newMockEventbroker(t,
 		func(meb *mockEventBroker, event *models.Event) {
@@ -771,7 +757,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 
 		})
 	defer mockEV.server.Close()
-	os.Setenv("EVENTBROKER", mockEV.server.URL)
+	_ = os.Setenv("EVENTBROKER", mockEV.server.URL)
 
 	// STEP 1
 	// send dev.artifact-delivery.triggered event
@@ -786,7 +772,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 		t.Errorf("STEP 1 failed: expected %d events in eventbroker, but got %d", 1, len(mockEV.receivedEvents))
 		return
 	}
-	done = shouldContainEvent(t, mockEV.receivedEvents, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), nil, "", nil)
+	done = shouldContainEvent(t, mockEV.receivedEvents, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), "", nil)
 	if done {
 		return
 	}
@@ -797,7 +783,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 		Service: stringp("carts"),
 		Source:  stringp("shipyard-controller"),
 	}, db.TriggeredEvent)
-	done = shouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), nil, "", nil)
+	done = shouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), "", nil)
 	if done {
 		return
 	}
@@ -914,7 +900,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 	}
 
 	// check if dev.artifact-delivery.finished has been sent
-	done = shouldContainEvent(t, mockEV.receivedEvents, keptnv2.GetFinishedEventType("dev.artifact-delivery"), nil, "dev", nil)
+	done = shouldContainEvent(t, mockEV.receivedEvents, keptnv2.GetFinishedEventType("dev.artifact-delivery"), "dev", nil)
 
 	finishedEvents, _ := sc.eventRepo.GetEvents("test-project", db.EventFilter{
 		Stage: stringp("dev"),
@@ -986,7 +972,7 @@ func sendAndVerifyFinishedEvent(t *testing.T, sc *shipyardController, finishedEv
 	}, db.TriggeredEvent)
 
 	triggeredID := triggeredEvents[0].ID
-	done = shouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(nextEventType), nil, nextStage, nil)
+	done = shouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(nextEventType), nextStage, nil)
 	if done {
 		return "", true
 	}
@@ -1004,7 +990,7 @@ func sendAndVerifyFinishedEvent(t *testing.T, sc *shipyardController, finishedEv
 	}
 
 	// check event broker -> should contain <nextEventType>.triggered event with properties
-	done = shouldContainEvent(t, mockEV.receivedEvents, keptnv2.GetTriggeredEventType(nextEventType), nil, nextStage, verifyTriggeredEvent)
+	done = shouldContainEvent(t, mockEV.receivedEvents, keptnv2.GetTriggeredEventType(nextEventType), nextStage, verifyTriggeredEvent)
 	if done {
 		return "", true
 	}
@@ -1029,7 +1015,7 @@ func sendAndVerifyPartialFinishedEvent(t *testing.T, sc *shipyardController, fin
 		Service: stringp("carts"),
 		Source:  stringp("shipyard-controller"),
 	}, db.TriggeredEvent)
-	done := shouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(eventType), nil, scope.Stage, nil)
+	done := shouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(eventType), scope.Stage, nil)
 	if done {
 		return true
 	}
@@ -1058,7 +1044,7 @@ func sendAndVerifyPartialFinishedEvent(t *testing.T, sc *shipyardController, fin
 		t.Errorf("List of started events does not hold proper number of events. Expected 1 but got %d", len(startedEvents))
 		return true
 	}
-	done = shouldContainEvent(t, startedEvents, keptnv2.GetStartedEventType(eventType), nil, scope.Stage, nil)
+	done = shouldContainEvent(t, startedEvents, keptnv2.GetStartedEventType(eventType), scope.Stage, nil)
 	if done {
 		return true
 	}
@@ -1084,7 +1070,7 @@ func sendAndVerifyStartedEvent(t *testing.T, sc *shipyardController, taskName st
 		Service:     stringp("carts"),
 		TriggeredID: stringp(triggeredID),
 	}, db.StartedEvent)
-	return shouldContainEvent(t, startedEvents, keptnv2.GetStartedEventType(taskName), nil, stage, nil)
+	return shouldContainEvent(t, startedEvents, keptnv2.GetStartedEventType(taskName), stage, nil)
 }
 
 const testShipyardResource = `{
@@ -1145,7 +1131,7 @@ spec:
 func newMockConfigurationService() *httptest.Server {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(testShipyardResource))
+		_, _ = w.Write([]byte(testShipyardResource))
 	}))
 	return ts
 }
@@ -1173,7 +1159,9 @@ func newMockEventbroker(test *testing.T, handleEventFunc func(meb *mockEventBrok
 
 	meb.server = httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		b, _ := ioutil.ReadAll(request.Body)
-		defer request.Body.Close()
+		defer func() {
+			_ = request.Body.Close()
+		}()
 		event := &models.Event{}
 
 		_ = json.Unmarshal(b, event)

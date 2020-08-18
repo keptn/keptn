@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-// ProjectMongoDBRepo retrieves projects from a mongodb collection
+// TaskSequenceMongoDBRepo godoc
 type TaskSequenceMongoDBRepo struct {
 	DbConnection MongoDBConnection
 	Logger       keptn.LoggerInterface
@@ -17,7 +17,7 @@ type TaskSequenceMongoDBRepo struct {
 
 const taskSequenceCollectionNameSuffix = "-taskSequences"
 
-// GetProjects godoc
+// GetTaskSequence godoc
 func (mdbrepo *TaskSequenceMongoDBRepo) GetTaskSequence(project, triggeredID string) (*models.TaskSequenceEvent, error) {
 	err := mdbrepo.DbConnection.EnsureDBConnection()
 	if err != nil {

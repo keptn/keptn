@@ -96,7 +96,7 @@ func GetTriggeredEvents(c *gin.Context) {
 
 	totalCount := len(events)
 	if paginationInfo.NextPageKey < int64(totalCount) {
-		for index, _ := range events[paginationInfo.NextPageKey:paginationInfo.EndIndex] {
+		for index := range events[paginationInfo.NextPageKey:paginationInfo.EndIndex] {
 			payload.Events = append(payload.Events, &events[index])
 		}
 	}
@@ -106,7 +106,7 @@ func GetTriggeredEvents(c *gin.Context) {
 	c.JSON(http.StatusOK, payload)
 }
 
-//
+// HandleEvent godoc
 // @Summary Handle event
 // @Description Handle incoming cloud event
 // @Tags Events
@@ -118,7 +118,6 @@ func GetTriggeredEvents(c *gin.Context) {
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /event [post]
-// HandleEvent implements the request handler for handling events
 func HandleEvent(c *gin.Context) {
 	event := &models.Event{}
 	if err := c.ShouldBindJSON(event); err != nil {
@@ -502,6 +501,9 @@ func (sc *shipyardController) proceedTaskSequence(eventScope *eventScope, taskSe
 			return err
 		}
 		return sc.triggerNextTaskSequences(event, eventScope, taskSequence, shipyard)
+	} else if err != nil {
+		sc.logger.Error("Could not get next task of sequence: " + err.Error())
+		return err
 	}
 	return sc.sendTaskTriggeredEvent(event.Shkeptncontext, eventScope, taskSequence.Name, *task, previousFinishedEvents)
 }

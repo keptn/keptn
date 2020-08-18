@@ -2,6 +2,7 @@ package db
 
 import "github.com/keptn/keptn/shipyard-controller/models"
 
+// TaskSequenceRepo godoc
 type TaskSequenceRepo interface {
 	// GetTaskSequence godoc
 	GetTaskSequence(project, triggeredID string) (*models.TaskSequenceEvent, error)

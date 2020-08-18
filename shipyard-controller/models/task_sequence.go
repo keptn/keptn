@@ -1,6 +1,6 @@
 package models
 
-// TaskSequence godoc
+// TaskSequenceEvent godoc
 type TaskSequenceEvent struct {
 	TaskSequenceName string `json:"taskSequenceName"`
 	TriggeredEventID string `json:"triggeredEventID"`
