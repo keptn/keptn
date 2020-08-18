@@ -11,9 +11,8 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/validate"
-
-	strfmt "github.com/go-openapi/strfmt"
 )
 
 // NewGetEventParams creates a new GetEventParams object
@@ -74,7 +73,7 @@ func (o *GetEventParams) BindRequest(r *http.Request, route *middleware.MatchedR
 // bindKeptnContext binds and validates parameter KeptnContext from query.
 func (o *GetEventParams) bindKeptnContext(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
-		return errors.Required("keptnContext", "query")
+		return errors.Required("keptnContext", "query", rawData)
 	}
 	var raw string
 	if len(rawData) > 0 {
@@ -95,7 +94,7 @@ func (o *GetEventParams) bindKeptnContext(rawData []string, hasKey bool, formats
 // bindType binds and validates parameter Type from query.
 func (o *GetEventParams) bindType(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
-		return errors.Required("type", "query")
+		return errors.Required("type", "query", rawData)
 	}
 	var raw string
 	if len(rawData) > 0 {

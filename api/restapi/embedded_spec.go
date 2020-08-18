@@ -302,6 +302,42 @@ func init() {
           "$ref": "#/parameters/projectName"
         }
       ]
+    },
+    "/project/{projectName}/service/{serviceName}": {
+      "delete": {
+        "tags": [
+          "Service"
+        ],
+        "summary": "Deletes a service",
+        "responses": {
+          "200": {
+            "description": "Deletion of service triggered",
+            "schema": {
+              "$ref": "response_model.yaml#/definitions/eventContext"
+            }
+          },
+          "400": {
+            "description": "Failed. Service could not be deleted",
+            "schema": {
+              "$ref": "response_model.yaml#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "response_model.yaml#/definitions/error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "$ref": "#/parameters/projectName"
+        },
+        {
+          "$ref": "#/parameters/serviceName"
+        }
+      ]
     }
   },
   "parameters": {
@@ -336,6 +372,13 @@ func init() {
         "$ref": "service_model.yaml#/definitions/service"
       }
     },
+    "serviceName": {
+      "type": "string",
+      "description": "Name of the service",
+      "name": "serviceName",
+      "in": "path",
+      "required": true
+    },
     "stageName": {
       "type": "string",
       "description": "Name of the stage",
@@ -359,8 +402,8 @@ func init() {
 }`))
 	FlatSwaggerJSON = json.RawMessage([]byte(`{
   "consumes": [
-    "application/json",
-    "application/cloudevents+json"
+    "application/cloudevents+json",
+    "application/json"
   ],
   "produces": [
     "application/json"
@@ -665,6 +708,50 @@ func init() {
           "required": true
         }
       ]
+    },
+    "/project/{projectName}/service/{serviceName}": {
+      "delete": {
+        "tags": [
+          "Service"
+        ],
+        "summary": "Deletes a service",
+        "responses": {
+          "200": {
+            "description": "Deletion of service triggered",
+            "schema": {
+              "$ref": "#/definitions/eventContext"
+            }
+          },
+          "400": {
+            "description": "Failed. Service could not be deleted",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "description": "Name of the project",
+          "name": "projectName",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "description": "Name of the service",
+          "name": "serviceName",
+          "in": "path",
+          "required": true
+        }
+      ]
     }
   },
   "definitions": {
@@ -860,6 +947,13 @@ func init() {
       "schema": {
         "$ref": "#/definitions/service"
       }
+    },
+    "serviceName": {
+      "type": "string",
+      "description": "Name of the service",
+      "name": "serviceName",
+      "in": "path",
+      "required": true
     },
     "stageName": {
       "type": "string",

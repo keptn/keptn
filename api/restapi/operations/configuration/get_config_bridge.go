@@ -8,9 +8,9 @@ package configuration
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/middleware"
 
-	models "github.com/keptn/keptn/api/models"
+	"github.com/keptn/keptn/api/models"
 )
 
 // GetConfigBridgeHandlerFunc turns a function with the right signature into a get config bridge handler

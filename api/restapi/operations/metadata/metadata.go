@@ -8,9 +8,9 @@ package metadata
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/middleware"
 
-	models "github.com/keptn/keptn/api/models"
+	"github.com/keptn/keptn/api/models"
 )
 
 // MetadataHandlerFunc turns a function with the right signature into a metadata handler
