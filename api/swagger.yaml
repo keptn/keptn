@@ -156,6 +156,28 @@ paths:
           schema:
             $ref: "response_model.yaml#/definitions/error"
 
+  /project/{projectName}/service/{serviceName}:
+    parameters:
+      - $ref: "#/parameters/projectName"
+      - $ref: "#/parameters/serviceName"
+    delete:
+      tags:
+        - Service
+      summary: Deletes a service
+      responses:
+        200:
+          description: Deletion of service triggered
+          schema:
+            $ref: "response_model.yaml#/definitions/eventContext"
+        400:
+          description: Failed. Service could not be deleted
+          schema:
+            $ref: "response_model.yaml#/definitions/error"
+        default:
+          description: Error
+          schema:
+            $ref: "response_model.yaml#/definitions/error"
+
   /config/bridge:
     post:
       tags:
@@ -216,6 +238,13 @@ parameters:
     required: true
     type: string
     description: Name of the stage
+
+  serviceName:
+    in: path
+    name: serviceName
+    required: true
+    type: string
+    description: Name of the service
 
   service:
     in: body
