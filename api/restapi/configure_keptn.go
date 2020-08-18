@@ -88,6 +88,7 @@ func configureAPI(api *operations.KeptnAPI) http.Handler {
 
 	// Service endpoints
 	api.ServicePostProjectProjectNameServiceHandler = service.PostProjectProjectNameServiceHandlerFunc(handlers.PostServiceHandlerFunc)
+	api.ServiceDeleteProjectProjectNameServiceServiceNameHandler = service.DeleteProjectProjectNameServiceServiceNameHandlerFunc(handlers.DeleteServiceHandlerFunc)
 
 	api.ServerShutdown = func() {}
 

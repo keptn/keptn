@@ -69,6 +69,60 @@ func TestPostServiceHandlerFunc(t *testing.T) {
 	}
 }
 
+func TestDeleteServiceHandlerFunc(t *testing.T) {
+	type args struct {
+		params    service.DeleteProjectProjectNameServiceServiceNameParams
+		principal *models.Principal
+	}
+	tests := []struct {
+		name       string
+		args       args
+		wantStatus int
+	}{
+		{
+			name: "send create service event",
+			args: args{
+				params: service.DeleteProjectProjectNameServiceServiceNameParams{
+					HTTPRequest: nil,
+					ProjectName: "sockshop",
+					ServiceName: "carts",
+				},
+				principal: nil,
+			},
+			wantStatus: 200,
+		},
+	}
+
+	_ = os.Setenv("SECRET_TOKEN", "testtesttesttesttest")
+
+	returnedStatus := 200
+
+	ts := httptest.NewServer(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Add("Content-Type", "application/json")
+			w.WriteHeader(returnedStatus)
+			w.Write([]byte(`{}`))
+		}),
+	)
+	defer ts.Close()
+
+	_ = os.Setenv("EVENTBROKER_URI", ts.URL)
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := DeleteServiceHandlerFunc(tt.args.params, tt.args.principal)
+
+			producer := &mockProducer{}
+			recorder := &httptest.ResponseRecorder{}
+			got.WriteResponse(recorder, producer)
+
+			if recorder.Result().StatusCode != tt.wantStatus {
+				t.Errorf("PostEventHandlerFunc() = %v, want %v", recorder.Result().StatusCode, tt.wantStatus)
+			}
+		})
+	}
+}
+
 func Test_mapDeploymentStrategies(t *testing.T) {
 	type args struct {
 		deploymentStrategies map[string]string
