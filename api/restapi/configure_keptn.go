@@ -36,7 +36,7 @@ import (
 
 var hub *ws.Hub
 
-func configureFlags(api *operations.API) {
+func configureFlags(api *operations.KeptnAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
 }
 
