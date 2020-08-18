@@ -7,6 +7,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/keptn/go-utils/pkg/api/models"
+
 	"helm.sh/helm/v3/pkg/chart"
 
 	cloudevents "github.com/cloudevents/sdk-go"
@@ -38,13 +40,6 @@ func NewOnboarder(mesh mesh.Mesh, keptnHandler *keptnevents.Keptn, configService
 // DoOnboard onboards a new service
 func (o *Onboarder) DoOnboard(ce cloudevents.Event, loggingDone chan bool) error {
 
-	defer func() { loggingDone <- true }()
-
-	keptnHandler, err := keptnevents.NewKeptn(&ce, keptnevents.KeptnOpts{})
-	if err != nil {
-		o.keptnHandler.Logger.Error("Could not initialize Keptn handler: " + err.Error())
-		return err
-	}
 	event := &keptnevents.ServiceCreateEventData{}
 	if err := ce.DataAs(event); err != nil {
 		o.keptnHandler.Logger.Error(fmt.Sprintf("Got Data Error: %s", err.Error()))
@@ -53,8 +48,24 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event, loggingDone chan bool) error
 
 	// Check whether Helm chart is provided
 	if len(event.HelmChart) == 0 {
-		o.keptnHandler.Logger.Error("Event does not contain a Helm chart")
+		// Event does not contain a Helm chart
 		return nil
+	}
+
+	// Only close logger/websocket, if there is a chart which needs to be onboarded
+	defer func() { loggingDone <- true }()
+
+	keptnHandler, err := keptnevents.NewKeptn(&ce, keptnevents.KeptnOpts{})
+	if err != nil {
+		o.keptnHandler.Logger.Error("Could not initialize Keptn handler: " + err.Error())
+		return err
+	}
+
+	// Check if project exists
+	projHandler := configutils.NewProjectHandler(o.configServiceURL)
+	if _, err := projHandler.GetProject(models.Project{ProjectName: event.Project}); err != nil {
+		o.keptnHandler.Logger.Error(fmt.Sprintf("Could not retrieve project %s: %s", event.Project, *err.Message))
+		return errors.New(*err.Message)
 	}
 
 	// Check service name
@@ -68,14 +79,14 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event, loggingDone chan bool) error
 		// Uses the provided deployment strategy for ALL stages
 		deplStrategies, err := fixDeploymentStrategies(keptnHandler, event.DeploymentStrategies["*"])
 		if err != nil {
-			o.keptnHandler.Logger.Error(fmt.Sprintf("Error when getting deployment strategies: %s", err.Error()))
+			o.keptnHandler.Logger.Error(err.Error())
 			return err
 		}
 		event.DeploymentStrategies = deplStrategies
 	} else if os.Getenv("PRE_WORKFLOW_ENGINE") == "true" && len(event.DeploymentStrategies) == 0 {
 		deplStrategies, err := getDeploymentStrategies(keptnHandler)
 		if err != nil {
-			o.keptnHandler.Logger.Error(fmt.Sprintf("Error when getting deployment strategies: %s", err.Error()))
+			o.keptnHandler.Logger.Error(err.Error())
 			return err
 		}
 		event.DeploymentStrategies = deplStrategies

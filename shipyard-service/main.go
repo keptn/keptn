@@ -134,7 +134,7 @@ func createService(event cloudevents.Event, logger keptn.LoggerInterface) (bool,
 		logger.Info("Creating new Keptn service " + eventData.Service + " in stage " + stage.StageName)
 		_, err := serviceHandler.CreateServiceInStage(eventData.Project, stage.StageName, eventData.Service)
 		if err != nil {
-			return len(eventData.HelmChart) == 0, fmt.Errorf("Failed to create service %s in project %s: %v", eventData.Service, eventData.Project, err)
+			return len(eventData.HelmChart) == 0, fmt.Errorf("Failed to create service %s in project %s: %s", eventData.Service, eventData.Project, *err.Message)
 		}
 	}
 
@@ -211,7 +211,7 @@ func deleteProject(event cloudevents.Event, keptnHandler *keptn.Keptn) error {
 	// delete project
 	prjHandler := configutils.NewProjectHandler(configServiceURL)
 	_, mErr := prjHandler.DeleteProject(project)
-	if err != nil {
+	if mErr != nil {
 		return fmt.Errorf("Faild to delete project %s: %s", project.ProjectName, *mErr.Message)
 	}
 

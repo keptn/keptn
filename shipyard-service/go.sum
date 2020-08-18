@@ -228,6 +228,10 @@ github.com/keptn/go-utils v0.6.3-0.20200714120809-ab94889d31e3 h1:f47ITlk40aLoX3
 github.com/keptn/go-utils v0.6.3-0.20200714120809-ab94889d31e3/go.mod h1:hf2FU6JFuOzLP5rEAlA1/XnNS28pDZbVfxDESeQsq1g=
 github.com/keptn/go-utils v0.6.3-0.20200817095149-3e582ccc2d0d h1:ycKdY60MVGiSQEvdL+TvS/nUK8WG6TVNKX8xg1JX0a8=
 github.com/keptn/go-utils v0.6.3-0.20200817095149-3e582ccc2d0d/go.mod h1:hf2FU6JFuOzLP5rEAlA1/XnNS28pDZbVfxDESeQsq1g=
+github.com/keptn/go-utils v0.6.3-0.20200817144346-6e2fba3f67de h1:m6f+zI0zSK5OjgKtuv1M66w1pFUjqeXHJ3BbmOmhFSk=
+github.com/keptn/go-utils v0.6.3-0.20200817144346-6e2fba3f67de/go.mod h1:hf2FU6JFuOzLP5rEAlA1/XnNS28pDZbVfxDESeQsq1g=
+github.com/keptn/go-utils v0.6.3-0.20200818061404-45bc1a6e0a86 h1:ilfSvKLwD0dgALor3b54scOGWtwOTrLcSrm9uwOFNvA=
+github.com/keptn/go-utils v0.6.3-0.20200818061404-45bc1a6e0a86/go.mod h1:hf2FU6JFuOzLP5rEAlA1/XnNS28pDZbVfxDESeQsq1g=
 github.com/keptn/go-utils v0.7.0 h1:UM9luAcPiptFzzTFl3wWHQ32jr9JD94Hx09LCYktI/s=
 github.com/keptn/go-utils v0.7.0/go.mod h1:hf2FU6JFuOzLP5rEAlA1/XnNS28pDZbVfxDESeQsq1g=
 github.com/kisielk/errcheck v1.2.0/go.mod h1:/BMXB+zMLi60iA8Vv6Ksmxu/1UDYcXs4uQLJ+jE2L00=

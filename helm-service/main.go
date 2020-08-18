@@ -91,7 +91,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 func closeLogger(loggingDone chan bool, logger keptnevents.LoggerInterface) {
 	<-loggingDone
 	if combinedLogger, ok := logger.(*keptnevents.CombinedLogger); ok {
-		combinedLogger.Terminate()
+		combinedLogger.Terminate("")
 	}
 }
 
