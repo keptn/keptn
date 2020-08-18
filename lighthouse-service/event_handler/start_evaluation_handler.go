@@ -173,7 +173,7 @@ func getSLIProvider(project string) (string, error) {
 		return "", err
 	}
 
-	configMap, err := kubeAPI.CoreV1().ConfigMaps("keptn").Get("lighthouse-config-"+project, v1.GetOptions{})
+	configMap, err := kubeAPI.CoreV1().ConfigMaps(namespace).Get("lighthouse-config-"+project, v1.GetOptions{})
 
 	if err != nil {
 		return "", errors.New("No SLI provider specified for project " + project)

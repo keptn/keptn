@@ -62,6 +62,7 @@ type installCmdParams struct {
 	ApiServiceTypeInput *string
 	ApiServiceType      apiServiceType
 	ChartRepoURL        *string
+	Namespace			*string
 }
 
 const keptnInstallerLogFileName = "keptn-installer.log"
@@ -295,6 +296,9 @@ func init() {
 
 	installCmd.PersistentFlags().BoolVarP(&insecureSkipTLSVerify, "insecure-skip-tls-verify", "s",
 		false, "Skip tls verification for kubectl commands")
+
+	installParams.Namespace = installCmd.Flags().StringP("namespace", "n", "keptn",
+		"Specify the namespace Keptn should be installed in (default keptn).")
 }
 
 func newActionConfig(config *rest.Config, namespace string) (*action.Configuration, error) {
@@ -423,8 +427,7 @@ func waitForDeploymentsOfHelmRelease(helmManifest string) error {
 
 // Preconditions: 1. Already authenticated against the cluster.
 func doInstallation() error {
-
-	const keptnNamespace = "keptn"
+	keptnNamespace := *installParams.Namespace
 	res, err := keptnutils.ExistsNamespace(false, keptnNamespace)
 	if err != nil {
 		return fmt.Errorf("Failed to check if namespace %s already exists: %v", keptnNamespace, err)
@@ -463,6 +466,14 @@ func doInstallation() error {
 				"type": installParams.ApiServiceType.String(),
 			},
 		},
+	}
+
+	if keptnNamespace != "keptn" {
+		controlPlaneMap := values["control-plane"]
+		switch controlPlaneMap := controlPlaneMap.(type) {
+		case map[string]interface{}:
+			controlPlaneMap["prefixPath"] = "/"+keptnNamespace
+		}
 	}
 
 	if err := upgradeChart(installChart, "keptn", keptnNamespace, values); err != nil {

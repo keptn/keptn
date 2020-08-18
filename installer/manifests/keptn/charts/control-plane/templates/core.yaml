@@ -99,7 +99,7 @@ spec:
                 secretKeyRef:
                   name: keptn-api-token
                   key: keptn-api-token
-            - name: API_POD_NAMESPACE
+            - name: POD_NAMESPACE
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
@@ -385,8 +385,10 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 100Mi
-status: {}
+      storage:  {{ .Values.configurationService.storage }}
+  {{- if .Values.configurationService.storageClass }}
+  storageClassName: {{ .Values.configurationService.storageClass }}
+  {{- end }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -442,6 +444,10 @@ spec:
                   key: password
             - name: MONGO_DB_NAME
               value: 'keptn'
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
           ports:
             - containerPort: 8080
           resources:

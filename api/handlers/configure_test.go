@@ -41,6 +41,9 @@ func Test_getBridgeCredentials(t *testing.T) {
 			},
 		},
 	}
+
+	namespace = "keptn"
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := getBridgeCredentials(tt.args.user, tt.args.password); !reflect.DeepEqual(got, tt.want) {
