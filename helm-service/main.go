@@ -3,6 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
+	"os"
+
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
+
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
 	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
@@ -12,8 +17,7 @@ import (
 	"github.com/keptn/keptn/helm-service/controller"
 	"github.com/keptn/keptn/helm-service/controller/mesh"
 	"github.com/keptn/keptn/helm-service/pkg/serviceutils"
-	"log"
-	"os"
+	authorizationv1 "k8s.io/api/authorization/v1"
 )
 
 type envConfig struct {
@@ -73,6 +77,9 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	} else if event.Type() == keptnevents.ActionTriggeredEventType {
 		actionHandler := controller.NewActionTriggeredHandler(keptnHandler, url.String())
 		go actionHandler.HandleEvent(event, loggingDone)
+	} else if event.Type() == keptnevents.InternalServiceDeleteEventType {
+		deleteHandler := controller.NewDeleteHandler(keptnHandler, url.String())
+		go deleteHandler.HandleEvent(event, loggingDone)
 	} else {
 		logger.Error("Received unexpected keptn event")
 		loggingDone <- true
@@ -84,12 +91,21 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 func closeLogger(loggingDone chan bool, logger keptnevents.LoggerInterface) {
 	<-loggingDone
 	if combinedLogger, ok := logger.(*keptnevents.CombinedLogger); ok {
-		combinedLogger.Terminate()
+		combinedLogger.Terminate("")
 	}
 }
 
 func _main(args []string, env envConfig) int {
 	ctx := context.Background()
+
+	// Check admin rights
+	adminRights, err := hasAdminRights()
+	if err != nil {
+		log.Fatal(fmt.Sprintf("failed to check wheter helm-service has admin right: %v", err))
+	}
+	if !adminRights {
+		log.Fatal("helm-service has insufficient RBAC rights.")
+	}
 
 	t, err := cloudeventshttp.New(
 		cloudeventshttp.WithPort(env.Port),
@@ -107,4 +123,21 @@ func _main(args []string, env envConfig) int {
 	log.Fatalf("failed to start receiver: %s", c.StartReceiver(ctx, gotEvent))
 
 	return 0
+}
+
+func hasAdminRights() (bool, error) {
+	clientset, err := keptnutils.GetClientset(true)
+	if err != nil {
+		return false, err
+	}
+	sar := &authorizationv1.SelfSubjectAccessReview{
+		Spec: authorizationv1.SelfSubjectAccessReviewSpec{
+			ResourceAttributes: &authorizationv1.ResourceAttributes{},
+		},
+	}
+	resp, err := clientset.AuthorizationV1().SelfSubjectAccessReviews().Create(sar)
+	if err != nil {
+		return false, err
+	}
+	return resp.Status.Allowed, nil
 }

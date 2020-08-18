@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"fmt"
+
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
 )
 
@@ -29,7 +31,7 @@ func getDeploymentStrategies(keptn *keptnevents.Keptn) (map[string]keptnevents.D
 func fixDeploymentStrategies(keptn *keptnevents.Keptn, deploymentStrategy keptnevents.DeploymentStrategy) (map[string]keptnevents.DeploymentStrategy, error) {
 	shipyard, err := keptn.GetShipyard()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to retrieve shipyard: %v", err)
 	}
 
 	res := make(map[string]keptnevents.DeploymentStrategy)

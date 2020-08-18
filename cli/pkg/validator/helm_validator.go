@@ -15,7 +15,7 @@ var reservedFileNameSuffixes = [...]string{"-istio-destinationrule.yaml", "-isti
 
 // ValidateHelmChart validates keptn's requirements regarding
 // the values, deployment, and service file
-func ValidateHelmChart(ch *chart.Chart) (bool, error) {
+func ValidateHelmChart(ch *chart.Chart, keptnServiceName string) (bool, error) {
 
 	if resValues := validateValues(ch); !resValues {
 		return false, nil
@@ -25,7 +25,7 @@ func ValidateHelmChart(ch *chart.Chart) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	if resServices, err := validateServices(services); !resServices || err != nil {
+	if resServices, err := validateServices(services, keptnServiceName); !resServices || err != nil {
 		return false, err
 	}
 
@@ -68,9 +68,9 @@ func validateValues(ch *chart.Chart) bool {
 	return true
 }
 
-func validateServices(services []*corev1.Service) (bool, error) {
+func validateServices(services []*corev1.Service, keptnServiceName string) (bool, error) {
 	for _, svc := range services {
-		if !validateService(svc) {
+		if !validateService(svc, keptnServiceName) {
 			return false, nil
 		}
 	}
@@ -94,9 +94,14 @@ func validateDeployments(deployments []*appsv1.Deployment) (bool, error) {
 	return true, nil
 }
 
-func validateService(svc *corev1.Service) bool {
+func validateService(svc *corev1.Service, keptnServiceName string) bool {
 	if !keptnutils.IsService(svc) {
 		logging.PrintLog(fmt.Sprintf("Service %s does not have kind \"service\"", svc.Name), logging.QuietLevel)
+		return false
+	}
+	if keptnServiceName != svc.Name {
+		logging.PrintLog(fmt.Sprintf("Provided Keptn service name \"%s\" "+
+			"does not match Kubernetes service name \"%s\"", keptnServiceName, svc.Name), logging.QuietLevel)
 		return false
 	}
 	if svc.Spec.Selector == nil {

@@ -14,18 +14,6 @@ metadata:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: keptn-helm-service
-  labels:
-    app.kubernetes.io/name: keptn-helm-service
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }} 
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
   name: keptn-configuration-service
   labels:
     app.kubernetes.io/name: keptn-configuration-service

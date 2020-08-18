@@ -186,3 +186,8 @@ func (h *HelmMockExecutor) GetManifest(releaseName, namespace string) (string, e
 func (h *HelmMockExecutor) UpgradeChart(ch *chart.Chart, releaseName, namespace string, vals map[string]interface{}) error {
 	return nil
 }
+
+// UninstallRelease does not execute any action
+func (h *HelmMockExecutor) UninstallRelease(releaseName, namespace string) error {
+	return nil
+}

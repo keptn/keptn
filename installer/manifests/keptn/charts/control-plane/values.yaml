@@ -34,10 +34,6 @@ eventbroker:
   image:
     repository: docker.io/keptn/eventbroker-go
 
-helmService:
-  image:
-    repository: docker.io/keptn/helm-service
-
 distributor:
   image:
     repository: docker.io/keptn/distributor
