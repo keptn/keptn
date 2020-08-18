@@ -187,6 +187,7 @@ func (h *HelmMockExecutor) UpgradeChart(ch *chart.Chart, releaseName, namespace 
 	return nil
 }
 
+// UninstallRelease does not execute any action
 func (h *HelmMockExecutor) UninstallRelease(releaseName, namespace string) error {
 	return nil
 }

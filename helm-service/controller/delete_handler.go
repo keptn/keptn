@@ -19,7 +19,7 @@ type DeleteHandler struct {
 	configServiceURL string
 }
 
-// NewActionTriggeredHandler creates a new DeleteHandler
+// NewDeleteHandler creates a new DeleteHandler
 func NewDeleteHandler(keptnHandler *keptn.Keptn, configServiceURL string) *DeleteHandler {
 	helmExecutor := helm.NewHelmV3Executor(keptnHandler.Logger)
 	return &DeleteHandler{keptnHandler: keptnHandler, helmExecutor: helmExecutor, configServiceURL: configServiceURL}
@@ -56,7 +56,7 @@ func (d *DeleteHandler) HandleEvent(ce cloudevents.Event, loggingDone chan bool)
 			d.keptnHandler.Logger.Error(err.Error())
 			allReleasesSuccessfullyUnistalled = false
 		}
-		if err := d.helmExecutor.UninstallRelease(releaseName + "-generated", namespace); err != nil {
+		if err := d.helmExecutor.UninstallRelease(releaseName+"-generated", namespace); err != nil {
 			d.keptnHandler.Logger.Error(err.Error())
 			allReleasesSuccessfullyUnistalled = false
 		}
