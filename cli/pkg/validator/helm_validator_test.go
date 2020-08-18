@@ -93,7 +93,7 @@ dockerImage: docker.io/keptnexamples/carts:0.8.1
 		ch, err := keptnutils.LoadChartFromPath("carts")
 		check(err, t)
 
-		res, err := ValidateHelmChart(ch)
+		res, err := ValidateHelmChart(ch, "carts")
 		check(err, t)
 		assert.False(t, res)
 		os.RemoveAll("carts")
@@ -166,7 +166,7 @@ spec:
 		ch, err := keptnutils.LoadChartFromPath("carts")
 		check(err, t)
 
-		res, err := ValidateHelmChart(ch)
+		res, err := ValidateHelmChart(ch, "carts")
 		check(err, t)
 		assert.False(t, res)
 		os.RemoveAll("carts")
@@ -313,7 +313,7 @@ spec:
 		ch, err := keptnutils.LoadChartFromPath("carts")
 		check(err, t)
 
-		res, err := ValidateHelmChart(ch)
+		res, err := ValidateHelmChart(ch, "carts")
 		check(err, t)
 		assert.False(t, res)
 		os.RemoveAll("carts")
@@ -340,7 +340,7 @@ func TestTemplateFileNames(t *testing.T) {
 	ch, err := keptnutils.LoadChartFromPath("carts")
 	check(err, t)
 
-	res, err := ValidateHelmChart(ch)
+	res, err := ValidateHelmChart(ch, "carts")
 	check(err, t)
 	assert.False(t, res)
 	os.RemoveAll("carts")

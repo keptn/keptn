@@ -100,7 +100,7 @@ spec:
           - name: PUBSUB_URL
             value: 'nats://keptn-nats-cluster'
           - name: PUBSUB_TOPIC
-            value: 'sh.keptn.internal.event.service.create'
+            value: 'sh.keptn.internal.event.service.create,sh.keptn.event.configuration.change,sh.keptn.event.action.triggered,sh.keptn.internal.event.service.delete'
           - name: PUBSUB_RECIPIENT
             value: '127.0.0.1'
 ---

@@ -73,7 +73,7 @@ keptn onboard service SERVICENAME --project=PROJECTNAME --chart=HELM_CHART.tgz
 			return err
 		}
 
-		res, err := validator.ValidateHelmChart(ch)
+		res, err := validator.ValidateHelmChart(ch, args[0])
 		if err != nil {
 			return err
 		}

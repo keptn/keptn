@@ -94,10 +94,6 @@ func TestDoOnboard(t *testing.T) {
 
 func TestCheckAndSetServiceName(t *testing.T) {
 
-	createErrorMsg := "Service name contains special character(s). " +
-		"The service name has to be a valid Unix directory name. For details see " +
-		"https://www.cyberciti.biz/faq/linuxunix-rules-for-naming-file-and-directory-names/"
-
 	o := NewOnboarder(nil, nil, configBaseURL)
 	data := helmtest.CreateHelmChartData(t)
 
@@ -113,14 +109,6 @@ func TestCheckAndSetServiceName(t *testing.T) {
 			nil, "carts"},
 		{"Set", &keptnevents.ServiceCreateEventData{Service: "", HelmChart: base64.StdEncoding.EncodeToString(data)},
 			nil, "carts"},
-		{"EmptyName", &keptnevents.ServiceCreateEventData{Service: ""},
-			errors.New(createErrorMsg), ""},
-		{"ValidName", &keptnevents.ServiceCreateEventData{Service: "a"},
-			nil, "a"},
-		{"ValidName", &keptnevents.ServiceCreateEventData{Service: "aa"},
-			nil, "aa"},
-		{"ValidName", &keptnevents.ServiceCreateEventData{Service: "aa7"},
-			nil, "aa7"},
 	}
 
 	for _, tt := range testCases {

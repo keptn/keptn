@@ -18,3 +18,7 @@ distributor:
 jmeterService:
   image:
     repository: docker.io/keptn/jmeter-service
+
+helmService:
+  image:
+    repository: docker.io/keptn/helm-service

@@ -12,7 +12,6 @@ import (
 
 	configmodels "github.com/keptn/go-utils/pkg/api/models"
 	keptn "github.com/keptn/go-utils/pkg/lib"
-	keptnutils "github.com/keptn/go-utils/pkg/lib"
 	"github.com/magiconair/properties/assert"
 )
 
@@ -56,12 +55,11 @@ func TestCreateProjectStatusNoContent(t *testing.T) {
 	)
 	defer ts.Close()
 
-	logger := keptnutils.NewLogger("4711-a83b-4bc1-9dc0-1f050c7e789b", "4711-a83b-4bc1-9dc0-1f050c7e781b", "shipyard-service")
-	os.Setenv("CONFIGURATION_SERVICE", ts.URL)
+	configServiceURL = ts.URL
 
 	project := configmodels.Project{}
 	project.ProjectName = "sockshop"
-	err := createProject(project, *logger)
+	err := createProject(project)
 
 	assert.Equal(t, err, nil, "Received unexpected error")
 }
@@ -77,12 +75,11 @@ func TestCreateProjectBadRequest(t *testing.T) {
 	)
 	defer ts.Close()
 
-	logger := keptnutils.NewLogger("4711-a83b-4bc1-9dc0-1f050c7e789b", "4711-a83b-4bc1-9dc0-1f050c7e781b", "shipyard-service")
-	os.Setenv("CONFIGURATION_SERVICE", ts.URL)
+	configServiceURL = ts.URL
 
 	project := configmodels.Project{}
 	project.ProjectName = "sockshop"
-	err := createProject(project, *logger)
+	err := createProject(project)
 
 	assert.Equal(t, err.Error(), "creating project failed due to error in configuration-service", "Expect an error")
 }
@@ -97,14 +94,13 @@ func TestCreateStageStatusNoContent(t *testing.T) {
 	)
 	defer ts.Close()
 
-	logger := keptnutils.NewLogger("4711-a83b-4bc1-9dc0-1f050c7e789b", "4711-a83b-4bc1-9dc0-1f050c7e781b", "shipyard-service")
-	os.Setenv("CONFIGURATION_SERVICE", ts.URL)
+	configServiceURL = ts.URL
 
 	project := configmodels.Project{}
 	project.ProjectName = "sockshop"
 	stage := configmodels.Stage{}
 	stage.StageName = "production"
-	err := createStage(project, stage.StageName, *logger)
+	err := createStage(project, stage.StageName)
 
 	assert.Equal(t, err, nil, "Received unexpected error")
 }
