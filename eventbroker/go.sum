@@ -214,6 +214,8 @@ github.com/keptn/go-utils v0.6.3-0.20200709123116-2ec34b39b07d h1:9XJD4q1UNYKaux
 github.com/keptn/go-utils v0.6.3-0.20200709123116-2ec34b39b07d/go.mod h1:76xtIqZUGDUgc8ct2jiSPnq57Ss0pFQJeXgWR6FHybg=
 github.com/keptn/go-utils v0.6.3-0.20200714120809-ab94889d31e3 h1:f47ITlk40aLoX3Wb9Irpra2ccwlpF5/eCZVc5z6Khas=
 github.com/keptn/go-utils v0.6.3-0.20200714120809-ab94889d31e3/go.mod h1:hf2FU6JFuOzLP5rEAlA1/XnNS28pDZbVfxDESeQsq1g=
+github.com/keptn/go-utils v0.6.3-0.20200818113737-80a2be0c42b0 h1:JRlN975nseAn5AGdlMkODRhTnJuYVKqyboeRm9yT1ng=
+github.com/keptn/go-utils v0.6.3-0.20200818113737-80a2be0c42b0/go.mod h1:hf2FU6JFuOzLP5rEAlA1/XnNS28pDZbVfxDESeQsq1g=
 github.com/keptn/go-utils v0.7.0 h1:UM9luAcPiptFzzTFl3wWHQ32jr9JD94Hx09LCYktI/s=
 github.com/keptn/go-utils v0.7.0/go.mod h1:hf2FU6JFuOzLP5rEAlA1/XnNS28pDZbVfxDESeQsq1g=
 github.com/kevinburke/ssh_config v0.0.0-20190725054713-01f96b0aa0cd h1:Coekwdh0v2wtGp9Gmz1Ze3eVRAWJMLokvN3QjdzCHLY=

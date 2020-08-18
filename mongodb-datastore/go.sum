@@ -242,6 +242,8 @@ github.com/keptn/go-utils v0.6.3-0.20200709130352-6dacb8130dc0 h1:g13cMMcTimnXdD
 github.com/keptn/go-utils v0.6.3-0.20200709130352-6dacb8130dc0/go.mod h1:hf2FU6JFuOzLP5rEAlA1/XnNS28pDZbVfxDESeQsq1g=
 github.com/keptn/go-utils v0.6.3-0.20200714120809-ab94889d31e3 h1:f47ITlk40aLoX3Wb9Irpra2ccwlpF5/eCZVc5z6Khas=
 github.com/keptn/go-utils v0.6.3-0.20200714120809-ab94889d31e3/go.mod h1:hf2FU6JFuOzLP5rEAlA1/XnNS28pDZbVfxDESeQsq1g=
+github.com/keptn/go-utils v0.6.3-0.20200818113737-80a2be0c42b0 h1:JRlN975nseAn5AGdlMkODRhTnJuYVKqyboeRm9yT1ng=
+github.com/keptn/go-utils v0.6.3-0.20200818113737-80a2be0c42b0/go.mod h1:hf2FU6JFuOzLP5rEAlA1/XnNS28pDZbVfxDESeQsq1g=
 github.com/keptn/go-utils v0.7.0 h1:UM9luAcPiptFzzTFl3wWHQ32jr9JD94Hx09LCYktI/s=
 github.com/keptn/go-utils v0.7.0/go.mod h1:hf2FU6JFuOzLP5rEAlA1/XnNS28pDZbVfxDESeQsq1g=
 github.com/keptn/keptn v0.0.0-20191107135234-c0939707dff0 h1:Q5MSMeWKpgleVkZLE2kw/ELOGdBPyegqGc3+132geqE=
