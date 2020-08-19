@@ -66,8 +66,9 @@ var delProjectCmd = &cobra.Command{
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
-			if deleteProjectParams.KeepServices != nil && *deleteProjectParams.KeepServices {
+			if deleteProjectParams.KeepServices == nil || !*deleteProjectParams.KeepServices {
 				apiProject, err := projectsHandler.GetProject(project)
+
 				if err != nil {
 					fmt.Println("Could not retrieve information about project " + project.ProjectName + ": " + *err.Message)
 					return fmt.Errorf("Could not retrieve information about project %s: %s", project.ProjectName, *err.Message)
@@ -76,7 +77,8 @@ var delProjectCmd = &cobra.Command{
 					fmt.Println(msg)
 					return fmt.Errorf(msg)
 				}
-				if len(project.Stages) > 0 {
+
+				if len(apiProject.Stages) > 0 {
 					fmt.Println("Deleting services of project " + project.ProjectName + "...")
 					for _, service := range apiProject.Stages[0].Services {
 						fmt.Println("Deleting service " + service.ServiceName)
