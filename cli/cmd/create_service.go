@@ -66,8 +66,7 @@ var crServiceCmd = &cobra.Command{
 		if !mocking {
 			eventContext, err := apiHandler.CreateService(*createServiceParams.Project, service)
 			if err != nil {
-				fmt.Println("Create service was unsuccessful")
-				return fmt.Errorf("Create service was unsuccessful. %s", *err.Message)
+				return fmt.Errorf("Create service was unsuccessful: %s", *err.Message)
 			}
 
 			// if eventContext is available, open WebSocket communication
