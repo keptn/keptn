@@ -216,12 +216,12 @@ func (sc *shipyardController) handleIncomingEvent(event models.Event) error {
 	}
 }
 
-func getEventScope(event models.Event) (*eventScope, error) {
+func getEventScope(event models.Event) (*keptnv2.EventData, error) {
 	marshal, err := json.Marshal(event.Data)
 	if err != nil {
 		return nil, err
 	}
-	data := &eventScope{}
+	data := &keptnv2.EventData{}
 	err = json.Unmarshal(marshal, data)
 	if err != nil {
 		return nil, err
@@ -256,8 +256,6 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 	if err != nil {
 		sc.logger.Error("Could not store .finished event: " + err.Error())
 	}
-
-	// TODO: consider status/result of finished event
 
 	trimmedEventType := strings.TrimSuffix(*event.Type, string(db.FinishedEvent))
 	// get corresponding 'started' event for the incoming 'finished' event
@@ -358,11 +356,33 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 
 		finishedEventsData := []interface{}{}
 
-		for index := range allFinishedEventsForTask {
+		continueTaskSequence := true
+		for index, finishedEvent := range allFinishedEventsForTask {
+			finishedEventScope, err := getEventScope(finishedEvent)
+			if err != nil {
+				sc.logger.Error("Could not determine scope of .finished event with ID " + finishedEvent.ID + ": " + err.Error())
+				continueTaskSequence = false
+			} else if finishedEventScope.Status == keptnv2.StatusErrored {
+				sc.logger.Info("Finished event with ID " + finishedEvent.ID + " reported an error. Will abort task sequence " + sequence.Name + " with KeptnContext " + event.Shkeptncontext)
+				continueTaskSequence = false
+			}
 			marshal, _ := json.Marshal(allFinishedEventsForTask[index].Data)
 			var tmp interface{}
 			_ = json.Unmarshal(marshal, &tmp)
 			finishedEventsData = append(finishedEventsData, tmp)
+		}
+
+		if !continueTaskSequence {
+			sc.logger.Info("Aborting task sequence " + sequence.Name + " with KeptnContext " + event.Shkeptncontext)
+			return sc.completeTaskSequence(event.Shkeptncontext, &keptnv2.EventData{
+				Project: eventScope.Project,
+				Stage:   eventScope.Stage,
+				Service: eventScope.Service,
+				Labels:  eventScope.Labels,
+				Status:  keptnv2.StatusErrored,
+				Result:  keptnv2.ResultFailed,
+				Message: "",
+			}, sequence.Name)
 		}
 
 		split := strings.Split(trimmedEventType, ".")
@@ -491,7 +511,7 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 	return sc.proceedTaskSequence(eventScope, taskSequence, event, shipyard, nil, "")
 }
 
-func (sc *shipyardController) proceedTaskSequence(eventScope *eventScope, taskSequence *keptnv2.Sequence, event models.Event, shipyard *keptnv2.Shipyard, previousFinishedEvents []interface{}, previousTask string) error {
+func (sc *shipyardController) proceedTaskSequence(eventScope *keptnv2.EventData, taskSequence *keptnv2.Sequence, event models.Event, shipyard *keptnv2.Shipyard, previousFinishedEvents []interface{}, previousTask string) error {
 	task, err := sc.getNextTaskOfSequence(taskSequence, previousTask)
 	if err != nil && err == errNoFurtherTaskForSequence {
 		// task sequence completed -> send .finished event and check if a new task sequence should be triggered by the completion
@@ -508,14 +528,14 @@ func (sc *shipyardController) proceedTaskSequence(eventScope *eventScope, taskSe
 	return sc.sendTaskTriggeredEvent(event.Shkeptncontext, eventScope, taskSequence.Name, *task, previousFinishedEvents)
 }
 
-func (sc *shipyardController) triggerNextTaskSequences(event models.Event, es *eventScope, completedSequence *keptnv2.Sequence, shipyard *keptnv2.Shipyard) error {
-	nextSequences := sc.getTaskSequencesByTrigger(es, completedSequence.Name, shipyard)
+func (sc *shipyardController) triggerNextTaskSequences(event models.Event, eventScope *keptnv2.EventData, completedSequence *keptnv2.Sequence, shipyard *keptnv2.Shipyard) error {
+	nextSequences := sc.getTaskSequencesByTrigger(eventScope, completedSequence.Name, shipyard)
 
 	for _, sequence := range nextSequences {
-		newScope := &eventScope{
-			Project: es.Project,
+		newScope := &keptnv2.EventData{
+			Project: eventScope.Project,
 			Stage:   sequence.StageName,
-			Service: es.Service,
+			Service: eventScope.Service,
 		}
 		err := sc.sendTaskSequenceTriggeredEvent(event.Shkeptncontext, newScope, sequence.Sequence.Name)
 		if err != nil {
@@ -532,7 +552,7 @@ func (sc *shipyardController) triggerNextTaskSequences(event models.Event, es *e
 	return nil
 }
 
-func (sc *shipyardController) completeTaskSequence(keptnContext string, eventScope *eventScope, taskSequenceName string) error {
+func (sc *shipyardController) completeTaskSequence(keptnContext string, eventScope *keptnv2.EventData, taskSequenceName string) error {
 	err := sc.taskSequenceRepo.DeleteTaskSequenceMapping(keptnContext, eventScope.Project, eventScope.Stage, taskSequenceName)
 	if err != nil {
 		return err
@@ -561,7 +581,7 @@ func (sc *shipyardController) completeTaskSequence(keptnContext string, eventSco
 	return sc.sendTaskSequenceFinishedEvent(keptnContext, eventScope, taskSequenceName)
 }
 
-func (sc *shipyardController) getShipyard(eventScope *eventScope) (*keptnv2.Shipyard, error) {
+func (sc *shipyardController) getShipyard(eventScope *keptnv2.EventData) (*keptnv2.Shipyard, error) {
 	csEndpoint, err := keptn.GetServiceEndpoint("CONFIGURATION_SERVICE")
 	if err != nil {
 		sc.logger.Error("Could not get configuration-service URL: " + err.Error())
@@ -592,7 +612,7 @@ var errNoFurtherTaskForSequence = errors.New("no further task for sequence")
 var errNoTaskSequence = errors.New("no task sequence found")
 var errNoStage = errors.New("no stage found")
 
-func (sc *shipyardController) getTaskSequencesByTrigger(eventScope *eventScope, completedTaskSequence string, shipyard *keptnv2.Shipyard) []nextTaskSequence {
+func (sc *shipyardController) getTaskSequencesByTrigger(eventScope *keptnv2.EventData, completedTaskSequence string, shipyard *keptnv2.Shipyard) []nextTaskSequence {
 	result := []nextTaskSequence{}
 	for _, stage := range shipyard.Spec.Stages {
 		for tsIndex, taskSequence := range stage.Sequences {
@@ -647,7 +667,7 @@ func (sc *shipyardController) getNextTaskOfSequence(taskSequence *keptnv2.Sequen
 	return nil, errNoFurtherTaskForSequence
 }
 
-func (sc *shipyardController) sendTaskSequenceTriggeredEvent(keptnContext string, eventScope *eventScope, taskSequenceName string) error {
+func (sc *shipyardController) sendTaskSequenceTriggeredEvent(keptnContext string, eventScope *keptnv2.EventData, taskSequenceName string) error {
 
 	eventPayload := map[string]interface{}{}
 
@@ -673,14 +693,7 @@ func (sc *shipyardController) sendTaskSequenceTriggeredEvent(keptnContext string
 	return sc.sendEvent(event)
 }
 
-func (sc *shipyardController) sendTaskSequenceFinishedEvent(keptnContext string, eventScope *eventScope, taskSequenceName string) error {
-
-	eventPayload := map[string]interface{}{}
-
-	eventPayload["project"] = eventScope.Project
-	eventPayload["stage"] = eventScope.Stage
-	eventPayload["service"] = eventScope.Service
-
+func (sc *shipyardController) sendTaskSequenceFinishedEvent(keptnContext string, eventScope *keptnv2.EventData, taskSequenceName string) error {
 	source, _ := url.Parse("shipyard-controller")
 	contentType := "application/json"
 	eventType := eventScope.Stage + "." + taskSequenceName
@@ -693,13 +706,13 @@ func (sc *shipyardController) sendTaskSequenceFinishedEvent(keptnContext string,
 			ContentType: &contentType,
 			Extensions:  map[string]interface{}{"shkeptncontext": keptnContext},
 		}.AsV02(),
-		Data: eventPayload,
+		Data: eventScope,
 	}
 
 	return sc.sendEvent(event)
 }
 
-func (sc *shipyardController) sendTaskTriggeredEvent(keptnContext string, eventScope *eventScope, taskSequenceName string, task keptnv2.Task, previousFinishedEvents []interface{}) error {
+func (sc *shipyardController) sendTaskTriggeredEvent(keptnContext string, eventScope *keptnv2.EventData, taskSequenceName string, task keptnv2.Task, previousFinishedEvents []interface{}) error {
 
 	eventPayload := map[string]interface{}{}
 
