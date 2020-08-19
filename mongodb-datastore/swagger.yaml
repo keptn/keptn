@@ -82,11 +82,6 @@ paths:
           type: string
           required: false
           description: Name of the event source
-        - name: result
-          in: query
-          type: string
-          required: false
-          description: Result of the event
         - "$ref": "#/parameters/pagesizeParam"
         - "$ref": "#/parameters/pageParam"
       responses:

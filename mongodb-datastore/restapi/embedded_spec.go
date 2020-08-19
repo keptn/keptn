@@ -99,12 +99,6 @@ func init() {
             "in": "query"
           },
           {
-            "type": "string",
-            "description": "Result of the event",
-            "name": "result",
-            "in": "query"
-          },
-          {
             "$ref": "#/parameters/pagesizeParam"
           },
           {
@@ -310,12 +304,6 @@ func init() {
             "type": "string",
             "description": "Name of the event source",
             "name": "source",
-            "in": "query"
-          },
-          {
-            "type": "string",
-            "description": "Result of the event",
-            "name": "result",
             "in": "query"
           },
           {

@@ -460,9 +460,6 @@ func getSearchOptions(params event.GetEventsParams) bson.M {
 			"$gt": *params.FromTime,
 		}
 	}
-	if params.Result != nil {
-		searchOptions["data.result"] = *params.Result
-	}
 	return searchOptions
 }
 

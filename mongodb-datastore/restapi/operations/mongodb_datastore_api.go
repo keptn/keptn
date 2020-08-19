@@ -34,16 +34,12 @@ func NewMongodbDatastoreAPI(spec *loads.Document) *MongodbDatastoreAPI {
 		PreServerShutdown:   func() {},
 		ServerShutdown:      func() {},
 		spec:                spec,
-		useSwaggerUI:        false,
 		ServeError:          errors.ServeError,
 		BasicAuthenticator:  security.BasicAuth,
 		APIKeyAuthenticator: security.APIKeyAuth,
 		BearerAuthenticator: security.BearerAuth,
-
-		JSONConsumer: runtime.JSONConsumer(),
-
-		JSONProducer: runtime.JSONProducer(),
-
+		JSONConsumer:        runtime.JSONConsumer(),
+		JSONProducer:        runtime.JSONProducer(),
 		EventGetEventsHandler: event.GetEventsHandlerFunc(func(params event.GetEventsParams) middleware.Responder {
 			return middleware.NotImplemented("operation event.GetEvents has not yet been implemented")
 		}),
@@ -64,7 +60,6 @@ type MongodbDatastoreAPI struct {
 	defaultConsumes string
 	defaultProduces string
 	Middleware      func(middleware.Builder) http.Handler
-	useSwaggerUI    bool
 
 	// BasicAuthenticator generates a runtime.Authenticator from the supplied basic auth function.
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
@@ -75,12 +70,10 @@ type MongodbDatastoreAPI struct {
 	// BearerAuthenticator generates a runtime.Authenticator from the supplied bearer token auth function.
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
 	BearerAuthenticator func(string, security.ScopedTokenAuthentication) runtime.Authenticator
-
 	// JSONConsumer registers a consumer for the following mime types:
 	//   - application/cloudevents+json
 	//   - application/json
 	JSONConsumer runtime.Consumer
-
 	// JSONProducer registers a producer for the following mime types:
 	//   - application/cloudevents+json
 	//   - application/json
@@ -107,16 +100,6 @@ type MongodbDatastoreAPI struct {
 
 	// User defined logger function.
 	Logger func(string, ...interface{})
-}
-
-// UseRedoc for documentation at /docs
-func (o *MongodbDatastoreAPI) UseRedoc() {
-	o.useSwaggerUI = false
-}
-
-// UseSwaggerUI for documentation at /docs
-func (o *MongodbDatastoreAPI) UseSwaggerUI() {
-	o.useSwaggerUI = true
 }
 
 // SetDefaultProduces sets the default produces media type
@@ -167,10 +150,11 @@ func (o *MongodbDatastoreAPI) Validate() error {
 	}
 
 	if o.EventGetEventsHandler == nil {
-		unregistered = append(unregistered, "event.GetEventsHandler")
+		unregistered = append(unregistered, "Event.GetEventsHandler")
 	}
+
 	if o.EventSaveEventHandler == nil {
-		unregistered = append(unregistered, "event.SaveEventHandler")
+		unregistered = append(unregistered, "Event.SaveEventHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -187,12 +171,16 @@ func (o *MongodbDatastoreAPI) ServeErrorFor(operationID string) func(http.Respon
 
 // AuthenticatorsFor gets the authenticators for the specified security schemes
 func (o *MongodbDatastoreAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
+
 	return nil
+
 }
 
 // Authorizer returns the registered authorizer
 func (o *MongodbDatastoreAPI) Authorizer() runtime.Authorizer {
+
 	return nil
+
 }
 
 // ConsumersFor gets the consumers for the specified media types.
@@ -260,6 +248,7 @@ func (o *MongodbDatastoreAPI) Context() *middleware.Context {
 
 func (o *MongodbDatastoreAPI) initHandlerCache() {
 	o.Context() // don't care about the result, just that the initialization happened
+
 	if o.handlers == nil {
 		o.handlers = make(map[string]map[string]http.Handler)
 	}
@@ -268,10 +257,12 @@ func (o *MongodbDatastoreAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/event"] = event.NewGetEvents(o.context, o.EventGetEventsHandler)
+
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/event"] = event.NewSaveEvent(o.context, o.EventSaveEventHandler)
+
 }
 
 // Serve creates a http handler to serve the API over HTTP
