@@ -152,7 +152,7 @@ func DeleteProjectProjectNameStageStageNameServiceServiceNameHandlerFunc(params 
 	servicePath := projectConfigPath + "/" + params.ServiceName
 
 	if !common.StageExists(params.ProjectName, params.StageName, false) {
-		return service.NewDeleteProjectProjectNameStageStageNameServiceServiceNameDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Stage  " + params.StageName + " does not exist.")})
+		return service.NewDeleteProjectProjectNameStageStageNameServiceServiceNameDefault(400).WithPayload(&models.Error{Code: 500, Message: swag.String("Stage  " + params.StageName + " does not exist.")})
 	}
 
 	if !common.ServiceExists(params.ProjectName, params.StageName, params.ServiceName, false) {
