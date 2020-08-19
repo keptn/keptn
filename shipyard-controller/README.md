@@ -20,10 +20,18 @@ To delete a deployed *shipyard-controller*, use the files `deploy/pvc.yaml` and 
 kubectl delete -f deploy/service.yaml
 ```
 
-### Generate source from Swagger
+### Generate  Swagger doc from source
 
-If the `swagger.yaml` is updated with new endpoints or models, generate the new source by executing:
+First, the following go modules have to be installed:
+
+```
+go get -u github.com/swaggo/swag/cmd/swag
+go get -u github.com/swaggo/gin-swagger
+go get -u github.com/swaggo/files
+```
+
+If the `swagger.yaml` should be updated with new endpoints or models, generate the new source by executing:
 
 ```console
-swagger generate server -A shipyard-controller -f ./swagger.yaml
+swag init
 ```

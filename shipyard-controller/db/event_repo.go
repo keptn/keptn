@@ -19,12 +19,13 @@ const (
 
 // EventFilter allows to pass filters
 type EventFilter struct {
-	Type        string
-	Stage       *string
-	Service     *string
-	ID          *string
-	TriggeredID *string
-	Source      *string
+	Type         string
+	Stage        *string
+	Service      *string
+	ID           *string
+	TriggeredID  *string
+	Source       *string
+	KeptnContext *string
 }
 
 // ErrNoEventFound indicates that no event could be found

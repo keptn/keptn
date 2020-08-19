@@ -1,0 +1,231 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "This is the API documentation of the Shipyard Controller.",
+        "title": "Shipyard Controller API",
+        "contact": {
+            "name": "Keptn Team",
+            "url": "http://www.keptn.sh"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "version": "1.0"
+    },
+    "basePath": "/v1",
+    "paths": {
+        "/event": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Handle incoming cloud event",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Events"
+                ],
+                "summary": "Handle event",
+                "parameters": [
+                    {
+                        "description": "Event type",
+                        "name": "event",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Event"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok"
+                    },
+                    "400": {
+                        "description": "Invalid payload",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/event/triggered/{eventType}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "get triggered events by their type",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Events"
+                ],
+                "summary": "Get triggered events",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event type",
+                        "name": "eventType",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "eventID",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Project",
+                        "name": "project",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Stage",
+                        "name": "stage",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Service",
+                        "name": "service",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "$ref": "#/definitions/models.Events"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid payload",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "models.Error": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "description": "Error code",
+                    "type": "integer"
+                },
+                "message": {
+                    "description": "Error message\nRequired: true",
+                    "type": "string"
+                }
+            }
+        },
+        "models.Event": {
+            "type": "object",
+            "properties": {
+                "contenttype": {
+                    "description": "contenttype",
+                    "type": "string"
+                },
+                "data": {
+                    "description": "data\nRequired: true",
+                    "type": "object"
+                },
+                "extensions": {
+                    "description": "extensions",
+                    "type": "object"
+                },
+                "id": {
+                    "description": "id",
+                    "type": "string"
+                },
+                "shkeptncontext": {
+                    "description": "shkeptncontext",
+                    "type": "string"
+                },
+                "source": {
+                    "description": "source\nRequired: true",
+                    "type": "string"
+                },
+                "specversion": {
+                    "description": "specversion",
+                    "type": "string"
+                },
+                "time": {
+                    "description": "time",
+                    "type": "string"
+                },
+                "triggeredid": {
+                    "description": "triggeredid",
+                    "type": "string"
+                },
+                "type": {
+                    "description": "type\nRequired: true",
+                    "type": "string"
+                }
+            }
+        },
+        "models.Events": {
+            "type": "object",
+            "properties": {
+                "events": {
+                    "description": "events",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Event"
+                    }
+                },
+                "nextPageKey": {
+                    "description": "Pointer to next page, base64 encoded",
+                    "type": "string"
+                },
+                "pageSize": {
+                    "description": "Size of returned page",
+                    "type": "number"
+                },
+                "totalCount": {
+                    "description": "Total number of events",
+                    "type": "number"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "ApiKeyAuth": {
+            "type": "apiKey",
+            "name": "x-token",
+            "in": "header"
+        }
+    }
+}
