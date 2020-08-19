@@ -11,10 +11,9 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
-
-	strfmt "github.com/go-openapi/strfmt"
 )
 
 // NewGetEventsParams creates a new GetEventsParams object
@@ -68,6 +67,10 @@ type GetEventsParams struct {
 	  In: query
 	*/
 	Project *string
+	/*Result of the event
+	  In: query
+	*/
+	Result *string
 	/*Set to load only root events
 	  In: query
 	*/
@@ -128,6 +131,11 @@ func (o *GetEventsParams) BindRequest(r *http.Request, route *middleware.Matched
 
 	qProject, qhkProject, _ := qs.GetOK("project")
 	if err := o.bindProject(qProject, qhkProject, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
+	qResult, qhkResult, _ := qs.GetOK("result")
+	if err := o.bindResult(qResult, qhkResult, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -289,6 +297,24 @@ func (o *GetEventsParams) bindProject(rawData []string, hasKey bool, formats str
 	}
 
 	o.Project = &raw
+
+	return nil
+}
+
+// bindResult binds and validates parameter Result from query.
+func (o *GetEventsParams) bindResult(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+
+	// Required: false
+	// AllowEmptyValue: false
+	if raw == "" { // empty values pass all other validations
+		return nil
+	}
+
+	o.Result = &raw
 
 	return nil
 }
