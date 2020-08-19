@@ -131,7 +131,7 @@ func deleteService(event cloudevents.Event, logger keptn.LoggerInterface) error 
 
 	serviceHandler := configutils.NewServiceHandler(configServiceURL)
 	for _, stage := range stages {
-		logger.Info("Creating new Keptn service " + eventData.Service + " in stage " + stage.StageName)
+		logger.Info("Deleting Keptn service " + eventData.Service + " from stage " + stage.StageName)
 		_, err := serviceHandler.DeleteServiceFromStage(eventData.Project, stage.StageName, eventData.Service)
 		if err != nil {
 			return fmt.Errorf("Failed to create service %s in project %s: %s", eventData.Service, eventData.Project, *err.Message)
