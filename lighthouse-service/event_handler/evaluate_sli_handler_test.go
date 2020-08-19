@@ -2588,7 +2588,7 @@ func TestEvaluateSLIHandler_getPreviousEvaluations(t *testing.T) {
 				Event:        tt.fields.Event,
 				HTTPClient:   tt.fields.HTTPClient,
 			}
-			got, err := eh.getPreviousEvaluations(tt.args.e, tt.args.numberOfPreviousResults)
+			got, err := eh.getPreviousEvaluations(tt.args.e, tt.args.numberOfPreviousResults, "all")
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getPreviousEvaluations() error = %v, wantErr %v", err, tt.wantErr)
 				return
