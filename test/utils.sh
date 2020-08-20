@@ -232,6 +232,35 @@ function wait_for_deployment_with_image_in_namespace() {
   fi
 }
 
+function wait_for_pod_number_in_deployment_in_namespace() {
+  DEPLOYMENT=$1; POD_COUNT=$2; NAMESPACE=$3;
+  RETRY=0; RETRY_MAX=50;
+
+  while [[ $RETRY -lt $RETRY_MAX ]]; do
+    DEPLOYMENT_LIST=$(eval "kubectl get deployments -n ${NAMESPACE} | awk '/$DEPLOYMENT /'" | awk '{print $1}') # list of multiple deployments when starting with the same name
+    if [[ -z "$DEPLOYMENT_LIST" ]]; then
+      RETRY=$[$RETRY+1]
+      echo "Retry: ${RETRY}/${RETRY_MAX} - Wait 15s for deployment ${DEPLOYMENT} in namespace ${NAMESPACE}"
+      sleep 15
+    else
+      READY_REPLICAS=$(eval kubectl get deployments $DEPLOYMENT -n $NAMESPACE -o=jsonpath='{$.status.availableReplicas}')
+      if [[ "$READY_REPLICAS" = "$POD_COUNT" ]]; then
+        echo "Found deployment ${DEPLOYMENT} in namespace ${NAMESPACE}: ${DEPLOYMENT_LIST}"
+        break
+      else
+          RETRY=$[$RETRY+1]
+          echo "Retry: ${RETRY}/${RETRY_MAX} - Wait 15s for deployment ${DEPLOYMENT} in namespace ${NAMESPACE}"
+          sleep 15
+      fi
+    fi
+  done
+
+  if [[ $RETRY == $RETRY_MAX ]]; then
+    echo "Error: Could not find deployment ${DEPLOYMENT} in namespace ${NAMESPACE}"
+    exit 1
+  fi
+}
+
 function wait_for_daemonset_in_namespace() {
   DAEMONSET=$1; NAMESPACE=$2;
   RETRY=0; RETRY_MAX=50;
