@@ -129,11 +129,11 @@ class Trace {
   }
 
   private isApproved(): boolean {
-    return this.data.approval.result == ApprovalStates.APPROVED;
+    return this.data.approval?.result == ApprovalStates.APPROVED;
   }
 
   private isDeclined(): boolean {
-    return this.data.approval.result == ApprovalStates.DECLINED;
+    return this.data.approval?.result == ApprovalStates.DECLINED;
   }
 
   hasLabels(): boolean {
