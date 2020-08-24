@@ -16,7 +16,12 @@ export class Root extends Trace {
   }
 
   isSuccessful(): string {
-    return this.traces.reduce((result: string, trace: Trace) => trace.isSuccessful() ? trace.data.stage : result, null);
+    return this.traces.reduce((result: string, trace: Trace) => {
+      if(result)
+        return trace.isFaulty() ? null : result;
+      else
+        return trace.isSuccessful() ? trace.data.stage : result
+    }, null);
   }
 
   isApproval(): string {
