@@ -43,6 +43,14 @@ export class Project {
       return null;
   }
 
+  getLatestRootEvents(stage: Stage): Root[] {
+    return this.getServices().map(service => service.roots.find(root => root.traces.some(trace => trace.data.stage === stage.stageName)));
+  }
+
+  getLatestFailedRootEvents(stage: Stage): Root[] {
+    return this.getLatestRootEvents(stage).filter(root => root.isFailedEvaluation() === stage.stageName);
+  }
+
   getRootEvent(service: Service, event: Trace): Root {
     return service.roots.find(root => root.shkeptncontext == event.shkeptncontext);
   }

@@ -88,6 +88,16 @@ class Trace {
     return result;
   }
 
+  isFailedEvaluation() {
+    let result: string = null;
+    if(this.data) {
+      if(this.type === EventTypes.EVALUATION_DONE && this.isFailed()) {
+        result = this.data.stage;
+      }
+    }
+    return result;
+  }
+
   isWarning(): string {
     let result: string = null;
     if(this.data) {
