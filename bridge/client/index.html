@@ -5,7 +5,7 @@
   <title>keptn</title>
   <base id="base-href" href="/">
   <script>
-    if(window.location.hostname != "localhost")
+    if(window.location.hostname != "localhost" && window.location.pathname.indexOf('bridge/') != -1)
       document.getElementById("base-href").href = window.location.pathname.substring(0, window.location.pathname.indexOf('bridge/')) + 'bridge/';
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1">
