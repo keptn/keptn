@@ -101,7 +101,7 @@ class Trace {
   isSuccessful(): string {
     let result: string = null;
     if(this.data) {
-      if(this.data.result == ResultTypes.PASSED || this.isApprovalFinished() && this.isApproved() || this.isProblem() && this.isProblemResolvedOrClosed()) {
+      if(this.data.result == ResultTypes.PASSED || this.isApprovalFinished() && this.isApproved() || this.isProblem() && this.isProblemResolvedOrClosed() || this.isSuccessfulRemediation()) {
         result = this.data.stage;
       }
     }
@@ -118,6 +118,10 @@ class Trace {
 
   public isProblemResolvedOrClosed(): boolean {
     return this.data.State === ProblemStates.RESOLVED || this.data.State === ProblemStates.CLOSED;
+  }
+
+  public isSuccessfulRemediation(): boolean {
+    return this.type === EventTypes.REMEDIATION_FINISHED && this.data.result == ResultTypes.PASSED;
   }
 
   public isApproval(): string {
