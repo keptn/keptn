@@ -69,7 +69,8 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 	} else if sloConfig.Comparison.CompareWith == "several_results" {
 		numberOfPreviousResults = sloConfig.Comparison.NumberOfComparisonResults
 	}
-	previousEvaluationEvents, err := eh.getPreviousEvaluations(e, numberOfPreviousResults)
+
+	previousEvaluationEvents, err := eh.getPreviousEvaluations(e, numberOfPreviousResults, sloConfig.Comparison.IncludeResultWithScore)
 	if err != nil {
 		return err
 	}
@@ -496,43 +497,71 @@ func parseCriteriaString(criteria string) (*criteriaObject, error) {
 }
 
 // gets previous evaluation-done events from mongodb-datastore
-func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptn.InternalGetSLIDoneEventData, numberOfPreviousResults int) ([]*keptn.EvaluationDoneEventData, error) {
-	// previous results are fetched from mongodb datastore with source=lighthouse-service
-	queryString := fmt.Sprintf(getDatastoreURL()+"/event?type=%s&source=%s&project=%s&stage=%s&service=%s&pageSize=%d",
-		keptn.EvaluationDoneEventType, "lighthouse-service",
-		e.Project, e.Stage, e.Service, numberOfPreviousResults)
-
-	req, err := http.NewRequest("GET", queryString, nil)
-	req.Header.Set("Content-Type", "application/json")
-	resp, err := eh.HTTPClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	body, _ := ioutil.ReadAll(resp.Body)
-	if resp.StatusCode != 200 {
-		return nil, errors.New("could not retrieve previous evaluation-done events")
-	}
-	previousEvents := &datastoreResult{}
-	err = json.Unmarshal(body, previousEvents)
-	if err != nil {
-		return nil, err
-	}
+func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptn.InternalGetSLIDoneEventData, numberOfPreviousResults int, includeResult string) ([]*keptn.EvaluationDoneEventData, error) {
 	var evaluationDoneEvents []*keptn.EvaluationDoneEventData
 
-	// iterate over previous events
-	for _, event := range previousEvents.Events {
-		bytes, err := json.Marshal(event.Data)
-		if err != nil {
-			continue
-		}
-		var evaluationDoneEvent keptn.EvaluationDoneEventData
-		err = json.Unmarshal(bytes, &evaluationDoneEvent)
+	nextPageKey := ""
+	for {
+		// previous results are fetched from mongodb datastore with source=lighthouse-service
+		queryString := fmt.Sprintf(getDatastoreURL()+"/event?type=%s&source=%s&project=%s&stage=%s&service=%s&pageSize=%d&nextPageKey=%s",
+			keptn.EvaluationDoneEventType, "lighthouse-service",
+			e.Project, e.Stage, e.Service, numberOfPreviousResults, nextPageKey)
 
+		includeResult = strings.ToLower(includeResult)
+
+		req, err := http.NewRequest("GET", queryString, nil)
+		req.Header.Set("Content-Type", "application/json")
+		resp, err := eh.HTTPClient.Do(req)
 		if err != nil {
-			continue
+			return nil, err
 		}
-		evaluationDoneEvents = append(evaluationDoneEvents, &evaluationDoneEvent)
+		defer resp.Body.Close()
+		body, _ := ioutil.ReadAll(resp.Body)
+		if resp.StatusCode != 200 {
+			return nil, errors.New("could not retrieve previous evaluation-done events")
+		}
+		previousEvents := &datastoreResult{}
+		err = json.Unmarshal(body, previousEvents)
+		if err != nil {
+			return nil, err
+		}
+
+		// iterate over previous events
+		for _, event := range previousEvents.Events {
+			bytes, err := json.Marshal(event.Data)
+			if err != nil {
+				continue
+			}
+			var evaluationDoneEvent keptn.EvaluationDoneEventData
+			err = json.Unmarshal(bytes, &evaluationDoneEvent)
+
+			if err != nil {
+				continue
+			}
+			switch includeResult {
+			case "pass":
+				if strings.ToLower(evaluationDoneEvent.Result) == "pass" {
+					evaluationDoneEvents = append(evaluationDoneEvents, &evaluationDoneEvent)
+				}
+				break
+			case "pass_or_warn":
+				if strings.ToLower(evaluationDoneEvent.Result) == "pass" || strings.ToLower(evaluationDoneEvent.Result) == "warning" {
+					evaluationDoneEvents = append(evaluationDoneEvents, &evaluationDoneEvent)
+				}
+				break
+			default:
+				evaluationDoneEvents = append(evaluationDoneEvents, &evaluationDoneEvent)
+				break
+			}
+			if len(evaluationDoneEvents) == numberOfPreviousResults {
+				return evaluationDoneEvents, nil
+			}
+		}
+
+		if previousEvents.NextPageKey == "" || previousEvents.NextPageKey == "0" {
+			break
+		}
+		nextPageKey = previousEvents.NextPageKey
 	}
 	return evaluationDoneEvents, nil
 }
