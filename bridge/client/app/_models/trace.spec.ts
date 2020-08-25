@@ -15,7 +15,7 @@ describe('Trace', () => {
     expect(rootTraces[0].getIcon()).toBe('information', 'Icon for trace "sh.keptn.internal.event.service.create" should be "information"');
     expect(rootTraces[0].isFaulty()).toBe(null);
     expect(rootTraces[0].isWarning()).toBe(null);
-    expect(rootTraces[0].isSuccessful()).toBe(false);
+    expect(rootTraces[0].isSuccessful()).toBe(null);
     expect(rootTraces[0].getProject()).toBe('sockshop');
     expect(rootTraces[0].getService()).toBe('carts');
 
@@ -25,7 +25,7 @@ describe('Trace', () => {
     expect(rootTraces[1].getIcon()).toBe('duplicate', 'Icon for trace "sh.keptn.event.configuration.change" should be "duplicate"');
     expect(rootTraces[1].isFaulty()).toBe(null);
     expect(rootTraces[1].isWarning()).toBe(null);
-    expect(rootTraces[1].isSuccessful()).toBe(false);
+    expect(rootTraces[1].isSuccessful()).toBe(null);
     expect(rootTraces[1].getProject()).toBe('sockshop');
     expect(rootTraces[1].getService()).toBe('carts');
 
@@ -35,7 +35,7 @@ describe('Trace', () => {
     expect(rootTraces[2].getIcon()).toBe('duplicate', 'Icon for trace "sh.keptn.event.configuration.change" should be "duplicate"');
     expect(rootTraces[2].isFaulty()).toBe(null);
     expect(rootTraces[2].isWarning()).toBe(null);
-    expect(rootTraces[2].isSuccessful()).toBe(false);
+    expect(rootTraces[2].isSuccessful()).toBe(null);
     expect(rootTraces[2].getProject()).toBe('sockshop');
     expect(rootTraces[2].getService()).toBe('carts');
 
@@ -44,7 +44,7 @@ describe('Trace', () => {
     expect(evaluationTraces[0].getIcon()).toBe('traffic-light', 'Icon for trace "sh.keptn.events.evaluation-done" should be "traffic-light"');
     expect(evaluationTraces[0].isFaulty()).toBe(null);
     expect(evaluationTraces[0].isWarning()).toBe(null);
-    expect(evaluationTraces[0].isSuccessful()).toBe(true, 'Successful evaluation should return true');
+    expect(evaluationTraces[0].isSuccessful()).toBe(evaluationTraces[0].data.stage, 'Successful evaluation should return true');
     expect(evaluationTraces[0].getProject()).toBe('sockshop');
     expect(evaluationTraces[0].getService()).toBe('carts');
   }));
