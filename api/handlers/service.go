@@ -23,6 +23,11 @@ type serviceCreateEventData struct {
 	EventContext                       models.EventContext `json:"eventContext"`
 }
 
+type serviceDeleteEventData struct {
+	keptnevents.ServiceDeleteEventData `json:",inline"`
+	EventContext                       models.EventContext `json:"eventContext"`
+}
+
 // PostServiceHandlerFunc creates a new service
 func PostServiceHandlerFunc(params service.PostProjectProjectNameServiceParams, principal *models.Principal) middleware.Responder {
 
@@ -60,6 +65,51 @@ func PostServiceHandlerFunc(params service.PostProjectProjectNameServiceParams, 
 			ID:          uuid.New().String(),
 			Time:        &types.Timestamp{Time: time.Now()},
 			Type:        keptnevents.InternalServiceCreateEventType,
+			Source:      types.URLRef{URL: *source},
+			ContentType: &contentType,
+			Extensions:  map[string]interface{}{"shkeptncontext": keptnContext},
+		}.AsV02(),
+		Data: forwardData,
+	}
+
+	_, err = utils.PostToEventBroker(event)
+	if err != nil {
+		l.Error(fmt.Sprintf("Error sending CloudEvent %s", err.Error()))
+		return getServiceInternalError(err)
+	}
+
+	return service.NewPostProjectProjectNameServiceOK().WithPayload(&eventContext)
+}
+
+// DeleteServiceHandlerFunc godoc
+func DeleteServiceHandlerFunc(params service.DeleteProjectProjectNameServiceServiceNameParams, principal *models.Principal) middleware.Responder {
+
+	keptnContext := uuid.New().String()
+	l := keptnutils.NewLogger(keptnContext, "", "api")
+	l.Info("API received create for service")
+
+	token, err := ws.CreateChannelInfo(keptnContext)
+	if err != nil {
+		l.Error(fmt.Sprintf("Error creating channel info %s", err.Error()))
+		return getServiceInternalError(err)
+	}
+
+	eventContext := models.EventContext{KeptnContext: &keptnContext, Token: &token}
+
+	source, _ := url.Parse("https://github.com/keptn/keptn/api")
+
+	serviceData := keptnevents.ServiceDeleteEventData{
+		Project: params.ProjectName,
+		Service: params.ServiceName,
+	}
+	forwardData := serviceDeleteEventData{ServiceDeleteEventData: serviceData, EventContext: eventContext}
+
+	contentType := "application/json"
+	event := cloudevents.Event{
+		Context: cloudevents.EventContextV02{
+			ID:          uuid.New().String(),
+			Time:        &types.Timestamp{Time: time.Now()},
+			Type:        keptnevents.InternalServiceDeleteEventType,
 			Source:      types.URLRef{URL: *source},
 			ContentType: &contentType,
 			Extensions:  map[string]interface{}{"shkeptncontext": keptnContext},

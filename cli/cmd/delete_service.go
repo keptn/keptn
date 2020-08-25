@@ -6,21 +6,27 @@ import (
 
 	"github.com/keptn/keptn/cli/pkg/websockethelper"
 
-	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/spf13/cobra"
 )
 
+type deleteServiceCmdParams struct {
+	Project *string
+	Service *string
+}
+
+var deleteServiceParams *deleteServiceCmdParams
+
 // delServiceCmd allows to delete a service
 var delServiceCmd = &cobra.Command{
-	Use:   "delete SERVICENAME --project=PROJECTNAME",
+	Use:   "service SERVICENAME --project=PROJECTNAME",
 	Short: "Deletes a service from a project",
 	Long: `Deletes a service from a project by deleting the configuration in the GIT repository.
 Furthermore, if Keptn is used for continuous delivery (i.e. services have been onboarded), this command will also uninstall the associated Helm releases.
 `,
-	Example:      `keptn delete project sockshop`,
+	Example:      `keptn delete service carts --project=sockshop`,
 	SilenceUsage: true,
 	Args:         cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -28,18 +34,20 @@ Furthermore, if Keptn is used for continuous delivery (i.e. services have been o
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
-		logging.PrintLog("Starting to delete project", logging.InfoLevel)
 
-		project := apimodels.Project{
-			ProjectName: args[0],
+		if len(args) != 1 {
+			cmd.SilenceUsage = false
+			return errors.New("required argument SERVICENAME not set")
 		}
+		service := args[0]
+
+		logging.PrintLog("Starting to delete service", logging.InfoLevel)
 
 		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
-			// TODO: API needs to be implemented first
-			eventContext, err := apiHandler.DeleteProject(project)
+			eventContext, err := apiHandler.DeleteService(*deleteServiceParams.Project, service)
 			if err != nil {
 				fmt.Println("Delete project was unsuccessful")
 				return fmt.Errorf("Delete project was unsuccessful. %s", *err.Message)
@@ -60,4 +68,7 @@ Furthermore, if Keptn is used for continuous delivery (i.e. services have been o
 
 func init() {
 	deleteCmd.AddCommand(delServiceCmd)
+	deleteServiceParams = &deleteServiceCmdParams{}
+	deleteServiceParams.Project = delServiceCmd.Flags().StringP("project", "p", "", "The project from which to delete the service")
+	delServiceCmd.MarkFlagRequired("project")
 }

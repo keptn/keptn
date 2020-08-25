@@ -102,12 +102,44 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 			keptnHandler.Logger.Terminate("")
 		}
 		return err
+	} else if event.Type() == keptn.InternalServiceDeleteEventType {
+		err := deleteService(event, keptnHandler.Logger)
+		if err != nil {
+			keptnHandler.Logger.Error(err.Error())
+		}
+		keptnHandler.Logger.Terminate("")
+		return err
 	} else {
 		const errorMsg = "Received unexpected keptn event that cannot be processed"
 		keptnHandler.Logger.Terminate(errorMsg)
 		return errors.New(errorMsg)
 	}
 	return nil
+}
+
+func deleteService(event cloudevents.Event, logger keptn.LoggerInterface) error {
+	eventData := keptn.ServiceDeleteEventData{}
+	if err := event.DataAs(&eventData); err != nil {
+		return err
+	}
+
+	stageHandler := configutils.NewStageHandler(configServiceURL)
+	stages, err := stageHandler.GetAllStages(eventData.Project)
+	if err != nil {
+		return fmt.Errorf("Failed to get stages for project %s: %v", eventData.Project, err)
+	}
+
+	serviceHandler := configutils.NewServiceHandler(configServiceURL)
+	for _, stage := range stages {
+		logger.Info("Deleting Keptn service " + eventData.Service + " from stage " + stage.StageName)
+		_, err := serviceHandler.DeleteServiceFromStage(eventData.Project, stage.StageName, eventData.Service)
+		if err != nil {
+			return fmt.Errorf("Failed to create service %s in project %s: %s", eventData.Service, eventData.Project, *err.Message)
+		}
+	}
+
+	return nil
+
 }
 
 func createService(event cloudevents.Event, logger keptn.LoggerInterface) (bool, error) {
