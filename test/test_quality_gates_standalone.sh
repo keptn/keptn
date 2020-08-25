@@ -167,7 +167,7 @@ verify_using_jq "$response" ".data.evaluationdetails.sloFileContent" ""
 #             Tenant/API Token configured
 ########################################################################################################################
 
-kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/dynatrace-sli-service/${DYNATRACE_SLI_SERVICE_VERSION}/deploy/service.yaml
+kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/dynatrace-sli-service/${DYNATRACE_SLI_SERVICE_VERSION}/deploy/service.yaml -n keptn
 sleep 10
 
 wait_for_deployment_in_namespace "dynatrace-sli-service" "keptn"
