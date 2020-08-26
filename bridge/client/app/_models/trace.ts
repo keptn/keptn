@@ -98,26 +98,30 @@ class Trace {
     return result;
   }
 
-  isSuccessful(): boolean {
-    let result: boolean = false;
+  isSuccessful(): string {
+    let result: string = null;
     if(this.data) {
-      if(this.data.result == ResultTypes.PASSED || this.isApprovalFinished() && this.isApproved() || this.isProblem() && this.isProblemResolvedOrClosed()) {
-        result = true;
+      if(this.data.result == ResultTypes.PASSED || this.isApprovalFinished() && this.isApproved() || this.isProblem() && this.isProblemResolvedOrClosed() || this.isSuccessfulRemediation()) {
+        result = this.data.stage;
       }
     }
-    return !this.isFaulty() && result;
+    return !this.isFaulty() && result ? result : null;
   }
 
-  private isFailed(): boolean {
+  public isFailed(): boolean {
     return this.data.result == ResultTypes.FAILED || this.isApprovalFinished() && this.isDeclined();
   }
 
-  private isProblem(): boolean {
+  public isProblem(): boolean {
     return this.type === EventTypes.PROBLEM_DETECTED || this.type === EventTypes.PROBLEM_OPEN;
   }
 
-  private isProblemResolvedOrClosed(): boolean {
+  public isProblemResolvedOrClosed(): boolean {
     return this.data.State === ProblemStates.RESOLVED || this.data.State === ProblemStates.CLOSED;
+  }
+
+  public isSuccessfulRemediation(): boolean {
+    return this.type === EventTypes.REMEDIATION_FINISHED && this.data.result == ResultTypes.PASSED;
   }
 
   public isApproval(): string {
@@ -129,11 +133,11 @@ class Trace {
   }
 
   private isApproved(): boolean {
-    return this.data.approval.result == ApprovalStates.APPROVED;
+    return this.data.approval?.result == ApprovalStates.APPROVED;
   }
 
   private isDeclined(): boolean {
-    return this.data.approval.result == ApprovalStates.DECLINED;
+    return this.data.approval?.result == ApprovalStates.DECLINED;
   }
 
   hasLabels(): boolean {

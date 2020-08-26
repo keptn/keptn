@@ -12,6 +12,8 @@ import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, Vi
     '[class.ktb-tile-disabled]': 'disabled',
     '[attr.aria-error]': 'error',
     '[class.ktb-tile-error]': 'error',
+    '[attr.aria-warning]': 'warning',
+    '[class.ktb-tile-warning]': 'warning',
     '[attr.aria-success]': 'success',
     '[class.ktb-tile-success]': 'success',
     '[attr.aria-highlight]': 'highlight',
@@ -26,6 +28,7 @@ export class KtbSelectableTileComponent implements OnInit {
   private _selected = false;
   private _disabled = false;
   private _error = false;
+  private _warning = false;
   private _success = false;
   private _highlight = false;
 
@@ -60,6 +63,17 @@ export class KtbSelectableTileComponent implements OnInit {
   set error(value: boolean) {
     if (this._error !== value) {
       this._error = value;
+      this._changeDetectorRef.markForCheck();
+    }
+  }
+
+  @Input()
+  get warning(): boolean {
+    return this._warning;
+  }
+  set warning(value: boolean) {
+    if (this._warning !== value) {
+      this._warning = value;
       this._changeDetectorRef.markForCheck();
     }
   }

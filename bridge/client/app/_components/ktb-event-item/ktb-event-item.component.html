@@ -1,4 +1,4 @@
-<ktb-selectable-tile [error]="_event.isFaulty()" [success]="_event.isSuccessful()" [highlight]="_event.isApproval()" *ngIf="_event && (project$ | async) as project">
+<ktb-selectable-tile [error]="_event.isFaulty()" [warning]="_event.isWarning()" [success]="_event.isSuccessful()" [highlight]="_event.isApproval()" *ngIf="_event && (project$ | async) as project">
   <div fxLayout="row">
     <div fxFlex>
       <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
