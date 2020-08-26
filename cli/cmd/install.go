@@ -428,6 +428,7 @@ func waitForDeploymentsOfHelmRelease(helmManifest string) error {
 // Preconditions: 1. Already authenticated against the cluster.
 func doInstallation() error {
 	keptnNamespace := *installParams.Namespace
+
 	res, err := keptnutils.ExistsNamespace(false, keptnNamespace)
 	if err != nil {
 		return fmt.Errorf("Failed to check if namespace %s already exists: %v", keptnNamespace, err)
@@ -466,14 +467,6 @@ func doInstallation() error {
 				"type": installParams.ApiServiceType.String(),
 			},
 		},
-	}
-
-	if keptnNamespace != "keptn" {
-		controlPlaneMap := values["control-plane"]
-		switch controlPlaneMap := controlPlaneMap.(type) {
-		case map[string]interface{}:
-			controlPlaneMap["prefixPath"] = "/"+keptnNamespace
-		}
 	}
 
 	if err := upgradeChart(installChart, "keptn", keptnNamespace, values); err != nil {

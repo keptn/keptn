@@ -30,9 +30,14 @@ var (
 	Version string
 )
 
-const versionCheckInfo = "Daily version check is %s. Keptn will%s collect statistical data and will%s notify about new versions and security patches for Keptn. Details can be found at https://keptn.sh/docs/0.7.x/reference/version_check\n"
-const enableVersionCheckMsg = "To %s the daily version check, please execute: \nkeptn set config AutomaticVersionCheck %s\n"
+const versionCheckInfo = `Daily version check is %s. 
+Keptn will%s collect statistical data and will%s notify about new versions and security patches for Keptn. Details can be found at: https://keptn.sh/docs/0.7.x/reference/version_check
+---------------------------------------------------
+`
+const enableVersionCheckMsg = `* To %s the daily version check, please execute:
+ - keptn set config AutomaticVersionCheck %s
 
+`
 const keptnReleaseDocsURL = "0.7.x"
 
 // KubeServerVersionConstraints the Kubernetes Cluster version's constraints is passed by ldflags
@@ -45,7 +50,7 @@ var versionCmd = &cobra.Command{
 	Long:    `Shows the CLI version of Keptn and a note when a new version is available.`,
 	Example: `keptn version`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("CLI version: " + Version)
+		fmt.Println("\nKeptn CLI version: " + Version + "\n")
 
 		configMng := config.NewCLIConfigManager()
 		cliConfig, err := configMng.LoadCLIConfig()
