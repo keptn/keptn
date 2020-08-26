@@ -210,7 +210,7 @@ while [[ $RETRY -lt $RETRY_MAX ]]; do
 done
 
 if [[ $RETRY == $RETRY_MAX ]]; then
-  kubectl -n keptn logs svc/dynatrace-sli-service
+  kubectl -n keptn logs svc/dynatrace-sli-service -c dynatrace-sli-service
   print_error "evaluation-done event could not be retrieved"
   # exit 1 - Todo - see below
 fi
@@ -261,7 +261,7 @@ done
 
 if [[ $RETRY == $RETRY_MAX ]]; then
   # print logs of dynatrace-sli-service
-  kubectl -n keptn logs svc/dynatrace-sli-service
+  kubectl -n keptn logs svc/dynatrace-sli-service -c dynatrace-sli-service
   print_error "evaluation-done event could not be retrieved"
   exit 1
 fi
@@ -339,7 +339,7 @@ done
 
 if [[ $RETRY == $RETRY_MAX ]]; then
   # print logs of dynatrace-sli-service
-  kubectl -n keptn logs svc/dynatrace-sli-service
+  kubectl -n keptn logs svc/dynatrace-sli-service -c dynatrace-sli-service
   print_error "evaluation-done event could not be retrieved"
   exit 1
 fi
@@ -419,7 +419,7 @@ done
 
 if [[ $RETRY == $RETRY_MAX ]]; then
   # print logs of dynatrace-sli-service
-  kubectl -n keptn logs svc/dynatrace-sli-service
+  kubectl -n keptn logs svc/dynatrace-sli-service -c dynatrace-sli-service
   print_error "evaluation-done event could not be retrieved"
   exit 1
 fi
@@ -503,7 +503,7 @@ done
 
 if [[ $RETRY == $RETRY_MAX ]]; then
   # print logs of dynatrace-sli-service
-  kubectl -n keptn logs svc/dynatrace-sli-service
+  kubectl -n keptn logs svc/dynatrace-sli-service -c dynatrace-sli-service
   print_error "evaluation-done event could not be retrieved"
   exit 1
 fi
