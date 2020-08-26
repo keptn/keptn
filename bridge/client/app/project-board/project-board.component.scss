@@ -35,6 +35,13 @@
   fill: $blue-400;
 }
 
+::ng-deep {
+  .dt-tag {
+    &.justify-content-center {
+      justify-content: center;
+    }
+  }
+}
 
 ::ng-deep {
   .dt-button-nested,
