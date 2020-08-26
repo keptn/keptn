@@ -18,74 +18,38 @@ package cmd
 
 import (
 	"bufio"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
-	"io/ioutil"
-	"net/http"
 	"os"
-	"path/filepath"
-	"regexp"
 	"strings"
+
+	"helm.sh/helm/v3/pkg/chart"
+
+	"github.com/keptn/keptn/cli/pkg/platform"
+
+	"github.com/keptn/keptn/cli/pkg/helm"
 
 	"github.com/keptn/keptn/cli/pkg/version"
 
-	"github.com/keptn/keptn/cli/pkg/file"
 	"github.com/keptn/keptn/cli/pkg/kube"
-	"helm.sh/helm/v3/pkg/action"
-	"helm.sh/helm/v3/pkg/chart"
-	kubeclient "helm.sh/helm/v3/pkg/kube"
-	"helm.sh/helm/v3/pkg/release"
-	"helm.sh/helm/v3/pkg/storage"
-	"helm.sh/helm/v3/pkg/storage/driver"
-	appsv1 "k8s.io/api/apps/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	kyaml "k8s.io/apimachinery/pkg/util/yaml"
-	"k8s.io/cli-runtime/pkg/genericclioptions"
-	"k8s.io/client-go/rest"
-	cmdutil "k8s.io/kubectl/pkg/cmd/util"
 
-	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
+
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"github.com/spf13/cobra"
-	"k8s.io/client-go/tools/clientcmd"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type installCmdParams struct {
-	ConfigFilePath      *string
-	KeptnVersion        *string
-	PlatformIdentifier  *string
-	UseCaseInput        *string
-	UseCase             usecase
-	ApiServiceTypeInput *string
-	ApiServiceType      apiServiceType
-	ChartRepoURL        *string
-	Namespace			*string
+	installUpgradeParams
+	UseCaseInput             *string
+	UseCase                  usecase
+	EndPointServiceTypeInput *string
+	EndPointServiceType      endpointServiceType
 }
-
-const keptnInstallerLogFileName = "keptn-installer.log"
-const keptnInstallerErrorLogFileName = "keptn-installer-Err.log"
-
-const keptnInstallerHelmRepoURL = "https://storage.googleapis.com/keptn-installer/"
 
 var installParams installCmdParams
-
-const openshift = "openshift"
-const kubernetes = "kubernetes"
-
-type platform interface {
-	checkRequirements() error
-	getCreds() interface{}
-	checkCreds() error
-	readCreds()
-	printCreds()
-}
-
-var p platform
-
-var installChart *chart.Chart
+var keptnChart *chart.Chart
 
 // installCmd represents the version command
 var installCmd = &cobra.Command{
@@ -105,20 +69,11 @@ keptn install --platform=kubernetes --endpoint-service-type=NodePort # install o
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 
 		// Parse api service type
-		if val, ok := apiServiceTypeToID[*installParams.ApiServiceTypeInput]; ok {
-			installParams.ApiServiceType = val
+		if val, ok := apiServiceTypeToID[*installParams.EndPointServiceTypeInput]; ok {
+			installParams.EndPointServiceType = val
 		} else {
 			return errors.New("value of 'endpoint-service-type' flag is unknown. Supported values are " +
 				"[" + ClusterIP.String() + "," + LoadBalancer.String() + "," + NodePort.String() + "]")
-		}
-
-		if insecureSkipTLSVerify {
-			kubectlOptions = "--insecure-skip-tls-verify=true"
-		}
-
-		err := setPlatform()
-		if err != nil {
-			return err
 		}
 
 		if val, ok := usecaseToID[*installParams.UseCaseInput]; ok {
@@ -144,36 +99,57 @@ keptn install --platform=kubernetes --endpoint-service-type=NodePort # install o
 			chartRepoURL = keptnInstallerHelmRepoURL + "latest/keptn-0.1.0.tgz"
 		}
 
-		if err := downloadChart(chartRepoURL); err != nil {
+		var err error
+		if keptnChart, err = helm.NewHelmHelper().DownloadChart(chartRepoURL); err != nil {
 			return err
 		}
 
 		logging.PrintLog(fmt.Sprintf("Helm Chart used for Keptn installation: %s", chartRepoURL), logging.InfoLevel)
 
-		if !mocking {
-			if p.checkRequirements() != nil {
-				return err
-			}
+		installPlatformManager, err := platform.NewPlatformManager(*installParams.PlatformIdentifier)
+		if err != nil {
+			return err
+		}
 
-			// Check whether kubectl is installed
-			isKubAvailable, err := kube.IsKubectlAvailable()
-			if err != nil || !isKubAvailable {
-				return errors.New(`Keptn requires 'kubectl' but it is not available.
-Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
+		if !mocking {
+			if err := installPlatformManager.CheckRequirements(); err != nil {
+				return err
 			}
 		}
 
 		if installParams.ConfigFilePath != nil && *installParams.ConfigFilePath != "" {
 			// Config was provided in form of a file
-			err = parseConfig(*installParams.ConfigFilePath)
-			if err != nil {
+			if err := installPlatformManager.ParseConfig(*installParams.ConfigFilePath); err != nil {
 				return err
 			}
 
 			// Check whether the authentication at the cluster is valid
-			err = p.checkCreds()
+			if err := installPlatformManager.CheckCreds(); err != nil {
+				return err
+			}
+		} else {
+			err = installPlatformManager.ReadCreds()
 			if err != nil {
 				return err
+			}
+		}
+
+		// check if Kubernetes server version is compatible (except OpenShift)
+		if *installParams.PlatformIdentifier != platform.OpenShiftIdentifier {
+			if err := kube.CheckKubeServerVersion(KubeServerVersionConstraints); err != nil {
+				logging.PrintLog(err.Error(), logging.VerboseLevel)
+				logging.PrintLog("See https://keptn.sh/docs/"+keptnReleaseDocsURL+"/operate/k8s_support/ for details.", logging.VerboseLevel)
+				return fmt.Errorf("Failed to check kubernetes server version: %w", err)
+			}
+		}
+
+		// check if istio-system namespace and istio-ingressgateway is available (full installation only)
+		if installParams.UseCase == ContinuousDelivery {
+			if err := checkIstioInstallation(); err != nil {
+				logging.PrintLog("Istio is required for the continuous-delivery use case, "+
+					"but could not be found in your cluster in namespace istio-system.", logging.InfoLevel)
+				logging.PrintLog("Please install Istio as described "+
+					"in the Istio docs: https://istio.io/latest/docs/setup/getting-started/", logging.InfoLevel)
 			}
 		}
 
@@ -182,35 +158,7 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 	RunE: func(cmd *cobra.Command, args []string) error {
 
 		logging.PrintLog("Installing Keptn ...", logging.InfoLevel)
-
-		var err error
 		if !mocking {
-			if installParams.ConfigFilePath == nil || *installParams.ConfigFilePath == "" {
-				err = readCreds()
-				if err != nil {
-					return err
-				}
-			}
-
-			// check if Kubernetes server version is compatible (except OpenShift)
-			if *installParams.PlatformIdentifier != "openshift" {
-				if err := kube.CheckKubeServerVersion(KubeServerVersionConstraints); err != nil {
-					logging.PrintLog(err.Error(), logging.VerboseLevel)
-					logging.PrintLog("See https://keptn.sh/docs/"+keptnReleaseDocsURL+"/operate/k8s_support/ for details.", logging.VerboseLevel)
-					return fmt.Errorf("Failed to check kubernetes server version: %w", err)
-				}
-			}
-
-			// check if istio-system namespace and istio-ingressgateway is available (full installation only)
-			if installParams.UseCase == ContinuousDelivery {
-				if err := checkIstioInstallation(); err != nil {
-					logging.PrintLog("Istio is required for the continuous-delivery use case, "+
-						"but could not be found in your cluster in namespace istio-system.", logging.InfoLevel)
-					logging.PrintLog("Please install Istio as described "+
-						"in the Istio docs: https://istio.io/latest/docs/setup/getting-started/", logging.InfoLevel)
-				}
-			}
-
 			return doInstallation()
 		}
 		fmt.Println("Skipping installation due to mocking flag")
@@ -218,67 +166,12 @@ Please see https://kubernetes.io/docs/tasks/tools/install-kubectl/`)
 	},
 }
 
-func downloadChart(chartRepoURL string) error {
-
-	resp, err := http.Get(chartRepoURL)
-	if err != nil {
-		return errors.New("error retrieving Keptn Helm Chart at " + chartRepoURL + ": " + err.Error())
-	}
-	defer resp.Body.Close()
-
-	bytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return errors.New("error retrieving Keptn Helm Chart at " + chartRepoURL + ": " + err.Error())
-	}
-
-	installChart, err = keptnutils.LoadChart(bytes)
-	if err != nil {
-		return errors.New("error retrieving Keptn Helm Chart at " + chartRepoURL + ": " + err.Error())
-	}
-	return nil
-}
-
-func checkIstioInstallation() error {
-	clientset, err := keptnutils.GetClientset(false)
-	if err != nil {
-		return err
-	}
-	_, err = clientset.CoreV1().Namespaces().Get("istio-system", metav1.GetOptions{})
-	if err != nil {
-		return err
-	}
-
-	_, err = clientset.CoreV1().Services("istio-system").Get("istio-ingressgateway", metav1.GetOptions{})
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func setPlatform() error {
-
-	*installParams.PlatformIdentifier = strings.ToLower(*installParams.PlatformIdentifier)
-
-	switch *installParams.PlatformIdentifier {
-	case openshift:
-		p = newOpenShiftPlatform()
-		return nil
-	case kubernetes:
-		p = newKubernetesPlatform()
-		return nil
-	default:
-		return errors.New("Unsupported platform '" + *installParams.PlatformIdentifier +
-			"'. The following platforms are supported: openshift and kubernetes")
-	}
-}
-
 func init() {
 	rootCmd.AddCommand(installCmd)
 	installParams = installCmdParams{}
 
 	installParams.PlatformIdentifier = installCmd.Flags().StringP("platform", "p", "kubernetes",
-		"The platform to run Keptn on ["+kubernetes+","+openshift+"]")
+		"The platform to run Keptn on ["+platform.KubernetesIdentifier+","+platform.OpenShiftIdentifier+"]")
 
 	installParams.ConfigFilePath = installCmd.Flags().StringP("creds", "c", "",
 		"Specify a JSON file containing cluster information needed for the installation. This allows skipping user prompts to execute a *silent* Keptn installation.")
@@ -286,7 +179,7 @@ func init() {
 	installParams.UseCaseInput = installCmd.Flags().StringP("use-case", "u", "",
 		"The use case to install Keptn for ["+ContinuousDelivery.String()+"]")
 
-	installParams.ApiServiceTypeInput = installCmd.Flags().StringP("endpoint-service-type", "",
+	installParams.EndPointServiceTypeInput = installCmd.Flags().StringP("endpoint-service-type", "",
 		ClusterIP.String(), "Installation options for the endpoint-service type ["+ClusterIP.String()+","+
 			LoadBalancer.String()+","+NodePort.String()+"]")
 
@@ -299,130 +192,6 @@ func init() {
 
 	installParams.Namespace = installCmd.Flags().StringP("namespace", "n", "keptn",
 		"Specify the namespace Keptn should be installed in (default keptn).")
-}
-
-func newActionConfig(config *rest.Config, namespace string) (*action.Configuration, error) {
-
-	logFunc := func(format string, v ...interface{}) {
-		fmt.Sprintf(format, v)
-	}
-
-	restClientGetter := newConfigFlags(config, namespace)
-	kubeClient := &kubeclient.Client{
-		Factory: cmdutil.NewFactory(restClientGetter),
-		Log:     logFunc,
-	}
-	client, err := kubeClient.Factory.KubernetesClientSet()
-	if err != nil {
-		return nil, err
-	}
-
-	s := driver.NewSecrets(client.CoreV1().Secrets(namespace))
-	s.Log = logFunc
-
-	return &action.Configuration{
-		RESTClientGetter: restClientGetter,
-		Releases:         storage.Init(s),
-		KubeClient:       kubeClient,
-		Log:              logFunc,
-	}, nil
-}
-
-func newConfigFlags(config *rest.Config, namespace string) *genericclioptions.ConfigFlags {
-	return &genericclioptions.ConfigFlags{
-		Namespace:   &namespace,
-		APIServer:   &config.Host,
-		CAFile:      &config.CAFile,
-		BearerToken: &config.BearerToken,
-	}
-}
-
-func upgradeChart(ch *chart.Chart, releaseName, namespace string, vals map[string]interface{}) error {
-
-	if len(ch.Templates) > 0 {
-		logging.PrintLog(fmt.Sprintf("Start upgrading Helm Chart %s in namespace: %s", releaseName, namespace), logging.InfoLevel)
-		var kubeconfig string
-		if os.Getenv("KUBECONFIG") != "" {
-			kubeconfig = keptnutils.ExpandTilde(os.Getenv("KUBECONFIG"))
-		} else {
-			kubeconfig = filepath.Join(
-				keptnutils.UserHomeDir(), ".kube", "config",
-			)
-		}
-		config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
-		if err != nil {
-			return err
-		}
-
-		cfg, err := newActionConfig(config, namespace)
-		if err != nil {
-			return err
-		}
-
-		histClient := action.NewHistory(cfg)
-		var release *release.Release
-
-		if _, err = histClient.Run(releaseName); err == driver.ErrReleaseNotFound {
-			iCli := action.NewInstall(cfg)
-			iCli.Namespace = namespace
-			iCli.ReleaseName = releaseName
-			iCli.Wait = true
-			release, err = iCli.Run(ch, vals)
-		} else {
-			iCli := action.NewUpgrade(cfg)
-			iCli.Namespace = namespace
-			iCli.Wait = true
-			iCli.ResetValues = true
-			release, err = iCli.Run(releaseName, ch, vals)
-		}
-		if err != nil {
-			return fmt.Errorf("Error when installing/upgrading Helm Chart %s in namespace %s: %s",
-				releaseName, namespace, err.Error())
-		}
-		if release != nil {
-			logging.PrintLog(release.Manifest, logging.VerboseLevel)
-			if err := waitForDeploymentsOfHelmRelease(release.Manifest); err != nil {
-				return err
-			}
-		} else {
-			logging.PrintLog("Release is nil", logging.InfoLevel)
-		}
-		logging.PrintLog(fmt.Sprintf("Finished upgrading Helm Chart %s in namespace %s", releaseName, namespace), logging.InfoLevel)
-	} else {
-		logging.PrintLog("Upgrade not done since this is an empty Helm Chart", logging.InfoLevel)
-	}
-	return nil
-}
-
-func getDeployments(helmManifest string) []*appsv1.Deployment {
-
-	deployments := []*appsv1.Deployment{}
-	dec := kyaml.NewYAMLToJSONDecoder(strings.NewReader(helmManifest))
-	for {
-		var dpl appsv1.Deployment
-		err := dec.Decode(&dpl)
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			continue
-		}
-
-		if keptnutils.IsDeployment(&dpl) {
-			deployments = append(deployments, &dpl)
-		}
-	}
-	return deployments
-}
-
-func waitForDeploymentsOfHelmRelease(helmManifest string) error {
-	depls := getDeployments(helmManifest)
-	for _, depl := range depls {
-		if err := keptnutils.WaitForDeploymentToBeRolledOut(false, depl.Name, depl.Namespace); err != nil {
-			return fmt.Errorf("Error when waiting for deployment %s in namespace %s: %s", depl.Name, depl.Namespace, err.Error())
-		}
-	}
-	return nil
 }
 
 // Preconditions: 1. Already authenticated against the cluster.
@@ -463,7 +232,7 @@ func doInstallation() error {
 		"control-plane": map[string]interface{}{
 			"enabled": true,
 			"apiGatewayNginx": map[string]interface{}{
-				"type": installParams.ApiServiceType.String(),
+				"type": installParams.EndPointServiceType.String(),
 			},
 		},
 	}
@@ -472,11 +241,11 @@ func doInstallation() error {
 		controlPlaneMap := values["control-plane"]
 		switch controlPlaneMap := controlPlaneMap.(type) {
 		case map[string]interface{}:
-			controlPlaneMap["prefixPath"] = "/"+keptnNamespace
+			controlPlaneMap["prefixPath"] = "/" + keptnNamespace
 		}
 	}
 
-	if err := upgradeChart(installChart, "keptn", keptnNamespace, values); err != nil {
+	if err := helm.NewHelmHelper().UpgradeChart(keptnChart, "keptn", keptnNamespace, values); err != nil {
 		logging.PrintLog("Could not complete Keptn installation: "+err.Error(), logging.InfoLevel)
 		return err
 	}
@@ -491,74 +260,20 @@ func doInstallation() error {
 	return nil
 }
 
-func parseConfig(configFile string) error {
-	data, err := file.ReadFile(configFile)
+func checkIstioInstallation() error {
+	clientset, err := keptnutils.GetClientset(false)
 	if err != nil {
 		return err
 	}
-	return json.Unmarshal([]byte(data), p.getCreds())
-}
-
-func readCreds() error {
-
-	cm := credentialmanager.NewCredentialManager()
-	credsStr, err := cm.GetInstallCreds()
+	_, err = clientset.CoreV1().Namespaces().Get("istio-system", metav1.GetOptions{})
 	if err != nil {
-		credsStr = ""
-	}
-	// Ignore unmarshaling error
-	json.Unmarshal([]byte(credsStr), p.getCreds())
-
-	for {
-		p.readCreds()
-
-		fmt.Println()
-		fmt.Println("Please confirm that the provided cluster information is correct: ")
-
-		p.printCreds()
-
-		fmt.Println()
-		fmt.Println("Is this all correct? (y/n)")
-
-		reader := bufio.NewReader(os.Stdin)
-		in, err := reader.ReadString('\n')
-		if err != nil {
-			return err
-		}
-		in = strings.TrimSpace(in)
-		if in == "y" || in == "yes" {
-			break
-		}
+		return err
 	}
 
-	newCreds, _ := json.Marshal(p.getCreds())
-	newCredsStr := strings.Replace(string(newCreds), "\r\n", "\n", -1)
-	newCredsStr = strings.Replace(newCredsStr, "\n", "", -1)
-	return cm.SetInstallCreds(newCredsStr)
-}
+	_, err = clientset.CoreV1().Services("istio-system").Get("istio-ingressgateway", metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
 
-func readUserInput(value *string, regex string, promptMessage string, regexViolationMessage string) {
-	var re *regexp.Regexp
-	validateRegex := false
-	if regex != "" {
-		re = regexp.MustCompile(regex)
-		validateRegex = true
-	}
-	keepAsking := true
-	reader := bufio.NewReader(os.Stdin)
-	for keepAsking {
-		fmt.Printf("%s [%s]: ", promptMessage, *value)
-		userInput, _ := reader.ReadString('\n')
-		userInput = strings.TrimSpace(strings.Replace(userInput, "\r\n", "\n", -1))
-		if userInput != "" || *value == "" {
-			if validateRegex && !re.MatchString(userInput) {
-				fmt.Println(regexViolationMessage)
-			} else {
-				*value = userInput
-				keepAsking = false
-			}
-		} else {
-			keepAsking = false
-		}
-	}
+	return nil
 }

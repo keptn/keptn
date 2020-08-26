@@ -6,19 +6,18 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 
-	"helm.sh/helm/v3/pkg/action"
-	"k8s.io/client-go/tools/clientcmd"
+	"github.com/keptn/keptn/cli/pkg/helm"
 
 	"github.com/keptn/keptn/cli/pkg/logging"
+	"github.com/keptn/keptn/cli/pkg/platform"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"github.com/spf13/cobra"
 )
 
 type uninstallCmdParams struct {
-	Namespace			*string
+	Namespace *string
 }
 
 var uninstallParams uninstallCmdParams
@@ -49,7 +48,7 @@ Besides, deployed services and the configuration on the Git upstream (i.e., GitH
 
 		keptnNamespace := *uninstallParams.Namespace
 
-		ctx, _ := getKubeContext()
+		ctx, _ := platform.GetKubeContext()
 		fmt.Println("Your Kubernetes current context is configured to cluster: " + strings.TrimSpace(ctx))
 		fmt.Println("Would you like to uninstall Keptn from this cluster? (y/n)")
 
@@ -66,7 +65,7 @@ Besides, deployed services and the configuration on the Git upstream (i.e., GitH
 		logging.PrintLog("Starting to uninstall Keptn", logging.InfoLevel)
 
 		if !mocking {
-			if err := uninstallKeptnChart("keptn", keptnNamespace); err != nil {
+			if err := helm.NewHelmHelper().UninstallRelease("keptn", keptnNamespace); err != nil {
 				return err
 			}
 			// Clean up keptn namespace
@@ -96,36 +95,6 @@ Besides, deployed services and the configuration on the Git upstream (i.e., GitH
 
 		return nil
 	},
-}
-
-func uninstallKeptnChart(releaseName, namespace string) error {
-	logging.PrintLog(fmt.Sprintf("Start deleting Helm Chart %s in namespace %s", releaseName, namespace), logging.InfoLevel)
-	var kubeconfig string
-	if os.Getenv("KUBECONFIG") != "" {
-		kubeconfig = keptnutils.ExpandTilde(os.Getenv("KUBECONFIG"))
-	} else {
-		kubeconfig = filepath.Join(
-			keptnutils.UserHomeDir(), ".kube", "config",
-		)
-	}
-	config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
-	if err != nil {
-		return err
-	}
-
-	cfg, err := newActionConfig(config, namespace)
-	if err != nil {
-		return err
-	}
-
-	iCli := action.NewUninstall(cfg)
-	_, err = iCli.Run(releaseName)
-
-	if err != nil {
-		return fmt.Errorf("Error when deleting Helm Chart %s in namespace %s: %s",
-			releaseName, namespace, err.Error())
-	}
-	return nil
 }
 
 // returns a list of all namespaces

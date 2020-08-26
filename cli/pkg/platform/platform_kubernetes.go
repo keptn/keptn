@@ -14,7 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package cmd
+package platform
 
 import (
 	"errors"
@@ -43,7 +43,7 @@ func (p kubernetesPlatform) getCreds() interface{} {
 }
 
 func (p kubernetesPlatform) checkRequirements() error {
-	if ctx, err := getKubeContext(); err != nil || ctx == "" {
+	if ctx, err := GetKubeContext(); err != nil || ctx == "" {
 		return errors.New("kubectl is not properly configured. " +
 			"Check your current context with 'kubectl config current-context'")
 	}
@@ -59,13 +59,13 @@ func (p kubernetesPlatform) authenticateAtCluster() (bool, error) {
 }
 
 func (p kubernetesPlatform) checkCreds() error {
-	if ctx, err := getKubeContext(); err == nil && ctx != "" {
+	if ctx, err := GetKubeContext(); err == nil && ctx != "" {
 		return nil
 	}
 	return errors.New("Kubectl is not correctly configured")
 }
 
-func getKubeContext() (string, error) {
+func GetKubeContext() (string, error) {
 	logging.PrintLog("Checking current Kubernetes context: kubectl config current-context", logging.VerboseLevel)
 	out, err := keptnutils.ExecuteCommand("kubectl", []string{
 		"config",
@@ -76,6 +76,6 @@ func getKubeContext() (string, error) {
 }
 
 func (p kubernetesPlatform) printCreds() {
-	ctx, _ := getKubeContext()
+	ctx, _ := GetKubeContext()
 	fmt.Println("Cluster: " + strings.TrimSpace(ctx))
 }
