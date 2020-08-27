@@ -43,14 +43,17 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-type HelmHelper struct {
+// Helper provides helper functions for common Helm operations
+type Helper struct {
 }
 
-func NewHelmHelper() HelmHelper {
-	return HelmHelper{}
+// NewHelper creates a Helper
+func NewHelper() Helper {
+	return Helper{}
 }
 
-func (c HelmHelper) DownloadChart(chartRepoURL string) (*chart.Chart, error) {
+// DownloadChart downloads a Helm chart using the provided repo URL
+func (c Helper) DownloadChart(chartRepoURL string) (*chart.Chart, error) {
 
 	resp, err := http.Get(chartRepoURL)
 	if err != nil {
@@ -106,7 +109,8 @@ func newConfigFlags(config *rest.Config, namespace string) *genericclioptions.Co
 	}
 }
 
-func (c HelmHelper) GetHistory(releaseName, namespace string) ([]*release.Release, error) {
+// GetHistory returns the history for a Helm release
+func (c Helper) GetHistory(releaseName, namespace string) ([]*release.Release, error) {
 
 	logging.PrintLog(fmt.Sprintf("Check availability of Helm release %s in namespace %s", releaseName, namespace), logging.VerboseLevel)
 
@@ -125,7 +129,8 @@ func (c HelmHelper) GetHistory(releaseName, namespace string) ([]*release.Releas
 	return histClient.Run(releaseName)
 }
 
-func (c HelmHelper) UpgradeChart(ch *chart.Chart, releaseName, namespace string, vals map[string]interface{}) error {
+// UpgradeChart upgrades/installs the provided chart
+func (c Helper) UpgradeChart(ch *chart.Chart, releaseName, namespace string, vals map[string]interface{}) error {
 
 	if len(ch.Templates) > 0 {
 		logging.PrintLog(fmt.Sprintf("Start upgrading Helm Chart %s in namespace %s", releaseName, namespace), logging.InfoLevel)
@@ -185,7 +190,8 @@ func getKubeConfig() string {
 
 }
 
-func (c HelmHelper) UninstallRelease(releaseName, namespace string) error {
+// UninstallRelease uninstalls the provided release
+func (c Helper) UninstallRelease(releaseName, namespace string) error {
 	logging.PrintLog(fmt.Sprintf("Start uninstalling Helm release %s in namespace %s", releaseName, namespace), logging.InfoLevel)
 	config, err := clientcmd.BuildConfigFromFlags("", getKubeConfig())
 	if err != nil {

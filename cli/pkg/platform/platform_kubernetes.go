@@ -65,6 +65,7 @@ func (p kubernetesPlatform) checkCreds() error {
 	return errors.New("Kubectl is not correctly configured")
 }
 
+// GetKubeContext returns the configured current-context
 func GetKubeContext() (string, error) {
 	logging.PrintLog("Checking current Kubernetes context: kubectl config current-context", logging.VerboseLevel)
 	out, err := keptnutils.ExecuteCommand("kubectl", []string{

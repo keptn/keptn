@@ -89,7 +89,7 @@ keptn install --platform=kubernetes --endpoint-service-type=NodePort # install o
 		chartRepoURL := getChartRepoURL(installParams.ChartRepoURL)
 
 		var err error
-		if keptnChart, err = helm.NewHelmHelper().DownloadChart(chartRepoURL); err != nil {
+		if keptnChart, err = helm.NewHelper().DownloadChart(chartRepoURL); err != nil {
 			return err
 		}
 
@@ -226,7 +226,7 @@ func doInstallation() error {
 		},
 	}
 
-	if err := helm.NewHelmHelper().UpgradeChart(keptnChart, keptnReleaseName, keptnNamespace, values); err != nil {
+	if err := helm.NewHelper().UpgradeChart(keptnChart, keptnReleaseName, keptnNamespace, values); err != nil {
 		logging.PrintLog("Could not complete Keptn installation: "+err.Error(), logging.InfoLevel)
 		return err
 	}

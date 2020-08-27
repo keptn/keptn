@@ -8,11 +8,12 @@ import (
 	"github.com/keptn/keptn/cli/pkg/logging"
 )
 
+// KeptnVersionChecker implements functions for checking the Keptn-cluster version
 type KeptnVersionChecker struct {
 	versionFetcherClient *versionFetcherClient
 }
 
-// NewVersionChecker creates a new VersionChecker
+// NewKeptnVersionChecker creates a new VersionChecker
 func NewKeptnVersionChecker() *KeptnVersionChecker {
 	versionChecker := KeptnVersionChecker{}
 	versionChecker.versionFetcherClient = newVersionFetcherClient()
@@ -47,6 +48,7 @@ func (c KeptnVersionChecker) GetStableVersions(cliVersion, keptnVersion string) 
 	return upgradeableVersion, nil
 }
 
+// IsUpgradable checks whether a Keptn version can be upgraded to a new version
 func (c KeptnVersionChecker) IsUpgradable(cliVersion, currentKeptnVersion, newDesiredKeptnVersion string) (bool, error) {
 
 	versions, err := c.GetStableVersions(cliVersion, currentKeptnVersion)

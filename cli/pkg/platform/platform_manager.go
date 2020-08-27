@@ -12,7 +12,10 @@ import (
 	"github.com/keptn/keptn/cli/pkg/file"
 )
 
+// OpenShiftIdentifier is used as identifier for Openshift
 const OpenShiftIdentifier = "openshift"
+
+// KubernetesIdentifier is used as identifier for Kubernetes
 const KubernetesIdentifier = "kubernetes"
 
 type platform interface {
@@ -23,10 +26,12 @@ type platform interface {
 	printCreds()
 }
 
+// PlatformManager allows to manage (i.e. check requirements) for supported platforms
 type PlatformManager struct {
 	platform platform
 }
 
+// NewPlatformManager creates a new manager for the provided platform
 func NewPlatformManager(platformIdentifier string) (*PlatformManager, error) {
 
 	switch strings.ToLower(platformIdentifier) {
@@ -40,14 +45,17 @@ func NewPlatformManager(platformIdentifier string) (*PlatformManager, error) {
 	}
 }
 
+// CheckRequirements checks the platform's requirements
 func (mng PlatformManager) CheckRequirements() error {
 	return mng.platform.checkRequirements()
 }
 
+// CheckCreds checks the provided creds
 func (mng PlatformManager) CheckCreds() error {
 	return mng.platform.checkCreds()
 }
 
+// ParseConfig reads and parses the provided config file
 func (mng PlatformManager) ParseConfig(configFile string) error {
 	data, err := file.ReadFile(configFile)
 	if err != nil {
@@ -56,6 +64,7 @@ func (mng PlatformManager) ParseConfig(configFile string) error {
 	return json.Unmarshal([]byte(data), mng.platform.getCreds())
 }
 
+// ReadCreds reads the credentials for the platform
 func (mng PlatformManager) ReadCreds() error {
 
 	cm := credentialmanager.NewCredentialManager()

@@ -20,11 +20,11 @@ type cliVersionInfo struct {
 }
 
 type keptnVersionInfo struct {
-	Stable     []VersionWithUpgradePath `json:"stable"`
-	Prerelease []VersionWithUpgradePath `json:"prerelease"`
+	Stable     []versionWithUpgradePath `json:"stable"`
+	Prerelease []versionWithUpgradePath `json:"prerelease"`
 }
 
-type VersionWithUpgradePath struct {
+type versionWithUpgradePath struct {
 	Version            string   `json:"version"`
 	UpgradableVersions []string `json:"upgradableVersions"`
 }

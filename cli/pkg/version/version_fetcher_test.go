@@ -61,7 +61,7 @@ func TestGetCLIVersionInfo(t *testing.T) {
 	assert.Equal(t, cliVersionInfo.Stable, []string{"0.5.2", "0.6.0"}, "Received unexpected content")
 }
 
-const versionJsonTest = `{
+const versionJSONTest = `{
     "cli": {
         "stable": [ "0.5.2", "0.6.2", "0.7.0"],
         "prerelease": [ ]
@@ -89,7 +89,7 @@ func TestGetKeptnVersionInfo(t *testing.T) {
 		assert.Equal(t, r.Method, "GET", "Expect GET request")
 		assert.Equal(t, r.Header.Get("user-agent"), "keptn/cli:0.6.0", "Expect user-agent header")
 		w.WriteHeader(http.StatusOK)
-		io.WriteString(w, versionJsonTest)
+		io.WriteString(w, versionJSONTest)
 	})
 
 	httpClient, url, teardown := testingHTTPClient(handler)

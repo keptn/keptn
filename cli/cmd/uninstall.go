@@ -65,7 +65,7 @@ Besides, deployed services and the configuration on the Git upstream (i.e., GitH
 		logging.PrintLog("Starting to uninstall Keptn", logging.InfoLevel)
 
 		if !mocking {
-			if err := helm.NewHelmHelper().UninstallRelease("keptn", keptnNamespace); err != nil {
+			if err := helm.NewHelper().UninstallRelease("keptn", keptnNamespace); err != nil {
 				return err
 			}
 			// Clean up keptn namespace

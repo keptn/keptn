@@ -12,7 +12,7 @@ func TestGetNewStableVersions(t *testing.T) {
 
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		io.WriteString(w, versionJsonTest)
+		io.WriteString(w, versionJSONTest)
 	})
 
 	httpClient, url, teardown := testingHTTPClient(handler)
@@ -43,7 +43,7 @@ func TestIsUpgradable(t *testing.T) {
 
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		io.WriteString(w, versionJsonTest)
+		io.WriteString(w, versionJSONTest)
 	})
 
 	httpClient, url, teardown := testingHTTPClient(handler)

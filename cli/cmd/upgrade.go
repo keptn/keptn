@@ -61,7 +61,7 @@ keptn upgrade --platform=kubernetes # upgrades Keptn on the Kubernetes cluster
 		chartRepoURL := getChartRepoURL(upgradeParams.ChartRepoURL)
 
 		var err error
-		if keptnUpgradeChart, err = helm.NewHelmHelper().DownloadChart(chartRepoURL); err != nil {
+		if keptnUpgradeChart, err = helm.NewHelper().DownloadChart(chartRepoURL); err != nil {
 			return err
 		}
 
@@ -152,7 +152,7 @@ func isUpgradeCompatible() (bool, error) {
 
 func getLatestKeptnRelease() (*release.Release, error) {
 	keptnNamespace := *upgradeParams.Namespace
-	releases, err := helm.NewHelmHelper().GetHistory(keptnReleaseName, keptnNamespace)
+	releases, err := helm.NewHelper().GetHistory(keptnReleaseName, keptnNamespace)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to check if Keptn release is available in namespace %s: %v", keptnNamespace, err)
 	}
@@ -198,7 +198,7 @@ func doUpgrade() error {
 		return fmt.Errorf("Stopping upgrade.")
 	}
 
-	if err := helm.NewHelmHelper().UpgradeChart(keptnUpgradeChart, keptnReleaseName, keptnNamespace, nil); err != nil {
+	if err := helm.NewHelper().UpgradeChart(keptnUpgradeChart, keptnReleaseName, keptnNamespace, nil); err != nil {
 		logging.PrintLog("Could not complete Keptn upgrade: "+err.Error(), logging.InfoLevel)
 		return err
 	}
