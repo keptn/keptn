@@ -186,6 +186,7 @@ func init() {
 // Preconditions: 1. Already authenticated against the cluster.
 func doInstallation() error {
 	keptnNamespace := *installParams.Namespace
+
 	res, err := keptnutils.ExistsNamespace(false, keptnNamespace)
 	if err != nil {
 		return fmt.Errorf("Failed to check if namespace %s already exists: %v", keptnNamespace, err)
