@@ -74,6 +74,12 @@ class Trace {
       status: string;
     };
 
+    action: {
+      action: string;
+      description: string;
+      name: string;
+    }
+
     Tags: string;
     State: string;
   };

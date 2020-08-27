@@ -44,11 +44,15 @@ export class Project {
   }
 
   getLatestRootEvents(stage: Stage): Root[] {
-    return this.getServices().map(service => service.roots.find(root => root.traces.some(trace => trace.type == EventTypes.CONFIGURATION_CHANGE && trace.data.stage === stage.stageName)));
+    return this.getServices().map(service => service.roots.find(root => root.traces.some(trace => trace.data.stage === stage.stageName)));
   }
 
   getLatestFailedRootEvents(stage: Stage): Root[] {
     return this.getLatestRootEvents(stage).filter(root => root.isFailedEvaluation() === stage.stageName);
+  }
+
+  getLatestProblemEvents(stage: Stage): Root[] {
+    return this.getLatestRootEvents(stage).filter(root => root.isProblem() /* TODO: && !root.isProblemResolvedOrClosed()*/);
   }
 
   getRootEvent(service: Service, event: Trace): Root {
