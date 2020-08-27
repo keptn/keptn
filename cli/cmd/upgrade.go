@@ -186,7 +186,7 @@ func doUpgrade() error {
 		return err
 	}
 
-	fmt.Printf("Do you want to upgrade Keptn version %s to version %s? (y/n)\n", installedKeptnVersion, getAppVersion(keptnUpgradeChart))
+	fmt.Printf("Do you want to upgrade Keptn version %s to %s? (y/n)\n", installedKeptnVersion, getAppVersion(keptnUpgradeChart))
 
 	reader := bufio.NewReader(os.Stdin)
 	in, err := reader.ReadString('\n')
