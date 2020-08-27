@@ -60,3 +60,48 @@ func TestGetCLIVersionInfo(t *testing.T) {
 	assert.Equal(t, cliVersionInfo.Prerelease, []string{"0.6.0-beta2"}, "Received unexpected content")
 	assert.Equal(t, cliVersionInfo.Stable, []string{"0.5.2", "0.6.0"}, "Received unexpected content")
 }
+
+const versionJsonTest = `{
+    "cli": {
+        "stable": [ "0.5.2", "0.6.2", "0.7.0"],
+        "prerelease": [ ]
+    }, 
+    "bridge": {
+        "stable": [ "0.5.2", "0.6.2", "0.7.0"],
+        "prerelease": [ ]
+    },
+    "keptn": {
+        "stable": [
+            {
+              "version": "0.7.1",
+              "upgradableVersions": [ "0.7.0" ]
+            },
+            {
+              "version": "0.8.0",
+              "upgradableVersions": [ "0.7.0", "0.7.1" ]
+            }
+        ]
+    }
+}`
+
+func TestGetKeptnVersionInfo(t *testing.T) {
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, r.Method, "GET", "Expect GET request")
+		assert.Equal(t, r.Header.Get("user-agent"), "keptn/cli:0.6.0", "Expect user-agent header")
+		w.WriteHeader(http.StatusOK)
+		io.WriteString(w, versionJsonTest)
+	})
+
+	httpClient, url, teardown := testingHTTPClient(handler)
+	defer teardown()
+
+	client := newVersionFetcherClient()
+	client.httpClient = httpClient
+	client.versionUrl = url
+
+	keptnVersionInfo, err := client.getKeptnVersionInfo("0.6.0")
+	assert.Equal(t, err, nil, "Received unexpected error")
+	assert.Equal(t, len(keptnVersionInfo.Stable), 2, "Received unexpected content")
+	assert.Equal(t, keptnVersionInfo.Stable[0].Version, "0.7.1", "Received unexpected content")
+	assert.Equal(t, keptnVersionInfo.Stable[0].UpgradableVersions, []string{"0.7.0"}, "Received unexpected content")
+}

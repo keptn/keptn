@@ -22,10 +22,12 @@ import (
 	"os"
 	"strings"
 
-	"github.com/keptn/keptn/cli/pkg/helm"
-	"github.com/keptn/keptn/cli/pkg/platform"
+	"helm.sh/helm/v3/pkg/release"
 
 	"github.com/keptn/keptn/cli/pkg/version"
+
+	"github.com/keptn/keptn/cli/pkg/helm"
+	"github.com/keptn/keptn/cli/pkg/platform"
 
 	"github.com/keptn/keptn/cli/pkg/kube"
 	"helm.sh/helm/v3/pkg/chart"
@@ -33,6 +35,8 @@ import (
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/spf13/cobra"
 )
+
+const keptnReleaseName = "keptn"
 
 var upgradeParams installUpgradeParams
 var keptnUpgradeChart *chart.Chart
@@ -54,54 +58,58 @@ keptn upgrade --platform=kubernetes # upgrades Keptn on the Kubernetes cluster
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 
-		var chartRepoURL string
-		// Determine installer version
-		if installParams.ChartRepoURL != nil && *installParams.ChartRepoURL != "" {
-			chartRepoURL = *installParams.ChartRepoURL
-		} else if version.IsOfficialKeptnVersion(Version) {
-			version, _ := version.GetOfficialKeptnVersion(Version)
-			chartRepoURL = keptnInstallerHelmRepoURL + "keptn-" + version + ".tgz"
-		} else {
-			chartRepoURL = keptnInstallerHelmRepoURL + "latest/keptn-0.1.0.tgz"
-		}
+		chartRepoURL := getChartRepoURL(upgradeParams.ChartRepoURL)
 
 		var err error
-		if keptnChart, err = helm.NewHelmHelper().DownloadChart(chartRepoURL); err != nil {
+		if keptnUpgradeChart, err = helm.NewHelmHelper().DownloadChart(chartRepoURL); err != nil {
 			return err
+		}
+
+		res, err := isUpgradeCompatible()
+		if err != nil {
+			return err
+		}
+		if !res {
+			installedKeptnVerison, err := getInstalledKeptnVersion()
+			if err != nil {
+				return err
+			}
+			return fmt.Errorf("No upgrade path exists from Keptn version %s to %s",
+				installedKeptnVerison, getAppVersion(keptnUpgradeChart))
 		}
 
 		logging.PrintLog(fmt.Sprintf("Helm Chart used for Keptn installation: %s", chartRepoURL), logging.InfoLevel)
 
-		installPlatformManager, err := platform.NewPlatformManager(*installParams.PlatformIdentifier)
+		platformManager, err := platform.NewPlatformManager(*upgradeParams.PlatformIdentifier)
 		if err != nil {
 			return err
 		}
 
 		if !mocking {
-			if err := installPlatformManager.CheckRequirements(); err != nil {
+			if err := platformManager.CheckRequirements(); err != nil {
 				return err
 			}
 		}
 
-		if installParams.ConfigFilePath != nil && *installParams.ConfigFilePath != "" {
+		if upgradeParams.ConfigFilePath != nil && *upgradeParams.ConfigFilePath != "" {
 			// Config was provided in form of a file
-			if err := installPlatformManager.ParseConfig(*installParams.ConfigFilePath); err != nil {
+			if err := platformManager.ParseConfig(*upgradeParams.ConfigFilePath); err != nil {
 				return err
 			}
 
 			// Check whether the authentication at the cluster is valid
-			if err := installPlatformManager.CheckCreds(); err != nil {
+			if err := platformManager.CheckCreds(); err != nil {
 				return err
 			}
 		} else {
-			err = installPlatformManager.ReadCreds()
+			err = platformManager.ReadCreds()
 			if err != nil {
 				return err
 			}
 		}
 
 		// check if Kubernetes server version is compatible (except OpenShift)
-		if *installParams.PlatformIdentifier != platform.OpenShiftIdentifier {
+		if *upgradeParams.PlatformIdentifier != platform.OpenShiftIdentifier {
 			if err := kube.CheckKubeServerVersion(KubeServerVersionConstraints); err != nil {
 				logging.PrintLog(err.Error(), logging.VerboseLevel)
 				logging.PrintLog("See https://keptn.sh/docs/"+keptnReleaseDocsURL+"/operate/k8s_support/ for details.", logging.VerboseLevel)
@@ -113,14 +121,46 @@ keptn upgrade --platform=kubernetes # upgrades Keptn on the Kubernetes cluster
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 
-		logging.PrintLog("Upgrading Keptn ...", logging.InfoLevel)
-
 		if !mocking {
 			return doUpgrade()
 		}
 		fmt.Println("Skipping upgrade due to mocking flag")
 		return nil
 	},
+}
+
+func getInstalledKeptnVersion() (string, error) {
+	lastRelease, err := getLatestKeptnRelease()
+	if err != nil {
+		return "", err
+	}
+	return lastRelease.Chart.Metadata.AppVersion, nil
+}
+
+func getAppVersion(ch *chart.Chart) string {
+	return ch.Metadata.AppVersion
+}
+
+func isUpgradeCompatible() (bool, error) {
+	installedVersion, err := getInstalledKeptnVersion()
+	if err != nil {
+		return false, err
+	}
+	versionChecker := version.NewKeptnVersionChecker()
+	return versionChecker.IsUpgradable(Version, installedVersion, getAppVersion(keptnUpgradeChart))
+}
+
+func getLatestKeptnRelease() (*release.Release, error) {
+	keptnNamespace := *upgradeParams.Namespace
+	releases, err := helm.NewHelmHelper().GetHistory(keptnReleaseName, keptnNamespace)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to check if Keptn release is available in namespace %s: %v", keptnNamespace, err)
+	}
+	if len(releases) == 0 {
+		return nil, fmt.Errorf("No Keptn release found in namespace %s: %v", keptnNamespace, err)
+	}
+
+	return releases[len(releases)-1], nil
 }
 
 func init() {
@@ -135,27 +175,18 @@ func init() {
 	upgraderCmd.Flags().MarkHidden("chart-repo")
 
 	upgradeParams.Namespace = upgraderCmd.Flags().StringP("namespace", "n", "keptn",
-		"Specify the namespace Keptn should be installed in (default keptn).")
+		"Specify the namespace where Keptn should be upgraded (default keptn).")
 }
 
-// Preconditions: 1. Already authenticated against the cluster.
 func doUpgrade() error {
-	const keptnReleaseName = "keptn"
-	keptnNamespace := *installParams.Namespace
-	helper := helm.NewHelmHelper()
-	releases, err := helper.GetHistory(keptnReleaseName, keptnNamespace)
+	keptnNamespace := *upgradeParams.Namespace
+
+	installedKeptnVersion, err := getInstalledKeptnVersion()
 	if err != nil {
-		return fmt.Errorf("Failed to check if Keptn release is available in namespace %s: %v", keptnNamespace, err)
-	}
-	if len(releases) == 0 {
-		return fmt.Errorf("No Keptn release found in namespace %s: %v", keptnNamespace, err)
+		return err
 	}
 
-	lastRelease := releases[len(releases)-1]
-
-	fmt.Printf("Existing Keptn installation found in namespace %s\n with version %v", keptnNamespace, lastRelease.Chart.Metadata.AppVersion)
-	fmt.Println()
-	fmt.Println("Do you want to upgrade this installation? (y/n)")
+	fmt.Printf("Do you want to upgrade Keptn version %s to version %s? (y/n)\n", installedKeptnVersion, getAppVersion(keptnUpgradeChart))
 
 	reader := bufio.NewReader(os.Stdin)
 	in, err := reader.ReadString('\n')
@@ -167,7 +198,7 @@ func doUpgrade() error {
 		return fmt.Errorf("Stopping upgrade.")
 	}
 
-	if err := helper.UpgradeChart(keptnUpgradeChart, keptnReleaseName, keptnNamespace, nil); err != nil {
+	if err := helm.NewHelmHelper().UpgradeChart(keptnUpgradeChart, keptnReleaseName, keptnNamespace, nil); err != nil {
 		logging.PrintLog("Could not complete Keptn upgrade: "+err.Error(), logging.InfoLevel)
 		return err
 	}

@@ -10,12 +10,23 @@ import (
 const versionURL = "https://get.keptn.sh/version.json"
 
 type versionInfo struct {
-	CLIVersionInfo cliVersionInfo `json:"cli"`
+	CLIVersionInfo   cliVersionInfo   `json:"cli"`
+	KeptnVersionInfo keptnVersionInfo `json:"keptn"`
 }
 
 type cliVersionInfo struct {
 	Stable     []string `json:"stable"`
 	Prerelease []string `json:"prerelease"`
+}
+
+type keptnVersionInfo struct {
+	Stable     []VersionWithUpgradePath `json:"stable"`
+	Prerelease []VersionWithUpgradePath `json:"prerelease"`
+}
+
+type VersionWithUpgradePath struct {
+	Version            string   `json:"version"`
+	UpgradableVersions []string `json:"upgradableVersions"`
 }
 
 type versionFetcherClient struct {
@@ -34,7 +45,22 @@ func newVersionFetcherClient() *versionFetcherClient {
 }
 
 func (client *versionFetcherClient) getCLIVersionInfo(cliVersion string) (*cliVersionInfo, error) {
+	v, err := client.getVersionInfo(cliVersion)
+	if v != nil {
+		return &v.CLIVersionInfo, err
+	}
+	return nil, err
+}
 
+func (client *versionFetcherClient) getKeptnVersionInfo(cliVersion string) (*keptnVersionInfo, error) {
+	v, err := client.getVersionInfo(cliVersion)
+	if v != nil {
+		return &v.KeptnVersionInfo, err
+	}
+	return nil, err
+}
+
+func (client *versionFetcherClient) getVersionInfo(cliVersion string) (*versionInfo, error) {
 	versionInfo := &versionInfo{}
 	req, err := http.NewRequest("GET", client.versionUrl, nil)
 	if err != nil {
@@ -51,5 +77,5 @@ func (client *versionFetcherClient) getCLIVersionInfo(cliVersion string) (*cliVe
 		return nil, err
 	}
 	err = json.Unmarshal(body, versionInfo)
-	return &versionInfo.CLIVersionInfo, err
+	return versionInfo, err
 }

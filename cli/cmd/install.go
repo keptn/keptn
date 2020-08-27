@@ -29,8 +29,6 @@ import (
 
 	"github.com/keptn/keptn/cli/pkg/helm"
 
-	"github.com/keptn/keptn/cli/pkg/version"
-
 	"github.com/keptn/keptn/cli/pkg/kube"
 
 	"github.com/keptn/keptn/cli/pkg/logging"
@@ -88,16 +86,7 @@ keptn install --platform=kubernetes --endpoint-service-type=NodePort # install o
 			logging.PrintLog("Note: The --use-case=quality-gates option is now deprecated and is now a synonym for the default installation of Keptn.", logging.InfoLevel)
 		}
 
-		var chartRepoURL string
-		// Determine installer version
-		if installParams.ChartRepoURL != nil && *installParams.ChartRepoURL != "" {
-			chartRepoURL = *installParams.ChartRepoURL
-		} else if version.IsOfficialKeptnVersion(Version) {
-			version, _ := version.GetOfficialKeptnVersion(Version)
-			chartRepoURL = keptnInstallerHelmRepoURL + "keptn-" + version + ".tgz"
-		} else {
-			chartRepoURL = keptnInstallerHelmRepoURL + "latest/keptn-0.1.0.tgz"
-		}
+		chartRepoURL := getChartRepoURL(installParams.ChartRepoURL)
 
 		var err error
 		if keptnChart, err = helm.NewHelmHelper().DownloadChart(chartRepoURL); err != nil {
@@ -191,7 +180,7 @@ func init() {
 		false, "Skip tls verification for kubectl commands")
 
 	installParams.Namespace = installCmd.Flags().StringP("namespace", "n", "keptn",
-		"Specify the namespace Keptn should be installed in (default keptn).")
+		"Specify the namespace where Keptn should be installed in (default keptn).")
 }
 
 // Preconditions: 1. Already authenticated against the cluster.
@@ -237,15 +226,7 @@ func doInstallation() error {
 		},
 	}
 
-	if keptnNamespace != "keptn" {
-		controlPlaneMap := values["control-plane"]
-		switch controlPlaneMap := controlPlaneMap.(type) {
-		case map[string]interface{}:
-			controlPlaneMap["prefixPath"] = "/" + keptnNamespace
-		}
-	}
-
-	if err := helm.NewHelmHelper().UpgradeChart(keptnChart, "keptn", keptnNamespace, values); err != nil {
+	if err := helm.NewHelmHelper().UpgradeChart(keptnChart, keptnReleaseName, keptnNamespace, values); err != nil {
 		logging.PrintLog("Could not complete Keptn installation: "+err.Error(), logging.InfoLevel)
 		return err
 	}
