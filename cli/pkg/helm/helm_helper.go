@@ -108,7 +108,7 @@ func newConfigFlags(config *rest.Config, namespace string) *genericclioptions.Co
 
 func (c HelmHelper) GetHistory(releaseName, namespace string) ([]*release.Release, error) {
 
-	logging.PrintLog(fmt.Sprintf("Check availability of Helm release %s in namespace: %s", releaseName, namespace), logging.InfoLevel)
+	logging.PrintLog(fmt.Sprintf("Check availability of Helm release %s in namespace %s", releaseName, namespace), logging.VerboseLevel)
 
 	config, err := clientcmd.BuildConfigFromFlags("", getKubeConfig())
 	if err != nil {
@@ -128,7 +128,7 @@ func (c HelmHelper) GetHistory(releaseName, namespace string) ([]*release.Releas
 func (c HelmHelper) UpgradeChart(ch *chart.Chart, releaseName, namespace string, vals map[string]interface{}) error {
 
 	if len(ch.Templates) > 0 {
-		logging.PrintLog(fmt.Sprintf("Start upgrading Helm Chart %s in namespace: %s", releaseName, namespace), logging.InfoLevel)
+		logging.PrintLog(fmt.Sprintf("Start upgrading Helm Chart %s in namespace %s", releaseName, namespace), logging.InfoLevel)
 
 		config, err := clientcmd.BuildConfigFromFlags("", getKubeConfig())
 		if err != nil {

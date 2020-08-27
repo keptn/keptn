@@ -73,8 +73,6 @@ func (mng PlatformManager) ReadCreds() error {
 		fmt.Println("Please confirm that the provided cluster information is correct: ")
 
 		mng.platform.printCreds()
-
-		fmt.Println()
 		fmt.Println("Is this all correct? (y/n)")
 
 		reader := bufio.NewReader(os.Stdin)

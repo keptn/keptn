@@ -29,7 +29,7 @@ func (c KeptnVersionChecker) GetStableVersions(cliVersion, keptnVersion string) 
 
 	currentVersion, err := version.NewSemver(keptnVersion)
 	if err != nil {
-		return nil, fmt.Errorf("error when parsing current keptn version: %v", err)
+		return nil, fmt.Errorf("error when parsing current Keptn version: %v", err)
 	}
 
 	upgradeableVersion := make([]string, 0)

@@ -78,7 +78,7 @@ keptn upgrade --platform=kubernetes # upgrades Keptn on the Kubernetes cluster
 				installedKeptnVerison, getAppVersion(keptnUpgradeChart))
 		}
 
-		logging.PrintLog(fmt.Sprintf("Helm Chart used for Keptn installation: %s", chartRepoURL), logging.InfoLevel)
+		logging.PrintLog(fmt.Sprintf("Helm Chart used for Keptn upgrade: %s", chartRepoURL), logging.InfoLevel)
 
 		platformManager, err := platform.NewPlatformManager(*upgradeParams.PlatformIdentifier)
 		if err != nil {

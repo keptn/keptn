@@ -44,38 +44,32 @@ func newVersionFetcherClient() *versionFetcherClient {
 	return &client
 }
 
-func (client *versionFetcherClient) getCLIVersionInfo(cliVersion string) (*cliVersionInfo, error) {
+func (client *versionFetcherClient) getCLIVersionInfo(cliVersion string) (cliVersionInfo, error) {
 	v, err := client.getVersionInfo(cliVersion)
-	if v != nil {
-		return &v.CLIVersionInfo, err
-	}
-	return nil, err
+	return v.CLIVersionInfo, err
 }
 
-func (client *versionFetcherClient) getKeptnVersionInfo(cliVersion string) (*keptnVersionInfo, error) {
+func (client *versionFetcherClient) getKeptnVersionInfo(cliVersion string) (keptnVersionInfo, error) {
 	v, err := client.getVersionInfo(cliVersion)
-	if v != nil {
-		return &v.KeptnVersionInfo, err
-	}
-	return nil, err
+	return v.KeptnVersionInfo, err
 }
 
-func (client *versionFetcherClient) getVersionInfo(cliVersion string) (*versionInfo, error) {
-	versionInfo := &versionInfo{}
+func (client *versionFetcherClient) getVersionInfo(cliVersion string) (versionInfo, error) {
+	versionInfo := versionInfo{}
 	req, err := http.NewRequest("GET", client.versionUrl, nil)
 	if err != nil {
-		return nil, err
+		return versionInfo, err
 	}
 	req.Header.Set("user-agent", "keptn/cli:"+cliVersion)
 	resp, err := client.httpClient.Do(req)
 	if err != nil {
-		return nil, err
+		return versionInfo, err
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return versionInfo, err
 	}
-	err = json.Unmarshal(body, versionInfo)
+	err = json.Unmarshal(body, &versionInfo)
 	return versionInfo, err
 }
