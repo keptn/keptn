@@ -12,7 +12,7 @@ PROJECT="self-healing-project"
 SERVICE="frontend"
 
 ########################################################################################################################
-# Pre-requesits
+# Pre-requisites
 ########################################################################################################################
 
 # ensure unleash-service is not installed yet
@@ -32,7 +32,6 @@ if [[ "$response" == "${PROJECT}" ]]; then
   echo "keptn delete project ${PROJECT}"
   exit 2
 fi
-
 
 echo "Testing self-healing for project $PROJECT ..."
 
@@ -181,7 +180,7 @@ fi
 ##########################################################################################################################################
 
 # Install unleash service
-kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/unleash-service/${UNLEASH_SERVICE_VERSION}/deploy/service.yaml
+kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/unleash-service/${UNLEASH_SERVICE_VERSION}/deploy/service.yaml -n keptn
 sleep 10
 
 wait_for_deployment_in_namespace "unleash-service" "keptn"
@@ -228,7 +227,6 @@ fi
 #verify_using_jq "$response" ".data.remediation.result" "failed"
 #verify_using_jq "$response" ".data.remediation.message" "Action run-snow-wf triggered but not executed after waiting for 2 minutes."
 
-
 response=$(curl -X GET "${KEPTN_ENDPOINT}/mongodb-datastore/event?project=${PROJECT}&type=sh.keptn.event.action.finished&keptnContext=${keptn_context_id}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.events[0]')
 
 # print the response
@@ -242,10 +240,3 @@ verify_using_jq "$response" ".data.service" "$SERVICE"
 verify_using_jq "$response" ".data.action.status" "errored"
 # TODO: we need a message field for that
 # verify_using_jq "$response" ".data.action.message" "Action run-snow-wf triggered but not executed after waiting for 2 minutes."
-
-
-
-
-
-
-
