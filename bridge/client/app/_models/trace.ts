@@ -142,6 +142,10 @@ class Trace {
     return this.type === EventTypes.APPROVAL_FINISHED;
   }
 
+  isDirectDeployment(): boolean {
+    return this.type === EventTypes.DEPLOYMENT_FINISHED && this.data.deploymentstrategy == "direct";
+  }
+
   private isApproved(): boolean {
     return this.data.approval?.result == ApprovalStates.APPROVED;
   }

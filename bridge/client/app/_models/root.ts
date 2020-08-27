@@ -73,6 +73,10 @@ export class Root extends Trace {
     return this.traces.find(t => t.type == EventTypes.EVALUATION_DONE && t.data.stage == stage.stageName);
   }
 
+  getDeploymentDetails(stage: Stage): Trace {
+    return this.traces.find(t => t.type == EventTypes.DEPLOYMENT_FINISHED && t.data.stage == stage.stageName);
+  }
+
   static fromJSON(data: any) {
     return Object.assign(new this, data);
   }
