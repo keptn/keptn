@@ -85,6 +85,17 @@ export class Root extends Trace {
     return this.traces.filter(trace => trace.type == EventTypes.ACTION_TRIGGERED);
   }
 
+  getRemediationActions(): Root[] {
+    // create chunks of Remediations and start new chunk at REMEDIATION_TRIGGERED event
+    return this.traces.reduce((result, trace: Trace) => {
+      if(trace.type == EventTypes.ACTION_TRIGGERED)
+        result.push(Root.fromJSON(JSON.parse(JSON.stringify(trace))));
+      else if(result.length)
+        result[result.length-1].traces = [...result[result.length-1].traces||[], trace];
+      return result;
+    }, []);
+  }
+
   static fromJSON(data: any) {
     return Object.assign(new this, data);
   }

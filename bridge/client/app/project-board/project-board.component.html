@@ -139,8 +139,14 @@
                 </ktb-expandable-tile-header>
                 <ng-container *ngIf="findProblemEvent(problemEvents, service) as problemEvent">
                   <p class="m-0"><span class="bold">Problem: </span><span [textContent]="problemEvent.data.ImpactedEntity"></span></p>
-                  <div class="mt-1" *ngFor="let remediationAction of problemEvent.getRemediationActions()">
-                    <p class="m-0" [textContent]="remediationAction.data.action.description"></p>
+                  <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px" *ngFor="let remediationAction of problemEvent.getRemediationActions()">
+                    <p class="m-0">- <span [textContent]="remediationAction.data.action.description"></span></p>
+                    <dt-tag-list aria-label="evaluation-info" *ngIf="remediationAction.getEvaluation(selectedStage) as evaluation">
+                      <dt-tag class="justify-content-center" [dtOverlay]="evaluationOverlay" [dtOverlayConfig]="overlayConfig" [class.error]="evaluation.isFaulty()" [class.warning]="evaluation.isWarning()" [class.success]="evaluation.isSuccessful()" [textContent]="evaluation.data.evaluationdetails.score | number:'1.0-0'"></dt-tag>
+                      <ng-template #evaluationOverlay>
+                        <ktb-evaluation-details [evaluationData]="evaluation" [showChart]="false"></ktb-evaluation-details>
+                      </ng-template>
+                    </dt-tag-list>
                   </div>
                   <hr />
                 </ng-container>
@@ -202,8 +208,8 @@
                   </div>
                 </div>
               </dt-info-group-title>
-              <p class="m-0 mb-1 mt-1" *ngIf="project.getLatestDeployment(service) as deployment; else noDeployment">
-                <span class="bold">Last processed artifact: </span><span *ngIf="deployment.getShortImageName()" [textContent]="deployment.getShortImageName()"></span><span *ngIf="!deployment.getShortImageName()">unknown</span>
+              <p class="m-0 mb-1 mt-1" *ngIf="project.getLatestDeployment(service, project.stages[0]) as deployment; else noDeployment">
+                <span class="bold">Last processed artifact: </span><span [textContent]="deployment.getShortImageName()"></span>
               </p>
               <button dt-button disabled variant="nested" *ngIf="!service.roots">
                 <dt-loading-spinner></dt-loading-spinner>
@@ -255,7 +261,7 @@
   </ng-container>
 </div>
 <ng-template #noDeployment>
-  <p class="m-0">Service not deployed yet. Use <a href="https://keptn.sh/docs/0.7.x/reference/cli/commands/keptn_send_event_new-artifact/" target="_blank" rel="noopener noreferrer">keptn send event new-artifact</a> to trigger a deployment.</p>
+  <p class="m-0">Service not deployed yet. Use <a href="https://keptn.sh/docs/0.7.x/reference/cli/commands/keptn_send_event_new-artifact/" target="_blank" rel="noopener noreferrer">keptn send new-artifact</a> to trigger a deployment.</p>
 </ng-template>
 <ng-template #noService>
   <div fxLayout="row" fxLayoutAlign="start center">
