@@ -44,7 +44,7 @@ export class Project {
   }
 
   getLatestRootEvents(stage: Stage): Root[] {
-    return this.getServices().map(service => service.roots.find(root => root.traces.some(trace => trace.data.stage === stage.stageName)));
+    return this.getServices().map(service => service.roots.find(root => root.traces.some(trace => trace.type == EventTypes.CONFIGURATION_CHANGE && trace.data.stage === stage.stageName)));
   }
 
   getLatestFailedRootEvents(stage: Stage): Root[] {
