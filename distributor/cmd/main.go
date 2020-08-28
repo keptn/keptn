@@ -21,13 +21,14 @@ import (
 	"io/ioutil"
 	"net/url"
 
-	"github.com/keptn/keptn/distributor/pkg/lib"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/keptn/keptn/distributor/pkg/lib"
 
 	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
@@ -354,7 +355,7 @@ func createRecipientConnection() client.Client {
 }
 
 func handleMessage(m *nats.Msg) {
-	fmt.Printf("Received a message for topic [%s]: %s\n", m.Subject, string(m.Data))
+	fmt.Printf("Received a message for topic [%s]\n", m.Subject)
 	e, err := decodeCloudEvent(m.Data)
 
 	if e != nil {
