@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/keptn/keptn/cli/pkg/exechelper"
+	"github.com/keptn/keptn/cli/pkg/platform"
 
 	"github.com/keptn/go-utils/pkg/api/models"
 
@@ -116,15 +117,13 @@ keptn generate support-archive --dir=/some/directory`,
 					s.KeptnAPIMetadata = getKeptnMetadata()
 				}
 			}
-			writeKeptnInstallerLog(keptnInstallerLogFileName, tmpDir)
-			writeKeptnInstallerLog(keptnInstallerErrorLogFileName, tmpDir)
 
 			s.KubectlVersion = getKubectlVersion()
 			if s.KubectlVersion.Err == nil {
 				s.KubeContextPointsToKeptnCluster = getKubeContextPointsToKeptnCluster(keptnNS)
 
 				if s.KubeContextPointsToKeptnCluster.Err == nil && s.KubeContextPointsToKeptnCluster.Result {
-					ctx, _ := getKubeContext()
+					ctx, _ := platform.GetKubeContext()
 					fmt.Println("Retrieving logs from cluster " + strings.TrimSpace(ctx))
 					s.IngressHostnameSuffix = getIngressHostnameSuffix(keptnNS)
 					s.IngressPort = getIngressPort(keptnNS)

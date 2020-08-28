@@ -14,11 +14,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package cmd
+package platform
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
+	"os"
+	"regexp"
+	"strings"
 
 	"github.com/keptn/keptn/cli/pkg/logging"
 
@@ -99,6 +103,32 @@ func (p openShiftPlatform) readOpenshiftPassword() {
 		"Openshift Password",
 		"Please enter a valid password.",
 	)
+}
+
+func readUserInput(value *string, regex string, promptMessage string, regexViolationMessage string) {
+	var re *regexp.Regexp
+	validateRegex := false
+	if regex != "" {
+		re = regexp.MustCompile(regex)
+		validateRegex = true
+	}
+	keepAsking := true
+	reader := bufio.NewReader(os.Stdin)
+	for keepAsking {
+		fmt.Printf("%s [%s]: ", promptMessage, *value)
+		userInput, _ := reader.ReadString('\n')
+		userInput = strings.TrimSpace(strings.Replace(userInput, "\r\n", "\n", -1))
+		if userInput != "" || *value == "" {
+			if validateRegex && !re.MatchString(userInput) {
+				fmt.Println(regexViolationMessage)
+			} else {
+				*value = userInput
+				keepAsking = false
+			}
+		} else {
+			keepAsking = false
+		}
+	}
 }
 
 func (p openShiftPlatform) authenticateAtCluster() (bool, error) {
