@@ -123,7 +123,7 @@ func (v *VersionChecker) getNewerCLIVersion(cliConfig config.CLIConfig, usedVers
 		return availableNewestVersions{}, fmt.Errorf("error when fetching CLI version infos: %v", err)
 	}
 
-	res, err := getAvailableVersions(usedVersionString, *cliVersionInfo)
+	res, err := getAvailableVersions(usedVersionString, cliVersionInfo)
 	if err != nil {
 		return availableNewestVersions{}, fmt.Errorf("error when analyzing the available versions: %v", err)
 	}

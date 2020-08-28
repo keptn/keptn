@@ -10,12 +10,23 @@ import (
 const versionURL = "https://get.keptn.sh/version.json"
 
 type versionInfo struct {
-	CLIVersionInfo cliVersionInfo `json:"cli"`
+	CLIVersionInfo   cliVersionInfo   `json:"cli"`
+	KeptnVersionInfo keptnVersionInfo `json:"keptn"`
 }
 
 type cliVersionInfo struct {
 	Stable     []string `json:"stable"`
 	Prerelease []string `json:"prerelease"`
+}
+
+type keptnVersionInfo struct {
+	Stable     []versionWithUpgradePath `json:"stable"`
+	Prerelease []versionWithUpgradePath `json:"prerelease"`
+}
+
+type versionWithUpgradePath struct {
+	Version            string   `json:"version"`
+	UpgradableVersions []string `json:"upgradableVersions"`
 }
 
 type versionFetcherClient struct {
@@ -33,23 +44,32 @@ func newVersionFetcherClient() *versionFetcherClient {
 	return &client
 }
 
-func (client *versionFetcherClient) getCLIVersionInfo(cliVersion string) (*cliVersionInfo, error) {
+func (client *versionFetcherClient) getCLIVersionInfo(cliVersion string) (cliVersionInfo, error) {
+	v, err := client.getVersionInfo(cliVersion)
+	return v.CLIVersionInfo, err
+}
 
-	versionInfo := &versionInfo{}
+func (client *versionFetcherClient) getKeptnVersionInfo(cliVersion string) (keptnVersionInfo, error) {
+	v, err := client.getVersionInfo(cliVersion)
+	return v.KeptnVersionInfo, err
+}
+
+func (client *versionFetcherClient) getVersionInfo(cliVersion string) (versionInfo, error) {
+	versionInfo := versionInfo{}
 	req, err := http.NewRequest("GET", client.versionUrl, nil)
 	if err != nil {
-		return nil, err
+		return versionInfo, err
 	}
 	req.Header.Set("user-agent", "keptn/cli:"+cliVersion)
 	resp, err := client.httpClient.Do(req)
 	if err != nil {
-		return nil, err
+		return versionInfo, err
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return versionInfo, err
 	}
-	err = json.Unmarshal(body, versionInfo)
-	return &versionInfo.CLIVersionInfo, err
+	err = json.Unmarshal(body, &versionInfo)
+	return versionInfo, err
 }
