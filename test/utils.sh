@@ -99,9 +99,21 @@ function check_number_open_approvals() {
   STAGE=$2
   EXPECTED=$3
 
-  result=$(keptn get event approval.triggered --project=$PROJECT --stage=$STAGE | awk '{if(NR>1)print}' | jq -r 'length')
-  if [[ "$result" != "$EXPECTED" ]]; then
-    echo "Received unexpected number of approval.triggered events: ${EXPECTED} (expected) = ${result} (actual)"
+  approvalEvents=$(keptn get event approval.triggered --project=$PROJECT --stage=$STAGE | awk '{if(NR>1)print}')
+  type=$(echo $approvalEvents | jq -r 'type')
+
+  if [[ "$approvalEvents" == "No approval.triggered events have been found" ]]; then
+    RESULT=0
+  elif [ "$type" != "array"  ]; then
+    RESULT=1
+  else
+    RESULT=$(echo $approvalEvents | jq -r 'length')
+  fi
+
+  if [[ "$RESULT" != "$EXPECTED" ]]; then
+    echo "Received unexpected number of approval.triggered events"
+    echo "${RESULT}"
+
     exit 2
   else
     echo "Verified number of approval.triggered events: ${EXPECTED} (expected) = ${result} (actual)"
