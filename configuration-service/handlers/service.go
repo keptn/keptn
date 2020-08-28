@@ -2,10 +2,11 @@ package handlers
 
 import (
 	"fmt"
-	"github.com/keptn/keptn/configuration-service/restapi/operations/services"
-	"github.com/keptn/keptn/configuration-service/restapi/operations/stage"
 	"os"
 	"time"
+
+	"github.com/keptn/keptn/configuration-service/restapi/operations/services"
+	"github.com/keptn/keptn/configuration-service/restapi/operations/stage"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
@@ -159,22 +160,25 @@ func DeleteProjectProjectNameStageStageNameServiceServiceNameHandlerFunc(params 
 		return service.NewDeleteProjectProjectNameStageStageNameServiceServiceNameBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Service does not exists")})
 	}
 
-	logger.Debug("Creating new resource(s) in: " + projectConfigPath + " in stage " + params.StageName)
+	logger.Debug(fmt.Sprintf("Deleting service %s of project %s in stage %s", params.ServiceName, params.ProjectName, params.StageName))
 	logger.Debug("Checking out branch: " + params.StageName)
 	err := common.CheckoutBranch(params.ProjectName, params.StageName, false)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Could not check out %s branch of project %s", params.StageName, params.ProjectName))
-		logger.Error(err.Error())
+		logger.Error(fmt.Sprintf("Could not check out %s branch of project %s: %s", params.StageName, params.ProjectName, err.Error()))
 		return service.NewDeleteProjectProjectNameStageStageNameServiceServiceNameDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not check out branch")})
 	}
 
 	err = os.RemoveAll(servicePath)
 	if err != nil {
 		logger.Error(err.Error())
-		return service.NewDeleteProjectProjectNameStageStageNameServiceServiceNameDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not delete service directory")})
+		return service.NewDeleteProjectProjectNameStageStageNameServiceServiceNameDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not delete service directory: " + err.Error())})
 	}
 
-	_ = common.StageAndCommitAll(params.ProjectName, "Deleted service: "+params.ServiceName, true)
+	err = common.StageAndCommitAll(params.ProjectName, "Deleted service: "+params.ServiceName, true)
+	if err != nil {
+		logger.Error(err.Error())
+		return service.NewDeleteProjectProjectNameStageStageNameServiceServiceNameDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not delete service directory: " + err.Error())})
+	}
 
 	mv := common.GetProjectsMaterializedView()
 	err = mv.DeleteService(params.ProjectName, params.StageName, params.ServiceName)
