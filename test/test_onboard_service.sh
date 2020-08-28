@@ -4,12 +4,12 @@ source test/utils.sh
 
 echo "Testing onboarding for project $PROJECT ..."
 
-# Test keptn create-project and onboard
+# test keptn create-project and onboard
 rm -rf examples
 git clone --branch master https://github.com/keptn/examples --single-branch
 cd examples/onboarding-carts
 
-echo "Creating a new project without git upstream"
+echo "Creating a new project without Git upstream"
 keptn create project $PROJECT --shipyard=./shipyard.yaml
 verify_test_step $? "keptn create project command failed."
 sleep 10
@@ -18,7 +18,7 @@ sleep 10
 # onboard carts                           #
 ###########################################
 keptn onboard service carts --project=$PROJECT --chart=./carts
-verify_test_step $? "keptn onboard carts failed."
+verify_test_step $? "keptn onboard carts failed"
 sleep 10
 
 # add functional tests

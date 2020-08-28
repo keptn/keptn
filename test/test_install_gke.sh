@@ -5,7 +5,7 @@ source test/utils.sh
 KEPTN_INSTALLER_REPO=${KEPTN_INSTALLER_REPO:-https://storage.googleapis.com/keptn-installer/latest/keptn-0.1.0.tgz}
 PROJECT_NAME=${PROJECT_NAME:-sockshop}
 
-# Prepare creds.json file
+# prepare creds.json file
 cd ./test/assets
 
 export CLN=$CLUSTER_NAME_NIGHTLY
@@ -14,9 +14,9 @@ export PROJ=$PROJECT_NAME
 
 echo "{}" > creds.json # empty credentials file
 
-echo "Installing keptn on cluster"
+echo "Installing Keptn on cluster"
 
-# Install keptn (using the develop version, which should point the :latest docker images)
+# install Keptn (using the develop version, which should point the :latest docker images)
 keptn install --chart-repo="${KEPTN_INSTALLER_REPO}" --creds=creds.json --verbose --use-case=continuous-delivery --endpoint-service-type=LoadBalancer
 verify_test_step $? "keptn install failed"
 
@@ -25,7 +25,6 @@ KEPTN_API_URL=http://$(kubectl -n keptn get service api-gateway-nginx -o jsonpat
 KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)
 
 auth_at_keptn $KEPTN_API_URL $KEPTN_API_TOKEN
-
 
 # install public-gateway.istio-system
 kubectl apply -f - <<EOF
@@ -46,7 +45,7 @@ spec:
     - "*"
 EOF
 
-# Set ingress-hostname params
+# set ingress-hostname params
 INGRESS_IP=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 kubectl create configmap -n keptn ingress-config --from-literal=ingress_hostname_suffix=${INGRESS_IP}.xip.io --from-literal=ingress_port=80 --from-literal=ingress_protocol=http --from-literal=ingress_gateway=public-gateway.istio-system -oyaml --dry-run | kubectl replace -f -
 
@@ -79,7 +78,6 @@ verify_deployment_in_namespace "istio-ingressgateway" "istio-system"
 verify_deployment_in_namespace "istio-pilot" "istio-system"
 verify_deployment_in_namespace "istio-citadel" "istio-system"
 verify_deployment_in_namespace "istio-sidecar-injector" "istio-system"
-
 
 cd ../..
 

@@ -6,12 +6,12 @@ KUBE_CONSTRAINTS=$2
 ############################################
 # MAC OS
 ############################################
-echo "Building keptn cli for OSX"
+echo "Building Keptn CLI for OSX"
 env GOOS=darwin GOARCH=amd64 go mod download
 env GOOS=darwin GOARCH=amd64 go build -v -x  -ldflags="-X 'main.Version=$VERSION' -X 'main.KubeServerVersionConstraints=$KUBE_CONSTRAINTS'" -o keptn
 
 if [ $? -ne 0 ]; then
-  echo 'Error compiling keptn cli, exiting...'
+  echo "Error compiling Keptn CLI, exiting ..."
   exit 1
 fi
 
@@ -32,12 +32,12 @@ rm keptn-macOS.tar.gz
 ############################################
 # Linux
 ############################################
-echo "Building keptn cli for linux"
+echo "Building Keptn CLI for Linux"
 env GOOS=linux GOARCH=amd64 go mod download
 env GOOS=linux GOARCH=amd64 go build -v -x -ldflags="-X 'main.Version=$VERSION' -X 'main.KubeServerVersionConstraints=$KUBE_CONSTRAINTS'" -o keptn
 
 if [ $? -ne 0 ]; then
-  echo 'Error compiling keptn cli, exiting...'
+  echo "Error compiling Keptn CLI, exiting ..."
   exit 1
 fi
 
@@ -58,12 +58,12 @@ rm keptn-linux.tar.gz
 ############################################
 # Windows
 ############################################
-echo "Building keptn cli for windows"
+echo "Building Keptn CLI for Windows"
 env GOOS=windows GOARCH=amd64 go mod download
 env GOOS=windows GOARCH=amd64 go build -ldflags="-X 'main.Version=$VERSION' -X 'main.KubeServerVersionConstraints=$KUBE_CONSTRAINTS'" -o keptn.exe
 
 if [ $? -ne 0 ]; then
-  echo 'Error compiling keptn cli, exiting...'
+  echo 'Error compiling Keptn CLI, exiting ...'
   exit 1
 fi
 

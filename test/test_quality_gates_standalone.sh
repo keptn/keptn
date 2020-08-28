@@ -61,14 +61,14 @@ fi
 
 echo "Testing quality gates standalone for project $PROJECT ..."
 
-# Test keptn create-project and create service
+# test keptn create project and create service
 rm -rf examples
 git clone --branch ${KEPTN_EXAMPLES_BRANCH} https://github.com/keptn/examples --single-branch
 cd examples/onboarding-carts
 
 echo "Creating a new project without git upstream"
 keptn create project $PROJECT --shipyard=./shipyard-quality-gates.yaml
-verify_test_step $? "keptn create project command failed."
+verify_test_step $? "keptn create project {$PROJECT} failed."
 sleep 10
 
 cd ../..

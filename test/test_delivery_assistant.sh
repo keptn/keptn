@@ -38,9 +38,9 @@ fi
 
 echo "Testing delivery assistant for project $PROJECT ..."
 
-echo "Creating a new project without git upstream"
+echo "Creating a new project without Git upstream"
 keptn create project $PROJECT --shipyard=./test/assets/delivery_assistant_shipyard.yaml
-verify_test_step $? "keptn create project command failed."
+verify_test_step $? "keptn create project ${PROJECT} failed."
 sleep 10
 
 # verify that the project has been created via the Keptn API
@@ -51,7 +51,7 @@ if [[ "$response" != "${PROJECT}" ]]; then
   echo "${response}"
   exit 2
 else
-  echo "Verified that Project exists via api"
+  echo "Verified that project exists via API."
 fi
 
 ###########################################
@@ -62,7 +62,7 @@ rm -rf examples
 git clone --branch master https://github.com/keptn/examples --single-branch
 cd examples/onboarding-carts
 
-keptn onboard service carts --project=$PROJECT --chart=./carts
+keptn onboard service $SERVICE --project=$PROJECT --chart=./carts
 verify_test_step $? "keptn onboard service ${SERVICE} failed."
 sleep 10
 
@@ -93,7 +93,6 @@ send_evaluation_done_event $PROJECT combi4 $SERVICE pass
 send_evaluation_done_event $PROJECT combi4 $SERVICE warning
 send_evaluation_done_event $PROJECT combi4 $SERVICE failed
 
-
 # verify the number of open approval events
 check_no_open_approvals $PROJECT combi1
 
@@ -105,10 +104,10 @@ keptn send event approval.finished --id=${combi2ApprovalId} --project=delivery-a
 sleep 5
 check_no_open_approvals $PROJECT combi2
 
-response=$(get_keptn_event $PROJECT $keptn_context_id sh.keptn.event.configuration.change $KEPTN_ENDPOINT $KEPTN_API_TOKEN)
-
 # print the response
 echo "Resulting configuration.change event by approval:"
+
+response=$(get_keptn_event $PROJECT $keptn_context_id sh.keptn.event.configuration.change $KEPTN_ENDPOINT $KEPTN_API_TOKEN)
 echo $response | jq .
 
 # validate the response
@@ -129,10 +128,10 @@ sleep 5
 check_no_open_approvals $PROJECT combi3
 combi3EventLength=$(keptn get event approval.triggered --project=delivery-assistant-project --stage=combi3 | awk '{if(NR>1)print}')
 
-response=$(get_keptn_event $PROJECT $keptn_context_id sh.keptn.event.configuration.change $KEPTN_ENDPOINT $KEPTN_API_TOKEN)
-
 # print the response
 echo "Resulting configuration.change event by approval:"
+
+response=$(get_keptn_event $PROJECT $keptn_context_id sh.keptn.event.configuration.change $KEPTN_ENDPOINT $KEPTN_API_TOKEN)
 echo $response | jq .
 
 # validate the response
@@ -155,10 +154,10 @@ keptn send event approval.finished --id=${combi4ApprovalId1} --project=delivery-
 sleep 5
 check_number_open_approvals $PROJECT combi4 1
 
-response=$(get_keptn_event $PROJECT $keptn_context_id_1 sh.keptn.event.configuration.change $KEPTN_ENDPOINT $KEPTN_API_TOKEN)
-
 # print the response
 echo "Resulting configuration.change event by approval:"
+
+response=$(get_keptn_event $PROJECT $keptn_context_id_1 sh.keptn.event.configuration.change $KEPTN_ENDPOINT $KEPTN_API_TOKEN)
 echo $response | jq .
 
 # validate the response
@@ -169,17 +168,15 @@ verify_using_jq "$response" ".data.service" "$SERVICE"
 verify_using_jq "$response" ".data.canary.action" "set"
 verify_using_jq "$response" ".data.canary.value" "100"
 verify_using_jq "$response" ".data.valuesCanary.image" "docker.io/keptnexamples/carts:0.11.1"
-
 
 keptn send event approval.finished --id=${combi4ApprovalId2} --project=delivery-assistant-project --stage=combi4
 sleep 5
 check_no_open_approvals $PROJECT combi4
 
-
-response=$(get_keptn_event $PROJECT $keptn_context_id_2 sh.keptn.event.configuration.change $KEPTN_ENDPOINT $KEPTN_API_TOKEN)
-
 # print the response
 echo "Resulting configuration.change event by approval:"
+response=$(get_keptn_event $PROJECT $keptn_context_id_2 sh.keptn.event.configuration.change $KEPTN_ENDPOINT $KEPTN_API_TOKEN)
+
 echo $response | jq .
 
 # validate the response
@@ -190,4 +187,3 @@ verify_using_jq "$response" ".data.service" "$SERVICE"
 verify_using_jq "$response" ".data.canary.action" "set"
 verify_using_jq "$response" ".data.canary.value" "100"
 verify_using_jq "$response" ".data.valuesCanary.image" "docker.io/keptnexamples/carts:0.11.1"
-

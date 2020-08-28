@@ -61,9 +61,9 @@ keptn add-resource --project=$PROJECT --service=$SERVICE --stage=production --re
 # deploy the service
 keptn send event new-artifact --project=$PROJECT --service=$SERVICE --image=docker.io/keptnexamples/$SERVICE --tag=0.11.1
 
-echo "It might take a while for the service to be available on production - waiting a bit"
+echo "It might take a while for the service to be available on production - waiting 50sec"
 sleep 50
-echo "Still waiting..."
+echo "Still waiting 50sec ..."
 sleep 50
 
 wait_for_deployment_in_namespace $SERVICE-primary $PROJECT-$STAGE
@@ -77,22 +77,19 @@ keptn configure monitoring prometheus --project=$PROJECT --service=$SERVICE
 wait_for_deployment_in_namespace prometheus-deployment monitoring
 echo "Prometheus deployed successfully"
 
-
 ###########################################
 # generate load on the service            #
 ###########################################
 cd examples/load-generation/cartsloadgen
 
 kubectl apply -f deploy/cartsloadgen-faulty.yaml
-
 wait_for_deployment_in_namespace cartsloadgen loadgen
-
 echo "loadgen deployed successfully waiting for problem notification"
 
 sleep 120
-echo "Still waiting..."
+echo "Still waiting 120sec ..."
 sleep 120
-echo "Still waiting..."
+echo "Still waiting 120sec ..."
 sleep 120
 
 event=$(wait_for_problem_open_event ${PROJECT} ${SERVICE} ${STAGE})

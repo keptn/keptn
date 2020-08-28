@@ -2,7 +2,7 @@
 
 source test/utils.sh
 
-echo "Testing deletion of project"
+echo "Testing the keptn delete project command"
 
 keptn delete project $PROJECT
 verify_test_step $? "Deleting project failed"

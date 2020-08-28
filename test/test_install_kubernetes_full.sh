@@ -16,18 +16,17 @@ verify_deployment_in_namespace "istio-pilot" "istio-system"
 verify_deployment_in_namespace "istio-citadel" "istio-system"
 verify_deployment_in_namespace "istio-sidecar-injector" "istio-system"
 
-
-echo "Installing keptn on cluster"
+echo "Installing Keptn on cluster"
 echo "{}" > creds.json # empty credentials file
-# Install keptn (using the develop version, which should point the :latest docker images)
-keptn install --chart-repo="${KEPTN_INSTALLER_REPO}" --platform=kubernetes --creds=creds.json --endpoint-service-type=NodePort --verbose --use-case=continuous-delivery
 
+# install Keptn (using the develop version, which should point the :latest docker images)
+keptn install --chart-repo="${KEPTN_INSTALLER_REPO}" --platform=kubernetes --creds=creds.json --endpoint-service-type=NodePort --verbose --use-case=continuous-delivery
 verify_test_step $? "keptn install failed"
 
 # verify that the keptn CLI has successfully authenticated
-echo "Checking that keptn is authenticated..."
+echo "Checking that Keptn is authenticated ..."
 ls -la ~/.keptn/.keptn
-verify_test_step $? "Could not find keptn credentials in ~/.keptn folder"
+verify_test_step $? "Could not find Keptn credentials in ~/.keptn folder"
 
 echo "Verifying that services and namespaces have been created"
 
