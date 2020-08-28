@@ -7,7 +7,7 @@ DYNATRACE_SLI_SERVICE_VERSION=${DYNATRACE_SLI_SERVICE_VERSION:-master}
 KEPTN_EXAMPLES_BRANCH=${KEPTN_EXAMPLES_BRANCH:-master}
 PROJECT=${PROJECT:-easytravel}
 
-# get keptn api details
+# get keptn API details
 if [[ "$PLATFORM" == "openshift" ]]; then
   KEPTN_ENDPOINT=http://api.keptn.127.0.0.1.nip.io/api
   KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)
@@ -26,11 +26,10 @@ fi
 kubectl -n keptn get deployment dynatrace-sli-service 2> /dev/null
 
 if [[ $? -eq 0 ]]; then
-  echo "Found dynatrace-sli-service. Please uninstall it using"
+  echo "Found dynatrace-sli-service. Please uninstall it using:"
   echo "kubectl -n keptn delete deployment dynatrace-sli-service"
   exit 1
 fi
-
 
 # verify that the project does not exist yet via the Keptn API
 response=$(curl -X GET "${KEPTN_ENDPOINT}/configuration-service/v1/project/${PROJECT}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.projectName')
@@ -45,7 +44,7 @@ fi
 kubectl -n keptn get cm lighthouse-config-${PROJECT} 2> /dev/null
 
 if [[ $? -eq 0 ]]; then
-  echo "Found configmap lighthouse-config-${PROJECT}. Please remove it using"
+  echo "Found configmap lighthouse-config-${PROJECT}. Please remove it using:"
   echo "kubectl -n keptn delete configmap lighthouse-config-${PROJECT}"
   exit 1
 fi
@@ -66,7 +65,7 @@ rm -rf examples
 git clone --branch ${KEPTN_EXAMPLES_BRANCH} https://github.com/keptn/examples --single-branch
 cd examples/onboarding-carts
 
-echo "Creating a new project without git upstream"
+echo "Creating a new project without Git upstream"
 keptn create project $PROJECT --shipyard=./shipyard-quality-gates.yaml
 verify_test_step $? "keptn create project {$PROJECT} failed."
 sleep 10
@@ -81,12 +80,11 @@ if [[ "$response" != "${PROJECT}" ]]; then
   echo "${response}"
   exit 2
 else
-  echo "Verified that Project exists via api"
+  echo "Verified that project exists via the API"
 fi
 
-
 ###########################################
-# create service catalogue                #
+# create service frontend                 #
 ###########################################
 SERVICE=frontend
 keptn create service $SERVICE --project=$PROJECT
@@ -104,9 +102,8 @@ echo "Sending start-evaluation event for service $SERVICE in stage hardening"
 keptn_context_id=$(send_start_evaluation_event $PROJECT hardening $SERVICE)
 sleep 10
 
-echo "Getting evaluation-done event with context-id ${keptn_context_id}"
-
 # try to fetch a evaluation-done event
+echo "Getting evaluation-done event with context-id: ${keptn_context_id}"
 response=$(get_evaluation_done_event ${keptn_context_id})
 
 # print the response
@@ -143,9 +140,8 @@ echo "Sending start-evaluation event for service $SERVICE in stage hardening"
 keptn_context_id=$(send_start_evaluation_event $PROJECT hardening $SERVICE)
 sleep 10
 
-echo "Getting evaluation-done event with context-id ${keptn_context_id}"
-
 # try to fetch a evaluation-done event
+echo "Getting evaluation-done event with context-id: ${keptn_context_id}"
 response=$(get_evaluation_done_event ${keptn_context_id})
 
 # print the response
@@ -166,10 +162,9 @@ verify_using_jq "$response" ".data.evaluationdetails.sloFileContent" ""
 # Testcase 3: Send a start-evaluation event with an SLO file specified and with an SLI provider set, but no Dynatrace
 #             Tenant/API Token configured
 ########################################################################################################################
-
+echo "Install dynatrace-sli-service from: ${DYNATRACE_SLI_SERVICE_VERSION}"
 kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/dynatrace-sli-service/${DYNATRACE_SLI_SERVICE_VERSION}/deploy/service.yaml -n keptn
 sleep 10
-
 wait_for_deployment_in_namespace "dynatrace-sli-service" "keptn"
 
 # now configure monitoring for Dynatrace
@@ -181,14 +176,13 @@ sleep 5
 kubectl -n keptn get configmap "lighthouse-config-${PROJECT}" -oyaml 2> /dev/null
 verify_test_step $? "ERROR: Could not find configmap lighthouse-config-$PROJECT (this is expected to be created by keptn configure monitoring dynatrace --project=$PROJECT)"
 
+# now that the dynatrace-sli-service is deployed, send the start evaluation command again
 echo "Sending start-evaluation event for service $SERVICE in stage hardening"
-
-# now that this is set, let's send the start evaluation command again
 keptn_context_id=$(send_start_evaluation_event $PROJECT hardening $SERVICE)
 sleep 30
 
-# Wait until a evaluation-done event is retrieved
-echo "Trying to get evaluation-done event with context-id ${keptn_context_id}"
+# wait until a evaluation-done event is retrieved
+echo "Trying to get evaluation-done event with context-id: ${keptn_context_id}"
 
 RETRY=0; RETRY_MAX=30;
 
@@ -227,7 +221,7 @@ verify_using_jq "$response" ".data.service" "${SERVICE}"
 verify_using_jq "$response" ".data.result" "fail"
 
 ########################################################################################################################
-# Testcase 4: Run tests with Dynatrace credentials (tenant and api token) set
+# Testcase 4: Run tests with Dynatrace credentials (Tenant and API token)
 ########################################################################################################################
 
 # create secret from file
@@ -237,8 +231,8 @@ kubectl -n keptn create secret generic dynatrace-credentials-${PROJECT} --from-l
 keptn_context_id=$(send_start_evaluation_event $PROJECT hardening $SERVICE)
 sleep 30
 
-# Wait until a evaluation-done event is retrieved
-echo "Trying to get evaluation-done event with context-id ${keptn_context_id}"
+# wait until a evaluation-done event is retrieved
+echo "Trying to get evaluation-done event with context-id: ${keptn_context_id}"
 
 RETRY=0; RETRY_MAX=30;
 
@@ -261,7 +255,10 @@ done
 
 if [[ $RETRY == $RETRY_MAX ]]; then
   # print logs of dynatrace-sli-service
+  echo "Logs from: dynatrace-sli-service"
   kubectl -n keptn logs svc/dynatrace-sli-service -c dynatrace-sli-service
+  echo "Logs from: lighthouse-service"
+  kubectl -n keptn logs svc/lighthouse-service -c lighthouse-service
   print_error "evaluation-done event could not be retrieved"
   exit 1
 fi
@@ -277,7 +274,7 @@ verify_using_jq "$response" ".data.stage" "hardening"
 verify_using_jq "$response" ".data.service" "${SERVICE}"
 verify_using_jq "$response" ".data.result" "pass"
 
-# Verify .data.evaluationdetails: There should be 3 results that are true, and 0 false
+# verify .data.evaluationdetails: There should be 3 results that are true, and 0 false
 number_of_true_results=$(echo $response | jq -r '.data.evaluationdetails.indicatorResults[].value.success' | grep -c "true")
 number_of_false_results=$(echo $response | jq -r '.data.evaluationdetails.indicatorResults[].value.success' | grep -c "false")
 
@@ -315,8 +312,8 @@ sleep 30
 keptn_context_id=$(send_start_evaluation_event $PROJECT hardening $SERVICE)
 sleep 30
 
-# Wait until a evaluation-done event is retrieved
-echo "Trying to get evaluation-done event with context-id ${keptn_context_id}"
+# wait until a evaluation-done event is retrieved
+echo "Trying to get evaluation-done event with context-id: ${keptn_context_id}"
 
 RETRY=0; RETRY_MAX=30;
 
@@ -355,7 +352,7 @@ verify_using_jq "$response" ".data.stage" "hardening"
 verify_using_jq "$response" ".data.service" "${SERVICE}"
 verify_using_jq "$response" ".data.result" "pass"
 
-# Verify .data.evaluationdetails: There should be 3 results that are true, and 0 false
+# verify .data.evaluationdetails: There should be 3 results that are true, and 0 false
 number_of_true_results=$(echo $response | jq -r '.data.evaluationdetails.indicatorResults[].value.success' | grep -c "true")
 number_of_false_results=$(echo $response | jq -r '.data.evaluationdetails.indicatorResults[].value.success' | grep -c "false")
 
@@ -367,7 +364,7 @@ if [[ $number_of_false_results -ne 0 ]]; then
   echo "Expected 0 results with success: false, but found $number_of_false_results"
 fi
 
-# Verify .data.evaluationsdetails: There should be 2 results with status: pass, and 1 with status: info
+# verify .data.evaluationsdetails: There should be 2 results with status: pass, and 1 with status: info
 number_of_pass_results=$(echo $response | jq -r '.data.evaluationdetails.indicatorResults[].status' | grep -c "pass")
 number_of_warning_results=$(echo $response | jq -r '.data.evaluationdetails.indicatorResults[].status' | grep -c "warning")
 number_of_info_results=$(echo $response | jq -r '.data.evaluationdetails.indicatorResults[].status' | grep -c "info")
@@ -395,8 +392,8 @@ verify_test_step $? "keptn add-resource slo.yaml failed."
 keptn_context_id=$(send_start_evaluation_event $PROJECT hardening $SERVICE)
 sleep 30
 
-# Wait until a evaluation-done event is retrieved
-echo "Trying to get evaluation-done event with context-id ${keptn_context_id}"
+# wait until a evaluation-done event is retrieved
+echo "Trying to get evaluation-done event with context-id: ${keptn_context_id}"
 
 RETRY=0; RETRY_MAX=30;
 
@@ -435,7 +432,7 @@ verify_using_jq "$response" ".data.stage" "hardening"
 verify_using_jq "$response" ".data.service" "${SERVICE}"
 verify_using_jq "$response" ".data.result" "pass"
 
-# Verify .data.evaluationdetails: There should be 3 results that are true, and 2 false
+# verify .data.evaluationdetails: There should be 3 results that are true, and 2 false
 number_of_true_results=$(echo $response | jq -r '.data.evaluationdetails.indicatorResults[].value.success' | grep -c "true")
 number_of_false_results=$(echo $response | jq -r '.data.evaluationdetails.indicatorResults[].value.success' | grep -c "false")
 
@@ -447,7 +444,7 @@ if [[ $number_of_false_results -ne 2 ]]; then
   echo "Expected 2 results with success: false, but found $number_of_false_results"
 fi
 
-# Verify .data.evaluationsdetails: There should be 2 results with status: pass, and 3 with status: info
+# verify .data.evaluationsdetails: There should be 2 results with status: pass, and 3 with status: info
 number_of_pass_results=$(echo $response | jq -r '.data.evaluationdetails.indicatorResults[].status' | grep -c "pass")
 number_of_warning_results=$(echo $response | jq -r '.data.evaluationdetails.indicatorResults[].status' | grep -c "warning")
 number_of_info_results=$(echo $response | jq -r '.data.evaluationdetails.indicatorResults[].status' | grep -c "info")
@@ -474,13 +471,12 @@ echo "Adding SLI File: test/assets/quality_gates_standalone_sli_dynatrace_step2.
 keptn add-resource --project=$PROJECT --stage=hardening --service=$SERVICE --resource=test/assets/quality_gates_standalone_sli_dynatrace_step2.yaml --resourceUri=dynatrace/sli.yaml
 verify_test_step $? "keptn add-resource sli.yaml failed."
 
-
 # send start-evaluation event
 keptn_context_id=$(send_start_evaluation_event $PROJECT hardening $SERVICE)
 sleep 30
 
-# Wait until a evaluation-done event is retrieved
-echo "Trying to get evaluation-done event with context-id ${keptn_context_id}"
+# wait until a evaluation-done event is retrieved
+echo "Trying to get evaluation-done event with context-id: ${keptn_context_id}"
 
 RETRY=0; RETRY_MAX=30;
 
@@ -519,7 +515,7 @@ verify_using_jq "$response" ".data.stage" "hardening"
 verify_using_jq "$response" ".data.service" "${SERVICE}"
 verify_using_jq "$response" ".data.result" "pass"
 
-# Verify .data.evaluationdetails: There should be 5 results that are true, and 0 false
+# verify .data.evaluationdetails: There should be 5 results that are true, and 0 false
 number_of_true_results=$(echo $response | jq -r '.data.evaluationdetails.indicatorResults[].value.success' | grep -c "true")
 number_of_false_results=$(echo $response | jq -r '.data.evaluationdetails.indicatorResults[].value.success' | grep -c "false")
 
@@ -531,7 +527,7 @@ if [[ $number_of_false_results -ne 0 ]]; then
   echo "Expected 0 results with success: false, but found $number_of_false_results"
 fi
 
-# Verify .data.evaluationsdetails: There should be 2 results with status: pass, and 3 with status: info
+# verify .data.evaluationsdetails: There should be 2 results with status: pass, and 3 with status: info
 number_of_pass_results=$(echo $response | jq -r '.data.evaluationdetails.indicatorResults[].status' | grep -c "pass")
 number_of_warning_results=$(echo $response | jq -r '.data.evaluationdetails.indicatorResults[].status' | grep -c "warning")
 number_of_info_results=$(echo $response | jq -r '.data.evaluationdetails.indicatorResults[].status' | grep -c "info")
