@@ -87,11 +87,10 @@ function check_no_open_approvals() {
 
   result=$(keptn get event approval.triggered --project=$PROJECT --stage=$STAGE | awk '{if(NR>1)print}')
   if [[ "$result" != "No approval.triggered events have been found" ]]; then
-    echo "Received unexpected number of approval.triggered events"
-    echo "${result}"
+    echo "Received ${result} approval.triggered events but expected 0"
     exit 2
   else
-    echo "Verified number of approval.triggered events"
+    echo "Verified that there is no approval.triggered events"
   fi
 }
 
@@ -102,12 +101,10 @@ function check_number_open_approvals() {
 
   result=$(keptn get event approval.triggered --project=$PROJECT --stage=$STAGE | awk '{if(NR>1)print}' | jq -r 'length')
   if [[ "$result" != "$EXPECTED" ]]; then
-    echo "Received unexpected number of approval.triggered events"
-    echo "${result}"
-
+    echo "Received unexpected number of approval.triggered events: ${EXPECTED} (expected) = ${result} (actual)"
     exit 2
   else
-    echo "Verified number of approval.triggered events"
+    echo "Verified number of approval.triggered events: ${EXPECTED} (expected) = ${result} (actual)"
   fi
 }
 
@@ -131,7 +128,7 @@ function verify_using_jq() {
 function verify_test_step() {
   if [[ $1 != '0' ]]; then
     print_error "$2"
-    print_error "Keptn Test failed."
+    print_error "Keptn test failed."
     exit 1
   fi
 }

@@ -179,7 +179,7 @@ fi
 # Sending a problem.open event now should result in message: Action toogle-feature triggered but not executed after waiting for 2 minutes.
 ##########################################################################################################################################
 
-# Install unleash service
+# install unleash service
 kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/unleash-service/${UNLEASH_SERVICE_VERSION}/deploy/service.yaml -n keptn
 sleep 10
 
