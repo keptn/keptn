@@ -172,7 +172,7 @@ func (h *HelmV3Executor) waitForDeploymentsOfHelmRelease(helmManifest string) er
 // UninstallRelease uninstalls the specified release in the namespace
 func (h *HelmV3Executor) UninstallRelease(releaseName, namespace string) error {
 
-	h.logger.Info(fmt.Sprintf("Start deleting chart %s in namespace %s", releaseName, namespace))
+	h.logger.Debug(fmt.Sprintf("Start deleting Helm release %s in namespace %s", releaseName, namespace))
 	config, err := h.getKubeRestConfig()
 	if err != nil {
 		return err
@@ -189,11 +189,10 @@ func (h *HelmV3Executor) UninstallRelease(releaseName, namespace string) error {
 	}
 
 	iCli := action.NewUninstall(cfg)
-	resp, err := iCli.Run(releaseName)
-	if err != nil {
+	if _, err := iCli.Run(releaseName); err != nil {
 		return fmt.Errorf("Error when uninstalling release %s in namespace %s: %s",
 			releaseName, namespace, err.Error())
 	}
-	h.logger.Info(fmt.Sprintf("Helm uninstall successfully: %s", resp.Info))
+	h.logger.Debug(fmt.Sprintf("Successfully uninstall Helm release %s in namespace %s", releaseName, namespace))
 	return nil
 }
