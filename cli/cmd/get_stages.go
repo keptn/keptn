@@ -69,6 +69,11 @@ staging        2020-04-06T14:37:45.210Z
 				return fmt.Errorf("Failed to retrieve stages for project %s: %v", *stageParameter.project, err)
 			}
 
+			if len(stages) == 0 {
+				fmt.Println("No stages found")
+				return nil
+			}
+
 			w := new(tabwriter.Writer)
 			w.Init(os.Stdout, 10, 8, 0, '\t', 0)
 			fmt.Fprintln(w, "NAME\tCREATION DATE")

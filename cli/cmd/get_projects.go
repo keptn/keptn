@@ -26,6 +26,7 @@ import (
 
 	"github.com/keptn/keptn/cli/pkg/logging"
 
+	"github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	keptn "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
@@ -102,29 +103,54 @@ keptn get project sockshop -output=json  # Returns project details in JSON forma
 				return err
 			}
 
-			for _, project := range projects {
-				if len(args) == 1 && project.ProjectName == args[0] || len(args) == 0 {
-					if strings.ToLower(*getProject.outputFormat) == "yaml" {
-						yamlBytes, err := yaml.Marshal(project)
-						if err != nil {
-							return errors.New(err.Error())
-						}
-						fmt.Println(string(yamlBytes))
-					} else if strings.ToLower(*getProject.outputFormat) == "json" {
-						jsonBytes, err := json.MarshalIndent(project, "", "   ")
-						if err != nil {
-							return errors.New(err.Error())
-						}
-						fmt.Println(string(jsonBytes))
-					} else {
-						fmt.Fprintln(w, project.ProjectName+"\t"+parseCreationDate(project.CreationDate))
+			filteredProjects := filterProjects(projects, getProjectNameFromArgs(args))
+			if len(filteredProjects) == 0 {
+				if len(args) == 1 {
+					fmt.Printf("No project %s found\n", args[0])
+				} else {
+					fmt.Println("No projects found")
+				}
+				return nil
+			}
+
+			for _, project := range filteredProjects {
+				if strings.ToLower(*getProject.outputFormat) == "yaml" {
+					yamlBytes, err := yaml.Marshal(project)
+					if err != nil {
+						return errors.New(err.Error())
 					}
+					fmt.Println(string(yamlBytes))
+				} else if strings.ToLower(*getProject.outputFormat) == "json" {
+					jsonBytes, err := json.MarshalIndent(project, "", "   ")
+					if err != nil {
+						return errors.New(err.Error())
+					}
+					fmt.Println(string(jsonBytes))
+				} else {
+					fmt.Fprintln(w, project.ProjectName+"\t"+parseCreationDate(project.CreationDate))
 				}
 			}
 			w.Flush()
 		}
 		return nil
 	},
+}
+
+func getProjectNameFromArgs(args []string) string {
+	if len(args) == 1 {
+		return args[0]
+	}
+	return ""
+}
+
+func filterProjects(projects []*models.Project, projectName string) []*models.Project {
+	filteredProjects := make([]*models.Project, 0)
+	for _, project := range projects {
+		if projectName == "" || projectName == project.ProjectName {
+			filteredProjects = append(filteredProjects, project)
+		}
+	}
+	return filteredProjects
 }
 
 func parseCreationDate(creationDate string) string {
