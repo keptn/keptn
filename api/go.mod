@@ -18,7 +18,7 @@ require (
 	github.com/gorilla/websocket v1.4.1
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/json-iterator/go v1.1.9 // indirect
-	github.com/keptn/go-utils v0.6.3-0.20200818082305-f51180cb3d15
+	github.com/keptn/go-utils v0.6.3-0.20200828090559-595b01d0f2a6
 	github.com/keptn/kubernetes-utils v0.2.0
 	github.com/kinbiko/jsonassert v1.0.1
 	github.com/magiconair/properties v1.8.1

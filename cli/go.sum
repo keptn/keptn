@@ -377,6 +377,8 @@ github.com/kelseyhightower/envconfig v1.4.0/go.mod h1:cccZRl6mQpaq41TPp5QxidR+Sa
 github.com/keptn/go-utils v0.6.1-compat.0.20200414111241-846f2becaf21/go.mod h1:aDNFm3olvCZd7AE6/Xyir4g5Mw6E89mjhKt0zoJHC6g=
 github.com/keptn/go-utils v0.6.3-0.20200819093757-8970446a97d5 h1:WNpGyAC0UYPSY411W/TYknGVL7875vAXozKbAFVt/Cc=
 github.com/keptn/go-utils v0.6.3-0.20200819093757-8970446a97d5/go.mod h1:hf2FU6JFuOzLP5rEAlA1/XnNS28pDZbVfxDESeQsq1g=
+github.com/keptn/go-utils v0.6.3-0.20200828090559-595b01d0f2a6 h1:WJhNkXBLFZ6OxDziWFUuHmHuXmApVmvU0X2QrGySVDY=
+github.com/keptn/go-utils v0.6.3-0.20200828090559-595b01d0f2a6/go.mod h1:hf2FU6JFuOzLP5rEAlA1/XnNS28pDZbVfxDESeQsq1g=
 github.com/keptn/kubernetes-utils v0.2.0 h1:DEjTzixk7TJ6i2HopTlw/d4b1perJR1gmyOOCrWX5cA=
 github.com/keptn/kubernetes-utils v0.2.0/go.mod h1:YoWRuV28Guz5/mzjo9jVxtMsWAEn0MDXwxK/ScAQlZc=
 github.com/kisielk/errcheck v1.1.0/go.mod h1:EZBBE59ingxPouuu3KfxchcWSUPOHkagtvWXihfKN4Q=

@@ -248,6 +248,8 @@ github.com/karrick/godirwalk v1.10.3/go.mod h1:RoGL9dQei4vP9ilrpETWE8CLOZ1kiN0Lh
 github.com/kelseyhightower/envconfig v1.4.0/go.mod h1:cccZRl6mQpaq41TPp5QxidR+Sa3axMbJDNb//FQX6Gg=
 github.com/keptn/go-utils v0.6.3-0.20200812114054-9ae6556a6499 h1:lawpRZE/v7g/xjtTzrHrXWMpSJKtclvTv9ZrwsubP1s=
 github.com/keptn/go-utils v0.6.3-0.20200812114054-9ae6556a6499/go.mod h1:hf2FU6JFuOzLP5rEAlA1/XnNS28pDZbVfxDESeQsq1g=
+github.com/keptn/go-utils v0.6.3-0.20200828090559-595b01d0f2a6 h1:WJhNkXBLFZ6OxDziWFUuHmHuXmApVmvU0X2QrGySVDY=
+github.com/keptn/go-utils v0.6.3-0.20200828090559-595b01d0f2a6/go.mod h1:hf2FU6JFuOzLP5rEAlA1/XnNS28pDZbVfxDESeQsq1g=
 github.com/keptn/go-utils v0.7.0 h1:UM9luAcPiptFzzTFl3wWHQ32jr9JD94Hx09LCYktI/s=
 github.com/keptn/go-utils v0.7.0/go.mod h1:hf2FU6JFuOzLP5rEAlA1/XnNS28pDZbVfxDESeQsq1g=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
