@@ -577,7 +577,7 @@ jobs:
       - keptn status
       - export PROJECT=musicshop
       - export PLATFORM=openshift
-      - export DYNATRACE_SLI_SERVICE_VERSION=release-0.5.0
+      - export DYNATRACE_SLI_SERVICE_VERSION=master
       - test/test_quality_gates_standalone.sh
     after_success:
       # delete kubernetes cluster only on success (in case of an error we want to be able to dig into the cluster)
