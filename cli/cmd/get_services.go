@@ -22,6 +22,8 @@ import (
 	"strings"
 	"text/tabwriter"
 
+	"github.com/keptn/go-utils/pkg/api/models"
+
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/spf13/cobra"
@@ -88,36 +90,51 @@ keptn get services carts --project=sockshop -o=json  # Get details of the carts 
 				fmt.Fprintln(w, "NAME\tPROJECT\tSTAGE\tCREATION DATE")
 			}
 
-			for _, project := range projects {
-				// make the project filter optional => print all services with matching names
-				if *getService.project == "" || project.ProjectName == *getService.project {
-					//stagesHandler := apiutils.NewStageHandler(endPoint.String())
-					for _, stage := range project.Stages {
-						services, err := servicesHandler.GetAllServices(project.ProjectName, stage.StageName)
-						if err != nil {
-							return errors.New(err.Error())
-						}
-						for _, service := range services {
-							if len(args) == 1 && service.ServiceName == args[0] || len(args) == 0 {
-								if strings.ToLower(*getService.outputFormat) == "yaml" {
-									yamlBytes, err := yaml.Marshal(service)
-									if err != nil {
-										return errors.New(err.Error())
-									}
-									yamlString := string(yamlBytes)
-									fmt.Println(yamlString)
-								} else if strings.ToLower(*getService.outputFormat) == "json" {
-									jsonBytes, err := json.MarshalIndent(service, "", "   ")
-									if err != nil {
-										return errors.New(err.Error())
-									}
+			filteredProjects := filterProjects(projects, *getService.project)
+			if len(filteredProjects) == 0 {
+				if *getService.project != "" {
+					fmt.Printf("No project %s found\n", *getService.project)
+				} else {
+					fmt.Println("No projects found")
+				}
+				return nil
+			}
 
-									jsonString := string(jsonBytes)
-									fmt.Println(jsonString)
-								} else {
-									fmt.Fprintln(w, service.ServiceName+"\t"+project.ProjectName+"\t"+stage.StageName+"\t"+parseCreationDate(service.CreationDate))
-								}
+			for _, project := range filteredProjects {
+				//stagesHandler := apiutils.NewStageHandler(endPoint.String())
+				for _, stage := range project.Stages {
+					services, err := servicesHandler.GetAllServices(project.ProjectName, stage.StageName)
+					if err != nil {
+						return errors.New(err.Error())
+					}
+					filteredServices := filterServices(services, getServiceNameFromArgs(args))
+					if len(filteredServices) == 0 {
+						if len(args) == 1 {
+							fmt.Printf("No services %s found in project %s", args[0], *getService.project)
+						} else {
+							fmt.Printf("No services found in project %s", *getService.project)
+						}
+						return nil
+					}
+
+					for _, service := range filteredServices {
+						if strings.ToLower(*getService.outputFormat) == "yaml" {
+							yamlBytes, err := yaml.Marshal(service)
+							if err != nil {
+								return errors.New(err.Error())
 							}
+							yamlString := string(yamlBytes)
+							fmt.Println(yamlString)
+						} else if strings.ToLower(*getService.outputFormat) == "json" {
+							jsonBytes, err := json.MarshalIndent(service, "", "   ")
+							if err != nil {
+								return errors.New(err.Error())
+							}
+
+							jsonString := string(jsonBytes)
+							fmt.Println(jsonString)
+						} else {
+							fmt.Fprintln(w, service.ServiceName+"\t"+project.ProjectName+"\t"+stage.StageName+"\t"+parseCreationDate(service.CreationDate))
 						}
 					}
 				}
@@ -128,6 +145,23 @@ keptn get services carts --project=sockshop -o=json  # Get details of the carts 
 		}
 		return nil
 	},
+}
+
+func getServiceNameFromArgs(args []string) string {
+	if len(args) == 1 {
+		return args[0]
+	}
+	return ""
+}
+
+func filterServices(services []*models.Service, serviceName string) []*models.Service {
+	filteredServices := make([]*models.Service, 0)
+	for _, service := range services {
+		if serviceName == "" || serviceName == service.ServiceName {
+			filteredServices = append(filteredServices, service)
+		}
+	}
+	return filteredServices
 }
 
 func init() {
