@@ -21,10 +21,11 @@ PROMETHEUS_SERVICE_VERSION=${PROMETHEUS_SERVICE_VERSION:-master}
 
 kubectl delete namespace $PROJECT-production
 keptn delete project $PROJECT
-
 keptn create project $PROJECT --shipyard=./test/assets/shipyard_self_healing_scale.yaml
 
-# Prerequisites
+########################################################################################################################
+# Pre-requisites
+########################################################################################################################
 
 kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/prometheus-service/$PROMETHEUS_SERVICE_VERSION/deploy/service.yaml
 
@@ -84,7 +85,7 @@ cd examples/load-generation/cartsloadgen
 
 kubectl apply -f deploy/cartsloadgen-faulty.yaml
 wait_for_deployment_in_namespace cartsloadgen loadgen
-echo "loadgen deployed successfully waiting for problem notification"
+echo "Loadgen deployed successfully - waiting for problem notification"
 
 sleep 120
 echo "Still waiting 120sec ..."
@@ -104,7 +105,7 @@ keptn_context_id=$(echo $event | jq -r '.shkeptncontext')
 
 sleep 20
 
-## Check remediation.triggered event ##
+## check remediation.triggered event ##
 response=$(curl -X GET "${KEPTN_ENDPOINT}/mongodb-datastore/event?project=${PROJECT}&type=sh.keptn.event.remediation.triggered&keptnContext=${keptn_context_id}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.events[0]')
 
 # print the response
@@ -119,7 +120,7 @@ verify_using_jq "$response" ".data.problem.ProblemTitle" "response_time_p90"
 verify_using_jq "$response" ".data.problem.State" "OPEN"
 
 
-## Check remediation.status.changed event ##
+## check remediation.status.changed event ##
 response=$(curl -X GET "${KEPTN_ENDPOINT}/mongodb-datastore/event?project=${PROJECT}&type=sh.keptn.event.remediation.status.changed&keptnContext=${keptn_context_id}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.events[0]')
 
 # print the response
@@ -133,8 +134,7 @@ verify_using_jq "$response" ".data.service" "$SERVICE"
 verify_using_jq "$response" ".data.remediation.result.actionIndex" "0"
 verify_using_jq "$response" ".data.remediation.result.actionName" "scaling"
 
-
-## Check action.triggered event ##
+## check action.triggered event ##
 response=$(curl -X GET "${KEPTN_ENDPOINT}/mongodb-datastore/event?project=${PROJECT}&type=sh.keptn.event.action.triggered&keptnContext=${keptn_context_id}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.events[0]')
 
 # print the response
@@ -148,7 +148,7 @@ verify_using_jq "$response" ".data.service" "$SERVICE"
 verify_using_jq "$response" ".data.action.action" "scaling"
 verify_using_jq "$response" ".data.action.value" "1"
 
-## Check action.started event ##
+## check action.started event ##
 response=$(curl -X GET "${KEPTN_ENDPOINT}/mongodb-datastore/event?project=${PROJECT}&type=sh.keptn.event.action.started&keptnContext=${keptn_context_id}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.events[0]')
 
 # print the response
@@ -163,7 +163,7 @@ verify_using_jq "$response" ".data.service" "$SERVICE"
 # wait for the remediation action to be finished
 sleep 160
 
-## Check action.finished event ##
+## check action.finished event ##
 response=$(curl -X GET "${KEPTN_ENDPOINT}/mongodb-datastore/event?project=${PROJECT}&type=sh.keptn.event.action.finished&keptnContext=${keptn_context_id}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.events[0]')
 
 # print the response
@@ -182,3 +182,5 @@ if [[ "$replicacount" != "2" ]]; then
 else
   echo "Verified that number of replicas has been increased"
 fi
+
+echo "Self healing tests for scaling done ✓"

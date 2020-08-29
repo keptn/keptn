@@ -19,7 +19,7 @@ SERVICE="frontend"
 kubectl -n keptn get deployment unleash-service 2> /dev/null
 
 if [[ $? -eq 0 ]]; then
-  echo "Found unleash-service. Please uninstall it using"
+  echo "Found unleash-service. Please uninstall it using:"
   echo "kubectl -n keptn delete deployment unleash-service"
   exit 1
 fi
@@ -28,16 +28,16 @@ fi
 response=$(curl -X GET "${KEPTN_ENDPOINT}/configuration-service/v1/project/${PROJECT}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.projectName')
 
 if [[ "$response" == "${PROJECT}" ]]; then
-  echo "Project ${PROJECT} already exists. Please delete it using"
+  echo "Project ${PROJECT} already exists. Please delete it using:"
   echo "keptn delete project ${PROJECT}"
   exit 2
 fi
 
 echo "Testing self-healing for project $PROJECT ..."
 
-echo "Creating a new project without git upstream"
+echo "Creating a new project without Git upstream"
 keptn create project $PROJECT --shipyard=./test/assets/self_healing_shipyard.yaml
-verify_test_step $? "keptn create project command failed."
+verify_test_step $? "keptn create project ${PROJECT} - failed"
 sleep 10
 
 # verify that the project has been created via the Keptn API
@@ -48,7 +48,7 @@ if [[ "$response" != "${PROJECT}" ]]; then
   echo "${response}"
   exit 2
 else
-  echo "Verified that Project exists via api"
+  echo "Verified that project exists via API"
 fi
 
 
@@ -60,7 +60,6 @@ fi
 
 echo "Sending problem.open event"
 keptn_context_id=$(send_event_json ./test/assets/self_healing_problem_open_event.json)
-
 sleep 10
 
 #response=$(curl -X GET "${KEPTN_ENDPOINT}/mongodb-datastore/event?project=${PROJECT}&type=sh.keptn.event.remediation.finished&keptnContext=${keptn_context_id}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.events[0]')
@@ -81,30 +80,29 @@ verify_using_jq "$response" ".data.remediation.result" "failed"
 ####################################################################################################################################
 # Testcase 2:
 # Project exists, service has been onboarded, but no remediation file could be found
-# Sending a problem.open event now should result in message: Could not execute remediation action because no remediation file available
+# Sending a problem.open event should result in message: Could not execute remediation action because no remediation file available
 ####################################################################################################################################
 
 ###########################################
-# create service frontend                #
+# create service frontend                
 ###########################################
 keptn create service $SERVICE --project=$PROJECT
-verify_test_step $? "keptn create service ${SERVICE} failed."
+verify_test_step $? "keptn create service ${SERVICE} --project=${PROJECT} - failed"
 sleep 10
 
 # verify that the service has been created via the Keptn API
 response=$(curl -X GET "${KEPTN_ENDPOINT}/configuration-service/v1/project/${PROJECT}/stage/production/service/${SERVICE}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.serviceName')
 
 if [[ "$response" != "${SERVICE}" ]]; then
-  echo "Failed to check that the service exists via the API."
+  echo "Failed to check that the service exists via the API"
   echo "${response}"
   exit 2
 else
-  echo "Verified that service exists via api"
+  echo "Verified that service exists via API"
 fi
 
 echo "Sending problem.open event"
 keptn_context_id=$(send_event_json ./test/assets/self_healing_problem_open_event.json)
-
 sleep 10
 
 #response=$(curl -X GET "${KEPTN_ENDPOINT}/mongodb-datastore/event?project=${PROJECT}&type=sh.keptn.event.remediation.finished&keptnContext=${keptn_context_id}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.events[0]')
@@ -133,7 +131,6 @@ keptn add-resource --project=$PROJECT --service=$SERVICE --stage=production --re
 
 echo "Sending problem.open event"
 keptn_context_id=$(send_event_json ./test/assets/self_healing_problem_open_event.json)
-
 sleep 10
 
 response=$(curl -X GET "${KEPTN_ENDPOINT}/mongodb-datastore/event?project=${PROJECT}&type=sh.keptn.event.remediation.finished&keptnContext=${keptn_context_id}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.events | length')
@@ -240,3 +237,5 @@ verify_using_jq "$response" ".data.service" "$SERVICE"
 verify_using_jq "$response" ".data.action.status" "errored"
 # TODO: we need a message field for that
 # verify_using_jq "$response" ".data.action.message" "Action run-snow-wf triggered but not executed after waiting for 2 minutes."
+
+echo "Self healing tests done ✓"

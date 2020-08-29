@@ -6,11 +6,11 @@ comparison:
   aggregate_function: avg
 objectives:
   - sli: response_time_p90
-    pass:        # pass if (relative change <= 10% AND absolute value is < 500)
+    pass:            # pass if (relative change <= 10% AND absolute value is < 1000ms)
       - criteria:
           - "<=+10%" # relative values require a prefixed sign (plus or minus)
-          - "<1000"   # absolute values only require a logical operator
-    warning:     # if the response time is below 800ms, the result should be a warning
+          - "<1000"  # absolute values only require a logical operator
+    warning:         # if the response time is below 1200ms, the result should be a warning
       - criteria:
           - "<=1200"
 total_score:

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Exposing Keptn Bridge..."
+echo "Exposing Keptn Bridge ..."
 export BRIDGE_URL=http://$(kubectl -n keptn get service api-gateway-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')/bridge
 
 # verify that bridge is available

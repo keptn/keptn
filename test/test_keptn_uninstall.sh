@@ -3,15 +3,14 @@
 source test/utils.sh
 
 echo "y" | keptn uninstall
-
-verify_test_step $? "keptn uninstall failed"
+verify_test_step $? "keptn uninstall - failed"
 
 # verify namespace keptn has been removed
 kubectl -n keptn get namespace keptn 2> /dev/null
 
 if [[ $? -eq 0 ]]; then
   echo "Found namespace keptn"
-  echo "keptn uninstall failed"
+  echo "keptn uninstall - failed"
   exit 1
 fi
 
@@ -22,5 +21,5 @@ kubectl delete namespace $PROJECT-dev $PROJECT-staging $PROJECT-production || tr
 # wait for the actual deletion
 sleep 60
 
-echo "Okay, Keptn seems to have been uninstalled. This is what is left on the cluster:"
+echo "Keptn has been uninstalled. This is what is left on the cluster:"
 kubectl get all --all-namespaces

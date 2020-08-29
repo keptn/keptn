@@ -9,11 +9,11 @@ filter:
 objectives:
   - sli: "response_time_p95"
     key_sli: false
-    pass:             # pass if (relative change <= 10% AND absolute value is < 600ms)
+    pass:             # pass if (relative change <= 75% AND absolute value is < 75ms)
       - criteria:
           - "<=+75%"  # relative values require a prefixed sign (plus or minus)
-          - "<75"    # absolute values only require a logical operator
-    warning:          # if the response time is below 800ms, the result should be a warning
+          - "<75"     # absolute values only require a logical operator
+    warning:          # if the response time is below 200ms, the result should be a warning
       - criteria:
           - "<=200"
           - "<=+100%"

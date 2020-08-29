@@ -15,7 +15,7 @@ function cleanup() {
 }
 trap cleanup EXIT
 
-# get keptn api details
+# get keptn API details
 KEPTN_ENDPOINT=http://$(kubectl -n keptn get service api-gateway-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')/api
 KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)
 
@@ -31,7 +31,7 @@ SERVICE="carts"
 response=$(curl -X GET "${KEPTN_ENDPOINT}/configuration-service/v1/project/${PROJECT}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.projectName')
 
 if [[ "$response" == "${PROJECT}" ]]; then
-  echo "Project ${PROJECT} already exists. Please delete it using"
+  echo "Project ${PROJECT} already exists. Please delete it using:"
   echo "keptn delete project ${PROJECT}"
   exit 2
 fi
@@ -40,18 +40,18 @@ echo "Testing delivery assistant for project $PROJECT ..."
 
 echo "Creating a new project without Git upstream"
 keptn create project $PROJECT --shipyard=./test/assets/delivery_assistant_shipyard.yaml
-verify_test_step $? "keptn create project ${PROJECT} failed."
+verify_test_step $? "keptn create project ${PROJECT} - failed"
 sleep 10
 
 # verify that the project has been created via the Keptn API
 response=$(curl -X GET "${KEPTN_ENDPOINT}/configuration-service/v1/project/${PROJECT}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.projectName')
 
 if [[ "$response" != "${PROJECT}" ]]; then
-  echo "Failed to check that the project exists via the API."
+  echo "Failed to check that the project exists via the API"
   echo "${response}"
   exit 2
 else
-  echo "Verified that project exists via API."
+  echo "Verified that project exists via API"
 fi
 
 ###########################################
@@ -63,7 +63,7 @@ git clone --branch master https://github.com/keptn/examples --single-branch
 cd examples/onboarding-carts
 
 keptn onboard service $SERVICE --project=$PROJECT --chart=./carts
-verify_test_step $? "keptn onboard service ${SERVICE} failed."
+verify_test_step $? "keptn onboard service ${SERVICE} - failed"
 sleep 10
 
 cd ../..
