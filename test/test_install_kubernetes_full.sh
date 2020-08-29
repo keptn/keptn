@@ -19,9 +19,9 @@ verify_deployment_in_namespace "istio-sidecar-injector" "istio-system"
 echo "Installing Keptn on cluster"
 echo "{}" > creds.json # empty credentials file
 
-# install Keptn (using the develop version, which should point the :latest docker images)
+# install Keptn using the develop version, which refers to the :latest docker images
 keptn install --chart-repo="${KEPTN_INSTALLER_REPO}" --platform=kubernetes --creds=creds.json --endpoint-service-type=NodePort --verbose --use-case=continuous-delivery
-verify_test_step $? "keptn install failed"
+verify_test_step $? "keptn install --chart-repo=${KEPTN_INSTALLER_REPO} - failed"
 
 # verify that the keptn CLI has successfully authenticated
 echo "Checking that Keptn is authenticated ..."
@@ -53,6 +53,6 @@ verify_test_step $? "Could not authenticate at Keptn API"
 
 cd ../..
 
-echo "Installation done!"
+echo "Installing Keptn on cluster done ✓"
 
 exit 0

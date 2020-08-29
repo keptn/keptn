@@ -9,20 +9,20 @@ echo ""
 
 # send new artifcat for database
 keptn send event new-artifact --project=$PROJECT --service=carts-db --image=mongo
-verify_test_step $? "Send event new-artifact for carts-db failed"
+verify_test_step $? "keptn send event new-artifact --project=${PROJECT} --service=carts-db --image=mongo - failed"
 
 # wait until mongodb has been deployed
 wait_for_deployment_in_namespace "carts-db" "$PROJECT-dev"
-verify_test_step $? "Deployment carts-db not available, exiting..."
+verify_test_step $? "Deployment carts-db not available, exiting ..."
 
-# okay, now we can start with carts
+# send new artifact for carts
 test/utils/send_new_artifact_sockshop.sh $PROJECT docker.io/keptnexamples/carts 0.10.1
 
 # wait before sending the next artifact
-echo "Waiting a little bit before we continue..."
+echo "Waiting 30sec before continue ..."
 sleep 30
-echo "Continuing now!"
 
+echo "Send new artifact now"
 test/utils/send_new_artifact_sockshop.sh $PROJECT docker.io/keptnexamples/carts 0.10.3
 
 exit 0

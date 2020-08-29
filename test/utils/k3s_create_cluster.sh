@@ -10,9 +10,9 @@ curl -Lo k3s "https://github.com/rancher/k3s/releases/download/${K3S_VERSION}/k3
 sudo k3s server --no-deploy=traefik --write-kubeconfig-mode=644 --log /k3s.log &
 # wait a bit for the server to start
 sleep 30
-echo "Waiting until k3s is definately ready..."
+echo "Waiting until K3s is ready ..."
 sleep 30
-echo "Still waiting..."
+echo "Still waiting ..."
 sleep 30
 cat /k3s.log
 

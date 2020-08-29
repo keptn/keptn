@@ -35,7 +35,7 @@ fi
 response=$(curl -X GET "${KEPTN_ENDPOINT}/configuration-service/v1/project/${PROJECT}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.projectName')
 
 if [[ "$response" == "${PROJECT}" ]]; then
-  echo "Project ${PROJECT} already exists. Please delete it using"
+  echo "Project ${PROJECT} already exists. Please delete it using:"
   echo "keptn delete project ${PROJECT}"
   exit 2
 fi
@@ -53,12 +53,12 @@ fi
 kubectl -n keptn get secret dynatrace-credentials-${PROJECT} 2> /dev/null
 
 if [[ $? -eq 0 ]]; then
-  echo "Found secret dynatrace-credentials-${PROJECT}. Please remove it using"
+  echo "Found secret dynatrace-credentials-${PROJECT}. Please remove it using:"
   echo "kubectl -n keptn delete secret dynatrace-credentials-${PROJECT}"
   exit 1
 fi
 
-echo "Testing quality gates standalone for project $PROJECT ..."
+echo "Testing quality gates standalone for project $PROJECT"
 
 # test keptn create project and create service
 rm -rf examples
@@ -67,7 +67,7 @@ cd examples/onboarding-carts
 
 echo "Creating a new project without Git upstream"
 keptn create project $PROJECT --shipyard=./shipyard-quality-gates.yaml
-verify_test_step $? "keptn create project {$PROJECT} failed."
+verify_test_step $? "keptn create project {$PROJECT} - failed"
 sleep 10
 
 cd ../..
@@ -76,7 +76,7 @@ cd ../..
 response=$(curl -X GET "${KEPTN_ENDPOINT}/configuration-service/v1/project/${PROJECT}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.projectName')
 
 if [[ "$response" != "${PROJECT}" ]]; then
-  echo "Failed to check that the project exists via the API."
+  echo "Failed to check that the project exists via the API"
   echo "${response}"
   exit 2
 else
@@ -88,8 +88,9 @@ fi
 ###########################################
 SERVICE=frontend
 keptn create service $SERVICE --project=$PROJECT
-verify_test_step $? "keptn create service ${SERVICE} failed."
+verify_test_step $? "keptn create service ${SERVICE} - failed"
 sleep 10
+
 
 ########################################################################################################################
 # Testcase 1:
@@ -128,12 +129,12 @@ verify_using_jq "$response" ".data.evaluationdetails.sloFileContent" ""
 # add SLO file for service
 echo "Adding SLO File: test/assets/quality_gates_standalone_slo_step1.yaml"
 keptn add-resource --project=$PROJECT --stage=hardening --service=$SERVICE --resource=test/assets/quality_gates_standalone_slo_step1.yaml --resourceUri=slo.yaml
-verify_test_step $? "keptn add-resource slo.yaml failed."
+verify_test_step $? "keptn add-resource slo.yaml - failed"
 
 # add SLI file for service
 echo "Adding SLI File: test/assets/quality_gates_standalone_sli_dynatrace_step1.yaml"
 keptn add-resource --project=$PROJECT --stage=hardening --service=$SERVICE --resource=test/assets/quality_gates_standalone_sli_dynatrace_step1.yaml --resourceUri=dynatrace/sli.yaml
-verify_test_step $? "keptn add-resource sli.yaml failed."
+verify_test_step $? "keptn add-resource sli.yaml - failed"
 
 echo "Sending start-evaluation event for service $SERVICE in stage hardening"
 
@@ -158,6 +159,7 @@ verify_using_jq "$response" ".data.evaluationdetails.result" "no evaluation perf
 verify_using_jq "$response" ".data.evaluationdetails.score" "0"
 verify_using_jq "$response" ".data.evaluationdetails.sloFileContent" ""
 
+
 ########################################################################################################################
 # Testcase 3: Send a start-evaluation event with an SLO file specified and with an SLI provider set, but no Dynatrace
 #             Tenant/API Token configured
@@ -167,16 +169,16 @@ kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/dynatrace-sli-s
 sleep 10
 wait_for_deployment_in_namespace "dynatrace-sli-service" "keptn"
 
-# now configure monitoring for Dynatrace
+# configure monitoring for Dynatrace
 echo "Calling keptn configure monitoring dynatrace --project=$PROJECT"
 keptn configure monitoring dynatrace --project=$PROJECT --suppress-websocket
 sleep 5
 # this should set the configmap 'lighthouse-config-$PROJECT' - verify that it exists
 
 kubectl -n keptn get configmap "lighthouse-config-${PROJECT}" -oyaml 2> /dev/null
-verify_test_step $? "ERROR: Could not find configmap lighthouse-config-$PROJECT (this is expected to be created by keptn configure monitoring dynatrace --project=$PROJECT)"
+verify_test_step $? "ERROR: Could not find ConfigMap lighthouse-config-$PROJECT (this is expected to be created by: keptn configure monitoring dynatrace --project=$PROJECT)"
 
-# now that the dynatrace-sli-service is deployed, send the start evaluation command again
+# send the start evaluation command again
 echo "Sending start-evaluation event for service $SERVICE in stage hardening"
 keptn_context_id=$(send_start_evaluation_event $PROJECT hardening $SERVICE)
 sleep 30
@@ -194,7 +196,7 @@ while [[ $RETRY -lt $RETRY_MAX ]]; do
   echo $response | grep "No event returned"
 
   if [[ $? -ne 0 ]]; then
-    echo "Received an evaluation-done event, continuing..."
+    echo "Received an evaluation-done event, continue ..."
     break
   else
     RETRY=$[$RETRY+1]
@@ -220,6 +222,7 @@ verify_using_jq "$response" ".data.stage" "hardening"
 verify_using_jq "$response" ".data.service" "${SERVICE}"
 verify_using_jq "$response" ".data.result" "fail"
 
+
 ########################################################################################################################
 # Testcase 4: Run tests with Dynatrace credentials (Tenant and API token)
 ########################################################################################################################
@@ -227,7 +230,7 @@ verify_using_jq "$response" ".data.result" "fail"
 # create secret from file
 kubectl -n keptn create secret generic dynatrace-credentials-${PROJECT} --from-literal="DT_TENANT=$QG_INTEGRATION_TEST_DT_TENANT" --from-literal="DT_API_TOKEN=$QG_INTEGRATION_TEST_DT_API_TOKEN"
 
-# now that this is set, let's send the start evaluation command again
+# send the start evaluation command again
 keptn_context_id=$(send_start_evaluation_event $PROJECT hardening $SERVICE)
 sleep 30
 
@@ -244,7 +247,7 @@ while [[ $RETRY -lt $RETRY_MAX ]]; do
   echo $response | grep "No event returned"
 
   if [[ $? -ne 0 ]]; then
-    echo "Received an evaluation-done event, continuing..."
+    echo "Received an evaluation-done event, continue ..."
     break
   else
     RETRY=$[$RETRY+1]
@@ -303,6 +306,7 @@ if [[ $number_of_info_results -ne 1 ]]; then
   echo "Expected 1 results with status: info, but found $number_of_info_results"
 fi
 
+
 ########################################################################################################################
 # Testcase 5: Run the test again
 ########################################################################################################################
@@ -325,7 +329,7 @@ while [[ $RETRY -lt $RETRY_MAX ]]; do
   echo $response | grep "No event returned"
 
   if [[ $? -ne 0 ]]; then
-    echo "Received an evaluation-done event, continuing..."
+    echo "Received an evaluation-done event, continue ..."
     break
   else
     RETRY=$[$RETRY+1]
@@ -381,12 +385,13 @@ if [[ $number_of_info_results -ne 1 ]]; then
   echo "Expected 1 results with status: info, but found $number_of_info_results"
 fi
 
+
 ########################################################################################################################
 # Testcase 6: Add slo step2 which contains values that are not handled by dynatrace-sli-service
 ########################################################################################################################
-echo "Adding SLO File: test/assets/quality_gates_standalone_slo_step2.yaml"
+echo "Adding SLO file: test/assets/quality_gates_standalone_slo_step2.yaml"
 keptn add-resource --project=$PROJECT --stage=hardening --service=$SERVICE --resource=test/assets/quality_gates_standalone_slo_step2.yaml --resourceUri=slo.yaml
-verify_test_step $? "keptn add-resource slo.yaml failed."
+verify_test_step $? "keptn add-resource slo.yaml - failed"
 
 # send start-evaluation event
 keptn_context_id=$(send_start_evaluation_event $PROJECT hardening $SERVICE)
@@ -405,7 +410,7 @@ while [[ $RETRY -lt $RETRY_MAX ]]; do
   echo $response | grep "No event returned"
 
   if [[ $? -ne 0 ]]; then
-    echo "Received an evaluation-done event, continuing..."
+    echo "Received an evaluation-done event, continue ..."
     break
   else
     RETRY=$[$RETRY+1]
@@ -469,7 +474,7 @@ fi
 # add SLI file for service
 echo "Adding SLI File: test/assets/quality_gates_standalone_sli_dynatrace_step2.yaml"
 keptn add-resource --project=$PROJECT --stage=hardening --service=$SERVICE --resource=test/assets/quality_gates_standalone_sli_dynatrace_step2.yaml --resourceUri=dynatrace/sli.yaml
-verify_test_step $? "keptn add-resource sli.yaml failed."
+verify_test_step $? "keptn add-resource sli.yaml - failed"
 
 # send start-evaluation event
 keptn_context_id=$(send_start_evaluation_event $PROJECT hardening $SERVICE)
@@ -488,7 +493,7 @@ while [[ $RETRY -lt $RETRY_MAX ]]; do
   echo $response | grep "No event returned"
 
   if [[ $? -ne 0 ]]; then
-    echo "Received an evaluation-done event, continuing..."
+    echo "Received an evaluation-done event, continue ..."
     break
   else
     RETRY=$[$RETRY+1]
@@ -558,6 +563,6 @@ kubectl -n keptn delete deployment dynatrace-sli-service
 echo "Removing secret dynatrace-credentials-${PROJECT}"
 kubectl -n keptn delete secret dynatrace-credentials-${PROJECT}
 
-echo "Done!"
+echo "Quality gates standalone tests done ✓"
 
 exit 0

@@ -68,7 +68,6 @@ function send_event_json() {
 
   response=$(keptn send event --file=$EVENT_JSON_FILE_URI)
   keptn_context_id=$(echo $response | awk -F'Keptn context:' '{ print $2 }' | xargs)
-
   echo "$keptn_context_id"
 }
 
@@ -138,7 +137,7 @@ function verify_using_jq() {
 function verify_test_step() {
   if [[ $1 != '0' ]]; then
     print_error "$2"
-    print_error "Keptn test failed."
+    print_error "Keptn test step failed"
     exit 1
   fi
 }
@@ -151,11 +150,11 @@ function wait_for_url() {
     curl $URL -k
 
     if [[ $? -eq 0 ]]; then
-      echo "Verified access to ${URL}!"
+      echo "Verified access to ${URL}"
       break
     else
       RETRY=$[$RETRY+1]
-      echo "Retry: ${RETRY}/${RETRY_MAX} - Wait 10s for url ${URL} ..."
+      echo "Retry: ${RETRY}/${RETRY_MAX} - Wait 10s for URL ${URL} ..."
       sleep 10
     fi
   done
@@ -384,6 +383,5 @@ function wait_for_event_with_field_output() {
 
 function replace_value_in_yaml_file() {
   OLDVAL=$1; NEWVAL=$2; FILE=$3
-
   sed -i'.bak' -e "s#$OLDVAL#$NEWVAL#g" $FILE
 }

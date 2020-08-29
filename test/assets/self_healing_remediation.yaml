@@ -8,7 +8,7 @@ spec:
       actionsOnOpen:
       - action: toggle-feature
         name: toggle-feature
-        description: Toggle feature ...
+        description: Toggle feature flag EnablePromotion to OFF
         value:
           EnablePromotion: "off"
       - action: run-snow-wf

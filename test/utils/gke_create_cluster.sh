@@ -8,7 +8,7 @@ gcloud --quiet config set compute/zone ${CLOUDSDK_COMPUTE_ZONE}
 # clean up any nightly clusters
 clusters=$(gcloud container clusters list --zone $CLOUDSDK_COMPUTE_ZONE --project $PROJECT_NAME)
 if echo "$clusters" | grep $CLUSTER_NAME_NIGHTLY; then 
-    echo "Deleting nightly cluster ${CLUSTER_NAME_NIGHTLY}..."
+    echo "Deleting nightly cluster ${CLUSTER_NAME_NIGHTLY} ..."
     gcloud container clusters delete $CLUSTER_NAME_NIGHTLY --zone $CLOUDSDK_COMPUTE_ZONE --project $PROJECT_NAME --quiet
     echo "Finished deleting nightly cluster"
 else 
@@ -28,6 +28,6 @@ gcloud beta container --project $PROJECT_NAME clusters create $CLUSTER_NAME_NIGH
  --labels owner=travis,expiry=auto-delete
 
 if [[ $? != '0' ]]; then
-    echo "gcloud cluster create failed."
+    echo "gcloud cluster create failed"
     exit 1
 fi

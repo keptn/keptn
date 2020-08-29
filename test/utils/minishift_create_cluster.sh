@@ -59,8 +59,9 @@ minishift openshift config set --target=kube --patch '{
         }
     }
 }'
+
 # wait until the kube-apiserver is restarted
-echo "Waiting for login..."
+echo "Waiting for login ..."
 until oc login -u admin -p admin; do sleep 5; done;
 
 echo "Setting policies"
