@@ -68,6 +68,11 @@ export class DataService {
       versionCheckEnabled: of(this.apiService.isVersionCheckEnabled())
     })
     .subscribe((result) => {
+      if(window.location.href.indexOf('bridge') != -1)
+        result.bridgeInfo.apiUrl = `${window.location.href.substring(0, window.location.href.indexOf('/bridge'))}/api/`;
+      else
+        result.bridgeInfo.apiUrl = `${window.location.href.substring(0, window.location.href.lastIndexOf('/'))}/api/`;
+
       result.bridgeInfo.authCommand = `keptn auth --endpoint=${result.bridgeInfo.apiUrl} --api-token=${result.bridgeInfo.apiToken}`;
       this._keptnInfo.next(result);
     }, (err) => {
