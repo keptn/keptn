@@ -13,6 +13,10 @@ export class Root extends Trace {
     return this.traces.reduce((result: boolean, trace: Trace) => trace.isProblem() && !trace.isProblemResolvedOrClosed() ? true : result, false);
   }
 
+  isProblemResolvedOrClosed(): boolean {
+    return this.traces.reduce((result: boolean, trace: Trace) => trace.isProblem() && trace.isProblemResolvedOrClosed() ? true : result, false);
+  }
+
   isFailedEvaluation(): string {
     let result: string = null;
     if(this.traces) {
@@ -75,6 +79,17 @@ export class Root extends Trace {
 
   getDeploymentDetails(stage: Stage): Trace {
     return this.traces.find(t => t.type == EventTypes.DEPLOYMENT_FINISHED && t.data.stage == stage.stageName);
+  }
+
+  getRemediationActions(): Root[] {
+    // create chunks of Remediations and start new chunk at REMEDIATION_TRIGGERED event
+    return this.traces.reduce((result, trace: Trace) => {
+      if(trace.type == EventTypes.ACTION_TRIGGERED)
+        result.push(Root.fromJSON(JSON.parse(JSON.stringify(trace))));
+      else if(result.length)
+        result[result.length-1].traces = [...result[result.length-1].traces||[], trace];
+      return result;
+    }, []);
   }
 
   static fromJSON(data: any) {

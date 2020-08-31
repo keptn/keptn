@@ -31,8 +31,7 @@
   color: $gray-500;
 }
 .out-of-sync-service {
-  color: $blue-400;
-  fill: $blue-400;
+  border: 1px solid $blue-400;
 }
 
 ::ng-deep {
