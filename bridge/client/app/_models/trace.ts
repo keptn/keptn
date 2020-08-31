@@ -140,6 +140,14 @@ class Trace {
     return this.data.approval?.result == ApprovalStates.DECLINED;
   }
 
+  public isDeployment(): string {
+    return this.type === EventTypes.DEPLOYMENT_FINISHED ? this.data.stage : null;
+  }
+
+  public isEvaluation(): string {
+    return this.type === EventTypes.EVALUATION_DONE ? this.data.stage : null;
+  }
+
   hasLabels(): boolean {
     return Object.keys(this.data.labels||{}).length > 0;
   }
