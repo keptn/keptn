@@ -52,7 +52,7 @@ export class Project {
   }
 
   getLatestProblemEvents(stage: Stage): Root[] {
-    return this.getLatestRootEvents(stage).filter(root => root.isProblem() /* TODO: && !root.isProblemResolvedOrClosed()*/);
+    return this.getLatestRootEvents(stage).filter(root => root.isProblem() && !root.isProblemResolvedOrClosed());
   }
 
   getRootEvent(service: Service, event: Trace): Root {
