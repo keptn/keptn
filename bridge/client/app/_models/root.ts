@@ -1,4 +1,6 @@
 import {Trace} from "./trace";
+import {EventTypes} from "./event-types";
+import {Stage} from "./stage";
 
 export class Root extends Trace {
   traces: Trace[];
@@ -9,6 +11,18 @@ export class Root extends Trace {
 
   isProblem(): boolean {
     return this.traces.reduce((result: boolean, trace: Trace) => trace.isProblem() && !trace.isProblemResolvedOrClosed() ? true : result, false);
+  }
+
+  isFailedEvaluation(): string {
+    let result: string = null;
+    if(this.traces) {
+      this.traces.forEach((trace) => {
+        if(trace.isFailedEvaluation()) {
+          result = trace.data.stage;
+        }
+      });
+    }
+    return result;
   }
 
   isWarning(): string {
@@ -53,6 +67,14 @@ export class Root extends Trace {
     if(!this.data.service)
       this.data.service = this.traces.find(trace => !!trace.data.project).data.service;
     return this.data.service;
+  }
+
+  getEvaluation(stage: Stage): Trace {
+    return this.traces.find(t => t.type == EventTypes.EVALUATION_DONE && t.data.stage == stage.stageName);
+  }
+
+  getDeploymentDetails(stage: Stage): Trace {
+    return this.traces.find(t => t.type == EventTypes.DEPLOYMENT_FINISHED && t.data.stage == stage.stageName);
   }
 
   static fromJSON(data: any) {

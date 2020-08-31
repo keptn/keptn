@@ -3,20 +3,6 @@
 
 .ktb-root-events-list {
 
-  .dt-tag {
-    &.error {
-      background-color: $error-color;
-      color: $white;
-    }
-    &.warning {
-      background-color: $warning-color;
-      color: $white;
-    }
-    &.highlight {
-      border-color: $blue-400;
-    }
-  }
-
   .ktb-selectable-tile.ktb-tile-error {
     .ktb-selectable-tile-container {
       border: 1px solid $gray-200;

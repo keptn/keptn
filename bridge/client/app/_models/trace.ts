@@ -88,6 +88,16 @@ class Trace {
     return result;
   }
 
+  isFailedEvaluation() {
+    let result: string = null;
+    if(this.data) {
+      if(this.type === EventTypes.EVALUATION_DONE && this.isFailed()) {
+        result = this.data.stage;
+      }
+    }
+    return result;
+  }
+
   isWarning(): string {
     let result: string = null;
     if(this.data) {
@@ -130,6 +140,10 @@ class Trace {
 
   private isApprovalFinished(): boolean {
     return this.type === EventTypes.APPROVAL_FINISHED;
+  }
+
+  isDirectDeployment(): boolean {
+    return this.type === EventTypes.DEPLOYMENT_FINISHED && this.data.deploymentstrategy == "direct";
   }
 
   private isApproved(): boolean {

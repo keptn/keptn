@@ -35,6 +35,28 @@
   fill: $blue-400;
 }
 
+::ng-deep {
+  .dt-tag {
+    &.justify-content-center {
+      justify-content: center;
+    }
+    &.error {
+      background-color: $error-color;
+      color: $white;
+    }
+    &.warning {
+      background-color: $warning-color;
+      color: $white;
+    }
+    &.success {
+      background-color: $cta-color-active;
+      color: $white;
+    }
+    &.highlight {
+      border-color: $blue-400;
+    }
+  }
+}
 
 ::ng-deep {
   .dt-button-nested,
