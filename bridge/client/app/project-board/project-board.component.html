@@ -116,7 +116,7 @@
                 </dt-info-group-title>
                 <ng-container *ngIf="project.getLatestDeployment(service, selectedStage) as deployment; else noDeployment">
                   <p class="m-0 mt-1"><span [textContent]="deployment.data.image"></span>:<span [textContent]="deployment.data.tag"></span></p>
-                  <p class="m-0 mb-1"><span class="bold">Deployed at: </span><span [textContent]="deployment.time | amCalendar:getCalendarFormats()"></span></p>
+                  <p class="m-0 mb-1" *ngIf="deployment.isDeployment()"><span class="bold">Deployed at: </span><span [textContent]="deployment.time | amCalendar:getCalendarFormats()"></span></p>
                 </ng-container>
               </dt-info-group>
             </ktb-expandable-tile-header>
@@ -164,8 +164,8 @@
                   </div>
                 </div>
               </dt-info-group-title>
-              <p class="m-0 mb-1 mt-1" *ngIf="project.getLatestDeployment(service, project.stages[0]) as deployment; else noDeployment">
-                <span class="bold">Last processed artifact: </span><span [textContent]="deployment.getShortImageName()"></span>
+              <p class="m-0 mb-1 mt-1" *ngIf="project.getLatestDeployment(service) as deployment; else noDeployment">
+                <span class="bold">Last processed artifact: </span><span *ngIf="deployment.getShortImageName()" [textContent]="deployment.getShortImageName()"></span><span *ngIf="!deployment.getShortImageName()">unknown</span>
               </p>
               <button dt-button disabled variant="nested" *ngIf="!service.roots">
                 <dt-loading-spinner></dt-loading-spinner>
@@ -217,7 +217,7 @@
   </ng-container>
 </div>
 <ng-template #noDeployment>
-  <p class="m-0">Service not deployed yet. Use <a href="https://keptn.sh/docs/0.7.x/reference/cli/commands/keptn_send_event_new-artifact/" target="_blank" rel="noopener noreferrer">keptn send new-artifact</a> to trigger a deployment.</p>
+  <p class="m-0">Service not deployed yet. Use <a href="https://keptn.sh/docs/0.7.x/reference/cli/commands/keptn_send_event_new-artifact/" target="_blank" rel="noopener noreferrer">keptn send event new-artifact</a> to trigger a deployment.</p>
 </ng-template>
 <ng-template #noService>
   <div fxLayout="row" fxLayoutAlign="start center">

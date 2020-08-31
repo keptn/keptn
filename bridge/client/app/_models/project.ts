@@ -31,14 +31,14 @@ export class Project {
     return this.stages.find(s => s.stageName == stageName);
   }
 
-  getLatestDeployment(service: Service, stage: Stage): Trace {
+  getLatestDeployment(service: Service, stage?: Stage): Trace {
     let currentService = this.getService(service.serviceName);
 
     if(currentService.roots)
       return currentService.roots
-        .filter(root => root.isFaulty() != stage.stageName || root.traces.find(trace => trace.type == EventTypes.DEPLOYMENT_FINISHED && trace.data.stage == stage.stageName)?.data.deploymentstrategy == "direct")
+        .filter(root => !stage || root.isFaulty() != stage.stageName || root.traces.find(trace => trace.type == EventTypes.DEPLOYMENT_FINISHED && trace.data.stage == stage.stageName)?.data.deploymentstrategy == "direct")
         .reduce((traces: Trace[], root) => [...traces, ...root.traces], [])
-        .find(trace => trace.type == EventTypes.DEPLOYMENT_FINISHED && trace.data.stage == stage.stageName);
+        .find(trace => stage ? trace.isDeployment() == stage.stageName || trace.isEvaluation() == stage.stageName : !!trace.isDeployment() || !!trace.isEvaluation());
     else
       return null;
   }
