@@ -23,7 +23,7 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
   public projects: Observable<Project[]>;
   public project: Observable<Project>;
 
-  public versionInfo: any;
+  public keptnInfo: any;
   public versionCheckDialogState: string | null;
   public versionCheckReference = "https://keptn.sh/docs/0.7.x/reference/version_check";
 
@@ -46,15 +46,15 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
         }
       });
 
-    this.dataService.versionInfo
+    this.dataService.keptnInfo
       .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(versionInfo => {
-        this.versionInfo = versionInfo;
-        if(versionInfo.versionCheckEnabled === null) {
+      .subscribe(keptnInfo => {
+        this.keptnInfo = keptnInfo;
+        if(keptnInfo.versionCheckEnabled === null) {
           this.showVersionCheckInfoDialog();
-        } else if(versionInfo.versionCheckEnabled) {
-          versionInfo.keptnVersionInvalid = !this.doVersionCheck(versionInfo.keptnVersion, versionInfo.availableVersions.cli.stable, versionInfo.availableVersions.cli.prerelease, "Keptn");
-          versionInfo.bridgeVersionInvalid = !this.doVersionCheck(versionInfo.bridgeVersion, versionInfo.availableVersions.bridge.stable, versionInfo.availableVersions.bridge.prerelease, "Keptn Bridge");;
+        } else if(keptnInfo.versionCheckEnabled) {
+          keptnInfo.keptnVersionInvalid = !this.doVersionCheck(keptnInfo.keptnVersion, keptnInfo.availableVersions.cli.stable, keptnInfo.availableVersions.cli.prerelease, "Keptn");
+          keptnInfo.bridgeVersionInvalid = !this.doVersionCheck(keptnInfo.bridgeInfo.bridgeVersion, keptnInfo.availableVersions.bridge.stable, keptnInfo.availableVersions.bridge.prerelease, "Keptn Bridge");;
         }
       });
   }

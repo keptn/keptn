@@ -30,11 +30,10 @@ export class ApiService {
     this._baseUrl = `./api`;
   }
 
-  public getBridgeVersion(): Observable<any> {
+  public getKeptnInfo(): Observable<any> {
     let url = `${this._baseUrl}/`;
     return this.http
       .get<any>(url, { headers: this.defaultHeaders })
-      .pipe(map(res => res.version));
   }
 
   public getKeptnVersion(): Observable<any> {

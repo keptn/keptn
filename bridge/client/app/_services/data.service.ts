@@ -21,14 +21,14 @@ export class DataService {
   private _projects = new BehaviorSubject<Project[]>(null);
   private _roots = new BehaviorSubject<Root[]>(null);
   private _openApprovals = new BehaviorSubject<Trace[]>([]);
-  private _versionInfo = new BehaviorSubject<Object>({});
+  private _keptnInfo = new BehaviorSubject<Object>({});
   private _rootsLastUpdated: Object = {};
   private _tracesLastUpdated: Object = {};
 
   private _evaluationResults = new Subject();
 
   constructor(private http: HttpClient, private apiService: ApiService) {
-    this.loadVersionInfo();
+    this.loadKeptnInfo();
     this.loadProjects();
   }
 
@@ -44,8 +44,8 @@ export class DataService {
     return this._openApprovals.asObservable();
   }
 
-  get versionInfo(): Observable<any> {
-    return this._versionInfo.asObservable();
+  get keptnInfo(): Observable<any> {
+    return this._keptnInfo.asObservable();
   }
 
   get evaluationResults(): Observable<any> {
@@ -60,23 +60,24 @@ export class DataService {
     return this._tracesLastUpdated[root.shkeptncontext];
   }
 
-  public loadVersionInfo() {
+  public loadKeptnInfo() {
     forkJoin({
       availableVersions: this.apiService.getAvailableVersions(),
-      bridgeVersion: this.apiService.getBridgeVersion(),
+      bridgeInfo: this.apiService.getKeptnInfo(),
       keptnVersion: this.apiService.getKeptnVersion(),
       versionCheckEnabled: of(this.apiService.isVersionCheckEnabled())
     })
     .subscribe((result) => {
-      this._versionInfo.next(result);
+      result.bridgeInfo.authCommand = `keptn auth --endpoint=${result.bridgeInfo.apiUrl} --api-token=${result.bridgeInfo.apiToken}`;
+      this._keptnInfo.next(result);
     }, (err) => {
-      this._versionInfo.error(err);
+      this._keptnInfo.error(err);
     });
   }
 
   public setVersionCheck(enabled: boolean) {
     this.apiService.setVersionCheck(enabled);
-    this.loadVersionInfo();
+    this.loadKeptnInfo();
   }
 
   public loadProjects() {

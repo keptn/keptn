@@ -26,6 +26,9 @@ dt-top-bar-navigation {
 }
 
 ::ng-deep .dt-context-dialog-panel {
+  h3 {
+    color: $gray-300;
+  }
   p.small {
     color: $gray-100;
     span {
