@@ -78,6 +78,10 @@ Implemented **Keptn spec** version: [0.1.4](https://github.com/keptn/spec/tree/0
 <details><summary>Bridge</summary>
 <p>
 
+- Provide API token and `keptn auth` command in user menu [#2197](https://github.com/keptn/keptn/issues/2197)
+- Show remediation workflow in environment screen [#2085](https://github.com/keptn/keptn/issues/2085)
+- Show failed quality gates in environment screen [#2086](https://github.com/keptn/keptn/issues/2086)
+- Fixed misleading message in bridge if no deployment was done but evaluations happened [#2112](https://github.com/keptn/keptn/issues/2112)
 - Improved color-coding in Keptn Bridge for `problem.resolved` event [#2139](https://github.com/keptn/keptn/issues/2139)
 - Provider better indication and workflow for artifacts waiting for approval [#2142](https://github.com/keptn/keptn/issues/2142)
 - Fix wrong version in environments overview when evaluation failed [#2133](https://github.com/keptn/keptn/issues/2133)
