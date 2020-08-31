@@ -81,10 +81,6 @@ export class Root extends Trace {
     return this.traces.find(t => t.type == EventTypes.DEPLOYMENT_FINISHED && t.data.stage == stage.stageName);
   }
 
-  getRemediationActions(): Trace[] {
-    return this.traces.filter(trace => trace.type == EventTypes.ACTION_TRIGGERED);
-  }
-
   getRemediationActions(): Root[] {
     // create chunks of Remediations and start new chunk at REMEDIATION_TRIGGERED event
     return this.traces.reduce((result, trace: Trace) => {
