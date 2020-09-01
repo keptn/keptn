@@ -34,6 +34,7 @@ import { DtSwitchModule } from '@dynatrace/barista-components/switch';
 import { DtTagModule } from '@dynatrace/barista-components/tag';
 import { DtTopBarNavigationModule } from "@dynatrace/barista-components/top-bar-navigation";
 import { DtCopyToClipboardModule } from "@dynatrace/barista-components/copy-to-clipboard";
+import { DtToggleButtonGroupModule } from "@dynatrace/barista-components/toggle-button-group";
 
 import { DtThemingModule } from '@dynatrace/barista-components/theming';
 import { DtTileModule } from '@dynatrace/barista-components/tile';
@@ -138,6 +139,7 @@ registerLocaleData(localeEn, 'en');
     DtToastModule,
     DtTopBarNavigationModule,
     DtCopyToClipboardModule,
+    DtToggleButtonGroupModule,
     MatDialogModule,
     DtIconModule.forRoot({
       svgIconLocation: `assets/icons/{{name}}.svg`,

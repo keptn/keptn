@@ -33,6 +33,12 @@
 .out-of-sync-service {
   border: 1px solid $blue-400;
 }
+::ng-deep .dt-icon {
+  &.out-of-sync-service {
+    border: none;
+    fill: $blue-400;
+  }
+}
 
 ::ng-deep {
   .dt-tag {
@@ -89,4 +95,69 @@
 
 ::ng-deep .ktb-expandable-tile .dt-show-more-icon {
   margin-right: 5px;
+}
+
+::ng-deep .dt-toggle-button-group {
+  flex-direction: column;
+  display: flex;
+  align-items: start;
+
+  .dt-toggle-button-item {
+
+    &.error {
+      .dt-toggle-button-item-icon {
+        background-color: $error-color;
+      }
+      &.dt-toggle-button-item-selected {
+        border-color: $error-color;
+        .dt-toggle-button-item-icon {
+          background-color: $error-color;
+        }
+      }
+    }
+    &.error:hover {
+      .dt-toggle-button-item-icon {
+        background-color: $error-color-hover;
+      }
+      &.dt-toggle-button-item-selected {
+        border-color: $error-color-hover;
+        .dt-toggle-button-item-icon {
+          background-color: $error-color-hover;
+        }
+      }
+    }
+
+    &.highlight {
+      .dt-toggle-button-item-icon {
+        background-color: $blue-400;
+      }
+      &.dt-toggle-button-item-selected {
+        border-color: $blue-400;
+        .dt-toggle-button-item-icon {
+          background-color: $blue-400;
+        }
+      }
+    }
+    &.highlight:hover {
+      .dt-toggle-button-item-icon {
+        background-color: $blue-500;
+      }
+      &.dt-toggle-button-item-selected {
+        border-color: $blue-500;
+        .dt-toggle-button-item-icon {
+          background-color: $blue-500;
+        }
+      }
+    }
+
+    .dt-toggle-button-item-icon {
+      width: 32px !important;
+      height: 32px !important;
+
+      .dt-icon {
+        width: 25px;
+        height: 25px;
+      }
+    }
+  }
 }

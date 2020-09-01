@@ -93,24 +93,33 @@
         <ng-container *ngIf="project.getLatestProblemEvents(selectedStage) as problemEvents">
           <ng-container *ngIf="openApprovals$ | async as openApprovals">
             <h2 [textContent]="selectedStage.stageName"></h2>
-            <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px" *ngIf="problemEvents.length > 0">
-              <dt-icon class="stage-state-icon event-icon" name="traffic-light" [class.error]="problemEvents.length > 0"></dt-icon>
-              <p class="m-0"><span [textContent]="problemEvents.length"></span> Problem<span *ngIf="problemEvents.length > 1">s</span> open</p>
-            </div>
-            <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px" *ngIf="failedRootEvents.length > 0">
-              <dt-icon class="stage-state-icon event-icon" name="traffic-light" [class.error]="failedRootEvents.length > 0"></dt-icon>
-              <p class="m-0"><span [textContent]="failedRootEvents.length"></span> Quality gate<span *ngIf="failedRootEvents.length > 1">s</span> failed</p>
-            </div>
-            <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
-              <dt-icon class="stage-state-icon" name="deploy" [ngClass]="{'out-of-sync-service': countOpenApprovals(openApprovals, project, selectedStage) > 0}"></dt-icon>
-              <p class="m-0"><span [textContent]="countOpenApprovals(openApprovals, project, selectedStage)"></span> Service<span *ngIf="countOpenApprovals(openApprovals, project, selectedStage) > 1">s</span> are out-of-sync</p>
-            </div>
+            <dt-toggle-button-group #eventTypes>
+              <button dt-toggle-button-item class="default" [value]="'problem'" [class.error]="problemEvents.length > 0" [disabled]="problemEvents.length == 0">
+                <dt-toggle-button-item-icon>
+                  <dt-icon class="stage-state-icon event-icon" name="traffic-light"></dt-icon>
+                </dt-toggle-button-item-icon>
+                <p class="m-0"><span [textContent]="problemEvents.length"></span> Problem<span *ngIf="problemEvents.length > 1">s</span> open</p>
+              </button>
+              <button dt-toggle-button-item class="default" [value]="'evaluation'" [class.error]="failedRootEvents.length > 0" [disabled]="failedRootEvents.length == 0">
+                <dt-toggle-button-item-icon>
+                  <dt-icon class="stage-state-icon event-icon" name="traffic-light"></dt-icon>
+                </dt-toggle-button-item-icon>
+                <p class="m-0"><span [textContent]="failedRootEvents.length"></span> Quality gate<span *ngIf="failedRootEvents.length > 1">s</span> failed</p>
+              </button>
+              <button dt-toggle-button-item class="default" [value]="'approval'" [class.highlight]="countOpenApprovals(openApprovals, project, selectedStage) > 0" [disabled]="countOpenApprovals(openApprovals, project, selectedStage) == 0">
+                <dt-toggle-button-item-icon>
+                  <dt-icon class="stage-state-icon" name="deploy"></dt-icon>
+                </dt-toggle-button-item-icon>
+                <p class="m-0"><span [textContent]="countOpenApprovals(openApprovals, project, selectedStage)"></span> Service<span *ngIf="countOpenApprovals(openApprovals, project, selectedStage) > 1">s</span> out-of-sync</p>
+              </button>
+            </dt-toggle-button-group>
             <div fxLayout="row" fxLayoutAlign="start center" *ngIf="selectedStage.services.length == 0">
               <dt-icon class="icon" name="information"></dt-icon>
               <p class="m-0">No service onboarded yet. Follow the intructions to <a href="https://keptn.sh/docs/0.7.x/manage/service/#onboard-a-service" target="_blank" rel="noopener noreferrer">onboard a service</a>.</p>
             </div>
             <ng-container *ngFor="let service of selectedStage.services">
-              <ktb-expandable-tile [expanded]="countOpenApprovals(openApprovals, project, selectedStage, service) > 0">
+              <ktb-expandable-tile [expanded]="countOpenApprovals(openApprovals, project, selectedStage, service) > 0"
+                                   *ngIf="!eventTypes.value || eventTypes.value == 'problem' && findProblemEvent(problemEvents, service) || eventTypes.value == 'evaluation' && findFailedRootEvent(failedRootEvents, service) || eventTypes.value == 'approval' && countOpenApprovals(openApprovals, project, selectedStage, service) > 0">
                 <ktb-expandable-tile-header>
                   <dt-info-group>
                     <dt-info-group-title>
