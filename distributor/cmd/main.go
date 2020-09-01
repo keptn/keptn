@@ -106,8 +106,8 @@ func createEventForwardingEndpoint(env envConfig) {
 	ctx := context.Background()
 
 	t, err := cloudeventshttp.New(
-		cloudeventshttp.WithPort(env.Port),
-		cloudeventshttp.WithPath(env.Path),
+		cloudeventshttp.WithPort(8081),
+		cloudeventshttp.WithPath("/event"),
 	)
 
 	if err != nil {
