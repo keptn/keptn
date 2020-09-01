@@ -98,19 +98,19 @@
                 <dt-toggle-button-item-icon>
                   <dt-icon class="stage-state-icon event-icon" name="traffic-light"></dt-icon>
                 </dt-toggle-button-item-icon>
-                <p class="m-0"><span [textContent]="problemEvents.length"></span> Problem<span *ngIf="problemEvents.length > 1">s</span> open</p>
+                <p class="m-0"><span [textContent]="problemEvents.length"></span> Problem<span *ngIf="problemEvents.length != 1">s</span> open</p>
               </button>
               <button dt-toggle-button-item class="default" [value]="'evaluation'" [class.error]="failedRootEvents.length > 0" [disabled]="failedRootEvents.length == 0">
                 <dt-toggle-button-item-icon>
                   <dt-icon class="stage-state-icon event-icon" name="traffic-light"></dt-icon>
                 </dt-toggle-button-item-icon>
-                <p class="m-0"><span [textContent]="failedRootEvents.length"></span> Quality gate<span *ngIf="failedRootEvents.length > 1">s</span> failed</p>
+                <p class="m-0"><span [textContent]="failedRootEvents.length"></span> Quality gate<span *ngIf="failedRootEvents.length != 1">s</span> failed</p>
               </button>
               <button dt-toggle-button-item class="default" [value]="'approval'" [class.highlight]="countOpenApprovals(openApprovals, project, selectedStage) > 0" [disabled]="countOpenApprovals(openApprovals, project, selectedStage) == 0">
                 <dt-toggle-button-item-icon>
                   <dt-icon class="stage-state-icon" name="deploy"></dt-icon>
                 </dt-toggle-button-item-icon>
-                <p class="m-0"><span [textContent]="countOpenApprovals(openApprovals, project, selectedStage)"></span> Service<span *ngIf="countOpenApprovals(openApprovals, project, selectedStage) > 1">s</span> out-of-sync</p>
+                <p class="m-0"><span [textContent]="countOpenApprovals(openApprovals, project, selectedStage)"></span> Service<span *ngIf="countOpenApprovals(openApprovals, project, selectedStage) != 1">s</span> out-of-sync</p>
               </button>
             </dt-toggle-button-group>
             <div fxLayout="row" fxLayoutAlign="start center" *ngIf="selectedStage.services.length == 0">
