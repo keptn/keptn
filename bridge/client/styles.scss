@@ -1,4 +1,4 @@
-$fonts-dir: '/bridge/assets/fonts';
+$fonts-dir: '^./assets/fonts';
 
 @import 'variables';
 @import '~normalize.css';
