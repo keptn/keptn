@@ -18,6 +18,7 @@ import {Stage} from "../_models/stage";
 import {DtCheckboxChange} from "@dynatrace/barista-components/checkbox";
 import {EVENT_LABELS} from "../_models/event-labels";
 import {DtOverlayConfig} from "@dynatrace/barista-components/overlay";
+import {DtToggleButtonItem} from "@dynatrace/barista-components/toggle-button-group";
 
 @Component({
   selector: 'app-project-board',
@@ -50,6 +51,10 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   public filterEventTypes: string[] = [];
 
   public filterEventType: string = null;
+
+  @ViewChild('problemFilterEventButton') public problemFilterEventButton: DtToggleButtonItem;
+  @ViewChild('evaluationFilterEventButton') public evaluationFilterEventButton: DtToggleButtonItem;
+  @ViewChild('approvalFilterEventButton') public approvalFilterEventButton: DtToggleButtonItem;
 
   public overlayConfig: DtOverlayConfig = {
     pinnable: true
@@ -232,6 +237,10 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   }
 
   selectStage($event, stage: Stage, filterType?: string) {
+    this.problemFilterEventButton?.deselect();
+    this.evaluationFilterEventButton?.deselect();
+    this.approvalFilterEventButton?.deselect();
+
     this.selectedStage = stage;
     this.filterEventType = filterType;
     $event.stopPropagation();

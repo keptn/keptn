@@ -94,19 +94,19 @@
           <ng-container *ngIf="openApprovals$ | async as openApprovals">
             <h2 [textContent]="selectedStage.stageName"></h2>
             <dt-toggle-button-group (change)="selectFilterEvent($event)">
-              <button dt-toggle-button-item class="default" [value]="'problem'" [class.error]="problemEvents.length > 0" [disabled]="problemEvents.length == 0" [selected]="filterEventType == 'problem'">
+              <button #problemFilterEventButton dt-toggle-button-item class="default" [value]="'problem'" [class.error]="problemEvents.length > 0" [disabled]="problemEvents.length == 0" [selected]="filterEventType == 'problem'">
                 <dt-toggle-button-item-icon>
                   <dt-icon class="stage-state-icon event-icon" name="criticalevent"></dt-icon>
                 </dt-toggle-button-item-icon>
                 <p class="m-0"><span [textContent]="problemEvents.length"></span> Problem<span *ngIf="problemEvents.length != 1">s</span> open</p>
               </button>
-              <button dt-toggle-button-item class="default" [value]="'evaluation'" [class.error]="failedRootEvents.length > 0" [disabled]="failedRootEvents.length == 0" [selected]="filterEventType == 'evaluation'">
+              <button #evaluationFilterEventButton dt-toggle-button-item class="default" [value]="'evaluation'" [class.error]="failedRootEvents.length > 0" [disabled]="failedRootEvents.length == 0" [selected]="filterEventType == 'evaluation'">
                 <dt-toggle-button-item-icon>
                   <dt-icon class="stage-state-icon event-icon" name="traffic-light"></dt-icon>
                 </dt-toggle-button-item-icon>
                 <p class="m-0"><span [textContent]="failedRootEvents.length"></span> Quality gate<span *ngIf="failedRootEvents.length != 1">s</span> failed</p>
               </button>
-              <button dt-toggle-button-item class="default" [value]="'approval'" [class.highlight]="countOpenApprovals(openApprovals, project, selectedStage) > 0" [disabled]="countOpenApprovals(openApprovals, project, selectedStage) == 0" [selected]="filterEventType == 'approval'">
+              <button #approvalFilterEventButton dt-toggle-button-item class="default" [value]="'approval'" [class.highlight]="countOpenApprovals(openApprovals, project, selectedStage) > 0" [disabled]="countOpenApprovals(openApprovals, project, selectedStage) == 0" [selected]="filterEventType == 'approval'">
                 <dt-toggle-button-item-icon>
                   <dt-icon class="stage-state-icon" name="deploy"></dt-icon>
                 </dt-toggle-button-item-icon>
