@@ -98,8 +98,8 @@
 }
 
 ::ng-deep .dt-toggle-button-group {
+  display: flex !important;
   flex-direction: column;
-  display: flex;
   align-items: start;
 
   .dt-toggle-button-item {
