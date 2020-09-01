@@ -94,6 +94,12 @@ func _main(args []string, env envConfig) int {
 		createNATSConnection()
 	}
 
+	createEventForwardingEndpoint(env)
+
+	return 0
+}
+
+func createEventForwardingEndpoint(env envConfig) {
 	ctx := context.Background()
 
 	t, err := cloudeventshttp.New(
@@ -110,8 +116,6 @@ func _main(args []string, env envConfig) int {
 	}
 
 	log.Fatalf("failed to start receiver: %s", c.StartReceiver(ctx, gotEvent))
-
-	return 0
 }
 
 const defaultPollingInterval = 10
