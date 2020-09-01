@@ -6,7 +6,7 @@ export const EVENT_LABELS = {
   [EventTypes.CONFIGURE_MONITORING]: "Configure monitoring",
   [EventTypes.DEPLOYMENT_FINISHED]: "Deployment finished",
   [EventTypes.TESTS_FINISHED]: "Tests finished",
-  [EventTypes.START_EVALUATION]: "Start evaluation",
+  [EventTypes.START_EVALUATION]: "Evaluation started",
   [EventTypes.EVALUATION_DONE]: "Evaluation done",
   [EventTypes.START_SLI_RETRIEVAL]: "Start SLI retrieval",
   [EventTypes.SLI_RETRIEVAL_DONE]: "SLI retrieval done",
