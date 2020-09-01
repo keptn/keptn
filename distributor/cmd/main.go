@@ -102,7 +102,7 @@ func _main(args []string, env envConfig) int {
 }
 
 func createEventForwardingEndpoint(env envConfig) {
-	fmt.Println("Creating event forwarding endpointx")
+	fmt.Println("Creating event forwarding endpoint")
 	ctx := context.Background()
 
 	t, err := cloudeventshttp.New(
