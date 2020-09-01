@@ -6,7 +6,7 @@ const router = express.Router();
 
 module.exports = (params) => {
   const { apiUrl, apiToken } = params;
-  const version = process.env.VERSION;
+  const bridgeVersion = process.env.VERSION;
 
   // accepts self-signed ssl certificate
   const agent = new https.Agent({
@@ -15,7 +15,7 @@ module.exports = (params) => {
 
   router.get('/', async (req, res, next) => {
     try {
-      return res.json({ version, apiUrl });
+      return res.json({ bridgeVersion, apiUrl, apiToken });
     } catch (err) {
       return next(err);
     }
