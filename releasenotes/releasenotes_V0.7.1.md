@@ -70,6 +70,7 @@ Implemented **Keptn spec** version: [0.1.4](https://github.com/keptn/spec/tree/0
   - Delete a service from the cluster when deleting it from a project [#2201](https://github.com/keptn/keptn/issues/2201)
 
 - *lighthouse-service*: 
+  - Mark info SLI correctly when empty pass/warning array is provided [#2231](https://github.com/keptn/keptn/issues/2231)
   - Change the comparison strategy to match the full quality gate result [#2224](https://github.com/keptn/keptn/issues/2224)
 
 </p>
@@ -78,6 +79,7 @@ Implemented **Keptn spec** version: [0.1.4](https://github.com/keptn/spec/tree/0
 <details><summary>Bridge</summary>
 <p>
 
+- Icons in stage tile and labels work as filter [#2087](https://github.com/keptn/keptn/issues/2087)
 - Provide API token and `keptn auth` command in user menu [#2197](https://github.com/keptn/keptn/issues/2197)
 - Show remediation workflow in environment screen [#2085](https://github.com/keptn/keptn/issues/2085)
 - Show failed quality gates in environment screen [#2086](https://github.com/keptn/keptn/issues/2086)
