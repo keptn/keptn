@@ -79,6 +79,8 @@ Implemented **Keptn spec** version: [0.1.4](https://github.com/keptn/spec/tree/0
 <details><summary>Bridge</summary>
 <p>
 
+- Fonts are corretly loaded when a root context is used for Bridge [#2174](https://github.com/keptn/keptn/issues/2174)
+- Labels are clickable when containing a URL as value [#2061](https://github.com/keptn/keptn/issues/2061)
 - Icons in stage tile and labels work as filter [#2087](https://github.com/keptn/keptn/issues/2087)
 - Provide API token and `keptn auth` command in user menu [#2197](https://github.com/keptn/keptn/issues/2197)
 - Show remediation workflow in environment screen [#2085](https://github.com/keptn/keptn/issues/2085)
