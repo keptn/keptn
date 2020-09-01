@@ -96,7 +96,7 @@
             <dt-toggle-button-group #eventTypes>
               <button dt-toggle-button-item class="default" [value]="'problem'" [class.error]="problemEvents.length > 0" [disabled]="problemEvents.length == 0">
                 <dt-toggle-button-item-icon>
-                  <dt-icon class="stage-state-icon event-icon" name="traffic-light"></dt-icon>
+                  <dt-icon class="stage-state-icon event-icon" name="criticalevent"></dt-icon>
                 </dt-toggle-button-item-icon>
                 <p class="m-0"><span [textContent]="problemEvents.length"></span> Problem<span *ngIf="problemEvents.length != 1">s</span> open</p>
               </button>
