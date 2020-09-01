@@ -48,11 +48,11 @@ export class Project {
   }
 
   getLatestFailedRootEvents(stage: Stage): Root[] {
-    return this.getLatestRootEvents(stage).filter(root => root.isFailedEvaluation() === stage.stageName);
+    return this.getLatestRootEvents(stage).filter(root => root.isFailedEvaluation() === stage.stageName && root.isDeployment());
   }
 
   getLatestProblemEvents(stage: Stage): Root[] {
-    return this.getLatestRootEvents(stage).filter(root => root.isProblem() && !root.isProblemResolvedOrClosed());
+    return this.getLatestRootEvents(stage).filter(root => root?.isProblem() && !root?.isProblemResolvedOrClosed());
   }
 
   getRootEvent(service: Service, event: Trace): Root {

@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
+import {ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {filter, map, startWith, switchMap, takeUntil} from "rxjs/operators";
 import {Observable, Subject, Subscription, timer} from "rxjs";
 import {ActivatedRoute, Router} from "@angular/router";
@@ -48,6 +48,8 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
 
   public eventTypes: string[] = [];
   public filterEventTypes: string[] = [];
+
+  public filterEventType: string = null;
 
   public overlayConfig: DtOverlayConfig = {
     pinnable: true
@@ -229,8 +231,15 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
       return roots.filter(r => this.filterEventTypes.indexOf(r.type) == -1);
   }
 
-  selectStage(stage) {
+  selectStage($event, stage: Stage, filterType?: string) {
     this.selectedStage = stage;
+    this.filterEventType = filterType;
+    $event.stopPropagation();
+  }
+
+  selectFilterEvent($event) {
+    if($event.isUserInput)
+      this.filterEventType = $event.source.selected ? $event.value : null;
   }
 
   countOpenApprovals(openApprovals: Trace[], project: Project, stage: Stage, service?: Service) {
