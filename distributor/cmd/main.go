@@ -14,11 +14,13 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/url"
 
 	"net/http"
@@ -43,8 +45,8 @@ import (
 
 type envConfig struct {
 	// Port on which to listen for cloudevents
-	Port int    `envconfig:"RCV_PORT" default:"8080"`
-	Path string `envconfig:"RCV_PATH" default:"/"`
+	Port int    `envconfig:"RCV_PORT" default:"8081"`
+	Path string `envconfig:"RCV_PATH" default:"/event"`
 }
 
 var httpClient client.Client
@@ -92,10 +94,66 @@ func _main(args []string, env envConfig) int {
 		createNATSConnection()
 	}
 
+	ctx := context.Background()
+
+	t, err := cloudeventshttp.New(
+		cloudeventshttp.WithPort(env.Port),
+		cloudeventshttp.WithPath(env.Path),
+	)
+
+	if err != nil {
+		log.Fatalf("failed to create transport, %v", err)
+	}
+	c, err := client.New(t)
+	if err != nil {
+		log.Fatalf("failed to create client, %v", err)
+	}
+
+	log.Fatalf("failed to start receiver: %s", c.StartReceiver(ctx, gotEvent))
+
 	return 0
 }
 
 const defaultPollingInterval = 10
+
+func gotEvent(ctx context.Context, event cloudevents.Event) error {
+	fmt.Println("Received CloudEvent with ID " + event.ID() + ". Forwarding to Keptn API.")
+	apiEndpoint := os.Getenv("HTTP_EVENT_FORWARDING_ENDPOINT")
+	if apiEndpoint == "" {
+		apiEndpoint = "http://api-service:8080/v1/event"
+	}
+	fmt.Println("Keptn API endpoint: " + apiEndpoint)
+	apiToken := os.Getenv("HTTP_EVENT_ENDPOINT_AUTH_TOKEN")
+
+	payload, err := event.MarshalJSON()
+	req, err := http.NewRequest("POST", apiEndpoint, bytes.NewBuffer(payload))
+	req.Header.Set("Content-Type", "application/json")
+	if apiToken != "" {
+		fmt.Println("Adding x-token header to HTTP request")
+		req.Header.Add("x-token", apiToken)
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		fmt.Println("Could not send event to API endpoint: " + err.Error())
+		return err
+	}
+	if resp.StatusCode == 200 {
+		fmt.Println("Event forwarded successfully")
+		return nil
+	}
+	fmt.Println("Received HTTP status from Keptn API: " + resp.Status)
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("Could not decode response: " + err.Error())
+		return err
+	}
+
+	fmt.Println("Response from Keptn API: " + string(body))
+	return errors.New(string(body))
+}
 
 func createHTTPConnection() {
 	sentCloudEvents = map[string][]string{}
@@ -119,9 +177,11 @@ func createHTTPConnection() {
 }
 
 func getHTTPPollingEndpoint() string {
-	endpoint := os.Getenv("HTTP_EVENT_ENDPOINT")
+	endpoint := os.Getenv("HTTP_EVENT_POLLING_ENDPOINT")
 	if endpoint == "" {
-		return "http://shipyard-controller:8080/v1/event/triggered"
+		if endpoint == "" {
+			return "http://shipyard-controller:8080/v1/event/triggered"
+		}
 	}
 
 	parsedURL, _ := url.Parse(endpoint)
