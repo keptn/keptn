@@ -217,8 +217,8 @@
                   </div>
                 </div>
               </dt-info-group-title>
-              <p class="m-0 mb-1 mt-1" *ngIf="project.getLatestDeployment(service) as deployment; else noDeployment">
-                <span class="bold">Last processed artifact: </span><span *ngIf="deployment.getShortImageName()" [textContent]="deployment.getShortImageName()"></span><span *ngIf="!deployment.getShortImageName()">unknown</span>
+              <p class="m-0 mb-1 mt-1" *ngIf="project.getLatestArtifact(service) as artifact; else noDeployment">
+                <span class="bold">Last processed artifact: </span><span *ngIf="artifact.getShortImageName()" [textContent]="artifact.getShortImageName()"></span><span *ngIf="!artifact.getShortImageName()">unknown</span>
               </p>
               <button dt-button disabled variant="nested" *ngIf="!service.roots">
                 <dt-loading-spinner></dt-loading-spinner>

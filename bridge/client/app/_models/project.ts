@@ -38,6 +38,18 @@ export class Project {
       return currentService.roots
         .filter(root => !stage || root.isFaulty() != stage.stageName || root.getDeploymentDetails(stage)?.isDirectDeployment())
         .reduce((traces: Trace[], root) => [...traces, ...root.traces], [])
+        .find(trace => stage ? trace.isDeployment() == stage.stageName : !!trace.isDeployment());
+    else
+      return null;
+  }
+
+  getLatestArtifact(service: Service, stage?: Stage): Trace {
+    let currentService = this.getService(service.serviceName);
+
+    if(currentService.roots)
+      return currentService.roots
+        .filter(root => !stage || root.isFaulty() != stage.stageName || root.getDeploymentDetails(stage)?.isDirectDeployment())
+        .reduce((traces: Trace[], root) => [...traces, ...root.traces], [])
         .find(trace => stage ? trace.isDeployment() == stage.stageName || trace.isEvaluation() == stage.stageName : !!trace.isDeployment() || !!trace.isEvaluation());
     else
       return null;
@@ -48,7 +60,7 @@ export class Project {
   }
 
   getLatestFailedRootEvents(stage: Stage): Root[] {
-    return this.getLatestRootEvents(stage).filter(root => root.isFailedEvaluation() === stage.stageName && root.isDeployment());
+    return this.getLatestRootEvents(stage).filter(root => root?.isFailedEvaluation() === stage.stageName && root?.isDeployment());
   }
 
   getLatestProblemEvents(stage: Stage): Root[] {
