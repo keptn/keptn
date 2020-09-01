@@ -48,6 +48,11 @@ dt-top-bar-navigation {
     height: 20px;
     fill: $error-color;
   }
+
+  .dt-copy-to-clipboard-btn-button {
+    min-width: 50px !important;
+    padding: 0px 6px;
+  }
 }
 
 dt-select#projectSelect {
