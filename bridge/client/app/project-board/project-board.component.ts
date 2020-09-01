@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
+import {ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {filter, map, startWith, switchMap, takeUntil} from "rxjs/operators";
 import {Observable, Subject, Subscription, timer} from "rxjs";
 import {ActivatedRoute, Router} from "@angular/router";
@@ -18,6 +18,7 @@ import {Stage} from "../_models/stage";
 import {DtCheckboxChange} from "@dynatrace/barista-components/checkbox";
 import {EVENT_LABELS} from "../_models/event-labels";
 import {DtOverlayConfig} from "@dynatrace/barista-components/overlay";
+import {DtToggleButtonItem} from "@dynatrace/barista-components/toggle-button-group";
 
 @Component({
   selector: 'app-project-board',
@@ -48,6 +49,12 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
 
   public eventTypes: string[] = [];
   public filterEventTypes: string[] = [];
+
+  public filterEventType: string = null;
+
+  @ViewChild('problemFilterEventButton') public problemFilterEventButton: DtToggleButtonItem<string>;
+  @ViewChild('evaluationFilterEventButton') public evaluationFilterEventButton: DtToggleButtonItem<string>;
+  @ViewChild('approvalFilterEventButton') public approvalFilterEventButton: DtToggleButtonItem<string>;
 
   public overlayConfig: DtOverlayConfig = {
     pinnable: true
@@ -229,8 +236,19 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
       return roots.filter(r => this.filterEventTypes.indexOf(r.type) == -1);
   }
 
-  selectStage(stage) {
+  selectStage($event, stage: Stage, filterType?: string) {
+    this.problemFilterEventButton?.deselect();
+    this.evaluationFilterEventButton?.deselect();
+    this.approvalFilterEventButton?.deselect();
+
     this.selectedStage = stage;
+    this.filterEventType = filterType;
+    $event.stopPropagation();
+  }
+
+  selectFilterEvent($event) {
+    if($event.isUserInput)
+      this.filterEventType = $event.source.selected ? $event.value : null;
   }
 
   countOpenApprovals(openApprovals: Trace[], project: Project, stage: Stage, service?: Service) {

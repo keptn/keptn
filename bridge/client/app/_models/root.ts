@@ -29,6 +29,10 @@ export class Root extends Trace {
     return result;
   }
 
+  isDeployment(): string {
+    return this.traces.reduce((result: string, trace: Trace) => result ? result : trace.isDeployment(), null);
+  }
+
   isWarning(): string {
     return this.traces.reduce((result: string, trace: Trace) => trace.isWarning() ? trace.data.stage : result, null);
   }
