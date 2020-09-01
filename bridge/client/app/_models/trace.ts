@@ -165,7 +165,7 @@ class Trace {
   }
 
   public isEvaluation(): string {
-    return this.type === EventTypes.EVALUATION_DONE ? this.data.stage : null;
+    return this.type === EventTypes.START_EVALUATION ? this.data.stage : null;
   }
 
   hasLabels(): boolean {
