@@ -68,13 +68,13 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
         let genMessage;
         switch(semver.diff(currentVersion, stableVersion)) {
           case 'patch':
-            genMessage = (version, type, major, minor) => `New ${type} ${version} available. This is a patch with bug fixes for your current version. For details how to upgrade visit https://keptn.sh/docs/${major}.${minor}.0/operate/upgrade/`;
+            genMessage = (version, type, major, minor) => `New ${type} ${version} available. This is a patch version with bug fixes and minor improvements. For details how to upgrade visit https://keptn.sh/docs/${major}.${minor}.x/operate/upgrade/`;
             break;
           case 'minor':
-            genMessage = (version, type, major, minor) => `New ${type} ${version} available. This is a minor update with backwards compatible improvements. For details how to upgrade visit https://keptn.sh/docs/${major}.${minor}.0/operate/upgrade/`;
+            genMessage = (version, type, major, minor) => `New ${type} ${version} available. This is a minor update with backwards compatible improvements. For details how to upgrade visit https://keptn.sh/docs/${major}.${minor}.x/operate/upgrade/`;
             break;
           case 'major':
-            genMessage = (version, type, major, minor) => `New ${type} ${version} available. This is a major update and it might contain incompatible changes. For details how to upgrade visit https://keptn.sh/docs/${major}.${minor}.0/operate/upgrade/`;
+            genMessage = (version, type, major, minor) => `New ${type} ${version} available. This is a major update and it might contain incompatible changes. For details how to upgrade visit https://keptn.sh/docs/${major}.${minor}.x/operate/upgrade/`;
             break;
         }
 
@@ -85,7 +85,7 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
     });
     prereleaseVersions.forEach(prereleaseVersion => {
       if(semver.lt(currentVersion, prereleaseVersion)) {
-        let genMessage = (version, type, major, minor) => `New ${type} ${version} available. This is a pre-release version that might contain experimental features. For details how to upgrade visit: https://keptn.sh/docs/${major}.${minor}.0/operate/upgrade/`;
+        let genMessage = (version, type, major, minor) => `New ${type} ${version} available. This is a pre-release version with experimental features. For details how to upgrade visit: https://keptn.sh/docs/${major}.${minor}.x/operate/upgrade/`;
         let major = semver.major(prereleaseVersion);
         let minor = semver.minor(prereleaseVersion);
         this.notificationsService.addNotification(NotificationType.Info, genMessage(prereleaseVersion, type, major, minor));
