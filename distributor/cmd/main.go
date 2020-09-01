@@ -77,6 +77,10 @@ const connectionTypeNATS = "nats"
 const connectionTypeHTTP = "http"
 
 func _main(args []string, env envConfig) int {
+
+	go func() {
+		createEventForwardingEndpoint(env)
+	}()
 	// initialize the http client
 	connectionType := strings.ToLower(os.Getenv("CONNECTION_TYPE"))
 
@@ -94,12 +98,11 @@ func _main(args []string, env envConfig) int {
 		createNATSConnection()
 	}
 
-	createEventForwardingEndpoint(env)
-
 	return 0
 }
 
 func createEventForwardingEndpoint(env envConfig) {
+	fmt.Println("Creating event forwarding endpointx")
 	ctx := context.Background()
 
 	t, err := cloudeventshttp.New(
