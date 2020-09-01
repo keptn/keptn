@@ -52,9 +52,9 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
 
   public filterEventType: string = null;
 
-  @ViewChild('problemFilterEventButton') public problemFilterEventButton: DtToggleButtonItem;
-  @ViewChild('evaluationFilterEventButton') public evaluationFilterEventButton: DtToggleButtonItem;
-  @ViewChild('approvalFilterEventButton') public approvalFilterEventButton: DtToggleButtonItem;
+  @ViewChild('problemFilterEventButton') public problemFilterEventButton: DtToggleButtonItem<string>;
+  @ViewChild('evaluationFilterEventButton') public evaluationFilterEventButton: DtToggleButtonItem<string>;
+  @ViewChild('approvalFilterEventButton') public approvalFilterEventButton: DtToggleButtonItem<string>;
 
   public overlayConfig: DtOverlayConfig = {
     pinnable: true
