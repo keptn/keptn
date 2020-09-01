@@ -1,21 +1,2 @@
 @import '../../../variables';
 @import '~@dynatrace/barista-components/core/src/style/variables';
-
-
-.dt-tag {
-  &.justify-content-center {
-    justify-content: center;
-  }
-  &.error {
-    background-color: $error-color;
-    color: $white;
-  }
-  &.warning {
-    background-color: $warning-color;
-    color: $white;
-  }
-  &.success {
-    background-color: $cta-color-active;
-    color: $white;
-  }
-}

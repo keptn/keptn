@@ -40,7 +40,7 @@ export class MockDataService {
 
   private _projects = new BehaviorSubject<Project[]>(null);
   private _roots = new BehaviorSubject<Root[]>(null);
-  private _versionInfo = new BehaviorSubject<Object>({});
+  private _keptnInfo = new BehaviorSubject<Object>({});
   private _rootsLastUpdated: Object = {};
   private _tracesLastUpdated: Object = {};
 
@@ -58,8 +58,8 @@ export class MockDataService {
     return this._roots.asObservable();
   }
 
-  get versionInfo(): Observable<any> {
-    return this._versionInfo.asObservable();
+  get keptnInfo(): Observable<any> {
+    return this._keptnInfo.asObservable();
   }
 
   get evaluationResults(): Observable<any> {
@@ -75,7 +75,7 @@ export class MockDataService {
   }
 
   public loadVersionInfo() {
-    this._versionInfo.next(this.versionInfoResult);
+    this._keptnInfo.next(this.versionInfoResult);
   }
 
   public setVersionCheck(enabled: boolean) {

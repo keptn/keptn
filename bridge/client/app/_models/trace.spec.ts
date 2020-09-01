@@ -10,7 +10,7 @@ describe('Trace', () => {
     expect(rootTraces[0] instanceof Trace).toBe(true, 'instance of Trace');
 
     expect(rootTraces[0].type).toBe('sh.keptn.internal.event.service.create');
-    expect(rootTraces[0].getLabel()).toBe('Service create', 'Label for trace "sh.keptn.internal.event.service.create" should be "Service create"');
+    expect(rootTraces[0].getLabel()).toBe('Service created', 'Label for trace "sh.keptn.internal.event.service.create" should be "Service created"');
     expect(rootTraces[0].getShortImageName()).toBe(undefined);
     expect(rootTraces[0].getIcon()).toBe('information', 'Icon for trace "sh.keptn.internal.event.service.create" should be "information"');
     expect(rootTraces[0].isFaulty()).toBe(null);
@@ -20,7 +20,7 @@ describe('Trace', () => {
     expect(rootTraces[0].getService()).toBe('carts');
 
     expect(rootTraces[1].type).toBe('sh.keptn.event.configuration.change');
-    expect(rootTraces[1].getLabel()).toBe('Configuration change', 'Label for trace "sh.keptn.event.configuration.change" should be "Configuration change"');
+    expect(rootTraces[1].getLabel()).toBe('Configuration changed', 'Label for trace "sh.keptn.event.configuration.change" should be "Configuration changed"');
     expect(rootTraces[1].getShortImageName()).toBe('carts:0.10.1', 'ShortImageName for first trace "sh.keptn.event.configuration.change" should be "carts:0.10.1"');
     expect(rootTraces[1].getIcon()).toBe('duplicate', 'Icon for trace "sh.keptn.event.configuration.change" should be "duplicate"');
     expect(rootTraces[1].isFaulty()).toBe(null);
@@ -30,7 +30,7 @@ describe('Trace', () => {
     expect(rootTraces[1].getService()).toBe('carts');
 
     expect(rootTraces[2].type).toBe('sh.keptn.event.configuration.change');
-    expect(rootTraces[2].getLabel()).toBe('Configuration change', 'Label for trace "sh.keptn.event.configuration.change" should be "Configuration change"');
+    expect(rootTraces[2].getLabel()).toBe('Configuration changed', 'Label for trace "sh.keptn.event.configuration.change" should be "Configuration changed"');
     expect(rootTraces[2].getShortImageName()).toBe('carts:0.10.2', 'ShortImageName for second trace "sh.keptn.event.configuration.change" should be "carts:0.10.2"');
     expect(rootTraces[2].getIcon()).toBe('duplicate', 'Icon for trace "sh.keptn.event.configuration.change" should be "duplicate"');
     expect(rootTraces[2].isFaulty()).toBe(null);

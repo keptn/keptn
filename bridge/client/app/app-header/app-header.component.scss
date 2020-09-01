@@ -26,6 +26,9 @@ dt-top-bar-navigation {
 }
 
 ::ng-deep .dt-context-dialog-panel {
+  h3 {
+    color: $gray-300;
+  }
   p.small {
     color: $gray-100;
     span {
@@ -44,6 +47,11 @@ dt-top-bar-navigation {
     width: 20px;
     height: 20px;
     fill: $error-color;
+  }
+
+  .dt-copy-to-clipboard-btn-button {
+    min-width: 50px !important;
+    padding: 0px 6px;
   }
 }
 

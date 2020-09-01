@@ -47,7 +47,7 @@ func (d *DeleteHandler) HandleEvent(ce cloudevents.Event, loggingDone chan bool)
 
 	allReleasesSuccessfullyUnistalled := true
 	for _, stage := range stages {
-		d.keptnHandler.Logger.Info(fmt.Sprintf("Uninstlling Helm releases for service %s in "+
+		d.keptnHandler.Logger.Info(fmt.Sprintf("Uninstalling Helm releases for service %s in "+
 			"stage %s and project %s", serviceDeleteEvent.Service, stage.StageName, serviceDeleteEvent.Project))
 
 		namespace := serviceDeleteEvent.Project + "-" + stage.StageName

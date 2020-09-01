@@ -18,19 +18,39 @@
   </dt-top-bar-navigation-item>
 </dt-top-bar-navigation>
 <dt-context-dialog #dialog aria-label="User menu" ariaLabelClose="Close user menu">
-  <div class="mb-3" fxLayout="row" fxLayoutAlign="flex-start center" *ngIf="!versionInfo.versionCheckEnabled">
-    <div>
-      <dt-icon class="error" [name]="'criticalevent'"></dt-icon>
-    </div>
+  <h3 class="m-0">Get started</h3>
+  <div class="mt-1" fxLayout="row" fxLayoutAlign="flex-start center" *ngIf="keptnInfo?.bridgeInfo?.apiToken">
     <div fxFlex>
-      <p class="small m-0">Automatic version and security check disabled</p>
+      <p class="m-0 mr-2 nobreak">API token</p>
     </div>
+    <div>
+      <dt-copy-to-clipboard>
+        <input dtInput [value]="keptnInfo.bridgeInfo.apiToken" aria-label="Keptn API token" />
+        <dt-copy-to-clipboard-label>Copy</dt-copy-to-clipboard-label>
+      </dt-copy-to-clipboard>
+    </div>
+  </div>
+  <div class="mt-1" fxLayout="row" fxLayoutAlign="flex-start center" *ngIf="keptnInfo?.bridgeInfo?.authCommand">
+    <div fxFlex>
+      <p class="m-0 mr-2 nobreak"><a href="https://keptn.sh/docs/0.7.x/reference/cli/commands/keptn_auth/" target="_blank">keptn auth</a> command</p>
+    </div>
+    <div>
+      <dt-copy-to-clipboard>
+        <input dtInput [value]="keptnInfo.bridgeInfo.authCommand" aria-label="keptn auth command" />
+        <dt-copy-to-clipboard-label>Copy</dt-copy-to-clipboard-label>
+      </dt-copy-to-clipboard>
+    </div>
+  </div>
+  <hr/>
+  <div class="mb-3" fxLayout="row" fxLayoutAlign="flex-start center" *ngIf="!keptnInfo.versionCheckEnabled">
+    <dt-icon class="error" [name]="'criticalevent'"></dt-icon>
+    <p class="small m-0">Automatic version and security check disabled</p>
   </div>
   <div class="mt-3" fxLayout="column" fxLayoutAlign="flex-end end">
-    <p class="small m-0">Keptn version: <span [textContent]="versionInfo.keptnVersion"></span><span *ngIf="versionInfo.keptnVersionInvalid">*</span></p>
-    <p class="small m-0">Bridge version: <span [textContent]="versionInfo.bridgeVersion"></span><span *ngIf="versionInfo.bridgeVersionInvalid">*</span></p>
+    <p class="small m-0">Keptn version: <span [textContent]="keptnInfo.keptnVersion"></span><span *ngIf="keptnInfo.keptnVersionInvalid">*</span></p>
+    <p class="small m-0">Bridge version: <span [textContent]="keptnInfo.bridgeVersion"></span><span *ngIf="keptnInfo.bridgeVersionInvalid">*</span></p>
   </div>
-  <div class="mt-3" fxLayout="row" fxLayoutAlign="flex-start" *ngIf="versionInfo.keptnVersionInvalid || versionInfo.bridgeVersionInvalid">
+  <div class="mt-3" fxLayout="row" fxLayoutAlign="flex-start" *ngIf="keptnInfo.keptnVersionInvalid || keptnInfo.bridgeVersionInvalid">
     <div>
       <dt-icon class="error mr-1" [name]="'criticalevent'"></dt-icon>
     </div>
@@ -43,7 +63,7 @@
       <p class="m-0">Version check</p>
     </div>
     <div>
-      <dt-switch (change)="versionCheckClicked($event)" [checked]="versionInfo.versionCheckEnabled"></dt-switch>
+      <dt-switch (change)="versionCheckClicked($event)" [checked]="keptnInfo.versionCheckEnabled"></dt-switch>
     </div>
   </div>
   <p class="m-0 mt-3 small">By enabling this feature, Keptn will collect statistical data and notify about new version and security patches for Keptn and Keptn Bridge. Details can be found at <a [href]="versionCheckReference" target="_blank" [textContent]="versionCheckReference"></a></p>
