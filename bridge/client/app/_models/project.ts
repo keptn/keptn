@@ -60,7 +60,7 @@ export class Project {
   }
 
   getLatestProblemEvents(stage: Stage): Root[] {
-    return this.getServices().map(service => service.roots?.find(root => root?.isProblem() && root.traces.some(trace => trace.data.stage === stage.stageName))).filter(root => root && !root?.isProblemResolvedOrClosed());
+    return this.getServices().map(service => service.roots?.find(root => root.traces.some(trace => trace.data.stage === stage.stageName))).filter(root => root && root?.isProblem() && !root?.isProblemResolvedOrClosed());
   }
 
   getRootEvent(service: Service, event: Trace): Root {
