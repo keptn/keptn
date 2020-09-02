@@ -75,7 +75,7 @@ func main() {
 const connectionTypeNATS = "nats"
 const connectionTypeHTTP = "http"
 
-const defaultApiEndpoint = "http://api-service:8080/v1/event"
+const defaultAPIEndpoint = "http://api-service:8080/v1/event"
 
 func _main(args []string, env envConfig) int {
 
@@ -155,7 +155,7 @@ func gotEvent(event cloudevents.Event) error {
 	fmt.Println("Received CloudEvent with ID " + event.ID() + ". Forwarding to Keptn API.")
 	apiEndpoint := os.Getenv("HTTP_EVENT_FORWARDING_ENDPOINT")
 	if apiEndpoint == "" {
-		apiEndpoint = defaultApiEndpoint
+		apiEndpoint = defaultAPIEndpoint
 	}
 	fmt.Println("Keptn API endpoint: " + apiEndpoint)
 	apiToken := os.Getenv("HTTP_EVENT_ENDPOINT_AUTH_TOKEN")
