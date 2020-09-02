@@ -10,10 +10,10 @@ KEPTN_NAMESPACE=${KEPTN_NAMESPACE:-keptn}
 
 # get keptn API details
 if [[ "$PLATFORM" == "openshift" ]]; then
-  KEPTN_ENDPOINT=http://api.keptn.127.0.0.1.nip.io/api
+  KEPTN_ENDPOINT=http://api.${KEPTN_NAMESPACE}.127.0.0.1.nip.io/api
   KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n ${KEPTN_NAMESPACE} -ojsonpath={.data.keptn-api-token} | base64 --decode)
 else
-  API_PORT=$(kubectl get svc api-gateway-nginx -n keptn -o jsonpath='{.spec.ports[?(@.name=="http")].nodePort}')
+  API_PORT=$(kubectl get svc api-gateway-nginx -n ${KEPTN_NAMESPACE} -o jsonpath='{.spec.ports[?(@.name=="http")].nodePort}')
   INTERNAL_NODE_IP=$(kubectl get nodes -o jsonpath='{ $.items[0].status.addresses[?(@.type=="InternalIP")].address }')
   KEPTN_ENDPOINT="http://${INTERNAL_NODE_IP}:${API_PORT}"/api
   KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n ${KEPTN_NAMESPACE} -ojsonpath={.data.keptn-api-token} | base64 --decode)
@@ -28,7 +28,7 @@ kubectl -n ${KEPTN_NAMESPACE} get deployment dynatrace-sli-service 2> /dev/null
 
 if [[ $? -eq 0 ]]; then
   echo "Found dynatrace-sli-service. Please uninstall it using:"
-  echo "kubectl -n keptn delete deployment dynatrace-sli-service"
+  echo "kubectl -n ${KEPTN_NAMESPACE} delete deployment dynatrace-sli-service"
   exit 1
 fi
 
@@ -46,7 +46,7 @@ kubectl -n ${KEPTN_NAMESPACE} get cm lighthouse-config-${PROJECT} 2> /dev/null
 
 if [[ $? -eq 0 ]]; then
   echo "Found configmap lighthouse-config-${PROJECT}. Please remove it using:"
-  echo "kubectl -n keptn delete configmap lighthouse-config-${PROJECT}"
+  echo "kubectl -n ${KEPTN_NAMESPACE} delete configmap lighthouse-config-${PROJECT}"
   exit 1
 fi
 
@@ -176,7 +176,7 @@ keptn configure monitoring dynatrace --project=$PROJECT --suppress-websocket
 sleep 5
 # this should set the configmap 'lighthouse-config-$PROJECT' - verify that it exists
 
-kubectl -n keptn get configmap "lighthouse-config-${PROJECT}" -oyaml 2> /dev/null
+kubectl -n ${KEPTN_NAMESPACE} get configmap "lighthouse-config-${PROJECT}" -oyaml 2> /dev/null
 verify_test_step $? "ERROR: Could not find ConfigMap lighthouse-config-$PROJECT (this is expected to be created by: keptn configure monitoring dynatrace --project=$PROJECT)"
 
 # send the start evaluation command again
