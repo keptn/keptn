@@ -589,7 +589,7 @@ jobs:
 
   - &K3sStandaloneTest
     stage: Test K3s Standalone (--platform=kubernetes)
-    if: (branch = master or branch =~ ^release.*$ or branch=patch/integration-tests) AND (type = cron OR type = push) # run for any change on master/release-* on push as well as cron
+    if: (branch = master or branch =~ ^release.*$) AND (type = cron OR type = push) # run for any change on master/release-* on push as well as cron
     os: linux
     env:
       - K3S_VERSION=v1.16.10+k3s1 # see https://github.com/rancher/k3s/releases
