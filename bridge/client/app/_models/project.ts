@@ -48,7 +48,7 @@ export class Project {
 
     if(currentService.roots)
       return currentService.roots
-        .filter(root => !stage || root.isFaulty() != stage.stageName || root.getDeploymentDetails(stage)?.isDirectDeployment())
+        .filter(root => !stage || root.isFaulty() != stage.stageName || root.isEvaluation() || root.getDeploymentDetails(stage)?.isDirectDeployment())
         .reduce((traces: Trace[], root) => [...traces, ...root.traces], [])
         .find(trace => stage ? trace.isDeployment() == stage.stageName || trace.isEvaluation() == stage.stageName : !!trace.isDeployment() || !!trace.isEvaluation());
     else
