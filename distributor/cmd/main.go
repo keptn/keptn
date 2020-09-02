@@ -107,25 +107,6 @@ func createEventForwardingEndpoint(env envConfig) {
 	http.HandleFunc("/event", EventForwardHandler)
 	go http.ListenAndServe("localhost:8081", nil)
 
-	/*
-		ctx := context.Background()
-
-		t, err := cloudeventshttp.New(
-			cloudeventshttp.WithPort(8081),
-			cloudeventshttp.WithPath("/event"),
-		)
-
-		if err != nil {
-			log.Fatalf("failed to create transport, %v", err)
-		}
-		c, err := client.New(t)
-		if err != nil {
-			log.Fatalf("failed to create client, %v", err)
-		}
-
-		log.Fatalf("failed to start receiver: %s", c.StartReceiver(ctx, gotEvent))
-
-	*/
 }
 
 // EventForwardHandler godoc
