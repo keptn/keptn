@@ -20,7 +20,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/url"
 
 	"net/http"
@@ -76,11 +75,12 @@ func main() {
 const connectionTypeNATS = "nats"
 const connectionTypeHTTP = "http"
 
+const defaultApiEndpoint = "http://api-service:8080/v1/event"
+
 func _main(args []string, env envConfig) int {
 
-	go func() {
-		createEventForwardingEndpoint(env)
-	}()
+	createEventForwardingEndpoint(env)
+
 	// initialize the http client
 	connectionType := strings.ToLower(os.Getenv("CONNECTION_TYPE"))
 
@@ -103,37 +103,66 @@ func _main(args []string, env envConfig) int {
 
 func createEventForwardingEndpoint(env envConfig) {
 	fmt.Println("Creating event forwarding endpoint")
-	ctx := context.Background()
 
-	t, err := cloudeventshttp.New(
-		cloudeventshttp.WithPort(8081),
-		cloudeventshttp.WithPath("/event"),
-	)
+	http.HandleFunc("/event", EventForwardHandler)
+	go http.ListenAndServe("localhost:8081", nil)
 
+	/*
+		ctx := context.Background()
+
+		t, err := cloudeventshttp.New(
+			cloudeventshttp.WithPort(8081),
+			cloudeventshttp.WithPath("/event"),
+		)
+
+		if err != nil {
+			log.Fatalf("failed to create transport, %v", err)
+		}
+		c, err := client.New(t)
+		if err != nil {
+			log.Fatalf("failed to create client, %v", err)
+		}
+
+		log.Fatalf("failed to start receiver: %s", c.StartReceiver(ctx, gotEvent))
+
+	*/
+}
+
+// EventForwardHandler godoc
+func EventForwardHandler(rw http.ResponseWriter, req *http.Request) {
+
+	body, err := ioutil.ReadAll(req.Body)
 	if err != nil {
-		log.Fatalf("failed to create transport, %v", err)
-	}
-	c, err := client.New(t)
-	if err != nil {
-		log.Fatalf("failed to create client, %v", err)
+		fmt.Printf("Failed to read body from requst: %s", err)
+		return
 	}
 
-	log.Fatalf("failed to start receiver: %s", c.StartReceiver(ctx, gotEvent))
+	event, err := decodeCloudEvent(body)
+	if err != nil {
+		fmt.Printf("Failed to decode CloudEvent: %s", err)
+		return
+	}
+	err = gotEvent(*event)
+	if err != nil {
+		fmt.Printf("Failed to forward CloudEvent: %s", err)
+		return
+	}
 }
 
 const defaultPollingInterval = 10
 
-func gotEvent(ctx context.Context, event cloudevents.Event) error {
+func gotEvent(event cloudevents.Event) error {
 	fmt.Println("Received CloudEvent with ID " + event.ID() + ". Forwarding to Keptn API.")
 	apiEndpoint := os.Getenv("HTTP_EVENT_FORWARDING_ENDPOINT")
 	if apiEndpoint == "" {
-		apiEndpoint = "http://event-broker/keptn"
+		apiEndpoint = defaultApiEndpoint
 	}
 	fmt.Println("Keptn API endpoint: " + apiEndpoint)
 	apiToken := os.Getenv("HTTP_EVENT_ENDPOINT_AUTH_TOKEN")
 
 	payload, err := event.MarshalJSON()
 	req, err := http.NewRequest("POST", apiEndpoint, bytes.NewBuffer(payload))
+
 	req.Header.Set("Content-Type", "application/json")
 	if apiToken != "" {
 		fmt.Println("Adding x-token header to HTTP request")
