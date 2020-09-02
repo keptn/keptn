@@ -43,12 +43,24 @@ export class Project {
       return null;
   }
 
+  getLatestSuccessfulArtifact(service: Service, stage?: Stage): Trace {
+    let currentService = this.getService(service.serviceName);
+
+    if(currentService.roots)
+      return currentService.roots
+        .filter(root => (root.isEvaluation() || root.isDeployment()) && (!stage || root.isFaulty() != stage.stageName || root.getDeploymentDetails(stage)?.isDirectDeployment()))
+        .reduce((traces: Trace[], root) => [...traces, ...root.traces], [])
+        .find(trace => stage ? trace.isDeployment() == stage.stageName || trace.isEvaluation() == stage.stageName : !!trace.isDeployment() || !!trace.isEvaluation());
+    else
+      return null;
+  }
+
   getLatestArtifact(service: Service, stage?: Stage): Trace {
     let currentService = this.getService(service.serviceName);
 
     if(currentService.roots)
       return currentService.roots
-        .filter(root => !stage || root.isFaulty() != stage.stageName || root.isEvaluation() || root.getDeploymentDetails(stage)?.isDirectDeployment())
+        .filter(root => root.isEvaluation() || root.isDeployment())
         .reduce((traces: Trace[], root) => [...traces, ...root.traces], [])
         .find(trace => stage ? trace.isDeployment() == stage.stageName || trace.isEvaluation() == stage.stageName : !!trace.isDeployment() || !!trace.isEvaluation());
     else

@@ -139,9 +139,9 @@
                         </ng-container>
                       </div>
                     </dt-info-group-title>
-                    <ng-container *ngIf="project.getLatestArtifact(service, selectedStage) as artifact; else noDeployment">
+                    <ng-container *ngIf="project.getLatestSuccessfulArtifact(service, selectedStage) as artifact; else noDeployment">
                       <p class="m-0 mt-1"><span [textContent]="artifact.data.image"></span>:<span [textContent]="artifact.data.tag"></span></p>
-                      <p class="m-0 mb-1" *ngif="artifact.isDeployment()"><span class="bold">Deployed at: </span><span [textContent]="artifact.time | amCalendar:getCalendarFormats()"></span></p>
+                      <p class="m-0 mb-1" *ngIf="artifact.isDeployment()"><span class="bold">Deployed at: </span><span [textContent]="artifact.time | amCalendar:getCalendarFormats()"></span></p>
                     </ng-container>
                   </dt-info-group>
                 </ktb-expandable-tile-header>
