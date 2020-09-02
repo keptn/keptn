@@ -127,7 +127,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	fmt.Println("Received CloudEvent with ID " + event.ID() + ". Forwarding to Keptn API.")
 	apiEndpoint := os.Getenv("HTTP_EVENT_FORWARDING_ENDPOINT")
 	if apiEndpoint == "" {
-		apiEndpoint = "http://api-service:8080/v1/event"
+		apiEndpoint = "http://event-broker/keptn"
 	}
 	fmt.Println("Keptn API endpoint: " + apiEndpoint)
 	apiToken := os.Getenv("HTTP_EVENT_ENDPOINT_AUTH_TOKEN")
