@@ -107,7 +107,7 @@ class Trace {
   isWarning(): string {
     let result: string = null;
     if(this.data) {
-      if(this.data.result == ResultTypes.WARNING) {
+      if(this.type === EventTypes.EVALUATION_DONE && this.data.result == ResultTypes.WARNING) {
         result = this.data.stage;
       }
     }
