@@ -168,7 +168,7 @@
                       </ng-template>
                     </dt-tag-list>
                   </div>
-                  <p class="m-0" *ngIf="!failedRootEvent.getDeploymentDetails(selectedStage).isDirectDeployment()">Rollback to <span *ngIf="project.getLatestDeployment(service, selectedStage) as deployment" [textContent]="deployment.getShortImageName()"></span> performed.</p>
+                  <p class="m-0" *ngIf="failedRootEvent?.isDeployment() && !failedRootEvent.getDeploymentDetails(selectedStage)?.isDirectDeployment()">Rollback to <span *ngIf="project.getLatestDeployment(service, selectedStage) as deployment" [textContent]="deployment.getShortImageName()"></span> performed.</p>
                   <hr />
                 </ng-container>
                 <div *ngIf="countOpenApprovals(openApprovals, project, selectedStage, service) > 0; else noOutOfSyncDeployments">

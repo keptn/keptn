@@ -60,7 +60,7 @@ export class Project {
   }
 
   getLatestFailedRootEvents(stage: Stage): Root[] {
-    return this.getLatestRootEvents(stage).filter(root => root?.isFailedEvaluation() === stage.stageName && root?.isDeployment());
+    return this.getLatestRootEvents(stage).filter(root => root?.isFailedEvaluation() === stage.stageName && (root?.isDeployment() || root?.isEvaluation()));
   }
 
   getLatestProblemEvents(stage: Stage): Root[] {
