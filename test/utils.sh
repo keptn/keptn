@@ -134,6 +134,21 @@ function verify_using_jq() {
   return 0
 }
 
+function verify_value() {
+  attribute=$1
+  actual=$2
+  expected=$3
+
+  if [[ "${actual}" != "${expected}" ]]; then
+    print_error "ERROR: Checking $attribute, expected '${expected}', got '${actual}' ❌"
+    exit 1
+  else
+    echo "Checking $attribute: ${actual} ✓"
+  fi
+
+  return 0
+}
+
 function verify_test_step() {
   if [[ $1 != '0' ]]; then
     print_error "$2"

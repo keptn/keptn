@@ -6,16 +6,17 @@ source test/utils.sh
 DYNATRACE_SLI_SERVICE_VERSION=${DYNATRACE_SLI_SERVICE_VERSION:-master}
 KEPTN_EXAMPLES_BRANCH=${KEPTN_EXAMPLES_BRANCH:-master}
 PROJECT=${PROJECT:-easytravel}
+KEPTN_NAMESPACE=${KEPTN_NAMESPACE:-keptn}
 
 # get keptn API details
 if [[ "$PLATFORM" == "openshift" ]]; then
   KEPTN_ENDPOINT=http://api.keptn.127.0.0.1.nip.io/api
-  KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)
+  KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n ${KEPTN_NAMESPACE} -ojsonpath={.data.keptn-api-token} | base64 --decode)
 else
   API_PORT=$(kubectl get svc api-gateway-nginx -n keptn -o jsonpath='{.spec.ports[?(@.name=="http")].nodePort}')
   INTERNAL_NODE_IP=$(kubectl get nodes -o jsonpath='{ $.items[0].status.addresses[?(@.type=="InternalIP")].address }')
   KEPTN_ENDPOINT="http://${INTERNAL_NODE_IP}:${API_PORT}"/api
-  KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)
+  KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n ${KEPTN_NAMESPACE} -ojsonpath={.data.keptn-api-token} | base64 --decode)
 fi
 
 ########################################################################################################################
@@ -23,7 +24,7 @@ fi
 ########################################################################################################################
 
 # ensure dynatrace-sli-service is not installed yet
-kubectl -n keptn get deployment dynatrace-sli-service 2> /dev/null
+kubectl -n ${KEPTN_NAMESPACE} get deployment dynatrace-sli-service 2> /dev/null
 
 if [[ $? -eq 0 ]]; then
   echo "Found dynatrace-sli-service. Please uninstall it using:"
@@ -41,7 +42,7 @@ if [[ "$response" == "${PROJECT}" ]]; then
 fi
 
 # verify that the lighthouse configmap for the project does not exist yet
-kubectl -n keptn get cm lighthouse-config-${PROJECT} 2> /dev/null
+kubectl -n ${KEPTN_NAMESPACE} get cm lighthouse-config-${PROJECT} 2> /dev/null
 
 if [[ $? -eq 0 ]]; then
   echo "Found configmap lighthouse-config-${PROJECT}. Please remove it using:"
@@ -50,11 +51,11 @@ if [[ $? -eq 0 ]]; then
 fi
 
 # verify that the Dynatrace credential secret does not exist yet
-kubectl -n keptn get secret dynatrace-credentials-${PROJECT} 2> /dev/null
+kubectl -n ${KEPTN_NAMESPACE} get secret dynatrace-credentials-${PROJECT} 2> /dev/null
 
 if [[ $? -eq 0 ]]; then
   echo "Found secret dynatrace-credentials-${PROJECT}. Please remove it using:"
-  echo "kubectl -n keptn delete secret dynatrace-credentials-${PROJECT}"
+  echo "kubectl -n ${KEPTN_NAMESPACE} delete secret dynatrace-credentials-${PROJECT}"
   exit 1
 fi
 
@@ -165,9 +166,9 @@ verify_using_jq "$response" ".data.evaluationdetails.sloFileContent" ""
 #             Tenant/API Token configured
 ########################################################################################################################
 echo "Install dynatrace-sli-service from: ${DYNATRACE_SLI_SERVICE_VERSION}"
-kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/dynatrace-sli-service/${DYNATRACE_SLI_SERVICE_VERSION}/deploy/service.yaml -n keptn
+kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/dynatrace-sli-service/${DYNATRACE_SLI_SERVICE_VERSION}/deploy/service.yaml -n ${KEPTN_NAMESPACE}
 sleep 10
-wait_for_deployment_in_namespace "dynatrace-sli-service" "keptn"
+wait_for_deployment_in_namespace "dynatrace-sli-service" ${KEPTN_NAMESPACE}
 
 # configure monitoring for Dynatrace
 echo "Calling keptn configure monitoring dynatrace --project=$PROJECT"
@@ -206,7 +207,7 @@ while [[ $RETRY -lt $RETRY_MAX ]]; do
 done
 
 if [[ $RETRY == $RETRY_MAX ]]; then
-  kubectl -n keptn logs svc/dynatrace-sli-service -c dynatrace-sli-service
+  kubectl -n ${KEPTN_NAMESPACE} logs svc/dynatrace-sli-service -c dynatrace-sli-service
   print_error "evaluation-done event could not be retrieved"
   # exit 1 - Todo - see below
 fi
@@ -228,7 +229,7 @@ verify_using_jq "$response" ".data.result" "fail"
 ########################################################################################################################
 
 # create secret from file
-kubectl -n keptn create secret generic dynatrace-credentials-${PROJECT} --from-literal="DT_TENANT=$QG_INTEGRATION_TEST_DT_TENANT" --from-literal="DT_API_TOKEN=$QG_INTEGRATION_TEST_DT_API_TOKEN"
+kubectl -n ${KEPTN_NAMESPACE} create secret generic dynatrace-credentials-${PROJECT} --from-literal="DT_TENANT=$QG_INTEGRATION_TEST_DT_TENANT" --from-literal="DT_API_TOKEN=$QG_INTEGRATION_TEST_DT_API_TOKEN"
 
 # send the start evaluation command again
 keptn_context_id=$(send_start_evaluation_event $PROJECT hardening $SERVICE)
@@ -259,9 +260,9 @@ done
 if [[ $RETRY == $RETRY_MAX ]]; then
   # print logs of dynatrace-sli-service
   echo "Logs from: dynatrace-sli-service"
-  kubectl -n keptn logs svc/dynatrace-sli-service -c dynatrace-sli-service
+  kubectl -n ${KEPTN_NAMESPACE} logs svc/dynatrace-sli-service -c dynatrace-sli-service
   echo "Logs from: lighthouse-service"
-  kubectl -n keptn logs svc/lighthouse-service -c lighthouse-service
+  kubectl -n ${KEPTN_NAMESPACE} logs svc/lighthouse-service -c lighthouse-service
   print_error "evaluation-done event could not be retrieved"
   exit 1
 fi
@@ -289,7 +290,7 @@ if [[ $number_of_false_results -ne 0 ]]; then
   echo "Expected 0 results with success: false, but found $number_of_false_results"
 fi
 
-# Verify .data.evaluationsdetails: There should be 2 results with status: pass, and 1 with status: info
+# Verify .data.evaluationdetails: There should be 2 results with status: pass, and 1 with status: info
 number_of_pass_results=$(echo $response | jq -r '.data.evaluationdetails.indicatorResults[].status' | grep -c "pass")
 number_of_warning_results=$(echo $response | jq -r '.data.evaluationdetails.indicatorResults[].status' | grep -c "warning")
 number_of_info_results=$(echo $response | jq -r '.data.evaluationdetails.indicatorResults[].status' | grep -c "info")
@@ -340,7 +341,7 @@ done
 
 if [[ $RETRY == $RETRY_MAX ]]; then
   # print logs of dynatrace-sli-service
-  kubectl -n keptn logs svc/dynatrace-sli-service -c dynatrace-sli-service
+  kubectl -n ${KEPTN_NAMESPACE} logs svc/dynatrace-sli-service -c dynatrace-sli-service
   print_error "evaluation-done event could not be retrieved"
   exit 1
 fi
@@ -421,7 +422,7 @@ done
 
 if [[ $RETRY == $RETRY_MAX ]]; then
   # print logs of dynatrace-sli-service
-  kubectl -n keptn logs svc/dynatrace-sli-service -c dynatrace-sli-service
+  kubectl -n ${KEPTN_NAMESPACE} logs svc/dynatrace-sli-service -c dynatrace-sli-service
   print_error "evaluation-done event could not be retrieved"
   exit 1
 fi
@@ -504,7 +505,7 @@ done
 
 if [[ $RETRY == $RETRY_MAX ]]; then
   # print logs of dynatrace-sli-service
-  kubectl -n keptn logs svc/dynatrace-sli-service -c dynatrace-sli-service
+  kubectl -n ${KEPTN_NAMESPACE} logs svc/dynatrace-sli-service -c dynatrace-sli-service
   print_error "evaluation-done event could not be retrieved"
   exit 1
 fi
@@ -558,10 +559,10 @@ echo "Deleting project ${PROJECT}"
 keptn delete project $PROJECT
 
 echo "Uninstalling dynatrace-sli-service"
-kubectl -n keptn delete deployment dynatrace-sli-service
+kubectl -n ${KEPTN_NAMESPACE} delete deployment dynatrace-sli-service
 
 echo "Removing secret dynatrace-credentials-${PROJECT}"
-kubectl -n keptn delete secret dynatrace-credentials-${PROJECT}
+kubectl -n ${KEPTN_NAMESPACE} delete secret dynatrace-credentials-${PROJECT}
 
 echo "Quality gates standalone tests done ✓"
 
