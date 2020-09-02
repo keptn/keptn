@@ -75,7 +75,7 @@ func main() {
 const connectionTypeNATS = "nats"
 const connectionTypeHTTP = "http"
 
-const defaultAPIEndpoint = "http://api-service:8080/v1/event"
+const defaultAPIEndpoint = "http://event-broker/keptn"
 
 func _main(args []string, env envConfig) int {
 
@@ -143,8 +143,12 @@ func gotEvent(event cloudevents.Event) error {
 
 	payload, err := event.MarshalJSON()
 	req, err := http.NewRequest("POST", apiEndpoint, bytes.NewBuffer(payload))
-
-	req.Header.Set("Content-Type", "application/json")
+	if apiEndpoint == defaultAPIEndpoint {
+		// if the event goes directly to the cluster-internal event-broker, we need to set the Content-Type header accordingly
+		req.Header.Set("Content-Type", "application/cloudevents+json")
+	} else {
+		req.Header.Set("Content-Type", "application/json")
+	}
 	if apiToken != "" {
 		fmt.Println("Adding x-token header to HTTP request")
 		req.Header.Add("x-token", apiToken)
