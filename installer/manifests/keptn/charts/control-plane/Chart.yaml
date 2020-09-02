@@ -15,7 +15,7 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.1.0
+version: 0.7.1
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
@@ -24,7 +24,7 @@ appVersion: 0.7.1
 
 dependencies:
   - name: mongodb
-    version: 0.1.0
+    version: 0.7.1
   - name: nats
     version: 0.4.2
     repository: https://nats-io.github.io/k8s/helm/charts/
