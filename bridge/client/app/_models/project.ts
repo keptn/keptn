@@ -55,16 +55,12 @@ export class Project {
       return null;
   }
 
-  getLatestRootEvents(stage: Stage): Root[] {
-    return this.getServices().map(service => service.roots?.find(root => root.traces.some(trace => trace.data.stage === stage.stageName)));
-  }
-
   getLatestFailedRootEvents(stage: Stage): Root[] {
-    return this.getLatestRootEvents(stage).filter(root => root?.isFailedEvaluation() === stage.stageName && (root?.isDeployment() || root?.isEvaluation()));
+    return this.getServices().map(service => service.roots?.find(root => (root?.isDeployment() || root?.isEvaluation()) && root.traces.some(trace => trace.data.stage === stage.stageName))).filter(root => root?.isFailedEvaluation() === stage.stageName);
   }
 
   getLatestProblemEvents(stage: Stage): Root[] {
-    return this.getLatestRootEvents(stage).filter(root => root?.isProblem() && !root?.isProblemResolvedOrClosed());
+    return this.getServices().map(service => service.roots?.find(root => root?.isProblem() && root.traces.some(trace => trace.data.stage === stage.stageName))).filter(root => root && !root?.isProblemResolvedOrClosed());
   }
 
   getRootEvent(service: Service, event: Trace): Root {
@@ -74,7 +70,7 @@ export class Project {
   getDeploymentEvaluation(trace: Trace): Trace {
     let service = this.getServices().find(s => s.serviceName == trace.data.service);
     let root = this.getRootEvent(service, trace);
-    return root.traces.slice().reverse().find(t => t.type == EventTypes.EVALUATION_DONE);
+    return root?.traces.slice().reverse().find(t => t.type == EventTypes.EVALUATION_DONE);
   }
 
   static fromJSON(data: any) {

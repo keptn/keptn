@@ -264,7 +264,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   }
 
   findProblemEvent(problemEvents: Root[], service: Service) {
-    return problemEvents.find(root => root.data.service == service.serviceName);
+    return problemEvents.find(root => root?.data.service == service.serviceName);
   }
 
   ngOnDestroy(): void {
