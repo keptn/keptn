@@ -74,6 +74,12 @@ class Trace {
       status: string;
     };
 
+    action: {
+      action: string;
+      description: string;
+      name: string;
+    }
+
     Tags: string;
     State: string;
   };
@@ -82,6 +88,16 @@ class Trace {
     let result: string = null;
     if(this.data) {
       if(this.isFailed() || (this.isProblem() && !this.isProblemResolvedOrClosed())) {
+        result = this.data.stage;
+      }
+    }
+    return result;
+  }
+
+  isFailedEvaluation() {
+    let result: string = null;
+    if(this.data) {
+      if(this.type === EventTypes.EVALUATION_DONE && this.isFailed()) {
         result = this.data.stage;
       }
     }
@@ -132,12 +148,24 @@ class Trace {
     return this.type === EventTypes.APPROVAL_FINISHED;
   }
 
+  isDirectDeployment(): boolean {
+    return this.type === EventTypes.DEPLOYMENT_FINISHED && this.data.deploymentstrategy == "direct";
+  }
+
   private isApproved(): boolean {
     return this.data.approval?.result == ApprovalStates.APPROVED;
   }
 
   private isDeclined(): boolean {
     return this.data.approval?.result == ApprovalStates.DECLINED;
+  }
+
+  public isDeployment(): string {
+    return this.type === EventTypes.DEPLOYMENT_FINISHED ? this.data.stage : null;
+  }
+
+  public isEvaluation(): string {
+    return this.type === EventTypes.START_EVALUATION ? this.data.stage : null;
   }
 
   hasLabels(): boolean {

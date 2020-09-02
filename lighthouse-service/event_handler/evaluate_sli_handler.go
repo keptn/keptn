@@ -176,7 +176,7 @@ func evaluateObjectives(e *keptn.InternalGetSLIDoneEventData, sloConfig *keptn.S
 		var warningTargets []*keptn.SLITarget
 		isPassed := true
 		isWarning := true
-		if objective.Pass != nil {
+		if objective.Pass != nil && len(objective.Pass) > 0 {
 			isPassed, passTargets, _ = evaluateOrCombinedCriteria(sliEvaluationResult.Value, objective.Pass, previousSLIResults, sloConfig.Comparison)
 			if isPassed {
 				sliEvaluationResult.Score = float64(objective.Weight)
@@ -187,7 +187,7 @@ func evaluateObjectives(e *keptn.InternalGetSLIDoneEventData, sloConfig *keptn.S
 		}
 
 		if !isPassed {
-			if objective.Warning != nil {
+			if objective.Warning != nil && len(objective.Warning) > 0 {
 				isWarning, warningTargets, _ = evaluateOrCombinedCriteria(sliEvaluationResult.Value, objective.Warning, previousSLIResults, sloConfig.Comparison)
 				if isWarning {
 					sliEvaluationResult.Score = 0.5 * float64(objective.Weight)

@@ -23,7 +23,7 @@ require (
 	github.com/jeremywohl/flatten v0.0.0-20190921043622-d936035e55cf
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/json-iterator/go v1.1.10 // indirect
-	github.com/keptn/go-utils v0.6.3-0.20200828090559-595b01d0f2a6
+	github.com/keptn/go-utils v0.7.1
 	github.com/kr/pretty v0.2.0 // indirect
 	github.com/mailru/easyjson v0.7.3 // indirect
 	github.com/mitchellh/mapstructure v1.2.2 // indirect

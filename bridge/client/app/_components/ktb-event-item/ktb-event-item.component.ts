@@ -70,4 +70,13 @@ export class KtbEventItemComponent {
     this.clipboard.copy(plainEvent, 'event payload');
   }
 
+  isUrl(value: string): boolean {
+    try {
+      new URL(value);
+    } catch (_) {
+      return false;  
+    }
+    return true;
+  }
+
 }

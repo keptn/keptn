@@ -31,20 +31,44 @@ export class Project {
     return this.stages.find(s => s.stageName == stageName);
   }
 
-  getLatestDeployment(service: Service, stage: Stage): Trace {
+  getLatestDeployment(service: Service, stage?: Stage): Trace {
     let currentService = this.getService(service.serviceName);
 
     if(currentService.roots)
       return currentService.roots
-        .filter(root => root.isFaulty() != stage.stageName || root.traces.find(trace => trace.type == EventTypes.DEPLOYMENT_FINISHED && trace.data.stage == stage.stageName)?.data.deploymentstrategy == "direct")
+        .filter(root => !stage || root.isFaulty() != stage.stageName || root.getDeploymentDetails(stage)?.isDirectDeployment())
         .reduce((traces: Trace[], root) => [...traces, ...root.traces], [])
-        .find(trace => trace.type == EventTypes.DEPLOYMENT_FINISHED && trace.data.stage == stage.stageName);
+        .find(trace => stage ? trace.isDeployment() == stage.stageName : !!trace.isDeployment());
     else
       return null;
   }
 
+  getLatestArtifact(service: Service, stage?: Stage): Trace {
+    let currentService = this.getService(service.serviceName);
+
+    if(currentService.roots)
+      return currentService.roots
+        .filter(root => !stage || root.isFaulty() != stage.stageName || root.getDeploymentDetails(stage)?.isDirectDeployment())
+        .reduce((traces: Trace[], root) => [...traces, ...root.traces], [])
+        .find(trace => stage ? trace.isDeployment() == stage.stageName || trace.isEvaluation() == stage.stageName : !!trace.isDeployment() || !!trace.isEvaluation());
+    else
+      return null;
+  }
+
+  getLatestRootEvents(stage: Stage): Root[] {
+    return this.getServices().map(service => service.roots?.find(root => root.traces.some(trace => trace.data.stage === stage.stageName)));
+  }
+
+  getLatestFailedRootEvents(stage: Stage): Root[] {
+    return this.getLatestRootEvents(stage).filter(root => root?.isFailedEvaluation() === stage.stageName && root?.isDeployment());
+  }
+
+  getLatestProblemEvents(stage: Stage): Root[] {
+    return this.getLatestRootEvents(stage).filter(root => root?.isProblem() && !root?.isProblemResolvedOrClosed());
+  }
+
   getRootEvent(service: Service, event: Trace): Root {
-    return service.roots.find(root => root.shkeptncontext == event.shkeptncontext);
+    return service.roots?.find(root => root.shkeptncontext == event.shkeptncontext);
   }
 
   getDeploymentEvaluation(trace: Trace): Trace {
