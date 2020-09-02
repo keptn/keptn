@@ -30,7 +30,8 @@
       <p class="bold nobreak m-0 mt-1 mb-1">Labels: </p>
       <dt-tag-list aria-label="affected-entities" (click)="$event.stopPropagation();">
         <dt-tag *ngFor="let tag of _event.data.ProblemDetails.tagsOfAffectedEntities">
-          <span [textContent]="tag.key"></span>:&nbsp;<span *ngIf="!isUrl(tag.value)" [textContent]="tag.value"></span><a [href]="tag.value" target="_blank" *ngIf="isUrl(tag.value)" [textContent]="tag.value"></a>
+          <p *ngIf="!isUrl(tag.value)" ><span [textContent]="tag.key"></span>:&nbsp;<span [textContent]="tag.value"></span></p>
+          <a *ngIf="isUrl(tag.value)" [href]="tag.value" target="_blank" [textContent]="tag.key"></a>
         </dt-tag>
       </dt-tag-list>
     </div>
@@ -40,7 +41,8 @@
       <p class="bold">Labels: </p>
       <dt-tag-list aria-label="evaluation-labels">
         <dt-tag *ngFor="let label of _event.data.labels | keyvalue">
-          <span [textContent]="label.key"></span>:&nbsp;<span *ngIf="!isUrl(label.value)" [textContent]="label.value"></span><a [href]="label.value" target="_blank" *ngIf="isUrl(label.value)" [textContent]="label.value"></a>
+          <p *ngIf="!isUrl(label.value)" ><span [textContent]="label.key"></span>:&nbsp;<span [textContent]="label.value"></span></p>
+          <a *ngIf="isUrl(label.value)" [href]="label.value" target="_blank" [textContent]="label.key"></a>
         </dt-tag>
       </dt-tag-list>
     </div>
