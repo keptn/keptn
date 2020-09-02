@@ -154,6 +154,7 @@ gke_full_part1: &gke_full_part1
     - test/utils/check_bridge_availability.sh
     # test onboarding and new-artifact for project sockshop
     - export PROJECT=sockshop
+    - export SERVICE=carts
     - test/test_onboard_service.sh
     - test/test_new_artifact.sh
     - test/test_delete_project.sh
@@ -533,7 +534,7 @@ jobs:
       - docker images | grep keptn
 
   - stage: Test GKE Full with Istio - Pt. 1 (--platform=gke --use-case=continuous-delivery)
-    if: branch = master AND type = cron # run for cron
+    if: (branch = master AND type = cron) or (branch = patch/integration-tests) # run for cron
     env:
       - GKE_VERSION=1.15
     <<: *gke_full_part1 # use GKE template
