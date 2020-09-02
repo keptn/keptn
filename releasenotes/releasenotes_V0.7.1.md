@@ -19,7 +19,7 @@ Keptn 0.7.1 improves the capabilities of the 0.7 release by adding more flexibil
 
 ## Keptn Specification
 
-Implemented **Keptn spec** version: [0.1.4](https://github.com/keptn/spec/tree/0.1.4)
+Implemented **Keptn spec** version: [0.1.5](https://github.com/keptn/spec/tree/0.1.5)
 
 ## New Features
 
@@ -92,7 +92,7 @@ Implemented **Keptn spec** version: [0.1.4](https://github.com/keptn/spec/tree/0
 - Set height for evaluation chart and maxHeight for legend [#2150](https://github.com/keptn/keptn/issues/2150)
 - Expand service tile automatically if there is an open approval [#2151](https://github.com/keptn/keptn/issues/2151)
 - Show labels in event payload [#2138](https://github.com/keptn/keptn/issues/2138)
-- Bridge code refactoring tasks: [#2000](https://github.com/keptn/keptn/issues/2000) [#2011](https://github.com/keptn/keptn/issues/2011) [#2012](https://github.com/keptn/keptn/issues/2012)
+- Bridge code refactoring tasks: [#2000](https://github.com/keptn/keptn/issues/2000), [#2011](https://github.com/keptn/keptn/issues/2011), [#2012](https://github.com/keptn/keptn/issues/2012)
 
 </p>
 </details>
