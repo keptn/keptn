@@ -157,6 +157,7 @@ func forwardEventToNATSServer(event cloudevents.Event) error {
 	_, _, err = eventClient.Send(ctx, event)
 	if err != nil {
 		fmt.Printf("Failed to send cloudevent: " + err.Error())
+		return err
 	}
 
 	return nil
