@@ -121,20 +121,20 @@ func Test_decodeCloudEvent(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Get V0.2 CloudEvent",
+			name: "Get V0.3 CloudEvent",
 			args: args{
 				data: []byte(`{
 				"data": "",
 				"id": "6de83495-4f83-481c-8dbe-fcceb2e0243b",
 				"source": "helm-service",
-				"specversion": "0.2",
+				"specversion": "0.3",
 				"type": "sh.keptn.events.deployment-finished",
 				"shkeptncontext": "3c9ffbbb-6e1d-4789-9fee-6e63b4bcc1fb"
 			}`),
 			},
 			want: &cloudevents.Event{
 				Context: &cloudevents.EventContextV02{
-					SpecVersion: "0.2",
+					SpecVersion: "0.3",
 					Type:        "sh.keptn.events.deployment-finished",
 					Source: types.URLRef{
 						URL: url.URL{
@@ -164,7 +164,7 @@ func Test_decodeCloudEvent(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Get V0.2 CloudEvent",
+			name: "Get V0.3 CloudEvent",
 			args: args{
 				data: []byte(""),
 			},
@@ -451,7 +451,7 @@ func Test_pollEventsForTopic(t *testing.T) {
 						ID:             "1234",
 						Shkeptncontext: "1234",
 						Source:         stringp("my-source"),
-						Specversion:    "0.2",
+						Specversion:    "0.3",
 						Time:           strfmt.DateTime{},
 						Triggeredid:    "1234",
 						Type:           stringp("my-topic"),
@@ -516,7 +516,7 @@ func Test__main(t *testing.T) {
 				"data": "",
 				"id": "6de83495-4f83-481c-8dbe-fcceb2e0243b",
 				"source": "helm-service",
-				"specversion": "0.2",
+				"specversion": "0.3",
 				"type": "sh.keptn.events.deployment-finished",
 				"shkeptncontext": "3c9ffbbb-6e1d-4789-9fee-6e63b4bcc1fb"
 			}`))
@@ -552,7 +552,7 @@ func Test__main(t *testing.T) {
 				"data": "",
 				"id": "6de83495-4f83-481c-8dbe-fcceb2e0243b",
 				"source": "helm-service",
-				"specversion": "0.2",
+				"specversion": "0.3",
 				"type": "sh.keptn.events.deployment-finished",
 				"shkeptncontext": "3c9ffbbb-6e1d-4789-9fee-6e63b4bcc1fb"
 			}`)))

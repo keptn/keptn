@@ -162,7 +162,7 @@ func forwardEventToNATSServer(event cloudevents.Event) error {
 	if result := c.Send(context.Background(), event); cloudevents.IsUndelivered(result) {
 		fmt.Printf("failed to send: %v", err)
 	} else {
-		fmt.Printf("sent: %d, accepted: %t", event.ID(), cloudevents.IsACK(result))
+		fmt.Printf("sent: %s, accepted: %t", event.ID(), cloudevents.IsACK(result))
 	}
 
 	return nil
@@ -317,7 +317,7 @@ func pollEventsForTopic(endpoint string, token string, topic string, client clou
 
 		if e != nil {
 			fmt.Println("Sending CloudEvent with ID " + event.ID + " to " + os.Getenv("PUBSUB_RECIPIENT"))
-			err = sendEvent(*e, client)
+			err = sendEvent(*e)
 			if err != nil {
 				fmt.Println("Could not send CloudEvent: " + err.Error())
 			}
@@ -434,8 +434,6 @@ func stringp(s string) *string {
 func createNATSClientConnection() {
 	uptimeTicker = time.NewTicker(10 * time.Second)
 
-	httpClient = createRecipientConnection()
-
 	natsURL := os.Getenv("PUBSUB_URL")
 	topics := strings.Split(os.Getenv("PUBSUB_TOPIC"), ",")
 	nch := lib.NewNatsConnectionHandler(natsURL, topics)
@@ -496,15 +494,22 @@ func handleMessage(m *nats.Msg) {
 	e, err := decodeCloudEvent(m.Data)
 
 	if e != nil {
-		err = sendEvent(*e, httpClient)
+		err = sendEvent(*e)
 		if err != nil {
 			fmt.Println("Could not send CloudEvent: " + err.Error())
 		}
 	}
 }
 
+type ceVersion struct {
+	SpecVersion string `json:"specversion"`
+}
+
 func decodeCloudEvent(data []byte) (*cloudevents.Event, error) {
-	event := cloudevents.NewEvent()
+
+	cv := &ceVersion{}
+	json.Unmarshal(data, cv)
+	event := cloudevents.NewEvent(cv.SpecVersion)
 
 	err := json.Unmarshal(data, &event)
 	if err != nil {
@@ -515,14 +520,16 @@ func decodeCloudEvent(data []byte) (*cloudevents.Event, error) {
 	return &event, nil
 }
 
-func sendEvent(event cloudevents.Event, client cloudevents.Client) error {
+func sendEvent(event cloudevents.Event) error {
+	client := createRecipientConnection()
+
 	ctx := cloudevents.ContextWithTarget(context.Background(), recipientURL)
 	ctx = cloudevents.WithEncodingStructured(ctx)
-	if result := client.Send(context.Background(), event); cloudevents.IsUndelivered(result) {
+	if result := client.Send(ctx, event); cloudevents.IsUndelivered(result) {
 		fmt.Printf("failed to send: %s", result.Error())
 		return errors.New(result.Error())
 	}
-	fmt.Printf("sent: %d", event.ID())
+	fmt.Printf("sent: %s", event.ID())
 	return nil
 }
 
