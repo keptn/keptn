@@ -14,6 +14,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -43,8 +44,8 @@ import (
 
 type envConfig struct {
 	// Port on which to listen for cloudevents
-	Port int    `envconfig:"RCV_PORT" default:"8080"`
-	Path string `envconfig:"RCV_PATH" default:"/"`
+	Port int    `envconfig:"RCV_PORT" default:"8081"`
+	Path string `envconfig:"RCV_PATH" default:"/event"`
 }
 
 var httpClient client.Client
@@ -74,7 +75,12 @@ func main() {
 const connectionTypeNATS = "nats"
 const connectionTypeHTTP = "http"
 
+const defaultAPIEndpoint = "http://event-broker/keptn"
+
 func _main(args []string, env envConfig) int {
+
+	createEventForwardingEndpoint(env)
+
 	// initialize the http client
 	connectionType := strings.ToLower(os.Getenv("CONNECTION_TYPE"))
 
@@ -95,7 +101,80 @@ func _main(args []string, env envConfig) int {
 	return 0
 }
 
+func createEventForwardingEndpoint(env envConfig) {
+	fmt.Println("Creating event forwarding endpoint")
+
+	http.HandleFunc("/event", EventForwardHandler)
+	go http.ListenAndServe("localhost:8081", nil)
+
+}
+
+// EventForwardHandler godoc
+func EventForwardHandler(rw http.ResponseWriter, req *http.Request) {
+
+	body, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		fmt.Printf("Failed to read body from requst: %s", err)
+		return
+	}
+
+	event, err := decodeCloudEvent(body)
+	if err != nil {
+		fmt.Printf("Failed to decode CloudEvent: %s", err)
+		return
+	}
+	err = gotEvent(*event)
+	if err != nil {
+		fmt.Printf("Failed to forward CloudEvent: %s", err)
+		return
+	}
+}
+
 const defaultPollingInterval = 10
+
+func gotEvent(event cloudevents.Event) error {
+	fmt.Println("Received CloudEvent with ID " + event.ID() + ". Forwarding to Keptn API.")
+	apiEndpoint := os.Getenv("HTTP_EVENT_FORWARDING_ENDPOINT")
+	if apiEndpoint == "" {
+		apiEndpoint = defaultAPIEndpoint
+	}
+	fmt.Println("Keptn API endpoint: " + apiEndpoint)
+	apiToken := os.Getenv("HTTP_EVENT_ENDPOINT_AUTH_TOKEN")
+
+	payload, err := event.MarshalJSON()
+	req, err := http.NewRequest("POST", apiEndpoint, bytes.NewBuffer(payload))
+	if apiEndpoint == defaultAPIEndpoint {
+		// if the event goes directly to the cluster-internal event-broker, we need to set the Content-Type header accordingly
+		req.Header.Set("Content-Type", "application/cloudevents+json")
+	} else {
+		req.Header.Set("Content-Type", "application/json")
+	}
+	if apiToken != "" {
+		fmt.Println("Adding x-token header to HTTP request")
+		req.Header.Add("x-token", apiToken)
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		fmt.Println("Could not send event to API endpoint: " + err.Error())
+		return err
+	}
+	if resp.StatusCode == 200 {
+		fmt.Println("Event forwarded successfully")
+		return nil
+	}
+	fmt.Println("Received HTTP status from Keptn API: " + resp.Status)
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("Could not decode response: " + err.Error())
+		return err
+	}
+
+	fmt.Println("Response from Keptn API: " + string(body))
+	return errors.New(string(body))
+}
 
 func createHTTPConnection() {
 	sentCloudEvents = map[string][]string{}
@@ -119,9 +198,11 @@ func createHTTPConnection() {
 }
 
 func getHTTPPollingEndpoint() string {
-	endpoint := os.Getenv("HTTP_EVENT_ENDPOINT")
+	endpoint := os.Getenv("HTTP_EVENT_POLLING_ENDPOINT")
 	if endpoint == "" {
-		return "http://shipyard-controller:8080/v1/event/triggered"
+		if endpoint == "" {
+			return "http://shipyard-controller:8080/v1/event/triggered"
+		}
 	}
 
 	parsedURL, _ := url.Parse(endpoint)
