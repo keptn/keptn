@@ -1,11 +1,13 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 	"github.com/go-openapi/strfmt"
+	"github.com/kelseyhightower/envconfig"
 	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/nats-io/nats-server/v2/server"
 	natsserver "github.com/nats-io/nats-server/v2/test"
@@ -15,6 +17,7 @@ import (
 	"net/url"
 	"os"
 	"reflect"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -186,67 +189,6 @@ func Test_decodeCloudEvent(t *testing.T) {
 			}
 		})
 	}
-}
-
-const TEST_PORT = 8370
-const TEST_TOPIC = "test-topic"
-
-func RunServerOnPort(port int) *server.Server {
-	opts := natsserver.DefaultTestOptions
-	opts.Port = port
-	return RunServerWithOptions(&opts)
-}
-
-func RunServerWithOptions(opts *server.Options) *server.Server {
-	return natsserver.RunServer(opts)
-}
-
-func Test__main(t *testing.T) {
-
-	messageReceived := make(chan bool)
-	// Mock http server
-	ts := httptest.NewServer(
-		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			messageReceived <- true
-			w.Header().Add("Content-Type", "application/json")
-			w.Write([]byte(`{}`))
-		}),
-	)
-	defer ts.Close()
-
-	natsServer := RunServerOnPort(TEST_PORT)
-	defer natsServer.Shutdown()
-	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", TEST_PORT)
-
-	hostAndPort := strings.Split(ts.URL, ":")
-	os.Setenv("PUBSUB_RECIPIENT", strings.TrimPrefix(hostAndPort[1], "//"))
-	os.Setenv("PUBSUB_RECIPIENT_PORT", hostAndPort[2])
-	os.Setenv("PUBSUB_TOPIC", "test-topic")
-	os.Setenv("PUBSUB_URL", natsURL)
-
-	natsPublisher, _ := nats.Connect(natsURL)
-
-	go _main(nil, envConfig{})
-
-	<-time.After(2 * time.Second)
-
-	_ = natsPublisher.Publish(TEST_TOPIC, []byte(`{
-				"data": "",
-				"id": "6de83495-4f83-481c-8dbe-fcceb2e0243b",
-				"source": "helm-service",
-				"specversion": "0.2",
-				"type": "sh.keptn.events.deployment-finished",
-				"shkeptncontext": "3c9ffbbb-6e1d-4789-9fee-6e63b4bcc1fb"
-			}`))
-
-	select {
-	case <-messageReceived:
-		return
-	case <-time.After(5 * time.Second):
-		t.Error("SubscribeToTopics(): timed out waiting for messages")
-	}
-
-	close <- true
 }
 
 func Test_cleanSentEventList(t *testing.T) {
@@ -527,5 +469,101 @@ func Test_pollEventsForTopic(t *testing.T) {
 			client := createRecipientConnection()
 			pollEventsForTopic(tt.args.endpoint, tt.args.token, tt.args.topic, client)
 		})
+	}
+}
+
+const TEST_PORT = 8370
+const TEST_TOPIC = "test-topic"
+
+func RunServerOnPort(port int) *server.Server {
+	opts := natsserver.DefaultTestOptions
+	opts.Port = port
+	return RunServerWithOptions(&opts)
+}
+
+func RunServerWithOptions(opts *server.Options) *server.Server {
+	return natsserver.RunServer(opts)
+}
+func Test__main(t *testing.T) {
+	messageReceived := make(chan bool)
+	// Mock http server
+	ts := httptest.NewServer(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			messageReceived <- true
+			w.Header().Add("Content-Type", "application/json")
+			w.Write([]byte(`{}`))
+		}),
+	)
+	defer ts.Close()
+
+	natsServer := RunServerOnPort(TEST_PORT)
+	defer natsServer.Shutdown()
+	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", TEST_PORT)
+
+	hostAndPort := strings.Split(ts.URL, ":")
+	os.Setenv("PUBSUB_RECIPIENT", strings.TrimPrefix(hostAndPort[1], "//"))
+	os.Setenv("PUBSUB_RECIPIENT_PORT", hostAndPort[2])
+	os.Setenv("PUBSUB_TOPIC", "test-topic")
+	os.Setenv("PUBSUB_URL", natsURL)
+
+	natsPublisher, _ := nats.Connect(natsURL)
+
+	go _main(nil, envConfig{})
+
+	<-time.After(2 * time.Second)
+
+	_ = natsPublisher.Publish(TEST_TOPIC, []byte(`{
+				"data": "",
+				"id": "6de83495-4f83-481c-8dbe-fcceb2e0243b",
+				"source": "helm-service",
+				"specversion": "0.2",
+				"type": "sh.keptn.events.deployment-finished",
+				"shkeptncontext": "3c9ffbbb-6e1d-4789-9fee-6e63b4bcc1fb"
+			}`))
+
+	select {
+	case <-messageReceived:
+		return
+	case <-time.After(5 * time.Second):
+		t.Error("SubscribeToTopics(): timed out waiting for messages")
+	}
+
+	close <- true
+
+	receivedMessage := make(chan bool)
+	var env envConfig
+	if err := envconfig.Process("", &env); err != nil {
+		t.Errorf("Failed to process env var: %s", err)
+	}
+
+	_ = os.Setenv("PUBSUB_URL", natsURL)
+
+	natsClient, _ := nats.Connect(natsURL)
+	defer natsClient.Close()
+
+	_, _ = natsClient.Subscribe("sh.keptn.events.deployment-finished", func(m *nats.Msg) {
+		receivedMessage <- true
+	})
+
+	go main()
+
+	<-time.After(2 * time.Second)
+	_, err := http.Post("http://127.0.0.1:"+strconv.Itoa(env.Port), "application/cloudevents+json", bytes.NewBuffer([]byte(`{
+				"data": "",
+				"id": "6de83495-4f83-481c-8dbe-fcceb2e0243b",
+				"source": "helm-service",
+				"specversion": "0.2",
+				"type": "sh.keptn.events.deployment-finished",
+				"shkeptncontext": "3c9ffbbb-6e1d-4789-9fee-6e63b4bcc1fb"
+			}`)))
+
+	if err != nil {
+		t.Errorf("Could not send event")
+	}
+	select {
+	case <-receivedMessage:
+		t.Logf("Received event!")
+	case <-time.After(5 * time.Second):
+		t.Errorf("Message did not make it to the receiver")
 	}
 }

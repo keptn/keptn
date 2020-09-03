@@ -36,6 +36,7 @@ import (
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
+	"github.com/cloudevents/sdk-go/pkg/cloudevents/transport"
 	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
 	cloudeventsnats "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/nats"
 	"github.com/kelseyhightower/envconfig"
@@ -62,6 +63,8 @@ var mux sync.Mutex
 
 var sentCloudEvents map[string][]string
 
+var pubSubConnections map[string]transport.Transport
+
 func main() {
 	var env envConfig
 	if err := envconfig.Process("", &env); err != nil {
@@ -75,8 +78,6 @@ func main() {
 const connectionTypeNATS = "nats"
 const connectionTypeHTTP = "http"
 
-const defaultAPIEndpoint = "http://event-broker/keptn"
-
 func _main(args []string, env envConfig) int {
 
 	createEventForwardingEndpoint(env)
@@ -86,22 +87,23 @@ func _main(args []string, env envConfig) int {
 
 	switch connectionType {
 	case "":
-		createNATSConnection()
+		createNATSClientConnection()
 		break
 	case connectionTypeNATS:
-		createNATSConnection()
+		createNATSClientConnection()
 		break
 	case connectionTypeHTTP:
 		createHTTPConnection()
 		break
 	default:
-		createNATSConnection()
+		createNATSClientConnection()
 	}
 
 	return 0
 }
 
 func createEventForwardingEndpoint(env envConfig) {
+	pubSubConnections = map[string]transport.Transport{}
 	fmt.Println("Creating event forwarding endpoint")
 
 	http.HandleFunc("/event", EventForwardHandler)
@@ -136,19 +138,65 @@ func gotEvent(event cloudevents.Event) error {
 	fmt.Println("Received CloudEvent with ID " + event.ID() + ". Forwarding to Keptn API.")
 	apiEndpoint := os.Getenv("HTTP_EVENT_FORWARDING_ENDPOINT")
 	if apiEndpoint == "" {
-		apiEndpoint = defaultAPIEndpoint
+		fmt.Println("No external API endpoint defined. Forwarding directly to NATS server ")
+		return forwardEventToNATSServer(event)
 	}
+	return forwardEventToAPI(event, apiEndpoint)
+}
+
+func forwardEventToNATSServer(event cloudevents.Event) error {
+	var shkeptncontext string
+	event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
+
+	pubSubConnection, err := createPubSubConnection(event.Context.GetType())
+
+	eventClient, err := client.New(pubSubConnection)
+	if err != nil {
+		fmt.Printf("Unable to create cloudevent client: " + err.Error())
+	}
+	_, _, err = eventClient.Send(ctx, event)
+	if err != nil {
+		fmt.Printf("Failed to send cloudevent: " + err.Error())
+	}
+
+	return nil
+}
+
+func createPubSubConnection(topic string) (transport.Transport, error) {
+	pubSubURL := os.Getenv("PUBSUB_URL")
+
+	if pubSubURL == "" {
+		return nil, errors.New("no PubSub URL defined")
+	}
+
+	if topic == "" {
+		return nil, errors.New("no PubSub Topic defined")
+	}
+
+	if pubSubConnections[topic] == nil {
+		natsConnection, err := cloudeventsnats.New(
+			pubSubURL,
+			topic,
+		)
+		if err != nil {
+			fmt.Printf("Failed to create NATS connection, " + err.Error())
+			return nil, err
+		}
+		pubSubConnections[topic] = natsConnection
+	}
+
+	return pubSubConnections[topic], nil
+}
+
+func forwardEventToAPI(event cloudevents.Event, apiEndpoint string) error {
 	fmt.Println("Keptn API endpoint: " + apiEndpoint)
 	apiToken := os.Getenv("HTTP_EVENT_ENDPOINT_AUTH_TOKEN")
 
 	payload, err := event.MarshalJSON()
 	req, err := http.NewRequest("POST", apiEndpoint, bytes.NewBuffer(payload))
-	if apiEndpoint == defaultAPIEndpoint {
-		// if the event goes directly to the cluster-internal event-broker, we need to set the Content-Type header accordingly
-		req.Header.Set("Content-Type", "application/cloudevents+json")
-	} else {
-		req.Header.Set("Content-Type", "application/json")
-	}
+
+	req.Header.Set("Content-Type", "application/json")
+
 	if apiToken != "" {
 		fmt.Println("Adding x-token header to HTTP request")
 		req.Header.Add("x-token", apiToken)
@@ -371,7 +419,7 @@ func stringp(s string) *string {
 	return &s
 }
 
-func createNATSConnection() {
+func createNATSClientConnection() {
 	uptimeTicker = time.NewTicker(10 * time.Second)
 
 	httpClient = createRecipientConnection()
