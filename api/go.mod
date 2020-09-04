@@ -4,7 +4,7 @@ go 1.13
 
 require (
 	github.com/cloudevents/sdk-go v0.10.0
-	github.com/cloudevents/sdk-go/v2 v2.2.0 // indirect
+	github.com/cloudevents/sdk-go/v2 v2.2.0
 	github.com/gbrlsnchs/jwt/v2 v2.0.0
 	github.com/go-openapi/errors v0.19.6
 	github.com/go-openapi/loads v0.19.5
