@@ -4,13 +4,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/keptn/go-utils/pkg/lib/keptn"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"time"
 
-	"github.com/cloudevents/sdk-go/pkg/cloudevents"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 )
 
 const datastore = "MONGODB_DATASTORE"
@@ -24,11 +26,11 @@ type approval struct {
 }
 
 type ApprovalFinishedEventHandler struct {
-	keptn *keptnevents.Keptn
+	keptn *keptnv2.Keptn
 }
 
 // NewApprovalFinishedEventHandler returns a new approval.finished event handler
-func NewApprovalFinishedEventHandler(keptn *keptnevents.Keptn) *ApprovalFinishedEventHandler {
+func NewApprovalFinishedEventHandler(keptn *keptnv2.Keptn) *ApprovalFinishedEventHandler {
 	return &ApprovalFinishedEventHandler{keptn: keptn}
 }
 
@@ -36,7 +38,7 @@ func (a *ApprovalFinishedEventHandler) IsTypeHandled(event cloudevents.Event) bo
 	return event.Type() == keptnevents.ApprovalFinishedEventType
 }
 
-func (a *ApprovalFinishedEventHandler) Handle(event cloudevents.Event, keptnHandler *keptnevents.Keptn, shipyard *keptnevents.Shipyard) {
+func (a *ApprovalFinishedEventHandler) Handle(event cloudevents.Event, keptnHandler *keptnv2.Keptn, shipyard *keptnevents.Shipyard) {
 	data := &keptnevents.ApprovalFinishedEventData{}
 	if err := event.DataAs(data); err != nil {
 		a.keptn.Logger.Error(fmt.Sprintf("failed to parse ApprovalTriggeredEventData: %v", err))
@@ -100,7 +102,7 @@ func (a *ApprovalFinishedEventHandler) handleApprovalFinishedEvent(inputEvent ke
 }
 
 func getOpenApproval(inputEvent keptnevents.ApprovalFinishedEventData, triggeredID string) (*approval, error) {
-	configurationServiceEndpoint, err := keptnevents.GetServiceEndpoint(configService)
+	configurationServiceEndpoint, err := keptn.GetServiceEndpoint(configService)
 	if err != nil {
 		return nil, errors.New("could not retrieve configuration-service URL")
 	}
@@ -153,7 +155,7 @@ func getApprovalsEndpoint(configurationServiceEndpoint url.URL, project, stage, 
 }
 
 func closeOpenApproval(inputEvent keptnevents.ApprovalFinishedEventData, triggeredID string) error {
-	configurationServiceEndpoint, err := keptnevents.GetServiceEndpoint(configService)
+	configurationServiceEndpoint, err := keptn.GetServiceEndpoint(configService)
 	if err != nil {
 		return errors.New("could not retrieve configuration-service URL")
 	}

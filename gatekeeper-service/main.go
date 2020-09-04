@@ -2,17 +2,20 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
+	keptn "github.com/keptn/go-utils/pkg/lib"
 	"keptn/gatekeeper-service/pkg/handler"
 	"log"
 	"os"
 
-	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
 	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 
-	keptnevents "github.com/keptn/go-utils/pkg/lib"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 
 	"github.com/kelseyhightower/envconfig"
 )
@@ -60,34 +63,43 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 func switchEvent(event cloudevents.Event) {
 	serviceName := "gatekeeper-service"
-	keptnHandler, err := keptnevents.NewKeptn(&event, keptnevents.KeptnOpts{
-		LoggingOptions: &keptnevents.LoggingOpts{ServiceName: &serviceName},
+	keptnHandlerV2, err := keptnv2.NewKeptn(&event, keptncommon.KeptnOpts{
+		LoggingOptions: &keptncommon.LoggingOpts{ServiceName: &serviceName},
 	})
+
 	if err != nil {
-		l := keptnevents.NewLogger("", event.Context.GetID(), "gatekeeper-service")
+		l := keptncommon.NewLogger("", event.Context.GetID(), "gatekeeper-service")
 		l.Error("failed to initialize Keptn handler: " + err.Error())
 		return
 	}
-	l := keptnevents.NewLogger(keptnHandler.KeptnContext, event.Context.GetID(), "gatekeeper-service")
-	shipyard, err := keptnHandler.GetShipyard()
+
+	// TODO: Retrieving the shipyard file will become obsolete because required properties will be located in the event
+
+	shipyard := &keptn.Shipyard{}
+	shipyardResource, err := keptnHandlerV2.ResourceHandler.GetProjectResource(keptnHandlerV2.KeptnBase.Event.GetProject(), "shipyard.yaml")
 	if err != nil {
-		l.Error("failed to retrieve shipyard: " + err.Error())
+		keptnHandlerV2.Logger.Error("failed to retrieve shipyard: " + err.Error())
+		return
+	}
+	err = json.Unmarshal([]byte(shipyardResource.ResourceContent), shipyard)
+	if err != nil {
+		keptnHandlerV2.Logger.Error("failed to decode shipyard: " + err.Error())
 		return
 	}
 
-	handlers := []handler.Handler{handler.NewEvaluationDoneEventHandler(keptnHandler),
-		handler.NewApprovalTriggeredEventHandler(keptnHandler),
-		handler.NewApprovalFinishedEventHandler(keptnHandler)}
+	handlers := []handler.Handler{handler.NewEvaluationDoneEventHandler(keptnHandlerV2),
+		handler.NewApprovalTriggeredEventHandler(keptnHandlerV2),
+		handler.NewApprovalFinishedEventHandler(keptnHandlerV2)}
 
 	unhandled := true
 	for _, handler := range handlers {
 		if handler.IsTypeHandled(event) {
 			unhandled = false
-			handler.Handle(event, keptnHandler, shipyard)
+			handler.Handle(event, keptnHandlerV2, shipyard)
 		}
 	}
 
 	if unhandled {
-		l.Error(fmt.Sprintf("Received unexpected keptn event type %s", event.Type()))
+		keptnHandlerV2.Logger.Error(fmt.Sprintf("Received unexpected keptn event type %s", event.Type()))
 	}
 }

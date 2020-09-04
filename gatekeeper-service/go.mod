@@ -4,10 +4,11 @@ go 1.13
 
 require (
 	github.com/cloudevents/sdk-go v0.10.0
+	github.com/cloudevents/sdk-go/v2 v2.2.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/google/uuid v1.1.1
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.7.1
+	github.com/keptn/go-utils v0.6.3-0.20200904105752-099cf094ddd3
 	github.com/keptn/kubernetes-utils v0.2.0
 )
 

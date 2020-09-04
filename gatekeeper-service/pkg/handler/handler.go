@@ -4,10 +4,11 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/cloudevents/sdk-go/pkg/cloudevents"
-	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 )
 
 const PassResult = "pass"
@@ -20,11 +21,11 @@ const SucceededResult = "succeeded"
 
 type Handler interface {
 	IsTypeHandled(event cloudevents.Event) bool
-	Handle(event cloudevents.Event, keptnHandler *keptnevents.Keptn,
+	Handle(event cloudevents.Event, keptnHandler *keptnv2.Keptn,
 		shipyard *keptnevents.Shipyard)
 }
 
-func sendEvents(keptnHandler *keptnevents.Keptn, events []cloudevents.Event, l keptnevents.LoggerInterface) {
+func sendEvents(keptnHandler *keptnv2.Keptn, events []cloudevents.Event, l keptncommon.LoggerInterface) {
 	for _, outgoingEvent := range events {
 		err := keptnHandler.SendCloudEvent(outgoingEvent)
 		if err != nil {
@@ -36,24 +37,23 @@ func sendEvents(keptnHandler *keptnevents.Keptn, events []cloudevents.Event, l k
 func getCloudEvent(data interface{}, ceType string, shkeptncontext string, triggeredID string) *cloudevents.Event {
 
 	source, _ := url.Parse("gatekeeper-service")
-	contentType := "application/json"
 
 	extensions := map[string]interface{}{"shkeptncontext": shkeptncontext}
 	if triggeredID != "" {
 		extensions["triggeredid"] = triggeredID
 	}
 
-	return &cloudevents.Event{
-		Context: cloudevents.EventContextV02{
-			ID:          uuid.New().String(),
-			Time:        &types.Timestamp{Time: time.Now()},
-			Type:        ceType,
-			Source:      types.URLRef{URL: *source},
-			ContentType: &contentType,
-			Extensions:  extensions,
-		}.AsV02(),
-		Data: data,
-	}
+	event := cloudevents.NewEvent()
+	event.SetID(uuid.New().String())
+	event.SetTime(time.Now())
+	event.SetType(ceType)
+	event.SetSource(source.String())
+	event.SetDataContentType(cloudevents.ApplicationJSON)
+	event.SetExtension("shkeptncontext", shkeptncontext)
+	event.SetExtension("triggeredid", triggeredID)
+	event.SetData(cloudevents.ApplicationJSON, data)
+
+	return &event
 }
 
 func getConfigurationChangeEventForCanary(project, service, nextStage, image, shkeptncontext string, labels map[string]string) *cloudevents.Event {
