@@ -143,7 +143,6 @@ keptn generate support-archive --dir=/some/directory`,
 							fmt.Printf("Error making directory %s: %v\n", k8sNSFilePath, err)
 						}
 					}
-					s.ConfiguredGatewayAvailable = isConfiguredIngressGatewayAvailable()
 
 					// get nodes + their internal and external IPs
 					writeClusterNodes(tmpDir)
@@ -158,6 +157,7 @@ keptn generate support-archive --dir=/some/directory`,
 							fmt.Printf("Error making directory %s: %v\n", k8sNSFilePath, err)
 							continue
 						}
+						s.ConfiguredGatewayAvailable = isConfiguredIngressGatewayAvailable(ns)
 						writeConfigMaps(ns, k8sNSFilePath)
 						writeSecrets(ns, k8sNSFilePath)
 						writeDeployments(ns, k8sNSFilePath)
@@ -199,8 +199,8 @@ keptn generate support-archive --dir=/some/directory`,
 	},
 }
 
-func isConfiguredIngressGatewayAvailable() *errorableBoolResult {
-	res, err := exechelper.ExecuteCommand("kubectl", "get cm -n keptn ingress-config -ojsonpath='{.data.ingress_gateway}'")
+func isConfiguredIngressGatewayAvailable(keptnNamespace string) *errorableBoolResult {
+	res, err := exechelper.ExecuteCommand("kubectl", "get cm -n "+keptnNamespace+" ingress-config -ojsonpath='{.data.ingress_gateway}'")
 	if err != nil {
 		return newErrorableBoolResult(false, err)
 	}
