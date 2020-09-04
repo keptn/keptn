@@ -2,18 +2,20 @@
 
 Keptn 0.7.1 improves the capabilities of the 0.7.0 release by adding more flexibility to the tasks of installing/operating Keptn, introducing three new CLI commands and improving the UX in the Keptn Bridge. Especially the new feature of installing Keptn in different namespaces is a door opener for various use-cases since multiple Keptn deployments, e.g., one for each team, can be operated on one cluster. 
 
-**The three key announcements of Keptn 0.7.1**:
+**The key announcements of Keptn 0.7.1**:
 
-:rocket: *More flexibility in installing/operating Keptn*: 
+:star2: *More flexibility in installing/operating Keptn*: 
 - `keptn install --namespace`: Allows you to specify the namespace to install Keptn in. 
 - `keptn upgrade`: Instead of manually executing a K8s job as done by the previous upgrade processes, this CLI command performs the upgrade. 
 - Set `root context`: As part of the installation Helm Chart of Keptn, a root context can be specified that allows you to customize the prefix of the API and Bridge endpoint of Keptn. 
 
-:star2: *New CLI commands*:
+:rocket: *New CLI commands*:
 - `keptn delete service`: This command will delete a service from a project and *undeploy* the service from the cluster. 
 - `keptn get events`: This command is a generic implementation to retrieve Keptn events of any event type.  
 
 :sparkles: *UX improvements in environment screen*: Based on feedback on the features of the Keptn delivery assistant, improvements regarding the user experience of the Keptn Bridge has been implemented.
+
+:tada: *Keptn on OpenShift 4*: Thanks to the work of @marcredhat, Keptn has been successfully tested on an OpenShift 4 cluster. Two assets of this task are provided here: (1) Docu for [Automated install of OpenShift 4.5 and Keptn](https://github.com/marcredhat/crcdemos/tree/master/keptn) and (2) [YouTube - Deploy to OpenShift 4.5 / Service Mesh using Keptn](https://www.youtube.com/watch?v=ji03EjFx6CA). 
 
 *Additional note:* Added documentation of [GOVERNANCE](https://github.com/keptn/keptn/blob/0.7.1/GOVERNANCE.md) & [SECURITY](https://github.com/keptn/keptn/blob/0.7.1/GOVERNANCE.md) process
 
@@ -26,6 +28,7 @@ Implemented **Keptn spec** version: [0.1.5](https://github.com/keptn/spec/tree/0
 <details><summary>Platform Support / Installer</summary>
 <p>
 
+- Keptn on OpenShift 4 [#2157](https://github.com/keptn/keptn/issues/2157)
 - Install Keptn in a namespace other than keptn using: `keptn install --namespace=` [#2195](https://github.com/keptn/keptn/issues/2195)
 - Upgrade Keptn from 0.7 to 0.7.1 using: `keptn upgrade` [#2234](https://github.com/keptn/keptn/issues/2234)
 - Make StorageClass and PersistentVolumeClaim configurable in Keptn installer [#2190](https://github.com/keptn/keptn/issues/2190)
