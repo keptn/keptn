@@ -4,8 +4,7 @@ go 1.13
 
 require (
 	github.com/Masterminds/sprig/v3 v3.1.0 // indirect
-	github.com/cloudevents/sdk-go v0.10.0
-	github.com/cloudevents/sdk-go/v2 v2.2.0 // indirect
+	github.com/cloudevents/sdk-go/v2 v2.2.0
 	github.com/danieljoos/wincred v1.1.0 // indirect
 	github.com/docker/docker-credential-helpers v0.6.3
 	github.com/elazarl/goproxy v0.0.0-20180725130230-947c36da3153 // indirect
