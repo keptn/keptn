@@ -4,8 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/cloudevents/sdk-go/pkg/cloudevents"
-	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/go-openapi/strfmt"
 	"github.com/kelseyhightower/envconfig"
 	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
@@ -121,50 +120,22 @@ func Test_decodeCloudEvent(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Get V0.3 CloudEvent",
+			name: "Get V1.0 CloudEvent",
 			args: args{
 				data: []byte(`{
 				"data": "",
 				"id": "6de83495-4f83-481c-8dbe-fcceb2e0243b",
 				"source": "helm-service",
-				"specversion": "0.3",
+				"specversion": "1.0",
 				"type": "sh.keptn.events.deployment-finished",
 				"shkeptncontext": "3c9ffbbb-6e1d-4789-9fee-6e63b4bcc1fb"
 			}`),
 			},
-			want: &cloudevents.Event{
-				Context: &cloudevents.EventContextV02{
-					SpecVersion: "0.3",
-					Type:        "sh.keptn.events.deployment-finished",
-					Source: types.URLRef{
-						URL: url.URL{
-							Scheme:     "",
-							Opaque:     "helm-service",
-							User:       nil,
-							Host:       "",
-							Path:       "",
-							RawPath:    "",
-							ForceQuery: false,
-							RawQuery:   "",
-							Fragment:   "",
-						},
-					},
-					ID:        "6de83495-4f83-481c-8dbe-fcceb2e0243b",
-					Time:      nil,
-					SchemaURL: nil,
-					Extensions: map[string]interface{}{
-						"shkeptncontext": "3c9ffbbb-6e1d-4789-9fee-6e63b4bcc1fb",
-					},
-				},
-				Data:        []byte(`""`),
-				DataEncoded: false,
-				DataBinary:  false,
-				FieldErrors: nil,
-			},
+			want:    getExpectedCloudEvent(),
 			wantErr: false,
 		},
 		{
-			name: "Get V0.3 CloudEvent",
+			name: "Get V1.0 CloudEvent",
 			args: args{
 				data: []byte(""),
 			},
@@ -189,6 +160,16 @@ func Test_decodeCloudEvent(t *testing.T) {
 			}
 		})
 	}
+}
+
+func getExpectedCloudEvent() *cloudevents.Event {
+	event := cloudevents.NewEvent()
+	event.SetSource("helm-service")
+	event.SetType("sh.keptn.events.deployment-finished")
+	event.SetID("6de83495-4f83-481c-8dbe-fcceb2e0243b")
+	event.SetExtension("shkeptncontext", "3c9ffbbb-6e1d-4789-9fee-6e63b4bcc1fb")
+	event.SetData(cloudevents.TextPlain, `""`)
+	return &event
 }
 
 func Test_cleanSentEventList(t *testing.T) {
@@ -451,7 +432,7 @@ func Test_pollEventsForTopic(t *testing.T) {
 						ID:             "1234",
 						Shkeptncontext: "1234",
 						Source:         stringp("my-source"),
-						Specversion:    "0.3",
+						Specversion:    "1.0",
 						Time:           strfmt.DateTime{},
 						Triggeredid:    "1234",
 						Type:           stringp("my-topic"),
@@ -516,7 +497,7 @@ func Test__main(t *testing.T) {
 				"data": "",
 				"id": "6de83495-4f83-481c-8dbe-fcceb2e0243b",
 				"source": "helm-service",
-				"specversion": "0.3",
+				"specversion": "1.0",
 				"type": "sh.keptn.events.deployment-finished",
 				"shkeptncontext": "3c9ffbbb-6e1d-4789-9fee-6e63b4bcc1fb"
 			}`))
@@ -552,7 +533,7 @@ func Test__main(t *testing.T) {
 				"data": "",
 				"id": "6de83495-4f83-481c-8dbe-fcceb2e0243b",
 				"source": "helm-service",
-				"specversion": "0.3",
+				"specversion": "1.0",
 				"type": "sh.keptn.events.deployment-finished",
 				"shkeptncontext": "3c9ffbbb-6e1d-4789-9fee-6e63b4bcc1fb"
 			}`)))
