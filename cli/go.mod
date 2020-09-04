@@ -5,6 +5,7 @@ go 1.13
 require (
 	github.com/Masterminds/sprig/v3 v3.1.0 // indirect
 	github.com/cloudevents/sdk-go v0.10.0
+	github.com/cloudevents/sdk-go/v2 v2.2.0 // indirect
 	github.com/danieljoos/wincred v1.1.0 // indirect
 	github.com/docker/docker-credential-helpers v0.6.3
 	github.com/elazarl/goproxy v0.0.0-20180725130230-947c36da3153 // indirect
@@ -27,7 +28,6 @@ require (
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/viper v1.4.0
 	github.com/stretchr/testify v1.5.1
-	golang.org/x/sys v0.0.0-20191022100944-742c48ecaeb7 // indirect
 	google.golang.org/appengine v1.6.5 // indirect
 	gopkg.in/yaml.v2 v2.2.8
 	gotest.tools v2.2.0+incompatible

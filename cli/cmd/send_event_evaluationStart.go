@@ -23,8 +23,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cloudevents/sdk-go/pkg/cloudevents"
-	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
@@ -100,16 +99,14 @@ keptn send event start-evaluation --project=sockshop --stage=hardening --service
 
 		keptnContext := uuid.New().String()
 		source, _ := url.Parse("https://github.com/keptn/keptn/cli#configuration-change")
-		contentType := "application/json"
-		sdkEvent := cloudevents.Event{
-			Context: cloudevents.EventContextV02{
-				ID:          keptnContext,
-				Type:        keptnevents.StartEvaluationEventType,
-				Source:      types.URLRef{URL: *source},
-				ContentType: &contentType,
-			}.AsV02(),
-			Data: startEvaluationEventData,
-		}
+
+		sdkEvent := cloudevents.NewEvent()
+		sdkEvent.SetID(uuid.New().String())
+		sdkEvent.SetType(keptnevents.StartEvaluationEventType)
+		sdkEvent.SetSource(source.String())
+		sdkEvent.SetDataContentType(cloudevents.ApplicationJSON)
+		sdkEvent.SetExtension("shkeptncontext", keptnContext)
+		sdkEvent.SetData(cloudevents.ApplicationJSON, startEvaluationEventData)
 
 		eventByte, err := sdkEvent.MarshalJSON()
 		if err != nil {

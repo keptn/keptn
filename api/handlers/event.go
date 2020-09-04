@@ -3,45 +3,24 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
-	"net/url"
-	"os"
-	"strings"
-	"time"
-
-	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
 	"github.com/google/uuid"
+	"github.com/keptn/keptn/api/utils"
+	"net/url"
+	"strings"
 
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptnutils "github.com/keptn/go-utils/pkg/lib/keptn"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-
 	"github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations/event"
 	"github.com/keptn/keptn/api/ws"
 )
 
-const eventBroker = "EVENTBROKER_URI"
-const dataStore = "DATASTORE_URI"
-
-func getEventBrokerURL() string {
-	return sanitizeURL(os.Getenv(eventBroker))
-}
-
-func getDatastoreURL() string {
-	return sanitizeURL(os.Getenv(dataStore))
-}
-
 // PostEventHandlerFunc forwards an event to the event broker
 func PostEventHandlerFunc(params event.PostEventParams, principal *models.Principal) middleware.Responder {
 
 	keptnContext := createOrApplyKeptnContext(params.Body.Shkeptncontext)
-	extensions := make(map[string]interface{})
-	extensions["shkeptncontext"] = keptnContext
-	if params.Body.Triggeredid != "" {
-		extensions["triggeredid"] = params.Body.Triggeredid
-	}
 
 	logger := keptnutils.NewLogger(keptnContext, "", "api")
 	logger.Info("API received a keptn event")
@@ -67,27 +46,8 @@ func PostEventHandlerFunc(params event.PostEventParams, principal *models.Princi
 	}
 
 	forwardData := addEventContextInCE(params.Body.Data, eventContext)
-	contentType := "application/json"
 
-	ev := cloudevents.NewEvent()
-	ev.SetType(*params.Body.Type)
-	ev.SetID(uuid.New().String())
-	ev.SetTime(time.Now())
-	ev.SetSource(source.String())
-	ev.SetDataContentType(contentType)
-	ev.SetExtension("shkeptncontext", extensions["shkeptncontext"])
-	ev.SetExtension("triggeredid", extensions["triggeredid"])
-	ev.SetData(cloudevents.ApplicationCloudEventsJSON, forwardData)
-
-	k, err := keptnv2.NewKeptn(&ev, keptnutils.KeptnOpts{
-		EventBrokerURL: getEventBrokerURL(),
-	})
-	if err != nil {
-		logger.Error("could not initialize Keptn handler: " + err.Error())
-		return sendInternalErrorForPost(err, logger)
-	}
-
-	err = k.SendCloudEvent(ev)
+	err = utils.SendEvent(keptnContext, params.Body.Triggeredid, *params.Body.Type, forwardData, logger)
 
 	if err != nil {
 		return sendInternalErrorForPost(err, logger)
@@ -124,7 +84,7 @@ func GetEventHandlerFunc(params event.GetEventParams, principal *models.Principa
 	logger := keptnutils.NewLogger(params.KeptnContext, "", "api")
 	logger.Info("API received a GET keptn event")
 
-	eventHandler := keptnapi.NewEventHandler(getDatastoreURL())
+	eventHandler := keptnapi.NewEventHandler(utils.GetDatastoreURL())
 	ef := keptnapi.EventFilter{
 		EventType:    params.Type,
 		KeptnContext: params.KeptnContext,

@@ -14,7 +14,7 @@ import (
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
-	keptnutils "github.com/keptn/go-utils/pkg/lib"
+	keptnutils "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/api/models"
 	k8sutils "github.com/keptn/kubernetes-utils/pkg"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

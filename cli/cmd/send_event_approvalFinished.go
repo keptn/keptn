@@ -11,8 +11,7 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"github.com/cloudevents/sdk-go/pkg/cloudevents"
-	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
@@ -102,19 +101,17 @@ func sendApprovalFinishedEvent(sendApprovalFinishedOptions sendApprovalFinishedS
 
 	ID := uuid.New().String()
 	source, _ := url.Parse("https://github.com/keptn/keptn/cli#approval.finished")
-	contentType := "application/json"
-	sdkEvent := cloudevents.Event{
-		Context: cloudevents.EventContextV02{
-			ID:          ID,
-			Type:        keptnevents.ApprovalFinishedEventType,
-			Source:      types.URLRef{URL: *source},
-			ContentType: &contentType,
-			Extensions:  map[string]interface{}{"shkeptncontext": keptnContext, "triggeredid": triggeredID},
-		}.AsV02(),
-		Data: approvalFinishedEvent,
-	}
 
-	eventByte, err := sdkEvent.MarshalJSON()
+	sdkEvent := cloudevents.NewEvent()
+	sdkEvent.SetID(ID)
+	sdkEvent.SetType(keptnevents.ApprovalFinishedEventType)
+	sdkEvent.SetSource(source.String())
+	sdkEvent.SetDataContentType(cloudevents.ApplicationJSON)
+	sdkEvent.SetExtension("shkeptncontext", keptnContext)
+	sdkEvent.SetExtension("triggeredid", triggeredID)
+	sdkEvent.SetData(cloudevents.ApplicationJSON, approvalFinishedEvent)
+
+	eventByte, err := json.Marshal(sdkEvent)
 	if err != nil {
 		return fmt.Errorf("Failed to marshal cloud event. %s", err.Error())
 	}

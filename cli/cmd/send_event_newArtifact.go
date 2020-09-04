@@ -23,8 +23,7 @@ import (
 
 	"github.com/keptn/keptn/cli/pkg/docker"
 
-	"github.com/cloudevents/sdk-go/pkg/cloudevents"
-	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
@@ -94,16 +93,13 @@ For pulling an image from a private registry, we would like to refer to the Kube
 		}
 
 		source, _ := url.Parse("https://github.com/keptn/keptn/cli#configuration-change")
-		contentType := "application/json"
-		sdkEvent := cloudevents.Event{
-			Context: cloudevents.EventContextV02{
-				ID:          uuid.New().String(),
-				Type:        keptnevents.ConfigurationChangeEventType,
-				Source:      types.URLRef{URL: *source},
-				ContentType: &contentType,
-			}.AsV02(),
-			Data: configChangedEvent,
-		}
+
+		sdkEvent := cloudevents.NewEvent()
+		sdkEvent.SetID(uuid.New().String())
+		sdkEvent.SetType(keptnevents.StartEvaluationEventType)
+		sdkEvent.SetSource(source.String())
+		sdkEvent.SetDataContentType(cloudevents.ApplicationJSON)
+		sdkEvent.SetData(cloudevents.ApplicationJSON, configChangedEvent)
 
 		eventByte, err := sdkEvent.MarshalJSON()
 		if err != nil {
