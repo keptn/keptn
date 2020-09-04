@@ -25,7 +25,7 @@ definitions:
 
   keptnContextExtendedCE:
       type: object
-      properties: # CloudEvents v0.2 properties (https://raw.githubusercontent.com/cloudevents/spec/v0.2/spec.json#/definitions/event)
+      properties: # CloudEvents v1.0 properties (https://raw.githubusercontent.com/cloudevents/spec/v1.0/spec.json#/definitions/event)
         shkeptncontext:
           type: string
         triggeredid:
