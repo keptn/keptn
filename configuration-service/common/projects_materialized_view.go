@@ -184,7 +184,8 @@ func (mv *projectsMaterializedView) CreateService(project string, stage string, 
 		if stg.StageName == stage {
 			for _, svc := range stg.Services {
 				if svc.ServiceName == service {
-					break
+					mv.Logger.Info("Service " + service + " already exists in stage " + stage + " in project " + project)
+					return nil
 				}
 			}
 			stg.Services = append(stg.Services, &models.ExpandedService{
@@ -196,11 +197,13 @@ func (mv *projectsMaterializedView) CreateService(project string, stage string, 
 			err := mv.updateProject(existingProject)
 			if err != nil {
 				mv.Logger.Error("Could not add service " + service + " to stage " + stage + " in project " + project + ". Could not update project: " + err.Error())
+				return err
 			}
+			mv.Logger.Info("Service " + service + " has been added to stage " + stage + " in project " + project)
 			break
 		}
 	}
-	mv.Logger.Info("Service " + service + " already exists in stage " + stage + " in project " + project)
+
 	return nil
 }
 

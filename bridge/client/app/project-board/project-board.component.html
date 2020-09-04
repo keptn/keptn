@@ -139,9 +139,9 @@
                         </ng-container>
                       </div>
                     </dt-info-group-title>
-                    <ng-container *ngIf="project.getLatestDeployment(service, selectedStage) as deployment; else noDeployment">
-                      <p class="m-0 mt-1"><span [textContent]="deployment.data.image"></span>:<span [textContent]="deployment.data.tag"></span></p>
-                      <p class="m-0 mb-1"><span class="bold">Deployed at: </span><span [textContent]="deployment.time | amCalendar:getCalendarFormats()"></span></p>
+                    <ng-container *ngIf="project.getLatestSuccessfulArtifact(service, selectedStage) as artifact; else noDeployment">
+                      <p class="m-0 mt-1"><span [textContent]="artifact.data.image"></span>:<span [textContent]="artifact.data.tag"></span></p>
+                      <p class="m-0 mb-1" *ngIf="artifact.isDeployment()"><span class="bold">Deployed at: </span><span [textContent]="artifact.time | amCalendar:getCalendarFormats()"></span></p>
                     </ng-container>
                   </dt-info-group>
                 </ktb-expandable-tile-header>
@@ -168,7 +168,7 @@
                       </ng-template>
                     </dt-tag-list>
                   </div>
-                  <p class="m-0" *ngIf="!failedRootEvent.getDeploymentDetails(selectedStage).isDirectDeployment()">Rollback to <span *ngIf="project.getLatestDeployment(service, selectedStage) as deployment" [textContent]="deployment.getShortImageName()"></span> performed.</p>
+                  <p class="m-0" *ngIf="failedRootEvent?.isDeployment() && !failedRootEvent.getDeploymentDetails(selectedStage)?.isDirectDeployment()">Rollback to <span *ngIf="project.getLatestDeployment(service, selectedStage) as deployment" [textContent]="deployment.getShortImageName()"></span> performed.</p>
                   <hr />
                 </ng-container>
                 <div *ngIf="countOpenApprovals(openApprovals, project, selectedStage, service) > 0; else noOutOfSyncDeployments">
