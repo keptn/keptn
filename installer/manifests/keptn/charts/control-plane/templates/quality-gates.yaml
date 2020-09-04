@@ -45,7 +45,7 @@ spec:
               cpu: "500m"
           env:
             - name: EVENTBROKER
-              value: 'http://event-broker/keptn'
+              value: 'http://localhost:8081/event'
             - name: CONFIGURATION_SERVICE
               value: 'http://configuration-service:8080'
             - name: MONGODB_DATASTORE

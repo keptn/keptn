@@ -22,8 +22,15 @@ import (
 	"github.com/keptn/keptn/api/ws"
 )
 
+const eventBroker = "EVENTBROKER_URI"
+const dataStore = "DATASTORE_URI"
+
+func getEventBrokerURL() string {
+	return sanitizeURL(os.Getenv(eventBroker))
+}
+
 func getDatastoreURL() string {
-	return sanitizeURL(os.Getenv("DATASTORE_URI"))
+	return sanitizeURL(os.Getenv(dataStore))
 }
 
 // PostEventHandlerFunc forwards an event to the event broker
@@ -72,7 +79,9 @@ func PostEventHandlerFunc(params event.PostEventParams, principal *models.Princi
 	ev.SetExtension("triggeredid", extensions["triggeredid"])
 	ev.SetData(cloudevents.ApplicationCloudEventsJSON, forwardData)
 
-	k, err := keptnv2.NewKeptn(&ev, keptnutils.KeptnOpts{})
+	k, err := keptnv2.NewKeptn(&ev, keptnutils.KeptnOpts{
+		EventBrokerURL: getEventBrokerURL(),
+	})
 	if err != nil {
 		logger.Error("could not initialize Keptn handler: " + err.Error())
 		return sendInternalErrorForPost(err, logger)

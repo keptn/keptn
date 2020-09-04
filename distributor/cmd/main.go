@@ -237,6 +237,10 @@ func forwardEventToAPI(event cloudevents.Event, apiEndpoint string) error {
 }
 
 func createHTTPConnection() {
+	if os.Getenv("PUBSUB_RECIPIENT") == "" {
+		fmt.Printf("No pubsub recipient defined")
+		return
+	}
 	sentCloudEvents = map[string][]string{}
 	httpClient = createRecipientConnection()
 
@@ -432,6 +436,10 @@ func stringp(s string) *string {
 }
 
 func createNATSClientConnection() {
+	if os.Getenv("PUBSUB_RECIPIENT") == "" {
+		fmt.Printf("No pubsub recipient defined")
+		return
+	}
 	uptimeTicker = time.NewTicker(10 * time.Second)
 
 	natsURL := os.Getenv("PUBSUB_URL")
