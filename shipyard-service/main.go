@@ -5,6 +5,8 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"log"
 	"os"
 	"strings"
@@ -15,9 +17,7 @@ import (
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptn "github.com/keptn/go-utils/pkg/lib"
 
-	"github.com/cloudevents/sdk-go/pkg/cloudevents"
-	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
-	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/kelseyhightower/envconfig"
 
 	"gopkg.in/yaml.v2"
@@ -44,27 +44,24 @@ var configServiceURL string
 
 func _main(args []string, env envConfig) int {
 
-	url, err := keptn.GetServiceEndpoint(configservice)
+	url, err := keptncommon.GetServiceEndpoint(configservice)
 	if err != nil {
 		log.Fatalf("failed to get service endpoint for %s: %s", configservice, err.Error())
 	}
 	configServiceURL = url.String()
 
 	ctx := context.Background()
+	ctx = cloudevents.WithEncodingStructured(ctx)
 
-	t, err := cloudeventshttp.New(
-		cloudeventshttp.WithPort(env.Port),
-		cloudeventshttp.WithPath(env.Path),
-	)
+	p, err := cloudevents.NewHTTP(cloudevents.WithPath(env.Path), cloudevents.WithPort(env.Port))
 	if err != nil {
-		log.Fatalf("failed to create transport: %v", err)
+		log.Fatalf("failed to create client, %v", err)
 	}
-
-	c, err := client.New(t)
+	c, err := cloudevents.NewClient(p)
 	if err != nil {
-		log.Fatalf("failed to create client: %v", err)
+		log.Fatalf("failed to create client, %v", err)
 	}
-	log.Fatalf("failed to start receiver: %s", c.StartReceiver(ctx, gotEvent))
+	log.Fatal(c.StartReceiver(ctx, gotEvent))
 
 	return 0
 }
@@ -72,8 +69,8 @@ func _main(args []string, env envConfig) int {
 func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 	serviceName := "shipyard-service"
-	keptnHandler, err := keptn.NewKeptn(&event, keptn.KeptnOpts{
-		LoggingOptions: &keptn.LoggingOpts{
+	keptnHandler, err := keptnv2.NewKeptn(&event, keptncommon.KeptnOpts{
+		LoggingOptions: &keptncommon.LoggingOpts{
 			EnableWebsocket: true,
 			ServiceName:     &serviceName,
 		},
@@ -117,7 +114,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	return nil
 }
 
-func deleteService(event cloudevents.Event, logger keptn.LoggerInterface) error {
+func deleteService(event cloudevents.Event, logger keptncommon.LoggerInterface) error {
 	eventData := keptn.ServiceDeleteEventData{}
 	if err := event.DataAs(&eventData); err != nil {
 		return err
@@ -142,14 +139,14 @@ func deleteService(event cloudevents.Event, logger keptn.LoggerInterface) error 
 
 }
 
-func createService(event cloudevents.Event, logger keptn.LoggerInterface) (bool, error) {
+func createService(event cloudevents.Event, logger keptncommon.LoggerInterface) (bool, error) {
 
 	eventData := keptn.ServiceCreateEventData{}
 	if err := event.DataAs(&eventData); err != nil {
 		return len(eventData.HelmChart) == 0, err
 	}
 
-	if !keptn.ValididateUnixDirectoryName(eventData.Service) {
+	if !keptncommon.ValididateUnixDirectoryName(eventData.Service) {
 		return len(eventData.HelmChart) == 0, errors.New("Service name contains special character(s). " +
 			"The service name has to be a valid Unix directory name. For details see " +
 			"https://www.cyberciti.biz/faq/linuxunix-rules-for-naming-file-and-directory-names/")
@@ -174,7 +171,7 @@ func createService(event cloudevents.Event, logger keptn.LoggerInterface) (bool,
 }
 
 // createProjectAndProcessShipyard creates a project and stages defined in the shipyard
-func createProjectAndProcessShipyard(event cloudevents.Event, logger keptn.LoggerInterface) error {
+func createProjectAndProcessShipyard(event cloudevents.Event, logger keptncommon.LoggerInterface) error {
 	eventData := keptn.ProjectCreateEventData{}
 	if err := event.DataAs(&eventData); err != nil {
 		return err
@@ -219,7 +216,7 @@ func createProjectAndProcessShipyard(event cloudevents.Event, logger keptn.Logge
 }
 
 // deleteProject processes event and deletes project
-func deleteProject(event cloudevents.Event, keptnHandler *keptn.Keptn) error {
+func deleteProject(event cloudevents.Event, keptnHandler *keptnv2.Keptn) error {
 	eventData := keptn.ProjectDeleteEventData{}
 	if err := event.DataAs(&eventData); err != nil {
 		return err
@@ -271,21 +268,32 @@ func createProject(project configmodels.Project) error {
 	return nil
 }
 
-func getDeleteInfoMessage(keptnHandler *keptn.Keptn, project string) string {
-	shipyard, err := keptnHandler.GetShipyard()
+func getDeleteInfoMessage(keptnHandler *keptnv2.Keptn, project string) string {
+	res, err := keptnHandler.ResourceHandler.GetProjectResource(project, "shipyard.yaml")
 	if err != nil {
-		return fmt.Sprintf("Shipyard of project %s cannot be retrieved anymore. "+
-			"After deleting the project, the namespaces containing the services are still available. "+
-			"This may cause problems if a project with the same name is created later.", project)
+		return getShipyardNotAvailableError(project)
 	}
+
+	shipyard := &keptn.Shipyard{}
+	err = yaml.Unmarshal([]byte(res.ResourceContent), shipyard)
+	if err != nil {
+		return getShipyardNotAvailableError(project)
+	}
+
 	msg := "\n"
 	for _, stage := range shipyard.Stages {
-		namespace := keptnHandler.KeptnBase.Project + "-" + stage.Name
+		namespace := keptnHandler.Event.GetProject() + "-" + stage.Name
 		msg += fmt.Sprintf("- A potentially created namespace %s is not managed by Keptn anymore but is not deleted. "+
 			"If you would like to delete this namespace, please execute "+
 			"'kubectl delete ns %s'\n", namespace, namespace)
 	}
 	return strings.TrimSpace(msg)
+}
+
+func getShipyardNotAvailableError(project string) string {
+	return fmt.Sprintf("Shipyard of project %s cannot be retrieved anymore. "+
+		"After deleting the project, the namespaces containing the services are still available. "+
+		"This may cause problems if a project with the same name is created later.", project)
 }
 
 // getProject returns a project by using the configuration-service
