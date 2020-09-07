@@ -1,10 +1,12 @@
 package handler
 
 import (
-	cloudevents "github.com/cloudevents/sdk-go"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/go-openapi/strfmt"
 	keptnapi "github.com/keptn/go-utils/pkg/api/models"
 	keptn "github.com/keptn/go-utils/pkg/lib"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"testing"
 )
 
@@ -63,7 +65,7 @@ func TestActionFinishedEventHandler_HandleEvent(t *testing.T) {
 			mockEV := NewMockEventbroker(tt.expectedEventOnEventbroker)
 			defer mockEV.Server.Close()
 
-			testKeptnHandler, _ := keptn.NewKeptn(&tt.fields.Event, keptn.KeptnOpts{
+			testKeptnHandler, _ := keptnv2.NewKeptn(&tt.fields.Event, keptncommon.KeptnOpts{
 				EventBrokerURL: mockEV.Server.URL,
 			})
 

@@ -2,6 +2,8 @@ package handler
 
 import (
 	"encoding/json"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -9,8 +11,7 @@ import (
 	"strings"
 	"testing"
 
-	cloudevents "github.com/cloudevents/sdk-go"
-	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/go-openapi/strfmt"
 	keptnapi "github.com/keptn/go-utils/pkg/api/models"
 	keptn "github.com/keptn/go-utils/pkg/lib"
@@ -113,20 +114,16 @@ const unknownProblemEventPayload = `{
 const testKeptnContext = "test-context"
 
 func createTestCloudEvent(ceType, data string) cloudevents.Event {
-	contentType := "application/json"
-	event := cloudevents.Event{
-		Context: &cloudevents.EventContextV02{
-			SpecVersion: "0.2",
-			Type:        ceType,
-			Source:      types.URLRef{},
-			ID:          "1234",
-			Time:        nil,
-			SchemaURL:   nil,
-			ContentType: &contentType,
-			Extensions:  nil,
-		},
-		Data: []byte(data),
-	}
+
+	event := cloudevents.NewEvent()
+	event.SetType(ceType)
+	event.SetDataContentType(cloudevents.ApplicationJSON)
+	event.SetExtension("shkeptncontext", testKeptnContext)
+
+	var payload interface{}
+	json.Unmarshal([]byte(data), &payload)
+	event.SetData(cloudevents.ApplicationJSON, payload)
+
 	event.SetExtension("shkeptncontext", testKeptnContext)
 	return event
 }
@@ -439,7 +436,7 @@ func TestProblemOpenEventHandler_HandleEvent(t *testing.T) {
 			mockEV := NewMockEventbroker(tt.expectedEventOnEventbroker)
 			defer mockEV.Server.Close()
 
-			testKeptnHandler, _ := keptn.NewKeptn(&tt.fields.Event, keptn.KeptnOpts{
+			testKeptnHandler, _ := keptnv2.NewKeptn(&tt.fields.Event, keptncommon.KeptnOpts{
 				EventBrokerURL:          mockEV.Server.URL,
 				ConfigurationServiceURL: mockCS.Server.URL,
 			})

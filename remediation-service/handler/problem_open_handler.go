@@ -2,14 +2,16 @@ package handler
 
 import (
 	"fmt"
+	"github.com/ghodss/yaml"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 
-	cloudevents "github.com/cloudevents/sdk-go"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptn "github.com/keptn/go-utils/pkg/lib"
 )
 
 // ProblemOpenEventHandler handles incoming problem.open events
 type ProblemOpenEventHandler struct {
-	KeptnHandler *keptn.Keptn
+	KeptnHandler *keptnv2.Keptn
 	Event        cloudevents.Event
 	Remediation  *Remediation
 }
@@ -93,12 +95,18 @@ func (eh *ProblemOpenEventHandler) HandleEvent() error {
 }
 
 func (eh *ProblemOpenEventHandler) isRemediationEnabled() (bool, error) {
-	shipyard, err := eh.KeptnHandler.GetShipyard()
+	shipyard := &keptn.Shipyard{}
+	resource, err := eh.KeptnHandler.ResourceHandler.GetProjectResource(eh.KeptnHandler.Event.GetProject(), "shipyard.yaml")
 	if err != nil {
 		return false, err
 	}
+	err = yaml.Unmarshal([]byte(resource.ResourceContent), shipyard)
+	if err != nil {
+		return false, err
+	}
+
 	for _, s := range shipyard.Stages {
-		if s.Name == eh.KeptnHandler.KeptnBase.Stage && s.RemediationStrategy == "automated" {
+		if s.Name == eh.KeptnHandler.Event.GetStage() && s.RemediationStrategy == "automated" {
 			return true, nil
 		}
 	}

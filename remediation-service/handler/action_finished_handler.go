@@ -2,8 +2,9 @@ package handler
 
 import (
 	"fmt"
-	cloudevents "github.com/cloudevents/sdk-go"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptn "github.com/keptn/go-utils/pkg/lib"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"os"
 	"time"
 )
@@ -12,7 +13,7 @@ const waitTimeInMinutes = 10
 
 // ActionFinishedEventHandler handles action.finished events
 type ActionFinishedEventHandler struct {
-	KeptnHandler *keptn.Keptn
+	KeptnHandler *keptnv2.Keptn
 	Event        cloudevents.Event
 	Remediation  *Remediation
 	WaitFunction waitFunction
