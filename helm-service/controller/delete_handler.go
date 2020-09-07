@@ -3,24 +3,25 @@ package controller
 import (
 	"errors"
 	"fmt"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 
 	configutils "github.com/keptn/go-utils/pkg/api/utils"
 
 	"github.com/keptn/keptn/helm-service/controller/helm"
 
-	cloudevents "github.com/cloudevents/sdk-go"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptn "github.com/keptn/go-utils/pkg/lib"
 )
 
 // DeleteHandler handles sh.keptn.internal.event.service.delete events
 type DeleteHandler struct {
-	keptnHandler     *keptn.Keptn
+	keptnHandler     *keptnv2.Keptn
 	helmExecutor     helm.HelmExecutor
 	configServiceURL string
 }
 
 // NewDeleteHandler creates a new DeleteHandler
-func NewDeleteHandler(keptnHandler *keptn.Keptn, configServiceURL string) *DeleteHandler {
+func NewDeleteHandler(keptnHandler *keptnv2.Keptn, configServiceURL string) *DeleteHandler {
 	helmExecutor := helm.NewHelmV3Executor(keptnHandler.Logger)
 	return &DeleteHandler{keptnHandler: keptnHandler, helmExecutor: helmExecutor, configServiceURL: configServiceURL}
 }

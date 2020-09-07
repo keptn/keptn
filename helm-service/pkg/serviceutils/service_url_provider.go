@@ -1,7 +1,7 @@
 package serviceutils
 
 import (
-	keptn "github.com/keptn/go-utils/pkg/lib"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"net/url"
 )
 
@@ -10,16 +10,16 @@ const eventbroker = "EVENTBROKER"
 const api = "API"
 
 func GetConfigServiceURL() (*url.URL, error) {
-	url, err := keptn.GetServiceEndpoint(configservice)
+	url, err := keptncommon.GetServiceEndpoint(configservice)
 	return &url, err
 }
 
 func GetAPIURL() (*url.URL, error) {
-	url, err := keptn.GetServiceEndpoint(api)
+	url, err := keptncommon.GetServiceEndpoint(api)
 	return &url, err
 }
 
 func GetEventbrokerURL() (*url.URL, error) {
-	url, err := keptn.GetServiceEndpoint(eventbroker)
+	url, err := keptncommon.GetServiceEndpoint(eventbroker)
 	return &url, err
 }

@@ -2,14 +2,15 @@ package controller
 
 import (
 	"encoding/base64"
-	"encoding/json"
 	"errors"
 	"fmt"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"net/http"
 	"os"
 	"testing"
 
-	"github.com/cloudevents/sdk-go/pkg/cloudevents"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/keptn/keptn/helm-service/controller/mesh"
 	"github.com/keptn/keptn/helm-service/pkg/helmtest"
 
@@ -75,14 +76,10 @@ func TestDoOnboard(t *testing.T) {
 	data := helmtest.CreateHelmChartData(t)
 	encodedChart := base64.StdEncoding.EncodeToString(data)
 	fmt.Println(encodedChart)
-	ce := cloudevents.New("0.2")
-	dataBytes, err := json.Marshal(keptnevents.ServiceCreateEventData{Project: projectName, Service: serviceName, HelmChart: encodedChart})
-	if err != nil {
-		t.Error(err)
-	}
-	ce.Data = dataBytes
+	ce := cloudevents.NewEvent()
+	ce.SetData(cloudevents.ApplicationJSON, keptnevents.ServiceCreateEventData{Project: projectName, Service: serviceName, HelmChart: encodedChart})
 
-	keptnHandler, _ := keptnevents.NewKeptn(&ce, keptnevents.KeptnOpts{})
+	keptnHandler, _ := keptnv2.NewKeptn(&ce, keptncommon.KeptnOpts{})
 
 	onboarder := NewOnboarder(mesh.NewIstioMesh(), keptnHandler, configBaseURL)
 	loggingDone := make(chan bool)

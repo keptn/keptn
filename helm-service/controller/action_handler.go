@@ -5,32 +5,27 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"io"
-	"net/url"
-	"os"
-	"strconv"
-	"strings"
-	"time"
-
 	appsv1 "k8s.io/api/apps/v1"
 	kyaml "k8s.io/apimachinery/pkg/util/yaml"
+	"net/url"
+	"strconv"
+	"strings"
 
 	"helm.sh/helm/v3/pkg/chart"
 
 	"github.com/ghodss/yaml"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 
-	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
-	"github.com/google/uuid"
-
-	cloudevents "github.com/cloudevents/sdk-go"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptn "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/helm-service/controller/helm"
 )
 
 // ActionTriggeredHandler handles sh.keptn.events.action.triggered events for scaling
 type ActionTriggeredHandler struct {
-	keptnHandler     *keptn.Keptn
+	keptnHandler     *keptnv2.Keptn
 	helmExecutor     helm.HelmExecutor
 	configServiceURL string
 }
@@ -39,7 +34,7 @@ type ActionTriggeredHandler struct {
 const ActionScaling = "scaling"
 
 // NewActionTriggeredHandler creates a new ActionTriggeredHandler
-func NewActionTriggeredHandler(keptnHandler *keptn.Keptn,
+func NewActionTriggeredHandler(keptnHandler *keptnv2.Keptn,
 	configServiceURL string) *ActionTriggeredHandler {
 	helmExecutor := helm.NewHelmV3Executor(keptnHandler.Logger)
 	return &ActionTriggeredHandler{keptnHandler: keptnHandler, helmExecutor: helmExecutor,
@@ -239,30 +234,18 @@ func appendAsYaml(content []byte, element interface{}) ([]byte, error) {
 }
 
 func (a ActionTriggeredHandler) sendEvent(ce cloudevents.Event, eventType string, data interface{}) error {
-	keptnHandler, err := keptn.NewKeptn(&ce, keptn.KeptnOpts{
-		EventBrokerURL: os.Getenv("EVENTBROKER"),
-	})
-	if err != nil {
-		a.keptnHandler.Logger.Error("Could not initialize Keptn handler: " + err.Error())
-		return err
-	}
 
 	source, _ := url.Parse("helm-service")
-	contentType := "application/json"
 
-	event := cloudevents.Event{
-		Context: cloudevents.EventContextV02{
-			ID:          uuid.New().String(),
-			Time:        &types.Timestamp{Time: time.Now()},
-			Type:        eventType,
-			Source:      types.URLRef{URL: *source},
-			ContentType: &contentType,
-			Extensions:  map[string]interface{}{"shkeptncontext": keptnHandler.KeptnContext, "triggeredid": ce.ID()},
-		}.AsV02(),
-		Data: data,
-	}
+	event := cloudevents.NewEvent()
+	event.SetType(eventType)
+	event.SetDataContentType(cloudevents.ApplicationJSON)
+	event.SetSource(source.String())
+	event.SetExtension("shkeptncontext", a.keptnHandler.KeptnContext)
+	event.SetExtension("triggeredid", ce.ID())
+	event.SetData(cloudevents.ApplicationJSON, data)
 
-	err = keptnHandler.SendCloudEvent(event)
+	err := a.keptnHandler.SendCloudEvent(event)
 	if err != nil {
 		a.keptnHandler.Logger.Error("Could not send action.finished event: " + err.Error())
 		return err
