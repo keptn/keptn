@@ -5,8 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/cloudevents/sdk-go/pkg/cloudevents"
-	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptn "github.com/keptn/go-utils/pkg/lib"
 )
 
@@ -47,6 +46,11 @@ func Test_getEnableMeshCommandArgs(t *testing.T) {
 }
 
 func Test_gotEvent(t *testing.T) {
+
+	testEvent := cloudevents.NewEvent()
+	testEvent.SetID("123")
+	testEvent.SetType("some-event")
+
 	type args struct {
 		ctx   context.Context
 		event cloudevents.Event
@@ -59,21 +63,8 @@ func Test_gotEvent(t *testing.T) {
 		{
 			name: "invalid event",
 			args: args{
-				ctx: nil,
-				event: cloudevents.Event{
-					Context: &cloudevents.EventContextV02{
-						SpecVersion: "0.2",
-						Type:        "some-event",
-						Source:      types.URLRef{},
-						ID:          "123",
-						Time:        nil,
-						SchemaURL:   nil,
-						ContentType: nil,
-						Extensions:  nil,
-					},
-					Data:        "",
-					DataEncoded: false,
-				},
+				ctx:   nil,
+				event: testEvent,
 			},
 			wantErr: true,
 		},
