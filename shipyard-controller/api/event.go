@@ -4,13 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/cloudevents/sdk-go/pkg/cloudevents"
-	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/ghodss/yaml"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
-	keptn "github.com/keptn/go-utils/pkg/lib"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
@@ -155,12 +154,12 @@ type shipyardController struct {
 	projectRepo      db.ProjectRepo
 	eventRepo        db.EventRepo
 	taskSequenceRepo db.TaskSequenceRepo
-	logger           *keptn.Logger
+	logger           *keptncommon.Logger
 }
 
 func getShipyardControllerInstance() *shipyardController {
 	if shipyardControllerInstance == nil {
-		logger := keptn.NewLogger("", "", "shipyard-controller")
+		logger := keptncommon.NewLogger("", "", "shipyard-controller")
 		shipyardControllerInstance = &shipyardController{
 			projectRepo: &db.ProjectMongoDBRepo{
 				Logger: logger,
@@ -582,7 +581,7 @@ func (sc *shipyardController) completeTaskSequence(keptnContext string, eventSco
 }
 
 func (sc *shipyardController) getShipyard(eventScope *keptnv2.EventData) (*keptnv2.Shipyard, error) {
-	csEndpoint, err := keptn.GetServiceEndpoint("CONFIGURATION_SERVICE")
+	csEndpoint, err := keptncommon.GetServiceEndpoint("CONFIGURATION_SERVICE")
 	if err != nil {
 		sc.logger.Error("Could not get configuration-service URL: " + err.Error())
 		return nil, err
@@ -676,38 +675,28 @@ func (sc *shipyardController) sendTaskSequenceTriggeredEvent(keptnContext string
 	eventPayload["service"] = eventScope.Service
 
 	source, _ := url.Parse("shipyard-controller")
-	contentType := "application/json"
 	eventType := eventScope.Stage + "." + taskSequenceName
-	event := cloudevents.Event{
-		Context: cloudevents.EventContextV02{
-			ID:          uuid.New().String(),
-			Time:        &types.Timestamp{Time: time.Now()},
-			Type:        keptnv2.GetTriggeredEventType(eventType),
-			Source:      types.URLRef{URL: *source},
-			ContentType: &contentType,
-			Extensions:  map[string]interface{}{"shkeptncontext": keptnContext},
-		}.AsV02(),
-		Data: eventPayload,
-	}
+
+	event := cloudevents.NewEvent()
+	event.SetType(eventType)
+	event.SetSource(source.String())
+	event.SetDataContentType(cloudevents.ApplicationJSON)
+	event.SetExtension("shkeptncontext", keptnContext)
+	event.SetData(cloudevents.ApplicationJSON, eventPayload)
 
 	return sc.sendEvent(event)
 }
 
 func (sc *shipyardController) sendTaskSequenceFinishedEvent(keptnContext string, eventScope *keptnv2.EventData, taskSequenceName string) error {
 	source, _ := url.Parse("shipyard-controller")
-	contentType := "application/json"
 	eventType := eventScope.Stage + "." + taskSequenceName
-	event := cloudevents.Event{
-		Context: cloudevents.EventContextV02{
-			ID:          uuid.New().String(),
-			Time:        &types.Timestamp{Time: time.Now()},
-			Type:        keptnv2.GetFinishedEventType(eventType),
-			Source:      types.URLRef{URL: *source},
-			ContentType: &contentType,
-			Extensions:  map[string]interface{}{"shkeptncontext": keptnContext},
-		}.AsV02(),
-		Data: eventScope,
-	}
+
+	event := cloudevents.NewEvent()
+	event.SetType(eventType)
+	event.SetSource(source.String())
+	event.SetDataContentType(cloudevents.ApplicationJSON)
+	event.SetExtension("shkeptncontext", keptnContext)
+	event.SetData(cloudevents.ApplicationJSON, eventScope)
 
 	return sc.sendEvent(event)
 }
@@ -735,23 +724,19 @@ func (sc *shipyardController) sendTaskTriggeredEvent(keptnContext string, eventS
 	}
 
 	source, _ := url.Parse("shipyard-controller")
-	contentType := "application/json"
-	event := cloudevents.Event{
-		Context: cloudevents.EventContextV02{
-			ID:          uuid.New().String(),
-			Time:        &types.Timestamp{Time: time.Now()},
-			Type:        keptnv2.GetTriggeredEventType(task.Name),
-			Source:      types.URLRef{URL: *source},
-			ContentType: &contentType,
-			Extensions:  map[string]interface{}{"shkeptncontext": keptnContext},
-		}.AsV02(),
-		Data: eventPayload,
-	}
 
-	marshal, _ := json.Marshal(event)
+	event := cloudevents.NewEvent()
+	event.SetID(uuid.New().String())
+	event.SetType(keptnv2.GetTriggeredEventType(task.Name))
+	event.SetSource(source.String())
+	event.SetDataContentType(cloudevents.ApplicationJSON)
+	event.SetExtension("shkeptncontext", keptnContext)
+	event.SetData(cloudevents.ApplicationJSON, eventPayload)
+
+	marshal, err := json.Marshal(event)
 
 	storeEvent := &models.Event{}
-	err := json.Unmarshal(marshal, &storeEvent)
+	err = json.Unmarshal(marshal, &storeEvent)
 	if err != nil {
 		sc.logger.Error("could not transform CloudEvent for storage in mongodb: " + err.Error())
 		return err
@@ -778,12 +763,12 @@ func (sc *shipyardController) sendTaskTriggeredEvent(keptnContext string, eventS
 }
 
 func (sc *shipyardController) sendEvent(event cloudevents.Event) error {
-	ebEndpoint, err := keptn.GetServiceEndpoint("EVENTBROKER")
+	ebEndpoint, err := keptncommon.GetServiceEndpoint("EVENTBROKER")
 	if err != nil {
 		sc.logger.Error("Could not get eventbroker endpoint: " + err.Error())
 		return nil
 	}
-	k, err := keptn.NewKeptn(&event, keptn.KeptnOpts{
+	k, err := keptnv2.NewKeptn(&event, keptncommon.KeptnOpts{
 		EventBrokerURL: ebEndpoint.String(),
 	})
 	if err != nil {
