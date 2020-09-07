@@ -2,15 +2,13 @@ package main
 
 import (
 	"context"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"log"
 	"os"
 
-	"github.com/cloudevents/sdk-go/pkg/cloudevents"
-	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
-	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/kelseyhightower/envconfig"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
-	keptnutils "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/lighthouse-service/event_handler"
 )
 
@@ -33,21 +31,17 @@ func main() {
 func _main(args []string, env envConfig) int {
 
 	ctx := context.Background()
+	ctx = cloudevents.WithEncodingStructured(ctx)
 
-	t, err := cloudeventshttp.New(
-		cloudeventshttp.WithPort(env.Port),
-		cloudeventshttp.WithPath(env.Path),
-	)
-
-	if err != nil {
-		log.Fatalf("failed to create transport, %v", err)
-	}
-	c, err := client.New(t)
+	p, err := cloudevents.NewHTTP(cloudevents.WithPath(env.Path), cloudevents.WithPort(env.Port))
 	if err != nil {
 		log.Fatalf("failed to create client, %v", err)
 	}
-
-	log.Fatalf("failed to start receiver: %s", c.StartReceiver(ctx, gotEvent))
+	c, err := cloudevents.NewClient(p)
+	if err != nil {
+		log.Fatalf("failed to create client, %v", err)
+	}
+	log.Fatal(c.StartReceiver(ctx, gotEvent))
 
 	return 0
 }
@@ -56,7 +50,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	var shkeptncontext string
 	_ = event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
 
-	logger := keptnutils.NewLogger(shkeptncontext, event.Context.GetID(), "lighthouse-service")
+	logger := keptncommon.NewLogger(shkeptncontext, event.Context.GetID(), "lighthouse-service")
 
 	handler, err := event_handler.NewEventHandler(event, logger)
 

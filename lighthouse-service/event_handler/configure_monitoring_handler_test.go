@@ -1,8 +1,9 @@
 package event_handler
 
 import (
-	"github.com/cloudevents/sdk-go/pkg/cloudevents"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptn "github.com/keptn/go-utils/pkg/lib"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"reflect"
@@ -11,7 +12,7 @@ import (
 
 func TestConfigureMonitoringHandler_getSLISourceConfigMap(t *testing.T) {
 	type fields struct {
-		Logger *keptn.Logger
+		Logger *keptncommon.Logger
 		Event  cloudevents.Event
 	}
 	type args struct {

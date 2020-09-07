@@ -3,8 +3,8 @@ package event_handler
 import (
 	"encoding/json"
 	"errors"
-	"github.com/cloudevents/sdk-go/pkg/cloudevents"
-	keptnutils "github.com/keptn/go-utils/pkg/lib"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -2535,7 +2535,7 @@ func TestEvaluateSLIHandler_getPreviousTestExecutionResult(t *testing.T) {
 	_ = os.Setenv("MONGODB_DATASTORE", strings.TrimPrefix(ts.URL, "http://"))
 
 	type fields struct {
-		Logger     *keptnutils.Logger
+		Logger     *keptncommon.Logger
 		Event      cloudevents.Event
 		HTTPClient *http.Client
 	}
@@ -2650,7 +2650,7 @@ func TestEvaluateSLIHandler_getPreviousEvaluations(t *testing.T) {
 	_ = os.Setenv("MONGODB_DATASTORE", strings.TrimPrefix(ts.URL, "http://"))
 
 	type fields struct {
-		Logger     *keptnutils.Logger
+		Logger     *keptncommon.Logger
 		Event      cloudevents.Event
 		HTTPClient *http.Client
 	}
@@ -2852,7 +2852,7 @@ func TestEvaluateSLIHandler_getPreviousEvaluationsWithPassFilter(t *testing.T) {
 	_ = os.Setenv("MONGODB_DATASTORE", strings.TrimPrefix(ts.URL, "http://"))
 
 	type fields struct {
-		Logger     *keptnutils.Logger
+		Logger     *keptncommon.Logger
 		Event      cloudevents.Event
 		HTTPClient *http.Client
 	}

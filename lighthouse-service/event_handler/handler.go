@@ -1,9 +1,11 @@
 package event_handler
 
 import (
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"net/http"
 
-	"github.com/cloudevents/sdk-go/pkg/cloudevents"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptn "github.com/keptn/go-utils/pkg/lib"
 )
 
@@ -11,11 +13,12 @@ type EvaluationEventHandler interface {
 	HandleEvent() error
 }
 
-func NewEventHandler(event cloudevents.Event, logger *keptn.Logger) (EvaluationEventHandler, error) {
+func NewEventHandler(event cloudevents.Event, logger *keptncommon.Logger) (EvaluationEventHandler, error) {
 	logger.Debug("Received event: " + event.Type())
 	serviceName := "lighthouse-service"
-	keptnHandler, err := keptn.NewKeptn(&event, keptn.KeptnOpts{
-		LoggingOptions: &keptn.LoggingOpts{ServiceName: &serviceName},
+
+	keptnHandler, err := keptnv2.NewKeptn(&event, keptncommon.KeptnOpts{
+		LoggingOptions: &keptncommon.LoggingOpts{ServiceName: &serviceName},
 	})
 	if err != nil {
 		return nil, err

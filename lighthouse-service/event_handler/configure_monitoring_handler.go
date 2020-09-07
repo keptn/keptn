@@ -1,9 +1,9 @@
 package event_handler
 
 import (
-	"github.com/cloudevents/sdk-go/pkg/cloudevents"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
-	keptnutils "github.com/keptn/go-utils/pkg/lib"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -13,7 +13,7 @@ import (
 
 type ConfigureMonitoringHandler struct {
 	Event        cloudevents.Event
-	KeptnHandler *keptnutils.Keptn
+	KeptnHandler *keptnv2.Keptn
 }
 
 var namespace = os.Getenv("POD_NAMESPACE")

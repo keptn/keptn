@@ -3,10 +3,11 @@ package event_handler
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/cloudevents/sdk-go/pkg/cloudevents"
-	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/cloudevents/sdk-go/v2/types"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
-	keptnutils "github.com/keptn/go-utils/pkg/lib"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/nats-io/nats-server/v2/server"
 	natsserver "github.com/nats-io/nats-server/v2/test"
 	"io/ioutil"
@@ -73,7 +74,7 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 
 	////////// TEST DEFINITION ///////////
 	type fields struct {
-		Logger *keptnutils.Logger
+		Logger *keptncommon.Logger
 		Event  cloudevents.Event
 	}
 	tests := []struct {
@@ -86,19 +87,17 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 		{
 			name: "No test strategy set",
 			fields: fields{
-				Logger: keptnutils.NewLogger("", "", ""),
+				Logger: keptncommon.NewLogger("", "", ""),
 				Event: cloudevents.Event{
-					Context: &cloudevents.EventContextV02{
-						SpecVersion: "0.2",
-						Type:        "sh.keptn.events.tests-finished",
-						Source:      types.URLRef{},
-						ID:          "",
-						Time:        nil,
-						SchemaURL:   nil,
-						ContentType: stringp("application/json"),
-						Extensions:  nil,
+					Context: &cloudevents.EventContextV1{
+						Type:            "sh.keptn.events.tests-finished",
+						Source:          types.URIRef{},
+						ID:              "",
+						Time:            nil,
+						DataContentType: stringp("application/json"),
+						Extensions:      nil,
 					},
-					Data: []byte(`{
+					DataEncoded: []byte(`{
     "project": "sockshop",
     "stage": "staging",
     "service": "carts",
@@ -113,7 +112,7 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
     },
     "result": "pass"
   }`),
-					DataEncoded: false,
+					DataBase64: false,
 				},
 			},
 			sloAvailable:  false,
@@ -123,19 +122,17 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 		{
 			name: "No SLO file available",
 			fields: fields{
-				Logger: keptnutils.NewLogger("", "", ""),
+				Logger: keptncommon.NewLogger("", "", ""),
 				Event: cloudevents.Event{
-					Context: &cloudevents.EventContextV02{
-						SpecVersion: "0.2",
-						Type:        "sh.keptn.events.tests-finished",
-						Source:      types.URLRef{},
-						ID:          "",
-						Time:        nil,
-						SchemaURL:   nil,
-						ContentType: stringp("application/json"),
-						Extensions:  nil,
+					Context: &cloudevents.EventContextV1{
+						Type:            "sh.keptn.events.tests-finished",
+						Source:          types.URIRef{},
+						ID:              "",
+						Time:            nil,
+						DataContentType: stringp("application/json"),
+						Extensions:      nil,
 					},
-					Data: []byte(`{
+					DataEncoded: []byte(`{
     "project": "sockshop",
     "stage": "staging",
     "service": "carts",
@@ -150,7 +147,7 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
     },
     "result": "pass"
   }`),
-					DataEncoded: false,
+					DataBase64: false,
 				},
 			},
 			sloAvailable:  false,
@@ -162,7 +159,7 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			keptnHandler, _ := keptnutils.NewKeptn(&tt.fields.Event, keptnutils.KeptnOpts{
+			keptnHandler, _ := keptnv2.NewKeptn(&tt.fields.Event, keptncommon.KeptnOpts{
 				EventBrokerURL:          os.Getenv("EVENTBROKER"),
 				ConfigurationServiceURL: os.Getenv("CONFIGURATION_SERVICE"),
 			})
