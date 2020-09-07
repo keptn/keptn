@@ -1,9 +1,9 @@
 package controller
 
 import (
-	"encoding/json"
 	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/ghodss/yaml"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"net/url"
@@ -17,7 +17,7 @@ func getShipyard(keptnHandlerV2 *keptnv2.Keptn) (*keptnevents.Shipyard, error) {
 		keptnHandlerV2.Logger.Error("failed to retrieve shipyard: " + err.Error())
 		return nil, err
 	}
-	err = json.Unmarshal([]byte(shipyardResource.ResourceContent), shipyard)
+	err = yaml.Unmarshal([]byte(shipyardResource.ResourceContent), shipyard)
 	if err != nil {
 		keptnHandlerV2.Logger.Error("failed to decode shipyard: " + err.Error())
 		return nil, err
