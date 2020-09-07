@@ -3,12 +3,12 @@ package main
 import (
 	"errors"
 	"fmt"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"io/ioutil"
 	"os"
 
 	"github.com/ghodss/yaml"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
-	keptn "github.com/keptn/go-utils/pkg/lib"
 )
 
 var runlocal = (os.Getenv("env") == "runlocal")
@@ -40,7 +40,7 @@ func getWorkload(jmeterconf *JMeterConf, teststrategy string) (*Workload, error)
 //
 // Loads jmeter.conf for the current service
 //
-func getJMeterConf(project string, stage string, service string, logger *keptn.Logger) (*JMeterConf, error) {
+func getJMeterConf(project string, stage string, service string, logger *keptncommon.Logger) (*JMeterConf, error) {
 	// if we run in a runlocal mode we are just getting the file from the local disk
 	var fileContent []byte
 	var err error

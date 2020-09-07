@@ -1,7 +1,7 @@
 package main
 
 import (
-	keptnutils "github.com/keptn/go-utils/pkg/lib"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -30,7 +30,7 @@ func Test_executeJMeter(t *testing.T) {
 		url            *url.URL
 		LTN            string
 		funcValidation bool
-		logger         *keptnutils.Logger
+		logger         *keptncommon.Logger
 	}
 	tests := []struct {
 		name           string
