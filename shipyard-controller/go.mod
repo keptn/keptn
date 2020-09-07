@@ -23,11 +23,11 @@ require (
 	github.com/jeremywohl/flatten v0.0.0-20190921043622-d936035e55cf
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/json-iterator/go v1.1.10 // indirect
-	github.com/keptn/go-utils v0.7.1
+	github.com/keptn/go-utils v0.6.3-0.20200907143311-189e0ad20c27
 	github.com/kr/pretty v0.2.0 // indirect
 	github.com/mailru/easyjson v0.7.3 // indirect
 	github.com/mitchellh/mapstructure v1.2.2 // indirect
-	github.com/stretchr/testify v1.4.0
+	github.com/stretchr/testify v1.5.1
 	github.com/swaggo/files v0.0.0-20190704085106-630677cd5c14
 	github.com/swaggo/gin-swagger v1.2.0
 	github.com/swaggo/swag v1.6.7
@@ -38,6 +38,5 @@ require (
 	golang.org/x/sys v0.0.0-20200810151505-1b9f1253b3ed // indirect
 	golang.org/x/tools v0.0.0-20200811215021-48a8ffc5b207 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
-	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/yaml.v2 v2.3.0 // indirect
 )

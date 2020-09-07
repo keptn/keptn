@@ -10,9 +10,9 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/json-iterator/go v1.1.9 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.7.1
+	github.com/keptn/go-utils v0.6.3-0.20200907143311-189e0ad20c27
 	github.com/nats-io/nats-server/v2 v2.1.6
-	github.com/stretchr/testify v1.4.0
+	github.com/stretchr/testify v1.5.1
 	k8s.io/api v0.17.0
 	k8s.io/apimachinery v0.17.0
 	k8s.io/client-go v0.17.0
