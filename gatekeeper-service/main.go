@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
+	"github.com/ghodss/yaml"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptn "github.com/keptn/go-utils/pkg/lib"
 	"keptn/gatekeeper-service/pkg/handler"
@@ -75,7 +75,7 @@ func switchEvent(event cloudevents.Event) {
 		keptnHandlerV2.Logger.Error("failed to retrieve shipyard: " + err.Error())
 		return
 	}
-	err = json.Unmarshal([]byte(shipyardResource.ResourceContent), shipyard)
+	err = yaml.Unmarshal([]byte(shipyardResource.ResourceContent), shipyard)
 	if err != nil {
 		keptnHandlerV2.Logger.Error("failed to decode shipyard: " + err.Error())
 		return
