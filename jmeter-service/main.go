@@ -13,8 +13,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
-	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 
@@ -245,23 +243,17 @@ func _main(args []string, env envConfig) int {
 	}
 
 	ctx := context.Background()
+	ctx = cloudevents.WithEncodingStructured(ctx)
 
-	t, err := cloudeventshttp.New(
-		cloudeventshttp.WithPort(env.Port),
-		cloudeventshttp.WithPath(env.Path),
-	)
-
-	if err != nil {
-		log.Fatalf("failed to create transport, %v", err)
-	}
-	c, err := client.New(t)
+	p, err := cloudevents.NewHTTP(cloudevents.WithPath(env.Path), cloudevents.WithPort(env.Port))
 	if err != nil {
 		log.Fatalf("failed to create client, %v", err)
 	}
-
-	log.Println("Started jmeter-extended-service on ", env.Path, env.Port)
-
-	log.Fatalf("failed to start receiver: %s", c.StartReceiver(ctx, gotEvent))
+	c, err := cloudevents.NewClient(p)
+	if err != nil {
+		log.Fatalf("failed to create client, %v", err)
+	}
+	log.Fatal(c.StartReceiver(ctx, gotEvent))
 
 	return 0
 }
