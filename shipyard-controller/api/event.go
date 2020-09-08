@@ -692,7 +692,7 @@ func (sc *shipyardController) sendTaskSequenceFinishedEvent(keptnContext string,
 	eventType := eventScope.Stage + "." + taskSequenceName
 
 	event := cloudevents.NewEvent()
-	event.SetType(eventType)
+	event.SetType(keptnv2.GetFinishedEventType(eventType))
 	event.SetSource(source.String())
 	event.SetDataContentType(cloudevents.ApplicationJSON)
 	event.SetExtension("shkeptncontext", keptnContext)

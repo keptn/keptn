@@ -662,11 +662,13 @@ func getTestTaskFinishedEvent(stage string, triggeredID string) models.Event {
 				Result:  keptnv2.ResultPass,
 			},
 			Test: struct {
-				Start string `json:"start"`
-				End   string `json:"end"`
+				Start     string `json:"start"`
+				End       string `json:"end"`
+				GitCommit string `json:"gitCommit"`
 			}{
-				Start: "start",
-				End:   "end",
+				Start:     "start",
+				End:       "end",
+				GitCommit: "commit-id",
 			},
 		},
 		Extensions:     nil,
