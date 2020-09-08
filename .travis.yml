@@ -524,6 +524,7 @@ jobs:
       - export VERSION=${BRANCH#"release-"} # overwrite version for release branches based on the branch name
       - ./writeManifest.sh
       - source ./travis-scripts/build_release.sh "${SHIPYARD_SVC_IMAGE}" "${SHIPYARD_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
+      - source ./travis-scripts/build_release.sh "${SHIPYARD_CONTROLLER_IMAGE}" "${SHIPYARD_CONTROLLER_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
       - source ./travis-scripts/build_release.sh "${CONFIGURATION_SVC_IMAGE}" "${CONFIGURATION_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
       - source ./travis-scripts/build_release.sh "${REMEDIATION_SVC_IMAGE}" "${REMEDIATION_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
       - source ./travis-scripts/build_release.sh "${LIGHTHOUSE_SVC_IMAGE}" "${LIGHTHOUSE_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
