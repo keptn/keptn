@@ -3,6 +3,7 @@ package websockethelper
 import (
 	"bytes"
 	"encoding/json"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -11,7 +12,6 @@ import (
 	"testing"
 
 	"github.com/gorilla/websocket"
-	keptnutils "github.com/keptn/go-utils/pkg/lib"
 )
 
 var upgrader = websocket.Upgrader{}
@@ -93,10 +93,10 @@ func TestDoubleCERead(t *testing.T) {
 func sendCE(t *testing.T, ws *websocket.Conn, msg string, terminate bool, logLevel string) {
 	testCloudEvent1 := struct {
 		Type string
-		Data keptnutils.LogData
+		Data keptncommon.LogData
 	}{
 		Type: "sh.keptn.events.log",
-		Data: keptnutils.LogData{
+		Data: keptncommon.LogData{
 			Message:   msg,
 			Terminate: terminate,
 			LogLevel:  logLevel,

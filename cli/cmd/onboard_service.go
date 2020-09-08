@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"os"
 
 	"github.com/keptn/keptn/cli/pkg/websockethelper"
@@ -43,7 +44,7 @@ keptn onboard service SERVICENAME --project=PROJECTNAME --chart=HELM_CHART.tgz
 			cmd.SilenceUsage = false
 			return errors.New("required argument SERVICENAME not set")
 		}
-		if !keptn.ValidateKeptnEntityName(args[0]) {
+		if !keptncommon.ValidateKeptnEntityName(args[0]) {
 			errorMsg := "Service name contains upper case letter(s) or special character(s).\n"
 			return errors.New(errorMsg)
 		}
