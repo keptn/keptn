@@ -14,7 +14,7 @@ require (
 	github.com/googleapis/gnostic v0.1.0 // indirect
 	github.com/gorilla/websocket v1.4.1
 	github.com/hashicorp/go-version v1.2.0
-	github.com/keptn/go-utils v0.7.1
+	github.com/keptn/go-utils v0.6.3-0.20200908082455-010bbcf95e6f
 	github.com/keptn/kubernetes-utils v0.2.0
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/magiconair/properties v1.8.1
@@ -27,7 +27,6 @@ require (
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/viper v1.4.0
 	github.com/stretchr/testify v1.5.1
-	golang.org/x/sys v0.0.0-20191022100944-742c48ecaeb7 // indirect
 	google.golang.org/appengine v1.6.5 // indirect
 	gopkg.in/yaml.v2 v2.2.8
 	gotest.tools v2.2.0+incompatible
