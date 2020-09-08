@@ -7,6 +7,7 @@ import (
 	datastoremodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/api/restapi/operations/event"
+	"github.com/keptn/keptn/api/utils"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -299,7 +300,7 @@ func Test_getDatastoreURL(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			os.Setenv("DATASTORE_URI", tt.datastoreURLEnv)
 
-			if got := getDatastoreURL(); got != tt.want {
+			if got := utils.GetDatastoreURL(); got != tt.want {
 				t.Errorf("getDatastoreURL() = %v, want %v", got, tt.want)
 			}
 		})
