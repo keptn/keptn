@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"log"
 	"net/http"
 	"os"
@@ -11,7 +12,6 @@ import (
 
 	"github.com/gbrlsnchs/jwt/v2"
 	"github.com/gorilla/websocket"
-	keptnutils "github.com/keptn/go-utils/pkg/lib"
 )
 
 const wsLogging = false
@@ -67,7 +67,7 @@ type receivedData struct {
 // The application runs readPump in a per-connection goroutine. The application
 // ensures that there is at most one reader on a connection by executing all
 // reads from this goroutine.
-func (c *clientType) readPump(l *keptnutils.Logger) {
+func (c *clientType) readPump(l *keptncommon.Logger) {
 	defer func() {
 		c.hub.unregister <- c
 		c.conn.Close()
@@ -98,7 +98,7 @@ func (c *clientType) readPump(l *keptnutils.Logger) {
 // A goroutine running writePump is started for each connection. The
 // application ensures that there is at most one writer to a connection by
 // executing all writes from this goroutine.
-func (c *cliClientType) writePump(l *keptnutils.Logger) {
+func (c *cliClientType) writePump(l *keptncommon.Logger) {
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {
 		ticker.Stop()
@@ -139,7 +139,7 @@ func (c *cliClientType) writePump(l *keptnutils.Logger) {
 
 // ServeWs handles websocket requests from the services.
 func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request) error {
-	l := keptnutils.NewLogger("", "", "api")
+	l := keptncommon.NewLogger("", "", "api")
 	if wsLogging {
 		l.Debug("Serve internal service")
 	}
@@ -157,7 +157,7 @@ func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request) error {
 
 // ServeWsCLI handles websocket requests from the CLI.
 func ServeWsCLI(hub *Hub, w http.ResponseWriter, r *http.Request, channelID string) error {
-	l := keptnutils.NewLogger("", "", "api")
+	l := keptncommon.NewLogger("", "", "api")
 	if wsLogging {
 		l.Debug("Serve CLI")
 	}
