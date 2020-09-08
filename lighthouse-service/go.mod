@@ -10,11 +10,12 @@ require (
 	github.com/json-iterator/go v1.1.9 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/keptn/go-utils v0.6.3-0.20200908082455-010bbcf95e6f
+	github.com/keptn/keptn/cli v0.0.0-20200908124918-a8871e327082 // indirect
 	github.com/nats-io/nats-server/v2 v2.1.6
 	github.com/stretchr/testify v1.5.1
-	k8s.io/api v0.17.0
-	k8s.io/apimachinery v0.17.0
-	k8s.io/client-go v0.17.0
+	k8s.io/api v0.17.2
+	k8s.io/apimachinery v0.17.2
+	k8s.io/client-go v0.17.2
 	k8s.io/utils v0.0.0-20200327001022-6496210b90e8 // indirect
 	sigs.k8s.io/yaml v1.2.0 // indirect
 )

@@ -10,7 +10,6 @@ import (
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptn "github.com/keptn/go-utils/pkg/lib"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/mitchellh/mapstructure"
 	"io/ioutil"
 	"math"
@@ -169,7 +168,7 @@ func evaluateObjectives(e *keptn.InternalGetSLIDoneEventData, sloConfig *keptn.S
 			sliEvaluationResult.Score = 0
 			continue
 		}
-		sliEvaluationResult.Value = result
+		sliEvaluationResult.Value = (*keptnv2.SLIResult)(result)
 
 		// gather the previous results for the current SLI
 		var previousSLIResults []*keptn.SLIEvaluationResult
@@ -184,8 +183,8 @@ func evaluateObjectives(e *keptn.InternalGetSLIDoneEventData, sloConfig *keptn.S
 			}
 		}
 
-		var passTargets []*keptn.SLITarget
-		var warningTargets []*keptn.SLITarget
+		var passTargets []*keptnv2.SLITarget
+		var warningTargets []*keptnv2.SLITarget
 		isPassed := true
 		isWarning := true
 		if objective.Pass != nil && len(objective.Pass) > 0 {
@@ -272,19 +271,19 @@ func calculateScore(maximumAchievableScore float64, evaluationResult *keptnv2.Ev
 	return nil
 }
 
-func getSLIResult(results []*keptnv2.SLIResult, sli string) *keptnv2.SLIResult {
+func getSLIResult(results []*keptn.SLIResult, sli string) *keptn.SLIResult {
 	for _, sliResult := range results {
 		if sliResult.Metric == sli {
-			return sliResult.(*keptnv2.SLIResult)
+			return sliResult
 		}
 	}
 	return nil
 }
 
-func evaluateOrCombinedCriteria(result *keptn.SLIResult, sloCriteria []*keptn.SLOCriteria, previousResults []*keptn.SLIEvaluationResult, comparison *keptn.SLOComparison) (bool, []*keptn.SLITarget, error) {
+func evaluateOrCombinedCriteria(result *keptnv2.SLIResult, sloCriteria []*keptn.SLOCriteria, previousResults []*keptn.SLIEvaluationResult, comparison *keptn.SLOComparison) (bool, []*keptnv2.SLITarget, error) {
 	var satisfied bool
 	satisfied = false
-	var sliTargets []*keptn.SLITarget
+	var sliTargets []*keptnv2.SLITarget
 	for _, crit := range sloCriteria {
 		criteriaSatisfied, evaluatedTargets, _ := evaluateCriteriaSet(result, crit, previousResults, comparison)
 		if criteriaSatisfied {
@@ -299,11 +298,11 @@ func evaluateOrCombinedCriteria(result *keptn.SLIResult, sloCriteria []*keptn.SL
 }
 
 // evaluateCriteria evaluates a set of criteria strings. Per definition, all criteria clauses within a SLOCriteria object have to be fulfilled to satisfy the SLOCriteria
-func evaluateCriteriaSet(result *keptn.SLIResult, sloCriteria *keptn.SLOCriteria, previousResults []*keptn.SLIEvaluationResult, comparison *keptn.SLOComparison) (bool, []*keptn.SLITarget, error) {
+func evaluateCriteriaSet(result *keptnv2.SLIResult, sloCriteria *keptn.SLOCriteria, previousResults []*keptn.SLIEvaluationResult, comparison *keptn.SLOComparison) (bool, []*keptnv2.SLITarget, error) {
 	satisfied := true
-	var sliTargets []*keptn.SLITarget
+	var sliTargets []*keptnv2.SLITarget
 	for _, criteria := range sloCriteria.Criteria {
-		target := &keptn.SLITarget{
+		target := &keptnv2.SLITarget{
 			Criteria: criteria,
 		}
 		criteriaSatisfied, _ := evaluateSingleCriteria(result, criteria, previousResults, comparison, target)
@@ -318,7 +317,7 @@ func evaluateCriteriaSet(result *keptn.SLIResult, sloCriteria *keptn.SLOCriteria
 	return satisfied, sliTargets, nil
 }
 
-func evaluateSingleCriteria(sliResult *keptn.SLIResult, criteria string, previousResults []*keptn.SLIEvaluationResult, comparison *keptn.SLOComparison, violation *keptn.SLITarget) (bool, error) {
+func evaluateSingleCriteria(sliResult *keptnv2.SLIResult, criteria string, previousResults []*keptn.SLIEvaluationResult, comparison *keptn.SLOComparison, violation *keptnv2.SLITarget) (bool, error) {
 	if !sliResult.Success {
 		return false, errors.New("cannot evaluate invalid SLI result")
 	}
@@ -337,7 +336,7 @@ func evaluateSingleCriteria(sliResult *keptn.SLIResult, criteria string, previou
 	return evaluateComparison(sliResult, co, previousResults, comparison, violation)
 }
 
-func evaluateComparison(sliResult *keptn.SLIResult, co *criteriaObject, previousResults []*keptn.SLIEvaluationResult, comparison *keptn.SLOComparison, violation *keptn.SLITarget) (bool, error) {
+func evaluateComparison(sliResult *keptnv2.SLIResult, co *criteriaObject, previousResults []*keptn.SLIEvaluationResult, comparison *keptn.SLOComparison, violation *keptnv2.SLITarget) (bool, error) {
 	// aggregate previous results
 	var aggregatedValue float64
 	var targetValue float64
@@ -439,7 +438,7 @@ func calculatePercentile(values sort.Float64Slice, perc float64) float64 {
 	return scores[0]
 }
 
-func evaluateFixedThreshold(sliResult *keptn.SLIResult, co *criteriaObject, violation *keptn.SLITarget) (bool, error) {
+func evaluateFixedThreshold(sliResult *keptnv2.SLIResult, co *criteriaObject, violation *keptnv2.SLITarget) (bool, error) {
 	violation.TargetValue = co.Value
 	return evaluateValue(sliResult.Value, co.Value, co.Operator)
 }
