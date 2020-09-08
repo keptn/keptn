@@ -29,7 +29,7 @@ fi
 
 PREVIOUS_KEPTN_VERSION="0.6.2"
 KEPTN_VERSION=${KEPTN_VERSION:-"0.7.0"}
-HELM_CHART_URL=${HELM_CHART_URL:-"https://storage.googleapis.com/keptn-installer/0.7.0"}
+HELM_CHART_URL=${HELM_CHART_URL:-"https://storage.googleapis.com/keptn-installer"}
 MONGODB_SOURCE_URL=${MONGODB_SOURCE_URL:-"mongodb://user:password@mongodb.keptn-datastore:27017/keptn"}
 MONGODB_TARGET_URL=${MONGODB_TARGET_URL:-"mongodb.keptn:27017/keptn"}
 
@@ -112,12 +112,12 @@ if [[ $USE_CASE == "continuous-delivery" ]]; then
   kubectl get namespace openshift
   if [[ $? == '0' ]]; then
     print_debug "OpenShift platform detected. Updating OpenShift core services"
-    helm3 install keptn keptn/keptn -n keptn --set continuous-delivery.enabled=true --set continuous-delivery.openshift.enabled=true
+    helm3 install keptn keptn/keptn -n keptn --version=$KEPTN_VERSION --set continuous-delivery.enabled=true --set continuous-delivery.openshift.enabled=true
   else
-    helm3 install keptn keptn/keptn -n keptn --set continuous-delivery.enabled=true
+    helm3 install keptn keptn/keptn -n keptn --version=$KEPTN_VERSION --set continuous-delivery.enabled=true
   fi
 else
-  helm3 install keptn keptn/keptn -n keptn --set continuous-delivery.enabled=false
+  helm3 install keptn keptn/keptn -n keptn --version=$KEPTN_VERSION --set continuous-delivery.enabled=false
 fi
 
 wait_for_all_pods_in_namespace "keptn"
