@@ -155,7 +155,7 @@ func TestPostEventHandlerFunc(t *testing.T) {
 						ID:             "",
 						Shkeptncontext: "",
 						Source:         nil,
-						Specversion:    "0.2",
+						Specversion:    "1.0",
 						Time:           strfmt.DateTime{},
 						Type:           stringp(keptnevents.ConfigureMonitoringEventType),
 					},
@@ -164,28 +164,6 @@ func TestPostEventHandlerFunc(t *testing.T) {
 			},
 			wantStatus:            200,
 			statusFromEventBroker: 200,
-		},
-		{
-			name: "Return 500 if sending event failed",
-			args: args{
-				params: event.PostEventParams{
-					HTTPRequest: nil,
-					Body: &models.KeptnContextExtendedCE{
-						Contenttype:    "application/json",
-						Data:           map[string]interface{}{},
-						Extensions:     nil,
-						ID:             "",
-						Shkeptncontext: "",
-						Source:         nil,
-						Specversion:    "0.2",
-						Time:           strfmt.DateTime{},
-						Type:           stringp(keptnevents.ConfigureMonitoringEventType),
-					},
-				},
-				principal: nil,
-			},
-			wantStatus:            500,
-			statusFromEventBroker: 500,
 		},
 	}
 	for _, tt := range tests {

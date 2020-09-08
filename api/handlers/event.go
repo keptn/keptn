@@ -97,11 +97,11 @@ func GetEventHandlerFunc(params event.GetEventParams, principal *models.Principa
 		return sendInternalErrorForGet(fmt.Errorf("%s", *errObj.Message), logger)
 	}
 
-	if cloudEvent == nil {
+	if cloudEvent == nil || len(cloudEvent) == 0 {
 		return sendNotFoundErrorForGet(fmt.Errorf("No "+params.Type+" event found for Keptn context: "+params.KeptnContext), logger)
 	}
 
-	eventByte, err := json.Marshal(cloudEvent)
+	eventByte, err := json.Marshal(cloudEvent[0])
 	if err != nil {
 		return sendInternalErrorForGet(err, logger)
 	}
