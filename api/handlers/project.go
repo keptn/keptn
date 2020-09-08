@@ -47,7 +47,7 @@ func PostProjectHandlerFunc(params project.PostProjectParams, p *models.Principa
 	}
 	forwardData := projectCreateEventData{ProjectCreateEventData: prjData, EventContext: eventContext}
 
-	err = utils.SendEvent(keptnContext, "", keptnevents.InternalProjectCreateEventType, forwardData, l)
+	err = utils.SendEvent(keptnContext, "", keptnevents.InternalProjectCreateEventType, "", forwardData, l)
 	if err != nil {
 		l.Error(fmt.Sprintf("Error sending CloudEvent %s", err.Error()))
 		return getProjectPostInternalError(err)
@@ -76,7 +76,7 @@ func DeleteProjectProjectNameHandlerFunc(params project.DeleteProjectProjectName
 	}
 	forwardData := projectDeleteEventData{ProjectDeleteEventData: prjData, EventContext: eventContext}
 
-	err = utils.SendEvent(keptnContext, "", keptnevents.InternalProjectDeleteEventType, forwardData, l)
+	err = utils.SendEvent(keptnContext, "", keptnevents.InternalProjectDeleteEventType, "", forwardData, l)
 
 	if err != nil {
 		l.Error(fmt.Sprintf("Error sending CloudEvent %s", err.Error()))

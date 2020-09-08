@@ -47,7 +47,7 @@ func PostEventHandlerFunc(params event.PostEventParams, principal *models.Princi
 
 	forwardData := addEventContextInCE(params.Body.Data, eventContext)
 
-	err = utils.SendEvent(keptnContext, params.Body.Triggeredid, *params.Body.Type, forwardData, logger)
+	err = utils.SendEvent(keptnContext, params.Body.Triggeredid, *params.Body.Type, *params.Body.Source, forwardData, logger)
 
 	if err != nil {
 		return sendInternalErrorForPost(err, logger)

@@ -52,7 +52,7 @@ func PostServiceHandlerFunc(params service.PostProjectProjectNameServiceParams, 
 	}
 	forwardData := serviceCreateEventData{ServiceCreateEventData: serviceData, EventContext: eventContext}
 
-	err = utils.SendEvent(keptnContext, "", keptnevents.InternalServiceCreateEventType, forwardData, l)
+	err = utils.SendEvent(keptnContext, "", keptnevents.InternalServiceCreateEventType, "", forwardData, l)
 
 	if err != nil {
 		l.Error(fmt.Sprintf("Error sending CloudEvent %s", err.Error()))
@@ -83,7 +83,7 @@ func DeleteServiceHandlerFunc(params service.DeleteProjectProjectNameServiceServ
 	}
 	forwardData := serviceDeleteEventData{ServiceDeleteEventData: serviceData, EventContext: eventContext}
 
-	err = utils.SendEvent(keptnContext, "", keptnevents.InternalServiceDeleteEventType, forwardData, l)
+	err = utils.SendEvent(keptnContext, "", keptnevents.InternalServiceDeleteEventType, "", forwardData, l)
 
 	if err != nil {
 		l.Error(fmt.Sprintf("Error sending CloudEvent %s", err.Error()))

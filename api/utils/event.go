@@ -4,10 +4,8 @@ import (
 	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
-	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	keptnutils "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"net/url"
 	"os"
 	"time"
 )
@@ -26,13 +24,15 @@ func GetDatastoreURL() string {
 }
 
 // SendEvent godoc
-func SendEvent(keptnContext, triggeredID, eventType string, data interface{}, l keptnutils.LoggerInterface) error {
-	source, _ := url.Parse("https://github.com/keptn/keptn/api")
+func SendEvent(keptnContext, triggeredID, eventType, source string, data interface{}, l keptnutils.LoggerInterface) error {
+	if source == "" {
+		source = "https://github.com/keptn/keptn/api"
+	}
 	ev := cloudevents.NewEvent()
-	ev.SetType(keptnevents.InternalProjectCreateEventType)
+	ev.SetType(eventType)
 	ev.SetID(uuid.New().String())
 	ev.SetTime(time.Now())
-	ev.SetSource(source.String())
+	ev.SetSource(source)
 	ev.SetDataContentType(cloudevents.ApplicationJSON)
 	ev.SetExtension("shkeptncontext", keptnContext)
 	ev.SetExtension("triggeredid", triggeredID)

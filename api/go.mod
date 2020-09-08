@@ -3,7 +3,6 @@ module github.com/keptn/keptn/api
 go 1.13
 
 require (
-	github.com/cloudevents/sdk-go v0.10.0
 	github.com/cloudevents/sdk-go/v2 v2.2.0
 	github.com/gbrlsnchs/jwt/v2 v2.0.0
 	github.com/go-openapi/errors v0.19.6
