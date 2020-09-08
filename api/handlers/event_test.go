@@ -154,7 +154,7 @@ func TestPostEventHandlerFunc(t *testing.T) {
 						Extensions:     nil,
 						ID:             "",
 						Shkeptncontext: "",
-						Source:         nil,
+						Source:         stringp("test-source"),
 						Specversion:    "1.0",
 						Time:           strfmt.DateTime{},
 						Type:           stringp(keptnevents.ConfigureMonitoringEventType),
