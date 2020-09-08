@@ -7,12 +7,14 @@ import (
 	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/ghodss/yaml"
+	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptn "github.com/keptn/go-utils/pkg/lib"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/cli/pkg/logging"
+	"github.com/mitchellh/mapstructure"
 	"io/ioutil"
 	"math"
 	"net/http"
-	"net/url"
 	"regexp"
 	"sort"
 	"strconv"
@@ -87,7 +89,7 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 	if err != nil {
 		return err
 	}
-	eh.KeptnHandler.Logger.Debug("Evaluation result: " + evaluationResult.Result)
+	eh.KeptnHandler.Logger.Debug("Evaluation result: " + string(evaluationResult.Result))
 
 	var sloFileContent []byte
 	// get the slo.yaml as a plain file to avoid confusion due to defaulted values (see https://github.com/keptn/keptn/issues/1495)
@@ -99,40 +101,53 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 		sloFileContent = []byte(sloFileContentTmp)
 	}
 	base64.StdEncoding.EncodeToString(sloFileContent)
-	evaluationResult.EvaluationDetails.SLOFileContent = base64.StdEncoding.EncodeToString(sloFileContent)
+	evaluationResult.Evaluation.SLOFileContent = base64.StdEncoding.EncodeToString(sloFileContent)
 
 	// send the evaluation-done-event
 	var shkeptncontext string
 	eh.Event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
 
 	// #1289: check if test execution that preceded the evaluation was successful or failed
-	testsFinishedEvent, _ := eh.getPreviousTestExecutionResult(e, shkeptncontext)
+	testsFinishedEvent, _ := eh.getPreviousTestExecutionResult(e)
 	if testsFinishedEvent != nil {
-		if testsFinishedEvent.Result == "fail" {
+		if testsFinishedEvent.Result == keptnv2.ResultFailed {
 			eh.KeptnHandler.Logger.Debug("Setting evaluation result to 'fail' because of failed preceding test execution")
-			evaluationResult.Result = "fail"
-			evaluationResult.EvaluationDetails.Result = "Setting evaluation result to 'fail' because of failed preceding test execution"
+			evaluationResult.Result = keptnv2.ResultFailed
+			evaluationResult.Status = keptnv2.StatusErrored
+			evaluationResult.Evaluation.Result = "Setting evaluation result to 'fail' because of failed preceding test execution"
 		}
 	}
 
-	err = eh.sendEvaluationDoneEvent(shkeptncontext, evaluationResult)
-	return err
+	triggeredEvents, _ := eh.KeptnHandler.EventHandler.GetEvents(&keptnapi.EventFilter{
+		Project:      e.Project,
+		Stage:        e.Stage,
+		Service:      e.Service,
+		EventType:    keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName),
+		KeptnContext: eh.KeptnHandler.KeptnContext,
+	})
+	if triggeredEvents == nil || len(triggeredEvents) == 0 {
+		msg := "Could not retrieve evaluation.triggered event for context " + eh.KeptnHandler.KeptnContext
+		eh.KeptnHandler.Logger.Error(msg)
+		return errors.New(msg)
+	}
+
+	return sendEvent(shkeptncontext, triggeredEvents[0].ID, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), eh.KeptnHandler, evaluationResult)
 }
 
-func evaluateObjectives(e *keptn.InternalGetSLIDoneEventData, sloConfig *keptn.ServiceLevelObjectives, previousEvaluationEvents []*keptn.EvaluationDoneEventData) (*keptn.EvaluationDoneEventData, float64, bool) {
-	evaluationResult := &keptn.EvaluationDoneEventData{
-		Result:  "",
-		Project: e.Project,
-		Service: e.Service,
-		Stage:   e.Stage,
-		EvaluationDetails: &keptn.EvaluationDetails{
+func evaluateObjectives(e *keptn.InternalGetSLIDoneEventData, sloConfig *keptn.ServiceLevelObjectives, previousEvaluationEvents []*keptn.EvaluationDoneEventData) (*keptnv2.EvaluationFinishedEventData, float64, bool) {
+	evaluationResult := &keptnv2.EvaluationFinishedEventData{
+		EventData: keptnv2.EventData{
+			Status:  "",
+			Project: e.Project,
+			Service: e.Service,
+			Stage:   e.Stage,
+		},
+		Evaluation: keptnv2.EvaluationDetails{
 			TimeStart: e.Start,
 			TimeEnd:   e.End,
 		},
-		TestStrategy:       e.TestStrategy,
-		DeploymentStrategy: e.DeploymentStrategy,
 	}
-	var sliEvaluationResults []*keptn.SLIEvaluationResult
+	var sliEvaluationResults []*keptnv2.SLIEvaluationResult
 	maximumAchievableScore := 0.0
 	keySLIFailed := false
 	for _, objective := range sloConfig.Objectives {
@@ -140,12 +155,12 @@ func evaluateObjectives(e *keptn.InternalGetSLIDoneEventData, sloConfig *keptn.S
 		if len(objective.Pass) > 0 {
 			maximumAchievableScore += float64(objective.Weight)
 		}
-		sliEvaluationResult := &keptn.SLIEvaluationResult{}
+		sliEvaluationResult := &keptnv2.SLIEvaluationResult{}
 		result := getSLIResult(e.IndicatorValues, objective.SLI)
 
 		if result == nil {
 			// no result available => fail the objective
-			sliEvaluationResult.Value = &keptn.SLIResult{
+			sliEvaluationResult.Value = &keptnv2.SLIResult{
 				Metric:  objective.SLI,
 				Success: false,
 				Message: "no value received from SLI provider",
@@ -207,23 +222,24 @@ func evaluateObjectives(e *keptn.InternalGetSLIDoneEventData, sloConfig *keptn.S
 
 		sliEvaluationResults = append(sliEvaluationResults, sliEvaluationResult)
 	}
-	evaluationResult.EvaluationDetails.IndicatorResults = sliEvaluationResults
+	evaluationResult.Evaluation.IndicatorResults = sliEvaluationResults
 	return evaluationResult, maximumAchievableScore, keySLIFailed
 }
 
-func calculateScore(maximumAchievableScore float64, evaluationResult *keptn.EvaluationDoneEventData, sloConfig *keptn.ServiceLevelObjectives, keySLIFailed bool) error {
+func calculateScore(maximumAchievableScore float64, evaluationResult *keptnv2.EvaluationFinishedEventData, sloConfig *keptn.ServiceLevelObjectives, keySLIFailed bool) error {
 	if maximumAchievableScore == 0 {
-		evaluationResult.EvaluationDetails.Result = "pass"
-		evaluationResult.Result = evaluationResult.EvaluationDetails.Result
-		evaluationResult.EvaluationDetails.Score = 100.0
+		evaluationResult.Evaluation.Result = "pass"
+		evaluationResult.Result = keptnv2.ResultPass
+		evaluationResult.Status = keptnv2.StatusSucceeded
+		evaluationResult.Evaluation.Score = 100.0
 		return nil
 	}
 	totalScore := 0.0
-	for _, result := range evaluationResult.EvaluationDetails.IndicatorResults {
+	for _, result := range evaluationResult.Evaluation.IndicatorResults {
 		totalScore += result.Score
 	}
 	achievedPercentage := 100.0 * (totalScore / maximumAchievableScore)
-	evaluationResult.EvaluationDetails.Score = achievedPercentage
+	evaluationResult.Evaluation.Score = achievedPercentage
 	if sloConfig.TotalScore == nil || sloConfig.TotalScore.Pass == "" {
 		return errors.New("no target score defined")
 	}
@@ -232,7 +248,7 @@ func calculateScore(maximumAchievableScore float64, evaluationResult *keptn.Eval
 		return errors.New("could not parse pass target percentage")
 	}
 	if achievedPercentage >= passTargetPercentage && !keySLIFailed {
-		evaluationResult.EvaluationDetails.Result = "pass"
+		evaluationResult.Evaluation.Result = "pass"
 	} else if sloConfig.TotalScore.Warning != "" && !keySLIFailed {
 		warnTargetPercentage, err := strconv.ParseFloat(strings.TrimSuffix(sloConfig.TotalScore.Warning, "%"), 64)
 
@@ -240,21 +256,26 @@ func calculateScore(maximumAchievableScore float64, evaluationResult *keptn.Eval
 			return errors.New("could not parse warning target percentage")
 		}
 		if achievedPercentage >= warnTargetPercentage {
-			evaluationResult.EvaluationDetails.Result = "warning"
+			evaluationResult.Evaluation.Result = "warning"
+			evaluationResult.Result = keptnv2.ResultWarning
+			evaluationResult.Status = keptnv2.StatusSucceeded
 		} else {
-			evaluationResult.EvaluationDetails.Result = "fail"
+			evaluationResult.Evaluation.Result = "fail"
+			evaluationResult.Result = keptnv2.ResultFailed
+			evaluationResult.Status = keptnv2.StatusSucceeded
 		}
 	} else {
-		evaluationResult.EvaluationDetails.Result = "fail"
+		evaluationResult.Evaluation.Result = "fail"
+		evaluationResult.Result = keptnv2.ResultFailed
+		evaluationResult.Status = keptnv2.StatusSucceeded
 	}
-	evaluationResult.Result = evaluationResult.EvaluationDetails.Result
 	return nil
 }
 
-func getSLIResult(results []*keptn.SLIResult, sli string) *keptn.SLIResult {
+func getSLIResult(results []*keptnv2.SLIResult, sli string) *keptnv2.SLIResult {
 	for _, sliResult := range results {
 		if sliResult.Metric == sli {
-			return sliResult
+			return sliResult.(*keptnv2.SLIResult)
 		}
 	}
 	return nil
@@ -563,56 +584,26 @@ func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptn.InternalGetSLIDone
 	return evaluationDoneEvents, nil
 }
 
-func (eh *EvaluateSLIHandler) getPreviousTestExecutionResult(e *keptn.InternalGetSLIDoneEventData, keptnContext string) (*keptn.TestsFinishedEventData, error) {
-	queryString := fmt.Sprintf(getDatastoreURL()+"/event?type=%s&project=%s&stage=%s&service=%s&keptnContext=%s&pageSize=%d",
-		keptn.TestsFinishedEventType,
-		e.Project, e.Stage, e.Service, keptnContext, 1)
-
-	req, err := http.NewRequest("GET", queryString, nil)
-	req.Header.Set("Content-Type", "application/json")
-	resp, err := eh.HTTPClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	body, _ := ioutil.ReadAll(resp.Body)
-	if resp.StatusCode != 200 {
-		return nil, errors.New("could not retrieve previous evaluation-done events")
-	}
-	previousEvents := &datastoreResult{}
-	err = json.Unmarshal(body, previousEvents)
-	if err != nil {
-		return nil, err
-	}
-	if len(previousEvents.Events) == 0 {
-		return nil, nil
+func (eh *EvaluateSLIHandler) getPreviousTestExecutionResult(e *keptn.InternalGetSLIDoneEventData) (*keptnv2.TestFinishedEventData, error) {
+	events, _ := eh.KeptnHandler.EventHandler.GetEvents(&keptnapi.EventFilter{
+		Project:      e.Project,
+		Stage:        e.Stage,
+		Service:      e.Service,
+		EventType:    keptnv2.GetFinishedEventType(keptnv2.TestTaskName),
+		KeptnContext: eh.KeptnHandler.KeptnContext,
+	})
+	if events == nil || len(events) == 0 {
+		msg := "Could not retrieve test.finished event for context " + eh.KeptnHandler.KeptnContext
+		eh.KeptnHandler.Logger.Error(msg)
+		return nil, errors.New(msg)
 	}
 
-	bytes, err := json.Marshal(previousEvents.Events[0].Data)
+	testsFinishedEvent := &keptnv2.TestFinishedEventData{}
+	err := mapstructure.Decode(events[0].Data, testsFinishedEvent)
 	if err != nil {
-		return nil, err
-	}
-
-	testsFinishedEvent := &keptn.TestsFinishedEventData{}
-	err = json.Unmarshal(bytes, &testsFinishedEvent)
-	if err != nil {
+		eh.KeptnHandler.Logger.Error("Cannot decode approval.triggered event: " + err.Error())
 		return nil, err
 	}
 	return testsFinishedEvent, nil
 
-}
-
-func (eh *EvaluateSLIHandler) sendEvaluationDoneEvent(shkeptncontext string, data *keptn.EvaluationDoneEventData) error {
-
-	source, _ := url.Parse("lighthouse-service")
-
-	event := cloudevents.NewEvent()
-	event.SetType(keptn.EvaluationDoneEventType)
-	event.SetSource(source.String())
-	event.SetDataContentType(cloudevents.ApplicationJSON)
-	event.SetExtension("shkeptncontext", shkeptncontext)
-	event.SetData(cloudevents.ApplicationJSON, data)
-
-	eh.KeptnHandler.Logger.Debug("Send event: " + keptn.EvaluationDoneEventType)
-	return eh.KeptnHandler.SendCloudEvent(event)
 }

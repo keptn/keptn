@@ -2,6 +2,9 @@ package event_handler
 
 import (
 	"errors"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"net/url"
 	"os"
 
 	"github.com/ghodss/yaml"
@@ -71,4 +74,21 @@ func parseSLO(input []byte) (*keptn.ServiceLevelObjectives, error) {
 	}
 
 	return slo, nil
+}
+
+func sendEvent(shkeptncontext string, triggeredID, eventType string, keptnHandler *keptnv2.Keptn, data interface{}) error {
+	source, _ := url.Parse("lighthouse-service")
+
+	event := cloudevents.NewEvent()
+	event.SetType(eventType)
+	event.SetSource(source.String())
+	event.SetDataContentType(cloudevents.ApplicationJSON)
+	event.SetExtension("shkeptncontext", shkeptncontext)
+	event.SetExtension("triggeredid", triggeredID)
+	if data != nil {
+		event.SetData(cloudevents.ApplicationJSON, data)
+	}
+
+	keptnHandler.Logger.Debug("Send event: " + eventType)
+	return keptnHandler.SendCloudEvent(event)
 }
