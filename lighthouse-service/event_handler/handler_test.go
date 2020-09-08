@@ -1,43 +1,35 @@
 package event_handler
 
 import (
-	"github.com/cloudevents/sdk-go/pkg/cloudevents"
-	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/go-test/deep"
 	"github.com/keptn/go-utils/pkg/lib"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"net/http"
-	"net/url"
 	"testing"
 )
 
 func TestNewEventHandler(t *testing.T) {
-	incomingEvent := cloudevents.Event{
-		Context: &cloudevents.EventContextV02{
-			SpecVersion: "0.2",
-			Type:        keptn.TestsFinishedEventType,
-			Source:      types.URLRef{URL: url.URL{Host: "test"}},
-			ID:          "1",
-			Time:        nil,
-			SchemaURL:   nil,
-			ContentType: stringp("application/json"),
-			Extensions:  nil,
-		},
-		Data: []byte(`{
-    "project": "sockshop",
-    "stage": "staging",
-    "service": "carts"
-  }`),
-		DataEncoded: false,
-	}
+	incomingEvent := cloudevents.NewEvent()
+	incomingEvent.SetType(keptn.TestsFinishedEventType)
+	incomingEvent.SetSource("test")
+	incomingEvent.SetID("1")
+	incomingEvent.SetDataContentType(cloudevents.ApplicationJSON)
+	incomingEvent.SetData(cloudevents.ApplicationJSON, keptn.KeptnBaseEvent{
+		Project: "sockshop",
+		Service: "carts",
+		Stage:   "staging",
+	})
 
 	serviceName := "lighthouse-service"
-	keptnHandler, _ := keptn.NewKeptn(&incomingEvent, keptn.KeptnOpts{
-		LoggingOptions: &keptn.LoggingOpts{ServiceName: &serviceName},
+	keptnHandler, _ := keptnv2.NewKeptn(&incomingEvent, keptncommon.KeptnOpts{
+		LoggingOptions: &keptncommon.LoggingOpts{ServiceName: &serviceName},
 	})
 
 	type args struct {
 		event  cloudevents.Event
-		logger *keptn.Logger
+		logger *keptncommon.Logger
 	}
 	tests := []struct {
 		name      string
@@ -102,17 +94,12 @@ func TestNewEventHandler(t *testing.T) {
 		{
 			name: "invalid event type -> error",
 			args: args{
-				event: cloudevents.Event{
-					Context: &cloudevents.EventContextV02{
-						Type: "hulumulu",
-					},
-					Data:        nil,
-					DataEncoded: false,
-				},
+				event:  incomingEvent,
 				logger: nil,
 			},
-			want:    nil,
-			wantErr: true,
+			eventType: "nonsense-event",
+			want:      nil,
+			wantErr:   false,
 		},
 	}
 	for _, tt := range tests {

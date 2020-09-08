@@ -5,6 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/ghodss/yaml"
+	keptn "github.com/keptn/go-utils/pkg/lib"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"io/ioutil"
 	"math"
 	"net/http"
@@ -13,13 +17,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"time"
-
-	"github.com/cloudevents/sdk-go/pkg/cloudevents"
-	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
-	"github.com/ghodss/yaml"
-	"github.com/google/uuid"
-	keptn "github.com/keptn/go-utils/pkg/lib"
 )
 
 type datastoreResult struct {
@@ -42,7 +39,7 @@ type criteriaObject struct {
 type EvaluateSLIHandler struct {
 	Event        cloudevents.Event
 	HTTPClient   *http.Client
-	KeptnHandler *keptn.Keptn
+	KeptnHandler *keptnv2.Keptn
 }
 
 func (eh *EvaluateSLIHandler) HandleEvent() error {
@@ -608,19 +605,13 @@ func (eh *EvaluateSLIHandler) getPreviousTestExecutionResult(e *keptn.InternalGe
 func (eh *EvaluateSLIHandler) sendEvaluationDoneEvent(shkeptncontext string, data *keptn.EvaluationDoneEventData) error {
 
 	source, _ := url.Parse("lighthouse-service")
-	contentType := "application/json"
 
-	event := cloudevents.Event{
-		Context: cloudevents.EventContextV02{
-			ID:          uuid.New().String(),
-			Time:        &types.Timestamp{Time: time.Now()},
-			Type:        keptn.EvaluationDoneEventType,
-			Source:      types.URLRef{URL: *source},
-			ContentType: &contentType,
-			Extensions:  map[string]interface{}{"shkeptncontext": shkeptncontext},
-		}.AsV02(),
-		Data: data,
-	}
+	event := cloudevents.NewEvent()
+	event.SetType(keptn.EvaluationDoneEventType)
+	event.SetSource(source.String())
+	event.SetDataContentType(cloudevents.ApplicationJSON)
+	event.SetExtension("shkeptncontext", shkeptncontext)
+	event.SetData(cloudevents.ApplicationJSON, data)
 
 	eh.KeptnHandler.Logger.Debug("Send event: " + keptn.EvaluationDoneEventType)
 	return eh.KeptnHandler.SendCloudEvent(event)

@@ -1,10 +1,10 @@
-package handlers
+package utils
 
 import (
 	"strings"
 )
 
-func sanitizeURL(url string) string {
+func SanitizeURL(url string) string {
 	if strings.HasPrefix(url, "https://") || strings.HasPrefix(url, "http://") {
 		return url
 	}

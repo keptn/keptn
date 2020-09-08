@@ -3,7 +3,9 @@ package controller
 import (
 	"encoding/base64"
 	"encoding/json"
-	"github.com/cloudevents/sdk-go/pkg/cloudevents"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -239,14 +241,10 @@ func TestHandleScaling(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			ce := cloudevents.New("0.2")
-			dataBytes, err := json.Marshal(tt.actionTriggeredEvent)
-			if err != nil {
-				t.Error(err)
-			}
-			ce.Data = dataBytes
+			ce := cloudevents.NewEvent()
+			ce.SetData(cloudevents.ApplicationJSON, tt.actionTriggeredEvent)
 
-			keptnHandler, _ := keptnevents.NewKeptn(&ce, keptnevents.KeptnOpts{})
+			keptnHandler, _ := keptnv2.NewKeptn(&ce, keptncommon.KeptnOpts{})
 
 			a := &ActionTriggeredHandler{
 				helmExecutor:     helm.NewHelmMockExecutor(),

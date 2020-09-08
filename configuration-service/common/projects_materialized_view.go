@@ -3,7 +3,8 @@ package common
 import (
 	"errors"
 	"fmt"
-	keptn "github.com/keptn/go-utils/pkg/lib"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/configuration-service/models"
 	"github.com/mitchellh/mapstructure"
 	"strconv"
@@ -29,7 +30,7 @@ var instance *projectsMaterializedView
 
 type projectsMaterializedView struct {
 	ProjectRepo ProjectRepo
-	Logger      keptn.LoggerInterface
+	Logger      keptncommon.LoggerInterface
 }
 
 // GetProjectsMaterializedView returns the materialized view
@@ -37,7 +38,7 @@ func GetProjectsMaterializedView() *projectsMaterializedView {
 	if instance == nil {
 		instance = &projectsMaterializedView{
 			ProjectRepo: &MongoDBProjectRepo{},
-			Logger:      keptn.NewLogger("", "", "configuration-service"),
+			Logger:      keptncommon.NewLogger("", "", "configuration-service"),
 		}
 	}
 	return instance
@@ -245,7 +246,7 @@ func (mv *projectsMaterializedView) DeleteService(project string, stage string, 
 // UpdateEventOfService updates a service event
 func (mv *projectsMaterializedView) UpdateEventOfService(event interface{}, eventType string, keptnContext string, eventID string) error {
 
-	keptnBase := &keptn.KeptnBase{}
+	keptnBase := &keptnv2.EventData{}
 	err := mapstructure.Decode(event, keptnBase)
 	if err != nil {
 		mv.Logger.Error("Could not parse event data: " + err.Error())
@@ -267,11 +268,17 @@ func (mv *projectsMaterializedView) UpdateEventOfService(event interface{}, even
 		if service.LastEventTypes == nil {
 			service.LastEventTypes = map[string]models.EventContext{}
 		}
-		if eventType == keptn.DeploymentFinishedEventType {
-			if keptnBase.Image != nil && keptnBase.Tag != nil {
-				service.DeployedImage = *keptnBase.Image + ":" + *keptnBase.Tag
+		/*
+			// TODO: this will need changes due to different event payload in 0.8
+			if eventType == keptn.DeploymentFinishedEventType {
+				keptnv2.DeploymentFinishedEventData{}
+				if deploymentFinishedData, ok := keptnBase.(keptn.DeploymentFinishedEventData); ok {
+					if deploymentFinishedData.Image != "" && deploymentFinishedData.Tag != "" {
+						service.DeployedImage = deploymentFinishedData.Image + ":" + deploymentFinishedData.Tag
+					}
+				}
 			}
-		}
+		*/
 		service.LastEventTypes[eventType] = *contextInfo
 		return nil
 	})

@@ -3,10 +3,12 @@ package controller
 import (
 	"errors"
 	"fmt"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"os"
 	"strings"
 
-	cloudevents "github.com/cloudevents/sdk-go"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/ghodss/yaml"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/helm-service/controller/helm"
@@ -19,13 +21,13 @@ import (
 type ConfigurationChanger struct {
 	mesh                  mesh.Mesh
 	generatedChartHandler *helm.GeneratedChartHandler
-	keptnHandler          *keptnevents.Keptn
+	keptnHandler          *keptnv2.Keptn
 	helmExecutor          helm.HelmExecutor
 	configServiceURL      string
 }
 
 // NewConfigurationChanger creates a new ConfigurationChanger
-func NewConfigurationChanger(mesh mesh.Mesh, keptnHandler *keptnevents.Keptn, configServiceURL string) *ConfigurationChanger {
+func NewConfigurationChanger(mesh mesh.Mesh, keptnHandler *keptnv2.Keptn, configServiceURL string) *ConfigurationChanger {
 	generatedChartHandler := helm.NewGeneratedChartHandler(mesh, keptnHandler.Logger)
 	helmExecutor := helm.NewHelmV3Executor(keptnHandler.Logger)
 	return &ConfigurationChanger{
@@ -48,14 +50,13 @@ func (c *ConfigurationChanger) ChangeAndApplyConfiguration(ce cloudevents.Event,
 		return err
 	}
 
-	keptnHandler, err := keptnevents.NewKeptn(&ce, keptnevents.KeptnOpts{})
+	keptnHandler, err := keptnv2.NewKeptn(&ce, keptncommon.KeptnOpts{})
 	if err != nil {
 		c.keptnHandler.Logger.Error("Could not initialize keptn handler: " + err.Error())
 	}
 
 	if os.Getenv("PRE_WORKFLOW_ENGINE") == "true" && e.Stage == "" {
 		stage, err := getFirstStage(keptnHandler)
-		keptnHandler.KeptnBase.Stage = stage
 		if err != nil {
 			c.keptnHandler.Logger.Error(fmt.Sprintf("Error when reading shipyard: %s", err.Error()))
 			return err

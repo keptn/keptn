@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"os"
 	"time"
 
@@ -10,7 +11,6 @@ import (
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
-	utils "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/configuration-service/common"
 	"github.com/keptn/keptn/configuration-service/config"
 	"github.com/keptn/keptn/configuration-service/models"
@@ -87,7 +87,7 @@ func GetProjectProjectNameStageStageNameServiceServiceNameHandlerFunc(params ser
 
 // PostProjectProjectNameStageStageNameServiceHandlerFunc creates a new service
 func PostProjectProjectNameStageStageNameServiceHandlerFunc(params service.PostProjectProjectNameStageStageNameServiceParams) middleware.Responder {
-	logger := utils.NewLogger("", "", "configuration-service")
+	logger := keptncommon.NewLogger("", "", "configuration-service")
 
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
@@ -144,7 +144,7 @@ func PutProjectProjectNameStageStageNameServiceServiceNameHandlerFunc(params ser
 
 // DeleteProjectProjectNameStageStageNameServiceServiceNameHandlerFunc deletes a service
 func DeleteProjectProjectNameStageStageNameServiceServiceNameHandlerFunc(params service.DeleteProjectProjectNameStageStageNameServiceServiceNameParams) middleware.Responder {
-	logger := utils.NewLogger("", "", "configuration-service")
+	logger := keptncommon.NewLogger("", "", "configuration-service")
 
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)

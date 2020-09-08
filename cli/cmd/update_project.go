@@ -3,12 +3,12 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 
 	"github.com/keptn/keptn/cli/pkg/websockethelper"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
-	keptn "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/spf13/cobra"
@@ -48,7 +48,7 @@ For more information about updating projects or upstream repositories, please go
 			return errors.New("required argument PROJECTNAME not set")
 		}
 
-		if !keptn.ValidateKeptnEntityName(args[0]) {
+		if !keptncommon.ValidateKeptnEntityName(args[0]) {
 			errorMsg := "Project name contains upper case letter(s) or special character(s).\n"
 			errorMsg += "Keptn relies on the following conventions: "
 			errorMsg += "start with a lower case letter, then lower case letters, numbers, and hyphens are allowed.\n"

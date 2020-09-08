@@ -1,12 +1,13 @@
 package handler
 
 import (
-	"encoding/json"
 	"fmt"
+	"github.com/keptn/go-utils/pkg/lib/keptn"
 	"testing"
 
-	"github.com/cloudevents/sdk-go/pkg/cloudevents"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 )
 
 var evaluationDoneTests = []struct {
@@ -67,13 +68,10 @@ var evaluationDoneTests = []struct {
 func TestHandleEvaluationDoneEvent(t *testing.T) {
 	for _, tt := range evaluationDoneTests {
 		t.Run(tt.name, func(t *testing.T) {
-			ce := cloudevents.New("0.2")
-			dataBytes, err := json.Marshal(tt.inputEvent)
-			if err != nil {
-				t.Error(err)
-			}
-			ce.Data = dataBytes
-			keptnHandler, _ := keptnevents.NewKeptn(&ce, keptnevents.KeptnOpts{})
+			ce := cloudevents.NewEvent()
+			ce.SetData(cloudevents.ApplicationJSON, tt.inputEvent)
+
+			keptnHandler, _ := keptnv2.NewKeptn(&ce, keptn.KeptnOpts{})
 			e := NewEvaluationDoneEventHandler(keptnHandler)
 			res := e.handleEvaluationDoneEvent(tt.inputEvent, shkeptncontext, tt.image, tt.shipyard)
 			if len(res) != len(tt.outputEvent) {
@@ -84,8 +82,8 @@ func TestHandleEvaluationDoneEvent(t *testing.T) {
 				for i, r := range res {
 					if !compareEventContext(r, tt.outputEvent[i]) {
 
-						fmt.Println(r.Data)
-						fmt.Println(tt.outputEvent[i].Data)
+						fmt.Println(string(r.Data()))
+						fmt.Println(string(tt.outputEvent[i].Data()))
 						t.Errorf("output events do not match for %s", tt.name)
 					}
 				}

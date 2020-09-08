@@ -5,6 +5,7 @@ package restapi
 import (
 	"crypto/tls"
 	"fmt"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -19,7 +20,6 @@ import (
 
 	errors "github.com/go-openapi/errors"
 	runtime "github.com/go-openapi/runtime"
-	utils "github.com/keptn/go-utils/pkg/lib"
 	handlers "github.com/keptn/keptn/configuration-service/handlers"
 	"github.com/keptn/keptn/configuration-service/restapi/operations"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/project"
@@ -166,7 +166,7 @@ func configureTLS(tlsConfig *tls.Config) {
 // This function can be called multiple times, depending on the number of serving schemes.
 // scheme value will be set accordingly: "http", "https" or "unix"
 func configureServer(s *http.Server, scheme, addr string) {
-	logger := utils.NewLogger("", "", "configuration-service")
+	logger := keptncommon.NewLogger("", "", "configuration-service")
 	if os.Getenv("env") == "production" {
 		///////// initialize git ////////////
 		logger.Debug("Configuring git user.email")

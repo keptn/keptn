@@ -2,7 +2,7 @@ package db
 
 import (
 	"context"
-	keptn "github.com/keptn/go-utils/pkg/lib"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -12,7 +12,7 @@ import (
 // TaskSequenceMongoDBRepo godoc
 type TaskSequenceMongoDBRepo struct {
 	DbConnection MongoDBConnection
-	Logger       keptn.LoggerInterface
+	Logger       keptncommon.LoggerInterface
 }
 
 const taskSequenceCollectionNameSuffix = "-taskSequences"

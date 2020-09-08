@@ -8,7 +8,7 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/keptn/go-utils/pkg/api/models"
-	keptn "github.com/keptn/go-utils/pkg/lib"
+	keptn "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 )
 

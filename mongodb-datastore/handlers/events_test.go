@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/mongodb-datastore/models"
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/event"
 	"go.mongodb.org/mongo-driver/bson"
@@ -8,13 +9,12 @@ import (
 	"reflect"
 	"testing"
 
-	keptnutils "github.com/keptn/go-utils/pkg/lib"
 	"github.com/magiconair/properties/assert"
 )
 
 // TestFlattenRecursivelyNestedDocuments checks whether the flattening works with nested bson.D (documents)
 func TestFlattenRecursivelyNestedDocuments(t *testing.T) {
-	logger := keptnutils.NewLogger("", "", "mongodb-service")
+	logger := keptncommon.NewLogger("", "", "mongodb-service")
 
 	grandchild := bson.D{{"apple", "red"}, {"orange", "orange"}}
 	child := bson.D{{"foo", "bar"}, {"grandchild", grandchild}}
@@ -35,7 +35,7 @@ func TestFlattenRecursivelyNestedDocuments(t *testing.T) {
 // TestFlattenRecursivelyNestedDocuments checks whether the flattening works with nested bson.D (documents)
 // and bson.A (arrays)
 func TestFlattenRecursivelyNestedDocumentsWithArray(t *testing.T) {
-	logger := keptnutils.NewLogger("", "", "mongodb-service")
+	logger := keptncommon.NewLogger("", "", "mongodb-service")
 
 	grandchild := bson.D{{"apple", "red"}, {"orange", "orange"}}
 	child := bson.A{grandchild, "foo", "bar"}

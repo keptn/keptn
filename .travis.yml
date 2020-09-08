@@ -259,10 +259,6 @@ jobs:
         go test -v -coverprofile=coverage.txt -covermode=atomic ./...
         cd ..
       - |
-        cd "${EVENTBROKER_FOLDER}"
-        go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-        cd ..
-      - |
         cd ${SHIPYARD_SVC_FOLDER}
         go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
         cd ..
@@ -310,7 +306,6 @@ jobs:
     - source ./travis-scripts/build_develop.sh "${HELM_SVC_IMAGE}" "${HELM_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
     - source ./travis-scripts/build_develop.sh "${GATEKEEPER_SVC_IMAGE}" "${GATEKEEPER_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
     - source ./travis-scripts/build_develop.sh "${DISTRIBUTOR_IMAGE}" "${DISTRIBUTOR_FOLDER}" "${GIT_SHA}" "${DATE}"
-    - source ./travis-scripts/build_develop.sh "${EVENTBROKER_IMAGE}" "${EVENTBROKER_FOLDER}" "${GIT_SHA}" "${DATE}"
     - source ./travis-scripts/build_develop.sh "${SHIPYARD_SVC_IMAGE}" "${SHIPYARD_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
     - source ./travis-scripts/build_develop.sh "${SHIPYARD_CONTROLLER_IMAGE}" "${SHIPYARD_CONTROLLER_FOLDER}" "${GIT_SHA}" "${DATE}"
     - source ./travis-scripts/build_develop.sh "${CONFIGURATION_SVC_IMAGE}" "${CONFIGURATION_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
@@ -426,10 +421,6 @@ jobs:
         source ./travis-scripts/build_feature.sh "${DISTRIBUTOR_IMAGE}" "${DISTRIBUTOR_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
       fi
     - |
-      if [[ $CHANGED_FILES == *"${EVENTBROKER_FOLDER}"*  ]]; then
-        source ./travis-scripts/build_feature.sh "${EVENTBROKER_IMAGE}" "${EVENTBROKER_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
-      fi
-    - |
       if [[ $CHANGED_FILES == *"${SHIPYARD_SVC_FOLDER}"*  ]]; then
         source ./travis-scripts/build_feature.sh "${SHIPYARD_SVC_IMAGE}" "${SHIPYARD_SVC_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
       fi
@@ -507,7 +498,6 @@ jobs:
     - source ./travis-scripts/build_release.sh "${HELM_SVC_IMAGE}" "${HELM_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
     - source ./travis-scripts/build_release.sh "${GATEKEEPER_SVC_IMAGE}" "${GATEKEEPER_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
     - source ./travis-scripts/build_release.sh "${DISTRIBUTOR_IMAGE}" "${DISTRIBUTOR_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
-    - source ./travis-scripts/build_release.sh "${EVENTBROKER_IMAGE}" "${EVENTBROKER_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
     - set +e # revert set -e from above
     after_script:
       - echo "The following images have been built and pushed to dockerhub:"

@@ -7,18 +7,19 @@ import (
 
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 
-	"github.com/cloudevents/sdk-go/pkg/cloudevents"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 )
 
 const configService = "CONFIGURATION_SERVICE"
 
 type EvaluationDoneEventHandler struct {
-	keptn *keptnevents.Keptn
+	keptn *keptnv2.Keptn
 }
 
 // NewEvaluationDoneEventHandler returns a new evaluation-done handler
-func NewEvaluationDoneEventHandler(keptn *keptnevents.Keptn) *EvaluationDoneEventHandler {
+func NewEvaluationDoneEventHandler(keptn *keptnv2.Keptn) *EvaluationDoneEventHandler {
 	return &EvaluationDoneEventHandler{keptn: keptn}
 }
 
@@ -26,7 +27,7 @@ func (EvaluationDoneEventHandler) IsTypeHandled(event cloudevents.Event) bool {
 	return event.Type() == keptnevents.EvaluationDoneEventType
 }
 
-func (e *EvaluationDoneEventHandler) Handle(event cloudevents.Event, keptnHandler *keptnevents.Keptn, shipyard *keptnevents.Shipyard) {
+func (e *EvaluationDoneEventHandler) Handle(event cloudevents.Event, keptnHandler *keptnv2.Keptn, shipyard *keptnevents.Shipyard) {
 	data := &keptnevents.EvaluationDoneEventData{}
 	if err := event.DataAs(data); err != nil {
 		e.keptn.Logger.Error(fmt.Sprintf("failed to parse EvaluationDoneEvent: %v", err))

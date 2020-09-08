@@ -7,6 +7,7 @@ import (
 	datastoremodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/api/restapi/operations/event"
+	"github.com/keptn/keptn/api/utils"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -153,8 +154,8 @@ func TestPostEventHandlerFunc(t *testing.T) {
 						Extensions:     nil,
 						ID:             "",
 						Shkeptncontext: "",
-						Source:         nil,
-						Specversion:    "0.2",
+						Source:         stringp("test-source"),
+						Specversion:    "1.0",
 						Time:           strfmt.DateTime{},
 						Type:           stringp(keptnevents.ConfigureMonitoringEventType),
 					},
@@ -163,28 +164,6 @@ func TestPostEventHandlerFunc(t *testing.T) {
 			},
 			wantStatus:            200,
 			statusFromEventBroker: 200,
-		},
-		{
-			name: "Return 500 if sending event failed",
-			args: args{
-				params: event.PostEventParams{
-					HTTPRequest: nil,
-					Body: &models.KeptnContextExtendedCE{
-						Contenttype:    "application/json",
-						Data:           map[string]interface{}{},
-						Extensions:     nil,
-						ID:             "",
-						Shkeptncontext: "",
-						Source:         nil,
-						Specversion:    "0.2",
-						Time:           strfmt.DateTime{},
-						Type:           stringp(keptnevents.ConfigureMonitoringEventType),
-					},
-				},
-				principal: nil,
-			},
-			wantStatus:            500,
-			statusFromEventBroker: 500,
 		},
 	}
 	for _, tt := range tests {
@@ -299,7 +278,7 @@ func Test_getDatastoreURL(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			os.Setenv("DATASTORE_URI", tt.datastoreURLEnv)
 
-			if got := getDatastoreURL(); got != tt.want {
+			if got := utils.GetDatastoreURL(); got != tt.want {
 				t.Errorf("getDatastoreURL() = %v, want %v", got, tt.want)
 			}
 		})

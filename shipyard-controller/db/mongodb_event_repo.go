@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/jeremywohl/flatten"
-	keptn "github.com/keptn/go-utils/pkg/lib"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -20,7 +20,7 @@ const finishedEventsCollectionNameSuffix = "-finishedEvents"
 // MongoDBEventsRepo retrieves and stores events in a mongodb collection
 type MongoDBEventsRepo struct {
 	DbConnection MongoDBConnection
-	Logger       keptn.LoggerInterface
+	Logger       keptncommon.LoggerInterface
 }
 
 // GetEvents gets all events of a project, based on the provided filter

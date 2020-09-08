@@ -1,23 +1,18 @@
 package event_handler
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
-	"net/url"
-	"time"
-
-	"github.com/cloudevents/sdk-go/pkg/cloudevents"
-	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
-	"github.com/google/uuid"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
-	keptnutils "github.com/keptn/go-utils/pkg/lib"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"net/url"
 )
 
 type StartEvaluationHandler struct {
 	Event        cloudevents.Event
-	KeptnHandler *keptnutils.Keptn
+	KeptnHandler *keptnv2.Keptn
 }
 
 func (eh *StartEvaluationHandler) HandleEvent() error {
@@ -149,19 +144,13 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 
 func (eh *StartEvaluationHandler) sendEvaluationDoneEvent(shkeptncontext string, data *keptnevents.EvaluationDoneEventData) error {
 	source, _ := url.Parse("lighthouse-service")
-	contentType := "application/json"
 
-	event := cloudevents.Event{
-		Context: cloudevents.EventContextV02{
-			ID:          uuid.New().String(),
-			Time:        &types.Timestamp{Time: time.Now()},
-			Type:        keptnevents.EvaluationDoneEventType,
-			Source:      types.URLRef{URL: *source},
-			ContentType: &contentType,
-			Extensions:  map[string]interface{}{"shkeptncontext": shkeptncontext},
-		}.AsV02(),
-		Data: data,
-	}
+	event := cloudevents.NewEvent()
+	event.SetType(keptnevents.EvaluationDoneEventType)
+	event.SetSource(source.String())
+	event.SetDataContentType(cloudevents.ApplicationJSON)
+	event.SetExtension("shkeptncontext", shkeptncontext)
+	event.SetData(cloudevents.ApplicationJSON, data)
 
 	eh.KeptnHandler.Logger.Debug("Send event: " + keptnevents.EvaluationDoneEventType)
 	return eh.KeptnHandler.SendCloudEvent(event)
@@ -186,7 +175,6 @@ func getSLIProvider(project string) (string, error) {
 
 func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string, project string, stage string, service string, sliProvider string, indicators []string, start string, end string, teststrategy string, deploymentStrategy string, filters []*keptnevents.SLIFilter, labels map[string]string, deployment string) error {
 	source, _ := url.Parse("lighthouse-service")
-	contentType := "application/json"
 
 	getSLIEvent := keptnevents.InternalGetSLIEventData{
 		SLIProvider:        sliProvider,
@@ -202,30 +190,22 @@ func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string,
 		Labels:             labels,
 		Deployment:         deployment,
 	}
-	event := cloudevents.Event{
-		Context: cloudevents.EventContextV02{
-			ID:          uuid.New().String(),
-			Time:        &types.Timestamp{Time: time.Now()},
-			Type:        keptnevents.InternalGetSLIEventType,
-			Source:      types.URLRef{URL: *source},
-			ContentType: &contentType,
-			Extensions:  map[string]interface{}{"shkeptncontext": shkeptncontext},
-		}.AsV02(),
-		Data: getSLIEvent,
-	}
+
+	event := cloudevents.NewEvent()
+	event.SetType(keptnevents.InternalGetSLIEventType)
+	event.SetSource(source.String())
+	event.SetDataContentType(cloudevents.ApplicationJSON)
+	event.SetExtension("shkeptncontext", shkeptncontext)
+	event.SetData(cloudevents.ApplicationJSON, getSLIEvent)
 
 	eh.KeptnHandler.Logger.Debug("Send event: " + keptnevents.InternalGetSLIEventType)
 	return eh.KeptnHandler.SendCloudEvent(event)
 }
 
 func (eh *StartEvaluationHandler) getTestExecutionResult() string {
-	dataByte, err := eh.Event.DataBytes()
-	if err != nil {
-		eh.KeptnHandler.Logger.Error("Could not get event as byte array: " + err.Error())
-	}
 
 	e := &keptnevents.TestsFinishedEventData{}
-	err = json.Unmarshal(dataByte, e)
+	err := eh.Event.DataAs(e)
 	if err != nil {
 		eh.KeptnHandler.Logger.Error("Could not unmarshal event payload: " + err.Error())
 	}

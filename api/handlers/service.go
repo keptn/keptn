@@ -2,16 +2,11 @@ package handlers
 
 import (
 	"fmt"
-	"net/url"
-	"time"
-
-	"github.com/cloudevents/sdk-go/pkg/cloudevents"
-	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
 	"github.com/google/uuid"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
-	keptnutils "github.com/keptn/go-utils/pkg/lib"
+	keptnutils "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations/service"
 	"github.com/keptn/keptn/api/utils"
@@ -43,8 +38,6 @@ func PostServiceHandlerFunc(params service.PostProjectProjectNameServiceParams, 
 
 	eventContext := models.EventContext{KeptnContext: &keptnContext, Token: &token}
 
-	source, _ := url.Parse("https://github.com/keptn/keptn/api")
-
 	deploymentStrategies, err := mapDeploymentStrategies(params.Service.DeploymentStrategies)
 	if err != nil {
 		l.Error(fmt.Sprintf("Cannot map dep %s", err.Error()))
@@ -59,20 +52,8 @@ func PostServiceHandlerFunc(params service.PostProjectProjectNameServiceParams, 
 	}
 	forwardData := serviceCreateEventData{ServiceCreateEventData: serviceData, EventContext: eventContext}
 
-	contentType := "application/json"
-	event := cloudevents.Event{
-		Context: cloudevents.EventContextV02{
-			ID:          uuid.New().String(),
-			Time:        &types.Timestamp{Time: time.Now()},
-			Type:        keptnevents.InternalServiceCreateEventType,
-			Source:      types.URLRef{URL: *source},
-			ContentType: &contentType,
-			Extensions:  map[string]interface{}{"shkeptncontext": keptnContext},
-		}.AsV02(),
-		Data: forwardData,
-	}
+	err = utils.SendEvent(keptnContext, "", keptnevents.InternalServiceCreateEventType, "", forwardData, l)
 
-	_, err = utils.PostToEventBroker(event)
 	if err != nil {
 		l.Error(fmt.Sprintf("Error sending CloudEvent %s", err.Error()))
 		return getServiceInternalError(err)
@@ -96,28 +77,14 @@ func DeleteServiceHandlerFunc(params service.DeleteProjectProjectNameServiceServ
 
 	eventContext := models.EventContext{KeptnContext: &keptnContext, Token: &token}
 
-	source, _ := url.Parse("https://github.com/keptn/keptn/api")
-
 	serviceData := keptnevents.ServiceDeleteEventData{
 		Project: params.ProjectName,
 		Service: params.ServiceName,
 	}
 	forwardData := serviceDeleteEventData{ServiceDeleteEventData: serviceData, EventContext: eventContext}
 
-	contentType := "application/json"
-	event := cloudevents.Event{
-		Context: cloudevents.EventContextV02{
-			ID:          uuid.New().String(),
-			Time:        &types.Timestamp{Time: time.Now()},
-			Type:        keptnevents.InternalServiceDeleteEventType,
-			Source:      types.URLRef{URL: *source},
-			ContentType: &contentType,
-			Extensions:  map[string]interface{}{"shkeptncontext": keptnContext},
-		}.AsV02(),
-		Data: forwardData,
-	}
+	err = utils.SendEvent(keptnContext, "", keptnevents.InternalServiceDeleteEventType, "", forwardData, l)
 
-	_, err = utils.PostToEventBroker(event)
 	if err != nil {
 		l.Error(fmt.Sprintf("Error sending CloudEvent %s", err.Error()))
 		return getServiceInternalError(err)

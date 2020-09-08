@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"github.com/keptn/keptn/api/utils"
 	"net/http/httptest"
 	"testing"
 
@@ -31,7 +32,7 @@ func Test_sanitizeURL(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := sanitizeURL(tt.in); got != tt.want {
+			if got := utils.SanitizeURL(tt.in); got != tt.want {
 				t.Errorf("sanitizeURL() = %v, want %v", got, tt.want)
 			}
 		})

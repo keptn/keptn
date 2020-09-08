@@ -4,7 +4,9 @@
 
 package ws
 
-import keptnutils "github.com/keptn/go-utils/pkg/lib"
+import (
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+)
 
 // Hub maintains the set of active clients and broadcasts messages to the
 // clients.
@@ -50,7 +52,7 @@ func NewHub() *Hub {
 }
 
 func (h *Hub) Run() {
-	l := keptnutils.NewLogger("", "", "api")
+	l := keptncommon.NewLogger("", "", "api")
 
 	for {
 		select {

@@ -3,16 +3,17 @@ package handler
 import (
 	"encoding/json"
 	"errors"
-	cloudevents "github.com/cloudevents/sdk-go"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptn "github.com/keptn/go-utils/pkg/lib"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/mitchellh/mapstructure"
 	"os"
 )
 
 // EvaluationDoneEventHandler handles incoming evaluation-done events
 type EvaluationDoneEventHandler struct {
-	KeptnHandler *keptn.Keptn
+	KeptnHandler *keptnv2.Keptn
 	Event        cloudevents.Event
 	Remediation  *Remediation
 }
@@ -50,7 +51,7 @@ func (eh *EvaluationDoneEventHandler) HandleEvent() error {
 		return err
 	}
 
-	remediations, err := getRemediationsByContext(eh.KeptnHandler.KeptnContext, *eh.KeptnHandler.KeptnBase)
+	remediations, err := getRemediationsByContext(eh.KeptnHandler.KeptnContext, eh.KeptnHandler.Event)
 	if err != nil {
 		msg := "could not retrieve open remediations"
 		eh.KeptnHandler.Logger.Error(msg + ": " + err.Error())
@@ -119,7 +120,7 @@ func (eh *EvaluationDoneEventHandler) getLastRemediationStatusChangedEvent(remed
 
 	events, errorObj := eventHandler.GetEvents(&keptnapi.EventFilter{
 		EventID: lastRemediationStatusChanged.EventID,
-		Project: eh.KeptnHandler.KeptnBase.Project,
+		Project: eh.KeptnHandler.Event.GetProject(),
 	})
 
 	if errorObj != nil {
@@ -166,7 +167,7 @@ func (eh *EvaluationDoneEventHandler) getRemediationTriggeredEvent(remediations 
 
 	events, errorObj := eventHandler.GetEvents(&keptnapi.EventFilter{
 		EventID: remediationTriggered.EventID,
-		Project: eh.KeptnHandler.KeptnBase.Project,
+		Project: eh.KeptnHandler.Event.GetProject(),
 	})
 
 	if errorObj != nil || len(events) == 0 {

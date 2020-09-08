@@ -5,7 +5,7 @@ import (
 
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
 
-	cloudevents "github.com/cloudevents/sdk-go"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 )
 
 const shkeptncontext = "1234-4567"
@@ -15,7 +15,7 @@ func compareEventContext(in1 cloudevents.Event, in2 cloudevents.Event) bool {
 
 	return in1.Type() == in2.Type() && in1.Source() == in2.Source() &&
 		in1.DataContentType() == in2.DataContentType() && reflect.DeepEqual(in1.Extensions(), in2.Extensions()) &&
-		reflect.DeepEqual(in1.Data, in2.Data)
+		reflect.DeepEqual(in1.Data(), in2.Data())
 }
 
 func getPtr(s string) *string {

@@ -2,7 +2,7 @@ package db
 
 import (
 	"context"
-	keptn "github.com/keptn/go-utils/pkg/lib"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"time"
@@ -11,7 +11,7 @@ import (
 // ProjectMongoDBRepo retrieves projects from a mongodb collection
 type ProjectMongoDBRepo struct {
 	DbConnection MongoDBConnection
-	Logger       keptn.LoggerInterface
+	Logger       keptncommon.LoggerInterface
 }
 
 const projectsCollectionName = "keptnProjectsMV"

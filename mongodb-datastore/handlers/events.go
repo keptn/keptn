@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"strconv"
 	"sync"
 	"time"
@@ -54,7 +55,7 @@ type ProjectEventData struct {
 	Project *string `json:"project,omitempty"`
 }
 
-func ensureDBConnection(logger *keptnutils.Logger) error {
+func ensureDBConnection(logger *keptncommon.Logger) error {
 	mutex.Lock()
 	defer mutex.Unlock()
 	var err error
@@ -89,7 +90,7 @@ func connectMongoDBClient() error {
 
 // ProcessEvent processes the passed event.
 func ProcessEvent(event *models.KeptnContextExtendedCE) error {
-	logger := keptnutils.NewLogger("", "", serviceName)
+	logger := keptncommon.NewLogger("", "", serviceName)
 	logger.Debug("save event to data store")
 
 	if err := ensureDBConnection(logger); err != nil {
@@ -104,7 +105,7 @@ func ProcessEvent(event *models.KeptnContextExtendedCE) error {
 	return insertEvent(logger, event)
 }
 
-func insertEvent(logger *keptnutils.Logger, event *models.KeptnContextExtendedCE) error {
+func insertEvent(logger *keptncommon.Logger, event *models.KeptnContextExtendedCE) error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -148,7 +149,7 @@ func insertEvent(logger *keptnutils.Logger, event *models.KeptnContextExtendedCE
 	return nil
 }
 
-func storeRootEvent(logger *keptnutils.Logger, collectionName string, ctx context.Context, event *models.KeptnContextExtendedCE) error {
+func storeRootEvent(logger *keptncommon.Logger, collectionName string, ctx context.Context, event *models.KeptnContextExtendedCE) error {
 	if collectionName == eventsCollectionName {
 		logger.Debug("Will not store root event because no project has been set in the event")
 		return nil
@@ -209,7 +210,7 @@ func storeEventInCollection(event *models.KeptnContextExtendedCE, collection *mo
 	return nil
 }
 
-func storeContextToProjectMapping(logger *keptnutils.Logger, event *models.KeptnContextExtendedCE, ctx context.Context, collectionName string) error {
+func storeContextToProjectMapping(logger *keptncommon.Logger, event *models.KeptnContextExtendedCE, ctx context.Context, collectionName string) error {
 	if collectionName == eventsCollectionName {
 		logger.Debug("Will not store mapping between context and project because no project has been set in the event")
 		return nil
@@ -235,7 +236,7 @@ func storeContextToProjectMapping(logger *keptnutils.Logger, event *models.Keptn
 	return nil
 }
 
-func dropProjectEvents(logger *keptnutils.Logger, event *models.KeptnContextExtendedCE) error {
+func dropProjectEvents(logger *keptncommon.Logger, event *models.KeptnContextExtendedCE) error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -302,7 +303,7 @@ func getProjectOfEvent(event *models.KeptnContextExtendedCE) string {
 
 // GetEvents returns all events from the data store sorted by time
 func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
-	logger := keptnutils.NewLogger("", "", serviceName)
+	logger := keptncommon.NewLogger("", "", serviceName)
 	logger.Debug("getting events from the data store")
 
 	if err := ensureDBConnection(logger); err != nil {
@@ -463,7 +464,7 @@ func getSearchOptions(params event.GetEventsParams) bson.M {
 	return searchOptions
 }
 
-func flattenRecursively(i interface{}, logger *keptnutils.Logger) (interface{}, error) {
+func flattenRecursively(i interface{}, logger *keptncommon.Logger) (interface{}, error) {
 
 	if _, ok := i.(bson.D); ok {
 		d := i.(bson.D)

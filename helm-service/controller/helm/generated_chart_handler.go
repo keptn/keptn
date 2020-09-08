@@ -2,6 +2,7 @@ package helm
 
 import (
 	"fmt"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"strings"
 
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
@@ -14,10 +15,10 @@ import (
 
 type GeneratedChartHandler struct {
 	mesh   mesh.Mesh
-	logger keptnevents.LoggerInterface
+	logger keptncommon.LoggerInterface
 }
 
-func NewGeneratedChartHandler(mesh mesh.Mesh, logger keptnevents.LoggerInterface) *GeneratedChartHandler {
+func NewGeneratedChartHandler(mesh mesh.Mesh, logger keptncommon.LoggerInterface) *GeneratedChartHandler {
 	return &GeneratedChartHandler{
 		mesh:   mesh,
 		logger: logger,

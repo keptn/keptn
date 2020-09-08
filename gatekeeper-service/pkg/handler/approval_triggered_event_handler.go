@@ -5,19 +5,21 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/keptn/go-utils/pkg/lib/keptn"
 	"io/ioutil"
 	"net/http"
 
-	"github.com/cloudevents/sdk-go/pkg/cloudevents"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 )
 
 type ApprovalTriggeredEventHandler struct {
-	keptn *keptnevents.Keptn
+	keptn *keptnv2.Keptn
 }
 
 // NewApprovalTriggeredEventHandler returns a new approal.triggered event handler
-func NewApprovalTriggeredEventHandler(keptn *keptnevents.Keptn) *ApprovalTriggeredEventHandler {
+func NewApprovalTriggeredEventHandler(keptn *keptnv2.Keptn) *ApprovalTriggeredEventHandler {
 	return &ApprovalTriggeredEventHandler{keptn: keptn}
 }
 
@@ -25,7 +27,7 @@ func (a *ApprovalTriggeredEventHandler) IsTypeHandled(event cloudevents.Event) b
 	return event.Type() == keptnevents.ApprovalTriggeredEventType
 }
 
-func (a *ApprovalTriggeredEventHandler) Handle(event cloudevents.Event, keptnHandler *keptnevents.Keptn, shipyard *keptnevents.Shipyard) {
+func (a *ApprovalTriggeredEventHandler) Handle(event cloudevents.Event, keptnHandler *keptnv2.Keptn, shipyard *keptnevents.Shipyard) {
 
 	data := &keptnevents.ApprovalTriggeredEventData{}
 	if err := event.DataAs(data); err != nil {
@@ -104,7 +106,7 @@ func (a *ApprovalTriggeredEventHandler) getApprovalFinishedEvent(inputEvent kept
 }
 
 func createApproval(eventID, keptnContext, image, tag, time, project, stage, service string) error {
-	configurationServiceEndpoint, err := keptnevents.GetServiceEndpoint(configService)
+	configurationServiceEndpoint, err := keptn.GetServiceEndpoint(configService)
 	if err != nil {
 		return errors.New("could not retrieve configuration-service URL")
 	}

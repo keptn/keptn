@@ -7,7 +7,7 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
 	keptnmodels "github.com/keptn/go-utils/pkg/lib"
-	utils "github.com/keptn/go-utils/pkg/lib"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/configuration-service/common"
 	"github.com/keptn/keptn/configuration-service/config"
 	"github.com/keptn/keptn/configuration-service/models"
@@ -16,7 +16,7 @@ import (
 )
 
 func getStages(params stage.GetProjectProjectNameStageParams) ([]*models.Stage, errors.Error) {
-	logger := utils.NewLogger("", "", "configuration-service")
+	logger := keptncommon.NewLogger("", "", "configuration-service")
 	if !common.ProjectExists(params.ProjectName) {
 		return nil, errors.New(404, "Project does not exist.")
 	}
@@ -61,14 +61,14 @@ func getStages(params stage.GetProjectProjectNameStageParams) ([]*models.Stage, 
 
 // PostProjectProjectNameStageHandlerFunc creates a new stage
 func PostProjectProjectNameStageHandlerFunc(params stage.PostProjectProjectNameStageParams) middleware.Responder {
-	logger := utils.NewLogger("", "", "configuration-service")
+	logger := keptncommon.NewLogger("", "", "configuration-service")
 	if !common.ProjectExists(params.ProjectName) {
 		return stage.NewPostProjectProjectNameStageBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Project does not exist.")})
 	}
 
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
-	
+
 	err := common.CreateBranch(params.ProjectName, params.Stage.StageName, "master")
 	if err != nil {
 		logger.Error(fmt.Sprintf("Could not create %s branch for project %s", params.Stage.StageName, params.ProjectName))

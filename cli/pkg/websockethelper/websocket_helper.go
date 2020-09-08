@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"io"
 	"log"
 	"net"
@@ -16,18 +17,17 @@ import (
 	"github.com/gorilla/websocket"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
-	keptnutils "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/cli/pkg/logging"
 )
 
 // PrintWSContentEventContext opens a websocket using the passed
 // connection data and prints status data
 func PrintWSContentEventContext(eventContext *apimodels.EventContext, apiEndPoint url.URL) error {
-	connectionData := &keptnutils.ConnectionData{EventContext: *eventContext}
+	connectionData := &keptncommon.ConnectionData{EventContext: *eventContext}
 	return printWSContent(*connectionData, apiEndPoint)
 }
 
-func printWSContent(connData keptnutils.ConnectionData, apiEndPoint url.URL) error {
+func printWSContent(connData keptncommon.ConnectionData, apiEndPoint url.URL) error {
 
 	err := validateConnectionData(connData)
 	if err != nil {
@@ -45,7 +45,7 @@ func printWSContent(connData keptnutils.ConnectionData, apiEndPoint url.URL) err
 	return readAndPrintCE(ws)
 }
 
-func validateConnectionData(connData keptnutils.ConnectionData) error {
+func validateConnectionData(connData keptncommon.ConnectionData) error {
 	if *connData.EventContext.Token == "" && *connData.EventContext.KeptnContext == "" {
 		return errors.New("Could not open websocket because Token or KeptnContext are missing")
 	}
@@ -53,7 +53,7 @@ func validateConnectionData(connData keptnutils.ConnectionData) error {
 }
 
 // openWS opens a websocket
-func openWS(connData keptnutils.ConnectionData, apiEndPoint url.URL) (*websocket.Conn, *http.Response, error) {
+func openWS(connData keptncommon.ConnectionData, apiEndPoint url.URL) (*websocket.Conn, *http.Response, error) {
 
 	wsEndPoint := apiEndPoint
 	if apiEndPoint.Scheme == "https" {
@@ -94,7 +94,7 @@ func readAndPrintCE(ws *websocket.Conn) error {
 
 		ws.SetReadDeadline(time.Now().Add(readDeadline))
 		if messageType == 1 { // 1.. textmessage
-			var messageCE keptnutils.MyCloudEvent
+			var messageCE keptncommon.MyCloudEvent
 
 			dec := json.NewDecoder(strings.NewReader(string(message)))
 			if err := dec.Decode(&messageCE); err == io.EOF {
@@ -111,8 +111,8 @@ func readAndPrintCE(ws *websocket.Conn) error {
 	return nil
 }
 
-func printCE(ce keptnutils.MyCloudEvent) bool {
-	var log keptnutils.LogData
+func printCE(ce keptncommon.MyCloudEvent) bool {
+	var log keptncommon.LogData
 	if err := json.Unmarshal(ce.Data, &log); err != nil {
 		fmt.Println("JSON unmarshalling error. LogData format expected.")
 		//return nil, err

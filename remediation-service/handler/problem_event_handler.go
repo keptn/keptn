@@ -3,12 +3,13 @@ package handler
 import (
 	cloudevents "github.com/cloudevents/sdk-go"
 	keptn "github.com/keptn/go-utils/pkg/lib"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 )
 
 // ProblemEventHandler handles incoming problem events
 type ProblemEventHandler struct {
 	KeptnHandler *keptn.Keptn
-	Logger       keptn.LoggerInterface
+	Logger       keptncommon.LoggerInterface
 	Event        cloudevents.Event
 	Remediation  *Remediation
 }

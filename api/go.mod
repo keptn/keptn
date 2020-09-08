@@ -3,7 +3,7 @@ module github.com/keptn/keptn/api
 go 1.13
 
 require (
-	github.com/cloudevents/sdk-go v0.10.0
+	github.com/cloudevents/sdk-go/v2 v2.2.0
 	github.com/gbrlsnchs/jwt/v2 v2.0.0
 	github.com/go-openapi/errors v0.19.6
 	github.com/go-openapi/loads v0.19.5
@@ -18,7 +18,7 @@ require (
 	github.com/gorilla/websocket v1.4.1
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/json-iterator/go v1.1.9 // indirect
-	github.com/keptn/go-utils v0.7.1
+	github.com/keptn/go-utils v0.6.3-0.20200908082455-010bbcf95e6f
 	github.com/keptn/kubernetes-utils v0.2.0
 	github.com/kinbiko/jsonassert v1.0.1
 	github.com/magiconair/properties v1.8.1

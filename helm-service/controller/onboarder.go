@@ -4,6 +4,8 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"os"
 	"time"
 
@@ -11,7 +13,7 @@ import (
 
 	"helm.sh/helm/v3/pkg/chart"
 
-	cloudevents "github.com/cloudevents/sdk-go"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 
 	configutils "github.com/keptn/go-utils/pkg/api/utils"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
@@ -24,12 +26,12 @@ import (
 // Onboarder is a container of variables required for onboarding a new service
 type Onboarder struct {
 	mesh             mesh.Mesh
-	keptnHandler     *keptnevents.Keptn
+	keptnHandler     *keptnv2.Keptn
 	configServiceURL string
 }
 
 // NewOnboarder creates a new Onboarder
-func NewOnboarder(mesh mesh.Mesh, keptnHandler *keptnevents.Keptn, configServiceURL string) *Onboarder {
+func NewOnboarder(mesh mesh.Mesh, keptnHandler *keptnv2.Keptn, configServiceURL string) *Onboarder {
 	return &Onboarder{
 		mesh:             mesh,
 		keptnHandler:     keptnHandler,
@@ -55,7 +57,7 @@ func (o *Onboarder) DoOnboard(ce cloudevents.Event, loggingDone chan bool) error
 	// Only close logger/websocket, if there is a chart which needs to be onboarded
 	defer func() { loggingDone <- true }()
 
-	keptnHandler, err := keptnevents.NewKeptn(&ce, keptnevents.KeptnOpts{})
+	keptnHandler, err := keptnv2.NewKeptn(&ce, keptncommon.KeptnOpts{})
 	if err != nil {
 		o.keptnHandler.Logger.Error("Could not initialize Keptn handler: " + err.Error())
 		return err
@@ -167,7 +169,7 @@ func (o *Onboarder) checkAndSetServiceName(event *keptnevents.ServiceCreateEvent
 		return fmt.Errorf("Helm Chart has to contain exactly one Kubernetes service, but it contains %d services", len(services))
 	}
 	k8sServiceName := services[0].Name
-	if !keptnevents.ValidateKeptnEntityName(k8sServiceName) {
+	if !keptncommon.ValidateKeptnEntityName(k8sServiceName) {
 		return errors.New(errorMsg)
 	}
 	if event.Service == "" {

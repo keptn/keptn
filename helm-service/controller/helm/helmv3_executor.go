@@ -2,12 +2,11 @@ package helm
 
 import (
 	"fmt"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"os"
 	"path/filepath"
 
 	"helm.sh/helm/v3/pkg/release"
-
-	keptnevents "github.com/keptn/go-utils/pkg/lib"
 
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
@@ -32,11 +31,11 @@ func getInClusterConfig() bool {
 
 // HelmV3Executor provides util functions to execute helm commands
 type HelmV3Executor struct {
-	logger keptnevents.LoggerInterface
+	logger keptncommon.LoggerInterface
 }
 
 // NewHelmV3Executor creates a new HelmV3Executor
-func NewHelmV3Executor(logger keptnevents.LoggerInterface) *HelmV3Executor {
+func NewHelmV3Executor(logger keptncommon.LoggerInterface) *HelmV3Executor {
 	return &HelmV3Executor{logger: logger}
 }
 

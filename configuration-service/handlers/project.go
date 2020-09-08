@@ -2,10 +2,10 @@ package handlers
 
 import (
 	"fmt"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"os"
 	"time"
 
-	keptn "github.com/keptn/go-utils/pkg/lib"
 	k8sutils "github.com/keptn/kubernetes-utils/pkg"
 
 	"github.com/go-openapi/runtime/middleware"
@@ -56,7 +56,7 @@ func GetProjectHandlerFunc(params project.GetProjectParams) middleware.Responder
 // PostProjectHandlerFunc creates a new project
 func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Responder {
 	credentialsCreated := false
-	logger := keptn.NewLogger("", "", "configuration-service")
+	logger := keptncommon.NewLogger("", "", "configuration-service")
 	projectConfigPath := config.ConfigDir + "/" + params.Project.ProjectName
 
 	// check if the project already exists
@@ -175,7 +175,7 @@ func GetProjectProjectNameHandlerFunc(params project.GetProjectProjectNameParams
 
 // PutProjectProjectNameHandlerFunc updates a project
 func PutProjectProjectNameHandlerFunc(params project.PutProjectProjectNameParams) middleware.Responder {
-	logger := keptn.NewLogger("", "", "configuration-service")
+	logger := keptncommon.NewLogger("", "", "configuration-service")
 	// check if the project already exists
 	if common.ProjectExists(params.Project.ProjectName) {
 		common.LockProject(params.Project.ProjectName)
@@ -216,7 +216,7 @@ func PutProjectProjectNameHandlerFunc(params project.PutProjectProjectNameParams
 
 // DeleteProjectProjectNameHandlerFunc deletes a project
 func DeleteProjectProjectNameHandlerFunc(params project.DeleteProjectProjectNameParams) middleware.Responder {
-	logger := keptn.NewLogger("", "", "configuration-service")
+	logger := keptncommon.NewLogger("", "", "configuration-service")
 
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)

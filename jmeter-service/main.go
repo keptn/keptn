@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"log"
 	"net/url"
 	"os"
@@ -11,10 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cloudevents/sdk-go/pkg/cloudevents"
-	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
-	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
-	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 
 	"github.com/google/uuid"
@@ -44,7 +43,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	var shkeptncontext string
 	event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
 
-	logger := keptn.NewLogger(shkeptncontext, event.Context.GetID(), "jmeter-service")
+	logger := keptncommon.NewLogger(shkeptncontext, event.Context.GetID(), "jmeter-service")
 
 	data := &keptn.DeploymentFinishedEventData{}
 	if err := event.DataAs(data); err != nil {
@@ -71,7 +70,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 // This method executes the correct tests based on the passed testStrategy in the deployment finished event
 // The method will always try to execute a health check workload first, then execute the workload based on the passed testStrategy
 //
-func runTests(event cloudevents.Event, shkeptncontext string, data keptn.DeploymentFinishedEventData, logger *keptn.Logger) {
+func runTests(event cloudevents.Event, shkeptncontext string, data keptn.DeploymentFinishedEventData, logger *keptncommon.Logger) {
 
 	testInfo := getTestInfo(data)
 	id := uuid.New().String()
@@ -191,7 +190,7 @@ func getServiceURL(data keptn.DeploymentFinishedEventData) (*url.URL, error) {
 //
 // executes the actual JMEter tests based on the workload configuration
 //
-func runWorkload(serviceUrl *url.URL, testInfo *TestInfo, id string, workload *Workload, logger *keptn.Logger) (bool, error) {
+func runWorkload(serviceUrl *url.URL, testInfo *TestInfo, id string, workload *Workload, logger *keptncommon.Logger) (bool, error) {
 
 	// for testStrategy functional we enforce a 0% error policy!
 	breakOnFunctionalIssues := workload.TestStrategy == TestStrategy_Functional
@@ -212,9 +211,8 @@ func runWorkload(serviceUrl *url.URL, testInfo *TestInfo, id string, workload *W
 		breakOnFunctionalIssues, logger)
 }
 
-func sendTestsFinishedEvent(shkeptncontext string, incomingEvent cloudevents.Event, startedAt time.Time, result string, logger *keptn.Logger) error {
+func sendTestsFinishedEvent(shkeptncontext string, incomingEvent cloudevents.Event, startedAt time.Time, result string, logger *keptncommon.Logger) error {
 	source, _ := url.Parse("jmeter-service")
-	contentType := "application/json"
 
 	testFinishedData := keptn.TestsFinishedEventData{}
 	// fill in data from incoming event (e.g., project, service, stage, teststrategy, deploymentstrategy)
@@ -228,17 +226,12 @@ func sendTestsFinishedEvent(shkeptncontext string, incomingEvent cloudevents.Eve
 	// set test result
 	testFinishedData.Result = result
 
-	event := cloudevents.Event{
-		Context: cloudevents.EventContextV02{
-			ID:          uuid.New().String(),
-			Time:        &types.Timestamp{Time: time.Now()},
-			Type:        keptn.TestsFinishedEventType,
-			Source:      types.URLRef{URL: *source},
-			ContentType: &contentType,
-			Extensions:  map[string]interface{}{"shkeptncontext": shkeptncontext},
-		}.AsV02(),
-		Data: testFinishedData,
-	}
+	event := cloudevents.NewEvent()
+	event.SetType(keptn.TestsFinishedEventType)
+	event.SetSource(source.String())
+	event.SetDataContentType(cloudevents.ApplicationJSON)
+	event.SetExtension("shkeptncontext", shkeptncontext)
+	event.SetData(cloudevents.ApplicationJSON, testFinishedData)
 
 	return sendEvent(event)
 }
@@ -250,23 +243,17 @@ func _main(args []string, env envConfig) int {
 	}
 
 	ctx := context.Background()
+	ctx = cloudevents.WithEncodingStructured(ctx)
 
-	t, err := cloudeventshttp.New(
-		cloudeventshttp.WithPort(env.Port),
-		cloudeventshttp.WithPath(env.Path),
-	)
-
-	if err != nil {
-		log.Fatalf("failed to create transport, %v", err)
-	}
-	c, err := client.New(t)
+	p, err := cloudevents.NewHTTP(cloudevents.WithPath(env.Path), cloudevents.WithPort(env.Port))
 	if err != nil {
 		log.Fatalf("failed to create client, %v", err)
 	}
-
-	log.Println("Started jmeter-extended-service on ", env.Path, env.Port)
-
-	log.Fatalf("failed to start receiver: %s", c.StartReceiver(ctx, gotEvent))
+	c, err := cloudevents.NewClient(p)
+	if err != nil {
+		log.Fatalf("failed to create client, %v", err)
+	}
+	log.Fatal(c.StartReceiver(ctx, gotEvent))
 
 	return 0
 }
@@ -285,24 +272,15 @@ func sendEvent(event cloudevents.Event) error {
 	if endPoint.Host == "" {
 		return errors.New("Host of eventbroker not set")
 	}
+	keptnHandler, err := keptnv2.NewKeptn(&event, keptncommon.KeptnOpts{
+		EventBrokerURL: endPoint.String(),
+	})
 
-	transport, err := cloudeventshttp.New(
-		cloudeventshttp.WithTarget(endPoint.String()),
-		cloudeventshttp.WithEncoding(cloudeventshttp.StructuredV02),
-	)
 	if err != nil {
-		return errors.New("Failed to create transport:" + err.Error())
+		return errors.New("Failed to initialize Keptn handler: " + err.Error())
 	}
 
-	c, err := client.New(transport)
-	if err != nil {
-		return errors.New("Failed to create HTTP client:" + err.Error())
-	}
-
-	if _, _, err := c.Send(context.Background(), event); err != nil {
-		return errors.New("Failed to send cloudevent:, " + err.Error())
-	}
-	return nil
+	return keptnHandler.SendCloudEvent(event)
 }
 
 // getServiceEndpoint gets an endpoint stored in an environment variable and sets http as default scheme

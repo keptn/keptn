@@ -6,8 +6,7 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/cloudevents/sdk-go/pkg/cloudevents"
-	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
@@ -91,21 +90,18 @@ keptn configure monitoring prometheus --project=PROJECTNAME --service=SERVICENAM
 		}
 
 		source, _ := url.Parse("https://github.com/keptn/keptn/cli#configuremonitoring")
-		contentType := "application/json"
-		sdkEvent := cloudevents.Event{
-			Context: cloudevents.EventContextV02{
-				ID:          uuid.New().String(),
-				Type:        keptn.ConfigureMonitoringEventType,
-				Source:      types.URLRef{URL: *source},
-				ContentType: &contentType,
-			}.AsV02(),
-			Data: configureMonitoringEventData,
-		}
+
+		sdkEvent := cloudevents.NewEvent()
+		sdkEvent.SetID(uuid.New().String())
+		sdkEvent.SetType(keptn.ConfigureMonitoringEventType)
+		sdkEvent.SetSource(source.String())
+		sdkEvent.SetDataContentType(cloudevents.ApplicationJSON)
+		sdkEvent.SetData(cloudevents.ApplicationJSON, configureMonitoringEventData)
 
 		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
-		eventByte, err := sdkEvent.MarshalJSON()
+		eventByte, err := json.Marshal(sdkEvent)
 		if err != nil {
 			return fmt.Errorf("Failed to marshal cloud event. %s", err.Error())
 		}

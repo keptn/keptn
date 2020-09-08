@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/go-test/deep"
-	keptn "github.com/keptn/go-utils/pkg/lib"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
@@ -343,7 +343,7 @@ func Test_eventManager_handleStartedEvent(t *testing.T) {
 	type fields struct {
 		projectRepo db.ProjectRepo
 		eventRepo   db.EventRepo
-		logger      *keptn.Logger
+		logger      *keptncommon.Logger
 	}
 	type args struct {
 		event models.Event
@@ -428,7 +428,7 @@ func Test_eventManager_handleFinishedEvent(t *testing.T) {
 	type fields struct {
 		projectRepo db.ProjectRepo
 		eventRepo   db.EventRepo
-		logger      *keptn.Logger
+		logger      *keptncommon.Logger
 	}
 	type args struct {
 		event models.Event
@@ -486,7 +486,7 @@ func Test_eventManager_getEvents(t *testing.T) {
 	type fields struct {
 		projectRepo db.ProjectRepo
 		eventRepo   db.EventRepo
-		logger      *keptn.Logger
+		logger      *keptncommon.Logger
 	}
 	type args struct {
 		project string
@@ -509,7 +509,7 @@ func Test_eventManager_getEvents(t *testing.T) {
 						return []models.Event{getTestTriggeredEvent()}, nil
 					},
 				},
-				logger: keptn.NewLogger("", "", ""),
+				logger: keptncommon.NewLogger("", "", ""),
 			},
 			args: args{
 				project: "test-project",
@@ -532,7 +532,7 @@ func Test_eventManager_getEvents(t *testing.T) {
 						return nil, db.ErrNoEventFound
 					},
 				},
-				logger: keptn.NewLogger("", "", ""),
+				logger: keptncommon.NewLogger("", "", ""),
 			},
 			args: args{
 				project: "test-project",
@@ -662,11 +662,13 @@ func getTestTaskFinishedEvent(stage string, triggeredID string) models.Event {
 				Result:  keptnv2.ResultPass,
 			},
 			Test: struct {
-				Start string `json:"start"`
-				End   string `json:"end"`
+				Start     string `json:"start"`
+				End       string `json:"end"`
+				GitCommit string `json:"gitCommit"`
 			}{
-				Start: "start",
-				End:   "end",
+				Start:     "start",
+				End:       "end",
+				GitCommit: "commit-id",
 			},
 		},
 		Extensions:     nil,
@@ -1527,7 +1529,7 @@ func getTestShipyardController() *shipyardController {
 				return nil
 			},
 		},
-		logger: keptn.NewLogger("", "", ""),
+		logger: keptncommon.NewLogger("", "", ""),
 	}
 	return em
 }

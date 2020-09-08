@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"net/url"
 	"os"
 	"regexp"
@@ -37,7 +38,7 @@ func getConfigurationServiceURL() string {
 	return "localhost:8080"
 }
 
-func executeJMeter(testInfo *TestInfo, workload *Workload, resultsDir string, url *url.URL, LTN string, funcValidation bool, logger *keptnutils.Logger) (bool, error) {
+func executeJMeter(testInfo *TestInfo, workload *Workload, resultsDir string, url *url.URL, LTN string, funcValidation bool, logger *keptncommon.Logger) (bool, error) {
 	os.RemoveAll(resultsDir)
 	os.MkdirAll(resultsDir, 0644)
 

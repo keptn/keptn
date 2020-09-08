@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"io"
 	"net"
 	"net/http"
@@ -11,7 +12,6 @@ import (
 	"testing"
 
 	configmodels "github.com/keptn/go-utils/pkg/api/models"
-	keptn "github.com/keptn/go-utils/pkg/lib"
 	"github.com/magiconair/properties/assert"
 )
 
@@ -31,14 +31,14 @@ func testingHTTPClient(handler http.Handler) (*http.Client, func()) {
 }
 
 func TestGetEndpoint(t *testing.T) {
-	endPoint, err := keptn.GetServiceEndpoint(configservice)
+	endPoint, err := keptncommon.GetServiceEndpoint(configservice)
 
 	assert.Equal(t, err, errors.New("Provided environment variable CONFIGURATION_SERVICE has no valid value"), "Received unexpected error")
 	assert.Equal(t, endPoint.Path, "", "Endpoint has to be empty")
 
 	os.Setenv("CONFIGURATION_SERVICE", "http://configuration-service.keptn.svc.cluster.local")
 
-	endPoint, err = keptn.GetServiceEndpoint(configservice)
+	endPoint, err = keptncommon.GetServiceEndpoint(configservice)
 
 	assert.Equal(t, err, nil, "Received unexpected error")
 	assert.Equal(t, endPoint.Scheme, "http", "Schema of configuration-service endpoint incorrect")

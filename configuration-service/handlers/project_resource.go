@@ -3,12 +3,12 @@ package handlers
 import (
 	"encoding/base64"
 	"fmt"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"io/ioutil"
 	"strings"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
-	utils "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/configuration-service/common"
 	"github.com/keptn/keptn/configuration-service/config"
 	"github.com/keptn/keptn/configuration-service/models"
@@ -17,7 +17,7 @@ import (
 
 // GetProjectProjectNameResourceHandlerFunc get list of project resources
 func GetProjectProjectNameResourceHandlerFunc(params project_resource.GetProjectProjectNameResourceParams) middleware.Responder {
-	logger := utils.NewLogger("", "", "configuration-service")
+	logger := keptncommon.NewLogger("", "", "configuration-service")
 	if !common.ProjectExists(params.ProjectName) {
 		return project_resource.NewGetProjectProjectNameResourceNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project does not exist")})
 	}
@@ -40,7 +40,7 @@ func GetProjectProjectNameResourceHandlerFunc(params project_resource.GetProject
 
 // PutProjectProjectNameResourceHandlerFunc update list of project resources
 func PutProjectProjectNameResourceHandlerFunc(params project_resource.PutProjectProjectNameResourceParams) middleware.Responder {
-	logger := utils.NewLogger("", "", "configuration-service")
+	logger := keptncommon.NewLogger("", "", "configuration-service")
 	if !common.ProjectExists(params.ProjectName) {
 		return project_resource.NewPostProjectProjectNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Project does not exist")})
 	}
@@ -96,7 +96,7 @@ func PutProjectProjectNameResourceHandlerFunc(params project_resource.PutProject
 
 // PostProjectProjectNameResourceHandlerFunc creates a list of new resources
 func PostProjectProjectNameResourceHandlerFunc(params project_resource.PostProjectProjectNameResourceParams) middleware.Responder {
-	logger := utils.NewLogger("", "", "configuration-service")
+	logger := keptncommon.NewLogger("", "", "configuration-service")
 	if !common.ProjectExists(params.ProjectName) {
 		return project_resource.NewPostProjectProjectNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Project does not exist")})
 	}
@@ -144,7 +144,7 @@ func PostProjectProjectNameResourceHandlerFunc(params project_resource.PostProje
 
 // GetProjectProjectNameResourceResourceURIHandlerFunc gets the specified resource
 func GetProjectProjectNameResourceResourceURIHandlerFunc(params project_resource.GetProjectProjectNameResourceResourceURIParams) middleware.Responder {
-	logger := utils.NewLogger("", "", "configuration-service")
+	logger := keptncommon.NewLogger("", "", "configuration-service")
 	if !common.ProjectExists(params.ProjectName) {
 		return project_resource.NewGetProjectProjectNameResourceResourceURINotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project not found")})
 	}
@@ -183,7 +183,7 @@ func GetProjectProjectNameResourceResourceURIHandlerFunc(params project_resource
 
 // PutProjectProjectNameResourceResourceURIHandlerFunc updates a resource
 func PutProjectProjectNameResourceResourceURIHandlerFunc(params project_resource.PutProjectProjectNameResourceResourceURIParams) middleware.Responder {
-	logger := utils.NewLogger("", "", "configuration-service")
+	logger := keptncommon.NewLogger("", "", "configuration-service")
 	if !common.ProjectExists(params.ProjectName) {
 		return project_resource.NewPutProjectProjectNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Project does not exist")})
 	}
@@ -228,7 +228,7 @@ func PutProjectProjectNameResourceResourceURIHandlerFunc(params project_resource
 
 // DeleteProjectProjectNameResourceResourceURIHandlerFunc deletes a project resource
 func DeleteProjectProjectNameResourceResourceURIHandlerFunc(params project_resource.DeleteProjectProjectNameResourceResourceURIParams) middleware.Responder {
-	logger := utils.NewLogger("", "", "configuration-service")
+	logger := keptncommon.NewLogger("", "", "configuration-service")
 	if !common.ProjectExists(params.ProjectName) {
 		return project_resource.NewDeleteProjectProjectNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Project does not exist")})
 	}

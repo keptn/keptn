@@ -3,8 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
-
-	keptn "github.com/keptn/go-utils/pkg/lib"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 
 	"github.com/keptn/keptn/cli/pkg/websockethelper"
 
@@ -42,7 +41,7 @@ var crServiceCmd = &cobra.Command{
 			return errors.New("required argument SERVICENAME not set")
 		}
 
-		if !keptn.ValididateUnixDirectoryName(args[0]) {
+		if !keptncommon.ValididateUnixDirectoryName(args[0]) {
 			return errors.New("Service name contains special character(s)." +
 				"The service name has to be a valid Unix directory name. For details see " +
 				"https://www.cyberciti.biz/faq/linuxunix-rules-for-naming-file-and-directory-names/")

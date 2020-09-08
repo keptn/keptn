@@ -30,7 +30,7 @@ const approvalTriggeredMockResponse = `{
 		  },
 		  "id": "test-event-id-1",
 		  "source": "helm-service",
-		  "specversion": "0.2",
+		  "specversion": "1.0",
 		  "time": "2020-04-14T08:11:27.484Z",
 		  "type": "sh.keptn.event.approval.triggered",
 		  "shkeptncontext": "test-event-context-1"
@@ -60,7 +60,7 @@ const evaluationDoneMockResponse = `{
 		  },
 		  "id": "123",
 		  "source": "lighthouse-service",
-		  "specversion": "0.2",
+		  "specversion": "1.0",
 		  "time": "2020-06-02T12:28:54.642Z",
 		  "type": "sh.keptn.events.evaluation-done",
 		  "shkeptncontext": "test-event-context-1"

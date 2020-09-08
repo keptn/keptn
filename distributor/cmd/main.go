@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/url"
 
 	"net/http"
@@ -34,10 +35,8 @@ import (
 	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 
-	"github.com/cloudevents/sdk-go/pkg/cloudevents"
-	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
-	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
-	cloudeventsnats "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/nats"
+	cenats "github.com/cloudevents/sdk-go/protocol/nats/v2"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/nats-io/nats.go"
 )
@@ -48,7 +47,7 @@ type envConfig struct {
 	Path string `envconfig:"RCV_PATH" default:"/event"`
 }
 
-var httpClient client.Client
+var httpClient cloudevents.Client
 
 var nc *nats.Conn
 var subscriptions []*nats.Subscription
@@ -61,6 +60,10 @@ var close = make(chan bool)
 var mux sync.Mutex
 
 var sentCloudEvents map[string][]string
+
+var pubSubConnections map[string]*cenats.Sender
+
+var recipientURL string
 
 func main() {
 	var env envConfig
@@ -75,8 +78,6 @@ func main() {
 const connectionTypeNATS = "nats"
 const connectionTypeHTTP = "http"
 
-const defaultAPIEndpoint = "http://event-broker/keptn"
-
 func _main(args []string, env envConfig) int {
 
 	createEventForwardingEndpoint(env)
@@ -86,22 +87,23 @@ func _main(args []string, env envConfig) int {
 
 	switch connectionType {
 	case "":
-		createNATSConnection()
+		createNATSClientConnection()
 		break
 	case connectionTypeNATS:
-		createNATSConnection()
+		createNATSClientConnection()
 		break
 	case connectionTypeHTTP:
 		createHTTPConnection()
 		break
 	default:
-		createNATSConnection()
+		createNATSClientConnection()
 	}
 
 	return 0
 }
 
 func createEventForwardingEndpoint(env envConfig) {
+	pubSubConnections = map[string]*cenats.Sender{}
 	fmt.Println("Creating event forwarding endpoint")
 
 	http.HandleFunc("/event", EventForwardHandler)
@@ -136,19 +138,77 @@ func gotEvent(event cloudevents.Event) error {
 	fmt.Println("Received CloudEvent with ID " + event.ID() + ". Forwarding to Keptn API.")
 	apiEndpoint := os.Getenv("HTTP_EVENT_FORWARDING_ENDPOINT")
 	if apiEndpoint == "" {
-		apiEndpoint = defaultAPIEndpoint
+		fmt.Println("No external API endpoint defined. Forwarding directly to NATS server ")
+		return forwardEventToNATSServer(event)
 	}
+	return forwardEventToAPI(event, apiEndpoint)
+}
+
+func forwardEventToNATSServer(event cloudevents.Event) error {
+	var shkeptncontext string
+	event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
+
+	pubSubConnection, err := createPubSubConnection(event.Context.GetType())
+
+	c, err := cloudevents.NewClient(pubSubConnection)
+	if err != nil {
+		fmt.Printf("Failed to create client, %s", err.Error())
+		return err
+	}
+
+	ctx := context.Background()
+	ctx = cloudevents.WithEncodingStructured(ctx)
+
+	if result := c.Send(context.Background(), event); cloudevents.IsUndelivered(result) {
+		fmt.Printf("failed to send: %v", err)
+	} else {
+		fmt.Printf("sent: %s, accepted: %t", event.ID(), cloudevents.IsACK(result))
+	}
+
+	return nil
+}
+
+func createPubSubConnection(topic string) (*cenats.Sender, error) {
+	pubSubURL := os.Getenv("PUBSUB_URL")
+
+	if pubSubURL == "" {
+		return nil, errors.New("no PubSub URL defined")
+	}
+
+	if topic == "" {
+		return nil, errors.New("no PubSub Topic defined")
+	}
+
+	if pubSubConnections[topic] == nil {
+		p, err := cenats.NewSender(pubSubURL, topic, cenats.NatsOptions())
+		if err != nil {
+			fmt.Printf("Failed to create nats protocol, %s", err.Error())
+		}
+		/*
+			natsConnection, err := cloudeventsnats.New(
+				pubSubURL,
+				topic,
+			)
+			if err != nil {
+				fmt.Printf("Failed to create NATS connection, " + err.Error())
+				return nil, err
+			}
+		*/
+		pubSubConnections[topic] = p
+	}
+
+	return pubSubConnections[topic], nil
+}
+
+func forwardEventToAPI(event cloudevents.Event, apiEndpoint string) error {
 	fmt.Println("Keptn API endpoint: " + apiEndpoint)
 	apiToken := os.Getenv("HTTP_EVENT_ENDPOINT_AUTH_TOKEN")
 
 	payload, err := event.MarshalJSON()
 	req, err := http.NewRequest("POST", apiEndpoint, bytes.NewBuffer(payload))
-	if apiEndpoint == defaultAPIEndpoint {
-		// if the event goes directly to the cluster-internal event-broker, we need to set the Content-Type header accordingly
-		req.Header.Set("Content-Type", "application/cloudevents+json")
-	} else {
-		req.Header.Set("Content-Type", "application/json")
-	}
+
+	req.Header.Set("Content-Type", "application/json")
+
 	if apiToken != "" {
 		fmt.Println("Adding x-token header to HTTP request")
 		req.Header.Add("x-token", apiToken)
@@ -177,6 +237,10 @@ func gotEvent(event cloudevents.Event) error {
 }
 
 func createHTTPConnection() {
+	if os.Getenv("PUBSUB_RECIPIENT") == "" {
+		fmt.Printf("No pubsub recipient defined")
+		return
+	}
 	sentCloudEvents = map[string][]string{}
 	httpClient = createRecipientConnection()
 
@@ -217,14 +281,14 @@ func getHTTPPollingEndpoint() string {
 	return parsedURL.String()
 }
 
-func pollHTTPEventSource(endpoint string, token string, topics []string, client client.Client) {
+func pollHTTPEventSource(endpoint string, token string, topics []string, client cloudevents.Client) {
 	fmt.Println("Polling events from " + endpoint)
 	for _, topic := range topics {
 		pollEventsForTopic(endpoint, token, topic, client)
 	}
 }
 
-func pollEventsForTopic(endpoint string, token string, topic string, client client.Client) {
+func pollEventsForTopic(endpoint string, token string, topic string, client cloudevents.Client) {
 	fmt.Println("Retrieving events of type " + topic)
 	events, err := getEventsFromEndpoint(endpoint, token, topic)
 	if err != nil {
@@ -257,7 +321,7 @@ func pollEventsForTopic(endpoint string, token string, topic string, client clie
 
 		if e != nil {
 			fmt.Println("Sending CloudEvent with ID " + event.ID + " to " + os.Getenv("PUBSUB_RECIPIENT"))
-			err = sendEvent(*e, client)
+			err = sendEvent(*e)
 			if err != nil {
 				fmt.Println("Could not send CloudEvent: " + err.Error())
 			}
@@ -371,10 +435,12 @@ func stringp(s string) *string {
 	return &s
 }
 
-func createNATSConnection() {
+func createNATSClientConnection() {
+	if os.Getenv("PUBSUB_RECIPIENT") == "" {
+		fmt.Printf("No pubsub recipient defined")
+		return
+	}
 	uptimeTicker = time.NewTicker(10 * time.Second)
-
-	httpClient = createRecipientConnection()
 
 	natsURL := os.Getenv("PUBSUB_URL")
 	topics := strings.Split(os.Getenv("PUBSUB_TOPIC"), ",")
@@ -406,8 +472,9 @@ func createNATSConnection() {
 	}
 }
 
-func createRecipientConnection() client.Client {
-	recipientURL, err := getPubSubRecipientURL(
+func createRecipientConnection() cloudevents.Client {
+	var err error
+	recipientURL, err = getPubSubRecipientURL(
 		os.Getenv("PUBSUB_RECIPIENT"),
 		os.Getenv("PUBSUB_RECIPIENT_PORT"),
 		os.Getenv("PUBSUB_RECIPIENT_PATH"),
@@ -418,21 +485,16 @@ func createRecipientConnection() client.Client {
 		os.Exit(1)
 	}
 
-	httpTransport, err := cloudeventshttp.New(
-		cloudeventshttp.WithTarget(recipientURL),
-		cloudeventshttp.WithStructuredEncoding(),
-	)
+	p, err := cloudevents.NewHTTP()
 	if err != nil {
-		fmt.Println("failed to create Http connection: " + err.Error())
-		os.Exit(1)
-	}
-	httpClient, err := client.New(httpTransport)
-	if err != nil {
-		fmt.Println("failed to create client: " + err.Error())
-		os.Exit(1)
+		log.Fatalf("failed to create protocol: %s", err.Error())
 	}
 
-	return httpClient
+	c, err := cloudevents.NewClient(p, cloudevents.WithTimeNow(), cloudevents.WithUUIDs())
+	if err != nil {
+		log.Fatalf("failed to create client, %v", err)
+	}
+	return c
 }
 
 func handleMessage(m *nats.Msg) {
@@ -440,46 +502,42 @@ func handleMessage(m *nats.Msg) {
 	e, err := decodeCloudEvent(m.Data)
 
 	if e != nil {
-		err = sendEvent(*e, httpClient)
+		err = sendEvent(*e)
 		if err != nil {
 			fmt.Println("Could not send CloudEvent: " + err.Error())
 		}
 	}
 }
 
+type ceVersion struct {
+	SpecVersion string `json:"specversion"`
+}
+
 func decodeCloudEvent(data []byte) (*cloudevents.Event, error) {
-	ceMsg := &cloudeventsnats.Message{
-		Body: data,
-	}
 
-	codec := &cloudeventsnats.Codec{}
-	switch ceMsg.CloudEventsVersion() {
-	default:
-		fmt.Println("Cannot parse incoming payload: CloudEvent Spec version not set")
-		return nil, errors.New("CloudEvent version not set")
-	case cloudevents.CloudEventsVersionV02:
-		codec.Encoding = cloudeventsnats.StructuredV02
-	case cloudevents.CloudEventsVersionV03:
-		codec.Encoding = cloudeventsnats.StructuredV03
-	case cloudevents.CloudEventsVersionV1:
-		codec.Encoding = cloudeventsnats.StructuredV1
-	}
+	cv := &ceVersion{}
+	json.Unmarshal(data, cv)
+	event := cloudevents.NewEvent(cv.SpecVersion)
 
-	event, err := codec.Decode(ctx, ceMsg)
-
+	err := json.Unmarshal(data, &event)
 	if err != nil {
 		fmt.Println("Could not unmarshal CloudEvent: " + err.Error())
 		return nil, err
 	}
-	return event, nil
+
+	return &event, nil
 }
 
-func sendEvent(event cloudevents.Event, client client.Client) error {
-	ctx := context.Background()
-	_, _, err := client.Send(ctx, event)
-	if err != nil {
-		fmt.Println("failed to send event: " + err.Error())
+func sendEvent(event cloudevents.Event) error {
+	client := createRecipientConnection()
+
+	ctx := cloudevents.ContextWithTarget(context.Background(), recipientURL)
+	ctx = cloudevents.WithEncodingStructured(ctx)
+	if result := client.Send(ctx, event); cloudevents.IsUndelivered(result) {
+		fmt.Printf("failed to send: %s", result.Error())
+		return errors.New(result.Error())
 	}
+	fmt.Printf("sent: %s", event.ID())
 	return nil
 }
 
