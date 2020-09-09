@@ -73,7 +73,7 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 		return err
 	}
 
-	var filteredPreviousEvaluationEvents []*keptn.EvaluationDoneEventData
+	var filteredPreviousEvaluationEvents []*keptnv2.EvaluationFinishedEventData
 
 	// verify that we have enough evaluations
 	for _, val := range previousEvaluationEvents {
@@ -133,7 +133,7 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 	return sendEvent(shkeptncontext, triggeredEvents[0].ID, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), eh.KeptnHandler, evaluationResult)
 }
 
-func evaluateObjectives(e *keptn.InternalGetSLIDoneEventData, sloConfig *keptn.ServiceLevelObjectives, previousEvaluationEvents []*keptn.EvaluationDoneEventData) (*keptnv2.EvaluationFinishedEventData, float64, bool) {
+func evaluateObjectives(e *keptn.InternalGetSLIDoneEventData, sloConfig *keptn.ServiceLevelObjectives, previousEvaluationEvents []*keptnv2.EvaluationFinishedEventData) (*keptnv2.EvaluationFinishedEventData, float64, bool) {
 	evaluationResult := &keptnv2.EvaluationFinishedEventData{
 		EventData: keptnv2.EventData{
 			Status:  "",
@@ -171,11 +171,11 @@ func evaluateObjectives(e *keptn.InternalGetSLIDoneEventData, sloConfig *keptn.S
 		sliEvaluationResult.Value = (*keptnv2.SLIResult)(result)
 
 		// gather the previous results for the current SLI
-		var previousSLIResults []*keptn.SLIEvaluationResult
+		var previousSLIResults []*keptnv2.SLIEvaluationResult
 
 		if previousEvaluationEvents != nil && len(previousEvaluationEvents) > 0 {
 			for _, event := range previousEvaluationEvents {
-				for _, prevSLIResult := range event.EvaluationDetails.IndicatorResults {
+				for _, prevSLIResult := range event.Evaluation.IndicatorResults {
 					if strings.Compare(prevSLIResult.Value.Metric, objective.SLI) == 0 {
 						previousSLIResults = append(previousSLIResults, prevSLIResult)
 					}
@@ -248,6 +248,8 @@ func calculateScore(maximumAchievableScore float64, evaluationResult *keptnv2.Ev
 	}
 	if achievedPercentage >= passTargetPercentage && !keySLIFailed {
 		evaluationResult.Evaluation.Result = "pass"
+		evaluationResult.Result = keptnv2.ResultPass
+		evaluationResult.Status = keptnv2.StatusSucceeded
 	} else if sloConfig.TotalScore.Warning != "" && !keySLIFailed {
 		warnTargetPercentage, err := strconv.ParseFloat(strings.TrimSuffix(sloConfig.TotalScore.Warning, "%"), 64)
 
@@ -280,7 +282,7 @@ func getSLIResult(results []*keptn.SLIResult, sli string) *keptn.SLIResult {
 	return nil
 }
 
-func evaluateOrCombinedCriteria(result *keptnv2.SLIResult, sloCriteria []*keptn.SLOCriteria, previousResults []*keptn.SLIEvaluationResult, comparison *keptn.SLOComparison) (bool, []*keptnv2.SLITarget, error) {
+func evaluateOrCombinedCriteria(result *keptnv2.SLIResult, sloCriteria []*keptn.SLOCriteria, previousResults []*keptnv2.SLIEvaluationResult, comparison *keptn.SLOComparison) (bool, []*keptnv2.SLITarget, error) {
 	var satisfied bool
 	satisfied = false
 	var sliTargets []*keptnv2.SLITarget
@@ -298,7 +300,7 @@ func evaluateOrCombinedCriteria(result *keptnv2.SLIResult, sloCriteria []*keptn.
 }
 
 // evaluateCriteria evaluates a set of criteria strings. Per definition, all criteria clauses within a SLOCriteria object have to be fulfilled to satisfy the SLOCriteria
-func evaluateCriteriaSet(result *keptnv2.SLIResult, sloCriteria *keptn.SLOCriteria, previousResults []*keptn.SLIEvaluationResult, comparison *keptn.SLOComparison) (bool, []*keptnv2.SLITarget, error) {
+func evaluateCriteriaSet(result *keptnv2.SLIResult, sloCriteria *keptn.SLOCriteria, previousResults []*keptnv2.SLIEvaluationResult, comparison *keptn.SLOComparison) (bool, []*keptnv2.SLITarget, error) {
 	satisfied := true
 	var sliTargets []*keptnv2.SLITarget
 	for _, criteria := range sloCriteria.Criteria {
@@ -317,7 +319,7 @@ func evaluateCriteriaSet(result *keptnv2.SLIResult, sloCriteria *keptn.SLOCriter
 	return satisfied, sliTargets, nil
 }
 
-func evaluateSingleCriteria(sliResult *keptnv2.SLIResult, criteria string, previousResults []*keptn.SLIEvaluationResult, comparison *keptn.SLOComparison, violation *keptnv2.SLITarget) (bool, error) {
+func evaluateSingleCriteria(sliResult *keptnv2.SLIResult, criteria string, previousResults []*keptnv2.SLIEvaluationResult, comparison *keptn.SLOComparison, violation *keptnv2.SLITarget) (bool, error) {
 	if !sliResult.Success {
 		return false, errors.New("cannot evaluate invalid SLI result")
 	}
@@ -336,7 +338,7 @@ func evaluateSingleCriteria(sliResult *keptnv2.SLIResult, criteria string, previ
 	return evaluateComparison(sliResult, co, previousResults, comparison, violation)
 }
 
-func evaluateComparison(sliResult *keptnv2.SLIResult, co *criteriaObject, previousResults []*keptn.SLIEvaluationResult, comparison *keptn.SLOComparison, violation *keptnv2.SLITarget) (bool, error) {
+func evaluateComparison(sliResult *keptnv2.SLIResult, co *criteriaObject, previousResults []*keptnv2.SLIEvaluationResult, comparison *keptn.SLOComparison, violation *keptnv2.SLITarget) (bool, error) {
 	// aggregate previous results
 	var aggregatedValue float64
 	var targetValue float64
@@ -514,8 +516,8 @@ func parseCriteriaString(criteria string) (*criteriaObject, error) {
 }
 
 // gets previous evaluation-done events from mongodb-datastore
-func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptn.InternalGetSLIDoneEventData, numberOfPreviousResults int, includeResult string) ([]*keptn.EvaluationDoneEventData, error) {
-	var evaluationDoneEvents []*keptn.EvaluationDoneEventData
+func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptn.InternalGetSLIDoneEventData, numberOfPreviousResults int, includeResult string) ([]*keptnv2.EvaluationFinishedEventData, error) {
+	var evaluationDoneEvents []*keptnv2.EvaluationFinishedEventData
 
 	nextPageKey := ""
 	for {
@@ -549,7 +551,7 @@ func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptn.InternalGetSLIDone
 			if err != nil {
 				continue
 			}
-			var evaluationDoneEvent keptn.EvaluationDoneEventData
+			var evaluationDoneEvent keptnv2.EvaluationFinishedEventData
 			err = json.Unmarshal(bytes, &evaluationDoneEvent)
 
 			if err != nil {
@@ -557,12 +559,12 @@ func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptn.InternalGetSLIDone
 			}
 			switch includeResult {
 			case "pass":
-				if strings.ToLower(evaluationDoneEvent.Result) == "pass" {
+				if strings.ToLower(string(evaluationDoneEvent.Result)) == "pass" {
 					evaluationDoneEvents = append(evaluationDoneEvents, &evaluationDoneEvent)
 				}
 				break
 			case "pass_or_warn":
-				if strings.ToLower(evaluationDoneEvent.Result) == "pass" || strings.ToLower(evaluationDoneEvent.Result) == "warning" {
+				if strings.ToLower(string(evaluationDoneEvent.Result)) == "pass" || strings.ToLower(string(evaluationDoneEvent.Result)) == "warning" {
 					evaluationDoneEvents = append(evaluationDoneEvents, &evaluationDoneEvent)
 				}
 				break
@@ -598,7 +600,11 @@ func (eh *EvaluateSLIHandler) getPreviousTestExecutionResult(e *keptn.InternalGe
 	}
 
 	testsFinishedEvent := &keptnv2.TestFinishedEventData{}
-	err := mapstructure.Decode(events[0].Data, testsFinishedEvent)
+	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
+		Squash: true,
+		Result: testsFinishedEvent,
+	})
+	err = decoder.Decode(events[0].Data)
 	if err != nil {
 		eh.KeptnHandler.Logger.Error("Cannot decode approval.triggered event: " + err.Error())
 		return nil, err

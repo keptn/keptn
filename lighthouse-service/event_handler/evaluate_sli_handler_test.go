@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -202,9 +204,9 @@ func TestEvaluateValue(t *testing.T) {
 
 type evaluateFixedThresholdTestObject struct {
 	Name             string
-	InSLIResult      *keptnevents.SLIResult
+	InSLIResult      *keptnv2.SLIResult
 	InCriteriaObject *criteriaObject
-	InTarget         *keptnevents.SLITarget
+	InTarget         *keptnv2.SLITarget
 	ExpectedResult   bool
 	ExpectedError    error
 }
@@ -213,7 +215,7 @@ func TestEvaluateFixedThreshold(t *testing.T) {
 	tests := []*evaluateFixedThresholdTestObject{
 		{
 			Name: "10.0 > 9.0 should return true",
-			InSLIResult: &keptnevents.SLIResult{
+			InSLIResult: &keptnv2.SLIResult{
 				Metric:  "my-test-metric",
 				Value:   10.0,
 				Success: true,
@@ -226,7 +228,7 @@ func TestEvaluateFixedThreshold(t *testing.T) {
 				IsComparison:    false,
 				CheckIncrease:   false,
 			},
-			InTarget: &keptnevents.SLITarget{
+			InTarget: &keptnv2.SLITarget{
 				Criteria: ">9.0",
 			},
 			ExpectedResult: true,
@@ -234,7 +236,7 @@ func TestEvaluateFixedThreshold(t *testing.T) {
 		},
 		{
 			Name: "10.0 = 9.0 should return false",
-			InSLIResult: &keptnevents.SLIResult{
+			InSLIResult: &keptnv2.SLIResult{
 				Metric:  "my-test-metric",
 				Value:   10.0,
 				Success: true,
@@ -247,7 +249,7 @@ func TestEvaluateFixedThreshold(t *testing.T) {
 				IsComparison:    false,
 				CheckIncrease:   false,
 			},
-			InTarget: &keptnevents.SLITarget{
+			InTarget: &keptnv2.SLITarget{
 				Criteria: "=9.0",
 			},
 			ExpectedResult: false,
@@ -255,7 +257,7 @@ func TestEvaluateFixedThreshold(t *testing.T) {
 		},
 		{
 			Name: "10.0 ? 9.0 should return an error",
-			InSLIResult: &keptnevents.SLIResult{
+			InSLIResult: &keptnv2.SLIResult{
 				Metric:  "my-test-metric",
 				Value:   10.0,
 				Success: true,
@@ -268,7 +270,7 @@ func TestEvaluateFixedThreshold(t *testing.T) {
 				IsComparison:    false,
 				CheckIncrease:   false,
 			},
-			InTarget: &keptnevents.SLITarget{
+			InTarget: &keptnv2.SLITarget{
 				Criteria: "?9.0",
 			},
 			ExpectedResult: false,
@@ -324,11 +326,11 @@ func TestCalculatePercentile(t *testing.T) {
 
 type evaluateComparisonTestObject struct {
 	Name              string
-	InSLIResult       *keptnevents.SLIResult
+	InSLIResult       *keptnv2.SLIResult
 	InCriteriaObject  *criteriaObject
-	InPreviousResults []*keptnevents.SLIEvaluationResult
+	InPreviousResults []*keptnv2.SLIEvaluationResult
 	InComparison      *keptnmodelsv2.SLOComparison
-	InTarget          *keptnevents.SLITarget
+	InTarget          *keptnv2.SLITarget
 	ExpectedResult    bool
 	ExpectedError     error
 }
@@ -337,7 +339,7 @@ func TestEvaluateComparison(t *testing.T) {
 	tests := []*evaluateComparisonTestObject{
 		{
 			Name: "Expect true for 10.0 <= avg([10.0, 10.0]) + 10%",
-			InSLIResult: &keptnevents.SLIResult{
+			InSLIResult: &keptnv2.SLIResult{
 				Metric:  "my-test-metric",
 				Value:   10.0,
 				Success: true,
@@ -350,10 +352,10 @@ func TestEvaluateComparison(t *testing.T) {
 				IsComparison:    true,
 				CheckIncrease:   true,
 			},
-			InPreviousResults: []*keptnevents.SLIEvaluationResult{
+			InPreviousResults: []*keptnv2.SLIEvaluationResult{
 				{
 					Score: 2,
-					Value: &keptnevents.SLIResult{
+					Value: &keptnv2.SLIResult{
 						Metric:  "my-test-metric",
 						Value:   10.0,
 						Success: true,
@@ -364,7 +366,7 @@ func TestEvaluateComparison(t *testing.T) {
 				},
 				{
 					Score: 2,
-					Value: &keptnevents.SLIResult{
+					Value: &keptnv2.SLIResult{
 						Metric:  "my-test-metric",
 						Value:   10.0,
 						Success: true,
@@ -380,7 +382,7 @@ func TestEvaluateComparison(t *testing.T) {
 				NumberOfComparisonResults: 2,
 				AggregateFunction:         "avg",
 			},
-			InTarget: &keptnevents.SLITarget{
+			InTarget: &keptnv2.SLITarget{
 				Criteria: "<=+10%",
 			},
 			ExpectedResult: true,
@@ -388,7 +390,7 @@ func TestEvaluateComparison(t *testing.T) {
 		},
 		{
 			Name: "Expect false for 11.01 <= avg([10.0, 10.0]) + 10%",
-			InSLIResult: &keptnevents.SLIResult{
+			InSLIResult: &keptnv2.SLIResult{
 				Metric:  "my-test-metric",
 				Value:   11.01,
 				Success: true,
@@ -401,10 +403,10 @@ func TestEvaluateComparison(t *testing.T) {
 				IsComparison:    true,
 				CheckIncrease:   true,
 			},
-			InPreviousResults: []*keptnevents.SLIEvaluationResult{
+			InPreviousResults: []*keptnv2.SLIEvaluationResult{
 				{
 					Score: 2,
-					Value: &keptnevents.SLIResult{
+					Value: &keptnv2.SLIResult{
 						Metric:  "my-test-metric",
 						Value:   10.0,
 						Success: true,
@@ -415,7 +417,7 @@ func TestEvaluateComparison(t *testing.T) {
 				},
 				{
 					Score: 2,
-					Value: &keptnevents.SLIResult{
+					Value: &keptnv2.SLIResult{
 						Metric:  "my-test-metric",
 						Value:   10.0,
 						Success: true,
@@ -431,7 +433,7 @@ func TestEvaluateComparison(t *testing.T) {
 				NumberOfComparisonResults: 2,
 				AggregateFunction:         "avg",
 			},
-			InTarget: &keptnevents.SLITarget{
+			InTarget: &keptnv2.SLITarget{
 				Criteria: "<=+10%",
 			},
 			ExpectedResult: false,
@@ -439,7 +441,7 @@ func TestEvaluateComparison(t *testing.T) {
 		},
 		{
 			Name: "Expect false for 10.0 < avg([10.0, 10.0]) + 0%",
-			InSLIResult: &keptnevents.SLIResult{
+			InSLIResult: &keptnv2.SLIResult{
 				Metric:  "my-test-metric",
 				Value:   10.0,
 				Success: true,
@@ -452,10 +454,10 @@ func TestEvaluateComparison(t *testing.T) {
 				IsComparison:    true,
 				CheckIncrease:   true,
 			},
-			InPreviousResults: []*keptnevents.SLIEvaluationResult{
+			InPreviousResults: []*keptnv2.SLIEvaluationResult{
 				{
 					Score: 2,
-					Value: &keptnevents.SLIResult{
+					Value: &keptnv2.SLIResult{
 						Metric:  "my-test-metric",
 						Value:   10.0,
 						Success: true,
@@ -466,7 +468,7 @@ func TestEvaluateComparison(t *testing.T) {
 				},
 				{
 					Score: 2,
-					Value: &keptnevents.SLIResult{
+					Value: &keptnv2.SLIResult{
 						Metric:  "my-test-metric",
 						Value:   10.0,
 						Success: true,
@@ -482,7 +484,7 @@ func TestEvaluateComparison(t *testing.T) {
 				NumberOfComparisonResults: 2,
 				AggregateFunction:         "avg",
 			},
-			InTarget: &keptnevents.SLITarget{
+			InTarget: &keptnv2.SLITarget{
 				Criteria: "<=+10%",
 			},
 			ExpectedResult: false,
@@ -490,7 +492,7 @@ func TestEvaluateComparison(t *testing.T) {
 		},
 		{
 			Name: "Expect false for 10.0 > avg([10.0, 10.0]) + 0%",
-			InSLIResult: &keptnevents.SLIResult{
+			InSLIResult: &keptnv2.SLIResult{
 				Metric:  "my-test-metric",
 				Value:   10.0,
 				Success: true,
@@ -503,10 +505,10 @@ func TestEvaluateComparison(t *testing.T) {
 				IsComparison:    true,
 				CheckIncrease:   true,
 			},
-			InPreviousResults: []*keptnevents.SLIEvaluationResult{
+			InPreviousResults: []*keptnv2.SLIEvaluationResult{
 				{
 					Score: 2,
-					Value: &keptnevents.SLIResult{
+					Value: &keptnv2.SLIResult{
 						Metric:  "my-test-metric",
 						Value:   10.0,
 						Success: true,
@@ -517,7 +519,7 @@ func TestEvaluateComparison(t *testing.T) {
 				},
 				{
 					Score: 2,
-					Value: &keptnevents.SLIResult{
+					Value: &keptnv2.SLIResult{
 						Metric:  "my-test-metric",
 						Value:   10.0,
 						Success: true,
@@ -533,7 +535,7 @@ func TestEvaluateComparison(t *testing.T) {
 				NumberOfComparisonResults: 2,
 				AggregateFunction:         "avg",
 			},
-			InTarget: &keptnevents.SLITarget{
+			InTarget: &keptnv2.SLITarget{
 				Criteria: "<=+10%",
 			},
 			ExpectedResult: false,
@@ -541,7 +543,7 @@ func TestEvaluateComparison(t *testing.T) {
 		},
 		{
 			Name: "Expect true for 11.0 = avg([10.0, 10.0]) + 1.0",
-			InSLIResult: &keptnevents.SLIResult{
+			InSLIResult: &keptnv2.SLIResult{
 				Metric:  "my-test-metric",
 				Value:   11.0,
 				Success: true,
@@ -554,10 +556,10 @@ func TestEvaluateComparison(t *testing.T) {
 				IsComparison:    true,
 				CheckIncrease:   true,
 			},
-			InPreviousResults: []*keptnevents.SLIEvaluationResult{
+			InPreviousResults: []*keptnv2.SLIEvaluationResult{
 				{
 					Score: 2,
-					Value: &keptnevents.SLIResult{
+					Value: &keptnv2.SLIResult{
 						Metric:  "my-test-metric",
 						Value:   10.0,
 						Success: true,
@@ -568,7 +570,7 @@ func TestEvaluateComparison(t *testing.T) {
 				},
 				{
 					Score: 2,
-					Value: &keptnevents.SLIResult{
+					Value: &keptnv2.SLIResult{
 						Metric:  "my-test-metric",
 						Value:   10.0,
 						Success: true,
@@ -584,7 +586,7 @@ func TestEvaluateComparison(t *testing.T) {
 				NumberOfComparisonResults: 2,
 				AggregateFunction:         "avg",
 			},
-			InTarget: &keptnevents.SLITarget{
+			InTarget: &keptnv2.SLITarget{
 				Criteria: "<=+10%",
 			},
 			ExpectedResult: true,
@@ -592,7 +594,7 @@ func TestEvaluateComparison(t *testing.T) {
 		},
 		{
 			Name: "Expect true for 9.0 = avg([10.0, 10.0]) - 1.0",
-			InSLIResult: &keptnevents.SLIResult{
+			InSLIResult: &keptnv2.SLIResult{
 				Metric:  "my-test-metric",
 				Value:   9.0,
 				Success: true,
@@ -605,10 +607,10 @@ func TestEvaluateComparison(t *testing.T) {
 				IsComparison:    true,
 				CheckIncrease:   false,
 			},
-			InPreviousResults: []*keptnevents.SLIEvaluationResult{
+			InPreviousResults: []*keptnv2.SLIEvaluationResult{
 				{
 					Score: 2,
-					Value: &keptnevents.SLIResult{
+					Value: &keptnv2.SLIResult{
 						Metric:  "my-test-metric",
 						Value:   10.0,
 						Success: true,
@@ -619,7 +621,7 @@ func TestEvaluateComparison(t *testing.T) {
 				},
 				{
 					Score: 2,
-					Value: &keptnevents.SLIResult{
+					Value: &keptnv2.SLIResult{
 						Metric:  "my-test-metric",
 						Value:   10.0,
 						Success: true,
@@ -635,7 +637,7 @@ func TestEvaluateComparison(t *testing.T) {
 				NumberOfComparisonResults: 2,
 				AggregateFunction:         "avg",
 			},
-			InTarget: &keptnevents.SLITarget{
+			InTarget: &keptnv2.SLITarget{
 				Criteria: "<=+10%",
 			},
 			ExpectedResult: true,
@@ -643,7 +645,7 @@ func TestEvaluateComparison(t *testing.T) {
 		},
 		{
 			Name: "Expect true for 10.0 <= p50([10.0, 5.0]) + 10.0%",
-			InSLIResult: &keptnevents.SLIResult{
+			InSLIResult: &keptnv2.SLIResult{
 				Metric:  "my-test-metric",
 				Value:   10.0,
 				Success: true,
@@ -656,10 +658,10 @@ func TestEvaluateComparison(t *testing.T) {
 				IsComparison:    true,
 				CheckIncrease:   false,
 			},
-			InPreviousResults: []*keptnevents.SLIEvaluationResult{
+			InPreviousResults: []*keptnv2.SLIEvaluationResult{
 				{
 					Score: 2,
-					Value: &keptnevents.SLIResult{
+					Value: &keptnv2.SLIResult{
 						Metric:  "my-test-metric",
 						Value:   10.0,
 						Success: true,
@@ -670,7 +672,7 @@ func TestEvaluateComparison(t *testing.T) {
 				},
 				{
 					Score: 2,
-					Value: &keptnevents.SLIResult{
+					Value: &keptnv2.SLIResult{
 						Metric:  "my-test-metric",
 						Value:   10.0,
 						Success: true,
@@ -686,7 +688,7 @@ func TestEvaluateComparison(t *testing.T) {
 				NumberOfComparisonResults: 2,
 				AggregateFunction:         "p50",
 			},
-			InTarget: &keptnevents.SLITarget{
+			InTarget: &keptnv2.SLITarget{
 				Criteria: "<=+10%",
 			},
 			ExpectedResult: true,
@@ -704,11 +706,11 @@ func TestEvaluateComparison(t *testing.T) {
 
 type evaluateSingleCriteriaTestObject struct {
 	Name              string
-	InSLIResult       *keptnevents.SLIResult
+	InSLIResult       *keptnv2.SLIResult
 	InCriteria        string
-	InPreviousResults []*keptnevents.SLIEvaluationResult
+	InPreviousResults []*keptnv2.SLIEvaluationResult
 	InComparison      *keptnmodelsv2.SLOComparison
-	InTarget          *keptnevents.SLITarget
+	InTarget          *keptnv2.SLITarget
 	ExpectedResult    bool
 	ExpectedError     error
 }
@@ -717,17 +719,17 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 	tests := []*evaluateSingleCriteriaTestObject{
 		{
 			Name: "Expect true for 10.0 <= avg([10.0, 10.0]) + 10%",
-			InSLIResult: &keptnevents.SLIResult{
+			InSLIResult: &keptnv2.SLIResult{
 				Metric:  "my-test-metric",
 				Value:   10.0,
 				Success: true,
 				Message: "",
 			},
 			InCriteria: "<=+10%",
-			InPreviousResults: []*keptnevents.SLIEvaluationResult{
+			InPreviousResults: []*keptnv2.SLIEvaluationResult{
 				{
 					Score: 2,
-					Value: &keptnevents.SLIResult{
+					Value: &keptnv2.SLIResult{
 						Metric:  "my-test-metric",
 						Value:   10.0,
 						Success: true,
@@ -738,7 +740,7 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 				},
 				{
 					Score: 2,
-					Value: &keptnevents.SLIResult{
+					Value: &keptnv2.SLIResult{
 						Metric:  "my-test-metric",
 						Value:   10.0,
 						Success: true,
@@ -754,7 +756,7 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 				NumberOfComparisonResults: 2,
 				AggregateFunction:         "avg",
 			},
-			InTarget: &keptnevents.SLITarget{
+			InTarget: &keptnv2.SLITarget{
 				Criteria: "<=+10%",
 			},
 			ExpectedResult: true,
@@ -762,17 +764,17 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 		},
 		{
 			Name: "Expect false for 11.01 <= avg([10.0, 10.0]) + 10%",
-			InSLIResult: &keptnevents.SLIResult{
+			InSLIResult: &keptnv2.SLIResult{
 				Metric:  "my-test-metric",
 				Value:   11.01,
 				Success: true,
 				Message: "",
 			},
 			InCriteria: "<=+10%",
-			InPreviousResults: []*keptnevents.SLIEvaluationResult{
+			InPreviousResults: []*keptnv2.SLIEvaluationResult{
 				{
 					Score: 2,
-					Value: &keptnevents.SLIResult{
+					Value: &keptnv2.SLIResult{
 						Metric:  "my-test-metric",
 						Value:   10.0,
 						Success: true,
@@ -783,7 +785,7 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 				},
 				{
 					Score: 2,
-					Value: &keptnevents.SLIResult{
+					Value: &keptnv2.SLIResult{
 						Metric:  "my-test-metric",
 						Value:   10.0,
 						Success: true,
@@ -799,7 +801,7 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 				NumberOfComparisonResults: 2,
 				AggregateFunction:         "avg",
 			},
-			InTarget: &keptnevents.SLITarget{
+			InTarget: &keptnv2.SLITarget{
 				Criteria: "<=+10%",
 			},
 			ExpectedResult: false,
@@ -807,17 +809,17 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 		},
 		{
 			Name: "Expect false for 10.0 < avg([10.0, 10.0]) + 0%",
-			InSLIResult: &keptnevents.SLIResult{
+			InSLIResult: &keptnv2.SLIResult{
 				Metric:  "my-test-metric",
 				Value:   10.0,
 				Success: true,
 				Message: "",
 			},
 			InCriteria: "<+0%",
-			InPreviousResults: []*keptnevents.SLIEvaluationResult{
+			InPreviousResults: []*keptnv2.SLIEvaluationResult{
 				{
 					Score: 2,
-					Value: &keptnevents.SLIResult{
+					Value: &keptnv2.SLIResult{
 						Metric:  "my-test-metric",
 						Value:   10.0,
 						Success: true,
@@ -828,7 +830,7 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 				},
 				{
 					Score: 2,
-					Value: &keptnevents.SLIResult{
+					Value: &keptnv2.SLIResult{
 						Metric:  "my-test-metric",
 						Value:   10.0,
 						Success: true,
@@ -844,7 +846,7 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 				NumberOfComparisonResults: 2,
 				AggregateFunction:         "avg",
 			},
-			InTarget: &keptnevents.SLITarget{
+			InTarget: &keptnv2.SLITarget{
 				Criteria: "<=+10%",
 			},
 			ExpectedResult: false,
@@ -852,17 +854,17 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 		},
 		{
 			Name: "Expect false for 10.0 > avg([10.0, 10.0]) + 0%",
-			InSLIResult: &keptnevents.SLIResult{
+			InSLIResult: &keptnv2.SLIResult{
 				Metric:  "my-test-metric",
 				Value:   10.0,
 				Success: true,
 				Message: "",
 			},
 			InCriteria: ">+0%",
-			InPreviousResults: []*keptnevents.SLIEvaluationResult{
+			InPreviousResults: []*keptnv2.SLIEvaluationResult{
 				{
 					Score: 2,
-					Value: &keptnevents.SLIResult{
+					Value: &keptnv2.SLIResult{
 						Metric:  "my-test-metric",
 						Value:   10.0,
 						Success: true,
@@ -873,7 +875,7 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 				},
 				{
 					Score: 2,
-					Value: &keptnevents.SLIResult{
+					Value: &keptnv2.SLIResult{
 						Metric:  "my-test-metric",
 						Value:   10.0,
 						Success: true,
@@ -889,7 +891,7 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 				NumberOfComparisonResults: 2,
 				AggregateFunction:         "avg",
 			},
-			InTarget: &keptnevents.SLITarget{
+			InTarget: &keptnv2.SLITarget{
 				Criteria: "<=+10%",
 			},
 			ExpectedResult: false,
@@ -897,17 +899,17 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 		},
 		{
 			Name: "Expect true for 11.0 = avg([10.0, 10.0]) + 1.0",
-			InSLIResult: &keptnevents.SLIResult{
+			InSLIResult: &keptnv2.SLIResult{
 				Metric:  "my-test-metric",
 				Value:   11.0,
 				Success: true,
 				Message: "",
 			},
 			InCriteria: "=+1",
-			InPreviousResults: []*keptnevents.SLIEvaluationResult{
+			InPreviousResults: []*keptnv2.SLIEvaluationResult{
 				{
 					Score: 2,
-					Value: &keptnevents.SLIResult{
+					Value: &keptnv2.SLIResult{
 						Metric:  "my-test-metric",
 						Value:   10.0,
 						Success: true,
@@ -918,7 +920,7 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 				},
 				{
 					Score: 2,
-					Value: &keptnevents.SLIResult{
+					Value: &keptnv2.SLIResult{
 						Metric:  "my-test-metric",
 						Value:   10.0,
 						Success: true,
@@ -934,7 +936,7 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 				NumberOfComparisonResults: 2,
 				AggregateFunction:         "avg",
 			},
-			InTarget: &keptnevents.SLITarget{
+			InTarget: &keptnv2.SLITarget{
 				Criteria: "<=+10%",
 			},
 			ExpectedResult: true,
@@ -942,17 +944,17 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 		},
 		{
 			Name: "Expect true for 9.0 = avg([10.0, 10.0]) - 1.0",
-			InSLIResult: &keptnevents.SLIResult{
+			InSLIResult: &keptnv2.SLIResult{
 				Metric:  "my-test-metric",
 				Value:   9.0,
 				Success: true,
 				Message: "",
 			},
 			InCriteria: "=-1",
-			InPreviousResults: []*keptnevents.SLIEvaluationResult{
+			InPreviousResults: []*keptnv2.SLIEvaluationResult{
 				{
 					Score: 2,
-					Value: &keptnevents.SLIResult{
+					Value: &keptnv2.SLIResult{
 						Metric:  "my-test-metric",
 						Value:   10.0,
 						Success: true,
@@ -963,7 +965,7 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 				},
 				{
 					Score: 2,
-					Value: &keptnevents.SLIResult{
+					Value: &keptnv2.SLIResult{
 						Metric:  "my-test-metric",
 						Value:   10.0,
 						Success: true,
@@ -979,7 +981,7 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 				NumberOfComparisonResults: 2,
 				AggregateFunction:         "avg",
 			},
-			InTarget: &keptnevents.SLITarget{
+			InTarget: &keptnv2.SLITarget{
 				Criteria: "<=+10%",
 			},
 			ExpectedResult: true,
@@ -987,17 +989,17 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 		},
 		{
 			Name: "Expect true for 10.0 <= p50([10.0, 5.0]) + 10.0%",
-			InSLIResult: &keptnevents.SLIResult{
+			InSLIResult: &keptnv2.SLIResult{
 				Metric:  "my-test-metric",
 				Value:   10.0,
 				Success: true,
 				Message: "",
 			},
 			InCriteria: "<=+10%",
-			InPreviousResults: []*keptnevents.SLIEvaluationResult{
+			InPreviousResults: []*keptnv2.SLIEvaluationResult{
 				{
 					Score: 2,
-					Value: &keptnevents.SLIResult{
+					Value: &keptnv2.SLIResult{
 						Metric:  "my-test-metric",
 						Value:   10.0,
 						Success: true,
@@ -1008,7 +1010,7 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 				},
 				{
 					Score: 2,
-					Value: &keptnevents.SLIResult{
+					Value: &keptnv2.SLIResult{
 						Metric:  "my-test-metric",
 						Value:   10.0,
 						Success: true,
@@ -1024,7 +1026,7 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 				NumberOfComparisonResults: 2,
 				AggregateFunction:         "p50",
 			},
-			InTarget: &keptnevents.SLITarget{
+			InTarget: &keptnv2.SLITarget{
 				Criteria: "<=+10%",
 			},
 			ExpectedResult: true,
@@ -1032,14 +1034,14 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 		},
 		{
 			Name: "Expect true for 10.0 <= 10.0",
-			InSLIResult: &keptnevents.SLIResult{
+			InSLIResult: &keptnv2.SLIResult{
 				Metric:  "my-test-metric",
 				Value:   10.0,
 				Success: true,
 				Message: "",
 			},
 			InCriteria: "<=10",
-			InTarget: &keptnevents.SLITarget{
+			InTarget: &keptnv2.SLITarget{
 				Criteria: "<=+10%",
 			},
 			ExpectedResult: true,
@@ -1057,11 +1059,11 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 
 type evaluateCriteriaSetTestObject struct {
 	Name              string
-	InSLIResult       *keptnevents.SLIResult
+	InSLIResult       *keptnv2.SLIResult
 	InCriteriaSet     *keptnmodelsv2.SLOCriteria
-	InPreviousResults []*keptnevents.SLIEvaluationResult
+	InPreviousResults []*keptnv2.SLIEvaluationResult
 	InComparison      *keptnmodelsv2.SLOComparison
-	ExpectedTargets   []*keptnevents.SLITarget
+	ExpectedTargets   []*keptnv2.SLITarget
 	ExpectedResult    bool
 	ExpectedError     error
 }
@@ -1070,7 +1072,7 @@ func TestEvaluateCriteriaSet(t *testing.T) {
 	tests := []*evaluateCriteriaSetTestObject{
 		{
 			Name: "Expect true for (10.0 <= avg([10.0, 10.0]) + 10%) && (10.0 <= 10.0)",
-			InSLIResult: &keptnevents.SLIResult{
+			InSLIResult: &keptnv2.SLIResult{
 				Metric:  "my-test-metric",
 				Value:   10.0,
 				Success: true,
@@ -1079,10 +1081,10 @@ func TestEvaluateCriteriaSet(t *testing.T) {
 			InCriteriaSet: &keptnmodelsv2.SLOCriteria{
 				Criteria: []string{"<=+10%", "<=10.0"},
 			},
-			InPreviousResults: []*keptnevents.SLIEvaluationResult{
+			InPreviousResults: []*keptnv2.SLIEvaluationResult{
 				{
 					Score: 2,
-					Value: &keptnevents.SLIResult{
+					Value: &keptnv2.SLIResult{
 						Metric:  "my-test-metric",
 						Value:   10.0,
 						Success: true,
@@ -1093,7 +1095,7 @@ func TestEvaluateCriteriaSet(t *testing.T) {
 				},
 				{
 					Score: 2,
-					Value: &keptnevents.SLIResult{
+					Value: &keptnv2.SLIResult{
 						Metric:  "my-test-metric",
 						Value:   10.0,
 						Success: true,
@@ -1109,7 +1111,7 @@ func TestEvaluateCriteriaSet(t *testing.T) {
 				NumberOfComparisonResults: 2,
 				AggregateFunction:         "avg",
 			},
-			ExpectedTargets: []*keptnevents.SLITarget{
+			ExpectedTargets: []*keptnv2.SLITarget{
 				{
 					Criteria:    "<=+10%",
 					TargetValue: 11,
@@ -1126,7 +1128,7 @@ func TestEvaluateCriteriaSet(t *testing.T) {
 		},
 		{
 			Name: "Expect false for (11.0 <= avg([10.0, 10.0]) + 10%) && (10.0 <= 10.0)",
-			InSLIResult: &keptnevents.SLIResult{
+			InSLIResult: &keptnv2.SLIResult{
 				Metric:  "my-test-metric",
 				Value:   11.0,
 				Success: true,
@@ -1135,10 +1137,10 @@ func TestEvaluateCriteriaSet(t *testing.T) {
 			InCriteriaSet: &keptnmodelsv2.SLOCriteria{
 				Criteria: []string{"<=+10%", "<=10.0"},
 			},
-			InPreviousResults: []*keptnevents.SLIEvaluationResult{
+			InPreviousResults: []*keptnv2.SLIEvaluationResult{
 				{
 					Score: 2,
-					Value: &keptnevents.SLIResult{
+					Value: &keptnv2.SLIResult{
 						Metric:  "my-test-metric",
 						Value:   10.0,
 						Success: true,
@@ -1149,7 +1151,7 @@ func TestEvaluateCriteriaSet(t *testing.T) {
 				},
 				{
 					Score: 2,
-					Value: &keptnevents.SLIResult{
+					Value: &keptnv2.SLIResult{
 						Metric:  "my-test-metric",
 						Value:   10.0,
 						Success: true,
@@ -1165,7 +1167,7 @@ func TestEvaluateCriteriaSet(t *testing.T) {
 				NumberOfComparisonResults: 2,
 				AggregateFunction:         "avg",
 			},
-			ExpectedTargets: []*keptnevents.SLITarget{
+			ExpectedTargets: []*keptnv2.SLITarget{
 				{
 					Criteria:    "<=+10%",
 					TargetValue: 11,
@@ -1193,11 +1195,11 @@ func TestEvaluateCriteriaSet(t *testing.T) {
 
 type evaluateOrCombinedCriteriaTestObject struct {
 	Name              string
-	InSLIResult       *keptnevents.SLIResult
+	InSLIResult       *keptnv2.SLIResult
 	InCriteriaSets    []*keptnmodelsv2.SLOCriteria
-	InPreviousResults []*keptnevents.SLIEvaluationResult
+	InPreviousResults []*keptnv2.SLIEvaluationResult
 	InComparison      *keptnmodelsv2.SLOComparison
-	ExpectedTargets   []*keptnevents.SLITarget
+	ExpectedTargets   []*keptnv2.SLITarget
 	ExpectedResult    bool
 	ExpectedError     error
 }
@@ -1206,7 +1208,7 @@ func TestEvaluateOrCombinedCriteria(t *testing.T) {
 	tests := []*evaluateOrCombinedCriteriaTestObject{
 		{
 			Name: "Expect true for (10.0 <= avg([10.0, 10.0]) + 10%) || (10.0 <= 10.0)",
-			InSLIResult: &keptnevents.SLIResult{
+			InSLIResult: &keptnv2.SLIResult{
 				Metric:  "my-test-metric",
 				Value:   10.0,
 				Success: true,
@@ -1220,10 +1222,10 @@ func TestEvaluateOrCombinedCriteria(t *testing.T) {
 					Criteria: []string{"<=+10%"},
 				},
 			},
-			InPreviousResults: []*keptnevents.SLIEvaluationResult{
+			InPreviousResults: []*keptnv2.SLIEvaluationResult{
 				{
 					Score: 2,
-					Value: &keptnevents.SLIResult{
+					Value: &keptnv2.SLIResult{
 						Metric:  "my-test-metric",
 						Value:   10.0,
 						Success: true,
@@ -1234,7 +1236,7 @@ func TestEvaluateOrCombinedCriteria(t *testing.T) {
 				},
 				{
 					Score: 2,
-					Value: &keptnevents.SLIResult{
+					Value: &keptnv2.SLIResult{
 						Metric:  "my-test-metric",
 						Value:   10.0,
 						Success: true,
@@ -1250,7 +1252,7 @@ func TestEvaluateOrCombinedCriteria(t *testing.T) {
 				NumberOfComparisonResults: 2,
 				AggregateFunction:         "avg",
 			},
-			ExpectedTargets: []*keptnevents.SLITarget{
+			ExpectedTargets: []*keptnv2.SLITarget{
 				{
 					Criteria:    "<=10.0",
 					TargetValue: 10.0,
@@ -1267,7 +1269,7 @@ func TestEvaluateOrCombinedCriteria(t *testing.T) {
 		},
 		{
 			Name: "Expect true for (11.0 <= avg([10.0, 10.0]) + 10%) || (10.0 <= 10.0)",
-			InSLIResult: &keptnevents.SLIResult{
+			InSLIResult: &keptnv2.SLIResult{
 				Metric:  "my-test-metric",
 				Value:   11.0,
 				Success: true,
@@ -1281,10 +1283,10 @@ func TestEvaluateOrCombinedCriteria(t *testing.T) {
 					Criteria: []string{"<=+10%"},
 				},
 			},
-			InPreviousResults: []*keptnevents.SLIEvaluationResult{
+			InPreviousResults: []*keptnv2.SLIEvaluationResult{
 				{
 					Score: 2,
-					Value: &keptnevents.SLIResult{
+					Value: &keptnv2.SLIResult{
 						Metric:  "my-test-metric",
 						Value:   10.0,
 						Success: true,
@@ -1295,7 +1297,7 @@ func TestEvaluateOrCombinedCriteria(t *testing.T) {
 				},
 				{
 					Score: 2,
-					Value: &keptnevents.SLIResult{
+					Value: &keptnv2.SLIResult{
 						Metric:  "my-test-metric",
 						Value:   10.0,
 						Success: true,
@@ -1311,7 +1313,7 @@ func TestEvaluateOrCombinedCriteria(t *testing.T) {
 				NumberOfComparisonResults: 2,
 				AggregateFunction:         "avg",
 			},
-			ExpectedTargets: []*keptnevents.SLITarget{
+			ExpectedTargets: []*keptnv2.SLITarget{
 				{
 					Criteria:    "<=10.0",
 					TargetValue: 10.0,
@@ -1328,7 +1330,7 @@ func TestEvaluateOrCombinedCriteria(t *testing.T) {
 		},
 		{
 			Name: "Expect false for (20.0 <= avg([10.0, 10.0]) + 10%) || (10.0 <= 10.0)",
-			InSLIResult: &keptnevents.SLIResult{
+			InSLIResult: &keptnv2.SLIResult{
 				Metric:  "my-test-metric",
 				Value:   20.0,
 				Success: true,
@@ -1342,10 +1344,10 @@ func TestEvaluateOrCombinedCriteria(t *testing.T) {
 					Criteria: []string{"<=+10%"},
 				},
 			},
-			InPreviousResults: []*keptnevents.SLIEvaluationResult{
+			InPreviousResults: []*keptnv2.SLIEvaluationResult{
 				{
 					Score: 2,
-					Value: &keptnevents.SLIResult{
+					Value: &keptnv2.SLIResult{
 						Metric:  "my-test-metric",
 						Value:   10.0,
 						Success: true,
@@ -1356,7 +1358,7 @@ func TestEvaluateOrCombinedCriteria(t *testing.T) {
 				},
 				{
 					Score: 2,
-					Value: &keptnevents.SLIResult{
+					Value: &keptnv2.SLIResult{
 						Metric:  "my-test-metric",
 						Value:   10.0,
 						Success: true,
@@ -1372,7 +1374,7 @@ func TestEvaluateOrCombinedCriteria(t *testing.T) {
 				NumberOfComparisonResults: 2,
 				AggregateFunction:         "avg",
 			},
-			ExpectedTargets: []*keptnevents.SLITarget{
+			ExpectedTargets: []*keptnv2.SLITarget{
 				{
 					Criteria:    "<=10.0",
 					TargetValue: 10.0,
@@ -1404,8 +1406,8 @@ type evaluateObjectivesTestObject struct {
 	Name                       string
 	InGetSLIDoneEvent          *keptnevents.InternalGetSLIDoneEventData
 	InSLOConfig                *keptnmodelsv2.ServiceLevelObjectives
-	InPreviousEvaluationEvents []*keptnevents.EvaluationDoneEventData
-	ExpectedEvaluationResult   *keptnevents.EvaluationDoneEventData
+	InPreviousEvaluationEvents []*keptnv2.EvaluationFinishedEventData
+	ExpectedEvaluationResult   *keptnv2.EvaluationFinishedEventData
 	ExpectedMaximumScore       float64
 	ExpectedKeySLIFailed       bool
 }
@@ -1466,17 +1468,17 @@ func TestEvaluateObjectives(t *testing.T) {
 					Warning: "75%",
 				},
 			},
-			InPreviousEvaluationEvents: []*keptnevents.EvaluationDoneEventData{
+			InPreviousEvaluationEvents: []*keptnv2.EvaluationFinishedEventData{
 				{
-					EvaluationDetails: &keptnevents.EvaluationDetails{
+					Evaluation: keptnv2.EvaluationDetails{
 						TimeStart: "",
 						TimeEnd:   "",
 						Result:    "pass",
 						Score:     2,
-						IndicatorResults: []*keptnevents.SLIEvaluationResult{
+						IndicatorResults: []*keptnv2.SLIEvaluationResult{
 							{
 								Score: 2,
-								Value: &keptnevents.SLIResult{
+								Value: &keptnv2.SLIResult{
 									Metric:  "my-test-metric-1",
 									Value:   10.0,
 									Success: true,
@@ -1487,29 +1489,30 @@ func TestEvaluateObjectives(t *testing.T) {
 							},
 						},
 					},
-					Result:       "pass",
-					Project:      "sockshop",
-					Service:      "carts",
-					Stage:        "dev",
-					TestStrategy: "performance",
+					EventData: keptnv2.EventData{
+						Result:  "pass",
+						Project: "sockshop",
+						Service: "carts",
+						Stage:   "dev",
+					},
 				},
 			},
-			ExpectedEvaluationResult: &keptnevents.EvaluationDoneEventData{
-				EvaluationDetails: &keptnevents.EvaluationDetails{
+			ExpectedEvaluationResult: &keptnv2.EvaluationFinishedEventData{
+				Evaluation: keptnv2.EvaluationDetails{
 					TimeStart: "2019-10-20T07:57:27.152330783Z",
 					TimeEnd:   "2019-10-22T08:57:27.152330783Z",
 					Result:    "", // not set by the tested function
 					Score:     0,  // not calculated by tested function
-					IndicatorResults: []*keptnevents.SLIEvaluationResult{
+					IndicatorResults: []*keptnv2.SLIEvaluationResult{
 						{
 							Score: 1,
-							Value: &keptnevents.SLIResult{
+							Value: &keptnv2.SLIResult{
 								Metric:  "my-test-metric-1",
 								Value:   10.0,
 								Success: true,
 								Message: "",
 							},
-							Targets: []*keptnevents.SLITarget{
+							Targets: []*keptnv2.SLITarget{
 								{
 									Criteria:    "<=15.0",
 									TargetValue: 15.0,
@@ -1525,11 +1528,12 @@ func TestEvaluateObjectives(t *testing.T) {
 						},
 					},
 				},
-				Result:       "", // not set by the tested function
-				Project:      "sockshop",
-				Service:      "carts",
-				Stage:        "dev",
-				TestStrategy: "",
+				EventData: keptnv2.EventData{
+					Result:  "",
+					Project: "sockshop",
+					Service: "carts",
+					Stage:   "dev",
+				},
 			},
 			ExpectedMaximumScore: 1,
 			ExpectedKeySLIFailed: false,
@@ -1588,17 +1592,17 @@ func TestEvaluateObjectives(t *testing.T) {
 					Warning: "75%",
 				},
 			},
-			InPreviousEvaluationEvents: []*keptnevents.EvaluationDoneEventData{
+			InPreviousEvaluationEvents: []*keptnv2.EvaluationFinishedEventData{
 				{
-					EvaluationDetails: &keptnevents.EvaluationDetails{
+					Evaluation: keptnv2.EvaluationDetails{
 						TimeStart: "",
 						TimeEnd:   "",
 						Result:    "pass",
 						Score:     2,
-						IndicatorResults: []*keptnevents.SLIEvaluationResult{
+						IndicatorResults: []*keptnv2.SLIEvaluationResult{
 							{
 								Score: 2,
-								Value: &keptnevents.SLIResult{
+								Value: &keptnv2.SLIResult{
 									Metric:  "my-test-metric-1",
 									Value:   10.0,
 									Success: true,
@@ -1609,29 +1613,30 @@ func TestEvaluateObjectives(t *testing.T) {
 							},
 						},
 					},
-					Result:       "pass",
-					Project:      "sockshop",
-					Service:      "carts",
-					Stage:        "dev",
-					TestStrategy: "performance",
+					EventData: keptnv2.EventData{
+						Result:  "pass",
+						Project: "sockshop",
+						Service: "carts",
+						Stage:   "dev",
+					},
 				},
 			},
-			ExpectedEvaluationResult: &keptnevents.EvaluationDoneEventData{
-				EvaluationDetails: &keptnevents.EvaluationDetails{
+			ExpectedEvaluationResult: &keptnv2.EvaluationFinishedEventData{
+				Evaluation: keptnv2.EvaluationDetails{
 					TimeStart: "2019-10-20T07:57:27.152330783Z",
 					TimeEnd:   "2019-10-22T08:57:27.152330783Z",
 					Result:    "", // not set by the tested function
 					Score:     0,  // not calculated by tested function
-					IndicatorResults: []*keptnevents.SLIEvaluationResult{
+					IndicatorResults: []*keptnv2.SLIEvaluationResult{
 						{
 							Score: 0.5,
-							Value: &keptnevents.SLIResult{
+							Value: &keptnv2.SLIResult{
 								Metric:  "my-test-metric-1",
 								Value:   16.0,
 								Success: true,
 								Message: "",
 							},
-							Targets: []*keptnevents.SLITarget{
+							Targets: []*keptnv2.SLITarget{
 								{
 									Criteria:    "<=20.0",
 									TargetValue: 20,
@@ -1657,11 +1662,12 @@ func TestEvaluateObjectives(t *testing.T) {
 						},
 					},
 				},
-				Result:       "", // not set by the tested function
-				Project:      "sockshop",
-				Service:      "carts",
-				Stage:        "dev",
-				TestStrategy: "",
+				EventData: keptnv2.EventData{
+					Result:  "",
+					Project: "sockshop",
+					Service: "carts",
+					Stage:   "dev",
+				},
 			},
 			ExpectedMaximumScore: 1,
 			ExpectedKeySLIFailed: false,
@@ -1731,17 +1737,17 @@ func TestEvaluateObjectives(t *testing.T) {
 					Warning: "75%",
 				},
 			},
-			InPreviousEvaluationEvents: []*keptnevents.EvaluationDoneEventData{
+			InPreviousEvaluationEvents: []*keptnv2.EvaluationFinishedEventData{
 				{
-					EvaluationDetails: &keptnevents.EvaluationDetails{
+					Evaluation: keptnv2.EvaluationDetails{
 						TimeStart: "",
 						TimeEnd:   "",
 						Result:    "pass",
 						Score:     2,
-						IndicatorResults: []*keptnevents.SLIEvaluationResult{
+						IndicatorResults: []*keptnv2.SLIEvaluationResult{
 							{
 								Score: 2,
-								Value: &keptnevents.SLIResult{
+								Value: &keptnv2.SLIResult{
 									Metric:  "my-test-metric-1",
 									Value:   10.0,
 									Success: true,
@@ -1752,29 +1758,30 @@ func TestEvaluateObjectives(t *testing.T) {
 							},
 						},
 					},
-					Result:       "pass",
-					Project:      "sockshop",
-					Service:      "carts",
-					Stage:        "dev",
-					TestStrategy: "performance",
+					EventData: keptnv2.EventData{
+						Result:  "pass",
+						Project: "sockshop",
+						Service: "carts",
+						Stage:   "dev",
+					},
 				},
 			},
-			ExpectedEvaluationResult: &keptnevents.EvaluationDoneEventData{
-				EvaluationDetails: &keptnevents.EvaluationDetails{
+			ExpectedEvaluationResult: &keptnv2.EvaluationFinishedEventData{
+				Evaluation: keptnv2.EvaluationDetails{
 					TimeStart: "2019-10-20T07:57:27.152330783Z",
 					TimeEnd:   "2019-10-22T08:57:27.152330783Z",
 					Result:    "", // not set by the tested function
 					Score:     0,  // not calculated by tested function
-					IndicatorResults: []*keptnevents.SLIEvaluationResult{
+					IndicatorResults: []*keptnv2.SLIEvaluationResult{
 						{
 							Score: 1,
-							Value: &keptnevents.SLIResult{
+							Value: &keptnv2.SLIResult{
 								Metric:  "my-test-metric-1",
 								Value:   10.0,
 								Success: true,
 								Message: "",
 							},
-							Targets: []*keptnevents.SLITarget{
+							Targets: []*keptnv2.SLITarget{
 								{
 									Criteria:    "<=15.0",
 									TargetValue: 15.0,
@@ -1790,7 +1797,7 @@ func TestEvaluateObjectives(t *testing.T) {
 						},
 						{
 							Score: 0,
-							Value: &keptnevents.SLIResult{
+							Value: &keptnv2.SLIResult{
 								Metric:  "my-log-metric",
 								Value:   30.0,
 								Success: true,
@@ -1800,11 +1807,12 @@ func TestEvaluateObjectives(t *testing.T) {
 						},
 					},
 				},
-				Result:       "", // not set by the tested function
-				Project:      "sockshop",
-				Service:      "carts",
-				Stage:        "dev",
-				TestStrategy: "",
+				EventData: keptnv2.EventData{
+					Result:  "",
+					Project: "sockshop",
+					Service: "carts",
+					Stage:   "dev",
+				},
 			},
 			ExpectedMaximumScore: 1,
 			ExpectedKeySLIFailed: false,
@@ -1876,17 +1884,17 @@ func TestEvaluateObjectives(t *testing.T) {
 					Warning: "75%",
 				},
 			},
-			InPreviousEvaluationEvents: []*keptnevents.EvaluationDoneEventData{
+			InPreviousEvaluationEvents: []*keptnv2.EvaluationFinishedEventData{
 				{
-					EvaluationDetails: &keptnevents.EvaluationDetails{
+					Evaluation: keptnv2.EvaluationDetails{
 						TimeStart: "",
 						TimeEnd:   "",
 						Result:    "pass",
 						Score:     2,
-						IndicatorResults: []*keptnevents.SLIEvaluationResult{
+						IndicatorResults: []*keptnv2.SLIEvaluationResult{
 							{
 								Score: 2,
-								Value: &keptnevents.SLIResult{
+								Value: &keptnv2.SLIResult{
 									Metric:  "my-test-metric-1",
 									Value:   10.0,
 									Success: true,
@@ -1897,29 +1905,30 @@ func TestEvaluateObjectives(t *testing.T) {
 							},
 						},
 					},
-					Result:       "pass",
-					Project:      "sockshop",
-					Service:      "carts",
-					Stage:        "dev",
-					TestStrategy: "performance",
+					EventData: keptnv2.EventData{
+						Result:  "pass",
+						Project: "sockshop",
+						Service: "carts",
+						Stage:   "dev",
+					},
 				},
 			},
-			ExpectedEvaluationResult: &keptnevents.EvaluationDoneEventData{
-				EvaluationDetails: &keptnevents.EvaluationDetails{
+			ExpectedEvaluationResult: &keptnv2.EvaluationFinishedEventData{
+				Evaluation: keptnv2.EvaluationDetails{
 					TimeStart: "2019-10-20T07:57:27.152330783Z",
 					TimeEnd:   "2019-10-22T08:57:27.152330783Z",
 					Result:    "", // not set by the tested function
 					Score:     0,  // not calculated by tested function
-					IndicatorResults: []*keptnevents.SLIEvaluationResult{
+					IndicatorResults: []*keptnv2.SLIEvaluationResult{
 						{
 							Score: 1,
-							Value: &keptnevents.SLIResult{
+							Value: &keptnv2.SLIResult{
 								Metric:  "my-test-metric-1",
 								Value:   10.0,
 								Success: true,
 								Message: "",
 							},
-							Targets: []*keptnevents.SLITarget{
+							Targets: []*keptnv2.SLITarget{
 								{
 									Criteria:    "<=15.0",
 									TargetValue: 15.0,
@@ -1935,7 +1944,7 @@ func TestEvaluateObjectives(t *testing.T) {
 						},
 						{
 							Score: 0,
-							Value: &keptnevents.SLIResult{
+							Value: &keptnv2.SLIResult{
 								Metric:  "my-log-metric",
 								Value:   30.0,
 								Success: true,
@@ -1945,11 +1954,12 @@ func TestEvaluateObjectives(t *testing.T) {
 						},
 					},
 				},
-				Result:       "", // not set by the tested function
-				Project:      "sockshop",
-				Service:      "carts",
-				Stage:        "dev",
-				TestStrategy: "",
+				EventData: keptnv2.EventData{
+					Result:  "",
+					Project: "sockshop",
+					Service: "carts",
+					Stage:   "dev",
+				},
 			},
 			ExpectedMaximumScore: 1,
 			ExpectedKeySLIFailed: false,
@@ -1998,22 +2008,22 @@ func TestEvaluateObjectives(t *testing.T) {
 				},
 			},
 			InPreviousEvaluationEvents: nil,
-			ExpectedEvaluationResult: &keptnevents.EvaluationDoneEventData{
-				EvaluationDetails: &keptnevents.EvaluationDetails{
+			ExpectedEvaluationResult: &keptnv2.EvaluationFinishedEventData{
+				Evaluation: keptnv2.EvaluationDetails{
 					TimeStart: "2019-10-20T07:57:27.152330783Z",
 					TimeEnd:   "2019-10-22T08:57:27.152330783Z",
 					Result:    "", // not set by the tested function
 					Score:     0,  // not calculated by tested function
-					IndicatorResults: []*keptnevents.SLIEvaluationResult{
+					IndicatorResults: []*keptnv2.SLIEvaluationResult{
 						{
 							Score: 0,
-							Value: &keptnevents.SLIResult{
+							Value: &keptnv2.SLIResult{
 								Metric:  "response_time_p50",
 								Value:   1011.0745528937252,
 								Success: true,
 								Message: "",
 							},
-							Targets: []*keptnevents.SLITarget{
+							Targets: []*keptnv2.SLITarget{
 								{
 									Criteria:    "<=+20%",
 									TargetValue: 0,
@@ -2029,11 +2039,12 @@ func TestEvaluateObjectives(t *testing.T) {
 						},
 					},
 				},
-				Result:       "", // not set by the tested function
-				Project:      "sockshop",
-				Service:      "carts",
-				Stage:        "dev",
-				TestStrategy: "",
+				EventData: keptnv2.EventData{
+					Result:  "",
+					Project: "sockshop",
+					Service: "carts",
+					Stage:   "dev",
+				},
 			},
 			ExpectedMaximumScore: 1,
 			ExpectedKeySLIFailed: false,
@@ -2081,17 +2092,17 @@ func TestEvaluateObjectives(t *testing.T) {
 					Warning: "75%",
 				},
 			},
-			InPreviousEvaluationEvents: []*keptnevents.EvaluationDoneEventData{
+			InPreviousEvaluationEvents: []*keptnv2.EvaluationFinishedEventData{
 				{
-					EvaluationDetails: &keptnevents.EvaluationDetails{
+					Evaluation: keptnv2.EvaluationDetails{
 						TimeStart: "",
 						TimeEnd:   "",
 						Result:    "fail",
 						Score:     0,
-						IndicatorResults: []*keptnevents.SLIEvaluationResult{
+						IndicatorResults: []*keptnv2.SLIEvaluationResult{
 							{
 								Score: 0,
-								Value: &keptnevents.SLIResult{
+								Value: &keptnv2.SLIResult{
 									Metric:  "response_time_p50",
 									Value:   0.0,
 									Success: false,
@@ -2102,29 +2113,30 @@ func TestEvaluateObjectives(t *testing.T) {
 							},
 						},
 					},
-					Result:       "pass",
-					Project:      "sockshop",
-					Service:      "carts",
-					Stage:        "dev",
-					TestStrategy: "performance",
+					EventData: keptnv2.EventData{
+						Result:  "pass",
+						Project: "sockshop",
+						Service: "carts",
+						Stage:   "dev",
+					},
 				},
 			},
-			ExpectedEvaluationResult: &keptnevents.EvaluationDoneEventData{
-				EvaluationDetails: &keptnevents.EvaluationDetails{
+			ExpectedEvaluationResult: &keptnv2.EvaluationFinishedEventData{
+				Evaluation: keptnv2.EvaluationDetails{
 					TimeStart: "2019-10-20T07:57:27.152330783Z",
 					TimeEnd:   "2019-10-22T08:57:27.152330783Z",
 					Result:    "", // not set by the tested function
 					Score:     0,  // not calculated by tested function
-					IndicatorResults: []*keptnevents.SLIEvaluationResult{
+					IndicatorResults: []*keptnv2.SLIEvaluationResult{
 						{
 							Score: 1,
-							Value: &keptnevents.SLIResult{
+							Value: &keptnv2.SLIResult{
 								Metric:  "response_time_p50",
 								Value:   100,
 								Success: true,
 								Message: "",
 							},
-							Targets: []*keptnevents.SLITarget{
+							Targets: []*keptnv2.SLITarget{
 								{
 									Criteria:    "<=+20%",
 									TargetValue: 0,
@@ -2135,11 +2147,12 @@ func TestEvaluateObjectives(t *testing.T) {
 						},
 					},
 				},
-				Result:       "", // not set by the tested function
-				Project:      "sockshop",
-				Service:      "carts",
-				Stage:        "dev",
-				TestStrategy: "",
+				EventData: keptnv2.EventData{
+					Result:  "",
+					Project: "sockshop",
+					Service: "carts",
+					Stage:   "dev",
+				},
 			},
 			ExpectedMaximumScore: 1,
 			ExpectedKeySLIFailed: false,
@@ -2158,10 +2171,10 @@ func TestEvaluateObjectives(t *testing.T) {
 type calculateScoreTestObject struct {
 	Name                     string
 	InMaximumScore           float64
-	InEvaluationResult       *keptnevents.EvaluationDoneEventData
+	InEvaluationResult       *keptnv2.EvaluationFinishedEventData
 	InSLOConfig              *keptnmodelsv2.ServiceLevelObjectives
 	InKeySLIFailed           bool
-	ExpectedEvaluationResult *keptnevents.EvaluationDoneEventData
+	ExpectedEvaluationResult *keptnv2.EvaluationFinishedEventData
 	ExpectedError            error
 }
 
@@ -2170,16 +2183,16 @@ func TestCalculateScore(t *testing.T) {
 		{
 			Name:           "Simple comparison",
 			InMaximumScore: 1,
-			InEvaluationResult: &keptnevents.EvaluationDoneEventData{
-				EvaluationDetails: &keptnevents.EvaluationDetails{
+			InEvaluationResult: &keptnv2.EvaluationFinishedEventData{
+				Evaluation: keptnv2.EvaluationDetails{
 					TimeStart: "2019-10-20T07:57:27.152330783Z",
 					TimeEnd:   "2019-10-22T08:57:27.152330783Z",
 					Result:    "", // to be calculated
 					Score:     0,  // to be calculated
-					IndicatorResults: []*keptnevents.SLIEvaluationResult{
+					IndicatorResults: []*keptnv2.SLIEvaluationResult{
 						{
 							Score: 1,
-							Value: &keptnevents.SLIResult{
+							Value: &keptnv2.SLIResult{
 								Metric:  "my-test-metric-1",
 								Value:   10.0,
 								Success: true,
@@ -2190,11 +2203,12 @@ func TestCalculateScore(t *testing.T) {
 						},
 					},
 				},
-				Result:       "", // to be set
-				Project:      "sockshop",
-				Service:      "carts",
-				Stage:        "dev",
-				TestStrategy: "",
+				EventData: keptnv2.EventData{
+					Result:  "",
+					Project: "sockshop",
+					Service: "carts",
+					Stage:   "dev",
+				},
 			},
 			InSLOConfig: &keptnmodelsv2.ServiceLevelObjectives{
 				SpecVersion: "1.0",
@@ -2234,16 +2248,16 @@ func TestCalculateScore(t *testing.T) {
 				},
 			},
 			InKeySLIFailed: false,
-			ExpectedEvaluationResult: &keptnevents.EvaluationDoneEventData{
-				EvaluationDetails: &keptnevents.EvaluationDetails{
+			ExpectedEvaluationResult: &keptnv2.EvaluationFinishedEventData{
+				Evaluation: keptnv2.EvaluationDetails{
 					TimeStart: "2019-10-20T07:57:27.152330783Z",
 					TimeEnd:   "2019-10-22T08:57:27.152330783Z",
 					Result:    "pass",
 					Score:     100.0,
-					IndicatorResults: []*keptnevents.SLIEvaluationResult{
+					IndicatorResults: []*keptnv2.SLIEvaluationResult{
 						{
 							Score: 1,
-							Value: &keptnevents.SLIResult{
+							Value: &keptnv2.SLIResult{
 								Metric:  "my-test-metric-1",
 								Value:   10.0,
 								Success: true,
@@ -2254,27 +2268,29 @@ func TestCalculateScore(t *testing.T) {
 						},
 					},
 				},
-				Result:       "pass",
-				Project:      "sockshop",
-				Service:      "carts",
-				Stage:        "dev",
-				TestStrategy: "",
+				EventData: keptnv2.EventData{
+					Result:  "pass",
+					Status:  "succeeded",
+					Project: "sockshop",
+					Service: "carts",
+					Stage:   "dev",
+				},
 			},
 			ExpectedError: nil,
 		},
 		{
 			Name:           "Key SLI failed",
 			InMaximumScore: 2,
-			InEvaluationResult: &keptnevents.EvaluationDoneEventData{
-				EvaluationDetails: &keptnevents.EvaluationDetails{
+			InEvaluationResult: &keptnv2.EvaluationFinishedEventData{
+				Evaluation: keptnv2.EvaluationDetails{
 					TimeStart: "2019-10-20T07:57:27.152330783Z",
 					TimeEnd:   "2019-10-22T08:57:27.152330783Z",
 					Result:    "", // to be calculated
 					Score:     0,  // to be calculated
-					IndicatorResults: []*keptnevents.SLIEvaluationResult{
+					IndicatorResults: []*keptnv2.SLIEvaluationResult{
 						{
 							Score: 1,
-							Value: &keptnevents.SLIResult{
+							Value: &keptnv2.SLIResult{
 								Metric:  "my-test-metric-1",
 								Value:   10.0,
 								Success: true,
@@ -2285,7 +2301,7 @@ func TestCalculateScore(t *testing.T) {
 						},
 						{
 							Score: 0,
-							Value: &keptnevents.SLIResult{
+							Value: &keptnv2.SLIResult{
 								Metric:  "my-key-metric",
 								Value:   10.0,
 								Success: true,
@@ -2296,11 +2312,12 @@ func TestCalculateScore(t *testing.T) {
 						},
 					},
 				},
-				Result:       "", // to be set
-				Project:      "sockshop",
-				Service:      "carts",
-				Stage:        "dev",
-				TestStrategy: "",
+				EventData: keptnv2.EventData{
+					Result:  "",
+					Project: "sockshop",
+					Service: "carts",
+					Stage:   "dev",
+				},
 			},
 			InSLOConfig: &keptnmodelsv2.ServiceLevelObjectives{
 				SpecVersion: "1.0",
@@ -2361,16 +2378,16 @@ func TestCalculateScore(t *testing.T) {
 				},
 			},
 			InKeySLIFailed: true,
-			ExpectedEvaluationResult: &keptnevents.EvaluationDoneEventData{
-				EvaluationDetails: &keptnevents.EvaluationDetails{
+			ExpectedEvaluationResult: &keptnv2.EvaluationFinishedEventData{
+				Evaluation: keptnv2.EvaluationDetails{
 					TimeStart: "2019-10-20T07:57:27.152330783Z",
 					TimeEnd:   "2019-10-22T08:57:27.152330783Z",
 					Result:    "fail",
 					Score:     50.0,
-					IndicatorResults: []*keptnevents.SLIEvaluationResult{
+					IndicatorResults: []*keptnv2.SLIEvaluationResult{
 						{
 							Score: 1,
-							Value: &keptnevents.SLIResult{
+							Value: &keptnv2.SLIResult{
 								Metric:  "my-test-metric-1",
 								Value:   10.0,
 								Success: true,
@@ -2381,7 +2398,7 @@ func TestCalculateScore(t *testing.T) {
 						},
 						{
 							Score: 0,
-							Value: &keptnevents.SLIResult{
+							Value: &keptnv2.SLIResult{
 								Metric:  "my-key-metric",
 								Value:   10.0,
 								Success: true,
@@ -2392,27 +2409,30 @@ func TestCalculateScore(t *testing.T) {
 						},
 					},
 				},
-				Result:       "fail",
-				Project:      "sockshop",
-				Service:      "carts",
-				Stage:        "dev",
-				TestStrategy: "",
+				EventData: keptnv2.EventData{
+					Result:  "fail",
+					Status:  "succeeded",
+					Labels:  nil,
+					Project: "sockshop",
+					Service: "carts",
+					Stage:   "dev",
+				},
 			},
 			ExpectedError: nil,
 		},
 		{
 			Name:           "Only Info SLIs",
 			InMaximumScore: 0,
-			InEvaluationResult: &keptnevents.EvaluationDoneEventData{
-				EvaluationDetails: &keptnevents.EvaluationDetails{
+			InEvaluationResult: &keptnv2.EvaluationFinishedEventData{
+				Evaluation: keptnv2.EvaluationDetails{
 					TimeStart: "2019-10-20T07:57:27.152330783Z",
 					TimeEnd:   "2019-10-22T08:57:27.152330783Z",
 					Result:    "", // to be calculated
 					Score:     0,  // to be calculated
-					IndicatorResults: []*keptnevents.SLIEvaluationResult{
+					IndicatorResults: []*keptnv2.SLIEvaluationResult{
 						{
 							Score: 1,
-							Value: &keptnevents.SLIResult{
+							Value: &keptnv2.SLIResult{
 								Metric:  "my-test-metric-1",
 								Value:   10.0,
 								Success: true,
@@ -2423,7 +2443,7 @@ func TestCalculateScore(t *testing.T) {
 						},
 						{
 							Score: 1,
-							Value: &keptnevents.SLIResult{
+							Value: &keptnv2.SLIResult{
 								Metric:  "my-key-metric",
 								Value:   10.0,
 								Success: true,
@@ -2434,11 +2454,12 @@ func TestCalculateScore(t *testing.T) {
 						},
 					},
 				},
-				Result:       "", // to be set
-				Project:      "sockshop",
-				Service:      "carts",
-				Stage:        "dev",
-				TestStrategy: "",
+				EventData: keptnv2.EventData{
+					Result:  "",
+					Project: "sockshop",
+					Service: "carts",
+					Stage:   "dev",
+				},
 			},
 			InSLOConfig: &keptnmodelsv2.ServiceLevelObjectives{
 				SpecVersion: "1.0",
@@ -2467,16 +2488,16 @@ func TestCalculateScore(t *testing.T) {
 				},
 			},
 			InKeySLIFailed: true,
-			ExpectedEvaluationResult: &keptnevents.EvaluationDoneEventData{
-				EvaluationDetails: &keptnevents.EvaluationDetails{
+			ExpectedEvaluationResult: &keptnv2.EvaluationFinishedEventData{
+				Evaluation: keptnv2.EvaluationDetails{
 					TimeStart: "2019-10-20T07:57:27.152330783Z",
 					TimeEnd:   "2019-10-22T08:57:27.152330783Z",
 					Result:    "pass",
 					Score:     100.0,
-					IndicatorResults: []*keptnevents.SLIEvaluationResult{
+					IndicatorResults: []*keptnv2.SLIEvaluationResult{
 						{
 							Score: 1,
-							Value: &keptnevents.SLIResult{
+							Value: &keptnv2.SLIResult{
 								Metric:  "my-test-metric-1",
 								Value:   10.0,
 								Success: true,
@@ -2487,7 +2508,7 @@ func TestCalculateScore(t *testing.T) {
 						},
 						{
 							Score: 1,
-							Value: &keptnevents.SLIResult{
+							Value: &keptnv2.SLIResult{
 								Metric:  "my-key-metric",
 								Value:   10.0,
 								Success: true,
@@ -2498,11 +2519,14 @@ func TestCalculateScore(t *testing.T) {
 						},
 					},
 				},
-				Result:       "pass",
-				Project:      "sockshop",
-				Service:      "carts",
-				Stage:        "dev",
-				TestStrategy: "",
+				EventData: keptnv2.EventData{
+					Result:  "pass",
+					Status:  "succeeded",
+					Labels:  nil,
+					Project: "sockshop",
+					Service: "carts",
+					Stage:   "dev",
+				},
 			},
 			ExpectedError: nil,
 		},
@@ -2548,7 +2572,7 @@ func TestEvaluateSLIHandler_getPreviousTestExecutionResult(t *testing.T) {
 		fields              fields
 		args                args
 		resultFromDatastore datastoreResult
-		want                *keptnevents.TestsFinishedEventData
+		want                *keptnv2.TestFinishedEventData
 		wantErr             bool
 	}{
 		{
@@ -2581,30 +2605,44 @@ func TestEvaluateSLIHandler_getPreviousTestExecutionResult(t *testing.T) {
 					Data interface{} `json:"data"`
 				}{
 					{
-						Data: &keptnevents.TestsFinishedEventData{
-							Project:            "sockshop",
-							Service:            "carts",
-							Stage:              "dev",
-							TestStrategy:       "",
-							DeploymentStrategy: "",
-							Start:              "",
-							End:                "",
-							Labels:             nil,
-							Result:             "",
+						Data: &keptnv2.TestFinishedEventData{
+							EventData: keptnv2.EventData{
+								Project: "sockshop",
+								Service: "carts",
+								Stage:   "dev",
+								Result:  "",
+								Labels:  nil,
+							},
+							Test: struct {
+								Start     string `json:"start"`
+								End       string `json:"end"`
+								GitCommit string `json:"gitCommit"`
+							}{
+								Start:     "",
+								End:       "",
+								GitCommit: "",
+							},
 						},
 					},
 				},
 			},
-			want: &keptnevents.TestsFinishedEventData{
-				Project:            "sockshop",
-				Service:            "carts",
-				Stage:              "dev",
-				TestStrategy:       "",
-				DeploymentStrategy: "",
-				Start:              "",
-				End:                "",
-				Labels:             nil,
-				Result:             "",
+			want: &keptnv2.TestFinishedEventData{
+				EventData: keptnv2.EventData{
+					Project: "sockshop",
+					Service: "carts",
+					Stage:   "dev",
+					Result:  "",
+					Labels:  nil,
+				},
+				Test: struct {
+					Start     string `json:"start"`
+					End       string `json:"end"`
+					GitCommit string `json:"gitCommit"`
+				}{
+					Start:     "",
+					End:       "",
+					GitCommit: "",
+				},
 			},
 			wantErr: false,
 		},
@@ -2614,13 +2652,18 @@ func TestEvaluateSLIHandler_getPreviousTestExecutionResult(t *testing.T) {
 
 			returnedResult = tt.resultFromDatastore
 
-			//keptnHandler, _ := keptnevents.NewKeptn(&tt.fields.Event, keptnevents.KeptnOpts{})
+			eventHandler := keptnapi.NewEventHandler(ts.URL)
 			eh := &EvaluateSLIHandler{
-				KeptnHandler: nil,
-				Event:        tt.fields.Event,
-				HTTPClient:   tt.fields.HTTPClient,
+				KeptnHandler: &keptnv2.Keptn{
+					KeptnBase: keptncommon.KeptnBase{
+						EventHandler: eventHandler,
+						KeptnContext: "123",
+					},
+				},
+				Event:      tt.fields.Event,
+				HTTPClient: tt.fields.HTTPClient,
 			}
-			got, err := eh.getPreviousTestExecutionResult(tt.args.e, tt.args.keptnContext)
+			got, err := eh.getPreviousTestExecutionResult(tt.args.e)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getPreviousTestExecutionResult() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -2663,7 +2706,7 @@ func TestEvaluateSLIHandler_getPreviousEvaluations(t *testing.T) {
 		fields              fields
 		args                args
 		resultFromDatastore datastoreResult
-		want                []*keptnevents.EvaluationDoneEventData
+		want                []*keptnv2.EvaluationFinishedEventData
 		wantErr             bool
 	}{
 		{
@@ -2696,27 +2739,27 @@ func TestEvaluateSLIHandler_getPreviousEvaluations(t *testing.T) {
 					Data interface{} `json:"data"`
 				}{
 					{
-						Data: &keptnevents.EvaluationDoneEventData{
-							Project:            "sockshop",
-							Service:            "carts",
-							Stage:              "dev",
-							TestStrategy:       "",
-							DeploymentStrategy: "",
-							Labels:             nil,
-							Result:             "",
+						Data: &keptnv2.EvaluationFinishedEventData{
+							EventData: keptnv2.EventData{
+								Project: "sockshop",
+								Service: "carts",
+								Stage:   "dev",
+								Labels:  nil,
+								Result:  "",
+							},
 						},
 					},
 				},
 			},
-			want: []*keptnevents.EvaluationDoneEventData{
+			want: []*keptnv2.EvaluationFinishedEventData{
 				{
-					Project:            "sockshop",
-					Service:            "carts",
-					Stage:              "dev",
-					TestStrategy:       "",
-					DeploymentStrategy: "",
-					Labels:             nil,
-					Result:             "",
+					EventData: keptnv2.EventData{
+						Project: "sockshop",
+						Service: "carts",
+						Stage:   "dev",
+						Labels:  nil,
+						Result:  "",
+					},
 				},
 			},
 			wantErr: false,
@@ -2754,36 +2797,36 @@ func TestEvaluateSLIHandler_getPreviousEvaluationsWithPassFilter(t *testing.T) {
 			Data interface{} `json:"data"`
 		}{
 			{
-				Data: &keptnevents.EvaluationDoneEventData{
-					Project:            "sockshop",
-					Service:            "carts",
-					Stage:              "dev",
-					TestStrategy:       "",
-					DeploymentStrategy: "",
-					Labels:             nil,
-					Result:             "pass",
+				Data: &keptnv2.EvaluationFinishedEventData{
+					EventData: keptnv2.EventData{
+						Project: "sockshop",
+						Service: "carts",
+						Stage:   "dev",
+						Labels:  nil,
+						Result:  "pass",
+					},
 				},
 			},
 			{
-				Data: &keptnevents.EvaluationDoneEventData{
-					Project:            "sockshop",
-					Service:            "carts",
-					Stage:              "dev",
-					TestStrategy:       "",
-					DeploymentStrategy: "",
-					Labels:             nil,
-					Result:             "fail",
+				Data: &keptnv2.EvaluationFinishedEventData{
+					EventData: keptnv2.EventData{
+						Project: "sockshop",
+						Service: "carts",
+						Stage:   "dev",
+						Labels:  nil,
+						Result:  "fail",
+					},
 				},
 			},
 			{
-				Data: &keptnevents.EvaluationDoneEventData{
-					Project:            "sockshop",
-					Service:            "carts",
-					Stage:              "dev",
-					TestStrategy:       "",
-					DeploymentStrategy: "",
-					Labels:             nil,
-					Result:             "fail",
+				Data: &keptnv2.EvaluationFinishedEventData{
+					EventData: keptnv2.EventData{
+						Project: "sockshop",
+						Service: "carts",
+						Stage:   "dev",
+						Labels:  nil,
+						Result:  "fail",
+					},
 				},
 			},
 		},
@@ -2797,36 +2840,36 @@ func TestEvaluateSLIHandler_getPreviousEvaluationsWithPassFilter(t *testing.T) {
 			Data interface{} `json:"data"`
 		}{
 			{
-				Data: &keptnevents.EvaluationDoneEventData{
-					Project:            "sockshop",
-					Service:            "carts",
-					Stage:              "dev",
-					TestStrategy:       "",
-					DeploymentStrategy: "",
-					Labels:             nil,
-					Result:             "pass",
+				Data: &keptnv2.EvaluationFinishedEventData{
+					EventData: keptnv2.EventData{
+						Project: "sockshop",
+						Service: "carts",
+						Stage:   "dev",
+						Labels:  nil,
+						Result:  "pass",
+					},
 				},
 			},
 			{
-				Data: &keptnevents.EvaluationDoneEventData{
-					Project:            "sockshop",
-					Service:            "carts",
-					Stage:              "dev",
-					TestStrategy:       "",
-					DeploymentStrategy: "",
-					Labels:             nil,
-					Result:             "pass",
+				Data: &keptnv2.EvaluationFinishedEventData{
+					EventData: keptnv2.EventData{
+						Project: "sockshop",
+						Service: "carts",
+						Stage:   "dev",
+						Labels:  nil,
+						Result:  "pass",
+					},
 				},
 			},
 			{
-				Data: &keptnevents.EvaluationDoneEventData{
-					Project:            "sockshop",
-					Service:            "carts",
-					Stage:              "dev",
-					TestStrategy:       "",
-					DeploymentStrategy: "",
-					Labels:             nil,
-					Result:             "fail",
+				Data: &keptnv2.EvaluationFinishedEventData{
+					EventData: keptnv2.EventData{
+						Project: "sockshop",
+						Service: "carts",
+						Stage:   "dev",
+						Labels:  nil,
+						Result:  "fail",
+					},
 				},
 			},
 		},
@@ -2864,7 +2907,7 @@ func TestEvaluateSLIHandler_getPreviousEvaluationsWithPassFilter(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    []*keptnevents.EvaluationDoneEventData
+		want    []*keptnv2.EvaluationFinishedEventData
 		wantErr bool
 	}{
 		{
@@ -2889,33 +2932,33 @@ func TestEvaluateSLIHandler_getPreviousEvaluationsWithPassFilter(t *testing.T) {
 				},
 				numberOfPreviousResults: 3,
 			},
-			want: []*keptnevents.EvaluationDoneEventData{
+			want: []*keptnv2.EvaluationFinishedEventData{
 				{
-					Project:            "sockshop",
-					Service:            "carts",
-					Stage:              "dev",
-					TestStrategy:       "",
-					DeploymentStrategy: "",
-					Labels:             nil,
-					Result:             "pass",
+					EventData: keptnv2.EventData{
+						Project: "sockshop",
+						Service: "carts",
+						Stage:   "dev",
+						Labels:  nil,
+						Result:  "pass",
+					},
 				},
 				{
-					Project:            "sockshop",
-					Service:            "carts",
-					Stage:              "dev",
-					TestStrategy:       "",
-					DeploymentStrategy: "",
-					Labels:             nil,
-					Result:             "pass",
+					EventData: keptnv2.EventData{
+						Project: "sockshop",
+						Service: "carts",
+						Stage:   "dev",
+						Labels:  nil,
+						Result:  "pass",
+					},
 				},
 				{
-					Project:            "sockshop",
-					Service:            "carts",
-					Stage:              "dev",
-					TestStrategy:       "",
-					DeploymentStrategy: "",
-					Labels:             nil,
-					Result:             "pass",
+					EventData: keptnv2.EventData{
+						Project: "sockshop",
+						Service: "carts",
+						Stage:   "dev",
+						Labels:  nil,
+						Result:  "pass",
+					},
 				},
 			},
 			wantErr: false,

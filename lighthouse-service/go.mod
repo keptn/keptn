@@ -11,6 +11,7 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/keptn/go-utils v0.6.3-0.20200908082455-010bbcf95e6f
 	github.com/keptn/keptn/cli v0.0.0-20200908124918-a8871e327082 // indirect
+	github.com/mitchellh/mapstructure v1.3.3
 	github.com/nats-io/nats-server/v2 v2.1.6
 	github.com/stretchr/testify v1.5.1
 	k8s.io/api v0.17.2
