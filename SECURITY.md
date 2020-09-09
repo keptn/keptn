@@ -42,5 +42,6 @@ Defined below are the security contacts for this repository. In case you identif
 
 - johannes.braeuer
 - andreas.grimmer
+- christian.kreuzberger
 
 Please append the email addresses with [at] dynatrace [.com] and address your email to all security contacts.
