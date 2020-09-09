@@ -18,8 +18,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/kelseyhightower/envconfig"
-
-	keptn "github.com/keptn/go-utils/pkg/lib"
 )
 
 const eventbroker = "EVENTBROKER"
@@ -45,19 +43,19 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 	logger := keptncommon.NewLogger(shkeptncontext, event.Context.GetID(), "jmeter-service")
 
-	data := &keptn.DeploymentFinishedEventData{}
+	data := &keptnv2.TestTriggeredEventData{}
 	if err := event.DataAs(data); err != nil {
 		logger.Error(fmt.Sprintf("Got Data Error: %s", err.Error()))
 		return err
 	}
 
-	if event.Type() != keptn.DeploymentFinishedEventType {
+	if event.Type() != keptnv2.GetTriggeredEventType(keptnv2.TestTaskName) {
 		const errorMsg = "Received unexpected keptn event"
 		logger.Error(errorMsg)
 		return errors.New(errorMsg)
 	}
 
-	if data.TestStrategy == TestStrategy_RealUser {
+	if data.Test.TestStrategy == TestStrategy_RealUser {
 		logger.Info("Received '" + TestStrategy_RealUser + "' test strategy, hence no tests are triggered")
 		return nil
 	}
@@ -70,8 +68,9 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 // This method executes the correct tests based on the passed testStrategy in the deployment finished event
 // The method will always try to execute a health check workload first, then execute the workload based on the passed testStrategy
 //
-func runTests(event cloudevents.Event, shkeptncontext string, data keptn.DeploymentFinishedEventData, logger *keptncommon.Logger) {
+func runTests(event cloudevents.Event, shkeptncontext string, data keptnv2.TestTriggeredEventData, logger *keptncommon.Logger) {
 
+	sendTestsStartedEvent(shkeptncontext, event, logger)
 	testInfo := getTestInfo(data)
 	id := uuid.New().String()
 	startedAt := time.Now()
@@ -86,7 +85,7 @@ func runTests(event cloudevents.Event, shkeptncontext string, data keptn.Deploym
 	serviceUrl, err = getServiceURL(data)
 	if err != nil {
 		logger.Error(fmt.Sprintf("Error getting service url to run test against: %s", err.Error()))
-		if err := sendTestsFinishedEvent(shkeptncontext, event, startedAt, "fail", logger); err != nil {
+		if err := sendTestsFinishedEvent(shkeptncontext, event, startedAt, keptnv2.ResultFailed, logger); err != nil {
 			logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.ToString())
 		}
 		return
@@ -104,7 +103,7 @@ func runTests(event cloudevents.Event, shkeptncontext string, data keptn.Deploym
 		}
 
 		if !res {
-			if err := sendTestsFinishedEvent(shkeptncontext, event, startedAt, "fail", logger); err != nil {
+			if err := sendTestsFinishedEvent(shkeptncontext, event, startedAt, keptnv2.ResultFailed, logger); err != nil {
 				logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.ToString())
 			}
 			return
@@ -116,7 +115,7 @@ func runTests(event cloudevents.Event, shkeptncontext string, data keptn.Deploym
 
 	// now lets execute the workload based on the passed testStrategy
 	res = false
-	var testStrategy = strings.ToLower(data.TestStrategy)
+	var testStrategy = strings.ToLower(data.Test.TestStrategy)
 
 	if testStrategy == "" {
 		// no testStrategy passed at all -> we just send a successful test finished event!
@@ -143,13 +142,13 @@ func runTests(event cloudevents.Event, shkeptncontext string, data keptn.Deploym
 
 	// now lets send the test finished event
 	if !res {
-		if err := sendTestsFinishedEvent(shkeptncontext, event, startedAt, "fail", logger); err != nil {
+		if err := sendTestsFinishedEvent(shkeptncontext, event, startedAt, keptnv2.ResultFailed, logger); err != nil {
 			logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.ToString())
 		}
 		return
 	}
 
-	if err := sendTestsFinishedEvent(shkeptncontext, event, startedAt, "pass", logger); err != nil {
+	if err := sendTestsFinishedEvent(shkeptncontext, event, startedAt, keptnv2.ResultPass, logger); err != nil {
 		logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.ToString())
 	}
 }
@@ -157,34 +156,28 @@ func runTests(event cloudevents.Event, shkeptncontext string, data keptn.Deploym
 //
 // Extracts relevant information from the data object
 //
-func getTestInfo(data keptn.DeploymentFinishedEventData) *TestInfo {
+func getTestInfo(data keptnv2.TestTriggeredEventData) *TestInfo {
 	return &TestInfo{
 		Project:      data.Project,
 		Service:      data.Service,
 		Stage:        data.Stage,
-		TestStrategy: data.TestStrategy,
+		TestStrategy: data.Test.TestStrategy,
 	}
 }
 
 //
 // returns the service URL that is either passed via the DeploymentURI* parameters or constructs one based on keptn naming structure
 //
-func getServiceURL(data keptn.DeploymentFinishedEventData) (*url.URL, error) {
+func getServiceURL(data keptnv2.TestTriggeredEventData) (*url.URL, error) {
 
-	if data.DeploymentURILocal != "" {
-		return url.Parse(data.DeploymentURILocal)
+	if len(data.Deployment.DeploymentURIsLocal) > 0 && data.Deployment.DeploymentURIsLocal[0] != "" {
+		return url.Parse(data.Deployment.DeploymentURIsLocal[0])
 
-	} else if data.DeploymentURIPublic != "" {
-		return url.Parse(data.DeploymentURIPublic)
+	} else if len(data.Deployment.DeploymentURIsPublic) > 0 && data.Deployment.DeploymentURIsPublic[0] != "" {
+		return url.Parse(data.Deployment.DeploymentURIsPublic[0])
 	}
 
-	// Use educated guess of the service url based on stage, service name, deployment type
-	serviceURL := data.Service + "." + data.Project + "-" + data.Stage
-	if data.DeploymentStrategy == "blue_green_service" {
-		serviceURL = data.Service + "-canary" + "." + data.Project + "-" + data.Stage
-	}
-	serviceURL = "http://" + serviceURL + "/health"
-	return url.Parse(serviceURL)
+	return nil, errors.New("no deployment URI included in event")
 }
 
 //
@@ -211,26 +204,54 @@ func runWorkload(serviceUrl *url.URL, testInfo *TestInfo, id string, workload *W
 		breakOnFunctionalIssues, logger)
 }
 
-func sendTestsFinishedEvent(shkeptncontext string, incomingEvent cloudevents.Event, startedAt time.Time, result string, logger *keptncommon.Logger) error {
+func sendTestsStartedEvent(shkeptncontext string, incomingEvent cloudevents.Event, logger *keptncommon.Logger) error {
 	source, _ := url.Parse("jmeter-service")
 
-	testFinishedData := keptn.TestsFinishedEventData{}
-	// fill in data from incoming event (e.g., project, service, stage, teststrategy, deploymentstrategy)
-	if err := incomingEvent.DataAs(&testFinishedData); err != nil {
+	testStartedEventData := keptnv2.TestStartedEventData{}
+	testTriggeredEventData := keptnv2.TestTriggeredEventData{}
+	// fill in data from incoming event (e.g., project, service, stage)
+	if err := incomingEvent.DataAs(&testTriggeredEventData); err != nil {
 		logger.Error(fmt.Sprintf("Got Data Error: %s", err.Error()))
 		return err
 	}
-	// fill in timestamps
-	testFinishedData.Start = startedAt.Format(time.RFC3339)
-	testFinishedData.End = time.Now().Format(time.RFC3339)
-	// set test result
-	testFinishedData.Result = result
+	testStartedEventData.EventData = testTriggeredEventData.EventData
+	testStartedEventData.Status = keptnv2.StatusSucceeded
 
 	event := cloudevents.NewEvent()
-	event.SetType(keptn.TestsFinishedEventType)
+	event.SetType(keptnv2.GetStartedEventType(keptnv2.TestTaskName))
 	event.SetSource(source.String())
 	event.SetDataContentType(cloudevents.ApplicationJSON)
 	event.SetExtension("shkeptncontext", shkeptncontext)
+	event.SetExtension("triggeredid", incomingEvent.ID())
+	event.SetData(cloudevents.ApplicationJSON, testStartedEventData)
+
+	return sendEvent(event)
+}
+
+func sendTestsFinishedEvent(shkeptncontext string, incomingEvent cloudevents.Event, startedAt time.Time, result keptnv2.ResultType, logger *keptncommon.Logger) error {
+	source, _ := url.Parse("jmeter-service")
+
+	testFinishedData := keptnv2.TestFinishedEventData{}
+	testTriggeredEventData := keptnv2.TestTriggeredEventData{}
+	// fill in data from incoming event (e.g., project, service, stage)
+	if err := incomingEvent.DataAs(&testTriggeredEventData); err != nil {
+		logger.Error(fmt.Sprintf("Got Data Error: %s", err.Error()))
+		return err
+	}
+	testFinishedData.EventData = testTriggeredEventData.EventData
+	// fill in timestamps
+	testFinishedData.Test.Start = startedAt.Format(time.RFC3339)
+	testFinishedData.Test.End = time.Now().Format(time.RFC3339)
+	// set test result
+	testFinishedData.Result = result
+	testFinishedData.Status = keptnv2.StatusSucceeded
+
+	event := cloudevents.NewEvent()
+	event.SetType(keptnv2.GetFinishedEventType(keptnv2.TestTaskName))
+	event.SetSource(source.String())
+	event.SetDataContentType(cloudevents.ApplicationJSON)
+	event.SetExtension("shkeptncontext", shkeptncontext)
+	event.SetExtension("triggeredid", incomingEvent.ID())
 	event.SetData(cloudevents.ApplicationJSON, testFinishedData)
 
 	return sendEvent(event)

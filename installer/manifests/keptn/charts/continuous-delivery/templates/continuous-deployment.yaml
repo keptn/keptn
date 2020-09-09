@@ -303,7 +303,7 @@ spec:
             - name: PUBSUB_URL
               value: 'nats://keptn-nats-cluster'
             - name: PUBSUB_TOPIC
-              value: 'sh.keptn.events.deployment-finished'
+              value: 'sh.keptn.event.test.triggered'
             - name: PUBSUB_RECIPIENT
               value: '127.0.0.1'
 ---

@@ -1,23 +1,20 @@
 package main
 
 import (
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"log"
 	"net/url"
 	"reflect"
 	"testing"
-
-	keptnevents "github.com/keptn/go-utils/pkg/lib"
 )
 
 var serviceURLTests = []struct {
 	name  string
-	event keptnevents.DeploymentFinishedEventData
+	event keptnv2.TestTriggeredEventData
 	url   *url.URL
 }{
 	{"local", deploymentFinishedEventInitHelper("sockshop", "carts", "dev", "direct", "https://carts.sockshop-dev.svc.cluster.local/test", "carts.sockshop-dev.mydomain.com"), getURL("https://carts.sockshop-dev.svc.cluster.local/test")},
 	{"public", deploymentFinishedEventInitHelper("sockshop", "carts", "dev", "direct", "", "http://carts.sockshop-dev.mydomain.com:8080/myendpoint"), getURL("http://carts.sockshop-dev.mydomain.com:8080/myendpoint")},
-	{"educatedGuessDirect", deploymentFinishedEventInitHelper("sockshop", "carts", "dev", "direct", "", ""), getURL("http://carts.sockshop-dev/health")},
-	{"educatedGuessBG", deploymentFinishedEventInitHelper("sockshop", "carts", "dev", "blue_green_service", "", ""), getURL("http://carts-canary.sockshop-dev/health")},
 }
 
 func getURL(urlString string) *url.URL {
@@ -29,8 +26,21 @@ func getURL(urlString string) *url.URL {
 }
 
 func deploymentFinishedEventInitHelper(project, service, stage, deploymentStrategy,
-	deploymentURILocal, deploymentURIPublic string) keptnevents.DeploymentFinishedEventData {
-	return keptnevents.DeploymentFinishedEventData{Project: project, Service: service, Stage: stage, DeploymentStrategy: deploymentStrategy, DeploymentURILocal: deploymentURILocal, DeploymentURIPublic: deploymentURIPublic}
+	deploymentURILocal, deploymentURIPublic string) keptnv2.TestTriggeredEventData {
+	return keptnv2.TestTriggeredEventData{
+		EventData: keptnv2.EventData{
+			Project: project,
+			Service: service,
+			Stage:   stage,
+		},
+		Deployment: struct {
+			DeploymentURIsLocal  []string `json:"deploymentURIsLocal,omitempty"`
+			DeploymentURIsPublic []string `json:"deploymentURIsPublic,omitempty"`
+		}{
+			DeploymentURIsLocal:  []string{deploymentURILocal},
+			DeploymentURIsPublic: []string{deploymentURIPublic},
+		},
+	}
 }
 
 func TestGetServiceURL(t *testing.T) {
