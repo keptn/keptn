@@ -27,7 +27,12 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 		return err
 	}
 
-	err = sendEvent(keptnContext, eh.Event.ID(), keptnv2.GetStartedEventType(keptnv2.EvaluationTaskName), eh.KeptnHandler, nil)
+	startedEvent := keptnv2.EvaluationStartedEventData{
+		EventData: e.EventData,
+	}
+	startedEvent.EventData.Status = keptnv2.StatusSucceeded
+
+	err = sendEvent(keptnContext, eh.Event.ID(), keptnv2.GetStartedEventType(keptnv2.EvaluationTaskName), eh.KeptnHandler, startedEvent)
 	if err != nil {
 		eh.KeptnHandler.Logger.Error("Could not send evaluation.started event: " + err.Error())
 		return err
