@@ -39,12 +39,12 @@ func TestNewEventHandler(t *testing.T) {
 		wantErr   bool
 	}{
 		{
-			name: "tests-finished -> start-evaluation handler",
+			name: "evaluation.triggered -> start-evaluation handler",
 			args: args{
 				event:  incomingEvent,
 				logger: nil,
 			},
-			eventType: keptn.TestsFinishedEventType,
+			eventType: keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName),
 			want: &StartEvaluationHandler{
 				Event:        incomingEvent,
 				KeptnHandler: keptnHandler,

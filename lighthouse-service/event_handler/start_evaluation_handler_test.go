@@ -5,7 +5,6 @@ import (
 	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/types"
-	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/nats-io/nats-server/v2/server"
@@ -90,7 +89,7 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 				Logger: keptncommon.NewLogger("", "", ""),
 				Event: cloudevents.Event{
 					Context: &cloudevents.EventContextV1{
-						Type:            "sh.keptn.events.tests-finished",
+						Type:            keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName),
 						Source:          types.URIRef{},
 						ID:              "",
 						Time:            nil,
@@ -116,7 +115,7 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 				},
 			},
 			sloAvailable:  false,
-			wantEventType: keptnevents.EvaluationDoneEventType,
+			wantEventType: keptnv2.GetStartedEventType(keptnv2.EvaluationTaskName),
 			wantErr:       false,
 		},
 		{
@@ -125,7 +124,7 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 				Logger: keptncommon.NewLogger("", "", ""),
 				Event: cloudevents.Event{
 					Context: &cloudevents.EventContextV1{
-						Type:            "sh.keptn.events.tests-finished",
+						Type:            keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName),
 						Source:          types.URIRef{},
 						ID:              "",
 						Time:            nil,
@@ -136,8 +135,6 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
     "project": "sockshop",
     "stage": "staging",
     "service": "carts",
-    "testStrategy": "performance",
-    "deploymentStrategy": "direct",
     "start": "2019-09-01 12:00:00",
     "end": "2019-09-01 12:05:00",
     "labels": {
@@ -151,7 +148,7 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 				},
 			},
 			sloAvailable:  false,
-			wantEventType: keptnevents.EvaluationDoneEventType,
+			wantEventType: keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName),
 			wantErr:       false,
 		},
 	}

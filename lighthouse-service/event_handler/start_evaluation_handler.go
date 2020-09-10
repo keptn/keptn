@@ -20,33 +20,21 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 	var keptnContext string
 	_ = eh.Event.ExtensionAs("shkeptncontext", &keptnContext)
 
-	e := &keptnevents.StartEvaluationEventData{}
+	e := &keptnv2.EvaluationTriggeredEventData{}
 	err := eh.Event.DataAs(e)
 	if err != nil {
 		eh.KeptnHandler.Logger.Error("Could not parse event payload: " + err.Error())
 		return err
 	}
 
-	if e.TestStrategy == "" {
-		eh.KeptnHandler.Logger.Debug("No test has been executed, no evaluation conducted")
-		evaluationDetails := keptnevents.EvaluationDetails{
-			IndicatorResults: nil,
-			TimeStart:        e.Start,
-			TimeEnd:          e.End,
-			Result:           fmt.Sprintf("no evaluation performed by lighthouse because no test has been executed"),
-		}
-		// send the evaluation-done-event
-		evaluationResult := keptnevents.EvaluationDoneEventData{
-			EvaluationDetails:  &evaluationDetails,
-			Result:             eh.getTestExecutionResult(),
-			Project:            e.Project,
-			Service:            e.Service,
-			Stage:              e.Stage,
-			TestStrategy:       e.TestStrategy,
-			DeploymentStrategy: e.DeploymentStrategy,
-			Labels:             e.Labels,
-		}
-		err = eh.sendEvaluationDoneEvent(keptnContext, &evaluationResult)
+	startedEvent := keptnv2.EvaluationStartedEventData{
+		EventData: e.EventData,
+	}
+	startedEvent.EventData.Status = keptnv2.StatusSucceeded
+
+	err = sendEvent(keptnContext, eh.Event.ID(), keptnv2.GetStartedEventType(keptnv2.EvaluationTaskName), eh.KeptnHandler, startedEvent)
+	if err != nil {
+		eh.KeptnHandler.Logger.Error("Could not send evaluation.started event: " + err.Error())
 		return err
 	}
 
@@ -55,25 +43,27 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 	if err != nil {
 		// no SLO file found (assumption that this is an empty SLO file) -> no need to evaluate
 		eh.KeptnHandler.Logger.Debug("No SLO file found, no evaluation conducted")
-		evaluationDetails := keptnevents.EvaluationDetails{
+		evaluationDetails := keptnv2.EvaluationDetails{
 			IndicatorResults: nil,
-			TimeStart:        e.Start,
-			TimeEnd:          e.End,
+			TimeStart:        e.Test.Start,
+			TimeEnd:          e.Test.End,
 			Result:           fmt.Sprintf("no evaluation performed by lighthouse because no SLO found for service %s", e.Service),
 		}
 
-		evaluationResult := keptnevents.EvaluationDoneEventData{
-			EvaluationDetails:  &evaluationDetails,
-			Result:             eh.getTestExecutionResult(),
-			Project:            e.Project,
-			Service:            e.Service,
-			Stage:              e.Stage,
-			TestStrategy:       e.TestStrategy,
-			DeploymentStrategy: e.DeploymentStrategy,
-			Labels:             e.Labels,
+		evaluationFinishedData := keptnv2.EvaluationFinishedEventData{
+			EventData: keptnv2.EventData{
+				Project: e.Project,
+				Stage:   e.Stage,
+				Service: e.Service,
+				Labels:  e.Labels,
+				Status:  keptnv2.StatusSucceeded,
+				Result:  keptnv2.ResultPass,
+				Message: fmt.Sprintf("no evaluation performed by lighthouse because no SLO found for service %s", e.Service),
+			},
+			Evaluation: evaluationDetails,
 		}
 
-		err = eh.sendEvaluationDoneEvent(keptnContext, &evaluationResult)
+		err = sendEvent(keptnContext, eh.Event.ID(), keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), eh.KeptnHandler, &evaluationFinishedData)
 		return err
 	}
 
@@ -83,23 +73,6 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 	}
 
 	var filters = []*keptnevents.SLIFilter{}
-
-	deployment := ""
-	if e.DeploymentStrategy != "" {
-		if e.DeploymentStrategy == "blue_green_service" {
-			// blue-green deployed services should be evaluated based on data of either the primary or canary deployment
-			if e.TestStrategy == "real-user" {
-				// remediation use case will be tested by real users, therefore the evaluation needs to take place on the on the primary deployment
-				deployment = "primary"
-			} else {
-				// while load-tests are running on the canary deployment
-				deployment = "canary"
-			}
-		} else {
-			// assert deployment_strategy == 'direct'
-			deployment = "direct"
-		}
-	}
 
 	if objectives.Filter != nil {
 		for key, value := range objectives.Filter {
@@ -115,45 +88,32 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 	sliProvider, err := getSLIProvider(e.Project)
 	if err != nil {
 		eh.KeptnHandler.Logger.Error("no SLI-provider configured for project " + e.Project + ", no evaluation conducted")
-		evaluationDetails := keptnevents.EvaluationDetails{
+		evaluationDetails := keptnv2.EvaluationDetails{
 			IndicatorResults: nil,
-			TimeStart:        e.Start,
-			TimeEnd:          e.End,
+			TimeStart:        e.Test.Start,
+			TimeEnd:          e.Test.End,
 			Result:           fmt.Sprintf("no evaluation performed by lighthouse because no SLI-provider configured for project %s", e.Project),
 		}
 
-		evaluationResult := keptnevents.EvaluationDoneEventData{
-			EvaluationDetails:  &evaluationDetails,
-			Result:             "failed",
-			Project:            e.Project,
-			Service:            e.Service,
-			Stage:              e.Stage,
-			TestStrategy:       e.TestStrategy,
-			DeploymentStrategy: e.DeploymentStrategy,
-			Labels:             e.Labels,
+		evaluationFinishedData := keptnv2.EvaluationFinishedEventData{
+			EventData: keptnv2.EventData{
+				Project: e.Project,
+				Stage:   e.Stage,
+				Service: e.Service,
+				Labels:  e.Labels,
+				Status:  keptnv2.StatusSucceeded,
+				Result:  keptnv2.ResultPass,
+				Message: fmt.Sprintf("no evaluation performed by lighthouse because no SLI-provider configured for project %s", e.Project),
+			},
+			Evaluation: evaluationDetails,
 		}
 
-		err = eh.sendEvaluationDoneEvent(keptnContext, &evaluationResult)
-		return err
+		return sendEvent(keptnContext, eh.Event.ID(), keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), eh.KeptnHandler, &evaluationFinishedData)
 	}
 	// send a new event to trigger the SLI retrieval
 	eh.KeptnHandler.Logger.Debug("SLI provider for project " + e.Project + " is: " + sliProvider)
-	err = eh.sendInternalGetSLIEvent(keptnContext, e.Project, e.Stage, e.Service, sliProvider, indicators, e.Start, e.End, e.TestStrategy, e.DeploymentStrategy, filters, e.Labels, deployment)
+	err = eh.sendInternalGetSLIEvent(keptnContext, e.Project, e.Stage, e.Service, sliProvider, indicators, e.Test.Start, e.Test.End, filters, e.Labels)
 	return nil
-}
-
-func (eh *StartEvaluationHandler) sendEvaluationDoneEvent(shkeptncontext string, data *keptnevents.EvaluationDoneEventData) error {
-	source, _ := url.Parse("lighthouse-service")
-
-	event := cloudevents.NewEvent()
-	event.SetType(keptnevents.EvaluationDoneEventType)
-	event.SetSource(source.String())
-	event.SetDataContentType(cloudevents.ApplicationJSON)
-	event.SetExtension("shkeptncontext", shkeptncontext)
-	event.SetData(cloudevents.ApplicationJSON, data)
-
-	eh.KeptnHandler.Logger.Debug("Send event: " + keptnevents.EvaluationDoneEventType)
-	return eh.KeptnHandler.SendCloudEvent(event)
 }
 
 func getSLIProvider(project string) (string, error) {
@@ -173,22 +133,19 @@ func getSLIProvider(project string) (string, error) {
 	return sliProvider, nil
 }
 
-func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string, project string, stage string, service string, sliProvider string, indicators []string, start string, end string, teststrategy string, deploymentStrategy string, filters []*keptnevents.SLIFilter, labels map[string]string, deployment string) error {
+func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string, project string, stage string, service string, sliProvider string, indicators []string, start string, end string, filters []*keptnevents.SLIFilter, labels map[string]string) error {
 	source, _ := url.Parse("lighthouse-service")
 
 	getSLIEvent := keptnevents.InternalGetSLIEventData{
-		SLIProvider:        sliProvider,
-		Project:            project,
-		Service:            service,
-		Stage:              stage,
-		Start:              start,
-		End:                end,
-		Indicators:         indicators,
-		CustomFilters:      filters,
-		TestStrategy:       teststrategy,
-		DeploymentStrategy: deploymentStrategy,
-		Labels:             labels,
-		Deployment:         deployment,
+		SLIProvider:   sliProvider,
+		Project:       project,
+		Service:       service,
+		Stage:         stage,
+		Start:         start,
+		End:           end,
+		Indicators:    indicators,
+		CustomFilters: filters,
+		Labels:        labels,
 	}
 
 	event := cloudevents.NewEvent()
