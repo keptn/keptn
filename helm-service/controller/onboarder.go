@@ -25,33 +25,39 @@ import (
 
 // Onboarder is a container of variables required for onboarding a new service
 type Onboarder struct {
-	mesh             mesh.Mesh
-	keptnHandler     *keptnv2.Keptn
-	configServiceURL string
+	HandlerBase
+	mesh mesh.Mesh
 }
 
 // NewOnboarder creates a new Onboarder
-func NewOnboarder(keptnHandler *keptnv2.Keptn, mesh mesh.Mesh, configServiceURL string) *Onboarder {
-	return &Onboarder{
-		mesh:             mesh,
-		keptnHandler:     keptnHandler,
-		configServiceURL: configServiceURL,
+func NewOnboarder(keptnHandler *keptnv2.Keptn, mesh mesh.Mesh, configServiceURL string) Onboarder {
+	return Onboarder{
+		HandlerBase: NewHandlerBase(keptnHandler, configServiceURL),
+		mesh:        mesh,
 	}
 }
 
 // HandleEvent onboards a new service
-func (o *Onboarder) HandleEvent(ce cloudevents.Event, closeLogger func(keptnHandler *keptnv2.Keptn)) error {
+func (o Onboarder) HandleEvent(ce cloudevents.Event, closeLogger func(keptnHandler *keptnv2.Keptn)) {
 
-	event := &keptnv2.ServiceCreateTriggeredEventData{}
-	if err := ce.DataAs(event); err != nil {
-		o.keptnHandler.Logger.Error(fmt.Sprintf("Got Data Error: %s", err.Error()))
-		return err
+	e := &keptnv2.ServiceCreateTriggeredEventData{}
+	if err := ce.DataAs(e); err != nil {
+		err = fmt.Errorf("failed to unmarshal data: %v", err)
+		o.HandleError(ce.ID(), err, keptnv2.ServiceCreateTaskName, o.getFinishedEventDataForError(e.EventData, err))
+		return
 	}
 
 	// Check whether Helm chart is provided
-	if len(event.Helm.Chart) == 0 {
+	if len(e.Helm.Chart) == 0 {
 		// Event does not contain a Helm chart
-		return nil
+		return
+	}
+
+	// Send service.create started eveny
+	if err := o.SendEvent(ce.ID(), keptnv2.GetStartedEventType(keptnv2.ServiceCreateTaskName),
+		o.getStartedEventData(e.EventData)); err != nil {
+		o.HandleError(ce.ID(), err, keptnv2.ServiceCreateTaskName, o.getFinishedEventDataForError(e.EventData, err))
+		return
 	}
 
 	// Only close logger/websocket, if there is a chart which needs to be onboarded
@@ -59,49 +65,73 @@ func (o *Onboarder) HandleEvent(ce cloudevents.Event, closeLogger func(keptnHand
 
 	// Check if project exists
 	projHandler := configutils.NewProjectHandler(o.configServiceURL)
-	if _, err := projHandler.GetProject(models.Project{ProjectName: event.Project}); err != nil {
-		o.keptnHandler.Logger.Error(fmt.Sprintf("Could not retrieve project %s: %s", event.Project, *err.Message))
-		return errors.New(*err.Message)
+	if _, err := projHandler.GetProject(models.Project{ProjectName: e.Project}); err != nil {
+		err := fmt.Errorf("failed not retrieve project %s: %s", e.Project, *err.Message)
+		o.HandleError(ce.ID(), err, keptnv2.ServiceCreateTaskName, o.getFinishedEventDataForError(e.EventData, err))
+		return
 	}
 
 	// Check service name
-	if err := o.checkAndSetServiceName(event); err != nil {
-		o.keptnHandler.Logger.Error(fmt.Sprintf("Invalid service name: %s", err.Error()))
-		return err
+	if err := o.checkAndSetServiceName(e); err != nil {
+		err := fmt.Errorf("invalid service name: %s", err.Error())
+		o.HandleError(ce.ID(), err, keptnv2.ServiceCreateTaskName, o.getFinishedEventDataForError(e.EventData, err))
+		return
 	}
 
 	// Check stages
-	stageHandler := configutils.NewStageHandler(o.configServiceURL)
-	stages, err := stageHandler.GetAllStages(event.Project)
+	stages, err := o.getStages(e)
 	if err != nil {
-		o.keptnHandler.Logger.Error("Error when getting all stages: " + err.Error())
-		return err
-	}
-	if len(stages) == 0 {
-		o.keptnHandler.Logger.Error("Cannot onboard service because no stage is available")
-		return errors.New("Cannot onboard service because no stage is available")
+		o.HandleError(ce.ID(), err, keptnv2.ServiceCreateTaskName, o.getFinishedEventDataForError(e.EventData, err))
+		return
 	}
 
 	// Initialize Namespace
 	namespaceMng := NewNamespaceManager(o.keptnHandler.Logger)
-	if err := namespaceMng.InitNamespaces(event.Project, stages); err != nil {
-		o.keptnHandler.Logger.Error(err.Error())
-		return err
+	if err := namespaceMng.InitNamespaces(e.Project, stages); err != nil {
+		o.HandleError(ce.ID(), err, keptnv2.ServiceCreateTaskName, o.getFinishedEventDataForError(e.EventData, err))
+		return
 	}
 
 	// Onboard service in all namespaces
 	for _, stage := range stages {
-		if err := o.onboardService(stage.StageName, event); err != nil {
-			o.keptnHandler.Logger.Error(err.Error())
-			return err
+		if err := o.onboardService(stage, e); err != nil {
+			o.HandleError(ce.ID(), err, keptnv2.ServiceCreateTaskName, o.getFinishedEventDataForError(e.EventData, err))
+			return
 		}
 	}
 
-	o.keptnHandler.Logger.Info(fmt.Sprintf("Finished creating service %s in project %s", event.Service, event.Project))
-	return nil
+	// Send finished event
+	msg := fmt.Sprintf("Finished creating service %s in project %s", e.Service, e.Project)
+	// TODO Set git version
+	data := o.getFinishedEventData(e.EventData, keptnv2.StatusSucceeded, keptnv2.ResultPass, msg, "")
+	if err := o.SendEvent(ce.ID(), keptnv2.GetFinishedEventType(keptnv2.ServiceCreateTaskName), data); err != nil {
+		o.HandleError(ce.ID(), err, keptnv2.ServiceCreateTaskName, o.getFinishedEventDataForError(e.EventData, err))
+		return
+	}
 }
 
-func (o *Onboarder) checkAndSetServiceName(event *keptnv2.ServiceCreateTriggeredEventData) error {
+// getStages returns a list of stages where the service should be onboarded
+// If the stage of the incoming event is empty, all available stages are returned
+func (o Onboarder) getStages(e *keptnv2.ServiceCreateTriggeredEventData) ([]string, error) {
+	stageHandler := configutils.NewStageHandler(o.configServiceURL)
+	allStages, err := stageHandler.GetAllStages(e.Project)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retriev stages: %v", err.Error())
+	}
+	var stages []string = nil
+	for _, availableStage := range allStages {
+		if availableStage.StageName == e.Stage || e.Stage == "" {
+			stages = append(stages, availableStage.StageName)
+		}
+	}
+
+	if len(stages) == 0 {
+		return nil, errors.New("Cannot onboard service because no stage is available")
+	}
+	return stages, nil
+}
+
+func (o Onboarder) checkAndSetServiceName(event *keptnv2.ServiceCreateTriggeredEventData) error {
 
 	errorMsg := "Service name contains upper case letter(s) or special character(s).\n " +
 		"Keptn relies on the following conventions: " +
@@ -137,7 +167,7 @@ func (o *Onboarder) checkAndSetServiceName(event *keptnv2.ServiceCreateTriggered
 	return nil
 }
 
-func (o *Onboarder) onboardService(stageName string, event *keptnv2.ServiceCreateTriggeredEventData) error {
+func (o Onboarder) onboardService(stageName string, event *keptnv2.ServiceCreateTriggeredEventData) error {
 
 	serviceHandler := configutils.NewServiceHandler(o.configServiceURL)
 	const retries = 2
@@ -168,7 +198,8 @@ func (o *Onboarder) onboardService(stageName string, event *keptnv2.ServiceCreat
 	return nil
 }
 
-func (o *Onboarder) OnboardGeneratedChart(helmManifest string, event keptnv2.EventData, strategy keptnevents.DeploymentStrategy) (*chart.Chart, error) {
+func (o Onboarder) OnboardGeneratedChart(helmManifest string, event keptnv2.EventData,
+	strategy keptnevents.DeploymentStrategy) (*chart.Chart, error) {
 
 	chartGenerator := helm.NewGeneratedChartGenerator(o.mesh, o.keptnHandler.Logger)
 
@@ -213,4 +244,29 @@ func (o *Onboarder) OnboardGeneratedChart(helmManifest string, event keptnv2.Eve
 		return nil, err
 	}
 	return generatedChart, nil
+}
+
+func (o Onboarder) getStartedEventData(inEventData keptnv2.EventData) keptnv2.ServiceCreateStartedEventData {
+
+	inEventData.Status = keptnv2.StatusSucceeded
+	inEventData.Result = ""
+	inEventData.Message = ""
+	return keptnv2.ServiceCreateStartedEventData{EventData: inEventData}
+}
+
+func (o Onboarder) getFinishedEventData(inEventData keptnv2.EventData, status keptnv2.StatusType, result keptnv2.ResultType,
+	message string, gitCommit string) keptnv2.ServiceCreateFinishedEventData {
+
+	inEventData.Status = status
+	inEventData.Result = result
+	inEventData.Message = message
+
+	return keptnv2.ServiceCreateFinishedEventData{
+		EventData: inEventData,
+		Helm:      keptnv2.HelmData{GitCommit: gitCommit},
+	}
+}
+
+func (o Onboarder) getFinishedEventDataForError(inEventData keptnv2.EventData, err error) keptnv2.ServiceCreateFinishedEventData {
+	return o.getFinishedEventData(inEventData, keptnv2.StatusErrored, keptnv2.ResultFailed, err.Error(), "")
 }

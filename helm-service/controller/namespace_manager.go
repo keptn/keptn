@@ -6,7 +6,6 @@ import (
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/keptn/go-utils/pkg/api/models"
 	keptn "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 )
@@ -20,11 +19,11 @@ func NewNamespaceManager(logger keptn.LoggerInterface) *NamespaceManager {
 }
 
 // InitNamespaces initializes namespaces if they do not exist yet
-func (p *NamespaceManager) InitNamespaces(project string, stages []*models.Stage) error {
+func (p *NamespaceManager) InitNamespaces(project string, stages []string) error {
 
-	for _, shipyardStage := range stages {
+	for _, stage := range stages {
 
-		namespace := project + "-" + shipyardStage.StageName
+		namespace := project + "-" + stage
 		exists, err := keptnutils.ExistsNamespace(true, namespace)
 		if err != nil {
 			return fmt.Errorf("error when checking availability of namespace: %v", err)
