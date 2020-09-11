@@ -117,29 +117,33 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 	}
 
 	// get the SLI provider that has been configured for the project (e.g. 'dynatrace' or 'prometheus')
-	sliProvider, err := getSLIProvider(e.Project)
+	var sliProvider string
+	sliProvider, err = getSLIProvider(e.Project)
 	if err != nil {
-		eh.KeptnHandler.Logger.Error("no SLI-provider configured for project " + e.Project + ", no evaluation conducted")
-		evaluationDetails := keptnevents.EvaluationDetails{
-			IndicatorResults: nil,
-			TimeStart:        e.Start,
-			TimeEnd:          e.End,
-			Result:           fmt.Sprintf("no evaluation performed by lighthouse because no SLI-provider configured for project %s", e.Project),
-		}
+		sliProvider, err = getDefaultProvider()
+		if err != nil {
+			eh.KeptnHandler.Logger.Error("no SLI-provider configured for project " + e.Project + ", no evaluation conducted")
+			evaluationDetails := keptnevents.EvaluationDetails{
+				IndicatorResults: nil,
+				TimeStart:        e.Start,
+				TimeEnd:          e.End,
+				Result:           fmt.Sprintf("no evaluation performed by lighthouse because no SLI-provider configured for project %s", e.Project),
+			}
 
-		evaluationResult := keptnevents.EvaluationDoneEventData{
-			EvaluationDetails:  &evaluationDetails,
-			Result:             "failed",
-			Project:            e.Project,
-			Service:            e.Service,
-			Stage:              e.Stage,
-			TestStrategy:       e.TestStrategy,
-			DeploymentStrategy: e.DeploymentStrategy,
-			Labels:             e.Labels,
-		}
+			evaluationResult := keptnevents.EvaluationDoneEventData{
+				EvaluationDetails:  &evaluationDetails,
+				Result:             "failed",
+				Project:            e.Project,
+				Service:            e.Service,
+				Stage:              e.Stage,
+				TestStrategy:       e.TestStrategy,
+				DeploymentStrategy: e.DeploymentStrategy,
+				Labels:             e.Labels,
+			}
 
-		err = eh.sendEvaluationDoneEvent(keptnContext, &evaluationResult)
-		return err
+			err = eh.sendEvaluationDoneEvent(keptnContext, &evaluationResult)
+			return err
+		}
 	}
 	// send a new event to trigger the SLI retrieval
 	eh.KeptnHandler.Logger.Debug("SLI provider for project " + e.Project + " is: " + sliProvider)
@@ -176,7 +180,24 @@ func getSLIProvider(project string) (string, error) {
 	configMap, err := kubeAPI.CoreV1().ConfigMaps(namespace).Get("lighthouse-config-"+project, v1.GetOptions{})
 
 	if err != nil {
-		return "", errors.New("No SLI provider specified for project " + project)
+		return "", errors.New("o SLI provider specified for project " + project)
+	}
+
+	sliProvider := configMap.Data["sli-provider"]
+
+	return sliProvider, nil
+}
+
+func getDefaultProvider() (string, error) {
+	kubeAPI, err := getKubeAPI()
+	if err != nil {
+		return "", err
+	}
+
+	configMap, err := kubeAPI.CoreV1().ConfigMaps(namespace).Get("lighthouse-config", v1.GetOptions{})
+
+	if err != nil {
+		return "", errors.New("no default SLI provider specified")
 	}
 
 	sliProvider := configMap.Data["sli-provider"]
