@@ -81,9 +81,8 @@ func TestDoOnboard(t *testing.T) {
 
 	keptnHandler, _ := keptnv2.NewKeptn(&ce, keptncommon.KeptnOpts{})
 
-	onboarder := NewOnboarder(mesh.NewIstioMesh(), keptnHandler, configBaseURL)
-	loggingDone := make(chan bool)
-	err = onboarder.DoOnboard(ce, loggingDone)
+	onboarder := NewOnboarder(keptnHandler, mesh.NewIstioMesh(), configBaseURL)
+	err = onboarder.HandleEvent(ce, func(h *keptnv2.Keptn) {})
 	if err != nil {
 		t.Error(err)
 	}
@@ -96,15 +95,18 @@ func TestCheckAndSetServiceName(t *testing.T) {
 
 	testCases := []struct {
 		name        string
-		event       *keptnevents.ServiceCreateEventData
+		event       *keptnv2.ServiceCreateTriggeredEventData
 		error       error
 		serviceName string
 	}{
-		{"Mismatch", &keptnevents.ServiceCreateEventData{Service: "carts-1", HelmChart: base64.StdEncoding.EncodeToString(data)},
+		{"Mismatch", &keptnv2.ServiceCreateTriggeredEventData{EventData: keptnv2.EventData{Service: "carts-1"},
+			Helm: keptnv2.Helm{Chart: base64.StdEncoding.EncodeToString(data)}},
 			errors.New("Provided Keptn service name \"carts-1\" does not match Kubernetes service name \"carts\""), "carts-1"},
-		{"Match", &keptnevents.ServiceCreateEventData{Service: "carts", HelmChart: base64.StdEncoding.EncodeToString(data)},
+		{"Match", &keptnv2.ServiceCreateTriggeredEventData{EventData: keptnv2.EventData{Service: "carts"},
+			Helm: keptnv2.Helm{Chart: base64.StdEncoding.EncodeToString(data)}},
 			nil, "carts"},
-		{"Set", &keptnevents.ServiceCreateEventData{Service: "", HelmChart: base64.StdEncoding.EncodeToString(data)},
+		{"Set", &keptnv2.ServiceCreateTriggeredEventData{EventData: keptnv2.EventData{Service: ""},
+			Helm: keptnv2.Helm{Chart: base64.StdEncoding.EncodeToString(data)}},
 			nil, "carts"},
 	}
 

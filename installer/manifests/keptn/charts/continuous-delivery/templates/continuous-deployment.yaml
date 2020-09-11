@@ -174,8 +174,6 @@ spec:
               value: 'ws://api-service:8080/websocket'
             - name: ENVIRONMENT
               value: 'production'
-            - name: PRE_WORKFLOW_ENGINE
-              value: 'true'
             - name: CANARY
               value: 'deployment'
             - name: INGRESS_HOSTNAME_SUFFIX
@@ -219,7 +217,7 @@ spec:
             - name: PUBSUB_URL
               value: 'nats://keptn-nats-cluster'
             - name: PUBSUB_TOPIC
-              value: 'sh.keptn.internal.event.service.create,sh.keptn.event.configuration.change,sh.keptn.event.action.triggered,sh.keptn.internal.event.service.delete'
+              value: 'sh.keptn.internal.event.service.create,sh.keptn.event.deployment.triggered,sh.keptn.event.release.triggered,sh.keptn.event.action.triggered,sh.keptn.internal.event.service.delete'
             - name: PUBSUB_RECIPIENT
               value: '127.0.0.1'
       serviceAccountName: keptn-helm-service

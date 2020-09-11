@@ -3,6 +3,8 @@ package helmtest
 import (
 	"bytes"
 	"encoding/json"
+	keptnevents "github.com/keptn/go-utils/pkg/lib"
+	"github.com/keptn/keptn/helm-service/controller/helm"
 	"io"
 	"io/ioutil"
 	"os"
@@ -195,4 +197,43 @@ func GetTemplateByName(chart *chart.Chart, templateName string) *chart.File {
 		}
 	}
 	return nil
+}
+
+func GetGeneratedChart() chart.Chart {
+	return chart.Chart{
+		Raw: nil,
+		Metadata: &chart.Metadata{
+			Name:       "carts-generated",
+			Version:    "0.1.0",
+			Keywords:   []string{"deployment_strategy=" + keptnevents.Duplicate.String()},
+			APIVersion: "v2",
+		},
+		Lock: nil,
+		Templates: []*chart.File{
+			{
+				Name: "carts-canary-istio-destinationrule.yaml",
+				Data: []byte(helm.GeneratedCanaryDestinationRule),
+			},
+			{
+				Name: "carts-canary-service.yaml",
+				Data: []byte(helm.GeneratedCanaryService),
+			},
+			{
+				Name: "carts-istio-virtualservice.yaml",
+				Data: []byte(helm.GeneratedVirtualService),
+			},
+			{
+				Name: "carts-primary-deployment.yaml",
+				Data: []byte(helm.GeneratedPrimaryDeployment),
+			},
+			{
+				Name: "carts-primary-istio-destinationrule.yaml",
+				Data: []byte(helm.GeneratedPrimaryDestinationRule),
+			},
+			{
+				Name: "carts-primary-service.yaml",
+				Data: []byte(helm.GeneratedPrimaryService),
+			},
+		},
+	}
 }

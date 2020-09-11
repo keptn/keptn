@@ -1,9 +1,9 @@
 package helm
 
 import (
-	"fmt"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"strings"
+
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/helm-service/controller/mesh"
@@ -13,21 +13,21 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
-type GeneratedChartHandler struct {
+type GeneratedChartGenerator struct {
 	mesh   mesh.Mesh
 	logger keptncommon.LoggerInterface
 }
 
-func NewGeneratedChartHandler(mesh mesh.Mesh, logger keptncommon.LoggerInterface) *GeneratedChartHandler {
-	return &GeneratedChartHandler{
+func NewGeneratedChartGenerator(mesh mesh.Mesh, logger keptncommon.LoggerInterface) *GeneratedChartGenerator {
+	return &GeneratedChartGenerator{
 		mesh:   mesh,
 		logger: logger,
 	}
 }
 
-// GenerateDuplicateManagedChart generates a duplicated chart which is managed by keptn and used for
+// GenerateDuplicateChart generates a duplicated chart which is managed by keptn and used for
 // b/g and canary releases
-func (c *GeneratedChartHandler) GenerateDuplicateManagedChart(helmManifest string, project string, stageName string, service string) (*chart.Chart, error) {
+func (c *GeneratedChartGenerator) GenerateDuplicateChart(helmManifest string, project string, stageName string, service string) (*chart.Chart, error) {
 	meta := &chart.Metadata{
 		APIVersion: "v2",
 		Name:       service + "-generated",
@@ -79,11 +79,11 @@ func resetDeployment(depl *appsv1.Deployment) {
 	depl.Status = appsv1.DeploymentStatus{}
 }
 
-func (*GeneratedChartHandler) getNamespace(project string, stage string) string {
+func (*GeneratedChartGenerator) getNamespace(project string, stage string) string {
 	return project + "-" + stage
 }
 
-func (c *GeneratedChartHandler) generateServices(svc *corev1.Service, project string, stageName string) ([]*chart.File, error) {
+func (c *GeneratedChartGenerator) generateServices(svc *corev1.Service, project string, stageName string) ([]*chart.File, error) {
 
 	templates := make([]*chart.File, 0, 0)
 
@@ -155,7 +155,7 @@ func (c *GeneratedChartHandler) generateServices(svc *corev1.Service, project st
 	return templates, nil
 }
 
-func (c *GeneratedChartHandler) generateDeployment(depl *appsv1.Deployment) (*chart.File, error) {
+func (c *GeneratedChartGenerator) generateDeployment(depl *appsv1.Deployment) (*chart.File, error) {
 	primaryDeployment := depl.DeepCopy()
 
 	primaryDeployment.Name = primaryDeployment.Name + "-primary"
@@ -182,7 +182,7 @@ func (c *GeneratedChartHandler) generateDeployment(depl *appsv1.Deployment) (*ch
 }
 
 // GenerateMeshChart generates a chart containing the required mesh setup
-func (c *GeneratedChartHandler) GenerateMeshChart(helmManifest string, project string, stageName string,
+func (c *GeneratedChartGenerator) GenerateMeshChart(helmManifest string, project string, stageName string,
 	service string) (*chart.Chart, error) {
 
 	meta := &chart.Metadata{
@@ -223,38 +223,4 @@ func (c *GeneratedChartHandler) GenerateMeshChart(helmManifest string, project s
 	}
 
 	return &ch, nil
-}
-
-// UpdateCanaryWeight updates the provided traffic weight in the VirtualService contained in the chart
-func (c *GeneratedChartHandler) UpdateCanaryWeight(ch *chart.Chart, canaryWeight int32) error {
-
-	// Set weights in all virtualservices
-	for _, template := range ch.Templates {
-		if strings.HasPrefix(template.Name, "templates/") &&
-			strings.HasSuffix(template.Name, c.mesh.GetVirtualServiceSuffix()) {
-
-			vs, err := c.mesh.UpdateWeights(template.Data, canaryWeight)
-			if err != nil {
-				return fmt.Errorf("Error when setting new weights in VirtualService %s: %s",
-					template.Name, err.Error())
-			}
-			template.Data = vs
-			break
-		}
-	}
-	return nil
-}
-
-// GenerateEmptyChart generates an empty chart
-func (c *GeneratedChartHandler) GenerateEmptyChart(service string,
-	strategy keptnevents.DeploymentStrategy) *chart.Chart {
-
-	meta := &chart.Metadata{
-		APIVersion: "v2",
-		Name:       service + "-generated",
-		Keywords:   []string{"deployment_strategy=" + strategy.String()},
-		Version:    "0.1.0",
-	}
-	return &chart.Chart{Metadata: meta}
-
 }

@@ -7,64 +7,62 @@ import (
 
 	configutils "github.com/keptn/go-utils/pkg/api/utils"
 
-	"github.com/keptn/keptn/helm-service/controller/helm"
-
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptn "github.com/keptn/go-utils/pkg/lib"
 )
 
 // DeleteHandler handles sh.keptn.internal.event.service.delete events
 type DeleteHandler struct {
-	keptnHandler     *keptnv2.Keptn
-	helmExecutor     helm.HelmExecutor
-	configServiceURL string
+	HandlerBase
 }
 
 // NewDeleteHandler creates a new DeleteHandler
-func NewDeleteHandler(keptnHandler *keptnv2.Keptn, configServiceURL string) *DeleteHandler {
-	helmExecutor := helm.NewHelmV3Executor(keptnHandler.Logger)
-	return &DeleteHandler{keptnHandler: keptnHandler, helmExecutor: helmExecutor, configServiceURL: configServiceURL}
+func NewDeleteHandler(keptnHandler *keptnv2.Keptn, configServiceURL string) DeleteHandler {
+	return DeleteHandler{
+		HandlerBase: NewHandlerBase(keptnHandler, configServiceURL),
+	}
 }
 
 // HandleEvent takes the sh.keptn.internal.event.service.delete event and deletes the service in all stages
-func (d *DeleteHandler) HandleEvent(ce cloudevents.Event, loggingDone chan bool) error {
+func (h DeleteHandler) HandleEvent(ce cloudevents.Event, closeLogger func(keptnHandler *keptnv2.Keptn)) error {
 
-	defer func() { loggingDone <- true }()
+	defer closeLogger(h.keptnHandler)
+
 	serviceDeleteEvent := keptn.ServiceDeleteEventData{}
 
 	err := ce.DataAs(&serviceDeleteEvent)
 	if err != nil {
 		errMsg := "service.delete event not well-formed: " + err.Error()
-		d.keptnHandler.Logger.Error(errMsg)
+		h.keptnHandler.Logger.Error(errMsg)
 		return errors.New(errMsg)
 	}
 
-	stageHandler := configutils.NewStageHandler(d.configServiceURL)
+	stageHandler := configutils.NewStageHandler(h.configServiceURL)
 	stages, err := stageHandler.GetAllStages(serviceDeleteEvent.Project)
 	if err != nil {
-		d.keptnHandler.Logger.Error("Error when getting all stages: " + err.Error())
+		h.keptnHandler.Logger.Error("Error when getting all stages: " + err.Error())
 		return err
 	}
 
 	allReleasesSuccessfullyUnistalled := true
 	for _, stage := range stages {
-		d.keptnHandler.Logger.Info(fmt.Sprintf("Uninstalling Helm releases for service %s in "+
+		h.keptnHandler.Logger.Info(fmt.Sprintf("Uninstalling Helm releases for service %s in "+
 			"stage %s and project %s", serviceDeleteEvent.Service, stage.StageName, serviceDeleteEvent.Project))
 
 		namespace := serviceDeleteEvent.Project + "-" + stage.StageName
 		releaseName := namespace + "-" + serviceDeleteEvent.Service
-		if err := d.helmExecutor.UninstallRelease(releaseName, namespace); err != nil {
-			d.keptnHandler.Logger.Error(err.Error())
+		if err := h.helmExecutor.UninstallRelease(releaseName, namespace); err != nil {
+			h.keptnHandler.Logger.Error(err.Error())
 			allReleasesSuccessfullyUnistalled = false
 		}
-		if err := d.helmExecutor.UninstallRelease(releaseName+"-generated", namespace); err != nil {
-			d.keptnHandler.Logger.Error(err.Error())
+		if err := h.helmExecutor.UninstallRelease(releaseName+"-generated", namespace); err != nil {
+			h.keptnHandler.Logger.Error(err.Error())
 			allReleasesSuccessfullyUnistalled = false
 		}
 	}
 
 	if allReleasesSuccessfullyUnistalled {
-		d.keptnHandler.Logger.Info(fmt.Sprintf("All Helm releases for service %s in project %s successfully uninstalled",
+		h.keptnHandler.Logger.Info(fmt.Sprintf("All Helm releases for service %s in project %s successfully uninstalled",
 			serviceDeleteEvent.Service, serviceDeleteEvent.Project))
 	}
 

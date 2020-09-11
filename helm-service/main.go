@@ -55,44 +55,39 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		return err
 	}
 
-	var logger keptncommon.LoggerInterface
-	loggingDone := make(chan bool)
-	go closeLogger(loggingDone, keptnHandler.Logger)
-
 	mesh := mesh.NewIstioMesh()
 
 	url, err := serviceutils.GetConfigServiceURL()
 	if err != nil {
 		keptnHandler.Logger.Error(fmt.Sprintf("Error when getting config service url: %s", err.Error()))
-		loggingDone <- true
+		closeLogger(keptnHandler)
 		return err
 	}
 
 	keptnHandler.Logger.Debug("Got event of type " + event.Type())
 
-	if event.Type() == keptnevents.ConfigurationChangeEventType {
-		configChanger := controller.NewConfigurationChanger(mesh, keptnHandler, url.String())
-		go configChanger.ChangeAndApplyConfiguration(event, loggingDone)
+	if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName) {
+		configChanger := controller.NewDeploymentHandler(keptnHandler, mesh, url.String())
+		go configChanger.HandleEvent(event, closeLogger)
 	} else if event.Type() == keptnevents.InternalServiceCreateEventType {
-		onboarder := controller.NewOnboarder(mesh, keptnHandler, url.String())
-		go onboarder.DoOnboard(event, loggingDone)
+		onboarder := controller.NewOnboarder(keptnHandler, mesh, url.String())
+		go onboarder.HandleEvent(event, closeLogger)
 	} else if event.Type() == keptnevents.ActionTriggeredEventType {
 		actionHandler := controller.NewActionTriggeredHandler(keptnHandler, url.String())
-		go actionHandler.HandleEvent(event, loggingDone)
+		go actionHandler.HandleEvent(event, closeLogger)
 	} else if event.Type() == keptnevents.InternalServiceDeleteEventType {
 		deleteHandler := controller.NewDeleteHandler(keptnHandler, url.String())
-		go deleteHandler.HandleEvent(event, loggingDone)
+		go deleteHandler.HandleEvent(event, closeLogger)
 	} else {
-		logger.Error("Received unexpected keptn event")
-		loggingDone <- true
+		keptnHandler.Logger.Error("Received unexpected keptn event")
+		closeLogger(keptnHandler)
 	}
 
 	return nil
 }
 
-func closeLogger(loggingDone chan bool, logger keptncommon.LoggerInterface) {
-	<-loggingDone
-	if combinedLogger, ok := logger.(*keptncommon.CombinedLogger); ok {
+func closeLogger(keptnHandler *keptnv2.Keptn) {
+	if combinedLogger, ok := keptnHandler.Logger.(*keptncommon.CombinedLogger); ok {
 		combinedLogger.Terminate("")
 	}
 }

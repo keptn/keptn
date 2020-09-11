@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/keptn/keptn/helm-service/controller/helm"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/keptn/go-utils/pkg/api/models"
@@ -25,7 +24,7 @@ func (p *NamespaceManager) InitNamespaces(project string, stages []*models.Stage
 
 	for _, shipyardStage := range stages {
 
-		namespace := helm.GetUmbrellaNamespace(project, shipyardStage.StageName)
+		namespace := project + "-" + shipyardStage.StageName
 		exists, err := keptnutils.ExistsNamespace(true, namespace)
 		if err != nil {
 			return fmt.Errorf("error when checking availability of namespace: %v", err)
@@ -48,7 +47,8 @@ func (p *NamespaceManager) InjectIstio(project string, stage string) error {
 	if err != nil {
 		return fmt.Errorf("error when getting kube API: %v", err)
 	}
-	namespace, err := kubeClient.Namespaces().Get(helm.GetUmbrellaNamespace(project, stage), v1.GetOptions{})
+	namespaceName := project + "-" + stage
+	namespace, err := kubeClient.Namespaces().Get(namespaceName, v1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -56,7 +56,7 @@ func (p *NamespaceManager) InjectIstio(project string, stage string) error {
 		return errors.New("error when getting namespace")
 	}
 
-	p.logger.Info(fmt.Sprintf("Inject Istio to the %s namespace for blue-green deployments", helm.GetUmbrellaNamespace(project, stage)))
+	p.logger.Info(fmt.Sprintf("Inject Istio to the %s namespace for blue-green deployments", namespaceName))
 
 	if namespace.ObjectMeta.Labels == nil {
 		namespace.ObjectMeta.Labels = make(map[string]string)
