@@ -20,6 +20,7 @@ fi
 mkdir keptn-charts/
 mv keptn-${VERSION}.tgz keptn-charts/
 
+# download index.yaml chart
 gsutil cp gs://keptn-installer/index.yaml keptn-charts/index.yaml
 
 helm repo index keptn-charts --url https://storage.googleapis.com/keptn-installer/ --merge keptn-charts/index.yaml
@@ -29,5 +30,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # upload to gcloud
-gsutil cp keptn-charts/index.yaml gs://keptn-installer/index.yaml
+# commented out on purpose by CKreuzberger: Do not upload index.yaml for now, as it might break things
+# gsutil cp keptn-charts/index.yaml gs://keptn-installer/index.yaml
+
 gsutil cp keptn-charts/keptn-${VERSION}.tgz gs://keptn-installer/keptn-${VERSION}.tgz
