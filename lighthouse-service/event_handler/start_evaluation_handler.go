@@ -2,7 +2,6 @@ package event_handler
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/url"
 	"time"
@@ -12,7 +11,6 @@ import (
 	"github.com/google/uuid"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	keptnutils "github.com/keptn/go-utils/pkg/lib"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type StartEvaluationHandler struct {
@@ -98,9 +96,9 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 
 	// get the SLI provider that has been configured for the project (e.g. 'dynatrace' or 'prometheus')
 	var sliProvider string
-	sliProvider, err = getSLIProvider(e.Project)
+	sliProvider, err = eh.SLIProviderConfig.GetSLIProvider(e.Project)
 	if err != nil {
-		sliProvider, err = getDefaultProvider()
+		sliProvider, err = eh.SLIProviderConfig.GetDefaultSLIProvider()
 		if err != nil {
 			eh.KeptnHandler.Logger.Error("no SLI-provider configured for project " + e.Project + ", no evaluation conducted")
 			evaluationDetails := keptnevents.EvaluationDetails{
@@ -149,40 +147,6 @@ func (eh *StartEvaluationHandler) sendEvaluationDoneEvent(shkeptncontext string,
 
 	eh.KeptnHandler.Logger.Debug("Send event: " + keptnevents.EvaluationDoneEventType)
 	return eh.KeptnHandler.SendCloudEvent(event)
-}
-
-func getSLIProvider(project string) (string, error) {
-	kubeAPI, err := getKubeAPI()
-	if err != nil {
-		return "", err
-	}
-
-	configMap, err := kubeAPI.CoreV1().ConfigMaps(namespace).Get("lighthouse-config-"+project, v1.GetOptions{})
-
-	if err != nil {
-		return "", errors.New("o SLI provider specified for project " + project)
-	}
-
-	sliProvider := configMap.Data["sli-provider"]
-
-	return sliProvider, nil
-}
-
-func getDefaultProvider() (string, error) {
-	kubeAPI, err := getKubeAPI()
-	if err != nil {
-		return "", err
-	}
-
-	configMap, err := kubeAPI.CoreV1().ConfigMaps(namespace).Get("lighthouse-config", v1.GetOptions{})
-
-	if err != nil {
-		return "", errors.New("no default SLI provider specified")
-	}
-
-	sliProvider := configMap.Data["sli-provider"]
-
-	return sliProvider, nil
 }
 
 func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string, project string, stage string, service string, sliProvider string, indicators []string, start string, end string, teststrategy string, deploymentStrategy string, filters []*keptnevents.SLIFilter, labels map[string]string, deployment string) error {

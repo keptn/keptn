@@ -2,6 +2,7 @@ package event_handler
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
@@ -148,40 +149,13 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 			wantErr:       false,
 		},
 		{
-			name: "No SLO file available",
+			name: "No SLO file available -  send get-sli event",
 			fields: fields{
 				Logger: keptnutils.NewLogger("", "", ""),
-				Event: cloudevents.Event{
-					Context: &cloudevents.EventContextV02{
-						SpecVersion: "0.2",
-						Type:        "sh.keptn.events.tests-finished",
-						Source:      types.URLRef{},
-						ID:          "",
-						Time:        nil,
-						SchemaURL:   nil,
-						ContentType: stringp("application/json"),
-						Extensions:  nil,
-					},
-					Data: []byte(`{
-    "project": "sockshop",
-    "stage": "staging",
-    "service": "carts",
-    "testStrategy": "performance",
-    "deploymentStrategy": "direct",
-    "start": "2019-09-01 12:00:00",
-    "end": "2019-09-01 12:05:00",
-    "labels": {
-      "testid": "12345",
-      "buildnr": "build17",
-      "runby": "JohnDoe"
-    },
-    "result": "pass"
-  }`),
-					DataEncoded: false,
-				},
+				Event:  getStartEvaluationEvent(),
 			},
 			sloAvailable:  false,
-			wantEventType: keptnevents.EvaluationDoneEventType,
+			wantEventType: keptnevents.InternalGetSLIEventType,
 			wantErr:       false,
 			ProjectSLIProvider: struct {
 				val string
@@ -194,6 +168,30 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 				val string
 				err error
 			}{},
+		},
+		{
+			name: "No SLI provider configured for project - use default",
+			fields: fields{
+				Logger: keptnutils.NewLogger("", "", ""),
+				Event:  getStartEvaluationEvent(),
+			},
+			sloAvailable:  false,
+			wantEventType: keptnevents.InternalGetSLIEventType,
+			wantErr:       false,
+			ProjectSLIProvider: struct {
+				val string
+				err error
+			}{
+				val: "",
+				err: errors.New(""),
+			},
+			DefaultSLIProvider: struct {
+				val string
+				err error
+			}{
+				val: "default-sli-provider",
+				err: nil,
+			},
 		},
 	}
 	////////// TEST EXECUTION ///////////
@@ -228,6 +226,37 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 			}
 
 		})
+	}
+}
+
+func getStartEvaluationEvent() cloudevents.Event {
+	return cloudevents.Event{
+		Context: &cloudevents.EventContextV02{
+			SpecVersion: "0.2",
+			Type:        "sh.keptn.events.tests-finished",
+			Source:      types.URLRef{},
+			ID:          "",
+			Time:        nil,
+			SchemaURL:   nil,
+			ContentType: stringp("application/json"),
+			Extensions:  nil,
+		},
+		Data: []byte(`{
+    "project": "sockshop",
+    "stage": "staging",
+    "service": "carts",
+    "testStrategy": "performance",
+    "deploymentStrategy": "direct",
+    "start": "2019-09-01 12:00:00",
+    "end": "2019-09-01 12:05:00",
+    "labels": {
+      "testid": "12345",
+      "buildnr": "build17",
+      "runby": "JohnDoe"
+    },
+    "result": "pass"
+  }`),
+		DataEncoded: false,
 	}
 }
 
