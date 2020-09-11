@@ -56,40 +56,6 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 		return err
 	}
 
-	// get SLO file
-	objectives, err := getSLOs(e.Project, e.Stage, e.Service)
-	if err != nil {
-		// no SLO file found (assumption that this is an empty SLO file) -> no need to evaluate
-		eh.KeptnHandler.Logger.Debug("No SLO file found, no evaluation conducted")
-		evaluationDetails := keptnevents.EvaluationDetails{
-			IndicatorResults: nil,
-			TimeStart:        e.Start,
-			TimeEnd:          e.End,
-			Result:           fmt.Sprintf("no evaluation performed by lighthouse because no SLO found for service %s", e.Service),
-		}
-
-		evaluationResult := keptnevents.EvaluationDoneEventData{
-			EvaluationDetails:  &evaluationDetails,
-			Result:             eh.getTestExecutionResult(),
-			Project:            e.Project,
-			Service:            e.Service,
-			Stage:              e.Stage,
-			TestStrategy:       e.TestStrategy,
-			DeploymentStrategy: e.DeploymentStrategy,
-			Labels:             e.Labels,
-		}
-
-		err = eh.sendEvaluationDoneEvent(keptnContext, &evaluationResult)
-		return err
-	}
-
-	indicators := []string{}
-	for _, objective := range objectives.Objectives {
-		indicators = append(indicators, objective.SLI)
-	}
-
-	var filters = []*keptnevents.SLIFilter{}
-
 	deployment := ""
 	if e.DeploymentStrategy != "" {
 		if e.DeploymentStrategy == "blue_green_service" {
@@ -107,14 +73,27 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 		}
 	}
 
-	if objectives.Filter != nil {
-		for key, value := range objectives.Filter {
-			filter := &keptnevents.SLIFilter{
-				Key:   key,
-				Value: value,
-			}
-			filters = append(filters, filter)
+	indicators := []string{}
+	var filters = []*keptnevents.SLIFilter{}
+	// get SLO file
+	objectives, err := getSLOs(e.Project, e.Stage, e.Service)
+	if err == nil && objectives != nil {
+		eh.KeptnHandler.Logger.Info("SLO file found")
+		for _, objective := range objectives.Objectives {
+			indicators = append(indicators, objective.SLI)
 		}
+
+		if objectives.Filter != nil {
+			for key, value := range objectives.Filter {
+				filter := &keptnevents.SLIFilter{
+					Key:   key,
+					Value: value,
+				}
+				filters = append(filters, filter)
+			}
+		}
+	} else {
+		eh.KeptnHandler.Logger.Info("no SLO file found")
 	}
 
 	// get the SLI provider that has been configured for the project (e.g. 'dynatrace' or 'prometheus')
