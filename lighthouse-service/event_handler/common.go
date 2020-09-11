@@ -2,6 +2,7 @@ package event_handler
 
 import (
 	"errors"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"os"
 
 	"github.com/ghodss/yaml"
@@ -71,4 +72,45 @@ func parseSLO(input []byte) (*keptn.ServiceLevelObjectives, error) {
 	}
 
 	return slo, nil
+}
+
+type SLIProviderConfig interface {
+	GetDefaultSLIProvider() (string, error)
+	GetSLIProvider(project string) (string, error)
+}
+
+type K8sSLIProviderConfig struct{}
+
+func (K8sSLIProviderConfig) GetDefaultSLIProvider() (string, error) {
+	kubeAPI, err := getKubeAPI()
+	if err != nil {
+		return "", err
+	}
+
+	configMap, err := kubeAPI.CoreV1().ConfigMaps(namespace).Get("lighthouse-config", v1.GetOptions{})
+
+	if err != nil {
+		return "", errors.New("no default SLI provider specified")
+	}
+
+	sliProvider := configMap.Data["sli-provider"]
+
+	return sliProvider, nil
+}
+
+func (K8sSLIProviderConfig) GetSLIProvider(project string) (string, error) {
+	kubeAPI, err := getKubeAPI()
+	if err != nil {
+		return "", err
+	}
+
+	configMap, err := kubeAPI.CoreV1().ConfigMaps(namespace).Get("lighthouse-config-"+project, v1.GetOptions{})
+
+	if err != nil {
+		return "", errors.New("no SLI provider specified for project " + project)
+	}
+
+	sliProvider := configMap.Data["sli-provider"]
+
+	return sliProvider, nil
 }

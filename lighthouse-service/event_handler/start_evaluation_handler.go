@@ -16,8 +16,9 @@ import (
 )
 
 type StartEvaluationHandler struct {
-	Event        cloudevents.Event
-	KeptnHandler *keptnutils.Keptn
+	Event             cloudevents.Event
+	KeptnHandler      *keptnutils.Keptn
+	SLIProviderConfig SLIProviderConfig
 }
 
 func (eh *StartEvaluationHandler) HandleEvent() error {

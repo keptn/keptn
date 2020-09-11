@@ -30,6 +30,25 @@ func RunServerWithOptions(opts *server.Options) *server.Server {
 	return natsserver.RunServer(opts)
 }
 
+type MockSLIProviderConfig struct {
+	ProjectSLIProvider struct {
+		val string
+		err error
+	}
+	DefaultSLIProvider struct {
+		val string
+		err error
+	}
+}
+
+func (m *MockSLIProviderConfig) GetDefaultSLIProvider() (string, error) {
+	return m.DefaultSLIProvider.val, m.DefaultSLIProvider.err
+}
+
+func (m *MockSLIProviderConfig) GetSLIProvider(project string) (string, error) {
+	return m.ProjectSLIProvider.val, m.DefaultSLIProvider.err
+}
+
 func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 
 	type ceTypeEvent struct {
@@ -77,11 +96,19 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 		Event  cloudevents.Event
 	}
 	tests := []struct {
-		name          string
-		fields        fields
-		sloAvailable  bool
-		wantEventType string
-		wantErr       bool
+		name               string
+		fields             fields
+		sloAvailable       bool
+		wantEventType      string
+		wantErr            bool
+		ProjectSLIProvider struct {
+			val string
+			err error
+		}
+		DefaultSLIProvider struct {
+			val string
+			err error
+		}
 	}{
 		{
 			name: "No test strategy set",
@@ -156,6 +183,17 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 			sloAvailable:  false,
 			wantEventType: keptnevents.EvaluationDoneEventType,
 			wantErr:       false,
+			ProjectSLIProvider: struct {
+				val string
+				err error
+			}{
+				val: "my-sli-provider",
+				err: nil,
+			},
+			DefaultSLIProvider: struct {
+				val string
+				err error
+			}{},
 		},
 	}
 	////////// TEST EXECUTION ///////////
@@ -170,6 +208,10 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 			eh := &StartEvaluationHandler{
 				Event:        tt.fields.Event,
 				KeptnHandler: keptnHandler,
+				SLIProviderConfig: &MockSLIProviderConfig{
+					ProjectSLIProvider: tt.ProjectSLIProvider,
+					DefaultSLIProvider: tt.DefaultSLIProvider,
+				},
 			}
 			if err := eh.HandleEvent(); (err != nil) != tt.wantErr {
 				t.Errorf("HandleEvent() error = %v, wantErr %v", err, tt.wantErr)
