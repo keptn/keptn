@@ -74,13 +74,16 @@ func parseSLO(input []byte) (*keptn.ServiceLevelObjectives, error) {
 	return slo, nil
 }
 
+// SLIProviderConfig godoc
 type SLIProviderConfig interface {
 	GetDefaultSLIProvider() (string, error)
 	GetSLIProvider(project string) (string, error)
 }
 
+// K8sSLIProviderConfig godoc
 type K8sSLIProviderConfig struct{}
 
+// GetDefaultSLIProvider godoc
 func (K8sSLIProviderConfig) GetDefaultSLIProvider() (string, error) {
 	kubeAPI, err := getKubeAPI()
 	if err != nil {
@@ -98,6 +101,7 @@ func (K8sSLIProviderConfig) GetDefaultSLIProvider() (string, error) {
 	return sliProvider, nil
 }
 
+// GetSLIProvider godoc
 func (K8sSLIProviderConfig) GetSLIProvider(project string) (string, error) {
 	kubeAPI, err := getKubeAPI()
 	if err != nil {
