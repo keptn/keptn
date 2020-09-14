@@ -51,7 +51,6 @@ COPY --from=builder /go/src/github.com/keptn/keptn/api/service_model.yaml /swagg
 COPY --from=builder /go/src/github.com/keptn/keptn/api/configure_model.yaml /swagger-ui/configure_model.yaml
 
 RUN sed -i "s|basePath: /v1|basePath: /api/v1 |g" /swagger-ui/swagger.yaml
-RUN sed -i '/schemes:/a\ \ - https' /swagger-ui/swagger.yaml
 
 EXPOSE 8080
 
