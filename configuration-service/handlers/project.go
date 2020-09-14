@@ -74,7 +74,12 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 	if params.Project.GitUser != "" && params.Project.GitToken != "" && params.Project.GitRemoteURI != "" {
 		// try to clone the repo
 		var err error
-		initializedGit, err = common.CloneRepo(params.Project.ProjectName, params.Project.GitUser, params.Project.GitToken, params.Project.GitRemoteURI)
+		credentials := common.GitCredentials{
+			User:      params.Project.GitUser,
+			Token:     params.Project.GitToken,
+			RemoteURI: params.Project.GitRemoteURI,
+		}
+		initializedGit, err = common.CloneRepo(params.Project.ProjectName, credentials)
 		if err != nil {
 			logger.Error(fmt.Sprintf("Could not clone git repository during creating project %s", params.Project.ProjectName))
 			logger.Error(err.Error())
