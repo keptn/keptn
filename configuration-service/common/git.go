@@ -26,15 +26,15 @@ var namespace = os.Getenv("POD_NAMESPACE")
 
 // CloneRepo clones an upstream repository into a local folder "project" and returns
 // whether the Git repo is already initialized.
-func CloneRepo(project string, user string, token string, uri string) (bool, error) {
-	uri = getRepoURI(uri, user, token)
+func CloneRepo(project string, credentials GitCredentials) (bool, error) {
+	uri := getRepoURI(credentials.RemoteURI, credentials.User, credentials.Token)
 
 	msg, err := utils.ExecuteCommandInDirectory("git", []string{"clone", uri, project}, config.ConfigDir)
 	const emptyRepoWarning = "warning: You appear to have cloned an empty repository."
 	if strings.Contains(msg, emptyRepoWarning) {
-		return false, err
+		return false, obfuscateErrorMessage(err, &credentials)
 	}
-	return true, err
+	return true, obfuscateErrorMessage(err, &credentials)
 }
 
 func getRepoURI(uri string, user string, token string) string {
@@ -45,11 +45,11 @@ func getRepoURI(uri string, user string, token string) string {
 	}
 
 	if strings.Contains(uri, user+"@") {
-		uri = strings.Replace(uri, "https://"+user+"@", "https://"+user+":"+token+"@", 1)
+		uri = strings.Replace(uri, "://"+user+"@", "://"+user+":"+token+"@", 1)
 	}
 
 	if !strings.Contains(uri, user+":"+token+"@") {
-		uri = strings.Replace(uri, "https://", "https://"+user+":"+token+"@", 1)
+		uri = strings.Replace(uri, "://", "://"+user+":"+token+"@", 1)
 	}
 
 	return uri
