@@ -11,9 +11,6 @@ consumes:
   - application/cloudevents+json
   - application/json
 
-schemes:
-  - http
-
 definitions:
   Error:
     type: object
