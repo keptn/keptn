@@ -186,6 +186,8 @@ spec:
                 secretKeyRef:
                   name: keptn-api-token
                   key: keptn-api-token
+            - name: CLI_DOWNLOAD_LINK
+              value: "https://github.com/keptn/keptn/releases/tag/0.7.1"
           envFrom:
             - secretRef:
                 name: bridge-credentials
