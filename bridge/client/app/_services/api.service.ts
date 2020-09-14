@@ -31,7 +31,7 @@ export class ApiService {
   }
 
   public getKeptnInfo(): Observable<any> {
-    let url = `${this._baseUrl}/`;
+    let url = `${this._baseUrl}/bridgeInfo`;
     return this.http
       .get<any>(url, { headers: this.defaultHeaders })
   }
