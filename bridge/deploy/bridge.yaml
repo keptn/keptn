@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: bridge
-  namespace: keptn
+  namespace: keptndev
   labels:
     app.kubernetes.io/name: bridge
     app.kubernetes.io/instance: keptn
