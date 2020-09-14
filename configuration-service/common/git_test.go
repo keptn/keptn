@@ -94,3 +94,51 @@ func Test_addRepoURIToResource(t *testing.T) {
 		})
 	}
 }
+
+func Test_getRepoURI(t *testing.T) {
+	type args struct {
+		uri   string
+		user  string
+		token string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "get url with https:// ",
+			args: args{
+				uri:   "https://my-repo.git",
+				user:  "user",
+				token: "token",
+			},
+			want: "https://user:token@my-repo.git",
+		},
+		{
+			name: "get url with https:// where user is already included in the url",
+			args: args{
+				uri:   "https://user@my-repo.git",
+				user:  "user",
+				token: "token",
+			},
+			want: "https://user:token@my-repo.git",
+		},
+		{
+			name: "get url with http:// ",
+			args: args{
+				uri:   "http://my-repo.git",
+				user:  "user",
+				token: "token",
+			},
+			want: "http://user:token@my-repo.git",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := getRepoURI(tt.args.uri, tt.args.user, tt.args.token); got != tt.want {
+				t.Errorf("getRepoURI() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
