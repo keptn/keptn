@@ -19,13 +19,13 @@ spec:
           imagePullPolicy: Always
           env:
             - name: KEPTN_VERSION
-              value: "master"
+              value: "0.7.0"
             - name: MONGODB_SOURCE_URL
               value: 'mongodb://user:password@mongodb.keptn-datastore:27017/keptn'
             - name: MONGODB_TARGET_URL
               value: 'mongodb.keptn:27017/keptn'
             - name: CONFIGURATION_SERVICE_URL
-              value: 'configuration-service:8080'
+              value: 'configuration-service.keptn:8080'
             - name: HELM_RELEASE_UPGRADE
               value: 'true'
             - name: HELM_CHART_URL
