@@ -7,8 +7,8 @@ require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/gogo/protobuf v1.3.1
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.6.3-0.20200908082455-010bbcf95e6f
-	github.com/keptn/kubernetes-utils v0.2.0
+	github.com/keptn/go-utils v0.7.0
+	github.com/keptn/kubernetes-utils v0.2.1-0.20200914100206-f5b712af409c
 	github.com/kinbiko/jsonassert v1.0.1
 	github.com/stretchr/testify v1.5.1
 	gotest.tools v2.2.0+incompatible

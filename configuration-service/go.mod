@@ -3,6 +3,7 @@ module github.com/keptn/keptn/configuration-service
 go 1.13
 
 require (
+	github.com/cloudevents/sdk-go/v2 v2.2.0 // indirect
 	github.com/dsnet/compress v0.0.1 // indirect
 	github.com/frankban/quicktest v1.9.0 // indirect
 	github.com/ghodss/yaml v1.0.0
@@ -18,8 +19,8 @@ require (
 	github.com/imdario/mergo v0.3.9 // indirect
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/json-iterator/go v1.1.9 // indirect
-	github.com/keptn/go-utils v0.6.3-0.20200908082455-010bbcf95e6f
-	github.com/keptn/kubernetes-utils v0.2.0
+	github.com/keptn/go-utils v0.7.0
+	github.com/keptn/kubernetes-utils v0.2.1-0.20200914100206-f5b712af409c
 	github.com/mholt/archiver v3.1.1+incompatible
 	github.com/mitchellh/mapstructure v1.2.2
 	github.com/nwaples/rardecode v1.0.0 // indirect

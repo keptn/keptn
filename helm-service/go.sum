@@ -359,8 +359,11 @@ github.com/keptn/go-utils v0.6.3-0.20200907143311-189e0ad20c27 h1:xSeigps+hb52Ml
 github.com/keptn/go-utils v0.6.3-0.20200907143311-189e0ad20c27/go.mod h1:jD+ZvrkwYyDMgeKANzVZsBSYgjYQxTJvxw/RB3vYFAE=
 github.com/keptn/go-utils v0.6.3-0.20200908082455-010bbcf95e6f h1:YU/mwHVC5wrtjxe1H96VkGCr/9JeleZZZ73P9Pj/zYo=
 github.com/keptn/go-utils v0.6.3-0.20200908082455-010bbcf95e6f/go.mod h1:jD+ZvrkwYyDMgeKANzVZsBSYgjYQxTJvxw/RB3vYFAE=
+github.com/keptn/go-utils v0.7.0/go.mod h1:hf2FU6JFuOzLP5rEAlA1/XnNS28pDZbVfxDESeQsq1g=
 github.com/keptn/kubernetes-utils v0.2.0 h1:DEjTzixk7TJ6i2HopTlw/d4b1perJR1gmyOOCrWX5cA=
 github.com/keptn/kubernetes-utils v0.2.0/go.mod h1:YoWRuV28Guz5/mzjo9jVxtMsWAEn0MDXwxK/ScAQlZc=
+github.com/keptn/kubernetes-utils v0.2.1-0.20200914100206-f5b712af409c h1:G2gozcT9fCDq1tlt+WNgsOJGuY0qk7P9TktS5OvUUNs=
+github.com/keptn/kubernetes-utils v0.2.1-0.20200914100206-f5b712af409c/go.mod h1:vPHHnemFeO2VxRMc+shxbIKYG1QxKM73QbkUnw/ogow=
 github.com/kinbiko/jsonassert v1.0.1 h1:8gdLmUaPWuxk2TzQSofKRqatFH6zwTF6AsUH4bugJYY=
 github.com/kinbiko/jsonassert v1.0.1/go.mod h1:QRwBwiAsrcJpjw+L+Q4WS8psLxuUY+HylVZS/4j74TM=
 github.com/kisielk/errcheck v1.1.0/go.mod h1:EZBBE59ingxPouuu3KfxchcWSUPOHkagtvWXihfKN4Q=
