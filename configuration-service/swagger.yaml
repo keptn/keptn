@@ -358,6 +358,15 @@ definitions:
         type: string
         # format: byte
         description: Resource content
+      upstreamURL:
+        type: string
+        description: Upstream repository containing the resource
+      version:
+        type: string
+        description: version/git commit id of the resource
+      branch:
+        type: string
+        description: branch in git repo containing the resource
 
   Resources:
     type: object

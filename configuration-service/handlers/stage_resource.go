@@ -69,11 +69,16 @@ func GetProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(params st
 	}
 
 	resourceContent := base64.StdEncoding.EncodeToString(dat)
-	return stage_resource.NewGetProjectProjectNameStageStageNameResourceResourceURIOK().WithPayload(
-		&models.Resource{
-			ResourceURI:     &params.ResourceURI,
-			ResourceContent: resourceContent,
-		})
+
+	resource := &models.Resource{
+		ResourceURI:     &params.ResourceURI,
+		ResourceContent: resourceContent,
+		Branch:          params.StageName,
+	}
+
+	common.AddResourceMetadata(params.ProjectName, err, resource)
+
+	return stage_resource.NewGetProjectProjectNameStageStageNameResourceResourceURIOK().WithPayload(resource)
 }
 
 // PostProjectProjectNameStageStageNameResourceHandlerFunc creates list of new resources in a stage

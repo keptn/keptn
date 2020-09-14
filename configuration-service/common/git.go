@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/keptn/keptn/configuration-service/models"
 	"net/url"
 	"os"
 	"strings"
@@ -339,4 +340,29 @@ func GetBranches(project string) ([]string, error) {
 	branches := strings.Split(strings.TrimSpace(out), "\n")
 
 	return branches, nil
+}
+
+// AddResourceMetadata godoc
+func AddResourceMetadata(project string, err error, resource *models.Resource) {
+	credentials, err := GetCredentials(project)
+
+	if err == nil && credentials != nil {
+		addRepoURIToResource(credentials, resource)
+	}
+
+	addVersionToResource(project, err, resource)
+}
+
+func addRepoURIToResource(credentials *GitCredentials, resource *models.Resource) {
+	// the git token should not be included in the repo URI in the first place, but let's make sure it's hidden in any case
+	remoteURI := credentials.RemoteURI
+	remoteURI = strings.Replace(remoteURI, credentials.Token, "********", -1)
+	resource.UpstreamURL = remoteURI
+}
+
+func addVersionToResource(project string, err error, resource *models.Resource) {
+	version, err := GetCurrentVersion(project)
+	if err == nil {
+		resource.Version = version
+	}
 }

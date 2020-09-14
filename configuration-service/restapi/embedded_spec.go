@@ -25,9 +25,6 @@ func init() {
   "produces": [
     "application/json"
   ],
-  "schemes": [
-    "http"
-  ],
   "swagger": "2.0",
   "info": {
     "title": "Configuration Service API",
@@ -2138,12 +2135,24 @@ func init() {
         "resourceURI"
       ],
       "properties": {
+        "branch": {
+          "description": "branch in git repo containing the resource",
+          "type": "string"
+        },
         "resourceContent": {
           "description": "Resource content",
           "type": "string"
         },
         "resourceURI": {
           "description": "Resource URI",
+          "type": "string"
+        },
+        "upstreamURL": {
+          "description": "Upstream repository containing the resource",
+          "type": "string"
+        },
+        "version": {
+          "description": "version/git commit id of the resource",
           "type": "string"
         }
       }
@@ -2395,9 +2404,6 @@ func init() {
   ],
   "produces": [
     "application/json"
-  ],
-  "schemes": [
-    "http"
   ],
   "swagger": "2.0",
   "info": {
@@ -4994,12 +5000,24 @@ func init() {
         "resourceURI"
       ],
       "properties": {
+        "branch": {
+          "description": "branch in git repo containing the resource",
+          "type": "string"
+        },
         "resourceContent": {
           "description": "Resource content",
           "type": "string"
         },
         "resourceURI": {
           "description": "Resource URI",
+          "type": "string"
+        },
+        "upstreamURL": {
+          "description": "Upstream repository containing the resource",
+          "type": "string"
+        },
+        "version": {
+          "description": "version/git commit id of the resource",
           "type": "string"
         }
       }

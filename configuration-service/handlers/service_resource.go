@@ -86,11 +86,16 @@ func GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHan
 	}
 
 	resourceContent := base64.StdEncoding.EncodeToString(dat)
-	return service_resource.NewGetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIOK().WithPayload(
-		&models.Resource{
-			ResourceURI:     &params.ResourceURI,
-			ResourceContent: resourceContent,
-		})
+
+	resource := &models.Resource{
+		ResourceURI:     &params.ResourceURI,
+		ResourceContent: resourceContent,
+		Branch:          params.StageName,
+	}
+
+	common.AddResourceMetadata(params.ProjectName, err, resource)
+
+	return service_resource.NewGetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIOK().WithPayload(resource)
 }
 
 // DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc deletes the specified resource

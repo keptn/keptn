@@ -174,11 +174,15 @@ func GetProjectProjectNameResourceResourceURIHandlerFunc(params project_resource
 
 	resourceContent := base64.StdEncoding.EncodeToString(dat)
 
-	return project_resource.NewGetProjectProjectNameResourceResourceURIOK().WithPayload(
-		&models.Resource{
-			ResourceURI:     &params.ResourceURI,
-			ResourceContent: resourceContent,
-		})
+	resource := &models.Resource{
+		ResourceURI:     &params.ResourceURI,
+		ResourceContent: resourceContent,
+		Branch:          "master",
+	}
+
+	common.AddResourceMetadata(params.ProjectName, err, resource)
+
+	return project_resource.NewGetProjectProjectNameResourceResourceURIOK().WithPayload(resource)
 }
 
 // PutProjectProjectNameResourceResourceURIHandlerFunc updates a resource
