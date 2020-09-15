@@ -90,6 +90,7 @@ before_install:
   if [[ $BRANCH =~ ^release.* ]]; then
     export KEPTN_INSTALLER_VERSION=${BRANCH#"release-"}
     export KEPTN_CLI_VERSION=${BRANCH#"release-"}
+    export KEPTN_INSTALLER_REPO=https://storage.googleapis.com/keptn-installer/keptn-${KEPTN_INSTALLER_VERSION}.tgz
   fi
 # generate a lower-case slug of the branch name
 - BRANCH_SLUG=$(echo ${BRANCH} | sed -r s/[^a-zA-Z0-9]+/-/g | sed -r s/^-+\|-+$//g | tr A-Z a-z)
