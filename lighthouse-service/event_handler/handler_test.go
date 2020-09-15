@@ -54,8 +54,9 @@ func TestNewEventHandler(t *testing.T) {
 			},
 			eventType: keptn.TestsFinishedEventType,
 			want: &StartEvaluationHandler{
-				Event:        incomingEvent,
-				KeptnHandler: keptnHandler,
+				Event:             incomingEvent,
+				KeptnHandler:      keptnHandler,
+				SLIProviderConfig: K8sSLIProviderConfig{},
 			},
 			wantErr: false,
 		},
@@ -67,8 +68,9 @@ func TestNewEventHandler(t *testing.T) {
 			},
 			eventType: keptn.StartEvaluationEventType,
 			want: &StartEvaluationHandler{
-				Event:        incomingEvent,
-				KeptnHandler: keptnHandler,
+				Event:             incomingEvent,
+				KeptnHandler:      keptnHandler,
+				SLIProviderConfig: K8sSLIProviderConfig{},
 			},
 			wantErr: false,
 		},

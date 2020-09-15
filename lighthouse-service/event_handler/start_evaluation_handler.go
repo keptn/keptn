@@ -2,7 +2,6 @@ package event_handler
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/url"
 	"time"
@@ -12,12 +11,12 @@ import (
 	"github.com/google/uuid"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	keptnutils "github.com/keptn/go-utils/pkg/lib"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type StartEvaluationHandler struct {
-	Event        cloudevents.Event
-	KeptnHandler *keptnutils.Keptn
+	Event             cloudevents.Event
+	KeptnHandler      *keptnutils.Keptn
+	SLIProviderConfig SLIProviderConfig
 }
 
 func (eh *StartEvaluationHandler) HandleEvent() error {
@@ -55,40 +54,6 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 		return err
 	}
 
-	// get SLO file
-	objectives, err := getSLOs(e.Project, e.Stage, e.Service)
-	if err != nil {
-		// no SLO file found (assumption that this is an empty SLO file) -> no need to evaluate
-		eh.KeptnHandler.Logger.Debug("No SLO file found, no evaluation conducted")
-		evaluationDetails := keptnevents.EvaluationDetails{
-			IndicatorResults: nil,
-			TimeStart:        e.Start,
-			TimeEnd:          e.End,
-			Result:           fmt.Sprintf("no evaluation performed by lighthouse because no SLO found for service %s", e.Service),
-		}
-
-		evaluationResult := keptnevents.EvaluationDoneEventData{
-			EvaluationDetails:  &evaluationDetails,
-			Result:             eh.getTestExecutionResult(),
-			Project:            e.Project,
-			Service:            e.Service,
-			Stage:              e.Stage,
-			TestStrategy:       e.TestStrategy,
-			DeploymentStrategy: e.DeploymentStrategy,
-			Labels:             e.Labels,
-		}
-
-		err = eh.sendEvaluationDoneEvent(keptnContext, &evaluationResult)
-		return err
-	}
-
-	indicators := []string{}
-	for _, objective := range objectives.Objectives {
-		indicators = append(indicators, objective.SLI)
-	}
-
-	var filters = []*keptnevents.SLIFilter{}
-
 	deployment := ""
 	if e.DeploymentStrategy != "" {
 		if e.DeploymentStrategy == "blue_green_service" {
@@ -106,40 +71,57 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 		}
 	}
 
-	if objectives.Filter != nil {
-		for key, value := range objectives.Filter {
-			filter := &keptnevents.SLIFilter{
-				Key:   key,
-				Value: value,
-			}
-			filters = append(filters, filter)
+	indicators := []string{}
+	var filters = []*keptnevents.SLIFilter{}
+	// get SLO file
+	objectives, err := getSLOs(e.Project, e.Stage, e.Service)
+	if err == nil && objectives != nil {
+		eh.KeptnHandler.Logger.Info("SLO file found")
+		for _, objective := range objectives.Objectives {
+			indicators = append(indicators, objective.SLI)
 		}
+
+		if objectives.Filter != nil {
+			for key, value := range objectives.Filter {
+				filter := &keptnevents.SLIFilter{
+					Key:   key,
+					Value: value,
+				}
+				filters = append(filters, filter)
+			}
+		}
+	} else {
+		eh.KeptnHandler.Logger.Info("no SLO file found")
 	}
 
 	// get the SLI provider that has been configured for the project (e.g. 'dynatrace' or 'prometheus')
-	sliProvider, err := getSLIProvider(e.Project)
+	var sliProvider string
+	sliProvider, err = eh.SLIProviderConfig.GetSLIProvider(e.Project)
 	if err != nil {
-		eh.KeptnHandler.Logger.Error("no SLI-provider configured for project " + e.Project + ", no evaluation conducted")
-		evaluationDetails := keptnevents.EvaluationDetails{
-			IndicatorResults: nil,
-			TimeStart:        e.Start,
-			TimeEnd:          e.End,
-			Result:           fmt.Sprintf("no evaluation performed by lighthouse because no SLI-provider configured for project %s", e.Project),
-		}
+		sliProvider, err = eh.SLIProviderConfig.GetDefaultSLIProvider()
+		if err != nil {
+			eh.KeptnHandler.Logger.Error("no SLI-provider configured for project " + e.Project + ", no evaluation conducted")
+			evaluationDetails := keptnevents.EvaluationDetails{
+				IndicatorResults: nil,
+				TimeStart:        e.Start,
+				TimeEnd:          e.End,
+				Result:           fmt.Sprintf("no evaluation performed by lighthouse because no SLI-provider configured for project %s", e.Project),
+			}
 
-		evaluationResult := keptnevents.EvaluationDoneEventData{
-			EvaluationDetails:  &evaluationDetails,
-			Result:             "failed",
-			Project:            e.Project,
-			Service:            e.Service,
-			Stage:              e.Stage,
-			TestStrategy:       e.TestStrategy,
-			DeploymentStrategy: e.DeploymentStrategy,
-			Labels:             e.Labels,
-		}
+			evaluationResult := keptnevents.EvaluationDoneEventData{
+				EvaluationDetails:  &evaluationDetails,
+				Result:             "failed",
+				Project:            e.Project,
+				Service:            e.Service,
+				Stage:              e.Stage,
+				TestStrategy:       e.TestStrategy,
+				DeploymentStrategy: e.DeploymentStrategy,
+				Labels:             e.Labels,
+			}
 
-		err = eh.sendEvaluationDoneEvent(keptnContext, &evaluationResult)
-		return err
+			err = eh.sendEvaluationDoneEvent(keptnContext, &evaluationResult)
+			return err
+		}
 	}
 	// send a new event to trigger the SLI retrieval
 	eh.KeptnHandler.Logger.Debug("SLI provider for project " + e.Project + " is: " + sliProvider)
@@ -165,23 +147,6 @@ func (eh *StartEvaluationHandler) sendEvaluationDoneEvent(shkeptncontext string,
 
 	eh.KeptnHandler.Logger.Debug("Send event: " + keptnevents.EvaluationDoneEventType)
 	return eh.KeptnHandler.SendCloudEvent(event)
-}
-
-func getSLIProvider(project string) (string, error) {
-	kubeAPI, err := getKubeAPI()
-	if err != nil {
-		return "", err
-	}
-
-	configMap, err := kubeAPI.CoreV1().ConfigMaps(namespace).Get("lighthouse-config-"+project, v1.GetOptions{})
-
-	if err != nil {
-		return "", errors.New("No SLI provider specified for project " + project)
-	}
-
-	sliProvider := configMap.Data["sli-provider"]
-
-	return sliProvider, nil
 }
 
 func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string, project string, stage string, service string, sliProvider string, indicators []string, start string, end string, teststrategy string, deploymentStrategy string, filters []*keptnevents.SLIFilter, labels map[string]string, deployment string) error {

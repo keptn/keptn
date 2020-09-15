@@ -2,6 +2,7 @@ package event_handler
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
@@ -28,6 +29,25 @@ func RunServerOnPort(port int) *server.Server {
 
 func RunServerWithOptions(opts *server.Options) *server.Server {
 	return natsserver.RunServer(opts)
+}
+
+type MockSLIProviderConfig struct {
+	ProjectSLIProvider struct {
+		val string
+		err error
+	}
+	DefaultSLIProvider struct {
+		val string
+		err error
+	}
+}
+
+func (m *MockSLIProviderConfig) GetDefaultSLIProvider() (string, error) {
+	return m.DefaultSLIProvider.val, m.DefaultSLIProvider.err
+}
+
+func (m *MockSLIProviderConfig) GetSLIProvider(project string) (string, error) {
+	return m.ProjectSLIProvider.val, m.DefaultSLIProvider.err
 }
 
 func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
@@ -77,11 +97,19 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 		Event  cloudevents.Event
 	}
 	tests := []struct {
-		name          string
-		fields        fields
-		sloAvailable  bool
-		wantEventType string
-		wantErr       bool
+		name               string
+		fields             fields
+		sloAvailable       bool
+		wantEventType      string
+		wantErr            bool
+		ProjectSLIProvider struct {
+			val string
+			err error
+		}
+		DefaultSLIProvider struct {
+			val string
+			err error
+		}
 	}{
 		{
 			name: "No test strategy set",
@@ -121,41 +149,49 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 			wantErr:       false,
 		},
 		{
-			name: "No SLO file available",
+			name: "No SLO file available -  send get-sli event",
 			fields: fields{
 				Logger: keptnutils.NewLogger("", "", ""),
-				Event: cloudevents.Event{
-					Context: &cloudevents.EventContextV02{
-						SpecVersion: "0.2",
-						Type:        "sh.keptn.events.tests-finished",
-						Source:      types.URLRef{},
-						ID:          "",
-						Time:        nil,
-						SchemaURL:   nil,
-						ContentType: stringp("application/json"),
-						Extensions:  nil,
-					},
-					Data: []byte(`{
-    "project": "sockshop",
-    "stage": "staging",
-    "service": "carts",
-    "testStrategy": "performance",
-    "deploymentStrategy": "direct",
-    "start": "2019-09-01 12:00:00",
-    "end": "2019-09-01 12:05:00",
-    "labels": {
-      "testid": "12345",
-      "buildnr": "build17",
-      "runby": "JohnDoe"
-    },
-    "result": "pass"
-  }`),
-					DataEncoded: false,
-				},
+				Event:  getStartEvaluationEvent(),
 			},
 			sloAvailable:  false,
-			wantEventType: keptnevents.EvaluationDoneEventType,
+			wantEventType: keptnevents.InternalGetSLIEventType,
 			wantErr:       false,
+			ProjectSLIProvider: struct {
+				val string
+				err error
+			}{
+				val: "my-sli-provider",
+				err: nil,
+			},
+			DefaultSLIProvider: struct {
+				val string
+				err error
+			}{},
+		},
+		{
+			name: "No SLI provider configured for project - use default",
+			fields: fields{
+				Logger: keptnutils.NewLogger("", "", ""),
+				Event:  getStartEvaluationEvent(),
+			},
+			sloAvailable:  false,
+			wantEventType: keptnevents.InternalGetSLIEventType,
+			wantErr:       false,
+			ProjectSLIProvider: struct {
+				val string
+				err error
+			}{
+				val: "",
+				err: errors.New(""),
+			},
+			DefaultSLIProvider: struct {
+				val string
+				err error
+			}{
+				val: "default-sli-provider",
+				err: nil,
+			},
 		},
 	}
 	////////// TEST EXECUTION ///////////
@@ -170,6 +206,10 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 			eh := &StartEvaluationHandler{
 				Event:        tt.fields.Event,
 				KeptnHandler: keptnHandler,
+				SLIProviderConfig: &MockSLIProviderConfig{
+					ProjectSLIProvider: tt.ProjectSLIProvider,
+					DefaultSLIProvider: tt.DefaultSLIProvider,
+				},
 			}
 			if err := eh.HandleEvent(); (err != nil) != tt.wantErr {
 				t.Errorf("HandleEvent() error = %v, wantErr %v", err, tt.wantErr)
@@ -186,6 +226,37 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 			}
 
 		})
+	}
+}
+
+func getStartEvaluationEvent() cloudevents.Event {
+	return cloudevents.Event{
+		Context: &cloudevents.EventContextV02{
+			SpecVersion: "0.2",
+			Type:        "sh.keptn.events.tests-finished",
+			Source:      types.URLRef{},
+			ID:          "",
+			Time:        nil,
+			SchemaURL:   nil,
+			ContentType: stringp("application/json"),
+			Extensions:  nil,
+		},
+		Data: []byte(`{
+    "project": "sockshop",
+    "stage": "staging",
+    "service": "carts",
+    "testStrategy": "performance",
+    "deploymentStrategy": "direct",
+    "start": "2019-09-01 12:00:00",
+    "end": "2019-09-01 12:05:00",
+    "labels": {
+      "testid": "12345",
+      "buildnr": "build17",
+      "runby": "JohnDoe"
+    },
+    "result": "pass"
+  }`),
+		DataEncoded: false,
 	}
 }
 
