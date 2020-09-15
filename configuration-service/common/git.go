@@ -33,6 +33,8 @@ func CloneRepo(project string, credentials GitCredentials) (bool, error) {
 	const emptyRepoWarning = "warning: You appear to have cloned an empty repository."
 	if strings.Contains(msg, emptyRepoWarning) {
 		return false, obfuscateErrorMessage(err, &credentials)
+	} else if err != nil {
+		return false, obfuscateErrorMessage(err, &credentials)
 	}
 	return true, nil
 }
