@@ -6,15 +6,15 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/helm-service/controller/helm"
-	"github.com/keptn/keptn/helm-service/controller/mesh"
 	"github.com/keptn/keptn/helm-service/pkg/configuration_changer"
+	"github.com/keptn/keptn/helm-service/pkg/helm"
+	"github.com/keptn/keptn/helm-service/pkg/mesh"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 )
 
 // ReleaseHandler is a handler for releasing a service
 type ReleaseHandler struct {
-	HandlerBase
+	Handler
 	mesh                  mesh.Mesh
 	generatedChartHandler *helm.GeneratedChartGenerator
 }
@@ -22,7 +22,7 @@ type ReleaseHandler struct {
 func NewReleaseHandler(keptnHandler *keptnv2.Keptn, configServiceURL string, mesh mesh.Mesh) ReleaseHandler {
 	generatedChartHandler := helm.NewGeneratedChartGenerator(mesh, keptnHandler.Logger)
 	return ReleaseHandler{
-		HandlerBase:           NewHandlerBase(keptnHandler, configServiceURL),
+		Handler:           NewHandlerBase(keptnHandler, configServiceURL),
 		mesh:                  mesh,
 		generatedChartHandler: generatedChartHandler,
 	}
@@ -31,7 +31,7 @@ func NewReleaseHandler(keptnHandler *keptnv2.Keptn, configServiceURL string, mes
 // HandleEvent handles release.triggered events and either promotes or aborts an artifact
 func (h ReleaseHandler) HandleEvent(ce cloudevents.Event, closeLogger func(keptnHandler *keptnv2.Keptn)) {
 
-	defer closeLogger(h.keptnHandler)
+	defer closeLogger(h.GetKeptnHandler())
 
 	e := keptnv2.ReleaseTriggeredEventData{}
 	if err := ce.DataAs(&e); err != nil {
@@ -57,7 +57,7 @@ func (h ReleaseHandler) HandleEvent(ce cloudevents.Event, closeLogger func(keptn
 		// Only in case of a duplicate deployment strategy, the user-chart has to be promoted/aborted and
 		// a traffic switch is necessary
 		if e.Result == keptnv2.ResultPass || e.Result == keptnv2.ResultWarning {
-			h.keptnHandler.Logger.Info(fmt.Sprintf("Promote service %s in stage %s of project %s",
+			h.GetKeptnHandler().Logger.Info(fmt.Sprintf("Promote service %s in stage %s of project %s",
 				e.Service, e.Stage, e.Project))
 			gitVersion, err = h.promoteDeployment(e.EventData)
 			if err != nil {
@@ -65,7 +65,7 @@ func (h ReleaseHandler) HandleEvent(ce cloudevents.Event, closeLogger func(keptn
 				return
 			}
 		} else {
-			h.keptnHandler.Logger.Info(fmt.Sprintf("Rollback service %s in stage %s of project %s",
+			h.GetKeptnHandler().Logger.Info(fmt.Sprintf("Rollback service %s in stage %s of project %s",
 				e.Service, e.Stage, e.Project))
 			gitVersion, err = h.rollbackDeployment(e.EventData)
 			if err != nil {
@@ -74,7 +74,7 @@ func (h ReleaseHandler) HandleEvent(ce cloudevents.Event, closeLogger func(keptn
 			}
 		}
 	} else {
-		h.keptnHandler.Logger.Info(fmt.Sprintf(
+		h.GetKeptnHandler().Logger.Info(fmt.Sprintf(
 			"No release action required, as the service %s in stage %s of project %s has a direct deployment strategy",
 			e.Service, e.Stage, e.Project))
 	}
@@ -90,7 +90,7 @@ func (h ReleaseHandler) HandleEvent(ce cloudevents.Event, closeLogger func(keptn
 func (h ReleaseHandler) rollbackDeployment(e keptnv2.EventData) (string, error) {
 
 	canaryWeightTo0Updater := configuration_changer.NewCanaryWeightUpdater(h.mesh, 0)
-	genChart, gitVersion, err := configuration_changer.NewConfigurationChanger(h.configServiceURL).UpdateChart(e,
+	genChart, gitVersion, err := configuration_changer.NewConfigurationChanger(h.GetConfigServiceURL()).UpdateChart(e,
 		true, canaryWeightTo0Updater)
 	if err != nil {
 		return "", err
@@ -113,7 +113,7 @@ func (h ReleaseHandler) rollbackDeployment(e keptnv2.EventData) (string, error) 
 
 func (h ReleaseHandler) promoteDeployment(e keptnv2.EventData) (string, error) {
 
-	configChanger := configuration_changer.NewConfigurationChanger(h.configServiceURL)
+	configChanger := configuration_changer.NewConfigurationChanger(h.GetConfigServiceURL())
 
 	// Switch weight to 100% canary, 0% primary
 	canaryWeightTo100Updater := configuration_changer.NewCanaryWeightUpdater(h.mesh, 100)
@@ -154,8 +154,8 @@ func (h ReleaseHandler) promoteDeployment(e keptnv2.EventData) (string, error) {
 func (h ReleaseHandler) updateGeneratedChart(e keptnv2.EventData) error {
 
 	canaryWeightTo100Updater := configuration_changer.NewCanaryWeightUpdater(h.mesh, 100)
-	chartGenerator := helm.NewGeneratedChartGenerator(h.mesh, h.keptnHandler.Logger)
-	userChartManifest, err := h.helmExecutor.GetManifest(helm.GetReleaseName(e.Project, e.Stage, e.Service, false),
+	chartGenerator := helm.NewGeneratedChartGenerator(h.mesh, h.GetKeptnHandler().Logger)
+	userChartManifest, err := h.GetHelmExecutor().GetManifest(helm.GetReleaseName(e.Project, e.Stage, e.Service, false),
 		e.Project+"-"+e.Stage)
 	if err != nil {
 		return err
@@ -171,7 +171,7 @@ func (h ReleaseHandler) updateGeneratedChart(e keptnv2.EventData) error {
 	if err != nil {
 		return err
 	}
-	if _, err := keptnutils.StoreChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, true), genChartData, h.configServiceURL); err != nil {
+	if _, err := keptnutils.StoreChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, true), genChartData, h.GetConfigServiceURL()); err != nil {
 		return err
 	}
 	return h.upgradeChart(newGenChart, e, keptnevents.Duplicate)

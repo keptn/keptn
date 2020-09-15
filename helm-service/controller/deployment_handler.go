@@ -6,16 +6,16 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/helm-service/controller/helm"
-	"github.com/keptn/keptn/helm-service/controller/mesh"
 	"github.com/keptn/keptn/helm-service/pkg/configuration_changer"
+	"github.com/keptn/keptn/helm-service/pkg/helm"
+	"github.com/keptn/keptn/helm-service/pkg/mesh"
 	"helm.sh/helm/v3/pkg/chart"
 )
 
 // DeploymentHandler is a handler for doing the deployment and
 // optionally first change the configuration
 type DeploymentHandler struct {
-	HandlerBase
+	Handler
 	mesh                  mesh.Mesh
 	generatedChartHandler *helm.GeneratedChartGenerator
 }
@@ -24,7 +24,7 @@ type DeploymentHandler struct {
 func NewDeploymentHandler(keptnHandler *keptnv2.Keptn, mesh mesh.Mesh, configServiceURL string) DeploymentHandler {
 	generatedChartHandler := helm.NewGeneratedChartGenerator(mesh, keptnHandler.Logger)
 	return DeploymentHandler{
-		HandlerBase:           NewHandlerBase(keptnHandler, configServiceURL),
+		Handler:           NewHandlerBase(keptnHandler, configServiceURL),
 		mesh:                  mesh,
 		generatedChartHandler: generatedChartHandler,
 	}
@@ -34,7 +34,7 @@ func NewDeploymentHandler(keptnHandler *keptnv2.Keptn, mesh mesh.Mesh, configSer
 // afterwards applying the configuration in the cluster
 func (h DeploymentHandler) HandleEvent(ce cloudevents.Event, closeLogger func(keptnHandler *keptnv2.Keptn)) {
 
-	defer closeLogger(h.keptnHandler)
+	defer closeLogger(h.GetKeptnHandler())
 
 	e := keptnv2.DeploymentTriggeredEventData{}
 	if err := ce.DataAs(&e); err != nil {
@@ -54,7 +54,7 @@ func (h DeploymentHandler) HandleEvent(ce cloudevents.Event, closeLogger func(ke
 	gitVersion := ""
 	if len(e.ConfigurationChange.Values) > 0 {
 		valuesUpdater := configuration_changer.NewValuesUpdater(e.ConfigurationChange.Values)
-		userChart, gitVersion, err = configuration_changer.NewConfigurationChanger(h.configServiceURL).UpdateChart(e.EventData,
+		userChart, gitVersion, err = configuration_changer.NewConfigurationChanger(h.GetConfigServiceURL()).UpdateChart(e.EventData,
 			false, valuesUpdater)
 		if err != nil {
 			err = fmt.Errorf("failed to update values: %v", err)
@@ -109,22 +109,21 @@ func (h DeploymentHandler) HandleEvent(ce cloudevents.Event, closeLogger func(ke
 func (h DeploymentHandler) catchupGeneratedChartOnboarding(deploymentStrategy keptnevents.DeploymentStrategy,
 	event keptnv2.EventData) (*chart.Chart, error) {
 
-	genChartName := helm.GetChartName(event.Service, true)
-	res, err := helm.DoesChartExist(event, genChartName, h.configServiceURL)
+	exists, err := h.ExistsGeneratedChart(event)
 	if err != nil {
 		return nil, err
 	}
 
-	if res {
+	if exists {
 		return h.GetGeneratedChart(event)
 	} else {
-		// Chart does not yet exist, onboard it now
-		userChartManifest, err := h.helmExecutor.GetManifest(helm.GetReleaseName(event.Project, event.Stage, event.Service, false),
+		// Chart does not exist yet, onboard it now
+		userChartManifest, err := h.GetHelmExecutor().GetManifest(helm.GetReleaseName(event.Project, event.Stage, event.Service, false),
 			event.Project+"-"+event.Stage)
 		if err != nil {
 			return nil, err
 		}
-		onboarder := NewOnboarder(h.keptnHandler, h.mesh, h.configServiceURL)
+		onboarder := NewOnboarder(h.GetKeptnHandler(), h.mesh, h.GetConfigServiceURL())
 		return onboarder.OnboardGeneratedChart(userChartManifest, event, deploymentStrategy)
 	}
 }

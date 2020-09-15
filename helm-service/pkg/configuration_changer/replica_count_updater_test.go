@@ -2,8 +2,7 @@ package configuration_changer
 
 import (
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
-	"github.com/keptn/keptn/helm-service/controller/helm"
-	"github.com/keptn/keptn/helm-service/pkg/helmtest"
+	"github.com/keptn/keptn/helm-service/pkg/helm"
 	"helm.sh/helm/v3/pkg/chart"
 	"reflect"
 	"testing"
@@ -76,7 +75,7 @@ status: {}
 		},
 	}
 
-	inputChart := helmtest.GetGeneratedChart()
+	inputChart := helm.GetTestGeneratedChart()
 	updater := NewReplicaCountUpdater(2)
 	updater.Update(&inputChart)
 

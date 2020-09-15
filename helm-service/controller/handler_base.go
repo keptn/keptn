@@ -8,7 +8,7 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/helm-service/controller/helm"
+	"github.com/keptn/keptn/helm-service/pkg/helm"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"helm.sh/helm/v3/pkg/chart"
 )
@@ -19,18 +19,25 @@ type HandlerBase struct {
 	configServiceURL string
 }
 
-func NewHandlerBase(keptnHandler *keptnv2.Keptn, configServiceURL string) HandlerBase {
+func NewHandlerBase(keptnHandler *keptnv2.Keptn, configServiceURL string) *HandlerBase {
 	helmExecutor := helm.NewHelmV3Executor(keptnHandler.Logger)
-	return HandlerBase{
+	return &HandlerBase{
 		keptnHandler:     keptnHandler,
 		helmExecutor:     helmExecutor,
 		configServiceURL: configServiceURL,
 	}
 }
 
-type Handler interface {
-	HandleEvent(ce cloudevents.Event, closeLogger func(keptnHandler *keptnv2.Keptn))
-	HandleError(err error, ceType string, finishedEventData interface{})
+func (h HandlerBase) GetKeptnHandler() *keptnv2.Keptn {
+	return h.keptnHandler
+}
+
+func (h HandlerBase) GetHelmExecutor() helm.HelmExecutor {
+	return h.helmExecutor
+}
+
+func (h HandlerBase) GetConfigServiceURL() string {
+	return h.configServiceURL
 }
 
 func (h HandlerBase) GetGeneratedChart(e keptnv2.EventData) (*chart.Chart, error) {
@@ -43,6 +50,11 @@ func (h HandlerBase) GetUserChart(e keptnv2.EventData) (*chart.Chart, error) {
 	helmChartName := helm.GetChartName(e.Service, false)
 	// Read chart
 	return keptnutils.GetChart(e.Project, e.Service, e.Stage, helmChartName, h.configServiceURL)
+}
+
+func (h HandlerBase) ExistsGeneratedChart(e keptnv2.EventData) (bool, error) {
+	genChartName := helm.GetChartName(e.Service, true)
+	return helm.DoesChartExist(e, genChartName, h.GetConfigServiceURL())
 }
 
 // HandleError logs the error and sends a finished-event

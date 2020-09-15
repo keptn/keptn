@@ -171,6 +171,19 @@ spec:
 status: {}    
 `
 
+const valuesContent = `
+image: docker.io/keptnexamples/carts:0.8.1
+replicas: 1
+`
+
+const chartContent = `
+apiVersion: v2
+type: application
+description: A Helm Chart for service carts
+name: carts
+version: 0.1.0
+`
+
 // GetManifest returns test/sample manifests
 func (h *HelmMockExecutor) GetManifest(releaseName, namespace string) (string, error) {
 

@@ -11,7 +11,7 @@ import (
 
 // ActionTriggeredHandler handles sh.keptn.events.action.triggered events for scaling
 type ActionTriggeredHandler struct {
-	HandlerBase
+	Handler
 }
 
 // ActionScaling is the identifier for the scaling action
@@ -20,7 +20,7 @@ const ActionScaling = "scaling"
 // NewActionTriggeredHandler creates a new ActionTriggeredHandler
 func NewActionTriggeredHandler(keptnHandler *keptnv2.Keptn, configServiceURL string) ActionTriggeredHandler {
 	return ActionTriggeredHandler{
-		HandlerBase: NewHandlerBase(keptnHandler, configServiceURL),
+		Handler: NewHandlerBase(keptnHandler, configServiceURL),
 	}
 }
 
@@ -28,7 +28,7 @@ func NewActionTriggeredHandler(keptnHandler *keptnv2.Keptn, configServiceURL str
 // Therefore, this scaling action only works if the service is deployed b/g
 func (h ActionTriggeredHandler) HandleEvent(ce cloudevents.Event, closeLogger func(keptnHandler *keptnv2.Keptn)) {
 
-	defer closeLogger(h.keptnHandler)
+	defer closeLogger(h.Handler.GetKeptnHandler())
 
 	actionTriggeredEvent := keptnv2.ActionTriggeredEventData{}
 
@@ -48,9 +48,9 @@ func (h ActionTriggeredHandler) HandleEvent(ce cloudevents.Event, closeLogger fu
 
 		resp := h.handleScaling(actionTriggeredEvent)
 		if resp.Status == keptnv2.StatusErrored {
-			h.keptnHandler.Logger.Error(fmt.Sprintf("action %s errored with result %s", actionTriggeredEvent.Action.Action, resp.Message))
+			h.GetKeptnHandler().Logger.Error(fmt.Sprintf("action %s errored with result %s", actionTriggeredEvent.Action.Action, resp.Message))
 		} else {
-			h.keptnHandler.Logger.Info(fmt.Sprintf("Sucessfully finished action action %s", actionTriggeredEvent.Action.Action))
+			h.GetKeptnHandler().Logger.Info(fmt.Sprintf("Sucessfully finished action action %s", actionTriggeredEvent.Action.Action))
 		}
 
 		// Send action.finished event
@@ -59,7 +59,7 @@ func (h ActionTriggeredHandler) HandleEvent(ce cloudevents.Event, closeLogger fu
 			return
 		}
 	} else {
-		h.keptnHandler.Logger.Info("Received unhandled action: " + actionTriggeredEvent.Action.Action + ". Exiting")
+		h.GetKeptnHandler().Logger.Info("Received unhandled action: " + actionTriggeredEvent.Action.Action + ". Exiting")
 	}
 
 	return
@@ -122,7 +122,7 @@ func (h ActionTriggeredHandler) handleScaling(e keptnv2.ActionTriggeredEventData
 
 	replicaCountUpdater := configuration_changer.NewReplicaCountUpdater(replicaIncrement)
 	// Note: This action applies the scaling on the generated chart and therefore assumes a b/g deployment
-	genChart, gitVersion, err := configuration_changer.NewConfigurationChanger(h.configServiceURL).UpdateChart(e.EventData,
+	genChart, gitVersion, err := configuration_changer.NewConfigurationChanger(h.GetConfigServiceURL()).UpdateChart(e.EventData,
 		true, replicaCountUpdater)
 	if err != nil {
 		return h.getFinishedEventDataForError(e.EventData, err)

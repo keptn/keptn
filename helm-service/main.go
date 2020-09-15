@@ -15,7 +15,7 @@ import (
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/helm-service/controller"
-	"github.com/keptn/keptn/helm-service/controller/mesh"
+	"github.com/keptn/keptn/helm-service/pkg/mesh"
 	"github.com/keptn/keptn/helm-service/pkg/serviceutils"
 	authorizationv1 "k8s.io/api/authorization/v1"
 )

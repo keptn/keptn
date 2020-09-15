@@ -3,11 +3,10 @@ package controller
 import (
 	"encoding/base64"
 	"errors"
+	"github.com/keptn/keptn/helm-service/pkg/helm"
 	"testing"
 
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-
-	"github.com/keptn/keptn/helm-service/pkg/helmtest"
 
 	configmodels "github.com/keptn/go-utils/pkg/api/models"
 	configutils "github.com/keptn/go-utils/pkg/api/utils"
@@ -57,15 +56,17 @@ func createTestProject(t *testing.T) {
 
 func TestCheckAndSetServiceName(t *testing.T) {
 
+	mockHandler := HandlerBase{
+		keptnHandler:     nil,
+		helmExecutor:     nil,
+		configServiceURL: configBaseURL,
+	}
+
 	o := Onboarder{
-		HandlerBase: HandlerBase{
-			keptnHandler:     nil,
-			helmExecutor:     nil,
-			configServiceURL: configBaseURL,
-		},
+		Handler: mockHandler,
 		mesh: nil,
 	}
-	data := helmtest.CreateHelmChartData(t)
+	data := helm.CreateTestHelmChartData(t)
 
 	testCases := []struct {
 		name        string

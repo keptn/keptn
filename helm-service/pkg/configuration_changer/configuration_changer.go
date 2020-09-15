@@ -5,7 +5,7 @@ import (
 
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 
-	"github.com/keptn/keptn/helm-service/controller/helm"
+	"github.com/keptn/keptn/helm-service/pkg/helm"
 	"helm.sh/helm/v3/pkg/chart"
 )
 

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/keptn/keptn/helm-service/controller/mesh"
+	"github.com/keptn/keptn/helm-service/pkg/mesh"
 
 	"helm.sh/helm/v3/pkg/chart"
 )

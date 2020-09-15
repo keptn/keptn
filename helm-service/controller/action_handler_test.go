@@ -6,7 +6,6 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/helm-service/pkg/helmtest"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -14,7 +13,7 @@ import (
 	"testing"
 
 	"github.com/keptn/go-utils/pkg/api/models"
-	"github.com/keptn/keptn/helm-service/controller/helm"
+	"github.com/keptn/keptn/helm-service/pkg/helm"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 )
 
@@ -30,7 +29,7 @@ func mockChartResourceEndpoints() *httptest.Server {
 				w.Header().Add("Content-Type", "application/json")
 				w.WriteHeader(200)
 
-				ch := helmtest.GetGeneratedChart()
+				ch := helm.GetTestGeneratedChart()
 				chPackage, _ := keptnutils.PackageChart(&ch)
 
 				resp := models.Resource{
@@ -137,8 +136,15 @@ func TestHandleScaling(t *testing.T) {
 
 			keptnHandler, _ := keptnv2.NewKeptn(&ce, keptncommon.KeptnOpts{})
 
-			a := NewActionTriggeredHandler(keptnHandler, ts.URL)
-			a.helmExecutor = helm.NewHelmMockExecutor()
+			mockHandler := HandlerBase{
+				keptnHandler:     keptnHandler,
+				helmExecutor:     helm.NewHelmMockExecutor(),
+				configServiceURL: ts.URL,
+			}
+
+			a := ActionTriggeredHandler{
+				Handler:mockHandler,
+			}
 
 			resp := a.handleScaling(tt.actionTriggeredEvent)
 			if !reflect.DeepEqual(resp, tt.wanted) {
