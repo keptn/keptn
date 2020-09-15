@@ -26,6 +26,7 @@ type: Opaque
 data:
   keptn-api-token: {{ $apiToken }}
 ---
+{{- if .Values.bridge.secret.enabled }}
 apiVersion: v1
 kind: Secret
 metadata:
@@ -42,6 +43,7 @@ data:
   BASIC_AUTH_USERNAME: 'a2VwdG4='
   BASIC_AUTH_PASSWORD: {{ $bridgePassword }}
 ---
+{{- end }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
