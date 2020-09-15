@@ -136,8 +136,8 @@ keptn_context_id=$(send_start_evaluation_event $PROJECT hardening $SERVICE)
 sleep 10
 
 # try to fetch a evaluation-done event
-echo "Getting evaluation-done event with context-id: ${keptn_context_id}"
-response=$(get_keptn_event ${PROJECT} ${keptn_context_id} "sh.keptn.event.get-sli" ${KEPTN_ENDPOINT} ${KEPTN_API_TOKEN})
+echo "Getting get-sli event with context-id: ${keptn_context_id}"
+response=$(get_event sh.keptn.internal.event.get-sli ${keptn_context_id})
 
 # print the response
 echo $response | jq .
