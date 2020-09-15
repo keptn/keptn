@@ -168,6 +168,8 @@ spec:
                 secretKeyRef:
                   name: keptn-api-token
                   key: keptn-api-token
+            - name: CLI_DOWNLOAD_LINK
+              value: {{ .Values.bridge.cliDownloadLink | default (print "https://github.com/keptn/keptn/releases/tag/" .Chart.AppVersion) }}
           envFrom:
             - secretRef:
                 name: bridge-credentials
