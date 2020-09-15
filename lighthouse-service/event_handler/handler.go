@@ -22,9 +22,9 @@ func NewEventHandler(event cloudevents.Event, logger *keptn.Logger) (EvaluationE
 	}
 	switch event.Type() {
 	case keptn.TestsFinishedEventType:
-		return &StartEvaluationHandler{Event: event, KeptnHandler: keptnHandler}, nil
+		return &StartEvaluationHandler{Event: event, KeptnHandler: keptnHandler, SLIProviderConfig: K8sSLIProviderConfig{}}, nil
 	case keptn.StartEvaluationEventType:
-		return &StartEvaluationHandler{Event: event, KeptnHandler: keptnHandler}, nil // new event type in Keptn versions >= 0.6
+		return &StartEvaluationHandler{Event: event, KeptnHandler: keptnHandler, SLIProviderConfig: K8sSLIProviderConfig{}}, nil // new event type in Keptn versions >= 0.6
 	case keptn.InternalGetSLIDoneEventType:
 		return &EvaluateSLIHandler{Event: event, HTTPClient: &http.Client{}, KeptnHandler: keptnHandler}, nil
 	case keptn.ConfigureMonitoringEventType:
