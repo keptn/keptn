@@ -34,7 +34,7 @@ func CloneRepo(project string, credentials GitCredentials) (bool, error) {
 	if strings.Contains(msg, emptyRepoWarning) {
 		return false, obfuscateErrorMessage(err, &credentials)
 	}
-	return true, obfuscateErrorMessage(err, &credentials)
+	return true, nil
 }
 
 func getRepoURI(uri string, user string, token string) string {
@@ -177,7 +177,7 @@ func StageAndCommitAll(project string, message string, withPull bool) error {
 }
 
 func obfuscateErrorMessage(err error, credentials *GitCredentials) error {
-	if credentials.Token != "" {
+	if err != nil && credentials != nil && credentials.Token != "" {
 		errorMessage := strings.ReplaceAll(err.Error(), credentials.Token, "********")
 		return errors.New(errorMessage)
 	}
