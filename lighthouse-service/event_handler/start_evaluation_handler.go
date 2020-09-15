@@ -11,8 +11,9 @@ import (
 )
 
 type StartEvaluationHandler struct {
-	Event        cloudevents.Event
-	KeptnHandler *keptnv2.Keptn
+	Event             cloudevents.Event
+	KeptnHandler      *keptnv2.Keptn
+	SLIProviderConfig SLIProviderConfig
 }
 
 func (eh *StartEvaluationHandler) HandleEvent() error {
@@ -39,76 +40,58 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 	}
 
 	// get SLO file
-	objectives, err := getSLOs(e.Project, e.Stage, e.Service)
-	if err != nil {
-		// no SLO file found (assumption that this is an empty SLO file) -> no need to evaluate
-		eh.KeptnHandler.Logger.Debug("No SLO file found, no evaluation conducted")
-		evaluationDetails := keptnv2.EvaluationDetails{
-			IndicatorResults: nil,
-			TimeStart:        e.Test.Start,
-			TimeEnd:          e.Test.End,
-			Result:           fmt.Sprintf("no evaluation performed by lighthouse because no SLO found for service %s", e.Service),
-		}
-
-		evaluationFinishedData := keptnv2.EvaluationFinishedEventData{
-			EventData: keptnv2.EventData{
-				Project: e.Project,
-				Stage:   e.Stage,
-				Service: e.Service,
-				Labels:  e.Labels,
-				Status:  keptnv2.StatusSucceeded,
-				Result:  keptnv2.ResultPass,
-				Message: fmt.Sprintf("no evaluation performed by lighthouse because no SLO found for service %s", e.Service),
-			},
-			Evaluation: evaluationDetails,
-		}
-
-		err = sendEvent(keptnContext, eh.Event.ID(), keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), eh.KeptnHandler, &evaluationFinishedData)
-		return err
-	}
-
 	indicators := []string{}
-	for _, objective := range objectives.Objectives {
-		indicators = append(indicators, objective.SLI)
-	}
-
 	var filters = []*keptnevents.SLIFilter{}
-
-	if objectives.Filter != nil {
-		for key, value := range objectives.Filter {
-			filter := &keptnevents.SLIFilter{
-				Key:   key,
-				Value: value,
-			}
-			filters = append(filters, filter)
+	// get SLO file
+	objectives, err := getSLOs(e.Project, e.Stage, e.Service)
+	if err == nil && objectives != nil {
+		eh.KeptnHandler.Logger.Info("SLO file found")
+		for _, objective := range objectives.Objectives {
+			indicators = append(indicators, objective.SLI)
 		}
+
+		if objectives.Filter != nil {
+			for key, value := range objectives.Filter {
+				filter := &keptnevents.SLIFilter{
+					Key:   key,
+					Value: value,
+				}
+				filters = append(filters, filter)
+			}
+		}
+	} else {
+		eh.KeptnHandler.Logger.Info("no SLO file found")
 	}
 
 	// get the SLI provider that has been configured for the project (e.g. 'dynatrace' or 'prometheus')
-	sliProvider, err := getSLIProvider(e.Project)
+	var sliProvider string
+	sliProvider, err = eh.SLIProviderConfig.GetSLIProvider(e.Project)
 	if err != nil {
-		eh.KeptnHandler.Logger.Error("no SLI-provider configured for project " + e.Project + ", no evaluation conducted")
-		evaluationDetails := keptnv2.EvaluationDetails{
-			IndicatorResults: nil,
-			TimeStart:        e.Test.Start,
-			TimeEnd:          e.Test.End,
-			Result:           fmt.Sprintf("no evaluation performed by lighthouse because no SLI-provider configured for project %s", e.Project),
-		}
+		sliProvider, err = eh.SLIProviderConfig.GetDefaultSLIProvider()
+		if err != nil {
+			eh.KeptnHandler.Logger.Error("no SLI-provider configured for project " + e.Project + ", no evaluation conducted")
+			evaluationDetails := keptnv2.EvaluationDetails{
+				IndicatorResults: nil,
+				TimeStart:        e.Test.Start,
+				TimeEnd:          e.Test.End,
+				Result:           fmt.Sprintf("no evaluation performed by lighthouse because no SLI-provider configured for project %s", e.Project),
+			}
 
-		evaluationFinishedData := keptnv2.EvaluationFinishedEventData{
-			EventData: keptnv2.EventData{
-				Project: e.Project,
-				Stage:   e.Stage,
-				Service: e.Service,
-				Labels:  e.Labels,
-				Status:  keptnv2.StatusSucceeded,
-				Result:  keptnv2.ResultPass,
-				Message: fmt.Sprintf("no evaluation performed by lighthouse because no SLI-provider configured for project %s", e.Project),
-			},
-			Evaluation: evaluationDetails,
-		}
+			evaluationFinishedData := keptnv2.EvaluationFinishedEventData{
+				EventData: keptnv2.EventData{
+					Project: e.Project,
+					Stage:   e.Stage,
+					Service: e.Service,
+					Labels:  e.Labels,
+					Status:  keptnv2.StatusSucceeded,
+					Result:  keptnv2.ResultPass,
+					Message: fmt.Sprintf("no evaluation performed by lighthouse because no SLI-provider configured for project %s", e.Project),
+				},
+				Evaluation: evaluationDetails,
+			}
 
-		return sendEvent(keptnContext, eh.Event.ID(), keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), eh.KeptnHandler, &evaluationFinishedData)
+			return sendEvent(keptnContext, eh.Event.ID(), keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), eh.KeptnHandler, &evaluationFinishedData)
+		}
 	}
 	// send a new event to trigger the SLI retrieval
 	eh.KeptnHandler.Logger.Debug("SLI provider for project " + e.Project + " is: " + sliProvider)

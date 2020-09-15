@@ -4,6 +4,7 @@ import (
 	"errors"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"net/url"
 	"os"
 
@@ -91,4 +92,49 @@ func sendEvent(shkeptncontext string, triggeredID, eventType string, keptnHandle
 
 	keptnHandler.Logger.Debug("Send event: " + eventType)
 	return keptnHandler.SendCloudEvent(event)
+}
+
+// SLIProviderConfig godoc
+type SLIProviderConfig interface {
+	GetDefaultSLIProvider() (string, error)
+	GetSLIProvider(project string) (string, error)
+}
+
+// K8sSLIProviderConfig godoc
+type K8sSLIProviderConfig struct{}
+
+// GetDefaultSLIProvider godoc
+func (K8sSLIProviderConfig) GetDefaultSLIProvider() (string, error) {
+	kubeAPI, err := getKubeAPI()
+	if err != nil {
+		return "", err
+	}
+
+	configMap, err := kubeAPI.CoreV1().ConfigMaps(namespace).Get("lighthouse-config", v1.GetOptions{})
+
+	if err != nil {
+		return "", errors.New("no default SLI provider specified")
+	}
+
+	sliProvider := configMap.Data["sli-provider"]
+
+	return sliProvider, nil
+}
+
+// GetSLIProvider godoc
+func (K8sSLIProviderConfig) GetSLIProvider(project string) (string, error) {
+	kubeAPI, err := getKubeAPI()
+	if err != nil {
+		return "", err
+	}
+
+	configMap, err := kubeAPI.CoreV1().ConfigMaps(namespace).Get("lighthouse-config-"+project, v1.GetOptions{})
+
+	if err != nil {
+		return "", errors.New("no SLI provider specified for project " + project)
+	}
+
+	sliProvider := configMap.Data["sli-provider"]
+
+	return sliProvider, nil
 }
