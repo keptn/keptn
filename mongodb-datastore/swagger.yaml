@@ -2,7 +2,7 @@
 swagger: '2.0'
 info:
   title: mongodb-datastore
-  version: 0.1.0
+  version: develop
 basePath: /
 consumes:
   - application/cloudevents+json
