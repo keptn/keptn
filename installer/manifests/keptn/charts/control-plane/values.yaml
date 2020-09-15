@@ -29,6 +29,8 @@ apiService:
 bridge:
   image:
     repository: docker.io/keptn/bridge2
+  secret:
+    enabled: true
 
 eventbroker:
   image:
