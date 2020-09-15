@@ -559,7 +559,7 @@ jobs:
     <<: *gke_full_part2 # use GKE template
 
   - stage: Test Minishift Standalone (--platform=openshift)
-    if: (branch = master or branch =~ ^release.*$) AND (type = cron OR type = push) # run for any change on master/release-* on push and cron
+    if: branch = feature/2318/integration-tests #(branch = master or branch =~ ^release.*$) AND (type = cron OR type = push) # run for any change on master/release-* on push and cron
     os: linux
     before_script:
       # download and install kubectl
