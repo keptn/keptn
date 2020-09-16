@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/mitchellh/mapstructure"
 	"strconv"
 	"sync"
 	"time"
@@ -100,6 +101,21 @@ func ProcessEvent(event *models.KeptnContextExtendedCE) error {
 
 	if event.Type == keptnutils.InternalProjectDeleteEventType {
 		return dropProjectEvents(logger, event)
+	}
+	if event.Type == keptnutils.InternalProjectCreateEventType {
+		createProjectData := &keptnutils.ProjectCreateEventData{}
+		err := mapstructure.Decode(event.Data, createProjectData)
+		if err != nil {
+			logger.Error("Could not decode project.create event: " + err.Error())
+			return err
+		}
+		if createProjectData.GitToken != "" {
+			createProjectData.GitToken = ""
+		}
+		if createProjectData.GitUser != "" {
+			createProjectData.GitUser = ""
+		}
+		event.Data = createProjectData
 	}
 	return insertEvent(logger, event)
 }
