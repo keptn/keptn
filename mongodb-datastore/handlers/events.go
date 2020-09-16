@@ -103,6 +103,7 @@ func ProcessEvent(event *models.KeptnContextExtendedCE) error {
 		return dropProjectEvents(logger, event)
 	}
 	if event.Type == keptnutils.InternalProjectCreateEventType {
+
 		createProjectData := &keptnutils.ProjectCreateEventData{}
 		err := mapstructure.Decode(event.Data, createProjectData)
 		if err != nil {
@@ -115,7 +116,13 @@ func ProcessEvent(event *models.KeptnContextExtendedCE) error {
 		if createProjectData.GitUser != "" {
 			createProjectData.GitUser = ""
 		}
-		event.Data = createProjectData
+		marshal, err := json.Marshal(createProjectData)
+		var data interface{}
+		err = json.Unmarshal(marshal, &data)
+		if err != nil {
+			return err
+		}
+		event.Data = data
 	}
 	return insertEvent(logger, event)
 }
