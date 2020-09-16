@@ -1,10 +1,10 @@
-{{- $apiToken := (randAlphaNum 20) | b64enc | quote }}
+{{- $apiToken := (randAlphaNum 45) | b64enc | quote }}
 {{- $apisecret := (lookup "v1" "Secret" .Release.Namespace "keptn-api-token") }}
 {{- if $apisecret }}
 {{- $apiToken = index $apisecret.data "keptn-api-token" }}
 {{- end -}}
 
-{{- $bridgePassword := (randAlphaNum 16) | b64enc | quote }}
+{{- $bridgePassword := (randAlphaNum 20) | b64enc | quote }}
 {{- $bridgesecret := (lookup "v1" "Secret" .Release.Namespace "bridge-credentials") }}
 {{- if $bridgesecret }}
 {{- $bridgePassword = index $bridgesecret.data "BASIC_AUTH_PASSWORD" }}
