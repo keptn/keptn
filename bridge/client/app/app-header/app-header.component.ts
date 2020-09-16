@@ -96,7 +96,8 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
   }
 
   showVersionCheckInfoDialog() {
-    this.versionCheckDialogState = 'info';
+    if(this.keptnInfo.bridgeInfo.enableVersionCheckFeature)
+      this.versionCheckDialogState = 'info';
   }
 
   acceptVersionCheck(accepted: boolean): void {

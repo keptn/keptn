@@ -10,6 +10,7 @@ const app = express();
 let apiUrl = process.env.API_URL;
 let apiToken = process.env.API_TOKEN;
 let cliDownloadLink = process.env.CLI_DOWNLOAD_LINK;
+let enableVersionCheckFeature = process.env.ENABLE_VERSION_CHECK != "false";
 
 if(!apiToken) {
   console.log("API_TOKEN was not provided. Fetching from kubectl.");
@@ -56,7 +57,7 @@ if (process.env.BASIC_AUTH_USERNAME && process.env.BASIC_AUTH_PASSWORD) {
 
 
 // everything starting with /api is routed to the api implementation
-app.use('/api', apiRouter({ apiUrl, apiToken, cliDownloadLink }));
+app.use('/api', apiRouter({ apiUrl, apiToken, cliDownloadLink, enableVersionCheckFeature }));
 
 // fallback: go to index.html
 app.use((req, res, next) => {
