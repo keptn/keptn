@@ -144,7 +144,7 @@ echo $response | jq .
 
 # validate the response
 verify_using_jq "$response" ".source" "lighthouse-service"
-verify_using_jq "$response" ".type" "sh.keptn.event.get-sli"
+verify_using_jq "$response" ".type" "sh.keptn.internal.event.get-sli"
 verify_using_jq "$response" ".data.project" "${PROJECT}"
 verify_using_jq "$response" ".data.stage" "hardening"
 verify_using_jq "$response" ".data.service" "${SERVICE}"
