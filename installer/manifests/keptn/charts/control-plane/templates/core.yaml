@@ -1,10 +1,10 @@
-{{- $apiToken := (randAlphaNum 20) | b64enc | quote }}
+{{- $apiToken := (randAlphaNum 45) | b64enc | quote }}
 {{- $apisecret := (lookup "v1" "Secret" .Release.Namespace "keptn-api-token") }}
 {{- if $apisecret }}
 {{- $apiToken = index $apisecret.data "keptn-api-token" }}
 {{- end -}}
 
-{{- $bridgePassword := (randAlphaNum 16) | b64enc | quote }}
+{{- $bridgePassword := (randAlphaNum 20) | b64enc | quote }}
 {{- $bridgesecret := (lookup "v1" "Secret" .Release.Namespace "bridge-credentials") }}
 {{- if $bridgesecret }}
 {{- $bridgePassword = index $bridgesecret.data "BASIC_AUTH_PASSWORD" }}
@@ -26,6 +26,7 @@ type: Opaque
 data:
   keptn-api-token: {{ $apiToken }}
 ---
+{{- if .Values.bridge.secret.enabled }}
 apiVersion: v1
 kind: Secret
 metadata:
@@ -42,6 +43,7 @@ data:
   BASIC_AUTH_USERNAME: 'a2VwdG4='
   BASIC_AUTH_PASSWORD: {{ $bridgePassword }}
 ---
+{{- end }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
