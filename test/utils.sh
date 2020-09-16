@@ -52,7 +52,7 @@ function get_event() {
   event_type=$1
   keptn_context_id=$2
   project=$3
-  keptn get event $event_type --keptn-context="${keptn_context_id}" --project=${project} | tail -n +2
+  keptn get event $event_type --keptn-context="${keptn_context_id}" --project=${project}
 }
 
 function send_evaluation_done_event() {
