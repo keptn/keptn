@@ -35,7 +35,7 @@
     <a class="mt-1 mb-2" href="https://keptn.sh/docs/0.7.x/reference/cli/commands/keptn_auth/" rel="noopener noreferrer" target="_blank">keptn auth command</a>
   </div>
   <hr/>
-  <div class="mt-2 mb-3" fxLayout="row" fxLayoutAlign="flex-start center" *ngIf="!keptnInfo.versionCheckEnabled">
+  <div class="mt-2 mb-3" fxLayout="row" fxLayoutAlign="flex-start center" *ngIf="keptnInfo?.bridgeInfo?.enableVersionCheckFeature && !keptnInfo.versionCheckEnabled">
     <dt-icon class="error" [name]="'criticalevent'"></dt-icon>
     <p class="small m-0">Automatic version and security check disabled</p>
   </div>
