@@ -5,6 +5,7 @@ go 1.13
 require (
 	github.com/cloudevents/sdk-go/v2 v2.2.0
 	github.com/ghodss/yaml v1.0.0
+	github.com/go-openapi/swag v0.19.5
 	github.com/go-test/deep v1.0.5
 	github.com/google/gofuzz v1.1.0 // indirect
 	github.com/json-iterator/go v1.1.9 // indirect

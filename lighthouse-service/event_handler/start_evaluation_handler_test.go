@@ -6,6 +6,7 @@ import (
 	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/types"
+	keptnapi "github.com/keptn/go-utils/pkg/api/models"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -59,6 +60,7 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 	ch := make(chan string)
 
 	var returnSlo bool
+	var returnServiceNotFound bool
 	ts := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
@@ -80,6 +82,11 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 			} else if strings.Contains(r.RequestURI, "/configuration") {
 				if returnSlo {
 
+				} else if returnServiceNotFound {
+					errObj := &keptnapi.Error{Code: 404, Message: stringp("Service not found")}
+					marshal, _ := json.Marshal(errObj)
+					w.WriteHeader(404)
+					w.Write(marshal)
 				} else {
 					w.WriteHeader(404)
 					w.Write([]byte(``))
@@ -98,12 +105,13 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 		Event  cloudevents.Event
 	}
 	tests := []struct {
-		name               string
-		fields             fields
-		sloAvailable       bool
-		wantEventType      []string
-		wantErr            bool
-		ProjectSLIProvider struct {
+		name                string
+		fields              fields
+		sloAvailable        bool
+		serviceNotAvailable bool
+		wantEventType       []string
+		wantErr             bool
+		ProjectSLIProvider  struct {
 			val string
 			err error
 		}
@@ -121,6 +129,28 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 			sloAvailable:  false,
 			wantEventType: []string{keptnv2.GetStartedEventType(keptnv2.EvaluationTaskName), keptnevents.InternalGetSLIEventType},
 			wantErr:       false,
+			ProjectSLIProvider: struct {
+				val string
+				err error
+			}{
+				val: "my-sli-provider",
+				err: nil,
+			},
+			DefaultSLIProvider: struct {
+				val string
+				err error
+			}{},
+		},
+		{
+			name: "Service not available - return evaluation.done event",
+			fields: fields{
+				Logger: keptncommon.NewLogger("", "", ""),
+				Event:  getStartEvaluationEvent(),
+			},
+			sloAvailable:        false,
+			serviceNotAvailable: true,
+			wantEventType:       []string{keptnv2.GetStartedEventType(keptnv2.EvaluationTaskName), keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName)},
+			wantErr:             false,
 			ProjectSLIProvider: struct {
 				val string
 				err error
@@ -167,6 +197,7 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 				ConfigurationServiceURL: os.Getenv("CONFIGURATION_SERVICE"),
 			})
 			returnSlo = tt.sloAvailable
+			returnServiceNotFound = tt.serviceNotAvailable
 			eh := &StartEvaluationHandler{
 				Event:        tt.fields.Event,
 				KeptnHandler: keptnHandler,
