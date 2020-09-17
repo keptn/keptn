@@ -26,28 +26,13 @@
     </div>
   </div>
   <div class="mt-2 mb-2" *ngIf="keptnInfo?.bridgeInfo?.showApiToken">
-    <div class="mt-1" fxLayout="row" fxLayoutAlign="flex-start center">
-      <div fxFlex>
-        <p class="m-0 mr-2 nobreak">API token</p>
-      </div>
-      <div>
-        <dt-copy-to-clipboard>
-          <input dtInput [value]="keptnInfo.bridgeInfo.apiToken" aria-label="Keptn API token" />
-          <dt-copy-to-clipboard-label>Copy</dt-copy-to-clipboard-label>
-        </dt-copy-to-clipboard>
-      </div>
+    <div class="mt-1">
+      <ktb-copy-to-clipboard [value]="keptnInfo.bridgeInfo.apiToken" [label]="'Keptn API token'"></ktb-copy-to-clipboard>
     </div>
-    <div class="mt-1" fxLayout="row" fxLayoutAlign="flex-start center">
-      <div fxFlex>
-        <p class="m-0 mr-2 nobreak"><a href="https://keptn.sh/docs/0.7.x/reference/cli/commands/keptn_auth/" rel="noopener noreferrer" target="_blank">keptn auth</a> command</p>
-      </div>
-      <div>
-        <dt-copy-to-clipboard>
-          <input dtInput [value]="keptnInfo.bridgeInfo.authCommand" aria-label="keptn auth command" />
-          <dt-copy-to-clipboard-label>Copy</dt-copy-to-clipboard-label>
-        </dt-copy-to-clipboard>
-      </div>
+    <div class="mt-1">
+      <ktb-copy-to-clipboard [value]="keptnInfo.bridgeInfo.authCommand" [label]="'keptn auth command'"></ktb-copy-to-clipboard>
     </div>
+    <a class="mt-1 mb-2" href="https://keptn.sh/docs/0.7.x/reference/cli/commands/keptn_auth/" rel="noopener noreferrer" target="_blank">keptn auth command</a>
   </div>
   <hr/>
   <div class="mt-2 mb-3" fxLayout="row" fxLayoutAlign="flex-start center" *ngIf="!keptnInfo.versionCheckEnabled">
