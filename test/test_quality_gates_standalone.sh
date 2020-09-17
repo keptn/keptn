@@ -92,6 +92,86 @@ keptn create service $SERVICE --project=$PROJECT
 verify_test_step $? "keptn create service ${SERVICE} - failed"
 sleep 10
 
+########################################################################################################################
+# Testcase 0.a: Send a start-evaluation event for a service that does not exist
+########################################################################################################################
+
+echo "Sending start-evaluation event for service 'wrong-service' in stage hardening"
+
+keptn_context_id=$(send_start_evaluation_event $PROJECT hardening wrong-service)
+sleep 10
+
+# try to fetch a evaluation-done event
+echo "Getting evaluation-done event with context-id: ${keptn_context_id}"
+response=$(get_evaluation_done_event ${keptn_context_id})
+
+# print the response
+echo $response | jq .
+
+# validate the response
+verify_using_jq "$response" ".source" "lighthouse-service"
+verify_using_jq "$response" ".type" "sh.keptn.events.evaluation-done"
+verify_using_jq "$response" ".data.project" "${PROJECT}"
+verify_using_jq "$response" ".data.stage" "hardening"
+verify_using_jq "$response" ".data.service" "wrong-service"
+verify_using_jq "$response" ".data.result" "failed"
+verify_using_jq "$response" ".data.evaluationdetails.result" "error retrieving SLO file: service wrong-service not found"
+verify_using_jq "$response" ".data.evaluationdetails.score" "0"
+verify_using_jq "$response" ".data.evaluationdetails.sloFileContent" ""
+
+########################################################################################################################
+# Testcase 0.b: Send a start-evaluation event for a stage that does not exist
+########################################################################################################################
+
+echo "Sending start-evaluation event for service 'wrong-service' in stage 'wrong-service'"
+
+keptn_context_id=$(send_start_evaluation_event $PROJECT wrong-stage wrong-service)
+sleep 10
+
+# try to fetch a evaluation-done event
+echo "Getting evaluation-done event with context-id: ${keptn_context_id}"
+response=$(get_evaluation_done_event ${keptn_context_id})
+
+# print the response
+echo $response | jq .
+
+# validate the response
+verify_using_jq "$response" ".source" "lighthouse-service"
+verify_using_jq "$response" ".type" "sh.keptn.events.evaluation-done"
+verify_using_jq "$response" ".data.project" "${PROJECT}"
+verify_using_jq "$response" ".data.stage" "wrong-stage"
+verify_using_jq "$response" ".data.service" "wrong-service"
+verify_using_jq "$response" ".data.result" "failed"
+verify_using_jq "$response" ".data.evaluationdetails.result" "error retrieving SLO file: stage wrong-stage not found"
+verify_using_jq "$response" ".data.evaluationdetails.score" "0"
+verify_using_jq "$response" ".data.evaluationdetails.sloFileContent" ""
+
+########################################################################################################################
+# Testcase 0.c: Send a start-evaluation event for a project that does not exist
+########################################################################################################################
+
+echo "Sending start-evaluation event for service 'wrong-service' in stage 'wrong-service' in project 'wrong-project'"
+
+keptn_context_id=$(send_start_evaluation_event wrong-project wrong-stage wrong-service)
+sleep 10
+
+# try to fetch a evaluation-done event
+echo "Getting evaluation-done event with context-id: ${keptn_context_id}"
+response=$(get_evaluation_done_event ${keptn_context_id})
+
+# print the response
+echo $response | jq .
+
+# validate the response
+verify_using_jq "$response" ".source" "lighthouse-service"
+verify_using_jq "$response" ".type" "sh.keptn.events.evaluation-done"
+verify_using_jq "$response" ".data.project" "wrong-project"
+verify_using_jq "$response" ".data.stage" "wrong-stage"
+verify_using_jq "$response" ".data.service" "wrong-service"
+verify_using_jq "$response" ".data.result" "failed"
+verify_using_jq "$response" ".data.evaluationdetails.result" "error retrieving SLO file: project wrong-project not found"
+verify_using_jq "$response" ".data.evaluationdetails.score" "0"
+verify_using_jq "$response" ".data.evaluationdetails.sloFileContent" ""
 
 ########################################################################################################################
 # Testcase 1:
