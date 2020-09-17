@@ -90,7 +90,6 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 		}
 
 		return sendEvent(keptnContext, eh.Event.ID(), keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), eh.KeptnHandler, &evaluationFinishedData)
-		return err
 	} else if err != nil && err == ErrSLOFileNotFound {
 		eh.KeptnHandler.Logger.Info("no SLO file found")
 	}
