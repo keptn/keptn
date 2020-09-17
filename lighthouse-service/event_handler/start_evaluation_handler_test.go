@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
-	"github.com/go-openapi/swag"
 	keptnapi "github.com/keptn/go-utils/pkg/api/models"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	keptnutils "github.com/keptn/go-utils/pkg/lib"
@@ -83,7 +82,7 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 				if returnSlo {
 
 				} else if returnServiceNotFound {
-					errObj := &keptnapi.Error{Code: 404, Message: swag.String("Service not found")}
+					errObj := &keptnapi.Error{Code: 404, Message: stringp("Service not found")}
 					marshal, _ := json.Marshal(errObj)
 					w.WriteHeader(404)
 					w.Write(marshal)
