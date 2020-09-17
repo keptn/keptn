@@ -1,6 +1,6 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import {KtbCopyToClipboardComponent, KtbExpandableTileHeader} from './ktb-copy-to-clipboard.component';
+import {KtbCopyToClipboardComponent} from './ktb-copy-to-clipboard.component';
 import {AppModule} from '../../app.module';
 import {HttpClientTestingModule} from "@angular/common/http/testing";
 
