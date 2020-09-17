@@ -8,8 +8,8 @@ module.exports = (params) => {
   // fetch parameters for bridgeInfo endpoint
   const { apiUrl, apiToken, cliDownloadLink } = params;
 
-  const enableVersionCheckFeature = process.env.ENABLE_VERSION_CHECK === "true";
-  const showApiToken = process.env.SHOW_API_TOKEN === "true";
+  const enableVersionCheckFeature = process.env.ENABLE_VERSION_CHECK !== "false";
+  const showApiToken = process.env.SHOW_API_TOKEN !== "false";
   const bridgeVersion = process.env.VERSION;
 
   // accepts self-signed ssl certificate
