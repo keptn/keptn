@@ -51,7 +51,7 @@
     <table>
       <tr>
         <td><p class="m-0">Currently deployed artifact: </p></td>
-        <td><p class="m-0" [textContent]="project.getLatestDeployment(project.getService(_event.data.service), project.getStage(_event.data.stage)).getShortImageName()"></p></td>
+        <td><p class="m-0" [textContent]="project.getLatestDeployment(project.getService(_event.data.service), project.getStage(_event.data.stage))?.getShortImageName() || 'N/A'"></p></td>
       </tr>
       <tr>
         <td><p class="m-0">Deployable artifact: </p></td>
