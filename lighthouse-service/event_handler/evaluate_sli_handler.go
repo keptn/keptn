@@ -48,6 +48,8 @@ type EvaluateSLIHandler struct {
 func (eh *EvaluateSLIHandler) HandleEvent() error {
 	e := &keptn.InternalGetSLIDoneEventData{}
 
+	var shkeptncontext string
+	eh.Event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
 	err := eh.Event.DataAs(&e)
 
 	if err != nil {
@@ -59,6 +61,26 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 	// compare the results based on the evaluation strategy
 	sloConfig, err := getSLOs(e.Project, e.Stage, e.Service)
 	if err != nil {
+		if err == ErrSLOFileNotFound {
+			evaluationDetails := keptn.EvaluationDetails{
+				IndicatorResults: nil,
+				TimeStart:        e.Start,
+				TimeEnd:          e.End,
+				Result:           fmt.Sprintf("no evaluation performed by lighthouse because no SLO file configured for project %s", e.Project),
+			}
+
+			evaluationResult := keptn.EvaluationDoneEventData{
+				EvaluationDetails:  &evaluationDetails,
+				Result:             "pass",
+				Project:            e.Project,
+				Service:            e.Service,
+				Stage:              e.Stage,
+				TestStrategy:       e.TestStrategy,
+				DeploymentStrategy: e.DeploymentStrategy,
+				Labels:             e.Labels,
+			}
+			return eh.sendEvaluationDoneEvent(shkeptncontext, &evaluationResult)
+		}
 		return err
 	}
 
@@ -103,10 +125,6 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 	}
 	base64.StdEncoding.EncodeToString(sloFileContent)
 	evaluationResult.EvaluationDetails.SLOFileContent = base64.StdEncoding.EncodeToString(sloFileContent)
-
-	// send the evaluation-done-event
-	var shkeptncontext string
-	eh.Event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
 
 	// #1289: check if test execution that preceded the evaluation was successful or failed
 	testsFinishedEvent, _ := eh.getPreviousTestExecutionResult(e, shkeptncontext)
