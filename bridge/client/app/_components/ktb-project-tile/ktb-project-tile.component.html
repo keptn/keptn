@@ -4,7 +4,7 @@
     <p class="mt-0 mb-2" *ngIf="project.stages"><span [textContent]="project.stages.length"></span> Stages, <span [textContent]="project.getServices().length"></span> Services</p>
     <p class="mt-0 mb-2" *ngIf="project.gitRemoteURI"><a [href]="project.gitRemoteURI" [textContent]="project.gitRemoteURI" target="_blank" (click)="$event.stopPropagation()"></a></p>
     <div class="mb-2" fxLayout="row" fxLayoutAlign="flex-start center" *ngIf="!project.gitRemoteURI">
-      <dt-icon class="error mr-1" [name]="'information'"></dt-icon>
+      <dt-icon class="info mr-1" [name]="'information'"></dt-icon>
       <p class="small m-0">No Git upstream configured. Please use <br/><a href="https://keptn.sh/docs/0.7.x/reference/cli/commands/keptn_update_project/" target="_blank" (click)="$event.stopPropagation()">keptn update project</a> to set a Git upstream.</p>
     </div>
   </dt-tile-subtitle>
