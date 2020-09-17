@@ -80,7 +80,7 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 
 		evaluationResult := keptnevents.EvaluationDoneEventData{
 			EvaluationDetails:  &evaluationDetails,
-			Result:             "fail",
+			Result:             "failed",
 			Project:            e.Project,
 			Service:            e.Service,
 			Stage:              e.Stage,
