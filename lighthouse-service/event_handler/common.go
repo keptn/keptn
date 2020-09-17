@@ -112,6 +112,30 @@ func sendEvent(shkeptncontext string, triggeredID, eventType string, keptnHandle
 	return keptnHandler.SendCloudEvent(event)
 }
 
+func sendErroredFinishedEventWithMessage(shkeptncontext, triggeredID, message, sloFileContent string, keptnHandler *keptnv2.Keptn, incoming *keptn.InternalGetSLIDoneEventData) error {
+	data := keptnv2.EvaluationFinishedEventData{
+		EventData: keptnv2.EventData{
+			Project: incoming.Project,
+			Stage:   incoming.Stage,
+			Service: incoming.Service,
+			Labels:  incoming.Labels,
+			Status:  keptnv2.StatusErrored,
+			Result:  keptnv2.ResultFailed,
+			Message: message,
+		},
+		Evaluation: keptnv2.EvaluationDetails{
+			TimeStart:        incoming.Start,
+			TimeEnd:          incoming.End,
+			Result:           string(keptnv2.ResultFailed),
+			Score:            0,
+			SLOFileContent:   sloFileContent,
+			IndicatorResults: nil,
+			GitCommit:        "",
+		},
+	}
+	return sendEvent(shkeptncontext, triggeredID, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), keptnHandler, data)
+}
+
 // SLIProviderConfig godoc
 type SLIProviderConfig interface {
 	GetDefaultSLIProvider() (string, error)
