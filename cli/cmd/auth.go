@@ -53,6 +53,14 @@ More precisely, the Keptn CLI stores the endpoint and API token using *pass* in 
 				return fmt.Errorf("Authentication was unsuccessful - could not resolve hostname.")
 			}
 
+			if endPointErr := checkEndPointStatus(*endPoint); endPointErr != nil {
+				return fmt.Errorf("Authentication was unsucessful: %s"+`
+Possible reasons:
+* The Keptn API server is currently not available. Check if your Kubernetes cluster is available.
+* Your Keptn CLI points to the wrong API server (verify using 'keptn status')`,
+					endPointErr)
+			}
+
 			// try to authenticate (and retry it)
 			for retries := 0; retries < 3; time.Sleep(5 * time.Second) {
 				_, err := authHandler.Authenticate()

@@ -98,6 +98,14 @@ keptn configure monitoring prometheus --project=PROJECTNAME --service=SERVICENAM
 		sdkEvent.SetDataContentType(cloudevents.ApplicationJSON)
 		sdkEvent.SetData(cloudevents.ApplicationJSON, configureMonitoringEventData)
 
+		if endPointErr := checkEndPointStatus(endPoint.String()); endPointErr != nil {
+			return fmt.Errorf("Error connecting to server: %s"+`
+Possible reasons:
+* The Keptn API server is currently not available. Check if your Kubernetes cluster is available.
+* Your Keptn CLI points to the wrong API server (verify using 'keptn status')`,
+				endPointErr)
+		}
+
 		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 

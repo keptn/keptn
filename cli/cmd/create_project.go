@@ -4,8 +4,9 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"os"
+
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 
 	"github.com/keptn/keptn/cli/pkg/file"
 
@@ -121,6 +122,14 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-t
 			project.GitUser = *createProjectParams.GitUser
 			project.GitToken = *createProjectParams.GitToken
 			project.GitRemoteURL = *createProjectParams.RemoteURL
+		}
+
+		if endPointErr := checkEndPointStatus(endPoint.String()); endPointErr != nil {
+			return fmt.Errorf("Error connecting to server: %s"+`
+Possible reasons:
+* The Keptn API server is currently not available. Check if your Kubernetes cluster is available.
+* Your Keptn CLI points to the wrong API server (verify using 'keptn status')`,
+				endPointErr)
 		}
 
 		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)

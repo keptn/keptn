@@ -74,6 +74,14 @@ keptn get services carts --project=sockshop -o=json  # Get details of the carts 
 			return errors.New(authErrorMsg)
 		}
 
+		if endPointErr := checkEndPointStatus(endPoint.String()); endPointErr != nil {
+			return fmt.Errorf("Error connecting to server: %s"+`
+Possible reasons:
+* The Keptn API server is currently not available. Check if your Kubernetes cluster is available.
+* Your Keptn CLI points to the wrong API server (verify using 'keptn status')`,
+				endPointErr)
+		}
+
 		projectsHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 		servicesHandler := apiutils.NewAuthenticatedServiceHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 

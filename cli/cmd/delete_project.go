@@ -60,6 +60,14 @@ var delProjectCmd = &cobra.Command{
 			ProjectName: args[0],
 		}
 
+		if endPointErr := checkEndPointStatus(endPoint.String()); endPointErr != nil {
+			return fmt.Errorf("Error connecting to server: %s"+`
+Possible reasons:
+* The Keptn API server is currently not available. Check if your Kubernetes cluster is available.
+* Your Keptn CLI points to the wrong API server (verify using 'keptn status')`,
+				endPointErr)
+		}
+
 		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 		projectsHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 

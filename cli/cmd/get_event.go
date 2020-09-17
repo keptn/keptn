@@ -18,23 +18,24 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/url"
+	"os"
+
 	"github.com/ghodss/yaml"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/spf13/cobra"
-	"net/url"
-	"os"
 )
 
 type GetEventStruct struct {
-	KeptnContext 	*string
-	Project			*string
-	Stage			*string
-	Service			*string
-	PageSize		*string
-	Output			*string
-	NumOfPages		*int
+	KeptnContext *string
+	Project      *string
+	Stage        *string
+	Service      *string
+	PageSize     *string
+	Output       *string
+	NumOfPages   *int
 }
 
 var getEventParams GetEventStruct
@@ -74,15 +75,23 @@ func getEvent(eventStruct GetEventStruct, args []string) error {
 		return errors.New(authErrorMsg)
 	}
 
+	if endPointErr := checkEndPointStatus(endPoint.String()); endPointErr != nil {
+		return fmt.Errorf("Error connecting to server: %s"+`
+Possible reasons:
+* The Keptn API server is currently not available. Check if your Kubernetes cluster is available.
+* Your Keptn CLI points to the wrong API server (verify using 'keptn status')`,
+			endPointErr)
+	}
+
 	eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 
 	events, modErr := eventHandler.GetEvents(&apiutils.EventFilter{
-		KeptnContext: *eventStruct.KeptnContext,
-		Service: *eventStruct.Service,
-		Stage: *eventStruct.Stage,
-		Project: *eventStruct.Project,
-		EventType:    eventType,
-		PageSize: pageSize,
+		KeptnContext:  *eventStruct.KeptnContext,
+		Service:       *eventStruct.Service,
+		Stage:         *eventStruct.Stage,
+		Project:       *eventStruct.Project,
+		EventType:     eventType,
+		PageSize:      pageSize,
 		NumberOfPages: *eventStruct.NumOfPages,
 	})
 
