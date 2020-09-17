@@ -79,7 +79,17 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 			}
 			return eh.sendEvaluationDoneEvent(shkeptncontext, &evaluationResult)
 		}
-		return err
+		return eh.sendFailedEvaluationDoneEventWithMessage(shkeptncontext, err.Error(), "", e)
+	}
+
+	var sloFileContent []byte
+	// get the slo.yaml as a plain file to avoid confusion due to defaulted values (see https://github.com/keptn/keptn/issues/1495)
+	sloFileContentTmp, err := eh.KeptnHandler.GetKeptnResource("slo.yaml")
+	if err != nil {
+		eh.KeptnHandler.Logger.Debug("Could not fetch slo.yaml from service repository: " + err.Error() + ". Will append internally used SLO object to evaluation-done event.")
+		sloFileContent, _ = yaml.Marshal(sloConfig)
+	} else {
+		sloFileContent = []byte(sloFileContentTmp)
 	}
 
 	// get results of previous evaluations from data store (mongodb-datastore)
@@ -92,7 +102,7 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 
 	previousEvaluationEvents, err := eh.getPreviousEvaluations(e, numberOfPreviousResults, sloConfig.Comparison.IncludeResultWithScore)
 	if err != nil {
-		return err
+		return eh.sendFailedEvaluationDoneEventWithMessage(shkeptncontext, err.Error(), string(sloFileContent), e)
 	}
 
 	var filteredPreviousEvaluationEvents []*keptnv2.EvaluationFinishedEventData
@@ -108,7 +118,7 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 	// calculate the total score
 	err = calculateScore(maximumAchievableScore, evaluationResult, sloConfig, keySLIFailed)
 	if err != nil {
-		return err
+		return eh.sendFailedEvaluationDoneEventWithMessage(shkeptncontext, err.Error(), string(sloFileContent), e)
 	}
 	eh.KeptnHandler.Logger.Debug("Evaluation result: " + string(evaluationResult.Result))
 
