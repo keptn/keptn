@@ -117,7 +117,7 @@ verify_using_jq "$response" ".type" "sh.keptn.events.evaluation-done"
 verify_using_jq "$response" ".data.project" "${PROJECT}"
 verify_using_jq "$response" ".data.stage" "hardening"
 verify_using_jq "$response" ".data.service" "${SERVICE}"
-verify_using_jq "$response" ".data.result" "failed"
+verify_using_jq "$response" ".data.result" "pass"
 verify_using_jq "$response" ".data.evaluationdetails.result" "no evaluation performed by lighthouse because no SLI-provider configured for project ${PROJECT}"
 verify_using_jq "$response" ".data.evaluationdetails.score" "0"
 verify_using_jq "$response" ".data.evaluationdetails.sloFileContent" ""
@@ -130,12 +130,13 @@ verify_using_jq "$response" ".data.evaluationdetails.sloFileContent" ""
 
 echo "Sending start-evaluation event for service $SERVICE in stage hardening"
 
+# Create a config map containing the default sli-provider for the lighthouse service
 kubectl create configmap -n keptn lighthouse-config --from-literal=sli-provider=dynatrace
 
 keptn_context_id=$(send_start_evaluation_event $PROJECT hardening $SERVICE)
 sleep 10
 
-# try to fetch a evaluation-done event
+# try to fetch a get-sli event
 echo "Getting get-sli event with context-id: ${keptn_context_id}"
 response=$(get_event sh.keptn.internal.event.get-sli ${keptn_context_id} ${PROJECT})
 
