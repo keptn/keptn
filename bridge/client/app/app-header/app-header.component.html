@@ -34,7 +34,7 @@
     </div>
   </div>
   <hr/>
-  <div class="mt-2 mb-3" fxLayout="row" fxLayoutAlign="flex-start center" *ngIf="keptnInfo?.bridgeInfo?.showApiToken && !keptnInfo.versionCheckEnabled">
+  <div class="mt-2 mb-3" fxLayout="row" fxLayoutAlign="flex-start center" *ngIf="keptnInfo?.bridgeInfo?.enableVersionCheckFeature && !keptnInfo.versionCheckEnabled">
     <dt-icon class="error" [name]="'criticalevent'"></dt-icon>
     <p class="small m-0">Automatic version and security check disabled</p>
   </div>
