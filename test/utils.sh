@@ -48,6 +48,13 @@ function get_evaluation_done_event() {
   keptn get event evaluation-done --keptn-context="${keptn_context_id}" | tail -n +2
 }
 
+function get_event() {
+  event_type=$1
+  keptn_context_id=$2
+  project=$3
+  keptn get event $event_type --keptn-context="${keptn_context_id}" --project=${project}
+}
+
 function send_evaluation_done_event() {
   PROJECT=$1
   STAGE=$2
