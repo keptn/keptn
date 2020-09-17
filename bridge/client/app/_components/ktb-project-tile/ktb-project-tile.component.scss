@@ -1,0 +1,15 @@
+@import '../../../variables';
+@import '~@dynatrace/barista-components/core/src/style/variables';
+
+::ng-deep ktb-project-tile .dt-tile-header {
+  height: auto;
+}
+
+.dt-icon {
+  width: 16px;
+  height: 16px;
+
+  &.error {
+    fill: $gray-700;
+  }
+}
