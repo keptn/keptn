@@ -26,13 +26,13 @@
     </div>
   </div>
   <div class="mt-2 mb-2" *ngIf="keptnInfo?.bridgeInfo?.showApiToken">
+    <a class="mt-1 mb-2" [href]="keptnInfo.bridgeInfo.apiUrl" rel="noopener noreferrer" target="_blank">Keptn API</a>
     <div class="mt-1">
       <ktb-copy-to-clipboard [value]="keptnInfo.bridgeInfo.apiToken" [label]="'Keptn API token'"></ktb-copy-to-clipboard>
     </div>
     <div class="mt-1">
       <ktb-copy-to-clipboard [value]="keptnInfo.bridgeInfo.authCommand" [label]="'keptn auth command'"></ktb-copy-to-clipboard>
     </div>
-    <a class="mt-1 mb-2" href="https://keptn.sh/docs/0.7.x/reference/cli/commands/keptn_auth/" rel="noopener noreferrer" target="_blank">keptn auth command</a>
   </div>
   <hr/>
   <div class="mt-2 mb-3" fxLayout="row" fxLayoutAlign="flex-start center" *ngIf="keptnInfo?.bridgeInfo?.enableVersionCheckFeature && !keptnInfo.versionCheckEnabled">
