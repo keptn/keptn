@@ -5,6 +5,7 @@ package cmd
 
 import (
 	"archive/zip"
+	"bufio"
 	"crypto/tls"
 	"encoding/json"
 	"errors"
@@ -96,34 +97,48 @@ keptn generate support-archive --dir=/some/directory`,
 			return errors.New(fmt.Sprintf("Error trying to access directory %s. Please make sure the directory exists.", outputDir))
 		}
 
-		tmpDir, err := ioutil.TempDir("", "keptn-support-archive")
-		if err != nil {
-			return fmt.Errorf("Error when creating a temporary directory: %v", err)
-		}
-		defer os.RemoveAll(tmpDir)
-
 		s := &metaData{}
 		s.OperatingSystem = runtime.GOOS
 		s.KeptnCLIVersion = Version
 
 		keptnNS := *generateSupportArchiveParams.KeptnNamespace
 
-		if !mocking {
-			s.KeptnAPIUrl = getKeptnAPIUrl()
-			if s.KeptnAPIUrl.Err == nil {
-				s.KeptnAPIReachable = getKeptnAPIReachable()
-				if s.KeptnAPIReachable.Err == nil && s.KeptnAPIReachable.Result {
-					s.Projects = getProjects()
-					s.KeptnAPIMetadata = getKeptnMetadata()
-				}
-			}
+		// create temporary directory for storing log files
+		tmpDir, err := ioutil.TempDir("", "keptn-support-archive")
+		if err != nil {
+			return fmt.Errorf("Error when creating a temporary directory: %v", err)
+		}
+		defer os.RemoveAll(tmpDir)
 
+		// Before we do anything:
+		// - Check if kubectl is available
+		// - Check if a connection to the Keptn API could be made
+
+		if !mocking {
 			s.KubectlVersion = getKubectlVersion()
 			if s.KubectlVersion.Err == nil {
+				// check if current Kube context points to a Keptn Cluster by looking for a Keptn installation
 				s.KubeContextPointsToKeptnCluster = getKubeContextPointsToKeptnCluster(keptnNS)
 
 				if s.KubeContextPointsToKeptnCluster.Err == nil && s.KubeContextPointsToKeptnCluster.Result {
 					ctx, _ := platform.GetKubeContext()
+
+					// Ask the user if this is the correct cluster
+					fmt.Println("Please confirm that this is the cluster Keptn is running on: ")
+					fmt.Printf("Cluster: %v\n", strings.TrimSpace(ctx))
+
+					fmt.Println("Is this all correct? (y/n)")
+
+					reader := bufio.NewReader(os.Stdin)
+					in, err := reader.ReadString('\n')
+					if err != nil {
+						return err
+					}
+					in = strings.ToLower(strings.TrimSpace(in))
+					if in != "y" && in != "yes" {
+						return nil
+					}
+
 					fmt.Println("Retrieving logs from cluster " + strings.TrimSpace(ctx))
 					s.IngressHostnameSuffix = getIngressHostnameSuffix(keptnNS)
 					s.IngressPort = getIngressPort(keptnNS)
@@ -170,10 +185,23 @@ keptn generate support-archive --dir=/some/directory`,
 						writeDeploymentDescriptions(ns, k8sNSFilePath)
 					}
 				} else {
-					fmt.Println("Your kube context does not point to a Keptn cluster!")
+					fmt.Printf("Could not find a valid Keptn installation in namespace %s.\n", keptnNS)
+					fmt.Println("Hint: use -n to specify another namespace.")
+					return nil // exit, as we did not find a proper Keptn installation in the cluster
 				}
 			} else {
 				fmt.Printf("Availability check of kubectl failed with %v\n", s.KubectlVersion.Err)
+				fmt.Println("Please reach out to your administrator to get a connection to the Kubernetes cluster on which your Keptn installation is running on. ")
+				return nil // exit, as we need kubectl to generate log files
+			}
+
+			s.KeptnAPIUrl = getKeptnAPIUrl()
+			if s.KeptnAPIUrl.Err == nil {
+				s.KeptnAPIReachable = getKeptnAPIReachable()
+				if s.KeptnAPIReachable.Err == nil && s.KeptnAPIReachable.Result {
+					s.Projects = getProjects()
+					s.KeptnAPIMetadata = getKeptnMetadata()
+				}
 			}
 		}
 
