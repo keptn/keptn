@@ -64,9 +64,6 @@ func getSLOs(project string, stage string, service string) (*keptn.ServiceLevelO
 	if sloFile == nil || sloFile.ResourceContent == "" {
 		return nil, ErrSLOFileNotFound
 	}
-	if sloFile == nil || sloFile.ResourceContent == "" {
-		return nil, ErrSLOFileNotFound
-	}
 
 	slo, err := parseSLO([]byte(sloFile.ResourceContent))
 
