@@ -90,7 +90,39 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 				filters = append(filters, filter)
 			}
 		}
-	} else {
+	} else if err != nil && err != ErrSLOFileNotFound {
+		var message string
+		if err == ErrServiceNotFound {
+			message = "error retrieving SLO file: service " + e.Service + " not found"
+			eh.KeptnHandler.Logger.Error(message)
+		} else if err == ErrStageNotFound {
+			message = "error retrieving SLO file: stage " + e.Stage + " not found"
+			eh.KeptnHandler.Logger.Error(message)
+		} else if err == ErrProjectNotFound {
+			message = "error retrieving SLO file: project " + e.Project + " not found"
+			eh.KeptnHandler.Logger.Error(message)
+		}
+		evaluationDetails := keptnevents.EvaluationDetails{
+			IndicatorResults: nil,
+			TimeStart:        e.Start,
+			TimeEnd:          e.End,
+			Result:           message,
+		}
+
+		evaluationResult := keptnevents.EvaluationDoneEventData{
+			EvaluationDetails:  &evaluationDetails,
+			Result:             "failed",
+			Project:            e.Project,
+			Service:            e.Service,
+			Stage:              e.Stage,
+			TestStrategy:       e.TestStrategy,
+			DeploymentStrategy: e.DeploymentStrategy,
+			Labels:             e.Labels,
+		}
+
+		err = eh.sendEvaluationDoneEvent(keptnContext, &evaluationResult)
+		return err
+	} else if err != nil && err == ErrSLOFileNotFound {
 		eh.KeptnHandler.Logger.Info("no SLO file found")
 	}
 
