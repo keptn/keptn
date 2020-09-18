@@ -40,6 +40,10 @@ spec:
                key: keptn-api-token
          - name: CLI_DOWNLOAD_LINK
            value: "https://github.com/keptn/keptn/releases/tag/0.7.1"
+         - name: ENABLE_VERSION_CHECK
+           value: "true"
+         - name: SHOW_API_TOKEN
+           value: "true"
         envFrom:
           - secretRef:
               name: bridge-credentials

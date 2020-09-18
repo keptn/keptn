@@ -172,6 +172,10 @@ spec:
                   key: keptn-api-token
             - name: CLI_DOWNLOAD_LINK
               value: {{ .Values.bridge.cliDownloadLink | default (print "https://github.com/keptn/keptn/releases/tag/" .Chart.AppVersion) }}
+            - name: ENABLE_VERSION_CHECK
+              value: {{ .Values.bridge.versionCheck.enabled }}
+            - name: SHOW_API_TOKEN
+              value: {{ .Values.showApiToken.enabled } }
           envFrom:
             - secretRef:
                 name: bridge-credentials
