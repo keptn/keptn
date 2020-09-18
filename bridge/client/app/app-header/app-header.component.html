@@ -26,6 +26,7 @@
     </div>
   </div>
   <div class="mt-2 mb-2" *ngIf="keptnInfo?.bridgeInfo?.showApiToken">
+    <a class="mt-1 mb-2" [href]="keptnInfo.bridgeInfo.apiUrl" rel="noopener noreferrer" target="_blank">Keptn API</a>
     <div class="mt-1">
       <ktb-copy-to-clipboard [value]="keptnInfo.bridgeInfo.apiToken" [label]="'Keptn API token'"></ktb-copy-to-clipboard>
     </div>
