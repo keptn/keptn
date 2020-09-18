@@ -7,6 +7,7 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"net/url"
 	"os"
+	"strings"
 
 	"github.com/ghodss/yaml"
 	utils "github.com/keptn/go-utils/pkg/api/utils"
@@ -15,6 +16,7 @@ import (
 
 const eventbroker = "EVENTBROKER"
 const datastore = "MONGODB_DATASTORE"
+const configurationServiceURL = "configuration-service:8080"
 
 func getDatastoreURL() string {
 	if os.Getenv(datastore) != "" {
@@ -23,11 +25,34 @@ func getDatastoreURL() string {
 	return "http://mongodb-datastore:8080"
 }
 
+// ErrSLOFileNotFound godoc
+var ErrSLOFileNotFound = errors.New("no slo file available")
+
+// ErrProjectNotFound godoc
+var ErrProjectNotFound = errors.New("project not found")
+
+// ErrStageNotFound godoc
+var ErrStageNotFound = errors.New("stage not found")
+
+// ErrServiceNotFound godoc
+var ErrServiceNotFound = errors.New("service not found")
+
 func getSLOs(project string, stage string, service string) (*keptn.ServiceLevelObjectives, error) {
-	resourceHandler := utils.NewResourceHandler("configuration-service:8080")
+	resourceHandler := utils.NewResourceHandler(configurationServiceURL)
 	sloFile, err := resourceHandler.GetServiceResource(project, stage, service, "slo.yaml")
 	if err != nil {
-		return nil, errors.New("No SLO file found for service " + service + " in stage " + stage + " in project " + project)
+		// check if service/stage/project actually exist
+		serviceHandler := utils.NewServiceHandler(configurationServiceURL)
+		_, err = serviceHandler.GetService(project, stage, service)
+		if strings.Contains(strings.ToLower(err.Error()), "project not found") {
+			return nil, ErrProjectNotFound
+		} else if strings.Contains(strings.ToLower(err.Error()), "stage not found") {
+			return nil, ErrStageNotFound
+		} else if strings.Contains(strings.ToLower(err.Error()), "service not found") {
+			return nil, ErrServiceNotFound
+		} else {
+			return nil, ErrSLOFileNotFound
+		}
 	}
 
 	slo, err := parseSLO([]byte(sloFile.ResourceContent))
@@ -92,6 +117,30 @@ func sendEvent(shkeptncontext string, triggeredID, eventType string, keptnHandle
 
 	keptnHandler.Logger.Debug("Send event: " + eventType)
 	return keptnHandler.SendCloudEvent(event)
+}
+
+func sendErroredFinishedEventWithMessage(shkeptncontext, triggeredID, message, sloFileContent string, keptnHandler *keptnv2.Keptn, incoming *keptn.InternalGetSLIDoneEventData) error {
+	data := keptnv2.EvaluationFinishedEventData{
+		EventData: keptnv2.EventData{
+			Project: incoming.Project,
+			Stage:   incoming.Stage,
+			Service: incoming.Service,
+			Labels:  incoming.Labels,
+			Status:  keptnv2.StatusErrored,
+			Result:  keptnv2.ResultFailed,
+			Message: message,
+		},
+		Evaluation: keptnv2.EvaluationDetails{
+			TimeStart:        incoming.Start,
+			TimeEnd:          incoming.End,
+			Result:           string(keptnv2.ResultFailed),
+			Score:            0,
+			SLOFileContent:   sloFileContent,
+			IndicatorResults: nil,
+			GitCommit:        "",
+		},
+	}
+	return sendEvent(shkeptncontext, triggeredID, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), keptnHandler, data)
 }
 
 // SLIProviderConfig godoc
