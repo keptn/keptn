@@ -1,0 +1,27 @@
+@import '../../../variables';
+@import '~@dynatrace/barista-components/core/src/style/variables';
+
+.ktb-copy-to-clipboard {
+  .copy-to-clipboard-input {
+    display: none;
+  }
+
+  &.ktb-copy-input-visible {
+    .copy-to-clipboard-label {
+      display: none;
+    }
+    .copy-to-clipboard-input {
+      display: block;
+    }
+  }
+}
+
+.dt-copy-to-clipboard-btn-button {
+  min-width: 10px !important;
+  padding: 0px 6px;
+
+  .dt-icon {
+    width: 20px;
+    fill: $white;
+  }
+}

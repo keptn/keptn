@@ -4,6 +4,7 @@ import (
 	"errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"os"
+	"strings"
 
 	"github.com/ghodss/yaml"
 	utils "github.com/keptn/go-utils/pkg/api/utils"
@@ -12,6 +13,7 @@ import (
 
 const eventbroker = "EVENTBROKER"
 const datastore = "MONGODB_DATASTORE"
+const configurationServiceURL = "configuration-service:8080"
 
 func getDatastoreURL() string {
 	if os.Getenv(datastore) != "" {
@@ -20,11 +22,34 @@ func getDatastoreURL() string {
 	return "http://mongodb-datastore:8080"
 }
 
+// ErrSLOFileNotFound godoc
+var ErrSLOFileNotFound = errors.New("no slo file available")
+
+// ErrProjectNotFound godoc
+var ErrProjectNotFound = errors.New("project not found")
+
+// ErrStageNotFound godoc
+var ErrStageNotFound = errors.New("stage not found")
+
+// ErrServiceNotFound godoc
+var ErrServiceNotFound = errors.New("service not found")
+
 func getSLOs(project string, stage string, service string) (*keptn.ServiceLevelObjectives, error) {
-	resourceHandler := utils.NewResourceHandler("configuration-service:8080")
+	resourceHandler := utils.NewResourceHandler(configurationServiceURL)
 	sloFile, err := resourceHandler.GetServiceResource(project, stage, service, "slo.yaml")
 	if err != nil {
-		return nil, errors.New("No SLO file found for service " + service + " in stage " + stage + " in project " + project)
+		// check if service/stage/project actually exist
+		serviceHandler := utils.NewServiceHandler(configurationServiceURL)
+		_, err = serviceHandler.GetService(project, stage, service)
+		if strings.Contains(strings.ToLower(err.Error()), "project not found") {
+			return nil, ErrProjectNotFound
+		} else if strings.Contains(strings.ToLower(err.Error()), "stage not found") {
+			return nil, ErrStageNotFound
+		} else if strings.Contains(strings.ToLower(err.Error()), "service not found") {
+			return nil, ErrServiceNotFound
+		} else {
+			return nil, ErrSLOFileNotFound
+		}
 	}
 
 	slo, err := parseSLO([]byte(sloFile.ResourceContent))

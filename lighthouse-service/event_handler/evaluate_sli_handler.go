@@ -48,6 +48,8 @@ type EvaluateSLIHandler struct {
 func (eh *EvaluateSLIHandler) HandleEvent() error {
 	e := &keptn.InternalGetSLIDoneEventData{}
 
+	var shkeptncontext string
+	eh.Event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
 	err := eh.Event.DataAs(&e)
 
 	if err != nil {
@@ -59,7 +61,37 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 	// compare the results based on the evaluation strategy
 	sloConfig, err := getSLOs(e.Project, e.Stage, e.Service)
 	if err != nil {
-		return err
+		if err == ErrSLOFileNotFound {
+			evaluationDetails := keptn.EvaluationDetails{
+				IndicatorResults: nil,
+				TimeStart:        e.Start,
+				TimeEnd:          e.End,
+				Result:           fmt.Sprintf("no evaluation performed by lighthouse because no SLO file configured for project %s", e.Project),
+			}
+
+			evaluationResult := keptn.EvaluationDoneEventData{
+				EvaluationDetails:  &evaluationDetails,
+				Result:             "pass",
+				Project:            e.Project,
+				Service:            e.Service,
+				Stage:              e.Stage,
+				TestStrategy:       e.TestStrategy,
+				DeploymentStrategy: e.DeploymentStrategy,
+				Labels:             e.Labels,
+			}
+			return eh.sendEvaluationDoneEvent(shkeptncontext, &evaluationResult)
+		}
+		return eh.sendFailedEvaluationDoneEventWithMessage(shkeptncontext, err.Error(), "", e)
+	}
+
+	var sloFileContent []byte
+	// get the slo.yaml as a plain file to avoid confusion due to defaulted values (see https://github.com/keptn/keptn/issues/1495)
+	sloFileContentTmp, err := eh.KeptnHandler.GetKeptnResource("slo.yaml")
+	if err != nil {
+		eh.KeptnHandler.Logger.Debug("Could not fetch slo.yaml from service repository: " + err.Error() + ". Will append internally used SLO object to evaluation-done event.")
+		sloFileContent, _ = yaml.Marshal(sloConfig)
+	} else {
+		sloFileContent = []byte(sloFileContentTmp)
 	}
 
 	// get results of previous evaluations from data store (mongodb-datastore)
@@ -72,7 +104,7 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 
 	previousEvaluationEvents, err := eh.getPreviousEvaluations(e, numberOfPreviousResults, sloConfig.Comparison.IncludeResultWithScore)
 	if err != nil {
-		return err
+		return eh.sendFailedEvaluationDoneEventWithMessage(shkeptncontext, err.Error(), string(sloFileContent), e)
 	}
 
 	var filteredPreviousEvaluationEvents []*keptn.EvaluationDoneEventData
@@ -88,25 +120,11 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 	// calculate the total score
 	err = calculateScore(maximumAchievableScore, evaluationResult, sloConfig, keySLIFailed)
 	if err != nil {
-		return err
+		return eh.sendFailedEvaluationDoneEventWithMessage(shkeptncontext, err.Error(), string(sloFileContent), e)
 	}
 	eh.KeptnHandler.Logger.Debug("Evaluation result: " + evaluationResult.Result)
 
-	var sloFileContent []byte
-	// get the slo.yaml as a plain file to avoid confusion due to defaulted values (see https://github.com/keptn/keptn/issues/1495)
-	sloFileContentTmp, err := eh.KeptnHandler.GetKeptnResource("slo.yaml")
-	if err != nil {
-		eh.KeptnHandler.Logger.Debug("Could not fetch slo.yaml from service repository: " + err.Error() + ". Will append internally used SLO object to evaluation-done event.")
-		sloFileContent, _ = yaml.Marshal(sloConfig)
-	} else {
-		sloFileContent = []byte(sloFileContentTmp)
-	}
-	base64.StdEncoding.EncodeToString(sloFileContent)
 	evaluationResult.EvaluationDetails.SLOFileContent = base64.StdEncoding.EncodeToString(sloFileContent)
-
-	// send the evaluation-done-event
-	var shkeptncontext string
-	eh.Event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
 
 	// #1289: check if test execution that preceded the evaluation was successful or failed
 	testsFinishedEvent, _ := eh.getPreviousTestExecutionResult(e, shkeptncontext)
@@ -118,8 +136,7 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 		}
 	}
 
-	err = eh.sendEvaluationDoneEvent(shkeptncontext, evaluationResult)
-	return err
+	return eh.sendEvaluationDoneEvent(shkeptncontext, evaluationResult)
 }
 
 func evaluateObjectives(e *keptn.InternalGetSLIDoneEventData, sloConfig *keptn.ServiceLevelObjectives, previousEvaluationEvents []*keptn.EvaluationDoneEventData) (*keptn.EvaluationDoneEventData, float64, bool) {
@@ -610,6 +627,43 @@ func (eh *EvaluateSLIHandler) sendEvaluationDoneEvent(shkeptncontext string, dat
 	source, _ := url.Parse("lighthouse-service")
 	contentType := "application/json"
 
+	event := cloudevents.Event{
+		Context: cloudevents.EventContextV02{
+			ID:          uuid.New().String(),
+			Time:        &types.Timestamp{Time: time.Now()},
+			Type:        keptn.EvaluationDoneEventType,
+			Source:      types.URLRef{URL: *source},
+			ContentType: &contentType,
+			Extensions:  map[string]interface{}{"shkeptncontext": shkeptncontext},
+		}.AsV02(),
+		Data: data,
+	}
+
+	eh.KeptnHandler.Logger.Debug("Send event: " + keptn.EvaluationDoneEventType)
+	return eh.KeptnHandler.SendCloudEvent(event)
+}
+
+func (eh *EvaluateSLIHandler) sendFailedEvaluationDoneEventWithMessage(shkeptncontext, message, sloFileContent string, incomingEvent *keptn.InternalGetSLIDoneEventData) error {
+	source, _ := url.Parse("lighthouse-service")
+	contentType := "application/json"
+
+	data := keptn.EvaluationDoneEventData{
+		EvaluationDetails: &keptn.EvaluationDetails{
+			TimeStart:        incomingEvent.Start,
+			TimeEnd:          incomingEvent.End,
+			Result:           message,
+			Score:            0,
+			SLOFileContent:   sloFileContent,
+			IndicatorResults: nil,
+		},
+		Result:             "failed",
+		Project:            incomingEvent.Project,
+		Stage:              incomingEvent.Stage,
+		Service:            incomingEvent.Service,
+		TestStrategy:       incomingEvent.TestStrategy,
+		DeploymentStrategy: incomingEvent.DeploymentStrategy,
+		Labels:             incomingEvent.Labels,
+	}
 	event := cloudevents.Event{
 		Context: cloudevents.EventContextV02{
 			ID:          uuid.New().String(),
