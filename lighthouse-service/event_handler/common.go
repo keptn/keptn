@@ -41,15 +41,18 @@ func getSLOs(project string, stage string, service string) (*keptn.ServiceLevelO
 		// check if service/stage/project actually exist
 		serviceHandler := utils.NewServiceHandler(configurationServiceURL)
 		_, err2 := serviceHandler.GetService(project, stage, service)
-		if strings.Contains(strings.ToLower(err2.Error()), "project not found") {
-			return nil, ErrProjectNotFound
-		} else if strings.Contains(strings.ToLower(err2.Error()), "stage not found") {
-			return nil, ErrStageNotFound
-		} else if strings.Contains(strings.ToLower(err2.Error()), "service not found") {
-			return nil, ErrServiceNotFound
+		if err2 != nil {
+			if strings.Contains(strings.ToLower(err2.Error()), "project not found") {
+				return nil, ErrProjectNotFound
+			} else if strings.Contains(strings.ToLower(err2.Error()), "stage not found") {
+				return nil, ErrStageNotFound
+			} else if strings.Contains(strings.ToLower(err2.Error()), "service not found") {
+				return nil, ErrServiceNotFound
+			}
 		} else {
 			return nil, ErrSLOFileNotFound
 		}
+
 	}
 
 	slo, err := parseSLO([]byte(sloFile.ResourceContent))
