@@ -3,6 +3,7 @@ package event_handler
 import (
 	"errors"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"net/url"
@@ -38,21 +39,30 @@ var ErrStageNotFound = errors.New("stage not found")
 var ErrServiceNotFound = errors.New("service not found")
 
 func getSLOs(project string, stage string, service string) (*keptn.ServiceLevelObjectives, error) {
-	resourceHandler := utils.NewResourceHandler(configurationServiceURL)
+	endpoint, err := keptncommon.GetServiceEndpoint(os.Getenv("CONFIGURATION_SERVICE"))
+	if err != nil {
+		return nil, err
+	}
+	resourceHandler := utils.NewResourceHandler(endpoint.String())
 	sloFile, err := resourceHandler.GetServiceResource(project, stage, service, "slo.yaml")
 	if err != nil {
 		// check if service/stage/project actually exist
-		serviceHandler := utils.NewServiceHandler(configurationServiceURL)
-		_, err = serviceHandler.GetService(project, stage, service)
-		if strings.Contains(strings.ToLower(err.Error()), "project not found") {
-			return nil, ErrProjectNotFound
-		} else if strings.Contains(strings.ToLower(err.Error()), "stage not found") {
-			return nil, ErrStageNotFound
-		} else if strings.Contains(strings.ToLower(err.Error()), "service not found") {
-			return nil, ErrServiceNotFound
+		serviceHandler := utils.NewServiceHandler(endpoint.String())
+		_, err2 := serviceHandler.GetService(project, stage, service)
+		if err2 != nil {
+			if strings.Contains(strings.ToLower(err2.Error()), "project not found") {
+				return nil, ErrProjectNotFound
+			} else if strings.Contains(strings.ToLower(err2.Error()), "stage not found") {
+				return nil, ErrStageNotFound
+			} else if strings.Contains(strings.ToLower(err2.Error()), "service not found") {
+				return nil, ErrServiceNotFound
+			}
 		} else {
 			return nil, ErrSLOFileNotFound
 		}
+	}
+	if sloFile == nil || sloFile.ResourceContent == "" {
+		return nil, ErrSLOFileNotFound
 	}
 
 	slo, err := parseSLO([]byte(sloFile.ResourceContent))
