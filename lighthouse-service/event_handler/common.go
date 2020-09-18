@@ -22,9 +22,16 @@ func getDatastoreURL() string {
 	return "http://mongodb-datastore:8080"
 }
 
+// ErrSLOFileNotFound godoc
 var ErrSLOFileNotFound = errors.New("no slo file available")
+
+// ErrProjectNotFound godoc
 var ErrProjectNotFound = errors.New("project not found")
+
+// ErrStageNotFound godoc
 var ErrStageNotFound = errors.New("stage not found")
+
+// ErrServiceNotFound godoc
 var ErrServiceNotFound = errors.New("service not found")
 
 func getSLOs(project string, stage string, service string) (*keptn.ServiceLevelObjectives, error) {
