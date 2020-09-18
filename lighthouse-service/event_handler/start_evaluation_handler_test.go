@@ -86,9 +86,13 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 					marshal, _ := json.Marshal(errObj)
 					w.WriteHeader(404)
 					w.Write(marshal)
+					return
 				} else {
+					errObj := &keptnapi.Error{Code: 404, Message: stringp("Resource not found")}
+					marshal, _ := json.Marshal(errObj)
 					w.WriteHeader(404)
-					w.Write([]byte(``))
+					w.Write([]byte(marshal))
+					return
 				}
 			}
 		}),
@@ -185,7 +189,7 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 			},
 			sloAvailable:        false,
 			serviceNotAvailable: true,
-			wantEventType:       keptnevents.InternalGetSLIEventType,
+			wantEventType:       keptnevents.EvaluationDoneEventType,
 			wantErr:             false,
 			ProjectSLIProvider: struct {
 				val string
