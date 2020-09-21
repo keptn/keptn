@@ -17,6 +17,14 @@ fi
 mkdir keptn-charts/
 mv keptn-0.1.0.tgz keptn-charts/
 
+# verify the chart
+helm template --debug keptn-charts/keptn-0.1.0.tgz
+
+if [ $? -ne 0 ]; then
+  echo "Helm Chart has templating errors - exiting"
+  exit 1
+fi
+
 helm repo index keptn-charts --url https://storage.googleapis.com/keptn-installer/${VERSION}
 if [ $? -ne 0 ]; then
   echo 'Error generating index.yaml, exiting...'
