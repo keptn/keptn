@@ -7,6 +7,9 @@ const router = express.Router();
 module.exports = (params) => {
   // fetch parameters for bridgeInfo endpoint
   const { apiUrl, apiToken, cliDownloadLink } = params;
+
+  const enableVersionCheckFeature = process.env.ENABLE_VERSION_CHECK !== "false";
+  const showApiToken = process.env.SHOW_API_TOKEN !== "false";
   const bridgeVersion = process.env.VERSION;
 
   // accepts self-signed ssl certificate
@@ -17,7 +20,7 @@ module.exports = (params) => {
   // bridgeInfo endpoint: Provide certain metadata for Bridge
   router.get('/bridgeInfo', async (req, res, next) => {
     try {
-      return res.json({ bridgeVersion, apiUrl, apiToken, cliDownloadLink });
+      return res.json({ bridgeVersion, apiUrl, ...showApiToken && { apiToken }, cliDownloadLink, enableVersionCheckFeature, showApiToken });
     } catch (err) {
       return next(err);
     }
