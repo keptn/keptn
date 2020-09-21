@@ -6,3 +6,6 @@ carts
 
 #binary - go build
 cli
+
+# ignore support-archive folder if it exists
+support-archive
