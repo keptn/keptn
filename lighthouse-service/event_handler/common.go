@@ -35,21 +35,28 @@ var ErrStageNotFound = errors.New("stage not found")
 var ErrServiceNotFound = errors.New("service not found")
 
 func getSLOs(project string, stage string, service string) (*keptn.ServiceLevelObjectives, error) {
-	resourceHandler := utils.NewResourceHandler(configurationServiceURL)
+	configServiceURL, err := keptn.GetServiceEndpoint("CONFIGURATION_SERVICE")
+	resourceHandler := utils.NewResourceHandler(configServiceURL.String())
 	sloFile, err := resourceHandler.GetServiceResource(project, stage, service, "slo.yaml")
 	if err != nil {
 		// check if service/stage/project actually exist
-		serviceHandler := utils.NewServiceHandler(configurationServiceURL)
-		_, err = serviceHandler.GetService(project, stage, service)
-		if strings.Contains(strings.ToLower(err.Error()), "project not found") {
-			return nil, ErrProjectNotFound
-		} else if strings.Contains(strings.ToLower(err.Error()), "stage not found") {
-			return nil, ErrStageNotFound
-		} else if strings.Contains(strings.ToLower(err.Error()), "service not found") {
-			return nil, ErrServiceNotFound
+		serviceHandler := utils.NewServiceHandler(configServiceURL.String())
+		_, err2 := serviceHandler.GetService(project, stage, service)
+		if err2 != nil {
+			if strings.Contains(strings.ToLower(err2.Error()), "project not found") {
+				return nil, ErrProjectNotFound
+			} else if strings.Contains(strings.ToLower(err2.Error()), "stage not found") {
+				return nil, ErrStageNotFound
+			} else if strings.Contains(strings.ToLower(err2.Error()), "service not found") {
+				return nil, ErrServiceNotFound
+			}
 		} else {
 			return nil, ErrSLOFileNotFound
 		}
+
+	}
+	if sloFile == nil || sloFile.ResourceContent == "" {
+		return nil, ErrSLOFileNotFound
 	}
 
 	slo, err := parseSLO([]byte(sloFile.ResourceContent))
