@@ -20,6 +20,15 @@ fi
 mkdir keptn-charts/
 mv keptn-${VERSION}.tgz keptn-charts/
 
+# verify the chart
+helm template --debug keptn-charts/keptn-${VERSION}.tgz
+
+if [ $? -ne 0 ]; then
+  echo "Helm Chart has templating errors - exiting"
+  exit 1
+fi
+
+# download index.yaml chart
 gsutil cp gs://keptn-installer/index.yaml keptn-charts/index.yaml
 
 helm repo index keptn-charts --url https://storage.googleapis.com/keptn-installer/ --merge keptn-charts/index.yaml
