@@ -1,1 +1,2 @@
 .DS_Store
+manifests/keptn/charts/control-plane/charts/nats-*.tgz
