@@ -251,5 +251,7 @@ func DeleteProjectProjectNameResourceResourceURIHandlerFunc(params project_resou
 	}
 	logger.Debug("Successfully deleted resources")
 
-	return project_resource.NewDeleteProjectProjectNameResourceResourceURINoContent()
+	metadata := common.GetResourceMetadata(params.ProjectName)
+
+	return project_resource.NewDeleteProjectProjectNameResourceResourceURINoContent().WithPayload(metadata)
 }

@@ -10,17 +10,22 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	models "github.com/keptn/keptn/configuration-service/models"
+	"github.com/keptn/keptn/configuration-service/models"
 )
 
 // DeleteProjectProjectNameResourceResourceURINoContentCode is the HTTP code returned for type DeleteProjectProjectNameResourceResourceURINoContent
 const DeleteProjectProjectNameResourceResourceURINoContentCode int = 204
 
-/*DeleteProjectProjectNameResourceResourceURINoContent Success. Project resource has been deleted. Response does not have a body.
+/*DeleteProjectProjectNameResourceResourceURINoContent Success. Project resource has been deleted.
 
 swagger:response deleteProjectProjectNameResourceResourceUriNoContent
 */
 type DeleteProjectProjectNameResourceResourceURINoContent struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Version `json:"body,omitempty"`
 }
 
 // NewDeleteProjectProjectNameResourceResourceURINoContent creates DeleteProjectProjectNameResourceResourceURINoContent with default headers values
@@ -29,12 +34,27 @@ func NewDeleteProjectProjectNameResourceResourceURINoContent() *DeleteProjectPro
 	return &DeleteProjectProjectNameResourceResourceURINoContent{}
 }
 
+// WithPayload adds the payload to the delete project project name resource resource Uri no content response
+func (o *DeleteProjectProjectNameResourceResourceURINoContent) WithPayload(payload *models.Version) *DeleteProjectProjectNameResourceResourceURINoContent {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the delete project project name resource resource Uri no content response
+func (o *DeleteProjectProjectNameResourceResourceURINoContent) SetPayload(payload *models.Version) {
+	o.Payload = payload
+}
+
 // WriteResponse to the client
 func (o *DeleteProjectProjectNameResourceResourceURINoContent) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
-	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
-
 	rw.WriteHeader(204)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
 }
 
 // DeleteProjectProjectNameResourceResourceURIBadRequestCode is the HTTP code returned for type DeleteProjectProjectNameResourceResourceURIBadRequest

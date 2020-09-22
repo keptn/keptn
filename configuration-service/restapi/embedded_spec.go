@@ -380,7 +380,10 @@ func init() {
         "summary": "Delete the specified resource",
         "responses": {
           "204": {
-            "description": "Success. Project resource has been deleted. Response does not have a body."
+            "description": "Success. Project resource has been deleted.",
+            "schema": {
+              "$ref": "#/definitions/Version"
+            }
           },
           "400": {
             "description": "Failed. Project resource could not be deleted.",
@@ -659,7 +662,10 @@ func init() {
         "summary": "Delete the specified default resource for the service",
         "responses": {
           "204": {
-            "description": "Success. Service default resource has been deleted. Response does not have a body."
+            "description": "Success. Service default resource has been deleted.",
+            "schema": {
+              "$ref": "#/definitions/Version"
+            }
           },
           "400": {
             "description": "Failed. Service default resource could not be deleted.",
@@ -1033,7 +1039,10 @@ func init() {
         "summary": "Delete the specified resource",
         "responses": {
           "204": {
-            "description": "Success. Stage resource has been deleted. Response does not have a body."
+            "description": "Success. Stage resource has been deleted.",
+            "schema": {
+              "$ref": "#/definitions/Version"
+            }
           },
           "400": {
             "description": "Failed. Stage resource could not be deleted.",
@@ -1706,7 +1715,10 @@ func init() {
         "summary": "Delete the specified resource",
         "responses": {
           "204": {
-            "description": "Success. Service resource has been deleted. Response does not have a body."
+            "description": "Success. Service resource has been deleted.",
+            "schema": {
+              "$ref": "#/definitions/Version"
+            }
           },
           "400": {
             "description": "Failed. Service resource could not be deleted.",
@@ -2832,7 +2844,10 @@ func init() {
         "summary": "Delete the specified resource",
         "responses": {
           "204": {
-            "description": "Success. Project resource has been deleted. Response does not have a body."
+            "description": "Success. Project resource has been deleted.",
+            "schema": {
+              "$ref": "#/definitions/Version"
+            }
           },
           "400": {
             "description": "Failed. Project resource could not be deleted.",
@@ -3193,7 +3208,10 @@ func init() {
         "summary": "Delete the specified default resource for the service",
         "responses": {
           "204": {
-            "description": "Success. Service default resource has been deleted. Response does not have a body."
+            "description": "Success. Service default resource has been deleted.",
+            "schema": {
+              "$ref": "#/definitions/Version"
+            }
           },
           "400": {
             "description": "Failed. Service default resource could not be deleted.",
@@ -3672,7 +3690,10 @@ func init() {
         "summary": "Delete the specified resource",
         "responses": {
           "204": {
-            "description": "Success. Stage resource has been deleted. Response does not have a body."
+            "description": "Success. Stage resource has been deleted.",
+            "schema": {
+              "$ref": "#/definitions/Version"
+            }
           },
           "400": {
             "description": "Failed. Stage resource could not be deleted.",
@@ -4554,7 +4575,10 @@ func init() {
         "summary": "Delete the specified resource",
         "responses": {
           "204": {
-            "description": "Success. Service resource has been deleted. Response does not have a body."
+            "description": "Success. Service resource has been deleted.",
+            "schema": {
+              "$ref": "#/definitions/Version"
+            }
           },
           "400": {
             "description": "Failed. Service resource could not be deleted.",
