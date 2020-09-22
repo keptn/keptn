@@ -10,17 +10,22 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	models "github.com/keptn/keptn/configuration-service/models"
+	"github.com/keptn/keptn/configuration-service/models"
 )
 
 // DeleteProjectProjectNameStageStageNameResourceResourceURINoContentCode is the HTTP code returned for type DeleteProjectProjectNameStageStageNameResourceResourceURINoContent
 const DeleteProjectProjectNameStageStageNameResourceResourceURINoContentCode int = 204
 
-/*DeleteProjectProjectNameStageStageNameResourceResourceURINoContent Success. Stage resource has been deleted. Response does not have a body.
+/*DeleteProjectProjectNameStageStageNameResourceResourceURINoContent Success. Stage resource has been deleted.
 
 swagger:response deleteProjectProjectNameStageStageNameResourceResourceUriNoContent
 */
 type DeleteProjectProjectNameStageStageNameResourceResourceURINoContent struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Version `json:"body,omitempty"`
 }
 
 // NewDeleteProjectProjectNameStageStageNameResourceResourceURINoContent creates DeleteProjectProjectNameStageStageNameResourceResourceURINoContent with default headers values
@@ -29,12 +34,27 @@ func NewDeleteProjectProjectNameStageStageNameResourceResourceURINoContent() *De
 	return &DeleteProjectProjectNameStageStageNameResourceResourceURINoContent{}
 }
 
+// WithPayload adds the payload to the delete project project name stage stage name resource resource Uri no content response
+func (o *DeleteProjectProjectNameStageStageNameResourceResourceURINoContent) WithPayload(payload *models.Version) *DeleteProjectProjectNameStageStageNameResourceResourceURINoContent {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the delete project project name stage stage name resource resource Uri no content response
+func (o *DeleteProjectProjectNameStageStageNameResourceResourceURINoContent) SetPayload(payload *models.Version) {
+	o.Payload = payload
+}
+
 // WriteResponse to the client
 func (o *DeleteProjectProjectNameStageStageNameResourceResourceURINoContent) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
-	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
-
 	rw.WriteHeader(204)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
 }
 
 // DeleteProjectProjectNameStageStageNameResourceResourceURIBadRequestCode is the HTTP code returned for type DeleteProjectProjectNameStageStageNameResourceResourceURIBadRequest

@@ -25,9 +25,6 @@ func init() {
   "produces": [
     "application/json"
   ],
-  "schemes": [
-    "http"
-  ],
   "swagger": "2.0",
   "info": {
     "title": "Configuration Service API",
@@ -383,7 +380,10 @@ func init() {
         "summary": "Delete the specified resource",
         "responses": {
           "204": {
-            "description": "Success. Project resource has been deleted. Response does not have a body."
+            "description": "Success. Project resource has been deleted.",
+            "schema": {
+              "$ref": "#/definitions/Version"
+            }
           },
           "400": {
             "description": "Failed. Project resource could not be deleted.",
@@ -662,7 +662,10 @@ func init() {
         "summary": "Delete the specified default resource for the service",
         "responses": {
           "204": {
-            "description": "Success. Service default resource has been deleted. Response does not have a body."
+            "description": "Success. Service default resource has been deleted.",
+            "schema": {
+              "$ref": "#/definitions/Version"
+            }
           },
           "400": {
             "description": "Failed. Service default resource could not be deleted.",
@@ -1036,7 +1039,10 @@ func init() {
         "summary": "Delete the specified resource",
         "responses": {
           "204": {
-            "description": "Success. Stage resource has been deleted. Response does not have a body."
+            "description": "Success. Stage resource has been deleted.",
+            "schema": {
+              "$ref": "#/definitions/Version"
+            }
           },
           "400": {
             "description": "Failed. Stage resource could not be deleted.",
@@ -1709,7 +1715,10 @@ func init() {
         "summary": "Delete the specified resource",
         "responses": {
           "204": {
-            "description": "Success. Service resource has been deleted. Response does not have a body."
+            "description": "Success. Service resource has been deleted.",
+            "schema": {
+              "$ref": "#/definitions/Version"
+            }
           },
           "400": {
             "description": "Failed. Service resource could not be deleted.",
@@ -2138,6 +2147,9 @@ func init() {
         "resourceURI"
       ],
       "properties": {
+        "metadata": {
+          "$ref": "#/definitions/Version"
+        },
         "resourceContent": {
           "description": "Resource content",
           "type": "string"
@@ -2267,8 +2279,16 @@ func init() {
     "Version": {
       "type": "object",
       "properties": {
+        "branch": {
+          "description": "branch in git repo containing the resource",
+          "type": "string"
+        },
+        "upstreamURL": {
+          "description": "Upstream repository containing the resource",
+          "type": "string"
+        },
         "version": {
-          "description": "Version identifier",
+          "description": "version/git commit id of the resource",
           "type": "string"
         }
       }
@@ -2395,9 +2415,6 @@ func init() {
   ],
   "produces": [
     "application/json"
-  ],
-  "schemes": [
-    "http"
   ],
   "swagger": "2.0",
   "info": {
@@ -2827,7 +2844,10 @@ func init() {
         "summary": "Delete the specified resource",
         "responses": {
           "204": {
-            "description": "Success. Project resource has been deleted. Response does not have a body."
+            "description": "Success. Project resource has been deleted.",
+            "schema": {
+              "$ref": "#/definitions/Version"
+            }
           },
           "400": {
             "description": "Failed. Project resource could not be deleted.",
@@ -3188,7 +3208,10 @@ func init() {
         "summary": "Delete the specified default resource for the service",
         "responses": {
           "204": {
-            "description": "Success. Service default resource has been deleted. Response does not have a body."
+            "description": "Success. Service default resource has been deleted.",
+            "schema": {
+              "$ref": "#/definitions/Version"
+            }
           },
           "400": {
             "description": "Failed. Service default resource could not be deleted.",
@@ -3667,7 +3690,10 @@ func init() {
         "summary": "Delete the specified resource",
         "responses": {
           "204": {
-            "description": "Success. Stage resource has been deleted. Response does not have a body."
+            "description": "Success. Stage resource has been deleted.",
+            "schema": {
+              "$ref": "#/definitions/Version"
+            }
           },
           "400": {
             "description": "Failed. Stage resource could not be deleted.",
@@ -4549,7 +4575,10 @@ func init() {
         "summary": "Delete the specified resource",
         "responses": {
           "204": {
-            "description": "Success. Service resource has been deleted. Response does not have a body."
+            "description": "Success. Service resource has been deleted.",
+            "schema": {
+              "$ref": "#/definitions/Version"
+            }
           },
           "400": {
             "description": "Failed. Service resource could not be deleted.",
@@ -4994,6 +5023,9 @@ func init() {
         "resourceURI"
       ],
       "properties": {
+        "metadata": {
+          "$ref": "#/definitions/Version"
+        },
         "resourceContent": {
           "description": "Resource content",
           "type": "string"
@@ -5123,8 +5155,16 @@ func init() {
     "Version": {
       "type": "object",
       "properties": {
+        "branch": {
+          "description": "branch in git repo containing the resource",
+          "type": "string"
+        },
+        "upstreamURL": {
+          "description": "Upstream repository containing the resource",
+          "type": "string"
+        },
         "version": {
-          "description": "Version identifier",
+          "description": "version/git commit id of the resource",
           "type": "string"
         }
       }

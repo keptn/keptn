@@ -2,6 +2,8 @@ package common
 
 import (
 	"errors"
+	"github.com/keptn/keptn/configuration-service/models"
+	"strings"
 	"testing"
 )
 
@@ -51,6 +53,45 @@ func Test_obfuscateErrorMessage(t *testing.T) {
 			}
 			if err.Error() != tt.wantErrorMessage {
 				t.Errorf("obfuscateErrorMessage() error = %s, wantErrorMessage %s", err.Error(), tt.wantErrorMessage)
+			}
+		})
+	}
+}
+
+func Test_addRepoURIToMetadata(t *testing.T) {
+	type args struct {
+		credentials *GitCredentials
+		err         error
+		resource    *models.Resource
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{
+			name: "Token must not be included",
+			args: args{
+				credentials: &GitCredentials{
+					User:      "user",
+					Token:     "secret-token",
+					RemoteURI: "https://user:secret-token@my-url.test",
+				},
+				err: nil,
+				resource: &models.Resource{
+					Metadata: &models.Version{
+						Branch: "master",
+					},
+					ResourceContent: "123",
+					ResourceURI:     stringp("test.txt"),
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			addRepoURIToMetadata(tt.args.credentials, tt.args.resource.Metadata)
+			if strings.Contains(tt.args.resource.Metadata.UpstreamURL, tt.args.credentials.Token) {
+				t.Errorf("Resource URI contains secret token")
 			}
 		})
 	}

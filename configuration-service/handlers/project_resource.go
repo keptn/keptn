@@ -83,15 +83,10 @@ func PutProjectProjectNameResourceHandlerFunc(params project_resource.PutProject
 	}
 	logger.Debug("Successfully updated resources")
 
-	newVersion, err := common.GetCurrentVersion(params.ProjectName)
-	if err != nil {
-		logger.Error(err.Error())
-		return project_resource.NewPutProjectProjectNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Coult not retrieve latest version")})
-	}
+	metadata := common.GetResourceMetadata(params.ProjectName)
+	metadata.Branch = "master"
 
-	return project_resource.NewPutProjectProjectNameResourceCreated().WithPayload(&models.Version{
-		Version: newVersion,
-	})
+	return project_resource.NewPutProjectProjectNameResourceCreated().WithPayload(metadata)
 }
 
 // PostProjectProjectNameResourceHandlerFunc creates a list of new resources
@@ -131,15 +126,10 @@ func PostProjectProjectNameResourceHandlerFunc(params project_resource.PostProje
 	}
 	logger.Debug("Successfully added resources")
 
-	newVersion, err := common.GetCurrentVersion(params.ProjectName)
-	if err != nil {
-		logger.Error(err.Error())
-		return project_resource.NewPostProjectProjectNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not retrieve latest version")})
-	}
+	metadata := common.GetResourceMetadata(params.ProjectName)
+	metadata.Branch = "master"
 
-	return project_resource.NewPostProjectProjectNameResourceCreated().WithPayload(&models.Version{
-		Version: newVersion,
-	})
+	return project_resource.NewPostProjectProjectNameResourceCreated().WithPayload(metadata)
 }
 
 // GetProjectProjectNameResourceResourceURIHandlerFunc gets the specified resource
@@ -174,11 +164,16 @@ func GetProjectProjectNameResourceResourceURIHandlerFunc(params project_resource
 
 	resourceContent := base64.StdEncoding.EncodeToString(dat)
 
-	return project_resource.NewGetProjectProjectNameResourceResourceURIOK().WithPayload(
-		&models.Resource{
-			ResourceURI:     &params.ResourceURI,
-			ResourceContent: resourceContent,
-		})
+	resource := &models.Resource{
+		ResourceURI:     &params.ResourceURI,
+		ResourceContent: resourceContent,
+	}
+
+	metadata := common.GetResourceMetadata(params.ProjectName)
+	metadata.Branch = "master"
+	resource.Metadata = metadata
+
+	return project_resource.NewGetProjectProjectNameResourceResourceURIOK().WithPayload(resource)
 }
 
 // PutProjectProjectNameResourceResourceURIHandlerFunc updates a resource
@@ -214,15 +209,10 @@ func PutProjectProjectNameResourceResourceURIHandlerFunc(params project_resource
 	}
 	logger.Debug("Successfully updated resource: " + params.ResourceURI)
 
-	newVersion, err := common.GetCurrentVersion(params.ProjectName)
-	if err != nil {
-		logger.Error(err.Error())
-		return project_resource.NewPutProjectProjectNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not retrieve latest version")})
-	}
+	metadata := common.GetResourceMetadata(params.ProjectName)
+	metadata.Branch = "master"
 
-	return project_resource.NewPutProjectProjectNameResourceResourceURICreated().WithPayload(&models.Version{
-		Version: newVersion,
-	})
+	return project_resource.NewPutProjectProjectNameResourceResourceURICreated().WithPayload(metadata)
 
 }
 
@@ -261,5 +251,7 @@ func DeleteProjectProjectNameResourceResourceURIHandlerFunc(params project_resou
 	}
 	logger.Debug("Successfully deleted resources")
 
-	return project_resource.NewDeleteProjectProjectNameResourceResourceURINoContent()
+	metadata := common.GetResourceMetadata(params.ProjectName)
+
+	return project_resource.NewDeleteProjectProjectNameResourceResourceURINoContent().WithPayload(metadata)
 }
