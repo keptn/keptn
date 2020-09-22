@@ -29,6 +29,7 @@ apiService:
 bridge:
   image:
     repository: docker.io/keptn/bridge2
+  cliDownloadLink: null
   secret:
     enabled: true
   versionCheck:
