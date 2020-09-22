@@ -59,6 +59,7 @@ import { KtbSliBreakdownComponent } from './_components/ktb-sli-breakdown/ktb-sl
 import { KtbHideHttpLoadingDirective } from './_directives/ktb-hide-http-loading/ktb-hide-http-loading.directive';
 import { KtbShowHttpLoadingDirective } from './_directives/ktb-show-http-loading/ktb-show-http-loading.directive';
 import { KtbApprovalItemComponent } from "./_components/ktb-approval-item/ktb-approval-item.component";
+import {KtbCopyToClipboardComponent} from "./_components/ktb-copy-to-clipboard/ktb-copy-to-clipboard.component";
 
 import { HttpErrorInterceptor } from './_interceptors/http-error-interceptor';
 import { HttpLoadingInterceptor } from './_interceptors/http-loading-interceptor';
@@ -101,6 +102,7 @@ registerLocaleData(localeEn, 'en');
     KtbSliBreakdownComponent,
     KtbNotificationBarComponent,
     KtbApprovalItemComponent,
+    KtbCopyToClipboardComponent,
   ],
   imports: [
     BrowserModule,

@@ -1,0 +1,14 @@
+<div class="mt-1" fxLayout="row" fxLayoutAlign="flex-start center">
+  <div>
+    <input class="copy-to-clipboard-label" dtInput [value]="label" [disabled]="true" />
+  </div>
+  <div>
+    <dt-copy-to-clipboard>
+      <input class="copy-to-clipboard-input" dtInput [value]="value" />
+      <dt-copy-to-clipboard-label><dt-icon [name]="'duplicate'"></dt-icon></dt-copy-to-clipboard-label>
+    </dt-copy-to-clipboard>
+  </div>
+  <div>
+    <button class="ml-2" dt-icon-button variant="secondary" (click)="visible=!visible"><dt-icon *ngIf="visible" [name]="'overview'"></dt-icon><dt-icon *ngIf="!visible" [name]="'dont-watch'"></dt-icon></button>
+  </div>
+</div>
