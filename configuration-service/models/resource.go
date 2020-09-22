@@ -17,8 +17,8 @@ import (
 // swagger:model Resource
 type Resource struct {
 
-	// branch in git repo containing the resource
-	Branch string `json:"branch,omitempty"`
+	// metadata
+	Metadata *Version `json:"metadata,omitempty"`
 
 	// Resource content
 	ResourceContent string `json:"resourceContent,omitempty"`
@@ -26,17 +26,15 @@ type Resource struct {
 	// Resource URI
 	// Required: true
 	ResourceURI *string `json:"resourceURI"`
-
-	// Upstream repository containing the resource
-	UpstreamURL string `json:"upstreamURL,omitempty"`
-
-	// version/git commit id of the resource
-	Version string `json:"version,omitempty"`
 }
 
 // Validate validates this resource
 func (m *Resource) Validate(formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.validateMetadata(formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.validateResourceURI(formats); err != nil {
 		res = append(res, err)
@@ -45,6 +43,24 @@ func (m *Resource) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *Resource) validateMetadata(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Metadata) { // not required
+		return nil
+	}
+
+	if m.Metadata != nil {
+		if err := m.Metadata.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metadata")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 

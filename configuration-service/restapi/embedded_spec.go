@@ -2135,9 +2135,8 @@ func init() {
         "resourceURI"
       ],
       "properties": {
-        "branch": {
-          "description": "branch in git repo containing the resource",
-          "type": "string"
+        "metadata": {
+          "$ref": "#/definitions/Version"
         },
         "resourceContent": {
           "description": "Resource content",
@@ -2145,14 +2144,6 @@ func init() {
         },
         "resourceURI": {
           "description": "Resource URI",
-          "type": "string"
-        },
-        "upstreamURL": {
-          "description": "Upstream repository containing the resource",
-          "type": "string"
-        },
-        "version": {
-          "description": "version/git commit id of the resource",
           "type": "string"
         }
       }
@@ -2276,8 +2267,16 @@ func init() {
     "Version": {
       "type": "object",
       "properties": {
+        "branch": {
+          "description": "branch in git repo containing the resource",
+          "type": "string"
+        },
+        "upstreamURL": {
+          "description": "Upstream repository containing the resource",
+          "type": "string"
+        },
         "version": {
-          "description": "Version identifier",
+          "description": "version/git commit id of the resource",
           "type": "string"
         }
       }
@@ -5000,9 +4999,8 @@ func init() {
         "resourceURI"
       ],
       "properties": {
-        "branch": {
-          "description": "branch in git repo containing the resource",
-          "type": "string"
+        "metadata": {
+          "$ref": "#/definitions/Version"
         },
         "resourceContent": {
           "description": "Resource content",
@@ -5010,14 +5008,6 @@ func init() {
         },
         "resourceURI": {
           "description": "Resource URI",
-          "type": "string"
-        },
-        "upstreamURL": {
-          "description": "Upstream repository containing the resource",
-          "type": "string"
-        },
-        "version": {
-          "description": "version/git commit id of the resource",
           "type": "string"
         }
       }
@@ -5141,8 +5131,16 @@ func init() {
     "Version": {
       "type": "object",
       "properties": {
+        "branch": {
+          "description": "branch in git repo containing the resource",
+          "type": "string"
+        },
+        "upstreamURL": {
+          "description": "Upstream repository containing the resource",
+          "type": "string"
+        },
         "version": {
-          "description": "Version identifier",
+          "description": "version/git commit id of the resource",
           "type": "string"
         }
       }
