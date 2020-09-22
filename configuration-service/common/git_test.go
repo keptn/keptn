@@ -58,7 +58,7 @@ func Test_obfuscateErrorMessage(t *testing.T) {
 	}
 }
 
-func Test_addRepoURIToResource(t *testing.T) {
+func Test_addRepoURIToMetadata(t *testing.T) {
 	type args struct {
 		credentials *GitCredentials
 		err         error
@@ -78,7 +78,9 @@ func Test_addRepoURIToResource(t *testing.T) {
 				},
 				err: nil,
 				resource: &models.Resource{
-					Branch:          "master",
+					Metadata: &models.Version{
+						Branch: "master",
+					},
 					ResourceContent: "123",
 					ResourceURI:     stringp("test.txt"),
 				},
@@ -87,8 +89,8 @@ func Test_addRepoURIToResource(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			addRepoURIToResource(tt.args.credentials, tt.args.resource)
-			if strings.Contains(tt.args.resource.UpstreamURL, tt.args.credentials.Token) {
+			addRepoURIToMetadata(tt.args.credentials, tt.args.resource.Metadata)
+			if strings.Contains(tt.args.resource.Metadata.UpstreamURL, tt.args.credentials.Token) {
 				t.Errorf("Resource URI contains secret token")
 			}
 		})

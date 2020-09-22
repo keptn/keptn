@@ -344,27 +344,29 @@ func GetBranches(project string) ([]string, error) {
 	return branches, nil
 }
 
-// AddResourceMetadata godoc
-func AddResourceMetadata(project string, err error, resource *models.Resource) {
+// GetResourceMetadata godoc
+func GetResourceMetadata(project string) *models.Version {
+	result := &models.Version{}
+
 	credentials, err := GetCredentials(project)
 
 	if err == nil && credentials != nil {
-		addRepoURIToResource(credentials, resource)
+		addRepoURIToMetadata(credentials, result)
 	}
-
-	addVersionToResource(project, err, resource)
+	addVersionToMetadata(project, result)
+	return result
 }
 
-func addRepoURIToResource(credentials *GitCredentials, resource *models.Resource) {
+func addRepoURIToMetadata(credentials *GitCredentials, metadata *models.Version) {
 	// the git token should not be included in the repo URI in the first place, but let's make sure it's hidden in any case
 	remoteURI := credentials.RemoteURI
 	remoteURI = strings.Replace(remoteURI, credentials.Token, "********", -1)
-	resource.UpstreamURL = remoteURI
+	metadata.UpstreamURL = remoteURI
 }
 
-func addVersionToResource(project string, err error, resource *models.Resource) {
+func addVersionToMetadata(project string, metadata *models.Version) {
 	version, err := GetCurrentVersion(project)
 	if err == nil {
-		resource.Version = version
+		metadata.Version = version
 	}
 }

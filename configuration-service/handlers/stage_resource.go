@@ -73,10 +73,11 @@ func GetProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(params st
 	resource := &models.Resource{
 		ResourceURI:     &params.ResourceURI,
 		ResourceContent: resourceContent,
-		Branch:          params.StageName,
 	}
 
-	common.AddResourceMetadata(params.ProjectName, err, resource)
+	metadata := common.GetResourceMetadata(params.ProjectName)
+	metadata.Branch = params.StageName
+	resource.Metadata = metadata
 
 	return stage_resource.NewGetProjectProjectNameStageStageNameResourceResourceURIOK().WithPayload(resource)
 }
@@ -117,14 +118,10 @@ func PostProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resour
 	}
 	logger.Debug("Successfully added resources")
 
-	newVersion, err := common.GetCurrentVersion(params.ProjectName)
-	if err != nil {
-		logger.Error(err.Error())
-		return stage_resource.NewPostProjectProjectNameStageStageNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not retrieve latest vesion")})
-	}
-	return stage_resource.NewPostProjectProjectNameStageStageNameResourceCreated().WithPayload(&models.Version{
-		Version: newVersion,
-	})
+	metadata := common.GetResourceMetadata(params.ProjectName)
+	metadata.Branch = params.StageName
+
+	return stage_resource.NewPostProjectProjectNameStageStageNameResourceCreated().WithPayload(metadata)
 }
 
 // PutProjectProjectNameStageStageNameResourceHandlerFunc updates list of stage resources
@@ -163,15 +160,10 @@ func PutProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resourc
 	}
 	logger.Debug("Successfully updated resources")
 
-	newVersion, err := common.GetCurrentVersion(params.ProjectName)
-	if err != nil {
-		logger.Error(err.Error())
-		return stage_resource.NewPutProjectProjectNameStageStageNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not retrieve latest version")})
-	}
+	metadata := common.GetResourceMetadata(params.ProjectName)
+	metadata.Branch = params.StageName
 
-	return stage_resource.NewPutProjectProjectNameStageStageNameResourceCreated().WithPayload(&models.Version{
-		Version: newVersion,
-	})
+	return stage_resource.NewPutProjectProjectNameStageStageNameResourceCreated().WithPayload(metadata)
 }
 
 // PutProjectProjectNameStageStageNameResourceResourceURIHandlerFunc updates the specified stage resource
@@ -207,14 +199,9 @@ func PutProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(params st
 	}
 	logger.Debug("Successfully updated resource: " + params.ResourceURI)
 
-	newVersion, err := common.GetCurrentVersion(params.ProjectName)
-	if err != nil {
-		logger.Error(err.Error())
-		return stage_resource.NewPutProjectProjectNameStageStageNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not retrieve latest version")})
-	}
-	return stage_resource.NewPutProjectProjectNameStageStageNameResourceResourceURICreated().WithPayload(&models.Version{
-		Version: newVersion,
-	})
+	metadata := common.GetResourceMetadata(params.ProjectName)
+	metadata.Branch = params.StageName
+	return stage_resource.NewPutProjectProjectNameStageStageNameResourceResourceURICreated().WithPayload(metadata)
 }
 
 // DeleteProjectProjectNameStageStageNameResourceResourceURIHandlerFunc deletes the specified stage resource
