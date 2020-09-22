@@ -36,6 +36,7 @@ func testResource(t *testing.T, fileName string, fileContent string) func() {
 func TestAddResourceToProjectStageService(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
+	checkEndPointStatusMock = true
 
 	resourceFileName := "testResource.txt"
 	defer testResource(t, resourceFileName, "")()
@@ -52,6 +53,7 @@ func TestAddResourceToProjectStageService(t *testing.T) {
 func TestAddResourceToProjectStage(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
+	checkEndPointStatusMock = true
 
 	resourceFileName := "testResource.txt"
 	defer testResource(t, resourceFileName, "")()
@@ -68,6 +70,7 @@ func TestAddResourceToProjectStage(t *testing.T) {
 func TestAddResourceToProject(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
+	checkEndPointStatusMock = true
 
 	resourceFileName := "testResource.txt"
 	defer testResource(t, resourceFileName, "")()
@@ -84,6 +87,7 @@ func TestAddResourceToProject(t *testing.T) {
 func TestAddResourceToProjectService(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
+	checkEndPointStatusMock = true
 
 	*addResourceCmdParams.Stage = ""
 
@@ -102,19 +106,20 @@ func TestAddResourceToProjectService(t *testing.T) {
 func TestAddResourceWhenArgsArePresent(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
+	checkEndPointStatusMock = true
 
 	resourceFileName := "testResource.txt"
 	defer testResource(t, resourceFileName, "")()
 
 	cmd := fmt.Sprintf("add-resource --project=%s --stage=%s --service=%s --resource=%s "+
 		"-- resourceUri=%s --mock", "sockshop", "dev", "carts", resourceFileName, "resource/"+resourceFileName)
-	_, err := executeActionCommandC(cmd)	
+	_, err := executeActionCommandC(cmd)
 	if err == nil {
-		t.Errorf("Expected an error")	
+		t.Errorf("Expected an error")
 	}
 	got := err.Error()
 	expected := "accepts 0 arg(s), received 2"
 	if got != expected {
-		t.Errorf("Expected %q, got %q", expected, got)	
+		t.Errorf("Expected %q, got %q", expected, got)
 	}
 }

@@ -16,6 +16,7 @@ func init() {
 // TestCreateProjectCmd tests the default use of the update project command
 func TestUpdateProjectCmd(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
+	checkEndPointStatusMock = true
 
 	cmd := fmt.Sprintf("update project sockshop -t token -u user -r https:// --mock")
 	_, err := executeActionCommandC(cmd)
@@ -28,6 +29,7 @@ func TestUpdateProjectCmd(t *testing.T) {
 // due to a project name with upper case character
 func TestUpdateProjectIncorrectProjectNameCmd(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
+	checkEndPointStatusMock = true
 
 	cmd := fmt.Sprintf("update project Sockshop -t token -u user -r https://github.com/user/upstream.git --mock")
 	_, err := executeActionCommandC(cmd)

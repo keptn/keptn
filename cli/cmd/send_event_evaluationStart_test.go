@@ -19,6 +19,7 @@ func init() {
 func TestEvaluationStart(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
+	checkEndPointStatusMock = true
 
 	*evaluationStart.Timeframe = ""
 	*evaluationStart.Start = ""
@@ -35,6 +36,7 @@ func TestEvaluationStart(t *testing.T) {
 func TestEvaluationStartWrongFormat(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
+	checkEndPointStatusMock = true
 
 	*evaluationStart.Timeframe = ""
 	*evaluationStart.Start = ""
@@ -52,6 +54,7 @@ func TestEvaluationStartWrongFormat(t *testing.T) {
 func TestEvaluationStartTimeSpecified(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
+	checkEndPointStatusMock = true
 
 	*evaluationStart.Timeframe = ""
 	*evaluationStart.Start = ""
@@ -69,6 +72,7 @@ func TestEvaluationStartTimeSpecified(t *testing.T) {
 func TestEvaluationStartAndEndTimeSpecified(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
+	checkEndPointStatusMock = true
 
 	*evaluationStart.Timeframe = ""
 	*evaluationStart.Start = ""
@@ -86,6 +90,7 @@ func TestEvaluationStartAndEndTimeSpecified(t *testing.T) {
 func TestEvaluationStartAndEndTimeAndTimeframeSpecified(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
+	checkEndPointStatusMock = true
 
 	*evaluationStart.Timeframe = ""
 	*evaluationStart.Start = ""
@@ -106,6 +111,7 @@ func TestEvaluationStartAndEndTimeAndTimeframeSpecified(t *testing.T) {
 func TestEvaluationStartAndEndTimeWrongOrder(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
+	checkEndPointStatusMock = true
 
 	*evaluationStart.Timeframe = ""
 	*evaluationStart.Start = ""
