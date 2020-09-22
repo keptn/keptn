@@ -82,10 +82,7 @@ keptn add-resource --project=rockshop --stage=production --service=shop --resour
 		resourceHandler := apiutils.NewAuthenticatedResourceHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 
 		if endPointErr := checkEndPointStatus(endPoint.String()); endPointErr != nil {
-			return fmt.Errorf("Resource %s could not be uploaded: %s"+`
-Possible reasons:
-* The Keptn API server is currently not available. Check if your Kubernetes cluster is available.
-* Your Keptn CLI points to the wrong API server (verify using 'keptn status')`,
+			return fmt.Errorf("Resource %s could not be uploaded: %s"+endPointErrorReasons,
 				*addResourceCmdParams.Resource, endPointErr)
 		}
 

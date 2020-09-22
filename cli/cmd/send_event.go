@@ -68,10 +68,7 @@ In addition, the payload of the CloudEvent needs to follow the Keptn spec (https
 		}
 
 		if endPointErr := checkEndPointStatus(endPoint.String()); endPointErr != nil {
-			return fmt.Errorf("Error connecting to server: %s"+`
-Possible reasons:
-* The Keptn API server is currently not available. Check if your Kubernetes cluster is available.
-* Your Keptn CLI points to the wrong API server (verify using 'keptn status')`,
+			return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
 				endPointErr)
 		}
 
