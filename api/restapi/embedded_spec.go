@@ -25,9 +25,6 @@ func init() {
   "produces": [
     "application/json"
   ],
-  "schemes": [
-    "http"
-  ],
   "swagger": "2.0",
   "info": {
     "title": "keptn api",
@@ -338,6 +335,46 @@ func init() {
           "$ref": "#/parameters/serviceName"
         }
       ]
+    },
+    "/project/{projectName}/stage/{stageName}/service/{serviceName}/evaluation": {
+      "post": {
+        "tags": [
+          "evaluation"
+        ],
+        "summary": "Trigger a new evaluation",
+        "operationId": "triggerEvaluation",
+        "parameters": [
+          {
+            "$ref": "#/parameters/projectName"
+          },
+          {
+            "$ref": "#/parameters/stageName"
+          },
+          {
+            "$ref": "#/parameters/serviceName"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Evaluation has been triggered",
+            "schema": {
+              "$ref": "response_model.yaml#/definitions/eventContext"
+            }
+          },
+          "400": {
+            "description": "Evaluation could not be triggered",
+            "schema": {
+              "$ref": "response_model.yaml#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "response_model.yaml#/definitions/error"
+            }
+          }
+        }
+      }
     }
   },
   "parameters": {
@@ -407,9 +444,6 @@ func init() {
   ],
   "produces": [
     "application/json"
-  ],
-  "schemes": [
-    "http"
   ],
   "swagger": "2.0",
   "info": {
@@ -752,6 +786,58 @@ func init() {
           "required": true
         }
       ]
+    },
+    "/project/{projectName}/stage/{stageName}/service/{serviceName}/evaluation": {
+      "post": {
+        "tags": [
+          "evaluation"
+        ],
+        "summary": "Trigger a new evaluation",
+        "operationId": "triggerEvaluation",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Name of the project",
+            "name": "projectName",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Name of the stage",
+            "name": "stageName",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Name of the service",
+            "name": "serviceName",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Evaluation has been triggered",
+            "schema": {
+              "$ref": "#/definitions/eventContext"
+            }
+          },
+          "400": {
+            "description": "Evaluation could not be triggered",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {

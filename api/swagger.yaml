@@ -176,6 +176,30 @@ paths:
           schema:
             $ref: "response_model.yaml#/definitions/error"
 
+  /project/{projectName}/stage/{stageName}/service/{serviceName}/evaluation:
+    post:
+      tags:
+        - evaluation
+      summary: Trigger a new evaluation
+      operationId: triggerEvaluation
+      parameters:
+        - $ref: "#/parameters/projectName"
+        - $ref: "#/parameters/stageName"
+        - $ref: "#/parameters/serviceName"
+      responses:
+        200:
+          description: Evaluation has been triggered
+          schema:
+            $ref: "response_model.yaml#/definitions/eventContext"
+        400:
+          description: Evaluation could not be triggered
+          schema:
+            $ref: "response_model.yaml#/definitions/error"
+        default:
+          description: Error
+          schema:
+            $ref: "response_model.yaml#/definitions/error"
+
   /config/bridge:
     post:
       tags:
