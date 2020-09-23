@@ -16,8 +16,8 @@ Heatmap(Highcharts);
 Treemap(Highcharts);
 
 import * as moment from 'moment';
-import {ChangeDetectorRef, Component, Input, OnDestroy, OnInit} from '@angular/core';
-import {DtChartSeriesVisibilityChangeEvent} from "@dynatrace/barista-components/chart";
+import {ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {DtChart, DtChartSeriesVisibilityChangeEvent} from "@dynatrace/barista-components/chart";
 
 import {DataService} from "../../_services/data.service";
 import DateUtil from "../../_utils/date.utils";
@@ -35,6 +35,11 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
 
   private readonly unsubscribe$ = new Subject<void>();
   @Input() public showChart = true;
+
+  private heatmapChart: DtChart;
+  @ViewChild('heatmapChart') set heatmap(heatmap: DtChart) {
+    this.heatmapChart = heatmap;
+  }
 
   public _evaluationColor = {
     'pass': '#7dc540',
@@ -124,6 +129,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
 
     xAxis: [{
       categories: [],
+      plotBands: [],
       labels: {
         enabled: false
       },
@@ -173,7 +179,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     if(this._evaluationData)
       this.dataService.loadEvaluationResults(this._evaluationData);
     if(!this._selectedEvaluationData && this._evaluationData.data.evaluationHistory)
-      this._selectedEvaluationData = this._evaluationData.data.evaluationHistory.find(h => h.shkeptncontext === this._evaluationData.shkeptncontext);
+      this.selectEvaluationData(this._evaluationData.data.evaluationHistory.find(h => h.shkeptncontext === this._evaluationData.shkeptncontext));
     this.dataService.evaluationResults
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((event) => {
@@ -187,9 +193,8 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   updateChartData(evaluationHistory) {
     let chartSeries = [];
 
-    if(!this._selectedEvaluationData && evaluationHistory) {
-      this._selectedEvaluationData = evaluationHistory.find(h => h.shkeptncontext === this._evaluationData.shkeptncontext);
-    }
+    if(!this._selectedEvaluationData && evaluationHistory)
+      this.selectEvaluationData(evaluationHistory.find(h => h.shkeptncontext === this._evaluationData.shkeptncontext));
 
     if(this.showChart) {
       evaluationHistory.forEach((evaluation) => {
@@ -292,6 +297,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
       ];
     }
 
+    this.highlightHeatmap();
     this._changeDetectorRef.markForCheck();
   }
 
@@ -304,7 +310,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
         if(this._heatmapOptions.xAxis[0].categories.indexOf(time) == -1)
           this._heatmapOptions.xAxis[0].categories.splice(SearchUtil.binarySearch(this._heatmapOptions.xAxis[0].categories, time, (a, b) => moment(a).unix() - moment(b).unix()), 0, time);
       })
-    )
+    );
 
     this._heatmapOptions.chart.height = this._heatmapOptions.yAxis[0].categories.length*28 + 100;
   }
@@ -314,11 +320,33 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   }
 
   _chartSeriesClicked(event) {
-    this._selectedEvaluationData = event.point.evaluationData;
+    this.selectEvaluationData(event.point.evaluationData);
   }
 
   _heatmapTileClicked(event) {
-    this._selectedEvaluationData = this._heatmapSeries[0].data[event.point.x]['evaluation'];
+    this.selectEvaluationData(this._heatmapSeries[0].data[event.point.x]['evaluation']);
+  }
+
+  selectEvaluationData(evaluation) {
+    this._selectedEvaluationData = evaluation;
+    this.highlightHeatmap();
+  }
+
+  highlightHeatmap() {
+    let highlightIndex = this._heatmapOptions.xAxis[0].categories.indexOf(moment(this._selectedEvaluationData.time).format());
+    let plotBands = [];
+    if(highlightIndex >= 0)
+      plotBands.push({
+        borderWidth: 2,
+        borderColor: '#e6be00',
+        color: 'rgba(230,190,0,.4)',
+        from: highlightIndex-0.5,
+        to: highlightIndex+0.5,
+        zIndex: 20
+      });
+    this._heatmapOptions.xAxis[0].plotBands = plotBands;
+    this.heatmapChart._update();
+    this._changeDetectorRef.markForCheck();
   }
 
   getCalendarFormat() {
