@@ -8,7 +8,7 @@ import (
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 	keptnapi "github.com/keptn/go-utils/pkg/api/models"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
-	keptnutils "github.com/keptn/go-utils/pkg/lib"
+	keptnutils "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/nats-io/nats-server/v2/server"
 	natsserver "github.com/nats-io/nats-server/v2/test"
 	"io/ioutil"
@@ -232,7 +232,7 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			keptnHandler, _ := keptnutils.NewKeptn(&tt.fields.Event, keptnutils.KeptnOpts{
+			keptnHandler, _ := keptnevents.NewKeptn(&tt.fields.Event, keptnutils.KeptnOpts{
 				EventBrokerURL:          os.Getenv("EVENTBROKER"),
 				ConfigurationServiceURL: os.Getenv("CONFIGURATION_SERVICE"),
 			})

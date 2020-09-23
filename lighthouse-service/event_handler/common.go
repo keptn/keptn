@@ -8,7 +8,8 @@ import (
 
 	"github.com/ghodss/yaml"
 	utils "github.com/keptn/go-utils/pkg/api/utils"
-	keptn "github.com/keptn/go-utils/pkg/lib"
+	keptnv1 "github.com/keptn/go-utils/pkg/lib"
+	keptn "github.com/keptn/go-utils/pkg/lib/keptn"
 )
 
 const eventbroker = "EVENTBROKER"
@@ -34,7 +35,7 @@ var ErrStageNotFound = errors.New("stage not found")
 // ErrServiceNotFound godoc
 var ErrServiceNotFound = errors.New("service not found")
 
-func getSLOs(project string, stage string, service string) (*keptn.ServiceLevelObjectives, error) {
+func getSLOs(project string, stage string, service string) (*keptnv1.ServiceLevelObjectives, error) {
 	configServiceURL, err := keptn.GetServiceEndpoint("CONFIGURATION_SERVICE")
 	resourceHandler := utils.NewResourceHandler(configServiceURL.String())
 	sloFile, err := resourceHandler.GetServiceResource(project, stage, service, "slo.yaml")
@@ -68,8 +69,8 @@ func getSLOs(project string, stage string, service string) (*keptn.ServiceLevelO
 	return slo, nil
 }
 
-func parseSLO(input []byte) (*keptn.ServiceLevelObjectives, error) {
-	slo := &keptn.ServiceLevelObjectives{}
+func parseSLO(input []byte) (*keptnv1.ServiceLevelObjectives, error) {
+	slo := &keptnv1.ServiceLevelObjectives{}
 	err := yaml.Unmarshal([]byte(input), &slo)
 
 	if err != nil {
@@ -77,7 +78,7 @@ func parseSLO(input []byte) (*keptn.ServiceLevelObjectives, error) {
 	}
 
 	if slo.Comparison == nil {
-		slo.Comparison = &keptn.SLOComparison{
+		slo.Comparison = &keptnv1.SLOComparison{
 			CompareWith:               "single_result",
 			IncludeResultWithScore:    "all",
 			NumberOfComparisonResults: 1,
