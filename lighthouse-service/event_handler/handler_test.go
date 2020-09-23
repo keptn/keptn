@@ -4,7 +4,8 @@ import (
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 	"github.com/go-test/deep"
-	"github.com/keptn/go-utils/pkg/lib"
+	keptnv1 "github.com/keptn/go-utils/pkg/lib"
+	"github.com/keptn/go-utils/pkg/lib/keptn"
 	"net/http"
 	"net/url"
 	"testing"
@@ -14,7 +15,7 @@ func TestNewEventHandler(t *testing.T) {
 	incomingEvent := cloudevents.Event{
 		Context: &cloudevents.EventContextV02{
 			SpecVersion: "0.2",
-			Type:        keptn.TestsFinishedEventType,
+			Type:        keptnv1.TestsFinishedEventType,
 			Source:      types.URLRef{URL: url.URL{Host: "test"}},
 			ID:          "1",
 			Time:        nil,
@@ -31,7 +32,7 @@ func TestNewEventHandler(t *testing.T) {
 	}
 
 	serviceName := "lighthouse-service"
-	keptnHandler, _ := keptn.NewKeptn(&incomingEvent, keptn.KeptnOpts{
+	keptnHandler, _ := keptnv1.NewKeptn(&incomingEvent, keptn.KeptnOpts{
 		LoggingOptions: &keptn.LoggingOpts{ServiceName: &serviceName},
 	})
 
@@ -52,7 +53,7 @@ func TestNewEventHandler(t *testing.T) {
 				event:  incomingEvent,
 				logger: nil,
 			},
-			eventType: keptn.TestsFinishedEventType,
+			eventType: keptnv1.TestsFinishedEventType,
 			want: &StartEvaluationHandler{
 				Event:             incomingEvent,
 				KeptnHandler:      keptnHandler,
@@ -66,7 +67,7 @@ func TestNewEventHandler(t *testing.T) {
 				event:  incomingEvent,
 				logger: nil,
 			},
-			eventType: keptn.StartEvaluationEventType,
+			eventType: keptnv1.StartEvaluationEventType,
 			want: &StartEvaluationHandler{
 				Event:             incomingEvent,
 				KeptnHandler:      keptnHandler,
@@ -80,7 +81,7 @@ func TestNewEventHandler(t *testing.T) {
 				event:  incomingEvent,
 				logger: nil,
 			},
-			eventType: keptn.InternalGetSLIDoneEventType,
+			eventType: keptnv1.InternalGetSLIDoneEventType,
 			want: &EvaluateSLIHandler{
 				Event:        incomingEvent,
 				KeptnHandler: keptnHandler,
@@ -94,7 +95,7 @@ func TestNewEventHandler(t *testing.T) {
 				event:  incomingEvent,
 				logger: nil,
 			},
-			eventType: keptn.ConfigureMonitoringEventType,
+			eventType: keptnv1.ConfigureMonitoringEventType,
 			want: &ConfigureMonitoringHandler{
 				Event:        incomingEvent,
 				KeptnHandler: keptnHandler,

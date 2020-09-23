@@ -28,6 +28,7 @@ type datastoreResult struct {
 	PageSize    int    `json:"pageSize"`
 	Events      []struct {
 		Data interface{} `json:"data"`
+		ID   string      `json:"id"`
 	}
 }
 
@@ -102,20 +103,14 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 		numberOfPreviousResults = sloConfig.Comparison.NumberOfComparisonResults
 	}
 
-	previousEvaluationEvents, err := eh.getPreviousEvaluations(e, numberOfPreviousResults, sloConfig.Comparison.IncludeResultWithScore)
+	filteredPreviousEvaluationEvents, comparedEventIDs, err := eh.getPreviousEvaluations(e, numberOfPreviousResults, sloConfig.Comparison.IncludeResultWithScore)
 	if err != nil {
 		return eh.sendFailedEvaluationDoneEventWithMessage(shkeptncontext, err.Error(), string(sloFileContent), e)
 	}
 
-	var filteredPreviousEvaluationEvents []*keptn.EvaluationDoneEventData
-
-	// verify that we have enough evaluations
-	for _, val := range previousEvaluationEvents {
-		filteredPreviousEvaluationEvents = append(filteredPreviousEvaluationEvents, val)
-	}
-
 	evaluationResult, maximumAchievableScore, keySLIFailed := evaluateObjectives(e, sloConfig, filteredPreviousEvaluationEvents)
 	evaluationResult.Labels = e.Labels
+	evaluationResult.EvaluationDetails.ComparedEvents = comparedEventIDs
 
 	// calculate the total score
 	err = calculateScore(maximumAchievableScore, evaluationResult, sloConfig, keySLIFailed)
@@ -348,21 +343,9 @@ func evaluateComparison(sliResult *keptn.SLIResult, co *criteriaObject, previous
 	}
 
 	for _, val := range previousResults {
-		if comparison.IncludeResultWithScore == "all" {
-			if val.Value.Success == true {
-				// always include
-				previousValues = append(previousValues, val.Value.Value)
-			}
-		} else if comparison.IncludeResultWithScore == "pass_or_warn" {
-			// only include warnings and passes
-			if (val.Status == "warning" || val.Status == "pass") && val.Value.Success == true {
-				previousValues = append(previousValues, val.Value.Value)
-			}
-		} else if comparison.IncludeResultWithScore == "pass" {
-			// only include passes
-			if val.Status == "pass" && val.Value.Success == true {
-				previousValues = append(previousValues, val.Value.Value)
-			}
+		if val.Value.Success == true {
+			// always include
+			previousValues = append(previousValues, val.Value.Value)
 		}
 	}
 
@@ -514,8 +497,9 @@ func parseCriteriaString(criteria string) (*criteriaObject, error) {
 }
 
 // gets previous evaluation-done events from mongodb-datastore
-func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptn.InternalGetSLIDoneEventData, numberOfPreviousResults int, includeResult string) ([]*keptn.EvaluationDoneEventData, error) {
+func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptn.InternalGetSLIDoneEventData, numberOfPreviousResults int, includeResult string) ([]*keptn.EvaluationDoneEventData, []string, error) {
 	var evaluationDoneEvents []*keptn.EvaluationDoneEventData
+	var eventIDs []string
 
 	nextPageKey := ""
 	for {
@@ -530,17 +514,17 @@ func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptn.InternalGetSLIDone
 		req.Header.Set("Content-Type", "application/json")
 		resp, err := eh.HTTPClient.Do(req)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		defer resp.Body.Close()
 		body, _ := ioutil.ReadAll(resp.Body)
 		if resp.StatusCode != 200 {
-			return nil, errors.New("could not retrieve previous evaluation-done events")
+			return nil, nil, errors.New("could not retrieve previous evaluation-done events")
 		}
 		previousEvents := &datastoreResult{}
 		err = json.Unmarshal(body, previousEvents)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
 		// iterate over previous events
@@ -559,19 +543,22 @@ func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptn.InternalGetSLIDone
 			case "pass":
 				if strings.ToLower(evaluationDoneEvent.Result) == "pass" {
 					evaluationDoneEvents = append(evaluationDoneEvents, &evaluationDoneEvent)
+					eventIDs = append(eventIDs, event.ID)
 				}
 				break
 			case "pass_or_warn":
 				if strings.ToLower(evaluationDoneEvent.Result) == "pass" || strings.ToLower(evaluationDoneEvent.Result) == "warning" {
 					evaluationDoneEvents = append(evaluationDoneEvents, &evaluationDoneEvent)
+					eventIDs = append(eventIDs, event.ID)
 				}
 				break
 			default:
 				evaluationDoneEvents = append(evaluationDoneEvents, &evaluationDoneEvent)
+				eventIDs = append(eventIDs, event.ID)
 				break
 			}
 			if len(evaluationDoneEvents) == numberOfPreviousResults {
-				return evaluationDoneEvents, nil
+				return evaluationDoneEvents, eventIDs, nil
 			}
 		}
 
@@ -580,7 +567,7 @@ func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptn.InternalGetSLIDone
 		}
 		nextPageKey = previousEvents.NextPageKey
 	}
-	return evaluationDoneEvents, nil
+	return evaluationDoneEvents, eventIDs, nil
 }
 
 func (eh *EvaluateSLIHandler) getPreviousTestExecutionResult(e *keptn.InternalGetSLIDoneEventData, keptnContext string) (*keptn.TestsFinishedEventData, error) {

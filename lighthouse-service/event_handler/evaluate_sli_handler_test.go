@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
-	keptnutils "github.com/keptn/go-utils/pkg/lib"
+	keptnutils "github.com/keptn/go-utils/pkg/lib/keptn"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -666,7 +666,7 @@ func TestEvaluateComparison(t *testing.T) {
 						Message: "",
 					},
 					Targets: nil,
-					Status:  "pass",
+					Status:  "fail",
 				},
 				{
 					Score: 2,
@@ -2579,6 +2579,7 @@ func TestEvaluateSLIHandler_getPreviousTestExecutionResult(t *testing.T) {
 				PageSize:    1,
 				Events: []struct {
 					Data interface{} `json:"data"`
+					ID   string      `json:"id"`
 				}{
 					{
 						Data: &keptnevents.TestsFinishedEventData{
@@ -2664,10 +2665,11 @@ func TestEvaluateSLIHandler_getPreviousEvaluations(t *testing.T) {
 		args                args
 		resultFromDatastore datastoreResult
 		want                []*keptnevents.EvaluationDoneEventData
+		want2               []string
 		wantErr             bool
 	}{
 		{
-			name: "get eveluation-done events",
+			name: "get evaluation-done events",
 			fields: fields{
 				Logger:     nil,
 				Event:      cloudevents.Event{},
@@ -2694,6 +2696,7 @@ func TestEvaluateSLIHandler_getPreviousEvaluations(t *testing.T) {
 				PageSize:    1,
 				Events: []struct {
 					Data interface{} `json:"data"`
+					ID   string      `json:"id"`
 				}{
 					{
 						Data: &keptnevents.EvaluationDoneEventData{
@@ -2705,6 +2708,7 @@ func TestEvaluateSLIHandler_getPreviousEvaluations(t *testing.T) {
 							Labels:             nil,
 							Result:             "",
 						},
+						ID: "my-id",
 					},
 				},
 			},
@@ -2719,6 +2723,7 @@ func TestEvaluateSLIHandler_getPreviousEvaluations(t *testing.T) {
 					Result:             "",
 				},
 			},
+			want2:   []string{"my-id"},
 			wantErr: false,
 		},
 	}
@@ -2731,12 +2736,15 @@ func TestEvaluateSLIHandler_getPreviousEvaluations(t *testing.T) {
 				Event:        tt.fields.Event,
 				HTTPClient:   tt.fields.HTTPClient,
 			}
-			got, err := eh.getPreviousEvaluations(tt.args.e, tt.args.numberOfPreviousResults, "all")
+			got, got2, err := eh.getPreviousEvaluations(tt.args.e, tt.args.numberOfPreviousResults, "all")
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getPreviousEvaluations() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getPreviousEvaluations() got = %v, want %v", got, tt.want)
+			}
+			if !reflect.DeepEqual(got2, tt.want2) {
 				t.Errorf("getPreviousEvaluations() got = %v, want %v", got, tt.want)
 			}
 		})
@@ -2752,6 +2760,7 @@ func TestEvaluateSLIHandler_getPreviousEvaluationsWithPassFilter(t *testing.T) {
 		PageSize:    3,
 		Events: []struct {
 			Data interface{} `json:"data"`
+			ID   string      `json:"id"`
 		}{
 			{
 				Data: &keptnevents.EvaluationDoneEventData{
@@ -2763,6 +2772,7 @@ func TestEvaluateSLIHandler_getPreviousEvaluationsWithPassFilter(t *testing.T) {
 					Labels:             nil,
 					Result:             "pass",
 				},
+				ID: "my-id-1",
 			},
 			{
 				Data: &keptnevents.EvaluationDoneEventData{
@@ -2774,6 +2784,7 @@ func TestEvaluateSLIHandler_getPreviousEvaluationsWithPassFilter(t *testing.T) {
 					Labels:             nil,
 					Result:             "fail",
 				},
+				ID: "my-id-2",
 			},
 			{
 				Data: &keptnevents.EvaluationDoneEventData{
@@ -2785,6 +2796,7 @@ func TestEvaluateSLIHandler_getPreviousEvaluationsWithPassFilter(t *testing.T) {
 					Labels:             nil,
 					Result:             "fail",
 				},
+				ID: "my-id-3",
 			},
 		},
 	}
@@ -2795,6 +2807,7 @@ func TestEvaluateSLIHandler_getPreviousEvaluationsWithPassFilter(t *testing.T) {
 		PageSize:    3,
 		Events: []struct {
 			Data interface{} `json:"data"`
+			ID   string      `json:"id"`
 		}{
 			{
 				Data: &keptnevents.EvaluationDoneEventData{
@@ -2806,6 +2819,7 @@ func TestEvaluateSLIHandler_getPreviousEvaluationsWithPassFilter(t *testing.T) {
 					Labels:             nil,
 					Result:             "pass",
 				},
+				ID: "my-id-4",
 			},
 			{
 				Data: &keptnevents.EvaluationDoneEventData{
@@ -2817,6 +2831,7 @@ func TestEvaluateSLIHandler_getPreviousEvaluationsWithPassFilter(t *testing.T) {
 					Labels:             nil,
 					Result:             "pass",
 				},
+				ID: "my-id-5",
 			},
 			{
 				Data: &keptnevents.EvaluationDoneEventData{
@@ -2828,6 +2843,7 @@ func TestEvaluateSLIHandler_getPreviousEvaluationsWithPassFilter(t *testing.T) {
 					Labels:             nil,
 					Result:             "fail",
 				},
+				ID: "my-id-6",
 			},
 		},
 	}
@@ -2865,6 +2881,7 @@ func TestEvaluateSLIHandler_getPreviousEvaluationsWithPassFilter(t *testing.T) {
 		fields  fields
 		args    args
 		want    []*keptnevents.EvaluationDoneEventData
+		want2   []string
 		wantErr bool
 	}{
 		{
@@ -2918,6 +2935,7 @@ func TestEvaluateSLIHandler_getPreviousEvaluationsWithPassFilter(t *testing.T) {
 					Result:             "pass",
 				},
 			},
+			want2:   []string{"my-id-1", "my-id-4", "my-id-5"},
 			wantErr: false,
 		},
 	}
@@ -2929,12 +2947,15 @@ func TestEvaluateSLIHandler_getPreviousEvaluationsWithPassFilter(t *testing.T) {
 				Event:        tt.fields.Event,
 				HTTPClient:   tt.fields.HTTPClient,
 			}
-			got, err := eh.getPreviousEvaluations(tt.args.e, tt.args.numberOfPreviousResults, "pass")
+			got, got2, err := eh.getPreviousEvaluations(tt.args.e, tt.args.numberOfPreviousResults, "pass")
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getPreviousEvaluations() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getPreviousEvaluations() got = %v, want %v", got, tt.want)
+			}
+			if !reflect.DeepEqual(got2, tt.want2) {
 				t.Errorf("getPreviousEvaluations() got = %v, want %v", got, tt.want)
 			}
 		})

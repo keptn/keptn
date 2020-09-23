@@ -4,7 +4,8 @@ import (
 	"net/http"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
-	keptn "github.com/keptn/go-utils/pkg/lib"
+	keptnv1 "github.com/keptn/go-utils/pkg/lib"
+	keptn "github.com/keptn/go-utils/pkg/lib/keptn"
 )
 
 type EvaluationEventHandler interface {
@@ -14,20 +15,20 @@ type EvaluationEventHandler interface {
 func NewEventHandler(event cloudevents.Event, logger *keptn.Logger) (EvaluationEventHandler, error) {
 	logger.Debug("Received event: " + event.Type())
 	serviceName := "lighthouse-service"
-	keptnHandler, err := keptn.NewKeptn(&event, keptn.KeptnOpts{
+	keptnHandler, err := keptnv1.NewKeptn(&event, keptn.KeptnOpts{
 		LoggingOptions: &keptn.LoggingOpts{ServiceName: &serviceName},
 	})
 	if err != nil {
 		return nil, err
 	}
 	switch event.Type() {
-	case keptn.TestsFinishedEventType:
+	case keptnv1.TestsFinishedEventType:
 		return &StartEvaluationHandler{Event: event, KeptnHandler: keptnHandler, SLIProviderConfig: K8sSLIProviderConfig{}}, nil
-	case keptn.StartEvaluationEventType:
+	case keptnv1.StartEvaluationEventType:
 		return &StartEvaluationHandler{Event: event, KeptnHandler: keptnHandler, SLIProviderConfig: K8sSLIProviderConfig{}}, nil // new event type in Keptn versions >= 0.6
-	case keptn.InternalGetSLIDoneEventType:
+	case keptnv1.InternalGetSLIDoneEventType:
 		return &EvaluateSLIHandler{Event: event, HTTPClient: &http.Client{}, KeptnHandler: keptnHandler}, nil
-	case keptn.ConfigureMonitoringEventType:
+	case keptnv1.ConfigureMonitoringEventType:
 		return &ConfigureMonitoringHandler{Event: event, KeptnHandler: keptnHandler}, nil
 	default:
 		logger.Info("received unhandled event type")
