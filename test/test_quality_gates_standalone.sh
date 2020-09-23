@@ -211,7 +211,7 @@ verify_using_jq "$response" ".data.evaluationdetails.sloFileContent" ""
 echo "Sending start-evaluation event for service $SERVICE in stage hardening"
 
 # Create a config map containing the default sli-provider for the lighthouse service
-kubectl create configmap -n keptn lighthouse-config --from-literal=sli-provider=dynatrace
+kubectl create configmap -n ${KEPTN_NAMESPACE} lighthouse-config --from-literal=sli-provider=dynatrace
 
 keptn_context_id=$(send_start_evaluation_event $PROJECT hardening $SERVICE)
 sleep 10
@@ -231,7 +231,7 @@ verify_using_jq "$response" ".data.stage" "hardening"
 verify_using_jq "$response" ".data.service" "${SERVICE}"
 verify_using_jq "$response" ".data.sliProvider" "dynatrace"
 
-kubectl delete configmap -n keptn lighthouse-config
+kubectl delete configmap -n ${KEPTN_NAMESPACE} lighthouse-config
 
 ########################################################################################################################
 # Testcase 3: Send a start-evaluation event with an SLO file specified, but without an SLI provider configured
