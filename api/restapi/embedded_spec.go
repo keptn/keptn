@@ -352,6 +352,15 @@ func init() {
           },
           {
             "$ref": "#/parameters/serviceName"
+          },
+          {
+            "$ref": "#/parameters/from"
+          },
+          {
+            "$ref": "#/parameters/to"
+          },
+          {
+            "$ref": "#/parameters/timeframe"
           }
         ],
         "responses": {
@@ -385,6 +394,12 @@ func init() {
       "schema": {
         "$ref": "configure_model.yaml#/definitions/configureBridge"
       }
+    },
+    "from": {
+      "type": "string",
+      "description": "Evaluation start timestamp",
+      "name": "from",
+      "in": "query"
     },
     "project": {
       "description": "Project entity",
@@ -422,6 +437,18 @@ func init() {
       "name": "stageName",
       "in": "path",
       "required": true
+    },
+    "timeframe": {
+      "type": "string",
+      "description": "Evaluation timeframe",
+      "name": "timeframe",
+      "in": "query"
+    },
+    "to": {
+      "type": "string",
+      "description": "Evaluation end timestamp",
+      "name": "to",
+      "in": "query"
     }
   },
   "securityDefinitions": {
@@ -815,6 +842,24 @@ func init() {
             "name": "serviceName",
             "in": "path",
             "required": true
+          },
+          {
+            "type": "string",
+            "description": "Evaluation start timestamp",
+            "name": "from",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Evaluation end timestamp",
+            "name": "to",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Evaluation timeframe",
+            "name": "timeframe",
+            "in": "query"
           }
         ],
         "responses": {
@@ -1011,6 +1056,12 @@ func init() {
         "$ref": "#/definitions/configureBridge"
       }
     },
+    "from": {
+      "type": "string",
+      "description": "Evaluation start timestamp",
+      "name": "from",
+      "in": "query"
+    },
     "project": {
       "description": "Project entity",
       "name": "project",
@@ -1047,6 +1098,18 @@ func init() {
       "name": "stageName",
       "in": "path",
       "required": true
+    },
+    "timeframe": {
+      "type": "string",
+      "description": "Evaluation timeframe",
+      "name": "timeframe",
+      "in": "query"
+    },
+    "to": {
+      "type": "string",
+      "description": "Evaluation end timestamp",
+      "name": "to",
+      "in": "query"
     }
   },
   "securityDefinitions": {

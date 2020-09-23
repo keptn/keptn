@@ -9,6 +9,7 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
 )
@@ -29,6 +30,10 @@ type TriggerEvaluationParams struct {
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
+	/*Evaluation start timestamp
+	  In: query
+	*/
+	From *string
 	/*Name of the project
 	  Required: true
 	  In: path
@@ -44,6 +49,14 @@ type TriggerEvaluationParams struct {
 	  In: path
 	*/
 	StageName string
+	/*Evaluation timeframe
+	  In: query
+	*/
+	Timeframe *string
+	/*Evaluation end timestamp
+	  In: query
+	*/
+	To *string
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -54,6 +67,13 @@ func (o *TriggerEvaluationParams) BindRequest(r *http.Request, route *middleware
 	var res []error
 
 	o.HTTPRequest = r
+
+	qs := runtime.Values(r.URL.Query())
+
+	qFrom, qhkFrom, _ := qs.GetOK("from")
+	if err := o.bindFrom(qFrom, qhkFrom, route.Formats); err != nil {
+		res = append(res, err)
+	}
 
 	rProjectName, rhkProjectName, _ := route.Params.GetOK("projectName")
 	if err := o.bindProjectName(rProjectName, rhkProjectName, route.Formats); err != nil {
@@ -70,9 +90,37 @@ func (o *TriggerEvaluationParams) BindRequest(r *http.Request, route *middleware
 		res = append(res, err)
 	}
 
+	qTimeframe, qhkTimeframe, _ := qs.GetOK("timeframe")
+	if err := o.bindTimeframe(qTimeframe, qhkTimeframe, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
+	qTo, qhkTo, _ := qs.GetOK("to")
+	if err := o.bindTo(qTo, qhkTo, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+// bindFrom binds and validates parameter From from query.
+func (o *TriggerEvaluationParams) bindFrom(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+
+	// Required: false
+	// AllowEmptyValue: false
+	if raw == "" { // empty values pass all other validations
+		return nil
+	}
+
+	o.From = &raw
+
 	return nil
 }
 
@@ -117,6 +165,42 @@ func (o *TriggerEvaluationParams) bindStageName(rawData []string, hasKey bool, f
 	// Parameter is provided by construction from the route
 
 	o.StageName = raw
+
+	return nil
+}
+
+// bindTimeframe binds and validates parameter Timeframe from query.
+func (o *TriggerEvaluationParams) bindTimeframe(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+
+	// Required: false
+	// AllowEmptyValue: false
+	if raw == "" { // empty values pass all other validations
+		return nil
+	}
+
+	o.Timeframe = &raw
+
+	return nil
+}
+
+// bindTo binds and validates parameter To from query.
+func (o *TriggerEvaluationParams) bindTo(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+
+	// Required: false
+	// AllowEmptyValue: false
+	if raw == "" { // empty values pass all other validations
+		return nil
+	}
+
+	o.To = &raw
 
 	return nil
 }
