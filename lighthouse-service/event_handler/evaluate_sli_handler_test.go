@@ -668,7 +668,7 @@ func TestEvaluateComparison(t *testing.T) {
 						Message: "",
 					},
 					Targets: nil,
-					Status:  "pass",
+					Status:  "fail",
 				},
 				{
 					Score: 2,
@@ -2603,6 +2603,7 @@ func TestEvaluateSLIHandler_getPreviousTestExecutionResult(t *testing.T) {
 				PageSize:    1,
 				Events: []struct {
 					Data interface{} `json:"data"`
+					ID   string      `json:"id"`
 				}{
 					{
 						Data: &keptnv2.TestFinishedEventData{
@@ -2707,6 +2708,7 @@ func TestEvaluateSLIHandler_getPreviousEvaluations(t *testing.T) {
 		args                args
 		resultFromDatastore datastoreResult
 		want                []*keptnv2.EvaluationFinishedEventData
+		want2               []string
 		wantErr             bool
 	}{
 		{
@@ -2737,6 +2739,7 @@ func TestEvaluateSLIHandler_getPreviousEvaluations(t *testing.T) {
 				PageSize:    1,
 				Events: []struct {
 					Data interface{} `json:"data"`
+					ID   string      `json:"id"`
 				}{
 					{
 						Data: &keptnv2.EvaluationFinishedEventData{
@@ -2748,6 +2751,7 @@ func TestEvaluateSLIHandler_getPreviousEvaluations(t *testing.T) {
 								Result:  "",
 							},
 						},
+						ID: "my-id",
 					},
 				},
 			},
@@ -2762,6 +2766,7 @@ func TestEvaluateSLIHandler_getPreviousEvaluations(t *testing.T) {
 					},
 				},
 			},
+			want2:   []string{"my-id"},
 			wantErr: false,
 		},
 	}
@@ -2774,12 +2779,15 @@ func TestEvaluateSLIHandler_getPreviousEvaluations(t *testing.T) {
 				Event:        tt.fields.Event,
 				HTTPClient:   tt.fields.HTTPClient,
 			}
-			got, err := eh.getPreviousEvaluations(tt.args.e, tt.args.numberOfPreviousResults, "all")
+			got, got2, err := eh.getPreviousEvaluations(tt.args.e, tt.args.numberOfPreviousResults, "all")
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getPreviousEvaluations() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getPreviousEvaluations() got = %v, want %v", got, tt.want)
+			}
+			if !reflect.DeepEqual(got2, tt.want2) {
 				t.Errorf("getPreviousEvaluations() got = %v, want %v", got, tt.want)
 			}
 		})
@@ -2795,6 +2803,7 @@ func TestEvaluateSLIHandler_getPreviousEvaluationsWithPassFilter(t *testing.T) {
 		PageSize:    3,
 		Events: []struct {
 			Data interface{} `json:"data"`
+			ID   string      `json:"id"`
 		}{
 			{
 				Data: &keptnv2.EvaluationFinishedEventData{
@@ -2806,6 +2815,7 @@ func TestEvaluateSLIHandler_getPreviousEvaluationsWithPassFilter(t *testing.T) {
 						Result:  "pass",
 					},
 				},
+				ID: "my-id-1",
 			},
 			{
 				Data: &keptnv2.EvaluationFinishedEventData{
@@ -2817,6 +2827,7 @@ func TestEvaluateSLIHandler_getPreviousEvaluationsWithPassFilter(t *testing.T) {
 						Result:  "fail",
 					},
 				},
+				ID: "my-id-2",
 			},
 			{
 				Data: &keptnv2.EvaluationFinishedEventData{
@@ -2828,6 +2839,7 @@ func TestEvaluateSLIHandler_getPreviousEvaluationsWithPassFilter(t *testing.T) {
 						Result:  "fail",
 					},
 				},
+				ID: "my-id-3",
 			},
 		},
 	}
@@ -2838,6 +2850,7 @@ func TestEvaluateSLIHandler_getPreviousEvaluationsWithPassFilter(t *testing.T) {
 		PageSize:    3,
 		Events: []struct {
 			Data interface{} `json:"data"`
+			ID   string      `json:"id"`
 		}{
 			{
 				Data: &keptnv2.EvaluationFinishedEventData{
@@ -2849,6 +2862,7 @@ func TestEvaluateSLIHandler_getPreviousEvaluationsWithPassFilter(t *testing.T) {
 						Result:  "pass",
 					},
 				},
+				ID: "my-id-4",
 			},
 			{
 				Data: &keptnv2.EvaluationFinishedEventData{
@@ -2860,6 +2874,7 @@ func TestEvaluateSLIHandler_getPreviousEvaluationsWithPassFilter(t *testing.T) {
 						Result:  "pass",
 					},
 				},
+				ID: "my-id-5",
 			},
 			{
 				Data: &keptnv2.EvaluationFinishedEventData{
@@ -2871,6 +2886,7 @@ func TestEvaluateSLIHandler_getPreviousEvaluationsWithPassFilter(t *testing.T) {
 						Result:  "fail",
 					},
 				},
+				ID: "my-id-6",
 			},
 		},
 	}
@@ -2908,6 +2924,7 @@ func TestEvaluateSLIHandler_getPreviousEvaluationsWithPassFilter(t *testing.T) {
 		fields  fields
 		args    args
 		want    []*keptnv2.EvaluationFinishedEventData
+		want2   []string
 		wantErr bool
 	}{
 		{
@@ -2961,6 +2978,7 @@ func TestEvaluateSLIHandler_getPreviousEvaluationsWithPassFilter(t *testing.T) {
 					},
 				},
 			},
+			want2:   []string{"my-id-1", "my-id-4", "my-id-5"},
 			wantErr: false,
 		},
 	}
@@ -2972,12 +2990,15 @@ func TestEvaluateSLIHandler_getPreviousEvaluationsWithPassFilter(t *testing.T) {
 				Event:        tt.fields.Event,
 				HTTPClient:   tt.fields.HTTPClient,
 			}
-			got, err := eh.getPreviousEvaluations(tt.args.e, tt.args.numberOfPreviousResults, "pass")
+			got, got2, err := eh.getPreviousEvaluations(tt.args.e, tt.args.numberOfPreviousResults, "pass")
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getPreviousEvaluations() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getPreviousEvaluations() got = %v, want %v", got, tt.want)
+			}
+			if !reflect.DeepEqual(got2, tt.want2) {
 				t.Errorf("getPreviousEvaluations() got = %v, want %v", got, tt.want)
 			}
 		})
