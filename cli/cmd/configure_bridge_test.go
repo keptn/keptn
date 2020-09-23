@@ -42,10 +42,6 @@ func Test_verifyConfigureBridgeParams(t *testing.T) {
 	}
 }
 
-func stringp(s string) *string {
-	return &s
-}
-
 func Test_configureBridge(t *testing.T) {
 	ts := getTestAPI()
 	defer ts.Close()
