@@ -186,6 +186,7 @@ paths:
         - $ref: "#/parameters/projectName"
         - $ref: "#/parameters/stageName"
         - $ref: "#/parameters/serviceName"
+        - $ref: "#/parameters/evaluation"
       responses:
         200:
           description: Evaluation has been triggered
@@ -281,3 +282,10 @@ parameters:
     description: Parameters for configuring the bridge access
     schema:
       $ref: "configure_model.yaml#/definitions/configureBridge"
+
+  evaluation:
+    in: body
+    name: evaluation
+    description: Evaluation
+    schema:
+      $ref: "evaluation_model.yaml#/definitions/evaluation"

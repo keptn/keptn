@@ -15,24 +15,34 @@
 package cmd
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/url"
+	"io/ioutil"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/cloudevents/sdk-go/pkg/cloudevents"
-	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
-	"github.com/google/uuid"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
-	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/spf13/cobra"
 )
+
+type evaluationTimeframe struct {
+
+	// Evaluation start timestamp
+	From string `json:"from,omitempty"`
+
+	// Evaluation timeframe
+	Timeframe string `json:"timeframe,omitempty"`
+
+	// Evaluation end timestamp
+	To string `json:"to,omitempty"`
+}
 
 type evaluationStartStruct struct {
 	Project   *string            `json:"project"`
@@ -88,45 +98,20 @@ keptn send event start-evaluation --project=sockshop --stage=hardening --service
 			return fmt.Errorf("Start and end time of evaluation time frame not set: %s", err.Error())
 		}
 
-		startEvaluationEventData := keptnevents.StartEvaluationEventData{
-			Project:      *evaluationStart.Project,
-			Service:      *evaluationStart.Service,
-			Stage:        *evaluationStart.Stage,
-			TestStrategy: "manual",
-			Start:        start.Format("2006-01-02T15:04:05.000Z"),
-			End:          end.Format("2006-01-02T15:04:05.000Z"),
-			Labels:       *evaluationStart.Labels,
-		}
-
-		keptnContext := uuid.New().String()
-		source, _ := url.Parse("https://github.com/keptn/keptn/cli#configuration-change")
-		contentType := "application/json"
-		sdkEvent := cloudevents.Event{
-			Context: cloudevents.EventContextV02{
-				ID:          keptnContext,
-				Type:        keptnevents.StartEvaluationEventType,
-				Source:      types.URLRef{URL: *source},
-				ContentType: &contentType,
-			}.AsV02(),
-			Data: startEvaluationEventData,
-		}
-
-		eventByte, err := sdkEvent.MarshalJSON()
-		if err != nil {
-			return fmt.Errorf("Failed to marshal cloud event. %s", err.Error())
-		}
-
-		apiEvent := apimodels.KeptnContextExtendedCE{}
-		err = json.Unmarshal(eventByte, &apiEvent)
-		if err != nil {
-			return fmt.Errorf("Failed to map cloud event to API event model. %s", err.Error())
-		}
-
 		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
-			responseEvent, err := apiHandler.SendEvent(apiEvent)
+			responseEvent, err := sendTriggerEvaluationRequest(
+				apiHandler,
+				*evaluationStart.Project,
+				*evaluationStart.Stage,
+				*evaluationStart.Service,
+				evaluationTimeframe{
+					From: start.Format("2006-01-02T15:04:05"),
+					To:   end.Format("2006-01-02T15:04:05"),
+				})
+
 			if err != nil {
 				logging.PrintLog("Send start-evaluation was unsuccessful", logging.QuietLevel)
 				return fmt.Errorf("Send start-evaluation was unsuccessful. %s", *err.Message)
@@ -143,6 +128,74 @@ keptn send event start-evaluation --project=sockshop --stage=hardening --service
 		fmt.Println("Skipping send start-evaluation due to mocking flag set to true")
 		return nil
 	},
+}
+
+func sendTriggerEvaluationRequest(handler *apiutils.APIHandler, project, stage, service string, timeframe evaluationTimeframe) (*apimodels.EventContext, *apimodels.Error) {
+	bodyStr, err := json.Marshal(timeframe)
+	if err != nil {
+		return nil, &apimodels.Error{
+			Message: stringp(err.Error()),
+		}
+	}
+	req, err := http.NewRequest("POST", handler.Scheme+"://"+handler.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/service/"+service+"/evaluation", bytes.NewBuffer(bodyStr))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set(handler.AuthHeader, handler.AuthToken)
+
+	resp, err := handler.HTTPClient.Do(req)
+	if err != nil {
+		return nil, &apimodels.Error{
+			Message: stringp(err.Error()),
+		}
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, &apimodels.Error{
+			Message: stringp(err.Error()),
+		}
+	}
+
+	if resp.StatusCode >= 200 && resp.StatusCode <= 204 {
+		if len(body) > 0 {
+			var eventContext apimodels.EventContext
+			err = json.Unmarshal(body, &eventContext)
+			if err != nil {
+				// failed to parse json
+				return nil, &apimodels.Error{
+					Message: stringp(err.Error() + "\n" + "-----DETAILS-----" + string(body)),
+				}
+			}
+
+			if eventContext.KeptnContext != nil {
+				fmt.Println("ID of Keptn context: " + *eventContext.KeptnContext)
+			}
+			return &eventContext, nil
+		}
+
+		return nil, nil
+	}
+
+	if len(body) > 0 {
+		var respErr apimodels.Error
+		err = json.Unmarshal(body, &respErr)
+		if err != nil {
+			// failed to parse json
+			return nil, &apimodels.Error{
+				Message: stringp(err.Error() + "\n" + "-----DETAILS-----" + string(body)),
+			}
+		}
+
+		return nil, &respErr
+	}
+
+	return nil, &apimodels.Error{
+		Message: stringp(fmt.Sprintf("Received unexptected response: %d %s", resp.StatusCode, resp.Status)),
+	}
+}
+
+func stringp(s string) *string {
+	return &s
 }
 
 func getStartEndTime(startDatePoint string, endDatePoint string, timeframe string) (*time.Time, *time.Time, error) {

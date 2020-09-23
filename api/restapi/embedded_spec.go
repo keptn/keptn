@@ -354,13 +354,7 @@ func init() {
             "$ref": "#/parameters/serviceName"
           },
           {
-            "$ref": "#/parameters/from"
-          },
-          {
-            "$ref": "#/parameters/to"
-          },
-          {
-            "$ref": "#/parameters/timeframe"
+            "$ref": "#/parameters/evaluation"
           }
         ],
         "responses": {
@@ -395,11 +389,13 @@ func init() {
         "$ref": "configure_model.yaml#/definitions/configureBridge"
       }
     },
-    "from": {
-      "type": "string",
-      "description": "Evaluation start timestamp",
-      "name": "from",
-      "in": "query"
+    "evaluation": {
+      "description": "Evaluation",
+      "name": "evaluation",
+      "in": "body",
+      "schema": {
+        "$ref": "evaluation_model.yaml#/definitions/evaluation"
+      }
     },
     "project": {
       "description": "Project entity",
@@ -437,18 +433,6 @@ func init() {
       "name": "stageName",
       "in": "path",
       "required": true
-    },
-    "timeframe": {
-      "type": "string",
-      "description": "Evaluation timeframe",
-      "name": "timeframe",
-      "in": "query"
-    },
-    "to": {
-      "type": "string",
-      "description": "Evaluation end timestamp",
-      "name": "to",
-      "in": "query"
     }
   },
   "securityDefinitions": {
@@ -844,22 +828,12 @@ func init() {
             "required": true
           },
           {
-            "type": "string",
-            "description": "Evaluation start timestamp",
-            "name": "from",
-            "in": "query"
-          },
-          {
-            "type": "string",
-            "description": "Evaluation end timestamp",
-            "name": "to",
-            "in": "query"
-          },
-          {
-            "type": "string",
-            "description": "Evaluation timeframe",
-            "name": "timeframe",
-            "in": "query"
+            "description": "Evaluation",
+            "name": "evaluation",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/evaluation"
+            }
           }
         ],
         "responses": {
@@ -916,6 +890,33 @@ func init() {
         },
         "message": {
           "type": "string"
+        }
+      }
+    },
+    "evaluation": {
+      "type": "object",
+      "properties": {
+        "from": {
+          "description": "Evaluation start timestamp",
+          "type": "string",
+          "name": "from"
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "name": "labels"
+        },
+        "timeframe": {
+          "description": "Evaluation timeframe",
+          "type": "string",
+          "name": "timeframe"
+        },
+        "to": {
+          "description": "Evaluation end timestamp",
+          "type": "string",
+          "name": "to"
         }
       }
     },
@@ -1056,11 +1057,13 @@ func init() {
         "$ref": "#/definitions/configureBridge"
       }
     },
-    "from": {
-      "type": "string",
-      "description": "Evaluation start timestamp",
-      "name": "from",
-      "in": "query"
+    "evaluation": {
+      "description": "Evaluation",
+      "name": "evaluation",
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/evaluation"
+      }
     },
     "project": {
       "description": "Project entity",
@@ -1098,18 +1101,6 @@ func init() {
       "name": "stageName",
       "in": "path",
       "required": true
-    },
-    "timeframe": {
-      "type": "string",
-      "description": "Evaluation timeframe",
-      "name": "timeframe",
-      "in": "query"
-    },
-    "to": {
-      "type": "string",
-      "description": "Evaluation end timestamp",
-      "name": "to",
-      "in": "query"
     }
   },
   "securityDefinitions": {

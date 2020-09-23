@@ -18,10 +18,6 @@ type TriggerEvaluationURL struct {
 	ServiceName string
 	StageName   string
 
-	From      *string
-	Timeframe *string
-	To        *string
-
 	_basePath string
 	// avoid unkeyed usage
 	_ struct{}
@@ -74,34 +70,6 @@ func (o *TriggerEvaluationURL) Build() (*url.URL, error) {
 		_basePath = "/v1"
 	}
 	_result.Path = golangswaggerpaths.Join(_basePath, _path)
-
-	qs := make(url.Values)
-
-	var fromQ string
-	if o.From != nil {
-		fromQ = *o.From
-	}
-	if fromQ != "" {
-		qs.Set("from", fromQ)
-	}
-
-	var timeframeQ string
-	if o.Timeframe != nil {
-		timeframeQ = *o.Timeframe
-	}
-	if timeframeQ != "" {
-		qs.Set("timeframe", timeframeQ)
-	}
-
-	var toQ string
-	if o.To != nil {
-		toQ = *o.To
-	}
-	if toQ != "" {
-		qs.Set("to", toQ)
-	}
-
-	_result.RawQuery = qs.Encode()
 
 	return &_result, nil
 }
