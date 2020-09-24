@@ -14,7 +14,7 @@ require (
 	github.com/gophercloud/gophercloud v0.9.0 // indirect
 	github.com/json-iterator/go v1.1.9 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.6.3-0.20200908082455-010bbcf95e6f
+	github.com/keptn/go-utils v0.6.3-0.20200924101653-1aad54242301
 	github.com/mitchellh/mapstructure v1.1.2
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
