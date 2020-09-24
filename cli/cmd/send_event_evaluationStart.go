@@ -32,7 +32,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type evaluationTimeframe struct {
+type triggerEvaluationRequest struct {
 
 	// Evaluation start timestamp
 	From string `json:"from,omitempty"`
@@ -42,6 +42,9 @@ type evaluationTimeframe struct {
 
 	// Evaluation end timestamp
 	To string `json:"to,omitempty"`
+
+	// Labels labels for the evaluation
+	Labels map[string]string `json:"labels,omitempty"`
 }
 
 type evaluationStartStruct struct {
@@ -107,9 +110,10 @@ keptn send event start-evaluation --project=sockshop --stage=hardening --service
 				*evaluationStart.Project,
 				*evaluationStart.Stage,
 				*evaluationStart.Service,
-				evaluationTimeframe{
-					From: start.Format("2006-01-02T15:04:05"),
-					To:   end.Format("2006-01-02T15:04:05"),
+				triggerEvaluationRequest{
+					From:   start.Format("2006-01-02T15:04:05"),
+					To:     end.Format("2006-01-02T15:04:05"),
+					Labels: *evaluationStart.Labels,
 				})
 
 			if err != nil {
@@ -130,7 +134,7 @@ keptn send event start-evaluation --project=sockshop --stage=hardening --service
 	},
 }
 
-func sendTriggerEvaluationRequest(handler *apiutils.APIHandler, project, stage, service string, timeframe evaluationTimeframe) (*apimodels.EventContext, *apimodels.Error) {
+func sendTriggerEvaluationRequest(handler *apiutils.APIHandler, project, stage, service string, timeframe triggerEvaluationRequest) (*apimodels.EventContext, *apimodels.Error) {
 	bodyStr, err := json.Marshal(timeframe)
 	if err != nil {
 		return nil, &apimodels.Error{
