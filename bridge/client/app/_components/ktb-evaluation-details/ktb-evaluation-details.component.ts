@@ -158,6 +158,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   }
   set evaluationData(evaluationData: any) {
     if (this._evaluationData !== evaluationData) {
+      this.parseSloFile(evaluationData);
       this._evaluationData = evaluationData;
       this._changeDetectorRef.markForCheck();
     }
@@ -166,10 +167,11 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService) { }
 
   ngOnInit() {
-    if(this._evaluationData)
+    if(this._evaluationData) {
       this.dataService.loadEvaluationResults(this._evaluationData);
-    if(!this._selectedEvaluationData && this._evaluationData.data.evaluationHistory)
-      this.selectEvaluationData(this._evaluationData.data.evaluationHistory.find(h => h.shkeptncontext === this._evaluationData.shkeptncontext));
+      if (!this._selectedEvaluationData && this._evaluationData.data.evaluationHistory)
+        this.selectEvaluationData(this._evaluationData.data.evaluationHistory.find(h => h.shkeptncontext === this._evaluationData.shkeptncontext));
+    }
     this.dataService.evaluationResults
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((event) => {
@@ -178,6 +180,14 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
           this._changeDetectorRef.markForCheck();
         }
       });
+  }
+
+  private parseSloFile(evaluationData) {
+    if(evaluationData.data) {
+      evaluationData.data.evaluationdetails.sloFileContentParsed = atob(evaluationData.data.evaluationdetails.sloFileContent);
+      evaluationData.score_pass = evaluationData.data.evaluationdetails.sloFileContentParsed.split("total_score:")[1]?.split("pass:")[1]?.split("\"")[1]?.split("%")[0];
+      evaluationData.score_warning = evaluationData.data.evaluationdetails.sloFileContentParsed.split("total_score:")[1]?.split("warning:")[1]?.split("\"")[1]?.split("%")[0];
+    }
   }
 
   updateChartData(evaluationHistory) {

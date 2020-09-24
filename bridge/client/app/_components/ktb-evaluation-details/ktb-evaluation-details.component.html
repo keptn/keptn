@@ -9,7 +9,7 @@
     </p>
     <dt-expandable-panel #sloFile>
       <div class="container dark">
-        <pre>{{ evaluationData.data.evaluationdetails.sloFileContent | atob }}</pre>
+        <pre [textContent]="evaluationData.data.evaluationdetails.sloFileContentParsed"></pre>
       </div>
     </dt-expandable-panel>
   </div>
