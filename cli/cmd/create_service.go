@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	keptn "github.com/keptn/go-utils/pkg/lib"
+	keptn "github.com/keptn/go-utils/pkg/lib/keptn"
 
 	"github.com/keptn/keptn/cli/pkg/websockethelper"
 

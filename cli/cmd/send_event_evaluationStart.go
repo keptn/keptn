@@ -15,12 +15,8 @@
 package cmd
 
 import (
-	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -105,23 +101,24 @@ keptn send event start-evaluation --project=sockshop --stage=hardening --service
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
-			responseEvent, err := sendTriggerEvaluationRequest(
-				apiHandler,
+
+			response, err := apiHandler.TriggerEvaluation(
 				*evaluationStart.Project,
 				*evaluationStart.Stage,
 				*evaluationStart.Service,
-				triggerEvaluationRequest{
+				apimodels.Evaluation{
 					From:   start.Format("2006-01-02T15:04:05"),
 					To:     end.Format("2006-01-02T15:04:05"),
 					Labels: *evaluationStart.Labels,
-				})
+				},
+			)
 
 			if err != nil {
 				logging.PrintLog("Send start-evaluation was unsuccessful", logging.QuietLevel)
 				return fmt.Errorf("Send start-evaluation was unsuccessful. %s", *err.Message)
 			}
 
-			if responseEvent == nil {
+			if response == nil {
 				logging.PrintLog("No event returned", logging.QuietLevel)
 				return nil
 			}
@@ -132,70 +129,6 @@ keptn send event start-evaluation --project=sockshop --stage=hardening --service
 		fmt.Println("Skipping send start-evaluation due to mocking flag set to true")
 		return nil
 	},
-}
-
-func sendTriggerEvaluationRequest(handler *apiutils.APIHandler, project, stage, service string, timeframe triggerEvaluationRequest) (*apimodels.EventContext, *apimodels.Error) {
-	bodyStr, err := json.Marshal(timeframe)
-	if err != nil {
-		return nil, &apimodels.Error{
-			Message: stringp(err.Error()),
-		}
-	}
-	req, err := http.NewRequest("POST", handler.Scheme+"://"+handler.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/service/"+service+"/evaluation", bytes.NewBuffer(bodyStr))
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set(handler.AuthHeader, handler.AuthToken)
-
-	resp, err := handler.HTTPClient.Do(req)
-	if err != nil {
-		return nil, &apimodels.Error{
-			Message: stringp(err.Error()),
-		}
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, &apimodels.Error{
-			Message: stringp(err.Error()),
-		}
-	}
-
-	if resp.StatusCode >= 200 && resp.StatusCode <= 204 {
-		if len(body) > 0 {
-			var eventContext apimodels.EventContext
-			err = json.Unmarshal(body, &eventContext)
-			if err != nil {
-				// failed to parse json
-				return nil, &apimodels.Error{
-					Message: stringp(err.Error() + "\n" + "-----DETAILS-----" + string(body)),
-				}
-			}
-
-			if eventContext.KeptnContext != nil {
-				fmt.Println("ID of Keptn context: " + *eventContext.KeptnContext)
-			}
-			return &eventContext, nil
-		}
-
-		return nil, nil
-	}
-
-	if len(body) > 0 {
-		var respErr apimodels.Error
-		err = json.Unmarshal(body, &respErr)
-		if err != nil {
-			// failed to parse json
-			return nil, &apimodels.Error{
-				Message: stringp(err.Error() + "\n" + "-----DETAILS-----" + string(body)),
-			}
-		}
-
-		return nil, &respErr
-	}
-
-	return nil, &apimodels.Error{
-		Message: stringp(fmt.Sprintf("Received unexptected response: %d %s", resp.StatusCode, resp.Status)),
-	}
 }
 
 func stringp(s string) *string {

@@ -12,7 +12,8 @@ import (
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
-	keptn "github.com/keptn/go-utils/pkg/lib"
+	keptnv1 "github.com/keptn/go-utils/pkg/lib"
+	keptn "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
@@ -157,8 +158,8 @@ func checkGitCredentials() error {
 	return errors.New(gitErrMsg)
 }
 
-func parseShipyard(shipyardContent string) (*keptn.Shipyard, error) {
-	shipyard := keptn.Shipyard{}
+func parseShipyard(shipyardContent string) (*keptnv1.Shipyard, error) {
+	shipyard := keptnv1.Shipyard{}
 	err := yaml.Unmarshal([]byte(shipyardContent), &shipyard)
 	if err != nil {
 		return nil, err

@@ -10,7 +10,8 @@ import (
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
-	keptn "github.com/keptn/go-utils/pkg/lib"
+	keptnv1 "github.com/keptn/go-utils/pkg/lib"
+	keptn "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/pkg/validator"
@@ -111,9 +112,9 @@ keptn onboard service SERVICENAME --project=PROJECTNAME --chart=HELM_CHART.tgz
 			deplStrategies := make(map[string]string)
 
 			if *onboardServiceParams.DeploymentStrategy == "direct" {
-				deplStrategies["*"] = keptn.Direct.String()
+				deplStrategies["*"] = keptnv1.Direct.String()
 			} else if *onboardServiceParams.DeploymentStrategy == "blue_green_service" {
-				deplStrategies["*"] = keptn.Duplicate.String()
+				deplStrategies["*"] = keptnv1.Duplicate.String()
 			} else {
 				return fmt.Errorf("The provided deployment strategy %s is not supported. Select: [direct|blue_green_service]", *onboardServiceParams.DeploymentStrategy)
 			}
