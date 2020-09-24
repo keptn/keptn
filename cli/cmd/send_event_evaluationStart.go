@@ -123,13 +123,23 @@ keptn send event start-evaluation --project=sockshop --stage=hardening --service
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
-			responseEvent, err := apiHandler.SendEvent(apiEvent)
+			response, err := apiHandler.TriggerEvaluation(
+				*evaluationStart.Project,
+				*evaluationStart.Stage,
+				*evaluationStart.Service,
+				apimodels.Evaluation{
+					From:   start.Format("2006-01-02T15:04:05"),
+					To:     end.Format("2006-01-02T15:04:05"),
+					Labels: *evaluationStart.Labels,
+				},
+			)
+
 			if err != nil {
 				logging.PrintLog("Send start-evaluation was unsuccessful", logging.QuietLevel)
 				return fmt.Errorf("Send start-evaluation was unsuccessful. %s", *err.Message)
 			}
 
-			if responseEvent == nil {
+			if response == nil {
 				logging.PrintLog("No event returned", logging.QuietLevel)
 				return nil
 			}
