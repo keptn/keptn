@@ -16,7 +16,7 @@ Heatmap(Highcharts);
 Treemap(Highcharts);
 
 import * as moment from 'moment';
-import {ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {ChangeDetectorRef, Component, Input, OnDestroy, OnInit, TemplateRef, ViewChild} from '@angular/core';
 import {DtChart, DtChartSeriesVisibilityChangeEvent} from "@dynatrace/barista-components/chart";
 
 import {DataService} from "../../_services/data.service";
@@ -25,6 +25,7 @@ import {Trace} from "../../_models/trace";
 import SearchUtil from "../../_utils/search.utils";
 import {Subject} from "rxjs";
 import {takeUntil} from "rxjs/operators";
+import {MatDialog, MatDialogRef} from "@angular/material/dialog";
 
 @Component({
   selector: 'ktb-evaluation-details',
@@ -35,6 +36,10 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
 
   private readonly unsubscribe$ = new Subject<void>();
   @Input() public showChart = true;
+
+  @ViewChild('sloDialog')
+  public sloDialog: TemplateRef<any>;
+  public sloDialogRef: MatDialogRef<any, any>;
 
   private heatmapChart: DtChart;
   @ViewChild('heatmapChart') set heatmap(heatmap: DtChart) {
@@ -158,13 +163,12 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   }
   set evaluationData(evaluationData: any) {
     if (this._evaluationData !== evaluationData) {
-      this.parseSloFile(evaluationData);
       this._evaluationData = evaluationData;
       this._changeDetectorRef.markForCheck();
     }
   }
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService) { }
+  constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private dialog: MatDialog) { }
 
   ngOnInit() {
     if(this._evaluationData) {
@@ -183,7 +187,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   }
 
   private parseSloFile(evaluationData) {
-    if(evaluationData.data && !evaluationData.data.evaluationdetails.sloFileContentParsed) {
+    if(evaluationData.data && evaluationData.data.evaluationdetails.sloFileContent && !evaluationData.data.evaluationdetails.sloFileContentParsed) {
       evaluationData.data.evaluationdetails.sloFileContentParsed = atob(evaluationData.data.evaluationdetails.sloFileContent);
       evaluationData.data.evaluationdetails.score_pass = evaluationData.data.evaluationdetails.sloFileContentParsed.split("total_score:")[1]?.split("pass:")[1]?.split("\"")[1]?.split("%")[0];
       evaluationData.data.evaluationdetails.score_warning = evaluationData.data.evaluationdetails.sloFileContentParsed.split("total_score:")[1]?.split("warning:")[1]?.split("\"")[1]?.split("%")[0];
@@ -197,7 +201,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     let chartSeries = [];
 
     if(!this._selectedEvaluationData && evaluationHistory)
-      this.selectEvaluationData(evaluationHistory.find(h => h.shkeptncontext === this._evaluationData.shkeptncontext));
+      this.selectEvaluationData(evaluationHistory.find(h => h.id === this._evaluationData.id));
 
     if(this.showChart) {
       evaluationHistory.forEach((evaluation) => {
@@ -315,7 +319,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
       })
     );
 
-    this._heatmapOptions.chart.height = this._heatmapOptions.yAxis[0].categories.length*28 + 100;
+    this._heatmapOptions.chart.height = this._heatmapOptions.yAxis[0].categories.length*28 + 60;
   }
 
   seriesVisibilityChanged(_: DtChartSeriesVisibilityChangeEvent): void {
@@ -331,6 +335,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   }
 
   selectEvaluationData(evaluation) {
+    this.parseSloFile(evaluation);
     this._selectedEvaluationData = evaluation;
     this.highlightHeatmap();
   }
@@ -358,6 +363,16 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
 
   getDuration(start, end) {
     return DateUtil.getDurationFormatted(start, end);
+  }
+
+  showSloDialog() {
+    this.sloDialogRef = this.dialog.open(this.sloDialog, { data: this._selectedEvaluationData.data.evaluationdetails.sloFileContentParsed });
+  }
+
+  closeSloDialog() {
+    if (this.sloDialogRef) {
+      this.sloDialogRef.close();
+    }
   }
 
   ngOnDestroy(): void {
