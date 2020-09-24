@@ -117,16 +117,6 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
       height: 400
     },
 
-    title: {
-      text: 'Heatmap',
-      align: 'left'
-    },
-
-    subtitle: {
-      text: 'Evalution results',
-      align: 'left'
-    },
-
     xAxis: [{
       categories: [],
       plotBands: [],
