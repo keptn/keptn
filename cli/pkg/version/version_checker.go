@@ -130,9 +130,9 @@ func (v *VersionChecker) getNewerCLIVersion(cliConfig config.CLIConfig, usedVers
 	return res, nil
 }
 
-const newCompatibleVersionMsg = `keptn version %s is available! Please visit https://keptn.sh for more information.`
-const newIncompatibleVersionMsg = `keptn version %s is available! Please note that this version might be incompatible with your Keptn cluster ` +
-	`version and requires to update the cluster too. Please visit https://keptn.sh for more information.`
+const newCompatibleVersionMsg = `Keptn CLI version %s is available! Please visit https://keptn.sh/docs/%s/operate/upgrade/ for more information.`
+const newIncompatibleVersionMsg = `Keptn CLI version %s is available! Please note that this version might be incompatible with your Keptn cluster ` +
+	`version and requires to update the cluster too. Please visit https://keptn.sh/docs/%s/operate/upgrade/ for more information.`
 const disableMsg = `To disable this notice, run: '%s set config AutomaticVersionCheck false'`
 
 // CheckCLIVersion checks whether there is a new CLI version available and prints corresponding
@@ -157,15 +157,18 @@ func (v *VersionChecker) CheckCLIVersion(cliVersion string, considerPrevCheck bo
 			}
 			msgPrinted := false
 			if newVersions.stable.newestCompatible != nil {
-				fmt.Printf(newCompatibleVersionMsg+"\n", newVersions.stable.newestCompatible.String())
+				fmt.Printf(newCompatibleVersionMsg+"\n", newVersions.stable.newestCompatible.String(),
+					newVersions.stable.newestCompatible.String())
 				msgPrinted = true
 			}
 			if newVersions.prerelease.newestCompatible != nil {
-				fmt.Printf(newCompatibleVersionMsg+"\n", newVersions.prerelease.newestCompatible)
+				fmt.Printf(newCompatibleVersionMsg+"\n", newVersions.prerelease.newestCompatible.String(),
+					newVersions.prerelease.newestCompatible.String())
 				msgPrinted = true
 			}
 			if newVersions.stable.newestIncompatible != nil {
-				fmt.Printf(newIncompatibleVersionMsg+"\n", newVersions.stable.newestIncompatible.String())
+				fmt.Printf(newIncompatibleVersionMsg+"\n", newVersions.stable.newestIncompatible.String(),
+					newVersions.stable.newestIncompatible.String())
 				msgPrinted = true
 			}
 			if msgPrinted && considerPrevCheck {
