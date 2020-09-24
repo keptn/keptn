@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
@@ -67,7 +68,15 @@ func TriggerEvaluationHandlerFunc(params evaluation.TriggerEvaluationParams, pri
 	}
 	contentType := "application/json"
 
-	forwardData := addEventContextInCE(startEvaluationEvent, eventContext)
+	var ceIntf map[string]interface{}
+	marshal, _ := json.Marshal(startEvaluationEvent)
+	err = json.Unmarshal(marshal, &ceIntf)
+	if err != nil {
+		return evaluation.NewTriggerEvaluationBadRequest().WithPayload(&models.Error{
+			Code: 500,
+		})
+	}
+	forwardData := addEventContextInCE(ceIntf, eventContext)
 
 	ev := cloudevents.Event{
 		Context: cloudevents.EventContextV02{
