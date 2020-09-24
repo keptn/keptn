@@ -10,7 +10,7 @@ import (
 	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
 	"github.com/kelseyhightower/envconfig"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
-	keptnutils "github.com/keptn/go-utils/pkg/lib"
+	keptnutils "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/lighthouse-service/event_handler"
 )
 
