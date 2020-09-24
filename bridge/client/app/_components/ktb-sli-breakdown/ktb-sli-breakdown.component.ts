@@ -38,6 +38,8 @@ export class KtbSliBreakdownComponent implements OnInit {
   set indicatorResults(indicatorResults: any) {
     if (this._indicatorResults !== indicatorResults) {
       this._indicatorResults = indicatorResults;
+      console.log("indicatorResults", indicatorResults);
+      indicatorResults[0].key_sli = true;
       this._indicatorResultsFail = indicatorResults.filter(i => i.status === 'fail');
       this._indicatorResultsWarning = indicatorResults.filter(i => i.status === 'warning');
       this._indicatorResultsPass = indicatorResults.filter(i => i.status !== 'fail' && i.status !== 'warning');
