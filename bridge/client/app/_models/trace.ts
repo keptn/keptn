@@ -56,6 +56,12 @@ class Trace {
       sloFileContent: string;
       timeEnd: Date;
       timeStart: Date;
+
+      score_pass: any;
+      score_warning: any;
+      compare_with: string;
+      include_result_with_score: string;
+      number_of_comparison_results: number;
     };
 
     evaluationHistory: Trace[];
