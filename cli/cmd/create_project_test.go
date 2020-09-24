@@ -42,6 +42,7 @@ func testShipyard(t *testing.T, shipyardFileName string, shipyard string) func()
 // TestCreateProjectCmd tests the default use of the create project command
 func TestCreateProjectCmd(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
+	checkEndPointStatusMock = true
 
 	shipyardFileName := "shipyard.yaml"
 	defer testShipyard(t, shipyardFileName, "")()
@@ -57,6 +58,7 @@ func TestCreateProjectCmd(t *testing.T) {
 // due to a project name with upper case character
 func TestCreateProjectIncorrectProjectNameCmd(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
+	checkEndPointStatusMock = true
 
 	shipyardFileName := "shipyard.yaml"
 	defer testShipyard(t, shipyardFileName, "")()
@@ -73,6 +75,7 @@ func TestCreateProjectIncorrectProjectNameCmd(t *testing.T) {
 // due to a stage name, which contains a special character (-)
 func TestCreateProjectIncorrectStageNameCmd(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
+	checkEndPointStatusMock = true
 
 	shipyardFileName := "shipyard.yaml"
 	shipyardContent := `stages:
@@ -97,6 +100,7 @@ func TestCreateProjectIncorrectStageNameCmd(t *testing.T) {
 // due to a missing flag for defining a git upstream
 func TestCreateProjectCmdWithGitMissingParam(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
+	checkEndPointStatusMock = true
 
 	shipyardFileName := "shipyard.yaml"
 	defer testShipyard(t, shipyardFileName, "")()
@@ -114,6 +118,7 @@ func TestCreateProjectCmdWithGitMissingParam(t *testing.T) {
 // command with git upstream parameters
 func TestCreateProjectCmdWithGit(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
+	checkEndPointStatusMock = true
 
 	shipyardFileName := "shipyard.yaml"
 	defer testShipyard(t, shipyardFileName, "")()

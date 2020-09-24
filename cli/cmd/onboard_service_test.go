@@ -17,6 +17,7 @@ func init() {
 func TestOnboardServiceWrongHelmChartPath(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
+	checkEndPointStatusMock = true
 
 	cmd := fmt.Sprintf("onboard service carts --project=sockshop --chart=cartsX")
 	_, err := executeActionCommandC(cmd)
@@ -34,6 +35,7 @@ func TestOnboardServiceWrongHelmChartPath(t *testing.T) {
 func TestOnboardServiceDeploymentStrategy(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
+	checkEndPointStatusMock = true
 
 	cmd := fmt.Sprintf("onboard service carts --project=sockshop --deployment-strategy=directX")
 	_, err := executeActionCommandC(cmd)

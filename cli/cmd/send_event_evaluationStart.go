@@ -71,6 +71,11 @@ keptn send event start-evaluation --project=sockshop --stage=hardening --service
 		logging.PrintLog("Starting to send a start-evaluation event to evaluate the service "+
 			*evaluationStart.Service+" in project "+*evaluationStart.Project, logging.InfoLevel)
 
+		if endPointErr := checkEndPointStatus(endPoint.String()); endPointErr != nil {
+			return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
+				endPointErr)
+		}
+
 		startPoint := ""
 		if evaluationStart.Start != nil {
 			startPoint = *evaluationStart.Start

@@ -15,6 +15,7 @@ func init() {
 
 func TestDeleteProjectCmd(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
+	checkEndPointStatusMock = true
 
 	cmd := fmt.Sprintf("delete project %s --mock", "sockshop")
 	_, err := executeActionCommandC(cmd)

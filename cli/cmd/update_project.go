@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 
 	"github.com/keptn/keptn/cli/pkg/websockethelper"
@@ -63,6 +64,11 @@ For more information about updating projects or upstream repositories, please go
 			return errors.New(authErrorMsg)
 		}
 		logging.PrintLog("Starting to update project", logging.InfoLevel)
+
+		if endPointErr := checkEndPointStatus(endPoint.String()); endPointErr != nil {
+			return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
+				endPointErr)
+		}
 
 		project := apimodels.Project{
 			ProjectName: args[0],

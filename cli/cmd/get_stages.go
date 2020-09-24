@@ -62,6 +62,11 @@ staging        2020-04-06T14:37:45.210Z
 			return errors.New(authErrorMsg)
 		}
 
+		if endPointErr := checkEndPointStatus(endPoint.String()); endPointErr != nil {
+			return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
+				endPointErr)
+		}
+
 		stagesHandler := apiutils.NewAuthenticatedStageHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 		if !mocking {
 			stages, err := stagesHandler.GetAllStages(*stageParameter.project)

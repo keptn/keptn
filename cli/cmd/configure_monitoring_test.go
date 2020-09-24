@@ -16,6 +16,7 @@ func init() {
 func TestConfigureMonitoringCmd(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
+	checkEndPointStatusMock = true
 
 	*params.Project = ""
 	*params.Service = ""
@@ -29,6 +30,7 @@ func TestConfigureMonitoringCmd(t *testing.T) {
 func TestConfigureMonitoringCmdForPrometheus(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
+	checkEndPointStatusMock = true
 
 	*params.Project = ""
 	*params.Service = ""
