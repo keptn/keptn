@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 
 	"github.com/keptn/keptn/cli/pkg/websockethelper"
@@ -103,7 +104,7 @@ func init() {
 	updateProjectParams.GitUser = upProjectCmd.Flags().StringP("git-user", "u", "", "The git user of the upstream target")
 	updateProjectParams.GitToken = upProjectCmd.Flags().StringP("git-token", "t", "", "The git token of the git user")
 	updateProjectParams.RemoteURL = upProjectCmd.Flags().StringP("git-remote-url", "r", "", "The remote url of the upstream target")
-	updateCmd.MarkFlagRequired("git-user")
-	updateCmd.MarkFlagRequired("git-token")
-	updateCmd.MarkFlagRequired("git-remote-url")
+	upProjectCmd.MarkFlagRequired("git-user")
+	upProjectCmd.MarkFlagRequired("git-token")
+	upProjectCmd.MarkFlagRequired("git-remote-url")
 }
