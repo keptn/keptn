@@ -338,8 +338,8 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     if(highlightIndex >= 0)
       plotBands.push({
         borderWidth: 2,
-        borderColor: '#e6be00',
-        color: 'rgba(230,190,0,.4)',
+        borderColor: '#00a1b2',
+        color: 'rgba(0,161,178,.4)',
         from: highlightIndex-0.5,
         to: highlightIndex+0.5,
         zIndex: 20
