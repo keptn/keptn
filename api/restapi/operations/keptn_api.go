@@ -22,6 +22,7 @@ import (
 	"github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations/auth"
 	"github.com/keptn/keptn/api/restapi/operations/configuration"
+	"github.com/keptn/keptn/api/restapi/operations/evaluation"
 	"github.com/keptn/keptn/api/restapi/operations/event"
 	"github.com/keptn/keptn/api/restapi/operations/metadata"
 	"github.com/keptn/keptn/api/restapi/operations/project"
@@ -79,6 +80,9 @@ func NewKeptnAPI(spec *loads.Document) *KeptnAPI {
 		}),
 		MetadataMetadataHandler: metadata.MetadataHandlerFunc(func(params metadata.MetadataParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation metadata.Metadata has not yet been implemented")
+		}),
+		EvaluationTriggerEvaluationHandler: evaluation.TriggerEvaluationHandlerFunc(func(params evaluation.TriggerEvaluationParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation evaluation.TriggerEvaluation has not yet been implemented")
 		}),
 
 		// Applies when the "x-token" header is set
@@ -149,6 +153,8 @@ type KeptnAPI struct {
 	AuthAuthHandler auth.AuthHandler
 	// MetadataMetadataHandler sets the operation handler for the metadata operation
 	MetadataMetadataHandler metadata.MetadataHandler
+	// EvaluationTriggerEvaluationHandler sets the operation handler for the trigger evaluation operation
+	EvaluationTriggerEvaluationHandler evaluation.TriggerEvaluationHandler
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
 	ServeError func(http.ResponseWriter, *http.Request, error)
@@ -258,6 +264,9 @@ func (o *KeptnAPI) Validate() error {
 	}
 	if o.MetadataMetadataHandler == nil {
 		unregistered = append(unregistered, "metadata.MetadataHandler")
+	}
+	if o.EvaluationTriggerEvaluationHandler == nil {
+		unregistered = append(unregistered, "evaluation.TriggerEvaluationHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -400,6 +409,10 @@ func (o *KeptnAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/metadata"] = metadata.NewMetadata(o.context, o.MetadataMetadataHandler)
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/project/{projectName}/stage/{stageName}/service/{serviceName}/evaluation"] = evaluation.NewTriggerEvaluation(o.context, o.EvaluationTriggerEvaluationHandler)
 }
 
 // Serve creates a http handler to serve the API over HTTP
