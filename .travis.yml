@@ -34,7 +34,7 @@ before_install:
 - VERSION="unknownversion"
 - DATE="$(date +'%Y%m%d.%H%M')"
 - GIT_SHA="$(git rev-parse --short HEAD)"
-- KUBE_CONSTRAINTS=">= 1.14, <= 1.18" # don't forget to udpate the defaults in cli/main.go
+- KUBE_CONSTRAINTS=">= 1.14, <= 1.19" # don't forget to udpate the defaults in cli/main.go
 
 # store all changed files from this commit in files.txt (note: Travis commit range might fail)
 - git diff --name-only $TRAVIS_COMMIT_RANGE > files.txt || echo ""
@@ -628,6 +628,9 @@ jobs:
     env:
       - K3S_VERSION=v1.18.3+k3s1 # see https://github.com/rancher/k3s/releases
 
+  - <<: *K3sStandaloneTest
+      - K3S_VERSION=v1.19.2+k3s1 # see https://github.com/rancher/k3s/releases
+
   - &microk8sStandaloneTest
     stage: Test MicroK8s Standalone (--platform=kubernetes)
     if: (branch = master or branch =~ ^release.*$) AND (type = cron OR type = push) # run for any change on master/release-* on push as well as cron
@@ -665,6 +668,10 @@ jobs:
   - <<: *microk8sStandaloneTest
     env:
       - MICROK8S_VERSION=1.18/stable # see https://snapcraft.io/microk8s channels
+
+  - <<: *microk8sStandaloneTest
+    env:
+      - MICROK8S_VERSION=1.19/stable # see https://snapcraft.io/microk8s channels
 
   - &minikubeStandaloneTest
     stage: Test Minikube Standalone (--platform=kubernetes) # for detailed Minikube versions see https://github.com/kubernetes/minikube/blob/master/CHANGELOG.md
