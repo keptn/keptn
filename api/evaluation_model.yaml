@@ -1,0 +1,25 @@
+---
+definitions:
+  evaluation:
+    type: object
+    properties:
+      labels:
+        name: labels
+        type: object
+        additionalProperties:
+          type: string
+
+      from:
+        name: from
+        type: string
+        description: Evaluation start timestamp
+
+      to:
+        name: to
+        type: string
+        description: Evaluation end timestamp
+
+      timeframe:
+        name: timeframe
+        type: string
+        description: Evaluation timeframe

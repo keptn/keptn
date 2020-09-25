@@ -5,6 +5,7 @@ package restapi
 import (
 	"crypto/tls"
 	"fmt"
+	"github.com/keptn/keptn/api/restapi/operations/evaluation"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -89,6 +90,8 @@ func configureAPI(api *operations.KeptnAPI) http.Handler {
 	// Service endpoints
 	api.ServicePostProjectProjectNameServiceHandler = service.PostProjectProjectNameServiceHandlerFunc(handlers.PostServiceHandlerFunc)
 	api.ServiceDeleteProjectProjectNameServiceServiceNameHandler = service.DeleteProjectProjectNameServiceServiceNameHandlerFunc(handlers.DeleteServiceHandlerFunc)
+
+	api.EvaluationTriggerEvaluationHandler = evaluation.TriggerEvaluationHandlerFunc(handlers.TriggerEvaluationHandlerFunc)
 
 	api.ServerShutdown = func() {}
 
