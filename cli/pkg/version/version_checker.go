@@ -157,18 +157,24 @@ func (v *VersionChecker) CheckCLIVersion(cliVersion string, considerPrevCheck bo
 			}
 			msgPrinted := false
 			if newVersions.stable.newestCompatible != nil {
+				segments := newVersions.stable.newestCompatible.Segments()
+				majorMinorXVersion := fmt.Sprintf("%v.%v.x", segments[0], segments[1])
 				fmt.Printf(newCompatibleVersionMsg+"\n", newVersions.stable.newestCompatible.String(),
-					newVersions.stable.newestCompatible.String())
+					majorMinorXVersion)
 				msgPrinted = true
 			}
 			if newVersions.prerelease.newestCompatible != nil {
+				segments := newVersions.prerelease.newestCompatible.Segments()
+				majorMinorXVersion := fmt.Sprintf("%v.%v.x", segments[0], segments[1])
 				fmt.Printf(newCompatibleVersionMsg+"\n", newVersions.prerelease.newestCompatible.String(),
-					newVersions.prerelease.newestCompatible.String())
+					majorMinorXVersion)
 				msgPrinted = true
 			}
 			if newVersions.stable.newestIncompatible != nil {
+				segments := newVersions.stable.newestIncompatible.Segments()
+				majorMinorXVersion := fmt.Sprintf("%v.%v.x", segments[0], segments[1])
 				fmt.Printf(newIncompatibleVersionMsg+"\n", newVersions.stable.newestIncompatible.String(),
-					newVersions.stable.newestIncompatible.String())
+					majorMinorXVersion)
 				msgPrinted = true
 			}
 			if msgPrinted && considerPrevCheck {
