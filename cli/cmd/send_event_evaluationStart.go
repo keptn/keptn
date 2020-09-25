@@ -15,24 +15,33 @@
 package cmd
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
-	"net/url"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/cloudevents/sdk-go/pkg/cloudevents"
-	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
-	"github.com/google/uuid"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
-	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/spf13/cobra"
 )
+
+type triggerEvaluationRequest struct {
+
+	// Evaluation start timestamp
+	From string `json:"from,omitempty"`
+
+	// Evaluation timeframe
+	Timeframe string `json:"timeframe,omitempty"`
+
+	// Evaluation end timestamp
+	To string `json:"to,omitempty"`
+
+	// Labels labels for the evaluation
+	Labels map[string]string `json:"labels,omitempty"`
+}
 
 type evaluationStartStruct struct {
 	Project   *string            `json:"project"`
@@ -88,51 +97,28 @@ keptn send event start-evaluation --project=sockshop --stage=hardening --service
 			return fmt.Errorf("Start and end time of evaluation time frame not set: %s", err.Error())
 		}
 
-		startEvaluationEventData := keptnevents.StartEvaluationEventData{
-			Project:      *evaluationStart.Project,
-			Service:      *evaluationStart.Service,
-			Stage:        *evaluationStart.Stage,
-			TestStrategy: "manual",
-			Start:        start.Format("2006-01-02T15:04:05.000Z"),
-			End:          end.Format("2006-01-02T15:04:05.000Z"),
-			Labels:       *evaluationStart.Labels,
-		}
-
-		keptnContext := uuid.New().String()
-		source, _ := url.Parse("https://github.com/keptn/keptn/cli#configuration-change")
-		contentType := "application/json"
-		sdkEvent := cloudevents.Event{
-			Context: cloudevents.EventContextV02{
-				ID:          keptnContext,
-				Type:        keptnevents.StartEvaluationEventType,
-				Source:      types.URLRef{URL: *source},
-				ContentType: &contentType,
-			}.AsV02(),
-			Data: startEvaluationEventData,
-		}
-
-		eventByte, err := sdkEvent.MarshalJSON()
-		if err != nil {
-			return fmt.Errorf("Failed to marshal cloud event. %s", err.Error())
-		}
-
-		apiEvent := apimodels.KeptnContextExtendedCE{}
-		err = json.Unmarshal(eventByte, &apiEvent)
-		if err != nil {
-			return fmt.Errorf("Failed to map cloud event to API event model. %s", err.Error())
-		}
-
 		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
-			responseEvent, err := apiHandler.SendEvent(apiEvent)
+
+			response, err := apiHandler.TriggerEvaluation(
+				*evaluationStart.Project,
+				*evaluationStart.Stage,
+				*evaluationStart.Service,
+				apimodels.Evaluation{
+					From:   start.Format("2006-01-02T15:04:05"),
+					To:     end.Format("2006-01-02T15:04:05"),
+					Labels: *evaluationStart.Labels,
+				},
+			)
+
 			if err != nil {
 				logging.PrintLog("Send start-evaluation was unsuccessful", logging.QuietLevel)
 				return fmt.Errorf("Send start-evaluation was unsuccessful. %s", *err.Message)
 			}
 
-			if responseEvent == nil {
+			if response == nil {
 				logging.PrintLog("No event returned", logging.QuietLevel)
 				return nil
 			}
@@ -143,6 +129,10 @@ keptn send event start-evaluation --project=sockshop --stage=hardening --service
 		fmt.Println("Skipping send start-evaluation due to mocking flag set to true")
 		return nil
 	},
+}
+
+func stringp(s string) *string {
+	return &s
 }
 
 func getStartEndTime(startDatePoint string, endDatePoint string, timeframe string) (*time.Time, *time.Time, error) {
