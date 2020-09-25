@@ -21,8 +21,9 @@ if (!cliDownloadLink) {
   cliDownloadLink = "https://github.com/keptn/keptn/releases"
 }
 
+const oneWeek       = 7*24*3600000;    // 3600000msec == 1hour
 // host static files (angular app)
-app.use(express.static(path.join(__dirname, '../dist')));
+app.use(express.static(path.join(__dirname, '../dist'), { maxAge: oneWeek }));
 
 // add some middlewares
 app.use(logger('dev'));
