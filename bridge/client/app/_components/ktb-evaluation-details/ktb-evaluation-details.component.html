@@ -25,7 +25,7 @@
     </div>
   </div>
   <div (click)="$event.stopPropagation();" class="m-0 mr-2">
-    <dt-chart *ngIf="showChart && _comparisonView == 'heatmap'"
+    <dt-chart #heatmapChart *ngIf="showChart && _comparisonView == 'heatmap'"
               [options]="_heatmapOptions"
               [series]="_heatmapSeries"
               (seriesVisibilityChange)="seriesVisibilityChanged($event)">
