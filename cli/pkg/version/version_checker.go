@@ -115,8 +115,8 @@ func NewVersionChecker() *VersionChecker {
 	return &versionChecker
 }
 
-// getNewerCLIVersion checks for newer CLI versions if the automatic version check is enabled in the config
-func (v *VersionChecker) getNewerCLIVersion(cliConfig config.CLIConfig, usedVersionString string) (availableNewestVersions, error) {
+// getNewerCLIVersion checks for newer CLI versions
+func (v *VersionChecker) getNewerCLIVersion(usedVersionString string) (availableNewestVersions, error) {
 
 	cliVersionInfo, err := v.versionFetcherClient.getCLIVersionInfo(usedVersionString)
 	if err != nil {
@@ -150,7 +150,7 @@ func (v *VersionChecker) CheckCLIVersion(cliVersion string, considerPrevCheck bo
 		checkTime := time.Now()
 		if !considerPrevCheck || cliConfig.LastVersionCheck == nil ||
 			checkTime.Sub(*cliConfig.LastVersionCheck) >= checkInterval {
-			newVersions, err := v.getNewerCLIVersion(cliConfig, cliVersion)
+			newVersions, err := v.getNewerCLIVersion(cliVersion)
 			if err != nil {
 				logging.PrintLog(err.Error(), logging.InfoLevel)
 				return
