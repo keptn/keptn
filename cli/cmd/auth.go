@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"net"
 	"net/url"
@@ -17,6 +18,9 @@ import (
 
 var endPoint *string
 var apiToken *string
+var exportConfig *bool
+var exportEndPoint url.URL
+var exportAPIToken string
 
 // authCmd represents the auth command
 var authCmd = &cobra.Command{
@@ -32,6 +36,26 @@ More precisely, the Keptn CLI stores the endpoint and API token using *pass* in 
 	Example:      `keptn auth --endpoint=https://api.keptn.MY.DOMAIN.COM --api-token=abcd-0123-wxyz-7890`,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
+
+		var err error
+		if *exportConfig {
+			exportEndPoint, exportAPIToken, err = credentialmanager.NewCredentialManager().GetCreds()
+			if err != nil {
+				return err
+			}
+			fmt.Println("Endpoint = ", exportEndPoint.String())
+			fmt.Println("API Token = ", exportAPIToken)
+			return nil
+		}
+
+		if *endPoint == "" && *apiToken == "" {
+			return errors.New("required flag(s) \"api-token\", \"endpoint\" not set")
+		} else if *endPoint == "" {
+			return errors.New("required flag \"endpoint\" not set")
+		} else if *apiToken == "" {
+			return errors.New("required flag \"api-token\" not set")
+		}
+
 		logging.PrintLog("Starting to authenticate", logging.InfoLevel)
 
 		url, err := url.Parse(*endPoint)
@@ -89,9 +113,8 @@ func init() {
 	rootCmd.AddCommand(authCmd)
 
 	endPoint = authCmd.Flags().StringP("endpoint", "e", "", "The endpoint exposed by the Keptn installation (e.g., api.keptn.127.0.0.1.xip.io)")
-	authCmd.MarkFlagRequired("endpoint")
 	apiToken = authCmd.Flags().StringP("api-token", "a", "", "The API token to communicate with the Keptn installation")
-	authCmd.MarkFlagRequired("api-token")
+	exportConfig = authCmd.Flags().BoolP("export", "c", false, "To export the current cluster config i.e API token and Endpoint")
 }
 
 func lookupHostname(hostname string) bool {

@@ -9,3 +9,6 @@ cli
 
 # ignore support-archive folder if it exists
 support-archive
+
+# ignore the keptn cli binary generated after running go build -o keptn
+keptn
