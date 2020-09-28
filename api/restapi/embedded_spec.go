@@ -25,9 +25,6 @@ func init() {
   "produces": [
     "application/json"
   ],
-  "schemes": [
-    "http"
-  ],
   "swagger": "2.0",
   "info": {
     "title": "keptn api",
@@ -338,6 +335,49 @@ func init() {
           "$ref": "#/parameters/serviceName"
         }
       ]
+    },
+    "/project/{projectName}/stage/{stageName}/service/{serviceName}/evaluation": {
+      "post": {
+        "tags": [
+          "evaluation"
+        ],
+        "summary": "Trigger a new evaluation",
+        "operationId": "triggerEvaluation",
+        "parameters": [
+          {
+            "$ref": "#/parameters/projectName"
+          },
+          {
+            "$ref": "#/parameters/stageName"
+          },
+          {
+            "$ref": "#/parameters/serviceName"
+          },
+          {
+            "$ref": "#/parameters/evaluation"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Evaluation has been triggered",
+            "schema": {
+              "$ref": "response_model.yaml#/definitions/eventContext"
+            }
+          },
+          "400": {
+            "description": "Evaluation could not be triggered",
+            "schema": {
+              "$ref": "response_model.yaml#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "response_model.yaml#/definitions/error"
+            }
+          }
+        }
+      }
     }
   },
   "parameters": {
@@ -347,6 +387,14 @@ func init() {
       "in": "body",
       "schema": {
         "$ref": "configure_model.yaml#/definitions/configureBridge"
+      }
+    },
+    "evaluation": {
+      "description": "Evaluation",
+      "name": "evaluation",
+      "in": "body",
+      "schema": {
+        "$ref": "evaluation_model.yaml#/definitions/evaluation"
       }
     },
     "project": {
@@ -407,9 +455,6 @@ func init() {
   ],
   "produces": [
     "application/json"
-  ],
-  "schemes": [
-    "http"
   ],
   "swagger": "2.0",
   "info": {
@@ -752,6 +797,66 @@ func init() {
           "required": true
         }
       ]
+    },
+    "/project/{projectName}/stage/{stageName}/service/{serviceName}/evaluation": {
+      "post": {
+        "tags": [
+          "evaluation"
+        ],
+        "summary": "Trigger a new evaluation",
+        "operationId": "triggerEvaluation",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Name of the project",
+            "name": "projectName",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Name of the stage",
+            "name": "stageName",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Name of the service",
+            "name": "serviceName",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Evaluation",
+            "name": "evaluation",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/evaluation"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Evaluation has been triggered",
+            "schema": {
+              "$ref": "#/definitions/eventContext"
+            }
+          },
+          "400": {
+            "description": "Evaluation could not be triggered",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -785,6 +890,33 @@ func init() {
         },
         "message": {
           "type": "string"
+        }
+      }
+    },
+    "evaluation": {
+      "type": "object",
+      "properties": {
+        "from": {
+          "description": "Evaluation start timestamp",
+          "type": "string",
+          "name": "from"
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "name": "labels"
+        },
+        "timeframe": {
+          "description": "Evaluation timeframe",
+          "type": "string",
+          "name": "timeframe"
+        },
+        "to": {
+          "description": "Evaluation end timestamp",
+          "type": "string",
+          "name": "to"
         }
       }
     },
@@ -923,6 +1055,14 @@ func init() {
       "in": "body",
       "schema": {
         "$ref": "#/definitions/configureBridge"
+      }
+    },
+    "evaluation": {
+      "description": "Evaluation",
+      "name": "evaluation",
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/evaluation"
       }
     },
     "project": {
