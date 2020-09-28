@@ -56,7 +56,7 @@ func (c KeptnVersionChecker) CheckKeptnVersion(cliVersion, clusterVersion string
 	return false, msgPrinted
 }
 
-// getNewestStableVersion returns the newest stable version to wihch the current version can be upgraded
+// getNewestStableVersion returns the newest stable version to which the current version can be upgraded
 func (c KeptnVersionChecker) getNewestStableVersion(cliVersion, keptnVersion string) (*version.Version, error) {
 	keptnVersionInfo, err := c.versionFetcherClient.getKeptnVersionInfo(cliVersion)
 	if err != nil {
