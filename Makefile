@@ -9,7 +9,7 @@ UTILDIR := $(PROJECTROOT)/make-scripts/utils
 SPINNER := $(UTILDIR)/spinner.sh
 BUILDIR := $(PROJECTROOT)/make-scripts/build
 
-UNITTESTCOMMAND := $(shell cd cli/cmd/; go test -v)
+CREATEBIN := $(shell [ ! -d ./bin ] && mkdir bin)
 
 # Make is verbose in Linux. Make it silent.
 MAKEFLAGS += --silent
@@ -63,11 +63,12 @@ clean:
 ## Run unit tests on the CLI
 test-unit-cli:
 	@printf "⚙️ Running unit tests on the CLI\n" 
-	@$(UNITTESTCOMMAND)
+	@./make-scripts/run_cli_test.sh
 	@printf "👍 Done\n"
 
 ## Prepare code for PR
-prepare-for-pr: fmt lint test-unit-cli
+prepare-for-pr: fmt lint
+	@printf "❗️ Remember to run the tests"
 	@git diff-index --quiet HEAD -- ||\
 	(echo "-----------------" &&\
 	echo "NOTICE: There are some files that have not been committed." &&\
@@ -79,6 +80,17 @@ prepare-for-pr: fmt lint test-unit-cli
 	exit 0)
 
 help:
-	@printf "Keptn"
-	@printf "Help is coming soon..."
-	@printf ""
+	@echo "KEPTN"
+	@echo ""
+	@echo "* build-cli: Build the keptn cli and save it in bin/"
+	@echo "* start-bridge: Start the bridge server"
+	@echo "* install-helm: Install the helm binary in your local"
+	@echo "* install-golint: Install golint for linting the code"
+	@echo "* fmt: Formats the codebase"
+	@echo "* lint: Lints the codebase"
+	@echo "* clean: Cleans the build cache"
+	@echo "* test-unit-cli: Run unit tests on the Keptn CLI"
+	@echo "* prepare-for-pr: Makes the code ready for PR by formatting, linting and checking for uncommitted files"
+	@echo ""
+	@echo "Please visit https://keptn.sh for more information."
+	@echo "Get in touch with us via Slack: https://slack.keptn.sh"
