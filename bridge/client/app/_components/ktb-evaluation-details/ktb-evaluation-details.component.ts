@@ -334,16 +334,24 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
 
   highlightHeatmap() {
     let highlightIndex = this._heatmapOptions.xAxis[0].categories.indexOf(moment(this._selectedEvaluationData.time).format());
+    let secondaryHighlightIndexes = this._selectedEvaluationData?.data.evaluationdetails.comparedEvents?.map(eventId => this._heatmapSeries[0]?.data.find(e => e['evaluation'].id == eventId)?.x);
     let plotBands = [];
     if(highlightIndex >= 0)
       plotBands.push({
-        borderWidth: 2,
-        borderColor: '#6d6d6d',
-        color: 'rgba(109,109,109,.4)',
+        className: 'highlight-primary',
         from: highlightIndex-0.5,
         to: highlightIndex+0.5,
         zIndex: 20
       });
+    secondaryHighlightIndexes?.forEach(highlightIndex => {
+      if(highlightIndex >= 0)
+        plotBands.push({
+          className: 'highlight-secondary',
+          from: highlightIndex-0.5,
+          to: highlightIndex+0.5,
+          zIndex: 20
+        });
+    });
     this._heatmapOptions.xAxis[0].plotBands = plotBands;
     this.heatmapChart?._update();
     this._changeDetectorRef.markForCheck();

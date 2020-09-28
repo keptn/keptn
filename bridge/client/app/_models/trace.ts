@@ -50,6 +50,7 @@ class Trace {
     };
 
     evaluationdetails: {
+      comparedEvents: string[];
       indicatorResults: any;
       result: string;
       score: number;
