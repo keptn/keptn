@@ -178,7 +178,7 @@ class Trace {
       if(this.isProblem() && this.isProblemResolvedOrClosed()) {
         this.label = EVENT_LABELS[EventTypes.PROBLEM_RESOLVED];
       } else if(this.isApprovalFinished()) {
-        this.label = EVENT_LABELS[EventTypes.APPROVAL_FINISHED][this.data.approval.result];
+        this.label = EVENT_LABELS[EventTypes.APPROVAL_FINISHED][this.data.approval?.result] || this.type;
       } else {
         this.label = EVENT_LABELS[this.type] || this.type;
       }
@@ -190,7 +190,7 @@ class Trace {
   getIcon() {
     if(!this.icon) {
       if(this.isApprovalFinished()) {
-        this.icon = EVENT_ICONS[this.type][this.data.approval.result];
+        this.icon = EVENT_ICONS[EventTypes.APPROVAL_FINISHED][this.data.approval?.result] || DEFAULT_ICON;
       } else {
         this.icon = EVENT_ICONS[this.type] || DEFAULT_ICON;
       }
