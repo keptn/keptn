@@ -12,7 +12,7 @@ var (
 	Version = "develop"
 
 	// KubeServerVersionConstraints the Kubernetes Cluster version's constraints is passed by ldflags
-	KubeServerVersionConstraints = ">= 1.14, <= 1.18"
+	KubeServerVersionConstraints = ">= 1.14, <= 1.19"
 )
 
 func init() {
