@@ -44,8 +44,7 @@ func Execute() {
 	currentLogLevel := logging.LogLevel
 	logging.LogLevel = logging.QuietLevel
 
-	vChecker := version.NewVersionChecker()
-	vChecker.CheckCLIVersion(Version, true)
+	runDailyVersionCheck()
 
 	// Set LogLevel back to previous state
 	logging.LogLevel = currentLogLevel
@@ -107,5 +106,30 @@ type options []string
 func (s *options) appendIfNotEmpty(newOption string) {
 	if newOption != "" {
 		*s = append(*s, newOption)
+	}
+}
+
+func runDailyVersionCheck() {
+	vChecker := version.NewVersionChecker()
+	cliMsgPrinted, cliChecked := vChecker.CheckCLIVersion(Version, true)
+
+	keptnVersion, err := getInstalledKeptnVersion()
+	if err != nil {
+		logging.PrintLog(err.Error(), logging.InfoLevel)
+		return
+	}
+	kvChecker := version.NewKeptnVersionChecker()
+	keptnMsgPrinted, keptnChecked := kvChecker.CheckKeptnVersion(Version, keptnVersion, true)
+
+	if cliMsgPrinted || keptnMsgPrinted {
+		fmt.Println(updateInfoMsg)
+		if len(os.Args) > 0 {
+			fmt.Printf(disableVersionCheckMsg+"\n", os.Args[0])
+		} else {
+			fmt.Printf(disableVersionCheckMsg+"\n", "keptn")
+		}
+	}
+	if cliChecked || keptnChecked {
+		updateLastVersionCheck()
 	}
 }

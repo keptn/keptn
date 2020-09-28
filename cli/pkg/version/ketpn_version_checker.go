@@ -3,8 +3,10 @@ package version
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/go-version"
+	"github.com/keptn/keptn/cli/pkg/config"
 	"github.com/keptn/keptn/cli/pkg/logging"
 )
 
@@ -18,6 +20,66 @@ func NewKeptnVersionChecker() *KeptnVersionChecker {
 	versionChecker := KeptnVersionChecker{}
 	versionChecker.versionFetcherClient = newVersionFetcherClient()
 	return &versionChecker
+}
+
+const newKeptnVersionMsg = `* Keptn version %s is available! Please visit https://keptn.sh/docs/%s/operate/upgrade/ for more information.`
+
+// CheckKeptnVersion checks whether there is a new Keptn version available and prints corresponding
+// messages to the stdout
+func (c KeptnVersionChecker) CheckKeptnVersion(cliVersion, clusterVersion string, considerPrevCheck bool) (bool, bool) {
+	configMng := config.NewCLIConfigManager()
+	cliConfig, err := configMng.LoadCLIConfig()
+	if err != nil {
+		logging.PrintLog(err.Error(), logging.InfoLevel)
+		return false, false
+	}
+
+	msgPrinted := false
+	if cliConfig.AutomaticVersionCheck && IsOfficialKeptnVersion(clusterVersion) {
+		checkTime := time.Now()
+		if !considerPrevCheck || cliConfig.LastVersionCheck == nil ||
+			checkTime.Sub(*cliConfig.LastVersionCheck) >= checkInterval {
+			newVersion, err := c.getNewestStableVersion(cliVersion, clusterVersion)
+			if err != nil {
+				logging.PrintLog(err.Error(), logging.InfoLevel)
+				return false, false
+			}
+			if newVersion != nil {
+				fmt.Printf(newKeptnVersionMsg+"\n", newVersion.String())
+				msgPrinted = true
+			}
+			return msgPrinted, true
+		}
+	}
+	return msgPrinted, false
+}
+
+// getNewestStableVersion returns the newest stable version to wihch the current version can be upgraded
+func (c KeptnVersionChecker) getNewestStableVersion(cliVersion, keptnVersion string) (*version.Version, error) {
+	keptnVersionInfo, err := c.versionFetcherClient.getKeptnVersionInfo(cliVersion)
+	if err != nil {
+		return nil, fmt.Errorf("error when fetching Keptn version infos: %v", err)
+	}
+
+	currentVersion, err := version.NewSemver(keptnVersion)
+	if err != nil {
+		return nil, fmt.Errorf("error when parsing current Keptn version: %v", err)
+	}
+
+	var latestVersion *version.Version
+	for _, kv := range keptnVersionInfo.Stable {
+		availableVersion, err := version.NewSemver(kv.Version)
+		if err != nil {
+			logging.PrintLog(fmt.Sprintf("error when parsing version %s", kv.Version), logging.InfoLevel)
+			continue
+		}
+		if availableVersion.Compare(currentVersion) > 0 && contains(kv.UpgradableVersions, keptnVersion) {
+			if latestVersion == nil || availableVersion.Compare(latestVersion) > 0 {
+				latestVersion = availableVersion
+			}
+		}
+	}
+	return latestVersion, nil
 }
 
 // GetStableVersions returns a list of all stable version to which the current version can be upgraded
