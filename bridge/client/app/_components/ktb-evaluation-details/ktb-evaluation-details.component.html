@@ -51,9 +51,13 @@
       <dt-consumption-title>Evaluation of <span [textContent]="_selectedEvaluationData.data.teststrategy"></span> test on <span [textContent]="_selectedEvaluationData.data.stage"></span></dt-consumption-title>
       <dt-consumption-count>
         <p class="m-0">
-          <span class="error" *ngIf="_selectedEvaluationData.isFailed()"><span class="bold" [textContent]="_selectedEvaluationData.data.evaluationdetails.score | number:'1.0-0'"></span> < </span>
-          <span class="small" *ngIf="(_selectedEvaluationData.isFailed() || _selectedEvaluationData.isWarning()) && _selectedEvaluationData.data.evaluationdetails.score_warning" [textContent]="_selectedEvaluationData.data.evaluationdetails.score_warning"></span>
-          <span class="warning" *ngIf="_selectedEvaluationData.isWarning()"> < <span class="bold" [textContent]="_selectedEvaluationData.data.evaluationdetails.score | number:'1.0-0'"></span> < </span>
+          <span class="error" *ngIf="_selectedEvaluationData.isFailed()"><span class="bold" [textContent]="_selectedEvaluationData.data.evaluationdetails.score | number:'1.0-0'"></span></span>
+          <span class="small" *ngIf="(_selectedEvaluationData.isFailed() || _selectedEvaluationData.isWarning()) && _selectedEvaluationData.data.evaluationdetails.score_warning">
+            <span *ngIf="_selectedEvaluationData.isFailed()"> < </span>
+            <span [textContent]="_selectedEvaluationData.data.evaluationdetails.score_warning"></span>
+            <span *ngIf="_selectedEvaluationData.isWarning()"> < </span>
+          </span>
+          <span class="warning" *ngIf="_selectedEvaluationData.isWarning()"><span class="bold" [textContent]="_selectedEvaluationData.data.evaluationdetails.score | number:'1.0-0'"></span></span>
           <span class="small" *ngIf="!(_selectedEvaluationData.isFailed() && _selectedEvaluationData.data.evaluationdetails.score_warning) && _selectedEvaluationData.data.evaluationdetails.score_pass">
             <span *ngIf="_selectedEvaluationData.isFailed() || _selectedEvaluationData.isWarning()"> < </span>
             <span [textContent]="_selectedEvaluationData.data.evaluationdetails.score_pass"></span>
