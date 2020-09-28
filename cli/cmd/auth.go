@@ -124,12 +124,14 @@ func verifyAuthParams(authParams *authCmdParams) error {
 		return nil
 	}
 
-	if authParams.endPoint == nil && authParams.apiToken == nil {
-		return errors.New("required flag(s) \"api-token\", \"endpoint\" not set")
-	} else if authParams.endPoint == nil {
-		return errors.New("required flag \"endpoint\" not set")
-	} else if authParams.apiToken == nil {
-		return errors.New("required flag \"api-token\" not set")
+	if !mocking {
+		if (authParams.endPoint == nil || *authParams.endPoint == "") && (authParams.apiToken == nil || *authParams.apiToken == "") {
+			return errors.New("required flag(s) \"api-token\", \"endpoint\" not set")
+		} else if authParams.endPoint == nil || *authParams.endPoint == "" {
+			return errors.New("required flag \"endpoint\" not set")
+		} else if authParams.apiToken == nil || *authParams.apiToken == "" {
+			return errors.New("required flag \"api-token\" not set")
+		}
 	}
 	return nil
 }
