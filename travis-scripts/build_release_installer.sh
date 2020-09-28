@@ -38,7 +38,6 @@ if [ $? -ne 0 ]; then
 fi
 
 # upload to gcloud
-# commented out on purpose by CKreuzberger: Do not upload index.yaml for now, as it might break things
-# gsutil cp keptn-charts/index.yaml gs://keptn-installer/index.yaml
+gsutil cp keptn-charts/index.yaml gs://keptn-installer/index.yaml
 
 gsutil cp keptn-charts/keptn-${VERSION}.tgz gs://keptn-installer/keptn-${VERSION}.tgz
