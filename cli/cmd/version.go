@@ -40,10 +40,6 @@ const setVersionCheckMsg = `* To %s the daily version check, please execute:
 `
 const keptnReleaseDocsURL = "0.7.x"
 
-const updateInfoMsg = `
-Please visit https://keptn.sh for more information about updating.
-`
-
 const disableVersionCheckMsg = "To disable this notice, run: '%s set config AutomaticVersionCheck false'"
 
 // KubeServerVersionConstraints the Kubernetes Cluster version's constraints is passed by ldflags
@@ -62,29 +58,25 @@ var versionCmd = &cobra.Command{
 			return
 		}
 
-		var cliMsgPrinted, cliChecked, keptnMsgPrinted, keptnChecked bool
+		var cliChecked, keptnChecked bool
 
 		// Keptn CLI
 		fmt.Println("\nKeptn CLI version: " + Version)
 		if isLastCheckStale {
 			vChecker := version.NewVersionChecker()
-			cliMsgPrinted, cliChecked = vChecker.CheckCLIVersion(Version, false)
+			cliChecked, _ = vChecker.CheckCLIVersion(Version, false)
 		}
 
 		// Keptn
 		keptnVersion, err := getInstalledKeptnVersion()
 		if err != nil {
 			logging.PrintLog(err.Error(), logging.InfoLevel)
-			return
-		}
-		fmt.Println("\nKeptn cluster version: " + keptnVersion)
-		if isLastCheckStale {
-			kvChecker := version.NewKeptnVersionChecker()
-			keptnMsgPrinted, keptnChecked = kvChecker.CheckKeptnVersion(Version, keptnVersion, false)
-		}
-
-		if cliMsgPrinted || keptnMsgPrinted {
-			fmt.Println(updateInfoMsg)
+		} else {
+			fmt.Println("\nKeptn cluster version: " + keptnVersion)
+			if isLastCheckStale {
+				kvChecker := version.NewKeptnVersionChecker()
+				keptnChecked, _ = kvChecker.CheckKeptnVersion(Version, keptnVersion, false)
+			}
 		}
 
 		if cliChecked || keptnChecked {

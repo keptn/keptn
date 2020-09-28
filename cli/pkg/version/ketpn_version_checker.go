@@ -45,13 +45,15 @@ func (c KeptnVersionChecker) CheckKeptnVersion(cliVersion, clusterVersion string
 				return false, false
 			}
 			if newVersion != nil {
-				fmt.Printf(newKeptnVersionMsg+"\n", newVersion.String())
+				segments := newVersion.Segments()
+				majorMinorXVersion := fmt.Sprintf("%v.%v.x", segments[0], segments[1])
+				fmt.Printf(newKeptnVersionMsg+"\n", newVersion.String(), majorMinorXVersion)
 				msgPrinted = true
 			}
-			return msgPrinted, true
+			return true, msgPrinted
 		}
 	}
-	return msgPrinted, false
+	return false, msgPrinted
 }
 
 // getNewestStableVersion returns the newest stable version to wihch the current version can be upgraded

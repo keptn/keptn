@@ -110,19 +110,20 @@ func (s *options) appendIfNotEmpty(newOption string) {
 }
 
 func runDailyVersionCheck() {
+	var cliMsgPrinted, cliChecked, keptnMsgPrinted, keptnChecked bool
+
 	vChecker := version.NewVersionChecker()
-	cliMsgPrinted, cliChecked := vChecker.CheckCLIVersion(Version, true)
+	cliChecked, cliMsgPrinted = vChecker.CheckCLIVersion(Version, true)
 
 	keptnVersion, err := getInstalledKeptnVersion()
 	if err != nil {
 		logging.PrintLog(err.Error(), logging.InfoLevel)
-		return
+	} else {
+		kvChecker := version.NewKeptnVersionChecker()
+		keptnChecked, keptnMsgPrinted = kvChecker.CheckKeptnVersion(Version, keptnVersion, true)
 	}
-	kvChecker := version.NewKeptnVersionChecker()
-	keptnMsgPrinted, keptnChecked := kvChecker.CheckKeptnVersion(Version, keptnVersion, true)
 
 	if cliMsgPrinted || keptnMsgPrinted {
-		fmt.Println(updateInfoMsg)
 		if len(os.Args) > 0 {
 			fmt.Printf(disableVersionCheckMsg+"\n", os.Args[0])
 		} else {

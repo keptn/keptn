@@ -175,10 +175,10 @@ func (v *VersionChecker) CheckCLIVersion(cliVersion string, considerPrevCheck bo
 					majorMinorXVersion)
 				msgPrinted = true
 			}
-			return msgPrinted, true
+			return true, msgPrinted
 		}
 	}
-	return msgPrinted, false
+	return false, msgPrinted
 }
 
 // IsOfficialKeptnVersion checks whether the provided version string follows a Keptn version pattern
