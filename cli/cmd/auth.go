@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"net"
 	"net/url"
@@ -15,8 +16,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var endPoint *string
-var apiToken *string
+type authCmdParams struct {
+	endPoint     *string
+	apiToken     *string
+	exportConfig *bool
+}
+
+var authParams *authCmdParams
+var exportEndPoint url.URL
+var exportAPIToken string
 
 // authCmd represents the auth command
 var authCmd = &cobra.Command{
@@ -31,10 +39,26 @@ More precisely, the Keptn CLI stores the endpoint and API token using *pass* in 
 	`,
 	Example:      `keptn auth --endpoint=https://api.keptn.MY.DOMAIN.COM --api-token=abcd-0123-wxyz-7890`,
 	SilenceUsage: true,
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		return verifyAuthParams(authParams)
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
+
+		var err error
+		// User wants to print current auth credentials
+		if *authParams.exportConfig {
+			exportEndPoint, exportAPIToken, err = credentialmanager.NewCredentialManager().GetCreds()
+			if err != nil {
+				return err
+			}
+			fmt.Println("Endpoint: ", exportEndPoint.String())
+			fmt.Println("API Token: ", exportAPIToken)
+			return nil
+		}
+
 		logging.PrintLog("Starting to authenticate", logging.InfoLevel)
 
-		url, err := url.Parse(*endPoint)
+		url, err := url.Parse(*authParams.endPoint)
 		if err != nil {
 			logging.PrintLog("Error parsing Keptn API URL", logging.InfoLevel)
 			return err
@@ -44,7 +68,7 @@ More precisely, the Keptn CLI stores the endpoint and API token using *pass* in 
 			url.Path = "/api"
 		}
 
-		authHandler := apiutils.NewAuthenticatedAuthHandler(url.String(), *apiToken, "x-token", nil, url.Scheme)
+		authHandler := apiutils.NewAuthenticatedAuthHandler(url.String(), *authParams.apiToken, "x-token", nil, url.Scheme)
 
 		if !mocking {
 			authenticated := false
@@ -53,7 +77,7 @@ More precisely, the Keptn CLI stores the endpoint and API token using *pass* in 
 				return fmt.Errorf("Authentication was unsuccessful - could not resolve hostname.")
 			}
 
-			if endPointErr := checkEndPointStatus(*endPoint); endPointErr != nil {
+			if endPointErr := checkEndPointStatus(*authParams.endPoint); endPointErr != nil {
 				return fmt.Errorf("Authentication was unsucessful: %s"+endPointErrorReasons,
 					endPointErr)
 			}
@@ -77,7 +101,7 @@ More precisely, the Keptn CLI stores the endpoint and API token using *pass* in 
 			}
 
 			logging.PrintLog("Successfully authenticated", logging.InfoLevel)
-			return credentialmanager.NewCredentialManager().SetCreds(*url, *apiToken)
+			return credentialmanager.NewCredentialManager().SetCreds(*url, *authParams.apiToken)
 		}
 
 		fmt.Println("skipping auth due to mocking flag set to true")
@@ -87,11 +111,29 @@ More precisely, the Keptn CLI stores the endpoint and API token using *pass* in 
 
 func init() {
 	rootCmd.AddCommand(authCmd)
+	authParams = &authCmdParams{}
 
-	endPoint = authCmd.Flags().StringP("endpoint", "e", "", "The endpoint exposed by the Keptn installation (e.g., api.keptn.127.0.0.1.xip.io)")
-	authCmd.MarkFlagRequired("endpoint")
-	apiToken = authCmd.Flags().StringP("api-token", "a", "", "The API token to communicate with the Keptn installation")
-	authCmd.MarkFlagRequired("api-token")
+	authParams.endPoint = authCmd.Flags().StringP("endpoint", "e", "", "The endpoint exposed by the Keptn installation (e.g., api.keptn.127.0.0.1.xip.io)")
+	authParams.apiToken = authCmd.Flags().StringP("api-token", "a", "", "The API token to communicate with the Keptn installation")
+	authParams.exportConfig = authCmd.Flags().BoolP("export", "c", false, "To export the current cluster config i.e API token and Endpoint")
+}
+
+func verifyAuthParams(authParams *authCmdParams) error {
+
+	if *authParams.exportConfig {
+		return nil
+	}
+
+	if !mocking {
+		if (authParams.endPoint == nil || *authParams.endPoint == "") && (authParams.apiToken == nil || *authParams.apiToken == "") {
+			return errors.New("required flag(s) \"api-token\", \"endpoint\" not set")
+		} else if authParams.endPoint == nil || *authParams.endPoint == "" {
+			return errors.New("required flag \"endpoint\" not set")
+		} else if authParams.apiToken == nil || *authParams.apiToken == "" {
+			return errors.New("required flag \"api-token\" not set")
+		}
+	}
+	return nil
 }
 
 func lookupHostname(hostname string) bool {
