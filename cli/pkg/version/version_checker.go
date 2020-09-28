@@ -130,9 +130,9 @@ func (v *VersionChecker) getNewerCLIVersion(cliConfig config.CLIConfig, usedVers
 	return res, nil
 }
 
-const newCompatibleVersionMsg = `keptn version %s is available! Please visit https://keptn.sh for more information.`
-const newIncompatibleVersionMsg = `keptn version %s is available! Please note that this version might be incompatible with your Keptn cluster ` +
-	`version and requires to update the cluster too. Please visit https://keptn.sh for more information.`
+const newCompatibleVersionMsg = `Keptn CLI version %s is available! Please visit https://keptn.sh/docs/%s/operate/upgrade/ for more information.`
+const newIncompatibleVersionMsg = `Keptn CLI version %s is available! Please note that this version might be incompatible with your Keptn cluster ` +
+	`version and requires to update the cluster too. Please visit https://keptn.sh/docs/%s/operate/upgrade/ for more information.`
 const disableMsg = `To disable this notice, run: '%s set config AutomaticVersionCheck false'`
 
 // CheckCLIVersion checks whether there is a new CLI version available and prints corresponding
@@ -157,15 +157,24 @@ func (v *VersionChecker) CheckCLIVersion(cliVersion string, considerPrevCheck bo
 			}
 			msgPrinted := false
 			if newVersions.stable.newestCompatible != nil {
-				fmt.Printf(newCompatibleVersionMsg+"\n", newVersions.stable.newestCompatible.String())
+				segments := newVersions.stable.newestCompatible.Segments()
+				majorMinorXVersion := fmt.Sprintf("%v.%v.x", segments[0], segments[1])
+				fmt.Printf(newCompatibleVersionMsg+"\n", newVersions.stable.newestCompatible.String(),
+					majorMinorXVersion)
 				msgPrinted = true
 			}
 			if newVersions.prerelease.newestCompatible != nil {
-				fmt.Printf(newCompatibleVersionMsg+"\n", newVersions.prerelease.newestCompatible)
+				segments := newVersions.prerelease.newestCompatible.Segments()
+				majorMinorXVersion := fmt.Sprintf("%v.%v.x", segments[0], segments[1])
+				fmt.Printf(newCompatibleVersionMsg+"\n", newVersions.prerelease.newestCompatible.String(),
+					majorMinorXVersion)
 				msgPrinted = true
 			}
 			if newVersions.stable.newestIncompatible != nil {
-				fmt.Printf(newIncompatibleVersionMsg+"\n", newVersions.stable.newestIncompatible.String())
+				segments := newVersions.stable.newestIncompatible.Segments()
+				majorMinorXVersion := fmt.Sprintf("%v.%v.x", segments[0], segments[1])
+				fmt.Printf(newIncompatibleVersionMsg+"\n", newVersions.stable.newestIncompatible.String(),
+					majorMinorXVersion)
 				msgPrinted = true
 			}
 			if msgPrinted && considerPrevCheck {
