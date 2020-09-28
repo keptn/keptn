@@ -629,6 +629,7 @@ jobs:
       - K3S_VERSION=v1.18.3+k3s1 # see https://github.com/rancher/k3s/releases
 
   - <<: *K3sStandaloneTest
+    env:
       - K3S_VERSION=v1.19.2+k3s1 # see https://github.com/rancher/k3s/releases
 
   - &microk8sStandaloneTest
