@@ -345,7 +345,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
         zIndex: 20
       });
     this._heatmapOptions.xAxis[0].plotBands = plotBands;
-    this.heatmapChart._update();
+    this.heatmapChart?._update();
     this._changeDetectorRef.markForCheck();
   }
 
