@@ -100,7 +100,7 @@ echo "Sending start-evaluation event for service 'wrong-service' in stage harden
 
 response=$(send_start_evaluation_request $PROJECT wrong-stage wrong-service)
 
-# check if the error response tells us that the stage does not exist
+# check if the error response tells us that the service does not exist
 if [[ $response != *"Service not found"* ]]; then
   echo "Did not receive expected response from Keptn API"
   exit 1
@@ -129,7 +129,7 @@ echo "Sending start-evaluation event for service 'wrong-service' in stage 'wrong
 
 response=$(send_start_evaluation_request $PROJECT wrong-stage wrong-service)
 
-# check if the error response tells us that the stage does not exist
+# check if the error response tells us that the project does not exist
 if [[ $response != *"Project not found"* ]]; then
   echo "Did not receive expected response from Keptn API"
   exit 1
