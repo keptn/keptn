@@ -49,6 +49,7 @@ COPY --from=builder /go/src/github.com/keptn/keptn/api/project_model.yaml /swagg
 COPY --from=builder /go/src/github.com/keptn/keptn/api/response_model.yaml /swagger-ui/response_model.yaml
 COPY --from=builder /go/src/github.com/keptn/keptn/api/service_model.yaml /swagger-ui/service_model.yaml
 COPY --from=builder /go/src/github.com/keptn/keptn/api/configure_model.yaml /swagger-ui/configure_model.yaml
+COPY --from=builder /go/src/github.com/keptn/keptn/api/evaluation_model.yaml /swagger-ui/evaluation_model.yaml
 
 RUN sed -i "s|basePath: /v1|basePath: /api/v1 |g" /swagger-ui/swagger.yaml
 
