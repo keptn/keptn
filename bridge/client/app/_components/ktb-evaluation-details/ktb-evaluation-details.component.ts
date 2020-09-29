@@ -334,7 +334,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
 
   highlightHeatmap() {
     let highlightIndex = this._heatmapOptions.xAxis[0].categories.indexOf(moment(this._selectedEvaluationData.time).format());
-    let secondaryHighlightIndexes = this._selectedEvaluationData?.data.evaluationdetails.comparedEvents?.map(eventId => this._heatmapSeries[0]?.data.find(e => e['evaluation'].id == eventId)?.x);
+    let secondaryHighlightIndexes = this._selectedEvaluationData?.data.evaluationdetails.comparedEvents?.map(eventId => this._heatmapSeries[0]?.data.findIndex(e => e['evaluation'].id == eventId));
     let plotBands = [];
     if(highlightIndex >= 0)
       plotBands.push({
