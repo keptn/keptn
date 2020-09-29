@@ -1,4 +1,5 @@
 import {EventTypes} from "./event-types";
+import {ApprovalStates} from "./approval-states";
 
 export const EVENT_LABELS = {
   [EventTypes.SERVICE_CREATE]: "Service created",
@@ -16,7 +17,10 @@ export const EVENT_LABELS = {
   [EventTypes.PROBLEM_RESOLVED]: "Problem resolved",
   [EventTypes.PROBLEM_CLOSED]: "Problem closed",
   [EventTypes.APPROVAL_TRIGGERED]: "Approval triggered",
-  [EventTypes.APPROVAL_FINISHED]: "Approval finished",
+  [EventTypes.APPROVAL_FINISHED]: {
+    [ApprovalStates.APPROVED]: "Approval finished",
+    [ApprovalStates.DECLINED]: "Approval declined"
+  },
   [EventTypes.REMEDIATION_TRIGGERED]: 'Remediation triggered',
   [EventTypes.REMEDIATION_STATUS_CHANGED]: 'Remediation status changed',
   [EventTypes.REMEDIATION_FINISHED]: 'Remediation finished',
