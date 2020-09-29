@@ -896,10 +896,10 @@ func init() {
     "evaluation": {
       "type": "object",
       "properties": {
-        "from": {
-          "description": "Evaluation start timestamp",
+        "end": {
+          "description": "Evaluation end timestamp",
           "type": "string",
-          "name": "from"
+          "name": "to"
         },
         "labels": {
           "type": "object",
@@ -908,15 +908,15 @@ func init() {
           },
           "name": "labels"
         },
+        "start": {
+          "description": "Evaluation start timestamp",
+          "type": "string",
+          "name": "from"
+        },
         "timeframe": {
           "description": "Evaluation timeframe",
           "type": "string",
           "name": "timeframe"
-        },
-        "to": {
-          "description": "Evaluation end timestamp",
-          "type": "string",
-          "name": "to"
         }
       }
     },

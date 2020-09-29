@@ -133,8 +133,8 @@ keptn send event start-evaluation --project=sockshop --stage=hardening --service
 				*evaluationStart.Stage,
 				*evaluationStart.Service,
 				apimodels.Evaluation{
-					From:   start.Format("2006-01-02T15:04:05"),
-					To:     end.Format("2006-01-02T15:04:05"),
+					Start:  start.Format("2006-01-02T15:04:05"),
+					End:    end.Format("2006-01-02T15:04:05"),
 					Labels: *evaluationStart.Labels,
 				},
 			)
