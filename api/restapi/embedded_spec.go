@@ -345,15 +345,6 @@ func init() {
         "operationId": "triggerEvaluation",
         "parameters": [
           {
-            "$ref": "#/parameters/projectName"
-          },
-          {
-            "$ref": "#/parameters/stageName"
-          },
-          {
-            "$ref": "#/parameters/serviceName"
-          },
-          {
             "$ref": "#/parameters/evaluation"
           }
         ],
@@ -377,7 +368,18 @@ func init() {
             }
           }
         }
-      }
+      },
+      "parameters": [
+        {
+          "$ref": "#/parameters/projectName"
+        },
+        {
+          "$ref": "#/parameters/stageName"
+        },
+        {
+          "$ref": "#/parameters/serviceName"
+        }
+      ]
     }
   },
   "parameters": {
@@ -807,27 +809,6 @@ func init() {
         "operationId": "triggerEvaluation",
         "parameters": [
           {
-            "type": "string",
-            "description": "Name of the project",
-            "name": "projectName",
-            "in": "path",
-            "required": true
-          },
-          {
-            "type": "string",
-            "description": "Name of the stage",
-            "name": "stageName",
-            "in": "path",
-            "required": true
-          },
-          {
-            "type": "string",
-            "description": "Name of the service",
-            "name": "serviceName",
-            "in": "path",
-            "required": true
-          },
-          {
             "description": "Evaluation",
             "name": "evaluation",
             "in": "body",
@@ -856,7 +837,30 @@ func init() {
             }
           }
         }
-      }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "description": "Name of the project",
+          "name": "projectName",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "description": "Name of the stage",
+          "name": "stageName",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "description": "Name of the service",
+          "name": "serviceName",
+          "in": "path",
+          "required": true
+        }
+      ]
     }
   },
   "definitions": {
