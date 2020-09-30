@@ -40,7 +40,7 @@ func TriggerEvaluationHandlerFunc(params evaluation.TriggerEvaluationParams, pri
 	logger := keptnutils.NewLogger(keptnContext, "", "api")
 	logger.Info("API received a trigger-evaluation request")
 
-	start, end, err := getStartEndTime(params.Evaluation.From, params.Evaluation.To, params.Evaluation.Timeframe)
+	start, end, err := getStartEndTime(params.Evaluation.Start, params.Evaluation.End, params.Evaluation.Timeframe)
 	if err != nil {
 		return evaluation.NewTriggerEvaluationBadRequest().WithPayload(&models.Error{
 			Code:    400,
