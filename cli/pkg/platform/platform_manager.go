@@ -93,6 +93,10 @@ func (mng PlatformManager) ReadCreds() error {
 		if in == "y" || in == "yes" {
 			break
 		}
+
+		if in == "n" || in == "no" {
+			return errors.New("Stopping installation")
+		}
 	}
 
 	newCreds, _ := json.Marshal(mng.platform.getCreds())
