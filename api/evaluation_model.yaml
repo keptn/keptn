@@ -9,12 +9,12 @@ definitions:
         additionalProperties:
           type: string
 
-      from:
+      start:
         name: from
         type: string
         description: Evaluation start timestamp
 
-      to:
+      end:
         name: to
         type: string
         description: Evaluation end timestamp
