@@ -15,17 +15,17 @@ import (
 // swagger:model evaluation
 type Evaluation struct {
 
-	// Evaluation start timestamp
-	From string `json:"from,omitempty"`
+	// Evaluation end timestamp
+	End string `json:"end,omitempty"`
 
 	// labels
 	Labels map[string]string `json:"labels,omitempty"`
 
+	// Evaluation start timestamp
+	Start string `json:"start,omitempty"`
+
 	// Evaluation timeframe
 	Timeframe string `json:"timeframe,omitempty"`
-
-	// Evaluation end timestamp
-	To string `json:"to,omitempty"`
 }
 
 // Validate validates this evaluation
