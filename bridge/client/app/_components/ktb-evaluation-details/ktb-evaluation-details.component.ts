@@ -317,7 +317,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
       })
     );
 
-    this._heatmapOptions.chart.height = this._heatmapOptions.yAxis[0].categories.length*28 + 60;
+    this._heatmapOptions.chart.height = this._heatmapOptions.yAxis[0].categories.length*28 + 160;
   }
 
   seriesVisibilityChanged(_: DtChartSeriesVisibilityChangeEvent): void {
