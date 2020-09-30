@@ -101,6 +101,7 @@ More precisely, the Keptn CLI stores the endpoint and API token using *pass* in 
 			}
 
 			logging.PrintLog("Successfully authenticated", logging.InfoLevel)
+			logging.PrintLog("CLI is authenticated against the Keptn cluster "+*authParams.endPoint, logging.InfoLevel)
 			return credentialmanager.NewCredentialManager().SetCreds(*url, *authParams.apiToken)
 		}
 
