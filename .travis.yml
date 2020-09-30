@@ -92,6 +92,12 @@ before_install:
     export KEPTN_CLI_VERSION=${BRANCH#"release-"}
     export KEPTN_INSTALLER_REPO=https://storage.googleapis.com/keptn-installer/keptn-${KEPTN_INSTALLER_VERSION}.tgz
   fi
+- | # set installer version and CLI version for release branches
+  if [[ $BRANCH = feature/2335/integration-tests ]]; then
+    export KEPTN_INSTALLER_VERSION=0.7.2
+    export KEPTN_CLI_VERSION=0.7.2
+    export KEPTN_INSTALLER_REPO=https://storage.googleapis.com/keptn-installer/keptn-0.7.2.tgz
+  fi
 # generate a lower-case slug of the branch name
 - BRANCH_SLUG=$(echo ${BRANCH} | sed -r s/[^a-zA-Z0-9]+/-/g | sed -r s/^-+\|-+$//g | tr A-Z a-z)
 
@@ -354,7 +360,7 @@ jobs:
   # feature/bug/hotfix/patch branches build jobs
   ##################################################################################
   - stage: Partial Build for feature/bug/hotfix/patch branches (CLI + Docker Images)
-    if: branch =~ ^feature.*$ OR branch =~ ^bug.*$ OR branch =~ ^hotfix.*$ OR branch =~ ^patch.*$
+    if: NOT branch = feature/2335/integration-tests AND (branch =~ ^feature.*$ OR branch =~ ^bug.*$ OR branch =~ ^hotfix.*$ OR branch =~ ^patch.*$)
     os: osx
     before_script:
       - source ./travis-scripts/install_gcloud.sh
