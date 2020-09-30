@@ -216,6 +216,7 @@ jobs:
   # Jobs that are always executed
   ##################################################################################
   - stage: Unit tests # node for Keptn Bridge
+    if: NOT branch = feature/2335/integration-tests #
     os: linux
     addons:
       chrome: stable
@@ -235,6 +236,7 @@ jobs:
 
   - stage: Unit tests # golang
     os: linux
+    if: NOT branch = feature/2335/integration-tests #
     script:
       - set -e # fail the whole script whenever any command fails
       - |
@@ -360,7 +362,7 @@ jobs:
   # feature/bug/hotfix/patch branches build jobs
   ##################################################################################
   - stage: Partial Build for feature/bug/hotfix/patch branches (CLI + Docker Images)
-    if: NOT branch = feature/2335/integration-tests AND (branch =~ ^feature.*$ OR branch =~ ^bug.*$ OR branch =~ ^hotfix.*$ OR branch =~ ^patch.*$)
+    if: NOT branch = feature/2335/integration-tests #branch =~ ^feature.*$ OR branch =~ ^bug.*$ OR branch =~ ^hotfix.*$ OR branch =~ ^patch.*$
     os: osx
     before_script:
       - source ./travis-scripts/install_gcloud.sh
@@ -378,7 +380,7 @@ jobs:
         source ../travis-scripts/build_cli.sh "${TAG}" "${KUBE_CONSTRAINTS}"
         cd ..
       fi
-  - if: branch =~ ^feature.*$ OR branch =~ ^bug.*$ OR branch =~ ^hotfix.*$ OR branch =~ ^patch.*$
+  - if: NOT branch = feature/2335/integration-tests #branch =~ ^feature.*$ OR branch =~ ^bug.*$ OR branch =~ ^hotfix.*$ OR branch =~ ^patch.*$
     os: linux
     before_script:
       - source ./travis-scripts/install_gcloud.sh
@@ -394,7 +396,7 @@ jobs:
           TAG="${TYPE}-${NUMBER}+${DATE}"
           source ./travis-scripts/build_latest_installer.sh "${TAG}"
         fi
-  - if: branch =~ ^feature.*$ OR branch =~ ^bug.*$ OR branch =~ ^hotfix.*$ OR branch =~ ^patch.*$
+  - if: NOT branch = feature/2335/integration-tests #branch =~ ^feature.*$ OR branch =~ ^bug.*$ OR branch =~ ^hotfix.*$ OR branch =~ ^patch.*$
     os: linux
     services:
       - docker
