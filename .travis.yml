@@ -670,9 +670,9 @@ jobs:
     env:
       - MICROK8S_VERSION=1.18/stable # see https://snapcraft.io/microk8s channels
 
-  - <<: *microk8sStandaloneTest
-    env:
-      - MICROK8S_VERSION=1.19/stable # see https://snapcraft.io/microk8s channels
+  #- <<: *microk8sStandaloneTest
+  #  env:
+  #    - MICROK8S_VERSION=1.19/stable # see https://snapcraft.io/microk8s channels
 
   - &minikubeStandaloneTest
     stage: Test Minikube Standalone (--platform=kubernetes) # for detailed Minikube versions see https://github.com/kubernetes/minikube/blob/master/CHANGELOG.md
