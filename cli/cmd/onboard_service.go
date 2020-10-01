@@ -4,7 +4,6 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"net/url"
 	"os"
 
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
@@ -88,21 +87,10 @@ keptn onboard service SERVICENAME --project=PROJECTNAME --chart=HELM_CHART.tgz
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		var endPoint url.URL
-		var apiToken string
-
-		if customCredsLocation, ok := os.LookupEnv("KEPTNCONFIG"); ok {
-			endPoint, apiToken, err := credentialmanager.HandleCustomCreds(customCredsLocation)
-			if err != nil {
-				return errors.New(authErrorMsg)
-			}
-		} else {
-			endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
-			if err != nil {
-				return errors.New(authErrorMsg)
-			}
+		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
+		if err != nil {
+			return errors.New(authErrorMsg)
 		}
-
 		logging.PrintLog("Starting to onboard service", logging.InfoLevel)
 
 		if endPointErr := checkEndPointStatus(endPoint.String()); endPointErr != nil {

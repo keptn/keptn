@@ -18,8 +18,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/url"
-	"os"
 
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
@@ -42,19 +40,9 @@ var evaluationDoneCmd = &cobra.Command{
 	Example:      `keptn get event evaluation-done --keptn-context=1234-5678-90ab-cdef`,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		var endPoint url.URL
-		var apiToken string
-
-		if customCredsLocation, ok := os.LookupEnv("KEPTNCONFIG"); ok {
-			endPoint, apiToken, err := credentialmanager.HandleCustomCreds(customCredsLocation)
-			if err != nil {
-				return errors.New(authErrorMsg)
-			}
-		} else {
-			endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
-			if err != nil {
-				return errors.New(authErrorMsg)
-			}
+		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
+		if err != nil {
+			return errors.New(authErrorMsg)
 		}
 
 		logging.PrintLog("Starting to get evaluation-done event", logging.InfoLevel)

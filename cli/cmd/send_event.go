@@ -18,8 +18,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/url"
-	"os"
 
 	"github.com/keptn/keptn/cli/pkg/file"
 
@@ -54,21 +52,10 @@ In addition, the payload of the CloudEvent needs to follow the Keptn spec (https
 		return json.Unmarshal([]byte(eventString), &body)
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		var endPoint url.URL
-		var apiToken string
-
-		if customCredsLocation, ok := os.LookupEnv("KEPTNCONFIG"); ok {
-			endPoint, apiToken, err := credentialmanager.HandleCustomCreds(customCredsLocation)
-			if err != nil {
-				return errors.New(authErrorMsg)
-			}
-		} else {
-			endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
-			if err != nil {
-				return errors.New(authErrorMsg)
-			}
+		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
+		if err != nil {
+			return errors.New(authErrorMsg)
 		}
-
 		eventString, err := file.ReadFile(*eventFilePath)
 		if err != nil {
 			return err

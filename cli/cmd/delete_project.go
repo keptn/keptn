@@ -3,8 +3,6 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"net/url"
-	"os"
 
 	"github.com/keptn/keptn/cli/pkg/websockethelper"
 
@@ -52,21 +50,10 @@ var delProjectCmd = &cobra.Command{
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		var endPoint url.URL
-		var apiToken string
-
-		if customCredsLocation, ok := os.LookupEnv("KEPTNCONFIG"); ok {
-			endPoint, apiToken, err := credentialmanager.HandleCustomCreds(customCredsLocation)
-			if err != nil {
-				return errors.New(authErrorMsg)
-			}
-		} else {
-			endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
-			if err != nil {
-				return errors.New(authErrorMsg)
-			}
+		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
+		if err != nil {
+			return errors.New(authErrorMsg)
 		}
-
 		logging.PrintLog("Starting to delete project", logging.InfoLevel)
 
 		project := apimodels.Project{
