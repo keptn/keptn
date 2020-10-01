@@ -326,7 +326,6 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
             return item.evaluationData.getHeatmapLabel();
           });
 
-        console.log("categories", categories);
         this._heatmapOptions.xAxis[0].categories = categories;
       }
     });
@@ -353,6 +352,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   }
 
   highlightHeatmap() {
+    let _this = this;
     let highlightIndex = this._heatmapOptions.xAxis[0].categories.indexOf(this._selectedEvaluationData.getHeatmapLabel());
     let secondaryHighlightIndexes = this._selectedEvaluationData?.data.evaluationdetails.comparedEvents?.map(eventId => this._heatmapSeries[0]?.data.findIndex(e => e['evaluation'].id == eventId));
     let plotBands = [];
@@ -369,7 +369,13 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
           className: 'highlight-secondary',
           from: highlightIndex-0.5,
           to: highlightIndex+0.5,
-          zIndex: 100
+          zIndex: 100,
+          events: {
+            click: function (event) {
+              let index = this.options.from+0.5;
+              _this.selectEvaluationData(_this._heatmapSeries[0].data[index]['evaluation']);
+            }
+          }
         });
     });
     this._heatmapOptions.xAxis[0].plotBands = plotBands;
